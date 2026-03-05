@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_register_guard.c */
-
 /**
  * @file test_rx_register_guard.c
  * @brief Comprehensive unit tests for register guard with soft-error detection and auto-correction
@@ -135,7 +133,7 @@
  * - **Interface Segregation:** Minimal API (init, refresh, get_count, reset_count)
  * - **Dependency Inversion:** N/A (low-level hardware access)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

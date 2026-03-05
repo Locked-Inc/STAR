@@ -1,5 +1,3 @@
-/* star-ros2/src/star_spi_bridge/test/test_spi_driver.cpp */
-
 /**
  * @file test_spi_driver.cpp
  * @brief Setup code

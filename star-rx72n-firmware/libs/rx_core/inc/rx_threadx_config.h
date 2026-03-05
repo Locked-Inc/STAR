@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/inc/rx_threadx_config.h */
-
 /**
  * @file rx_threadx_config.h
  * @brief ThreadX RTOS Tick Rate Configuration
@@ -205,7 +203,7 @@
  * @see rx_time_interface.h Dependency Inversion time abstraction
  * @see ThreadX User Guide Chapter 3: Time and Timers
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

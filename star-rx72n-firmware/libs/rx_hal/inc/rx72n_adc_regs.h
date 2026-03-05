@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_adc_regs.h */
-
 /**
  * @file rx72n_adc_regs.h
  * @brief RX72N S12AD 12-bit A/D Converter Register Definitions
@@ -97,7 +95,7 @@
  * against RX72N Manual Ch56 section 56.2. Critical bug fixed: ADDR0-7 were at
  * wrong offsets (was 0x16, now correct at 0x20).
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

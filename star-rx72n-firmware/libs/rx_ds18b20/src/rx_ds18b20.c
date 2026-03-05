@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_ds18b20/src/rx_ds18b20.c */
-
 /**
  * @file rx_ds18b20.c
  * @brief DS18B20 1-Wire Digital Temperature Sensor Driver Implementation

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_ds18b20.c */
-
 /**
  * @file test_rx_ds18b20.c
  * @brief Unit Tests for DS18B20 1-Wire Temperature Sensor Driver
@@ -410,7 +408,7 @@
  * - 1-Wire Protocol Specification: Book of iButton Standards (Maxim Integrated)
  * - CRC-8 Algorithm: Polynomial 0x31 (x^8 + x^5 + x^4 + 1)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

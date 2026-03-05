@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/src/rx_pin_validator.c */
-
 /**
  * @file rx_pin_validator.c
  * @brief Pin Validator Concrete Implementation - GPIO Pin Tracking and Conflict Prevention
@@ -148,7 +146,7 @@
  * @see rx_infrastructure.c Global validator instantiation
  * @see rx_gpio_constants.h GPIO port/pin constants
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-01
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

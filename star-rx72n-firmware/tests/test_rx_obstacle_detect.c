@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_obstacle_detect.c */
-
 /**
  * @file test_rx_obstacle_detect.c
  * @brief Unit Tests for Safety-Critical Obstacle Detection Module
@@ -235,7 +233,7 @@
  * @see rx_hcsr04.h HC-SR04 sensor driver (mocked in tests)
  * @see unity.h Unity test framework
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

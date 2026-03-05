@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_time.h */
-
 /**
  * @file mock_time.h
  * @brief Mock time interface for deterministic timing tests without delays
@@ -37,7 +35,7 @@
  * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Dependency Inversion, L - Liskov Substitution
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */

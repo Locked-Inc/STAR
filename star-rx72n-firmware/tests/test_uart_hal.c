@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_uart_hal.c */
-
 /**
  * @file test_uart_hal.c
  * @brief Comprehensive Unit Tests for RX72N UART HAL Driver
@@ -350,7 +348,7 @@
  * - Mock UART: [mock_uart_hw.h](mocks/mock_uart_hw.h)
  * - RX72N Manual: Chapter 34 - Serial Communication Interface (SCI)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-04
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

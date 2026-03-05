@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_usb_comm/src/rx_usb_comm.c */
-
 /**
  * @file rx_usb_comm.c
  * @brief High-Level USB CDC Communication Layer Implementation
@@ -50,7 +48,7 @@
  * @see rx_frame.h Frame encoding layer
  * @see rx_usb.h USB CDC driver
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-01
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

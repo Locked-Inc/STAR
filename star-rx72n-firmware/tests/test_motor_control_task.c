@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_motor_control_task.c */
-
 /**
  * @file test_motor_control_task.c
  * @brief Unit Tests for Motor Control Task
@@ -13,7 +11,7 @@
  * - PID initialization for all 4 motors
  * - Velocity command reading from shared data
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/src/rspi.c */
-
 /**
  * @file rspi.c
  * @brief RSPI (Renesas Serial Peripheral Interface) Driver for RX72N
@@ -135,7 +133,7 @@
  * @see rx_spi_comm.h Higher-level SPI communication layer
  * @see docs/sections/03_hardware_pinout.tex SPI pin assignments
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-01
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

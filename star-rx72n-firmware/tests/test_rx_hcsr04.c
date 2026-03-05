@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_hcsr04.c */
-
 /**
  * @file test_rx_hcsr04.c
  * @brief Unit Tests for HC-SR04 Ultrasonic Distance Sensor Driver

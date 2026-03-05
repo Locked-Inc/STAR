@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_usb_hw.c */
-
 /**
  * @file mock_usb_hw.c
  * @brief Mock USB Hardware Layer Implementation

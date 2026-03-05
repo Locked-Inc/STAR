@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/src/rx_cmt.c */
-
 /**
  * @file rx_cmt.c
  * @brief CMT (Compare Match Timer) Driver Implementation - Periodic Interrupt Generation
@@ -134,7 +132,7 @@
  * @see rx72n_cmt_regs.h CMT register definitions
  * @see rx_register_protection.h PRCR unlock for module stop
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

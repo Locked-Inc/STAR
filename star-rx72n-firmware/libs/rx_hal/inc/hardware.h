@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/hardware.h */
-
 /**
  * @file hardware.h
  * @brief Hardware Abstraction Layer (HAL) - Unified Interface for RX72N Peripherals
@@ -243,7 +241,7 @@
  *   +--> Application tasks (comm, motor, sensors)
  * ```
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

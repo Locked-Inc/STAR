@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/src/rx_wdt.c */
-
 /**
  * @file rx_wdt.c
  * @brief Watchdog Timer (WDT) Implementation for RX72N Microcontroller
@@ -158,7 +156,7 @@
  * @see rx_iwdt.c Independent Watchdog implementation
  * @see RX72N User's Manual Section 10: Watchdog Timer
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

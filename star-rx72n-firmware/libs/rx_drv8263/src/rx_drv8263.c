@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_drv8263/src/rx_drv8263.c */
-
 /**
  * @file rx_drv8263.c
  * @brief DRV8263H-Q1 Motor Driver Chip-Level Control Implementation
@@ -32,7 +30,7 @@
  *
  * @see rx_drv8263.h API documentation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-03-03
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

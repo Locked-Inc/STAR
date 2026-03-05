@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_riic_regs.h */
-
 /**
  * @file rx72n_riic_regs.h
  * @brief RX72N I2C Bus Interface (RIIC) Register Definitions

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_pid/inc/rx_pid.h */
-
 /**
  * @file rx_pid.h
  * @brief PID Controller API for Closed-Loop Motor Control with Anti-Windup
@@ -288,7 +286,7 @@
  *   +--> Any closed-loop control application
  * ```
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

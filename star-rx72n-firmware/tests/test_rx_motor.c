@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_motor.c */
-
 /**
  * @file test_rx_motor.c
  * @brief Unit Tests for RX Motor Driver (GPTW-based PWM Control)
@@ -130,7 +128,7 @@
  * @see rx_gptw.h for GPTW hardware interface
  * @see mock_rx_gptw.h for mock implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

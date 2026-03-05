@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_dtc_regs.h */
-
 /**
  * @file rx72n_dtc_regs.h
  * @brief RX72N Data Transfer Controller (DTCb) Register Definitions
@@ -54,7 +52,7 @@
  * - Chapter 20: Data Transfer Controller (DTCb), pages 786-867
  * - Section 20.2: Register Descriptions
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

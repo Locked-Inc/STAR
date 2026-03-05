@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_error_handler.c */
-
 /**
  * @file mock_error_handler.c
  * @brief Mock Error Handler Implementation

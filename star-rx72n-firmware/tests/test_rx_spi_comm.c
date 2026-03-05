@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_spi_comm.c */
-
 /**
  * @file test_rx_spi_comm.c
  * @brief Unit Tests for SPI Frame-Based Communication Protocol (RPi5 <-> RX72N)
@@ -213,7 +211,7 @@
  * @see RX72N User's Manual section 33 - RSPI module specification
  * @see docs/sections/01_nanopb_protocol.tex - Full protocol specification
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-30
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

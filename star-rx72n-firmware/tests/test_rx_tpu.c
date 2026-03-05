@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_tpu.c */
-
 /**
  * @file test_rx_tpu.c
  * @brief Unit Tests for TPU HAL Driver (Phase Counting Mode)
@@ -28,7 +26,7 @@
  * @see rx_tpu.c TPU HAL driver implementation
  * @see rx72n_tpu_regs.h Mock TPU register structures (mocks/)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

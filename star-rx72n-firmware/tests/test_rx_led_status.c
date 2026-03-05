@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_led_status.c */
-
 /**
  * @file test_rx_led_status.c
  * @brief Unit Tests for LED Status Task
@@ -12,7 +10,7 @@
  * Self-contained: includes its own mocks for PORT registers,
  * shared_data, ThreadX, and logging.
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

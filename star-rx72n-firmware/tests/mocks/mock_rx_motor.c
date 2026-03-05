@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_motor.c */
-
 /**
  * @file mock_rx_motor.c
  * @brief Mock Motor Control Implementation

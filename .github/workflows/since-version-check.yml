@@ -1,0 +1,27 @@
+# since-version-check.yml - Enforce @since version ceiling for RX72N firmware
+#
+# Rejects any commit where a @since tag in star-rx72n-firmware/ C/H files
+# references a version higher than the one declared in
+# star-rx72n-firmware/VERSION.
+#
+# Copyright (c) 2026 Locked Inc.
+# SPDX-License-Identifier: MIT
+
+name: Since Version Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  since-version-check:
+    name: "@since version ceiling enforcement"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check @since versions against VERSION file
+        run: python3 scripts/utils/check-since-version.py

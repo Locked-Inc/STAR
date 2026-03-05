@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/boot/inc/smc/lowlvl.h */
-
 /***********************************************************************************************************************
 * DISCLAIMER
 * This software is supplied by Renesas Electronics Corporation and is only intended for use with Renesas products. No
@@ -52,7 +50,7 @@
  * @warning These functions are NOT thread-safe - caller must provide synchronization
  * @since Version 1.0.0
  *
- * @author STAR Project (Locked, Inc.)
+ * @author Locked, Inc.
  * @date 2019 (original), 2026 (STAR modifications)
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.

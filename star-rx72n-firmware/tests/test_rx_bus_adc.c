@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_bus_adc.c */
-
 /**
  * @file test_rx_bus_adc.c
  * @brief Unit Tests for ADC Bus Abstraction Layer
@@ -38,7 +36,7 @@
  * - L: Mock ADC HAL is a drop-in substitute for real HAL
  * - D: Tests depend on rx_bus_adc interface, not register-level ADC details
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-26
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

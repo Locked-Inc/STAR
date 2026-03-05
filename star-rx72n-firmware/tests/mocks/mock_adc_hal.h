@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_adc_hal.h */
-
 /**
  * @file mock_adc_hal.h
  * @brief Mock ADC HAL for unit testing analog input code without hardware
@@ -50,7 +48,7 @@
  * @par NASA Power of 10: [OK] Static allocation, bounded loops
  * @par SOLID: D - Dependency Inversion
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

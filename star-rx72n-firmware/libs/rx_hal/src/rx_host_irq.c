@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/src/rx_host_irq.c */
-
 /**
  * @file rx_host_irq.c
  * @brief HOST_IRQ GPIO Output Driver Implementation
@@ -36,7 +34,7 @@
  * @see rx_host_irq.h Public API
  * @see hardware_config.h Pin assignments
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

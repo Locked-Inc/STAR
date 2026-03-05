@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/src/rx_exception.c */
-
 /**
  * @file rx_exception.c
  * @brief RX72N CPU Exception Handling Implementation

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_nanopb/inc/rx_nanopb.h */
-
 /**
  * @file rx_nanopb.h
  * @brief nanopb Integration Wrapper for RX72N

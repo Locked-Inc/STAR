@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hcsr04/src/rx_hcsr04_icu.c */
-
 /**
  * @file rx_hcsr04_icu.c
  * @brief HC-SR04 ICU (Interrupt Controller Unit) Configuration Implementation
@@ -30,7 +28,7 @@
  * - Single Responsibility: Only ICU enable/disable; pin config in rx_mpc, ISR in rx_hcsr04_isr
  * - Dependency Inversion: Uses rx_irq_filter.h abstraction for digital filter configuration
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/src/rx_register_guard.c */
-
 /**
  * @file rx_register_guard.c
  * @brief Register Guard Implementation - ESD/EMI Protection for Critical Registers
@@ -187,7 +185,7 @@
  * @see RX72N User's Manual Chapter 13: I/O Ports
  * @see RX72N User's Manual Chapter 9: Module Stop Function
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

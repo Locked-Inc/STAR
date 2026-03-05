@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_comm_manager.h */
-
 /**
  * @file mock_rx_comm_manager.h
  * @brief Mock communication manager for protocol testing without hardware
@@ -20,7 +18,7 @@
  * @par NASA Power of 10: [OK] Static allocation, bounded queues
  * @par SOLID: S - Single responsibility (communication only)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

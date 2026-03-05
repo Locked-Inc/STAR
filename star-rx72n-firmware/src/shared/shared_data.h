@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/shared/shared_data.h */
-
 /**
  * @file shared_data.h
  * @brief Thread-Safe Shared Data Infrastructure for Multi-Task Communication

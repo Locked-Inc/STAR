@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_ds18b20.h */
-
 /**
  * @file mock_rx_ds18b20.h
  * @brief Mock DS18B20 temperature sensor driver for thermal monitoring tests
@@ -23,7 +21,7 @@
  * @par NASA Power of 10: [OK] Static allocation, bounded loops
  * @par SOLID: D - Thermal monitoring depends on DS18B20 interface
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

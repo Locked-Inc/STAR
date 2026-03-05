@@ -10,7 +10,6 @@
 // - Enum zero value ends with _UNKNOWN
 // - All fields documented with units
 //
-// STAR Project - Texas A&M University
 // February 2026
 
 syntax = "proto3";

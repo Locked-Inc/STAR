@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_mtu_encoder.c */
-
 /**
  * @file mock_rx_mtu_encoder.c
  * @brief Mock MTU Encoder Hardware Implementation for Unit Testing

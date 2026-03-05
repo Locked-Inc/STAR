@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_usb_regs.h */
-
 /**
  * @file rx72n_usb_regs.h
  * @brief RX72N USB 2.0 Full-Speed Host/Function Module Register Definitions

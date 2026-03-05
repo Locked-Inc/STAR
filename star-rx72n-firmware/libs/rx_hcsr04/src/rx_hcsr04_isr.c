@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hcsr04/src/rx_hcsr04_isr.c */
-
 /**
  * @file rx_hcsr04_isr.c
  * @brief HC-SR04 ISR (Interrupt Service Routine) Handler Implementation
@@ -29,7 +27,7 @@
  *                          driver logic in rx_hcsr04.c
  * - Dependency Inversion: Uses hcsr04_hal_get_time_us_isr() abstraction (mutex-free, ISR-safe)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

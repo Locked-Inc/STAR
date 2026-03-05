@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_spi_comm/src/rx_spi_comm.c */
-
 /**
  * @file rx_spi_comm.c
  * @brief High-Level SPI Frame Protocol Communication Layer Implementation

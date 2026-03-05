@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/tasks/motor_control_task.c */
-
 /**
  * @file motor_control_task.c
  * @brief Motor Control Task - 4-Motor PID Velocity Control @ 100 Hz
@@ -368,7 +366,7 @@
  * @see matlab/pid_discretize.m MATLAB discrete-time PID coefficients
  * @see docs/sections/03_hardware_pinout.tex Hardware motor/encoder connections
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

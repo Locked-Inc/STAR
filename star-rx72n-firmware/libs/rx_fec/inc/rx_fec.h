@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_fec/inc/rx_fec.h */
-
 /**
  * @file rx_fec.h
  * @brief Forward Error Correction (FEC) Codec for RX72N
@@ -157,7 +155,7 @@
  * @see docs/sections/01_nanopb_protocol.tex for protocol specification
  * @see "Error Control Coding" by Lin & Costello for theory
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

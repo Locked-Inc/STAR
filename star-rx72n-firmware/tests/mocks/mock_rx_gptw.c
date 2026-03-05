@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_gptw.c */
-
 /**
  * @file mock_rx_gptw.c
  * @brief Mock GPTW Driver Implementation for Unit Testing

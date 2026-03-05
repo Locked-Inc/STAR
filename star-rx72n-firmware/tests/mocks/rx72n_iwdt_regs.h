@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/rx72n_iwdt_regs.h */
-
 /**
  * @file rx72n_iwdt_regs.h
  * @brief Mock IWDT Register Definitions for Unit Testing

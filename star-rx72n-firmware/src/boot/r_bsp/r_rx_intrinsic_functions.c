@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/boot/r_bsp/r_rx_intrinsic_functions.c */
-
 /***********************************************************************************************************************
 * DISCLAIMER
 * This software is supplied by Renesas Electronics Corporation and is only intended for use with Renesas products. No
@@ -88,7 +86,7 @@
  * - Interface Segregation: Functions grouped by category (arithmetic, registers, TFU)
  * - Dependency Inversion: BSP code depends on intrinsic interface, not compiler specifics
  *
- * @author Renesas Electronics Corporation (original), STAR Project/Locked, Inc. (modifications)
+ * @author Renesas Electronics Corporation (original), Locked, Inc. (modifications)
  * @date 2019-02-28 (original), 2026-02-13 (STAR modifications)
  * @version 1.05
  * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.

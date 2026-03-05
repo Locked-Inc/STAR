@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_mtu_encoder.h */
-
 /**
  * @file mock_rx_mtu_encoder.h
  * @brief Mock MTU encoder hardware for quadrature encoder unit testing
@@ -45,7 +43,7 @@
  * @par NASA Power of 10: [OK] Static allocation, fixed-size counters
  * @par SOLID: D - Dependency Inversion
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

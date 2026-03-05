@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_shared_data.h */
-
 /**
  * @file mock_shared_data.h
  * @brief Mock shared data module for inter-task communication testing
@@ -19,7 +17,7 @@
  * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: S - Single responsibility (data sharing only)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

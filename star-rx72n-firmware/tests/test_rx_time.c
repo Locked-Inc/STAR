@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_time.c */
-
 /**
  * @file test_rx_time.c
  * @brief Comprehensive unit tests for time interface with mock implementation and DIP
@@ -160,7 +158,7 @@
  * - **Interface Segregation:** Minimal interface (3 functions: get, sleep, elapsed)
  * - **Dependency Inversion:** HIGH-LEVEL <- interface -> LOW-LEVEL (testability!)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-04
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rspi.c */
-
 /**
  * @file mock_rspi.c
  * @brief Mock RSPI Hardware Layer Implementation for Host-Side Testing

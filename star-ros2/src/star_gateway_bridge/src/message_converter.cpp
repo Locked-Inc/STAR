@@ -1,16 +1,9 @@
-/* star-ros2/src/star_gateway_bridge/src/message_converter.cpp */
-
 /**
  * @file message_converter.cpp
  * @brief Bidirectional conversion between ROS2 standard messages and STAR Protocol
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */
-// message_converter.cpp - ROS2 <-> Protobuf Message Converter Implementation
-// Bidirectional conversion between ROS2 standard messages and STAR Protocol
-// Buffers.
-//
-// STAR Project - Texas A&M University
 
 #include "star_gateway_bridge/message_converter.hpp"
 
@@ -25,10 +18,7 @@ namespace star::star_gateway_bridge
 namespace
 {
 
-/** @brief Microseconds in one second for ROS timestamp conversion.
- * @copyright Copyright (c) 2026 Locked Inc.
- * SPDX-License-Identifier: MIT
-*/
+/** @brief Microseconds in one second for ROS timestamp conversion. */
 constexpr int64_t US_PER_SEC = 1'000'000LL;
 /** @brief Nanoseconds in one microsecond for ROS timestamp conversion. */
 constexpr int64_t NS_PER_US = 1'000LL;

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_drv8263_port.h */
-
 /**
  * @file mock_drv8263_port.h
  * @brief Test helper API for DRV8263 mock port registers
@@ -9,7 +7,7 @@
  * the rx_drv8263 module. Allows tests to set simulated input pin values
  * (PIDR) and read output pin values (PODR).
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-03-03
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

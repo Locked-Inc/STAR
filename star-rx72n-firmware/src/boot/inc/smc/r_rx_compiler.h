@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/boot/inc/smc/r_rx_compiler.h */
-
 /***********************************************************************************************************************
 * DISCLAIMER
 * This software is supplied by Renesas Electronics Corporation and is only intended for use with Renesas products. No
@@ -101,7 +99,7 @@
  * @warning Adding new compilers requires updating ALL macro definitions
  * @since Version 1.0.0
  *
- * @author STAR Project (Locked, Inc.)
+ * @author Locked, Inc.
  * @date 2019 (original), 2026 (STAR modifications)
  * @version 1.0.1
  * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/inc/rx_pin_interface.h */
-
 /**
  * @file rx_pin_interface.h
  * @brief Abstract Pin Validator Interface - THE "I" and "D" in SOLID

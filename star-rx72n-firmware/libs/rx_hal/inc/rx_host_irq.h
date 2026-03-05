@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx_host_irq.h */
-
 /**
  * @file rx_host_irq.h
  * @brief HOST_IRQ GPIO Output Driver for RPi5 Data-Ready Signaling
@@ -46,7 +44,7 @@
  * @see rx_spi_comm.h SPI communication driver
  * @see hardware_config.h Pin assignments (host_irq_pins group)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

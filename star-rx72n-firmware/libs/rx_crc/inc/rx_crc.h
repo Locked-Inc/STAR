@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_crc/inc/rx_crc.h */
-
 /**
  * @file rx_crc.h
  * @brief Cyclic Redundancy Check (CRC) API for Data Integrity Validation

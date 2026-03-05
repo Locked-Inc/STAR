@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_log.c */
-
 /**
  * @file mock_rx_log.c
  * @brief Mock RX Log and UART Implementation for Unit Testing

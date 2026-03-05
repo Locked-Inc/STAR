@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_bus/src/rx_bus_onewire.c */
-
 /**
  * @file rx_bus_onewire.c
  * @brief OneWire (1-Wire) Bus Implementation Using GPIO Bit-Banging
@@ -71,7 +69,7 @@
  * @see rx_bus_manager.h Bus manager integration
  * @see gpio.c GPIO driver used for bit-banging
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-03
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_bus/src/rx_bus_manager.c */
-
 /**
  * @file rx_bus_manager.c
  * @brief Bus Manager Implementation - Thread-Safe Multi-Protocol Registry
@@ -146,7 +144,7 @@
  * @see rx_bus_command.h Command pattern interface
  * @see docs/sections/03_hardware_pinout.tex Hardware peripheral assignments
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

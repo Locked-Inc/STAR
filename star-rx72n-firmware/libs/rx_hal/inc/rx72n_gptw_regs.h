@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_gptw_regs.h */
-
 /**
  * @file rx72n_gptw_regs.h
  * @brief RX72N GPTW (General PWM Timer) Register Definitions
@@ -116,7 +114,7 @@
  * - Structure sizes verified: 216 bytes (channel), 44 bytes (common)
  * - Reference: iodefine.h lines 10427-11461 (struct st_gptw)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

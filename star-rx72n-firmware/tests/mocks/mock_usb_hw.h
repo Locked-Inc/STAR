@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_usb_hw.h */
-
 /**
  * @file mock_usb_hw.h
  * @brief Mock USB CDC hardware layer for serial communication testing

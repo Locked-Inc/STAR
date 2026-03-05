@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_clock_power_init.c */
-
 /**
  * @file mock_rx_clock_power_init.c
  * @brief Mock Clock/Power Initialization Implementation
@@ -8,7 +6,7 @@
  * Implements mock rx_clock_power_init() for unit testing.
  * Tracks calls and allows configurable return values.
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

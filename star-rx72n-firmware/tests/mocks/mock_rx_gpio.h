@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_gpio.h */
-
 /**
  * @file mock_rx_gpio.h
  * @brief Mock high-level GPIO functions for bus protocol testing
@@ -29,7 +27,7 @@
  * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Bus protocols depend on GPIO interface
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

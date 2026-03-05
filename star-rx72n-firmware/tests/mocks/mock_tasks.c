@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_tasks.c */
-
 /**
  * @file mock_tasks.c
  * @brief Mock Task Create Functions for Unit Testing
@@ -8,7 +6,7 @@
  * Provides stub implementations of task creation functions that use
  * the ThreadX mock to simulate task creation behavior.
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

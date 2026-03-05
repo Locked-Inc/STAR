@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_frame/src/rx_frame.c */
-
 /**
  * @file rx_frame.c
  * @brief Frame Layer Protocol Implementation
@@ -167,7 +165,7 @@
  * @see rx_crc.h CRC-32 computation
  * @see star-gateway/internal/frame/ Go reference implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

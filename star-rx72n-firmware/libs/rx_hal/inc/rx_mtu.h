@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx_mtu.h */
-
 /**
  * @file rx_mtu.h
  * @brief MTU PWM Driver for RX72N Multi-Function Timer Unit
@@ -171,7 +169,7 @@
  * @see rx72n_mtu_regs.h Register definitions
  * @see RX72N Hardware Manual Section 24 - Multi-Function Timer Unit 3
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

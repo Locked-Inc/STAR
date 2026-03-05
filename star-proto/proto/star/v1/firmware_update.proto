@@ -5,8 +5,6 @@
 // - Proto3 only, 100 char line limit, 4 space indent
 // - All fields documented
 //
-// STAR Project - Texas A&M University
-// December 2025
 
 syntax = "proto3";
 

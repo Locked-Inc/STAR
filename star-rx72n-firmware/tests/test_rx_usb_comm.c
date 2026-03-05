@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_usb_comm.c */
-
 /**
  * @file test_rx_usb_comm.c
  * @brief Unit Tests for USB CDC Frame-Based Communication Protocol Layer
@@ -162,7 +160,7 @@
  * @see rx_usb.h - USB CDC driver
  * @see docs/sections/01_nanopb_protocol.tex - Full protocol specification
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-30
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

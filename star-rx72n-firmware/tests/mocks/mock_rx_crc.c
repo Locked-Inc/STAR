@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_crc.c */
-
 /**
  * @file mock_rx_crc.c
  * @brief Mock CRC Implementation for Host-Side Testing

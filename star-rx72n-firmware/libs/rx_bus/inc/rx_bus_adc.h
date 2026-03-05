@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_bus/inc/rx_bus_adc.h */
-
 /**
  * @file rx_bus_adc.h
  * @brief ADC (Analog-to-Digital Converter) Bus Abstraction for RX72N

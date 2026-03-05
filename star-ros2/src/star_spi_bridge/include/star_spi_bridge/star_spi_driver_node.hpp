@@ -1,5 +1,3 @@
-/* star-ros2/src/star_spi_bridge/include/star_spi_bridge/star_spi_driver_node.hpp */
-
 /**
  * @file star_spi_driver_node.hpp
  * @brief ROS2 lifecycle node for the STAR SPI bridge to the RX72N peripheral MCU.

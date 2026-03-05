@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_adc_hal.c */
-
 /**
  * @file mock_adc_hal.c
  * @brief Mock ADC HAL Function Implementation
@@ -23,7 +21,7 @@
  *           (see g_mock_adc, local variables in mock_adc_read, mock_adc_init)
  * - Rule 7: [OK] All internal function returns checked by callers
  *
- * @author STAR Project
+ * @author Locked, Inc.
  * @version 1.0.0
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.

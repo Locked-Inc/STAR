@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_gptw_staggered.c */
-
 /**
  * @file test_rx_gptw_staggered.c
  * @brief Unit Tests for GPTW Staggered PWM Initialization API
@@ -273,7 +271,7 @@
  * @see docs/sections/05_motor_control.tex Motor control system design
  * @see RX72N Hardware Manual Section 26 - General PWM Timer
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-24
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

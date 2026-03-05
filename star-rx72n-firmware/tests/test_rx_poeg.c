@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_poeg.c */
-
 /**
  * @file test_rx_poeg.c
  * @brief Unit Tests for POEG Motor Fault Protection Driver
@@ -8,7 +6,7 @@
  * Tests the POEG driver's fault detection, clearing, and software stop
  * functionality. Uses mock POEG/GPTW/ICU registers allocated in this file.
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

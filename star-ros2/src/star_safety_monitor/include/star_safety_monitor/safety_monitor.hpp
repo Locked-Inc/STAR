@@ -1,5 +1,3 @@
-/* star-ros2/src/star_safety_monitor/include/star_safety_monitor/safety_monitor.hpp */
-
 /**
  * @file safety_monitor.hpp
  * @brief Permission is hereby granted, free of charge, to any person obtaining a copy

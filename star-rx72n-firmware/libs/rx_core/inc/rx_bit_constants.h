@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/inc/rx_bit_constants.h */
-
 /**
  * @file rx_bit_constants.h
  * @brief Fundamental Bit and Byte Size Constants for Protocol and Data Manipulation
@@ -118,7 +116,7 @@
  *   +--> lib/rx_hal/src/uart.c (data serialization)
  * ```
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

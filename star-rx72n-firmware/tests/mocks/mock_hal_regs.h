@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_hal_regs.h */
-
 /**
  * @file mock_hal_regs.h
  * @brief Mock HAL Register Structures for Unit Testing

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_spi_comm/inc/rx_spi_comm.h */
-
 /**
  * @file rx_spi_comm.h
  * @brief High-Level SPI Frame Protocol Communication Layer for RX72N Peripheral Mode

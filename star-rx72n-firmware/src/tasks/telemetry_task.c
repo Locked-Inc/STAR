@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/tasks/telemetry_task.c */
-
 /**
  * @file telemetry_task.c
  * @brief Telemetry Aggregation Task - Robot System State Broadcasting @ 20 Hz
@@ -636,7 +634,7 @@
  * **Conclusion:** This task is **thread-safe** - all shared resources use mutex/queue synchronization.
  * No race conditions possible.
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

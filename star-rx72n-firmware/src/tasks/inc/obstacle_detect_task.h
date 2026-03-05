@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/tasks/inc/obstacle_detect_task.h */
-
 /**
  * @file obstacle_detect_task.h
  * @brief Obstacle Detection Task - HC-SR04 Ultrasonic Sensor Monitoring

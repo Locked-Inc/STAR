@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_tx_api.c */
-
 /**
  * @file mock_tx_api.c
  * @brief Mock ThreadX API Implementation for Unit Testing
@@ -8,7 +6,7 @@
  * Provides mock implementation of ThreadX thread functions for unit testing.
  * Allows controlling return values and tracking call counts.
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

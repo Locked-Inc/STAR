@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/tasks/inc/led_status_task.h */
-
 /**
  * @file led_status_task.h
  * @brief LED Status Indicator Task - Visual System Health Feedback

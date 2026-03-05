@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_communication_task.c */
-
 /**
  * @file test_communication_task.c
  * @brief Unit Tests for Communication Task
@@ -14,7 +12,7 @@
  * - Velocity command decoding and storage
  * - Emergency stop request handling
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

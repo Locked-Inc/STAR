@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_usb/src/rx_usb_cdc.c */
-
 /**
  * @file rx_usb_cdc.c
  * @brief USB CDC-ACM Composite Device Implementation for RX72N Multi-Port Serial
@@ -569,7 +567,7 @@
  * 6. **WinUSB descriptor:** Microsoft OS descriptors for driverless Windows installation
  * 7. **Configuration via control endpoint:** Runtime port enable/disable, buffer size adjustment
  *
- * @author STAR Project Team
+ * @author Locked, Inc. Team
  * @date 2026-01-27
  * @version 1.0.0
  *

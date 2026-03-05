@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_nanopb.c */
-
 /**
  * @file test_rx_nanopb.c
  * @brief Comprehensive Unit Tests for nanopb Protocol Buffer Integration Layer

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_encoder.c */
-
 /**
  * @file test_rx_encoder.c
  * @brief Unit Tests for MTU Encoder Driver (Quadrature Phase Counting)
@@ -171,7 +169,7 @@
  * @see rx_mtu.h for MTU hardware interface
  * @see mock_rx_mtu_encoder.h for mock implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

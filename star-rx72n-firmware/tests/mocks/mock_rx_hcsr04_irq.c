@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_hcsr04_irq.c */
-
 /**
  * @file mock_rx_hcsr04_irq.c
  * @brief Mock implementations for HC-SR04 IRQ mode functions (for unit testing)
@@ -21,7 +19,7 @@
  *                          rx_hcsr04_isr_start, rx_hcsr04_isr_get_duration,
  *                          rx_hcsr04_isr_disarm)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

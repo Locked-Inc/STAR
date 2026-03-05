@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/boot/smc/vecttbl.c */
-
 /***********************************************************************************************************************
 * DISCLAIMER
 * This software is supplied by Renesas Electronics Corporation and is only intended for use with Renesas products. No 
@@ -79,7 +77,7 @@
  * @see default_interrupt_handlers.c Exception handler implementations
  *
  * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
- * @copyright Modified 2026 STAR Project - Adapted to STAR coding standards
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
  *
  * @par History
  * - 08.10.2019 v1.00 - First release (Renesas)

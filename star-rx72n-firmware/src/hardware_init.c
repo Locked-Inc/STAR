@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/hardware_init.c */
-
 /**
  * @file hardware_init.c
  * @brief Application-Specific Hardware Initialization - Motor Control, Sensors, Communication

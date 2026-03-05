@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hcsr04/src/rx_hcsr04.c */
-
 /**
  * @file rx_hcsr04.c
  * @brief HC-SR04 Ultrasonic Distance Sensor Driver Implementation

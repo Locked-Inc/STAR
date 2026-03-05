@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_session/src/rx_session.c */
-
 /**
  * @file rx_session.c
  *
@@ -36,7 +34,7 @@
  * - S: Single responsibility (sequence tracking only)
  * - D: Depends on rx_err_t abstraction, not concrete transport details
  *
- * @author STAR Project Team
+ * @author Locked, Inc. Team
  * @date February 2026
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

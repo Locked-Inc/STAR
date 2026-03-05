@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_usb.c */
-
 /**
  * @file test_rx_usb.c
  * @brief Unit Tests for USB CDC Driver
@@ -120,7 +118,7 @@
  * @see rx_usb_private.h Internal APIs and ring buffer
  * @see mock_usb_hw.h Hardware abstraction mocks
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-04
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

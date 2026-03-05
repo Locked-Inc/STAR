@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_temperature_sensing_task.c */
-
 /**
  * @file test_temperature_sensing_task.c
  * @brief Unit Tests for Temperature Sensing Task
@@ -13,7 +11,7 @@
  * - Conversion trigger and read
  * - Temperature data storage for telemetry
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

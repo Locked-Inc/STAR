@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_drv8263_port.c */
-
 /**
  * @file mock_drv8263_port.c
  * @brief Mock PORT register implementation for DRV8263 unit testing
@@ -9,7 +7,7 @@
  * The g_mock_port_regs array is referenced by the mock port accessor
  * functions in drv8263/rx72n_port_regs.h.
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-03-03
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

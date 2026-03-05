@@ -1,15 +1,9 @@
-/* star-ros2/src/star_gateway_bridge/src/star_gateway_bridge_node.cpp */
-
 /**
  * @file star_gateway_bridge_node.cpp
  * @brief Bridges ROS2 ecosystem with Go gateway service via gRPC.
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */
-// star_gateway_bridge_node.cpp - ROS2 Gateway Bridge Node Implementation
-// Bridges ROS2 ecosystem with Go gateway service via gRPC.
-//
-// STAR Project - Texas A&M University
 
 #include "star_gateway_bridge/star_gateway_bridge_node.hpp"
 

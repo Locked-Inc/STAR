@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_comm_manager/src/rx_comm_manager.c */
-
 /**
  * @file rx_comm_manager.c
  * @brief Unified Multi-Channel Communication Manager Implementation

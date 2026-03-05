@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_fec/src/rx_fec.c */
-
 /**
  * @file rx_fec.c
  * @brief Forward Error Correction (FEC) Codec Implementation
@@ -83,7 +81,7 @@
  * - **Rule 5**: [OK] All functions have >=2 assertions
  * - **Rule 10**: [OK] Compiles with -Wall -Wextra -Werror
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

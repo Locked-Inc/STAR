@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_usb/src/rx_usb_internal.h */
-
 /**
  * @file rx_usb_internal.h
  * @brief Internal shared definitions for USB CDC driver implementation

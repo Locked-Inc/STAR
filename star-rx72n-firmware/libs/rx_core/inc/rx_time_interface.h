@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/inc/rx_time_interface.h */
-
 /**
  * @file rx_time_interface.h
  * @brief Time Interface - Dependency Inversion for Timing Operations
@@ -228,7 +226,7 @@
  * @see [rx_error_interface.h](rx_error_interface.h) Similar DIP pattern for errors
  * @see [rx_pin_interface.h](rx_pin_interface.h) Similar DIP pattern for GPIO
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

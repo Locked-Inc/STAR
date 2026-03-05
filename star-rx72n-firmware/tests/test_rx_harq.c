@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_harq.c */
-
 /**
  * @file test_rx_harq.c
  * @brief Unit Tests for HARQ Protocol with Chase Combining Diversity
@@ -296,7 +294,7 @@
  * @see "Hybrid ARQ Schemes" by S. Lin & D. Costello - Textbook reference
  * @see "Digital Communications" by J. Proakis - Chase Combining analysis (Ch. 13)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/inc/rx_iwdt.h */
-
 /**
  * @file rx_iwdt.h
  * @brief Independent Watchdog Timer (IWDT) Driver for RX72N Microcontroller
@@ -231,7 +229,7 @@
  * @see docs/sections/06_nasa_power_of_10.tex Safety-critical coding standards
  * @see RX72N Hardware Manual Section 11 Independent Watchdog Timer specification
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

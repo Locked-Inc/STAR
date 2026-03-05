@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/tasks/comm_task.c */
-
 /**
  * @file comm_task.c
  * @brief Communication Task Implementation - HIGHEST PRIORITY Protocol Handling for RPi5 Interface
@@ -380,7 +378,7 @@
  * @see docs/sections/01_nanopb_protocol.tex SPI communication protocol specification
  * @see docs/sections/02_protobuf_schemas.tex Protocol Buffer message definitions
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

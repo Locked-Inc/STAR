@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/inc/rx_infrastructure.h */
-
 /**
  * @file rx_infrastructure.h
  * @brief Global Infrastructure Initialization and Service Locator

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_ds18b20/inc/rx_ds18b20.h */
-
 /**
  * @file rx_ds18b20.h
  * @brief DS18B20 1-Wire Digital Temperature Sensor Driver API
@@ -428,7 +426,7 @@
  *   +-- rx_check (nullptr validation macros)
  * @endcode
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-30
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

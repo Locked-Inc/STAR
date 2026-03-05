@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/src/riic.c */
-
 /**
  * @file riic.c
  * @brief RIIC (I2C) Driver Implementation for RX72N

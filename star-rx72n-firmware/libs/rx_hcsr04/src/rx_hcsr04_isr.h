@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hcsr04/src/rx_hcsr04_isr.h */
-
 /**
  * @file rx_hcsr04_isr.h
  * @brief HC-SR04 ISR (Interrupt Service Routine) Handler Layer
@@ -60,7 +58,7 @@
  * @see rx_hcsr04.c Main driver using this ISR layer
  * @see RX72N Manual Chapter 15 - ICU (Interrupt Controller Unit)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

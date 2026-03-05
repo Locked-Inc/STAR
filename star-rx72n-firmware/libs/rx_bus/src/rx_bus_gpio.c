@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_bus/src/rx_bus_gpio.c */
-
 /**
  * @file rx_bus_gpio.c
  * @brief GPIO Bus Abstraction Implementation for Renesas RX72N
@@ -150,7 +148,7 @@
  * @see rx_bus_manager.h Bus manager core implementation
  * @see rx_port_utils.h Low-level PORT register access
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-30
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

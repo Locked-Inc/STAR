@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_encoder/src/rx_mtu_encoder.c */
-
 /**
  * @file rx_mtu_encoder.c
  * @brief RX72N MTU Quadrature Encoder Driver Implementation (Phase Counting Mode)

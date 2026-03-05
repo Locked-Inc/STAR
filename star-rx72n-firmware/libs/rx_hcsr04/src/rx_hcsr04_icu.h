@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hcsr04/src/rx_hcsr04_icu.h */
-
 /**
  * @file rx_hcsr04_icu.h
  * @brief HC-SR04 ICU (Interrupt Controller Unit) Configuration Layer
@@ -55,7 +53,7 @@
  * @see docs/sections/06_nasa_power_of_10.tex NASA Power of 10 rules applied in this module
  * @see docs/sections/01_nanopb_protocol.tex System architecture and design document
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

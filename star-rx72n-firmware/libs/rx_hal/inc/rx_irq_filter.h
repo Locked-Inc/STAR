@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx_irq_filter.h */
-
 /**
  * @file rx_irq_filter.h
  * @brief IRQ Digital Filter Driver API for RX72N
@@ -153,7 +151,7 @@
  * @see rx72n_icu_regs.h ICU register definitions (IRQFLTE, IRQFLTC)
  * @see RX72N Hardware Manual, Chapter 13 - Interrupt Controller Unit
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

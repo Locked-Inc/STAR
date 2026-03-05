@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_regs.h */
-
 /**
  * @file rx72n_regs.h
  * @brief RX72N Hardware Register Definitions - Main Aggregator Header
@@ -240,7 +238,7 @@
  *   +--> hardware.h (HAL API implementation)
  * ```
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

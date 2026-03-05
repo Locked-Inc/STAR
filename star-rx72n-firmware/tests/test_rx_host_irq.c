@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_host_irq.c */
-
 /**
  * @file test_rx_host_irq.c
  * @brief Unit Tests for HOST_IRQ GPIO Output Driver (P67)
@@ -8,7 +6,7 @@
  * Self-contained test that reimplements the HOST_IRQ driver logic
  * against mock PORT registers. Follows the same pattern as test_rx_poeg.c.
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

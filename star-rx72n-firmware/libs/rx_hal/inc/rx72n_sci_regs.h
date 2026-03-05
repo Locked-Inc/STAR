@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_sci_regs.h */
-
 /**
  * @file rx72n_sci_regs.h
  * @brief RX72N Serial Communication Interface (SCI) register definitions
@@ -140,7 +138,7 @@
  * @see RX72N Hardware Manual Chapter 41 for complete SCI specification
  * @see DOXYGEN_ROADMAP.md for documentation standards
  *
- * @author STAR Project Contributors
+ * @author Locked, Inc. Contributors
  * @date 2026-01-28
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

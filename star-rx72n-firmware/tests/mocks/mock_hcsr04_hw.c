@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_hcsr04_hw.c */
-
 /**
  * @file mock_hcsr04_hw.c
  * @brief Mock HC-SR04 Hardware Layer Implementation

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_encoder/inc/rx_mtu_encoder.h */
-
 /**
  * @file rx_mtu_encoder.h
  * @brief MTU Quadrature Encoder Driver for RX72N (Hardware Phase Counting Mode)
@@ -197,7 +195,7 @@
  * @see docs/sections/03_hardware_pinout.tex Complete pin assignments
  * @see RX72N Hardware Manual Chapter 19 - Multi-Function Timer (MTU)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

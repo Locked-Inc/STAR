@@ -1,10 +1,8 @@
-/* star-rx72n-firmware/tests/mocks/mock_shared_data.c */
-
 /**
  * @file mock_shared_data.c
  * @brief Mock Shared Data Module Implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

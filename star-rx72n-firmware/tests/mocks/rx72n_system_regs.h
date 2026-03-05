@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/rx72n_system_regs.h */
-
 /**
  * @file rx72n_system_regs.h
  * @brief Mock RX72N System Control Register Definitions for Host-Side Unit Testing
@@ -287,7 +285,7 @@
  * - **Interface Segregation (I)**: [OK] Separate accessors for PRCR, RSTSR, system regs (no "fat" interface)
  * - **Dependency Inversion (D)**: [OK] Production code depends on abstract register types, not concrete mock implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

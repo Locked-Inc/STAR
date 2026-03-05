@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_fec.c */
-
 /**
  * @file test_rx_fec.c
  * @brief Unit Tests for Forward Error Correction (K=7 Convolutional + Viterbi Decoder)
@@ -274,7 +272,7 @@
  * OK
  * @endverbatim
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-04
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

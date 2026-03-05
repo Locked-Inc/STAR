@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_gpio_hal.c */
-
 /**
  * @file test_gpio_hal.c
  * @brief Unit Tests for GPIO HAL (General Purpose Input/Output) Driver
@@ -215,7 +213,7 @@
  * @see [RX72N Manual Ch13](../RX72N_Manual_Chapters/Ch13_IO_Ports.txt) I/O Ports chapter
  * @see [hardware.h](../libs/rx_hal/inc/hardware.h) Hardware abstraction interface
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

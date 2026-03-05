@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_pin_validator.c */
-
 /**
  * @file test_rx_pin_validator.c
  * @brief Comprehensive unit tests for GPIO pin validator with conflict detection and DIP interface
@@ -147,7 +145,7 @@
  * - **Interface Segregation:** Minimal interface (3 functions: reserve, release, check)
  * - **Dependency Inversion:** HIGH-LEVEL <- interface -> LOW-LEVEL (prevents conflicts!)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

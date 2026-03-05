@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_drv8263/inc/rx_drv8263.h */
-
 /**
  * @file rx_drv8263.h
  * @brief DRV8263H-Q1 Motor Driver Chip-Level Control API
@@ -56,7 +54,7 @@
  * @see rx_motor.h Motor PWM control (complementary to this module)
  * @see hardware_config.h Pin assignments for DRVOFF, nSLEEP, nFAULT
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-03-03
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

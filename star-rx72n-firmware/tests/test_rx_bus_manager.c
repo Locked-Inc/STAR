@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_bus_manager.c */
-
 /**
  * @file test_rx_bus_manager.c
  * @brief Comprehensive unit tests for rx_bus_manager centralized multi-protocol bus registry
@@ -286,7 +284,7 @@
  * @see lib/rx_bus/inc/rx_bus_command.h Command Pattern interface
  * @see tests/test_rx_error_handler.c Reference test documentation pattern
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

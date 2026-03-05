@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/boot/inc/smc/lowsrc.h */
-
 /***********************************************************************************************************************
 * DISCLAIMER
 * This software is supplied by Renesas Electronics Corporation and is only intended for use with Renesas products. No
@@ -77,7 +75,7 @@
  * - Interface Segregation: Compiler-specific sections provide minimal required surface
  * - Dependency Inversion: Higher-level stdio depends on this abstraction layer
  *
- * @author STAR Project (Locked, Inc.)
+ * @author Locked, Inc.
  * @date 2013 (original), 2026 (STAR modifications)
  * @version 3.01
  * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.

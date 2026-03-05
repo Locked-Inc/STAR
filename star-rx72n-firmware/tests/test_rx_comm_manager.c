@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_comm_manager.c */
-
 /**
  * @file test_rx_comm_manager.c
  * @brief Unit Tests for Unified Communication Channel Manager (USB + SPI Multiplexing)
@@ -189,7 +187,7 @@
  * @see rx_spi_comm.h - SPI frame layer
  * @see STAR_TEST_PLAN.md - Integration testing strategy
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-30
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

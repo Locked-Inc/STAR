@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/rx_hcsr04_hal_mock.c */
-
 /**
  * @file rx_hcsr04_hal_mock.c
  * @brief HC-SR04 Ultrasonic Sensor Mock HAL Implementation for Host-Side Testing
@@ -132,7 +130,7 @@
  * @see rx_hcsr04.c HC-SR04 driver implementation using this HAL
  * @see mock_hcsr04_hw.h Mock hardware simulation functions
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

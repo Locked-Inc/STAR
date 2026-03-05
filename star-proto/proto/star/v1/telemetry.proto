@@ -6,8 +6,6 @@
 // - MKS units (meters, radians, Celsius)
 // - All fields documented with units
 //
-// STAR Project - Texas A&M University
-// December 2025
 
 syntax = "proto3";
 

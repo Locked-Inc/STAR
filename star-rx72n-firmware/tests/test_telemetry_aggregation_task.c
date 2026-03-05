@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_telemetry_aggregation_task.c */
-
 /**
  * @file test_telemetry_aggregation_task.c
  * @brief Unit Tests for Telemetry Aggregation Task
@@ -14,7 +12,7 @@
  * - Protobuf encoding of telemetry
  * - Broadcast to all communication channels
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

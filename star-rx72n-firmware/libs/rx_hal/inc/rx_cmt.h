@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx_cmt.h */
-
 /**
  * @file rx_cmt.h
  * @brief CMT (Compare Match Timer) Driver API for RX72N - Periodic Interrupt Generation
@@ -153,7 +151,7 @@
  * @see timer.h Timer abstraction (uses CMT internally)
  * @see hardware_init.h Boot sequence context
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

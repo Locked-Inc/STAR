@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/tasks/watchdog_monitor_task.c */
-
 /**
  * @file watchdog_monitor_task.c
  * @brief Watchdog Monitor Task Implementation
@@ -90,7 +88,7 @@
  * - Dependency Inversion: Depends on rx_iwdt abstraction, not hardware
  *
  * @version 1.0.0
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

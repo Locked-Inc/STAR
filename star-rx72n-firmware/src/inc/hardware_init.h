@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/inc/hardware_init.h */
-
 /**
  * @file hardware_init.h
  * @brief Application-Specific Hardware Initialization

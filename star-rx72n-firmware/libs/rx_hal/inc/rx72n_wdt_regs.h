@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_wdt_regs.h */
-
 /**
  * @file rx72n_wdt_regs.h
  * @brief RX72N WDT Watchdog Timer Register Definitions
@@ -132,7 +130,7 @@
  * @see rx_wdt.h Higher-level WDT API
  * @see rx72n_regs.h Main register include file
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

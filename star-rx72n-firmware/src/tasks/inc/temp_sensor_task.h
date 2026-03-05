@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/tasks/inc/temp_sensor_task.h */
-
 /**
  * @file temp_sensor_task.h
  * @brief Temperature Sensor Task - DS18B20 Digital Thermometer Monitoring

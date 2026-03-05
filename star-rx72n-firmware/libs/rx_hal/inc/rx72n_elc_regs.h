@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_elc_regs.h */
-
 /**
  * @file rx72n_elc_regs.h
  * @brief RX72N Event Link Controller (ELC) Register Definitions
@@ -52,7 +50,7 @@
  * - Chapter 21: Event Link Controller (ELC), pages 835-860
  * - Section 21.2: Register Descriptions
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

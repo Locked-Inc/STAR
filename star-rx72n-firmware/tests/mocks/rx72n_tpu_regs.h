@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/rx72n_tpu_regs.h */
-
 /**
  * @file rx72n_tpu_regs.h
  * @brief Mock TPU Register Definitions for Host-Side Unit Testing
@@ -19,7 +17,7 @@
  * @see rx_tpu.h TPU HAL driver API
  * @see rx_tpu.c TPU HAL driver implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

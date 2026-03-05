@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_system_regs.c */
-
 /**
  * @file mock_rx_system_regs.c
  * @brief Mock Reset Status Registers Implementation
@@ -8,7 +6,7 @@
  * Implements mock reset status registers for unit testing main.c startup
  * validation. Provides controllable RSTSR0/1/2 values without hardware.
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

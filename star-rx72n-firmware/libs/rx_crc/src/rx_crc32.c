@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_crc/src/rx_crc32.c */
-
 /**
  * @file rx_crc32.c
  * @brief IEEE 802.3 CRC-32 Public API with Hardware/Software Dispatcher
@@ -374,7 +372,7 @@
  * - Base address: 0x0008C280
  * - Features: 8/16/32-bit CRC, polynomial programmable, DMA support
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

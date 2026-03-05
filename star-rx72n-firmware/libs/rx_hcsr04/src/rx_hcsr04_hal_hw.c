@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hcsr04/src/rx_hcsr04_hal_hw.c */
-
 /**
  * @file rx_hcsr04_hal_hw.c
  * @brief HC-SR04 Hardware Abstraction Layer Implementation for Renesas RX72N

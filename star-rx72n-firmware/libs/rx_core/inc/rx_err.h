@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/inc/rx_err.h */
-
 /**
  * @file rx_err.h
  * @brief Error Code Definitions for RX72N Firmware
@@ -94,7 +92,7 @@
  * - **I (Interface Segregation):** Minimal interface (3 helper functions)
  * - **D (Dependency Inversion):** No dependencies on concrete implementations
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

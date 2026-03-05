@@ -1,16 +1,9 @@
-/* star-ros2/src/star_gateway_bridge/src/main.cpp */
-
 /**
  * @file main.cpp
  * @brief Entry point for running star_gateway_bridge node as standalone process.
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */
-// main.cpp - STAR Gateway Bridge Standalone Executable
-// Entry point for running star_gateway_bridge node as standalone process.
-//
-// STAR Project - Texas A&M University
-// January 2026
 
 #include <memory>
 

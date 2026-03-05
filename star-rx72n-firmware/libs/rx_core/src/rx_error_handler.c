@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/src/rx_error_handler.c */
-
 /**
  * @file rx_error_handler.c
  * @brief Error Handler Concrete Implementation
@@ -136,7 +134,7 @@
  * @see rx_check.h Validation macros (RX_CHECK_NULL_PTR)
  * @see rx_log.h Logging functions (rx_log_error, rx_log_info)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

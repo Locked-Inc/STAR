@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_bus/inc/rx_bus_i2c.h */
-
 /**
  * @file rx_bus_i2c.h
  * @brief I2C (Inter-Integrated Circuit) Bus Abstraction for RX72N

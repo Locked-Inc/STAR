@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/tasks/inc/motor_control_task.h */
-
 /**
  * @file motor_control_task.h
  * @brief Motor Control Task - 250 Hz PID-Based Velocity Control

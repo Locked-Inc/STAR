@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/boot/default_interrupt_handlers.c */
-
 /**
  * @file default_interrupt_handlers.c
  * @brief Default exception and interrupt handlers for RX72N boot sequence

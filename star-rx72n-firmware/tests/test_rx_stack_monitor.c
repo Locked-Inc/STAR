@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_stack_monitor.c */
-
 /**
  * @file test_rx_stack_monitor.c
  * @brief Unit Tests for ThreadX Stack Overflow Detection and High-Water Mark Monitoring
@@ -58,7 +56,7 @@
  * - Runs on host (x86-64/aarch64) under CTest; no RX72N hardware required
  *
  * @since Version 1.0.0
- * @author STAR Team
+ * @author Locked, Inc.
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */

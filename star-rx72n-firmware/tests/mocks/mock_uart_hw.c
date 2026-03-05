@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_uart_hw.c */
-
 /**
  * @file mock_uart_hw.c
  * @brief Mock UART HAL Function Implementation

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_drv8263.c */
-
 /**
  * @file test_rx_drv8263.c
  * @brief Unit Tests for DRV8263H-Q1 Motor Driver Chip-Level Control
@@ -17,7 +15,7 @@
  * - ADC-to-amps conversion accuracy
  * - OLP boot/fault enable configuration
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-03-03
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

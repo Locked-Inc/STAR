@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/boot/smc/lowlvl.c */
-
 /***********************************************************************************************************************
 * DISCLAIMER
 * This software is supplied by Renesas Electronics Corporation and is only intended for use with Renesas products. No
@@ -60,7 +58,7 @@
  * @see r_bsp_config.h BSP_CFG_IO_LIB_ENABLE, BSP_CFG_USER_CHARPUT_ENABLED
  *
  * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
- * @copyright Modified 2026 STAR Project - Added comprehensive Doxygen
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
  *
  * @par History
  * - 28.02.2019 v3.00 - Merged all devices, fixed coding style (Renesas)

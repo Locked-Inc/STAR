@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/inc/rx_simulator_config.h */
-
 /**
  * @file rx_simulator_config.h
  * @brief Configuration for e^2 studio simulator support

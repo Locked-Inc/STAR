@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_nanopb/src/rx_nanopb.c */
-
 /**
  * @file rx_nanopb.c
  * @brief nanopb Integration Wrapper Implementation for RX72N
@@ -151,7 +149,7 @@
  * @see gen/star/v1/ Generated protobuf message definitions (.pb.h files)
  * @see star-proto/proto/star/v1/ Protocol Buffer schema files
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

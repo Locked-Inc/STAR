@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_usb/src/rx_usb.c */
-
 /**
  * @file rx_usb.c
  * @brief Multi-Port USB CDC-ACM Composite Device Driver Implementation for RX72N

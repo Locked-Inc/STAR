@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_usb/src/rx_usb_isr.c */
-
 /**
  * @file rx_usb_isr.c
  * @brief USB0 Interrupt Service Routine for RX72N Multi-Port CDC Composite Device

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/inc/rx_pin_validator.h */
-
 /**
  * @file rx_pin_validator.h
  * @brief Concrete Pin Validator Implementation - Dependency Inversion Pattern

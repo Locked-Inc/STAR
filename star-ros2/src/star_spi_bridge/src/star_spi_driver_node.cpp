@@ -1,5 +1,3 @@
-/* star-ros2/src/star_spi_bridge/src/star_spi_driver_node.cpp */
-
 /**
  * @file star_spi_driver_node.cpp
  * @brief IMU sensor noise model (variance = sigma^2, all diagonal).

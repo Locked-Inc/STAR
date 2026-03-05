@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rspi.h */
-
 /**
  * @file mock_rspi.h
  * @brief Mock RSPI (SPI) hardware layer for unit testing without hardware
@@ -60,7 +58,7 @@
  * @par SOLID Principles:
  * - D: Dependency Inversion - Tests depend on interface, not implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

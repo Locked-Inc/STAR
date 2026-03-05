@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_bus/inc/rx_bus_gpio.h */
-
 /**
  * @file rx_bus_gpio.h
  * @brief GPIO (General Purpose Input/Output) Bus Abstraction for RX72N
@@ -289,7 +287,7 @@
  * @see rx_port_utils.h Low-level PORT hardware access
  * @see rx_pin_validator.h Pin conflict detection
  *
- * @author STAR Project Contributors
+ * @author Locked, Inc. Contributors
  * @version 1.0.0
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_frame_ascii/inc/rx_frame_ascii.h */
-
 /**
  * @file rx_frame_ascii.h
  * @brief Frame ASCII Formatter for Human-Readable Frame Dumps
@@ -129,7 +127,7 @@
  * @see rx_usb.h USB CDC output for debug port
  * @see docs/sections/01_nanopb_protocol.tex Protocol specification
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-26
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

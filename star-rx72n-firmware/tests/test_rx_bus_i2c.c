@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_bus_i2c.c */
-
 /**
  * @file test_rx_bus_i2c.c
  * @brief Unit Tests for I2C Bus Abstraction Layer
@@ -39,7 +37,7 @@
  * - L: Mock RIIC HAL is a drop-in substitute for real HAL
  * - D: Tests depend on rx_bus_i2c interface, not RIIC register details
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-26
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

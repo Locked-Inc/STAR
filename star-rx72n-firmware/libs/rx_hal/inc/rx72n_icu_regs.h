@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_icu_regs.h */
-
 /**
  * @file rx72n_icu_regs.h
  * @brief RX72N ICU Interrupt Controller Unit Register Definitions
@@ -102,7 +100,7 @@
  * - DMRSR registers fixed: 8-bit regs at 4-byte aligned addresses (0x400/404/408/...)
  *   NOT consecutive bytes as originally implemented
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

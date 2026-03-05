@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_gpio_hal.h */
-
 /**
  * @file mock_gpio_hal.h
  * @brief Mock GPIO HAL implementation for unit testing without hardware
@@ -145,7 +143,7 @@
  * - I: Interface Segregation - Minimal focused interface matching real HAL
  * - D: Dependency Inversion - Tests depend on GPIO HAL interface, not implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

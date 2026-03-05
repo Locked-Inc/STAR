@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_encoder/src/rx_encoder_tpu.c */
-
 /**
  * @file rx_encoder_tpu.c
  * @brief TPU Quadrature Encoder Driver Implementation (Phase Counting Mode)
@@ -41,7 +39,7 @@
  * @see rx_mtu_encoder.c MTU encoder (front wheels, same algorithm)
  * @see rx_tpu.h TPU HAL driver
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

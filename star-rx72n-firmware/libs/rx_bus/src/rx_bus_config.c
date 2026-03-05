@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_bus/src/rx_bus_config.c */
-
 /**
  * @file rx_bus_config.c
  * @brief Bus Configuration Creation Helpers - Static Initialization Pattern
@@ -140,7 +138,7 @@
  * @see rx_bus_manager.h Bus manager for registration
  * @see docs/sections/03_hardware_pinout.tex Hardware pin assignments
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

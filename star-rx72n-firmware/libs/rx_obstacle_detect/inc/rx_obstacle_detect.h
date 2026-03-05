@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_obstacle_detect/inc/rx_obstacle_detect.h */
-
 /**
  * @file rx_obstacle_detect.h
  * @brief Safety-Critical Obstacle Detection System with Emergency Motor Stop
@@ -180,7 +178,7 @@
  * @see rx_motor.h Motor control with emergency stop
  * @see rx_obstacle_detect.c Implementation file
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

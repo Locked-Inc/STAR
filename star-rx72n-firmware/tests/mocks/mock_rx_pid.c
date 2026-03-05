@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_pid.c */
-
 /**
  * @file mock_rx_pid.c
  * @brief Mock PID Controller Implementation
@@ -8,7 +6,7 @@
  * Implements mock rx_pid functions for unit testing.
  * Tracks calls, stores parameters, and allows configurable return values.
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_error_handler.h */
-
 /**
  * @file mock_error_handler.h
  * @brief Mock error handler for testing error reporting and recovery logic
@@ -28,7 +26,7 @@
  * @par NASA Power of 10: [OK] Static allocation (circular buffer), bounded capacity
  * @par SOLID: D - Dependency Inversion, L - Liskov Substitution
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */

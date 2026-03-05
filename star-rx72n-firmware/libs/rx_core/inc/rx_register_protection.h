@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/inc/rx_register_protection.h */
-
 /**
  * @file rx_register_protection.h
  * @brief RX72N Register Protection Control (PRCR) - Write Protection Constants
@@ -210,7 +208,7 @@
  * @see [rx_register_guard.c](../../src/rx_register_guard.c) Uses PRCR for MSTPCR refresh
  * @see [rx_clock_power_init.c](../../src/rx_clock_power_init.c) Uses PRCR for clock config
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

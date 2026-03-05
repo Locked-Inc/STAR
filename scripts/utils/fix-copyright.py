@@ -3,10 +3,9 @@
 
 Desired file structure after running this script:
 
-    /* star-rx72n-firmware/libs/rx_hal/inc/rx72n_cmt_regs.h */   <- line 1, exact git-relative path
     /**
      * @file rx72n_cmt_regs.h
-     * ...
+     * @brief ...
      * @copyright Copyright (c) 2026 Locked Inc.
      * SPDX-License-Identifier: MIT                              <- inside Doxygen, after @copyright
      * @since ...
@@ -28,7 +27,7 @@ import sys
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
-# Configuration (must stay in sync with check-copyright.py / check-file-path.py)
+# Configuration (must stay in sync with check-copyright.py)
 # ---------------------------------------------------------------------------
 
 SOURCE_EXTENSIONS = {".c", ".h", ".cpp", ".hpp"}
@@ -131,33 +130,16 @@ def fix_or_insert_copyright(text: str, expected: str) -> str:
     return text[:end] + insert + "\n" + text[end:]
 
 
-def fix_path_comment(text: str, rel: str) -> str:
-    """Ensure line 1 is exactly '/* rel */' followed by a blank line."""
-    desired = f"/* {rel} */\n"
-
-    # Strip existing line-1 path comment or // comment block preamble
-    # We remove lines that look like path comments or SPDX / old // headers
+def strip_path_comment(text: str) -> str:
+    """Remove any leading '/* path/to/file.ext */' line (and the blank line after it)."""
     lines = text.splitlines(keepends=True)
-    strip_count = 0
-    for line in lines:
-        if (PATH_COMMENT_RE.match(line)
-                or STANDALONE_SPDX_RE.match(line)
-                or (strip_count == 0 and SLASH_COMMENT_LINE_RE.match(line)
-                    and "SPDX" in line)):
-            strip_count += 1
-        else:
-            break
-
-    # Only strip the very first line if it looks like an old path comment or SPDX
-    # (avoid ripping out real // file headers for non-Doxygen files)
-    first = lines[0] if lines else ""
-    if PATH_COMMENT_RE.match(first) or (STANDALONE_SPDX_RE.match(first) and "SPDX" in first):
+    if not lines:
+        return text
+    if PATH_COMMENT_RE.match(lines[0]):
         rest = "".join(lines[1:])
-    else:
-        rest = text
-
-    # Ensure exactly one blank line between the path comment and the body
-    return desired + "\n" + rest.lstrip("\n")
+        # Drop the blank line that was inserted after the path comment
+        return rest.lstrip("\n")
+    return text
 
 
 def build_minimal_doxygen(rel: str, filename: str, existing_lines: list[str]) -> str:
@@ -177,7 +159,7 @@ def build_minimal_doxygen(rel: str, filename: str, existing_lines: list[str]) ->
                 brief = candidate
                 break
     if not brief:
-        brief = f"{filename} - STAR project source file"
+        brief = f"{filename} - source file"
 
     return (
         f"/**\n"
@@ -221,6 +203,9 @@ def fix_file(path: Path, rel: str, dry_run: bool) -> bool:
     expected   = RENESAS_COPYRIGHT if is_renesas else OUR_COPYRIGHT
     filename   = path.name
 
+    # Always strip any leading path comment (policy removed)
+    text = strip_path_comment(text)
+
     if FILE_LEVEL_DOXYGEN_RE.search(text):
         # --- Files with a file-level /** Doxygen block (has @file tag) ---
         # 1. Remove standalone SPDX from anywhere outside Doxygen
@@ -229,11 +214,8 @@ def fix_file(path: Path, rel: str, dry_run: bool) -> bool:
         text = fix_or_insert_copyright(text, expected)
         # 3. Insert SPDX right after @copyright (non-Renesas only)
         if not is_renesas:
-            # Only insert if not already inside Doxygen
             if "SPDX-License-Identifier: MIT" not in text:
                 text = insert_spdx_after_copyright(text)
-        # 4. Fix line-1 path comment
-        text = fix_path_comment(text, rel)
 
     else:
         # --- Files without a /** Doxygen block (some ROS2 files) ---
@@ -243,13 +225,8 @@ def fix_file(path: Path, rel: str, dry_run: bool) -> bool:
 
         if not is_renesas:
             doxy = build_minimal_doxygen(rel, filename, existing_lines)
-            # Remove the first line if it's already an old path comment / SPDX
-            lines = text.splitlines(keepends=True)
-            if lines and (PATH_COMMENT_RE.match(lines[0]) or "SPDX" in lines[0]):
-                text = "".join(lines[1:])
-            text = f"/* {rel} */\n\n" + doxy + text
+            text = doxy + text
         else:
-            text = fix_path_comment(text, rel)
             text = fix_or_insert_copyright(text, expected)
 
     if text == original:

@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_nanopb.h */
-
 /**
  * @file mock_rx_nanopb.h
  * @brief Mock nanopb Protocol Buffers encoding/decoding for comm testing
@@ -23,7 +21,7 @@
  * @par NASA Power of 10: [OK] Static buffers, bounded message sizes
  * @par SOLID: D - Communication tasks depend on serialization interface
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

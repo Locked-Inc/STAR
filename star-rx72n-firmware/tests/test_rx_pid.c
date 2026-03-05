@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_pid.c */
-
 /**
  * @file test_rx_pid.c
  * @brief Unit Tests for RX PID Controller
@@ -186,7 +184,7 @@
  * @see matlab/pid_discretize.m for discrete-time implementation
  * @see docs/sections/05_motor_control.tex for system overview
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

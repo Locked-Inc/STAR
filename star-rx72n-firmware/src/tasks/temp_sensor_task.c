@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/tasks/temp_sensor_task.c */
-
 /**
  * @file temp_sensor_task.c
  * @brief Temperature Sensor Task Implementation - DS18B20 Ambient Temperature for Ultrasonic Compensation
@@ -349,7 +347,7 @@
  * @see obstacle_detect_task.h Consumer of temperature data (ultrasonic compensation)
  * @see docs/sections/03_hardware_pinout.tex Hardware 1-Wire GPIO connections
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

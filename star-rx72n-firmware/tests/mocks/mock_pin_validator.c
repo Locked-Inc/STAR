@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_pin_validator.c */
-
 /**
  * @file mock_pin_validator.c
  * @brief Mock Pin Validator Implementation

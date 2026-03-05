@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hcsr04/src/rx_hcsr04_hal.h */
-
 /**
  * @file rx_hcsr04_hal.h
  * @brief HC-SR04 Hardware Abstraction Layer (HAL) Interface

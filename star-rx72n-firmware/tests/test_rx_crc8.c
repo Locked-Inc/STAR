@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_crc8.c */
-
 /**
  * @file test_rx_crc8.c
  * @brief Unit tests for Dallas/Maxim CRC-8 implementation with comprehensive test vectors
@@ -99,7 +97,7 @@
  * - **Interface Segregation:** Tests only rx_crc8_maxim() - minimal interface
  * - **Dependency Inversion:** Tests depend on rx_crc.h interface, not implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

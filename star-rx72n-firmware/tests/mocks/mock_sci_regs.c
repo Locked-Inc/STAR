@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_sci_regs.c */
-
 /**
  * @file mock_sci_regs.c
  * @brief Mock SCI Register Implementation

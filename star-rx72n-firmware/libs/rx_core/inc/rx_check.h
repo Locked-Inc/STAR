@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/inc/rx_check.h */
-
 /**
  * @file rx_check.h
  * @brief Validation and Error Checking Macros for RX72N Firmware
@@ -195,7 +193,7 @@
  * - **I (Interface Segregation):** Separate macros for different use cases (fatal, return, validate)
  * - **D (Dependency Inversion):** Depends on abstract rx_err_t, not concrete error values
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

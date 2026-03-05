@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/test_rx_session.c */
-
 /**
  * @file test_rx_session.c
  * @brief Unit Tests for Shared Session State Module

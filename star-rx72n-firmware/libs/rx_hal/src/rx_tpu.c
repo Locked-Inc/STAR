@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/src/rx_tpu.c */
-
 /**
  * @file rx_tpu.c
  * @brief TPU HAL Driver Implementation for Phase Counting Mode
@@ -91,7 +89,7 @@
  * @see rx72n_tpu_regs.h TPU register definitions
  * @see rx_mtu_encoder.h MTU encoder interface (front wheels)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

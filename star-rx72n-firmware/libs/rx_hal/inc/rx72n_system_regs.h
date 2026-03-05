@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_system_regs.h */
-
 /**
  * @file rx72n_system_regs.h
  * @brief RX72N System Control Register Definitions
@@ -106,7 +104,7 @@
  * @see rx_register_protection.h PRCR unlock/lock API
  * @see rx_clock_power_init.c Clock initialization implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

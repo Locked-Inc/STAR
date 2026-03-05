@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_time.c */
-
 /**
  * @file mock_time.c
  * @brief Mock Time Implementation for Testing

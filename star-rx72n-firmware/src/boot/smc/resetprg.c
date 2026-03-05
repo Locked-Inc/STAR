@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/boot/smc/resetprg.c */
-
 /***********************************************************************************************************************
 * DISCLAIMER
 * This software is supplied by Renesas Electronics Corporation and is only intended for use with Renesas products. No
@@ -52,7 +50,7 @@
  * @see _INITSCT() C runtime initialization (copies ROM->RAM, zeros BSS)
  *
  * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
- * @copyright Modified 2026 STAR Project - Adapted to STAR coding standards
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
  *
  * @par History
  * - 28.02.2019 v3.00 - Merged processing of all devices (Renesas)

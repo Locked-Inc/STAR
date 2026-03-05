@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/drv8263/rx_port_utils.h */
-
 /**
  * @file rx_port_utils.h
  * @brief Mock PORT utility functions for DRV8263 unit testing
@@ -9,7 +7,7 @@
  * access for host-side testing. Includes the mock rx72n_port_regs.h
  * (from this same directory) instead of the real hardware version.
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-03-03
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

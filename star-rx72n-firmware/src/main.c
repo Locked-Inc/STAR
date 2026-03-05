@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/main.c */
-
 /**
  * @file main.c
  * @brief STAR RX72N Firmware Entry Point - System Initialization and ThreadX Bootstrap

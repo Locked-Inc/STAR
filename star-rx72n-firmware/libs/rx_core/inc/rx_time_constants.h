@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/inc/rx_time_constants.h */
-
 /**
  * @file rx_time_constants.h
  * @brief Time Unit Conversion Constants for RX72N Firmware
@@ -104,7 +102,7 @@
  * @see ThreadX API tx_thread_sleep() uses these conversions
  * @see docs/sections/06_nasa_power_of_10.tex NASA Rule 8 compliance details
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

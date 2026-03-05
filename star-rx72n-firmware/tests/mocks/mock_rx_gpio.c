@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_gpio.c */
-
 /**
  * @file mock_rx_gpio.c
  * @brief Mock GPIO Implementation for Host-Side Testing

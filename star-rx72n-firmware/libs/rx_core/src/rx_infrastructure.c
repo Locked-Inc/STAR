@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/src/rx_infrastructure.c */
-
 /**
  * @file rx_infrastructure.c
  * @brief Global Infrastructure Initialization Implementation
@@ -132,7 +130,7 @@
  * @see rx_error_handler.h Error handler with retry logic
  * @see rx_pin_validator.h GPIO pin conflict detection
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

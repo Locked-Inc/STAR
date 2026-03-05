@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/rx_clock_power_init.c */
-
 /**
  * @file rx_clock_power_init.c
  * @brief RX72N System Clock and Power Management - 240 MHz PLL Configuration

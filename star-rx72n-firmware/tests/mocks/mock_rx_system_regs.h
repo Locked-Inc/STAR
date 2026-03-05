@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_system_regs.h */
-
 /**
  * @file mock_rx_system_regs.h
  * @brief Mock Reset Status Registers for Unit Testing
@@ -27,7 +25,7 @@
  * }
  * @endcode
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

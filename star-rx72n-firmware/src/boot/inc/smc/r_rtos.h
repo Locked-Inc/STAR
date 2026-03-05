@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/src/boot/inc/smc/r_rtos.h */
-
 /***********************************************************************************************************************
 * DISCLAIMER
 * This software is supplied by Renesas Electronics Corporation and is only intended for use with Renesas products. No
@@ -77,7 +75,7 @@
  * - Open/Closed: Extensible via new BSP_CFG_RTOS_USED values
  * - Dependency Inversion: Abstracts RTOS kernel behind compile-time selection
  *
- * @author STAR Project (Locked, Inc.)
+ * @author Locked, Inc.
  * @date 2019 (original), 2026 (STAR modifications)
  * @version 1.11
  * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.

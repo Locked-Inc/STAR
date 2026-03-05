@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_riic_hal.c */
-
 /**
  * @file mock_riic_hal.c
  * @brief Mock RIIC (I2C) HAL Function Implementation

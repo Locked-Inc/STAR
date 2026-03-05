@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_pid/src/rx_pid.c */
-
 /**
  * @file rx_pid.c
  * @brief PID Controller Implementation for Closed-Loop Motor Control
@@ -149,7 +147,7 @@
  *   +--> Unit tests: tests/test_rx_pid.c
  * ```
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

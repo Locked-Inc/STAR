@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_mpc_regs.h */
-
 /**
  * @file rx72n_mpc_regs.h
  * @brief RX72N Multi-Function Pin Controller (MPC) Register Definitions

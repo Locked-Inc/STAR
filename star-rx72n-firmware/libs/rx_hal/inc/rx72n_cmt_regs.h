@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_cmt_regs.h */
-
 /**
  * @file rx72n_cmt_regs.h
  * @brief RX72N Compare Match Timer (CMT) Register Definitions

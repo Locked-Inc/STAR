@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_rx_onewire_hw.c */
-
 /**
  * @file mock_rx_onewire_hw.c
  * @brief Mock Hardware Implementation for OneWire Testing

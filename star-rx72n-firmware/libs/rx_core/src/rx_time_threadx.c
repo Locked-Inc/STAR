@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/src/rx_time_threadx.c */
-
 /**
  * @file rx_time_threadx.c
  * @brief ThreadX Time Implementation for RX72N
@@ -101,7 +99,7 @@
  * @see rx_time_constants.h Time conversion constants
  * @see mock_time.c Unit test mock implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

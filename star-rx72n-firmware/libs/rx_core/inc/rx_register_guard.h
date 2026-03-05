@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_core/inc/rx_register_guard.h */
-
 /**
  * @file rx_register_guard.h
  * @brief Register Guard - Periodic Refresh for ESD/EMI Protection
@@ -176,7 +174,7 @@
  * @see [RX72N User's Manual](../../docs/rx72n_manual.pdf) Chapter 14: Interrupt Controller
  * @see [RX72N User's Manual](../../docs/rx72n_manual.pdf) Chapter 9: Module Stop Function
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.

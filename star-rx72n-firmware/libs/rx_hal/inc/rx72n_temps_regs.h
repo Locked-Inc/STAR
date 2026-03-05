@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_temps_regs.h */
-
 /**
  * @file rx72n_temps_regs.h
  * @brief RX72N Temperature Sensor (TEMPS) Register Definitions
@@ -58,7 +56,7 @@
  * - Section 58.2.2: TSCDR register @ 0xFE7F7D7C
  * - Section 63 Table 63.57: Temperature slope characteristics
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT

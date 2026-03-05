@@ -1,5 +1,3 @@
-/* star-rx72n-firmware/tests/mocks/mock_uart_hw.h */
-
 /**
  * @file mock_uart_hw.h
  * @brief Mock UART hardware layer for serial communication testing
