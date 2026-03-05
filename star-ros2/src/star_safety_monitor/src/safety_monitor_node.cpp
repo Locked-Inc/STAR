@@ -1,4 +1,5 @@
 // Copyright 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
 /**
  * @file safety_monitor_node.cpp
  * @brief ROS2 node entry point for the safety monitor.
