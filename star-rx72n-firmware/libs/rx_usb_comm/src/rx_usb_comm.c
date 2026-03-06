@@ -83,6 +83,11 @@ typedef enum : uint8_t {
                          k_frame_type_size + k_frame_flags_size,
 } rx_usb_comm_header_size_t;
 
+/** @brief CRC-32 seed value (pre-initialization before rx_crc32_ieee writes it) */
+typedef enum : uint32_t {
+  k_usb_crc32_seed_initial = 0U, /**< Initial value for CRC-32 output variable */
+} usb_crc32_seed_t;
+
 /**
  * @brief Decode frame header from raw wire data
  *
@@ -226,7 +231,7 @@ static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32
   }
 
   const uint32_t received_crc   = rx_frame_read_le32(&data[offset]);
-  uint32_t       calculated_crc = 0U;
+  uint32_t       calculated_crc = (uint32_t)k_usb_crc32_seed_initial;
   rx_err_t       crc_err        = rx_crc32_ieee(data, offset, &calculated_crc);
   if (crc_err != k_rx_ok) {
     return crc_err;
