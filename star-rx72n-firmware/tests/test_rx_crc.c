@@ -112,11 +112,39 @@ typedef enum : uint32_t {
  * =============================================================================
  */
 
+/**
+ * @brief Unity fixture: reset all mock state before each test
+ *
+ * @details
+ * Resets the DMAC mock to its uninitialized state so each test starts from a
+ * clean baseline without residual state from a previous test.
+ *
+ * @pre None -- called automatically by the Unity framework before every test
+ * @post mock_rx_dmaca is in its uninitialized state (s_is_initialized == false)
+ *
+ * @note Not thread-safe; Unity test runner is single-threaded
+ * @since Version 1.0.0
+ */
 void setUp(void)
 {
   mock_rx_dmaca_reset();
 }
 
+/**
+ * @brief Unity fixture: clean up module and mock state after each test
+ *
+ * @details
+ * Calls rx_crc_deinit() (ignoring the return value) to handle tests that
+ * initialized the CRC module but may not have deinitialized it, then resets
+ * the DMAC mock so the next test starts clean.
+ *
+ * @pre None -- called automatically by the Unity framework after every test
+ * @post rx_crc module is in its uninitialized state
+ * @post mock_rx_dmaca is in its uninitialized state (s_is_initialized == false)
+ *
+ * @note Not thread-safe; Unity test runner is single-threaded
+ * @since Version 1.0.0
+ */
 void tearDown(void)
 {
   /* Ensure module is deinitialized between tests that call rx_crc_init() */
@@ -132,11 +160,24 @@ void tearDown(void)
 /**
  * @brief Build a config and call rx_crc_compute(); assert k_rx_ok.
  *
- * @param[in]  poly      Polynomial selection
- * @param[in]  backend   Backend selection
- * @param[in]  data      Input buffer (non-NULL)
- * @param[in]  len       Input length
- * @param[out] result    CRC output
+ * @details
+ * Constructs an rx_crc_config_t with the given polynomial and backend,
+ * LSB-first bit order, and zero DMA timeout, then calls rx_crc_compute()
+ * and asserts that it returns k_rx_ok. Writes the computed CRC to *result.
+ *
+ * @param[in]  poly      Polynomial selection (e.g. k_rx_crc_poly_crc8)
+ * @param[in]  backend   Backend selection (e.g. k_rx_crc_backend_sw)
+ * @param[in]  data      Input buffer; must be non-NULL and at least len bytes
+ * @param[in]  len       Number of bytes to compute CRC over; must be > 0
+ * @param[out] result    Pointer to store the computed CRC value; must be non-NULL
+ *
+ * @pre data must point to at least len valid bytes
+ * @pre result must point to a valid uint32_t storage location
+ * @post *result contains the CRC-computed value for the given input
+ * @post Unity test is failed (via TEST_ASSERT_EQUAL) if rx_crc_compute() != k_rx_ok
+ *
+ * @note Not thread-safe; call only from the Unity test thread
+ * @since Version 1.0.0
  */
 static void internal_compute_ok(rx_crc_poly_t    poly,
                                 rx_crc_backend_t backend,

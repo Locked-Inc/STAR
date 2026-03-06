@@ -306,6 +306,10 @@ rx_err_t internal_crc_hw_cpu_compute(const rx_crc_config_t* config,
 
   /* CRC-8/Maxim: hardware GPS=0x00 uses poly 0x07, not 0x31 - must use SW */
   if (config->poly == k_rx_crc_poly_crc8) {
+    /* Software CRC-8/Maxim only supports LSB-first bit order */
+    if (config->bit_order != k_rx_crc_bit_order_lsb_first) {
+      return k_rx_err_invalid_arg;
+    }
     *result_out = internal_crc_sw_compute(config->poly, data, len);
     return k_rx_ok;
   }

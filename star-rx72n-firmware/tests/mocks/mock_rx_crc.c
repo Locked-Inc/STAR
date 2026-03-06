@@ -54,6 +54,7 @@ typedef enum : uint32_t {
 
 static bool     s_override_enabled = false;
 static uint32_t s_mock_crc_value   = 0U;
+static bool     s_is_initialized   = false;
 
 /* =============================================================================
  * Mock Control Functions
@@ -84,7 +85,7 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
     return k_rx_err_null_ptr;
   }
 
-  if (len == 0U || config->poly != k_rx_crc_poly_crc8) {
+  if (len == 0U || len > (uint32_t)k_crc_len_max || config->poly != k_rx_crc_poly_crc8) {
     return k_rx_err_invalid_arg;
   }
 
@@ -117,11 +118,19 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
 
 rx_err_t rx_crc_init(void)
 {
+  if (s_is_initialized) {
+    return k_rx_err_invalid_state;
+  }
+  s_is_initialized = true;
   return k_rx_ok;
 }
 
 rx_err_t rx_crc_deinit(void)
 {
+  if (!s_is_initialized) {
+    return k_rx_err_invalid_state;
+  }
+  s_is_initialized = false;
   return k_rx_ok;
 }
 

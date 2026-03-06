@@ -346,9 +346,14 @@ void rx_exception_init(void);
  * @retval NULL     rx_exception_init() has not been called yet
  *
  * @pre rx_exception_init() must have been called for a non-NULL return
- * @post No side effects
+ * @pre Caller must mask interrupts before reading fields if a consistent snapshot is required;
+ *      exception handlers modify the statistics structure asynchronously from interrupt context
+ * @post No side effects; returned pointer is owned by this module and must not be freed or modified
+ * @post The returned pointer remains valid for the lifetime of the module (never reallocated)
  *
- * @note Thread-safe: Read access only
+ * @note NOT thread-safe: exception handlers update the statistics structure from interrupt
+ *       context concurrently with any reader; callers that require a consistent multi-field
+ *       snapshot must disable interrupts around the read
  *
  * @par Example:
  * @code

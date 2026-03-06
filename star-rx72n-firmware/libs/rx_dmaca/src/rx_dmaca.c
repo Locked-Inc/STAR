@@ -49,6 +49,17 @@ typedef enum : uint32_t {
   /** @brief Maximum DMA transfer length (DMCRA is 16-bit) */
   k_dmaca_len_max = 65535U,
 
+  /**
+   * @brief Maximum caller-supplied timeout_cycles for internal_poll_act()
+   *
+   * @details
+   * Provides a statically-provable upper bound on the internal_poll_act() loop
+   * so that NASA Rule 2 (bounded loops) is satisfied even though the loop bound
+   * is a runtime parameter. Callers are validated against this limit in
+   * rx_dmaca_transfer_poll() before the loop executes.
+   */
+  k_dmaca_timeout_cycles_max = 10000000U,
+
 } rx_dmaca_internal_constants_t;
 
 /* =============================================================================
@@ -107,15 +118,17 @@ static void internal_configure_channel(const rx_dmaca_config_t* config)
  * k_rx_err_timeout if the loop exhausts without ACT clearing.
  *
  * @param[in] channel Channel number (0-7, pre-validated)
- * @param[in] timeout_cycles Maximum iterations (> 0, pre-validated)
+ * @param[in] timeout_cycles Maximum iterations (> 0 and <= k_dmaca_timeout_cycles_max,
+ *                           pre-validated by caller, provides NASA Rule 2 loop bound)
  *
  * @return rx_err_t
  * @retval k_rx_ok ACT cleared (transfer complete)
  * @retval k_rx_err_timeout ACT still set after timeout_cycles iterations
  *
  * @pre channel < k_dmac_channel_count
- * @pre timeout_cycles > 0
+ * @pre timeout_cycles > 0 and <= k_dmaca_timeout_cycles_max (enforced by caller)
  * @post On k_rx_ok: DMSTS.ACT = 0
+ * @post On k_rx_err_timeout: DMSTS.ACT may still be set; caller must clear DTE
  *
  * @note Not thread-safe on the same channel
  * @since Version 1.0.0
@@ -192,7 +205,8 @@ rx_err_t rx_dmaca_init(void)
  * @retval k_rx_err_null_ptr        config or config->src is NULL
  * @retval k_rx_err_not_initialized rx_dmaca_init() has not been called
  * @retval k_rx_err_invalid_arg     channel out of range, len == 0 or > 65535,
- *                                  or timeout_cycles == 0
+ *                                  dst_addr == 0, timeout_cycles == 0 or
+ *                                  timeout_cycles > k_dmaca_timeout_cycles_max
  * @retval k_rx_err_timeout         Transfer did not complete within timeout_cycles
  *
  * @pre rx_dmaca_init() must have been called successfully
@@ -220,7 +234,11 @@ rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
     return k_rx_err_invalid_arg;
   }
 
-  if (config->timeout_cycles == 0U) {
+  if (config->timeout_cycles == 0U || config->timeout_cycles > k_dmaca_timeout_cycles_max) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (config->dst_addr == 0U) {
     return k_rx_err_invalid_arg;
   }
 

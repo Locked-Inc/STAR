@@ -437,8 +437,11 @@ static rx_err_t internal_decode_header(const uint8_t* data,
  * @param[out] crc_out Pointer to store received CRC value from buffer
  *
  * @return k_rx_ok on successful CRC verification (received matches calculated)
+ * @retval k_rx_ok             CRC verified; received_crc written to *crc_out
  * @retval k_rx_err_invalid_arg if data or crc_out is nullptr
  * @retval k_rx_err_invalid_size if offset + CRC size exceeds buffer length or data_len too small
+ * @retval k_rx_err_null_ptr   rx_crc32_ieee() backend received a null pointer (propagated)
+ * @retval k_rx_err_invalid_arg rx_crc32_ieee() backend received invalid arguments (propagated)
  * @retval k_rx_err_crc_mismatch if calculated CRC does not match received CRC value
  */
 static rx_err_t
@@ -753,17 +756,18 @@ rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec)
  * @param[in]  data_len  Length of data buffer in bytes
  * @param[out] frame     Decoded frame (header, payload, CRC)
  *
- * @retval k_rx_ok Success - frame decoded and CRC verified
- * @retval k_rx_err_invalid_arg Any pointer parameter is nullptr or other invalid arguments
+ * @retval k_rx_ok                Frame decoded and CRC verified
+ * @retval k_rx_err_invalid_arg   Any pointer parameter is nullptr or other invalid arguments
  * @retval k_rx_err_invalid_state Decoder not initialized
- * @retval k_rx_err_crc CRC-32 verification failed
- * @retval k_rx_err_invalid_size Payload exceeds maximum frame size
+ * @retval k_rx_err_invalid_size  Payload exceeds maximum frame size or buffer too small
+ * @retval k_rx_err_null_ptr      CRC backend received null pointer (propagated from rx_crc32_ieee)
+ * @retval k_rx_err_crc_mismatch  CRC-32 verification failed (received != calculated)
  *
  * @note This function performs validation at multiple points:
  *       - Null pointer checks on all parameters
  *       - Decoder initialization check
  *       - Header parsing via internal_decode_header()
- *       - CRC verification via internal_verify_crc()
+ *       - CRC verification via internal_verify_crc() (may surface CRC backend errors)
  */
 rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
                          const uint8_t*            data,
@@ -827,12 +831,13 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  *
  * @return rx_err_t k_rx_ok on success, or k_rx_err_invalid_arg,
  *         k_rx_err_invalid_state, k_rx_err_invalid_size,
- *         k_rx_err_protocol_error, or k_rx_err_crc_mismatch on failure
+ *         k_rx_err_protocol_error, k_rx_err_null_ptr, or k_rx_err_crc_mismatch on failure
  * @retval k_rx_ok               Frame decoded and CRC verified
  * @retval k_rx_err_invalid_arg  Any pointer parameter is nullptr
  * @retval k_rx_err_invalid_state Decoder not initialized
  * @retval k_rx_err_invalid_size  Buffer too short to contain a valid frame
  * @retval k_rx_err_protocol_error No sync word found within scan window
+ * @retval k_rx_err_null_ptr     CRC backend received null pointer (propagated from rx_crc32_ieee)
  * @retval k_rx_err_crc_mismatch  Sync found but CRC verification failed
  *
  * @pre dec must be initialized via rx_frame_decoder_init()
