@@ -1562,6 +1562,8 @@ static rx_err_t internal_onewire_match_rom_callback(rx_bus_config_t* bus_config,
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_not_found if no device presence detected
  * @return k_rx_err_crc_mismatch if ROM CRC validation fails
+ * @return propagated error from rx_crc8_maxim() if CRC computation itself fails
+ *         (ctx->result is also set to the propagated error in that case)
  */
 static rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {

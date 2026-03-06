@@ -128,8 +128,8 @@ static void internal_process_exception(const rx_exception_frame_t* frame)
   s_exception_stats.last_frame = *frame;
 
   /* Log the exception */
-  rx_log_error(s_tag, "*** CPU EXCEPTION ***");
-  rx_log_error(s_tag, s_exception_names[frame->type]);
+  (void)rx_log_error(s_tag, "*** CPU EXCEPTION ***");
+  (void)rx_log_error(s_tag, s_exception_names[frame->type]);
   /* Note: PC and PSW values available in s_exception_stats.last_frame for debugging */
 }
 
@@ -328,7 +328,7 @@ void rx_exc_nmi_c_handler(uint32_t pc, uint32_t psw)
 
   internal_process_exception(&frame);
 
-  rx_log_error(s_tag, "FATAL: NMI - System halted");
+  (void)rx_log_error(s_tag, "FATAL: NMI - System halted");
 
   /* NMI is fatal - MUST NOT return */
   internal_halt_cpu();

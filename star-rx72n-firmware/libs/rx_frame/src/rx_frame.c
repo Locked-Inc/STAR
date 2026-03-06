@@ -188,7 +188,7 @@
  * @var s_tag
  * @brief Log tag for frame module
  * @details Identifies log messages from this module
- * @invariant Read-only after initialization
+ * @invariant Immutable module-scoped string constant
  * @since Version 1.0.0
  */
 static const char* const s_tag = "FRAME";
