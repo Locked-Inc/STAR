@@ -281,6 +281,27 @@ typedef enum : uint32_t {
   k_bytes_discarded_none = 0U, /**< No bytes have been discarded; stream is aligned */
 } frame_resync_discarded_t;
 
+/**
+ * @enum frame_crc_init_t
+ * @brief Initial value for CRC-32 output variable before rx_crc32_ieee() writes it
+ *
+ * @details
+ * k_frame_crc32_init is used to pre-initialize the calculated_crc output
+ * variable in internal_verify_crc() before passing its address to
+ * rx_crc32_ieee(). The value is immediately overwritten on success; the
+ * named constant satisfies the STAR no-magic-numbers policy (NASA Rule 8)
+ * and makes the intent of the initialization explicit.
+ *
+ * @invariant k_frame_crc32_init == 0 (matches zero-init convention)
+ *
+ * @see internal_verify_crc() Only user of this constant
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_frame_crc32_init = 0U, /**< Pre-initialization value for CRC output variable */
+} frame_crc_init_t;
+
 /* =============================================================================
  * Private Helper Functions
  * =============================================================================
@@ -436,7 +457,7 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
   if (err != k_rx_ok) {
     return err;
   }
-  uint32_t calculated_crc = 0U;
+  uint32_t calculated_crc = (uint32_t)k_frame_crc32_init;
   rx_err_t crc_err        = rx_crc32_ieee(data, offset, &calculated_crc);
   if (crc_err != k_rx_ok) {
     return crc_err;

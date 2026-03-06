@@ -379,6 +379,31 @@ static uint8_t internal_crc8_maxim_compute(const uint8_t* data, uint32_t len)
  * =============================================================================
  */
 
+/**
+ * @brief Compute CRC using software for the given polynomial
+ *
+ * @details
+ * Dispatches to the appropriate software CRC implementation based on poly.
+ * CRC-32 and CRC-32C use 256-entry lookup tables; CRC-16/IBM, CRC-CCITT, and
+ * CRC-8/Maxim use bitwise algorithms. All implementations use the reflected
+ * (LSB-first) form of the polynomial. Caller must ensure data != NULL and
+ * len is in [k_crc_len_min, k_crc_len_max]; these are not re-validated here.
+ *
+ * @param[in] poly CRC polynomial selection
+ * @param[in] data Input data buffer (must not be NULL; caller enforces)
+ * @param[in] len  Number of bytes [1, k_crc_len_max]
+ *
+ * @return uint32_t CRC result (8, 16, or 32 significant bits depending on poly)
+ * @retval 0x00000000..0xFFFFFFFF CRC result; significant bits depend on polynomial
+ *
+ * @pre data != NULL (enforced by caller rx_crc_compute())
+ * @pre len in [k_crc_len_min, k_crc_len_max] (enforced by caller)
+ * @post Returns CRC with final XOR applied; no persistent state modified
+ * @post No side effects (stateless, read-only tables)
+ *
+ * @note Thread-safe; stateless, read-only table access only
+ * @since Version 1.0.0
+ */
 uint32_t internal_crc_sw_compute(rx_crc_poly_t poly, const uint8_t* data, uint32_t len)
 {
   switch (poly) {
@@ -396,6 +421,34 @@ uint32_t internal_crc_sw_compute(rx_crc_poly_t poly, const uint8_t* data, uint32
   }
 }
 
+/**
+ * @brief Update CRC-32/IEEE in-progress value with additional data
+ *
+ * @details
+ * Continues an IEEE 802.3 CRC-32 from a finalized partial result. Un-finalizes
+ * the input CRC by XOR with k_crc32_final_xor to recover the internal accumulator
+ * state, feeds the new data through the s_crc32_table lookup loop, then
+ * re-finalizes by XOR with k_crc32_final_xor. Used by rx_crc32_update() to
+ * support incremental (streaming) CRC-32 computation over multiple chunks.
+ *
+ * Pass-through cases: returns crc unchanged if data is nullptr or len == 0.
+ *
+ * @param[in] crc  Previous finalized CRC-32 value (0U for first chunk)
+ * @param[in] data Additional data buffer; NULL causes pass-through
+ * @param[in] len  Number of bytes to process; 0 causes pass-through
+ *
+ * @return uint32_t Updated finalized CRC-32/IEEE value
+ * @retval 0x00000000..0xFFFFFFFF Updated CRC, or original crc on pass-through
+ *
+ * @pre crc is either 0U (first call) or the return value of a prior
+ *      internal_crc32_sw_update() / rx_crc32_update() call
+ * @pre data points to len valid bytes, or is NULL (pass-through)
+ * @post Returns finalized CRC-32 with final XOR applied
+ * @post No side effects (stateless, read-only table access)
+ *
+ * @note Thread-safe; stateless, read-only table access only
+ * @since Version 1.0.0
+ */
 uint32_t internal_crc32_sw_update(uint32_t crc, const uint8_t* data, uint32_t len)
 {
   if (data == nullptr || len == 0U || len > k_crc_len_max) {

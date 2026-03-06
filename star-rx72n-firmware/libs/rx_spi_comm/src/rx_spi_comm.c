@@ -524,6 +524,7 @@ static rx_err_t internal_decode_header(const uint8_t* data,
  * @retval k_rx_err_invalid_arg data pointer is nullptr, or offset is zero (propagated from
  *                              rx_crc32_ieee for a zero-length input)
  * @retval k_rx_err_crc_mismatch CRC invalid (corruption detected)
+ * @retval other Propagated from rx_crc32_ieee() if CRC computation fails
  *
  * @pre data must point to valid buffer containing offset + 4 bytes
  * @pre offset must be the byte position where CRC-32 field begins

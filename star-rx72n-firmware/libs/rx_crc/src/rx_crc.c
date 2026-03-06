@@ -124,14 +124,15 @@ rx_err_t rx_crc_deinit(void)
  *
  * @details
  * Validates inputs then routes to one of three backends:
- * - software: always available; uses bitwise algorithm; ignores config->bit_order
- *   (always uses the standard reflected form for each polynomial)
+ * - software: always available; uses bitwise algorithm; only supports LSB-first
+ *   (reflected) bit order; returns k_rx_err_invalid_arg for MSB-first requests
  * - hw_cpu: RX72N CRC peripheral driven byte-by-byte; falls back to software on host
  * - hw_dma: RX72N CRC peripheral via DMAC; falls back to software on host
  *
- * @note The software backend silently ignores config->bit_order. All software
- *       CRC implementations use the reflected (LSB-first) form which matches
- *       the hardware behavior for IEEE 802.3, Kermit, and Maxim protocols.
+ * @note The software backend only supports k_rx_crc_bit_order_lsb_first. All
+ *       software CRC implementations use the reflected (LSB-first) form.
+ *       Requesting k_rx_crc_bit_order_msb_first with the software backend
+ *       returns k_rx_err_invalid_arg.
  *
  * @param[in]  config     CRC configuration (poly, bit_order, backend, dma.timeout_cycles)
  * @param[in]  data       Input buffer (non-NULL, at least len bytes)
@@ -141,7 +142,8 @@ rx_err_t rx_crc_deinit(void)
  * @return rx_err_t
  * @retval k_rx_ok                  CRC computed; *result_out is valid
  * @retval k_rx_err_null_ptr        config, data, or result_out is NULL
- * @retval k_rx_err_invalid_arg     len == 0 or len > k_crc_len_max or invalid backend
+ * @retval k_rx_err_invalid_arg     len == 0, len > k_crc_len_max, invalid backend,
+ *                                  or software backend with MSB-first bit_order
  * @retval k_rx_err_not_initialized hw_cpu or hw_dma backend used before rx_crc_init()
  * @retval other                    Propagated from hardware backend (RX72N only)
  *
@@ -168,6 +170,9 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
 
   switch (config->backend) {
     case k_rx_crc_backend_software:
+      if (config->bit_order != k_rx_crc_bit_order_lsb_first) {
+        return k_rx_err_invalid_arg;
+      }
       *result_out = internal_crc_sw_compute(config->poly, data, len);
       return k_rx_ok;
 

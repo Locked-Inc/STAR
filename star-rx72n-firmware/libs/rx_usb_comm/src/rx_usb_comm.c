@@ -194,6 +194,7 @@ static rx_err_t internal_decode_header(const uint8_t* data,
  * @retval k_rx_err_invalid_arg nullptr data, or offset below minimum valid CRC position
  *                              (offset < k_frame_min_size - k_frame_crc_size), including offset == 0
  * @retval k_rx_err_crc_mismatch Calculated CRC doesn't match stored CRC
+ * @retval other Propagated from rx_crc32_ieee() if CRC computation fails
  *
  * @pre data != nullptr
  * @pre offset >= (k_frame_min_size - k_frame_crc_size)
