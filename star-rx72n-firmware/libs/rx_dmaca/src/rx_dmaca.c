@@ -136,6 +136,26 @@ static rx_err_t internal_poll_act(uint8_t channel, uint32_t timeout_cycles)
  * =============================================================================
  */
 
+/**
+ * @brief Initialize the RX72N DMAC peripheral
+ *
+ * @details
+ * Unlocks PRCR, enables the DMAC module clock (clears MSTPCRA bit 28), starts
+ * the DMAC module (sets DMAST.DMST = 1), and marks the driver as initialized.
+ * Returns k_rx_err_invalid_state on double-init without touching hardware.
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok              DMAC initialized successfully
+ * @retval k_rx_err_invalid_state Already initialized (call rx_dmaca_deinit() first)
+ *
+ * @pre DMAC must not already be initialized (s_dmaca_initialized == false)
+ * @pre System clock (PCLKA) must be configured and running
+ * @post s_dmaca_initialized set to true
+ * @post DMAC module clock enabled and DMAST.DMST = 1
+ *
+ * @note Not thread-safe; call during single-threaded system initialization
+ * @since Version 1.0.0
+ */
 rx_err_t rx_dmaca_init(void)
 {
   /* Pre-condition: detect double-init (NASA Rule 5) */
@@ -156,6 +176,33 @@ rx_err_t rx_dmaca_init(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Perform a polled DMA transfer and block until complete or timeout
+ *
+ * @details
+ * Validates all inputs, configures the DMA channel registers via
+ * internal_configure_channel(), starts the transfer (DTE=1, SWREQ=1),
+ * and polls the ACT bit until completion or timeout. Clears DTE on exit
+ * regardless of outcome.
+ *
+ * @param[in] config Transfer configuration; must not be NULL
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok                  Transfer completed successfully
+ * @retval k_rx_err_null_ptr        config or config->src is NULL
+ * @retval k_rx_err_not_initialized rx_dmaca_init() has not been called
+ * @retval k_rx_err_invalid_arg     channel out of range, len == 0 or > 65535,
+ *                                  or timeout_cycles == 0
+ * @retval k_rx_err_timeout         Transfer did not complete within timeout_cycles
+ *
+ * @pre rx_dmaca_init() must have been called successfully
+ * @pre config->src must point to at least config->len bytes of readable memory
+ * @post DMA channel DTE cleared (channel idle) regardless of return value
+ * @post On k_rx_ok, destination memory (config->dst_addr) contains transferred data
+ *
+ * @note Not thread-safe; concurrent calls on the same channel corrupt the transfer
+ * @since Version 1.0.0
+ */
 rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
 {
   /* Pre-conditions: validate all inputs (NASA Rule 5) */
@@ -198,6 +245,30 @@ rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
   return ret;
 }
 
+/**
+ * @brief Abort an in-progress DMA transfer on the specified channel
+ *
+ * @details
+ * Immediately clears DTE to disable the channel, then polls the ACT bit
+ * until the active transfer drains or the internal abort timeout expires.
+ * Returns k_rx_ok when the channel is confirmed idle.
+ *
+ * @param[in] channel Channel to abort (0 to k_dmac_channel_count - 1)
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok                  Channel is now idle
+ * @retval k_rx_err_not_initialized rx_dmaca_init() has not been called
+ * @retval k_rx_err_invalid_arg     channel >= k_dmac_channel_count
+ * @retval k_rx_err_timeout         ACT bit did not clear within abort timeout
+ *
+ * @pre rx_dmaca_init() must have been called successfully
+ * @pre channel must be in [0, k_dmac_channel_count - 1]
+ * @post DTE cleared for the specified channel
+ * @post Channel ACT bit is 0 on k_rx_ok return
+ *
+ * @note Not thread-safe; do not call concurrently on the same channel
+ * @since Version 1.0.0
+ */
 rx_err_t rx_dmaca_abort(uint8_t channel)
 {
   /* Pre-conditions: validate inputs (NASA Rule 5) */
@@ -217,6 +288,27 @@ rx_err_t rx_dmaca_abort(uint8_t channel)
   return internal_poll_act(channel, k_dmaca_abort_timeout_cycles);
 }
 
+/**
+ * @brief Deinitialize the RX72N DMAC peripheral
+ *
+ * @details
+ * Clears DMAST.DMST (suspends all channels), unlocks PRCR, sets MSTPCRA
+ * bit 28 to gate the DMAC module clock, re-locks PRCR, and marks the
+ * driver as uninitialized. Returns k_rx_err_not_initialized if called
+ * without a prior rx_dmaca_init().
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok              DMAC deinitialized successfully
+ * @retval k_rx_err_not_initialized rx_dmaca_init() was not called
+ *
+ * @pre rx_dmaca_init() must have been called successfully
+ * @pre No DMA transfers should be in progress (all channels idle)
+ * @post s_dmaca_initialized set to false
+ * @post DMAC module clock disabled (MSTPCRA bit 28 set)
+ *
+ * @note Not thread-safe; call during single-threaded system teardown
+ * @since Version 1.0.0
+ */
 rx_err_t rx_dmaca_deinit(void)
 {
   /* Pre-condition: must be initialized (NASA Rule 5) */

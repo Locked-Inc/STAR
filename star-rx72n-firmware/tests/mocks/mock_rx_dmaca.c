@@ -30,6 +30,9 @@ static uint32_t s_init_count;
 /** @brief Number of rx_dmaca_deinit() calls since last reset */
 static uint32_t s_deinit_count;
 
+/** @brief Whether the mock DMAC is currently initialized */
+static bool s_is_initialized;
+
 /** @brief Number of rx_dmaca_transfer_poll() calls since last reset */
 static uint32_t s_transfer_count;
 
@@ -76,6 +79,7 @@ void mock_rx_dmaca_reset(void)
   s_transfer_result = k_rx_ok;
   memset(&s_last_config, 0, sizeof(s_last_config));
   s_transfer_called = false;
+  s_is_initialized  = false;
 }
 
 /**
@@ -233,6 +237,10 @@ const rx_dmaca_config_t* mock_rx_dmaca_get_last_config(void)
 rx_err_t rx_dmaca_init(void)
 {
   s_init_count++;
+  if (s_is_initialized) {
+    return k_rx_err_invalid_state;
+  }
+  s_is_initialized = true;
   return k_rx_ok;
 }
 
@@ -258,6 +266,10 @@ rx_err_t rx_dmaca_init(void)
 rx_err_t rx_dmaca_deinit(void)
 {
   s_deinit_count++;
+  if (!s_is_initialized) {
+    return k_rx_err_not_initialized;
+  }
+  s_is_initialized = false;
   return k_rx_ok;
 }
 
@@ -294,6 +306,9 @@ rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
   if (config == nullptr) {
     return k_rx_err_null_ptr;
   }
+  if (!s_is_initialized) {
+    return k_rx_err_not_initialized;
+  }
   s_transfer_count++;
   s_transfer_called = true;
   s_last_config     = *config;
@@ -327,6 +342,9 @@ rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
  */
 rx_err_t rx_dmaca_abort(uint8_t channel)
 {
+  if (!s_is_initialized) {
+    return k_rx_err_not_initialized;
+  }
   if (channel >= (uint8_t)k_dmac_channel_count) {
     return k_rx_err_invalid_arg;
   }

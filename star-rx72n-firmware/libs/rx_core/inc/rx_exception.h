@@ -337,11 +337,15 @@ void rx_exception_init(void);
  *
  * @details
  * Returns pointer to read-only exception statistics structure.
- * Statistics are updated by exception handlers.
+ * Statistics are updated by exception handlers. Returns NULL if
+ * rx_exception_init() has not yet been called; callers must check
+ * the return value before dereferencing.
  *
- * @return Pointer to exception statistics (never NULL)
+ * @return Pointer to exception statistics, or NULL if not initialized
+ * @retval non-NULL Valid pointer to statistics after rx_exception_init()
+ * @retval NULL     rx_exception_init() has not been called yet
  *
- * @pre rx_exception_init() must have been called
+ * @pre rx_exception_init() must have been called for a non-NULL return
  * @post No side effects
  *
  * @note Thread-safe: Read access only
@@ -349,7 +353,7 @@ void rx_exception_init(void);
  * @par Example:
  * @code
  * const rx_exception_stats_t* stats = rx_exception_get_stats();
- * if (stats->count[k_rx_exception_nmi] > 0) {
+ * if (stats != NULL && stats->count[k_rx_exception_nmi] > 0) {
  *     // NMI occurred - investigate
  * }
  * @endcode

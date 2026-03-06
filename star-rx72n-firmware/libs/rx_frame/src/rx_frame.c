@@ -670,7 +670,7 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
   }
 
   /* Calculate CRC-32 over SYNC + Header + Payload (IEEE 802.3 polynomial) */
-  uint32_t crc = 0U;
+  uint32_t crc = (uint32_t)k_frame_crc32_init;
   rx_err_t err = rx_crc32_ieee(output, offset, &crc);
   if (err != k_rx_ok) {
     return err;

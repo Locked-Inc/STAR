@@ -43,6 +43,8 @@ typedef enum : uint32_t {
   k_crc32_poly     = 0xEDB88320U, /**< Reflected CRC-32/IEEE polynomial (0x04C11DB7 reflected) */
   k_crc32_xor_mask = 0xFFFFFFFFU, /**< Initial and final XOR mask (IEEE 802.3) */
   k_crc32_lsb_mask = 0x00000001U, /**< Mask for LSB check in bitwise accumulator loop */
+  k_crc_len_max =
+    65535U, /**< Maximum CRC data length (matches k_crc_len_max in rx_crc_internal.h) */
 } crc32_constants_t;
 
 /* =============================================================================
@@ -94,7 +96,10 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
   /* CRC-8/Maxim computation - only supported polynomial for this mock */
   uint8_t crc = (uint8_t)k_crc8_init_value;
 
-  for (uint32_t i = 0U; i < len; ++i) {
+  for (uint32_t i = 0U; i < k_crc_len_max; ++i) {
+    if (i >= len) {
+      break;
+    }
     crc ^= data[i];
 
     for (uint8_t j = 0; j < k_bits_per_byte; ++j) {
@@ -152,14 +157,17 @@ rx_err_t rx_crc_deinit(void)
  */
 uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len)
 {
-  if (data == nullptr || len == 0U) {
+  if (data == nullptr || len == 0U || len > k_crc_len_max) {
     return crc;
   }
 
   /* Un-finalize previous CRC, process bytes, re-finalize (matches rx_crc_sw.c) */
   uint32_t work = crc ^ (uint32_t)k_crc32_xor_mask;
 
-  for (uint32_t i = 0U; i < len; ++i) {
+  for (uint32_t i = 0U; i < k_crc_len_max; ++i) {
+    if (i >= len) {
+      break;
+    }
     work ^= (uint32_t)data[i];
     for (uint8_t b = 0U; b < k_bits_per_byte; ++b) {
       if ((work & (uint32_t)k_crc32_lsb_mask) != 0U) {

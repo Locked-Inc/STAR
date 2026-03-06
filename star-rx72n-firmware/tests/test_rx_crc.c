@@ -790,6 +790,9 @@ void test_mock_dmaca_preset_timeout_result(void)
 {
   mock_rx_dmaca_set_transfer_result(k_rx_err_timeout);
 
+  /* Initialize mock so transfer_poll accepts calls (mirrors real DMACA semantics) */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_dmaca_init());
+
   /* Call the mock directly to verify preset behavior */
   const rx_dmaca_config_t cfg = {
     .channel        = (uint8_t)k_mock_dma_channel,

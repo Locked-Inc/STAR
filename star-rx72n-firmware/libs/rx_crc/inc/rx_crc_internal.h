@@ -98,7 +98,8 @@ typedef enum : uint32_t {
  *
  * @pre data must point to at least len bytes
  * @pre len must be in [k_crc_len_min, k_crc_len_max]
- * @post No side effects (pure function)
+ * @post No side effects (pure function, no heap allocation, no global state modified)
+ * @post Return value has at most 32 significant bits; upper bits zero for CRC-8 and CRC-16
  *
  * @note Thread-safe (stateless, read-only tables)
  * @since Version 1.0.0
@@ -118,8 +119,11 @@ uint32_t internal_crc_sw_compute(rx_crc_poly_t poly, const uint8_t* data, uint32
  *
  * @return Updated finalized CRC-32 value
  *
- * @pre data must point to at least len bytes
- * @post No side effects (pure function)
+ * @pre data must point to at least len bytes, or be NULL (pass-through)
+ * @pre crc must be 0U (first call) or the finalized CRC-32/IEEE value returned
+ *      by a prior rx_crc32_update() / internal_crc32_sw_update() call
+ * @post Returns finalized CRC-32/IEEE value; no heap or global state modified
+ * @post No side effects (pure computation, read-only table access)
  *
  * @note Thread-safe (stateless, read-only table)
  * @since Version 1.0.0
@@ -138,8 +142,10 @@ uint32_t internal_crc32_sw_update(uint32_t crc, const uint8_t* data, uint32_t le
  *
  * @return rx_err_t k_rx_ok on success
  *
- * @pre System clock must be running
+ * @pre System clock (PCLKB) must be configured and running
+ * @pre PRCR register must be writable (caller must not hold PRCR lock)
  * @post CRCA module clock enabled (MSTPCRB bit 23 cleared)
+ * @post DMAC driver initialized (rx_dmaca_init() called) if not already running
  *
  * @since Version 1.0.0
  */
@@ -150,8 +156,10 @@ uint32_t internal_crc32_sw_update(uint32_t crc, const uint8_t* data, uint32_t le
  *
  * @return rx_err_t k_rx_ok on success
  *
- * @pre internal_crc_hw_init() must have been called
+ * @pre internal_crc_hw_init() must have been called successfully before this
+ * @pre No CRC or DMA transfers may be in progress at time of call
  * @post CRCA module clock disabled (MSTPCRB bit 23 set)
+ * @post DMAC driver deinitialized (rx_dmaca_deinit() called) if owned by this module
  *
  * @since Version 1.0.0
  */
@@ -171,8 +179,10 @@ uint32_t internal_crc32_sw_update(uint32_t crc, const uint8_t* data, uint32_t le
  *
  * @return rx_err_t k_rx_ok on success
  *
- * @pre CRC peripheral must be initialized
- * @post *result_out contains the computed CRC
+ * @pre CRC peripheral must be initialized via internal_crc_hw_init()
+ * @pre config, data, and result_out must not be NULL
+ * @post *result_out contains the computed CRC on k_rx_ok
+ * @post CRC peripheral registers returned to idle state (CRCDOR readable)
  *
  * @since Version 1.0.0
  */

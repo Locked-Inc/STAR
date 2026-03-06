@@ -192,6 +192,9 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
     /* Host build: hardware backends not available - fall back to software */
     case k_rx_crc_backend_hw_cpu:
     case k_rx_crc_backend_hw_dma:
+      if (config->bit_order != k_rx_crc_bit_order_lsb_first) {
+        return k_rx_err_invalid_arg;
+      }
       *result_out = internal_crc_sw_compute(config->poly, data, len);
       return k_rx_ok;
 #endif

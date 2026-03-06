@@ -210,11 +210,16 @@ rx_err_t internal_crc_hw_init(void)
 
   /* Initialize DMA driver; treat k_rx_err_invalid_state as OK (already initialized),
    * propagate any unexpected error so callers know DMA is unavailable.
-   * Track ownership: only deinit DMAC on teardown if we initialized it here. */
+   * Track ownership: only deinit DMAC on teardown if we initialized it here.
+   * On unexpected failure, roll back CRC clock to leave no partial state. */
   rx_err_t dma_ret = rx_dmaca_init();
   if (dma_ret == k_rx_ok) {
     s_dmaca_owned = true;
   } else if (dma_ret != k_rx_err_invalid_state) {
+    /* Roll back: disable CRC clock before returning the error */
+    *prcr_reg() = k_rx_prcr_unlock_prc1;
+    system_regs()->mstpcrb |= ((uint32_t)k_hw_bit_one << k_hw_mstpb_crc_bit);
+    *prcr_reg() = k_rx_prcr_lock;
     return dma_ret;
   }
 
