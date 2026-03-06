@@ -273,8 +273,9 @@ rx_err_t rx_dmaca_deinit(void)
  * @param[in] config Transfer configuration; must not be NULL (mirrors real API null check)
  *
  * @return rx_err_t
- * @retval k_rx_ok Default (after mock_rx_dmaca_reset())
- * @retval other   Whatever was set by mock_rx_dmaca_set_transfer_result()
+ * @retval k_rx_err_null_ptr config is NULL (mirrors real API null check)
+ * @retval k_rx_ok           Default (after mock_rx_dmaca_reset())
+ * @retval other             Whatever was set by mock_rx_dmaca_set_transfer_result()
  *
  * @pre Mock initialized via mock_rx_dmaca_reset(); s_transfer_count and s_last_config valid
  * @pre Called only from the test thread; not thread-safe (no concurrent calls)

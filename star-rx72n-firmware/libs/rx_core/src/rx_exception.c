@@ -175,7 +175,7 @@ void rx_exception_init(void)
   /* Mark as initialized */
   s_initialized = k_rx_exc_initialized;
 
-  rx_log_info(s_tag, "Exception handling initialized");
+  (void)rx_log_info(s_tag, "Exception handling initialized");
 }
 
 /**

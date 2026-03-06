@@ -217,6 +217,8 @@ uint32_t internal_crc32_sw_update(uint32_t crc, const uint8_t* data, uint32_t le
  *       Callers must serialize all concurrent invocations. Concurrent calls
  *       will corrupt the in-flight DMA transfer and produce wrong result_out.
  *
+ * @see k_hw_crc32_alignment_bytes Alignment requirement for CRC-32/CRC-32C (defined in rx_crc.h)
+ *
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t internal_crc_hw_dma_compute(const rx_crc_config_t* config,
