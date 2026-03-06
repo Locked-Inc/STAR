@@ -159,9 +159,9 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len)
   /* Un-finalize previous CRC, process bytes, re-finalize (matches rx_crc_sw.c) */
   uint32_t work = crc ^ (uint32_t)k_crc32_xor_mask;
 
-  for (uint32_t i = 0U; i < len; i++) {
+  for (uint32_t i = 0U; i < len; ++i) {
     work ^= (uint32_t)data[i];
-    for (uint8_t b = 0U; b < k_bits_per_byte; b++) {
+    for (uint8_t b = 0U; b < k_bits_per_byte; ++b) {
       if ((work & (uint32_t)k_crc32_lsb_mask) != 0U) {
         work = (work >> k_shift_one_bit) ^ (uint32_t)k_crc32_poly;
       } else {

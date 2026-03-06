@@ -258,6 +258,7 @@ static bool s_infrastructure_initialized = false;
  * @details Identifies log messages from the infrastructure module. Passed to
  *          rx_log_* functions to prefix output with "INFRA".
  * @note Read-only after initialization; never modified after program startup.
+ * @invariant Value is "INFRA" and never changes after compilation.
  * @since Version 1.0.0
  */
 static const char* const s_tag = "INFRA";
