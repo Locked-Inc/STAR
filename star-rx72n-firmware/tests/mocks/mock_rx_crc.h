@@ -50,6 +50,21 @@ extern "C" {
  * test code and documentation examples so all call sites are searchable and
  * self-documenting.
  *
+ * @invariant All members are test-only constants; never written at runtime.
+ *
+ * @code
+ * // Inject a known bad CRC to verify corruption-detection logic:
+ * mock_crc8_set_return_value(k_mock_crc8_injected);
+ * mock_crc8_set_override(true);
+ *
+ * // Inject a zero CRC to verify CRC-mismatch error path:
+ * mock_crc8_set_return_value(k_mock_crc8_wrong);
+ * mock_crc8_set_override(true);
+ * @endcode
+ *
+ * @see mock_crc8_set_return_value() Injects the chosen constant into the mock
+ * @see mock_crc8_set_override() Activates or deactivates the override
+ *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {

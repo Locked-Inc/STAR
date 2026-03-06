@@ -254,7 +254,7 @@
  * **All function returns validated:**
  * ```c
  * err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
- * RX_RETURN_ON_ERROR(err, s_tag,"Failed to set trigger low");
+ * RX_RETURN_ON_ERROR(err, s_tag, "Failed to set trigger low");
  *
  * status = tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
  * if (status != TX_SUCCESS) {

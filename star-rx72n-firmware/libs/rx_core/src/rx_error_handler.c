@@ -156,8 +156,9 @@
 /**
  * @var s_tag
  * @brief Log tag for error handler module
- * @details Identifies log messages from this module
- * @note Read-only after initialization
+ * @details Identifies log messages from this module. Points to a string
+ *          literal and is immutable for the entire lifetime of the program
+ *          (compile-time constant, not just after initialization).
  * @since Version 1.0.0
  */
 static const char* const s_tag = "ERROR_HANDLER";

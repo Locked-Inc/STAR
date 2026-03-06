@@ -33,6 +33,7 @@ typedef enum : uint8_t {
 typedef enum : uint8_t {
   k_crc8_maxim_poly = 0x8CU, /**< Reversed polynomial 0x31 */
   k_crc8_lsb_mask   = 0x01U, /**< Mask for LSB */
+  k_crc8_init_value = 0x00U, /**< Initial CRC-8/Maxim accumulator value */
 } crc8_constants_t;
 
 /**
@@ -91,7 +92,7 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
   }
 
   /* Real CRC-8/Maxim computation (only polynomial used in this mock context) */
-  uint8_t crc = 0;
+  uint8_t crc = (uint8_t)k_crc8_init_value;
 
   for (uint32_t i = 0U; i < len; ++i) {
     crc ^= data[i];

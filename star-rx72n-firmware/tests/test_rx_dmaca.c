@@ -285,7 +285,7 @@ void test_transfer_null_src(void)
  * the driver always uses 8-bit transfer size (DMTMD.SZ=00b). The count
  * equals len, not len/4. DMINT is cleared to disable interrupts.
  */
-void test_transfer_32bit_mode_register_values(void)
+void test_transfer_8bit_mode_register_values(void)
 {
   (void)rx_dmaca_init();
   /* Leave g_mock_dmac_ch[0].dmsts = 0 so poll succeeds immediately */
@@ -480,7 +480,7 @@ int main(void)
   RUN_TEST(test_transfer_null_src);
 
   /* transfer_poll register verification */
-  RUN_TEST(test_transfer_32bit_mode_register_values);
+  RUN_TEST(test_transfer_8bit_mode_register_values);
   RUN_TEST(test_transfer_8bit_mode_unaligned_len);
   RUN_TEST(test_transfer_8bit_mode_unaligned_dst);
   RUN_TEST(test_transfer_ok_clears_dte);
