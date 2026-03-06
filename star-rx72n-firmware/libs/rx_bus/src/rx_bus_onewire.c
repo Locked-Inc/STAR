@@ -1613,8 +1613,12 @@ static rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, 
     ctx->rom[i] = byte;
   }
 
-  crc_out = 0U;
-  (void)rx_crc8_maxim(ctx->rom, k_onewire_rom_crc_idx, &crc_out);
+  crc_out          = 0U;
+  rx_err_t crc_err = rx_crc8_maxim(ctx->rom, k_onewire_rom_crc_idx, &crc_out);
+  if (crc_err != k_rx_ok) {
+    ctx->result = crc_err;
+    return crc_err;
+  }
   if ((uint8_t)crc_out != ctx->rom[k_onewire_rom_crc_idx]) {
     ctx->result = k_rx_err_crc_mismatch;
     return ctx->result;

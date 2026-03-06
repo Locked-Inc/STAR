@@ -69,10 +69,30 @@ static const char* const s_exception_names[k_rx_exception_type_count] = {"Undefi
 static rx_exception_stats_t s_exception_stats = {0};
 
 /**
- * @brief Initialization flag
- * @details Tracks whether rx_exception_init() has been called
+ * @enum rx_exc_init_state_t
+ * @brief Initialization state for the exception module
+ *
+ * @details
+ * Tracks whether rx_exception_init() has been called. Used to guard
+ * rx_exception_get_stats() so callers cannot observe uninitialized data.
+ *
+ * @since Version 1.0.0
  */
-static uint8_t s_initialized = 0U;
+typedef enum : uint8_t {
+  k_rx_exc_not_initialized = 0U, /**< rx_exception_init() has not been called */
+  k_rx_exc_initialized     = 1U, /**< rx_exception_init() completed successfully */
+} rx_exc_init_state_t;
+
+/**
+ * @var s_initialized
+ * @brief Initialization flag for the exception module
+ * @details Set to k_rx_exc_initialized after rx_exception_init() completes.
+ *          Guards rx_exception_get_stats() against returning stale data.
+ * @note Not thread-safe; rx_exception_init() must be called before any
+ *       concurrent access to exception module state.
+ * @since Version 1.0.0
+ */
+static rx_exc_init_state_t s_initialized = k_rx_exc_not_initialized;
 
 /* ============================================================================
  * Internal Helper Functions
@@ -153,7 +173,7 @@ void rx_exception_init(void)
   s_exception_stats.last_frame.reserved[2] = 0;
 
   /* Mark as initialized */
-  s_initialized = 1;
+  s_initialized = k_rx_exc_initialized;
 
   rx_log_info(s_tag, "Exception handling initialized");
 }
@@ -163,6 +183,9 @@ void rx_exception_init(void)
  */
 const rx_exception_stats_t* rx_exception_get_stats(void)
 {
+  if (s_initialized != k_rx_exc_initialized) {
+    return nullptr;
+  }
   return &s_exception_stats;
 }
 

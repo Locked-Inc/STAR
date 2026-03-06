@@ -211,6 +211,12 @@ uint32_t internal_crc32_sw_update(uint32_t crc, const uint8_t* data, uint32_t le
  *       result_out is not written on any error return
  * @post DMA channel is idle on return (transfer complete, or aborted on timeout)
  *
+ * @note NOT thread-safe. Unlike internal_crc_sw_compute and
+ *       internal_crc32_sw_update (which are stateless and re-entrant), this
+ *       function programs shared DMA channel hardware and writes result_out.
+ *       Callers must serialize all concurrent invocations. Concurrent calls
+ *       will corrupt the in-flight DMA transfer and produce wrong result_out.
+ *
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t internal_crc_hw_dma_compute(const rx_crc_config_t* config,

@@ -732,7 +732,15 @@ typedef enum : uint32_t {
   k_irq_poll_max_iterations = 100, /**< Max iterations (~10ms/iter at 100Hz, ~1s safety bound) */
 } rx_hcsr04_irq_poll_limits_t;
 
-/** @brief Log tag for this module */
+/**
+ * @var s_tag
+ * @brief Log tag for this module
+ * @details Identifies log messages from the HC-SR04 ultrasonic sensor module.
+ *          Passed to rx_log_* functions to prefix output with "HCSR04".
+ *          Avoids magic strings at each call site.
+ * @note Read-only after initialization; never modified after program startup.
+ * @since Version 1.0.0
+ */
 static const char* const s_tag = "HCSR04";
 
 /**

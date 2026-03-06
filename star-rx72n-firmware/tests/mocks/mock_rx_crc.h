@@ -41,6 +41,23 @@ extern "C" {
 #endif
 
 /**
+ * @enum mock_crc8_test_values_t
+ * @brief Named CRC-8 test constants for use in mock override examples
+ *
+ * @details
+ * Provides named constants for the CRC-8 values injected via
+ * mock_crc8_set_return_value(). Use these instead of magic literals in
+ * test code and documentation examples so all call sites are searchable and
+ * self-documenting.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_mock_crc8_injected = 0xAAU, /**< Injected CRC-8 value for testing corruption-detection logic */
+  k_mock_crc8_wrong    = 0x00U, /**< Wrong CRC-8 value for testing CRC-mismatch error paths */
+} mock_crc8_test_values_t;
+
+/**
  * @brief Set the fixed CRC-8 value returned when mock override is active
  *
  * @details
@@ -60,10 +77,10 @@ extern "C" {
  *
  * @code
  * // Inject a bad CRC to test corruption-detection logic in the caller:
- * mock_crc8_set_return_value(0xAAU);   // stage the injected value first
- * mock_crc8_set_override(true);        // then activate the override
+ * mock_crc8_set_return_value(k_mock_crc8_injected);  // stage the injected value first
+ * mock_crc8_set_override(true);                      // then activate the override
  * rx_err_t ret = rx_crc_compute(&cfg, data, len, &result);
- * // result == 0xAA regardless of the actual byte content of data
+ * // result == k_mock_crc8_injected regardless of the actual byte content of data
  * @endcode
  *
  * @since Version 1.0.0
@@ -91,10 +108,10 @@ void mock_crc8_set_return_value(uint8_t crc);
  *
  * @code
  * // Test that the caller detects a bad CRC and returns an error:
- * mock_crc8_set_return_value(0x00U);   // inject a wrong checksum
- * mock_crc8_set_override(true);        // activate override
+ * mock_crc8_set_return_value(k_mock_crc8_wrong);  // inject a wrong checksum
+ * mock_crc8_set_override(true);                   // activate override
  * TEST_ASSERT_EQUAL(k_rx_err_crc, driver_read(&handle, buf, len));
- * mock_crc8_set_override(false);       // restore real CRC in tearDown()
+ * mock_crc8_set_override(false);                  // restore real CRC in tearDown()
  * @endcode
  *
  * @since Version 1.0.0

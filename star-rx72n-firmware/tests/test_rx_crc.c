@@ -96,10 +96,15 @@ typedef enum : uint32_t {
   k_chunk_second_len = 5U, /**< Second chunk: bytes 4-8 of "123456789" (4+5=9) */
 } crc_chunk_sizes_t;
 
-/** @brief Mock DMAC constants for direct mock interaction tests */
+/** @brief Mock DMAC address constants (uintptr_t for hardware addresses) */
+typedef enum : uintptr_t {
+  k_mock_crc_dst_addr = 0x00088284U, /**< CRCDIR register address (DMA destination) */
+} crc_mock_addr_constants_t;
+
+/** @brief Mock DMAC non-address constants for direct mock interaction tests */
 typedef enum : uint32_t {
-  k_mock_crc_dst_addr   = 0x00088284U, /**< CRCDIR register address (DMA destination) */
-  k_mock_timeout_cycles = 50000U,      /**< Timeout cycles for mock DMA transfer test */
+  k_mock_timeout_cycles = 50000U, /**< Timeout cycles for mock DMA transfer test */
+  k_mock_dma_channel    = 0U,     /**< DMA channel index used in mock transfer config */
 } crc_mock_constants_t;
 
 /* =============================================================================
@@ -787,7 +792,7 @@ void test_mock_dmaca_preset_timeout_result(void)
 
   /* Call the mock directly to verify preset behavior */
   const rx_dmaca_config_t cfg = {
-    .channel        = 0U,
+    .channel        = (uint8_t)k_mock_dma_channel,
     .src            = s_test_vec_9,
     .len            = k_test_vec_9_len,
     .dst_addr       = (uintptr_t)k_mock_crc_dst_addr,

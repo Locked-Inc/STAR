@@ -252,7 +252,14 @@ static rx_pin_interface_t s_global_pin_interface = {0};
  */
 static bool s_infrastructure_initialized = false;
 
-/** @brief Log tag for this module */
+/**
+ * @var s_tag
+ * @brief Log tag for this module
+ * @details Identifies log messages from the infrastructure module. Passed to
+ *          rx_log_* functions to prefix output with "INFRA".
+ * @note Read-only after initialization; never modified after program startup.
+ * @since Version 1.0.0
+ */
 static const char* const s_tag = "INFRA";
 
 /* =============================================================================

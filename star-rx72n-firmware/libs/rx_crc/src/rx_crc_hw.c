@@ -395,8 +395,10 @@ rx_err_t internal_crc_hw_dma_compute(const rx_crc_config_t* config,
 
   rx_err_t err = rx_dmaca_transfer_poll(&dma_cfg);
   if (err != k_rx_ok) {
-    /* DMA failure: record for observability, then fall back to CPU loop */
-    s_dma_fallback_count++;
+    /* DMA failure: record for observability (saturating), then fall back to CPU loop */
+    if (s_dma_fallback_count < UINT32_MAX) {
+      s_dma_fallback_count++;
+    }
     return internal_crc_hw_cpu_compute(config, data, len, result_out);
   }
 
