@@ -69,7 +69,7 @@ void mock_crc8_set_override(bool enable)
 }
 
 /* =============================================================================
- * CRC-8 Implementation
+ * CRC Implementation (CRC-8/Maxim only; other polys return k_rx_err_invalid_arg)
  * =============================================================================
  */
 
@@ -82,7 +82,7 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
     return k_rx_err_null_ptr;
   }
 
-  if (len == 0U) {
+  if (len == 0U || config->poly != k_rx_crc_poly_crc8) {
     return k_rx_err_invalid_arg;
   }
 
@@ -91,7 +91,7 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
     return k_rx_ok;
   }
 
-  /* Real CRC-8/Maxim computation (only polynomial used in this mock context) */
+  /* CRC-8/Maxim computation - only supported polynomial for this mock */
   uint8_t crc = (uint8_t)k_crc8_init_value;
 
   for (uint32_t i = 0U; i < len; ++i) {
