@@ -201,6 +201,8 @@
  * @since Version 1.0.0
  */
 
+#ifdef __RX__
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -2196,3 +2198,5 @@ void uart_debug_puthex(const uint32_t value, uint8_t digits)
 }
 
 #endif /* !RX_IS_SIMULATOR */
+
+#endif /* __RX__ */

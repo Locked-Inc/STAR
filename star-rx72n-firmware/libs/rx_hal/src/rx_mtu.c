@@ -103,6 +103,8 @@
  * @since Version 1.0.0
  */
 
+#ifdef __RX__
+
 #include "rx_mtu.h"
 
 #include <stddef.h>
@@ -1214,3 +1216,5 @@ rx_err_t rx_mtu_deinit(const rx_mtu_channel_t channel)
 
   return k_rx_ok;
 }
+
+#endif /* __RX__ */

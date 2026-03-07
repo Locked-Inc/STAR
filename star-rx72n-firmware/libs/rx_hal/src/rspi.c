@@ -140,6 +140,8 @@
  * @since Version 1.0.0
  */
 
+#ifdef __RX__
+
 #include <stdint.h>
 #include <string.h>
 
@@ -1779,3 +1781,5 @@ rx_err_t rspi_controller_deinit(const rspi_channel_t channel)
 
   return k_rx_ok;
 }
+
+#endif /* __RX__ */

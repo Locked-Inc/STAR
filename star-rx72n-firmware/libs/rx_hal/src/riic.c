@@ -206,6 +206,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+#ifdef __RX__
+
 #include <string.h>
 
 #include "hardware.h"
@@ -1985,3 +1987,5 @@ rx_err_t riic_write_read(const riic_channel_t    channel,
 
   return k_rx_ok;
 }
+
+#endif /* __RX__ */
