@@ -20,6 +20,27 @@
 #include "rx72n_dmac_regs.h"
 
 /* =============================================================================
+ * Private Constants (mirror rx_dmaca.c internal limits for validation parity)
+ * =============================================================================
+ */
+
+/**
+ * @brief Transfer-length and timeout limits (must match rx_dmaca.c values)
+ *
+ * @details
+ * These constants duplicate the private constants in rx_dmaca.c so that the
+ * mock can enforce the same input validation as the real driver without
+ * exposing those constants in the public header.
+ */
+typedef enum : uint32_t {
+  /** @brief Maximum DMA transfer length (DMCRA is 16-bit) */
+  k_mock_dmaca_len_max = 65535U,
+
+  /** @brief Maximum caller-supplied timeout_cycles (NASA Rule 2 loop bound) */
+  k_mock_dmaca_timeout_cycles_max = 10000000U,
+} mock_dmaca_limits_t;
+
+/* =============================================================================
  * Mock State
  * =============================================================================
  */
@@ -285,17 +306,20 @@ rx_err_t rx_dmaca_deinit(void)
  * @param[in] config Transfer configuration; must not be NULL (mirrors real API null check)
  *
  * @return rx_err_t
- * @retval k_rx_err_null_ptr config is NULL (mirrors real API null check)
- * @retval k_rx_ok           Default (after mock_rx_dmaca_reset())
- * @retval other             Whatever was set by mock_rx_dmaca_set_transfer_result()
+ * @retval k_rx_err_null_ptr        config is NULL or config->src is NULL
+ * @retval k_rx_err_not_initialized Mock not initialized (rx_dmaca_init() not called)
+ * @retval k_rx_err_invalid_arg     channel out of range, len == 0 or > k_mock_dmaca_len_max,
+ *                                  dst_addr == 0, or timeout_cycles == 0 or
+ *                                  timeout_cycles > k_mock_dmaca_timeout_cycles_max
+ * @retval k_rx_ok                  Default (after mock_rx_dmaca_reset())
+ * @retval other                    Whatever was set by mock_rx_dmaca_set_transfer_result()
  *
  * @pre Mock initialized via mock_rx_dmaca_reset(); s_transfer_count and s_last_config valid
  * @pre Called only from the test thread; not thread-safe (no concurrent calls)
  * @pre mock_rx_dmaca_set_transfer_result() may be called beforehand to preset return value
- * @pre If config is non-NULL, it must point to valid memory for the lifetime of this call
- * @post s_transfer_count incremented by 1
- * @post s_transfer_called = true
- * @post s_last_config updated if config != NULL
+ * @pre All config fields must pass the same validation as the real rx_dmaca_transfer_poll()
+ * @post s_transfer_count incremented by 1 only on successful validation
+ * @post s_transfer_called = true and s_last_config updated only on successful validation
  *
  * @note Not thread-safe; call only from test thread
  *
@@ -308,6 +332,22 @@ rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
   }
   if (!s_is_initialized) {
     return k_rx_err_not_initialized;
+  }
+  if (config->channel >= (uint8_t)k_dmac_channel_count) {
+    return k_rx_err_invalid_arg;
+  }
+  if (config->len == 0U || config->len > (uint32_t)k_mock_dmaca_len_max) {
+    return k_rx_err_invalid_arg;
+  }
+  if (config->timeout_cycles == 0U ||
+      config->timeout_cycles > (uint32_t)k_mock_dmaca_timeout_cycles_max) {
+    return k_rx_err_invalid_arg;
+  }
+  if (config->dst_addr == 0U) {
+    return k_rx_err_invalid_arg;
+  }
+  if (config->src == nullptr) {
+    return k_rx_err_null_ptr;
   }
   s_transfer_count++;
   s_transfer_called = true;
