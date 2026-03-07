@@ -155,6 +155,8 @@
  * @since Version 1.0.0
  */
 
+#ifdef __RX__
+
 #include <stddef.h>
 
 #include "hardware.h"
@@ -870,3 +872,5 @@ rx_err_t gpio_read(const rx_port_pin_t pin, bool* value)
 
   return k_rx_ok;
 }
+
+#endif /* __RX__ */

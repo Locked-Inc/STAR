@@ -151,6 +151,8 @@
  * @since Version 1.0.0
  */
 
+#ifdef __RX__
+
 #include <string.h>
 
 #include "hardware.h"
@@ -992,3 +994,5 @@ rx_err_t adc_read_voltage_mv(const adc_unit_t unit,
 
   return k_rx_ok;
 }
+
+#endif /* __RX__ */

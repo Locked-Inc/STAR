@@ -109,6 +109,8 @@
  * @since Version 1.0.0
  */
 
+#ifdef __RX__
+
 #include "rx_gptw.h"
 
 #include <stddef.h>
@@ -2029,3 +2031,5 @@ rx_err_t rx_gptw_deinit(const rx_gptw_channel_t channel)
 
   return k_rx_ok;
 }
+
+#endif /* __RX__ */

@@ -139,6 +139,8 @@
  * @since Version 1.0.0
  */
 
+#ifdef __RX__
+
 #include "rx_cmt.h"
 
 #include <stddef.h>
@@ -1500,3 +1502,5 @@ rx_err_t rx_cmt_deinit(const rx_cmt_channel_t channel)
 
   return k_rx_ok;
 }
+
+#endif /* __RX__ */
