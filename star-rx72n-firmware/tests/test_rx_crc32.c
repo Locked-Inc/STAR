@@ -163,34 +163,34 @@ void tearDown(void)
  */
 
 /**
- * @brief Test CRC-32 with empty data returns 0
+ * @brief Test CRC-32 with nullptr and zero length returns k_rx_err_null_ptr
  */
 void test_crc32_empty_data(void)
 {
-  uint32_t crc = rx_crc32_ieee(nullptr, 0);
+  uint32_t crc = 0U;
 
-  TEST_ASSERT_EQUAL_HEX32(0x00000000, crc);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, rx_crc32_ieee(nullptr, 0, &crc));
 }
 
 /**
- * @brief Test CRC-32 with nullptr pointer returns 0
+ * @brief Test CRC-32 with nullptr pointer returns k_rx_err_null_ptr
  */
 void test_crc32_null_pointer(void)
 {
-  uint32_t crc = rx_crc32_ieee(nullptr, 10);
+  uint32_t crc = 0U;
 
-  TEST_ASSERT_EQUAL_HEX32(0x00000000, crc);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, rx_crc32_ieee(nullptr, 10, &crc));
 }
 
 /**
- * @brief Test CRC-32 with zero length returns 0
+ * @brief Test CRC-32 with zero length returns k_rx_err_invalid_arg
  */
 void test_crc32_zero_length(void)
 {
   uint8_t  data[] = {0x01, 0x02, 0x03};
-  uint32_t crc    = rx_crc32_ieee(data, 0);
+  uint32_t crc    = 0U;
 
-  TEST_ASSERT_EQUAL_HEX32(0x00000000, crc);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc32_ieee(data, 0, &crc));
 }
 
 /* =============================================================================
@@ -258,8 +258,9 @@ void test_crc32_zero_length(void)
 void test_crc32_standard_vector(void)
 {
   const uint8_t data[] = "123456789";
-  uint32_t      crc    = rx_crc32_ieee(data, 9); /* "123456789" without null */
+  uint32_t      crc    = 0U;
 
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 9, &crc)); /* "123456789" without null */
   TEST_ASSERT_EQUAL_HEX32(0xCBF43926, crc);
 }
 
@@ -271,8 +272,9 @@ void test_crc32_standard_vector(void)
 void test_crc32_single_zero(void)
 {
   uint8_t  data[] = {0x00};
-  uint32_t crc    = rx_crc32_ieee(data, 1);
+  uint32_t crc    = 0U;
 
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 1, &crc));
   TEST_ASSERT_EQUAL_HEX32(0xD202EF8D, crc);
 }
 
@@ -284,8 +286,9 @@ void test_crc32_single_zero(void)
 void test_crc32_single_ff(void)
 {
   uint8_t  data[] = {0xFF};
-  uint32_t crc    = rx_crc32_ieee(data, 1);
+  uint32_t crc    = 0U;
 
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 1, &crc));
   TEST_ASSERT_EQUAL_HEX32(0xFF000000, crc);
 }
 
@@ -307,7 +310,9 @@ void test_crc32_sync_word(void)
   };
 
   uint8_t  data[] = {k_sync_lo, k_sync_hi};
-  uint32_t crc    = rx_crc32_ieee(data, sizeof(data));
+  uint32_t crc    = 0U;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, sizeof(data), &crc));
   TEST_ASSERT_EQUAL_HEX32(k_expected_crc_sync, crc);
 }
 
@@ -319,8 +324,9 @@ void test_crc32_sync_word(void)
 void test_crc32_eight_zeros(void)
 {
   uint8_t  data[8] = {0};
-  uint32_t crc     = rx_crc32_ieee(data, 8);
+  uint32_t crc     = 0U;
 
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 8, &crc));
   TEST_ASSERT_EQUAL_HEX32(0x6522DF69, crc);
 }
 
@@ -334,7 +340,9 @@ void test_crc32_eight_ff(void)
   uint8_t data[8];
 
   memset(data, 0xFF, 8);
-  uint32_t crc = rx_crc32_ieee(data, 8);
+  uint32_t crc = 0U;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 8, &crc));
   TEST_ASSERT_EQUAL_HEX32(0x2144DF1C, crc);
 }
 
@@ -348,8 +356,9 @@ void test_crc32_eight_ff(void)
 void test_crc32_frame_header(void)
 {
   uint8_t  header[] = {0xAA, 0x55, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00};
-  uint32_t crc      = rx_crc32_ieee(header, 8);
+  uint32_t crc      = 0U;
 
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(header, 8, &crc));
   TEST_ASSERT_EQUAL_HEX32(0x38B12836, crc);
 }
 
@@ -366,11 +375,14 @@ void test_crc32_incremental_matches_single(void)
   uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
 
   /* Single-shot CRC */
-  uint32_t crc_single = rx_crc32_ieee(data, 8);
+  uint32_t crc_single = 0U;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 8, &crc_single));
 
   /* Incremental CRC (2 + 3 + 3 bytes) */
-  uint32_t crc_incr = rx_crc32_ieee(data, 2);
+  uint32_t crc_incr = 0U;
 
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 2, &crc_incr));
   crc_incr = rx_crc32_update(crc_incr, data + 2, 3);
   crc_incr = rx_crc32_update(crc_incr, data + 5, 3);
 
@@ -385,10 +397,14 @@ void test_crc32_incremental_single_bytes(void)
   const uint8_t data[] = "123456789";
 
   /* Single-shot CRC */
-  uint32_t crc_single = rx_crc32_ieee(data, 9);
+  uint32_t crc_single = 0U;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 9, &crc_single));
 
   /* Incremental CRC byte by byte */
-  uint32_t crc_incr = rx_crc32_ieee(&data[0], 1);
+  uint32_t crc_incr = 0U;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(&data[0], 1, &crc_incr));
 
   for (uint32_t i = 1; i < 9; i++) {
     crc_incr = rx_crc32_update(crc_incr, &data[i], 1);
@@ -419,19 +435,18 @@ void test_crc32_init_deinit(void)
 }
 
 /**
- * @brief Test that multiple init calls are safe (idempotent)
+ * @brief Test that double init returns invalid state (not idempotent)
  */
 void test_crc32_double_init_safe(void)
 {
-  /* First init */
   rx_err_t err;
 
   err = rx_crc_init();
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  /* Second init should also succeed (idempotent) */
+  /* Second init must return invalid_state (re-init is not allowed) */
   err = rx_crc_init();
-  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 
   /* Cleanup */
   (void)rx_crc_deinit();
@@ -457,7 +472,9 @@ void test_crc32_large_buffer_1kb(void)
     data[i] = (uint8_t)(i & 0xFF);
   }
 
-  uint32_t crc = rx_crc32_ieee(data, sizeof(data));
+  uint32_t crc = 0U;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, sizeof(data), &crc));
   TEST_ASSERT_EQUAL_HEX32(0xB70B4C26, crc);
 }
 
@@ -476,26 +493,36 @@ void test_crc32_unaligned_data(void)
   uint8_t data[] = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE};
 
   /* 1 byte */
-  uint32_t crc1 = rx_crc32_ieee(data, 1);
+  uint32_t crc1 = 0U;
 
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 1, &crc1));
   TEST_ASSERT_EQUAL_HEX32(0x21BB9EC5, crc1);
 
   /* 3 bytes - verify incremental calculation matches single-shot */
-  uint32_t crc3_single = rx_crc32_ieee(data, 3);
-  uint32_t crc3_incr   = rx_crc32_ieee(data, 1);
-  crc3_incr            = rx_crc32_update(crc3_incr, data + 1, 2);
+  uint32_t crc3_single = 0U;
+  uint32_t crc3_incr   = 0U;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 3, &crc3_single));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 1, &crc3_incr));
+  crc3_incr = rx_crc32_update(crc3_incr, data + 1, 2);
   TEST_ASSERT_EQUAL_HEX32(crc3_single, crc3_incr);
 
   /* 5 bytes - verify incremental calculation matches single-shot */
-  uint32_t crc5_single = rx_crc32_ieee(data, 5);
-  uint32_t crc5_incr   = rx_crc32_ieee(data, 2);
-  crc5_incr            = rx_crc32_update(crc5_incr, data + 2, 3);
+  uint32_t crc5_single = 0U;
+  uint32_t crc5_incr   = 0U;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 5, &crc5_single));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 2, &crc5_incr));
+  crc5_incr = rx_crc32_update(crc5_incr, data + 2, 3);
   TEST_ASSERT_EQUAL_HEX32(crc5_single, crc5_incr);
 
   /* 7 bytes - verify all data processes correctly */
-  uint32_t crc7_single = rx_crc32_ieee(data, 7);
-  uint32_t crc7_incr   = rx_crc32_ieee(data, 4);
-  crc7_incr            = rx_crc32_update(crc7_incr, data + 4, 3);
+  uint32_t crc7_single = 0U;
+  uint32_t crc7_incr   = 0U;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 7, &crc7_single));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, 4, &crc7_incr));
+  crc7_incr = rx_crc32_update(crc7_incr, data + 4, 3);
   TEST_ASSERT_EQUAL_HEX32(crc7_single, crc7_incr);
 }
 

@@ -148,6 +148,21 @@
 #include "rx_check.h"
 #include "rx_log.h"
 
+/* =============================================================================
+ * Module State
+ * =============================================================================
+ */
+
+/**
+ * @var s_tag
+ * @brief Log tag for error handler module
+ * @details Identifies log messages from this module. Points to a string
+ *          literal and is immutable for the entire lifetime of the program
+ *          (compile-time constant, not just after initialization).
+ * @since Version 1.0.0
+ */
+static const char* const s_tag = "ERROR_HANDLER";
+
 /**
  * @enum error_handler_backoff_constants_t
  * @brief Internal constants for exponential backoff algorithm
@@ -470,11 +485,11 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
 {
   error_handler_t* handler = (error_handler_t*)ctx;
 
-  RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is nullptr");
-  RX_CHECK_NULL_PTR(component, "ERROR_HANDLER", "Component pointer is nullptr");
-  RX_CHECK_NULL_PTR(message, "ERROR_HANDLER", "Message pointer is nullptr");
+  RX_CHECK_NULL_PTR(handler, s_tag, "Handler pointer is nullptr");
+  RX_CHECK_NULL_PTR(component, s_tag, "Component pointer is nullptr");
+  RX_CHECK_NULL_PTR(message, s_tag, "Message pointer is nullptr");
   if (!handler->initialized) {
-    rx_log_error("ERROR_HANDLER", "Handler not initialized");
+    rx_log_error(s_tag, "Handler not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -678,9 +693,9 @@ static rx_err_t impl_clear_errors(void* ctx)
 {
   error_handler_t* handler = (error_handler_t*)ctx;
 
-  RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is nullptr");
+  RX_CHECK_NULL_PTR(handler, s_tag, "Handler pointer is nullptr");
   if (!handler->initialized) {
-    rx_log_error("ERROR_HANDLER", "Handler not initialized");
+    rx_log_error(s_tag, "Handler not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -835,10 +850,10 @@ static rx_err_t impl_reset_retry_counter(void* ctx, const char* component)
 {
   error_handler_t* handler = (error_handler_t*)ctx;
 
-  RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is nullptr");
-  RX_CHECK_NULL_PTR(component, "ERROR_HANDLER", "Component pointer is nullptr");
+  RX_CHECK_NULL_PTR(handler, s_tag, "Handler pointer is nullptr");
+  RX_CHECK_NULL_PTR(component, s_tag, "Component pointer is nullptr");
   if (!handler->initialized) {
-    rx_log_error("ERROR_HANDLER", "Handler not initialized");
+    rx_log_error(s_tag, "Handler not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -1118,14 +1133,14 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
  */
 rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config_t* config)
 {
-  RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is nullptr");
-  RX_CHECK_NULL_PTR(config, "ERROR_HANDLER", "Config pointer is nullptr");
+  RX_CHECK_NULL_PTR(handler, s_tag, "Handler pointer is nullptr");
+  RX_CHECK_NULL_PTR(config, s_tag, "Config pointer is nullptr");
   if (config->max_backoff_ms < config->initial_backoff_ms) {
-    rx_log_error("ERROR_HANDLER", "Backoff range invalid");
+    rx_log_error(s_tag, "Backoff range invalid");
     return k_rx_err_invalid_arg;
   }
   if (config->initial_backoff_ms > 0 && config->max_backoff_ms == 0) {
-    rx_log_error("ERROR_HANDLER", "Max backoff is zero");
+    rx_log_error(s_tag, "Max backoff is zero");
     return k_rx_err_invalid_arg;
   }
 
@@ -1140,13 +1155,13 @@ rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config
   /* Create mutex */
   UINT status = tx_mutex_create(&handler->mutex, "ErrorHandlerMutex", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
-    rx_log_error("ERROR_HANDLER", "Failed to create mutex");
+    rx_log_error(s_tag, "Failed to create mutex");
     return k_rx_err_rtos_mutex;
   }
 
   handler->initialized = true;
 
-  rx_log_info("ERROR_HANDLER", "Error handler initialized");
+  rx_log_info(s_tag, "Error handler initialized");
 
   return k_rx_ok;
 }
@@ -1239,11 +1254,11 @@ rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config
  */
 rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_t* handler)
 {
-  RX_CHECK_NULL_PTR(iface, "ERROR_HANDLER", "Interface pointer is nullptr");
-  RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is nullptr");
+  RX_CHECK_NULL_PTR(iface, s_tag, "Interface pointer is nullptr");
+  RX_CHECK_NULL_PTR(handler, s_tag, "Handler pointer is nullptr");
 
   if (!handler->initialized) {
-    rx_log_error("ERROR_HANDLER", "Handler not initialized");
+    rx_log_error(s_tag, "Handler not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -1314,7 +1329,7 @@ rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_
  */
 rx_err_t error_handler_deinit(error_handler_t* handler)
 {
-  RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is nullptr");
+  RX_CHECK_NULL_PTR(handler, s_tag, "Handler pointer is nullptr");
 
   if (!handler->initialized) {
     return k_rx_ok; /* Already deinitialized */
@@ -1326,7 +1341,7 @@ rx_err_t error_handler_deinit(error_handler_t* handler)
   /* Clear state */
   handler->initialized = false;
 
-  rx_log_info("ERROR_HANDLER", "Error handler deinitialized");
+  rx_log_info(s_tag, "Error handler deinitialized");
 
   return k_rx_ok;
 }

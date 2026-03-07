@@ -342,6 +342,11 @@ typedef enum : uint8_t {
   k_hdr_flags         = 7, /**< Frame flags */
 } frame_header_offset_t;
 
+/** @brief CRC-32 seed value (pre-initialization before rx_crc32_ieee writes it) */
+typedef enum : uint32_t {
+  k_spi_crc32_seed_initial = 0U, /**< Initial value for CRC-32 output variable */
+} spi_crc32_seed_t;
+
 /* Forward declaration: retransmit helper used by rx_spi_comm_receive() */
 static rx_err_t internal_retransmit_frame(rx_spi_comm_handle_t* handle);
 
@@ -521,7 +526,9 @@ static rx_err_t internal_decode_header(const uint8_t* data,
  *
  * @return rx_err_t Error code indicating CRC validation result
  * @retval k_rx_ok CRC valid (received == calculated), frame intact
- * @retval k_rx_err_invalid_arg data pointer is nullptr
+ * @retval k_rx_err_invalid_arg data pointer is nullptr, or offset is zero (propagated from
+ *                              rx_crc32_ieee for a zero-length input)
+ * @retval k_rx_err_null_ptr Propagated from rx_crc32_ieee() when data is NULL
  * @retval k_rx_err_crc_mismatch CRC invalid (corruption detected)
  *
  * @pre data must point to valid buffer containing offset + 4 bytes
@@ -569,7 +576,11 @@ static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32
   }
 
   const uint32_t received_crc   = rx_frame_read_le32(&data[offset]);
-  const uint32_t calculated_crc = rx_crc32_ieee(data, offset);
+  uint32_t       calculated_crc = (uint32_t)k_spi_crc32_seed_initial;
+  rx_err_t       crc_err        = rx_crc32_ieee(data, offset, &calculated_crc);
+  if (crc_err != k_rx_ok) {
+    return crc_err;
+  }
 
   if (received_crc != calculated_crc) {
     return k_rx_err_crc_mismatch;

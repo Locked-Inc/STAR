@@ -180,6 +180,20 @@
 #include "rx_crc.h"
 
 /* =============================================================================
+ * Module State
+ * =============================================================================
+ */
+
+/**
+ * @var s_tag
+ * @brief Log tag for frame module
+ * @details Identifies log messages from this module
+ * @invariant Immutable module-scoped string constant
+ * @since Version 1.0.0
+ */
+static const char* const s_tag = "FRAME";
+
+/* =============================================================================
  * Byte Serialization Constants
  *
  * Named constants for byte manipulation in serialization functions.
@@ -267,6 +281,27 @@ typedef enum : uint32_t {
   k_bytes_discarded_none = 0U, /**< No bytes have been discarded; stream is aligned */
 } frame_resync_discarded_t;
 
+/**
+ * @enum frame_crc_init_t
+ * @brief Initial value for CRC-32 output variable before rx_crc32_ieee() writes it
+ *
+ * @details
+ * k_frame_crc32_init is used to pre-initialize the calculated_crc output
+ * variable in internal_verify_crc() before passing its address to
+ * rx_crc32_ieee(). The value is immediately overwritten on success; the
+ * named constant satisfies the STAR no-magic-numbers policy (NASA Rule 8)
+ * and makes the intent of the initialization explicit.
+ *
+ * @invariant k_frame_crc32_init == 0 (matches zero-init convention)
+ *
+ * @see internal_verify_crc() Only user of this constant
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_frame_crc32_init = 0U, /**< Pre-initialization value for CRC output variable */
+} frame_crc_init_t;
+
 /* =============================================================================
  * Private Helper Functions
  * =============================================================================
@@ -285,7 +320,7 @@ typedef enum : uint32_t {
  */
 static rx_err_t internal_write_le32(uint8_t* buf, const uint32_t buf_len, const uint32_t val)
 {
-  RX_CHECK_NULL_PTR(buf, "FRAME", "LE32 write buffer is nullptr");
+  RX_CHECK_NULL_PTR(buf, s_tag, "LE32 write buffer is nullptr");
   if (buf_len < k_frame_crc_size) {
     return k_rx_err_invalid_size;
   }
@@ -310,8 +345,8 @@ static rx_err_t internal_write_le32(uint8_t* buf, const uint32_t buf_len, const 
  */
 static rx_err_t internal_read_le32(const uint8_t* buf, const uint32_t buf_len, uint32_t* out_val)
 {
-  RX_CHECK_NULL_PTR(buf, "FRAME", "LE32 read buffer is nullptr");
-  RX_CHECK_NULL_PTR(out_val, "FRAME", "LE32 output pointer is nullptr");
+  RX_CHECK_NULL_PTR(buf, s_tag, "LE32 read buffer is nullptr");
+  RX_CHECK_NULL_PTR(out_val, s_tag, "LE32 output pointer is nullptr");
   if (buf_len < k_frame_crc_size) {
     return k_rx_err_invalid_size;
   }
@@ -402,8 +437,11 @@ static rx_err_t internal_decode_header(const uint8_t* data,
  * @param[out] crc_out Pointer to store received CRC value from buffer
  *
  * @return k_rx_ok on successful CRC verification (received matches calculated)
+ * @retval k_rx_ok             CRC verified; received_crc written to *crc_out
  * @retval k_rx_err_invalid_arg if data or crc_out is nullptr
  * @retval k_rx_err_invalid_size if offset + CRC size exceeds buffer length or data_len too small
+ * @retval k_rx_err_null_ptr   rx_crc32_ieee() backend received a null pointer (propagated)
+ * @retval k_rx_err_invalid_arg rx_crc32_ieee() backend received invalid arguments (propagated)
  * @retval k_rx_err_crc_mismatch if calculated CRC does not match received CRC value
  */
 static rx_err_t
@@ -422,7 +460,11 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
   if (err != k_rx_ok) {
     return err;
   }
-  uint32_t calculated_crc = rx_crc32_ieee(data, offset);
+  uint32_t calculated_crc = (uint32_t)k_frame_crc32_init;
+  rx_err_t crc_err        = rx_crc32_ieee(data, offset, &calculated_crc);
+  if (crc_err != k_rx_ok) {
+    return crc_err;
+  }
 
   if (received_crc != calculated_crc) {
     return k_rx_err_crc_mismatch;
@@ -631,10 +673,14 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
   }
 
   /* Calculate CRC-32 over SYNC + Header + Payload (IEEE 802.3 polynomial) */
-  uint32_t crc = rx_crc32_ieee(output, offset);
+  uint32_t crc = (uint32_t)k_frame_crc32_init;
+  rx_err_t err = rx_crc32_ieee(output, offset, &crc);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Write CRC-32 (little-endian to match IEEE 802.3 LSB-first order) */
-  rx_err_t err = internal_write_le32(&output[offset], frame_size - offset, crc);
+  err = internal_write_le32(&output[offset], frame_size - offset, crc);
   if (err != k_rx_ok) {
     return err;
   }
@@ -710,17 +756,18 @@ rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec)
  * @param[in]  data_len  Length of data buffer in bytes
  * @param[out] frame     Decoded frame (header, payload, CRC)
  *
- * @retval k_rx_ok Success - frame decoded and CRC verified
- * @retval k_rx_err_invalid_arg Any pointer parameter is nullptr or other invalid arguments
+ * @retval k_rx_ok                Frame decoded and CRC verified
+ * @retval k_rx_err_invalid_arg   Any pointer parameter is nullptr or other invalid arguments
  * @retval k_rx_err_invalid_state Decoder not initialized
- * @retval k_rx_err_crc CRC-32 verification failed
- * @retval k_rx_err_invalid_size Payload exceeds maximum frame size
+ * @retval k_rx_err_invalid_size  Payload exceeds maximum frame size or buffer too small
+ * @retval k_rx_err_null_ptr      CRC backend received null pointer (propagated from rx_crc32_ieee)
+ * @retval k_rx_err_crc_mismatch  CRC-32 verification failed (received != calculated)
  *
  * @note This function performs validation at multiple points:
  *       - Null pointer checks on all parameters
  *       - Decoder initialization check
  *       - Header parsing via internal_decode_header()
- *       - CRC verification via internal_verify_crc()
+ *       - CRC verification via internal_verify_crc() (may surface CRC backend errors)
  */
 rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
                          const uint8_t*            data,
@@ -784,12 +831,13 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  *
  * @return rx_err_t k_rx_ok on success, or k_rx_err_invalid_arg,
  *         k_rx_err_invalid_state, k_rx_err_invalid_size,
- *         k_rx_err_protocol_error, or k_rx_err_crc_mismatch on failure
+ *         k_rx_err_protocol_error, k_rx_err_null_ptr, or k_rx_err_crc_mismatch on failure
  * @retval k_rx_ok               Frame decoded and CRC verified
  * @retval k_rx_err_invalid_arg  Any pointer parameter is nullptr
  * @retval k_rx_err_invalid_state Decoder not initialized
  * @retval k_rx_err_invalid_size  Buffer too short to contain a valid frame
  * @retval k_rx_err_protocol_error No sync word found within scan window
+ * @retval k_rx_err_null_ptr     CRC backend received null pointer (propagated from rx_crc32_ieee)
  * @retval k_rx_err_crc_mismatch  Sync found but CRC verification failed
  *
  * @pre dec must be initialized via rx_frame_decoder_init()

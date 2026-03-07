@@ -377,8 +377,8 @@ static const uint32_t s_iwdt_timeout_table_size =
  * @brief Log tag for IWDT module
  *
  * @details
- * Identifies log messages from this module in system logs. Uses abbreviated
- * name "iwdt" to keep log lines concise while remaining identifiable.
+ * Identifies log messages from this module in system logs. Uses the tag "IWDT"
+ * (uppercase) to match SCREAMING_SNAKE_CASE convention for log tags.
  *
  * @par Log Message Format
  * @verbatim
@@ -391,7 +391,7 @@ static const uint32_t s_iwdt_timeout_table_size =
  *
  * @since Version 1.0.0
  */
-static const char* const s_tag = "iwdt";
+static const char* const s_tag = "IWDT";
 
 /**
  * @var s_iwdt_initialized

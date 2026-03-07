@@ -195,7 +195,7 @@ static rx_bus_manager_t* s_manager = NULL;
  *  @see BMP280 datasheet section 4.2.2 for coefficient descriptions
  *  @since Version 1.0.0
  */
-static bmp280_calib_t s_calib;
+static bmp280_calib_t s_calib = {0};
 
 /** @brief Guard flag: true after successful rx_bmp280_init()
  *  @note Only set to true in rx_bmp280_init() after all init steps succeed
