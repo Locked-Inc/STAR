@@ -4,3 +4,9 @@
 [submodule "star-ros2/src/sllidar_ros2"]
 	path = star-ros2/src/sllidar_ros2
 	url = https://github.com/Slamtec/sllidar_ros2.git
+[submodule "star-stm32-firmware/libs/tinyusb"]
+	path = star-stm32-firmware/libs/tinyusb
+	url = https://github.com/hathach/tinyusb.git
+[submodule "star-stm32-firmware/libs/freertos"]
+	path = star-stm32-firmware/libs/freertos
+	url = https://github.com/FreeRTOS/FreeRTOS-Kernel.git
