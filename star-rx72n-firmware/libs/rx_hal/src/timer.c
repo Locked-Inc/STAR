@@ -185,6 +185,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+#ifdef __RX__
+
 #include <stdint.h>
 
 #include "hardware.h"
@@ -1024,3 +1026,5 @@ rx_err_t timer_get_count(uint16_t* count)
 
   return k_rx_ok;
 }
+
+#endif /* __RX__ */
