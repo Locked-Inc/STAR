@@ -372,18 +372,14 @@ rx_err_t internal_crc_hw_cpu_compute(const rx_crc_config_t* config,
  * - len < k_crc_dma_threshold (DMA overhead not justified)
  * - DMA transfer failure (s_dma_fallback_count incremented for observability)
  *
- * CRC-32/CRC-32C require 4-byte aligned buffer and length; returns
- * k_rx_err_invalid_arg if the alignment check fails.
- *
  * @param[in]  config     CRC configuration; dma.timeout_cycles used if > 0
  * @param[in]  data       Input buffer (non-NULL, len >= 1)
  * @param[in]  len        Number of bytes to process
  * @param[out] result_out Computed CRC result
  *
  * @return rx_err_t
- * @retval k_rx_ok              CRC computed via DMA or CPU fallback
+ * @retval k_rx_ok              CRC computed via DMA or CPU fallback; no alignment required
  * @retval k_rx_err_null_ptr    config, data, or result_out is NULL
- * @retval k_rx_err_invalid_arg CRC-32/CRC-32C buffer or length not aligned to 4 bytes
  *
  * @pre CRC and DMAC peripherals must be initialized (internal_crc_hw_init() called)
  * @pre data must point to valid readable memory of len bytes
@@ -402,10 +398,10 @@ rx_err_t internal_crc_hw_cpu_compute(const rx_crc_config_t* config,
  *   :internal_crc_hw_cpu_compute() [direct];
  *   stop
  * endif
- * if (crc32/crc32c AND alignment check fails?) then (yes)
- *   :return k_rx_err_invalid_arg;
- *   stop
- * endif
+ * note right
+ *   No alignment check: DMAC uses 8-bit transfers
+ *   (k_dmtmd_sz_8bit), so any byte count is valid
+ * end note
  * :internal_configure_crccr() -- GPS + LMS + DORCLR;
  * :build rx_dmaca_config_t (src->CRCDIR, timeout);
  * :rx_dmaca_transfer_poll(&dma_cfg);
@@ -438,14 +434,9 @@ rx_err_t internal_crc_hw_dma_compute(const rx_crc_config_t* config,
     return internal_crc_hw_cpu_compute(config, data, len, result_out);
   }
 
-  /* CRC-32 and CRC-32C require 4-byte aligned buffer and length multiple of 4 */
-  if (config->poly == k_rx_crc_poly_crc32 || config->poly == k_rx_crc_poly_crc32c) {
-    if ((len % (uint32_t)k_hw_crc32_alignment_bytes) != 0U ||
-        ((uintptr_t)data % (uintptr_t)k_hw_crc32_alignment_bytes) != 0U) {
-      return k_rx_err_invalid_arg;
-    }
-  }
-
+  /* No alignment requirement: DMAC is configured for 8-bit (k_dmtmd_sz_8bit)
+   * transfers in internal_configure_channel(), so CRCDIR receives one byte at
+   * a time regardless of the CRC polynomial selected. */
   internal_configure_crccr(config);
 
   /* Use config timeout if non-zero, otherwise use library default */

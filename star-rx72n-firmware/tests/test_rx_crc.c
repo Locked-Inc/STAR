@@ -107,6 +107,12 @@ typedef enum : uint32_t {
   k_mock_dma_channel    = 0U,     /**< DMA channel index used in mock transfer config */
 } crc_mock_constants_t;
 
+/** @brief Sentinel value for pass-through tests (arbitrary non-zero CRC) */
+typedef enum : uint32_t {
+  k_test_crc32_sentinel =
+    0xDEADBEEFU, /**< Arbitrary sentinel; verifies pass-through returns input unchanged */
+} crc_sentinel_constants_t;
+
 /* =============================================================================
  * Unity Fixtures
  * =============================================================================
@@ -761,7 +767,7 @@ void test_crc32_update_chunked_matches_single(void)
  */
 void test_crc32_update_null_returns_original(void)
 {
-  uint32_t crc = 0xDEADBEEFU;
+  uint32_t crc = (uint32_t)k_test_crc32_sentinel;
   TEST_ASSERT_EQUAL_HEX32(crc, rx_crc32_update(crc, nullptr, k_test_vec_9_len));
 }
 
@@ -770,7 +776,7 @@ void test_crc32_update_null_returns_original(void)
  */
 void test_crc32_update_zero_len_returns_original(void)
 {
-  uint32_t crc = 0xDEADBEEFU;
+  uint32_t crc = (uint32_t)k_test_crc32_sentinel;
   TEST_ASSERT_EQUAL_HEX32(crc, rx_crc32_update(crc, s_test_vec_9, 0U));
 }
 

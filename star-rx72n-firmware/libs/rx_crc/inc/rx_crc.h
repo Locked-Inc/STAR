@@ -719,14 +719,20 @@ typedef struct {
  * @param[out] result_out Computed CRC value
  *
  * @return rx_err_t
- * @retval k_rx_ok               Success
- * @retval k_rx_err_null_ptr     config, data, or result_out is NULL
- * @retval k_rx_err_invalid_arg  len == 0 or len > k_crc_len_max
- * @retval k_rx_err_timeout      DMA transfer timed out (hw_dma only)
+ * @retval k_rx_ok                  CRC computed; *result_out is valid
+ * @retval k_rx_err_null_ptr        config, data, or result_out is NULL
+ * @retval k_rx_err_invalid_arg     len == 0 or len > k_crc_len_max;
+ *                                  poly or bit_order out of valid enum range;
+ *                                  software or host-fallback backend with
+ *                                  bit_order == k_rx_crc_bit_order_msb_first;
+ *                                  unknown backend value
+ * @retval k_rx_err_not_initialized hw_cpu or hw_dma backend requested on RX72N
+ *                                  before rx_crc_init() has been called
+ * @retval k_rx_err_timeout         DMA transfer did not complete (hw_dma only)
  *
  * @pre config must point to a valid rx_crc_config_t
  * @pre data must point to at least len readable bytes
- * @post On success, *result_out contains the CRC value
+ * @post On k_rx_ok, *result_out contains the computed CRC value
  * @post On error, *result_out is unchanged
  *
  * @note Not thread-safe if hardware backend shares the CRC peripheral
@@ -746,8 +752,9 @@ typedef struct {
  * hardware-accelerated or software table-based implementation at compile time.
  *
  * **Algorithm Selection:**
- * - **RX72N (if rx_crc_init() called)**: Hardware CRC peripheral (4x faster)
- * - **RX72N (no init) or Host**: Software table lookup (portable, slower)
+ * - **All targets**: Software table lookup (portable, always available, no init required)
+ * - For hardware-accelerated CRC-32, call rx_crc_compute() with k_rx_crc_backend_hw_cpu
+ *   or k_rx_crc_backend_hw_dma after rx_crc_init() has been called
  *
  * **CRC-32/IEEE 802.3 Specification:**
  * - **Polynomial**: @f$ x^{32} + x^{26} + x^{23} + ... + x + 1 @f$ (0x04C11DB7)
@@ -790,7 +797,8 @@ typedef struct {
  * @post On k_rx_ok, *out contains the IEEE 802.3 CRC-32
  * @post On error, *out is unchanged
  *
- * @note This function is thread-safe (stateless, read-only tables)
+ * @note Thread-safe: always uses the software backend (stateless, read-only table);
+ *       rx_crc_init() is NOT required and does NOT affect the result of this function
  * @note For incremental CRC over multiple buffers, use rx_crc32_update()
  * @warning Passing invalid data pointer or incorrect len causes undefined behavior
  * @warning For large buffers (>10 KB), consider chunking with rx_crc32_update()
@@ -892,8 +900,8 @@ static inline rx_err_t rx_crc32_ieee(const uint8_t* data, uint32_t len, uint32_t
   static const rx_crc_config_t s_cfg = {
     .poly      = k_rx_crc_poly_crc32,
     .bit_order = k_rx_crc_bit_order_lsb_first,
-    .backend   = k_rx_crc_backend_hw_cpu,
-    .dma       = {.timeout_cycles = 0U},
+    .backend = k_rx_crc_backend_software, /* Software: always available, no rx_crc_init() needed */
+    .dma     = {.timeout_cycles = 0U},
   };
   return rx_crc_compute(&s_cfg, data, len, out);
 }
@@ -965,14 +973,17 @@ static inline rx_err_t rx_crc32_ieee(const uint8_t* data, uint32_t len, uint32_t
  *   - **Associative**: Order of updates matters, but partial results can be cached
  *
  * @pre If data != nullptr, data must point to valid buffer of size len
- * @pre len must accurately reflect data buffer size (no bounds checking)
- * @post Return value is valid IEEE 802.3 CRC-32
- * @post Input crc is unchanged (pure function)
- * @post No side effects (thread-safe)
+ * @pre len must be in [1, k_crc_len_max] for any update to occur; len == 0 or
+ *      len > k_crc_len_max both cause pass-through (input crc returned unchanged)
+ * @post Return value is valid IEEE 802.3 CRC-32 if data != NULL and 0 < len <= k_crc_len_max
+ * @post Returns input crc unchanged (pass-through) if data == NULL, len == 0, or len > k_crc_len_max
  *
- * @note This function is thread-safe (stateless, read-only tables)
+ * @note Thread-safe; stateless, read-only table access only
  * @note For single-shot CRC over contiguous buffer, use rx_crc32_ieee() (simpler)
  * @note Software CRC only - hardware peripheral does not support incremental mode
+ * @warning Chunks larger than k_crc_len_max (65535 bytes) are silently ignored --
+ *          the function returns the input crc unchanged with NO error signal;
+ *          split chunks exceeding k_crc_len_max into multiple calls
  * @warning Passing invalid data pointer or incorrect len causes undefined behavior
  * @warning Do not mix rx_crc32_ieee() and rx_crc32_update() incorrectly (see examples)
  *

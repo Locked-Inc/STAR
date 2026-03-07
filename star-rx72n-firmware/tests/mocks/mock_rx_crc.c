@@ -76,6 +76,33 @@ void mock_crc8_set_override(bool enable)
  * =============================================================================
  */
 
+/**
+ * @brief Mock CRC computation -- supports CRC-8/Maxim only; all other polys error
+ *
+ * @details
+ * Validates all pointer and length arguments, then either returns a preset value
+ * (when override is enabled via mock_crc8_set_override()) or runs the real
+ * CRC-8/Maxim bitwise algorithm so test assertions can verify actual CRC math.
+ * Any polynomial other than k_rx_crc_poly_crc8 returns k_rx_err_invalid_arg.
+ *
+ * @param[in]  config     CRC configuration; must not be NULL; only poly field checked
+ * @param[in]  data       Source bytes; must not be NULL
+ * @param[in]  len        Byte count [1, k_crc_len_max]
+ * @param[out] result_out Computed or preset CRC value; valid only on k_rx_ok
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok              CRC computed; *result_out is valid
+ * @retval k_rx_err_null_ptr    config, data, or result_out is NULL
+ * @retval k_rx_err_invalid_arg len == 0, len > k_crc_len_max, or poly != k_rx_crc_poly_crc8
+ *
+ * @pre config, data, result_out must not be NULL
+ * @pre len must be in [1, k_crc_len_max]
+ * @post *result_out set to preset value (override) or computed CRC-8/Maxim
+ * @post s_mock_crc_value and s_override_enabled are read-only; not modified
+ *
+ * @note Not thread-safe; call only from the test thread
+ * @since Version 1.0.0
+ */
 rx_err_t rx_crc_compute(const rx_crc_config_t* config,
                         const uint8_t*         data,
                         uint32_t               len,
@@ -116,6 +143,26 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
   return k_rx_ok;
 }
 
+/**
+ * @brief Mock CRC init -- tracks initialization state; rejects double-init
+ *
+ * @details
+ * Sets s_is_initialized to true. Returns k_rx_err_invalid_state if already
+ * initialized, mirroring the real rx_crc_init() behavior so tests that check
+ * double-init error handling work against the mock without linking hardware code.
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok              Module marked as initialized
+ * @retval k_rx_err_invalid_state Already initialized (call rx_crc_deinit() first)
+ *
+ * @pre s_is_initialized must be false
+ * @pre No CRC computations should be in progress
+ * @post s_is_initialized = true
+ * @post Mock is now ready to accept rx_crc_compute() calls
+ *
+ * @note Not thread-safe; call only from the test thread
+ * @since Version 1.0.0
+ */
 rx_err_t rx_crc_init(void)
 {
   if (s_is_initialized) {
@@ -125,6 +172,27 @@ rx_err_t rx_crc_init(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Mock CRC deinit -- clears initialization state; rejects deinit-without-init
+ *
+ * @details
+ * Clears s_is_initialized to false. Returns k_rx_err_invalid_state if not
+ * currently initialized, mirroring the real rx_crc_deinit() behavior.
+ * Does NOT clear mock override state (s_override_enabled, s_mock_crc_value)
+ * so test presets survive a deinit/reinit cycle.
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok              Module marked as deinitialized
+ * @retval k_rx_err_invalid_state Not initialized (call rx_crc_init() first)
+ *
+ * @pre s_is_initialized must be true
+ * @pre No CRC computations should be in progress
+ * @post s_is_initialized = false
+ * @post Mock override state (s_override_enabled, s_mock_crc_value) unchanged
+ *
+ * @note Not thread-safe; call only from the test thread
+ * @since Version 1.0.0
+ */
 rx_err_t rx_crc_deinit(void)
 {
   if (!s_is_initialized) {

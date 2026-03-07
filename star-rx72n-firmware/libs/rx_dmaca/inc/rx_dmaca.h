@@ -241,7 +241,9 @@ typedef struct {
  * @return rx_err_t
  * @retval k_rx_ok Transfer complete
  * @retval k_rx_err_null_ptr config is NULL
- * @retval k_rx_err_invalid_arg channel >= 8, len == 0, len > 65535, timeout == 0
+ * @retval k_rx_err_invalid_arg channel >= 8, len == 0, len > 65535,
+ *                              timeout_cycles == 0 or > k_dmaca_timeout_cycles_max,
+ *                              or dst_addr == 0
  * @retval k_rx_err_not_initialized rx_dmaca_init() not called
  * @retval k_rx_err_timeout Transfer did not complete within timeout_cycles
  *

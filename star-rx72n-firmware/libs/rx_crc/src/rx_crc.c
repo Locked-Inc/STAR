@@ -211,6 +211,10 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
     return k_rx_err_invalid_arg;
   }
 
+  if (config->poly > k_rx_crc_poly_crc32c || config->bit_order > k_rx_crc_bit_order_msb_first) {
+    return k_rx_err_invalid_arg;
+  }
+
   switch (config->backend) {
     case k_rx_crc_backend_software:
       if (config->bit_order != k_rx_crc_bit_order_lsb_first) {
