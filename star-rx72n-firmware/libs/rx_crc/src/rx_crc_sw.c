@@ -17,6 +17,28 @@
  * | CRC-CCITT      | Bitwise  | 0         | Reflected poly 0x8408 (Kermit)   |
  * | CRC-8/Maxim    | Bitwise  | 0         | Reflected poly 0x8C (Dallas)     |
  *
+ * ## Algorithm Dispatch
+ *
+ * @startuml
+ * start
+ * :internal_crc_sw_compute(poly, data, len);
+ * switch (poly)
+ * case (k_rx_crc_poly_crc8)
+ *   :internal_crc8_maxim_compute()\nbitwise, reflected poly 0x8C\ninit=0x00, no final XOR;
+ * case (k_rx_crc_poly_crc16)
+ *   :internal_crc16_ibm_compute()\nbitwise, reflected poly 0xA001\ninit=0x0000, no final XOR;
+ * case (k_rx_crc_poly_crc_ccitt)
+ *   :internal_crc_ccitt_compute()\nbitwise, reflected poly 0x8408\ninit=0x0000, no final XOR;
+ * case (k_rx_crc_poly_crc32c)
+ *   :internal_crc32c_compute()\ntable 0x82F63B78 (256 entries)\ninit=0xFFFFFFFF, XOR=0xFFFFFFFF;
+ * case (k_rx_crc_poly_crc32 / default)
+ *   :internal_crc32_compute()\ntable 0xEDB88320 (256 entries)\ninit=0xFFFFFFFF, XOR=0xFFFFFFFF;
+ * endswitch
+ * :return uint32_t CRC result;
+ * note right: CRC-8 uses low 8 bits\nCRC-16 uses low 16 bits\nCRC-32 uses all 32 bits
+ * stop
+ * @enduml
+ *
  * @see rx_crc.h Public API
  * @see rx_crc_internal.h Internal declarations
  *
@@ -400,6 +422,31 @@ static uint8_t internal_crc8_maxim_compute(const uint8_t* data, uint32_t len)
  * @pre len in [k_crc_len_min, k_crc_len_max] (enforced by caller)
  * @post Returns CRC with final XOR applied; no persistent state modified
  * @post No side effects (stateless, read-only tables)
+ *
+ * @par Activity Diagram:
+ * @startuml
+ * start
+ * :internal_crc_sw_compute(poly, data, len);
+ * switch (poly)
+ * case (crc8)
+ *   :internal_crc8_maxim_compute();
+ *   note right: bitwise XOR per bit, poly 0x8C
+ * case (crc16)
+ *   :internal_crc16_ibm_compute();
+ *   note right: bitwise XOR per bit, poly 0xA001
+ * case (crc_ccitt)
+ *   :internal_crc_ccitt_compute();
+ *   note right: bitwise XOR per bit, poly 0x8408
+ * case (crc32c)
+ *   :internal_crc32c_compute();
+ *   note right: table lookup, poly 0x82F63B78
+ * case (crc32 / default)
+ *   :internal_crc32_compute();
+ *   note right: table lookup, poly 0xEDB88320
+ * endswitch
+ * :return uint32_t result;
+ * stop
+ * @enduml
  *
  * @note Thread-safe; stateless, read-only table access only
  * @since Version 1.0.0

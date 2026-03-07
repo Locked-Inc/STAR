@@ -130,6 +130,28 @@ static void internal_configure_channel(const rx_dmaca_config_t* config)
  * @post On k_rx_ok: DMSTS.ACT = 0
  * @post On k_rx_err_timeout: DMSTS.ACT may still be set; caller must clear DTE
  *
+ * @par Activity Diagram:
+ * @startuml
+ * start
+ * :internal_poll_act(channel, timeout_cycles);
+ * note right
+ *   timeout_cycles pre-validated in [1, k_dmaca_timeout_cycles_max]
+ *   -- provides NASA Rule 2 statically-bounded loop
+ * end note
+ * :i = 0;
+ * while (i < timeout_cycles?) is (yes)
+ *   :read DMSTS.ACT for channel;
+ *   if (ACT == 0?) then (yes)
+ *     :write DMSTS = 0 (clear DTIF flag);
+ *     :return k_rx_ok;
+ *     stop
+ *   endif
+ *   :i++;
+ * endwhile (no -- exhausted)
+ * :return k_rx_err_timeout;
+ * stop
+ * @enduml
+ *
  * @note Not thread-safe on the same channel
  * @since Version 1.0.0
  */
@@ -213,6 +235,47 @@ rx_err_t rx_dmaca_init(void)
  * @pre config->src must point to at least config->len bytes of readable memory
  * @post DMA channel DTE cleared (channel idle) regardless of return value
  * @post On k_rx_ok, destination memory (config->dst_addr) contains transferred data
+ *
+ * @par Activity Diagram:
+ * @startuml
+ * start
+ * :rx_dmaca_transfer_poll(&config);
+ * if (config == NULL?) then (yes)
+ *   :return k_rx_err_null_ptr;
+ *   stop
+ * endif
+ * if (not initialized?) then (yes)
+ *   :return k_rx_err_not_initialized;
+ *   stop
+ * endif
+ * if (channel >= 8?) then (yes)
+ *   :return k_rx_err_invalid_arg;
+ *   stop
+ * endif
+ * if (len == 0 or len > 65535?) then (yes)
+ *   :return k_rx_err_invalid_arg;
+ *   stop
+ * endif
+ * if (timeout == 0 or timeout > max?) then (yes)
+ *   :return k_rx_err_invalid_arg;
+ *   stop
+ * endif
+ * if (dst_addr == 0?) then (yes)
+ *   :return k_rx_err_invalid_arg;
+ *   stop
+ * endif
+ * if (src == NULL?) then (yes)
+ *   :return k_rx_err_null_ptr;
+ *   stop
+ * endif
+ * :internal_configure_channel(&config);
+ * :DMCNT.DTE = 1 (enable channel);
+ * :DMREQ = SWREQ|CLRS (trigger + auto-clear);
+ * :internal_poll_act(channel, timeout_cycles);
+ * :DMCNT.DTE = 0 (always clear on exit);
+ * :return poll result (k_rx_ok or k_rx_err_timeout);
+ * stop
+ * @enduml
  *
  * @note Not thread-safe; concurrent calls on the same channel corrupt the transfer
  * @since Version 1.0.0

@@ -325,6 +325,67 @@
  * | **Interface Segregation** | Minimal API (4 functions), each serves specific purpose |
  * | **Dependency Inversion** | CRC functions independent of frame protocol, reusable across OneWire, SPI, USB |
  *
+ * ## Module Lifecycle State Machine
+ *
+ * @startuml
+ * [*] --> NOT_INITIALIZED : (after reset)
+ *
+ * NOT_INITIALIZED --> READY : rx_crc_init() [k_rx_ok]\n(HW: CRC clock on, DMAC init)
+ * NOT_INITIALIZED --> NOT_INITIALIZED : rx_crc_init() [already init]\n/ k_rx_err_invalid_state
+ *
+ * READY --> READY : rx_crc_compute() [software backend]\nrx_crc32_ieee()\nrx_crc32_update()\nrx_crc8_maxim()
+ *
+ * READY --> NOT_INITIALIZED : rx_crc_deinit() [k_rx_ok]\n(HW: CRC clock off, DMAC deinit)
+ * @enduml
+ *
+ * ## Backend Selection for rx_crc_compute()
+ *
+ * @startuml
+ * start
+ * :rx_crc_compute(config, data, len, result_out);
+ * if (NULL inputs or len out of [1,65535]?) then (yes)
+ *   :return k_rx_err_null_ptr or k_rx_err_invalid_arg;
+ *   stop
+ * endif
+ * switch (config->backend)
+ * case (software)
+ *   if (bit_order != LSB-first?) then (yes)
+ *     :return k_rx_err_invalid_arg;
+ *     stop
+ *   endif
+ *   :internal_crc_sw_compute() -- portable bitwise/table;
+ *   :return k_rx_ok;
+ *   stop
+ * case (hw_cpu)
+ *   if (__RX__ target) then (RX72N)
+ *     if (not initialized?) then (yes)
+ *       :return k_rx_err_not_initialized;
+ *       stop
+ *     endif
+ *     :internal_crc_hw_cpu_compute()\nCRC peripheral byte-by-byte;
+ *   else (host fallback)
+ *     :internal_crc_sw_compute();
+ *   endif
+ *   :return result;
+ *   stop
+ * case (hw_dma)
+ *   if (__RX__ target) then (RX72N)
+ *     if (not initialized?) then (yes)
+ *       :return k_rx_err_not_initialized;
+ *       stop
+ *     endif
+ *     :internal_crc_hw_dma_compute()\nCRC peripheral via DMAC;
+ *   else (host fallback)
+ *     :internal_crc_sw_compute();
+ *   endif
+ *   :return result;
+ *   stop
+ * case (invalid)
+ *   :return k_rx_err_invalid_arg;
+ *   stop
+ * endswitch
+ * @enduml
+ *
  * ## References
  *
  * - **IEEE 802.3**: Ethernet CRC-32 specification

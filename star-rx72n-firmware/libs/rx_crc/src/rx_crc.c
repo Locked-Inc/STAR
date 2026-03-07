@@ -152,6 +152,49 @@ rx_err_t rx_crc_deinit(void)
  * @post *result_out contains the computed CRC on k_rx_ok
  * @post No state is modified (pure computation)
  *
+ * @par Activity Diagram:
+ * @startuml
+ * start
+ * :rx_crc_compute(config, data, len, result_out);
+ * if (any pointer NULL?) then (yes)
+ *   :return k_rx_err_null_ptr;
+ *   stop
+ * endif
+ * if (len < 1 or len > k_crc_len_max?) then (yes)
+ *   :return k_rx_err_invalid_arg;
+ *   stop
+ * endif
+ * switch (config->backend)
+ * case (software)
+ *   if (bit_order != LSB-first?) then (yes)
+ *     :return k_rx_err_invalid_arg;
+ *     stop
+ *   endif
+ *   :internal_crc_sw_compute(poly, data, len);
+ *   :return k_rx_ok;
+ *   stop
+ * case (hw_cpu / hw_dma on RX72N)
+ *   if (not initialized?) then (yes)
+ *     :return k_rx_err_not_initialized;
+ *     stop
+ *   endif
+ *   :internal_crc_hw_cpu/dma_compute();
+ *   :return result;
+ *   stop
+ * case (hw_cpu / hw_dma on host)
+ *   if (bit_order != LSB-first?) then (yes)
+ *     :return k_rx_err_invalid_arg;
+ *     stop
+ *   endif
+ *   :internal_crc_sw_compute() [host fallback];
+ *   :return k_rx_ok;
+ *   stop
+ * case (default)
+ *   :return k_rx_err_invalid_arg;
+ *   stop
+ * endswitch
+ * @enduml
+ *
  * @note Thread-safe for software backend; not thread-safe for hw_cpu/hw_dma
  * @since Version 1.0.0
  */

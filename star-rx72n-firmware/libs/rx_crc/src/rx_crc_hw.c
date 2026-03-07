@@ -195,6 +195,34 @@ static void internal_configure_crccr(const rx_crc_config_t* config)
  * @post MSTPCRB bit 23 cleared (CRC clock enabled)
  * @post s_dmaca_owned set to true only if rx_dmaca_init() returned k_rx_ok
  *
+ * @par Sequence Diagram:
+ * @startuml
+ * participant "caller" as C
+ * participant "internal_crc_hw_init" as I
+ * participant "PRCR + MSTPCRB" as R
+ * participant "rx_dmaca_init" as D
+ * C -> I: call
+ * I -> R: PRCR = unlock_prc1
+ * I -> R: MSTPCRB &= ~bit23 (enable CRC clock)
+ * I -> R: PRCR = lock
+ * I -> D: rx_dmaca_init()
+ * alt k_rx_ok
+ *   D --> I: k_rx_ok
+ *   I -> I: s_dmaca_owned = true
+ * else k_rx_err_invalid_state
+ *   D --> I: k_rx_err_invalid_state
+ *   note right of I: already owned -- s_dmaca_owned stays false\ndeinit will not call rx_dmaca_deinit()
+ * else unexpected error
+ *   D --> I: other error
+ *   I -> R: PRCR = unlock_prc1
+ *   I -> R: MSTPCRB |= bit23 (rollback CRC clock)
+ *   I -> R: PRCR = lock
+ *   I --> C: propagate error
+ *   return
+ * end
+ * I --> C: k_rx_ok
+ * @enduml
+ *
  * @note Not thread-safe; call during single-threaded system init
  * @since Version 1.0.0
  */
@@ -361,6 +389,37 @@ rx_err_t internal_crc_hw_cpu_compute(const rx_crc_config_t* config,
  * @pre data must point to valid readable memory of len bytes
  * @post *result_out contains the final CRC with XOR applied (on k_rx_ok)
  * @post s_dma_fallback_count incremented if DMA transfer failed and CPU fallback used
+ *
+ * @par Activity Diagram:
+ * @startuml
+ * start
+ * :internal_crc_hw_dma_compute(config, data, len, result_out);
+ * if (any pointer NULL?) then (yes)
+ *   :return k_rx_err_null_ptr;
+ *   stop
+ * endif
+ * if (poly==crc8 or len < DMA threshold?) then (yes)
+ *   :internal_crc_hw_cpu_compute() [direct];
+ *   stop
+ * endif
+ * if (crc32/crc32c AND alignment check fails?) then (yes)
+ *   :return k_rx_err_invalid_arg;
+ *   stop
+ * endif
+ * :internal_configure_crccr() -- GPS + LMS + DORCLR;
+ * :build rx_dmaca_config_t (src->CRCDIR, timeout);
+ * :rx_dmaca_transfer_poll(&dma_cfg);
+ * if (DMA failed?) then (yes)
+ *   if (s_dma_fallback_count < UINT32_MAX?) then (yes)
+ *     :s_dma_fallback_count++;
+ *   endif
+ *   :internal_crc_hw_cpu_compute() [fallback];
+ *   stop
+ * endif
+ * :*result_out = CRCDOR XOR final_xor;
+ * :return k_rx_ok;
+ * stop
+ * @enduml
  *
  * @note DMA fallback is transparent to callers; result is identical to CPU path
  * @since Version 1.0.0

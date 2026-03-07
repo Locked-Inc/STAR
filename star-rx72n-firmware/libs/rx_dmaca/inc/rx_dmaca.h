@@ -45,6 +45,59 @@
  * | 9. Restrict pointers | WARN | Function pointers via bus interface pattern |
  * | 10. Compiler warnings | PASS | -Wall -Wextra -Werror |
  *
+ * ## Driver Lifecycle State Machine
+ *
+ * @startuml
+ * [*] --> STOPPED : (after reset -- MSTPCRA bit 28 set)
+ *
+ * STOPPED --> ACTIVE : rx_dmaca_init() [k_rx_ok]\n(MSTPCRA bit 28=0, DMST=1)
+ * STOPPED --> STOPPED : rx_dmaca_init() [double-init]\n/ k_rx_err_invalid_state
+ * STOPPED --> STOPPED : rx_dmaca_deinit() [not init]\n/ k_rx_err_not_initialized
+ *
+ * ACTIVE --> TRANSFERRING : rx_dmaca_transfer_poll() [valid config]\n(DTE=1, SWREQ=1, poll ACT)
+ * TRANSFERRING --> ACTIVE : ACT=0 (complete)\n(DTE cleared) / k_rx_ok
+ * TRANSFERRING --> ACTIVE : timeout\n(DTE cleared) / k_rx_err_timeout
+ *
+ * ACTIVE --> ABORTING : rx_dmaca_abort(channel)
+ * ABORTING --> ACTIVE : ACT=0 / k_rx_ok
+ * ABORTING --> ACTIVE : timeout / k_rx_err_timeout
+ *
+ * ACTIVE --> STOPPED : rx_dmaca_deinit() [k_rx_ok]\n(DMST=0, MSTPCRA bit 28=1)
+ * @enduml
+ *
+ * ## Transfer Sequence for rx_dmaca_transfer_poll()
+ *
+ * @startuml
+ * participant "caller" as C
+ * participant "rx_dmaca_transfer_poll" as T
+ * participant "internal_configure_channel" as CF
+ * participant "DMAC regs" as R
+ * participant "internal_poll_act" as P
+ * C -> T: rx_dmaca_transfer_poll(&config)
+ * T -> T: validate: config, initialized,\nchannel, len, timeout, dst_addr, src
+ * T -> CF: internal_configure_channel(&config)
+ * CF -> R: DMSAR = src
+ * CF -> R: DMDAR = dst_addr (e.g. CRCDIR)
+ * CF -> R: DMCRA = len
+ * CF -> R: DMTMD = normal|software|8-bit
+ * CF -> R: DMAMD = src-increment|dst-fixed
+ * CF -> R: DMINT = 0 (polling, no interrupts)
+ * T -> R: DMCNT.DTE = 1 (enable channel)
+ * T -> R: DMREQ = SWREQ|CLRS (trigger + auto-clear)
+ * T -> P: internal_poll_act(channel, timeout_cycles)
+ * loop check DMSTS.ACT (bounded by timeout_cycles)
+ *   P -> R: read DMSTS
+ *   alt ACT == 0
+ *     P -> R: DMSTS = 0 (clear DTIF)
+ *     P --> T: k_rx_ok
+ *   else ACT == 1
+ *     note over P: continue loop
+ *   end
+ * end
+ * T -> R: DMCNT.DTE = 0 (always cleared on exit)
+ * T --> C: k_rx_ok or k_rx_err_timeout
+ * @enduml
+ *
  * @see rx_crc.h CRC library that uses this driver for hw_dma backend
  * @see rx72n_dmac_regs.h Hardware register definitions
  *
