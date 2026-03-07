@@ -337,19 +337,28 @@ void rx_exception_init(void);
  *
  * @details
  * Returns pointer to read-only exception statistics structure.
- * Statistics are updated by exception handlers.
+ * Statistics are updated by exception handlers. Returns NULL if
+ * rx_exception_init() has not yet been called; callers must check
+ * the return value before dereferencing.
  *
- * @return Pointer to exception statistics (never NULL)
+ * @return Pointer to exception statistics, or NULL if not initialized
+ * @retval non-NULL Valid pointer to statistics after rx_exception_init()
+ * @retval NULL     rx_exception_init() has not been called yet
  *
- * @pre rx_exception_init() must have been called
- * @post No side effects
+ * @pre rx_exception_init() must have been called for a non-NULL return
+ * @pre Caller must mask interrupts before reading fields if a consistent snapshot is required;
+ *      exception handlers modify the statistics structure asynchronously from interrupt context
+ * @post No side effects; returned pointer is owned by this module and must not be freed or modified
+ * @post The returned pointer remains valid for the lifetime of the module (never reallocated)
  *
- * @note Thread-safe: Read access only
+ * @note NOT thread-safe: exception handlers update the statistics structure from interrupt
+ *       context concurrently with any reader; callers that require a consistent multi-field
+ *       snapshot must disable interrupts around the read
  *
  * @par Example:
  * @code
  * const rx_exception_stats_t* stats = rx_exception_get_stats();
- * if (stats->count[k_rx_exception_nmi] > 0) {
+ * if (stats != NULL && stats->count[k_rx_exception_nmi] > 0) {
  *     // NMI occurred - investigate
  * }
  * @endcode

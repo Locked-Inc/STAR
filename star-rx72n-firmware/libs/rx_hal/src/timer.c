@@ -196,6 +196,14 @@
 void __attribute__((interrupt)) cmt0_isr(void);
 
 /* =============================================================================
+ * Module State
+ * =============================================================================
+ */
+
+/** @brief Log tag for this module */
+static const char* const s_tag = "TIMER";
+
+/* =============================================================================
  * CMT0 Configuration Constants
  * =============================================================================
  */
@@ -692,7 +700,7 @@ rx_err_t timer_init(void)
     return k_rx_err_invalid_state;
   }
 
-  rx_log_info("TIMER", "Initializing CMT0 for ThreadX tick");
+  rx_log_info(s_tag, "Initializing CMT0 for ThreadX tick");
 
   /* Stop CMT0 if running */
   cmt_ctrl()->cmstr0 &= (uint16_t) ~(uint16_t)k_cmt0_cmstr_start_bit;
@@ -732,7 +740,7 @@ rx_err_t timer_init(void)
    * Note: Direct assembly required as RX GCC has no built-in for PSW manipulation */
   __asm__ volatile("setpsw i");
 
-  rx_log_info("TIMER", "CMT0 initialized successfully");
+  rx_log_info(s_tag, "CMT0 initialized successfully");
 
   return k_rx_ok;
 }
@@ -810,7 +818,7 @@ rx_err_t timer_stop(void)
     return k_rx_err_invalid_state;
   }
 
-  rx_log_info("TIMER", "Stopping CMT0");
+  rx_log_info(s_tag, "Stopping CMT0");
 
   /* Stop CMT0 */
   cmt_ctrl()->cmstr0 &= (uint16_t) ~(uint16_t)k_cmt0_cmstr_start_bit;
@@ -1001,10 +1009,10 @@ rx_err_t timer_stop(void)
  */
 rx_err_t timer_get_count(uint16_t* count)
 {
-  RX_CHECK_NULL_PTR(count, "TIMER", "Count pointer is nullptr");
+  RX_CHECK_NULL_PTR(count, s_tag, "Count pointer is nullptr");
 
   if (cmt0() == nullptr) {
-    rx_log_error("TIMER", "CMT0 register block is nullptr");
+    rx_log_error(s_tag, "CMT0 register block is nullptr");
     return k_rx_err_hw_unmapped;
   }
 

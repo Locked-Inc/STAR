@@ -27,6 +27,7 @@ function(apply_test_includes target)
     )
     target_include_directories(${target} PRIVATE
         ${CMAKE_SOURCE_DIR}/../include
+        ${CMAKE_SOURCE_DIR}/../libs/rx_dmaca/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_frame/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_crc/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_fec/inc
@@ -75,14 +76,21 @@ FetchContent_MakeAvailable(nanopb)
 # Library Sources (copied for host compilation)
 # =============================================================================
 
-# Force software CRC for host testing (hardware CRC not available)
-add_compile_definitions(RX_CRC32_USE_SOFTWARE)
-
 # rx_crc source (public API + software implementation)
+# Hardware backend guarded by #ifdef __RX__, so no special define needed for host tests
 set(RX_CRC_SRC
-    ${CMAKE_SOURCE_DIR}/../libs/rx_crc/src/rx_crc32.c
-    ${CMAKE_SOURCE_DIR}/../libs/rx_crc/src/rx_crc32_sw.c
-    ${CMAKE_SOURCE_DIR}/../libs/rx_crc/src/rx_crc8.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_crc/src/rx_crc.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_crc/src/rx_crc_sw.c
+)
+
+# rx_dmaca source (real driver for test_rx_dmaca; mocked via mock_rx_dmaca.c for rx_crc tests)
+set(RX_DMACA_SRC
+    ${CMAKE_SOURCE_DIR}/../libs/rx_dmaca/src/rx_dmaca.c
+)
+
+# rx_dmaca mock source (for rx_crc DMA backend tests)
+set(MOCK_DMACA_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_dmaca.c
 )
 
 # rx_frame source
@@ -723,6 +731,31 @@ apply_strict_warnings(test_rx_led_status)
 apply_test_includes(test_rx_led_status)
 target_link_libraries(test_rx_led_status unity)
 
+# Test: Unified CRC API (all 5 polynomials x 3 backends)
+# Uses mock_rx_dmaca to intercept DMA calls on host builds.
+add_executable(test_rx_crc
+    test_rx_crc.c
+    ${RX_CRC_SRC}
+    ${MOCK_DMACA_SRC}
+)
+apply_strict_warnings(test_rx_crc)
+apply_test_includes(test_rx_crc)
+target_link_libraries(test_rx_crc unity)
+
+# Test: DMAC Polling Driver (rx_dmaca)
+# Tests the real rx_dmaca.c against mock DMAC hardware registers.
+# rx72n_dmac_regs.h (in mocks/) provides the mock DMAC register storage.
+add_executable(test_rx_dmaca
+    test_rx_dmaca.c
+    ${RX_DMACA_SRC}
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_onewire_hw.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_system_regs.c
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_dmaca)
+apply_test_includes(test_rx_dmaca)
+target_link_libraries(test_rx_dmaca unity)
+
 # Test: TPU HAL Driver (Phase Counting Mode)
 add_executable(test_rx_tpu
     test_rx_tpu.c
@@ -969,6 +1002,7 @@ enable_testing()
 set(ALL_TEST_TARGETS
     test_rx_crc32
     test_rx_crc8
+    test_rx_crc
     test_rx_frame
     test_rx_fec
     test_rx_harq
@@ -1005,6 +1039,7 @@ set(ALL_TEST_TARGETS
     test_rx_mpc
     test_rx_poeg
     test_rx_led_status
+    test_rx_dmaca
     test_rx_tpu
     test_rx_encoder_tpu
     test_rx_host_irq
@@ -1021,6 +1056,7 @@ set(ALL_TEST_TARGETS
 
 add_test(NAME test_rx_crc32 COMMAND test_rx_crc32)
 add_test(NAME test_rx_crc8 COMMAND test_rx_crc8)
+add_test(NAME test_rx_crc COMMAND test_rx_crc)
 add_test(NAME test_rx_frame COMMAND test_rx_frame)
 add_test(NAME test_rx_fec COMMAND test_rx_fec)
 add_test(NAME test_rx_harq COMMAND test_rx_harq)
@@ -1057,6 +1093,7 @@ add_test(NAME test_rx_gpio COMMAND test_rx_gpio)
 add_test(NAME test_rx_mpc COMMAND test_rx_mpc)
 add_test(NAME test_rx_poeg COMMAND test_rx_poeg)
 add_test(NAME test_rx_led_status COMMAND test_rx_led_status)
+add_test(NAME test_rx_dmaca COMMAND test_rx_dmaca)
 add_test(NAME test_rx_tpu COMMAND test_rx_tpu)
 add_test(NAME test_rx_encoder_tpu COMMAND test_rx_encoder_tpu)
 add_test(NAME test_rx_host_irq COMMAND test_rx_host_irq)

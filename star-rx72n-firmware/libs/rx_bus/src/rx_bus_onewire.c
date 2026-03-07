@@ -899,8 +899,11 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
 
   memcpy(state->last_rom, rom, k_onewire_rom_bytes);
 
-  const uint8_t crc = rx_crc8_maxim(rom, k_onewire_rom_crc_idx);
-  if (crc != rom[k_onewire_rom_crc_idx]) {
+  uint32_t crc_out = 0U;
+  RX_RETURN_ON_ERROR(rx_crc8_maxim(rom, k_onewire_rom_crc_idx, &crc_out),
+                     s_tag,
+                     "ROM CRC compute failed");
+  if ((uint8_t)crc_out != rom[k_onewire_rom_crc_idx]) {
     return k_rx_err_crc_mismatch;
   }
 
@@ -1559,12 +1562,14 @@ static rx_err_t internal_onewire_match_rom_callback(rx_bus_config_t* bus_config,
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_not_found if no device presence detected
  * @return k_rx_err_crc_mismatch if ROM CRC validation fails
+ * @return propagated error from rx_crc8_maxim() if CRC computation itself fails
+ *         (ctx->result is also set to the propagated error in that case)
  */
 static rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  onewire_read_rom_ctx_t* ctx  = (onewire_read_rom_ctx_t*)user_ctx;
-  uint8_t                 byte = 0;
-  uint8_t                 crc  = 0;
+  onewire_read_rom_ctx_t* ctx     = (onewire_read_rom_ctx_t*)user_ctx;
+  uint8_t                 byte    = 0;
+  uint32_t                crc_out = 0U;
 
   if (bus_config->type != k_bus_type_onewire || !bus_config->initialized) {
     ctx->result = k_rx_err_invalid_state;
@@ -1610,8 +1615,12 @@ static rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, 
     ctx->rom[i] = byte;
   }
 
-  crc = rx_crc8_maxim(ctx->rom, k_onewire_rom_crc_idx);
-  if (crc != ctx->rom[k_onewire_rom_crc_idx]) {
+  rx_err_t crc_err = rx_crc8_maxim(ctx->rom, k_onewire_rom_crc_idx, &crc_out);
+  if (crc_err != k_rx_ok) {
+    ctx->result = crc_err;
+    return crc_err;
+  }
+  if ((uint8_t)crc_out != ctx->rom[k_onewire_rom_crc_idx]) {
     ctx->result = k_rx_err_crc_mismatch;
     return ctx->result;
   }

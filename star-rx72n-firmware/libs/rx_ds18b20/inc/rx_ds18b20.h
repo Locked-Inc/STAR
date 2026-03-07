@@ -564,8 +564,9 @@ typedef enum : uint8_t {
  *                     (scratchpad[k_ds18b20_scratch_temp_msb] << 8);
  *
  * // Validate CRC
- * uint8_t crc_calc = rx_crc8_maxim(scratchpad, k_ds18b20_crc_bytes);
- * if (crc_calc != scratchpad[k_ds18b20_scratch_crc]) {
+ * uint32_t crc_out = 0U;
+ * (void)rx_crc8_maxim(scratchpad, k_ds18b20_crc_bytes, &crc_out);
+ * if ((uint8_t)crc_out != scratchpad[k_ds18b20_scratch_crc]) {
  *     // CRC mismatch: retry read
  * }
  *

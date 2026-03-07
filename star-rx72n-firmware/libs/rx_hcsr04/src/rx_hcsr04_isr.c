@@ -139,6 +139,15 @@ typedef enum : uint32_t {
  */
 
 /**
+ * @var s_tag
+ * @brief Log tag for HCSR04 ISR module
+ * @details Identifies log messages from this module
+ * @note Read-only after initialization
+ * @since Version 1.0.0
+ */
+static const char* const s_tag = "ISR";
+
+/**
  * @var s_irq_state
  * @brief Per-IRQ echo measurement state (IRQ8-11 -> array indices 0-3)
  *
@@ -494,7 +503,7 @@ rx_err_t rx_hcsr04_isr_disarm(const uint8_t irq_num)
 rx_err_t rx_hcsr04_isr_get_duration(const uint8_t irq_num, uint32_t* const duration_us)
 {
   /* Validate parameters */
-  RX_CHECK_NULL_PTR(duration_us, "ISR", "duration_us is NULL");
+  RX_CHECK_NULL_PTR(duration_us, s_tag, "duration_us is NULL");
   RX_CHECK_RANGE(irq_num, k_irq_min, k_irq_max, k_rx_err_invalid_arg);
 
   /* Check if measurement is complete */

@@ -211,7 +211,7 @@ static pin_validator_t s_global_pin_validator;
  *
  * @since Version 1.0.0
  */
-static rx_error_interface_t s_global_error_interface;
+static rx_error_interface_t s_global_error_interface = {0};
 
 /**
  * @var s_global_pin_interface
@@ -232,7 +232,7 @@ static rx_error_interface_t s_global_error_interface;
  *
  * @since Version 1.0.0
  */
-static rx_pin_interface_t s_global_pin_interface;
+static rx_pin_interface_t s_global_pin_interface = {0};
 
 /**
  * @var s_infrastructure_initialized
@@ -251,6 +251,17 @@ static rx_pin_interface_t s_global_pin_interface;
  * @since Version 1.0.0
  */
 static bool s_infrastructure_initialized = false;
+
+/**
+ * @var s_tag
+ * @brief Log tag for this module
+ * @details Identifies log messages from the infrastructure module. Passed to
+ *          rx_log_* functions to prefix output with "INFRA".
+ * @note Read-only after initialization; never modified after program startup.
+ * @invariant Value is "INFRA" and never changes after compilation.
+ * @since Version 1.0.0
+ */
+static const char* const s_tag = "INFRA";
 
 /* =============================================================================
  * Public API Implementation
@@ -364,23 +375,23 @@ rx_err_t rx_infrastructure_init(void)
   };
 
   if (s_infrastructure_initialized) {
-    rx_log_warn("INFRA", "Infrastructure already initialized");
+    rx_log_warn(s_tag, "Infrastructure already initialized");
     return k_rx_ok;
   }
 
-  rx_log_info("INFRA", "Initializing global infrastructure");
+  rx_log_info(s_tag, "Initializing global infrastructure");
 
   /* Initialize error handler */
   rx_err_t err = error_handler_init(&s_global_error_handler, &config);
   if (err != k_rx_ok) {
-    rx_log_error("INFRA", "Failed to initialize error handler");
+    rx_log_error(s_tag, "Failed to initialize error handler");
     return err;
   }
 
   /* Get error handler interface */
   err = error_handler_get_interface(&s_global_error_interface, &s_global_error_handler);
   if (err != k_rx_ok) {
-    rx_log_error("INFRA", "Failed to get error handler interface");
+    rx_log_error(s_tag, "Failed to get error handler interface");
     (void)error_handler_deinit(&s_global_error_handler); /* Cleanup, ignore errors */
     return err;
   }
@@ -388,7 +399,7 @@ rx_err_t rx_infrastructure_init(void)
   /* Initialize pin validator */
   err = pin_validator_init(&s_global_pin_validator);
   if (err != k_rx_ok) {
-    rx_log_error("INFRA", "Failed to initialize pin validator");
+    rx_log_error(s_tag, "Failed to initialize pin validator");
     (void)error_handler_deinit(&s_global_error_handler); /* Cleanup, ignore errors */
     return err;
   }
@@ -396,7 +407,7 @@ rx_err_t rx_infrastructure_init(void)
   /* Get pin validator interface */
   err = pin_validator_get_interface(&s_global_pin_interface, &s_global_pin_validator);
   if (err != k_rx_ok) {
-    rx_log_error("INFRA", "Failed to get pin validator interface");
+    rx_log_error(s_tag, "Failed to get pin validator interface");
     (void)pin_validator_deinit(&s_global_pin_validator); /* Cleanup, ignore errors */
     (void)error_handler_deinit(&s_global_error_handler); /* Cleanup, ignore errors */
     return err;
@@ -404,7 +415,7 @@ rx_err_t rx_infrastructure_init(void)
 
   s_infrastructure_initialized = true;
 
-  rx_log_info("INFRA", "Global infrastructure initialized successfully");
+  rx_log_info(s_tag, "Global infrastructure initialized successfully");
 
   return k_rx_ok;
 }
@@ -462,25 +473,25 @@ rx_err_t rx_infrastructure_deinit(void)
     return k_rx_ok;
   }
 
-  rx_log_info("INFRA", "Deinitializing global infrastructure");
+  rx_log_info(s_tag, "Deinitializing global infrastructure");
 
   /* Deinitialize pin validator */
   rx_err_t err = pin_validator_deinit(&s_global_pin_validator);
   if (err != k_rx_ok) {
-    rx_log_warn("INFRA", "Pin validator deinit failed");
+    rx_log_warn(s_tag, "Pin validator deinit failed");
     /* Continue with cleanup anyway */
   }
 
   /* Deinitialize error handler */
   err = error_handler_deinit(&s_global_error_handler);
   if (err != k_rx_ok) {
-    rx_log_warn("INFRA", "Error handler deinit failed");
+    rx_log_warn(s_tag, "Error handler deinit failed");
     return err;
   }
 
   s_infrastructure_initialized = false;
 
-  rx_log_info("INFRA", "Global infrastructure deinitialized");
+  rx_log_info(s_tag, "Global infrastructure deinitialized");
 
   return k_rx_ok;
 }
