@@ -380,11 +380,13 @@ rx_err_t internal_crc_hw_cpu_compute(const rx_crc_config_t* config,
  * @return rx_err_t
  * @retval k_rx_ok              CRC computed via DMA or CPU fallback; no alignment required
  * @retval k_rx_err_null_ptr    config, data, or result_out is NULL
+ * @retval k_rx_err_invalid_arg DMA config is invalid (e.g. timeout_cycles out of range);
+ *                              surfaced directly without fallback
  *
  * @pre CRC and DMAC peripherals must be initialized (internal_crc_hw_init() called)
  * @pre data must point to valid readable memory of len bytes
  * @post *result_out contains the final CRC with XOR applied (on k_rx_ok)
- * @post s_dma_fallback_count incremented if DMA transfer failed and CPU fallback used
+ * @post s_dma_fallback_count incremented only on transient DMA failure (not on invalid_arg)
  *
  * @par Activity Diagram:
  * @startuml
@@ -405,7 +407,11 @@ rx_err_t internal_crc_hw_cpu_compute(const rx_crc_config_t* config,
  * :internal_configure_crccr() -- GPS + LMS + DORCLR;
  * :build rx_dmaca_config_t (src->CRCDIR, timeout);
  * :rx_dmaca_transfer_poll(&dma_cfg);
- * if (DMA failed?) then (yes)
+ * if (err == k_rx_err_invalid_arg?) then (yes)
+ *   :return k_rx_err_invalid_arg (bad config);
+ *   stop
+ * endif
+ * if (other DMA failure (timeout)?) then (yes)
  *   if (s_dma_fallback_count < UINT32_MAX?) then (yes)
  *     :s_dma_fallback_count++;
  *   endif
@@ -417,7 +423,7 @@ rx_err_t internal_crc_hw_cpu_compute(const rx_crc_config_t* config,
  * stop
  * @enduml
  *
- * @note DMA fallback is transparent to callers; result is identical to CPU path
+ * @note Transient DMA failures fall back transparently to the CPU path; result is identical
  * @since Version 1.0.0
  */
 rx_err_t internal_crc_hw_dma_compute(const rx_crc_config_t* config,
@@ -453,8 +459,12 @@ rx_err_t internal_crc_hw_dma_compute(const rx_crc_config_t* config,
   };
 
   rx_err_t err = rx_dmaca_transfer_poll(&dma_cfg);
+  if (err == k_rx_err_invalid_arg) {
+    /* Bad config (e.g. timeout_cycles out of range): surface to caller, do not fall back */
+    return err;
+  }
   if (err != k_rx_ok) {
-    /* DMA failure: record for observability (saturating), then fall back to CPU loop */
+    /* Transient DMA failure (timeout): record for observability (saturating), fall back to CPU */
     if (s_dma_fallback_count < UINT32_MAX) {
       s_dma_fallback_count++;
     }

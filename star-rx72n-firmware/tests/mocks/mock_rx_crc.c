@@ -93,12 +93,13 @@ void mock_crc8_set_override(bool enable)
  * @return rx_err_t
  * @retval k_rx_ok              CRC computed; *result_out is valid
  * @retval k_rx_err_null_ptr    config, data, or result_out is NULL
- * @retval k_rx_err_invalid_arg len == 0, len > k_crc_len_max, or poly != k_rx_crc_poly_crc8
+ * @retval k_rx_err_invalid_arg len == 0 or len > k_crc_len_max; or override disabled
+ *                              and poly != k_rx_crc_poly_crc8
  *
  * @pre config, data, result_out must not be NULL
  * @pre len must be in [1, k_crc_len_max]
  * @post *result_out set to preset value (override) or computed CRC-8/Maxim
- * @post s_mock_crc_value and s_override_enabled are read-only; not modified
+ * @post When s_override_enabled is true, any polynomial is accepted and s_mock_crc_value is returned
  *
  * @note Not thread-safe; call only from the test thread
  * @since Version 1.0.0
@@ -112,13 +113,18 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
     return k_rx_err_null_ptr;
   }
 
-  if (len == 0U || len > (uint32_t)k_crc_len_max || config->poly != k_rx_crc_poly_crc8) {
+  if (len == 0U || len > (uint32_t)k_crc_len_max) {
     return k_rx_err_invalid_arg;
   }
 
+  /* Override checked before polynomial validation: allows any poly to be mocked */
   if (s_override_enabled) {
     *result_out = s_mock_crc_value;
     return k_rx_ok;
+  }
+
+  if (config->poly != k_rx_crc_poly_crc8) {
+    return k_rx_err_invalid_arg;
   }
 
   /* CRC-8/Maxim computation - only supported polynomial for this mock */
