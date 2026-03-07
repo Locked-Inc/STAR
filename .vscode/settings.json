@@ -48,7 +48,7 @@
   ],
   "cmake.sourceDirectory": [
     "${workspaceFolder}/star-rx72n-firmware",
-    "${workspaceFolder}/star-stm32f767-firmware"
+    "${workspaceFolder}/star-stm32-firmware"
   ],
   "protobuf.lint.ignore": ["star-rx72n-firmware/**"],
   "protobuf.options.ignore": ["star-rx72n-firmware/**"],
