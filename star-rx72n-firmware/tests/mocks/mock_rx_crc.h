@@ -103,6 +103,28 @@ typedef enum : uint8_t {
 void mock_crc8_set_return_value(uint8_t crc);
 
 /**
+ * @brief Set the fixed 32-bit CRC value returned when mock override is active
+ *
+ * @details
+ * Stores value directly as a uint32_t in s_mock_crc_value without truncation.
+ * When the override is enabled via mock_crc8_set_override(true), rx_crc_compute()
+ * returns this value for any polynomial (including CRC-32). Use this instead of
+ * mock_crc8_set_return_value() when injecting CRC-32 results.
+ *
+ * @param[in] value Fixed 32-bit CRC value to inject
+ *
+ * @pre Called from the test thread; not thread-safe
+ * @pre mock_crc8_set_override(true) must be called to activate the override
+ * @post s_mock_crc_value set to value without truncation
+ * @post Subsequent rx_crc_compute() calls return this value when override active
+ *
+ * @note No allocation or blocking; safe to call from setUp()
+ *
+ * @since Version 1.0.0
+ */
+void mock_crc32_set_return_value(uint32_t value);
+
+/**
  * @brief Enable or disable the CRC calculation override
  *
  * @details

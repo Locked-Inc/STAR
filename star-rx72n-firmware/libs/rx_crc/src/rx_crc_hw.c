@@ -136,8 +136,10 @@ static const char* const s_tag = "CRC";
  * @param[in] poly CRC polynomial
  * @return Final XOR value to apply after reading CRCDOR
  *
- * @pre poly is a valid rx_crc_poly_t
+ * @pre poly is a valid rx_crc_poly_t value within the defined enum range
+ * @pre Called only for hardware-supported polynomials (CRC-16 through CRC-32C)
  * @post Returns 0xFFFFFFFF for CRC-32/CRC-32C, 0 otherwise
+ * @post No side effects; does not modify any global or peripheral state
  * @since Version 1.0.0
  */
 static uint32_t internal_final_xor(rx_crc_poly_t poly)
@@ -158,7 +160,9 @@ static uint32_t internal_final_xor(rx_crc_poly_t poly)
  * @param[in] config CRC configuration (poly and bit_order used)
  *
  * @pre CRC peripheral module clock must be enabled
+ * @pre config must not be NULL; config->poly and config->bit_order must be valid enum values
  * @post CRCCR configured; accumulator reset to initial value for the polynomial
+ * @post Only CRCCR and the CRC accumulator (via DORCLR) are modified; no other registers changed
  * @since Version 1.0.0
  */
 static void internal_configure_crccr(const rx_crc_config_t* config)

@@ -66,6 +66,11 @@ void mock_crc8_set_return_value(uint8_t crc)
   s_mock_crc_value = (uint32_t)crc;
 }
 
+void mock_crc32_set_return_value(uint32_t value)
+{
+  s_mock_crc_value = value;
+}
+
 void mock_crc8_set_override(bool enable)
 {
   s_override_enabled = enable;
@@ -194,7 +199,7 @@ rx_err_t rx_crc_init(void)
  * @pre s_is_initialized must be true
  * @pre No CRC computations should be in progress
  * @post s_is_initialized = false
- * @post Mock override state (s_override_enabled, s_mock_crc_value) unchanged
+ * @post Mock override state cleared: s_override_enabled = false, s_mock_crc_value = 0U
  *
  * @note Not thread-safe; call only from the test thread
  * @since Version 1.0.0
@@ -204,7 +209,9 @@ rx_err_t rx_crc_deinit(void)
   if (!s_is_initialized) {
     return k_rx_err_invalid_state;
   }
-  s_is_initialized = false;
+  s_is_initialized   = false;
+  s_override_enabled = false;
+  s_mock_crc_value   = 0U;
   return k_rx_ok;
 }
 
