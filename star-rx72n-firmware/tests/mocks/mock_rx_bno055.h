@@ -19,44 +19,47 @@
 extern "C" {
 #endif
 
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "rx_err.h"
-
-/* Forward declaration */
-struct rx_bus_manager_s;
-typedef struct rx_bus_manager_s rx_bus_manager_t;
-
-/**
- * @struct bno055_data_t
- * @brief BNO055 sensor data output structure (mock version)
- */
-typedef struct {
-  int16_t heading_deg16; /**< Euler heading */
-  int16_t roll_deg16;    /**< Euler roll */
-  int16_t pitch_deg16;   /**< Euler pitch */
-  int16_t quat_w;        /**< Quaternion W */
-  int16_t quat_x;        /**< Quaternion X */
-  int16_t quat_y;        /**< Quaternion Y */
-  int16_t quat_z;        /**< Quaternion Z */
-  int16_t lin_acc_x;     /**< Linear accel X */
-  int16_t lin_acc_y;     /**< Linear accel Y */
-  int16_t lin_acc_z;     /**< Linear accel Z */
-  int16_t gyro_x_dps16;  /**< Gyroscope X */
-  int16_t gyro_y_dps16;  /**< Gyroscope Y */
-  int16_t gyro_z_dps16;  /**< Gyroscope Z */
-  int8_t  temp_degc;     /**< Temperature */
-  uint8_t calib_stat;    /**< Calibration status */
-} bno055_data_t;
+/* Use the canonical production types to avoid struct divergence */
+#include "rx_bno055.h"
 
 /* =============================================================================
  * Mock Control Functions
  * =============================================================================
  */
 
+/**
+ * @brief Reset all mock state to defaults (k_rx_ok returns, zero call counts)
+ *
+ * @details
+ * Resets s_init_return and s_read_return to k_rx_ok and clears s_init_count
+ * and s_read_count to 0. Call from setUp() before each test.
+ *
+ * @pre None
+ * @pre Mock module is linked into the test executable
+ * @post s_init_return == k_rx_ok
+ * @post s_read_return == k_rx_ok
+ * @post s_init_count == 0 and s_read_count == 0
+ */
 void mock_bno055_reset(void);
+
+/**
+ * @brief Set the return value that rx_bno055_init() will return
+ *
+ * @param[in] err Return value to inject (e.g. k_rx_ok or k_rx_err_nack)
+ *
+ * @pre err is a valid rx_err_t value
+ * @post Next call to rx_bno055_init() returns err
+ */
 void mock_bno055_set_init_return(rx_err_t err);
+
+/**
+ * @brief Set the return value that rx_bno055_read() will return
+ *
+ * @param[in] err Return value to inject (e.g. k_rx_ok or k_rx_err_timeout)
+ *
+ * @pre err is a valid rx_err_t value
+ * @post Next call to rx_bno055_read() returns err (unless out is NULL)
+ */
 void mock_bno055_set_read_return(rx_err_t err);
 
 /* =============================================================================
@@ -64,7 +67,24 @@ void mock_bno055_set_read_return(rx_err_t err);
  * =============================================================================
  */
 
+/**
+ * @brief Return the number of times rx_bno055_init() has been called
+ *
+ * @return uint32_t Call count since last mock_bno055_reset()
+ *
+ * @pre mock_bno055_reset() called at least once to establish baseline
+ * @post Return value equals number of rx_bno055_init() calls since reset
+ */
 uint32_t mock_bno055_get_init_count(void);
+
+/**
+ * @brief Return the number of times rx_bno055_read() has been called
+ *
+ * @return uint32_t Call count since last mock_bno055_reset()
+ *
+ * @pre mock_bno055_reset() called at least once to establish baseline
+ * @post Return value equals number of successful rx_bno055_read() calls (out != NULL)
+ */
 uint32_t mock_bno055_get_read_count(void);
 
 /* =============================================================================
@@ -72,7 +92,38 @@ uint32_t mock_bno055_get_read_count(void);
  * =============================================================================
  */
 
+/**
+ * @brief Mock implementation of rx_bno055_init()
+ *
+ * @details
+ * Increments the init call counter and returns the value set by
+ * mock_bno055_set_init_return(). Does not access hardware.
+ *
+ * @param[in] manager Bus manager pointer (ignored in mock)
+ *
+ * @return rx_err_t Value set by mock_bno055_set_init_return() (default k_rx_ok)
+ *
+ * @pre manager may be NULL (ignored by mock)
+ * @post s_init_count incremented by 1
+ */
 rx_err_t rx_bno055_init(rx_bus_manager_t* manager);
+
+/**
+ * @brief Mock implementation of rx_bno055_read()
+ *
+ * @details
+ * Returns k_rx_err_null_ptr if out is NULL. Otherwise zeroes *out, increments
+ * the read call counter, and returns the value set by mock_bno055_set_read_return().
+ *
+ * @param[out] out Destination for sensor data (zeroed on success)
+ *
+ * @return rx_err_t Value set by mock_bno055_set_read_return() (default k_rx_ok)
+ * @retval k_rx_err_null_ptr out is NULL
+ *
+ * @pre out may be NULL (returns k_rx_err_null_ptr)
+ * @post *out zeroed when out != NULL and return value is k_rx_ok
+ * @post s_read_count incremented when out != NULL
+ */
 rx_err_t rx_bno055_read(bno055_data_t* out);
 
 #ifdef __cplusplus

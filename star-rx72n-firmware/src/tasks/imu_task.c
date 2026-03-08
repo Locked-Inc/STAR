@@ -351,6 +351,7 @@ static void     internal_retry_sensor_init(bool* bno_ready, bool* bmp_ready);
 static void     internal_read_and_publish_imu(void);
 static void     internal_read_and_publish_baro(void);
 static rx_err_t internal_imu_hardware_reset(void);
+static bool     internal_wait_for_imu_int(void);
 static void     internal_imu_task_entry(ULONG input);
 
 /* =============================================================================
@@ -709,6 +710,44 @@ static rx_err_t internal_imu_hardware_reset(void)
 }
 
 /**
+ * @brief Block on BNO055 INT event flag with 200 ms watchdog timeout
+ *
+ * @details
+ * Waits for k_imu_event_data_ready to be set in s_imu_event_flags by the
+ * INT_IRQ12() ISR. Returns true immediately if the flag is already set.
+ * Returns false after k_imu_int_timeout_ticks (200 ms) with no INT -- the
+ * caller must perform a fault-recovery read without relying on the interrupt.
+ *
+ * @return bool true if BNO055 INT fired; false if 200 ms timeout expired
+ *
+ * @pre s_imu_event_flags created by imu_task_create()
+ * @pre Called from task context only (tx_event_flags_get blocks the caller)
+ * @post k_imu_event_data_ready cleared from s_imu_event_flags (TX_OR_CLEAR)
+ * @post Caller reads sensors regardless of return value (INT or timeout)
+ *
+ * @note Not thread-safe; called only from internal_imu_task_entry()
+ *
+ * @see s_imu_event_flags Event flags group set by INT_IRQ12()
+ * @see internal_imu_task_entry() Sole caller
+ *
+ * @since Version 1.0.0
+ */
+static bool internal_wait_for_imu_int(void)
+{
+  ULONG      actual_flags = 0U;
+  const UINT ef_status    = tx_event_flags_get(&s_imu_event_flags,
+                                            (ULONG)k_imu_event_data_ready,
+                                            TX_OR_CLEAR,
+                                            &actual_flags,
+                                            (ULONG)k_imu_int_timeout_ticks);
+  if (ef_status != TX_SUCCESS) {
+    rx_log_warn(s_tag, "IMU INT timeout (200 ms) - reading without INT");
+    return false;
+  }
+  return true;
+}
+
+/**
  * @brief BNO055 INT falling-edge ISR (IRQ12, vector 76, P3.2)
  *
  * @details
@@ -858,17 +897,7 @@ static void internal_imu_task_entry(ULONG input)
     internal_send_iwdt_heartbeat();
 
     /* Block until BNO055 asserts INT (falling edge) or 200 ms timeout */
-    ULONG      actual_flags = 0U;
-    const UINT ef_status    = tx_event_flags_get(&s_imu_event_flags,
-                                              (ULONG)k_imu_event_data_ready,
-                                              TX_OR_CLEAR,
-                                              &actual_flags,
-                                              (ULONG)k_imu_int_timeout_ticks);
-
-    if (ef_status != TX_SUCCESS) {
-      /* Timeout: BNO055 INT did not fire within 200 ms -- read anyway (fault recovery) */
-      rx_log_warn(s_tag, "IMU INT timeout (200 ms) - reading without INT");
-    }
+    (void)internal_wait_for_imu_int();
 
     /* Retry init for sensors that failed initial startup */
     internal_retry_sensor_init(&bno_ready, &bmp_ready);
