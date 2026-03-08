@@ -1083,6 +1083,28 @@ void test_bno055_init_interrupt_mode_succeeds(void)
   TEST_ASSERT_EQUAL((uint32_t)((uint32_t)poll_call_count + (uint32_t)k_test_interrupt_extra_writes),
                     (uint32_t)interrupt_call_count);
 
+  /* Verify Page 1 write sequence: PAGE_ID=1, INT_MSK=0x01, INT_EN=0x01, PAGE_ID=0.
+   * The 4 Page 1 writes are inserted after configure() and before enter_ndof(), so they
+   * sit at index (poll_call_count - 2) in the interrupt-mode history, where the -2
+   * accounts for the 2 poll-mode tail calls (ndof write + chip_id read) that follow. */
+  const uint16_t          base = (uint16_t)(poll_call_count - 2U);
+  const mock_riic_call_t* c0   = mock_riic_get_call(base + 0U); /* PAGE_ID = Page 1 */
+  const mock_riic_call_t* c1   = mock_riic_get_call(base + 1U); /* INT_MSK = 0x01  */
+  const mock_riic_call_t* c2   = mock_riic_get_call(base + 2U); /* INT_EN  = 0x01  */
+  const mock_riic_call_t* c3   = mock_riic_get_call(base + 3U); /* PAGE_ID = Page 0 */
+  TEST_ASSERT_NOT_NULL(c0);
+  TEST_ASSERT_NOT_NULL(c1);
+  TEST_ASSERT_NOT_NULL(c2);
+  TEST_ASSERT_NOT_NULL(c3);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_page_id, c0->tx_snapshot[0]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_page1, c0->tx_snapshot[1]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_int_msk, c1->tx_snapshot[0]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_int_msk_acc_bsx_drdy, c1->tx_snapshot[1]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_int_en, c2->tx_snapshot[0]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_int_en_acc_bsx_drdy, c2->tx_snapshot[1]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_page_id, c3->tx_snapshot[0]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_page0, c3->tx_snapshot[1]);
+
   /* Confirm driver is operational by performing a read */
   internal_load_read_data();
   bno055_data_t  data;
@@ -1107,9 +1129,11 @@ void test_bno055_init_interrupt_mode_succeeds(void)
  */
 void test_bno055_init_null_config(void)
 {
-  rx_err_t err = rx_bno055_init(&s_test_manager, nullptr);
+  const uint16_t before_count = mock_riic_get_call_count();
+  const rx_err_t err          = rx_bno055_init(&s_test_manager, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT32((uint32_t)before_count, (uint32_t)mock_riic_get_call_count());
 }
 
 /* =============================================================================

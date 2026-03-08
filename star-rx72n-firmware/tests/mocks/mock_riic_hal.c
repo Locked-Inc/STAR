@@ -280,6 +280,13 @@ rx_err_t riic_write(riic_channel_t    channel,
   ch->tx_length        = to_copy;
   ch->last_device_addr = device_addr.value;
 
+  /* Snapshot first 2 TX bytes into call history for test assertions */
+  if (g_mock_riic.call_count > 0U) {
+    mock_riic_call_t* last = &g_mock_riic.call_history[g_mock_riic.call_count - 1U];
+    last->tx_snapshot[0]   = (length >= 1U) ? data[0] : 0U;
+    last->tx_snapshot[1]   = (length >= 2U) ? data[1] : 0U;
+  }
+
   return k_rx_ok;
 }
 

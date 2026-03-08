@@ -5,10 +5,11 @@
  * @details
  * # Overview
  *
- * This module implements the IMU Task that initializes and polls the
- * BNO055 9-DOF absolute orientation sensor and the BMP280 barometric
- * pressure sensor at 20 Hz (50 ms period), publishing results to
- * shared data for consumption by the telemetry task.
+ * This module implements the IMU Task that initializes the BNO055
+ * 9-DOF absolute orientation sensor and the BMP280 barometric pressure
+ * sensor, then reads both sensors on each BNO055 INT falling edge (P3.2
+ * / IRQ12), publishing results to shared data for the telemetry task.
+ * A 200 ms watchdog timeout triggers a read when INT does not fire.
  *
  * # Hardware
  *
@@ -193,6 +194,28 @@ typedef enum : uint8_t {
 } imu_task_hw_rst_t;
 
 /**
+ * @enum imu_wait_result_t
+ * @brief Return values for internal_wait_for_imu_int()
+ *
+ * @details
+ * Three-state result distinguishes a genuine data-ready INT, a benign
+ * 200 ms watchdog timeout, and a fatal ThreadX RTOS error.  Callers
+ * must handle each case separately so corrupted/deleted event-flags
+ * groups surface as faults rather than silently degrading into the
+ * watchdog recovery path.
+ *
+ * @see internal_wait_for_imu_int() Function that returns this type
+ * @see internal_imu_task_entry() Sole consumer
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_imu_wait_data_ready = 0U, /**< BNO055 INT fired (TX_SUCCESS): read fresh data */
+  k_imu_wait_timeout    = 1U, /**< 200 ms watchdog (TX_NO_EVENTS): fault-recovery read */
+  k_imu_wait_rtos_error = 2U, /**< Fatal ThreadX error: event-flags group corrupted */
+} imu_wait_result_t;
+
+/**
  * @enum imu_task_int_cfg_t
  * @brief IMU INT watchdog timeout constants (interrupt-driven mode)
  *
@@ -367,13 +390,13 @@ extern rx_bus_manager_t
  * =============================================================================
  */
 
-static void     internal_send_iwdt_heartbeat(void);
-static void     internal_retry_sensor_init(bool* bno_ready, bool* bmp_ready);
-static void     internal_read_and_publish_imu(void);
-static void     internal_read_and_publish_baro(void);
-static rx_err_t internal_imu_hardware_reset(void);
-static bool     internal_wait_for_imu_int(void);
-static void     internal_imu_task_entry(ULONG input);
+static void              internal_send_iwdt_heartbeat(void);
+static void              internal_retry_sensor_init(bool* bno_ready, bool* bmp_ready);
+static void              internal_read_and_publish_imu(void);
+static void              internal_read_and_publish_baro(void);
+static rx_err_t          internal_imu_hardware_reset(void);
+static imu_wait_result_t internal_wait_for_imu_int(void);
+static void              internal_imu_task_entry(ULONG input);
 
 /* =============================================================================
  * Static Inline Helpers
@@ -738,25 +761,31 @@ static rx_err_t internal_imu_hardware_reset(void)
  *
  * @details
  * Waits for k_imu_event_data_ready to be set in s_imu_event_flags by the
- * INT_IRQ12() ISR. Returns true immediately if the flag is already set.
- * Returns false after k_imu_int_timeout_ticks (200 ms) with no INT -- the
- * caller must perform a fault-recovery read without relying on the interrupt.
+ * INT_IRQ12() ISR. Returns k_imu_wait_data_ready immediately if the flag is
+ * already set. Returns k_imu_wait_timeout after k_imu_int_timeout_ticks
+ * (200 ms) with no INT -- the caller performs a fault-recovery read.
+ * Returns k_imu_wait_rtos_error on any other ThreadX status, indicating that
+ * the event-flags group may be corrupted or deleted.
  *
- * @return bool true if BNO055 INT fired; false if 200 ms timeout expired
+ * @return imu_wait_result_t Three-state result distinguishing INT, timeout, and RTOS fault
+ * @retval k_imu_wait_data_ready BNO055 INT fired; event flag consumed
+ * @retval k_imu_wait_timeout 200 ms watchdog expired; fault-recovery read
+ * @retval k_imu_wait_rtos_error Fatal ThreadX error; caller must escalate
  *
  * @pre s_imu_event_flags created by imu_task_create()
  * @pre Called from task context only (tx_event_flags_get blocks the caller)
- * @post k_imu_event_data_ready cleared from s_imu_event_flags (TX_OR_CLEAR)
- * @post Caller reads sensors regardless of return value (INT or timeout)
+ * @post k_imu_event_data_ready cleared from s_imu_event_flags on TX_SUCCESS (TX_OR_CLEAR)
+ * @post Caller reads sensors on k_imu_wait_data_ready and k_imu_wait_timeout
  *
  * @note Not thread-safe; called only from internal_imu_task_entry()
  *
  * @see s_imu_event_flags Event flags group set by INT_IRQ12()
+ * @see imu_wait_result_t Return type documentation
  * @see internal_imu_task_entry() Sole caller
  *
  * @since Version 1.0.0
  */
-static bool internal_wait_for_imu_int(void)
+static imu_wait_result_t internal_wait_for_imu_int(void)
 {
   ULONG      actual_flags = 0U;
   const UINT ef_status    = tx_event_flags_get(&s_imu_event_flags,
@@ -767,14 +796,14 @@ static bool internal_wait_for_imu_int(void)
   if (ef_status == TX_NO_EVENTS) {
     /* Benign watchdog timeout: BNO055 INT did not fire within 200 ms */
     rx_log_warn(s_tag, "IMU INT timeout (200 ms) - reading without INT");
-    return false;
+    return k_imu_wait_timeout;
   }
   if (ef_status != TX_SUCCESS) {
     /* Fatal RTOS error: event flags group corrupted or deleted */
     rx_log_error_val(s_tag, "IMU event flags get failed", (uint32_t)ef_status);
-    return false;
+    return k_imu_wait_rtos_error;
   }
-  return true;
+  return k_imu_wait_data_ready;
 }
 
 /**
@@ -936,7 +965,17 @@ static void internal_imu_task_entry(ULONG input)
     internal_send_iwdt_heartbeat();
 
     /* Block until BNO055 asserts INT (falling edge) or 200 ms timeout */
-    (void)internal_wait_for_imu_int();
+    const imu_wait_result_t wait_result = internal_wait_for_imu_int();
+    if (wait_result == k_imu_wait_rtos_error) {
+      /* Fatal ThreadX fault: event-flags group corrupted or deleted.
+       * Suspend the task to surface the fault rather than looping
+       * forever in a degraded state with no interrupt signaling. */
+      rx_log_error(s_tag, "IMU task suspending: fatal RTOS event flags fault");
+      (void)tx_thread_suspend(tx_thread_identify());
+      continue;
+    }
+
+    /* Both k_imu_wait_data_ready and k_imu_wait_timeout proceed with read */
 
     /* Retry init for sensors that failed initial startup */
     internal_retry_sensor_init(&bno_ready, &bmp_ready);

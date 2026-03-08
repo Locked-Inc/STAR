@@ -197,11 +197,12 @@ typedef enum : uint8_t {
 
 /** @brief RIIC HAL function call record */
 typedef struct {
-  mock_riic_call_type_t type;         /**< Call type */
-  uint8_t               channel;      /**< RIIC channel */
-  uint8_t               device_addr;  /**< Device address */
-  uint16_t              write_length; /**< Write data length */
-  uint16_t              read_length;  /**< Read data length */
+  mock_riic_call_type_t type;           /**< Call type */
+  uint8_t               channel;        /**< RIIC channel */
+  uint8_t               device_addr;    /**< Device address */
+  uint16_t              write_length;   /**< Write data length */
+  uint16_t              read_length;    /**< Read data length */
+  uint8_t               tx_snapshot[2]; /**< First 2 TX bytes: [reg_addr, value] */
 } mock_riic_call_t;
 
 /** @brief Per-channel RIIC state */
