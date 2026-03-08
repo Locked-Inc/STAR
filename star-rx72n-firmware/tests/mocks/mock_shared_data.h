@@ -106,12 +106,13 @@ typedef enum : uint8_t {
  * @brief Emergency stop trigger reasons
  */
 typedef enum : uint8_t {
-  k_estop_reason_none         = 0, /**< No e-stop active */
-  k_estop_reason_comm_timeout = 1, /**< No commands for 500ms */
-  k_estop_reason_obstacle     = 2, /**< Obstacle detected by HC-SR04 */
-  k_estop_reason_driver_fault = 3, /**< Motor driver hardware fault detected */
-  k_estop_reason_overcurrent  = 4, /**< Motor overcurrent detected */
-  k_estop_reason_manual       = 5, /**< Manual e-stop request */
+  k_estop_reason_none           = 0, /**< No e-stop active */
+  k_estop_reason_comm_timeout   = 1, /**< No commands for 500ms */
+  k_estop_reason_obstacle       = 2, /**< Obstacle detected by HC-SR04 */
+  k_estop_reason_driver_fault   = 3, /**< Motor driver hardware fault detected */
+  k_estop_reason_overcurrent    = 4, /**< Motor overcurrent detected */
+  k_estop_reason_manual         = 5, /**< Manual e-stop request */
+  k_estop_reason_sensor_failure = 6, /**< ADC or sensor read failure */
 } estop_reason_t;
 
 /* =============================================================================

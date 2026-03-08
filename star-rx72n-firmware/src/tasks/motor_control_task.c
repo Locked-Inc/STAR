@@ -2976,7 +2976,7 @@ static void internal_update_motor_state(void)
 
     /* Fail-safe: treat unsampled channel as unsafe until first valid read */
     if (!s_last_good_current_valid[i]) {
-      (void)shared_data_trigger_estop(k_estop_reason_overcurrent);
+      (void)shared_data_trigger_estop(k_estop_reason_sensor_failure);
       continue;
     }
 
