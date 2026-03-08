@@ -39,6 +39,23 @@
 #include "rx_motor.h"
 
 /**
+ * @var g_motor_current_bus_names
+ * @brief Shared ADC bus-name table for motor current sensing (motor index -> bus name)
+ *
+ * @details
+ * Single definition lives in motor_control_task.c. Declared here so that
+ * main.c can use the same names for bus registration without duplicating the
+ * table. Array has one entry per motor (4 total: FL, FR, BL, BR).
+ *
+ * @note Consumers must not take sizeof() through this declaration; use the
+ *       authoritative size constant from motor_control_task.c (k_motor_count = 4).
+ * @see motor_control_task.c g_motor_current_bus_names Definition
+ * @see main.c internal_register_system_buses() Bus registration consumer
+ * @since Version 1.0.0
+ */
+extern const char* const g_motor_current_bus_names[];
+
+/**
  * @enum motor_count_t
  * @brief Motor count sentinels for motor_control_task_get_motors()
  *

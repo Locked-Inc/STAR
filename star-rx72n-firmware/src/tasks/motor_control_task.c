@@ -620,6 +620,12 @@ static const float s_pid_output_min_percent = -100.0F;
 /** @brief PID output maximum (percent duty) */
 static const float s_pid_output_max_percent = 100.0F;
 
+/** @brief Millivolts per volt: converts ADC millivolt reading to volts */
+static const float s_mv_per_v = 1000.0F;
+
+/** @brief Milliamps per amp: converts rx_drv8263_adc_to_amps() result to mA */
+static const float s_ma_per_a = 1000.0F;
+
 /** @brief PID integral minimum (percent, anti-windup clamp) */
 static const float s_pid_integral_min_percent = -50.0F;
 
@@ -824,6 +830,24 @@ static const float s_dt_sec = 0.004f;
 /** @brief Flag to track if timeout e-stop was already triggered */
 static bool s_timeout_estop_triggered = false;
 
+/**
+ * @var s_last_good_current_ma
+ * @brief Last successfully read motor current for each channel (mA)
+ *
+ * @details
+ * Preserved across control loop iterations so that a transient ADC read
+ * failure does not silently zero the current value used for overcurrent
+ * protection. On the first iteration this is 0 mA (BSS zero-init), which
+ * is safe -- the overcurrent check cannot false-trigger at 0 mA.
+ *
+ * @note Static allocation: no dynamic memory (NASA Rule 3).
+ * @note Written only on successful rx_bus_adc_read_voltage_mv() calls.
+ * @warning Direct modification outside internal_update_motor_state() is
+ *          forbidden -- read path owns this state.
+ * @since Version 1.0.0
+ */
+static float s_last_good_current_ma[k_motor_count];
+
 /** @brief Flag to track if currently in active brake sequence */
 static bool s_active_brake_in_progress = false;
 
@@ -831,13 +855,15 @@ static bool s_active_brake_in_progress = false;
 static const char* const s_tag = "MOTOR";
 
 /**
- * @var s_motor_current_bus_names
+ * @var g_motor_current_bus_names
  * @brief ADC bus names for motor current sensing, indexed by motor index
  *
  * @details
- * Maps motor index [0..3] to the bus manager name for its IPROPI current
- * sense channel. Each entry corresponds to one DRV8263H-Q1 IPROPI output
- * sampled by S12AD0. Channel-to-motor assignment follows PCB schematic:
+ * Single authoritative mapping from motor index [0..3] to the bus manager
+ * name for its IPROPI current-sense channel. Shared with main.c so that
+ * bus registration and ADC reads always reference the same string -- a
+ * rename only needs to happen here. Channel-to-motor assignment follows
+ * the PCB schematic:
  *
  * | Motor | Index | Bus Name       | ADC Ch | Pin |
  * |-------|-------|----------------|--------|-----|
@@ -847,12 +873,14 @@ static const char* const s_tag = "MOTOR";
  * | BR    | 3     | motor3_current | AN004  | P44 |
  *
  * @note String literals reside in .rodata (no dynamic allocation).
+ * @note Declared extern in motor_control_task.h; main.c uses it for
+ *       bus registration so the two files share one definition.
  * @warning Array size must match k_motor_count (4). Do not modify independently.
  * @see internal_update_motor_state() Consumer of this array
  * @see main.c internal_register_system_buses() Bus registrations
  * @since Version 1.0.0
  */
-static const char* const s_motor_current_bus_names[k_motor_count] = {
+const char* const g_motor_current_bus_names[k_motor_count] = {
   "motor0_current", /* Motor 0 (FL): AN007, ch 7, P47 */
   "motor1_current", /* Motor 1 (FR): AN006, ch 6, P46 */
   "motor2_current", /* Motor 2 (BL): AN005, ch 5, P45 */
@@ -2918,15 +2946,16 @@ static void internal_update_motor_state(void)
 
     /* Motor current (DRV8263H IPROPI -> S12AD0): V = I * 202e-6 * 5100 = I * 1.0302 */
     uint32_t voltage_mv = 0U;
-    err = rx_bus_adc_read_voltage_mv(&g_bus_manager, s_motor_current_bus_names[i], &voltage_mv);
+    err = rx_bus_adc_read_voltage_mv(&g_bus_manager, g_motor_current_bus_names[i], &voltage_mv);
     if (err == k_rx_ok) {
-      const float voltage_v = (float)voltage_mv / 1000.0F;
-      state.current_ma[i]   = rx_drv8263_adc_to_amps(voltage_v) * 1000.0F;
+      const float voltage_v     = (float)voltage_mv / s_mv_per_v;
+      s_last_good_current_ma[i] = rx_drv8263_adc_to_amps(voltage_v) * s_ma_per_a;
+    }
 
-      /* Overcurrent protection: trigger e-stop if |current| exceeds 2 A limit */
-      if (fabsf(state.current_ma[i]) > (float)k_motor_current_limit_ma) {
-        (void)shared_data_trigger_estop(k_estop_reason_overcurrent);
-      }
+    /* Safety check on last-good current (preserved across ADC read failures) */
+    state.current_ma[i] = s_last_good_current_ma[i];
+    if (fabsf(state.current_ma[i]) > (float)k_motor_current_limit_ma) {
+      (void)shared_data_trigger_estop(k_estop_reason_overcurrent);
     }
   }
 

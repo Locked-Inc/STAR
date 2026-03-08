@@ -364,52 +364,32 @@ typedef enum : uint8_t {
 } motor_current_adc_count_t;
 
 /**
- * @struct motor_current_adc_desc_t
- * @brief Per-motor ADC descriptor: bus name and S12AD0 channel
+ * @var k_motor_current_adc_channels
+ * @brief S12AD0 channel for each motor current-sense input, indexed by motor index
  *
  * @details
- * Pairs each motor's bus manager name with its ADC channel so that
- * internal_register_system_buses() can register all four channels with a
- * single loop instead of four copy-pasted blocks.
+ * Maps motor index (0-3) to its S12AD0 channel. Bus names are obtained from
+ * g_motor_current_bus_names (declared in motor_control_task.h) so there is a
+ * single authoritative name table shared between bus registration here and
+ * ADC reads in motor_control_task.c.
  *
- * @invariant name must be a non-NULL string literal
- * @invariant channel must be a valid adc_channel_t value for S12AD0
+ * | Index | Motor | Channel | Pin |
+ * |-------|-------|---------|-----|
+ * | 0     | FL    | AN007   | P47 |
+ * | 1     | FR    | AN006   | P46 |
+ * | 2     | BL    | AN005   | P45 |
+ * | 3     | BR    | AN004   | P44 |
  *
- * @see k_motor_current_adc_descs Compile-time table of all four descriptors
- * @since Version 1.0.0
- */
-typedef struct {
-  const char*   name;    /**< Bus manager name (e.g. "motor0_current") */
-  adc_channel_t channel; /**< S12AD0 channel (AN004-AN007) */
-} motor_current_adc_desc_t;
-
-/**
- * @var k_motor_current_adc_descs
- * @brief Compile-time descriptor table for all four motor current-sense ADC channels
- *
- * @details
- * Maps motor index (0-3) to its bus name and S12AD0 channel. All four motors
- * share ADC unit S12AD0 and 12-bit resolution; only the channel and name differ.
- *
- * | Index | Motor | Bus name       | Channel | Pin |
- * |-------|-------|----------------|---------|-----|
- * | 0     | FL    | motor0_current | AN007   | P47 |
- * | 1     | FR    | motor1_current | AN006   | P46 |
- * | 2     | BL    | motor2_current | AN005   | P45 |
- * | 3     | BR    | motor3_current | AN004   | P44 |
- *
- * @note String literals reside in .rodata (no dynamic allocation).
- * @note Names must match motor_control_task.c s_motor_current_bus_names[].
  * @warning Array size must match k_motor_current_adc_count.
+ * @see g_motor_current_bus_names Shared bus name array (motor_control_task.h)
  * @see internal_register_system_buses() Iterates over this table
- * @see motor_control_task.c s_motor_current_bus_names Consumer bus name list
  * @since Version 1.0.0
  */
-static const motor_current_adc_desc_t k_motor_current_adc_descs[k_motor_current_adc_count] = {
-  {"motor0_current", k_adc_channel_7}, /* Motor 0 (FL): AN007, P47 */
-  {"motor1_current", k_adc_channel_6}, /* Motor 1 (FR): AN006, P46 */
-  {"motor2_current", k_adc_channel_5}, /* Motor 2 (BL): AN005, P45 */
-  {"motor3_current", k_adc_channel_4}, /* Motor 3 (BR): AN004, P44 */
+static const adc_channel_t k_motor_current_adc_channels[k_motor_current_adc_count] = {
+  k_adc_channel_7, /* Motor 0 (FL): AN007, P47 */
+  k_adc_channel_6, /* Motor 1 (FR): AN006, P46 */
+  k_adc_channel_5, /* Motor 2 (BL): AN005, P45 */
+  k_adc_channel_4, /* Motor 3 (BR): AN004, P44 */
 };
 
 /**
@@ -423,7 +403,7 @@ static const motor_current_adc_desc_t k_motor_current_adc_descs[k_motor_current_
  * lifetime and BSS-zero initialisation guarantees.
  *
  * @note Static allocation follows NASA Power of 10 Rule 3 (no dynamic memory).
- * @see k_motor_current_adc_descs Descriptor table supplying name and channel
+ * @see k_motor_current_adc_channels Channel table supplying S12AD0 channel per motor
  * @see rx_bus_config_init_adc() Bus configuration function
  * @see motor_control_task.c internal_update_motor_state() Consumer
  * @since Version 1.0.0
@@ -1774,14 +1754,14 @@ static void internal_register_system_buses(void)
   /* Register motor current-sense ADC channels (S12AD0, 12-bit, 4 motors) */
   for (uint8_t i = 0; i < k_motor_current_adc_count; i++) {
     err = rx_bus_config_init_adc(&s_motor_current_configs[i],
-                                 k_motor_current_adc_descs[i].name,    /* name */
-                                 k_adc_unit_0,                         /* unit = S12AD0 */
-                                 k_motor_current_adc_descs[i].channel, /* channel = AN004-7 */
-                                 k_adc_resolution_12bit);              /* bits = 12-bit */
+                                 g_motor_current_bus_names[i],    /* name (shared) */
+                                 k_adc_unit_0,                    /* unit = S12AD0 */
+                                 k_motor_current_adc_channels[i], /* channel = AN004-7 */
+                                 k_adc_resolution_12bit);         /* bits = 12-bit */
     RX_ASSERT(err == k_rx_ok, "motor_current config init must succeed");
     err = rx_bus_manager_add_bus(&g_bus_manager, &s_motor_current_configs[i]);
     RX_ASSERT(err == k_rx_ok, "motor_current registration must succeed");
-    err = rx_bus_adc_init(&g_bus_manager, k_motor_current_adc_descs[i].name);
+    err = rx_bus_adc_init(&g_bus_manager, g_motor_current_bus_names[i]);
     RX_ASSERT(err == k_rx_ok, "motor_current ADC init must succeed");
   }
 
