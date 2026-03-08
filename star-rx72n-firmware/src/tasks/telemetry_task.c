@@ -1639,132 +1639,48 @@ static void internal_telem_task_entry(ULONG input)
  * @brief Select the active transport channel for this telemetry cycle
  *
  * @details
- * Queries the communication manager to determine which physical channel is
- * ready for transmission. Implements the USB-preferred, SPI-fallback policy:
+ * Reads the active command channel recorded by the comm task and maps it to
+ * the corresponding telemetry transport. Implements symmetric routing so that
+ * telemetry replies travel on the same physical link as incoming commands:
  *
- * 1. Query USB CDC readiness via rx_comm_manager_channel_ready()
- * 2. If USB is ready, return k_telemetry_transport_usb
- * 3. Otherwise query SPI readiness
- * 4. If SPI is ready, return k_telemetry_transport_spi (and log the failover
- *    once per transition)
- * 5. If neither is ready, return k_telemetry_transport_none
+ * 1. Call shared_data_get_active_channel() to read the last command channel
+ * 2. If the channel is k_comm_channel_spi, return k_telemetry_transport_spi
+ * 3. Otherwise (USB or no command received yet), return k_telemetry_transport_usb
  *
- * The function uses a static flag to detect the USB->SPI transition and emits
- * a warning log exactly once per failover event (not once per cycle) to avoid
- * log flooding at 20 Hz.
+ * Before any command has been received, shared_data_get_active_channel()
+ * returns k_comm_channel_usb (the USB default), preserving the existing
+ * USB-preferred startup behaviour.
  *
  * @return telemetry_transport_t Selected transport
- * @retval k_telemetry_transport_usb  USB CDC ready, use as primary
- * @retval k_telemetry_transport_spi  USB not ready, SPI available as fallback
- * @retval k_telemetry_transport_none Both channels unavailable, drop message
+ * @retval k_telemetry_transport_usb  USB was the last command channel, or no
+ *                                    command has been received yet
+ * @retval k_telemetry_transport_spi  SPI was the last command channel
  *
- * @pre g_comm_manager must be initialized via rx_comm_manager_init()
- * @pre rx_comm_manager_channel_ready() must be callable (non-blocking)
- * @post Returned transport reflects real-time channel readiness
- * @post Transition warning logged at most once per USB->SPI failover event
+ * @pre shared_data_init() has been called
+ * @pre shared_data_get_active_channel() returns a valid rx_comm_channel_t
+ * @post Return value is k_telemetry_transport_usb or k_telemetry_transport_spi
+ * @post Shared data is not modified (read-only access)
  *
  * @note Called every 50 ms from internal_build_and_send_telemetry() (20 Hz)
- * @note Non-blocking: rx_comm_manager_channel_ready() never blocks
- * @note Thread-safe: reads only s_usb_was_active (single writer: this task)
- *
- * @warning Returns k_telemetry_transport_none if g_comm_manager not initialized
- *
- * @par Channel selection state machine:
- * @startuml
- * state "USB Active" as usb {
- *   usb : Entry - Log info on first use
- *   usb : Do - Send telemetry via k_comm_channel_usb
- * }
- * state "SPI Fallback" as spi {
- *   spi : Entry - Log warning (USB->SPI failover detected)
- *   spi : Do - Send telemetry via k_comm_channel_spi
- * }
- * state "No Transport" as none {
- *   none : Do - Drop telemetry message, log warning
- * }
- * [*] --> usb : USB ready at startup
- * [*] --> spi : USB not ready at startup
- * [*] --> none : Both unavailable
- * usb --> spi : USB not ready\n(disconnect detected)
- * usb --> none : Both unavailable
- * spi --> usb : USB reconnected
- * spi --> none : SPI also lost
- * none --> usb : USB reconnected
- * none --> spi : SPI becomes available
- * @enduml
+ * @note Non-blocking: shared_data_get_active_channel() acquires mutex briefly
+ * @note Thread-safe: shared_data_get_active_channel() is mutex-protected
  *
  * @see internal_build_and_send_telemetry() Caller - maps transport to channel
- * @see rx_comm_manager_channel_ready() Readiness query API
- * @see rx_comm_manager_channel_name() Human-readable channel name for logs
+ * @see shared_data_get_active_channel() Active channel reader
+ * @see shared_data_update_active_channel() Written by comm task on each frame
  *
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Rule 5 Compliance:
- * - Precondition 1: g_comm_manager initialized (checked via channel_ready return)
- * - Precondition 2: channel argument within valid enum range
+ * - Precondition 1: shared_data_init() has been called
+ * - Precondition 2: shared_data_get_active_channel() returns a valid rx_comm_channel_t
  * - Postcondition 1: Returns a valid telemetry_transport_t value
- * - Postcondition 2: Transition logged if s_usb_was_active changes
+ * - Postcondition 2: Return value is k_telemetry_transport_usb or k_telemetry_transport_spi
  */
 static telemetry_transport_t internal_select_transport(void)
 {
-  /** @brief Tracks previous USB active state to detect failover transitions */
-  static bool s_usb_was_active = false;
-
-  /**
-   * @brief Rate-limits the "no transport" warning to once per transition into no-transport state
-   *
-   * @details
-   * Prevents log flooding at 20 Hz when both channels are unavailable.
-   * Cleared when either USB or SPI becomes ready so the warning fires again
-   * on the next failure.
-   */
-  static bool s_no_transport_logged = false;
-
-  /* Query USB channel readiness */
-  bool     usb_ready = false;
-  rx_err_t err = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_usb, &usb_ready);
-  if (err != k_rx_ok) {
-    /* Treat query failure as channel not ready */
-    usb_ready = false;
-  }
-
-  if (usb_ready) {
-    /* USB is ready: use as primary transport */
-    if (!s_usb_was_active) {
-      /* Log USB (re)activation - first cycle or recovery from SPI fallback */
-      rx_log_info(s_tag, "Telemetry transport: USB CDC (primary)");
-      s_usb_was_active = true;
-    }
-    /* Reset no-transport flag so warning fires again on next failure */
-    s_no_transport_logged = false;
-    return k_telemetry_transport_usb;
-  }
-
-  /* USB not ready: log failover warning on transition */
-  if (s_usb_was_active) {
-    rx_log_warn(s_tag, "USB CDC not ready - falling back to SPI");
-    s_usb_was_active = false;
-  }
-
-  /* Query SPI channel readiness */
-  bool spi_ready = false;
-  err            = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_spi, &spi_ready);
-  if (err != k_rx_ok) {
-    spi_ready = false;
-  }
-
-  if (spi_ready) {
-    /* Reset no-transport flag so warning fires again on SPI loss */
-    s_no_transport_logged = false;
-    return k_telemetry_transport_spi;
-  }
-
-  /* Neither channel ready: log once per transition into no-transport state */
-  if (!s_no_transport_logged) {
-    rx_log_warn(s_tag, "No transport available - dropping telemetry");
-    s_no_transport_logged = true;
-  }
-  return k_telemetry_transport_none;
+  const rx_comm_channel_t ch = (rx_comm_channel_t)shared_data_get_active_channel();
+  return (ch == k_comm_channel_spi) ? k_telemetry_transport_spi : k_telemetry_transport_usb;
 }
 
 /**
@@ -2368,11 +2284,8 @@ static rx_err_t internal_build_and_send_telemetry(void)
     return err;
   }
 
-  /* Select transport (USB preferred, SPI fallback) */
+  /* Select transport based on active command channel */
   transport = internal_select_transport();
-  if (transport == k_telemetry_transport_none) {
-    return k_rx_err_invalid_state;
-  }
 
   /* Assert HOST_IRQ LOW (active-low) to notify RPi5 that data is ready */
   (void)gpio_write_low(g_pin_host_irq);

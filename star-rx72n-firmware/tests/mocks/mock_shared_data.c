@@ -75,10 +75,12 @@ static uint32_t s_set_event_count = k_mock_count_reset;
  * =============================================================================
  */
 
-static bool           s_initialized  = false;
-static bool           s_estop_active = false;
-static estop_reason_t s_estop_reason = k_estop_reason_none;
-static bool           s_comm_timeout = false;
+static bool           s_initialized                 = false;
+static bool           s_estop_active                = false;
+static estop_reason_t s_estop_reason                = k_estop_reason_none;
+static bool           s_comm_timeout                = false;
+static uint8_t        s_active_channel              = 0U; /* 0 == k_comm_channel_usb */
+static uint32_t       s_active_channel_update_count = k_mock_count_reset;
 
 static motor_command_t s_motor_command      = {0};
 static motor_state_t   s_motor_state        = {0};
@@ -143,9 +145,11 @@ void mock_shared_data_reset(void)
   (void)memset(&s_temp_state, 0, sizeof(s_temp_state));
   (void)memset(&s_obstacle_state, 0, sizeof(s_obstacle_state));
 
-  s_last_triggered_reason = k_estop_reason_none;
-  s_set_event_count       = k_mock_count_reset;
-  s_last_event_flags      = k_event_none;
+  s_last_triggered_reason       = k_estop_reason_none;
+  s_set_event_count             = k_mock_count_reset;
+  s_last_event_flags            = k_event_none;
+  s_active_channel              = 0U; /* 0 == k_comm_channel_usb */
+  s_active_channel_update_count = k_mock_count_reset;
 }
 
 void mock_shared_data_set_init_return(rx_err_t err)
@@ -452,6 +456,28 @@ void shared_data_update_last_comm_tick(void)
 {
   /* In mock, this just clears the timeout flag */
   s_comm_timeout = false;
+}
+
+/* Active Channel Routing */
+void mock_shared_data_set_active_channel(uint8_t channel)
+{
+  s_active_channel = channel;
+}
+
+uint32_t mock_shared_data_get_active_channel_update_count(void)
+{
+  return s_active_channel_update_count;
+}
+
+void shared_data_update_active_channel(uint8_t channel)
+{
+  s_active_channel = channel;
+  s_active_channel_update_count++;
+}
+
+uint8_t shared_data_get_active_channel(void)
+{
+  return s_active_channel;
 }
 
 /* Event Flags */

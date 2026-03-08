@@ -387,6 +387,8 @@
 typedef enum : uint8_t {
   k_mutex_inherit = 1,  /**< TX_INHERIT for mutex creation (priority inheritance enabled) */
   k_ms_per_tick   = 10, /**< ThreadX milliseconds per tick (100 Hz tick rate = 10ms/tick) */
+  k_shared_channel_usb_default =
+    0, /**< Fail-safe USB channel value (== k_comm_channel_usb); avoids rx_comm_manager.h include */
 } shared_data_internal_constants_t;
 
 /**
@@ -2600,6 +2602,41 @@ void shared_data_update_last_comm_tick(void)
   g_shared_data.last_comm_tick = tx_time_get();
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
+}
+
+void shared_data_update_active_channel(uint8_t channel)
+{
+  if (!g_shared_data.initialized) {
+    return;
+  }
+
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  if (tx_status != TX_SUCCESS) {
+    return;
+  }
+
+  g_shared_data.active_channel       = channel;
+  g_shared_data.active_channel_valid = true;
+
+  (void)tx_mutex_put(&g_shared_data.motor_mutex);
+}
+
+uint8_t shared_data_get_active_channel(void)
+{
+  if (!g_shared_data.initialized || !g_shared_data.active_channel_valid) {
+    return k_shared_channel_usb_default;
+  }
+
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  if (tx_status != TX_SUCCESS) {
+    return k_shared_channel_usb_default;
+  }
+
+  const uint8_t ch = g_shared_data.active_channel;
+
+  (void)tx_mutex_put(&g_shared_data.motor_mutex);
+
+  return ch;
 }
 
 /* =============================================================================

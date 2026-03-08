@@ -361,6 +361,10 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state);
 bool shared_data_is_comm_timeout(void);
 void shared_data_update_last_comm_tick(void);
 
+/* Active Channel Routing */
+void    shared_data_update_active_channel(uint8_t channel);
+uint8_t shared_data_get_active_channel(void);
+
 /* Event Flags */
 
 /**
@@ -392,6 +396,35 @@ void shared_data_update_last_comm_tick(void);
  * @since Version 1.0.0
  */
 rx_err_t shared_data_set_event(shared_event_flags_t flags);
+
+/**
+ * @brief Configure the channel returned by shared_data_get_active_channel()
+ *
+ * @param[in] channel Channel to store as the active channel (rx_comm_channel_t cast to uint8_t)
+ *
+ * @pre mock_shared_data_reset() called at least once
+ * @pre channel is a valid rx_comm_channel_t value cast to uint8_t
+ * @post shared_data_get_active_channel() returns channel
+ * @post active_channel_update_count unchanged
+ *
+ * @note For test setup only; call before the code under test runs
+ */
+void mock_shared_data_set_active_channel(uint8_t channel);
+
+/**
+ * @brief Return how many times shared_data_update_active_channel() was called
+ *
+ * @return uint32_t Number of calls since last mock_shared_data_reset()
+ * @retval 0 Not called yet
+ *
+ * @pre mock_shared_data_reset() called at least once
+ * @pre shared_data_update_active_channel() may or may not have been called
+ * @post Internal counter unchanged (read-only)
+ * @post Return value >= 0
+ *
+ * @note Useful for asserting comm task calls update on every frame
+ */
+uint32_t mock_shared_data_get_active_channel_update_count(void);
 
 #ifdef __cplusplus
 }
