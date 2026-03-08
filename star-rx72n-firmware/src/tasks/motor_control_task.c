@@ -455,8 +455,7 @@ typedef enum : uint16_t {
  * 341 pulses per revolution (PPR) x 4 (quadrature decoding edges) = 1364
  * counts per revolution. This provides ~0.26deg angular resolution.
  *
- * @invariant k_motor_count must match the number of H-bridge channels
- *            physically wired on the PCB (4 channels fixed)
+ * @invariant k_motor_count is authoritative in motor_control_task.h (motor_count_t)
  * @invariant k_control_period_us must match the ThreadX tick period in
  *            microseconds (10 ticks/s x 1000 us/tick = 10000 us)
  *
@@ -469,12 +468,11 @@ typedef enum : uint16_t {
  *
  * @see motor_hw_constants_t Hardware-level PWM and current parameters
  * @see motor_task_constants_t Task scheduling constants
+ * @see motor_count_t Authoritative k_motor_count (motor_control_task.h)
  *
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_motor_count =
-    4, /**< Number of motors: 4 wheels (front-left, front-right, back-left, back-right) */
   k_control_period_us = 10000, /**< Control period: 10000 us = 10ms = 100 Hz control loop rate */
   k_active_brake_ms   = 50, /**< Active brake duration: 50ms short-circuit braking before coast */
   k_active_brake_duty = 30, /**< Active brake PWM duty: 30% duty cycle during braking phase */
@@ -836,17 +834,37 @@ static bool s_timeout_estop_triggered = false;
  *
  * @details
  * Preserved across control loop iterations so that a transient ADC read
- * failure does not silently zero the current value used for overcurrent
- * protection. On the first iteration this is 0 mA (BSS zero-init), which
- * is safe -- the overcurrent check cannot false-trigger at 0 mA.
+ * failure does not discard the most recent valid measurement. Only used
+ * when s_last_good_current_valid[i] == true; BSS zero-init is NOT treated
+ * as a valid 0 mA sample.
  *
  * @note Static allocation: no dynamic memory (NASA Rule 3).
  * @note Written only on successful rx_bus_adc_read_voltage_mv() calls.
  * @warning Direct modification outside internal_update_motor_state() is
  *          forbidden -- read path owns this state.
+ * @see s_last_good_current_valid Validity flag that guards access to this array
  * @since Version 1.0.0
  */
 static float s_last_good_current_ma[k_motor_count];
+
+/**
+ * @var s_last_good_current_valid
+ * @brief Per-channel validity flag for s_last_good_current_ma[]
+ *
+ * @details
+ * Set to true only after the first successful rx_bus_adc_read_voltage_mv()
+ * call for each channel. When false the BSS-zero value in
+ * s_last_good_current_ma[i] must not be published or used for safety checks;
+ * internal_update_motor_state() trips the overcurrent e-stop as a fail-safe
+ * until a valid sample arrives.
+ *
+ * @note BSS zero-init means all channels start as invalid (false). This is
+ *       intentional: unsampled current must not be assumed to be 0 mA.
+ * @note Written only by internal_update_motor_state().
+ * @see s_last_good_current_ma Values guarded by this array
+ * @since Version 1.0.0
+ */
+static bool s_last_good_current_valid[k_motor_count];
 
 /** @brief Flag to track if currently in active brake sequence */
 static bool s_active_brake_in_progress = false;
@@ -2885,7 +2903,10 @@ static void internal_check_comm_timeout(void)
  * 6. **Read Current:** rx_bus_adc_read_voltage_mv() + rx_drv8263_adc_to_amps()
  *    -> state.current_ma[i]  (DRV8263H IPROPI: V = I * 202e-6 * 5100 = I * 1.0302)
  *
- * 7. **Overcurrent Check:** if |state.current_ma[i]| > k_motor_current_limit_ma (2 A)
+ * 7. **Validity gate:** if !s_last_good_current_valid[i]
+ *    -> trigger overcurrent e-stop as fail-safe; skip publishing for this channel
+ *
+ * 7b. **Overcurrent Check:** if |state.current_ma[i]| > k_motor_current_limit_ma (2 A)
  *    -> call shared_data_trigger_estop(k_estop_reason_overcurrent)
  *
  * 8. **Aggregate E-Stop:** state.estop_active = shared_data_is_estop_active()
@@ -2948,8 +2969,15 @@ static void internal_update_motor_state(void)
     uint32_t voltage_mv = 0U;
     err = rx_bus_adc_read_voltage_mv(&g_bus_manager, g_motor_current_bus_names[i], &voltage_mv);
     if (err == k_rx_ok) {
-      const float voltage_v     = (float)voltage_mv / s_mv_per_v;
-      s_last_good_current_ma[i] = rx_drv8263_adc_to_amps(voltage_v) * s_ma_per_a;
+      const float voltage_v        = (float)voltage_mv / s_mv_per_v;
+      s_last_good_current_ma[i]    = rx_drv8263_adc_to_amps(voltage_v) * s_ma_per_a;
+      s_last_good_current_valid[i] = true;
+    }
+
+    /* Fail-safe: treat unsampled channel as unsafe until first valid read */
+    if (!s_last_good_current_valid[i]) {
+      (void)shared_data_trigger_estop(k_estop_reason_overcurrent);
+      continue;
     }
 
     /* Safety check on last-good current (preserved across ADC read failures) */
