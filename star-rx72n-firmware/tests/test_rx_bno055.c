@@ -8,12 +8,12 @@
  * public API: init, read, and calibration check.
  *
  * All hardware interaction is intercepted by mock_riic_hal (channel 1, the
- * RIIC channel used by "i2c1"). The real rx_bus_i2c.c and mock bus manager
+ * RIIC channel used by "i2c1_imu"). The real rx_bus_i2c.c and mock bus manager
  * are linked so bus resolution and RIIC calls exercise the full software stack.
  *
  * @par Test Architecture
  *
- * The BNO055 driver uses bus name "i2c1" on RIIC channel 1 (address 0x28).
+ * The BNO055 driver uses bus name "i2c1_imu" on RIIC channel 1 (address 0x28).
  * setUp() registers this bus with the mock bus manager and initialises RIIC
  * channel 1 via rx_bus_i2c_init(). Tests then pre-load mock RX data and/or
  * inject errors to steer the driver through all code paths.
@@ -94,7 +94,7 @@
  *
  * @details
  * The BNO055 is connected to RIIC channel 1 (P2.0=SDA1, P2.1=SCL1) at
- * address 0x28. The bus name "i2c1" must match the string hardcoded in
+ * address 0x28. The bus name "i2c1_imu" must match the string hardcoded in
  * rx_bno055.c (s_bus_name).
  *
  * @since Version 1.0.0
@@ -291,7 +291,7 @@ static rx_bus_manager_t s_test_manager;
 /**
  * @var s_i2c_config
  * @brief I2C bus configuration for BNO055 (channel 1, addr 0x28)
- * @details Configured in setUp() to match the "i2c1" bus expected by rx_bno055.c.
+ * @details Configured in setUp() to match the "i2c1_imu" bus expected by rx_bno055.c.
  * @since Version 1.0.0
  */
 static rx_bus_config_t s_i2c_config;
@@ -467,7 +467,7 @@ static void internal_load_lia_read_data(void)
  * 2. Reset mock RIIC HAL state (mock_riic_init)
  * 3. Initialize bus manager
  * 4. Create I2C bus config (channel 1, addr 0x28, 400 kHz, P2.0/P2.1)
- * 5. Register bus with manager as "i2c1"
+ * 5. Register bus with manager as "i2c1_imu"
  * 6. Initialize RIIC channel 1 via rx_bus_i2c_init()
  *
  * The driver statics s_initialized and s_manager are reset to their
@@ -476,7 +476,7 @@ static void internal_load_lia_read_data(void)
  *
  * @pre None - called by Unity before each test
  * @pre s_initialized may be any value (reset by rx_bno055_test_reset_state())
- * @post s_initialized == false; s_test_manager ready with "i2c1" registered
+ * @post s_initialized == false; s_test_manager ready with "i2c1_imu" registered
  * @post RIIC channel 1 initialized and ready for mock transactions
  *
  * @since Version 1.0.0
@@ -490,7 +490,7 @@ void setUp(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_config_init_i2c(&s_i2c_config,
-                               "i2c1",
+                               "i2c1_imu",
                                (uint8_t)k_test_bno055_riic_ch,
                                (uint8_t)k_test_bno055_i2c_addr,
                                k_rx_p2_0,
@@ -501,7 +501,7 @@ void setUp(void)
   err = rx_bus_manager_add_bus(&s_test_manager, &s_i2c_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = rx_bus_i2c_init(&s_test_manager, "i2c1");
+  err = rx_bus_i2c_init(&s_test_manager, "i2c1_imu");
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -674,7 +674,7 @@ void test_bno055_read_before_init(void)
  * All subsequent tests that require s_initialized == true depend on this.
  *
  * @pre s_initialized == false
- * @pre setUp() has registered "i2c1" bus and chip ID mock loaded via internal_load_valid_chip_id()
+ * @pre setUp() has registered "i2c1_imu" bus and chip ID mock loaded via internal_load_valid_chip_id()
  * @post s_initialized == true
  * @post rx_bno055_read() returns k_rx_ok confirming driver is operational
  *
