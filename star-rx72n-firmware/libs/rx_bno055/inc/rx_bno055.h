@@ -40,9 +40,14 @@
  *
  * # Initialization Sequence
  *
- * The rx_bno055_init() function performs the following steps:
+ * Before calling rx_bno055_init(), the caller (imu_task.c) performs a hardware
+ * reset via P83 (IMU RST, active-low): assert LOW for >= 10 ms, then deassert
+ * HIGH and wait 650 ms for the BNO055 POR sequence to complete. See
+ * internal_imu_hardware_reset() in imu_task.c.
  *
- * 1. Software reset (SYS_TRIGGER = 0x20), wait 650 ms
+ * The rx_bno055_init() function then performs the following steps:
+ *
+ * 1. Software reset (SYS_TRIGGER = 0x20), wait 650 ms (belt-and-suspenders)
  * 2. Set CONFIG mode (OPR_MODE = 0x00), wait 19 ms
  * 3. Set normal power mode (PWR_MODE = 0x00)
  * 4. Set default units (UNIT_SEL = 0x00)
@@ -263,6 +268,9 @@ typedef struct {
  * @retval k_rx_err_invalid_state CHIP_ID mismatch (wrong device or I2C issue)
  * @retval k_rx_err_timeout I2C transaction timeout
  *
+ * @pre Caller must have completed hardware reset via P83 (IMU RST, active-low):
+ *      assert LOW for >= 10 ms, deassert HIGH, wait >= 650 ms for POR to complete.
+ *      See internal_imu_hardware_reset() in imu_task.c.
  * @pre manager must be initialized via rx_bus_manager_init()
  * @pre "i2c1_imu" bus must be registered and initialized in manager
  * @pre RIIC1 hardware initialized by hardware_init() (riic_init)
