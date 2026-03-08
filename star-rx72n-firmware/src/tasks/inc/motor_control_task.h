@@ -40,15 +40,16 @@
 
 /**
  * @enum motor_count_t
- * @brief Motor count sentinels for motor_control_task_get_motors()
+ * @brief Authoritative motor-count constants shared across the motor subsystem
  *
  * @details
- * Named constants for motor count return values. Used to avoid magic
- * number 0 in callers checking whether motors are ready. Callers should
- * compare the out_count value returned by motor_control_task_get_motors()
- * against k_motor_count_none to determine whether motors are available.
+ * Provides the authoritative motor count (k_motor_count) used to size arrays in
+ * motor_control_task.c and the extern declaration of g_motor_current_bus_names.
+ * Also provides the sentinel k_motor_count_none for callers of
+ * motor_control_task_get_motors().
  *
  * @invariant k_motor_count_none == 0 (sentinel value, never a valid motor count)
+ * @invariant k_motor_count == 4 (one entry per wheel: FL, FR, BL, BR)
  *
  * @code
  * uint8_t motor_count = k_motor_count_none;
@@ -59,13 +60,30 @@
  * @endcode
  *
  * @see motor_control_task_get_motors() Returns k_motor_count_none when not ready
+ * @see g_motor_current_bus_names Sized by k_motor_count
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_motor_count_none =
     0, /**< Zero motors available -- motor_control_task_create() has not yet been called */
+  k_motor_count = 4U, /**< Number of motors: FL, FR, BL, BR */
 } motor_count_t;
+
+/**
+ * @var g_motor_current_bus_names
+ * @brief Shared ADC bus-name table for motor current sensing (motor index -> bus name)
+ *
+ * @details
+ * Single definition lives in motor_control_task.c. Declared here so that
+ * main.c can use the same names for bus registration without duplicating the
+ * table. Array has k_motor_count entries (one per motor).
+ *
+ * @see motor_control_task.c g_motor_current_bus_names Definition
+ * @see main.c internal_register_system_buses() Bus registration consumer
+ * @since Version 1.0.0
+ */
+extern const char* const g_motor_current_bus_names[k_motor_count];
 
 /**
  * @brief Create and start the motor control task

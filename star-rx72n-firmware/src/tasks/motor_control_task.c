@@ -375,7 +375,10 @@
 
 #include "motor_control_task.h"
 
+#include <math.h>
+
 #include "hardware_config.h"
+#include "rx_bus_adc.h"
 #include "rx_bus_manager.h"
 #include "rx_check.h"
 #include "rx_drv8263.h"
@@ -452,8 +455,7 @@ typedef enum : uint16_t {
  * 341 pulses per revolution (PPR) x 4 (quadrature decoding edges) = 1364
  * counts per revolution. This provides ~0.26deg angular resolution.
  *
- * @invariant k_motor_count must match the number of H-bridge channels
- *            physically wired on the PCB (4 channels fixed)
+ * @invariant k_motor_count is authoritative in motor_control_task.h (motor_count_t)
  * @invariant k_control_period_us must match the ThreadX tick period in
  *            microseconds (10 ticks/s x 1000 us/tick = 10000 us)
  *
@@ -466,12 +468,11 @@ typedef enum : uint16_t {
  *
  * @see motor_hw_constants_t Hardware-level PWM and current parameters
  * @see motor_task_constants_t Task scheduling constants
+ * @see motor_count_t Authoritative k_motor_count (motor_control_task.h)
  *
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_motor_count =
-    4, /**< Number of motors: 4 wheels (front-left, front-right, back-left, back-right) */
   k_control_period_us = 10000, /**< Control period: 10000 us = 10ms = 100 Hz control loop rate */
   k_active_brake_ms   = 50, /**< Active brake duration: 50ms short-circuit braking before coast */
   k_active_brake_duty = 30, /**< Active brake PWM duty: 30% duty cycle during braking phase */
@@ -616,6 +617,12 @@ static const float s_pid_output_min_percent = -100.0F;
 
 /** @brief PID output maximum (percent duty) */
 static const float s_pid_output_max_percent = 100.0F;
+
+/** @brief Millivolts per volt: converts ADC millivolt reading to volts */
+static const float s_mv_per_v = 1000.0F;
+
+/** @brief Milliamps per amp: converts rx_drv8263_adc_to_amps() result to mA */
+static const float s_ma_per_a = 1000.0F;
 
 /** @brief PID integral minimum (percent, anti-windup clamp) */
 static const float s_pid_integral_min_percent = -50.0F;
@@ -821,11 +828,82 @@ static const float s_dt_sec = 0.004f;
 /** @brief Flag to track if timeout e-stop was already triggered */
 static bool s_timeout_estop_triggered = false;
 
+/**
+ * @var s_last_good_current_ma
+ * @brief Last successfully read motor current for each channel (mA)
+ *
+ * @details
+ * Preserved across control loop iterations so that a transient ADC read
+ * failure does not discard the most recent valid measurement. Only used
+ * when s_last_good_current_valid[i] == true; BSS zero-init is NOT treated
+ * as a valid 0 mA sample.
+ *
+ * @note Static allocation: no dynamic memory (NASA Rule 3).
+ * @note Written only on successful rx_bus_adc_read_voltage_mv() calls.
+ * @warning Direct modification outside internal_update_motor_state() is
+ *          forbidden -- read path owns this state.
+ * @see s_last_good_current_valid Validity flag that guards access to this array
+ * @since Version 1.0.0
+ */
+static float s_last_good_current_ma[k_motor_count];
+
+/**
+ * @var s_last_good_current_valid
+ * @brief Per-channel validity flag for s_last_good_current_ma[]
+ *
+ * @details
+ * Set to true only after the first successful rx_bus_adc_read_voltage_mv()
+ * call for each channel. When false the BSS-zero value in
+ * s_last_good_current_ma[i] must not be published or used for safety checks;
+ * internal_update_motor_state() trips the overcurrent e-stop as a fail-safe
+ * until a valid sample arrives.
+ *
+ * @note BSS zero-init means all channels start as invalid (false). This is
+ *       intentional: unsampled current must not be assumed to be 0 mA.
+ * @note Written only by internal_update_motor_state().
+ * @see s_last_good_current_ma Values guarded by this array
+ * @since Version 1.0.0
+ */
+static bool s_last_good_current_valid[k_motor_count];
+
 /** @brief Flag to track if currently in active brake sequence */
 static bool s_active_brake_in_progress = false;
 
 /** @brief Log tag for this module */
 static const char* const s_tag = "MOTOR";
+
+/**
+ * @var g_motor_current_bus_names
+ * @brief ADC bus names for motor current sensing, indexed by motor index
+ *
+ * @details
+ * Single authoritative mapping from motor index [0..3] to the bus manager
+ * name for its IPROPI current-sense channel. Shared with main.c so that
+ * bus registration and ADC reads always reference the same string -- a
+ * rename only needs to happen here. Channel-to-motor assignment follows
+ * the PCB schematic:
+ *
+ * | Motor | Index | Bus Name       | ADC Ch | Pin |
+ * |-------|-------|----------------|--------|-----|
+ * | FL    | 0     | motor0_current | AN007  | P47 |
+ * | FR    | 1     | motor1_current | AN006  | P46 |
+ * | BL    | 2     | motor2_current | AN005  | P45 |
+ * | BR    | 3     | motor3_current | AN004  | P44 |
+ *
+ * @note String literals reside in .rodata (no dynamic allocation).
+ * @note Declared extern in motor_control_task.h; main.c uses it for
+ *       bus registration so the two files share one definition.
+ * @warning Array size must match k_motor_count (4). Do not modify independently.
+ * @see internal_update_motor_state() Consumer of this array
+ * @see main.c internal_register_system_buses() Bus registrations
+ * @since Version 1.0.0
+ */
+const char* const g_motor_current_bus_names[k_motor_count] = {
+  "motor0_current", /* Motor 0 (FL): AN007, ch 7, P47 */
+  "motor1_current", /* Motor 1 (FR): AN006, ch 6, P46 */
+  "motor2_current", /* Motor 2 (BL): AN005, ch 5, P45 */
+  "motor3_current", /* Motor 3 (BR): AN004, ch 4, P44 */
+};
 
 /**
  * @var s_task_name
@@ -2822,13 +2900,22 @@ static void internal_check_comm_timeout(void)
  *
  * 5. **Read Encoder Count:** rx_encoder_read_count() -> state.encoder_counts[i]
  *
- * 6. **Aggregate E-Stop:** state.estop_active = shared_data_is_estop_active()
+ * 6. **Read Current:** rx_bus_adc_read_voltage_mv() + rx_drv8263_adc_to_amps()
+ *    -> state.current_ma[i]  (DRV8263H IPROPI: V = I * 202e-6 * 5100 = I * 1.0302)
  *
- * 7. **E-Stop Reason:** state.estop_reason = shared_data_get_estop_reason()
+ * 7. **Validity gate:** if !s_last_good_current_valid[i]
+ *    -> trigger overcurrent e-stop as fail-safe; skip publishing for this channel
  *
- * 8. **Mode:** state.mode = estop ? k_motor_mode_estop : k_motor_mode_velocity
+ * 7b. **Overcurrent Check:** if |state.current_ma[i]| > k_motor_current_limit_ma (2 A)
+ *    -> call shared_data_trigger_estop(k_estop_reason_overcurrent)
  *
- * 9. **Write to Shared Data:** shared_data_update_motor_state(&state)
+ * 8. **Aggregate E-Stop:** state.estop_active = shared_data_is_estop_active()
+ *
+ * 9. **E-Stop Reason:** state.estop_reason = shared_data_get_estop_reason()
+ *
+ * 10. **Mode:** state.mode = estop ? k_motor_mode_estop : k_motor_mode_velocity
+ *
+ * 11. **Write to Shared Data:** shared_data_update_motor_state(&state)
  *
  * @return void Function always completes (no error return)
  *
@@ -2837,15 +2924,19 @@ static void internal_check_comm_timeout(void)
  *
  * @post shared_data.motor_state updated with latest values
  * @post Telemetry task can read updated state
+ * @post E-stop triggered if any motor exceeds k_motor_current_limit_ma
  *
  * @note **Thread Safety:** Mutex-protected via shared_data API
  * @note **Performance:** ~100 us (reads + mutex write)
  * @note **Error Handling:** Read errors result in 0 values (safe fallback)
  *
  * @see shared_data_update_motor_state() Write aggregated state
+ * @see shared_data_trigger_estop() Trigger emergency stop on overcurrent
  * @see rx_encoder_read_velocity() Read motor velocity
  * @see rx_motor_get_duty() Read PWM duty cycle
  * @see rx_encoder_read_count() Read encoder position
+ * @see rx_bus_adc_read_voltage_mv() Read IPROPI voltage for current sensing
+ * @see rx_drv8263_adc_to_amps() Convert IPROPI voltage to motor current (A)
  *
  * @since Version 1.0.0
  *
@@ -2872,6 +2963,27 @@ static void internal_update_motor_state(void)
     err = internal_read_encoder_count(i, &s_encoder_state[i]);
     if (err == k_rx_ok) {
       state.encoder_counts[i] = s_encoder_state[i].total_count;
+    }
+
+    /* Motor current (DRV8263H IPROPI -> S12AD0): V = I * 202e-6 * 5100 = I * 1.0302 */
+    uint32_t voltage_mv = 0U;
+    err = rx_bus_adc_read_voltage_mv(&g_bus_manager, g_motor_current_bus_names[i], &voltage_mv);
+    if (err == k_rx_ok) {
+      const float voltage_v        = (float)voltage_mv / s_mv_per_v;
+      s_last_good_current_ma[i]    = rx_drv8263_adc_to_amps(voltage_v) * s_ma_per_a;
+      s_last_good_current_valid[i] = true;
+    }
+
+    /* Fail-safe: treat unsampled channel as unsafe until first valid read */
+    if (!s_last_good_current_valid[i]) {
+      (void)shared_data_trigger_estop(k_estop_reason_sensor_failure);
+      continue;
+    }
+
+    /* Safety check on last-good current (preserved across ADC read failures) */
+    state.current_ma[i] = s_last_good_current_ma[i];
+    if (fabsf(state.current_ma[i]) > (float)k_motor_current_limit_ma) {
+      (void)shared_data_trigger_estop(k_estop_reason_overcurrent);
     }
   }
 

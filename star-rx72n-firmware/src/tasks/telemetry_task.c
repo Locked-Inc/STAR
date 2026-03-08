@@ -1781,16 +1781,17 @@ static telemetry_transport_t internal_select_transport(void)
  * | k_estop_reason_comm_timeout | ESTOP_REASON_COMM_TIMEOUT                  |
  * | k_estop_reason_obstacle     | ESTOP_REASON_OBSTACLE                      |
  * | k_estop_reason_driver_fault | ESTOP_REASON_FAULT                         |
- * | k_estop_reason_overcurrent  | ESTOP_REASON_OVERCURRENT                   |
- * | k_estop_reason_manual       | ESTOP_REASON_MANUAL                        |
- * | (unrecognized)              | ESTOP_REASON_UNKNOWN (safe default)        |
+ * | k_estop_reason_overcurrent    | ESTOP_REASON_OVERCURRENT                   |
+ * | k_estop_reason_manual         | ESTOP_REASON_MANUAL                        |
+ * | k_estop_reason_sensor_failure | ESTOP_REASON_FAULT (closest proto value)   |
+ * | (unrecognized)                | ESTOP_REASON_UNKNOWN (safe default)        |
  *
  * @param[in] reason Firmware estop reason code from shared_data
  *
  * @return star_v1_EstopReason Corresponding proto enum value
  * @retval star_v1_EstopReason_ESTOP_REASON_UNKNOWN Unknown or no estop active
  * @retval star_v1_EstopReason_ESTOP_REASON_MANUAL  Manual software command
- * @retval star_v1_EstopReason_ESTOP_REASON_FAULT   Motor driver hardware fault
+ * @retval star_v1_EstopReason_ESTOP_REASON_FAULT   Motor driver or sensor failure
  * @retval star_v1_EstopReason_ESTOP_REASON_COMM_TIMEOUT Communication timeout
  * @retval star_v1_EstopReason_ESTOP_REASON_OBSTACLE Obstacle too close
  * @retval star_v1_EstopReason_ESTOP_REASON_OVERCURRENT Motor overcurrent
@@ -1827,6 +1828,8 @@ static star_v1_EstopReason internal_map_estop_reason(estop_reason_t reason)
       return star_v1_EstopReason_ESTOP_REASON_OVERCURRENT;
     case k_estop_reason_manual:
       return star_v1_EstopReason_ESTOP_REASON_MANUAL;
+    case k_estop_reason_sensor_failure:
+      return star_v1_EstopReason_ESTOP_REASON_FAULT;
     case k_estop_reason_none:
     default:
       return star_v1_EstopReason_ESTOP_REASON_UNKNOWN;
