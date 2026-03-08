@@ -375,6 +375,8 @@
 
 #include "motor_control_task.h"
 
+#include <math.h>
+
 #include "hardware_config.h"
 #include "rx_bus_adc.h"
 #include "rx_bus_manager.h"
@@ -2855,13 +2857,16 @@ static void internal_check_comm_timeout(void)
  * 6. **Read Current:** rx_bus_adc_read_voltage_mv() + rx_drv8263_adc_to_amps()
  *    -> state.current_ma[i]  (DRV8263H IPROPI: V = I * 202e-6 * 5100 = I * 1.0302)
  *
- * 7. **Aggregate E-Stop:** state.estop_active = shared_data_is_estop_active()
+ * 7. **Overcurrent Check:** if |state.current_ma[i]| > k_motor_current_limit_ma (2 A)
+ *    -> call shared_data_trigger_estop(k_estop_reason_overcurrent)
  *
- * 8. **E-Stop Reason:** state.estop_reason = shared_data_get_estop_reason()
+ * 8. **Aggregate E-Stop:** state.estop_active = shared_data_is_estop_active()
  *
- * 9. **Mode:** state.mode = estop ? k_motor_mode_estop : k_motor_mode_velocity
+ * 9. **E-Stop Reason:** state.estop_reason = shared_data_get_estop_reason()
  *
- * 10. **Write to Shared Data:** shared_data_update_motor_state(&state)
+ * 10. **Mode:** state.mode = estop ? k_motor_mode_estop : k_motor_mode_velocity
+ *
+ * 11. **Write to Shared Data:** shared_data_update_motor_state(&state)
  *
  * @return void Function always completes (no error return)
  *
@@ -2870,12 +2875,14 @@ static void internal_check_comm_timeout(void)
  *
  * @post shared_data.motor_state updated with latest values
  * @post Telemetry task can read updated state
+ * @post E-stop triggered if any motor exceeds k_motor_current_limit_ma
  *
  * @note **Thread Safety:** Mutex-protected via shared_data API
  * @note **Performance:** ~100 us (reads + mutex write)
  * @note **Error Handling:** Read errors result in 0 values (safe fallback)
  *
  * @see shared_data_update_motor_state() Write aggregated state
+ * @see shared_data_trigger_estop() Trigger emergency stop on overcurrent
  * @see rx_encoder_read_velocity() Read motor velocity
  * @see rx_motor_get_duty() Read PWM duty cycle
  * @see rx_encoder_read_count() Read encoder position
@@ -2915,6 +2922,11 @@ static void internal_update_motor_state(void)
     if (err == k_rx_ok) {
       const float voltage_v = (float)voltage_mv / 1000.0F;
       state.current_ma[i]   = rx_drv8263_adc_to_amps(voltage_v) * 1000.0F;
+
+      /* Overcurrent protection: trigger e-stop if |current| exceeds 2 A limit */
+      if (fabsf(state.current_ma[i]) > (float)k_motor_current_limit_ma) {
+        (void)shared_data_trigger_estop(k_estop_reason_overcurrent);
+      }
     }
   }
 
