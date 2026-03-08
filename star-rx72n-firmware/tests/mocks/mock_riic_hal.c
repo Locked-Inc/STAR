@@ -53,9 +53,9 @@ static void internal_record_call(mock_riic_call_type_t type,
     call->device_addr      = device_addr;
     call->write_length     = write_length;
     call->read_length      = read_length;
-    /* Zero tx_snapshot so stale bytes from a previous clear+reuse cycle are not visible */
-    call->tx_snapshot[k_mock_riic_snapshot_reg_idx] = 0U;
-    call->tx_snapshot[k_mock_riic_snapshot_val_idx] = 0U;
+    /* Clear tx_snapshot so stale bytes from a previous clear+reuse cycle are not visible */
+    call->tx_snapshot[k_mock_riic_snapshot_reg_idx] = k_mock_riic_snapshot_empty;
+    call->tx_snapshot[k_mock_riic_snapshot_val_idx] = k_mock_riic_snapshot_empty;
     g_mock_riic.call_count++;
   }
 }
@@ -88,6 +88,23 @@ static rx_err_t internal_check_simulated_errors(void)
     return k_rx_err_nack;
   }
   return k_rx_ok;
+}
+
+/**
+ * @brief Populate tx_snapshot in a call history entry from a write buffer
+ *
+ * Captures the first two bytes of @p data into @p entry->tx_snapshot using the
+ * named index constants.  Slots beyond @p length are filled with the empty sentinel.
+ */
+static void
+internal_record_tx_snapshot(mock_riic_call_t* entry, const uint8_t* data, uint16_t length)
+{
+  entry->tx_snapshot[k_mock_riic_snapshot_reg_idx] = (length > k_mock_riic_snapshot_reg_idx)
+                                                       ? data[k_mock_riic_snapshot_reg_idx]
+                                                       : k_mock_riic_snapshot_empty;
+  entry->tx_snapshot[k_mock_riic_snapshot_val_idx] = (length > k_mock_riic_snapshot_val_idx)
+                                                       ? data[k_mock_riic_snapshot_val_idx]
+                                                       : k_mock_riic_snapshot_empty;
 }
 
 /* =============================================================================
@@ -289,11 +306,7 @@ rx_err_t riic_write(riic_channel_t    channel,
    * Only write when internal_record_call() actually appended a new record
    * (call_count incremented), so we never touch existing or out-of-bounds entries. */
   if (g_mock_riic.call_count > count_before) {
-    mock_riic_call_t* last = &g_mock_riic.call_history[count_before];
-    last->tx_snapshot[k_mock_riic_snapshot_reg_idx] =
-      (length > k_mock_riic_snapshot_reg_idx) ? data[k_mock_riic_snapshot_reg_idx] : 0U;
-    last->tx_snapshot[k_mock_riic_snapshot_val_idx] =
-      (length > k_mock_riic_snapshot_val_idx) ? data[k_mock_riic_snapshot_val_idx] : 0U;
+    internal_record_tx_snapshot(&g_mock_riic.call_history[count_before], data, length);
   }
 
   return k_rx_ok;
@@ -348,6 +361,8 @@ rx_err_t riic_write_read(riic_channel_t    channel,
                          uint8_t*          read_data,
                          uint16_t          read_length)
 {
+  /* Capture count before recording so snapshot only targets the freshly appended entry */
+  const uint16_t count_before = g_mock_riic.call_count;
   internal_record_call(k_mock_riic_call_write_read,
                        channel.value,
                        device_addr.value,
@@ -394,6 +409,11 @@ rx_err_t riic_write_read(riic_channel_t    channel,
   /* Copy pre-loaded RX data */
   uint16_t to_read = (read_length < ch->rx_length) ? read_length : ch->rx_length;
   memcpy(read_data, ch->rx_buffer, to_read);
+
+  /* Snapshot first 2 TX bytes into the freshly appended call history entry */
+  if (g_mock_riic.call_count > count_before) {
+    internal_record_tx_snapshot(&g_mock_riic.call_history[count_before], write_data, write_length);
+  }
 
   return k_rx_ok;
 }

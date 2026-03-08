@@ -209,6 +209,19 @@ typedef enum : uint8_t {
   k_mock_riic_snapshot_val_idx = 1U, /**< Index of the data value byte */
 } mock_riic_snapshot_idx_t;
 
+/**
+ * @enum mock_riic_snapshot_state_t
+ * @brief Sentinel value used to mark an unpopulated tx_snapshot slot
+ *
+ * @details
+ * Written to every tx_snapshot element when a call history entry is first
+ * allocated (in internal_record_call) and used as the fallback value when a
+ * write buffer is shorter than the snapshot slot index.
+ */
+typedef enum : uint8_t {
+  k_mock_riic_snapshot_empty = 0U, /**< Slot not yet populated by a write call */
+} mock_riic_snapshot_state_t;
+
 /** @brief RIIC HAL function call record */
 typedef struct {
   mock_riic_call_type_t type;                     /**< Call type */
