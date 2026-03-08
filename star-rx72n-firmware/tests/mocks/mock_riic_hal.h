@@ -195,14 +195,28 @@ typedef enum : uint8_t {
   k_mock_riic_call_write_read,
 } mock_riic_call_type_t;
 
+/**
+ * @enum mock_riic_snapshot_idx_t
+ * @brief tx_snapshot array size and named element indices
+ *
+ * @details
+ * Defines the layout of mock_riic_call_t::tx_snapshot so callers can
+ * access the captured register address and value without magic numbers.
+ */
+typedef enum : uint8_t {
+  k_mock_riic_snapshot_size    = 2U, /**< Total bytes captured per write call */
+  k_mock_riic_snapshot_reg_idx = 0U, /**< Index of the register address byte */
+  k_mock_riic_snapshot_val_idx = 1U, /**< Index of the data value byte */
+} mock_riic_snapshot_idx_t;
+
 /** @brief RIIC HAL function call record */
 typedef struct {
-  mock_riic_call_type_t type;           /**< Call type */
-  uint8_t               channel;        /**< RIIC channel */
-  uint8_t               device_addr;    /**< Device address */
-  uint16_t              write_length;   /**< Write data length */
-  uint16_t              read_length;    /**< Read data length */
-  uint8_t               tx_snapshot[2]; /**< First 2 TX bytes: [reg_addr, value] */
+  mock_riic_call_type_t type;                     /**< Call type */
+  uint8_t               channel;                  /**< RIIC channel */
+  uint8_t               device_addr;              /**< Device address */
+  uint16_t              write_length;             /**< Write data length */
+  uint16_t              read_length;              /**< Read data length */
+  uint8_t tx_snapshot[k_mock_riic_snapshot_size]; /**< First 2 TX bytes: [reg_addr, value] */
 } mock_riic_call_t;
 
 /** @brief Per-channel RIIC state */

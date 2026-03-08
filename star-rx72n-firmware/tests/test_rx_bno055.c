@@ -36,7 +36,7 @@
  * @par Test Coverage
  * | Group         | Tests | Description                                                          |
  * |---------------|-------|----------------------------------------------------------------------|
- * | Init          | 6     | null ptr, I2C error, wrong chip ID, read-before-init, success, double|
+ * | Init          | 8     | null mgr, null cfg, I2C error, wrong chip ID, read-before-init, success, double, interrupt mode|
  * | Read          | 6     | null ptr, euler, quaternion, temperature, linear accel, I2C error   |
  * | Calibration   | 3     | null ptr, reads status byte, partial calibration                     |
  *
@@ -218,6 +218,32 @@ typedef enum : uint8_t {
 typedef enum : uint8_t {
   k_test_interrupt_extra_writes = 4U, /**< PAGE_ID(x2)+INT_MSK+INT_EN (BSX_DRDY, 4-step sequence) */
 } test_bno055_interrupt_writes_t;
+
+/**
+ * @enum test_bno055_interrupt_history_idx_t
+ * @brief Named offsets into the interrupt-mode RIIC call history
+ *
+ * @details
+ * The 4 Page 1 writes are inserted after internal_init_configure() and before
+ * internal_init_enter_ndof() in the call history.  The base index is
+ * (poll_call_count - k_test_poll_tail_calls) because poll-mode's last two calls
+ * (ndof write + chip_id read) shift right by k_test_interrupt_extra_writes.
+ *
+ * Sequence at base:
+ * - base+k_test_int_idx_page1  : PAGE_ID = k_bno055_page1
+ * - base+k_test_int_idx_int_msk: INT_MSK = k_bno055_int_msk_acc_bsx_drdy
+ * - base+k_test_int_idx_int_en : INT_EN  = k_bno055_int_en_acc_bsx_drdy
+ * - base+k_test_int_idx_page0  : PAGE_ID = k_bno055_page0
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_test_poll_tail_calls = 2U, /**< ndof write + chip_id read that trail poll-mode init */
+  k_test_int_idx_page1   = 0U, /**< Offset of PAGE_ID=1 write from base */
+  k_test_int_idx_int_msk = 1U, /**< Offset of INT_MSK write from base */
+  k_test_int_idx_int_en  = 2U, /**< Offset of INT_EN  write from base */
+  k_test_int_idx_page0   = 3U, /**< Offset of PAGE_ID=0 write from base */
+} test_bno055_interrupt_history_idx_t;
 
 /**
  * @enum test_bno055_lia_raw_t
@@ -1085,25 +1111,30 @@ void test_bno055_init_interrupt_mode_succeeds(void)
 
   /* Verify Page 1 write sequence: PAGE_ID=1, INT_MSK=0x01, INT_EN=0x01, PAGE_ID=0.
    * The 4 Page 1 writes are inserted after configure() and before enter_ndof(), so they
-   * sit at index (poll_call_count - 2) in the interrupt-mode history, where the -2
-   * accounts for the 2 poll-mode tail calls (ndof write + chip_id read) that follow. */
-  const uint16_t          base = (uint16_t)(poll_call_count - 2U);
-  const mock_riic_call_t* c0   = mock_riic_get_call(base + 0U); /* PAGE_ID = Page 1 */
-  const mock_riic_call_t* c1   = mock_riic_get_call(base + 1U); /* INT_MSK = 0x01  */
-  const mock_riic_call_t* c2   = mock_riic_get_call(base + 2U); /* INT_EN  = 0x01  */
-  const mock_riic_call_t* c3   = mock_riic_get_call(base + 3U); /* PAGE_ID = Page 0 */
+   * sit at index (poll_call_count - k_test_poll_tail_calls) in the interrupt-mode history. */
+  const uint16_t          base = (uint16_t)(poll_call_count - (uint16_t)k_test_poll_tail_calls);
+  const mock_riic_call_t* c0   = mock_riic_get_call(base + (uint16_t)k_test_int_idx_page1);
+  const mock_riic_call_t* c1   = mock_riic_get_call(base + (uint16_t)k_test_int_idx_int_msk);
+  const mock_riic_call_t* c2   = mock_riic_get_call(base + (uint16_t)k_test_int_idx_int_en);
+  const mock_riic_call_t* c3   = mock_riic_get_call(base + (uint16_t)k_test_int_idx_page0);
   TEST_ASSERT_NOT_NULL(c0);
   TEST_ASSERT_NOT_NULL(c1);
   TEST_ASSERT_NOT_NULL(c2);
   TEST_ASSERT_NOT_NULL(c3);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_page_id, c0->tx_snapshot[0]);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_page1, c0->tx_snapshot[1]);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_int_msk, c1->tx_snapshot[0]);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_int_msk_acc_bsx_drdy, c1->tx_snapshot[1]);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_int_en, c2->tx_snapshot[0]);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_int_en_acc_bsx_drdy, c2->tx_snapshot[1]);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_page_id, c3->tx_snapshot[0]);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_page0, c3->tx_snapshot[1]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_page_id,
+                         c0->tx_snapshot[k_mock_riic_snapshot_reg_idx]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_page1, c0->tx_snapshot[k_mock_riic_snapshot_val_idx]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_int_msk,
+                         c1->tx_snapshot[k_mock_riic_snapshot_reg_idx]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_int_msk_acc_bsx_drdy,
+                         c1->tx_snapshot[k_mock_riic_snapshot_val_idx]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_int_en,
+                         c2->tx_snapshot[k_mock_riic_snapshot_reg_idx]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_int_en_acc_bsx_drdy,
+                         c2->tx_snapshot[k_mock_riic_snapshot_val_idx]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_page_id,
+                         c3->tx_snapshot[k_mock_riic_snapshot_reg_idx]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_page0, c3->tx_snapshot[k_mock_riic_snapshot_val_idx]);
 
   /* Confirm driver is operational by performing a read */
   internal_load_read_data();

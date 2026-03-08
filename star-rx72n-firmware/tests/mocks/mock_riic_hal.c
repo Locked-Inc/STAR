@@ -245,6 +245,8 @@ rx_err_t riic_write(riic_channel_t    channel,
                     const uint8_t*    data,
                     const uint16_t    length)
 {
+  /* Capture count before recording so snapshot only targets the freshly appended entry */
+  const uint16_t count_before = g_mock_riic.call_count;
   internal_record_call(k_mock_riic_call_write, channel.value, device_addr.value, length, 0);
 
   rx_err_t err = internal_check_error();
@@ -280,11 +282,13 @@ rx_err_t riic_write(riic_channel_t    channel,
   ch->tx_length        = to_copy;
   ch->last_device_addr = device_addr.value;
 
-  /* Snapshot first 2 TX bytes into call history for test assertions */
-  if (g_mock_riic.call_count > 0U) {
-    mock_riic_call_t* last = &g_mock_riic.call_history[g_mock_riic.call_count - 1U];
-    last->tx_snapshot[0]   = (length >= 1U) ? data[0] : 0U;
-    last->tx_snapshot[1]   = (length >= 2U) ? data[1] : 0U;
+  /* Snapshot first 2 TX bytes into the freshly appended call history entry.
+   * Only write when internal_record_call() actually appended a new record
+   * (call_count incremented), so we never touch existing or out-of-bounds entries. */
+  if (g_mock_riic.call_count > count_before) {
+    mock_riic_call_t* last                          = &g_mock_riic.call_history[count_before];
+    last->tx_snapshot[k_mock_riic_snapshot_reg_idx] = (length >= 1U) ? data[0] : 0U;
+    last->tx_snapshot[k_mock_riic_snapshot_val_idx] = (length >= 2U) ? data[1] : 0U;
   }
 
   return k_rx_ok;

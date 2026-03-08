@@ -258,6 +258,10 @@ typedef enum : uint8_t {
 } imu_isr_constants_t;
 #endif /* __RX__ */
 
+static_assert(
+  (((uint32_t)k_imu_int_timeout_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND + 999U) / 1000U + 1U) <=
+    0xFFU,
+  "k_imu_int_timeout_ticks overflows uint8_t; reduce k_imu_int_timeout_ms or use a wider type");
 static_assert(TX_TIMER_TICKS_PER_SECOND != 0U, "TX_TIMER_TICKS_PER_SECOND must be non-zero");
 static_assert(k_imu_ms_per_second > 0U, "k_imu_ms_per_second must be positive");
 static_assert(((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) %
