@@ -152,6 +152,7 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager, const bno055_config_t* config
  * @retval k_rx_err_null_ptr out is NULL
  *
  * @pre out may be NULL (returns k_rx_err_null_ptr)
+ * @pre mock_bno055_reset() called at least once to establish s_read_return baseline
  * @post *out zeroed when out != NULL and return value is k_rx_ok
  * @post s_read_count incremented when out != NULL
  */
