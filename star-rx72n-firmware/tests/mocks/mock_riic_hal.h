@@ -195,6 +195,76 @@ typedef enum : uint8_t {
   k_mock_riic_call_write_read,
 } mock_riic_call_type_t;
 
+/**
+ * @enum mock_riic_snapshot_idx_t
+ * @brief tx_snapshot array size and named element indices
+ *
+ * @details
+ * Defines the layout of mock_riic_call_t::tx_snapshot so callers can
+ * access the captured register address and value without magic numbers.
+ * k_mock_riic_snapshot_size equals the total number of slots; the individual
+ * index constants are the only legal subscripts into tx_snapshot.
+ *
+ * @invariant k_mock_riic_snapshot_size == 2
+ * @invariant k_mock_riic_snapshot_reg_idx < k_mock_riic_snapshot_size
+ * @invariant k_mock_riic_snapshot_val_idx < k_mock_riic_snapshot_size
+ *
+ * @code
+ * const mock_riic_call_t* call = mock_riic_get_call(0);
+ * if (call != NULL) {
+ *   // Always compare against k_mock_riic_snapshot_empty BEFORE casting to
+ *   // uint8_t: the sentinel (0x100) is outside the uint8_t domain and would
+ *   // be silently truncated to 0x00 by a bare (uint8_t) cast.
+ *   if (call->tx_snapshot[k_mock_riic_snapshot_reg_idx] != k_mock_riic_snapshot_empty) {
+ *     uint8_t reg = (uint8_t)call->tx_snapshot[k_mock_riic_snapshot_reg_idx];
+ *     (void)reg; // use reg ...
+ *   }
+ *   if (call->tx_snapshot[k_mock_riic_snapshot_val_idx] != k_mock_riic_snapshot_empty) {
+ *     uint8_t val = (uint8_t)call->tx_snapshot[k_mock_riic_snapshot_val_idx];
+ *     (void)val; // use val ...
+ *   }
+ * }
+ * @endcode
+ *
+ * @see mock_riic_call_t  Structure that embeds tx_snapshot
+ * @see mock_riic_snapshot_state_t  Sentinel written to unpopulated slots
+ */
+typedef enum : uint8_t {
+  k_mock_riic_snapshot_size    = 2U, /**< Total slots captured per write call */
+  k_mock_riic_snapshot_reg_idx = 0U, /**< Index of the register address byte */
+  k_mock_riic_snapshot_val_idx = 1U, /**< Index of the data value byte */
+} mock_riic_snapshot_idx_t;
+
+/**
+ * @enum mock_riic_snapshot_state_t
+ * @brief Sentinel value used to mark an unpopulated tx_snapshot slot
+ *
+ * @details
+ * Written to every tx_snapshot element when a call history entry is first
+ * allocated (in internal_record_call) and used as the fallback value when a
+ * write buffer is shorter than the slot index.  The sentinel value 0x100 lies
+ * outside the uint8_t domain (0x00-0xFF), making it unambiguous even when a
+ * legitimate TX byte of 0x00 is captured.  tx_snapshot slots are therefore
+ * uint16_t so they can hold both real byte values and the out-of-band sentinel.
+ *
+ * @invariant k_mock_riic_snapshot_empty > 0xFF (outside valid byte range)
+ *
+ * @code
+ * // Check whether a slot was populated by an actual write
+ * const mock_riic_call_t* call = mock_riic_get_call(0);
+ * if (call != NULL &&
+ *     call->tx_snapshot[k_mock_riic_snapshot_reg_idx] != k_mock_riic_snapshot_empty) {
+ *   uint8_t reg = (uint8_t)call->tx_snapshot[k_mock_riic_snapshot_reg_idx];
+ * }
+ * @endcode
+ *
+ * @see mock_riic_snapshot_idx_t  Index constants for tx_snapshot
+ * @see mock_riic_call_t  Structure whose tx_snapshot uses this sentinel
+ */
+typedef enum : uint16_t {
+  k_mock_riic_snapshot_empty = 0x100U, /**< Slot not populated; outside uint8_t range */
+} mock_riic_snapshot_state_t;
+
 /** @brief RIIC HAL function call record */
 typedef struct {
   mock_riic_call_type_t type;         /**< Call type */
@@ -202,6 +272,8 @@ typedef struct {
   uint8_t               device_addr;  /**< Device address */
   uint16_t              write_length; /**< Write data length */
   uint16_t              read_length;  /**< Read data length */
+  uint16_t              tx_snapshot
+    [k_mock_riic_snapshot_size]; /**< First 2 TX bytes as uint16_t; unpopulated slots hold k_mock_riic_snapshot_empty (0x100) */
 } mock_riic_call_t;
 
 /** @brief Per-channel RIIC state */

@@ -195,11 +195,13 @@
 #include "hardware_init.h"
 
 #include "hardware.h"
+#include "rx72n_icu_regs.h"
 #include "rx72n_sci_regs.h"
 #include "rx72n_system_regs.h"
 #include "rx_check.h"
 #include "rx_err.h"
 #include "rx_gptw.h"
+#include "rx_irq_filter.h"
 #include "rx_mpc.h"
 #include "rx_poeg.h"
 #include "rx_port_utils.h"
@@ -878,18 +880,123 @@ static rx_err_t internal_gpio_init_imu(void)
   err = rx_mpc_set_riic((rx_port_pin_t)k_pin_imu_sda);
   RX_RETURN_ON_ERROR(err, s_tag, "SDA1 pin config failed");
 
-  /* IMU INT: GPIO input (active-low interrupt from IMU) */
-  err = rx_mpc_set_gpio((rx_port_pin_t)k_pin_imu_int);
-  RX_RETURN_ON_ERROR(err, s_tag, "IMU INT MPC config failed");
-
-  internal_gpio_set_input((rx_port_pin_t)k_pin_imu_int);
-
   /* IMU RST: GPIO output, initial HIGH (not in reset) */
   err = rx_mpc_set_gpio((rx_port_pin_t)k_pin_imu_rst);
   RX_RETURN_ON_ERROR(err, s_tag, "IMU RST MPC config failed");
 
   internal_gpio_set_output((rx_port_pin_t)k_pin_imu_rst, true); /* HIGH = not in reset */
 
+  return k_rx_ok;
+}
+
+/**
+ * @enum imu_irq_cfg_t
+ * @brief ICU configuration constants for the IMU INT (IRQ12) interrupt
+ *
+ * @details
+ * P3.2 is connected to the BNO055 INT pin (active-low, falling-edge).
+ * IRQ12 vector = 64 (IRQ0 base) + 12 = 76.
+ * IER index = 76 / 8 = 9, bit = 76 % 8 = 4.
+ *
+ * Priority 7 sits between the comm task ISR (priority 6) and motor control (8).
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_imu_irq_num        = 12U,   /**< IRQ number for P3.2 (BNO055 INT pin) */
+  k_irqcr_falling_edge = 0x04U, /**< IRQCR[n] bits[3:2]=01: falling-edge trigger */
+  k_icu_ir_clear_imu   = 0U,    /**< Write 0 to IR register to clear pending flag */
+  k_imu_irq_priority   = 7U,    /**< IPR priority (between comm=6 and motor=8) */
+  k_imu_ier_bits       = 8U,    /**< Bits per IER register (vector/8 = IER index) */
+} imu_irq_cfg_t;
+
+/**
+ * @enum imu_irq_vector_t
+ * @brief ICU vector number for IRQ12 (IMU INT on P3.2)
+ *
+ * @details
+ * External IRQ0 = vector 64; IRQ12 = 64 + 12 = 76.
+ * Stored in uint8_t (fits in 0-255 range).
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_imu_irq_vector = 76U, /**< ICU vector for IRQ12: 64 (IRQ0 base) + 12 */
+} imu_irq_vector_t;
+
+/**
+ * @brief Configure IMU INT pin (P3.2) as falling-edge IRQ12 input
+ *
+ * @details
+ * Reconfigures P3.2 from plain GPIO input to IRQ12 function, enabling
+ * hardware falling-edge detection on the BNO055 active-low INT signal.
+ *
+ * Configuration sequence:
+ * 1. Set MPC ISEL bit (rx_mpc_set_irq) to route pin to ICU
+ * 2. Set GPIO direction to input (direction register cleared)
+ * 3. Enable digital noise filter (PCLK/32 = 1.6 us, rejects < 1 us spikes)
+ * 4. Set IRQCR[12] = 0x04 (falling-edge mode: bits[3:2] = 01)
+ * 5. Set IPR[76] = 7 (priority 7, between comm and motor tasks)
+ * 6. Clear IR[76] (remove any stale pending request)
+ * 7. Enable in IER[9] bit 4 (vector 76 / 8 = 9, 76 % 8 = 4)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok IRQ12 configured successfully
+ * @retval k_rx_err_hw_init_failed MPC or filter configuration failed
+ *
+ * @pre P3.2 not in use by another peripheral
+ * @pre MPC write protection disabled (handled by rx_mpc_set_irq)
+ * @post P3.2 configured as IRQ12 input, falling-edge trigger
+ * @post Digital noise filter active (PCLK/32, 1.6 us response time)
+ * @post ICU enabled for IRQ12 at priority 7
+ * @post imu_task.c ISR will fire on each active-low assertion from BNO055
+ *
+ * @note Called during single-threaded hardware_init() before RTOS start
+ * @note The ISR (INT_IRQ12 in imu_task.c) sets s_imu_event_flags
+ * @warning Do not call after RTOS starts; ICU register access is not thread-safe
+ *
+ * @see rx_mpc_set_irq() MPC ISEL bit configuration for IRQ function
+ * @see rx_irq_filter_enable() Digital noise filter API
+ * @see imu_task.c INT_IRQ12() ISR handler (sets event flags)
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_gpio_init_imu_irq(void)
+{
+  static const char* s_tag = "GPIO_IMU_IRQ";
+
+  /* NASA Rule 5: precondition validation */
+  RX_ASSERT(rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_imu_int)) != nullptr,
+            "IMU INT port base invalid");
+
+  /* Step 1: Configure P3.2 for IRQ12 function (MPC ISEL bit set) */
+  rx_err_t err = rx_mpc_set_irq((rx_port_pin_t)k_pin_imu_int);
+  RX_RETURN_ON_ERROR(err, s_tag, "IMU INT MPC IRQ config failed");
+
+  /* Step 2: Set GPIO direction to input */
+  internal_gpio_set_input((rx_port_pin_t)k_pin_imu_int);
+
+  /* Step 3: Enable digital noise filter on IRQ12 (PCLK/32 = 1.6 us response) */
+  err = rx_irq_filter_enable((uint8_t)k_imu_irq_num, k_irq_filter_pclk_32);
+  RX_RETURN_ON_ERROR(err, s_tag, "IMU INT filter enable failed");
+
+  volatile rx_icu_regs_t* const icu_regs = icu();
+
+  /* Step 4: Falling-edge trigger: IRQCR[12] bits[3:2] = 01 = 0x04 */
+  icu_regs->irqcr[k_imu_irq_num] = (uint8_t)k_irqcr_falling_edge;
+
+  /* Step 5: Set priority (7 = between comm ISR priority 6 and motor 8) */
+  icu_regs->ipr[k_imu_irq_vector] = (uint8_t)k_imu_irq_priority;
+
+  /* Step 6: Clear any stale pending request before enabling */
+  icu_regs->ir[k_imu_irq_vector] = (uint8_t)k_icu_ir_clear_imu;
+
+  /* Step 7: Enable IRQ12 in IER register (IER[9] bit 4) */
+  const uint8_t ier_idx = (uint8_t)((uint8_t)k_imu_irq_vector / (uint8_t)k_imu_ier_bits);
+  const uint8_t ier_bit = (uint8_t)((uint8_t)k_imu_irq_vector % (uint8_t)k_imu_ier_bits);
+  icu_regs->ier[ier_idx] |= (uint8_t)(1U << ier_bit);
+
+  rx_log_info(s_tag, "IMU IRQ12 configured: P3.2 falling-edge, priority 7");
   return k_rx_ok;
 }
 
@@ -1334,6 +1441,9 @@ static rx_err_t gpio_init(void)
 
   err = internal_gpio_init_imu();
   RX_RETURN_ON_ERROR(err, s_tag, "IMU pin init failed");
+
+  err = internal_gpio_init_imu_irq();
+  RX_RETURN_ON_ERROR(err, s_tag, "IMU IRQ pin init failed");
 
   err = internal_gpio_init_adc();
   RX_RETURN_ON_ERROR(err, s_tag, "ADC pin init failed");

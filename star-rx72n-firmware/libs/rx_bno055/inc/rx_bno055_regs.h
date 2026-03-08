@@ -483,6 +483,114 @@ typedef enum : uint16_t {
   k_bno055_ms_per_second = 1000U, /**< Milliseconds per second (for tick-rate conversion) */
 } bno055_time_const_t;
 
+/* =============================================================================
+ * Page 1 Interrupt Engine Registers
+ * =============================================================================
+ */
+
+/**
+ * @enum bno055_page_t
+ * @brief BNO055 register page selection values for the PAGE_ID register
+ *
+ * @details
+ * The BNO055 organizes registers into two pages selected by writing to PAGE_ID
+ * (address 0x07 on both pages). Page 0 is the default after reset and contains
+ * all sensor output registers. Page 1 contains the interrupt engine configuration
+ * registers used to enable the INT output pin.
+ *
+ * @see bno055_int_reg_t Page 1 interrupt register addresses
+ * @see rx_bno055.c internal_init_enable_interrupt() Uses PAGE_ID to switch pages
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_page0 = 0x00U, /**< Page 0 (default after reset): sensor output, system registers */
+  k_bno055_page1 = 0x01U, /**< Page 1: interrupt engine configuration registers */
+} bno055_page_t;
+
+/**
+ * @enum bno055_int_reg_t
+ * @brief BNO055 interrupt engine register addresses (PAGE_ID and Page 1 registers)
+ *
+ * @details
+ * These register addresses control the BNO055 interrupt output (INT pin).
+ * PAGE_ID (0x07) exists on both pages and selects the active page.
+ * All other addresses in this enum are Page 1 registers.
+ *
+ * Interrupt configuration sequence (while in CONFIG mode):
+ * 1. Write PAGE_ID=1 to switch to Page 1
+ * 2. Write INT_MSK (0x0F): route ACC_BSX_DRDY to INT pin
+ * 3. Write INT_EN (0x10): enable ACC_BSX_DRDY interrupt source
+ * 4. Write PAGE_ID=0 to return to Page 0 for normal operation
+ *
+ * @warning All addresses in this enum (except PAGE_ID) are Page 1 addresses.
+ *          Writing them without first setting PAGE_ID=1 will corrupt Page 0
+ *          sensor output registers (e.g., 0x0F = MAG_RADIUS_MSB on Page 0).
+ *
+ * @invariant All addresses are 8-bit I2C register addresses
+ * @see bno055_page_t Page selection values
+ * @see rx_bno055.c internal_init_enable_interrupt()
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_reg_page_id = 0x07U, /**< PAGE_ID register (both pages): 0=Page0, 1=Page1 */
+  k_bno055_reg_int_msk = 0x0FU, /**< INT_MSK (Page 1 0x0F): routes interrupt sources to INT pin */
+  k_bno055_reg_int_en  = 0x10U, /**< INT_EN (Page 1 0x10): enables interrupt sources */
+} bno055_int_reg_t;
+
+/**
+ * @enum bno055_int_en_t
+ * @brief INT_EN register bit values for enabling interrupt sources (Page 1, 0x10)
+ *
+ * @details
+ * Each bit in INT_EN enables a specific interrupt source.
+ * Bit 0 (k_bno055_int_en_acc_bsx_drdy) enables the accelerometer BSX
+ * data-ready interrupt, which asserts on every new accelerometer sample.
+ *
+ * INT_EN bit map (BNO055 datasheet Table 4-16):
+ * - Bit 7: Reserved
+ * - Bit 6: ACC_AM_EN -- accelerometer any-motion
+ * - Bit 5: ACC_HIGH_G_EN -- accelerometer high-g
+ * - Bit 4: Reserved
+ * - Bit 3: GYR_HIGH_RATE_EN
+ * - Bit 2: GYR_AM_EN
+ * - Bit 1: Reserved
+ * - Bit 0: ACC_BSX_DRDY -- accelerometer data-ready (this constant)
+ *
+ * @see bno055_int_reg_t k_bno055_reg_int_en register address
+ * @see bno055_int_msk_t INT_MSK mask values (same bit layout as INT_EN)
+ * @see rx_bno055.c internal_init_enable_interrupt()
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_int_en_acc_bsx_drdy =
+    0x01U, /**< INT_EN bit 0: enable accelerometer data-ready interrupt */
+} bno055_int_en_t;
+
+/**
+ * @enum bno055_int_msk_t
+ * @brief INT_MSK register bit values for routing interrupt sources to INT pin (Page 1, 0x0F)
+ *
+ * @details
+ * INT_MSK has the same bit layout as INT_EN (Table 4-15). Setting a bit here
+ * routes the corresponding enabled interrupt source to the physical INT pin.
+ * Both INT_EN and INT_MSK must be set for the INT pin to assert.
+ *
+ * INT_MSK bit 0 (k_bno055_int_msk_acc_bsx_drdy) routes the accelerometer BSX
+ * data-ready interrupt to the INT pin so it asserts on every new sample.
+ *
+ * @see bno055_int_reg_t k_bno055_reg_int_msk register address
+ * @see bno055_int_en_t INT_EN enable values (same bit positions)
+ * @see rx_bno055.c internal_init_enable_interrupt()
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_int_msk_acc_bsx_drdy = 0x01U, /**< INT_MSK bit 0: route ACC_BSX_DRDY to INT pin */
+} bno055_int_msk_t;
+
 #ifdef __cplusplus
 }
 #endif

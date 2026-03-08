@@ -1,14 +1,15 @@
 /**
  * @file imu_task.c
- * @brief IMU Task - BNO055 + BMP280 Sensor Polling at 20 Hz
+ * @brief IMU Task - BNO055 + BMP280 Interrupt-Driven Sensor Reading
  *
  * @details
  * # Overview
  *
- * This module implements the IMU Task that initializes and polls the
- * BNO055 9-DOF absolute orientation sensor and the BMP280 barometric
- * pressure sensor at 20 Hz (50 ms period), publishing results to
- * shared data for consumption by the telemetry task.
+ * This module implements the IMU Task that initializes the BNO055
+ * 9-DOF absolute orientation sensor and the BMP280 barometric pressure
+ * sensor, then reads both sensors on each BNO055 INT falling edge (P3.2
+ * / IRQ12), publishing results to shared data for the telemetry task.
+ * A 200 ms watchdog timeout triggers a read when INT does not fire.
  *
  * # Hardware
  *
@@ -22,7 +23,8 @@
  * [*] --> Init
  * Init --> Running : both sensors initialized
  * Init --> Running : one or both sensors failed (logs error, continues)
- * Running --> Running : poll BNO055 + BMP280 every 50 ms
+ * Running --> Running : BNO055 INT (IRQ12) fires -> ISR sets event flag -> read BNO055 + BMP280
+ * Running --> Running : 200 ms watchdog timeout -> read without INT (fault recovery)
  * @enduml
  *
  * # Data Flow
@@ -45,7 +47,7 @@
  * | 1. No goto | [PASS] | Structured if/while only |
  * | 2. Bounded loops | [PASS] | while(true) with IWDT watchdog |
  * | 3. No dynamic memory | [PASS] | Static stack and thread control block |
- * | 4. Short functions | [PASS] | Task entry ~50 lines; helpers extracted |
+ * | 4. Short functions | [PASS] | Task entry ~60 lines; helpers extracted |
  * | 5. Assertions | [PASS] | 2+ preconditions per function |
  * | 6. Data scope | [PASS] | Locals at point of use |
  * | 7. Check returns | [PASS] | All driver and shared_data returns validated |
@@ -75,6 +77,9 @@
 #include "rx_port_constants.h"
 #include "shared_data.h"
 #include "tx_api.h"
+#ifdef __RX__
+#include "rx72n_icu_regs.h"
+#endif /* __RX__ */
 
 /* =============================================================================
  * Constants
@@ -188,6 +193,75 @@ typedef enum : uint8_t {
   k_imu_hw_rst_por_ticks = (k_imu_hw_rst_por_ms * TX_TIMER_TICKS_PER_SECOND + 999U) / 1000U + 1U,
 } imu_task_hw_rst_t;
 
+/**
+ * @enum imu_wait_result_t
+ * @brief Return values for internal_wait_for_imu_int()
+ *
+ * @details
+ * Three-state result distinguishes a genuine data-ready INT, a benign
+ * 200 ms watchdog timeout, and a fatal ThreadX RTOS error.  Callers
+ * must handle each case separately so corrupted/deleted event-flags
+ * groups surface as faults rather than silently degrading into the
+ * watchdog recovery path.
+ *
+ * @see internal_wait_for_imu_int() Function that returns this type
+ * @see internal_imu_task_entry() Sole consumer
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_imu_wait_data_ready = 0U, /**< BNO055 INT fired (TX_SUCCESS): read fresh data */
+  k_imu_wait_timeout    = 1U, /**< 200 ms watchdog (TX_NO_EVENTS): fault-recovery read */
+  k_imu_wait_rtos_error = 2U, /**< Fatal ThreadX error: event-flags group corrupted */
+} imu_wait_result_t;
+
+/**
+ * @enum imu_task_int_cfg_t
+ * @brief IMU INT watchdog timeout constants (interrupt-driven mode)
+ *
+ * @details
+ * The IMU task blocks on s_imu_event_flags waiting for the BNO055 INT
+ * falling-edge ISR to signal k_imu_event_data_ready. If no INT fires
+ * within k_imu_int_timeout_ticks, the task reads BNO055 anyway (fault
+ * recovery) and logs a warning.
+ *
+ * Timeout formula (with +1 slack for tick boundary):
+ *   ticks = (ms * TX_TIMER_TICKS_PER_SECOND + 999) / 1000 + 1
+ * At 100 Hz: (200 * 100 + 999) / 1000 + 1 = 20999/1000 + 1 = 21 ticks.
+ *
+ * @invariant k_imu_int_timeout_ticks >= 21 at 100 Hz tick rate
+ * @see s_imu_event_flags ThreadX event flags group
+ * @see k_imu_event_data_ready Event bit set by ISR
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_imu_int_timeout_ticks =
+    ((uint32_t)k_imu_int_timeout_ms * TX_TIMER_TICKS_PER_SECOND + 999U) / 1000U +
+    1U, /**< Timeout in ticks with +1 slack: (200*100+999)/1000+1 = 21 ticks */
+  k_imu_event_data_ready = 0x01U, /**< Event flag bit set by ISR on BNO055 INT assertion */
+} imu_task_int_cfg_t;
+
+#ifdef __RX__
+/**
+ * @enum imu_isr_constants_t
+ * @brief ICU constants for the IMU INT ISR (RX target only)
+ *
+ * @details
+ * Mirrors k_imu_irq_vector and k_icu_ir_clear_imu from hardware_init.c for use
+ * in the INT_IRQ12 ISR, which cannot include hardware_init.h (no public header).
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_imu_irq_vector_isr = 76U, /**< ICU vector for IRQ12: matches hardware_init.c */
+  k_icu_ir_clear_val   = 0U,  /**< Write 0 to IR register to clear pending flag */
+} imu_isr_constants_t;
+#endif /* __RX__ */
+
+static_assert(
+  (((uint32_t)k_imu_int_timeout_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND + 999U) / 1000U + 1U) <=
+    0xFFU,
+  "k_imu_int_timeout_ticks overflows uint8_t; reduce k_imu_int_timeout_ms or use a wider type");
 static_assert(TX_TIMER_TICKS_PER_SECOND != 0U, "TX_TIMER_TICKS_PER_SECOND must be non-zero");
 static_assert(k_imu_ms_per_second > 0U, "k_imu_ms_per_second must be positive");
 static_assert(((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) %
@@ -262,6 +336,42 @@ static const char* const s_tag = "IMU";
 static char s_task_name[] = "ImuTask"; /* char[] (not const) satisfies ThreadX CHAR* parameter */
 
 /**
+ * @var s_imu_event_flags
+ * @brief ThreadX event flags group for BNO055 INT signaling
+ *
+ * @details
+ * Set by INT_IRQ12 (ISR context) on each falling edge of the BNO055 INT pin
+ * (P3.2 / IRQ12). The IMU task blocks on this group with a
+ * k_imu_int_timeout_ticks watchdog timeout.
+ *
+ * @note Initialized in imu_task_create() via tx_event_flags_create().
+ * @warning Access only via tx_event_flags_get() and tx_event_flags_set().
+ * @since Version 1.0.0
+ */
+static TX_EVENT_FLAGS_GROUP s_imu_event_flags;
+
+/**
+ * @var s_imu_event_flags_ready
+ * @brief ISR ready guard -- true only after both event-flags and thread are created
+ *
+ * @details
+ * INT_IRQ12() checks this flag before calling tx_event_flags_set().  The ICU
+ * IRQ12 line can fire as soon as the BNO055 powers up, which may be before
+ * imu_task_create() has finished setting up s_imu_event_flags.  Without this
+ * guard, the ISR would call tx_event_flags_set() on an uninitialised control
+ * block, corrupting the ThreadX heap.
+ *
+ * Set to true at the end of imu_task_create() after BOTH tx_event_flags_create()
+ * and tx_thread_create() succeed.  Never reset to false (task is never deleted).
+ *
+ * @note Declared volatile because it is written in task context and read in ISR
+ *       context without a memory barrier.
+ * @warning Do not set to true before tx_event_flags_create() completes.
+ * @since Version 1.0.0
+ */
+static volatile bool s_imu_event_flags_ready = false;
+
+/**
  * @var g_bus_manager
  * @brief External bus manager defined in shared_data.c; registered buses include "i2c1_imu" and "i2c1_baro"
  *
@@ -284,13 +394,13 @@ extern rx_bus_manager_t
  * =============================================================================
  */
 
-static void     internal_send_iwdt_heartbeat(void);
-static void     internal_retry_sensor_init(bool* bno_ready, bool* bmp_ready);
-static void     internal_handle_loop_sleep(ULONG start_tick);
-static void     internal_read_and_publish_imu(void);
-static void     internal_read_and_publish_baro(void);
-static rx_err_t internal_imu_hardware_reset(void);
-static void     internal_imu_task_entry(ULONG input);
+static void              internal_send_iwdt_heartbeat(void);
+static void              internal_retry_sensor_init(bool* bno_ready, bool* bmp_ready);
+static void              internal_read_and_publish_imu(void);
+static void              internal_read_and_publish_baro(void);
+static rx_err_t          internal_imu_hardware_reset(void);
+static imu_wait_result_t internal_wait_for_imu_int(void);
+static void              internal_imu_task_entry(ULONG input);
 
 /* =============================================================================
  * Static Inline Helpers
@@ -357,6 +467,13 @@ rx_err_t imu_task_create(void)
     return k_rx_err_invalid_state;
   }
 
+  /* Create event flags group for BNO055 INT signaling */
+  const UINT ef_status = tx_event_flags_create(&s_imu_event_flags, "imu_int_flags");
+  if (ef_status != TX_SUCCESS) {
+    rx_log_error(s_tag, "Failed to create IMU event flags");
+    return k_rx_err_rtos_thread_create;
+  }
+
   const UINT tx_status = tx_thread_create(&s_imu_thread,
                                           s_task_name,
                                           internal_imu_task_entry,
@@ -370,10 +487,12 @@ rx_err_t imu_task_create(void)
 
   if (tx_status != TX_SUCCESS) {
     rx_log_error_val(s_tag, "Thread create failed", (uint32_t)tx_status);
+    (void)tx_event_flags_delete(&s_imu_event_flags);
     return k_rx_err_rtos_thread_create;
   }
 
-  s_imu_created = true;
+  s_imu_created           = true;
+  s_imu_event_flags_ready = true;
   rx_log_info(s_tag, "IMU task created");
 
   return k_rx_ok;
@@ -444,7 +563,8 @@ static void internal_retry_sensor_init(bool* bno_ready, bool* bmp_ready)
   RX_ASSERT(bmp_ready != NULL, "bmp_ready must not be NULL");
 
   if (!*bno_ready) {
-    const rx_err_t retry_bno = rx_bno055_init(&g_bus_manager);
+    const bno055_config_t bno_cfg   = {.mode = k_bno055_mode_interrupt};
+    const rx_err_t        retry_bno = rx_bno055_init(&g_bus_manager, &bno_cfg);
     if (retry_bno == k_rx_ok) {
       *bno_ready = true;
       rx_log_info(s_tag, "BNO055 initialized on retry");
@@ -455,55 +575,6 @@ static void internal_retry_sensor_init(bool* bno_ready, bool* bmp_ready)
     if (retry_bmp == k_rx_ok) {
       *bmp_ready = true;
       rx_log_info(s_tag, "BMP280 initialized on retry");
-    }
-  }
-}
-
-/**
- * @brief Sleep for the remainder of the 50 ms IMU loop period
- *
- * @details
- * Computes elapsed ticks since @p start_tick and sleeps for the remaining
- * ticks in the k_imu_task_period_ticks (5-tick, 50 ms) window. Logs a warning
- * if the loop body has already overrun the period. Handles all tx_thread_sleep()
- * return values.
- *
- * @param[in] start_tick Value of tx_time_get() captured at the beginning of the loop
- *
- * @pre start_tick captured at the start of the current loop iteration
- * @pre s_imu_created == true
- * @post Thread sleeps for remaining period or logs overrun warning
- *
- * @note Not thread-safe; called only from internal_imu_task_entry()
- *
- * @see tx_thread_sleep() ThreadX sleep API
- * @see k_imu_task_period_ticks Loop period in RTOS ticks
- *
- * @since Version 1.0.0
- */
-static void internal_handle_loop_sleep(ULONG start_tick)
-{
-  RX_ASSERT(s_imu_created, "IMU task must be created before sleeping");
-  RX_ASSERT(s_tag != NULL, "s_tag must not be NULL");
-
-  const ULONG elapsed = tx_time_get() - start_tick;
-  if (elapsed >= (ULONG)k_imu_task_period_ticks) {
-    rx_log_warn_val(s_tag, "IMU loop overrun: elapsed ticks", (uint32_t)elapsed);
-  } else {
-    const UINT sleep_status = tx_thread_sleep((ULONG)k_imu_task_period_ticks - elapsed);
-    switch (sleep_status) {
-      case TX_SUCCESS:
-        /* Normal wake after sleep period - no action needed */
-        break;
-      case TX_WAIT_ABORTED:
-        rx_log_error(s_tag, "IMU task sleep aborted - external abort or priority change");
-        break;
-      case TX_CALLER_ERROR:
-        rx_log_error(s_tag, "IMU task sleep caller error - not called from thread context");
-        break;
-      default:
-        rx_log_error_val(s_tag, "IMU task sleep unexpected status", (uint32_t)sleep_status);
-        break;
     }
   }
 }
@@ -690,7 +761,102 @@ static rx_err_t internal_imu_hardware_reset(void)
 }
 
 /**
- * @brief IMU task entry point - initialize sensors then poll at 20 Hz
+ * @brief Block on BNO055 INT event flag with 200 ms watchdog timeout
+ *
+ * @details
+ * Waits for k_imu_event_data_ready to be set in s_imu_event_flags by the
+ * INT_IRQ12() ISR. Returns k_imu_wait_data_ready immediately if the flag is
+ * already set. Returns k_imu_wait_timeout after k_imu_int_timeout_ticks
+ * (200 ms) with no INT -- the caller performs a fault-recovery read.
+ * Returns k_imu_wait_rtos_error on any other ThreadX status, indicating that
+ * the event-flags group may be corrupted or deleted.
+ *
+ * @return imu_wait_result_t Three-state result distinguishing INT, timeout, and RTOS fault
+ * @retval k_imu_wait_data_ready BNO055 INT fired; event flag consumed
+ * @retval k_imu_wait_timeout 200 ms watchdog expired; fault-recovery read
+ * @retval k_imu_wait_rtos_error Fatal ThreadX error; caller must escalate
+ *
+ * @pre s_imu_event_flags created by imu_task_create()
+ * @pre Called from task context only (tx_event_flags_get blocks the caller)
+ * @post k_imu_event_data_ready cleared from s_imu_event_flags on TX_SUCCESS (TX_OR_CLEAR)
+ * @post Caller reads sensors on k_imu_wait_data_ready and k_imu_wait_timeout
+ *
+ * @note Not thread-safe; called only from internal_imu_task_entry()
+ *
+ * @see s_imu_event_flags Event flags group set by INT_IRQ12()
+ * @see imu_wait_result_t Return type documentation
+ * @see internal_imu_task_entry() Sole caller
+ *
+ * @since Version 1.0.0
+ */
+static imu_wait_result_t internal_wait_for_imu_int(void)
+{
+  ULONG      actual_flags = 0U;
+  const UINT ef_status    = tx_event_flags_get(&s_imu_event_flags,
+                                            (ULONG)k_imu_event_data_ready,
+                                            TX_OR_CLEAR,
+                                            &actual_flags,
+                                            (ULONG)k_imu_int_timeout_ticks);
+  if (ef_status == TX_NO_EVENTS) {
+    /* Benign watchdog timeout: BNO055 INT did not fire within 200 ms */
+    rx_log_warn(s_tag, "IMU INT timeout (200 ms) - reading without INT");
+    return k_imu_wait_timeout;
+  }
+  if (ef_status != TX_SUCCESS) {
+    /* Fatal RTOS error: event flags group corrupted or deleted */
+    rx_log_error_val(s_tag, "IMU event flags get failed", (uint32_t)ef_status);
+    return k_imu_wait_rtos_error;
+  }
+  return k_imu_wait_data_ready;
+}
+
+/**
+ * @brief BNO055 INT falling-edge ISR (IRQ12, vector 76, P3.2)
+ *
+ * @details
+ * Invoked by the RX72N ICU on each falling edge of the BNO055 active-low
+ * INT signal. Sets k_imu_event_data_ready in s_imu_event_flags to wake the
+ * IMU task, then clears the ICU IR flag.
+ *
+ * ISR execution time: < 1 us at 240 MHz (two register writes + event set).
+ *
+ * @pre ICU IRQ12 enabled and configured for falling-edge (hardware_init.c)
+ * @pre s_imu_event_flags created (imu_task_create() must have run)
+ * @post k_imu_event_data_ready bit set in s_imu_event_flags
+ * @post IR[76] cleared (ICU interrupt request flag deasserted)
+ *
+ * @note Runs in interrupt context; must not call blocking ThreadX APIs
+ * @note Registered at vector 76 in .rvectors (INTB) table via GNURX naming convention
+ * @warning Do not call from task context
+ *
+ * @see s_imu_event_flags Event flags group signaled by this ISR
+ * @see internal_gpio_init_imu_irq() Configures ICU for IRQ12 falling-edge
+ * @see internal_imu_task_entry() IMU task that pends on the event flag
+ *
+ * @since Version 1.0.0
+ */
+void INT_IRQ12(void);
+void INT_IRQ12(void)
+{
+#ifdef __RX__
+  /* Clear ICU interrupt request flag first -- must execute even when the ready
+   * guard below returns early.  If a pre-task-create edge fires and the IR bit
+   * is not cleared here, the ICU will re-assert the interrupt immediately after
+   * the ISR returns, corrupting the still-uninitialized event flags group. */
+  icu()->ir[k_imu_irq_vector_isr] = (uint8_t)k_icu_ir_clear_val;
+#endif /* __RX__ */
+
+  /* Guard against spurious INT edges before event flags are fully created */
+  if (!s_imu_event_flags_ready) {
+    return;
+  }
+
+  /* Signal the IMU task that BNO055 data is ready */
+  (void)tx_event_flags_set(&s_imu_event_flags, (ULONG)k_imu_event_data_ready, TX_OR);
+}
+
+/**
+ * @brief IMU task entry point - initialize sensors then read on BNO055 INT
  *
  * @details
  * Task startup sequence:
@@ -702,15 +868,15 @@ static rx_err_t internal_imu_hardware_reset(void)
  *    (skipped if hardware reset failed)
  * 5. Feed IWDT heartbeat after BNO055 init
  * 6. Initialize BMP280 via rx_bmp280_init() (~2 ms for calib read)
- * 7. Enter 50 ms periodic loop:
+ * 7. Enter interrupt-driven loop:
  *    a. Feed IWDT heartbeat FIRST (must precede any blocking sensor re-init)
- *    b. Retry init for any sensor that failed startup (until success)
- *    c. internal_read_and_publish_imu() if bno_ready - BNO055 -> shared_data_update_imu()
- *    d. internal_read_and_publish_baro() if bmp_ready - BMP280 -> shared_data_update_baro()
- *    e. Sleep 5 ticks (50 ms)
+ *    b. Block on BNO055 INT event flag (200 ms watchdog timeout)
+ *    c. Retry init for any sensor that failed startup (until success)
+ *    d. internal_read_and_publish_imu() if bno_ready - BNO055 -> shared_data_update_imu()
+ *    e. internal_read_and_publish_baro() if bmp_ready - BMP280 -> shared_data_update_baro()
  *
  * Both sensors are initialized before the poll loop. If either init fails,
- * the loop retries init each period until both succeed. Reads are only
+ * the loop retries init each iteration until both succeed. Reads are only
  * performed once the corresponding sensor is ready. Shared state valid flags
  * remain false until sensor init and the first read both succeed.
  *
@@ -724,10 +890,10 @@ static rx_err_t internal_imu_hardware_reset(void)
  * @pre BNO055 powered on RIIC1 I2C bus, RST pin (P83) configured as GPIO output
  * @pre BMP280 powered on RIIC1 I2C bus
  *
- * @post imu_state_t updated via shared_data_update_imu() at 20 Hz on success
- * @post baro_state_t updated via shared_data_update_baro() at 20 Hz on success
+ * @post imu_state_t updated via shared_data_update_imu() on each BNO055 INT
+ * @post baro_state_t updated via shared_data_update_baro() on each BNO055 INT
  * @post State valid flags remain false until first successful sensor read
- * @post IWDT heartbeat fed every 50 ms
+ * @post IWDT heartbeat fed on each loop iteration (< 200 ms period)
  *
  * @note Not thread-safe; runs as single dedicated ThreadX task
  * @note Sensor init failures do not halt the task; valid flag stays false
@@ -737,6 +903,7 @@ static rx_err_t internal_imu_hardware_reset(void)
  * @warning Do not call directly; use imu_task_create() to register with ThreadX
  *
  * @see imu_task_create() Creates this task
+ * @see INT_IRQ12() ISR that signals the event flags
  * @see internal_read_and_publish_imu() BNO055 read and publish helper
  * @see internal_read_and_publish_baro() BMP280 read and publish helper
  * @see internal_imu_hardware_reset() Hardware reset helper (step 1)
@@ -772,7 +939,8 @@ static void internal_imu_task_entry(ULONG input)
 
   /* Step 2: Initialize BNO055 (software reset + config, blocks ~700 ms) */
   if (err_rst == k_rx_ok) {
-    const rx_err_t err_bno = rx_bno055_init(&g_bus_manager);
+    const bno055_config_t bno_cfg = {.mode = k_bno055_mode_interrupt};
+    const rx_err_t        err_bno = rx_bno055_init(&g_bus_manager, &bno_cfg);
     if (err_bno != k_rx_ok) {
       rx_log_error_val(s_tag, "BNO055 init failed - will retry in loop", (uint32_t)err_bno);
     } else {
@@ -794,16 +962,24 @@ static void internal_imu_task_entry(ULONG input)
     rx_log_info(s_tag, "BMP280 initialized in forced mode");
   }
 
-  rx_log_info(s_tag, "IMU polling at 20 Hz");
-
-  /* Step 4: Periodic poll loop at 20 Hz (50 ms period = 5 ticks @ 100 Hz) */
+  /* Step 4: Interrupt-driven loop - block on BNO055 INT event flag */
+  rx_log_info(s_tag, "IMU interrupt-driven mode: blocking on IRQ12 event flag");
   while (1) {
-    const ULONG start_tick = tx_time_get();
-
-    /* Feed IWDT heartbeat FIRST -- must execute before any blocking sensor
-     * re-init (BNO055 retry can block ~700 ms; heartbeat must arrive within
-     * the 900 ms IWDT registration window to prevent a system reset). */
+    /* Feed IWDT heartbeat first -- must arrive within 900 ms window */
     internal_send_iwdt_heartbeat();
+
+    /* Block until BNO055 asserts INT (falling edge) or 200 ms timeout */
+    const imu_wait_result_t wait_result = internal_wait_for_imu_int();
+    if (wait_result == k_imu_wait_rtos_error) {
+      /* Fatal ThreadX fault: event-flags group corrupted or deleted.
+       * Suspend the task to surface the fault rather than looping
+       * forever in a degraded state with no interrupt signaling. */
+      rx_log_error(s_tag, "IMU task suspending: fatal RTOS event flags fault");
+      (void)tx_thread_suspend(tx_thread_identify());
+      continue;
+    }
+
+    /* Both k_imu_wait_data_ready and k_imu_wait_timeout proceed with read */
 
     /* Retry init for sensors that failed initial startup */
     internal_retry_sensor_init(&bno_ready, &bmp_ready);
@@ -814,8 +990,5 @@ static void internal_imu_task_entry(ULONG input)
     if (bmp_ready) {
       internal_read_and_publish_baro();
     }
-
-    /* Sleep only the remaining time in the 50 ms period to maintain cadence */
-    internal_handle_loop_sleep(start_tick);
   }
 }

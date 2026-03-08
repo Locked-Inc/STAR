@@ -16,7 +16,7 @@
  * | Group      | Tests | Description                                              |
  * |------------|-------|----------------------------------------------------------|
  * | Init       | 5     | Success, null manager/name, not found, HAL error         |
- * | Write      | 6     | Success, null manager/name/data, not init, NACK          |
+ * | Write      | 8     | Success, null manager/name/data, not init, NACK, snapshot len 0/1 |
  * | Read       | 6     | Success, null manager/name/buf, not init, NACK           |
  * | Write-Read | 7     | Success, null manager/name/tx/rx, not init, NACK         |
  *
@@ -98,23 +98,26 @@ typedef enum : uint16_t {
  * @brief Data byte values used in write tests
  */
 typedef enum : uint8_t {
-  k_test_write_byte_0 = 0x01, /**< First write byte */
-  k_test_write_byte_1 = 0x02, /**< Second write byte */
-  k_test_write_byte_2 = 0x03, /**< Third write byte */
-  k_test_read_byte_0  = 0xAA, /**< First expected read byte */
-  k_test_read_byte_1  = 0xBB, /**< Second expected read byte */
+  k_test_write_byte_0  = 0x01, /**< First write byte */
+  k_test_write_byte_1  = 0x02, /**< Second write byte */
+  k_test_write_byte_2  = 0x03, /**< Third write byte */
+  k_test_read_byte_0   = 0xAA, /**< First expected read byte */
+  k_test_read_byte_1   = 0xBB, /**< Second expected read byte */
+  k_test_snapshot_byte = 0x42, /**< Byte value for snapshot regression tests (length 0/1) */
 } test_i2c_data_t;
 
 /**
  * @enum test_i2c_single_len_t
- * @brief Single-byte transfer size for null-parameter and NACK tests
+ * @brief Short transfer size constants for null-parameter, NACK, and snapshot tests
  *
  * @details
  * Null-parameter and NACK tests use a minimal 1-byte payload to keep fixtures
- * concise. Named constant avoids the magic literal "1U" per STAR policy.
+ * concise. Snapshot regression tests also use length 0 to exercise the sentinel
+ * branch. Named constants avoid magic literals per STAR policy.
  */
 typedef enum : uint16_t {
-  k_test_len_one = 1U, /**< One-byte transfer length for minimal test fixtures */
+  k_test_len_zero = 0U, /**< Zero-byte transfer length for snapshot sentinel tests */
+  k_test_len_one  = 1U, /**< One-byte transfer length for minimal test fixtures */
 } test_i2c_single_len_t;
 
 /**
@@ -485,6 +488,74 @@ void test_bus_i2c_write_nack_propagates(void)
   const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
   err = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, (uint16_t)k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+}
+
+/**
+ * @brief Zero-length write fills both snapshot slots with the empty sentinel
+ *
+ * @details
+ * Exercises the length-0 branch of internal_record_tx_snapshot: when no bytes
+ * are available neither slot index satisfies the length guard, so both slots
+ * must hold k_mock_riic_snapshot_empty (0x100) which is outside the uint8_t
+ * domain and therefore unambiguous.
+ *
+ * @pre s_test_manager initialized; bus initialized; mock call history cleared
+ * @pre rx_bus_i2c_write called with length == k_test_len_zero
+ * @post call->tx_snapshot[k_mock_riic_snapshot_reg_idx] == k_mock_riic_snapshot_empty
+ * @post call->tx_snapshot[k_mock_riic_snapshot_val_idx] == k_mock_riic_snapshot_empty
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ */
+void test_bus_i2c_write_snapshot_length_zero_fills_sentinel(void)
+{
+  rx_err_t err = rx_bus_i2c_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  mock_riic_clear_history();
+
+  uint8_t  dummy = (uint8_t)k_test_snapshot_byte;
+  rx_err_t werr =
+    rx_bus_i2c_write(&s_test_manager, s_test_bus_name, &dummy, (uint16_t)k_test_len_zero);
+  TEST_ASSERT_EQUAL(k_rx_ok, werr);
+
+  const mock_riic_call_t* call = mock_riic_get_call((uint16_t)k_test_idx_zero);
+  TEST_ASSERT_NOT_NULL(call);
+  TEST_ASSERT_EQUAL_UINT16(k_mock_riic_snapshot_empty,
+                           call->tx_snapshot[k_mock_riic_snapshot_reg_idx]);
+  TEST_ASSERT_EQUAL_UINT16(k_mock_riic_snapshot_empty,
+                           call->tx_snapshot[k_mock_riic_snapshot_val_idx]);
+}
+
+/**
+ * @brief One-byte write fills slot 0 with the byte and slot 1 with the sentinel
+ *
+ * @details
+ * Exercises the length-1 branch of internal_record_tx_snapshot: only slot 0
+ * satisfies the length guard so it receives the real byte; slot 1 falls back
+ * to k_mock_riic_snapshot_empty (0x100).
+ *
+ * @pre s_test_manager initialized; bus initialized; mock call history cleared
+ * @pre rx_bus_i2c_write called with a single-byte buffer
+ * @post call->tx_snapshot[k_mock_riic_snapshot_reg_idx] == k_test_snapshot_byte
+ * @post call->tx_snapshot[k_mock_riic_snapshot_val_idx] == k_mock_riic_snapshot_empty
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ */
+void test_bus_i2c_write_snapshot_length_one_fills_first_slot(void)
+{
+  rx_err_t err = rx_bus_i2c_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  mock_riic_clear_history();
+
+  const uint8_t tx[] = {(uint8_t)k_test_snapshot_byte};
+  rx_err_t werr = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, (uint16_t)k_test_len_one);
+  TEST_ASSERT_EQUAL(k_rx_ok, werr);
+
+  const mock_riic_call_t* call = mock_riic_get_call((uint16_t)k_test_idx_zero);
+  TEST_ASSERT_NOT_NULL(call);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_test_snapshot_byte,
+                         call->tx_snapshot[k_mock_riic_snapshot_reg_idx]);
+  TEST_ASSERT_EQUAL_UINT16(k_mock_riic_snapshot_empty,
+                           call->tx_snapshot[k_mock_riic_snapshot_val_idx]);
 }
 
 /* =============================================================================
@@ -864,6 +935,8 @@ int main(void)
   RUN_TEST(test_bus_i2c_write_null_name_returns_error);
   RUN_TEST(test_bus_i2c_write_not_initialized_returns_error);
   RUN_TEST(test_bus_i2c_write_nack_propagates);
+  RUN_TEST(test_bus_i2c_write_snapshot_length_zero_fills_sentinel);
+  RUN_TEST(test_bus_i2c_write_snapshot_length_one_fills_first_slot);
 
   /* Read tests */
   RUN_TEST(test_bus_i2c_read_returns_configured_data);

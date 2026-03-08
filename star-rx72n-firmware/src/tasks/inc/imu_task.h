@@ -1,13 +1,14 @@
 /**
  * @file imu_task.h
- * @brief IMU Task - BNO055 + BMP280 Sensor Polling at 20 Hz
+ * @brief IMU Task - BNO055 + BMP280 Interrupt-Driven Sensor Reading
  *
  * @details
  * # Overview
  *
  * Declares the IMU task responsible for reading the BNO055 9-DOF absolute
- * orientation sensor and the BMP280 barometric pressure sensor at 20 Hz
- * (50 ms period) and publishing results to shared_data.
+ * orientation sensor and the BMP280 barometric pressure sensor via interrupt-
+ * driven mode (BNO055 INT pin on P3.2/IRQ12) and publishing results to
+ * shared_data. Falls back to a 200 ms watchdog read if no interrupt fires.
  *
  * # Hardware
  *
@@ -21,18 +22,19 @@
  * |-----------|-------|
  * | Priority | k_imu_task_priority = 13 (between obstacle detect and temp sensor) |
  * | Stack | k_imu_task_stack_size_bytes = 2048 bytes |
- * | Period | k_imu_task_period_ms = 50 ms (20 Hz) |
- * | Period margin | k_imu_task_period_margin_ms = 150 ms (3x period) |
+ * | Period | k_imu_task_period_ms = 50 ms (20 Hz reference; actual rate driven by BNO055 INT) |
+ * | INT timeout | k_imu_int_timeout_ms = 200 ms (fault recovery watchdog) |
+ * | Period margin | k_imu_task_period_margin_ms = 150 ms (3x reference period) |
  *
  * # Task Lifecycle
  *
  * 1. Initialize BNO055 (rx_bno055_init) - blocks ~700 ms for POR
  * 2. Initialize BMP280 (rx_bmp280_init) - blocks ~2 ms for calib read
- * 3. Enter 50 ms periodic polling loop:
- *    a. Read BNO055 -> populate imu_state_t -> shared_data_update_imu()
- *    b. Read BMP280 -> populate baro_state_t -> shared_data_update_baro()
- *    c. Feed IWDT heartbeat
- *    d. Sleep remainder of 50 ms period
+ * 3. Enter interrupt-driven loop:
+ *    a. Feed IWDT heartbeat
+ *    b. Block on BNO055 INT event flag (IRQ12 falling-edge) or 200 ms timeout
+ *    c. Read BNO055 -> populate imu_state_t -> shared_data_update_imu()
+ *    d. Read BMP280 -> populate baro_state_t -> shared_data_update_baro()
  *
  * @see imu_task.c Implementation
  * @see rx_bno055.h BNO055 driver
@@ -46,8 +48,8 @@
  * @warning rx_bno055_init() blocks for ~700 ms during power-on reset sequence.
  *          The IMU task itself is blocked during this initialization; other tasks
  *          are not blocked (the scheduler continues to run higher-priority tasks).
- * @invariant The IMU task runs at 20 Hz (50 ms period = k_imu_task_period_ticks ticks)
- *            once initialization is complete.
+ * @invariant The IMU task wakes on each BNO055 INT assertion (IRQ12 falling-edge)
+ *            with a 200 ms watchdog timeout as fault recovery.
  *
  * @author STAR Team
  * @date 2026-03-04
@@ -78,26 +80,30 @@ typedef enum : uint8_t {
 
 /**
  * @enum imu_task_timing_t
- * @brief Period, tick count, and IWDT timeout constants for the IMU task
+ * @brief Period, tick count, and watchdog timeout constants for the IMU task
  *
  * @details
- * The IMU task polls sensors at 20 Hz (50 ms period, 5 ticks at 100 Hz tick rate).
- * The IWDT heartbeat timeout is 3x the period to allow for sensor I2C latency.
+ * The IMU task operates in interrupt-driven mode: it blocks on the BNO055 INT
+ * event flag (IRQ12 falling-edge) rather than sleeping for a fixed period.
+ * The reference period constants remain for documentation and IWDT timeout
+ * calculations. k_imu_int_timeout_ms is the 200 ms watchdog for fault recovery.
  *
- * k_imu_task_period_ticks is used directly in tx_thread_sleep() to sleep for
- * exactly one 50 ms sampling period (5 ticks x 10 ms/tick = 50 ms).
+ * k_imu_task_period_ticks is kept as a reference (5 ticks = 50 ms at 100 Hz),
+ * but the actual loop rate is now driven by BNO055 data-ready interrupts.
  *
- * @invariant k_imu_task_period_ticks > 0 (task loop must have a finite sleep period)
+ * @invariant k_imu_task_period_ticks > 0 (reference period must be non-zero)
  * @invariant k_imu_task_period_margin_ms >= 3 * k_imu_task_period_ms (3x safety margin)
+ * @invariant k_imu_int_timeout_ms >= 3 * k_imu_task_period_ms (fault recovery >= 3x period)
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_imu_task_period_ms = 50U, /**< IMU sampling period in milliseconds (20 Hz) */
-  k_imu_task_period_ticks =
-    5U, /**< IMU sampling period in RTOS ticks (5 ticks x 10 ms/tick = 50 ms at 100 Hz) */
+  k_imu_task_period_ms =
+    50U, /**< Reference period in milliseconds (20 Hz); actual rate driven by BNO055 INT */
+  k_imu_task_period_ticks = 5U, /**< Reference ticks (5 x 10 ms at 100 Hz) */
   k_imu_task_period_margin_ms =
     150U, /**< Task period safety margin (3x 50ms period = 150ms); NOT the IWDT registration timeout (see k_iwdt_task_timeout_imu_ms in main.c) */
+  k_imu_int_timeout_ms = 200U, /**< Max wait for BNO055 INT assertion before fault recovery read */
 } imu_task_timing_t;
 
 /**

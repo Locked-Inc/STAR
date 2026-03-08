@@ -112,6 +112,63 @@ extern "C" {
  */
 
 /**
+ * @enum bno055_mode_t
+ * @brief BNO055 driver operating mode selection
+ *
+ * @details
+ * Selects whether the BNO055 INT pin is configured to assert on each new data
+ * sample (interrupt-driven mode) or left unconfigured (polling mode).
+ *
+ * In interrupt-driven mode, rx_bno055_init() programs five Page 1 registers
+ * after entering NDOF mode:
+ * 1. PAGE_ID = 1 (switch to Page 1)
+ * 2. ACC_AM_THRES = 0x01 (minimum threshold ~3.9 mg, fires at data rate)
+ * 3. ACC_INT_SETTINGS = 0x07 (enable any-motion on X+Y+Z axes)
+ * 4. INT_EN = 0x20 (enable accelerometer any-motion interrupt source)
+ * 5. PAGE_ID = 0 (restore Page 0 for normal sensor reads)
+ *
+ * In polling mode, none of these writes occur and the INT pin never asserts.
+ *
+ * @see bno055_config_t Configuration struct passed to rx_bno055_init()
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_mode_poll = 0U, /**< Polling mode: INT pin not configured; caller polls at fixed rate */
+  k_bno055_mode_interrupt = 1U, /**< Interrupt mode: configure BNO055 INT pin via ACC any-motion */
+} bno055_mode_t;
+
+/**
+ * @struct bno055_config_t
+ * @brief BNO055 driver configuration passed to rx_bno055_init()
+ *
+ * @details
+ * Allows the caller to select polling or interrupt-driven mode. In interrupt
+ * mode, rx_bno055_init() programs the BNO055 Page 1 interrupt engine registers
+ * after chip ID verification so that the INT pin asserts on each new sample.
+ *
+ * @invariant mode must be a valid bno055_mode_t value
+ *
+ * @code
+ * // Polling mode (no INT pin activity):
+ * const bno055_config_t cfg = {.mode = k_bno055_mode_poll};
+ * rx_bno055_init(&manager, &cfg);
+ *
+ * // Interrupt mode (BNO055 INT -> RX72N IRQ12):
+ * const bno055_config_t cfg = {.mode = k_bno055_mode_interrupt};
+ * rx_bno055_init(&manager, &cfg);
+ * @endcode
+ *
+ * @see bno055_mode_t Mode selection enumeration
+ * @see rx_bno055_init() Consumes this configuration struct
+ *
+ * @since Version 1.0.0
+ */
+typedef struct {
+  bno055_mode_t mode; /**< Operating mode: k_bno055_mode_poll or k_bno055_mode_interrupt */
+} bno055_config_t;
+
+/**
  * @enum bno055_calib_shift_t
  * @brief BNO055 CALIB_STAT register bit-shift positions for each subsystem
  *
@@ -252,6 +309,8 @@ typedef struct {
  * 6. Clear system trigger register
  * 7. Enter NDOF fusion mode (wait 7 ms for mode transition)
  * 8. Verify CHIP_ID register reads 0xA0
+ * 9. (If config->mode == k_bno055_mode_interrupt) Configure Page 1 interrupt
+ *    engine so the INT pin asserts on each new accelerometer sample
  *
  * The function stores the bus manager pointer in a module-static variable
  * for use by subsequent rx_bno055_read() calls. This design assumes a single
@@ -260,10 +319,12 @@ typedef struct {
  * @param[in] manager Pointer to initialized bus manager.
  *                    Must have "i2c1_imu" bus registered and initialized.
  *                    Must not be NULL.
+ * @param[in] config  Pointer to driver configuration selecting poll vs interrupt
+ *                    mode. Must not be NULL.
  *
  * @return rx_err_t Initialization result
  * @retval k_rx_ok Sensor initialized, NDOF mode active, ready to read
- * @retval k_rx_err_null_ptr manager is NULL
+ * @retval k_rx_err_null_ptr manager or config is NULL
  * @retval k_rx_err_nack I2C NACK - device not found (check address/wiring)
  * @retval k_rx_err_invalid_state CHIP_ID mismatch (wrong device or I2C issue)
  * @retval k_rx_err_timeout I2C transaction timeout
@@ -280,6 +341,7 @@ typedef struct {
  * @post Internal s_manager pointer stored for subsequent reads
  * @post s_initialized flag set to true on success
  * @post Sensor actively running sensor fusion (accelerometer + gyro + mag)
+ * @post INT pin configured to assert on data ready if config->mode == k_bno055_mode_interrupt
  *
  * @note Not thread-safe. Call from single-threaded initialization context.
  * @note Blocks for ~700 ms total due to required startup delays.
@@ -287,14 +349,16 @@ typedef struct {
  *
  * @par Performance:
  * - Execution time: ~700 ms (dominated by 650 ms POR delay)
- * - I2C transactions: ~12 writes + 1 read
+ * - I2C transactions: ~12 writes + 1 read (polling); ~17 writes + 1 read (interrupt mode)
  *
  * @see rx_bno055_read() Read sensor data after initialization
+ * @see bno055_mode_t Mode selection (poll vs interrupt)
+ * @see bno055_config_t Configuration struct
  * @see bno055_delay_ms_t Required timing constants
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_bno055_init(rx_bus_manager_t* manager);
+[[nodiscard]] rx_err_t rx_bno055_init(rx_bus_manager_t* manager, const bno055_config_t* config);
 
 /**
  * @brief Read current BNO055 fusion output data
