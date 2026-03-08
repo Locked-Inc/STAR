@@ -268,6 +268,9 @@ typedef struct {
  * @retval k_rx_err_invalid_state CHIP_ID mismatch (wrong device or I2C issue)
  * @retval k_rx_err_timeout I2C transaction timeout
  *
+ * @pre Caller must have completed hardware reset via P83 (IMU RST, active-low):
+ *      assert LOW for >= 10 ms, deassert HIGH, wait >= 650 ms for POR to complete.
+ *      See internal_imu_hardware_reset() in imu_task.c.
  * @pre manager must be initialized via rx_bus_manager_init()
  * @pre "i2c1" bus must be registered and initialized in manager
  * @pre RIIC1 hardware initialized by hardware_init() (riic_init)
