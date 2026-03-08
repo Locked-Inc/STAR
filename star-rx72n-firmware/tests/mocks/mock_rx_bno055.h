@@ -31,14 +31,16 @@ extern "C" {
  * @brief Reset all mock state to defaults (k_rx_ok returns, zero call counts)
  *
  * @details
- * Resets s_init_return and s_read_return to k_rx_ok and clears s_init_count
- * and s_read_count to 0. Call from setUp() before each test.
+ * Resets s_init_return and s_read_return to k_rx_ok, clears s_init_count
+ * and s_read_count to 0, and resets s_last_mode to k_bno055_mode_poll.
+ * Call from setUp() before each test.
  *
  * @pre None
  * @pre Mock module is linked into the test executable
  * @post s_init_return == k_rx_ok
  * @post s_read_return == k_rx_ok
  * @post s_init_count == 0 and s_read_count == 0
+ * @post s_last_mode == k_bno055_mode_poll
  */
 void mock_bno055_reset(void);
 
@@ -87,6 +89,21 @@ uint32_t mock_bno055_get_init_count(void);
  */
 uint32_t mock_bno055_get_read_count(void);
 
+/**
+ * @brief Return the bno055_mode_t value last passed to rx_bno055_init()
+ *
+ * @details
+ * Returns the mode field captured from the config pointer on the most recent
+ * call to rx_bno055_init(). Returns k_bno055_mode_poll if rx_bno055_init()
+ * has not been called since the last mock_bno055_reset().
+ *
+ * @return bno055_mode_t Mode passed to the most recent rx_bno055_init() call
+ *
+ * @pre mock_bno055_reset() called at least once to establish baseline
+ * @post Return value reflects the config->mode of the last rx_bno055_init() call
+ */
+bno055_mode_t mock_bno055_get_last_mode(void);
+
 /* =============================================================================
  * Mock BNO055 API (matches rx_bno055.h signatures)
  * =============================================================================
@@ -100,13 +117,16 @@ uint32_t mock_bno055_get_read_count(void);
  * mock_bno055_set_init_return(). Does not access hardware.
  *
  * @param[in] manager Bus manager pointer (ignored in mock)
+ * @param[in] config  Config pointer; mode field captured in s_last_mode (pointer itself ignored)
  *
  * @return rx_err_t Value set by mock_bno055_set_init_return() (default k_rx_ok)
  *
  * @pre manager may be NULL (ignored by mock)
+ * @pre config may be NULL (mock stores mode only when config != NULL)
  * @post s_init_count incremented by 1
+ * @post s_last_mode == config->mode when config != NULL
  */
-rx_err_t rx_bno055_init(rx_bus_manager_t* manager);
+rx_err_t rx_bno055_init(rx_bus_manager_t* manager, const bno055_config_t* config);
 
 /**
  * @brief Mock implementation of rx_bno055_read()

@@ -214,6 +214,7 @@ rx_err_t imu_task_create(void)
                             TX_AUTO_START);
 
   if (status != TX_SUCCESS) {
+    (void)tx_event_flags_delete(&s_imu_event_flags);
     return k_rx_err_rtos_thread_create;
   }
 

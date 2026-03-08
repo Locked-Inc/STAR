@@ -296,6 +296,22 @@ static rx_bus_manager_t s_test_manager;
  */
 static rx_bus_config_t s_i2c_config;
 
+/**
+ * @var s_poll_cfg
+ * @brief BNO055 polling-mode configuration used by most init tests
+ * @details Selects k_bno055_mode_poll; interrupt engine registers are not written.
+ * @since Version 1.0.0
+ */
+static const bno055_config_t s_poll_cfg = {.mode = k_bno055_mode_poll};
+
+/**
+ * @var s_interrupt_cfg
+ * @brief BNO055 interrupt-mode configuration used by interrupt init tests
+ * @details Selects k_bno055_mode_interrupt; driver writes Page 1 interrupt registers.
+ * @since Version 1.0.0
+ */
+static const bno055_config_t s_interrupt_cfg = {.mode = k_bno055_mode_interrupt};
+
 /* =============================================================================
  * Helper: Load mock RX data for a successful BNO055 init sequence
  * =============================================================================
@@ -552,7 +568,7 @@ void tearDown(void)
 static void internal_setup_initialized_driver(void)
 {
   internal_load_valid_chip_id();
-  rx_err_t err = rx_bno055_init(&s_test_manager);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Verify mock HAL is still operational after init (confirms bus communication completed) */
   TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
@@ -579,7 +595,7 @@ static void internal_setup_initialized_driver(void)
  */
 void test_bno055_init_null_manager_returns_error(void)
 {
-  rx_err_t err = rx_bno055_init(nullptr);
+  rx_err_t err = rx_bno055_init(nullptr, &s_poll_cfg);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 }
@@ -605,7 +621,7 @@ void test_bno055_init_i2c_error_propagates(void)
 {
   (void)mock_riic_simulate_nack(true);
 
-  rx_err_t err = rx_bno055_init(&s_test_manager);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
 
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -634,7 +650,7 @@ void test_bno055_init_wrong_chip_id(void)
   uint8_t wrong_id = (uint8_t)k_test_wrong_chip_id;
   (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &wrong_id, k_test_single_byte_buf);
 
-  rx_err_t err = rx_bno055_init(&s_test_manager);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -684,7 +700,7 @@ void test_bno055_init_success(void)
 {
   internal_load_valid_chip_id();
 
-  rx_err_t err = rx_bno055_init(&s_test_manager);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Verify initialized by attempting a read with mock data */
@@ -715,7 +731,7 @@ void test_bno055_init_double_init_returns_error(void)
   internal_setup_initialized_driver();
 
   /* Second call must be rejected with double-init guard */
-  rx_err_t err = rx_bno055_init(&s_test_manager);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1007,6 +1023,63 @@ void test_bno055_is_calibrated_partial(void)
 }
 
 /* =============================================================================
+ * Interrupt Mode Init Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief rx_bno055_init in interrupt mode succeeds when all writes succeed
+ *
+ * @details
+ * Passes k_bno055_mode_interrupt via config. The driver must write the normal
+ * init sequence plus the Page 1 interrupt-engine sequence (5 extra register
+ * writes). All writes go through the mock RIIC without error; the chip-ID read
+ * returns 0xA0. Verifies that k_rx_ok is returned and the driver is
+ * subsequently readable.
+ *
+ * @pre s_initialized == false
+ * @pre setUp() has initialized bus manager and mock RIIC HAL
+ * @post s_initialized == true
+ * @post rx_bno055_read() returns k_rx_ok confirming interrupt mode init succeeded
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_init_interrupt_mode_succeeds(void)
+{
+  internal_load_valid_chip_id();
+
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_interrupt_cfg);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* Confirm driver is operational by performing a read */
+  internal_load_read_data();
+  bno055_data_t data;
+  rx_err_t      read_err = rx_bno055_read(&data);
+  TEST_ASSERT_EQUAL(k_rx_ok, read_err);
+}
+
+/**
+ * @brief rx_bno055_init with NULL config returns k_rx_err_null_ptr
+ *
+ * @details
+ * Verifies the null-pointer guard added for the config parameter. Passes a
+ * valid manager but NULL config. The driver must return k_rx_err_null_ptr
+ * without performing any I2C communication.
+ *
+ * @pre s_initialized == false
+ * @pre setUp() has initialized bus manager and mock RIIC HAL
+ * @post s_initialized == false (null ptr guard fires before init begins)
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_init_null_config(void)
+{
+  rx_err_t err = rx_bno055_init(&s_test_manager, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/* =============================================================================
  * Unity Main Entry Point
  * =============================================================================
  */
@@ -1041,11 +1114,13 @@ int main(void)
 
   /* Init tests */
   RUN_TEST(test_bno055_init_null_manager_returns_error);
+  RUN_TEST(test_bno055_init_null_config);
   RUN_TEST(test_bno055_init_i2c_error_propagates);
   RUN_TEST(test_bno055_init_wrong_chip_id);
   RUN_TEST(test_bno055_read_before_init);
   RUN_TEST(test_bno055_init_success);
   RUN_TEST(test_bno055_init_double_init_returns_error);
+  RUN_TEST(test_bno055_init_interrupt_mode_succeeds);
 
   /* Read tests (null-ptr test does not require init; others call internal_setup_initialized_driver) */
   RUN_TEST(test_bno055_read_null_ptr_returns_error);

@@ -26,6 +26,8 @@ static rx_err_t s_read_return = k_rx_ok;
 static uint32_t s_init_count = 0;
 /** @brief Number of rx_bno055_read() calls (out != NULL) since last mock_bno055_reset() */
 static uint32_t s_read_count = 0;
+/** @brief Mode captured from config->mode on last rx_bno055_init() call */
+static bno055_mode_t s_last_mode = k_bno055_mode_poll;
 
 /**
  * @brief Reset all mock state to defaults (k_rx_ok returns, zero call counts)
@@ -46,6 +48,7 @@ void mock_bno055_reset(void)
   s_read_return = k_rx_ok;
   s_init_count  = 0;
   s_read_count  = 0;
+  s_last_mode   = k_bno055_mode_poll;
 }
 
 /**
@@ -101,6 +104,19 @@ uint32_t mock_bno055_get_read_count(void)
 }
 
 /**
+ * @brief Return the bno055_mode_t value last passed to rx_bno055_init()
+ *
+ * @return bno055_mode_t Mode passed to most recent rx_bno055_init() call
+ *
+ * @pre mock_bno055_reset() called at least once to establish baseline
+ * @post Return value reflects the config->mode of the last rx_bno055_init() call
+ */
+bno055_mode_t mock_bno055_get_last_mode(void)
+{
+  return s_last_mode;
+}
+
+/**
  * @brief Mock implementation of rx_bno055_init()
  *
  * @details
@@ -108,16 +124,22 @@ uint32_t mock_bno055_get_read_count(void)
  * mock_bno055_set_init_return(). Does not access hardware.
  *
  * @param[in] manager Bus manager pointer (ignored in mock)
+ * @param[in] config  Config pointer; mode field captured when non-NULL
  *
  * @return rx_err_t Value set by mock_bno055_set_init_return() (default k_rx_ok)
  *
  * @pre manager may be NULL (ignored by mock)
+ * @pre config may be NULL (mode not captured when config is NULL)
  * @post s_init_count incremented by 1
+ * @post s_last_mode == config->mode when config != NULL
  */
-rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
+rx_err_t rx_bno055_init(rx_bus_manager_t* manager, const bno055_config_t* config)
 {
   (void)manager;
   s_init_count++;
+  if (config != NULL) {
+    s_last_mode = config->mode;
+  }
   return s_init_return;
 }
 
@@ -134,7 +156,7 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
  * @retval k_rx_err_null_ptr out is NULL
  *
  * @pre out may be NULL (returns k_rx_err_null_ptr)
- * @post *out zeroed when out != NULL and return value is k_rx_ok
+ * @post *out zeroed only when out != NULL and injected return value is k_rx_ok
  * @post s_read_count incremented when out != NULL
  */
 rx_err_t rx_bno055_read(bno055_data_t* out)
@@ -143,6 +165,9 @@ rx_err_t rx_bno055_read(bno055_data_t* out)
     return k_rx_err_null_ptr;
   }
   s_read_count++;
-  (void)memset(out, 0, sizeof(*out));
-  return s_read_return;
+  const rx_err_t ret = s_read_return;
+  if (ret == k_rx_ok) {
+    (void)memset(out, 0, sizeof(*out));
+  }
+  return ret;
 }

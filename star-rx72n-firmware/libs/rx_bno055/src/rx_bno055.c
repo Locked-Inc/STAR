@@ -168,6 +168,16 @@ static rx_bus_manager_t* s_manager = NULL;
 static bool s_initialized = false;
 
 /**
+ * @var s_mode
+ * @brief Operating mode stored during rx_bno055_init(), used by diagnostic queries
+ * @details Set to config->mode during rx_bno055_init(). Reset to k_bno055_mode_poll
+ *          by rx_bno055_test_reset_state() (UNIT_TEST builds only).
+ * @note Valid only after successful rx_bno055_init()
+ * @since Version 1.0.0
+ */
+static bno055_mode_t s_mode = k_bno055_mode_poll;
+
+/**
  * @var s_bus_name
  * @brief I2C bus name used by the BNO055 driver to look up the bus manager
  *
@@ -344,6 +354,7 @@ static rx_err_t       internal_init_reset_and_wait(void);
 static rx_err_t       internal_init_configure(void);
 static rx_err_t       internal_init_enter_ndof(void);
 static rx_err_t       internal_verify_chip_id(void);
+static rx_err_t       internal_init_enable_interrupt(void);
 
 /* =============================================================================
  * Internal Helpers
@@ -678,6 +689,92 @@ static rx_err_t internal_verify_chip_id(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Configure BNO055 Page 1 interrupt engine to assert INT on each data sample
+ *
+ * @details
+ * Writes to the BNO055 Page 1 interrupt registers to enable the accelerometer
+ * any-motion interrupt on X, Y, and Z axes at minimum threshold (~3.9 mg).
+ * At this threshold the interrupt fires at the accelerometer data rate (~100 Hz
+ * in NDOF mode), effectively acting as a data-ready signal on the INT pin.
+ *
+ * Register write sequence:
+ * 1. PAGE_ID = 1 -- switch to Page 1
+ * 2. ACC_AM_THRES = 0x01 -- minimum threshold; fires at data rate
+ * 3. ACC_INT_SETTINGS = 0x07 -- enable any-motion on X+Y+Z axes
+ * 4. INT_EN = 0x20 -- route any-motion to INT pin
+ * 5. PAGE_ID = 0 -- restore Page 0 for normal sensor reads
+ *
+ * If any write fails, a best-effort restore of PAGE_ID=0 is attempted so the
+ * sensor is left in a known page before returning the error. On error, the caller
+ * (rx_bno055_init) will clear s_manager and return the error.
+ *
+ * @return rx_err_t Operation result
+ * @retval k_rx_ok All five Page 1 registers written, INT configured
+ * @retval k_rx_err_nack I2C NACK during any register write
+ * @retval k_rx_err_timeout I2C timeout during any register write
+ *
+ * @pre s_manager non-NULL (set by rx_bno055_init before calling this helper)
+ * @pre BNO055 in NDOF mode (internal_init_enter_ndof and internal_verify_chip_id succeeded)
+ * @post INT pin will assert on each BNO055 accelerometer sample (on k_rx_ok)
+ * @post PAGE_ID restored to 0 (attempted even on error)
+ *
+ * @note Not thread-safe; called only from rx_bno055_init()
+ *
+ * @see bno055_int_reg_t Page 1 register address constants
+ * @see bno055_int_en_t INT_EN enable bit value
+ * @see bno055_acc_int_t ACC_INT_SETTINGS axis enable bits
+ * @see bno055_am_thres_t Any-motion threshold constant
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_init_enable_interrupt(void)
+{
+  RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for interrupt enable");
+  RX_ASSERT(s_bus_name != NULL, "s_bus_name must be non-NULL for interrupt enable");
+
+  /* Switch to Page 1 to access interrupt engine registers */
+  rx_err_t err = internal_write_reg((uint8_t)k_bno055_reg_page_id, (uint8_t)k_bno055_page1);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "INT init: page 1 switch failed");
+    return err;
+  }
+
+  /* Set minimum any-motion threshold (~3.9 mg); fires at accelerometer data rate */
+  err = internal_write_reg((uint8_t)k_bno055_reg_acc_am_thres, (uint8_t)k_bno055_acc_am_thres_min);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "INT init: ACC_AM_THRES write failed");
+    (void)internal_write_reg((uint8_t)k_bno055_reg_page_id, (uint8_t)k_bno055_page0);
+    return err;
+  }
+
+  /* Enable any-motion detection on X, Y, and Z axes (1-sample duration) */
+  err =
+    internal_write_reg((uint8_t)k_bno055_reg_acc_int_settings, (uint8_t)k_bno055_acc_int_am_xyz);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "INT init: ACC_INT_SETTINGS write failed");
+    (void)internal_write_reg((uint8_t)k_bno055_reg_page_id, (uint8_t)k_bno055_page0);
+    return err;
+  }
+
+  /* Enable accelerometer any-motion as an interrupt source (bit 5) */
+  err = internal_write_reg((uint8_t)k_bno055_reg_int_en, (uint8_t)k_bno055_int_en_acc_am);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "INT init: INT_EN write failed");
+    (void)internal_write_reg((uint8_t)k_bno055_reg_page_id, (uint8_t)k_bno055_page0);
+    return err;
+  }
+
+  /* Restore Page 0 for normal sensor output reads */
+  err = internal_write_reg((uint8_t)k_bno055_reg_page_id, (uint8_t)k_bno055_page0);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "INT init: page 0 restore failed");
+    return err;
+  }
+
+  return k_rx_ok;
+}
+
 /* =============================================================================
  * Public API Implementation
  * =============================================================================
@@ -703,18 +800,20 @@ static rx_err_t internal_verify_chip_id(void)
  * - 7 ms NDOF: 1 tick (10 ms, rounded up for margin)
  *
  * @param[in] manager Pointer to initialized bus manager with "i2c1_imu" registered
+ * @param[in] config  Pointer to configuration struct selecting polling or interrupt mode
  *
  * @return rx_err_t Initialization result
  * @retval k_rx_ok Sensor initialized, NDOF mode active
- * @retval k_rx_err_null_ptr manager is NULL
+ * @retval k_rx_err_null_ptr manager or config is NULL
  * @retval k_rx_err_nack I2C NACK (device not found)
  * @retval k_rx_err_invalid_state CHIP_ID != 0xA0
  *
  * @pre manager non-NULL with "i2c1_imu" bus registered and initialized
- * @pre BNO055 powered (3.3V)
+ * @pre config non-NULL with a valid bno055_mode_t value in config->mode
  * @post s_initialized == true on success
  * @post Sensor running NDOF fusion
  * @post s_manager == NULL on any failure path
+ * @post INT pin asserts at accelerometer data rate when config->mode == k_bno055_mode_interrupt
  *
  * @note Not thread-safe
  * @note Blocks ~700 ms total
@@ -723,15 +822,18 @@ static rx_err_t internal_verify_chip_id(void)
  * @see internal_init_configure() Steps 3-6
  * @see internal_init_enter_ndof() Step 7
  * @see internal_verify_chip_id() Step 8
+ * @see internal_init_enable_interrupt() Interrupt engine configuration (interrupt mode only)
  * @see bno055_delay_ms_t Timing constants
+ * @see bno055_config_t Configuration struct
  *
  * @since Version 1.0.0
  */
-rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
+rx_err_t rx_bno055_init(rx_bus_manager_t* manager, const bno055_config_t* config)
 {
   static_assert(k_bno055_ms_per_tick != 0,
                 "k_bno055_ms_per_tick must be non-zero to avoid division by zero in tick delays");
   RX_CHECK_NULL_PTR(manager, s_tag, "Bus manager is NULL");
+  RX_CHECK_NULL_PTR(config, s_tag, "Config is NULL");
 
   if (s_initialized) {
     rx_log_error(s_tag, "BNO055 already initialized");
@@ -739,6 +841,7 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
   }
 
   s_manager     = manager;
+  s_mode        = config->mode;
   s_initialized = false;
 
   rx_err_t err = internal_init_reset_and_wait();
@@ -763,6 +866,14 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
   if (err != k_rx_ok) {
     s_manager = NULL;
     return err;
+  }
+
+  if (s_mode == k_bno055_mode_interrupt) {
+    err = internal_init_enable_interrupt();
+    if (err != k_rx_ok) {
+      s_manager = NULL;
+      return err;
+    }
   }
 
   s_initialized = true;
@@ -1104,6 +1215,7 @@ rx_err_t rx_bno055_is_calibrated(bool* out_calibrated)
  * @pre None
  * @post s_initialized == false
  * @post s_manager == NULL
+ * @post s_mode == k_bno055_mode_poll
  *
  * @note For unit tests only; not compiled in firmware builds
  * @since Version 1.0.0
@@ -1112,6 +1224,7 @@ void rx_bno055_test_reset_state(void)
 {
   s_initialized = false;
   s_manager     = NULL;
+  s_mode        = k_bno055_mode_poll;
   /* Post-condition verification: confirm assignments took effect (catches optimizer miscompilation) */
   RX_ASSERT(!s_initialized, "s_initialized must be false after reset");
   RX_ASSERT(s_manager == NULL, "s_manager must be NULL after reset");

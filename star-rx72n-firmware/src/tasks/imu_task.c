@@ -324,6 +324,27 @@ static char s_task_name[] = "ImuTask"; /* char[] (not const) satisfies ThreadX C
 static TX_EVENT_FLAGS_GROUP s_imu_event_flags;
 
 /**
+ * @var s_imu_event_flags_ready
+ * @brief ISR ready guard -- true only after both event-flags and thread are created
+ *
+ * @details
+ * INT_IRQ12() checks this flag before calling tx_event_flags_set().  The ICU
+ * IRQ12 line can fire as soon as the BNO055 powers up, which may be before
+ * imu_task_create() has finished setting up s_imu_event_flags.  Without this
+ * guard, the ISR would call tx_event_flags_set() on an uninitialised control
+ * block, corrupting the ThreadX heap.
+ *
+ * Set to true at the end of imu_task_create() after BOTH tx_event_flags_create()
+ * and tx_thread_create() succeed.  Never reset to false (task is never deleted).
+ *
+ * @note Declared volatile because it is written in task context and read in ISR
+ *       context without a memory barrier.
+ * @warning Do not set to true before tx_event_flags_create() completes.
+ * @since Version 1.0.0
+ */
+static volatile bool s_imu_event_flags_ready = false;
+
+/**
  * @var g_bus_manager
  * @brief External bus manager defined in shared_data.c; registered buses include "i2c1_imu" and "i2c1_baro"
  *
@@ -439,10 +460,12 @@ rx_err_t imu_task_create(void)
 
   if (tx_status != TX_SUCCESS) {
     rx_log_error_val(s_tag, "Thread create failed", (uint32_t)tx_status);
+    (void)tx_event_flags_delete(&s_imu_event_flags);
     return k_rx_err_rtos_thread_create;
   }
 
-  s_imu_created = true;
+  s_imu_created           = true;
+  s_imu_event_flags_ready = true;
   rx_log_info(s_tag, "IMU task created");
 
   return k_rx_ok;
@@ -513,7 +536,8 @@ static void internal_retry_sensor_init(bool* bno_ready, bool* bmp_ready)
   RX_ASSERT(bmp_ready != NULL, "bmp_ready must not be NULL");
 
   if (!*bno_ready) {
-    const rx_err_t retry_bno = rx_bno055_init(&g_bus_manager);
+    const bno055_config_t bno_cfg   = {.mode = k_bno055_mode_interrupt};
+    const rx_err_t        retry_bno = rx_bno055_init(&g_bus_manager, &bno_cfg);
     if (retry_bno == k_rx_ok) {
       *bno_ready = true;
       rx_log_info(s_tag, "BNO055 initialized on retry");
@@ -775,6 +799,11 @@ static bool internal_wait_for_imu_int(void)
 void INT_IRQ12(void);
 void INT_IRQ12(void)
 {
+  /* Guard against spurious INT edges before event flags are created */
+  if (!s_imu_event_flags_ready) {
+    return;
+  }
+
 #ifdef __RX__
   /* Clear ICU interrupt request flag before processing to avoid re-entry */
   icu()->ir[k_imu_irq_vector_isr] = (uint8_t)k_icu_ir_clear_val;
@@ -868,7 +897,8 @@ static void internal_imu_task_entry(ULONG input)
 
   /* Step 2: Initialize BNO055 (software reset + config, blocks ~700 ms) */
   if (err_rst == k_rx_ok) {
-    const rx_err_t err_bno = rx_bno055_init(&g_bus_manager);
+    const bno055_config_t bno_cfg = {.mode = k_bno055_mode_interrupt};
+    const rx_err_t        err_bno = rx_bno055_init(&g_bus_manager, &bno_cfg);
     if (err_bno != k_rx_ok) {
       rx_log_error_val(s_tag, "BNO055 init failed - will retry in loop", (uint32_t)err_bno);
     } else {

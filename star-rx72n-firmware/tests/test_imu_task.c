@@ -88,7 +88,7 @@ void test_imu_task_create_thread_fail(void)
  */
 void test_imu_int_timeout_ms_value(void)
 {
-  TEST_ASSERT_EQUAL(200U, (uint8_t)k_imu_int_timeout_ms);
+  TEST_ASSERT_EQUAL(200U, (uint32_t)k_imu_int_timeout_ms);
 }
 
 /**
@@ -100,7 +100,7 @@ void test_imu_int_timeout_ms_value(void)
  */
 void test_imu_task_period_ms_value(void)
 {
-  TEST_ASSERT_EQUAL(50U, (uint8_t)k_imu_task_period_ms);
+  TEST_ASSERT_EQUAL(50U, (uint32_t)k_imu_task_period_ms);
 }
 
 /**
@@ -113,8 +113,8 @@ void test_imu_task_period_ms_value(void)
 void test_imu_int_timeout_exceeds_period(void)
 {
   /* k_imu_int_timeout_ms must be >= 3 * k_imu_task_period_ms */
-  TEST_ASSERT_GREATER_OR_EQUAL((uint8_t)(3U * (uint8_t)k_imu_task_period_ms),
-                               (uint8_t)k_imu_int_timeout_ms);
+  TEST_ASSERT_GREATER_OR_EQUAL((uint32_t)(3U * (uint32_t)k_imu_task_period_ms),
+                               (uint32_t)k_imu_int_timeout_ms);
 }
 
 /**
@@ -126,7 +126,34 @@ void test_imu_int_timeout_exceeds_period(void)
  */
 void test_imu_task_period_margin_is_3x(void)
 {
-  TEST_ASSERT_EQUAL(3U * (uint8_t)k_imu_task_period_ms, (uint8_t)k_imu_task_period_margin_ms);
+  TEST_ASSERT_EQUAL(3U * (uint32_t)k_imu_task_period_ms, (uint32_t)k_imu_task_period_margin_ms);
+}
+
+/**
+ * @brief Test that a failed first imu_task_create() does not block a second attempt
+ *
+ * @details
+ * Verifies that after a first imu_task_create() call fails (TX_NO_MEMORY injected
+ * into tx_thread_create()), a subsequent call with TX_SUCCESS succeeds. Confirms
+ * that the task can be retried after a creation failure (no permanent state corruption).
+ *
+ * @pre setUp() has reset mock TX state
+ * @pre s_imu_created == false at start (reset by mock_tx_reset())
+ * @post First call returns k_rx_err_rtos_thread_create
+ * @post Second call returns k_rx_ok after TX_SUCCESS injected
+ */
+void test_imu_task_create_retry_succeeds(void)
+{
+  mock_tx_set_thread_create_return(TX_NO_MEMORY);
+
+  const rx_err_t first_err = imu_task_create();
+  TEST_ASSERT_EQUAL(k_rx_err_rtos_thread_create, first_err);
+
+  mock_tx_reset();
+  mock_tx_set_thread_create_return(TX_SUCCESS);
+
+  const rx_err_t second_err = imu_task_create();
+  TEST_ASSERT_EQUAL(k_rx_ok, second_err);
 }
 
 /* =============================================================================
@@ -140,6 +167,7 @@ int main(void)
 
   RUN_TEST(test_imu_task_create_success);
   RUN_TEST(test_imu_task_create_thread_fail);
+  RUN_TEST(test_imu_task_create_retry_succeeds);
   RUN_TEST(test_imu_int_timeout_ms_value);
   RUN_TEST(test_imu_task_period_ms_value);
   RUN_TEST(test_imu_int_timeout_exceeds_period);

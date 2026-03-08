@@ -483,6 +483,119 @@ typedef enum : uint16_t {
   k_bno055_ms_per_second = 1000U, /**< Milliseconds per second (for tick-rate conversion) */
 } bno055_time_const_t;
 
+/* =============================================================================
+ * Page 1 Interrupt Engine Registers
+ * =============================================================================
+ */
+
+/**
+ * @enum bno055_page_t
+ * @brief BNO055 register page selection values for the PAGE_ID register
+ *
+ * @details
+ * The BNO055 organizes registers into two pages selected by writing to PAGE_ID
+ * (address 0x07 on both pages). Page 0 is the default after reset and contains
+ * all sensor output registers. Page 1 contains the interrupt engine configuration
+ * registers used to enable the INT output pin.
+ *
+ * @see bno055_int_reg_t Page 1 interrupt register addresses
+ * @see rx_bno055.c internal_init_enable_interrupt() Uses PAGE_ID to switch pages
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_page0 = 0x00U, /**< Page 0 (default after reset): sensor output, system registers */
+  k_bno055_page1 = 0x01U, /**< Page 1: interrupt engine configuration registers */
+} bno055_page_t;
+
+/**
+ * @enum bno055_int_reg_t
+ * @brief BNO055 interrupt engine register addresses (PAGE_ID and Page 1 registers)
+ *
+ * @details
+ * These register addresses control the BNO055 interrupt output (INT pin).
+ * PAGE_ID (0x07) exists on both pages and selects the active page.
+ * All other addresses in this enum are Page 1 registers.
+ *
+ * Interrupt configuration sequence:
+ * 1. Write PAGE_ID=1 to switch to Page 1
+ * 2. Configure threshold (ACC_AM_THRES), axis enables (ACC_INT_SETTINGS),
+ *    and interrupt source enable (INT_EN)
+ * 3. Write PAGE_ID=0 to return to Page 0 for normal operation
+ *
+ * @invariant All addresses are 8-bit I2C register addresses
+ * @see bno055_page_t Page selection values
+ * @see rx_bno055.c internal_init_enable_interrupt()
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_reg_page_id = 0x07U, /**< PAGE_ID register (both pages): 0=Page0, 1=Page1 */
+  k_bno055_reg_int_msk = 0x0FU, /**< INT_MSK (Page 1): routes interrupt sources to INT pin */
+  k_bno055_reg_int_en  = 0x10U, /**< INT_EN (Page 1): enables interrupt sources */
+  k_bno055_reg_acc_int_settings =
+    0x16U, /**< ACC_INT_SETTINGS (Page 1): accelerometer interrupt config */
+  k_bno055_reg_acc_am_thres = 0x18U, /**< ACC_AM_THRES (Page 1): any-motion detection threshold */
+} bno055_int_reg_t;
+
+/**
+ * @enum bno055_int_en_t
+ * @brief INT_EN register bit values for enabling interrupt sources (Page 1, 0x10)
+ *
+ * @details
+ * Each bit in INT_EN enables a specific interrupt source to assert the INT pin.
+ * Bit 5 (k_bno055_int_en_acc_am) enables the accelerometer any-motion interrupt,
+ * which asserts INT whenever the accelerometer any-motion threshold is exceeded.
+ * At minimum threshold (1 LSB ~= 3.9 mg) this fires at the accelerometer data rate,
+ * making it effectively a data-ready interrupt.
+ *
+ * @see bno055_int_reg_t k_bno055_reg_int_en register address
+ * @see rx_bno055.c internal_init_enable_interrupt()
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_int_en_acc_am = 0x20U, /**< INT_EN bit 5: enable accelerometer any-motion interrupt */
+} bno055_int_en_t;
+
+/**
+ * @enum bno055_acc_int_t
+ * @brief ACC_INT_SETTINGS register values for accelerometer interrupt axis enables (Page 1, 0x16)
+ *
+ * @details
+ * Bits [2:0] of ACC_INT_SETTINGS enable any-motion detection on X, Y, and Z axes
+ * independently. Setting all three (0x07) fires the interrupt when motion is detected
+ * on any axis. At minimum threshold (1 LSB) this is effectively data-rate triggered.
+ *
+ * @see bno055_int_reg_t k_bno055_reg_acc_int_settings register address
+ * @see bno055_am_thres_t Threshold constant for any-motion detection
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_acc_int_am_xyz = 0x07U, /**< ACC_INT_SETTINGS bits[2:0]: enable AM on X+Y+Z axes */
+} bno055_acc_int_t;
+
+/**
+ * @enum bno055_am_thres_t
+ * @brief ACC_AM_THRES register values for any-motion threshold (Page 1, 0x18)
+ *
+ * @details
+ * Sets the accelerometer any-motion detection threshold in 3.9 mg steps.
+ * Minimum value (1 = ~3.9 mg) causes the interrupt to fire whenever the
+ * accelerometer produces new data, making it a data-ready interrupt.
+ *
+ * @invariant k_bno055_acc_am_thres_min > 0 (must be non-zero to enable detection)
+ *
+ * @see bno055_int_reg_t k_bno055_reg_acc_am_thres register address
+ * @see bno055_acc_int_t Any-motion axis enable settings
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_acc_am_thres_min = 0x01U, /**< Minimum threshold (~3.9 mg); fires at data rate */
+} bno055_am_thres_t;
+
 #ifdef __cplusplus
 }
 #endif
