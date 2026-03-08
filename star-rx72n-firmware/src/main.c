@@ -404,7 +404,7 @@ static rx_bus_config_t s_adc0_config;
  * @pre RIIC1 hardware initialized before any driver uses this config
  * @post rx_bus_config_init_i2c() populates all fields before bus registration
  *
- * @note Bus name "i2c1" matches s_bus_name in rx_bno055.c
+ * @note Bus name "i2c1_imu" matches s_bus_name in rx_bno055.c
  * @note Static allocation follows NASA Power of 10 Rule 3
  *
  * @see rx_bno055.h BNO055 driver that uses this bus
@@ -1733,24 +1733,24 @@ static void internal_register_system_buses(void)
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_adc0_config);
   RX_ASSERT(err == k_rx_ok, "adc0 registration must succeed");
 
-  /* Register i2c1 - BNO055 IMU (RIIC1, addr 0x28, SDA=P2.0, SCL=P2.1) */
+  /* Register i2c1_imu - BNO055 IMU (RIIC1, addr 0x28, SDA=P2.0, SCL=P2.1) */
   err = rx_bus_config_init_i2c(&s_i2c1_imu_config,
-                               "i2c1",                  /* name: matches rx_bno055.c s_bus_name */
+                               "i2c1_imu",              /* name: matches rx_bno055.c s_bus_name */
                                k_riic_channel_1,        /* channel: RIIC1 */
                                k_i2c_addr_bno055,       /* device_addr: BNO055 (COM3/ADR=LOW) */
                                k_rx_p2_0,               /* sda_pin: P2.0 = SDA1 */
                                k_rx_p2_1,               /* scl_pin: P2.1 = SCL1 */
                                k_i2c_frequency_400khz); /* frequency_hz: 400 kHz fast mode */
-  RX_ASSERT(err == k_rx_ok, "i2c1 (IMU) config init must succeed");
+  RX_ASSERT(err == k_rx_ok, "i2c1_imu config init must succeed");
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c1_imu_config);
-  RX_ASSERT(err == k_rx_ok, "i2c1 (IMU) registration must succeed");
-  err = rx_bus_i2c_init(&g_bus_manager, "i2c1");
-  RX_ASSERT(err == k_rx_ok, "i2c1 (IMU) I2C init must succeed");
+  RX_ASSERT(err == k_rx_ok, "i2c1_imu registration must succeed");
+  err = rx_bus_i2c_init(&g_bus_manager, "i2c1_imu");
+  RX_ASSERT(err == k_rx_ok, "i2c1_imu I2C init must succeed");
 
   /* Register i2c1_baro - BMP280 barometric sensor (RIIC1, addr 0x76, SDA=P2.0, SCL=P2.1) */
   err = rx_bus_config_init_i2c(&s_i2c1_baro_config,
                                "i2c1_baro",             /* name: matches rx_bmp280.c s_bus_name */
-                               k_riic_channel_1,        /* channel: RIIC1 (same as i2c1) */
+                               k_riic_channel_1,        /* channel: RIIC1 (same as i2c1_imu) */
                                k_i2c_addr_bmp280,       /* device_addr: BMP280 (SDO=LOW) */
                                k_rx_p2_0,               /* sda_pin: P2.0 = SDA1 */
                                k_rx_p2_1,               /* scl_pin: P2.1 = SCL1 */

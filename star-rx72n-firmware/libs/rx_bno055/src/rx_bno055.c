@@ -20,8 +20,8 @@
  * - internal_write_reg(): Writes a single byte to a register
  * - internal_read_regs(): Burst reads N consecutive registers
  *
- * Both helpers use the bus manager abstraction with bus name "i2c1".
- * The device address 0x28 is embedded in the "i2c1" bus configuration
+ * Both helpers use the bus manager abstraction with bus name "i2c1_imu".
+ * The device address 0x28 is embedded in the "i2c1_imu" bus configuration
  * registered by main.c.
  *
  * # Data Flow
@@ -175,12 +175,12 @@ static bool s_initialized = false;
  * The name must match the bus name registered in main.c via rx_bus_manager_register().
  * Passed to rx_bus_manager_get_i2c() to obtain the I2C bus handle.
  *
- * @note Must match the name registered in main.c (currently "i2c1")
+ * @note Must match the name registered in main.c (currently "i2c1_imu")
  * @warning Do not modify; changing the name at runtime will cause bus lookup failures
  *
  * @since Version 1.0.0
  */
-static const char* const s_bus_name = "i2c1";
+static const char* const s_bus_name = "i2c1_imu";
 
 /* =============================================================================
  * Module-level Offset Constants
@@ -355,7 +355,7 @@ static rx_err_t       internal_verify_chip_id(void);
  *
  * @details
  * Sends a 2-byte I2C write transaction [reg, val] to the BNO055 at
- * device address 0x28 (embedded in the "i2c1" bus configuration).
+ * device address 0x28 (embedded in the "i2c1_imu" bus configuration).
  *
  * @param[in] reg Register address (from bno055_reg_t)
  * @param[in] val Byte value to write to the register
@@ -366,7 +366,7 @@ static rx_err_t       internal_verify_chip_id(void);
  * @retval k_rx_err_timeout Transaction timeout
  *
  * @pre s_manager must be non-NULL (set by rx_bno055_init)
- * @pre "i2c1" bus must be initialized
+ * @pre "i2c1_imu" bus must be initialized
  * @post Register at address reg contains value val (if k_rx_ok)
  * @post Bus transaction completes before function returns
  *
@@ -405,7 +405,7 @@ static rx_err_t internal_write_reg(uint8_t reg, uint8_t val)
  * @retval k_rx_err_timeout Transaction timeout
  *
  * @pre s_manager must be non-NULL (set by rx_bno055_init)
- * @pre "i2c1" bus must be initialized
+ * @pre "i2c1_imu" bus must be initialized
  * @pre buf must have capacity for len bytes
  * @post buf[0..len-1] contain register data starting at reg (if k_rx_ok)
  * @post Bus transaction completes before function returns
@@ -479,7 +479,7 @@ static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high)
  * @retval k_rx_err_timeout I2C timeout
  *
  * @pre s_manager non-NULL
- * @pre "i2c1" bus initialized
+ * @pre "i2c1_imu" bus initialized
  * @post Sensor in CONFIG mode, ready for configuration register writes
  * @post ~670 ms elapsed (650 ms POR + 20 ms CONFIG transition)
  *
@@ -702,7 +702,7 @@ static rx_err_t internal_verify_chip_id(void)
  * - 19 ms config: 19/10 + 1 = 2 ticks (20 ms, rounded up for margin)
  * - 7 ms NDOF: 1 tick (10 ms, rounded up for margin)
  *
- * @param[in] manager Pointer to initialized bus manager with "i2c1" registered
+ * @param[in] manager Pointer to initialized bus manager with "i2c1_imu" registered
  *
  * @return rx_err_t Initialization result
  * @retval k_rx_ok Sensor initialized, NDOF mode active
@@ -710,7 +710,7 @@ static rx_err_t internal_verify_chip_id(void)
  * @retval k_rx_err_nack I2C NACK (device not found)
  * @retval k_rx_err_invalid_state CHIP_ID != 0xA0
  *
- * @pre manager non-NULL with "i2c1" bus registered and initialized
+ * @pre manager non-NULL with "i2c1_imu" bus registered and initialized
  * @pre BNO055 powered (3.3V)
  * @post s_initialized == true on success
  * @post Sensor running NDOF fusion
