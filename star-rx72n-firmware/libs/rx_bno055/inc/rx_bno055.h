@@ -28,7 +28,7 @@
  * - **Module**: DFRobot BNO055 breakout
  * - **I2C Address**: 0x28 (COM3/ADR pulled LOW)
  * - **I2C Bus**: RIIC1 (SCL1=P2.1, SDA1=P2.0)
- * - **Bus name in bus manager**: "i2c1"
+ * - **Bus name in bus manager**: "i2c1_imu"
  * - **Reset pin**: P8.3 (active-low, driven HIGH by hardware_init)
  *
  * # Operating Mode
@@ -253,7 +253,7 @@ typedef struct {
  * BNO055 instance (no multi-instance support needed for STAR hardware).
  *
  * @param[in] manager Pointer to initialized bus manager.
- *                    Must have "i2c1" bus registered and initialized.
+ *                    Must have "i2c1_imu" bus registered and initialized.
  *                    Must not be NULL.
  *
  * @return rx_err_t Initialization result
@@ -264,7 +264,7 @@ typedef struct {
  * @retval k_rx_err_timeout I2C transaction timeout
  *
  * @pre manager must be initialized via rx_bus_manager_init()
- * @pre "i2c1" bus must be registered and initialized in manager
+ * @pre "i2c1_imu" bus must be registered and initialized in manager
  * @pre RIIC1 hardware initialized by hardware_init() (riic_init)
  * @pre BNO055 powered and connected to I2C bus
  *

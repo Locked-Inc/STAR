@@ -13,7 +13,7 @@
  * # Hardware
  *
  * Both sensors use RIIC1 I2C hardware (P2.0=SDA1, P2.1=SCL1):
- * - **BNO055**: I2C addr 0x28, bus "i2c1", NDOF fusion mode (heading, quaternion, linear accel)
+ * - **BNO055**: I2C addr 0x28, bus "i2c1_imu", NDOF fusion mode (heading, quaternion, linear accel)
  * - **BMP280**: I2C addr 0x76, bus "i2c1_baro", forced mode (pressure Pa, temperature cC)
  *
  * # Task Lifecycle
@@ -203,7 +203,7 @@ static char s_task_name[] = "ImuTask"; /* char[] (not const) satisfies ThreadX C
 
 /**
  * @var g_bus_manager
- * @brief External bus manager defined in shared_data.c; registered buses include "i2c1" and "i2c1_baro"
+ * @brief External bus manager defined in shared_data.c; registered buses include "i2c1_imu" and "i2c1_baro"
  *
  * @details
  * Declared extern here because main.h does not export g_bus_manager.
@@ -576,7 +576,7 @@ static void internal_read_and_publish_baro(void)
  *
  * @pre ThreadX scheduler running
  * @pre s_imu_created == true (imu_task_create() completed)
- * @pre "i2c1" bus registered in g_bus_manager (registered by main.c)
+ * @pre "i2c1_imu" bus registered in g_bus_manager (registered by main.c)
  * @pre RIIC1 initialized at 400 kHz (by hardware_init.c i2c_init)
  * @pre shared_data_init() completed (imu_mutex and baro_mutex available)
  * @pre BNO055 powered on RIIC1 I2C bus, RST pin driven HIGH (not in reset)
