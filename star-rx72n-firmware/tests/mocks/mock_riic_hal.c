@@ -93,8 +93,29 @@ static rx_err_t internal_check_simulated_errors(void)
 /**
  * @brief Populate tx_snapshot in a call history entry from a write buffer
  *
- * Captures the first two bytes of @p data into @p entry->tx_snapshot using the
- * named index constants.  Slots beyond @p length are filled with the empty sentinel.
+ * @details
+ * Captures up to two bytes from @p data into @p entry->tx_snapshot using the
+ * named index constants k_mock_riic_snapshot_reg_idx and
+ * k_mock_riic_snapshot_val_idx.  Each slot that falls within @p length receives
+ * the corresponding raw byte; any slot whose index is >= @p length is filled with
+ * k_mock_riic_snapshot_empty (0x100), which lies outside the uint8_t domain and
+ * is therefore unambiguous even when a legitimate TX byte of 0x00 is captured.
+ *
+ * @param[in,out] entry  Call history entry whose tx_snapshot is written.
+ *                       Must not be NULL.  Ownership remains with the caller.
+ * @param[in]     data   Source write buffer.  May be NULL only when length == 0.
+ * @param[in]     length Number of valid bytes in @p data (0 or more).
+ *
+ * @pre  entry != NULL
+ * @pre  data != NULL || length == 0
+ * @post entry->tx_snapshot[k_mock_riic_snapshot_reg_idx] == data[0] if length > 0,
+ *       else k_mock_riic_snapshot_empty
+ * @post entry->tx_snapshot[k_mock_riic_snapshot_val_idx] == data[1] if length > 1,
+ *       else k_mock_riic_snapshot_empty
+ *
+ * @note Uses k_mock_riic_snapshot_reg_idx, k_mock_riic_snapshot_val_idx, and
+ *       k_mock_riic_snapshot_empty for all array subscripts and sentinel writes
+ *       so that no unnamed integer literals appear in the snapshot logic.
  */
 static void
 internal_record_tx_snapshot(mock_riic_call_t* entry, const uint8_t* data, uint16_t length)
