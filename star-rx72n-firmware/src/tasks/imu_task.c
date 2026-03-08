@@ -799,15 +799,18 @@ static bool internal_wait_for_imu_int(void)
 void INT_IRQ12(void);
 void INT_IRQ12(void)
 {
-  /* Guard against spurious INT edges before event flags are created */
+#ifdef __RX__
+  /* Clear ICU interrupt request flag first -- must execute even when the ready
+   * guard below returns early.  If a pre-task-create edge fires and the IR bit
+   * is not cleared here, the ICU will re-assert the interrupt immediately after
+   * the ISR returns, corrupting the still-uninitialized event flags group. */
+  icu()->ir[k_imu_irq_vector_isr] = (uint8_t)k_icu_ir_clear_val;
+#endif /* __RX__ */
+
+  /* Guard against spurious INT edges before event flags are fully created */
   if (!s_imu_event_flags_ready) {
     return;
   }
-
-#ifdef __RX__
-  /* Clear ICU interrupt request flag before processing to avoid re-entry */
-  icu()->ir[k_imu_irq_vector_isr] = (uint8_t)k_icu_ir_clear_val;
-#endif /* __RX__ */
 
   /* Signal the IMU task that BNO055 data is ready */
   (void)tx_event_flags_set(&s_imu_event_flags, (ULONG)k_imu_event_data_ready, TX_OR);

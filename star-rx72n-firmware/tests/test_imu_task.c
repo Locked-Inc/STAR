@@ -74,6 +74,27 @@ void test_imu_task_create_thread_fail(void)
   TEST_ASSERT_EQUAL(k_rx_err_rtos_thread_create, err);
 }
 
+/**
+ * @brief Test IMU task creation failure when event flags create fails
+ *
+ * @details
+ * Verifies that imu_task_create() returns k_rx_err_rtos_thread_create when
+ * tx_event_flags_create() fails. The event flags group must be created before
+ * the thread; a failure here must propagate and prevent task creation.
+ *
+ * @pre setUp() has reset mock TX state
+ * @pre s_imu_created == false at start (reset by mock_tx_reset())
+ * @post Returns k_rx_err_rtos_thread_create
+ * @post No thread was created (event flags creation failed first)
+ */
+void test_imu_task_create_event_flags_fail(void)
+{
+  mock_tx_set_event_flags_create_return(TX_NO_MEMORY);
+
+  const rx_err_t err = imu_task_create();
+  TEST_ASSERT_EQUAL(k_rx_err_rtos_thread_create, err);
+}
+
 /* =============================================================================
  * Timing Constant Tests
  * =============================================================================
@@ -167,6 +188,7 @@ int main(void)
 
   RUN_TEST(test_imu_task_create_success);
   RUN_TEST(test_imu_task_create_thread_fail);
+  RUN_TEST(test_imu_task_create_event_flags_fail);
   RUN_TEST(test_imu_task_create_retry_succeeds);
   RUN_TEST(test_imu_int_timeout_ms_value);
   RUN_TEST(test_imu_task_period_ms_value);

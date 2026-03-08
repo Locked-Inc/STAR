@@ -24,8 +24,9 @@ extern void mock_tasks_reset(void);
  * =============================================================================
  */
 
-static tx_status s_thread_create_return = TX_SUCCESS;
-static uint32_t  s_thread_create_count  = 0;
+static tx_status s_thread_create_return      = TX_SUCCESS;
+static uint32_t  s_thread_create_count       = 0;
+static tx_status s_event_flags_create_return = TX_SUCCESS;
 
 /* =============================================================================
  * Mock Control Functions
@@ -34,8 +35,9 @@ static uint32_t  s_thread_create_count  = 0;
 
 void mock_tx_reset(void)
 {
-  s_thread_create_return = TX_SUCCESS;
-  s_thread_create_count  = 0;
+  s_thread_create_return      = TX_SUCCESS;
+  s_thread_create_count       = 0;
+  s_event_flags_create_return = TX_SUCCESS;
 
   /* Also reset task creation states */
   mock_tasks_reset();
@@ -44,6 +46,11 @@ void mock_tx_reset(void)
 void mock_tx_set_thread_create_return(tx_status status)
 {
   s_thread_create_return = status;
+}
+
+void mock_tx_set_event_flags_create_return(tx_status status)
+{
+  s_event_flags_create_return = status;
 }
 
 bool mock_tx_was_thread_create_called(void)
@@ -106,3 +113,27 @@ tx_status tx_thread_create(TX_THREAD* thread_ptr,
 }
 
 #endif /* MOCK_TX_THREAD_CREATE */
+
+#ifdef MOCK_TX_EVENT_FLAGS_CREATE
+
+tx_status tx_event_flags_create(TX_EVENT_FLAGS_GROUP* group_ptr, CHAR* name_ptr)
+{
+  /* Return configured error if set */
+  if (s_event_flags_create_return != TX_SUCCESS) {
+    return s_event_flags_create_return;
+  }
+
+  /* Pre-condition: Validate input pointer */
+  if (group_ptr == nullptr) {
+    return TX_NOT_AVAILABLE;
+  }
+
+  /* Initialize event flags group structure */
+  group_ptr->tx_event_flags_name = name_ptr;
+  group_ptr->tx_event_flags_id   = k_tx_event_flags_magic;
+  group_ptr->tx_event_flags      = 0;
+
+  return TX_SUCCESS;
+}
+
+#endif /* MOCK_TX_EVENT_FLAGS_CREATE */

@@ -528,6 +528,11 @@ static inline tx_status tx_thread_sleep(ULONG timer_ticks)
  *
  * @return TX_SUCCESS on success
  */
+#ifdef MOCK_TX_EVENT_FLAGS_CREATE
+/* When MOCK_TX_EVENT_FLAGS_CREATE is defined, use non-inline declaration.
+ * Implementation in mock_tx_api.c allows controlling return values. */
+tx_status tx_event_flags_create(TX_EVENT_FLAGS_GROUP* group_ptr, CHAR* name_ptr);
+#else
 static inline tx_status tx_event_flags_create(TX_EVENT_FLAGS_GROUP* group_ptr, CHAR* name_ptr)
 {
   /* Pre-condition: Validate input pointer */
@@ -547,6 +552,7 @@ static inline tx_status tx_event_flags_create(TX_EVENT_FLAGS_GROUP* group_ptr, C
 
   return TX_SUCCESS;
 }
+#endif /* MOCK_TX_EVENT_FLAGS_CREATE */
 
 /**
  * @brief Create a semaphore
@@ -839,6 +845,13 @@ void mock_tx_reset(void);
  * @param[in] status Status to return from tx_thread_create()
  */
 void mock_tx_set_thread_create_return(tx_status status);
+
+/**
+ * @brief Set return value for tx_event_flags_create()
+ *
+ * @param[in] status Status to return from tx_event_flags_create()
+ */
+void mock_tx_set_event_flags_create_return(tx_status status);
 
 /**
  * @brief Check if tx_thread_create() was called

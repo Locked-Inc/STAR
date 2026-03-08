@@ -698,24 +698,28 @@ static rx_err_t internal_verify_chip_id(void)
  * At this threshold the interrupt fires at the accelerometer data rate (~100 Hz
  * in NDOF mode), effectively acting as a data-ready signal on the INT pin.
  *
- * Register write sequence:
+ * Register write sequence (BNO055 must be in CONFIG mode):
  * 1. PAGE_ID = 1 -- switch to Page 1
- * 2. ACC_AM_THRES = 0x01 -- minimum threshold; fires at data rate
- * 3. ACC_INT_SETTINGS = 0x07 -- enable any-motion on X+Y+Z axes
- * 4. INT_EN = 0x20 -- route any-motion to INT pin
- * 5. PAGE_ID = 0 -- restore Page 0 for normal sensor reads
+ * 2. ACC_AM_THRES = 0x01 (Page 1, 0x11) -- minimum threshold; fires at data rate
+ * 3. ACC_INT_SETTINGS = 0x1C (Page 1, 0x12) -- enable any-motion on X+Y+Z (bits[4:2])
+ * 4. INT_MSK = 0x40 (Page 1, 0x0F) -- route ACC_AM to INT pin (bit 6)
+ * 5. INT_EN = 0x40 (Page 1, 0x10) -- enable ACC_AM interrupt source (bit 6)
+ * 6. PAGE_ID = 0 -- restore Page 0 for normal sensor reads
+ *
+ * Must be called while the sensor is in CONFIG mode (before internal_init_enter_ndof)
+ * so the interrupt registers accept writes per BNO055 datasheet section 4.3.
  *
  * If any write fails, a best-effort restore of PAGE_ID=0 is attempted so the
  * sensor is left in a known page before returning the error. On error, the caller
  * (rx_bno055_init) will clear s_manager and return the error.
  *
  * @return rx_err_t Operation result
- * @retval k_rx_ok All five Page 1 registers written, INT configured
+ * @retval k_rx_ok All six Page 1 registers written, INT configured
  * @retval k_rx_err_nack I2C NACK during any register write
  * @retval k_rx_err_timeout I2C timeout during any register write
  *
  * @pre s_manager non-NULL (set by rx_bno055_init before calling this helper)
- * @pre BNO055 in NDOF mode (internal_init_enter_ndof and internal_verify_chip_id succeeded)
+ * @pre BNO055 in CONFIG mode -- call before internal_init_enter_ndof() per BNO055 datasheet
  * @post INT pin will assert on each BNO055 accelerometer sample (on k_rx_ok)
  * @post PAGE_ID restored to 0 (attempted even on error)
  *
@@ -757,7 +761,15 @@ static rx_err_t internal_init_enable_interrupt(void)
     return err;
   }
 
-  /* Enable accelerometer any-motion as an interrupt source (bit 5) */
+  /* Route ACC_AM interrupt source to INT pin (INT_MSK bit 6) */
+  err = internal_write_reg((uint8_t)k_bno055_reg_int_msk, (uint8_t)k_bno055_int_msk_acc_am);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "INT init: INT_MSK write failed");
+    (void)internal_write_reg((uint8_t)k_bno055_reg_page_id, (uint8_t)k_bno055_page0);
+    return err;
+  }
+
+  /* Enable accelerometer any-motion as an interrupt source (INT_EN bit 6) */
   err = internal_write_reg((uint8_t)k_bno055_reg_int_en, (uint8_t)k_bno055_int_en_acc_am);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "INT init: INT_EN write failed");
@@ -856,6 +868,15 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager, const bno055_config_t* config
     return err;
   }
 
+  /* Configure interrupt engine while still in CONFIG mode (BNO055 requires this) */
+  if (s_mode == k_bno055_mode_interrupt) {
+    err = internal_init_enable_interrupt();
+    if (err != k_rx_ok) {
+      s_manager = NULL;
+      return err;
+    }
+  }
+
   err = internal_init_enter_ndof();
   if (err != k_rx_ok) {
     s_manager = NULL;
@@ -866,14 +887,6 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager, const bno055_config_t* config
   if (err != k_rx_ok) {
     s_manager = NULL;
     return err;
-  }
-
-  if (s_mode == k_bno055_mode_interrupt) {
-    err = internal_init_enable_interrupt();
-    if (err != k_rx_ok) {
-      s_manager = NULL;
-      return err;
-    }
   }
 
   s_initialized = true;

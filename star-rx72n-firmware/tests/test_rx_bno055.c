@@ -205,6 +205,21 @@ typedef enum : uint8_t {
 } test_bno055_misc_t;
 
 /**
+ * @enum test_bno055_interrupt_writes_t
+ * @brief Expected extra RIIC write count for interrupt-mode init
+ *
+ * @details
+ * Interrupt mode appends 6 extra writes after the standard CONFIG-mode
+ * sequence: PAGE_ID=1, ACC_AM_THRES, ACC_INT_SETTINGS, INT_MSK, INT_EN,
+ * PAGE_ID=0. Poll mode does not write any Page 1 registers.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_test_interrupt_extra_writes = 6U, /**< PAGE_ID(x2)+AM_THRES+INT_SETTINGS+INT_MSK+INT_EN */
+} test_bno055_interrupt_writes_t;
+
+/**
  * @enum test_bno055_lia_raw_t
  * @brief Raw linear acceleration byte values for LIA read success test
  *
@@ -1046,15 +1061,31 @@ void test_bno055_is_calibrated_partial(void)
  */
 void test_bno055_init_interrupt_mode_succeeds(void)
 {
+  /* Establish poll-mode write count baseline (clear history to exclude setUp riic_init) */
+  mock_riic_clear_history();
   internal_load_valid_chip_id();
+  const rx_err_t poll_err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
+  TEST_ASSERT_EQUAL(k_rx_ok, poll_err);
+  const uint16_t poll_call_count = mock_riic_get_call_count();
 
-  rx_err_t err = rx_bno055_init(&s_test_manager, &s_interrupt_cfg);
+  /* Reset driver state and RIIC call history; bus stays initialized */
+  rx_bno055_test_reset_state();
+  mock_riic_clear_history();
 
+  /* Interrupt mode init: same sequence plus 6 Page 1 register writes */
+  internal_load_valid_chip_id();
+  const rx_err_t err = rx_bno055_init(&s_test_manager, &s_interrupt_cfg);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
+  const uint16_t interrupt_call_count = mock_riic_get_call_count();
+
+  /* Interrupt mode must issue exactly k_test_interrupt_extra_writes more RIIC calls */
+  TEST_ASSERT_EQUAL((uint32_t)((uint32_t)poll_call_count + (uint32_t)k_test_interrupt_extra_writes),
+                    (uint32_t)interrupt_call_count);
+
   /* Confirm driver is operational by performing a read */
   internal_load_read_data();
-  bno055_data_t data;
-  rx_err_t      read_err = rx_bno055_read(&data);
+  bno055_data_t  data;
+  const rx_err_t read_err = rx_bno055_read(&data);
   TEST_ASSERT_EQUAL(k_rx_ok, read_err);
 }
 

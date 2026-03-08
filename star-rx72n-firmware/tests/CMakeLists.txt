@@ -925,7 +925,7 @@ add_executable(test_imu_task
 )
 apply_strict_warnings(test_imu_task)
 apply_test_includes(test_imu_task)
-target_compile_definitions(test_imu_task PRIVATE MOCK_TX_THREAD_CREATE)
+target_compile_definitions(test_imu_task PRIVATE MOCK_TX_THREAD_CREATE MOCK_TX_EVENT_FLAGS_CREATE)
 target_include_directories(test_imu_task PRIVATE
     ${CMAKE_SOURCE_DIR}/../src/shared
     ${CMAKE_SOURCE_DIR}/../src/tasks/inc

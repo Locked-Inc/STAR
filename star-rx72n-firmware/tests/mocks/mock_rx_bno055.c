@@ -135,11 +135,11 @@ bno055_mode_t mock_bno055_get_last_mode(void)
  */
 rx_err_t rx_bno055_init(rx_bus_manager_t* manager, const bno055_config_t* config)
 {
-  (void)manager;
-  s_init_count++;
-  if (config != NULL) {
-    s_last_mode = config->mode;
+  if (manager == NULL || config == NULL) {
+    return k_rx_err_null_ptr;
   }
+  s_init_count++;
+  s_last_mode = config->mode;
   return s_init_return;
 }
 
