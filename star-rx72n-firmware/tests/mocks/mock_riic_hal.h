@@ -212,8 +212,17 @@ typedef enum : uint8_t {
  * @code
  * const mock_riic_call_t* call = mock_riic_get_call(0);
  * if (call != NULL) {
- *   uint8_t reg = (uint8_t)call->tx_snapshot[k_mock_riic_snapshot_reg_idx];
- *   uint8_t val = (uint8_t)call->tx_snapshot[k_mock_riic_snapshot_val_idx];
+ *   // Always compare against k_mock_riic_snapshot_empty BEFORE casting to
+ *   // uint8_t: the sentinel (0x100) is outside the uint8_t domain and would
+ *   // be silently truncated to 0x00 by a bare (uint8_t) cast.
+ *   if (call->tx_snapshot[k_mock_riic_snapshot_reg_idx] != k_mock_riic_snapshot_empty) {
+ *     uint8_t reg = (uint8_t)call->tx_snapshot[k_mock_riic_snapshot_reg_idx];
+ *     (void)reg; // use reg ...
+ *   }
+ *   if (call->tx_snapshot[k_mock_riic_snapshot_val_idx] != k_mock_riic_snapshot_empty) {
+ *     uint8_t val = (uint8_t)call->tx_snapshot[k_mock_riic_snapshot_val_idx];
+ *     (void)val; // use val ...
+ *   }
  * }
  * @endcode
  *
