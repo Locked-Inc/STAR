@@ -49,6 +49,28 @@ typedef enum : uint16_t {
 } mock_shared_data_constants_t;
 
 /**
+ * @enum mock_shared_channel_t
+ * @brief Channel identifier constants mirroring rx_comm_channel_t values
+ *
+ * @details
+ * Named channel constants for use in mock_shared_data without requiring
+ * rx_comm_manager.h (which would transitively include rx_frame.h and cause
+ * redeclaration conflicts with mock frame types in unit test builds).
+ * Values MUST remain bit-for-bit identical to rx_comm_channel_t.
+ *
+ * @invariant k_mock_channel_usb == k_comm_channel_usb (0)
+ * @invariant k_mock_channel_spi == k_comm_channel_spi (1)
+ *
+ * @see rx_comm_channel_t Production definition (authoritative)
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_mock_channel_usb = 0U, /**< USB CDC channel (matches k_comm_channel_usb) */
+  k_mock_channel_spi = 1U, /**< SPI channel (matches k_comm_channel_spi) */
+} mock_shared_channel_t;
+
+/**
  * @enum shared_event_flags_t
  * @brief Event flags for inter-task signaling (must match shared_data.h)
  *

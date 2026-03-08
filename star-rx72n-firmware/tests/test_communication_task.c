@@ -441,6 +441,8 @@ int main(void)
 
   /* Communication Timestamp Tests */
   RUN_TEST(test_comm_task_updates_comm_timestamp);
+
+  /* Active Channel Tests */
   RUN_TEST(test_comm_task_frame_updates_active_channel);
 
   /* Frame Response Tests */
