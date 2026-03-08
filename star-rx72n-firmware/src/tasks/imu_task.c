@@ -213,7 +213,7 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_imu_int_timeout_ticks =
-    ((uint8_t)k_imu_int_timeout_ms * TX_TIMER_TICKS_PER_SECOND + 999U) / 1000U +
+    ((uint32_t)k_imu_int_timeout_ms * TX_TIMER_TICKS_PER_SECOND + 999U) / 1000U +
     1U, /**< Timeout in ticks with +1 slack: (200*100+999)/1000+1 = 21 ticks */
   k_imu_event_data_ready = 0x01U, /**< Event flag bit set by ISR on BNO055 INT assertion */
 } imu_task_int_cfg_t;
@@ -764,8 +764,14 @@ static bool internal_wait_for_imu_int(void)
                                             TX_OR_CLEAR,
                                             &actual_flags,
                                             (ULONG)k_imu_int_timeout_ticks);
-  if (ef_status != TX_SUCCESS) {
+  if (ef_status == TX_NO_EVENTS) {
+    /* Benign watchdog timeout: BNO055 INT did not fire within 200 ms */
     rx_log_warn(s_tag, "IMU INT timeout (200 ms) - reading without INT");
+    return false;
+  }
+  if (ef_status != TX_SUCCESS) {
+    /* Fatal RTOS error: event flags group corrupted or deleted */
+    rx_log_error_val(s_tag, "IMU event flags get failed", (uint32_t)ef_status);
     return false;
   }
   return true;

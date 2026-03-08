@@ -209,14 +209,14 @@ typedef enum : uint8_t {
  * @brief Expected extra RIIC write count for interrupt-mode init
  *
  * @details
- * Interrupt mode appends 6 extra writes after the standard CONFIG-mode
- * sequence: PAGE_ID=1, ACC_AM_THRES, ACC_INT_SETTINGS, INT_MSK, INT_EN,
- * PAGE_ID=0. Poll mode does not write any Page 1 registers.
+ * Interrupt mode appends 4 extra writes after the standard CONFIG-mode
+ * sequence: PAGE_ID=1, INT_MSK=0x01, INT_EN=0x01, PAGE_ID=0.
+ * Poll mode does not write any Page 1 registers.
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_test_interrupt_extra_writes = 6U, /**< PAGE_ID(x2)+AM_THRES+INT_SETTINGS+INT_MSK+INT_EN */
+  k_test_interrupt_extra_writes = 4U, /**< PAGE_ID(x2)+INT_MSK+INT_EN (BSX_DRDY, 4-step sequence) */
 } test_bno055_interrupt_writes_t;
 
 /**
@@ -1047,10 +1047,11 @@ void test_bno055_is_calibrated_partial(void)
  *
  * @details
  * Passes k_bno055_mode_interrupt via config. The driver must write the normal
- * init sequence plus the Page 1 interrupt-engine sequence (5 extra register
- * writes). All writes go through the mock RIIC without error; the chip-ID read
- * returns 0xA0. Verifies that k_rx_ok is returned and the driver is
- * subsequently readable.
+ * init sequence plus the 4-step Page 1 interrupt-engine sequence (PAGE_ID=1,
+ * INT_MSK=0x01, INT_EN=0x01, PAGE_ID=0). All writes go through the mock RIIC
+ * without error; the chip-ID read returns 0xA0. Verifies that k_rx_ok is
+ * returned and the interrupt mode issues exactly k_test_interrupt_extra_writes
+ * more RIIC calls than poll mode.
  *
  * @pre s_initialized == false
  * @pre setUp() has initialized bus manager and mock RIIC HAL
@@ -1072,7 +1073,7 @@ void test_bno055_init_interrupt_mode_succeeds(void)
   rx_bno055_test_reset_state();
   mock_riic_clear_history();
 
-  /* Interrupt mode init: same sequence plus 6 Page 1 register writes */
+  /* Interrupt mode init: same sequence plus 4 Page 1 register writes (PAGE_ID x2, INT_MSK, INT_EN) */
   internal_load_valid_chip_id();
   const rx_err_t err = rx_bno055_init(&s_test_manager, &s_interrupt_cfg);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1100,6 +1101,7 @@ void test_bno055_init_interrupt_mode_succeeds(void)
  * @pre s_initialized == false
  * @pre setUp() has initialized bus manager and mock RIIC HAL
  * @post s_initialized == false (null ptr guard fires before init begins)
+ * @post No I2C communication occurred (RIIC call count unchanged)
  *
  * @since Version 1.0.0
  */
