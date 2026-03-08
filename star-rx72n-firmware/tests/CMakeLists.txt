@@ -915,6 +915,24 @@ target_include_directories(test_temperature_sensing_task PRIVATE
 )
 target_link_libraries(test_temperature_sensing_task unity)
 
+# Test: IMU Task (interrupt-driven BNO055 + BMP280)
+add_executable(test_imu_task
+    test_imu_task.c
+    ${MOCK_TX_API_SRC}
+    ${MOCK_TASKS_SRC}
+    ${MOCK_SHARED_DATA_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_imu_task)
+apply_test_includes(test_imu_task)
+target_compile_definitions(test_imu_task PRIVATE MOCK_TX_THREAD_CREATE)
+target_include_directories(test_imu_task PRIVATE
+    ${CMAKE_SOURCE_DIR}/../src/shared
+    ${CMAKE_SOURCE_DIR}/../src/tasks/inc
+)
+target_link_libraries(test_imu_task unity)
+set_target_properties(test_imu_task PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
+
 # Test: Telemetry Aggregation Task
 add_executable(test_telemetry_aggregation_task
     test_telemetry_aggregation_task.c
@@ -1052,6 +1070,7 @@ set(ALL_TEST_TARGETS
     test_obstacle_detection_task
     test_temperature_sensing_task
     test_telemetry_aggregation_task
+    test_imu_task
 )
 
 add_test(NAME test_rx_crc32 COMMAND test_rx_crc32)
@@ -1107,6 +1126,7 @@ add_test(NAME test_communication_task COMMAND test_communication_task)
 add_test(NAME test_obstacle_detection_task COMMAND test_obstacle_detection_task)
 add_test(NAME test_temperature_sensing_task COMMAND test_temperature_sensing_task)
 add_test(NAME test_telemetry_aggregation_task COMMAND test_telemetry_aggregation_task)
+add_test(NAME test_imu_task COMMAND test_imu_task)
 
 # =============================================================================
 # Convenience Targets

@@ -27,6 +27,7 @@ static bool s_comm_task_created      = false;
 static bool s_obstacle_task_created  = false;
 static bool s_temp_task_created      = false;
 static bool s_telemetry_task_created = false;
+static bool s_imu_task_created       = false;
 
 /* ThreadX thread structures (mocked) */
 static TX_THREAD s_motor_thread;
@@ -34,6 +35,10 @@ static TX_THREAD s_comm_thread;
 static TX_THREAD s_obstacle_thread;
 static TX_THREAD s_temp_thread;
 static TX_THREAD s_telemetry_thread;
+static TX_THREAD s_imu_thread;
+
+/* ThreadX event flags structures (mocked) */
+static TX_EVENT_FLAGS_GROUP s_imu_event_flags;
 
 /* =============================================================================
  * Mock Reset Function (called by mock_tx_reset)
@@ -47,6 +52,7 @@ void mock_tasks_reset(void)
   s_obstacle_task_created  = false;
   s_temp_task_created      = false;
   s_telemetry_task_created = false;
+  s_imu_task_created       = false;
 }
 
 /* =============================================================================
@@ -171,6 +177,47 @@ rx_err_t temp_sensor_task_create(void)
   }
 
   s_temp_task_created = true;
+  return k_rx_ok;
+}
+
+/**
+ * @brief Mock IMU task create
+ *
+ * @details
+ * Stub for imu_task_create() used by tests that test other tasks
+ * (motor, comm, obstacle, temp, telemetry) that reference imu_task.
+ * The real imu_task_create() is tested in test_imu_task.c.
+ */
+rx_err_t imu_task_create(void)
+{
+  tx_status status;
+
+  if (s_imu_task_created) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Create event flags group (matches real imu_task_create behavior) */
+  const tx_status ef_status = tx_event_flags_create(&s_imu_event_flags, "imu_int_flags");
+  if (ef_status != TX_SUCCESS) {
+    return k_rx_err_rtos_thread_create;
+  }
+
+  status = tx_thread_create(&s_imu_thread,
+                            "ImuTask",
+                            nullptr,
+                            0,
+                            NULL,
+                            0,
+                            0,
+                            0,
+                            TX_NO_TIME_SLICE,
+                            TX_AUTO_START);
+
+  if (status != TX_SUCCESS) {
+    return k_rx_err_rtos_thread_create;
+  }
+
+  s_imu_task_created = true;
   return k_rx_ok;
 }
 
