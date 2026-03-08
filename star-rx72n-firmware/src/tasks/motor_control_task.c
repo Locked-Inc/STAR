@@ -376,6 +376,7 @@
 #include "motor_control_task.h"
 
 #include "hardware_config.h"
+#include "rx_bus_adc.h"
 #include "rx_bus_manager.h"
 #include "rx_check.h"
 #include "rx_drv8263.h"
@@ -826,6 +827,35 @@ static bool s_active_brake_in_progress = false;
 
 /** @brief Log tag for this module */
 static const char* const s_tag = "MOTOR";
+
+/**
+ * @var s_motor_current_bus_names
+ * @brief ADC bus names for motor current sensing, indexed by motor index
+ *
+ * @details
+ * Maps motor index [0..3] to the bus manager name for its IPROPI current
+ * sense channel. Each entry corresponds to one DRV8263H-Q1 IPROPI output
+ * sampled by S12AD0. Channel-to-motor assignment follows PCB schematic:
+ *
+ * | Motor | Index | Bus Name       | ADC Ch | Pin |
+ * |-------|-------|----------------|--------|-----|
+ * | FL    | 0     | motor0_current | AN007  | P47 |
+ * | FR    | 1     | motor1_current | AN006  | P46 |
+ * | BL    | 2     | motor2_current | AN005  | P45 |
+ * | BR    | 3     | motor3_current | AN004  | P44 |
+ *
+ * @note String literals reside in .rodata (no dynamic allocation).
+ * @warning Array size must match k_motor_count (4). Do not modify independently.
+ * @see internal_update_motor_state() Consumer of this array
+ * @see main.c internal_register_system_buses() Bus registrations
+ * @since Version 1.0.0
+ */
+static const char* const s_motor_current_bus_names[k_motor_count] = {
+  "motor0_current", /* Motor 0 (FL): AN007, ch 7, P47 */
+  "motor1_current", /* Motor 1 (FR): AN006, ch 6, P46 */
+  "motor2_current", /* Motor 2 (BL): AN005, ch 5, P45 */
+  "motor3_current", /* Motor 3 (BR): AN004, ch 4, P44 */
+};
 
 /**
  * @var s_task_name
@@ -2822,13 +2852,16 @@ static void internal_check_comm_timeout(void)
  *
  * 5. **Read Encoder Count:** rx_encoder_read_count() -> state.encoder_counts[i]
  *
- * 6. **Aggregate E-Stop:** state.estop_active = shared_data_is_estop_active()
+ * 6. **Read Current:** rx_bus_adc_read_voltage_mv() + rx_drv8263_adc_to_amps()
+ *    -> state.current_ma[i]  (DRV8263H IPROPI: V = I * 202e-6 * 5100 = I * 1.0302)
  *
- * 7. **E-Stop Reason:** state.estop_reason = shared_data_get_estop_reason()
+ * 7. **Aggregate E-Stop:** state.estop_active = shared_data_is_estop_active()
  *
- * 8. **Mode:** state.mode = estop ? k_motor_mode_estop : k_motor_mode_velocity
+ * 8. **E-Stop Reason:** state.estop_reason = shared_data_get_estop_reason()
  *
- * 9. **Write to Shared Data:** shared_data_update_motor_state(&state)
+ * 9. **Mode:** state.mode = estop ? k_motor_mode_estop : k_motor_mode_velocity
+ *
+ * 10. **Write to Shared Data:** shared_data_update_motor_state(&state)
  *
  * @return void Function always completes (no error return)
  *
@@ -2846,6 +2879,8 @@ static void internal_check_comm_timeout(void)
  * @see rx_encoder_read_velocity() Read motor velocity
  * @see rx_motor_get_duty() Read PWM duty cycle
  * @see rx_encoder_read_count() Read encoder position
+ * @see rx_bus_adc_read_voltage_mv() Read IPROPI voltage for current sensing
+ * @see rx_drv8263_adc_to_amps() Convert IPROPI voltage to motor current (A)
  *
  * @since Version 1.0.0
  *
@@ -2872,6 +2907,14 @@ static void internal_update_motor_state(void)
     err = internal_read_encoder_count(i, &s_encoder_state[i]);
     if (err == k_rx_ok) {
       state.encoder_counts[i] = s_encoder_state[i].total_count;
+    }
+
+    /* Motor current (DRV8263H IPROPI -> S12AD0): V = I * 202e-6 * 5100 = I * 1.0302 */
+    uint32_t voltage_mv = 0U;
+    err = rx_bus_adc_read_voltage_mv(&g_bus_manager, s_motor_current_bus_names[i], &voltage_mv);
+    if (err == k_rx_ok) {
+      const float voltage_v = (float)voltage_mv / 1000.0F;
+      state.current_ma[i]   = rx_drv8263_adc_to_amps(voltage_v) * 1000.0F;
     }
   }
 

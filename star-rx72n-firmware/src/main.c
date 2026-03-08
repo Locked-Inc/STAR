@@ -173,6 +173,7 @@
 #include "hardware.h"
 #include "hardware_init.h"
 #include "rx72n_system_regs.h"
+#include "rx_bus_adc.h"
 #include "rx_bus_config.h"
 #include "rx_bus_i2c.h"
 #include "rx_bus_manager.h"
@@ -349,42 +350,97 @@ static rx_bus_config_t s_onewire0_config;
 static rx_bus_config_t s_gpio_config;
 
 /**
- * @var s_adc0_config
- * @brief ADC configuration for motor current sensing
+ * @var s_motor0_current_config
+ * @brief ADC bus configuration for Motor 0 (FL) current sensing via DRV8263H IPROPI
  *
  * @details
- * Configures ADC Unit 0 (S12AD0) as generic ADC bus for motor current monitoring.
- * The initial channel (0) is required by the API but not significant - motor control
- * task specifies actual channels (AN004-AN007) at runtime for each motor.
+ * Configures S12AD0 channel 7 (AN007, P47) for Motor 0 (Front-Left) IPROPI
+ * current sense output. The DRV8263H mirrors 202 uA/A of motor current into
+ * a 5100 Ohm sense resistor: V_IPROPI = I_motor * 1.0302 V/A.
  *
- * **Hardware Configuration:**
- * - Bus type: ADC (generic abstraction)
- * - Unit: ADC Unit 0 (S12AD0)
- * - Initial channel: 0 (API requirement, not actually used)
- * - Resolution: 12-bit (0-4095 counts)
- * - Actual channels: Specified by motor_control_task at runtime
- *
- * **Motor Current Sensing Channels:**
- * | Motor | ADC Channel | Pin    |
- * |-------|-------------|--------|
- * | Motor 0 | AN007 (ch 7) | P40.7  |
- * | Motor 1 | AN006 (ch 6) | P40.6  |
- * | Motor 2 | AN005 (ch 5) | P40.5  |
- * | Motor 3 | AN004 (ch 4) | P40.4  |
+ * | Parameter  | Value          |
+ * |------------|----------------|
+ * | Unit       | S12AD0         |
+ * | Channel    | AN007 (ch 7)   |
+ * | Pin        | P47            |
+ * | Resolution | 12-bit         |
+ * | Bus name   | motor0_current |
  *
  * @note Static allocation follows NASA Power of 10 Rule 3 (no dynamic memory).
- * @note Registered with bus manager in tx_application_define() before task creation.
- * @note This is a generic bus abstraction - one "adc0" bus serves all 4 motor drivers.
- * @note Each current reading specifies the actual ADC channel to sample.
- * @note 12-bit resolution provides 1 mV per count with 3.3V reference.
- *
  * @see rx_bus_config_init_adc() Bus configuration function
- * @see motor_control_task.c Task that uses this bus for current monitoring
- * @see rx_bus_adc_read_voltage_mv() Runtime ADC read with channel specification
- *
+ * @see motor_control_task.c internal_update_motor_state() Consumer
  * @since Version 1.0.0
  */
-static rx_bus_config_t s_adc0_config;
+static rx_bus_config_t s_motor0_current_config;
+
+/**
+ * @var s_motor1_current_config
+ * @brief ADC bus configuration for Motor 1 (FR) current sensing via DRV8263H IPROPI
+ *
+ * @details
+ * Configures S12AD0 channel 6 (AN006, P46) for Motor 1 (Front-Right) IPROPI
+ * current sense output.
+ *
+ * | Parameter  | Value          |
+ * |------------|----------------|
+ * | Unit       | S12AD0         |
+ * | Channel    | AN006 (ch 6)   |
+ * | Pin        | P46            |
+ * | Resolution | 12-bit         |
+ * | Bus name   | motor1_current |
+ *
+ * @note Static allocation follows NASA Power of 10 Rule 3 (no dynamic memory).
+ * @see rx_bus_config_init_adc() Bus configuration function
+ * @see motor_control_task.c internal_update_motor_state() Consumer
+ * @since Version 1.0.0
+ */
+static rx_bus_config_t s_motor1_current_config;
+
+/**
+ * @var s_motor2_current_config
+ * @brief ADC bus configuration for Motor 2 (BL) current sensing via DRV8263H IPROPI
+ *
+ * @details
+ * Configures S12AD0 channel 5 (AN005, P45) for Motor 2 (Back-Left) IPROPI
+ * current sense output.
+ *
+ * | Parameter  | Value          |
+ * |------------|----------------|
+ * | Unit       | S12AD0         |
+ * | Channel    | AN005 (ch 5)   |
+ * | Pin        | P45            |
+ * | Resolution | 12-bit         |
+ * | Bus name   | motor2_current |
+ *
+ * @note Static allocation follows NASA Power of 10 Rule 3 (no dynamic memory).
+ * @see rx_bus_config_init_adc() Bus configuration function
+ * @see motor_control_task.c internal_update_motor_state() Consumer
+ * @since Version 1.0.0
+ */
+static rx_bus_config_t s_motor2_current_config;
+
+/**
+ * @var s_motor3_current_config
+ * @brief ADC bus configuration for Motor 3 (BR) current sensing via DRV8263H IPROPI
+ *
+ * @details
+ * Configures S12AD0 channel 4 (AN004, P44) for Motor 3 (Back-Right) IPROPI
+ * current sense output.
+ *
+ * | Parameter  | Value          |
+ * |------------|----------------|
+ * | Unit       | S12AD0         |
+ * | Channel    | AN004 (ch 4)   |
+ * | Pin        | P44            |
+ * | Resolution | 12-bit         |
+ * | Bus name   | motor3_current |
+ *
+ * @note Static allocation follows NASA Power of 10 Rule 3 (no dynamic memory).
+ * @see rx_bus_config_init_adc() Bus configuration function
+ * @see motor_control_task.c internal_update_motor_state() Consumer
+ * @since Version 1.0.0
+ */
+static rx_bus_config_t s_motor3_current_config;
 
 /**
  * @var s_i2c1_imu_config
@@ -1686,10 +1742,15 @@ static void internal_init_bus_manager(void)
  * Registered buses:
  * - **onewire0** (P51): DS18B20 temperature sensor, 1-Wire bit-banging
  * - **gpio** (P00): Generic GPIO for motor driver control signals
- * - **adc0** (S12AD0, ch0): Motor current sensing, 12-bit resolution
+ * - **motor0_current** (S12AD0, ch7, AN007, P47): Motor 0 (FL) IPROPI current sense
+ * - **motor1_current** (S12AD0, ch6, AN006, P46): Motor 1 (FR) IPROPI current sense
+ * - **motor2_current** (S12AD0, ch5, AN005, P45): Motor 2 (BL) IPROPI current sense
+ * - **motor3_current** (S12AD0, ch4, AN004, P44): Motor 3 (BR) IPROPI current sense
  *
  * @pre internal_init_bus_manager() completed successfully
- * @pre Static bus config structs (s_onewire0_config, s_gpio_config, s_adc0_config) are zeroed (BSS)
+ * @pre Static bus config structs zeroed (BSS): s_onewire0_config, s_gpio_config,
+ *      s_motor0_current_config, s_motor1_current_config,
+ *      s_motor2_current_config, s_motor3_current_config
  *
  * @post All three buses registered and accessible via bus manager
  * @post Static config structs populated with bus parameters
@@ -1723,15 +1784,53 @@ static void internal_register_system_buses(void)
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_gpio_config);
   RX_ASSERT(err == k_rx_ok, "gpio registration must succeed");
 
-  /* Register adc0 - Motor Current Sensing (ADC Unit 0) */
-  err = rx_bus_config_init_adc(&s_adc0_config,
-                               "adc0",                  /* name */
-                               k_adc_unit_0,            /* unit = ADC0 (S12AD0) */
-                               k_adc_channel_0,         /* channel = 0 (generic bus) */
-                               k_adc_resolution_12bit); /* bits = 12-bit resolution */
-  RX_ASSERT(err == k_rx_ok, "adc0 config init must succeed");
-  err = rx_bus_manager_add_bus(&g_bus_manager, &s_adc0_config);
-  RX_ASSERT(err == k_rx_ok, "adc0 registration must succeed");
+  /* Register motor0_current - Motor 0 (FL) current sense: AN007, ch 7, P47 */
+  err = rx_bus_config_init_adc(&s_motor0_current_config,
+                               "motor0_current",        /* name */
+                               k_adc_unit_0,            /* unit = S12AD0 */
+                               k_adc_channel_7,         /* channel = AN007 = Motor 0 (FL) */
+                               k_adc_resolution_12bit); /* bits = 12-bit */
+  RX_ASSERT(err == k_rx_ok, "motor0_current config init must succeed");
+  err = rx_bus_manager_add_bus(&g_bus_manager, &s_motor0_current_config);
+  RX_ASSERT(err == k_rx_ok, "motor0_current registration must succeed");
+  err = rx_bus_adc_init(&g_bus_manager, "motor0_current");
+  RX_ASSERT(err == k_rx_ok, "motor0_current ADC init must succeed");
+
+  /* Register motor1_current - Motor 1 (FR) current sense: AN006, ch 6, P46 */
+  err = rx_bus_config_init_adc(&s_motor1_current_config,
+                               "motor1_current",        /* name */
+                               k_adc_unit_0,            /* unit = S12AD0 */
+                               k_adc_channel_6,         /* channel = AN006 = Motor 1 (FR) */
+                               k_adc_resolution_12bit); /* bits = 12-bit */
+  RX_ASSERT(err == k_rx_ok, "motor1_current config init must succeed");
+  err = rx_bus_manager_add_bus(&g_bus_manager, &s_motor1_current_config);
+  RX_ASSERT(err == k_rx_ok, "motor1_current registration must succeed");
+  err = rx_bus_adc_init(&g_bus_manager, "motor1_current");
+  RX_ASSERT(err == k_rx_ok, "motor1_current ADC init must succeed");
+
+  /* Register motor2_current - Motor 2 (BL) current sense: AN005, ch 5, P45 */
+  err = rx_bus_config_init_adc(&s_motor2_current_config,
+                               "motor2_current",        /* name */
+                               k_adc_unit_0,            /* unit = S12AD0 */
+                               k_adc_channel_5,         /* channel = AN005 = Motor 2 (BL) */
+                               k_adc_resolution_12bit); /* bits = 12-bit */
+  RX_ASSERT(err == k_rx_ok, "motor2_current config init must succeed");
+  err = rx_bus_manager_add_bus(&g_bus_manager, &s_motor2_current_config);
+  RX_ASSERT(err == k_rx_ok, "motor2_current registration must succeed");
+  err = rx_bus_adc_init(&g_bus_manager, "motor2_current");
+  RX_ASSERT(err == k_rx_ok, "motor2_current ADC init must succeed");
+
+  /* Register motor3_current - Motor 3 (BR) current sense: AN004, ch 4, P44 */
+  err = rx_bus_config_init_adc(&s_motor3_current_config,
+                               "motor3_current",        /* name */
+                               k_adc_unit_0,            /* unit = S12AD0 */
+                               k_adc_channel_4,         /* channel = AN004 = Motor 3 (BR) */
+                               k_adc_resolution_12bit); /* bits = 12-bit */
+  RX_ASSERT(err == k_rx_ok, "motor3_current config init must succeed");
+  err = rx_bus_manager_add_bus(&g_bus_manager, &s_motor3_current_config);
+  RX_ASSERT(err == k_rx_ok, "motor3_current registration must succeed");
+  err = rx_bus_adc_init(&g_bus_manager, "motor3_current");
+  RX_ASSERT(err == k_rx_ok, "motor3_current ADC init must succeed");
 
   /* Register i2c1 - BNO055 IMU (RIIC1, addr 0x28, SDA=P2.0, SCL=P2.1) */
   err = rx_bus_config_init_i2c(&s_i2c1_imu_config,
