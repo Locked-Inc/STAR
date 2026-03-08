@@ -1561,6 +1561,21 @@ static void validate_peripherals(void)
 }
 
 /**
+ * @var g_pin_host_irq
+ * @brief Canonical pin identifier for the HOST_IRQ output signal (P6.7, active-low)
+ *
+ * @details
+ * Single authoritative definition of the HOST_IRQ GPIO pin.  Consumers
+ * (e.g. telemetry_task) use this constant with gpio_write_low() /
+ * gpio_write_high() instead of embedding the raw port/bit literal.
+ *
+ * @note Read-only after hardware_init() completes.
+ * @since Version 1.0.0
+ * @see internal_gpio_init_host_irq() Configures pin direction and initial level
+ */
+const rx_port_pin_t g_pin_host_irq = (rx_port_pin_t)k_pin_host_irq;
+
+/**
  * @brief Initialize all application-specific hardware peripherals for STAR motor controller
  *
  * @details

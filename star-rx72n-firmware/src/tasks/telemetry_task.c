@@ -681,13 +681,13 @@
 #include "telemetry_task.h"
 
 #include "hardware.h"
+#include "hardware_init.h"
 #include "rx_check.h"
 #include "rx_comm_manager.h"
 #include "rx_frame.h"
 #include "rx_iwdt.h"
 #include "rx_log.h"
 #include "rx_nanopb.h"
-#include "rx_port_constants.h"
 #include "shared_data.h"
 #include "tx_api.h"
 
@@ -2371,15 +2371,15 @@ static rx_err_t internal_build_and_send_telemetry(void)
     return k_rx_err_invalid_state;
   }
 
-  /* Assert HOST_IRQ LOW (P67, active-low) to notify RPi5 that data is ready */
-  (void)gpio_write_low((rx_port_pin_t)k_rx_p6_7);
+  /* Assert HOST_IRQ LOW (active-low) to notify RPi5 that data is ready */
+  (void)gpio_write_low(g_pin_host_irq);
 
   /* Map transport to channel and send */
   channel = (transport == k_telemetry_transport_usb) ? k_comm_channel_usb : k_comm_channel_spi;
   err     = internal_send_via_channel(channel, encoded_len);
 
   /* Deassert HOST_IRQ HIGH regardless of send outcome */
-  (void)gpio_write_high((rx_port_pin_t)k_rx_p6_7);
+  (void)gpio_write_high(g_pin_host_irq);
 
   if (err != k_rx_ok) {
     return err;
