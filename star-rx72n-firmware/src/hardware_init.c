@@ -292,6 +292,10 @@ typedef enum : uint16_t {
   k_pin_host_sclk = k_rx_pd_3, /**< PD.3 - SCLK (RSPI2 clock from RPi5) */
   k_pin_host_cs0  = k_rx_pd_4, /**< PD.4 - CS0 (chip select from RPi5) */
 
+  /* Host control signals */
+  k_pin_host_irq =
+    k_rx_p6_7, /**< P6.7 - HOST_IRQ (active-low output to RPi5, data ready, pin 98) */
+
   /* MTU Encoder clock inputs (front wheels) */
   k_pin_enc0_pha = k_rx_p2_4, /**< P2.4 - MTCLKA (encoder 0 phase A) */
   k_pin_enc0_phb = k_rx_p2_5, /**< P2.5 - MTCLKB (encoder 0 phase B) */
@@ -890,6 +894,49 @@ static rx_err_t internal_gpio_init_imu(void)
 }
 
 /**
+ * @brief Configure HOST_IRQ output pin (P67, active-low data-ready signal to RPi5)
+ *
+ * @details
+ * Configures P6.7 (pin 98) as a GPIO output, initialised HIGH (deasserted).
+ * The telemetry task drives this pin LOW immediately before each telemetry
+ * send and HIGH again after the send completes, giving the RPi5 a hardware
+ * data-ready interrupt instead of requiring fixed-rate polling.
+ *
+ * | Signal   | Pin | Direction | Active Level | Default |
+ * |----------|-----|-----------|--------------|---------|
+ * | HOST_IRQ | P67 | Output    | LOW          | HIGH    |
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Pin configured successfully
+ * @retval k_rx_err_hw_init_failed MPC GPIO configuration failed
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre P6.7 not in use by another peripheral
+ * @post P6.7 configured as GPIO output, driven HIGH (deasserted, no data pending)
+ * @post RPi5 sees HOST_IRQ HIGH (idle/no-data state)
+ *
+ * @note Thread-safe. No shared state modified.
+ * @note Called only during single-threaded initialization before RTOS start.
+ *
+ * @see telemetry_task.c internal_build_and_send_telemetry() Asserts/deasserts at runtime
+ * @see rx_port_constants.h k_rx_p6_7 for the combined port/pin constant
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_gpio_init_host_irq(void)
+{
+  static const char* s_tag = "GPIO_IRQ";
+
+  rx_err_t err = rx_mpc_set_gpio((rx_port_pin_t)k_pin_host_irq);
+  RX_RETURN_ON_ERROR(err, s_tag, "HOST_IRQ MPC config failed");
+
+  /* Initial HIGH = deasserted (no data pending) */
+  internal_gpio_set_output((rx_port_pin_t)k_pin_host_irq, true);
+
+  return k_rx_ok;
+}
+
+/**
  * @brief Configure DRV8263H motor driver control pins (DRVOFF + nSLEEP)
  *
  * @details
@@ -1270,6 +1317,9 @@ static rx_err_t gpio_init(void)
   err = internal_gpio_init_host_spi();
   RX_RETURN_ON_ERROR(err, s_tag, "Host SPI pin init failed");
 
+  err = internal_gpio_init_host_irq();
+  RX_RETURN_ON_ERROR(err, s_tag, "HOST_IRQ pin init failed");
+
   err = internal_gpio_init_mtu_encoders();
   RX_RETURN_ON_ERROR(err, s_tag, "MTU encoder pin init failed");
 
@@ -1509,6 +1559,21 @@ static void validate_peripherals(void)
 
   rx_log_info(s_tag, "Peripheral validation complete");
 }
+
+/**
+ * @var g_pin_host_irq
+ * @brief Canonical pin identifier for the HOST_IRQ output signal (P6.7, active-low)
+ *
+ * @details
+ * Single authoritative definition of the HOST_IRQ GPIO pin.  Consumers
+ * (e.g. telemetry_task) use this constant with gpio_write_low() /
+ * gpio_write_high() instead of embedding the raw port/bit literal.
+ *
+ * @note Read-only after hardware_init() completes.
+ * @since Version 1.0.0
+ * @see internal_gpio_init_host_irq() Configures pin direction and initial level
+ */
+const rx_port_pin_t g_pin_host_irq = (rx_port_pin_t)k_pin_host_irq;
 
 /**
  * @brief Initialize all application-specific hardware peripherals for STAR motor controller

@@ -680,6 +680,8 @@
 
 #include "telemetry_task.h"
 
+#include "hardware.h"
+#include "hardware_init.h"
 #include "rx_check.h"
 #include "rx_comm_manager.h"
 #include "rx_frame.h"
@@ -2289,7 +2291,9 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  * 2. **internal_collect_state()** - populate motor and temperature fields
  * 3. **internal_encode_telemetry()** - nanopb encode to s_telem_buffer
  * 4. **internal_select_transport()** - USB preferred, SPI fallback
- * 5. **internal_send_via_channel()** - transmit via comm manager
+ * 5. **Assert HOST_IRQ LOW** (P67, active-low) to notify RPi5 data is ready
+ * 6. **internal_send_via_channel()** - transmit via comm manager
+ * 7. **Deassert HOST_IRQ HIGH** (P67) regardless of send outcome
  *
  * Encoding failure is fatal for this cycle (message not sent, retry next cycle).
  * Send failure is non-critical (message lost, host detects via sequence gap).
@@ -2309,6 +2313,7 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  * @pre Task created and running (telemetry_task_create() called)
  *
  * @post Telemetry message sent via USB CDC (primary) or SPI (fallback)
+ * @post HOST_IRQ (P67) is HIGH (deasserted) on return, regardless of send result
  * @post s_sequence incremented exactly once per call
  * @post s_telem_buffer overwritten with latest encoded protobuf
  *
@@ -2366,9 +2371,16 @@ static rx_err_t internal_build_and_send_telemetry(void)
     return k_rx_err_invalid_state;
   }
 
+  /* Assert HOST_IRQ LOW (active-low) to notify RPi5 that data is ready */
+  (void)gpio_write_low(g_pin_host_irq);
+
   /* Map transport to channel and send */
   channel = (transport == k_telemetry_transport_usb) ? k_comm_channel_usb : k_comm_channel_spi;
   err     = internal_send_via_channel(channel, encoded_len);
+
+  /* Deassert HOST_IRQ HIGH regardless of send outcome */
+  (void)gpio_write_high(g_pin_host_irq);
+
   if (err != k_rx_ok) {
     return err;
   }
