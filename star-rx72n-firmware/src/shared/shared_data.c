@@ -371,6 +371,7 @@
 
 #include "rx_bus_types.h"
 #include "rx_check.h"
+#include "rx_comm_manager.h"
 
 /* =============================================================================
  * Constants
@@ -392,6 +393,13 @@ typedef enum : uint8_t {
   k_shared_channel_count =
     2, /**< Number of valid channels (== k_comm_channel_count); avoids rx_comm_manager.h include */
 } shared_data_internal_constants_t;
+
+/* Compile-time guard: k_shared_channel_count must stay equal to k_comm_channel_count.
+ * If rx_comm_channel_t gains a new value, update k_shared_channel_count to match. */
+static_assert((uint8_t)k_shared_channel_count == (uint8_t)k_comm_channel_count,
+              "k_shared_channel_count out of sync with k_comm_channel_count");
+static_assert((uint8_t)k_shared_channel_usb_default == (uint8_t)k_comm_channel_usb,
+              "k_shared_channel_usb_default out of sync with k_comm_channel_usb");
 
 /**
  * @var s_default_pid_kp

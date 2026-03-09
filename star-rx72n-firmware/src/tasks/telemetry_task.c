@@ -2301,7 +2301,9 @@ static rx_err_t internal_build_and_send_telemetry(void)
       break;
     case k_telemetry_transport_none:
     default:
-      /* No valid transport: skip send, deassert IRQ, and return error */
+      /* internal_select_transport() only returns USB or SPI; reaching here is a
+       * programming error. Assert to surface it in debug builds. */
+      RX_ASSERT(false, "internal_select_transport() returned unexpected transport");
       return k_rx_err_invalid_state;
   }
 
