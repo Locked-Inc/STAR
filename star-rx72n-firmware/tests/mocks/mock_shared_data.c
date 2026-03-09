@@ -547,7 +547,7 @@ uint32_t mock_shared_data_get_active_channel_update_count(void)
  * @post s_active_channel_update_count incremented by 1
  *
  * @note Thread safety: not thread-safe; intended for single-threaded test use only
- * @note Mock only: no mutex, no initialized-flag check, always succeeds
+ * @note Mirrors production: returns k_rx_err_not_initialized before shared_data_init()
  *
  * @see shared_data_get_active_channel() Reads the stored channel
  * @see mock_shared_data_get_active_channel_update_count() Retrieves call count
@@ -557,6 +557,9 @@ uint32_t mock_shared_data_get_active_channel_update_count(void)
  */
 rx_err_t shared_data_update_active_channel(uint8_t channel)
 {
+  if (!s_initialized) {
+    return k_rx_err_not_initialized;
+  }
   s_active_channel = channel;
   s_active_channel_update_count++;
   return k_rx_ok;
@@ -582,10 +585,11 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
  * @post Return value is k_mock_channel_usb or k_mock_channel_spi
  *
  * @note Thread safety: read-only; safe in single-threaded test context only
- * @note Mock only: no mutex, always returns the raw stored value
+ * @note Mirrors production: returns k_mock_channel_usb fallback before shared_data_init()
  *
  * @code
- * shared_data_update_active_channel(k_mock_channel_spi);
+ * (void)shared_data_init();
+ * (void)shared_data_update_active_channel(k_mock_channel_spi);
  * TEST_ASSERT_EQUAL(k_mock_channel_spi, shared_data_get_active_channel());
  * @endcode
  *
@@ -597,6 +601,9 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
  */
 uint8_t shared_data_get_active_channel(void)
 {
+  if (!s_initialized) {
+    return (uint8_t)k_mock_channel_usb;
+  }
   return s_active_channel;
 }
 

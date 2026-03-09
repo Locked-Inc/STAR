@@ -47,6 +47,7 @@ void setUp(void)
 {
   /* Reset all mocks before each test */
   mock_shared_data_reset();
+  (void)shared_data_init(); /* mirrors production task startup; enables active-channel API */
   mock_comm_manager_reset();
   mock_nanopb_reset();
   mock_tx_reset();
@@ -333,11 +334,16 @@ void test_comm_task_updates_comm_timestamp(void)
  */
 void test_comm_task_frame_updates_active_channel(void)
 {
+  /* NOTE: internal_frame_callback() is static in comm_task.c and cannot be
+   * called here (comm_task.c is not in the test binary -- only mocks are).
+   * This test verifies the shared_data mock correctly stores and returns the
+   * channel, exercising the same API surface that the comm task calls. */
+
   /* Arrange: default is USB */
   TEST_ASSERT_EQUAL(k_comm_channel_usb, shared_data_get_active_channel());
 
   /* Act: simulate comm task recording an SPI frame receipt */
-  (void)shared_data_update_active_channel(k_comm_channel_spi);
+  (void)shared_data_update_active_channel((uint8_t)k_comm_channel_spi);
 
   /* Assert: active channel updated to SPI */
   TEST_ASSERT_EQUAL(k_comm_channel_spi, shared_data_get_active_channel());
