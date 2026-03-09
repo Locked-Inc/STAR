@@ -1679,8 +1679,12 @@ static void internal_telem_task_entry(ULONG input)
  */
 static telemetry_transport_t internal_select_transport(void)
 {
-  const rx_comm_channel_t ch = (rx_comm_channel_t)shared_data_get_active_channel();
-  return (ch == k_comm_channel_spi) ? k_telemetry_transport_spi : k_telemetry_transport_usb;
+  const uint8_t raw_ch = shared_data_get_active_channel();
+  if (raw_ch >= (uint8_t)k_comm_channel_count) {
+    return k_telemetry_transport_usb; /* fail-safe: unexpected value defaults to USB */
+  }
+  return ((rx_comm_channel_t)raw_ch == k_comm_channel_spi) ? k_telemetry_transport_spi
+                                                           : k_telemetry_transport_usb;
 }
 
 /**

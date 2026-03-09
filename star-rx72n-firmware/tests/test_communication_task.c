@@ -337,7 +337,7 @@ void test_comm_task_frame_updates_active_channel(void)
   TEST_ASSERT_EQUAL(k_comm_channel_usb, shared_data_get_active_channel());
 
   /* Act: simulate comm task recording an SPI frame receipt */
-  shared_data_update_active_channel(k_comm_channel_spi);
+  (void)shared_data_update_active_channel(k_comm_channel_spi);
 
   /* Assert: active channel updated to SPI */
   TEST_ASSERT_EQUAL(k_comm_channel_spi, shared_data_get_active_channel());

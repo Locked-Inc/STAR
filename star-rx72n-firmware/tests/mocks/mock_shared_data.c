@@ -487,9 +487,9 @@ void shared_data_update_last_comm_tick(void)
  *
  * @since Version 1.0.0
  */
-void mock_shared_data_set_active_channel(uint8_t channel)
+void mock_shared_data_set_active_channel(mock_shared_channel_t channel)
 {
-  s_active_channel = channel;
+  s_active_channel = (uint8_t)channel;
 }
 
 /**
@@ -555,10 +555,11 @@ uint32_t mock_shared_data_get_active_channel_update_count(void)
  *
  * @since Version 1.0.0
  */
-void shared_data_update_active_channel(uint8_t channel)
+rx_err_t shared_data_update_active_channel(uint8_t channel)
 {
   s_active_channel = channel;
   s_active_channel_update_count++;
+  return k_rx_ok;
 }
 
 /**

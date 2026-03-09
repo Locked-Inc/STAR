@@ -1714,7 +1714,7 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
   shared_data_update_last_comm_tick();
 
   /* Record the active channel so telemetry can route replies symmetrically */
-  shared_data_update_active_channel((uint8_t)channel);
+  (void)shared_data_update_active_channel((uint8_t)channel);
 
   /* Dispatch based on frame type */
   switch (frame->header.type) {

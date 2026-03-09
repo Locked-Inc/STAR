@@ -2604,26 +2604,83 @@ void shared_data_update_last_comm_tick(void)
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 }
 
-void shared_data_update_active_channel(uint8_t channel)
+/**
+ * @brief Record the channel that most recently delivered a command frame
+ *
+ * @details
+ * Acquires motor_mutex and stores @p channel plus sets active_channel_valid.
+ * Called by comm task inside internal_frame_callback() on every valid frame.
+ * Enables the telemetry task to route outgoing frames on the same transport
+ * that the host is actively using.
+ *
+ * @param[in] channel Channel that delivered the frame (rx_comm_channel_t cast to uint8_t;
+ *                    must be k_comm_channel_usb (0) or k_comm_channel_spi (1))
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Channel stored successfully
+ * @retval k_rx_err_not_initialized shared_data_init() not yet called
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre shared_data_init() has been called successfully
+ * @pre channel is a valid rx_comm_channel_t value cast to uint8_t (< k_comm_channel_count)
+ * @post g_shared_data.active_channel == channel on k_rx_ok
+ * @post g_shared_data.active_channel_valid == true on k_rx_ok
+ *
+ * @note Thread safety: protected by motor_mutex
+ * @note Uses uint8_t to avoid including rx_comm_manager.h in shared_data.h
+ *
+ * @see shared_data_get_active_channel() Consumer used by telemetry task
+ * @see shared_data_update_last_comm_tick() Called in the same callback
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_update_active_channel(uint8_t channel)
 {
   if (!g_shared_data.initialized) {
-    return;
+    return k_rx_err_not_initialized;
   }
 
   const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
-    return;
+    return k_rx_err_rtos_mutex;
   }
 
   g_shared_data.active_channel       = channel;
   g_shared_data.active_channel_valid = true;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
+  return k_rx_ok;
 }
 
+/**
+ * @brief Return the channel that last delivered a command frame
+ *
+ * @details
+ * Acquires motor_mutex, reads active_channel_valid and active_channel under
+ * the lock (eliminating any TOCTOU race with concurrent writers), then
+ * releases the mutex. Returns the USB fail-safe default when no command has
+ * been received yet or on any error.
+ *
+ * @return uint8_t Active communication channel (rx_comm_channel_t cast to uint8_t)
+ * @retval 0 (k_comm_channel_usb) Default before any command received, or on error
+ * @retval 1 (k_comm_channel_spi) SPI was the last channel to deliver a command
+ *
+ * @pre shared_data_init() has been called (returns USB default if not)
+ * @pre At least one valid frame has been received for a non-default result
+ * @post Return value is 0 (USB) or 1 (SPI) matching rx_comm_channel_t values
+ * @post g_shared_data state is unchanged (read-only accessor)
+ *
+ * @note Thread safety: active_channel_valid and active_channel both read inside mutex
+ * @note Fail-safe: returns 0 (k_comm_channel_usb) on any error or before first frame
+ * @note Uses uint8_t to avoid including rx_comm_manager.h in shared_data.h
+ *
+ * @see shared_data_update_active_channel() Writer called by comm task
+ *
+ * @since Version 1.0.0
+ */
 uint8_t shared_data_get_active_channel(void)
 {
-  if (!g_shared_data.initialized || !g_shared_data.active_channel_valid) {
+  if (!g_shared_data.initialized) {
     return k_shared_channel_usb_default;
   }
 
@@ -2632,7 +2689,8 @@ uint8_t shared_data_get_active_channel(void)
     return k_shared_channel_usb_default;
   }
 
-  const uint8_t ch = g_shared_data.active_channel;
+  const uint8_t ch = g_shared_data.active_channel_valid ? g_shared_data.active_channel
+                                                        : k_shared_channel_usb_default;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 

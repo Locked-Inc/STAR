@@ -706,13 +706,17 @@ void shared_data_update_last_comm_tick(void);
  * @param[in] channel Channel on which the frame was received (rx_comm_channel_t cast to uint8_t).
  *                    Must be k_comm_channel_usb (0) or k_comm_channel_spi (1).
  *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Channel stored successfully
+ * @retval k_rx_err_not_initialized shared_data_init() not yet called
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
  * @pre shared_data_init() has been called successfully
  * @pre channel is a valid rx_comm_channel_t value cast to uint8_t (< k_comm_channel_count)
- * @post g_shared_data.active_channel == channel
- * @post g_shared_data.active_channel_valid == true
+ * @post g_shared_data.active_channel == channel on k_rx_ok
+ * @post g_shared_data.active_channel_valid == true on k_rx_ok
  *
  * @note Thread safety: protected by motor_mutex (same section as last_comm_tick)
- * @note Void return: best-effort update; mutex failure is silent
  * @note Uses uint8_t to avoid including rx_comm_manager.h in this header
  *
  * @see shared_data_get_active_channel() Consumer accessor for telemetry routing
@@ -720,7 +724,7 @@ void shared_data_update_last_comm_tick(void);
  *
  * @since Version 1.0.0
  */
-void shared_data_update_active_channel(uint8_t channel);
+rx_err_t shared_data_update_active_channel(uint8_t channel);
 
 /**
  * @brief Return the channel that last delivered a command frame

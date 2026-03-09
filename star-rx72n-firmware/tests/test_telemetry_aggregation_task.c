@@ -583,7 +583,7 @@ void test_telemetry_defaults_to_usb_before_any_command(void)
 void test_telemetry_routes_to_spi_after_spi_command(void)
 {
   /* Arrange: SPI command received */
-  shared_data_update_active_channel(k_comm_channel_spi);
+  (void)shared_data_update_active_channel(k_comm_channel_spi);
 
   /* Assert: active channel now SPI */
   TEST_ASSERT_EQUAL(k_comm_channel_spi, shared_data_get_active_channel());
