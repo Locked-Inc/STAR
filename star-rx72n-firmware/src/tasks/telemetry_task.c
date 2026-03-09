@@ -2291,12 +2291,24 @@ static rx_err_t internal_build_and_send_telemetry(void)
   /* Select transport based on active command channel */
   transport = internal_select_transport();
 
+  /* Map transport to channel; exhaustive switch surfaces unexpected enum values */
+  switch (transport) {
+    case k_telemetry_transport_usb:
+      channel = k_comm_channel_usb;
+      break;
+    case k_telemetry_transport_spi:
+      channel = k_comm_channel_spi;
+      break;
+    case k_telemetry_transport_none:
+    default:
+      /* No valid transport: skip send, deassert IRQ, and return error */
+      return k_rx_err_invalid_state;
+  }
+
   /* Assert HOST_IRQ LOW (active-low) to notify RPi5 that data is ready */
   (void)gpio_write_low(g_pin_host_irq);
 
-  /* Map transport to channel and send */
-  channel = (transport == k_telemetry_transport_usb) ? k_comm_channel_usb : k_comm_channel_spi;
-  err     = internal_send_via_channel(channel, encoded_len);
+  err = internal_send_via_channel(channel, encoded_len);
 
   /* Deassert HOST_IRQ HIGH regardless of send outcome */
   (void)gpio_write_high(g_pin_host_irq);

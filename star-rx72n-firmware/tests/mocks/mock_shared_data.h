@@ -496,30 +496,69 @@ rx_err_t shared_data_set_event(shared_event_flags_t flags);
 /**
  * @brief Configure the channel returned by shared_data_get_active_channel()
  *
- * @param[in] channel Channel to store as the active channel; use k_mock_channel_usb
- *                    or k_mock_channel_spi (mock_shared_channel_t typed for safety)
+ * @details
+ * Directly writes @p channel into the mock's internal s_active_channel state
+ * without incrementing s_active_channel_update_count or checking s_initialized.
+ * Use this for test setup (Arrange phase) to establish pre-test channel state
+ * before invoking code under test. Do NOT use to simulate a runtime channel
+ * update -- call shared_data_update_active_channel() for that purpose.
  *
- * @pre mock_shared_data_reset() called at least once
- * @pre channel is a valid mock_shared_channel_t value (k_mock_channel_usb or k_mock_channel_spi)
- * @post shared_data_get_active_channel() returns channel
- * @post active_channel_update_count unchanged
+ * @param[in] channel Channel to store; must be a valid mock_shared_channel_t value
+ *                    (k_mock_channel_usb or k_mock_channel_spi)
  *
- * @note For test setup only; call before the code under test runs
+ * @pre mock_shared_data_reset() called at least once (setUp)
+ * @pre channel is k_mock_channel_usb (0) or k_mock_channel_spi (1)
+ * @post shared_data_get_active_channel() returns (uint8_t)channel
+ * @post s_active_channel_update_count is unchanged
+ *
+ * @note Thread safety: not thread-safe; intended for single-threaded test setup only
+ * @note For Arrange phase only; call before the code under test runs
+ *
+ * @code
+ * // Arrange: set SPI as active before running telemetry task code
+ * mock_shared_data_set_active_channel(k_mock_channel_spi);
+ * TEST_ASSERT_EQUAL(k_mock_channel_spi, shared_data_get_active_channel());
+ * @endcode
+ *
+ * @see shared_data_update_active_channel() Runtime writer (increments update count)
+ * @see mock_shared_data_get_active_channel_update_count() Retrieves update call count
+ * @see mock_shared_data_reset() Resets channel to k_mock_channel_usb (0)
+ *
+ * @since Version 1.0.0
  */
 void mock_shared_data_set_active_channel(mock_shared_channel_t channel);
 
 /**
  * @brief Return how many times shared_data_update_active_channel() was called
  *
- * @return uint32_t Number of calls since last mock_shared_data_reset()
- * @retval 0 Not called yet
+ * @details
+ * Returns the accumulated call count for shared_data_update_active_channel()
+ * since the last mock_shared_data_reset(). Allows tests to assert that comm_task
+ * called the update function exactly the expected number of times (e.g., once
+ * per COMMAND frame received). Note that mock_shared_data_set_active_channel()
+ * does NOT increment this counter -- only shared_data_update_active_channel() does.
  *
- * @pre mock_shared_data_reset() called at least once
- * @pre shared_data_update_active_channel() may or may not have been called
- * @post Internal counter unchanged (read-only)
+ * @return uint32_t Number of shared_data_update_active_channel() calls since reset
+ * @retval 0 shared_data_update_active_channel() has not been called since last reset
+ * @retval n Number of times shared_data_update_active_channel() was called
+ *
+ * @pre mock_shared_data_reset() called at least once (setUp)
+ * @pre s_active_channel_update_count reflects only calls via shared_data_update_active_channel()
+ * @post s_active_channel_update_count is unchanged (read-only accessor)
  * @post Return value >= 0
  *
- * @note Useful for asserting comm task calls update on every frame
+ * @note Thread safety: read-only; safe in single-threaded test context only
+ * @note mock_shared_data_set_active_channel() does NOT increment this counter
+ *
+ * @code
+ * (void)shared_data_update_active_channel(k_mock_channel_spi);
+ * TEST_ASSERT_EQUAL_UINT32(1, mock_shared_data_get_active_channel_update_count());
+ * @endcode
+ *
+ * @see shared_data_update_active_channel() The function whose calls are counted
+ * @see mock_shared_data_reset() Resets the counter to zero
+ *
+ * @since Version 1.0.0
  */
 uint32_t mock_shared_data_get_active_channel_update_count(void);
 

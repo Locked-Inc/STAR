@@ -389,6 +389,8 @@ typedef enum : uint8_t {
   k_ms_per_tick   = 10, /**< ThreadX milliseconds per tick (100 Hz tick rate = 10ms/tick) */
   k_shared_channel_usb_default =
     0, /**< Fail-safe USB channel value (== k_comm_channel_usb); avoids rx_comm_manager.h include */
+  k_shared_channel_count =
+    2, /**< Number of valid channels (== k_comm_channel_count); avoids rx_comm_manager.h include */
 } shared_data_internal_constants_t;
 
 /**
@@ -2619,6 +2621,7 @@ void shared_data_update_last_comm_tick(void)
  * @return rx_err_t Error code
  * @retval k_rx_ok Channel stored successfully
  * @retval k_rx_err_not_initialized shared_data_init() not yet called
+ * @retval k_rx_err_invalid_arg channel >= k_shared_channel_count (out of range)
  * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre shared_data_init() has been called successfully
@@ -2638,6 +2641,10 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
 {
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
+  }
+
+  if (channel >= (uint8_t)k_shared_channel_count) {
+    return k_rx_err_invalid_arg;
   }
 
   const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);

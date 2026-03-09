@@ -1414,15 +1414,16 @@ static void internal_comm_task_entry(ULONG input)
  *    - Resets 500ms communication timeout watchdog
  *    - Motor task monitors this timestamp to detect comm loss
  *    - Updated on ANY valid frame (COMMAND, ACK, NACK, TELEMETRY)
- * 4. **Record Active Channel:** Call shared_data_update_active_channel(channel)
- *    - Stores the channel that delivered this frame for symmetric reply routing
- *    - Telemetry task reads this so replies travel on the same transport as commands
- *    - Prevents asymmetric USB/SPI usage in SPI-only deployment
- * 5. **Dispatch by Frame Type:** Switch on frame->header.type
- *    - **COMMAND:** Call internal_handle_command_frame() (protobuf decode)
+ * 4. **Dispatch by Frame Type:** Switch on frame->header.type
+ *    - **COMMAND:** Record active channel, then call internal_handle_command_frame()
  *    - **ACK:** Log debug message, no further action needed
  *    - **NACK:** Log warning (RPi5 rejected our telemetry frame)
  *    - **Unknown:** Log warning (protocol version mismatch?)
+ * 5. **Record Active Channel (COMMAND frames only):**
+ *    - shared_data_update_active_channel() stores the channel for symmetric routing
+ *    - Only COMMAND frames update the channel; ACK/NACK must NOT overwrite it
+ *    - ACK/NACK are host responses to our telemetry (not commands) and arrive on
+ *      whichever channel the host happens to use for ACKs, which may differ
  * 6. **Command Frame Processing (if COMMAND):**
  *    - internal_handle_command_frame() decodes protobuf payload
  *    - Updates shared_data with motor commands or triggers e-stop
@@ -1554,7 +1555,7 @@ static void internal_comm_task_entry(ULONG input)
  * @pre shared_data_init() called (for watchdog update)
  *
  * @post Communication watchdog timestamp updated (prevents timeout)
- * @post Active channel recorded in shared_data for symmetric telemetry routing
+ * @post Active channel recorded in shared_data (COMMAND frames only; ACK/NACK do not update)
  * @post Command frames processed and shared_data updated (if COMMAND type)
  * @post ACK/NACK frames logged for debugging
  * @post Unknown frame types logged as warning
@@ -1713,12 +1714,13 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
   /* Update communication timestamp on any valid frame */
   shared_data_update_last_comm_tick();
 
-  /* Record the active channel so telemetry can route replies symmetrically */
-  (void)shared_data_update_active_channel((uint8_t)channel);
-
   /* Dispatch based on frame type */
   switch (frame->header.type) {
     case k_frame_type_command:
+      /* Record channel only for COMMAND frames so telemetry replies are routed
+       * back on the same transport that carries host commands. ACK/NACK frames
+       * are host responses to our telemetry and must not overwrite the channel. */
+      (void)shared_data_update_active_channel((uint8_t)channel);
       (void)internal_handle_command_frame(channel, frame);
       break;
 

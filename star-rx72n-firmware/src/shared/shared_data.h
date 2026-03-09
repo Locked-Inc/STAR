@@ -709,6 +709,7 @@ void shared_data_update_last_comm_tick(void);
  * @return rx_err_t Error code
  * @retval k_rx_ok Channel stored successfully
  * @retval k_rx_err_not_initialized shared_data_init() not yet called
+ * @retval k_rx_err_invalid_arg channel is out of range (>= k_comm_channel_count)
  * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre shared_data_init() has been called successfully
