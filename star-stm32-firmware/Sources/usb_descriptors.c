@@ -160,7 +160,7 @@ typedef enum : uint8_t {
  */
 typedef enum : uint16_t {
     k_config_total_len = TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN, /**< Total bytes in config blob */
-    k_config_power_ma  = 100U, /**< Max bus current draw in mA */
+    k_config_power_ma  = 100U,                                   /**< Max bus current draw in mA */
 } config_desc_sizes_t;
 
 /**
@@ -223,11 +223,11 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 static uint8_t const s_desc_fs_config[k_config_total_len] = {
-    TUD_CONFIG_DESCRIPTOR(1,                  /* bConfigurationValue */
-                          k_itf_total,         /* bNumInterfaces */
-                          0,                   /* iConfiguration string index (none) */
+    TUD_CONFIG_DESCRIPTOR(1,           /* bConfigurationValue */
+                          k_itf_total, /* bNumInterfaces */
+                          0,           /* iConfiguration string index (none) */
                           k_config_total_len,
-                          0x00,                /* bmAttributes: bus-powered */
+                          0x00, /* bmAttributes: bus-powered */
                           k_config_power_ma),
 
     TUD_CDC_DESCRIPTOR(k_itf_cdc_cmd,
@@ -266,24 +266,24 @@ static uint8_t const s_desc_fs_config[k_config_total_len] = {
 uint8_t const* tud_descriptor_device_cb(void)
 {
     static tusb_desc_device_t const desc_device = {
-        .bLength            = sizeof(tusb_desc_device_t),
-        .bDescriptorType    = TUSB_DESC_DEVICE,
-        .bcdUSB             = k_usb_ver_bcd,
+        .bLength         = sizeof(tusb_desc_device_t),
+        .bDescriptorType = TUSB_DESC_DEVICE,
+        .bcdUSB          = k_usb_ver_bcd,
 
         /* MISC + COMMON + IAD: required for composite CDC device */
-        .bDeviceClass       = TUSB_CLASS_MISC,
-        .bDeviceSubClass    = MISC_SUBCLASS_COMMON,
-        .bDeviceProtocol    = MISC_PROTOCOL_IAD,
+        .bDeviceClass    = TUSB_CLASS_MISC,
+        .bDeviceSubClass = MISC_SUBCLASS_COMMON,
+        .bDeviceProtocol = MISC_PROTOCOL_IAD,
 
-        .bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
+        .bMaxPacketSize0 = CFG_TUD_ENDPOINT0_SIZE,
 
-        .idVendor           = k_usb_vid,
-        .idProduct          = k_usb_pid,
-        .bcdDevice          = k_usb_bcd,
+        .idVendor  = k_usb_vid,
+        .idProduct = k_usb_pid,
+        .bcdDevice = k_usb_bcd,
 
-        .iManufacturer      = k_strid_manufacturer,
-        .iProduct           = k_strid_product,
-        .iSerialNumber      = k_strid_serial,
+        .iManufacturer = k_strid_manufacturer,
+        .iProduct      = k_strid_product,
+        .iSerialNumber = k_strid_serial,
 
         .bNumConfigurations = k_num_configurations,
     };
@@ -351,8 +351,7 @@ uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid)
 
     if (index == k_strid_langid) {
         /* Language ID: copy the 2 raw bytes (0x09, 0x04) as one UTF-16LE word */
-        memcpy(&s_str_buf[k_str_header_words], s_string_desc[k_strid_langid],
-               k_utf16_bytes_per);
+        memcpy(&s_str_buf[k_str_header_words], s_string_desc[k_strid_langid], k_utf16_bytes_per);
         chr_count = k_langid_word_count;
     } else {
         if (index >= k_strid_count) {
@@ -360,7 +359,7 @@ uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid)
         }
 
         const char* str = s_string_desc[index];
-        chr_count = (uint8_t)strlen(str);
+        chr_count       = (uint8_t)strlen(str);
         if (chr_count > k_max_str_chars) {
             chr_count = k_max_str_chars;
         }
@@ -373,7 +372,7 @@ uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid)
 
     /* Header: descriptor type in high byte, total byte length in low byte */
     s_str_buf[0] = (uint16_t)(((uint16_t)TUSB_DESC_STRING << 8U) |
-                               (uint16_t)(k_utf16_bytes_per * chr_count + k_desc_hdr_bytes));
+                              (uint16_t)(k_utf16_bytes_per * chr_count + k_desc_hdr_bytes));
 
     return s_str_buf;
 }

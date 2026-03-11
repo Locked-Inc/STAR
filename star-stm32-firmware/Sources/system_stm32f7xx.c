@@ -41,9 +41,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <stdint.h>
-
 #include "stm32f7xx_hal.h"
+
+#include <stdint.h>
 
 /* ---------------------------------------------------------------------------
  * CMSIS-required prescaler tables
@@ -71,16 +71,22 @@
  * @since Version 1.0.0
  */
 const uint8_t AHBPrescTable[16] = {
-    0U, 0U, 0U, 0U,  /* HPRE 0000-0011: SYSCLK not divided (/1)  */
-    0U, 0U, 0U, 0U,  /* HPRE 0100-0111: SYSCLK not divided (/1)  */
-    1U,               /* HPRE 1000: /2   */
-    2U,               /* HPRE 1001: /4   */
-    3U,               /* HPRE 1010: /8   */
-    4U,               /* HPRE 1011: /16  */
-    6U,               /* HPRE 1100: /64  */
-    7U,               /* HPRE 1101: /128 */
-    8U,               /* HPRE 1110: /256 */
-    9U,               /* HPRE 1111: /512 */
+    0U,
+    0U,
+    0U,
+    0U, /* HPRE 0000-0011: SYSCLK not divided (/1)  */
+    0U,
+    0U,
+    0U,
+    0U, /* HPRE 0100-0111: SYSCLK not divided (/1)  */
+    1U, /* HPRE 1000: /2   */
+    2U, /* HPRE 1001: /4   */
+    3U, /* HPRE 1010: /8   */
+    4U, /* HPRE 1011: /16  */
+    6U, /* HPRE 1100: /64  */
+    7U, /* HPRE 1101: /128 */
+    8U, /* HPRE 1110: /256 */
+    9U, /* HPRE 1111: /512 */
 };
 
 /**
@@ -95,11 +101,14 @@ const uint8_t AHBPrescTable[16] = {
  * @since Version 1.0.0
  */
 const uint8_t APBPrescTable[8] = {
-    0U, 0U, 0U, 0U,  /* PPREx 000-011: HCLK not divided (/1) */
-    1U,               /* PPREx 100: /2  */
-    2U,               /* PPREx 101: /4  */
-    3U,               /* PPREx 110: /8  */
-    4U,               /* PPREx 111: /16 */
+    0U,
+    0U,
+    0U,
+    0U, /* PPREx 000-011: HCLK not divided (/1) */
+    1U, /* PPREx 100: /2  */
+    2U, /* PPREx 101: /4  */
+    3U, /* PPREx 110: /8  */
+    4U, /* PPREx 111: /16 */
 };
 
 /* ---------------------------------------------------------------------------
@@ -142,7 +151,7 @@ uint32_t SystemCoreClock = 16000000UL;
  * @since Version 1.0.0
  */
 typedef enum : uintptr_t {
-    k_cpacr_addr = 0xE000ED88U,              /**< CPACR fixed Cortex-M address */
+    k_cpacr_addr = 0xE000ED88U,                   /**< CPACR fixed Cortex-M address */
     k_cp10_cp11  = ((3UL << 20U) | (3UL << 22U)), /**< Full access bits CP10+CP11 */
 } fpu_config_t;
 
@@ -318,23 +327,23 @@ void stm32_system_clock_init(void)
 
 #ifdef STM32_USE_HSE
     /* HSE path: 8 MHz crystal -> PLLM=4 -> VCO input = 2 MHz */
-    osc_init.OscillatorType      = RCC_OSCILLATORTYPE_HSE;
-    osc_init.HSEState            = RCC_HSE_ON;
-    osc_init.PLL.PLLSource       = RCC_PLLSOURCE_HSE;
-    osc_init.PLL.PLLM            = (uint32_t)k_pll_m_hse;
+    osc_init.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    osc_init.HSEState       = RCC_HSE_ON;
+    osc_init.PLL.PLLSource  = RCC_PLLSOURCE_HSE;
+    osc_init.PLL.PLLM       = (uint32_t)k_pll_m_hse;
 #else
     /* HSI fallback: 16 MHz internal -> PLLM=8 -> VCO input = 2 MHz */
-    osc_init.OscillatorType          = RCC_OSCILLATORTYPE_HSI;
-    osc_init.HSIState                = RCC_HSI_ON;
-    osc_init.HSICalibrationValue     = RCC_HSICALIBRATION_DEFAULT;
-    osc_init.PLL.PLLSource           = RCC_PLLSOURCE_HSI;
-    osc_init.PLL.PLLM                = (uint32_t)k_pll_m_hsi;
+    osc_init.OscillatorType      = RCC_OSCILLATORTYPE_HSI;
+    osc_init.HSIState            = RCC_HSI_ON;
+    osc_init.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    osc_init.PLL.PLLSource       = RCC_PLLSOURCE_HSI;
+    osc_init.PLL.PLLM            = (uint32_t)k_pll_m_hsi;
 #endif /* STM32_USE_HSE */
 
     osc_init.PLL.PLLState = RCC_PLL_ON;
-    osc_init.PLL.PLLN     = (uint32_t)k_pll_n;   /* VCO = 2 MHz * 216 = 432 MHz  */
-    osc_init.PLL.PLLP     = RCC_PLLP_DIV2;        /* SYSCLK = 432 / 2 = 216 MHz   */
-    osc_init.PLL.PLLQ     = (uint32_t)k_pll_q;   /* USB = 432 / 9 = 48 MHz       */
+    osc_init.PLL.PLLN     = (uint32_t)k_pll_n; /* VCO = 2 MHz * 216 = 432 MHz  */
+    osc_init.PLL.PLLP     = RCC_PLLP_DIV2;     /* SYSCLK = 432 / 2 = 216 MHz   */
+    osc_init.PLL.PLLQ     = (uint32_t)k_pll_q; /* USB = 432 / 9 = 48 MHz       */
 
     if (HAL_RCC_OscConfig(&osc_init) != HAL_OK) {
         /* Clock source unavailable; halt -- no recovery possible before scheduler */
@@ -352,12 +361,12 @@ void stm32_system_clock_init(void)
 
     /* Step 4: Switch SYSCLK to PLL; configure bus prescalers and flash latency */
     RCC_ClkInitTypeDef clk_init = {0};
-    clk_init.ClockType      = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK |
-                              RCC_CLOCKTYPE_PCLK1  | RCC_CLOCKTYPE_PCLK2;
+    clk_init.ClockType =
+        RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
     clk_init.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
-    clk_init.AHBCLKDivider  = RCC_SYSCLK_DIV1;   /* HCLK = 216 MHz              */
-    clk_init.APB1CLKDivider = RCC_HCLK_DIV4;     /* APB1 = 54 MHz (max 54 MHz)  */
-    clk_init.APB2CLKDivider = RCC_HCLK_DIV2;     /* APB2 = 108 MHz (max 108 MHz)*/
+    clk_init.AHBCLKDivider  = RCC_SYSCLK_DIV1; /* HCLK = 216 MHz              */
+    clk_init.APB1CLKDivider = RCC_HCLK_DIV4;   /* APB1 = 54 MHz (max 54 MHz)  */
+    clk_init.APB2CLKDivider = RCC_HCLK_DIV2;   /* APB2 = 108 MHz (max 108 MHz)*/
 
     if (HAL_RCC_ClockConfig(&clk_init, FLASH_LATENCY_7) != HAL_OK) {
         __asm volatile("cpsid i");

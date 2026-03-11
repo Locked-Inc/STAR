@@ -50,37 +50,37 @@ extern "C" {
 
 /** @brief External High Speed oscillator frequency in Hz (8 MHz on Nucleo-F767ZI). */
 #if !defined(HSE_VALUE)
-#define HSE_VALUE       8000000U
+#define HSE_VALUE 8000000U
 #endif
 
 /** @brief HSE startup timeout in ms. */
 #if !defined(HSE_STARTUP_TIMEOUT)
-#define HSE_STARTUP_TIMEOUT  100U
+#define HSE_STARTUP_TIMEOUT 100U
 #endif
 
 /** @brief Internal High Speed oscillator frequency in Hz. */
 #if !defined(HSI_VALUE)
-#define HSI_VALUE       16000000U
+#define HSI_VALUE 16000000U
 #endif
 
 /** @brief Internal Low Speed oscillator typical frequency in Hz. */
 #if !defined(LSI_VALUE)
-#define LSI_VALUE       32000U
+#define LSI_VALUE 32000U
 #endif
 
 /** @brief External Low Speed oscillator frequency in Hz. */
 #if !defined(LSE_VALUE)
-#define LSE_VALUE       32768U
+#define LSE_VALUE 32768U
 #endif
 
 /** @brief LSE startup timeout in ms. */
 #if !defined(LSE_STARTUP_TIMEOUT)
-#define LSE_STARTUP_TIMEOUT  5000U
+#define LSE_STARTUP_TIMEOUT 5000U
 #endif
 
 /** @brief External clock for I2S (used by stm32f7xx_hal_rcc_ex.c even without I2S enabled). */
 #if !defined(EXTERNAL_CLOCK_VALUE)
-#define EXTERNAL_CLOCK_VALUE    12288000U
+#define EXTERNAL_CLOCK_VALUE 12288000U
 #endif
 
 /* ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ extern "C" {
  * ---------------------------------------------------------------------------*/
 
 /** @brief VDD supply voltage in mV. */
-#define VDD_VALUE                   3300U
+#define VDD_VALUE 3300U
 
 /**
  * @brief HAL SysTick interrupt priority.
@@ -99,16 +99,16 @@ extern "C" {
  * managed by the FreeRTOS port; HAL_IncTick() is called from
  * vApplicationTickHook() or the FreeRTOS SysTick handler.
  */
-#define TICK_INT_PRIORITY           15U
+#define TICK_INT_PRIORITY 15U
 
 /** @brief Set to 0; FreeRTOS provides task scheduling. */
-#define USE_RTOS                    0U
+#define USE_RTOS 0U
 
 /** @brief Enable Flash prefetch buffer for 216 MHz operation. */
-#define PREFETCH_ENABLE             1U
+#define PREFETCH_ENABLE 1U
 
 /** @brief Enable ART Accelerator (instruction cache + prefetch). */
-#define ART_ACCELERATOR_ENABLE      1U
+#define ART_ACCELERATOR_ENABLE 1U
 
 /**
  * @brief Disable HAL assertion checking (no assert handler linked in).
@@ -119,13 +119,13 @@ extern "C" {
  * Expanding to (void)(expr) evaluates the expression (no side effects lost)
  * and satisfies the compiler without linking an assertion handler.
  */
-#define assert_param(expr)          ((void)(expr))
+#define assert_param(expr) ((void)(expr))
 
 /* All register callback variants disabled -- not needed for Phase 1 */
-#define USE_HAL_RCC_REGISTER_CALLBACKS    0U
-#define USE_HAL_GPIO_REGISTER_CALLBACKS   0U
-#define USE_HAL_DMA_REGISTER_CALLBACKS    0U
-#define USE_HAL_PWR_REGISTER_CALLBACKS    0U
+#define USE_HAL_RCC_REGISTER_CALLBACKS  0U
+#define USE_HAL_GPIO_REGISTER_CALLBACKS 0U
+#define USE_HAL_DMA_REGISTER_CALLBACKS  0U
+#define USE_HAL_PWR_REGISTER_CALLBACKS  0U
 
 /* ---------------------------------------------------------------------------
  * HAL module headers

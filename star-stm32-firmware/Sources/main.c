@@ -18,14 +18,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <stdint.h>
-
 #include "FreeRTOS.h"
-#include "task.h"
-
-#include "stm32f7xx_hal.h"
 #include "stm32_usb_cdc.h"
+#include "stm32f7xx_hal.h"
+#include "task.h"
 #include "tusb.h"
+
+#include <stdint.h>
 
 extern void stm32_system_clock_init(void);
 
