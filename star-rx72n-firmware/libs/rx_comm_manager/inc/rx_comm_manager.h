@@ -1022,10 +1022,10 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  rx_usb_comm_handle_t*  usb_handle;  /**< USB comm handle */
-  rx_spi_comm_handle_t*  spi_handle;  /**< SPI comm handle */
-  rx_i2c_comm_handle_t*  i2c_handle;  /**< I2C comm handle */
-  rx_uart_comm_handle_t* uart_handle; /**< UART comm handle */
+  rx_usb_comm_handle_t*  usb_handle;  /**< USB CDC comm handle (NULL disables USB channel) */
+  rx_spi_comm_handle_t*  spi_handle;  /**< SPI comm handle (NULL disables SPI channel) */
+  rx_i2c_comm_handle_t*  i2c_handle;  /**< I2C peripheral comm handle (NULL disables I2C channel) */
+  rx_uart_comm_handle_t* uart_handle; /**< UART (SCI9) comm handle (NULL disables UART channel) */
 
   /**< @brief Optional SPI link layer with HARQ (NULL if disabled)
    * @details

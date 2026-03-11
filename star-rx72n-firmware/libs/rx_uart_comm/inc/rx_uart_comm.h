@@ -448,7 +448,9 @@ typedef struct {
  * @return k_rx_ok on success, k_rx_err_invalid_arg if handle is nullptr
  *
  * @pre handle must not be nullptr
+ * @pre handle must have been initialized via rx_uart_comm_init()
  * @post handle->initialized == 0
+ * @post Further calls to rx_uart_comm_send/receive will return k_rx_err_invalid_state
  *
  * @since Version 1.0.0
  */

@@ -176,6 +176,14 @@ set(MOCK_RSPI_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rspi.c
 )
 
+# Mock RIIC HAL source for I2C peripheral mode testing.
+# NOTE: mock_riic_hal.c also appears in MOCK_HAL_SRC (used by GPIO/ADC/bus
+# tests that need a combined HAL mock).  Targets must use EITHER MOCK_HAL_SRC
+# OR MOCK_RIIC_HAL_SRC - never both, as that would produce duplicate symbols.
+set(MOCK_RIIC_HAL_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_riic_hal.c
+)
+
 # rx_spi_comm source
 set(RX_SPI_COMM_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_spi_comm/src/rx_spi_comm.c
@@ -692,7 +700,7 @@ add_executable(test_rx_comm_manager
     ${MOCK_USB_SRC}
     ${MOCK_RSPI_SRC}
     ${MOCK_UART_SRC}
-    ${CMAKE_SOURCE_DIR}/mocks/mock_riic_hal.c
+    ${MOCK_RIIC_HAL_SRC}
     ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_comm_manager)

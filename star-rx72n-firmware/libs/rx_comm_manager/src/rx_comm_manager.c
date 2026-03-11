@@ -881,7 +881,9 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
  * @retval k_rx_err_invalid_arg mgr is nullptr
  *
  * @pre mgr must be non-NULL
+ * @pre mgr->i2c_handle must be initialized before calling rx_comm_manager_poll()
  * @post On k_rx_ok: callback invoked for received frame
+ * @post On k_rx_err_timeout or k_rx_err_no_data: no state change
  *
  * @note Non-blocking - always returns immediately
  *
@@ -927,7 +929,9 @@ static rx_err_t internal_poll_i2c(rx_comm_manager_t* mgr)
  * @retval k_rx_err_invalid_arg mgr is nullptr
  *
  * @pre mgr must be non-NULL
+ * @pre mgr->uart_handle must be initialized before calling rx_comm_manager_poll()
  * @post On k_rx_ok: callback invoked for received frame
+ * @post On k_rx_err_timeout or k_rx_err_no_data: no state change
  *
  * @note Non-blocking - always returns immediately
  *

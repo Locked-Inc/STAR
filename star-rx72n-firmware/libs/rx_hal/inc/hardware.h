@@ -1497,6 +1497,24 @@ typedef struct {
  */
 
 /**
+ * @enum riic_peripheral_limits_t
+ * @brief Public size limits for RIIC peripheral mode callers
+ *
+ * @details
+ * Exposes the I/O size ceiling enforced by riic_peripheral_read() and
+ * riic_peripheral_write() so that callers can statically size their buffers
+ * and validate arguments without needing to inspect the driver implementation.
+ *
+ * @see riic_peripheral_read() Enforces this limit on max_length
+ * @see riic_peripheral_write() Enforces this limit on length
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_riic_peripheral_transfer_limit = 256, /**< Maximum bytes per peripheral read or write call */
+} riic_peripheral_limits_t;
+
+/**
  * @brief Initialize RIIC channel in peripheral (device) mode
  *
  * @details
@@ -1517,9 +1535,12 @@ typedef struct {
  * @return rx_err_t Error code
  * @retval k_rx_ok Channel initialized in peripheral mode
  * @retval k_rx_err_invalid_arg Channel value out of range
+ * @retval k_rx_err_invalid_state Channel already initialized (call riic_deinit first)
  *
- * @pre channel.value must be 0-2
- * @post RIIC peripheral will respond to device_addr on the I2C bus
+ * @pre channel.value must be in range [0, 2] (i.e., < k_riic_max_channels)
+ * @pre device_addr.value must be in range [0x08, 0x77] (valid non-reserved 7-bit I2C address)
+ * @post RIIC peripheral responds to device_addr on the I2C bus
+ * @post s_riic_channel_initialized[channel.value] == true on success
  *
  * @note Only available on RX72N target (guarded by __RX__ preprocessor)
  * @note Not thread-safe during initialization
@@ -1529,8 +1550,8 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t riic_init_peripheral(riic_channel_t    channel,
-                                            i2c_device_addr_t device_addr);
+[[nodiscard]] rx_err_t riic_init_peripheral(const riic_channel_t    channel,
+                                            const i2c_device_addr_t device_addr);
 
 /**
  * @brief Read bytes written by the I2C controller to this peripheral
@@ -1549,11 +1570,14 @@ typedef struct {
  * @retval k_rx_ok Read completed (check bytes_read for count)
  * @retval k_rx_err_null_ptr data or bytes_read is nullptr
  * @retval k_rx_err_invalid_arg Channel value out of range or max_length == 0
+ *                               or max_length > k_riic_peripheral_transfer_limit
  * @retval k_rx_err_invalid_state Channel not initialized via riic_init_peripheral()
  *
  * @pre channel must be initialized via riic_init_peripheral()
- * @pre data must not be nullptr and have space for max_length bytes
- * @post bytes_read contains number of bytes placed in data
+ * @pre data != nullptr with capacity for at least max_length bytes
+ * @pre max_length >= 1 && max_length <= k_riic_peripheral_transfer_limit
+ * @post *bytes_read contains number of bytes placed in data (0 to max_length)
+ * @post data[0..*bytes_read-1] contain valid received bytes on k_rx_ok
  *
  * @note Non-blocking: returns immediately with available data
  * @note Only available on RX72N target (guarded by __RX__ preprocessor)
@@ -1563,10 +1587,10 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t riic_peripheral_read(riic_channel_t channel,
-                                            uint8_t*       data,
-                                            uint16_t       max_length,
-                                            uint16_t*      bytes_read);
+[[nodiscard]] rx_err_t riic_peripheral_read(const riic_channel_t channel,
+                                            uint8_t*             data,
+                                            const uint16_t       max_length,
+                                            uint16_t*            bytes_read);
 
 /**
  * @brief Write bytes for the I2C controller to read from this peripheral
@@ -1589,19 +1613,21 @@ typedef struct {
  * @retval k_rx_err_timeout Transmit data register not empty within timeout
  *
  * @pre channel must be initialized via riic_init_peripheral()
- * @pre data must not be nullptr
- * @post data bytes placed in ICDRT for controller to read
+ * @pre data != nullptr with at least length valid bytes
+ * @pre length >= 1 && length <= k_riic_peripheral_transfer_limit
+ * @post On k_rx_ok: all length bytes have been written to ICDRT
+ * @post On k_rx_err_timeout: partial write may have occurred
  *
  * @note Only available on RX72N target (guarded by __RX__ preprocessor)
+ * @note Not thread-safe, caller must provide external synchronization
  *
  * @see riic_init_peripheral() Initialize channel first
  * @see riic_peripheral_read() Receive data from controller
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t riic_peripheral_write(riic_channel_t channel,
-                                             const uint8_t* data,
-                                             uint16_t       length);
+[[nodiscard]] rx_err_t
+riic_peripheral_write(const riic_channel_t channel, const uint8_t* data, const uint16_t length);
 
 /* =============================================================================
  * RSPI (SPI) Functions - Peripheral Mode

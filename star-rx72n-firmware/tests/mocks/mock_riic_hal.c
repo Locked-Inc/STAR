@@ -25,6 +25,21 @@ typedef enum : uint32_t {
   k_mock_riic_freq_1mhz   = 1000000, /**< Fast mode plus */
 } mock_riic_frequency_t;
 
+/**
+ * @enum mock_riic_length_t
+ * @brief Named constants for clearing receive-length fields in mock state
+ *
+ * @details
+ * Used instead of the magic literal 0 when resetting ch->rx_length after
+ * peripheral-read data has been consumed, making the intent explicit.
+ *
+ * @see riic_peripheral_read() Consumes rx_buffer and resets rx_length
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_mock_riic_length_cleared = 0U, /**< Sentinel: receive buffer fully consumed */
+} mock_riic_length_t;
+
 /* =============================================================================
  * Global State
  * =============================================================================
@@ -469,21 +484,105 @@ rx_err_t riic_write_read(riic_channel_t    channel,
  * =============================================================================
  */
 
-rx_err_t riic_init_peripheral(riic_channel_t channel, i2c_device_addr_t device_addr)
+/**
+ * @brief Mock implementation of riic_init_peripheral()
+ *
+ * @details
+ * Marks the specified channel as initialized in mock state and records the
+ * call in global call history. Error injection (internal_check_error()) is
+ * applied before validating the channel index so test fixtures can simulate
+ * hardware init failures. A channel.value out of range returns
+ * k_rx_err_invalid_arg without modifying any channel state.
+ *
+ * @param[in] channel     RIIC channel wrapper (channel.value range: 0 to
+ *                        k_mock_riic_max_channels - 1)
+ * @param[in] device_addr 7-bit I2C peripheral address the mock should respond to.
+ *                        Recorded in call history; not range-validated by mock.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok                 Channel marked initialized
+ * @retval k_rx_err_invalid_arg    channel.value >= k_mock_riic_max_channels
+ * @retval Other                   Injected error from mock_riic_set_next_error()
+ *
+ * @pre  channel.value < k_mock_riic_max_channels
+ * @pre  mock state must be initialized via mock_riic_init() before use
+ * @post On k_rx_ok: g_mock_riic.channels[channel.value].initialized == true
+ * @post call recorded in g_mock_riic.call_history (if history not full)
+ *
+ * @note Not thread-safe; must be called from a single test thread
+ * @see  mock_riic_init()        Reset mock state before each test
+ * @see  riic_init_peripheral()  Real HAL function this mock replaces
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t riic_init_peripheral(const riic_channel_t channel, const i2c_device_addr_t device_addr)
 {
+  internal_record_call(k_mock_riic_call_init, channel.value, device_addr.value, 0, 0);
+
+  rx_err_t err = internal_check_error();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
   if (channel.value >= k_mock_riic_max_channels) {
     return k_rx_err_invalid_arg;
   }
-  (void)device_addr;
+
   g_mock_riic.channels[channel.value].initialized = true;
   return k_rx_ok;
 }
 
-rx_err_t riic_peripheral_read(riic_channel_t channel,
-                               uint8_t*       data,
-                               uint16_t       max_length,
-                               uint16_t*      bytes_read)
+/**
+ * @brief Mock implementation of riic_peripheral_read()
+ *
+ * @details
+ * Returns pre-loaded RX data set by mock_riic_set_rx_data() as if the I2C
+ * controller (RPi5) had written bytes to this peripheral. After the data is
+ * consumed, ch->rx_length is reset to k_mock_riic_length_cleared so
+ * subsequent calls return bytes_read=0 (no new data). Error injection and
+ * simulated error conditions are applied before any data copy.
+ *
+ * @param[in]  channel     RIIC channel wrapper (channel.value range: 0 to
+ *                         k_mock_riic_max_channels - 1)
+ * @param[out] data        Buffer to receive copied bytes (must not be nullptr)
+ * @param[in]  max_length  Maximum bytes to copy (must be >= 1)
+ * @param[out] bytes_read  Actual bytes copied (may be 0 if no pre-loaded data)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok               Data (possibly 0 bytes) placed in @p data
+ * @retval k_rx_err_null_ptr     data or bytes_read is nullptr
+ * @retval k_rx_err_invalid_arg  channel.value >= k_mock_riic_max_channels
+ *                               or max_length == 0
+ * @retval k_rx_err_invalid_state Channel not initialized via
+ *                                riic_init_peripheral() mock
+ * @retval Other                 Injected error from mock_riic_set_next_error()
+ *                               or simulated error (timeout, NACK, busy)
+ *
+ * @pre  channel.value < k_mock_riic_max_channels
+ * @pre  channel must be initialized via riic_init_peripheral() mock first
+ * @post On k_rx_ok: *bytes_read contains bytes copied (0 to max_length)
+ * @post On k_rx_ok: g_mock_riic.channels[channel.value].rx_length reset to
+ *       k_mock_riic_length_cleared (consumed)
+ *
+ * @note Not thread-safe; must be called from a single test thread
+ * @note Call mock_riic_set_rx_data() before this function to pre-load data
+ * @see  mock_riic_set_rx_data()   Load data for the mock to return
+ * @see  riic_peripheral_read()    Real HAL function this mock replaces
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t riic_peripheral_read(const riic_channel_t channel,
+                              uint8_t*             data,
+                              const uint16_t       max_length,
+                              uint16_t*            bytes_read)
 {
+  internal_record_call(k_mock_riic_call_read, channel.value, 0, 0, max_length);
+
+  rx_err_t err = internal_check_error();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
   if (data == nullptr || bytes_read == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -497,18 +596,68 @@ rx_err_t riic_peripheral_read(riic_channel_t channel,
     return k_rx_err_invalid_state;
   }
 
-  mock_riic_channel_state_t* ch = &g_mock_riic.channels[channel.value];
-  uint16_t to_read = (max_length < ch->rx_length) ? max_length : ch->rx_length;
+  err = internal_check_simulated_errors();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  mock_riic_channel_state_t* ch      = &g_mock_riic.channels[channel.value];
+  uint16_t                   to_read = (max_length < ch->rx_length) ? max_length : ch->rx_length;
   if (to_read > 0) {
     memcpy(data, ch->rx_buffer, to_read);
-    ch->rx_length = 0;
+    ch->rx_length = k_mock_riic_length_cleared;
   }
   *bytes_read = to_read;
   return k_rx_ok;
 }
 
-rx_err_t riic_peripheral_write(riic_channel_t channel, const uint8_t* data, uint16_t length)
+/**
+ * @brief Mock implementation of riic_peripheral_write()
+ *
+ * @details
+ * Records data bytes that the peripheral would transmit to the I2C controller.
+ * Copies up to k_mock_riic_buffer_size bytes from @p data into the channel's
+ * tx_buffer and updates tx_length. Also records the call in the global call
+ * history via internal_record_call() so tests can inspect the call count and
+ * arguments. Error injection (internal_check_error()) and simulated error
+ * conditions (internal_check_simulated_errors()) are applied before copying.
+ *
+ * @param[in] channel RIIC channel wrapper (channel.value range: 0-2)
+ * @param[in] data    Buffer containing bytes to write (must not be nullptr)
+ * @param[in] length  Number of bytes in @p data (must be >= 1)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok         Data stored in tx_buffer; tx_length updated
+ * @retval k_rx_err_null_ptr  @p data is nullptr
+ * @retval k_rx_err_invalid_arg  channel.value >= k_mock_riic_max_channels or length == 0
+ * @retval k_rx_err_invalid_state  Channel not initialized via riic_init_peripheral() mock
+ * @retval Other  Injected error from mock_riic_set_next_error()
+ *
+ * @pre channel.value < k_mock_riic_max_channels
+ * @pre data != nullptr with at least length valid bytes
+ * @pre length >= 1
+ * @post On k_rx_ok: g_mock_riic.channels[channel.value].tx_buffer[0..to_write-1]
+ *       contain a copy of data[0..to_write-1]
+ * @post On k_rx_ok: g_mock_riic.channels[channel.value].tx_length == to_write
+ *
+ * @note Not thread-safe; must be called from a single test thread
+ * @note Truncates silently to k_mock_riic_buffer_size bytes if length exceeds it
+ *
+ * @see riic_init_peripheral()   Initialize channel before calling this mock
+ * @see mock_riic_get_tx_data()  Retrieve stored TX bytes from tests
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t
+riic_peripheral_write(const riic_channel_t channel, const uint8_t* data, const uint16_t length)
 {
+  internal_record_call(k_mock_riic_call_write, channel.value, 0, length, 0);
+
+  rx_err_t err = internal_check_error();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
   if (data == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -522,8 +671,13 @@ rx_err_t riic_peripheral_write(riic_channel_t channel, const uint8_t* data, uint
     return k_rx_err_invalid_state;
   }
 
-  mock_riic_channel_state_t* ch        = &g_mock_riic.channels[channel.value];
-  uint16_t                   to_write  = (length < k_mock_riic_buffer_size) ? length : k_mock_riic_buffer_size;
+  err = internal_check_simulated_errors();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  mock_riic_channel_state_t* ch = &g_mock_riic.channels[channel.value];
+  uint16_t to_write = (length < k_mock_riic_buffer_size) ? length : k_mock_riic_buffer_size;
   memcpy(ch->tx_buffer, data, to_write);
   ch->tx_length = to_write;
   return k_rx_ok;

@@ -1223,22 +1223,28 @@ typedef enum : uint8_t {
  *
  * @details
  * Identifies which physical communication channel is currently selected for
- * telemetry broadcast. The selection algorithm prefers USB CDC when it is
- * ready (development convenience and higher bandwidth) and falls back to SPI
- * when USB is unavailable (production RPi5 connection).
+ * telemetry broadcast. The selection algorithm uses symmetric routing: it
+ * reads shared_data_get_active_channel() to return the same channel on which
+ * the most recent command was received.
  *
  * @par Channel Selection Priority:
- * 1. k_telemetry_transport_usb  - USB CDC connected and ready (preferred)
- * 2. k_telemetry_transport_spi  - SPI available as fallback when USB absent
- * 3. k_telemetry_transport_none - Neither channel ready (message dropped)
+ * 1. k_telemetry_transport_usb  - USB CDC was the last command channel (or no command yet)
+ * 2. k_telemetry_transport_spi  - SPI was the last command channel
+ * 3. k_telemetry_transport_i2c  - I2C was the last command channel
+ * 4. k_telemetry_transport_uart - UART was the last command channel
+ * 5. k_telemetry_transport_none - Out-of-range channel value (programming error)
  *
  * @startuml
  * [*] --> SELECT
- * SELECT --> USB : USB CDC ready\n(rx_comm_manager_channel_ready == true)
- * SELECT --> SPI : USB not ready\nSPI available
- * SELECT --> NONE : Both unavailable
- * USB --> SELECT : Next cycle
- * SPI --> SELECT : Next cycle
+ * SELECT --> USB  : active_channel == k_comm_channel_usb\n(or no command received yet)
+ * SELECT --> SPI  : active_channel == k_comm_channel_spi
+ * SELECT --> I2C  : active_channel == k_comm_channel_i2c
+ * SELECT --> UART : active_channel == k_comm_channel_uart
+ * SELECT --> NONE : active_channel out-of-range (fail-safe maps to USB)
+ * USB  --> SELECT : Next cycle
+ * SPI  --> SELECT : Next cycle
+ * I2C  --> SELECT : Next cycle
+ * UART --> SELECT : Next cycle
  * NONE --> SELECT : Next cycle
  * @enduml
  *
@@ -1664,9 +1670,11 @@ static void internal_telem_task_entry(ULONG input)
  * 1. Call shared_data_get_active_channel() to read the last command channel
  * 2. If the raw value is >= k_comm_channel_count (out-of-range), return
  *    k_telemetry_transport_usb as a fail-safe
- * 3. If the channel is k_comm_channel_spi, return k_telemetry_transport_spi
- * 4. Otherwise (k_comm_channel_usb or no command received yet), return
- *    k_telemetry_transport_usb
+ * 3. Map the channel value to the corresponding telemetry_transport_t:
+ *    - k_comm_channel_usb  -> k_telemetry_transport_usb
+ *    - k_comm_channel_spi  -> k_telemetry_transport_spi
+ *    - k_comm_channel_i2c  -> k_telemetry_transport_i2c
+ *    - k_comm_channel_uart -> k_telemetry_transport_uart
  *
  * Before any command has been received, shared_data_get_active_channel()
  * returns k_comm_channel_usb (the USB default), preserving the existing
@@ -1679,14 +1687,15 @@ static void internal_telem_task_entry(ULONG input)
  *                                    an out-of-range/unknown rx_comm_channel_t
  *                                    (fail-safe)
  * @retval k_telemetry_transport_spi  SPI was the last command channel
+ * @retval k_telemetry_transport_i2c  I2C was the last command channel
+ * @retval k_telemetry_transport_uart UART was the last command channel
  *
  * @pre shared_data_init() has been called
  * @pre shared_data_get_active_channel() may return any uint8_t value,
  *      including an invalid or unknown rx_comm_channel_t; this function
  *      handles all cases safely
- * @post Return value is always k_telemetry_transport_usb or
- *       k_telemetry_transport_spi, even when the raw channel value is
- *       out-of-range
+ * @post Return value is a valid telemetry_transport_t (USB/SPI/I2C/UART)
+ *       for all possible inputs including out-of-range channel values
  * @post Shared data is not modified (read-only access)
  *
  * @note Called every 50 ms from internal_build_and_send_telemetry() (20 Hz)
@@ -1702,9 +1711,11 @@ static void internal_telem_task_entry(ULONG input)
  * @see internal_build_and_send_telemetry() Caller - maps transport to channel
  * @see shared_data_get_active_channel() Active channel reader (returns uint8_t)
  * @see shared_data_update_active_channel() Written by comm task on each frame
- * @see rx_comm_channel_t Channel enum (k_comm_channel_usb, k_comm_channel_spi)
+ * @see rx_comm_channel_t Channel enum (USB, SPI, I2C, UART)
  * @see k_telemetry_transport_usb USB transport constant
  * @see k_telemetry_transport_spi SPI transport constant
+ * @see k_telemetry_transport_i2c I2C transport constant
+ * @see k_telemetry_transport_uart UART transport constant
  *
  * @since Version 1.0.0
  *
@@ -1713,8 +1724,7 @@ static void internal_telem_task_entry(ULONG input)
  * - Precondition 2: shared_data_get_active_channel() may return any uint8_t,
  *                   including invalid rx_comm_channel_t values
  * - Postcondition 1: Returns a valid telemetry_transport_t value
- * - Postcondition 2: Return value is k_telemetry_transport_usb or
- *                    k_telemetry_transport_spi for all possible inputs
+ * - Postcondition 2: Out-of-range input always maps to k_telemetry_transport_usb
  */
 
 /**
@@ -1733,7 +1743,8 @@ static void internal_telem_task_entry(ULONG input)
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_telem_supported_channel_count = 4U, /**< USB + SPI + I2C + UART; must match k_comm_channel_count */
+  k_telem_supported_channel_count =
+    4U, /**< USB + SPI + I2C + UART; must match k_comm_channel_count */
 } telem_channel_contract_t;
 
 static telemetry_transport_t internal_select_transport(void)
@@ -2291,10 +2302,12 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  * 2. **internal_collect_state()** - populate motor and temperature fields
  * 3. **internal_encode_telemetry()** - nanopb encode to s_telem_buffer
  * 4. **internal_select_transport()** - symmetric routing via
- *    shared_data_get_active_channel(); returns k_comm_channel_usb or
- *    k_comm_channel_spi based on the last received command channel
+ *    shared_data_get_active_channel(); maps to USB/SPI/I2C/UART transport
+ *    based on the last received command channel
  * 5. **Assert HOST_IRQ LOW** (P67, active-low) only for SPI sends, to notify
- *    the RPi5 SPI peripheral that data is ready
+ *    the RPi5 SPI peripheral that data is ready. HOST_IRQ is NOT toggled for
+ *    USB, I2C, or UART sends because those channels do not use a data-ready
+ *    handshake signal (I2C/UART have their own framing; USB has endpoint polling)
  * 6. **internal_send_via_channel()** - transmit via comm manager
  * 7. **Deassert HOST_IRQ HIGH** (P67) only if it was asserted in step 5
  *
@@ -2318,7 +2331,7 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  * @pre Task created and running (telemetry_task_create() called)
  *
  * @post Telemetry message sent on the same physical link as the last received command
- *       (k_comm_channel_usb or k_comm_channel_spi)
+ *       (k_comm_channel_usb, k_comm_channel_spi, k_comm_channel_i2c, or k_comm_channel_uart)
  * @post HOST_IRQ (P67) is HIGH (deasserted) on return; toggled only for SPI sends
  * @post s_sequence incremented exactly once per call
  * @post s_telem_buffer overwritten with latest encoded protobuf

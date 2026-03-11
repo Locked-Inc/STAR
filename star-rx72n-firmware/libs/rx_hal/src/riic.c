@@ -2017,21 +2017,68 @@ typedef enum : uint8_t {
  * @brief Size and timeout constants for peripheral mode operations
  *
  * @details
- * Buffer size limits and timeout values for peripheral mode read/write.
- * Values exceed uint8_t range so uint16_t underlying type is used.
+ * Timeout values for peripheral mode read/write.
+ * k_riic_peripheral_transfer_limit is declared in hardware.h (public API) so
+ * callers can statically size their buffers; only the timeout lives here.
  *
  * @see riic_peripheral_read()
  * @see riic_peripheral_write()
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_riic_peripheral_read_limit = 256,  /**< Maximum bytes per peripheral read call */
-  k_riic_periph_timeout_us     = 1000, /**< 1ms timeout for TDRE poll in write */
+  k_riic_periph_timeout_us = 1000, /**< 1ms timeout for TDRE poll in write */
 } riic_peripheral_size_constants_t;
 
-rx_err_t riic_init_peripheral(riic_channel_t channel, i2c_device_addr_t device_addr)
+/**
+ * @brief Initialize RIIC channel in peripheral (device) mode
+ *
+ * @details
+ * Configures the RIIC peripheral to act as an I2C peripheral device, responding
+ * to a fixed 7-bit I2C address issued by a controller (RPi5). Sets up the slave
+ * address register (SARL0/SARU0), enables address match detection (ICSER.SAR0E),
+ * and leaves the module in peripheral mode (MS=0 in ICMR1).
+ *
+ * ## Initialization Sequence
+ *
+ * 1. Validate channel number and device address
+ * 2. Enable RIIC module clock (clear MSTPCRB bit)
+ * 3. Reset RIIC internal state (IICRST)
+ * 4. Configure peripheral address in SARL0/SARU0
+ * 5. Enable SAR0 address match detection (ICSER.SAR0E)
+ * 6. Configure peripheral mode (MS=0), 7-bit addressing
+ * 7. Enable I2C bus interface (ICE)
+ * 8. Mark channel as initialized
+ *
+ * @param[in] channel RIIC channel wrapper (channel.value range: 0-2)
+ * @param[in] device_addr 7-bit I2C address this peripheral responds to
+ *                        (valid range: 0x00 to 0x7F, i.e., 0 to 127)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Channel initialized in peripheral mode
+ * @retval k_rx_err_invalid_arg Channel value out of range (>= 3) or
+ *                              device_addr.value > k_riic_addr_max_7bit
+ *
+ * @pre channel.value must be in range [0, k_riic_max_channels - 1]
+ * @pre device_addr.value must be <= k_riic_addr_max_7bit (0x7F)
+ * @post RIIC peripheral responds to device_addr on the I2C bus
+ * @post s_riic_channel_initialized[channel.value] == true
+ *
+ * @note Only available on RX72N target (guarded by __RX__ preprocessor)
+ * @note Not thread-safe during initialization
+ *
+ * @see riic_peripheral_read() Read data written by I2C controller
+ * @see riic_peripheral_write() Provide data to I2C controller read
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t riic_init_peripheral(const riic_channel_t channel, const i2c_device_addr_t device_addr)
 {
   if (channel.value >= k_riic_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (device_addr.value > k_riic_addr_max_7bit) {
+    rx_log_error(s_tag, "Invalid peripheral device address");
     return k_rx_err_invalid_arg;
   }
 
@@ -2082,10 +2129,57 @@ rx_err_t riic_init_peripheral(riic_channel_t channel, i2c_device_addr_t device_a
   return k_rx_ok;
 }
 
-rx_err_t riic_peripheral_read(riic_channel_t channel,
-                               uint8_t*       data,
-                               uint16_t       max_length,
-                               uint16_t*      bytes_read)
+/**
+ * @brief Read bytes written by the I2C controller to this peripheral
+ *
+ * @details
+ * Polls ICSR2.RDRF (Receive Data Register Full) to detect incoming bytes from
+ * the I2C controller (RPi5). Reads up to max_length bytes into the caller-supplied
+ * buffer. Returns immediately with bytes_read == 0 if no data is currently available
+ * (non-blocking). Each byte read clears the RDRF flag automatically on the RX72N.
+ *
+ * ## Read Algorithm
+ *
+ * 1. Validate pointers, channel, and max_length
+ * 2. Clear *bytes_read to 0
+ * 3. Poll ICSR2.RDRF; if set, read ICDRR into data[*bytes_read], increment count
+ * 4. Repeat until RDRF clear or max_length reached
+ * 5. Return k_rx_ok with actual count in *bytes_read
+ *
+ * @param[in] channel RIIC channel wrapper (channel.value range: 0-2)
+ * @param[out] data Buffer to store received bytes (must not be nullptr,
+ *                  must have space for at least max_length bytes)
+ * @param[in] max_length Maximum number of bytes to read
+ *                       (valid range: 1 to k_riic_peripheral_transfer_limit)
+ * @param[out] bytes_read Actual number of bytes read (may be 0 if no data available;
+ *                        must not be nullptr)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Read completed successfully (check bytes_read for count)
+ * @retval k_rx_err_null_ptr data or bytes_read is nullptr
+ * @retval k_rx_err_invalid_arg Channel value out of range, max_length == 0,
+ *                              or max_length > k_riic_peripheral_transfer_limit
+ * @retval k_rx_err_invalid_state Channel not initialized via riic_init_peripheral()
+ *
+ * @pre channel must be initialized via riic_init_peripheral()
+ * @pre data != nullptr with at least max_length bytes of capacity
+ * @pre max_length >= 1 && max_length <= k_riic_peripheral_transfer_limit
+ * @post *bytes_read contains the number of bytes placed in data (0 to max_length)
+ * @post data[0..(*bytes_read)-1] contain valid received bytes on k_rx_ok
+ *
+ * @note Non-blocking: returns immediately with available data (bytes_read may be 0)
+ * @note Only available on RX72N target (guarded by __RX__ preprocessor)
+ * @note Not thread-safe, caller must provide external synchronization
+ *
+ * @see riic_init_peripheral() Initialize channel first
+ * @see riic_peripheral_write() Provide read data to controller
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t riic_peripheral_read(const riic_channel_t channel,
+                              uint8_t*             data,
+                              const uint16_t       max_length,
+                              uint16_t*            bytes_read)
 {
   if (data == nullptr || bytes_read == nullptr) {
     return k_rx_err_null_ptr;
@@ -2096,6 +2190,11 @@ rx_err_t riic_peripheral_read(riic_channel_t channel,
   }
 
   if (max_length == 0) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (max_length > k_riic_peripheral_transfer_limit) {
+    rx_log_error(s_tag, "Peripheral read max_length exceeds limit");
     return k_rx_err_invalid_arg;
   }
 
@@ -2122,7 +2221,51 @@ rx_err_t riic_peripheral_read(riic_channel_t channel,
   return k_rx_ok;
 }
 
-rx_err_t riic_peripheral_write(riic_channel_t channel, const uint8_t* data, uint16_t length)
+/**
+ * @brief Write bytes for the I2C controller to read from this peripheral
+ *
+ * @details
+ * Loads data bytes into the RIIC transmit data register (ICDRT) one at a time.
+ * For each byte, polls ICSR2.TDRE (Transmit Data Register Empty) until the
+ * register is available or a 1 ms timeout expires, then writes the byte.
+ * The controller clock-shifts bytes out automatically after each write.
+ *
+ * ## Write Algorithm
+ *
+ * 1. Validate pointer, channel, and length
+ * 2. For each byte in data[0..length-1]:
+ *    a. Poll ICSR2.TDRE with k_riic_periph_timeout_us countdown
+ *    b. If timeout, return k_rx_err_timeout
+ *    c. Write data[i] to ICDRT
+ * 3. Return k_rx_ok
+ *
+ * @param[in] channel RIIC channel wrapper (channel.value range: 0-2)
+ * @param[in] data Pointer to buffer containing bytes to write (must not be nullptr)
+ * @param[in] length Number of bytes to write (valid range: 1 to UINT16_MAX)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All bytes written successfully
+ * @retval k_rx_err_null_ptr data is nullptr
+ * @retval k_rx_err_invalid_arg Channel value out of range or length == 0
+ * @retval k_rx_err_invalid_state Channel not initialized via riic_init_peripheral()
+ * @retval k_rx_err_timeout TDRE not set within k_riic_periph_timeout_us iterations
+ *
+ * @pre channel must be initialized via riic_init_peripheral()
+ * @pre data != nullptr with at least length valid bytes
+ * @pre length >= 1
+ * @post On k_rx_ok: all length bytes have been written to ICDRT
+ * @post On k_rx_err_timeout: partial write may have occurred (i bytes written)
+ *
+ * @note Only available on RX72N target (guarded by __RX__ preprocessor)
+ * @note Not thread-safe, caller must provide external synchronization
+ *
+ * @see riic_init_peripheral() Initialize channel first
+ * @see riic_peripheral_read() Receive data from controller
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t
+riic_peripheral_write(const riic_channel_t channel, const uint8_t* data, const uint16_t length)
 {
   if (data == nullptr) {
     return k_rx_err_null_ptr;

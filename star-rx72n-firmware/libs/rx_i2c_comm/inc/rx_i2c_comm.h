@@ -99,15 +99,15 @@
  * - rx_session.h: Cross-transport sequence continuity
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: [OK] No goto, setjmp, or recursion
- * - Rule 2: [OK] Loop bounds via k_i2c_comm_max_receive_iterations
- * - Rule 3: [OK] No dynamic memory (static buffers in handle)
- * - Rule 4: [OK] Functions are concise
- * - Rule 5: [OK] Input validation on all public functions
- * - Rule 6: [OK] Variables declared at smallest scope
- * - Rule 7: [OK] All return values checked
- * - Rule 8: [OK] Constants use C23 typed enums
- * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [PASS] No goto, setjmp, or recursion
+ * - Rule 2: [PASS] Loop bounds via k_i2c_comm_max_receive_iterations
+ * - Rule 3: [PASS] No dynamic memory (static buffers in handle)
+ * - Rule 4: [PASS] Functions are concise
+ * - Rule 5: [PASS] Minimum 2 pre/post conditions per public function
+ * - Rule 6: [PASS] Variables declared at smallest scope
+ * - Rule 7: [PASS] All return values checked
+ * - Rule 8: [PASS] Constants use C23 typed enums
+ * - Rule 10: [PASS] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S (SRP):** I2C communication only, frame details in rx_frame
@@ -395,8 +395,10 @@ typedef struct {
  *
  * @pre handle points to allocated rx_i2c_comm_handle_t
  * @pre config->session points to initialized rx_session_state_t
+ * @pre config->device_addr.value must be in range [0x08, 0x77]
  * @post handle->initialized == 1
  * @post RIIC peripheral will respond to config->device_addr on I2C bus
+ * @post handle->encoder and handle->decoder are in their initial reset state
  *
  * @note Not thread-safe; call from single initialization context
  * @note Only initializes software handle; RIIC hardware configured via riic_init_peripheral()
@@ -408,7 +410,7 @@ typedef struct {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_i2c_comm_init(rx_i2c_comm_handle_t*       handle,
-                                         const rx_i2c_comm_config_t* config);
+                                        const rx_i2c_comm_config_t* config);
 
 /**
  * @brief Deinitialize I2C communication handle
@@ -421,7 +423,9 @@ typedef struct {
  * @return k_rx_ok on success, k_rx_err_invalid_arg if handle is nullptr
  *
  * @pre handle must not be nullptr
+ * @pre handle must have been initialized via rx_i2c_comm_init()
  * @post handle->initialized == 0
+ * @post Further calls to rx_i2c_comm_send/receive will return k_rx_err_invalid_state
  *
  * @since Version 1.0.0
  */
@@ -464,10 +468,10 @@ typedef struct {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_i2c_comm_send(rx_i2c_comm_handle_t* handle,
-                                         rx_frame_type_t        type,
-                                         uint8_t                flags,
-                                         const uint8_t*         payload,
-                                         uint32_t               payload_len);
+                                        rx_frame_type_t       type,
+                                        uint8_t               flags,
+                                        const uint8_t*        payload,
+                                        uint32_t              payload_len);
 
 /* =============================================================================
  * Receive API
@@ -498,6 +502,7 @@ typedef struct {
  * @pre handle initialized via rx_i2c_comm_init()
  * @pre frame points to valid rx_frame_t
  * @post On success: frame contains decoded data, session RX sequence updated
+ * @post On k_rx_err_no_data: handle internal state unchanged, ready for next call
  *
  * @note Loop iterations bounded by k_i2c_comm_max_receive_iterations
  * @note Thread safety: caller must provide external synchronization
