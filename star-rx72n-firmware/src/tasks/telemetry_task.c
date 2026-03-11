@@ -1644,21 +1644,31 @@ static void internal_telem_task_entry(ULONG input)
  * telemetry replies travel on the same physical link as incoming commands:
  *
  * 1. Call shared_data_get_active_channel() to read the last command channel
- * 2. If the channel is k_comm_channel_spi, return k_telemetry_transport_spi
- * 3. Otherwise (USB or no command received yet), return k_telemetry_transport_usb
+ * 2. If the raw value is >= k_comm_channel_count (out-of-range), return
+ *    k_telemetry_transport_usb as a fail-safe
+ * 3. If the channel is k_comm_channel_spi, return k_telemetry_transport_spi
+ * 4. Otherwise (k_comm_channel_usb or no command received yet), return
+ *    k_telemetry_transport_usb
  *
  * Before any command has been received, shared_data_get_active_channel()
  * returns k_comm_channel_usb (the USB default), preserving the existing
  * USB-preferred startup behaviour.
  *
  * @return telemetry_transport_t Selected transport
- * @retval k_telemetry_transport_usb  USB was the last command channel, or no
- *                                    command has been received yet
+ * @retval k_telemetry_transport_usb  USB was the last command channel, no
+ *                                    command has been received yet, or
+ *                                    shared_data_get_active_channel() returned
+ *                                    an out-of-range/unknown rx_comm_channel_t
+ *                                    (fail-safe)
  * @retval k_telemetry_transport_spi  SPI was the last command channel
  *
  * @pre shared_data_init() has been called
- * @pre shared_data_get_active_channel() returns a valid rx_comm_channel_t
- * @post Return value is k_telemetry_transport_usb or k_telemetry_transport_spi
+ * @pre shared_data_get_active_channel() may return any uint8_t value,
+ *      including an invalid or unknown rx_comm_channel_t; this function
+ *      handles all cases safely
+ * @post Return value is always k_telemetry_transport_usb or
+ *       k_telemetry_transport_spi, even when the raw channel value is
+ *       out-of-range
  * @post Shared data is not modified (read-only access)
  *
  * @note Called every 50 ms from internal_build_and_send_telemetry() (20 Hz)
@@ -1666,25 +1676,55 @@ static void internal_telem_task_entry(ULONG input)
  *       with TX_WAIT_FOREVER and holds it for ~2 us; callers must not assume
  *       lock-free or zero-latency timing
  * @note Thread-safe: shared_data_get_active_channel() is motor_mutex-protected
+ * @note Symmetric routing: telemetry replies are sent on the same physical
+ *       link as the most recently received command; out-of-range channel
+ *       values are intentionally mapped to k_telemetry_transport_usb as the
+ *       safe default
  *
  * @see internal_build_and_send_telemetry() Caller - maps transport to channel
- * @see shared_data_get_active_channel() Active channel reader
+ * @see shared_data_get_active_channel() Active channel reader (returns uint8_t)
  * @see shared_data_update_active_channel() Written by comm task on each frame
+ * @see rx_comm_channel_t Channel enum (k_comm_channel_usb, k_comm_channel_spi)
+ * @see k_telemetry_transport_usb USB transport constant
+ * @see k_telemetry_transport_spi SPI transport constant
  *
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Rule 5 Compliance:
  * - Precondition 1: shared_data_init() has been called
- * - Precondition 2: shared_data_get_active_channel() returns a valid rx_comm_channel_t
+ * - Precondition 2: shared_data_get_active_channel() may return any uint8_t,
+ *                   including invalid rx_comm_channel_t values
  * - Postcondition 1: Returns a valid telemetry_transport_t value
- * - Postcondition 2: Return value is k_telemetry_transport_usb or k_telemetry_transport_spi
+ * - Postcondition 2: Return value is k_telemetry_transport_usb or
+ *                    k_telemetry_transport_spi for all possible inputs
  */
+
+/**
+ * @enum telem_channel_contract_t
+ * @brief Compile-time contract: number of rx_comm_channel_t values this
+ *        function explicitly handles
+ *
+ * @details
+ * Used in the static_assert inside internal_select_transport() to ensure the
+ * switch statement is updated whenever a new channel is added to
+ * rx_comm_channel_t.  Must equal k_comm_channel_count.
+ *
+ * @see internal_select_transport() Consumer of this constant
+ * @see k_comm_channel_count Total channel count in rx_comm_channel_t
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_telem_supported_channel_count = 2U, /**< USB + SPI; must match k_comm_channel_count */
+} telem_channel_contract_t;
+
 static telemetry_transport_t internal_select_transport(void)
 {
-  /* Compile-time guard: this switch covers exactly two channels.  If a new
-   * channel is ever added to rx_comm_channel_t, update k_comm_channel_count
-   * and add a case below so the new channel is not silently routed to USB. */
-  static_assert(k_comm_channel_count == 2,
+  /* Compile-time guard: this switch covers exactly k_telem_supported_channel_count
+   * channels.  If a new channel is ever added to rx_comm_channel_t, update
+   * k_comm_channel_count, increment k_telem_supported_channel_count, and add a
+   * case below so the new channel is not silently routed to USB. */
+  static_assert((uint8_t)k_comm_channel_count == (uint8_t)k_telem_supported_channel_count,
                 "internal_select_transport: add a case for every new rx_comm_channel_t value");
 
   const uint8_t raw_ch = shared_data_get_active_channel();
