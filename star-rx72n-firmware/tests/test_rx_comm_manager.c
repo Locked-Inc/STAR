@@ -1,12 +1,12 @@
 /**
  * @file test_rx_comm_manager.c
- * @brief Unit Tests for Unified Communication Channel Manager (USB + SPI Multiplexing)
+ * @brief Unit Tests for Unified Communication Channel Manager (USB + SPI + I2C + UART Multiplexing)
  *
  * @details
  * **Comprehensive Test Suite for Multi-Channel Communication Manager**
  *
  * This test suite validates the rx_comm_manager layer - a unified abstraction that
- * multiplexes multiple communication channels (USB CDC and SPI) into a single API.
+ * multiplexes multiple communication channels (USB CDC, SPI, I2C, and UART) into a single API.
  * The manager enables runtime channel selection, automatic fallback, and consistent
  * error handling across heterogeneous transports for RX72N <-> RPi5 communication.
  *
@@ -50,6 +50,8 @@
  * The manager supports multiple physical transports with identical API:
  * - **k_comm_channel_usb:** USB CDC (Port 0 = Protocol, Port 1 = Decoded debug)
  * - **k_comm_channel_spi:** SPI with hardware handshake (RPi5 <-> RX72N)
+ * - **k_comm_channel_i2c:** I2C peripheral mode (RIIC0, RX72N as peripheral, RPi5 as controller)
+ * - **k_comm_channel_uart:** UART (SCI9, full-duplex serial link to RPi5)
  *
  * Applications can switch channels at runtime via `rx_comm_manager_set_channel()`.
  *
@@ -210,12 +212,14 @@
  * @brief Test constants
  */
 typedef enum : uint16_t {
-  k_test_payload_size            = 10,   /**< Test payload size */
-  k_expected_channel_usb_value   = 0,    /**< Expected k_comm_channel_usb value */
-  k_expected_channel_spi_value   = 1,    /**< Expected k_comm_channel_spi value */
-  k_expected_channel_count_value = 2,    /**< Expected k_comm_channel_count value */
-  k_invalid_channel_sentinel     = 99,   /**< Invalid channel ID for negative testing */
-  k_garbage_fill_value           = 0xFF, /**< Fill value to simulate garbage data */
+  k_test_payload_size             = 10,  /**< Test payload size */
+  k_expected_channel_usb_value    = 0,   /**< Expected k_comm_channel_usb value */
+  k_expected_channel_spi_value    = 1,   /**< Expected k_comm_channel_spi value */
+  k_expected_channel_i2c_value    = 2,   /**< Expected k_comm_channel_i2c value */
+  k_expected_channel_uart_value   = 3,   /**< Expected k_comm_channel_uart value */
+  k_expected_channel_count_value  = 4,   /**< Expected k_comm_channel_count value */
+  k_invalid_channel_sentinel      = 99,  /**< Invalid channel ID for negative testing */
+  k_garbage_fill_value            = 0xFF, /**< Fill value to simulate garbage data */
 } test_constants_t;
 
 /* =============================================================================
@@ -696,6 +700,38 @@ void test_channel_ready_spi_not_configured(void)
 }
 
 /**
+ * @brief Test channel_ready for I2C when not configured
+ *
+ * Expected: Success with ready=false (handle is nullptr)
+ */
+void test_channel_ready_i2c_not_configured(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_init(&s_manager, nullptr));
+  bool ready;
+
+  /* I2C handle is nullptr, so channel is not ready */
+  rx_err_t err = rx_comm_manager_channel_ready(&s_manager, k_comm_channel_i2c, &ready);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(ready);
+}
+
+/**
+ * @brief Test channel_ready for UART when not configured
+ *
+ * Expected: Success with ready=false (handle is nullptr)
+ */
+void test_channel_ready_uart_not_configured(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_init(&s_manager, nullptr));
+  bool ready;
+
+  /* UART handle is nullptr, so channel is not ready */
+  rx_err_t err = rx_comm_manager_channel_ready(&s_manager, k_comm_channel_uart, &ready);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(ready);
+}
+
+/**
  * @brief Test channel_ready with invalid channel ID
  *
  * Expected: Returns k_rx_err_invalid_arg with ready=false
@@ -740,6 +776,28 @@ void test_channel_name_spi(void)
 }
 
 /**
+ * @brief Test channel name for I2C channel
+ *
+ * Expected: Returns "I2C"
+ */
+void test_channel_name_i2c(void)
+{
+  const char* name = rx_comm_manager_channel_name(k_comm_channel_i2c);
+  TEST_ASSERT_EQUAL_STRING("I2C", name);
+}
+
+/**
+ * @brief Test channel name for UART channel
+ *
+ * Expected: Returns "UART"
+ */
+void test_channel_name_uart(void)
+{
+  const char* name = rx_comm_manager_channel_name(k_comm_channel_uart);
+  TEST_ASSERT_EQUAL_STRING("UART", name);
+}
+
+/**
  * @brief Test channel name for invalid channel
  *
  * Expected: Returns "UNKNOWN"
@@ -758,12 +816,14 @@ void test_channel_name_invalid(void)
 /**
  * @brief Test channel enum values match expected constants
  *
- * Expected: USB=0, SPI=1, COUNT=2 (for ABI stability verification)
+ * Expected: USB=0, SPI=1, I2C=2, UART=3, COUNT=4 (for ABI stability verification)
  */
 void test_channel_enum_values(void)
 {
   TEST_ASSERT_EQUAL(k_expected_channel_usb_value, k_comm_channel_usb);
   TEST_ASSERT_EQUAL(k_expected_channel_spi_value, k_comm_channel_spi);
+  TEST_ASSERT_EQUAL(k_expected_channel_i2c_value, k_comm_channel_i2c);
+  TEST_ASSERT_EQUAL(k_expected_channel_uart_value, k_comm_channel_uart);
   TEST_ASSERT_EQUAL(k_expected_channel_count_value, k_comm_channel_count);
 }
 
@@ -813,11 +873,15 @@ int main(void)
   RUN_TEST(test_channel_ready_uninitialized);
   RUN_TEST(test_channel_ready_usb_not_configured);
   RUN_TEST(test_channel_ready_spi_not_configured);
+  RUN_TEST(test_channel_ready_i2c_not_configured);
+  RUN_TEST(test_channel_ready_uart_not_configured);
   RUN_TEST(test_channel_ready_invalid_channel);
 
   /* Channel name tests */
   RUN_TEST(test_channel_name_usb);
   RUN_TEST(test_channel_name_spi);
+  RUN_TEST(test_channel_name_i2c);
+  RUN_TEST(test_channel_name_uart);
   RUN_TEST(test_channel_name_invalid);
 
   /* Enum tests */

@@ -1268,13 +1268,31 @@ typedef enum : uint8_t {
   k_telemetry_transport_spi = 1,
 
   /**
-   * @brief No transport available (both USB and SPI unavailable)
+   * @brief I2C channel (RIIC0 peripheral mode)
    * @details
-   * Selected when neither channel is ready. Telemetry message is dropped
-   * for this cycle. The task continues running and will retry next cycle.
+   * Selected when the last command arrived via I2C channel.
+   * Maps to k_comm_channel_i2c in the comm manager.
    * @par Value: 2
    */
-  k_telemetry_transport_none = 2,
+  k_telemetry_transport_i2c = 2,
+
+  /**
+   * @brief UART channel (SCI9)
+   * @details
+   * Selected when the last command arrived via UART channel.
+   * Maps to k_comm_channel_uart in the comm manager.
+   * @par Value: 3
+   */
+  k_telemetry_transport_uart = 3,
+
+  /**
+   * @brief No transport available (all channels unavailable)
+   * @details
+   * Selected when no channel is ready. Telemetry message is dropped
+   * for this cycle. The task continues running and will retry next cycle.
+   * @par Value: 4
+   */
+  k_telemetry_transport_none = 4,
 } telemetry_transport_t;
 
 /* =============================================================================
@@ -1715,7 +1733,7 @@ static void internal_telem_task_entry(ULONG input)
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_telem_supported_channel_count = 2U, /**< USB + SPI; must match k_comm_channel_count */
+  k_telem_supported_channel_count = 4U, /**< USB + SPI + I2C + UART; must match k_comm_channel_count */
 } telem_channel_contract_t;
 
 static telemetry_transport_t internal_select_transport(void)
@@ -1737,6 +1755,10 @@ static telemetry_transport_t internal_select_transport(void)
       return k_telemetry_transport_spi;
     case k_comm_channel_usb:
       return k_telemetry_transport_usb;
+    case k_comm_channel_i2c:
+      return k_telemetry_transport_i2c;
+    case k_comm_channel_uart:
+      return k_telemetry_transport_uart;
     default:
       return k_telemetry_transport_usb; /* fail-safe for unhandled future values */
   }
@@ -2362,10 +2384,16 @@ static rx_err_t internal_build_and_send_telemetry(void)
     case k_telemetry_transport_spi:
       channel = k_comm_channel_spi;
       break;
+    case k_telemetry_transport_i2c:
+      channel = k_comm_channel_i2c;
+      break;
+    case k_telemetry_transport_uart:
+      channel = k_comm_channel_uart;
+      break;
     case k_telemetry_transport_none:
     default:
-      /* internal_select_transport() only returns USB or SPI; reaching here is a
-       * programming error. Assert to surface it in debug builds. */
+      /* internal_select_transport() only returns a valid transport; reaching here
+       * with none or unknown is a programming error. Assert in debug builds. */
       RX_ASSERT(false, "internal_select_transport() returned unexpected transport");
       return k_rx_err_invalid_state;
   }

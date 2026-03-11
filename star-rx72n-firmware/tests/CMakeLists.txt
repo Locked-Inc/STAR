@@ -35,8 +35,10 @@ function(apply_test_includes target)
         ${CMAKE_SOURCE_DIR}/../libs/rx_core/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_usb/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_usb_comm/inc
+        ${CMAKE_SOURCE_DIR}/../libs/rx_i2c_comm/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_spi_comm/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_spi_link/inc
+        ${CMAKE_SOURCE_DIR}/../libs/rx_uart_comm/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_frame_ascii/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_comm_manager/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_hcsr04/inc
@@ -192,6 +194,16 @@ set(RX_FRAME_ASCII_SRC
 # rx_session source
 set(RX_SESSION_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_session/src/rx_session.c
+)
+
+# rx_i2c_comm source
+set(RX_I2C_COMM_SRC
+    ${CMAKE_SOURCE_DIR}/../libs/rx_i2c_comm/src/rx_i2c_comm.c
+)
+
+# rx_uart_comm source
+set(RX_UART_COMM_SRC
+    ${CMAKE_SOURCE_DIR}/../libs/rx_uart_comm/src/rx_uart_comm.c
 )
 
 # rx_comm_manager source
@@ -675,8 +687,12 @@ add_executable(test_rx_comm_manager
     ${RX_SPI_LINK_SRC}
     ${RX_FEC_SRC}
     ${RX_HARQ_SRC}
+    ${RX_I2C_COMM_SRC}
+    ${RX_UART_COMM_SRC}
     ${MOCK_USB_SRC}
     ${MOCK_RSPI_SRC}
+    ${MOCK_UART_SRC}
+    ${CMAKE_SOURCE_DIR}/mocks/mock_riic_hal.c
     ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_comm_manager)

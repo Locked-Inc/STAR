@@ -391,7 +391,7 @@ typedef enum : uint8_t {
   k_shared_channel_usb_default =
     0, /**< Fail-safe USB channel value (== k_comm_channel_usb); avoids rx_comm_manager.h include */
   k_shared_channel_count =
-    2, /**< Number of valid channels (== k_comm_channel_count); avoids rx_comm_manager.h include */
+    4, /**< Number of valid channels (== k_comm_channel_count); avoids rx_comm_manager.h include */
 } shared_data_internal_constants_t;
 
 /* Compile-time guard: k_shared_channel_count must stay equal to k_comm_channel_count.

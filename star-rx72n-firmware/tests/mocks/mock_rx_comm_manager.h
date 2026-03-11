@@ -77,7 +77,9 @@ typedef enum : uint8_t {
 typedef enum : uint8_t {
   k_comm_channel_usb   = 0, /**< USB CDC channel */
   k_comm_channel_spi   = 1, /**< SPI channel */
-  k_comm_channel_count = 2, /**< Total channel count */
+  k_comm_channel_i2c   = 2, /**< I2C peripheral channel (RIIC0) */
+  k_comm_channel_uart  = 3, /**< UART channel (SCI9) */
+  k_comm_channel_count = 4, /**< Total channel count */
 } rx_comm_channel_t;
 
 /**

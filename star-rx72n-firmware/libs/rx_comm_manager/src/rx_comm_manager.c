@@ -865,6 +865,98 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
   return err;
 }
 
+/**
+ * @brief Poll I2C channel for incoming frames (non-blocking)
+ *
+ * @details
+ * Attempts to receive one frame from I2C peripheral channel with zero timeout.
+ * If frame is successfully received, it is dispatched via internal_handle_frame().
+ *
+ * @param[in,out] mgr Communication manager handle
+ *
+ * @return rx_err_t Error code indicating poll result
+ * @retval k_rx_ok Frame received and handled successfully
+ * @retval k_rx_err_timeout No data available (expected, not an error)
+ * @retval k_rx_err_no_data No complete frame in receive buffer
+ * @retval k_rx_err_invalid_arg mgr is nullptr
+ *
+ * @pre mgr must be non-NULL
+ * @post On k_rx_ok: callback invoked for received frame
+ *
+ * @note Non-blocking - always returns immediately
+ *
+ * @see internal_handle_frame() Frame dispatch
+ * @see rx_i2c_comm_receive() I2C peripheral receive implementation
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_poll_i2c(rx_comm_manager_t* mgr)
+{
+  if (mgr == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (mgr->i2c_handle == nullptr) {
+    return k_rx_err_timeout;
+  }
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_i2c_comm_receive(mgr->i2c_handle, &frame, k_receive_timeout_ms);
+
+  if (err == k_rx_ok) {
+    internal_handle_frame(mgr, k_comm_channel_i2c, &frame);
+    return k_rx_ok;
+  }
+
+  return err;
+}
+
+/**
+ * @brief Poll UART channel for incoming frames (non-blocking)
+ *
+ * @details
+ * Attempts to receive one frame from UART (SCI9) channel with zero timeout.
+ * If frame is successfully received, it is dispatched via internal_handle_frame().
+ *
+ * @param[in,out] mgr Communication manager handle
+ *
+ * @return rx_err_t Error code indicating poll result
+ * @retval k_rx_ok Frame received and handled successfully
+ * @retval k_rx_err_timeout No data available (expected, not an error)
+ * @retval k_rx_err_no_data No complete frame in receive buffer
+ * @retval k_rx_err_invalid_arg mgr is nullptr
+ *
+ * @pre mgr must be non-NULL
+ * @post On k_rx_ok: callback invoked for received frame
+ *
+ * @note Non-blocking - always returns immediately
+ *
+ * @see internal_handle_frame() Frame dispatch
+ * @see rx_uart_comm_receive() UART receive implementation
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_poll_uart(rx_comm_manager_t* mgr)
+{
+  if (mgr == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (mgr->uart_handle == nullptr) {
+    return k_rx_err_timeout;
+  }
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_uart_comm_receive(mgr->uart_handle, &frame, k_receive_timeout_ms);
+
+  if (err == k_rx_ok) {
+    internal_handle_frame(mgr, k_comm_channel_uart, &frame);
+    return k_rx_ok;
+  }
+
+  return err;
+}
+
 /* =============================================================================
  * Event Queue Helpers
  * =============================================================================
@@ -1160,6 +1252,8 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
   if (cfg != nullptr) {
     mgr->usb_handle            = cfg->usb_handle;
     mgr->spi_handle            = cfg->spi_handle;
+    mgr->i2c_handle            = cfg->i2c_handle;
+    mgr->uart_handle           = cfg->uart_handle;
     mgr->spi_link              = cfg->spi_link;
     mgr->callback              = cfg->callback;
     mgr->callback_ctx          = cfg->callback_ctx;
@@ -1413,6 +1507,24 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
     return spi_err;
   }
 
+  /* Poll I2C channel */
+  rx_err_t i2c_err = internal_poll_i2c(mgr);
+  if (i2c_err == k_rx_ok) {
+    received = true;
+  } else if (i2c_err != k_rx_err_timeout && i2c_err != k_rx_err_no_data) {
+    rx_log_error_val(s_tag, "I2C poll error", i2c_err);
+    return i2c_err;
+  }
+
+  /* Poll UART channel */
+  rx_err_t uart_err = internal_poll_uart(mgr);
+  if (uart_err == k_rx_ok) {
+    received = true;
+  } else if (uart_err != k_rx_err_timeout && uart_err != k_rx_err_no_data) {
+    rx_log_error_val(s_tag, "UART poll error", uart_err);
+    return uart_err;
+  }
+
   /* Process event queue: send one queued event per poll cycle */
   internal_process_event_queue(mgr);
 
@@ -1596,6 +1708,30 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
                                params->payload,
                                params->payload_len);
       }
+      break;
+
+    case k_comm_channel_i2c:
+      if (mgr->i2c_handle == nullptr) {
+        rx_log_error(s_tag, "Send failed: I2C handle NULL");
+        return k_rx_err_invalid_state;
+      }
+      err = rx_i2c_comm_send(mgr->i2c_handle,
+                             params->type,
+                             params->flags,
+                             params->payload,
+                             params->payload_len);
+      break;
+
+    case k_comm_channel_uart:
+      if (mgr->uart_handle == nullptr) {
+        rx_log_error(s_tag, "Send failed: UART handle NULL");
+        return k_rx_err_invalid_state;
+      }
+      err = rx_uart_comm_send(mgr->uart_handle,
+                              params->type,
+                              params->flags,
+                              params->payload,
+                              params->payload_len);
       break;
 
     default:
@@ -1942,6 +2078,16 @@ rx_comm_manager_channel_ready(rx_comm_manager_t* mgr, rx_comm_channel_t channel,
       *ready = (mgr->spi_handle != nullptr);
       break;
 
+    case k_comm_channel_i2c:
+      /* I2C is always "ready" if handle is set (peripheral mode) */
+      *ready = (mgr->i2c_handle != nullptr);
+      break;
+
+    case k_comm_channel_uart:
+      /* UART is always "ready" if handle is set */
+      *ready = (mgr->uart_handle != nullptr);
+      break;
+
     default:
       *ready = false;
       rx_log_error(s_tag, "Channel ready: invalid channel");
@@ -2018,6 +2164,10 @@ const char* rx_comm_manager_channel_name(rx_comm_channel_t channel)
       return "USB";
     case k_comm_channel_spi:
       return "SPI";
+    case k_comm_channel_i2c:
+      return "I2C";
+    case k_comm_channel_uart:
+      return "UART";
     default:
       return "UNKNOWN";
   }

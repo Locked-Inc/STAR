@@ -390,8 +390,10 @@
 
 #include "rx_err.h"
 #include "rx_frame.h"
+#include "rx_i2c_comm.h"
 #include "rx_spi_comm.h"
 #include "rx_spi_link.h"
+#include "rx_uart_comm.h"
 #include "rx_usb_comm.h"
 
 #ifdef __cplusplus
@@ -569,6 +571,28 @@ typedef enum : uint8_t {
   k_comm_channel_spi = 1,
 
   /**
+   * @brief I2C peripheral channel (RIIC0)
+   * @details
+   * I2C connection where RX72N acts as I2C peripheral device and RPi5 is
+   * the I2C controller. Useful when SPI and USB CDC are unavailable.
+   *
+   * @par Hardware: RIIC0 peripheral (P16/SCL0, P17/SDA0)
+   * @par Value: 2
+   */
+  k_comm_channel_i2c = 2,
+
+  /**
+   * @brief UART channel (SCI9)
+   * @details
+   * Serial UART connection over SCI9 (TXD9/RXD9) at configurable baud rate.
+   * Provides an alternative communication channel for development and debugging.
+   *
+   * @par Hardware: SCI9 peripheral (TXD9/RXD9)
+   * @par Value: 3
+   */
+  k_comm_channel_uart = 3,
+
+  /**
    * @brief Total number of supported channels
    * @details
    * Compile-time constant indicating channel count. Used for array sizing
@@ -581,10 +605,10 @@ typedef enum : uint8_t {
    * }
    * @endcode
    *
-   * @par Value: 2 (USB + SPI)
+   * @par Value: 4 (USB + SPI + I2C + UART)
    * @par Invariant: Must equal number of enum values (excluding this one)
    */
-  k_comm_channel_count = 2,
+  k_comm_channel_count = 4,
 } rx_comm_channel_t;
 
 /**
@@ -843,6 +867,31 @@ typedef struct {
   rx_spi_comm_handle_t* spi_handle;
 
   /**
+   * @brief I2C communication handle (NULL to disable I2C channel)
+   * @details
+   * Pointer to initialized I2C peripheral transport handle. If NULL, I2C channel
+   * is disabled and all I2C operations are skipped. The RX72N acts as I2C
+   * peripheral (device) and the RPi5 acts as I2C controller.
+   *
+   * @par Type: rx_i2c_comm_handle_t* (pointer to I2C transport handle)
+   * @par Valid values: Non-NULL initialized handle, or nullptr to disable
+   * @par Lifetime: Must outlive manager instance
+   */
+  rx_i2c_comm_handle_t* i2c_handle;
+
+  /**
+   * @brief UART communication handle (NULL to disable UART channel)
+   * @details
+   * Pointer to initialized UART (SCI9) transport handle. If NULL, UART channel
+   * is disabled and all UART operations are skipped.
+   *
+   * @par Type: rx_uart_comm_handle_t* (pointer to UART transport handle)
+   * @par Valid values: Non-NULL initialized handle, or nullptr to disable
+   * @par Lifetime: Must outlive manager instance
+   */
+  rx_uart_comm_handle_t* uart_handle;
+
+  /**
    * @brief Optional SPI link layer with HARQ (NULL to use raw SPI)
    * @details
    * When non-NULL, SPI send/receive operations route through the link
@@ -973,8 +1022,10 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  rx_usb_comm_handle_t* usb_handle; /**< USB comm handle */
-  rx_spi_comm_handle_t* spi_handle; /**< SPI comm handle */
+  rx_usb_comm_handle_t*  usb_handle;  /**< USB comm handle */
+  rx_spi_comm_handle_t*  spi_handle;  /**< SPI comm handle */
+  rx_i2c_comm_handle_t*  i2c_handle;  /**< I2C comm handle */
+  rx_uart_comm_handle_t* uart_handle; /**< UART comm handle */
 
   /**< @brief Optional SPI link layer with HARQ (NULL if disabled)
    * @details

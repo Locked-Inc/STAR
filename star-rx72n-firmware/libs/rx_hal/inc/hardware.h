@@ -1492,6 +1492,118 @@ typedef struct {
                                        uint16_t          read_length);
 
 /* =============================================================================
+ * RIIC (I2C) Functions - Peripheral Mode
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize RIIC channel in peripheral (device) mode
+ *
+ * @details
+ * Configures the RIIC peripheral to act as an I2C peripheral device, responding
+ * to a fixed 7-bit I2C address issued by a controller (RPi5). Sets up the slave
+ * address register (SARL0/SARU0), enables address match detection (ICSER.SAR0E),
+ * and leaves the module in peripheral mode (MS=0 in ICMR1).
+ *
+ * @par Peripheral Mode Architecture:
+ * - RPi5 acts as I2C controller (generates SCL, START, STOP)
+ * - RX72N acts as I2C peripheral (responds to address, provides/accepts data)
+ * - Address matching handled in hardware (ICSER.SAR0E)
+ * - Data transfer polled via ICSR2.RDRF and ICSR2.TDRE
+ *
+ * @param[in] channel RIIC channel wrapper (channel.value range: 0-2)
+ * @param[in] device_addr 7-bit peripheral address for this device
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Channel initialized in peripheral mode
+ * @retval k_rx_err_invalid_arg Channel value out of range
+ *
+ * @pre channel.value must be 0-2
+ * @post RIIC peripheral will respond to device_addr on the I2C bus
+ *
+ * @note Only available on RX72N target (guarded by __RX__ preprocessor)
+ * @note Not thread-safe during initialization
+ *
+ * @see riic_peripheral_read() Read data written by I2C controller
+ * @see riic_peripheral_write() Provide data to I2C controller read
+ *
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t riic_init_peripheral(riic_channel_t    channel,
+                                            i2c_device_addr_t device_addr);
+
+/**
+ * @brief Read bytes written by the I2C controller to this peripheral
+ *
+ * @details
+ * Polls ICSR2.RDRF (Receive Data Register Full) to detect incoming bytes from
+ * the I2C controller (RPi5). Reads up to max_length bytes. Returns immediately
+ * with bytes_read=0 if no data is currently available.
+ *
+ * @param[in] channel RIIC channel wrapper (channel.value range: 0-2)
+ * @param[out] data Buffer to store received bytes
+ * @param[in] max_length Maximum number of bytes to read
+ * @param[out] bytes_read Actual number of bytes read (may be 0)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Read completed (check bytes_read for count)
+ * @retval k_rx_err_null_ptr data or bytes_read is nullptr
+ * @retval k_rx_err_invalid_arg Channel value out of range or max_length == 0
+ * @retval k_rx_err_invalid_state Channel not initialized via riic_init_peripheral()
+ *
+ * @pre channel must be initialized via riic_init_peripheral()
+ * @pre data must not be nullptr and have space for max_length bytes
+ * @post bytes_read contains number of bytes placed in data
+ *
+ * @note Non-blocking: returns immediately with available data
+ * @note Only available on RX72N target (guarded by __RX__ preprocessor)
+ *
+ * @see riic_init_peripheral() Initialize channel first
+ * @see riic_peripheral_write() Provide read data to controller
+ *
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t riic_peripheral_read(riic_channel_t channel,
+                                            uint8_t*       data,
+                                            uint16_t       max_length,
+                                            uint16_t*      bytes_read);
+
+/**
+ * @brief Write bytes for the I2C controller to read from this peripheral
+ *
+ * @details
+ * Polls ICSR2.TDRE (Transmit Data Register Empty) to detect when the I2C
+ * controller is reading from this peripheral. Writes up to length bytes into
+ * the ICDRT transmit data register. Returns immediately if the transmit
+ * register is not yet empty (controller not currently reading).
+ *
+ * @param[in] channel RIIC channel wrapper (channel.value range: 0-2)
+ * @param[in] data Pointer to data buffer to write
+ * @param[in] length Number of bytes to write
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Write completed
+ * @retval k_rx_err_null_ptr data is nullptr
+ * @retval k_rx_err_invalid_arg Channel value out of range or length == 0
+ * @retval k_rx_err_invalid_state Channel not initialized via riic_init_peripheral()
+ * @retval k_rx_err_timeout Transmit data register not empty within timeout
+ *
+ * @pre channel must be initialized via riic_init_peripheral()
+ * @pre data must not be nullptr
+ * @post data bytes placed in ICDRT for controller to read
+ *
+ * @note Only available on RX72N target (guarded by __RX__ preprocessor)
+ *
+ * @see riic_init_peripheral() Initialize channel first
+ * @see riic_peripheral_read() Receive data from controller
+ *
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t riic_peripheral_write(riic_channel_t channel,
+                                             const uint8_t* data,
+                                             uint16_t       length);
+
+/* =============================================================================
  * RSPI (SPI) Functions - Peripheral Mode
  * =============================================================================
  */

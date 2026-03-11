@@ -1988,4 +1988,178 @@ rx_err_t riic_write_read(const riic_channel_t    channel,
   return k_rx_ok;
 }
 
+/* =============================================================================
+ * RIIC Peripheral (Device) Mode Functions
+ * =============================================================================
+ */
+
+/**
+ * @enum riic_peripheral_reg_constants_t
+ * @brief Register bit-field constants for peripheral mode configuration
+ *
+ * @details
+ * Bit field values used when configuring RIIC for peripheral (device) mode.
+ * In peripheral mode the RX72N responds to an external I2C controller (RPi5).
+ * All values fit in uint8_t since they are 8-bit register constants.
+ *
+ * @see riic_init_peripheral()
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_riic_icmr1_peripheral_7bit = 0x00, /**< CKS=0, MS=0 (peripheral mode), 7-bit */
+  k_riic_icser_sar0e           = 0x01, /**< ICSER bit 0: enable SAR0 address matching */
+  k_riic_sarl_addr_shift       = 1,    /**< 7-bit addr stored in SARL[7:1] */
+  k_riic_saru0_7bit            = 0x00, /**< SARU0 = 0 for 7-bit addressing */
+} riic_peripheral_reg_constants_t;
+
+/**
+ * @enum riic_peripheral_size_constants_t
+ * @brief Size and timeout constants for peripheral mode operations
+ *
+ * @details
+ * Buffer size limits and timeout values for peripheral mode read/write.
+ * Values exceed uint8_t range so uint16_t underlying type is used.
+ *
+ * @see riic_peripheral_read()
+ * @see riic_peripheral_write()
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_riic_peripheral_read_limit = 256,  /**< Maximum bytes per peripheral read call */
+  k_riic_periph_timeout_us     = 1000, /**< 1ms timeout for TDRE poll in write */
+} riic_peripheral_size_constants_t;
+
+rx_err_t riic_init_peripheral(riic_channel_t channel, i2c_device_addr_t device_addr)
+{
+  if (channel.value >= k_riic_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  volatile rx_riic_regs_t* const riic = internal_get_riic_base(channel.value);
+  if (riic == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Enable RIIC module (clear module stop bit) */
+  *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
+
+  if (channel.value == k_riic_channel_0) {
+    system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic0);
+  } else if (channel.value == k_riic_channel_1) {
+    system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic1);
+  } else {
+    system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic2);
+  }
+
+  *prcr_reg() = k_rx_prcr_lock;
+
+  /* Reset RIIC */
+  riic->iccr1 = k_riic_iccr1_iicrst;
+  riic->iccr1 = k_riic_timeout_zero;
+
+  /* Set peripheral (device) address in SARL0/SARU0
+   * SARL0[7:1] = device_addr.value (7-bit address)
+   * SARU0 = 0 for 7-bit mode */
+  riic->sarl0 = (uint8_t)(device_addr.value << k_riic_sarl_addr_shift);
+  riic->saru0 = k_riic_saru0_7bit;
+
+  /* Enable SAR0 address match detection */
+  riic->icser = k_riic_icser_sar0e;
+
+  /* Configure for peripheral mode (MS=0), 7-bit addressing, CKS=0 */
+  riic->icmr1 = k_riic_icmr1_peripheral_7bit;
+  riic->icmr2 = k_riic_icmr2_default;
+  riic->icmr3 = k_riic_icmr2_default;
+
+  /* Enable I2C bus interface */
+  riic->iccr1 = k_riic_iccr1_ice;
+
+  /* Mark channel as initialized */
+  s_riic_channel_initialized[channel.value] = true;
+
+  rx_log_debug(s_tag, "RIIC peripheral mode initialized");
+
+  return k_rx_ok;
+}
+
+rx_err_t riic_peripheral_read(riic_channel_t channel,
+                               uint8_t*       data,
+                               uint16_t       max_length,
+                               uint16_t*      bytes_read)
+{
+  if (data == nullptr || bytes_read == nullptr) {
+    return k_rx_err_null_ptr;
+  }
+
+  if (channel.value >= k_riic_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (max_length == 0) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!s_riic_channel_initialized[channel.value]) {
+    return k_rx_err_invalid_state;
+  }
+
+  volatile rx_riic_regs_t* const riic = internal_get_riic_base(channel.value);
+  if (riic == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  *bytes_read = 0;
+
+  /* Poll ICSR2.RDRF (bit 1) for each available byte - non-blocking */
+  while (*bytes_read < max_length) {
+    if (!(riic->icsr2 & k_riic_icsr2_rdrf)) {
+      break; /* No more data available right now */
+    }
+    data[*bytes_read] = riic->icdrr;
+    (*bytes_read)++;
+  }
+
+  return k_rx_ok;
+}
+
+rx_err_t riic_peripheral_write(riic_channel_t channel, const uint8_t* data, uint16_t length)
+{
+  if (data == nullptr) {
+    return k_rx_err_null_ptr;
+  }
+
+  if (channel.value >= k_riic_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (length == 0) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!s_riic_channel_initialized[channel.value]) {
+    return k_rx_err_invalid_state;
+  }
+
+  volatile rx_riic_regs_t* const riic = internal_get_riic_base(channel.value);
+  if (riic == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  for (uint16_t i = 0; i < length; i++) {
+    /* Wait for ICSR2.TDRE (transmit data register empty) */
+    uint32_t timeout = k_riic_periph_timeout_us;
+    while (!(riic->icsr2 & k_riic_icsr2_tdre) && timeout > k_riic_timeout_zero) {
+      timeout--;
+    }
+
+    if (timeout == k_riic_timeout_zero) {
+      return k_rx_err_timeout;
+    }
+
+    riic->icdrt = data[i];
+  }
+
+  return k_rx_ok;
+}
+
 #endif /* __RX__ */

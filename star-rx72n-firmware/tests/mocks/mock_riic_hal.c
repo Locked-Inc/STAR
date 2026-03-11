@@ -463,3 +463,68 @@ rx_err_t riic_write_read(riic_channel_t    channel,
 
   return k_rx_ok;
 }
+
+/* =============================================================================
+ * Peripheral Mode Mock Implementations
+ * =============================================================================
+ */
+
+rx_err_t riic_init_peripheral(riic_channel_t channel, i2c_device_addr_t device_addr)
+{
+  if (channel.value >= k_mock_riic_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+  (void)device_addr;
+  g_mock_riic.channels[channel.value].initialized = true;
+  return k_rx_ok;
+}
+
+rx_err_t riic_peripheral_read(riic_channel_t channel,
+                               uint8_t*       data,
+                               uint16_t       max_length,
+                               uint16_t*      bytes_read)
+{
+  if (data == nullptr || bytes_read == nullptr) {
+    return k_rx_err_null_ptr;
+  }
+  if (channel.value >= k_mock_riic_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+  if (max_length == 0) {
+    return k_rx_err_invalid_arg;
+  }
+  if (!g_mock_riic.channels[channel.value].initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  mock_riic_channel_state_t* ch = &g_mock_riic.channels[channel.value];
+  uint16_t to_read = (max_length < ch->rx_length) ? max_length : ch->rx_length;
+  if (to_read > 0) {
+    memcpy(data, ch->rx_buffer, to_read);
+    ch->rx_length = 0;
+  }
+  *bytes_read = to_read;
+  return k_rx_ok;
+}
+
+rx_err_t riic_peripheral_write(riic_channel_t channel, const uint8_t* data, uint16_t length)
+{
+  if (data == nullptr) {
+    return k_rx_err_null_ptr;
+  }
+  if (channel.value >= k_mock_riic_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+  if (length == 0) {
+    return k_rx_err_invalid_arg;
+  }
+  if (!g_mock_riic.channels[channel.value].initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  mock_riic_channel_state_t* ch        = &g_mock_riic.channels[channel.value];
+  uint16_t                   to_write  = (length < k_mock_riic_buffer_size) ? length : k_mock_riic_buffer_size;
+  memcpy(ch->tx_buffer, data, to_write);
+  ch->tx_length = to_write;
+  return k_rx_ok;
+}

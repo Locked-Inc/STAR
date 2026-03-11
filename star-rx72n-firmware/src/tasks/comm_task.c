@@ -582,6 +582,35 @@ static rx_spi_comm_handle_t s_spi_comm_handle;
 static rx_spi_link_t s_spi_link;
 
 /**
+ * @var s_i2c_comm_handle
+ * @brief I2C peripheral communication handle (RIIC0)
+ *
+ * @details
+ * Stores runtime state for the I2C peripheral transport layer. The RX72N acts
+ * as I2C peripheral (device) and the RPi5 acts as I2C controller. Initialized
+ * during transport setup via rx_i2c_comm_init() using a configuration structure
+ * that references s_session_state for sequence tracking.
+ *
+ * @note File-scoped static owned by comm_task.c.
+ * @since Version 1.0.0
+ */
+static rx_i2c_comm_handle_t s_i2c_comm_handle;
+
+/**
+ * @var s_uart_comm_handle
+ * @brief UART (SCI9) communication handle
+ *
+ * @details
+ * Stores runtime state for the UART transport layer using SCI9 (TXD9/RXD9).
+ * Initialized during transport setup via rx_uart_comm_init() using a
+ * configuration structure that references s_session_state for sequence tracking.
+ *
+ * @note File-scoped static owned by comm_task.c.
+ * @since Version 1.0.0
+ */
+static rx_uart_comm_handle_t s_uart_comm_handle;
+
+/**
  * @var s_response_buffer
  * @brief Static buffer for encoding command response messages (NASA Rule 3 - no dynamic allocation)
  *
@@ -1029,13 +1058,36 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
     config->spi_link = nullptr;
   }
 
+  /* Initialize I2C communication layer (RIIC0, peripheral mode, address 0x42) */
+  rx_i2c_comm_config_t i2c_cfg = {
+    .session     = &s_session_state,
+    .channel     = {.value = k_i2c_comm_default_channel},
+    .device_addr = {.value = k_i2c_comm_default_addr},
+  };
+  bool i2c_ok = (rx_i2c_comm_init(&s_i2c_comm_handle, &i2c_cfg) == k_rx_ok);
+  if (!i2c_ok) {
+    rx_log_error(s_tag, "I2C comm init failed");
+  }
+
+  /* Initialize UART communication layer (SCI9) */
+  rx_uart_comm_config_t uart_cfg = {
+    .session = &s_session_state,
+    .channel = k_uart_channel_9,
+  };
+  bool uart_ok = (rx_uart_comm_init(&s_uart_comm_handle, &uart_cfg) == k_rx_ok);
+  if (!uart_ok) {
+    rx_log_error(s_tag, "UART comm init failed");
+  }
+
   /* Wire handles - pass nullptr for failed transports (triggers timeout in comm_manager) */
-  config->usb_handle = usb_ok ? &s_usb_comm_handle : nullptr;
-  config->spi_handle = spi_ok ? &s_spi_comm_handle : nullptr;
+  config->usb_handle  = usb_ok  ? &s_usb_comm_handle  : nullptr;
+  config->spi_handle  = spi_ok  ? &s_spi_comm_handle  : nullptr;
+  config->i2c_handle  = i2c_ok  ? &s_i2c_comm_handle  : nullptr;
+  config->uart_handle = uart_ok ? &s_uart_comm_handle : nullptr;
 
   /* Validation logging */
-  if (!usb_ok && !spi_ok) {
-    rx_log_error(s_tag, "CRITICAL: Both USB and SPI transports failed to initialize");
+  if (!usb_ok && !spi_ok && !i2c_ok && !uart_ok) {
+    rx_log_error(s_tag, "CRITICAL: All transport channels failed to initialize");
   } else {
     if (usb_ok) {
       rx_log_info(s_tag, "USB transport initialized");
@@ -1045,6 +1097,12 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
     }
     if (link_ok) {
       rx_log_info(s_tag, "SPI HARQ link initialized (FEC with Chase Combining)");
+    }
+    if (i2c_ok) {
+      rx_log_info(s_tag, "I2C peripheral transport initialized");
+    }
+    if (uart_ok) {
+      rx_log_info(s_tag, "UART transport initialized");
     }
   }
 }
