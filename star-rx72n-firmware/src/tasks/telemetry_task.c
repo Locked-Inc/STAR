@@ -2268,37 +2268,45 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  * 1. **Timestamp + sequence** - Set timestamp_us and increment s_sequence
  * 2. **internal_collect_state()** - populate motor and temperature fields
  * 3. **internal_encode_telemetry()** - nanopb encode to s_telem_buffer
- * 4. **internal_select_transport()** - USB preferred, SPI fallback
- * 5. **Assert HOST_IRQ LOW** (P67, active-low) to notify RPi5 data is ready
+ * 4. **internal_select_transport()** - symmetric routing via
+ *    shared_data_get_active_channel(); returns k_comm_channel_usb or
+ *    k_comm_channel_spi based on the last received command channel
+ * 5. **Assert HOST_IRQ LOW** (P67, active-low) only for SPI sends, to notify
+ *    the RPi5 SPI peripheral that data is ready
  * 6. **internal_send_via_channel()** - transmit via comm manager
- * 7. **Deassert HOST_IRQ HIGH** (P67) regardless of send outcome
+ * 7. **Deassert HOST_IRQ HIGH** (P67) only if it was asserted in step 5
  *
  * Encoding failure is fatal for this cycle (message not sent, retry next cycle).
  * Send failure is non-critical (message lost, host detects via sequence gap).
- * No-transport drops the encoded message silently (both channels unavailable).
+ * An unexpected transport value from internal_select_transport() is a
+ * programming error and returns k_rx_err_invalid_state immediately.
  *
  * @return rx_err_t Operation status
  * @retval k_rx_ok Telemetry sent successfully
  * @retval k_rx_err_encoding_failed nanopb encoding failed (buffer too small, invalid message)
- * @retval k_rx_err_invalid_state No transport available (both channels unavailable)
+ * @retval k_rx_err_invalid_state internal_select_transport() returned an unexpected
+ *                                transport (programming error; indicates enum mismatch)
  * @retval k_rx_err_usb_tx_fail USB CDC transmission failed (host disconnected)
  * @retval k_rx_err_spi_tx_fail SPI transmission failed (RPi5 not responding)
  * @retval k_rx_err_timeout Communication manager send timeout
  *
- * @pre Shared data initialized (shared_data_init() called)
- * @pre Communication manager initialized (rx_comm_manager_init() called)
- * @pre nanopb initialized (compile-time, no init function)
+ * @pre shared_data_init() has been called
+ * @pre rx_comm_manager_init() has been called
+ * @pre shared_data_get_active_channel() reflects the most recent command channel
  * @pre Task created and running (telemetry_task_create() called)
  *
- * @post Telemetry message sent via USB CDC (primary) or SPI (fallback)
- * @post HOST_IRQ (P67) is HIGH (deasserted) on return, regardless of send result
+ * @post Telemetry message sent on the same physical link as the last received command
+ *       (k_comm_channel_usb or k_comm_channel_spi)
+ * @post HOST_IRQ (P67) is HIGH (deasserted) on return; toggled only for SPI sends
  * @post s_sequence incremented exactly once per call
  * @post s_telem_buffer overwritten with latest encoded protobuf
  *
  * @note Called every 50ms by internal_telem_task_entry() (20 Hz)
  * @note Execution time: ~120 us
  * @note Data collection is non-blocking (graceful degradation if mutex locked)
- * @note Transport channel selected dynamically each cycle (USB preferred)
+ * @note Transport channel is selected symmetrically: telemetry replies travel
+ *       on the same physical link as the last incoming command frame;
+ *       only k_comm_channel_usb and k_comm_channel_spi are expected
  *
  * @warning If encoding fails, message is NOT sent (retry next cycle)
  * @warning If transmission fails, message is lost (host detects via sequence gap)
@@ -2362,13 +2370,21 @@ static rx_err_t internal_build_and_send_telemetry(void)
       return k_rx_err_invalid_state;
   }
 
-  /* Assert HOST_IRQ LOW (active-low) to notify RPi5 that data is ready */
-  (void)gpio_write_low(g_pin_host_irq);
+  /* Assert HOST_IRQ LOW (active-low) only for SPI sends: the RPi5 SPI
+   * peripheral watches HOST_IRQ (P67) as a data-ready signal.  USB sends
+   * do not involve the SPI peer so toggling HOST_IRQ for USB would
+   * spuriously wake it. */
+  const bool assert_host_irq = (channel == k_comm_channel_spi);
+  if (assert_host_irq) {
+    (void)gpio_write_low(g_pin_host_irq);
+  }
 
   err = internal_send_via_channel(channel, encoded_len);
 
-  /* Deassert HOST_IRQ HIGH regardless of send outcome */
-  (void)gpio_write_high(g_pin_host_irq);
+  /* Deassert HOST_IRQ HIGH only if we asserted it above */
+  if (assert_host_irq) {
+    (void)gpio_write_high(g_pin_host_irq);
+  }
 
   if (err != k_rx_ok) {
     return err;
