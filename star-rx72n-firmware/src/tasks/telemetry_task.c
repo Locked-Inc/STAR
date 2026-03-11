@@ -1662,8 +1662,10 @@ static void internal_telem_task_entry(ULONG input)
  * @post Shared data is not modified (read-only access)
  *
  * @note Called every 50 ms from internal_build_and_send_telemetry() (20 Hz)
- * @note Non-blocking: shared_data_get_active_channel() acquires mutex briefly
- * @note Thread-safe: shared_data_get_active_channel() is mutex-protected
+ * @note Bounded blocking: shared_data_get_active_channel() acquires motor_mutex
+ *       with TX_WAIT_FOREVER and holds it for ~2 us; callers must not assume
+ *       lock-free or zero-latency timing
+ * @note Thread-safe: shared_data_get_active_channel() is motor_mutex-protected
  *
  * @see internal_build_and_send_telemetry() Caller - maps transport to channel
  * @see shared_data_get_active_channel() Active channel reader
@@ -1679,12 +1681,25 @@ static void internal_telem_task_entry(ULONG input)
  */
 static telemetry_transport_t internal_select_transport(void)
 {
+  /* Compile-time guard: this switch covers exactly two channels.  If a new
+   * channel is ever added to rx_comm_channel_t, update k_comm_channel_count
+   * and add a case below so the new channel is not silently routed to USB. */
+  static_assert(k_comm_channel_count == 2,
+                "internal_select_transport: add a case for every new rx_comm_channel_t value");
+
   const uint8_t raw_ch = shared_data_get_active_channel();
   if (raw_ch >= (uint8_t)k_comm_channel_count) {
     return k_telemetry_transport_usb; /* fail-safe: unexpected value defaults to USB */
   }
-  return ((rx_comm_channel_t)raw_ch == k_comm_channel_spi) ? k_telemetry_transport_spi
-                                                           : k_telemetry_transport_usb;
+
+  switch ((rx_comm_channel_t)raw_ch) {
+    case k_comm_channel_spi:
+      return k_telemetry_transport_spi;
+    case k_comm_channel_usb:
+      return k_telemetry_transport_usb;
+    default:
+      return k_telemetry_transport_usb; /* fail-safe for unhandled future values */
+  }
 }
 
 /**
