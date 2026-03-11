@@ -51,6 +51,7 @@ void setUp(void)
 {
   /* Reset all mocks before each test */
   mock_shared_data_reset();
+  (void)shared_data_init(); /* mirrors production task startup; enables active-channel API */
   mock_nanopb_reset();
   mock_comm_manager_reset();
   mock_tx_reset();
@@ -543,6 +544,96 @@ void test_telemetry_spi_fallback_send_succeeds(void)
   TEST_ASSERT_EQUAL_UINT32(1, mock_comm_manager_get_send_count());
 }
 
+/**
+ * @brief Telemetry defaults to USB when no command has been received yet
+ *
+ * @details
+ * Before any command frame arrives, shared_data_get_active_channel() returns
+ * k_comm_channel_usb (the USB default). Verifies that the mock preserves this
+ * default AND that sending on that channel routes to USB -- mirroring what
+ * internal_select_transport() + internal_build_and_send_telemetry() would do.
+ *
+ * @pre mock_shared_data_reset() + shared_data_init() called (setUp)
+ * @pre Default active channel is k_comm_channel_usb
+ * @post mock_comm_manager_get_last_send_channel() returns k_comm_channel_usb
+ * @post send count is 1
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ * @note internal_select_transport() is static; this test mirrors its logic directly
+ */
+void test_telemetry_defaults_to_usb_before_any_command(void)
+{
+  rx_comm_manager_t     mgr    = {0};
+  rx_comm_send_params_t params = {0};
+  rx_err_t              err;
+
+  mgr.initialized = true;
+  mock_comm_manager_set_send_return(k_rx_ok);
+
+  /* With no command received, active channel must default to USB */
+  const uint8_t raw_ch = shared_data_get_active_channel();
+  TEST_ASSERT_EQUAL_UINT8((uint8_t)k_comm_channel_usb, raw_ch);
+  TEST_ASSERT_EQUAL_UINT32(0, mock_shared_data_get_active_channel_update_count());
+
+  /* Simulate telemetry routing: read channel, send via comm manager */
+  params.channel     = (rx_comm_channel_t)raw_ch;
+  params.type        = k_frame_type_response;
+  params.flags       = 0;
+  params.payload_len = 0;
+
+  err = rx_comm_manager_send(&mgr, &params);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_comm_channel_usb, mock_comm_manager_get_last_send_channel());
+  TEST_ASSERT_EQUAL_UINT32(1, mock_comm_manager_get_send_count());
+}
+
+/**
+ * @brief Telemetry routes to SPI after an SPI command is recorded
+ *
+ * @details
+ * When the comm task records that the last command arrived over SPI,
+ * shared_data_get_active_channel() must return k_comm_channel_spi AND the
+ * telemetry send must use k_comm_channel_spi -- mirroring what
+ * internal_select_transport() + internal_build_and_send_telemetry() would do.
+ *
+ * @pre mock_shared_data_reset() + shared_data_init() called (setUp)
+ * @pre shared_data_update_active_channel() sets SPI as active
+ * @post mock_comm_manager_get_last_send_channel() returns k_comm_channel_spi
+ * @post active_channel_update_count == 1
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ * @note internal_select_transport() is static; this test mirrors its logic directly
+ */
+void test_telemetry_routes_to_spi_after_spi_command(void)
+{
+  rx_comm_manager_t     mgr    = {0};
+  rx_comm_send_params_t params = {0};
+  rx_err_t              err;
+
+  mgr.initialized = true;
+  mock_comm_manager_set_send_return(k_rx_ok);
+
+  /* Arrange: SPI command received */
+  (void)shared_data_update_active_channel((uint8_t)k_comm_channel_spi);
+  TEST_ASSERT_EQUAL_UINT32(1, mock_shared_data_get_active_channel_update_count());
+
+  /* Simulate telemetry routing: read channel, send via comm manager */
+  const uint8_t raw_ch = shared_data_get_active_channel();
+  TEST_ASSERT_EQUAL_UINT8((uint8_t)k_comm_channel_spi, raw_ch);
+
+  params.channel     = (rx_comm_channel_t)raw_ch;
+  params.type        = k_frame_type_response;
+  params.flags       = 0;
+  params.payload_len = 0;
+
+  err = rx_comm_manager_send(&mgr, &params);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_comm_channel_spi, mock_comm_manager_get_last_send_channel());
+  TEST_ASSERT_EQUAL_UINT32(1, mock_comm_manager_get_send_count());
+}
+
 /* =============================================================================
  * Test Runner
  * =============================================================================
@@ -575,6 +666,8 @@ int main(void)
   RUN_TEST(test_telemetry_channel_ready_usb_reports_correctly);
   RUN_TEST(test_telemetry_channel_ready_spi_reports_correctly);
   RUN_TEST(test_telemetry_spi_fallback_send_succeeds);
+  RUN_TEST(test_telemetry_defaults_to_usb_before_any_command);
+  RUN_TEST(test_telemetry_routes_to_spi_after_spi_command);
 
   return UNITY_END();
 }

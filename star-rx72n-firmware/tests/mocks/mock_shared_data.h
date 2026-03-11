@@ -49,6 +49,36 @@ typedef enum : uint16_t {
 } mock_shared_data_constants_t;
 
 /**
+ * @enum mock_shared_channel_t
+ * @brief Channel identifier constants mirroring rx_comm_channel_t values
+ *
+ * @details
+ * Named channel constants for use in mock_shared_data without requiring
+ * rx_comm_manager.h (which would transitively include rx_frame.h and cause
+ * redeclaration conflicts with mock frame types in unit test builds).
+ * Values MUST remain bit-for-bit identical to rx_comm_channel_t.
+ *
+ * @invariant k_mock_channel_usb == k_comm_channel_usb (0)
+ * @invariant k_mock_channel_spi == k_comm_channel_spi (1)
+ *
+ * @code
+ * // Set active channel to SPI before running code under test:
+ * mock_shared_data_set_active_channel(k_mock_channel_spi);
+ *
+ * // Assert active channel after code under test:
+ * TEST_ASSERT_EQUAL(k_mock_channel_spi, shared_data_get_active_channel());
+ * @endcode
+ *
+ * @see rx_comm_channel_t Production definition (authoritative)
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_mock_channel_usb = 0U, /**< USB CDC channel (matches k_comm_channel_usb) */
+  k_mock_channel_spi = 1U, /**< SPI channel (matches k_comm_channel_spi) */
+} mock_shared_channel_t;
+
+/**
  * @enum shared_event_flags_t
  * @brief Event flags for inter-task signaling (must match shared_data.h)
  *
@@ -361,6 +391,76 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state);
 bool shared_data_is_comm_timeout(void);
 void shared_data_update_last_comm_tick(void);
 
+/* Active Channel Routing */
+
+/**
+ * @brief Mock implementation of shared_data_update_active_channel()
+ *
+ * @details
+ * Records @p channel as the active transport and increments the update counter.
+ * Always returns k_rx_ok (no mutex or initialization checks in mock).
+ * Mirrors the production API signature so comm_task calls compile unmodified
+ * against this mock.
+ *
+ * @param[in] channel Channel to record (rx_comm_channel_t cast to uint8_t;
+ *                    use k_mock_channel_usb (0) or k_mock_channel_spi (1))
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Always succeeds in mock
+ *
+ * @pre mock_shared_data_reset() has been called at least once (setUp)
+ * @pre channel is a valid mock_shared_channel_t value (0 or 1)
+ * @post s_active_channel == channel
+ * @post s_active_channel_update_count incremented by 1
+ *
+ * @note Thread safety: not thread-safe; intended for single-threaded test use only
+ * @note Mock only: no mutex, always returns k_rx_ok
+ *
+ * @code
+ * (void)shared_data_update_active_channel(k_mock_channel_spi);
+ * TEST_ASSERT_EQUAL(k_mock_channel_spi, shared_data_get_active_channel());
+ * @endcode
+ *
+ * @see shared_data_get_active_channel() Reads the stored channel
+ * @see mock_shared_data_get_active_channel_update_count() Retrieves call count
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_update_active_channel(uint8_t channel);
+
+/**
+ * @brief Mock implementation of shared_data_get_active_channel()
+ *
+ * @details
+ * Returns s_active_channel, reflecting the last value stored by
+ * shared_data_update_active_channel() or mock_shared_data_set_active_channel().
+ * Defaults to k_mock_channel_usb (0) after mock_shared_data_reset().
+ *
+ * @return uint8_t Active communication channel (rx_comm_channel_t cast to uint8_t)
+ * @retval k_mock_channel_usb (0) Default before any update or after reset
+ * @retval k_mock_channel_spi (1) SPI was the last channel stored
+ *
+ * @pre mock_shared_data_reset() has been called at least once (setUp)
+ * @pre s_active_channel set via shared_data_update_active_channel() or
+ *      mock_shared_data_set_active_channel()
+ * @post s_active_channel is unchanged (read-only accessor)
+ * @post Return value is k_mock_channel_usb or k_mock_channel_spi
+ *
+ * @note Thread safety: read-only; safe in single-threaded test context only
+ * @note Mock only: no mutex, always returns the raw stored value
+ *
+ * @code
+ * (void)shared_data_update_active_channel(k_mock_channel_spi);
+ * TEST_ASSERT_EQUAL(k_mock_channel_spi, shared_data_get_active_channel());
+ * @endcode
+ *
+ * @see shared_data_update_active_channel() Writer
+ * @see mock_shared_data_set_active_channel() Test setup writer (no count increment)
+ *
+ * @since Version 1.0.0
+ */
+uint8_t shared_data_get_active_channel(void);
+
 /* Event Flags */
 
 /**
@@ -392,6 +492,75 @@ void shared_data_update_last_comm_tick(void);
  * @since Version 1.0.0
  */
 rx_err_t shared_data_set_event(shared_event_flags_t flags);
+
+/**
+ * @brief Configure the channel returned by shared_data_get_active_channel()
+ *
+ * @details
+ * Directly writes @p channel into the mock's internal s_active_channel state
+ * without incrementing s_active_channel_update_count or checking s_initialized.
+ * Use this for test setup (Arrange phase) to establish pre-test channel state
+ * before invoking code under test. Do NOT use to simulate a runtime channel
+ * update -- call shared_data_update_active_channel() for that purpose.
+ *
+ * @param[in] channel Channel to store; must be a valid mock_shared_channel_t value
+ *                    (k_mock_channel_usb or k_mock_channel_spi)
+ *
+ * @pre mock_shared_data_reset() called at least once (setUp)
+ * @pre channel is k_mock_channel_usb (0) or k_mock_channel_spi (1)
+ * @post shared_data_get_active_channel() returns (uint8_t)channel
+ * @post s_active_channel_update_count is unchanged
+ *
+ * @note Thread safety: not thread-safe; intended for single-threaded test setup only
+ * @note For Arrange phase only; call before the code under test runs
+ *
+ * @code
+ * // Arrange: set SPI as active before running telemetry task code
+ * mock_shared_data_set_active_channel(k_mock_channel_spi);
+ * TEST_ASSERT_EQUAL(k_mock_channel_spi, shared_data_get_active_channel());
+ * @endcode
+ *
+ * @see shared_data_update_active_channel() Runtime writer (increments update count)
+ * @see mock_shared_data_get_active_channel_update_count() Retrieves update call count
+ * @see mock_shared_data_reset() Resets channel to k_mock_channel_usb (0)
+ *
+ * @since Version 1.0.0
+ */
+void mock_shared_data_set_active_channel(mock_shared_channel_t channel);
+
+/**
+ * @brief Return how many times shared_data_update_active_channel() was called
+ *
+ * @details
+ * Returns the accumulated call count for shared_data_update_active_channel()
+ * since the last mock_shared_data_reset(). Allows tests to assert that comm_task
+ * called the update function exactly the expected number of times (e.g., once
+ * per COMMAND frame received). Note that mock_shared_data_set_active_channel()
+ * does NOT increment this counter -- only shared_data_update_active_channel() does.
+ *
+ * @return uint32_t Number of shared_data_update_active_channel() calls since reset
+ * @retval 0 shared_data_update_active_channel() has not been called since last reset
+ * @retval n Number of times shared_data_update_active_channel() was called
+ *
+ * @pre mock_shared_data_reset() called at least once (setUp)
+ * @pre s_active_channel_update_count reflects only calls via shared_data_update_active_channel()
+ * @post s_active_channel_update_count is unchanged (read-only accessor)
+ * @post Return value >= 0
+ *
+ * @note Thread safety: read-only; safe in single-threaded test context only
+ * @note mock_shared_data_set_active_channel() does NOT increment this counter
+ *
+ * @code
+ * (void)shared_data_update_active_channel(k_mock_channel_spi);
+ * TEST_ASSERT_EQUAL_UINT32(1, mock_shared_data_get_active_channel_update_count());
+ * @endcode
+ *
+ * @see shared_data_update_active_channel() The function whose calls are counted
+ * @see mock_shared_data_reset() Resets the counter to zero
+ *
+ * @since Version 1.0.0
+ */
+uint32_t mock_shared_data_get_active_channel_update_count(void);
 
 #ifdef __cplusplus
 }

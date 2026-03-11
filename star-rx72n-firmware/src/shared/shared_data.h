@@ -324,6 +324,9 @@ typedef struct {
 
   /* Communication tracking */
   uint32_t last_comm_tick; /**< Last communication timestamp */
+  uint8_t
+       active_channel; /**< Channel that last delivered a command frame (rx_comm_channel_t value) */
+  bool active_channel_valid; /**< True once at least one command frame has been received */
 
   /* Initialization flag */
   bool initialized; /**< Module initialized flag */
@@ -690,6 +693,68 @@ bool shared_data_is_comm_timeout(void);
  * @brief Update last communication timestamp
  */
 void shared_data_update_last_comm_tick(void);
+
+/**
+ * @brief Record the channel that most recently delivered a command frame
+ *
+ * @details
+ * Called by the comm task inside internal_frame_callback() on every valid
+ * frame reception.  The value is used by the telemetry task to route
+ * outgoing frames back on the same transport that the host is actively
+ * using, avoiding asymmetric USB/SPI usage in SPI-only mode.
+ *
+ * @param[in] channel Channel on which the frame was received (rx_comm_channel_t cast to uint8_t).
+ *                    Must be k_comm_channel_usb (0) or k_comm_channel_spi (1).
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Channel stored successfully
+ * @retval k_rx_err_not_initialized shared_data_init() not yet called
+ * @retval k_rx_err_invalid_arg channel is out of range (>= k_comm_channel_count)
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre shared_data_init() has been called successfully
+ * @pre channel is a valid rx_comm_channel_t value cast to uint8_t (< k_comm_channel_count)
+ * @post g_shared_data.active_channel == channel on k_rx_ok
+ * @post g_shared_data.active_channel_valid == true on k_rx_ok
+ *
+ * @note Thread safety: protected by motor_mutex (same section as last_comm_tick)
+ * @note Uses uint8_t to avoid including rx_comm_manager.h in this header
+ *
+ * @see shared_data_get_active_channel() Consumer accessor for telemetry routing
+ * @see shared_data_update_last_comm_tick() Updated in the same callback
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_update_active_channel(uint8_t channel);
+
+/**
+ * @brief Return the channel that last delivered a command frame
+ *
+ * @details
+ * Used by the telemetry task to select the outgoing transport channel so
+ * that telemetry replies travel on the same physical link as commands.
+ * Returns k_comm_channel_usb when no command has been received yet
+ * (active_channel_valid == false), preserving existing USB-default behaviour.
+ *
+ * @return uint8_t Active communication channel (rx_comm_channel_t cast to uint8_t)
+ * @retval 0 (k_comm_channel_usb) Default before any command is received, or on
+ *           mutex failure, or when USB was the last channel
+ * @retval 1 (k_comm_channel_spi) SPI was the last channel to deliver a command
+ *
+ * @pre shared_data_init() has been called (returns USB default if not)
+ * @pre At least one frame has been received for a non-default result
+ * @post Return value is 0 (USB) or 1 (SPI) matching rx_comm_channel_t values
+ * @post g_shared_data is unchanged (read-only accessor)
+ *
+ * @note Thread safety: protected by motor_mutex
+ * @note Fail-safe: returns 0 (k_comm_channel_usb) on any error
+ * @note Uses uint8_t to avoid including rx_comm_manager.h in this header
+ *
+ * @see shared_data_update_active_channel() Writer called by comm task
+ *
+ * @since Version 1.0.0
+ */
+uint8_t shared_data_get_active_channel(void);
 
 /**
  * @brief Set event flags for inter-task signaling

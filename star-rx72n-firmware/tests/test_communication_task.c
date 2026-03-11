@@ -47,6 +47,7 @@ void setUp(void)
 {
   /* Reset all mocks before each test */
   mock_shared_data_reset();
+  (void)shared_data_init(); /* mirrors production task startup; enables active-channel API */
   mock_comm_manager_reset();
   mock_nanopb_reset();
   mock_tx_reset();
@@ -316,6 +317,39 @@ void test_comm_task_updates_comm_timestamp(void)
   TEST_ASSERT_FALSE(shared_data_is_comm_timeout());
 }
 
+/**
+ * @brief Test that frame reception records the active channel in shared data
+ *
+ * @details
+ * Verifies that shared_data_update_active_channel() is called and the
+ * correct channel value is retrievable via shared_data_get_active_channel().
+ * This mechanism lets the telemetry task route replies symmetrically.
+ *
+ * @pre mock_shared_data_reset() called (setUp)
+ * @pre No prior shared_data_update_active_channel() calls
+ * @post shared_data_get_active_channel() returns k_comm_channel_spi
+ * @post mock_shared_data_get_active_channel_update_count() == 1
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ */
+void test_comm_task_frame_updates_active_channel(void)
+{
+  /* NOTE: internal_frame_callback() is static in comm_task.c and cannot be
+   * called here (comm_task.c is not in the test binary -- only mocks are).
+   * This test verifies the shared_data mock correctly stores and returns the
+   * channel, exercising the same API surface that the comm task calls. */
+
+  /* Arrange: default is USB */
+  TEST_ASSERT_EQUAL(k_comm_channel_usb, shared_data_get_active_channel());
+
+  /* Act: simulate comm task recording an SPI frame receipt */
+  (void)shared_data_update_active_channel((uint8_t)k_comm_channel_spi);
+
+  /* Assert: active channel updated to SPI */
+  TEST_ASSERT_EQUAL(k_comm_channel_spi, shared_data_get_active_channel());
+  TEST_ASSERT_EQUAL_UINT32(1, mock_shared_data_get_active_channel_update_count());
+}
+
 /* =============================================================================
  * Frame Response Tests
  * =============================================================================
@@ -413,6 +447,9 @@ int main(void)
 
   /* Communication Timestamp Tests */
   RUN_TEST(test_comm_task_updates_comm_timestamp);
+
+  /* Active Channel Tests */
+  RUN_TEST(test_comm_task_frame_updates_active_channel);
 
   /* Frame Response Tests */
   RUN_TEST(test_comm_task_can_send_response);

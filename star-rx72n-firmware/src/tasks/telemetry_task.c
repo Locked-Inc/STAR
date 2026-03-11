@@ -1639,132 +1639,107 @@ static void internal_telem_task_entry(ULONG input)
  * @brief Select the active transport channel for this telemetry cycle
  *
  * @details
- * Queries the communication manager to determine which physical channel is
- * ready for transmission. Implements the USB-preferred, SPI-fallback policy:
+ * Reads the active command channel recorded by the comm task and maps it to
+ * the corresponding telemetry transport. Implements symmetric routing so that
+ * telemetry replies travel on the same physical link as incoming commands:
  *
- * 1. Query USB CDC readiness via rx_comm_manager_channel_ready()
- * 2. If USB is ready, return k_telemetry_transport_usb
- * 3. Otherwise query SPI readiness
- * 4. If SPI is ready, return k_telemetry_transport_spi (and log the failover
- *    once per transition)
- * 5. If neither is ready, return k_telemetry_transport_none
+ * 1. Call shared_data_get_active_channel() to read the last command channel
+ * 2. If the raw value is >= k_comm_channel_count (out-of-range), return
+ *    k_telemetry_transport_usb as a fail-safe
+ * 3. If the channel is k_comm_channel_spi, return k_telemetry_transport_spi
+ * 4. Otherwise (k_comm_channel_usb or no command received yet), return
+ *    k_telemetry_transport_usb
  *
- * The function uses a static flag to detect the USB->SPI transition and emits
- * a warning log exactly once per failover event (not once per cycle) to avoid
- * log flooding at 20 Hz.
+ * Before any command has been received, shared_data_get_active_channel()
+ * returns k_comm_channel_usb (the USB default), preserving the existing
+ * USB-preferred startup behaviour.
  *
  * @return telemetry_transport_t Selected transport
- * @retval k_telemetry_transport_usb  USB CDC ready, use as primary
- * @retval k_telemetry_transport_spi  USB not ready, SPI available as fallback
- * @retval k_telemetry_transport_none Both channels unavailable, drop message
+ * @retval k_telemetry_transport_usb  USB was the last command channel, no
+ *                                    command has been received yet, or
+ *                                    shared_data_get_active_channel() returned
+ *                                    an out-of-range/unknown rx_comm_channel_t
+ *                                    (fail-safe)
+ * @retval k_telemetry_transport_spi  SPI was the last command channel
  *
- * @pre g_comm_manager must be initialized via rx_comm_manager_init()
- * @pre rx_comm_manager_channel_ready() must be callable (non-blocking)
- * @post Returned transport reflects real-time channel readiness
- * @post Transition warning logged at most once per USB->SPI failover event
+ * @pre shared_data_init() has been called
+ * @pre shared_data_get_active_channel() may return any uint8_t value,
+ *      including an invalid or unknown rx_comm_channel_t; this function
+ *      handles all cases safely
+ * @post Return value is always k_telemetry_transport_usb or
+ *       k_telemetry_transport_spi, even when the raw channel value is
+ *       out-of-range
+ * @post Shared data is not modified (read-only access)
  *
  * @note Called every 50 ms from internal_build_and_send_telemetry() (20 Hz)
- * @note Non-blocking: rx_comm_manager_channel_ready() never blocks
- * @note Thread-safe: reads only s_usb_was_active (single writer: this task)
- *
- * @warning Returns k_telemetry_transport_none if g_comm_manager not initialized
- *
- * @par Channel selection state machine:
- * @startuml
- * state "USB Active" as usb {
- *   usb : Entry - Log info on first use
- *   usb : Do - Send telemetry via k_comm_channel_usb
- * }
- * state "SPI Fallback" as spi {
- *   spi : Entry - Log warning (USB->SPI failover detected)
- *   spi : Do - Send telemetry via k_comm_channel_spi
- * }
- * state "No Transport" as none {
- *   none : Do - Drop telemetry message, log warning
- * }
- * [*] --> usb : USB ready at startup
- * [*] --> spi : USB not ready at startup
- * [*] --> none : Both unavailable
- * usb --> spi : USB not ready\n(disconnect detected)
- * usb --> none : Both unavailable
- * spi --> usb : USB reconnected
- * spi --> none : SPI also lost
- * none --> usb : USB reconnected
- * none --> spi : SPI becomes available
- * @enduml
+ * @note Bounded blocking: shared_data_get_active_channel() acquires motor_mutex
+ *       with TX_WAIT_FOREVER and holds it for ~2 us; callers must not assume
+ *       lock-free or zero-latency timing
+ * @note Thread-safe: shared_data_get_active_channel() is motor_mutex-protected
+ * @note Symmetric routing: telemetry replies are sent on the same physical
+ *       link as the most recently received command; out-of-range channel
+ *       values are intentionally mapped to k_telemetry_transport_usb as the
+ *       safe default
  *
  * @see internal_build_and_send_telemetry() Caller - maps transport to channel
- * @see rx_comm_manager_channel_ready() Readiness query API
- * @see rx_comm_manager_channel_name() Human-readable channel name for logs
+ * @see shared_data_get_active_channel() Active channel reader (returns uint8_t)
+ * @see shared_data_update_active_channel() Written by comm task on each frame
+ * @see rx_comm_channel_t Channel enum (k_comm_channel_usb, k_comm_channel_spi)
+ * @see k_telemetry_transport_usb USB transport constant
+ * @see k_telemetry_transport_spi SPI transport constant
  *
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Rule 5 Compliance:
- * - Precondition 1: g_comm_manager initialized (checked via channel_ready return)
- * - Precondition 2: channel argument within valid enum range
+ * - Precondition 1: shared_data_init() has been called
+ * - Precondition 2: shared_data_get_active_channel() may return any uint8_t,
+ *                   including invalid rx_comm_channel_t values
  * - Postcondition 1: Returns a valid telemetry_transport_t value
- * - Postcondition 2: Transition logged if s_usb_was_active changes
+ * - Postcondition 2: Return value is k_telemetry_transport_usb or
+ *                    k_telemetry_transport_spi for all possible inputs
  */
+
+/**
+ * @enum telem_channel_contract_t
+ * @brief Compile-time contract: number of rx_comm_channel_t values this
+ *        function explicitly handles
+ *
+ * @details
+ * Used in the static_assert inside internal_select_transport() to ensure the
+ * switch statement is updated whenever a new channel is added to
+ * rx_comm_channel_t.  Must equal k_comm_channel_count.
+ *
+ * @see internal_select_transport() Consumer of this constant
+ * @see k_comm_channel_count Total channel count in rx_comm_channel_t
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_telem_supported_channel_count = 2U, /**< USB + SPI; must match k_comm_channel_count */
+} telem_channel_contract_t;
+
 static telemetry_transport_t internal_select_transport(void)
 {
-  /** @brief Tracks previous USB active state to detect failover transitions */
-  static bool s_usb_was_active = false;
+  /* Compile-time guard: this switch covers exactly k_telem_supported_channel_count
+   * channels.  If a new channel is ever added to rx_comm_channel_t, update
+   * k_comm_channel_count, increment k_telem_supported_channel_count, and add a
+   * case below so the new channel is not silently routed to USB. */
+  static_assert((uint8_t)k_comm_channel_count == (uint8_t)k_telem_supported_channel_count,
+                "internal_select_transport: add a case for every new rx_comm_channel_t value");
 
-  /**
-   * @brief Rate-limits the "no transport" warning to once per transition into no-transport state
-   *
-   * @details
-   * Prevents log flooding at 20 Hz when both channels are unavailable.
-   * Cleared when either USB or SPI becomes ready so the warning fires again
-   * on the next failure.
-   */
-  static bool s_no_transport_logged = false;
-
-  /* Query USB channel readiness */
-  bool     usb_ready = false;
-  rx_err_t err = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_usb, &usb_ready);
-  if (err != k_rx_ok) {
-    /* Treat query failure as channel not ready */
-    usb_ready = false;
+  const uint8_t raw_ch = shared_data_get_active_channel();
+  if (raw_ch >= (uint8_t)k_comm_channel_count) {
+    return k_telemetry_transport_usb; /* fail-safe: unexpected value defaults to USB */
   }
 
-  if (usb_ready) {
-    /* USB is ready: use as primary transport */
-    if (!s_usb_was_active) {
-      /* Log USB (re)activation - first cycle or recovery from SPI fallback */
-      rx_log_info(s_tag, "Telemetry transport: USB CDC (primary)");
-      s_usb_was_active = true;
-    }
-    /* Reset no-transport flag so warning fires again on next failure */
-    s_no_transport_logged = false;
-    return k_telemetry_transport_usb;
+  switch ((rx_comm_channel_t)raw_ch) {
+    case k_comm_channel_spi:
+      return k_telemetry_transport_spi;
+    case k_comm_channel_usb:
+      return k_telemetry_transport_usb;
+    default:
+      return k_telemetry_transport_usb; /* fail-safe for unhandled future values */
   }
-
-  /* USB not ready: log failover warning on transition */
-  if (s_usb_was_active) {
-    rx_log_warn(s_tag, "USB CDC not ready - falling back to SPI");
-    s_usb_was_active = false;
-  }
-
-  /* Query SPI channel readiness */
-  bool spi_ready = false;
-  err            = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_spi, &spi_ready);
-  if (err != k_rx_ok) {
-    spi_ready = false;
-  }
-
-  if (spi_ready) {
-    /* Reset no-transport flag so warning fires again on SPI loss */
-    s_no_transport_logged = false;
-    return k_telemetry_transport_spi;
-  }
-
-  /* Neither channel ready: log once per transition into no-transport state */
-  if (!s_no_transport_logged) {
-    rx_log_warn(s_tag, "No transport available - dropping telemetry");
-    s_no_transport_logged = true;
-  }
-  return k_telemetry_transport_none;
 }
 
 /**
@@ -2293,37 +2268,45 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  * 1. **Timestamp + sequence** - Set timestamp_us and increment s_sequence
  * 2. **internal_collect_state()** - populate motor and temperature fields
  * 3. **internal_encode_telemetry()** - nanopb encode to s_telem_buffer
- * 4. **internal_select_transport()** - USB preferred, SPI fallback
- * 5. **Assert HOST_IRQ LOW** (P67, active-low) to notify RPi5 data is ready
+ * 4. **internal_select_transport()** - symmetric routing via
+ *    shared_data_get_active_channel(); returns k_comm_channel_usb or
+ *    k_comm_channel_spi based on the last received command channel
+ * 5. **Assert HOST_IRQ LOW** (P67, active-low) only for SPI sends, to notify
+ *    the RPi5 SPI peripheral that data is ready
  * 6. **internal_send_via_channel()** - transmit via comm manager
- * 7. **Deassert HOST_IRQ HIGH** (P67) regardless of send outcome
+ * 7. **Deassert HOST_IRQ HIGH** (P67) only if it was asserted in step 5
  *
  * Encoding failure is fatal for this cycle (message not sent, retry next cycle).
  * Send failure is non-critical (message lost, host detects via sequence gap).
- * No-transport drops the encoded message silently (both channels unavailable).
+ * An unexpected transport value from internal_select_transport() is a
+ * programming error and returns k_rx_err_invalid_state immediately.
  *
  * @return rx_err_t Operation status
  * @retval k_rx_ok Telemetry sent successfully
  * @retval k_rx_err_encoding_failed nanopb encoding failed (buffer too small, invalid message)
- * @retval k_rx_err_invalid_state No transport available (both channels unavailable)
+ * @retval k_rx_err_invalid_state internal_select_transport() returned an unexpected
+ *                                transport (programming error; indicates enum mismatch)
  * @retval k_rx_err_usb_tx_fail USB CDC transmission failed (host disconnected)
  * @retval k_rx_err_spi_tx_fail SPI transmission failed (RPi5 not responding)
  * @retval k_rx_err_timeout Communication manager send timeout
  *
- * @pre Shared data initialized (shared_data_init() called)
- * @pre Communication manager initialized (rx_comm_manager_init() called)
- * @pre nanopb initialized (compile-time, no init function)
+ * @pre shared_data_init() has been called
+ * @pre rx_comm_manager_init() has been called
+ * @pre shared_data_get_active_channel() reflects the most recent command channel
  * @pre Task created and running (telemetry_task_create() called)
  *
- * @post Telemetry message sent via USB CDC (primary) or SPI (fallback)
- * @post HOST_IRQ (P67) is HIGH (deasserted) on return, regardless of send result
+ * @post Telemetry message sent on the same physical link as the last received command
+ *       (k_comm_channel_usb or k_comm_channel_spi)
+ * @post HOST_IRQ (P67) is HIGH (deasserted) on return; toggled only for SPI sends
  * @post s_sequence incremented exactly once per call
  * @post s_telem_buffer overwritten with latest encoded protobuf
  *
  * @note Called every 50ms by internal_telem_task_entry() (20 Hz)
  * @note Execution time: ~120 us
  * @note Data collection is non-blocking (graceful degradation if mutex locked)
- * @note Transport channel selected dynamically each cycle (USB preferred)
+ * @note Transport channel is selected symmetrically: telemetry replies travel
+ *       on the same physical link as the last incoming command frame;
+ *       only k_comm_channel_usb and k_comm_channel_spi are expected
  *
  * @warning If encoding fails, message is NOT sent (retry next cycle)
  * @warning If transmission fails, message is lost (host detects via sequence gap)
@@ -2368,21 +2351,40 @@ static rx_err_t internal_build_and_send_telemetry(void)
     return err;
   }
 
-  /* Select transport (USB preferred, SPI fallback) */
+  /* Select transport based on active command channel */
   transport = internal_select_transport();
-  if (transport == k_telemetry_transport_none) {
-    return k_rx_err_invalid_state;
+
+  /* Map transport to channel; exhaustive switch surfaces unexpected enum values */
+  switch (transport) {
+    case k_telemetry_transport_usb:
+      channel = k_comm_channel_usb;
+      break;
+    case k_telemetry_transport_spi:
+      channel = k_comm_channel_spi;
+      break;
+    case k_telemetry_transport_none:
+    default:
+      /* internal_select_transport() only returns USB or SPI; reaching here is a
+       * programming error. Assert to surface it in debug builds. */
+      RX_ASSERT(false, "internal_select_transport() returned unexpected transport");
+      return k_rx_err_invalid_state;
   }
 
-  /* Assert HOST_IRQ LOW (active-low) to notify RPi5 that data is ready */
-  (void)gpio_write_low(g_pin_host_irq);
+  /* Assert HOST_IRQ LOW (active-low) only for SPI sends: the RPi5 SPI
+   * peripheral watches HOST_IRQ (P67) as a data-ready signal.  USB sends
+   * do not involve the SPI peer so toggling HOST_IRQ for USB would
+   * spuriously wake it. */
+  const bool assert_host_irq = (channel == k_comm_channel_spi);
+  if (assert_host_irq) {
+    (void)gpio_write_low(g_pin_host_irq);
+  }
 
-  /* Map transport to channel and send */
-  channel = (transport == k_telemetry_transport_usb) ? k_comm_channel_usb : k_comm_channel_spi;
-  err     = internal_send_via_channel(channel, encoded_len);
+  err = internal_send_via_channel(channel, encoded_len);
 
-  /* Deassert HOST_IRQ HIGH regardless of send outcome */
-  (void)gpio_write_high(g_pin_host_irq);
+  /* Deassert HOST_IRQ HIGH only if we asserted it above */
+  if (assert_host_irq) {
+    (void)gpio_write_high(g_pin_host_irq);
+  }
 
   if (err != k_rx_ok) {
     return err;
