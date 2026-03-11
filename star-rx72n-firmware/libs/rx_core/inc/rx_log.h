@@ -403,39 +403,64 @@ void uart_debug_puthex(uint32_t value, uint8_t digits);
 #endif /* RX_IS_SIMULATOR */
 
 /* =============================================================================
- * USB Log Mirroring (Optional)
+ * Log Backend Selection (Runtime Dispatch)
  *
- * When USB_LOG_MIRROR is defined and set to 1, all log messages are sent to both UART
- * (/dev/ttyUSB0 via CY7C65213) and USB CDC Port 2 (/dev/ttyACM2). This allows
- * viewing logs with standard terminal tools like screen or minicom on either:
- * - UART: `screen /dev/ttyUSB0 115200`
- * - USB:  `screen /dev/ttyACM2 115200`
+ * Controls which output interfaces receive log messages at runtime.
+ * Call rx_log_set_backend() once at startup before tasks run.
  *
- * Port Assignment:
- * - Port 0 (k_usb_port_proto): Binary protocol (nanopb frames)
+ * Port assignments:
+ * - Port 0 (k_usb_port_proto):   Binary protocol (nanopb frames)
  * - Port 1 (k_usb_port_decoded): Decoded ASCII frame dumps
- * - Port 2 (k_usb_port_log): Log output (mirrored here)
- *
- * Enabled by default: USB_LOG_MIRROR=1
- * Disable with: -DUSB_LOG_MIRROR=0 (logs will only appear on UART)
+ * - Port 2 (k_usb_port_log):     Log output (enabled via k_log_backend_usb)
  * =============================================================================
  */
 
-/* Default: USB log mirroring enabled (Issue #161: USB CDC debug output mode) */
-#ifndef USB_LOG_MIRROR
-#define USB_LOG_MIRROR 1
-#endif
-
-#if USB_LOG_MIRROR
-/*
- * USB CDC logging backend functions (implemented in rx_log_usb.c)
+/**
+ * @enum rx_log_backend_t
+ * @brief Bitmask selecting which output interfaces receive log messages
  *
- * These functions provide:
- * - Boot log buffering (512B ring buffer for logs during USB enumeration)
- * - Thread safety (ThreadX mutex for multi-task logging)
- * - Error handling (graceful handling of USB TX buffer full)
- * - Statistics tracking (total, dropped, boot buffered, USB errors)
- * - Non-blocking operation (drops logs if TX full, never blocks)
+ * @details
+ * Each bit enables one output backend. Values may be OR-ed together.
+ * Implemented in rx_log.c; runtime state stored in s_log_backend.
+ *
+ * @see rx_log_set_backend() Configure at startup
+ * @see rx_log_get_backend() Query active backend
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_log_backend_none = 0x00u, /**< Discard all log output */
+  k_log_backend_uart = 0x01u, /**< SCI9 via uart_debug_* (CY7C65213 bridge) */
+  k_log_backend_usb  = 0x02u, /**< USB CDC Port 2 via rx_log_usb_* (/dev/ttyACM2) */
+  k_log_backend_both = 0x03u, /**< k_log_backend_uart | k_log_backend_usb */
+} rx_log_backend_t;
+
+/**
+ * @brief Set the active log output backend(s)
+ *
+ * @param[in] backend Bitmask of rx_log_backend_t values
+ * @return k_rx_ok on success, k_rx_err_invalid_arg if unknown bits are set
+ *
+ * @pre Must be called before any RTOS tasks are started
+ * @note Not thread-safe. Call once at startup.
+ * @since Version 1.0.0
+ */
+rx_err_t rx_log_set_backend(rx_log_backend_t backend);
+
+/**
+ * @brief Get the currently active log backend bitmask
+ *
+ * @return Current rx_log_backend_t bitmask
+ * @note Read-only after startup -- safe to call from any context.
+ * @since Version 1.0.0
+ */
+rx_log_backend_t rx_log_get_backend(void);
+
+/* =============================================================================
+ * USB CDC Logging Backend
+ *
+ * Functions implemented in rx_log_usb.c providing boot buffering,
+ * thread safety, error recovery, and statistics tracking.
+ * =============================================================================
  */
 
 /**
@@ -490,44 +515,57 @@ void rx_log_usb_get_stats(usb_log_stats_t* stats);
  */
 void rx_log_usb_notify_ready(void);
 
-/* Output to both UART and USB CDC Port 2 (log port)
- * USB backend handles boot buffering, thread safety, and error recovery.
- * Each macro evaluates its arguments exactly once to avoid side effects. */
+/* Runtime dispatch: route log output based on active backend bitmask.
+ * rx_log_get_backend() is called once per invocation and both bits checked.
+ * Each macro evaluates its value arguments exactly once (no side effects). */
 #define LOG_PUTC(c)                                                                                \
   do {                                                                                             \
-    char _log_c = (c);                                                                             \
-    uart_debug_putc(_log_c);                                                                       \
-    rx_log_usb_putc(_log_c);                                                                       \
+    char             _log_c = (c);                                                                 \
+    rx_log_backend_t _log_b = rx_log_get_backend();                                                \
+    if ((_log_b & k_log_backend_uart) != k_log_backend_none) {                                     \
+      uart_debug_putc(_log_c);                                                                     \
+    }                                                                                              \
+    if ((_log_b & k_log_backend_usb) != k_log_backend_none) {                                      \
+      rx_log_usb_putc(_log_c);                                                                     \
+    }                                                                                              \
   } while (0)
 
 #define LOG_PUTS(s)                                                                                \
   do {                                                                                             \
-    const char* _log_s = (s);                                                                      \
-    uart_debug_puts(_log_s);                                                                       \
-    rx_log_usb_puts(_log_s);                                                                       \
+    const char*      _log_s = (s);                                                                 \
+    rx_log_backend_t _log_b = rx_log_get_backend();                                                \
+    if ((_log_b & k_log_backend_uart) != k_log_backend_none) {                                     \
+      uart_debug_puts(_log_s);                                                                     \
+    }                                                                                              \
+    if ((_log_b & k_log_backend_usb) != k_log_backend_none) {                                      \
+      rx_log_usb_puts(_log_s);                                                                     \
+    }                                                                                              \
   } while (0)
 
 #define LOG_PUTINT(v)                                                                              \
   do {                                                                                             \
-    int32_t _log_v = (v);                                                                          \
-    uart_debug_putint(_log_v);                                                                     \
-    rx_log_usb_putint(_log_v);                                                                     \
+    int32_t          _log_v = (v);                                                                 \
+    rx_log_backend_t _log_b = rx_log_get_backend();                                                \
+    if ((_log_b & k_log_backend_uart) != k_log_backend_none) {                                     \
+      uart_debug_putint(_log_v);                                                                   \
+    }                                                                                              \
+    if ((_log_b & k_log_backend_usb) != k_log_backend_none) {                                      \
+      rx_log_usb_putint(_log_v);                                                                   \
+    }                                                                                              \
   } while (0)
 
 #define LOG_PUTHEX(v, d)                                                                           \
   do {                                                                                             \
-    uint32_t _log_vhex = (v);                                                                      \
-    uint8_t  _log_d    = (d);                                                                      \
-    uart_debug_puthex(_log_vhex, _log_d);                                                          \
-    rx_log_usb_puthex(_log_vhex, _log_d);                                                          \
+    uint32_t         _log_vhex = (v);                                                              \
+    uint8_t          _log_d    = (d);                                                              \
+    rx_log_backend_t _log_b    = rx_log_get_backend();                                             \
+    if ((_log_b & k_log_backend_uart) != k_log_backend_none) {                                     \
+      uart_debug_puthex(_log_vhex, _log_d);                                                        \
+    }                                                                                              \
+    if ((_log_b & k_log_backend_usb) != k_log_backend_none) {                                      \
+      rx_log_usb_puthex(_log_vhex, _log_d);                                                        \
+    }                                                                                              \
   } while (0)
-#else
-/* Output to UART only (default) - no side effects */
-#define LOG_PUTC(c)      uart_debug_putc(c)
-#define LOG_PUTS(s)      uart_debug_puts(s)
-#define LOG_PUTINT(v)    uart_debug_putint(v)
-#define LOG_PUTHEX(v, d) uart_debug_puthex((v), (d))
-#endif
 
 /* =============================================================================
  * Log Level Definitions

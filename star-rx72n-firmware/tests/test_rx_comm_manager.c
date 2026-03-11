@@ -212,14 +212,14 @@
  * @brief Test constants
  */
 typedef enum : uint16_t {
-  k_test_payload_size             = 10,  /**< Test payload size */
-  k_expected_channel_usb_value    = 0,   /**< Expected k_comm_channel_usb value */
-  k_expected_channel_spi_value    = 1,   /**< Expected k_comm_channel_spi value */
-  k_expected_channel_i2c_value    = 2,   /**< Expected k_comm_channel_i2c value */
-  k_expected_channel_uart_value   = 3,   /**< Expected k_comm_channel_uart value */
-  k_expected_channel_count_value  = 4,   /**< Expected k_comm_channel_count value */
-  k_invalid_channel_sentinel      = 99,  /**< Invalid channel ID for negative testing */
-  k_garbage_fill_value            = 0xFF, /**< Fill value to simulate garbage data */
+  k_test_payload_size            = 10,   /**< Test payload size */
+  k_expected_channel_usb_value   = 0,    /**< Expected k_comm_channel_usb value */
+  k_expected_channel_spi_value   = 1,    /**< Expected k_comm_channel_spi value */
+  k_expected_channel_i2c_value   = 2,    /**< Expected k_comm_channel_i2c value */
+  k_expected_channel_uart_value  = 3,    /**< Expected k_comm_channel_uart value */
+  k_expected_channel_count_value = 4,    /**< Expected k_comm_channel_count value */
+  k_invalid_channel_sentinel     = 99,   /**< Invalid channel ID for negative testing */
+  k_garbage_fill_value           = 0xFF, /**< Fill value to simulate garbage data */
 } test_constants_t;
 
 /* =============================================================================

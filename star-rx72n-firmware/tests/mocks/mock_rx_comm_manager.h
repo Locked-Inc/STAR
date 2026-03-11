@@ -33,6 +33,8 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+/* Pull in real types so mock functions have compatible signatures */
+#include "rx_comm_manager.h"
 #include "rx_err.h"
 
 /* =============================================================================
@@ -49,112 +51,6 @@ typedef enum : uint16_t {
   k_mock_comm_max_payload_size = 1024, /**< Maximum payload size */
   k_mock_comm_ascii_buf_size   = 2048, /**< ASCII buffer size */
 } mock_comm_manager_constants_t;
-
-/* =============================================================================
- * Type Definitions (mirrors rx_comm_manager.h / rx_frame.h)
- * =============================================================================
- */
-
-/**
- * @enum rx_frame_type_t
- * @brief Frame types for communication protocol
- */
-typedef enum : uint8_t {
-  k_frame_type_ping      = 0x00, /**< Link health check request */
-  k_frame_type_pong      = 0x01, /**< Link health check response */
-  k_frame_type_command   = 0x10, /**< Command from controller */
-  k_frame_type_response  = 0x11, /**< Response from peripheral */
-  k_frame_type_ack       = 0x12, /**< Positive acknowledgment (SPI only) */
-  k_frame_type_nack      = 0x13, /**< Negative acknowledgment (SPI only) */
-  k_frame_type_reset_ack = 0xFE, /**< Session reset acknowledgment */
-  k_frame_type_reset     = 0xFF, /**< Session reset request */
-} rx_frame_type_t;
-
-/**
- * @enum rx_comm_channel_t
- * @brief Communication channel identifiers
- */
-typedef enum : uint8_t {
-  k_comm_channel_usb   = 0, /**< USB CDC channel */
-  k_comm_channel_spi   = 1, /**< SPI channel */
-  k_comm_channel_i2c   = 2, /**< I2C peripheral channel (RIIC0) */
-  k_comm_channel_uart  = 3, /**< UART channel (SCI9) */
-  k_comm_channel_count = 4, /**< Total channel count */
-} rx_comm_channel_t;
-
-/**
- * @struct rx_frame_header_t
- * @brief Frame header structure
- */
-typedef struct {
-  uint16_t sequence; /**< Frame sequence number */
-  uint16_t length;   /**< Payload length */
-  uint8_t  type;     /**< Frame type */
-  uint8_t  flags;    /**< Control flags */
-} rx_frame_header_t;
-
-/**
- * @struct rx_frame_t
- * @brief Complete frame structure
- */
-typedef struct {
-  rx_frame_header_t header;                                /**< Frame header */
-  uint8_t           payload[k_mock_comm_max_payload_size]; /**< Payload data */
-  uint32_t          crc;                                   /**< CRC checksum */
-} rx_frame_t;
-
-/* Forward declarations for mock */
-struct rx_usb_comm_handle_s;
-typedef struct rx_usb_comm_handle_s rx_usb_comm_handle_t;
-
-struct rx_spi_comm_handle_s;
-typedef struct rx_spi_comm_handle_s rx_spi_comm_handle_t;
-
-/**
- * @typedef rx_comm_frame_callback_t
- * @brief Frame received callback function type
- */
-typedef void (*rx_comm_frame_callback_t)(rx_comm_channel_t channel,
-                                         const rx_frame_t* frame,
-                                         void*             ctx);
-
-/**
- * @struct rx_comm_manager_config_t
- * @brief Communication manager configuration
- */
-typedef struct {
-  rx_usb_comm_handle_t*    usb_handle;            /**< USB comm handle */
-  rx_spi_comm_handle_t*    spi_handle;            /**< SPI comm handle */
-  rx_comm_frame_callback_t callback;              /**< Frame callback */
-  void*                    callback_ctx;          /**< Callback context */
-  bool                     enable_decoded_output; /**< Enable ASCII output */
-} rx_comm_manager_config_t;
-
-/**
- * @struct rx_comm_manager_t
- * @brief Communication manager handle
- */
-typedef struct {
-  rx_usb_comm_handle_t*    usb_handle;                               /**< USB handle */
-  rx_spi_comm_handle_t*    spi_handle;                               /**< SPI handle */
-  rx_comm_frame_callback_t callback;                                 /**< Callback */
-  void*                    callback_ctx;                             /**< Context */
-  char                     ascii_buffer[k_mock_comm_ascii_buf_size]; /**< ASCII buf */
-  bool                     enable_decoded_output;                    /**< ASCII output */
-  bool                     initialized;                              /**< Init flag */
-} rx_comm_manager_t;
-
-/**
- * @struct rx_comm_send_params_t
- * @brief Parameters for send operations
- */
-typedef struct {
-  rx_comm_channel_t channel;     /**< Channel to send on */
-  rx_frame_type_t   type;        /**< Frame type */
-  uint8_t           flags;       /**< Frame flags */
-  const uint8_t*    payload;     /**< Payload data */
-  uint32_t          payload_len; /**< Payload length */
-} rx_comm_send_params_t;
 
 /* =============================================================================
  * Mock Control Functions

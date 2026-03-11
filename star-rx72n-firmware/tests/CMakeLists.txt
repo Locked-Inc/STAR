@@ -17,7 +17,7 @@ function(apply_strict_warnings target)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${target} PRIVATE -fshort-enums)
     endif()
-    target_compile_definitions(${target} PRIVATE USE_MOCK_SCI_REGS UNIT_TEST RX_SIMULATOR_MODE USB_LOG_MIRROR=0)
+    target_compile_definitions(${target} PRIVATE USE_MOCK_SCI_REGS UNIT_TEST RX_SIMULATOR_MODE)
 endfunction()
 
 # Helper function to apply common include paths per target
@@ -118,9 +118,15 @@ set(MOCK_USB_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_usb0_regs.c
 )
 
-# Log mock source
+# rx_log backend implementation (runtime backend selection)
+set(RX_LOG_SRC
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log.c
+)
+
+# Log mock source (UART/USB stub functions + runtime backend implementation)
 set(MOCK_LOG_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_log.c
+    ${RX_LOG_SRC}
 )
 
 # UART mock sources
@@ -306,6 +312,7 @@ add_executable(test_rx_frame
     test_rx_frame.c
     ${RX_FRAME_SRC}
     ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_frame)
 apply_test_includes(test_rx_frame)
@@ -381,6 +388,7 @@ add_executable(test_rx_hcsr04
     ${RX_HCSR04_SRC}
     ${MOCK_HCSR04_SRC}
     ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_hcsr04)
 apply_test_includes(test_rx_hcsr04)
@@ -483,7 +491,7 @@ set(MOCK_ONEWIRE_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_gpio.c
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_crc.c
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_onewire_hw.c
-    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_log.c
+    ${MOCK_LOG_SRC}
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_system_regs.c
 )
 
@@ -491,7 +499,7 @@ set(MOCK_ONEWIRE_SRC
 add_executable(test_rx_bus_manager
     test_rx_bus_manager.c
     ${MOCK_BUS_MANAGER_SRC}
-    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_log.c
+    ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_bus_manager)
 apply_test_includes(test_rx_bus_manager)
@@ -838,6 +846,13 @@ set(MOCK_OBSTACLE_DETECT_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_obstacle_detect.c
 )
 
+# Mock comm transport sources: stubs for transport inits, IWDT heartbeat,
+# and comm_manager/nanopb helpers absent from the standard mocks.
+# Required when linking the real comm_task.c in test_rx_system_config.
+set(MOCK_COMM_TRANSPORTS_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_comm_transports.c
+)
+
 set(MOCK_DS18B20_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_ds18b20.c
 )
@@ -956,6 +971,36 @@ target_include_directories(test_imu_task PRIVATE
 )
 target_link_libraries(test_imu_task unity)
 set_target_properties(test_imu_task PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
+
+# Test: rx_log.c runtime backend selection
+add_executable(test_rx_log_backend
+    test_rx_log_backend.c
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_log_backend)
+apply_test_includes(test_rx_log_backend)
+target_link_libraries(test_rx_log_backend unity)
+
+# Test: comm_task_apply_system_config() unified config + conflict detection
+add_executable(test_rx_system_config
+    test_rx_system_config.c
+    ${TASK_COMM_SRC}
+    ${MOCK_TX_API_SRC}
+    ${MOCK_TIME_SRC}
+    ${MOCK_SHARED_DATA_SRC}
+    ${MOCK_COMM_MANAGER_SRC_TASK}
+    ${MOCK_NANOPB_SRC}
+    ${MOCK_LOG_SRC}
+    ${MOCK_COMM_TRANSPORTS_SRC}
+)
+apply_strict_warnings(test_rx_system_config)
+apply_test_includes(test_rx_system_config)
+target_compile_definitions(test_rx_system_config PRIVATE MOCK_TX_THREAD_CREATE)
+target_include_directories(test_rx_system_config PRIVATE
+    ${CMAKE_SOURCE_DIR}/../src/shared
+    ${CMAKE_SOURCE_DIR}/../src/tasks/inc
+)
+target_link_libraries(test_rx_system_config unity)
 
 # Test: Telemetry Aggregation Task
 add_executable(test_telemetry_aggregation_task
@@ -1088,6 +1133,9 @@ set(ALL_TEST_TARGETS
     test_rx_stack_monitor
     test_rx_bno055
     test_rx_bmp280
+    # Runtime backend and system config tests
+    test_rx_log_backend
+    test_rx_system_config
     # Multi-task firmware tests
     test_motor_control_task
     test_communication_task
@@ -1143,6 +1191,8 @@ add_test(NAME test_rx_host_irq COMMAND test_rx_host_irq)
 add_test(NAME test_rx_stack_monitor COMMAND test_rx_stack_monitor)
 add_test(NAME test_rx_bno055 COMMAND test_rx_bno055)
 add_test(NAME test_rx_bmp280 COMMAND test_rx_bmp280)
+add_test(NAME test_rx_log_backend COMMAND test_rx_log_backend)
+add_test(NAME test_rx_system_config COMMAND test_rx_system_config)
 
 # Multi-task firmware tests
 add_test(NAME test_motor_control_task COMMAND test_motor_control_task)

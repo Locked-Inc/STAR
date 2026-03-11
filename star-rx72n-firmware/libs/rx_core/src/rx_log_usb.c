@@ -40,14 +40,11 @@
  * SPDX-License-Identifier: MIT
 */
 
-#include "rx_log.h"
-
-#if USB_LOG_MIRROR /* Only compile if USB logging enabled */
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
+#include "rx_log.h"
 #include "rx_usb.h"
 #include "tx_api.h"
 
@@ -956,5 +953,3 @@ void rx_log_usb_notify_ready(void)
     (void)tx_mutex_put(&s_log_mutex);
   }
 }
-
-#endif /* USB_LOG_MIRROR */

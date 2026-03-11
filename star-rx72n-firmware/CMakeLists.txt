@@ -111,9 +111,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_motor/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_obstacle_detect/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_pid/inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_i2c_comm/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_spi_comm/inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_uart_comm/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_usb/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_usb_comm/inc
 )

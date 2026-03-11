@@ -789,6 +789,32 @@ typedef void (*rx_comm_link_status_callback_t)(rx_comm_channel_t     channel,
                                                void*                 ctx);
 
 /**
+ * @enum rx_comm_channel_mask_t
+ * @brief Bitmask selecting which comm channels to initialize and use
+ *
+ * @details
+ * Each bit corresponds to one comm channel.  Bit position matches the numeric
+ * value of the corresponding rx_comm_channel_t enumerator so that a single
+ * shift converts between the two representations.
+ *
+ * Pass a bitmask in rx_comm_manager_config_t::enabled_channels to skip
+ * initialization of channels that are not needed (e.g. exclude UART when the
+ * log backend also uses SCI9).
+ *
+ * @see rx_comm_channel_t  Channel enumerator
+ * @see rx_comm_manager_config_t::enabled_channels  Usage
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_comm_channel_mask_none = 0x00u, /**< No channels enabled */
+  k_comm_channel_mask_usb  = 0x01u, /**< USB CDC (k_comm_channel_usb = 0) */
+  k_comm_channel_mask_spi  = 0x02u, /**< SPI     (k_comm_channel_spi = 1) */
+  k_comm_channel_mask_i2c  = 0x04u, /**< I2C     (k_comm_channel_i2c = 2) */
+  k_comm_channel_mask_uart = 0x08u, /**< UART    (k_comm_channel_uart = 3) */
+  k_comm_channel_mask_all  = 0x0Fu, /**< All four channels */
+} rx_comm_channel_mask_t;
+
+/**
  * @struct rx_comm_manager_config_t
  * @brief Communication manager configuration
  *
@@ -992,6 +1018,23 @@ typedef struct {
    * @brief User context for link_status_cb
    */
   void* link_status_ctx;
+
+  /**
+   * @brief Bitmask of channels to initialize and poll (default: all channels)
+   * @details
+   * When a bit is clear the corresponding transport is skipped during
+   * internal_init_transports() and its handle is left NULL.  Set to
+   * k_comm_channel_mask_all to attempt all four transports (legacy behaviour).
+   *
+   * Use comm_task_apply_system_config() to set this alongside the log backend
+   * so that SCI9 conflicts between UART comm and UART log are caught early.
+   *
+   * @par Valid values: Any combination of rx_comm_channel_mask_t bits
+   * @par Default: k_comm_channel_mask_all (attempt all channels)
+   * @see rx_comm_channel_mask_t Bit definitions
+   * @since Version 1.0.0
+   */
+  rx_comm_channel_mask_t enabled_channels;
 } rx_comm_manager_config_t;
 
 /**

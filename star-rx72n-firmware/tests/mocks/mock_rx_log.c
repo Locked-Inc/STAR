@@ -55,3 +55,16 @@ void rx_log_usb_puts(const char* str)
   (void)str;
   /* No-op for testing */
 }
+
+void rx_log_usb_putint(int32_t value)
+{
+  (void)value;
+  /* No-op for testing */
+}
+
+void rx_log_usb_puthex(uint32_t value, uint8_t digits)
+{
+  (void)value;
+  (void)digits;
+  /* No-op for testing */
+}

@@ -390,11 +390,14 @@
 #include "rx_check.h"
 #include "rx_comm_manager.h"
 #include "rx_frame.h"
+#include "rx_i2c_comm.h"
 #include "rx_iwdt.h"
 #include "rx_log.h"
 #include "rx_nanopb.h"
 #include "rx_spi_comm.h"
+#include "rx_spi_link.h"
 #include "rx_time_constants.h"
+#include "rx_uart_comm.h"
 #include "rx_usb_comm.h"
 #include "shared_data.h"
 #include "tx_api.h"
@@ -498,6 +501,45 @@ rx_comm_manager_t g_comm_manager;
 
 /** @brief Log tag for this module */
 static const char* const s_tag = "COMM";
+
+/**
+ * @var s_enabled_channels
+ * @brief Runtime bitmask of comm channels to initialize
+ *
+ * @details
+ * Set by comm_task_apply_system_config() before comm_task_create() is called.
+ * Consumed by internal_init_transports() to skip channels that should remain
+ * disabled (e.g. UART comm when UART log backend is active on SCI9).
+ *
+ * Default: k_comm_channel_mask_all so that existing callers that skip
+ * comm_task_apply_system_config() continue to attempt all four transports.
+ *
+ * @note File-scoped static. Must not be modified directly outside of
+ *       comm_task_apply_system_config().
+ * @since Version 1.0.0
+ */
+static rx_comm_channel_mask_t s_enabled_channels = k_comm_channel_mask_all;
+
+/* =============================================================================
+ * Public Constants
+ * =============================================================================
+ */
+
+/**
+ * @var k_system_config_default
+ * @brief Safe default system configuration
+ *
+ * @details
+ * Enables USB + SPI + I2C comm channels (UART excluded to avoid SCI9 conflict)
+ * with logs directed to both UART and USB CDC Port 2.
+ *
+ * @since Version 1.0.0
+ */
+const rx_system_config_t k_system_config_default = {
+  .comm_channels = (rx_comm_channel_mask_t)(k_comm_channel_mask_usb | k_comm_channel_mask_spi |
+                                            k_comm_channel_mask_i2c),
+  .log_backends  = k_log_backend_both,
+};
 
 /* =============================================================================
  * File-Scoped Transport Handles (Static Instances)
@@ -648,6 +690,68 @@ static bool internal_handle_retransmit_config_command(const rx_frame_t* frame);
  * Public Functions
  * =============================================================================
  */
+
+/**
+ * @brief Validate and apply a system configuration atomically
+ *
+ * @details
+ * Checks for unknown bits and the SCI9 conflict (UART comm + UART log)
+ * before modifying any persistent state. If all checks pass, the log
+ * backend and comm-channel mask are updated atomically from the caller's
+ * perspective (both writes succeed or neither happens).
+ *
+ * @param[in] config System configuration to validate and apply
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok              Configuration applied
+ * @retval k_rx_err_null_ptr    config is NULL
+ * @retval k_rx_err_invalid_arg Unknown bits or SCI9 conflict detected
+ *
+ * @pre config != NULL
+ * @pre Must be called before comm_task_create()
+ * @post rx_log_get_backend() reflects log_backends on k_rx_ok
+ * @post s_enabled_channels reflects comm_channels on k_rx_ok
+ *
+ * @note Not thread-safe. Call once at startup.
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: [PASS] 2 preconditions, 2 postconditions
+ *
+ * @callgraph
+ * @callergraph
+ */
+rx_err_t comm_task_apply_system_config(const rx_system_config_t* config)
+{
+  RX_CHECK_NULL_PTR(config, s_tag, "config must not be NULL");
+
+  /* Validate no unknown bits in log_backends */
+  if ((config->log_backends & (rx_log_backend_t)(~(uint8_t)k_log_backend_both)) !=
+      k_log_backend_none) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate no unknown bits in comm_channels */
+  if ((config->comm_channels & (rx_comm_channel_mask_t)(~(uint8_t)k_comm_channel_mask_all)) !=
+      k_comm_channel_mask_none) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Conflict: UART comm and UART log both use SCI9 -- reject at config time */
+  if ((config->comm_channels & k_comm_channel_mask_uart) != k_comm_channel_mask_none &&
+      (config->log_backends & k_log_backend_uart) != k_log_backend_none) {
+    rx_log_error(s_tag, "Config conflict: UART comm and UART log both use SCI9");
+    return k_rx_err_invalid_arg;
+  }
+
+  rx_err_t err = rx_log_set_backend(config->log_backends);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  s_enabled_channels = config->comm_channels;
+  return k_rx_ok;
+}
 
 /**
  * @brief Create the Communication task (HIGHEST PRIORITY application task)
@@ -1019,21 +1123,31 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
   RX_ASSERT(config != nullptr, "Config pointer must not be NULL");
   RX_ASSERT(s_tag != nullptr, "Log tag must be initialized");
 
-  /* Initialize USB communication layer */
-  rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr};
-  bool                 usb_ok  = (rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
-  if (!usb_ok) {
-    rx_log_error(s_tag, "USB comm init failed");
+  /* Initialize USB communication layer (if enabled by system config) */
+  bool usb_ok = false;
+  if ((s_enabled_channels & k_comm_channel_mask_usb) != k_comm_channel_mask_none) {
+    rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr};
+    usb_ok                       = (rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
+    if (!usb_ok) {
+      rx_log_error(s_tag, "USB comm init failed");
+    }
+  } else {
+    rx_log_info(s_tag, "USB comm disabled by config");
   }
 
   /* Initialize SPI communication layer (RSPI2 channel 2 - host peripheral) */
-  rx_spi_comm_config_t spi_cfg = {.session     = &s_session_state,
-                                  .channel     = k_rspi_channel_2,
-                                  .spi_mode    = k_spi_comm_default_mode,
-                                  .fec_enabled = false};
-  bool                 spi_ok  = (rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg) == k_rx_ok);
-  if (!spi_ok) {
-    rx_log_error(s_tag, "SPI comm init failed");
+  bool spi_ok = false;
+  if ((s_enabled_channels & k_comm_channel_mask_spi) != k_comm_channel_mask_none) {
+    rx_spi_comm_config_t spi_cfg = {.session     = &s_session_state,
+                                    .channel     = k_rspi_channel_2,
+                                    .spi_mode    = k_spi_comm_default_mode,
+                                    .fec_enabled = false};
+    spi_ok                       = (rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg) == k_rx_ok);
+    if (!spi_ok) {
+      rx_log_error(s_tag, "SPI comm init failed");
+    }
+  } else {
+    rx_log_info(s_tag, "SPI comm disabled by config");
   }
 
   bool link_ok = false;
@@ -1054,35 +1168,47 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
     }
     config->spi_link = link_ok ? &s_spi_link : nullptr;
   } else {
-    rx_log_warn(s_tag, "Skipping SPI HARQ link init because SPI transport failed");
+    if ((s_enabled_channels & k_comm_channel_mask_spi) != k_comm_channel_mask_none) {
+      rx_log_warn(s_tag, "Skipping SPI HARQ link init because SPI transport failed");
+    }
     config->spi_link = nullptr;
   }
 
   /* Initialize I2C communication layer (RIIC0, peripheral mode, address 0x42) */
-  rx_i2c_comm_config_t i2c_cfg = {
-    .session     = &s_session_state,
-    .channel     = {.value = k_i2c_comm_default_channel},
-    .device_addr = {.value = k_i2c_comm_default_addr},
-  };
-  bool i2c_ok = (rx_i2c_comm_init(&s_i2c_comm_handle, &i2c_cfg) == k_rx_ok);
-  if (!i2c_ok) {
-    rx_log_error(s_tag, "I2C comm init failed");
+  bool i2c_ok = false;
+  if ((s_enabled_channels & k_comm_channel_mask_i2c) != k_comm_channel_mask_none) {
+    rx_i2c_comm_config_t i2c_cfg = {
+      .session     = &s_session_state,
+      .channel     = {.value = k_i2c_comm_default_channel},
+      .device_addr = {.value = k_i2c_comm_default_addr},
+    };
+    i2c_ok = (rx_i2c_comm_init(&s_i2c_comm_handle, &i2c_cfg) == k_rx_ok);
+    if (!i2c_ok) {
+      rx_log_error(s_tag, "I2C comm init failed");
+    }
+  } else {
+    rx_log_info(s_tag, "I2C comm disabled by config");
   }
 
   /* Initialize UART communication layer (SCI9) */
-  rx_uart_comm_config_t uart_cfg = {
-    .session = &s_session_state,
-    .channel = k_uart_channel_9,
-  };
-  bool uart_ok = (rx_uart_comm_init(&s_uart_comm_handle, &uart_cfg) == k_rx_ok);
-  if (!uart_ok) {
-    rx_log_error(s_tag, "UART comm init failed");
+  bool uart_ok = false;
+  if ((s_enabled_channels & k_comm_channel_mask_uart) != k_comm_channel_mask_none) {
+    rx_uart_comm_config_t uart_cfg = {
+      .session = &s_session_state,
+      .channel = k_uart_channel_9,
+    };
+    uart_ok = (rx_uart_comm_init(&s_uart_comm_handle, &uart_cfg) == k_rx_ok);
+    if (!uart_ok) {
+      rx_log_error(s_tag, "UART comm init failed");
+    }
+  } else {
+    rx_log_info(s_tag, "UART comm disabled by config");
   }
 
-  /* Wire handles - pass nullptr for failed transports (triggers timeout in comm_manager) */
-  config->usb_handle  = usb_ok  ? &s_usb_comm_handle  : nullptr;
-  config->spi_handle  = spi_ok  ? &s_spi_comm_handle  : nullptr;
-  config->i2c_handle  = i2c_ok  ? &s_i2c_comm_handle  : nullptr;
+  /* Wire handles - pass nullptr for disabled/failed transports */
+  config->usb_handle  = usb_ok ? &s_usb_comm_handle : nullptr;
+  config->spi_handle  = spi_ok ? &s_spi_comm_handle : nullptr;
+  config->i2c_handle  = i2c_ok ? &s_i2c_comm_handle : nullptr;
   config->uart_handle = uart_ok ? &s_uart_comm_handle : nullptr;
 
   /* Validation logging */
@@ -1413,6 +1539,7 @@ static void internal_comm_task_entry(ULONG input)
 
   /* Initialize transport layers and wire into comm manager config */
   rx_comm_manager_config_t config = {0};
+  config.enabled_channels         = s_enabled_channels;
   internal_init_transports(&config);
   config.callback              = internal_frame_callback;
   config.callback_ctx          = &g_comm_manager;
