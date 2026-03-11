@@ -48,6 +48,7 @@
 
 #include "rx_bmp280.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "rx_bmp280_regs.h"

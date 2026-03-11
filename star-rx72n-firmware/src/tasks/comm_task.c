@@ -1406,7 +1406,7 @@ static void internal_comm_task_entry(ULONG input)
  * **Critical Safety Feature:** Updates communication watchdog timestamp on EVERY valid
  * frame reception (regardless of type) to prevent communication timeout emergency stop.
  *
- * ## Algorithm Steps (7 Steps)
+ * ## Algorithm Steps (8 Steps)
  *
  * 1. **NULL Check:** Validate frame pointer is not nullptr (defensive programming)
  * 2. **Debug Logging:** Log frame type and length (for debugging protocol issues)
@@ -1415,18 +1415,23 @@ static void internal_comm_task_entry(ULONG input)
  *    - Motor task monitors this timestamp to detect comm loss
  *    - Updated on ANY valid frame (COMMAND, ACK, NACK, TELEMETRY)
  * 4. **Dispatch by Frame Type:** Switch on frame->header.type
- *    - **COMMAND:** Call internal_handle_command_frame() (protobuf decode)
+ *    - **COMMAND:** Record active channel, then call internal_handle_command_frame()
  *    - **ACK:** Log debug message, no further action needed
  *    - **NACK:** Log warning (RPi5 rejected our telemetry frame)
  *    - **Unknown:** Log warning (protocol version mismatch?)
- * 5. **Command Frame Processing (if COMMAND):**
+ * 5. **Record Active Channel (COMMAND frames only):**
+ *    - shared_data_update_active_channel() stores the channel for symmetric routing
+ *    - Only COMMAND frames update the channel; ACK/NACK must NOT overwrite it
+ *    - ACK/NACK are host responses to our telemetry (not commands) and arrive on
+ *      whichever channel the host happens to use for ACKs, which may differ
+ * 6. **Command Frame Processing (if COMMAND):**
  *    - internal_handle_command_frame() decodes protobuf payload
  *    - Updates shared_data with motor commands or triggers e-stop
  *    - See internal_handle_command_frame() documentation for details
- * 6. **ACK Frame Processing (if ACK):**
+ * 7. **ACK Frame Processing (if ACK):**
  *    - RPi5 acknowledged our telemetry frame
  *    - No action needed (telemetry task continues sending at 10 Hz)
- * 7. **NACK Frame Processing (if NACK):**
+ * 8. **NACK Frame Processing (if NACK):**
  *    - RPi5 rejected our telemetry frame (CRC error, malformed protobuf)
  *    - Log warning for debugging, continue normal operation
  *    - Telemetry task will retry on next 100ms cycle
@@ -1550,6 +1555,7 @@ static void internal_comm_task_entry(ULONG input)
  * @pre shared_data_init() called (for watchdog update)
  *
  * @post Communication watchdog timestamp updated (prevents timeout)
+ * @post Active channel recorded in shared_data (COMMAND frames only; ACK/NACK do not update)
  * @post Command frames processed and shared_data updated (if COMMAND type)
  * @post ACK/NACK frames logged for debugging
  * @post Unknown frame types logged as warning
@@ -1668,6 +1674,7 @@ static void internal_comm_task_entry(ULONG input)
  *
  * @see internal_handle_command_frame() Command frame processing (protobuf decode)
  * @see shared_data_update_last_comm_tick() Update communication watchdog timestamp
+ * @see shared_data_update_active_channel() Record channel for symmetric telemetry routing
  * @see shared_data_is_comm_timeout() Motor task checks this for timeout detection
  * @see rx_comm_manager_poll() Calls this callback when frame received
  * @see rx_frame_t Frame structure definition
@@ -1686,7 +1693,7 @@ static void internal_comm_task_entry(ULONG input)
  * - **Rule 1:** [PASS] No goto, setjmp, recursion (only if/switch control flow)
  * - **Rule 3:** [PASS] Zero dynamic allocation (all stack-based)
  * - **Rule 4:** [PASS] Function is 47 lines (under 100 LOC guideline)
- * - **Rule 5:** [PASS] 5 preconditions, 4 postconditions documented
+ * - **Rule 5:** [PASS] 5 preconditions, 5 postconditions documented
  * - **Rule 7:** [PASS] All function returns checked or cast to (void)
  * - **Rule 8:** [PASS] All constants use C23 typed enums (no macros)
  *
@@ -1710,6 +1717,10 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
   /* Dispatch based on frame type */
   switch (frame->header.type) {
     case k_frame_type_command:
+      /* Record channel only for COMMAND frames so telemetry replies are routed
+       * back on the same transport that carries host commands. ACK/NACK frames
+       * are host responses to our telemetry and must not overwrite the channel. */
+      (void)shared_data_update_active_channel((uint8_t)channel);
       (void)internal_handle_command_frame(channel, frame);
       break;
 
