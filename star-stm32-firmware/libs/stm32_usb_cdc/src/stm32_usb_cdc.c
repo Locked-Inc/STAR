@@ -56,7 +56,7 @@
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum {
     k_tx_timeout_ms    = 20U, /**< Max TX wait time before timeout (ms) */
     k_tx_poll_delay_ms = 1U,  /**< Poll interval while waiting for TX FIFO space (ms) */
 } usb_cdc_timing_t;
@@ -75,7 +75,7 @@ typedef enum : uint32_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum {
     k_rx_stream_size_bytes = 1024U, /**< RX StreamBuffer capacity (bytes) */
     k_rx_drain_chunk       = 64U,   /**< Bytes read per CDC RX callback */
 } usb_cdc_buf_sizes_t;
@@ -92,7 +92,7 @@ typedef enum : uint32_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint8_t {
+typedef enum {
     k_rhport_hs = 1U, /**< TinyUSB rhport index for OTG_HS peripheral */
 } usb_cdc_rhport_t;
 
@@ -244,7 +244,7 @@ void OTG_HS_IRQHandler(void)
  * @note Call once from main() before vTaskStartScheduler()
  * @since Version 1.0.0
  */
-[[nodiscard]] stm32_err_t stm32_usb_cdc_init(void)
+stm32_err_t stm32_usb_cdc_init(void)
 {
     /* Step 1: Create RX StreamBuffer (single-producer/single-consumer) */
     s_rx_stream = xStreamBufferCreate((size_t)k_rx_stream_size_bytes, 1U);
@@ -298,7 +298,7 @@ void OTG_HS_IRQHandler(void)
  * @note Not re-entrant; only one task should call this at a time
  * @since Version 1.0.0
  */
-[[nodiscard]] stm32_err_t stm32_usb_cdc_send(const uint8_t* data, uint32_t len)
+stm32_err_t stm32_usb_cdc_send(const uint8_t* data, uint32_t len)
 {
     if (data == NULL) {
         return k_stm32_err_null_ptr;
@@ -350,7 +350,7 @@ void OTG_HS_IRQHandler(void)
  * @note Non-blocking; caller must poll or use vTaskDelay between calls
  * @since Version 1.0.0
  */
-[[nodiscard]] stm32_err_t stm32_usb_cdc_receive(uint8_t* buf, uint32_t max_len,
+stm32_err_t stm32_usb_cdc_receive(uint8_t* buf, uint32_t max_len,
                                                  uint32_t* out_len)
 {
     if (buf == NULL || out_len == NULL) {

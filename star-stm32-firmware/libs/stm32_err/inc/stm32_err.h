@@ -29,7 +29,7 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint8_t {
+typedef enum {
     k_stm32_err_ok                   = 0,  /**< Success */
     k_stm32_err_null_ptr             = 1,  /**< NULL pointer argument */
     k_stm32_err_invalid_arg          = 2,  /**< Invalid argument value */

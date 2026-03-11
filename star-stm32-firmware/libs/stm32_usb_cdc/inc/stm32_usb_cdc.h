@@ -62,7 +62,7 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] stm32_err_t stm32_usb_cdc_init(void);
+stm32_err_t stm32_usb_cdc_init(void);
 
 /**
  * @brief Send bytes over USB CDC.
@@ -88,7 +88,7 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] stm32_err_t stm32_usb_cdc_send(const uint8_t* data, uint32_t len);
+stm32_err_t stm32_usb_cdc_send(const uint8_t* data, uint32_t len);
 
 /**
  * @brief Receive bytes from the USB CDC RX StreamBuffer.
@@ -114,7 +114,7 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] stm32_err_t stm32_usb_cdc_receive(uint8_t* buf, uint32_t max_len,
+stm32_err_t stm32_usb_cdc_receive(uint8_t* buf, uint32_t max_len,
                                                  uint32_t* out_len);
 
 /**

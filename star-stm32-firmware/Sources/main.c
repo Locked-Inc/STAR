@@ -99,7 +99,7 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char* pcTaskName)
  *
  * @since Version 1.0.0
  */
-typedef enum : uint16_t {
+typedef enum {
     k_usb_task_stack_words = 512U, /**< USB task stack depth in 32-bit words (2 KB) */
     k_usb_task_priority    = 6U,   /**< FreeRTOS task priority (above vCommTask) */
 } usb_task_config_t;

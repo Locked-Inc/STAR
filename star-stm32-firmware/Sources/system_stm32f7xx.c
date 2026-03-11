@@ -150,7 +150,7 @@ uint32_t SystemCoreClock = 16000000UL;
  *       test host.
  * @since Version 1.0.0
  */
-typedef enum : uintptr_t {
+typedef enum {
     k_cpacr_addr = 0xE000ED88U,                   /**< CPACR fixed Cortex-M address */
     k_cp10_cp11  = ((3UL << 20U) | (3UL << 22U)), /**< Full access bits CP10+CP11 */
 } fpu_config_t;
@@ -174,7 +174,7 @@ typedef enum : uintptr_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint8_t {
+typedef enum {
     k_pll_m_hse = 4U, /**< HSE prescaler: VCO input = 8 MHz / 4 = 2 MHz    */
     k_pll_q     = 9U, /**< USB prescaler: PLL48CLK = 432 MHz / 9 = 48 MHz  */
 } pll_hse_dividers_t;
@@ -192,7 +192,7 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint8_t {
+typedef enum {
     k_pll_m_hsi = 8U, /**< HSI prescaler: VCO input = 16 MHz / 8 = 2 MHz */
 } pll_hsi_dividers_t;
 
@@ -207,7 +207,7 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint16_t {
+typedef enum {
     k_pll_n = 216U, /**< VCO multiplier: 2 MHz * 216 = 432 MHz VCO output */
 } pll_multiplier_t;
 
@@ -217,7 +217,7 @@ typedef enum : uint16_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum {
     k_sysclk_hz = 216000000UL, /**< SYSCLK / HCLK after PLL lock (216 MHz) */
 } clock_freq_t;
 

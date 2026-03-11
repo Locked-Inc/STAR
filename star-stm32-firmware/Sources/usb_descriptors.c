@@ -45,7 +45,7 @@
  *
  * @since Version 1.0.0
  */
-typedef enum : uint16_t {
+typedef enum {
     k_usb_vid = 0xCafeU, /**< Placeholder vendor ID -- NOT for production use */
     k_usb_pid = 0x4001U, /**< Product ID */
     k_usb_bcd = 0x0100U, /**< Device release: 1.00 in BCD */
@@ -66,7 +66,7 @@ typedef enum : uint16_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint8_t {
+typedef enum {
     k_strid_langid       = 0U, /**< Language ID (English US 0x0409) */
     k_strid_manufacturer = 1U, /**< Manufacturer string */
     k_strid_product      = 2U, /**< Product string */
@@ -110,7 +110,7 @@ static const char* const s_string_desc[k_strid_count] = {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint8_t {
+typedef enum {
     k_itf_cdc_cmd  = 0U, /**< CDC Communication Interface (control + notifications) */
     k_itf_cdc_data = 1U, /**< CDC Data Interface (bulk IN/OUT) */
     k_itf_total    = 2U, /**< Total interface count */
@@ -126,7 +126,7 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint8_t {
+typedef enum {
     k_epnum_cdc_notif = 0x81U, /**< CDC notification IN (interrupt transfer) */
     k_epnum_cdc_out   = 0x02U, /**< CDC data OUT (bulk, host to device) */
     k_epnum_cdc_in    = 0x82U, /**< CDC data IN  (bulk, device to host) */
@@ -142,7 +142,7 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint8_t {
+typedef enum {
     k_ep_notif_size = 8U,  /**< CDC notification interrupt endpoint size (bytes) */
     k_ep_bulk_size  = 64U, /**< CDC bulk data endpoint size for full-speed (bytes) */
 } cdc_ep_size_t;
@@ -158,7 +158,7 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint16_t {
+typedef enum {
     k_config_total_len = TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN, /**< Total bytes in config blob */
     k_config_power_ma  = 100U,                                   /**< Max bus current draw in mA */
 } config_desc_sizes_t;
@@ -173,7 +173,7 @@ typedef enum : uint16_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint8_t {
+typedef enum {
     k_max_str_chars     = 31U, /**< Max payload characters in one string descriptor */
     k_str_header_words  = 1U,  /**< Buffer slots reserved for descriptor header */
     k_langid_word_count = 1U,  /**< Language ID encodes as 1 UTF-16LE word */
@@ -190,7 +190,7 @@ typedef enum : uint8_t {
  * @brief USB specification version in BCD format.
  * @since Version 1.0.0
  */
-typedef enum : uint16_t {
+typedef enum {
     k_usb_ver_bcd = 0x0200U, /**< USB 2.0 in BCD */
 } usb_version_t;
 
@@ -199,7 +199,7 @@ typedef enum : uint16_t {
  * @brief Device descriptor scalar counts.
  * @since Version 1.0.0
  */
-typedef enum : uint8_t {
+typedef enum {
     k_num_configurations = 1U, /**< Single USB configuration supported */
 } device_desc_counts_t;
 
