@@ -16,11 +16,13 @@ on:
       - 'star-stm32-firmware/**'
       - '.github/workflows/stm32-firmware.yml'
       - 'docker/stm32/Dockerfile'
+      - '.gitmodules'
   pull_request:
     paths:
       - 'star-stm32-firmware/**'
       - '.github/workflows/stm32-firmware.yml'
       - 'docker/stm32/Dockerfile'
+      - '.gitmodules'
 
 # Cancel stale builds on fast-push branches -- only the latest commit matters.
 # NOT applied to stm32-toolchain-image.yml to avoid corrupted partial pushes.
@@ -66,6 +68,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+        with:
+          submodules: recursive
 
       - name: Install quality-gate tooling
         run: |
