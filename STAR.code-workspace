@@ -1,0 +1,32 @@
+{
+    "folders": [
+        {
+            "name": "star-rx72n-firmware",
+            "path": "star-rx72n-firmware"
+        },
+        {
+            "name": "star-stm32-firmware",
+            "path": "star-stm32-firmware"
+        },
+        {
+            "name": "star-ros2",
+            "path": "star-ros2"
+        },
+        {
+            "name": "star-proto",
+            "path": "star-proto"
+        },
+        {
+            "name": "star-gateway",
+            "path": "star-gateway"
+        },
+        {
+            "name": "star-ui",
+            "path": "star-ui"
+        }
+    ],
+    "settings": {
+        "cmake.sourceDirectory": "${workspaceFolder}",
+        "cmake.configureOnOpen": false
+    }
+}
