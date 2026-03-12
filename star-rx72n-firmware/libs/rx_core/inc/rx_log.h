@@ -345,6 +345,26 @@ static inline void uart_debug_putint(int32_t value)
 }
 
 /**
+ * @brief Output unsigned integer to simulator console
+ *
+ * @details
+ * Simulator implementation: Uses snprintf + uart_debug_puts.
+ * Hardware implementation: Custom formatting to avoid sprintf overhead.
+ *
+ * @param[in] value Unsigned 32-bit integer to output
+ *
+ * @note Inline function - zero call overhead in simulator builds
+ *
+ * @since Version 1.0.0
+ */
+static inline void uart_debug_putuint(uint32_t value)
+{
+  char buf[11]; /* 4294967295 = 10 chars + null */
+  (void)snprintf(buf, sizeof(buf), "%" PRIu32, value);
+  uart_debug_puts(buf);
+}
+
+/**
  * @brief Output hexadecimal value to simulator console
  *
  * @details
@@ -513,8 +533,21 @@ void rx_log_usb_putint(int32_t value);
 
 /**
  * @brief Write an unsigned integer as decimal text to USB CDC log port
- * @param[in] value Unsigned value to write
- * @note Thread-safe, non-blocking
+ *
+ * @details
+ * Formats value as a decimal ASCII string and queues it to USB CDC Port 2
+ * (k_usb_port_log) without blocking. Values larger than INT32_MAX print
+ * correctly; use instead of rx_log_usb_putint for uint32_t arguments.
+ *
+ * @param[in] value Unsigned 32-bit value to write as decimal ASCII
+ *
+ * @pre USB CDC log port (k_usb_port_log) must be initialized and ready
+ * @pre USB interrupt handler or DMA must be active to drain the TX buffer
+ * @post Decimal ASCII representation of value is queued to the USB TX buffer
+ * @post No blocking occurs; call returns immediately regardless of bus state
+ *
+ * @note Not safe to call before rx_log_usb_notify_ready() is invoked
+ * @since Version 1.0.0
  */
 void rx_log_usb_putuint(uint32_t value);
 
@@ -597,7 +630,21 @@ void rx_log_usb_notify_ready(void);
  * (uart_debug_putuint / rx_log_usb_putuint) to avoid the sign-extension
  * truncation that LOG_PUTINT would impose on values > INT32_MAX.
  *
- * @param[in] v uint32_t expression to print
+ * @param[in] v uint32_t expression to print; evaluated exactly once
+ *
+ * @pre v is a valid uint32_t expression with no undesired side-effects from
+ *   a single evaluation
+ * @pre rx_log_get_backend() is safe to call (logging subsystem initialized
+ *   via rx_log_set_backend() before the scheduler started)
+ * @post v is written as decimal ASCII to every enabled backend:
+ *   uart_debug_putuint() if k_log_backend_uart is set,
+ *   rx_log_usb_putuint() if k_log_backend_usb is set
+ * @post No global state is modified; only the respective output buffers are
+ *   advanced by the backend implementations
+ *
+ * @see rx_log_get_backend() Backend query called internally
+ * @see uart_debug_putuint() UART backend used when k_log_backend_uart is set
+ * @see rx_log_usb_putuint() USB backend used when k_log_backend_usb is set
  */
 #define LOG_PUTUINT(v)                                                                             \
   do {                                                                                             \

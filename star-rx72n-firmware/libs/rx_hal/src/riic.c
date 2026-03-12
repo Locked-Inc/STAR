@@ -244,6 +244,7 @@ typedef enum : uint32_t {
   k_riic_timeout_us          = 10000, /**< 10ms timeout for I2C operations (microseconds) */
   k_riic_timeout_zero        = 0,     /**< Timeout counter expired sentinel value */
   k_riic_length_zero         = 0,     /**< Zero-length transfer (invalid) sentinel */
+  k_riic_register_clear      = 0,     /**< Zero value used to clear hardware registers */
   k_riic_last_index_offset   = 1,     /**< Offset to calculate last byte index from length */
   k_riic_max_transfer_length = 256,   /**< Maximum bytes per transfer operation */
 } riic_constants_t;
@@ -1628,9 +1629,8 @@ rx_err_t riic_write(const riic_channel_t    channel,
     return k_rx_err_invalid_arg;
   }
 
-  /* Validate channel */
-  if (channel.value >= k_riic_max_channels ||
-      s_riic_channel_mode[channel.value] != k_riic_mode_controller) {
+  /* Validate channel mode (range already checked by RX_CHECK_RANGE_TAG above) */
+  if (s_riic_channel_mode[channel.value] != k_riic_mode_controller) {
     rx_log_error(s_tag, "RIIC channel not initialized in controller mode");
     return k_rx_err_invalid_state;
   }
@@ -1789,10 +1789,9 @@ rx_err_t riic_read(const riic_channel_t    channel,
     return k_rx_err_invalid_arg;
   }
 
-  /* Validate channel */
-  if (channel.value >= k_riic_max_channels ||
-      s_riic_channel_mode[channel.value] != k_riic_mode_controller) {
-    rx_log_error(s_tag, "RIIC channel not initialized");
+  /* Validate channel mode (range already checked by RX_CHECK_RANGE_TAG above) */
+  if (s_riic_channel_mode[channel.value] != k_riic_mode_controller) {
+    rx_log_error(s_tag, "RIIC channel not initialized in controller mode");
     return k_rx_err_invalid_state;
   }
 
@@ -1984,10 +1983,9 @@ rx_err_t riic_write_read(const riic_channel_t    channel,
     return k_rx_err_invalid_arg;
   }
 
-  /* Validate channel */
-  if (channel.value >= k_riic_max_channels ||
-      s_riic_channel_mode[channel.value] != k_riic_mode_controller) {
-    rx_log_error(s_tag, "RIIC channel not initialized");
+  /* Validate channel mode (range already checked by RX_CHECK_RANGE_TAG above) */
+  if (s_riic_channel_mode[channel.value] != k_riic_mode_controller) {
+    rx_log_error(s_tag, "RIIC channel not initialized in controller mode");
     return k_rx_err_invalid_state;
   }
 
@@ -2386,12 +2384,12 @@ rx_err_t riic_deinit_peripheral(const riic_channel_t channel)
   riic->icser = (uint8_t)(riic->icser & ~((uint8_t)k_riic_icser_sar0e));
 
   /* Clear peripheral address registers */
-  riic->sarl0 = k_riic_timeout_zero;
-  riic->saru0 = k_riic_timeout_zero;
+  riic->sarl0 = k_riic_register_clear;
+  riic->saru0 = k_riic_register_clear;
 
   /* Reset the RIIC module */
   riic->iccr1 = k_riic_iccr1_iicrst;
-  riic->iccr1 = k_riic_timeout_zero;
+  riic->iccr1 = k_riic_register_clear;
 
   /* Mark channel as uninitialized */
   s_riic_channel_mode[channel.value] = k_riic_mode_uninitialized;

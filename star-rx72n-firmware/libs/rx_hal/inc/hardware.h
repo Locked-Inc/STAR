@@ -1576,6 +1576,17 @@ typedef enum : uint16_t {
  * @note Only available on RX72N target (guarded by __RX__ preprocessor)
  * @note Not thread-safe; provide external synchronization if needed
  *
+ * @par Example:
+ * @code
+ * riic_channel_t ch = { .value = k_i2c_comm_default_channel };
+ * rx_err_t err = riic_deinit_peripheral(ch);
+ * if (err != k_rx_ok) {
+ *     // Channel was not in peripheral mode or index out of range
+ *     return err;
+ * }
+ * // Channel is now free; may be reinitialized for controller or peripheral use
+ * @endcode
+ *
  * @see riic_init_peripheral() Complementary initialization function
  *
  * @since Version 1.0.0

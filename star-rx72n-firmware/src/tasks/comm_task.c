@@ -1228,10 +1228,10 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
   const bool uart_enabled =
     (s_enabled_channels & k_comm_channel_mask_uart) != k_comm_channel_mask_none;
   const bool any_enabled = usb_enabled || spi_enabled || i2c_enabled || uart_enabled;
-  /* An enabled transport "failed" when its init returned false. */
-  const bool all_enabled_failed = (!usb_enabled || !usb_ok) && (!spi_enabled || !spi_ok) &&
-                                  (!i2c_enabled || !i2c_ok) && (!uart_enabled || !uart_ok);
-  if (any_enabled && all_enabled_failed) {
+  /* At least one enabled channel initialized successfully. */
+  const bool any_enabled_succeeded = (usb_enabled && usb_ok) || (spi_enabled && spi_ok) ||
+                                     (i2c_enabled && i2c_ok) || (uart_enabled && uart_ok);
+  if (any_enabled && !any_enabled_succeeded) {
     rx_log_error(s_tag, "CRITICAL: All transport channels failed to initialize");
   } else {
     if (usb_ok) {
