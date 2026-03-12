@@ -398,6 +398,7 @@ static inline void uart_debug_puthex(uint32_t value, uint8_t digits)
 void uart_debug_putc(char data);
 void uart_debug_puts(const char* str);
 void uart_debug_putint(int32_t value);
+void uart_debug_putuint(uint32_t value);
 void uart_debug_puthex(uint32_t value, uint8_t digits);
 
 #endif /* RX_IS_SIMULATOR */
@@ -511,6 +512,13 @@ void rx_log_usb_puts(const char* str);
 void rx_log_usb_putint(int32_t value);
 
 /**
+ * @brief Write an unsigned integer as decimal text to USB CDC log port
+ * @param[in] value Unsigned value to write
+ * @note Thread-safe, non-blocking
+ */
+void rx_log_usb_putuint(uint32_t value);
+
+/**
  * @brief Write an unsigned integer as hexadecimal text to USB CDC log port
  * @param[in] value Value to write as hex
  * @param[in] digits Number of hex digits (1-8, zero-padded)
@@ -577,6 +585,29 @@ void rx_log_usb_notify_ready(void);
     }                                                                                              \
     if ((_log_b & k_log_backend_usb) != k_log_backend_none) {                                      \
       rx_log_usb_putint(_log_v);                                                                   \
+    }                                                                                              \
+  } while (0)
+
+/**
+ * @def LOG_PUTUINT(v)
+ * @brief Print an unsigned 32-bit integer to the active log backend(s)
+ *
+ * @details
+ * Routes uint32_t values through unsigned-aware backend helpers
+ * (uart_debug_putuint / rx_log_usb_putuint) to avoid the sign-extension
+ * truncation that LOG_PUTINT would impose on values > INT32_MAX.
+ *
+ * @param[in] v uint32_t expression to print
+ */
+#define LOG_PUTUINT(v)                                                                             \
+  do {                                                                                             \
+    uint32_t         _log_u = (v);                                                                 \
+    rx_log_backend_t _log_b = rx_log_get_backend();                                                \
+    if ((_log_b & k_log_backend_uart) != k_log_backend_none) {                                     \
+      uart_debug_putuint(_log_u);                                                                  \
+    }                                                                                              \
+    if ((_log_b & k_log_backend_usb) != k_log_backend_none) {                                      \
+      rx_log_usb_putuint(_log_u);                                                                  \
     }                                                                                              \
   } while (0)
 

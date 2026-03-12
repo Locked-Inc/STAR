@@ -530,26 +530,52 @@ typedef enum : uint8_t {
 static const char* s_tag = "RIIC";
 
 /**
- * @var s_riic_channel_initialized
- * @brief Channel initialization state tracking array
+ * @enum riic_channel_mode_t
+ * @brief Per-channel RIIC initialization mode
  *
  * @details
- * Tracks which RIIC channels have been successfully initialized via riic_init().
- * Used to prevent operations on uninitialized channels.
+ * Tracks whether each RIIC channel has been initialized, and if so, whether
+ * it was initialized for controller or peripheral operation. This prevents
+ * peripheral-mode APIs from running on a controller-initialized channel and
+ * vice-versa, satisfying the Liskov Substitution Principle for RIIC API
+ * implementations.
  *
- * | Index | Channel | Initial State |
- * |-------|---------|---------------|
- * | 0     | RIIC0   | false         |
- * | 1     | RIIC1   | false         |
- * | 2     | RIIC2   | false         |
+ * @invariant Set only by riic_init() (controller) and riic_init_peripheral() (peripheral)
+ * @invariant Reset to k_riic_mode_uninitialized by riic_deinit_peripheral() on success
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_riic_mode_uninitialized = 0x00u, /**< Channel not yet initialized */
+  k_riic_mode_controller    = 0x01u, /**< Initialized by riic_init() -- controller mode */
+  k_riic_mode_peripheral = 0x02u, /**< Initialized by riic_init_peripheral() -- peripheral mode */
+} riic_channel_mode_t;
+
+/**
+ * @var s_riic_channel_mode
+ * @brief Per-channel RIIC mode tracking array
+ *
+ * @details
+ * Tracks the operational mode of each RIIC channel: uninitialized, controller,
+ * or peripheral. Used to enforce that controller APIs are only called on
+ * controller-initialized channels and vice-versa.
+ *
+ * | Index | Channel | Initial State            |
+ * |-------|---------|--------------------------|
+ * | 0     | RIIC0   | k_riic_mode_uninitialized |
+ * | 1     | RIIC1   | k_riic_mode_uninitialized |
+ * | 2     | RIIC2   | k_riic_mode_uninitialized |
  *
  * @invariant Array size == k_riic_max_channels (3)
- * @invariant Values are only modified by riic_init()
+ * @warning Do not modify directly -- only riic_init(), riic_init_peripheral(),
+ *          and riic_deinit_peripheral() may write to this array.
+ * @note Not thread-safe; provide external synchronization if needed.
  *
- * @warning Do not modify directly - only riic_init() should set these flags.
- * @note Not thread-safe; if multiple threads use RIIC, provide external sync.
+ * @since Version 1.0.0
  */
-static bool s_riic_channel_initialized[k_riic_max_channels] = {false, false, false};
+static riic_channel_mode_t s_riic_channel_mode[k_riic_max_channels] = {k_riic_mode_uninitialized,
+                                                                       k_riic_mode_uninitialized,
+                                                                       k_riic_mode_uninitialized};
 
 /* =============================================================================
  * Internal Helper Functions
@@ -1403,7 +1429,7 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
  * @pre channel.value < 3
  * @pre frequency_hz is one of: 100000, 400000, 1000000
  * @post Channel is enabled and ready for I2C transfers
- * @post s_riic_channel_initialized[channel.value] == true
+ * @post s_riic_channel_mode[channel.value] == k_riic_mode_controller
  *
  * @note This function modifies protected registers (MSTPCRB) using PRCR unlock.
  * @note Re-initializing an already initialized channel is allowed.
@@ -1485,8 +1511,8 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
   /* Enable I2C bus interface */
   riic->iccr1 = k_riic_iccr1_ice;
 
-  /* Mark channel as initialized */
-  s_riic_channel_initialized[channel.value] = true;
+  /* Mark channel as initialized in controller mode */
+  s_riic_channel_mode[channel.value] = k_riic_mode_controller;
 
   rx_log_debug(s_tag, "RIIC channel initialized");
 
@@ -1603,8 +1629,9 @@ rx_err_t riic_write(const riic_channel_t    channel,
   }
 
   /* Validate channel */
-  if (channel.value >= k_riic_max_channels || !s_riic_channel_initialized[channel.value]) {
-    rx_log_error(s_tag, "RIIC channel not initialized");
+  if (channel.value >= k_riic_max_channels ||
+      s_riic_channel_mode[channel.value] != k_riic_mode_controller) {
+    rx_log_error(s_tag, "RIIC channel not initialized in controller mode");
     return k_rx_err_invalid_state;
   }
 
@@ -1763,7 +1790,8 @@ rx_err_t riic_read(const riic_channel_t    channel,
   }
 
   /* Validate channel */
-  if (channel.value >= k_riic_max_channels || !s_riic_channel_initialized[channel.value]) {
+  if (channel.value >= k_riic_max_channels ||
+      s_riic_channel_mode[channel.value] != k_riic_mode_controller) {
     rx_log_error(s_tag, "RIIC channel not initialized");
     return k_rx_err_invalid_state;
   }
@@ -1957,7 +1985,8 @@ rx_err_t riic_write_read(const riic_channel_t    channel,
   }
 
   /* Validate channel */
-  if (channel.value >= k_riic_max_channels || !s_riic_channel_initialized[channel.value]) {
+  if (channel.value >= k_riic_max_channels ||
+      s_riic_channel_mode[channel.value] != k_riic_mode_controller) {
     rx_log_error(s_tag, "RIIC channel not initialized");
     return k_rx_err_invalid_state;
   }
@@ -2061,7 +2090,7 @@ typedef enum : uint16_t {
  * @pre channel.value must be in range [0, k_riic_max_channels - 1]
  * @pre device_addr.value must be <= k_riic_addr_max_7bit (0x7F)
  * @post RIIC peripheral responds to device_addr on the I2C bus
- * @post s_riic_channel_initialized[channel.value] == true
+ * @post s_riic_channel_mode[channel.value] == k_riic_mode_peripheral
  *
  * @note Only available on RX72N target (guarded by __RX__ preprocessor)
  * @note Not thread-safe during initialization
@@ -2121,8 +2150,8 @@ rx_err_t riic_init_peripheral(const riic_channel_t channel, const i2c_device_add
   /* Enable I2C bus interface */
   riic->iccr1 = k_riic_iccr1_ice;
 
-  /* Mark channel as initialized */
-  s_riic_channel_initialized[channel.value] = true;
+  /* Mark channel as initialized in peripheral mode */
+  s_riic_channel_mode[channel.value] = k_riic_mode_peripheral;
 
   rx_log_debug(s_tag, "RIIC peripheral mode initialized");
 
@@ -2198,7 +2227,7 @@ rx_err_t riic_peripheral_read(const riic_channel_t channel,
     return k_rx_err_invalid_arg;
   }
 
-  if (!s_riic_channel_initialized[channel.value]) {
+  if (s_riic_channel_mode[channel.value] != k_riic_mode_peripheral) {
     return k_rx_err_invalid_state;
   }
 
@@ -2282,7 +2311,7 @@ riic_peripheral_write(const riic_channel_t channel, const uint8_t* data, const u
     return k_rx_err_invalid_arg;
   }
 
-  if (!s_riic_channel_initialized[channel.value]) {
+  if (s_riic_channel_mode[channel.value] != k_riic_mode_peripheral) {
     return k_rx_err_invalid_state;
   }
 
@@ -2304,6 +2333,70 @@ riic_peripheral_write(const riic_channel_t channel, const uint8_t* data, const u
 
     riic->icdrt = data[i];
   }
+
+  rx_log_debug(s_tag, "RIIC peripheral write complete");
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Deinitialize an RIIC channel that was initialized in peripheral mode
+ *
+ * @details
+ * Disables the peripheral address match (ICSER.SAR0E), clears the SARL0/SARU0
+ * address registers, resets the RIIC module, and marks the channel as
+ * uninitialized. After this call, riic_init() or riic_init_peripheral() may
+ * be called again on the same channel.
+ *
+ * @param[in] channel RIIC channel to deinitialize (channel.value range: 0-2)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok           Channel deinitialized successfully
+ * @retval k_rx_err_invalid_arg   channel.value >= k_riic_max_channels
+ * @retval k_rx_err_invalid_state Channel was not initialized in peripheral mode
+ *
+ * @pre channel.value must be in range [0, k_riic_max_channels - 1]
+ * @pre Channel must have been initialized via riic_init_peripheral()
+ * @post s_riic_channel_mode[channel.value] == k_riic_mode_uninitialized on success
+ * @post RIIC peripheral address match disabled; hardware in reset state
+ *
+ * @note Only available on RX72N target (guarded by __RX__ preprocessor)
+ * @note Not thread-safe; provide external synchronization if needed
+ *
+ * @see riic_init_peripheral() Complementary initialization function
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t riic_deinit_peripheral(const riic_channel_t channel)
+{
+  if (channel.value >= k_riic_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (s_riic_channel_mode[channel.value] != k_riic_mode_peripheral) {
+    return k_rx_err_invalid_state;
+  }
+
+  volatile rx_riic_regs_t* const riic = internal_get_riic_base(channel.value);
+  if (riic == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Disable peripheral address match (clear SAR0E in ICSER) */
+  riic->icser = (uint8_t)(riic->icser & ~((uint8_t)k_riic_icser_sar0e));
+
+  /* Clear peripheral address registers */
+  riic->sarl0 = k_riic_timeout_zero;
+  riic->saru0 = k_riic_timeout_zero;
+
+  /* Reset the RIIC module */
+  riic->iccr1 = k_riic_iccr1_iicrst;
+  riic->iccr1 = k_riic_timeout_zero;
+
+  /* Mark channel as uninitialized */
+  s_riic_channel_mode[channel.value] = k_riic_mode_uninitialized;
+
+  rx_log_debug(s_tag, "RIIC peripheral mode deinitialized");
 
   return k_rx_ok;
 }

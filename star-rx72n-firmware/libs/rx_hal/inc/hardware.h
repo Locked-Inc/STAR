@@ -1554,6 +1554,35 @@ typedef enum : uint16_t {
                                             const i2c_device_addr_t device_addr);
 
 /**
+ * @brief Deinitialize an RIIC channel previously initialized in peripheral mode
+ *
+ * @details
+ * Disables peripheral address match (ICSER.SAR0E), clears SARL0/SARU0
+ * address registers, and resets the RIIC module. After this call, the channel
+ * may be reinitialized via riic_init() or riic_init_peripheral().
+ *
+ * @param[in] channel RIIC channel to deinitialize (channel.value range: 0-2)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok              Channel deinitialized successfully
+ * @retval k_rx_err_invalid_arg channel.value >= k_riic_max_channels
+ * @retval k_rx_err_invalid_state Channel was not initialized in peripheral mode
+ *
+ * @pre channel.value must be in range [0, k_riic_max_channels - 1]
+ * @pre Channel must have been initialized via riic_init_peripheral()
+ * @post Channel mode reset to uninitialized; safe to call riic_init_peripheral() again
+ * @post Peripheral address match disabled on the hardware
+ *
+ * @note Only available on RX72N target (guarded by __RX__ preprocessor)
+ * @note Not thread-safe; provide external synchronization if needed
+ *
+ * @see riic_init_peripheral() Complementary initialization function
+ *
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t riic_deinit_peripheral(const riic_channel_t channel);
+
+/**
  * @brief Read bytes written by the I2C controller to this peripheral
  *
  * @details

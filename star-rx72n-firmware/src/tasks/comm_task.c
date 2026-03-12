@@ -511,14 +511,18 @@ static const char* const s_tag = "COMM";
  * Consumed by internal_init_transports() to skip channels that should remain
  * disabled (e.g. UART comm when UART log backend is active on SCI9).
  *
- * Default: k_comm_channel_mask_all so that existing callers that skip
- * comm_task_apply_system_config() continue to attempt all four transports.
+ * Default matches k_system_config_default.comm_channels: USB + SPI + I2C.
+ * UART (SCI9) is excluded by default to avoid conflict with the SCI9 log
+ * backend. Callers that skip comm_task_apply_system_config() will therefore
+ * attempt USB, SPI, and I2C transports only.
  *
  * @note File-scoped static. Must not be modified directly outside of
  *       comm_task_apply_system_config().
  * @since Version 1.0.0
  */
-static rx_comm_channel_mask_t s_enabled_channels = k_comm_channel_mask_all;
+static rx_comm_channel_mask_t s_enabled_channels =
+  (rx_comm_channel_mask_t)(k_comm_channel_mask_usb | k_comm_channel_mask_spi |
+                           k_comm_channel_mask_i2c);
 
 /* =============================================================================
  * Public Constants
@@ -1211,8 +1215,23 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
   config->i2c_handle  = i2c_ok ? &s_i2c_comm_handle : nullptr;
   config->uart_handle = uart_ok ? &s_uart_comm_handle : nullptr;
 
-  /* Validation logging */
-  if (!usb_ok && !spi_ok && !i2c_ok && !uart_ok) {
+  /* Validation logging: fire the critical log only when at least one channel was
+   * enabled by config but every enabled channel failed to initialize.
+   * Disabled channels set their *_ok flag to false too, so the old four-way &&
+   * would fire spuriously when all channels are intentionally disabled. */
+  const bool usb_enabled =
+    (s_enabled_channels & k_comm_channel_mask_usb) != k_comm_channel_mask_none;
+  const bool spi_enabled =
+    (s_enabled_channels & k_comm_channel_mask_spi) != k_comm_channel_mask_none;
+  const bool i2c_enabled =
+    (s_enabled_channels & k_comm_channel_mask_i2c) != k_comm_channel_mask_none;
+  const bool uart_enabled =
+    (s_enabled_channels & k_comm_channel_mask_uart) != k_comm_channel_mask_none;
+  const bool any_enabled = usb_enabled || spi_enabled || i2c_enabled || uart_enabled;
+  /* An enabled transport "failed" when its init returned false. */
+  const bool all_enabled_failed = (!usb_enabled || !usb_ok) && (!spi_enabled || !spi_ok) &&
+                                  (!i2c_enabled || !i2c_ok) && (!uart_enabled || !uart_ok);
+  if (any_enabled && all_enabled_failed) {
     rx_log_error(s_tag, "CRITICAL: All transport channels failed to initialize");
   } else {
     if (usb_ok) {

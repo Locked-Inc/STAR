@@ -811,7 +811,9 @@ typedef enum : uint8_t {
   k_comm_channel_mask_spi  = 0x02u, /**< SPI     (k_comm_channel_spi = 1) */
   k_comm_channel_mask_i2c  = 0x04u, /**< I2C     (k_comm_channel_i2c = 2) */
   k_comm_channel_mask_uart = 0x08u, /**< UART    (k_comm_channel_uart = 3) */
-  k_comm_channel_mask_all  = 0x0Fu, /**< All four channels */
+  k_comm_channel_mask_all =
+    (k_comm_channel_mask_usb | k_comm_channel_mask_spi | k_comm_channel_mask_i2c |
+     k_comm_channel_mask_uart), /**< All four channels */
 } rx_comm_channel_mask_t;
 
 /**

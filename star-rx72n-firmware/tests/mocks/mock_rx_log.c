@@ -86,6 +86,28 @@ void uart_debug_putint(int32_t value)
 }
 
 /**
+ * @brief Stub for uart_debug_putuint() -- no-op
+ *
+ * @details
+ * Discards the unsigned integer value without writing to SCI9. Satisfies the
+ * linker for tests that pull in rx_log.h runtime LOG_PUTUINT dispatches but do
+ * not exercise UART output.
+ *
+ * @param[in] value Unsigned value to print (ignored)
+ *
+ * @pre  None -- stub accepts any value
+ * @pre  Caller context is single-threaded test execution
+ * @post No bytes written to SCI9
+ * @post Global state unchanged
+ *
+ * @since Version 1.0.0
+ */
+void uart_debug_putuint(uint32_t value)
+{
+  (void)value;
+}
+
+/**
  * @brief Stub for uart_debug_puthex() -- no-op
  *
  * @details
@@ -151,6 +173,28 @@ void rx_log_usb_putc(char c)
 void rx_log_usb_puts(const char* str)
 {
   (void)str;
+}
+
+/**
+ * @brief Stub for rx_log_usb_putuint() -- no-op
+ *
+ * @details
+ * Discards the unsigned integer value without writing to USB CDC Port 2.
+ * Satisfies the linker for tests that pull in rx_log.h runtime LOG_PUTUINT
+ * dispatches but do not exercise USB output.
+ *
+ * @param[in] value Unsigned value to print (ignored)
+ *
+ * @pre  None -- stub accepts any value
+ * @pre  Caller context is single-threaded test execution
+ * @post No bytes written to USB CDC
+ * @post Global state unchanged
+ *
+ * @since Version 1.0.0
+ */
+void rx_log_usb_putuint(uint32_t value)
+{
+  (void)value;
 }
 
 /**

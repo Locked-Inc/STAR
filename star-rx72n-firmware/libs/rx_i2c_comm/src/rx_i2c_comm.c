@@ -664,6 +664,9 @@ static rx_receive_result_t
 internal_receive_iteration(rx_i2c_comm_handle_t* handle, rx_frame_t* frame, rx_err_t* err)
 {
   *err = internal_read_i2c_data(handle);
+  /* k_rx_err_timeout means the HAL had no new bytes this iteration; treat as
+   * "buffer unchanged" and fall through to the sync-search so the caller can
+   * re-attempt up to k_i2c_comm_max_receive_iterations times before giving up. */
   if (*err != k_rx_ok && *err != k_rx_err_timeout) {
     return k_receive_error;
   }
