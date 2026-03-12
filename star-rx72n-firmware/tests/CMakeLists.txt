@@ -11,6 +11,76 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.21")
     set(CMAKE_C_STANDARD_REQUIRED ON)
 endif()
 
+# =============================================================================
+# clang-tidy integration (optional, default OFF)
+#
+# Enable with: cmake -B build/tidy -S . -DENABLE_CLANG_TIDY=ON
+# Requires clang-tidy >= 16 for C23 typed enum syntax support.
+# Runs against this host build's compile_commands.json so that all firmware
+# source files are analyzed without cross-compiler flag conflicts.
+# =============================================================================
+option(ENABLE_CLANG_TIDY "Run clang-tidy on all compiled sources" OFF)
+
+if(ENABLE_CLANG_TIDY)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+    # Prefer versioned clang-tidy binaries (require >= 16 for C23 typed enums)
+    find_program(CLANG_TIDY_EXE
+        NAMES clang-tidy-18 clang-tidy-17 clang-tidy-16 clang-tidy
+        DOC "Path to clang-tidy executable"
+    )
+
+    if(NOT CLANG_TIDY_EXE)
+        message(FATAL_ERROR
+            "ENABLE_CLANG_TIDY=ON but clang-tidy not found.\n"
+            "Install with: sudo apt-get install clang-tidy"
+        )
+    endif()
+
+    # Verify the found clang-tidy is >= 16 (required for C23 typed enum syntax).
+    execute_process(
+        COMMAND "${CLANG_TIDY_EXE}" --version
+        OUTPUT_VARIABLE CLANG_TIDY_VERSION_OUTPUT
+        ERROR_QUIET
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    string(REGEX MATCH "version ([0-9]+)" _ "${CLANG_TIDY_VERSION_OUTPUT}")
+    set(CLANG_TIDY_VERSION_MAJOR "${CMAKE_MATCH_1}")
+    if(NOT CLANG_TIDY_VERSION_MAJOR OR CLANG_TIDY_VERSION_MAJOR LESS 16)
+        message(FATAL_ERROR
+            "clang-tidy >= 16 required for C23 typed enum support.\n"
+            "Found: ${CLANG_TIDY_EXE} (version ${CLANG_TIDY_VERSION_MAJOR}).\n"
+            "Install with: sudo apt-get install clang-tidy-18"
+        )
+    endif()
+
+    # Verify .clang-tidy config exists before configuring CMAKE_C_CLANG_TIDY
+    # so that a misconfigured build fails early with a clear message.
+    set(_clang_tidy_config "${CMAKE_SOURCE_DIR}/../.clang-tidy")
+    if(NOT EXISTS "${_clang_tidy_config}")
+        message(FATAL_ERROR
+            ".clang-tidy config not found at ${_clang_tidy_config}.\n"
+            "Ensure star-rx72n-firmware/.clang-tidy exists in the repository."
+        )
+    endif()
+
+    message(STATUS "clang-tidy enabled: ${CLANG_TIDY_EXE} (version ${CLANG_TIDY_VERSION_MAJOR})")
+
+    # -std=c2x: pre-ratification name for C23; supported by clang-16+ and required
+    # for typed enum syntax (typedef enum : uint8_t {}).  Use c2x rather than c23
+    # for maximum clang version compatibility.
+    # -DUSE_MOCK_SCI_REGS: matches apply_strict_warnings() compile definitions so
+    # static analysis sees the same conditional flags as the test build.
+    set(CMAKE_C_CLANG_TIDY
+        "${CLANG_TIDY_EXE}"
+        "--config-file=${_clang_tidy_config}"
+        "--extra-arg=-std=c2x"
+        "--extra-arg=-DUNIT_TEST"
+        "--extra-arg=-DRX_SIMULATOR_MODE"
+        "--extra-arg=-DUSE_MOCK_SCI_REGS"
+    )
+endif()
+
 # Helper function to apply strict warnings/defines to our test targets only
 function(apply_strict_warnings target)
     target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -Wpedantic -Wno-error=cpp -Wno-error=format-truncation=)
@@ -1205,6 +1275,148 @@ add_test(NAME test_obstacle_detection_task COMMAND test_obstacle_detection_task)
 add_test(NAME test_temperature_sensing_task COMMAND test_temperature_sensing_task)
 add_test(NAME test_telemetry_aggregation_task COMMAND test_telemetry_aggregation_task)
 add_test(NAME test_imu_task COMMAND test_imu_task)
+
+# =============================================================================
+# Coverage Baseline: compile all firmware source files
+#
+# Every source file in libs/ and src/ that is not already compiled by another
+# test is compiled here with the same flags (--coverage, UNIT_TEST,
+# RX_SIMULATOR_MODE).  The resulting .gcno instrumentation files allow
+# lcov --initial to report 0% coverage for untested code paths, making all
+# firmware files visible in the HTML coverage report.
+#
+# Files guarded entirely by #ifdef __RX__ will compile but contribute 0
+# instrumented lines -- they appear in the report as "N/A" (no executable
+# lines on the host), which is correct: those paths require the hardware build.
+#
+# Boot files (smc_generated, r_bsp, resetprg, vecttbl, etc.) depend on
+# GNURX-specific startup ABI and are excluded; they are tested by the
+# cross-compile CI job instead.
+# =============================================================================
+
+# Task source files not linked into any other test executable
+set(COVERAGE_EXTRA_TASK_SRCS
+    ${CMAKE_SOURCE_DIR}/../src/tasks/motor_control_task.c
+    ${CMAKE_SOURCE_DIR}/../src/tasks/obstacle_detect_task.c
+    ${CMAKE_SOURCE_DIR}/../src/tasks/temp_sensor_task.c
+    ${CMAKE_SOURCE_DIR}/../src/tasks/telemetry_task.c
+    ${CMAKE_SOURCE_DIR}/../src/tasks/imu_task.c
+    ${CMAKE_SOURCE_DIR}/../src/tasks/led_status_task.c
+    ${CMAKE_SOURCE_DIR}/../src/tasks/watchdog_monitor_task.c
+)
+
+# Core runtime files not linked into any other test executable.
+# rx_wdt.c, rx_time_threadx.c, rx_exception.c, rx_infrastructure.c are
+# hardware/RTOS-specific (depend on __RX__ registers or ThreadX internals)
+# and cannot be compiled on the host test build; they are tested by the
+# cross-compile CI job.  Only rx_log_usb.c is host-compilable.
+set(COVERAGE_EXTRA_CORE_SRCS
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_usb.c
+)
+
+# HAL and USB ISR source files are replaced by mocks in all other tests and
+# depend on hardware-specific register types that are not available in the
+# host build (guarded by #ifdef __RX__ or __attribute__((interrupt))).
+# They are excluded from host coverage; coverage for HAL is achieved through
+# the mock-based tests that exercise the HAL interface contract.
+# (No COVERAGE_EXTRA_HAL_SRCS or COVERAGE_EXTRA_USB_SRCS intentionally.)
+
+# Remaining source files compilable on host
+set(COVERAGE_EXTRA_MISC_SRCS
+    ${CMAKE_SOURCE_DIR}/../src/shared/shared_data.c
+)
+
+# OBJECT library: compiles all coverage-extra files with host flags + --coverage.
+# Not linked into a runnable test; .gcno files it produces are sufficient for
+# lcov --initial to register each source file in the coverage database.
+add_library(firmware_coverage_obj OBJECT
+    ${COVERAGE_EXTRA_TASK_SRCS}
+    ${COVERAGE_EXTRA_CORE_SRCS}
+    ${COVERAGE_EXTRA_MISC_SRCS}
+)
+
+apply_strict_warnings(firmware_coverage_obj)
+apply_test_includes(firmware_coverage_obj)
+
+# Additional includes required by task sources
+target_include_directories(firmware_coverage_obj PRIVATE
+    ${CMAKE_SOURCE_DIR}/../src/shared
+    ${CMAKE_SOURCE_DIR}/../src/tasks/inc
+    ${CMAKE_SOURCE_DIR}/../src/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_ds18b20/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bno055/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bmp280/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_drv8263/inc
+    ${CMAKE_SOURCE_DIR}/../libs/threadx
+    ${CMAKE_SOURCE_DIR}/mocks
+)
+
+# Suppress warnings in generated/vendor-adjacent code compiled for coverage only
+target_compile_options(firmware_coverage_obj PRIVATE
+    -Wno-error
+    -Wno-missing-braces
+)
+
+target_compile_definitions(firmware_coverage_obj PRIVATE
+    MOCK_TX_THREAD_CREATE
+    MOCK_TX_EVENT_FLAGS_CREATE
+    USE_MOCK_SCI_REGS
+    UNIT_TEST
+    RX_SIMULATOR_MODE
+)
+
+# Dummy test that links firmware_coverage_obj so CMake actually compiles it.
+# The test body is empty; its sole purpose is to ensure .gcno files exist for
+# all extra firmware sources so lcov --initial can account for them.
+#
+# NOTE: firmware_coverage_obj compiles the REAL implementations of:
+#   - All task source files (motor_control_task.c, etc.)
+#   - shared_data.c
+#   - rx_log_usb.c
+# Therefore we must NOT include their mock equivalents here (MOCK_TASKS_SRC,
+# MOCK_SHARED_DATA_SRC, mock_rx_log.c), which would produce duplicate symbols.
+# We use ${RX_LOG_SRC} (rx_log.c only) instead of the full MOCK_LOG_SRC set.
+add_executable(test_coverage_compile_all
+    test_coverage_compile_all.c
+    $<TARGET_OBJECTS:firmware_coverage_obj>
+    ${MOCK_TX_API_SRC}
+    ${RX_LOG_SRC}
+    ${MOCK_COMM_MANAGER_SRC_TASK}
+    ${MOCK_NANOPB_SRC}
+    ${MOCK_USB_SRC}
+    ${MOCK_UART_SRC}
+    ${MOCK_HAL_SRC}
+    ${MOCK_MOTOR_SRC}
+    ${MOCK_RSPI_SRC}
+    ${MOCK_GPTW_SRC}
+    ${MOCK_DS18B20_SRC}
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_bmp280.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_bno055.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_coverage_stubs.c
+)
+apply_test_includes(test_coverage_compile_all)
+target_compile_options(test_coverage_compile_all PRIVATE -Wno-error -Wno-missing-braces)
+target_include_directories(test_coverage_compile_all PRIVATE
+    ${CMAKE_SOURCE_DIR}/../src/shared
+    ${CMAKE_SOURCE_DIR}/../src/tasks/inc
+    ${CMAKE_SOURCE_DIR}/../src/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_ds18b20/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bno055/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bmp280/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_drv8263/inc
+    ${CMAKE_SOURCE_DIR}/../libs/threadx
+)
+target_compile_definitions(test_coverage_compile_all PRIVATE
+    MOCK_TX_THREAD_CREATE
+    MOCK_TX_EVENT_FLAGS_CREATE
+    USE_MOCK_SCI_REGS
+    UNIT_TEST
+    RX_SIMULATOR_MODE
+)
+target_link_libraries(test_coverage_compile_all unity)
+
+list(APPEND ALL_TEST_TARGETS test_coverage_compile_all)
+add_test(NAME test_coverage_compile_all COMMAND test_coverage_compile_all)
 
 # =============================================================================
 # Convenience Targets

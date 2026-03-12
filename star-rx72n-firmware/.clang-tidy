@@ -1,0 +1,113 @@
+---
+# STAR RX72N Firmware - clang-tidy configuration
+#
+# Run against the host-compiled test build (tests/build/compile_commands.json)
+# because the cross-compiler (rx-elf-gcc) emits RX72N-specific flags that
+# LLVM cannot parse.  All firmware source files are compiled into the test
+# build via standard gcc/clang, so full coverage is achieved.
+#
+# Minimum clang version: 16 (required for C23 typed enum syntax).
+# Ubuntu 24.04 ships clang-18 via the unversioned 'clang-tidy' package.
+#
+# Usage:
+#   cmake -B build/tidy -S tests/ -DENABLE_CLANG_TIDY=ON
+#   cmake --build build/tidy
+#
+# Or via script:
+#   bash star-rx72n-firmware/scripts/clang_tidy.sh --check
+
+Checks: >
+  cert-*,
+  bugprone-*,
+  clang-analyzer-*,
+  misc-*,
+  readability-*,
+  portability-*,
+  performance-*,
+  -bugprone-easily-swappable-parameters,
+  -misc-include-cleaner,
+  -readability-identifier-length
+
+# Treat cert-*, bugprone-*, security, portability- and performance- checks as
+# hard errors so CI fails on any violation.
+WarningsAsErrors: >
+  cert-*,
+  bugprone-*,
+  clang-analyzer-security.*,
+  portability-*,
+  performance-*
+
+# Only report diagnostics for STAR-authored headers; suppress noise from
+# vendor headers (threadx, nanopb, smc_gen, r_bsp, _deps) and test mock
+# headers that use ThreadX naming conventions.
+HeaderFilterRegex: '^(?!.*(threadx|nanopb|smc_gen|r_bsp|_deps|tests/mocks)).*\.(h|hpp)$'
+
+CheckOptions:
+  # --- readability-identifier-naming (CLAUDE.md naming conventions) ---
+
+  # Functions: snake_case
+  - key: readability-identifier-naming.FunctionCase
+    value: lower_case
+
+  # Variables: snake_case
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+
+  # Parameters: snake_case
+  - key: readability-identifier-naming.ParameterCase
+    value: lower_case
+
+  # Types (struct/typedef/enum): snake_case with trailing _t
+  - key: readability-identifier-naming.TypedefCase
+    value: lower_case
+  - key: readability-identifier-naming.TypedefSuffix
+    value: _t
+
+  # Struct names: snake_case (without _t -- the typedef carries it)
+  - key: readability-identifier-naming.StructCase
+    value: lower_case
+
+  # Enum tag names: snake_case
+  - key: readability-identifier-naming.EnumCase
+    value: lower_case
+
+  # Enum constants: k_ prefix, lower_case (project convention)
+  - key: readability-identifier-naming.EnumConstantCase
+    value: lower_case
+  - key: readability-identifier-naming.EnumConstantPrefix
+    value: k_
+
+  # Macros: UPPER_CASE (SCREAMING_SNAKE_CASE)
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE
+
+  # Global variables: g_ prefix
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: lower_case
+  - key: readability-identifier-naming.GlobalVariablePrefix
+    value: g_
+
+  # Static variables: s_ prefix
+  - key: readability-identifier-naming.StaticVariableCase
+    value: lower_case
+  - key: readability-identifier-naming.StaticVariablePrefix
+    value: s_
+
+  # --- cert-str34-c: cast char to unsigned char before conversion ---
+  - key: cert-str34-c.DiagnoseSignedUnsignedCharComparisons
+    value: true
+
+  # --- readability-magic-numbers: allow 0 and 1 as universally benign ---
+  # These are the only numeric literals permitted without a named constant.
+  # All other numeric literals must use typed enum constants per CLAUDE.md.
+  - key: readability-magic-numbers.IgnoredIntegerValues
+    value: "0;1"
+  - key: readability-magic-numbers.IgnoredFloatingPointValues
+    value: "0.0;1.0"
+
+  # --- readability-function-cognitive-complexity: NASA Power of 10 Rule 4 ---
+  # Functions exceeding this threshold are flagged for refactoring.
+  # Threshold of 25 allows complex-but-verifiable control flow while
+  # preventing untestable "god functions" that violate Rule 4.
+  - key: readability-function-cognitive-complexity.Threshold
+    value: "25"

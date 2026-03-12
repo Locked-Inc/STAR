@@ -755,6 +755,69 @@ static inline tx_status tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
 #define TX_TIMER_TICKS_PER_SECOND (100UL)
 #endif
 
+/* =============================================================================
+ * ThreadX Interrupt Control Constants and Functions
+ * =============================================================================
+ */
+
+/**
+ * @def TX_INT_DISABLE
+ * @brief Argument to tx_interrupt_control() that disables interrupts.
+ *
+ * @details
+ * In real ThreadX this is a platform-specific mask value (typically 0xC0 on
+ * ARM Cortex-M).  The mock uses 0x1 as a sentinel so that test code can
+ * distinguish between "disable" and "restore to prior state" call patterns.
+ *
+ * @note Intentional macro: must match the ThreadX API call convention where
+ *       TX_INT_DISABLE is passed directly as a UINT argument. Cannot be an
+ *       enum constant because the argument and return types carry interrupt
+ *       state as an opaque UINT.
+ *
+ * @since Version 1.0.0
+ */
+#ifndef TX_INT_DISABLE
+#define TX_INT_DISABLE 0x1U
+#endif
+
+/**
+ * @brief Save the current interrupt-enable state and optionally disable
+ *        interrupts (mock implementation).
+ *
+ * @details
+ * In real ThreadX this performs a platform-specific atomic
+ * read-modify-write on the CPU interrupt-mask register.  The mock
+ * simply returns a fixed "previously enabled" sentinel so that firmware
+ * code that saves and later restores the state compiles and links on the
+ * host without any kernel dependency.
+ *
+ * Typical usage in firmware:
+ * @code
+ * UINT saved = tx_interrupt_control(TX_INT_DISABLE);
+ * // ... critical section ...
+ * (void)tx_interrupt_control(saved);
+ * @endcode
+ *
+ * @param[in] new_posture Desired interrupt state; TX_INT_DISABLE to disable,
+ *            or a previously returned value to restore.
+ *
+ * @return Previous interrupt-enable state (mock always returns 0 = "was
+ *         enabled before disable").
+ *
+ * @pre  Called from a single-threaded test context (no real scheduling).
+ * @post Interrupt state is unchanged in the host environment (mock is a no-op).
+ *
+ * @note Thread safety: N/A in single-threaded host test environment.
+ *
+ * @since Version 1.0.0
+ */
+static inline UINT tx_interrupt_control(UINT new_posture)
+{
+  (void)new_posture;
+  /* Mock: always report "interrupts were enabled" as the prior state. */
+  return 0U;
+}
+
 /**
  * @brief Get current timer tick count (mock implementation)
  *
