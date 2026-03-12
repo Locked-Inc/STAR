@@ -172,6 +172,19 @@ if [[ -n "$rx72n_files" ]]; then
         echo "WARNING: clang-format not found -- RX72N formatting check SKIPPED."
         echo "   Install: sudo apt install clang-format"
     fi
+
+    if command -v clang-tidy &>/dev/null || command -v clang-tidy-18 &>/dev/null; then
+        if ! bash star-rx72n-firmware/scripts/clang_tidy.sh --check; then
+            echo "[FAIL] RX72N clang-tidy violations found."
+            echo "   Fix violations above, then re-stage and commit."
+            error_found=1
+        fi
+    else
+        echo ""
+        echo "WARNING: clang-tidy not found -- static analysis SKIPPED."
+        echo "   Install: sudo apt install clang-tidy"
+        echo "   CI will enforce clang-tidy on push."
+    fi
 fi
 
 # -----------------------------------------------------------------------------

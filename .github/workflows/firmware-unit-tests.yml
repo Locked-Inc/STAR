@@ -200,7 +200,6 @@ jobs:
     name: clang-tidy (SEI CERT C)
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    continue-on-error: true
     permissions:
       contents: read
 
