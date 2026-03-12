@@ -98,7 +98,11 @@ rx_err_t rx_log_set_backend(rx_log_backend_t backend)
  * Called by the LOG_PUTS / LOG_PUTC / LOG_PUTINT / LOG_PUTHEX macros on
  * every log invocation to select the output interface(s).
  *
- * @return rx_log_backend_t  Active backend bitmask (k_log_backend_none if no logging)
+ * @return rx_log_backend_t  Active backend bitmask
+ * @retval k_log_backend_none No logging active; all output discarded
+ * @retval k_log_backend_uart UART (SCI9) only
+ * @retval k_log_backend_usb  USB CDC Port 2 only
+ * @retval k_log_backend_both Both UART (SCI9) and USB CDC Port 2
  *
  * @pre  s_log_backend has been set at least once (defaults to k_log_backend_uart at startup)
  * @pre  No concurrent write to s_log_backend is in progress (not thread-safe)
