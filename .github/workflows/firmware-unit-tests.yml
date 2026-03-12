@@ -193,7 +193,7 @@ jobs:
   # Runs against the host test build's compile_commands.json so that all
   # firmware source files are analyzed without cross-compiler flag conflicts.
   # continue-on-error: true until the SEI CERT C baseline is clean.
-  # Tracked in: https://github.com/your-org/STAR/issues/430
+  # Tracked in: issue #430 (add clang-tidy SEI CERT C + aggressive linting).
   # Remove continue-on-error once all cert-* violations are resolved.
   # ============================================================================
   clang-tidy:

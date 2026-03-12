@@ -15,8 +15,12 @@
 #
 # Justification: Main task loops use while(1) by design. The ThreadX scheduler
 # runs tasks indefinitely; termination is handled by the hardware watchdog
-# (WDT), not a loop-exit condition. This is the standard embedded RTOS pattern
-# and is explicitly permitted by MISRA C 2012 Directive 4.4 (platform limit).
+# (WDT), not a loop-exit condition. This is the standard embedded RTOS pattern.
+# Formal deviation against MISRA C 2012 Rule 14.4: the controlling expression
+# of a do-while or while loop must be essentially Boolean. RTOS task entry
+# points are permanently-running threads; a Boolean-typed loop condition would
+# be semantically misleading. The project records this as a permitted deviation
+# for RTOS task entry points consistent with MISRA C 2012 Appendix I guidance.
 # ---------------------------------------------------------------------------
 misra-c2012-14.4:*/tasks/*.c
 

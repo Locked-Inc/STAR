@@ -130,7 +130,7 @@ configure_build() {
     print_status "Configuring test build in $BUILD_DIR ..."
     local cmake_stdout
     cmake_stdout="/dev/null"
-    if [[ "${VERBOSE:-}" == "1" ]]; then
+    if [[ "${VERBOSE:-}" == "true" ]]; then
         cmake_stdout="/dev/stdout"
     fi
 
@@ -180,7 +180,7 @@ run_clang_tidy() {
         fix_flag="--fix"
     fi
 
-    local violations=0
+    local exit_code=0
     local files
     mapfile -t files < <(collect_source_files)
 
@@ -201,10 +201,10 @@ run_clang_tidy() {
         --extra-arg="-DRX_SIMULATOR_MODE" \
         ${fix_flag:+"$fix_flag"} \
         "${files[@]}" 2>&1
-    violations=$?
+    exit_code=$?
     set -e
 
-    if [[ $violations -ne 0 ]]; then
+    if [[ $exit_code -ne 0 ]]; then
         echo ""
         print_error "clang-tidy found violations."
         if [[ "$FIX_MODE" == "true" ]]; then

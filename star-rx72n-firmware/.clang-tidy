@@ -36,7 +36,9 @@ WarningsAsErrors: >
   clang-analyzer-security.*,
   portability-*,
   performance-*,
-  readability-magic-numbers
+  readability-magic-numbers,
+  readability-function-size,
+  readability-function-cognitive-complexity
 
 # Only report diagnostics for STAR-authored headers; suppress noise from
 # vendor headers (threadx, nanopb, smc_gen, r_bsp, _deps) and test mock

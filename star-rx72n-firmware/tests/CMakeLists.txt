@@ -1392,6 +1392,7 @@ add_executable(test_coverage_compile_all
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_bno055.c
     ${CMAKE_SOURCE_DIR}/mocks/mock_coverage_stubs.c
 )
+apply_strict_warnings(test_coverage_compile_all)
 apply_test_includes(test_coverage_compile_all)
 target_include_directories(test_coverage_compile_all PRIVATE
     ${CMAKE_SOURCE_DIR}/../src/shared

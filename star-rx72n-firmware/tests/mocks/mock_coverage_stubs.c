@@ -148,10 +148,7 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
 {
   (void)channel;
   if (state != nullptr) {
-    state->total_count    = 0;
-    state->last_raw_count = 0U;
-    state->revolutions    = 0;
-    state->position_deg   = 0.0F;
+    *state = (rx_encoder_state_t){0};
   }
   return k_rx_ok;
 }
@@ -458,10 +455,7 @@ rx_err_t rx_tpu_encoder_read_count(rx_tpu_channel_t channel, rx_encoder_state_t*
 {
   (void)channel;
   if (state != nullptr) {
-    state->total_count    = 0;
-    state->last_raw_count = 0U;
-    state->revolutions    = 0;
-    state->position_deg   = 0.0F;
+    *state = (rx_encoder_state_t){0};
   }
   return k_rx_ok;
 }

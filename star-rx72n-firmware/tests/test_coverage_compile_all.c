@@ -57,7 +57,8 @@ void tearDown(void) {}
  * with --coverage instrumentation so lcov --initial can record them in the
  * baseline coverage database.
  *
- * @return int Unity result code: 0 on success (no failures).
+ * @return int Unity result code.
+ * @retval 0 All registered tests passed (zero test cases means always 0).
  *
  * @pre  All firmware source files linked into this target compile cleanly.
  * @pre  Unity framework headers are available on the include path.
