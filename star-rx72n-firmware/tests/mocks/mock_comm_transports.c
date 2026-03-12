@@ -419,7 +419,7 @@ rx_err_t rx_nanopb_encode_velocity_response(const void* msg,
   (void)buffer;
   (void)buffer_size;
   if (len != nullptr) {
-    *len = (uint32_t)k_encoded_len_none;
+    *len = k_encoded_len_none;
   }
   return k_rx_ok;
 }
@@ -453,7 +453,7 @@ rx_nanopb_encode_estop_response(const void* msg, void* buffer, uint32_t buffer_s
   (void)buffer;
   (void)buffer_size;
   if (len != nullptr) {
-    *len = (uint32_t)k_encoded_len_none;
+    *len = k_encoded_len_none;
   }
   return k_rx_ok;
 }
@@ -489,7 +489,7 @@ rx_err_t rx_nanopb_encode_pid_gains_response(const void* msg,
   (void)buffer;
   (void)buffer_size;
   if (len != nullptr) {
-    *len = (uint32_t)k_encoded_len_none;
+    *len = k_encoded_len_none;
   }
   return k_rx_ok;
 }

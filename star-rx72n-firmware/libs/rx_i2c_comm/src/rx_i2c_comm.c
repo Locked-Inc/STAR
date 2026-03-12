@@ -992,6 +992,11 @@ static rx_err_t internal_handle_reset(rx_i2c_comm_handle_t* handle)
     return enc_err;
   }
 
+  if (wire_len > (uint32_t)k_riic_peripheral_transfer_limit) {
+    rx_log_error(s_tag, "Encoded frame exceeds I2C HAL transfer limit; cannot send");
+    return k_rx_err_invalid_size;
+  }
+
   const riic_channel_t ch        = {.value = handle->channel_value};
   rx_err_t             write_err = riic_peripheral_write(ch, handle->tx_buffer, (uint16_t)wire_len);
   if (write_err != k_rx_ok) {

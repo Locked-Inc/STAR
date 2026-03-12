@@ -2276,7 +2276,9 @@ riic_peripheral_write(const riic_channel_t channel, const uint8_t* data, const u
   }
 
   if (length == 0 || length > k_riic_peripheral_transfer_limit) {
-    rx_log_error(s_tag, "riic_peripheral_write: length out of range (must be 1..256)");
+    rx_log_error(
+      s_tag,
+      "riic_peripheral_write: length out of range (1..k_riic_peripheral_transfer_limit)");
     return k_rx_err_invalid_arg;
   }
 
