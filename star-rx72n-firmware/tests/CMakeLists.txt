@@ -402,6 +402,7 @@ add_executable(test_rx_obstacle_detect
     ${MOCK_HCSR04_SRC}
     ${MOCK_MOTOR_SRC}
     ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_obstacle_detect)
 apply_test_includes(test_rx_obstacle_detect)
@@ -682,6 +683,7 @@ add_executable(test_rx_frame_ascii
     ${RX_FRAME_ASCII_SRC}
     ${RX_FRAME_SRC}
     ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_frame_ascii)
 apply_test_includes(test_rx_frame_ascii)

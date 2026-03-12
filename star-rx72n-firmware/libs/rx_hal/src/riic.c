@@ -2275,7 +2275,7 @@ riic_peripheral_write(const riic_channel_t channel, const uint8_t* data, const u
     return k_rx_err_invalid_arg;
   }
 
-  if (length == 0) {
+  if (length == 0 || length > k_riic_peripheral_transfer_limit) {
     return k_rx_err_invalid_arg;
   }
 

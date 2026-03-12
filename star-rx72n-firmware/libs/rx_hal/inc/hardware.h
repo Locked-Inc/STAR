@@ -1519,9 +1519,9 @@ typedef enum : uint16_t {
  *
  * @details
  * Configures the RIIC peripheral to act as an I2C peripheral device, responding
- * to a fixed 7-bit I2C address issued by a controller (RPi5). Sets up the slave
- * address register (SARL0/SARU0), enables address match detection (ICSER.SAR0E),
- * and leaves the module in peripheral mode (MS=0 in ICMR1).
+ * to a fixed 7-bit I2C address issued by a controller (RPi5). Sets up the
+ * peripheral address register (SARL0/SARU0), enables address match detection
+ * (ICSER.SAR0E), and leaves the module in peripheral mode (MS=0 in ICMR1).
  *
  * @par Peripheral Mode Architecture:
  * - RPi5 acts as I2C controller (generates SCL, START, STOP)
@@ -1535,7 +1535,7 @@ typedef enum : uint16_t {
  * @return rx_err_t Error code
  * @retval k_rx_ok Channel initialized in peripheral mode
  * @retval k_rx_err_invalid_arg Channel value out of range
- * @retval k_rx_err_invalid_state Channel already initialized (call riic_deinit first)
+ * @retval k_rx_err_invalid_state Channel already initialized; deinitialize before reinitializing
  *
  * @pre channel.value must be in range [0, 2] (i.e., < k_riic_max_channels)
  * @pre device_addr.value must be in range [0x08, 0x77] (valid non-reserved 7-bit I2C address)
@@ -1603,12 +1603,13 @@ typedef enum : uint16_t {
  *
  * @param[in] channel RIIC channel wrapper (channel.value range: 0-2)
  * @param[in] data Pointer to data buffer to write
- * @param[in] length Number of bytes to write
+ * @param[in] length Number of bytes to write (valid range: 1..k_riic_peripheral_transfer_limit)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Write completed
  * @retval k_rx_err_null_ptr data is nullptr
- * @retval k_rx_err_invalid_arg Channel value out of range or length == 0
+ * @retval k_rx_err_invalid_arg Channel value out of range, length == 0,
+ *         or length > k_riic_peripheral_transfer_limit
  * @retval k_rx_err_invalid_state Channel not initialized via riic_init_peripheral()
  * @retval k_rx_err_timeout Transmit data register not empty within timeout
  *

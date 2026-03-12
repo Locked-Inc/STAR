@@ -327,12 +327,16 @@ static rx_err_t internal_read_i2c_data(rx_i2c_comm_handle_t* handle)
     return k_rx_ok;
   }
 
+  /* Clamp to the HAL transfer limit so riic_peripheral_read never receives
+   * a length that exceeds k_riic_peripheral_transfer_limit (256 bytes). */
+  const uint16_t read_len = (space > (uint32_t)k_riic_peripheral_transfer_limit)
+                              ? k_riic_peripheral_transfer_limit
+                              : (uint16_t)space;
+
   const riic_channel_t ch         = {.value = handle->channel_value};
   uint16_t             bytes_read = 0;
-  const rx_err_t       err        = riic_peripheral_read(ch,
-                                            handle->rx_buffer + handle->rx_buffer_len,
-                                            (uint16_t)space,
-                                            &bytes_read);
+  const rx_err_t       err =
+    riic_peripheral_read(ch, handle->rx_buffer + handle->rx_buffer_len, read_len, &bytes_read);
   if (err != k_rx_ok) {
     return err;
   }
@@ -891,6 +895,11 @@ rx_err_t rx_i2c_comm_send(rx_i2c_comm_handle_t* handle,
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame encode failed");
     return err;
+  }
+
+  if (wire_len > (uint32_t)k_riic_peripheral_transfer_limit) {
+    rx_log_error(s_tag, "Encoded frame exceeds I2C HAL transfer limit; cannot send");
+    return k_rx_err_invalid_arg;
   }
 
   const riic_channel_t ch = {.value = handle->channel_value};

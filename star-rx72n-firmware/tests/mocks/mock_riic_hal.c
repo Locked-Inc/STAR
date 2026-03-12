@@ -589,7 +589,7 @@ rx_err_t riic_peripheral_read(const riic_channel_t channel,
   if (channel.value >= k_mock_riic_max_channels) {
     return k_rx_err_invalid_arg;
   }
-  if (max_length == 0) {
+  if (max_length == 0 || max_length > k_riic_peripheral_transfer_limit) {
     return k_rx_err_invalid_arg;
   }
   if (!g_mock_riic.channels[channel.value].initialized) {
@@ -605,7 +605,12 @@ rx_err_t riic_peripheral_read(const riic_channel_t channel,
   uint16_t                   to_read = (max_length < ch->rx_length) ? max_length : ch->rx_length;
   if (to_read > 0) {
     memcpy(data, ch->rx_buffer, to_read);
-    ch->rx_length = k_mock_riic_length_cleared;
+    if (to_read == ch->rx_length) {
+      ch->rx_length = k_mock_riic_length_cleared;
+    } else {
+      (void)memmove(ch->rx_buffer, ch->rx_buffer + to_read, ch->rx_length - to_read);
+      ch->rx_length = (uint16_t)(ch->rx_length - to_read);
+    }
   }
   *bytes_read = to_read;
   return k_rx_ok;
@@ -664,7 +669,7 @@ riic_peripheral_write(const riic_channel_t channel, const uint8_t* data, const u
   if (channel.value >= k_mock_riic_max_channels) {
     return k_rx_err_invalid_arg;
   }
-  if (length == 0) {
+  if (length == 0 || length > k_riic_peripheral_transfer_limit) {
     return k_rx_err_invalid_arg;
   }
   if (!g_mock_riic.channels[channel.value].initialized) {
