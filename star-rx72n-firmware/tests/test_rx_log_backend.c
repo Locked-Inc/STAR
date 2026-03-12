@@ -24,6 +24,27 @@
 #include "unity.h"
 
 /* =============================================================================
+ * Test Constants
+ * =============================================================================
+ */
+
+/**
+ * @enum invalid_backend_test_value_t
+ * @brief Named constants for invalid rx_log_backend_t values used in negative tests
+ *
+ * @details
+ * Replaces raw hex literals in test_bit2_rejected, test_upper_nibble_rejected,
+ * and test_all_bits_rejected so each pattern's intent is self-documenting.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_invalid_backend_bit2         = 0x04u, /**< Bit 2 -- first undefined bit above the valid mask */
+  k_invalid_backend_upper_nibble = 0xF0u, /**< Upper nibble -- all high bits set */
+  k_invalid_backend_all_bits     = 0xFFu, /**< All bits set -- includes undefined bits */
+} invalid_backend_test_value_t;
+
+/* =============================================================================
  * Test Fixture
  * =============================================================================
  */
@@ -55,6 +76,11 @@ void tearDown(void) {}
  * @details
  * Verifies the safe boot-time default: UART logging only so that early
  * startup messages appear on SCI9 before USB CDC is enumerated.
+ *
+ * @pre  setUp() has been called, resetting s_log_backend to k_log_backend_uart
+ * @pre  No other test has modified the backend since setUp()
+ * @post rx_log_get_backend() returns k_log_backend_uart
+ * @post No global state modified beyond what Unity tearDown() resets
  */
 void test_default_backend_is_uart(void)
 {
@@ -116,7 +142,8 @@ void test_set_backend_none(void)
  */
 void test_bit2_rejected(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_log_set_backend((rx_log_backend_t)0x04u));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_log_set_backend((rx_log_backend_t)k_invalid_backend_bit2));
 }
 
 /**
@@ -124,7 +151,8 @@ void test_bit2_rejected(void)
  */
 void test_upper_nibble_rejected(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_log_set_backend((rx_log_backend_t)0xF0u));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_log_set_backend((rx_log_backend_t)k_invalid_backend_upper_nibble));
 }
 
 /**
@@ -132,7 +160,8 @@ void test_upper_nibble_rejected(void)
  */
 void test_all_bits_rejected(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_log_set_backend((rx_log_backend_t)0xFFu));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_log_set_backend((rx_log_backend_t)k_invalid_backend_all_bits));
 }
 
 /* =============================================================================
@@ -150,7 +179,8 @@ void test_all_bits_rejected(void)
 void test_backend_unchanged_after_rejection(void)
 {
   (void)rx_log_set_backend(k_log_backend_usb);
-  (void)rx_log_set_backend((rx_log_backend_t)0xFCu);
+  (void)rx_log_set_backend(
+    (rx_log_backend_t)(k_invalid_backend_upper_nibble | k_invalid_backend_bit2));
   TEST_ASSERT_EQUAL(k_log_backend_usb, rx_log_get_backend());
 }
 

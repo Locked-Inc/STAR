@@ -545,14 +545,15 @@ rx_err_t riic_init_peripheral(const riic_channel_t channel, const i2c_device_add
  * @param[in]  channel     RIIC channel wrapper (channel.value range: 0 to
  *                         k_mock_riic_max_channels - 1)
  * @param[out] data        Buffer to receive copied bytes (must not be nullptr)
- * @param[in]  max_length  Maximum bytes to copy (must be >= 1)
+ * @param[in]  max_length  Maximum bytes to copy (1..k_riic_peripheral_transfer_limit)
  * @param[out] bytes_read  Actual bytes copied (may be 0 if no pre-loaded data)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok               Data (possibly 0 bytes) placed in @p data
  * @retval k_rx_err_null_ptr     data or bytes_read is nullptr
- * @retval k_rx_err_invalid_arg  channel.value >= k_mock_riic_max_channels
- *                               or max_length == 0
+ * @retval k_rx_err_invalid_arg  channel.value >= k_mock_riic_max_channels,
+ *                               max_length == 0, or
+ *                               max_length > k_riic_peripheral_transfer_limit
  * @retval k_rx_err_invalid_state Channel not initialized via
  *                                riic_init_peripheral() mock
  * @retval Other                 Injected error from mock_riic_set_next_error()
@@ -561,8 +562,8 @@ rx_err_t riic_init_peripheral(const riic_channel_t channel, const i2c_device_add
  * @pre  channel.value < k_mock_riic_max_channels
  * @pre  channel must be initialized via riic_init_peripheral() mock first
  * @post On k_rx_ok: *bytes_read contains bytes copied (0 to max_length)
- * @post On k_rx_ok: g_mock_riic.channels[channel.value].rx_length reset to
- *       k_mock_riic_length_cleared (consumed)
+ * @post On k_rx_ok: only consumed bytes are removed from rx_buffer;
+ *       any remaining bytes are shifted down and rx_length updated
  *
  * @note Not thread-safe; must be called from a single test thread
  * @note Call mock_riic_set_rx_data() before this function to pre-load data
@@ -629,12 +630,13 @@ rx_err_t riic_peripheral_read(const riic_channel_t channel,
  *
  * @param[in] channel RIIC channel wrapper (channel.value range: 0-2)
  * @param[in] data    Buffer containing bytes to write (must not be nullptr)
- * @param[in] length  Number of bytes in @p data (must be >= 1)
+ * @param[in] length  Number of bytes in @p data (1..k_riic_peripheral_transfer_limit)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok         Data stored in tx_buffer; tx_length updated
  * @retval k_rx_err_null_ptr  @p data is nullptr
- * @retval k_rx_err_invalid_arg  channel.value >= k_mock_riic_max_channels or length == 0
+ * @retval k_rx_err_invalid_arg  channel.value >= k_mock_riic_max_channels,
+ *         length == 0, or length > k_riic_peripheral_transfer_limit
  * @retval k_rx_err_invalid_state  Channel not initialized via riic_init_peripheral() mock
  * @retval Other  Injected error from mock_riic_set_next_error()
  *

@@ -32,6 +32,26 @@
 #include "unity.h"
 
 /* =============================================================================
+ * Test Constants
+ * =============================================================================
+ */
+
+/**
+ * @enum test_invalid_mask_t
+ * @brief Named constants for invalid bitmask values used in negative tests
+ *
+ * @details
+ * Replaces raw hex literals in test_unknown_comm_bits_rejected and
+ * test_unknown_log_bits_rejected so the intent of each pattern is clear.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_test_invalid_comm_bits = 0xF0u, /**< Bits above bit 3 -- all unknown comm bits set */
+  k_test_invalid_log_bits  = 0xFCu, /**< Bits above bit 1 -- all unknown log bits set */
+} test_invalid_mask_t;
+
+/* =============================================================================
  * Test Fixture
  * =============================================================================
  */
@@ -193,7 +213,7 @@ void test_no_channels_no_log_accepted(void)
 void test_unknown_comm_bits_rejected(void)
 {
   const rx_system_config_t cfg = {
-    .comm_channels = (rx_comm_channel_mask_t)0xF0u,
+    .comm_channels = (rx_comm_channel_mask_t)k_test_invalid_comm_bits,
     .log_backends  = k_log_backend_usb,
   };
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, comm_task_apply_system_config(&cfg));
@@ -215,7 +235,7 @@ void test_unknown_log_bits_rejected(void)
 {
   const rx_system_config_t cfg = {
     .comm_channels = k_comm_channel_mask_usb,
-    .log_backends  = (rx_log_backend_t)0xFCu,
+    .log_backends  = (rx_log_backend_t)k_test_invalid_log_bits,
   };
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, comm_task_apply_system_config(&cfg));
 }

@@ -2241,7 +2241,7 @@ rx_err_t riic_peripheral_read(const riic_channel_t channel,
  *
  * @param[in] channel RIIC channel wrapper (channel.value range: 0-2)
  * @param[in] data Pointer to buffer containing bytes to write (must not be nullptr)
- * @param[in] length Number of bytes to write (valid range: 1 to UINT16_MAX)
+ * @param[in] length Number of bytes to write (valid range: 1..k_riic_peripheral_transfer_limit)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok All bytes written successfully
@@ -2276,6 +2276,7 @@ riic_peripheral_write(const riic_channel_t channel, const uint8_t* data, const u
   }
 
   if (length == 0 || length > k_riic_peripheral_transfer_limit) {
+    rx_log_error(s_tag, "riic_peripheral_write: length out of range (must be 1..256)");
     return k_rx_err_invalid_arg;
   }
 

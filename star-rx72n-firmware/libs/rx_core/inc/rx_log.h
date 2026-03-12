@@ -423,6 +423,22 @@ void uart_debug_puthex(uint32_t value, uint8_t digits);
  * Each bit enables one output backend. Values may be OR-ed together.
  * Implemented in rx_log.c; runtime state stored in s_log_backend.
  *
+ * @invariant Only bits 0 and 1 are valid. Any value with bits 2..7 set is
+ *   rejected by rx_log_set_backend() with k_rx_err_invalid_arg.
+ *   Valid values: k_log_backend_none (0x00), k_log_backend_uart (0x01),
+ *   k_log_backend_usb (0x02), k_log_backend_both (0x03).
+ *
+ * @code
+ * // Enable both backends at startup
+ * rx_err_t err = rx_log_set_backend(k_log_backend_both);
+ *
+ * // Switch to USB-only after USB enumeration
+ * err = rx_log_set_backend(k_log_backend_usb);
+ *
+ * // Silence all output (e.g., when UART comm is active on SCI9)
+ * err = rx_log_set_backend(k_log_backend_none);
+ * @endcode
+ *
  * @see rx_log_set_backend() Configure at startup
  * @see rx_log_get_backend() Query active backend
  * @since Version 1.0.0
@@ -437,10 +453,14 @@ typedef enum : uint8_t {
 /**
  * @brief Set the active log output backend(s)
  *
- * @param[in] backend Bitmask of rx_log_backend_t values
+ * @param[in] backend Bitmask of rx_log_backend_t values (valid: 0x00..0x03)
  * @return k_rx_ok on success, k_rx_err_invalid_arg if unknown bits are set
  *
- * @pre Must be called before any RTOS tasks are started
+ * @pre Must be called before any RTOS tasks are started (not thread-safe)
+ * @pre backend must contain only bits defined in rx_log_backend_t (bits 0..1)
+ * @post On k_rx_ok: rx_log_get_backend() returns backend; LOG_* macros route accordingly
+ * @post On k_rx_err_invalid_arg: backend state unchanged; previously active backend remains
+ *
  * @note Not thread-safe. Call once at startup.
  * @since Version 1.0.0
  */
@@ -450,6 +470,12 @@ rx_err_t rx_log_set_backend(rx_log_backend_t backend);
  * @brief Get the currently active log backend bitmask
  *
  * @return Current rx_log_backend_t bitmask
+ *
+ * @pre  s_log_backend initialized (defaults to k_log_backend_uart at startup)
+ * @pre  No concurrent call to rx_log_set_backend() in progress
+ * @post Returned value is the current backend bitmask; global state not modified
+ * @post Returned value is a valid rx_log_backend_t (bits 0..1 only)
+ *
  * @note Read-only after startup -- safe to call from any context.
  * @since Version 1.0.0
  */

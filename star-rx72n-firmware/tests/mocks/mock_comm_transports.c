@@ -60,9 +60,20 @@
 /**
  * @brief Stub for rx_usb_comm_init() -- always succeeds
  *
- * @param[out] handle Ignored
- * @param[in]  config Ignored
- * @return k_rx_ok
+ * @details
+ * No-op test stub that immediately returns k_rx_ok without touching hardware
+ * or initializing any transport state. Satisfies the linker for test targets
+ * that link comm_task.c but do not exercise USB transport initialization.
+ *
+ * @param[out] handle Ignored (may be NULL)
+ * @param[in]  config Ignored (may be NULL)
+ *
+ * @retval k_rx_ok Always; stub never fails
+ *
+ * @pre  None -- stub accepts any pointer including NULL
+ * @pre  Caller context is single-threaded test execution
+ * @post No USB hardware or handle state modified
+ * @post Returns k_rx_ok unconditionally
  */
 rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config_t* config)
 {
@@ -74,9 +85,20 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
 /**
  * @brief Stub for rx_spi_comm_init() -- always succeeds
  *
- * @param[out] handle Ignored
- * @param[in]  config Ignored
- * @return k_rx_ok
+ * @details
+ * No-op test stub that immediately returns k_rx_ok without touching hardware
+ * or initializing any transport state. Satisfies the linker for test targets
+ * that link comm_task.c but do not exercise SPI transport initialization.
+ *
+ * @param[out] handle Ignored (may be NULL)
+ * @param[in]  config Ignored (may be NULL)
+ *
+ * @retval k_rx_ok Always; stub never fails
+ *
+ * @pre  None -- stub accepts any pointer including NULL
+ * @pre  Caller context is single-threaded test execution
+ * @post No SPI hardware or handle state modified
+ * @post Returns k_rx_ok unconditionally
  */
 rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config_t* config)
 {
@@ -88,9 +110,20 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config
 /**
  * @brief Stub for rx_spi_link_init() -- always succeeds
  *
- * @param[out] link   Ignored
- * @param[in]  config Ignored
- * @return k_rx_ok
+ * @details
+ * No-op test stub that immediately returns k_rx_ok without touching hardware
+ * or initializing any link state. Satisfies the linker for test targets that
+ * link comm_task.c but do not exercise SPI link layer initialization.
+ *
+ * @param[out] link   Ignored (may be NULL)
+ * @param[in]  config Ignored (may be NULL)
+ *
+ * @retval k_rx_ok Always; stub never fails
+ *
+ * @pre  None -- stub accepts any pointer including NULL
+ * @pre  Caller context is single-threaded test execution
+ * @post No SPI link hardware or link state modified
+ * @post Returns k_rx_ok unconditionally
  */
 rx_err_t rx_spi_link_init(rx_spi_link_t* link, const rx_spi_link_config_t* config)
 {
@@ -102,9 +135,20 @@ rx_err_t rx_spi_link_init(rx_spi_link_t* link, const rx_spi_link_config_t* confi
 /**
  * @brief Stub for rx_i2c_comm_init() -- always succeeds
  *
- * @param[out] handle Ignored
- * @param[in]  config Ignored
- * @return k_rx_ok
+ * @details
+ * No-op test stub that immediately returns k_rx_ok without touching hardware
+ * or initializing any transport state. Satisfies the linker for test targets
+ * that link comm_task.c but do not exercise I2C transport initialization.
+ *
+ * @param[out] handle Ignored (may be NULL)
+ * @param[in]  config Ignored (may be NULL)
+ *
+ * @retval k_rx_ok Always; stub never fails
+ *
+ * @pre  None -- stub accepts any pointer including NULL
+ * @pre  Caller context is single-threaded test execution
+ * @post No I2C hardware or handle state modified
+ * @post Returns k_rx_ok unconditionally
  */
 rx_err_t rx_i2c_comm_init(rx_i2c_comm_handle_t* handle, const rx_i2c_comm_config_t* config)
 {
@@ -116,9 +160,20 @@ rx_err_t rx_i2c_comm_init(rx_i2c_comm_handle_t* handle, const rx_i2c_comm_config
 /**
  * @brief Stub for rx_uart_comm_init() -- always succeeds
  *
- * @param[out] handle Ignored
- * @param[in]  config Ignored
- * @return k_rx_ok
+ * @details
+ * No-op test stub that immediately returns k_rx_ok without touching hardware
+ * or initializing any transport state. Satisfies the linker for test targets
+ * that link comm_task.c but do not exercise UART transport initialization.
+ *
+ * @param[out] handle Ignored (may be NULL)
+ * @param[in]  config Ignored (may be NULL)
+ *
+ * @retval k_rx_ok Always; stub never fails
+ *
+ * @pre  None -- stub accepts any pointer including NULL
+ * @pre  Caller context is single-threaded test execution
+ * @post No UART hardware or handle state modified
+ * @post Returns k_rx_ok unconditionally
  */
 rx_err_t rx_uart_comm_init(rx_uart_comm_handle_t* handle, const rx_uart_comm_config_t* config)
 {
@@ -135,8 +190,22 @@ rx_err_t rx_uart_comm_init(rx_uart_comm_handle_t* handle, const rx_uart_comm_con
 /**
  * @brief Stub for rx_iwdt_task_heartbeat() -- always succeeds
  *
- * @param[in] task_name Ignored
- * @return k_rx_ok
+ * @details
+ * No-op test stub that immediately returns k_rx_ok without touching the
+ * Independent Watchdog Timer or any hardware register. Satisfies the linker
+ * for test targets that link comm_task.c but do not exercise the IWDT
+ * heartbeat path.
+ *
+ * @param[in] task_name Ignored (may be NULL)
+ *
+ * @retval k_rx_ok Always; stub never fails
+ *
+ * @pre  None -- stub accepts any pointer including NULL
+ * @pre  Caller context is single-threaded test execution
+ * @post No IWDT hardware or watchdog state modified
+ * @post Returns k_rx_ok unconditionally
+ *
+ * @since Version 1.0.0
  */
 rx_err_t rx_iwdt_task_heartbeat(const char* task_name)
 {
@@ -152,9 +221,22 @@ rx_err_t rx_iwdt_task_heartbeat(const char* task_name)
 /**
  * @brief Stub for rx_comm_manager_process_retransmits() -- no-op
  *
- * @param[in,out] mgr            Ignored
+ * @details
+ * No-op test stub that immediately returns k_rx_ok without processing any
+ * pending retransmit entries. Satisfies the linker for test targets that
+ * link comm_task.c but do not exercise the retransmit processing path.
+ *
+ * @param[in,out] mgr            Ignored (may be NULL)
  * @param[in]     current_time_ms Ignored
- * @return k_rx_ok
+ *
+ * @retval k_rx_ok Always; stub never fails
+ *
+ * @pre  None -- stub accepts any pointer including NULL
+ * @pre  Caller context is single-threaded test execution
+ * @post No comm manager retransmit state modified
+ * @post Returns k_rx_ok unconditionally
+ *
+ * @since Version 1.0.0
  */
 rx_err_t rx_comm_manager_process_retransmits(rx_comm_manager_t* mgr, uint32_t current_time_ms)
 {
@@ -166,10 +248,24 @@ rx_err_t rx_comm_manager_process_retransmits(rx_comm_manager_t* mgr, uint32_t cu
 /**
  * @brief Stub for rx_comm_manager_set_auto_retransmit() -- no-op
  *
- * @param[in,out] mgr     Ignored
- * @param[in]     enabled  Ignored
- * @param[in]     config   Ignored
- * @return k_rx_ok
+ * @details
+ * No-op test stub that immediately returns k_rx_ok without modifying any
+ * retransmit configuration. Satisfies the linker for test targets that
+ * link comm_task.c but do not exercise the auto-retransmit configuration
+ * path.
+ *
+ * @param[in,out] mgr    Ignored (may be NULL)
+ * @param[in]     enabled Ignored
+ * @param[in]     config  Ignored (may be NULL)
+ *
+ * @retval k_rx_ok Always; stub never fails
+ *
+ * @pre  None -- stub accepts any pointer including NULL
+ * @pre  Caller context is single-threaded test execution
+ * @post No comm manager auto-retransmit state modified
+ * @post Returns k_rx_ok unconditionally
+ *
+ * @since Version 1.0.0
  */
 rx_err_t rx_comm_manager_set_auto_retransmit(rx_comm_manager_t*                     mgr,
                                              bool                                   enabled,
@@ -191,7 +287,24 @@ rx_err_t rx_comm_manager_set_auto_retransmit(rx_comm_manager_t*                 
 
 /**
  * @brief Stub for rx_nanopb_decode_pid_gains_request() -- no-op
- * @return k_rx_ok
+ *
+ * @details
+ * No-op test stub that immediately returns k_rx_ok without decoding any
+ * protobuf data. Satisfies the linker for test targets that link comm_task.c
+ * but do not exercise PID gains request decoding.
+ *
+ * @param[in]  buffer Ignored (may be NULL)
+ * @param[in]  len    Ignored
+ * @param[out] msg    Ignored (may be NULL)
+ *
+ * @retval k_rx_ok Always; stub never fails
+ *
+ * @pre  None -- stub accepts any pointer including NULL
+ * @pre  Caller context is single-threaded test execution
+ * @post No protobuf state or output message modified
+ * @post Returns k_rx_ok unconditionally
+ *
+ * @since Version 1.0.0
  */
 rx_err_t rx_nanopb_decode_pid_gains_request(const void* buffer, uint32_t len, void* msg)
 {
@@ -203,7 +316,24 @@ rx_err_t rx_nanopb_decode_pid_gains_request(const void* buffer, uint32_t len, vo
 
 /**
  * @brief Stub for rx_nanopb_decode_retransmit_config_request() -- no-op
- * @return k_rx_ok
+ *
+ * @details
+ * No-op test stub that immediately returns k_rx_ok without decoding any
+ * protobuf data. Satisfies the linker for test targets that link comm_task.c
+ * but do not exercise retransmit config request decoding.
+ *
+ * @param[in]  buffer Ignored (may be NULL)
+ * @param[in]  len    Ignored
+ * @param[out] msg    Ignored (may be NULL)
+ *
+ * @retval k_rx_ok Always; stub never fails
+ *
+ * @pre  None -- stub accepts any pointer including NULL
+ * @pre  Caller context is single-threaded test execution
+ * @post No protobuf state or output message modified
+ * @post Returns k_rx_ok unconditionally
+ *
+ * @since Version 1.0.0
  */
 rx_err_t rx_nanopb_decode_retransmit_config_request(const void* buffer, uint32_t len, void* msg)
 {
@@ -215,6 +345,22 @@ rx_err_t rx_nanopb_decode_retransmit_config_request(const void* buffer, uint32_t
 
 /**
  * @brief Stub for rx_nanopb_create_response_header() -- no-op
+ *
+ * @details
+ * No-op test stub that returns immediately without populating any response
+ * header fields. Satisfies the linker for test targets that link comm_task.c
+ * but do not exercise response header creation.
+ *
+ * @param[out] header     Ignored (may be NULL)
+ * @param[in]  status     Ignored
+ * @param[in]  request_id Ignored (may be NULL)
+ *
+ * @pre  None -- stub accepts any pointer including NULL
+ * @pre  Caller context is single-threaded test execution
+ * @post No header fields populated; pointed-to memory unchanged
+ * @post Function returns with no observable side effects
+ *
+ * @since Version 1.0.0
  */
 void rx_nanopb_create_response_header(void* header, uint32_t status, const char* request_id)
 {
@@ -223,9 +369,46 @@ void rx_nanopb_create_response_header(void* header, uint32_t status, const char*
   (void)request_id;
 }
 
+/* =============================================================================
+ * Encoded length sentinel used by nanopb encode stubs
+ * =============================================================================
+ */
+
+/**
+ * @enum nanopb_stub_len_t
+ * @brief Sentinel value written to the output length pointer by nanopb encode stubs
+ *
+ * @details
+ * Stub encode functions write k_encoded_len_none (zero) to indicate that
+ * no bytes were encoded. Using a named constant avoids magic literals.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_encoded_len_none = 0u, /**< Zero bytes encoded; stubs always produce no output */
+} nanopb_stub_len_t;
+
 /**
  * @brief Stub for rx_nanopb_encode_velocity_response() -- no-op
- * @return k_rx_ok
+ *
+ * @details
+ * No-op test stub that writes k_encoded_len_none to len (if non-NULL) and
+ * returns k_rx_ok. Satisfies the linker for test targets that link
+ * comm_task.c but do not exercise velocity response encoding.
+ *
+ * @param[in]  msg         Ignored (may be NULL)
+ * @param[out] buffer      Ignored (may be NULL)
+ * @param[in]  buffer_size Ignored
+ * @param[out] len         Set to k_encoded_len_none if non-NULL
+ *
+ * @retval k_rx_ok Always; stub never fails
+ *
+ * @pre  None -- stub accepts any pointer including NULL
+ * @pre  Caller context is single-threaded test execution
+ * @post *len set to k_encoded_len_none if len is non-NULL
+ * @post Returns k_rx_ok unconditionally
+ *
+ * @since Version 1.0.0
  */
 rx_err_t rx_nanopb_encode_velocity_response(const void* msg,
                                             void*       buffer,
@@ -236,14 +419,32 @@ rx_err_t rx_nanopb_encode_velocity_response(const void* msg,
   (void)buffer;
   (void)buffer_size;
   if (len != nullptr) {
-    *len = 0u;
+    *len = (uint32_t)k_encoded_len_none;
   }
   return k_rx_ok;
 }
 
 /**
  * @brief Stub for rx_nanopb_encode_estop_response() -- no-op
- * @return k_rx_ok
+ *
+ * @details
+ * No-op test stub that writes k_encoded_len_none to len (if non-NULL) and
+ * returns k_rx_ok. Satisfies the linker for test targets that link
+ * comm_task.c but do not exercise e-stop response encoding.
+ *
+ * @param[in]  msg         Ignored (may be NULL)
+ * @param[out] buffer      Ignored (may be NULL)
+ * @param[in]  buffer_size Ignored
+ * @param[out] len         Set to k_encoded_len_none if non-NULL
+ *
+ * @retval k_rx_ok Always; stub never fails
+ *
+ * @pre  None -- stub accepts any pointer including NULL
+ * @pre  Caller context is single-threaded test execution
+ * @post *len set to k_encoded_len_none if len is non-NULL
+ * @post Returns k_rx_ok unconditionally
+ *
+ * @since Version 1.0.0
  */
 rx_err_t
 rx_nanopb_encode_estop_response(const void* msg, void* buffer, uint32_t buffer_size, uint32_t* len)
@@ -252,14 +453,32 @@ rx_nanopb_encode_estop_response(const void* msg, void* buffer, uint32_t buffer_s
   (void)buffer;
   (void)buffer_size;
   if (len != nullptr) {
-    *len = 0u;
+    *len = (uint32_t)k_encoded_len_none;
   }
   return k_rx_ok;
 }
 
 /**
  * @brief Stub for rx_nanopb_encode_pid_gains_response() -- no-op
- * @return k_rx_ok
+ *
+ * @details
+ * No-op test stub that writes k_encoded_len_none to len (if non-NULL) and
+ * returns k_rx_ok. Satisfies the linker for test targets that link
+ * comm_task.c but do not exercise PID gains response encoding.
+ *
+ * @param[in]  msg         Ignored (may be NULL)
+ * @param[out] buffer      Ignored (may be NULL)
+ * @param[in]  buffer_size Ignored
+ * @param[out] len         Set to k_encoded_len_none if non-NULL
+ *
+ * @retval k_rx_ok Always; stub never fails
+ *
+ * @pre  None -- stub accepts any pointer including NULL
+ * @pre  Caller context is single-threaded test execution
+ * @post *len set to k_encoded_len_none if len is non-NULL
+ * @post Returns k_rx_ok unconditionally
+ *
+ * @since Version 1.0.0
  */
 rx_err_t rx_nanopb_encode_pid_gains_response(const void* msg,
                                              void*       buffer,
@@ -270,7 +489,7 @@ rx_err_t rx_nanopb_encode_pid_gains_response(const void* msg,
   (void)buffer;
   (void)buffer_size;
   if (len != nullptr) {
-    *len = 0u;
+    *len = (uint32_t)k_encoded_len_none;
   }
   return k_rx_ok;
 }
@@ -288,5 +507,12 @@ rx_err_t rx_nanopb_encode_pid_gains_response(const void* msg,
  * mock_tasks.c in test_rx_system_config would create a duplicate
  * comm_task_create() symbol (real comm_task.c is already linked).  This
  * no-op stub satisfies the linker without pulling in the full task mock.
+ *
+ * @pre  None -- may be called from any test context
+ * @pre  Caller context is single-threaded test execution
+ * @post No task mock state modified
+ * @post Function returns with no observable side effects
+ *
+ * @since Version 1.0.0
  */
 void mock_tasks_reset(void) {}

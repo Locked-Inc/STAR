@@ -52,6 +52,11 @@
  * comm_task_apply_system_config(&cfg);
  * @endcode
  *
+ * @invariant (comm_channels & k_comm_channel_mask_uart) and (log_backends & k_log_backend_uart)
+ *   must not both be set -- SCI9 cannot simultaneously carry binary frames (UART comm)
+ *   and ASCII debug text (UART log).  comm_task_apply_system_config() enforces this
+ *   and returns k_rx_err_invalid_arg when the constraint is violated.
+ *
  * @see comm_task_apply_system_config() Validation and apply function
  * @see k_system_config_default        Safe startup default
  * @since Version 1.0.0

@@ -981,6 +981,7 @@ add_executable(test_rx_log_backend
 )
 apply_strict_warnings(test_rx_log_backend)
 apply_test_includes(test_rx_log_backend)
+set_target_properties(test_rx_log_backend PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
 target_link_libraries(test_rx_log_backend unity)
 
 # Test: comm_task_apply_system_config() unified config + conflict detection
@@ -1002,6 +1003,7 @@ target_include_directories(test_rx_system_config PRIVATE
     ${CMAKE_SOURCE_DIR}/../src/shared
     ${CMAKE_SOURCE_DIR}/../src/tasks/inc
 )
+set_target_properties(test_rx_system_config PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
 target_link_libraries(test_rx_system_config unity)
 
 # Test: Telemetry Aggregation Task

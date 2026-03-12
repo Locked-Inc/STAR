@@ -100,11 +100,16 @@ rx_err_t rx_log_set_backend(rx_log_backend_t backend)
  *
  * @return rx_log_backend_t  Active backend bitmask (k_log_backend_none if no logging)
  *
+ * @pre  s_log_backend has been set at least once (defaults to k_log_backend_uart at startup)
+ * @pre  No concurrent write to s_log_backend is in progress (not thread-safe)
+ * @post Returns the current value of s_log_backend; global state is not modified
+ * @post Returned value is a valid rx_log_backend_t bitmask (bits 0..1 only)
+ *
  * @note Read-only after startup -- safe to call from any context once initialized.
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: [PASS] No pointer parameters; output is bounded enum
+ * - Rule 5: [PASS] 2 preconditions, 2 postconditions
  */
 rx_log_backend_t rx_log_get_backend(void)
 {
