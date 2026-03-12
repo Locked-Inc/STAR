@@ -89,8 +89,8 @@ extern const rx_system_config_t k_system_config_default;
  * @details
  * Performs three checks before modifying any state:
  * 1. Null pointer guard on config
- * 2. Unknown bits in comm_channels or log_backends → k_rx_err_invalid_arg
- * 3. SCI9 conflict: UART comm AND UART log both set → k_rx_err_invalid_arg
+ * 2. Unknown bits in comm_channels or log_backends -- k_rx_err_invalid_arg
+ * 3. SCI9 conflict: UART comm AND UART log both set -- k_rx_err_invalid_arg
  *
  * If all checks pass, calls rx_log_set_backend() and stores comm_channels
  * in the file-scoped s_enabled_channels variable used by
