@@ -1492,7 +1492,7 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
 
   /* Reset RIIC */
   riic->iccr1 = k_riic_iccr1_iicrst;
-  riic->iccr1 = k_riic_timeout_zero;
+  riic->iccr1 = k_riic_register_clear;
 
   /* Calculate bit rate */
   uint8_t        icbrl = 0;
@@ -2129,7 +2129,7 @@ rx_err_t riic_init_peripheral(const riic_channel_t channel, const i2c_device_add
 
   /* Reset RIIC */
   riic->iccr1 = k_riic_iccr1_iicrst;
-  riic->iccr1 = k_riic_timeout_zero;
+  riic->iccr1 = k_riic_register_clear;
 
   /* Set peripheral (device) address in SARL0/SARU0
    * SARL0[7:1] = device_addr.value (7-bit address)

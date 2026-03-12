@@ -353,13 +353,20 @@ static inline void uart_debug_putint(int32_t value)
  *
  * @param[in] value Unsigned 32-bit integer to output
  *
+ * @pre  value is a valid uint32_t (any value in [0, UINT32_MAX])
+ * @pre  uart_debug subsystem initialized (uart_debug_puts functional)
+ * @post Decimal ASCII string representation of value written to console
+ * @post uart_debug_puts invoked with null-terminated decimal string
+ *
  * @note Inline function - zero call overhead in simulator builds
  *
  * @since Version 1.0.0
  */
 static inline void uart_debug_putuint(uint32_t value)
 {
-  char buf[11]; /* 4294967295 = 10 chars + null */
+  /* 4294967295 (UINT32_MAX) = 10 digits + null terminator */
+  enum : uint8_t { k_uart_debug_uint_buf_size = 11u };
+  char buf[k_uart_debug_uint_buf_size];
   (void)snprintf(buf, sizeof(buf), "%" PRIu32, value);
   uart_debug_puts(buf);
 }
