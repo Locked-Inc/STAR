@@ -128,13 +128,19 @@ configure_build() {
     BUILD_DIR="$FIRMWARE_DIR/build/tidy"
 
     print_status "Configuring test build in $BUILD_DIR ..."
+    local cmake_stdout
+    cmake_stdout="/dev/null"
+    if [[ "${VERBOSE:-}" == "1" ]]; then
+        cmake_stdout="/dev/stdout"
+    fi
+
     cmake -B "$BUILD_DIR" -S "$tests_dir" \
         -DCMAKE_BUILD_TYPE=Debug \
         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
         -DENABLE_CLANG_TIDY=OFF \
         -DCMAKE_C_FLAGS="-DUNIT_TEST -DRX_SIMULATOR_MODE" \
         -Wno-dev \
-        >/dev/null
+        >"$cmake_stdout"
 
     if [[ ! -f "$BUILD_DIR/compile_commands.json" ]]; then
         print_error "compile_commands.json was not generated."
@@ -185,10 +191,6 @@ run_clang_tidy() {
 
     print_status "Running $clang_tidy on ${#files[@]} file(s)..."
 
-    local tidy_output
-    tidy_output=$(mktemp)
-    trap 'rm -f "$tidy_output"' EXIT
-
     # clang-tidy exits non-zero when warnings are found with WarningsAsErrors
     set +e
     "$clang_tidy" \
@@ -198,7 +200,7 @@ run_clang_tidy() {
         --extra-arg="-DUNIT_TEST" \
         --extra-arg="-DRX_SIMULATOR_MODE" \
         ${fix_flag:+"$fix_flag"} \
-        "${files[@]}" 2>&1 | tee "$tidy_output"
+        "${files[@]}" 2>&1
     violations=$?
     set -e
 

@@ -12,6 +12,10 @@
  * compiled firmware sources are reachable by the coverage instrumentation
  * pass.  No actual hardware I/O is performed.
  *
+ * @author Locked, Inc.
+ * @date 2026-03-12
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

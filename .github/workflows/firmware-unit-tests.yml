@@ -172,6 +172,8 @@ jobs:
         run: |
           # No version suffix: devcontainer (osrf/ros:jazzy-desktop) and ubuntu-latest
           # both run Ubuntu 24.04 and install clang-format-18 via the unversioned package.
+          # pipefail: propagate format_code.sh exit code through tee so check failures block the build.
+          set -o pipefail
           sudo apt-get install -y clang-format
           bash star-rx72n-firmware/scripts/format_code.sh --check 2>&1 | tee clang-format-results.txt
 
@@ -190,7 +192,9 @@ jobs:
   #
   # Runs against the host test build's compile_commands.json so that all
   # firmware source files are analyzed without cross-compiler flag conflicts.
-  # continue-on-error: true until the baseline is clean; remove afterward.
+  # continue-on-error: true until the SEI CERT C baseline is clean.
+  # Tracked in: https://github.com/your-org/STAR/issues/430
+  # Remove continue-on-error once all cert-* violations are resolved.
   # ============================================================================
   clang-tidy:
     name: clang-tidy (SEI CERT C)
@@ -209,14 +213,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             cmake gcc g++ git ninja-build protobuf-compiler \
-            clang-tidy-18
+            clang-18 clang-tidy-18
 
       - name: Cache CMake FetchContent (Unity + nanopb)
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
         with:
           path: star-rx72n-firmware/tests/build/tidy/_deps
-          key: cmake-deps-${{ hashFiles('star-rx72n-firmware/tests/**/CMakeLists.txt') }}
-          restore-keys: cmake-deps-
+          # Separate key from unit-test job (different build dir) to prevent cache collisions.
+          key: cmake-deps-tidy-${{ hashFiles('star-rx72n-firmware/tests/**/CMakeLists.txt') }}
+          restore-keys: cmake-deps-tidy-
 
       - name: Configure test build with clang-tidy
         working-directory: star-rx72n-firmware/tests
@@ -230,7 +235,10 @@ jobs:
 
       - name: Build (violations surface as compiler errors)
         working-directory: star-rx72n-firmware/tests
-        run: cmake --build build/tidy -j$(nproc) 2>&1 | tee clang-tidy-results.txt
+        # pipefail: propagate cmake exit code through the tee pipe so violations fail the step.
+        run: |
+          set -o pipefail
+          cmake --build build/tidy -j$(nproc) 2>&1 | tee clang-tidy-results.txt
 
       - name: Upload clang-tidy results
         if: always()

@@ -83,7 +83,7 @@ endif()
 
 # Helper function to apply strict warnings/defines to our test targets only
 function(apply_strict_warnings target)
-    target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -Wpedantic -Wno-error=cpp -Wno-error=format-truncation=)
+    target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -Wpedantic)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${target} PRIVATE -fshort-enums)
     endif()
@@ -1351,11 +1351,9 @@ target_include_directories(firmware_coverage_obj PRIVATE
     ${CMAKE_SOURCE_DIR}/mocks
 )
 
-# Suppress warnings in generated/vendor-adjacent code compiled for coverage only
-target_compile_options(firmware_coverage_obj PRIVATE
-    -Wno-error
-    -Wno-missing-braces
-)
+# firmware_coverage_obj compiles real task/shared sources on the host.
+# All root-cause warnings have been fixed; no blanket suppression needed.
+# (See shared_data.c tx_inherit_option cast, tx_api.h declarations, rx_simulator_config.h pragma.)
 
 target_compile_definitions(firmware_coverage_obj PRIVATE
     MOCK_TX_THREAD_CREATE
@@ -1395,7 +1393,6 @@ add_executable(test_coverage_compile_all
     ${CMAKE_SOURCE_DIR}/mocks/mock_coverage_stubs.c
 )
 apply_test_includes(test_coverage_compile_all)
-target_compile_options(test_coverage_compile_all PRIVATE -Wno-error -Wno-missing-braces)
 target_include_directories(test_coverage_compile_all PRIVATE
     ${CMAKE_SOURCE_DIR}/../src/shared
     ${CMAKE_SOURCE_DIR}/../src/tasks/inc

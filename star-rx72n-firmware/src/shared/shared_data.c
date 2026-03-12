@@ -782,41 +782,48 @@ rx_err_t shared_data_init(void)
   }
 
   /* Create motor_mutex with priority inheritance */
-  UINT tx_status = tx_mutex_create(&g_shared_data.motor_mutex, "MotorMutex", k_mutex_inherit);
+  UINT tx_status =
+    tx_mutex_create(&g_shared_data.motor_mutex, "MotorMutex", (tx_inherit_option)k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
 
   /* Create temp_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", k_mutex_inherit);
+  tx_status =
+    tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", (tx_inherit_option)k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     internal_cleanup_mutexes(k_mutex_idx_motor);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create obstacle_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.obstacle_mutex, "ObstacleMutex", k_mutex_inherit);
+  tx_status = tx_mutex_create(&g_shared_data.obstacle_mutex,
+                              "ObstacleMutex",
+                              (tx_inherit_option)k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     internal_cleanup_mutexes(k_mutex_idx_temp);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create estop_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", k_mutex_inherit);
+  tx_status =
+    tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", (tx_inherit_option)k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     internal_cleanup_mutexes(k_mutex_idx_obstacle);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create imu_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.imu_mutex, "ImuMutex", k_mutex_inherit);
+  tx_status =
+    tx_mutex_create(&g_shared_data.imu_mutex, "ImuMutex", (tx_inherit_option)k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     internal_cleanup_mutexes(k_mutex_idx_estop);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create baro_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.baro_mutex, "BaroMutex", k_mutex_inherit);
+  tx_status =
+    tx_mutex_create(&g_shared_data.baro_mutex, "BaroMutex", (tx_inherit_option)k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     internal_cleanup_mutexes(k_mutex_idx_imu);
     return k_rx_err_rtos_mutex;

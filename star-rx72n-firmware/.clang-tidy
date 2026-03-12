@@ -35,7 +35,8 @@ WarningsAsErrors: >
   bugprone-*,
   clang-analyzer-security.*,
   portability-*,
-  performance-*
+  performance-*,
+  readability-magic-numbers
 
 # Only report diagnostics for STAR-authored headers; suppress noise from
 # vendor headers (threadx, nanopb, smc_gen, r_bsp, _deps) and test mock
@@ -111,3 +112,14 @@ CheckOptions:
   # preventing untestable "god functions" that violate Rule 4.
   - key: readability-function-cognitive-complexity.Threshold
     value: "25"
+
+  # --- readability-function-size: Clean Code / NASA Rule 4 function-length limit ---
+  # Functions over 60 lines are flagged. This matches the ~one-printed-page rule
+  # from Clean Code (Robert C. Martin) and NASA Power of 10 Rule 4.
+  # StatementThreshold catches bloated switch/case functions that stay under 60 lines.
+  - key: readability-function-size.LineThreshold
+    value: "60"
+  - key: readability-function-size.StatementThreshold
+    value: "40"
+  - key: readability-function-size.NestingThreshold
+    value: "4"

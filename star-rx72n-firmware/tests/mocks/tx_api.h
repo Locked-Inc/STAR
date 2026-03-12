@@ -515,6 +515,52 @@ static inline tx_status tx_thread_sleep(ULONG timer_ticks)
   return TX_SUCCESS;
 }
 
+/**
+ * @brief Suspend a thread (mock declaration -- implemented in mock_coverage_stubs.c).
+ *
+ * @details
+ * In real ThreadX this moves the thread to the suspended state. The mock
+ * implementation is a no-op that returns TX_SUCCESS so that firmware code
+ * calling tx_thread_suspend() compiles and links on the host without a
+ * kernel dependency.
+ *
+ * @param[in] thread_ptr Thread control block pointer.
+ *
+ * @return TX_SUCCESS always.
+ *
+ * @pre  thread_ptr points to a valid TX_THREAD (or may be nullptr in mocks).
+ * @pre  Called from a single-threaded test context (no real scheduling).
+ * @post Thread state is unchanged in the host environment.
+ * @post Returns synchronously with no scheduling side-effects.
+ *
+ * @note Thread safety: N/A in single-threaded host test environment.
+ * @since Version 1.0.0
+ */
+UINT tx_thread_suspend(TX_THREAD* thread_ptr);
+
+/**
+ * @brief Identify the currently running thread (mock declaration -- implemented
+ *        in mock_coverage_stubs.c).
+ *
+ * @details
+ * In real ThreadX this returns a pointer to the currently executing TX_THREAD
+ * control block, or nullptr if called from initialization or a timer ISR. The
+ * mock always returns nullptr to signal "not inside a thread" so that firmware
+ * code that guards critical sections with tx_thread_identify() != nullptr takes
+ * the non-thread path on the host.
+ *
+ * @return nullptr always.
+ *
+ * @pre  Called from a single-threaded test context (no real scheduling).
+ * @pre  No ThreadX scheduler is running on the host.
+ * @post Return value is nullptr.
+ * @post No state is modified.
+ *
+ * @note Thread safety: N/A in single-threaded host test environment.
+ * @since Version 1.0.0
+ */
+TX_THREAD* tx_thread_identify(void);
+
 /* =============================================================================
  * ThreadX Event Flags Functions (Mock Implementations)
  * =============================================================================
@@ -781,6 +827,22 @@ static inline tx_status tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
 #endif
 
 /**
+ * @enum tx_interrupt_prior_state_t
+ * @brief Named constants for the prior interrupt-enable state returned by
+ *        tx_interrupt_control() in the mock.
+ *
+ * @details
+ * The real ThreadX API returns an opaque UINT platform bitmask. In the mock
+ * we return a named constant instead of the magic literal 0U so that the
+ * return value is self-documenting and auditable.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : UINT {
+  k_tx_int_was_enabled = 0U, /**< Prior state: interrupts were enabled. */
+} tx_interrupt_prior_state_t;
+
+/**
  * @brief Save the current interrupt-enable state and optionally disable
  *        interrupts (mock implementation).
  *
@@ -805,7 +867,10 @@ static inline tx_status tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
  *         enabled before disable").
  *
  * @pre  Called from a single-threaded test context (no real scheduling).
+ * @pre  No concurrent access to this mock (single-threaded host environment).
  * @post Interrupt state is unchanged in the host environment (mock is a no-op).
+ * @post Mock performs no heap or I/O side-effects.
+ * @post Returns synchronously; no scheduling occurred.
  *
  * @note Thread safety: N/A in single-threaded host test environment.
  *
@@ -815,7 +880,7 @@ static inline UINT tx_interrupt_control(UINT new_posture)
 {
   (void)new_posture;
   /* Mock: always report "interrupts were enabled" as the prior state. */
-  return 0U;
+  return (UINT)k_tx_int_was_enabled;
 }
 
 /**
