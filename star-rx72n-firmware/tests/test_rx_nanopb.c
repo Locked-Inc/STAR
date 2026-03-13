@@ -2031,6 +2031,152 @@ void test_encode_telemetry_not_initialized(void)
 /** @} */ /* End of nanopb_test_telemetry_encode */
 
 /* =============================================================================
+ * SetPIDGainsResponse Encode Tests
+ * =============================================================================
+ */
+
+/**
+ * @defgroup nanopb_test_pid_gains_resp_encode SetPIDGainsResponse Encoding Tests
+ * @brief Tests for encoding PID gains acknowledgments (RX72N -> RPi5)
+ * @details
+ * Validates rx_nanopb_encode_pid_gains_response() with success/failure states.
+ *
+ * **Test Coverage (4 tests):** nullptr checks, buffer size, success true/false
+ * @{
+ */
+
+/**
+ * @brief Test encode pid gains response with nullptr message pointer
+ */
+void test_encode_pid_gains_response_null_msg(void)
+{
+  uint32_t len;
+  rx_err_t err = rx_nanopb_encode_pid_gains_response(nullptr, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test encode pid gains response with nullptr buffer pointer
+ */
+void test_encode_pid_gains_response_null_buffer(void)
+{
+  star_v1_SetPIDGainsResponse msg = star_v1_SetPIDGainsResponse_init_zero;
+  uint32_t                    len;
+  rx_err_t err = rx_nanopb_encode_pid_gains_response(&msg, nullptr, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test encode pid gains response with nullptr length pointer
+ */
+void test_encode_pid_gains_response_null_len(void)
+{
+  star_v1_SetPIDGainsResponse msg = star_v1_SetPIDGainsResponse_init_zero;
+  rx_err_t err = rx_nanopb_encode_pid_gains_response(&msg, s_buffer, sizeof(s_buffer), nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test encode pid gains response with success true
+ */
+void test_encode_pid_gains_response_success(void)
+{
+  star_v1_SetPIDGainsResponse msg = star_v1_SetPIDGainsResponse_init_zero;
+  msg.has_header                  = true;
+  msg.header.status               = star_v1_Status_STATUS_OK;
+  msg.success                     = true;
+
+  uint32_t len = 0;
+  rx_err_t err = rx_nanopb_encode_pid_gains_response(&msg, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_GREATER_THAN(0, len);
+}
+
+/**
+ * @brief Test encode pid gains response with success false (error state)
+ */
+void test_encode_pid_gains_response_failure(void)
+{
+  star_v1_SetPIDGainsResponse msg = star_v1_SetPIDGainsResponse_init_zero;
+  msg.has_header                  = true;
+  msg.header.status               = star_v1_Status_STATUS_INTERNAL_ERROR;
+  msg.success                     = false;
+
+  uint32_t len = 0;
+  rx_err_t err = rx_nanopb_encode_pid_gains_response(&msg, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_GREATER_THAN(0, len);
+}
+
+/** @} */ /* End of nanopb_test_pid_gains_resp_encode */
+
+/* =============================================================================
+ * SetRetransmitConfigRequest Decode Tests
+ * =============================================================================
+ */
+
+/**
+ * @defgroup nanopb_test_retransmit_req_decode SetRetransmitConfigRequest Decode Tests
+ * @brief Tests for decoding retransmit configuration requests (RPi5 -> RX72N)
+ * @details
+ * Validates rx_nanopb_decode_retransmit_config_request() with various inputs.
+ *
+ * **Test Coverage (3 tests):** nullptr checks, valid decode
+ * @{
+ */
+
+/**
+ * @brief Test decode retransmit config request with nullptr buffer pointer
+ */
+void test_decode_retransmit_config_request_null_buffer(void)
+{
+  star_v1_SetRetransmitConfigRequest msg;
+  rx_err_t err = rx_nanopb_decode_retransmit_config_request(nullptr, 0, &msg);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test decode retransmit config request with nullptr message pointer
+ */
+void test_decode_retransmit_config_request_null_msg(void)
+{
+  uint8_t  buf[4] = {0};
+  rx_err_t err    = rx_nanopb_decode_retransmit_config_request(buf, sizeof(buf), nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test decode retransmit config request with valid encoded data
+ */
+void test_decode_retransmit_config_request_valid(void)
+{
+  /* Build and encode a retransmit config request using nanopb directly */
+  star_v1_SetRetransmitConfigRequest orig = star_v1_SetRetransmitConfigRequest_init_zero;
+  orig.has_retransmit_config              = true;
+  orig.retransmit_config.enabled          = true;
+  orig.retransmit_config.max_retries      = 3;
+  orig.retransmit_config.ack_timeout_ms   = 50;
+  orig.retransmit_config.max_backoff_ms   = 400;
+
+  uint8_t      enc_buf[star_v1_SetRetransmitConfigRequest_size];
+  pb_ostream_t ostream   = pb_ostream_from_buffer(enc_buf, sizeof(enc_buf));
+  bool         encode_ok = pb_encode(&ostream, star_v1_SetRetransmitConfigRequest_fields, &orig);
+  TEST_ASSERT_TRUE(encode_ok);
+
+  star_v1_SetRetransmitConfigRequest decoded;
+  rx_err_t                           err =
+    rx_nanopb_decode_retransmit_config_request(enc_buf, (uint32_t)ostream.bytes_written, &decoded);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(decoded.has_retransmit_config);
+  TEST_ASSERT_TRUE(decoded.retransmit_config.enabled);
+  TEST_ASSERT_EQUAL(3, decoded.retransmit_config.max_retries);
+  TEST_ASSERT_EQUAL(50, decoded.retransmit_config.ack_timeout_ms);
+  TEST_ASSERT_EQUAL(400, decoded.retransmit_config.max_backoff_ms);
+}
+
+/** @} */ /* End of nanopb_test_retransmit_req_decode */
+
+/* =============================================================================
  * Helper Function Tests - Create Velocity Command
  * =============================================================================
  */
@@ -2172,6 +2318,79 @@ void test_create_velocity_command_initializes_struct(void)
 }
 
 /** @} */ /* End of nanopb_test_helpers_velocity */
+
+/* =============================================================================
+ * Helper Function Tests - Create Velocity Command (Diff Drive)
+ * =============================================================================
+ */
+
+/**
+ * @defgroup nanopb_test_helpers_velocity_diff Helper Function Tests: Diff Drive Velocity Command
+ * @brief Tests for rx_nanopb_create_velocity_command_diff_drive() message factory
+ * @details
+ * Validates that left/right side velocities are mapped to both front and back
+ * motors on the respective side.
+ *
+ * **Test Coverage (3 tests):** nullptr check, valid mapping, zero velocities
+ * @{
+ */
+
+/**
+ * @brief Test create diff drive velocity command with nullptr cmd pointer
+ */
+void test_create_velocity_command_diff_drive_null_cmd(void)
+{
+  rx_velocity_diff_drive_params_t params = {.left_mps = 1.0, .right_mps = 1.0, .sequence = 1};
+  rx_err_t err = rx_nanopb_create_velocity_command_diff_drive(nullptr, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test create diff drive velocity command with nullptr params pointer
+ */
+void test_create_velocity_command_diff_drive_null_params(void)
+{
+  star_v1_VelocityCommand cmd;
+  rx_err_t                err = rx_nanopb_create_velocity_command_diff_drive(&cmd, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test create diff drive velocity command maps left/right to all four wheels
+ */
+void test_create_velocity_command_diff_drive_valid(void)
+{
+  star_v1_VelocityCommand         cmd;
+  rx_velocity_diff_drive_params_t params = {.left_mps = 0.5, .right_mps = 1.0, .sequence = 42};
+
+  rx_err_t err = rx_nanopb_create_velocity_command_diff_drive(&cmd, &params);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 0.5F, (float)cmd.front_left_velocity_mps);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 0.5F, (float)cmd.back_left_velocity_mps);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 1.0F, (float)cmd.front_right_velocity_mps);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 1.0F, (float)cmd.back_right_velocity_mps);
+  TEST_ASSERT_EQUAL(42, cmd.sequence);
+}
+
+/**
+ * @brief Test create diff drive velocity command with zero velocities (stop)
+ */
+void test_create_velocity_command_diff_drive_zero(void)
+{
+  star_v1_VelocityCommand         cmd;
+  rx_velocity_diff_drive_params_t params = {.left_mps = 0.0, .right_mps = 0.0, .sequence = 0};
+
+  rx_err_t err = rx_nanopb_create_velocity_command_diff_drive(&cmd, &params);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 0.0F, (float)cmd.front_left_velocity_mps);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 0.0F, (float)cmd.back_left_velocity_mps);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 0.0F, (float)cmd.front_right_velocity_mps);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 0.0F, (float)cmd.back_right_velocity_mps);
+}
+
+/** @} */ /* End of nanopb_test_helpers_velocity_diff */
 
 /* =============================================================================
  * Helper Function Tests - Create Response Header
@@ -2456,6 +2675,149 @@ void test_telemetry_fits_in_buffer(void)
 /** @} */ /* End of nanopb_test_buffer_size */
 
 /* =============================================================================
+ * Additional Coverage Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Test successful decode of EmergencyStopRequest with valid data
+ * @details Covers the return k_rx_ok path in rx_nanopb_decode_estop_request().
+ */
+void test_decode_estop_request_valid(void)
+{
+  /* Encode a valid EmergencyStopRequest using nanopb directly */
+  star_v1_EmergencyStopRequest orig = star_v1_EmergencyStopRequest_init_zero;
+  (void)strncpy(orig.reason, "test", sizeof(orig.reason) - 1U);
+  orig.reason[sizeof(orig.reason) - 1U] = '\0';
+
+  uint8_t      enc_buf[star_v1_EmergencyStopRequest_size];
+  pb_ostream_t ostream   = pb_ostream_from_buffer(enc_buf, sizeof(enc_buf));
+  bool         encode_ok = pb_encode(&ostream, star_v1_EmergencyStopRequest_fields, &orig);
+  TEST_ASSERT_TRUE(encode_ok);
+  TEST_ASSERT_GREATER_THAN(0, ostream.bytes_written);
+
+  star_v1_EmergencyStopRequest decoded = star_v1_EmergencyStopRequest_init_zero;
+  rx_err_t err = rx_nanopb_decode_estop_request(enc_buf, (uint32_t)ostream.bytes_written, &decoded);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_STRING("test", decoded.reason);
+}
+
+/**
+ * @brief Test encode_pid_gains_response when not initialized
+ * @details Covers the not-initialized early-return path in
+ *          rx_nanopb_encode_pid_gains_response().
+ */
+void test_encode_pid_gains_response_not_initialized(void)
+{
+  rx_nanopb_test_reset_state();
+
+  star_v1_SetPIDGainsResponse msg = star_v1_SetPIDGainsResponse_init_zero;
+  uint32_t                    len = 0;
+  rx_err_t err = rx_nanopb_encode_pid_gains_response(&msg, s_buffer, sizeof(s_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
+}
+
+/**
+ * @brief Test encode_pid_gains_response with too-small buffer
+ * @details Covers the buffer_size < s_nanopb_buffer_size early-return path in
+ *          rx_nanopb_encode_pid_gains_response().
+ */
+void test_encode_pid_gains_response_small_buffer(void)
+{
+  star_v1_SetPIDGainsResponse msg = star_v1_SetPIDGainsResponse_init_zero;
+  uint32_t                    len = 0;
+  rx_err_t err = rx_nanopb_encode_pid_gains_response(&msg, s_buffer, k_test_small_buffer_size, &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test decode_retransmit_config_request with len == 0
+ * @details Covers the len == 0 path of the length-validation check.
+ */
+void test_decode_retransmit_config_request_zero_len(void)
+{
+  uint8_t                      buf[4] = {0};
+  star_v1_SetRetransmitConfigRequest msg;
+  rx_err_t err = rx_nanopb_decode_retransmit_config_request(buf, 0, &msg);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test decode_retransmit_config_request with len > buffer_size
+ * @details Covers the len > s_nanopb_buffer_size path of the length-validation check.
+ */
+void test_decode_retransmit_config_request_oversized(void)
+{
+  star_v1_SetRetransmitConfigRequest msg;
+  rx_err_t err =
+    rx_nanopb_decode_retransmit_config_request(s_buffer, (uint32_t)s_nanopb_buffer_size + 1U, &msg);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test decode_retransmit_config_request when not initialized
+ * @details Covers the not-initialized early-return path.
+ */
+void test_decode_retransmit_config_request_not_initialized(void)
+{
+  rx_nanopb_test_reset_state();
+
+  uint8_t                            buf[4] = {0x08, 0x01, 0x00, 0x00};
+  star_v1_SetRetransmitConfigRequest msg;
+  rx_err_t err = rx_nanopb_decode_retransmit_config_request(buf, sizeof(buf), &msg);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
+}
+
+/**
+ * @brief Test decode_retransmit_config_request with invalid protobuf data
+ * @details Covers the pb_decode failure path (returns k_rx_err_protocol_error).
+ */
+void test_decode_retransmit_config_request_invalid_data(void)
+{
+  uint8_t  invalid_data[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  star_v1_SetRetransmitConfigRequest msg;
+  rx_err_t err =
+    rx_nanopb_decode_retransmit_config_request(invalid_data, sizeof(invalid_data), &msg);
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
+}
+
+/**
+ * @brief Test create_velocity_command with out-of-range velocity
+ * @details Covers the velocity range check in rx_nanopb_create_velocity_command().
+ *          Uses a velocity > k_velocity_mps_max (1000.0 m/s) to trigger the guard.
+ */
+void test_create_velocity_command_out_of_range(void)
+{
+  star_v1_VelocityCommand      cmd;
+  rx_velocity_command_params_t params =
+    internal_make_velocity_params(1001.0, 0.0, 0.0, 0.0, k_test_sequence_zero);
+  rx_err_t err = rx_nanopb_create_velocity_command(&cmd, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test create_response_header with a request_id longer than s_nanopb_buffer_size
+ * @details Covers the strlen(request_id) > s_nanopb_buffer_size guard (line 1684).
+ *          Uses a 513-char string to exceed the 512-byte limit.
+ */
+void test_create_response_header_long_request_id(void)
+{
+  /* Build a string of length s_nanopb_buffer_size + 1 (513 chars) */
+  static char s_long_id[514];
+  memset(s_long_id, 'A', sizeof(s_long_id) - 1U);
+  s_long_id[sizeof(s_long_id) - 1U] = '\0';
+
+  star_v1_ResponseHeader header;
+  /* Function returns without modifying header when request_id is too long */
+  rx_nanopb_create_response_header(&header, star_v1_Status_STATUS_OK, s_long_id);
+
+  /* Header is unmodified: verify by checking that a subsequent valid call works */
+  star_v1_ResponseHeader header2 = star_v1_ResponseHeader_init_zero;
+  rx_nanopb_create_response_header(&header2, star_v1_Status_STATUS_OK, nullptr);
+  TEST_ASSERT_EQUAL(star_v1_Status_STATUS_OK, header2.status);
+}
+
+/* =============================================================================
  * Main
  * =============================================================================
  */
@@ -2539,6 +2901,7 @@ int main(void)
   RUN_TEST(test_decode_estop_request_invalid_data);
   RUN_TEST(test_decode_estop_request_not_initialized);
   RUN_TEST(test_decode_estop_request_oversized_buffer);
+  RUN_TEST(test_decode_estop_request_valid);
 
   /* SetPIDGainsRequest decode tests */
   RUN_TEST(test_decode_pid_gains_request_null_buffer);
@@ -2575,12 +2938,37 @@ int main(void)
   RUN_TEST(test_encode_telemetry_all_fields);
   RUN_TEST(test_encode_telemetry_not_initialized);
 
+  /* SetPIDGainsResponse encode tests */
+  RUN_TEST(test_encode_pid_gains_response_null_msg);
+  RUN_TEST(test_encode_pid_gains_response_null_buffer);
+  RUN_TEST(test_encode_pid_gains_response_null_len);
+  RUN_TEST(test_encode_pid_gains_response_success);
+  RUN_TEST(test_encode_pid_gains_response_failure);
+  RUN_TEST(test_encode_pid_gains_response_not_initialized);
+  RUN_TEST(test_encode_pid_gains_response_small_buffer);
+
+  /* SetRetransmitConfigRequest decode tests */
+  RUN_TEST(test_decode_retransmit_config_request_null_buffer);
+  RUN_TEST(test_decode_retransmit_config_request_null_msg);
+  RUN_TEST(test_decode_retransmit_config_request_valid);
+  RUN_TEST(test_decode_retransmit_config_request_zero_len);
+  RUN_TEST(test_decode_retransmit_config_request_oversized);
+  RUN_TEST(test_decode_retransmit_config_request_not_initialized);
+  RUN_TEST(test_decode_retransmit_config_request_invalid_data);
+
   /* Helper function tests - velocity command */
   RUN_TEST(test_create_velocity_command_null);
   RUN_TEST(test_create_velocity_command_valid);
   RUN_TEST(test_create_velocity_command_zero);
   RUN_TEST(test_create_velocity_command_max_sequence);
   RUN_TEST(test_create_velocity_command_initializes_struct);
+  RUN_TEST(test_create_velocity_command_out_of_range);
+
+  /* Helper function tests - diff drive velocity command */
+  RUN_TEST(test_create_velocity_command_diff_drive_null_cmd);
+  RUN_TEST(test_create_velocity_command_diff_drive_null_params);
+  RUN_TEST(test_create_velocity_command_diff_drive_valid);
+  RUN_TEST(test_create_velocity_command_diff_drive_zero);
 
   /* Helper function tests - response header */
   RUN_TEST(test_create_response_header_null);
@@ -2589,6 +2977,7 @@ int main(void)
   RUN_TEST(test_create_response_header_with_request_id);
   RUN_TEST(test_create_response_header_null_request_id);
   RUN_TEST(test_create_response_header_all_status_codes);
+  RUN_TEST(test_create_response_header_long_request_id);
 
   /* Length tracking tests */
   RUN_TEST(test_encoded_length_increases_with_data);

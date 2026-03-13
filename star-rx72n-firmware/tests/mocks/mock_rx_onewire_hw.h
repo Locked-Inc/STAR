@@ -96,16 +96,17 @@ typedef struct {
  */
 
 /**
- * @brief Timer constants for auto-increment behavior
+ * @brief Default timer auto-increment constant
  */
 typedef enum : uint8_t {
-  k_mock_onewire_timer_auto_increment = 100, /**< Timer ticks added on each access */
+  k_mock_onewire_timer_auto_increment_default = 100, /**< Default ticks added on each access */
 } mock_onewire_timer_constants_t;
 
 extern mock_cmt_channel_t g_mock_cmt3;
 extern mock_cmt_ctrl_t    g_mock_cmt_ctrl;
 extern mock_system_regs_t g_mock_onewire_system_regs;
 extern uint16_t           g_mock_cmt3_counter_shadow;
+extern uint16_t           g_mock_onewire_timer_auto_increment; /**< Runtime-configurable increment */
 
 /* =============================================================================
  * Mock Hardware Access Functions
@@ -114,15 +115,40 @@ extern uint16_t           g_mock_cmt3_counter_shadow;
 
 /**
  * @brief Get CMT3 register pointer
+ *
+ * @details
+ * Auto-increments the shadow counter by g_mock_onewire_timer_auto_increment on
+ * each access, simulating a free-running hardware timer. Default increment is
+ * k_mock_onewire_timer_auto_increment_default (100). Set to 1 for tests that
+ * need exact tick-level control (e.g. large-delay branch coverage).
  */
 static inline volatile mock_cmt_channel_t* cmt3(void)
 {
   g_mock_cmt3_counter_shadow =
-    (uint16_t)(g_mock_cmt3_counter_shadow + k_mock_onewire_timer_auto_increment);
+    (uint16_t)(g_mock_cmt3_counter_shadow + g_mock_onewire_timer_auto_increment);
   g_mock_cmt3.cmcnt = g_mock_cmt3_counter_shadow;
 
   return &g_mock_cmt3;
 }
+
+/**
+ * @brief Set the timer auto-increment value used by cmt3()
+ *
+ * @details
+ * Override the per-read tick increment for tests requiring specific timing
+ * behavior. Reset to k_mock_onewire_timer_auto_increment_default by
+ * mock_onewire_hw_init() / mock_onewire_hw_deinit().
+ *
+ * @param[in] increment Ticks to add on each cmt3() read (must be odd for
+ *                      large-delay tests so the exit condition is reachable)
+ *
+ * @pre mock_onewire_hw_init() has been called
+ * @post cmt3() uses new increment value immediately
+ *
+ * @note Not thread-safe
+ * @since Version 1.0.0
+ */
+void mock_onewire_hw_set_timer_auto_increment(uint16_t increment);
 
 /**
  * @brief Get CMT control register pointer

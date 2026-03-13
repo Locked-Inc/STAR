@@ -487,9 +487,9 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_event_max_retries        = 3,   /**< Maximum SPI retry attempts */
-  k_event_initial_backoff_ms = 10,  /**< Initial backoff delay (ms) */
-  k_event_max_backoff_ms     = 100, /**< Maximum backoff delay (ms) */
+  k_event_max_retries        = 3,  /**< Maximum SPI retry attempts */
+  k_event_initial_backoff_ms = 10, /**< Initial backoff delay (ms) */
+  k_event_max_backoff_ms     = 15, /**< Maximum backoff delay (ms): caps 10<<(retries-1) at retries=2 */
 } rx_comm_event_retry_constants_t;
 
 /* =============================================================================
@@ -1483,3 +1483,4 @@ rx_comm_manager_set_auto_retransmit(rx_comm_manager_t*                     mgr,
 #ifdef __cplusplus
 }
 #endif
+

@@ -93,6 +93,13 @@ static void internal_record_call(mock_gpio_call_type_t type, rx_port_pin_t pin)
  */
 static rx_err_t internal_check_error(void)
 {
+  /* Check Nth-call injection first (before incrementing call_count) */
+  if (g_mock_gpio.error_call_index != 0U &&
+      g_mock_gpio.call_count + 1U == g_mock_gpio.error_call_index) {
+    rx_err_t err                 = g_mock_gpio.nth_error;
+    g_mock_gpio.error_call_index = 0U;
+    return err;
+  }
   if (g_mock_gpio.error_set) {
     rx_err_t err          = g_mock_gpio.next_error;
     g_mock_gpio.error_set = false;
@@ -221,6 +228,12 @@ void mock_gpio_set_next_error(rx_err_t err)
 void mock_gpio_clear_error(void)
 {
   g_mock_gpio.error_set = false;
+}
+
+void mock_gpio_set_error_on_nth_call(uint16_t call_index, rx_err_t err)
+{
+  g_mock_gpio.error_call_index = call_index;
+  g_mock_gpio.nth_error        = err;
 }
 
 /* =============================================================================
@@ -390,6 +403,8 @@ rx_err_t gpio_toggle(rx_port_pin_t pin)
   mock_gpio_pin_state_t* state = internal_get_pin_state(port, pin_num);
   if (state != nullptr) {
     state->output_value = !state->output_value;
+    /* Keep input_value in sync so gpio_read reflects the toggled state */
+    state->input_value = state->output_value;
   }
 
   return k_rx_ok;

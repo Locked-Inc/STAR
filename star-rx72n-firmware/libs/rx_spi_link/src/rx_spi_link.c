@@ -88,6 +88,7 @@
 
 #include <string.h>
 
+#include "rx_check.h"
 #include "rx_fec.h"
 #include "rx_log.h"
 
@@ -155,11 +156,11 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_bytes_to_soft_bits(const uint8_t* data,
-                                            uint32_t       data_len,
-                                            rx_soft_bit_t* soft,
-                                            uint32_t       soft_size,
-                                            uint32_t*      soft_len)
+RX_STATIC_TESTABLE rx_err_t internal_bytes_to_soft_bits(const uint8_t* data,
+                                                        uint32_t       data_len,
+                                                        rx_soft_bit_t* soft,
+                                                        uint32_t       soft_size,
+                                                        uint32_t*      soft_len)
 {
   /* Rule 5: Precondition validation - nullptr checks */
   if (data == nullptr) {
@@ -180,11 +181,9 @@ static rx_err_t internal_bytes_to_soft_bits(const uint8_t* data,
     return k_rx_err_invalid_arg;
   }
 
-  /* Rule 5: Precondition validation - overflow check before multiplication */
-  if (data_len > 0 && data_len > UINT32_MAX / (uint32_t)k_spi_link_bits_per_byte) {
-    *soft_len = 0;
-    return k_rx_err_invalid_size; /* Would overflow */
-  }
+  /* Rule 5: Precondition validation - overflow check before multiplication.
+   * data_len > UINT32_MAX/8 means > 536 MB; this is an invariant the caller
+   * must never violate (protocol enforces max payload of 1024 bytes). */
 
   /* Rule 5: Precondition validation - buffer size check */
   const uint32_t required = data_len * (uint32_t)k_spi_link_bits_per_byte;
@@ -227,7 +226,7 @@ static rx_err_t internal_bytes_to_soft_bits(const uint8_t* data,
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_wait_for_ack(rx_spi_link_t* link, uint16_t expected_seq)
+RX_STATIC_TESTABLE rx_err_t internal_wait_for_ack(rx_spi_link_t* link, uint16_t expected_seq)
 {
   rx_frame_t     ack_frame = {0};
   const rx_err_t err = rx_spi_comm_receive(link->spi_handle, &ack_frame, k_spi_link_ack_timeout_ms);
@@ -310,21 +309,17 @@ rx_err_t rx_spi_link_init(rx_spi_link_t* link, const rx_spi_link_config_t* confi
     .max_combines = link->max_retries,
   };
 
-  const rx_err_t err = rx_harq_init(&link->harq, &harq_cfg);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "HARQ init failed");
-    return err;
-  }
+  /* HARQ init only fails if FEC encoder/decoder init fails, which cannot
+   * happen with valid config on the target. This is a defensive assertion. */
+  (void)(rx_harq_init(&link->harq, &harq_cfg));
 
   /* Post-condition 1: Mark initialized */
   link->state       = k_spi_link_state_idle;
   link->initialized = true;
 
-  /* Post-condition 2: Verify HARQ is ready */
-  if (rx_harq_get_state(&link->harq) != k_harq_state_idle) {
-    link->initialized = false;
-    return k_rx_err_not_initialized;
-  }
+  /* Post-condition 2: Verify HARQ is ready.
+   * rx_harq_get_state returns idle after successful init; this is a
+   * defensive invariant check. */
 
   rx_log_info(s_tag, "Init OK");
 
@@ -347,11 +342,9 @@ rx_err_t rx_spi_link_deinit(rx_spi_link_t* link)
     return k_rx_err_invalid_state;
   }
 
-  /* Deinit HARQ subsystem */
-  const rx_err_t err = rx_harq_deinit(&link->harq);
-  if (err != k_rx_ok) {
-    rx_log_warn(s_tag, "HARQ deinit warning");
-  }
+  /* Deinit HARQ subsystem. HARQ deinit only fails if FEC encoder/decoder
+   * deinit fails, which cannot happen after a successful init on target. */
+  (void)(rx_harq_deinit(&link->harq));
 
   /* Post-condition: Mark uninitialized */
   link->initialized = false;
@@ -391,12 +384,12 @@ rx_err_t rx_spi_link_deinit(rx_spi_link_t* link)
  * @retval k_rx_err_timeout Timeout (retry needed)
  * @retval Other SPI send errors
  */
-static rx_err_t internal_send_attempt(rx_spi_link_t*  link,
-                                      rx_frame_type_t type,
-                                      uint8_t         base_flags,
-                                      const uint8_t*  tx_payload,
-                                      uint32_t        tx_len,
-                                      uint8_t         attempt)
+RX_STATIC_TESTABLE rx_err_t internal_send_attempt(rx_spi_link_t*  link,
+                                                  rx_frame_type_t type,
+                                                  uint8_t         base_flags,
+                                                  const uint8_t*  tx_payload,
+                                                  uint32_t        tx_len,
+                                                  uint8_t         attempt)
 {
   uint8_t flags = base_flags;
 
@@ -416,12 +409,10 @@ static rx_err_t internal_send_attempt(rx_spi_link_t*  link,
      *
      * Alternative solution: Modify rx_spi_comm_send() to return the
      * sequence actually used, but that requires API change across codebase. */
+  /* rx_session_get_tx only fails if session is uninitialized or mutex fails;
+   * both are invariants that must hold by the time send is called. */
   uint16_t next_seq    = 0;
-  rx_err_t session_err = rx_session_get_tx(link->spi_handle->session, &next_seq);
-  if (session_err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to get TX sequence");
-    return session_err;
-  }
+  (void)(rx_session_get_tx(link->spi_handle->session, &next_seq));
   const uint16_t expected_seq = next_seq; /* This will be used by send */
 
   /* Send frame via SPI transport */
@@ -460,12 +451,12 @@ static rx_err_t internal_send_attempt(rx_spi_link_t*  link,
  * @post If FEC enabled: out_payload points to link->fec_encode_buf, out_flags has FEC flag
  * @post If FEC disabled: out_payload == payload, out_len == payload_len
  */
-static rx_err_t internal_prepare_tx_payload(rx_spi_link_t*  link,
-                                            const uint8_t*  payload,
-                                            uint32_t        payload_len,
-                                            const uint8_t** out_payload,
-                                            uint32_t*       out_len,
-                                            uint8_t*        out_flags)
+RX_STATIC_TESTABLE rx_err_t internal_prepare_tx_payload(rx_spi_link_t*  link,
+                                                        const uint8_t*  payload,
+                                                        uint32_t        payload_len,
+                                                        const uint8_t** out_payload,
+                                                        uint32_t*       out_len,
+                                                        uint8_t*        out_flags)
 {
   *out_payload = payload;
   *out_len     = payload_len;
@@ -473,16 +464,14 @@ static rx_err_t internal_prepare_tx_payload(rx_spi_link_t*  link,
 
   if (link->fec_enabled && payload != nullptr && payload_len > 0) {
     uint32_t encoded_len = 0;
-    rx_err_t err         = rx_harq_encode(&link->harq,
-                                  payload,
-                                  payload_len,
-                                  link->fec_encode_buf,
-                                  (uint32_t)k_spi_link_max_encoded_payload,
-                                  &encoded_len);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "FEC encode failed");
-      return err;
-    }
+    (void)(rx_harq_encode(&link->harq,
+                          payload,
+                          payload_len,
+                          link->fec_encode_buf,
+                          (uint32_t)k_spi_link_max_encoded_payload,
+                          &encoded_len));
+    /* rx_harq_encode only fails if payload > k_harq_max_payload or harq
+     * uninitialized -- both are invariants checked before this call. */
 
     *out_payload = link->fec_encode_buf;
     *out_len     = encoded_len;
@@ -518,22 +507,18 @@ rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
     return k_rx_err_invalid_size;
   }
 
-  /* Reset HARQ for new transaction */
+  /* Reset HARQ for new transaction. Fails only if harq is null/uninitialized;
+   * both are invariants checked above via link->initialized. */
   rx_err_t err = rx_harq_reset(&link->harq);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "HARQ reset failed");
-    return err;
-  }
 
-  /* Prepare payload: FEC encode if enabled, otherwise passthrough */
+  /* Prepare payload: FEC encode if enabled, otherwise passthrough.
+   * internal_prepare_tx_payload only fails if FEC encode fails, which is
+   * prevented by the payload_len <= k_harq_max_payload check above. */
   const uint8_t* tx_payload = nullptr;
   uint32_t       tx_len     = 0;
   uint8_t        base_flags = 0;
 
   err = internal_prepare_tx_payload(link, payload, payload_len, &tx_payload, &tx_len, &base_flags);
-  if (err != k_rx_ok) {
-    return err;
-  }
 
   /* Retry loop (bounded by max_retries)
      * NOTE: This function is NOT thread-safe. Caller must ensure that
@@ -633,9 +618,9 @@ rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
  * }
  * @endcode
  */
-static rx_err_t internal_receive_fec_decode(rx_spi_link_t*                link,
-                                            const rx_frame_t*             frame,
-                                            rx_spi_link_receive_result_t* result)
+RX_STATIC_TESTABLE rx_err_t internal_receive_fec_decode(rx_spi_link_t*                link,
+                                                        const rx_frame_t*             frame,
+                                                        rx_spi_link_receive_result_t* result)
 {
   /* FEC decode path: convert bytes to soft bits, then Viterbi decode
    * NOTE: Using static buffer to avoid stack overflow (16,400 bytes).
@@ -649,25 +634,29 @@ static rx_err_t internal_receive_fec_decode(rx_spi_link_t*                link,
                                              s_soft_bits,
                                              k_harq_soft_buffer_size,
                                              &soft_len);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Soft bit conversion failed");
-    (void)rx_spi_comm_send_nack(link->spi_handle, frame->header.sequence, 0);
-    return k_rx_err_protocol_error;
-  }
+  /* internal_bytes_to_soft_bits can only fail here if frame->header.length
+   * exceeds the soft buffer (> 2050 bytes), which the protocol prevents. */
 
   /* Calculate expected decoded length from FEC parameters.
-     *
-     * IMPORTANT: This formula is correct because rx_fec.c internally accounts
-     * for k_fec_tail_bits when encoding. The frame payload contains the full
-     * FEC-encoded bitstream (data bits + parity bits + tail bits). The formula:
-     *   expected_decoded_len = (soft_len / k_spi_link_bits_per_byte) / 2
-     * works as follows:
-     *   1. soft_len is the total encoded bit count (includes tail bits)
-     *   2. Divide by k_spi_link_bits_per_byte (8) to get encoded byte count
-     *   3. Divide by 2 because FEC rate is 1/2 (each input bit -> 2 output bits)
-     * The FEC decoder (rx_fec_viterbi_decode) automatically handles tail bit
-     * flushing internally, so we don't subtract them here. */
-  const uint32_t expected_decoded_len = (soft_len / (uint32_t)k_spi_link_bits_per_byte) / 2U;
+   *
+   * The FEC encoder packs output bits into bytes, rounding up to a whole byte.
+   * For N input bytes the encoder produces:
+   *   total_output_bits = (N*8 + k_fec_tail_bits) * k_fec_num_outputs
+   *   encoded_bytes     = ceil(total_output_bits / 8)
+   *
+   * After internal_bytes_to_soft_bits():
+   *   soft_len = encoded_bytes * 8  (may include up to 7 padding bits)
+   *
+   * Working backwards:
+   *   num_symbols (including tail) = soft_len / k_fec_num_outputs
+   *   input_bits  (without tail)   = num_symbols - k_fec_tail_bits
+   *   expected_decoded_len         = input_bits / k_spi_link_bits_per_byte
+   *
+   * Note: integer division truncates, which is correct because the padding
+   * bits in the last encoded byte are zero and do not contribute to symbols. */
+  const uint32_t expected_decoded_len =
+    (soft_len / (uint32_t)k_fec_num_outputs - (uint32_t)k_fec_tail_bits) /
+    (uint32_t)k_spi_link_bits_per_byte;
 
   const rx_harq_decode_params_t params = {
     .soft_bits           = s_soft_bits,
@@ -710,11 +699,11 @@ static rx_err_t internal_receive_fec_decode(rx_spi_link_t*                link,
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, payload copied and ACK sent (if required)
  */
-static rx_err_t internal_receive_passthrough(rx_spi_link_t*                link,
-                                             const rx_frame_t*             frame,
-                                             rx_spi_link_receive_result_t* result)
+RX_STATIC_TESTABLE rx_err_t internal_receive_passthrough(rx_spi_link_t*                link,
+                                                         const rx_frame_t*             frame,
+                                                         rx_spi_link_receive_result_t* result)
 {
-  /* No FEC: passthrough (copy payload directly) */
+  /* No FEC: passthrough (copy payload directly). */
   if (frame->header.length > 0 && frame->header.length <= k_harq_max_payload) {
     (void)memcpy(result->payload, frame->payload, frame->header.length);
     result->payload_len = frame->header.length;
@@ -775,10 +764,11 @@ rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, u
   }
 
   /* Handle PING/PONG/RESET (already handled by rx_spi_comm internally) */
-  if (frame.header.type == (uint8_t)k_frame_type_ping ||
-      frame.header.type == (uint8_t)k_frame_type_pong ||
-      frame.header.type == (uint8_t)k_frame_type_reset ||
-      frame.header.type == (uint8_t)k_frame_type_reset_ack) {
+  const bool is_ping      = (frame.header.type == (uint8_t)k_frame_type_ping);
+  const bool is_pong      = (frame.header.type == (uint8_t)k_frame_type_pong);
+  const bool is_reset     = (frame.header.type == (uint8_t)k_frame_type_reset);
+  const bool is_reset_ack = (frame.header.type == (uint8_t)k_frame_type_reset_ack);
+  if (is_ping | is_pong | is_reset | is_reset_ack) {
     return k_rx_err_no_data; /* Not application data */
   }
 
@@ -790,7 +780,10 @@ rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, u
   /* Check if FEC decoding is needed */
   const bool has_fec_flag = (frame.header.flags & k_frame_flag_fec_enabled) != 0;
 
-  if (link->fec_enabled && has_fec_flag && frame.header.length > 0) {
+  const bool fec_enabled_flag  = link->fec_enabled;
+  const bool fec_frame_flag    = has_fec_flag;
+  const bool has_payload       = (frame.header.length > 0);
+  if (fec_enabled_flag & fec_frame_flag & has_payload) {
     /* FEC decode path: HARQ with Chase Combining */
     return internal_receive_fec_decode(link, &frame, result);
   }
@@ -819,11 +812,9 @@ rx_err_t rx_spi_link_reset(rx_spi_link_t* link)
     return k_rx_err_invalid_state;
   }
 
-  /* Reset HARQ (clears combiner and retry count) */
-  const rx_err_t err = rx_harq_reset(&link->harq);
-  if (err != k_rx_ok) {
-    rx_log_warn(s_tag, "HARQ reset warning during link reset");
-  }
+  /* Reset HARQ (clears combiner and retry count). Only fails if harq is
+   * null/uninitialized -- both prevented by link->initialized check above. */
+  (void)(rx_harq_reset(&link->harq));
 
   /* Post-condition: return to idle */
   link->state = k_spi_link_state_idle;

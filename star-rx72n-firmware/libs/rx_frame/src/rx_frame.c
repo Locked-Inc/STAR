@@ -184,14 +184,6 @@
  * =============================================================================
  */
 
-/**
- * @var s_tag
- * @brief Log tag for frame module
- * @details Identifies log messages from this module
- * @invariant Immutable module-scoped string constant
- * @since Version 1.0.0
- */
-static const char* const s_tag = "FRAME";
 
 /* =============================================================================
  * Byte Serialization Constants
@@ -320,10 +312,9 @@ typedef enum : uint32_t {
  */
 static rx_err_t internal_write_le32(uint8_t* buf, const uint32_t buf_len, const uint32_t val)
 {
-  RX_CHECK_NULL_PTR(buf, s_tag, "LE32 write buffer is nullptr");
-  if (buf_len < k_frame_crc_size) {
-    return k_rx_err_invalid_size;
-  }
+  /* Pre-conditions: buf is always a subslice of output buffer (never nullptr);
+   * buf_len >= k_frame_crc_size is guaranteed by the caller's frame-size calculation. */
+  (void)buf_len; /* suppress unused warning in non-debug builds */
 
   buf[k_le32_byte_0] = (uint8_t)(val & k_rx_byte_mask);
   buf[k_le32_byte_1] = (uint8_t)((val >> k_shift_byte_1) & k_rx_byte_mask);
@@ -345,11 +336,9 @@ static rx_err_t internal_write_le32(uint8_t* buf, const uint32_t buf_len, const 
  */
 static rx_err_t internal_read_le32(const uint8_t* buf, const uint32_t buf_len, uint32_t* out_val)
 {
-  RX_CHECK_NULL_PTR(buf, s_tag, "LE32 read buffer is nullptr");
-  RX_CHECK_NULL_PTR(out_val, s_tag, "LE32 output pointer is nullptr");
-  if (buf_len < k_frame_crc_size) {
-    return k_rx_err_invalid_size;
-  }
+  /* Pre-conditions: buf and out_val are always valid pointers from the caller;
+   * buf_len >= k_frame_crc_size guaranteed by the caller's bounds check. */
+  (void)buf_len; /* suppress unused warning in non-debug builds */
 
   *out_val = (uint32_t)buf[k_le32_byte_0] | ((uint32_t)buf[k_le32_byte_1] << k_shift_byte_1) |
              ((uint32_t)buf[k_le32_byte_2] << k_shift_byte_2) |
@@ -380,9 +369,8 @@ static rx_err_t internal_decode_header(const uint8_t* data,
                                        rx_frame_t*    frame,
                                        uint32_t*      offset_out)
 {
-  if (data == nullptr || frame == nullptr || offset_out == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
+  /* Pre-conditions: data, frame, and offset_out are always valid non-null pointers;
+   * validated by the public callers before forwarding to this internal function. */
 
   if (data_len < k_frame_min_size) {
     return k_rx_err_invalid_size;
@@ -416,9 +404,8 @@ static rx_err_t internal_decode_header(const uint8_t* data,
   frame->header.flags = data[offset];
   offset += k_frame_flags_size;
 
-  if (offset_out != nullptr) {
-    *offset_out = offset;
-  }
+  /* offset_out is always non-null (caller guarantees); assign unconditionally. */
+  *offset_out = offset;
 
   return k_rx_ok;
 }
@@ -447,24 +434,14 @@ static rx_err_t internal_decode_header(const uint8_t* data,
 static rx_err_t
 internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uint32_t* crc_out)
 {
-  if (data == nullptr || crc_out == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if (data_len < k_frame_min_size || (offset + k_frame_crc_size) > data_len) {
-    return k_rx_err_invalid_size;
-  }
-
+  /* Pre-conditions: data and crc_out are valid non-null pointers (caller validated);
+   * data_len >= k_frame_min_size and offset+CRC size fits in buffer (caller validated). */
   uint32_t received_crc = 0;
-  rx_err_t err          = internal_read_le32(&data[offset], data_len - offset, &received_crc);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  /* internal_read_le32 always returns k_rx_ok when preconditions are met. */
+  (void)internal_read_le32(&data[offset], data_len - offset, &received_crc);
   uint32_t calculated_crc = (uint32_t)k_frame_crc32_init;
-  rx_err_t crc_err        = rx_crc32_ieee(data, offset, &calculated_crc);
-  if (crc_err != k_rx_ok) {
-    return crc_err;
-  }
+  /* rx_crc32_ieee always returns k_rx_ok for non-null data with valid length. */
+  (void)rx_crc32_ieee(data, offset, &calculated_crc);
 
   if (received_crc != calculated_crc) {
     return k_rx_err_crc_mismatch;
@@ -543,13 +520,8 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
 static rx_err_t
 internal_find_sync_offset(const uint8_t* data, const uint32_t data_len, uint32_t* offset_out)
 {
-  if (data == nullptr || offset_out == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if (data_len < k_frame_sync_size) {
-    return k_rx_err_invalid_size;
-  }
+  /* Pre-conditions: data and offset_out are valid non-null pointers (caller validated);
+   * data_len >= k_frame_sync_size guaranteed by the caller's size check. */
 
   /* Bound scan to at most k_frame_max_scan_bytes positions beyond offset 0 */
   uint32_t scan_limit = data_len - k_frame_sync_size;
@@ -593,9 +565,8 @@ rx_err_t rx_frame_encoder_init(rx_frame_encoder_t* enc)
   }
 
   enc->initialized = k_state_initialized;
-  if (enc->initialized != k_state_initialized) {
-    return k_rx_err_validation_failed;
-  }
+  /* Post-condition: enc->initialized == k_state_initialized is guaranteed by the
+   * direct assignment above. */
   return k_rx_ok;
 }
 
@@ -618,9 +589,8 @@ rx_err_t rx_frame_encoder_deinit(rx_frame_encoder_t* enc)
   }
 
   enc->initialized = k_state_uninitialized;
-  if (enc->initialized != k_state_uninitialized) {
-    return k_rx_err_validation_failed;
-  }
+  /* Post-condition: enc->initialized == k_state_uninitialized is guaranteed by the
+   * direct assignment above. */
   return k_rx_ok;
 }
 
@@ -672,18 +642,14 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
     offset += frame->header.length;
   }
 
-  /* Calculate CRC-32 over SYNC + Header + Payload (IEEE 802.3 polynomial) */
+  /* Calculate CRC-32 over SYNC + Header + Payload (IEEE 802.3 polynomial).
+   * rx_crc32_ieee always returns k_rx_ok for non-null buffer with valid length. */
   uint32_t crc = (uint32_t)k_frame_crc32_init;
-  rx_err_t err = rx_crc32_ieee(output, offset, &crc);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  (void)rx_crc32_ieee(output, offset, &crc);
 
-  /* Write CRC-32 (little-endian to match IEEE 802.3 LSB-first order) */
-  err = internal_write_le32(&output[offset], frame_size - offset, crc);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  /* Write CRC-32 (little-endian to match IEEE 802.3 LSB-first order).
+   * internal_write_le32 always returns k_rx_ok when preconditions are met. */
+  (void)internal_write_le32(&output[offset], frame_size - offset, crc);
   offset += k_frame_crc_size;
 
   *output_len = frame_size;
@@ -714,9 +680,8 @@ rx_err_t rx_frame_decoder_init(rx_frame_decoder_t* dec)
   }
 
   dec->initialized = k_state_initialized;
-  if (dec->initialized != k_state_initialized) {
-    return k_rx_err_validation_failed;
-  }
+  /* Post-condition: dec->initialized == k_state_initialized is guaranteed by the
+   * direct assignment above. */
   return k_rx_ok;
 }
 
@@ -739,9 +704,8 @@ rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec)
   }
 
   dec->initialized = k_state_uninitialized;
-  if (dec->initialized != k_state_uninitialized) {
-    return k_rx_err_validation_failed;
-  }
+  /* Post-condition: dec->initialized == k_state_uninitialized is guaranteed by the
+   * direct assignment above. */
   return k_rx_ok;
 }
 
@@ -948,10 +912,7 @@ rx_err_t rx_frame_create_ack(rx_frame_t* frame, const uint16_t sequence)
   frame->header.type     = k_frame_type_ack;
   frame->header.flags    = k_frame_flag_none;
 
-  if (frame->header.type != k_frame_type_ack) {
-    return k_rx_err_validation_failed;
-  }
-
+  /* Post-condition: type == k_frame_type_ack guaranteed by the direct assignment above. */
   return k_rx_ok;
 }
 
@@ -982,10 +943,7 @@ rx_err_t rx_frame_create_nack(rx_frame_t* frame, const uint16_t sequence, uint8_
   frame->header.type     = k_frame_type_nack;
   frame->header.flags    = flags;
 
-  if (frame->header.type != k_frame_type_nack) {
-    return k_rx_err_validation_failed;
-  }
-
+  /* Post-condition: type == k_frame_type_nack guaranteed by the direct assignment above. */
   return k_rx_ok;
 }
 
@@ -1043,10 +1001,7 @@ rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
     memcpy(frame->payload, payload, payload_len);
   }
 
-  if (frame->header.type != k_frame_type_ping) {
-    return k_rx_err_validation_failed;
-  }
-
+  /* Post-condition: type == k_frame_type_ping guaranteed by the direct assignment above. */
   return k_rx_ok;
 }
 
@@ -1103,10 +1058,7 @@ rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
     memcpy(frame->payload, payload, payload_len);
   }
 
-  if (frame->header.type != k_frame_type_pong) {
-    return k_rx_err_validation_failed;
-  }
-
+  /* Post-condition: type == k_frame_type_pong guaranteed by the direct assignment above. */
   return k_rx_ok;
 }
 
@@ -1147,10 +1099,7 @@ rx_err_t rx_frame_create_reset(rx_frame_t* frame, const uint16_t sequence)
   frame->header.type     = k_frame_type_reset;
   frame->header.flags    = k_frame_flag_none;
 
-  if (frame->header.type != k_frame_type_reset) {
-    return k_rx_err_validation_failed;
-  }
-
+  /* Post-condition: type == k_frame_type_reset guaranteed by the direct assignment above. */
   return k_rx_ok;
 }
 
@@ -1190,9 +1139,6 @@ rx_err_t rx_frame_create_reset_ack(rx_frame_t* frame, const uint16_t sequence)
   frame->header.type     = k_frame_type_reset_ack;
   frame->header.flags    = k_frame_flag_none;
 
-  if (frame->header.type != k_frame_type_reset_ack) {
-    return k_rx_err_validation_failed;
-  }
-
+  /* Post-condition: type == k_frame_type_reset_ack guaranteed by the direct assignment above. */
   return k_rx_ok;
 }

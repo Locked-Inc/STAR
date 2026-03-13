@@ -26,6 +26,7 @@
 #include "mock_rx_onewire_hw.h"
 #include "mock_rx_tpu_regs.h"
 #include "rx_encoder_tpu.h"
+#include "rx_tpu.h"
 #include "unity.h"
 
 /* =============================================================================
@@ -504,6 +505,166 @@ void test_deinit_invalid_channel(void)
  * =============================================================================
  */
 
+/* =============================================================================
+ * Additional Error-Path Tests for Missing Coverage
+ * =============================================================================
+ */
+
+/** @brief read_raw with invalid channel (0) returns invalid_arg */
+void test_read_raw_invalid_channel(void)
+{
+  uint16_t count = 0;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_tpu_encoder_read_raw(0, &count));
+}
+
+/** @brief read_count with invalid channel (0) returns invalid_arg */
+void test_read_count_invalid_channel(void)
+{
+  rx_encoder_state_t state;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_tpu_encoder_read_count(0, &state));
+}
+
+/** @brief read_velocity with invalid channel (0) returns invalid_arg */
+void test_read_velocity_invalid_channel(void)
+{
+  float velocity = 0.0f;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_tpu_encoder_read_velocity(&velocity, 0.01f, 0));
+}
+
+/** @brief set_count with invalid channel (0) returns invalid_arg */
+void test_set_count_invalid_channel(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_tpu_encoder_set_count(100, 0));
+}
+
+/** @brief read_velocity uninit returns invalid_state */
+void test_read_velocity_uninit_channel(void)
+{
+  float velocity = 0.0f;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state,
+                    rx_tpu_encoder_read_velocity(&velocity, 0.01f, k_tpu_channel_2));
+}
+
+/** @brief init_phase_count fails when TPU already initialized separately */
+void test_init_tpu_hal_already_initialized(void)
+{
+  /* Pre-initialize the TPU channel via HAL directly so encoder init finds it taken */
+  const rx_tpu_config_t tpu_config = {
+    .channel    = k_tpu_channel_1,
+    .phase_mode = k_tpu_phase_mode_4,
+  };
+  rx_err_t tpu_err = rx_tpu_init_phase_count(&tpu_config);
+  TEST_ASSERT_EQUAL(k_rx_ok, tpu_err);
+
+  /* Now encoder init should fail when it tries to init the same TPU channel */
+  const rx_tpu_encoder_config_t config = {
+    .channel          = k_tpu_channel_1,
+    .counts_per_rev   = k_test_counts_per_rev,
+    .invert_direction = false,
+  };
+  rx_err_t err = rx_tpu_encoder_init(&config);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/** @brief read_velocity returns error when cpr is corrupted (via test helper) */
+void test_velocity_corrupted_cpr(void)
+{
+#ifdef TESTING
+  TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
+  rx_tpu_encoder_test_corrupt_cpr(k_tpu_channel_1);
+  float    velocity = 0.0f;
+  rx_err_t err      = rx_tpu_encoder_read_velocity(&velocity, 0.01f, k_tpu_channel_1);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+#else
+  TEST_IGNORE_MESSAGE("Only testable in TESTING builds");
+#endif
+}
+
+/** @brief set_count returns error when cpr is corrupted (via test helper) */
+void test_set_count_corrupted_cpr(void)
+{
+#ifdef TESTING
+  TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
+  rx_tpu_encoder_test_corrupt_cpr(k_tpu_channel_1);
+  rx_err_t err = rx_tpu_encoder_set_count(100, k_tpu_channel_1);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+#else
+  TEST_IGNORE_MESSAGE("Only testable in TESTING builds");
+#endif
+}
+
+/** @brief internal_update_state with null state returns invalid_arg */
+void test_internal_update_state_null_state(void)
+{
+#ifdef UNIT_TEST
+  TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
+  rx_err_t err = internal_update_state(NULL, k_tpu_channel_1, 100);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/** @brief internal_update_state with invalid channel returns invalid_arg */
+void test_internal_update_state_invalid_channel(void)
+{
+#ifdef UNIT_TEST
+  rx_encoder_state_t state;
+  rx_err_t           err = internal_update_state(&state, 0, 100);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/** @brief internal_update_state with uninit channel returns invalid_state */
+void test_internal_update_state_uninit_channel(void)
+{
+#ifdef UNIT_TEST
+  rx_encoder_state_t state;
+  /* k_tpu_channel_1 is valid but not initialized (setUp deinits all channels) */
+  rx_err_t err = internal_update_state(&state, k_tpu_channel_1, 100);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/** @brief internal_update_state with corrupted cpr returns invalid_state */
+void test_internal_update_state_corrupted_cpr(void)
+{
+#if defined(UNIT_TEST) && defined(TESTING)
+  TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
+  rx_tpu_encoder_test_corrupt_cpr(k_tpu_channel_1);
+  rx_encoder_state_t state;
+  rx_err_t           err = internal_update_state(&state, k_tpu_channel_1, 100);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST+TESTING builds");
+#endif
+}
+
+/** @brief unrealistic velocity triggers warning log (not error) */
+void test_velocity_unrealistic(void)
+{
+  /* Use cpr=1 and a delta of 1000 (< 32768, no wrap) to produce velocity > 100 RPS */
+  const rx_tpu_encoder_config_t config = {
+    .channel          = k_tpu_channel_1,
+    .counts_per_rev   = 1,
+    .invert_direction = false,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_init(&config));
+
+  /* Velocity = delta_count / cpr / delta_time = 1000 / 1 / 0.01 = 100000 RPS > max */
+  g_mock_tpu_regs[0].tcnt = 1000;
+  float    velocity       = 0.0f;
+  rx_err_t err            = rx_tpu_encoder_read_velocity(&velocity, 0.01f, k_tpu_channel_1);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* Velocity exceeds k_tpu_enc_max_velocity_rps (100) - warning triggered */
+  TEST_ASSERT_GREATER_THAN(100.0f, velocity);
+}
+
 /** @brief Two channels operate independently */
 void test_multi_channel_independent(void)
 {
@@ -527,6 +688,20 @@ void test_multi_channel_independent(void)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, rx_tpu_encoder_read_count(k_tpu_channel_1, &state1));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_read_count(k_tpu_channel_2, &state2));
+}
+
+/**
+ * @brief rx_tpu_encoder_test_corrupt_cpr with out-of-range channel does nothing
+ *
+ * @details
+ * When channel >= k_tpu_enc_max_channels the guard if-statement body is skipped.
+ * Covers the false branch of the channel-bounds check at line 452.
+ */
+void test_corrupt_cpr_invalid_channel_noop(void)
+{
+  /* Cast a value above k_tpu_enc_max_channels (6) to exercise the false branch */
+  rx_tpu_encoder_test_corrupt_cpr((rx_tpu_channel_t)10);
+  /* No assertion needed - just must not crash and not corrupt any array entry */
 }
 
 /* =============================================================================
@@ -588,6 +763,22 @@ int main(void)
 
   /* Multi-channel */
   RUN_TEST(test_multi_channel_independent);
+
+  /* Additional error-path tests */
+  RUN_TEST(test_read_raw_invalid_channel);
+  RUN_TEST(test_read_count_invalid_channel);
+  RUN_TEST(test_read_velocity_invalid_channel);
+  RUN_TEST(test_set_count_invalid_channel);
+  RUN_TEST(test_read_velocity_uninit_channel);
+  RUN_TEST(test_init_tpu_hal_already_initialized);
+  RUN_TEST(test_velocity_corrupted_cpr);
+  RUN_TEST(test_set_count_corrupted_cpr);
+  RUN_TEST(test_internal_update_state_null_state);
+  RUN_TEST(test_internal_update_state_invalid_channel);
+  RUN_TEST(test_internal_update_state_uninit_channel);
+  RUN_TEST(test_internal_update_state_corrupted_cpr);
+  RUN_TEST(test_velocity_unrealistic);
+  RUN_TEST(test_corrupt_cpr_invalid_channel_noop);
 
   return UNITY_END();
 }

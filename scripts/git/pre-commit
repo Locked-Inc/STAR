@@ -185,6 +185,44 @@ if [[ -n "$rx72n_files" ]]; then
         echo "   Install: sudo apt install clang-tidy"
         echo "   CI will enforce clang-tidy on push."
     fi
+
+    # Coverage gate: libs/ line coverage >= 80%, function coverage = 100%
+    # Skipped if gcovr is not installed or tests have not been built.
+    if command -v gcovr &>/dev/null && [[ -d "star-rx72n-firmware/tests/build" ]]; then
+        echo "Checking coverage thresholds..."
+        cov_output=$(gcovr \
+            --object-directory star-rx72n-firmware/tests/build \
+            --filter '.*star-rx72n-firmware/libs/' \
+            --exclude '.*/third_party/.*' \
+            --exclude '.*/rx_nanopb/inc/gen/.*' \
+            --print-summary 2>/dev/null)
+        line_pct=$(echo "$cov_output" | grep 'lines:'     | sed 's/.*lines: \([0-9.]*\)%.*/\1/')
+        func_pct=$(echo "$cov_output" | grep 'functions:' | sed 's/.*functions: \([0-9.]*\)%.*/\1/')
+        bran_pct=$(echo "$cov_output" | grep 'branches:'  | sed 's/.*branches: \([0-9.]*\)%.*/\1/')
+        if [[ -n "$line_pct" ]]; then
+            echo "  Line coverage:     ${line_pct}% (required 100%)"
+            echo "  Branch coverage:   ${bran_pct}% (required 100%)"
+            echo "  Function coverage: ${func_pct}% (required 100%)"
+            if (( $(echo "$line_pct < 100" | bc -l) )); then
+                echo "[FAIL] Line coverage ${line_pct}% is below 100%."
+                error_found=1
+            fi
+            if (( $(echo "$bran_pct < 100" | bc -l) )); then
+                echo "[FAIL] Branch coverage ${bran_pct}% is below 100%."
+                error_found=1
+            fi
+            if (( $(echo "$func_pct < 100" | bc -l) )); then
+                echo "[FAIL] Function coverage ${func_pct}% is below 100%."
+                error_found=1
+            fi
+        fi
+    else
+        echo ""
+        echo "WARNING: gcovr not installed or test build missing -- coverage check SKIPPED."
+        echo "   Install: pip3 install gcovr"
+        echo "   Build tests: cmake --build star-rx72n-firmware/tests/build --parallel"
+        echo "   CI will enforce coverage thresholds on push."
+    fi
 fi
 
 # -----------------------------------------------------------------------------

@@ -43,13 +43,39 @@ static void internal_record_call(mock_uart_call_type_t type, uint8_t channel, ui
 }
 
 /**
- * @brief Check and consume error injection
+ * @brief Check and consume the general error injection
  */
 static rx_err_t internal_check_error(void)
 {
   if (g_mock_uart.error_set) {
     rx_err_t err          = g_mock_uart.next_error;
     g_mock_uart.error_set = false;
+    return err;
+  }
+  return k_rx_ok;
+}
+
+/**
+ * @brief Check and consume the write-only error injection
+ */
+static rx_err_t internal_check_write_error(void)
+{
+  if (g_mock_uart.write_error_set) {
+    rx_err_t err                = g_mock_uart.next_write_error;
+    g_mock_uart.write_error_set = false;
+    return err;
+  }
+  return k_rx_ok;
+}
+
+/**
+ * @brief Check and consume the read-only error injection
+ */
+static rx_err_t internal_check_read_error(void)
+{
+  if (g_mock_uart.read_error_set) {
+    rx_err_t err               = g_mock_uart.next_read_error;
+    g_mock_uart.read_error_set = false;
     return err;
   }
   return k_rx_ok;
@@ -193,7 +219,21 @@ void mock_uart_hw_set_next_error(rx_err_t err)
 
 void mock_uart_hw_clear_error(void)
 {
-  g_mock_uart.error_set = false;
+  g_mock_uart.error_set       = false;
+  g_mock_uart.write_error_set = false;
+  g_mock_uart.read_error_set  = false;
+}
+
+void mock_uart_hw_set_next_write_error(rx_err_t err)
+{
+  g_mock_uart.next_write_error = err;
+  g_mock_uart.write_error_set  = true;
+}
+
+void mock_uart_hw_set_next_read_error(rx_err_t err)
+{
+  g_mock_uart.next_read_error = err;
+  g_mock_uart.read_error_set  = true;
 }
 
 /* =============================================================================
@@ -398,6 +438,11 @@ rx_err_t uart_write_channel(uart_channel_t channel, const uint8_t* data, uint16_
     return err;
   }
 
+  err = internal_check_write_error();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
   if (data == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -464,6 +509,11 @@ uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16
     return err;
   }
 
+  err = internal_check_read_error();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
   if (data == nullptr || bytes_read == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -516,7 +566,7 @@ rx_err_t uart_rx_available(uart_channel_t channel, bool* available)
   }
 
   mock_uart_channel_t* ch = &g_mock_uart.channels[channel];
-  *available              = (ch->rx_head != ch->rx_tail);
+  *available              = (bool)(ch->rx_head != ch->rx_tail);
 
   return k_rx_ok;
 }
@@ -531,6 +581,15 @@ typedef enum : uint32_t {
   k_debug_uart_channel  = 9,      /**< SCI9 channel for debug UART */
   k_debug_uart_baudrate = 115200, /**< 115200 baud for debug console */
 } debug_uart_config_t;
+
+/** @brief Constants for uart_debug_putint / uart_debug_puthex */
+typedef enum : uint8_t {
+  k_int32_max_digits = 12,   /**< Max chars for int32 + sign + NUL: "-2147483648\0" */
+  k_decimal_base     = 10,   /**< Decimal (base-10) radix */
+  k_hex_max_digits   = 8,    /**< Max hex digits for uint32 (32-bit = 8 nibbles) */
+  k_bits_per_nibble  = 4,    /**< Bits per hexadecimal nibble */
+  k_nibble_mask      = 0x0F, /**< Mask for lowest nibble */
+} debug_format_constants_t;
 
 rx_err_t uart_debug_init(void)
 {
@@ -570,7 +629,7 @@ void uart_debug_puts(const char* str)
 
 void uart_debug_putint(int32_t value)
 {
-  char buffer[12];
+  char buffer[k_int32_max_digits];
 
   char*    p = buffer + sizeof(buffer) - 1;
   uint32_t abs_value;
@@ -585,9 +644,9 @@ void uart_debug_putint(int32_t value)
 
   *p = '\0';
   do {
-    *--p = '0' + (abs_value % 10);
-    abs_value /= 10;
-  } while (abs_value > 0);
+    *--p = (char)('0' + (abs_value % (uint32_t)k_decimal_base));
+    abs_value /= (uint32_t)k_decimal_base;
+  } while (abs_value > 0U);
 
   if (is_negative) {
     *--p = '-';
@@ -597,19 +656,20 @@ void uart_debug_putint(int32_t value)
 
 void uart_debug_puthex(uint32_t value, uint8_t digits)
 {
-  static const char hex[] = "0123456789ABCDEF";
+  static const char s_hex[] = "0123456789ABCDEF";
 
   uart_debug_puts("0x");
-  if (digits > 8) {
-    digits = 8;
+  if (digits > (uint8_t)k_hex_max_digits) {
+    digits = (uint8_t)k_hex_max_digits;
   }
-  if (digits == 0) {
-    digits = 1;
+  if (digits == 0U) {
+    digits = 1U;
   }
 
-  for (int32_t i = digits - 1; i >= 0; i--) {
-    uint8_t nibble = (value >> (i * 4)) & 0x0F;
-    uart_debug_putc(hex[nibble]);
+  for (int32_t i = (int32_t)digits - 1; i >= 0; i--) {
+    uint8_t nibble =
+      (uint8_t)((value >> ((uint32_t)i * (uint32_t)k_bits_per_nibble)) & (uint32_t)k_nibble_mask);
+    uart_debug_putc(s_hex[nibble]);
   }
 }
 #endif /* !RX_SIMULATOR_MODE */

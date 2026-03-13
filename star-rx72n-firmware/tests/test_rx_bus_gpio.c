@@ -728,6 +728,276 @@ void test_bus_gpio_toggle_not_initialized_returns_error(void)
 }
 
 /* =============================================================================
+ * Additional Coverage Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief rx_bus_gpio_init HAL error propagates (gpio_set_output fails)
+ * @details Injects an error on the first HAL call so gpio_set_output() returns
+ *          an error, covering lines 373-375 in the init callback.
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_gpio_init_hal_error_propagates(void)
+{
+  mock_gpio_set_next_error(k_rx_err_timeout);
+
+  rx_err_t err = rx_bus_gpio_init(&s_test_manager, s_test_bus_name, true);
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
+/**
+ * @brief rx_bus_gpio_init post-init read failure still succeeds
+ * @details Injects an error on the second HAL call (gpio_read in post-init
+ *          verification). The callback logs a warning and continues, returning
+ *          k_rx_ok. Covers line 382.
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_gpio_init_post_init_read_failure_still_succeeds(void)
+{
+  /* Call 1 = gpio_set_output (succeeds), call 2 = gpio_read (fails) */
+  /* error_call_index = N+1 to fail Nth call: fail call 2 -> index=3 */
+  static const uint16_t k_call_post_init_read = 3U;
+  mock_gpio_set_error_on_nth_call((uint16_t)k_call_post_init_read, k_rx_err_timeout);
+
+  rx_err_t err = rx_bus_gpio_init(&s_test_manager, s_test_bus_name, true);
+  /* Warning logged, init still returns k_rx_ok */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bus_gpio_write HAL error propagates (gpio_write_high fails)
+ * @details After successful init (2 HAL calls), injects an error on call 3
+ *          (gpio_write_high), covering lines 460-462.
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_gpio_write_hal_error_propagates(void)
+{
+  rx_err_t err = rx_bus_gpio_init(&s_test_manager, s_test_bus_name, true);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Call 3 = gpio_write_high (init used calls 1-2) */
+  /* error_call_index = N+1 to fail Nth call: fail call 3 -> index=4 */
+  static const uint16_t k_call_write = 4U;
+  mock_gpio_set_error_on_nth_call((uint16_t)k_call_write, k_rx_err_timeout);
+
+  err = rx_bus_gpio_write(&s_test_manager, s_test_bus_name, true);
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
+/**
+ * @brief rx_bus_gpio_write post-write verification read failure still succeeds
+ * @details After successful init (2 HAL calls) and write (call 3), injects an
+ *          error on call 4 (post-write gpio_read). The callback logs a warning
+ *          and continues, covering line 469.
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_gpio_write_post_write_read_failure_still_succeeds(void)
+{
+  rx_err_t err = rx_bus_gpio_init(&s_test_manager, s_test_bus_name, true);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Call 3 = gpio_write_high (succeeds), call 4 = gpio_read post-write (fails) */
+  /* error_call_index = N+1 to fail Nth call: fail call 4 -> index=5 */
+  static const uint16_t k_call_post_write_read = 5U;
+  mock_gpio_set_error_on_nth_call((uint16_t)k_call_post_write_read, k_rx_err_timeout);
+
+  err = rx_bus_gpio_write(&s_test_manager, s_test_bus_name, true);
+  /* Warning logged, write still returns k_rx_ok */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bus_gpio_read HAL error propagates (gpio_read fails)
+ * @details After successful init (2 HAL calls), injects an error on call 3
+ *          (gpio_read in the read callback), covering lines 555-557.
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_gpio_read_hal_error_propagates(void)
+{
+  rx_err_t err = rx_bus_gpio_init(&s_test_manager, s_test_bus_name, false);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Call 3 = gpio_read in read callback (init used calls 1-2) */
+  /* error_call_index = N+1 to fail Nth call: fail call 3 -> index=4 */
+  static const uint16_t k_call_read = 4U;
+  mock_gpio_set_error_on_nth_call((uint16_t)k_call_read, k_rx_err_timeout);
+
+  bool value = false;
+  err        = rx_bus_gpio_read(&s_test_manager, s_test_bus_name, &value);
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
+/**
+ * @brief rx_bus_gpio_toggle pre-toggle read failure still succeeds
+ * @details After successful init (2 HAL calls), injects error on call 3
+ *          (pre-toggle gpio_read). The callback logs a warning and continues.
+ *          Covers lines 642-643.
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_gpio_toggle_pre_toggle_read_failure_still_succeeds(void)
+{
+  rx_err_t err = rx_bus_gpio_init(&s_test_manager, s_test_bus_name, true);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Call 3 = pre-toggle gpio_read (fails), call 4 = gpio_toggle (succeeds) */
+  /* error_call_index = N+1 to fail Nth call: fail call 3 -> index=4 */
+  static const uint16_t k_call_pre_toggle_read = 4U;
+  mock_gpio_set_error_on_nth_call((uint16_t)k_call_pre_toggle_read, k_rx_err_timeout);
+
+  err = rx_bus_gpio_toggle(&s_test_manager, s_test_bus_name);
+  /* Warning logged, toggle still returns k_rx_ok */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bus_gpio_toggle HAL error propagates (gpio_toggle fails)
+ * @details After successful init (2 calls) and pre-toggle read (call 3),
+ *          injects error on call 4 (gpio_toggle). Covers lines 650-652.
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_gpio_toggle_hal_error_propagates(void)
+{
+  rx_err_t err = rx_bus_gpio_init(&s_test_manager, s_test_bus_name, true);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Call 3 = pre-toggle read (succeeds), call 4 = gpio_toggle (fails) */
+  /* error_call_index = N+1 to fail Nth call: fail call 4 -> index=5 */
+  static const uint16_t k_call_toggle = 5U;
+  mock_gpio_set_error_on_nth_call((uint16_t)k_call_toggle, k_rx_err_timeout);
+
+  err = rx_bus_gpio_toggle(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
+/**
+ * @brief rx_bus_gpio_toggle post-toggle read failure still succeeds
+ * @details After init (2 calls), pre-read (3), toggle (4), injects error on
+ *          call 5 (post-toggle gpio_read). The callback logs a warning.
+ *          Covers line 659.
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_gpio_toggle_post_toggle_read_failure_still_succeeds(void)
+{
+  rx_err_t err = rx_bus_gpio_init(&s_test_manager, s_test_bus_name, true);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Call 5 = post-toggle gpio_read (fails after init=1,2, pre-read=3, toggle=4) */
+  /* error_call_index = N+1 to fail Nth call: fail call 5 -> index=6 */
+  static const uint16_t k_call_post_toggle_read = 6U;
+  mock_gpio_set_error_on_nth_call((uint16_t)k_call_post_toggle_read, k_rx_err_timeout);
+
+  err = rx_bus_gpio_toggle(&s_test_manager, s_test_bus_name);
+  /* Warning logged, toggle still returns k_rx_ok */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bus_gpio_toggle state unchanged after toggle logs warning but succeeds
+ * @details Pre-set input_value to true before init. gpio_toggle flips output from
+ *          false to true and syncs input_value to true (same as before). Both
+ *          pre- and post-toggle reads return true, triggering the "state did not
+ *          change" warning branch. Covers line 660.
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_gpio_toggle_state_unchanged_logs_warning(void)
+{
+  /* Set input_value=true before init so pre-toggle read returns true.
+   * After toggle: output goes false->true, input syncs to true (unchanged).
+   * state_before == state_after == true -> triggers "state did not change" branch. */
+  mock_gpio_set_input_value(s_test_pin, true);
+
+  rx_err_t err = rx_bus_gpio_init(&s_test_manager, s_test_bus_name, true);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  err = rx_bus_gpio_toggle(&s_test_manager, s_test_bus_name);
+  /* Warning "state did not change" is logged; toggle still returns k_rx_ok */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/* =============================================================================
+ * Bus Config Validation Coverage Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Invalid port in rx_bus_config_init_gpio returns error
+ *
+ * @details
+ * Passes a rx_port_pin_t with port > k_rx_port_j (0x13) to trigger the
+ * invalid-port branch inside internal_validate_port_pin (lines 291-292)
+ * and the propagation in rx_bus_config_init_gpio (line 442).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers lines 291-292 and 442 of rx_bus_config.c
+ */
+void test_bus_config_gpio_invalid_port_returns_error(void)
+{
+  rx_bus_config_t config;
+  /* Construct a port_pin with port 0xFF (> k_rx_port_j = 0x13) */
+  static const rx_port_pin_t k_invalid_port_pin = (rx_port_pin_t)0xFF00U;
+  rx_err_t err = rx_bus_config_init_gpio(&config, "test", k_invalid_port_pin);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Invalid pin in rx_bus_config_init_gpio returns error
+ *
+ * @details
+ * Passes a rx_port_pin_t with valid port but pin > 7 to trigger the
+ * invalid-pin branch inside internal_validate_port_pin (lines 296-297).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers lines 296-297 of rx_bus_config.c
+ */
+void test_bus_config_gpio_invalid_pin_returns_error(void)
+{
+  rx_bus_config_t config;
+  /* Construct a port_pin with valid port (0x00) but pin 0x08 (> k_rx_pin_max = 7) */
+  static const rx_port_pin_t k_invalid_pin = (rx_port_pin_t)0x0008U;
+  rx_err_t err = rx_bus_config_init_gpio(&config, "test", k_invalid_pin);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Null config pointer to rx_bus_config_init_gpio returns error
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(config, ...) branch at line 436 of rx_bus_config.c.
+ */
+void test_bus_config_gpio_null_config_returns_error(void)
+{
+  rx_err_t err = rx_bus_config_init_gpio(nullptr, "test", s_test_pin);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Null name pointer to rx_bus_config_init_gpio returns error
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(name, ...) branch at line 437 of rx_bus_config.c.
+ */
+void test_bus_config_gpio_null_name_returns_error(void)
+{
+  rx_bus_config_t config;
+  rx_err_t        err = rx_bus_config_init_gpio(&config, nullptr, s_test_pin);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/* =============================================================================
  * Test Runner
  * =============================================================================
  */
@@ -763,6 +1033,8 @@ int main(void)
   RUN_TEST(test_bus_gpio_init_null_name_returns_error);
   RUN_TEST(test_bus_gpio_init_bus_not_found_returns_error);
   RUN_TEST(test_bus_gpio_init_rejects_wrong_bus_type);
+  RUN_TEST(test_bus_gpio_init_hal_error_propagates);
+  RUN_TEST(test_bus_gpio_init_post_init_read_failure_still_succeeds);
 
   /* Write tests */
   RUN_TEST(test_bus_gpio_write_high_sets_output_high);
@@ -770,6 +1042,8 @@ int main(void)
   RUN_TEST(test_bus_gpio_write_null_manager_returns_error);
   RUN_TEST(test_bus_gpio_write_null_name_returns_error);
   RUN_TEST(test_bus_gpio_write_not_initialized_returns_error);
+  RUN_TEST(test_bus_gpio_write_hal_error_propagates);
+  RUN_TEST(test_bus_gpio_write_post_write_read_failure_still_succeeds);
 
   /* Read tests */
   RUN_TEST(test_bus_gpio_read_returns_simulated_high);
@@ -778,12 +1052,23 @@ int main(void)
   RUN_TEST(test_bus_gpio_read_null_name_returns_error);
   RUN_TEST(test_bus_gpio_read_null_value_returns_error);
   RUN_TEST(test_bus_gpio_read_not_initialized_returns_error);
+  RUN_TEST(test_bus_gpio_read_hal_error_propagates);
 
   /* Toggle tests */
   RUN_TEST(test_bus_gpio_toggle_flips_output);
   RUN_TEST(test_bus_gpio_toggle_null_manager_returns_error);
   RUN_TEST(test_bus_gpio_toggle_null_name_returns_error);
   RUN_TEST(test_bus_gpio_toggle_not_initialized_returns_error);
+  RUN_TEST(test_bus_gpio_toggle_pre_toggle_read_failure_still_succeeds);
+  RUN_TEST(test_bus_gpio_toggle_hal_error_propagates);
+  RUN_TEST(test_bus_gpio_toggle_post_toggle_read_failure_still_succeeds);
+  RUN_TEST(test_bus_gpio_toggle_state_unchanged_logs_warning);
+
+  /* Bus config validation tests */
+  RUN_TEST(test_bus_config_gpio_invalid_port_returns_error);
+  RUN_TEST(test_bus_config_gpio_invalid_pin_returns_error);
+  RUN_TEST(test_bus_config_gpio_null_config_returns_error);
+  RUN_TEST(test_bus_config_gpio_null_name_returns_error);
 
   return UNITY_END();
 }

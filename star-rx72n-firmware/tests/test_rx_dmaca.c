@@ -261,6 +261,31 @@ void test_transfer_zero_timeout(void)
 }
 
 /**
+ * @brief timeout_cycles > k_dmaca_timeout_cycles_max returns k_rx_err_invalid_arg
+ */
+void test_transfer_timeout_too_large(void)
+{
+  (void)rx_dmaca_init();
+  /* 10000001 > k_dmaca_timeout_cycles_max (10000000) */
+  rx_dmaca_config_t cfg =
+    internal_make_config(k_test_len_aligned, k_test_dst_addr_aligned, 10000001U);
+  rx_err_t err = rx_dmaca_transfer_poll(&cfg);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief dst_addr == 0 returns k_rx_err_invalid_arg
+ */
+void test_transfer_zero_dst_addr(void)
+{
+  (void)rx_dmaca_init();
+  rx_dmaca_config_t cfg =
+    internal_make_config(k_test_len_aligned, (uintptr_t)0U, k_test_timeout_normal);
+  rx_err_t err = rx_dmaca_transfer_poll(&cfg);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
  * @brief NULL src pointer returns k_rx_err_null_ptr
  */
 void test_transfer_null_src(void)
@@ -477,6 +502,8 @@ int main(void)
   RUN_TEST(test_transfer_zero_len);
   RUN_TEST(test_transfer_len_too_large);
   RUN_TEST(test_transfer_zero_timeout);
+  RUN_TEST(test_transfer_timeout_too_large);
+  RUN_TEST(test_transfer_zero_dst_addr);
   RUN_TEST(test_transfer_null_src);
 
   /* transfer_poll register verification */

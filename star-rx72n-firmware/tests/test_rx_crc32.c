@@ -549,6 +549,19 @@ void test_crc32_update_zero_len_returns_original(void)
   TEST_ASSERT_EQUAL_HEX32(original_crc, result);
 }
 
+/**
+ * @brief Test rx_crc32_update with len exceeding k_crc_len_max returns original CRC
+ */
+void test_crc32_update_oversized_len_returns_original(void)
+{
+  uint8_t  data[]       = {0x01, 0x02, 0x03};
+  uint32_t original_crc = 0x12345678;
+  /* k_crc_len_max is 65535; pass 65536 to trigger the len > k_crc_len_max guard */
+  uint32_t result = rx_crc32_update(original_crc, data, 65536U);
+
+  TEST_ASSERT_EQUAL_HEX32(original_crc, result);
+}
+
 /* =============================================================================
  * Main
  * =============================================================================
@@ -653,6 +666,7 @@ int main(void)
   RUN_TEST(test_crc32_unaligned_data);
   RUN_TEST(test_crc32_update_null_returns_original);
   RUN_TEST(test_crc32_update_zero_len_returns_original);
+  RUN_TEST(test_crc32_update_oversized_len_returns_original);
 
   return UNITY_END();
 }

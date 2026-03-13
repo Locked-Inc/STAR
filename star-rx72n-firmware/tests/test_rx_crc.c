@@ -330,6 +330,96 @@ void test_crc_compute_len_too_large(void)
                     rx_crc_compute(&cfg, s_test_vec_9, (uint32_t)k_crc_len_max + 1U, &result));
 }
 
+/**
+ * @brief Out-of-range poly value returns invalid_arg.
+ */
+void test_crc_compute_invalid_poly(void)
+{
+  const rx_crc_config_t cfg = {
+    .poly      = (rx_crc_poly_t)0xFFU,
+    .bit_order = k_rx_crc_bit_order_lsb_first,
+    .backend   = k_rx_crc_backend_software,
+    .dma       = {.timeout_cycles = 0U},
+  };
+  uint32_t result = 0U;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+}
+
+/**
+ * @brief Out-of-range bit_order value returns invalid_arg.
+ */
+void test_crc_compute_invalid_bit_order(void)
+{
+  const rx_crc_config_t cfg = {
+    .poly      = k_rx_crc_poly_crc32,
+    .bit_order = (rx_crc_bit_order_t)0xFFU,
+    .backend   = k_rx_crc_backend_software,
+    .dma       = {.timeout_cycles = 0U},
+  };
+  uint32_t result = 0U;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+}
+
+/**
+ * @brief Software backend with msb_first bit order returns invalid_arg.
+ */
+void test_crc_compute_sw_msb_first_invalid(void)
+{
+  const rx_crc_config_t cfg = {
+    .poly      = k_rx_crc_poly_crc32,
+    .bit_order = k_rx_crc_bit_order_msb_first,
+    .backend   = k_rx_crc_backend_software,
+    .dma       = {.timeout_cycles = 0U},
+  };
+  uint32_t result = 0U;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+}
+
+/**
+ * @brief hw_cpu backend with msb_first bit order returns invalid_arg on host.
+ */
+void test_crc_compute_hw_cpu_msb_first_invalid(void)
+{
+  const rx_crc_config_t cfg = {
+    .poly      = k_rx_crc_poly_crc32,
+    .bit_order = k_rx_crc_bit_order_msb_first,
+    .backend   = k_rx_crc_backend_hw_cpu,
+    .dma       = {.timeout_cycles = 0U},
+  };
+  uint32_t result = 0U;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+}
+
+/**
+ * @brief hw_dma backend with msb_first bit order returns invalid_arg on host.
+ */
+void test_crc_compute_hw_dma_msb_first_invalid(void)
+{
+  const rx_crc_config_t cfg = {
+    .poly      = k_rx_crc_poly_crc32,
+    .bit_order = k_rx_crc_bit_order_msb_first,
+    .backend   = k_rx_crc_backend_hw_dma,
+    .dma       = {.timeout_cycles = 0U},
+  };
+  uint32_t result = 0U;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+}
+
+/**
+ * @brief Invalid backend value returns invalid_arg (default switch case).
+ */
+void test_crc_compute_invalid_backend(void)
+{
+  const rx_crc_config_t cfg = {
+    .poly      = k_rx_crc_poly_crc32,
+    .bit_order = k_rx_crc_bit_order_lsb_first,
+    .backend   = (rx_crc_backend_t)0xFFU,
+    .dma       = {.timeout_cycles = 0U},
+  };
+  uint32_t result = 0U;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+}
+
 /* =============================================================================
  * Software Backend Tests - All 5 Polynomials
  * =============================================================================
@@ -772,6 +862,16 @@ void test_crc32_update_null_returns_original(void)
 }
 
 /**
+ * @brief rx_crc32_update() with len > k_crc_len_max returns crc unchanged.
+ */
+void test_crc32_update_len_too_large_returns_original(void)
+{
+  uint32_t crc = (uint32_t)k_test_crc32_sentinel;
+  TEST_ASSERT_EQUAL_HEX32(crc,
+                           rx_crc32_update(crc, s_test_vec_9, (uint32_t)k_crc_len_max + 1U));
+}
+
+/**
  * @brief rx_crc32_update() zero length returns input crc unchanged.
  */
 void test_crc32_update_zero_len_returns_original(void)
@@ -875,6 +975,12 @@ int main(void)
   RUN_TEST(test_crc_compute_null_result);
   RUN_TEST(test_crc_compute_zero_len);
   RUN_TEST(test_crc_compute_len_too_large);
+  RUN_TEST(test_crc_compute_invalid_poly);
+  RUN_TEST(test_crc_compute_invalid_bit_order);
+  RUN_TEST(test_crc_compute_sw_msb_first_invalid);
+  RUN_TEST(test_crc_compute_hw_cpu_msb_first_invalid);
+  RUN_TEST(test_crc_compute_hw_dma_msb_first_invalid);
+  RUN_TEST(test_crc_compute_invalid_backend);
 
   /* Software backend - all 5 polynomials */
   RUN_TEST(test_crc_sw_crc8_maxim);
@@ -916,6 +1022,7 @@ int main(void)
   RUN_TEST(test_crc32_update_chunked_matches_single);
   RUN_TEST(test_crc32_update_null_returns_original);
   RUN_TEST(test_crc32_update_zero_len_returns_original);
+  RUN_TEST(test_crc32_update_len_too_large_returns_original);
 
   /* Single-byte edge cases */
   RUN_TEST(test_crc32_ieee_single_zero);

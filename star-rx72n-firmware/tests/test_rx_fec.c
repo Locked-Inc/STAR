@@ -818,6 +818,22 @@ void test_encoded_len_max_payload(void)
   TEST_ASSERT_EQUAL(2050, rx_fec_encoded_len(1024));
 }
 
+/**
+ * @brief Test encoded_len with input_len exceeding k_fec_max_input_bytes
+ *
+ * @details
+ * Verifies that rx_fec_encoded_len() returns 0 when input_len > k_fec_max_input_bytes (1024).
+ *
+ * @pre No precondition
+ * @post Returns 0 indicating error
+ *
+ * @test Validates input_len > k_fec_max_input_bytes returns 0 (line 523)
+ */
+void test_encoded_len_too_large(void)
+{
+  TEST_ASSERT_EQUAL(0, rx_fec_encoded_len(k_fec_max_input_bytes + 1U));
+}
+
 /** @} */ // end of test_fec_encoded_len
 
 /* =============================================================================
@@ -1026,6 +1042,29 @@ void test_encode_deterministic(void)
 
   TEST_ASSERT_EQUAL(len1, len2);
   TEST_ASSERT_EQUAL_MEMORY(output1, output2, len1);
+}
+
+/**
+ * @brief Test encode with input_len exceeding k_fec_max_input_bytes
+ *
+ * @details
+ * Verifies that rx_fec_encode() returns k_rx_err_invalid_size when
+ * input_len > k_fec_max_input_bytes (1024).
+ *
+ * @pre setUp() has initialized s_encoder
+ * @post No encoding performed
+ *
+ * @test Validates input_len > k_fec_max_input_bytes rejection (line 578)
+ */
+void test_encode_too_large(void)
+{
+  static uint8_t  s_big_input[k_fec_max_input_bytes + 1U];
+  static uint8_t  s_big_output[4200U];
+  uint32_t        len;
+
+  rx_err_t err = rx_fec_encode(&s_encoder, s_big_input, k_fec_max_input_bytes + 1U,
+                                s_big_output, &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 /** @} */ // end of test_fec_encode
@@ -1321,6 +1360,153 @@ void test_decode_zero_length(void)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
+/**
+ * @brief Test decode_soft with expected_output_len producing zero symbols
+ *
+ * @details
+ * When expected_output_len == 0, the num_symbols ternary evaluates to 0,
+ * which is less than k_fec_tail_bits (6), triggering the too-small check.
+ *
+ * @pre setUp() has initialized s_decoder
+ * @post No decoding performed
+ *
+ * @test Validates num_symbols < k_fec_tail_bits rejection (line 684)
+ */
+void test_decode_soft_num_symbols_too_small(void)
+{
+  rx_soft_bit_t soft[32];
+  uint8_t       output[16];
+  uint32_t      len;
+
+  rx_fec_decode_soft_params_t params = {
+    .soft_bits           = soft,
+    .soft_len            = 32,
+    .expected_output_len = 0,
+    .output              = output,
+    .output_len          = &len,
+  };
+
+  rx_err_t err = rx_fec_decode_soft(&s_decoder, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test decode_soft with expected_output_len exceeding k_fec_max_symbols
+ *
+ * @details
+ * When expected_output_len == 1025, num_symbols = (1025 * 8) + 6 = 8206 > 8200 (k_fec_max_symbols),
+ * triggering the too-large check.
+ *
+ * @pre setUp() has initialized s_decoder
+ * @post No decoding performed
+ *
+ * @test Validates num_symbols > k_fec_max_symbols rejection (line 688)
+ */
+void test_decode_soft_num_symbols_too_large(void)
+{
+  /* Use a local soft buffer large enough to pass the soft_len check */
+  static rx_soft_bit_t s_large_soft[k_fec_max_symbols * k_fec_num_outputs + 32U];
+  uint8_t              output[16];
+  uint32_t             len;
+
+  rx_fec_decode_soft_params_t params = {
+    .soft_bits           = s_large_soft,
+    .soft_len            = sizeof(s_large_soft) / sizeof(s_large_soft[0]),
+    .expected_output_len = 1025,
+    .output              = output,
+    .output_len          = &len,
+  };
+
+  rx_err_t err = rx_fec_decode_soft(&s_decoder, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test decode_soft with insufficient soft_len for requested symbols
+ *
+ * @details
+ * Provides expected_output_len = 2 (num_symbols = 22), but only 10 soft bits,
+ * so num_symbols * k_fec_num_outputs (44) > soft_len (10), triggering rejection.
+ *
+ * @pre setUp() has initialized s_decoder
+ * @post No decoding performed
+ *
+ * @test Validates soft_len < num_symbols * k_fec_num_outputs rejection (line 698)
+ */
+void test_decode_soft_insufficient_soft_len(void)
+{
+  rx_soft_bit_t soft[10];
+  uint8_t       output[16];
+  uint32_t      len;
+
+  rx_fec_decode_soft_params_t params = {
+    .soft_bits           = soft,
+    .soft_len            = 10,
+    .expected_output_len = 2,
+    .output              = output,
+    .output_len          = &len,
+  };
+
+  rx_err_t err = rx_fec_decode_soft(&s_decoder, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test decode_soft with survivors buffer too small for requested symbols
+ *
+ * @details
+ * Creates a decoder with a survivors buffer of only 10 entries, then requests
+ * decoding with expected_output_len = 2 (num_symbols = 22 > 10),
+ * triggering the survivors_len check.
+ *
+ * @pre setUp() has initialized s_soft_bits_buffer
+ * @post No decoding performed
+ *
+ * @test Validates num_symbols > dec->survivors_len rejection (line 702)
+ */
+void test_decode_soft_survivors_too_small(void)
+{
+  /* Create a decoder with small survivors buffer */
+  static uint64_t       s_small_survivors[10];
+  rx_fec_decoder_t      small_dec;
+  rx_fec_decode_soft_params_t params;
+
+  rx_err_t init_err = rx_fec_decoder_init(&small_dec, s_small_survivors,
+                                           sizeof(s_small_survivors) / sizeof(s_small_survivors[0]));
+  TEST_ASSERT_EQUAL(k_rx_ok, init_err);
+
+  /* expected_output_len=2: num_symbols=(2*8)+6=22 > survivors_len=10 */
+  rx_soft_bit_t soft[64];
+  uint8_t       output[16];
+  uint32_t      len;
+
+  params.soft_bits           = soft;
+  params.soft_len            = 44; /* 22 * 2 = 44 */
+  params.expected_output_len = 2;
+  params.output              = output;
+  params.output_len          = &len;
+
+  rx_err_t err = rx_fec_decode_soft(&small_dec, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test rx_fec_decoder_deinit with null pointer
+ *
+ * @details
+ * Verifies that rx_fec_decoder_deinit() rejects nullptr with k_rx_err_invalid_arg.
+ *
+ * @pre No precondition
+ * @post Nothing modified
+ *
+ * @test Validates nullptr rejection in decoder_deinit (line 762)
+ */
+void test_decoder_deinit_null(void)
+{
+  rx_err_t err = rx_fec_decoder_deinit(nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
 /** @} */ // end of test_fec_decode_soft
 
 /* =============================================================================
@@ -1487,6 +1673,72 @@ void test_decode_hard_zero_length(void)
 
   rx_err_t err = rx_fec_decode_hard(&s_decoder, &params);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test decode_hard with data_len exceeding k_fec_max_input_bytes
+ *
+ * @details
+ * Verifies that rx_fec_decode_hard() returns k_rx_err_invalid_size when
+ * data_len > k_fec_max_input_bytes (1024).
+ *
+ * @pre setUp() has initialized s_decoder and s_soft_bits_buffer
+ * @post No decoding performed
+ *
+ * @test Validates data_len > k_fec_max_input_bytes rejection (line 964)
+ */
+void test_decode_hard_data_too_large(void)
+{
+  static uint8_t s_big_hard[k_fec_max_input_bytes + 1U];
+  uint8_t        output[16];
+  uint32_t       len;
+
+  rx_fec_decode_hard_params_t params = {
+    .data                = s_big_hard,
+    .data_len            = k_fec_max_input_bytes + 1U,
+    .expected_output_len = 2,
+    .output              = output,
+    .output_len          = &len,
+    .soft_bits_buffer    = s_soft_bits_buffer,
+    .soft_buffer_len     = sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]),
+  };
+
+  rx_err_t err = rx_fec_decode_hard(&s_decoder, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test decode_hard with soft_buffer_len insufficient for num_bits
+ *
+ * @details
+ * Verifies that rx_fec_decode_hard() returns k_rx_err_invalid_size when
+ * soft_buffer_len < data_len * 8 (num_bits > soft_buffer_len).
+ * Uses data_len = 4 (32 bits) but soft_buffer_len = 10 (< 32).
+ *
+ * @pre setUp() has initialized s_decoder
+ * @post No decoding performed
+ *
+ * @test Validates num_bits > soft_buffer_len rejection (line 972)
+ */
+void test_decode_hard_soft_buffer_too_small(void)
+{
+  static rx_soft_bit_t s_tiny_soft[10];
+  uint8_t              hard[4] = {0};
+  uint8_t              output[16];
+  uint32_t             len;
+
+  rx_fec_decode_hard_params_t params = {
+    .data                = hard,
+    .data_len            = 4,
+    .expected_output_len = 2,
+    .output              = output,
+    .output_len          = &len,
+    .soft_bits_buffer    = s_tiny_soft,
+    .soft_buffer_len     = 10, /* < 32 = 4 bytes * 8 bits */
+  };
+
+  rx_err_t err = rx_fec_decode_hard(&s_decoder, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 /** @} */ // end of test_fec_decode_hard
@@ -2020,15 +2272,15 @@ void test_multiple_bit_error_correction(void)
  * **Test Execution Order:**
  * 1. Encoder initialization tests (3 tests)
  * 2. Decoder initialization tests (4 tests)
- * 3. Encoded length calculation tests (4 tests)
- * 4. Encode tests (5 tests)
+ * 3. Encoded length calculation tests (5 tests)
+ * 4. Encode tests (6 tests)
  * 5. Soft/hard bit conversion tests (2 tests)
- * 6. Decode soft tests (4 tests)
- * 7. Decode hard tests (3 tests)
+ * 6. Decode soft tests (9 tests)
+ * 7. Decode hard tests (5 tests)
  * 8. Round-trip tests (6 tests)
  * 9. Error correction tests (2 tests)
  *
- * **Total:** 33 tests
+ * **Total:** 42 tests
  *
  * **Exit Codes:**
  * - 0: All tests passed
@@ -2056,6 +2308,7 @@ int main(void)
   RUN_TEST(test_encoded_len_one_byte);
   RUN_TEST(test_encoded_len_two_bytes);
   RUN_TEST(test_encoded_len_max_payload);
+  RUN_TEST(test_encoded_len_too_large);
 
   /* Encode tests */
   RUN_TEST(test_encode_null_args);
@@ -2063,6 +2316,7 @@ int main(void)
   RUN_TEST(test_encode_zero_length);
   RUN_TEST(test_encode_single_byte);
   RUN_TEST(test_encode_deterministic);
+  RUN_TEST(test_encode_too_large);
 
   /* Soft/hard bit conversion tests */
   RUN_TEST(test_hard_to_soft);
@@ -2073,11 +2327,18 @@ int main(void)
   RUN_TEST(test_decode_uninitialized);
   RUN_TEST(test_decode_odd_soft_length);
   RUN_TEST(test_decode_zero_length);
+  RUN_TEST(test_decode_soft_num_symbols_too_small);
+  RUN_TEST(test_decode_soft_num_symbols_too_large);
+  RUN_TEST(test_decode_soft_insufficient_soft_len);
+  RUN_TEST(test_decode_soft_survivors_too_small);
+  RUN_TEST(test_decoder_deinit_null);
 
   /* Decode hard tests */
   RUN_TEST(test_decode_hard_null_args);
   RUN_TEST(test_decode_hard_uninitialized);
   RUN_TEST(test_decode_hard_zero_length);
+  RUN_TEST(test_decode_hard_data_too_large);
+  RUN_TEST(test_decode_hard_soft_buffer_too_small);
 
   /* Round-trip tests */
   RUN_TEST(test_roundtrip_single_byte);

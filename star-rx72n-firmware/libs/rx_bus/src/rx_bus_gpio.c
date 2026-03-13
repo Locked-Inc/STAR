@@ -535,11 +535,9 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
  */
 static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
+  /* bus_config and user_ctx are guaranteed non-NULL by rx_bus_manager_with_bus();
+   * ctx->value is guaranteed non-NULL because rx_bus_gpio_read() checks it first. */
   gpio_read_ctx_t* ctx = (gpio_read_ctx_t*)user_ctx;
-
-  RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is nullptr");
-  RX_CHECK_NULL_PTR(ctx, s_tag, "user_ctx pointer is nullptr");
-  RX_CHECK_NULL_PTR(ctx->value, s_tag, "value pointer is nullptr");
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {

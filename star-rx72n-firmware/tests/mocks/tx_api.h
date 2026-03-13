@@ -269,8 +269,7 @@ typedef struct TX_EVENT_FLAGS_GROUP_STRUCT {
  *
  * @return TX_SUCCESS on success
  */
-static inline tx_status
-tx_mutex_create(TX_MUTEX* mutex_ptr, CHAR* name_ptr, tx_inherit_option inherit)
+static inline tx_status tx_mutex_create(TX_MUTEX* mutex_ptr, CHAR* name_ptr, UINT inherit)
 {
   (void)inherit;
 
@@ -435,6 +434,11 @@ static inline tx_status tx_thread_create(TX_THREAD* thread_ptr,
  *
  * @return TX_SUCCESS on success
  */
+#ifdef MOCK_TX_THREAD_DELETE
+/* When MOCK_TX_THREAD_DELETE is defined, use non-inline declaration.
+ * Implementation in mock_tx_api.c allows controlling the return value. */
+tx_status tx_thread_delete(TX_THREAD* thread_ptr);
+#else
 static inline tx_status tx_thread_delete(TX_THREAD* thread_ptr)
 {
   if (thread_ptr == nullptr) {
@@ -448,6 +452,7 @@ static inline tx_status tx_thread_delete(TX_THREAD* thread_ptr)
   thread_ptr->tx_thread_id = k_tx_invalid_id;
   return TX_SUCCESS;
 }
+#endif /* MOCK_TX_THREAD_DELETE */
 
 /**
  * @brief Terminate a thread
@@ -502,6 +507,11 @@ static inline tx_status tx_thread_resume(TX_THREAD* thread_ptr)
  *
  * @return TX_SUCCESS on success
  */
+#ifdef MOCK_TX_THREAD_SLEEP
+/* When MOCK_TX_THREAD_SLEEP is defined, use non-inline declaration.
+ * Implementation in mock_tx_api.c allows registering a callback. */
+tx_status tx_thread_sleep(ULONG timer_ticks);
+#else
 static inline tx_status tx_thread_sleep(ULONG timer_ticks)
 {
   if (timer_ticks == TX_WAIT_FOREVER) {
@@ -514,6 +524,7 @@ static inline tx_status tx_thread_sleep(ULONG timer_ticks)
 
   return TX_SUCCESS;
 }
+#endif /* MOCK_TX_THREAD_SLEEP */
 
 /**
  * @brief Suspend a thread (mock declaration -- implemented in mock_coverage_stubs.c).
@@ -764,6 +775,15 @@ tx_event_flags_set(TX_EVENT_FLAGS_GROUP* group_ptr, ULONG flags_to_set, UINT set
  *
  * @return TX_SUCCESS on success
  */
+#ifdef MOCK_TX_EVENT_FLAGS_GET
+/* When MOCK_TX_EVENT_FLAGS_GET is defined, use non-inline declaration.
+ * Implementation in mock_tx_api.c allows controlling return values per call. */
+tx_status tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
+                             ULONG                 requested_flags,
+                             UINT                  get_option,
+                             ULONG*                actual_flags_ptr,
+                             tx_wait_option        wait_option);
+#else
 static inline tx_status tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
                                            ULONG                 requested_flags,
                                            UINT                  get_option,
@@ -790,6 +810,7 @@ static inline tx_status tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
 
   return TX_SUCCESS;
 }
+#endif /* MOCK_TX_EVENT_FLAGS_GET */
 
 /* =============================================================================
  * ThreadX Timer Tick Constants and Functions
@@ -981,6 +1002,20 @@ void mock_tx_set_thread_create_return(tx_status status);
  */
 void mock_tx_set_event_flags_create_return(tx_status status);
 
+#ifdef MOCK_TX_THREAD_DELETE
+/**
+ * @brief Set return value for tx_thread_delete()
+ *
+ * @details
+ * Overrides the next tx_thread_delete() call to return the given status.
+ * After one call the override is cleared (one-shot). Set TX_SUCCESS to
+ * restore normal behavior.
+ *
+ * @param[in] status Status to return from tx_thread_delete()
+ */
+void mock_tx_set_thread_delete_return(tx_status status);
+#endif /* MOCK_TX_THREAD_DELETE */
+
 /**
  * @brief Check if tx_thread_create() was called
  *
@@ -994,6 +1029,92 @@ bool mock_tx_was_thread_create_called(void);
  * @return Number of times tx_thread_create() was called
  */
 uint32_t mock_tx_get_thread_create_count(void);
+
+#ifdef MOCK_TX_EVENT_FLAGS_GET
+/**
+ * @brief Set return value for tx_event_flags_get() on the Nth call
+ *
+ * @details
+ * The first N-1 calls return TX_NO_EVENTS (flag not set), the Nth and
+ * subsequent calls return TX_SUCCESS. Set N=0 to always return TX_SUCCESS.
+ * Use this to control whether a specific event is "ready" on the Nth poll.
+ *
+ * @param[in] success_after_n_calls Number of calls that return TX_NO_EVENTS
+ *   before switching to TX_SUCCESS. 0 = always TX_SUCCESS.
+ */
+void mock_tx_set_event_flags_get_no_events_count(uint32_t success_after_n_calls);
+
+/**
+ * @brief Reset the tx_event_flags_get() call counter to zero
+ *
+ * @details
+ * Resets the internal call counter used by
+ * mock_tx_set_event_flags_get_no_events_count() so that the "first N calls
+ * return TX_NO_EVENTS" window starts over from the next call. Use from a
+ * sleep callback or obstacle callback to re-arm the no-events window between
+ * the outer and inner task-loop calls.
+ *
+ * @note Only available when MOCK_TX_EVENT_FLAGS_GET is defined.
+ *
+ * @since Version 1.0.0
+ */
+void mock_tx_event_flags_get_reset_count(void);
+
+/**
+ * @brief Register a callback invoked each time tx_event_flags_get() returns TX_SUCCESS
+ *
+ * @details
+ * The registered function is called immediately after tx_event_flags_get()
+ * determines it will return TX_SUCCESS but before returning to the caller.
+ * Use this to re-arm the no-events counter so that the NEXT call to
+ * tx_event_flags_get() starts a fresh no-events window.
+ *
+ * Example: to let the outer "wait for start" fire (TX_SUCCESS), then make
+ * the first inner "check stop" return TX_NO_EVENTS:
+ * @code
+ * static void on_start_event(void) {
+ *   mock_tx_event_flags_get_reset_count();
+ *   mock_tx_set_event_flags_get_no_events_count(1);
+ *   mock_tx_event_flags_get_set_on_success_cb(nullptr); // fire once only
+ * }
+ * mock_tx_event_flags_get_set_on_success_cb(on_start_event);
+ * @endcode
+ *
+ * @param[in] cb Callback function pointer, or nullptr to clear.
+ *
+ * @note Only available when MOCK_TX_EVENT_FLAGS_GET is defined.
+ *
+ * @since Version 1.0.0
+ */
+void mock_tx_event_flags_get_set_on_success_cb(void (*cb)(void));
+
+/**
+ * @brief Set a bitmask applied to the flags returned by tx_event_flags_get()
+ *
+ * @details
+ * The returned actual_flags are ANDed with mask before being written to the
+ * caller. Use to suppress specific flag bits on a call (e.g., exclude the
+ * shutdown bit so the worker loop continues rather than exits).
+ * Reset mask to ~0 to restore normal (all-flags) behavior.
+ *
+ * @param[in] mask Bitmask to AND with returned flags (default ~0 = all bits set)
+ */
+void mock_tx_event_flags_get_set_mask(ULONG mask);
+#endif /* MOCK_TX_EVENT_FLAGS_GET */
+
+#ifdef MOCK_TX_THREAD_SLEEP
+/**
+ * @brief Register a callback invoked each time tx_thread_sleep() is called
+ *
+ * @details
+ * The registered function is called immediately when tx_thread_sleep() is
+ * invoked (before returning TX_SUCCESS). Use this in task-entry tests to
+ * modify state (e.g., stop the outer task loop) at a predictable point.
+ *
+ * @param[in] cb Callback function pointer, or nullptr to clear.
+ */
+void mock_tx_set_sleep_callback(void (*cb)(void));
+#endif /* MOCK_TX_THREAD_SLEEP */
 
 #ifdef __cplusplus
 }

@@ -1015,6 +1015,347 @@ void test_bmp280_read_zero_var1_returns_error(void)
 }
 
 /* =============================================================================
+ * Additional Init Error Path Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief rx_bmp280_init returns error when chip ID does not match expected value
+ *
+ * @details
+ * The BMP280 chip ID register (0xD0) must return 0x60. Loading the mock
+ * buffer with 0x00 causes the chip ID check to fail with
+ * k_rx_err_invalid_state.
+ *
+ * @since Version 1.0.0
+ */
+void test_bmp280_init_wrong_chip_id_returns_error(void)
+{
+  /* Load RX buffer with wrong chip ID (0x00 instead of 0x60) */
+  uint8_t wrong_chip_id = 0x00U;
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &wrong_chip_id, k_test_single_byte);
+
+  rx_err_t err = rx_bmp280_init(&s_test_manager);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief rx_bmp280_init propagates I2C error from calibration read failure
+ *
+ * @details
+ * The chip ID read (call 0) succeeds, but the calibration read (call 1)
+ * fails with NACK. The driver must propagate k_rx_err_nack.
+ *
+ * Call sequence in rx_bmp280_init:
+ *   0: chip_id read (write_read)
+ *   1: calib read (write_read)  <- inject error here
+ *
+ * @since Version 1.0.0
+ */
+void test_bmp280_init_calib_read_error_propagates(void)
+{
+  /* Load valid chip ID so call 0 succeeds */
+  uint8_t chip_id = (uint8_t)k_calib_t1_lsb; /* 0x60 = chip_id_expected */
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &chip_id, k_test_single_byte);
+
+  /* Fail call index 1 (calibration read) */
+  mock_riic_set_nth_call_error(1U, k_rx_err_nack);
+
+  rx_err_t err = rx_bmp280_init(&s_test_manager);
+
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+}
+
+/**
+ * @brief rx_bmp280_init propagates I2C error from config register write failure
+ *
+ * @details
+ * The chip ID read (call 0) and calibration read (call 1) succeed, but the
+ * config register write (call 2) fails with NACK. The driver must propagate
+ * k_rx_err_nack and leave s_initialized false.
+ *
+ * Call sequence in rx_bmp280_init:
+ *   0: chip_id read (write_read)
+ *   1: calib read (write_read)
+ *   2: config write (write)  <- inject error here
+ *
+ * @since Version 1.0.0
+ */
+void test_bmp280_init_config_write_error_propagates(void)
+{
+  /* Load valid calibration data so calls 0 and 1 succeed */
+  internal_load_valid_calib();
+
+  /* Fail call index 2 (config register write) */
+  mock_riic_set_nth_call_error(2U, k_rx_err_nack);
+
+  rx_err_t err = rx_bmp280_init(&s_test_manager);
+
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+}
+
+/* =============================================================================
+ * Additional Read Error Path Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief rx_bmp280_read returns error when status register read fails
+ *
+ * @details
+ * After ctrl_meas write (call 0) succeeds, the status register read
+ * (call 1) fails with NACK.
+ *
+ * Call sequence in rx_bmp280_read:
+ *   0: ctrl_meas write (write)
+ *   1: status read (write_read)  <- inject error here
+ *
+ * @since Version 1.0.0
+ */
+void test_bmp280_read_status_read_error_propagates(void)
+{
+  internal_setup_initialized_bmp280();
+
+  /* Fail call index 1 (status read) */
+  mock_riic_set_nth_call_error(1U, k_rx_err_nack);
+
+  bmp280_data_t data;
+  memset(&data, 0, sizeof(data));
+  rx_err_t err = rx_bmp280_read(&data);
+
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+}
+
+/**
+ * @brief rx_bmp280_read returns error when ADC data register read fails
+ *
+ * @details
+ * ctrl_meas write (call 0) and status read (call 1, returns 0x00=done)
+ * succeed, but the ADC data read (call 2) fails with NACK.
+ *
+ * Call sequence in rx_bmp280_read:
+ *   0: ctrl_meas write (write)
+ *   1: status read (write_read) returns 0x00 (done)
+ *   2: ADC data read (write_read)  <- inject error here
+ *
+ * @since Version 1.0.0
+ */
+void test_bmp280_read_adc_read_error_propagates(void)
+{
+  internal_setup_initialized_bmp280();
+
+  /* Load status=0x00 (done) so the status poll clears on call 1 */
+  uint8_t done_status = (uint8_t)k_status_measuring_done;
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &done_status, k_test_single_byte);
+
+  /* Fail call index 2 (ADC data read) */
+  mock_riic_set_nth_call_error(2U, k_rx_err_nack);
+
+  bmp280_data_t data;
+  memset(&data, 0, sizeof(data));
+  rx_err_t err = rx_bmp280_read(&data);
+
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+}
+
+/* =============================================================================
+ * Compensation Out-of-Range and Division-by-Zero Tests
+ * =============================================================================
+ */
+
+#ifdef UNIT_TEST
+/**
+ * @brief Forward declaration of internal_read_and_compensate_adc (UNIT_TEST only)
+ *
+ * @details
+ * Exposed via RX_STATIC_TESTABLE so tests can call it directly without
+ * going through the full rx_bmp280_read() forced-mode sequence.
+ *
+ * @since Version 1.0.0
+ */
+extern rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out);
+#endif
+
+/**
+ * @brief internal_read_and_compensate_adc returns error when dig_P1 is zero (var1==0)
+ *
+ * @details
+ * After normal init, corrupts s_calib.dig_P1 to zero via test helper.
+ * The pressure compensation formula produces var1 == 0 which triggers the
+ * division-by-zero guard and returns k_rx_err_invalid_state (lines 807-812).
+ *
+ * @since Version 1.0.0
+ */
+void test_bmp280_pressure_comp_zero_p1_returns_error(void)
+{
+#ifdef UNIT_TEST
+  /* Initialize normally first so s_initialized==true and s_manager is set */
+  internal_setup_initialized_bmp280();
+
+  /* Load status=done + valid ADC bytes so calls succeed up to compensation */
+  internal_load_read_data();
+
+  /* Corrupt P1 to zero AFTER init so the guard in init doesn't block us */
+  rx_bmp280_test_zero_calib_p1();
+
+  /* Fail call index 2 should NOT be needed - compensation fails before write */
+  /* call 0 = ctrl_meas write, call 1 = status read, call 2 = ADC read */
+  /* For this test we need ctrl_meas + status to succeed, ADC to succeed,
+   * then compensation to fail due to P1=0. Load a fresh buffer. */
+  /* First, set nth error so only 2 calls succeed, then ADC read gets data */
+  bmp280_data_t data;
+  memset(&data, 0, sizeof(data));
+
+  /* Load read buffer so status (call 1) returns 0x00 and ADC (call 2) returns data */
+  internal_load_read_data();
+
+  rx_err_t err = rx_bmp280_read(&data);
+
+  /* With P1=0 the pressure compensation fails with k_rx_err_invalid_state */
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/**
+ * @brief internal_read_and_compensate_adc returns error when temperature is out of range
+ *
+ * @details
+ * Uses extreme calibration (T2=32767) combined with maximum adc_T so that
+ * compensated temperature exceeds 8500 centi-degC. The out-of-range check
+ * returns k_rx_err_invalid_state (lines 816-820).
+ *
+ * ADC buffer layout (7 bytes): [0]=status=0x00, [3]=0xFF, [4]=0xFF, [5]=0xF0
+ *   -> adc_T = 0xFFFFF = 1048575 (20-bit max)
+ *   -> temp = ~40735 centi-degC > 8500 (out of range)
+ *
+ * @since Version 1.0.0
+ */
+void test_bmp280_read_temp_out_of_range_returns_error(void)
+{
+#ifdef UNIT_TEST
+  /* Strategy: use test helper to set extreme-temp calibration directly into s_calib,
+   * bypassing init so we can control T2=32767 without the chip_id constraint.
+   * T1=352, T2=32767, T3=0, P1=65410:
+   *   adc_T=0xFFFFF=1048575: var1 = (((1048575>>3) - 704) * 32767) >> 11
+   *   Note: var1 computation overflows int32_t. However, the compensate formula
+   *   uses int32_t internally, so result is implementation-defined on overflow.
+   *
+   * To avoid overflow: use T1=1, T2=1, T3=0, P1=65410 with adc_T=1048575:
+   *   var1 = (((1048575>>3) - 2) * 1) >> 11 = (131069) >> 11 = 64
+   *   var2 = 0 (T3=0)
+   *   t_fine = 64
+   *   T = (64*5 + 128) >> 8 = 448 >> 8 = 1 centi-degC -> IN RANGE
+   *
+   * For out-of-range temp, we need t_fine to be very large or very small.
+   * With T1=1, T2=32767, T3=0 and adc_T=1048575:
+   *   var1 = ((131071 - 2) * 32767) >> 11
+   *   = (131069 * 32767) >> 11
+   *   = 4294343723 >> 11  (fits in uint32, but int32 OVERFLOWS at ~2.1B)
+   *   In C23 with GCC on x86_64 (test host), signed overflow is UB -> unpredictable
+   *
+   * Safe approach: use adc_T = 0 with T2=(-32768) (most negative int16):
+   *   var1 = (((0>>3) - (T1<<1)) * T2) >> 11
+   *   With T1=1, T2=-32768:
+   *   var1 = ((0 - 2) * (-32768)) >> 11 = (65536) >> 11 = 32
+   *   var2 = 0 (T3=0)
+   *   t_fine = 32
+   *   T = (32*5+128)>>8 = 288>>8 = 1 -> still in range
+   *
+   * Best option: directly expose internal_compensate_temp or set calibration
+   * such that the BMP280 formula produces obvious out-of-range without overflow.
+   *
+   * Verified safe combination: T1=27488, T2=24790, T3=50 (valid test calib)
+   * but adc_T engineered to produce temp > 8500:
+   *   Need t_fine > 435000.
+   *   With T1=27488, T2=24790 and large adc_T:
+   *   var1 = (((adc_T>>3) - 54976) * 24790) >> 11
+   *   For adc_T = 1048575 (max 20-bit):
+   *   var1 = ((131071 - 54976) * 24790) >> 11 = (76095 * 24790) >> 11
+   *   76095 * 24790 = 1887235050 -> fits in int32 (max ~2.1B) ✓
+   *   1887235050 >> 11 = 920720
+   *   t_fine = 920720 (approx)
+   *   T = (920720*5 + 128) >> 8 = (4603600 + 128) >> 8 = 4603728 >> 8 = 17983 > 8500 ✓
+   *
+   * Use the NORMAL calibration (T1=27488, T2=24790, T3=50, P1=65410) with max adc_T!
+   */
+
+  /* Setup: init with normal calibration, then load ADC buffer with max adc_T */
+  internal_setup_initialized_bmp280();
+
+  /* Load 7-byte ADC buffer: status=0x00 + max adc_T (buf[3..5]=0xFF, 0xFF, 0xF0)
+   * adc_T = (buf[3]<<12)|(buf[4]<<4)|(buf[5]>>4) = 0xFFFFF = 1048575 */
+  uint8_t extreme_adc[7];
+  memset(extreme_adc, 0, sizeof(extreme_adc));
+  extreme_adc[3] = 0xFFU; /* temp_msb -> adc_T high bits 0xFF*/
+  extreme_adc[4] = 0xFFU; /* temp_lsb -> adc_T middle bits 0xFF */
+  extreme_adc[5] = 0xF0U; /* temp_xlsb -> adc_T low nibble = 0xF */
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch,
+                              extreme_adc,
+                              (uint16_t)sizeof(extreme_adc));
+
+  bmp280_data_t data;
+  memset(&data, 0, sizeof(data));
+  rx_err_t err = rx_bmp280_read(&data);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/**
+ * @brief internal_read_and_compensate_adc returns error when pressure is out of range
+ *
+ * @details
+ * Uses extreme pressure calibration (P1=1, T2=0) so that temperature stays
+ * in range but pressure compensation produces a near-zero result below the
+ * 7680000 Pa*256 minimum (lines 822-826).
+ *
+ * @since Version 1.0.0
+ */
+void test_bmp280_read_pressure_out_of_range_returns_error(void)
+{
+  /* Reset state then init with extreme pressure calibration:
+   * T1=27488 (0x6B60), T2=0, T3=0, P1=1
+   * chip_id = first byte of calib = T1_LSB = 0x60 ✓
+   * T2=0, T3=0 -> t_fine ~ 0 -> temp ~ 0 centi-degC (in range [-4000, 8500])
+   * P1=1 -> pressure formula produces near-zero output (below 7680000 Pa*256 min) */
+  rx_bmp280_test_reset_state();
+  rx_bmp280_test_set_state(&s_test_manager, false);
+
+  uint8_t extreme_press_calib[k_test_calib_buf_size];
+  memset(extreme_press_calib, 0, sizeof(extreme_press_calib));
+  extreme_press_calib[0] = 0x60U; /* T1 LSB = chip_id 0x60 */
+  extreme_press_calib[1] = 0x6BU; /* T1 MSB -> T1 = 0x6B60 = 27488 */
+  /* T2=0, T3=0: bytes 2-5 stay zero */
+  extreme_press_calib[6] = 0x01U; /* P1 LSB -> P1 = 1 */
+  extreme_press_calib[7] = 0x00U; /* P1 MSB */
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch,
+                              extreme_press_calib,
+                              k_test_calib_buf_size);
+
+  rx_err_t init_err = rx_bmp280_init(&s_test_manager);
+  TEST_ASSERT_EQUAL(k_rx_ok, init_err);
+
+  /* Load all-zero ADC buffer: status=done(0x00), adc_P=0, adc_T=0 */
+  uint8_t adc_buf[7];
+  memset(adc_buf, 0, sizeof(adc_buf));
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch,
+                              adc_buf,
+                              (uint16_t)sizeof(adc_buf));
+
+  bmp280_data_t data;
+  memset(&data, 0, sizeof(data));
+  rx_err_t err = rx_bmp280_read(&data);
+
+  /* With P1=1 and adc_P=0, pressure compensation produces a value below 7680000 */
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/* =============================================================================
  * Unity Main Entry Point
  * =============================================================================
  */
@@ -1065,6 +1406,20 @@ int main(void)
   /* Compensation tests - each calls internal_setup_initialized_bmp280() internally */
   RUN_TEST(test_bmp280_compensation_known_values);
   RUN_TEST(test_bmp280_read_zero_var1_returns_error);
+
+  /* Additional init error path tests */
+  RUN_TEST(test_bmp280_init_wrong_chip_id_returns_error);
+  RUN_TEST(test_bmp280_init_calib_read_error_propagates);
+  RUN_TEST(test_bmp280_init_config_write_error_propagates);
+
+  /* Additional read error path tests */
+  RUN_TEST(test_bmp280_read_status_read_error_propagates);
+  RUN_TEST(test_bmp280_read_adc_read_error_propagates);
+
+  /* Out-of-range and division-by-zero compensation tests */
+  RUN_TEST(test_bmp280_pressure_comp_zero_p1_returns_error);
+  RUN_TEST(test_bmp280_read_temp_out_of_range_returns_error);
+  RUN_TEST(test_bmp280_read_pressure_out_of_range_returns_error);
 
   return UNITY_END();
 }

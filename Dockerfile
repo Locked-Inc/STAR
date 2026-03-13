@@ -30,6 +30,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     clangd \
     clang-format \
     clang \
+    clang-tidy \
+    lcov \
     vim \
     cmake
 
@@ -132,7 +134,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # Install nanopb for Protocol Buffer C code generation
 # Required for star-rx72n-firmware embedded target
 RUN rm -f /usr/lib/python*/EXTERNALLY-MANAGED && \
-    python3 -m pip install --no-cache-dir nanopb
+    python3 -m pip install --no-cache-dir nanopb gcovr
 
 # Verify nanopb installation (fails fast if installation broken)
 RUN python3 -m pip show nanopb > /dev/null || (echo "ERROR: nanopb installation failed" && exit 1)

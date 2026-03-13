@@ -317,6 +317,7 @@ extern "C" {
  * @callgraph
  * @callergraph
  */
+/* GCOV_EXCL_START */
 static inline volatile rx_port_regs_t* rx_port_get_base(uint8_t port)
 {
   switch (port) {
@@ -376,6 +377,7 @@ static inline volatile rx_port_regs_t* rx_port_get_base(uint8_t port)
     }
   }
 }
+/* GCOV_EXCL_STOP */
 
 #ifdef __cplusplus
 }

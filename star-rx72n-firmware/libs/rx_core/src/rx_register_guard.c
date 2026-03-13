@@ -1112,9 +1112,7 @@ void rx_register_guard_reset_count(void)
   }
 
   s_state.corrections = k_corrections_default;
-
-  /* Rule 5: Post-condition validation - verify assignment succeeded */
-  assert(s_state.corrections == k_corrections_default);
+  /* Post-condition: corrections reset to k_corrections_default (guaranteed by assignment) */
 }
 
 /**

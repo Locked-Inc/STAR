@@ -443,11 +443,19 @@ rx_err_t rx_usb_hw_configure_pipe(uint8_t  pipe,
  * =============================================================================
  */
 
+static rx_err_t s_cdc_init_return = k_rx_ok;
+
+void mock_usb_hw_set_cdc_init_return(rx_err_t ret)
+{
+  s_cdc_init_return = ret;
+}
+
 rx_err_t rx_usb_cdc_init(void)
 {
   mock_usb_hw_t* m = &g_mock_usb_hw;
 
-  rx_err_t ret = k_rx_ok; /* CDC init always succeeds in mock */
+  rx_err_t ret = s_cdc_init_return;
+  s_cdc_init_return = k_rx_ok; /* Reset after one use */
   mock_usb_hw_record_call(m, "rx_usb_cdc_init", 0, 0, 0, ret);
 
   return ret;

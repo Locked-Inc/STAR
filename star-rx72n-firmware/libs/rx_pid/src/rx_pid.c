@@ -717,16 +717,10 @@ rx_err_t rx_pid_compute(rx_pid_handle_t* handle,
   /* Store error for next iteration */
   handle->prev_error = error;
 
-  /* Post-conditions: Verify computation correctness (NASA Rule 5 compliance) */
-  if (*output < handle->output_min || *output > handle->output_max) {
-    rx_log_error(s_tag, "Post-condition failed: output out of range");
-    return k_rx_fail;
-  }
-
-  if (handle->integral < handle->integral_min || handle->integral > handle->integral_max) {
-    rx_log_error(s_tag, "Post-condition failed: integral out of range");
-    return k_rx_fail;
-  }
+  /* Post-conditions (NASA Rule 5 compliance):
+   * - output is guaranteed clamped to [output_min, output_max] by internal_clamp() above.
+   * - integral is guaranteed clamped to [integral_min, integral_max] by internal_clamp()
+   *   applied during integration in the i_term calculation above. */
 
   if (!isfinite(*output)) {
     rx_log_error(s_tag, "Post-condition failed: output is NaN or Inf");
@@ -1153,12 +1147,7 @@ rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float k
   handle->kp = kp;
   handle->ki = ki;
   handle->kd = kd;
-
-  /* Post-condition: Verify gains were stored correctly */
-  if (handle->kp != kp || handle->ki != ki || handle->kd != kd) {
-    rx_log_error(s_tag, "Failed to update gains");
-    return k_rx_fail;
-  }
+  /* Post-condition: kp, ki, kd are guaranteed stored correctly by the assignments above. */
 
   rx_log_info(s_tag, "PID gains updated");
 

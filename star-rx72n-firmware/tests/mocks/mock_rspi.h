@@ -170,6 +170,10 @@ typedef struct {
   rx_err_t next_ready_return;     /**< Return for next ready call */
   rx_err_t next_deinit_return;    /**< Return for next deinit call */
 
+  /* Deferred-failure injection: fail on the Nth transfer call (1-based; 0=disabled) */
+  uint32_t fail_transfer_on_call_n;     /**< Fail on this transfer call number (0 = disabled) */
+  rx_err_t fail_transfer_on_call_n_err; /**< Error to return on call N */
+
   /* Controller mode return values */
   rx_err_t next_controller_init_return;     /**< Return for controller init */
   rx_err_t next_controller_transfer_return; /**< Return for controller transfer */
@@ -272,6 +276,19 @@ void mock_rspi_set_ready_return(mock_rspi_t* mock, rx_err_t ret);
  * @param ret Return value to use
  */
 void mock_rspi_set_deinit_return(mock_rspi_t* mock, rx_err_t ret);
+
+/**
+ * @brief Fail on the Nth rspi_peripheral_transfer call (1-based; 0 disables)
+ *
+ * @details
+ * Allows tests to let the first N-1 transfers succeed and inject a failure
+ * on exactly the Nth call. The counter is reset by mock_rspi_init/clear.
+ *
+ * @param mock Mock instance (use NULL for global)
+ * @param n    1-based call index that should fail (0 = disable deferred failure)
+ * @param err  Error to return on call N
+ */
+void mock_rspi_set_fail_transfer_on_call_n(mock_rspi_t* mock, uint32_t n, rx_err_t err);
 
 /**
  * @brief Set return value for next rspi_init_controller call

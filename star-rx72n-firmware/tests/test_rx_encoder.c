@@ -1072,6 +1072,256 @@ void test_encoder_rapid_direction_changes(void)
 }
 
 /* =============================================================================
+ * Additional Channel Tests (covers internal_get_mtu_base ch3/ch4 paths)
+ * =============================================================================
+ */
+
+void test_encoder_init_channel_3_success(void)
+{
+  s_config.channel = k_mtu_channel_3;
+
+  rx_err_t err = rx_encoder_init(&s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* Teardown needs to deinit ch3 explicitly */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_deinit(k_mtu_channel_3));
+}
+
+void test_encoder_init_channel_4_success(void)
+{
+  s_config.channel = k_mtu_channel_4;
+
+  rx_err_t err = rx_encoder_init(&s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_deinit(k_mtu_channel_4));
+}
+
+/* =============================================================================
+ * Invalid Channel Tests for Read/Reset/SetCount
+ * =============================================================================
+ */
+
+void test_encoder_read_raw_invalid_channel_fails(void)
+{
+  /* Channel 5 has no base address (nullptr from internal_get_mtu_base) */
+  uint16_t count = 0;
+  rx_err_t err   = rx_encoder_read_raw((rx_mtu_channel_t)5, &count);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_encoder_read_count_invalid_channel_fails(void)
+{
+  rx_encoder_state_t state;
+  rx_err_t           err = rx_encoder_read_count((rx_mtu_channel_t)5, &state);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_encoder_read_velocity_invalid_channel_fails(void)
+{
+  float    velocity = 0.0f;
+  rx_err_t err      = rx_encoder_read_velocity(&velocity, 0.01f, (rx_mtu_channel_t)5);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_encoder_reset_invalid_channel_fails(void)
+{
+  rx_err_t err = rx_encoder_reset((rx_mtu_channel_t)5);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_encoder_set_count_invalid_channel_fails(void)
+{
+  rx_err_t err = rx_encoder_set_count(0, (rx_mtu_channel_t)5);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/* =============================================================================
+ * Velocity: Unrealistic Speed Detection
+ * =============================================================================
+ */
+
+void test_encoder_read_velocity_unrealistic_speed(void)
+{
+  /* cpr=1364, dt=0.01s, delta=1500 counts -> 1500/1364/0.01 = ~110 RPS > 100 limit */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
+
+  /* Advance counter so velocity is unrealistically high */
+  mock_encoder_set_counter(s_config.channel, 1500);
+
+  float    velocity = 0.0f;
+  rx_err_t err      = rx_encoder_read_velocity(&velocity, 0.01f, s_config.channel);
+
+  /* Function still returns k_rx_ok - just logs a warning */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_GREATER_THAN(100.0f, velocity);
+}
+
+/* =============================================================================
+ * Corrupted CPR Tests (via TESTING helper)
+ * =============================================================================
+ */
+
+void test_encoder_read_count_corrupted_cpr(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
+
+  /* Corrupt cpr after init to exercise runtime guard in internal_update_state_from_count */
+  rx_mtu_encoder_test_corrupt_cpr(s_config.channel);
+
+  rx_encoder_state_t state;
+  rx_err_t           err = rx_encoder_read_count(s_config.channel, &state);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_encoder_set_count_corrupted_cpr(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
+
+  rx_mtu_encoder_test_corrupt_cpr(s_config.channel);
+
+  rx_err_t err = rx_encoder_set_count(1000, s_config.channel);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/* =============================================================================
+ * Direct Internal Function Tests (source directly included, so static funcs
+ * are accessible; UNIT_TEST strips 'static' via RX_STATIC_TESTABLE but here
+ * the functions use plain 'static', so they are accessible within this TU)
+ * =============================================================================
+ */
+
+void test_internal_enable_mtu_module_channel_out_of_range(void)
+{
+  /* Channel > k_mtu_channel_7 triggers first guard in internal_enable_mtu_module */
+  rx_err_t err = internal_enable_mtu_module((rx_mtu_channel_t)8);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_enable_mtu_module_channel_5_no_base(void)
+{
+  /* Channel 5 passes the > k_mtu_channel_7 check but has no base address */
+  rx_err_t err = internal_enable_mtu_module((rx_mtu_channel_t)5);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_configure_encoder_timer_null_ptr(void)
+{
+  rx_err_t err = internal_configure_encoder_timer(nullptr);
+
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_internal_configure_encoder_timer_success(void)
+{
+  /* Call configure with a valid (non-null) mock register pointer */
+  volatile rx_mtu_channel_regs_t* mtu = &g_mock_mtu_regs[0];
+
+  rx_err_t err = internal_configure_encoder_timer(mtu);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT8(0x00, mtu->tcr);
+  TEST_ASSERT_EQUAL_UINT8(0x04, mtu->tmdr);
+}
+
+void test_internal_verify_timer_counting_null_ptr(void)
+{
+  rx_err_t err = internal_verify_timer_counting(nullptr);
+
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_internal_verify_timer_counting_wrong_tmdr(void)
+{
+  /* Set up register with wrong TMDR value (not phase counting mode) */
+  volatile rx_mtu_channel_regs_t* mtu = &g_mock_mtu_regs[0];
+  mtu->tmdr                           = 0x00; /* Normal mode, not phase counting */
+
+  rx_err_t err = internal_verify_timer_counting(mtu);
+
+  TEST_ASSERT_EQUAL(k_rx_err_hw_init_failed, err);
+}
+
+void test_internal_initialize_encoder_state_null_config(void)
+{
+  rx_err_t err = internal_initialize_encoder_state(k_mtu_channel_1, nullptr);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_initialize_encoder_state_invalid_channel(void)
+{
+  rx_encoder_config_t cfg = {
+    .channel          = (rx_mtu_channel_t)5,
+    .counts_per_rev   = 1364,
+    .invert_direction = false,
+  };
+  rx_err_t err = internal_initialize_encoder_state((rx_mtu_channel_t)5, &cfg);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_initialize_encoder_state_zero_cpr(void)
+{
+  rx_encoder_config_t cfg = {
+    .channel          = k_mtu_channel_1,
+    .counts_per_rev   = 0,
+    .invert_direction = false,
+  };
+  rx_err_t err = internal_initialize_encoder_state(k_mtu_channel_1, &cfg);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_update_state_from_count_invalid_channel(void)
+{
+  rx_encoder_state_t state;
+  rx_err_t           err = internal_update_state_from_count(&state, (rx_mtu_channel_t)5, 0);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_update_state_from_count_null_state(void)
+{
+  /* Channel 1 must be initialized first */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
+
+  rx_err_t err = internal_update_state_from_count(nullptr, k_mtu_channel_1, 0);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_update_state_from_count_uninit_channel(void)
+{
+  /* Channel 2 is not initialized */
+  rx_encoder_state_t state;
+  rx_err_t           err = internal_update_state_from_count(&state, k_mtu_channel_2, 0);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_internal_update_state_from_count_corrupted_cpr(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
+
+  rx_mtu_encoder_test_corrupt_cpr(s_config.channel);
+
+  rx_encoder_state_t state;
+  rx_err_t           err = internal_update_state_from_count(&state, s_config.channel, 0);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/* =============================================================================
  * Main Test Runner
  * =============================================================================
  */
@@ -1152,6 +1402,39 @@ int main(void)
   RUN_TEST(test_encoder_position_at_90_degrees);
   RUN_TEST(test_encoder_counter_at_exact_boundary);
   RUN_TEST(test_encoder_rapid_direction_changes);
+
+  /* Additional channel tests (ch3, ch4) */
+  RUN_TEST(test_encoder_init_channel_3_success);
+  RUN_TEST(test_encoder_init_channel_4_success);
+
+  /* Invalid channel tests for read/reset/set_count */
+  RUN_TEST(test_encoder_read_raw_invalid_channel_fails);
+  RUN_TEST(test_encoder_read_count_invalid_channel_fails);
+  RUN_TEST(test_encoder_read_velocity_invalid_channel_fails);
+  RUN_TEST(test_encoder_reset_invalid_channel_fails);
+  RUN_TEST(test_encoder_set_count_invalid_channel_fails);
+
+  /* Velocity unrealistic speed warning */
+  RUN_TEST(test_encoder_read_velocity_unrealistic_speed);
+
+  /* Corrupted CPR tests */
+  RUN_TEST(test_encoder_read_count_corrupted_cpr);
+  RUN_TEST(test_encoder_set_count_corrupted_cpr);
+
+  /* Direct internal function tests */
+  RUN_TEST(test_internal_enable_mtu_module_channel_out_of_range);
+  RUN_TEST(test_internal_enable_mtu_module_channel_5_no_base);
+  RUN_TEST(test_internal_configure_encoder_timer_null_ptr);
+  RUN_TEST(test_internal_configure_encoder_timer_success);
+  RUN_TEST(test_internal_verify_timer_counting_null_ptr);
+  RUN_TEST(test_internal_verify_timer_counting_wrong_tmdr);
+  RUN_TEST(test_internal_initialize_encoder_state_null_config);
+  RUN_TEST(test_internal_initialize_encoder_state_invalid_channel);
+  RUN_TEST(test_internal_initialize_encoder_state_zero_cpr);
+  RUN_TEST(test_internal_update_state_from_count_invalid_channel);
+  RUN_TEST(test_internal_update_state_from_count_null_state);
+  RUN_TEST(test_internal_update_state_from_count_uninit_channel);
+  RUN_TEST(test_internal_update_state_from_count_corrupted_cpr);
 
   return UNITY_END();
 }

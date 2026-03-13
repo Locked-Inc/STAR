@@ -1149,6 +1149,41 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius);
  */
 [[nodiscard]] rx_err_t rx_hcsr04_reset_stats(rx_hcsr04_t* handle);
 
+#ifdef UNIT_TEST
+#include "tx_api.h" /* Required for TX_SEMAPHORE, ULONG used in internal declarations */
+
+/**
+ * @brief Worker event flag bits (internal, exposed for unit testing).
+ */
+typedef enum : unsigned long {
+  k_event_measurement_request = 1U, /**< Bit 0: Measurement request */
+  k_event_shutdown_request    = 2U, /**< Bit 1: Shutdown request */
+} hcsr04_event_flags_t;
+
+/**
+ * @brief Async measurement pending context (internal struct exposed for unit testing).
+ */
+typedef struct {
+  rx_hcsr04_t*         handle;    /**< Sensor handle (NULL = idle) */
+  rx_hcsr04_callback_t callback;  /**< Completion callback function */
+  void*                user_data; /**< Caller-provided context pointer */
+} hcsr04_pending_measurement_t;
+
+/* Internal variables exposed for direct manipulation in tests */
+extern hcsr04_pending_measurement_t s_pending;             /**< Pending measurement context */
+extern bool                         s_worker_initialized;  /**< Worker init flag */
+extern TX_SEMAPHORE                 s_worker_shutdown_sem; /**< Shutdown semaphore */
+
+/* Internal functions exposed for unit testing via RX_STATIC_TESTABLE */
+rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle);
+rx_err_t internal_wait_for_echo(rx_hcsr04_t* handle, bool target_state, uint32_t timeout_us);
+rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* duration_us);
+rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* duration_us);
+rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t* out_priority);
+rx_err_t internal_trigger_and_measure(rx_hcsr04_t* handle, uint32_t* out_echo_us);
+bool     internal_handle_worker_event(unsigned long actual_flags);
+#endif /* UNIT_TEST */
+
 #ifdef __cplusplus
 }
 #endif

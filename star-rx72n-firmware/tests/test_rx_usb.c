@@ -134,7 +134,12 @@
 #include "mock_usb0_regs.h"
 #include "mock_usb_hw.h"
 #include "rx_usb.h"
+#include "rx_usb_internal.h" /* Shared-internal API: rx_usb_get_port_config, rx_usb_invoke_callback */
 #include "rx_usb_private.h" /* Internal types and functions for testing */
+
+/* UNIT_TEST-only accessors defined in rx_usb.c under #ifdef UNIT_TEST */
+extern ring_buffer_t* rx_usb_test_get_tx_buffer(rx_usb_port_id_t port);
+extern ring_buffer_t* rx_usb_test_get_rx_buffer(rx_usb_port_id_t port);
 
 /* =============================================================================
  * Test Constants
@@ -1963,6 +1968,1065 @@ void test_usb_write_updates_stats(void)
 /** @} */ /* end of test_usb_tx_trigger */
 
 /* =============================================================================
+ * Shared-Internal API Tests
+ * =============================================================================
+ */
+
+/**
+ * @defgroup test_usb_internal_api Shared-Internal API Tests
+ * @brief Tests for rx_usb_get_port_config, rx_usb_invoke_callback,
+ *        rx_usb_priv_set_port_state, and UNIT_TEST buffer accessors
+ * @{
+ */
+
+/**
+ * @brief Test rx_usb_get_port_config() returns non-null for valid port
+ */
+void test_usb_get_port_config_valid(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  const rx_usb_port_hw_config_t* cfg = rx_usb_get_port_config(k_usb_port_proto);
+  TEST_ASSERT_NOT_NULL(cfg);
+}
+
+/**
+ * @brief Test rx_usb_get_port_config() returns nullptr for invalid port
+ */
+void test_usb_get_port_config_invalid(void)
+{
+  const rx_usb_port_hw_config_t* cfg = rx_usb_get_port_config(k_usb_port_count);
+  TEST_ASSERT_NULL(cfg);
+}
+
+/**
+ * @brief Test rx_usb_invoke_callback() with no callback registered (no crash)
+ */
+void test_usb_invoke_callback_no_callback(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  /* No callback registered: must not crash */
+  rx_usb_invoke_callback(k_usb_port_proto, k_usb_event_configured);
+}
+
+/**
+ * @brief Test rx_usb_invoke_callback() with invalid port (no crash)
+ */
+void test_usb_invoke_callback_invalid_port(void)
+{
+  /* Invalid port: must not crash */
+  rx_usb_invoke_callback(k_usb_port_count, k_usb_event_configured);
+}
+
+/**
+ * @brief Test rx_usb_priv_set_port_state() sets device state for valid port
+ */
+void test_usb_priv_set_port_state_valid(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_priv_set_port_state(k_usb_port_proto, k_usb_state_configured);
+  TEST_ASSERT_EQUAL(k_usb_state_configured, rx_usb_get_state());
+}
+
+/**
+ * @brief Test rx_usb_priv_set_port_state() with invalid port (no-op)
+ */
+void test_usb_priv_set_port_state_invalid_port(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  /* Should return without changing state */
+  rx_usb_priv_set_port_state(k_usb_port_count, k_usb_state_configured);
+  TEST_ASSERT_EQUAL(k_usb_state_attached, rx_usb_get_state());
+}
+
+/**
+ * @brief Test rx_usb_test_get_tx_buffer() returns non-null for valid port
+ */
+void test_usb_test_get_tx_buffer_valid(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  ring_buffer_t* buf = rx_usb_test_get_tx_buffer(k_usb_port_proto);
+  TEST_ASSERT_NOT_NULL(buf);
+}
+
+/**
+ * @brief Test rx_usb_test_get_tx_buffer() returns nullptr for invalid port
+ */
+void test_usb_test_get_tx_buffer_invalid(void)
+{
+  ring_buffer_t* buf = rx_usb_test_get_tx_buffer(k_usb_port_count);
+  TEST_ASSERT_NULL(buf);
+}
+
+/**
+ * @brief Test rx_usb_test_get_rx_buffer() returns non-null for valid port
+ */
+void test_usb_test_get_rx_buffer_valid(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  ring_buffer_t* buf = rx_usb_test_get_rx_buffer(k_usb_port_proto);
+  TEST_ASSERT_NOT_NULL(buf);
+}
+
+/**
+ * @brief Test rx_usb_test_get_rx_buffer() returns nullptr for invalid port
+ */
+void test_usb_test_get_rx_buffer_invalid(void)
+{
+  ring_buffer_t* buf = rx_usb_test_get_rx_buffer(k_usb_port_count);
+  TEST_ASSERT_NULL(buf);
+}
+
+/** @} */ /* end of test_usb_internal_api */
+
+/* =============================================================================
+ * Additional Coverage Tests
+ * =============================================================================
+ */
+
+/**
+ * @defgroup test_usb_coverage Additional Coverage Tests
+ * @brief Tests targeting previously uncovered branches and functions
+ * @{
+ */
+
+/* --- CDC init failure in rx_usb_init --- */
+
+/**
+ * @brief Verify rx_usb_init returns error when CDC init fails
+ */
+void test_usb_init_cdc_init_failure_propagates(void)
+{
+  mock_usb_hw_set_cdc_init_return(k_rx_err_timeout);
+
+  rx_err_t err = rx_usb_init(nullptr);
+
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+  /* Hardware should have been deinitialized on cleanup */
+  TEST_ASSERT_EQUAL_UINT32(1, mock_usb_hw_get_call_count(nullptr, "rx_usb_hw_deinit"));
+}
+
+/* --- rx_usb_flush --- */
+
+/**
+ * @brief Verify flush returns invalid_arg when timeout exceeds maximum
+ */
+void test_usb_flush_timeout_exceeds_max_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+
+  /* k_flush_max_timeout_ms is 10000; pass 10001 to exceed the limit */
+  rx_err_t err = rx_usb_flush(k_usb_port_proto, 10001U);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify blocking flush succeeds when buffer is already empty
+ */
+void test_usb_flush_blocking_empty_buffer_returns_ok(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  /* TX buffer is empty - blocking flush with non-zero timeout succeeds immediately */
+
+  rx_err_t err = rx_usb_flush(k_usb_port_proto, 10U);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Verify blocking flush times out when buffer has data that does not drain
+ */
+void test_usb_flush_blocking_with_data_times_out(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_set_state(k_usb_state_configured);
+
+  /* Write data to TX buffer so buffer is not empty */
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, 4));
+
+  /* tx_thread_sleep is a no-op; loop runs instantly, elapsed increments by 10 each iter.
+   * With timeout=10ms: after first iteration elapsed(10) >= timeout(10) -> timeout. */
+  rx_err_t err = rx_usb_flush(k_usb_port_proto, 10U);
+
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
+/* --- rx_usb_set_callback with invalid port --- */
+
+/**
+ * @brief Verify set_callback returns invalid_arg for invalid port
+ */
+void test_usb_set_callback_invalid_port_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+
+  rx_err_t err = rx_usb_set_callback(k_usb_port_count, test_callback, nullptr);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/* --- rx_usb_read when not initialized --- */
+
+/**
+ * @brief Verify rx_usb_read returns invalid_state when not initialized
+ */
+void test_usb_read_not_initialized_fails(void)
+{
+  uint8_t  buf[10];
+  uint32_t actual = 0;
+
+  rx_err_t err = rx_usb_read(k_usb_port_proto, buf, sizeof(buf), &actual);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/* --- rx_usb_set_state same-state no-op --- */
+
+/**
+ * @brief Verify rx_usb_set_state is a no-op when state has not changed
+ */
+void test_usb_set_state_same_state_no_op(void)
+{
+  rx_usb_config_t config = {.callback = test_callback, .ctx = nullptr};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(&config));
+  /* After init, state is k_usb_state_attached */
+  s_callback_count = 0;
+
+  /* Set to the same state - should be a no-op (no callback) */
+  rx_usb_set_state(k_usb_state_attached);
+
+  TEST_ASSERT_EQUAL_UINT32(0, s_callback_count);
+  TEST_ASSERT_EQUAL(k_usb_state_attached, rx_usb_get_state());
+}
+
+/**
+ * @brief Verify rx_usb_set_state ignores invalid state values
+ */
+void test_usb_set_state_invalid_state_ignored(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  /* k_usb_state_suspended is 6; 7 is outside the valid range */
+  rx_usb_set_state((rx_usb_state_t)7U);
+
+  /* State must remain unchanged */
+  TEST_ASSERT_EQUAL(k_usb_state_attached, rx_usb_get_state());
+}
+
+/* --- rx_usb_set_state configured case triggers callback --- */
+
+/**
+ * @brief Verify rx_usb_set_state fires callback for k_usb_state_configured
+ */
+void test_usb_set_state_configured_fires_callback(void)
+{
+  rx_usb_config_t config = {.callback = test_callback, .ctx = nullptr};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(&config));
+
+  /* Register per-port callback too */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_set_callback(k_usb_port_proto, test_callback, nullptr));
+  s_callback_count = 0;
+
+  rx_usb_set_state(k_usb_state_configured);
+
+  /* Both global and per-port callbacks fire: count >= 1 */
+  TEST_ASSERT_GREATER_THAN_UINT32(0, s_callback_count);
+  TEST_ASSERT_EQUAL(k_usb_event_configured, s_last_event);
+}
+
+/* --- rx_usb_set_state intermediate states (powered/default/addressed) --- */
+
+/**
+ * @brief Verify intermediate states set has_event = false (no callback)
+ */
+void test_usb_set_state_powered_no_callback(void)
+{
+  rx_usb_config_t config = {.callback = test_callback, .ctx = nullptr};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(&config));
+  /* Move to configured so we can transition to powered (different state) */
+  rx_usb_set_state(k_usb_state_configured);
+  s_callback_count = 0;
+
+  rx_usb_set_state(k_usb_state_powered);
+
+  TEST_ASSERT_EQUAL_UINT32(0, s_callback_count);
+}
+
+/* --- rx_usb_rx_push with invalid port --- */
+
+/**
+ * @brief Verify rx_usb_rx_push returns 0 for invalid port
+ */
+void test_usb_rx_push_invalid_port_returns_zero(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  uint8_t data[] = "test";
+
+  uint32_t written = rx_usb_rx_push(k_usb_port_count, data, 4);
+
+  TEST_ASSERT_EQUAL_UINT32(0, written);
+}
+
+/* --- rx_usb_rx_push overflow increments rx_overruns --- */
+
+/**
+ * @brief Verify rx_usb_rx_push increments rx_overruns on buffer overflow
+ */
+void test_usb_rx_push_overflow_increments_overruns(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+
+  /* Fill the RX buffer completely first */
+  ring_buffer_t* rx_buf = rx_usb_test_get_rx_buffer(k_usb_port_proto);
+  TEST_ASSERT_NOT_NULL(rx_buf);
+
+  /* Write until full: k_usb_port_proto_rx_size = 1024 */
+  uint8_t fill[k_usb_port_proto_rx_size];
+  memset(fill, 0xAA, sizeof(fill));
+  uint32_t written = rx_usb_rx_push(k_usb_port_proto, fill, sizeof(fill));
+  TEST_ASSERT_EQUAL_UINT32(sizeof(fill), written);
+
+  /* Now push more data - should overflow */
+  uint8_t extra[] = "overflow";
+  rx_usb_rx_push(k_usb_port_proto, extra, sizeof(extra) - 1);
+
+  rx_usb_stats_t stats;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_get_stats(k_usb_port_proto, &stats));
+  TEST_ASSERT_GREATER_THAN_UINT32(0, stats.rx_overruns);
+}
+
+/* --- rx_usb_rx_push with callback - written == 0 path --- */
+
+/**
+ * @brief Verify rx_usb_rx_push does not fire callback when zero bytes written
+ */
+void test_usb_rx_push_zero_written_no_callback(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_set_callback(k_usb_port_proto, test_callback, nullptr));
+
+  /* Fill RX buffer so next push writes 0 bytes */
+  uint8_t fill[k_usb_port_proto_rx_size];
+  memset(fill, 0xBB, sizeof(fill));
+  rx_usb_rx_push(k_usb_port_proto, fill, sizeof(fill));
+  s_callback_count = 0;
+
+  /* Push with full buffer -> written == 0 -> no callback */
+  uint8_t extra[] = "no space";
+  rx_usb_rx_push(k_usb_port_proto, extra, sizeof(extra) - 1);
+
+  TEST_ASSERT_EQUAL_UINT32(0, s_callback_count);
+}
+
+/* --- rx_usb_tx_pop triggers callback when buffer empties --- */
+
+/**
+ * @brief Verify rx_usb_tx_pop fires tx_complete callback when buffer becomes empty
+ */
+void test_usb_tx_pop_fires_tx_complete_callback(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_set_state(k_usb_state_configured);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_set_callback(k_usb_port_proto, test_callback, nullptr));
+
+  uint8_t data[] = "Hello";
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, 5));
+  s_callback_count = 0;
+
+  /* Pop all data -> buffer empty -> tx_complete callback */
+  uint8_t buf[10];
+  rx_usb_tx_pop(k_usb_port_proto, buf, sizeof(buf));
+
+  TEST_ASSERT_GREATER_THAN_UINT32(0, s_callback_count);
+  TEST_ASSERT_EQUAL(k_usb_event_tx_complete, s_last_event);
+}
+
+/* --- rx_usb_get_port_config with invalid port --- */
+
+/**
+ * @brief Verify rx_usb_get_port_config returns nullptr for invalid port
+ */
+void test_usb_get_port_config_invalid_port(void)
+{
+  const rx_usb_port_hw_config_t* cfg = rx_usb_get_port_config(k_usb_port_count);
+
+  TEST_ASSERT_NULL(cfg);
+}
+
+/* --- rx_usb_find_port_by_pipe --- */
+
+/**
+ * @brief Verify rx_usb_find_port_by_pipe finds correct port for known pipe
+ */
+void test_usb_find_port_by_pipe_found(void)
+{
+  /* Port 0 uses pipe 1 (bulk in). k_port0_pipe_bulk_in = 1 */
+  rx_usb_port_id_t port = rx_usb_find_port_by_pipe(1U);
+
+  TEST_ASSERT_EQUAL(k_usb_port_proto, port);
+}
+
+/**
+ * @brief Verify rx_usb_find_port_by_pipe returns k_usb_port_count for unknown pipe
+ */
+void test_usb_find_port_by_pipe_not_found(void)
+{
+  /* No port uses pipe 0 (DCP, reserved) */
+  rx_usb_port_id_t port = rx_usb_find_port_by_pipe(0U);
+
+  TEST_ASSERT_EQUAL(k_usb_port_count, port);
+}
+
+/* --- rx_usb_find_port_by_interface --- */
+
+/**
+ * @brief Verify rx_usb_find_port_by_interface finds correct port for known interface
+ */
+void test_usb_find_port_by_interface_found(void)
+{
+  /* Port 0 uses k_intf_port0_control = 0 for its CDC control interface */
+  rx_usb_port_id_t port = rx_usb_find_port_by_interface(0U);
+
+  TEST_ASSERT_EQUAL(k_usb_port_proto, port);
+}
+
+/**
+ * @brief Verify rx_usb_find_port_by_interface returns k_usb_port_count for unknown interface
+ */
+void test_usb_find_port_by_interface_not_found(void)
+{
+  /* Interface 255 does not belong to any port */
+  rx_usb_port_id_t port = rx_usb_find_port_by_interface(255U);
+
+  TEST_ASSERT_EQUAL(k_usb_port_count, port);
+}
+
+/* --- rx_usb_invoke_callback with callback registered --- */
+
+/**
+ * @brief Verify rx_usb_invoke_callback fires the registered callback
+ */
+void test_usb_invoke_callback_with_callback(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_set_callback(k_usb_port_proto, test_callback, nullptr));
+
+  rx_usb_invoke_callback(k_usb_port_proto, k_usb_event_configured);
+
+  TEST_ASSERT_EQUAL_UINT32(1, s_callback_count);
+  TEST_ASSERT_EQUAL(k_usb_event_configured, s_last_event);
+}
+
+/* --- rx_usb_priv_set_port_state with invalid state --- */
+
+/**
+ * @brief Verify rx_usb_priv_set_port_state is a no-op for invalid state
+ */
+void test_usb_priv_set_port_state_invalid_state(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  /* k_usb_state_suspended = 6; 7 is outside the valid state range */
+  rx_usb_priv_set_port_state(k_usb_port_proto, (rx_usb_state_t)7U);
+
+  /* State must remain attached (unchanged from init) */
+  TEST_ASSERT_EQUAL(k_usb_state_attached, rx_usb_get_state());
+}
+
+/* --- rx_usb_putc with invalid port --- */
+
+/**
+ * @brief Verify rx_usb_putc returns invalid_arg for invalid port
+ */
+void test_usb_putc_invalid_port_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_set_state(k_usb_state_configured);
+
+  rx_err_t err = rx_usb_putc(k_usb_port_count, 'A');
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify rx_usb_putc returns invalid_state when not initialized
+ */
+void test_usb_putc_not_initialized_returns_invalid_state(void)
+{
+  /* USB not initialized */
+  rx_err_t err = rx_usb_putc(k_usb_port_proto, 'A');
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/* --- rx_usb_puts with invalid port --- */
+
+/**
+ * @brief Verify rx_usb_puts returns invalid_arg for invalid port
+ */
+void test_usb_puts_invalid_port_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_set_state(k_usb_state_configured);
+
+  rx_err_t err = rx_usb_puts(k_usb_port_count, "hello");
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/* --- rx_usb_putint with invalid port --- */
+
+/**
+ * @brief Verify rx_usb_putint returns invalid_arg for invalid port
+ */
+void test_usb_putint_invalid_port_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_set_state(k_usb_state_configured);
+
+  rx_err_t err = rx_usb_putint(k_usb_port_count, 42);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/* --- rx_usb_puthex with invalid port --- */
+
+/**
+ * @brief Verify rx_usb_puthex returns invalid_arg for invalid port
+ */
+void test_usb_puthex_invalid_port_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_set_state(k_usb_state_configured);
+
+  rx_err_t err = rx_usb_puthex(k_usb_port_count, 0xAB, 2);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/* --- rx_usb_puthex digit clamping (digits == 0 and digits > 8) --- */
+
+/**
+ * @brief Verify rx_usb_puthex clamps digits=0 to 1 digit
+ */
+void test_usb_puthex_zero_digits_clamped_to_one(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_set_state(k_usb_state_configured);
+
+  /* digits=0 should be clamped to 1 */
+  rx_err_t err = rx_usb_puthex(k_usb_port_proto, 0xF, 0);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  uint8_t  buf[10];
+  uint32_t len = rx_usb_tx_pop(k_usb_port_proto, buf, sizeof(buf));
+
+  /* Should output 1 hex digit */
+  TEST_ASSERT_EQUAL_UINT32(1, len);
+  TEST_ASSERT_EQUAL_CHAR('F', buf[0]);
+}
+
+/**
+ * @brief Verify rx_usb_puthex clamps digits > 8 to 8 digits
+ */
+void test_usb_puthex_too_many_digits_clamped(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_set_state(k_usb_state_configured);
+
+  /* digits=9 (> k_max_hex_digits=8) should be clamped to 8 */
+  rx_err_t err = rx_usb_puthex(k_usb_port_proto, 0xABCDEF01U, 9U);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  uint8_t  buf[20];
+  uint32_t len = rx_usb_tx_pop(k_usb_port_proto, buf, sizeof(buf));
+
+  /* Should output exactly 8 hex digits */
+  TEST_ASSERT_EQUAL_UINT32(8, len);
+}
+
+/* --- Invalid port tests for remaining API functions --- */
+
+/**
+ * @brief Verify rx_usb_is_configured returns false for invalid port
+ */
+void test_usb_is_configured_invalid_port(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_set_state(k_usb_state_configured);
+
+  bool result = rx_usb_is_configured(k_usb_port_count);
+
+  TEST_ASSERT_FALSE(result);
+}
+
+/**
+ * @brief Verify rx_usb_write returns invalid_arg for invalid port
+ */
+void test_usb_write_invalid_port_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_set_state(k_usb_state_configured);
+
+  uint8_t  data[] = "test";
+  rx_err_t err    = rx_usb_write(k_usb_port_count, data, 4);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify rx_usb_read returns invalid_arg for invalid port
+ */
+void test_usb_read_invalid_port_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+
+  uint8_t  buf[10];
+  uint32_t actual = 0;
+  rx_err_t err    = rx_usb_read(k_usb_port_count, buf, sizeof(buf), &actual);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify rx_usb_rx_available returns invalid_arg for invalid port
+ */
+void test_usb_rx_available_invalid_port_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+
+  uint32_t avail = 0;
+  rx_err_t err   = rx_usb_rx_available(k_usb_port_count, &avail);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify rx_usb_tx_available returns invalid_arg for invalid port
+ */
+void test_usb_tx_available_invalid_port_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+
+  uint32_t avail = 0;
+  rx_err_t err   = rx_usb_tx_available(k_usb_port_count, &avail);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify rx_usb_flush returns invalid_arg for invalid port
+ */
+void test_usb_flush_invalid_port_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+
+  rx_err_t err = rx_usb_flush(k_usb_port_count, 0);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify rx_usb_get_line_coding returns invalid_arg for invalid port
+ */
+void test_usb_get_line_coding_invalid_port_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+
+  rx_usb_line_coding_t coding;
+  rx_err_t             err = rx_usb_get_line_coding(k_usb_port_count, &coding);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify rx_usb_get_stats returns invalid_arg for invalid port
+ */
+void test_usb_get_stats_invalid_port_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+
+  rx_usb_stats_t stats;
+  rx_err_t       err = rx_usb_get_stats(k_usb_port_count, &stats);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Verify rx_usb_puts returns invalid_state when not initialized
+ */
+void test_usb_puts_not_initialized_returns_invalid_state(void)
+{
+  rx_err_t err = rx_usb_puts(k_usb_port_proto, "hello");
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Verify rx_usb_putint returns invalid_state when not initialized
+ */
+void test_usb_putint_not_initialized_returns_invalid_state(void)
+{
+  rx_err_t err = rx_usb_putint(k_usb_port_proto, 42);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Verify rx_usb_puthex returns invalid_state when not initialized
+ */
+void test_usb_puthex_not_initialized_returns_invalid_state(void)
+{
+  rx_err_t err = rx_usb_puthex(k_usb_port_proto, 0xABU, 2);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Verify rx_usb_tx_pop returns 0 for invalid port
+ */
+void test_usb_tx_pop_invalid_port_returns_zero(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+
+  uint8_t  buf[10];
+  uint32_t count = rx_usb_tx_pop(k_usb_port_count, buf, sizeof(buf));
+
+  TEST_ASSERT_EQUAL_UINT32(0, count);
+}
+
+/* --- rx_usb_set_state attached callback --- */
+
+/**
+ * @brief Verify rx_usb_set_state fires callback when transitioning to k_usb_state_attached
+ */
+void test_usb_set_state_attached_fires_callback(void)
+{
+  rx_usb_config_t config = {.callback = test_callback, .ctx = nullptr};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(&config));
+
+  /* Move to a different state first, then return to attached */
+  rx_usb_set_state(k_usb_state_suspended);
+  s_callback_count = 0;
+
+  /* Transitioning to attached should fire the callback */
+  rx_usb_set_state(k_usb_state_attached);
+
+  TEST_ASSERT_GREATER_THAN_UINT32(0, s_callback_count);
+  TEST_ASSERT_EQUAL(k_usb_event_attached, s_last_event);
+}
+
+/* --- rx_usb_flush max iterations exit path --- */
+
+/**
+ * @brief Verify flush blocking loop exits via max iterations when data never drains
+ *
+ * @details Whitebox test for the for-loop fallthrough exit.  tx_thread_sleep is
+ * a no-op so the loop runs k_flush_max_iterations=1000 times instantly.  Each
+ * iteration increments elapsed_ms by s_flush_poll_interval_ms=10.  After 1000
+ * iterations elapsed=10000ms which equals k_flush_max_timeout_ms, causing the
+ * loop to exit via the iterations limit rather than the timeout check.
+ */
+void test_usb_flush_blocking_exit_via_max_iterations(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_set_state(k_usb_state_configured);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, 4));
+
+  /* Use exactly k_flush_max_timeout_ms=10000 so elapsed never reaches it within
+   * the 1000 iterations (elapsed reaches 10000 only at iteration 1000 exit). */
+  rx_err_t err = rx_usb_flush(k_usb_port_proto, 10000U);
+
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
+/**
+ * @brief Verify priv_ring_buffer_write loop runs to exhaustion with full buffer write
+ *
+ * @details Covers the loop-exhaustion branch of line 773: write exactly
+ * k_usb_max_buffer_size (1024) bytes to a 1024-byte ring buffer so the for
+ * loop reaches i == k_usb_max_buffer_size rather than exiting via break.
+ */
+void test_ring_buffer_write_full_1024_bytes_loop_exhaustion(void)
+{
+  /* Use a 1024-byte ring buffer -- same as k_usb_max_buffer_size */
+  static uint8_t s_big_data[1024];
+  ring_buffer_t   big_buf;
+  priv_ring_buffer_init(&big_buf, s_big_data, sizeof(s_big_data));
+
+  uint8_t src[1024];
+  for (uint32_t i = 0U; i < 1024U; i++) {
+    src[i] = (uint8_t)(i & 0xFFU);
+  }
+  /* Writing exactly 1024 bytes: break fires on each iteration only when
+   * written >= len (1024) or buf full.  At i=1023 the last byte is written
+   * and read_count becomes 1024; next iteration check at i=1024 exits loop
+   * via the for-condition (loop exhaustion). */
+  uint32_t written = priv_ring_buffer_write(&big_buf, src, 1024U);
+  TEST_ASSERT_EQUAL_UINT32(1024U, written);
+  TEST_ASSERT_EQUAL_UINT32(1024U, big_buf.count);
+}
+
+/**
+ * @brief Verify priv_ring_buffer_read loop runs to exhaustion with full buffer read
+ *
+ * @details Covers the loop-exhaustion branch of line 804: read exactly
+ * k_usb_max_buffer_size (1024) bytes from a full 1024-byte ring buffer so
+ * the for loop reaches i == k_usb_max_buffer_size.
+ */
+void test_ring_buffer_read_full_1024_bytes_loop_exhaustion(void)
+{
+  static uint8_t s_big_data2[1024];
+  ring_buffer_t   big_buf;
+  priv_ring_buffer_init(&big_buf, s_big_data2, sizeof(s_big_data2));
+
+  uint8_t src[1024];
+  for (uint32_t i = 0U; i < 1024U; i++) {
+    src[i] = (uint8_t)(i & 0xFFU);
+  }
+  /* Fill the buffer completely */
+  uint32_t written = priv_ring_buffer_write(&big_buf, src, 1024U);
+  TEST_ASSERT_EQUAL_UINT32(1024U, written);
+
+  /* Read all 1024 bytes - loop runs to exhaustion */
+  uint8_t dst[1024];
+  uint32_t read = priv_ring_buffer_read(&big_buf, dst, 1024U);
+  TEST_ASSERT_EQUAL_UINT32(1024U, read);
+  TEST_ASSERT_EQUAL_UINT32(0U, big_buf.count);
+}
+
+/**
+ * @brief Verify priv_ring_buffer_write returns 0 when buf pointer is NULL
+ *
+ * @details Covers the buf == nullptr branch (1st sub-condition) of line 766
+ * in priv_ring_buffer_write(). Passes nullptr as the buf argument.
+ */
+void test_ring_buffer_write_null_buf_returns_zero(void)
+{
+  uint8_t src[] = "hi";
+  uint32_t written = priv_ring_buffer_write(nullptr, src, 2U);
+  TEST_ASSERT_EQUAL_UINT32(0U, written);
+}
+
+/**
+ * @brief Verify priv_ring_buffer_read returns 0 when buf pointer is NULL
+ *
+ * @details Covers the buf == nullptr branch (1st sub-condition) of line 797
+ * in priv_ring_buffer_read(). Passes nullptr as the buf argument.
+ */
+void test_ring_buffer_read_null_buf_returns_zero(void)
+{
+  uint8_t dst[4];
+  uint32_t read = priv_ring_buffer_read(nullptr, dst, 4U);
+  TEST_ASSERT_EQUAL_UINT32(0U, read);
+}
+
+/**
+ * @brief Verify priv_ring_buffer_write returns 0 when buf->data is NULL
+ *
+ * @details Covers the buf->data == nullptr branch (2nd sub-condition) of line
+ * 766 in priv_ring_buffer_write(). Creates a ring_buffer_t with buf->data
+ * explicitly set to nullptr.
+ */
+void test_ring_buffer_write_null_buf_data_returns_zero(void)
+{
+  ring_buffer_t buf;
+  buf.data  = nullptr;
+  buf.size  = 8U;
+  buf.head  = 0U;
+  buf.tail  = 0U;
+  buf.count = 0U;
+  uint8_t src[] = "hi";
+  uint32_t written = priv_ring_buffer_write(&buf, src, 2U);
+  TEST_ASSERT_EQUAL_UINT32(0U, written);
+}
+
+/**
+ * @brief Verify priv_ring_buffer_read returns 0 when buf->data is NULL
+ *
+ * @details Covers the buf->data == nullptr branch (2nd sub-condition) of line
+ * 797 in priv_ring_buffer_read(). Creates a ring_buffer_t with buf->data
+ * explicitly set to nullptr.
+ */
+void test_ring_buffer_read_null_buf_data_returns_zero(void)
+{
+  ring_buffer_t buf;
+  buf.data  = nullptr;
+  buf.size  = 8U;
+  buf.head  = 0U;
+  buf.tail  = 0U;
+  buf.count = 2U; /* Pretend there is data */
+  uint8_t dst[4];
+  uint32_t read = priv_ring_buffer_read(&buf, dst, 2U);
+  TEST_ASSERT_EQUAL_UINT32(0U, read);
+}
+
+/**
+ * @brief Verify rx_usb_puts handles a maximum-length unterminated buffer
+ *
+ * @details Covers the loop-exhaustion branch of line 1959: the for loop in
+ * rx_usb_puts() reaches i == k_usb_max_buffer_size when the string has no
+ * null terminator within the first 1024 bytes. The function then writes all
+ * 1024 bytes to the TX buffer.
+ */
+void test_usb_puts_unterminated_1024_bytes_loop_exhaustion(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_set_state(k_usb_state_configured);
+
+  /* Create a 1024-byte buffer with no null terminator */
+  static char s_no_null[1024];
+  for (uint32_t i = 0U; i < 1024U; i++) {
+    s_no_null[i] = 'A';
+  }
+
+  /* The loop runs all 1024 iterations and then exits via the loop bound;
+   * len = 1024, and rx_usb_write() is called with that length. */
+  rx_err_t err = rx_usb_puts(k_usb_port_proto, s_no_null);
+  /* Buffer may be full (k_usb_port_proto_tx_size = 1024); accept ok or busy */
+  TEST_ASSERT_TRUE(err == k_rx_ok || err == k_rx_err_busy);
+}
+
+/**
+ * @brief Verify rx_usb_reset_stats is a no-op for invalid port
+ *
+ * @details Covers the false branch of internal_port_is_valid() in
+ * rx_usb_reset_stats() (line 1873).
+ */
+void test_usb_reset_stats_invalid_port_no_op(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_set_state(k_usb_state_configured);
+  uint8_t data[] = "hi";
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, 2U));
+  rx_usb_stats_t stats_before;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_get_stats(k_usb_port_proto, &stats_before));
+  /* Invalid port - should be a no-op */
+  rx_usb_reset_stats(k_usb_port_count);
+  rx_usb_stats_t stats_after;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_get_stats(k_usb_port_proto, &stats_after));
+  /* Stats unchanged */
+  TEST_ASSERT_EQUAL_UINT32(stats_before.bytes_tx, stats_after.bytes_tx);
+}
+
+/**
+ * @brief Verify rx_usb_priv_set_port_state with detached state does not
+ *        set initialized flag
+ *
+ * @details Covers the false branch of (state != k_usb_state_detached) at line
+ * 2325 in rx_usb_priv_set_port_state().
+ */
+void test_usb_priv_set_port_state_detached_no_init_flag(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  /* Set to detached - the branch at line 2325 goes false, skipping initialized = true */
+  rx_usb_priv_set_port_state(k_usb_port_proto, k_usb_state_detached);
+  TEST_ASSERT_EQUAL(k_usb_state_detached, rx_usb_get_state());
+}
+
+/**
+ * @brief Verify rx_usb_set_line_coding is a no-op for invalid port
+ *
+ * @details Covers the !internal_port_is_valid(port) branch of line 2162.
+ */
+void test_usb_set_line_coding_invalid_port_no_op(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+  rx_usb_line_coding_t coding = {.baud_rate = 115200U, .data_bits = 8U, .stop_bits = 0U, .parity = 0U};
+  /* Invalid port - should be a no-op (no crash) */
+  rx_usb_set_line_coding(k_usb_port_count, &coding);
+  /* Valid port line coding should be unchanged (default = 115200) */
+  rx_usb_line_coding_t out;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_get_line_coding(k_usb_port_proto, &out));
+  TEST_ASSERT_EQUAL_UINT32(115200U, out.baud_rate);
+}
+
+/**
+ * @brief Verify rx_usb_find_port_by_pipe finds port via pipe_bulk_out match
+ *
+ * @details Covers the second sub-condition (pipe_bulk_out == pipe) on line
+ * 2253-2254 of rx_usb_find_port_by_pipe(). Port 0 bulk_out = pipe 2.
+ */
+void test_usb_find_port_by_pipe_bulk_out(void)
+{
+  /* k_port0_pipe_bulk_out = 2 */
+  rx_usb_port_id_t port = rx_usb_find_port_by_pipe(2U);
+  TEST_ASSERT_EQUAL(k_usb_port_proto, port);
+}
+
+/**
+ * @brief Verify rx_usb_find_port_by_pipe finds port via pipe_interrupt match
+ *
+ * @details Covers the third sub-condition (pipe_interrupt == pipe) on line
+ * 2253-2254 of rx_usb_find_port_by_pipe(). Port 0 interrupt = pipe 3.
+ */
+void test_usb_find_port_by_pipe_interrupt(void)
+{
+  /* k_port0_pipe_int_in = 3 */
+  rx_usb_port_id_t port = rx_usb_find_port_by_pipe(3U);
+  TEST_ASSERT_EQUAL(k_usb_port_proto, port);
+}
+
+/**
+ * @brief Verify rx_usb_find_port_by_interface finds port via interface_data match
+ *
+ * @details Covers the second sub-condition (interface_data == interface) on
+ * line 2268 of rx_usb_find_port_by_interface(). Port 0 data interface = 1.
+ */
+void test_usb_find_port_by_interface_data(void)
+{
+  /* k_intf_port0_data = 1 */
+  rx_usb_port_id_t port = rx_usb_find_port_by_interface(1U);
+  TEST_ASSERT_EQUAL(k_usb_port_proto, port);
+}
+
+/**
+ * @brief Verify priv_ring_buffer_init is a no-op when data pointer is NULL
+ *
+ * @details Covers the (data == nullptr) branch of line 712 in
+ * priv_ring_buffer_init(). The buf pointer is valid but data is NULL.
+ */
+void test_ring_buffer_init_null_data_no_op(void)
+{
+  ring_buffer_t buf;
+  buf.size = 0U;
+  /* Pass valid buf but nullptr data - should be a no-op */
+  priv_ring_buffer_init(&buf, nullptr, 8U);
+  /* buf.data was never assigned; check buf.size was not updated */
+  TEST_ASSERT_EQUAL_UINT32(0U, buf.size);
+}
+
+/**
+ * @brief Verify tx_pop does not fire callback when TX buffer still has data
+ *
+ * @details Covers the false branch of (buffer empty after pop) check at line
+ * 2207: after partial read, buffer still has data so tx_complete is not fired.
+ */
+void test_usb_tx_pop_partial_no_tx_complete_callback(void)
+{
+  rx_usb_config_t config = {.callback = test_callback, .ctx = nullptr};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(&config));
+  rx_usb_set_state(k_usb_state_configured);
+
+  /* Write 8 bytes to TX buffer */
+  uint8_t data[] = "12345678";
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, 8U));
+
+  s_callback_count = 0;
+
+  /* Pop only 4 bytes - buffer still has 4 remaining; callback should NOT fire */
+  uint8_t out[4];
+  uint32_t popped = rx_usb_tx_pop(k_usb_port_proto, out, 4U);
+  TEST_ASSERT_EQUAL_UINT32(4U, popped);
+  TEST_ASSERT_EQUAL_UINT32(0U, s_callback_count);
+}
+
+/** @} */ /* end of test_usb_coverage */
+
+/* =============================================================================
  * Main
  * =============================================================================
  */
@@ -2118,6 +3182,81 @@ int main(void)
   RUN_TEST(test_usb_puthex_lowercase_letters);
   RUN_TEST(test_usb_puthex_zero_value);
   RUN_TEST(test_usb_puthex_single_digit);
+
+  /* Shared-internal API tests */
+  RUN_TEST(test_usb_get_port_config_valid);
+  RUN_TEST(test_usb_get_port_config_invalid);
+  RUN_TEST(test_usb_invoke_callback_no_callback);
+  RUN_TEST(test_usb_invoke_callback_invalid_port);
+  RUN_TEST(test_usb_priv_set_port_state_valid);
+  RUN_TEST(test_usb_priv_set_port_state_invalid_port);
+  RUN_TEST(test_usb_test_get_tx_buffer_valid);
+  RUN_TEST(test_usb_test_get_tx_buffer_invalid);
+  RUN_TEST(test_usb_test_get_rx_buffer_valid);
+  RUN_TEST(test_usb_test_get_rx_buffer_invalid);
+
+  /* Additional coverage tests */
+  RUN_TEST(test_usb_init_cdc_init_failure_propagates);
+  RUN_TEST(test_usb_flush_timeout_exceeds_max_fails);
+  RUN_TEST(test_usb_flush_blocking_empty_buffer_returns_ok);
+  RUN_TEST(test_usb_flush_blocking_with_data_times_out);
+  RUN_TEST(test_usb_set_callback_invalid_port_fails);
+  RUN_TEST(test_usb_read_not_initialized_fails);
+  RUN_TEST(test_usb_set_state_same_state_no_op);
+  RUN_TEST(test_usb_set_state_invalid_state_ignored);
+  RUN_TEST(test_usb_set_state_configured_fires_callback);
+  RUN_TEST(test_usb_set_state_powered_no_callback);
+  RUN_TEST(test_usb_rx_push_invalid_port_returns_zero);
+  RUN_TEST(test_usb_rx_push_overflow_increments_overruns);
+  RUN_TEST(test_usb_rx_push_zero_written_no_callback);
+  RUN_TEST(test_usb_tx_pop_fires_tx_complete_callback);
+  RUN_TEST(test_usb_get_port_config_invalid_port);
+  RUN_TEST(test_usb_find_port_by_pipe_found);
+  RUN_TEST(test_usb_find_port_by_pipe_not_found);
+  RUN_TEST(test_usb_find_port_by_interface_found);
+  RUN_TEST(test_usb_find_port_by_interface_not_found);
+  RUN_TEST(test_usb_invoke_callback_with_callback);
+  RUN_TEST(test_usb_priv_set_port_state_invalid_state);
+  RUN_TEST(test_usb_putc_invalid_port_fails);
+  RUN_TEST(test_usb_putc_not_initialized_returns_invalid_state);
+  RUN_TEST(test_usb_puts_invalid_port_fails);
+  RUN_TEST(test_usb_putint_invalid_port_fails);
+  RUN_TEST(test_usb_puthex_invalid_port_fails);
+  RUN_TEST(test_usb_puthex_zero_digits_clamped_to_one);
+  RUN_TEST(test_usb_puthex_too_many_digits_clamped);
+
+  /* Second coverage batch */
+  RUN_TEST(test_usb_is_configured_invalid_port);
+  RUN_TEST(test_usb_write_invalid_port_fails);
+  RUN_TEST(test_usb_read_invalid_port_fails);
+  RUN_TEST(test_usb_rx_available_invalid_port_fails);
+  RUN_TEST(test_usb_tx_available_invalid_port_fails);
+  RUN_TEST(test_usb_flush_invalid_port_fails);
+  RUN_TEST(test_usb_get_line_coding_invalid_port_fails);
+  RUN_TEST(test_usb_get_stats_invalid_port_fails);
+  RUN_TEST(test_usb_puts_not_initialized_returns_invalid_state);
+  RUN_TEST(test_usb_putint_not_initialized_returns_invalid_state);
+  RUN_TEST(test_usb_puthex_not_initialized_returns_invalid_state);
+  RUN_TEST(test_usb_tx_pop_invalid_port_returns_zero);
+  RUN_TEST(test_usb_set_state_attached_fires_callback);
+  RUN_TEST(test_usb_flush_blocking_exit_via_max_iterations);
+
+  /* Third coverage batch */
+  RUN_TEST(test_usb_puts_unterminated_1024_bytes_loop_exhaustion);
+  RUN_TEST(test_ring_buffer_write_full_1024_bytes_loop_exhaustion);
+  RUN_TEST(test_ring_buffer_read_full_1024_bytes_loop_exhaustion);
+  RUN_TEST(test_ring_buffer_write_null_buf_returns_zero);
+  RUN_TEST(test_ring_buffer_read_null_buf_returns_zero);
+  RUN_TEST(test_ring_buffer_write_null_buf_data_returns_zero);
+  RUN_TEST(test_ring_buffer_read_null_buf_data_returns_zero);
+  RUN_TEST(test_usb_reset_stats_invalid_port_no_op);
+  RUN_TEST(test_usb_priv_set_port_state_detached_no_init_flag);
+  RUN_TEST(test_usb_set_line_coding_invalid_port_no_op);
+  RUN_TEST(test_usb_find_port_by_pipe_bulk_out);
+  RUN_TEST(test_usb_find_port_by_pipe_interrupt);
+  RUN_TEST(test_usb_find_port_by_interface_data);
+  RUN_TEST(test_ring_buffer_init_null_data_no_op);
+  RUN_TEST(test_usb_tx_pop_partial_no_tx_complete_callback);
 
   return UNITY_END();
 }

@@ -19,7 +19,7 @@ concurrency:
 jobs:
   unit-test:
     name: Build and Run Unity Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: read
@@ -85,8 +85,8 @@ jobs:
           # Step 4: Remove vendor / generated / non-firmware paths.
           lcov --remove merged.info \
                '*/build/_deps/*' \
-               '*/threadx/*' \
-               '*/nanopb/*' \
+               '*/third_party/*' \
+               '*/rx_nanopb/inc/gen/*' \
                '*/smc_generated/*' \
                '*/r_bsp/*' \
                '*/smc/*' \
@@ -101,6 +101,23 @@ jobs:
                --title "STAR RX72N Firmware Coverage" \
                --legend \
                --ignore-errors mismatch
+
+      - name: Check coverage thresholds (libs/ only)
+        working-directory: star-rx72n-firmware/tests/build
+        run: |
+          pip3 install --quiet gcovr
+          # Measure coverage on libs/ only -- src/tasks/ are ThreadX RTOS entry points
+          # that cannot be meaningfully unit-tested without a live RTOS instance.
+          # Requirements: 100% line, 100% branch, 100% function coverage.
+          gcovr \
+            --root .. \
+            --filter '.*/star-rx72n-firmware/libs/' \
+            --exclude '.*/third_party/' \
+            --exclude '.*/rx_nanopb/inc/gen/' \
+            --fail-under-line 100 \
+            --fail-under-branch 100 \
+            --fail-under-function 100 \
+            --print-summary
 
       - name: Upload coverage results
         if: always()
@@ -159,8 +176,8 @@ jobs:
             --suppressions-list=star-rx72n-firmware/.cppcheck-suppressions \
             --suppress=unmatchedSuppression \
             --inline-suppr \
-            --exclude=star-rx72n-firmware/libs/threadx \
-            --exclude=star-rx72n-firmware/libs/rx_nanopb/nanopb \
+            --exclude=star-rx72n-firmware/libs/third_party/threadx \
+            --exclude=star-rx72n-firmware/libs/third_party/nanopb \
             --exclude=star-rx72n-firmware/src/boot/smc_generated \
             --exclude=star-rx72n-firmware/src/boot/r_bsp \
             star-rx72n-firmware/libs/ \

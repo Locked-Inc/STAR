@@ -1090,6 +1090,24 @@ rx_encoder_read_velocity(float* velocity_rps, float delta_time_s, rx_mtu_channel
  */
 [[nodiscard]] rx_err_t rx_encoder_deinit(rx_mtu_channel_t channel);
 
+#ifdef TESTING
+/**
+ * @brief Corrupt s_counts_per_rev for a channel (test-only)
+ *
+ * @details
+ * Sets s_counts_per_rev[channel] = 0 to exercise runtime cpr-corrupted guards in
+ * internal_update_state_from_count(), rx_encoder_read_velocity(), and rx_encoder_set_count().
+ * Available only in TESTING builds.
+ *
+ * @param[in] channel MTU channel (must be a valid array index: 0-7)
+ * @post s_counts_per_rev[channel] == 0
+ *
+ * @note Test-only; not compiled into production firmware
+ * @since Version 1.0.0
+ */
+void rx_mtu_encoder_test_corrupt_cpr(rx_mtu_channel_t channel);
+#endif /* TESTING */
+
 #ifdef __cplusplus
 }
 #endif

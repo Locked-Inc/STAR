@@ -589,6 +589,26 @@ void rx_log_usb_get_stats(usb_log_stats_t* stats);
  */
 void rx_log_usb_notify_ready(void);
 
+#ifdef UNIT_TEST
+/**
+ * @brief Reset all rx_log_usb static state (unit tests only)
+ * @details Clears boot buffer, stats, flags, and mutex state.
+ * @note Compiled only when UNIT_TEST is defined.
+ * @since Version 1.0.0
+ */
+void rx_log_usb_test_reset_state(void);
+
+/**
+ * @brief Directly set boot buffer ring buffer state (unit tests only)
+ * @param[in] head  Ring buffer head position
+ * @param[in] count Number of bytes in buffer
+ * @param[in] data  Data to write into the ring buffer
+ * @note Compiled only when UNIT_TEST is defined.
+ * @since Version 1.0.0
+ */
+void rx_log_usb_test_set_boot_buffer(uint16_t head, uint16_t count, const char* data);
+#endif /* UNIT_TEST */
+
 /* Runtime dispatch: route log output based on active backend bitmask.
  * rx_log_get_backend() is called once per invocation and both bits checked.
  * Each macro evaluates its value arguments exactly once (no side effects). */
@@ -1161,7 +1181,6 @@ internal_rx_log_error_str(const char* tag, const char* message, const char* str_
   if (message == (const char*)0 || str_value == (const char*)0) {
     return;
   }
-
   internal_log_header("ERROR", tag);
   LOG_PUTS(message);
   LOG_PUTS(": ");

@@ -288,6 +288,8 @@ typedef struct {
  * @since Version 1.0.0
  */
 void rx_bmp280_test_reset_state(void);
+void rx_bmp280_test_set_state(rx_bus_manager_t* manager, bool init_val);
+void rx_bmp280_test_zero_calib_p1(void);
 #endif /* TESTING */
 
 #ifdef __cplusplus

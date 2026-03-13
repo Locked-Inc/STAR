@@ -282,14 +282,14 @@ typedef enum : uint16_t {
  * =============================================================================
  */
 
-static void     internal_detection_task_entry(ULONG input);
-static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* config);
-static rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle);
-static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle);
-static void     internal_invoke_callback(const rx_obstacle_detect_t* handle,
-                                         bool                        obstacle_detected,
-                                         uint8_t                     sensor_idx,
-                                         float                       distance_cm);
+static void                 internal_detection_task_entry(ULONG input);
+static rx_err_t             internal_validate_config(const rx_obstacle_detect_config_t* config);
+RX_STATIC_TESTABLE rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle);
+RX_STATIC_TESTABLE rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle);
+RX_STATIC_TESTABLE void     internal_invoke_callback(const rx_obstacle_detect_t* handle,
+                                                     bool                        obstacle_detected,
+                                                     uint8_t                     sensor_idx,
+                                                     float                       distance_cm);
 
 /* =============================================================================
  * Public API - Initialization
@@ -450,20 +450,23 @@ rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle)
   }
 
   /* Wait for thread to terminate */
-  UINT status = tx_thread_terminate(&handle->thread);
-  if (status != TX_SUCCESS && status != TX_THREAD_ERROR) {
+  UINT       status           = tx_thread_terminate(&handle->thread);
+  const bool terminate_failed = (status != TX_SUCCESS) & (status != TX_THREAD_ERROR);
+  if (terminate_failed) {
     return k_rx_err_rtos_error;
   }
 
   /* Delete thread */
-  status = tx_thread_delete(&handle->thread);
-  if (status != TX_SUCCESS && status != TX_DELETE_ERROR) {
+  status                     = tx_thread_delete(&handle->thread);
+  const bool delete_failed   = (status != TX_SUCCESS) & (status != TX_DELETE_ERROR);
+  if (delete_failed) {
     return k_rx_err_rtos_error;
   }
 
   /* Delete event flags */
-  status = tx_event_flags_delete(&handle->event_flags);
-  if (status != TX_SUCCESS && status != TX_DELETE_ERROR) {
+  status                      = tx_event_flags_delete(&handle->event_flags);
+  const bool evflags_failed   = (status != TX_SUCCESS) & (status != TX_DELETE_ERROR);
+  if (evflags_failed) {
     return k_rx_err_rtos_error;
   }
 
@@ -990,9 +993,29 @@ typedef enum : uint8_t {
   k_min_sleep_ticks = 1, /**< Minimum sleep duration in ticks */
 } task_constants_t;
 
+#ifdef UNIT_TEST
+/** @brief Controls the outer task loop in unit test builds (false = exit loop) */
+static bool s_task_running = true;
+
+/**
+ * @brief Set the task running flag for unit test control
+ * @param[in] running False to stop the outer task loop after the current iteration
+ */
+void rx_obstacle_detect_test_set_task_running(bool running)
+{
+  s_task_running = running;
+}
+
+/** @brief Macro that controls outer task loop continuity */
+#define TASK_SHOULD_CONTINUE() s_task_running
+#else
+/** @brief In production builds the task runs forever */
+#define TASK_SHOULD_CONTINUE() true
+#endif /* UNIT_TEST */
+
 static void internal_detection_task_entry(const ULONG input)
 {
-  rx_obstacle_detect_t* const handle = (rx_obstacle_detect_t*)input;
+  rx_obstacle_detect_t* const handle = (rx_obstacle_detect_t*)(uintptr_t)input;
   RX_ASSERT(handle != nullptr, "Obstacle detect handle is nullptr");
   if (handle == nullptr) {
     return;
@@ -1004,7 +1027,7 @@ static void internal_detection_task_entry(const ULONG input)
     sleep_ticks = k_min_sleep_ticks;
   }
 
-  while (true) {
+  while (TASK_SHOULD_CONTINUE()) {
     /* Wait for start event */
     ULONG      actual_flags = 0;
     const UINT status_start = tx_event_flags_get(&handle->event_flags,
@@ -1020,10 +1043,9 @@ static void internal_detection_task_entry(const ULONG input)
     /* Update state */
     handle->state          = k_obstacle_detect_state_running;
     handle->stop_requested = false;
-    bool running           = true;
 
-    /* Detection loop */
-    while (running) {
+    /* Detection loop -- exits via break (stop event, stop_requested, or error) */
+    for (;;) {
       /* Check for stop event (non-blocking) */
       ULONG      stop_flags  = 0;
       const UINT status_stop = tx_event_flags_get(&handle->event_flags,
@@ -1032,8 +1054,8 @@ static void internal_detection_task_entry(const ULONG input)
                                                   &stop_flags,
                                                   TX_NO_WAIT);
 
-      if (status_stop == TX_SUCCESS || handle->stop_requested) {
-        running                = false;
+      const bool stop_event_fired = (status_stop == TX_SUCCESS);
+      if (stop_event_fired | handle->stop_requested) {
         handle->state          = k_obstacle_detect_state_stopped;
         handle->stop_requested = false;
         break;
@@ -1044,7 +1066,6 @@ static void internal_detection_task_entry(const ULONG input)
       if (ret != k_rx_ok) {
         /* Critical error during polling (e.g., motor stop failed) */
         /* Stop detection to prevent unsafe operation */
-        running                = false;
         handle->state          = k_obstacle_detect_state_stopped;
         handle->stop_requested = false;
         break;
@@ -1055,6 +1076,17 @@ static void internal_detection_task_entry(const ULONG input)
     }
   }
 }
+
+#ifdef UNIT_TEST
+/**
+ * @brief Wrapper to call internal_detection_task_entry from unit tests
+ * @param[in] input Handle cast to ULONG (as the task entry expects)
+ */
+void rx_obstacle_detect_test_run_task_entry(ULONG input)
+{
+  internal_detection_task_entry(input);
+}
+#endif /* UNIT_TEST */
 
 /* =============================================================================
  * Static Functions - Validation
@@ -1126,7 +1158,7 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
  * @param[in] handle Pointer to obstacle detect handle
  * @return k_rx_ok on success, error code otherwise
  */
-static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
+RX_STATIC_TESTABLE rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
 {
   float    distance_cm         = 0.0F;
   rx_err_t ret                 = k_rx_ok;
@@ -1224,7 +1256,7 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
  * @param[in] handle Pointer to obstacle detect handle
  * @return k_rx_ok if all motors stopped, first error code otherwise
  */
-static rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle)
+RX_STATIC_TESTABLE rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle)
 {
   if (handle == nullptr) {
     return k_rx_err_null_ptr;
@@ -1248,10 +1280,10 @@ static rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle)
   return first_err;
 }
 
-static void internal_invoke_callback(const rx_obstacle_detect_t* handle,
-                                     const bool                  obstacle_detected,
-                                     const uint8_t               sensor_idx,
-                                     const float                 distance_cm)
+RX_STATIC_TESTABLE void internal_invoke_callback(const rx_obstacle_detect_t* handle,
+                                                 const bool                  obstacle_detected,
+                                                 const uint8_t               sensor_idx,
+                                                 const float                 distance_cm)
 {
   if (handle == nullptr || handle->callback == nullptr) {
     return;

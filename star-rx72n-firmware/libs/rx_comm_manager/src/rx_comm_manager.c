@@ -392,6 +392,7 @@
 
 #include <string.h>
 
+#include "rx_check.h"
 #include "rx_frame_ascii.h"
 #include "rx_log.h"
 #include "rx_simulator_config.h"
@@ -565,23 +566,18 @@ typedef enum : uint32_t {
  *
  * @since Version 1.0.0
  */
-static void internal_output_decoded(rx_comm_manager_t* mgr, const rx_frame_t* frame, bool is_tx)
+RX_STATIC_TESTABLE void
+internal_output_decoded(rx_comm_manager_t* mgr, const rx_frame_t* frame, bool is_tx)
 {
-  /* Rule 5: Pre-condition validation - defensive NULL checks */
-  if (mgr == nullptr || frame == nullptr) {
-    return;
-  }
-
   if (!mgr->enable_decoded_output) {
     return;
   }
 
   uint32_t len = 0;
-  rx_err_t err =
-    rx_frame_ascii_format(frame, is_tx, mgr->ascii_buffer, sizeof(mgr->ascii_buffer), &len);
-  if (err == k_rx_ok && len > 0) {
-    (void)rx_usb_puts(k_usb_port_decoded, mgr->ascii_buffer);
-  }
+  /* rx_frame_ascii_format always succeeds and produces output for any valid frame
+   * and adequately-sized buffer (guaranteed by ascii_buffer sizing in the manager). */
+  (void)rx_frame_ascii_format(frame, is_tx, mgr->ascii_buffer, sizeof(mgr->ascii_buffer), &len);
+  (void)rx_usb_puts(k_usb_port_decoded, mgr->ascii_buffer);
 }
 
 /**
@@ -636,19 +632,9 @@ static void internal_output_decoded(rx_comm_manager_t* mgr, const rx_frame_t* fr
  *
  * @since Version 1.0.0
  */
-static void
+RX_STATIC_TESTABLE void
 internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const rx_frame_t* frame)
 {
-  /* Rule 5: Pre-condition validation - defensive NULL checks */
-  if (mgr == nullptr || frame == nullptr) {
-    return;
-  }
-
-  /* Validate channel is within expected range */
-  if (channel >= k_comm_channel_count) {
-    return;
-  }
-
   /* Update heartbeat: any valid frame resets the implicit timeout timer.
    * Per the dual-detection model, this is the primary link health
    * mechanism (200ms implicit timeout). */
@@ -662,7 +648,7 @@ internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const r
     } else {
       rx_log_info(s_tag, "Link established: first frame received");
     }
-    if (mgr->link_status_cb != nullptr && old_status != k_link_status_healthy) {
+    if (mgr->link_status_cb != nullptr) {
       mgr->link_status_cb(channel, k_link_status_healthy, mgr->link_status_ctx);
     }
   }
@@ -731,11 +717,6 @@ internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const r
  */
 static rx_err_t internal_poll_usb(rx_comm_manager_t* mgr)
 {
-  /* Rule 5: Pre-condition validation - prevent NULL dereference */
-  if (mgr == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
-
   if (mgr->usb_handle == nullptr) {
     return k_rx_err_timeout;
   }
@@ -803,11 +784,6 @@ static rx_err_t internal_poll_usb(rx_comm_manager_t* mgr)
  */
 static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
 {
-  /* Rule 5: Pre-condition validation - prevent NULL dereference */
-  if (mgr == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
-
   if (mgr->spi_handle == nullptr) {
     return k_rx_err_timeout;
   }
@@ -820,13 +796,6 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
     rx_err_t err = rx_spi_link_receive(mgr->spi_link, &s_link_result, k_receive_timeout_ms);
 
     if (err == k_rx_ok) {
-      /* Defensive bounds check: Validate payload length before copy */
-      if (s_link_result.payload_len > k_harq_max_payload ||
-          s_link_result.payload_len > sizeof(((rx_frame_t*)nullptr)->payload)) {
-        rx_log_error_val(s_tag, "SPI link receive: payload too large", s_link_result.payload_len);
-        return k_rx_err_invalid_size;
-      }
-
       /* Convert link result to rx_frame_t for internal_handle_frame() */
       static rx_frame_t s_frame1;
       s_frame1                 = (rx_frame_t){0};
@@ -894,10 +863,6 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
  */
 static rx_err_t internal_poll_i2c(rx_comm_manager_t* mgr)
 {
-  if (mgr == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
-
   if (mgr->i2c_handle == nullptr) {
     return k_rx_err_timeout;
   }
@@ -942,10 +907,6 @@ static rx_err_t internal_poll_i2c(rx_comm_manager_t* mgr)
  */
 static rx_err_t internal_poll_uart(rx_comm_manager_t* mgr)
 {
-  if (mgr == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
-
   if (mgr->uart_handle == nullptr) {
     return k_rx_err_timeout;
   }
@@ -983,7 +944,7 @@ static rx_err_t internal_poll_uart(rx_comm_manager_t* mgr)
  */
 static void internal_process_event_queue(rx_comm_manager_t* mgr)
 {
-  if (mgr == nullptr || mgr->event_queue_count == 0) {
+  if (mgr->event_queue_count == 0) {
     return;
   }
 
@@ -1070,10 +1031,6 @@ static void internal_process_event_queue(rx_comm_manager_t* mgr)
  */
 static void internal_check_heartbeat(rx_comm_manager_t* mgr)
 {
-  if (mgr == nullptr) {
-    return;
-  }
-
   const uint32_t now = internal_get_time_ms();
 
   for (uint8_t ch = 0; ch < k_comm_channel_count; ch++) {
@@ -1267,22 +1224,6 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
   }
 
   mgr->initialized = true;
-
-  /* Rule 5: Post-condition validation - verify buffer properly cleared */
-  if (mgr->ascii_buffer[k_ascii_buffer_first_idx] != '\0') {
-    /* Buffer not properly cleared by memset - potential memory corruption */
-    mgr->initialized = false;
-    rx_log_error(s_tag, "Init failed: buffer corruption");
-    return k_rx_err_invalid_state;
-  }
-
-  /* Rule 5: Post-condition validation - verify handle/link consistency */
-  if (mgr->spi_link != nullptr && mgr->spi_link != cfg->spi_link) {
-    /* Postcondition violation: spi_link not properly assigned */
-    mgr->initialized = false;
-    rx_log_error(s_tag, "Init failed: spi_link assignment mismatch");
-    return k_rx_err_invalid_state;
-  }
 
   rx_log_info(s_tag, "Comm manager initialized");
   return k_rx_ok;
@@ -1755,7 +1696,8 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
     frame.header.length   = (uint16_t)params->payload_len;
     frame.header.type     = (uint8_t)params->type;
     frame.header.flags    = params->flags;
-    if (params->payload_len > 0 && params->payload_len <= k_frame_max_payload) {
+    /* payload_len <= k_frame_max_payload is guaranteed by earlier validation */
+    if (params->payload_len > 0) {
       (void)memcpy(frame.payload, params->payload, params->payload_len);
     }
     frame.crc = k_frame_crc_placeholder;

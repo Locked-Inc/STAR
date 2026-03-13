@@ -1133,6 +1133,64 @@ typedef struct {
  */
 [[nodiscard]] rx_err_t rx_obstacle_detect_reset_stats(rx_obstacle_detect_t* handle);
 
+/* =============================================================================
+ * Internal Functions Exposed for Unit Testing
+ * =============================================================================
+ */
+
+#ifdef UNIT_TEST
+#include "rx_check.h"
+
+/**
+ * @brief Poll all sensors and update obstacle state (exposed for unit testing)
+ * @param[in,out] handle Obstacle detection handle
+ * @return k_rx_ok on success
+ */
+rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle);
+
+/**
+ * @brief Stop all configured motors (exposed for unit testing)
+ * @param[in] handle Obstacle detection handle
+ * @return k_rx_ok if all motors stopped
+ */
+rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle);
+
+/**
+ * @brief Invoke user callback if registered (exposed for unit testing)
+ * @param[in] handle Obstacle detection handle
+ * @param[in] obstacle_detected True if obstacle detected, false if cleared
+ * @param[in] sensor_idx Sensor index that triggered the event
+ * @param[in] distance_cm Measured distance in centimeters
+ */
+void internal_invoke_callback(const rx_obstacle_detect_t* handle,
+                              bool                        obstacle_detected,
+                              uint8_t                     sensor_idx,
+                              float                       distance_cm);
+
+/**
+ * @brief Control the outer task loop in unit test builds
+ *
+ * @details
+ * Sets the s_task_running flag that controls the outer while loop of
+ * internal_detection_task_entry(). Set to false before calling the
+ * task entry to make it execute exactly one outer iteration and then exit.
+ *
+ * @param[in] running True to keep the loop running, false to stop after one iteration
+ */
+void rx_obstacle_detect_test_set_task_running(bool running);
+
+/**
+ * @brief Exercise internal_detection_task_entry for unit test coverage
+ *
+ * @details
+ * Calls internal_detection_task_entry with the provided handle cast to ULONG.
+ * Exposed only in UNIT_TEST builds via this header.
+ *
+ * @param[in] input Handle cast to ULONG as the task entry expects
+ */
+void rx_obstacle_detect_test_run_task_entry(ULONG input);
+#endif /* UNIT_TEST */
+
 #ifdef __cplusplus
 }
 #endif

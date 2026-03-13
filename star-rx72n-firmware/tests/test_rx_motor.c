@@ -1247,6 +1247,250 @@ void test_motor_duty_tracking_clamped_value(void)
 }
 
 /* =============================================================================
+ * GPTW Error Injection Tests
+ * =============================================================================
+ */
+
+void test_motor_init_gptw_init_error(void)
+{
+  mock_gptw_set_init_error(k_rx_err_hw_error);
+  rx_err_t err = rx_motor_init(&s_motor, &s_config);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+void test_motor_init_gptw_set_duty_a_error(void)
+{
+  /* Covers line 690: first rx_gptw_set_duty error in internal_init_gptw_outputs */
+  mock_gptw_set_duty_error(k_rx_err_hw_error);
+  rx_err_t err = rx_motor_init(&s_motor, &s_config);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_motor_deinit_gptw_deinit_error(void)
+{
+  /* Covers line 1109: rx_gptw_deinit error in rx_motor_deinit */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  mock_gptw_set_deinit_error(k_rx_err_hw_error);
+  rx_err_t err = rx_motor_deinit(&s_motor);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_motor_set_duty_gptw_set_duty_error(void)
+{
+  /* Covers lines 1404, 1412: rx_gptw_set_duty error in rx_motor_set_duty forward path */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  mock_gptw_set_duty_error(k_rx_err_hw_error);
+  rx_err_t err = rx_motor_set_duty(&s_motor, 50.0F);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_motor_set_duty_reverse_gptw_error(void)
+{
+  /* Covers lines 1421, 1429: rx_gptw_set_duty error in reverse direction path */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  mock_gptw_set_duty_error(k_rx_err_hw_error);
+  rx_err_t err = rx_motor_set_duty(&s_motor, -50.0F);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_motor_set_duty_brake_gptw_error(void)
+{
+  /* Covers lines 1438, 1446: rx_gptw_set_duty error in brake (zero duty) path */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  mock_gptw_set_duty_error(k_rx_err_hw_error);
+  rx_err_t err = rx_motor_set_duty(&s_motor, 0.0F);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_motor_stop_gptw_error(void)
+{
+  /* Covers lines 1559, 1567: rx_gptw_set_duty error in rx_motor_stop */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_set_duty(&s_motor, 50.0F));
+  mock_gptw_set_duty_error(k_rx_err_hw_error);
+  rx_err_t err = rx_motor_stop(&s_motor, true);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_motor_emergency_stop_set_duty_error(void)
+{
+  /* Covers lines 1878, 1880, 1887, 1889: rx_gptw_set_duty errors in emergency_stop */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_set_duty(&s_motor, 75.0F));
+  mock_gptw_set_duty_error(k_rx_err_hw_error);
+  rx_err_t err = rx_motor_emergency_stop(&s_motor);
+  /* Emergency stop continues even on error, returns accumulated error */
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+void test_motor_emergency_stop_enable_output_error(void)
+{
+  /* Covers lines 1896, 1898, 1903, 1905: rx_gptw_enable_output errors in emergency_stop */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  mock_gptw_set_enable_output_error(k_rx_err_hw_error);
+  rx_err_t err = rx_motor_emergency_stop(&s_motor);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+void test_motor_emergency_stop_gptw_stop_error(void)
+{
+  /* Covers lines 1912, 1914: rx_gptw_stop error in emergency_stop */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  mock_gptw_set_stop_error(k_rx_err_hw_error);
+  rx_err_t err = rx_motor_emergency_stop(&s_motor);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+/* =============================================================================
+ * Coverage Gap Tests - Second set_duty failure and invalid output selection
+ * =============================================================================
+ */
+
+void test_motor_init_invalid_output_selection(void)
+{
+  /* Covers line 679: invalid output value (not output_a or output_b) */
+  s_config.output_a = (rx_gptw_output_t)2; /* Invalid: only 0 and 1 are valid */
+  rx_err_t err      = rx_motor_init(&s_motor, &s_config);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+void test_motor_init_same_output_a_and_b(void)
+{
+  /* Covers line 685: output_a == output_b (both k_gptw_output_a) */
+  s_config.output_a = k_gptw_output_a;
+  s_config.output_b = k_gptw_output_a; /* Same as output_a -> invalid */
+  rx_err_t err      = rx_motor_init(&s_motor, &s_config);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+void test_motor_init_gptw_set_duty_b_error(void)
+{
+  /* Covers lines 708-709: second rx_gptw_set_duty failure (output_b) during init.
+   * First set_duty (output_a) succeeds, second (output_b) returns error. */
+  mock_gptw_set_duty_error_after_n(1, k_rx_err_hw_error);
+  rx_err_t err = rx_motor_init(&s_motor, &s_config);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+void test_motor_set_duty_forward_second_set_duty_error(void)
+{
+  /* Covers lines 1411: second rx_gptw_set_duty failure in forward drive path.
+   * Init succeeds (2 set_duty calls). Then set_duty_error_after_n(1) makes the
+   * second set_duty call (output_b = speed) fail during rx_motor_set_duty forward. */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  mock_gptw_set_duty_error_after_n(1, k_rx_err_hw_error);
+  rx_err_t err = rx_motor_set_duty(&s_motor, 50.0F);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_motor_set_duty_reverse_second_set_duty_error(void)
+{
+  /* Covers line 1428: second rx_gptw_set_duty failure in reverse drive path.
+   * First set_duty (output_a = speed) succeeds, second (output_b = 0) fails. */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  mock_gptw_set_duty_error_after_n(1, k_rx_err_hw_error);
+  rx_err_t err = rx_motor_set_duty(&s_motor, -50.0F);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_motor_set_duty_brake_second_set_duty_error(void)
+{
+  /* Covers line 1445: second rx_gptw_set_duty failure in brake (zero duty) path.
+   * First set_duty (output_a = 0%) succeeds, second (output_b = 0%) fails. */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  mock_gptw_set_duty_error_after_n(1, k_rx_err_hw_error);
+  rx_err_t err = rx_motor_set_duty(&s_motor, 0.0F);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_motor_stop_second_set_duty_error(void)
+{
+  /* Covers line 1564: second rx_gptw_set_duty failure in rx_motor_stop (brake mode).
+   * First set_duty (output_a = stop_level) succeeds, second (output_b) fails. */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_set_duty(&s_motor, 50.0F));
+  mock_gptw_set_duty_error_after_n(1, k_rx_err_hw_error);
+  rx_err_t err = rx_motor_stop(&s_motor, true);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_motor_deinit_stop_fails_warns(void)
+{
+  /* Covers line 1102: rx_motor_stop fails during rx_motor_deinit but deinit continues.
+   * stop (coast mode) calls set_duty; if set_duty fails, stop returns error but deinit
+   * continues to rx_gptw_deinit(). If gptw_deinit succeeds, deinit returns k_rx_ok. */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_set_duty(&s_motor, 50.0F));
+  mock_gptw_set_duty_error(k_rx_err_hw_error);
+  rx_err_t err = rx_motor_deinit(&s_motor);
+  /* Deinit continues past stop failure; gptw_deinit (no duty error) succeeds -> k_rx_ok */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+void test_motor_emergency_stop_second_set_duty_error(void)
+{
+  /* Covers line 1884: second set_duty (output_b) fails in emergency_stop while
+   * first set_duty (output_a) succeeded. result stays k_rx_ok until line 1884 sets it. */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_set_duty(&s_motor, 75.0F));
+  mock_gptw_set_duty_error_after_n(1, k_rx_err_hw_error);
+  rx_err_t err = rx_motor_emergency_stop(&s_motor);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+void test_motor_emergency_stop_second_enable_output_error(void)
+{
+  /* Covers line 1900: second enable_output (output_b) fails in emergency_stop while
+   * first enable_output (output_a) succeeded. result stays k_rx_ok until line 1900. */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  mock_gptw_set_enable_output_error_after_n(1, k_rx_err_hw_error);
+  rx_err_t err = rx_motor_emergency_stop(&s_motor);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+/**
+ * @brief Both set_duty AND enable_output_a fail in emergency_stop
+ *
+ * @details Exercises the FALSE branch of (result == k_rx_ok) inside the
+ * enable_output_a error block: result is already set to hw_error from set_duty.
+ */
+void test_motor_emergency_stop_duty_and_enable_both_fail(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  mock_gptw_set_duty_error(k_rx_err_hw_error);     /* both set_duty calls fail */
+  mock_gptw_set_enable_output_error(k_rx_err_hw_error); /* all enable_output calls fail */
+  rx_err_t err = rx_motor_emergency_stop(&s_motor);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+/**
+ * @brief Both set_duty AND gptw_stop fail in emergency_stop
+ *
+ * @details Exercises the FALSE branch of (result == k_rx_ok) inside the
+ * gptw_stop error block: result is already set to hw_error from set_duty.
+ */
+void test_motor_emergency_stop_duty_and_stop_both_fail(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
+  mock_gptw_set_duty_error(k_rx_err_hw_error); /* both set_duty calls fail */
+  mock_gptw_set_stop_error(k_rx_err_hw_error); /* gptw_stop also fails */
+  rx_err_t err = rx_motor_emergency_stop(&s_motor);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(s_motor.initialized);
+}
+
+/* =============================================================================
  * Main Test Runner
  * =============================================================================
  */
@@ -1361,6 +1605,32 @@ int main(void)
   RUN_TEST(test_motor_emergency_stop_null_handle_fails);
   RUN_TEST(test_motor_emergency_stop_not_initialized_fails);
   RUN_TEST(test_motor_emergency_stop_requires_reinit);
+
+  /* GPTW error injection tests */
+  RUN_TEST(test_motor_init_gptw_init_error);
+  RUN_TEST(test_motor_init_gptw_set_duty_a_error);
+  RUN_TEST(test_motor_deinit_gptw_deinit_error);
+  RUN_TEST(test_motor_set_duty_gptw_set_duty_error);
+  RUN_TEST(test_motor_set_duty_reverse_gptw_error);
+  RUN_TEST(test_motor_set_duty_brake_gptw_error);
+  RUN_TEST(test_motor_stop_gptw_error);
+  RUN_TEST(test_motor_emergency_stop_set_duty_error);
+  RUN_TEST(test_motor_emergency_stop_enable_output_error);
+  RUN_TEST(test_motor_emergency_stop_gptw_stop_error);
+
+  /* Coverage gap tests - second set_duty failure and invalid output selection */
+  RUN_TEST(test_motor_init_invalid_output_selection);
+  RUN_TEST(test_motor_init_same_output_a_and_b);
+  RUN_TEST(test_motor_init_gptw_set_duty_b_error);
+  RUN_TEST(test_motor_set_duty_forward_second_set_duty_error);
+  RUN_TEST(test_motor_set_duty_reverse_second_set_duty_error);
+  RUN_TEST(test_motor_set_duty_brake_second_set_duty_error);
+  RUN_TEST(test_motor_stop_second_set_duty_error);
+  RUN_TEST(test_motor_deinit_stop_fails_warns);
+  RUN_TEST(test_motor_emergency_stop_second_set_duty_error);
+  RUN_TEST(test_motor_emergency_stop_second_enable_output_error);
+  RUN_TEST(test_motor_emergency_stop_duty_and_enable_both_fail);
+  RUN_TEST(test_motor_emergency_stop_duty_and_stop_both_fail);
 
   return UNITY_END();
 }

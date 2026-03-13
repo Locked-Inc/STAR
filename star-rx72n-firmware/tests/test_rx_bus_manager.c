@@ -1708,6 +1708,173 @@ void test_rx_bus_manager_execute_command_not_found(void)
 }
 
 /* =============================================================================
+ * Bus Config Validation Coverage Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Invalid channel in rx_bus_config_init_uart returns error
+ *
+ * @details
+ * Passes channel >= k_sci_channel_count (13) to trigger the invalid-channel
+ * branch inside rx_bus_config_init_uart (lines 1200-1201).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers lines 1200-1201 of rx_bus_config.c
+ */
+void test_bus_config_uart_invalid_channel_returns_error(void)
+{
+  rx_bus_config_t config;
+  static const uint8_t k_invalid_channel = k_sci_channel_count;
+  rx_err_t err = rx_bus_config_init_uart(&config, "test", k_invalid_channel,
+                                          k_rx_pb_7, k_rx_pb_6, 115200U);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Invalid TX pin in rx_bus_config_init_uart returns error
+ *
+ * @details
+ * Passes a TX pin with port > k_rx_port_j to trigger the invalid-TX-pin
+ * branch inside rx_bus_config_init_uart (line 1206).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers line 1206 of rx_bus_config.c
+ */
+void test_bus_config_uart_invalid_tx_pin_returns_error(void)
+{
+  rx_bus_config_t        config;
+  static const uint8_t   k_valid_channel = 9U;
+  static const rx_port_pin_t k_invalid_tx = (rx_port_pin_t)0xFF00U;
+  rx_err_t err = rx_bus_config_init_uart(&config, "test", k_valid_channel,
+                                          k_invalid_tx, k_rx_pb_6, 115200U);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Invalid RX pin in rx_bus_config_init_uart returns error
+ *
+ * @details
+ * Passes a valid TX but invalid RX pin to trigger the invalid-RX-pin
+ * branch inside rx_bus_config_init_uart (line 1211).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers line 1211 of rx_bus_config.c
+ */
+void test_bus_config_uart_invalid_rx_pin_returns_error(void)
+{
+  rx_bus_config_t        config;
+  static const uint8_t   k_valid_channel = 9U;
+  static const rx_port_pin_t k_invalid_rx = (rx_port_pin_t)0xFF00U;
+  rx_err_t err = rx_bus_config_init_uart(&config, "test", k_valid_channel,
+                                          k_rx_pb_7, k_invalid_rx, 115200U);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Zero baud rate in rx_bus_config_init_uart returns error
+ *
+ * @details
+ * Passes baudrate=0 to trigger the invalid-baud-rate branch inside
+ * rx_bus_config_init_uart (lines 1216-1217).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers lines 1216-1217 of rx_bus_config.c
+ */
+void test_bus_config_uart_zero_baudrate_returns_error(void)
+{
+  rx_bus_config_t      config;
+  static const uint8_t k_valid_channel = 9U;
+  rx_err_t err = rx_bus_config_init_uart(&config, "test", k_valid_channel,
+                                          k_rx_pb_7, k_rx_pb_6, 0U);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Invalid pin in rx_bus_config_init_onewire returns error
+ *
+ * @details
+ * Passes a rx_port_pin_t with port > k_rx_port_j to trigger the invalid-pin
+ * branch inside rx_bus_config_init_onewire (line 1489).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers line 1489 of rx_bus_config.c
+ */
+void test_bus_config_onewire_invalid_pin_returns_error(void)
+{
+  rx_bus_config_t config;
+  static const rx_port_pin_t k_invalid_pin = (rx_port_pin_t)0xFF00U;
+  rx_err_t err = rx_bus_config_init_onewire(&config, "test", k_invalid_pin);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Null config pointer to rx_bus_config_init_uart returns error
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(config, ...) branch at line 1195 of rx_bus_config.c.
+ */
+void test_bus_config_uart_null_config_returns_error(void)
+{
+  static const uint8_t k_valid_channel = 9U;
+  rx_err_t             err = rx_bus_config_init_uart(nullptr, "test",
+                                                      k_valid_channel,
+                                                      k_rx_pb_7, k_rx_pb_6, 115200U);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Null name pointer to rx_bus_config_init_uart returns error
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(name, ...) branch at line 1196 of rx_bus_config.c.
+ */
+void test_bus_config_uart_null_name_returns_error(void)
+{
+  rx_bus_config_t      config;
+  static const uint8_t k_valid_channel = 9U;
+  rx_err_t             err = rx_bus_config_init_uart(&config, nullptr,
+                                                      k_valid_channel,
+                                                      k_rx_pb_7, k_rx_pb_6, 115200U);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Null config pointer to rx_bus_config_init_onewire returns error
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(config, ...) branch at line 1483 of rx_bus_config.c.
+ */
+void test_bus_config_onewire_null_config_returns_error(void)
+{
+  rx_err_t err = rx_bus_config_init_onewire(nullptr, "test", k_rx_p0_5);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Null name pointer to rx_bus_config_init_onewire returns error
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(name, ...) branch at line 1484 of rx_bus_config.c.
+ */
+void test_bus_config_onewire_null_name_returns_error(void)
+{
+  rx_bus_config_t config;
+  rx_err_t        err = rx_bus_config_init_onewire(&config, nullptr, k_rx_p0_5);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/* =============================================================================
  * Test Runner
  * =============================================================================
  */
@@ -1763,6 +1930,17 @@ int main(void)
   RUN_TEST(test_rx_bus_manager_execute_command_null_command);
   RUN_TEST(test_rx_bus_manager_execute_command_null_execute);
   RUN_TEST(test_rx_bus_manager_execute_command_not_found);
+
+  /* Bus config validation tests */
+  RUN_TEST(test_bus_config_uart_invalid_channel_returns_error);
+  RUN_TEST(test_bus_config_uart_invalid_tx_pin_returns_error);
+  RUN_TEST(test_bus_config_uart_invalid_rx_pin_returns_error);
+  RUN_TEST(test_bus_config_uart_zero_baudrate_returns_error);
+  RUN_TEST(test_bus_config_onewire_invalid_pin_returns_error);
+  RUN_TEST(test_bus_config_uart_null_config_returns_error);
+  RUN_TEST(test_bus_config_uart_null_name_returns_error);
+  RUN_TEST(test_bus_config_onewire_null_config_returns_error);
+  RUN_TEST(test_bus_config_onewire_null_name_returns_error);
 
   return UNITY_END();
 }

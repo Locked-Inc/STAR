@@ -488,6 +488,24 @@ void test_register_guard_get_count_before_init(void)
   TEST_PASS();
 }
 
+/**
+ * @brief Test refresh before init is a safe no-op
+ *
+ * @details
+ * Must run before any rx_register_guard_init() call in the test binary.
+ * Verifies that calling refresh() when s_state.initialized == false
+ * returns immediately without crashing.
+ *
+ * @pre Guard not yet initialized (static default: initialized=false)
+ * @post Guard still not initialized
+ */
+void test_register_guard_refresh_before_init(void)
+{
+  /* Should not crash - returns immediately when not initialized */
+  rx_register_guard_refresh();
+  TEST_ASSERT_FALSE(rx_register_guard_is_initialized());
+}
+
 /* =============================================================================
  * Main
  * =============================================================================
@@ -496,6 +514,12 @@ void test_register_guard_get_count_before_init(void)
 int main(void)
 {
   UNITY_BEGIN();
+
+  /* Before-init edge cases must run FIRST (before any init() call).
+   * Order matters: refresh/get_count before reset_before_init (which calls init). */
+  RUN_TEST(test_register_guard_refresh_before_init);
+  RUN_TEST(test_register_guard_get_count_before_init);
+  RUN_TEST(test_register_guard_reset_before_init);
 
   /* Initialization tests */
   RUN_TEST(test_register_guard_init_success);
@@ -521,8 +545,6 @@ int main(void)
 
   /* Edge case tests */
   RUN_TEST(test_register_guard_many_refreshes);
-  RUN_TEST(test_register_guard_reset_before_init);
-  RUN_TEST(test_register_guard_get_count_before_init);
 
   return UNITY_END();
 }

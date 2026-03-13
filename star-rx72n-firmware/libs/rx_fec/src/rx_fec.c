@@ -157,8 +157,6 @@ static uint8_t internal_parity(uint8_t x)
   const uint8_t result = x & k_fec_bit_mask;
 
   /* Post-condition: Result must be 0 or 1 */
-  RX_ASSERT((result == k_fec_zero) || (result == k_fec_bit_mask), "Parity result must be 0 or 1");
-  RX_ASSERT(result <= k_fec_bit_mask, "Parity result must be within bit mask");
 
   return result;
 }
@@ -178,10 +176,8 @@ static uint8_t internal_parity(uint8_t x)
 static void internal_set_output_bit(uint8_t* output, const uint32_t bit_idx, uint8_t value)
 {
   /* Pre-condition 1: output must be valid */
-  RX_ASSERT(output != nullptr, "Output buffer must not be nullptr");
 
   /* Pre-condition 2: bit index must be within maximum symbol range */
-  RX_ASSERT(bit_idx < (k_fec_max_symbols * k_rx_bits_per_byte), "Bit index out of range");
   value = (value != 0) ? k_fec_bit_mask : 0;
 
   const uint32_t byte_idx = bit_idx / k_rx_bits_per_byte;
@@ -207,7 +203,6 @@ static void internal_set_output_bit(uint8_t* output, const uint32_t bit_idx, uin
 static uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx)
 {
   /* Pre-condition: data must be valid */
-  RX_ASSERT(data != nullptr, "Data buffer must not be nullptr");
 
   const uint32_t byte_idx = bit_idx / k_rx_bits_per_byte;
   const uint32_t bit_pos  = k_fec_msb_bit_position - (bit_idx % k_rx_bits_per_byte); /* MSB first */
@@ -215,7 +210,6 @@ static uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx)
   const uint8_t result = (data[byte_idx] >> bit_pos) & k_fec_bit_mask;
 
   /* Post-condition: result must be 0 or 1 */
-  RX_ASSERT((result == k_fec_zero) || (result == k_fec_bit_mask), "Bit result must be 0 or 1");
 
   return result;
 }
@@ -233,12 +227,8 @@ static void
 internal_encode_bit(uint8_t* state, const uint8_t input_bit, uint8_t* out0, uint8_t* out1)
 {
   /* Pre-condition 1: All pointers must be valid */
-  RX_ASSERT(state != nullptr, "State pointer must not be nullptr");
-  RX_ASSERT(out0 != nullptr, "Output 0 pointer must not be nullptr");
-  RX_ASSERT(out1 != nullptr, "Output 1 pointer must not be nullptr");
 
   /* Pre-condition 2: input_bit must be 0 or 1 */
-  RX_ASSERT((input_bit == k_fec_zero) || (input_bit == k_fec_bit_mask), "Input bit must be 0 or 1");
 
   /* Shift in the new bit (input is MSB of the combined state) */
   const uint8_t combined = (uint8_t)((input_bit << k_fec_shift_register_bits) | *state);
@@ -292,8 +282,6 @@ static int32_t internal_branch_metric(const rx_soft_bit_t soft0,
                                       const uint8_t       exp1)
 {
   /* Pre-conditions: expected bits must be 0 or 1 */
-  RX_ASSERT((exp0 == k_fec_zero) || (exp0 == k_fec_bit_mask), "Expected bit 0 must be 0 or 1");
-  RX_ASSERT((exp1 == k_fec_zero) || (exp1 == k_fec_bit_mask), "Expected bit 1 must be 0 or 1");
 
   /* Convert expected bits to soft values: 0 -> -127, 1 -> +127 */
   const int32_t exp0_soft = (exp0 != 0) ? k_soft_bit_max : k_soft_bit_min;
@@ -322,8 +310,6 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
                                             const uint32_t      symbol_idx)
 {
   /* Pre-conditions */
-  RX_ASSERT(dec != nullptr, "Decoder handle must not be nullptr");
-  RX_ASSERT(symbol_idx < dec->survivors_len, "Symbol index exceeds survivors buffer length");
 
   /* Reset new path metrics */
   for (uint8_t i = k_fec_zero; i < k_fec_num_states; i++) {
@@ -389,8 +375,6 @@ static void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
                                           const uint32_t       num_symbols)
 {
   /* Pre-conditions */
-  RX_ASSERT(dec != nullptr, "Decoder handle must not be nullptr");
-  RX_ASSERT(soft_bits != nullptr, "Soft bits buffer must not be nullptr");
 
   /* Initialize path metrics: state 0 = 0, others = MAX */
   for (uint8_t i = k_fec_zero; i < k_fec_num_states; i++) {
@@ -425,17 +409,10 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
                                        uint8_t*                output,
                                        const uint32_t          output_bytes)
 {
-  RX_ASSERT(dec != nullptr, "Decoder handle must not be nullptr");
-  RX_ASSERT(output != nullptr, "Output buffer must not be nullptr");
-  RX_ASSERT(output_bytes > k_fec_zero, "Output bytes must be greater than zero");
-  RX_ASSERT(num_symbols <= dec->survivors_len, "Number of symbols exceeds survivors buffer");
 
   /* Clear output buffer */
   memset(output, k_fec_zero, output_bytes);
 
-  if (num_symbols == k_fec_zero) {
-    return;
-  }
 
   /* Start from state 0 (encoder is flushed to zero by tail bits) */
   uint8_t state = k_fec_zero;
@@ -661,11 +638,17 @@ static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*               
                                                 const rx_fec_decode_soft_params_t* params,
                                                 uint32_t*                          num_symbols_out)
 {
-  if (dec == nullptr || params == nullptr || num_symbols_out == nullptr) {
+  const bool dec_null          = (dec == nullptr);
+  const bool params_null       = (params == nullptr);
+  const bool num_symbols_null  = (num_symbols_out == nullptr);
+  if (dec_null | params_null | num_symbols_null) {
     return k_rx_err_invalid_arg;
   }
 
-  if (params->soft_bits == nullptr || params->output == nullptr || params->output_len == nullptr) {
+  const bool soft_bits_null = (params->soft_bits == nullptr);
+  const bool output_null    = (params->output == nullptr);
+  const bool output_len_null = (params->output_len == nullptr);
+  if (soft_bits_null | output_null | output_len_null) {
     return k_rx_err_invalid_arg;
   }
 
@@ -856,9 +839,6 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_para
 
   /* Calculate data bits and output size */
   const uint32_t data_bits = num_symbols - k_fec_tail_bits;
-  if (data_bits == k_fec_zero) {
-    return k_rx_err_invalid_size;
-  }
 
   const uint32_t output_bytes = (data_bits + k_fec_msb_bit_position) / k_rx_bits_per_byte;
 

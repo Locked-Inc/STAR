@@ -164,6 +164,13 @@ void mock_rspi_set_deinit_return(mock_rspi_t* mock, rx_err_t ret)
   m->next_deinit_return = ret;
 }
 
+void mock_rspi_set_fail_transfer_on_call_n(mock_rspi_t* mock, uint32_t n, rx_err_t err)
+{
+  mock_rspi_t* m                 = internal_get_mock(mock);
+  m->fail_transfer_on_call_n     = n;
+  m->fail_transfer_on_call_n_err = err;
+}
+
 void mock_rspi_set_controller_init_return(mock_rspi_t* mock, rx_err_t ret)
 {
   mock_rspi_t* m                 = internal_get_mock(mock);
@@ -482,7 +489,14 @@ rx_err_t rspi_peripheral_transfer(rspi_channel_t channel,
     return ret;
   }
 
-  rx_err_t ret = mock->next_transfer_return;
+  /* Check deferred-failure injection: fail on the Nth call */
+  rx_err_t ret = k_rx_ok;
+  if (mock->fail_transfer_on_call_n > 0 && mock->transfer_calls == mock->fail_transfer_on_call_n) {
+    ret                           = mock->fail_transfer_on_call_n_err;
+    mock->fail_transfer_on_call_n = 0; /* Consume the deferred failure */
+  } else {
+    ret = mock->next_transfer_return;
+  }
 
   if (ret == k_rx_ok) {
     /* Capture TX data */
@@ -512,7 +526,7 @@ rx_err_t rspi_peripheral_transfer(rspi_channel_t channel,
 
   mock_rspi_record_call(mock, "rspi_peripheral_transfer", channel, length, 0, ret);
 
-  /* Reset to default for next call */
+  /* Reset one-shot next_transfer_return to default for next call */
   mock->next_transfer_return = k_rx_ok;
 
   return ret;

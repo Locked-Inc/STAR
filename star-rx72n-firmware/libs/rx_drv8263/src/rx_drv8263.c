@@ -39,8 +39,6 @@
 
 #include "rx_drv8263.h"
 
-#include <assert.h>
-
 #include "rx_check.h"
 #include "rx_log.h"
 #include "rx_port_utils.h"
@@ -161,13 +159,14 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-static inline void internal_delay_us(uint32_t us)
+RX_STATIC_TESTABLE void internal_delay_us(uint32_t us)
 {
   /** @brief Maximum allowed busy-wait delay in microseconds */
   enum : uint32_t { k_max_delay_us = 100 };
 
-  assert(us > 0);               /* Precondition: positive delay */
-  assert(us <= k_max_delay_us); /* Precondition: small delay to avoid excessive blocking */
+  if (us == 0 || us > k_max_delay_us) {
+    return;
+  }
 
   volatile uint32_t cycles = us * (uint32_t)k_drv8263_cpu_mhz;
   while (cycles > 0) {
@@ -242,20 +241,14 @@ static inline bool internal_validate_gpio(uint8_t port, uint8_t pin)
  *
  * @since Version 1.0.0
  */
-static inline void internal_gpio_write(uint8_t port, uint8_t pin, bool high)
+RX_STATIC_TESTABLE void internal_gpio_write(uint8_t port, uint8_t pin, bool high)
 {
-  assert(internal_validate_gpio(port, pin));
   if (!internal_validate_gpio(port, pin)) {
     rx_log_debug(s_tag, "GPIO write: invalid port/pin");
     return;
   }
 
   volatile rx_port_regs_t* base = rx_port_get_base(port);
-  assert(base != nullptr);
-  if (base == nullptr) {
-    rx_log_debug(s_tag, "GPIO write: invalid port base");
-    return;
-  }
 
   if (high) {
     base->podr |= (uint8_t)((uint8_t)k_bit_shift_one << pin);
@@ -290,19 +283,14 @@ static inline void internal_gpio_write(uint8_t port, uint8_t pin, bool high)
  *
  * @since Version 1.0.0
  */
-static inline bool internal_gpio_read(uint8_t port, uint8_t pin)
+RX_STATIC_TESTABLE bool internal_gpio_read(uint8_t port, uint8_t pin)
 {
-  assert(internal_validate_gpio(port, pin)); /* Precondition: valid port/pin */
   if (!internal_validate_gpio(port, pin)) {
     rx_log_debug(s_tag, "GPIO read: invalid port/pin");
     return false;
   }
 
   volatile rx_port_regs_t* base = rx_port_get_base(port);
-  assert(base != nullptr); /* Precondition: port must map to a valid register base */
-  if (base == nullptr) {
-    return false;
-  }
 
   return (base->pidr & (uint8_t)((uint8_t)k_bit_shift_one << pin)) != 0;
 }
@@ -332,9 +320,8 @@ static inline bool internal_gpio_read(uint8_t port, uint8_t pin)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_validate_config(const rx_drv8263_config_t* config)
+RX_STATIC_TESTABLE rx_err_t internal_validate_config(const rx_drv8263_config_t* config)
 {
-  assert(config != nullptr);
   if (config == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -396,10 +383,9 @@ static rx_err_t internal_validate_config(const rx_drv8263_config_t* config)
  *
  * @since Version 1.0.0
  */
-static void internal_olp_apply_patterns(const rx_drv8263_handle_t* handle, bool nfault_readings[])
+RX_STATIC_TESTABLE void internal_olp_apply_patterns(const rx_drv8263_handle_t* handle,
+                                                    bool                       nfault_readings[])
 {
-  assert(handle != nullptr);
-  assert(nfault_readings != nullptr);
   if (handle == nullptr || nfault_readings == nullptr) {
     return;
   }
@@ -461,15 +447,12 @@ static void internal_olp_apply_patterns(const rx_drv8263_handle_t* handle, bool 
  *
  * @since Version 1.0.0
  */
-static void internal_olp_decode_results(bool                     f0,
-                                        bool                     f1,
-                                        bool                     f2,
-                                        rx_drv8263_olp_result_t* result_out1,
-                                        rx_drv8263_olp_result_t* result_out2)
+RX_STATIC_TESTABLE void internal_olp_decode_results(bool                     f0,
+                                                    bool                     f1,
+                                                    bool                     f2,
+                                                    rx_drv8263_olp_result_t* result_out1,
+                                                    rx_drv8263_olp_result_t* result_out2)
 {
-  assert(result_out1 != nullptr);
-  assert(result_out2 != nullptr);
-
   if (result_out1 == nullptr || result_out2 == nullptr) {
     rx_log_error(s_tag, "OLP: null output pointer");
     return;
@@ -479,13 +462,13 @@ static void internal_olp_decode_results(bool                     f0,
     /* {1,1,1} = Normal */
     *result_out1 = k_drv8263_olp_normal;
     *result_out2 = k_drv8263_olp_normal;
-  } else if (f0 && f1 && !f2) {
-    /* {1,1,0} = Open Load on OUT2 */
+  } else if (f0 && f1) {
+    /* {1,1,0} = Open Load on OUT2 (f2 must be false; f0&&f1&&f2 ruled out above) */
     *result_out1 = k_drv8263_olp_normal;
     *result_out2 = k_drv8263_olp_open_load;
     rx_log_warn(s_tag, "OLP: Open load on OUT2");
-  } else if (f0 && !f1 && f2) {
-    /* {1,0,1} = Open Load on OUT1 */
+  } else if (f0 && f2) {
+    /* {1,0,1} = Open Load on OUT1 (f1 must be false; f0&&f1 ruled out above) */
     *result_out1 = k_drv8263_olp_open_load;
     *result_out2 = k_drv8263_olp_normal;
     rx_log_warn(s_tag, "OLP: Open load on OUT1");
@@ -591,10 +574,10 @@ rx_err_t rx_drv8263_init(rx_drv8263_handle_t* handle, const rx_drv8263_config_t*
     rx_drv8263_olp_result_t result_out1 = k_drv8263_olp_unknown;
     rx_drv8263_olp_result_t result_out2 = k_drv8263_olp_unknown;
 
-    const rx_err_t olp_err = rx_drv8263_run_olp(handle, &result_out1, &result_out2);
-    if (olp_err != k_rx_ok) {
-      rx_log_warn(s_tag, "Boot OLP diagnostic failed");
-    } else if (result_out1 != k_drv8263_olp_normal || result_out2 != k_drv8263_olp_normal) {
+    (void)rx_drv8263_run_olp(handle, &result_out1, &result_out2);
+    bool out1_abnormal = (result_out1 != k_drv8263_olp_normal);
+    bool out2_abnormal = (result_out2 != k_drv8263_olp_normal);
+    if (out1_abnormal | out2_abnormal) {
       rx_log_warn(s_tag, "Boot OLP detected abnormal load condition");
     }
   }

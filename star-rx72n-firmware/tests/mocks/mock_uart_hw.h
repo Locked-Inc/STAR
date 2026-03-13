@@ -99,8 +99,12 @@ typedef struct {
   mock_uart_channel_t channels[k_mock_uart_channel_count];       /**< Per-channel state */
   mock_uart_call_t    call_history[k_mock_uart_call_history_sz]; /**< Call history */
   uint16_t            call_count;                                /**< Number of calls recorded */
-  rx_err_t            next_error; /**< Error to return on next call */
-  bool                error_set;  /**< Whether error injection is active */
+  rx_err_t            next_error;       /**< Error to return on next call (all functions) */
+  bool                error_set;        /**< Whether general error injection is active */
+  rx_err_t            next_write_error; /**< Error to return on next write call only */
+  bool                write_error_set;  /**< Whether write-only error injection is active */
+  rx_err_t            next_read_error;  /**< Error to return on next read call only */
+  bool                read_error_set;   /**< Whether read-only error injection is active */
 } mock_uart_hw_t;
 
 /* =============================================================================
@@ -209,7 +213,27 @@ void mock_uart_hw_clear_tx(uint8_t channel);
 void mock_uart_hw_set_next_error(rx_err_t err);
 
 /**
- * @brief Clear any pending error injection
+ * @brief Set error to return on next UART write call only
+ *
+ * Only consumed by uart_write_channel(); read and availability calls are
+ * not affected. After the next write call the injection is cleared.
+ *
+ * @param[in] err Error code to return
+ */
+void mock_uart_hw_set_next_write_error(rx_err_t err);
+
+/**
+ * @brief Set error to return on next UART read call only
+ *
+ * Only consumed by uart_read_channel(); uart_rx_available() and write calls
+ * are not affected. After the next read call the injection is cleared.
+ *
+ * @param[in] err Error code to return
+ */
+void mock_uart_hw_set_next_read_error(rx_err_t err);
+
+/**
+ * @brief Clear any pending error injection (all error slots)
  */
 void mock_uart_hw_clear_error(void);
 
@@ -262,30 +286,7 @@ bool mock_uart_hw_is_initialized(uint8_t channel);
  */
 uint32_t mock_uart_hw_get_baudrate(uint8_t channel);
 
-/* =============================================================================
- * UART HAL Function Declarations (for test linking)
- *
- * These match the declarations in hardware.h and are implemented in
- * mock_uart_hw.c for testing.
- * =============================================================================
- */
-
-rx_err_t uart_init_channel(const uart_channel_config_t* config);
-rx_err_t uart_deinit_channel(uart_channel_t channel);
-rx_err_t uart_putc_channel(uart_channel_t channel, char data);
-rx_err_t uart_puts_channel(uart_channel_t channel, const char* str);
-rx_err_t uart_write_channel(uart_channel_t channel, const uint8_t* data, uint16_t length);
-rx_err_t uart_getc_channel(uart_channel_t channel, char* data);
-rx_err_t
-uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read);
-rx_err_t uart_rx_available(uart_channel_t channel, bool* available);
-
-/* Debug UART convenience wrapper functions */
-rx_err_t uart_debug_init(void);
-void     uart_debug_putc(char data);
-void     uart_debug_puts(const char* str);
-void     uart_debug_putint(int32_t value);
-void     uart_debug_puthex(uint32_t value, uint8_t digits);
+/* UART HAL functions are declared in hardware.h (included above). */
 
 #ifdef __cplusplus
 }

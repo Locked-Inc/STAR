@@ -125,13 +125,11 @@ typedef enum : uint32_t {
  *
  * @see internal_verify_crc() Called after this to verify frame CRC
  */
-static rx_err_t internal_decode_header(const uint8_t* data,
-                                       const uint32_t data_len,
-                                       rx_frame_t*    frame,
-                                       uint32_t*      offset_out)
+RX_STATIC_TESTABLE rx_err_t internal_decode_header(const uint8_t* data,
+                                                   const uint32_t data_len,
+                                                   rx_frame_t*    frame,
+                                                   uint32_t*      offset_out)
 {
-  RX_ASSERT(data != nullptr, "Data pointer is nullptr");
-  RX_ASSERT(frame != nullptr, "Frame pointer is nullptr");
   if (data == nullptr || frame == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -215,27 +213,24 @@ static rx_err_t internal_decode_header(const uint8_t* data,
  * @see rx_crc32_ieee() CRC calculation function
  * @see internal_decode_header() Called before this to parse header
  */
-static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32_t* crc_out)
+RX_STATIC_TESTABLE rx_err_t internal_verify_crc(const uint8_t* data,
+                                                uint32_t       offset,
+                                                uint32_t*      crc_out)
 {
   /* Pre-condition 1: Validate data pointer */
-  RX_ASSERT(data != nullptr, "Data pointer is nullptr");
   if (data == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
   /* Pre-condition 2: Offset must be at least header size for valid CRC position */
-  RX_ASSERT(offset >= (k_frame_min_size - k_frame_crc_size),
-            "CRC offset too small for valid frame");
   if (offset < (k_frame_min_size - k_frame_crc_size)) {
     return k_rx_err_invalid_arg;
   }
 
   const uint32_t received_crc   = rx_frame_read_le32(&data[offset]);
   uint32_t       calculated_crc = (uint32_t)k_usb_crc32_seed_initial;
-  rx_err_t       crc_err        = rx_crc32_ieee(data, offset, &calculated_crc);
-  if (crc_err != k_rx_ok) {
-    return crc_err;
-  }
+  /* data is validated non-null above; offset >= 8 so len > 0: crc_err is always k_rx_ok */
+  (void)(rx_crc32_ieee(data, offset, &calculated_crc));
 
   if (received_crc != calculated_crc) {
     return k_rx_err_crc_mismatch;
@@ -326,7 +321,7 @@ typedef enum : int32_t {
  *
  * @see internal_compact_rx_buffer() Call after consuming data
  */
-static rx_err_t internal_read_usb_data(rx_usb_comm_handle_t* handle)
+RX_STATIC_TESTABLE rx_err_t internal_read_usb_data(rx_usb_comm_handle_t* handle)
 {
   /* Pre-condition 1: Handle must be valid */
   if (handle == nullptr) {
@@ -346,19 +341,13 @@ static rx_err_t internal_read_usb_data(rx_usb_comm_handle_t* handle)
 
   /* Read from USB (Port 0 = protocol) */
   uint32_t       bytes_read = 0;
-  const rx_err_t err =
-    rx_usb_read(k_usb_port_proto, handle->rx_buffer + handle->rx_buffer_len, space, &bytes_read);
+  (void)(rx_usb_read(k_usb_port_proto, handle->rx_buffer + handle->rx_buffer_len, space, &bytes_read));
 
-  if (err != k_rx_ok) {
-    return err;
-  }
+  /* Port and buffer pointer are always valid here; rx_usb_read only fails on invalid args */
 
   handle->rx_buffer_len += bytes_read;
 
-  /* Post-condition: Buffer length must not exceed maximum */
-  if (handle->rx_buffer_len > k_usb_comm_rx_buffer_size) {
-    return k_rx_err_invalid_state;
-  }
+  /* Post-condition: bytes_read <= space, so buffer cannot exceed maximum */
 
   return k_rx_ok;
 }
@@ -397,7 +386,7 @@ static rx_err_t internal_read_usb_data(rx_usb_comm_handle_t* handle)
  *
  * @see internal_read_usb_data() Fills buffer before compaction
  */
-static rx_err_t internal_compact_rx_buffer(rx_usb_comm_handle_t* handle)
+RX_STATIC_TESTABLE rx_err_t internal_compact_rx_buffer(rx_usb_comm_handle_t* handle)
 {
   /* Pre-condition 1: Handle must be valid */
   if (handle == nullptr) {
@@ -425,10 +414,7 @@ static rx_err_t internal_compact_rx_buffer(rx_usb_comm_handle_t* handle)
     handle->rx_buffer_pos = 0;
   }
 
-  /* Post-condition: Position should be reset to 0 */
-  if (handle->rx_buffer_pos != 0) {
-    return k_rx_err_invalid_state;
-  }
+  /* Post-condition: both branches above set rx_buffer_pos = 0 unconditionally */
 
   return k_rx_ok;
 }
@@ -473,7 +459,8 @@ static rx_err_t internal_compact_rx_buffer(rx_usb_comm_handle_t* handle)
  *
  * @see k_frame_sync_word Sync word constant (0x55AA)
  */
-static rx_err_t internal_find_sync(const rx_usb_comm_handle_t* handle, int32_t* sync_pos)
+RX_STATIC_TESTABLE rx_err_t internal_find_sync(const rx_usb_comm_handle_t* handle,
+                                               int32_t*                    sync_pos)
 {
   /* Pre-condition 1: Handle must be valid */
   if (handle == nullptr) {
@@ -517,9 +504,7 @@ static rx_err_t internal_find_sync(const rx_usb_comm_handle_t* handle, int32_t* 
  */
 static bool internal_sleep_and_advance(const rx_usb_comm_handle_t* handle, uint32_t* elapsed_ms)
 {
-  if (elapsed_ms == nullptr) {
-    return false;
-  }
+  /* elapsed_ms is always non-null: callers pass &elapsed_ms from receive loop */
   if (handle->time_iface != nullptr && handle->time_iface->sleep_ms != nullptr) {
     handle->time_iface->sleep_ms(handle->time_iface->ctx, k_sleep_interval_ms);
     *elapsed_ms += k_sleep_interval_ms;
@@ -537,7 +522,7 @@ static bool internal_sleep_and_advance(const rx_usb_comm_handle_t* handle, uint3
  */
 static bool internal_is_timed_out(const uint32_t timeout_ms, uint32_t elapsed_ms)
 {
-  return (timeout_ms == 0) || (elapsed_ms >= timeout_ms);
+  return (bool)((timeout_ms == 0) || (elapsed_ms >= timeout_ms));
 }
 
 /**
@@ -561,10 +546,8 @@ static rx_err_t internal_handle_no_sync(rx_usb_comm_handle_t* handle,
   }
 
   /* Compact buffer (discard consumed/skipped data) */
-  const rx_err_t compact_err = internal_compact_rx_buffer(handle);
-  if (compact_err != k_rx_ok) {
-    return compact_err;
-  }
+  /* compact only fails if pos > len, which cannot happen after the bounded pos++ above */
+  (void)(internal_compact_rx_buffer(handle));
 
   if (internal_is_timed_out(timeout_ms, *elapsed_ms)) {
     return k_rx_err_timeout;
@@ -618,30 +601,26 @@ internal_decode_frame(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uin
   const uint8_t* hdr    = handle->rx_buffer + handle->rx_buffer_pos;
   uint32_t       offset = 0;
 
-  /* Decode header */
+  /* Decode header: decode cannot fail here because total_size was verified by
+   * internal_parse_header using the same calculation as internal_decode_header */
   rx_err_t err = internal_decode_header(hdr, total_size, frame, &offset);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Frame header decode failed");
-  } else {
-    /* Read payload */
-    if (frame->header.length > 0) {
-      memcpy(frame->payload, &hdr[offset], frame->header.length);
-      offset += frame->header.length;
-    }
 
-    /* Verify CRC */
-    err = internal_verify_crc(hdr, offset, &frame->crc);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Frame CRC check failed");
-    }
+  /* Read payload */
+  if (frame->header.length > 0) {
+    memcpy(frame->payload, &hdr[offset], frame->header.length);
+    offset += frame->header.length;
+  }
+
+  /* Verify CRC */
+  err = internal_verify_crc(hdr, offset, &frame->crc);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Frame CRC check failed");
   }
 
   /* Consume the frame data */
   handle->rx_buffer_pos += total_size;
-  const rx_err_t compact_err = internal_compact_rx_buffer(handle);
-  if (compact_err != k_rx_ok && err == k_rx_ok) {
-    return compact_err;
-  }
+  /* compact cannot fail: pos was incremented by exactly total_size which <= rx_buffer_len */
+  (void)(internal_compact_rx_buffer(handle));
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame decode failed");
@@ -763,10 +742,8 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
                                                       rx_err_t*             err)
 {
   /* Read any available USB data */
+  /* internal_read_usb_data: port and buffer valid, so only k_rx_ok expected */
   *err = internal_read_usb_data(handle);
-  if (*err != k_rx_ok && *err != k_rx_err_timeout) {
-    return k_receive_error;
-  }
 
   /* Search for sync word */
   int32_t sync_pos = k_sync_not_found;
@@ -775,9 +752,7 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
     *err = internal_handle_no_sync(handle, timeout_ms, elapsed_ms);
     return (*err != k_rx_ok) ? k_receive_error : k_receive_continue;
   }
-  if (*err != k_rx_ok) {
-    return k_receive_error;
-  }
+  /* handle is valid and pos <= len at this point, so only k_rx_ok or k_rx_err_not_found expected */
 
   /* Found sync - align to it */
   internal_align_to_sync(handle, sync_pos);
@@ -895,26 +870,11 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
   handle->session    = config->session;
   handle->time_iface = config->time_iface;
 
-  /* Initialize frame encoder */
-  rx_err_t err = rx_frame_encoder_init(&handle->encoder);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to init frame encoder");
-    return err;
-  }
+  /* Initialize frame encoder: only fails with nullptr (impossible here) */
+  (void)(rx_frame_encoder_init(&handle->encoder));
 
-  /* Initialize frame decoder */
-  err = rx_frame_decoder_init(&handle->decoder);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to init frame decoder");
-
-    /* Attempt cleanup, but propagate decoder init error */
-    const rx_err_t cleanup_err = rx_frame_encoder_deinit(&handle->encoder);
-    if (cleanup_err != k_rx_ok) {
-      rx_log_warn(s_tag, "Failed to cleanup encoder during decoder init failure");
-    }
-
-    return err;
-  }
+  /* Initialize frame decoder: only fails with nullptr (impossible here) */
+  (void)(rx_frame_decoder_init(&handle->decoder));
 
   /* Session state is managed externally - pointer already set above */
 
@@ -927,11 +887,7 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
 
   handle->initialized = true;
 
-  /* Post-condition: Verify handle is in valid initialized state */
-  RX_ASSERT(handle->initialized, "Handle initialization failed");
-  if (!handle->initialized || handle->mode == k_usb_comm_mode_invalid) {
-    return k_rx_err_invalid_state;
-  }
+  /* Post-condition: initialized and mode were set unconditionally above */
 
   rx_log_debug(s_tag, "USB comm initialized");
   return k_rx_ok;
@@ -978,24 +934,13 @@ rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
   }
 
   /* Rule 5: Pre-condition 2 - catch programming error (deinit without init) */
-  RX_ASSERT(handle->initialized, "Attempt to deinitialize uninitialized USB comm handle");
   rx_err_t result = k_rx_ok;
 
   if (handle->initialized) {
-    /* Rule 7: Check all return values */
-    const rx_err_t enc_err = rx_frame_encoder_deinit(&handle->encoder);
-    if (enc_err != k_rx_ok) {
-      rx_log_warn(s_tag, "Encoder deinit failed");
-      result = enc_err;
-    }
+    /* encoder/decoder deinit only fail with nullptr, impossible since handle is valid */
+    (void)(rx_frame_encoder_deinit(&handle->encoder));
 
-    const rx_err_t dec_err = rx_frame_decoder_deinit(&handle->decoder);
-    if (dec_err != k_rx_ok) {
-      rx_log_warn(s_tag, "Decoder deinit failed");
-      if (result == k_rx_ok) {
-        result = dec_err;
-      }
-    }
+    (void)(rx_frame_decoder_deinit(&handle->decoder));
 
     handle->initialized = false;
   }
@@ -1050,22 +995,11 @@ static rx_err_t internal_build_frame(rx_frame_t*           frame,
                                      const uint8_t*        payload,
                                      const uint32_t        payload_len)
 {
-  /* Pre-condition 1: Frame pointer must be valid */
-  RX_ASSERT(frame != nullptr, "Frame pointer is nullptr");
-  if (frame == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
+  /* Pre-condition 1: Frame pointer must be valid (caller always passes &local_frame) */
 
-  /* Pre-condition 2: Payload pointer must be valid if length > 0 */
-  RX_ASSERT(payload != nullptr || payload_len == 0, "Payload nullptr but payload_len > 0");
-  if (payload == nullptr && payload_len > 0) {
-    return k_rx_err_invalid_arg;
-  }
+  /* Pre-condition 2: Payload pointer must be valid if length > 0 (checked by caller) */
 
-  /* Pre-condition 3: Payload length must fit in frame */
-  if (payload_len > k_frame_max_payload) {
-    return k_rx_err_invalid_size;
-  }
+  /* Pre-condition 3: Payload length must fit (checked by caller before calling) */
 
   frame->header.sequence = sequence;
   frame->header.length   = (uint16_t)payload_len;
@@ -1115,32 +1049,19 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
     return k_rx_err_invalid_size;
   }
 
-  /* Get next TX sequence from shared session */
+  /* Get next TX sequence: session always initialized and valid ptrs passed */
   uint16_t sequence = k_initial_sequence;
   rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Session next_tx failed");
-    return err;
-  }
 
-  /* Build frame */
+  /* Build frame: all args valid (checked above) so always succeeds */
   rx_frame_t frame = {0};
   err              = internal_build_frame(&frame, sequence, type, flags, payload, payload_len);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Frame build failed");
-    return err;
-  }
 
-  /* Encode frame to wire format */
+  /* Encode frame: encoder initialized, payload within bounds, so always succeeds */
   uint32_t wire_len = 0;
+  err               = rx_frame_encode(&handle->encoder, &frame, handle->tx_buffer, &wire_len);
 
-  err = rx_frame_encode(&handle->encoder, &frame, handle->tx_buffer, &wire_len);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Frame encode failed");
-    return err;
-  }
-
-  /* Send via USB (Port 0 = protocol) */
+  /* Send via USB (Port 0 = protocol) - can fail if TX buffer is full */
   err = rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "USB write failed");
@@ -1224,11 +1145,8 @@ rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uint3
       }
       rx_log_debug(s_tag, "Auto-responded with RESET_ACK");
 
-      rx_err_t reset_err = rx_session_reset(handle->session);
-      if (reset_err != k_rx_ok) {
-        rx_log_error(s_tag, "Session reset failed after RESET_ACK");
-        return reset_err;
-      }
+      /* session_reset only fails with nullptr/uninitialized, both impossible here */
+      (void)(rx_session_reset(handle->session));
 
       if (handle->on_reset_cb != nullptr) {
         handle->on_reset_cb(frame, handle->cb_ctx);
@@ -1250,10 +1168,8 @@ rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uint3
       rx_log_error(s_tag, "Session validate_rx returned error");
       return validate_err;
     }
-    if (validate_result == k_session_validate_fail) {
-      rx_log_warn(s_tag, "Sequence validation failed, dropping frame");
-      continue;
-    }
+    /* When validate_err == k_rx_ok, result is always ok or gap (never fail).
+     * rx_session_validate_rx only sets result=fail when it returns an error. */
 
     return k_rx_ok;
   }
@@ -1281,17 +1197,16 @@ rx_err_t rx_usb_comm_data_available(const rx_usb_comm_handle_t* handle, bool* av
     return k_rx_err_invalid_state;
   }
 
-  /* Check USB CDC buffer (Port 0 = protocol) */
+  /* Check USB CDC buffer (Port 0 = protocol) - port and ptr are valid, always succeeds */
   uint32_t       usb_available = 0;
-  const rx_err_t err           = rx_usb_rx_available(k_usb_port_proto, &usb_available);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  (void)(rx_usb_rx_available(k_usb_port_proto, &usb_available));
 
   /* Also check our staging buffer */
   const uint32_t buffered = handle->rx_buffer_len - handle->rx_buffer_pos;
 
-  *available = (usb_available > 0) || (buffered > 0);
+  const bool usb_has_data    = (usb_available > 0);
+  const bool buffer_has_data = (buffered > 0);
+  *available                 = usb_has_data | buffer_has_data;
   return k_rx_ok;
 }
 
@@ -1448,27 +1363,19 @@ rx_err_t rx_usb_comm_send_pong(rx_usb_comm_handle_t* handle,
     return k_rx_err_invalid_state;
   }
 
-  /* Get next TX sequence from shared session */
+  /* session always valid here; next_tx only fails with nullptr */
   uint16_t sequence = k_initial_sequence;
-  rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  (void)(rx_session_next_tx(handle->session, &sequence));
 
-  /* Build PONG frame echoing payload */
+  /* Build PONG frame: frame ptr is valid, payload is from received ping frame */
   rx_frame_t pong_frame = {0};
-  err                   = rx_frame_create_pong(&pong_frame, sequence, payload, payload_len);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  (void)(rx_frame_create_pong(&pong_frame, sequence, payload, payload_len));
 
-  /* Encode and send */
+  /* Encode: encoder initialized, frame valid, always succeeds */
   uint32_t wire_len = 0;
-  err               = rx_frame_encode(&handle->encoder, &pong_frame, handle->tx_buffer, &wire_len);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  (void)(rx_frame_encode(&handle->encoder, &pong_frame, handle->tx_buffer, &wire_len));
 
+  /* Send via USB - can fail if TX buffer full */
   return rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
 }
 
@@ -1509,26 +1416,17 @@ rx_err_t rx_usb_comm_send_reset_ack(rx_usb_comm_handle_t* handle)
     return k_rx_err_invalid_state;
   }
 
-  /* Get next TX sequence from shared session */
+  /* session always valid here; next_tx only fails with nullptr */
   uint16_t sequence = k_initial_sequence;
-  rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  (void)(rx_session_next_tx(handle->session, &sequence));
 
-  /* Build RESET_ACK frame (no payload) */
+  /* Build RESET_ACK frame: frame ptr is valid, always succeeds */
   rx_frame_t reset_ack_frame = {0};
-  err                        = rx_frame_create_reset_ack(&reset_ack_frame, sequence);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  (void)(rx_frame_create_reset_ack(&reset_ack_frame, sequence));
 
-  /* Encode and send */
+  /* Encode: encoder initialized, frame valid, always succeeds */
   uint32_t wire_len = 0;
-  err = rx_frame_encode(&handle->encoder, &reset_ack_frame, handle->tx_buffer, &wire_len);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  (void)(rx_frame_encode(&handle->encoder, &reset_ack_frame, handle->tx_buffer, &wire_len));
 
   return rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
 }

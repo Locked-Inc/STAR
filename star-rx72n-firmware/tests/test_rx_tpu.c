@@ -418,6 +418,17 @@ void test_read_count_uninit(void)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
+/**
+ * @brief Test: Read count on invalid channel (3) returns invalid_arg
+ */
+void test_read_count_invalid_channel(void)
+{
+  uint16_t count = 0;
+  rx_err_t err   = rx_tpu_read_count((rx_tpu_channel_t)3, &count);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
 /* =============================================================================
  * Read Direction Tests
  * =============================================================================
@@ -492,6 +503,17 @@ void test_read_direction_uninit(void)
   rx_err_t err         = rx_tpu_read_direction(k_tpu_channel_5, &counting_up);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test: Read direction on invalid channel (0) returns invalid_arg
+ */
+void test_read_direction_invalid_channel(void)
+{
+  bool     counting_up = false;
+  rx_err_t err         = rx_tpu_read_direction((rx_tpu_channel_t)0, &counting_up);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /* =============================================================================
@@ -732,6 +754,57 @@ void test_multi_channel_independent(void)
 }
 
 /* =============================================================================
+ * Internal Helper Default-Branch Coverage Tests
+ * =============================================================================
+ */
+
+#ifdef UNIT_TEST
+/**
+ * @brief Forward declaration of internal helpers exposed via RX_STATIC_TESTABLE
+ */
+extern volatile rx_tpu_regs_t* internal_get_regs(rx_tpu_channel_t channel);
+extern uint8_t internal_get_cst_bit(rx_tpu_channel_t channel);
+#endif
+
+/**
+ * @brief Test: internal_get_regs default branch with invalid channel
+ *
+ * @details
+ * Calls internal_get_regs with an invalid channel value to exercise the
+ * default case (RX_ASSERT + return nullptr). In UNIT_TEST builds
+ * internal_rx_fatal_error returns instead of halting, so the return
+ * statement is reached and nullptr is returned.
+ */
+void test_internal_get_regs_invalid_channel(void)
+{
+#ifdef UNIT_TEST
+  volatile rx_tpu_regs_t* result = internal_get_regs((rx_tpu_channel_t)0);
+  TEST_ASSERT_NULL((void*)result);
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/**
+ * @brief Test: internal_get_cst_bit default branch with invalid channel
+ *
+ * @details
+ * Calls internal_get_cst_bit with an invalid channel value to exercise the
+ * default case (RX_ASSERT + return 0). In UNIT_TEST builds
+ * internal_rx_fatal_error returns instead of halting, so the return 0
+ * statement is reached.
+ */
+void test_internal_get_cst_bit_invalid_channel(void)
+{
+#ifdef UNIT_TEST
+  uint8_t result = internal_get_cst_bit((rx_tpu_channel_t)0);
+  TEST_ASSERT_EQUAL_UINT8(0, result);
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/* =============================================================================
  * Unity Test Runner
  * =============================================================================
  */
@@ -766,12 +839,14 @@ int main(void)
   RUN_TEST(test_read_count_max_value);
   RUN_TEST(test_read_count_null_ptr);
   RUN_TEST(test_read_count_uninit);
+  RUN_TEST(test_read_count_invalid_channel);
 
   /* Read direction tests */
   RUN_TEST(test_read_direction_counting_up);
   RUN_TEST(test_read_direction_counting_down);
   RUN_TEST(test_read_direction_null_ptr);
   RUN_TEST(test_read_direction_uninit);
+  RUN_TEST(test_read_direction_invalid_channel);
 
   /* Reset count tests */
   RUN_TEST(test_reset_count);
@@ -791,6 +866,10 @@ int main(void)
   RUN_TEST(test_phase_mode_2_register);
   RUN_TEST(test_init_stops_counter_first);
   RUN_TEST(test_multi_channel_independent);
+
+  /* Internal helper default-branch tests */
+  RUN_TEST(test_internal_get_regs_invalid_channel);
+  RUN_TEST(test_internal_get_cst_bit_invalid_channel);
 
   return UNITY_END();
 }

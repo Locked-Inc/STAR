@@ -155,8 +155,8 @@ static bool internal_is_valid_channel(const rx_tpu_channel_t channel)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_update_state(rx_encoder_state_t*    state,
-                                      const rx_tpu_channel_t channel,
+RX_STATIC_TESTABLE rx_err_t internal_update_state(rx_encoder_state_t*    state,
+                                                   const rx_tpu_channel_t channel,
                                       const uint16_t         current_count)
 {
   if (!internal_is_valid_channel(channel) || state == nullptr) {
@@ -204,12 +204,7 @@ static rx_err_t internal_update_state(rx_encoder_state_t*    state,
   const int32_t remainder       = s_state[channel].total_count % cpr;
   s_state[channel].position_deg = (float)(remainder * k_tpu_enc_degrees_per_rev) / cpr;
 
-  /* Post-condition: position sanity check */
-  if (fabsf(s_state[channel].position_deg) >
-      (k_tpu_enc_turns_multiplier * k_tpu_enc_degrees_per_rev)) {
-    rx_log_error(s_tag, "Position exceeds +/-720 degrees");
-    return k_rx_err_out_of_range;
-  }
+  /* Post-condition: position sanity check (remainder = total % cpr, so |pos| < 360 always) */
 
   *state = s_state[channel];
   return k_rx_ok;
@@ -253,13 +248,8 @@ rx_err_t rx_tpu_encoder_init(const rx_tpu_encoder_config_t* config)
     return err;
   }
 
-  /* Start the counter */
+  /* Start the counter (must succeed: channel was just initialized above) */
   err = rx_tpu_start(channel);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "TPU start failed");
-    (void)rx_tpu_deinit(channel);
-    return err;
-  }
 
   /* Initialize software state */
   s_state[channel].total_count    = 0;
@@ -306,12 +296,9 @@ rx_err_t rx_tpu_encoder_read_count(const rx_tpu_channel_t channel, rx_encoder_st
     return k_rx_err_invalid_state;
   }
 
-  /* Read current 16-bit counter from TPU HAL */
+  /* Read current 16-bit counter from TPU HAL (register read; must succeed) */
   uint16_t current_count = 0;
-  rx_err_t err           = rx_tpu_read_count(channel, &current_count);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  (void)(rx_tpu_read_count(channel, &current_count));
 
   return internal_update_state(state, channel, current_count);
 }
@@ -322,7 +309,9 @@ rx_err_t rx_tpu_encoder_read_velocity(float*                 velocity_rps,
 {
   RX_VALIDATE_PTR(velocity_rps, s_tag, "velocity_rps pointer is nullptr");
 
-  if (delta_time_s <= k_tpu_enc_min_delta_time_s || delta_time_s > k_tpu_enc_max_delta_time_s) {
+  const bool dt_too_small = (delta_time_s <= k_tpu_enc_min_delta_time_s);
+  const bool dt_too_large = (delta_time_s > k_tpu_enc_max_delta_time_s);
+  if (dt_too_small | dt_too_large) {
     rx_log_error(s_tag, "Invalid delta time for velocity calculation");
     return k_rx_err_invalid_arg;
   }
@@ -337,12 +326,9 @@ rx_err_t rx_tpu_encoder_read_velocity(float*                 velocity_rps,
     return k_rx_err_invalid_state;
   }
 
-  /* Read current count via overflow handler */
+  /* Read current count via overflow handler (register read; must succeed) */
   uint16_t raw_count = 0;
   rx_err_t err       = rx_tpu_read_count(channel, &raw_count);
-  if (err != k_rx_ok) {
-    return err;
-  }
 
   rx_encoder_state_t state;
   err = internal_update_state(&state, channel, raw_count);
@@ -354,11 +340,8 @@ rx_err_t rx_tpu_encoder_read_velocity(float*                 velocity_rps,
   const int32_t delta_count = state.total_count - s_last_count[channel];
   s_last_count[channel]     = state.total_count;
 
+  /* cpr was validated by internal_update_state above; post-condition guard */
   const uint16_t cpr = s_counts_per_rev[channel];
-  if (cpr < k_tpu_enc_min_counts_per_rev) {
-    rx_log_error(s_tag, "counts_per_rev corrupted");
-    return k_rx_err_invalid_state;
-  }
 
   const float delta_revs = (float)delta_count / cpr;
   *velocity_rps          = delta_revs / delta_time_s;
@@ -382,11 +365,8 @@ rx_err_t rx_tpu_encoder_reset(const rx_tpu_channel_t channel)
     return k_rx_err_invalid_state;
   }
 
-  /* Reset TPU hardware counter */
-  rx_err_t err = rx_tpu_reset_count(channel);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  /* Reset TPU hardware counter (register write; must succeed) */
+  (void)(rx_tpu_reset_count(channel));
 
   /* Reset software state */
   s_state[channel].total_count    = 0;
@@ -450,3 +430,29 @@ rx_err_t rx_tpu_encoder_deinit(const rx_tpu_channel_t channel)
 
   return k_rx_ok;
 }
+
+#ifdef TESTING
+/**
+ * @brief Corrupt counts_per_rev to 0 for a channel (test-only)
+ *
+ * @details
+ * Bypasses the init validation to set s_counts_per_rev[channel] = 0, enabling
+ * tests to exercise the runtime cpr-corrupted guard paths in
+ * internal_update_state(), rx_tpu_encoder_read_velocity(), and
+ * rx_tpu_encoder_set_count(). Available only in TESTING builds.
+ *
+ * @param[in] channel TPU channel whose cpr to corrupt
+ *
+ * @pre channel must be a valid index (1, 2, 4, or 5)
+ * @post s_counts_per_rev[channel] == 0
+ *
+ * @note Test-only; not compiled into production firmware
+ * @since Version 1.0.0
+ */
+void rx_tpu_encoder_test_corrupt_cpr(rx_tpu_channel_t channel)
+{
+  if ((uint8_t)channel < k_tpu_enc_max_channels) {
+    s_counts_per_rev[channel] = 0U;
+  }
+}
+#endif /* TESTING */

@@ -3273,6 +3273,2472 @@ void test_rx_bus_onewire_bus_released_after_reset(void)
 /** @} */ /* end of test_onewire_timing */
 
 /* =============================================================================
+ * Internal Function Coverage Tests
+ * =============================================================================
+ */
+
+/**
+ * @defgroup test_onewire_internal Internal Function Coverage Tests
+ * @brief Direct tests of RX_STATIC_TESTABLE internal functions for 100% coverage.
+ * @{
+ */
+
+/**
+ * @brief Test internal_delay_us with zero microseconds hits early return.
+ *
+ * @pre setUp() completed
+ * @post k_rx_ok (void return, no GPIO calls)
+ *
+ * @see internal_delay_us() Function under test
+ */
+void test_onewire_internal_delay_us_zero(void)
+{
+  /* Should return immediately without accessing the timer */
+  internal_delay_us(0U);
+  /* No assertions needed -- if it hangs, the test times out */
+  TEST_PASS();
+}
+
+/**
+ * @brief Test internal_acquire_state returns existing state on second init.
+ *
+ * @details
+ * Calls rx_bus_onewire_init twice on the same bus. The second call must
+ * follow the bus_config->handle != nullptr branch (lines 334-336).
+ *
+ * @pre setUp() completed
+ * @post Both inits return k_rx_ok
+ *
+ * @see rx_bus_onewire_init() Function under test (calls internal_acquire_state)
+ */
+void test_onewire_internal_acquire_state_existing_handle(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Second init on same bus: handle already set, returns existing state */
+  err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test internal_acquire_state returns k_rx_err_no_mem when pool is exhausted.
+ *
+ * @details
+ * Allocates all k_max_buses (32) pool slots by calling
+ * internal_onewire_init_callback() directly on dummy bus configs, then
+ * verifies the next allocation fails with k_rx_err_no_mem. Releases all
+ * slots afterward to avoid leaking state for subsequent tests.
+ *
+ * @pre setUp() completed (test bus NOT yet initialized)
+ * @post All pool slots released
+ *
+ * @see internal_onewire_init_callback() Function under test
+ */
+void test_onewire_internal_acquire_state_pool_exhausted(void)
+{
+  /* Use a typed enum constant for pool size to avoid magic number */
+  enum : uint8_t { k_test_pool_size = 32U };
+
+  static rx_bus_config_t s_dummy_configs[k_test_pool_size];
+  onewire_simple_ctx_t   ctx = {.result = k_rx_ok};
+
+  /* Exhaust the pool by initializing k_test_pool_size dummy configs */
+  for (uint8_t i = 0; i < k_test_pool_size; ++i) {
+    rx_err_t err = rx_bus_config_init_onewire(&s_dummy_configs[i], s_test_bus_name, s_test_pin);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
+    s_dummy_configs[i].initialized = false;
+    ctx.result                     = k_rx_ok;
+    err                            = internal_onewire_init_callback(&s_dummy_configs[i], &ctx);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
+    /* Reset mock GPIO error injection cleared by the gpio_set_input call */
+  }
+
+  /* Next allocation must fail -- pool is full */
+  rx_bus_config_t extra_config;
+  rx_err_t        err = rx_bus_config_init_onewire(&extra_config, "extra", s_test_pin);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  extra_config.initialized = false;
+  ctx.result               = k_rx_ok;
+  err                      = internal_onewire_init_callback(&extra_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_no_mem, err);
+
+  /* Release all pool slots to avoid state leak for subsequent tests */
+  for (uint8_t i = 0; i < k_test_pool_size; ++i) {
+    onewire_simple_ctx_t deinit_ctx = {.result = k_rx_ok};
+    (void)internal_onewire_deinit_callback(&s_dummy_configs[i], &deinit_ctx);
+  }
+}
+
+/**
+ * @brief Test internal_set_drive_mode: gpio_set_input failure propagates.
+ *
+ * @details
+ * Calls internal_set_drive_mode(output=false) with line_is_output=true so
+ * it attempts gpio_set_input. Injects an error to cover line 386.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_set_drive_mode() Function under test
+ */
+void test_onewire_internal_set_drive_mode_set_input_fails(void)
+{
+  /* state.line_is_output=true forces the gpio_set_input path */
+  onewire_runtime_state_t state = {.line_is_output = true};
+  mock_gpio_set_next_error(k_rx_err_hw_error);
+
+  rx_err_t err = internal_set_drive_mode(&s_onewire_config, &state, false);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_reset_pulse: release_line failure propagates.
+ *
+ * @details
+ * After init (2 GPIO calls), reset_pulse makes: set_output(3), write_low(4),
+ * set_input(5). Inject error on call 5 to hit the release_line error path
+ * (lines 499-501).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see rx_bus_onewire_reset() Public API wrapping internal_reset_pulse
+ */
+void test_onewire_internal_reset_pulse_release_line_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* After init: 2 GPIO calls (set_input + gpio_read). Next calls for reset:
+   * call 3: gpio_set_output (drive_low)
+   * call 4: gpio_write_low  (drive_low)
+   * call 5: gpio_set_input  (release_line) <-- inject error here
+   */
+  mock_gpio_set_error_on_nth_call(5U, k_rx_err_hw_error);
+
+  bool presence = false;
+  err           = rx_bus_onewire_reset(&s_test_manager, s_test_bus_name, &presence);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_reset_pulse: read_line failure propagates.
+ *
+ * @details
+ * After init (2 calls), reset_pulse makes: set_output(3), write_low(4),
+ * set_input(5), gpio_read(6). Inject error on call 6 to hit read_line
+ * error path (lines 506-508).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see rx_bus_onewire_reset() Public API wrapping internal_reset_pulse
+ */
+void test_onewire_internal_reset_pulse_read_line_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* call 6: gpio_read (read_line) <-- inject error here */
+  mock_gpio_set_error_on_nth_call(6U, k_rx_err_hw_error);
+
+  bool presence = false;
+  err           = rx_bus_onewire_reset(&s_test_manager, s_test_bus_name, &presence);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_write_bit(1): release_line failure propagates.
+ *
+ * @details
+ * After init (2 calls), write_bit(1) makes: set_output(3), write_low(4),
+ * set_input(5). Inject error on call 5 to hit the release_line error path
+ * in the bit=1 branch (lines 564-566).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see rx_bus_onewire_write_bit() Public API wrapping internal_write_bit
+ */
+void test_onewire_internal_write_bit_one_release_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* call 5: gpio_set_input (release_line in bit=1 branch) */
+  mock_gpio_set_error_on_nth_call(5U, k_rx_err_hw_error);
+
+  err = rx_bus_onewire_write_bit(&s_test_manager, s_test_bus_name, true);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_write_bit(0): release_line failure propagates.
+ *
+ * @details
+ * After init (2 calls), write_bit(0) makes: set_output(3), write_low(4),
+ * set_input(5). Inject error on call 5 to hit the release_line error path
+ * in the bit=0 branch (lines 571-573).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see rx_bus_onewire_write_bit() Public API wrapping internal_write_bit
+ */
+void test_onewire_internal_write_bit_zero_release_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* call 5: gpio_set_input (release_line in bit=0 branch) */
+  mock_gpio_set_error_on_nth_call(5U, k_rx_err_hw_error);
+
+  err = rx_bus_onewire_write_bit(&s_test_manager, s_test_bus_name, false);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_read_bit: release_line failure propagates.
+ *
+ * @details
+ * After init (2 calls), read_bit makes: set_output(3), write_low(4),
+ * set_input(5). Inject error on call 5 to hit lines 628-630.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see rx_bus_onewire_read_bit() Public API wrapping internal_read_bit
+ */
+void test_onewire_internal_read_bit_release_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* call 5: gpio_set_input (release_line) */
+  mock_gpio_set_error_on_nth_call(5U, k_rx_err_hw_error);
+
+  bool bit = false;
+  err      = rx_bus_onewire_read_bit(&s_test_manager, s_test_bus_name, &bit);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_read_bit: read_line failure propagates.
+ *
+ * @details
+ * After init (2 calls), read_bit makes: set_output(3), write_low(4),
+ * set_input(5), gpio_read(6). Inject error on call 6 to hit lines 639-641.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see rx_bus_onewire_read_bit() Public API wrapping internal_read_bit
+ */
+void test_onewire_internal_read_bit_read_line_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* call 6: gpio_read (read_line) */
+  mock_gpio_set_error_on_nth_call(6U, k_rx_err_hw_error);
+
+  bool bit = false;
+  err      = rx_bus_onewire_read_bit(&s_test_manager, s_test_bus_name, &bit);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_write_byte: write_bit error propagates through loop.
+ *
+ * @details
+ * After init (2 calls), write_byte calls write_bit for each bit. The first
+ * bit (gpio_set_output on call 3) failure propagates through the loop's
+ * error check (lines 658-660).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see rx_bus_onewire_write_byte() Public API wrapping internal_write_byte
+ */
+void test_onewire_internal_write_byte_write_bit_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* call 3: gpio_set_output (first write_bit's drive_low) */
+  mock_gpio_set_error_on_nth_call(3U, k_rx_err_hw_error);
+
+  err = rx_bus_onewire_write_byte(&s_test_manager, s_test_bus_name, 0xAA);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_read_byte: read_bit error propagates through loop.
+ *
+ * @details
+ * After init (2 calls), read_byte calls read_bit for each bit. Fail the
+ * first bit to cover the loop error path (lines 675-677).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see rx_bus_onewire_read_byte() Public API wrapping internal_read_byte
+ */
+void test_onewire_internal_read_byte_read_bit_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* call 3: gpio_set_output (first read_bit's drive_low) */
+  mock_gpio_set_error_on_nth_call(3U, k_rx_err_hw_error);
+
+  uint8_t byte = 0;
+  err          = rx_bus_onewire_read_byte(&s_test_manager, s_test_bus_name, &byte);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_search_step: first read_bit error propagates.
+ *
+ * @details
+ * Calls internal_search_step directly. Injects error on the first GPIO
+ * call to fail internal_read_bit (lines 713-715).
+ *
+ * @pre setUp() completed (bus config available)
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_search_step() Function under test
+ */
+void test_onewire_internal_search_step_first_read_bit_fails(void)
+{
+  onewire_runtime_state_t state = {.line_is_output = false};
+  uint8_t                 rom[k_test_rom_bytes];
+  uint8_t                 byte_idx  = 0;
+  uint8_t                 bit_mask  = 1;
+  uint8_t                 last_zero = 0;
+
+  mock_gpio_set_next_error(k_rx_err_hw_error);
+
+  rx_err_t err =
+    internal_search_step(&s_onewire_config, &state, rom, 1U, &byte_idx, &bit_mask, &last_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_search_step: second read_bit error propagates.
+ *
+ * @details
+ * The first read_bit takes 3 GPIO calls (set_output, write_low, set_input)
+ * plus gpio_read = 4 calls. Second read_bit starts at call 5.
+ * Inject error on call 5 to fail second read_bit (lines 718-720).
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_search_step() Function under test
+ */
+void test_onewire_internal_search_step_second_read_bit_fails(void)
+{
+  onewire_runtime_state_t state = {.line_is_output = false};
+  uint8_t                 rom[k_test_rom_bytes];
+  uint8_t                 byte_idx  = 0;
+  uint8_t                 bit_mask  = 1;
+  uint8_t                 last_zero = 0;
+
+  /* First read_bit: set_output(1), write_low(2), set_input(3), gpio_read(4)
+   * Second read_bit starts at call 5: set_output(5) <-- inject here */
+  mock_gpio_set_error_on_nth_call(5U, k_rx_err_hw_error);
+
+  rx_err_t err =
+    internal_search_step(&s_onewire_config, &state, rom, 1U, &byte_idx, &bit_mask, &last_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_search_step: bit=1 and comp_bit=1 returns hw_error.
+ *
+ * @details
+ * When both bit and comp_bit are 1, no devices are responding -- this is
+ * a bus collision error (lines 721-723).
+ *
+ * The first read_bit reads the gpio_read result. To get bit=1: set gpio
+ * read_value to HIGH (true). Both bits read high triggers k_rx_err_hw_error.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_search_step() Function under test
+ */
+void test_onewire_internal_search_step_bit_and_comp_both_true(void)
+{
+  onewire_runtime_state_t state = {.line_is_output = false};
+  uint8_t                 rom[k_test_rom_bytes];
+  uint8_t                 byte_idx  = 0;
+  uint8_t                 bit_mask  = 1;
+  uint8_t                 last_zero = 0;
+
+  /* Both read_bit calls return HIGH (line stays high after release) */
+  mock_gpio_set_read_value(s_test_pin, true);
+
+  rx_err_t err =
+    internal_search_step(&s_onewire_config, &state, rom, 1U, &byte_idx, &bit_mask, &last_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_search_step: discrepancy at last_discrepancy bit uses last_rom.
+ *
+ * @details
+ * When bit_number < last_discrepancy, search_direction = last_rom bit.
+ * Covers the else branch at line 732: `search_direction = last_rom[...]`.
+ *
+ * Set last_discrepancy > 1, bit_number=1, both bits low (discrepancy=0,0),
+ * and last_rom[0] bit 0 set.
+ *
+ * @pre setUp() completed
+ * @post k_rx_ok returned, rom bit set according to last_rom
+ *
+ * @see internal_search_step() Function under test
+ */
+void test_onewire_internal_search_step_direction_from_last_rom(void)
+{
+  onewire_runtime_state_t state = {.line_is_output = false, .last_discrepancy = 2U};
+
+  /* Set last_rom[0] bit 0 = 1, so search_direction = true */
+  state.last_rom[0] = 1U;
+
+  uint8_t rom[k_test_rom_bytes];
+  uint8_t byte_idx  = 0;
+  uint8_t bit_mask  = 1;
+  uint8_t last_zero = 0;
+
+  /* Both read_bit calls return LOW (0,0 discrepancy): bit=false, comp_bit=false */
+  mock_gpio_set_read_value(s_test_pin, false);
+
+  rx_err_t err =
+    internal_search_step(&s_onewire_config, &state, rom, 1U, &byte_idx, &bit_mask, &last_zero);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test internal_search_step: write_bit error propagates.
+ *
+ * @details
+ * Reads succeed (both bits low, discrepancy), then write_bit fails.
+ * Covers lines 747-749. write_bit starts after 8 GPIO calls (2 read_bits
+ * x 4 calls each).
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_search_step() Function under test
+ */
+void test_onewire_internal_search_step_write_bit_fails(void)
+{
+  onewire_runtime_state_t state = {.line_is_output = false};
+  uint8_t                 rom[k_test_rom_bytes];
+  uint8_t                 byte_idx  = 0;
+  uint8_t                 bit_mask  = 1;
+  uint8_t                 last_zero = 0;
+
+  /* Both bits low (0,0): discrepancy, search_direction=false (bit_number>last_discrepancy=0)
+   * read_bit_1: set_output(1), write_low(2), set_input(3), gpio_read(4)
+   * read_bit_2: set_output(5), write_low(6), set_input(7), gpio_read(8)
+   * write_bit starts: set_output(9) <-- inject here */
+  mock_gpio_set_read_value(s_test_pin, false);
+  mock_gpio_set_error_on_nth_call(9U, k_rx_err_hw_error);
+
+  rx_err_t err =
+    internal_search_step(&s_onewire_config, &state, rom, 1U, &byte_idx, &bit_mask, &last_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_search_bits: search_step error propagates.
+ *
+ * @details
+ * Inject error on first GPIO call inside internal_search_bits to cause
+ * internal_search_step to fail, covering the error return at line 791.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_search_bits() Function under test
+ */
+void test_onewire_internal_search_bits_step_error(void)
+{
+  onewire_runtime_state_t state = {.line_is_output = false};
+  uint8_t                 rom[k_test_rom_bytes];
+  uint8_t                 last_zero = 0;
+
+  mock_gpio_set_next_error(k_rx_err_hw_error);
+
+  rx_err_t err = internal_search_bits(&s_onewire_config, &state, rom, &last_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_search_iteration: reset_pulse error propagates.
+ *
+ * @details
+ * Inject error on gpio_set_output (call 1) to fail internal_reset_pulse,
+ * covering lines 863-865.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_search_iteration() Function under test
+ */
+void test_onewire_internal_search_iteration_reset_pulse_fails(void)
+{
+  onewire_runtime_state_t state = {.line_is_output = false};
+  uint8_t                 rom[k_test_rom_bytes];
+  bool                    device_found = false;
+
+  mock_gpio_set_next_error(k_rx_err_hw_error);
+
+  rx_err_t err = internal_search_iteration(&s_onewire_config, &state, rom, &device_found);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_search_iteration: no presence returns k_rx_ok, device_found=false.
+ *
+ * @details
+ * When gpio_read returns HIGH (no device), internal_search_iteration returns
+ * k_rx_ok with device_found=false (lines 864-865 in the !presence branch).
+ *
+ * @pre setUp() completed
+ * @post k_rx_ok returned, device_found == false
+ *
+ * @see internal_search_iteration() Function under test
+ */
+void test_onewire_internal_search_iteration_no_presence(void)
+{
+  onewire_runtime_state_t state = {.line_is_output = false};
+  uint8_t                 rom[k_test_rom_bytes];
+  bool                    device_found = false;
+
+  /* Line stays high (no device) */
+  mock_gpio_set_read_value(s_test_pin, true);
+
+  rx_err_t err = internal_search_iteration(&s_onewire_config, &state, rom, &device_found);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(device_found);
+}
+
+/**
+ * @brief Test internal_search_iteration: write_byte error propagates.
+ *
+ * @details
+ * Presence detected (gpio_read=LOW), then write_byte (SEARCH_ROM cmd) fails.
+ * Covers lines 874-876. After init-sequence gpio calls for reset_pulse:
+ * set_output(1), write_low(2), set_input(3), gpio_read(4, returns LOW).
+ * Then write_byte bit0: set_output(5). Inject error at call 5.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_search_iteration() Function under test
+ */
+void test_onewire_internal_search_iteration_write_byte_fails(void)
+{
+  onewire_runtime_state_t state = {.line_is_output = false};
+  uint8_t                 rom[k_test_rom_bytes];
+  bool                    device_found = false;
+
+  /* Line goes low on gpio_read (presence detected)
+   * reset_pulse: set_output(1), write_low(2), set_input(3), gpio_read(4)=LOW
+   * write_byte bit0: set_output(5) <-- inject error */
+  mock_gpio_set_read_value(s_test_pin, false);
+  mock_gpio_set_error_on_nth_call(5U, k_rx_err_hw_error);
+
+  rx_err_t err = internal_search_iteration(&s_onewire_config, &state, rom, &device_found);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_search_iteration: last_device_flag set causes early return.
+ *
+ * @details
+ * When state.last_device_flag is true, the function returns k_rx_ok with
+ * device_found=false immediately (lines 858-860).
+ *
+ * @pre setUp() completed
+ * @post k_rx_ok returned, device_found == false
+ *
+ * @see internal_search_iteration() Function under test
+ */
+void test_onewire_internal_search_iteration_last_device_flag(void)
+{
+  onewire_runtime_state_t state = {.last_device_flag = true};
+  uint8_t                 rom[k_test_rom_bytes];
+  bool                    device_found = false;
+
+  rx_err_t err = internal_search_iteration(&s_onewire_config, &state, rom, &device_found);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(device_found);
+}
+
+/**
+ * @brief Test internal_search_iteration: internal_search_bits error propagates.
+ *
+ * @details
+ * Presence detected and SEARCH_ROM write_byte succeeds, then
+ * internal_search_bits fails on the first search step.
+ * Covers line 879.
+ *
+ * GPIO call accounting from direct call (no prior init):
+ * reset_pulse:      set_output(1), write_low(2), set_input(3), gpio_read(4)=LOW
+ * write_byte cmd:   8 bits x 3 calls each = 24 calls (5..28)
+ * search_bits step0 read_bit: set_output(29) -- inject error here
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_search_iteration() Function under test
+ */
+void test_onewire_internal_search_iteration_search_bits_fails(void)
+{
+  onewire_runtime_state_t state = {.line_is_output = false};
+  uint8_t                 rom[k_test_rom_bytes];
+  bool                    device_found = false;
+
+  mock_gpio_set_read_value(s_test_pin, false);
+  /* reset_pulse(4) + write_byte(24) = 28 calls; search_bits first call = 29 */
+  mock_gpio_set_error_on_nth_call(29U, k_rx_err_hw_error);
+
+  rx_err_t err = internal_search_iteration(&s_onewire_config, &state, rom, &device_found);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_onewire_init_callback: gpio_read error on post-init check.
+ *
+ * @details
+ * After gpio_set_input succeeds (call 1), gpio_read (call 2) fails.
+ * Covers lines 1016-1020. After init, gpio_set_input was call 1.
+ * Then gpio_read is call 2. Inject error on call 2.
+ *
+ * @pre setUp() completed (bus not yet initialized)
+ * @post k_rx_err_hw_error returned from rx_bus_onewire_init
+ *
+ * @see internal_onewire_init_callback() Function under test
+ */
+void test_onewire_internal_init_callback_gpio_read_fails(void)
+{
+  /* call 1: gpio_set_input (succeeds), call 2: gpio_read (fails) */
+  mock_gpio_set_error_on_nth_call(2U, k_rx_err_hw_error);
+
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_onewire_init_callback: pin reads low triggers warning.
+ *
+ * @details
+ * Initialization succeeds even when pin reads LOW (missing pullup resistor).
+ * A warning is logged but operation continues. Covers line 1023-1024.
+ *
+ * @pre setUp() completed
+ * @post k_rx_ok returned despite low pin state
+ *
+ * @see internal_onewire_init_callback() Function under test
+ */
+void test_onewire_internal_init_callback_pin_reads_low(void)
+{
+  /* Pin reads low (no pullup or device holding bus low) */
+  mock_gpio_set_read_value(s_test_pin, false);
+
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+  /* Init still succeeds with a warning */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test internal_onewire_reset_callback: nullptr presence pointer.
+ *
+ * @details
+ * Calls internal_onewire_reset_callback directly with ctx->presence = nullptr.
+ * Covers lines 1105-1108.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @see internal_onewire_reset_callback() Function under test
+ */
+void test_onewire_internal_reset_callback_null_presence(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  onewire_reset_ctx_t ctx      = {.presence = nullptr, .result = k_rx_ok};
+  s_onewire_config.initialized = true; /* already done by init above */
+  err                          = internal_onewire_reset_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test internal_onewire_write_bit_callback: uninitialized bus.
+ *
+ * @details
+ * write_bit callback has its own !initialized check (lines 1139-1143).
+ * Calls callback directly with initialized=false.
+ *
+ * @pre setUp() completed (bus config available but not initialized)
+ * @post k_rx_err_invalid_state returned
+ *
+ * @see internal_onewire_write_bit_callback() Function under test
+ */
+void test_onewire_internal_write_bit_callback_not_initialized(void)
+{
+  onewire_write_bit_ctx_t ctx = {.bit = true, .result = k_rx_ok};
+  /* s_onewire_config.initialized == false (setUp doesn't init the bus) */
+  rx_err_t err = internal_onewire_write_bit_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test internal_onewire_write_bit_callback: wrong bus type.
+ *
+ * @details
+ * bus_config->type != k_bus_type_onewire returns k_rx_err_invalid_arg.
+ * Covers lines 1134-1136.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @see internal_onewire_write_bit_callback() Function under test
+ */
+void test_onewire_internal_write_bit_callback_wrong_type(void)
+{
+  rx_bus_config_t wrong_config = s_onewire_config;
+  wrong_config.type            = k_bus_type_spi; /* Wrong bus type */
+
+  onewire_write_bit_ctx_t ctx = {.bit = true, .result = k_rx_ok};
+  rx_err_t                err = internal_onewire_write_bit_callback(&wrong_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_bit_callback: uninitialized bus.
+ *
+ * @details
+ * read_bit callback has its own !initialized check (lines 1176-1180).
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_invalid_state returned
+ *
+ * @see internal_onewire_read_bit_callback() Function under test
+ */
+void test_onewire_internal_read_bit_callback_not_initialized(void)
+{
+  bool                   bit = false;
+  onewire_read_bit_ctx_t ctx = {.bit = &bit, .result = k_rx_ok};
+
+  rx_err_t err = internal_onewire_read_bit_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_bit_callback: wrong bus type.
+ *
+ * @details
+ * bus_config->type != k_bus_type_onewire returns k_rx_err_invalid_arg.
+ * Covers lines 1171-1173.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @see internal_onewire_read_bit_callback() Function under test
+ */
+void test_onewire_internal_read_bit_callback_wrong_type(void)
+{
+  rx_bus_config_t wrong_config = s_onewire_config;
+  wrong_config.type            = k_bus_type_spi; /* Wrong bus type */
+
+  bool                   bit = false;
+  onewire_read_bit_ctx_t ctx = {.bit = &bit, .result = k_rx_ok};
+  rx_err_t               err = internal_onewire_read_bit_callback(&wrong_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_bit_callback: nullptr bit output pointer.
+ *
+ * @details
+ * Calls read_bit callback with ctx->bit = nullptr. Covers lines 1187-1190.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @see internal_onewire_read_bit_callback() Function under test
+ */
+void test_onewire_internal_read_bit_callback_null_bit(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  onewire_read_bit_ctx_t ctx = {.bit = nullptr, .result = k_rx_ok};
+  err                        = internal_onewire_read_bit_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test internal_onewire_write_byte_callback: write_byte error propagates.
+ *
+ * @details
+ * After init (2 GPIO calls), write_byte_callback calls write_byte which calls
+ * write_bit. Inject error on call 3 (first bit's gpio_set_output) to trigger
+ * the error path (lines 1222-1225).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_onewire_write_byte_callback() Function under test
+ */
+void test_onewire_internal_write_byte_callback_write_byte_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_gpio_set_error_on_nth_call(3U, k_rx_err_hw_error);
+
+  onewire_write_byte_ctx_t ctx = {.byte = 0xAA, .result = k_rx_ok};
+  err                          = internal_onewire_write_byte_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_byte_callback: nullptr byte output pointer.
+ *
+ * @details
+ * Calls read_byte callback with ctx->byte = nullptr. Covers lines 1253-1256.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @see internal_onewire_read_byte_callback() Function under test
+ */
+void test_onewire_internal_read_byte_callback_null_byte(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  onewire_read_byte_ctx_t ctx = {.byte = nullptr, .result = k_rx_ok};
+  err                         = internal_onewire_read_byte_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test internal_onewire_write_buffer_callback: length exceeds maximum.
+ *
+ * @details
+ * ctx->length > k_onewire_max_buf_bytes returns k_rx_err_invalid_size
+ * (lines 1288-1290).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_invalid_size returned
+ *
+ * @see internal_onewire_write_buffer_callback() Function under test
+ */
+void test_onewire_internal_write_buffer_callback_length_too_large(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  static const uint8_t    s_data[1] = {0xAA};
+  onewire_write_buf_ctx_t ctx       = {.data = s_data, .length = 0xFFFFFFFFU, .result = k_rx_ok};
+  err = internal_onewire_write_buffer_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test internal_onewire_write_buffer_callback: nullptr data pointer.
+ *
+ * @details
+ * ctx->data = nullptr with valid length returns k_rx_err_invalid_arg
+ * (lines 1298-1301).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @see internal_onewire_write_buffer_callback() Function under test
+ */
+void test_onewire_internal_write_buffer_callback_null_data(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  onewire_write_buf_ctx_t ctx = {.data = nullptr, .length = 4U, .result = k_rx_ok};
+  err                         = internal_onewire_write_buffer_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test internal_onewire_write_buffer_callback: write_byte error mid-loop.
+ *
+ * @details
+ * Data is valid, but write_byte fails on the first byte. Covers lines 1306-1309.
+ * After init (2 GPIO calls), first write_byte bit0: gpio_set_output = call 3.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_onewire_write_buffer_callback() Function under test
+ */
+void test_onewire_internal_write_buffer_callback_write_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_gpio_set_error_on_nth_call(3U, k_rx_err_hw_error);
+
+  static const uint8_t    s_data[2] = {0x01, 0x02};
+  onewire_write_buf_ctx_t ctx       = {.data = s_data, .length = 2U, .result = k_rx_ok};
+  err = internal_onewire_write_buffer_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_buffer_callback: bus not initialized.
+ *
+ * @details
+ * read_buffer with uninitialized bus returns k_rx_err_invalid_state
+ * (lines 1336-1338). Call callback directly with initialized=false.
+ *
+ * @pre setUp() completed (bus not initialized)
+ * @post k_rx_err_invalid_state returned
+ *
+ * @see internal_onewire_read_buffer_callback() Function under test
+ */
+void test_onewire_internal_read_buffer_callback_not_initialized(void)
+{
+  static uint8_t         s_buf[4];
+  onewire_read_buf_ctx_t ctx = {.data = s_buf, .length = 4U, .result = k_rx_ok};
+
+  /* s_onewire_config.initialized == false */
+  rx_err_t err = internal_onewire_read_buffer_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_buffer_callback: length exceeds max.
+ *
+ * @details
+ * ctx->length > k_onewire_max_buf_bytes returns k_rx_err_invalid_size.
+ * Covers lines 1331-1332.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_invalid_size returned
+ *
+ * @see internal_onewire_read_buffer_callback() Function under test
+ */
+void test_onewire_internal_read_buffer_callback_length_too_large(void)
+{
+  static uint8_t s_buf[4];
+  /* Use a length larger than k_onewire_max_buf_bytes (255) */
+  onewire_read_buf_ctx_t ctx = {.data = s_buf, .length = 0xFFFFFFFFU, .result = k_rx_ok};
+
+  rx_err_t err = internal_onewire_read_buffer_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_buffer_callback: nullptr data pointer.
+ *
+ * @details
+ * ctx->data = nullptr returns k_rx_err_invalid_arg (lines 1346-1349).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @see internal_onewire_read_buffer_callback() Function under test
+ */
+void test_onewire_internal_read_buffer_callback_null_data(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  onewire_read_buf_ctx_t ctx = {.data = nullptr, .length = 4U, .result = k_rx_ok};
+  err                        = internal_onewire_read_buffer_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_buffer_callback: read_byte error mid-loop.
+ *
+ * @details
+ * read_byte fails on first byte. Covers lines 1355-1358.
+ * After init (2 calls), first read_byte bit0: gpio_set_output = call 3.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_onewire_read_buffer_callback() Function under test
+ */
+void test_onewire_internal_read_buffer_callback_read_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_gpio_set_error_on_nth_call(3U, k_rx_err_hw_error);
+
+  static uint8_t         s_buf[2];
+  onewire_read_buf_ctx_t ctx = {.data = s_buf, .length = 2U, .result = k_rx_ok};
+  err                        = internal_onewire_read_buffer_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_onewire_skip_rom_callback: reset_pulse error propagates.
+ *
+ * @details
+ * skip_rom calls reset_pulse. Inject error on first GPIO call to fail it.
+ * Covers line 1391-1393.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_onewire_skip_rom_callback() Function under test
+ */
+void test_onewire_internal_skip_rom_callback_reset_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_gpio_set_error_on_nth_call(3U, k_rx_err_hw_error);
+
+  err = internal_onewire_skip_rom_callback(&s_onewire_config, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_onewire_skip_rom_callback: write_byte error propagates.
+ *
+ * @details
+ * Presence detected (line goes LOW), then write_byte (SKIP_ROM) fails.
+ * Covers lines 1400-1402. reset_pulse takes calls 3-6 (set_output, write_low,
+ * set_input, gpio_read=LOW). write_byte starts at call 7.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_onewire_skip_rom_callback() Function under test
+ */
+void test_onewire_internal_skip_rom_callback_write_byte_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_gpio_set_read_value(s_test_pin, false);
+  /* reset_pulse: set_output(3), write_low(4), set_input(5), gpio_read(6)
+   * write_byte bit0: set_output(7) <-- inject error */
+  mock_gpio_set_error_on_nth_call(7U, k_rx_err_hw_error);
+
+  err = internal_onewire_skip_rom_callback(&s_onewire_config, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_onewire_match_rom_callback: nullptr rom pointer.
+ *
+ * @details
+ * ctx->rom = nullptr returns k_rx_err_invalid_arg (lines 1429-1432).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @see internal_onewire_match_rom_callback() Function under test
+ */
+void test_onewire_internal_match_rom_callback_null_rom(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  onewire_match_rom_ctx_t ctx = {.rom = nullptr, .result = k_rx_ok};
+  err                         = internal_onewire_match_rom_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test internal_onewire_match_rom_callback: reset_pulse error propagates.
+ *
+ * @details
+ * After init (gpio_set_input=1, gpio_read=2), reset_pulse calls gpio_set_output
+ * (call 3). Inject error on call 3 to fail reset_pulse.
+ * Covers lines 1433-1434.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_onewire_match_rom_callback() Function under test
+ */
+void test_onewire_internal_match_rom_callback_reset_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* After init (2 calls), reset_pulse gpio_set_output = call 3 */
+  mock_gpio_set_error_on_nth_call(3U, k_rx_err_hw_error);
+
+  static const uint8_t    s_rom[k_test_rom_bytes] = {0};
+  onewire_match_rom_ctx_t ctx                     = {.rom = s_rom, .result = k_rx_ok};
+  err = internal_onewire_match_rom_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_onewire_match_rom_callback: no presence detected.
+ *
+ * @details
+ * Line stays HIGH (no device) after reset_pulse. Returns k_rx_err_not_found
+ * (lines 1438-1440).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_not_found returned
+ *
+ * @see internal_onewire_match_rom_callback() Function under test
+ */
+void test_onewire_internal_match_rom_callback_no_presence(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_gpio_set_read_value(s_test_pin, true);
+
+  static const uint8_t    s_rom[k_test_rom_bytes] = {0};
+  onewire_match_rom_ctx_t ctx                     = {.rom = s_rom, .result = k_rx_ok};
+  err = internal_onewire_match_rom_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_not_found, err);
+}
+
+/**
+ * @brief Test internal_onewire_match_rom_callback: write match_rom command fails.
+ *
+ * @details
+ * Presence detected, then write_byte(MATCH_ROM=0x55) fails. Covers lines
+ * 1447-1450. reset_pulse takes calls 3-6; write_byte starts at call 7.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_onewire_match_rom_callback() Function under test
+ */
+void test_onewire_internal_match_rom_callback_write_cmd_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_gpio_set_read_value(s_test_pin, false);
+  mock_gpio_set_error_on_nth_call(7U, k_rx_err_hw_error);
+
+  static const uint8_t    s_rom[k_test_rom_bytes] = {0};
+  onewire_match_rom_ctx_t ctx                     = {.rom = s_rom, .result = k_rx_ok};
+  err = internal_onewire_match_rom_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_onewire_match_rom_callback: write ROM byte fails.
+ *
+ * @details
+ * Presence detected, MATCH_ROM command succeeds (8 bits = 8 write_bit x 3 GPIO calls),
+ * then first ROM byte fails. Covers lines 1453-1456.
+ * After init (2), reset_pulse (4 calls = 3..6), write_byte cmd (8 bits:
+ * each bit takes set_output+write_low+set_input = 3 calls -> 24 calls, 7..30).
+ * First ROM byte bit0: call 31.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_onewire_match_rom_callback() Function under test
+ */
+void test_onewire_internal_match_rom_callback_write_rom_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_gpio_set_read_value(s_test_pin, false);
+  /* After init (2), reset_pulse (set_output=3, write_low=4, set_input=5, gpio_read=6),
+   * write_byte(MATCH_ROM) 8 bits x 3 GPIO each = 24 calls (7..30),
+   * ROM byte 0, bit 0: set_output(31) <-- inject error */
+  mock_gpio_set_error_on_nth_call(31U, k_rx_err_hw_error);
+
+  static const uint8_t    s_rom[k_test_rom_bytes] = {0};
+  onewire_match_rom_ctx_t ctx                     = {.rom = s_rom, .result = k_rx_ok};
+  err = internal_onewire_match_rom_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_rom_callback: nullptr rom pointer.
+ *
+ * @details
+ * ctx->rom = nullptr returns k_rx_err_invalid_arg (lines 1490-1493).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @see internal_onewire_read_rom_callback() Function under test
+ */
+void test_onewire_internal_read_rom_callback_null_rom(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  onewire_read_rom_ctx_t ctx = {.rom = nullptr, .result = k_rx_ok};
+  err                        = internal_onewire_read_rom_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_rom_callback: reset_pulse error propagates.
+ *
+ * @details
+ * After init (gpio_set_input=1, gpio_read=2), reset_pulse calls gpio_set_output
+ * (call 3). Inject error on call 3 to fail reset_pulse.
+ * Covers lines 1494-1495.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_onewire_read_rom_callback() Function under test
+ */
+void test_onewire_internal_read_rom_callback_reset_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* After init (2 calls), reset_pulse gpio_set_output = call 3 */
+  mock_gpio_set_error_on_nth_call(3U, k_rx_err_hw_error);
+
+  static uint8_t         s_rom[k_test_rom_bytes] = {0};
+  onewire_read_rom_ctx_t ctx                     = {.rom = s_rom, .result = k_rx_ok};
+  err = internal_onewire_read_rom_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_rom_callback: no presence detected.
+ *
+ * @details
+ * Line stays HIGH (no device). Returns k_rx_err_not_found (lines 1499-1501).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_not_found returned
+ *
+ * @see internal_onewire_read_rom_callback() Function under test
+ */
+void test_onewire_internal_read_rom_callback_no_presence(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_gpio_set_read_value(s_test_pin, true);
+
+  static uint8_t         s_rom[k_test_rom_bytes] = {0};
+  onewire_read_rom_ctx_t ctx                     = {.rom = s_rom, .result = k_rx_ok};
+  err = internal_onewire_read_rom_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_not_found, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_rom_callback: write READ_ROM command fails.
+ *
+ * @details
+ * Presence detected, then write_byte(READ_ROM) fails. Covers lines 1508-1511.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_onewire_read_rom_callback() Function under test
+ */
+void test_onewire_internal_read_rom_callback_write_cmd_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_gpio_set_read_value(s_test_pin, false);
+  /* reset_pulse (calls 3..6), write_byte READ_ROM starts at call 7 */
+  mock_gpio_set_error_on_nth_call(7U, k_rx_err_hw_error);
+
+  static uint8_t         s_rom[k_test_rom_bytes] = {0};
+  onewire_read_rom_ctx_t ctx                     = {.rom = s_rom, .result = k_rx_ok};
+  err = internal_onewire_read_rom_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_rom_callback: read_byte error.
+ *
+ * @details
+ * READ_ROM command sent, then first read_byte fails. Covers lines 1514-1517.
+ * After init(2), reset_pulse(4), write_byte READ_ROM (8 bits x 3 calls = 24,
+ * calls 7..30), read_byte byte0 bit0: set_output(31). But read_bit takes
+ * set_output+write_low+set_input+gpio_read = 4 calls each. So call 31.
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_hw_error returned
+ *
+ * @see internal_onewire_read_rom_callback() Function under test
+ */
+void test_onewire_internal_read_rom_callback_read_byte_fails(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_gpio_set_read_value(s_test_pin, false);
+  /* calls 3..6: reset_pulse, calls 7..30: write_byte READ_ROM
+   * read_byte byte0 bit0: set_output(31) */
+  mock_gpio_set_error_on_nth_call(31U, k_rx_err_hw_error);
+
+  static uint8_t         s_rom[k_test_rom_bytes] = {0};
+  onewire_read_rom_ctx_t ctx                     = {.rom = s_rom, .result = k_rx_ok};
+  err = internal_onewire_read_rom_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_rom_callback: family code 0 triggers warning.
+ *
+ * @details
+ * When ROM byte 0 (family code) is 0x00, a warning is logged but init
+ * succeeds. Covers the family-code-zero warning branch.
+ * With all GPIO reads returning false, ROM = {0,0,0,0,0,0,0,0}.
+ * CRC-8/Maxim of 7 zero bytes = 0x00, which matches rom[7] = 0x00, so CRC passes.
+ *
+ * @pre Bus initialized
+ * @post k_rx_ok returned despite family code 0
+ *
+ * @see internal_onewire_read_rom_callback() Function under test
+ */
+void test_onewire_internal_read_rom_callback_family_code_zero(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* All bytes low -> ROM = {0,0,0,0,0,0,0,0}, family_code=0
+   * CRC-8/Maxim of 7 zero bytes = 0x00, matches rom[7]=0x00, CRC passes */
+  mock_gpio_set_read_value(s_test_pin, false);
+
+  static uint8_t         s_rom[k_test_rom_bytes] = {0};
+  onewire_read_rom_ctx_t ctx                     = {.rom = s_rom, .result = k_rx_ok};
+  err = internal_onewire_read_rom_callback(&s_onewire_config, &ctx);
+  /* Should succeed even with family code 0 */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test internal_onewire_search_callback: max_devices == 0 returns ok.
+ *
+ * @details
+ * ctx->max_devices = 0 returns k_rx_ok immediately (lines 1561-1562).
+ *
+ * @pre Bus initialized
+ * @post k_rx_ok returned, num_devices = 0
+ *
+ * @see internal_onewire_search_callback() Function under test
+ */
+void test_onewire_internal_search_callback_zero_max(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  uint32_t             num = 1U;
+  onewire_search_ctx_t ctx = {.roms        = nullptr,
+                              .max_devices = 0U,
+                              .num_devices = &num,
+                              .result      = k_rx_ok};
+  err                      = internal_onewire_search_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(0U, num);
+}
+
+/**
+ * @brief Test internal_onewire_search_callback: nullptr num_devices.
+ *
+ * @details
+ * ctx->num_devices == nullptr returns k_rx_err_invalid_arg (lines 1551-1552).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @see internal_onewire_search_callback() Function under test
+ */
+void test_onewire_internal_search_callback_null_num_devices(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  onewire_search_ctx_t ctx = {.roms        = nullptr,
+                              .max_devices = 1U,
+                              .num_devices = nullptr,
+                              .result      = k_rx_ok};
+  err                      = internal_onewire_search_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test internal_onewire_search_callback: max_devices exceeds limit.
+ *
+ * @details
+ * ctx->max_devices > s_onewire_max_search_devices returns k_rx_err_invalid_arg
+ * (lines 1571-1573).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @see internal_onewire_search_callback() Function under test
+ */
+void test_onewire_internal_search_callback_max_exceeds_limit(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  uint32_t             num = 0;
+  static uint8_t       s_roms[k_test_rom_bytes];
+  onewire_search_ctx_t ctx = {.roms        = s_roms,
+                              .max_devices = 0xFFFFFFFFU,
+                              .num_devices = &num,
+                              .result      = k_rx_ok};
+  err                      = internal_onewire_search_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test internal_onewire_search_callback: nullptr roms pointer.
+ *
+ * @details
+ * ctx->roms = nullptr returns k_rx_err_invalid_arg (lines 1575-1577).
+ *
+ * @pre Bus initialized
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @see internal_onewire_search_callback() Function under test
+ */
+void test_onewire_internal_search_callback_null_roms(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  uint32_t             num = 0;
+  onewire_search_ctx_t ctx = {.roms        = nullptr,
+                              .max_devices = 1U,
+                              .num_devices = &num,
+                              .result      = k_rx_ok};
+  err                      = internal_onewire_search_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_deinit: nullptr manager returns k_rx_err_null_ptr.
+ *
+ * @details
+ * rx_bus_onewire_deinit has its own nullptr checks (lines 1696-1697).
+ *
+ * @pre None
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_deinit() Function under test
+ */
+void test_onewire_deinit_null_manager(void)
+{
+  rx_err_t err = rx_bus_onewire_deinit(nullptr, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_deinit: nullptr bus_name returns k_rx_err_null_ptr.
+ *
+ * @details
+ * rx_bus_onewire_deinit nullptr bus_name check (lines 1699-1700).
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_deinit() Function under test
+ */
+void test_onewire_deinit_null_bus_name(void)
+{
+  rx_err_t err = rx_bus_onewire_deinit(&s_test_manager, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_deinit: bus not found returns with_bus error.
+ *
+ * @details
+ * rx_bus_manager_with_bus fails when bus name is not registered. Covers
+ * line 1706-1707.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_not_found returned
+ *
+ * @see rx_bus_onewire_deinit() Function under test
+ */
+void test_onewire_deinit_bus_not_found(void)
+{
+  rx_err_t err = rx_bus_onewire_deinit(&s_test_manager, "nonexistent_bus");
+  TEST_ASSERT_EQUAL(k_rx_err_not_found, err);
+}
+
+/* -------------------------------------------------------------------------
+ * Public API null bus_name / null manager branch coverage tests
+ * -------------------------------------------------------------------------
+ */
+
+/**
+ * @brief Test rx_bus_onewire_reset: nullptr bus_name returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(bus_name) branch at line 1718.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_reset() Function under test
+ */
+void test_rx_bus_onewire_reset_null_bus_name(void)
+{
+  bool     presence = false;
+  rx_err_t err      = rx_bus_onewire_reset(&s_test_manager, nullptr, &presence);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_write_bit: nullptr bus_name returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(bus_name) branch at line 1742.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_write_bit() Function under test
+ */
+void test_rx_bus_onewire_write_bit_null_bus_name(void)
+{
+  rx_err_t err = rx_bus_onewire_write_bit(&s_test_manager, nullptr, true);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_read_bit: nullptr manager returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(manager) branch at line 1764.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_read_bit() Function under test
+ */
+void test_rx_bus_onewire_read_bit_null_manager(void)
+{
+  bool     bit = false;
+  rx_err_t err = rx_bus_onewire_read_bit(nullptr, s_test_bus_name, &bit);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_read_bit: nullptr bus_name returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(bus_name) branch at line 1765.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_read_bit() Function under test
+ */
+void test_rx_bus_onewire_read_bit_null_bus_name(void)
+{
+  bool     bit = false;
+  rx_err_t err = rx_bus_onewire_read_bit(&s_test_manager, nullptr, &bit);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_write_byte: nullptr bus_name returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(bus_name) branch at line 1789.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_write_byte() Function under test
+ */
+void test_rx_bus_onewire_write_byte_null_bus_name(void)
+{
+  rx_err_t err = rx_bus_onewire_write_byte(&s_test_manager, nullptr, 0x00U);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_read_byte: nullptr manager returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(manager) branch at line 1811.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_read_byte() Function under test
+ */
+void test_rx_bus_onewire_read_byte_null_manager(void)
+{
+  uint8_t  byte = 0U;
+  rx_err_t err  = rx_bus_onewire_read_byte(nullptr, s_test_bus_name, &byte);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_read_byte: nullptr bus_name returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(bus_name) branch at line 1812.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_read_byte() Function under test
+ */
+void test_rx_bus_onewire_read_byte_null_bus_name(void)
+{
+  uint8_t  byte = 0U;
+  rx_err_t err  = rx_bus_onewire_read_byte(&s_test_manager, nullptr, &byte);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_write: nullptr manager returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(manager) branch at line 1829.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_write() Function under test
+ */
+void test_rx_bus_onewire_write_null_manager(void)
+{
+  const uint8_t data[] = {0x01U};
+  rx_err_t      err    = rx_bus_onewire_write(nullptr, s_test_bus_name, data, 1U);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_write: nullptr bus_name returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(bus_name) branch at line 1830.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_write() Function under test
+ */
+void test_rx_bus_onewire_write_null_bus_name(void)
+{
+  const uint8_t data[] = {0x01U};
+  rx_err_t      err    = rx_bus_onewire_write(&s_test_manager, nullptr, data, 1U);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_read: nullptr manager returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(manager) branch at line 1846.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_read() Function under test
+ */
+void test_rx_bus_onewire_read_null_manager(void)
+{
+  uint8_t  buf[1] = {0U};
+  rx_err_t err    = rx_bus_onewire_read(nullptr, s_test_bus_name, buf, 1U);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_read: nullptr bus_name returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(bus_name) branch at line 1847.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_read() Function under test
+ */
+void test_rx_bus_onewire_read_null_bus_name(void)
+{
+  uint8_t  buf[1] = {0U};
+  rx_err_t err    = rx_bus_onewire_read(&s_test_manager, nullptr, buf, 1U);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_skip_rom: nullptr bus_name returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(bus_name) branch at line 1875.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_skip_rom() Function under test
+ */
+void test_rx_bus_onewire_skip_rom_null_bus_name(void)
+{
+  rx_err_t err = rx_bus_onewire_skip_rom(&s_test_manager, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_match_rom: nullptr manager returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(manager) branch at line 1895.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_match_rom() Function under test
+ */
+void test_rx_bus_onewire_match_rom_null_manager(void)
+{
+  const uint8_t rom[8] = {0x28U, 0x01U, 0x02U, 0x03U, 0x04U, 0x05U, 0x06U, 0x07U};
+  rx_err_t      err    = rx_bus_onewire_match_rom(nullptr, s_test_bus_name, rom);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_match_rom: nullptr bus_name returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(bus_name) branch at line 1896.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_match_rom() Function under test
+ */
+void test_rx_bus_onewire_match_rom_null_bus_name(void)
+{
+  const uint8_t rom[8] = {0x28U, 0x01U, 0x02U, 0x03U, 0x04U, 0x05U, 0x06U, 0x07U};
+  rx_err_t      err    = rx_bus_onewire_match_rom(&s_test_manager, nullptr, rom);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_read_rom: nullptr bus_name returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(bus_name) branch at line 1925.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_read_rom() Function under test
+ */
+void test_rx_bus_onewire_read_rom_null_bus_name(void)
+{
+  uint8_t  rom[8] = {0U};
+  rx_err_t err    = rx_bus_onewire_read_rom(&s_test_manager, nullptr, rom);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_bus_onewire_search: nullptr bus_name returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(bus_name) branch at line 1944.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see rx_bus_onewire_search() Function under test
+ */
+void test_rx_bus_onewire_search_null_bus_name(void)
+{
+  uint8_t  roms[8 * 4] = {0U};
+  uint32_t num         = 0U;
+  rx_err_t err         = rx_bus_onewire_search(&s_test_manager, nullptr, roms, 4U, &num);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/* -------------------------------------------------------------------------
+ * Callback wrong-type branch coverage tests
+ * -------------------------------------------------------------------------
+ */
+
+/**
+ * @brief Test internal_onewire_deinit_callback: wrong bus type returns k_rx_err_invalid_arg.
+ *
+ * @details
+ * Covers CHECK_ONEWIRE_BUS type check at line 1077.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @see internal_onewire_deinit_callback() Function under test
+ */
+void test_onewire_internal_deinit_callback_wrong_type(void)
+{
+  rx_bus_config_t      wrong_config = s_onewire_config;
+  wrong_config.type                 = k_bus_type_spi; /* Wrong bus type */
+  onewire_simple_ctx_t ctx          = {.result = k_rx_ok};
+  rx_err_t             err          = internal_onewire_deinit_callback(&wrong_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test internal_onewire_reset_callback: wrong bus type returns k_rx_err_invalid_arg.
+ *
+ * @details
+ * Covers CHECK_ONEWIRE_BUS type check at line 1101.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @see internal_onewire_reset_callback() Function under test
+ */
+void test_onewire_internal_reset_callback_wrong_type(void)
+{
+  rx_bus_config_t     wrong_config = s_onewire_config;
+  wrong_config.type                = k_bus_type_spi; /* Wrong bus type */
+  bool                 presence    = false;
+  onewire_reset_ctx_t  ctx         = {.presence = &presence, .result = k_rx_ok};
+  rx_err_t             err         = internal_onewire_reset_callback(&wrong_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test internal_onewire_write_byte_callback: wrong bus type returns k_rx_err_invalid_state.
+ *
+ * @details
+ * Covers the type != k_bus_type_onewire branch at line 1213.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_invalid_state returned
+ *
+ * @see internal_onewire_write_byte_callback() Function under test
+ */
+void test_onewire_internal_write_byte_callback_wrong_type(void)
+{
+  rx_bus_config_t          wrong_config = s_onewire_config;
+  wrong_config.type                     = k_bus_type_spi; /* Wrong bus type */
+  onewire_write_byte_ctx_t ctx          = {.byte = 0xAAU, .result = k_rx_ok};
+  rx_err_t err = internal_onewire_write_byte_callback(&wrong_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_byte_callback: wrong bus type returns k_rx_err_invalid_state.
+ *
+ * @details
+ * Covers the type != k_bus_type_onewire branch at line 1245.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_invalid_state returned
+ *
+ * @see internal_onewire_read_byte_callback() Function under test
+ */
+void test_onewire_internal_read_byte_callback_wrong_type(void)
+{
+  rx_bus_config_t         wrong_config = s_onewire_config;
+  wrong_config.type                    = k_bus_type_spi; /* Wrong bus type */
+  uint8_t                 byte         = 0U;
+  onewire_read_byte_ctx_t ctx          = {.byte = &byte, .result = k_rx_ok};
+  rx_err_t err = internal_onewire_read_byte_callback(&wrong_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test internal_onewire_write_buffer_callback: wrong type returns k_rx_err_invalid_state.
+ *
+ * @details
+ * Covers the type != k_bus_type_onewire branch at line 1290.
+ * length must be nonzero and <= max to reach the type check.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_invalid_state returned
+ *
+ * @see internal_onewire_write_buffer_callback() Function under test
+ */
+void test_onewire_internal_write_buffer_callback_wrong_type(void)
+{
+  rx_bus_config_t         wrong_config = s_onewire_config;
+  wrong_config.type                    = k_bus_type_spi; /* Wrong bus type */
+  const uint8_t           data[]       = {0x01U};
+  onewire_write_buf_ctx_t ctx          = {.data = data, .length = 1U, .result = k_rx_ok};
+  rx_err_t err = internal_onewire_write_buffer_callback(&wrong_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_buffer_callback: wrong type returns k_rx_err_invalid_state.
+ *
+ * @details
+ * Covers the type != k_bus_type_onewire branch at line 1338.
+ * length must be nonzero and <= max to reach the type check.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_invalid_state returned
+ *
+ * @see internal_onewire_read_buffer_callback() Function under test
+ */
+void test_onewire_internal_read_buffer_callback_wrong_type(void)
+{
+  rx_bus_config_t        wrong_config = s_onewire_config;
+  wrong_config.type                   = k_bus_type_spi; /* Wrong bus type */
+  uint8_t                buf[1]       = {0U};
+  onewire_read_buf_ctx_t ctx          = {.data = buf, .length = 1U, .result = k_rx_ok};
+  rx_err_t err = internal_onewire_read_buffer_callback(&wrong_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test internal_onewire_skip_rom_callback: wrong bus type returns k_rx_err_invalid_state.
+ *
+ * @details
+ * Covers the type != k_bus_type_onewire branch at line 1382.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_invalid_state returned
+ *
+ * @see internal_onewire_skip_rom_callback() Function under test
+ */
+void test_onewire_internal_skip_rom_callback_wrong_type(void)
+{
+  rx_bus_config_t wrong_config = s_onewire_config;
+  wrong_config.type            = k_bus_type_spi; /* Wrong bus type */
+  rx_err_t err = internal_onewire_skip_rom_callback(&wrong_config, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test internal_onewire_match_rom_callback: wrong type returns k_rx_err_invalid_state.
+ *
+ * @details
+ * Covers the type != k_bus_type_onewire branch at line 1423.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_invalid_state returned
+ *
+ * @see internal_onewire_match_rom_callback() Function under test
+ */
+void test_onewire_internal_match_rom_callback_wrong_type(void)
+{
+  rx_bus_config_t         wrong_config = s_onewire_config;
+  wrong_config.type                    = k_bus_type_spi; /* Wrong bus type */
+  const uint8_t           rom[8]       = {0x28U, 0x01U, 0x02U, 0x03U, 0x04U, 0x05U, 0x06U, 0xCBU};
+  onewire_match_rom_ctx_t ctx          = {.rom = rom, .result = k_rx_ok};
+  rx_err_t err = internal_onewire_match_rom_callback(&wrong_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test internal_onewire_read_rom_callback: wrong type returns k_rx_err_invalid_state.
+ *
+ * @details
+ * Covers the type != k_bus_type_onewire branch at line 1484.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_invalid_state returned
+ *
+ * @see internal_onewire_read_rom_callback() Function under test
+ */
+void test_onewire_internal_read_rom_callback_wrong_type(void)
+{
+  rx_bus_config_t        wrong_config = s_onewire_config;
+  wrong_config.type                   = k_bus_type_spi; /* Wrong bus type */
+  uint8_t                rom[8]       = {0U};
+  onewire_read_rom_ctx_t ctx          = {.rom = rom, .result = k_rx_ok};
+  rx_err_t err = internal_onewire_read_rom_callback(&wrong_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test internal_onewire_search_callback: wrong type returns k_rx_err_invalid_state.
+ *
+ * @details
+ * Covers the type != k_bus_type_onewire branch at line 1573.
+ * All prior checks (num_devices, max_devices, roms) must pass first.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_invalid_state returned
+ *
+ * @see internal_onewire_search_callback() Function under test
+ */
+void test_onewire_internal_search_callback_wrong_type(void)
+{
+  rx_bus_config_t      wrong_config = s_onewire_config;
+  wrong_config.type                 = k_bus_type_spi; /* Wrong bus type */
+  uint8_t              roms[8]      = {0U};
+  uint32_t             num          = 0U;
+  onewire_search_ctx_t ctx          = {
+    .roms        = roms,
+    .max_devices = 1U,
+    .num_devices = &num,
+    .result      = k_rx_ok,
+  };
+  rx_err_t err = internal_onewire_search_callback(&wrong_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/* -------------------------------------------------------------------------
+ * Internal function null-pointer branch coverage tests
+ * -------------------------------------------------------------------------
+ */
+
+/**
+ * @brief Test internal_search_step: nullptr bus_config returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers RX_CHECK_NULL_PTR(bus_config) at line 710.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see internal_search_step() Function under test
+ */
+void test_onewire_internal_search_step_null_bus_config(void)
+{
+  onewire_runtime_state_t state        = {0};
+  uint8_t                 rom[8]       = {0U};
+  uint8_t                 byte_idx     = 0U;
+  uint8_t                 bit_mask     = 0x01U;
+  uint8_t                 last_zero    = 0U;
+  rx_err_t err = internal_search_step(nullptr, &state, rom, 1U, &byte_idx, &bit_mask, &last_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test internal_search_step: nullptr state returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers RX_CHECK_NULL_PTR(state) at line 711.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see internal_search_step() Function under test
+ */
+void test_onewire_internal_search_step_null_state(void)
+{
+  uint8_t  rom[8]    = {0U};
+  uint8_t  byte_idx  = 0U;
+  uint8_t  bit_mask  = 0x01U;
+  uint8_t  last_zero = 0U;
+  rx_err_t err       = internal_search_step(&s_onewire_config,
+                                      nullptr,
+                                      rom,
+                                      1U,
+                                      &byte_idx,
+                                      &bit_mask,
+                                      &last_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test internal_search_bits: nullptr bus_config returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers RX_CHECK_NULL_PTR(bus_config) at line 776.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see internal_search_bits() Function under test
+ */
+void test_onewire_internal_search_bits_null_bus_config(void)
+{
+  onewire_runtime_state_t state     = {0};
+  uint8_t                 rom[8]    = {0U};
+  uint8_t                 last_zero = 0U;
+  rx_err_t err = internal_search_bits(nullptr, &state, rom, &last_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test internal_search_bits: nullptr state returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers RX_CHECK_NULL_PTR(state) at line 777.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see internal_search_bits() Function under test
+ */
+void test_onewire_internal_search_bits_null_state(void)
+{
+  uint8_t  rom[8]    = {0U};
+  uint8_t  last_zero = 0U;
+  rx_err_t err       = internal_search_bits(&s_onewire_config, nullptr, rom, &last_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test internal_search_bits: nullptr rom returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers RX_CHECK_NULL_PTR(rom) at line 778.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see internal_search_bits() Function under test
+ */
+void test_onewire_internal_search_bits_null_rom(void)
+{
+  onewire_runtime_state_t state     = {0};
+  uint8_t                 last_zero = 0U;
+  rx_err_t err = internal_search_bits(&s_onewire_config, &state, nullptr, &last_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test internal_search_bits: nullptr last_zero returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers RX_CHECK_NULL_PTR(last_zero) at line 779.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see internal_search_bits() Function under test
+ */
+void test_onewire_internal_search_bits_null_last_zero(void)
+{
+  onewire_runtime_state_t state  = {0};
+  uint8_t                 rom[8] = {0U};
+  rx_err_t err = internal_search_bits(&s_onewire_config, &state, rom, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test internal_search_iteration: nullptr bus_config returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers RX_CHECK_NULL_PTR(bus_config) at line 852.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see internal_search_iteration() Function under test
+ */
+void test_onewire_internal_search_iteration_null_bus_config(void)
+{
+  onewire_runtime_state_t state        = {0};
+  uint8_t                 rom[8]       = {0U};
+  bool                    device_found = false;
+  rx_err_t err = internal_search_iteration(nullptr, &state, rom, &device_found);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test internal_search_iteration: nullptr state returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers RX_CHECK_NULL_PTR(state) at line 853.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see internal_search_iteration() Function under test
+ */
+void test_onewire_internal_search_iteration_null_state(void)
+{
+  uint8_t  rom[8]       = {0U};
+  bool     device_found = false;
+  rx_err_t err = internal_search_iteration(&s_onewire_config, nullptr, rom, &device_found);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test internal_search_iteration: nullptr rom returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers RX_CHECK_NULL_PTR(rom) at line 854.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see internal_search_iteration() Function under test
+ */
+void test_onewire_internal_search_iteration_null_rom(void)
+{
+  onewire_runtime_state_t state        = {0};
+  bool                    device_found = false;
+  rx_err_t err = internal_search_iteration(&s_onewire_config, &state, nullptr, &device_found);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test internal_search_iteration: nullptr device_found returns k_rx_err_null_ptr.
+ *
+ * @details
+ * Covers RX_CHECK_NULL_PTR(device_found) at line 855.
+ *
+ * @pre setUp() completed
+ * @post k_rx_err_null_ptr returned
+ *
+ * @see internal_search_iteration() Function under test
+ */
+void test_onewire_internal_search_iteration_null_device_found(void)
+{
+  onewire_runtime_state_t state  = {0};
+  uint8_t                 rom[8] = {0U};
+  rx_err_t err = internal_search_iteration(&s_onewire_config, &state, rom, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/* -------------------------------------------------------------------------
+ * Drive mode FALSE-branch coverage tests
+ * -------------------------------------------------------------------------
+ */
+
+/**
+ * @brief Test internal_set_drive_mode: output=true when already output returns k_rx_ok.
+ *
+ * @details
+ * When output==true and state->line_is_output==true, the TRUE branch of
+ * `if (output && !state->line_is_output)` is NOT taken (FALSE branch at line 373).
+ * The function should return k_rx_ok without calling gpio_set_output.
+ *
+ * @pre setUp() completed
+ * @post k_rx_ok returned, line_is_output remains true
+ *
+ * @see internal_set_drive_mode() Function under test
+ */
+void test_onewire_internal_set_drive_mode_already_output(void)
+{
+  onewire_runtime_state_t state       = {.line_is_output = true};
+  rx_err_t                err         = internal_set_drive_mode(&s_onewire_config, &state, true);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(state.line_is_output);
+}
+
+/**
+ * @brief Test internal_set_drive_mode: output=false when already input returns k_rx_ok.
+ *
+ * @details
+ * When output==false and state->line_is_output==false, neither branch fires
+ * (FALSE branch of `else if (!output && state->line_is_output)` at line 379).
+ * The function should return k_rx_ok without calling gpio_set_input.
+ *
+ * @pre setUp() completed
+ * @post k_rx_ok returned, line_is_output remains false
+ *
+ * @see internal_set_drive_mode() Function under test
+ */
+void test_onewire_internal_set_drive_mode_already_input(void)
+{
+  onewire_runtime_state_t state = {.line_is_output = false};
+  rx_err_t err = internal_set_drive_mode(&s_onewire_config, &state, false);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(state.line_is_output);
+}
+
+/**
+ * @brief Test write_buffer callback loop exits when i reaches max_buf_bytes.
+ *
+ * @details
+ * Calls internal_onewire_write_buffer_callback with ctx->length == 255
+ * (k_onewire_max_buf_bytes). The for loop `for (i = 0; (i < 255) && (i < 255); ++i)`
+ * runs exactly 255 iterations. On the 256th check, i == 255 and the first
+ * condition (i < k_onewire_max_buf_bytes) is FALSE -- covering the loop-exit
+ * branch on line 1303.
+ *
+ * @pre Bus initialized
+ * @post k_rx_ok returned, all 255 bytes written
+ *
+ * @see internal_onewire_write_buffer_callback() Function under test (line 1303)
+ */
+void test_onewire_write_buffer_loop_exit_at_max_buf_bytes(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* 255 zero bytes: each write-0 bit = 3 GPIO calls -> 255*8*3 = 6120 calls */
+  static const uint8_t    s_buf[255] = {0U};
+  onewire_write_buf_ctx_t ctx        = {.data = s_buf, .length = 255U, .result = k_rx_ok};
+  err                                = internal_onewire_write_buffer_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test read_buffer callback loop exits when i reaches max_buf_bytes.
+ *
+ * @details
+ * Calls internal_onewire_read_buffer_callback with ctx->length == 255
+ * (k_onewire_max_buf_bytes). The for loop runs exactly 255 iterations.
+ * On the 256th check, i == 255 and the first condition is FALSE -- covering
+ * the loop-exit branch on line 1351.
+ *
+ * GPIO reads default to false (0), so all 255 bytes read as 0x00.
+ *
+ * @pre Bus initialized
+ * @post k_rx_ok returned, all 255 bytes read
+ *
+ * @see internal_onewire_read_buffer_callback() Function under test (line 1351)
+ */
+void test_onewire_read_buffer_loop_exit_at_max_buf_bytes(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* 255 bytes: each read bit = 4 GPIO calls -> 255*8*4 = 8160 calls */
+  static uint8_t         s_buf[255];
+  onewire_read_buf_ctx_t ctx = {.data = s_buf, .length = 255U, .result = k_rx_ok};
+  err                        = internal_onewire_read_buffer_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test search callback while loop exits when num_devices reaches max_devices.
+ *
+ * @details
+ * Uses the two-device mock sequence but sets max_devices = 1. After finding
+ * Device A (with last_device_flag = false because a discrepancy exists),
+ * *num_devices increments to 1. The while condition `*num_devices < max_devices`
+ * evaluates to `1 < 1` = FALSE -- covering the while-loop-exit branch on
+ * line 1580 (as opposed to the break at line 1595).
+ *
+ * @pre Bus initialized, CRC override disabled
+ * @post k_rx_ok returned, exactly 1 device found
+ *
+ * @see internal_onewire_search_callback() Function under test (line 1580)
+ */
+void test_onewire_search_callback_while_loop_exits_at_max_devices(void)
+{
+  rx_err_t err = rx_bus_onewire_init(&s_test_manager, s_test_bus_name);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_crc8_set_override(false);
+  /* Two-device sequence: iteration 1 finds Device A with last_device_flag=false */
+  mock_gpio_set_read_sequence(s_test_pin, s_seq_two_device, k_test_two_device_seq_len);
+
+  uint8_t              s_roms[k_test_rom_bytes];
+  uint32_t             num_devices = 0U;
+  onewire_search_ctx_t ctx         = {.roms        = s_roms,
+                                      .max_devices = 1U,
+                                      .num_devices = &num_devices,
+                                      .result      = k_rx_ok};
+  err                              = internal_onewire_search_callback(&s_onewire_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(1U, num_devices);
+}
+
+/**
+ * @brief Test internal_delay_us with large delay exercises ticks > counter_max branch
+ *
+ * @details
+ * Calls internal_delay_us with 10000 microseconds (10ms). This produces
+ * ticks = 10000 * 7500000 / 1000000 = 75000, which exceeds k_onewire_timer_counter_max
+ * (0xFFFF = 65535). The ternary at line 278 takes the TRUE branch (cap at counter_max).
+ * With the mock auto-incrementing cmcnt by 100 per read, the wait loop exits quickly.
+ *
+ * @pre setUp() completed, mock timer auto-increment enabled
+ * @post Delay completes without hanging
+ */
+void test_onewire_internal_delay_us_large_delay_exercises_counter_max(void)
+{
+  /*
+   * 10000 us -> ticks = 75000 > 65535 (k_onewire_timer_counter_max).
+   * Covers the TRUE branch of: wait_ticks = (ticks > counter_max) ? counter_max : ticks
+   *
+   * With the default auto-increment of 100 the inner busy-wait never exits:
+   * gcd(100, 65536) = 4 which does not divide 65535, so (uint16_t)(cmcnt - start)
+   * can never reach 65535. Use increment=1 (odd -> gcd=1) so the loop exits
+   * after exactly 65535 inner iterations per outer pass (~75000 nop calls total,
+   * completing in < 1 ms on the x86_64 test host).
+   */
+  mock_onewire_hw_set_timer_auto_increment(1U);
+  internal_delay_us(10000U);
+  /* Restore default so subsequent tests are not affected */
+  mock_onewire_hw_set_timer_auto_increment(k_mock_onewire_timer_auto_increment_default);
+  /* If we get here without hanging, the test passed */
+  TEST_PASS();
+}
+
+/**
+ * @brief Test internal_onewire_deinit_callback with corrupted handle exercises loop exhaustion
+ *
+ * @details
+ * Covers line 1048 false exit: for loop completes all iterations without finding a match.
+ * Sets bus_config.handle to a fake pointer that does not match any pool entry.
+ * After the loop exhausts, bus_config.handle is set to nullptr.
+ *
+ * @pre setUp() completed, s_onewire_config initialized
+ * @post handle set to nullptr, no crash
+ */
+void test_onewire_release_state_loop_exhaustion(void)
+{
+  /* Use a valid bus_config but set handle to a fake pointer not in the pool */
+  rx_bus_config_t      cfg = s_onewire_config;
+  uint8_t              dummy_target;
+  cfg.handle               = &dummy_target; /* Points outside s_state_pool */
+  onewire_simple_ctx_t ctx = {.result = k_rx_ok};
+
+  rx_err_t err = internal_onewire_deinit_callback(&cfg, &ctx);
+  /* Loop exhausts, handle cleared to nullptr, callback returns k_rx_ok */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_NULL(cfg.handle);
+}
+
+/** @} */ /* end of test_onewire_internal */
+
+/* =============================================================================
  * Test Runner
  * =============================================================================
  */
@@ -3411,6 +5877,123 @@ int main(void)
   RUN_TEST(test_rx_bus_onewire_bus_released_after_write);
   RUN_TEST(test_rx_bus_onewire_bus_released_after_read);
   RUN_TEST(test_rx_bus_onewire_bus_released_after_reset);
+
+  /* Internal function coverage tests */
+  RUN_TEST(test_onewire_internal_delay_us_zero);
+  RUN_TEST(test_onewire_internal_acquire_state_existing_handle);
+  RUN_TEST(test_onewire_internal_acquire_state_pool_exhausted);
+  RUN_TEST(test_onewire_internal_set_drive_mode_set_input_fails);
+  RUN_TEST(test_onewire_internal_reset_pulse_release_line_fails);
+  RUN_TEST(test_onewire_internal_reset_pulse_read_line_fails);
+  RUN_TEST(test_onewire_internal_write_bit_one_release_fails);
+  RUN_TEST(test_onewire_internal_write_bit_zero_release_fails);
+  RUN_TEST(test_onewire_internal_read_bit_release_fails);
+  RUN_TEST(test_onewire_internal_read_bit_read_line_fails);
+  RUN_TEST(test_onewire_internal_write_byte_write_bit_fails);
+  RUN_TEST(test_onewire_internal_read_byte_read_bit_fails);
+  RUN_TEST(test_onewire_internal_search_step_first_read_bit_fails);
+  RUN_TEST(test_onewire_internal_search_step_second_read_bit_fails);
+  RUN_TEST(test_onewire_internal_search_step_bit_and_comp_both_true);
+  RUN_TEST(test_onewire_internal_search_step_direction_from_last_rom);
+  RUN_TEST(test_onewire_internal_search_step_write_bit_fails);
+  RUN_TEST(test_onewire_internal_search_bits_step_error);
+  RUN_TEST(test_onewire_internal_search_iteration_reset_pulse_fails);
+  RUN_TEST(test_onewire_internal_search_iteration_no_presence);
+  RUN_TEST(test_onewire_internal_search_iteration_write_byte_fails);
+  RUN_TEST(test_onewire_internal_search_iteration_last_device_flag);
+  RUN_TEST(test_onewire_internal_search_iteration_search_bits_fails);
+  RUN_TEST(test_onewire_internal_init_callback_gpio_read_fails);
+  RUN_TEST(test_onewire_internal_init_callback_pin_reads_low);
+  RUN_TEST(test_onewire_internal_reset_callback_null_presence);
+  RUN_TEST(test_onewire_internal_write_bit_callback_not_initialized);
+  RUN_TEST(test_onewire_internal_write_bit_callback_wrong_type);
+  RUN_TEST(test_onewire_internal_read_bit_callback_not_initialized);
+  RUN_TEST(test_onewire_internal_read_bit_callback_wrong_type);
+  RUN_TEST(test_onewire_internal_read_bit_callback_null_bit);
+  RUN_TEST(test_onewire_internal_write_byte_callback_write_byte_fails);
+  RUN_TEST(test_onewire_internal_read_byte_callback_null_byte);
+  RUN_TEST(test_onewire_internal_write_buffer_callback_length_too_large);
+  RUN_TEST(test_onewire_internal_write_buffer_callback_null_data);
+  RUN_TEST(test_onewire_internal_write_buffer_callback_write_fails);
+  RUN_TEST(test_onewire_internal_read_buffer_callback_not_initialized);
+  RUN_TEST(test_onewire_internal_read_buffer_callback_length_too_large);
+  RUN_TEST(test_onewire_internal_read_buffer_callback_null_data);
+  RUN_TEST(test_onewire_internal_read_buffer_callback_read_fails);
+  RUN_TEST(test_onewire_internal_skip_rom_callback_reset_fails);
+  RUN_TEST(test_onewire_internal_skip_rom_callback_write_byte_fails);
+  RUN_TEST(test_onewire_internal_match_rom_callback_null_rom);
+  RUN_TEST(test_onewire_internal_match_rom_callback_reset_fails);
+  RUN_TEST(test_onewire_internal_match_rom_callback_no_presence);
+  RUN_TEST(test_onewire_internal_match_rom_callback_write_cmd_fails);
+  RUN_TEST(test_onewire_internal_match_rom_callback_write_rom_fails);
+  RUN_TEST(test_onewire_internal_read_rom_callback_null_rom);
+  RUN_TEST(test_onewire_internal_read_rom_callback_reset_fails);
+  RUN_TEST(test_onewire_internal_read_rom_callback_no_presence);
+  RUN_TEST(test_onewire_internal_read_rom_callback_write_cmd_fails);
+  RUN_TEST(test_onewire_internal_read_rom_callback_read_byte_fails);
+  RUN_TEST(test_onewire_internal_read_rom_callback_family_code_zero);
+  RUN_TEST(test_onewire_internal_search_callback_null_num_devices);
+  RUN_TEST(test_onewire_internal_search_callback_zero_max);
+  RUN_TEST(test_onewire_internal_search_callback_max_exceeds_limit);
+  RUN_TEST(test_onewire_internal_search_callback_null_roms);
+  RUN_TEST(test_onewire_deinit_null_manager);
+  RUN_TEST(test_onewire_deinit_null_bus_name);
+  RUN_TEST(test_onewire_deinit_bus_not_found);
+
+  /* Public API null bus_name / null manager branch coverage */
+  RUN_TEST(test_rx_bus_onewire_reset_null_bus_name);
+  RUN_TEST(test_rx_bus_onewire_write_bit_null_bus_name);
+  RUN_TEST(test_rx_bus_onewire_read_bit_null_manager);
+  RUN_TEST(test_rx_bus_onewire_read_bit_null_bus_name);
+  RUN_TEST(test_rx_bus_onewire_write_byte_null_bus_name);
+  RUN_TEST(test_rx_bus_onewire_read_byte_null_manager);
+  RUN_TEST(test_rx_bus_onewire_read_byte_null_bus_name);
+  RUN_TEST(test_rx_bus_onewire_write_null_manager);
+  RUN_TEST(test_rx_bus_onewire_write_null_bus_name);
+  RUN_TEST(test_rx_bus_onewire_read_null_manager);
+  RUN_TEST(test_rx_bus_onewire_read_null_bus_name);
+  RUN_TEST(test_rx_bus_onewire_skip_rom_null_bus_name);
+  RUN_TEST(test_rx_bus_onewire_match_rom_null_manager);
+  RUN_TEST(test_rx_bus_onewire_match_rom_null_bus_name);
+  RUN_TEST(test_rx_bus_onewire_read_rom_null_bus_name);
+  RUN_TEST(test_rx_bus_onewire_search_null_bus_name);
+
+  /* Callback wrong-type branch coverage */
+  RUN_TEST(test_onewire_internal_deinit_callback_wrong_type);
+  RUN_TEST(test_onewire_internal_reset_callback_wrong_type);
+  RUN_TEST(test_onewire_internal_write_byte_callback_wrong_type);
+  RUN_TEST(test_onewire_internal_read_byte_callback_wrong_type);
+  RUN_TEST(test_onewire_internal_write_buffer_callback_wrong_type);
+  RUN_TEST(test_onewire_internal_read_buffer_callback_wrong_type);
+  RUN_TEST(test_onewire_internal_skip_rom_callback_wrong_type);
+  RUN_TEST(test_onewire_internal_match_rom_callback_wrong_type);
+  RUN_TEST(test_onewire_internal_read_rom_callback_wrong_type);
+  RUN_TEST(test_onewire_internal_search_callback_wrong_type);
+
+  /* Internal function null-pointer branch coverage */
+  RUN_TEST(test_onewire_internal_search_step_null_bus_config);
+  RUN_TEST(test_onewire_internal_search_step_null_state);
+  RUN_TEST(test_onewire_internal_search_bits_null_bus_config);
+  RUN_TEST(test_onewire_internal_search_bits_null_state);
+  RUN_TEST(test_onewire_internal_search_bits_null_rom);
+  RUN_TEST(test_onewire_internal_search_bits_null_last_zero);
+  RUN_TEST(test_onewire_internal_search_iteration_null_bus_config);
+  RUN_TEST(test_onewire_internal_search_iteration_null_state);
+  RUN_TEST(test_onewire_internal_search_iteration_null_rom);
+  RUN_TEST(test_onewire_internal_search_iteration_null_device_found);
+
+  /* Drive mode FALSE-branch coverage */
+  RUN_TEST(test_onewire_internal_set_drive_mode_already_output);
+  RUN_TEST(test_onewire_internal_set_drive_mode_already_input);
+
+  /* Loop exit branch coverage (i >= max_buf_bytes, while max_devices) */
+  RUN_TEST(test_onewire_write_buffer_loop_exit_at_max_buf_bytes);
+  RUN_TEST(test_onewire_read_buffer_loop_exit_at_max_buf_bytes);
+  RUN_TEST(test_onewire_search_callback_while_loop_exits_at_max_devices);
+
+  /* Branch coverage for large delay (ticks > counter_max) and pool exhaustion */
+  RUN_TEST(test_onewire_internal_delay_us_large_delay_exercises_counter_max);
+  RUN_TEST(test_onewire_release_state_loop_exhaustion);
 
   return UNITY_END();
 }

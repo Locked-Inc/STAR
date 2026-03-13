@@ -204,8 +204,11 @@ typedef enum : uint16_t {
 
 /* =============================================================================
  * Callback Context Structures
+ * In UNIT_TEST builds these typedefs are provided by rx_bus_i2c.h so that
+ * test files can construct context values and call the callbacks directly.
  * =============================================================================
  */
+#ifndef UNIT_TEST
 
 /**
  * @struct i2c_init_ctx_t
@@ -411,6 +414,8 @@ typedef struct {
   rx_err_t result;      /**< Operation result: k_rx_ok on success, error code on failure */
 } i2c_write_read_ctx_t;
 
+#endif /* ifndef UNIT_TEST */
+
 /* =============================================================================
  * Private Callback Functions
  * =============================================================================
@@ -491,7 +496,7 @@ typedef struct {
  * - **Rule 5**: 2 preconditions, 2 postconditions
  * - **Rule 4**: Function is 20 lines (well under 60 limit)
  */
-static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
+RX_STATIC_TESTABLE rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   i2c_init_ctx_t* const ctx = (i2c_init_ctx_t*)user_ctx;
 
@@ -641,7 +646,7 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
  * - **Rule 4**: Function is 20 lines (well under 60 limit)
  * - **Rule 7**: All riic_write() return values checked
  */
-static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* user_ctx)
+RX_STATIC_TESTABLE rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   i2c_write_ctx_t* const ctx = (i2c_write_ctx_t*)user_ctx;
 
@@ -750,7 +755,7 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
  * - **Rule 4**: Function is 20 lines (well under 60 limit)
  * - **Rule 7**: All riic_read() return values checked
  */
-static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
+RX_STATIC_TESTABLE rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   i2c_read_ctx_t* const ctx = (i2c_read_ctx_t*)user_ctx;
 
@@ -847,7 +852,8 @@ static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* us
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
+RX_STATIC_TESTABLE rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config,
+                                                             void*            user_ctx)
 {
   i2c_write_read_ctx_t* const ctx = (i2c_write_read_ctx_t*)user_ctx;
 

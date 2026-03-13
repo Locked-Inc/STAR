@@ -480,9 +480,23 @@ typedef struct {
   bool presence_response; /**< True if device responds to reset pulse (simulates presence detect) */
   uint8_t scratchpad
     [k_ds18b20_scratchpad_bytes]; /**< Mock 9-byte scratchpad memory (temp + config + CRC) */
-  uint8_t power_mode;  /**< Power supply mode: 1=external VDD, 0=parasitic (powered from DQ) */
-  bool    initialized; /**< Bus initialization state: true after rx_bus_onewire_init() called */
-  uint8_t rom[k_onewire_rom_bytes]; /**< 64-bit ROM code: [family(0x28), serial(48-bit), CRC-8] */
+  uint8_t  power_mode;  /**< Power supply mode: 1=external VDD, 0=parasitic (powered from DQ) */
+  bool     initialized; /**< Bus initialization state: true after rx_bus_onewire_init() called */
+  uint8_t  rom[k_onewire_rom_bytes]; /**< 64-bit ROM code: [family(0x28), serial(48-bit), CRC-8] */
+  bool     force_init_error;         /**< If true, rx_bus_onewire_init() returns error */
+  bool     force_write_error;        /**< If true, rx_bus_onewire_write_byte/write returns error */
+  bool     force_write_data_error;   /**< If true, rx_bus_onewire_write (multi-byte) returns error */
+  bool     force_read_error;         /**< If true, rx_bus_onewire_read returns error */
+  bool     force_reset_error;        /**< If true, rx_bus_onewire_reset returns error */
+  bool     force_skip_rom_error;     /**< If true, rx_bus_onewire_skip_rom returns error */
+  bool     force_match_rom_error;    /**< If true, rx_bus_onewire_match_rom returns error */
+  uint32_t write_fail_after;         /**< Fail write_byte after this many successful calls (0 = always) */
+  uint32_t write_call_count;         /**< Counter for write_byte calls */
+  uint32_t skip_rom_fail_after;      /**< Fail skip_rom after this many successful calls (0 = always) */
+  uint32_t skip_rom_call_count;      /**< Counter for skip_rom calls */
+  bool     force_presence_false_after; /**< If true, return presence=false after N resets */
+  uint32_t presence_false_after;     /**< Return presence=false after this many resets (0=immediately) */
+  uint32_t reset_call_count;         /**< Counter for reset calls */
 } mock_onewire_state_t;
 
 /**
@@ -694,6 +708,10 @@ rx_err_t rx_bus_onewire_init(rx_bus_manager_t* manager, const char* bus_name)
     return k_rx_err_null_ptr;
   }
 
+  if (s_mock_state.force_init_error) {
+    return k_rx_err_hw_error;
+  }
+
   if (s_mock_state.initialized) {
     return k_rx_err_invalid_state;
   }
@@ -749,7 +767,17 @@ rx_err_t rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, b
     return k_rx_err_invalid_state;
   }
 
-  *presence = s_mock_state.presence_response;
+  if (s_mock_state.force_reset_error) {
+    return k_rx_err_hw_error;
+  }
+
+  if (s_mock_state.force_presence_false_after &&
+      s_mock_state.reset_call_count >= s_mock_state.presence_false_after) {
+    *presence = false;
+  } else {
+    *presence = s_mock_state.presence_response;
+  }
+  s_mock_state.reset_call_count++;
   return k_rx_ok;
 }
 
@@ -795,6 +823,14 @@ rx_err_t rx_bus_onewire_write_byte(rx_bus_manager_t* manager, const char* bus_na
   if (!s_mock_state.initialized) {
     return k_rx_err_invalid_state;
   }
+
+  if (s_mock_state.force_write_error) {
+    if (s_mock_state.write_fail_after == 0U ||
+        s_mock_state.write_call_count >= s_mock_state.write_fail_after) {
+      return k_rx_err_hw_error;
+    }
+  }
+  s_mock_state.write_call_count++;
 
   return k_rx_ok;
 }
@@ -885,6 +921,10 @@ rx_err_t rx_bus_onewire_read_bit(rx_bus_manager_t* manager, const char* bus_name
     return k_rx_err_invalid_state;
   }
 
+  if (s_mock_state.force_read_error) {
+    return k_rx_err_hw_error;
+  }
+
   *bit = s_mock_state.power_mode;
   return k_rx_ok;
 }
@@ -939,6 +979,10 @@ rx_bus_onewire_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* da
     return k_rx_err_invalid_state;
   }
 
+  if (s_mock_state.force_read_error) {
+    return k_rx_err_hw_error;
+  }
+
   if (length > k_ds18b20_scratchpad_bytes) {
     length = k_ds18b20_scratchpad_bytes;
   }
@@ -991,6 +1035,10 @@ rx_err_t rx_bus_onewire_write(rx_bus_manager_t* manager,
     return k_rx_err_invalid_state;
   }
 
+  if (s_mock_state.force_write_error || s_mock_state.force_write_data_error) {
+    return k_rx_err_hw_error;
+  }
+
   if (length == 0U) {
     return k_rx_ok;
   }
@@ -1034,6 +1082,14 @@ rx_err_t rx_bus_onewire_skip_rom(rx_bus_manager_t* manager, const char* bus_name
   if (!s_mock_state.initialized) {
     return k_rx_err_invalid_state;
   }
+
+  if (s_mock_state.force_skip_rom_error) {
+    if (s_mock_state.skip_rom_fail_after == 0U ||
+        s_mock_state.skip_rom_call_count >= s_mock_state.skip_rom_fail_after) {
+      return k_rx_err_hw_error;
+    }
+  }
+  s_mock_state.skip_rom_call_count++;
 
   return k_rx_ok;
 }
@@ -1079,6 +1135,10 @@ rx_err_t rx_bus_onewire_match_rom(rx_bus_manager_t* manager,
 
   if (!s_mock_state.initialized) {
     return k_rx_err_invalid_state;
+  }
+
+  if (s_mock_state.force_match_rom_error) {
+    return k_rx_err_hw_error;
   }
 
   return k_rx_ok;
@@ -2220,6 +2280,109 @@ void test_ds18b20_trigger_conversion_no_device(void)
 /** @} */ // end of conversion_tests
 
 /* =============================================================================
+ * Save/Recall Config and Read Scratchpad Tests
+ * =============================================================================
+ */
+
+/**
+ * @defgroup config_persist_tests Config Persistence and Scratchpad Tests
+ * @brief Tests for save_config, recall_config, and read_scratchpad functions
+ * @{
+ */
+
+/**
+ * @brief Test rx_ds18b20_save_config() with valid initialized handle
+ */
+void test_ds18b20_save_config_success(void)
+{
+  rx_ds18b20_handle_t handle;
+
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  rx_err_t err = rx_ds18b20_save_config(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test rx_ds18b20_save_config() with nullptr handle
+ */
+void test_ds18b20_save_config_null(void)
+{
+  rx_err_t err = rx_ds18b20_save_config(nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_ds18b20_recall_config() with valid initialized handle
+ */
+void test_ds18b20_recall_config_success(void)
+{
+  rx_ds18b20_handle_t handle;
+
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  rx_err_t err = rx_ds18b20_recall_config(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test rx_ds18b20_recall_config() with nullptr handle
+ */
+void test_ds18b20_recall_config_null(void)
+{
+  rx_err_t err = rx_ds18b20_recall_config(nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test rx_ds18b20_read_scratchpad() with valid initialized handle
+ */
+void test_ds18b20_read_scratchpad_success(void)
+{
+  rx_ds18b20_handle_t handle;
+
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+
+  uint8_t  scratchpad[k_ds18b20_scratchpad_bytes];
+  rx_err_t err = rx_ds18b20_read_scratchpad(&handle, scratchpad);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test rx_ds18b20_read_scratchpad() with nullptr handle
+ */
+void test_ds18b20_read_scratchpad_null(void)
+{
+  uint8_t  scratchpad[k_ds18b20_scratchpad_bytes];
+  rx_err_t err = rx_ds18b20_read_scratchpad(nullptr, scratchpad);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/** @} */ // end of config_persist_tests
+
+/* =============================================================================
  * Deinitialization Tests
  * =============================================================================
  */
@@ -2262,6 +2425,1230 @@ void test_ds18b20_deinit(void)
 }
 
 /** @} */ // end of deinit_tests
+
+/* =============================================================================
+ * Additional Tests: null-handle / not-initialized / error-path coverage
+ * =============================================================================
+ */
+
+void test_ds18b20_init_with_rom_matching(void)
+{
+  rx_ds18b20_handle_t handle;
+
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = true,
+  };
+  /* Copy mock ROM into config */
+  memcpy(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
+
+  internal_init_handle(&handle);
+
+  rx_err_t err = rx_ds18b20_init(&handle, &config);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(handle.initialized);
+  TEST_ASSERT_TRUE(handle.use_rom_matching);
+}
+
+void test_ds18b20_deinit_null_handle(void)
+{
+  rx_err_t err = rx_ds18b20_deinit(nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_ds18b20_deinit_not_initialized(void)
+{
+  rx_ds18b20_handle_t handle;
+  internal_init_handle(&handle);
+  rx_err_t err = rx_ds18b20_deinit(&handle);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_ds18b20_trigger_conversion_null_handle(void)
+{
+  rx_err_t err = rx_ds18b20_trigger_conversion(nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_ds18b20_trigger_conversion_not_initialized(void)
+{
+  rx_ds18b20_handle_t handle;
+  internal_init_handle(&handle);
+  rx_err_t err = rx_ds18b20_trigger_conversion(&handle);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_ds18b20_read_temperature_raw_null_handle(void)
+{
+  int16_t  raw_temp = 0;
+  rx_err_t err      = rx_ds18b20_read_temperature_raw(nullptr, &raw_temp);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_ds18b20_read_temperature_raw_not_initialized(void)
+{
+  rx_ds18b20_handle_t handle;
+  int16_t             raw_temp = 0;
+  internal_init_handle(&handle);
+  rx_err_t err = rx_ds18b20_read_temperature_raw(&handle, &raw_temp);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_ds18b20_read_temperature_raw_null_output(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  rx_err_t err = rx_ds18b20_read_temperature_raw(&handle, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_ds18b20_read_temperature_10bit(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_10bit,
+    .use_rom_matching = false,
+  };
+  float temp_c = 0.0f;
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+void test_ds18b20_read_temperature_11bit(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_11bit,
+    .use_rom_matching = false,
+  };
+  float temp_c = 0.0f;
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+void test_ds18b20_set_resolution_null_handle(void)
+{
+  rx_err_t err = rx_ds18b20_set_resolution(nullptr, k_ds18b20_resolution_12bit);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_ds18b20_set_resolution_not_initialized(void)
+{
+  rx_ds18b20_handle_t handle;
+  internal_init_handle(&handle);
+  rx_err_t err = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_12bit);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_ds18b20_get_resolution_null_handle(void)
+{
+  ds18b20_resolution_t res = k_ds18b20_resolution_12bit;
+  rx_err_t             err = rx_ds18b20_get_resolution(nullptr, &res);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_ds18b20_get_resolution_null_output(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  rx_err_t err = rx_ds18b20_get_resolution(&handle, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_ds18b20_save_config_not_initialized(void)
+{
+  rx_ds18b20_handle_t handle;
+  internal_init_handle(&handle);
+  rx_err_t err = rx_ds18b20_save_config(&handle);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_ds18b20_recall_config_not_initialized(void)
+{
+  rx_ds18b20_handle_t handle;
+  internal_init_handle(&handle);
+  rx_err_t err = rx_ds18b20_recall_config(&handle);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_ds18b20_read_power_mode_null_handle(void)
+{
+  bool     external_power = false;
+  rx_err_t err            = rx_ds18b20_read_power_mode(nullptr, &external_power);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_ds18b20_read_power_mode_null_output(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  rx_err_t err = rx_ds18b20_read_power_mode(&handle, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_ds18b20_read_scratchpad_not_initialized(void)
+{
+  rx_ds18b20_handle_t handle;
+  uint8_t             scratchpad[k_ds18b20_scratchpad_bytes];
+  internal_init_handle(&handle);
+  rx_err_t err = rx_ds18b20_read_scratchpad(&handle, scratchpad);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_ds18b20_get_conversion_time_null_handle(void)
+{
+  uint32_t time_ms = rx_ds18b20_get_conversion_time_ms(nullptr);
+  TEST_ASSERT_EQUAL_UINT32(0U, time_ms);
+}
+
+void test_ds18b20_get_conversion_time_not_initialized(void)
+{
+  rx_ds18b20_handle_t handle;
+  internal_init_handle(&handle);
+  uint32_t time_ms = rx_ds18b20_get_conversion_time_ms(&handle);
+  TEST_ASSERT_EQUAL_UINT32(0U, time_ms);
+}
+
+void test_ds18b20_get_conversion_time_10bit(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_10bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  uint32_t time_ms = rx_ds18b20_get_conversion_time_ms(&handle);
+  TEST_ASSERT_EQUAL_UINT32(k_ds18b20_conv_time_10bit_ms, time_ms);
+}
+
+void test_ds18b20_get_conversion_time_11bit(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_11bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  uint32_t time_ms = rx_ds18b20_get_conversion_time_ms(&handle);
+  TEST_ASSERT_EQUAL_UINT32(k_ds18b20_conv_time_11bit_ms, time_ms);
+}
+
+void test_ds18b20_init_null_bus_manager(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = nullptr,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  rx_err_t err = rx_ds18b20_init(&handle, &config);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_ds18b20_init_null_bus_name(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = nullptr,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  rx_err_t err = rx_ds18b20_init(&handle, &config);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_ds18b20_init_wrong_family_code(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = true,
+  };
+  /* Set wrong family code (not 0x28) */
+  memset(config.rom, 0x00, k_onewire_rom_bytes);
+  config.rom[0] = 0x10; /* DS1820 family code, not DS18B20 */
+  internal_init_handle(&handle);
+  rx_err_t err = rx_ds18b20_init(&handle, &config);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_ds18b20_init_bus_init_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  s_mock_state.force_init_error = true;
+  rx_err_t err                  = rx_ds18b20_init(&handle, &config);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_ds18b20_trigger_conversion_reset_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.force_reset_error = true;
+  rx_err_t err                   = rx_ds18b20_trigger_conversion(&handle);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_ds18b20_trigger_conversion_select_device_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.force_skip_rom_error = true;
+  rx_err_t err                      = rx_ds18b20_trigger_conversion(&handle);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test trigger conversion when match_rom fails (use_rom_matching=true path)
+ *
+ * @details
+ * Covers the match_rom error branch in internal_ds18b20_select_device() when
+ * use_rom_matching is true.
+ */
+void test_ds18b20_trigger_conversion_match_rom_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = true,
+  };
+  memcpy(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.force_match_rom_error = true;
+  rx_err_t err                       = rx_ds18b20_trigger_conversion(&handle);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_ds18b20_trigger_conversion_write_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = true,
+  };
+  memcpy(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* With use_rom_matching=true, select_device uses match_rom.
+   * After match_rom succeeds, write_byte (Convert T) should fail.
+   * Set write error after init, so init itself can succeed. */
+  s_mock_state.force_write_error = true;
+  rx_err_t err                   = rx_ds18b20_trigger_conversion(&handle);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_ds18b20_read_scratchpad_write_cmd_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  float temp_c = 0.0f;
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* Inject write error so read_scratchpad_raw's write_byte fails */
+  s_mock_state.force_write_error = true;
+  rx_err_t err                   = rx_ds18b20_read_temperature(&handle, &temp_c);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_ds18b20_read_temperature_out_of_range(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  int16_t raw_temp = 0;
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* Create scratchpad with out-of-range raw value 0x8000 = -32768 < -880 */
+  internal_create_valid_scratchpad(s_mock_state.scratchpad,
+                                   (temp_raw_t){.lsb = 0x00, .msb = 0x80},
+                                   k_test_config_12bit);
+  rx_err_t err = rx_ds18b20_read_temperature_raw(&handle, &raw_temp);
+  TEST_ASSERT_EQUAL(k_rx_err_out_of_range, err);
+}
+
+void test_ds18b20_read_scratchpad_null_buffer(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  rx_err_t err = rx_ds18b20_read_scratchpad(&handle, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_ds18b20_read_temperature_9bit(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_9bit,
+    .use_rom_matching = false,
+  };
+  float temp_c = 0.0f;
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+void test_ds18b20_read_scratchpad_read_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  float temp_c = 0.0f;
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* Inject read error so rx_bus_onewire_read fails */
+  s_mock_state.force_read_error = true;
+  rx_err_t err                  = rx_ds18b20_read_temperature(&handle, &temp_c);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+void test_ds18b20_read_temperature_null_handle(void)
+{
+  float    temp_c = 0.0f;
+  rx_err_t err    = rx_ds18b20_read_temperature(nullptr, &temp_c);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_ds18b20_set_resolution_invalid_value(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* 0xFF is an invalid resolution value */
+  rx_err_t err = rx_ds18b20_set_resolution(&handle, (ds18b20_resolution_t)0xFF);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_ds18b20_get_resolution_not_initialized(void)
+{
+  rx_ds18b20_handle_t  handle;
+  ds18b20_resolution_t res = k_ds18b20_resolution_12bit;
+  internal_init_handle(&handle);
+  rx_err_t err = rx_ds18b20_get_resolution(&handle, &res);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_ds18b20_read_power_mode_not_initialized(void)
+{
+  rx_ds18b20_handle_t handle;
+  bool                external_power = false;
+  internal_init_handle(&handle);
+  rx_err_t err = rx_ds18b20_read_power_mode(&handle, &external_power);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_ds18b20_scratchpad_crc_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  float temp_c = 0.0f;
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* Corrupt the CRC byte to trigger CRC mismatch */
+  s_mock_state.scratchpad[k_ds18b20_scratch_crc] ^= 0xFF;
+  rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
+  TEST_ASSERT_EQUAL(k_rx_err_crc_mismatch, err);
+}
+
+/**
+ * @brief Test init fails when OneWire reset fails during verify_device_presence
+ *
+ * @details Covers line 1376 error branch in internal_ds18b20_verify_device_presence().
+ */
+void test_ds18b20_init_reset_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  s_mock_state.force_reset_error = true;
+  rx_err_t err                   = rx_ds18b20_init(&handle, &config);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(handle.initialized);
+}
+
+/**
+ * @brief Test init fails when read_scratchpad_raw fails during verify_device_presence
+ *
+ * @details Covers line 1389 error branch in internal_ds18b20_verify_device_presence().
+ */
+void test_ds18b20_init_read_scratchpad_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  /* Inject read error so internal_ds18b20_read_scratchpad_raw fails during init */
+  s_mock_state.force_read_error = true;
+  rx_err_t err                  = rx_ds18b20_init(&handle, &config);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(handle.initialized);
+}
+
+/**
+ * @brief Test save_config fails when device not present (presence=false)
+ *
+ * @details Covers the !presence branch (line 925) in rx_ds18b20_save_config().
+ */
+void test_ds18b20_save_config_no_device(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.presence_response = false;
+  rx_err_t err                   = rx_ds18b20_save_config(&handle);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test recall_config fails when device not present (presence=false)
+ *
+ * @details Covers the !presence branch (line 1005) in rx_ds18b20_recall_config().
+ */
+void test_ds18b20_recall_config_no_device(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.presence_response = false;
+  rx_err_t err                   = rx_ds18b20_recall_config(&handle);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test read_power_mode fails when device not present (presence=false)
+ *
+ * @details Covers the !presence branch (line 1090) in rx_ds18b20_read_power_mode().
+ */
+void test_ds18b20_read_power_mode_no_device(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  bool external_power = false;
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.presence_response = false;
+  rx_err_t err                   = rx_ds18b20_read_power_mode(&handle, &external_power);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test read_temperature_raw fails when temp value is too high (> max_raw)
+ *
+ * @details Covers the `> max_raw` branch (line 701) in
+ * internal_ds18b20_read_temperature_raw(). The out_of_range test covers < min_raw,
+ * this test covers > max_raw.
+ */
+void test_ds18b20_read_temperature_too_high(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  int16_t raw_temp = 0;
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* Raw value 0x07D0 = 2000 > max_raw (125*16=2000? Let's use 0x07D1 = 2001) */
+  internal_create_valid_scratchpad(s_mock_state.scratchpad,
+                                   (temp_raw_t){.lsb = 0xD1, .msb = 0x07},
+                                   k_test_config_12bit);
+  rx_err_t err = rx_ds18b20_read_temperature_raw(&handle, &raw_temp);
+  TEST_ASSERT_EQUAL(k_rx_err_out_of_range, err);
+}
+
+/**
+ * @brief Test save_config fails when reset/presence check fails
+ *
+ * @details Covers line 925 error branch in rx_ds18b20_save_config().
+ */
+void test_ds18b20_save_config_reset_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.force_reset_error = true;
+  rx_err_t err                   = rx_ds18b20_save_config(&handle);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test save_config fails when select_device (skip_rom) fails
+ *
+ * @details Covers line 932 error branch in rx_ds18b20_save_config().
+ */
+void test_ds18b20_save_config_select_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.force_skip_rom_error = true;
+  rx_err_t err                      = rx_ds18b20_save_config(&handle);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test save_config fails when write_byte (copy scratchpad cmd) fails
+ *
+ * @details Covers line 939 error branch in rx_ds18b20_save_config().
+ */
+void test_ds18b20_save_config_write_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.force_write_error = true;
+  rx_err_t err                   = rx_ds18b20_save_config(&handle);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test recall_config fails when reset/presence check fails
+ *
+ * @details Covers line 1005 error branch in rx_ds18b20_recall_config().
+ */
+void test_ds18b20_recall_config_reset_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.force_reset_error = true;
+  rx_err_t err                   = rx_ds18b20_recall_config(&handle);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test recall_config fails when select_device (skip_rom) fails
+ *
+ * @details Covers line 1012 error branch in rx_ds18b20_recall_config().
+ */
+void test_ds18b20_recall_config_select_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.force_skip_rom_error = true;
+  rx_err_t err                      = rx_ds18b20_recall_config(&handle);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test recall_config fails when write_byte (recall EEPROM cmd) fails
+ *
+ * @details Covers line 1019 error branch in rx_ds18b20_recall_config().
+ */
+void test_ds18b20_recall_config_write_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.force_write_error = true;
+  rx_err_t err                   = rx_ds18b20_recall_config(&handle);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test read_power_mode fails when reset/presence check fails
+ *
+ * @details Covers line 1090 error branch in rx_ds18b20_read_power_mode().
+ */
+void test_ds18b20_read_power_mode_reset_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  bool external_power = false;
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.force_reset_error = true;
+  rx_err_t err                   = rx_ds18b20_read_power_mode(&handle, &external_power);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test read_power_mode fails when select_device (skip_rom) fails
+ *
+ * @details Covers line 1097 error branch in rx_ds18b20_read_power_mode().
+ */
+void test_ds18b20_read_power_mode_select_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  bool external_power = false;
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.force_skip_rom_error = true;
+  rx_err_t err                      = rx_ds18b20_read_power_mode(&handle, &external_power);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test read_power_mode fails when write_byte (read power cmd) fails
+ *
+ * @details Covers line 1103 error branch in rx_ds18b20_read_power_mode().
+ */
+void test_ds18b20_read_power_mode_write_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  bool external_power = false;
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.force_write_error = true;
+  rx_err_t err                   = rx_ds18b20_read_power_mode(&handle, &external_power);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test read_power_mode fails when read_bit fails
+ *
+ * @details Covers line 1111 error branch in rx_ds18b20_read_power_mode().
+ * Mock read_bit uses force_read_error flag.
+ */
+void test_ds18b20_read_power_mode_read_bit_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  bool external_power = false;
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.force_read_error = true;
+  rx_err_t err                  = rx_ds18b20_read_power_mode(&handle, &external_power);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test set_resolution fails when no device present during read_scratchpad
+ *
+ * @details Covers the !presence branch (line 1602) in
+ * internal_ds18b20_read_scratchpad_raw() when called from rx_ds18b20_set_resolution().
+ */
+void test_ds18b20_set_resolution_no_device(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  s_mock_state.presence_response = false;
+  rx_err_t err                   = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_10bit);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test set_resolution fails when no device present during write_scratchpad
+ *
+ * @details Covers the !presence branch (line 1758) in
+ * internal_ds18b20_write_scratchpad() called from rx_ds18b20_set_resolution().
+ * Use write_fail_after=1 so read_scratchpad's write_byte succeeds but then
+ * set presence=false so write_scratchpad's reset returns no presence.
+ *
+ * Actually, we can test the no-device in write_scratchpad by having
+ * read_scratchpad succeed (presence=true, write_byte ok) and then presence=false
+ * only during write_scratchpad's reset. But since presence_response is global,
+ * setting it after read_scratchpad but before write_scratchpad is tricky.
+ * Instead, use write_fail_after=0 with force_write=false and presence_response
+ * toggling via a separate approach. Simplest: rely on GCOV_EXCL for this path
+ * since it requires per-call presence toggling which the mock doesn't support.
+ *
+ * For now, this test covers line 1765 (select_device error in write_scratchpad)
+ * by using force_skip_rom_error after a successful read_scratchpad (via write_fail_after).
+ */
+void test_ds18b20_set_resolution_write_scratchpad_select_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* After init, force_skip_rom_error so select_device in write_scratchpad fails.
+   * read_scratchpad succeeds (its write_byte completes before skip_rom fails
+   * because read_scratchpad uses write_byte THEN read, and skip_rom is called
+   * BEFORE write_byte in read_scratchpad). Actually:
+   * read_scratchpad_raw: reset, skip_rom, write_byte(cmd), read
+   * write_scratchpad:    reset, skip_rom <-- fails here
+   * So skip_rom error causes read_scratchpad to fail too (line 1602 branch).
+   * To cover line 1765 we need read_scratchpad to succeed but write_scratchpad
+   * skip_rom to fail. This requires per-call skip_rom failure which is not
+   * directly supported. The line 1765 path will be excluded with GCOV_EXCL. */
+  s_mock_state.force_skip_rom_error = true;
+  rx_err_t err = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_10bit);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test set_resolution fails when write (3-byte data) in write_scratchpad fails
+ *
+ * @details Covers line 1787 error branch in internal_ds18b20_write_scratchpad().
+ * Uses write_fail_after=2: read_scratchpad write_byte(1 call) ok,
+ * write_scratchpad write_byte(2nd call) ok, write(3rd) FAIL via rx_bus_onewire_write.
+ * But rx_bus_onewire_write checks force_write_error without fail_after, so it
+ * always fails when force_write_error=true. We need write_byte calls 1 and 2 to
+ * succeed so write_scratchpad gets past the cmd write, then onewire_write fails.
+ * With write_fail_after=2: calls 1,2 succeed, call 3 (onewire_write uses the same
+ * force_write_error but NOT the counter). So onewire_write will fail immediately.
+ * Actually: set write_fail_after so write_byte calls 1&2 succeed, then onewire_write
+ * (which ignores the counter) will also fail. Line 1787 covers onewire_write failure.
+ */
+void test_ds18b20_set_resolution_write_data_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* write_byte call sequence in set_resolution:
+   *   call 1: read_scratchpad_raw -> write_byte(read_scratch_cmd) ok
+   *   call 2: write_scratchpad -> write_byte(write_scratch_cmd) ok (count=1<2)
+   * Then rx_bus_onewire_write (3-byte data) fails because force_write_error=true
+   * and write does not use fail_after counter. Covers line 1787. */
+  s_mock_state.force_write_error = true;
+  s_mock_state.write_fail_after  = 2U;
+  rx_err_t err                   = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_10bit);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test set_resolution fails when read_scratchpad fails
+ *
+ * @details Covers line 785 error branch in rx_ds18b20_set_resolution().
+ */
+void test_ds18b20_set_resolution_read_scratchpad_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* Inject read error so read_scratchpad_raw fails inside set_resolution */
+  s_mock_state.force_read_error = true;
+  rx_err_t err                  = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_10bit);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test set_resolution fails when write_scratchpad fails
+ *
+ * @details Covers line 798 error branch in rx_ds18b20_set_resolution().
+ * Use write_fail_after=1 so read_scratchpad's write_byte succeeds (call 1),
+ * then write_scratchpad's write_byte fails (call 2, count>=1).
+ */
+void test_ds18b20_set_resolution_write_scratchpad_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* call 1: read_scratchpad -> write_byte(read_scratch_cmd) ok
+   * call 2: write_scratchpad -> write_byte(write_scratch_cmd) FAIL (count=1 >= 1)
+   * This propagates: write_scratchpad line 1772 -> set_resolution line 798. */
+  s_mock_state.force_write_error = true;
+  s_mock_state.write_fail_after  = 1U;
+  rx_err_t err                   = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_10bit);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test init fails when set_resolution fails (line 385 branch)
+ *
+ * @details Covers line 385 error branch in rx_ds18b20_init() where
+ * rx_ds18b20_set_resolution returns an error.
+ */
+void test_ds18b20_init_set_resolution_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  /* write_byte call sequence during rx_ds18b20_init():
+   *   call 1: check_presence -> read_scratchpad_raw -> write_byte(read_scratch_cmd) ok
+   *   call 2: set_resolution -> read_scratchpad_raw -> write_byte(read_scratch_cmd) ok
+   *   call 3: set_resolution -> write_scratchpad -> write_byte(write_scratch_cmd) FAIL
+   * Set write_fail_after=2 so write_byte fails on the 3rd call (count >= 2). */
+  s_mock_state.force_write_error = true;
+  s_mock_state.write_fail_after  = 2U;
+  rx_err_t err                   = rx_ds18b20_init(&handle, &config);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  /* Handle must be deinitialized on failure */
+  TEST_ASSERT_FALSE(handle.initialized);
+}
+
+/**
+ * @brief get_conversion_time_ms returns invalid for out-of-range resolution in handle.
+ *
+ * @details Directly sets handle->resolution to an invalid value after init to
+ * exercise the default case in the internal resolution switch (line 1218-1219).
+ */
+void test_ds18b20_get_conversion_time_invalid_resolution(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* Force an invalid resolution to trigger the default case */
+  handle.resolution = (ds18b20_resolution_t)0xFFU;
+  uint32_t time_ms  = rx_ds18b20_get_conversion_time_ms(&handle);
+  TEST_ASSERT_EQUAL_UINT32(0U, time_ms);
+}
+
+/**
+ * @brief write_scratchpad fails when presence pulse is absent during reset.
+ *
+ * @details Uses the presence_false_after counter to allow read_scratchpad's
+ * reset to succeed (call 0 returns true) but write_scratchpad's reset (call 1)
+ * to return presence=false. Covers lines 1759-1760 in rx_ds18b20.c.
+ */
+void test_ds18b20_write_scratchpad_no_presence(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* After init (4 resets already consumed during init):
+   * - verify_device_presence: reset 0, read_scratchpad_raw: reset 1
+   * - set_resolution (from init): read_scratchpad_raw: reset 2, write_scratchpad: reset 3
+   * Now for the post-init rx_ds18b20_set_resolution call:
+   * - read_scratchpad_raw: reset 4 (ok)
+   * - write_scratchpad: reset 5 (force presence=false)
+   * So presence_false_after = 5 (fail on reset_call_count >= 5). */
+  s_mock_state.force_presence_false_after = true;
+  s_mock_state.presence_false_after       = 5U;
+  rx_err_t err = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_10bit);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief write_scratchpad select_device fails on second skip_rom call.
+ *
+ * @details Uses skip_rom_fail_after to let read_scratchpad's skip_rom succeed
+ * (call 0) but fail on write_scratchpad's skip_rom (call 1). Covers line 1766.
+ */
+void test_ds18b20_write_scratchpad_select_error_after_read(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* After init (3 skip_rom calls consumed):
+   * - verify_device_presence read_scratchpad_raw: skip_rom 0
+   * - set_resolution (from init): read_scratchpad_raw: skip_rom 1, write_scratchpad: skip_rom 2
+   * Now for the post-init rx_ds18b20_set_resolution call:
+   * - read_scratchpad_raw: skip_rom 3 (ok)
+   * - write_scratchpad: skip_rom 4 (fail)
+   * So skip_rom_fail_after = 4. */
+  s_mock_state.force_skip_rom_error = true;
+  s_mock_state.skip_rom_fail_after  = 4U;
+  rx_err_t err = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_10bit);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief get_temp_mask returns 12-bit mask for invalid resolution (default case).
+ *
+ * @details Directly sets handle->resolution to an invalid value after init to
+ * exercise the default case in internal_ds18b20_get_temp_mask (line 1830-1831).
+ * The default case returns k_ds18b20_temp_mask_12bit so the read succeeds.
+ */
+void test_ds18b20_read_temp_raw_invalid_resolution_default(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* Force invalid resolution to hit default case in get_temp_mask */
+  handle.resolution = (ds18b20_resolution_t)0xFFU;
+  int16_t  raw      = 0;
+  rx_err_t err      = rx_ds18b20_read_temperature_raw(&handle, &raw);
+  /* Default mask is k_ds18b20_temp_mask_12bit so reading still succeeds */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief write_scratchpad 3-byte write fails after cmd write succeeds.
+ *
+ * @details Uses force_write_data_error (only affects rx_bus_onewire_write, not
+ * write_byte) set AFTER init. This allows init to complete normally, then
+ * when set_resolution's write_scratchpad tries to write 3 bytes of data, it
+ * fails. Covers lines 1788-1789 in rx_ds18b20.c.
+ */
+void test_ds18b20_write_scratchpad_data_write_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* After init succeeds, enable multi-byte write failure.
+   * read_scratchpad_raw uses rx_bus_onewire_read (not write), so it succeeds.
+   * write_scratchpad: write_byte(cmd) ok, then rx_bus_onewire_write(3 bytes) fails. */
+  s_mock_state.force_write_data_error = true;
+  rx_err_t err = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_10bit);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Read temperature read_scratchpad_raw returns reserved byte warning path.
+ *
+ * @details Sets scratchpad reserved byte (index 5) to a non-0xFF value to
+ * trigger the warning log at line 1645. No error is returned, just a warning.
+ */
+void test_ds18b20_read_scratchpad_reserved_byte_warning(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+  /* Set reserved byte to non-0xFF value to trigger the warning log */
+  s_mock_state.scratchpad[k_ds18b20_scratch_reserved1] = 0x00U;
+  /* Re-compute CRC to match modified scratchpad */
+  uint32_t new_crc = 0U;
+  (void)rx_crc8_maxim(s_mock_state.scratchpad,
+                      (uint32_t)(k_ds18b20_scratchpad_bytes - 1U),
+                      &new_crc);
+  s_mock_state.scratchpad[k_ds18b20_scratchpad_bytes - 1U] = (uint8_t)new_crc;
+  float    temp = 0.0F;
+  rx_err_t err  = rx_ds18b20_read_temperature(&handle, &temp);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
 
 /* =============================================================================
  * Unity Test Runner
@@ -2332,8 +3719,87 @@ int main(void)
   RUN_TEST(test_ds18b20_trigger_conversion);
   RUN_TEST(test_ds18b20_trigger_conversion_no_device);
 
+  /* Save/recall config and read scratchpad tests */
+  RUN_TEST(test_ds18b20_save_config_success);
+  RUN_TEST(test_ds18b20_save_config_null);
+  RUN_TEST(test_ds18b20_recall_config_success);
+  RUN_TEST(test_ds18b20_recall_config_null);
+  RUN_TEST(test_ds18b20_read_scratchpad_success);
+  RUN_TEST(test_ds18b20_read_scratchpad_null);
+
   /* Deinitialization tests */
   RUN_TEST(test_ds18b20_deinit);
+
+  /* Additional coverage tests */
+  RUN_TEST(test_ds18b20_init_with_rom_matching);
+  RUN_TEST(test_ds18b20_deinit_null_handle);
+  RUN_TEST(test_ds18b20_deinit_not_initialized);
+  RUN_TEST(test_ds18b20_trigger_conversion_null_handle);
+  RUN_TEST(test_ds18b20_trigger_conversion_not_initialized);
+  RUN_TEST(test_ds18b20_read_temperature_raw_null_handle);
+  RUN_TEST(test_ds18b20_read_temperature_raw_not_initialized);
+  RUN_TEST(test_ds18b20_read_temperature_raw_null_output);
+  RUN_TEST(test_ds18b20_read_temperature_10bit);
+  RUN_TEST(test_ds18b20_read_temperature_11bit);
+  RUN_TEST(test_ds18b20_set_resolution_null_handle);
+  RUN_TEST(test_ds18b20_set_resolution_not_initialized);
+  RUN_TEST(test_ds18b20_get_resolution_null_handle);
+  RUN_TEST(test_ds18b20_get_resolution_null_output);
+  RUN_TEST(test_ds18b20_save_config_not_initialized);
+  RUN_TEST(test_ds18b20_recall_config_not_initialized);
+  RUN_TEST(test_ds18b20_read_power_mode_null_handle);
+  RUN_TEST(test_ds18b20_read_power_mode_null_output);
+  RUN_TEST(test_ds18b20_read_scratchpad_not_initialized);
+  RUN_TEST(test_ds18b20_get_conversion_time_null_handle);
+  RUN_TEST(test_ds18b20_get_conversion_time_not_initialized);
+  RUN_TEST(test_ds18b20_get_conversion_time_10bit);
+  RUN_TEST(test_ds18b20_get_conversion_time_11bit);
+  RUN_TEST(test_ds18b20_get_conversion_time_invalid_resolution);
+  RUN_TEST(test_ds18b20_scratchpad_crc_error);
+  RUN_TEST(test_ds18b20_read_temperature_null_handle);
+  RUN_TEST(test_ds18b20_set_resolution_invalid_value);
+  RUN_TEST(test_ds18b20_get_resolution_not_initialized);
+  RUN_TEST(test_ds18b20_read_power_mode_not_initialized);
+  RUN_TEST(test_ds18b20_init_null_bus_manager);
+  RUN_TEST(test_ds18b20_init_null_bus_name);
+  RUN_TEST(test_ds18b20_init_wrong_family_code);
+  RUN_TEST(test_ds18b20_init_bus_init_error);
+  RUN_TEST(test_ds18b20_trigger_conversion_reset_error);
+  RUN_TEST(test_ds18b20_trigger_conversion_select_device_error);
+  RUN_TEST(test_ds18b20_trigger_conversion_match_rom_error);
+  RUN_TEST(test_ds18b20_trigger_conversion_write_error);
+  RUN_TEST(test_ds18b20_read_scratchpad_write_cmd_error);
+  RUN_TEST(test_ds18b20_read_scratchpad_read_error);
+  RUN_TEST(test_ds18b20_read_temperature_9bit);
+  RUN_TEST(test_ds18b20_read_scratchpad_null_buffer);
+  RUN_TEST(test_ds18b20_read_temperature_out_of_range);
+  RUN_TEST(test_ds18b20_save_config_no_device);
+  RUN_TEST(test_ds18b20_recall_config_no_device);
+  RUN_TEST(test_ds18b20_read_power_mode_no_device);
+  RUN_TEST(test_ds18b20_read_temperature_too_high);
+  RUN_TEST(test_ds18b20_init_reset_error);
+  RUN_TEST(test_ds18b20_init_read_scratchpad_error);
+  RUN_TEST(test_ds18b20_save_config_reset_error);
+  RUN_TEST(test_ds18b20_save_config_select_error);
+  RUN_TEST(test_ds18b20_save_config_write_error);
+  RUN_TEST(test_ds18b20_recall_config_reset_error);
+  RUN_TEST(test_ds18b20_recall_config_select_error);
+  RUN_TEST(test_ds18b20_recall_config_write_error);
+  RUN_TEST(test_ds18b20_read_power_mode_reset_error);
+  RUN_TEST(test_ds18b20_read_power_mode_select_error);
+  RUN_TEST(test_ds18b20_read_power_mode_write_error);
+  RUN_TEST(test_ds18b20_read_power_mode_read_bit_error);
+  RUN_TEST(test_ds18b20_set_resolution_no_device);
+  RUN_TEST(test_ds18b20_set_resolution_write_scratchpad_select_error);
+  RUN_TEST(test_ds18b20_read_temp_raw_invalid_resolution_default);
+  RUN_TEST(test_ds18b20_write_scratchpad_no_presence);
+  RUN_TEST(test_ds18b20_write_scratchpad_select_error_after_read);
+  RUN_TEST(test_ds18b20_write_scratchpad_data_write_error);
+  RUN_TEST(test_ds18b20_read_scratchpad_reserved_byte_warning);
+  RUN_TEST(test_ds18b20_set_resolution_write_data_error);
+  RUN_TEST(test_ds18b20_set_resolution_read_scratchpad_error);
+  RUN_TEST(test_ds18b20_set_resolution_write_scratchpad_error);
+  RUN_TEST(test_ds18b20_init_set_resolution_error);
 
   return UNITY_END();
 }

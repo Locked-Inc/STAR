@@ -7,7 +7,7 @@ CONTAINER_NAME := star-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n
+.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n
 
 help:
 	@echo "STAR Project Development Helper"
@@ -23,7 +23,8 @@ help:
 	@echo "  make format-rx72n        - Auto-format firmware C/H files with clang-format"
 	@echo "  make check-rx72n         - Check firmware formatting (exit 1 if any file differs)"
 	@echo "  make proto-gen-firmware  - Generate nanopb protos for RX72N firmware"
-	@echo "  make test-rx72n          - Run RX72N unit tests (regenerates protos first)"
+	@echo "  make test-rx72n          - Run RX72N unit tests and show coverage summary"
+	@echo "  make coverage-rx72n      - Show coverage summary without rebuilding"
 	@echo "  make doxygen-html        - Generate unified HTML docs (all features, all cross-links)"
 	@echo "  make doxygen-pdf-src     - Generate PDF for firmware src/"
 	@echo "  make doxygen-pdf-<lib>   - Generate PDF for a specific library (e.g. doxygen-pdf-rx_pid)"
@@ -128,10 +129,26 @@ proto-gen-firmware: proto-gen-go
 	done
 	@echo "✓ Firmware protos updated"
 
-# Test RX72N firmware (regenerates protos first)
+# Test RX72N firmware (regenerates protos first) and show coverage summary
 test-rx72n: proto-gen-firmware
 	@echo "Running RX72N unit tests..."
 	@cd star-rx72n-firmware/tests && bash run_tests.sh
+	@$(MAKE) --no-print-directory coverage-rx72n
+
+# Show coverage summary for RX72N firmware (requires tests/build to exist)
+coverage-rx72n:
+	@echo ""
+	@echo "=== RX72N Coverage Summary ==="
+	@gcovr \
+		--object-directory star-rx72n-firmware/tests/build \
+		--filter 'star-rx72n-firmware/libs/' \
+		--exclude 'star-rx72n-firmware/libs/threadx/' \
+		--exclude 'star-rx72n-firmware/libs/rx_nanopb/nanopb/' \
+		--exclude 'star-rx72n-firmware/libs/rx_nanopb/inc/gen/' \
+		--exclude 'star-rx72n-firmware/libs/rx_hal/inc/rx72n_port_regs.h' \
+		--exclude 'star-rx72n-firmware/libs/rx_hal/inc/rx_port_utils.h' \
+		--print-summary \
+		2>/dev/null || echo "(run 'make test-rx72n' first to generate coverage data)"
 
 # Build RX72N firmware binary (Debug) - requires GNURX toolchain (rx-elf-gcc)
 build-rx72n:

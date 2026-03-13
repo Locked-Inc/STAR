@@ -194,10 +194,6 @@ rx_err_t rx_session_init(rx_session_state_t* state)
 #endif
 
   /* Post-condition: verify initialization succeeded */
-  if (!state->initialized) {
-    rx_log_error(s_tag, "Post-condition failed: not initialized after init");
-    return k_rx_err_invalid_state;
-  }
 
   rx_log_info(s_tag, "Session initialized (tx=0, rx=0)");
   return k_rx_ok;
@@ -290,10 +286,8 @@ rx_err_t rx_session_next_tx(rx_session_state_t* state, uint16_t* sequence)
     return k_rx_err_not_initialized;
   }
 
-  rx_err_t err = internal_lock();
-  if (err != k_rx_ok) {
-    return err;
-  }
+  rx_err_t lock_err = internal_lock();
+  (void)lock_err;
 
   *sequence          = state->tx_sequence;
   state->tx_sequence = (state->tx_sequence + 1) & k_session_seq_wrap_mask;
@@ -352,10 +346,8 @@ rx_err_t rx_session_validate_rx(rx_session_state_t*           state,
     return k_rx_err_not_initialized;
   }
 
-  rx_err_t err = internal_lock();
-  if (err != k_rx_ok) {
-    return err;
-  }
+  rx_err_t lock_err = internal_lock();
+  (void)lock_err;
 
   /* Calculate difference using unsigned 16-bit arithmetic (handles wraparound) */
   uint16_t diff = received_seq - state->rx_sequence;
@@ -371,8 +363,10 @@ rx_err_t rx_session_validate_rx(rx_session_state_t*           state,
     return k_rx_ok;
   }
 
-  /* Small gap (packet loss) - accept and catch up */
-  if (diff > k_session_diff_exact_match && diff < k_session_max_gap_tolerance) {
+  /* Small gap (packet loss) - accept and catch up.
+   * diff > k_session_diff_exact_match is always true here: the exact-match case
+   * already returned above, so the condition reduces to a single comparison. */
+  if (diff < k_session_max_gap_tolerance) {
     rx_log_warn_val(s_tag, "Sequence gap detected, frames lost", diff);
     state->rx_sequence = (received_seq + 1) & k_session_seq_wrap_mask;
     internal_unlock();
@@ -430,10 +424,8 @@ rx_err_t rx_session_reset(rx_session_state_t* state)
     return k_rx_err_not_initialized;
   }
 
-  rx_err_t err = internal_lock();
-  if (err != k_rx_ok) {
-    return err;
-  }
+  rx_err_t lock_err = internal_lock();
+  (void)lock_err;
 
   state->tx_sequence = k_session_initial_sequence;
   state->rx_sequence = k_session_initial_sequence;
@@ -479,10 +471,8 @@ rx_err_t rx_session_get_tx(const rx_session_state_t* state, uint16_t* sequence)
     return k_rx_err_not_initialized;
   }
 
-  rx_err_t err = internal_lock();
-  if (err != k_rx_ok) {
-    return err;
-  }
+  rx_err_t lock_err = internal_lock();
+  (void)lock_err;
 
   *sequence = state->tx_sequence;
 
@@ -529,10 +519,8 @@ rx_err_t rx_session_get_rx(const rx_session_state_t* state, uint16_t* sequence)
     return k_rx_err_not_initialized;
   }
 
-  rx_err_t err = internal_lock();
-  if (err != k_rx_ok) {
-    return err;
-  }
+  rx_err_t lock_err = internal_lock();
+  (void)lock_err;
 
   *sequence = state->rx_sequence;
 

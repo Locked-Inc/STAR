@@ -259,6 +259,16 @@ extern void     rx_usb_set_state(rx_usb_state_t state);
 extern uint32_t rx_usb_tx_pop(rx_usb_port_id_t port, uint8_t* data, uint32_t max_len);
 extern uint32_t rx_usb_rx_push(rx_usb_port_id_t port, const uint8_t* data, uint32_t len);
 
+/* Extern internal functions from rx_usb_comm.c (RX_STATIC_TESTABLE) */
+extern rx_err_t internal_decode_header(const uint8_t* data,
+                                       uint32_t       data_len,
+                                       rx_frame_t*    frame,
+                                       uint32_t*      offset_out);
+extern rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32_t* crc_out);
+extern rx_err_t internal_read_usb_data(rx_usb_comm_handle_t* handle);
+extern rx_err_t internal_compact_rx_buffer(rx_usb_comm_handle_t* handle);
+extern rx_err_t internal_find_sync(const rx_usb_comm_handle_t* handle, int32_t* sync_pos);
+
 /**
  * @brief Create a default USB comm config with shared session
  * @return Config with session pointer and no time interface
@@ -2228,6 +2238,918 @@ void test_usb_comm_receive_reset_callback_invoked(void)
 }
 
 /* =============================================================================
+ * Internal Function Tests (via RX_STATIC_TESTABLE)
+ * =============================================================================
+ */
+
+void test_internal_decode_header_null_data_fails(void)
+{
+  rx_frame_t frame;
+  uint32_t   offset = 0;
+
+  rx_err_t err = internal_decode_header(nullptr, 20, &frame, &offset);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_decode_header_null_frame_fails(void)
+{
+  uint8_t  data[20] = {0};
+  uint32_t offset   = 0;
+
+  rx_err_t err = internal_decode_header(data, 20, nullptr, &offset);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_decode_header_too_small_fails(void)
+{
+  uint8_t    data[4] = {0};
+  rx_frame_t frame;
+  uint32_t   offset = 0;
+
+  /* data_len < k_frame_min_size (12) */
+  rx_err_t err = internal_decode_header(data, 4, &frame, &offset);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+void test_internal_decode_header_bad_sync_fails(void)
+{
+  /* Build a 12-byte buffer with wrong sync word */
+  uint8_t    data[12] = {0xDE, 0xAD, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  rx_frame_t frame;
+  uint32_t   offset = 0;
+
+  rx_err_t err = internal_decode_header(data, 12, &frame, &offset);
+
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
+}
+
+void test_internal_decode_header_payload_too_large_fails(void)
+{
+  /* Sync: 0xAA 0x55, seq: 0 0, length: 0xFF 0xFF (> max payload), type, flags, + CRC space */
+  uint8_t data[12];
+  memset(data, 0, sizeof(data));
+  data[0] = 0xAA; /* sync low */
+  data[1] = 0x55; /* sync high */
+  data[4] = 0xFF; /* length low */
+  data[5] = 0xFF; /* length high (way over k_frame_max_payload) */
+
+  rx_frame_t frame;
+  uint32_t   offset = 0;
+
+  rx_err_t err = internal_decode_header(data, 12, &frame, &offset);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+void test_internal_decode_header_null_offset_out_ok(void)
+{
+  /* Build a valid minimal frame header: sync + seq=0 + len=0 + type=1 + flags=0 */
+  uint8_t data[12];
+  memset(data, 0, sizeof(data));
+  data[0] = 0xAA; /* sync low */
+  data[1] = 0x55; /* sync high */
+  data[6] = 0x01; /* type = command */
+
+  rx_frame_t frame;
+
+  /* offset_out = nullptr should be accepted */
+  rx_err_t err = internal_decode_header(data, 12, &frame, nullptr);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+void test_internal_verify_crc_null_data_fails(void)
+{
+  uint32_t crc = 0;
+
+  rx_err_t err = internal_verify_crc(nullptr, 8, &crc);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_verify_crc_small_offset_fails(void)
+{
+  uint8_t  data[12] = {0};
+  uint32_t crc      = 0;
+
+  /* offset < (k_frame_min_size - k_frame_crc_size) = 12 - 4 = 8 */
+  rx_err_t err = internal_verify_crc(data, 4, &crc);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_read_usb_data_null_handle_fails(void)
+{
+  rx_err_t err = internal_read_usb_data(nullptr);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_read_usb_data_buffer_overflow_fails(void)
+{
+  {
+    rx_usb_comm_config_t cfg_ = helper_default_config();
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_));
+  }
+  helper_usb_init_and_configure();
+
+  /* Set rx_buffer_len beyond max to trigger pre-condition check */
+  s_handle.rx_buffer_len = k_usb_comm_rx_buffer_size + 1U;
+
+  rx_err_t err = internal_read_usb_data(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+
+  /* Reset to avoid tearDown issues */
+  s_handle.rx_buffer_len = 0;
+}
+
+void test_internal_compact_rx_buffer_null_handle_fails(void)
+{
+  rx_err_t err = internal_compact_rx_buffer(nullptr);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_compact_rx_buffer_pos_exceeds_len_fails(void)
+{
+  {
+    rx_usb_comm_config_t cfg_ = helper_default_config();
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_));
+  }
+
+  /* Set pos > len to trigger invalid state */
+  s_handle.rx_buffer_len = 10;
+  s_handle.rx_buffer_pos = 20;
+
+  rx_err_t err = internal_compact_rx_buffer(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+
+  /* Reset */
+  s_handle.rx_buffer_len = 0;
+  s_handle.rx_buffer_pos = 0;
+}
+
+void test_internal_find_sync_null_handle_fails(void)
+{
+  int32_t pos = 0;
+
+  rx_err_t err = internal_find_sync(nullptr, &pos);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_find_sync_null_pos_fails(void)
+{
+  {
+    rx_usb_comm_config_t cfg_ = helper_default_config();
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_));
+  }
+
+  rx_err_t err = internal_find_sync(&s_handle, nullptr);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_internal_find_sync_pos_exceeds_len_fails(void)
+{
+  {
+    rx_usb_comm_config_t cfg_ = helper_default_config();
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_));
+  }
+
+  /* Set pos > len to trigger invalid state */
+  s_handle.rx_buffer_len = 5;
+  s_handle.rx_buffer_pos = 10;
+
+  int32_t  pos = 0;
+  rx_err_t err = internal_find_sync(&s_handle, &pos);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+
+  /* Reset */
+  s_handle.rx_buffer_len = 0;
+  s_handle.rx_buffer_pos = 0;
+}
+
+/* =============================================================================
+ * Coverage gap tests: uncovered paths in rx_usb_comm.c
+ * =============================================================================
+ */
+
+void test_usb_comm_send_pong_usb_not_configured_fails(void)
+{
+  {
+    rx_usb_comm_config_t cfg_ = helper_default_config();
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_));
+  }
+  /* Initialize USB but do NOT configure (no set_state configured) */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+
+  rx_err_t err = rx_usb_comm_send_pong(&s_handle, nullptr, 0);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_usb_comm_send_reset_ack_usb_not_configured_fails(void)
+{
+  {
+    rx_usb_comm_config_t cfg_ = helper_default_config();
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_));
+  }
+  /* Initialize USB but do NOT configure */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+
+  rx_err_t err = rx_usb_comm_send_reset_ack(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+void test_usb_comm_set_mode_invalid_mode_fails(void)
+{
+  {
+    rx_usb_comm_config_t cfg_ = helper_default_config();
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_));
+  }
+
+  /* k_usb_comm_mode_invalid is not a valid mode to set */
+  rx_err_t err = rx_usb_comm_set_mode(&s_handle, k_usb_comm_mode_invalid);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_usb_comm_receive_pong_consumed_silently(void)
+{
+  /* Inject a PONG frame - should be consumed silently, loop exits via timeout */
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
+
+  helper_usb_init_and_configure();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
+
+  /* Create PONG frame */
+  rx_frame_t tx_frame;
+  uint8_t    encoded[k_frame_max_size];
+  uint32_t   encoded_len = 0;
+
+  rx_err_t err = helper_create_encoded_frame(&tx_frame,
+                                             0,
+                                             k_frame_type_pong,
+                                             k_frame_flag_none,
+                                             nullptr,
+                                             0,
+                                             encoded,
+                                             &encoded_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  rx_usb_rx_push(k_usb_port_proto, encoded, encoded_len);
+
+  /* Receive should consume PONG and loop until timeout */
+  rx_frame_t rx_frame;
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, 50);
+
+  /* No data frames, so timeout */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+
+  mock_time_deinit(&mock);
+}
+
+void test_usb_comm_receive_sequence_validation_fail_returns_error(void)
+{
+  /* Inject a frame with sequence far out of range (>= k_session_max_gap_tolerance=10).
+   * rx_session_validate_rx returns k_rx_err_protocol_error for out-of-range sequence. */
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
+
+  helper_usb_init_and_configure();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
+
+  /* rx_sequence = 0, send sequence = 100 (diff >= k_session_max_gap_tolerance=10) */
+  rx_frame_t tx_frame;
+  uint8_t    encoded[k_frame_max_size];
+  uint32_t   encoded_len = 0;
+
+  rx_err_t err = helper_create_encoded_frame(&tx_frame,
+                                             100,
+                                             k_frame_type_command,
+                                             k_frame_flag_none,
+                                             nullptr,
+                                             0,
+                                             encoded,
+                                             &encoded_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  rx_usb_rx_push(k_usb_port_proto, encoded, encoded_len);
+
+  /* Receive should return k_rx_err_protocol_error (propagated from session validate) */
+  rx_frame_t rx_frame;
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, 50);
+
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
+
+  /* Session rx_sequence should not have advanced */
+  TEST_ASSERT_EQUAL_UINT16(0, helper_get_rx_seq());
+
+  mock_time_deinit(&mock);
+}
+
+void test_usb_comm_receive_partial_header_waits(void)
+{
+  /* Inject only partial sync + partial header data (less than k_frame_header_total).
+   * With no time interface, the wait_for_data call returns timeout. */
+  {
+    rx_usb_comm_config_t cfg_ = helper_default_config();
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_));
+  }
+  helper_usb_init_and_configure();
+
+  /* Inject 4 bytes: just the sync + sequence (but not full header of 8 bytes) */
+  uint8_t partial[] = {0xAA, 0x55, 0x00, 0x00}; /* sync + seq, no len/type/flags */
+  rx_usb_rx_push(k_usb_port_proto, partial, sizeof(partial));
+
+  rx_frame_t rx_frame;
+  rx_err_t   err = rx_usb_comm_receive(&s_handle, &rx_frame, 100);
+
+  /* Should timeout since not enough data and no sleep interface */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
+void test_usb_comm_receive_buffer_full_advances_window(void)
+{
+  /* Fill the RX buffer with non-frame garbage (no sync word), triggering the
+   * buffer-full path in internal_handle_no_sync that increments rx_buffer_pos. */
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
+
+  helper_usb_init_and_configure();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
+
+  /* Fill the USB RX ring buffer with 0xFF bytes (no sync word 0xAA/0x55).
+   * The USB ring buffer is 512 bytes; push in chunks. */
+  enum : uint16_t { k_chunk_size = 128, k_num_chunks = 4 };
+  uint8_t garbage[k_chunk_size];
+  memset(garbage, 0xFF, sizeof(garbage));
+
+  for (uint32_t i = 0; i < k_num_chunks; i++) {
+    rx_usb_rx_push(k_usb_port_proto, garbage, k_chunk_size);
+  }
+
+  /* Call receive - it reads up to 2048 bytes but ring buffer only has 512.
+   * The rx_buffer will fill with non-sync bytes. The buffer_full path fires
+   * when rx_buffer_len == k_usb_comm_rx_buffer_size. */
+  rx_frame_t rx_frame;
+  rx_err_t   err = rx_usb_comm_receive(&s_handle, &rx_frame, 200);
+
+  /* With garbage data and a timeout, we should eventually get timeout */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+
+  mock_time_deinit(&mock);
+}
+
+/* =============================================================================
+ * Coverage gap tests: reachable paths not yet covered
+ * =============================================================================
+ */
+
+/**
+ * @brief Test that internal_decode_header returns k_rx_err_invalid_size when
+ * data_len is large enough for the minimum frame check but smaller than
+ * the frame expected by the payload length field.
+ *
+ * Frame: sync(2)+seq(2)+len(2)+type(1)+flags(1)+crc(4) = 12 bytes minimum.
+ * If length field says payload=4, total expected = 12+4 = 16 bytes.
+ * Passing only 12 bytes should trigger line 162.
+ */
+void test_internal_decode_header_data_len_smaller_than_expected(void)
+{
+  /* Build 12-byte buffer: valid sync, seq=0, len=4 (payload), type=1, flags=0.
+   * data_len = 12 but expected_size = 8(header) + 4(payload) + 4(crc) = 16. */
+  uint8_t data[12];
+  memset(data, 0, sizeof(data));
+  data[0] = 0xAA; /* sync low */
+  data[1] = 0x55; /* sync high */
+  /* seq = 0 (bytes 2,3) */
+  data[4] = 4; /* length low: payload = 4 */
+  data[5] = 0; /* length high */
+  data[6] = 1; /* type = command */
+  /* flags = 0 */
+
+  rx_frame_t frame;
+  uint32_t   offset = 0;
+
+  /* data_len=12 < expected_size=16: should return k_rx_err_invalid_size (line 162) */
+  rx_err_t err = internal_decode_header(data, 12, &frame, &offset);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test that internal_read_usb_data returns k_rx_ok immediately when
+ * the internal rx_buffer is exactly full (space == 0, line 345).
+ */
+void test_internal_read_usb_data_buffer_full_returns_ok(void)
+{
+  {
+    rx_usb_comm_config_t cfg_ = helper_default_config();
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_));
+  }
+  helper_usb_init_and_configure();
+
+  /* Set buffer exactly full: space == 0 should return k_rx_ok immediately */
+  s_handle.rx_buffer_len = k_usb_comm_rx_buffer_size;
+  s_handle.rx_buffer_pos = 0;
+
+  rx_err_t err = internal_read_usb_data(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* Buffer length unchanged since nothing could be read */
+  TEST_ASSERT_EQUAL_UINT32(k_usb_comm_rx_buffer_size, s_handle.rx_buffer_len);
+
+  /* Reset to avoid tearDown issues */
+  s_handle.rx_buffer_len = 0;
+}
+
+/**
+ * @brief Test that rx_usb_comm_send returns k_rx_err_busy when USB TX buffer
+ * is full. Filling the TX ring buffer (1024 bytes) then sending a frame that
+ * requires more than 0 free bytes triggers the k_rx_err_busy path (lines 1097-1098).
+ *
+ * We send a max-payload frame (1036 bytes wire) which exceeds the 1024-byte TX ring.
+ */
+void test_usb_comm_send_tx_buffer_full_returns_busy(void)
+{
+  {
+    rx_usb_comm_config_t cfg_ = helper_default_config();
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_));
+  }
+  helper_usb_init_and_configure();
+
+  /* Fill the TX ring buffer by writing 1024 bytes of raw data directly.
+   * Use rx_usb_write with a large buffer that exactly fills the ring. */
+  uint8_t fill_data[k_usb_port_proto_tx_size];
+  memset(fill_data, 0xAB, sizeof(fill_data));
+
+  /* First write fills the buffer */
+  rx_err_t fill_err = rx_usb_write(k_usb_port_proto, fill_data, k_usb_port_proto_tx_size);
+  TEST_ASSERT_EQUAL(k_rx_ok, fill_err);
+
+  /* Now try to send a frame - TX ring is full, should get k_rx_err_busy */
+  uint8_t  payload[4] = {1, 2, 3, 4};
+  rx_err_t err =
+    rx_usb_comm_send(&s_handle, k_frame_type_response, k_frame_flag_none, payload, sizeof(payload));
+
+  TEST_ASSERT_EQUAL(k_rx_err_busy, err);
+}
+
+/**
+ * @brief Test that rx_usb_comm_receive returns pong-send error when a PING frame
+ * arrives but the TX buffer is full (lines 1157-1158: pong send failure path).
+ */
+void test_usb_comm_receive_ping_pong_send_fails_when_tx_full(void)
+{
+  {
+    rx_usb_comm_config_t cfg_ = helper_default_config();
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_));
+  }
+  helper_usb_init_and_configure();
+
+  /* Fill TX ring buffer so PONG send will fail */
+  uint8_t fill_data_ping[k_usb_port_proto_tx_size];
+  memset(fill_data_ping, 0xCC, sizeof(fill_data_ping));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_usb_write(k_usb_port_proto, fill_data_ping, k_usb_port_proto_tx_size));
+
+  /* Inject a PING frame into the RX buffer */
+  rx_frame_t tx_frame;
+  uint8_t    encoded[k_frame_max_size];
+  uint32_t   encoded_len = 0;
+  rx_err_t   err         = helper_create_encoded_frame(&tx_frame,
+                                             0,
+                                             k_frame_type_ping,
+                                             k_frame_flag_none,
+                                             nullptr,
+                                             0,
+                                             encoded,
+                                             &encoded_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  rx_usb_rx_push(k_usb_port_proto, encoded, encoded_len);
+
+  /* Receive should try to auto-PONG, fail because TX is full, and return that error */
+  rx_frame_t rx_frame;
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, 0);
+
+  TEST_ASSERT_EQUAL(k_rx_err_busy, err);
+}
+
+/**
+ * @brief Test that rx_usb_comm_receive returns ack-send error when a RESET frame
+ * arrives but the TX buffer is full (lines 1173-1174: ack send failure path).
+ */
+void test_usb_comm_receive_reset_ack_send_fails_when_tx_full(void)
+{
+  {
+    rx_usb_comm_config_t cfg_ = helper_default_config();
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_));
+  }
+  helper_usb_init_and_configure();
+
+  /* Fill TX ring buffer so RESET_ACK send will fail */
+  uint8_t fill_data_reset[k_usb_port_proto_tx_size];
+  memset(fill_data_reset, 0xDD, sizeof(fill_data_reset));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_usb_write(k_usb_port_proto, fill_data_reset, k_usb_port_proto_tx_size));
+
+  /* Inject a RESET frame into the RX buffer */
+  rx_frame_t tx_frame;
+  uint8_t    encoded[k_frame_max_size];
+  uint32_t   encoded_len = 0;
+  rx_err_t   err         = helper_create_encoded_frame(&tx_frame,
+                                             0,
+                                             k_frame_type_reset,
+                                             k_frame_flag_none,
+                                             nullptr,
+                                             0,
+                                             encoded,
+                                             &encoded_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  rx_usb_rx_push(k_usb_port_proto, encoded, encoded_len);
+
+  /* Receive should try to auto-ACK, fail because TX is full, and return that error */
+  rx_frame_t rx_frame;
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, 0);
+
+  TEST_ASSERT_EQUAL(k_rx_err_busy, err);
+}
+
+/**
+ * @brief Test that the rx_buffer full path in internal_handle_no_sync is triggered.
+ *
+ * When internal_handle_no_sync is called and rx_buffer_len == k_usb_comm_rx_buffer_size,
+ * it increments rx_buffer_pos to advance the sliding window (line 557).
+ *
+ * We pre-fill the handle's rx_buffer with non-sync garbage of exactly max size,
+ * then call receive which will invoke internal_handle_no_sync with full buffer.
+ */
+void test_usb_comm_receive_handle_no_sync_buffer_pos_advances(void)
+{
+  /* Need a time interface so we can control timeout */
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
+
+  helper_usb_init_and_configure();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
+
+  /* Fill rx_buffer completely with non-sync data (no 0xAA/0x55 pair).
+   * The buffer will be full when internal_read_usb_data is first called,
+   * which will return k_rx_ok immediately (line 345).
+   * Then internal_find_sync fails (no sync), calling internal_handle_no_sync
+   * with rx_buffer_len == k_usb_comm_rx_buffer_size, triggering line 557. */
+  memset(s_handle.rx_buffer, 0xFF, k_usb_comm_rx_buffer_size);
+  s_handle.rx_buffer_len = k_usb_comm_rx_buffer_size;
+  s_handle.rx_buffer_pos = 0;
+
+  rx_frame_t rx_frame;
+  rx_err_t   err = rx_usb_comm_receive(&s_handle, &rx_frame, 200);
+
+  /* Should timeout since no valid frame */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+
+  mock_time_deinit(&mock);
+}
+
+/**
+ * @brief internal_verify_crc: nullptr crc_out with valid frame returns k_rx_ok.
+ *
+ * @details
+ * Covers the FALSE branch of `if (crc_out != nullptr)` at line 245.
+ *
+ * @pre setUp() completed
+ * @post k_rx_ok returned
+ *
+ * @see internal_verify_crc() Function under test
+ */
+void test_internal_verify_crc_null_crc_out_valid_frame(void)
+{
+  rx_usb_comm_config_t cfg = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg));
+  helper_usb_init_and_configure();
+
+  rx_frame_t  tx_frame;
+  uint8_t     encoded[256];
+  uint32_t    encoded_len = 0;
+  rx_err_t    err         = helper_create_encoded_frame(
+    &tx_frame, 0, k_frame_type_command, k_frame_flag_none, nullptr, 0, encoded, &encoded_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* CRC is at encoded_len - k_frame_crc_size */
+  const uint32_t crc_offset = encoded_len - (uint32_t)k_frame_crc_size;
+  /* Pass nullptr for crc_out: covers line-245 FALSE branch */
+  err = internal_verify_crc(encoded, crc_offset, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_usb_comm_send: non-null payload with zero length skips memcpy.
+ *
+ * @details
+ * Covers the `payload_len == 0` path of `if (payload != nullptr && payload_len > 0)`
+ * at line 1036 (second condition evaluates FALSE).
+ *
+ * @pre setUp() completed
+ * @post k_rx_ok returned
+ *
+ * @see rx_usb_comm_send() Function under test
+ */
+void test_usb_comm_send_nonnull_payload_zero_len(void)
+{
+  rx_usb_comm_config_t cfg = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg));
+  helper_usb_init_and_configure();
+
+  /* Non-null payload pointer but zero len: second condition of && is FALSE */
+  const uint8_t payload[4] = {0x01U, 0x02U, 0x03U, 0x04U};
+  rx_err_t err = rx_usb_comm_send(&s_handle, k_frame_type_command, 0, payload, 0);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_usb_comm_set_mode: setting same mode skips logging.
+ *
+ * @details
+ * Covers the FALSE branch of `if (handle->mode != mode)` at line 1501.
+ * When current mode equals the requested mode, the inner log block is skipped.
+ *
+ * @pre setUp() completed
+ * @post k_rx_ok returned, mode unchanged
+ *
+ * @see rx_usb_comm_set_mode() Function under test
+ */
+void test_usb_comm_set_mode_same_mode_no_log(void)
+{
+  rx_usb_comm_config_t cfg = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg));
+
+  /* Handle starts in binary mode; set to binary again (same mode -> FALSE branch) */
+  rx_err_t err = rx_usb_comm_set_mode(&s_handle, k_usb_comm_mode_binary);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_usb_comm_data_available: buffered data makes available true.
+ *
+ * @details
+ * Covers the `usb_available == 0, buffered > 0` branch of the compound condition
+ * `(usb_available > 0) || (buffered > 0)` at line 1241.
+ *
+ * @pre setUp() completed
+ * @post available is true
+ *
+ * @see rx_usb_comm_data_available() Function under test
+ */
+void test_usb_comm_data_available_buffered_data(void)
+{
+  rx_usb_comm_config_t cfg = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg));
+  helper_usb_init_and_configure();
+
+  /* Place data in the staging rx_buffer directly (not from USB) */
+  s_handle.rx_buffer[0]  = 0xAAU;
+  s_handle.rx_buffer_len = 1;
+  s_handle.rx_buffer_pos = 0;
+
+  bool     available = false;
+  rx_err_t err       = rx_usb_comm_data_available(&s_handle, &available);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(available);
+}
+
+/**
+ * @brief internal_sleep_and_advance: time_iface present but sleep_ms is nullptr returns false.
+ *
+ * @details
+ * Covers the `handle->time_iface->sleep_ms == nullptr` FALSE-second path of
+ * `if (handle->time_iface != nullptr && handle->time_iface->sleep_ms != nullptr)` at line 520.
+ * The outer condition is TRUE but the inner is FALSE, so function returns false.
+ *
+ * This is exercised indirectly through the receive path by providing a time interface
+ * with sleep_ms=nullptr. The receive loop calls internal_sleep_and_advance when waiting.
+ *
+ * @pre setUp() completed
+ * @post Function behaves as no-time-interface (no sleep, elapsed unchanged)
+ *
+ * @see rx_usb_comm_receive() Function under test
+ */
+void test_usb_comm_time_iface_null_sleep_ms(void)
+{
+  /* Create a time interface with sleep_ms = nullptr */
+  rx_time_interface_t time_iface = {.sleep_ms = nullptr, .get_ms = nullptr, .ctx = nullptr};
+  rx_usb_comm_config_t cfg       = helper_config_with_time(&time_iface);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg));
+  helper_usb_init_and_configure();
+
+  /* Receive with timeout=1ms; the sleep_and_advance call returns false immediately */
+  rx_frame_t frame;
+  memset(&frame, 0, sizeof(frame));
+  rx_err_t err = rx_usb_comm_receive(&s_handle, &frame, 1U);
+  /* No data available, timeout expires quickly */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
+/**
+ * @brief Receive a RESET_ACK frame -- covers line 1190 second || operand TRUE
+ *
+ * @details
+ * rx_usb_comm.c line 1190:
+ *   `if (frame->header.type == k_frame_type_pong || frame->header.type == k_frame_type_reset_ack)`
+ * The existing PONG receive test covers the first operand TRUE path. This test
+ * covers the second operand TRUE path (type == k_frame_type_reset_ack) by
+ * injecting a RESET_ACK frame. The frame is silently consumed and the receive
+ * loop times out.
+ *
+ * @pre  setUp() completed, USB mock initialized
+ * @post rx_usb_comm_receive returns k_rx_err_timeout (no data frame follows)
+ */
+void test_usb_comm_receive_reset_ack_silently_consumed(void)
+{
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
+
+  helper_usb_init_and_configure();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
+
+  /* Create RESET_ACK frame */
+  rx_frame_t tx_frame;
+  uint8_t    encoded[k_frame_max_size];
+  uint32_t   encoded_len = 0;
+
+  rx_err_t err = helper_create_encoded_frame(&tx_frame,
+                                             0,
+                                             k_frame_type_reset_ack,
+                                             k_frame_flag_none,
+                                             nullptr,
+                                             0,
+                                             encoded,
+                                             &encoded_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  rx_usb_rx_push(k_usb_port_proto, encoded, encoded_len);
+
+  /* Receive should consume RESET_ACK and loop until timeout */
+  rx_frame_t rx_frame;
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, 50);
+
+  /* No data frames, so timeout */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+
+  mock_time_deinit(&mock);
+}
+
+/**
+ * @brief Partial header with time interface yields k_receive_continue then timeout
+ *
+ * @details
+ * Injects sync + 4 bytes (less than k_frame_header_total = 8) and uses a time
+ * interface with auto-advance. The first call to internal_wait_for_data sees
+ * elapsed_ms < timeout and advances time, returning k_rx_ok (k_receive_continue).
+ * The loop retries and eventually exhausts the timeout.
+ * Covers the false branch of (*err != k_rx_ok) at line 764.
+ */
+void test_usb_comm_receive_partial_header_with_time_iface_loops(void)
+{
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
+
+  helper_usb_init_and_configure();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
+
+  /* Inject sync word + 4 bytes of payload (total 4 bytes) --
+   * less than k_frame_header_total (8 bytes), so header read will wait. */
+  uint8_t partial[] = {0xAA, 0x55, 0x00, 0x00}; /* sync (2) + seq (2) only */
+  rx_usb_rx_push(k_usb_port_proto, partial, sizeof(partial));
+
+  rx_frame_t rx_frame;
+  /* Use a generous timeout so the first internal_wait_for_data returns k_rx_ok
+   * (time advances 10 ms per iteration, eventually times out). */
+  rx_err_t err = rx_usb_comm_receive(&s_handle, &rx_frame, 100);
+
+  /* Must time out eventually since no full frame is ever added */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+
+  mock_time_deinit(&mock);
+}
+
+/**
+ * @brief Partial header with time interface: wait_for_data returns k_rx_ok (k_receive_continue)
+ *
+ * @details
+ * Covers line 764 branch :1 (k_receive_continue path) in rx_usb_comm.c:
+ *   `return (*err != k_rx_ok) ? k_receive_error : k_receive_continue;`
+ *
+ * Scenario: sync word found but only 4 bytes available (less than k_frame_header_total=8).
+ * With a mock time interface that allows one sleep cycle, internal_wait_for_data returns
+ * k_rx_ok at least once, so the ternary takes the k_receive_continue branch. The outer
+ * receive loop then retries, eventually timing out.
+ *
+ * @pre setUp() completed, USB mock initialized
+ * @post rx_usb_comm_receive returns k_rx_err_timeout
+ */
+void test_usb_comm_partial_header_wait_returns_ok_then_timeout(void)
+{
+  mock_time_t         mock;
+  rx_time_interface_t time_iface;
+
+  mock_time_init(&mock);
+  mock_time_set_auto_advance(&mock, true);
+  mock_time_get_interface(&time_iface, &mock);
+
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
+
+  helper_usb_init_and_configure();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
+
+  /* Push valid sync word + partial header (only 4 bytes, less than k_frame_header_total=8) */
+  uint8_t partial[] = {0xAAU, 0x55U, 0x00U, 0x00U};
+  rx_usb_rx_push(k_usb_port_proto, partial, sizeof(partial));
+
+  /* With time interface, internal_wait_for_data returns k_rx_ok at least once
+   * (k_receive_continue branch taken), then eventually times out */
+  rx_frame_t rx_frame;
+  memset(&rx_frame, 0, sizeof(rx_frame));
+  rx_err_t err = rx_usb_comm_receive(&s_handle, &rx_frame, 50U);
+
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+
+  mock_time_deinit(&mock);
+}
+
+/**
+ * @brief data_available: USB buffer has data (usb_available > 0 short-circuit branch)
+ *
+ * @details
+ * Covers line 1207 missing branch in rx_usb_comm.c:
+ *   `*available = (usb_available > 0) || (buffered > 0);`
+ *
+ * The short-circuit branch (usb_available > 0 TRUE) is not covered by any existing test.
+ * Here we push raw bytes to the USB proto port RX buffer so rx_usb_rx_available returns > 0.
+ *
+ * @pre setUp() completed, USB mock initialized
+ * @post rx_usb_comm_data_available returns true via short-circuit (usb_available > 0)
+ */
+void test_usb_comm_data_available_usb_buffer_has_data(void)
+{
+  rx_usb_comm_config_t cfg = helper_default_config();
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg));
+  helper_usb_init_and_configure();
+
+  /* Push raw bytes into the USB proto port RX buffer -- usb_available > 0 */
+  uint8_t data[] = {0xAAU, 0x55U};
+  rx_usb_rx_push(k_usb_port_proto, data, sizeof(data));
+
+  bool     available = false;
+  rx_err_t err       = rx_usb_comm_data_available(&s_handle, &available);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(available);
+}
+
+/* =============================================================================
  * Main
  * =============================================================================
  */
@@ -2333,6 +3255,55 @@ int main(void)
   RUN_TEST(test_usb_comm_receive_reset_auto_ack);
   RUN_TEST(test_usb_comm_receive_ping_callback_invoked);
   RUN_TEST(test_usb_comm_receive_reset_callback_invoked);
+
+  /* Previously unregistered timeout tests */
+  RUN_TEST(test_usb_comm_init_with_time_interface);
+  RUN_TEST(test_usb_comm_receive_timeout_without_time_iface);
+  RUN_TEST(test_usb_comm_receive_timeout_with_mock_time);
+  RUN_TEST(test_usb_comm_receive_immediate_timeout_zero);
+
+  /* Internal function tests (RX_STATIC_TESTABLE) */
+  RUN_TEST(test_internal_decode_header_null_data_fails);
+  RUN_TEST(test_internal_decode_header_null_frame_fails);
+  RUN_TEST(test_internal_decode_header_too_small_fails);
+  RUN_TEST(test_internal_decode_header_bad_sync_fails);
+  RUN_TEST(test_internal_decode_header_payload_too_large_fails);
+  RUN_TEST(test_internal_decode_header_null_offset_out_ok);
+  RUN_TEST(test_internal_verify_crc_null_data_fails);
+  RUN_TEST(test_internal_verify_crc_small_offset_fails);
+  RUN_TEST(test_internal_read_usb_data_null_handle_fails);
+  RUN_TEST(test_internal_read_usb_data_buffer_overflow_fails);
+  RUN_TEST(test_internal_compact_rx_buffer_null_handle_fails);
+  RUN_TEST(test_internal_compact_rx_buffer_pos_exceeds_len_fails);
+  RUN_TEST(test_internal_find_sync_null_handle_fails);
+  RUN_TEST(test_internal_find_sync_null_pos_fails);
+  RUN_TEST(test_internal_find_sync_pos_exceeds_len_fails);
+
+  /* Coverage gap tests */
+  RUN_TEST(test_usb_comm_send_pong_usb_not_configured_fails);
+  RUN_TEST(test_usb_comm_send_reset_ack_usb_not_configured_fails);
+  RUN_TEST(test_usb_comm_set_mode_invalid_mode_fails);
+  RUN_TEST(test_usb_comm_receive_pong_consumed_silently);
+  RUN_TEST(test_usb_comm_receive_sequence_validation_fail_returns_error);
+  RUN_TEST(test_usb_comm_receive_partial_header_waits);
+  RUN_TEST(test_usb_comm_receive_buffer_full_advances_window);
+  RUN_TEST(test_internal_decode_header_data_len_smaller_than_expected);
+  RUN_TEST(test_internal_read_usb_data_buffer_full_returns_ok);
+  RUN_TEST(test_usb_comm_send_tx_buffer_full_returns_busy);
+  RUN_TEST(test_usb_comm_receive_ping_pong_send_fails_when_tx_full);
+  RUN_TEST(test_usb_comm_receive_reset_ack_send_fails_when_tx_full);
+  RUN_TEST(test_usb_comm_receive_handle_no_sync_buffer_pos_advances);
+
+  /* Branch coverage gap tests */
+  RUN_TEST(test_internal_verify_crc_null_crc_out_valid_frame);
+  RUN_TEST(test_usb_comm_send_nonnull_payload_zero_len);
+  RUN_TEST(test_usb_comm_set_mode_same_mode_no_log);
+  RUN_TEST(test_usb_comm_data_available_buffered_data);
+  RUN_TEST(test_usb_comm_time_iface_null_sleep_ms);
+  RUN_TEST(test_usb_comm_receive_reset_ack_silently_consumed);
+  RUN_TEST(test_usb_comm_receive_partial_header_with_time_iface_loops);
+  RUN_TEST(test_usb_comm_partial_header_wait_returns_ok_then_timeout);
+  RUN_TEST(test_usb_comm_data_available_usb_buffer_has_data);
 
   return UNITY_END();
 }

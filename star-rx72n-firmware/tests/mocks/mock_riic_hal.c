@@ -80,6 +80,17 @@ static void internal_record_call(mock_riic_call_type_t type,
  */
 static rx_err_t internal_check_error(void)
 {
+  /* Check nth-call error injection first */
+  if (g_mock_riic.nth_call_error_set) {
+    if (g_mock_riic.nth_call_counter == g_mock_riic.nth_call_target) {
+      rx_err_t err                   = g_mock_riic.nth_call_error;
+      g_mock_riic.nth_call_error_set = false;
+      g_mock_riic.nth_call_counter++;
+      return err;
+    }
+    g_mock_riic.nth_call_counter++;
+  }
+
   if (g_mock_riic.error_set) {
     rx_err_t err          = g_mock_riic.next_error;
     g_mock_riic.error_set = false;
@@ -220,9 +231,25 @@ void mock_riic_set_next_error(rx_err_t err)
   g_mock_riic.error_set  = true;
 }
 
+void mock_riic_set_next_write_error(rx_err_t err)
+{
+  g_mock_riic.next_write_error = err;
+  g_mock_riic.write_error_set  = true;
+}
+
 void mock_riic_clear_error(void)
 {
-  g_mock_riic.error_set = false;
+  g_mock_riic.error_set         = false;
+  g_mock_riic.write_error_set   = false;
+  g_mock_riic.nth_call_error_set = false;
+}
+
+void mock_riic_set_nth_call_error(uint16_t n, rx_err_t err)
+{
+  g_mock_riic.nth_call_target    = n;
+  g_mock_riic.nth_call_error     = err;
+  g_mock_riic.nth_call_error_set = true;
+  g_mock_riic.nth_call_counter   = 0U;
 }
 
 /* =============================================================================
@@ -663,6 +690,12 @@ riic_peripheral_write(const riic_channel_t channel, const uint8_t* data, const u
   rx_err_t err = internal_check_error();
   if (err != k_rx_ok) {
     return err;
+  }
+
+  if (g_mock_riic.write_error_set) {
+    rx_err_t write_err          = g_mock_riic.next_write_error;
+    g_mock_riic.write_error_set = false;
+    return write_err;
   }
 
   if (data == nullptr) {

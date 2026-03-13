@@ -2547,6 +2547,173 @@ void test_resync_null_args(void)
     rx_frame_decode_with_resync(&s_decoder, buf, k_frame_min_size, &frame, nullptr));
 }
 
+/**
+ * @brief Test that decode rejects a raw frame with LEN field exceeding k_frame_max_payload
+ *
+ * @details
+ * Crafts a raw byte buffer with valid sync word (0xAA 0x55 in LE) but LEN field
+ * set to k_frame_max_payload + 1 (1025). The internal_decode_header() validation
+ * rejects it with k_rx_err_invalid_size before any CRC is checked.
+ *
+ * @pre s_decoder must be initialized (via setUp())
+ * @post k_rx_err_invalid_size returned
+ *
+ * @test Validates frame->header.length > k_frame_max_payload rejection (rx_frame.c line 404)
+ */
+void test_decode_header_length_too_large(void)
+{
+  /* Build a minimal raw buffer: sync (2) + seq (2) + len (2) + type (1) + flags (1) + CRC (4) */
+  uint8_t buf[k_frame_min_size] = {0};
+
+  /* Write sync word (0x55AA) in little-endian: byte[0]=0xAA, byte[1]=0x55 */
+  buf[k_frame_offset_sync_low]  = (uint8_t)(k_frame_sync_word & k_test_byte_mask);
+  buf[k_frame_offset_sync_high] = (uint8_t)(k_frame_sync_word >> k_test_byte_shift_8);
+
+  /* Write LEN = k_frame_max_payload + 1 = 1025 = 0x0401 in LE: low=0x01, high=0x04 */
+  enum : uint16_t { k_oversized_len = (uint16_t)(k_frame_max_payload + 1U) };
+  buf[k_frame_offset_len_low]  = (uint8_t)(k_oversized_len & k_test_byte_mask);
+  buf[k_frame_offset_len_high] = (uint8_t)(k_oversized_len >> k_test_byte_shift_8);
+  buf[k_frame_offset_type]     = k_frame_type_command;
+  buf[k_frame_offset_flags]    = k_frame_flag_none;
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_frame_decode(&s_decoder, buf, k_frame_min_size, &frame);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test rx_frame_create_ping() with payload_len > k_frame_max_payload
+ *
+ * @details
+ * Verifies that rx_frame_create_ping() returns k_rx_err_invalid_size
+ * when payload_len > k_frame_max_payload.
+ *
+ * @pre No precondition
+ * @post k_rx_err_invalid_size returned
+ *
+ * @test Validates payload_len > k_frame_max_payload rejection in create_ping
+ */
+void test_create_ping_payload_too_large(void)
+{
+  uint8_t    buf[4]   = {0x01, 0x02, 0x03, 0x04};
+  rx_frame_t frame;
+  rx_err_t   err      = rx_frame_create_ping(&frame, 0, buf, k_frame_max_payload + 1U);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test rx_frame_create_pong() with payload_len > k_frame_max_payload
+ *
+ * @details
+ * Verifies that rx_frame_create_pong() returns k_rx_err_invalid_size
+ * when payload_len > k_frame_max_payload.
+ *
+ * @pre No precondition
+ * @post k_rx_err_invalid_size returned
+ *
+ * @test Validates payload_len > k_frame_max_payload rejection in create_pong
+ */
+void test_create_pong_payload_too_large(void)
+{
+  uint8_t    buf[4]   = {0x01, 0x02, 0x03, 0x04};
+  rx_frame_t frame;
+  rx_err_t   err      = rx_frame_create_pong(&frame, 0, buf, k_frame_max_payload + 1U);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test rx_frame_create_pong() with null payload but non-zero payload_len
+ *
+ * @details
+ * Verifies that rx_frame_create_pong() returns k_rx_err_invalid_arg
+ * when payload is nullptr but payload_len > 0.
+ *
+ * @pre No precondition
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @test Validates payload_len > 0 && payload == nullptr rejection in create_pong
+ */
+void test_create_pong_null_payload_with_len(void)
+{
+  rx_frame_t frame;
+  rx_err_t   err = rx_frame_create_pong(&frame, k_test_seq_zero, nullptr, 1);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief rx_frame_create_pong with zero-length payload succeeds
+ *
+ * @details
+ * Exercises the `payload_len == 0` paths in rx_frame_create_pong:
+ * - The `payload_len > 0 && payload == nullptr` condition short-circuits false
+ *   (A=false), so the null check is bypassed.
+ * - The `if (payload_len > 0)` guard is false, so memcpy is skipped.
+ * Both false branches (branch coverage gaps) are exercised here.
+ *
+ * @pre rx_frame_create_pong compiled with branch coverage instrumentation
+ * @post frame initialised with empty payload and type == k_frame_type_pong
+ * @post return value is k_rx_ok
+ *
+ * @since Version 1.0.0
+ */
+void test_create_pong_empty_payload(void)
+{
+  rx_frame_t frame;
+  rx_err_t   err = rx_frame_create_pong(&frame, k_test_seq_zero, nullptr, 0);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_frame_type_pong, frame.header.type);
+  TEST_ASSERT_EQUAL(0, frame.header.length);
+}
+
+/**
+ * @brief Test rx_frame_decoder_deinit() with null pointer
+ *
+ * @details
+ * Verifies that rx_frame_decoder_deinit() returns k_rx_err_invalid_arg
+ * when dec is nullptr.
+ *
+ * @pre No precondition
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @test Validates nullptr rejection in rx_frame_decoder_deinit
+ */
+void test_decoder_deinit_null(void)
+{
+  rx_err_t err = rx_frame_decoder_deinit(nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test resync with a buffer larger than k_frame_max_scan_bytes containing no sync
+ *
+ * @details
+ * Creates a buffer larger than k_frame_max_scan_bytes (1036) filled with junk bytes.
+ * The initial decode fails on sync mismatch, then the scan hits the cap condition
+ * (scan_limit = k_frame_max_scan_bytes), scans the bounded window, finds no sync,
+ * and returns k_rx_err_protocol_error.
+ *
+ * @pre s_decoder must be initialized (via setUp())
+ * @post k_rx_err_protocol_error returned
+ * @post bytes_discarded == 0
+ *
+ * @test Validates scan_limit capping at k_frame_max_scan_bytes (rx_frame.c line 557)
+ */
+void test_resync_scan_limit_capped(void)
+{
+  /* Buffer larger than k_frame_max_scan_bytes (1036): use 1040 bytes of junk */
+  enum : uint32_t { k_large_buf_len = 1040U };
+  static uint8_t  s_large_buf[k_large_buf_len];
+  memset(s_large_buf, k_resync_junk_byte, k_large_buf_len);
+
+  rx_frame_t frame     = {0};
+  uint32_t   discarded = k_resync_sentinel;
+  rx_err_t   err = rx_frame_decode_with_resync(&s_decoder, s_large_buf, k_large_buf_len,
+                                                &frame, &discarded);
+
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
+  TEST_ASSERT_EQUAL(0U, discarded);
+}
+
 /* =============================================================================
  * Main
  * =============================================================================
@@ -2695,6 +2862,12 @@ int main(void)
   RUN_TEST(test_decode_payload_length_mismatch);
   RUN_TEST(test_decode_zero_length_buffer);
   RUN_TEST(test_encode_sequence_rollover);
+  RUN_TEST(test_decode_header_length_too_large);
+  RUN_TEST(test_create_ping_payload_too_large);
+  RUN_TEST(test_create_pong_payload_too_large);
+  RUN_TEST(test_create_pong_null_payload_with_len);
+  RUN_TEST(test_create_pong_empty_payload);
+  RUN_TEST(test_decoder_deinit_null);
 
   /* Resynchronization tests */
   RUN_TEST(test_resync_null_args);
@@ -2702,6 +2875,7 @@ int main(void)
   RUN_TEST(test_resync_aligned_frame_zero_discarded);
   RUN_TEST(test_resync_no_sync_found);
   RUN_TEST(test_resync_crc_mismatch_sets_discarded);
+  RUN_TEST(test_resync_scan_limit_capped);
 
   return UNITY_END();
 }

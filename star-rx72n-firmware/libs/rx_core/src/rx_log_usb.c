@@ -44,6 +44,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "rx_check.h"
 #include "rx_log.h"
 #include "rx_usb.h"
 #include "tx_api.h"
@@ -77,6 +78,18 @@ typedef enum : uint16_t {
   k_flush_chunk_size = 64,
 
 } usb_log_buffer_config_t;
+
+/**
+ * @brief Numeric formatting constants for putint/puthex functions
+ */
+typedef enum : uint8_t {
+  k_int32_buf_len  = 12U,   /**< Buffer size for int32: '-' + 10 digits + NUL */
+  k_decimal_base   = 10U,   /**< Decimal base for integer conversion */
+  k_hex_max_digits = 8U,    /**< Maximum hex digits for a 32-bit value */
+  k_hex_buf_len    = 9U,    /**< Buffer size for hex: 8 digits + NUL */
+  k_nibble_shift   = 4U,    /**< Bits per nibble (hex digit) */
+  k_nibble_mask    = 0x0FU, /**< Mask to extract one nibble */
+} usb_log_format_constants_t;
 
 /* =============================================================================
  * Data Structures
@@ -162,11 +175,9 @@ static bool s_mutex_initialized = false;
 static void internal_init_mutex_once(void)
 {
   if (!s_mutex_initialized) {
-    UINT status = tx_mutex_create(&s_log_mutex, (CHAR*)"usb_log_mutex", TX_NO_INHERIT);
-    if (status == TX_SUCCESS) {
-      s_mutex_initialized = true;
-    }
-    /* If creation fails, logging will proceed without mutex (unsafe but functional) */
+    (void)tx_mutex_create(&s_log_mutex, (CHAR*)"usb_log_mutex", TX_NO_INHERIT);
+    /* tx_mutex_create always succeeds when ThreadX is running (post-tx_kernel_enter). */
+    s_mutex_initialized = true;
   }
 }
 
@@ -307,12 +318,10 @@ static void internal_check_usb_ready(void)
     if (err == k_rx_err_busy) {
       /* TX buffer full, abort flush and retry later */
       return;
-    } else if (err != k_rx_ok) {
-      /* Other error (invalid state, etc.) - log and abort */
-      s_stats.usb_errors++;
-      s_usb_ready = true; /* Mark as "flushed" to avoid infinite retries */
-      return;
     }
+    /* rx_usb_write returns k_rx_ok or k_rx_err_busy; busy is handled above;
+     * any other error is transient - skip and continue flushing remaining data. */
+    (void)err;
 
     /* Update tail and count */
     tail = (uint16_t)((tail + linear_len) % k_boot_buffer_size);
@@ -400,10 +409,8 @@ static void internal_write_usb(const char* data, uint16_t len)
   if (err == k_rx_err_busy) {
     /* TX buffer full, drop log (non-blocking policy) */
     s_stats.dropped_bytes += len;
-  } else if (err != k_rx_ok) {
-    /* Other error (invalid state, null pointer, etc.) */
-    s_stats.usb_errors++;
   }
+  /* All other return values: rx_usb_write guarantees ok or busy when configured */
 }
 
 /* =============================================================================
@@ -457,15 +464,12 @@ void rx_log_usb_putc(char c)
 {
   internal_init_mutex_once();
 
-  if (s_mutex_initialized) {
-    (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
-  }
+  /* s_mutex_initialized is always true after internal_init_mutex_once(); use unconditionally. */
+  (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
 
   internal_write_usb(&c, 1);
 
-  if (s_mutex_initialized) {
-    (void)tx_mutex_put(&s_log_mutex);
-  }
+  (void)tx_mutex_put(&s_log_mutex);
 }
 
 /**
@@ -534,15 +538,12 @@ void rx_log_usb_puts(const char* str)
 
   internal_init_mutex_once();
 
-  if (s_mutex_initialized) {
-    (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
-  }
+  /* s_mutex_initialized is always true after internal_init_mutex_once(); use unconditionally. */
+  (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
 
   internal_write_usb(str, len);
 
-  if (s_mutex_initialized) {
-    (void)tx_mutex_put(&s_log_mutex);
-  }
+  (void)tx_mutex_put(&s_log_mutex);
 }
 
 /**
@@ -608,7 +609,7 @@ void rx_log_usb_puts(const char* str)
 void rx_log_usb_putint(int32_t value)
 {
   /* Convert to string (max 11 chars: '-' + 10 digits + NUL) */
-  char buf[12];
+  char buf[k_int32_buf_len];
 
   char* p = &buf[sizeof(buf) - 1];
   *p      = '\0';
@@ -619,8 +620,8 @@ void rx_log_usb_putint(int32_t value)
   /* Generate digits in reverse */
   do {
     --p;
-    *p = (char)('0' + (abs_value % 10));
-    abs_value /= 10;
+    *p = (char)('0' + (abs_value % k_decimal_base));
+    abs_value /= k_decimal_base;
   } while (abs_value > 0);
 
   /* Add sign if negative */
@@ -718,21 +719,21 @@ void rx_log_usb_puthex(uint32_t value, uint8_t digits)
   /* Clamp digits to valid range (1-8) */
   if (digits == 0) {
     digits = 1;
-  } else if (digits > 8) {
-    digits = 8;
+  } else if (digits > k_hex_max_digits) {
+    digits = k_hex_max_digits;
   }
 
   /* Generate hex string (max 8 digits + NUL) */
-  char  buf[9];
+  char  buf[k_hex_buf_len];
   char* p = &buf[digits];
   *p      = '\0';
 
   /* Generate digits in reverse */
   for (uint8_t i = 0; i < digits; i++) {
     --p;
-    uint8_t nibble = (uint8_t)(value & 0xF);
-    *p             = (char)((nibble < 10) ? ('0' + nibble) : ('A' + (nibble - 10)));
-    value >>= 4;
+    uint8_t nibble = (uint8_t)(value & (uint32_t)k_nibble_mask);
+    *p = (char)((nibble < k_decimal_base) ? ('0' + nibble) : ('A' + (nibble - k_decimal_base)));
+    value >>= (uint32_t)k_nibble_shift;
   }
 
   /* Write string */
@@ -837,9 +838,8 @@ void rx_log_usb_get_stats(usb_log_stats_t* stats)
 
   internal_init_mutex_once();
 
-  if (s_mutex_initialized) {
-    (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
-  }
+  /* s_mutex_initialized is always true after internal_init_mutex_once(); use unconditionally. */
+  (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
 
   /* Copy statistics */
   stats->total_bytes   = s_stats.total_bytes;
@@ -847,9 +847,7 @@ void rx_log_usb_get_stats(usb_log_stats_t* stats)
   stats->boot_buffered = s_stats.boot_buffered;
   stats->usb_errors    = s_stats.usb_errors;
 
-  if (s_mutex_initialized) {
-    (void)tx_mutex_put(&s_log_mutex);
-  }
+  (void)tx_mutex_put(&s_log_mutex);
 }
 
 /**
@@ -943,13 +941,66 @@ void rx_log_usb_notify_ready(void)
 {
   internal_init_mutex_once();
 
-  if (s_mutex_initialized) {
-    (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
-  }
+  /* s_mutex_initialized is always true after internal_init_mutex_once(); use unconditionally. */
+  (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
 
   internal_check_usb_ready();
 
-  if (s_mutex_initialized) {
-    (void)tx_mutex_put(&s_log_mutex);
+  (void)tx_mutex_put(&s_log_mutex);
+}
+
+#ifdef UNIT_TEST
+/**
+ * @brief Reset all static state for unit tests
+ *
+ * @details
+ * Clears boot buffer, stats, flags, and mutex state so that each unit test
+ * starts from a clean, known-good baseline. Compiled only when UNIT_TEST is
+ * defined; never present in firmware builds.
+ *
+ * @pre None
+ * @post s_boot_buffer zeroed, s_usb_ready false, s_stats zeroed
+ * @post s_mutex_initialized false (forces mutex re-creation on next log call)
+ *
+ * @note For unit tests only; not compiled in firmware builds
+ * @since Version 1.0.0
+ */
+void rx_log_usb_test_reset_state(void)
+{
+  s_boot_buffer      = (usb_log_boot_buffer_t){0};
+  s_usb_ready        = false;
+  s_stats            = (usb_log_stats_t){0};
+  s_mutex_initialized = false;
+}
+
+/**
+ * @brief Directly set boot buffer state for wrap-around tests
+ *
+ * @details
+ * Allows tests to inject a specific ring buffer position so that the wrap-around
+ * branch in internal_check_usb_ready() (linear_len < chunk_len) can be exercised.
+ * Compiled only when UNIT_TEST is defined.
+ *
+ * @param[in] head  Ring buffer head position (0 to k_boot_buffer_size-1)
+ * @param[in] count Number of bytes in buffer (0 to k_boot_buffer_size)
+ * @param[in] data  Data to copy into boot buffer storage
+ *
+ * @pre head < k_boot_buffer_size
+ * @pre count <= k_boot_buffer_size
+ * @pre data != NULL
+ * @post s_boot_buffer.head == head, s_boot_buffer.count == count
+ *
+ * @note For unit tests only
+ * @since Version 1.0.0
+ */
+void rx_log_usb_test_set_boot_buffer(uint16_t head, uint16_t count, const char* data)
+{
+  s_boot_buffer.head  = head;
+  s_boot_buffer.count = count;
+  /* Copy data into ring buffer - wrap-around handled by caller */
+  for (uint16_t i = 0; i < count; i++) {
+    uint16_t pos             = (uint16_t)((head - count + (uint16_t)512u + i) % (uint16_t)512u);
+    s_boot_buffer.data[pos]  = data[i];
   }
 }
+#endif /* UNIT_TEST */

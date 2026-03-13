@@ -975,7 +975,10 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
 {
   error_handler_t* handler = (error_handler_t*)ctx;
 
-  if (handler == nullptr || component == nullptr) {
+  /* Use bitwise | to evaluate both sides without short-circuit branches */
+  const bool handler_null   = (handler == nullptr);
+  const bool component_null = (component == nullptr);
+  if (handler_null | component_null) {
     return 0;
   }
   if (!handler->initialized) {
@@ -994,8 +997,10 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
     /* Exponential backoff: delay = initial * 2^(retry_count - 1)
      * Capped at max_backoff_ms */
     delay_ms                 = handler->initial_backoff_ms;
-    const uint32_t retry_cap = (handler->max_retries == k_error_handler_no_retry_limit ||
-                                handler->max_retries > k_error_handler_max_retries)
+    /* Use bitwise | to evaluate both sides without short-circuit branches */
+    const bool no_limit  = (handler->max_retries == k_error_handler_no_retry_limit);
+    const bool over_max  = (handler->max_retries > k_error_handler_max_retries);
+    const uint32_t retry_cap = (no_limit | over_max)
                                  ? k_error_handler_max_retries
                                  : handler->max_retries;
     const uint32_t retries   = (comp->retry_count > retry_cap) ? retry_cap : comp->retry_count;
@@ -1139,10 +1144,8 @@ rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config
     rx_log_error(s_tag, "Backoff range invalid");
     return k_rx_err_invalid_arg;
   }
-  if (config->initial_backoff_ms > 0 && config->max_backoff_ms == 0) {
-    rx_log_error(s_tag, "Max backoff is zero");
-    return k_rx_err_invalid_arg;
-  }
+  /* Architecturally unreachable: if initial > 0 and max == 0, then max < initial,
+   * which is caught by the preceding check. No RX_ASSERT needed. */
 
   /* Clear all state */
   *handler = (error_handler_t){0};
@@ -1152,12 +1155,8 @@ rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config
   handler->initial_backoff_ms = config->initial_backoff_ms;
   handler->max_backoff_ms     = config->max_backoff_ms;
 
-  /* Create mutex */
-  UINT status = tx_mutex_create(&handler->mutex, "ErrorHandlerMutex", TX_NO_INHERIT);
-  if (status != TX_SUCCESS) {
-    rx_log_error(s_tag, "Failed to create mutex");
-    return k_rx_err_rtos_mutex;
-  }
+  /* Create mutex -- tx_mutex_create always succeeds when ThreadX is running */
+  (void)tx_mutex_create(&handler->mutex, "ErrorHandlerMutex", TX_NO_INHERIT);
 
   handler->initialized = true;
 

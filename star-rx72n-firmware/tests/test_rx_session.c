@@ -411,7 +411,7 @@ void test_validate_rx_duplicate_rejected(void)
 }
 
 /**
- * @brief Verify validate_rx with NULL result pointer still works
+ * @brief Verify validate_rx with NULL result pointer still works (exact match)
  */
 void test_validate_rx_null_result(void)
 {
@@ -419,6 +419,56 @@ void test_validate_rx_null_result(void)
   rx_err_t err = rx_session_validate_rx(&s_session, 0, NULL);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Verify validate_rx with NULL result pointer works for gap case
+ *
+ * @details
+ * Exercises the gap branch (0 < diff < MaxGapTolerance) with result=NULL.
+ * Verifies that the null result pointer path inside the gap branch is
+ * reachable and does not crash.
+ */
+void test_validate_rx_null_result_gap(void)
+{
+  /* Accept seq=0 first to advance rx_sequence to 1 */
+  rx_err_t err = rx_session_validate_rx(&s_session, 0, NULL);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Skip seq=1, receive seq=2 (gap=1, within tolerance) with NULL result */
+  err = rx_session_validate_rx(&s_session, 2, NULL);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Verify rx_sequence updated to 3 (gap was accepted) */
+  uint16_t rx_seq;
+  err = rx_session_get_rx(&s_session, &rx_seq);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT16(3, rx_seq);
+}
+
+/**
+ * @brief Verify validate_rx with NULL result pointer works for fail case
+ *
+ * @details
+ * Exercises the reject branch (diff >= MaxGapTolerance) with result=NULL.
+ * Verifies that the null result pointer path inside the fail branch is
+ * reachable and does not crash.
+ */
+void test_validate_rx_null_result_fail(void)
+{
+  /* Accept seq=0 first to advance rx_sequence to 1 */
+  rx_err_t err = rx_session_validate_rx(&s_session, 0, NULL);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Receive seq=100 (diff=99, >= MaxGapTolerance=10) with NULL result */
+  err = rx_session_validate_rx(&s_session, 100, NULL);
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
+
+  /* rx_sequence should be unchanged (still expecting 1) */
+  uint16_t rx_seq;
+  err = rx_session_get_rx(&s_session, &rx_seq);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT16(1, rx_seq);
 }
 
 /**
@@ -430,6 +480,20 @@ void test_validate_rx_null_state(void)
   rx_err_t                     err = rx_session_validate_rx(NULL, 0, &result);
 
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Verify validate_rx rejects uninitialized state
+ */
+void test_validate_rx_not_initialized(void)
+{
+  rx_session_state_t           uninit;
+  rx_session_validate_result_t result;
+
+  memset(&uninit, 0, sizeof(uninit));
+
+  rx_err_t err = rx_session_validate_rx(&uninit, 0, &result);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
 }
 
 /**
@@ -599,6 +663,20 @@ void test_get_tx_null_output(void)
 }
 
 /**
+ * @brief Verify get_tx rejects uninitialized state
+ */
+void test_get_tx_not_initialized(void)
+{
+  rx_session_state_t uninit;
+  uint16_t           seq;
+
+  memset(&uninit, 0, sizeof(uninit));
+
+  rx_err_t err = rx_session_get_tx(&uninit, &seq);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
+}
+
+/**
  * @brief Verify get_rx rejects NULL state
  */
 void test_get_rx_null_state(void)
@@ -617,6 +695,20 @@ void test_get_rx_null_output(void)
   rx_err_t err = rx_session_get_rx(&s_session, NULL);
 
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Verify get_rx rejects uninitialized state
+ */
+void test_get_rx_not_initialized(void)
+{
+  rx_session_state_t uninit;
+  uint16_t           seq;
+
+  memset(&uninit, 0, sizeof(uninit));
+
+  rx_err_t err = rx_session_get_rx(&uninit, &seq);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
 }
 
 /* ============================================================================
@@ -651,7 +743,10 @@ int main(void)
   RUN_TEST(test_validate_rx_large_gap_rejected);
   RUN_TEST(test_validate_rx_duplicate_rejected);
   RUN_TEST(test_validate_rx_null_result);
+  RUN_TEST(test_validate_rx_null_result_gap);
+  RUN_TEST(test_validate_rx_null_result_fail);
   RUN_TEST(test_validate_rx_null_state);
+  RUN_TEST(test_validate_rx_not_initialized);
   RUN_TEST(test_validate_rx_wraparound);
 
   /* Reset */
@@ -666,8 +761,10 @@ int main(void)
   /* Getters */
   RUN_TEST(test_get_tx_null_state);
   RUN_TEST(test_get_tx_null_output);
+  RUN_TEST(test_get_tx_not_initialized);
   RUN_TEST(test_get_rx_null_state);
   RUN_TEST(test_get_rx_null_output);
+  RUN_TEST(test_get_rx_not_initialized);
 
   return UNITY_END();
 }

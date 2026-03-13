@@ -383,6 +383,22 @@
 #include "rx_frame_ascii.h"
 #include "unity.h"
 
+#ifdef UNIT_TEST
+/* Expose internal helpers for branch coverage */
+extern uint32_t internal_append_str(char* buf, uint32_t pos, uint32_t max, const char* str);
+extern uint32_t internal_append_char(char* buf, uint32_t pos, uint32_t max, char c);
+extern uint32_t internal_append_hex_byte(char* buf, uint32_t pos, uint32_t max, uint8_t byte);
+extern uint32_t internal_append_hex_u16(char* buf, uint32_t pos, uint32_t max, uint16_t value);
+extern uint32_t internal_append_hex_u32(char* buf, uint32_t pos, uint32_t max, uint32_t value);
+extern uint32_t internal_append_decimal_u16(char* buf, uint32_t pos, uint32_t max, uint16_t value);
+extern uint32_t internal_append_flag(char* buffer, uint32_t pos, uint32_t max, bool* first,
+                                     uint8_t flags, uint8_t flag_bit, const char* flag_name);
+extern uint32_t internal_format_payload(char* buf, uint32_t pos, uint32_t max,
+                                        const uint8_t* payload, uint16_t length);
+extern uint32_t internal_format_header(char* buf, uint32_t pos, uint32_t max,
+                                       const rx_frame_header_t* header, bool is_tx);
+#endif
+
 /* =============================================================================
  * Test Constants
  * =============================================================================
@@ -1298,6 +1314,29 @@ void test_format_buffer_too_small(void)
   TEST_ASSERT_EQUAL(k_rx_err_no_mem, err);
 }
 
+/**
+ * @brief Test format with frame->header.length exceeding k_frame_max_payload
+ *
+ * @details
+ * Verifies that rx_frame_ascii_format() returns k_rx_err_invalid_arg when
+ * frame->header.length > k_frame_max_payload (1024).
+ *
+ * @pre setUp() zeroed s_output_buffer
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @test Validates frame->header.length > k_frame_max_payload rejection (line 951)
+ */
+void test_format_payload_length_too_large(void)
+{
+  rx_frame_t frame     = {0};
+  uint32_t   len       = 0;
+  frame.header.length  = k_frame_max_payload + 1U;
+
+  rx_err_t err = rx_frame_ascii_format(&frame, false, s_output_buffer,
+                                        sizeof(s_output_buffer), &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
 /** @} */ // end of test_rx_frame_ascii_format_errors
 
 /* =============================================================================
@@ -1843,6 +1882,289 @@ void test_format_crc_displayed(void)
 /** @} */ // end of test_rx_frame_ascii_format_success
 
 /* =============================================================================
+ * Internal Helper Branch Coverage Tests
+ * =============================================================================
+ */
+
+/**
+ * @defgroup test_rx_frame_ascii_internal Internal Helper Branch Coverage Tests
+ * @brief Tests that exercise assert-false branches and buffer-full paths in
+ *        internal (RX_STATIC_TESTABLE) helper functions.
+ * @{
+ */
+
+/**
+ * @brief Test internal_append_str assert fires for each precondition failure.
+ * @details Exercises ALL RX_ASSERT short-circuit branches (A=false, B=false,
+ *          C=false, D=false) and the while-loop false-exit branch (buffer full).
+ *          After the assert fires in unit test mode (returns), the while loop
+ *          condition `pos < max - 1` is false (pos >= max), so no writes occur.
+ *          The C=false case (max=0) is safe because pos is large enough that
+ *          pos < UINT32_MAX is still false (with pos = max = 0, both are 0).
+ *          The B=false case (str=nullptr) is safe because the while loop now
+ *          checks `pos < max - 1` FIRST (short-circuit prevents *str deref).
+ * @since Version 1.0.0
+ */
+void test_internal_append_str_assert_pos_beyond_max(void)
+{
+#ifdef UNIT_TEST
+  char        dummy[8] = {0};
+  const char* str      = "hi";
+
+  /* A=false: buf=nullptr, pos>=max prevents write (D is also false) */
+  uint32_t pos = internal_append_str(nullptr, 8, 4, str);
+  TEST_ASSERT_EQUAL(8, pos);
+
+  /* B=false: str=nullptr, pos>=max prevents *str deref (short-circuit) */
+  pos = internal_append_str(dummy, 8, 4, nullptr);
+  TEST_ASSERT_EQUAL(8, pos);
+
+  /* C=false: max=0, pos=UINT32_MAX so pos >= max-1=UINT32_MAX: no write */
+  pos = internal_append_str(dummy, 0xFFFFFFFFU, 0, str);
+  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+
+  /* D=false: pos >= max (already covered, reconfirm) */
+  pos = internal_append_str(dummy, 8, 4, str);
+  TEST_ASSERT_EQUAL(8, pos);
+
+  /* Buffer exactly full: pos == max-1 = 3, while exits immediately */
+  pos = internal_append_str(dummy, 3, 4, str);
+  TEST_ASSERT_EQUAL(3, pos);
+#endif
+}
+
+/**
+ * @brief Test internal_append_char assert fires for each precondition and
+ *        exercises buffer-full path.
+ * @details Exercises A=false (buf=nullptr), B=false (max=0), C=false (pos>=max)
+ *          short-circuit branches and the if-false (buffer-full) branch.
+ *          Safe because when pos >= max, the if body is not entered.
+ * @since Version 1.0.0
+ */
+void test_internal_append_char_assert_and_full(void)
+{
+#ifdef UNIT_TEST
+  char dummy[4] = {0};
+
+  /* A=false: buf=nullptr with pos >= max (if body skipped) */
+  uint32_t pos = internal_append_char(nullptr, 8, 4, 'A');
+  TEST_ASSERT_EQUAL(8, pos);
+
+  /* B=false: max=0, pos=UINT32_MAX so pos < max-1 = UINT32_MAX is false */
+  pos = internal_append_char(dummy, 0xFFFFFFFFU, 0, 'A');
+  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+
+  /* C=false: pos >= max (already covered, reconfirm) */
+  pos = internal_append_char(dummy, 8, 4, 'A');
+  TEST_ASSERT_EQUAL(8, pos);
+
+  /* Buffer full: pos == max-1 = 3, if-false branch */
+  pos = internal_append_char(dummy, 3, 4, 'A');
+  TEST_ASSERT_EQUAL(3, pos);
+#endif
+}
+
+/**
+ * @brief Test internal_append_hex_byte assert fires for each precondition and
+ *        exercises buffer-full path.
+ * @details Exercises A=false (buf=nullptr), B=false (max<2), C=false (pos>=max),
+ *          and the if-false (buffer has only 1 byte left) branches.
+ * @since Version 1.0.0
+ */
+void test_internal_append_hex_byte_assert_and_full(void)
+{
+#ifdef UNIT_TEST
+  char dummy[8] = {0};
+
+  /* C=false: pos >= max (D fails), if body not entered */
+  uint32_t pos = internal_append_hex_byte(dummy, 8, 4, 0xAB);
+  TEST_ASSERT_EQUAL(8, pos);
+
+  /* A=false: buf=nullptr, pos >= max prevents write */
+  pos = internal_append_hex_byte(nullptr, 8, 4, 0xAB);
+  TEST_ASSERT_EQUAL(8, pos);
+
+  /* B=false: max < k_hex_chars_per_byte=2, pos=UINT32_MAX so if body skipped */
+  pos = internal_append_hex_byte(dummy, 0xFFFFFFFFU, 1, 0xAB);
+  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+
+  /* Buffer only has 1 byte left: pos = max-1 = 3, if-false at line 389 */
+  pos = internal_append_hex_byte(dummy, 3, 4, 0xAB);
+  TEST_ASSERT_EQUAL(3, pos);
+#endif
+}
+
+/**
+ * @brief Test internal_append_hex_u16 assert fires for each precondition.
+ * @details Exercises A=false, B=false, and C=false short-circuit branches.
+ * @since Version 1.0.0
+ */
+void test_internal_append_hex_u16_assert_pos_beyond_max(void)
+{
+#ifdef UNIT_TEST
+  char dummy[8] = {0};
+
+  /* C=false: pos >= max */
+  uint32_t pos = internal_append_hex_u16(dummy, 8, 4, 0x1234);
+  TEST_ASSERT_EQUAL(8, pos);
+
+  /* A=false: buf=nullptr, pos >= max prevents any write */
+  pos = internal_append_hex_u16(nullptr, 8, 4, 0x1234);
+  TEST_ASSERT_EQUAL(8, pos);
+
+  /* B=false: max < k_hex_chars_per_u16=4, pos=UINT32_MAX */
+  pos = internal_append_hex_u16(dummy, 0xFFFFFFFFU, 3, 0x1234);
+  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+#endif
+}
+
+/**
+ * @brief Test internal_append_hex_u32 assert fires for each precondition.
+ * @details Exercises A=false, B=false, and C=false short-circuit branches.
+ * @since Version 1.0.0
+ */
+void test_internal_append_hex_u32_assert_pos_beyond_max(void)
+{
+#ifdef UNIT_TEST
+  char dummy[16] = {0};
+
+  /* B=false: max < k_hex_chars_per_u32=8, pos=UINT32_MAX */
+  uint32_t pos = internal_append_hex_u32(dummy, 0xFFFFFFFFU, 7, 0xDEADBEEF);
+  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+
+  /* A=false: buf=nullptr, B=true (max=8), C=false (pos>=max) */
+  pos = internal_append_hex_u32(nullptr, 16, 8, 0xDEADBEEF);
+  TEST_ASSERT_EQUAL(16, pos);
+
+  /* C=false: A=true, B=true (max=8>=8), pos=16>=8 */
+  pos = internal_append_hex_u32(dummy, 16, 8, 0xDEADBEEF);
+  TEST_ASSERT_EQUAL(16, pos);
+#endif
+}
+
+/**
+ * @brief Test internal_append_decimal_u16 assert fires for each precondition
+ *        and the while loop exits when value reaches zero.
+ * @details Exercises A=false (buf=nullptr), B=false (max=0), C=false (pos>=max)
+ *          short-circuit branches.
+ * @since Version 1.0.0
+ */
+void test_internal_append_decimal_u16_assert_and_loop(void)
+{
+#ifdef UNIT_TEST
+  char dummy[8] = {0};
+
+  /* C=false: pos >= max */
+  uint32_t pos = internal_append_decimal_u16(dummy, 8, 4, 42);
+  TEST_ASSERT_EQUAL(8, pos);
+
+  /* A=false: buf=nullptr, pos >= max prevents write */
+  pos = internal_append_decimal_u16(nullptr, 8, 4, 42);
+  TEST_ASSERT_EQUAL(8, pos);
+
+  /* B=false: max=0, pos=UINT32_MAX so inner append_char also skips */
+  pos = internal_append_decimal_u16(dummy, 0xFFFFFFFFU, 0, 42);
+  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+
+  /* Non-zero value -> the while loop runs then exits naturally when value=0 */
+  pos = internal_append_decimal_u16(dummy, 0, 8, 12345);
+  /* "12345" is 5 digits, pos should advance to 5 */
+  TEST_ASSERT_EQUAL(5, pos);
+  dummy[pos] = '\0';
+  TEST_ASSERT_EQUAL_STRING("12345", dummy);
+#endif
+}
+
+/**
+ * @brief Test internal_format_payload assert fires for each precondition.
+ * @details Exercises A=false (buf=nullptr), B=false (max=0), C=false (pos>=max)
+ *          short-circuit branches at line 616 assert.
+ *          Also tests payload=nullptr (early return from null guard at line 625).
+ * @since Version 1.0.0
+ */
+void test_internal_format_payload_assert_violations(void)
+{
+#ifdef UNIT_TEST
+  char          buf[256]    = {0};
+  const uint8_t payload[4] = {0x01, 0x02, 0x03, 0x04};
+
+  /* C=false: pos >= max (line 616 assert fires) */
+  uint32_t pos = internal_format_payload(buf, 256, 64, payload, 4);
+  TEST_ASSERT_EQUAL(256, pos);
+
+  /* A=false: buf=nullptr, pos >= max prevents writes */
+  pos = internal_format_payload(nullptr, 256, 64, payload, 4);
+  TEST_ASSERT_EQUAL(256, pos);
+
+  /* B=false: max=0, pos=UINT32_MAX so child append calls all skip */
+  pos = internal_format_payload(buf, 0xFFFFFFFFU, 0, payload, 4);
+  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+
+  /* payload=nullptr with length>0 hits the null guard (line 625 if-false branch) */
+  pos = internal_format_payload(buf, 0, 256, nullptr, 4);
+  TEST_ASSERT_EQUAL(0, pos);
+#endif
+}
+
+/**
+ * @brief Test internal_format_header assert fires for each precondition.
+ * @details Exercises A=false (buf=nullptr), B=false (header=nullptr),
+ *          C=false (max=0), D=false (pos>=max) short-circuit branches.
+ * @since Version 1.0.0
+ */
+void test_internal_format_header_assert_pos_beyond_max(void)
+{
+#ifdef UNIT_TEST
+  char              buf[128] = {0};
+  rx_frame_header_t header   = {0};
+  header.sequence            = 1;
+  header.length              = 0;
+  header.type                = (uint8_t)k_frame_type_ping;
+  header.flags               = 0;
+
+  /* D=false: pos >= max */
+  uint32_t pos = internal_format_header(buf, 128, 64, &header, true);
+  TEST_ASSERT_EQUAL(128, pos);
+
+  /* A=false: buf=nullptr, pos >= max prevents writes */
+  pos = internal_format_header(nullptr, 128, 64, &header, true);
+  TEST_ASSERT_EQUAL(128, pos);
+
+  /* B=false: header=nullptr, safety guard returns early */
+  pos = internal_format_header(buf, 0, 64, nullptr, true);
+  TEST_ASSERT_EQUAL(0, pos);
+
+  /* C=false: max=0, pos=UINT32_MAX */
+  pos = internal_format_header(buf, 0xFFFFFFFFU, 0, &header, true);
+  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+#endif
+}
+
+/**
+ * @brief Test internal_append_flag assert fires when first is NULL.
+ * @details Exercises assert false branch at line 830.
+ *          Passes a non-NULL buffer with pos >= max so that after the assert
+ *          fires (returns) the subsequent code path does not crash.
+ * @since Version 1.0.0
+ */
+void test_internal_append_flag_assert_null_first(void)
+{
+#ifdef UNIT_TEST
+  char dummy[32] = {0};
+
+  /* first == nullptr violates assert (line 830 false branch covered).
+   * After assert fires in unit test mode, code checks (flags & flag_bit).
+   * flags=0x01, flag_bit=0x01 so condition is true.
+   * Then accesses *first which is nullptr -> segfault risk.
+   * To avoid: pass flags=0x00 so (flags & flag_bit) is false and body skipped. */
+  uint32_t pos = internal_append_flag(dummy, 0, 32, nullptr, 0x00, 0x01, "ACK");
+  TEST_ASSERT_EQUAL(0, pos);
+#endif
+}
+
+/** @} */ // end of test_rx_frame_ascii_internal
+
+/* =============================================================================
  * Main
  * =============================================================================
  */
@@ -1915,6 +2237,7 @@ int main(void)
   RUN_TEST(test_format_null_output);
   RUN_TEST(test_format_null_output_len);
   RUN_TEST(test_format_buffer_too_small);
+  RUN_TEST(test_format_payload_length_too_large);
 
   /* Format success tests */
   RUN_TEST(test_format_empty_frame_rx);
@@ -1925,6 +2248,17 @@ int main(void)
   RUN_TEST(test_format_nack_with_soft_flag);
   RUN_TEST(test_format_combined_flags);
   RUN_TEST(test_format_crc_displayed);
+
+  /* Internal helper branch coverage tests */
+  RUN_TEST(test_internal_append_str_assert_pos_beyond_max);
+  RUN_TEST(test_internal_append_char_assert_and_full);
+  RUN_TEST(test_internal_append_hex_byte_assert_and_full);
+  RUN_TEST(test_internal_append_hex_u16_assert_pos_beyond_max);
+  RUN_TEST(test_internal_append_hex_u32_assert_pos_beyond_max);
+  RUN_TEST(test_internal_append_decimal_u16_assert_and_loop);
+  RUN_TEST(test_internal_format_payload_assert_violations);
+  RUN_TEST(test_internal_format_header_assert_pos_beyond_max);
+  RUN_TEST(test_internal_append_flag_assert_null_first);
 
   return UNITY_END();
 }

@@ -416,6 +416,7 @@ add_executable(test_rx_usb
 )
 apply_strict_warnings(test_rx_usb)
 apply_test_includes(test_rx_usb)
+target_include_directories(test_rx_usb PRIVATE ${CMAKE_SOURCE_DIR}/../libs/rx_usb/src)
 target_link_libraries(test_rx_usb unity)
 
 # Test: USB CDC Multi-Port (Composite Device)
@@ -459,10 +460,18 @@ add_executable(test_rx_hcsr04
     ${MOCK_HCSR04_SRC}
     ${MOCK_UART_SRC}
     ${MOCK_LOG_SRC}
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tx_api.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tasks.c
 )
 apply_strict_warnings(test_rx_hcsr04)
 apply_test_includes(test_rx_hcsr04)
 target_link_libraries(test_rx_hcsr04 unity)
+target_compile_definitions(test_rx_hcsr04 PRIVATE
+    MOCK_TX_THREAD_CREATE
+    MOCK_TX_THREAD_DELETE
+    MOCK_TX_EVENT_FLAGS_CREATE
+    MOCK_TX_EVENT_FLAGS_GET
+)
 
 # Test: Obstacle Detection
 add_executable(test_rx_obstacle_detect
@@ -473,10 +482,19 @@ add_executable(test_rx_obstacle_detect
     ${MOCK_MOTOR_SRC}
     ${MOCK_UART_SRC}
     ${MOCK_LOG_SRC}
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tx_api.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tasks.c
 )
 apply_strict_warnings(test_rx_obstacle_detect)
 apply_test_includes(test_rx_obstacle_detect)
 target_link_libraries(test_rx_obstacle_detect unity)
+target_compile_definitions(test_rx_obstacle_detect PRIVATE
+    MOCK_TX_THREAD_CREATE
+    MOCK_TX_THREAD_DELETE
+    MOCK_TX_EVENT_FLAGS_CREATE
+    MOCK_TX_EVENT_FLAGS_GET
+    MOCK_TX_THREAD_SLEEP
+)
 
 # Test: UART HAL Driver
 add_executable(test_uart_hal
@@ -677,6 +695,7 @@ add_executable(test_rx_encoder
 apply_strict_warnings(test_rx_encoder)
 apply_test_includes(test_rx_encoder)
 target_link_libraries(test_rx_encoder unity)
+target_compile_definitions(test_rx_encoder PRIVATE TESTING)
 
 # Test: DS18B20 Temperature Sensor
 add_executable(test_rx_ds18b20
@@ -785,11 +804,63 @@ add_executable(test_rx_comm_manager
 )
 apply_strict_warnings(test_rx_comm_manager)
 apply_test_includes(test_rx_comm_manager)
+# Force RX_STATIC_TESTABLE=static to prevent symbol collisions when both
+# rx_i2c_comm.c and rx_uart_comm.c (which share internal function names)
+# are compiled into the same binary under UNIT_TEST mode.
+target_compile_definitions(test_rx_comm_manager PRIVATE RX_STATIC_TESTABLE=static)
 target_include_directories(test_rx_comm_manager PRIVATE
     ${CMAKE_SOURCE_DIR}/../libs/rx_frame_ascii/inc
     ${CMAKE_SOURCE_DIR}/../libs/rx_comm_manager/inc
 )
 target_link_libraries(test_rx_comm_manager unity)
+
+# Test: I2C Comm Layer (RIIC0 peripheral frame protocol)
+add_executable(test_rx_i2c_comm
+    test_rx_i2c_comm.c
+    ${RX_I2C_COMM_SRC}
+    ${RX_FRAME_SRC}
+    ${RX_SESSION_SRC}
+    ${MOCK_RIIC_HAL_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_i2c_comm)
+apply_test_includes(test_rx_i2c_comm)
+target_include_directories(test_rx_i2c_comm PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_i2c_comm/inc
+)
+target_link_libraries(test_rx_i2c_comm unity)
+
+# Test: UART Comm Layer (SCI9 frame protocol)
+add_executable(test_rx_uart_comm
+    test_rx_uart_comm.c
+    ${RX_UART_COMM_SRC}
+    ${RX_FRAME_SRC}
+    ${RX_SESSION_SRC}
+    ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_uart_comm)
+apply_test_includes(test_rx_uart_comm)
+target_include_directories(test_rx_uart_comm PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_uart_comm/inc
+)
+target_link_libraries(test_rx_uart_comm unity)
+
+# Test: USB Log Backend (rx_log_usb.c)
+add_executable(test_rx_log_usb
+    test_rx_log_usb.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_usb.c
+    ${RX_USB_SRC}
+    ${RX_LOG_SRC}
+    ${MOCK_USB_SRC}
+)
+apply_strict_warnings(test_rx_log_usb)
+apply_test_includes(test_rx_log_usb)
+target_include_directories(test_rx_log_usb PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_usb/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/inc
+)
+target_link_libraries(test_rx_log_usb unity)
 
 # Test: Independent Watchdog Timer (IWDT) Driver
 add_executable(test_rx_iwdt
@@ -884,6 +955,7 @@ add_executable(test_rx_encoder_tpu
 apply_strict_warnings(test_rx_encoder_tpu)
 apply_test_includes(test_rx_encoder_tpu)
 target_link_libraries(test_rx_encoder_tpu unity m)
+target_compile_definitions(test_rx_encoder_tpu PRIVATE TESTING)
 
 # =============================================================================
 # Multi-Task Firmware Test Sources
@@ -1195,6 +1267,9 @@ set(ALL_TEST_TARGETS
     test_rx_frame_ascii
     test_rx_session
     test_rx_comm_manager
+    test_rx_i2c_comm
+    test_rx_uart_comm
+    test_rx_log_usb
     test_rx_iwdt
     test_rx_gpio
     test_rx_mpc
@@ -1253,6 +1328,9 @@ add_test(NAME test_rx_drv8263 COMMAND test_rx_drv8263)
 add_test(NAME test_rx_frame_ascii COMMAND test_rx_frame_ascii)
 add_test(NAME test_rx_session COMMAND test_rx_session)
 add_test(NAME test_rx_comm_manager COMMAND test_rx_comm_manager)
+add_test(NAME test_rx_i2c_comm COMMAND test_rx_i2c_comm)
+add_test(NAME test_rx_uart_comm COMMAND test_rx_uart_comm)
+add_test(NAME test_rx_log_usb COMMAND test_rx_log_usb)
 add_test(NAME test_rx_iwdt COMMAND test_rx_iwdt)
 add_test(NAME test_rx_gpio COMMAND test_rx_gpio)
 add_test(NAME test_rx_mpc COMMAND test_rx_mpc)
