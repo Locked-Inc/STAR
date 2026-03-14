@@ -2620,7 +2620,7 @@ void test_harq_decode_null_params(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
 
-  uint8_t  output[64];
+  uint8_t  output[k_test_buf_large];
   uint32_t len;
   rx_err_t err = rx_harq_decode(&s_harq, nullptr, output, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2678,17 +2678,12 @@ void test_harq_decode_null_params(void)
  *
  * @since Version 1.0.0
  */
-int main(void)
+static void internal_run_combiner_tests(void)
 {
-  UNITY_BEGIN();
-
-  /* Chase Combiner init tests */
   RUN_TEST(test_combiner_init_null);
   RUN_TEST(test_combiner_init_success);
   RUN_TEST(test_combiner_init_default_max);
   RUN_TEST(test_combiner_deinit_null);
-
-  /* Chase Combiner add tests */
   RUN_TEST(test_combiner_add_null_combiner);
   RUN_TEST(test_combiner_add_null_soft);
   RUN_TEST(test_combiner_add_uninitialized);
@@ -2697,15 +2692,15 @@ int main(void)
   RUN_TEST(test_combiner_add_single);
   RUN_TEST(test_combiner_add_length_mismatch);
   RUN_TEST(test_combiner_add_max_reached);
+}
 
-  /* Chase Combiner accumulation tests */
+static void internal_run_combiner_acc_tests(void)
+{
   RUN_TEST(test_combiner_accumulation);
   RUN_TEST(test_combiner_combined_output);
   RUN_TEST(test_combiner_combined_no_add);
   RUN_TEST(test_combiner_combined_null_args);
   RUN_TEST(test_combiner_combined_uninitialized);
-
-  /* Chase Combiner helper tests */
   RUN_TEST(test_combiner_can_add);
   RUN_TEST(test_combiner_can_add_null);
   RUN_TEST(test_combiner_can_add_uninitialized);
@@ -2714,39 +2709,37 @@ int main(void)
   RUN_TEST(test_combiner_reset);
   RUN_TEST(test_combiner_reset_null);
   RUN_TEST(test_combiner_reset_uninitialized);
+}
 
-  /* HARQ init tests */
+static void internal_run_harq_encode_tests(void)
+{
   RUN_TEST(test_harq_init_null);
   RUN_TEST(test_harq_init_default_config);
   RUN_TEST(test_harq_init_custom_config);
   RUN_TEST(test_harq_deinit_null);
-
-  /* HARQ state tests */
   RUN_TEST(test_harq_get_state_null);
   RUN_TEST(test_harq_get_state_idle);
   RUN_TEST(test_harq_reset);
   RUN_TEST(test_harq_reset_null);
   RUN_TEST(test_harq_reset_uninitialized);
-
-  /* HARQ encode tests */
   RUN_TEST(test_harq_encode_null_args);
   RUN_TEST(test_harq_encode_uninitialized);
   RUN_TEST(test_harq_encode_zero_payload);
   RUN_TEST(test_harq_encode_too_large);
+}
+
+static void internal_run_harq_decode_tests(void)
+{
   RUN_TEST(test_harq_encode_with_fec);
   RUN_TEST(test_harq_encode_without_fec);
   RUN_TEST(test_harq_encode_buffer_too_small);
   RUN_TEST(test_harq_encode_buffer_too_small_no_fec);
-
-  /* HARQ retry tests */
   RUN_TEST(test_harq_get_retry_count_null);
   RUN_TEST(test_harq_get_retry_count);
   RUN_TEST(test_harq_can_retry_null);
   RUN_TEST(test_harq_can_retry_uninitialized);
   RUN_TEST(test_harq_can_retry_fresh);
   RUN_TEST(test_harq_can_retry_exhausted);
-
-  /* HARQ decode parameter validation tests */
   RUN_TEST(test_harq_decode_null_args);
   RUN_TEST(test_harq_decode_null_params);
   RUN_TEST(test_harq_decode_uninitialized);
@@ -2756,11 +2749,17 @@ int main(void)
   RUN_TEST(test_harq_decode_fec_fail_retry);
   RUN_TEST(test_harq_decode_fec_fail_exhausted);
   RUN_TEST(test_harq_decode_combiner_add_mismatch);
-
-  /* HARQ integration tests */
   RUN_TEST(test_harq_roundtrip_with_fec);
   RUN_TEST(test_harq_roundtrip_without_fec);
   RUN_TEST(test_harq_combining_improves_reception);
+}
 
+int main(void)
+{
+  UNITY_BEGIN();
+  internal_run_combiner_tests();
+  internal_run_combiner_acc_tests();
+  internal_run_harq_encode_tests();
+  internal_run_harq_decode_tests();
   return UNITY_END();
 }

@@ -11,8 +11,6 @@
 
 #include "mock_uart_hw.h"
 
-#include <string.h>
-
 #include "hardware.h"
 #include "mock_sci_regs.h"
 
@@ -123,7 +121,10 @@ static rx_err_t internal_wait_for_tdre(uint8_t channel)
 
 void mock_uart_hw_init(void)
 {
-  memset(&g_mock_uart, 0, sizeof(g_mock_uart));
+  uint8_t* const p = (uint8_t*)&g_mock_uart;
+  for (uint32_t i = 0U; i < sizeof(g_mock_uart); i++) {
+    p[i] = 0U;
+  }
 }
 
 void mock_uart_hw_deinit(void)
