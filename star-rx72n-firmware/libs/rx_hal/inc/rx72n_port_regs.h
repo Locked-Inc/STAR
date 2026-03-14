@@ -638,12 +638,12 @@ static inline volatile rx_port_regs_t* port2(void)
  * @note PORT3 PDR = 0x0008C003, PODR = 0x0008C023, PIDR = 0x0008C043
  * @note 144-pin: P30-P37 available (P35 is input-only)
  */
-/* GCOV_EXCL_START */
+/* LCOV_EXCL_START */
 static inline volatile rx_port_regs_t* port3(void)
 {
   return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_3);
 }
-/* GCOV_EXCL_STOP */
+/* LCOV_EXCL_STOP */
 
 /**
  * @brief Get pointer to PORT4 registers
@@ -651,12 +651,12 @@ static inline volatile rx_port_regs_t* port3(void)
  * @note PORT4 PDR = 0x0008C004, PODR = 0x0008C024, PIDR = 0x0008C044
  * @note 144-pin: P40-P47 available
  */
-/* GCOV_EXCL_START */
+/* LCOV_EXCL_START */
 static inline volatile rx_port_regs_t* port4(void)
 {
   return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_4);
 }
-/* GCOV_EXCL_STOP */
+/* LCOV_EXCL_STOP */
 
 /**
  * @brief Get pointer to PORT5 registers
@@ -664,12 +664,12 @@ static inline volatile rx_port_regs_t* port4(void)
  * @note PORT5 PDR = 0x0008C005, PODR = 0x0008C025, PIDR = 0x0008C045
  * @note 144-pin: P50-P56 available (7 pins)
  */
-/* GCOV_EXCL_START */
+/* LCOV_EXCL_START */
 static inline volatile rx_port_regs_t* port5(void)
 {
   return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_5);
 }
-/* GCOV_EXCL_STOP */
+/* LCOV_EXCL_STOP */
 
 /**
  * @brief Get pointer to PORT6 registers
@@ -677,12 +677,12 @@ static inline volatile rx_port_regs_t* port5(void)
  * @note PORT6 PDR = 0x0008C006, PODR = 0x0008C026, PIDR = 0x0008C046
  * @note 144-pin: P60-P67 available (8 pins)
  */
-/* GCOV_EXCL_START */
+/* LCOV_EXCL_START */
 static inline volatile rx_port_regs_t* port6(void)
 {
   return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_6);
 }
-/* GCOV_EXCL_STOP */
+/* LCOV_EXCL_STOP */
 
 /**
  * @brief Get pointer to PORT7 registers
@@ -690,12 +690,12 @@ static inline volatile rx_port_regs_t* port6(void)
  * @note PORT7 PDR = 0x0008C007, PODR = 0x0008C027, PIDR = 0x0008C047
  * @note 144-pin: P70-P77 available (8 pins)
  */
-/* GCOV_EXCL_START */
+/* LCOV_EXCL_START */
 static inline volatile rx_port_regs_t* port7(void)
 {
   return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_7);
 }
-/* GCOV_EXCL_STOP */
+/* LCOV_EXCL_STOP */
 
 /**
  * @brief Get pointer to PORT8 registers
@@ -703,12 +703,12 @@ static inline volatile rx_port_regs_t* port7(void)
  * @note PORT8 PDR = 0x0008C008, PODR = 0x0008C028, PIDR = 0x0008C048
  * @note 144-pin: P80-P83, P86-P87 available (6 pins)
  */
-/* GCOV_EXCL_START */
+/* LCOV_EXCL_START */
 static inline volatile rx_port_regs_t* port8(void)
 {
   return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_8);
 }
-/* GCOV_EXCL_STOP */
+/* LCOV_EXCL_STOP */
 
 /**
  * @brief Get pointer to PORT9 registers
@@ -716,12 +716,12 @@ static inline volatile rx_port_regs_t* port8(void)
  * @note PORT9 PDR = 0x0008C009, PODR = 0x0008C029, PIDR = 0x0008C049
  * @note 144-pin: P90-P93 available (4 pins)
  */
-/* GCOV_EXCL_START */
+/* LCOV_EXCL_START */
 static inline volatile rx_port_regs_t* port9(void)
 {
   return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_9);
 }
-/* GCOV_EXCL_STOP */
+/* LCOV_EXCL_STOP */
 
 /**
  * @brief Get pointer to PORTA registers
@@ -784,12 +784,12 @@ static inline volatile rx_port_regs_t* porte(void)
  * @note PORTF PDR = 0x0008C00F, PODR = 0x0008C02F, PIDR = 0x0008C04F
  * @note 144-pin: PF5 available (1 pin)
  */
-/* GCOV_EXCL_START */
+/* LCOV_EXCL_START */
 static inline volatile rx_port_regs_t* portf(void)
 {
   return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_f);
 }
-/* GCOV_EXCL_STOP */
+/* LCOV_EXCL_STOP */
 
 /**
  * @brief Get pointer to PORTJ registers
