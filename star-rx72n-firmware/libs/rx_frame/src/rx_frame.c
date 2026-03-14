@@ -637,7 +637,9 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
 
   /* Write PAYLOAD */
   if (frame->header.length > 0) {
-    memcpy(&output[offset], frame->payload, frame->header.length);
+    for (uint32_t i = 0U; i < (uint32_t)frame->header.length; i++) {
+      output[offset + i] = frame->payload[i];
+    }
     offset += frame->header.length;
   }
 
@@ -753,7 +755,9 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
 
   /* Read PAYLOAD */
   if (frame->header.length > 0) {
-    memcpy(frame->payload, &data[offset], frame->header.length);
+    for (uint32_t i = 0U; i < (uint32_t)frame->header.length; i++) {
+      frame->payload[i] = data[offset + i];
+    }
     offset += frame->header.length;
   }
 
@@ -997,7 +1001,9 @@ rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
   frame->header.flags    = k_frame_flag_none;
 
   if (payload_len > 0) {
-    memcpy(frame->payload, payload, payload_len);
+    for (uint32_t i = 0U; i < payload_len; i++) {
+      frame->payload[i] = payload[i];
+    }
   }
 
   /* Post-condition: type == k_frame_type_ping guaranteed by the direct assignment above. */
@@ -1054,7 +1060,9 @@ rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
   frame->header.flags    = k_frame_flag_none;
 
   if (payload_len > 0) {
-    memcpy(frame->payload, payload, payload_len);
+    for (uint32_t i = 0U; i < payload_len; i++) {
+      frame->payload[i] = payload[i];
+    }
   }
 
   /* Post-condition: type == k_frame_type_pong guaranteed by the direct assignment above. */

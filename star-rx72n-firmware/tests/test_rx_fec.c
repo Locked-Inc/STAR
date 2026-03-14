@@ -296,6 +296,32 @@
  */
 
 /**
+ * @defgroup test_fec_constants FEC Test Constants
+ * @brief Named constants for FEC unit tests
+ * @{
+ */
+
+/**
+ * @brief Arbitrary survivors buffer count used in decoder init parameter validation tests
+ * @details A non-zero, non-max count passed to rx_fec_decoder_init() to exercise
+ *          valid-argument code paths in null-pointer and zero-length rejection tests.
+ */
+typedef enum : uint32_t {
+  k_test_survivors_count = 100U, /**< Arbitrary valid count for init tests */
+} fec_test_counts_t;
+
+/**
+ * @brief Test byte value used as a single-element input buffer for encode null-arg tests
+ * @details Arbitrary non-zero byte to satisfy the input buffer requirement when testing
+ *          null pointer rejection of other parameters.
+ */
+typedef enum : uint8_t {
+  k_test_input_byte = 0x42U, /**< Arbitrary test byte for encode null-arg tests */
+} fec_test_bytes_t;
+
+/** @} */ /* end of test_fec_constants */
+
+/**
  * @defgroup test_fec_fixtures FEC Test Fixtures
  * @brief Encoder, decoder, and buffer setup for FEC unit tests
  *
@@ -597,7 +623,7 @@ void test_encoder_deinit_null(void)
  */
 void test_decoder_init_null_dec(void)
 {
-  rx_err_t err = rx_fec_decoder_init(nullptr, s_survivors, 100);
+  rx_err_t err = rx_fec_decoder_init(nullptr, s_survivors, k_test_survivors_count);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -621,7 +647,7 @@ void test_decoder_init_null_dec(void)
 void test_decoder_init_null_buffer(void)
 {
   rx_fec_decoder_t dec;
-  rx_err_t         err = rx_fec_decoder_init(&dec, nullptr, 100);
+  rx_err_t         err = rx_fec_decoder_init(&dec, nullptr, k_test_survivors_count);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -680,7 +706,7 @@ void test_decoder_init_zero_length(void)
 void test_decoder_init_success(void)
 {
   rx_fec_decoder_t dec;
-  rx_err_t         err = rx_fec_decoder_init(&dec, s_survivors, 100);
+  rx_err_t         err = rx_fec_decoder_init(&dec, s_survivors, k_test_survivors_count);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_NOT_EQUAL(0, dec.initialized);
@@ -889,7 +915,7 @@ void test_encoded_len_too_large(void)
  */
 void test_encode_null_args(void)
 {
-  uint8_t  input[] = {0x42};
+  uint8_t  input[] = {k_test_input_byte};
   uint8_t  output[16];
   uint32_t len;
 
@@ -923,7 +949,7 @@ void test_encode_null_args(void)
 void test_encode_uninitialized(void)
 {
   rx_fec_encoder_t enc     = {0};
-  uint8_t          input[] = {0x42};
+  uint8_t          input[] = {k_test_input_byte};
   uint8_t          output[16];
   uint32_t         len;
 
@@ -950,7 +976,7 @@ void test_encode_uninitialized(void)
  */
 void test_encode_zero_length(void)
 {
-  uint8_t  input[] = {0x42};
+  uint8_t  input[] = {k_test_input_byte};
   uint8_t  output[16];
   uint32_t len;
 
@@ -1807,7 +1833,7 @@ void test_decode_hard_soft_buffer_too_small(void)
  */
 void test_roundtrip_single_byte(void)
 {
-  uint8_t input[] = {0x42};
+  uint8_t input[] = {k_test_input_byte};
   uint8_t encoded[16];
   uint8_t decoded[16];
 
@@ -1830,7 +1856,7 @@ void test_roundtrip_single_byte(void)
   err = rx_fec_decode_hard(&s_decoder, &params);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(1, dec_len);
-  TEST_ASSERT_EQUAL_HEX8(0x42, decoded[0]);
+  TEST_ASSERT_EQUAL_HEX8(k_test_input_byte, decoded[0]);
 }
 
 /**
@@ -2166,7 +2192,7 @@ void test_roundtrip_larger_payload(void)
  */
 void test_single_bit_error_correction(void)
 {
-  uint8_t input[] = {0x42};
+  uint8_t input[] = {k_test_input_byte};
   uint8_t encoded[16];
   uint8_t decoded[16];
 
@@ -2190,7 +2216,7 @@ void test_single_bit_error_correction(void)
   };
   rx_err_t err = rx_fec_decode_hard(&s_decoder, &params);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_HEX8(0x42, decoded[0]);
+  TEST_ASSERT_EQUAL_HEX8(k_test_input_byte, decoded[0]);
 }
 
 /**

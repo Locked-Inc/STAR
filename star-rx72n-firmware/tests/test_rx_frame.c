@@ -1060,18 +1060,14 @@ void test_roundtrip_with_payload(void)
   uint8_t    buffer[k_test_small_buffer];
   uint32_t   len;
 
-  original.header.sequence = k_test_seq_beef;
-  original.header.length   = s_deadbeef_len;
-  original.header.type     = k_frame_type_command;
-  original.header.flags    = k_frame_flag_fec_enabled | k_frame_flag_priority;
-  original.payload[0]      = 'D';
-  original.payload[1]      = 'E';
-  original.payload[2]      = 'A';
-  original.payload[3]      = 'D';
-  original.payload[4]      = 'B';
-  original.payload[5]      = 'E';
-  original.payload[6]      = 'E';
-  original.payload[7]      = 'F';
+  original.header.sequence           = k_test_seq_beef;
+  original.header.length             = s_deadbeef_len;
+  original.header.type               = k_frame_type_command;
+  original.header.flags              = k_frame_flag_fec_enabled | k_frame_flag_priority;
+  static const char s_deadbeef_str[] = "DEADBEEF";
+  for (uint32_t i = 0U; i < s_deadbeef_len; i++) {
+    original.payload[i] = (uint8_t)s_deadbeef_str[i];
+  }
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &original, buffer, &len));
 
@@ -1426,14 +1422,10 @@ void test_flag_combined(void)
   frame.header.length   = s_combined_payload_len;
   frame.header.type     = k_frame_type_command;
   frame.header.flags = k_frame_flag_requires_ack | k_frame_flag_priority | k_frame_flag_fec_enabled;
-  frame.payload[0]   = 'C';
-  frame.payload[1]   = 'O';
-  frame.payload[2]   = 'M';
-  frame.payload[3]   = 'B';
-  frame.payload[4]   = 'I';
-  frame.payload[5]   = 'N';
-  frame.payload[6]   = 'E';
-  frame.payload[7]   = 'D';
+  static const char s_combined_str[] = "COMBINED";
+  for (uint32_t i = 0U; i < s_combined_payload_len; i++) {
+    frame.payload[i] = (uint8_t)s_combined_str[i];
+  }
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
 
   rx_frame_t decoded;
@@ -2615,7 +2607,8 @@ void test_decode_header_length_too_large(void)
  */
 void test_create_ping_payload_too_large(void)
 {
-  uint8_t    buf[4] = {0x01, 0x02, 0x03, 0x04};
+  enum : uint8_t { k_too_large_buf_len = 4 };
+  uint8_t    buf[k_too_large_buf_len] = {0};
   rx_frame_t frame;
   rx_err_t   err = rx_frame_create_ping(&frame, 0, buf, k_frame_max_payload + 1U);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
@@ -2635,7 +2628,8 @@ void test_create_ping_payload_too_large(void)
  */
 void test_create_pong_payload_too_large(void)
 {
-  uint8_t    buf[4] = {0x01, 0x02, 0x03, 0x04};
+  enum : uint8_t { k_too_large_buf_len = 4 };
+  uint8_t    buf[k_too_large_buf_len] = {0};
   rx_frame_t frame;
   rx_err_t   err = rx_frame_create_pong(&frame, 0, buf, k_frame_max_payload + 1U);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
@@ -2723,7 +2717,9 @@ void test_resync_scan_limit_capped(void)
   /* Buffer larger than k_frame_max_scan_bytes (1036): use 1040 bytes of junk */
   enum : uint32_t { k_large_buf_len = 1040U };
   static uint8_t s_large_buf[k_large_buf_len];
-  memset(s_large_buf, k_resync_junk_byte, k_large_buf_len);
+  for (uint32_t i = 0U; i < k_large_buf_len; i++) {
+    s_large_buf[i] = k_resync_junk_byte;
+  }
 
   rx_frame_t frame     = {0};
   uint32_t   discarded = k_resync_sentinel;
@@ -2738,6 +2734,115 @@ void test_resync_scan_limit_capped(void)
  * Main
  * =============================================================================
  */
+
+/** @brief Run initialization and encode/decode tests */
+static void internal_run_init_codec_tests(void)
+{
+  /* Encoder init tests */
+  RUN_TEST(test_encoder_init_null);
+  RUN_TEST(test_encoder_init_success);
+  RUN_TEST(test_encoder_deinit_null);
+  /* Decoder init tests */
+  RUN_TEST(test_decoder_init_null);
+  RUN_TEST(test_decoder_init_success);
+  /* Encode tests */
+  RUN_TEST(test_encode_null_args);
+  RUN_TEST(test_encode_uninitialized);
+  RUN_TEST(test_encode_payload_too_large);
+  RUN_TEST(test_encode_empty_frame);
+  RUN_TEST(test_encode_with_payload);
+  /* Decode tests */
+  RUN_TEST(test_decode_null_args);
+  RUN_TEST(test_decode_uninitialized);
+  RUN_TEST(test_decode_too_short);
+  RUN_TEST(test_decode_invalid_sync);
+  RUN_TEST(test_decode_crc_mismatch);
+  /* Round-trip tests */
+  RUN_TEST(test_roundtrip_empty_frame);
+  RUN_TEST(test_roundtrip_with_payload);
+  RUN_TEST(test_roundtrip_max_sequence);
+  RUN_TEST(test_roundtrip_large_payload);
+  /* Utility tests */
+  RUN_TEST(test_create_ack_null);
+  RUN_TEST(test_create_ack_success);
+  RUN_TEST(test_create_nack_null);
+  RUN_TEST(test_create_nack_with_flags);
+  RUN_TEST(test_encoded_size_calculation);
+  RUN_TEST(test_frame_type_valid_valid_types);
+  RUN_TEST(test_frame_type_valid_invalid_types);
+}
+
+/** @brief Run frame type and flag tests */
+static void internal_run_type_flag_tests(void)
+{
+  /* Max payload tests */
+  RUN_TEST(test_roundtrip_max_payload);
+  /* Frame type tests */
+  RUN_TEST(test_frame_type_command);
+  RUN_TEST(test_frame_type_response);
+  RUN_TEST(test_frame_type_ack);
+  RUN_TEST(test_frame_type_nack);
+  /* Frame flag tests */
+  RUN_TEST(test_flag_requires_ack);
+  RUN_TEST(test_flag_retransmit);
+  RUN_TEST(test_flag_priority);
+  RUN_TEST(test_flag_fec_enabled);
+  RUN_TEST(test_flag_soft_nack);
+  RUN_TEST(test_flag_combined);
+  /* Endianness tests */
+  RUN_TEST(test_sync_word_little_endian);
+  RUN_TEST(test_sequence_little_endian);
+  RUN_TEST(test_length_little_endian);
+  RUN_TEST(test_crc_little_endian);
+  /* Go compatibility tests */
+  RUN_TEST(test_go_compatibility_empty_ack);
+  RUN_TEST(test_go_compatibility_command_with_payload);
+  /* Cross-compatibility vectors */
+  RUN_TEST(test_cross_compat_ping_seq0_empty);
+  RUN_TEST(test_cross_compat_pong_seq0_counter42);
+  RUN_TEST(test_cross_compat_command_seq1_test);
+  RUN_TEST(test_cross_compat_response_seq1_ok);
+  RUN_TEST(test_cross_compat_ack_seq1_empty);
+  RUN_TEST(test_cross_compat_nack_seq1_empty);
+  RUN_TEST(test_cross_compat_reset_seq0_empty);
+  RUN_TEST(test_cross_compat_reset_ack_seq0_empty);
+  RUN_TEST(test_cross_compat_decode_go_wire_bytes);
+}
+
+/** @brief Run edge case, PING/PONG/RESET, and resync tests */
+static void internal_run_edge_and_resync_tests(void)
+{
+  /* Edge case tests */
+  RUN_TEST(test_decode_payload_length_mismatch);
+  RUN_TEST(test_decode_zero_length_buffer);
+  RUN_TEST(test_encode_sequence_rollover);
+  RUN_TEST(test_decode_header_length_too_large);
+  RUN_TEST(test_create_ping_payload_too_large);
+  RUN_TEST(test_create_pong_payload_too_large);
+  RUN_TEST(test_create_pong_null_payload_with_len);
+  RUN_TEST(test_create_pong_empty_payload);
+  RUN_TEST(test_decoder_deinit_null);
+  /* PING/PONG/RESET creation tests */
+  RUN_TEST(test_create_ping_null);
+  RUN_TEST(test_create_ping_empty);
+  RUN_TEST(test_create_ping_with_counter);
+  RUN_TEST(test_create_ping_null_payload_with_len);
+  RUN_TEST(test_create_pong_null);
+  RUN_TEST(test_create_pong_echoes_payload);
+  RUN_TEST(test_create_reset_null);
+  RUN_TEST(test_create_reset_success);
+  RUN_TEST(test_create_reset_ack_null);
+  RUN_TEST(test_create_reset_ack_success);
+  RUN_TEST(test_roundtrip_ping_pong);
+  RUN_TEST(test_roundtrip_reset);
+  /* Resync tests */
+  RUN_TEST(test_resync_null_args);
+  RUN_TEST(test_resync_dropped_byte_recovery);
+  RUN_TEST(test_resync_aligned_frame_zero_discarded);
+  RUN_TEST(test_resync_no_sync_found);
+  RUN_TEST(test_resync_crc_mismatch_sets_discarded);
+  RUN_TEST(test_resync_scan_limit_capped);
+}
 
 /**
  * @brief Main entry point for test suite execution
@@ -2788,115 +2893,8 @@ void test_resync_scan_limit_capped(void)
 int main(void)
 {
   UNITY_BEGIN();
-
-  /* Encoder init tests */
-  RUN_TEST(test_encoder_init_null);
-  RUN_TEST(test_encoder_init_success);
-  RUN_TEST(test_encoder_deinit_null);
-
-  /* Decoder init tests */
-  RUN_TEST(test_decoder_init_null);
-  RUN_TEST(test_decoder_init_success);
-
-  /* Encode tests */
-  RUN_TEST(test_encode_null_args);
-  RUN_TEST(test_encode_uninitialized);
-  RUN_TEST(test_encode_payload_too_large);
-  RUN_TEST(test_encode_empty_frame);
-  RUN_TEST(test_encode_with_payload);
-
-  /* Decode tests */
-  RUN_TEST(test_decode_null_args);
-  RUN_TEST(test_decode_uninitialized);
-  RUN_TEST(test_decode_too_short);
-  RUN_TEST(test_decode_invalid_sync);
-  RUN_TEST(test_decode_crc_mismatch);
-
-  /* Round-trip tests */
-  RUN_TEST(test_roundtrip_empty_frame);
-  RUN_TEST(test_roundtrip_with_payload);
-  RUN_TEST(test_roundtrip_max_sequence);
-  RUN_TEST(test_roundtrip_large_payload);
-
-  /* Utility tests */
-  RUN_TEST(test_create_ack_null);
-  RUN_TEST(test_create_ack_success);
-  RUN_TEST(test_create_nack_null);
-  RUN_TEST(test_create_nack_with_flags);
-  RUN_TEST(test_encoded_size_calculation);
-  RUN_TEST(test_frame_type_valid_valid_types);
-  RUN_TEST(test_frame_type_valid_invalid_types);
-
-  /* Maximum payload tests */
-  RUN_TEST(test_roundtrip_max_payload);
-
-  /* Frame type tests */
-  RUN_TEST(test_frame_type_command);
-  RUN_TEST(test_frame_type_response);
-  RUN_TEST(test_frame_type_ack);
-  RUN_TEST(test_frame_type_nack);
-
-  /* Frame flag tests */
-  RUN_TEST(test_flag_requires_ack);
-  RUN_TEST(test_flag_retransmit);
-  RUN_TEST(test_flag_priority);
-  RUN_TEST(test_flag_fec_enabled);
-  RUN_TEST(test_flag_soft_nack);
-  RUN_TEST(test_flag_combined);
-
-  /* Endianness tests */
-  RUN_TEST(test_sync_word_little_endian);
-  RUN_TEST(test_sequence_little_endian);
-  RUN_TEST(test_length_little_endian);
-  RUN_TEST(test_crc_little_endian);
-
-  /* Go compatibility tests (header byte order) */
-  RUN_TEST(test_go_compatibility_empty_ack);
-  RUN_TEST(test_go_compatibility_command_with_payload);
-
-  /* Cross-compatibility vectors (byte-exact with Go, includes CRC) */
-  RUN_TEST(test_cross_compat_ping_seq0_empty);
-  RUN_TEST(test_cross_compat_pong_seq0_counter42);
-  RUN_TEST(test_cross_compat_command_seq1_test);
-  RUN_TEST(test_cross_compat_response_seq1_ok);
-  RUN_TEST(test_cross_compat_ack_seq1_empty);
-  RUN_TEST(test_cross_compat_nack_seq1_empty);
-  RUN_TEST(test_cross_compat_reset_seq0_empty);
-  RUN_TEST(test_cross_compat_reset_ack_seq0_empty);
-  RUN_TEST(test_cross_compat_decode_go_wire_bytes);
-
-  /* PING/PONG/RESET/RESET_ACK tests */
-  RUN_TEST(test_create_ping_null);
-  RUN_TEST(test_create_ping_empty);
-  RUN_TEST(test_create_ping_with_counter);
-  RUN_TEST(test_create_ping_null_payload_with_len);
-  RUN_TEST(test_create_pong_null);
-  RUN_TEST(test_create_pong_echoes_payload);
-  RUN_TEST(test_create_reset_null);
-  RUN_TEST(test_create_reset_success);
-  RUN_TEST(test_create_reset_ack_null);
-  RUN_TEST(test_create_reset_ack_success);
-  RUN_TEST(test_roundtrip_ping_pong);
-  RUN_TEST(test_roundtrip_reset);
-
-  /* Edge case tests */
-  RUN_TEST(test_decode_payload_length_mismatch);
-  RUN_TEST(test_decode_zero_length_buffer);
-  RUN_TEST(test_encode_sequence_rollover);
-  RUN_TEST(test_decode_header_length_too_large);
-  RUN_TEST(test_create_ping_payload_too_large);
-  RUN_TEST(test_create_pong_payload_too_large);
-  RUN_TEST(test_create_pong_null_payload_with_len);
-  RUN_TEST(test_create_pong_empty_payload);
-  RUN_TEST(test_decoder_deinit_null);
-
-  /* Resynchronization tests */
-  RUN_TEST(test_resync_null_args);
-  RUN_TEST(test_resync_dropped_byte_recovery);
-  RUN_TEST(test_resync_aligned_frame_zero_discarded);
-  RUN_TEST(test_resync_no_sync_found);
-  RUN_TEST(test_resync_crc_mismatch_sets_discarded);
-  RUN_TEST(test_resync_scan_limit_capped);
-
+  internal_run_init_codec_tests();
+  internal_run_type_flag_tests();
+  internal_run_edge_and_resync_tests();
   return UNITY_END();
 }
