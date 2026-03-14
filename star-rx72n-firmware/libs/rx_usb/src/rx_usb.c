@@ -835,20 +835,20 @@ static void internal_trigger_tx_if_idle(const rx_usb_port_id_t port)
   /* Map pipe control registers to avoid undefined pointer arithmetic on struct members.
    * Array contains pointers to contiguous pipe control registers (pipe1ctr through pipe9ctr).
    * Cannot be const-initialized because usb0() is not a compile-time constant expression. */
-  static volatile uint16_t* s_pipe_ctr_map[9];
+  static volatile uint16_t* s_pipe_ctr_map[k_data_pipe_max];
   static bool               s_pipe_ctr_map_init = false;
 
   if (!s_pipe_ctr_map_init) {
-    s_pipe_ctr_map[0]   = &usb0()->pipe1ctr;
-    s_pipe_ctr_map[1]   = &usb0()->pipe2ctr;
-    s_pipe_ctr_map[2]   = &usb0()->pipe3ctr;
-    s_pipe_ctr_map[3]   = &usb0()->pipe4ctr;
-    s_pipe_ctr_map[4]   = &usb0()->pipe5ctr;
-    s_pipe_ctr_map[5]   = &usb0()->pipe6ctr;
-    s_pipe_ctr_map[6]   = &usb0()->pipe7ctr;
-    s_pipe_ctr_map[7]   = &usb0()->pipe8ctr;
-    s_pipe_ctr_map[8]   = &usb0()->pipe9ctr;
-    s_pipe_ctr_map_init = true;
+    s_pipe_ctr_map[k_port0_pipe_bulk_in - k_data_pipe_min]  = &usb0()->pipe1ctr;
+    s_pipe_ctr_map[k_port0_pipe_bulk_out - k_data_pipe_min] = &usb0()->pipe2ctr;
+    s_pipe_ctr_map[k_port0_pipe_int_in - k_data_pipe_min]   = &usb0()->pipe3ctr;
+    s_pipe_ctr_map[k_port1_pipe_bulk_in - k_data_pipe_min]  = &usb0()->pipe4ctr;
+    s_pipe_ctr_map[k_port1_pipe_bulk_out - k_data_pipe_min] = &usb0()->pipe5ctr;
+    s_pipe_ctr_map[k_port1_pipe_int_in - k_data_pipe_min]   = &usb0()->pipe6ctr;
+    s_pipe_ctr_map[k_port2_pipe_bulk_in - k_data_pipe_min]  = &usb0()->pipe7ctr;
+    s_pipe_ctr_map[k_port2_pipe_bulk_out - k_data_pipe_min] = &usb0()->pipe8ctr;
+    s_pipe_ctr_map[k_port2_pipe_int_in - k_data_pipe_min]   = &usb0()->pipe9ctr;
+    s_pipe_ctr_map_init                                     = true;
   }
 
   /* Check if pipe is not busy (PBUSY bit = 0 means idle) */
