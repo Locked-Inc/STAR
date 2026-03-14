@@ -158,6 +158,11 @@ typedef enum : uint16_t {
  * @brief Test byte values for data validation
  */
 typedef enum : uint8_t {
+  k_test_byte_0x01 = 0x01, /**< Byte value 0x01 for sequential data tests */
+  k_test_byte_0x02 = 0x02, /**< Byte value 0x02 for sequential data tests */
+  k_test_byte_0x03 = 0x03, /**< Byte value 0x03 for sequential data tests */
+  k_test_byte_0x04 = 0x04, /**< Byte value 0x04 for sequential data tests */
+  k_test_byte_0x05 = 0x05, /**< Byte value 0x05 for sequential data tests */
   k_test_byte_0x42 = 0x42, /**< Common test byte value */
 } test_byte_values_t;
 
@@ -562,7 +567,7 @@ void test_ring_buffer_write_null_data_returns_zero(void)
 void test_ring_buffer_write_zero_len_returns_zero(void)
 {
   priv_ring_buffer_init(&s_test_buffer, s_test_buffer_data, sizeof(s_test_buffer_data));
-  uint8_t data[] = {0x01, 0x02};
+  uint8_t data[] = {k_test_byte_0x01, k_test_byte_0x02};
 
   uint32_t written = priv_ring_buffer_write(&s_test_buffer, data, k_test_size_0);
 
@@ -573,14 +578,18 @@ void test_ring_buffer_write_zero_len_returns_zero(void)
 void test_ring_buffer_write_multiple_bytes(void)
 {
   priv_ring_buffer_init(&s_test_buffer, s_test_buffer_data, sizeof(s_test_buffer_data));
-  uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05};
+  uint8_t data[] = {k_test_byte_0x01,
+                    k_test_byte_0x02,
+                    k_test_byte_0x03,
+                    k_test_byte_0x04,
+                    k_test_byte_0x05};
 
   uint32_t written = priv_ring_buffer_write(&s_test_buffer, data, k_test_size_5);
 
-  TEST_ASSERT_EQUAL_UINT32(5, written);
-  TEST_ASSERT_EQUAL_UINT32(5, s_test_buffer.count);
-  TEST_ASSERT_EQUAL_UINT8(0x01, s_test_buffer.data[0]);
-  TEST_ASSERT_EQUAL_UINT8(0x05, s_test_buffer.data[4]);
+  TEST_ASSERT_EQUAL_UINT32(k_test_size_5, written);
+  TEST_ASSERT_EQUAL_UINT32(k_test_size_5, s_test_buffer.count);
+  TEST_ASSERT_EQUAL_UINT8(k_test_byte_0x01, s_test_buffer.data[k_test_size_0]);
+  TEST_ASSERT_EQUAL_UINT8(k_test_byte_0x05, s_test_buffer.data[k_test_size_4]);
 }
 
 void test_ring_buffer_write_fills_buffer(void)
@@ -618,7 +627,7 @@ void test_ring_buffer_write_partial_when_partially_full(void)
   priv_ring_buffer_init(&s_test_buffer, s_test_buffer_data, sizeof(s_test_buffer_data));
 
   /* Fill half the buffer */
-  uint8_t first[k_usb_port_proto_rx_size / 2];
+  uint8_t first[k_usb_port_proto_rx_size / k_test_size_2];
   for (uint32_t i = 0U; i < (uint32_t)sizeof(first); i++) {
     first[i] = k_test_fill_11;
   }
@@ -632,7 +641,7 @@ void test_ring_buffer_write_partial_when_partially_full(void)
   uint32_t written = priv_ring_buffer_write(&s_test_buffer, second, sizeof(second));
 
   /* Should only write remaining space */
-  TEST_ASSERT_EQUAL_UINT32(k_usb_port_proto_rx_size / 2, written);
+  TEST_ASSERT_EQUAL_UINT32(k_usb_port_proto_rx_size / k_test_size_2, written);
   TEST_ASSERT_EQUAL_UINT32(k_usb_port_proto_rx_size, s_test_buffer.count);
 }
 
@@ -648,11 +657,11 @@ void test_ring_buffer_write_wraps_around(void)
   priv_ring_buffer_write(&s_test_buffer, data1, sizeof(data1));
 
   /* Read some to create space at beginning */
-  uint8_t out[100];
+  uint8_t out[k_test_size_100];
   priv_ring_buffer_read(&s_test_buffer, out, k_test_size_100);
 
   /* Write data that wraps around */
-  uint8_t data2[50];
+  uint8_t data2[k_test_size_50];
   for (uint32_t i = k_test_size_0; i < k_test_size_50; i++) {
     data2[i] = (uint8_t)(i & k_test_hex_ff_mask);
   }
@@ -728,7 +737,7 @@ void test_ring_buffer_read_single_byte(void)
   uint32_t read_count = priv_ring_buffer_read(&s_test_buffer, &read_data, k_test_size_1);
 
   TEST_ASSERT_EQUAL_UINT32(1, read_count);
-  TEST_ASSERT_EQUAL_UINT8(0x42, read_data);
+  TEST_ASSERT_EQUAL_UINT8(k_test_byte_0x42, read_data);
   TEST_ASSERT_EQUAL_UINT32(0, s_test_buffer.count);
 }
 
@@ -751,12 +760,12 @@ void test_ring_buffer_read_partial(void)
   uint8_t write_data[] = "Hello World";
   priv_ring_buffer_write(&s_test_buffer, write_data, k_test_size_11);
 
-  uint8_t  read_data[5];
+  uint8_t  read_data[k_test_size_5];
   uint32_t read_count = priv_ring_buffer_read(&s_test_buffer, read_data, k_test_size_5);
 
   TEST_ASSERT_EQUAL_UINT32(k_test_size_5, read_count);
   TEST_ASSERT_EQUAL_MEMORY("Hello", read_data, k_test_size_5);
-  TEST_ASSERT_EQUAL_UINT32(6, s_test_buffer.count); /* " World" remains */
+  TEST_ASSERT_EQUAL_UINT32(k_test_count_6, s_test_buffer.count); /* " World" remains */
 }
 
 void test_ring_buffer_read_wraps_around(void)
@@ -775,14 +784,14 @@ void test_ring_buffer_read_wraps_around(void)
   priv_ring_buffer_read(&s_test_buffer, discard, sizeof(discard));
 
   /* Write pattern that wraps */
-  uint8_t pattern[50];
+  uint8_t pattern[k_test_size_50];
   for (uint32_t i = k_test_size_0; i < k_test_size_50; i++) {
     pattern[i] = (uint8_t)(i + 1);
   }
   priv_ring_buffer_write(&s_test_buffer, pattern, k_test_size_50);
 
   /* Read and verify pattern */
-  uint8_t verify[50];
+  uint8_t verify[k_test_size_50];
   priv_ring_buffer_read(&s_test_buffer, discard, k_test_size_10); /* Skip remaining fill */
   uint32_t read_count = priv_ring_buffer_read(&s_test_buffer, verify, k_test_size_50);
 
@@ -817,12 +826,12 @@ void test_ring_buffer_interleaved_read_write(void)
 
   for (uint32_t i = k_test_size_0; i < k_test_iterations_100; i++) {
     uint8_t  write_data = (uint8_t)i;
-    uint32_t written    = priv_ring_buffer_write(&s_test_buffer, &write_data, 1);
+    uint32_t written    = priv_ring_buffer_write(&s_test_buffer, &write_data, k_test_size_1);
     TEST_ASSERT_EQUAL_UINT32(k_test_size_1, written);
 
     uint8_t  read_data;
     uint32_t read_count = priv_ring_buffer_read(&s_test_buffer, &read_data, k_test_size_1);
-    TEST_ASSERT_EQUAL_UINT32(1, read_count);
+    TEST_ASSERT_EQUAL_UINT32(k_test_size_1, read_count);
     TEST_ASSERT_EQUAL_UINT8((uint8_t)i, read_data);
   }
 }
@@ -831,16 +840,16 @@ void test_ring_buffer_burst_write_then_burst_read(void)
 {
   priv_ring_buffer_init(&s_test_buffer, s_test_buffer_data, sizeof(s_test_buffer_data));
 
-  uint8_t pattern[100];
+  uint8_t pattern[k_test_size_100];
   for (uint32_t i = k_test_size_0; i < k_test_iterations_100; i++) {
-    pattern[i] = (uint8_t)(i * 2);
+    pattern[i] = (uint8_t)(i * k_test_size_2);
   }
   uint32_t written = priv_ring_buffer_write(&s_test_buffer, pattern, k_test_size_100);
   TEST_ASSERT_EQUAL_UINT32(k_test_size_100, written);
 
-  uint8_t  read_buf[100];
+  uint8_t  read_buf[k_test_size_100];
   uint32_t read_count = priv_ring_buffer_read(&s_test_buffer, read_buf, k_test_size_100);
-  TEST_ASSERT_EQUAL_UINT32(100, read_count);
+  TEST_ASSERT_EQUAL_UINT32(k_test_size_100, read_count);
   TEST_ASSERT_EQUAL_MEMORY(pattern, read_buf, k_test_size_100);
 }
 
@@ -1161,7 +1170,7 @@ void test_usb_read_null_data_fails(void)
 {
   uint32_t actual_len;
 
-  rx_err_t err = rx_usb_read(k_usb_port_proto, nullptr, 10, &actual_len);
+  rx_err_t err = rx_usb_read(k_usb_port_proto, nullptr, k_test_size_10, &actual_len);
 
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
@@ -1170,7 +1179,7 @@ void test_usb_read_null_actual_len_fails(void)
 {
   uint8_t data[k_test_size_10];
 
-  rx_err_t err = rx_usb_read(k_usb_port_proto, data, 10, nullptr);
+  rx_err_t err = rx_usb_read(k_usb_port_proto, data, k_test_size_10, nullptr);
 
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
@@ -1178,10 +1187,10 @@ void test_usb_read_null_actual_len_fails(void)
 void test_usb_read_empty_buffer_returns_zero(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
-  uint8_t  data[10];
+  uint8_t  data[k_test_size_10];
   uint32_t actual_len = k_test_sentinel_999;
 
-  rx_err_t err = rx_usb_read(k_usb_port_proto, data, 10, &actual_len);
+  rx_err_t err = rx_usb_read(k_usb_port_proto, data, k_test_size_10, &actual_len);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT32(0, actual_len);
@@ -1240,12 +1249,12 @@ void test_usb_rx_available_after_push(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   uint8_t data[] = "test";
-  rx_usb_rx_push(k_usb_port_proto, data, 4);
+  rx_usb_rx_push(k_usb_port_proto, data, k_test_size_4);
 
   uint32_t available;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_rx_available(k_usb_port_proto, &available));
 
-  TEST_ASSERT_EQUAL_UINT32(4, available);
+  TEST_ASSERT_EQUAL_UINT32(k_test_size_4, available);
 }
 
 void test_usb_tx_available_null_fails(void)
@@ -1271,7 +1280,7 @@ void test_usb_tx_available_after_write(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   rx_usb_set_state(k_usb_state_configured);
   uint8_t data[] = "test";
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, 4));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, k_test_size_4));
 
   uint32_t available;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_tx_available(k_usb_port_proto, &available));
@@ -1364,11 +1373,11 @@ void test_usb_reset_stats(void)
 
   /* Generate some stats by writing */
   uint8_t data[] = "test";
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, 4));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, k_test_size_4));
 
   rx_usb_stats_t stats;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_get_stats(k_usb_port_proto, &stats));
-  TEST_ASSERT_EQUAL_UINT32(4, stats.bytes_tx);
+  TEST_ASSERT_EQUAL_UINT32(k_test_size_4, stats.bytes_tx);
 
   /* Reset stats */
   rx_usb_reset_stats(k_usb_port_proto);
@@ -1414,7 +1423,7 @@ void test_usb_flush_with_data_and_zero_timeout_returns_timeout(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   rx_usb_set_state(k_usb_state_configured);
   uint8_t data[] = "test";
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, 4));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, k_test_size_4));
 
   rx_err_t err = rx_usb_flush(k_usb_port_proto, 0);
 
@@ -1611,11 +1620,11 @@ void test_usb_rx_push_updates_stats(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   uint8_t data[] = "test";
 
-  rx_usb_rx_push(k_usb_port_proto, data, 4);
+  rx_usb_rx_push(k_usb_port_proto, data, k_test_size_4);
 
   rx_usb_stats_t stats;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_get_stats(k_usb_port_proto, &stats));
-  TEST_ASSERT_EQUAL_UINT32(4, stats.bytes_rx);
+  TEST_ASSERT_EQUAL_UINT32(k_test_size_4, stats.bytes_rx);
 }
 
 void test_usb_rx_push_triggers_callback(void)
@@ -1624,9 +1633,9 @@ void test_usb_rx_push_triggers_callback(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_set_callback(k_usb_port_proto, test_callback, nullptr));
 
   uint8_t data[] = "test";
-  rx_usb_rx_push(k_usb_port_proto, data, 4);
+  rx_usb_rx_push(k_usb_port_proto, data, k_test_size_4);
 
-  TEST_ASSERT_EQUAL(1, s_callback_count);
+  TEST_ASSERT_EQUAL(k_test_size_1, s_callback_count);
   TEST_ASSERT_EQUAL(k_usb_event_data_rx, s_last_event);
 }
 
@@ -1639,7 +1648,7 @@ void test_usb_tx_pop_retrieves_data(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, write_data, 5));
 
   uint8_t  read_data[k_test_size_10];
-  uint32_t read_count = rx_usb_tx_pop(k_usb_port_proto, read_data, 10);
+  uint32_t read_count = rx_usb_tx_pop(k_usb_port_proto, read_data, k_test_size_10);
 
   TEST_ASSERT_EQUAL_UINT32(k_test_size_5, read_count);
   TEST_ASSERT_EQUAL_MEMORY("Hello", read_data, k_test_size_5);
@@ -1654,7 +1663,7 @@ void test_usb_count_bus_reset_increments_stat(void)
 
   rx_usb_stats_t stats;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_get_stats(k_usb_port_proto, &stats));
-  TEST_ASSERT_EQUAL_UINT32(2, stats.bus_resets);
+  TEST_ASSERT_EQUAL_UINT32(k_test_size_2, stats.bus_resets);
 }
 
 void test_usb_count_suspend_increments_stat(void)
@@ -2021,7 +2030,7 @@ void test_usb_write_triggers_transmission_when_pipe_idle(void)
   mock_usb_hw_clear_calls(nullptr);
 
   uint8_t data[] = "test";
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, 4));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, k_test_size_4));
 
   /* Verify rx_usb_cdc_handle_bulk_in was called */
   TEST_ASSERT_TRUE(mock_usb_hw_was_called(nullptr, "rx_usb_cdc_handle_bulk_in"));
@@ -2037,7 +2046,7 @@ void test_usb_write_no_trigger_when_pipe_busy(void)
   mock_usb_hw_clear_calls(nullptr);
 
   uint8_t data[] = "test";
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, 4));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, k_test_size_4));
 
   /* Verify rx_usb_cdc_handle_bulk_in was NOT called */
   TEST_ASSERT_FALSE(mock_usb_hw_was_called(nullptr, "rx_usb_cdc_handle_bulk_in"));
@@ -2075,11 +2084,11 @@ void test_usb_write_updates_stats(void)
   rx_usb_set_state(k_usb_state_configured);
   uint8_t data[] = "test";
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, 4));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, k_test_size_4));
 
   rx_usb_stats_t stats;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_get_stats(k_usb_port_proto, &stats));
-  TEST_ASSERT_EQUAL_UINT32(4, stats.bytes_tx);
+  TEST_ASSERT_EQUAL_UINT32(k_test_size_4, stats.bytes_tx);
 }
 
 /** @} */ /* end of test_usb_tx_trigger */
@@ -2379,7 +2388,7 @@ void test_usb_rx_push_invalid_port_returns_zero(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   uint8_t data[] = "test";
 
-  uint32_t written = rx_usb_rx_push(k_usb_port_count, data, 4);
+  uint32_t written = rx_usb_rx_push(k_usb_port_count, data, k_test_size_4);
 
   TEST_ASSERT_EQUAL_UINT32(0, written);
 }
@@ -2691,7 +2700,7 @@ void test_usb_write_invalid_port_fails(void)
   rx_usb_set_state(k_usb_state_configured);
 
   uint8_t  data[] = "test";
-  rx_err_t err    = rx_usb_write(k_usb_port_count, data, 4);
+  rx_err_t err    = rx_usb_write(k_usb_port_count, data, k_test_size_4);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -2789,7 +2798,7 @@ void test_usb_puts_not_initialized_returns_invalid_state(void)
  */
 void test_usb_putint_not_initialized_returns_invalid_state(void)
 {
-  rx_err_t err = rx_usb_putint(k_usb_port_proto, 42);
+  rx_err_t err = rx_usb_putint(k_usb_port_proto, k_test_magic_42);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -2855,7 +2864,7 @@ void test_usb_flush_blocking_exit_via_max_iterations(void)
   rx_usb_set_state(k_usb_state_configured);
 
   uint8_t data[] = "test";
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, 4));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_write(k_usb_port_proto, data, k_test_size_4));
 
   /* Use exactly k_flush_max_timeout_ms=10000 so elapsed never reaches it within
    * the 1000 iterations (elapsed reaches 10000 only at iteration 1000 exit). */
@@ -2928,7 +2937,7 @@ void test_ring_buffer_read_full_1024_bytes_loop_exhaustion(void)
 void test_ring_buffer_write_null_buf_returns_zero(void)
 {
   uint8_t  src[]   = "hi";
-  uint32_t written = priv_ring_buffer_write(nullptr, src, 2U);
+  uint32_t written = priv_ring_buffer_write(nullptr, src, k_test_size_2);
   TEST_ASSERT_EQUAL_UINT32(0U, written);
 }
 
@@ -2940,8 +2949,8 @@ void test_ring_buffer_write_null_buf_returns_zero(void)
  */
 void test_ring_buffer_read_null_buf_returns_zero(void)
 {
-  uint8_t  dst[4];
-  uint32_t read = priv_ring_buffer_read(nullptr, dst, 4U);
+  uint8_t  dst[k_test_size_4];
+  uint32_t read = priv_ring_buffer_read(nullptr, dst, k_test_size_4);
   TEST_ASSERT_EQUAL_UINT32(0U, read);
 }
 
@@ -2956,7 +2965,7 @@ void test_ring_buffer_write_null_buf_data_returns_zero(void)
 {
   ring_buffer_t buf;
   buf.data         = nullptr;
-  buf.size         = 8U;
+  buf.size         = k_test_size_8;
   buf.head         = 0U;
   buf.tail         = 0U;
   buf.count        = 0U;
@@ -2976,11 +2985,11 @@ void test_ring_buffer_read_null_buf_data_returns_zero(void)
 {
   ring_buffer_t buf;
   buf.data  = nullptr;
-  buf.size  = 8U;
+  buf.size  = k_test_size_8;
   buf.head  = 0U;
   buf.tail  = 0U;
-  buf.count = 2U; /* Pretend there is data */
-  uint8_t  dst[4];
+  buf.count = k_test_size_2; /* Pretend there is data */
+  uint8_t  dst[k_test_size_4];
   uint32_t read = priv_ring_buffer_read(&buf, dst, k_test_size_2);
   TEST_ASSERT_EQUAL_UINT32(0U, read);
 }
@@ -3118,7 +3127,7 @@ void test_ring_buffer_init_null_data_no_op(void)
   ring_buffer_t buf;
   buf.size = 0U;
   /* Pass valid buf but nullptr data - should be a no-op */
-  priv_ring_buffer_init(&buf, nullptr, 8U);
+  priv_ring_buffer_init(&buf, nullptr, k_test_size_8);
   /* buf.data was never assigned; check buf.size was not updated */
   TEST_ASSERT_EQUAL_UINT32(0U, buf.size);
 }
@@ -3142,9 +3151,9 @@ void test_usb_tx_pop_partial_no_tx_complete_callback(void)
   s_callback_count = 0;
 
   /* Pop only 4 bytes - buffer still has 4 remaining; callback should NOT fire */
-  uint8_t  out[4];
-  uint32_t popped = rx_usb_tx_pop(k_usb_port_proto, out, 4U);
-  TEST_ASSERT_EQUAL_UINT32(4U, popped);
+  uint8_t  out[k_test_size_4];
+  uint32_t popped = rx_usb_tx_pop(k_usb_port_proto, out, k_test_size_4);
+  TEST_ASSERT_EQUAL_UINT32(k_test_size_4, popped);
   TEST_ASSERT_EQUAL_UINT32(0U, s_callback_count);
 }
 
@@ -3156,11 +3165,11 @@ void test_usb_tx_pop_partial_no_tx_complete_callback(void)
  */
 
 /**
- * @brief Run ring buffer and USB init/deinit/state tests
+ * @brief Run ring buffer tests (init, write, and read)
  *
- * @details Group 1: ring buffer tests (22) + init/deinit/state tests (20)
+ * @details Group 1a: ring buffer init tests (4) + write tests (8) + read tests (10)
  */
-static void internal_run_ring_buffer_and_init_tests(void)
+static void internal_run_ring_buffer_tests(void)
 {
   /* Ring buffer initialization tests */
   RUN_TEST(test_ring_buffer_init_clears_state);
@@ -3189,7 +3198,15 @@ static void internal_run_ring_buffer_and_init_tests(void)
   RUN_TEST(test_ring_buffer_fifo_order);
   RUN_TEST(test_ring_buffer_interleaved_read_write);
   RUN_TEST(test_ring_buffer_burst_write_then_burst_read);
+}
 
+/**
+ * @brief Run USB init/deinit/state tests
+ *
+ * @details Group 1b: USB initialization tests (12) + deinit tests (3) + state tests (5)
+ */
+static void internal_run_init_tests(void)
+{
   /* USB initialization tests */
   RUN_TEST(test_usb_init_null_config_succeeds);
   RUN_TEST(test_usb_init_transitions_to_attached);
@@ -3263,11 +3280,11 @@ static void internal_run_io_and_codec_tests(void)
 }
 
 /**
- * @brief Run state machine, internal API, and debug output tests
+ * @brief Run state machine and transmission trigger tests
  *
- * @details Group 3: state machine (17) + transmission trigger (3) + debug output (22)
+ * @details Group 3a: state machine tests (17) + transmission trigger tests (3)
  */
-static void internal_run_state_and_debug_tests(void)
+static void internal_run_state_tests(void)
 {
   /* Internal state functions tests */
   RUN_TEST(test_usb_set_state_triggers_callback);
@@ -3292,7 +3309,15 @@ static void internal_run_state_and_debug_tests(void)
   RUN_TEST(test_usb_write_triggers_transmission_when_pipe_idle);
   RUN_TEST(test_usb_write_no_trigger_when_pipe_busy);
   RUN_TEST(test_usb_write_no_trigger_when_buffer_empty_after_write_fails);
+}
 
+/**
+ * @brief Run debug text output tests (putc, puts, putint, puthex)
+ *
+ * @details Group 3b: debug output tests (22)
+ */
+static void internal_run_debug_tests(void)
+{
   /* Debug text output tests */
   RUN_TEST(test_usb_putc_not_configured_fails);
   RUN_TEST(test_usb_putc_success_when_configured);
@@ -3423,9 +3448,11 @@ int main(void)
 {
   UNITY_BEGIN();
 
-  internal_run_ring_buffer_and_init_tests();
+  internal_run_ring_buffer_tests();
+  internal_run_init_tests();
   internal_run_io_and_codec_tests();
-  internal_run_state_and_debug_tests();
+  internal_run_state_tests();
+  internal_run_debug_tests();
   internal_run_internal_api_and_coverage_tests();
   internal_run_coverage_batch_2_and_3_tests();
 
