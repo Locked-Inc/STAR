@@ -255,6 +255,7 @@ static const char* const s_task_name = "WatchdogMon";
  * =============================================================================
  */
 
+static void internal_handle_check_result(rx_err_t err, bool* timeout_logged);
 static void internal_watchdog_monitor_task_entry(ULONG input);
 
 /* =============================================================================
@@ -346,6 +347,43 @@ rx_err_t watchdog_monitor_task_create(void)
  */
 
 /**
+ * @brief Process the result of rx_iwdt_check_tasks() for one iteration
+ *
+ * @details
+ * Handles the three possible outcomes of rx_iwdt_check_tasks(): timeout
+ * (stop feeding watchdog), ok (feed watchdog), or unexpected error (stop
+ * feeding as a safe default).
+ *
+ * @param[in]     err            Return value from rx_iwdt_check_tasks()
+ * @param[in,out] timeout_logged Flag set on first timeout log; cleared on recovery
+ *
+ * @pre timeout_logged is a valid non-NULL pointer
+ * @pre err is a valid rx_err_t value returned by rx_iwdt_check_tasks()
+ * @post Hardware watchdog fed if err == k_rx_ok
+ * @post *timeout_logged updated to reflect current timeout state
+ *
+ * @note Not thread-safe; called only from internal_watchdog_monitor_task_entry
+ * @since Version 1.0.0
+ */
+static void internal_handle_check_result(rx_err_t err, bool* timeout_logged)
+{
+  if (err == k_rx_err_timeout) {
+    if (!(*timeout_logged)) {
+      rx_log_error(s_tag, "Task timeout detected - system will reset in 2s");
+      *timeout_logged = true;
+    }
+    /* Don't feed watchdog - allow hardware reset to occur */
+  } else if (err == k_rx_ok) {
+    *timeout_logged = false; /* Clear flag for future timeouts */
+    err             = rx_iwdt_feed();
+    RX_ASSERT(err == k_rx_ok, "IWDT feed must succeed");
+  } else {
+    /* Unexpected error - don't feed watchdog to prevent masking errors */
+    rx_log_error_val(s_tag, "Unexpected error from rx_iwdt_check_tasks", (uint32_t)err);
+  }
+}
+
+/**
  * @brief Watchdog monitor task entry point - infinite loop at 100 Hz
  *
  * @details
@@ -411,28 +449,11 @@ static void internal_watchdog_monitor_task_entry(ULONG input)
 
   while (true) {
     /* Check all registered tasks for heartbeat timeouts */
-    rx_err_t err = rx_iwdt_check_tasks();
-
-    if (err == k_rx_err_timeout) {
-      /* Task timeout detected - system will reset in ~2s */
-      if (!timeout_logged) {
-        rx_log_error(s_tag, "Task timeout detected - system will reset in 2s");
-        timeout_logged = true;
-      }
-      /* Don't feed watchdog - allow hardware reset to occur */
-    } else if (err == k_rx_ok) {
-      /* All tasks healthy - feed hardware watchdog */
-      timeout_logged = false; /* Clear flag for future timeouts */
-      err            = rx_iwdt_feed();
-      RX_ASSERT(err == k_rx_ok, "IWDT feed must succeed");
-    } else {
-      /* Unexpected error from rx_iwdt_check_tasks() */
-      rx_log_error_val(s_tag, "Unexpected error from rx_iwdt_check_tasks", (uint32_t)err);
-      /* Don't feed watchdog - prevent masking errors */
-    }
+    const rx_err_t check_err = rx_iwdt_check_tasks();
+    internal_handle_check_result(check_err, &timeout_logged);
 
     /* Report own heartbeat (self-monitoring) */
-    err = rx_iwdt_task_heartbeat(s_task_name);
+    rx_err_t err = rx_iwdt_task_heartbeat(s_task_name);
     if (err != k_rx_ok) {
       rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
       /* Continue operation - watchdog monitor will detect timeout */

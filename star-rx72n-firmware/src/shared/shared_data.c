@@ -367,8 +367,6 @@
 
 #include "shared_data.h"
 
-#include <string.h>
-
 #include "rx_bus_types.h"
 #include "rx_check.h"
 #include "rx_comm_manager.h"
@@ -758,6 +756,8 @@ typedef enum : uint8_t {
  * @note Not thread-safe; called only during single-threaded initialization
  * @since Version 1.0.0
  */
+static rx_err_t internal_create_shared_sync_objects(void);
+
 static void internal_cleanup_mutexes(uint8_t count)
 {
   TX_MUTEX* const mutexes[k_mutex_idx_baro] = {
@@ -774,6 +774,67 @@ static void internal_cleanup_mutexes(uint8_t count)
   }
 }
 
+/**
+ * @brief Create all ThreadX mutexes and the event-flags group for shared_data
+ *
+ * @details
+ * Attempts to create 6 priority-inheritance mutexes (motor, temp, obstacle,
+ * estop, imu, baro) and one TX_EVENT_FLAGS_GROUP. On any failure, already-
+ * created mutexes are deleted in reverse order before returning.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All RTOS objects created successfully
+ * @retval k_rx_err_rtos_mutex A tx_mutex_create() call failed
+ * @retval k_rx_err_rtos_error tx_event_flags_create() failed
+ *
+ * @pre ThreadX kernel is running (tx_application_define has been called)
+ * @pre g_shared_data.initialized == false (called only from shared_data_init)
+ * @post All 6 mutexes and 1 event-flags group are created on k_rx_ok
+ * @post g_shared_data RTOS objects deleted/uncreated on any error return
+ *
+ * @note Not thread-safe; called once during single-threaded init
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_create_shared_sync_objects(void)
+{
+  UINT tx_status = tx_mutex_create(&g_shared_data.motor_mutex, "MotorMutex", (UINT)k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+  tx_status = tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", (UINT)k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_motor);
+    return k_rx_err_rtos_mutex;
+  }
+  tx_status =
+    tx_mutex_create(&g_shared_data.obstacle_mutex, "ObstacleMutex", (UINT)k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_temp);
+    return k_rx_err_rtos_mutex;
+  }
+  tx_status = tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", (UINT)k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_obstacle);
+    return k_rx_err_rtos_mutex;
+  }
+  tx_status = tx_mutex_create(&g_shared_data.imu_mutex, "ImuMutex", (UINT)k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_estop);
+    return k_rx_err_rtos_mutex;
+  }
+  tx_status = tx_mutex_create(&g_shared_data.baro_mutex, "BaroMutex", (UINT)k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_imu);
+    return k_rx_err_rtos_mutex;
+  }
+  tx_status = tx_event_flags_create(&g_shared_data.event_flags, "SharedEvents");
+  if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_baro);
+    return k_rx_err_rtos_error;
+  }
+  return k_rx_ok;
+}
+
 rx_err_t shared_data_init(void)
 {
   /* Check if already initialized */
@@ -781,53 +842,9 @@ rx_err_t shared_data_init(void)
     return k_rx_err_invalid_state;
   }
 
-  /* Create motor_mutex with priority inheritance */
-  UINT tx_status = tx_mutex_create(&g_shared_data.motor_mutex, "MotorMutex", (UINT)k_mutex_inherit);
-  if (tx_status != TX_SUCCESS) {
-    return k_rx_err_rtos_mutex;
-  }
-
-  /* Create temp_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", (UINT)k_mutex_inherit);
-  if (tx_status != TX_SUCCESS) {
-    internal_cleanup_mutexes(k_mutex_idx_motor);
-    return k_rx_err_rtos_mutex;
-  }
-
-  /* Create obstacle_mutex with priority inheritance */
-  tx_status =
-    tx_mutex_create(&g_shared_data.obstacle_mutex, "ObstacleMutex", (UINT)k_mutex_inherit);
-  if (tx_status != TX_SUCCESS) {
-    internal_cleanup_mutexes(k_mutex_idx_temp);
-    return k_rx_err_rtos_mutex;
-  }
-
-  /* Create estop_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", (UINT)k_mutex_inherit);
-  if (tx_status != TX_SUCCESS) {
-    internal_cleanup_mutexes(k_mutex_idx_obstacle);
-    return k_rx_err_rtos_mutex;
-  }
-
-  /* Create imu_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.imu_mutex, "ImuMutex", (UINT)k_mutex_inherit);
-  if (tx_status != TX_SUCCESS) {
-    internal_cleanup_mutexes(k_mutex_idx_estop);
-    return k_rx_err_rtos_mutex;
-  }
-
-  /* Create baro_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.baro_mutex, "BaroMutex", (UINT)k_mutex_inherit);
-  if (tx_status != TX_SUCCESS) {
-    internal_cleanup_mutexes(k_mutex_idx_imu);
-    return k_rx_err_rtos_mutex;
-  }
-
-  /* Create event_flags group */
-  tx_status = tx_event_flags_create(&g_shared_data.event_flags, "SharedEvents");
-  if (tx_status != TX_SUCCESS) {
-    internal_cleanup_mutexes(k_mutex_idx_baro);
-    return k_rx_err_rtos_error;
+  const rx_err_t sync_err = internal_create_shared_sync_objects();
+  if (sync_err != k_rx_ok) {
+    return sync_err;
   }
 
   /* Initialize default PID gains (from MATLAB tuning) */
@@ -984,7 +1001,7 @@ rx_err_t shared_data_set_motor_command(const motor_command_t* cmd)
   }
 
   /* Copy command data */
-  (void)memcpy(&g_shared_data.motor_command, cmd, sizeof(motor_command_t));
+  g_shared_data.motor_command = *cmd;
 
   /* Update timestamp */
   g_shared_data.motor_command.timestamp_ms = tx_time_get();
@@ -1081,7 +1098,7 @@ rx_err_t shared_data_get_motor_command(motor_command_t* out_cmd)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(out_cmd, &g_shared_data.motor_command, sizeof(motor_command_t));
+  *out_cmd = g_shared_data.motor_command;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 
@@ -1171,7 +1188,7 @@ rx_err_t shared_data_update_motor_state(const motor_state_t* state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(&g_shared_data.motor_state, state, sizeof(motor_state_t));
+  g_shared_data.motor_state = *state;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 
@@ -1245,7 +1262,7 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(out_state, &g_shared_data.motor_state, sizeof(motor_state_t));
+  *out_state = g_shared_data.motor_state;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 
@@ -1344,7 +1361,7 @@ rx_err_t shared_data_set_pid_gains(const pid_gains_t* gains)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(&g_shared_data.pid_gains, gains, sizeof(pid_gains_t));
+  g_shared_data.pid_gains                = *gains;
   g_shared_data.pid_gains.update_pending = true;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
@@ -1430,7 +1447,7 @@ rx_err_t shared_data_get_pid_gains(pid_gains_t* out_gains)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(out_gains, &g_shared_data.pid_gains, sizeof(pid_gains_t));
+  *out_gains = g_shared_data.pid_gains;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 
@@ -2168,7 +2185,7 @@ rx_err_t shared_data_update_temp(const temp_sensor_state_t* state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(&g_shared_data.temp_state, state, sizeof(temp_sensor_state_t));
+  g_shared_data.temp_state = *state;
 
   (void)tx_mutex_put(&g_shared_data.temp_mutex);
 
@@ -2243,7 +2260,7 @@ rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(out_state, &g_shared_data.temp_state, sizeof(temp_sensor_state_t));
+  *out_state = g_shared_data.temp_state;
 
   (void)tx_mutex_put(&g_shared_data.temp_mutex);
 
@@ -2340,7 +2357,7 @@ rx_err_t shared_data_update_obstacle(const obstacle_state_t* state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(&g_shared_data.obstacle_state, state, sizeof(obstacle_state_t));
+  g_shared_data.obstacle_state = *state;
 
   (void)tx_mutex_put(&g_shared_data.obstacle_mutex);
 
@@ -2420,7 +2437,7 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(out_state, &g_shared_data.obstacle_state, sizeof(obstacle_state_t));
+  *out_state = g_shared_data.obstacle_state;
 
   (void)tx_mutex_put(&g_shared_data.obstacle_mutex);
 
@@ -2987,7 +3004,7 @@ rx_err_t shared_data_update_imu(const imu_state_t* state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(&g_shared_data.imu_state, state, sizeof(imu_state_t));
+  g_shared_data.imu_state = *state;
 
   (void)tx_mutex_put(&g_shared_data.imu_mutex);
 
@@ -3057,7 +3074,7 @@ rx_err_t shared_data_get_imu(imu_state_t* out_state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(out_state, &g_shared_data.imu_state, sizeof(imu_state_t));
+  *out_state = g_shared_data.imu_state;
 
   (void)tx_mutex_put(&g_shared_data.imu_mutex);
 
@@ -3136,7 +3153,7 @@ rx_err_t shared_data_update_baro(const baro_state_t* state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(&g_shared_data.baro_state, state, sizeof(baro_state_t));
+  g_shared_data.baro_state = *state;
 
   (void)tx_mutex_put(&g_shared_data.baro_mutex);
 
@@ -3207,7 +3224,7 @@ rx_err_t shared_data_get_baro(baro_state_t* out_state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(out_state, &g_shared_data.baro_state, sizeof(baro_state_t));
+  *out_state = g_shared_data.baro_state;
 
   (void)tx_mutex_put(&g_shared_data.baro_mutex);
 

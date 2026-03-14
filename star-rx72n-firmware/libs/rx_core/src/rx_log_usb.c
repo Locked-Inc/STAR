@@ -999,7 +999,8 @@ void rx_log_usb_test_set_boot_buffer(uint16_t head, uint16_t count, const char* 
   s_boot_buffer.count = count;
   /* Copy data into ring buffer - wrap-around handled by caller */
   for (uint16_t i = 0; i < count; i++) {
-    uint16_t pos            = (uint16_t)((head - count + (uint16_t)512u + i) % (uint16_t)512u);
+    uint16_t pos =
+      (uint16_t)((head - count + (uint16_t)k_boot_buffer_size + i) % (uint16_t)k_boot_buffer_size);
     s_boot_buffer.data[pos] = data[i];
   }
 }

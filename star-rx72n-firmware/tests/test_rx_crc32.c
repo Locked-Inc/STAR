@@ -193,6 +193,7 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
+  k_crc_len_1kb       = 1024U,  /**< 1 KiB buffer length for large-buffer test */
   k_crc_oversized_len = 65536U, /**< Exceeds k_crc_len_max (65535); triggers guard */
 } crc_misc_t;
 
@@ -403,8 +404,8 @@ void test_crc32_sync_word(void)
  */
 void test_crc32_eight_zeros(void)
 {
-  uint8_t  data[8] = {0};
-  uint32_t crc     = 0U;
+  uint8_t  data[k_crc_len_8] = {0};
+  uint32_t crc               = 0U;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, k_crc_len_8, &crc));
   TEST_ASSERT_EQUAL_HEX32(k_crc_expected_eight_zeros, crc);
@@ -554,7 +555,7 @@ void test_crc32_double_init_safe(void)
  */
 void test_crc32_large_buffer_1kb(void)
 {
-  uint8_t data[1024];
+  uint8_t data[k_crc_len_1kb];
 
   /* Fill with repeating pattern 0x00-0xFF */
   for (uint32_t i = 0; i < sizeof(data); i++) {
