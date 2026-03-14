@@ -144,10 +144,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(nanopb)
 
-# Disable clang-tidy for nanopb vendor sources -- they don't follow STAR coding
-# standards (magic numbers, cognitive complexity, insecure API warnings).
+# Disable clang-tidy for nanopb and Unity vendor sources -- they don't follow
+# STAR coding standards (magic numbers, cognitive complexity, insecure APIs).
 if(ENABLE_CLANG_TIDY)
     set_target_properties(protobuf-nanopb-static PROPERTIES C_CLANG_TIDY "")
+    set_target_properties(unity PROPERTIES C_CLANG_TIDY "")
 endif()
 
 # =============================================================================

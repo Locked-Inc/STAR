@@ -1207,6 +1207,7 @@ static const char* const s_sensor_names[k_obstacle_sensor_count] = {
 
 static void internal_obstacle_task_entry(ULONG input);
 static void internal_init_obstacle_detect(uint8_t motor_count, rx_motor_handle_t** motors);
+static void internal_run_monitoring_loop(void);
 static void internal_obstacle_callback(bool    obstacle_detected,
                                        uint8_t sensor_idx,
                                        float   distance_cm,
@@ -1839,6 +1840,60 @@ static void internal_init_obstacle_detect(uint8_t motor_count, rx_motor_handle_t
  * @callgraph
  * @callergraph
  */
+
+/**
+ * @brief Run the obstacle detection monitoring loop.
+ *
+ * @details
+ * Executes the infinite monitoring loop: sends IWDT heartbeats at every tick
+ * interval and logs obstacle detection statistics once per second. This function
+ * never returns -- it is the main body of the obstacle detection task after
+ * successful initialization.
+ *
+ * @pre rx_obstacle_detect library is running (internal_init_obstacle_detect called).
+ * @pre s_obstacle_handle is valid and polling is active.
+ * @post Never returns (infinite loop with watchdog heartbeats).
+ * @post Statistics logged to UART at k_obstacle_stats_log_interval rate.
+ *
+ * @note Called once from internal_obstacle_task_entry() after init completes.
+ * @note Loop sleeps for k_obstacle_heartbeat_ticks between iterations.
+ *
+ * @see rx_obstacle_detect_get_stats() Library statistics API.
+ * @see rx_iwdt_task_heartbeat() IWDT heartbeat API.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_run_monitoring_loop(void)
+{
+  uint16_t stats_counter = 0;
+  rx_err_t err;
+
+  while (true) {
+    err = rx_iwdt_task_heartbeat("ObstDetect");
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
+    }
+
+    stats_counter++;
+    if (stats_counter >= k_obstacle_stats_log_interval) {
+      stats_counter            = 0;
+      uint32_t total_polls     = 0;
+      uint32_t obstacle_events = 0;
+      uint32_t false_positives = 0;
+      err                      = rx_obstacle_detect_get_stats(&s_obstacle_handle,
+                                         &total_polls,
+                                         &obstacle_events,
+                                         &false_positives);
+      if (err == k_rx_ok) {
+        rx_log_debug_val(s_tag, "Total polls", total_polls);
+        rx_log_debug_val(s_tag, "Obstacle events", obstacle_events);
+      }
+    }
+
+    (void)tx_thread_sleep(k_obstacle_heartbeat_ticks);
+  }
+}
+
 static void internal_obstacle_task_entry(ULONG input)
 {
   (void)input;
@@ -1870,33 +1925,7 @@ static void internal_obstacle_task_entry(ULONG input)
 
   internal_init_obstacle_detect(motor_count, motors);
   rx_log_info(s_tag, "Obstacle detection running (4 sensors, 4 motors)");
-
-  /* Main monitoring loop - library handles actual polling */
-  uint16_t stats_counter = 0;
-  while (true) {
-    err = rx_iwdt_task_heartbeat("ObstDetect");
-    if (err != k_rx_ok) {
-      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
-    }
-
-    stats_counter++;
-    if (stats_counter >= k_obstacle_stats_log_interval) {
-      stats_counter            = 0;
-      uint32_t total_polls     = 0;
-      uint32_t obstacle_events = 0;
-      uint32_t false_positives = 0;
-      err                      = rx_obstacle_detect_get_stats(&s_obstacle_handle,
-                                         &total_polls,
-                                         &obstacle_events,
-                                         &false_positives);
-      if (err == k_rx_ok) {
-        rx_log_debug_val(s_tag, "Total polls", total_polls);
-        rx_log_debug_val(s_tag, "Obstacle events", obstacle_events);
-      }
-    }
-
-    (void)tx_thread_sleep(k_obstacle_heartbeat_ticks);
-  }
+  internal_run_monitoring_loop();
 }
 
 /**
