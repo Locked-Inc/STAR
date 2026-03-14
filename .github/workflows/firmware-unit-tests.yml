@@ -112,7 +112,7 @@ jobs:
           # that cannot be meaningfully unit-tested without a live RTOS instance.
           # Requirements: 100% line, 100% branch, 100% function coverage.
           gcovr \
-            --root .. \
+            --root ../.. \
             --filter '.*/star-rx72n-firmware/libs/' \
             --exclude '.*/third_party/' \
             --exclude '.*/rx_nanopb/inc/gen/' \

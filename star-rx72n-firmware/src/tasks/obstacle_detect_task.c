@@ -1147,12 +1147,66 @@ static rx_hcsr04_t* s_sensor_ptrs[k_obstacle_sensor_count] = {
   &s_sensors[k_sensor_back_right],
 };
 
+/**
+ * @var s_trigger_pins
+ * @brief GPIO trigger output pins indexed by obstacle_sensor_idx_t
+ * @details Maps each sensor index to its hardware TRIG pin (10 us pulse output).
+ *          Indexed by obstacle_sensor_idx_t (k_sensor_front_left ... k_sensor_back_right).
+ *          Static file-scope; resides in .rodata (~16 bytes, 4 x uint32_t).
+ * @note Static and const -- initialized once at program start, never modified
+ * @warning Do not use before GPIO ports F, J, 0, 3 are powered and clocked
+ * @since Version 1.0.0
+ */
+static const rx_port_pin_t s_trigger_pins[k_obstacle_sensor_count] = {
+  k_rx_pf_5, /* k_sensor_front_left:  PF5 TRIG */
+  k_rx_pj_5, /* k_sensor_front_right: PJ5 TRIG */
+  k_rx_pj_3, /* k_sensor_back_left:   PJ3 TRIG */
+  k_rx_p3_3, /* k_sensor_back_right:  P33 TRIG */
+};
+
+/**
+ * @var s_echo_pins
+ * @brief GPIO echo input pins indexed by obstacle_sensor_idx_t
+ * @details Maps each sensor index to its hardware ECHO pin (pulse-width input).
+ *          Pins P00-P03 also support IRQ8-IRQ11 for future interrupt-driven measurement.
+ *          Indexed by obstacle_sensor_idx_t (k_sensor_front_left ... k_sensor_back_right).
+ *          Static file-scope; resides in .rodata (~16 bytes, 4 x uint32_t).
+ * @note Static and const -- initialized once at program start, never modified
+ * @warning Do NOT reconfigure these pins elsewhere in the firmware while sensors are active;
+ *          the pin validator enforces single-owner registration to prevent conflicts
+ * @since Version 1.0.0
+ */
+static const rx_port_pin_t s_echo_pins[k_obstacle_sensor_count] = {
+  k_rx_p0_3, /* k_sensor_front_left:  P03 ECHO (IRQ11) */
+  k_rx_p0_2, /* k_sensor_front_right: P02 ECHO (IRQ10) */
+  k_rx_p0_1, /* k_sensor_back_left:   P01 ECHO (IRQ9) */
+  k_rx_p0_0, /* k_sensor_back_right:  P00 ECHO (IRQ8) */
+};
+
+/**
+ * @var s_sensor_names
+ * @brief Human-readable error messages for each sensor, indexed by obstacle_sensor_idx_t
+ * @details Passed as the message argument to rx_log_error_val() when rx_hcsr04_init()
+ *          fails for a given sensor. Includes the failure description so the log line
+ *          is self-contained. Static file-scope; resides in .rodata (~128 bytes).
+ * @note Static and const -- string literals stored in Flash, pointer array in .rodata
+ * @warning Strings are for logging only -- do NOT use as keys or compare by pointer
+ * @since Version 1.0.0
+ */
+static const char* const s_sensor_names[k_obstacle_sensor_count] = {
+  "Front-left sensor init failed",
+  "Front-right sensor init failed",
+  "Back-left sensor init failed",
+  "Back-right sensor init failed",
+};
+
 /* =============================================================================
  * Forward Declarations
  * =============================================================================
  */
 
 static void internal_obstacle_task_entry(ULONG input);
+static void internal_init_obstacle_detect(uint8_t motor_count, rx_motor_handle_t** motors);
 static void internal_obstacle_callback(bool    obstacle_detected,
                                        uint8_t sensor_idx,
                                        float   distance_cm,
@@ -1493,59 +1547,6 @@ rx_err_t obstacle_detect_task_create(void)
  */
 static rx_err_t internal_init_sensors(void)
 {
-  /**
-   * @var s_trigger_pins
-   * @brief GPIO trigger output pins indexed by obstacle_sensor_idx_t
-   * @details Maps each sensor index to its hardware TRIG pin (10 us pulse output).
-   *          Indexed by obstacle_sensor_idx_t (k_sensor_front_left ... k_sensor_back_right).
-   *          Static function-scope; resides in .rodata (~16 bytes, 4 x uint32_t).
-   * @note Static and const -- initialized once at program start, never modified
-   * @warning Do not call this function before GPIO ports F, J, 0, 3 are powered and clocked
-   * @since Version 1.0.0
-   */
-  static const rx_port_pin_t s_trigger_pins[k_obstacle_sensor_count] = {
-    k_rx_pf_5, /* k_sensor_front_left:  PF5 TRIG */
-    k_rx_pj_5, /* k_sensor_front_right: PJ5 TRIG */
-    k_rx_pj_3, /* k_sensor_back_left:   PJ3 TRIG */
-    k_rx_p3_3, /* k_sensor_back_right:  P33 TRIG */
-  };
-
-  /**
-   * @var s_echo_pins
-   * @brief GPIO echo input pins indexed by obstacle_sensor_idx_t
-   * @details Maps each sensor index to its hardware ECHO pin (pulse-width input).
-   *          Pins P00-P03 also support IRQ8-IRQ11 for future interrupt-driven measurement.
-   *          Indexed by obstacle_sensor_idx_t (k_sensor_front_left ... k_sensor_back_right).
-   *          Static function-scope; resides in .rodata (~16 bytes, 4 x uint32_t).
-   * @note Static and const -- initialized once at program start, never modified
-   * @warning Do NOT reconfigure these pins elsewhere in the firmware while sensors are active;
-   *          the pin validator enforces single-owner registration to prevent conflicts
-   * @since Version 1.0.0
-   */
-  static const rx_port_pin_t s_echo_pins[k_obstacle_sensor_count] = {
-    k_rx_p0_3, /* k_sensor_front_left:  P03 ECHO (IRQ11) */
-    k_rx_p0_2, /* k_sensor_front_right: P02 ECHO (IRQ10) */
-    k_rx_p0_1, /* k_sensor_back_left:   P01 ECHO (IRQ9) */
-    k_rx_p0_0, /* k_sensor_back_right:  P00 ECHO (IRQ8) */
-  };
-
-  /**
-   * @var s_sensor_names
-   * @brief Human-readable error messages for each sensor, indexed by obstacle_sensor_idx_t
-   * @details Passed as the message argument to rx_log_error_val() when rx_hcsr04_init()
-   *          fails for a given sensor. Includes the failure description so the log line
-   *          is self-contained. Static function-scope; resides in .rodata (~128 bytes).
-   * @note Static and const -- string literals stored in Flash, pointer array in .rodata
-   * @warning Strings are for logging only -- do NOT use as keys or compare by pointer
-   * @since Version 1.0.0
-   */
-  static const char* const s_sensor_names[k_obstacle_sensor_count] = {
-    "Front-left sensor init failed",
-    "Front-right sensor init failed",
-    "Back-left sensor init failed",
-    "Back-right sensor init failed",
-  };
-
   /* Initialize all sensors in loop (eliminates code duplication) */
   for (uint8_t i = k_sensor_front_left; i < k_obstacle_sensor_count; i++) {
     rx_hcsr04_config_t config = {
@@ -1563,6 +1564,65 @@ static rx_err_t internal_init_sensors(void)
 
   rx_log_info(s_tag, "All 4 HC-SR04 sensors initialized");
   return k_rx_ok;
+}
+
+/**
+ * @brief Initialize and start the rx_obstacle_detect library.
+ *
+ * @details
+ * Configures the rx_obstacle_detect library with the 4 HC-SR04 sensors, motor
+ * handles, detection threshold, and callback, then starts the 50 Hz polling task.
+ * On any failure this function triggers an emergency stop and spins indefinitely
+ * so the IWDT watchdog resets the system.
+ *
+ * @param[in] motor_count Number of motor handles provided by motor_control_task.
+ * @param[in] motors      Array of motor handle pointers (length motor_count).
+ *
+ * @pre internal_init_sensors() completed successfully.
+ * @pre motor_count > 0 and motors is non-null.
+ * @post rx_obstacle_detect library polling task is running at 50 Hz.
+ * @post internal_obstacle_callback() is registered for obstacle events.
+ *
+ * @note Does not return on fatal error -- IWDT watchdog resets system.
+ * @note Called once from internal_obstacle_task_entry() at startup.
+ *
+ * @see rx_obstacle_detect_init() Library initialization API.
+ * @see rx_obstacle_detect_start() Library start API.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_init_obstacle_detect(uint8_t motor_count, rx_motor_handle_t** motors)
+{
+  rx_obstacle_detect_config_t config = {0};
+  config.sensor_count                = k_obstacle_sensor_count;
+  config.sensors                     = s_sensor_ptrs;
+  config.motor_count                 = motor_count;
+  config.motors                      = motors;
+  config.detection_threshold_cm      = (float)k_obstacle_threshold_cm;
+  config.debounce_samples            = k_obstacle_debounce_samples;
+  config.poll_interval_ms            = k_obstacle_poll_interval_ms;
+  config.callback                    = internal_obstacle_callback;
+  config.user_data                   = nullptr;
+
+  rx_err_t err = rx_obstacle_detect_init(&s_obstacle_handle, &config);
+  if (err != k_rx_ok) {
+    rx_log_error_val(s_tag, "Obstacle detect init failed", (uint32_t)err);
+    (void)shared_data_trigger_estop(k_estop_reason_obstacle);
+    while (true) {
+      rx_log_error(s_tag, "FATAL: obstacle init failed, awaiting watchdog reset");
+      (void)tx_thread_sleep(k_obstacle_heartbeat_ticks);
+    }
+  }
+
+  err = rx_obstacle_detect_start(&s_obstacle_handle);
+  if (err != k_rx_ok) {
+    rx_log_error_val(s_tag, "Obstacle detect start failed", (uint32_t)err);
+    (void)shared_data_trigger_estop(k_estop_reason_obstacle);
+    while (true) {
+      rx_log_error(s_tag, "FATAL: obstacle start failed, awaiting watchdog reset");
+      (void)tx_thread_sleep(k_obstacle_heartbeat_ticks);
+    }
+  }
 }
 
 /**
@@ -1789,7 +1849,6 @@ static void internal_obstacle_task_entry(ULONG input)
   rx_err_t err = internal_init_sensors();
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Sensor initialization failed", (uint32_t)err);
-    /* Fatal: trigger e-stop and spin -- do NOT call heartbeat so watchdog resets system */
     (void)shared_data_trigger_estop(k_estop_reason_obstacle);
     while (true) {
       rx_log_error(s_tag, "FATAL: sensor init failed, awaiting watchdog reset");
@@ -1802,7 +1861,6 @@ static void internal_obstacle_task_entry(ULONG input)
   rx_motor_handle_t** motors      = motor_control_task_get_motors(&motor_count);
   if (motors == nullptr || motor_count == k_obstacle_motor_count_none) {
     rx_log_error(s_tag, "Motor handles unavailable");
-    /* Fatal: trigger e-stop and spin -- do NOT call heartbeat so watchdog resets system */
     (void)shared_data_trigger_estop(k_estop_reason_obstacle);
     while (true) {
       rx_log_error(s_tag, "FATAL: motor handles unavailable, awaiting watchdog reset");
@@ -1810,62 +1868,24 @@ static void internal_obstacle_task_entry(ULONG input)
     }
   }
 
-  /* Configure obstacle detection system */
-  rx_obstacle_detect_config_t config = {0};
-  config.sensor_count                = k_obstacle_sensor_count;
-  config.sensors                     = s_sensor_ptrs;
-  config.motor_count                 = motor_count;
-  config.motors                      = motors;
-  config.detection_threshold_cm      = (float)k_obstacle_threshold_cm;
-  config.debounce_samples            = k_obstacle_debounce_samples;
-  config.poll_interval_ms            = k_obstacle_poll_interval_ms;
-  config.callback                    = internal_obstacle_callback;
-  config.user_data                   = nullptr;
-
-  /* Initialize obstacle detection (library creates its own internal task) */
-  err = rx_obstacle_detect_init(&s_obstacle_handle, &config);
-  if (err != k_rx_ok) {
-    rx_log_error_val(s_tag, "Obstacle detect init failed", (uint32_t)err);
-    /* Fatal: trigger e-stop and spin -- do NOT call heartbeat so watchdog resets system */
-    (void)shared_data_trigger_estop(k_estop_reason_obstacle);
-    while (true) {
-      rx_log_error(s_tag, "FATAL: obstacle init failed, awaiting watchdog reset");
-      (void)tx_thread_sleep(k_obstacle_heartbeat_ticks);
-    }
-  }
-
-  /* Start obstacle detection */
-  err = rx_obstacle_detect_start(&s_obstacle_handle);
-  if (err != k_rx_ok) {
-    rx_log_error_val(s_tag, "Obstacle detect start failed", (uint32_t)err);
-    /* Fatal: trigger e-stop and spin -- do NOT call heartbeat so watchdog resets system */
-    (void)shared_data_trigger_estop(k_estop_reason_obstacle);
-    while (true) {
-      rx_log_error(s_tag, "FATAL: obstacle start failed, awaiting watchdog reset");
-      (void)tx_thread_sleep(k_obstacle_heartbeat_ticks);
-    }
-  }
-
+  internal_init_obstacle_detect(motor_count, motors);
   rx_log_info(s_tag, "Obstacle detection running (4 sensors, 4 motors)");
 
   /* Main monitoring loop - library handles actual polling */
   uint16_t stats_counter = 0;
   while (true) {
-    /* Report task heartbeat to IWDT (must execute within 60ms timeout) */
     err = rx_iwdt_task_heartbeat("ObstDetect");
     if (err != k_rx_ok) {
       rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
-      /* Continue operation - watchdog monitor will detect timeout */
     }
 
-    /* Periodically log statistics (every 1 second) */
     stats_counter++;
     if (stats_counter >= k_obstacle_stats_log_interval) {
-      stats_counter = 0;
-      uint32_t total_polls;
-      uint32_t obstacle_events;
-      uint32_t false_positives;
-      err = rx_obstacle_detect_get_stats(&s_obstacle_handle,
+      stats_counter            = 0;
+      uint32_t total_polls     = 0;
+      uint32_t obstacle_events = 0;
+      uint32_t false_positives = 0;
+      err                      = rx_obstacle_detect_get_stats(&s_obstacle_handle,
                                          &total_polls,
                                          &obstacle_events,
                                          &false_positives);
@@ -1875,7 +1895,6 @@ static void internal_obstacle_task_entry(ULONG input)
       }
     }
 
-    /* Sleep until next heartbeat (20ms = 2 ticks @ 100 Hz) */
     (void)tx_thread_sleep(k_obstacle_heartbeat_ticks);
   }
 }
@@ -2148,8 +2167,7 @@ static void internal_obstacle_callback(bool    obstacle_detected,
                                        float   distance_cm,
                                        void*   user_data)
 {
-  obstacle_state_t state;
-
+  obstacle_state_t state = {0};
   (void)user_data;
 
   if (obstacle_detected) {
@@ -2169,7 +2187,6 @@ static void internal_obstacle_callback(bool    obstacle_detected,
   }
 
   /* Update obstacle state in shared data (read-modify-write to preserve other sensors) */
-  (void)memset(&state, 0, sizeof(state)); /* Initialize to zero in case get fails */
   rx_err_t err = shared_data_get_obstacle(&state);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Failed to get obstacle state", (uint32_t)err);
