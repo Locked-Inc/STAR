@@ -12,8 +12,6 @@
 
 #include "mock_sci_regs.h"
 
-#include <string.h>
-
 #include "rx72n_sci_regs.h"
 
 /* =============================================================================
@@ -47,7 +45,11 @@ void mock_sci_regs_init(void)
 
 void mock_sci_regs_clear(void)
 {
-  memset(g_mock_sci, 0, sizeof(g_mock_sci));
+  uint8_t* const p   = (uint8_t*)g_mock_sci;
+  const uint32_t len = (uint32_t)sizeof(g_mock_sci);
+  for (uint32_t i = 0U; i < len; i++) {
+    p[i] = 0U;
+  }
 }
 
 void mock_sci_set_ssr(uint8_t channel, uint8_t value)

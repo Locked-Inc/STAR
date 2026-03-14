@@ -360,7 +360,22 @@ typedef enum : uint32_t {
   k_enc_len_1byte_val = 4U,    /**< Expected encoded output bytes for 1-byte input: (8+6)*2/8=4 */
   k_enc_len_2byte_val = 6U,    /**< Expected encoded output bytes for 2-byte input: (16+6)*2/8=6 */
   k_enc_len_max_val   = 2050U, /**< Expected encoded output bytes for 1024-byte input */
+  k_large_soft_pad    = 32U, /**< Extra padding added to large soft buffer to exceed max symbols */
 } fec_test_lengths_t;
+
+/**
+ * @brief Byte pattern constants for round-trip and error correction tests
+ * @details Named byte values used as test input patterns and XOR error masks.
+ */
+typedef enum : uint8_t {
+  k_byte_ff       = 0xFFU, /**< All-ones byte pattern for all-ones round-trip test */
+  k_byte_aa       = 0xAAU, /**< Alternating 10101010 pattern for alternating round-trip test */
+  k_byte_55       = 0x55U, /**< Alternating 01010101 pattern for alternating round-trip test */
+  k_byte_ab       = 0xABU, /**< First byte of multi-bit error correction test vector */
+  k_byte_cd       = 0xCDU, /**< Second byte of multi-bit error correction test vector */
+  k_xor_flip_bit1 = 0x02U, /**< XOR mask to flip bit 1 in encoded[0] for error injection */
+  k_xor_flip_bit3 = 0x08U, /**< XOR mask to flip bit 3 in encoded[1] for error injection */
+} fec_test_pattern_t;
 
 /** @} */ /* end of test_fec_constants */
 
@@ -1478,8 +1493,8 @@ void test_decode_soft_num_symbols_too_small(void)
 void test_decode_soft_num_symbols_too_large(void)
 {
   /* Use a local soft buffer large enough to pass the soft_len check */
-  static rx_soft_bit_t s_large_soft[k_fec_max_symbols * k_fec_num_outputs + 32U];
-  uint8_t              output[16];
+  static rx_soft_bit_t s_large_soft[k_fec_max_symbols * k_fec_num_outputs + k_large_soft_pad];
+  uint8_t              output[k_buf_size_out16];
   uint32_t             len;
 
   rx_fec_decode_soft_params_t params = {
@@ -1540,7 +1555,7 @@ void test_decode_soft_insufficient_soft_len(void)
 void test_decode_soft_survivors_too_small(void)
 {
   /* Create a decoder with small survivors buffer */
-  static uint64_t             s_small_survivors[10];
+  static uint64_t             s_small_survivors[k_buf_size_sm];
   rx_fec_decoder_t            small_dec;
   rx_fec_decode_soft_params_t params;
 
@@ -1764,7 +1779,7 @@ void test_decode_hard_zero_length(void)
 void test_decode_hard_data_too_large(void)
 {
   static uint8_t s_big_hard[k_fec_max_input_bytes + 1U];
-  uint8_t        output[16];
+  uint8_t        output[k_buf_size_out16];
   uint32_t       len;
 
   rx_fec_decode_hard_params_t params = {
@@ -2040,7 +2055,7 @@ void test_roundtrip_all_ones(void)
   uint32_t enc_len, dec_len;
 
   for (uint32_t i = 0; i < (uint32_t)k_input_len_8; i++) {
-    input[i] = 0xFF;
+    input[i] = k_byte_ff;
   }
 
   /* Encode */
@@ -2086,7 +2101,7 @@ void test_roundtrip_all_ones(void)
  */
 void test_roundtrip_alternating_pattern(void)
 {
-  uint8_t input[] = {0xAA, 0x55, 0xAA, 0x55};
+  uint8_t input[] = {k_byte_aa, k_byte_55, k_byte_aa, k_byte_55};
   uint8_t encoded[k_buf_size_enc32];
   uint8_t decoded[k_buf_size_out16];
 
@@ -2305,7 +2320,7 @@ void test_single_bit_error_correction(void)
  */
 void test_multiple_bit_error_correction(void)
 {
-  uint8_t input[] = {0xAB, 0xCD};
+  uint8_t input[] = {k_byte_ab, k_byte_cd};
   uint8_t encoded[k_buf_size_out16];
   uint8_t decoded[k_buf_size_out16];
 
@@ -2315,8 +2330,8 @@ void test_multiple_bit_error_correction(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encode(&s_encoder, input, k_input_len_2, encoded, &enc_len));
 
   /* Flip a couple bits in different positions */
-  encoded[0] ^= 0x02;
-  encoded[1] ^= 0x08;
+  encoded[0] ^= k_xor_flip_bit1;
+  encoded[1] ^= k_xor_flip_bit3;
 
   /* K=7 Viterbi can typically correct multiple scattered errors */
   rx_fec_decode_hard_params_t params = {
@@ -2341,35 +2356,17 @@ void test_multiple_bit_error_correction(void)
  */
 
 /**
- * @brief Main test runner for FEC unit tests
+ * @brief Run encoder init, decoder init, and encoded-length tests
  *
  * @details
- * Executes all FEC unit tests using Unity framework. Tests are organized into
- * logical groups and run sequentially.
+ * Groups encoder/decoder initialization and encoded-length calculation tests.
+ * Called from main() to keep main() within function-size limits.
  *
- * **Test Execution Order:**
- * 1. Encoder initialization tests (3 tests)
- * 2. Decoder initialization tests (4 tests)
- * 3. Encoded length calculation tests (5 tests)
- * 4. Encode tests (6 tests)
- * 5. Soft/hard bit conversion tests (2 tests)
- * 6. Decode soft tests (9 tests)
- * 7. Decode hard tests (5 tests)
- * 8. Round-trip tests (6 tests)
- * 9. Error correction tests (2 tests)
- *
- * **Total:** 42 tests
- *
- * **Exit Codes:**
- * - 0: All tests passed
- * - Non-zero: At least one test failed (Unity returns number of failures)
- *
- * @return 0 if all tests pass, non-zero if any test fails
+ * @pre UNITY_BEGIN() has been called
+ * @post 12 tests queued for execution
  */
-int main(void)
+static void internal_run_init_and_length_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Encoder init tests */
   RUN_TEST(test_encoder_init_null);
   RUN_TEST(test_encoder_init_success);
@@ -2387,7 +2384,20 @@ int main(void)
   RUN_TEST(test_encoded_len_two_bytes);
   RUN_TEST(test_encoded_len_max_payload);
   RUN_TEST(test_encoded_len_too_large);
+}
 
+/**
+ * @brief Run encode parameter validation and soft/hard bit conversion tests
+ *
+ * @details
+ * Groups encode API validation and bit-conversion tests.
+ * Called from main() to keep main() within function-size limits.
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post 8 tests queued for execution
+ */
+static void internal_run_encode_and_conversion_tests(void)
+{
   /* Encode tests */
   RUN_TEST(test_encode_null_args);
   RUN_TEST(test_encode_uninitialized);
@@ -2399,7 +2409,20 @@ int main(void)
   /* Soft/hard bit conversion tests */
   RUN_TEST(test_hard_to_soft);
   RUN_TEST(test_soft_to_hard);
+}
 
+/**
+ * @brief Run decode soft and decode hard parameter validation tests
+ *
+ * @details
+ * Groups soft-decision and hard-decision decode API validation tests.
+ * Called from main() to keep main() within function-size limits.
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post 14 tests queued for execution
+ */
+static void internal_run_decode_validation_tests(void)
+{
   /* Decode soft tests */
   RUN_TEST(test_decode_null_args);
   RUN_TEST(test_decode_uninitialized);
@@ -2417,7 +2440,20 @@ int main(void)
   RUN_TEST(test_decode_hard_zero_length);
   RUN_TEST(test_decode_hard_data_too_large);
   RUN_TEST(test_decode_hard_soft_buffer_too_small);
+}
 
+/**
+ * @brief Run round-trip and error correction tests
+ *
+ * @details
+ * Groups encode/decode round-trip and error correction tests.
+ * Called from main() to keep main() within function-size limits.
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post 8 tests queued for execution
+ */
+static void internal_run_roundtrip_and_error_tests(void)
+{
   /* Round-trip tests */
   RUN_TEST(test_roundtrip_single_byte);
   RUN_TEST(test_roundtrip_multi_byte);
@@ -2429,6 +2465,35 @@ int main(void)
   /* Error correction tests */
   RUN_TEST(test_single_bit_error_correction);
   RUN_TEST(test_multiple_bit_error_correction);
+}
 
+/**
+ * @brief Main test runner for FEC unit tests
+ *
+ * @details
+ * Executes all FEC unit tests using Unity framework. Tests are organized into
+ * logical groups and run sequentially via static helper functions.
+ *
+ * **Test Execution Order:**
+ * 1. internal_run_init_and_length_tests()    - 12 tests
+ * 2. internal_run_encode_and_conversion_tests() - 8 tests
+ * 3. internal_run_decode_validation_tests()  - 14 tests
+ * 4. internal_run_roundtrip_and_error_tests() - 8 tests
+ *
+ * **Total:** 42 tests
+ *
+ * **Exit Codes:**
+ * - 0: All tests passed
+ * - Non-zero: At least one test failed (Unity returns number of failures)
+ *
+ * @return 0 if all tests pass, non-zero if any test fails
+ */
+int main(void)
+{
+  UNITY_BEGIN();
+  internal_run_init_and_length_tests();
+  internal_run_encode_and_conversion_tests();
+  internal_run_decode_validation_tests();
+  internal_run_roundtrip_and_error_tests();
   return UNITY_END();
 }
