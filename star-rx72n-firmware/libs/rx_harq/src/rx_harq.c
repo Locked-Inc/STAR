@@ -81,7 +81,6 @@
  * - [rx_harq.h](rx_harq_8h.html): Public API
  * - [rx_fec.h](rx_fec_8h.html): FEC codec
  * - [rx_bit_constants.h](rx_bit_constants_8h.html): Bit manipulation
- * - string.h: memset, memcpy
  *
  * @par NASA Power of 10 Compliance
  * - **Rule 1**: [OK] No recursion, goto, setjmp/longjmp
@@ -100,8 +99,6 @@
  */
 
 #include "rx_harq.h"
-
-#include <string.h>
 
 #include "rx_bit_constants.h"
 #include "rx_check.h"
@@ -160,7 +157,9 @@ rx_err_t rx_chase_combiner_init(rx_chase_combiner_t* combiner, const uint8_t max
   }
 
   /* Clear accumulator */
-  memset(combiner->accumulated, 0, sizeof(combiner->accumulated));
+  for (uint32_t i = 0U; i < k_harq_soft_buffer_size; i++) {
+    combiner->accumulated[i] = 0;
+  }
 
   combiner->expected_len = 0;
   combiner->count        = 0;
@@ -211,7 +210,9 @@ rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_b
   if (combiner->count == 0) {
     combiner->expected_len = len;
     /* Clear accumulator for new frame */
-    memset(combiner->accumulated, 0, len * sizeof(int16_t));
+    for (uint32_t i = 0U; i < len; i++) {
+      combiner->accumulated[i] = 0;
+    }
   } else if (len != combiner->expected_len) {
     return k_rx_err_invalid_size;
   }
@@ -225,7 +226,7 @@ rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_b
    * - Array bounds: accumulated[i] and soft_bits[i] are safe for i < len
    */
   for (uint32_t i = 0; i < len; i++) {
-    combiner->accumulated[i] += (int16_t)soft_bits[i];
+    combiner->accumulated[i] = (int16_t)(combiner->accumulated[i] + (int16_t)soft_bits[i]);
   }
 
   combiner->count++;
@@ -286,7 +287,9 @@ rx_err_t rx_chase_combiner_reset(rx_chase_combiner_t* combiner)
   }
 
   /* Clear the entire accumulator to prevent stale data */
-  memset(combiner->accumulated, 0, sizeof(combiner->accumulated));
+  for (uint32_t i = 0U; i < k_harq_soft_buffer_size; i++) {
+    combiner->accumulated[i] = 0;
+  }
   combiner->count        = 0;
   combiner->expected_len = 0;
 
@@ -474,7 +477,9 @@ rx_err_t rx_harq_encode(const rx_harq_handle_t* harq,
     if (output_size < payload_len) {
       return k_rx_err_invalid_size;
     }
-    memcpy(output, payload, payload_len);
+    for (uint32_t i = 0U; i < payload_len; i++) {
+      output[i] = payload[i];
+    }
     *output_len = payload_len;
     return k_rx_ok;
   }
@@ -536,7 +541,9 @@ static rx_err_t internal_soft_to_hard(const rx_soft_bit_t* soft_bits,
   if (out_bytes > max_output_bytes) {
     out_bytes = max_output_bytes;
   }
-  memset(output, 0, out_bytes);
+  for (uint32_t i = 0U; i < out_bytes; i++) {
+    output[i] = 0U;
+  }
 
   /*
    * Loop bound: i < soft_len is validated by prior check that soft_bits != nullptr.
