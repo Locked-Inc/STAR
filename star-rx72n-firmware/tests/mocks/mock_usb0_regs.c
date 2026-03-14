@@ -13,7 +13,6 @@
 #include "mock_usb0_regs.h"
 
 #include <assert.h>
-#include <string.h>
 
 /* =============================================================================
  * USB Pipe Number Constants
@@ -58,9 +57,18 @@ void mock_regs_init(void)
 
 void mock_regs_clear(void)
 {
-  memset(&g_mock_usb0, 0, sizeof(g_mock_usb0));
-  memset(&g_mock_icu, 0, sizeof(g_mock_icu));
-  memset(&g_mock_system, 0, sizeof(g_mock_system));
+  uint8_t* const p_usb0   = (uint8_t*)&g_mock_usb0;
+  uint8_t* const p_icu    = (uint8_t*)&g_mock_icu;
+  uint8_t* const p_system = (uint8_t*)&g_mock_system;
+  for (uint32_t i = 0; i < sizeof(g_mock_usb0); i++) {
+    p_usb0[i] = 0;
+  }
+  for (uint32_t i = 0; i < sizeof(g_mock_icu); i++) {
+    p_icu[i] = 0;
+  }
+  for (uint32_t i = 0; i < sizeof(g_mock_system); i++) {
+    p_system[i] = 0;
+  }
 }
 
 void mock_usb0_set_intsts0(uint16_t value)
