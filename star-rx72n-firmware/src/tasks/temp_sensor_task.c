@@ -424,6 +424,7 @@ static const float s_cdegc_per_degree = 100.0F;
  */
 
 static void internal_send_iwdt_heartbeat(void);
+static void internal_init_ds18b20(void);
 static void internal_temp_task_entry(ULONG input);
 
 /* =============================================================================
@@ -1167,26 +1168,48 @@ static void internal_send_iwdt_heartbeat(void)
  * @callgraph
  * @callergraph
  */
-static void internal_temp_task_entry(ULONG input)
+/**
+ * @brief Initialize the DS18B20 temperature sensor.
+ *
+ * @details
+ * Configures and initializes the DS18B20 sensor with 12-bit resolution
+ * and single-sensor (no ROM matching) mode. On failure, logs the error
+ * and continues -- the main loop will report invalid data until the sensor
+ * recovers.
+ *
+ * @pre g_bus_manager is initialized.
+ * @pre s_onewire_bus_name identifies a valid 1-Wire bus.
+ * @post s_ds18b20 is initialized (valid or invalid state logged).
+ * @post Temperature loop can proceed regardless of init result.
+ *
+ * @note Called once from internal_temp_task_entry() at startup.
+ * @note Non-fatal: sensor failure allows task to continue reporting invalid data.
+ *
+ * @see rx_ds18b20_init() DS18B20 driver initialization API.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_init_ds18b20(void)
 {
-  (void)input;
-
-  rx_log_info(s_tag, "Temperature sensor task starting");
-
-  /* Configure DS18B20 */
   rx_ds18b20_config_t config = {0};
   config.bus_manager         = &g_bus_manager;
   config.bus_name            = s_onewire_bus_name;
   config.resolution          = k_ds18b20_resolution_12bit;
   config.use_rom_matching    = false; /* Skip ROM - only one sensor */
 
-  /* Initialize DS18B20 (internally sets resolution from config.resolution) */
   const rx_err_t err_init = rx_ds18b20_init(&s_ds18b20, &config);
   if (err_init != k_rx_ok) {
     rx_log_error_val(s_tag, "DS18B20 init failed", (uint32_t)err_init);
     /* Continue anyway - will report invalid data */
   }
+}
 
+static void internal_temp_task_entry(ULONG input)
+{
+  (void)input;
+
+  rx_log_info(s_tag, "Temperature sensor task starting");
+  internal_init_ds18b20();
   rx_log_info(s_tag, "Temperature sensing running @ 1 Hz");
 
   /* Main polling loop */
