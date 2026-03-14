@@ -71,7 +71,7 @@
  * - [rx_fec.h](rx_fec_8h.html): Public API declarations
  * - [rx_check.h](rx_check_8h.html): Assertion macros (RX_ASSERT)
  * - [rx_bit_constants.h](rx_bit_constants_8h.html): Bit manipulation constants
- * - string.h: memset for buffer initialization
+ * - No standard library headers required (memset replaced with for-loop)
  *
  * @par NASA Power of 10 Compliance
  * - **Rule 1**: [OK] No recursion, goto, or setjmp/longjmp
@@ -92,8 +92,6 @@
 
 #include "rx_fec.h"
 
-#include <string.h>
-
 #include "rx_bit_constants.h"
 #include "rx_check.h"
 
@@ -112,6 +110,8 @@ typedef enum : uint16_t {
   k_fec_correlation_offset  = 32768, /**< Correlation metric offset (2^15) */
   k_fec_state_shift_amount  = 5,     /**< k_fec_constraint_length - 2 */
   k_fec_bit_mask            = 1,     /**< Mask for extracting single bit */
+  k_fec_parity_shift_nibble = 4,     /**< Shift amount for nibble XOR in parity computation */
+  k_fec_parity_shift_pair   = 2,     /**< Shift amount for bit-pair XOR in parity computation */
 } rx_fec_impl_constants_t;
 
 /**
@@ -150,9 +150,9 @@ typedef enum : uint8_t {
 static uint8_t internal_parity(uint8_t x)
 {
   /* Compute parity using parallel XOR reduction */
-  x ^= x >> 4; /* XOR upper nibble with lower nibble */
-  x ^= x >> 2; /* XOR bit pairs */
-  x ^= x >> 1; /* XOR final pair */
+  x ^= x >> k_fec_parity_shift_nibble; /* XOR upper nibble with lower nibble */
+  x ^= x >> k_fec_parity_shift_pair;   /* XOR bit pairs */
+  x ^= x >> k_fec_bit_mask;            /* XOR final pair */
 
   const uint8_t result = x & k_fec_bit_mask;
 
@@ -295,6 +295,46 @@ static int32_t internal_branch_metric(const rx_soft_bit_t soft0,
 }
 
 /**
+ * @brief Process one transition (state + input combination) in the Viterbi trellis
+ *
+ * Computes the branch metric for the given state/input pair and updates the
+ * next-state path metric and survivor bit if the new metric is better.
+ *
+ * @param[in,out] dec        Decoder handle. Modified: new_path_metrics and survivors updated.
+ * @param[in]     soft0      First soft bit of symbol pair
+ * @param[in]     soft1      Second soft bit of symbol pair
+ * @param[in]     symbol_idx Time step index for survivor storage
+ * @param[in]     state      Current trellis state
+ * @param[in]     input      Input bit being tried (0 or 1)
+ */
+static void internal_viterbi_process_transition(rx_fec_decoder_t*   dec,
+                                                const rx_soft_bit_t soft0,
+                                                const rx_soft_bit_t soft1,
+                                                const uint32_t      symbol_idx,
+                                                const uint8_t       state,
+                                                const uint8_t       input)
+{
+  const uint8_t exp0 = dec->branch_table[state][input][k_fec_output_g1];
+  const uint8_t exp1 = dec->branch_table[state][input][k_fec_output_g2];
+
+  const int32_t branch_metric = internal_branch_metric(soft0, soft1, exp0, exp1);
+
+  const uint8_t next_state =
+    (state >> k_fec_bit_mask) | ((uint8_t)input << k_fec_state_shift_amount);
+
+  const int32_t new_metric = dec->path_metrics[state] + branch_metric;
+
+  if (new_metric < dec->new_path_metrics[next_state]) {
+    dec->new_path_metrics[next_state] = new_metric;
+
+    dec->survivors[symbol_idx] &= ~((uint64_t)k_fec_bit_mask << (uint8_t)next_state);
+    if ((state & k_fec_bit_mask) == k_fec_bit_mask) {
+      dec->survivors[symbol_idx] |= ((uint64_t)k_fec_bit_mask << (uint8_t)next_state);
+    }
+  }
+}
+
+/**
  * @brief Process one symbol pair through the Viterbi trellis
  *
  * Updates path metrics and survivors for one time step.
@@ -309,14 +349,10 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
                                             const rx_soft_bit_t soft1,
                                             const uint32_t      symbol_idx)
 {
-  /* Pre-conditions */
-
-  /* Reset new path metrics */
+  /* Reset new path metrics and clear survivors for this time step */
   for (uint8_t i = k_fec_zero; i < k_fec_num_states; i++) {
     dec->new_path_metrics[i] = INT32_MAX;
   }
-
-  /* Clear survivors for this time step */
   dec->survivors[symbol_idx] = k_fec_zero;
 
   /* For each current state, compute transitions */
@@ -325,32 +361,8 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
       continue;
     }
 
-    /* Try both input bits (0 and 1) */
     for (uint8_t input = k_fec_zero; input < k_fec_num_input_values; input++) {
-      /* Get expected output bits for this transition */
-      const uint8_t exp0 = dec->branch_table[state][input][k_fec_output_g1];
-      const uint8_t exp1 = dec->branch_table[state][input][k_fec_output_g2];
-
-      /* Compute branch metric */
-      const int32_t branch_metric = internal_branch_metric(soft0, soft1, exp0, exp1);
-
-      /* Compute next state: shift right and insert input as MSB */
-      const uint8_t next_state =
-        (state >> k_fec_bit_mask) | ((uint8_t)input << k_fec_state_shift_amount);
-
-      /* Compute new path metric */
-      const int32_t new_metric = dec->path_metrics[state] + branch_metric;
-
-      /* Compare and select */
-      if (new_metric < dec->new_path_metrics[next_state]) {
-        dec->new_path_metrics[next_state] = new_metric;
-
-        /* Store predecessor's LSB for traceback */
-        dec->survivors[symbol_idx] &= ~((uint64_t)k_fec_bit_mask << (uint8_t)next_state);
-        if ((state & k_fec_bit_mask) == k_fec_bit_mask) {
-          dec->survivors[symbol_idx] |= ((uint64_t)k_fec_bit_mask << (uint8_t)next_state);
-        }
-      }
+      internal_viterbi_process_transition(dec, soft0, soft1, symbol_idx, state, input);
     }
   }
 
@@ -411,7 +423,9 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
 {
 
   /* Clear output buffer */
-  memset(output, k_fec_zero, output_bytes);
+  for (uint32_t i = k_fec_zero; i < output_bytes; i++) {
+    output[i] = (uint8_t)k_fec_zero;
+  }
 
   /* Start from state 0 (encoder is flushed to zero by tail bits) */
   uint8_t state = k_fec_zero;
@@ -512,6 +526,60 @@ uint32_t rx_fec_encoded_len(const uint32_t input_len)
 }
 
 /**
+ * @brief Encode all data bytes into output bit stream
+ *
+ * Processes each byte of input MSB-first, producing two output bits per input bit
+ * via the convolutional encoder.
+ *
+ * @param[in]     input      Input data buffer
+ * @param[in]     byte_limit Number of bytes to encode
+ * @param[out]    output     Output bit buffer
+ * @param[in,out] state      Encoder shift-register state (modified per bit)
+ * @param[in,out] out_bit_idx Next output bit index (incremented per output bit)
+ */
+static void internal_encode_data_bytes(const uint8_t* input,
+                                       const uint32_t byte_limit,
+                                       uint8_t*       output,
+                                       uint8_t*       state,
+                                       uint32_t*      out_bit_idx)
+{
+  for (uint32_t byte_idx = k_fec_zero; byte_idx < byte_limit; byte_idx++) {
+    const uint8_t b = input[byte_idx];
+    for (int8_t i = (int8_t)k_fec_msb_bit_position; i >= (int8_t)k_fec_zero; i--) {
+      const uint8_t input_bit = (b >> i) & k_fec_bit_mask;
+      uint8_t       out0;
+      uint8_t       out1;
+
+      internal_encode_bit(state, input_bit, &out0, &out1);
+
+      internal_set_output_bit(output, (*out_bit_idx)++, out0);
+      internal_set_output_bit(output, (*out_bit_idx)++, out1);
+    }
+  }
+}
+
+/**
+ * @brief Append tail bits to flush encoder shift register to zero state
+ *
+ * Appends k_fec_tail_bits zero-input bits to the output stream, ensuring
+ * the decoder traceback terminates at state 0.
+ *
+ * @param[out]    output     Output bit buffer
+ * @param[in,out] state      Encoder shift-register state (modified per bit)
+ * @param[in,out] out_bit_idx Next output bit index (incremented per output bit)
+ */
+static void internal_encode_tail_bits(uint8_t* output, uint8_t* state, uint32_t* out_bit_idx)
+{
+  for (uint8_t i = k_fec_zero; i < k_fec_tail_bits; i++) {
+    uint8_t out0;
+    uint8_t out1;
+    internal_encode_bit(state, k_fec_zero, &out0, &out1);
+    internal_set_output_bit(output, (*out_bit_idx)++, out0);
+    internal_set_output_bit(output, (*out_bit_idx)++, out1);
+  }
+}
+
+/**
  * @brief Encode data using convolutional FEC
  *
  * Applies rate-1/2, constraint-length-7 convolutional encoding
@@ -557,44 +625,20 @@ rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
     return k_rx_err_invalid_size;
   }
 
-  /* Calculate output size */
+  /* Calculate output size and clear output buffer */
   const uint32_t expected_output_len = rx_fec_encoded_len(input_len);
+  for (uint32_t i = k_fec_zero; i < expected_output_len; i++) {
+    output[i] = (uint8_t)k_fec_zero;
+  }
 
-  /* Clear output buffer */
-  memset(output, k_fec_zero, expected_output_len);
-
-  /* Reset encoder state */
-  uint8_t  state       = k_fec_zero;
-  uint32_t out_bit_idx = k_fec_zero;
-
-  /* Calculate byte limit before loop to avoid redundant checks inside */
+  /* Encode input bytes then flush with tail bits */
+  uint8_t        state       = k_fec_zero;
+  uint32_t       out_bit_idx = k_fec_zero;
   const uint32_t byte_limit =
     (input_len < k_fec_max_input_bytes) ? input_len : k_fec_max_input_bytes;
 
-  /* Encode each input byte, MSB first */
-  for (uint32_t byte_idx = k_fec_zero; byte_idx < byte_limit; byte_idx++) {
-    const uint8_t b = input[byte_idx];
-    for (int8_t i = (int8_t)k_fec_msb_bit_position; i >= (int8_t)k_fec_zero; i--) {
-      const uint8_t input_bit = (b >> i) & k_fec_bit_mask;
-      uint8_t       out0;
-      uint8_t       out1;
-
-      internal_encode_bit(&state, input_bit, &out0, &out1);
-
-      /* Pack output bits */
-      internal_set_output_bit(output, out_bit_idx++, out0);
-      internal_set_output_bit(output, out_bit_idx++, out1);
-    }
-  }
-
-  /* Append tail bits (zeros) to flush encoder to zero state */
-  for (uint8_t i = k_fec_zero; i < k_fec_tail_bits; i++) {
-    uint8_t out0;
-    uint8_t out1;
-    internal_encode_bit(&state, k_fec_zero, &out0, &out1);
-    internal_set_output_bit(output, out_bit_idx++, out0);
-    internal_set_output_bit(output, out_bit_idx++, out1);
-  }
+  internal_encode_data_bytes(input, byte_limit, output, &state, &out_bit_idx);
+  internal_encode_tail_bits(output, &state, &out_bit_idx);
 
   *output_len = expected_output_len;
   return k_rx_ok;

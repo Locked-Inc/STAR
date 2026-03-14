@@ -2443,7 +2443,7 @@ void test_resync_aligned_frame_zero_discarded(void)
 void test_resync_no_sync_found(void)
 {
   uint8_t    buf[k_frame_min_size] = {k_resync_zero};
-  rx_frame_t frame                 = {k_resync_zero};
+  rx_frame_t frame                 = {0};
 
   for (uint32_t i = 0; i < (uint32_t)k_frame_min_size; i++) {
     buf[i] = k_resync_junk_byte;
@@ -2485,7 +2485,7 @@ void test_resync_no_sync_found(void)
  */
 void test_resync_crc_mismatch_sets_discarded(void)
 {
-  rx_frame_t frame                                              = {k_resync_zero};
+  rx_frame_t frame                                              = {0};
   uint8_t    wire[k_frame_max_size]                             = {k_resync_zero};
   uint8_t    misaligned[k_frame_max_size + k_resync_prefix_len] = {k_resync_zero};
   uint32_t   wire_len                                           = k_resync_zero;
@@ -2503,7 +2503,7 @@ void test_resync_crc_mismatch_sets_discarded(void)
     misaligned[(uint32_t)k_resync_prefix_len + i] = wire[i];
   }
 
-  rx_frame_t decoded   = {k_resync_zero};
+  rx_frame_t decoded   = {0};
   uint32_t   discarded = k_resync_sentinel; /* Must be overwritten to sync_offset */
   rx_err_t   err       = rx_frame_decode_with_resync(&s_decoder,
                                              misaligned,
@@ -2542,7 +2542,7 @@ void test_resync_crc_mismatch_sets_discarded(void)
 void test_resync_null_args(void)
 {
   uint8_t    buf[k_frame_min_size] = {k_resync_zero};
-  rx_frame_t frame                 = {k_resync_zero};
+  rx_frame_t frame                 = {0};
   uint32_t   discarded             = k_resync_zero;
 
   TEST_ASSERT_EQUAL(
