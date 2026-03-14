@@ -228,7 +228,7 @@ set(RX_HCSR04_SRC
 # HC-SR04 mock source (includes IRQ mode mocks)
 set(MOCK_HCSR04_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_hcsr04_hw.c
-    ${CMAKE_SOURCE_DIR}/mocks/rx_hcsr04_hal_mock.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_hcsr04_hal.c
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_hcsr04_irq.c
 )
 
@@ -549,11 +549,7 @@ add_executable(test_rx_drv8263
 )
 apply_strict_warnings(test_rx_drv8263)
 apply_test_includes(test_rx_drv8263)
-# Mock drv8263/ dir must come BEFORE all others to shadow rx72n_port_regs.h
-# with RAM-based mock port registers instead of hardware addresses
-target_include_directories(test_rx_drv8263 BEFORE PRIVATE
-    ${CMAKE_SOURCE_DIR}/mocks/drv8263
-)
+target_compile_definitions(test_rx_drv8263 PRIVATE UNIT_TEST)
 target_include_directories(test_rx_drv8263 PRIVATE
     ${CMAKE_SOURCE_DIR}/../libs/rx_drv8263/inc
 )

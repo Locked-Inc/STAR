@@ -363,7 +363,7 @@
  *
  * **HAL implementations interchangeable:**
  * - Hardware HAL (`rx_hcsr04_hal_hw.c`): Production firmware
- * - Mock HAL (`rx_hcsr04_hal_mock.c`): Host-side unit tests
+ * - Mock HAL (`mock_rx_hcsr04_hal.c`): Host-side unit tests
  * - Same interface, different behavior (real GPIO vs. simulated)
  *
  * **Proof:**

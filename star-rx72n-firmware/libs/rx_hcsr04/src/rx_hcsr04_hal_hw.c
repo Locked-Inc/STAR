@@ -10,7 +10,7 @@
  * using actual RX72N peripherals (GPIO ports, CMT2 timer).
  *
  * This implementation is linked into firmware builds targeting the RX72N platform.
- * For host-side unit testing, the build system links `tests/mocks/rx_hcsr04_hal_mock.c` instead.
+ * For host-side unit testing, the build system links `tests/mocks/mock_rx_hcsr04_hal.c` instead.
  *
  * # Architecture
  *

@@ -26,6 +26,6 @@
 #ifdef UNIT_TEST
 
 /* Shadow rx72n_tpu_regs.h provides TPU types, enums, and mock accessors */
-#include "rx72n_tpu_regs.h"
+#include "mock_rx72n_tpu_regs.h"
 
 #endif /* UNIT_TEST */

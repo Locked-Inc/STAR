@@ -17,7 +17,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "rx72n_dmac_regs.h"
+#include "mock_rx72n_dmac_regs.h"
 
 /* =============================================================================
  * Private Constants (mirror rx_dmaca.c internal limits for validation parity)

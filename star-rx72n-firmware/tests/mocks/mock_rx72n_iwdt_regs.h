@@ -1,12 +1,13 @@
 /**
- * @file rx72n_iwdt_regs.h
+ * @file mock_rx72n_iwdt_regs.h
  * @brief Mock IWDT Register Definitions for Unit Testing
  *
  * @details
  * Wraps the real rx72n_iwdt_regs.h but overrides the iwdt() inline accessor
  * to return a pointer to a mock register area instead of the hardware address.
- * The mock directory is included BEFORE the HAL directory so this file shadows
- * the real header.
+ * Source files that use IWDT registers select this header via `#ifdef UNIT_TEST`
+ * guards: `#include "mock_rx72n_iwdt_regs.h"` in test builds and
+ * `#include "rx72n_iwdt_regs.h"` in production builds.
  *
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.

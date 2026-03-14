@@ -14,8 +14,8 @@
 
 #include "mock_rx_system_regs.h"
 
-#include "rx72n_iwdt_regs.h"
-#include "rx72n_system_regs.h"
+#include "mock_rx72n_iwdt_regs.h"
+#include "mock_rx72n_system_regs.h"
 
 /* Mock IWDT register area for unit testing */
 rx_iwdt_regs_t g_mock_iwdt_regs;

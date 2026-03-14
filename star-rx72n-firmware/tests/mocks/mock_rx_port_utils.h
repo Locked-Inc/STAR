@@ -1,11 +1,11 @@
 /**
- * @file rx_port_utils.h
- * @brief Mock PORT utility functions for DRV8263 unit testing
+ * @file mock_rx_port_utils.h
+ * @brief Mock PORT utility functions for unit testing
  *
  * @details
- * Shadows the real rx_port_utils.h to provide RAM-based port register
- * access for host-side testing. Includes the mock rx72n_port_regs.h
- * (from this same directory) instead of the real hardware version.
+ * Replaces the real rx_port_utils.h to provide RAM-based port register
+ * access for host-side testing. Includes mock_rx72n_port_regs.h
+ * instead of the real hardware version.
  *
  * @author Locked, Inc.
  * @date 2026-03-03
@@ -28,7 +28,7 @@
 
 #pragma once
 
-#include "rx72n_port_regs.h"
+#include "mock_rx72n_port_regs.h"
 #include "rx_port_constants.h"
 
 #ifdef __cplusplus

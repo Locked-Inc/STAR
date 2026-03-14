@@ -1,5 +1,5 @@
 /**
- * @file rx72n_regs.h
+ * @file mock_rx72n_regs.h
  * @brief Unified Mock RX72N Hardware Register Definitions for Host-Side Unit Testing
  *
  * @details
@@ -15,24 +15,13 @@
  * registers, so this mock file replaces hardware registers with simulated C structures
  * that behave identically from the code's perspective.
  *
- * ## Include Path Shadowing Mechanism
+ * ## Test vs Production Build Selection
  *
  * **How Mock Override Works:**
- * 1. Production firmware builds: `lib/rx_hal/inc/` is first in include path
- *    - `#include "rx72n_regs.h"` -> resolves to real hardware definitions
- * 2. Unit test builds: CMake prepends `tests/mocks/` to include path
- *    - `#include "rx72n_regs.h"` -> resolves to THIS mock file
- * 3. Production code remains unchanged - same `#include` statements work for both
- *
- * **Example CMakeLists.txt:**
- * @code{.cmake}
- * # Unit test target
- * add_executable(test_onewire test_onewire.c)
- * target_include_directories(test_onewire PRIVATE
- *     ${CMAKE_SOURCE_DIR}/tests/mocks  # Mock headers FIRST
- *     ${CMAKE_SOURCE_DIR}/lib/rx_hal/inc  # Real headers second (fallback)
- * )
- * @endcode
+ * 1. Production firmware builds: source files include `rx72n_regs.h` (real hardware)
+ * 2. Unit test builds: source files use `#ifdef UNIT_TEST` guards to explicitly
+ *    include `mock_rx72n_regs.h` (this file) instead
+ * 3. The `UNIT_TEST` macro is defined by CMake for all test build targets
  *
  * ## Aggregated Mock Peripherals
  *
@@ -42,10 +31,10 @@
  * |--------------------------|--------------------------|------------------------|-------------------|
  * | `mock_cmt_channel_t`     | `rx_cmt_channel_regs_t`  | mock_rx_onewire_hw.h   | CMT timer channel |
  * | `mock_cmt_ctrl_t`        | `rx_cmt_control_regs_t`  | mock_rx_onewire_hw.h   | CMT start/stop    |
- * | `mock_system_regs_t`     | `rx_system_regs_t`       | rx72n_system_regs.h    | System control    |
+ * | `mock_system_regs_t`     | `rx_system_regs_t`       | mock_rx72n_system_regs.h | System control  |
  *
  * Additional peripherals (module stop control, clock generation) are defined in
- * the included mock headers ([rx72n_system_regs.h](rx72n_system_regs.h)).
+ * the included mock headers ([mock_rx72n_system_regs.h](mock_rx72n_system_regs.h)).
  *
  * ## Mock Register Behavior
  *
@@ -63,7 +52,7 @@
  *
  * ### Basic Test Setup
  * @code{.c}
- * #include "rx72n_regs.h"  // Resolves to THIS mock file (not real hardware)
+ * #include "mock_rx72n_regs.h"
  * #include "rx_onewire.h"  // Driver under test
  *
  * void test_onewire_init(void)
@@ -226,9 +215,9 @@
 
 /* Include mock hardware stubs */
 #include "mock_rx_onewire_hw.h"
-#include "rx72n_dmac_regs.h"
-#include "rx72n_system_regs.h"
-#include "rx72n_tpu_regs.h"
+#include "mock_rx72n_dmac_regs.h"
+#include "mock_rx72n_system_regs.h"
+#include "mock_rx72n_tpu_regs.h"
 
 #ifdef __cplusplus
 extern "C" {

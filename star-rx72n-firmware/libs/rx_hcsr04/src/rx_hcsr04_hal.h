@@ -71,7 +71,7 @@
 * if(TARGET_PLATFORM STREQUAL "RX72N")
 *     target_sources(rx_hcsr04 PRIVATE rx_hcsr04_hal_hw.c)
 * else()
-*     target_sources(rx_hcsr04 PRIVATE ../../tests/mocks/rx_hcsr04_hal_mock.c)
+*     target_sources(rx_hcsr04 PRIVATE ../../tests/mocks/mock_rx_hcsr04_hal.c)
 * endif()
 * ```
  *
@@ -255,7 +255,7 @@
  * | **Timer**     | CMT2 (7.5 MHz)     | OS timer API      |
  *
  * @see rx_hcsr04_hal_hw.c Hardware implementation (RX72N)
- * @see rx_hcsr04_hal_mock.c Mock implementation (host testing)
+ * @see mock_rx_hcsr04_hal.c Mock implementation (host testing)
  * @see rx_hcsr04.h HC-SR04 driver public API
  * @see rx_port_constants.h GPIO pin type definitions
  *

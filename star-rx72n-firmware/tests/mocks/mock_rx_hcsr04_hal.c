@@ -1,5 +1,5 @@
 /**
- * @file rx_hcsr04_hal_mock.c
+ * @file mock_rx_hcsr04_hal.c
  * @brief HC-SR04 Ultrasonic Sensor Mock HAL Implementation for Host-Side Testing
  *
  * @details
@@ -87,7 +87,7 @@
  *   rankdir=TB;
  *   node [shape=box, style=rounded];
  *
- *   mock_hal [label="rx_hcsr04_hal_mock.c\n(This Module)", fillcolor=lightblue, style=filled];
+ *   mock_hal [label="mock_rx_hcsr04_hal.c\n(This Module)", fillcolor=lightblue, style=filled];
  *   hal_interface [label="rx_hcsr04_hal.h\nInterface", shape=ellipse];
  *   driver [label="rx_hcsr04.c\nDriver"];
  *   mock_hw [label="mock_hcsr04_hw\nTest Infrastructure", fillcolor=lightgray, style=filled];

@@ -41,7 +41,11 @@
 
 #include "rx_check.h"
 #include "rx_log.h"
+#ifdef UNIT_TEST
+#include "mock_rx_port_utils.h"
+#else
 #include "rx_port_utils.h"
+#endif
 #include "tx_api.h"
 
 /**

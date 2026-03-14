@@ -5,7 +5,7 @@
  * @details
  * Provides RAM-based port register storage and test helper functions.
  * The g_mock_port_regs array is referenced by the mock port accessor
- * functions in drv8263/rx72n_port_regs.h.
+ * functions in mock_rx72n_port_regs.h.
  *
  * @author Locked, Inc.
  * @date 2026-03-03
@@ -30,7 +30,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "rx72n_port_regs.h"
+#include "mock_rx72n_port_regs.h"
 
 /* =============================================================================
  * File-Scope Named Constants
@@ -108,7 +108,7 @@ typedef enum : uint8_t {
  * accessor functions (port0() through portj()). Zeroed by
  * mock_drv8263_port_reset() before each test.
  *
- * @note Accessed by port accessor inlines in drv8263/rx72n_port_regs.h
+ * @note Accessed by port accessor inlines in mock_rx72n_port_regs.h
  *
  * @warning Do not modify directly in test code; use the mock_drv8263_port_*
  *          helper functions for clean test interfaces
@@ -121,8 +121,8 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-/* k_mock_port_max (from rx72n_port_regs.h) == k_mock_port_count (from mock_drv8263_port.h);
- * using k_mock_port_max here to match the extern declaration in rx72n_port_regs.h. */
+/* k_mock_port_max (from mock_rx72n_port_regs.h) == k_mock_port_count (from mock_drv8263_port.h);
+ * using k_mock_port_max here to match the extern declaration in mock_rx72n_port_regs.h. */
 static_assert((uint32_t)k_mock_port_max == (uint32_t)k_mock_port_count,
               "k_mock_port_max and k_mock_port_count must be equal");
 rx_port_regs_t g_mock_port_regs[k_mock_port_max];

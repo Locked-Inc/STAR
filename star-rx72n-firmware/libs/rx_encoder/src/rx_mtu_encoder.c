@@ -364,7 +364,11 @@
 
 #include <math.h>
 
+#ifdef UNIT_TEST
+#include "mock_rx72n_regs.h"
+#else
 #include "rx72n_regs.h"
+#endif
 #include "rx_check.h"
 #include "rx_gpio_constants.h"
 #include "rx_log.h"

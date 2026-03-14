@@ -81,9 +81,15 @@
 
 #include "hardware.h"
 #include "rx72n_clock.h"
+#ifdef UNIT_TEST
+#include "mock_rx72n_cmt_regs.h"
+#include "mock_rx72n_regs.h"
+#include "mock_rx72n_system_regs.h"
+#else
 #include "rx72n_cmt_regs.h"
 #include "rx72n_regs.h"
 #include "rx72n_system_regs.h"
+#endif
 #include "rx_bus_types.h"
 #include "rx_check.h"
 #include "rx_crc.h"

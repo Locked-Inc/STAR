@@ -186,8 +186,13 @@
 
 #include <string.h>
 
+#ifdef UNIT_TEST
+#include "mock_rx72n_iwdt_regs.h"
+#include "mock_rx72n_system_regs.h"
+#else
 #include "rx72n_iwdt_regs.h"
 #include "rx72n_system_regs.h"
+#endif
 #include "rx_check.h"
 #include "tx_api.h" /* ThreadX API for tx_time_get() and TX_TIMER_TICKS_PER_SECOND */
 
