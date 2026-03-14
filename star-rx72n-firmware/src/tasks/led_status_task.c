@@ -169,6 +169,10 @@ static uint32_t s_last_comm_sequence = 0;
 static void internal_led_task_entry(ULONG input);
 static void internal_led_set(uint8_t led_index, bool on);
 static void internal_led_init_gpio(void);
+static void internal_update_heartbeat_led(void);
+static void internal_update_error_and_motor_leds(void);
+static void internal_update_comm_led(void);
+static void internal_update_obstacle_and_estop_leds(void);
 
 /* =============================================================================
  * Public Functions
@@ -363,6 +367,135 @@ static void internal_led_set(uint8_t led_index, bool on)
 }
 
 /**
+ * @brief Update LED 0 (heartbeat): 1 Hz toggle (10 ticks on, 10 ticks off)
+ *
+ * @details
+ * Increments s_heartbeat_counter each call (50 ms tick), wraps at
+ * k_led_heartbeat_half_period, and drives LED 0 on during the first half
+ * of the period.
+ *
+ * @pre internal_led_init_gpio() called
+ * @post s_heartbeat_counter incremented and wrapped
+ * @post LED 0 state updated
+ *
+ * @note Not thread-safe; called only from internal_led_task_entry()
+ * @since Version 1.0.0
+ */
+static void internal_update_heartbeat_led(void)
+{
+  s_heartbeat_counter++;
+  if (s_heartbeat_counter >= k_led_heartbeat_half_period) {
+    s_heartbeat_counter = 0;
+  }
+  internal_led_set(
+    k_led_idx_heartbeat,
+    (s_heartbeat_counter < (k_led_heartbeat_half_period / k_led_half_period_divisor)));
+}
+
+/**
+ * @brief Update LED 1 (error) and LED 2 (motor active) from motor state
+ *
+ * @details
+ * Reads motor_state from shared_data once and drives:
+ * - LED 1 (error): fast blink when any fault_flags[i] != 0
+ * - LED 2 (motor): solid on when any duty_cycle_percent[i] > 0
+ *
+ * @pre internal_led_init_gpio() called
+ * @post LED 1 and LED 2 states updated
+ * @post s_error_counter reset to 0 when no fault present
+ *
+ * @note Not thread-safe; called only from internal_led_task_entry()
+ * @since Version 1.0.0
+ */
+static void internal_update_error_and_motor_leds(void)
+{
+  motor_state_t motor_state;
+  (void)shared_data_get_motor_state(&motor_state);
+
+  bool any_fault = false;
+  for (uint8_t i = 0; i < k_poeg_motor_count; i++) {
+    if (motor_state.fault_flags[i] != 0) {
+      any_fault = true;
+    }
+  }
+
+  if (any_fault) {
+    s_error_counter++;
+    if (s_error_counter >= k_led_error_half_period) {
+      s_error_counter = 0;
+    }
+    internal_led_set(k_led_idx_error,
+                     (s_error_counter < (k_led_error_half_period / k_led_half_period_divisor)));
+  } else {
+    s_error_counter = 0;
+    internal_led_set(k_led_idx_error, false);
+  }
+
+  bool any_motor_active = false;
+  for (uint8_t i = 0; i < k_poeg_motor_count; i++) {
+    if (motor_state.duty_cycle_percent[i] > 0.0F) {
+      any_motor_active = true;
+    }
+  }
+  internal_led_set(k_led_idx_motor, any_motor_active);
+}
+
+/**
+ * @brief Update LED 3 (comm activity): 100 ms pulse on new motor command
+ *
+ * @details
+ * Detects a new motor command by comparing sequence numbers. On a new
+ * command, loads s_comm_pulse_remaining with k_led_comm_pulse_duration
+ * (2 ticks = 100 ms) and counts down each call.
+ *
+ * @pre internal_led_init_gpio() called
+ * @post LED 3 state updated
+ * @post s_comm_pulse_remaining decremented or loaded
+ * @post s_last_comm_sequence updated on new command
+ *
+ * @note Not thread-safe; called only from internal_led_task_entry()
+ * @since Version 1.0.0
+ */
+static void internal_update_comm_led(void)
+{
+  motor_command_t cmd;
+  (void)shared_data_get_motor_command(&cmd);
+
+  if (cmd.valid && (cmd.sequence != s_last_comm_sequence)) {
+    s_last_comm_sequence   = cmd.sequence;
+    s_comm_pulse_remaining = k_led_comm_pulse_duration;
+  }
+
+  if (s_comm_pulse_remaining > 0) {
+    s_comm_pulse_remaining--;
+    internal_led_set(k_led_idx_comm, true);
+  } else {
+    internal_led_set(k_led_idx_comm, false);
+  }
+}
+
+/**
+ * @brief Update LED 4 (obstacle) and LED 5 (e-stop) from shared state
+ *
+ * @details
+ * - LED 4: solid on when obs_state.any_obstacle is true
+ * - LED 5: solid on when shared_data_is_estop_active() returns true
+ *
+ * @pre internal_led_init_gpio() called
+ * @post LED 4 and LED 5 states updated
+ *
+ * @note Not thread-safe; called only from internal_led_task_entry()
+ * @since Version 1.0.0
+ */
+static void internal_update_obstacle_and_estop_leds(void)
+{
+  obstacle_state_t obs_state;
+  (void)shared_data_get_obstacle(&obs_state);
+  internal_led_set(k_led_idx_obstacle, obs_state.any_obstacle);
+  internal_led_set(k_led_idx_estop, shared_data_is_estop_active());
+}
+
+/**
  * @brief LED status task entry point - infinite loop updating LEDs at 20 Hz
  *
  * @details
@@ -385,6 +518,11 @@ static void internal_led_set(uint8_t led_index, bool on)
  *
  * @note Thread Safety: Reads shared_data via thread-safe APIs
  *
+ * @see internal_update_heartbeat_led() LED 0 update
+ * @see internal_update_error_and_motor_leds() LED 1 and 2 update
+ * @see internal_update_comm_led() LED 3 update
+ * @see internal_update_obstacle_and_estop_leds() LED 4 and 5 update
+ *
  * @since Version 1.0.0
  */
 static void internal_led_task_entry(ULONG input)
@@ -400,78 +538,10 @@ static void internal_led_task_entry(ULONG input)
 
   /* Main loop */
   while (true) {
-    /* ---- LED 0: Heartbeat (1 Hz toggle) ---- */
-    s_heartbeat_counter++;
-    if (s_heartbeat_counter >= k_led_heartbeat_half_period) {
-      s_heartbeat_counter = 0;
-    }
-    internal_led_set(
-      k_led_idx_heartbeat,
-      (s_heartbeat_counter < (k_led_heartbeat_half_period / k_led_half_period_divisor)));
-
-    /* ---- LED 1: Error indicator (fast blink on fault) ---- */
-    {
-      motor_state_t motor_state;
-      (void)shared_data_get_motor_state(&motor_state);
-
-      bool any_fault = false;
-      for (uint8_t i = 0; i < k_poeg_motor_count; i++) {
-        if (motor_state.fault_flags[i] != 0) {
-          any_fault = true;
-        }
-      }
-
-      if (any_fault) {
-        s_error_counter++;
-        if (s_error_counter >= k_led_error_half_period) {
-          s_error_counter = 0;
-        }
-        internal_led_set(k_led_idx_error,
-                         (s_error_counter < (k_led_error_half_period / k_led_half_period_divisor)));
-      } else {
-        s_error_counter = 0;
-        internal_led_set(k_led_idx_error, false);
-      }
-
-      /* ---- LED 2: Motor active (solid on if any motor running) ---- */
-      {
-        bool any_motor_active = false;
-        for (uint8_t i = 0; i < k_poeg_motor_count; i++) {
-          if (motor_state.duty_cycle_percent[i] > 0.0F) {
-            any_motor_active = true;
-          }
-        }
-        internal_led_set(k_led_idx_motor, any_motor_active);
-      }
-    }
-
-    /* ---- LED 3: Communication activity (100ms pulse on new command) ---- */
-    {
-      motor_command_t cmd;
-      (void)shared_data_get_motor_command(&cmd);
-
-      if (cmd.valid && (cmd.sequence != s_last_comm_sequence)) {
-        s_last_comm_sequence   = cmd.sequence;
-        s_comm_pulse_remaining = k_led_comm_pulse_duration;
-      }
-
-      if (s_comm_pulse_remaining > 0) {
-        s_comm_pulse_remaining--;
-        internal_led_set(k_led_idx_comm, true);
-      } else {
-        internal_led_set(k_led_idx_comm, false);
-      }
-    }
-
-    /* ---- LED 4: Obstacle detected (solid on) ---- */
-    {
-      obstacle_state_t obs_state;
-      (void)shared_data_get_obstacle(&obs_state);
-      internal_led_set(k_led_idx_obstacle, obs_state.any_obstacle);
-    }
-
-    /* ---- LED 5: E-stop active (solid on) ---- */
-    internal_led_set(k_led_idx_estop, shared_data_is_estop_active());
+    internal_update_heartbeat_led();
+    internal_update_error_and_motor_leds();
+    internal_update_comm_led();
+    internal_update_obstacle_and_estop_leds();
 
     /* Report task heartbeat to IWDT (must execute within 150ms timeout) */
     rx_err_t err = rx_iwdt_task_heartbeat("LEDStatus");

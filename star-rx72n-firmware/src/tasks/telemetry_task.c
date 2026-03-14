@@ -1309,6 +1309,8 @@ typedef enum : uint8_t {
 static void                  internal_telem_task_entry(ULONG input);
 static rx_err_t              internal_build_and_send_telemetry(void);
 static telemetry_transport_t internal_select_transport(void);
+static rx_err_t              internal_transport_to_channel(telemetry_transport_t transport,
+                                                           rx_comm_channel_t*    out_channel);
 static rx_err_t              internal_populate_motor_telemetry(star_v1_TelemetryData* telemetry);
 static void                  internal_collect_state(star_v1_TelemetryData* telemetry);
 static void                  internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry);
@@ -2293,6 +2295,58 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
 }
 
 /**
+ * @brief Map a telemetry transport to its comm-manager channel enum
+ *
+ * @details
+ * Converts the telemetry_transport_t selected by internal_select_transport()
+ * into the rx_comm_channel_t required by rx_comm_manager_send().  Each
+ * transport maps 1-to-1 to a channel; k_telemetry_transport_none and any
+ * unknown value return k_rx_err_invalid_state (programming error).
+ *
+ * @param[in]  transport  Active transport returned by internal_select_transport()
+ * @param[out] out_channel Corresponding comm channel; valid only on k_rx_ok
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok            Mapping succeeded; *out_channel is valid
+ * @retval k_rx_err_null_ptr  out_channel is NULL
+ * @retval k_rx_err_invalid_state Unexpected transport value (programming error)
+ *
+ * @pre transport is a valid telemetry_transport_t value
+ * @pre out_channel is not NULL
+ *
+ * @post *out_channel contains the matching rx_comm_channel_t on k_rx_ok
+ * @post *out_channel is unchanged on error
+ *
+ * @note Not thread-safe; called only from internal_build_and_send_telemetry()
+ * @see internal_select_transport() Produces the transport argument
+ * @see internal_build_and_send_telemetry() Sole caller
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_transport_to_channel(telemetry_transport_t transport,
+                                              rx_comm_channel_t*    out_channel)
+{
+  RX_CHECK_NULL_PTR(out_channel, s_tag, "out_channel pointer is nullptr");
+  switch (transport) {
+    case k_telemetry_transport_usb:
+      *out_channel = k_comm_channel_usb;
+      return k_rx_ok;
+    case k_telemetry_transport_spi:
+      *out_channel = k_comm_channel_spi;
+      return k_rx_ok;
+    case k_telemetry_transport_i2c:
+      *out_channel = k_comm_channel_i2c;
+      return k_rx_ok;
+    case k_telemetry_transport_uart:
+      *out_channel = k_comm_channel_uart;
+      return k_rx_ok;
+    case k_telemetry_transport_none:
+    default:
+      RX_ASSERT(false, "internal_select_transport() returned unexpected transport");
+      return k_rx_err_invalid_state;
+  }
+}
+
+/**
  * @brief Build and send complete telemetry message (4-phase aggregation orchestrator)
  *
  * @details
@@ -2389,26 +2443,10 @@ static rx_err_t internal_build_and_send_telemetry(void)
   /* Select transport based on active command channel */
   transport = internal_select_transport();
 
-  /* Map transport to channel; exhaustive switch surfaces unexpected enum values */
-  switch (transport) {
-    case k_telemetry_transport_usb:
-      channel = k_comm_channel_usb;
-      break;
-    case k_telemetry_transport_spi:
-      channel = k_comm_channel_spi;
-      break;
-    case k_telemetry_transport_i2c:
-      channel = k_comm_channel_i2c;
-      break;
-    case k_telemetry_transport_uart:
-      channel = k_comm_channel_uart;
-      break;
-    case k_telemetry_transport_none:
-    default:
-      /* internal_select_transport() only returns a valid transport; reaching here
-       * with none or unknown is a programming error. Assert in debug builds. */
-      RX_ASSERT(false, "internal_select_transport() returned unexpected transport");
-      return k_rx_err_invalid_state;
+  /* Map transport to comm channel */
+  err = internal_transport_to_channel(transport, &channel);
+  if (err != k_rx_ok) {
+    return err;
   }
 
   /* Assert HOST_IRQ LOW (active-low) only for SPI sends: the RPi5 SPI
