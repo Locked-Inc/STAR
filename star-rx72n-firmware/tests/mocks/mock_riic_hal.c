@@ -239,8 +239,8 @@ void mock_riic_set_next_write_error(rx_err_t err)
 
 void mock_riic_clear_error(void)
 {
-  g_mock_riic.error_set         = false;
-  g_mock_riic.write_error_set   = false;
+  g_mock_riic.error_set          = false;
+  g_mock_riic.write_error_set    = false;
   g_mock_riic.nth_call_error_set = false;
 }
 

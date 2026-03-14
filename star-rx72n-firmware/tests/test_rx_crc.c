@@ -342,7 +342,8 @@ void test_crc_compute_invalid_poly(void)
     .dma       = {.timeout_cycles = 0U},
   };
   uint32_t result = 0U;
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
 }
 
 /**
@@ -357,7 +358,8 @@ void test_crc_compute_invalid_bit_order(void)
     .dma       = {.timeout_cycles = 0U},
   };
   uint32_t result = 0U;
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
 }
 
 /**
@@ -372,7 +374,8 @@ void test_crc_compute_sw_msb_first_invalid(void)
     .dma       = {.timeout_cycles = 0U},
   };
   uint32_t result = 0U;
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
 }
 
 /**
@@ -387,7 +390,8 @@ void test_crc_compute_hw_cpu_msb_first_invalid(void)
     .dma       = {.timeout_cycles = 0U},
   };
   uint32_t result = 0U;
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
 }
 
 /**
@@ -402,7 +406,8 @@ void test_crc_compute_hw_dma_msb_first_invalid(void)
     .dma       = {.timeout_cycles = 0U},
   };
   uint32_t result = 0U;
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
 }
 
 /**
@@ -417,7 +422,8 @@ void test_crc_compute_invalid_backend(void)
     .dma       = {.timeout_cycles = 0U},
   };
   uint32_t result = 0U;
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
 }
 
 /* =============================================================================
@@ -867,8 +873,7 @@ void test_crc32_update_null_returns_original(void)
 void test_crc32_update_len_too_large_returns_original(void)
 {
   uint32_t crc = (uint32_t)k_test_crc32_sentinel;
-  TEST_ASSERT_EQUAL_HEX32(crc,
-                           rx_crc32_update(crc, s_test_vec_9, (uint32_t)k_crc_len_max + 1U));
+  TEST_ASSERT_EQUAL_HEX32(crc, rx_crc32_update(crc, s_test_vec_9, (uint32_t)k_crc_len_max + 1U));
 }
 
 /**

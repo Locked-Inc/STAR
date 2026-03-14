@@ -22,8 +22,8 @@
 mock_cmt_channel_t g_mock_cmt3;
 mock_cmt_ctrl_t    g_mock_cmt_ctrl;
 mock_system_regs_t g_mock_onewire_system_regs;
-uint16_t           g_mock_cmt3_counter_shadow        = 0;
-uint16_t           g_mock_onewire_timer_auto_increment = k_mock_onewire_timer_auto_increment_default;
+uint16_t           g_mock_cmt3_counter_shadow = 0;
+uint16_t g_mock_onewire_timer_auto_increment  = k_mock_onewire_timer_auto_increment_default;
 
 /* =============================================================================
  * Mock State Control Functions
@@ -36,7 +36,7 @@ void mock_onewire_hw_init(void)
   memset(&g_mock_cmt_ctrl, 0, sizeof(g_mock_cmt_ctrl));
   memset(&g_mock_onewire_system_regs, 0, sizeof(g_mock_onewire_system_regs));
 
-  g_mock_cmt3_counter_shadow        = 0;
+  g_mock_cmt3_counter_shadow          = 0;
   g_mock_onewire_timer_auto_increment = k_mock_onewire_timer_auto_increment_default;
 
   /* Set default system register values */
@@ -49,7 +49,7 @@ void mock_onewire_hw_deinit(void)
   memset(&g_mock_cmt3, 0, sizeof(g_mock_cmt3));
   memset(&g_mock_cmt_ctrl, 0, sizeof(g_mock_cmt_ctrl));
   memset(&g_mock_onewire_system_regs, 0, sizeof(g_mock_onewire_system_regs));
-  g_mock_cmt3_counter_shadow        = 0;
+  g_mock_cmt3_counter_shadow          = 0;
   g_mock_onewire_timer_auto_increment = k_mock_onewire_timer_auto_increment_default;
 }
 

@@ -920,11 +920,8 @@ static bool s_stub_is_pin_reserved(void* ctx, uint8_t port, uint8_t pin)
   return false;
 }
 
-static rx_err_t s_stub_get_pin_function(void*    ctx,
-                                         uint8_t  port,
-                                         uint8_t  pin,
-                                         char*    out_buf,
-                                         uint32_t buf_size)
+static rx_err_t
+s_stub_get_pin_function(void* ctx, uint8_t port, uint8_t pin, char* out_buf, uint32_t buf_size)
 {
   (void)ctx;
   (void)port;
@@ -1038,9 +1035,9 @@ void test_pin_interface_validate_missing_get_pin_function(void)
 {
   rx_pin_interface_t iface;
   memset(&iface, 0, sizeof(iface));
-  iface.validate_pin  = s_stub_validate_pin;
-  iface.reserve_pin   = s_stub_reserve_pin;
-  iface.release_pin   = s_stub_release_pin;
+  iface.validate_pin    = s_stub_validate_pin;
+  iface.reserve_pin     = s_stub_reserve_pin;
+  iface.release_pin     = s_stub_release_pin;
   iface.is_pin_reserved = s_stub_is_pin_reserved;
 
   rx_err_t err = rx_pin_interface_validate(&iface);
@@ -1058,10 +1055,10 @@ void test_pin_interface_validate_missing_clear_all(void)
 {
   rx_pin_interface_t iface;
   memset(&iface, 0, sizeof(iface));
-  iface.validate_pin    = s_stub_validate_pin;
-  iface.reserve_pin     = s_stub_reserve_pin;
-  iface.release_pin     = s_stub_release_pin;
-  iface.is_pin_reserved = s_stub_is_pin_reserved;
+  iface.validate_pin     = s_stub_validate_pin;
+  iface.reserve_pin      = s_stub_reserve_pin;
+  iface.release_pin      = s_stub_release_pin;
+  iface.is_pin_reserved  = s_stub_is_pin_reserved;
   iface.get_pin_function = s_stub_get_pin_function;
 
   rx_err_t err = rx_pin_interface_validate(&iface);
@@ -1164,7 +1161,7 @@ void test_pin_validator_release_pin_null_ctx_returns_error(void)
 
   /* Tamper ctx to null to hit the null-check in impl_release_pin */
   iface.ctx = nullptr;
-  err        = iface.release_pin(iface.ctx, k_test_port_a, k_test_pin_3);
+  err       = iface.release_pin(iface.ctx, k_test_port_a, k_test_pin_3);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1189,7 +1186,7 @@ void test_pin_validator_is_reserved_null_ctx_returns_false(void)
   TEST_ASSERT_EQUAL(k_rx_ok, pin_validator_get_interface(&iface, &s_validator));
 
   /* Tamper ctx to null to hit the null-check in impl_is_pin_reserved */
-  iface.ctx    = nullptr;
+  iface.ctx     = nullptr;
   bool reserved = iface.is_pin_reserved(iface.ctx, k_test_port_a, k_test_pin_3);
   TEST_ASSERT_FALSE(reserved);
 }
@@ -1274,7 +1271,7 @@ void test_pin_validator_clear_all_null_ctx_returns_error(void)
 
   /* Tamper ctx to null to hit the null-check in impl_clear_all_reservations */
   iface.ctx = nullptr;
-  err        = iface.clear_all_reservations(iface.ctx);
+  err       = iface.clear_all_reservations(iface.ctx);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 

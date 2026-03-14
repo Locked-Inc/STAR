@@ -391,12 +391,23 @@ extern uint32_t internal_append_hex_byte(char* buf, uint32_t pos, uint32_t max, 
 extern uint32_t internal_append_hex_u16(char* buf, uint32_t pos, uint32_t max, uint16_t value);
 extern uint32_t internal_append_hex_u32(char* buf, uint32_t pos, uint32_t max, uint32_t value);
 extern uint32_t internal_append_decimal_u16(char* buf, uint32_t pos, uint32_t max, uint16_t value);
-extern uint32_t internal_append_flag(char* buffer, uint32_t pos, uint32_t max, bool* first,
-                                     uint8_t flags, uint8_t flag_bit, const char* flag_name);
-extern uint32_t internal_format_payload(char* buf, uint32_t pos, uint32_t max,
-                                        const uint8_t* payload, uint16_t length);
-extern uint32_t internal_format_header(char* buf, uint32_t pos, uint32_t max,
-                                       const rx_frame_header_t* header, bool is_tx);
+extern uint32_t internal_append_flag(char*       buffer,
+                                     uint32_t    pos,
+                                     uint32_t    max,
+                                     bool*       first,
+                                     uint8_t     flags,
+                                     uint8_t     flag_bit,
+                                     const char* flag_name);
+extern uint32_t internal_format_payload(char*          buf,
+                                        uint32_t       pos,
+                                        uint32_t       max,
+                                        const uint8_t* payload,
+                                        uint16_t       length);
+extern uint32_t internal_format_header(char*                    buf,
+                                       uint32_t                 pos,
+                                       uint32_t                 max,
+                                       const rx_frame_header_t* header,
+                                       bool                     is_tx);
 #endif
 
 /* =============================================================================
@@ -1328,12 +1339,12 @@ void test_format_buffer_too_small(void)
  */
 void test_format_payload_length_too_large(void)
 {
-  rx_frame_t frame     = {0};
-  uint32_t   len       = 0;
-  frame.header.length  = k_frame_max_payload + 1U;
+  rx_frame_t frame    = {0};
+  uint32_t   len      = 0;
+  frame.header.length = k_frame_max_payload + 1U;
 
-  rx_err_t err = rx_frame_ascii_format(&frame, false, s_output_buffer,
-                                        sizeof(s_output_buffer), &len);
+  rx_err_t err =
+    rx_frame_ascii_format(&frame, false, s_output_buffer, sizeof(s_output_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -2085,7 +2096,7 @@ void test_internal_append_decimal_u16_assert_and_loop(void)
 void test_internal_format_payload_assert_violations(void)
 {
 #ifdef UNIT_TEST
-  char          buf[256]    = {0};
+  char          buf[256]   = {0};
   const uint8_t payload[4] = {0x01, 0x02, 0x03, 0x04};
 
   /* C=false: pos >= max (line 616 assert fires) */

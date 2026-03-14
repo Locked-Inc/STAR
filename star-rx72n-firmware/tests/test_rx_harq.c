@@ -1130,12 +1130,9 @@ void test_combiner_combined_null_args(void)
   rx_soft_bit_t output[k_test_array_size_small];
   uint32_t      len;
 
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_chase_combiner_combined(nullptr, output, &len));
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_chase_combiner_combined(&s_combiner, nullptr, &len));
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_chase_combiner_combined(&s_combiner, output, nullptr));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_chase_combiner_combined(nullptr, output, &len));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_chase_combiner_combined(&s_combiner, nullptr, &len));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_chase_combiner_combined(&s_combiner, output, nullptr));
 }
 
 /**
@@ -1149,7 +1146,7 @@ void test_combiner_combined_null_args(void)
  */
 void test_combiner_combined_uninitialized(void)
 {
-  rx_chase_combiner_t comb     = {0};
+  rx_chase_combiner_t comb = {0};
   rx_soft_bit_t       output[k_test_array_size_small];
   uint32_t            len;
 
@@ -2151,8 +2148,8 @@ void test_harq_decode_no_fec_output_truncated(void)
   uint32_t enc_len = k_test_count_zero;
   uint8_t  bit;
 
-  rx_err_t err = rx_harq_encode(&s_harq, payload, k_test_buf_small, encoded, k_test_buf_large,
-                                &enc_len);
+  rx_err_t err =
+    rx_harq_encode(&s_harq, payload, k_test_buf_small, encoded, k_test_buf_large, &enc_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_test_buf_small, enc_len);
 
@@ -2161,7 +2158,7 @@ void test_harq_decode_no_fec_output_truncated(void)
   uint32_t      soft_len = enc_len * k_bits_per_byte;
   for (uint32_t i = k_test_count_zero; i < enc_len; i++) {
     for (int8_t b = k_bit_idx_msb; b >= k_bit_idx_lsb; b--) {
-      bit                                              = (encoded[i] >> b) & k_bit_mask;
+      bit                                             = (encoded[i] >> b) & k_bit_mask;
       soft[i * k_bits_per_byte + (k_bit_idx_msb - b)] = rx_fec_hard_to_soft(bit);
     }
   }
@@ -2170,8 +2167,8 @@ void test_harq_decode_no_fec_output_truncated(void)
   (void)rx_harq_reset(&s_harq);
 
   /* Request only 1 byte output while soft bits decode to 2 bytes -> truncation */
-  uint8_t  output[k_test_buf_medium];
-  uint32_t dec_len;
+  uint8_t                 output[k_test_buf_medium];
+  uint32_t                dec_len;
   rx_harq_decode_params_t params = {
     .soft_bits           = soft,
     .soft_len            = soft_len,
@@ -2301,8 +2298,7 @@ void test_harq_decode_combiner_add_mismatch(void)
     .soft_len            = k_test_fec_len_2_byte * k_bits_per_byte,
     .expected_output_len = k_test_count_zero,
   };
-  TEST_ASSERT_EQUAL(k_rx_err_protocol_error,
-                    rx_harq_decode(&s_harq, &params_48, output, &len));
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, rx_harq_decode(&s_harq, &params_48, output, &len));
   TEST_ASSERT_EQUAL(k_harq_state_combining, rx_harq_get_state(&s_harq));
 
   /* Second decode: soft_len=32 (different length) -> combiner_add returns invalid_size */

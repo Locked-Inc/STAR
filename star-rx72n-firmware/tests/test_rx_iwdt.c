@@ -1540,9 +1540,22 @@ static void test_register_task_no_free_slot_returns_no_mem(void)
 
   /* Fill all k_iwdt_max_tasks (16) slots with unique names */
   static const char* const k_task_names[16] = {
-    "task_00", "task_01", "task_02", "task_03", "task_04", "task_05",
-    "task_06", "task_07", "task_08", "task_09", "task_10", "task_11",
-    "task_12", "task_13", "task_14", "task_15",
+    "task_00",
+    "task_01",
+    "task_02",
+    "task_03",
+    "task_04",
+    "task_05",
+    "task_06",
+    "task_07",
+    "task_08",
+    "task_09",
+    "task_10",
+    "task_11",
+    "task_12",
+    "task_13",
+    "task_14",
+    "task_15",
   };
   for (uint32_t i = 0; i < k_iwdt_max_tasks; i++) {
     (void)rx_iwdt_register_task(k_task_names[i], 1000);

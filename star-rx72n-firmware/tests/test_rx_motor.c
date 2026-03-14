@@ -1467,7 +1467,7 @@ void test_motor_emergency_stop_second_enable_output_error(void)
 void test_motor_emergency_stop_duty_and_enable_both_fail(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
-  mock_gptw_set_duty_error(k_rx_err_hw_error);     /* both set_duty calls fail */
+  mock_gptw_set_duty_error(k_rx_err_hw_error);          /* both set_duty calls fail */
   mock_gptw_set_enable_output_error(k_rx_err_hw_error); /* all enable_output calls fail */
   rx_err_t err = rx_motor_emergency_stop(&s_motor);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);

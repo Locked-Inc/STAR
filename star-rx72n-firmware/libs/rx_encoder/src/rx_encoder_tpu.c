@@ -156,8 +156,8 @@ static bool internal_is_valid_channel(const rx_tpu_channel_t channel)
  * @since Version 1.0.0
  */
 RX_STATIC_TESTABLE rx_err_t internal_update_state(rx_encoder_state_t*    state,
-                                                   const rx_tpu_channel_t channel,
-                                      const uint16_t         current_count)
+                                                  const rx_tpu_channel_t channel,
+                                                  const uint16_t         current_count)
 {
   if (!internal_is_valid_channel(channel) || state == nullptr) {
     return k_rx_err_invalid_arg;

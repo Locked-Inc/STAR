@@ -967,9 +967,9 @@ void rx_log_usb_notify_ready(void)
  */
 void rx_log_usb_test_reset_state(void)
 {
-  s_boot_buffer      = (usb_log_boot_buffer_t){0};
-  s_usb_ready        = false;
-  s_stats            = (usb_log_stats_t){0};
+  s_boot_buffer       = (usb_log_boot_buffer_t){0};
+  s_usb_ready         = false;
+  s_stats             = (usb_log_stats_t){0};
   s_mutex_initialized = false;
 }
 
@@ -999,8 +999,8 @@ void rx_log_usb_test_set_boot_buffer(uint16_t head, uint16_t count, const char* 
   s_boot_buffer.count = count;
   /* Copy data into ring buffer - wrap-around handled by caller */
   for (uint16_t i = 0; i < count; i++) {
-    uint16_t pos             = (uint16_t)((head - count + (uint16_t)512u + i) % (uint16_t)512u);
-    s_boot_buffer.data[pos]  = data[i];
+    uint16_t pos            = (uint16_t)((head - count + (uint16_t)512u + i) % (uint16_t)512u);
+    s_boot_buffer.data[pos] = data[i];
   }
 }
 #endif /* UNIT_TEST */

@@ -2660,10 +2660,10 @@ void test_hcsr04_init_irq_mode_irq_above_range_max_returns_error(void)
 {
   rx_hcsr04_config_t cfg;
   memset(&cfg, 0, sizeof(cfg));
-  cfg.echo_pin     = k_rx_p0_3;
+  cfg.echo_pin = k_rx_p0_3;
   /* Cast 16 to bypass enum - satisfies irq >= min (8) AND irq > max (15) */
-  cfg.echo_irq     = (rx_hcsr04_irq_t)16;
-  cfg.sensor_index = k_hcsr04_sensor_front_left;
+  cfg.echo_irq      = (rx_hcsr04_irq_t)16;
+  cfg.sensor_index  = k_hcsr04_sensor_front_left;
   uint8_t  priority = 0U;
   rx_err_t err      = internal_init_irq_mode(&cfg, &priority);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2692,9 +2692,9 @@ void test_hcsr04_init_irq_mode_pin_wrong_port_returns_error(void)
   rx_hcsr04_config_t cfg;
   memset(&cfg, 0, sizeof(cfg));
   /* P1_0 has port=1 which != k_irq_p0_port(0); irq and sensor_index are valid */
-  cfg.echo_pin     = k_rx_p1_0;
-  cfg.echo_irq     = k_hcsr04_irq_11;
-  cfg.sensor_index = k_hcsr04_sensor_front_left;
+  cfg.echo_pin      = k_rx_p1_0;
+  cfg.echo_irq      = k_hcsr04_irq_11;
+  cfg.sensor_index  = k_hcsr04_sensor_front_left;
   uint8_t  priority = 0U;
   rx_err_t err      = internal_init_irq_mode(&cfg, &priority);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -3032,8 +3032,8 @@ void test_hcsr04_measure_blocking_non_timeout_error(void)
 
   s_sensor.cancel_requested = true;
 
-  float distance_cm = 0.0F;
-  rx_err_t err = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
+  float    distance_cm = 0.0F;
+  rx_err_t err         = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
 
   TEST_ASSERT_EQUAL(k_rx_err_cancelled, err);
 }
@@ -3055,8 +3055,8 @@ void test_hcsr04_measure_blocking_temp_comp_out_of_range(void)
   mock_hcsr04_hw_set_echo_time(nullptr, 50U); /* ~0.86cm < 2cm */
   mock_hcsr04_hw_set_auto_advance(nullptr, true, 10);
 
-  float distance_cm = 0.0F;
-  rx_err_t err = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
+  float    distance_cm = 0.0F;
+  rx_err_t err         = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
 
   TEST_ASSERT_EQUAL(k_rx_err_out_of_range, err);
 }
@@ -3078,8 +3078,8 @@ void test_hcsr04_measure_blocking_distance_exceeds_max_out_of_range(void)
   mock_hcsr04_hw_set_echo_time(nullptr, 28000U);
   mock_hcsr04_hw_set_auto_advance(nullptr, true, 10);
 
-  float distance_cm = 0.0F;
-  rx_err_t err = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
+  float    distance_cm = 0.0F;
+  rx_err_t err         = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
 
   TEST_ASSERT_EQUAL(k_rx_err_out_of_range, err);
 }
@@ -3139,7 +3139,7 @@ void test_hcsr04_measure_async_with_worker_succeeds(void)
   TEST_ASSERT_TRUE(s_sensor.measurement_active);
 
   /* Clean up: clear pending state and deinit worker */
-  s_pending.handle = nullptr;
+  s_pending.handle            = nullptr;
   s_sensor.measurement_active = false;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_worker_deinit());
 }
@@ -3211,8 +3211,8 @@ void test_hcsr04_disable_temp_compensation_not_initialized_fails(void)
  */
 void test_hcsr04_get_temperature_not_initialized_fails(void)
 {
-  float temp = 0.0F;
-  rx_err_t err = rx_hcsr04_get_temperature(&s_sensor, &temp);
+  float    temp = 0.0F;
+  rx_err_t err  = rx_hcsr04_get_temperature(&s_sensor, &temp);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -3272,9 +3272,9 @@ void test_hcsr04_get_speed_of_sound_clamps_above_max(void)
  */
 void test_hcsr04_echo_to_cm_with_temp_below_min_uses_fallback(void)
 {
-  const uint32_t echo_us = 580U;
-  float result     = rx_hcsr04_echo_to_cm_with_temp(echo_us, -50.0F);
-  float expected   = rx_hcsr04_echo_to_cm(echo_us);
+  const uint32_t echo_us  = 580U;
+  float          result   = rx_hcsr04_echo_to_cm_with_temp(echo_us, -50.0F);
+  float          expected = rx_hcsr04_echo_to_cm(echo_us);
   TEST_ASSERT_FLOAT_WITHIN(0.5F, expected, result);
 }
 
@@ -3290,9 +3290,9 @@ void test_hcsr04_echo_to_cm_with_temp_below_min_uses_fallback(void)
  */
 void test_hcsr04_echo_to_cm_with_temp_above_max_uses_fallback(void)
 {
-  const uint32_t echo_us = 580U;
-  float result     = rx_hcsr04_echo_to_cm_with_temp(echo_us, 100.0F);
-  float expected   = rx_hcsr04_echo_to_cm(echo_us);
+  const uint32_t echo_us  = 580U;
+  float          result   = rx_hcsr04_echo_to_cm_with_temp(echo_us, 100.0F);
+  float          expected = rx_hcsr04_echo_to_cm(echo_us);
   TEST_ASSERT_FLOAT_WITHIN(0.5F, expected, result);
 }
 
@@ -3341,9 +3341,9 @@ void test_hcsr04_echo_to_cm_with_temp_exceeded_echo_returns_zero(void)
  */
 void test_hcsr04_get_stats_null_handle_fails(void)
 {
-  uint32_t mc = 0;
-  uint32_t tc = 0;
-  uint32_t re = 0;
+  uint32_t mc  = 0;
+  uint32_t tc  = 0;
+  uint32_t re  = 0;
   rx_err_t err = rx_hcsr04_get_stats(nullptr, &mc, &tc, &re);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
@@ -3356,9 +3356,9 @@ void test_hcsr04_get_stats_null_handle_fails(void)
  */
 void test_hcsr04_get_stats_not_initialized_fails(void)
 {
-  uint32_t mc = 0;
-  uint32_t tc = 0;
-  uint32_t re = 0;
+  uint32_t mc  = 0;
+  uint32_t tc  = 0;
+  uint32_t re  = 0;
   rx_err_t err = rx_hcsr04_get_stats(&s_sensor, &mc, &tc, &re);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -3487,9 +3487,9 @@ void test_hcsr04_worker_event_measurement_cancelled(void)
 
   /* Cancel will be detected inside internal_trigger_and_measure */
   mock_hcsr04_hw_set_auto_advance(nullptr, false, 0);
-  s_sensor.cancel_requested  = true;
+  s_sensor.cancel_requested   = true;
   s_sensor.measurement_active = true;
-  s_async_callback_invoked   = false;
+  s_async_callback_invoked    = false;
 
   s_pending.handle    = &s_sensor;
   s_pending.callback  = test_async_callback;
@@ -3818,7 +3818,7 @@ void test_hcsr04_init_irq_mode_isr_register_fails(void)
   cfg.echo_irq           = k_hcsr04_irq_11;
   cfg.sensor_index       = k_hcsr04_sensor_front_left; /* Valid: mock inject triggers failure */
 
-  uint8_t  priority = 0U;
+  uint8_t priority = 0U;
   mock_rx_hcsr04_irq_set_isr_register_fail(true);
   rx_err_t err = internal_init_irq_mode(&cfg, &priority);
   mock_rx_hcsr04_irq_set_isr_register_fail(false);

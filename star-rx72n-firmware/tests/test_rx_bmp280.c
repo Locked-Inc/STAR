@@ -1274,10 +1274,10 @@ void test_bmp280_read_temp_out_of_range_returns_error(void)
    *   var1 = (((adc_T>>3) - 54976) * 24790) >> 11
    *   For adc_T = 1048575 (max 20-bit):
    *   var1 = ((131071 - 54976) * 24790) >> 11 = (76095 * 24790) >> 11
-   *   76095 * 24790 = 1887235050 -> fits in int32 (max ~2.1B) ✓
+   *   76095 * 24790 = 1887235050 -> fits in int32 (max ~2.1B) [PASS]
    *   1887235050 >> 11 = 920720
    *   t_fine = 920720 (approx)
-   *   T = (920720*5 + 128) >> 8 = (4603600 + 128) >> 8 = 4603728 >> 8 = 17983 > 8500 ✓
+   *   T = (920720*5 + 128) >> 8 = (4603600 + 128) >> 8 = 4603728 >> 8 = 17983 > 8500 [PASS]
    *
    * Use the NORMAL calibration (T1=27488, T2=24790, T3=50, P1=65410) with max adc_T!
    */
@@ -1320,7 +1320,7 @@ void test_bmp280_read_pressure_out_of_range_returns_error(void)
 {
   /* Reset state then init with extreme pressure calibration:
    * T1=27488 (0x6B60), T2=0, T3=0, P1=1
-   * chip_id = first byte of calib = T1_LSB = 0x60 ✓
+   * chip_id = first byte of calib = T1_LSB = 0x60 [PASS]
    * T2=0, T3=0 -> t_fine ~ 0 -> temp ~ 0 centi-degC (in range [-4000, 8500])
    * P1=1 -> pressure formula produces near-zero output (below 7680000 Pa*256 min) */
   rx_bmp280_test_reset_state();
@@ -1343,9 +1343,7 @@ void test_bmp280_read_pressure_out_of_range_returns_error(void)
   /* Load all-zero ADC buffer: status=done(0x00), adc_P=0, adc_T=0 */
   uint8_t adc_buf[7];
   memset(adc_buf, 0, sizeof(adc_buf));
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch,
-                              adc_buf,
-                              (uint16_t)sizeof(adc_buf));
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, adc_buf, (uint16_t)sizeof(adc_buf));
 
   bmp280_data_t data;
   memset(&data, 0, sizeof(data));

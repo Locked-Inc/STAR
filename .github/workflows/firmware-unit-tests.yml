@@ -83,6 +83,8 @@ jobs:
                --ignore-errors mismatch
 
           # Step 4: Remove vendor / generated / non-firmware paths.
+          # --ignore-errors unused: suppress "pattern matched no files" for paths
+          # that may not produce coverage data (e.g. third_party/ header-only libs).
           lcov --remove merged.info \
                '*/build/_deps/*' \
                '*/third_party/*' \
@@ -92,7 +94,7 @@ jobs:
                '*/smc/*' \
                '*/tests/mocks/*' \
                --output-file final.info \
-               --ignore-errors mismatch
+               --ignore-errors mismatch,unused
 
           # Step 5: Generate HTML report with per-file line and branch coverage.
           genhtml final.info \

@@ -2726,7 +2726,8 @@ void test_encode_pid_gains_response_small_buffer(void)
 {
   star_v1_SetPIDGainsResponse msg = star_v1_SetPIDGainsResponse_init_zero;
   uint32_t                    len = 0;
-  rx_err_t err = rx_nanopb_encode_pid_gains_response(&msg, s_buffer, k_test_small_buffer_size, &len);
+  rx_err_t                    err =
+    rx_nanopb_encode_pid_gains_response(&msg, s_buffer, k_test_small_buffer_size, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -2736,9 +2737,9 @@ void test_encode_pid_gains_response_small_buffer(void)
  */
 void test_decode_retransmit_config_request_zero_len(void)
 {
-  uint8_t                      buf[4] = {0};
+  uint8_t                            buf[4] = {0};
   star_v1_SetRetransmitConfigRequest msg;
-  rx_err_t err = rx_nanopb_decode_retransmit_config_request(buf, 0, &msg);
+  rx_err_t                           err = rx_nanopb_decode_retransmit_config_request(buf, 0, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -2749,7 +2750,7 @@ void test_decode_retransmit_config_request_zero_len(void)
 void test_decode_retransmit_config_request_oversized(void)
 {
   star_v1_SetRetransmitConfigRequest msg;
-  rx_err_t err =
+  rx_err_t                           err =
     rx_nanopb_decode_retransmit_config_request(s_buffer, (uint32_t)s_nanopb_buffer_size + 1U, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -2774,9 +2775,9 @@ void test_decode_retransmit_config_request_not_initialized(void)
  */
 void test_decode_retransmit_config_request_invalid_data(void)
 {
-  uint8_t  invalid_data[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint8_t                            invalid_data[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
   star_v1_SetRetransmitConfigRequest msg;
-  rx_err_t err =
+  rx_err_t                           err =
     rx_nanopb_decode_retransmit_config_request(invalid_data, sizeof(invalid_data), &msg);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
 }

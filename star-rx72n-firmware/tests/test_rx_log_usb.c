@@ -962,7 +962,8 @@ void test_log_usb_flush_ring_buffer_wrap_around(void)
    * tail = (42 - 64 + 512) % 512 = 490.
    * During flush: tail=490, chunk=64, 490+64=554 > 512 -> wrap-around triggered.
    * linear_len = 512 - 490 = 22 (bytes until end of ring buffer). */
-  static const char wrap_data[64u] = {"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?"};
+  static const char wrap_data[64u] = {
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?"};
   rx_log_usb_test_set_boot_buffer(42u, 64u, wrap_data);
 
   /* Configure USB and flush. */

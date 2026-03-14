@@ -413,7 +413,6 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
   /* Clear output buffer */
   memset(output, k_fec_zero, output_bytes);
 
-
   /* Start from state 0 (encoder is flushed to zero by tail bits) */
   uint8_t state = k_fec_zero;
 
@@ -638,15 +637,15 @@ static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*               
                                                 const rx_fec_decode_soft_params_t* params,
                                                 uint32_t*                          num_symbols_out)
 {
-  const bool dec_null          = (dec == nullptr);
-  const bool params_null       = (params == nullptr);
-  const bool num_symbols_null  = (num_symbols_out == nullptr);
+  const bool dec_null         = (dec == nullptr);
+  const bool params_null      = (params == nullptr);
+  const bool num_symbols_null = (num_symbols_out == nullptr);
   if (dec_null | params_null | num_symbols_null) {
     return k_rx_err_invalid_arg;
   }
 
-  const bool soft_bits_null = (params->soft_bits == nullptr);
-  const bool output_null    = (params->output == nullptr);
+  const bool soft_bits_null  = (params->soft_bits == nullptr);
+  const bool output_null     = (params->output == nullptr);
   const bool output_len_null = (params->output_len == nullptr);
   if (soft_bits_null | output_null | output_len_null) {
     return k_rx_err_invalid_arg;

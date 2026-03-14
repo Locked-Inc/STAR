@@ -79,15 +79,15 @@ void mock_gptw_reset(void)
   memset(s_frequency, 0, sizeof(s_frequency));
   memset(s_duty, 0, sizeof(s_duty));
   memset(s_output_enabled, 0, sizeof(s_output_enabled));
-  s_init_error                    = k_rx_ok;
-  s_set_duty_error                = k_rx_ok;
-  s_deinit_error                  = k_rx_ok;
-  s_stop_error                    = k_rx_ok;
-  s_enable_output_error           = k_rx_ok;
-  s_set_duty_success_remaining    = UINT32_MAX;
-  s_set_duty_error_after          = k_rx_ok;
+  s_init_error                      = k_rx_ok;
+  s_set_duty_error                  = k_rx_ok;
+  s_deinit_error                    = k_rx_ok;
+  s_stop_error                      = k_rx_ok;
+  s_enable_output_error             = k_rx_ok;
+  s_set_duty_success_remaining      = UINT32_MAX;
+  s_set_duty_error_after            = k_rx_ok;
   s_enable_output_success_remaining = UINT32_MAX;
-  s_enable_output_error_after     = k_rx_ok;
+  s_enable_output_error_after       = k_rx_ok;
 }
 
 void mock_gptw_set_init_error(rx_err_t err)

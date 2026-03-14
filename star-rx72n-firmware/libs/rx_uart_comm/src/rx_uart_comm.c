@@ -772,7 +772,6 @@ rx_err_t rx_uart_comm_deinit(rx_uart_comm_handle_t* handle)
     return k_rx_err_invalid_arg;
   }
 
-
   if (handle->initialized) {
     (void)(rx_frame_encoder_deinit(&handle->encoder));
     /* Post-condition: deinit only fails on nullptr; &handle->encoder is never null */

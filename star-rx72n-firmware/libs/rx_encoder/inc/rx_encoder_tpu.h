@@ -376,9 +376,8 @@ void rx_tpu_encoder_test_corrupt_cpr(rx_tpu_channel_t channel);
  *
  * @since Version 1.0.0
  */
-rx_err_t internal_update_state(rx_encoder_state_t* state,
-                                rx_tpu_channel_t    channel,
-                                uint16_t            current_count);
+rx_err_t
+internal_update_state(rx_encoder_state_t* state, rx_tpu_channel_t channel, uint16_t current_count);
 #endif /* UNIT_TEST */
 
 #ifdef __cplusplus

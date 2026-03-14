@@ -3020,12 +3020,18 @@ void test_retransmit_frame_spi_transfer_fails(void)
 void test_internal_decode_header_null_frame(void)
 {
   uint8_t data[k_frame_min_size] = {
-    0xAA, 0x55, /* SYNC = 0x55AA */
-    0x00, 0x01, /* SEQ = 1 */
-    0x00, 0x00, /* LEN = 0 */
-    0x01,       /* TYPE */
-    0x00,       /* FLAGS */
-    0x00, 0x00, 0x00, 0x00, /* CRC */
+    0xAA,
+    0x55, /* SYNC = 0x55AA */
+    0x00,
+    0x01, /* SEQ = 1 */
+    0x00,
+    0x00, /* LEN = 0 */
+    0x01, /* TYPE */
+    0x00, /* FLAGS */
+    0x00,
+    0x00,
+    0x00,
+    0x00, /* CRC */
   };
   uint32_t offset = 0;
 
@@ -3037,12 +3043,18 @@ void test_internal_decode_header_null_frame(void)
 void test_internal_decode_header_null_offset_out(void)
 {
   uint8_t data[k_frame_min_size] = {
-    0xAA, 0x55, /* SYNC = 0x55AA */
-    0x00, 0x01, /* SEQ = 1 */
-    0x00, 0x00, /* LEN = 0 */
-    0x01,       /* TYPE */
-    0x00,       /* FLAGS */
-    0x00, 0x00, 0x00, 0x00, /* CRC */
+    0xAA,
+    0x55, /* SYNC = 0x55AA */
+    0x00,
+    0x01, /* SEQ = 1 */
+    0x00,
+    0x00, /* LEN = 0 */
+    0x01, /* TYPE */
+    0x00, /* FLAGS */
+    0x00,
+    0x00,
+    0x00,
+    0x00, /* CRC */
   };
   rx_frame_t frame;
 

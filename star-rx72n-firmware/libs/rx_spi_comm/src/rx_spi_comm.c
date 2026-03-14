@@ -1847,8 +1847,8 @@ static rx_err_t internal_dispatch_control_frame(rx_spi_comm_handle_t*   handle,
         }
       } else {
         /* NACK: trigger immediate retransmit if sequence matches */
-        const bool pending      = handle->retry_pending;
-        const bool seq_match    = (frame->header.sequence == handle->retry_sequence);
+        const bool pending   = handle->retry_pending;
+        const bool seq_match = (frame->header.sequence == handle->retry_sequence);
         if (pending & seq_match) {
           const rx_err_t retx_err = internal_retransmit_frame(handle);
           if (retx_err != k_rx_ok) {

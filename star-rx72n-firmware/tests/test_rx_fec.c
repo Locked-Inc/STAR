@@ -1058,12 +1058,12 @@ void test_encode_deterministic(void)
  */
 void test_encode_too_large(void)
 {
-  static uint8_t  s_big_input[k_fec_max_input_bytes + 1U];
-  static uint8_t  s_big_output[4200U];
-  uint32_t        len;
+  static uint8_t s_big_input[k_fec_max_input_bytes + 1U];
+  static uint8_t s_big_output[4200U];
+  uint32_t       len;
 
-  rx_err_t err = rx_fec_encode(&s_encoder, s_big_input, k_fec_max_input_bytes + 1U,
-                                s_big_output, &len);
+  rx_err_t err =
+    rx_fec_encode(&s_encoder, s_big_input, k_fec_max_input_bytes + 1U, s_big_output, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -1467,12 +1467,13 @@ void test_decode_soft_insufficient_soft_len(void)
 void test_decode_soft_survivors_too_small(void)
 {
   /* Create a decoder with small survivors buffer */
-  static uint64_t       s_small_survivors[10];
-  rx_fec_decoder_t      small_dec;
+  static uint64_t             s_small_survivors[10];
+  rx_fec_decoder_t            small_dec;
   rx_fec_decode_soft_params_t params;
 
-  rx_err_t init_err = rx_fec_decoder_init(&small_dec, s_small_survivors,
-                                           sizeof(s_small_survivors) / sizeof(s_small_survivors[0]));
+  rx_err_t init_err = rx_fec_decoder_init(&small_dec,
+                                          s_small_survivors,
+                                          sizeof(s_small_survivors) / sizeof(s_small_survivors[0]));
   TEST_ASSERT_EQUAL(k_rx_ok, init_err);
 
   /* expected_output_len=2: num_symbols=(2*8)+6=22 > survivors_len=10 */

@@ -304,7 +304,10 @@ static const char s_hex_chars[] = "0123456789ABCDEF";
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-RX_STATIC_TESTABLE uint32_t internal_append_str(char* buf, uint32_t pos, uint32_t max, const char* str)
+RX_STATIC_TESTABLE uint32_t internal_append_str(char*       buf,
+                                                uint32_t    pos,
+                                                uint32_t    max,
+                                                const char* str)
 {
   /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
   RX_ASSERT(buf != nullptr && str != nullptr && max != k_empty_buffer && pos < max,
@@ -380,7 +383,10 @@ RX_STATIC_TESTABLE uint32_t internal_append_char(char* buf, uint32_t pos, uint32
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-RX_STATIC_TESTABLE uint32_t internal_append_hex_byte(char* buf, uint32_t pos, uint32_t max, uint8_t byte)
+RX_STATIC_TESTABLE uint32_t internal_append_hex_byte(char*    buf,
+                                                     uint32_t pos,
+                                                     uint32_t max,
+                                                     uint8_t  byte)
 {
   /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
   RX_ASSERT(buf != nullptr && max >= k_hex_chars_per_byte && pos < max,
@@ -420,7 +426,10 @@ RX_STATIC_TESTABLE uint32_t internal_append_hex_byte(char* buf, uint32_t pos, ui
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-RX_STATIC_TESTABLE uint32_t internal_append_hex_u16(char* buf, uint32_t pos, uint32_t max, uint16_t value)
+RX_STATIC_TESTABLE uint32_t internal_append_hex_u16(char*    buf,
+                                                    uint32_t pos,
+                                                    uint32_t max,
+                                                    uint16_t value)
 {
   /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
   RX_ASSERT(buf != nullptr && max >= k_hex_chars_per_u16 && pos < max,
@@ -459,7 +468,10 @@ RX_STATIC_TESTABLE uint32_t internal_append_hex_u16(char* buf, uint32_t pos, uin
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-RX_STATIC_TESTABLE uint32_t internal_append_hex_u32(char* buf, uint32_t pos, uint32_t max, uint32_t value)
+RX_STATIC_TESTABLE uint32_t internal_append_hex_u32(char*    buf,
+                                                    uint32_t pos,
+                                                    uint32_t max,
+                                                    uint32_t value)
 {
   /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
   RX_ASSERT(buf != nullptr && max >= k_hex_chars_per_u32 && pos < max,
@@ -507,7 +519,10 @@ RX_STATIC_TESTABLE uint32_t internal_append_hex_u32(char* buf, uint32_t pos, uin
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-RX_STATIC_TESTABLE uint32_t internal_append_decimal_u16(char* buf, uint32_t pos, uint32_t max, uint16_t value)
+RX_STATIC_TESTABLE uint32_t internal_append_decimal_u16(char*    buf,
+                                                        uint32_t pos,
+                                                        uint32_t max,
+                                                        uint16_t value)
 {
   /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
   RX_ASSERT(buf != nullptr && max != k_empty_buffer && pos < max,
@@ -607,10 +622,10 @@ RX_STATIC_TESTABLE bool internal_is_printable(uint8_t c)
  * @since Version 1.0.0
  */
 RX_STATIC_TESTABLE uint32_t internal_format_payload(char*          buf,
-                                        uint32_t       pos,
-                                        uint32_t       max,
-                                        const uint8_t* payload,
-                                        uint16_t       length)
+                                                    uint32_t       pos,
+                                                    uint32_t       max,
+                                                    const uint8_t* payload,
+                                                    uint16_t       length)
 {
   /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
   RX_ASSERT(buf != nullptr && max != k_empty_buffer && pos < max,
@@ -705,10 +720,10 @@ RX_STATIC_TESTABLE uint32_t internal_format_payload(char*          buf,
  * @since Version 1.0.0
  */
 RX_STATIC_TESTABLE uint32_t internal_format_header(char*                    buf,
-                                       uint32_t                 pos,
-                                       uint32_t                 max,
-                                       const rx_frame_header_t* header,
-                                       bool                     is_tx)
+                                                   uint32_t                 pos,
+                                                   uint32_t                 max,
+                                                   const rx_frame_header_t* header,
+                                                   bool                     is_tx)
 {
   /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
   RX_ASSERT(buf != nullptr && header != nullptr && max != k_empty_buffer && pos < max,
@@ -825,12 +840,12 @@ const char* rx_frame_ascii_type_name(rx_frame_type_t type)
  * @since Version 1.0.0
  */
 RX_STATIC_TESTABLE uint32_t internal_append_flag(char*       buffer,
-                                     uint32_t    pos,
-                                     uint32_t    max,
-                                     bool*       first,
-                                     uint8_t     flags,
-                                     uint8_t     flag_bit,
-                                     const char* flag_name)
+                                                 uint32_t    pos,
+                                                 uint32_t    max,
+                                                 bool*       first,
+                                                 uint8_t     flags,
+                                                 uint8_t     flag_bit,
+                                                 const char* flag_name)
 {
   /* Rule 5: Pre-condition invariant - callers always pass valid local bool address */
   RX_ASSERT(first != nullptr, "internal_append_flag: first is nullptr - caller must validate");

@@ -144,6 +144,12 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(nanopb)
 
+# Disable clang-tidy for nanopb vendor sources -- they don't follow STAR coding
+# standards (magic numbers, cognitive complexity, insecure API warnings).
+if(ENABLE_CLANG_TIDY)
+    set_target_properties(protobuf-nanopb-static PROPERTIES C_CLANG_TIDY "")
+endif()
+
 # =============================================================================
 # Library Sources (copied for host compilation)
 # =============================================================================

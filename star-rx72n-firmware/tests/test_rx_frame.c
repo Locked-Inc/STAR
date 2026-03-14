@@ -2595,9 +2595,9 @@ void test_decode_header_length_too_large(void)
  */
 void test_create_ping_payload_too_large(void)
 {
-  uint8_t    buf[4]   = {0x01, 0x02, 0x03, 0x04};
+  uint8_t    buf[4] = {0x01, 0x02, 0x03, 0x04};
   rx_frame_t frame;
-  rx_err_t   err      = rx_frame_create_ping(&frame, 0, buf, k_frame_max_payload + 1U);
+  rx_err_t   err = rx_frame_create_ping(&frame, 0, buf, k_frame_max_payload + 1U);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -2615,9 +2615,9 @@ void test_create_ping_payload_too_large(void)
  */
 void test_create_pong_payload_too_large(void)
 {
-  uint8_t    buf[4]   = {0x01, 0x02, 0x03, 0x04};
+  uint8_t    buf[4] = {0x01, 0x02, 0x03, 0x04};
   rx_frame_t frame;
-  rx_err_t   err      = rx_frame_create_pong(&frame, 0, buf, k_frame_max_payload + 1U);
+  rx_err_t   err = rx_frame_create_pong(&frame, 0, buf, k_frame_max_payload + 1U);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -2702,13 +2702,13 @@ void test_resync_scan_limit_capped(void)
 {
   /* Buffer larger than k_frame_max_scan_bytes (1036): use 1040 bytes of junk */
   enum : uint32_t { k_large_buf_len = 1040U };
-  static uint8_t  s_large_buf[k_large_buf_len];
+  static uint8_t s_large_buf[k_large_buf_len];
   memset(s_large_buf, k_resync_junk_byte, k_large_buf_len);
 
   rx_frame_t frame     = {0};
   uint32_t   discarded = k_resync_sentinel;
-  rx_err_t   err = rx_frame_decode_with_resync(&s_decoder, s_large_buf, k_large_buf_len,
-                                                &frame, &discarded);
+  rx_err_t   err =
+    rx_frame_decode_with_resync(&s_decoder, s_large_buf, k_large_buf_len, &frame, &discarded);
 
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
   TEST_ASSERT_EQUAL(0U, discarded);

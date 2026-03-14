@@ -528,8 +528,7 @@ void test_read_count_invalid_channel(void)
 void test_read_velocity_invalid_channel(void)
 {
   float velocity = 0.0f;
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_tpu_encoder_read_velocity(&velocity, 0.01f, 0));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_tpu_encoder_read_velocity(&velocity, 0.01f, 0));
 }
 
 /** @brief set_count with invalid channel (0) returns invalid_arg */

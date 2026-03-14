@@ -294,15 +294,15 @@ typedef struct {
   uint16_t                  call_count; /**< Number of calls recorded */
   rx_err_t                  next_error; /**< Error to return on next call */
   bool                      error_set;  /**< Whether error injection is active */
-  rx_err_t next_write_error; /**< Error to return on next riic_peripheral_write() call only */
-  bool     write_error_set;  /**< Whether write-only error injection is active */
-  bool     simulate_nack;    /**< Simulate NACK response */
-  bool     simulate_timeout; /**< Simulate timeout */
-  bool     simulate_busy;    /**< Simulate bus busy */
-  rx_err_t nth_call_error;   /**< Error to return on the nth call */
+  rx_err_t next_write_error;   /**< Error to return on next riic_peripheral_write() call only */
+  bool     write_error_set;    /**< Whether write-only error injection is active */
+  bool     simulate_nack;      /**< Simulate NACK response */
+  bool     simulate_timeout;   /**< Simulate timeout */
+  bool     simulate_busy;      /**< Simulate bus busy */
+  rx_err_t nth_call_error;     /**< Error to return on the nth call */
   bool     nth_call_error_set; /**< Whether nth-call error injection is active */
-  uint16_t nth_call_target;  /**< Call index (0-based) at which to inject error */
-  uint16_t nth_call_counter; /**< Running count of calls seen */
+  uint16_t nth_call_target;    /**< Call index (0-based) at which to inject error */
+  uint16_t nth_call_counter;   /**< Running count of calls seen */
 } mock_riic_state_t;
 
 /* =============================================================================

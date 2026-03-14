@@ -2754,7 +2754,7 @@ void test_ring_buffer_write_full_1024_bytes_loop_exhaustion(void)
 {
   /* Use a 1024-byte ring buffer -- same as k_usb_max_buffer_size */
   static uint8_t s_big_data[1024];
-  ring_buffer_t   big_buf;
+  ring_buffer_t  big_buf;
   priv_ring_buffer_init(&big_buf, s_big_data, sizeof(s_big_data));
 
   uint8_t src[1024];
@@ -2780,7 +2780,7 @@ void test_ring_buffer_write_full_1024_bytes_loop_exhaustion(void)
 void test_ring_buffer_read_full_1024_bytes_loop_exhaustion(void)
 {
   static uint8_t s_big_data2[1024];
-  ring_buffer_t   big_buf;
+  ring_buffer_t  big_buf;
   priv_ring_buffer_init(&big_buf, s_big_data2, sizeof(s_big_data2));
 
   uint8_t src[1024];
@@ -2792,7 +2792,7 @@ void test_ring_buffer_read_full_1024_bytes_loop_exhaustion(void)
   TEST_ASSERT_EQUAL_UINT32(1024U, written);
 
   /* Read all 1024 bytes - loop runs to exhaustion */
-  uint8_t dst[1024];
+  uint8_t  dst[1024];
   uint32_t read = priv_ring_buffer_read(&big_buf, dst, 1024U);
   TEST_ASSERT_EQUAL_UINT32(1024U, read);
   TEST_ASSERT_EQUAL_UINT32(0U, big_buf.count);
@@ -2806,7 +2806,7 @@ void test_ring_buffer_read_full_1024_bytes_loop_exhaustion(void)
  */
 void test_ring_buffer_write_null_buf_returns_zero(void)
 {
-  uint8_t src[] = "hi";
+  uint8_t  src[]   = "hi";
   uint32_t written = priv_ring_buffer_write(nullptr, src, 2U);
   TEST_ASSERT_EQUAL_UINT32(0U, written);
 }
@@ -2819,7 +2819,7 @@ void test_ring_buffer_write_null_buf_returns_zero(void)
  */
 void test_ring_buffer_read_null_buf_returns_zero(void)
 {
-  uint8_t dst[4];
+  uint8_t  dst[4];
   uint32_t read = priv_ring_buffer_read(nullptr, dst, 4U);
   TEST_ASSERT_EQUAL_UINT32(0U, read);
 }
@@ -2834,12 +2834,12 @@ void test_ring_buffer_read_null_buf_returns_zero(void)
 void test_ring_buffer_write_null_buf_data_returns_zero(void)
 {
   ring_buffer_t buf;
-  buf.data  = nullptr;
-  buf.size  = 8U;
-  buf.head  = 0U;
-  buf.tail  = 0U;
-  buf.count = 0U;
-  uint8_t src[] = "hi";
+  buf.data         = nullptr;
+  buf.size         = 8U;
+  buf.head         = 0U;
+  buf.tail         = 0U;
+  buf.count        = 0U;
+  uint8_t  src[]   = "hi";
   uint32_t written = priv_ring_buffer_write(&buf, src, 2U);
   TEST_ASSERT_EQUAL_UINT32(0U, written);
 }
@@ -2859,7 +2859,7 @@ void test_ring_buffer_read_null_buf_data_returns_zero(void)
   buf.head  = 0U;
   buf.tail  = 0U;
   buf.count = 2U; /* Pretend there is data */
-  uint8_t dst[4];
+  uint8_t  dst[4];
   uint32_t read = priv_ring_buffer_read(&buf, dst, 2U);
   TEST_ASSERT_EQUAL_UINT32(0U, read);
 }
@@ -2935,7 +2935,10 @@ void test_usb_priv_set_port_state_detached_no_init_flag(void)
 void test_usb_set_line_coding_invalid_port_no_op(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
-  rx_usb_line_coding_t coding = {.baud_rate = 115200U, .data_bits = 8U, .stop_bits = 0U, .parity = 0U};
+  rx_usb_line_coding_t coding = {.baud_rate = 115200U,
+                                 .data_bits = 8U,
+                                 .stop_bits = 0U,
+                                 .parity    = 0U};
   /* Invalid port - should be a no-op (no crash) */
   rx_usb_set_line_coding(k_usb_port_count, &coding);
   /* Valid port line coding should be unchanged (default = 115200) */
@@ -3018,7 +3021,7 @@ void test_usb_tx_pop_partial_no_tx_complete_callback(void)
   s_callback_count = 0;
 
   /* Pop only 4 bytes - buffer still has 4 remaining; callback should NOT fire */
-  uint8_t out[4];
+  uint8_t  out[4];
   uint32_t popped = rx_usb_tx_pop(k_usb_port_proto, out, 4U);
   TEST_ASSERT_EQUAL_UINT32(4U, popped);
   TEST_ASSERT_EQUAL_UINT32(0U, s_callback_count);

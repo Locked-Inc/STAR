@@ -941,6 +941,8 @@ static rx_err_t internal_init_pid_controllers(void);
 static rx_err_t internal_init_encoders(void);
 static void     internal_control_loop_iteration(void);
 static void     internal_active_brake_sequence(void);
+static void     internal_apply_reverse_brake_pwm(void);
+static void     internal_wait_active_brake(uint32_t brake_ticks);
 static void     internal_apply_pid_updates(void);
 static void     internal_check_comm_timeout(void);
 static rx_err_t
@@ -2652,42 +2654,32 @@ static void internal_control_loop_iteration(void)
  * @callgraph
  * @callergraph
  */
-static void internal_active_brake_sequence(void)
+/** @brief Apply reverse PWM to all motors based on current velocity direction. */
+static void internal_apply_reverse_brake_pwm(void)
 {
-  s_active_brake_in_progress = true;
-
-  rx_log_info(s_tag, "Active brake sequence starting");
-
-  /* Calculate brake duration in ticks (1 tick = 10ms at 100 Hz) */
-  const uint32_t brake_ticks = k_active_brake_ms / k_threadx_tick_interval_ms;
-
-  /* Step 1: Read current velocities and apply reverse PWM */
   for (uint8_t i = 0; i < k_motor_count; i++) {
-    /* Read current velocity to determine direction */
     float    current_velocity_mps = 0.0f;
     rx_err_t err = internal_read_encoder_velocity(&current_velocity_mps, s_dt_sec, i);
     if (err != k_rx_ok) {
       current_velocity_mps = 0.0f;
     }
 
-    /* Calculate reverse duty (opposite sign of velocity) */
     float brake_duty;
     if (current_velocity_mps > s_velocity_near_stopped_mps) {
-      /* Motor moving forward - brake with negative duty */
       brake_duty = -((float)k_active_brake_duty);
     } else if (current_velocity_mps < -s_velocity_near_stopped_mps) {
-      /* Motor moving backward - brake with positive duty */
       brake_duty = (float)k_active_brake_duty;
     } else {
-      /* Already near stopped */
       brake_duty = 0.0f;
     }
 
-    /* Apply reverse PWM */
     (void)rx_motor_set_duty(&s_motors[i], brake_duty);
   }
+}
 
-  /* Step 2: Wait for active brake duration */
+/** @brief Wait for active brake duration with IWDT heartbeat. */
+static void internal_wait_active_brake(uint32_t brake_ticks)
+{
   uint32_t brake_start_tick = tx_time_get();
 
   while (true) {
@@ -2698,18 +2690,28 @@ static void internal_active_brake_sequence(void)
       break;
     }
 
-    /* Report heartbeat during active brake (prevents IWDT timeout) */
     rx_err_t err = rx_iwdt_task_heartbeat(s_task_name);
     if (err != k_rx_ok) {
       rx_log_error_val(s_tag, "IWDT heartbeat failed during brake", (uint32_t)err);
     }
 
-    (void)tx_thread_sleep(1); /* 10ms polling */
+    (void)tx_thread_sleep(1);
   }
+}
 
-  /* Step 3: Apply passive brake (both H-bridge sides high) */
+static void internal_active_brake_sequence(void)
+{
+  s_active_brake_in_progress = true;
+
+  rx_log_info(s_tag, "Active brake sequence starting");
+
+  const uint32_t brake_ticks = k_active_brake_ms / k_threadx_tick_interval_ms;
+
+  internal_apply_reverse_brake_pwm();
+  internal_wait_active_brake(brake_ticks);
+
   for (uint8_t i = 0; i < k_motor_count; i++) {
-    (void)rx_motor_stop(&s_motors[i], true); /* brake = true */
+    (void)rx_motor_stop(&s_motors[i], true);
   }
 
   rx_log_info(s_tag, "Active brake sequence complete");

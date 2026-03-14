@@ -1052,8 +1052,9 @@ static void internal_release_state(rx_bus_config_t* bus_config)
   }
 
   for (uint32_t i = k_onewire_instance_idx_start; i < k_onewire_max_instances; ++i) {
-    const bool slot_in_use    = s_state_pool[i].in_use;
-    const bool handle_matches = (&s_state_pool[i].state == (onewire_runtime_state_t*)bus_config->handle);
+    const bool slot_in_use = s_state_pool[i].in_use;
+    const bool handle_matches =
+      (&s_state_pool[i].state == (onewire_runtime_state_t*)bus_config->handle);
     if (slot_in_use & handle_matches) {
       s_state_pool[i].in_use = false;
       s_state_pool[i].state  = (onewire_runtime_state_t){0};

@@ -2353,9 +2353,9 @@ void test_task_entry_runs_full_detection_loop(void)
   mock_hcsr04_hw_set_distance(nullptr, 50.0F);
   mock_hcsr04_hw_set_auto_advance(nullptr, true, 1u);
 
-  static rx_hcsr04_t       s_te_sensor;
-  static rx_hcsr04_t*      s_te_sensor_ptr;
-  static rx_motor_handle_t s_te_motor;
+  static rx_hcsr04_t        s_te_sensor;
+  static rx_hcsr04_t*       s_te_sensor_ptr;
+  static rx_motor_handle_t  s_te_motor;
   static rx_motor_handle_t* s_te_motor_ptr;
   memset(&s_te_sensor, 0, sizeof(s_te_sensor));
   memset(&s_te_motor, 0, sizeof(s_te_motor));
@@ -2831,10 +2831,10 @@ void test_internal_poll_sensors_obstacle_already_active_no_callback(void)
   static rx_obstacle_detect_t s_oa_handle;
   memset(&s_oa_handle, 0, sizeof(s_oa_handle));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_oa_handle, &cfg));
-  s_oa_handle.state              = k_obstacle_detect_state_running;
-  s_oa_handle.obstacle_active[0] = true;  /* Pre-set: obstacle already detected */
+  s_oa_handle.state               = k_obstacle_detect_state_running;
+  s_oa_handle.obstacle_active[0]  = true; /* Pre-set: obstacle already detected */
   s_oa_handle.debounce_counter[0] = 0;    /* Reset counter so it re-increments */
-  s_oa_handle.obstacle_events    = 1u;    /* Already fired once */
+  s_oa_handle.obstacle_events     = 1u;   /* Already fired once */
 
   /* Set state to obstacle (already in obstacle detection state) */
   s_oa_handle.state = k_obstacle_detect_state_obstacle;
@@ -2844,7 +2844,7 @@ void test_internal_poll_sensors_obstacle_already_active_no_callback(void)
   /* Obstacle still active, but callback should NOT fire again */
   TEST_ASSERT_TRUE(s_oa_handle.obstacle_active[0]);
   TEST_ASSERT_EQUAL(1u, s_oa_handle.obstacle_events); /* No new event */
-  TEST_ASSERT_FALSE(s_callback_called); /* Callback NOT re-fired */
+  TEST_ASSERT_FALSE(s_callback_called);               /* Callback NOT re-fired */
   /* State stays at obstacle (already was obstacle) */
   TEST_ASSERT_EQUAL(k_obstacle_detect_state_obstacle, s_oa_handle.state);
 }
@@ -2902,7 +2902,7 @@ void test_internal_poll_sensors_debounce_at_threshold_no_false_positive(void)
   static rx_obstacle_detect_t s_fp_handle;
   memset(&s_fp_handle, 0, sizeof(s_fp_handle));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_fp_handle, &cfg));
-  s_fp_handle.state                = k_obstacle_detect_state_running;
+  s_fp_handle.state = k_obstacle_detect_state_running;
   /* Pre-set counter to exactly debounce_samples: counter >= samples, NOT < samples */
   s_fp_handle.debounce_counter[0]  = 3u; /* Equal to debounce_samples */
   s_fp_handle.false_positive_count = 0u;

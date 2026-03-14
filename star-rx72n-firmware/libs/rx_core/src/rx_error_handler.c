@@ -996,14 +996,13 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
   if (comp != nullptr && comp->retry_count > 0) {
     /* Exponential backoff: delay = initial * 2^(retry_count - 1)
      * Capped at max_backoff_ms */
-    delay_ms                 = handler->initial_backoff_ms;
+    delay_ms = handler->initial_backoff_ms;
     /* Use bitwise | to evaluate both sides without short-circuit branches */
-    const bool no_limit  = (handler->max_retries == k_error_handler_no_retry_limit);
-    const bool over_max  = (handler->max_retries > k_error_handler_max_retries);
-    const uint32_t retry_cap = (no_limit | over_max)
-                                 ? k_error_handler_max_retries
-                                 : handler->max_retries;
-    const uint32_t retries   = (comp->retry_count > retry_cap) ? retry_cap : comp->retry_count;
+    const bool     no_limit = (handler->max_retries == k_error_handler_no_retry_limit);
+    const bool     over_max = (handler->max_retries > k_error_handler_max_retries);
+    const uint32_t retry_cap =
+      (no_limit | over_max) ? k_error_handler_max_retries : handler->max_retries;
+    const uint32_t retries = (comp->retry_count > retry_cap) ? retry_cap : comp->retry_count;
     /* Statically bounded loop: iterate from first retry to max retries cap (NASA Rule 2) */
     for (uint32_t i = k_error_handler_first_retry; i < k_error_handler_max_retries; ++i) {
       /* Explicit bounds check: break if reached actual retry limit */

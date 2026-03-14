@@ -5129,10 +5129,10 @@ void test_rx_bus_onewire_search_null_bus_name(void)
  */
 void test_onewire_internal_deinit_callback_wrong_type(void)
 {
-  rx_bus_config_t      wrong_config = s_onewire_config;
-  wrong_config.type                 = k_bus_type_spi; /* Wrong bus type */
-  onewire_simple_ctx_t ctx          = {.result = k_rx_ok};
-  rx_err_t             err          = internal_onewire_deinit_callback(&wrong_config, &ctx);
+  rx_bus_config_t wrong_config = s_onewire_config;
+  wrong_config.type            = k_bus_type_spi; /* Wrong bus type */
+  onewire_simple_ctx_t ctx     = {.result = k_rx_ok};
+  rx_err_t             err     = internal_onewire_deinit_callback(&wrong_config, &ctx);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -5149,11 +5149,11 @@ void test_onewire_internal_deinit_callback_wrong_type(void)
  */
 void test_onewire_internal_reset_callback_wrong_type(void)
 {
-  rx_bus_config_t     wrong_config = s_onewire_config;
-  wrong_config.type                = k_bus_type_spi; /* Wrong bus type */
-  bool                 presence    = false;
-  onewire_reset_ctx_t  ctx         = {.presence = &presence, .result = k_rx_ok};
-  rx_err_t             err         = internal_onewire_reset_callback(&wrong_config, &ctx);
+  rx_bus_config_t wrong_config = s_onewire_config;
+  wrong_config.type            = k_bus_type_spi; /* Wrong bus type */
+  bool                presence = false;
+  onewire_reset_ctx_t ctx      = {.presence = &presence, .result = k_rx_ok};
+  rx_err_t            err      = internal_onewire_reset_callback(&wrong_config, &ctx);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -5170,10 +5170,10 @@ void test_onewire_internal_reset_callback_wrong_type(void)
  */
 void test_onewire_internal_write_byte_callback_wrong_type(void)
 {
-  rx_bus_config_t          wrong_config = s_onewire_config;
-  wrong_config.type                     = k_bus_type_spi; /* Wrong bus type */
-  onewire_write_byte_ctx_t ctx          = {.byte = 0xAAU, .result = k_rx_ok};
-  rx_err_t err = internal_onewire_write_byte_callback(&wrong_config, &ctx);
+  rx_bus_config_t wrong_config = s_onewire_config;
+  wrong_config.type            = k_bus_type_spi; /* Wrong bus type */
+  onewire_write_byte_ctx_t ctx = {.byte = 0xAAU, .result = k_rx_ok};
+  rx_err_t                 err = internal_onewire_write_byte_callback(&wrong_config, &ctx);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -5190,11 +5190,11 @@ void test_onewire_internal_write_byte_callback_wrong_type(void)
  */
 void test_onewire_internal_read_byte_callback_wrong_type(void)
 {
-  rx_bus_config_t         wrong_config = s_onewire_config;
-  wrong_config.type                    = k_bus_type_spi; /* Wrong bus type */
-  uint8_t                 byte         = 0U;
-  onewire_read_byte_ctx_t ctx          = {.byte = &byte, .result = k_rx_ok};
-  rx_err_t err = internal_onewire_read_byte_callback(&wrong_config, &ctx);
+  rx_bus_config_t wrong_config = s_onewire_config;
+  wrong_config.type            = k_bus_type_spi; /* Wrong bus type */
+  uint8_t                 byte = 0U;
+  onewire_read_byte_ctx_t ctx  = {.byte = &byte, .result = k_rx_ok};
+  rx_err_t                err  = internal_onewire_read_byte_callback(&wrong_config, &ctx);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -5212,11 +5212,11 @@ void test_onewire_internal_read_byte_callback_wrong_type(void)
  */
 void test_onewire_internal_write_buffer_callback_wrong_type(void)
 {
-  rx_bus_config_t         wrong_config = s_onewire_config;
-  wrong_config.type                    = k_bus_type_spi; /* Wrong bus type */
-  const uint8_t           data[]       = {0x01U};
-  onewire_write_buf_ctx_t ctx          = {.data = data, .length = 1U, .result = k_rx_ok};
-  rx_err_t err = internal_onewire_write_buffer_callback(&wrong_config, &ctx);
+  rx_bus_config_t wrong_config   = s_onewire_config;
+  wrong_config.type              = k_bus_type_spi; /* Wrong bus type */
+  const uint8_t           data[] = {0x01U};
+  onewire_write_buf_ctx_t ctx    = {.data = data, .length = 1U, .result = k_rx_ok};
+  rx_err_t                err    = internal_onewire_write_buffer_callback(&wrong_config, &ctx);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -5234,11 +5234,11 @@ void test_onewire_internal_write_buffer_callback_wrong_type(void)
  */
 void test_onewire_internal_read_buffer_callback_wrong_type(void)
 {
-  rx_bus_config_t        wrong_config = s_onewire_config;
-  wrong_config.type                   = k_bus_type_spi; /* Wrong bus type */
-  uint8_t                buf[1]       = {0U};
-  onewire_read_buf_ctx_t ctx          = {.data = buf, .length = 1U, .result = k_rx_ok};
-  rx_err_t err = internal_onewire_read_buffer_callback(&wrong_config, &ctx);
+  rx_bus_config_t wrong_config  = s_onewire_config;
+  wrong_config.type             = k_bus_type_spi; /* Wrong bus type */
+  uint8_t                buf[1] = {0U};
+  onewire_read_buf_ctx_t ctx    = {.data = buf, .length = 1U, .result = k_rx_ok};
+  rx_err_t               err    = internal_onewire_read_buffer_callback(&wrong_config, &ctx);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -5257,7 +5257,7 @@ void test_onewire_internal_skip_rom_callback_wrong_type(void)
 {
   rx_bus_config_t wrong_config = s_onewire_config;
   wrong_config.type            = k_bus_type_spi; /* Wrong bus type */
-  rx_err_t err = internal_onewire_skip_rom_callback(&wrong_config, nullptr);
+  rx_err_t err                 = internal_onewire_skip_rom_callback(&wrong_config, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -5274,11 +5274,11 @@ void test_onewire_internal_skip_rom_callback_wrong_type(void)
  */
 void test_onewire_internal_match_rom_callback_wrong_type(void)
 {
-  rx_bus_config_t         wrong_config = s_onewire_config;
-  wrong_config.type                    = k_bus_type_spi; /* Wrong bus type */
-  const uint8_t           rom[8]       = {0x28U, 0x01U, 0x02U, 0x03U, 0x04U, 0x05U, 0x06U, 0xCBU};
-  onewire_match_rom_ctx_t ctx          = {.rom = rom, .result = k_rx_ok};
-  rx_err_t err = internal_onewire_match_rom_callback(&wrong_config, &ctx);
+  rx_bus_config_t wrong_config   = s_onewire_config;
+  wrong_config.type              = k_bus_type_spi; /* Wrong bus type */
+  const uint8_t           rom[8] = {0x28U, 0x01U, 0x02U, 0x03U, 0x04U, 0x05U, 0x06U, 0xCBU};
+  onewire_match_rom_ctx_t ctx    = {.rom = rom, .result = k_rx_ok};
+  rx_err_t                err    = internal_onewire_match_rom_callback(&wrong_config, &ctx);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -5295,11 +5295,11 @@ void test_onewire_internal_match_rom_callback_wrong_type(void)
  */
 void test_onewire_internal_read_rom_callback_wrong_type(void)
 {
-  rx_bus_config_t        wrong_config = s_onewire_config;
-  wrong_config.type                   = k_bus_type_spi; /* Wrong bus type */
-  uint8_t                rom[8]       = {0U};
-  onewire_read_rom_ctx_t ctx          = {.rom = rom, .result = k_rx_ok};
-  rx_err_t err = internal_onewire_read_rom_callback(&wrong_config, &ctx);
+  rx_bus_config_t wrong_config  = s_onewire_config;
+  wrong_config.type             = k_bus_type_spi; /* Wrong bus type */
+  uint8_t                rom[8] = {0U};
+  onewire_read_rom_ctx_t ctx    = {.rom = rom, .result = k_rx_ok};
+  rx_err_t               err    = internal_onewire_read_rom_callback(&wrong_config, &ctx);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -5317,15 +5317,15 @@ void test_onewire_internal_read_rom_callback_wrong_type(void)
  */
 void test_onewire_internal_search_callback_wrong_type(void)
 {
-  rx_bus_config_t      wrong_config = s_onewire_config;
-  wrong_config.type                 = k_bus_type_spi; /* Wrong bus type */
-  uint8_t              roms[8]      = {0U};
-  uint32_t             num          = 0U;
-  onewire_search_ctx_t ctx          = {
-    .roms        = roms,
-    .max_devices = 1U,
-    .num_devices = &num,
-    .result      = k_rx_ok,
+  rx_bus_config_t wrong_config = s_onewire_config;
+  wrong_config.type            = k_bus_type_spi; /* Wrong bus type */
+  uint8_t              roms[8] = {0U};
+  uint32_t             num     = 0U;
+  onewire_search_ctx_t ctx     = {
+        .roms        = roms,
+        .max_devices = 1U,
+        .num_devices = &num,
+        .result      = k_rx_ok,
   };
   rx_err_t err = internal_onewire_search_callback(&wrong_config, &ctx);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -5349,11 +5349,11 @@ void test_onewire_internal_search_callback_wrong_type(void)
  */
 void test_onewire_internal_search_step_null_bus_config(void)
 {
-  onewire_runtime_state_t state        = {0};
-  uint8_t                 rom[8]       = {0U};
-  uint8_t                 byte_idx     = 0U;
-  uint8_t                 bit_mask     = 0x01U;
-  uint8_t                 last_zero    = 0U;
+  onewire_runtime_state_t state     = {0};
+  uint8_t                 rom[8]    = {0U};
+  uint8_t                 byte_idx  = 0U;
+  uint8_t                 bit_mask  = 0x01U;
+  uint8_t                 last_zero = 0U;
   rx_err_t err = internal_search_step(nullptr, &state, rom, 1U, &byte_idx, &bit_mask, &last_zero);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
@@ -5375,13 +5375,8 @@ void test_onewire_internal_search_step_null_state(void)
   uint8_t  byte_idx  = 0U;
   uint8_t  bit_mask  = 0x01U;
   uint8_t  last_zero = 0U;
-  rx_err_t err       = internal_search_step(&s_onewire_config,
-                                      nullptr,
-                                      rom,
-                                      1U,
-                                      &byte_idx,
-                                      &bit_mask,
-                                      &last_zero);
+  rx_err_t err =
+    internal_search_step(&s_onewire_config, nullptr, rom, 1U, &byte_idx, &bit_mask, &last_zero);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -5401,7 +5396,7 @@ void test_onewire_internal_search_bits_null_bus_config(void)
   onewire_runtime_state_t state     = {0};
   uint8_t                 rom[8]    = {0U};
   uint8_t                 last_zero = 0U;
-  rx_err_t err = internal_search_bits(nullptr, &state, rom, &last_zero);
+  rx_err_t                err       = internal_search_bits(nullptr, &state, rom, &last_zero);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -5458,7 +5453,7 @@ void test_onewire_internal_search_bits_null_last_zero(void)
 {
   onewire_runtime_state_t state  = {0};
   uint8_t                 rom[8] = {0U};
-  rx_err_t err = internal_search_bits(&s_onewire_config, &state, rom, nullptr);
+  rx_err_t                err    = internal_search_bits(&s_onewire_config, &state, rom, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -5478,7 +5473,7 @@ void test_onewire_internal_search_iteration_null_bus_config(void)
   onewire_runtime_state_t state        = {0};
   uint8_t                 rom[8]       = {0U};
   bool                    device_found = false;
-  rx_err_t err = internal_search_iteration(nullptr, &state, rom, &device_found);
+  rx_err_t                err = internal_search_iteration(nullptr, &state, rom, &device_found);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -5497,7 +5492,7 @@ void test_onewire_internal_search_iteration_null_state(void)
 {
   uint8_t  rom[8]       = {0U};
   bool     device_found = false;
-  rx_err_t err = internal_search_iteration(&s_onewire_config, nullptr, rom, &device_found);
+  rx_err_t err          = internal_search_iteration(&s_onewire_config, nullptr, rom, &device_found);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -5535,7 +5530,7 @@ void test_onewire_internal_search_iteration_null_device_found(void)
 {
   onewire_runtime_state_t state  = {0};
   uint8_t                 rom[8] = {0U};
-  rx_err_t err = internal_search_iteration(&s_onewire_config, &state, rom, nullptr);
+  rx_err_t                err = internal_search_iteration(&s_onewire_config, &state, rom, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -5559,8 +5554,8 @@ void test_onewire_internal_search_iteration_null_device_found(void)
  */
 void test_onewire_internal_set_drive_mode_already_output(void)
 {
-  onewire_runtime_state_t state       = {.line_is_output = true};
-  rx_err_t                err         = internal_set_drive_mode(&s_onewire_config, &state, true);
+  onewire_runtime_state_t state = {.line_is_output = true};
+  rx_err_t                err   = internal_set_drive_mode(&s_onewire_config, &state, true);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(state.line_is_output);
 }
@@ -5581,7 +5576,7 @@ void test_onewire_internal_set_drive_mode_already_output(void)
 void test_onewire_internal_set_drive_mode_already_input(void)
 {
   onewire_runtime_state_t state = {.line_is_output = false};
-  rx_err_t err = internal_set_drive_mode(&s_onewire_config, &state, false);
+  rx_err_t                err   = internal_set_drive_mode(&s_onewire_config, &state, false);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(state.line_is_output);
 }
@@ -5610,7 +5605,7 @@ void test_onewire_write_buffer_loop_exit_at_max_buf_bytes(void)
   /* 255 zero bytes: each write-0 bit = 3 GPIO calls -> 255*8*3 = 6120 calls */
   static const uint8_t    s_buf[255] = {0U};
   onewire_write_buf_ctx_t ctx        = {.data = s_buf, .length = 255U, .result = k_rx_ok};
-  err                                = internal_onewire_write_buffer_callback(&s_onewire_config, &ctx);
+  err = internal_onewire_write_buffer_callback(&s_onewire_config, &ctx);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -5725,8 +5720,8 @@ void test_onewire_internal_delay_us_large_delay_exercises_counter_max(void)
 void test_onewire_release_state_loop_exhaustion(void)
 {
   /* Use a valid bus_config but set handle to a fake pointer not in the pool */
-  rx_bus_config_t      cfg = s_onewire_config;
-  uint8_t              dummy_target;
+  rx_bus_config_t cfg = s_onewire_config;
+  uint8_t         dummy_target;
   cfg.handle               = &dummy_target; /* Points outside s_state_pool */
   onewire_simple_ctx_t ctx = {.result = k_rx_ok};
 

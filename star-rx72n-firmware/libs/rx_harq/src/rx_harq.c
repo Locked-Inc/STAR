@@ -368,7 +368,9 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
     /* Post-condition: encoder_init only fails on nullptr; &harq->encoder is never null */
 
     /* Initialize FEC decoder with survivors buffer */
-    (void)(rx_fec_decoder_init(&harq->decoder, harq->decoder_survivors, k_harq_survivors_buffer_size));
+    (void)(rx_fec_decoder_init(&harq->decoder,
+                               harq->decoder_survivors,
+                               k_harq_survivors_buffer_size));
     /* Post-condition: decoder_init only fails on nullptr or zero size; both are impossible here */
   }
 
@@ -616,9 +618,9 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*              harq,
   }
 
   /* Add soft bits to combiner */
-  rx_err_t   err         = rx_chase_combiner_add(&harq->combiner, params->soft_bits, params->soft_len);
-  const bool not_ok      = (err != k_rx_ok);
-  const bool not_busy    = (err != k_rx_err_busy);
+  rx_err_t   err      = rx_chase_combiner_add(&harq->combiner, params->soft_bits, params->soft_len);
+  const bool not_ok   = (err != k_rx_ok);
+  const bool not_busy = (err != k_rx_err_busy);
   if (not_ok & not_busy) {
     return err;
   }

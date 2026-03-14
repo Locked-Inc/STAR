@@ -454,7 +454,7 @@ rx_err_t rx_usb_cdc_init(void)
 {
   mock_usb_hw_t* m = &g_mock_usb_hw;
 
-  rx_err_t ret = s_cdc_init_return;
+  rx_err_t ret      = s_cdc_init_return;
   s_cdc_init_return = k_rx_ok; /* Reset after one use */
   mock_usb_hw_record_call(m, "rx_usb_cdc_init", 0, 0, 0, ret);
 

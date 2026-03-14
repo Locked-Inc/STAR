@@ -49,7 +49,10 @@
  *         k_comm_channel_mask_usb | k_comm_channel_mask_spi | k_comm_channel_mask_i2c),
  *     .log_backends  = k_log_backend_both,
  * };
- * comm_task_apply_system_config(&cfg);
+ * rx_err_t err = comm_task_apply_system_config(&cfg);
+ * if (err != k_rx_ok) {
+ *     // handle error: invalid config or SCI9 conflict
+ * }
  * @endcode
  *
  * @invariant (comm_channels & k_comm_channel_mask_uart) and (log_backends & k_log_backend_uart)

@@ -763,7 +763,7 @@ void test_multi_channel_independent(void)
  * @brief Forward declaration of internal helpers exposed via RX_STATIC_TESTABLE
  */
 extern volatile rx_tpu_regs_t* internal_get_regs(rx_tpu_channel_t channel);
-extern uint8_t internal_get_cst_bit(rx_tpu_channel_t channel);
+extern uint8_t                 internal_get_cst_bit(rx_tpu_channel_t channel);
 #endif
 
 /**

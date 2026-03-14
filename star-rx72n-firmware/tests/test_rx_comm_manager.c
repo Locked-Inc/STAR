@@ -204,8 +204,8 @@
 #include "mock_riic_hal.h"
 #include "mock_rspi.h"
 #include "mock_uart_hw.h"
-#include "mock_usb_hw.h"
 #include "mock_usb0_regs.h"
+#include "mock_usb_hw.h"
 #include "rx_comm_manager.h"
 #include "rx_frame.h"
 #include "rx_harq.h"
@@ -2047,7 +2047,7 @@ static void helper_init_usb_handle(rx_session_state_t* sess, rx_usb_comm_handle_
 static void helper_init_spi_handle(rx_session_state_t* sess, rx_spi_comm_handle_t* spi)
 {
   mock_rspi_init(nullptr);
-  const rspi_config_t rspi_cfg = {.spi_mode = (rspi_mode_t)k_spi_comm_default_mode,
+  const rspi_config_t rspi_cfg = {.spi_mode  = (rspi_mode_t)k_spi_comm_default_mode,
                                   .use_16bit = false};
   TEST_ASSERT_EQUAL(k_rx_ok, rspi_init_peripheral(k_rspi_channel_0, &rspi_cfg));
   mock_rspi_set_write_ready(nullptr, k_rspi_channel_0, true);
@@ -2077,7 +2077,7 @@ static void helper_init_spi_handle(rx_session_state_t* sess, rx_spi_comm_handle_
  */
 void test_send_usb_handle_non_null_covers_send_path(void)
 {
-  static rx_session_state_t  s_sess_us;
+  static rx_session_state_t   s_sess_us;
   static rx_usb_comm_handle_t s_usb_us;
   helper_init_usb_handle(&s_sess_us, &s_usb_us);
 
@@ -2296,8 +2296,8 @@ void test_poll_uart_valid_frame_triggers_callback(void)
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_uart_comm_init(&s_uart_ur, &uart_cfg_ur));
 
-  s_callback_count                        = 0;
-  const rx_comm_manager_config_t mgr_cfg  = {
+  s_callback_count                       = 0;
+  const rx_comm_manager_config_t mgr_cfg = {
     .usb_handle            = nullptr,
     .spi_handle            = nullptr,
     .i2c_handle            = nullptr,
@@ -2408,9 +2408,9 @@ void test_event_queue_entry_not_occupied_returns_early(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_init(&s_manager, nullptr));
 
   /* Manually corrupt queue state: count=1 but entry occupied=false */
-  s_manager.event_queue_count              = 1;
-  s_manager.event_queue_tail               = 0;
-  s_manager.event_queue[0].occupied        = false;
+  s_manager.event_queue_count       = 1;
+  s_manager.event_queue_tail        = 0;
+  s_manager.event_queue[0].occupied = false;
 
   (void)rx_comm_manager_poll(&s_manager);
   /* Queue was not drained (entry not occupied -> early return) */
@@ -2453,7 +2453,7 @@ void test_event_queue_backoff_not_elapsed_skips_entry(void)
   TEST_ASSERT_EQUAL(1u, s_manager.event_queue_count);
 
   /* Clean up queue for tearDown */
-  s_manager.event_queue_count = 0;
+  s_manager.event_queue_count       = 0;
   s_manager.event_queue[0].occupied = false;
 }
 
@@ -2521,10 +2521,11 @@ void test_event_queue_spi_retry_backoff_computed(void)
   TEST_ASSERT_EQUAL(1u, s_manager.event_queue_count);
   TEST_ASSERT_EQUAL(1u, s_manager.event_queue[s_manager.event_queue_tail].retries);
   /* next_retry_time_ms should be set to now + backoff (> 0) */
-  TEST_ASSERT_GREATER_THAN(0u, s_manager.event_queue[s_manager.event_queue_tail].next_retry_time_ms);
+  TEST_ASSERT_GREATER_THAN(0u,
+                           s_manager.event_queue[s_manager.event_queue_tail].next_retry_time_ms);
 
   /* Clean up */
-  s_manager.event_queue_count = 0;
+  s_manager.event_queue_count       = 0;
   s_manager.event_queue[0].occupied = false;
 }
 
@@ -2606,8 +2607,8 @@ void test_event_send_payload_nonnull_zero_len(void)
     .channel     = k_comm_channel_usb,
     .type        = k_frame_type_command,
     .flags       = k_frame_flag_none,
-    .payload     = &dummy,  /* Non-null payload */
-    .payload_len = 0,       /* But zero length: memcpy must NOT be called */
+    .payload     = &dummy, /* Non-null payload */
+    .payload_len = 0,      /* But zero length: memcpy must NOT be called */
   };
   rx_err_t err = rx_comm_manager_event_send(&s_manager, &params);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2647,7 +2648,7 @@ void test_event_queue_backoff_cap(void)
   TEST_ASSERT_EQUAL(1u, s_manager.event_queue[s_manager.event_queue_tail].retries);
 
   /* Clean up */
-  s_manager.event_queue_count = 0;
+  s_manager.event_queue_count       = 0;
   s_manager.event_queue[0].occupied = false;
 }
 
@@ -2816,7 +2817,7 @@ void test_poll_i2c_frame_received_no_callback(void)
     .spi_handle            = nullptr,
     .i2c_handle            = &s_i2c_nc,
     .uart_handle           = nullptr,
-    .callback              = nullptr,  /* No callback: covers 674 FALSE */
+    .callback              = nullptr, /* No callback: covers 674 FALSE */
     .callback_ctx          = nullptr,
     .enable_decoded_output = false,
   };
@@ -2875,7 +2876,7 @@ void test_init_spi_link_matching_succeeds(void)
 
   const rx_comm_manager_config_t cfg_lm = {
     .usb_handle   = nullptr,
-    .spi_handle   = &s_spi_lm,  /* Matches spi_link->spi_handle */
+    .spi_handle   = &s_spi_lm, /* Matches spi_link->spi_handle */
     .spi_link     = &s_link_lm,
     .callback     = nullptr,
     .callback_ctx = nullptr,
@@ -3179,7 +3180,7 @@ void test_send_i2c_decoded_empty_payload(void)
     .i2c_handle            = &s_i2c_dep,
     .uart_handle           = nullptr,
     .callback              = nullptr,
-    .enable_decoded_output = true,  /* Enable decoded output */
+    .enable_decoded_output = true, /* Enable decoded output */
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_init(&s_manager, &mgr_cfg_dep));
 
@@ -3188,7 +3189,7 @@ void test_send_i2c_decoded_empty_payload(void)
     .type        = k_frame_type_command,
     .flags       = k_frame_flag_none,
     .payload     = nullptr,
-    .payload_len = 0,  /* Empty payload: covers 1755 FALSE */
+    .payload_len = 0, /* Empty payload: covers 1755 FALSE */
   };
   rx_err_t err = rx_comm_manager_send(&s_manager, &params_dep);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -3382,8 +3383,11 @@ void test_poll_spi_with_link_success_path(void)
   static uint8_t s_payload3[] = {0x01, 0x02, 0x03};
   static uint8_t s_wire3[256];
   uint32_t       wire_len3 = 0;
-  helper_encode_cmd_frame_ex(s_payload3, sizeof(s_payload3),
-                             (uint8_t)k_frame_flag_retransmit, s_wire3, &wire_len3);
+  helper_encode_cmd_frame_ex(s_payload3,
+                             sizeof(s_payload3),
+                             (uint8_t)k_frame_flag_retransmit,
+                             s_wire3,
+                             &wire_len3);
   TEST_ASSERT_EQUAL(k_rx_ok,
                     mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, s_wire3, wire_len3));
   mock_rspi_set_data_available(nullptr, k_rspi_channel_0, true);
@@ -3438,8 +3442,9 @@ void test_poll_spi_with_link_zero_payload(void)
   static uint8_t s_wire_zpay[128];
   uint32_t       wire_len_zpay = 0;
   helper_encode_cmd_frame_ex(nullptr, 0U, k_frame_flag_none, s_wire_zpay, &wire_len_zpay);
-  TEST_ASSERT_EQUAL(k_rx_ok,
-                    mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, s_wire_zpay, wire_len_zpay));
+  TEST_ASSERT_EQUAL(
+    k_rx_ok,
+    mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, s_wire_zpay, wire_len_zpay));
   mock_rspi_set_data_available(nullptr, k_rspi_channel_0, true);
 
   /* Poll: spi_link path decodes frame with zero payload; line 837 FALSE branch taken */
@@ -3492,12 +3497,13 @@ void test_poll_spi_with_link_fec_decoded(void)
   static const uint8_t s_original_fec[] = {0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x78, 0x9A};
   static uint8_t       s_encoded_fec[k_spi_link_max_encoded_payload];
   uint32_t             encoded_len_fec = 0;
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_encode(&s_link_fec.harq,
-                                            s_original_fec,
-                                            sizeof(s_original_fec),
-                                            s_encoded_fec,
-                                            sizeof(s_encoded_fec),
-                                            &encoded_len_fec));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_harq_encode(&s_link_fec.harq,
+                                   s_original_fec,
+                                   sizeof(s_original_fec),
+                                   s_encoded_fec,
+                                   sizeof(s_encoded_fec),
+                                   &encoded_len_fec));
 
   /* Build an rx_frame_t with the FEC-encoded payload and k_frame_flag_fec_enabled */
   rx_frame_encoder_t enc_fec;
@@ -3512,13 +3518,11 @@ void test_poll_spi_with_link_fec_decoded(void)
 
   static uint8_t s_wire_fec[k_frame_max_size];
   uint32_t       wire_len_fec = 0;
-  TEST_ASSERT_EQUAL(k_rx_ok,
-                    rx_frame_encode(&enc_fec, &frame_fec, s_wire_fec, &wire_len_fec));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&enc_fec, &frame_fec, s_wire_fec, &wire_len_fec));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_deinit(&enc_fec));
 
   TEST_ASSERT_EQUAL(k_rx_ok,
-                    mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0,
-                                            s_wire_fec, wire_len_fec));
+                    mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, s_wire_fec, wire_len_fec));
   mock_rspi_set_data_available(nullptr, k_rspi_channel_0, true);
 
   /* Poll: spi_link FEC path decodes successfully, sets fec_decoded=true (line 834) */
@@ -3573,7 +3577,7 @@ void test_event_queue_backoff_cap_reached(void)
   TEST_ASSERT_EQUAL(2u, s_manager.event_queue[s_manager.event_queue_tail].retries);
 
   /* Clean up queue */
-  s_manager.event_queue_count = 0;
+  s_manager.event_queue_count       = 0;
   s_manager.event_queue[0].occupied = false;
 }
 

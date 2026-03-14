@@ -171,13 +171,13 @@ void mock_hcsr04_hw_set_gpio_error(mock_hcsr04_hw_t* mock, bool error)
 
 void mock_hcsr04_hw_set_gpio_input_error(mock_hcsr04_hw_t* mock, bool error)
 {
-  mock_hcsr04_hw_t* m    = internal_get_mock(mock);
+  mock_hcsr04_hw_t* m        = internal_get_mock(mock);
   m->inject_gpio_input_error = error;
 }
 
 void mock_hcsr04_hw_set_gpio_read_error(mock_hcsr04_hw_t* mock, bool error)
 {
-  mock_hcsr04_hw_t* m    = internal_get_mock(mock);
+  mock_hcsr04_hw_t* m       = internal_get_mock(mock);
   m->inject_gpio_read_error = error;
 }
 
@@ -195,8 +195,8 @@ void mock_hcsr04_hw_set_gpio_write_high_error(mock_hcsr04_hw_t* mock, bool error
 
 void mock_hcsr04_hw_set_gpio_write_low_fail_after(mock_hcsr04_hw_t* mock, uint32_t count)
 {
-  mock_hcsr04_hw_t* m                  = internal_get_mock(mock);
-  m->gpio_write_low_fail_after_count   = count;
+  mock_hcsr04_hw_t* m                = internal_get_mock(mock);
+  m->gpio_write_low_fail_after_count = count;
 }
 
 void mock_hcsr04_hw_set_gpio_deinit_error(mock_hcsr04_hw_t* mock, bool error)
@@ -207,8 +207,8 @@ void mock_hcsr04_hw_set_gpio_deinit_error(mock_hcsr04_hw_t* mock, bool error)
 
 void mock_hcsr04_hw_set_gpio_deinit_fail_after(mock_hcsr04_hw_t* mock, uint32_t count)
 {
-  mock_hcsr04_hw_t* m               = internal_get_mock(mock);
-  m->gpio_deinit_fail_after_count   = count;
+  mock_hcsr04_hw_t* m             = internal_get_mock(mock);
+  m->gpio_deinit_fail_after_count = count;
 }
 
 void mock_hcsr04_hw_set_pin_conflict(mock_hcsr04_hw_t* mock, bool conflict)

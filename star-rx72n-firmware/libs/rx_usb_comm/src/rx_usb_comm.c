@@ -340,8 +340,11 @@ RX_STATIC_TESTABLE rx_err_t internal_read_usb_data(rx_usb_comm_handle_t* handle)
   }
 
   /* Read from USB (Port 0 = protocol) */
-  uint32_t       bytes_read = 0;
-  (void)(rx_usb_read(k_usb_port_proto, handle->rx_buffer + handle->rx_buffer_len, space, &bytes_read));
+  uint32_t bytes_read = 0;
+  (void)(rx_usb_read(k_usb_port_proto,
+                     handle->rx_buffer + handle->rx_buffer_len,
+                     space,
+                     &bytes_read));
 
   /* Port and buffer pointer are always valid here; rx_usb_read only fails on invalid args */
 
@@ -1198,7 +1201,7 @@ rx_err_t rx_usb_comm_data_available(const rx_usb_comm_handle_t* handle, bool* av
   }
 
   /* Check USB CDC buffer (Port 0 = protocol) - port and ptr are valid, always succeeds */
-  uint32_t       usb_available = 0;
+  uint32_t usb_available = 0;
   (void)(rx_usb_rx_available(k_usb_port_proto, &usb_available));
 
   /* Also check our staging buffer */

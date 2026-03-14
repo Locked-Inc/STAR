@@ -769,9 +769,7 @@ void test_bus_adc_read_voltage_hal_error_propagates(void)
 void test_bus_adc_read_voltage_exceeds_safety_limit_logs_warning(void)
 {
   /* Set raw value to UINT16_MAX so computed voltage >> 5500 mV */
-  mock_adc_set_value((uint8_t)k_test_adc_unit,
-                     (uint8_t)k_test_adc_channel,
-                     UINT16_MAX);
+  mock_adc_set_value((uint8_t)k_test_adc_unit, (uint8_t)k_test_adc_channel, UINT16_MAX);
 
   rx_err_t err = rx_bus_adc_init(&s_test_manager, s_test_bus_name);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -803,9 +801,10 @@ void test_bus_adc_read_voltage_exceeds_safety_limit_logs_warning(void)
  */
 void test_bus_config_adc_invalid_unit_returns_error(void)
 {
-  rx_bus_config_t config;
+  rx_bus_config_t      config;
   static const uint8_t k_invalid_unit = k_adc_unit_count;
-  rx_err_t err = rx_bus_config_init_adc(&config, "test", k_invalid_unit, k_test_adc_channel, k_test_adc_bits);
+  rx_err_t             err =
+    rx_bus_config_init_adc(&config, "test", k_invalid_unit, k_test_adc_channel, k_test_adc_bits);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -823,9 +822,10 @@ void test_bus_config_adc_invalid_unit_returns_error(void)
  */
 void test_bus_config_adc_invalid_channel_returns_error(void)
 {
-  rx_bus_config_t config;
+  rx_bus_config_t      config;
   static const uint8_t k_invalid_channel = k_adc_channel_max + 1U;
-  rx_err_t err = rx_bus_config_init_adc(&config, "test", k_test_adc_unit, k_invalid_channel, k_test_adc_bits);
+  rx_err_t             err =
+    rx_bus_config_init_adc(&config, "test", k_test_adc_unit, k_invalid_channel, k_test_adc_bits);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -843,9 +843,10 @@ void test_bus_config_adc_invalid_channel_returns_error(void)
  */
 void test_bus_config_adc_invalid_resolution_returns_error(void)
 {
-  rx_bus_config_t config;
+  rx_bus_config_t      config;
   static const uint8_t k_invalid_bits = 9U;
-  rx_err_t err = rx_bus_config_init_adc(&config, "test", k_test_adc_unit, k_test_adc_channel, k_invalid_bits);
+  rx_err_t             err =
+    rx_bus_config_init_adc(&config, "test", k_test_adc_unit, k_test_adc_channel, k_invalid_bits);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -858,10 +859,10 @@ void test_bus_config_adc_invalid_resolution_returns_error(void)
 void test_bus_config_adc_null_config_returns_error(void)
 {
   rx_err_t err = rx_bus_config_init_adc(nullptr,
-                                         "test",
-                                         (uint8_t)k_test_adc_unit,
-                                         (uint8_t)k_test_adc_channel,
-                                         (uint8_t)k_test_adc_bits);
+                                        "test",
+                                        (uint8_t)k_test_adc_unit,
+                                        (uint8_t)k_test_adc_channel,
+                                        (uint8_t)k_test_adc_bits);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -875,10 +876,10 @@ void test_bus_config_adc_null_name_returns_error(void)
 {
   rx_bus_config_t config;
   rx_err_t        err = rx_bus_config_init_adc(&config,
-                                                nullptr,
-                                                (uint8_t)k_test_adc_unit,
-                                                (uint8_t)k_test_adc_channel,
-                                                (uint8_t)k_test_adc_bits);
+                                        nullptr,
+                                        (uint8_t)k_test_adc_unit,
+                                        (uint8_t)k_test_adc_channel,
+                                        (uint8_t)k_test_adc_bits);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -902,10 +903,10 @@ void test_bus_config_adc_resolution_8bit_valid(void)
 {
   rx_bus_config_t config;
   rx_err_t        err = rx_bus_config_init_adc(&config,
-                                                "adc0",
-                                                (uint8_t)k_test_adc_unit,
-                                                (uint8_t)k_test_adc_channel,
-                                                (uint8_t)k_adc_resolution_8bit);
+                                        "adc0",
+                                        (uint8_t)k_test_adc_unit,
+                                        (uint8_t)k_test_adc_channel,
+                                        (uint8_t)k_adc_resolution_8bit);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL((uint8_t)k_adc_resolution_8bit, config.proto.adc.bits);
 }
@@ -930,10 +931,10 @@ void test_bus_config_adc_resolution_10bit_valid(void)
 {
   rx_bus_config_t config;
   rx_err_t        err = rx_bus_config_init_adc(&config,
-                                                "adc0",
-                                                (uint8_t)k_test_adc_unit,
-                                                (uint8_t)k_test_adc_channel,
-                                                (uint8_t)k_adc_resolution_10bit);
+                                        "adc0",
+                                        (uint8_t)k_test_adc_unit,
+                                        (uint8_t)k_test_adc_channel,
+                                        (uint8_t)k_adc_resolution_10bit);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL((uint8_t)k_adc_resolution_10bit, config.proto.adc.bits);
 }

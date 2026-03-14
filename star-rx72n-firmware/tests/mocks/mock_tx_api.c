@@ -33,11 +33,11 @@ static tx_status s_thread_delete_return = TX_SUCCESS;
 #endif /* MOCK_TX_THREAD_DELETE */
 
 #ifdef MOCK_TX_EVENT_FLAGS_GET
-static uint32_t s_event_flags_get_call_count    = 0;
-static uint32_t s_event_flags_get_no_evt_count  = 0;
-static void (*s_get_success_callback)(void)     = nullptr;
-static ULONG s_event_flags_get_mask             = ~(ULONG)0; /* All bits set by default */
-#endif /* MOCK_TX_EVENT_FLAGS_GET */
+static uint32_t s_event_flags_get_call_count   = 0;
+static uint32_t s_event_flags_get_no_evt_count = 0;
+static void (*s_get_success_callback)(void)    = nullptr;
+static ULONG s_event_flags_get_mask            = ~(ULONG)0; /* All bits set by default */
+#endif                                                      /* MOCK_TX_EVENT_FLAGS_GET */
 
 #ifdef MOCK_TX_THREAD_SLEEP
 static void (*s_sleep_callback)(void) = nullptr;
@@ -270,7 +270,7 @@ tx_status tx_thread_delete(TX_THREAD* thread_ptr)
 {
   /* Return configured error if set (one-shot) */
   if (s_thread_delete_return != TX_SUCCESS) {
-    const tx_status ret = s_thread_delete_return;
+    const tx_status ret    = s_thread_delete_return;
     s_thread_delete_return = TX_SUCCESS;
     return ret;
   }

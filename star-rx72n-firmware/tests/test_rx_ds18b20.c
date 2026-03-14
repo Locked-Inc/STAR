@@ -485,18 +485,19 @@ typedef struct {
   uint8_t  rom[k_onewire_rom_bytes]; /**< 64-bit ROM code: [family(0x28), serial(48-bit), CRC-8] */
   bool     force_init_error;         /**< If true, rx_bus_onewire_init() returns error */
   bool     force_write_error;        /**< If true, rx_bus_onewire_write_byte/write returns error */
-  bool     force_write_data_error;   /**< If true, rx_bus_onewire_write (multi-byte) returns error */
-  bool     force_read_error;         /**< If true, rx_bus_onewire_read returns error */
-  bool     force_reset_error;        /**< If true, rx_bus_onewire_reset returns error */
-  bool     force_skip_rom_error;     /**< If true, rx_bus_onewire_skip_rom returns error */
-  bool     force_match_rom_error;    /**< If true, rx_bus_onewire_match_rom returns error */
-  uint32_t write_fail_after;         /**< Fail write_byte after this many successful calls (0 = always) */
-  uint32_t write_call_count;         /**< Counter for write_byte calls */
-  uint32_t skip_rom_fail_after;      /**< Fail skip_rom after this many successful calls (0 = always) */
-  uint32_t skip_rom_call_count;      /**< Counter for skip_rom calls */
+  bool     force_write_data_error; /**< If true, rx_bus_onewire_write (multi-byte) returns error */
+  bool     force_read_error;       /**< If true, rx_bus_onewire_read returns error */
+  bool     force_reset_error;      /**< If true, rx_bus_onewire_reset returns error */
+  bool     force_skip_rom_error;   /**< If true, rx_bus_onewire_skip_rom returns error */
+  bool     force_match_rom_error;  /**< If true, rx_bus_onewire_match_rom returns error */
+  uint32_t write_fail_after; /**< Fail write_byte after this many successful calls (0 = always) */
+  uint32_t write_call_count; /**< Counter for write_byte calls */
+  uint32_t skip_rom_fail_after; /**< Fail skip_rom after this many successful calls (0 = always) */
+  uint32_t skip_rom_call_count; /**< Counter for skip_rom calls */
   bool     force_presence_false_after; /**< If true, return presence=false after N resets */
-  uint32_t presence_false_after;     /**< Return presence=false after this many resets (0=immediately) */
-  uint32_t reset_call_count;         /**< Counter for reset calls */
+  uint32_t
+    presence_false_after;    /**< Return presence=false after this many resets (0=immediately) */
+  uint32_t reset_call_count; /**< Counter for reset calls */
 } mock_onewire_state_t;
 
 /**
@@ -3645,8 +3646,8 @@ void test_ds18b20_read_scratchpad_reserved_byte_warning(void)
                       (uint32_t)(k_ds18b20_scratchpad_bytes - 1U),
                       &new_crc);
   s_mock_state.scratchpad[k_ds18b20_scratchpad_bytes - 1U] = (uint8_t)new_crc;
-  float    temp = 0.0F;
-  rx_err_t err  = rx_ds18b20_read_temperature(&handle, &temp);
+  float    temp                                            = 0.0F;
+  rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 

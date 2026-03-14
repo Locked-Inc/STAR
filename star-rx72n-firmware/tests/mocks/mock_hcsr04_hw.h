@@ -116,16 +116,18 @@ typedef struct {
   uint32_t time_step_us;         /**< Time step per auto-advance */
 
   /* Error injection */
-  bool inject_timeout;           /**< Simulate timeout (no echo) */
-  bool inject_gpio_error;        /**< Simulate GPIO set_output failure */
-  bool inject_gpio_input_error;  /**< Simulate GPIO set_input failure */
-  bool inject_gpio_read_error;   /**< Simulate GPIO read failure */
-  bool     inject_gpio_write_error;            /**< Simulate GPIO write_low failure (all calls) */
-  bool     inject_gpio_write_high_error;       /**< Simulate GPIO write_high failure */
-  uint32_t gpio_write_low_fail_after_count;   /**< Fail write_low after this many successes (0=disabled) */
-  bool     inject_gpio_deinit_error;           /**< Simulate GPIO deinit failure on all calls */
-  uint32_t gpio_deinit_fail_after_count;      /**< Fail gpio_deinit after this many successes (0 = disabled) */
-  bool     inject_pin_conflict;                /**< Simulate pin already reserved */
+  bool inject_timeout;               /**< Simulate timeout (no echo) */
+  bool inject_gpio_error;            /**< Simulate GPIO set_output failure */
+  bool inject_gpio_input_error;      /**< Simulate GPIO set_input failure */
+  bool inject_gpio_read_error;       /**< Simulate GPIO read failure */
+  bool inject_gpio_write_error;      /**< Simulate GPIO write_low failure (all calls) */
+  bool inject_gpio_write_high_error; /**< Simulate GPIO write_high failure */
+  uint32_t
+    gpio_write_low_fail_after_count; /**< Fail write_low after this many successes (0=disabled) */
+  bool inject_gpio_deinit_error;     /**< Simulate GPIO deinit failure on all calls */
+  uint32_t
+    gpio_deinit_fail_after_count; /**< Fail gpio_deinit after this many successes (0 = disabled) */
+  bool inject_pin_conflict;       /**< Simulate pin already reserved */
 
   /* Call tracking */
   mock_hcsr04_call_t call_history[k_mock_hcsr04_max_calls]; /**< Call log */

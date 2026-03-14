@@ -725,11 +725,10 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
   /* Parse calibration coefficients (all little-endian: LSB first) */
   internal_parse_calibration(calib_buf);
 
-  /* Postcondition: verify critical calibration coefficients are non-zero.
-   * Use bitwise | to evaluate both sub-expressions without short-circuit. */
+  /* Postcondition: verify critical calibration coefficients are non-zero. */
   bool t1_zero = (s_calib.dig_T1 == 0U);
   bool p1_zero = (s_calib.dig_P1 == 0U);
-  if (t1_zero | p1_zero) {
+  if (t1_zero || p1_zero) {
     rx_log_error(s_tag, "Invalid calibration: dig_T1 or dig_P1 is zero");
     s_manager = NULL;
     return k_rx_err_invalid_state;
@@ -812,18 +811,17 @@ RX_STATIC_TESTABLE rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out)
     return press_err;
   }
 
-  /* Step 5: Postcondition range checks (BMP280 datasheet operating limits).
-   * Use bitwise | to evaluate both sub-expressions without short-circuit. */
+  /* Step 5: Postcondition range checks (BMP280 datasheet operating limits). */
   bool temp_lo = (out->temp_centi_degc < (int32_t)k_bmp280_temp_min_cdegc_impl);
   bool temp_hi = (out->temp_centi_degc > (int32_t)k_bmp280_temp_max_cdegc_impl);
-  if (temp_lo | temp_hi) {
+  if (temp_lo || temp_hi) {
     rx_log_error_val(s_tag, "Temperature out of range (centi-degC)", (int32_t)out->temp_centi_degc);
     return k_rx_err_invalid_state;
   }
 
   bool press_lo = (out->press_pa_256 < (uint32_t)k_bmp280_press_min_pa_256);
   bool press_hi = (out->press_pa_256 > (uint32_t)k_bmp280_press_max_pa_256);
-  if (press_lo | press_hi) {
+  if (press_lo || press_hi) {
     rx_log_error_val(s_tag, "Pressure out of range (Pa*256)", out->press_pa_256);
     return k_rx_err_invalid_state;
   }
@@ -914,7 +912,9 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
  * for the test target).
  *
  * @pre Called from test setUp() before each test
+ * @pre No concurrent access from other threads (test runs single-threaded)
  * @post s_initialized == false; s_calib zeroed
+ * @post s_manager == NULL; driver in pre-init state
  *
  * @note Test-only helper; not compiled into production firmware
  * @see setUp() in test_rx_bmp280.c Calls this function
@@ -942,7 +942,9 @@ void rx_bmp280_test_reset_state(void)
  * @param[in] init_val Value to write to s_initialized
  *
  * @pre Called from test setup
+ * @pre No concurrent access from other threads (test runs single-threaded)
  * @post s_initialized == init_val; s_manager == manager
+ * @post Calibration struct unchanged (only s_initialized and s_manager are modified)
  *
  * @note Test-only helper; not compiled into production firmware
  *
@@ -964,7 +966,9 @@ void rx_bmp280_test_set_state(rx_bus_manager_t* manager, bool init_val)
  * internal_read_and_compensate_adc().
  *
  * @pre rx_bmp280_test_set_state() or rx_bmp280_init() called
- * @post s_calib.dig_P1 == 0; other fields unchanged
+ * @pre No concurrent access from other threads (test runs single-threaded)
+ * @post s_calib.dig_P1 == 0; other calibration fields unchanged
+ * @post internal_compensate_pressure() will return k_rx_err_invalid_state when called
  *
  * @note Test-only helper; not compiled into production firmware
  *

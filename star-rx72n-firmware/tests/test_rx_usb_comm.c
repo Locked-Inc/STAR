@@ -2860,11 +2860,17 @@ void test_internal_verify_crc_null_crc_out_valid_frame(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg));
   helper_usb_init_and_configure();
 
-  rx_frame_t  tx_frame;
-  uint8_t     encoded[256];
-  uint32_t    encoded_len = 0;
-  rx_err_t    err         = helper_create_encoded_frame(
-    &tx_frame, 0, k_frame_type_command, k_frame_flag_none, nullptr, 0, encoded, &encoded_len);
+  rx_frame_t tx_frame;
+  uint8_t    encoded[256];
+  uint32_t   encoded_len = 0;
+  rx_err_t   err         = helper_create_encoded_frame(&tx_frame,
+                                             0,
+                                             k_frame_type_command,
+                                             k_frame_flag_none,
+                                             nullptr,
+                                             0,
+                                             encoded,
+                                             &encoded_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* CRC is at encoded_len - k_frame_crc_size */
@@ -2894,7 +2900,7 @@ void test_usb_comm_send_nonnull_payload_zero_len(void)
 
   /* Non-null payload pointer but zero len: second condition of && is FALSE */
   const uint8_t payload[4] = {0x01U, 0x02U, 0x03U, 0x04U};
-  rx_err_t err = rx_usb_comm_send(&s_handle, k_frame_type_command, 0, payload, 0);
+  rx_err_t      err        = rx_usb_comm_send(&s_handle, k_frame_type_command, 0, payload, 0);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -2968,8 +2974,8 @@ void test_usb_comm_data_available_buffered_data(void)
 void test_usb_comm_time_iface_null_sleep_ms(void)
 {
   /* Create a time interface with sleep_ms = nullptr */
-  rx_time_interface_t time_iface = {.sleep_ms = nullptr, .get_ms = nullptr, .ctx = nullptr};
-  rx_usb_comm_config_t cfg       = helper_config_with_time(&time_iface);
+  rx_time_interface_t  time_iface = {.sleep_ms = nullptr, .get_ms = nullptr, .ctx = nullptr};
+  rx_usb_comm_config_t cfg        = helper_config_with_time(&time_iface);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg));
   helper_usb_init_and_configure();
 

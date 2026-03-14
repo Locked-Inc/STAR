@@ -30,8 +30,8 @@
 #include "unity.h"
 
 /* Shadow header included first so rx72n_regs.h resolves to mock */
-#include "mock_rx_onewire_hw.h"
 #include "mock_rx72n_regs.h"
+#include "mock_rx_onewire_hw.h"
 #include "rx_dmaca.h"
 
 /* =============================================================================

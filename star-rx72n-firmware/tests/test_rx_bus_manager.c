@@ -1726,10 +1726,10 @@ void test_rx_bus_manager_execute_command_not_found(void)
  */
 void test_bus_config_uart_invalid_channel_returns_error(void)
 {
-  rx_bus_config_t config;
+  rx_bus_config_t      config;
   static const uint8_t k_invalid_channel = k_sci_channel_count;
-  rx_err_t err = rx_bus_config_init_uart(&config, "test", k_invalid_channel,
-                                          k_rx_pb_7, k_rx_pb_6, 115200U);
+  rx_err_t             err =
+    rx_bus_config_init_uart(&config, "test", k_invalid_channel, k_rx_pb_7, k_rx_pb_6, 115200U);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1747,11 +1747,11 @@ void test_bus_config_uart_invalid_channel_returns_error(void)
  */
 void test_bus_config_uart_invalid_tx_pin_returns_error(void)
 {
-  rx_bus_config_t        config;
-  static const uint8_t   k_valid_channel = 9U;
-  static const rx_port_pin_t k_invalid_tx = (rx_port_pin_t)0xFF00U;
-  rx_err_t err = rx_bus_config_init_uart(&config, "test", k_valid_channel,
-                                          k_invalid_tx, k_rx_pb_6, 115200U);
+  rx_bus_config_t            config;
+  static const uint8_t       k_valid_channel = 9U;
+  static const rx_port_pin_t k_invalid_tx    = (rx_port_pin_t)0xFF00U;
+  rx_err_t                   err =
+    rx_bus_config_init_uart(&config, "test", k_valid_channel, k_invalid_tx, k_rx_pb_6, 115200U);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1769,11 +1769,11 @@ void test_bus_config_uart_invalid_tx_pin_returns_error(void)
  */
 void test_bus_config_uart_invalid_rx_pin_returns_error(void)
 {
-  rx_bus_config_t        config;
-  static const uint8_t   k_valid_channel = 9U;
-  static const rx_port_pin_t k_invalid_rx = (rx_port_pin_t)0xFF00U;
-  rx_err_t err = rx_bus_config_init_uart(&config, "test", k_valid_channel,
-                                          k_rx_pb_7, k_invalid_rx, 115200U);
+  rx_bus_config_t            config;
+  static const uint8_t       k_valid_channel = 9U;
+  static const rx_port_pin_t k_invalid_rx    = (rx_port_pin_t)0xFF00U;
+  rx_err_t                   err =
+    rx_bus_config_init_uart(&config, "test", k_valid_channel, k_rx_pb_7, k_invalid_rx, 115200U);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1793,8 +1793,8 @@ void test_bus_config_uart_zero_baudrate_returns_error(void)
 {
   rx_bus_config_t      config;
   static const uint8_t k_valid_channel = 9U;
-  rx_err_t err = rx_bus_config_init_uart(&config, "test", k_valid_channel,
-                                          k_rx_pb_7, k_rx_pb_6, 0U);
+  rx_err_t             err =
+    rx_bus_config_init_uart(&config, "test", k_valid_channel, k_rx_pb_7, k_rx_pb_6, 0U);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1812,9 +1812,9 @@ void test_bus_config_uart_zero_baudrate_returns_error(void)
  */
 void test_bus_config_onewire_invalid_pin_returns_error(void)
 {
-  rx_bus_config_t config;
+  rx_bus_config_t            config;
   static const rx_port_pin_t k_invalid_pin = (rx_port_pin_t)0xFF00U;
-  rx_err_t err = rx_bus_config_init_onewire(&config, "test", k_invalid_pin);
+  rx_err_t                   err = rx_bus_config_init_onewire(&config, "test", k_invalid_pin);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1827,9 +1827,8 @@ void test_bus_config_onewire_invalid_pin_returns_error(void)
 void test_bus_config_uart_null_config_returns_error(void)
 {
   static const uint8_t k_valid_channel = 9U;
-  rx_err_t             err = rx_bus_config_init_uart(nullptr, "test",
-                                                      k_valid_channel,
-                                                      k_rx_pb_7, k_rx_pb_6, 115200U);
+  rx_err_t             err =
+    rx_bus_config_init_uart(nullptr, "test", k_valid_channel, k_rx_pb_7, k_rx_pb_6, 115200U);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1843,9 +1842,8 @@ void test_bus_config_uart_null_name_returns_error(void)
 {
   rx_bus_config_t      config;
   static const uint8_t k_valid_channel = 9U;
-  rx_err_t             err = rx_bus_config_init_uart(&config, nullptr,
-                                                      k_valid_channel,
-                                                      k_rx_pb_7, k_rx_pb_6, 115200U);
+  rx_err_t             err =
+    rx_bus_config_init_uart(&config, nullptr, k_valid_channel, k_rx_pb_7, k_rx_pb_6, 115200U);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 

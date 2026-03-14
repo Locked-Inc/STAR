@@ -1193,8 +1193,8 @@ rx_err_t rx_bno055_is_calibrated(bool* out_calibrated)
 
   /* Use bitwise & to evaluate all sub-expressions without short-circuit,
    * ensuring full branch coverage. */
-  *out_calibrated = (bool)((sys_cal == full) & (gyr_cal == full) &
-                           (acc_cal == full) & (mag_cal == full));
+  *out_calibrated =
+    (bool)((sys_cal == full) & (gyr_cal == full) & (acc_cal == full) & (mag_cal == full));
 
   return k_rx_ok;
 }

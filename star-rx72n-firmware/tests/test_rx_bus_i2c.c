@@ -1372,7 +1372,7 @@ void test_bus_i2c_write_read_callback_zero_write_length_skips_null_check(void)
   bus_config.type        = k_bus_type_i2c;
   bus_config.initialized = true;
 
-  uint8_t read_buf[4];
+  uint8_t              read_buf[4];
   i2c_write_read_ctx_t ctx = {
     .write_data   = NULL,
     .write_length = 0U, /* length == 0: skips null-check for write_data */
@@ -1400,12 +1400,12 @@ void test_bus_i2c_write_read_callback_zero_read_length_skips_null_check(void)
   bus_config.initialized = true;
 
   static const uint8_t write_buf[] = {0x01};
-  i2c_write_read_ctx_t ctx = {
-    .write_data   = write_buf,
-    .write_length = (uint16_t)k_test_len_one,
-    .read_data    = NULL,
-    .read_length  = 0U, /* length == 0: skips null-check for read_data */
-    .result       = k_rx_err_hw_error,
+  i2c_write_read_ctx_t ctx         = {
+            .write_data   = write_buf,
+            .write_length = (uint16_t)k_test_len_one,
+            .read_data    = NULL,
+            .read_length  = 0U, /* length == 0: skips null-check for read_data */
+            .result       = k_rx_err_hw_error,
   };
 
   (void)internal_i2c_write_read_callback(&bus_config, &ctx);
@@ -1431,11 +1431,15 @@ void test_bus_i2c_write_read_callback_zero_read_length_skips_null_check(void)
  */
 void test_bus_config_i2c_invalid_sda_pin_returns_error(void)
 {
-  rx_bus_config_t config;
+  rx_bus_config_t            config;
   static const rx_port_pin_t k_invalid_sda = (rx_port_pin_t)0xFF00U;
-  rx_err_t err = rx_bus_config_init_i2c(&config, "test", k_test_i2c_channel,
-                                         k_test_i2c_addr, k_invalid_sda, k_rx_p0_5,
-                                         k_test_i2c_freq_hz);
+  rx_err_t                   err           = rx_bus_config_init_i2c(&config,
+                                        "test",
+                                        k_test_i2c_channel,
+                                        k_test_i2c_addr,
+                                        k_invalid_sda,
+                                        k_rx_p0_5,
+                                        k_test_i2c_freq_hz);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1453,11 +1457,15 @@ void test_bus_config_i2c_invalid_sda_pin_returns_error(void)
  */
 void test_bus_config_i2c_invalid_scl_pin_returns_error(void)
 {
-  rx_bus_config_t config;
+  rx_bus_config_t            config;
   static const rx_port_pin_t k_invalid_scl = (rx_port_pin_t)0xFF00U;
-  rx_err_t err = rx_bus_config_init_i2c(&config, "test", k_test_i2c_channel,
-                                         k_test_i2c_addr, k_rx_p0_5, k_invalid_scl,
-                                         k_test_i2c_freq_hz);
+  rx_err_t                   err           = rx_bus_config_init_i2c(&config,
+                                        "test",
+                                        k_test_i2c_channel,
+                                        k_test_i2c_addr,
+                                        k_rx_p0_5,
+                                        k_invalid_scl,
+                                        k_test_i2c_freq_hz);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1475,11 +1483,15 @@ void test_bus_config_i2c_invalid_scl_pin_returns_error(void)
  */
 void test_bus_config_i2c_invalid_channel_returns_error(void)
 {
-  rx_bus_config_t config;
+  rx_bus_config_t      config;
   static const uint8_t k_invalid_channel = k_riic_channel_count;
-  rx_err_t err = rx_bus_config_init_i2c(&config, "test", k_invalid_channel,
-                                         k_test_i2c_addr, k_rx_p0_5, k_rx_p0_6,
-                                         k_test_i2c_freq_hz);
+  rx_err_t             err               = rx_bus_config_init_i2c(&config,
+                                        "test",
+                                        k_invalid_channel,
+                                        k_test_i2c_addr,
+                                        k_rx_p0_5,
+                                        k_rx_p0_6,
+                                        k_test_i2c_freq_hz);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1497,11 +1509,15 @@ void test_bus_config_i2c_invalid_channel_returns_error(void)
  */
 void test_bus_config_i2c_invalid_address_returns_error(void)
 {
-  rx_bus_config_t config;
+  rx_bus_config_t      config;
   static const uint8_t k_invalid_addr = k_i2c_addr_max_7bit + 1U;
-  rx_err_t err = rx_bus_config_init_i2c(&config, "test", k_test_i2c_channel,
-                                         k_invalid_addr, k_rx_p0_5, k_rx_p0_6,
-                                         k_test_i2c_freq_hz);
+  rx_err_t             err            = rx_bus_config_init_i2c(&config,
+                                        "test",
+                                        k_test_i2c_channel,
+                                        k_invalid_addr,
+                                        k_rx_p0_5,
+                                        k_rx_p0_6,
+                                        k_test_i2c_freq_hz);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1514,12 +1530,12 @@ void test_bus_config_i2c_invalid_address_returns_error(void)
 void test_bus_config_i2c_null_config_returns_error(void)
 {
   rx_err_t err = rx_bus_config_init_i2c(nullptr,
-                                         "test",
-                                         (uint8_t)k_test_i2c_channel,
-                                         (uint8_t)k_test_i2c_addr,
-                                         k_rx_p0_5,
-                                         k_rx_p0_6,
-                                         (uint32_t)k_test_i2c_freq_hz);
+                                        "test",
+                                        (uint8_t)k_test_i2c_channel,
+                                        (uint8_t)k_test_i2c_addr,
+                                        k_rx_p0_5,
+                                        k_rx_p0_6,
+                                        (uint32_t)k_test_i2c_freq_hz);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1533,12 +1549,12 @@ void test_bus_config_i2c_null_name_returns_error(void)
 {
   rx_bus_config_t config;
   rx_err_t        err = rx_bus_config_init_i2c(&config,
-                                                nullptr,
-                                                (uint8_t)k_test_i2c_channel,
-                                                (uint8_t)k_test_i2c_addr,
-                                                k_rx_p0_5,
-                                                k_rx_p0_6,
-                                                (uint32_t)k_test_i2c_freq_hz);
+                                        nullptr,
+                                        (uint8_t)k_test_i2c_channel,
+                                        (uint8_t)k_test_i2c_addr,
+                                        k_rx_p0_5,
+                                        k_rx_p0_6,
+                                        (uint32_t)k_test_i2c_freq_hz);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 

@@ -457,15 +457,15 @@ rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle)
   }
 
   /* Delete thread */
-  status                     = tx_thread_delete(&handle->thread);
-  const bool delete_failed   = (status != TX_SUCCESS) & (status != TX_DELETE_ERROR);
+  status                   = tx_thread_delete(&handle->thread);
+  const bool delete_failed = (status != TX_SUCCESS) & (status != TX_DELETE_ERROR);
   if (delete_failed) {
     return k_rx_err_rtos_error;
   }
 
   /* Delete event flags */
-  status                      = tx_event_flags_delete(&handle->event_flags);
-  const bool evflags_failed   = (status != TX_SUCCESS) & (status != TX_DELETE_ERROR);
+  status                    = tx_event_flags_delete(&handle->event_flags);
+  const bool evflags_failed = (status != TX_SUCCESS) & (status != TX_DELETE_ERROR);
   if (evflags_failed) {
     return k_rx_err_rtos_error;
   }

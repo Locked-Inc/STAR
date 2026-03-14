@@ -2625,7 +2625,7 @@ void shared_data_update_last_comm_tick(void)
  * that the host is actively using.
  *
  * @param[in] channel Channel that delivered the frame (rx_comm_channel_t cast to uint8_t;
- *                    must be k_comm_channel_usb (0) or k_comm_channel_spi (1))
+ *                    valid values: 0=USB, 1=SPI, 2=I2C, 3=UART; must be < k_comm_channel_count)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Channel stored successfully
@@ -2678,12 +2678,14 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
  * been received yet or on any error.
  *
  * @return uint8_t Active communication channel (rx_comm_channel_t cast to uint8_t)
- * @retval 0 (k_comm_channel_usb) Default before any command received, or on error
- * @retval 1 (k_comm_channel_spi) SPI was the last channel to deliver a command
+ * @retval 0 (k_comm_channel_usb)  Default before any command received, or on error
+ * @retval 1 (k_comm_channel_spi)  SPI was the last channel to deliver a command
+ * @retval 2 (k_comm_channel_i2c)  I2C was the last channel to deliver a command
+ * @retval 3 (k_comm_channel_uart) UART was the last channel to deliver a command
  *
  * @pre shared_data_init() has been called (returns USB default if not)
  * @pre At least one valid frame has been received for a non-default result
- * @post Return value is 0 (USB) or 1 (SPI) matching rx_comm_channel_t values
+ * @post Return value is 0-3 matching rx_comm_channel_t values (USB/SPI/I2C/UART)
  * @post g_shared_data state is unchanged (read-only accessor)
  *
  * @note Thread safety: active_channel_valid and active_channel both read inside mutex

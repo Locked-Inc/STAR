@@ -1912,7 +1912,7 @@ void test_uart_comm_receive_timeout(void)
   const uint8_t sync_low  = (uint8_t)(k_frame_sync_word & 0xFFU);
   const uint8_t sync_high = (uint8_t)(k_frame_sync_word >> 8U);
   for (uint32_t i = k_test_timeout_zero; i < k_test_rx_buf_max; i += 2U) {
-    s_handle.rx_buffer[i]     = sync_low;
+    s_handle.rx_buffer[i]      = sync_low;
     s_handle.rx_buffer[i + 1U] = sync_high;
   }
   s_handle.rx_buffer_len = k_test_rx_buf_max;

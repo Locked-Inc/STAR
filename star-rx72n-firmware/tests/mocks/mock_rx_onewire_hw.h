@@ -106,7 +106,7 @@ extern mock_cmt_channel_t g_mock_cmt3;
 extern mock_cmt_ctrl_t    g_mock_cmt_ctrl;
 extern mock_system_regs_t g_mock_onewire_system_regs;
 extern uint16_t           g_mock_cmt3_counter_shadow;
-extern uint16_t           g_mock_onewire_timer_auto_increment; /**< Runtime-configurable increment */
+extern uint16_t g_mock_onewire_timer_auto_increment; /**< Runtime-configurable increment */
 
 /* =============================================================================
  * Mock Hardware Access Functions

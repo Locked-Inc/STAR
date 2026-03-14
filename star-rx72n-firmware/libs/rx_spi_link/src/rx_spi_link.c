@@ -411,7 +411,7 @@ RX_STATIC_TESTABLE rx_err_t internal_send_attempt(rx_spi_link_t*  link,
      * sequence actually used, but that requires API change across codebase. */
   /* rx_session_get_tx only fails if session is uninitialized or mutex fails;
    * both are invariants that must hold by the time send is called. */
-  uint16_t next_seq    = 0;
+  uint16_t next_seq = 0;
   (void)(rx_session_get_tx(link->spi_handle->session, &next_seq));
   const uint16_t expected_seq = next_seq; /* This will be used by send */
 
@@ -780,9 +780,9 @@ rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, u
   /* Check if FEC decoding is needed */
   const bool has_fec_flag = (frame.header.flags & k_frame_flag_fec_enabled) != 0;
 
-  const bool fec_enabled_flag  = link->fec_enabled;
-  const bool fec_frame_flag    = has_fec_flag;
-  const bool has_payload       = (frame.header.length > 0);
+  const bool fec_enabled_flag = link->fec_enabled;
+  const bool fec_frame_flag   = has_fec_flag;
+  const bool has_payload      = (frame.header.length > 0);
   if (fec_enabled_flag & fec_frame_flag & has_payload) {
     /* FEC decode path: HARQ with Chase Combining */
     return internal_receive_fec_decode(link, &frame, result);
