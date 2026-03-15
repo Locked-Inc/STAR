@@ -1447,7 +1447,7 @@ void test_usb_flush_with_data_and_zero_timeout_returns_timeout(void)
  * @{
  */
 
-/* Forward declarations removed — these are already declared in the included
+/* Forward declarations removed -- these are already declared in the included
    rx_usb.h header, so repeating them here triggers
    readability-redundant-declaration. */
 
