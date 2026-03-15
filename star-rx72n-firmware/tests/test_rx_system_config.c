@@ -213,8 +213,9 @@ void test_no_channels_no_log_accepted(void)
 void test_unknown_comm_bits_rejected(void)
 {
   const rx_system_config_t cfg = {
-    .comm_channels = (rx_comm_channel_mask_t)
-      k_test_invalid_comm_bits, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    .comm_channels =
+      (rx_comm_channel_mask_t) // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    k_test_invalid_comm_bits,  // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
     .log_backends = k_log_backend_usb,
   };
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, comm_task_apply_system_config(&cfg));
@@ -236,8 +237,8 @@ void test_unknown_log_bits_rejected(void)
 {
   const rx_system_config_t cfg = {
     .comm_channels = k_comm_channel_mask_usb,
-    .log_backends  = (rx_log_backend_t)
-      k_test_invalid_log_bits, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    .log_backends  = (rx_log_backend_t) // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    k_test_invalid_log_bits,            // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
   };
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, comm_task_apply_system_config(&cfg));
 }

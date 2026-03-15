@@ -1800,8 +1800,8 @@ void test_ds18b20_init_invalid_resolution(void)
   rx_ds18b20_config_t config = {
     .bus_manager = &s_mock_bus_manager,
     .bus_name    = s_test_bus_name,
-    .resolution  = (ds18b20_resolution_t)
-      k_test_invalid_resolution, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+    .resolution       = (ds18b20_resolution_t)k_test_invalid_resolution,
     .use_rom_matching = false,
   };
 
@@ -2971,10 +2971,8 @@ void test_ds18b20_set_resolution_invalid_value(void)
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* 0xFF is an invalid resolution value */
-  rx_err_t err = rx_ds18b20_set_resolution(
-    &handle,
-    (ds18b20_resolution_t)
-      k_test_invalid_byte); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t err = rx_ds18b20_set_resolution(&handle, (ds18b20_resolution_t)k_test_invalid_byte);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -3563,9 +3561,9 @@ void test_ds18b20_get_conversion_time_invalid_resolution(void)
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* Force an invalid resolution to trigger the default case */
-  handle.resolution = (ds18b20_resolution_t)
-    k_test_invalid_byte; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
-  uint32_t time_ms = rx_ds18b20_get_conversion_time_ms(&handle);
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  handle.resolution = (ds18b20_resolution_t)k_test_invalid_byte;
+  uint32_t time_ms  = rx_ds18b20_get_conversion_time_ms(&handle);
   TEST_ASSERT_EQUAL_UINT32(0U, time_ms);
 }
 
@@ -3649,10 +3647,10 @@ void test_ds18b20_read_temp_raw_invalid_resolution_default(void)
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* Force invalid resolution to hit default case in get_temp_mask */
-  handle.resolution = (ds18b20_resolution_t)
-    k_test_invalid_byte; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
-  int16_t  raw = 0;
-  rx_err_t err = rx_ds18b20_read_temperature_raw(&handle, &raw);
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  handle.resolution = (ds18b20_resolution_t)k_test_invalid_byte;
+  int16_t  raw      = 0;
+  rx_err_t err      = rx_ds18b20_read_temperature_raw(&handle, &raw);
   /* Default mask is k_ds18b20_temp_mask_12bit so reading still succeeds */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }

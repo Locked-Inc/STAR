@@ -1205,9 +1205,8 @@ void test_encoder_read_raw_invalid_channel_fails(void)
 {
   /* Channel 5 has no base address (nullptr from internal_get_mtu_base) */
   uint16_t count = 0;
-  rx_err_t err =
-    rx_encoder_read_raw((rx_mtu_channel_t)k_test_channel_5,
-                        &count); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t err = rx_encoder_read_raw((rx_mtu_channel_t)k_test_channel_5, &count);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1215,9 +1214,8 @@ void test_encoder_read_raw_invalid_channel_fails(void)
 void test_encoder_read_count_invalid_channel_fails(void)
 {
   rx_encoder_state_t state = {0};
-  rx_err_t           err =
-    rx_encoder_read_count((rx_mtu_channel_t)k_test_channel_5,
-                          &state); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t err = rx_encoder_read_count((rx_mtu_channel_t)k_test_channel_5, &state);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1372,14 +1370,13 @@ void test_internal_initialize_encoder_state_null_config(void)
 void test_internal_initialize_encoder_state_invalid_channel(void)
 {
   rx_encoder_config_t cfg = {
-    .channel =
-      (rx_mtu_channel_t)k_test_channel_5, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+    .channel          = (rx_mtu_channel_t)k_test_channel_5,
     .counts_per_rev   = k_test_counts_per_rev,
     .invert_direction = false,
   };
-  rx_err_t err =
-    internal_initialize_encoder_state((rx_mtu_channel_t)k_test_channel_5,
-                                      &cfg); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t err = internal_initialize_encoder_state((rx_mtu_channel_t)k_test_channel_5, &cfg);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1399,10 +1396,8 @@ void test_internal_initialize_encoder_state_zero_cpr(void)
 void test_internal_update_state_from_count_invalid_channel(void)
 {
   rx_encoder_state_t state = {0};
-  rx_err_t           err =
-    internal_update_state_from_count(&state,
-                                     (rx_mtu_channel_t)k_test_channel_5,
-                                     0); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t err = internal_update_state_from_count(&state, (rx_mtu_channel_t)k_test_channel_5, 0);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }

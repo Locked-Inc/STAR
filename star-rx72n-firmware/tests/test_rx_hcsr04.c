@@ -2411,9 +2411,8 @@ void test_hcsr04_trigger_pulse_invalid_pin_returns_error(void)
   const uint8_t bad_port      = 7U;
   const uint8_t bad_pin       = 0U;
   const uint8_t k_wrong_shift = 4U;
-  handle.trigger_pin =
-    (rx_port_pin_t)((bad_port << k_wrong_shift) |
-                    bad_pin); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  handle.trigger_pin = (rx_port_pin_t)((bad_port << k_wrong_shift) | bad_pin);
 
   rx_err_t err = internal_send_trigger_pulse(&handle);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2435,8 +2434,8 @@ void test_hcsr04_trigger_pulse_port_above_j_returns_error(void)
   rx_hcsr04_t handle;
   internal_zero_fill(&handle, sizeof(handle));
   /* port=20 > k_rx_port_j(19) -- encodes as (20 << 8) | 0 */
-  handle.trigger_pin = (rx_port_pin_t)((k_test_port_encode_20 << k_test_port_shift_bits) |
-                                       0U); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  handle.trigger_pin = (rx_port_pin_t)((k_test_port_encode_20 << k_test_port_shift_bits) | 0U);
 
   rx_err_t err = internal_send_trigger_pulse(&handle);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2458,6 +2457,7 @@ void test_hcsr04_trigger_pulse_port_in_gap_returns_error(void)
   rx_hcsr04_t handle;
   internal_zero_fill(&handle, sizeof(handle));
   /* port=17 (0x11): > k_rx_port_g(0x10=16) AND < k_rx_port_j(0x13=19) */
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
   handle.trigger_pin = (rx_port_pin_t)(((uint32_t)k_test_port_gap_value << k_test_port_shift_bits) |
                                        0U); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
@@ -2698,8 +2698,8 @@ void test_hcsr04_init_irq_mode_irq_out_of_range_returns_error(void)
   rx_hcsr04_config_t cfg;
   internal_zero_fill(&cfg, sizeof(cfg));
   cfg.echo_pin = k_rx_p0_3;
-  cfg.echo_irq = (rx_hcsr04_irq_t)k_test_irq_below_range;
-  /* Below k_irq_range_min (8) */ // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  cfg.echo_irq      = (rx_hcsr04_irq_t)k_test_irq_below_range; /* Below k_irq_range_min (8) */
   cfg.sensor_index  = k_hcsr04_sensor_front_left;
   uint8_t  priority = 0U;
   rx_err_t err      = internal_init_irq_mode(&cfg, &priority);
@@ -2894,9 +2894,9 @@ void test_hcsr04_trigger_and_measure_irq_mode_success(void)
 
 void test_hcsr04_init_invalid_echo_mode_returns_error(void)
 {
-  s_config.echo_mode = (rx_hcsr04_echo_mode_t)
-    k_test_invalid_echo_mode; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
-  rx_err_t err = rx_hcsr04_init(&s_sensor, &s_config);
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  s_config.echo_mode = (rx_hcsr04_echo_mode_t)k_test_invalid_echo_mode;
+  rx_err_t err       = rx_hcsr04_init(&s_sensor, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
   TEST_ASSERT_FALSE(s_sensor.initialized);
 }

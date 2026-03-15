@@ -260,7 +260,7 @@ void test_transfer_channel_out_of_range(void)
   (void)rx_dmaca_init();
   rx_dmaca_config_t cfg =
     internal_make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_normal);
-  cfg.channel  = (uint8_t)k_dmac_channel_count;
+  cfg.channel  = k_dmac_channel_count;
   rx_err_t err = rx_dmaca_transfer_poll(&cfg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -369,12 +369,11 @@ void test_transfer_8bit_mode_register_values(void)
   TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_len_aligned, g_mock_dmac_ch[0].dmcra);
 
   /* DMTMD: always 8-bit mode, software trigger, normal mode */
-  uint16_t expected_dmtmd =
-    (uint16_t)k_dmtmd_sz_8bit | (uint16_t)k_dmtmd_md_normal | (uint16_t)k_dmtmd_dctg_software;
+  uint16_t expected_dmtmd = k_dmtmd_sz_8bit | k_dmtmd_md_normal | k_dmtmd_dctg_software;
   TEST_ASSERT_EQUAL_UINT16(expected_dmtmd, g_mock_dmac_ch[0].dmtmd);
 
   /* DMAMD: source increment, destination fixed */
-  uint16_t expected_dmamd = (uint16_t)k_dmamd_sm_increment | (uint16_t)k_dmamd_dm_fixed;
+  uint16_t expected_dmamd = k_dmamd_sm_increment | k_dmamd_dm_fixed;
   TEST_ASSERT_EQUAL_UINT16(expected_dmamd, g_mock_dmac_ch[0].dmamd);
 
   /* DMINT: cleared (no interrupts in polling mode) */
@@ -445,7 +444,7 @@ void test_transfer_timeout(void)
 {
   (void)rx_dmaca_init();
   /* Set ACT bit: poll will never see ACT=0 */
-  g_mock_dmac_ch[0].dmsts = (uint8_t)k_dmsts_act;
+  g_mock_dmac_ch[0].dmsts = k_dmsts_act;
 
   rx_dmaca_config_t cfg =
     internal_make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_short);
@@ -459,7 +458,7 @@ void test_transfer_timeout(void)
 void test_transfer_timeout_still_clears_dte(void)
 {
   (void)rx_dmaca_init();
-  g_mock_dmac_ch[0].dmsts = (uint8_t)k_dmsts_act;
+  g_mock_dmac_ch[0].dmsts = k_dmsts_act;
 
   rx_dmaca_config_t cfg =
     internal_make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_short);
@@ -488,7 +487,7 @@ void test_abort_not_initialized(void)
 void test_abort_channel_out_of_range(void)
 {
   (void)rx_dmaca_init();
-  rx_err_t err = rx_dmaca_abort((uint8_t)k_dmac_channel_count);
+  rx_err_t err = rx_dmaca_abort(k_dmac_channel_count);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -511,7 +510,7 @@ void test_abort_timeout(void)
 {
   (void)rx_dmaca_init();
   /* Set ACT bit: abort poll will never see ACT=0 */
-  g_mock_dmac_ch[0].dmsts = (uint8_t)k_dmsts_act;
+  g_mock_dmac_ch[0].dmsts = k_dmsts_act;
 
   rx_err_t err = rx_dmaca_abort(0U);
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);

@@ -1045,9 +1045,8 @@ static void test_set_state_invalid(void)
   test_setup();
 
   (void)rx_iwdt_init(nullptr);
-  rx_err_t err = rx_iwdt_set_state(
-    (system_state_t)
-      k_iwdt_test_invalid_state); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t err = rx_iwdt_set_state((system_state_t)k_iwdt_test_invalid_state);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1623,10 +1622,9 @@ static void test_set_timeout_invalid_state_returns_error(void)
 {
   test_setup();
 
-  rx_err_t err = rx_iwdt_set_timeout_for_state(
-    (system_state_t)
-      k_iwdt_test_invalid_state, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
-    k_iwdt_test_timeout_1000_ms);
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t err = rx_iwdt_set_timeout_for_state((system_state_t)k_iwdt_test_invalid_state,
+                                               k_iwdt_test_timeout_1000_ms);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 

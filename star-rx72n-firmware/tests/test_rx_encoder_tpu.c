@@ -663,7 +663,7 @@ void test_internal_update_state_invalid_channel(void)
   rx_encoder_state_t state;
   rx_err_t           err =
     internal_update_state(&state,
-                          0,
+                          0,                 // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
                           k_test_count_100); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 #else
@@ -754,8 +754,8 @@ void test_corrupt_cpr_invalid_channel_noop(void)
 {
   /* Cast a value above k_tpu_enc_max_channels (6) to exercise the false branch */
   rx_tpu_encoder_test_corrupt_cpr(
-    (rx_tpu_channel_t)
-      k_test_invalid_channel_10); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_tpu_channel_t)          // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    k_test_invalid_channel_10); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
   /* No assertion needed - just must not crash and not corrupt any array entry */
 }
 
