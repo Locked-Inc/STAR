@@ -903,7 +903,7 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
    * Same invariant as TX: callers never pass nullptr rx_data with non-zero rx_len. */
 
   /* Wait for host ready signal before transmit operations */
-  const bool has_tx = ((tx_data != nullptr) && (tx_len > 0));
+  const bool has_tx = (bool)((tx_data != nullptr) && (tx_len > 0));
   if (has_tx) {
     rx_err_t wait_err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
     RX_RETURN_ON_ERROR(wait_err, s_tag, "Host ACK wait failed");
@@ -935,7 +935,7 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
   }
 
   /* Post-condition: Copy RX data (reverse copy: rx_data may alias rx_buffer) */
-  const bool has_rx = ((rx_data != nullptr) && (rx_len > 0));
+  const bool has_rx = (bool)((rx_data != nullptr) && (rx_len > 0));
   if (has_rx) {
     for (uint32_t i = rx_len; i > 0; i--) {
       rx_data[i - 1] = handle->rx_buffer[i - 1];
@@ -1567,7 +1567,7 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
   }
 
   /* Buffer frame for retransmission if enabled and requires-ACK flag set */
-  if (handle->auto_retransmit && ((flags & k_frame_flag_requires_ack) != 0)) {
+  if ((int)handle->auto_retransmit && ((flags & k_frame_flag_requires_ack) != 0)) {
     internal_buffer_for_retransmit(handle, wire_buffer, wire_len, sequence);
   }
 
@@ -1815,7 +1815,7 @@ typedef enum : uint8_t {
 static void internal_dispatch_ack_nack(rx_spi_comm_handle_t* handle, const rx_frame_t* frame)
 {
   if (frame->header.type == k_frame_type_ack) {
-    if (handle->retry_pending && frame->header.sequence == handle->retry_sequence) {
+    if ((int)handle->retry_pending && frame->header.sequence == handle->retry_sequence) {
       handle->retry_pending = false;
       handle->retry_count   = 0;
       if (handle->on_ack_cb != nullptr) {
@@ -1826,8 +1826,8 @@ static void internal_dispatch_ack_nack(rx_spi_comm_handle_t* handle, const rx_fr
   }
 
   /* NACK: trigger immediate retransmit if sequence matches */
-  const bool seq_match = (frame->header.sequence == handle->retry_sequence);
-  if (handle->retry_pending && seq_match) {
+  const bool seq_match = (bool)(frame->header.sequence == handle->retry_sequence);
+  if ((int)handle->retry_pending && (int)seq_match) {
     const rx_err_t retx_err = internal_retransmit_frame(handle);
     if (retx_err != k_rx_ok) {
       rx_log_error(s_tag, "NACK-triggered retransmit failed");

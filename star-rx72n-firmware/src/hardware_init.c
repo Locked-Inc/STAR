@@ -260,7 +260,8 @@ typedef enum : uint16_t {
  * @details Ensures k_twake_busy_wait_us * k_twake_cpu_mhz does not overflow
  *          the volatile uint32_t counter used in internal_busy_wait_us().
  */
-static_assert((uint64_t)k_twake_busy_wait_us * (uint64_t)k_twake_cpu_mhz <= (uint64_t)UINT32_MAX,
+static_assert((bool)(((uint64_t)k_twake_busy_wait_us * (uint64_t)k_twake_cpu_mhz) <=
+                     (uint64_t)UINT32_MAX),
               "tWAKE cycle count overflows uint32_t");
 
 /** @brief Port pin identifiers for MPC configuration (rx_port_pin_t values) */
@@ -403,7 +404,8 @@ typedef enum : uint8_t {
   k_i2c_channel_0 = 0, /**< RIIC0 = host I2C (RPi5 comms) */
   k_i2c_channel_1 = 1, /**< RIIC1 = IMU I2C (BNO055 + BMP280) */
 } i2c_channel_t;
-static_assert(k_i2c_channel_0 != k_i2c_channel_1, "I2C channel assignments must be distinct");
+static_assert((bool)(k_i2c_channel_0 != k_i2c_channel_1),
+              "I2C channel assignments must be distinct");
 
 /**
  * @enum i2c_freq_limits_t
@@ -445,9 +447,9 @@ typedef enum : uint32_t {
   k_i2c_host_freq_hz = k_i2c_fast_mode_max_hz, /**< 400 kHz fast mode for host (RIIC0) */
   k_i2c_imu_freq_hz  = k_i2c_fast_mode_max_hz, /**< 400 kHz fast mode for IMU sensors (RIIC1) */
 } i2c_freq_t;
-static_assert((uint32_t)k_i2c_host_freq_hz >= (uint32_t)k_i2c_freq_min_hz,
+static_assert((bool)((unsigned int)k_i2c_host_freq_hz >= (unsigned int)k_i2c_freq_min_hz),
               "Host I2C frequency must be non-zero");
-static_assert((uint32_t)k_i2c_imu_freq_hz >= (uint32_t)k_i2c_freq_min_hz,
+static_assert((bool)((unsigned int)k_i2c_imu_freq_hz >= (unsigned int)k_i2c_freq_min_hz),
               "IMU I2C frequency must be non-zero");
 
 /** @brief Number of motor current ADC channels */
@@ -491,6 +493,7 @@ typedef enum : uint8_t {
 /** @brief SCKCR3 reset/unconfigured state value (before clock initialization) */
 static const uint8_t s_sckcr3_reset_state = 0U;
 
+#if !RX_IS_SIMULATOR
 /**
  * @brief Configure I2C bus pins (RIIC0/RIIC1)
  *
@@ -977,23 +980,23 @@ static rx_err_t internal_gpio_init_imu_irq(void)
   internal_gpio_set_input((rx_port_pin_t)k_pin_imu_int);
 
   /* Step 3: Enable digital noise filter on IRQ12 (PCLK/32 = 1.6 us response) */
-  err = rx_irq_filter_enable((uint8_t)k_imu_irq_num, k_irq_filter_pclk_32);
+  err = rx_irq_filter_enable(k_imu_irq_num, k_irq_filter_pclk_32);
   RX_RETURN_ON_ERROR(err, s_tag, "IMU INT filter enable failed");
 
   volatile rx_icu_regs_t* const icu_regs = icu();
 
   /* Step 4: Falling-edge trigger: IRQCR[12] bits[3:2] = 01 = 0x04 */
-  icu_regs->irqcr[k_imu_irq_num] = (uint8_t)k_irqcr_falling_edge;
+  icu_regs->irqcr[k_imu_irq_num] = k_irqcr_falling_edge;
 
   /* Step 5: Set priority (7 = between comm ISR priority 6 and motor 8) */
-  icu_regs->ipr[k_imu_irq_vector] = (uint8_t)k_imu_irq_priority;
+  icu_regs->ipr[k_imu_irq_vector] = k_imu_irq_priority;
 
   /* Step 6: Clear any stale pending request before enabling */
-  icu_regs->ir[k_imu_irq_vector] = (uint8_t)k_icu_ir_clear_imu;
+  icu_regs->ir[k_imu_irq_vector] = k_icu_ir_clear_imu;
 
   /* Step 7: Enable IRQ12 in IER register (IER[9] bit 4) */
-  const uint8_t ier_idx = (uint8_t)((uint8_t)k_imu_irq_vector / (uint8_t)k_imu_ier_bits);
-  const uint8_t ier_bit = (uint8_t)((uint8_t)k_imu_irq_vector % (uint8_t)k_imu_ier_bits);
+  const uint8_t ier_idx = (uint8_t)(k_imu_irq_vector / k_imu_ier_bits);
+  const uint8_t ier_bit = (uint8_t)(k_imu_irq_vector % k_imu_ier_bits);
   icu_regs->ier[ier_idx] |= (uint8_t)(1U << ier_bit);
 
   rx_log_info(s_tag, "IMU IRQ12 configured: P3.2 falling-edge, priority 7");
@@ -1088,6 +1091,30 @@ static rx_err_t internal_gpio_init_host_irq(void)
  *
  * @since Version 1.0.0
  */
+/** @brief Configure all DRVOFF GPIO pins as outputs HIGH (outputs disabled). */
+static rx_err_t internal_gpio_init_drvoff_pins(const rx_port_pin_t pins[])
+{
+  static const char* s_tag = "GPIO_DRV_CTRL";
+  for (uint8_t i = 0; i < k_motor_count; i++) {
+    const rx_err_t err = rx_mpc_set_gpio(pins[i]);
+    RX_RETURN_ON_ERROR(err, s_tag, "DRVOFF MPC config failed");
+    internal_gpio_set_output(pins[i], true); /* HIGH = outputs disabled */
+  }
+  return k_rx_ok;
+}
+
+/** @brief Configure all nSLEEP GPIO pins as outputs HIGH (driver awake). */
+static rx_err_t internal_gpio_init_nsleep_pins(const rx_port_pin_t pins[])
+{
+  static const char* s_tag = "GPIO_DRV_CTRL";
+  for (uint8_t i = 0; i < k_motor_count; i++) {
+    const rx_err_t err = rx_mpc_set_gpio(pins[i]);
+    RX_RETURN_ON_ERROR(err, s_tag, "nSLEEP MPC config failed");
+    internal_gpio_set_output(pins[i], true); /* HIGH = awake */
+  }
+  return k_rx_ok;
+}
+
 static rx_err_t internal_gpio_init_motor_driver_ctrl(void)
 {
   static const char* s_tag = "GPIO_DRV_CTRL";
@@ -1108,37 +1135,15 @@ static rx_err_t internal_gpio_init_motor_driver_ctrl(void)
                                                     (rx_port_pin_t)k_pin_motor2_nsleep,
                                                     (rx_port_pin_t)k_pin_motor3_nsleep};
 
-  /*
-   * CRITICAL ORDERING: DRVOFF must be configured HIGH (outputs disabled) BEFORE
-   * nSLEEP wakes the driver. This prevents the DRV8263H H-bridge from entering
-   * an undefined output state during the wake-up transition. See DRV8263H
-   * datasheet Section 7.3.1 (Device Functional Modes) for power-up sequencing.
-   */
+  /* CRITICAL ORDERING: DRVOFF HIGH before nSLEEP HIGH to prevent undefined
+   * H-bridge state during wake-up (per DRV8263H datasheet sec 7.3.1) */
+  rx_err_t err = internal_gpio_init_drvoff_pins(drvoff_pins);
+  RX_RETURN_ON_ERROR(err, s_tag, "DRVOFF pins init failed");
 
-  /* Step 1: Configure DRVOFF pins HIGH first -- ensures H-bridge outputs are
-   * disabled before the driver is awakened by nSLEEP. */
-  for (uint8_t i = 0; i < k_motor_count; i++) {
-    const rx_err_t err = rx_mpc_set_gpio(drvoff_pins[i]);
-    RX_RETURN_ON_ERROR(err, s_tag, "DRVOFF MPC config failed");
-    internal_gpio_set_output(drvoff_pins[i], true); /* HIGH = outputs disabled */
-  }
+  err = internal_gpio_init_nsleep_pins(nsleep_pins);
+  RX_RETURN_ON_ERROR(err, s_tag, "nSLEEP pins init failed");
 
-  /* Step 2: Configure nSLEEP pins HIGH second -- driver wakes with DRVOFF
-   * already asserted, so H-bridge outputs remain safely disabled. */
-  for (uint8_t i = 0; i < k_motor_count; i++) {
-    const rx_err_t err = rx_mpc_set_gpio(nsleep_pins[i]);
-    RX_RETURN_ON_ERROR(err, s_tag, "nSLEEP MPC config failed");
-    internal_gpio_set_output(nsleep_pins[i], true); /* HIGH = awake */
-  }
-
-  /* Step 3: Wait for DRV8263H-Q1 tWAKE (nFAULT returns HIGH after ~1.2 ms).
-   * Uses busy-wait because this runs pre-kernel (before tx_kernel_enter()),
-   * so ThreadX APIs like tx_thread_sleep() are not available.
-   * The volatile decrement loop takes ~5-6 CPU cycles per iteration,
-   * yielding an actual delay of approximately 10 ms (well above the
-   * 1.2 ms tWAKE spec, providing ample safety margin).
-   * Cannot poll nFAULT GPIO here because nFAULT is configured as POEG input
-   * (GTETRG), not general-purpose GPIO. */
+  /* Wait for DRV8263H-Q1 tWAKE (~1.2 ms min; busy-wait ~10 ms pre-kernel) */
   internal_busy_wait_us(k_twake_busy_wait_us, k_twake_cpu_mhz);
 
   return k_rx_ok;
@@ -1414,7 +1419,8 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
  * - **Rule 10** [OK] Compiles with -Wall -Wextra -Werror
  *
  */
-static rx_err_t gpio_init(void)
+/** @brief Configure comm, IRQ, and encoder GPIO pins (first half of gpio_init). */
+static rx_err_t internal_gpio_init_comm_and_encoders(void)
 {
   static const char* s_tag = "GPIO";
 
@@ -1433,7 +1439,15 @@ static rx_err_t gpio_init(void)
   err = internal_gpio_init_tpu_encoders();
   RX_RETURN_ON_ERROR(err, s_tag, "TPU encoder pin init failed");
 
-  err = internal_gpio_init_gptw_pwm();
+  return k_rx_ok;
+}
+
+/** @brief Configure motor, IMU, ADC, USB, and sonar GPIO pins (second half of gpio_init). */
+static rx_err_t internal_gpio_init_motor_and_sensors(void)
+{
+  static const char* s_tag = "GPIO";
+
+  rx_err_t err = internal_gpio_init_gptw_pwm();
   RX_RETURN_ON_ERROR(err, s_tag, "GPTW PWM pin init failed");
 
   err = internal_gpio_init_motor_driver_ctrl();
@@ -1457,8 +1471,20 @@ static rx_err_t gpio_init(void)
   err = internal_gpio_init_sonar_echoes();
   RX_RETURN_ON_ERROR(err, s_tag, "Sonar echo pin init failed");
 
-  /* GTETRG nFAULT pins: no MPC config needed (documented in header) */
+  return k_rx_ok;
+}
 
+static rx_err_t gpio_init(void)
+{
+  static const char* s_tag = "GPIO";
+
+  rx_err_t err = internal_gpio_init_comm_and_encoders();
+  RX_RETURN_ON_ERROR(err, s_tag, "Comm and encoder pin init failed");
+
+  err = internal_gpio_init_motor_and_sensors();
+  RX_RETURN_ON_ERROR(err, s_tag, "Motor and sensor pin init failed");
+
+  /* GTETRG nFAULT pins: no MPC config needed (documented in header) */
   rx_log_info(s_tag, "GPIO pin muxing complete");
 
   return k_rx_ok;
@@ -1575,9 +1601,9 @@ static rx_err_t i2c_init(void)
   static const char* s_tag = "I2C";
 
   /* Precondition: channel and frequency values must be within valid range (NASA Rule 5) */
-  static_assert((uint32_t)k_i2c_host_freq_hz <= (uint32_t)k_i2c_fast_mode_max_hz,
+  static_assert((bool)((unsigned int)k_i2c_host_freq_hz <= (unsigned int)k_i2c_fast_mode_max_hz),
                 "Host I2C frequency must not exceed 400 kHz fast mode");
-  static_assert((uint32_t)k_i2c_imu_freq_hz <= (uint32_t)k_i2c_fast_mode_max_hz,
+  static_assert((bool)((unsigned int)k_i2c_imu_freq_hz <= (unsigned int)k_i2c_fast_mode_max_hz),
                 "IMU I2C frequency must not exceed 400 kHz fast mode");
 
   /* RIIC initialization is deferred to the bus manager. Each call to
@@ -1669,6 +1695,7 @@ static void validate_peripherals(void)
 
   rx_log_info(s_tag, "Peripheral validation complete");
 }
+#endif /* !RX_IS_SIMULATOR */
 
 /**
  * @var g_pin_host_irq
@@ -1879,29 +1906,12 @@ const rx_port_pin_t g_pin_host_irq = (rx_port_pin_t)k_pin_host_irq;
  * @test test_hardware_init.c Verify precondition assertion (clocks not initialized)
  * @test test_hardware_init.c Verify error propagation (timer/UART init failure)
  */
-rx_err_t hardware_init(void)
+#if !RX_IS_SIMULATOR
+/** @brief Initialize all hardware peripherals (GPIO through ADC). Hardware only. */
+static rx_err_t internal_init_all_peripherals(void)
 {
   static const char* s_tag = "HW_INIT";
 
-  /* =========================================================================
-   * PRECONDITION: Verify system initialization
-   * =========================================================================
-   */
-
-  /* Precondition: Verify that system clocks have been initialized
-   * Clock initialization must complete before peripheral setup */
-  RX_ASSERT((system_regs() != nullptr) && (system_regs()->sckcr3 != s_sckcr3_reset_state),
-            "Precondition: Clock system not properly initialized");
-
-  /* =========================================================================
-   * INITIALIZE PERIPHERALS
-   *
-   * Order: GPIO -> GPTW -> Timer -> UART -> SPI -> I2C -> ADC -> Validate
-   * Later stages depend on earlier stages (GPIO must precede peripherals).
-   * =========================================================================
-   */
-
-#if !RX_IS_SIMULATOR
   /* 1. GPIO: Configure MPC pin multiplexing for all peripherals */
   rx_err_t err = gpio_init();
   RX_RETURN_ON_ERROR(err, s_tag, "GPIO initialization failed");
@@ -1939,19 +1949,25 @@ rx_err_t hardware_init(void)
   /* 9. Validate: Non-fatal peripheral checks (log warnings, never halt) */
   validate_peripherals();
 
-#else
-  /* Simulator: Skip all hardware peripheral init (not modeled) */
-  rx_err_t err = k_rx_ok;
-  (void)err;
+  return k_rx_ok;
+}
+#endif /* !RX_IS_SIMULATOR */
+
+rx_err_t hardware_init(void)
+{
+  /* Precondition: Verify that system clocks have been initialized */
+  RX_ASSERT((system_regs() != nullptr) && (system_regs()->sckcr3 != s_sckcr3_reset_state),
+            "Precondition: Clock system not properly initialized");
+
+#if !RX_IS_SIMULATOR
+  /* Initialize all peripherals: GPIO -> GPTW -> POEG -> Timer -> SPI -> I2C -> ADC */
+  const rx_err_t init_err = internal_init_all_peripherals();
+  if (rx_err_is_error(init_err)) {
+    return init_err;
+  }
 #endif
 
-  /* =========================================================================
-   * POSTCONDITION: Verify initialization state
-   * =========================================================================
-   */
-
-  /* Postcondition: Verify clock system is still operational after all setup
-   * This confirms the initialization did not inadvertently disable clocks */
+  /* Postcondition: Verify clock system is still operational after all setup */
   RX_ASSERT((system_regs() != nullptr) && (system_regs()->sckcr3 != s_sckcr3_reset_state),
             "Postcondition: Clock system corrupted during initialization");
 

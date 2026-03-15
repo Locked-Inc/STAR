@@ -287,13 +287,13 @@ static uint32_t internal_crc32c_compute(const uint8_t* data, uint32_t len)
  */
 static uint16_t internal_crc16_ibm_compute(const uint8_t* data, uint32_t len)
 {
-  uint16_t crc = (uint16_t)k_crc16_init;
+  uint16_t crc = k_crc16_init;
 
   for (uint32_t i = 0U; i < len; i++) {
     crc ^= (uint16_t)data[i];
     for (uint8_t b = 0U; b < k_bits_per_byte; b++) {
       if ((crc & (uint16_t)k_crc_lsb_mask) != 0U) {
-        crc = (uint16_t)((crc >> k_crc_shift_1bit) ^ (uint16_t)k_crc16_ibm_poly);
+        crc = (uint16_t)((crc >> k_crc_shift_1bit) ^ k_crc16_ibm_poly);
       } else {
         crc >>= k_crc_shift_1bit;
       }
@@ -326,13 +326,13 @@ static uint16_t internal_crc16_ibm_compute(const uint8_t* data, uint32_t len)
  */
 static uint16_t internal_crc_ccitt_compute(const uint8_t* data, uint32_t len)
 {
-  uint16_t crc = (uint16_t)k_crc_ccitt_init;
+  uint16_t crc = k_crc_ccitt_init;
 
   for (uint32_t i = 0U; i < len; i++) {
     crc ^= (uint16_t)data[i];
     for (uint8_t b = 0U; b < k_bits_per_byte; b++) {
       if ((crc & (uint16_t)k_crc_lsb_mask) != 0U) {
-        crc = (uint16_t)((crc >> k_crc_shift_1bit) ^ (uint16_t)k_crc_ccitt_poly);
+        crc = (uint16_t)((crc >> k_crc_shift_1bit) ^ k_crc_ccitt_poly);
       } else {
         crc >>= k_crc_shift_1bit;
       }
@@ -365,7 +365,7 @@ static uint16_t internal_crc_ccitt_compute(const uint8_t* data, uint32_t len)
  */
 static uint8_t internal_crc8_maxim_compute(const uint8_t* data, uint32_t len)
 {
-  uint8_t crc = (uint8_t)k_crc8_init;
+  uint8_t crc = k_crc8_init;
 
   for (uint32_t i = 0U; i < len; i++) {
     crc ^= data[i];

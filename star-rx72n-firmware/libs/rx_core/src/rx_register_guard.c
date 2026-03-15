@@ -1172,5 +1172,5 @@ void rx_register_guard_reset_count(void)
  */
 bool rx_register_guard_is_initialized(void)
 {
-  return s_state.initialized != 0;
+  return (bool)(s_state.initialized != 0);
 }

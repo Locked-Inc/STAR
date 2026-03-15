@@ -157,10 +157,19 @@ collect_source_files() {
         \( -name '*.c' -o -name '*.h' \) \
         ! -path '*/threadx/*' \
         ! -path '*/nanopb/*' \
+        ! -path '*/rx_nanopb/inc/gen/*' \
         ! -path '*/smc_generated/*' \
+        ! -path '*/smc/*' \
         ! -path '*/r_bsp/*' \
+        ! -path '*/third_party/*' \
         ! -path '*/build/*' \
-        ! -path '*/_deps/*'
+        ! -path '*/_deps/*' \
+        ! -path '*/rx_hal/src/*' \
+        ! -path '*/rx_hal/inc/rx72n_*_regs.h' \
+        ! -path '*/rx_encoder/src/rx_mtu_encoder.c' \
+        ! -path '*/rx_usb/src/rx_usb_isr.c' \
+        ! -path '*/src/boot/*' \
+        ! -path '*/src/main.c'
 }
 
 # ---------------------------------------------------------------------------

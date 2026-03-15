@@ -454,8 +454,6 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
   while (1) {
     __asm__ volatile("wait");
   }
-#else
-  return;
 #endif
 }
 

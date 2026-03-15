@@ -255,9 +255,9 @@ RX_STATIC_TESTABLE void internal_gpio_write(uint8_t port, uint8_t pin, bool high
   volatile rx_port_regs_t* base = rx_port_get_base(port);
 
   if (high) {
-    base->podr |= (uint8_t)((uint8_t)k_bit_shift_one << pin);
+    base->podr |= (uint8_t)(k_bit_shift_one << pin);
   } else {
-    base->podr &= (uint8_t) ~((uint8_t)k_bit_shift_one << pin);
+    base->podr &= (uint8_t) ~(k_bit_shift_one << pin);
   }
 }
 
@@ -296,7 +296,7 @@ RX_STATIC_TESTABLE bool internal_gpio_read(uint8_t port, uint8_t pin)
 
   volatile rx_port_regs_t* base = rx_port_get_base(port);
 
-  return (base->pidr & (uint8_t)((uint8_t)k_bit_shift_one << pin)) != 0;
+  return (bool)((base->pidr & (uint8_t)(k_bit_shift_one << pin)) != 0);
 }
 
 /**
@@ -462,26 +462,26 @@ RX_STATIC_TESTABLE void internal_olp_decode_results(bool                     f0,
     return;
   }
 
-  if (f0 && f1 && f2) {
+  if ((int)f0 && (int)f1 && (int)f2) {
     /* {1,1,1} = Normal */
     *result_out1 = k_drv8263_olp_normal;
     *result_out2 = k_drv8263_olp_normal;
-  } else if (f0 && f1) {
+  } else if ((int)f0 && (int)f1) {
     /* {1,1,0} = Open Load on OUT2 (f2 must be false; f0&&f1&&f2 ruled out above) */
     *result_out1 = k_drv8263_olp_normal;
     *result_out2 = k_drv8263_olp_open_load;
     rx_log_warn(s_tag, "OLP: Open load on OUT2");
-  } else if (f0 && f2) {
+  } else if ((int)f0 && (int)f2) {
     /* {1,0,1} = Open Load on OUT1 (f1 must be false; f0&&f1 ruled out above) */
     *result_out1 = k_drv8263_olp_open_load;
     *result_out2 = k_drv8263_olp_normal;
     rx_log_warn(s_tag, "OLP: Open load on OUT1");
-  } else if (!f0 && f1 && f2) {
+  } else if (!(int)f0 && (int)f1 && (int)f2) {
     /* {0,1,1} = Short to GND */
     *result_out1 = k_drv8263_olp_short_to_gnd;
     *result_out2 = k_drv8263_olp_short_to_gnd;
     rx_log_error(s_tag, "OLP: Short to GND detected");
-  } else if (!f0 && !f1 && !f2) {
+  } else if (!(int)f0 && !(int)f1 && !(int)f2) {
     /* {0,0,0} = Short to VM */
     *result_out1 = k_drv8263_olp_short_to_vm;
     *result_out2 = k_drv8263_olp_short_to_vm;
@@ -579,9 +579,9 @@ rx_err_t rx_drv8263_init(rx_drv8263_handle_t* handle, const rx_drv8263_config_t*
     rx_drv8263_olp_result_t result_out2 = k_drv8263_olp_unknown;
 
     (void)rx_drv8263_run_olp(handle, &result_out1, &result_out2);
-    bool out1_abnormal = (result_out1 != k_drv8263_olp_normal);
-    bool out2_abnormal = (result_out2 != k_drv8263_olp_normal);
-    if (out1_abnormal | out2_abnormal) {
+    bool out1_abnormal = (bool)(result_out1 != k_drv8263_olp_normal);
+    bool out2_abnormal = (bool)(result_out2 != k_drv8263_olp_normal);
+    if ((bool)((int)out1_abnormal | (int)out2_abnormal)) {
       rx_log_warn(s_tag, "Boot OLP detected abnormal load condition");
     }
   }

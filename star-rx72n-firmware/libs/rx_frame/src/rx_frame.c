@@ -438,7 +438,7 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
   uint32_t received_crc = 0;
   /* internal_read_le32 always returns k_rx_ok when preconditions are met. */
   (void)internal_read_le32(&data[offset], data_len - offset, &received_crc);
-  uint32_t calculated_crc = (uint32_t)k_frame_crc32_init;
+  uint32_t calculated_crc = k_frame_crc32_init;
   /* rx_crc32_ieee always returns k_rx_ok for non-null data with valid length. */
   (void)rx_crc32_ieee(data, offset, &calculated_crc);
 
@@ -645,13 +645,12 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
 
   /* Calculate CRC-32 over SYNC + Header + Payload (IEEE 802.3 polynomial).
    * rx_crc32_ieee always returns k_rx_ok for non-null buffer with valid length. */
-  uint32_t crc = (uint32_t)k_frame_crc32_init;
+  uint32_t crc = k_frame_crc32_init;
   (void)rx_crc32_ieee(output, offset, &crc);
 
   /* Write CRC-32 (little-endian to match IEEE 802.3 LSB-first order).
    * internal_write_le32 always returns k_rx_ok when preconditions are met. */
   (void)internal_write_le32(&output[offset], frame_size - offset, crc);
-  offset += k_frame_crc_size;
 
   *output_len = frame_size;
   return k_rx_ok;

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# STAR dev — mapping session with virtual RX72N.
+# STAR dev -- mapping session with virtual RX72N.
 # Wraps start.sh with STAR_SIMULATION_MODE=true and --rviz.
 # Usage: ./dev.sh [--no-ui] [--no-lidar] [--help]
 set -euo pipefail

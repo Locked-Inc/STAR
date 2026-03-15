@@ -226,7 +226,7 @@ RX_STATIC_TESTABLE rx_err_t internal_verify_crc(const uint8_t* data,
   }
 
   const uint32_t received_crc   = rx_frame_read_le32(&data[offset]);
-  uint32_t       calculated_crc = (uint32_t)k_usb_crc32_seed_initial;
+  uint32_t       calculated_crc = k_usb_crc32_seed_initial;
   /* data is validated non-null above; offset >= 8 so len > 0: crc_err is always k_rx_ok */
   (void)(rx_crc32_ieee(data, offset, &calculated_crc));
 
@@ -606,7 +606,8 @@ internal_decode_frame(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uin
 
   /* Decode header: decode cannot fail here because total_size was verified by
    * internal_parse_header using the same calculation as internal_decode_header */
-  rx_err_t err = internal_decode_header(hdr, total_size, frame, &offset);
+  (void)internal_decode_header(hdr, total_size, frame, &offset);
+  rx_err_t err = k_rx_ok;
 
   /* Read payload */
   if (frame->header.length > 0) {
@@ -890,7 +891,7 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
   /* Initialize mode to binary (default) */
   handle->mode = k_usb_comm_mode_binary;
 
-  handle->initialized = true;
+  handle->initialized = 1U;
 
   /* Post-condition: initialized and mode were set unconditionally above */
 
@@ -947,7 +948,7 @@ rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
 
     (void)(rx_frame_decoder_deinit(&handle->decoder));
 
-    handle->initialized = false;
+    handle->initialized = 0U;
   }
 
   rx_log_debug(s_tag, "USB comm deinitialized");
@@ -1058,18 +1059,18 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
 
   /* Get next TX sequence: session always initialized and valid ptrs passed */
   uint16_t sequence = k_initial_sequence;
-  rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
+  (void)rx_session_next_tx(handle->session, &sequence);
 
   /* Build frame: all args valid (checked above) so always succeeds */
   rx_frame_t frame = {0};
-  err              = internal_build_frame(&frame, sequence, type, flags, payload, payload_len);
+  (void)internal_build_frame(&frame, sequence, type, flags, payload, payload_len);
 
   /* Encode frame: encoder initialized, payload within bounds, so always succeeds */
   uint32_t wire_len = 0;
-  err               = rx_frame_encode(&handle->encoder, &frame, handle->tx_buffer, &wire_len);
+  (void)rx_frame_encode(&handle->encoder, &frame, handle->tx_buffer, &wire_len);
 
   /* Send via USB (Port 0 = protocol) - can fail if TX buffer is full */
-  err = rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
+  const rx_err_t err = rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "USB write failed");
     return err;
@@ -1255,9 +1256,9 @@ rx_err_t rx_usb_comm_data_available(const rx_usb_comm_handle_t* handle, bool* av
   /* Also check our staging buffer */
   const uint32_t buffered = handle->rx_buffer_len - handle->rx_buffer_pos;
 
-  const bool usb_has_data    = (usb_available > 0);
-  const bool buffer_has_data = (buffered > 0);
-  *available                 = usb_has_data | buffer_has_data;
+  const bool usb_has_data    = (bool)(usb_available > 0);
+  const bool buffer_has_data = (bool)(buffered > 0);
+  *available                 = (bool)((int)usb_has_data | (int)buffer_has_data);
   return k_rx_ok;
 }
 

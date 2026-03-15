@@ -389,7 +389,7 @@ static void internal_update_heartbeat_led(void)
   }
   internal_led_set(
     k_led_idx_heartbeat,
-    (s_heartbeat_counter < (k_led_heartbeat_half_period / k_led_half_period_divisor)));
+    (bool)(s_heartbeat_counter < (k_led_heartbeat_half_period / k_led_half_period_divisor)));
 }
 
 /**
@@ -424,8 +424,9 @@ static void internal_update_error_and_motor_leds(void)
     if (s_error_counter >= k_led_error_half_period) {
       s_error_counter = 0;
     }
-    internal_led_set(k_led_idx_error,
-                     (s_error_counter < (k_led_error_half_period / k_led_half_period_divisor)));
+    internal_led_set(
+      k_led_idx_error,
+      (bool)(s_error_counter < (k_led_error_half_period / k_led_half_period_divisor)));
   } else {
     s_error_counter = 0;
     internal_led_set(k_led_idx_error, false);
@@ -461,7 +462,7 @@ static void internal_update_comm_led(void)
   motor_command_t cmd;
   (void)shared_data_get_motor_command(&cmd);
 
-  if (cmd.valid && (cmd.sequence != s_last_comm_sequence)) {
+  if ((bool)((int)cmd.valid && (cmd.sequence != s_last_comm_sequence))) {
     s_last_comm_sequence   = cmd.sequence;
     s_comm_pulse_remaining = k_led_comm_pulse_duration;
   }

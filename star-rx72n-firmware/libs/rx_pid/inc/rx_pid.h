@@ -649,8 +649,7 @@ rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt
  * @return k_rx_err_invalid_arg if any gain is negative or non-finite (NaN/Inf)
  * @return k_rx_fail if gain storage verification fails
  */
-[[nodiscard]] rx_err_t
-rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float ki, const float kd);
+[[nodiscard]] rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, float kp, float ki, float kd);
 
 /**
  * @brief Update PID output limits at runtime

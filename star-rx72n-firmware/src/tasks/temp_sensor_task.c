@@ -1221,7 +1221,7 @@ static void internal_temp_task_entry(ULONG input)
 
     /* Step 1: Trigger temperature conversion */
     const rx_err_t err_trigger = rx_ds18b20_trigger_conversion(&s_ds18b20);
-    const bool     trigger_ok  = (err_trigger == k_rx_ok);
+    const bool     trigger_ok  = (bool)(err_trigger == k_rx_ok);
 
     if (!trigger_ok) {
       rx_log_error(s_tag, "trigger conversion failed");

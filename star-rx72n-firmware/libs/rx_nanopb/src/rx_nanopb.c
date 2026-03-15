@@ -1467,22 +1467,23 @@ rx_err_t rx_nanopb_create_velocity_command(star_v1_VelocityCommand*            c
                                            const rx_velocity_command_params_t* params)
 {
   /* Use bitwise | to evaluate both sides without short-circuit branches */
-  const bool cmd_null    = (cmd == nullptr);
-  const bool params_null = (params == nullptr);
-  if (cmd_null | params_null) {
+  const bool cmd_null    = (bool)(cmd == nullptr);
+  const bool params_null = (bool)(params == nullptr);
+  if ((bool)((int)cmd_null | (int)params_null)) {
     return k_rx_err_invalid_arg;
   }
 
   /* Use bitwise | to evaluate all velocity bounds without short-circuit branches */
-  const bool fl_lo = (params->front_left_mps < k_velocity_mps_min);
-  const bool fl_hi = (params->front_left_mps > k_velocity_mps_max);
-  const bool fr_lo = (params->front_right_mps < k_velocity_mps_min);
-  const bool fr_hi = (params->front_right_mps > k_velocity_mps_max);
-  const bool bl_lo = (params->back_left_mps < k_velocity_mps_min);
-  const bool bl_hi = (params->back_left_mps > k_velocity_mps_max);
-  const bool br_lo = (params->back_right_mps < k_velocity_mps_min);
-  const bool br_hi = (params->back_right_mps > k_velocity_mps_max);
-  if (fl_lo | fl_hi | fr_lo | fr_hi | bl_lo | bl_hi | br_lo | br_hi) {
+  const bool fl_lo = (bool)(params->front_left_mps < k_velocity_mps_min);
+  const bool fl_hi = (bool)(params->front_left_mps > k_velocity_mps_max);
+  const bool fr_lo = (bool)(params->front_right_mps < k_velocity_mps_min);
+  const bool fr_hi = (bool)(params->front_right_mps > k_velocity_mps_max);
+  const bool bl_lo = (bool)(params->back_left_mps < k_velocity_mps_min);
+  const bool bl_hi = (bool)(params->back_left_mps > k_velocity_mps_max);
+  const bool br_lo = (bool)(params->back_right_mps < k_velocity_mps_min);
+  const bool br_hi = (bool)(params->back_right_mps > k_velocity_mps_max);
+  if ((bool)((int)fl_lo | (int)fl_hi | (int)fr_lo | (int)fr_hi | (int)bl_lo | (int)bl_hi |
+             (int)br_lo | (int)br_hi)) {
     return k_rx_err_invalid_arg;
   }
 

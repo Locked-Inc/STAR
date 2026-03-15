@@ -82,7 +82,7 @@ static rx_log_backend_t s_log_backend = k_log_backend_uart;
 rx_err_t rx_log_set_backend(rx_log_backend_t backend)
 {
   /* Precondition: reject any bit outside the known mask */
-  if ((backend & (rx_log_backend_t)(~(uint8_t)k_log_backend_both)) != k_log_backend_none) {
+  if (((uint8_t)backend & (uint8_t)(~k_log_backend_both)) != k_log_backend_none) {
     return k_rx_err_invalid_arg;
   }
 

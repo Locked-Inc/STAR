@@ -22,7 +22,10 @@ echo "Running pre-commit checks..."
 # -----------------------------------------------------------------------------
 ascii_ok=true
 while IFS= read -r staged_file; do
-    if [[ "$staged_file" =~ \.(c|h|go|cpp|hpp|proto|ts|md)$ ]]; then
+    # Check all text source files, not just C/Go/Proto/TS/MD.
+    # Match by extension or by specific filename (Makefile, Dockerfile, etc.).
+    if [[ "$staged_file" =~ \.(c|h|go|cpp|hpp|proto|ts|md|yml|yaml|sh|py|cmake|json|toml|cfg|conf|tex|bib|css|html|xml|txt|ini|rs|java|rb|lua|js)$ ]] \
+       || [[ "$(basename "$staged_file")" =~ ^(Makefile|Dockerfile|\.clang-format|\.clang-tidy|\.cppcheck-suppressions)$ ]]; then
         if grep -qP "[^\x00-\x7F]" "$staged_file" 2>/dev/null; then
             echo "ERROR: Non-ASCII characters in staged file: $staged_file"
             grep -nP "[^\x00-\x7F]" "$staged_file" | head -5

@@ -507,4 +507,9 @@ rx_err_t rx_time_threadx_get_interface(rx_time_interface_t* iface)
   return k_rx_ok;
 }
 
+#else
+
+/* ISO C requires at least one declaration per translation unit */
+typedef int rx_time_threadx_placeholder_t;
+
 #endif /* __RX__ */

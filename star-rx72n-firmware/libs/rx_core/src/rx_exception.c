@@ -46,6 +46,16 @@ void rx_exc_nmi_c_handler(uint32_t pc, uint32_t psw);
 static const char* const s_tag = "EXCEPTION";
 
 /**
+ * @brief Indices for the reserved padding bytes in rx_exception_frame_t
+ * @details The reserved array has k_exception_frame_reserved_size (3) elements.
+ */
+typedef enum : uint8_t {
+  k_exc_reserved_idx_0 = 0, /**< First reserved padding byte */
+  k_exc_reserved_idx_1 = 1, /**< Second reserved padding byte */
+  k_exc_reserved_idx_2 = 2, /**< Third reserved padding byte */
+} exc_reserved_idx_t;
+
+/**
  * @brief Exception type names for logging
  * @details Indexed by rx_exception_type_t values
  */
@@ -165,12 +175,12 @@ void rx_exception_init(void)
   }
 
   /* Clear last frame */
-  s_exception_stats.last_frame.pc          = 0;
-  s_exception_stats.last_frame.psw         = 0;
-  s_exception_stats.last_frame.type        = k_rx_exception_undefined_instruction;
-  s_exception_stats.last_frame.reserved[0] = 0;
-  s_exception_stats.last_frame.reserved[1] = 0;
-  s_exception_stats.last_frame.reserved[2] = 0;
+  s_exception_stats.last_frame.pc   = 0;
+  s_exception_stats.last_frame.psw  = 0;
+  s_exception_stats.last_frame.type = k_rx_exception_undefined_instruction;
+  s_exception_stats.last_frame.reserved[k_exc_reserved_idx_0] = 0;
+  s_exception_stats.last_frame.reserved[k_exc_reserved_idx_1] = 0;
+  s_exception_stats.last_frame.reserved[k_exc_reserved_idx_2] = 0;
 
   /* Mark as initialized */
   s_initialized = k_rx_exc_initialized;

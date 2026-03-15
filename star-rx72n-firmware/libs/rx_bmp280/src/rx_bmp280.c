@@ -237,9 +237,10 @@ static rx_err_t internal_write_reg(uint8_t reg, uint8_t val);
 /** @brief Burst-read consecutive registers from BMP280 via I2C write-read */
 static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len);
 /** @brief Apply Bosch integer temperature compensation formula (returns centi-degC, sets t_fine) */
-static int32_t internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out);
+static int32_t internal_compensate_temp(int32_t adc_temp, int32_t* t_fine_out);
 /** @brief Apply Bosch integer pressure compensation formula (returns Pa*256 in press_out) */
-static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint32_t* press_out);
+static rx_err_t
+internal_compensate_pressure(int32_t adc_pressure, int32_t t_fine, uint32_t* press_out);
 /** @brief Assemble an unsigned 16-bit little-endian value from two consecutive bytes */
 static inline uint16_t internal_parse_u16_le(const uint8_t* buf);
 /** @brief Assemble a signed 16-bit little-endian value from two consecutive bytes */
@@ -346,7 +347,7 @@ static inline uint16_t internal_parse_u16_le(const uint8_t* buf)
 {
   /* Pre-condition: buf is always a valid pointer to a calibration or ADC buffer;
    * all callers pass stack-allocated arrays (never NULL). */
-  static_assert((uint8_t)k_bmp280_byte_shift == (uint8_t)k_bmp280_sizeof_int64,
+  static_assert((bool)(((unsigned)k_bmp280_byte_shift == (unsigned)k_bmp280_sizeof_int64) != 0),
                 "byte shift must be 8 for LE 16-bit assembly");
   return (uint16_t)((uint16_t)buf[k_bmp280_le16_lsb_idx] |
                     ((uint16_t)buf[k_bmp280_le16_msb_idx] << k_bmp280_byte_shift));
@@ -375,7 +376,7 @@ static inline uint16_t internal_parse_u16_le(const uint8_t* buf)
 static inline int16_t internal_parse_s16_le(const uint8_t* buf)
 {
   /* Pre-condition: buf is always a valid calibration buffer pointer (never NULL). */
-  static_assert(sizeof(int16_t) == sizeof(uint16_t),
+  static_assert((bool)((sizeof(int16_t) == sizeof(uint16_t)) != 0),
                 "int16_t and uint16_t must be same size for safe reinterpret cast");
   return (int16_t)internal_parse_u16_le(buf);
 }
@@ -458,7 +459,7 @@ typedef enum : int32_t {
  * T = (t_fine * 5 + 128) >> 8    // Unit: centi-degrees (0.01 degC)
  * @endcode
  *
- * @param[in]  adc_T     Raw 20-bit temperature ADC value
+ * @param[in]  adc_temp   Raw 20-bit temperature ADC value
  * @param[out] t_fine_out Intermediate fine temperature value (for pressure comp)
  *
  * @return int32_t Compensated temperature in 0.01 degC units (divide by 100 for degC)
@@ -473,16 +474,16 @@ typedef enum : int32_t {
  *
  * @since Version 1.0.0
  */
-static int32_t internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out)
+static int32_t internal_compensate_temp(int32_t adc_temp, int32_t* t_fine_out)
 {
   /* Pre-conditions: t_fine_out is a local stack variable (never NULL);
-   * adc_T is produced by internal_assemble_adc20 which masks to 20 bits. */
+   * adc_temp is produced by internal_assemble_adc20 which masks to 20 bits. */
   const int32_t var1 =
-    ((((adc_T >> k_temp_shift_adc_3) - ((int32_t)s_calib.dig_T1 << k_temp_shift_t1_1))) *
+    ((((adc_temp >> k_temp_shift_adc_3) - ((int32_t)s_calib.dig_T1 << k_temp_shift_t1_1))) *
      ((int32_t)s_calib.dig_T2)) >>
     k_temp_shift_11;
-  const int32_t var2 = (((((adc_T >> k_temp_shift_adc_4) - ((int32_t)s_calib.dig_T1)) *
-                          ((adc_T >> k_temp_shift_adc_4) - ((int32_t)s_calib.dig_T1))) >>
+  const int32_t var2 = (((((adc_temp >> k_temp_shift_adc_4) - ((int32_t)s_calib.dig_T1)) *
+                          ((adc_temp >> k_temp_shift_adc_4) - ((int32_t)s_calib.dig_T1))) >>
                          k_temp_shift_12) *
                         ((int32_t)s_calib.dig_T3)) >>
                        k_temp_shift_14;
@@ -549,7 +550,7 @@ static uint32_t internal_finalize_pressure_q8(int64_t p, int64_t var1, int64_t v
 {
   /* Pre-conditions: dig_P1 non-zero is guaranteed by the rx_bmp280_init post-condition check;
    * p is non-negative by construction from the BMP280 datasheet algorithm (var1 > 0 guard). */
-  static_assert(sizeof(int64_t) == k_bmp280_sizeof_int64,
+  static_assert((bool)((sizeof(int64_t) == k_bmp280_sizeof_int64) != 0),
                 "int64_t must be 64-bit for overflow-safe pressure math");
   /* Bosch BMP280 datasheet formula (Section 4.2.3):
    * Step 1: shift (p + fine adjustments) right by 8 to get Q8 fixed-point Pa*256
@@ -574,8 +575,8 @@ static uint32_t internal_finalize_pressure_q8(int64_t p, int64_t var1, int64_t v
  *
  * Output unit: Pa * 256 (fixed-point Q8.0 format). Divide by 256.0 for Pa.
  *
- * @param[in]  adc_P     Raw 20-bit pressure ADC value
- * @param[in]  t_fine    Intermediate temperature from internal_compensate_temp()
+ * @param[in]  adc_pressure Raw 20-bit pressure ADC value
+ * @param[in]  t_fine       Intermediate temperature from internal_compensate_temp()
  * @param[out] press_out Compensated pressure in Pa * 256 on success
  *
  * @return rx_err_t Operation result
@@ -593,10 +594,11 @@ static uint32_t internal_finalize_pressure_q8(int64_t p, int64_t var1, int64_t v
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint32_t* press_out)
+static rx_err_t
+internal_compensate_pressure(int32_t adc_pressure, int32_t t_fine, uint32_t* press_out)
 {
   /* Pre-conditions: dig_P1 non-zero is validated by rx_bmp280_init before any read is possible;
-   * adc_P is a 20-bit value from internal_assemble_adc20 (always >= 0);
+   * adc_pressure is a 20-bit value from internal_assemble_adc20 (always >= 0);
    * press_out is a local stack variable passed by internal_read_and_compensate_adc (never NULL). */
 
   /* k_press_base_one must be int64_t (not enum) because the expression
@@ -621,7 +623,7 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
     return k_rx_err_invalid_state;
   }
 
-  int64_t p = (int64_t)k_press_p_scale - adc_P;
+  int64_t p = (int64_t)k_press_p_scale - adc_pressure;
   p         = (((p << k_press_shift_31) - var2) * k_press_mul_3125) / var1;
 
   var1 = (((int64_t)s_calib.dig_P9) * (p >> k_press_shift_13) * (p >> k_press_shift_13)) >>
@@ -660,8 +662,9 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
 static void internal_parse_calibration(const uint8_t* buf)
 {
   /* Pre-condition: buf is a stack-allocated calibration buffer in rx_bmp280_init (never NULL). */
-  static_assert(k_bmp280_calib_p9_lsb + k_bmp280_calib_tail_bytes == k_bmp280_calib_byte_count,
-                "P9 coefficient must occupy the final two bytes of the calibration block");
+  static_assert(
+    (bool)((k_bmp280_calib_p9_lsb + k_bmp280_calib_tail_bytes == k_bmp280_calib_byte_count) != 0),
+    "P9 coefficient must occupy the final two bytes of the calibration block");
   s_calib.dig_T1 = internal_parse_u16_le(&buf[k_bmp280_calib_t1_lsb]);
   s_calib.dig_T2 = internal_parse_s16_le(&buf[k_bmp280_calib_t2_lsb]);
   s_calib.dig_T3 = internal_parse_s16_le(&buf[k_bmp280_calib_t3_lsb]);
@@ -707,14 +710,13 @@ static void internal_parse_calibration(const uint8_t* buf)
 static rx_err_t internal_verify_chip_id(void)
 {
   uint8_t        chip_id = 0U;
-  const rx_err_t err =
-    internal_read_regs((uint8_t)k_bmp280_reg_chip_id, &chip_id, k_bmp280_single_byte);
+  const rx_err_t err     = internal_read_regs(k_bmp280_reg_chip_id, &chip_id, k_bmp280_single_byte);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Chip ID read failed");
     s_manager = NULL;
     return err;
   }
-  if (chip_id != (uint8_t)k_bmp280_chip_id_expected) {
+  if (chip_id != k_bmp280_chip_id_expected) {
     rx_log_error_val(s_tag, "Unexpected chip ID", (uint32_t)chip_id);
     s_manager = NULL;
     return k_rx_err_invalid_state;
@@ -749,7 +751,7 @@ static rx_err_t internal_read_and_validate_calibration(void)
 {
   uint8_t        calib_buf[k_bmp280_calib_byte_count];
   const rx_err_t err =
-    internal_read_regs((uint8_t)k_bmp280_reg_calib_start, calib_buf, k_bmp280_calib_byte_count);
+    internal_read_regs(k_bmp280_reg_calib_start, calib_buf, k_bmp280_calib_byte_count);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Calibration read failed");
     s_manager = NULL;
@@ -758,9 +760,7 @@ static rx_err_t internal_read_and_validate_calibration(void)
 
   internal_parse_calibration(calib_buf);
 
-  const bool t1_zero = (s_calib.dig_T1 == 0U);
-  const bool p1_zero = (s_calib.dig_P1 == 0U);
-  if (t1_zero || p1_zero) {
+  if ((s_calib.dig_T1 == 0U) || (s_calib.dig_P1 == 0U)) {
     rx_log_error(s_tag, "Invalid calibration: dig_T1 or dig_P1 is zero");
     s_manager = NULL;
     return k_rx_err_invalid_state;
@@ -810,7 +810,7 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
     return err;
   }
 
-  err = internal_write_reg((uint8_t)k_bmp280_reg_config, (uint8_t)k_bmp280_config_val);
+  err = internal_write_reg(k_bmp280_reg_config, k_bmp280_config_val);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Config register write failed");
     s_manager = NULL;
@@ -864,39 +864,36 @@ RX_STATIC_TESTABLE rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out)
 
   /* Step 1: Read 6 bytes of ADC data: pressure[3] + temperature[3] */
   uint8_t        adc_buf[k_bmp280_adc_buf_size];
-  const rx_err_t err =
-    internal_read_regs((uint8_t)k_bmp280_reg_press_msb, adc_buf, k_bmp280_adc_buf_size);
+  const rx_err_t err = internal_read_regs(k_bmp280_reg_press_msb, adc_buf, k_bmp280_adc_buf_size);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "ADC data read failed");
     return err;
   }
 
   /* Step 2: Assemble 20-bit raw ADC values */
-  const int32_t adc_P = internal_assemble_adc20(&adc_buf[k_bmp280_press_msb_idx]);
-  const int32_t adc_T = internal_assemble_adc20(&adc_buf[k_bmp280_temp_msb_idx]);
+  const int32_t adc_pressure = internal_assemble_adc20(&adc_buf[k_bmp280_press_msb_idx]);
+  const int32_t adc_temp     = internal_assemble_adc20(&adc_buf[k_bmp280_temp_msb_idx]);
 
   /* Step 3: Apply Bosch integer temperature compensation */
   int32_t t_fine       = 0;
-  out->temp_centi_degc = internal_compensate_temp(adc_T, &t_fine);
+  out->temp_centi_degc = internal_compensate_temp(adc_temp, &t_fine);
 
   /* Step 4: Apply Bosch integer pressure compensation */
-  const rx_err_t press_err = internal_compensate_pressure(adc_P, t_fine, &out->press_pa_256);
+  const rx_err_t press_err = internal_compensate_pressure(adc_pressure, t_fine, &out->press_pa_256);
   if (press_err != k_rx_ok) {
     rx_log_error(s_tag, "Pressure compensation failed (var1==0)");
     return press_err;
   }
 
   /* Step 5: Postcondition range checks (BMP280 datasheet operating limits). */
-  bool temp_lo = (out->temp_centi_degc < (int32_t)k_bmp280_temp_min_cdegc_impl);
-  bool temp_hi = (out->temp_centi_degc > (int32_t)k_bmp280_temp_max_cdegc_impl);
-  if (temp_lo || temp_hi) {
+  if ((out->temp_centi_degc < k_bmp280_temp_min_cdegc_impl) ||
+      (out->temp_centi_degc > k_bmp280_temp_max_cdegc_impl)) {
     rx_log_error_val(s_tag, "Temperature out of range (centi-degC)", (int32_t)out->temp_centi_degc);
     return k_rx_err_invalid_state;
   }
 
-  bool press_lo = (out->press_pa_256 < (uint32_t)k_bmp280_press_min_pa_256);
-  bool press_hi = (out->press_pa_256 > (uint32_t)k_bmp280_press_max_pa_256);
-  if (press_lo || press_hi) {
+  if ((out->press_pa_256 < k_bmp280_press_min_pa_256) ||
+      (out->press_pa_256 > k_bmp280_press_max_pa_256)) {
     rx_log_error_val(s_tag, "Pressure out of range (Pa*256)", out->press_pa_256);
     return k_rx_err_invalid_state;
   }
@@ -942,8 +939,7 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
   }
 
   /* Step 1: Write ctrl_meas to trigger forced measurement */
-  rx_err_t err =
-    internal_write_reg((uint8_t)k_bmp280_reg_ctrl_meas, (uint8_t)k_bmp280_ctrl_meas_val);
+  rx_err_t err = internal_write_reg(k_bmp280_reg_ctrl_meas, k_bmp280_ctrl_meas_val);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "ctrl_meas write failed");
     return err;
@@ -953,13 +949,13 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
   uint32_t poll_count = 0;
   while (poll_count < (uint32_t)k_bmp280_poll_max) {
     uint8_t status_byte = 0;
-    err = internal_read_regs((uint8_t)k_bmp280_reg_status, &status_byte, k_bmp280_single_byte);
+    err = internal_read_regs(k_bmp280_reg_status, &status_byte, k_bmp280_single_byte);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Status register read failed");
       return err;
     }
 
-    if ((status_byte & (uint8_t)k_bmp280_status_meas_mask) == 0U) {
+    if ((status_byte & k_bmp280_status_meas_mask) == 0U) {
       break; /* Measurement complete */
     }
 

@@ -1066,7 +1066,7 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  */
 [[nodiscard]] rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
                                        const uint8_t*            data,
-                                       const uint32_t            data_len,
+                                       uint32_t                  data_len,
                                        rx_frame_t*               frame);
 
 /**
@@ -1153,7 +1153,7 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  */
 [[nodiscard]] rx_err_t rx_frame_decode_with_resync(const rx_frame_decoder_t* dec,
                                                    const uint8_t*            data,
-                                                   const uint32_t            data_len,
+                                                   uint32_t                  data_len,
                                                    rx_frame_t*               frame,
                                                    uint32_t*                 bytes_discarded_out);
 
@@ -1191,9 +1191,9 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  * @return k_rx_ok on success
  */
 [[nodiscard]] rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
-                                            const uint16_t sequence,
+                                            uint16_t       sequence,
                                             const uint8_t* payload,
-                                            const uint32_t payload_len);
+                                            uint32_t       payload_len);
 
 /**
  * @brief Create PONG frame (response to PING)
@@ -1205,9 +1205,9 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  * @return k_rx_ok on success
  */
 [[nodiscard]] rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
-                                            const uint16_t sequence,
+                                            uint16_t       sequence,
                                             const uint8_t* payload,
-                                            const uint32_t payload_len);
+                                            uint32_t       payload_len);
 
 /**
  * @brief Create RESET frame to reset communication state
@@ -1216,7 +1216,7 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  * @param[in]  sequence Sequence number
  * @return k_rx_ok on success
  */
-[[nodiscard]] rx_err_t rx_frame_create_reset(rx_frame_t* frame, const uint16_t sequence);
+[[nodiscard]] rx_err_t rx_frame_create_reset(rx_frame_t* frame, uint16_t sequence);
 
 /**
  * @brief Create RESET_ACK frame (response to RESET)
@@ -1225,7 +1225,7 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  * @param[in]  sequence Sequence number (matches reset)
  * @return k_rx_ok on success
  */
-[[nodiscard]] rx_err_t rx_frame_create_reset_ack(rx_frame_t* frame, const uint16_t sequence);
+[[nodiscard]] rx_err_t rx_frame_create_reset_ack(rx_frame_t* frame, uint16_t sequence);
 
 /**
  * @brief Check if frame type is valid

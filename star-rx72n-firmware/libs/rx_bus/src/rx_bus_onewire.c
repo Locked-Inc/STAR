@@ -211,7 +211,7 @@ RX_STATIC_TESTABLE void internal_delay_timer_init(void)
 
   /* Enable CMT module clock */
   *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
-  system_regs()->mstpcrb &= ~((uint32_t)k_onewire_bit_set << k_onewire_mstpb_cmt_bit);
+  system_regs()->mstpcrb &= ~(k_onewire_bit_set << k_onewire_mstpb_cmt_bit);
   *prcr_reg() = k_rx_prcr_lock;
 
   /* Stop CMT3 before reconfiguration */
@@ -370,13 +370,13 @@ RX_STATIC_TESTABLE rx_err_t internal_set_drive_mode(const rx_bus_config_t*   bus
                                                     const bool               output)
 {
   rx_err_t err = k_rx_ok;
-  if (output && !state->line_is_output) {
+  if ((int)output && !(int)state->line_is_output) {
     err = gpio_set_output(bus_config->proto.onewire.pin);
     if (err != k_rx_ok) {
       return err;
     }
     state->line_is_output = true;
-  } else if (!output && state->line_is_output) {
+  } else if (!(int)output && (int)state->line_is_output) {
     err = gpio_set_input(bus_config->proto.onewire.pin);
     if (err != k_rx_ok) {
       return err;
@@ -507,7 +507,7 @@ RX_STATIC_TESTABLE rx_err_t internal_reset_pulse(rx_bus_config_t*         bus_co
     return err;
   }
 
-  *presence = !line_high;
+  *presence = (bool)(!line_high);
   internal_delay_us(k_onewire_presence_tail_us);
 
   return k_rx_ok;
@@ -656,7 +656,7 @@ RX_STATIC_TESTABLE rx_err_t internal_write_byte(rx_bus_config_t*         bus_con
                                                 const uint8_t            byte)
 {
   for (uint8_t i = 0; i < k_bits_per_byte; ++i) {
-    const bool     bit = ((byte >> i) & k_onewire_single_bit_mask) != 0U;
+    const bool     bit = (bool)(((byte >> i) & k_onewire_single_bit_mask) != 0U);
     const rx_err_t err = internal_write_bit(bus_config, state, bit);
     if (err != k_rx_ok) {
       return err;
@@ -738,7 +738,7 @@ static bool internal_resolve_search_direction(const bool                     bit
     } else if (bit_number > state->last_discrepancy) {
       search_direction = false;
     } else {
-      search_direction = ((state->last_rom[rom_byte_index] & rom_bit_mask) != 0U);
+      search_direction = (bool)((state->last_rom[rom_byte_index] & rom_bit_mask) != 0U);
     }
     if (!search_direction) {
       *last_zero = bit_number;
@@ -771,7 +771,7 @@ RX_STATIC_TESTABLE rx_err_t internal_search_step(rx_bus_config_t*         bus_co
   if (err != k_rx_ok) {
     return err;
   }
-  if (bit && comp_bit) {
+  if ((int)bit && (int)comp_bit) {
     return k_rx_err_hw_error;
   }
 
@@ -1189,8 +1189,8 @@ static void internal_release_state(rx_bus_config_t* bus_config)
   for (uint32_t i = k_onewire_instance_idx_start; i < k_onewire_max_instances; ++i) {
     const bool slot_in_use = s_state_pool[i].in_use;
     const bool handle_matches =
-      (&s_state_pool[i].state == (onewire_runtime_state_t*)bus_config->handle);
-    if (slot_in_use & handle_matches) {
+      (bool)(&s_state_pool[i].state == (onewire_runtime_state_t*)bus_config->handle);
+    if ((bool)((int)slot_in_use & (int)handle_matches)) {
       s_state_pool[i].in_use = false;
       s_state_pool[i].state  = (onewire_runtime_state_t){0};
       break;

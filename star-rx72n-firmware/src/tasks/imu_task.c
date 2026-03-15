@@ -281,20 +281,22 @@ typedef enum : uint8_t {
 #endif /* __RX__ */
 
 static_assert(
-  (((uint32_t)k_imu_int_timeout_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND + k_imu_ceiling_addend) /
-     (uint32_t)k_imu_ms_per_second +
-   1U) <= k_imu_uint8_max_val,
+  (bool)((((uint32_t)k_imu_int_timeout_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND +
+           k_imu_ceiling_addend) /
+            (uint32_t)k_imu_ms_per_second +
+          1U) <= k_imu_uint8_max_val),
   "k_imu_int_timeout_ticks overflows uint8_t; reduce k_imu_int_timeout_ms or use a wider type");
-static_assert(TX_TIMER_TICKS_PER_SECOND != 0U, "TX_TIMER_TICKS_PER_SECOND must be non-zero");
-static_assert(k_imu_ms_per_second > 0U, "k_imu_ms_per_second must be positive");
-static_assert(((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) %
-                  (uint32_t)k_imu_ms_per_second ==
-                0U,
+static_assert((bool)(TX_TIMER_TICKS_PER_SECOND != 0U),
+              "TX_TIMER_TICKS_PER_SECOND must be non-zero");
+static_assert((bool)(k_imu_ms_per_second > 0U), "k_imu_ms_per_second must be positive");
+static_assert((bool)(((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) %
+                       (uint32_t)k_imu_ms_per_second ==
+                     0U),
               "IMU period must map to a whole number of ThreadX ticks");
 static_assert(
-  (uint32_t)k_imu_task_period_ticks ==
-    (((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) /
-     (uint32_t)k_imu_ms_per_second),
+  (bool)((uint32_t)k_imu_task_period_ticks ==
+         (((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) /
+          (uint32_t)k_imu_ms_per_second)),
   "k_imu_task_period_ticks must match k_imu_task_period_ms / TX_TIMER_TICKS_PER_SECOND");
 
 /* =============================================================================
@@ -859,7 +861,6 @@ static imu_wait_result_t internal_wait_for_imu_int(void)
  *
  * @since Version 1.0.0
  */
-void INT_IRQ12(void);
 void INT_IRQ12(void)
 {
 #ifdef __RX__

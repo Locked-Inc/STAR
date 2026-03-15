@@ -394,9 +394,10 @@ typedef enum : uint8_t {
 
 /* Compile-time guard: k_shared_channel_count must stay equal to k_comm_channel_count.
  * If rx_comm_channel_t gains a new value, update k_shared_channel_count to match. */
-static_assert((uint8_t)k_shared_channel_count == (uint8_t)k_comm_channel_count,
+static_assert((bool)((unsigned int)k_shared_channel_count == (unsigned int)k_comm_channel_count),
               "k_shared_channel_count out of sync with k_comm_channel_count");
-static_assert((uint8_t)k_shared_channel_usb_default == (uint8_t)k_comm_channel_usb,
+static_assert((bool)((unsigned int)k_shared_channel_usb_default ==
+                     (unsigned int)k_comm_channel_usb),
               "k_shared_channel_usb_default out of sync with k_comm_channel_usb");
 
 /**
@@ -768,7 +769,7 @@ static void internal_cleanup_mutexes(uint8_t count)
     &g_shared_data.imu_mutex,
     &g_shared_data.baro_mutex,
   };
-  const uint8_t limit = (count < k_mutex_idx_baro) ? count : (uint8_t)k_mutex_idx_baro;
+  const uint8_t limit = (count < k_mutex_idx_baro) ? count : k_mutex_idx_baro;
   for (uint8_t i = limit; i > 0U; i--) {
     (void)tx_mutex_delete(mutexes[i - 1U]);
   }
@@ -2564,7 +2565,7 @@ bool shared_data_is_comm_timeout(void)
   /* ThreadX tick rate is 100 Hz (10ms per tick) */
   const uint32_t elapsed_ms = (current_tick - last_tick) * k_ms_per_tick;
 
-  const bool timeout = (elapsed_ms > k_shared_comm_timeout_ms);
+  const bool timeout = (bool)(elapsed_ms > k_shared_comm_timeout_ms);
 
   if (timeout) {
     /* Signal timeout event */
@@ -2669,7 +2670,7 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
     return k_rx_err_not_initialized;
   }
 
-  if (channel >= (uint8_t)k_shared_channel_count) {
+  if (channel >= k_shared_channel_count) {
     return k_rx_err_invalid_arg;
   }
 
@@ -2724,8 +2725,8 @@ uint8_t shared_data_get_active_channel(void)
     return k_shared_channel_usb_default;
   }
 
-  const uint8_t ch = g_shared_data.active_channel_valid ? g_shared_data.active_channel
-                                                        : k_shared_channel_usb_default;
+  const uint8_t ch = (int)g_shared_data.active_channel_valid ? g_shared_data.active_channel
+                                                             : k_shared_channel_usb_default;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 

@@ -100,14 +100,14 @@ proto-gen: proto-gen-go proto-gen-ros2 proto-gen-firmware proto-check-nanopb-syn
 proto-gen-go:
 	@echo "Generating protocol buffers (Go, TS, C, C++)..."
 	@buf generate star-proto/proto
-	@echo "✓ Code generated under star-proto/gen/"
+	@echo "[PASS] Code generated under star-proto/gen/"
 	@echo "Setting up Go module for generated code..."
 	@if [ ! -f star-proto/gen/go/go.mod ]; then \
 		cd star-proto/gen/go && go mod init github.com/Locked-Inc/star-proto/gen/go; \
 	fi
 	@cd star-proto/gen/go && go mod tidy
 	@go work sync
-	@echo "✓ Go workspace synchronized"
+	@echo "[PASS] Go workspace synchronized"
 
 # Placeholder for ROS2-specific generation (if distinct tooling is added)
 proto-gen-ros2:
@@ -127,7 +127,7 @@ proto-gen-firmware: proto-gen-go
 		base=$$(basename "$$header" .pb.h); \
 		cp -v "$$src_gen/$$base.pb.h" "$$src_gen/$$base.pb.c" "$$dst/"; \
 	done
-	@echo "✓ Firmware protos updated"
+	@echo "[PASS] Firmware protos updated"
 
 # Test RX72N firmware (regenerates protos first) and show coverage summary
 test-rx72n: proto-gen-firmware

@@ -653,7 +653,7 @@ static uint8_t s_port2_tx_buf[k_usb_port_log_tx_size];
  * =============================================================================
  */
 
-static usb_driver_t s_usb = {0};
+static usb_driver_t s_usb = {};
 
 /* Redundant extern declarations removed - now provided by rx_usb_internal.h */
 
@@ -667,7 +667,7 @@ static usb_driver_t s_usb = {0};
  */
 static inline bool internal_port_is_valid(const rx_usb_port_id_t port)
 {
-  return port < k_usb_port_count;
+  return (bool)(port < k_usb_port_count);
 }
 
 /**
@@ -682,7 +682,7 @@ static inline bool internal_port_is_valid(const rx_usb_port_id_t port)
  */
 static inline bool internal_state_is_valid(const rx_usb_state_t state)
 {
-  return state <= k_usb_state_suspended;
+  return (bool)(state <= k_usb_state_suspended);
 }
 
 /* =============================================================================
@@ -1092,7 +1092,7 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   rx_log_info(s_tag, "Initializing USB CDC composite driver");
 
   /* Clear driver state */
-  s_usb = (usb_driver_t){0};
+  s_usb = (usb_driver_t){};
 
   /* Store global callback if provided */
   if (config != nullptr) {
@@ -1193,7 +1193,7 @@ bool rx_usb_is_configured(const rx_usb_port_id_t port)
     return false;
   }
 
-  return s_usb.initialized && (s_usb.device_state == k_usb_state_configured);
+  return (bool)((int)s_usb.initialized && (s_usb.device_state == k_usb_state_configured));
 }
 
 /**

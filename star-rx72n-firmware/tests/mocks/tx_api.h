@@ -134,11 +134,14 @@ typedef enum : uint8_t {
   TX_FEATURE_NOT_ENABLED = 0xFFU,
 } tx_status;
 
-/** @brief ThreadX wait options */
-typedef enum tx_wait_option : uint32_t {
-  TX_NO_WAIT      = 0U,
-  TX_WAIT_FOREVER = 0xFFFFFFFFU,
-} tx_wait_option;
+/** @brief ThreadX wait option type (ULONG tick count, or TX_NO_WAIT/TX_WAIT_FOREVER) */
+typedef ULONG tx_wait_option;
+
+/** @brief Return immediately if resource unavailable */
+static const tx_wait_option TX_NO_WAIT = 0U;
+
+/** @brief Wait indefinitely for resource */
+static const tx_wait_option TX_WAIT_FOREVER = 0xFFFFFFFFU;
 
 /** @brief ThreadX inheritance options */
 typedef enum : uint8_t {

@@ -614,8 +614,8 @@ void rx_log_usb_putint(int32_t value)
   char* p = &buf[sizeof(buf) - 1];
   *p      = '\0';
 
-  bool     negative  = (value < 0);
-  uint32_t abs_value = (negative) ? (uint32_t)(-value) : (uint32_t)value;
+  bool     negative  = (bool)(value < 0);
+  uint32_t abs_value = (int)negative ? (uint32_t)(-value) : (uint32_t)value;
 
   /* Generate digits in reverse */
   do {
@@ -999,8 +999,7 @@ void rx_log_usb_test_set_boot_buffer(uint16_t head, uint16_t count, const char* 
   s_boot_buffer.count = count;
   /* Copy data into ring buffer - wrap-around handled by caller */
   for (uint16_t i = 0; i < count; i++) {
-    uint16_t pos =
-      (uint16_t)((head - count + (uint16_t)k_boot_buffer_size + i) % (uint16_t)k_boot_buffer_size);
+    uint16_t pos = (uint16_t)((head - count + k_boot_buffer_size + i) % k_boot_buffer_size);
     s_boot_buffer.data[pos] = data[i];
   }
 }

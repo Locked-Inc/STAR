@@ -1755,11 +1755,12 @@ static telemetry_transport_t internal_select_transport(void)
    * channels.  If a new channel is ever added to rx_comm_channel_t, update
    * k_comm_channel_count, increment k_telem_supported_channel_count, and add a
    * case below so the new channel is not silently routed to USB. */
-  static_assert((uint8_t)k_comm_channel_count == (uint8_t)k_telem_supported_channel_count,
-                "internal_select_transport: add a case for every new rx_comm_channel_t value");
+  static_assert(
+    (bool)((unsigned int)k_comm_channel_count == (unsigned int)k_telem_supported_channel_count),
+    "internal_select_transport: add a case for every new rx_comm_channel_t value");
 
   const uint8_t raw_ch = shared_data_get_active_channel();
-  if (raw_ch >= (uint8_t)k_comm_channel_count) {
+  if (raw_ch >= k_comm_channel_count) {
     return k_telemetry_transport_usb; /* fail-safe: unexpected value defaults to USB */
   }
 
@@ -1920,7 +1921,7 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
   telemetry->encoder_front_left.motor_id = k_telem_motor_front_left;
   telemetry->encoder_front_left.ticks    = motor_state.encoder_counts[k_telem_motor_front_left];
   telemetry->encoder_front_left.velocity_mps =
-    (float)motor_state.current_velocity_mps[k_telem_motor_front_left];
+    motor_state.current_velocity_mps[k_telem_motor_front_left];
   telemetry->encoder_front_left.timestamp_us = telemetry->timestamp_us;
 
   /* Front right encoder */
@@ -1928,7 +1929,7 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
   telemetry->encoder_front_right.motor_id = k_telem_motor_front_right;
   telemetry->encoder_front_right.ticks    = motor_state.encoder_counts[k_telem_motor_front_right];
   telemetry->encoder_front_right.velocity_mps =
-    (float)motor_state.current_velocity_mps[k_telem_motor_front_right];
+    motor_state.current_velocity_mps[k_telem_motor_front_right];
   telemetry->encoder_front_right.timestamp_us = telemetry->timestamp_us;
 
   /* Back left encoder */
@@ -1936,7 +1937,7 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
   telemetry->encoder_back_left.motor_id = k_telem_motor_back_left;
   telemetry->encoder_back_left.ticks    = motor_state.encoder_counts[k_telem_motor_back_left];
   telemetry->encoder_back_left.velocity_mps =
-    (float)motor_state.current_velocity_mps[k_telem_motor_back_left];
+    motor_state.current_velocity_mps[k_telem_motor_back_left];
   telemetry->encoder_back_left.timestamp_us = telemetry->timestamp_us;
 
   /* Back right encoder */
@@ -1944,7 +1945,7 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
   telemetry->encoder_back_right.motor_id = k_telem_motor_back_right;
   telemetry->encoder_back_right.ticks    = motor_state.encoder_counts[k_telem_motor_back_right];
   telemetry->encoder_back_right.velocity_mps =
-    (float)motor_state.current_velocity_mps[k_telem_motor_back_right];
+    motor_state.current_velocity_mps[k_telem_motor_back_right];
   telemetry->encoder_back_right.timestamp_us = telemetry->timestamp_us;
 
   return k_rx_ok;
@@ -1996,7 +1997,7 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
 
   imu_state_t    imu_state;
   const rx_err_t err = shared_data_get_imu(&imu_state);
-  if (err == k_rx_ok && imu_state.valid) {
+  if ((bool)((err == k_rx_ok) && (int)imu_state.valid)) {
     telemetry->has_imu = true;
 
     /* Heading in degrees [0, 360) then convert to radians [0, 2*pi) */
@@ -2074,7 +2075,7 @@ static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
 
   baro_state_t   baro_state;
   const rx_err_t err = shared_data_get_baro(&baro_state);
-  if (err == k_rx_ok && baro_state.valid) {
+  if ((bool)((err == k_rx_ok) && (int)baro_state.valid)) {
     telemetry->has_baro = true;
 
     /* Temperature: centi-degrees Celsius -> degrees Celsius */
@@ -2155,7 +2156,7 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
 
   /* Collect temperature state */
   err = shared_data_get_temp(&temp_state);
-  if (err == k_rx_ok && temp_state.sensor_valid[k_telem_sensor_ambient]) {
+  if ((bool)((err == k_rx_ok) && (int)temp_state.sensor_valid[k_telem_sensor_ambient])) {
     /* Convert from centi-degrees to degrees */
     telemetry->temperature_celsius =
       (float)temp_state.temperature_cdegc[k_telem_sensor_ambient] / s_cdegc_per_degree;
@@ -2453,7 +2454,7 @@ static rx_err_t internal_build_and_send_telemetry(void)
    * peripheral watches HOST_IRQ (P67) as a data-ready signal.  USB sends
    * do not involve the SPI peer so toggling HOST_IRQ for USB would
    * spuriously wake it. */
-  const bool assert_host_irq = (channel == k_comm_channel_spi);
+  const bool assert_host_irq = (bool)(channel == k_comm_channel_spi);
   if (assert_host_irq) {
     (void)gpio_write_low(g_pin_host_irq);
   }

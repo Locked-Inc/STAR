@@ -671,9 +671,9 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
 
   /* gptw_config is always &local_var from the single caller (rx_motor_init) -- never null. */
 
-  const bool a_invalid = ((outputs.a != k_gptw_output_a) & (outputs.a != k_gptw_output_b));
-  const bool b_invalid = ((outputs.b != k_gptw_output_a) & (outputs.b != k_gptw_output_b));
-  if (a_invalid | b_invalid) {
+  const bool a_invalid = (bool)((outputs.a != k_gptw_output_a) & (outputs.a != k_gptw_output_b));
+  const bool b_invalid = (bool)((outputs.b != k_gptw_output_a) & (outputs.b != k_gptw_output_b));
+  if ((bool)((int)a_invalid | (int)b_invalid)) {
     rx_log_error(s_tag, "Invalid GPTW output selection");
     return k_rx_err_invalid_arg;
   }
@@ -1546,7 +1546,7 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, const bool brake)
    *   Brake: IN2 = LOW(0%), IN1 = LOW(0%) -> low-side FET short (active brake)
    *   Coast: IN2 = HIGH(100%), IN1 = HIGH(100%) -> Hi-Z (motor free-wheels)
    */
-  const float stop_level = brake ? (float)k_motor_drive_low : (float)k_motor_drive_high;
+  const float stop_level = (int)brake ? (float)k_motor_drive_low : (float)k_motor_drive_high;
 
   err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                          rx_gptw_output_id(handle->output_a),

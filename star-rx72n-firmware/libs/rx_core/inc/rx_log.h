@@ -275,6 +275,17 @@ extern "C" {
 #include <stdio.h>    /* For putchar(), snprintf() */
 
 /**
+ * @enum uart_debug_buf_size_t
+ * @brief Buffer sizes for uart_debug_put* simulator functions
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_uart_debug_int_buf_size  = 12U, /**< Buffer for int32 string: "-2147483648\0" = 12 chars */
+  k_uart_debug_uint_buf_size = 11U, /**< Buffer for uint32 string: "4294967295\0" = 11 chars */
+  k_uart_debug_hex_buf_size  = 11U, /**< Buffer for "0x" + 8 hex digits + null = 11 chars */
+} uart_debug_buf_size_t;
+
+/**
  * @brief Output character to simulator console
  *
  * @details
@@ -339,8 +350,12 @@ static inline void uart_debug_puts(const char* str)
  */
 static inline void uart_debug_putint(int32_t value)
 {
-  char buf[12]; /* -2147483648 = 11 chars + null */
-  (void)snprintf(buf, sizeof(buf), "%" PRId32, value);
+  char buf[k_uart_debug_int_buf_size];
+  (void)snprintf(
+    buf,
+    sizeof(buf),
+    "%" PRId32,
+    value); /* NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   uart_debug_puts(buf);
 }
 
@@ -365,9 +380,12 @@ static inline void uart_debug_putint(int32_t value)
 static inline void uart_debug_putuint(uint32_t value)
 {
   /* 4294967295 (UINT32_MAX) = 10 digits + null terminator */
-  enum : uint8_t { k_uart_debug_uint_buf_size = 11u };
   char buf[k_uart_debug_uint_buf_size];
-  (void)snprintf(buf, sizeof(buf), "%" PRIu32, value);
+  (void)snprintf(
+    buf,
+    sizeof(buf),
+    "%" PRIu32,
+    value); /* NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   uart_debug_puts(buf);
 }
 
@@ -403,14 +421,18 @@ static inline void uart_debug_puthex(uint32_t value, uint8_t digits)
     "0x%08" PRIx32,
   };
 
-  char buf[11]; /* "0x" + 8 hex digits + null */
+  char buf[k_uart_debug_hex_buf_size]; /* "0x" + 8 hex digits + null */
   if (digits < k_min_hex_digits) {
     digits = k_min_hex_digits;
   }
   if (digits > k_max_hex_digits) {
     digits = k_max_hex_digits;
   }
-  (void)snprintf(buf, sizeof(buf), s_hex_fmts[digits - k_min_hex_digits], value);
+  (void)snprintf(
+    buf,
+    sizeof(buf),
+    s_hex_fmts[digits - k_min_hex_digits],
+    value); /* NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   uart_debug_puts(buf);
 }
 
@@ -472,10 +494,10 @@ void uart_debug_puthex(uint32_t value, uint8_t digits);
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_log_backend_none = 0x00u, /**< Discard all log output */
-  k_log_backend_uart = 0x01u, /**< SCI9 via uart_debug_* (CY7C65213 bridge) */
-  k_log_backend_usb  = 0x02u, /**< USB CDC Port 2 via rx_log_usb_* (/dev/ttyACM2) */
-  k_log_backend_both = 0x03u, /**< k_log_backend_uart | k_log_backend_usb */
+  k_log_backend_none = 0x00U, /**< Discard all log output */
+  k_log_backend_uart = 0x01U, /**< SCI9 via uart_debug_* (CY7C65213 bridge) */
+  k_log_backend_usb  = 0x02U, /**< USB CDC Port 2 via rx_log_usb_* (/dev/ttyACM2) */
+  k_log_backend_both = 0x03U, /**< k_log_backend_uart | k_log_backend_usb */
 } rx_log_backend_t;
 
 /**
@@ -847,6 +869,35 @@ typedef enum : uint16_t {
 #endif
 
 /* =============================================================================
+ * Internal Output Helpers (thin wrappers to keep per-level functions small)
+ * =============================================================================
+ */
+
+/** @brief Write one character to the active log backend(s). @param[in] c Character to write. */
+static inline void internal_log_putc(char c)
+{
+  LOG_PUTC(c);
+}
+
+/** @brief Write a string to the active log backend(s). @param[in] s Null-terminated string. */
+static inline void internal_log_puts(const char* s)
+{
+  LOG_PUTS(s);
+}
+
+/** @brief Write a signed 32-bit integer to the active log backend(s). @param[in] v Value. */
+static inline void internal_log_putint(int32_t v)
+{
+  LOG_PUTINT(v);
+}
+
+/** @brief Write a hex value to the active log backend(s). @param[in] v Value. @param[in] d Digits. */
+static inline void internal_log_puthex(uint32_t v, uint8_t d)
+{
+  LOG_PUTHEX(v, d);
+}
+
+/* =============================================================================
  * Internal Helper: Format Log Header
  * =============================================================================
  */
@@ -917,11 +968,11 @@ static inline void internal_log_header(const char* level_str, const char* tag)
     return;
   }
 
-  LOG_PUTC('[');
-  LOG_PUTS(level_str);
-  LOG_PUTS("] [");
-  LOG_PUTS(tag);
-  LOG_PUTS("] ");
+  internal_log_putc('[');
+  internal_log_puts(level_str);
+  internal_log_puts("] [");
+  internal_log_puts(tag);
+  internal_log_puts("] ");
 }
 
 /* =============================================================================
@@ -1000,8 +1051,8 @@ static inline void internal_rx_log_error(const char* tag, const char* message)
     return;
   }
   internal_log_header("ERROR", tag);
-  LOG_PUTS(message);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1010,10 +1061,10 @@ static inline void internal_rx_log_error(const char* tag, const char* message)
 static inline void internal_rx_log_error_u8(const char* tag, const char* message, uint8_t value)
 {
   internal_log_header("ERROR", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1022,10 +1073,10 @@ static inline void internal_rx_log_error_u8(const char* tag, const char* message
 static inline void internal_rx_log_error_u16(const char* tag, const char* message, uint16_t value)
 {
   internal_log_header("ERROR", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1034,10 +1085,10 @@ static inline void internal_rx_log_error_u16(const char* tag, const char* messag
 static inline void internal_rx_log_error_u32(const char* tag, const char* message, uint32_t value)
 {
   internal_log_header("ERROR", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1046,10 +1097,10 @@ static inline void internal_rx_log_error_u32(const char* tag, const char* messag
 static inline void internal_rx_log_error_i32(const char* tag, const char* message, int32_t value)
 {
   internal_log_header("ERROR", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT(value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint(value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1058,10 +1109,10 @@ static inline void internal_rx_log_error_i32(const char* tag, const char* messag
 static inline void internal_rx_log_error_err(const char* tag, const char* message, rx_err_t err)
 {
   internal_log_header("ERROR", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": 0x");
-  LOG_PUTHEX((uint32_t)err, k_log_hex_width_err);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": 0x");
+  internal_log_puthex((uint32_t)err, k_log_hex_width_err);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1071,10 +1122,10 @@ static inline void
 internal_rx_log_error_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
 {
   internal_log_header("ERROR", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": 0x");
-  LOG_PUTHEX(value, digits);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": 0x");
+  internal_log_puthex(value, digits);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1182,8 +1233,8 @@ internal_rx_log_error_str(const char* tag, const char* message, const char* str_
     return;
   }
   internal_log_header("ERROR", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
+  internal_log_puts(message);
+  internal_log_puts(": ");
 
   /*
    * NASA Rule 2: Loop bounded by k_log_str_max_len (compile-time constant)
@@ -1193,10 +1244,10 @@ internal_rx_log_error_str(const char* tag, const char* message, const char* str_
     if (i >= len || str_value[i] == '\0') {
       break;
     }
-    LOG_PUTC(str_value[i]);
+    internal_log_putc(str_value[i]);
   }
 
-  LOG_PUTS("\r\n");
+  internal_log_puts("\r\n");
 }
 
 /* =============================================================================
@@ -1214,8 +1265,8 @@ static inline void internal_rx_log_warn(const char* tag, const char* message)
     return;
   }
   internal_log_header("WARN", tag);
-  LOG_PUTS(message);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1224,10 +1275,10 @@ static inline void internal_rx_log_warn(const char* tag, const char* message)
 static inline void internal_rx_log_warn_u8(const char* tag, const char* message, uint8_t value)
 {
   internal_log_header("WARN", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1236,10 +1287,10 @@ static inline void internal_rx_log_warn_u8(const char* tag, const char* message,
 static inline void internal_rx_log_warn_u16(const char* tag, const char* message, uint16_t value)
 {
   internal_log_header("WARN", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1248,10 +1299,10 @@ static inline void internal_rx_log_warn_u16(const char* tag, const char* message
 static inline void internal_rx_log_warn_u32(const char* tag, const char* message, uint32_t value)
 {
   internal_log_header("WARN", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1260,10 +1311,10 @@ static inline void internal_rx_log_warn_u32(const char* tag, const char* message
 static inline void internal_rx_log_warn_i32(const char* tag, const char* message, int32_t value)
 {
   internal_log_header("WARN", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT(value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint(value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1272,10 +1323,10 @@ static inline void internal_rx_log_warn_i32(const char* tag, const char* message
 static inline void internal_rx_log_warn_err(const char* tag, const char* message, rx_err_t err)
 {
   internal_log_header("WARN", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": 0x");
-  LOG_PUTHEX((uint32_t)err, k_log_hex_width_err);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": 0x");
+  internal_log_puthex((uint32_t)err, k_log_hex_width_err);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1285,10 +1336,10 @@ static inline void
 internal_rx_log_warn_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
 {
   internal_log_header("WARN", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": 0x");
-  LOG_PUTHEX(value, digits);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": 0x");
+  internal_log_puthex(value, digits);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1303,8 +1354,8 @@ internal_rx_log_warn_str(const char* tag, const char* message, const char* str_v
   }
 
   internal_log_header("WARN", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
+  internal_log_puts(message);
+  internal_log_puts(": ");
 
   /*
    * NASA Rule 2: Loop bounded by k_log_str_max_len (compile-time constant)
@@ -1314,10 +1365,10 @@ internal_rx_log_warn_str(const char* tag, const char* message, const char* str_v
     if (i >= len || str_value[i] == '\0') {
       break;
     }
-    LOG_PUTC(str_value[i]);
+    internal_log_putc(str_value[i]);
   }
 
-  LOG_PUTS("\r\n");
+  internal_log_puts("\r\n");
 }
 
 /* =============================================================================
@@ -1335,8 +1386,8 @@ static inline void internal_rx_log_info(const char* tag, const char* message)
     return;
   }
   internal_log_header("INFO", tag);
-  LOG_PUTS(message);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1345,10 +1396,10 @@ static inline void internal_rx_log_info(const char* tag, const char* message)
 static inline void internal_rx_log_info_u8(const char* tag, const char* message, uint8_t value)
 {
   internal_log_header("INFO", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1357,10 +1408,10 @@ static inline void internal_rx_log_info_u8(const char* tag, const char* message,
 static inline void internal_rx_log_info_u16(const char* tag, const char* message, uint16_t value)
 {
   internal_log_header("INFO", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1369,10 +1420,10 @@ static inline void internal_rx_log_info_u16(const char* tag, const char* message
 static inline void internal_rx_log_info_u32(const char* tag, const char* message, uint32_t value)
 {
   internal_log_header("INFO", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1381,10 +1432,10 @@ static inline void internal_rx_log_info_u32(const char* tag, const char* message
 static inline void internal_rx_log_info_i32(const char* tag, const char* message, int32_t value)
 {
   internal_log_header("INFO", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT(value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint(value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1393,10 +1444,10 @@ static inline void internal_rx_log_info_i32(const char* tag, const char* message
 static inline void internal_rx_log_info_err(const char* tag, const char* message, rx_err_t err)
 {
   internal_log_header("INFO", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": 0x");
-  LOG_PUTHEX((uint32_t)err, k_log_hex_width_err);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": 0x");
+  internal_log_puthex((uint32_t)err, k_log_hex_width_err);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1406,10 +1457,10 @@ static inline void
 internal_rx_log_info_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
 {
   internal_log_header("INFO", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": 0x");
-  LOG_PUTHEX(value, digits);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": 0x");
+  internal_log_puthex(value, digits);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1424,8 +1475,8 @@ internal_rx_log_info_str(const char* tag, const char* message, const char* str_v
   }
 
   internal_log_header("INFO", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
+  internal_log_puts(message);
+  internal_log_puts(": ");
 
   /*
    * NASA Rule 2: Loop bounded by k_log_str_max_len (compile-time constant)
@@ -1435,10 +1486,10 @@ internal_rx_log_info_str(const char* tag, const char* message, const char* str_v
     if (i >= len || str_value[i] == '\0') {
       break;
     }
-    LOG_PUTC(str_value[i]);
+    internal_log_putc(str_value[i]);
   }
 
-  LOG_PUTS("\r\n");
+  internal_log_puts("\r\n");
 }
 
 /* =============================================================================
@@ -1456,8 +1507,8 @@ static inline void internal_rx_log_debug(const char* tag, const char* message)
     return;
   }
   internal_log_header("DEBUG", tag);
-  LOG_PUTS(message);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1466,10 +1517,10 @@ static inline void internal_rx_log_debug(const char* tag, const char* message)
 static inline void internal_rx_log_debug_u8(const char* tag, const char* message, uint8_t value)
 {
   internal_log_header("DEBUG", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1478,10 +1529,10 @@ static inline void internal_rx_log_debug_u8(const char* tag, const char* message
 static inline void internal_rx_log_debug_u16(const char* tag, const char* message, uint16_t value)
 {
   internal_log_header("DEBUG", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1490,10 +1541,10 @@ static inline void internal_rx_log_debug_u16(const char* tag, const char* messag
 static inline void internal_rx_log_debug_u32(const char* tag, const char* message, uint32_t value)
 {
   internal_log_header("DEBUG", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1502,10 +1553,10 @@ static inline void internal_rx_log_debug_u32(const char* tag, const char* messag
 static inline void internal_rx_log_debug_i32(const char* tag, const char* message, int32_t value)
 {
   internal_log_header("DEBUG", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT(value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint(value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1514,10 +1565,10 @@ static inline void internal_rx_log_debug_i32(const char* tag, const char* messag
 static inline void internal_rx_log_debug_err(const char* tag, const char* message, rx_err_t err)
 {
   internal_log_header("DEBUG", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": 0x");
-  LOG_PUTHEX((uint32_t)err, k_log_hex_width_err);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": 0x");
+  internal_log_puthex((uint32_t)err, k_log_hex_width_err);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1527,10 +1578,10 @@ static inline void
 internal_rx_log_debug_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
 {
   internal_log_header("DEBUG", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": 0x");
-  LOG_PUTHEX(value, digits);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": 0x");
+  internal_log_puthex(value, digits);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1545,8 +1596,8 @@ internal_rx_log_debug_str(const char* tag, const char* message, const char* str_
   }
 
   internal_log_header("DEBUG", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
+  internal_log_puts(message);
+  internal_log_puts(": ");
 
   /*
    * NASA Rule 2: Loop bounded by k_log_str_max_len (compile-time constant)
@@ -1556,10 +1607,10 @@ internal_rx_log_debug_str(const char* tag, const char* message, const char* str_
     if (i >= len || str_value[i] == '\0') {
       break;
     }
-    LOG_PUTC(str_value[i]);
+    internal_log_putc(str_value[i]);
   }
 
-  LOG_PUTS("\r\n");
+  internal_log_puts("\r\n");
 }
 
 /* =============================================================================
@@ -1577,8 +1628,8 @@ static inline void internal_rx_log_verbose(const char* tag, const char* message)
     return;
   }
   internal_log_header("VERBOSE", tag);
-  LOG_PUTS(message);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1587,10 +1638,10 @@ static inline void internal_rx_log_verbose(const char* tag, const char* message)
 static inline void internal_rx_log_verbose_u8(const char* tag, const char* message, uint8_t value)
 {
   internal_log_header("VERBOSE", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1599,10 +1650,10 @@ static inline void internal_rx_log_verbose_u8(const char* tag, const char* messa
 static inline void internal_rx_log_verbose_u16(const char* tag, const char* message, uint16_t value)
 {
   internal_log_header("VERBOSE", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1611,10 +1662,10 @@ static inline void internal_rx_log_verbose_u16(const char* tag, const char* mess
 static inline void internal_rx_log_verbose_u32(const char* tag, const char* message, uint32_t value)
 {
   internal_log_header("VERBOSE", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT((int32_t)value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint((int32_t)value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1623,10 +1674,10 @@ static inline void internal_rx_log_verbose_u32(const char* tag, const char* mess
 static inline void internal_rx_log_verbose_i32(const char* tag, const char* message, int32_t value)
 {
   internal_log_header("VERBOSE", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
-  LOG_PUTINT(value);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": ");
+  internal_log_putint(value);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1635,10 +1686,10 @@ static inline void internal_rx_log_verbose_i32(const char* tag, const char* mess
 static inline void internal_rx_log_verbose_err(const char* tag, const char* message, rx_err_t err)
 {
   internal_log_header("VERBOSE", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": 0x");
-  LOG_PUTHEX((uint32_t)err, k_log_hex_width_err);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": 0x");
+  internal_log_puthex((uint32_t)err, k_log_hex_width_err);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1648,10 +1699,10 @@ static inline void
 internal_rx_log_verbose_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
 {
   internal_log_header("VERBOSE", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": 0x");
-  LOG_PUTHEX(value, digits);
-  LOG_PUTS("\r\n");
+  internal_log_puts(message);
+  internal_log_puts(": 0x");
+  internal_log_puthex(value, digits);
+  internal_log_puts("\r\n");
 }
 
 /**
@@ -1668,8 +1719,8 @@ static inline void internal_rx_log_verbose_str(const char* tag,
   }
 
   internal_log_header("VERBOSE", tag);
-  LOG_PUTS(message);
-  LOG_PUTS(": ");
+  internal_log_puts(message);
+  internal_log_puts(": ");
 
   /*
    * NASA Rule 2: Loop bounded by k_log_str_max_len (compile-time constant)
@@ -1679,10 +1730,10 @@ static inline void internal_rx_log_verbose_str(const char* tag,
     if (i >= len || str_value[i] == '\0') {
       break;
     }
-    LOG_PUTC(str_value[i]);
+    internal_log_putc(str_value[i]);
   }
 
-  LOG_PUTS("\r\n");
+  internal_log_puts("\r\n");
 }
 
 /* =============================================================================

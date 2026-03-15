@@ -240,7 +240,7 @@ RX_STATIC_TESTABLE rx_err_t internal_wait_for_ack(rx_spi_link_t* link, uint16_t 
   }
 
   /* Check frame type */
-  if (ack_frame.header.type == (uint8_t)k_frame_type_ack) {
+  if (ack_frame.header.type == k_frame_type_ack) {
     if (ack_frame.header.sequence == expected_seq) {
       return k_rx_ok;
     }
@@ -248,7 +248,7 @@ RX_STATIC_TESTABLE rx_err_t internal_wait_for_ack(rx_spi_link_t* link, uint16_t 
     return k_rx_err_timeout; /* Treat as timeout, will retry */
   }
 
-  if (ack_frame.header.type == (uint8_t)k_frame_type_nack) {
+  if (ack_frame.header.type == k_frame_type_nack) {
     if (ack_frame.header.sequence == expected_seq) {
       return k_rx_err_protocol_error; /* NACK = decode failure on receiver */
     }
@@ -300,12 +300,12 @@ rx_err_t rx_spi_link_init(rx_spi_link_t* link, const rx_spi_link_config_t* confi
   link->spi_handle  = config->spi_handle;
   link->fec_enabled = config->fec_enabled;
   link->max_retries =
-    (config->max_retries > 0) ? config->max_retries : (uint8_t)k_spi_link_default_max_retries;
+    (config->max_retries > 0) ? config->max_retries : k_spi_link_default_max_retries;
 
   /* Initialize HARQ handle (includes FEC encoder/decoder and Chase Combiner) */
   const rx_harq_config_t harq_cfg = {
     .max_retries  = link->max_retries,
-    .fec_enabled  = link->fec_enabled ? 1U : 0U,
+    .fec_enabled  = (int)link->fec_enabled ? 1U : 0U,
     .max_combines = link->max_retries,
   };
 
@@ -462,7 +462,7 @@ RX_STATIC_TESTABLE rx_err_t internal_prepare_tx_payload(rx_spi_link_t*  link,
   *out_len     = payload_len;
   *out_flags   = k_frame_flag_requires_ack;
 
-  if (link->fec_enabled && payload != nullptr && payload_len > 0) {
+  if ((int)link->fec_enabled && payload != nullptr && payload_len > 0) {
     uint32_t encoded_len = 0;
     (void)(rx_harq_encode(&link->harq,
                           payload,
@@ -745,33 +745,32 @@ rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, u
   }
 
   /* Handle ACK/NACK control frames internally (not data for application) */
-  if (frame.header.type == (uint8_t)k_frame_type_ack ||
-      frame.header.type == (uint8_t)k_frame_type_nack) {
+  if (frame.header.type == k_frame_type_ack || frame.header.type == k_frame_type_nack) {
     /* Control frame - not application data */
     return k_rx_err_no_data; /* Signal "no data" to caller */
   }
 
   /* Handle PING/PONG/RESET (already handled by rx_spi_comm internally) */
-  const bool is_ping      = (frame.header.type == (uint8_t)k_frame_type_ping);
-  const bool is_pong      = (frame.header.type == (uint8_t)k_frame_type_pong);
-  const bool is_reset     = (frame.header.type == (uint8_t)k_frame_type_reset);
-  const bool is_reset_ack = (frame.header.type == (uint8_t)k_frame_type_reset_ack);
-  if (is_ping | is_pong | is_reset | is_reset_ack) {
+  const bool is_ping      = (bool)(frame.header.type == k_frame_type_ping);
+  const bool is_pong      = (bool)(frame.header.type == k_frame_type_pong);
+  const bool is_reset     = (bool)(frame.header.type == k_frame_type_reset);
+  const bool is_reset_ack = (bool)(frame.header.type == k_frame_type_reset_ack);
+  if ((bool)((int)is_ping | (int)is_pong | (int)is_reset | (int)is_reset_ack)) {
     return k_rx_err_no_data; /* Not application data */
   }
 
   /* Data frame received - populate common metadata */
   result->sequence      = frame.header.sequence;
   result->frame_type    = frame.header.type;
-  result->is_retransmit = (frame.header.flags & k_frame_flag_retransmit) != 0;
+  result->is_retransmit = (bool)((frame.header.flags & k_frame_flag_retransmit) != 0);
 
   /* Check if FEC decoding is needed */
-  const bool has_fec_flag = (frame.header.flags & k_frame_flag_fec_enabled) != 0;
+  const bool has_fec_flag = (bool)((frame.header.flags & k_frame_flag_fec_enabled) != 0);
 
   const bool fec_enabled_flag = link->fec_enabled;
   const bool fec_frame_flag   = has_fec_flag;
-  const bool has_payload      = (frame.header.length > 0);
-  if (fec_enabled_flag & fec_frame_flag & has_payload) {
+  const bool has_payload      = (bool)(frame.header.length > 0);
+  if ((bool)((int)fec_enabled_flag & (int)fec_frame_flag & (int)has_payload)) {
     /* FEC decode path: HARQ with Chase Combining */
     return internal_receive_fec_decode(link, &frame, result);
   }

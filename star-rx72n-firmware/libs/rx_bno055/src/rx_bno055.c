@@ -77,9 +77,10 @@
 /* Validate k_bno055_ms_per_tick is consistent with the actual ThreadX tick rate.
  * If TX_TIMER_TICKS_PER_SECOND changes, this assert catches the mismatch at compile time. */
 static_assert(
-  (k_bno055_ms_per_second % TX_TIMER_TICKS_PER_SECOND) == 0U,
+  (bool)(((k_bno055_ms_per_second % TX_TIMER_TICKS_PER_SECOND) == 0U) != 0),
   "TX_TIMER_TICKS_PER_SECOND must evenly divide k_bno055_ms_per_second (no truncation)");
-static_assert(k_bno055_ms_per_tick == (k_bno055_ms_per_second / TX_TIMER_TICKS_PER_SECOND),
+static_assert((bool)((k_bno055_ms_per_tick ==
+                      (k_bno055_ms_per_second / TX_TIMER_TICKS_PER_SECOND)) != 0),
               "k_bno055_ms_per_tick must equal k_bno055_ms_per_second/TX_TIMER_TICKS_PER_SECOND");
 
 /* =============================================================================
@@ -484,10 +485,12 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
  */
 static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high)
 {
-  static_assert((uint8_t)k_bno055_shift_msb == (uint8_t)k_bno055_expected_msb_shift,
-                "MSB shift must be 8 for little-endian assembly");
-  static_assert(sizeof(uint16_t) * CHAR_BIT == (unsigned)k_bno055_expected_uint16_bits,
-                "uint16_t must be 16 bits for assembly to be well-defined");
+  static_assert(
+    (bool)(((unsigned)k_bno055_shift_msb == (unsigned)k_bno055_expected_msb_shift) != 0),
+    "MSB shift must be 8 for little-endian assembly");
+  static_assert(
+    (bool)((sizeof(uint16_t) * CHAR_BIT == (unsigned)k_bno055_expected_uint16_bits) != 0),
+    "uint16_t must be 16 bits for assembly to be well-defined");
   return (int16_t)((uint16_t)low | ((uint16_t)high << k_bno055_shift_msb));
 }
 
@@ -528,8 +531,7 @@ static rx_err_t internal_init_reset_and_wait(void)
    * and s_bus_name is a compile-time string constant (never NULL). */
 
   /* Step 1: Software reset, then wait for POR sequence */
-  rx_err_t err =
-    internal_write_reg((uint8_t)k_bno055_reg_sys_trigger, (uint8_t)k_bno055_sys_trigger_rst);
+  rx_err_t err = internal_write_reg(k_bno055_reg_sys_trigger, k_bno055_sys_trigger_rst);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Software reset failed");
     return err;
@@ -538,7 +540,7 @@ static rx_err_t internal_init_reset_and_wait(void)
     (ULONG)(k_bno055_delay_por_ms / k_bno055_ms_per_tick)); /* 65 ticks @ 10 ms/tick = 650 ms */
 
   /* Step 2: Enter CONFIG mode (required for configuration register writes) */
-  err = internal_write_reg((uint8_t)k_bno055_reg_opr_mode, (uint8_t)k_bno055_opr_config);
+  err = internal_write_reg(k_bno055_reg_opr_mode, k_bno055_opr_config);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Set CONFIG mode failed");
     return err;
@@ -583,34 +585,34 @@ static rx_err_t internal_init_configure(void)
    * s_bus_name is a compile-time string constant (never NULL). */
 
   /* Step 3: Set normal power mode */
-  rx_err_t err = internal_write_reg((uint8_t)k_bno055_reg_pwr_mode, (uint8_t)k_bno055_pwr_normal);
+  rx_err_t err = internal_write_reg(k_bno055_reg_pwr_mode, k_bno055_pwr_normal);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Set power mode failed");
     return err;
   }
 
   /* Step 4: Set default measurement units (degrees, m/s^2, dps, Celsius) */
-  err = internal_write_reg((uint8_t)k_bno055_reg_unit_sel, (uint8_t)k_bno055_unit_sel_default);
+  err = internal_write_reg(k_bno055_reg_unit_sel, k_bno055_unit_sel_default);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Set unit sel failed");
     return err;
   }
 
   /* Step 5: Set default axis remapping */
-  err = internal_write_reg((uint8_t)k_bno055_reg_axis_map_cfg, (uint8_t)k_bno055_axis_map_default);
+  err = internal_write_reg(k_bno055_reg_axis_map_cfg, k_bno055_axis_map_default);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Set axis map cfg failed");
     return err;
   }
 
-  err = internal_write_reg((uint8_t)k_bno055_reg_axis_map_sgn, (uint8_t)k_bno055_axis_map_sign_pos);
+  err = internal_write_reg(k_bno055_reg_axis_map_sgn, k_bno055_axis_map_sign_pos);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Set axis map sign failed");
     return err;
   }
 
   /* Step 6: Clear system trigger register */
-  err = internal_write_reg((uint8_t)k_bno055_reg_sys_trigger, (uint8_t)k_bno055_sys_trigger_clear);
+  err = internal_write_reg(k_bno055_reg_sys_trigger, k_bno055_sys_trigger_clear);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Clear sys trigger failed");
     return err;
@@ -651,8 +653,7 @@ static rx_err_t internal_init_enter_ndof(void)
    * s_bus_name is a compile-time string constant (never NULL). */
 
   /* Step 7: Enter NDOF fusion mode (full 9-DOF sensor fusion) */
-  const rx_err_t err =
-    internal_write_reg((uint8_t)k_bno055_reg_opr_mode, (uint8_t)k_bno055_opr_ndof);
+  const rx_err_t err = internal_write_reg(k_bno055_reg_opr_mode, k_bno055_opr_ndof);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Set NDOF mode failed");
     return err;
@@ -695,13 +696,13 @@ static rx_err_t internal_verify_chip_id(void)
 
   /* Step 8: Verify chip ID */
   uint8_t  chip_id = 0;
-  rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_chip_id, &chip_id, k_bno055_single_byte);
+  rx_err_t err     = internal_read_regs(k_bno055_reg_chip_id, &chip_id, k_bno055_single_byte);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Chip ID read failed");
     return err;
   }
 
-  if (chip_id != (uint8_t)k_bno055_chip_id_expected) {
+  if (chip_id != k_bno055_chip_id_expected) {
     rx_log_error_val(s_tag, "Unexpected chip ID", (uint32_t)chip_id);
     return k_rx_err_invalid_state;
   }
@@ -755,30 +756,30 @@ static rx_err_t internal_init_enable_interrupt(void)
    * s_bus_name is a compile-time string constant (never NULL). */
 
   /* Switch to Page 1 to access interrupt engine registers */
-  rx_err_t err = internal_write_reg((uint8_t)k_bno055_reg_page_id, (uint8_t)k_bno055_page1);
+  rx_err_t err = internal_write_reg(k_bno055_reg_page_id, k_bno055_page1);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "INT init: page 1 switch failed");
     return err;
   }
 
   /* Route ACC_BSX_DRDY interrupt source to INT pin (INT_MSK bit 0) */
-  err = internal_write_reg((uint8_t)k_bno055_reg_int_msk, (uint8_t)k_bno055_int_msk_acc_bsx_drdy);
+  err = internal_write_reg(k_bno055_reg_int_msk, k_bno055_int_msk_acc_bsx_drdy);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "INT init: INT_MSK write failed");
-    (void)internal_write_reg((uint8_t)k_bno055_reg_page_id, (uint8_t)k_bno055_page0);
+    (void)internal_write_reg(k_bno055_reg_page_id, k_bno055_page0);
     return err;
   }
 
   /* Enable accelerometer BSX data-ready as an interrupt source (INT_EN bit 0) */
-  err = internal_write_reg((uint8_t)k_bno055_reg_int_en, (uint8_t)k_bno055_int_en_acc_bsx_drdy);
+  err = internal_write_reg(k_bno055_reg_int_en, k_bno055_int_en_acc_bsx_drdy);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "INT init: INT_EN write failed");
-    (void)internal_write_reg((uint8_t)k_bno055_reg_page_id, (uint8_t)k_bno055_page0);
+    (void)internal_write_reg(k_bno055_reg_page_id, k_bno055_page0);
     return err;
   }
 
   /* Restore Page 0 for normal sensor output reads */
-  err = internal_write_reg((uint8_t)k_bno055_reg_page_id, (uint8_t)k_bno055_page0);
+  err = internal_write_reg(k_bno055_reg_page_id, k_bno055_page0);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "INT init: page 0 restore failed");
     return err;
@@ -894,7 +895,7 @@ static rx_err_t internal_init_run_sequence(void)
  */
 rx_err_t rx_bno055_init(rx_bus_manager_t* manager, const bno055_config_t* config)
 {
-  static_assert(k_bno055_ms_per_tick != 0,
+  static_assert((bool)((k_bno055_ms_per_tick != 0) != 0),
                 "k_bno055_ms_per_tick must be non-zero to avoid division by zero in tick delays");
   RX_CHECK_NULL_PTR(manager, s_tag, "Bus manager is NULL");
   RX_CHECK_NULL_PTR(config, s_tag, "Config is NULL");
@@ -946,12 +947,12 @@ static rx_err_t internal_read_euler(bno055_data_t* out)
 {
   /* Pre-conditions: s_initialized is true (rx_bno055_read checks via
    * RX_CHECK_INITIALIZED); out is a local stack variable (never NULL). */
-  static_assert((uint8_t)k_bno055_euler_bytes >= (uint8_t)k_bno055_euler_expected_bytes,
-                "euler buffer must hold 6 bytes");
+  static_assert(
+    (bool)(((unsigned)k_bno055_euler_bytes >= (unsigned)k_bno055_euler_expected_bytes) != 0),
+    "euler buffer must hold 6 bytes");
 
   uint8_t  euler_buf[k_bno055_euler_bytes];
-  rx_err_t err =
-    internal_read_regs((uint8_t)k_bno055_reg_eul_h_lsb, euler_buf, k_bno055_euler_bytes);
+  rx_err_t err = internal_read_regs(k_bno055_reg_eul_h_lsb, euler_buf, k_bno055_euler_bytes);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Euler read failed");
     return err;
@@ -992,11 +993,12 @@ static rx_err_t internal_read_quat(bno055_data_t* out)
 {
   /* Pre-conditions: s_initialized is true (rx_bno055_read checks via
    * RX_CHECK_INITIALIZED); out is a local stack variable (never NULL). */
-  static_assert((uint8_t)k_bno055_quat_bytes >= (uint8_t)k_bno055_quat_expected_bytes,
-                "quat buffer must hold 8 bytes");
+  static_assert(
+    (bool)(((unsigned)k_bno055_quat_bytes >= (unsigned)k_bno055_quat_expected_bytes) != 0),
+    "quat buffer must hold 8 bytes");
 
   uint8_t  quat_buf[k_bno055_quat_bytes];
-  rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_qua_w_lsb, quat_buf, k_bno055_quat_bytes);
+  rx_err_t err = internal_read_regs(k_bno055_reg_qua_w_lsb, quat_buf, k_bno055_quat_bytes);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Quaternion read failed");
     return err;
@@ -1035,11 +1037,12 @@ static rx_err_t internal_read_lia(bno055_data_t* out)
 {
   /* Pre-conditions: s_initialized is true (rx_bno055_read checks via
    * RX_CHECK_INITIALIZED); out is a local stack variable (never NULL). */
-  static_assert((uint8_t)k_bno055_lia_bytes >= (uint8_t)k_bno055_lia_expected_bytes,
-                "lia buffer must hold 6 bytes");
+  static_assert(
+    (bool)(((unsigned)k_bno055_lia_bytes >= (unsigned)k_bno055_lia_expected_bytes) != 0),
+    "lia buffer must hold 6 bytes");
 
   uint8_t  lia_buf[k_bno055_lia_bytes];
-  rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_lia_x_lsb, lia_buf, k_bno055_lia_bytes);
+  rx_err_t err = internal_read_regs(k_bno055_reg_lia_x_lsb, lia_buf, k_bno055_lia_bytes);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Linear accel read failed");
     return err;
@@ -1082,11 +1085,12 @@ static rx_err_t internal_read_gyro(bno055_data_t* out)
 {
   /* Pre-conditions: s_initialized is true (rx_bno055_read checks via
    * RX_CHECK_INITIALIZED); out is a local stack variable (never NULL). */
-  static_assert((uint8_t)k_bno055_gyro_bytes >= (uint8_t)k_bno055_gyro_expected_bytes,
-                "gyro buffer must hold 6 bytes");
+  static_assert(
+    (bool)(((unsigned)k_bno055_gyro_bytes >= (unsigned)k_bno055_gyro_expected_bytes) != 0),
+    "gyro buffer must hold 6 bytes");
 
   uint8_t  gyro_buf[k_bno055_gyro_bytes];
-  rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_gyr_x_lsb, gyro_buf, k_bno055_gyro_bytes);
+  rx_err_t err = internal_read_regs(k_bno055_reg_gyr_x_lsb, gyro_buf, k_bno055_gyro_bytes);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Gyro read failed");
     return err;
@@ -1166,7 +1170,7 @@ rx_err_t rx_bno055_read(bno055_data_t* out)
 
   /* Read Temperature: 1 byte from 0x34 */
   uint8_t temp_raw = 0;
-  err = internal_read_regs((uint8_t)k_bno055_reg_temp, &temp_raw, k_bno055_single_byte);
+  err              = internal_read_regs(k_bno055_reg_temp, &temp_raw, k_bno055_single_byte);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Temperature read failed");
     return err;
@@ -1174,7 +1178,7 @@ rx_err_t rx_bno055_read(bno055_data_t* out)
 
   /* Read Calibration status: 1 byte from 0x35 */
   uint8_t calib_raw = 0;
-  err = internal_read_regs((uint8_t)k_bno055_reg_calib_stat, &calib_raw, k_bno055_single_byte);
+  err               = internal_read_regs(k_bno055_reg_calib_stat, &calib_raw, k_bno055_single_byte);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Calib status read failed");
     return err;
@@ -1221,24 +1225,23 @@ rx_err_t rx_bno055_is_calibrated(bool* out_calibrated)
   }
 
   uint8_t  calib_raw = 0;
-  rx_err_t err =
-    internal_read_regs((uint8_t)k_bno055_reg_calib_stat, &calib_raw, k_bno055_single_byte);
+  rx_err_t err = internal_read_regs(k_bno055_reg_calib_stat, &calib_raw, k_bno055_single_byte);
   if (err != k_rx_ok) {
     return err;
   }
 
-  const uint8_t mask = (uint8_t)k_bno055_calib_level_mask;
-  const uint8_t full = (uint8_t)k_bno055_calib_full;
+  const uint8_t mask = k_bno055_calib_level_mask;
+  const uint8_t full = k_bno055_calib_full;
 
-  const uint8_t sys_cal = (calib_raw >> (uint8_t)k_bno055_calib_sys_shift) & mask;
-  const uint8_t gyr_cal = (calib_raw >> (uint8_t)k_bno055_calib_gyr_shift) & mask;
-  const uint8_t acc_cal = (calib_raw >> (uint8_t)k_bno055_calib_acc_shift) & mask;
-  const uint8_t mag_cal = (calib_raw >> (uint8_t)k_bno055_calib_mag_shift) & mask;
+  const uint8_t sys_cal = (calib_raw >> k_bno055_calib_sys_shift) & mask;
+  const uint8_t gyr_cal = (calib_raw >> k_bno055_calib_gyr_shift) & mask;
+  const uint8_t acc_cal = (calib_raw >> k_bno055_calib_acc_shift) & mask;
+  const uint8_t mag_cal = (calib_raw >> k_bno055_calib_mag_shift) & mask;
 
   /* Use bitwise & to evaluate all sub-expressions without short-circuit,
    * ensuring full branch coverage. */
   *out_calibrated =
-    (bool)((sys_cal == full) & (gyr_cal == full) & (acc_cal == full) & (mag_cal == full));
+    (bool)(((sys_cal == full) & (gyr_cal == full) & (acc_cal == full) & (mag_cal == full)) != 0);
 
   return k_rx_ok;
 }

@@ -386,7 +386,8 @@ static uint32_t internal_get_tick_count(void)
 static rx_iwdt_task_info_t* internal_find_task(const char* task_name)
 {
   for (uint32_t i = 0; i < k_iwdt_max_tasks; i++) {
-    if (s_iwdt_state.tasks[i].active && strcmp(s_iwdt_state.tasks[i].task_name, task_name) == 0) {
+    if ((int)s_iwdt_state.tasks[i].active &&
+        strcmp(s_iwdt_state.tasks[i].task_name, task_name) == 0) {
       return &s_iwdt_state.tasks[i];
     }
   }
@@ -1135,7 +1136,7 @@ bool rx_iwdt_was_reset(void)
   const uint8_t           status     = *rstsr2_reg;
 
   /* Check IWDT reset flag in RSTSR2 */
-  return ((status & k_rstsr2_iwdtrf) != 0);
+  return (bool)((status & k_rstsr2_iwdtrf) != 0);
 }
 
 /**
@@ -1240,5 +1241,5 @@ rx_err_t rx_iwdt_check_tasks(void)
     }
   }
 
-  return any_timeout ? k_rx_err_timeout : k_rx_ok;
+  return (int)any_timeout ? k_rx_err_timeout : k_rx_ok;
 }

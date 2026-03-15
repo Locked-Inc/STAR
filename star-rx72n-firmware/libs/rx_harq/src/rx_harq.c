@@ -245,9 +245,9 @@ rx_err_t rx_chase_combiner_combined(const rx_chase_combiner_t* combiner,
     return k_rx_err_invalid_state;
   }
 
-  const bool count_zero = (combiner->count == 0);
-  const bool len_zero   = (combiner->expected_len == 0);
-  if (count_zero | len_zero) {
+  const bool count_zero = (bool)(combiner->count == 0);
+  const bool len_zero   = (bool)(combiner->expected_len == 0);
+  if ((bool)((int)count_zero | (int)len_zero)) {
     return k_rx_err_invalid_state;
   }
 
@@ -311,7 +311,7 @@ bool rx_chase_combiner_can_add(const rx_chase_combiner_t* combiner)
   if (combiner->initialized == k_harq_false) {
     return false;
   }
-  return combiner->count < combiner->max_combines;
+  return (bool)(combiner->count < combiner->max_combines);
 }
 
 /**
@@ -360,8 +360,9 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
   }
 
   /* Initialize Chase Combiner */
-  const bool    has_combines = (config != nullptr && config->max_combines > k_harq_zero_combines);
-  const uint8_t max_combines = has_combines ? config->max_combines : k_harq_default_combines;
+  const bool has_combines =
+    (bool)(config != nullptr && (int)(config->max_combines > k_harq_zero_combines));
+  const uint8_t max_combines = (int)has_combines ? config->max_combines : k_harq_default_combines;
   (void)(rx_chase_combiner_init(&harq->combiner, max_combines));
   /* Post-condition: combiner_init only fails on nullptr; &harq->combiner is never null */
 
@@ -587,9 +588,9 @@ static rx_err_t internal_handle_fec_result(rx_harq_handle_t* harq, const rx_err_
   }
 
   /* Decode failed - check if we can retry */
-  const bool can_add_more   = (bool)rx_chase_combiner_can_add(&harq->combiner);
-  const bool retries_remain = (harq->retry_count < harq->max_retries);
-  if (can_add_more & retries_remain) {
+  const bool can_add_more   = rx_chase_combiner_can_add(&harq->combiner);
+  const bool retries_remain = (bool)(harq->retry_count < harq->max_retries);
+  if ((bool)((int)can_add_more & (int)retries_remain)) {
     harq->state = k_harq_state_combining;
     return k_rx_err_protocol_error; /* Need more retransmissions */
   }
@@ -610,11 +611,11 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*              harq,
                         uint8_t*                       output,
                         uint32_t*                      output_len)
 {
-  const bool harq_null       = (harq == nullptr);
-  const bool params_null     = (params == nullptr);
-  const bool output_null     = (output == nullptr);
-  const bool output_len_null = (output_len == nullptr);
-  if (harq_null | params_null | output_null | output_len_null) {
+  const bool harq_null       = (bool)(harq == nullptr);
+  const bool params_null     = (bool)(params == nullptr);
+  const bool output_null     = (bool)(output == nullptr);
+  const bool output_len_null = (bool)(output_len == nullptr);
+  if ((bool)((int)harq_null | (int)params_null | (int)output_null | (int)output_len_null)) {
     return k_rx_err_invalid_arg;
   }
   if (harq->initialized == k_harq_false) {
@@ -626,15 +627,15 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*              harq,
 
   /* Add soft bits to combiner */
   rx_err_t   err      = rx_chase_combiner_add(&harq->combiner, params->soft_bits, params->soft_len);
-  const bool not_ok   = (err != k_rx_ok);
-  const bool not_busy = (err != k_rx_err_busy);
-  if (not_ok & not_busy) {
+  const bool not_ok   = (bool)(err != k_rx_ok);
+  const bool not_busy = (bool)(err != k_rx_err_busy);
+  if ((bool)((int)not_ok & (int)not_busy)) {
     return err;
   }
 
   /* Get combined soft bits into handle's buffer (thread-safe) */
   uint32_t combined_len = 0U;
-  err = rx_chase_combiner_combined(&harq->combiner, harq->decode_buffer, &combined_len);
+  (void)rx_chase_combiner_combined(&harq->combiner, harq->decode_buffer, &combined_len);
   /* Post-condition: combiner_combined only fails if count==0 or expected_len==0,
    * but combiner_add just succeeded (count>=1, expected_len>0) */
 
@@ -699,7 +700,7 @@ bool rx_harq_can_retry(const rx_harq_handle_t* harq)
   if (harq->initialized == k_harq_false) {
     return false;
   }
-  const bool retries_left = (harq->retry_count < harq->max_retries);
-  const bool can_add      = (bool)rx_chase_combiner_can_add(&harq->combiner);
-  return retries_left & can_add;
+  const bool retries_left = (bool)(harq->retry_count < harq->max_retries);
+  const bool can_add      = rx_chase_combiner_can_add(&harq->combiner);
+  return (bool)((int)retries_left & (int)can_add);
 }

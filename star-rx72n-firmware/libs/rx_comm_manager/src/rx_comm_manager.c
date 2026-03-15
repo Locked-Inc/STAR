@@ -1560,7 +1560,7 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
   /* Heartbeat: check implicit timeout on each transport */
   internal_check_heartbeat(mgr);
 
-  return (received != false) ? k_rx_ok : k_rx_err_timeout;
+  return (int)received ? k_rx_ok : k_rx_err_timeout;
 }
 
 /**
@@ -1779,7 +1779,7 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
   }
 
   /* Output decoded ASCII on success */
-  if (err == k_rx_ok && (mgr->enable_decoded_output != false)) {
+  if (err == k_rx_ok && (int)mgr->enable_decoded_output) {
     internal_output_decoded_from_params(mgr, params);
   }
 
@@ -2095,23 +2095,26 @@ rx_comm_manager_channel_ready(rx_comm_manager_t* mgr, rx_comm_channel_t channel,
   }
 
   switch (channel) {
-    case k_comm_channel_usb:
-      *ready = (mgr->usb_handle != nullptr) && (rx_usb_is_configured(k_usb_port_proto) != false);
+    case k_comm_channel_usb: {
+      const bool usb_handle_set = (bool)(mgr->usb_handle != nullptr);
+      const bool usb_configured = rx_usb_is_configured(k_usb_port_proto);
+      *ready                    = (bool)((int)usb_handle_set & (int)usb_configured);
       break;
+    }
 
     case k_comm_channel_spi:
       /* SPI is always "ready" if handle is set */
-      *ready = mgr->spi_handle != nullptr;
+      *ready = (bool)(mgr->spi_handle != nullptr);
       break;
 
     case k_comm_channel_i2c:
       /* I2C is always "ready" if handle is set (peripheral mode) */
-      *ready = mgr->i2c_handle != nullptr;
+      *ready = (bool)(mgr->i2c_handle != nullptr);
       break;
 
     case k_comm_channel_uart:
       /* UART is always "ready" if handle is set */
-      *ready = mgr->uart_handle != nullptr;
+      *ready = (bool)(mgr->uart_handle != nullptr);
       break;
 
     default:

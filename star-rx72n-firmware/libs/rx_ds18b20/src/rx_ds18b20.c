@@ -1290,7 +1290,7 @@ static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* conf
     return k_rx_err_invalid_arg;
   }
 
-  if ((config->use_rom_matching != false) && config->rom[0] != s_ds18b20_family_code) {
+  if ((int)config->use_rom_matching && config->rom[0] != s_ds18b20_family_code) {
     rx_log_error(s_tag, "Invalid DS18B20 family code");
     return k_rx_err_invalid_arg;
   }

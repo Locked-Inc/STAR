@@ -290,7 +290,7 @@ static error_component_state_t* internal_find_component(error_handler_t* handler
                                                         const char*      component)
 {
   for (uint32_t i = 0; i < k_error_handler_max_components; i++) {
-    if (handler->components[i].in_use &&
+    if ((int)handler->components[i].in_use &&
         strncmp(handler->components[i].name, component, k_error_handler_component_name_max) == 0) {
       return &handler->components[i];
     }

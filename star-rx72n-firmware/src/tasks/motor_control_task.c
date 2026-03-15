@@ -727,64 +727,64 @@ static rx_drv8263_handle_t s_drv8263[k_motor_count];
  */
 
 /** @brief DRV8263 DRVOFF GPIO port assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_drvoff_ports[k_motor_count] = {(uint8_t)k_motor_0_drvoff_port,
-                                                              (uint8_t)k_motor_1_drvoff_port,
-                                                              (uint8_t)k_motor_2_drvoff_port,
-                                                              (uint8_t)k_motor_3_drvoff_port};
+static const uint8_t s_drv8263_drvoff_ports[k_motor_count] = {k_motor_0_drvoff_port,
+                                                              k_motor_1_drvoff_port,
+                                                              k_motor_2_drvoff_port,
+                                                              k_motor_3_drvoff_port};
 
 /** @brief DRV8263 DRVOFF GPIO pin assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_drvoff_pins[k_motor_count] = {(uint8_t)k_motor_0_drvoff_pin,
-                                                             (uint8_t)k_motor_1_drvoff_pin,
-                                                             (uint8_t)k_motor_2_drvoff_pin,
-                                                             (uint8_t)k_motor_3_drvoff_pin};
+static const uint8_t s_drv8263_drvoff_pins[k_motor_count] = {k_motor_0_drvoff_pin,
+                                                             k_motor_1_drvoff_pin,
+                                                             k_motor_2_drvoff_pin,
+                                                             k_motor_3_drvoff_pin};
 
 /** @brief DRV8263 nSLEEP GPIO port assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_nsleep_ports[k_motor_count] = {(uint8_t)k_motor_0_nsleep_port,
-                                                              (uint8_t)k_motor_1_nsleep_port,
-                                                              (uint8_t)k_motor_2_nsleep_port,
-                                                              (uint8_t)k_motor_3_nsleep_port};
+static const uint8_t s_drv8263_nsleep_ports[k_motor_count] = {k_motor_0_nsleep_port,
+                                                              k_motor_1_nsleep_port,
+                                                              k_motor_2_nsleep_port,
+                                                              k_motor_3_nsleep_port};
 
 /** @brief DRV8263 nSLEEP GPIO pin assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_nsleep_pins[k_motor_count] = {(uint8_t)k_motor_0_nsleep_pin,
-                                                             (uint8_t)k_motor_1_nsleep_pin,
-                                                             (uint8_t)k_motor_2_nsleep_pin,
-                                                             (uint8_t)k_motor_3_nsleep_pin};
+static const uint8_t s_drv8263_nsleep_pins[k_motor_count] = {k_motor_0_nsleep_pin,
+                                                             k_motor_1_nsleep_pin,
+                                                             k_motor_2_nsleep_pin,
+                                                             k_motor_3_nsleep_pin};
 
 /** @brief DRV8263 nFAULT GPIO port assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_nfault_ports[k_motor_count] = {(uint8_t)k_motor_0_nfault_port,
-                                                              (uint8_t)k_motor_1_nfault_port,
-                                                              (uint8_t)k_motor_2_nfault_port,
-                                                              (uint8_t)k_motor_3_nfault_port};
+static const uint8_t s_drv8263_nfault_ports[k_motor_count] = {k_motor_0_nfault_port,
+                                                              k_motor_1_nfault_port,
+                                                              k_motor_2_nfault_port,
+                                                              k_motor_3_nfault_port};
 
 /** @brief DRV8263 nFAULT GPIO pin assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_nfault_pins[k_motor_count] = {(uint8_t)k_motor_0_nfault_pin,
-                                                             (uint8_t)k_motor_1_nfault_pin,
-                                                             (uint8_t)k_motor_2_nfault_pin,
-                                                             (uint8_t)k_motor_3_nfault_pin};
+static const uint8_t s_drv8263_nfault_pins[k_motor_count] = {k_motor_0_nfault_pin,
+                                                             k_motor_1_nfault_pin,
+                                                             k_motor_2_nfault_pin,
+                                                             k_motor_3_nfault_pin};
 
 /** @brief DRV8263 IN1 GPIO port assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_in1_ports[k_motor_count] = {(uint8_t)k_motor_0_in1_port,
-                                                           (uint8_t)k_motor_1_in1_port,
-                                                           (uint8_t)k_motor_2_in1_port,
-                                                           (uint8_t)k_motor_3_in1_port};
+static const uint8_t s_drv8263_in1_ports[k_motor_count] = {k_motor_0_in1_port,
+                                                           k_motor_1_in1_port,
+                                                           k_motor_2_in1_port,
+                                                           k_motor_3_in1_port};
 
 /** @brief DRV8263 IN1 GPIO pin assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_in1_pins[k_motor_count] = {(uint8_t)k_motor_0_in1_pin,
-                                                          (uint8_t)k_motor_1_in1_pin,
-                                                          (uint8_t)k_motor_2_in1_pin,
-                                                          (uint8_t)k_motor_3_in1_pin};
+static const uint8_t s_drv8263_in1_pins[k_motor_count] = {k_motor_0_in1_pin,
+                                                          k_motor_1_in1_pin,
+                                                          k_motor_2_in1_pin,
+                                                          k_motor_3_in1_pin};
 
 /** @brief DRV8263 IN2 GPIO port assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_in2_ports[k_motor_count] = {(uint8_t)k_motor_0_in2_port,
-                                                           (uint8_t)k_motor_1_in2_port,
-                                                           (uint8_t)k_motor_2_in2_port,
-                                                           (uint8_t)k_motor_3_in2_port};
+static const uint8_t s_drv8263_in2_ports[k_motor_count] = {k_motor_0_in2_port,
+                                                           k_motor_1_in2_port,
+                                                           k_motor_2_in2_port,
+                                                           k_motor_3_in2_port};
 
 /** @brief DRV8263 IN2 GPIO pin assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_in2_pins[k_motor_count] = {(uint8_t)k_motor_0_in2_pin,
-                                                          (uint8_t)k_motor_1_in2_pin,
-                                                          (uint8_t)k_motor_2_in2_pin,
-                                                          (uint8_t)k_motor_3_in2_pin};
+static const uint8_t s_drv8263_in2_pins[k_motor_count] = {k_motor_0_in2_pin,
+                                                          k_motor_1_in2_pin,
+                                                          k_motor_2_in2_pin,
+                                                          k_motor_3_in2_pin};
 
 /** @} */ /* end drv8263_gpio_arrays */
 
@@ -823,7 +823,7 @@ static rx_encoder_state_t s_encoder_state[k_motor_count];
 static rx_pid_handle_t s_pids[k_motor_count];
 
 /** @brief Control loop dt (seconds) */
-static const float s_dt_sec = 0.004f;
+static const float s_dt_sec = 0.004F;
 
 /** @brief Flag to track if timeout e-stop was already triggered */
 static bool s_timeout_estop_triggered = false;
@@ -1989,8 +1989,8 @@ static rx_err_t internal_init_motor_stack(void)
  */
 static rx_err_t internal_init_drv8263_drivers(void)
 {
-  static_assert(k_motor_count > 0, "Motor count must be positive at compile time");
-  RX_ASSERT(!s_drv8263[k_motor_front_left].initialized,
+  static_assert((bool)(k_motor_count > 0), "Motor count must be positive at compile time");
+  RX_ASSERT(s_drv8263[k_motor_front_left].initialized == false,
             "DRV8263 drivers already initialized (double init)");
 
   for (uint8_t i = 0; i < k_motor_count; i++) {
@@ -2405,7 +2405,7 @@ static void internal_control_loop_iteration(void)
   if (err != k_rx_ok || !cmd.valid) {
     /* No valid command - hold at zero */
     for (uint8_t i = 0; i < k_motor_count; i++) {
-      (void)rx_motor_set_duty(&s_motors[i], 0.0f);
+      (void)rx_motor_set_duty(&s_motors[i], 0.0F);
     }
     return;
   }
@@ -2413,21 +2413,21 @@ static void internal_control_loop_iteration(void)
   /* Process each motor */
   for (uint8_t i = 0; i < k_motor_count; i++) {
     /* 1. Read encoder velocity */
-    float current_velocity_mps = 0.0f;
+    float current_velocity_mps = 0.0F;
     err                        = internal_read_encoder_velocity(&current_velocity_mps, s_dt_sec, i);
     if (err != k_rx_ok) {
-      current_velocity_mps = 0.0f;
+      current_velocity_mps = 0.0F;
     }
 
     /* 2. Get target velocity */
     const float target_velocity_mps = internal_get_target_velocity(&cmd, i);
 
     /* 3. Compute PID output */
-    float pwm_duty = 0.0f;
+    float pwm_duty = 0.0F;
     err =
       rx_pid_compute(&s_pids[i], target_velocity_mps, current_velocity_mps, s_dt_sec, &pwm_duty);
     if (err != k_rx_ok) {
-      pwm_duty = 0.0f;
+      pwm_duty = 0.0F;
     }
 
     /* 4. Apply PWM duty */
@@ -2658,10 +2658,10 @@ static void internal_control_loop_iteration(void)
 static void internal_apply_reverse_brake_pwm(void)
 {
   for (uint8_t i = 0; i < k_motor_count; i++) {
-    float    current_velocity_mps = 0.0f;
+    float    current_velocity_mps = 0.0F;
     rx_err_t err = internal_read_encoder_velocity(&current_velocity_mps, s_dt_sec, i);
     if (err != k_rx_ok) {
-      current_velocity_mps = 0.0f;
+      current_velocity_mps = 0.0F;
     }
 
     float brake_duty;
@@ -2670,7 +2670,7 @@ static void internal_apply_reverse_brake_pwm(void)
     } else if (current_velocity_mps < -s_velocity_near_stopped_mps) {
       brake_duty = (float)k_active_brake_duty;
     } else {
-      brake_duty = 0.0f;
+      brake_duty = 0.0F;
     }
 
     (void)rx_motor_set_duty(&s_motors[i], brake_duty);
@@ -2871,11 +2871,11 @@ static void internal_apply_pid_updates(void)
 static void internal_check_comm_timeout(void)
 {
   const bool timeout = shared_data_is_comm_timeout();
-  if (timeout && !s_timeout_estop_triggered) {
+  if ((int)timeout && !(int)s_timeout_estop_triggered) {
     rx_log_warn(s_tag, "Communication timeout - triggering e-stop");
     (void)shared_data_trigger_estop(k_estop_reason_comm_timeout);
     s_timeout_estop_triggered = true;
-  } else if (!timeout && s_timeout_estop_triggered) {
+  } else if (!(int)timeout && (int)s_timeout_estop_triggered) {
     /* Communication restored - clear flag (but e-stop must be cleared manually) */
     s_timeout_estop_triggered = false;
   }
@@ -2952,7 +2952,7 @@ static void internal_update_motor_state(void)
   /* Collect state for each motor */
   for (uint8_t i = 0; i < k_motor_count; i++) {
     /* Velocity */
-    float    velocity_mps = 0.0f;
+    float    velocity_mps = 0.0F;
     rx_err_t err          = internal_read_encoder_velocity(&velocity_mps, s_dt_sec, i);
     if (err == k_rx_ok) {
       state.current_velocity_mps[i] = velocity_mps;
@@ -2992,7 +2992,7 @@ static void internal_update_motor_state(void)
   /* E-stop status */
   state.estop_active = shared_data_is_estop_active();
   state.estop_reason = shared_data_get_estop_reason();
-  state.mode         = state.estop_active ? k_motor_mode_estop : k_motor_mode_velocity;
+  state.mode         = (int)state.estop_active ? k_motor_mode_estop : k_motor_mode_velocity;
 
   /* Store in shared data */
   (void)shared_data_update_motor_state(&state);
@@ -3084,7 +3084,7 @@ static void internal_update_motor_state(void)
 static float internal_get_target_velocity(const motor_command_t* cmd, uint8_t motor_idx)
 {
   if (cmd == nullptr || motor_idx >= k_motor_count) {
-    return 0.0f;
+    return 0.0F;
   }
 
   return cmd->target_velocity_mps[motor_idx];

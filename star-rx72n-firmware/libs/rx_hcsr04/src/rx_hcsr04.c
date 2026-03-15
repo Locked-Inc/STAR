@@ -1664,16 +1664,16 @@ rx_err_t rx_hcsr04_worker_init(void)
   }
 
   /* Create mutex for pending measurement protection */
-  UINT status = tx_mutex_create(&s_pending_mutex, "HCSR04_Mutex", TX_NO_INHERIT);
+  (void)tx_mutex_create(&s_pending_mutex, "HCSR04_Mutex", TX_NO_INHERIT);
 
   /* Create event flags group */
-  status = tx_event_flags_create(&s_measurement_request, "HCSR04_Events");
+  UINT status = tx_event_flags_create(&s_measurement_request, "HCSR04_Events");
   if (status != TX_SUCCESS) {
     tx_mutex_delete(&s_pending_mutex);
     return k_rx_err_rtos_error;
   }
   /* Create semaphore for shutdown completion */
-  status = tx_semaphore_create(&s_worker_shutdown_sem, "HCSR04_Shutdown", 0);
+  (void)tx_semaphore_create(&s_worker_shutdown_sem, "HCSR04_Shutdown", 0);
   /* Initialize pending context (worker is idle) */
   s_pending.handle    = nullptr;
   s_pending.callback  = nullptr;
@@ -1726,25 +1726,25 @@ rx_err_t rx_hcsr04_worker_deinit(void)
    * This prevents abrupt termination mid-measurement, which could leave
    * sensor handles stuck in measurement_active state.
    */
-  UINT status = tx_event_flags_set(&s_measurement_request, k_event_shutdown_request, TX_OR);
+  (void)tx_event_flags_set(&s_measurement_request, k_event_shutdown_request, TX_OR);
 
   /* Wait for worker thread to exit gracefully (signaled by semaphore). */
-  status = tx_semaphore_get(&s_worker_shutdown_sem, (ULONG)k_shutdown_wait_ticks);
+  (void)tx_semaphore_get(&s_worker_shutdown_sem, (ULONG)k_shutdown_wait_ticks);
 
   /* Delete thread (now safely terminated) */
-  status = tx_thread_delete(&s_hcsr04_worker_thread);
+  const UINT status = tx_thread_delete(&s_hcsr04_worker_thread);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
 
   /* Delete event flags */
-  status = tx_event_flags_delete(&s_measurement_request);
+  (void)tx_event_flags_delete(&s_measurement_request);
 
   /* Delete shutdown semaphore */
-  status = tx_semaphore_delete(&s_worker_shutdown_sem);
+  (void)tx_semaphore_delete(&s_worker_shutdown_sem);
 
   /* Delete mutex */
-  status = tx_mutex_delete(&s_pending_mutex);
+  (void)tx_mutex_delete(&s_pending_mutex);
 
   s_worker_initialized = false;
   return k_rx_ok;
@@ -1814,27 +1814,27 @@ RX_STATIC_TESTABLE rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* con
   }
 
   /* Validate IRQ number range (IRQ8-15 for P00-P07) */
-  if ((uint8_t)config->echo_irq < (uint8_t)k_irq_range_min ||
-      (uint8_t)config->echo_irq > (uint8_t)k_irq_range_max) {
+  if ((unsigned int)config->echo_irq < (unsigned int)k_irq_range_min ||
+      (unsigned int)config->echo_irq > (unsigned int)k_irq_range_max) {
     return k_rx_err_invalid_arg;
   }
   /* Validate sensor index (must be < k_hcsr04_sensor_count) */
-  if ((uint8_t)config->sensor_index >= (uint8_t)k_hcsr04_sensor_count) {
+  if (config->sensor_index >= k_hcsr04_sensor_count) {
     return k_rx_err_invalid_arg;
   }
 
   /* Validate that echo_pin matches echo_irq (P00->IRQ8, P01->IRQ9, P02->IRQ10, P03->IRQ11) */
   const uint8_t pin_port     = rx_port_from_pin(config->echo_pin);
   const uint8_t pin_num      = rx_pin_from_pin(config->echo_pin);
-  const uint8_t expected_pin = (uint8_t)config->echo_irq - (uint8_t)k_irq_range_min;
-  if (pin_port != (uint8_t)k_irq_p0_port || pin_num != expected_pin) {
+  const uint8_t expected_pin = (uint8_t)(config->echo_irq - k_irq_range_min);
+  if (pin_port != k_irq_p0_port || pin_num != expected_pin) {
     rx_log_error(s_tag, "echo_pin/echo_irq mismatch (P0x must match IRQ8+x)");
     return k_rx_err_invalid_arg;
   }
   /* Determine effective ICU priority */
-  *out_priority = ((uint8_t)config->irq_priority != (uint8_t)k_hcsr04_irq_priority_unset)
-                    ? (uint8_t)config->irq_priority
-                    : (uint8_t)k_hcsr04_irq_priority_default;
+  *out_priority = (config->irq_priority != k_hcsr04_irq_priority_unset)
+                    ? config->irq_priority
+                    : k_hcsr04_irq_priority_default;
 
   /* Configure pin for IRQ function via MPC (sets ISEL bit in PFS) */
   rx_err_t err = rx_mpc_set_irq(config->echo_pin);
@@ -1875,7 +1875,9 @@ static void internal_populate_handle(rx_hcsr04_t*              handle,
   handle->timeout_us  = config->timeout_us;
   handle->echo_mode   = config->echo_mode;
   handle->echo_irq =
+    /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) -- k_hcsr04_irq_none=0 valid */
     (config->echo_mode == k_hcsr04_echo_irq) ? config->echo_irq : k_hcsr04_irq_none;
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) -- validated by caller */
   handle->irq_priority =
     (rx_hcsr04_irq_priority_t)effective_priority; /* Non-zero only in IRQ mode */
   handle->initialized               = true;

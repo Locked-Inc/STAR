@@ -1345,7 +1345,7 @@ typedef struct {
 [[nodiscard]] rx_err_t riic_write(riic_channel_t    channel,
                                   i2c_device_addr_t device_addr,
                                   const uint8_t*    data,
-                                  const uint16_t    length);
+                                  uint16_t          length);
 
 /**
  * @brief Read data from I2C device on specified RIIC channel
@@ -1408,10 +1408,8 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t riic_read(riic_channel_t    channel,
-                                 i2c_device_addr_t device_addr,
-                                 uint8_t*          data,
-                                 const uint16_t    length);
+[[nodiscard]] rx_err_t
+riic_read(riic_channel_t channel, i2c_device_addr_t device_addr, uint8_t* data, uint16_t length);
 
 /**
  * @brief Write then read from I2C device using repeated START (combined transaction)
@@ -1550,8 +1548,7 @@ typedef enum : uint16_t {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t riic_init_peripheral(const riic_channel_t    channel,
-                                            const i2c_device_addr_t device_addr);
+[[nodiscard]] rx_err_t riic_init_peripheral(riic_channel_t channel, i2c_device_addr_t device_addr);
 
 /**
  * @brief Deinitialize an RIIC channel previously initialized in peripheral mode
@@ -1591,7 +1588,7 @@ typedef enum : uint16_t {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t riic_deinit_peripheral(const riic_channel_t channel);
+[[nodiscard]] rx_err_t riic_deinit_peripheral(riic_channel_t channel);
 
 /**
  * @brief Read bytes written by the I2C controller to this peripheral
@@ -1627,10 +1624,10 @@ typedef enum : uint16_t {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t riic_peripheral_read(const riic_channel_t channel,
-                                            uint8_t*             data,
-                                            const uint16_t       max_length,
-                                            uint16_t*            bytes_read);
+[[nodiscard]] rx_err_t riic_peripheral_read(riic_channel_t channel,
+                                            uint8_t*       data,
+                                            uint16_t       max_length,
+                                            uint16_t*      bytes_read);
 
 /**
  * @brief Write bytes for the I2C controller to read from this peripheral
@@ -1668,7 +1665,7 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t
-riic_peripheral_write(const riic_channel_t channel, const uint8_t* data, const uint16_t length);
+riic_peripheral_write(riic_channel_t channel, const uint8_t* data, uint16_t length);
 
 /* =============================================================================
  * RSPI (SPI) Functions - Peripheral Mode

@@ -730,14 +730,12 @@ rx_err_t comm_task_apply_system_config(const rx_system_config_t* config)
   RX_CHECK_NULL_PTR(config, s_tag, "config must not be NULL");
 
   /* Validate no unknown bits in log_backends */
-  if ((config->log_backends & (rx_log_backend_t)(~(uint8_t)k_log_backend_both)) !=
-      k_log_backend_none) {
+  if (((uint8_t)config->log_backends & (uint8_t)(~k_log_backend_both)) != 0U) {
     return k_rx_err_invalid_arg;
   }
 
   /* Validate no unknown bits in comm_channels */
-  if ((config->comm_channels & (rx_comm_channel_mask_t)(~(uint8_t)k_comm_channel_mask_all)) !=
-      k_comm_channel_mask_none) {
+  if (((uint8_t)config->comm_channels & (uint8_t)(~k_comm_channel_mask_all)) != 0U) {
     return k_rx_err_invalid_arg;
   }
 
@@ -1089,7 +1087,7 @@ static bool internal_init_usb_transport(void)
   }
 
   rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr};
-  bool                 usb_ok  = (rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
+  bool                 usb_ok  = (bool)(rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
   if (!usb_ok) {
     rx_log_error(s_tag, "USB comm init failed");
   }
@@ -1136,7 +1134,7 @@ static bool internal_init_spi_transport(rx_comm_manager_config_t* config, bool* 
                                   .channel     = k_rspi_channel_2,
                                   .spi_mode    = k_spi_comm_default_mode,
                                   .fec_enabled = false};
-  bool                 spi_ok  = (rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg) == k_rx_ok);
+  bool                 spi_ok  = (bool)(rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg) == k_rx_ok);
   if (!spi_ok) {
     rx_log_error(s_tag, "SPI comm init failed");
     rx_log_warn(s_tag, "Skipping SPI HARQ link init because SPI transport failed");
@@ -1149,15 +1147,15 @@ static bool internal_init_spi_transport(rx_comm_manager_config_t* config, bool* 
    * undefined behaviour, so skip the whole block if spi_ok is false. */
   rx_spi_link_config_t link_cfg = {
     .spi_handle  = &s_spi_comm_handle,
-    .fec_enabled = k_spi_link_default_fec_enabled,
+    .fec_enabled = true,
     .max_retries = k_spi_link_default_max_retries,
   };
 
-  *link_ok_out = (rx_spi_link_init(&s_spi_link, &link_cfg) == k_rx_ok);
-  if (!*link_ok_out) {
+  *link_ok_out = (bool)(rx_spi_link_init(&s_spi_link, &link_cfg) == k_rx_ok);
+  if (!(*link_ok_out)) {
     rx_log_error(s_tag, "SPI link (HARQ) init failed");
   }
-  config->spi_link = *link_ok_out ? &s_spi_link : nullptr;
+  config->spi_link = (int)(*link_ok_out) ? &s_spi_link : nullptr;
   return true;
 }
 
@@ -1193,7 +1191,7 @@ static bool internal_init_i2c_transport(void)
     .channel     = {.value = k_i2c_comm_default_channel},
     .device_addr = {.value = k_i2c_comm_default_addr},
   };
-  bool i2c_ok = (rx_i2c_comm_init(&s_i2c_comm_handle, &i2c_cfg) == k_rx_ok);
+  bool i2c_ok = (bool)(rx_i2c_comm_init(&s_i2c_comm_handle, &i2c_cfg) == k_rx_ok);
   if (!i2c_ok) {
     rx_log_error(s_tag, "I2C comm init failed");
   }
@@ -1231,7 +1229,7 @@ static bool internal_init_uart_transport(void)
     .session = &s_session_state,
     .channel = k_uart_channel_9,
   };
-  bool uart_ok = (rx_uart_comm_init(&s_uart_comm_handle, &uart_cfg) == k_rx_ok);
+  bool uart_ok = (bool)(rx_uart_comm_init(&s_uart_comm_handle, &uart_cfg) == k_rx_ok);
   if (!uart_ok) {
     rx_log_error(s_tag, "UART comm init failed");
   }
@@ -1265,19 +1263,21 @@ static void
 internal_log_transport_status(bool usb_ok, bool spi_ok, bool link_ok, bool i2c_ok, bool uart_ok)
 {
   const bool usb_enabled =
-    (s_enabled_channels & k_comm_channel_mask_usb) != k_comm_channel_mask_none;
+    (bool)((s_enabled_channels & k_comm_channel_mask_usb) != k_comm_channel_mask_none);
   const bool spi_enabled =
-    (s_enabled_channels & k_comm_channel_mask_spi) != k_comm_channel_mask_none;
+    (bool)((s_enabled_channels & k_comm_channel_mask_spi) != k_comm_channel_mask_none);
   const bool i2c_enabled =
-    (s_enabled_channels & k_comm_channel_mask_i2c) != k_comm_channel_mask_none;
+    (bool)((s_enabled_channels & k_comm_channel_mask_i2c) != k_comm_channel_mask_none);
   const bool uart_enabled =
-    (s_enabled_channels & k_comm_channel_mask_uart) != k_comm_channel_mask_none;
-  const bool any_enabled = usb_enabled || spi_enabled || i2c_enabled || uart_enabled;
+    (bool)((s_enabled_channels & k_comm_channel_mask_uart) != k_comm_channel_mask_none);
+  const bool any_enabled =
+    (bool)((int)usb_enabled | (int)spi_enabled | (int)i2c_enabled | (int)uart_enabled);
   /* At least one enabled channel initialized successfully. */
-  const bool any_enabled_succeeded = (usb_enabled && usb_ok) || (spi_enabled && spi_ok) ||
-                                     (i2c_enabled && i2c_ok) || (uart_enabled && uart_ok);
+  const bool any_enabled_succeeded =
+    (bool)(((int)usb_enabled & (int)usb_ok) | ((int)spi_enabled & (int)spi_ok) |
+           ((int)i2c_enabled & (int)i2c_ok) | ((int)uart_enabled & (int)uart_ok));
 
-  if (any_enabled && !any_enabled_succeeded) {
+  if ((int)any_enabled && !(int)any_enabled_succeeded) {
     rx_log_error(s_tag, "CRITICAL: All transport channels failed to initialize");
     return;
   }
@@ -1354,10 +1354,10 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
   const bool uart_ok = internal_init_uart_transport();
 
   /* Wire handles - pass nullptr for disabled/failed transports */
-  config->usb_handle  = usb_ok ? &s_usb_comm_handle : nullptr;
-  config->spi_handle  = spi_ok ? &s_spi_comm_handle : nullptr;
-  config->i2c_handle  = i2c_ok ? &s_i2c_comm_handle : nullptr;
-  config->uart_handle = uart_ok ? &s_uart_comm_handle : nullptr;
+  config->usb_handle  = (int)usb_ok ? &s_usb_comm_handle : nullptr;
+  config->spi_handle  = (int)spi_ok ? &s_spi_comm_handle : nullptr;
+  config->i2c_handle  = (int)i2c_ok ? &s_i2c_comm_handle : nullptr;
+  config->uart_handle = (int)uart_ok ? &s_uart_comm_handle : nullptr;
 
   /* Log results and detect total failure */
   internal_log_transport_status(usb_ok, spi_ok, link_ok, i2c_ok, uart_ok);
@@ -2258,7 +2258,7 @@ static void internal_send_command_response(rx_comm_channel_t channel,
  */
 static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
-  star_v1_SetVelocityRequest velocity_req = {0};
+  star_v1_SetVelocityRequest velocity_req = star_v1_SetVelocityRequest_init_zero;
   const rx_err_t             err =
     rx_nanopb_decode_velocity_request(frame->payload, frame->header.length, &velocity_req);
   if (err != k_rx_ok || !velocity_req.has_command) {
@@ -2293,7 +2293,7 @@ static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx
     response.has_header = true;
     const star_v1_Status resp_status =
       (set_err == k_rx_ok) ? star_v1_Status_STATUS_OK : star_v1_Status_STATUS_INTERNAL_ERROR;
-    const char* req_id = velocity_req.has_header ? velocity_req.header.request_id : nullptr;
+    const char* req_id = (int)velocity_req.has_header ? velocity_req.header.request_id : nullptr;
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 
     uint32_t       encoded_len = 0;
@@ -2359,7 +2359,7 @@ static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx
  */
 static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
-  star_v1_EmergencyStopRequest estop_req = {0};
+  star_v1_EmergencyStopRequest estop_req = star_v1_EmergencyStopRequest_init_zero;
   const rx_err_t               err =
     rx_nanopb_decode_estop_request(frame->payload, frame->header.length, &estop_req);
   if (err != k_rx_ok) {
@@ -2378,10 +2378,10 @@ static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_fr
     star_v1_EmergencyStopResponse response =
       (star_v1_EmergencyStopResponse)star_v1_EmergencyStopResponse_init_zero;
     response.has_header    = true;
-    response.estop_engaged = (trigger_err == k_rx_ok);
+    response.estop_engaged = (bool)(trigger_err == k_rx_ok);
     const star_v1_Status resp_status =
       (trigger_err == k_rx_ok) ? star_v1_Status_STATUS_OK : star_v1_Status_STATUS_INTERNAL_ERROR;
-    const char* req_id = estop_req.has_header ? estop_req.header.request_id : nullptr;
+    const char* req_id = (int)estop_req.has_header ? estop_req.header.request_id : nullptr;
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 
     uint32_t       encoded_len = 0;
@@ -2449,7 +2449,7 @@ static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_fr
  */
 static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
-  star_v1_SetPIDGainsRequest pid_req = {0};
+  star_v1_SetPIDGainsRequest pid_req = star_v1_SetPIDGainsRequest_init_zero;
   const rx_err_t             err =
     rx_nanopb_decode_pid_gains_request(frame->payload, frame->header.length, &pid_req);
   if (err != k_rx_ok || !pid_req.has_pid_config) {
@@ -2481,11 +2481,11 @@ static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const r
     star_v1_SetPIDGainsResponse response =
       (star_v1_SetPIDGainsResponse)star_v1_SetPIDGainsResponse_init_zero;
     response.has_header = true;
-    response.success    = (set_err == k_rx_ok);
+    response.success    = (bool)(set_err == k_rx_ok);
     /* response.message left as init_zero: NULL callback skips optional string field */
     const star_v1_Status resp_status =
       (set_err == k_rx_ok) ? star_v1_Status_STATUS_OK : star_v1_Status_STATUS_INTERNAL_ERROR;
-    const char* req_id = pid_req.has_header ? pid_req.header.request_id : nullptr;
+    const char* req_id = (int)pid_req.has_header ? pid_req.header.request_id : nullptr;
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 
     uint32_t       encoded_len = 0;
@@ -2557,7 +2557,7 @@ static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const r
  */
 static bool internal_handle_retransmit_config_command(const rx_frame_t* frame)
 {
-  star_v1_SetRetransmitConfigRequest retransmit_req = {0};
+  star_v1_SetRetransmitConfigRequest retransmit_req = star_v1_SetRetransmitConfigRequest_init_zero;
   const rx_err_t err = rx_nanopb_decode_retransmit_config_request(frame->payload,
                                                                   frame->header.length,
                                                                   &retransmit_req);

@@ -292,12 +292,17 @@ static void     internal_process_sensor_reading(rx_obstacle_detect_t* handle,
                                                 uint8_t               sensor_idx,
                                                 float                 distance_cm);
 static void     internal_update_obstacle_state(rx_obstacle_detect_t* handle, rx_err_t* out_err);
+/* Forward declarations needed for GNURX production builds where these are static
+ * and called before their definitions. In UNIT_TEST builds the functions have
+ * external linkage, so the definition itself serves as a declaration. */
+#ifndef UNIT_TEST
 RX_STATIC_TESTABLE rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle);
 RX_STATIC_TESTABLE rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle);
 RX_STATIC_TESTABLE void     internal_invoke_callback(const rx_obstacle_detect_t* handle,
                                                      bool                        obstacle_detected,
                                                      uint8_t                     sensor_idx,
                                                      float                       distance_cm);
+#endif /* !UNIT_TEST */
 
 /* =============================================================================
  * Public API - Initialization
@@ -483,21 +488,21 @@ rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle)
 
   /* Wait for thread to terminate */
   UINT       status           = tx_thread_terminate(&handle->thread);
-  const bool terminate_failed = (status != TX_SUCCESS) & (status != TX_THREAD_ERROR);
+  const bool terminate_failed = (bool)((status != TX_SUCCESS) & (status != TX_THREAD_ERROR));
   if (terminate_failed) {
     return k_rx_err_rtos_error;
   }
 
   /* Delete thread */
   status                   = tx_thread_delete(&handle->thread);
-  const bool delete_failed = (status != TX_SUCCESS) & (status != TX_DELETE_ERROR);
+  const bool delete_failed = (bool)((status != TX_SUCCESS) & (status != TX_DELETE_ERROR));
   if (delete_failed) {
     return k_rx_err_rtos_error;
   }
 
   /* Delete event flags */
   status                    = tx_event_flags_delete(&handle->event_flags);
-  const bool evflags_failed = (status != TX_SUCCESS) & (status != TX_DELETE_ERROR);
+  const bool evflags_failed = (bool)((status != TX_SUCCESS) & (status != TX_DELETE_ERROR));
   if (evflags_failed) {
     return k_rx_err_rtos_error;
   }
@@ -863,7 +868,7 @@ bool rx_obstacle_detect_is_obstacle_detected(const rx_obstacle_detect_t* handle)
     return false;
   }
 
-  return handle->state == k_obstacle_detect_state_obstacle;
+  return (bool)(handle->state == k_obstacle_detect_state_obstacle);
 }
 
 /**
@@ -1105,8 +1110,8 @@ static void internal_run_detection_loop(rx_obstacle_detect_t* const handle, cons
                                                 &stop_flags,
                                                 TX_NO_WAIT);
 
-    const bool stop_event_fired = (status_stop == TX_SUCCESS);
-    if (stop_event_fired || handle->stop_requested) {
+    const bool stop_event_fired = (bool)(status_stop == TX_SUCCESS);
+    if ((int)stop_event_fired || (int)handle->stop_requested) {
       handle->state          = k_obstacle_detect_state_stopped;
       handle->stop_requested = false;
       break;
@@ -1302,13 +1307,13 @@ static void internal_update_obstacle_state(rx_obstacle_detect_t* const handle,
     }
   }
 
-  if (any_active && handle->state != k_obstacle_detect_state_obstacle) {
+  if ((int)any_active && handle->state != k_obstacle_detect_state_obstacle) {
     handle->state = k_obstacle_detect_state_obstacle;
     *out_err      = internal_stop_all_motors(handle);
     if (*out_err != k_rx_ok) {
       handle->state = k_obstacle_detect_state_stopped;
     }
-  } else if (!any_active && handle->state == k_obstacle_detect_state_obstacle) {
+  } else if (!(int)any_active && handle->state == k_obstacle_detect_state_obstacle) {
     handle->state = k_obstacle_detect_state_running;
   }
 }

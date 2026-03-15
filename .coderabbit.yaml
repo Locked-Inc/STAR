@@ -147,7 +147,7 @@ reviews:
         - Rule 1: No goto, setjmp/longjmp, or recursion
         - Rule 2: All loops must have statically provable bounds (use enums for limits)
         - Rule 3: Zero malloc/free/realloc (static allocation only)
-        - Rule 4: Functions must be ≤60 lines
+        - Rule 4: Functions must be <=60 lines
         - Rule 5: Minimum 2 assertions per function (pre/post conditions using RX_CHECK macros)
         - Rule 8: Enums for ALL integer constants (ZERO TOLERANCE for magic numbers)
         - Rule 9: Function pointers ALLOWED for Dependency Inversion Principle (intentional deviation)
@@ -337,7 +337,7 @@ reviews:
         - Rule 1: No goto, setjmp/longjmp, or recursion
         - Rule 2: All loops must have statically provable bounds (use enums for limits)
         - Rule 3: Zero malloc/free/realloc (static allocation only)
-        - Rule 4: Functions must be ≤60 lines
+        - Rule 4: Functions must be <=60 lines
         - Rule 5: Minimum 2 assertions per function (pre/post conditions using RX_CHECK macros)
         - Rule 8: Enums for ALL integer constants (ZERO TOLERANCE for magic numbers)
         - Rule 9: Function pointers ALLOWED for Dependency Inversion Principle (intentional deviation)

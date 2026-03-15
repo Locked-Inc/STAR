@@ -806,11 +806,11 @@ typedef void (*rx_comm_link_status_callback_t)(rx_comm_channel_t     channel,
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_comm_channel_mask_none = 0x00u, /**< No channels enabled */
-  k_comm_channel_mask_usb  = 0x01u, /**< USB CDC (k_comm_channel_usb = 0) */
-  k_comm_channel_mask_spi  = 0x02u, /**< SPI     (k_comm_channel_spi = 1) */
-  k_comm_channel_mask_i2c  = 0x04u, /**< I2C     (k_comm_channel_i2c = 2) */
-  k_comm_channel_mask_uart = 0x08u, /**< UART    (k_comm_channel_uart = 3) */
+  k_comm_channel_mask_none = 0x00U, /**< No channels enabled */
+  k_comm_channel_mask_usb  = 0x01U, /**< USB CDC (k_comm_channel_usb = 0) */
+  k_comm_channel_mask_spi  = 0x02U, /**< SPI     (k_comm_channel_spi = 1) */
+  k_comm_channel_mask_i2c  = 0x04U, /**< I2C     (k_comm_channel_i2c = 2) */
+  k_comm_channel_mask_uart = 0x08U, /**< UART    (k_comm_channel_uart = 3) */
   k_comm_channel_mask_all =
     (k_comm_channel_mask_usb | k_comm_channel_mask_spi | k_comm_channel_mask_i2c |
      k_comm_channel_mask_uart), /**< All four channels */

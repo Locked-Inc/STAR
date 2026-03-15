@@ -366,8 +366,8 @@ static rx_err_t internal_gpio_init_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Initialize GPIO pin */
-  const rx_err_t init_err = ctx->output ? gpio_set_output(bus_config->proto.gpio.pin)
-                                        : gpio_set_input(bus_config->proto.gpio.pin);
+  const rx_err_t init_err = (int)ctx->output ? gpio_set_output(bus_config->proto.gpio.pin)
+                                             : gpio_set_input(bus_config->proto.gpio.pin);
 
   if (init_err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO HAL initialization failed");
@@ -453,8 +453,8 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
   }
 
   /* Write GPIO value */
-  const rx_err_t write_err = ctx->value ? gpio_write_high(bus_config->proto.gpio.pin)
-                                        : gpio_write_low(bus_config->proto.gpio.pin);
+  const rx_err_t write_err = (int)ctx->value ? gpio_write_high(bus_config->proto.gpio.pin)
+                                             : gpio_write_low(bus_config->proto.gpio.pin);
 
   if (write_err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO write failed");

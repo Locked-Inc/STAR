@@ -87,9 +87,9 @@ typedef enum : uint16_t {
 } tpu_enc_velocity_t;
 
 /* Float constants (enums can't hold floats) */
-static const float k_tpu_enc_initial_position_deg = 0.0f;
-static const float k_tpu_enc_min_delta_time_s     = 0.0f;
-static const float k_tpu_enc_max_delta_time_s     = 10.0f;
+static const float k_tpu_enc_initial_position_deg = 0.0F;
+static const float k_tpu_enc_min_delta_time_s     = 0.0F;
+static const float k_tpu_enc_max_delta_time_s     = 10.0F;
 
 /* =============================================================================
  * Static Variables
@@ -127,8 +127,8 @@ static int32_t s_last_count[k_tpu_enc_max_channels] = {0};
  */
 static bool internal_is_valid_channel(const rx_tpu_channel_t channel)
 {
-  return (channel == k_tpu_channel_1 || channel == k_tpu_channel_2 || channel == k_tpu_channel_4 ||
-          channel == k_tpu_channel_5);
+  return (bool)(channel == k_tpu_channel_1 || channel == k_tpu_channel_2 ||
+                channel == k_tpu_channel_4 || channel == k_tpu_channel_5);
 }
 
 /**
@@ -250,7 +250,7 @@ rx_err_t rx_tpu_encoder_init(const rx_tpu_encoder_config_t* config)
   }
 
   /* Start the counter (must succeed: channel was just initialized above) */
-  err = rx_tpu_start(channel);
+  (void)rx_tpu_start(channel);
 
   /* Initialize software state */
   s_state[channel].total_count    = 0;
@@ -310,9 +310,9 @@ rx_err_t rx_tpu_encoder_read_velocity(float*                 velocity_rps,
 {
   RX_VALIDATE_PTR(velocity_rps, s_tag, "velocity_rps pointer is nullptr");
 
-  const bool dt_too_small = (delta_time_s <= k_tpu_enc_min_delta_time_s);
-  const bool dt_too_large = (delta_time_s > k_tpu_enc_max_delta_time_s);
-  if (dt_too_small | dt_too_large) {
+  const bool dt_too_small = (bool)(delta_time_s <= k_tpu_enc_min_delta_time_s);
+  const bool dt_too_large = (bool)(delta_time_s > k_tpu_enc_max_delta_time_s);
+  if ((bool)((int)dt_too_small | (int)dt_too_large)) {
     rx_log_error(s_tag, "Invalid delta time for velocity calculation");
     return k_rx_err_invalid_arg;
   }
@@ -329,10 +329,10 @@ rx_err_t rx_tpu_encoder_read_velocity(float*                 velocity_rps,
 
   /* Read current count via overflow handler (register read; must succeed) */
   uint16_t raw_count = 0;
-  rx_err_t err       = rx_tpu_read_count(channel, &raw_count);
+  (void)rx_tpu_read_count(channel, &raw_count);
 
   rx_encoder_state_t state;
-  err = internal_update_state(&state, channel, raw_count);
+  const rx_err_t     err = internal_update_state(&state, channel, raw_count);
   if (err != k_rx_ok) {
     return err;
   }

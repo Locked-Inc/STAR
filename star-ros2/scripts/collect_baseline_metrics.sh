@@ -257,34 +257,34 @@ Summary:                SUMMARY.txt
 
 Acceptance Criteria
 ---------------------------------------------
-✓ Teleop drop rate < 1.0% under normal load
-✓ Telemetry drop rate < 5.0% under normal load
-✓ Telemetry drop rate < 10.0% under stress test
+[PASS] Teleop drop rate < 1.0% under normal load
+[PASS] Telemetry drop rate < 5.0% under normal load
+[PASS] Telemetry drop rate < 10.0% under stress test
 
 Analysis
 ---------------------------------------------
 $(if [ -n "$TELEOP_DROP_RATE" ]; then
     if (( $(echo "$TELEOP_DROP_RATE < 1.0" | bc -l) )); then
-        echo "✅ Teleop performance: EXCELLENT (< 1% drop rate)"
+        echo "[PASS] Teleop performance: EXCELLENT (< 1% drop rate)"
     elif (( $(echo "$TELEOP_DROP_RATE < 5.0" | bc -l) )); then
-        echo "⚠️  Teleop performance: ACCEPTABLE (< 5% drop rate)"
+        echo "[WARN]  Teleop performance: ACCEPTABLE (< 5% drop rate)"
     else
-        echo "❌ Teleop performance: POOR (>= 5% drop rate)"
+        echo "[FAIL] Teleop performance: POOR (>= 5% drop rate)"
     fi
 else
-    echo "❓ Teleop performance: NO DATA"
+    echo "[?] Teleop performance: NO DATA"
 fi)
 
 $(if [ -n "$TELEMETRY_DROP_RATE" ]; then
     if (( $(echo "$TELEMETRY_DROP_RATE < 5.0" | bc -l) )); then
-        echo "✅ Telemetry performance: EXCELLENT (< 5% drop rate)"
+        echo "[PASS] Telemetry performance: EXCELLENT (< 5% drop rate)"
     elif (( $(echo "$TELEMETRY_DROP_RATE < 10.0" | bc -l) )); then
-        echo "⚠️  Telemetry performance: ACCEPTABLE (< 10% drop rate)"
+        echo "[WARN]  Telemetry performance: ACCEPTABLE (< 10% drop rate)"
     else
-        echo "❌ Telemetry performance: POOR (>= 10% drop rate)"
+        echo "[FAIL] Telemetry performance: POOR (>= 10% drop rate)"
     fi
 else
-    echo "❓ Telemetry performance: NO DATA"
+    echo "[?] Telemetry performance: NO DATA"
 fi)
 EOF
 
