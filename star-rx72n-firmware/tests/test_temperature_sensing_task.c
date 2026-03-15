@@ -48,6 +48,9 @@ static const float s_test_temp_reading_celsius = 25.5F;
 static const float s_test_temp_convert_celsius = 25.75F;
 static const float s_test_cdegc_per_degree     = 100.0F;
 
+/** @brief Tolerance for float comparisons (replaces Unity UNITY_FLOAT_PRECISION literal) */
+static const float s_float_tolerance = 0.00001F;
+
 /* =============================================================================
  * Test Fixture
  * =============================================================================
@@ -204,8 +207,7 @@ void test_temp_task_reads_temperature(void)
   err = rx_ds18b20_read_temperature(&handle, &temp_celsius);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  /* NOLINTNEXTLINE(readability-magic-numbers) -- Unity macro internal tolerance literal */
-  TEST_ASSERT_EQUAL_FLOAT(s_test_temp_reading_celsius, temp_celsius);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, s_test_temp_reading_celsius, temp_celsius);
   TEST_ASSERT_EQUAL_UINT32(1, mock_ds18b20_get_read_count());
 }
 

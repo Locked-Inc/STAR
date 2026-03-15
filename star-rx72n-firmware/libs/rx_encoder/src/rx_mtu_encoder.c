@@ -429,9 +429,9 @@ typedef enum : uint16_t {
 } encoder_velocity_limits_t;
 
 /* Floating-point constants (enums can't hold floats) */
-static const float k_encoder_initial_position_deg = 0.0f; /**< Initial position in degrees */
-static const float k_min_delta_time_s = 0.0f;  /**< Minimum delta time for velocity calculation */
-static const float k_max_delta_time_s = 10.0f; /**< Maximum delta time for velocity calculation */
+static const float k_encoder_initial_position_deg = 0.0F; /**< Initial position in degrees */
+static const float k_min_delta_time_s = 0.0F;  /**< Minimum delta time for velocity calculation */
+static const float k_max_delta_time_s = 10.0F; /**< Maximum delta time for velocity calculation */
 
 /* =============================================================================
  * Static Variables
@@ -473,19 +473,19 @@ internal_get_mtu_base(const rx_mtu_channel_t channel)
 {
   switch (channel) {
     case k_mtu_channel_0:
-      return (volatile rx_mtu_channel_regs_t*)mtu0();
+      return mtu0();
     case k_mtu_channel_1:
-      return (volatile rx_mtu_channel_regs_t*)mtu1();
+      return mtu1();
     case k_mtu_channel_2:
-      return (volatile rx_mtu_channel_regs_t*)mtu2();
+      return mtu2();
     case k_mtu_channel_3:
       return (volatile rx_mtu_channel_regs_t*)mtu3();
     case k_mtu_channel_4:
       return (volatile rx_mtu_channel_regs_t*)mtu4();
     case k_mtu_channel_6:
-      return (volatile rx_mtu_channel_regs_t*)mtu6();
+      return mtu6();
     case k_mtu_channel_7:
-      return (volatile rx_mtu_channel_regs_t*)mtu7();
+      return mtu7();
     default:
       return nullptr;
   }
@@ -493,7 +493,7 @@ internal_get_mtu_base(const rx_mtu_channel_t channel)
 
 RX_STATIC_TESTABLE bool internal_is_valid_channel(const rx_mtu_channel_t channel)
 {
-  return internal_get_mtu_base(channel) != nullptr;
+  return (bool)(internal_get_mtu_base(channel) != nullptr);
 }
 
 /* =============================================================================
@@ -949,9 +949,7 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
   RX_VALIDATE_PTR(velocity_rps, s_tag, "velocity_rps pointer is nullptr");
 
   /* Runtime validation to catch accidental parameter swaps */
-  const bool too_small = (delta_time_s <= k_min_delta_time_s);
-  const bool too_large = (delta_time_s > k_max_delta_time_s);
-  if (too_small | too_large) {
+  if ((delta_time_s <= k_min_delta_time_s) || (delta_time_s > k_max_delta_time_s)) {
     rx_log_error(s_tag, "Invalid delta time for velocity calculation");
     return k_rx_err_invalid_arg;
   }
@@ -967,7 +965,7 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
   RX_VALIDATE_INIT(s_encoder_initialized[channel], s_tag, "Encoder not initialized");
 
   /* Read current count */
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
   (void)(internal_update_state_from_count(&state, channel, mtu->tcnt));
   /* channel is valid and initialized - internal_update_state_from_count cannot fail here */
 
@@ -981,7 +979,7 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
   /* Guard division: Validate counts_per_rev is within acceptable range.
    * internal_update_state_from_count already checked cpr, so this is an invariant. */
 
-  const float delta_revs = (float)delta_count / counts_per_rev;
+  const float delta_revs = (float)delta_count / (float)counts_per_rev;
   *velocity_rps          = delta_revs / delta_time_s;
 
   /* Post-condition: Validate velocity is realistic */
@@ -1147,7 +1145,7 @@ rx_err_t rx_encoder_set_count(const int32_t count, const rx_mtu_channel_t channe
 
   const int32_t remainder_counts = count % counts_per_rev;
   s_encoder_state[channel].position_deg =
-    (float)(remainder_counts * k_degrees_per_revolution) / counts_per_rev;
+    (float)(remainder_counts * k_degrees_per_revolution) / (float)counts_per_rev;
 
   return k_rx_ok;
 }
@@ -1454,8 +1452,7 @@ RX_STATIC_TESTABLE rx_err_t internal_update_state_from_count(rx_encoder_state_t*
   /* Calculate revolutions and position */
   const uint16_t counts_per_rev = s_counts_per_rev[channel];
 
-  /* Guard division: Validate counts_per_rev (NASA Rule 5)
-   * Upper bound check omitted - uint16_t can't exceed k_encoder_max_counts_per_rev (65535) */
+  /* Guard division: Validate counts_per_rev (NASA Rule 5) */
   if (counts_per_rev < k_encoder_min_counts_per_rev) {
     rx_log_error(s_tag, "counts_per_rev must be >= 1");
     return k_rx_err_invalid_state;
@@ -1465,7 +1462,7 @@ RX_STATIC_TESTABLE rx_err_t internal_update_state_from_count(rx_encoder_state_t*
 
   const int32_t remainder_counts = s_encoder_state[channel].total_count % counts_per_rev;
   s_encoder_state[channel].position_deg =
-    (float)(remainder_counts * k_degrees_per_revolution) / counts_per_rev;
+    (float)(remainder_counts * k_degrees_per_revolution) / (float)counts_per_rev;
 
   /* Post-condition: position is remainder*360/cpr where |remainder| < cpr,
    * so |position| < 360 always. The +/-720 check can never trigger. */

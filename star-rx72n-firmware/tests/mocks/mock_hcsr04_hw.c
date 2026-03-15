@@ -364,7 +364,7 @@ rx_err_t mock_gpio_write_low(uint8_t port, uint8_t pin)
   }
 
   /* Detect trigger pulse completion (high->low transition) */
-  if (ret == k_rx_ok && m->trigger_pin_state) { // NOLINT(readability-implicit-bool-conversion)
+  if (ret == k_rx_ok && m->trigger_pin_state) { /* NOLINT(readability-implicit-bool-conversion) */
     m->trigger_pulse_count++;
   }
 
@@ -407,8 +407,7 @@ rx_err_t mock_gpio_read(uint8_t port, uint8_t pin, bool* value)
       k_hcsr04_trigger_settle_us + k_hcsr04_trigger_pulse_us; /* Wait for trigger pulse to finish */
     const uint32_t echo_end = echo_start + m->simulated_echo_us;
 
-    *value =
-      (elapsed >= echo_start && elapsed < echo_end); // NOLINT(readability-implicit-bool-conversion)
+    *value = (bool)(elapsed >= echo_start && elapsed < echo_end);
   } else {
     /* Timeout injected or no trigger sent yet: echo is low */
     *value = false;
@@ -431,7 +430,7 @@ rx_err_t mock_gpio_deinit(uint8_t port, uint8_t pin)
   mock_hcsr04_hw_t* m   = internal_get_mock(nullptr);
   rx_err_t          ret = k_rx_ok;
 
-  if (m->inject_gpio_deinit_error || // NOLINT(readability-implicit-bool-conversion)
+  if (m->inject_gpio_deinit_error || /* NOLINT(readability-implicit-bool-conversion) */
       (m->gpio_deinit_fail_after_count > 0U &&
        m->gpio_deinit_count >= m->gpio_deinit_fail_after_count)) {
     ret = k_rx_err_hw_error;

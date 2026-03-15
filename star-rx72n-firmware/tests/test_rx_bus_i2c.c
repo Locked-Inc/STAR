@@ -1401,7 +1401,7 @@ void test_bus_config_i2c_invalid_sda_pin_returns_error(void)
 {
   rx_bus_config_t            config;
   static const rx_port_pin_t k_invalid_sda =
-    (rx_port_pin_t)0xFF00U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_port_pin_t)0xFF00U; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_bus_config_init_i2c(&config,
                                         "test",
                                         k_test_i2c_channel,
@@ -1428,7 +1428,7 @@ void test_bus_config_i2c_invalid_scl_pin_returns_error(void)
 {
   rx_bus_config_t            config;
   static const rx_port_pin_t k_invalid_scl =
-    (rx_port_pin_t)0xFF00U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_port_pin_t)0xFF00U; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_bus_config_init_i2c(&config,
                                         "test",
                                         k_test_i2c_channel,

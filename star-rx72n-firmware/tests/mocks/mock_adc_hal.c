@@ -491,7 +491,7 @@ rx_err_t adc_read_voltage_mv(adc_unit_t       unit,
 
   /* Validate resolution matches unit's configured resolution (matches production behavior) */
   if ((uint8_t)unit < k_mock_adc_max_units &&
-      g_mock_adc.units[unit].initialized && // NOLINT(readability-implicit-bool-conversion)
+      g_mock_adc.units[unit].initialized && /* NOLINT(readability-implicit-bool-conversion) */
       g_mock_adc.units[unit].resolution != (uint8_t)bits) {
     return k_rx_err_invalid_arg;
   }

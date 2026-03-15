@@ -1458,8 +1458,8 @@ void test_motor_emergency_stop_gptw_stop_error(void)
 void test_motor_init_invalid_output_selection(void)
 {
   /* Covers line 679: invalid output value (not output_a or output_b) */
-  s_config.output_a =
-    (rx_gptw_output_t)k_test_invalid_output; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  s_config.output_a = (rx_gptw_output_t) /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+    k_test_invalid_output;               /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_motor_init(&s_motor, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
   TEST_ASSERT_FALSE(s_motor.initialized);

@@ -926,8 +926,9 @@ void test_type_name_invalid(void)
   };
 
   /* Invalid type value should return UNKNOWN */
-  const char* name = rx_frame_ascii_type_name(
-    (rx_frame_type_t)k_test_invalid_type); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  const char* name =
+    rx_frame_ascii_type_name((/* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+                              rx_frame_type_t)k_test_invalid_type);
   TEST_ASSERT_EQUAL_STRING("UNKNOWN", name);
 }
 

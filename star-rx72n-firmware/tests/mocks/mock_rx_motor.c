@@ -50,7 +50,7 @@ void mock_rx_motor_set_stop_return(rx_err_t ret_val)
 bool mock_rx_motor_was_stop_called(const rx_motor_handle_t* motor_handle)
 {
   if (motor_handle == nullptr) {
-    return s_stop_call_count > 0; // NOLINT(readability-implicit-bool-conversion)
+    return (bool)(s_stop_call_count > 0);
   }
 
   for (uint32_t i = 0; i < s_stop_call_count; i++) {

@@ -205,7 +205,7 @@ float mock_pid_get_last_dt(void)
 
 bool mock_pid_was_initialized(void)
 {
-  return s_init_count > 0; // NOLINT(readability-implicit-bool-conversion)
+  return (bool)(s_init_count > 0);
 }
 
 void mock_pid_get_last_compute_params(float* setpoint, float* measured, float* dt)

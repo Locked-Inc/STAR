@@ -238,8 +238,8 @@ void test_bit2_rejected(void)
   TEST_ASSERT_EQUAL(
     k_rx_err_invalid_arg,
     rx_log_set_backend(
-      (rx_log_backend_t)        // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
-      k_invalid_backend_bit2)); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+      (rx_log_backend_t)        /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+      k_invalid_backend_bit2)); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 }
 
 /**
@@ -250,8 +250,8 @@ void test_upper_nibble_rejected(void)
   TEST_ASSERT_EQUAL(
     k_rx_err_invalid_arg,
     rx_log_set_backend(
-      (rx_log_backend_t)                // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
-      k_invalid_backend_upper_nibble)); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+      (rx_log_backend_t)                /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+      k_invalid_backend_upper_nibble)); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 }
 
 /**
@@ -262,8 +262,8 @@ void test_all_bits_rejected(void)
   TEST_ASSERT_EQUAL(
     k_rx_err_invalid_arg,
     rx_log_set_backend(
-      (rx_log_backend_t)            // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
-      k_invalid_backend_all_bits)); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+      (rx_log_backend_t)            /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+      k_invalid_backend_all_bits)); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 }
 
 /* =============================================================================
@@ -281,10 +281,10 @@ void test_all_bits_rejected(void)
 void test_backend_unchanged_after_rejection(void)
 {
   (void)rx_log_set_backend(k_log_backend_usb);
-  (void)rx_log_set_backend(( // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
-    rx_log_backend_t)(
+  (void)rx_log_set_backend((/* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+                            rx_log_backend_t)(
     k_invalid_backend_upper_nibble |
-    k_invalid_backend_bit2)); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    k_invalid_backend_bit2)); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   TEST_ASSERT_EQUAL(k_log_backend_usb, rx_log_get_backend());
 }
 

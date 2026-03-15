@@ -866,7 +866,7 @@ void test_gptw_channel_id_assert_out_of_range(void)
 {
   /* Cast an out-of-range value to force the assert path */
   const rx_gptw_channel_t bad_channel =
-    (rx_gptw_channel_t)255U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_gptw_channel_t)255U; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   (void)rx_gptw_channel_id(bad_channel);
   TEST_PASS();
 }
@@ -889,7 +889,7 @@ void test_gptw_channel_id_assert_out_of_range(void)
 void test_gptw_channel_id_postcondition_assert(void)
 {
   const rx_gptw_channel_t bad_channel =
-    (rx_gptw_channel_t)200U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_gptw_channel_t)200U; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   (void)rx_gptw_channel_id(bad_channel);
   TEST_PASS();
 }
@@ -909,7 +909,7 @@ void test_gptw_channel_id_postcondition_assert(void)
 void test_gptw_output_id_assert_out_of_range(void)
 {
   const rx_gptw_output_t bad_output =
-    (rx_gptw_output_t)255U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_gptw_output_t)255U; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   (void)rx_gptw_output_id(bad_output);
   TEST_PASS();
 }
@@ -929,7 +929,7 @@ void test_gptw_output_id_assert_out_of_range(void)
 void test_gptw_output_id_postcondition_assert(void)
 {
   const rx_gptw_output_t bad_output =
-    (rx_gptw_output_t)200U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_gptw_output_t)200U; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   (void)rx_gptw_output_id(bad_output);
   TEST_PASS();
 }

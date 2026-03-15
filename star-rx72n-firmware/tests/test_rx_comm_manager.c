@@ -570,7 +570,7 @@ void test_send_invalid_channel(void)
 
   /* Invalid channel ID */
   const rx_comm_send_params_t params = {
-    // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+    /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
     .channel     = (rx_comm_channel_t)k_invalid_channel_sentinel,
     .type        = k_frame_type_command,
     .flags       = k_frame_flag_none,
@@ -781,7 +781,7 @@ void test_channel_ready_invalid_channel(void)
 
   rx_err_t err = rx_comm_manager_channel_ready(
     &s_manager,
-    (rx_comm_channel_t) // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_comm_channel_t) /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
     k_invalid_channel_sentinel,
     &ready);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1061,7 +1061,7 @@ void test_link_status_invalid_channel(void)
   rx_comm_link_status_t status;
   rx_err_t              err = rx_comm_manager_link_status(
     &s_manager,
-    (rx_comm_channel_t) // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_comm_channel_t) /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
     k_invalid_channel_sentinel,
     &status);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1210,7 +1210,7 @@ void test_channel_name_uart(void)
  */
 void test_channel_name_invalid(void)
 {
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   const char* name = rx_comm_manager_channel_name((rx_comm_channel_t)k_invalid_channel_sentinel);
   TEST_ASSERT_EQUAL_STRING("UNKNOWN", name);
 }

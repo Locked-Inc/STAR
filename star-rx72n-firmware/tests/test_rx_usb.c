@@ -2332,7 +2332,7 @@ void test_usb_set_state_invalid_state_ignored(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   /* k_usb_state_suspended is 6; 7 is outside the valid range */
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_usb_set_state((rx_usb_state_t)k_test_invalid_usb_state);
 
   /* State must remain unchanged */
@@ -2556,7 +2556,7 @@ void test_usb_priv_set_port_state_invalid_state(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   /* k_usb_state_suspended = 6; 7 is outside the valid state range */
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_usb_priv_set_port_state(k_usb_port_proto, (rx_usb_state_t)k_test_invalid_usb_state);
 
   /* State must remain attached (unchanged from init) */

@@ -86,7 +86,7 @@ uint32_t mock_obstacle_detect_get_stop_count(void)
 }
 bool mock_obstacle_detect_was_initialized(void)
 {
-  return s_init_count > 0; // NOLINT(readability-implicit-bool-conversion)
+  return (bool)(s_init_count > 0);
 }
 
 rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,

@@ -191,8 +191,13 @@ ci-rx72n:
 	@cmake --build $(FIRMWARE_DIR)/tests/build --parallel 2>&1 | tail -3
 	@ctest --test-dir $(FIRMWARE_DIR)/tests/build --output-on-failure
 	@echo ""
-	@echo "[4/4] clang-tidy (SEI CERT C)..."
-	@bash $(FIRMWARE_DIR)/scripts/clang_tidy.sh --check
+	@echo "[4/4] clang-tidy (SEI CERT C) -- CMake-integrated, mirrors CI exactly..."
+	@cd $(FIRMWARE_DIR)/tests && cmake -B build/tidy \
+		-DCMAKE_BUILD_TYPE=Debug \
+		-DENABLE_CLANG_TIDY=ON \
+		-DCMAKE_C_COMPILER=clang-18 \
+		-Wno-dev 2>&1 | tail -3
+	@cmake --build $(FIRMWARE_DIR)/tests/build/tidy --parallel 2>&1
 	@echo ""
 	@echo "=========================================="
 	@echo " [PASS] All CI checks passed!"

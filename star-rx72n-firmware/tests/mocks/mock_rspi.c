@@ -275,7 +275,7 @@ rx_err_t mock_rspi_inject_rx_data(mock_rspi_t*   mock,
   }
   ch->rx_len         = len;
   ch->rx_pos         = 0;
-  ch->data_available = (len > 0); // NOLINT(readability-implicit-bool-conversion)
+  ch->data_available = (bool)(len > 0);
 
   return k_rx_ok;
 }

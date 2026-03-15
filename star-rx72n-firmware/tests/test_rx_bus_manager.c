@@ -1798,7 +1798,7 @@ void test_bus_config_uart_invalid_tx_pin_returns_error(void)
 {
   rx_bus_config_t            config;
   static const rx_port_pin_t k_invalid_tx =
-    (rx_port_pin_t)0xFF00U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_port_pin_t)0xFF00U; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_bus_config_init_uart(&config,
                                          "test",
                                          k_test_uart_channel,
@@ -1824,7 +1824,7 @@ void test_bus_config_uart_invalid_rx_pin_returns_error(void)
 {
   rx_bus_config_t            config;
   static const rx_port_pin_t k_invalid_rx =
-    (rx_port_pin_t)0xFF00U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_port_pin_t)0xFF00U; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_bus_config_init_uart(&config,
                                          "test",
                                          k_test_uart_channel,
@@ -1870,7 +1870,7 @@ void test_bus_config_onewire_invalid_pin_returns_error(void)
 {
   rx_bus_config_t            config;
   static const rx_port_pin_t k_invalid_pin =
-    (rx_port_pin_t)0xFF00U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_port_pin_t)0xFF00U; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_bus_config_init_onewire(&config, "test", k_invalid_pin);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }

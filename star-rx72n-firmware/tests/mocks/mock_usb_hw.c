@@ -231,7 +231,7 @@ void mock_usb_hw_record_call(mock_usb_hw_t* mock,
 
 bool mock_usb_hw_was_called(mock_usb_hw_t* mock, const char* func)
 {
-  return mock_usb_hw_get_call_count(mock, func) > 0; // NOLINT(readability-implicit-bool-conversion)
+  return (bool)(mock_usb_hw_get_call_count(mock, func) > 0);
 }
 
 uint32_t mock_usb_hw_get_call_count(mock_usb_hw_t* mock, const char* func)

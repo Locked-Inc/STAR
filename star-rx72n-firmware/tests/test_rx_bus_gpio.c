@@ -945,7 +945,7 @@ void test_bus_config_gpio_invalid_port_returns_error(void)
   rx_bus_config_t config;
   /* Construct a port_pin with port 0xFF (> k_rx_port_j = 0x13) */
   static const rx_port_pin_t k_invalid_port_pin =
-    (rx_port_pin_t)0xFF00U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_port_pin_t)0xFF00U; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_bus_config_init_gpio(&config, "test", k_invalid_port_pin);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -967,7 +967,7 @@ void test_bus_config_gpio_invalid_pin_returns_error(void)
   rx_bus_config_t config;
   /* Construct a port_pin with valid port (0x00) but pin 0x08 (> k_rx_pin_max = 7) */
   static const rx_port_pin_t k_invalid_pin =
-    (rx_port_pin_t)0x0008U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_port_pin_t)0x0008U; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_bus_config_init_gpio(&config, "test", k_invalid_pin);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }

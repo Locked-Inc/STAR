@@ -72,6 +72,9 @@ static const float s_test_velocity_2 = -0.48F;
 /** @brief Velocity of motor 3 in m/s (negative = reverse) for encoder data test */
 static const float s_test_velocity_3 = -0.50F;
 
+/** @brief Tolerance for float comparisons (replaces Unity UNITY_FLOAT_PRECISION literal) */
+static const float s_float_tolerance = 0.00001F;
+
 /* =============================================================================
  * Test Fixture
  * =============================================================================
@@ -198,12 +201,12 @@ void test_telemetry_task_collects_encoder_data(void)
   TEST_ASSERT_EQUAL_INT32(k_test_encoder_1, state_out.encoder_counts[k_test_motor_idx_1]);
   TEST_ASSERT_EQUAL_INT32(k_test_encoder_2, state_out.encoder_counts[k_test_motor_idx_2]);
   TEST_ASSERT_EQUAL_INT32(k_test_encoder_3, state_out.encoder_counts[k_test_motor_idx_3]);
-  TEST_ASSERT_EQUAL_FLOAT( // NOLINT(readability-magic-numbers) -- __LINE__ in Unity macro
-    s_test_velocity_0,
-    state_out.current_velocity_mps[k_test_motor_idx_0]);
-  TEST_ASSERT_EQUAL_FLOAT( // NOLINT(readability-magic-numbers) -- __LINE__ in Unity macro
-    s_test_velocity_1,
-    state_out.current_velocity_mps[k_test_motor_idx_1]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           s_test_velocity_0,
+                           state_out.current_velocity_mps[k_test_motor_idx_0]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           s_test_velocity_1,
+                           state_out.current_velocity_mps[k_test_motor_idx_1]);
 }
 
 /**

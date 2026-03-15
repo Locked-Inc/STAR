@@ -410,7 +410,7 @@ rx_err_t gpio_toggle(rx_port_pin_t pin)
 
   mock_gpio_pin_state_t* state = internal_get_pin_state(port, pin_num);
   if (state != nullptr) {
-    state->output_value = !state->output_value; // NOLINT(readability-implicit-bool-conversion)
+    state->output_value = (bool)(!state->output_value);
     /* Keep input_value in sync so gpio_read reflects the toggled state */
     state->input_value = state->output_value;
   }

@@ -136,8 +136,8 @@ typedef enum : uint8_t {
 } mock_tx_error_codes_t;
 
 /* ---- Mock ThreadX types ---- */
-typedef unsigned long ULONG;
-typedef unsigned int  UINT;
+typedef unsigned long ULONG; /* NOLINT(readability-identifier-naming) */
+typedef unsigned int  UINT;  /* NOLINT(readability-identifier-naming) */
 /** @brief ThreadX thread name buffer size */
 typedef enum : uint8_t {
   k_tx_thread_name_len = 16, /**< Max thread name length including null */
@@ -147,12 +147,12 @@ typedef struct {
   char    name[k_tx_thread_name_len];
   uint8_t priority;
   bool    created;
-} TX_THREAD;
+} TX_THREAD; /* NOLINT(readability-identifier-naming) */
 /* ThreadX constants */
 enum {
-  TX_SUCCESS       = 0,
-  TX_NO_TIME_SLICE = 0,
-  TX_AUTO_START    = 1,
+  TX_SUCCESS       = 0, /* NOLINT(readability-identifier-naming) */
+  TX_NO_TIME_SLICE = 0, /* NOLINT(readability-identifier-naming) */
+  TX_AUTO_START    = 1, /* NOLINT(readability-identifier-naming) */
 };
 
 /* ---- Mock counters ---- */

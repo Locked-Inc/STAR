@@ -27,8 +27,7 @@ Checks: >
   -bugprone-easily-swappable-parameters,
   -misc-include-cleaner,
   -readability-identifier-length,
-  -performance-no-int-to-ptr,
-  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+  -performance-no-int-to-ptr
 
 # ALL warnings are errors -- zero tolerance for any clang-tidy violation.
 WarningsAsErrors: '*'

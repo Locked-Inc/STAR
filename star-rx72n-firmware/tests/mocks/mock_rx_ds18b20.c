@@ -77,7 +77,7 @@ uint32_t mock_ds18b20_get_read_count(void)
 }
 bool mock_ds18b20_was_initialized(void)
 {
-  return s_init_count > 0; // NOLINT(readability-implicit-bool-conversion)
+  return (bool)(s_init_count > 0);
 }
 
 rx_err_t rx_ds18b20_init(rx_ds18b20_handle_t* handle, const rx_ds18b20_config_t* config)

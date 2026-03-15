@@ -336,7 +336,7 @@ void test_crc_compute_len_too_large(void)
 void test_crc_compute_invalid_poly(void)
 {
   const rx_crc_config_t cfg = {
-    .poly      = (rx_crc_poly_t)0xFFU, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    .poly      = (rx_crc_poly_t)0xFFU, /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
     .bit_order = k_rx_crc_bit_order_lsb_first,
     .backend   = k_rx_crc_backend_software,
     .dma       = {.timeout_cycles = 0U},
@@ -352,10 +352,11 @@ void test_crc_compute_invalid_poly(void)
 void test_crc_compute_invalid_bit_order(void)
 {
   const rx_crc_config_t cfg = {
-    .poly      = k_rx_crc_poly_crc32,
-    .bit_order = (rx_crc_bit_order_t)0xFFU, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
-    .backend   = k_rx_crc_backend_software,
-    .dma       = {.timeout_cycles = 0U},
+    .poly = k_rx_crc_poly_crc32,
+    .bit_order =
+      (rx_crc_bit_order_t)0xFFU, /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+    .backend = k_rx_crc_backend_software,
+    .dma     = {.timeout_cycles = 0U},
   };
   uint32_t result = 0U;
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
@@ -418,7 +419,7 @@ void test_crc_compute_invalid_backend(void)
   const rx_crc_config_t cfg = {
     .poly      = k_rx_crc_poly_crc32,
     .bit_order = k_rx_crc_bit_order_lsb_first,
-    .backend   = (rx_crc_backend_t)0xFFU, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    .backend   = (rx_crc_backend_t)0xFFU, /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
     .dma       = {.timeout_cycles = 0U},
   };
   uint32_t result = 0U;
