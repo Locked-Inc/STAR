@@ -685,43 +685,6 @@ static rx_bus_manager_t s_mock_bus_manager;
 static const char* s_test_bus_name = "test_onewire";
 
 /* =============================================================================
- * Safe Buffer Helpers (avoid memcpy/memset)
- * =============================================================================
- */
-
-/**
- * @brief Copy bytes from source to destination without memcpy
- *
- * @param[out] dst Destination buffer
- * @param[in] src Source buffer
- * @param[in] len Number of bytes to copy
- *
- * @pre dst != nullptr
- * @pre src != nullptr
- */
-static void helper_copy_buf(uint8_t* dst, const uint8_t* src, uint32_t len)
-{
-  for (uint32_t i = 0; i < len; i++) {
-    dst[i] = src[i];
-  }
-}
-
-/**
- * @brief Zero a byte buffer without memset
- *
- * @param[out] buf Buffer to zero
- * @param[in] len Number of bytes to zero
- *
- * @pre buf != nullptr
- */
-static void helper_zero_buf(uint8_t* buf, uint32_t len)
-{
-  for (uint32_t i = 0; i < len; i++) {
-    buf[i] = 0;
-  }
-}
-
-/* =============================================================================
  * Mock OneWire Bus Functions
  * =============================================================================
  */
@@ -1043,7 +1006,8 @@ rx_bus_onewire_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* da
     length = k_ds18b20_scratchpad_bytes;
   }
 
-  helper_copy_buf(data, s_mock_state.scratchpad, length);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(data, s_mock_state.scratchpad, length);
   return k_rx_ok;
 }
 
@@ -1246,7 +1210,8 @@ rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager,
     return k_rx_err_invalid_state;
   }
 
-  helper_copy_buf(rom, s_mock_state.rom, k_onewire_rom_bytes);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(rom, s_mock_state.rom, k_onewire_rom_bytes);
   return k_rx_ok;
 }
 
@@ -1287,12 +1252,12 @@ rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager,
  * @note Not fully implemented - only returns count, not ROM data
  * @see rx_bus_onewire_search() Real implementation
  */
-rx_err_t
-rx_bus_onewire_search(rx_bus_manager_t* manager,
-                      const char*       bus_name,
-                      uint8_t*  roms, // NOLINT(readability-non-const-parameter) - must match header
-                      uint32_t  max_devices,
-                      uint32_t* num_devices)
+rx_err_t rx_bus_onewire_search(
+  rx_bus_manager_t* manager,
+  const char*       bus_name,
+  uint8_t*          roms, /* NOLINT(readability-non-const-parameter) - must match header */
+  uint32_t          max_devices,
+  uint32_t*         num_devices)
 {
   (void)roms;
   (void)max_devices;
@@ -1456,7 +1421,8 @@ static void internal_create_valid_scratchpad(uint8_t    scratchpad[k_ds18b20_scr
  */
 static void internal_reset_mock_state(void)
 {
-  helper_zero_buf((uint8_t*)&s_mock_state, sizeof(s_mock_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset((uint8_t*)&s_mock_state, 0, sizeof(s_mock_state));
   s_mock_state.presence_response = true;
   s_mock_state.power_mode        = (uint8_t) true; /* External power */
   s_mock_state.initialized       = false;
@@ -1518,7 +1484,8 @@ static void internal_reset_mock_state(void)
 static void internal_init_handle(rx_ds18b20_handle_t* handle)
 {
   TEST_ASSERT_NOT_NULL(handle);
-  helper_zero_buf((uint8_t*)handle, sizeof(*handle));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset((uint8_t*)handle, 0, sizeof(*handle));
 }
 
 /* =============================================================================
@@ -1800,7 +1767,7 @@ void test_ds18b20_init_invalid_resolution(void)
   rx_ds18b20_config_t config = {
     .bus_manager = &s_mock_bus_manager,
     .bus_name    = s_test_bus_name,
-    // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+    /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
     .resolution       = (ds18b20_resolution_t)k_test_invalid_resolution,
     .use_rom_matching = false,
   };
@@ -2500,7 +2467,8 @@ void test_ds18b20_init_with_rom_matching(void)
     .use_rom_matching = true,
   };
   /* Copy mock ROM into config */
-  helper_copy_buf(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
 
   internal_init_handle(&handle);
 
@@ -2767,7 +2735,8 @@ void test_ds18b20_init_wrong_family_code(void)
     .use_rom_matching = true,
   };
   /* Set wrong family code (not 0x28) */
-  helper_zero_buf(config.rom, k_onewire_rom_bytes);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(config.rom, 0, k_onewire_rom_bytes);
   config.rom[0] = k_test_ds1820_family_code; /* DS1820 family code, not DS18B20 */
   internal_init_handle(&handle);
   rx_err_t err = rx_ds18b20_init(&handle, &config);
@@ -2837,7 +2806,8 @@ void test_ds18b20_trigger_conversion_match_rom_error(void)
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = true,
   };
-  helper_copy_buf(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   s_mock_state.force_match_rom_error = true;
@@ -2854,7 +2824,8 @@ void test_ds18b20_trigger_conversion_write_error(void)
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = true,
   };
-  helper_copy_buf(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* With use_rom_matching=true, select_device uses match_rom.
@@ -2971,7 +2942,7 @@ void test_ds18b20_set_resolution_invalid_value(void)
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* 0xFF is an invalid resolution value */
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_ds18b20_set_resolution(&handle, (ds18b20_resolution_t)k_test_invalid_byte);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -3561,7 +3532,7 @@ void test_ds18b20_get_conversion_time_invalid_resolution(void)
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* Force an invalid resolution to trigger the default case */
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   handle.resolution = (ds18b20_resolution_t)k_test_invalid_byte;
   uint32_t time_ms  = rx_ds18b20_get_conversion_time_ms(&handle);
   TEST_ASSERT_EQUAL_UINT32(0U, time_ms);
@@ -3647,7 +3618,7 @@ void test_ds18b20_read_temp_raw_invalid_resolution_default(void)
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* Force invalid resolution to hit default case in get_temp_mask */
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   handle.resolution = (ds18b20_resolution_t)k_test_invalid_byte;
   int16_t  raw      = 0;
   rx_err_t err      = rx_ds18b20_read_temperature_raw(&handle, &raw);

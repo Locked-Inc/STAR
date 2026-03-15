@@ -47,6 +47,9 @@ typedef enum : uint8_t {
 static const float s_test_velocity_forward_mps = 1.0F;
 static const float s_test_velocity_reverse_mps = -0.5F;
 
+/** @brief Tolerance for float comparisons (replaces Unity UNITY_FLOAT_PRECISION literal) */
+static const float s_float_tolerance = 0.00001F;
+
 /* =============================================================================
  * Test Fixture
  * =============================================================================
@@ -205,7 +208,8 @@ void test_comm_task_polls_comm_manager(void)
  */
 void test_comm_task_velocity_cmd_updates_shared_data(void)
 {
-  star_v1_SetVelocityRequest velocity_req; // NOLINT
+  star_v1_SetVelocityRequest velocity_req;
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&velocity_req, 0, sizeof(velocity_req));
   motor_command_t cmd_out = {0};
   rx_err_t        err;
@@ -220,7 +224,8 @@ void test_comm_task_velocity_cmd_updates_shared_data(void)
   mock_nanopb_set_decode_velocity_return(k_rx_ok);
 
   /* Decode velocity request (simulating task behavior) */
-  star_v1_SetVelocityRequest decoded; // NOLINT
+  star_v1_SetVelocityRequest decoded;
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&decoded, 0, sizeof(decoded));
   err = rx_nanopb_decode_velocity_request(nullptr, 0, &decoded);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -242,18 +247,18 @@ void test_comm_task_velocity_cmd_updates_shared_data(void)
   err = shared_data_get_motor_command(&cmd_out);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(cmd_out.valid);
-  /* NOLINTNEXTLINE(readability-magic-numbers) -- Unity macro internal tolerance literal */
-  TEST_ASSERT_EQUAL_FLOAT(s_test_velocity_forward_mps,
-                          cmd_out.target_velocity_mps[k_test_motor_idx_fl]);
-  /* NOLINTNEXTLINE(readability-magic-numbers) -- Unity macro internal tolerance literal */
-  TEST_ASSERT_EQUAL_FLOAT(s_test_velocity_forward_mps,
-                          cmd_out.target_velocity_mps[k_test_motor_idx_fr]);
-  /* NOLINTNEXTLINE(readability-magic-numbers) -- Unity macro internal tolerance literal */
-  TEST_ASSERT_EQUAL_FLOAT(s_test_velocity_reverse_mps,
-                          cmd_out.target_velocity_mps[k_test_motor_idx_bl]);
-  /* NOLINTNEXTLINE(readability-magic-numbers) -- Unity macro internal tolerance literal */
-  TEST_ASSERT_EQUAL_FLOAT(s_test_velocity_reverse_mps,
-                          cmd_out.target_velocity_mps[k_test_motor_idx_br]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           s_test_velocity_forward_mps,
+                           cmd_out.target_velocity_mps[k_test_motor_idx_fl]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           s_test_velocity_forward_mps,
+                           cmd_out.target_velocity_mps[k_test_motor_idx_fr]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           s_test_velocity_reverse_mps,
+                           cmd_out.target_velocity_mps[k_test_motor_idx_bl]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           s_test_velocity_reverse_mps,
+                           cmd_out.target_velocity_mps[k_test_motor_idx_br]);
   /* Note: sequence comes from mock which uses decode call count (1) */
   TEST_ASSERT_EQUAL_UINT32(1, cmd_out.sequence);
 }
@@ -294,7 +299,8 @@ void test_comm_task_rejects_null_frame(void)
  */
 void test_comm_task_estop_request_triggers_estop(void)
 {
-  star_v1_EmergencyStopRequest estop_req; // NOLINT
+  star_v1_EmergencyStopRequest estop_req;
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&estop_req, 0, sizeof(estop_req));
   rx_err_t err;
 
@@ -430,7 +436,8 @@ void test_comm_task_handles_decode_failure(void)
   mock_nanopb_set_decode_velocity_return(k_rx_err_protocol_error);
 
   /* Try to decode (should fail) */
-  star_v1_SetVelocityRequest velocity_req; // NOLINT
+  star_v1_SetVelocityRequest velocity_req;
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&velocity_req, 0, sizeof(velocity_req));
   err = rx_nanopb_decode_velocity_request(nullptr, 0, &velocity_req);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);

@@ -19,6 +19,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "unity.h"
 
@@ -26,15 +27,6 @@
  * Byte-level memory helpers (replace memset/memcpy to satisfy clang-tidy)
  * =============================================================================
  */
-
-/** @brief Zero-fill a memory region byte-by-byte */
-static inline void internal_zero_fill(void* ptr, size_t len)
-{
-  uint8_t* p = (uint8_t*)ptr;
-  for (size_t i = 0; i < len; ++i) {
-    p[i] = 0;
-  }
-}
 
 /** @brief Fill a memory region with a constant byte value */
 static inline void internal_fill_bytes(void* ptr, uint8_t val, size_t len)
@@ -144,9 +136,8 @@ typedef enum : uint8_t {
 } mock_tx_error_codes_t;
 
 /* ---- Mock ThreadX types ---- */
-typedef unsigned long ULONG; // NOLINT(readability-identifier-naming)
-typedef unsigned int  UINT;  // NOLINT(readability-identifier-naming)
-
+typedef unsigned long ULONG;
+typedef unsigned int  UINT;
 /** @brief ThreadX thread name buffer size */
 typedef enum : uint8_t {
   k_tx_thread_name_len = 16, /**< Max thread name length including null */
@@ -156,13 +147,12 @@ typedef struct {
   char    name[k_tx_thread_name_len];
   uint8_t priority;
   bool    created;
-} TX_THREAD; // NOLINT(readability-identifier-naming)
-
+} TX_THREAD;
 /* ThreadX constants */
 enum {
-  TX_SUCCESS       = 0, // NOLINT(readability-identifier-naming)
-  TX_NO_TIME_SLICE = 0, // NOLINT(readability-identifier-naming)
-  TX_AUTO_START    = 1, // NOLINT(readability-identifier-naming)
+  TX_SUCCESS       = 0,
+  TX_NO_TIME_SLICE = 0,
+  TX_AUTO_START    = 1,
 };
 
 /* ---- Mock counters ---- */
@@ -596,9 +586,12 @@ void setUp(void)
                       sizeof(s_mock_port7)); /* Start with all bits set */
   internal_fill_bytes(&s_mock_porta, k_test_all_bits_set, sizeof(s_mock_porta));
   internal_fill_bytes(&s_mock_portb, k_test_all_bits_set, sizeof(s_mock_portb));
-  internal_zero_fill(&s_mock_motor_state, sizeof(s_mock_motor_state));
-  internal_zero_fill(&s_mock_motor_command, sizeof(s_mock_motor_command));
-  internal_zero_fill(&s_mock_obstacle_state, sizeof(s_mock_obstacle_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_motor_state, 0, sizeof(s_mock_motor_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_motor_command, 0, sizeof(s_mock_motor_command));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_obstacle_state, 0, sizeof(s_mock_obstacle_state));
   s_mock_estop_active = false;
 
   s_mock_tx_create_calls     = 0;
@@ -668,9 +661,12 @@ void test_led_task_config_constants(void)
 void test_led_gpio_init_sets_output_direction(void)
 {
   /* Clear ports to known state */
-  internal_zero_fill(&s_mock_port7, sizeof(s_mock_port7));
-  internal_zero_fill(&s_mock_porta, sizeof(s_mock_porta));
-  internal_zero_fill(&s_mock_portb, sizeof(s_mock_portb));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_port7, 0, sizeof(s_mock_port7));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_portb, 0, sizeof(s_mock_portb));
 
   internal_test_led_init_gpio();
 
@@ -725,7 +721,8 @@ void test_led_gpio_init_preserves_other_bits(void)
 /** @brief Verify LED 0 (heartbeat, PA7) can be turned on */
 void test_led_set_heartbeat_on(void)
 {
-  internal_zero_fill(&s_mock_porta, sizeof(s_mock_porta));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
   internal_test_led_set(k_led_idx_heartbeat, true);
   TEST_ASSERT_BITS(0x80, 0x80, s_mock_porta.podr); /* LED0 on PORTA pin 7 */
 }
@@ -741,7 +738,8 @@ void test_led_set_heartbeat_off(void)
 /** @brief Verify LED 1 (error, PB0) can be toggled */
 void test_led_set_error_toggle(void)
 {
-  internal_zero_fill(&s_mock_portb, sizeof(s_mock_portb));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_portb, 0, sizeof(s_mock_portb));
   internal_test_led_set(k_led_idx_error, true);
   TEST_ASSERT_BITS(0x01, 0x01, s_mock_portb.podr); /* LED1 on PB0, bit 0 */
 
@@ -752,7 +750,8 @@ void test_led_set_error_toggle(void)
 /** @brief Verify LED 5 (estop, PB2) can be set */
 void test_led_set_estop_on(void)
 {
-  internal_zero_fill(&s_mock_portb, sizeof(s_mock_portb));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_portb, 0, sizeof(s_mock_portb));
   internal_test_led_set(k_led_idx_estop, true);
   TEST_ASSERT_BITS(0x04, 0x04, s_mock_portb.podr); /* LED5 on PB2, bit 2 */
 }
@@ -760,9 +759,12 @@ void test_led_set_estop_on(void)
 /** @brief Verify out-of-range LED index is safely ignored */
 void test_led_set_invalid_index_no_crash(void)
 {
-  internal_zero_fill(&s_mock_port7, sizeof(s_mock_port7));
-  internal_zero_fill(&s_mock_porta, sizeof(s_mock_porta));
-  internal_zero_fill(&s_mock_portb, sizeof(s_mock_portb));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_port7, 0, sizeof(s_mock_port7));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_portb, 0, sizeof(s_mock_portb));
 
   internal_test_led_set(k_test_led_out_of_range, true);     /* Out of range */
   internal_test_led_set(k_test_led_way_out_of_range, true); /* Way out of range */
@@ -800,8 +802,10 @@ void test_led_set_does_not_affect_other_pins(void)
 /** @brief Verify is_on helper reads correct state */
 void test_led_is_on_returns_correct_state(void)
 {
-  internal_zero_fill(&s_mock_port7, sizeof(s_mock_port7));
-  internal_zero_fill(&s_mock_porta, sizeof(s_mock_porta));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_port7, 0, sizeof(s_mock_port7));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
 
   TEST_ASSERT_FALSE(internal_test_led_is_on(k_led_idx_heartbeat));
 
@@ -820,7 +824,8 @@ void test_led_is_on_returns_correct_state(void)
 /** @brief Verify motor active LED reflects duty cycle */
 void test_led_motor_active_when_duty_nonzero(void)
 {
-  internal_zero_fill(&s_mock_port7, sizeof(s_mock_port7));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_port7, 0, sizeof(s_mock_port7));
 
   /* No motors running */
   s_mock_motor_state.duty_cycle_percent[k_test_motor_idx_fl] = 0.0F;
@@ -857,7 +862,8 @@ void test_led_motor_active_when_duty_nonzero(void)
 /** @brief Verify obstacle LED reflects shared_data obstacle state */
 void test_led_obstacle_reflects_shared_data(void)
 {
-  internal_zero_fill(&s_mock_portb, sizeof(s_mock_portb));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_portb, 0, sizeof(s_mock_portb));
 
   /* No obstacle */
   s_mock_obstacle_state.any_obstacle = false;
@@ -876,7 +882,8 @@ void test_led_obstacle_reflects_shared_data(void)
 /** @brief Verify estop LED reflects shared_data estop state */
 void test_led_estop_reflects_shared_data(void)
 {
-  internal_zero_fill(&s_mock_portb, sizeof(s_mock_portb));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_portb, 0, sizeof(s_mock_portb));
 
   /* No estop */
   s_mock_estop_active = false;
@@ -892,7 +899,8 @@ void test_led_estop_reflects_shared_data(void)
 /** @brief Verify error LED activates on motor fault */
 void test_led_error_on_motor_fault(void)
 {
-  internal_zero_fill(&s_mock_portb, sizeof(s_mock_portb));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_portb, 0, sizeof(s_mock_portb));
 
   /* No faults */
   bool any_fault = false;
@@ -920,7 +928,8 @@ void test_led_error_on_motor_fault(void)
 /** @brief Verify comm LED pulse: initial state (no command yet) */
 static void internal_test_comm_pulse_no_command(uint32_t* last_seq, uint8_t* pulse_remaining)
 {
-  internal_zero_fill(&s_mock_port7, sizeof(s_mock_port7));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_port7, 0, sizeof(s_mock_port7));
 
   *last_seq        = 0;
   *pulse_remaining = 0;
@@ -999,7 +1008,8 @@ void test_led_comm_pulse_on_new_command(void)
 /** @brief Verify heartbeat toggles at 1 Hz (10 ticks on, 10 ticks off) */
 void test_led_heartbeat_timing(void)
 {
-  internal_zero_fill(&s_mock_porta, sizeof(s_mock_porta));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
 
   uint8_t counter = 0;
 

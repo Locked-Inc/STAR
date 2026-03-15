@@ -433,7 +433,7 @@ rx_err_t rx_tpu_encoder_deinit(const rx_tpu_channel_t channel)
   return k_rx_ok;
 }
 
-#ifdef TESTING
+#ifdef UNIT_TEST
 /**
  * @brief Corrupt counts_per_rev to 0 for a channel (test-only)
  *
@@ -441,7 +441,7 @@ rx_err_t rx_tpu_encoder_deinit(const rx_tpu_channel_t channel)
  * Bypasses the init validation to set s_counts_per_rev[channel] = 0, enabling
  * tests to exercise the runtime cpr-corrupted guard paths in
  * internal_update_state(), rx_tpu_encoder_read_velocity(), and
- * rx_tpu_encoder_set_count(). Available only in TESTING builds.
+ * rx_tpu_encoder_set_count(). Available only in UNIT_TEST builds.
  *
  * @param[in] channel TPU channel whose cpr to corrupt
  *
@@ -457,4 +457,4 @@ void rx_tpu_encoder_test_corrupt_cpr(rx_tpu_channel_t channel)
     s_counts_per_rev[channel] = 0U;
   }
 }
-#endif /* TESTING */
+#endif /* UNIT_TEST */

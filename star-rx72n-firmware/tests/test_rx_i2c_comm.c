@@ -212,51 +212,15 @@ typedef enum : uint32_t {
   k_test_sync_fill_step    = 2,   /**< Step size for sync word fill loop */
 } test_i2c_uint32_constants_t;
 
-/**
- * @brief Zero-initialize a byte buffer
- * @param[out] buf  Buffer to zero
- * @param[in]  len  Length in bytes
- */
-static void helper_zero_buf(void* buf, uint32_t len)
-{
-  uint8_t* ptr = (uint8_t*)buf;
-  for (uint32_t i = 0; i < len; i++) {
-    ptr[i] = 0;
-  }
-}
-
-/**
- * @brief Fill a byte buffer with a specified value
- * @param[out] buf  Buffer to fill
- * @param[in]  val  Fill byte value
- * @param[in]  len  Length in bytes
- */
-/**
- * @brief Copy bytes from src to dst
- * @param[out] dst  Destination buffer
- * @param[in]  src  Source buffer
- * @param[in]  len  Number of bytes to copy
- */
-static void helper_copy_buf(void* dst, const void* src, uint32_t len)
-{
-  uint8_t*       d = (uint8_t*)dst;
-  const uint8_t* s = (const uint8_t*)src;
-  for (uint32_t i = 0; i < len; i++) {
-    d[i] = s[i];
-  }
-}
-
 /* =============================================================================
  * Test Fixtures
  * =============================================================================
  */
 
 /** @brief I2C comm handle under test */
-/* NOLINTNEXTLINE(readability-identifier-naming) -- s_ prefix per CLAUDE.md for statics */
 static rx_i2c_comm_handle_t s_handle;
 
 /** @brief Shared session for sequence tracking */
-/* NOLINTNEXTLINE(readability-identifier-naming) -- s_ prefix per CLAUDE.md for statics */
 static rx_session_state_t s_session;
 
 /* =============================================================================
@@ -309,14 +273,16 @@ static void helper_encode_frame(rx_frame_type_t type,
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&enc));
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   frame.header.sequence = sequence;
   frame.header.length   = (uint16_t)payload_len;
   frame.header.type     = (uint8_t)type;
   frame.header.flags    = k_frame_flag_none;
 
   if (payload != nullptr && payload_len > 0) {
-    helper_copy_buf(frame.payload, payload, payload_len);
+    /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+    memcpy(frame.payload, payload, payload_len);
   }
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&enc, &frame, buf, out_len));
@@ -343,7 +309,8 @@ void setUp(void)
 {
   mock_riic_init();
   (void)rx_session_init(&s_session);
-  helper_zero_buf(&s_handle, sizeof(s_handle));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_handle, 0, sizeof(s_handle));
 }
 
 void tearDown(void)
@@ -720,7 +687,8 @@ void test_i2c_comm_send_riic_write_failure_propagates(void)
 void test_i2c_comm_receive_null_handle_fails(void)
 {
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(nullptr, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -750,7 +718,8 @@ void test_i2c_comm_receive_null_frame_fails(void)
 void test_i2c_comm_receive_not_initialized_fails(void)
 {
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -767,7 +736,8 @@ void test_i2c_comm_receive_no_data_returns_no_data(void)
   helper_init_default();
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -796,7 +766,8 @@ void test_i2c_comm_receive_valid_frame_success(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -831,7 +802,8 @@ void test_i2c_comm_receive_crc_mismatch_fails(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_crc_mismatch, err);
@@ -853,7 +825,8 @@ void test_i2c_comm_receive_invalid_sync_returns_no_data(void)
   helper_inject_rx(garbage, sizeof(garbage));
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -884,12 +857,14 @@ void test_i2c_comm_receive_skips_garbage_before_sync(void)
   buf_with_garbage[1]                        = k_test_garbage_byte1;
   buf_with_garbage[k_test_header_idx_seq_lo] = k_test_garbage_byte2;
   buf_with_garbage[k_test_header_idx_seq_hi] = k_test_garbage_byte3;
-  helper_copy_buf(buf_with_garbage + k_test_garbage_len, encoded, encoded_len);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(buf_with_garbage + k_test_garbage_len, encoded, encoded_len);
 
   helper_inject_rx(buf_with_garbage, (uint16_t)(encoded_len + k_test_garbage_len));
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -919,7 +894,8 @@ void test_i2c_comm_receive_partial_frame_returns_no_data(void)
   helper_inject_rx(encoded, k_test_partial_inject);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -947,7 +923,8 @@ void test_i2c_comm_receive_response_frame_success(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -970,7 +947,8 @@ void test_i2c_comm_receive_zero_payload_success(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1004,7 +982,8 @@ void test_i2c_comm_receive_correct_sequence_passes(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1038,7 +1017,8 @@ void test_i2c_comm_receive_ping_triggers_pong(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   /* After consuming the PING, no non-control frame is available, so no_data */
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
@@ -1072,7 +1052,8 @@ void test_i2c_comm_receive_reset_triggers_reset_ack(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* RESET consumed, RESET_ACK sent, then no_data */
@@ -1110,7 +1091,8 @@ void test_i2c_comm_receive_compacts_buffer_after_decode(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero));
 
   TEST_ASSERT_EQUAL_UINT32(0, s_handle.rx_buffer_len);
@@ -1147,19 +1129,23 @@ void test_i2c_comm_receive_two_frames_sequential(void)
 
   /* Concatenate both frames and inject together */
   uint8_t combined[k_test_frame_buf_size];
-  helper_copy_buf(combined, frame1_enc, frame1_len);
-  helper_copy_buf(combined + frame1_len, frame2_enc, frame2_len);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(combined, frame1_enc, frame1_len);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(combined + frame1_len, frame2_enc, frame2_len);
   helper_inject_rx(combined, (uint16_t)(frame1_len + frame2_len));
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
 
   /* First receive: gets frame 1 */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero));
   TEST_ASSERT_EQUAL_UINT8(k_frame_type_command, frame.header.type);
 
   /* Second receive: needs a fresh RIIC read - frame2 still in internal buffer */
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err2 = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
   /* Might be k_rx_ok (if buffered) or k_rx_err_no_data (if buffer was compacted) */
   TEST_ASSERT_TRUE(err2 == k_rx_ok || err2 == k_rx_err_no_data);
@@ -1200,7 +1186,8 @@ void test_i2c_comm_receive_after_deinit_fails(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_i2c_comm_deinit(&s_handle));
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1271,7 +1258,8 @@ void test_i2c_comm_receive_rx_buffer_full_no_sync(void)
   /* First receive call fills the buffer via multiple RIIC reads, then returns
    * no_data because there is no sync word in the data. */
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
 
   /* Inject enough garbage to fill the 2048-byte RX buffer across iterations.
    * Each receive iteration reads at most k_riic_peripheral_transfer_limit bytes,
@@ -1304,7 +1292,8 @@ void test_i2c_comm_receive_riic_read_error_propagates(void)
   mock_riic_set_next_error(k_rx_err_hw_error);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1343,10 +1332,11 @@ void test_i2c_comm_receive_invalid_payload_length_in_header(void)
 
   /* Build a frame with valid sync word but invalid (too-large) payload length */
   uint8_t malformed[k_header_total + k_extra];
-  helper_zero_buf(malformed, sizeof(malformed));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(malformed, 0, sizeof(malformed));
   malformed[0] = k_sync_low;  /* sync byte 0 (LE: 0xAA) */
   malformed[1] = k_sync_high; /* sync byte 1 (LE: 0x55) */
-  /* sequence low/high remain 0 from helper_zero_buf */
+  /* sequence low/high remain 0 from memset */
   malformed[k_test_header_idx_len_lo] = k_len_hi; /* payload length low = 0xFF */
   malformed[k_test_header_idx_len_hi] = k_len_hi; /* payload length high = 0xFF -> 65535 > 1024 */
   malformed[k_test_header_idx_type]   = k_test_frame_type_cmd;   /* frame type */
@@ -1355,7 +1345,8 @@ void test_i2c_comm_receive_invalid_payload_length_in_header(void)
   helper_inject_rx(malformed, (uint16_t)(k_header_total + k_extra));
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* Parse-header detects oversized length, advances past sync, no more data */
@@ -1383,7 +1374,8 @@ void test_i2c_comm_receive_pong_silently_consumed(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -1409,7 +1401,8 @@ void test_i2c_comm_receive_reset_ack_silently_consumed(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -1443,7 +1436,8 @@ void test_i2c_comm_receive_sequence_validation_fail_drops_frame(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* Session rejects the sequence gap and returns k_rx_err_protocol_error */
@@ -1480,7 +1474,8 @@ void test_i2c_comm_receive_ping_pong_send_fails(void)
   mock_riic_set_next_write_error(k_rx_err_hw_error);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1510,7 +1505,8 @@ void test_i2c_comm_receive_reset_ack_send_fails(void)
   mock_riic_set_next_write_error(k_rx_err_hw_error);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1578,19 +1574,23 @@ void test_i2c_comm_receive_second_frame_wrong_sequence_dropped(void)
                       &frame2_len);
 
   uint8_t combined[k_test_frame_buf_size];
-  helper_copy_buf(combined, frame1_enc, frame1_len);
-  helper_copy_buf(combined + frame1_len, frame2_enc, frame2_len);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(combined, frame1_enc, frame1_len);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(combined + frame1_len, frame2_enc, frame2_len);
   helper_inject_rx(combined, (uint16_t)(frame1_len + frame2_len));
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
 
   /* First receive: gets frame1 at seq 0 (valid) */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero));
   TEST_ASSERT_EQUAL_UINT16(0, frame.header.sequence);
 
   /* Second receive: frame2 at seq 200 rejected by session (expects 1), protocol error */
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err2 = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err2);
 }
@@ -1625,12 +1625,14 @@ void test_i2c_comm_receive_false_sync_low_then_real_frame(void)
   uint8_t buf[k_test_frame_buf_size];
   buf[0] = k_test_sync_byte_low; /* sync_low matches, but... */
   buf[1] = k_test_false_sync_hi; /* sync_high does NOT match -> false alarm */
-  helper_copy_buf(buf + k_test_false_sync_prefix, encoded, encoded_len);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(buf + k_test_false_sync_prefix, encoded, encoded_len);
 
   helper_inject_rx(buf, (uint16_t)(encoded_len + k_test_false_sync_prefix));
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1662,19 +1664,21 @@ void test_i2c_comm_receive_partial_frame_header_only(void)
   };
 
   uint8_t partial[k_partial_header];
-  helper_zero_buf(partial, sizeof(partial));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(partial, 0, sizeof(partial));
   partial[0] = (uint8_t)k_partial_sync_low;
   partial[1] = (uint8_t)k_partial_sync_high;
-  /* sequence low/high remain 0 from helper_zero_buf */
+  /* sequence low/high remain 0 from memset */
   partial[k_test_header_idx_len_lo] = (uint8_t)k_partial_payload; /* payload_len low */
-  /* payload_len high remains 0 from helper_zero_buf */
+  /* payload_len high remains 0 from memset */
   partial[k_test_header_idx_type]  = k_test_frame_type_cmd;   /* frame type (command) */
   partial[k_test_header_idx_flags] = k_test_frame_flags_zero; /* frame flags */
 
   helper_inject_rx(partial, (uint16_t)k_partial_header);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* available(8) < total_size(16), returns no_data */
@@ -1751,7 +1755,8 @@ void test_i2c_comm_receive_rx_buffer_prefilled_no_sync(void)
   s_handle.rx_buffer_pos = 0;
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* Buffer full: space==0 (line 361) -> no read, no sync -> handle_no_sync
@@ -1783,7 +1788,8 @@ void test_i2c_comm_receive_reset_session_next_tx_fails(void)
   (void)rx_session_deinit(&s_session);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
@@ -1820,7 +1826,8 @@ void test_i2c_internal_validate_wire_len_ok(void)
 void test_i2c_internal_decode_header_null_data(void)
 {
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = internal_decode_header(nullptr, k_test_decode_buf_large, &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1842,7 +1849,8 @@ void test_i2c_internal_decode_header_too_short(void)
 {
   const uint8_t buf[2] = {0};
   rx_frame_t    frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = internal_decode_header(buf, sizeof(buf), &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
@@ -1857,7 +1865,8 @@ void test_i2c_internal_decode_header_bad_sync(void)
   buf[0] = k_test_garbage_byte0;
   buf[1] = k_test_garbage_byte1;
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = internal_decode_header(buf, sizeof(buf), &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
 }
@@ -1878,7 +1887,8 @@ void test_i2c_internal_decode_header_payload_too_large(void)
   buf[k_test_header_idx_len_lo] = 0x00U;
   buf[k_test_header_idx_len_hi] = k_test_len_hi_byte; /* LE: 0x0500 = 1280 */
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = internal_decode_header(buf, sizeof(buf), &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
@@ -1895,7 +1905,8 @@ void test_i2c_internal_decode_header_offset_out_set(void)
   helper_encode_frame(k_frame_type_command, 0, nullptr, 0, encoded, &encoded_len);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   uint32_t offset = 0;
   rx_err_t err    = internal_decode_header(encoded, encoded_len, &frame, &offset);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2070,7 +2081,8 @@ void test_i2c_internal_build_frame_null_frame(void)
 void test_i2c_internal_build_frame_null_payload_nonzero_len(void)
 {
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err =
     internal_build_frame(&frame, 0, k_frame_type_command, 0, nullptr, k_test_payload_small);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2083,7 +2095,8 @@ void test_i2c_internal_build_frame_payload_too_large(void)
 {
   rx_frame_t    frame;
   const uint8_t big_payload[1025] = {0}; /* k_frame_max_payload is 1024; use 1025 to exceed it */
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err =
     internal_build_frame(&frame, 0, k_frame_type_command, 0, big_payload, sizeof(big_payload));
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
@@ -2095,7 +2108,8 @@ void test_i2c_internal_build_frame_payload_too_large(void)
 void test_i2c_internal_build_frame_zero_payload(void)
 {
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = internal_build_frame(&frame, k_test_seq_five, k_frame_type_command, 0, nullptr, 0);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_test_seq_five, frame.header.sequence);
@@ -2112,7 +2126,8 @@ void test_i2c_internal_build_frame_with_payload(void)
                                                  k_test_payload_byte_b,
                                                  k_test_payload_byte_c,
                                                  k_test_payload_byte_d};
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err =
     internal_build_frame(&frame, k_test_seq_one, k_frame_type_command, 0, payload, sizeof(payload));
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2178,7 +2193,8 @@ void test_i2c_comm_receive_timeout(void)
   s_handle.rx_buffer_pos = 0;
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
@@ -2204,7 +2220,8 @@ void test_i2c_internal_decode_header_null_offset_valid_header(void)
   helper_encode_frame(k_frame_type_command, 0, nullptr, 0, encoded, &encoded_len);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   /* Pass nullptr for offset_out with valid frame: covers line-208 FALSE branch */
   rx_err_t err = internal_decode_header(encoded, encoded_len, &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2284,7 +2301,8 @@ void test_i2c_comm_receive_riic_read_returns_timeout(void)
   mock_riic_simulate_timeout(true);
 
   rx_frame_t frame;
-  helper_zero_buf(&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&frame, 0, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, 0U);
 
   /* After timeout from RIIC, buffer is empty -> k_rx_err_no_data */

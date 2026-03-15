@@ -182,7 +182,7 @@ void test_init_null_config(void)
 void test_init_invalid_channel(void)
 {
   const rx_tpu_encoder_config_t config = {
-    .channel          = 0, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    .channel          = 0, /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
     .counts_per_rev   = k_test_counts_per_rev,
     .invert_direction = false,
   };
@@ -470,7 +470,7 @@ void test_reset_invalid_channel(void)
 {
   TEST_ASSERT_EQUAL(
     k_rx_err_invalid_arg,
-    rx_tpu_encoder_reset(0)); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    rx_tpu_encoder_reset(0)); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 }
 
 /* =============================================================================
@@ -537,7 +537,7 @@ void test_deinit_invalid_channel(void)
 {
   TEST_ASSERT_EQUAL(
     k_rx_err_invalid_arg,
-    rx_tpu_encoder_deinit(3)); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    rx_tpu_encoder_deinit(3)); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 }
 
 /* =============================================================================
@@ -556,7 +556,7 @@ void test_read_raw_invalid_channel(void)
   uint16_t count = 0;
   TEST_ASSERT_EQUAL(
     k_rx_err_invalid_arg,
-    rx_tpu_encoder_read_raw(0, &count)); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    rx_tpu_encoder_read_raw(0, &count)); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 }
 
 /** @brief read_count with invalid channel (0) returns invalid_arg */
@@ -565,7 +565,8 @@ void test_read_count_invalid_channel(void)
   rx_encoder_state_t state;
   TEST_ASSERT_EQUAL(
     k_rx_err_invalid_arg,
-    rx_tpu_encoder_read_count(0, &state)); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    rx_tpu_encoder_read_count(0, /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+                              &state));
 }
 
 /** @brief read_velocity with invalid channel (0) returns invalid_arg */
@@ -576,7 +577,7 @@ void test_read_velocity_invalid_channel(void)
     k_rx_err_invalid_arg,
     rx_tpu_encoder_read_velocity(&velocity,
                                  s_test_delta_time_s,
-                                 0)); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+                                 0)); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 }
 
 /** @brief set_count with invalid channel (0) returns invalid_arg */
@@ -585,7 +586,7 @@ void test_set_count_invalid_channel(void)
   TEST_ASSERT_EQUAL(
     k_rx_err_invalid_arg,
     rx_tpu_encoder_set_count(k_test_count_100,
-                             0)); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+                             0)); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 }
 
 /** @brief read_velocity uninit returns invalid_state */
@@ -620,27 +621,27 @@ void test_init_tpu_hal_already_initialized(void)
 /** @brief read_velocity returns error when cpr is corrupted (via test helper) */
 void test_velocity_corrupted_cpr(void)
 {
-#ifdef TESTING
+#ifdef UNIT_TEST
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
   rx_tpu_encoder_test_corrupt_cpr(k_tpu_channel_1);
   float    velocity = 0.0F;
   rx_err_t err      = rx_tpu_encoder_read_velocity(&velocity, s_test_delta_time_s, k_tpu_channel_1);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 #else
-  TEST_IGNORE_MESSAGE("Only testable in TESTING builds");
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
 #endif
 }
 
 /** @brief set_count returns error when cpr is corrupted (via test helper) */
 void test_set_count_corrupted_cpr(void)
 {
-#ifdef TESTING
+#ifdef UNIT_TEST
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
   rx_tpu_encoder_test_corrupt_cpr(k_tpu_channel_1);
   rx_err_t err = rx_tpu_encoder_set_count(k_test_count_100, k_tpu_channel_1);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 #else
-  TEST_IGNORE_MESSAGE("Only testable in TESTING builds");
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
 #endif
 }
 
@@ -661,10 +662,10 @@ void test_internal_update_state_invalid_channel(void)
 {
 #ifdef UNIT_TEST
   rx_encoder_state_t state;
-  rx_err_t           err =
-    internal_update_state(&state,
-                          0,                 // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
-                          k_test_count_100); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t           err = internal_update_state(
+    &state,
+    0,                 /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+    k_test_count_100); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 #else
   TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
@@ -754,8 +755,8 @@ void test_corrupt_cpr_invalid_channel_noop(void)
 {
   /* Cast a value above k_tpu_enc_max_channels (6) to exercise the false branch */
   rx_tpu_encoder_test_corrupt_cpr(
-    (rx_tpu_channel_t)          // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
-    k_test_invalid_channel_10); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_tpu_channel_t)          /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+    k_test_invalid_channel_10); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   /* No assertion needed - just must not crash and not corrupt any array entry */
 }
 

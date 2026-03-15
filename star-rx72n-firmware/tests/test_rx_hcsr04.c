@@ -348,36 +348,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "mock_hcsr04_hw.h"
 #include "rx_hcsr04.h"
 #include "unity.h"
-
-/* =============================================================================
- * Zero-fill helper (replaces memset to satisfy clang-tidy insecureAPI check)
- * =============================================================================
- */
-
-/**
- * @brief Zero-fill a memory region byte-by-byte
- *
- * @details
- * Replaces memset(&x, 0, sizeof(x)) to avoid
- * clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling.
- *
- * @param[out] ptr  Pointer to memory to zero
- * @param[in]  len  Number of bytes to zero
- *
- * @pre ptr != NULL
- * @post All bytes in [ptr, ptr+len) are zero
- */
-static inline void internal_zero_fill(void* ptr, size_t len)
-{
-  uint8_t* p = (uint8_t*)ptr;
-  for (size_t i = 0; i < len; ++i) {
-    p[i] = 0;
-  }
-}
 
 /* =============================================================================
  * Named Constants (avoid magic numbers per NASA Rule 8 / clang-tidy)
@@ -513,7 +488,8 @@ void setUp(void)
   mock_hcsr04_hw_set_auto_advance(nullptr, true, 1);
 
   /* Reset sensor handle (zero-fill avoids memset per clang-tidy) */
-  internal_zero_fill(&s_sensor, sizeof(s_sensor));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_sensor, 0, sizeof(s_sensor));
 
   /* Setup default config for sensor 1 (J24) using type-safe GPIO enum */
   s_config.trigger_pin  = k_rx_pc_6; /* PMOD JB GPIO0 */
@@ -2405,13 +2381,14 @@ void test_hcsr04_trigger_pulse_null_handle_returns_error(void)
 void test_hcsr04_trigger_pulse_invalid_pin_returns_error(void)
 {
   rx_hcsr04_t handle;
-  internal_zero_fill(&handle, sizeof(handle));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&handle, 0, sizeof(handle));
   /* Encode with lower-byte pin=112 (> k_rx_pin_max=7) using wrong shift so
    * decoded pin_num = 0x70 & 0xFF = 112 > 7 => covers the pin_num check */
   const uint8_t bad_port      = 7U;
   const uint8_t bad_pin       = 0U;
   const uint8_t k_wrong_shift = 4U;
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   handle.trigger_pin = (rx_port_pin_t)((bad_port << k_wrong_shift) | bad_pin);
 
   rx_err_t err = internal_send_trigger_pulse(&handle);
@@ -2432,9 +2409,10 @@ void test_hcsr04_trigger_pulse_invalid_pin_returns_error(void)
 void test_hcsr04_trigger_pulse_port_above_j_returns_error(void)
 {
   rx_hcsr04_t handle;
-  internal_zero_fill(&handle, sizeof(handle));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&handle, 0, sizeof(handle));
   /* port=20 > k_rx_port_j(19) -- encodes as (20 << 8) | 0 */
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   handle.trigger_pin = (rx_port_pin_t)((k_test_port_encode_20 << k_test_port_shift_bits) | 0U);
 
   rx_err_t err = internal_send_trigger_pulse(&handle);
@@ -2455,11 +2433,12 @@ void test_hcsr04_trigger_pulse_port_above_j_returns_error(void)
 void test_hcsr04_trigger_pulse_port_in_gap_returns_error(void)
 {
   rx_hcsr04_t handle;
-  internal_zero_fill(&handle, sizeof(handle));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&handle, 0, sizeof(handle));
   /* port=17 (0x11): > k_rx_port_g(0x10=16) AND < k_rx_port_j(0x13=19) */
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
-  handle.trigger_pin = (rx_port_pin_t)(((uint32_t)k_test_port_gap_value << k_test_port_shift_bits) |
-                                       0U); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  handle.trigger_pin =
+    /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
+    (rx_port_pin_t)(((uint32_t)k_test_port_gap_value << k_test_port_shift_bits) | 0U);
 
   rx_err_t err = internal_send_trigger_pulse(&handle);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2490,7 +2469,8 @@ void test_hcsr04_trigger_pulse_port_in_gap_returns_error(void)
 void test_hcsr04_trigger_pulse_port_j_boundary_valid(void)
 {
   rx_hcsr04_t handle;
-  internal_zero_fill(&handle, sizeof(handle));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&handle, 0, sizeof(handle));
   /* port=19 (= k_rx_port_j=0x13): A=FALSE, B=TRUE, C=FALSE -> condition FALSE */
   handle.trigger_pin =
     (rx_port_pin_t)(((uint32_t)k_test_port_j_boundary << k_test_port_shift_bits) | 0U);
@@ -2685,7 +2665,8 @@ void test_hcsr04_init_irq_mode_null_config_returns_null_ptr(void)
 void test_hcsr04_init_irq_mode_null_out_priority_returns_null_ptr(void)
 {
   rx_hcsr04_config_t cfg;
-  internal_zero_fill(&cfg, sizeof(cfg));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&cfg, 0, sizeof(cfg));
   cfg.echo_pin     = k_rx_p0_3;
   cfg.echo_irq     = k_hcsr04_irq_11;
   cfg.sensor_index = k_hcsr04_sensor_front_left;
@@ -2696,9 +2677,10 @@ void test_hcsr04_init_irq_mode_null_out_priority_returns_null_ptr(void)
 void test_hcsr04_init_irq_mode_irq_out_of_range_returns_error(void)
 {
   rx_hcsr04_config_t cfg;
-  internal_zero_fill(&cfg, sizeof(cfg));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&cfg, 0, sizeof(cfg));
   cfg.echo_pin = k_rx_p0_3;
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   cfg.echo_irq      = (rx_hcsr04_irq_t)k_test_irq_below_range; /* Below k_irq_range_min (8) */
   cfg.sensor_index  = k_hcsr04_sensor_front_left;
   uint8_t  priority = 0U;
@@ -2709,7 +2691,8 @@ void test_hcsr04_init_irq_mode_irq_out_of_range_returns_error(void)
 void test_hcsr04_init_irq_mode_sensor_index_out_of_range_returns_error(void)
 {
   rx_hcsr04_config_t cfg;
-  internal_zero_fill(&cfg, sizeof(cfg));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&cfg, 0, sizeof(cfg));
   cfg.echo_pin      = k_rx_p0_3;
   cfg.echo_irq      = k_hcsr04_irq_11;
   cfg.sensor_index  = k_hcsr04_sensor_count; /* == 4, out of range */
@@ -2721,7 +2704,8 @@ void test_hcsr04_init_irq_mode_sensor_index_out_of_range_returns_error(void)
 void test_hcsr04_init_irq_mode_pin_irq_mismatch_returns_error(void)
 {
   rx_hcsr04_config_t cfg;
-  internal_zero_fill(&cfg, sizeof(cfg));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&cfg, 0, sizeof(cfg));
   /* echo_pin P0_0 matches IRQ8, but we specify IRQ11 -> mismatch */
   cfg.echo_pin      = k_rx_p0_0;
   cfg.echo_irq      = k_hcsr04_irq_11;
@@ -2734,7 +2718,8 @@ void test_hcsr04_init_irq_mode_pin_irq_mismatch_returns_error(void)
 void test_hcsr04_init_irq_mode_unset_priority_uses_default(void)
 {
   rx_hcsr04_config_t cfg;
-  internal_zero_fill(&cfg, sizeof(cfg));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&cfg, 0, sizeof(cfg));
   cfg.echo_pin      = k_rx_p0_3;
   cfg.echo_irq      = k_hcsr04_irq_11;
   cfg.sensor_index  = k_hcsr04_sensor_front_left;
@@ -2767,11 +2752,12 @@ void test_hcsr04_init_irq_mode_unset_priority_uses_default(void)
 void test_hcsr04_init_irq_mode_irq_above_range_max_returns_error(void)
 {
   rx_hcsr04_config_t cfg;
-  internal_zero_fill(&cfg, sizeof(cfg));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&cfg, 0, sizeof(cfg));
   cfg.echo_pin = k_rx_p0_3;
   /* Cast to bypass enum - satisfies irq >= min (8) AND irq > max (15) */
-  cfg.echo_irq =
-    (rx_hcsr04_irq_t)k_test_irq_above_range; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  cfg.echo_irq = (rx_hcsr04_irq_t) /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+    k_test_irq_above_range;        /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   cfg.sensor_index  = k_hcsr04_sensor_front_left;
   uint8_t  priority = 0U;
   rx_err_t err      = internal_init_irq_mode(&cfg, &priority);
@@ -2799,7 +2785,8 @@ void test_hcsr04_init_irq_mode_irq_above_range_max_returns_error(void)
 void test_hcsr04_init_irq_mode_pin_wrong_port_returns_error(void)
 {
   rx_hcsr04_config_t cfg;
-  internal_zero_fill(&cfg, sizeof(cfg));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&cfg, 0, sizeof(cfg));
   /* P1_0 has port=1 which != k_irq_p0_port(0); irq and sensor_index are valid */
   cfg.echo_pin      = k_rx_p1_0;
   cfg.echo_irq      = k_hcsr04_irq_11;
@@ -2829,7 +2816,8 @@ void test_hcsr04_init_irq_mode_pin_wrong_port_returns_error(void)
 void test_hcsr04_init_irq_mode_icu_configure_fails_returns_error(void)
 {
   rx_hcsr04_config_t cfg;
-  internal_zero_fill(&cfg, sizeof(cfg));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&cfg, 0, sizeof(cfg));
   /* IRQ 12: firmware range [8,15] allows it, but mock icu_configure rejects >11 */
   cfg.echo_pin      = k_rx_p0_4; /* port=0, pin=4 matches expected_pin=12-8=4 */
   cfg.echo_irq      = (rx_hcsr04_irq_t)k_test_irq_outside_mock;
@@ -2894,7 +2882,7 @@ void test_hcsr04_trigger_and_measure_irq_mode_success(void)
 
 void test_hcsr04_init_invalid_echo_mode_returns_error(void)
 {
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   s_config.echo_mode = (rx_hcsr04_echo_mode_t)k_test_invalid_echo_mode;
   rx_err_t err       = rx_hcsr04_init(&s_sensor, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2945,7 +2933,8 @@ void test_hcsr04_deinit_irq_mode_success(void)
 void test_hcsr04_measure_full_null_handle_fails(void)
 {
   rx_hcsr04_result_t result;
-  internal_zero_fill(&result, sizeof(result));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&result, 0, sizeof(result));
 
   rx_err_t err = rx_hcsr04_measure(nullptr, &result);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
@@ -2974,7 +2963,8 @@ void test_hcsr04_measure_full_null_result_fails(void)
 void test_hcsr04_measure_full_not_initialized_fails(void)
 {
   rx_hcsr04_result_t result;
-  internal_zero_fill(&result, sizeof(result));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&result, 0, sizeof(result));
 
   rx_err_t err = rx_hcsr04_measure(&s_sensor, &result);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -2997,7 +2987,8 @@ void test_hcsr04_measure_full_timeout_increments_count(void)
   mock_hcsr04_hw_set_auto_advance(nullptr, true, k_test_auto_advance_fast);
 
   rx_hcsr04_result_t result;
-  internal_zero_fill(&result, sizeof(result));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&result, 0, sizeof(result));
   rx_err_t err = rx_hcsr04_measure(&s_sensor, &result);
 
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
@@ -3030,7 +3021,8 @@ void test_hcsr04_measure_full_propagates_non_timeout_error(void)
   s_sensor.cancel_requested = true;
 
   rx_hcsr04_result_t result;
-  internal_zero_fill(&result, sizeof(result));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&result, 0, sizeof(result));
   rx_err_t err = rx_hcsr04_measure(&s_sensor, &result);
 
   TEST_ASSERT_EQUAL(k_rx_err_cancelled, err);
@@ -3055,7 +3047,8 @@ void test_hcsr04_measure_full_out_of_range(void)
   mock_hcsr04_hw_set_auto_advance(nullptr, true, k_test_auto_advance_step);
 
   rx_hcsr04_result_t result;
-  internal_zero_fill(&result, sizeof(result));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&result, 0, sizeof(result));
   rx_err_t err = rx_hcsr04_measure(&s_sensor, &result);
 
   TEST_ASSERT_EQUAL(k_rx_err_out_of_range, err);
@@ -3087,7 +3080,8 @@ void test_hcsr04_measure_full_temp_comp_out_of_range(void)
   mock_hcsr04_hw_set_auto_advance(nullptr, true, k_test_auto_advance_step);
 
   rx_hcsr04_result_t result;
-  internal_zero_fill(&result, sizeof(result));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&result, 0, sizeof(result));
   rx_err_t err = rx_hcsr04_measure(&s_sensor, &result);
 
   TEST_ASSERT_EQUAL(k_rx_err_out_of_range, err);
@@ -3112,7 +3106,8 @@ void test_hcsr04_measure_full_distance_exceeds_max(void)
   mock_hcsr04_hw_set_auto_advance(nullptr, true, k_test_auto_advance_step);
 
   rx_hcsr04_result_t result;
-  internal_zero_fill(&result, sizeof(result));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&result, 0, sizeof(result));
   rx_err_t err = rx_hcsr04_measure(&s_sensor, &result);
 
   TEST_ASSERT_EQUAL(k_rx_err_out_of_range, err);
@@ -3274,7 +3269,8 @@ void test_hcsr04_measure_async_worker_busy_returns_busy(void)
   s_pending.handle = &s_sensor;
 
   rx_hcsr04_t sensor2;
-  internal_zero_fill(&sensor2, sizeof(sensor2));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&sensor2, 0, sizeof(sensor2));
   rx_hcsr04_config_t config2 = s_config;
   config2.trigger_pin        = k_rx_pc_7;
   config2.echo_pin           = k_rx_p5_4;

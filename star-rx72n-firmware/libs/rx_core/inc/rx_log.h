@@ -351,11 +351,11 @@ static inline void uart_debug_puts(const char* str)
 static inline void uart_debug_putint(int32_t value)
 {
   char buf[k_uart_debug_int_buf_size];
-  (void)snprintf(
-    buf,
-    sizeof(buf),
-    "%" PRId32,
-    value); /* NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  (void)snprintf(/* NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+                 buf,
+                 sizeof(buf),
+                 "%" PRId32,
+                 value);
   uart_debug_puts(buf);
 }
 
@@ -381,11 +381,11 @@ static inline void uart_debug_putuint(uint32_t value)
 {
   /* 4294967295 (UINT32_MAX) = 10 digits + null terminator */
   char buf[k_uart_debug_uint_buf_size];
-  (void)snprintf(
-    buf,
-    sizeof(buf),
-    "%" PRIu32,
-    value); /* NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  (void)snprintf(/* NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+                 buf,
+                 sizeof(buf),
+                 "%" PRIu32,
+                 value);
   uart_debug_puts(buf);
 }
 
@@ -428,11 +428,11 @@ static inline void uart_debug_puthex(uint32_t value, uint8_t digits)
   if (digits > k_max_hex_digits) {
     digits = k_max_hex_digits;
   }
-  (void)snprintf(
-    buf,
-    sizeof(buf),
-    s_hex_fmts[digits - k_min_hex_digits],
-    value); /* NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  (void)snprintf(/* NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+                 buf,
+                 sizeof(buf),
+                 s_hex_fmts[digits - k_min_hex_digits],
+                 value);
   uart_debug_puts(buf);
 }
 

@@ -68,7 +68,6 @@
  * =============================================================================
  */
 
-/* NOLINTNEXTLINE(readability-identifier-naming) -- s_ prefix per CLAUDE.md for statics */
 static const char* const s_tag = "I2C_COMM";
 
 /* =============================================================================
@@ -704,7 +703,6 @@ RX_STATIC_TESTABLE rx_receive_result_t internal_receive_iteration(rx_i2c_comm_ha
  * @see rx_i2c_comm_init() Uses this template to zero-initialize the comm handle
  * @since Version 1.0.0
  */
-/* NOLINTNEXTLINE(readability-identifier-naming) -- s_ prefix per CLAUDE.md for statics */
 static const rx_i2c_comm_handle_t s_zero_handle = {};
 
 rx_err_t rx_i2c_comm_init(rx_i2c_comm_handle_t* handle, const rx_i2c_comm_config_t* config)

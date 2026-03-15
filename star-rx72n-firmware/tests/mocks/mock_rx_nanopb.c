@@ -15,6 +15,7 @@
 #include "mock_rx_nanopb.h"
 
 #include <stddef.h>
+#include <string.h>
 
 /* =============================================================================
  * Internal Constants
@@ -33,34 +34,6 @@ typedef enum : uint8_t {
 typedef enum : uint32_t {
   k_mock_nanopb_default_encode_len = 64, /**< Default encoded output length */
 } mock_nanopb_encode_t;
-
-/**
- * @brief Zero-fill a byte region using a for-loop (clang-tidy safe)
- * @param[out] dst  Destination pointer
- * @param[in]  len  Number of bytes to zero
- */
-static inline void internal_zero_fill(void* dst, size_t len)
-{
-  uint8_t* p = (uint8_t*)dst;
-  for (size_t i = 0; i < len; i++) {
-    p[i] = 0;
-  }
-}
-
-/**
- * @brief Copy bytes using a for-loop (clang-tidy safe)
- * @param[out] dst  Destination pointer
- * @param[in]  src  Source pointer
- * @param[in]  len  Number of bytes to copy
- */
-static inline void internal_byte_copy(void* dst, const void* src, size_t len)
-{
-  uint8_t*       d = (uint8_t*)dst;
-  const uint8_t* s = (const uint8_t*)src;
-  for (size_t i = 0; i < len; i++) {
-    d[i] = s[i];
-  }
-}
 
 /**
  * @brief Fill a byte region with a given value (clang-tidy safe)
@@ -156,7 +129,8 @@ void mock_nanopb_reset(void)
   s_encode_length = k_mock_nanopb_default_encode_len;
 
   /* Reset captured telemetry */
-  internal_zero_fill(&s_last_telemetry, sizeof(s_last_telemetry));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_last_telemetry, 0, sizeof(s_last_telemetry));
   s_telemetry_captured = false;
 
   /* Reset state */
@@ -227,13 +201,14 @@ bool mock_nanopb_get_last_telemetry(star_v1_TelemetryData* out_telemetry)
     return false;
   }
 
-  internal_byte_copy(out_telemetry, &s_last_telemetry, sizeof(*out_telemetry));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_telemetry, &s_last_telemetry, sizeof(*out_telemetry));
   return true;
 }
 
 bool mock_nanopb_was_initialized(void)
 {
-  return s_init_count > 0; // NOLINT(readability-implicit-bool-conversion)
+  return (bool)(s_init_count > 0);
 }
 
 /* =============================================================================
@@ -315,7 +290,8 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
 
   if (s_encode_telemetry_return == k_rx_ok) {
     /* Capture telemetry for test verification */
-    internal_byte_copy(&s_last_telemetry, msg, sizeof(s_last_telemetry));
+    /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+    memcpy(&s_last_telemetry, msg, sizeof(s_last_telemetry));
     s_telemetry_captured = true;
 
     /* Fill buffer with dummy data */

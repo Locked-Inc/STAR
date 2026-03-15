@@ -691,6 +691,7 @@ target_link_libraries(test_rx_pid unity m)
 # We need to use a wrapper source file that includes mock headers before the encoder
 add_executable(test_rx_encoder
     test_rx_encoder.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_encoder/src/rx_mtu_encoder.c
     ${MOCK_MTU_ENCODER_SRC}
     ${MOCK_LOG_SRC}
 )
@@ -698,7 +699,6 @@ add_executable(test_rx_encoder
 apply_strict_warnings(test_rx_encoder)
 apply_test_includes(test_rx_encoder)
 target_link_libraries(test_rx_encoder unity)
-target_compile_definitions(test_rx_encoder PRIVATE TESTING)
 
 # Test: DS18B20 Temperature Sensor
 add_executable(test_rx_ds18b20
@@ -969,7 +969,6 @@ add_executable(test_rx_encoder_tpu
 apply_strict_warnings(test_rx_encoder_tpu)
 apply_test_includes(test_rx_encoder_tpu)
 target_link_libraries(test_rx_encoder_tpu unity m)
-target_compile_definitions(test_rx_encoder_tpu PRIVATE TESTING)
 
 # =============================================================================
 # Multi-Task Firmware Test Sources
@@ -1230,8 +1229,6 @@ add_executable(test_rx_bmp280
     ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_bmp280)
-# TESTING: enables rx_bmp280_test_reset_state() for test-order independence
-target_compile_definitions(test_rx_bmp280 PRIVATE TESTING)
 apply_test_includes(test_rx_bmp280)
 target_include_directories(test_rx_bmp280 PRIVATE
     ${CMAKE_SOURCE_DIR}/../libs/rx_bmp280/inc

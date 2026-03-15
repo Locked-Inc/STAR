@@ -36,6 +36,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "mock_rx_tpu_regs.h"
 #include "rx_tpu.h"
@@ -74,19 +75,6 @@ typedef enum : uint16_t {
   k_tpu_test_count_chan2 = 200,    /**< Channel 2 counter value */
 } tpu_test_count_constants_t;
 
-/**
- * @brief Zero-fill a byte region using a for-loop (clang-tidy safe)
- * @param[out] dst  Destination pointer
- * @param[in]  len  Number of bytes to zero
- */
-static inline void internal_zero_fill(volatile void* dst, size_t len)
-{
-  volatile uint8_t* p = (volatile uint8_t*)dst;
-  for (size_t i = 0; i < len; i++) {
-    p[i] = 0;
-  }
-}
-
 /* =============================================================================
  * Mock Register Storage
  * =============================================================================
@@ -106,9 +94,12 @@ rx_tpu_regs_t g_mock_tpu_regs[k_mock_tpu_channel_count];
 void setUp(void)
 {
   /* Clear all mock registers to zero */
-  internal_zero_fill(&g_mock_tpu_control, sizeof(g_mock_tpu_control));
-  internal_zero_fill(g_mock_tpu_regs, sizeof(g_mock_tpu_regs));
-  internal_zero_fill(&g_mock_onewire_system_regs, sizeof(g_mock_onewire_system_regs));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&g_mock_tpu_control, 0, sizeof(g_mock_tpu_control));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(g_mock_tpu_regs, 0, sizeof(g_mock_tpu_regs));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&g_mock_onewire_system_regs, 0, sizeof(g_mock_onewire_system_regs));
 
   /* Set MSTPA13 bit to simulate TPU module stopped (reset default) */
   g_mock_onewire_system_regs.mstpcra = (1U << k_tpu_test_mstpa13_bit);
@@ -120,8 +111,10 @@ void setUp(void)
   (void)rx_tpu_deinit(k_tpu_channel_5);
 
   /* Re-clear mock registers after deinit (deinit writes to them) */
-  internal_zero_fill(&g_mock_tpu_control, sizeof(g_mock_tpu_control));
-  internal_zero_fill(g_mock_tpu_regs, sizeof(g_mock_tpu_regs));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&g_mock_tpu_control, 0, sizeof(g_mock_tpu_control));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(g_mock_tpu_regs, 0, sizeof(g_mock_tpu_regs));
   g_mock_onewire_system_regs.mstpcra = (1U << k_tpu_test_mstpa13_bit);
 }
 
@@ -237,7 +230,7 @@ void test_init_null_config(void)
 void test_init_invalid_channel_0(void)
 {
   rx_tpu_config_t config = {
-    .channel = (rx_tpu_channel_t) // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    .channel = (rx_tpu_channel_t) /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
     k_tpu_test_invalid_ch0,
     .phase_mode = k_tpu_phase_mode_4,
   };
@@ -252,7 +245,7 @@ void test_init_invalid_channel_0(void)
 void test_init_invalid_channel_3(void)
 {
   rx_tpu_config_t config = {
-    .channel = (rx_tpu_channel_t) // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    .channel = (rx_tpu_channel_t) /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
     k_tpu_test_invalid_ch3,
     .phase_mode = k_tpu_phase_mode_4,
   };
@@ -268,7 +261,7 @@ void test_init_invalid_phase_mode(void)
 {
   rx_tpu_config_t config = {
     .channel    = k_tpu_channel_1,
-    .phase_mode = (rx_tpu_phase_mode_t)0, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    .phase_mode = (rx_tpu_phase_mode_t)0, /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   };
 
   rx_err_t err = rx_tpu_init_phase_count(&config);
@@ -365,7 +358,7 @@ void test_stop_uninit_channel(void)
  */
 void test_start_invalid_channel(void)
 {
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_tpu_start((rx_tpu_channel_t)k_tpu_test_invalid_ch3);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -376,7 +369,7 @@ void test_start_invalid_channel(void)
  */
 void test_stop_invalid_channel(void)
 {
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_tpu_stop((rx_tpu_channel_t)k_tpu_test_invalid_ch0);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -464,7 +457,7 @@ void test_read_count_uninit(void)
 void test_read_count_invalid_channel(void)
 {
   uint16_t count = 0;
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_tpu_read_count((rx_tpu_channel_t)k_tpu_test_invalid_ch3, &count);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -552,7 +545,7 @@ void test_read_direction_uninit(void)
 void test_read_direction_invalid_channel(void)
 {
   bool counting_up = false;
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_tpu_read_direction((rx_tpu_channel_t)k_tpu_test_invalid_ch0, &counting_up);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -588,7 +581,7 @@ void test_reset_count(void)
  */
 void test_reset_count_invalid_channel(void)
 {
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_tpu_reset_count((rx_tpu_channel_t)k_tpu_test_invalid_ch3);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -678,7 +671,7 @@ void test_deinit_then_reinit(void)
  */
 void test_deinit_invalid_channel(void)
 {
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_tpu_deinit((rx_tpu_channel_t)k_tpu_test_invalid_ch0);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -822,7 +815,7 @@ extern uint8_t                 internal_get_cst_bit(rx_tpu_channel_t channel);
 void test_internal_get_regs_invalid_channel(void)
 {
 #ifdef UNIT_TEST
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   volatile rx_tpu_regs_t* result = internal_get_regs((rx_tpu_channel_t)k_tpu_test_invalid_ch0);
   TEST_ASSERT_NULL((void*)result);
 #else
@@ -842,7 +835,7 @@ void test_internal_get_regs_invalid_channel(void)
 void test_internal_get_cst_bit_invalid_channel(void)
 {
 #ifdef UNIT_TEST
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   uint8_t result = internal_get_cst_bit((rx_tpu_channel_t)k_tpu_test_invalid_ch0);
   TEST_ASSERT_EQUAL_UINT8(0, result);
 #else

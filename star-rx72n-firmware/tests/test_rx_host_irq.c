@@ -15,27 +15,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "unity.h"
-
-/* =============================================================================
- * Zero-Fill Helper
- * =============================================================================
- */
-
-/**
- * @brief Zero-fill a memory region byte-by-byte (no memset dependency)
- *
- * @param[out] ptr  Pointer to memory region
- * @param[in]  len  Number of bytes to zero
- */
-static inline void internal_zero_fill(void* ptr, size_t len)
-{
-  uint8_t* p = (uint8_t*)ptr;
-  for (size_t i = 0; i < len; ++i) {
-    p[i] = 0;
-  }
-}
 
 /* =============================================================================
  * Mock Register Constants
@@ -184,7 +166,8 @@ static rx_err_t test_host_irq_is_asserted(bool* asserted)
 
 void setUp(void)
 {
-  internal_zero_fill(&s_mock_port6, sizeof(s_mock_port6));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_mock_port6, 0, sizeof(s_mock_port6));
   s_error_log_count = 0;
   s_info_log_count  = 0;
   s_initialized     = false;

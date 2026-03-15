@@ -16,34 +16,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
-/**
- * @brief Zero-fill a byte region using a for-loop (clang-tidy safe)
- * @param[out] dst  Destination pointer
- * @param[in]  len  Number of bytes to zero
- */
-static inline void internal_zero_fill(void* dst, size_t len)
-{
-  uint8_t* p = (uint8_t*)dst;
-  for (size_t i = 0; i < len; i++) {
-    p[i] = 0;
-  }
-}
-
-/**
- * @brief Copy bytes using a for-loop (clang-tidy safe)
- * @param[out] dst  Destination pointer
- * @param[in]  src  Source pointer
- * @param[in]  len  Number of bytes to copy
- */
-static inline void internal_byte_copy(void* dst, const void* src, size_t len)
-{
-  uint8_t*       d = (uint8_t*)dst;
-  const uint8_t* s = (const uint8_t*)src;
-  for (size_t i = 0; i < len; i++) {
-    d[i] = s[i];
-  }
-}
+#include <string.h>
 
 /* =============================================================================
  * Static Variables - Return Values
@@ -178,7 +151,8 @@ void mock_comm_manager_reset(void)
   s_last_send_channel     = k_comm_channel_usb;
   s_last_send_type        = k_frame_type_ping;
   s_last_send_payload_len = 0;
-  internal_zero_fill(s_last_send_payload, sizeof(s_last_send_payload));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(s_last_send_payload, 0, sizeof(s_last_send_payload));
 
   /* Reset channel ready status */
   for (uint32_t i = 0; i < k_comm_channel_count; i++) {
@@ -231,7 +205,8 @@ bool mock_comm_manager_queue_frame(rx_comm_channel_t channel,
   entry->frame.header.flags    = 0;
 
   if (payload != nullptr && len > 0) {
-    internal_byte_copy(entry->frame.payload, payload, len);
+    /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+    memcpy(entry->frame.payload, payload, len);
   }
 
   entry->valid = true;
@@ -300,14 +275,15 @@ uint32_t mock_comm_manager_get_last_send_payload(uint8_t* out_payload, uint32_t 
     copy_len = max_len;
   }
 
-  internal_byte_copy(out_payload, s_last_send_payload, copy_len);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_payload, s_last_send_payload, copy_len);
 
   return copy_len;
 }
 
 bool mock_comm_manager_was_initialized(void)
 {
-  return s_init_count > 0; // NOLINT(readability-implicit-bool-conversion)
+  return (bool)(s_init_count > 0);
 }
 
 uint32_t mock_comm_manager_get_queue_count(void)
@@ -358,7 +334,8 @@ rx_err_t rx_comm_manager_deinit(rx_comm_manager_t* mgr)
   }
 
   if (s_deinit_return == k_rx_ok) {
-    internal_zero_fill(mgr, sizeof(*mgr));
+    /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+    memset(mgr, 0, sizeof(*mgr));
     mgr->initialized  = false;
     s_current_manager = nullptr;
   }
@@ -384,7 +361,7 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
   if (s_queue_count > 0) {
     entry = &s_frame_queue[s_queue_read_idx];
 
-    if (entry->valid && // NOLINT(readability-implicit-bool-conversion)
+    if (entry->valid && /* NOLINT(readability-implicit-bool-conversion) */
         mgr->callback != nullptr) {
       /* Invoke callback with queued frame */
       mgr->callback(entry->channel, &entry->frame, mgr->callback_ctx);
@@ -423,7 +400,8 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
       if (copy_len > k_mock_comm_max_payload_size) {
         copy_len = k_mock_comm_max_payload_size;
       }
-      internal_byte_copy(s_last_send_payload, params->payload, copy_len);
+      /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+      memcpy(s_last_send_payload, params->payload, copy_len);
       s_last_send_payload_len = copy_len;
     } else {
       s_last_send_payload_len = 0;

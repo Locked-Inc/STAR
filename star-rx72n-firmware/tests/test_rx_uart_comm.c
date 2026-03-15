@@ -75,6 +75,8 @@
  * @test Tests run via Unity framework with: make test_rx_uart_comm
  */
 
+#include <string.h>
+
 #include "mock_uart_hw.h"
 #include "rx_frame.h"
 #include "rx_session.h"
@@ -250,59 +252,6 @@ static rx_uart_comm_handle_t s_handle;
 static rx_session_state_t s_session;
 
 /* =============================================================================
- * Internal Helpers -- buffer manipulation without memset/memcpy
- * =============================================================================
- */
-
-/**
- * @brief Zero a byte buffer without memset (avoids insecureAPI diagnostic)
- *
- * @param[out] buf  Buffer to zero
- * @param[in]  len  Number of bytes to zero
- *
- * @pre buf != nullptr
- */
-static void helper_zero_buf(uint8_t* buf, uint32_t len)
-{
-  for (uint32_t i = 0; i < len; i++) {
-    buf[i] = 0;
-  }
-}
-
-/**
- * @brief Copy bytes between buffers without memcpy (avoids insecureAPI diagnostic)
- *
- * @param[out] dst  Destination buffer
- * @param[in]  src  Source buffer
- * @param[in]  len  Number of bytes to copy
- *
- * @pre dst != nullptr
- * @pre src != nullptr
- */
-static void helper_copy_buf(uint8_t* dst, const uint8_t* src, uint32_t len)
-{
-  for (uint32_t i = 0; i < len; i++) {
-    dst[i] = src[i];
-  }
-}
-
-/**
- * @brief Fill a byte buffer with a constant value without memset
- *
- * @param[out] buf   Buffer to fill
- * @param[in]  val   Fill byte value
- * @param[in]  len   Number of bytes to fill
- *
- * @pre buf != nullptr
- */
-static void helper_fill_buf(uint8_t* buf, uint8_t val, uint32_t len)
-{
-  for (uint32_t i = 0; i < len; i++) {
-    buf[i] = val;
-  }
-}
-
-/* =============================================================================
  * Internal Helpers -- test setup
  * =============================================================================
  */
@@ -357,7 +306,8 @@ static void helper_encode_frame(rx_frame_type_t type,
   frame.header.flags    = k_frame_flag_none;
 
   if (payload != nullptr && payload_len > 0) {
-    helper_copy_buf(frame.payload, payload, payload_len);
+    /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+    memcpy(frame.payload, payload, payload_len);
   }
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&enc, &frame, buf, out_len));
@@ -397,7 +347,8 @@ void setUp(void)
   (void)uart_init_channel(&ch_cfg);
 
   (void)rx_session_init(&s_session);
-  helper_zero_buf((uint8_t*)&s_handle, sizeof(s_handle));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset((uint8_t*)&s_handle, 0, sizeof(s_handle));
 }
 
 void tearDown(void)
@@ -920,7 +871,8 @@ void test_uart_comm_receive_skips_garbage_before_sync(void)
   buf_with_garbage[k_hdr_off_sync_high] = (uint8_t)k_test_garbage_byte_dead_2;
   buf_with_garbage[k_hdr_off_seq_low]   = (uint8_t)k_test_garbage_byte_dead_3;
   buf_with_garbage[k_hdr_off_seq_high]  = (uint8_t)k_test_garbage_byte_dead_4;
-  helper_copy_buf(buf_with_garbage + k_test_garbage_prefix_len, encoded, encoded_len);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(buf_with_garbage + k_test_garbage_prefix_len, encoded, encoded_len);
 
   helper_inject_rx(buf_with_garbage, (uint16_t)(encoded_len + k_test_garbage_prefix_len));
 
@@ -1428,8 +1380,10 @@ void test_uart_comm_receive_second_frame_wrong_sequence_dropped(void)
                       &frame2_len);
 
   uint8_t combined[k_test_frame_buf_size];
-  helper_copy_buf(combined, frame1_enc, frame1_len);
-  helper_copy_buf(combined + frame1_len, frame2_enc, frame2_len);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(combined, frame1_enc, frame1_len);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(combined + frame1_len, frame2_enc, frame2_len);
   helper_inject_rx(combined, (uint16_t)(frame1_len + frame2_len));
 
   rx_frame_t frame = {0};
@@ -1439,7 +1393,8 @@ void test_uart_comm_receive_second_frame_wrong_sequence_dropped(void)
   TEST_ASSERT_EQUAL_UINT16(0, frame.header.sequence);
 
   /* Second receive: frame2 at seq 200 rejected by session (expects 1), protocol error */
-  helper_zero_buf((uint8_t*)&frame, sizeof(frame));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset((uint8_t*)&frame, 0, sizeof(frame));
   rx_err_t err2 = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err2);
 }
@@ -1510,7 +1465,8 @@ void test_uart_comm_receive_false_sync_low_then_real_frame(void)
   uint8_t buf[k_test_frame_buf_size];
   buf[0] = (uint8_t)k_test_sync_byte_low; /* sync_low matches, but... */
   buf[1] = 0x00U;                         /* sync_high does NOT match -> false alarm */
-  helper_copy_buf(buf + k_test_false_sync_prefix, encoded, encoded_len);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(buf + k_test_false_sync_prefix, encoded, encoded_len);
 
   helper_inject_rx(buf, (uint16_t)(encoded_len + k_test_false_sync_prefix));
 
@@ -1619,7 +1575,8 @@ void test_uart_comm_receive_rx_buffer_prefilled_no_sync(void)
   helper_init_default();
 
   /* Directly fill the RX buffer with garbage (no sync word = 0xAA 0x55) */
-  helper_fill_buf(s_handle.rx_buffer, (uint8_t)k_test_fill_byte_cc, k_test_rx_buf_max);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(s_handle.rx_buffer, (uint8_t)k_test_fill_byte_cc, k_test_rx_buf_max);
   s_handle.rx_buffer_len = (uint32_t)k_test_rx_buf_max;
   s_handle.rx_buffer_pos = 0;
 

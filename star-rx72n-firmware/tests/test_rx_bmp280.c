@@ -73,6 +73,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "mock_riic_hal.h"
 #include "rx_bmp280.h"
@@ -432,26 +433,6 @@ typedef enum : uint8_t {
   k_extreme_adc_buf_size      = 7, /**< Size of status + ADC combined buffer */
 } test_bmp280_extreme_idx_t;
 
-/**
- * @brief Zero-fill a memory region byte-by-byte without memset
- *
- * @param[out] ptr Pointer to the memory region to zero
- * @param[in]  len Number of bytes to zero
- *
- * @pre ptr non-NULL
- * @pre len > 0
- * @post All bytes in [ptr, ptr+len) are zero
- *
- * @since Version 1.0.0
- */
-static inline void internal_zero_fill(void* ptr, size_t len)
-{
-  uint8_t* p = (uint8_t*)ptr;
-  for (size_t i = 0; i < len; ++i) {
-    p[i] = 0;
-  }
-}
-
 /* =============================================================================
  * Test Fixtures
  * =============================================================================
@@ -501,7 +482,8 @@ static void internal_load_valid_calib(void)
 {
   static_assert((bool)(k_test_calib_buf_size > 0U), "calibration buffer must be non-empty");
   uint8_t calib[k_test_calib_buf_size];
-  internal_zero_fill(calib, sizeof(calib));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(calib, 0, sizeof(calib));
 
   /* dig_T1 at bytes 0-1 (unsigned, non-zero required) */
   calib[k_bmp280_calib_t1_lsb] = k_calib_t1_lsb;
@@ -523,7 +505,7 @@ static void internal_load_valid_calib(void)
   calib[k_bmp280_calib_p2_lsb] = k_calib_p2_lsb;
   calib[k_bmp280_calib_p2_msb] = k_calib_p2_msb;
 
-  /* Remaining P3-P9 bytes stay zero (set by internal_zero_fill above) */
+  /* Remaining P3-P9 bytes stay zero (set by memset above) */
 
   /* Postcondition: verify T1 and P1 set non-zero as required by the driver */
   TEST_ASSERT_NOT_EQUAL(0U, calib[k_bmp280_calib_t1_lsb] | calib[k_bmp280_calib_t1_msb]);
@@ -548,7 +530,8 @@ static void internal_load_invalid_calib_p1_zero(void)
 {
   static_assert((bool)(k_test_calib_buf_size > 0U), "calibration buffer must be non-empty");
   uint8_t calib[k_test_calib_buf_size];
-  internal_zero_fill(calib, sizeof(calib));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(calib, 0, sizeof(calib));
 
   /* Only set dig_T1 as non-zero; dig_P1 stays zero */
   calib[k_bmp280_calib_t1_lsb] = k_calib_t1_lsb;
@@ -892,7 +875,8 @@ void test_bmp280_read_before_init_returns_error(void)
 {
   /* setUp() reset s_initialized to false - no ordering dependency needed */
   bmp280_data_t data;
-  internal_zero_fill(&data, sizeof(data));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -922,7 +906,8 @@ void test_bmp280_read_success_forced_mode(void)
   mock_riic_clear_history();
 
   bmp280_data_t data;
-  internal_zero_fill(&data, sizeof(data));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
 
   rx_err_t err = rx_bmp280_read(&data);
 
@@ -959,7 +944,8 @@ void test_bmp280_read_status_timeout(void)
   mock_riic_set_rx_data(k_test_bmp280_riic_ch, &busy_status, k_test_single_byte);
 
   bmp280_data_t data;
-  internal_zero_fill(&data, sizeof(data));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
@@ -985,7 +971,8 @@ void test_bmp280_read_i2c_error_propagates(void)
   mock_riic_simulate_nack(true);
 
   bmp280_data_t data;
-  internal_zero_fill(&data, sizeof(data));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
@@ -1027,7 +1014,8 @@ void test_bmp280_compensation_known_values(void)
   mock_riic_clear_history();
 
   bmp280_data_t data;
-  internal_zero_fill(&data, sizeof(data));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
 
   rx_err_t err = rx_bmp280_read(&data);
 
@@ -1185,7 +1173,8 @@ void test_bmp280_read_status_read_error_propagates(void)
   mock_riic_set_nth_call_error((uint16_t)k_read_call_status, k_rx_err_nack);
 
   bmp280_data_t data;
-  internal_zero_fill(&data, sizeof(data));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
@@ -1217,7 +1206,8 @@ void test_bmp280_read_adc_read_error_propagates(void)
   mock_riic_set_nth_call_error((uint16_t)k_read_call_adc_data, k_rx_err_nack);
 
   bmp280_data_t data;
-  internal_zero_fill(&data, sizeof(data));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
@@ -1269,7 +1259,8 @@ void test_bmp280_pressure_comp_zero_p1_returns_error(void)
    * then compensation to fail due to P1=0. Load a fresh buffer. */
   /* First, set nth error so only 2 calls succeed, then ADC read gets data */
   bmp280_data_t data;
-  internal_zero_fill(&data, sizeof(data));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
 
   /* Load read buffer so status (call 1) returns 0x00 and ADC (call 2) returns data */
   internal_load_read_data();
@@ -1302,7 +1293,8 @@ void test_bmp280_pressure_comp_zero_p1_returns_error(void)
 static void internal_load_extreme_temp_adc(void)
 {
   uint8_t extreme_adc[k_extreme_adc_buf_size];
-  internal_zero_fill(extreme_adc, sizeof(extreme_adc));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(extreme_adc, 0, sizeof(extreme_adc));
   extreme_adc[k_extreme_adc_temp_msb_idx]  = k_extreme_adc_max_byte;
   extreme_adc[k_extreme_adc_temp_lsb_idx]  = k_extreme_adc_max_byte;
   extreme_adc[k_extreme_adc_temp_xlsb_idx] = k_extreme_xlsb_max_nibble;
@@ -1326,7 +1318,8 @@ void test_bmp280_read_temp_out_of_range_returns_error(void)
   internal_load_extreme_temp_adc();
 
   bmp280_data_t data;
-  internal_zero_fill(&data, sizeof(data));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1356,7 +1349,8 @@ void test_bmp280_read_pressure_out_of_range_returns_error(void)
   rx_bmp280_test_set_state(&s_test_manager, false);
 
   uint8_t extreme_press_calib[k_test_calib_buf_size];
-  internal_zero_fill(extreme_press_calib, sizeof(extreme_press_calib));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(extreme_press_calib, 0, sizeof(extreme_press_calib));
   extreme_press_calib[k_bmp280_calib_t1_lsb] = k_calib_t1_lsb;
   extreme_press_calib[k_bmp280_calib_t1_msb] = k_calib_t1_msb;
   /* T2=0, T3=0: bytes 2-5 stay zero */
@@ -1369,11 +1363,13 @@ void test_bmp280_read_pressure_out_of_range_returns_error(void)
 
   /* Load all-zero ADC buffer: status=done(0x00), adc_P=0, adc_T=0 */
   uint8_t adc_buf[k_extreme_adc_buf_size];
-  internal_zero_fill(adc_buf, sizeof(adc_buf));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(adc_buf, 0, sizeof(adc_buf));
   mock_riic_set_rx_data(k_test_bmp280_riic_ch, adc_buf, (uint16_t)sizeof(adc_buf));
 
   bmp280_data_t data;
-  internal_zero_fill(&data, sizeof(data));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
 
   /* With P1=1 and adc_P=0, pressure compensation produces a value below 7680000 */

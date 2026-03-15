@@ -26,6 +26,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "unity.h"
 
@@ -90,19 +91,6 @@ typedef enum : uint8_t {
 static uint8_t s_src_buf[k_test_src_buf_size];
 
 /**
- * @brief Zero-fill a byte region using a for-loop (clang-tidy safe)
- * @param[out] dst  Destination pointer
- * @param[in]  len  Number of bytes to zero
- */
-static inline void internal_zero_fill(void* dst, size_t len)
-{
-  uint8_t* p = (uint8_t*)dst;
-  for (size_t i = 0; i < len; i++) {
-    p[i] = 0;
-  }
-}
-
-/**
  * @brief Fill a byte region with a given value (clang-tidy safe)
  * @param[out] dst  Destination pointer
  * @param[in]  val  Fill value
@@ -149,7 +137,8 @@ void setUp(void)
   mock_onewire_hw_init();
 
   /* Zero DMAC mock registers */
-  internal_zero_fill(g_mock_dmac_ch, sizeof(g_mock_dmac_ch));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(g_mock_dmac_ch, 0, sizeof(g_mock_dmac_ch));
   g_mock_dmast = 0;
 
   /* Initialize test source buffer with known data */

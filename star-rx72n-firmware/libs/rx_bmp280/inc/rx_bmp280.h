@@ -269,7 +269,7 @@ typedef struct {
  */
 [[nodiscard]] rx_err_t rx_bmp280_read(bmp280_data_t* out);
 
-#ifdef TESTING
+#ifdef UNIT_TEST
 /**
  * @brief Reset BMP280 driver static state for unit test isolation
  *
@@ -277,7 +277,7 @@ typedef struct {
  * Clears s_initialized to false and zeroes the calibration struct.
  * Call from setUp() before each test so tests can run in any order
  * without depending on prior test state. Available only in test builds
- * (TESTING macro defined by CMakeLists.txt for the test target).
+ * Available only in UNIT_TEST builds.
  *
  * @pre None (may be called before init)
  * @post s_initialized == false; driver in pre-init state
@@ -325,7 +325,7 @@ void rx_bmp280_test_set_state(rx_bus_manager_t* manager, bool init_val);
  * @since Version 1.0.0
  */
 void rx_bmp280_test_zero_calib_p1(void);
-#endif /* TESTING */
+#endif /* UNIT_TEST */
 
 #ifdef __cplusplus
 }

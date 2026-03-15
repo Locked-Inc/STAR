@@ -340,14 +340,14 @@ rx_tpu_encoder_read_velocity(float* velocity_rps, float delta_time_s, rx_tpu_cha
  */
 [[nodiscard]] rx_err_t rx_tpu_encoder_deinit(rx_tpu_channel_t channel);
 
-#ifdef TESTING
+#ifdef UNIT_TEST
 /**
  * @brief Corrupt the counts_per_rev field for a channel (test-only)
  *
  * @details
  * Sets s_counts_per_rev[channel] = 0 to exercise runtime cpr-corrupted guards
  * in internal_update_state(), rx_tpu_encoder_read_velocity(), and
- * rx_tpu_encoder_set_count(). Available only in TESTING builds.
+ * rx_tpu_encoder_set_count(). Available only in UNIT_TEST builds.
  *
  * @param[in] channel TPU channel (must be valid: 1, 2, 4, or 5)
  * @post s_counts_per_rev[channel] == 0
@@ -356,7 +356,7 @@ rx_tpu_encoder_read_velocity(float* velocity_rps, float delta_time_s, rx_tpu_cha
  * @since Version 1.0.0
  */
 void rx_tpu_encoder_test_corrupt_cpr(rx_tpu_channel_t channel);
-#endif /* TESTING */
+#endif /* UNIT_TEST */
 
 #ifdef UNIT_TEST
 /**

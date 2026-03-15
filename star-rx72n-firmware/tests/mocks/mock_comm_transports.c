@@ -421,7 +421,7 @@ typedef enum : uint32_t {
  */
 rx_err_t
 rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* msg,
-                                   uint8_t*  buffer, // NOLINT(readability-non-const-parameter)
+                                   uint8_t*  buffer, /* NOLINT(readability-non-const-parameter) */
                                    uint32_t  buffer_size,
                                    uint32_t* len)
 {
@@ -456,10 +456,11 @@ rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* msg,
  *
  * @since Version 1.0.0
  */
-rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* msg,
-                                         uint8_t* buffer, // NOLINT(readability-non-const-parameter)
-                                         uint32_t buffer_size,
-                                         uint32_t* len)
+rx_err_t
+rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* msg,
+                                uint8_t*  buffer, /* NOLINT(readability-non-const-parameter) */
+                                uint32_t  buffer_size,
+                                uint32_t* len)
 {
   (void)msg;
   (void)buffer;
@@ -494,7 +495,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  */
 rx_err_t
 rx_nanopb_encode_pid_gains_response(const star_v1_SetPIDGainsResponse* msg,
-                                    uint8_t*  buffer, // NOLINT(readability-non-const-parameter)
+                                    uint8_t*  buffer, /* NOLINT(readability-non-const-parameter) */
                                     uint32_t  buffer_size,
                                     uint32_t* len)
 {

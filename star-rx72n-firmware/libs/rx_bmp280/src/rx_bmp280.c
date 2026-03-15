@@ -972,15 +972,14 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
   return internal_read_and_compensate_adc(out);
 }
 
-#ifdef TESTING
+#ifdef UNIT_TEST
 /**
  * @brief Reset BMP280 driver static state for unit test isolation
  *
  * @details
  * Clears s_initialized to false and zeroes the calibration struct so
  * each test starts from the same known state regardless of execution
- * order. Available only in test builds (TESTING defined by CMakeLists.txt
- * for the test target).
+ * order. Available only in UNIT_TEST builds.
  *
  * @pre Called from test setUp() before each test
  * @pre No concurrent access from other threads (test runs single-threaded)
@@ -1050,4 +1049,4 @@ void rx_bmp280_test_zero_calib_p1(void)
   s_calib.dig_P1 = 0U;
 }
 
-#endif /* TESTING */
+#endif /* UNIT_TEST */

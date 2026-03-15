@@ -72,6 +72,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "mock_riic_hal.h"
 #include "rx_bno055.h"
@@ -375,36 +376,6 @@ typedef enum : uint8_t {
 } test_bno055_read_call_idx_t;
 
 /* =============================================================================
- * Zero-Fill Helper (replaces memset to satisfy clang-analyzer-security)
- * =============================================================================
- */
-
-/**
- * @brief Zero-fill a memory region byte-by-byte without memset
- *
- * @details
- * Replaces memset(ptr, 0, len) to avoid clang-analyzer-security
- * insecureAPI.DeprecatedOrUnsafeBufferHandling warnings. Uses an explicit
- * byte loop so the intent is unambiguous.
- *
- * @param[out] ptr Pointer to the start of the memory region to zero
- * @param[in]  len Number of bytes to zero
- *
- * @pre ptr non-NULL
- * @pre len > 0
- * @post All bytes in [ptr, ptr+len) are zero
- *
- * @since Version 1.0.0
- */
-static inline void internal_zero_fill(void* ptr, size_t len)
-{
-  uint8_t* p = (uint8_t*)ptr;
-  for (size_t i = 0; i < len; ++i) {
-    p[i] = 0;
-  }
-}
-
-/* =============================================================================
  * Test Fixtures
  * =============================================================================
  */
@@ -503,7 +474,8 @@ static void internal_load_read_data(void)
   TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
   TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_read_buf_size);
   uint8_t read_buf[k_read_buf_size];
-  internal_zero_fill(read_buf, sizeof(read_buf));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(read_buf, 0, sizeof(read_buf));
 
   /* Euler heading = 0x0140, roll = 0x0010, pitch = 0x0020 */
   read_buf[k_read_idx_0] = k_test_euler_h_lsb;
@@ -534,7 +506,8 @@ static void internal_load_quat_read_data(void)
   TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
   TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_quat_buf_size);
   uint8_t quat_buf[k_quat_buf_size];
-  internal_zero_fill(quat_buf, sizeof(quat_buf));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(quat_buf, 0, sizeof(quat_buf));
   quat_buf[k_quat_w_lsb_idx] = k_test_quat_w_lsb;
   quat_buf[k_quat_w_msb_idx] = k_test_quat_w_msb;
 
@@ -562,7 +535,8 @@ static void internal_load_temp_read_data(void)
   TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
   TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_read_buf_size);
   uint8_t temp_buf[k_read_buf_size];
-  internal_zero_fill(temp_buf, sizeof(temp_buf));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(temp_buf, 0, sizeof(temp_buf));
   /* Position 0 is returned for all single-byte reads; set to k_test_temp_raw (25 degC) */
   temp_buf[k_read_idx_0] = k_test_temp_raw;
 
@@ -589,7 +563,8 @@ static void internal_load_lia_read_data(void)
   TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
   TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_test_lia_buf_size);
   uint8_t lia_buf[k_read_buf_size];
-  internal_zero_fill(lia_buf, sizeof(lia_buf));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(lia_buf, 0, sizeof(lia_buf));
   /* lin_acc_x = 0x00C8 = 200 raw (2.0 m/s^2 when divided by k_bno055_scale_acc=100) */
   lia_buf[k_read_idx_0] = k_test_lia_x_lsb;
   lia_buf[k_read_idx_1] = k_test_lia_x_msb;
@@ -917,7 +892,8 @@ void test_bno055_read_success_euler(void)
   internal_load_read_data();
 
   bno055_data_t data;
-  internal_zero_fill(&data, sizeof(data));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
 
   rx_err_t err = rx_bno055_read(&data);
 
@@ -952,7 +928,8 @@ void test_bno055_read_success_quaternion(void)
   internal_load_quat_read_data();
 
   bno055_data_t data;
-  internal_zero_fill(&data, sizeof(data));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
 
   rx_err_t err = rx_bno055_read(&data);
 
@@ -984,7 +961,8 @@ void test_bno055_read_success_temperature(void)
   internal_load_temp_read_data();
 
   bno055_data_t data;
-  internal_zero_fill(&data, sizeof(data));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
 
   rx_err_t err = rx_bno055_read(&data);
 
@@ -1014,7 +992,8 @@ void test_bno055_read_success_lia(void)
   internal_load_lia_read_data();
 
   bno055_data_t data;
-  internal_zero_fill(&data, sizeof(data));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
 
   rx_err_t err = rx_bno055_read(&data);
 

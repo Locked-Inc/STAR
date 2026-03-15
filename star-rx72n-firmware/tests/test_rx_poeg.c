@@ -57,8 +57,7 @@ typedef struct {
   volatile uint32_t poeggn;
 } mock_poegg_regs_t;
 
-static mock_poegg_regs_t s_mock_poeg[k_poeg_group_count]; // NOLINT(readability-identifier-naming)
-
+static mock_poegg_regs_t s_mock_poeg[k_poeg_group_count];
 /* Mock GPTW channel registers (simplified - only fields used by POEG) */
 typedef struct {
   volatile uint32_t gtwp;
@@ -67,8 +66,7 @@ typedef struct {
   uint32_t          rest[k_gptw_rest_count];
 } mock_gptw_channel_t;
 
-static mock_gptw_channel_t s_mock_gptw[k_poeg_group_count]; // NOLINT(readability-identifier-naming)
-
+static mock_gptw_channel_t s_mock_gptw[k_poeg_group_count];
 /* Mock ICU registers (simplified) */
 typedef struct {
   volatile uint8_t ir[k_icu_256];
@@ -83,18 +81,15 @@ typedef struct {
   volatile uint8_t ipr[k_icu_256];
 } mock_icu_regs_t;
 
-static mock_icu_regs_t s_mock_icu; // NOLINT(readability-identifier-naming)
-
+static mock_icu_regs_t s_mock_icu;
 /* Mock shared_data state */
-static bool     s_estop_active;        // NOLINT(readability-identifier-naming)
-static uint8_t  s_estop_reason;        // NOLINT(readability-identifier-naming)
-static uint32_t s_estop_trigger_count; // NOLINT(readability-identifier-naming)
-
+static bool     s_estop_active;
+static uint8_t  s_estop_reason;
+static uint32_t s_estop_trigger_count;
 /* Mock log state */
-static uint32_t s_error_log_count; // NOLINT(readability-identifier-naming)
-static uint32_t s_warn_log_count;  // NOLINT(readability-identifier-naming)
-static uint32_t s_info_log_count;  // NOLINT(readability-identifier-naming)
-
+static uint32_t s_error_log_count;
+static uint32_t s_warn_log_count;
+static uint32_t s_info_log_count;
 /* =============================================================================
  * Mock Function Implementations
  * =============================================================================
@@ -127,27 +122,27 @@ enum {
   } while (0)
 
 /* --- rx_log.h mock --- */
-#define rx_log_error(tag, msg) /* NOLINT(readability-identifier-naming) */                         \
+#define rx_log_error(tag, msg)                                                                     \
   do {                                                                                             \
     s_error_log_count++;                                                                           \
   } while (0)
-#define rx_log_error_val(tag, msg, val) /* NOLINT(readability-identifier-naming) */                \
+#define rx_log_error_val(tag, msg, val)                                                            \
   do {                                                                                             \
     s_error_log_count++;                                                                           \
   } while (0)
-#define rx_log_warn(tag, msg) /* NOLINT(readability-identifier-naming) */                          \
+#define rx_log_warn(tag, msg)                                                                      \
   do {                                                                                             \
     s_warn_log_count++;                                                                            \
   } while (0)
-#define rx_log_warn_val(tag, msg, val) /* NOLINT(readability-identifier-naming) */                 \
+#define rx_log_warn_val(tag, msg, val)                                                             \
   do {                                                                                             \
     s_warn_log_count++;                                                                            \
   } while (0)
-#define rx_log_info(tag, msg) /* NOLINT(readability-identifier-naming) */                          \
+#define rx_log_info(tag, msg)                                                                      \
   do {                                                                                             \
     s_info_log_count++;                                                                            \
   } while (0)
-#define rx_log_info_val(tag, msg, val) /* NOLINT(readability-identifier-naming) */                 \
+#define rx_log_info_val(tag, msg, val)                                                             \
   do {                                                                                             \
     s_info_log_count++;                                                                            \
   } while (0)
@@ -238,9 +233,8 @@ enum {
 enum { k_poeg_motor_count = 4 };
 
 /* Redirect register accessors to mocks */
-#define s_poeg_groups_test   s_mock_poeg // NOLINT(readability-identifier-naming)
-#define s_gptw_channels_test s_mock_gptw // NOLINT(readability-identifier-naming)
-
+#define s_poeg_groups_test   s_mock_poeg
+#define s_gptw_channels_test s_mock_gptw
 /* ICU constants */
 enum {
   k_icu_ir_clear_test     = 0,
@@ -271,11 +265,10 @@ typedef enum : uint8_t {
 } test_motor_constants_t;
 
 /* POEG init config */
-static const uint32_t k_poeg_init_value_test = // NOLINT(readability-identifier-naming)
+static const uint32_t k_poeg_init_value_test =
   (k_poeg_pide_enable | k_poeg_inv_invert | k_poeg_nfen_enable | k_poeg_nfcs_pclkb_div8);
 
 static const uint32_t s_gtintad_values_test[k_poeg_group_count] = {
-  // NOLINT(readability-identifier-naming)
   (k_gptw_gtintad_grp_a | k_gptw_gtintad_grpdte | k_gptw_gtintad_grpabl),
   (k_gptw_gtintad_grp_b | k_gptw_gtintad_grpdte | k_gptw_gtintad_grpabl),
   (k_gptw_gtintad_grp_c | k_gptw_gtintad_grpdte | k_gptw_gtintad_grpabl),
@@ -283,7 +276,6 @@ static const uint32_t s_gtintad_values_test[k_poeg_group_count] = {
 };
 
 static const uint16_t s_poeg_vectors_test[k_poeg_group_count] = {
-  // NOLINT(readability-identifier-naming)
   k_poeg_irq_group_a,
   k_poeg_irq_group_b,
   k_poeg_irq_group_c,

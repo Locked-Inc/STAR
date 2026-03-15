@@ -11,6 +11,7 @@
 #include "mock_shared_data.h"
 
 #include <stddef.h>
+#include <string.h>
 
 /* =============================================================================
  * Static Return Values
@@ -133,43 +134,6 @@ static estop_reason_t s_last_triggered_reason = k_estop_reason_none;
 static shared_event_flags_t s_last_event_flags = k_event_none;
 
 /* =============================================================================
- * Helper: Zero-fill a byte buffer without memset
- * =============================================================================
- */
-
-/**
- * @brief Zero-fill a byte buffer (replaces memset to satisfy
- *        clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
- *
- * @param[out] dst  Destination buffer to zero
- * @param[in]  len  Number of bytes to zero
- */
-static void internal_zero_fill(void* dst, size_t len)
-{
-  uint8_t* p = (uint8_t*)dst;
-  for (size_t i = 0; i < len; i++) {
-    p[i] = 0;
-  }
-}
-
-/**
- * @brief Copy bytes from src to dst (replaces memcpy to satisfy
- *        clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
- *
- * @param[out] dst  Destination buffer
- * @param[in]  src  Source buffer
- * @param[in]  len  Number of bytes to copy
- */
-static void internal_byte_copy(void* dst, const void* src, size_t len)
-{
-  uint8_t*       d = (uint8_t*)dst;
-  const uint8_t* s = (const uint8_t*)src;
-  for (size_t i = 0; i < len; i++) {
-    d[i] = s[i];
-  }
-}
-
-/* =============================================================================
  * Mock Control Functions
  * =============================================================================
  */
@@ -186,9 +150,12 @@ void mock_shared_data_reset(void)
   s_estop_reason = k_estop_reason_none;
   s_comm_timeout = false;
 
-  internal_zero_fill(&s_motor_command, sizeof(s_motor_command));
-  internal_zero_fill(&s_motor_state, sizeof(s_motor_state));
-  internal_zero_fill(&s_pid_gains, sizeof(s_pid_gains));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_motor_command, 0, sizeof(s_motor_command));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_motor_state, 0, sizeof(s_motor_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_pid_gains, 0, sizeof(s_pid_gains));
   s_pid_update_pending = false;
 
   /* Set default PID gains (MATLAB-tuned) */
@@ -200,8 +167,10 @@ void mock_shared_data_reset(void)
   s_pid_gains.integral_min = s_default_integral_min;
   s_pid_gains.integral_max = s_default_integral_max;
 
-  internal_zero_fill(&s_temp_state, sizeof(s_temp_state));
-  internal_zero_fill(&s_obstacle_state, sizeof(s_obstacle_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_temp_state, 0, sizeof(s_temp_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_obstacle_state, 0, sizeof(s_obstacle_state));
 
   s_last_triggered_reason       = k_estop_reason_none;
   s_set_event_count             = k_mock_count_reset;
@@ -229,14 +198,16 @@ void mock_shared_data_set_comm_timeout(bool timeout)
 void mock_shared_data_set_motor_command(const motor_command_t* cmd)
 {
   if (cmd != nullptr) {
-    internal_byte_copy(&s_motor_command, cmd, sizeof(s_motor_command));
+    /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+    memcpy(&s_motor_command, cmd, sizeof(s_motor_command));
   }
 }
 
 void mock_shared_data_set_pid_gains(const pid_gains_t* gains)
 {
   if (gains != nullptr) {
-    internal_byte_copy(&s_pid_gains, gains, sizeof(s_pid_gains));
+    /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+    memcpy(&s_pid_gains, gains, sizeof(s_pid_gains));
   }
 }
 
@@ -330,7 +301,8 @@ rx_err_t mock_shared_data_get_last_motor_state(motor_state_t* out_state)
     return k_rx_err_null_ptr;
   }
 
-  internal_byte_copy(out_state, &s_motor_state, sizeof(*out_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_state, &s_motor_state, sizeof(*out_state));
   return k_rx_ok;
 }
 
@@ -341,7 +313,7 @@ uint32_t mock_shared_data_get_motor_state_update_count(void)
 
 bool mock_shared_data_was_initialized(void)
 {
-  return s_init_count > 0; // NOLINT(readability-implicit-bool-conversion)
+  return (bool)(s_init_count > 0);
 }
 
 /* =============================================================================
@@ -367,7 +339,8 @@ rx_err_t shared_data_set_motor_command(const motor_command_t* cmd)
     return k_rx_err_null_ptr;
   }
 
-  internal_byte_copy(&s_motor_command, cmd, sizeof(s_motor_command));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(&s_motor_command, cmd, sizeof(s_motor_command));
   return k_rx_ok;
 }
 
@@ -377,7 +350,8 @@ rx_err_t shared_data_get_motor_command(motor_command_t* out_cmd)
     return k_rx_err_null_ptr;
   }
 
-  internal_byte_copy(out_cmd, &s_motor_command, sizeof(*out_cmd));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_cmd, &s_motor_command, sizeof(*out_cmd));
   return k_rx_ok;
 }
 
@@ -389,7 +363,8 @@ rx_err_t shared_data_update_motor_state(const motor_state_t* state)
   }
 
   s_motor_state_update_count++;
-  internal_byte_copy(&s_motor_state, state, sizeof(s_motor_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(&s_motor_state, state, sizeof(s_motor_state));
   return k_rx_ok;
 }
 
@@ -399,7 +374,8 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
     return k_rx_err_null_ptr;
   }
 
-  internal_byte_copy(out_state, &s_motor_state, sizeof(*out_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_state, &s_motor_state, sizeof(*out_state));
   return k_rx_ok;
 }
 
@@ -410,7 +386,8 @@ rx_err_t shared_data_set_pid_gains(const pid_gains_t* gains)
     return k_rx_err_null_ptr;
   }
 
-  internal_byte_copy(&s_pid_gains, gains, sizeof(s_pid_gains));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(&s_pid_gains, gains, sizeof(s_pid_gains));
   s_pid_update_pending = true;
   return k_rx_ok;
 }
@@ -421,7 +398,8 @@ rx_err_t shared_data_get_pid_gains(pid_gains_t* out_gains)
     return k_rx_err_null_ptr;
   }
 
-  internal_byte_copy(out_gains, &s_pid_gains, sizeof(*out_gains));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_gains, &s_pid_gains, sizeof(*out_gains));
   return k_rx_ok;
 }
 
@@ -469,7 +447,8 @@ rx_err_t shared_data_update_temp(const temp_sensor_state_t* state)
     return k_rx_err_null_ptr;
   }
 
-  internal_byte_copy(&s_temp_state, state, sizeof(s_temp_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(&s_temp_state, state, sizeof(s_temp_state));
   return k_rx_ok;
 }
 
@@ -479,7 +458,8 @@ rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
     return k_rx_err_null_ptr;
   }
 
-  internal_byte_copy(out_state, &s_temp_state, sizeof(*out_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_state, &s_temp_state, sizeof(*out_state));
   return k_rx_ok;
 }
 
@@ -490,7 +470,8 @@ rx_err_t shared_data_update_obstacle(const obstacle_state_t* state)
     return k_rx_err_null_ptr;
   }
 
-  internal_byte_copy(&s_obstacle_state, state, sizeof(s_obstacle_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(&s_obstacle_state, state, sizeof(s_obstacle_state));
   return k_rx_ok;
 }
 
@@ -500,7 +481,8 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
     return k_rx_err_null_ptr;
   }
 
-  internal_byte_copy(out_state, &s_obstacle_state, sizeof(*out_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_state, &s_obstacle_state, sizeof(*out_state));
   return k_rx_ok;
 }
 

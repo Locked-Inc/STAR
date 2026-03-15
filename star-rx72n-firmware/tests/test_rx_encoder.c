@@ -186,15 +186,23 @@
 
 /* Include mock registers FIRST to override hardware accessors.
  * This defines the mock types and guard macros to prevent hardware headers. */
-#include "mock_rx_mtu_regs.h"
-
-/* Include the encoder source directly to ensure it uses mock registers.
- * This is necessary because the hardware header accessor functions are inline. */
 #include <string.h>
 
-#include "../libs/rx_encoder/src/rx_mtu_encoder.c" // NOLINT(bugprone-suspicious-include)
 #include "mock_rx_mtu_encoder.h"
+#include "mock_rx_mtu_regs.h"
+#include "rx_mtu_encoder.h"
 #include "unity.h"
+
+/* Forward declarations for RX_STATIC_TESTABLE internal functions */
+rx_err_t internal_enable_mtu_module(rx_mtu_channel_t channel);
+rx_err_t internal_configure_encoder_timer(volatile rx_mtu_channel_regs_t* mtu);
+rx_err_t internal_verify_timer_counting(const volatile rx_mtu_channel_regs_t* mtu);
+rx_err_t internal_initialize_encoder_state(rx_mtu_channel_t           channel,
+                                           const rx_encoder_config_t* config);
+rx_err_t internal_update_state_from_count(rx_encoder_state_t* state,
+                                          rx_mtu_channel_t    channel,
+                                          uint16_t            current_count);
+bool     internal_is_valid_channel(rx_mtu_channel_t channel);
 
 /* =============================================================================
  * Test Constants
@@ -371,7 +379,7 @@ void test_encoder_init_invalid_channel_fails(void)
 {
   /* Channel 5 does not exist in MTU */
   s_config.channel =
-    (rx_mtu_channel_t)k_test_channel_5; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_mtu_channel_t)k_test_channel_5; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 
   rx_err_t err = rx_encoder_init(&s_config);
 
@@ -445,7 +453,7 @@ void test_encoder_deinit_out_of_range_channel_fails(void)
   /* Channel value >= k_encoder_max_channels (7) should fail.
    * Use channel 8 since that's definitely out of range. */
   rx_err_t err = rx_encoder_deinit(
-    (rx_mtu_channel_t)k_test_channel_8); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_mtu_channel_t)k_test_channel_8); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1205,7 +1213,7 @@ void test_encoder_read_raw_invalid_channel_fails(void)
 {
   /* Channel 5 has no base address (nullptr from internal_get_mtu_base) */
   uint16_t count = 0;
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_encoder_read_raw((rx_mtu_channel_t)k_test_channel_5, &count);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1214,7 +1222,7 @@ void test_encoder_read_raw_invalid_channel_fails(void)
 void test_encoder_read_count_invalid_channel_fails(void)
 {
   rx_encoder_state_t state = {0};
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_encoder_read_count((rx_mtu_channel_t)k_test_channel_5, &state);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1226,7 +1234,7 @@ void test_encoder_read_velocity_invalid_channel_fails(void)
   rx_err_t err      = rx_encoder_read_velocity(
     &velocity,
     s_test_delta_time_10ms,
-    (rx_mtu_channel_t)k_test_channel_5); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_mtu_channel_t)k_test_channel_5); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1234,7 +1242,7 @@ void test_encoder_read_velocity_invalid_channel_fails(void)
 void test_encoder_reset_invalid_channel_fails(void)
 {
   rx_err_t err = rx_encoder_reset(
-    (rx_mtu_channel_t)k_test_channel_5); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_mtu_channel_t)k_test_channel_5); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1243,7 +1251,7 @@ void test_encoder_set_count_invalid_channel_fails(void)
 {
   rx_err_t err = rx_encoder_set_count(
     0,
-    (rx_mtu_channel_t)k_test_channel_5); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_mtu_channel_t)k_test_channel_5); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1309,7 +1317,7 @@ void test_internal_enable_mtu_module_channel_out_of_range(void)
 {
   /* Channel > k_mtu_channel_7 triggers first guard in internal_enable_mtu_module */
   rx_err_t err = internal_enable_mtu_module(
-    (rx_mtu_channel_t)k_test_channel_8); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_mtu_channel_t)k_test_channel_8); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1318,7 +1326,7 @@ void test_internal_enable_mtu_module_channel_5_no_base(void)
 {
   /* Channel 5 passes the > k_mtu_channel_7 check but has no base address */
   rx_err_t err = internal_enable_mtu_module(
-    (rx_mtu_channel_t)k_test_channel_5); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    (rx_mtu_channel_t)k_test_channel_5); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1370,12 +1378,12 @@ void test_internal_initialize_encoder_state_null_config(void)
 void test_internal_initialize_encoder_state_invalid_channel(void)
 {
   rx_encoder_config_t cfg = {
-    // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+    /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
     .channel          = (rx_mtu_channel_t)k_test_channel_5,
     .counts_per_rev   = k_test_counts_per_rev,
     .invert_direction = false,
   };
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = internal_initialize_encoder_state((rx_mtu_channel_t)k_test_channel_5, &cfg);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1396,7 +1404,7 @@ void test_internal_initialize_encoder_state_zero_cpr(void)
 void test_internal_update_state_from_count_invalid_channel(void)
 {
   rx_encoder_state_t state = {0};
-  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = internal_update_state_from_count(&state, (rx_mtu_channel_t)k_test_channel_5, 0);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
