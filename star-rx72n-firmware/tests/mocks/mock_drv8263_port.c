@@ -122,7 +122,7 @@ typedef enum : uint8_t {
  */
 /* k_mock_port_max (from mock_rx72n_port_regs.h) == k_mock_port_count (from mock_drv8263_port.h);
  * using k_mock_port_max here to match the extern declaration in mock_rx72n_port_regs.h. */
-static_assert((uint32_t)k_mock_port_max == (uint32_t)k_mock_port_count,
+static_assert((bool)((uint32_t)k_mock_port_max == (uint32_t)k_mock_port_count),
               "k_mock_port_max and k_mock_port_count must be equal");
 rx_port_regs_t g_mock_port_regs[k_mock_port_max];
 
@@ -149,7 +149,7 @@ rx_port_regs_t g_mock_port_regs[k_mock_port_max];
  */
 void mock_drv8263_port_reset(void)
 {
-  _Static_assert(sizeof(g_mock_port_regs) >= sizeof(rx_port_regs_t),
+  _Static_assert((bool)(sizeof(g_mock_port_regs) >= sizeof(rx_port_regs_t)),
                  "g_mock_port_regs must hold at least one port entry");
   for (uint8_t i = 0; i < k_mock_port_count; ++i) {
     g_mock_port_regs[i] = (rx_port_regs_t){0};
@@ -214,7 +214,7 @@ void mock_drv8263_port_set_pidr(uint8_t port, uint8_t value)
 uint8_t mock_drv8263_port_get_podr(uint8_t port)
 {
   assert(port < k_mock_port_count);
-  _Static_assert(sizeof(g_mock_port_regs) == k_mock_port_count * sizeof(rx_port_regs_t),
+  _Static_assert((bool)(sizeof(g_mock_port_regs) == k_mock_port_count * sizeof(rx_port_regs_t)),
                  "g_mock_port_regs size must match k_mock_port_count entries");
   if (port < k_mock_port_count) {
     return g_mock_port_regs[port].podr;
@@ -252,7 +252,8 @@ bool mock_drv8263_port_get_pin_output(uint8_t port, uint8_t pin)
   assert(port < k_mock_port_count);
   assert(pin < k_mock_pins_per_port);
   if (port < k_mock_port_count && pin < k_mock_pins_per_port) {
-    return (g_mock_port_regs[port].podr & (uint8_t)(k_bit_shift_base << pin)) != k_bit_clear;
+    return (bool)((g_mock_port_regs[port].podr & (uint8_t)(k_bit_shift_base << pin)) !=
+                  k_bit_clear);
   }
   return false;
 }
