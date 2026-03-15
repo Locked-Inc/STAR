@@ -812,6 +812,34 @@ void test_error_handler_max_components(void)
   TEST_ASSERT_EQUAL_UINT32(0, iface.get_component_error_count(iface.ctx, "OVERFLOW"));
 }
 
+/**
+ * @brief Test that component names longer than the max are truncated
+ *
+ * @details
+ * Verifies internal_copy_component_name truncation path: when the component
+ * name exceeds k_error_handler_component_name_max - 1 characters, the name
+ * is truncated and null-terminated at position max - 1.
+ */
+void test_error_handler_long_component_name_truncated(void)
+{
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  rx_error_interface_t iface;
+  TEST_ASSERT_EQUAL(k_rx_ok, error_handler_get_interface(&iface, &s_handler));
+
+  /* 40-char name exceeds k_error_handler_component_name_max (32) */
+  static const char* const s_long_name = "ABCDEFGHIJKLMNOPQRSTUVWXYZ_EXTRA_CHARS!!";
+
+  iface.report_error(iface.ctx, k_rx_fail, s_long_name, "Long name test");
+  TEST_ASSERT_EQUAL_UINT32(1, iface.get_error_count(iface.ctx));
+
+  /* The truncated name (first 31 chars) should be findable */
+  TEST_ASSERT_EQUAL_UINT32(
+    1,
+    iface.get_component_error_count(iface.ctx, "ABCDEFGHIJKLMNOPQRSTUVWXYZ_EXTR"));
+}
+
 /* =============================================================================
  * Interface Validation Tests
  * =============================================================================
@@ -1495,6 +1523,7 @@ static void internal_run_lifecycle_tests(void)
   /* Multiple component tests */
   RUN_TEST(test_error_handler_multiple_components);
   RUN_TEST(test_error_handler_max_components);
+  RUN_TEST(test_error_handler_long_component_name_truncated);
 }
 
 /**
