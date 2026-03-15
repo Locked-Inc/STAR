@@ -35,8 +35,6 @@
  * @see mock_drv8263_port.h Mock PORT register API
  */
 
-#include <string.h>
-
 #include "mock_drv8263_port.h"
 #include "rx_drv8263.h"
 #include "unity.h"
@@ -133,6 +131,11 @@ typedef enum : uint8_t {
   k_test_invalid_port = 17, /**< Out-of-range port number (max valid is 16) */
   k_test_invalid_pin  = 8,  /**< Out-of-range pin number (max valid is 7) */
 } test_invalid_gpio_t;
+
+/** @brief Delay values used in internal_delay_us boundary tests */
+typedef enum : uint32_t {
+  k_test_delay_over_max = 101, /**< Exceeds k_max_delay_us (100) for boundary test */
+} test_delay_boundary_t;
 
 /**
  * @var s_adc_voltage_zero
@@ -281,7 +284,12 @@ static void internal_init_handle(void)
 void setUp(void)
 {
   mock_drv8263_port_reset();
-  memset(&s_handle, 0, sizeof(s_handle));
+  {
+    uint8_t* raw = (uint8_t*)&s_handle;
+    for (size_t i = 0; i < sizeof(s_handle); i++) {
+      raw[i] = 0;
+    }
+  }
   s_config = internal_make_valid_config();
 }
 
@@ -962,7 +970,7 @@ void test_internal_delay_us_zero(void)
 void test_internal_delay_us_over_max(void)
 {
   /* us=101 exceeds k_max_delay_us (100); should return silently */
-  internal_delay_us(101u);
+  internal_delay_us(k_test_delay_over_max);
 }
 
 /* =============================================================================
@@ -1218,11 +1226,8 @@ void test_set_olp_fault_enable_success(void)
  *
  * @since Version 1.0.0
  */
-int main(void)
+static void internal_run_init_and_control_tests(void)
 {
-  UNITY_BEGIN();
-
-  /* Initialization */
   RUN_TEST(test_init_success);
   RUN_TEST(test_init_null_handle);
   RUN_TEST(test_init_null_config);
@@ -1238,19 +1243,13 @@ int main(void)
   RUN_TEST(test_init_invalid_in2_port);
   RUN_TEST(test_init_copies_config);
   RUN_TEST(test_init_with_boot_olp_enabled);
-
-  /* DRVOFF control */
   RUN_TEST(test_set_drvoff_null_handle);
   RUN_TEST(test_set_drvoff_not_initialized);
   RUN_TEST(test_set_drvoff_active);
   RUN_TEST(test_set_drvoff_inactive);
-
-  /* Latched fault clear */
   RUN_TEST(test_clear_fault_null_handle);
   RUN_TEST(test_clear_fault_not_initialized);
   RUN_TEST(test_clear_fault_nsleep_returns_high);
-
-  /* OLP diagnostics */
   RUN_TEST(test_olp_null_handle);
   RUN_TEST(test_olp_null_result_out1);
   RUN_TEST(test_olp_null_result_out2);
@@ -1259,41 +1258,29 @@ int main(void)
   RUN_TEST(test_olp_short_to_vm_all_nfault_low);
   RUN_TEST(test_olp_drvoff_restored_after_diagnostic);
   RUN_TEST(test_olp_in1_in2_restored_to_low);
-
-  /* ADC-to-amps conversion */
   RUN_TEST(test_adc_to_amps_zero_voltage);
   RUN_TEST(test_adc_to_amps_one_volt);
   RUN_TEST(test_adc_to_amps_full_scale);
   RUN_TEST(test_adc_to_amps_typical_motor_current);
-
-  /* OLP enable/disable */
   RUN_TEST(test_set_olp_boot_enable_null_handle);
   RUN_TEST(test_set_olp_boot_enable_not_initialized);
   RUN_TEST(test_set_olp_boot_enable_success);
   RUN_TEST(test_set_olp_fault_enable_null_handle);
   RUN_TEST(test_set_olp_fault_enable_not_initialized);
   RUN_TEST(test_set_olp_fault_enable_success);
+}
 
-  /* Internal delay */
+static void internal_run_internal_function_tests(void)
+{
   RUN_TEST(test_internal_delay_us_zero);
   RUN_TEST(test_internal_delay_us_over_max);
-
-  /* Internal GPIO write */
   RUN_TEST(test_internal_gpio_write_invalid_port);
   RUN_TEST(test_internal_gpio_write_invalid_pin);
-
-  /* Internal GPIO read */
   RUN_TEST(test_internal_gpio_read_invalid_port);
   RUN_TEST(test_internal_gpio_read_invalid_pin);
-
-  /* Internal validate config */
   RUN_TEST(test_internal_validate_config_null);
-
-  /* Internal OLP apply patterns */
   RUN_TEST(test_internal_olp_apply_patterns_null_handle);
   RUN_TEST(test_internal_olp_apply_patterns_null_readings);
-
-  /* Internal OLP decode results */
   RUN_TEST(test_internal_olp_decode_results_null_out1);
   RUN_TEST(test_internal_olp_decode_results_null_out2);
   RUN_TEST(test_internal_olp_decode_open_load_out2);
@@ -1302,9 +1289,13 @@ int main(void)
   RUN_TEST(test_internal_olp_decode_unknown_pattern_100);
   RUN_TEST(test_internal_olp_decode_unknown_pattern_010);
   RUN_TEST(test_internal_olp_decode_unknown_pattern_001);
-
-  /* Boot OLP abnormal result */
   RUN_TEST(test_init_boot_olp_abnormal_result);
+}
 
+int main(void)
+{
+  UNITY_BEGIN();
+  internal_run_init_and_control_tests();
+  internal_run_internal_function_tests();
   return UNITY_END();
 }

@@ -15,7 +15,6 @@
 #include "mock_rx_dmaca.h"
 
 #include <stddef.h>
-#include <string.h>
 
 #include "mock_rx72n_dmac_regs.h"
 
@@ -98,7 +97,12 @@ void mock_rx_dmaca_reset(void)
   s_deinit_count    = 0;
   s_transfer_count  = 0;
   s_transfer_result = k_rx_ok;
-  memset(&s_last_config, 0, sizeof(s_last_config));
+  {
+    uint8_t* p = (uint8_t*)&s_last_config;
+    for (size_t i = 0; i < sizeof(s_last_config); i++) {
+      p[i] = 0;
+    }
+  }
   s_transfer_called = false;
   s_is_initialized  = false;
 }

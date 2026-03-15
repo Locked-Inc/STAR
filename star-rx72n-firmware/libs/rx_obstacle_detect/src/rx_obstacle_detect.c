@@ -282,8 +282,16 @@ typedef enum : uint16_t {
  * =============================================================================
  */
 
-static void                 internal_detection_task_entry(ULONG input);
-static rx_err_t             internal_validate_config(const rx_obstacle_detect_config_t* config);
+static void     internal_detection_task_entry(ULONG input);
+static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* config);
+static void     internal_copy_config(rx_obstacle_detect_t*              handle,
+                                     const rx_obstacle_detect_config_t* config);
+static rx_err_t internal_create_threadx_resources(rx_obstacle_detect_t* handle);
+static void     internal_run_detection_loop(rx_obstacle_detect_t* handle, ULONG sleep_ticks);
+static void     internal_process_sensor_reading(rx_obstacle_detect_t* handle,
+                                                uint8_t               sensor_idx,
+                                                float                 distance_cm);
+static void     internal_update_obstacle_state(rx_obstacle_detect_t* handle, rx_err_t* out_err);
 RX_STATIC_TESTABLE rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle);
 RX_STATIC_TESTABLE rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle);
 RX_STATIC_TESTABLE void     internal_invoke_callback(const rx_obstacle_detect_t* handle,
@@ -327,7 +335,28 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
 
   *handle = s_zero_handle;
 
-  /* Copy configuration */
+  internal_copy_config(handle, config);
+
+  ret = internal_create_threadx_resources(handle);
+  if (ret != k_rx_ok) {
+    return ret;
+  }
+
+  handle->initialized = true;
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Copy configuration fields and handles into the detection handle
+ * @param[out] handle Destination handle (must be zero-initialized)
+ * @param[in]  config Source configuration
+ * @pre handle and config must be non-null (validated by caller)
+ * @post All config fields, sensor handles, and motor handles are copied
+ */
+static void internal_copy_config(rx_obstacle_detect_t*              handle,
+                                 const rx_obstacle_detect_config_t* config)
+{
   handle->sensor_count           = config->sensor_count;
   handle->motor_count            = config->motor_count;
   handle->detection_threshold_cm = config->detection_threshold_cm;
@@ -336,27 +365,32 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
   handle->callback               = config->callback;
   handle->user_data              = config->user_data;
 
-  /* Copy sensor handles */
   for (uint8_t i = 0; i < config->sensor_count; i++) {
     handle->sensors[i] = config->sensors[i];
   }
 
-  /* Copy motor handles */
   for (uint8_t i = 0; i < config->motor_count; i++) {
     handle->motors[i] = config->motors[i];
   }
 
-  /* Initialize state */
   handle->state          = k_obstacle_detect_state_stopped;
   handle->stop_requested = false;
+}
 
-  /* Create event flags */
+/**
+ * @brief Create ThreadX event flags and detection thread
+ * @param[in,out] handle Handle with config already copied
+ * @return k_rx_ok on success, k_rx_err_rtos_error on ThreadX failure
+ * @pre handle must have config fields populated
+ * @post Event flags and thread created (thread not yet started)
+ */
+static rx_err_t internal_create_threadx_resources(rx_obstacle_detect_t* handle)
+{
   UINT status = tx_event_flags_create(&handle->event_flags, "ObstacleDetectEvents");
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
 
-  /* Create detection task */
   status = tx_thread_create(&handle->thread,
                             "ObstacleDetect",
                             internal_detection_task_entry,
@@ -372,8 +406,6 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
     tx_event_flags_delete(&handle->event_flags);
     return k_rx_err_rtos_error;
   }
-
-  handle->initialized = true;
 
   return k_rx_ok;
 }
@@ -1015,7 +1047,15 @@ void rx_obstacle_detect_test_set_task_running(bool running)
 
 static void internal_detection_task_entry(const ULONG input)
 {
-  rx_obstacle_detect_t* const handle = (rx_obstacle_detect_t*)(uintptr_t)input;
+  /* ThreadX passes the handle as a ULONG; recover it through a union to avoid
+   * integer-to-pointer cast that triggers performance-no-int-to-ptr. */
+  union {
+    ULONG                 as_ulong;
+    rx_obstacle_detect_t* as_ptr;
+  } task_arg;
+  task_arg.as_ulong = input;
+
+  rx_obstacle_detect_t* const handle = task_arg.as_ptr;
   RX_ASSERT(handle != nullptr, "Obstacle detect handle is nullptr");
   if (handle == nullptr) {
     return;
@@ -1040,40 +1080,47 @@ static void internal_detection_task_entry(const ULONG input)
       continue;
     }
 
-    /* Update state */
     handle->state          = k_obstacle_detect_state_running;
     handle->stop_requested = false;
 
-    /* Detection loop -- exits via break (stop event, stop_requested, or error) */
-    for (;;) {
-      /* Check for stop event (non-blocking) */
-      ULONG      stop_flags  = 0;
-      const UINT status_stop = tx_event_flags_get(&handle->event_flags,
-                                                  k_event_flag_stop,
-                                                  TX_OR_CLEAR,
-                                                  &stop_flags,
-                                                  TX_NO_WAIT);
+    internal_run_detection_loop(handle, sleep_ticks);
+  }
+}
 
-      const bool stop_event_fired = (status_stop == TX_SUCCESS);
-      if (stop_event_fired | handle->stop_requested) {
-        handle->state          = k_obstacle_detect_state_stopped;
-        handle->stop_requested = false;
-        break;
-      }
+/**
+ * @brief Inner detection loop that polls sensors until stopped or error
+ * @param[in,out] handle Obstacle detection handle in running state
+ * @param[in] sleep_ticks ThreadX tick count between poll cycles
+ * @pre handle is non-null and in running state
+ * @post handle->state set to stopped on exit (stop event or error)
+ */
+static void internal_run_detection_loop(rx_obstacle_detect_t* const handle, const ULONG sleep_ticks)
+{
+  for (;;) {
+    /* Check for stop event (non-blocking) */
+    ULONG      stop_flags  = 0;
+    const UINT status_stop = tx_event_flags_get(&handle->event_flags,
+                                                k_event_flag_stop,
+                                                TX_OR_CLEAR,
+                                                &stop_flags,
+                                                TX_NO_WAIT);
 
-      /* Poll all sensors */
-      const rx_err_t ret = internal_poll_sensors(handle);
-      if (ret != k_rx_ok) {
-        /* Critical error during polling (e.g., motor stop failed) */
-        /* Stop detection to prevent unsafe operation */
-        handle->state          = k_obstacle_detect_state_stopped;
-        handle->stop_requested = false;
-        break;
-      }
-
-      /* Sleep until next poll */
-      tx_thread_sleep(sleep_ticks);
+    const bool stop_event_fired = (status_stop == TX_SUCCESS);
+    if (stop_event_fired || handle->stop_requested) {
+      handle->state          = k_obstacle_detect_state_stopped;
+      handle->stop_requested = false;
+      break;
     }
+
+    /* Poll all sensors */
+    const rx_err_t ret = internal_poll_sensors(handle);
+    if (ret != k_rx_ok) {
+      handle->state          = k_obstacle_detect_state_stopped;
+      handle->stop_requested = false;
+      break;
+    }
+
+    tx_thread_sleep(sleep_ticks);
   }
 }
 
@@ -1160,11 +1207,6 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
  */
 RX_STATIC_TESTABLE rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
 {
-  float    distance_cm         = 0.0F;
-  rx_err_t ret                 = k_rx_ok;
-  bool     was_obstacle_active = false;
-  bool     is_obstacle_active  = false;
-
   static const float s_clear_distance_offset_cm = 1.0F;
 
   if (handle == nullptr) {
@@ -1177,78 +1219,98 @@ RX_STATIC_TESTABLE rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
 
   handle->total_polls++;
 
-  /* Poll each sensor */
+  /* Poll each sensor and update per-sensor debounce/obstacle state */
   for (uint8_t i = 0; i < handle->sensor_count; i++) {
-    ret = rx_hcsr04_measure_blocking(handle->sensors[i], &distance_cm);
+    float          distance_cm = 0.0F;
+    const rx_err_t meas_ret    = rx_hcsr04_measure_blocking(handle->sensors[i], &distance_cm);
 
-    /* Handle measurement errors */
-    if (ret == k_rx_err_timeout) {
-      /* No echo = no object (treat as clear) */
+    if (meas_ret == k_rx_err_timeout) {
       distance_cm = handle->detection_threshold_cm + s_clear_distance_offset_cm;
-    } else if (ret != k_rx_ok) {
-      /* Other errors = skip this sensor */
+    } else if (meas_ret != k_rx_ok) {
       continue;
     }
 
-    /* Check if obstacle detected */
-    if (distance_cm < handle->detection_threshold_cm) {
-      /* Increment debounce counter */
-      handle->debounce_counter[i]++;
-
-      /* Check if debounce threshold reached */
-      if (handle->debounce_counter[i] >= handle->debounce_samples) {
-        was_obstacle_active        = handle->obstacle_active[i];
-        handle->obstacle_active[i] = true;
-
-        /* Fire callback on state change */
-        if (!was_obstacle_active) {
-          internal_invoke_callback(handle, true, i, distance_cm);
-          handle->obstacle_events++;
-        }
-      }
-    } else {
-      /* Object beyond threshold - check if state changed */
-      if (handle->debounce_counter[i] > 0 &&
-          handle->debounce_counter[i] < handle->debounce_samples) {
-        /* False positive debounced */
-        handle->false_positive_count++;
-      }
-
-      /* Reset debounce counter */
-      handle->debounce_counter[i] = 0;
-
-      /* Check if obstacle cleared */
-      if (handle->obstacle_active[i]) {
-        handle->obstacle_active[i] = false;
-        internal_invoke_callback(handle, false, i, distance_cm);
-      }
-    }
+    internal_process_sensor_reading(handle, i, distance_cm);
   }
 
+  /* Evaluate aggregate obstacle state and control motors */
+  rx_err_t motor_err = k_rx_ok;
+  internal_update_obstacle_state(handle, &motor_err);
+
+  return motor_err;
+}
+
+/**
+ * @brief Process a single sensor distance reading through debounce logic
+ * @param[in,out] handle Obstacle detection handle
+ * @param[in] sensor_idx Index of the sensor being processed
+ * @param[in] distance_cm Measured (or synthesized) distance in centimeters
+ * @pre handle is non-null and initialized (validated by caller)
+ * @post Debounce counter and obstacle_active flag updated for sensor_idx
+ */
+static void internal_process_sensor_reading(rx_obstacle_detect_t* const handle,
+                                            const uint8_t               sensor_idx,
+                                            const float                 distance_cm)
+{
+  if (distance_cm < handle->detection_threshold_cm) {
+    handle->debounce_counter[sensor_idx]++;
+
+    if (handle->debounce_counter[sensor_idx] >= handle->debounce_samples) {
+      const bool was_active               = handle->obstacle_active[sensor_idx];
+      handle->obstacle_active[sensor_idx] = true;
+
+      if (!was_active) {
+        internal_invoke_callback(handle, true, sensor_idx, distance_cm);
+        handle->obstacle_events++;
+      }
+    }
+    return;
+  }
+
+  /* Object beyond threshold */
+  if (handle->debounce_counter[sensor_idx] > 0 &&
+      handle->debounce_counter[sensor_idx] < handle->debounce_samples) {
+    handle->false_positive_count++;
+  }
+
+  handle->debounce_counter[sensor_idx] = 0;
+
+  if (handle->obstacle_active[sensor_idx]) {
+    handle->obstacle_active[sensor_idx] = false;
+    internal_invoke_callback(handle, false, sensor_idx, distance_cm);
+  }
+}
+
+/**
+ * @brief Evaluate aggregate obstacle state across all sensors and control motors
+ * @param[in,out] handle Obstacle detection handle
+ * @param[out] out_err Set to motor stop error code if stop fails, k_rx_ok otherwise
+ * @pre handle is non-null and initialized (validated by caller)
+ * @post handle->state updated; motors stopped if obstacle newly detected
+ */
+static void internal_update_obstacle_state(rx_obstacle_detect_t* const handle,
+                                           rx_err_t* const             out_err)
+{
+  *out_err = k_rx_ok;
+
   /* Check if any sensor has active obstacle */
-  is_obstacle_active = false;
+  bool any_active = false;
   for (uint8_t i = 0; i < handle->sensor_count; i++) {
     if (handle->obstacle_active[i]) {
-      is_obstacle_active = true;
+      any_active = true;
       break;
     }
   }
 
-  /* Update state and stop motors if needed */
-  if (is_obstacle_active && handle->state != k_obstacle_detect_state_obstacle) {
+  if (any_active && handle->state != k_obstacle_detect_state_obstacle) {
     handle->state = k_obstacle_detect_state_obstacle;
-    ret           = internal_stop_all_motors(handle);
-    if (ret != k_rx_ok) {
-      /* CRITICAL: Failed to stop motors during obstacle detection */
-      /* This is a safety-critical failure - motors may still be running */
+    *out_err      = internal_stop_all_motors(handle);
+    if (*out_err != k_rx_ok) {
       handle->state = k_obstacle_detect_state_stopped;
-      return ret;
     }
-  } else if (!is_obstacle_active && handle->state == k_obstacle_detect_state_obstacle) {
+  } else if (!any_active && handle->state == k_obstacle_detect_state_obstacle) {
     handle->state = k_obstacle_detect_state_running;
   }
-
-  return k_rx_ok;
 }
 
 /**

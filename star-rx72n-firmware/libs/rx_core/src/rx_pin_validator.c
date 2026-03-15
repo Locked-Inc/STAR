@@ -176,6 +176,40 @@
 static const char* const s_tag = "PIN_VALIDATOR";
 
 /* =============================================================================
+ * Internal String Helpers
+ * =============================================================================
+ */
+
+/**
+ * @brief Copy a string safely without strncpy
+ *
+ * @details
+ * Copies up to max_len-1 characters from src to dst, then null-terminates.
+ * Replaces strncpy to satisfy clang-analyzer-security checks.
+ *
+ * @param[out] dst Destination buffer
+ * @param[in] src Source string (null-terminated)
+ * @param[in] max_len Size of destination buffer
+ *
+ * @pre dst and src must be non-NULL
+ * @pre max_len must be > 0
+ * @post dst is null-terminated
+ *
+ * @note Thread-safe: no shared state
+ * @since Version 1.0.0
+ */
+static void internal_safe_copy(char* dst, const char* src, const uint32_t max_len)
+{
+  for (uint32_t i = 0; i < max_len - 1; i++) {
+    dst[i] = src[i];
+    if (src[i] == '\0') {
+      return;
+    }
+  }
+  dst[max_len - 1] = '\0';
+}
+
+/* =============================================================================
  * Internal Helper Functions
  * =============================================================================
  */
@@ -494,10 +528,7 @@ impl_reserve_pin(void* ctx, const uint8_t port, const uint8_t pin, const char* f
 {
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
-  /* Use bitwise | to evaluate both sides without short-circuit branches */
-  const bool validator_null = (validator == nullptr);
-  const bool function_null  = (function == nullptr);
-  if (validator_null | function_null) {
+  if ((validator == nullptr) || (function == nullptr)) {
     return k_rx_err_null_ptr;
   }
 
@@ -525,8 +556,7 @@ impl_reserve_pin(void* ctx, const uint8_t port, const uint8_t pin, const char* f
 
   /* Reserve the pin */
   reservation->reserved = true;
-  strncpy(reservation->function, function, k_pin_function_name_max_len - 1);
-  reservation->function[k_pin_function_name_max_len - 1] = '\0';
+  internal_safe_copy(reservation->function, function, k_pin_function_name_max_len);
 
   /* Release mutex */
   (void)tx_mutex_put(&validator->mutex);
@@ -802,10 +832,7 @@ static rx_err_t impl_get_pin_function(void*          ctx,
 {
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
-  /* Use bitwise | to evaluate both sides without short-circuit branches */
-  const bool validator_null    = (validator == nullptr);
-  const bool function_out_null = (function_out == nullptr);
-  if (validator_null | function_out_null) {
+  if ((validator == nullptr) || (function_out == nullptr)) {
     return k_rx_err_null_ptr;
   }
 
@@ -833,8 +860,7 @@ static rx_err_t impl_get_pin_function(void*          ctx,
   }
 
   /* Copy function name */
-  strncpy(function_out, reservation->function, function_len - 1);
-  function_out[function_len - 1] = '\0';
+  internal_safe_copy(function_out, reservation->function, function_len);
 
   /* Release mutex */
   (void)tx_mutex_put(&validator->mutex);

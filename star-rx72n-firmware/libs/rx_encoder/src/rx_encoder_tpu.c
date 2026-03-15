@@ -201,8 +201,9 @@ RX_STATIC_TESTABLE rx_err_t internal_update_state(rx_encoder_state_t*    state,
 
   s_state[channel].revolutions = s_state[channel].total_count / cpr;
 
-  const int32_t remainder       = s_state[channel].total_count % cpr;
-  s_state[channel].position_deg = (float)(remainder * k_tpu_enc_degrees_per_rev) / cpr;
+  const int32_t remainder = s_state[channel].total_count % cpr;
+  s_state[channel].position_deg =
+    ((float)remainder * (float)k_tpu_enc_degrees_per_rev) / (float)cpr;
 
   /* Post-condition: position sanity check (remainder = total % cpr, so |pos| < 360 always) */
 
@@ -343,7 +344,7 @@ rx_err_t rx_tpu_encoder_read_velocity(float*                 velocity_rps,
   /* cpr was validated by internal_update_state above; post-condition guard */
   const uint16_t cpr = s_counts_per_rev[channel];
 
-  const float delta_revs = (float)delta_count / cpr;
+  const float delta_revs = (float)delta_count / (float)cpr;
   *velocity_rps          = delta_revs / delta_time_s;
 
   /* Warn on unrealistic velocity */
@@ -403,8 +404,9 @@ rx_err_t rx_tpu_encoder_set_count(const int32_t count, const rx_tpu_channel_t ch
 
   s_state[channel].revolutions = count / cpr;
 
-  const int32_t remainder       = count % cpr;
-  s_state[channel].position_deg = (float)(remainder * k_tpu_enc_degrees_per_rev) / cpr;
+  const int32_t remainder = count % cpr;
+  s_state[channel].position_deg =
+    ((float)remainder * (float)k_tpu_enc_degrees_per_rev) / (float)cpr;
 
   return k_rx_ok;
 }

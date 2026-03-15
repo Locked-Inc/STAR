@@ -66,7 +66,8 @@
  * =============================================================================
  */
 
-static const char* s_tag = "UART_COMM";
+/* NOLINTNEXTLINE(readability-identifier-naming) -- s_ prefix per CLAUDE.md for statics */
+static const char* const s_tag = "UART_COMM";
 
 /* =============================================================================
  * Frame Header Constants
@@ -213,7 +214,7 @@ RX_STATIC_TESTABLE rx_err_t internal_verify_crc(const uint8_t* data,
   }
 
   const uint32_t received_crc   = rx_frame_read_le32(&data[offset]);
-  uint32_t       calculated_crc = (uint32_t)k_uart_crc32_seed_initial;
+  uint32_t       calculated_crc = k_uart_crc32_seed_initial;
   (void)(rx_crc32_ieee(data, offset, &calculated_crc));
   /* Post-condition: rx_crc32_ieee only fails on null/zero-len; data is valid and
    * offset >= k_frame_min_size - k_frame_crc_size > 0 is guaranteed by RX_ASSERT above */
@@ -407,7 +408,9 @@ RX_STATIC_TESTABLE rx_err_t internal_compact_rx_buffer(rx_uart_comm_handle_t* ha
     handle->rx_buffer_pos = 0;
   } else {
     const uint32_t remaining = handle->rx_buffer_len - handle->rx_buffer_pos;
-    memmove(handle->rx_buffer, handle->rx_buffer + handle->rx_buffer_pos, remaining);
+    for (uint32_t i = 0; i < remaining; i++) {
+      handle->rx_buffer[i] = handle->rx_buffer[handle->rx_buffer_pos + i];
+    }
     handle->rx_buffer_len = remaining;
     handle->rx_buffer_pos = 0;
   }
@@ -541,16 +544,18 @@ RX_STATIC_TESTABLE rx_err_t internal_decode_frame(rx_uart_comm_handle_t* handle,
   const uint8_t* hdr    = handle->rx_buffer + handle->rx_buffer_pos;
   uint32_t       offset = 0;
 
-  rx_err_t err = internal_decode_header(hdr, total_size, frame, &offset);
+  (void)internal_decode_header(hdr, total_size, frame, &offset);
   /* Post-condition: header decode can only fail if sync word is wrong (impossible: buffer
    * was aligned to sync) or payload_len invalid (impossible: parse_header validated it) */
 
   if (frame->header.length > 0) {
-    memcpy(frame->payload, &hdr[offset], frame->header.length);
+    for (uint16_t i = 0; i < frame->header.length; i++) {
+      frame->payload[i] = hdr[offset + i];
+    }
     offset += frame->header.length;
   }
 
-  err = internal_verify_crc(hdr, offset, &frame->crc);
+  rx_err_t err = internal_verify_crc(hdr, offset, &frame->crc);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame CRC check failed");
   }
@@ -736,6 +741,7 @@ RX_STATIC_TESTABLE rx_receive_result_t internal_receive_iteration(rx_uart_comm_h
  * @see rx_uart_comm_init() Uses this template to zero-initialize the comm handle
  * @since Version 1.0.0
  */
+/* NOLINTNEXTLINE(readability-identifier-naming) -- s_ prefix per CLAUDE.md for statics */
 static const rx_uart_comm_handle_t s_zero_handle = {};
 
 rx_err_t rx_uart_comm_init(rx_uart_comm_handle_t* handle, const rx_uart_comm_config_t* config)
@@ -760,7 +766,7 @@ rx_err_t rx_uart_comm_init(rx_uart_comm_handle_t* handle, const rx_uart_comm_con
 
   handle->rx_buffer_len = 0;
   handle->rx_buffer_pos = 0;
-  handle->initialized   = true;
+  handle->initialized   = 1U;
 
   rx_log_debug(s_tag, "UART comm initialized");
   return k_rx_ok;
@@ -779,7 +785,7 @@ rx_err_t rx_uart_comm_deinit(rx_uart_comm_handle_t* handle)
     (void)(rx_frame_decoder_deinit(&handle->decoder));
     /* Post-condition: deinit only fails on nullptr; &handle->decoder is never null */
 
-    handle->initialized = 0;
+    handle->initialized = 0U;
   }
 
   rx_log_debug(s_tag, "UART comm deinitialized");
@@ -841,7 +847,9 @@ RX_STATIC_TESTABLE rx_err_t internal_build_frame(rx_frame_t*           frame,
   frame->header.flags    = flags;
 
   if (payload != nullptr && payload_len > 0) {
-    memcpy(frame->payload, payload, payload_len);
+    for (uint32_t i = 0; i < payload_len; i++) {
+      frame->payload[i] = payload[i];
+    }
   }
 
   return k_rx_ok;
@@ -879,9 +887,9 @@ rx_err_t rx_uart_comm_send(rx_uart_comm_handle_t* handle,
   }
 
   rx_frame_t frame = {0};
-  err              = internal_build_frame(&frame, sequence, type, flags, payload, payload_len);
-  /* Post-condition: build_frame fails only on nullptr frame (impossible: &frame) or
-   * payload_len > max (already validated above) or null payload with nonzero len (validated) */
+  /* build_frame only fails on nullptr frame (impossible: &frame), payload_len > max
+   * (already validated above), or null payload with nonzero len (validated above) */
+  (void)internal_build_frame(&frame, sequence, type, flags, payload, payload_len);
 
   uint32_t wire_len = 0;
   err               = rx_frame_encode(&handle->encoder, &frame, handle->tx_buffer, &wire_len);
@@ -997,6 +1005,68 @@ RX_STATIC_TESTABLE rx_err_t internal_handle_reset(rx_uart_comm_handle_t* handle)
   return k_rx_ok;
 }
 
+/**
+ * @enum uart_dispatch_result_t
+ * @brief Return codes for internal_dispatch_frame()
+ *
+ * @details
+ * Distinguishes between "frame consumed internally, continue loop",
+ * "frame dispatched to caller as data", and "error during dispatch".
+ */
+typedef enum : uint8_t {
+  k_dispatch_continue = 0, /**< Control frame consumed; continue receive loop */
+  k_dispatch_done     = 1, /**< Data frame validated; return to caller */
+  k_dispatch_error    = 2, /**< Error during dispatch; check err output */
+} uart_dispatch_result_t;
+
+/**
+ * @brief Dispatch a decoded frame by type (PING/RESET/PONG/data)
+ *
+ * @param[in,out] handle UART communication handle
+ * @param[in]     frame  Decoded frame to dispatch
+ * @param[out]    err    Error code (valid only when return is k_dispatch_error)
+ *
+ * @return uart_dispatch_result_t Result code
+ * @retval k_dispatch_continue Control frame handled; caller should continue loop
+ * @retval k_dispatch_done     Data frame validated; caller should return k_rx_ok
+ * @retval k_dispatch_error    Error occurred; *err contains the error code
+ *
+ * @pre handle != nullptr and initialized
+ * @pre frame != nullptr with valid decoded header
+ * @pre err != nullptr
+ * @post On k_dispatch_continue: PONG/RESET_ACK may have been sent
+ * @post On k_dispatch_done: session RX sequence updated
+ */
+static uart_dispatch_result_t
+internal_dispatch_frame(rx_uart_comm_handle_t* handle, rx_frame_t* frame, rx_err_t* err)
+{
+  /* PING: auto-send PONG, continue loop for next frame */
+  if (frame->header.type == k_frame_type_ping) {
+    *err = internal_handle_ping(handle, frame);
+    return (*err != k_rx_ok) ? k_dispatch_error : k_dispatch_continue;
+  }
+
+  /* RESET: send RESET_ACK, reset session, continue loop */
+  if (frame->header.type == k_frame_type_reset) {
+    *err = internal_handle_reset(handle);
+    return (*err != k_rx_ok) ? k_dispatch_error : k_dispatch_continue;
+  }
+
+  /* PONG / RESET_ACK: consume silently */
+  if (frame->header.type == k_frame_type_pong || frame->header.type == k_frame_type_reset_ack) {
+    return k_dispatch_continue;
+  }
+
+  /* Data frame: validate sequence via session */
+  rx_session_validate_result_t validate_result = k_session_validate_fail;
+  *err = rx_session_validate_rx(handle->session, frame->header.sequence, &validate_result);
+  if (*err != k_rx_ok) {
+    rx_log_error(s_tag, "Session validate_rx returned error");
+    return k_dispatch_error;
+  }
+  return k_dispatch_done;
+}
+
 rx_err_t rx_uart_comm_receive(rx_uart_comm_handle_t* handle, rx_frame_t* frame, uint32_t timeout_ms)
 {
   (void)timeout_ms; /* UART receive is non-blocking; timeout reserved for future use */
@@ -1013,14 +1083,10 @@ rx_err_t rx_uart_comm_receive(rx_uart_comm_handle_t* handle, rx_frame_t* frame, 
     return k_rx_err_invalid_state;
   }
 
-  uint32_t            iterations = 0;
-  rx_err_t            err        = k_rx_ok;
-  rx_receive_result_t result     = k_receive_continue;
+  rx_err_t err = k_rx_ok;
 
-  while (iterations < k_uart_comm_max_receive_iterations) {
-    iterations++;
-
-    result = internal_receive_iteration(handle, frame, &err);
+  for (uint32_t iterations = 0; iterations < k_uart_comm_max_receive_iterations; iterations++) {
+    rx_receive_result_t result = internal_receive_iteration(handle, frame, &err);
     if (result == k_receive_error) {
       return err;
     }
@@ -1028,41 +1094,14 @@ rx_err_t rx_uart_comm_receive(rx_uart_comm_handle_t* handle, rx_frame_t* frame, 
       continue;
     }
 
-    /* PING: auto-send PONG, loop for next frame */
-    if (frame->header.type == k_frame_type_ping) {
-      err = internal_handle_ping(handle, frame);
-      if (err != k_rx_ok) {
-        return err;
-      }
-      continue;
+    uart_dispatch_result_t dispatch = internal_dispatch_frame(handle, frame, &err);
+    if (dispatch == k_dispatch_error) {
+      return err;
     }
-
-    /* RESET: send RESET_ACK, reset session, loop */
-    if (frame->header.type == k_frame_type_reset) {
-      err = internal_handle_reset(handle);
-      if (err != k_rx_ok) {
-        return err;
-      }
-      continue;
+    if (dispatch == k_dispatch_done) {
+      return k_rx_ok;
     }
-
-    /* PONG / RESET_ACK: consume silently, loop for next frame */
-    if (frame->header.type == k_frame_type_pong || frame->header.type == k_frame_type_reset_ack) {
-      continue;
-    }
-
-    /* Data frame: validate sequence via session */
-    rx_session_validate_result_t validate_result = k_session_validate_fail;
-    rx_err_t                     validate_err =
-      rx_session_validate_rx(handle->session, frame->header.sequence, &validate_result);
-    if (validate_err != k_rx_ok) {
-      rx_log_error(s_tag, "Session validate_rx returned error");
-      return validate_err;
-    }
-    /* Post-condition: validate_fail result is always paired with k_rx_err_protocol_error,
-     * so if validate_err == k_rx_ok, then validate_result is always ok or gap (not fail) */
-
-    return k_rx_ok;
+    /* k_dispatch_continue: loop for next frame */
   }
 
   return k_rx_err_timeout;

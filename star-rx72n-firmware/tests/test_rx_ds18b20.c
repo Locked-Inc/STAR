@@ -467,7 +467,7 @@
  * @code
  * void test_crc_error(void) {
  *     internal_create_valid_scratchpad(s_mock_state.scratchpad, ...);
- *     s_mock_state.scratchpad[k_ds18b20_scratch_crc] ^= 0xFF;  // Corrupt CRC
+ *     s_mock_state.scratchpad[k_ds18b20_scratch_crc] ^= k_test_invalid_byte;  // Corrupt CRC
  *     rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp);
  *     TEST_ASSERT_EQUAL(k_rx_err_crc_mismatch, err);
  * }
@@ -563,11 +563,20 @@ typedef enum : uint8_t {
   k_test_temp_25c_msb         = 0x01, /**< +25.0degC MSB: 0x0190 = 400 decimal */
   k_test_temp_0c_lsb          = 0x00, /**< 0.0degC LSB: 0x0000 = 0 decimal */
   k_test_temp_0c_msb          = 0x00, /**< 0.0degC MSB: 0x0000 = 0 decimal */
-  k_test_temp_minus_55c_lsb = 0x90, /**< -55.0degC LSB: 0xFC90 = -880 decimal (two's complement) */
-  k_test_temp_minus_55c_msb = 0xFC, /**< -55.0degC MSB: 0xFC90 = -880 decimal (two's complement) */
-  k_test_temp_125c_lsb      = 0xD0, /**< +125.0degC LSB: 0x07D0 = 2000 decimal */
-  k_test_temp_125c_msb      = 0x07, /**< +125.0degC MSB: 0x07D0 = 2000 decimal */
-  k_test_config_12bit       = 0x7F, /**< 12-bit resolution config: R1=1, R0=1 -> 0b01111111 */
+  k_test_temp_minus_55c_lsb = 0x90,  /**< -55.0degC LSB: 0xFC90 = -880 decimal (two's complement) */
+  k_test_temp_minus_55c_msb = 0xFC,  /**< -55.0degC MSB: 0xFC90 = -880 decimal (two's complement) */
+  k_test_temp_125c_lsb      = 0xD0,  /**< +125.0degC LSB: 0x07D0 = 2000 decimal */
+  k_test_temp_125c_msb      = 0x07,  /**< +125.0degC MSB: 0x07D0 = 2000 decimal */
+  k_test_config_12bit       = 0x7F,  /**< 12-bit resolution config: R1=1, R0=1 -> 0b01111111 */
+  k_test_invalid_resolution = 99,    /**< Out-of-range resolution value for error tests */
+  k_test_ds1820_family_code = 0x10,  /**< DS1820 family code (not DS18B20) */
+  k_test_out_of_range_msb   = 0x80,  /**< MSB for out-of-range temp (0x8000 = -32768) */
+  k_test_too_high_temp_lsb  = 0xD1,  /**< LSB for temp too high (0x07D1 = 2001 > max) */
+  k_test_too_high_temp_msb  = 0x07,  /**< MSB for temp too high (0x07D1 = 2001 > max) */
+  k_test_invalid_byte       = 0xFFU, /**< Invalid byte value for error tests */
+  k_test_write_fail_after_2 = 2U,    /**< Fail write after 2 successful calls */
+  k_test_skip_rom_fail_at_4 = 4U,    /**< Fail skip_rom on 4th call */
+  k_test_presence_fail_at_5 = 5U,    /**< Fail presence on 5th reset */
 } ds18b20_mock_constants_t;
 
 /**
@@ -645,6 +654,15 @@ typedef enum : uint8_t {
  */
 static const float s_temp_tolerance_c = 0.1F;
 
+/**
+ * @brief Expected temperature values for assertion comparisons
+ * @{
+ */
+static const float s_test_expected_25c       = 25.0F;  /**< +25.0degC expected value */
+static const float s_test_expected_minus_55c = -55.0F; /**< -55.0degC expected value */
+static const float s_test_expected_125c      = 125.0F; /**< +125.0degC expected value */
+/** @} */
+
 /* =============================================================================
  * Mock OneWire Bus Manager
  * =============================================================================
@@ -665,6 +683,43 @@ static rx_bus_manager_t s_mock_bus_manager;
  * physical GPIO pins (e.g., "onewire_p40" for port 4, pin 0).
  */
 static const char* s_test_bus_name = "test_onewire";
+
+/* =============================================================================
+ * Safe Buffer Helpers (avoid memcpy/memset)
+ * =============================================================================
+ */
+
+/**
+ * @brief Copy bytes from source to destination without memcpy
+ *
+ * @param[out] dst Destination buffer
+ * @param[in] src Source buffer
+ * @param[in] len Number of bytes to copy
+ *
+ * @pre dst != nullptr
+ * @pre src != nullptr
+ */
+static void helper_copy_buf(uint8_t* dst, const uint8_t* src, uint32_t len)
+{
+  for (uint32_t i = 0; i < len; i++) {
+    dst[i] = src[i];
+  }
+}
+
+/**
+ * @brief Zero a byte buffer without memset
+ *
+ * @param[out] buf Buffer to zero
+ * @param[in] len Number of bytes to zero
+ *
+ * @pre buf != nullptr
+ */
+static void helper_zero_buf(uint8_t* buf, uint32_t len)
+{
+  for (uint32_t i = 0; i < len; i++) {
+    buf[i] = 0;
+  }
+}
 
 /* =============================================================================
  * Mock OneWire Bus Functions
@@ -988,7 +1043,7 @@ rx_bus_onewire_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* da
     length = k_ds18b20_scratchpad_bytes;
   }
 
-  memcpy(data, s_mock_state.scratchpad, length);
+  helper_copy_buf(data, s_mock_state.scratchpad, length);
   return k_rx_ok;
 }
 
@@ -1191,7 +1246,7 @@ rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager,
     return k_rx_err_invalid_state;
   }
 
-  memcpy(rom, s_mock_state.rom, k_onewire_rom_bytes);
+  helper_copy_buf(rom, s_mock_state.rom, k_onewire_rom_bytes);
   return k_rx_ok;
 }
 
@@ -1400,7 +1455,7 @@ static void internal_create_valid_scratchpad(uint8_t    scratchpad[k_ds18b20_scr
  */
 static void internal_reset_mock_state(void)
 {
-  memset(&s_mock_state, 0U, sizeof(s_mock_state));
+  helper_zero_buf((uint8_t*)&s_mock_state, sizeof(s_mock_state));
   s_mock_state.presence_response = true;
   s_mock_state.power_mode        = true; /* External power */
   s_mock_state.initialized       = false;
@@ -1462,7 +1517,7 @@ static void internal_reset_mock_state(void)
 static void internal_init_handle(rx_ds18b20_handle_t* handle)
 {
   TEST_ASSERT_NOT_NULL(handle);
-  memset(handle, 0U, sizeof(*handle));
+  helper_zero_buf((uint8_t*)handle, sizeof(*handle));
 }
 
 /* =============================================================================
@@ -1744,7 +1799,7 @@ void test_ds18b20_init_invalid_resolution(void)
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
-    .resolution       = (ds18b20_resolution_t)99,
+    .resolution       = (ds18b20_resolution_t)k_test_invalid_resolution,
     .use_rom_matching = false,
   };
 
@@ -1819,7 +1874,7 @@ void test_ds18b20_read_temperature_25c(void)
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(s_temp_tolerance_c, 25.0f, temp_c);
+  TEST_ASSERT_FLOAT_WITHIN(s_temp_tolerance_c, s_test_expected_25c, temp_c);
 }
 
 /**
@@ -1904,7 +1959,7 @@ void test_ds18b20_read_temperature_minus_55c(void)
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(s_temp_tolerance_c, -55.0f, temp_c);
+  TEST_ASSERT_FLOAT_WITHIN(s_temp_tolerance_c, s_test_expected_minus_55c, temp_c);
 }
 
 /**
@@ -1941,7 +1996,7 @@ void test_ds18b20_read_temperature_125c(void)
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(s_temp_tolerance_c, 125.0f, temp_c);
+  TEST_ASSERT_FLOAT_WITHIN(s_temp_tolerance_c, s_test_expected_125c, temp_c);
 }
 
 /**
@@ -2443,7 +2498,7 @@ void test_ds18b20_init_with_rom_matching(void)
     .use_rom_matching = true,
   };
   /* Copy mock ROM into config */
-  memcpy(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
+  helper_copy_buf(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
 
   internal_init_handle(&handle);
 
@@ -2710,8 +2765,8 @@ void test_ds18b20_init_wrong_family_code(void)
     .use_rom_matching = true,
   };
   /* Set wrong family code (not 0x28) */
-  memset(config.rom, 0x00, k_onewire_rom_bytes);
-  config.rom[0] = 0x10; /* DS1820 family code, not DS18B20 */
+  helper_zero_buf(config.rom, k_onewire_rom_bytes);
+  config.rom[0] = k_test_ds1820_family_code; /* DS1820 family code, not DS18B20 */
   internal_init_handle(&handle);
   rx_err_t err = rx_ds18b20_init(&handle, &config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2780,7 +2835,7 @@ void test_ds18b20_trigger_conversion_match_rom_error(void)
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = true,
   };
-  memcpy(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
+  helper_copy_buf(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   s_mock_state.force_match_rom_error = true;
@@ -2797,7 +2852,7 @@ void test_ds18b20_trigger_conversion_write_error(void)
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = true,
   };
-  memcpy(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
+  helper_copy_buf(config.rom, s_mock_state.rom, k_onewire_rom_bytes);
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* With use_rom_matching=true, select_device uses match_rom.
@@ -2840,7 +2895,7 @@ void test_ds18b20_read_temperature_out_of_range(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* Create scratchpad with out-of-range raw value 0x8000 = -32768 < -880 */
   internal_create_valid_scratchpad(s_mock_state.scratchpad,
-                                   (temp_raw_t){.lsb = 0x00, .msb = 0x80},
+                                   (temp_raw_t){.lsb = 0x00, .msb = k_test_out_of_range_msb},
                                    k_test_config_12bit);
   rx_err_t err = rx_ds18b20_read_temperature_raw(&handle, &raw_temp);
   TEST_ASSERT_EQUAL(k_rx_err_out_of_range, err);
@@ -2914,7 +2969,7 @@ void test_ds18b20_set_resolution_invalid_value(void)
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* 0xFF is an invalid resolution value */
-  rx_err_t err = rx_ds18b20_set_resolution(&handle, (ds18b20_resolution_t)0xFF);
+  rx_err_t err = rx_ds18b20_set_resolution(&handle, (ds18b20_resolution_t)k_test_invalid_byte);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -2949,7 +3004,7 @@ void test_ds18b20_scratchpad_crc_error(void)
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* Corrupt the CRC byte to trigger CRC mismatch */
-  s_mock_state.scratchpad[k_ds18b20_scratch_crc] ^= 0xFF;
+  s_mock_state.scratchpad[k_ds18b20_scratch_crc] ^= k_test_invalid_byte;
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
   TEST_ASSERT_EQUAL(k_rx_err_crc_mismatch, err);
 }
@@ -3081,9 +3136,10 @@ void test_ds18b20_read_temperature_too_high(void)
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* Raw value 0x07D0 = 2000 > max_raw (125*16=2000? Let's use 0x07D1 = 2001) */
-  internal_create_valid_scratchpad(s_mock_state.scratchpad,
-                                   (temp_raw_t){.lsb = 0xD1, .msb = 0x07},
-                                   k_test_config_12bit);
+  internal_create_valid_scratchpad(
+    s_mock_state.scratchpad,
+    (temp_raw_t){.lsb = k_test_too_high_temp_lsb, .msb = k_test_too_high_temp_msb},
+    k_test_config_12bit);
   rx_err_t err = rx_ds18b20_read_temperature_raw(&handle, &raw_temp);
   TEST_ASSERT_EQUAL(k_rx_err_out_of_range, err);
 }
@@ -3401,7 +3457,7 @@ void test_ds18b20_set_resolution_write_data_error(void)
    * Then rx_bus_onewire_write (3-byte data) fails because force_write_error=true
    * and write does not use fail_after counter. Covers line 1787. */
   s_mock_state.force_write_error = true;
-  s_mock_state.write_fail_after  = 2U;
+  s_mock_state.write_fail_after  = k_test_write_fail_after_2;
   rx_err_t err                   = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_10bit);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 }
@@ -3477,7 +3533,7 @@ void test_ds18b20_init_set_resolution_error(void)
    *   call 3: set_resolution -> write_scratchpad -> write_byte(write_scratch_cmd) FAIL
    * Set write_fail_after=2 so write_byte fails on the 3rd call (count >= 2). */
   s_mock_state.force_write_error = true;
-  s_mock_state.write_fail_after  = 2U;
+  s_mock_state.write_fail_after  = k_test_write_fail_after_2;
   rx_err_t err                   = rx_ds18b20_init(&handle, &config);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
   /* Handle must be deinitialized on failure */
@@ -3502,7 +3558,7 @@ void test_ds18b20_get_conversion_time_invalid_resolution(void)
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* Force an invalid resolution to trigger the default case */
-  handle.resolution = (ds18b20_resolution_t)0xFFU;
+  handle.resolution = (ds18b20_resolution_t)k_test_invalid_byte;
   uint32_t time_ms  = rx_ds18b20_get_conversion_time_ms(&handle);
   TEST_ASSERT_EQUAL_UINT32(0U, time_ms);
 }
@@ -3533,7 +3589,7 @@ void test_ds18b20_write_scratchpad_no_presence(void)
    * - write_scratchpad: reset 5 (force presence=false)
    * So presence_false_after = 5 (fail on reset_call_count >= 5). */
   s_mock_state.force_presence_false_after = true;
-  s_mock_state.presence_false_after       = 5U;
+  s_mock_state.presence_false_after       = k_test_presence_fail_at_5;
   rx_err_t err = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_10bit);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 }
@@ -3563,7 +3619,7 @@ void test_ds18b20_write_scratchpad_select_error_after_read(void)
    * - write_scratchpad: skip_rom 4 (fail)
    * So skip_rom_fail_after = 4. */
   s_mock_state.force_skip_rom_error = true;
-  s_mock_state.skip_rom_fail_after  = 4U;
+  s_mock_state.skip_rom_fail_after  = k_test_skip_rom_fail_at_4;
   rx_err_t err = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_10bit);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 }
@@ -3587,7 +3643,7 @@ void test_ds18b20_read_temp_raw_invalid_resolution_default(void)
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* Force invalid resolution to hit default case in get_temp_mask */
-  handle.resolution = (ds18b20_resolution_t)0xFFU;
+  handle.resolution = (ds18b20_resolution_t)k_test_invalid_byte;
   int16_t  raw      = 0;
   rx_err_t err      = rx_ds18b20_read_temperature_raw(&handle, &raw);
   /* Default mask is k_ds18b20_temp_mask_12bit so reading still succeeds */
@@ -3686,10 +3742,11 @@ void test_ds18b20_read_scratchpad_reserved_byte_warning(void)
  * @return 0 All tests passed
  * @return Non-zero One or more tests failed
  */
-int main(void)
+/**
+ * @brief Run public API tests (init, temp, resolution, power, conversion, config)
+ */
+static void internal_run_public_api_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Initialization tests */
   RUN_TEST(test_ds18b20_init_success);
   RUN_TEST(test_ds18b20_init_null_handle);
@@ -3730,8 +3787,13 @@ int main(void)
 
   /* Deinitialization tests */
   RUN_TEST(test_ds18b20_deinit);
+}
 
-  /* Additional coverage tests */
+/**
+ * @brief Run additional coverage and null-pointer tests
+ */
+static void internal_run_coverage_tests(void)
+{
   RUN_TEST(test_ds18b20_init_with_rom_matching);
   RUN_TEST(test_ds18b20_deinit_null_handle);
   RUN_TEST(test_ds18b20_deinit_not_initialized);
@@ -3765,6 +3827,13 @@ int main(void)
   RUN_TEST(test_ds18b20_init_null_bus_name);
   RUN_TEST(test_ds18b20_init_wrong_family_code);
   RUN_TEST(test_ds18b20_init_bus_init_error);
+}
+
+/**
+ * @brief Run error path and branch coverage tests
+ */
+static void internal_run_error_path_tests(void)
+{
   RUN_TEST(test_ds18b20_trigger_conversion_reset_error);
   RUN_TEST(test_ds18b20_trigger_conversion_select_device_error);
   RUN_TEST(test_ds18b20_trigger_conversion_match_rom_error);
@@ -3801,6 +3870,15 @@ int main(void)
   RUN_TEST(test_ds18b20_set_resolution_read_scratchpad_error);
   RUN_TEST(test_ds18b20_set_resolution_write_scratchpad_error);
   RUN_TEST(test_ds18b20_init_set_resolution_error);
+}
+
+int main(void)
+{
+  UNITY_BEGIN();
+
+  internal_run_public_api_tests();
+  internal_run_coverage_tests();
+  internal_run_error_path_tests();
 
   return UNITY_END();
 }

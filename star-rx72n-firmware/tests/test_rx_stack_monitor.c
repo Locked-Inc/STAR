@@ -61,8 +61,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "rx_err.h"
 #include "rx_stack_monitor.h"
@@ -86,9 +86,9 @@
  *
  * @code
  * uint8_t stack_buf[k_test_stack_size];
- * memset(stack_buf, (int)k_stack_fill_byte, k_test_stack_size);
- * memset(&stack_buf[k_test_stack_size - k_test_used_bytes],
- *        (int)k_stack_fill_absent_byte, k_test_used_bytes);
+ * internal_mem_fill(stack_buf, (uint8_t)k_stack_fill_byte, k_test_stack_size);
+ * internal_mem_fill(&stack_buf[k_test_stack_size - k_test_used_bytes],
+ *                   (uint8_t)k_stack_fill_absent_byte, k_test_used_bytes);
  * @endcode
  *
  * @since Version 1.0.0
@@ -100,6 +100,26 @@ typedef enum : uint32_t {
   k_stack_fill_absent_byte = 0x00U, /**< Fill byte used to simulate absent fill pattern */
   k_zero_u32               = 0U,    /**< Named zero constant (avoids raw 0 literals; NASA Rule 8) */
 } test_stack_constants_t;
+
+/* =============================================================================
+ * Memory Fill Helper (replaces memset to avoid string.h dependency)
+ * =============================================================================
+ */
+
+/**
+ * @brief Fill a memory region with a given byte value (no memset dependency)
+ *
+ * @param[out] ptr  Pointer to memory region
+ * @param[in]  val  Byte value to fill with
+ * @param[in]  len  Number of bytes to fill
+ */
+static inline void internal_mem_fill(void* ptr, uint8_t val, size_t len)
+{
+  uint8_t* p = (uint8_t*)ptr;
+  for (size_t i = 0; i < len; ++i) {
+    p[i] = val;
+  }
+}
 
 /* =============================================================================
  * Unity Lifecycle Callbacks
@@ -280,7 +300,7 @@ static void test_get_free_bytes_null_output(void)
     .tx_thread_stack_size  = k_test_stack_size,
   };
 
-  memset(stack_buf, (int)k_stack_fill_byte, k_test_stack_size);
+  internal_mem_fill(stack_buf, (uint8_t)k_stack_fill_byte, k_test_stack_size);
 
   rx_err_t err = rx_stack_monitor_get_free_bytes(&thread, NULL);
 
@@ -329,7 +349,7 @@ static void test_get_free_bytes_pattern_absent(void)
   uint32_t free_bytes = k_zero_u32;
 
   /* Fill with absent-pattern byte - no 0xEF sentinel present */
-  memset(stack_buf, (int)k_stack_fill_absent_byte, k_test_stack_size);
+  internal_mem_fill(stack_buf, (uint8_t)k_stack_fill_absent_byte, k_test_stack_size);
 
   rx_err_t err = rx_stack_monitor_get_free_bytes(&thread, &free_bytes);
 
@@ -374,7 +394,7 @@ static void test_get_free_bytes_all_unused(void)
   uint32_t free_bytes = k_zero_u32;
 
   /* Entire stack is 0xEF - thread never used any stack */
-  memset(stack_buf, (int)k_stack_fill_byte, k_test_stack_size);
+  internal_mem_fill(stack_buf, (uint8_t)k_stack_fill_byte, k_test_stack_size);
 
   rx_err_t err = rx_stack_monitor_get_free_bytes(&thread, &free_bytes);
 
@@ -422,10 +442,10 @@ static void test_get_free_bytes_partial_usage(void)
   uint32_t free_bytes = k_zero_u32;
 
   /* Fill entire stack with sentinel, then "use" top k_test_used_bytes */
-  memset(stack_buf, (int)k_stack_fill_byte, k_test_stack_size);
-  memset(&stack_buf[k_test_stack_size - k_test_used_bytes],
-         (int)k_stack_fill_absent_byte,
-         k_test_used_bytes);
+  internal_mem_fill(stack_buf, (uint8_t)k_stack_fill_byte, k_test_stack_size);
+  internal_mem_fill(&stack_buf[k_test_stack_size - k_test_used_bytes],
+                    (uint8_t)k_stack_fill_absent_byte,
+                    k_test_used_bytes);
 
   rx_err_t err = rx_stack_monitor_get_free_bytes(&thread, &free_bytes);
 

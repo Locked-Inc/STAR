@@ -9,7 +9,7 @@
 
 #include "mock_rx_gpio.h"
 
-#include <string.h>
+#include <stddef.h>
 
 /* =============================================================================
  * Mock State
@@ -101,9 +101,25 @@ static uint32_t internal_pin_to_index(rx_port_pin_t pin)
  * =============================================================================
  */
 
+/**
+ * @brief Zero-initialize all fields of mock_gpio_state_t
+ *
+ * @param[out] state Pointer to mock GPIO state struct to clear
+ *
+ * @pre state != nullptr
+ * @post All bytes in *state are zero
+ */
+static void internal_zero_gpio_state(mock_gpio_state_t* state)
+{
+  uint8_t* raw = (uint8_t*)state;
+  for (size_t i = 0; i < sizeof(*state); i++) {
+    raw[i] = 0;
+  }
+}
+
 void mock_gpio_init(void)
 {
-  memset(&s_mock_gpio, 0, sizeof(s_mock_gpio));
+  internal_zero_gpio_state(&s_mock_gpio);
   s_mock_gpio.initialized = true;
 
   /* Default all pins to high (external pull-up for OneWire) */
@@ -114,7 +130,7 @@ void mock_gpio_init(void)
 
 void mock_gpio_deinit(void)
 {
-  memset(&s_mock_gpio, 0, sizeof(s_mock_gpio));
+  internal_zero_gpio_state(&s_mock_gpio);
 }
 
 void mock_gpio_set_read_value(rx_port_pin_t pin, bool high)

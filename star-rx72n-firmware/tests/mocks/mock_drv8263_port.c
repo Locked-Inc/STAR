@@ -28,7 +28,6 @@
 #include "mock_drv8263_port.h"
 
 #include <assert.h>
-#include <string.h>
 
 #include "mock_rx72n_port_regs.h"
 
@@ -150,10 +149,11 @@ rx_port_regs_t g_mock_port_regs[k_mock_port_max];
  */
 void mock_drv8263_port_reset(void)
 {
-  /** @brief Minimum valid array size (at least one port entry) */
-  enum : uint8_t { k_mock_port_min_size = 1 };
-  assert(sizeof(g_mock_port_regs) >= k_mock_port_min_size * sizeof(rx_port_regs_t));
-  (void)memset(g_mock_port_regs, k_memset_zero, sizeof(g_mock_port_regs));
+  _Static_assert(sizeof(g_mock_port_regs) >= sizeof(rx_port_regs_t),
+                 "g_mock_port_regs must hold at least one port entry");
+  for (uint8_t i = 0; i < k_mock_port_count; ++i) {
+    g_mock_port_regs[i] = (rx_port_regs_t){0};
+  }
   assert(g_mock_port_regs[k_mock_port_first_index].podr == k_mock_port_reset_value);
 }
 
@@ -214,7 +214,8 @@ void mock_drv8263_port_set_pidr(uint8_t port, uint8_t value)
 uint8_t mock_drv8263_port_get_podr(uint8_t port)
 {
   assert(port < k_mock_port_count);
-  assert(sizeof(g_mock_port_regs) == k_mock_port_count * sizeof(rx_port_regs_t));
+  _Static_assert(sizeof(g_mock_port_regs) == k_mock_port_count * sizeof(rx_port_regs_t),
+                 "g_mock_port_regs size must match k_mock_port_count entries");
   if (port < k_mock_port_count) {
     return g_mock_port_regs[port].podr;
   }
@@ -251,8 +252,7 @@ bool mock_drv8263_port_get_pin_output(uint8_t port, uint8_t pin)
   assert(port < k_mock_port_count);
   assert(pin < k_mock_pins_per_port);
   if (port < k_mock_port_count && pin < k_mock_pins_per_port) {
-    return (g_mock_port_regs[port].podr & (uint8_t)((uint8_t)k_bit_shift_base << pin)) !=
-           (uint8_t)k_bit_clear;
+    return (g_mock_port_regs[port].podr & (uint8_t)(k_bit_shift_base << pin)) != k_bit_clear;
   }
   return false;
 }
@@ -285,7 +285,7 @@ void mock_drv8263_port_set_pin_input(uint8_t port, uint8_t pin, bool high)
   assert(port < k_mock_port_count);
   assert(pin < k_mock_pins_per_port);
   if (port < k_mock_port_count && pin < k_mock_pins_per_port) {
-    const uint8_t mask = (uint8_t)((uint8_t)k_bit_shift_base << pin);
+    const uint8_t mask = (uint8_t)(k_bit_shift_base << pin);
     if (high) {
       g_mock_port_regs[port].pidr |= mask;
     } else {

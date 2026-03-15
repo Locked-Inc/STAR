@@ -33,8 +33,20 @@
  */
 
 typedef enum : uint8_t {
-  k_test_sensor_idx = 0, /**< Primary sensor index */
+  k_test_sensor_idx   = 0, /**< Primary sensor index */
+  k_test_sensor_count = 1, /**< Number of sensors */
 } test_temp_constants_t;
+
+/** @brief Named constants for temperature test values */
+typedef enum : uint16_t {
+  k_test_timestamp_ms   = 1000, /**< Test timestamp in ms */
+  k_test_expected_cdegc = 2575, /**< Expected 25.75 degC in centi-degrees */
+} test_temp_u16_constants_t;
+
+/** @brief Floating-point temperature test values (cannot be in enum) */
+static const float s_test_temp_reading_celsius = 25.5F;
+static const float s_test_temp_convert_celsius = 25.75F;
+static const float s_test_cdegc_per_degree     = 100.0F;
 
 /* =============================================================================
  * Test Fixture
@@ -185,14 +197,15 @@ void test_temp_task_reads_temperature(void)
   float               temp_celsius;
   rx_err_t            err;
 
-  mock_ds18b20_set_temperature(25.5f);
+  mock_ds18b20_set_temperature(s_test_temp_reading_celsius);
   mock_ds18b20_set_read_return(k_rx_ok);
 
   /* Read temperature */
   err = rx_ds18b20_read_temperature(&handle, &temp_celsius);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_FLOAT(25.5f, temp_celsius);
+  /* NOLINTNEXTLINE(readability-magic-numbers) -- Unity macro internal tolerance literal */
+  TEST_ASSERT_EQUAL_FLOAT(s_test_temp_reading_celsius, temp_celsius);
   TEST_ASSERT_EQUAL_UINT32(1, mock_ds18b20_get_read_count());
 }
 
@@ -211,12 +224,12 @@ void test_temp_data_stored_in_telemetry(void)
   rx_err_t            err;
 
   /* Configure temperature reading (25.75degC) */
-  float temp_celsius = 25.75f;
+  float temp_celsius = s_test_temp_convert_celsius;
 
-  state_in.temperature_cdegc[k_test_sensor_idx] = (int16_t)(temp_celsius * 100.0f);
+  state_in.temperature_cdegc[k_test_sensor_idx] = (int16_t)(temp_celsius * s_test_cdegc_per_degree);
   state_in.sensor_valid[k_test_sensor_idx]      = true;
-  state_in.sensor_count                         = 1;
-  state_in.timestamp_ms                         = 1000;
+  state_in.sensor_count                         = k_test_sensor_count;
+  state_in.timestamp_ms                         = k_test_timestamp_ms;
 
   /* Store in shared data */
   err = shared_data_update_temp(&state_in);
@@ -228,8 +241,8 @@ void test_temp_data_stored_in_telemetry(void)
 
   /* Verify */
   TEST_ASSERT_TRUE(state_out.sensor_valid[k_test_sensor_idx]);
-  TEST_ASSERT_EQUAL_INT16(2575, state_out.temperature_cdegc[k_test_sensor_idx]);
-  TEST_ASSERT_EQUAL_UINT8(1, state_out.sensor_count);
+  TEST_ASSERT_EQUAL_INT16(k_test_expected_cdegc, state_out.temperature_cdegc[k_test_sensor_idx]);
+  TEST_ASSERT_EQUAL_UINT8(k_test_sensor_count, state_out.sensor_count);
 }
 
 /**
@@ -255,8 +268,8 @@ void test_temp_task_handles_read_failure(void)
 
   /* Build state with invalid data as task does */
   state_in.sensor_valid[k_test_sensor_idx] = false;
-  state_in.sensor_count                    = 1;
-  state_in.timestamp_ms                    = 1000;
+  state_in.sensor_count                    = k_test_sensor_count;
+  state_in.timestamp_ms                    = k_test_timestamp_ms;
 
   /* Store in shared data */
   err = shared_data_update_temp(&state_in);

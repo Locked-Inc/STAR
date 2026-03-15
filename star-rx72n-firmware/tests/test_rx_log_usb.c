@@ -100,6 +100,11 @@ typedef enum : uint32_t {
   k_test_usb_log_tx_size     = 1024u,       /**< USB log port TX ring buffer capacity */
   k_test_puthex_9_digits     = 9u,          /**< > 8, triggers clamp to 8 */
   k_test_puthex_zero_digits  = 0u,          /**< 0 digits, triggers clamp to 1 */
+  k_test_putint_neg_val      = 7u,          /**< Absolute value for negative test */
+  k_test_putint_min_digits   = 2u,          /**< Minimum digits for 2-char output */
+  k_test_puthex_test_byte    = 0xABu,       /**< Test byte for puthex zero digits */
+  k_test_boot_wrap_head      = 42u,         /**< Boot ring buffer head for wrap test */
+  k_test_boot_wrap_count     = 64u,         /**< Boot ring buffer count for wrap test */
 } log_usb_test_const_t;
 
 /* =============================================================================
@@ -377,7 +382,7 @@ void test_log_usb_putint_positive(void)
   helper_get_usb_tx_bytes(&tx_bytes);
 
   /* "42" = 2 bytes */
-  TEST_ASSERT_GREATER_OR_EQUAL(2u, tx_bytes);
+  TEST_ASSERT_GREATER_OR_EQUAL(k_test_putint_min_digits, tx_bytes);
 }
 
 /**
@@ -395,13 +400,13 @@ void test_log_usb_putint_negative(void)
 {
   helper_set_usb_configured();
 
-  rx_log_usb_putint(-7);
+  rx_log_usb_putint(-(int32_t)k_test_putint_neg_val);
 
   uint32_t tx_bytes = 0u;
   helper_get_usb_tx_bytes(&tx_bytes);
 
-  /* "-7" = 2 bytes */
-  TEST_ASSERT_GREATER_OR_EQUAL(2u, tx_bytes);
+  /* "-7" = 2 bytes (sign + digit) */
+  TEST_ASSERT_GREATER_OR_EQUAL(k_test_putint_min_digits, tx_bytes);
 }
 
 /**
@@ -740,7 +745,7 @@ void test_log_usb_boot_buffer_flushed_on_ready(void)
   helper_get_usb_tx_bytes(&after_tx);
 
   /* Should have received at least 2 bytes: 'A', 'B' */
-  TEST_ASSERT_GREATER_OR_EQUAL(2u, after_tx);
+  TEST_ASSERT_GREATER_OR_EQUAL(k_test_putint_min_digits, after_tx);
 }
 
 /* =============================================================================
@@ -764,13 +769,13 @@ void test_log_usb_puthex_zero_digits_clamped_to_1(void)
 {
   helper_set_usb_configured();
 
-  rx_log_usb_puthex(0xABu, (uint8_t)k_test_puthex_zero_digits);
+  rx_log_usb_puthex(k_test_puthex_test_byte, (uint8_t)k_test_puthex_zero_digits);
 
   uint32_t tx_bytes = 0u;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   /* digits == 0 is clamped to 1; only one hex character written */
-  TEST_ASSERT_EQUAL(1u, tx_bytes);
+  TEST_ASSERT_EQUAL(k_test_one_byte, tx_bytes);
 }
 
 /**
@@ -962,9 +967,9 @@ void test_log_usb_flush_ring_buffer_wrap_around(void)
    * tail = (42 - 64 + 512) % 512 = 490.
    * During flush: tail=490, chunk=64, 490+64=554 > 512 -> wrap-around triggered.
    * linear_len = 512 - 490 = 22 (bytes until end of ring buffer). */
-  static const char wrap_data[64u] = {
+  static const char wrap_data[k_test_boot_wrap_count] = {
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?"};
-  rx_log_usb_test_set_boot_buffer(42u, 64u, wrap_data);
+  rx_log_usb_test_set_boot_buffer(k_test_boot_wrap_head, k_test_boot_wrap_count, wrap_data);
 
   /* Configure USB and flush. */
   helper_set_usb_configured();
@@ -997,94 +1002,58 @@ void test_log_usb_flush_ring_buffer_wrap_around(void)
  *
  * @since Version 1.0.0
  */
-int main(void)
+/**
+ * @brief Group 1: Boot-buffer path tests (s_usb_ready initially false)
+ */
+static void internal_run_boot_buffer_tests(void)
 {
-  UNITY_BEGIN();
-
-  /* -----------------------------------------------------------------------
-   * Group 1: Boot-buffer path tests.
-   * These run FIRST while rx_log_usb.c's s_usb_ready is still false
-   * (initial value). Once any test calls helper_set_usb_configured() and
-   * writes a character, s_usb_ready becomes true and stays true for the
-   * remainder of the binary run (it is a static variable in rx_log_usb.c).
-   * -----------------------------------------------------------------------
-   */
-
-  /* putc before USB ready -> boot buffer */
   RUN_TEST(test_log_usb_putc_before_usb_ready_buffers);
-
-  /* puts before USB ready -> boot buffer */
   RUN_TEST(test_log_usb_puts_before_usb_ready_buffers);
-
-  /* boot_buffered stat increments before USB ready */
   RUN_TEST(test_log_usb_get_stats_boot_buffered);
-
-  /* notify_ready when USB not configured -> no-op */
   RUN_TEST(test_log_usb_notify_ready_usb_not_ready);
-
-  /* boot buffer overflow does not crash */
   RUN_TEST(test_log_usb_boot_buffer_overflow_no_crash);
-
-  /* flush abort when TX ring buffer is full (hits line 309: k_rx_err_busy during flush).
-   * Must run while s_usb_ready is still false (before any test sets it to true). */
   RUN_TEST(test_log_usb_flush_abort_on_busy);
-
-  /* notify_ready flushes boot buffer once USB is configured */
   RUN_TEST(test_log_usb_notify_ready);
-
-  /* boot buffer is flushed when USB becomes configured (sets s_usb_ready=true) */
   RUN_TEST(test_log_usb_boot_buffer_flushed_on_ready);
+}
 
-  /* -----------------------------------------------------------------------
-   * Group 2: USB-configured path tests.
-   * After the notify_ready test above, s_usb_ready = true and these tests
-   * can freely call helper_set_usb_configured() + rx_log_usb_* without
-   * worrying about the boot buffer being flushed mid-test.
-   * -----------------------------------------------------------------------
-   */
-
-  /* putc basic - USB configured */
+/**
+ * @brief Group 2: USB-configured path tests (s_usb_ready == true)
+ */
+static void internal_run_usb_configured_tests(void)
+{
   RUN_TEST(test_log_usb_putc_basic);
-
-  /* puts tests - USB configured */
   RUN_TEST(test_log_usb_puts_basic);
   RUN_TEST(test_log_usb_puts_null);
   RUN_TEST(test_log_usb_puts_empty);
-
-  /* putint tests - USB configured */
   RUN_TEST(test_log_usb_putint_positive);
   RUN_TEST(test_log_usb_putint_negative);
   RUN_TEST(test_log_usb_putint_zero);
-
-  /* puthex tests - USB configured */
   RUN_TEST(test_log_usb_puthex_basic);
   RUN_TEST(test_log_usb_puthex_zero);
   RUN_TEST(test_log_usb_puthex_4_digits);
   RUN_TEST(test_log_usb_puthex_zero_digits_clamped_to_1);
   RUN_TEST(test_log_usb_puthex_9_digits_clamped_to_8);
-
-  /* stats tests */
   RUN_TEST(test_log_usb_get_stats_null);
   RUN_TEST(test_log_usb_get_stats_basic);
-
-  /* idempotency of notify_ready after s_usb_ready is set */
   RUN_TEST(test_log_usb_notify_ready_idempotent);
-
-  /* USB TX ring buffer full - busy path (line 402: dropped_bytes++) */
   RUN_TEST(test_log_usb_write_busy_increments_dropped_bytes);
+}
 
-  /* -----------------------------------------------------------------------
-   * Group 3: Coverage gap tests using test reset function.
-   * These tests reset all static rx_log_usb state and USB state to exercise
-   * specific branches not reachable through the normal test ordering.
-   * -----------------------------------------------------------------------
-   */
-
-  /* Flush with no overflow: exercises the overflow=false branch at line 335 */
+/**
+ * @brief Group 3: Coverage gap tests using test reset function
+ */
+static void internal_run_coverage_gap_tests(void)
+{
   RUN_TEST(test_log_usb_flush_no_overflow_warning);
-
-  /* Ring buffer wrap-around: exercises linear_len < chunk_len branch at line 314 */
   RUN_TEST(test_log_usb_flush_ring_buffer_wrap_around);
+}
 
+int main(void)
+{
+  UNITY_BEGIN();
+  internal_run_boot_buffer_tests();
+  internal_run_usb_configured_tests();
+  internal_run_coverage_gap_tests();
   return UNITY_END();
 }

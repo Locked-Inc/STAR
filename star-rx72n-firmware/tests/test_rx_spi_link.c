@@ -109,21 +109,77 @@ typedef enum : uint32_t {
 typedef enum : uint8_t {
   k_rx_spi_test_data_byte1 = 0x01, /**< Test byte 1 */
   k_rx_spi_test_data_byte2 = 0x02, /**< Test byte 2 */
-  k_rx_spi_test_data_byte3 = 0x12, /**< Test byte 3 */
+  k_rx_spi_test_data_byte3 = 0x03, /**< Test byte 3 */
+  k_rx_spi_test_data_byte4 = 0x04, /**< Test byte 4 */
+  k_rx_spi_test_data_11    = 0x11, /**< Test pattern 11 */
+  k_rx_spi_test_data_12    = 0x12, /**< Test pattern 12 */
+  k_rx_spi_test_data_22    = 0x22, /**< Test pattern 22 */
+  k_rx_spi_test_data_33    = 0x33, /**< Test pattern 33 */
+  k_rx_spi_test_data_34    = 0x34, /**< Test pattern 34 */
+  k_rx_spi_test_data_44    = 0x44, /**< Test pattern 44 */
+  k_rx_spi_test_data_55    = 0x55, /**< Test pattern 55 */
+  k_rx_spi_test_data_56    = 0x56, /**< Test pattern 56 */
+  k_rx_spi_test_data_66    = 0x66, /**< Test pattern 66 */
+  k_rx_spi_test_data_78    = 0x78, /**< Test pattern 78 */
+  k_rx_spi_test_data_9a    = 0x9A, /**< Test pattern 9A */
   k_rx_spi_test_data_aa    = 0xAA, /**< Test pattern AA */
+  k_rx_spi_test_data_ab    = 0xAB, /**< Test pattern AB */
   k_rx_spi_test_data_bb    = 0xBB, /**< Test pattern BB */
+  k_rx_spi_test_data_be    = 0xBE, /**< Test pattern BE */
   k_rx_spi_test_data_cc    = 0xCC, /**< Test pattern CC */
+  k_rx_spi_test_data_cd    = 0xCD, /**< Test pattern CD */
+  k_rx_spi_test_data_dd    = 0xDD, /**< Test pattern DD */
+  k_rx_spi_test_data_de    = 0xDE, /**< Test pattern DE */
+  k_rx_spi_test_data_ad    = 0xAD, /**< Test pattern AD */
+  k_rx_spi_test_data_ef    = 0xEF, /**< Test pattern EF */
   k_rx_spi_test_data_ff    = 0xFF, /**< Test pattern FF */
 } rx_spi_test_data_t;
 
 /**
- * @enum rx_spi_test_zero_t
- * @brief Zero constant for memset and initialization
+ * @enum rx_spi_test_sizes_t
+ * @brief Small size constants for buffer dimensions and indices
  * @since Version 1.0.0
  */
-typedef enum : int32_t {
-  k_rx_spi_test_zero = 0, /**< Zero value for initialization and memset */
-} rx_spi_test_zero_t;
+typedef enum : uint32_t {
+  k_rx_spi_test_soft_bits_per_byte = 8,    /**< Soft bits produced per input byte */
+  k_rx_spi_test_two_bytes          = 2,    /**< Two-byte payload size */
+  k_rx_spi_test_three_bytes        = 3,    /**< Three-byte payload size */
+  k_rx_spi_test_four_bytes         = 4,    /**< Four-byte payload size */
+  k_rx_spi_test_eight_bytes        = 8,    /**< Eight-byte payload size */
+  k_rx_spi_test_fill_pattern       = 0x55, /**< Memset fill pattern for oversized test */
+} rx_spi_test_sizes_t;
+
+/**
+ * @enum rx_spi_test_seq_t
+ * @brief Sequence number constants for frame injection tests
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_rx_spi_test_seq_2  = 2,  /**< Sequence number 2 */
+  k_rx_spi_test_seq_3  = 3,  /**< Sequence number 3 */
+  k_rx_spi_test_seq_5  = 5,  /**< Sequence number 5 */
+  k_rx_spi_test_seq_7  = 7,  /**< Sequence number 7 */
+  k_rx_spi_test_seq_10 = 10, /**< Sequence number 10 */
+} rx_spi_test_seq_t;
+
+/**
+ * @enum rx_spi_test_misc_t
+ * @brief Miscellaneous test constants
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_rx_spi_test_initial_soft_len = 99, /**< Non-zero initial value to verify overwrite */
+} rx_spi_test_misc_t;
+
+/**
+ * @enum rx_spi_test_payload_idx_t
+ * @brief Payload array indices for frame construction tests
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_rx_spi_test_payload_idx_2 = 2, /**< Third payload byte index */
+  k_rx_spi_test_payload_idx_3 = 3, /**< Fourth payload byte index */
+} rx_spi_test_payload_idx_t;
 
 /**
  * @enum rx_spi_test_payload_sizes_t
@@ -220,9 +276,12 @@ static rx_session_state_t s_session;
 void setUp(void)
 {
   mock_rspi_init(nullptr);
-  (void)memset(&s_link, k_rx_spi_test_zero, sizeof(s_link));
-  (void)memset(&s_spi_comm, k_rx_spi_test_zero, sizeof(s_spi_comm));
-  (void)memset(&s_session, k_rx_spi_test_zero, sizeof(s_session));
+  static const rx_spi_link_t        s_zero_link     = {0};
+  static const rx_spi_comm_handle_t s_zero_spi_comm = {0};
+  static const rx_session_state_t   s_zero_session  = {0};
+  s_link                                            = s_zero_link;
+  s_spi_comm                                        = s_zero_spi_comm;
+  s_session                                         = s_zero_session;
 }
 
 /**
@@ -1171,8 +1230,7 @@ void test_state_query_null_and_error(void)
   TEST_ASSERT_EQUAL(k_spi_link_state_error, rx_spi_link_get_state(nullptr));
 
   /* Uninitialized link (all zeros) also returns error state */
-  rx_spi_link_t uninit_link;
-  (void)memset(&uninit_link, k_rx_spi_test_zero, sizeof(uninit_link));
+  rx_spi_link_t uninit_link = {0};
   /* Should return error (initialized flag is false) */
   TEST_ASSERT_EQUAL(k_spi_link_state_error, rx_spi_link_get_state(&uninit_link));
 }
@@ -1336,9 +1394,10 @@ void test_reset_clears_error_state(void)
  */
 void test_bytes_to_soft_bits_null_data(void)
 {
-  rx_soft_bit_t soft[8];
+  rx_soft_bit_t soft[k_rx_spi_test_soft_bits_per_byte];
   uint32_t      soft_len = 0;
-  rx_err_t      err      = internal_bytes_to_soft_bits(nullptr, 1, soft, 8, &soft_len);
+  rx_err_t      err =
+    internal_bytes_to_soft_bits(nullptr, 1, soft, k_rx_spi_test_soft_bits_per_byte, &soft_len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1347,9 +1406,10 @@ void test_bytes_to_soft_bits_null_data(void)
  */
 void test_bytes_to_soft_bits_null_soft(void)
 {
-  uint8_t  data[]   = {0xAA};
+  uint8_t  data[]   = {k_rx_spi_test_data_aa};
   uint32_t soft_len = 0;
-  rx_err_t err      = internal_bytes_to_soft_bits(data, 1, nullptr, 8, &soft_len);
+  rx_err_t err =
+    internal_bytes_to_soft_bits(data, 1, nullptr, k_rx_spi_test_soft_bits_per_byte, &soft_len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1358,9 +1418,10 @@ void test_bytes_to_soft_bits_null_soft(void)
  */
 void test_bytes_to_soft_bits_null_soft_len(void)
 {
-  uint8_t       data[] = {0xAA};
-  rx_soft_bit_t soft[8];
-  rx_err_t      err = internal_bytes_to_soft_bits(data, 1, soft, 8, nullptr);
+  uint8_t       data[] = {k_rx_spi_test_data_aa};
+  rx_soft_bit_t soft[k_rx_spi_test_soft_bits_per_byte];
+  rx_err_t      err =
+    internal_bytes_to_soft_bits(data, 1, soft, k_rx_spi_test_soft_bits_per_byte, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1369,12 +1430,13 @@ void test_bytes_to_soft_bits_null_soft_len(void)
  */
 void test_bytes_to_soft_bits_valid(void)
 {
-  uint8_t       data[] = {0xAA}; /* 10101010 in binary */
-  rx_soft_bit_t soft[8];
+  uint8_t       data[] = {k_rx_spi_test_data_aa}; /* 10101010 in binary */
+  rx_soft_bit_t soft[k_rx_spi_test_soft_bits_per_byte];
   uint32_t      soft_len = 0;
-  rx_err_t      err      = internal_bytes_to_soft_bits(data, 1, soft, 8, &soft_len);
+  rx_err_t      err =
+    internal_bytes_to_soft_bits(data, 1, soft, k_rx_spi_test_soft_bits_per_byte, &soft_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(8, soft_len);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_soft_bits_per_byte, soft_len);
 }
 
 /**
@@ -1382,10 +1444,14 @@ void test_bytes_to_soft_bits_valid(void)
  */
 void test_bytes_to_soft_bits_buffer_too_small(void)
 {
-  uint8_t       data[] = {0xAA, 0xBB}; /* needs 16 soft bits */
-  rx_soft_bit_t soft[8];               /* only 8 slots */
+  uint8_t       data[] = {k_rx_spi_test_data_aa, k_rx_spi_test_data_bb}; /* needs 16 soft bits */
+  rx_soft_bit_t soft[k_rx_spi_test_soft_bits_per_byte];                  /* only 8 slots */
   uint32_t      soft_len = 0;
-  rx_err_t      err      = internal_bytes_to_soft_bits(data, 2, soft, 8, &soft_len);
+  rx_err_t      err      = internal_bytes_to_soft_bits(data,
+                                             k_rx_spi_test_two_bytes,
+                                             soft,
+                                             k_rx_spi_test_soft_bits_per_byte,
+                                             &soft_len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -1398,9 +1464,10 @@ void test_bytes_to_soft_bits_buffer_too_small(void)
  */
 void test_bytes_to_soft_bits_null_data_null_soft_len(void)
 {
-  rx_soft_bit_t soft[8];
+  rx_soft_bit_t soft[k_rx_spi_test_soft_bits_per_byte];
   /* soft_len is null AND data is null: inner if(soft_len != nullptr) is false */
-  rx_err_t err = internal_bytes_to_soft_bits(nullptr, 1, soft, 8, nullptr);
+  rx_err_t err =
+    internal_bytes_to_soft_bits(nullptr, 1, soft, k_rx_spi_test_soft_bits_per_byte, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1412,8 +1479,9 @@ void test_bytes_to_soft_bits_null_data_null_soft_len(void)
  */
 void test_bytes_to_soft_bits_null_soft_null_soft_len(void)
 {
-  uint8_t  data[] = {0xAA};
-  rx_err_t err    = internal_bytes_to_soft_bits(data, 1, nullptr, 8, nullptr);
+  uint8_t  data[] = {k_rx_spi_test_data_aa};
+  rx_err_t err =
+    internal_bytes_to_soft_bits(data, 1, nullptr, k_rx_spi_test_soft_bits_per_byte, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1426,10 +1494,11 @@ void test_bytes_to_soft_bits_null_soft_null_soft_len(void)
  */
 void test_bytes_to_soft_bits_zero_len(void)
 {
-  uint8_t       data[] = {0xAA};
-  rx_soft_bit_t soft[8];
-  uint32_t      soft_len = 99;
-  rx_err_t      err      = internal_bytes_to_soft_bits(data, 0, soft, 8, &soft_len);
+  uint8_t       data[] = {k_rx_spi_test_data_aa};
+  rx_soft_bit_t soft[k_rx_spi_test_soft_bits_per_byte];
+  uint32_t      soft_len = k_rx_spi_test_initial_soft_len;
+  rx_err_t      err =
+    internal_bytes_to_soft_bits(data, 0, soft, k_rx_spi_test_soft_bits_per_byte, &soft_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(0, soft_len);
 }
@@ -1476,24 +1545,22 @@ void test_receive_passthrough_copies_payload(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  rx_frame_t frame;
-  (void)memset(&frame, 0, sizeof(frame));
-  frame.header.length   = 3;
-  frame.header.flags    = 0; /* no ACK required */
-  frame.header.sequence = 1;
-  frame.payload[0]      = 0xAA;
-  frame.payload[1]      = 0xBB;
-  frame.payload[2]      = 0xCC;
+  rx_frame_t frame                       = {0};
+  frame.header.length                    = k_rx_spi_test_three_bytes;
+  frame.header.flags                     = 0; /* no ACK required */
+  frame.header.sequence                  = 1;
+  frame.payload[0]                       = k_rx_spi_test_data_aa;
+  frame.payload[1]                       = k_rx_spi_test_data_bb;
+  frame.payload[k_rx_spi_test_two_bytes] = k_rx_spi_test_data_cc;
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   err = internal_receive_passthrough(&s_link, &frame, &result);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(3, result.payload_len);
-  TEST_ASSERT_EQUAL(0xAA, result.payload[0]);
-  TEST_ASSERT_EQUAL(0xBB, result.payload[1]);
-  TEST_ASSERT_EQUAL(0xCC, result.payload[2]);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_three_bytes, result.payload_len);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_data_aa, result.payload[0]);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_data_bb, result.payload[1]);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_data_cc, result.payload[k_rx_spi_test_two_bytes]);
   TEST_ASSERT_FALSE(result.fec_decoded);
 }
 
@@ -1510,14 +1577,12 @@ void test_receive_passthrough_zero_payload(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  rx_frame_t frame;
-  (void)memset(&frame, 0, sizeof(frame));
+  rx_frame_t frame      = {0};
   frame.header.length   = 0;
   frame.header.flags    = 0;
-  frame.header.sequence = 2;
+  frame.header.sequence = k_rx_spi_test_seq_2;
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   err = internal_receive_passthrough(&s_link, &frame, &result);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1546,18 +1611,16 @@ void test_receive_fec_decode_runs(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Build a frame with a small but non-zero payload; the content is arbitrary */
-  rx_frame_t frame;
-  (void)memset(&frame, 0, sizeof(frame));
-  frame.header.length   = 4; /* 4 bytes = 32 soft bits */
-  frame.header.flags    = k_frame_flag_fec_enabled;
-  frame.header.sequence = 5;
-  frame.payload[0]      = 0x01;
-  frame.payload[1]      = 0x02;
-  frame.payload[2]      = 0x03;
-  frame.payload[3]      = 0x04;
+  rx_frame_t frame                         = {0};
+  frame.header.length                      = k_rx_spi_test_four_bytes; /* 4 bytes = 32 soft bits */
+  frame.header.flags                       = k_frame_flag_fec_enabled;
+  frame.header.sequence                    = k_rx_spi_test_seq_5;
+  frame.payload[0]                         = k_rx_spi_test_data_byte1;
+  frame.payload[1]                         = k_rx_spi_test_data_byte2;
+  frame.payload[k_rx_spi_test_two_bytes]   = k_rx_spi_test_data_byte3;
+  frame.payload[k_rx_spi_test_three_bytes] = k_rx_spi_test_data_byte4;
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   err = internal_receive_fec_decode(&s_link, &frame, &result);
   /* Either succeeds or fails with protocol error - both are acceptable */
@@ -1582,16 +1645,24 @@ void test_prepare_tx_payload_no_fec(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint8_t        data[4]     = {0x01, 0x02, 0x03, 0x04};
-  const uint8_t* out_payload = nullptr;
-  uint32_t       out_len     = 0;
-  uint8_t        out_flags   = 0;
+  uint8_t        data[k_rx_spi_test_four_bytes] = {k_rx_spi_test_data_byte1,
+                                                   k_rx_spi_test_data_byte2,
+                                                   k_rx_spi_test_data_byte3,
+                                                   k_rx_spi_test_data_byte4};
+  const uint8_t* out_payload                    = nullptr;
+  uint32_t       out_len                        = 0;
+  uint8_t        out_flags                      = 0;
 
-  err = internal_prepare_tx_payload(&s_link, data, 4, &out_payload, &out_len, &out_flags);
+  err = internal_prepare_tx_payload(&s_link,
+                                    data,
+                                    k_rx_spi_test_four_bytes,
+                                    &out_payload,
+                                    &out_len,
+                                    &out_flags);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_PTR(data, out_payload);
-  TEST_ASSERT_EQUAL(4, out_len);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_four_bytes, out_len);
   TEST_ASSERT_BITS(k_frame_flag_requires_ack, k_frame_flag_requires_ack, out_flags);
 }
 
@@ -1636,10 +1707,13 @@ void test_prepare_tx_payload_fec_zero_len(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint8_t        data[4]     = {0x01, 0x02, 0x03, 0x04};
-  const uint8_t* out_payload = nullptr;
-  uint32_t       out_len     = 0;
-  uint8_t        out_flags   = 0;
+  uint8_t        data[k_rx_spi_test_four_bytes] = {k_rx_spi_test_data_byte1,
+                                                   k_rx_spi_test_data_byte2,
+                                                   k_rx_spi_test_data_byte3,
+                                                   k_rx_spi_test_data_byte4};
+  const uint8_t* out_payload                    = nullptr;
+  uint32_t       out_len                        = 0;
+  uint8_t        out_flags                      = 0;
 
   err = internal_prepare_tx_payload(&s_link, data, 0, &out_payload, &out_len, &out_flags);
 
@@ -1662,12 +1736,24 @@ void test_prepare_tx_payload_fec_encodes(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint8_t        data[8]     = {0xAA, 0xBB, 0xCC, 0xDD, 0x11, 0x22, 0x33, 0x44};
-  const uint8_t* out_payload = nullptr;
-  uint32_t       out_len     = 0;
-  uint8_t        out_flags   = 0;
+  uint8_t        data[k_rx_spi_test_eight_bytes] = {k_rx_spi_test_data_aa,
+                                                    k_rx_spi_test_data_bb,
+                                                    k_rx_spi_test_data_cc,
+                                                    k_rx_spi_test_data_dd,
+                                                    k_rx_spi_test_data_11,
+                                                    k_rx_spi_test_data_22,
+                                                    k_rx_spi_test_data_33,
+                                                    k_rx_spi_test_data_44};
+  const uint8_t* out_payload                     = nullptr;
+  uint32_t       out_len                         = 0;
+  uint8_t        out_flags                       = 0;
 
-  err = internal_prepare_tx_payload(&s_link, data, 8, &out_payload, &out_len, &out_flags);
+  err = internal_prepare_tx_payload(&s_link,
+                                    data,
+                                    k_rx_spi_test_eight_bytes,
+                                    &out_payload,
+                                    &out_len,
+                                    &out_flags);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_NOT_NULL(out_payload);
@@ -1711,21 +1797,19 @@ void test_receive_passthrough_with_requires_ack(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  rx_frame_t frame;
-  (void)memset(&frame, 0, sizeof(frame));
-  frame.header.length   = 2;
+  rx_frame_t frame      = {0};
+  frame.header.length   = k_rx_spi_test_two_bytes;
   frame.header.flags    = k_frame_flag_requires_ack;
-  frame.header.sequence = 3;
-  frame.payload[0]      = 0x55;
-  frame.payload[1]      = 0x66;
+  frame.header.sequence = k_rx_spi_test_seq_3;
+  frame.payload[0]      = k_rx_spi_test_data_55;
+  frame.payload[1]      = k_rx_spi_test_data_66;
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   err = internal_receive_passthrough(&s_link, &frame, &result);
   /* ACK send will fail with no hardware but function still returns k_rx_ok */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(2, result.payload_len);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_two_bytes, result.payload_len);
 }
 
 /* =============================================================================
@@ -1808,15 +1892,16 @@ static void helper_encode_frame(rx_frame_type_t type,
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&encoder));
 
-  rx_frame_t frame;
-  (void)memset(&frame, 0, sizeof(frame));
+  rx_frame_t frame      = {0};
   frame.header.type     = (uint8_t)type;
   frame.header.sequence = sequence;
   frame.header.flags    = flags;
   frame.header.length   = (uint16_t)payload_len;
 
   if (payload != nullptr && payload_len > 0) {
-    (void)memcpy(frame.payload, payload, payload_len);
+    for (uint32_t i = 0; i < payload_len; i++) {
+      frame.payload[i] = payload[i];
+    }
   }
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&encoder, &frame, out_buf, out_len));
@@ -1888,8 +1973,12 @@ static void helper_inject_frame_after_send(rx_frame_type_t type,
   uint32_t combined_len = send_frame_wire_sz + frame_len;
   TEST_ASSERT_LESS_OR_EQUAL((uint32_t)k_test_inject_buf_max, combined_len);
 
-  (void)memset(combined, 0, send_frame_wire_sz);
-  (void)memcpy(&combined[send_frame_wire_sz], frame_buf, frame_len);
+  for (uint32_t i = 0; i < send_frame_wire_sz; i++) {
+    combined[i] = 0;
+  }
+  for (uint32_t i = 0; i < frame_len; i++) {
+    combined[send_frame_wire_sz + i] = frame_buf[i];
+  }
 
   TEST_ASSERT_EQUAL(k_rx_ok,
                     mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, combined, combined_len));
@@ -2003,7 +2092,7 @@ void test_wait_for_ack_non_ack_frame(void)
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_link_with_mock_rspi(false));
 
   uint16_t next_seq = 0;
-  uint8_t  data[]   = {0x01, 0x02};
+  uint8_t  data[]   = {k_rx_spi_test_data_byte1, k_rx_spi_test_data_byte2};
 
   helper_inject_frame(k_frame_type_command, next_seq, k_frame_flag_none, data, sizeof(data));
 
@@ -2059,7 +2148,7 @@ void test_send_ack_received_success(void)
    * for both sends and receives. Pre-inject with k_test_send_frame_2byte_size
    * bytes of padding so the send transfer consumes the padding while the ACK
    * frame bytes remain for the subsequent rx_spi_comm_receive() call. */
-  uint8_t data[] = {0xAB, 0xCD};
+  uint8_t data[] = {k_rx_spi_test_data_ab, k_rx_spi_test_data_cd};
   helper_inject_frame_after_send(k_frame_type_ack,
                                  next_seq,
                                  k_frame_flag_none,
@@ -2116,7 +2205,7 @@ void test_send_nack_received_retries_exhausted(void)
   /* Inject NACK with matching sequence */
   helper_inject_frame(k_frame_type_nack, next_seq, k_frame_flag_none, nullptr, 0);
 
-  uint8_t data[] = {0xAB};
+  uint8_t data[] = {k_rx_spi_test_data_ab};
   err            = rx_spi_link_send(&s_link, k_frame_type_command, data, sizeof(data));
 
   /* 1 retry, NACK received -> continue loop, loop ends -> retry_limit */
@@ -2143,17 +2232,17 @@ void test_receive_passthrough_oversized_payload(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  rx_frame_t frame;
-  (void)memset(&frame, 0, sizeof(frame));
+  rx_frame_t frame = {0};
   /* header.length is uint16_t; set to k_harq_max_payload + 1 to trigger truncation */
   frame.header.length   = (uint16_t)(k_harq_max_payload + 1);
   frame.header.flags    = k_frame_flag_none;
-  frame.header.sequence = 7;
+  frame.header.sequence = k_rx_spi_test_seq_7;
   /* Payload buffer in rx_frame_t is k_frame_max_payload bytes; fill with pattern */
-  (void)memset(frame.payload, 0x55, sizeof(frame.payload));
+  for (uint32_t i = 0; i < sizeof(frame.payload); i++) {
+    frame.payload[i] = (uint8_t)k_rx_spi_test_fill_pattern;
+  }
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   err = internal_receive_passthrough(&s_link, &frame, &result);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2180,8 +2269,7 @@ void test_receive_filters_ack_frame(void)
 
   helper_inject_frame(k_frame_type_ack, 0, k_frame_flag_none, nullptr, 0);
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -2201,8 +2289,7 @@ void test_receive_filters_nack_frame(void)
 
   helper_inject_frame(k_frame_type_nack, 0, k_frame_flag_none, nullptr, 0);
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -2229,8 +2316,7 @@ void test_receive_filters_ping_frame(void)
   /* PONG is returned by rx_spi_comm_receive; exercises the filter branch */
   helper_inject_frame(k_frame_type_pong, 1, k_frame_flag_none, nullptr, 0);
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -2250,8 +2336,7 @@ void test_receive_filters_pong_frame(void)
 
   helper_inject_frame(k_frame_type_pong, 0, k_frame_flag_none, nullptr, 0);
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -2279,8 +2364,7 @@ void test_receive_filters_reset_frame(void)
   /* RESET_ACK is returned by rx_spi_comm_receive; exercises the filter branch */
   helper_inject_frame(k_frame_type_reset_ack, 1, k_frame_flag_none, nullptr, 0);
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -2301,8 +2385,7 @@ void test_receive_filters_reset_ack_frame(void)
 
   helper_inject_frame(k_frame_type_reset_ack, 0, k_frame_flag_none, nullptr, 0);
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -2322,21 +2405,24 @@ void test_receive_data_frame_passthrough(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_link_with_mock_rspi(false));
 
-  uint8_t data[] = {0x11, 0x22, 0x33};
+  uint8_t data[] = {k_rx_spi_test_data_11, k_rx_spi_test_data_22, k_rx_spi_test_data_33};
   /* Inject a command frame with no FEC flag */
-  helper_inject_frame(k_frame_type_command, 5, k_frame_flag_none, data, sizeof(data));
+  helper_inject_frame(k_frame_type_command,
+                      k_rx_spi_test_seq_5,
+                      k_frame_flag_none,
+                      data,
+                      sizeof(data));
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(3, result.payload_len);
-  TEST_ASSERT_EQUAL(0x11, result.payload[0]);
-  TEST_ASSERT_EQUAL(0x22, result.payload[1]);
-  TEST_ASSERT_EQUAL(0x33, result.payload[2]);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_three_bytes, result.payload_len);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_data_11, result.payload[0]);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_data_22, result.payload[1]);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_data_33, result.payload[2]);
   TEST_ASSERT_FALSE(result.fec_decoded);
-  TEST_ASSERT_EQUAL(5, result.sequence);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_seq_5, result.sequence);
   TEST_ASSERT_EQUAL(k_frame_type_command, result.frame_type);
 }
 
@@ -2353,11 +2439,14 @@ void test_receive_data_frame_retransmit_flag(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_link_with_mock_rspi(false));
 
-  uint8_t data[] = {0xDE, 0xAD};
-  helper_inject_frame(k_frame_type_command, 3, k_frame_flag_retransmit, data, sizeof(data));
+  uint8_t data[] = {k_rx_spi_test_data_de, k_rx_spi_test_data_ad};
+  helper_inject_frame(k_frame_type_command,
+                      k_rx_spi_test_seq_3,
+                      k_frame_flag_retransmit,
+                      data,
+                      sizeof(data));
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2385,7 +2474,14 @@ void test_receive_fec_decode_success_path(void)
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_link_with_mock_rspi(true)); /* FEC enabled */
 
   /* Encode a small payload using HARQ encode to get a valid FEC bitstream */
-  uint8_t  original[] = {0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56, 0x78, 0x9A};
+  uint8_t  original[] = {k_rx_spi_test_data_ab,
+                         k_rx_spi_test_data_cd,
+                         k_rx_spi_test_data_ef,
+                         k_rx_spi_test_data_12,
+                         k_rx_spi_test_data_34,
+                         k_rx_spi_test_data_56,
+                         k_rx_spi_test_data_78,
+                         k_rx_spi_test_data_9a};
   uint8_t  encoded[k_spi_link_max_encoded_payload];
   uint32_t encoded_len = 0;
 
@@ -2398,15 +2494,15 @@ void test_receive_fec_decode_success_path(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Build a frame with the encoded payload */
-  rx_frame_t frame;
-  (void)memset(&frame, 0, sizeof(frame));
+  rx_frame_t frame      = {0};
   frame.header.length   = (uint16_t)encoded_len;
   frame.header.flags    = k_frame_flag_fec_enabled;
-  frame.header.sequence = 10;
-  (void)memcpy(frame.payload, encoded, encoded_len);
+  frame.header.sequence = k_rx_spi_test_seq_10;
+  for (uint32_t i = 0; i < encoded_len; i++) {
+    frame.payload[i] = encoded[i];
+  }
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   err = internal_receive_fec_decode(&s_link, &frame, &result);
   /* Viterbi decode succeeds for a properly encoded payload; ACK send may log a
@@ -2438,22 +2534,20 @@ void test_receive_fec_decode_failure_nack_path(void)
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_link_with_mock_rspi(true)); /* FEC enabled */
 
   /* Build a frame with a valid-looking FEC-encoded payload (4 bytes) */
-  rx_frame_t frame;
-  (void)memset(&frame, 0, sizeof(frame));
-  frame.header.length   = 4;
-  frame.header.flags    = k_frame_flag_fec_enabled;
-  frame.header.sequence = 7;
-  frame.payload[0]      = 0xAA;
-  frame.payload[1]      = 0xBB;
-  frame.payload[2]      = 0xCC;
-  frame.payload[3]      = 0xDD;
+  rx_frame_t frame                           = {0};
+  frame.header.length                        = k_rx_spi_test_four_bytes;
+  frame.header.flags                         = k_frame_flag_fec_enabled;
+  frame.header.sequence                      = k_rx_spi_test_seq_7;
+  frame.payload[0]                           = k_rx_spi_test_data_aa;
+  frame.payload[1]                           = k_rx_spi_test_data_bb;
+  frame.payload[k_rx_spi_test_payload_idx_2] = k_rx_spi_test_data_cc;
+  frame.payload[k_rx_spi_test_payload_idx_3] = k_rx_spi_test_data_dd;
 
   /* Force HARQ into de-initialized state so rx_harq_decode() returns an error.
    * This triggers the NACK path in internal_receive_fec_decode(). */
   s_link.harq.initialized = 0;
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   rx_err_t err = internal_receive_fec_decode(&s_link, &frame, &result);
   /* HARQ not initialized -> rx_harq_decode fails -> NACK sent -> protocol_error */
@@ -2509,7 +2603,7 @@ void test_send_nack_retry_protocol_error_path(void)
 
   /* Send frame for 1-byte payload = 13 bytes. Inject NACK with matching seq
    * after 13 padding bytes so it survives the send transfer. */
-  uint8_t data[] = {0xEF};
+  uint8_t data[] = {k_rx_spi_test_data_ef};
   helper_inject_frame_after_send(k_frame_type_nack,
                                  next_seq,
                                  k_frame_flag_none,
@@ -2546,7 +2640,10 @@ void test_receive_data_frame_fec_path(void)
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_link_with_mock_rspi(true)); /* FEC enabled */
 
   /* Encode a small payload using HARQ to get a valid FEC-encoded buffer */
-  uint8_t  original[] = {0xDE, 0xAD, 0xBE, 0xEF};
+  uint8_t  original[] = {k_rx_spi_test_data_de,
+                         k_rx_spi_test_data_ad,
+                         k_rx_spi_test_data_be,
+                         k_rx_spi_test_data_ef};
   uint8_t  encoded[k_spi_link_max_encoded_payload];
   uint32_t encoded_len = 0;
 
@@ -2564,8 +2661,7 @@ void test_receive_data_frame_fec_path(void)
   /* Inject the FEC-encoded frame via mock RSPI */
   helper_inject_frame(k_frame_type_command, 0, k_frame_flag_fec_enabled, encoded, encoded_len);
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
 
@@ -2607,7 +2703,7 @@ void test_send_attempt_ack_success(void)
                                  0,
                                  k_test_send_frame_1byte_size);
 
-  uint8_t  payload[] = {0x55};
+  uint8_t  payload[] = {k_rx_spi_test_data_55};
   rx_err_t err       = internal_send_attempt(&s_link,
                                        k_frame_type_command,
                                        k_frame_flag_requires_ack,
@@ -2625,8 +2721,9 @@ void test_send_attempt_ack_success(void)
  */
 void test_bytes_to_soft_bits_null_data_null_len(void)
 {
-  rx_soft_bit_t soft[8];
-  rx_err_t      err = internal_bytes_to_soft_bits(nullptr, 1, soft, 8, nullptr);
+  rx_soft_bit_t soft[k_rx_spi_test_soft_bits_per_byte];
+  rx_err_t      err =
+    internal_bytes_to_soft_bits(nullptr, 1, soft, k_rx_spi_test_soft_bits_per_byte, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -2638,8 +2735,9 @@ void test_bytes_to_soft_bits_null_data_null_len(void)
  */
 void test_bytes_to_soft_bits_null_soft_null_len(void)
 {
-  uint8_t  data[] = {0xAA};
-  rx_err_t err    = internal_bytes_to_soft_bits(data, 1, nullptr, 8, nullptr);
+  uint8_t  data[] = {k_rx_spi_test_data_aa};
+  rx_err_t err =
+    internal_bytes_to_soft_bits(data, 1, nullptr, k_rx_spi_test_soft_bits_per_byte, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -2653,23 +2751,21 @@ void test_receive_passthrough_ack_succeeds(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_link_with_mock_rspi(false));
 
-  rx_frame_t frame;
-  (void)memset(&frame, 0, sizeof(frame));
-  frame.header.length   = 2;
+  rx_frame_t frame      = {0};
+  frame.header.length   = k_rx_spi_test_two_bytes;
   frame.header.flags    = k_frame_flag_requires_ack;
-  frame.header.sequence = 7;
-  frame.payload[0]      = 0xAA;
-  frame.payload[1]      = 0xBB;
+  frame.header.sequence = k_rx_spi_test_seq_7;
+  frame.payload[0]      = k_rx_spi_test_data_aa;
+  frame.payload[1]      = k_rx_spi_test_data_bb;
 
-  rx_spi_link_receive_result_t result;
-  (void)memset(&result, 0, sizeof(result));
+  rx_spi_link_receive_result_t result = {0};
 
   /* With write_ready=true, ACK send succeeds: ack_err == k_rx_ok */
   rx_err_t err = internal_receive_passthrough(&s_link, &frame, &result);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(2, result.payload_len);
-  TEST_ASSERT_EQUAL(0xAA, result.payload[0]);
-  TEST_ASSERT_EQUAL(0xBB, result.payload[1]);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_two_bytes, result.payload_len);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_data_aa, result.payload[0]);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_data_bb, result.payload[1]);
 }
 
 /* =============================================================================
@@ -2685,10 +2781,13 @@ void test_receive_passthrough_ack_succeeds(void)
  *
  * @return Number of failures (0 = all passed)
  */
-int main(void)
+/**
+ * @brief Run lifecycle, state, and validation tests
+ * @details 26 tests covering init (6), deinit (3), state (3), FEC (4),
+ *          reset (3), send validation (4), and receive validation (3).
+ */
+static void internal_run_lifecycle_and_validation_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Lifecycle: Init */
   RUN_TEST(test_init_null_link);
   RUN_TEST(test_init_null_config);
@@ -2728,7 +2827,14 @@ int main(void)
   RUN_TEST(test_receive_null_link);
   RUN_TEST(test_receive_null_result);
   RUN_TEST(test_receive_uninitialized);
+}
 
+/**
+ * @brief Run behavioral and direct internal function tests
+ * @details 24 tests covering behavioral (6), internal functions (18).
+ */
+static void internal_run_behavioral_and_internal_tests(void)
+{
   /* Behavioral Tests */
   RUN_TEST(test_state_transitions_send_retries);
   RUN_TEST(test_fec_enabled_query);
@@ -2756,7 +2862,15 @@ int main(void)
   RUN_TEST(test_receive_passthrough_with_requires_ack);
   RUN_TEST(test_receive_passthrough_ack_succeeds);
   RUN_TEST(test_send_null_payload_zero_len);
+}
 
+/**
+ * @brief Run mock RSPI injection and integration tests
+ * @details 19 tests covering wait_for_ack (6), send (3), receive (9),
+ *          and FEC decode success/failure paths (1).
+ */
+static void internal_run_mock_rspi_injection_tests(void)
+{
   /* Mock RSPI injection tests: internal_wait_for_ack */
   RUN_TEST(test_wait_for_ack_matching_ack);
   RUN_TEST(test_wait_for_ack_mismatched_ack_seq);
@@ -2792,6 +2906,15 @@ int main(void)
 
   /* internal_send_attempt: ACK success */
   RUN_TEST(test_send_attempt_ack_success);
+}
+
+int main(void)
+{
+  UNITY_BEGIN();
+
+  internal_run_lifecycle_and_validation_tests();
+  internal_run_behavioral_and_internal_tests();
+  internal_run_mock_rspi_injection_tests();
 
   return UNITY_END();
 }

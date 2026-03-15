@@ -71,8 +71,8 @@
  */
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "mock_riic_hal.h"
 #include "rx_bmp280.h"
@@ -388,6 +388,70 @@ typedef enum : int32_t {
   k_temp_physical_max_cdegc = 8500,  /**< BMP280 maximum: +85.00 degC */
 } test_bmp280_temp_range_t;
 
+/**
+ * @enum test_bmp280_init_call_idx_t
+ * @brief Expected RIIC call-history indices for rx_bmp280_init()
+ *
+ * @details
+ * rx_bmp280_init() issues three RIIC transactions in order:
+ *   0: write_read (chip ID register 0xD0, 1 byte read)
+ *   1: write_read (calibration register 0x88, 24 bytes read)
+ *   2: write (config register 0xF5, 1 byte write)
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_init_call_chip_id      = 0U, /**< Call 0: write_read chip ID register (0xD0) */
+  k_init_call_calib_read   = 1U, /**< Call 1: write_read calibration register (0x88) */
+  k_init_call_config_write = 2U, /**< Call 2: write config register (0xF5) */
+} test_bmp280_init_call_idx_t;
+
+/**
+ * @enum test_bmp280_extreme_adc_t
+ * @brief Byte values for extreme ADC data buffers used in out-of-range tests
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_extreme_adc_max_byte    = 0xFFU, /**< Maximum byte value for saturated ADC reading */
+  k_extreme_xlsb_max_nibble = 0xF0U, /**< XLSB with upper nibble = 0xF (20-bit max) */
+  k_extreme_p1_lsb_one      = 0x01U, /**< P1 LSB = 1 for extreme pressure calibration */
+  k_extreme_zero            = 0x00U, /**< Zero byte for wrong chip ID or zero coefficients */
+} test_bmp280_extreme_adc_t;
+
+/**
+ * @enum test_bmp280_extreme_idx_t
+ * @brief Array indices for the 7-byte extreme ADC test buffer
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_extreme_adc_temp_msb_idx  = 3, /**< Temp MSB index in 7-byte status+ADC buffer */
+  k_extreme_adc_temp_lsb_idx  = 4, /**< Temp LSB index in 7-byte status+ADC buffer */
+  k_extreme_adc_temp_xlsb_idx = 5, /**< Temp XLSB index in 7-byte status+ADC buffer */
+  k_extreme_adc_buf_size      = 7, /**< Size of status + ADC combined buffer */
+} test_bmp280_extreme_idx_t;
+
+/**
+ * @brief Zero-fill a memory region byte-by-byte without memset
+ *
+ * @param[out] ptr Pointer to the memory region to zero
+ * @param[in]  len Number of bytes to zero
+ *
+ * @pre ptr non-NULL
+ * @pre len > 0
+ * @post All bytes in [ptr, ptr+len) are zero
+ *
+ * @since Version 1.0.0
+ */
+static inline void internal_zero_fill(void* ptr, size_t len)
+{
+  uint8_t* p = (uint8_t*)ptr;
+  for (size_t i = 0; i < len; ++i) {
+    p[i] = 0;
+  }
+}
+
 /* =============================================================================
  * Test Fixtures
  * =============================================================================
@@ -437,7 +501,7 @@ static void internal_load_valid_calib(void)
 {
   static_assert(k_test_calib_buf_size > 0U, "calibration buffer must be non-empty");
   uint8_t calib[k_test_calib_buf_size];
-  memset(calib, 0, sizeof(calib));
+  internal_zero_fill(calib, sizeof(calib));
 
   /* dig_T1 at bytes 0-1 (unsigned, non-zero required) */
   calib[k_bmp280_calib_t1_lsb] = (uint8_t)k_calib_t1_lsb;
@@ -459,7 +523,7 @@ static void internal_load_valid_calib(void)
   calib[k_bmp280_calib_p2_lsb] = (uint8_t)k_calib_p2_lsb;
   calib[k_bmp280_calib_p2_msb] = (uint8_t)k_calib_p2_msb;
 
-  /* Remaining P3-P9 bytes stay zero (set by memset above) */
+  /* Remaining P3-P9 bytes stay zero (set by internal_zero_fill above) */
 
   /* Postcondition: verify T1 and P1 set non-zero as required by the driver */
   TEST_ASSERT_NOT_EQUAL(0U, calib[k_bmp280_calib_t1_lsb] | calib[k_bmp280_calib_t1_msb]);
@@ -472,7 +536,7 @@ static void internal_load_valid_calib(void)
  * @brief Pre-load RIIC channel 1 with a calibration block where dig_P1 == 0
  *
  * @details
- * dig_T1 is non-zero but dig_P1 is zero (bytes 6-7 remain zero from memset).
+ * dig_T1 is non-zero but dig_P1 is zero (bytes 6-7 remain zero from zero-fill).
  * This triggers the postcondition error check: "dig_T1 or dig_P1 is zero".
  *
  * @pre mock_riic_init() has been called
@@ -484,7 +548,7 @@ static void internal_load_invalid_calib_p1_zero(void)
 {
   static_assert(k_test_calib_buf_size > 0U, "calibration buffer must be non-empty");
   uint8_t calib[k_test_calib_buf_size];
-  memset(calib, 0, sizeof(calib));
+  internal_zero_fill(calib, sizeof(calib));
 
   /* Only set dig_T1 as non-zero; dig_P1 stays zero */
   calib[k_bmp280_calib_t1_lsb] = (uint8_t)k_calib_t1_lsb;
@@ -828,7 +892,7 @@ void test_bmp280_read_before_init_returns_error(void)
 {
   /* setUp() reset s_initialized to false - no ordering dependency needed */
   bmp280_data_t data;
-  memset(&data, 0, sizeof(data));
+  internal_zero_fill(&data, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -858,7 +922,7 @@ void test_bmp280_read_success_forced_mode(void)
   mock_riic_clear_history();
 
   bmp280_data_t data;
-  memset(&data, 0, sizeof(data));
+  internal_zero_fill(&data, sizeof(data));
 
   rx_err_t err = rx_bmp280_read(&data);
 
@@ -895,7 +959,7 @@ void test_bmp280_read_status_timeout(void)
   (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &busy_status, k_test_single_byte);
 
   bmp280_data_t data;
-  memset(&data, 0, sizeof(data));
+  internal_zero_fill(&data, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
@@ -921,7 +985,7 @@ void test_bmp280_read_i2c_error_propagates(void)
   (void)mock_riic_simulate_nack(true);
 
   bmp280_data_t data;
-  memset(&data, 0, sizeof(data));
+  internal_zero_fill(&data, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
@@ -963,7 +1027,7 @@ void test_bmp280_compensation_known_values(void)
   mock_riic_clear_history();
 
   bmp280_data_t data;
-  memset(&data, 0, sizeof(data));
+  internal_zero_fill(&data, sizeof(data));
 
   rx_err_t err = rx_bmp280_read(&data);
 
@@ -1032,7 +1096,7 @@ void test_bmp280_read_zero_var1_returns_error(void)
 void test_bmp280_init_wrong_chip_id_returns_error(void)
 {
   /* Load RX buffer with wrong chip ID (0x00 instead of 0x60) */
-  uint8_t wrong_chip_id = 0x00U;
+  uint8_t wrong_chip_id = (uint8_t)k_extreme_zero;
   (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &wrong_chip_id, k_test_single_byte);
 
   rx_err_t err = rx_bmp280_init(&s_test_manager);
@@ -1060,7 +1124,7 @@ void test_bmp280_init_calib_read_error_propagates(void)
   (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &chip_id, k_test_single_byte);
 
   /* Fail call index 1 (calibration read) */
-  mock_riic_set_nth_call_error(1U, k_rx_err_nack);
+  mock_riic_set_nth_call_error((uint8_t)k_init_call_calib_read, k_rx_err_nack);
 
   rx_err_t err = rx_bmp280_init(&s_test_manager);
 
@@ -1088,7 +1152,7 @@ void test_bmp280_init_config_write_error_propagates(void)
   internal_load_valid_calib();
 
   /* Fail call index 2 (config register write) */
-  mock_riic_set_nth_call_error(2U, k_rx_err_nack);
+  mock_riic_set_nth_call_error((uint8_t)k_init_call_config_write, k_rx_err_nack);
 
   rx_err_t err = rx_bmp280_init(&s_test_manager);
 
@@ -1118,10 +1182,10 @@ void test_bmp280_read_status_read_error_propagates(void)
   internal_setup_initialized_bmp280();
 
   /* Fail call index 1 (status read) */
-  mock_riic_set_nth_call_error(1U, k_rx_err_nack);
+  mock_riic_set_nth_call_error((uint8_t)k_read_call_status, k_rx_err_nack);
 
   bmp280_data_t data;
-  memset(&data, 0, sizeof(data));
+  internal_zero_fill(&data, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
@@ -1150,10 +1214,10 @@ void test_bmp280_read_adc_read_error_propagates(void)
   (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &done_status, k_test_single_byte);
 
   /* Fail call index 2 (ADC data read) */
-  mock_riic_set_nth_call_error(2U, k_rx_err_nack);
+  mock_riic_set_nth_call_error((uint8_t)k_read_call_adc_data, k_rx_err_nack);
 
   bmp280_data_t data;
-  memset(&data, 0, sizeof(data));
+  internal_zero_fill(&data, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
@@ -1205,7 +1269,7 @@ void test_bmp280_pressure_comp_zero_p1_returns_error(void)
    * then compensation to fail due to P1=0. Load a fresh buffer. */
   /* First, set nth error so only 2 calls succeed, then ADC read gets data */
   bmp280_data_t data;
-  memset(&data, 0, sizeof(data));
+  internal_zero_fill(&data, sizeof(data));
 
   /* Load read buffer so status (call 1) returns 0x00 and ADC (call 2) returns data */
   internal_load_read_data();
@@ -1220,84 +1284,51 @@ void test_bmp280_pressure_comp_zero_p1_returns_error(void)
 }
 
 /**
+ * @brief Load a 7-byte ADC buffer with maximum 20-bit temperature ADC value
+ *
+ * @details
+ * Loads the mock RIIC RX buffer with status=0x00 (done) and maximum adc_T:
+ *   buf[3]=0xFF, buf[4]=0xFF, buf[5]=0xF0
+ *   adc_T = (0xFF<<12)|(0xFF<<4)|(0xF0>>4) = 0xFFFFF = 1048575
+ *
+ * With the normal test calibration (T1=27488, T2=24790, T3=50), this produces
+ * temp ~17983 centi-degC which exceeds the 8500 limit.
+ *
+ * @pre mock_riic_init() has been called
+ * @post RIIC channel 1 RX buffer contains extreme temperature ADC data
+ *
+ * @since Version 1.0.0
+ */
+static void internal_load_extreme_temp_adc(void)
+{
+  uint8_t extreme_adc[k_extreme_adc_buf_size];
+  internal_zero_fill(extreme_adc, sizeof(extreme_adc));
+  extreme_adc[k_extreme_adc_temp_msb_idx]  = (uint8_t)k_extreme_adc_max_byte;
+  extreme_adc[k_extreme_adc_temp_lsb_idx]  = (uint8_t)k_extreme_adc_max_byte;
+  extreme_adc[k_extreme_adc_temp_xlsb_idx] = (uint8_t)k_extreme_xlsb_max_nibble;
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch,
+                              extreme_adc,
+                              (uint16_t)sizeof(extreme_adc));
+}
+
+/**
  * @brief internal_read_and_compensate_adc returns error when temperature is out of range
  *
  * @details
- * Uses extreme calibration (T2=32767) combined with maximum adc_T so that
- * compensated temperature exceeds 8500 centi-degC. The out-of-range check
- * returns k_rx_err_invalid_state (lines 816-820).
- *
- * ADC buffer layout (7 bytes): [0]=status=0x00, [3]=0xFF, [4]=0xFF, [5]=0xF0
- *   -> adc_T = 0xFFFFF = 1048575 (20-bit max)
- *   -> temp = ~40735 centi-degC > 8500 (out of range)
+ * Uses normal calibration (T1=27488, T2=24790, T3=50, P1=65410) with maximum
+ * adc_T (0xFFFFF = 1048575) so that compensated temperature exceeds 8500
+ * centi-degC. The out-of-range check returns k_rx_err_invalid_state.
  *
  * @since Version 1.0.0
  */
 void test_bmp280_read_temp_out_of_range_returns_error(void)
 {
 #ifdef UNIT_TEST
-  /* Strategy: use test helper to set extreme-temp calibration directly into s_calib,
-   * bypassing init so we can control T2=32767 without the chip_id constraint.
-   * T1=352, T2=32767, T3=0, P1=65410:
-   *   adc_T=0xFFFFF=1048575: var1 = (((1048575>>3) - 704) * 32767) >> 11
-   *   Note: var1 computation overflows int32_t. However, the compensate formula
-   *   uses int32_t internally, so result is implementation-defined on overflow.
-   *
-   * To avoid overflow: use T1=1, T2=1, T3=0, P1=65410 with adc_T=1048575:
-   *   var1 = (((1048575>>3) - 2) * 1) >> 11 = (131069) >> 11 = 64
-   *   var2 = 0 (T3=0)
-   *   t_fine = 64
-   *   T = (64*5 + 128) >> 8 = 448 >> 8 = 1 centi-degC -> IN RANGE
-   *
-   * For out-of-range temp, we need t_fine to be very large or very small.
-   * With T1=1, T2=32767, T3=0 and adc_T=1048575:
-   *   var1 = ((131071 - 2) * 32767) >> 11
-   *   = (131069 * 32767) >> 11
-   *   = 4294343723 >> 11  (fits in uint32, but int32 OVERFLOWS at ~2.1B)
-   *   In C23 with GCC on x86_64 (test host), signed overflow is UB -> unpredictable
-   *
-   * Safe approach: use adc_T = 0 with T2=(-32768) (most negative int16):
-   *   var1 = (((0>>3) - (T1<<1)) * T2) >> 11
-   *   With T1=1, T2=-32768:
-   *   var1 = ((0 - 2) * (-32768)) >> 11 = (65536) >> 11 = 32
-   *   var2 = 0 (T3=0)
-   *   t_fine = 32
-   *   T = (32*5+128)>>8 = 288>>8 = 1 -> still in range
-   *
-   * Best option: directly expose internal_compensate_temp or set calibration
-   * such that the BMP280 formula produces obvious out-of-range without overflow.
-   *
-   * Verified safe combination: T1=27488, T2=24790, T3=50 (valid test calib)
-   * but adc_T engineered to produce temp > 8500:
-   *   Need t_fine > 435000.
-   *   With T1=27488, T2=24790 and large adc_T:
-   *   var1 = (((adc_T>>3) - 54976) * 24790) >> 11
-   *   For adc_T = 1048575 (max 20-bit):
-   *   var1 = ((131071 - 54976) * 24790) >> 11 = (76095 * 24790) >> 11
-   *   76095 * 24790 = 1887235050 -> fits in int32 (max ~2.1B) [PASS]
-   *   1887235050 >> 11 = 920720
-   *   t_fine = 920720 (approx)
-   *   T = (920720*5 + 128) >> 8 = (4603600 + 128) >> 8 = 4603728 >> 8 = 17983 > 8500 [PASS]
-   *
-   * Use the NORMAL calibration (T1=27488, T2=24790, T3=50, P1=65410) with max adc_T!
-   */
-
-  /* Setup: init with normal calibration, then load ADC buffer with max adc_T */
   internal_setup_initialized_bmp280();
-
-  /* Load 7-byte ADC buffer: status=0x00 + max adc_T (buf[3..5]=0xFF, 0xFF, 0xF0)
-   * adc_T = (buf[3]<<12)|(buf[4]<<4)|(buf[5]>>4) = 0xFFFFF = 1048575 */
-  uint8_t extreme_adc[7];
-  memset(extreme_adc, 0, sizeof(extreme_adc));
-  extreme_adc[3] = 0xFFU; /* temp_msb -> adc_T high bits 0xFF*/
-  extreme_adc[4] = 0xFFU; /* temp_lsb -> adc_T middle bits 0xFF */
-  extreme_adc[5] = 0xF0U; /* temp_xlsb -> adc_T low nibble = 0xF */
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch,
-                              extreme_adc,
-                              (uint16_t)sizeof(extreme_adc));
+  internal_load_extreme_temp_adc();
 
   bmp280_data_t data;
-  memset(&data, 0, sizeof(data));
+  internal_zero_fill(&data, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1327,12 +1358,12 @@ void test_bmp280_read_pressure_out_of_range_returns_error(void)
   rx_bmp280_test_set_state(&s_test_manager, false);
 
   uint8_t extreme_press_calib[k_test_calib_buf_size];
-  memset(extreme_press_calib, 0, sizeof(extreme_press_calib));
-  extreme_press_calib[0] = 0x60U; /* T1 LSB = chip_id 0x60 */
-  extreme_press_calib[1] = 0x6BU; /* T1 MSB -> T1 = 0x6B60 = 27488 */
+  internal_zero_fill(extreme_press_calib, sizeof(extreme_press_calib));
+  extreme_press_calib[k_bmp280_calib_t1_lsb] = (uint8_t)k_calib_t1_lsb;
+  extreme_press_calib[k_bmp280_calib_t1_msb] = (uint8_t)k_calib_t1_msb;
   /* T2=0, T3=0: bytes 2-5 stay zero */
-  extreme_press_calib[6] = 0x01U; /* P1 LSB -> P1 = 1 */
-  extreme_press_calib[7] = 0x00U; /* P1 MSB */
+  extreme_press_calib[k_bmp280_calib_p1_lsb] = (uint8_t)k_extreme_p1_lsb_one;
+  extreme_press_calib[k_bmp280_calib_p1_msb] = (uint8_t)k_extreme_zero;
   (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch,
                               extreme_press_calib,
                               k_test_calib_buf_size);
@@ -1341,12 +1372,12 @@ void test_bmp280_read_pressure_out_of_range_returns_error(void)
   TEST_ASSERT_EQUAL(k_rx_ok, init_err);
 
   /* Load all-zero ADC buffer: status=done(0x00), adc_P=0, adc_T=0 */
-  uint8_t adc_buf[7];
-  memset(adc_buf, 0, sizeof(adc_buf));
+  uint8_t adc_buf[k_extreme_adc_buf_size];
+  internal_zero_fill(adc_buf, sizeof(adc_buf));
   (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, adc_buf, (uint16_t)sizeof(adc_buf));
 
   bmp280_data_t data;
-  memset(&data, 0, sizeof(data));
+  internal_zero_fill(&data, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
 
   /* With P1=1 and adc_P=0, pressure compensation produces a value below 7680000 */

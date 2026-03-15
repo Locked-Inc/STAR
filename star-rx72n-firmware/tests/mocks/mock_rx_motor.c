@@ -9,8 +9,6 @@
 
 #include "mock_rx_motor.h"
 
-#include <string.h>
-
 /* =============================================================================
  * Mock State
  * =============================================================================
@@ -82,7 +80,10 @@ void mock_rx_motor_reset(void)
 {
   s_stop_return_value = k_rx_ok;
   s_stop_call_count   = 0;
-  memset(s_stop_calls, 0, sizeof(s_stop_calls));
+  for (uint8_t i = 0; i < s_max_stop_calls; i++) {
+    s_stop_calls[i].motor_handle = nullptr;
+    s_stop_calls[i].immediate    = false;
+  }
 }
 
 /* =============================================================================

@@ -1063,162 +1063,207 @@ rx_err_t comm_task_create(void)
  */
 
 /**
- * @brief Initialize USB and SPI transport layers and wire into comm manager config
+ * @brief Initialize USB transport layer
  *
  * @details
- * Performs complete initialization of USB CDC and SPI communication transport layers,
- * including handle initialization, error handling, and validation logging. This function
- * populates the rx_comm_manager_config_t structure with either real transport handles
- * (on success) or nullptr (on failure) to enable graceful degradation.
+ * Attempts to initialize the USB CDC communication transport if USB is enabled
+ * in the channel mask. On failure, logs an error but allows graceful degradation.
  *
- * **Algorithm Steps:**
- * 1. **Initialize USB transport**: Call rx_usb_comm_init() with shared session state
- * 2. **Handle USB failure**: Log error if init fails, set handle to nullptr
- * 3. **Initialize SPI transport**: Call rx_spi_comm_init() with shared session state
- * 4. **Handle SPI failure**: Log error if init fails, set handle to nullptr
- * 5. **Initialize HARQ link**: If spi_ok, call rx_spi_link_init(&s_spi_link, &link_cfg);
- *    config->spi_link = &s_spi_link on k_rx_ok, nullptr otherwise (or when spi_ok is false)
- * 6. **Wire handles**: Assign valid or nullptr handles to config structure
- * 7. **Validate transports**: Log critical error if both transports failed
- * 8. **Log success**: Log info for each successfully initialized transport
+ * @return true if USB transport initialized successfully, false otherwise
  *
- * **Graceful Degradation:**
- * - If one transport fails: Other transport continues (logged warning)
- * - If both transports fail: Config wired with nullptr handles (logged critical error)
- * - If SPI transport fails: config->spi_link is set to nullptr (HARQ skipped)
- * - Comm manager will return k_rx_err_timeout on poll for nullptr handles
- *
- * @param[out] config Comm manager configuration to populate
- *   - **Valid range**: Non-nullptr to rx_comm_manager_config_t
- *   - **Constraints**: Must be zeroed before calling this function
- *   - **Side effects**: usb_handle, spi_handle, and spi_link fields populated
- *
- * @return void This function does not return a value
- *
- * @pre config must be non-NULL and zero-initialized (memset)
  * @pre s_session_state must be zero-initialized (static storage)
- * @pre RSPI2 peripheral must be initialized before calling this function
- * @post config->usb_handle set to &s_usb_comm_handle or nullptr
- * @post config->spi_handle set to &s_spi_comm_handle or nullptr
- * @post config->spi_link set to &s_spi_link when SPI transport and HARQ init both succeed, else nullptr
- * @post At least one transport handle set on success (best effort)
- * @post All init failures logged via rx_log_error
+ * @pre s_enabled_channels must be configured before calling
+ * @post s_usb_comm_handle initialized on success
+ * @post Failure logged via rx_log_error
  *
- * @note This function does NOT initialize RSPI hardware - caller must ensure
- *       RSPI2 peripheral is initialized before calling
  * @note Called once during single-threaded task initialization; not thread-safe
- * @warning Function has no return value - check config->usb_handle,
- *          config->spi_handle, and config->spi_link for nullptr to detect degraded modes
- *
- * @par Thread Safety:
- * This function is **not thread-safe**. It must be called only once during
- * task initialization in a single-threaded context. The function modifies
- * file-scoped static variables (s_usb_comm_handle, s_spi_comm_handle) and
- * should not be called concurrently from multiple threads.
  *
  * @since Version 1.0.0
  * @see rx_usb_comm_init() USB transport layer initialization
- * @see rx_spi_comm_init() SPI transport layer initialization
- * @see rx_spi_link_init() HARQ link layer initialization (called internally when spi_ok)
  */
-static void internal_init_transports(rx_comm_manager_config_t* config)
+static bool internal_init_usb_transport(void)
 {
-  /* Precondition checks (NASA Power of 10 Rule 5: minimum 2 checks) */
-  RX_ASSERT(config != nullptr, "Config pointer must not be NULL");
-  RX_ASSERT(s_tag != nullptr, "Log tag must be initialized");
-
-  /* Initialize USB communication layer (if enabled by system config) */
-  bool usb_ok = false;
-  if ((s_enabled_channels & k_comm_channel_mask_usb) != k_comm_channel_mask_none) {
-    rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr};
-    usb_ok                       = (rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
-    if (!usb_ok) {
-      rx_log_error(s_tag, "USB comm init failed");
-    }
-  } else {
+  if ((s_enabled_channels & k_comm_channel_mask_usb) == k_comm_channel_mask_none) {
     rx_log_info(s_tag, "USB comm disabled by config");
+    return false;
   }
 
-  /* Initialize SPI communication layer (RSPI2 channel 2 - host peripheral) */
-  bool spi_ok = false;
-  if ((s_enabled_channels & k_comm_channel_mask_spi) != k_comm_channel_mask_none) {
-    rx_spi_comm_config_t spi_cfg = {.session     = &s_session_state,
-                                    .channel     = k_rspi_channel_2,
-                                    .spi_mode    = k_spi_comm_default_mode,
-                                    .fec_enabled = false};
-    spi_ok                       = (rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg) == k_rx_ok);
-    if (!spi_ok) {
-      rx_log_error(s_tag, "SPI comm init failed");
-    }
-  } else {
+  rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr};
+  bool                 usb_ok  = (rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
+  if (!usb_ok) {
+    rx_log_error(s_tag, "USB comm init failed");
+  }
+  return usb_ok;
+}
+
+/**
+ * @brief Initialize SPI transport layer and HARQ link
+ *
+ * @details
+ * Attempts to initialize the SPI communication transport (RSPI2 channel 2) if SPI
+ * is enabled in the channel mask. When SPI transport succeeds, also initializes the
+ * HARQ link layer for reliable communication. Sets config->spi_link accordingly.
+ *
+ * @param[out] config Comm manager configuration; spi_link field populated
+ * @param[out] link_ok_out Set to true if HARQ link initialized successfully
+ *
+ * @return true if SPI transport initialized successfully, false otherwise
+ *
+ * @pre config must be non-NULL
+ * @pre s_session_state must be zero-initialized (static storage)
+ * @pre RSPI2 peripheral must be initialized before calling
+ * @post s_spi_comm_handle initialized on success
+ * @post config->spi_link set to &s_spi_link or nullptr
+ * @post Failure logged via rx_log_error
+ *
+ * @note Called once during single-threaded task initialization; not thread-safe
+ *
+ * @since Version 1.0.0
+ * @see rx_spi_comm_init() SPI transport layer initialization
+ * @see rx_spi_link_init() HARQ link layer initialization
+ */
+static bool internal_init_spi_transport(rx_comm_manager_config_t* config, bool* link_ok_out)
+{
+  *link_ok_out = false;
+
+  if ((s_enabled_channels & k_comm_channel_mask_spi) == k_comm_channel_mask_none) {
     rx_log_info(s_tag, "SPI comm disabled by config");
-  }
-
-  bool link_ok = false;
-
-  if (spi_ok) {
-    /* Only attempt to configure the HARQ link when the underlying SPI transport
-     * succeeded.  Passing an invalid handle into rx_spi_link_init would trigger
-     * undefined behaviour, so skip the whole block if spi_ok is false. */
-    rx_spi_link_config_t link_cfg = {
-      .spi_handle  = &s_spi_comm_handle,
-      .fec_enabled = k_spi_link_default_fec_enabled,
-      .max_retries = k_spi_link_default_max_retries,
-    };
-
-    link_ok = (rx_spi_link_init(&s_spi_link, &link_cfg) == k_rx_ok);
-    if (!link_ok) {
-      rx_log_error(s_tag, "SPI link (HARQ) init failed");
-    }
-    config->spi_link = link_ok ? &s_spi_link : nullptr;
-  } else {
-    if ((s_enabled_channels & k_comm_channel_mask_spi) != k_comm_channel_mask_none) {
-      rx_log_warn(s_tag, "Skipping SPI HARQ link init because SPI transport failed");
-    }
     config->spi_link = nullptr;
+    return false;
   }
 
-  /* Initialize I2C communication layer (RIIC0, peripheral mode, address 0x42) */
-  bool i2c_ok = false;
-  if ((s_enabled_channels & k_comm_channel_mask_i2c) != k_comm_channel_mask_none) {
-    rx_i2c_comm_config_t i2c_cfg = {
-      .session     = &s_session_state,
-      .channel     = {.value = k_i2c_comm_default_channel},
-      .device_addr = {.value = k_i2c_comm_default_addr},
-    };
-    i2c_ok = (rx_i2c_comm_init(&s_i2c_comm_handle, &i2c_cfg) == k_rx_ok);
-    if (!i2c_ok) {
-      rx_log_error(s_tag, "I2C comm init failed");
-    }
-  } else {
+  rx_spi_comm_config_t spi_cfg = {.session     = &s_session_state,
+                                  .channel     = k_rspi_channel_2,
+                                  .spi_mode    = k_spi_comm_default_mode,
+                                  .fec_enabled = false};
+  bool                 spi_ok  = (rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg) == k_rx_ok);
+  if (!spi_ok) {
+    rx_log_error(s_tag, "SPI comm init failed");
+    rx_log_warn(s_tag, "Skipping SPI HARQ link init because SPI transport failed");
+    config->spi_link = nullptr;
+    return false;
+  }
+
+  /* Only attempt to configure the HARQ link when the underlying SPI transport
+   * succeeded.  Passing an invalid handle into rx_spi_link_init would trigger
+   * undefined behaviour, so skip the whole block if spi_ok is false. */
+  rx_spi_link_config_t link_cfg = {
+    .spi_handle  = &s_spi_comm_handle,
+    .fec_enabled = k_spi_link_default_fec_enabled,
+    .max_retries = k_spi_link_default_max_retries,
+  };
+
+  *link_ok_out = (rx_spi_link_init(&s_spi_link, &link_cfg) == k_rx_ok);
+  if (!*link_ok_out) {
+    rx_log_error(s_tag, "SPI link (HARQ) init failed");
+  }
+  config->spi_link = *link_ok_out ? &s_spi_link : nullptr;
+  return true;
+}
+
+/**
+ * @brief Initialize I2C transport layer
+ *
+ * @details
+ * Attempts to initialize the I2C communication transport (RIIC0, peripheral mode,
+ * address 0x42) if I2C is enabled in the channel mask. On failure, logs an error
+ * but allows graceful degradation.
+ *
+ * @return true if I2C transport initialized successfully, false otherwise
+ *
+ * @pre s_session_state must be zero-initialized (static storage)
+ * @pre s_enabled_channels must be configured before calling
+ * @post s_i2c_comm_handle initialized on success
+ * @post Failure logged via rx_log_error
+ *
+ * @note Called once during single-threaded task initialization; not thread-safe
+ *
+ * @since Version 1.0.0
+ * @see rx_i2c_comm_init() I2C transport layer initialization
+ */
+static bool internal_init_i2c_transport(void)
+{
+  if ((s_enabled_channels & k_comm_channel_mask_i2c) == k_comm_channel_mask_none) {
     rx_log_info(s_tag, "I2C comm disabled by config");
+    return false;
   }
 
-  /* Initialize UART communication layer (SCI9) */
-  bool uart_ok = false;
-  if ((s_enabled_channels & k_comm_channel_mask_uart) != k_comm_channel_mask_none) {
-    rx_uart_comm_config_t uart_cfg = {
-      .session = &s_session_state,
-      .channel = k_uart_channel_9,
-    };
-    uart_ok = (rx_uart_comm_init(&s_uart_comm_handle, &uart_cfg) == k_rx_ok);
-    if (!uart_ok) {
-      rx_log_error(s_tag, "UART comm init failed");
-    }
-  } else {
+  rx_i2c_comm_config_t i2c_cfg = {
+    .session     = &s_session_state,
+    .channel     = {.value = k_i2c_comm_default_channel},
+    .device_addr = {.value = k_i2c_comm_default_addr},
+  };
+  bool i2c_ok = (rx_i2c_comm_init(&s_i2c_comm_handle, &i2c_cfg) == k_rx_ok);
+  if (!i2c_ok) {
+    rx_log_error(s_tag, "I2C comm init failed");
+  }
+  return i2c_ok;
+}
+
+/**
+ * @brief Initialize UART transport layer
+ *
+ * @details
+ * Attempts to initialize the UART communication transport (SCI9) if UART is
+ * enabled in the channel mask. On failure, logs an error but allows graceful
+ * degradation.
+ *
+ * @return true if UART transport initialized successfully, false otherwise
+ *
+ * @pre s_session_state must be zero-initialized (static storage)
+ * @pre s_enabled_channels must be configured before calling
+ * @post s_uart_comm_handle initialized on success
+ * @post Failure logged via rx_log_error
+ *
+ * @note Called once during single-threaded task initialization; not thread-safe
+ *
+ * @since Version 1.0.0
+ * @see rx_uart_comm_init() UART transport layer initialization
+ */
+static bool internal_init_uart_transport(void)
+{
+  if ((s_enabled_channels & k_comm_channel_mask_uart) == k_comm_channel_mask_none) {
     rx_log_info(s_tag, "UART comm disabled by config");
+    return false;
   }
 
-  /* Wire handles - pass nullptr for disabled/failed transports */
-  config->usb_handle  = usb_ok ? &s_usb_comm_handle : nullptr;
-  config->spi_handle  = spi_ok ? &s_spi_comm_handle : nullptr;
-  config->i2c_handle  = i2c_ok ? &s_i2c_comm_handle : nullptr;
-  config->uart_handle = uart_ok ? &s_uart_comm_handle : nullptr;
+  rx_uart_comm_config_t uart_cfg = {
+    .session = &s_session_state,
+    .channel = k_uart_channel_9,
+  };
+  bool uart_ok = (rx_uart_comm_init(&s_uart_comm_handle, &uart_cfg) == k_rx_ok);
+  if (!uart_ok) {
+    rx_log_error(s_tag, "UART comm init failed");
+  }
+  return uart_ok;
+}
 
-  /* Validation logging: fire the critical log only when at least one channel was
-   * enabled by config but every enabled channel failed to initialize.
-   * Disabled channels set their *_ok flag to false too, so the old four-way &&
-   * would fire spuriously when all channels are intentionally disabled. */
+/**
+ * @brief Log transport initialization status and detect total failure
+ *
+ * @details
+ * Logs which transports initialized successfully and fires a critical error
+ * when at least one channel was enabled but all enabled channels failed.
+ * Disabled channels are excluded from failure detection.
+ *
+ * @param[in] usb_ok  true if USB transport initialized successfully
+ * @param[in] spi_ok  true if SPI transport initialized successfully
+ * @param[in] link_ok true if SPI HARQ link initialized successfully
+ * @param[in] i2c_ok  true if I2C transport initialized successfully
+ * @param[in] uart_ok true if UART transport initialized successfully
+ *
+ * @pre s_enabled_channels must be configured before calling
+ * @pre All *_ok parameters must reflect actual init results
+ * @post Critical error logged if all enabled channels failed
+ * @post Info logged for each successfully initialized transport
+ *
+ * @note Called once during single-threaded task initialization; not thread-safe
+ *
+ * @since Version 1.0.0
+ */
+static void
+internal_log_transport_status(bool usb_ok, bool spi_ok, bool link_ok, bool i2c_ok, bool uart_ok)
+{
   const bool usb_enabled =
     (s_enabled_channels & k_comm_channel_mask_usb) != k_comm_channel_mask_none;
   const bool spi_enabled =
@@ -1231,25 +1276,91 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
   /* At least one enabled channel initialized successfully. */
   const bool any_enabled_succeeded = (usb_enabled && usb_ok) || (spi_enabled && spi_ok) ||
                                      (i2c_enabled && i2c_ok) || (uart_enabled && uart_ok);
+
   if (any_enabled && !any_enabled_succeeded) {
     rx_log_error(s_tag, "CRITICAL: All transport channels failed to initialize");
-  } else {
-    if (usb_ok) {
-      rx_log_info(s_tag, "USB transport initialized");
-    }
-    if (spi_ok) {
-      rx_log_info(s_tag, "SPI transport initialized");
-    }
-    if (link_ok) {
-      rx_log_info(s_tag, "SPI HARQ link initialized (FEC with Chase Combining)");
-    }
-    if (i2c_ok) {
-      rx_log_info(s_tag, "I2C peripheral transport initialized");
-    }
-    if (uart_ok) {
-      rx_log_info(s_tag, "UART transport initialized");
-    }
+    return;
   }
+
+  if (usb_ok) {
+    rx_log_info(s_tag, "USB transport initialized");
+  }
+  if (spi_ok) {
+    rx_log_info(s_tag, "SPI transport initialized");
+  }
+  if (link_ok) {
+    rx_log_info(s_tag, "SPI HARQ link initialized (FEC with Chase Combining)");
+  }
+  if (i2c_ok) {
+    rx_log_info(s_tag, "I2C peripheral transport initialized");
+  }
+  if (uart_ok) {
+    rx_log_info(s_tag, "UART transport initialized");
+  }
+}
+
+/**
+ * @brief Initialize all transport layers and wire into comm manager config
+ *
+ * @details
+ * Orchestrates initialization of all communication transport layers (USB, SPI,
+ * I2C, UART) by delegating to per-channel helper functions. Populates the
+ * rx_comm_manager_config_t structure with either real transport handles (on
+ * success) or nullptr (on failure) to enable graceful degradation.
+ *
+ * @param[out] config Comm manager configuration to populate
+ *   - **Valid range**: Non-nullptr to rx_comm_manager_config_t
+ *   - **Constraints**: Must be zeroed before calling this function
+ *   - **Side effects**: usb_handle, spi_handle, i2c_handle, uart_handle,
+ *     and spi_link fields populated
+ *
+ * @return void This function does not return a value
+ *
+ * @pre config must be non-NULL and zero-initialized (memset)
+ * @pre s_session_state must be zero-initialized (static storage)
+ * @pre RSPI2 peripheral must be initialized before calling this function
+ * @post config->usb_handle set to &s_usb_comm_handle or nullptr
+ * @post config->spi_handle set to &s_spi_comm_handle or nullptr
+ * @post config->spi_link set to &s_spi_link when SPI transport and HARQ init both succeed, else nullptr
+ * @post At least one transport handle set on success (best effort)
+ * @post All init failures logged via rx_log_error
+ *
+ * @note Called once during single-threaded task initialization; not thread-safe
+ * @warning Function has no return value - check config handle fields for nullptr
+ *          to detect degraded modes
+ *
+ * @par Thread Safety:
+ * This function is **not thread-safe**. It must be called only once during
+ * task initialization in a single-threaded context.
+ *
+ * @since Version 1.0.0
+ * @see internal_init_usb_transport() USB channel initialization
+ * @see internal_init_spi_transport() SPI channel and HARQ link initialization
+ * @see internal_init_i2c_transport() I2C channel initialization
+ * @see internal_init_uart_transport() UART channel initialization
+ * @see internal_log_transport_status() Validation and status logging
+ */
+static void internal_init_transports(rx_comm_manager_config_t* config)
+{
+  /* Precondition checks (NASA Power of 10 Rule 5: minimum 2 checks) */
+  RX_ASSERT(config != nullptr, "Config pointer must not be NULL");
+  RX_ASSERT(s_tag != nullptr, "Log tag must be initialized");
+
+  /* Initialize each transport channel via dedicated helpers */
+  const bool usb_ok  = internal_init_usb_transport();
+  bool       link_ok = false;
+  const bool spi_ok  = internal_init_spi_transport(config, &link_ok);
+  const bool i2c_ok  = internal_init_i2c_transport();
+  const bool uart_ok = internal_init_uart_transport();
+
+  /* Wire handles - pass nullptr for disabled/failed transports */
+  config->usb_handle  = usb_ok ? &s_usb_comm_handle : nullptr;
+  config->spi_handle  = spi_ok ? &s_spi_comm_handle : nullptr;
+  config->i2c_handle  = i2c_ok ? &s_i2c_comm_handle : nullptr;
+  config->uart_handle = uart_ok ? &s_uart_comm_handle : nullptr;
+
+  /* Log results and detect total failure */
+  internal_log_transport_status(usb_ok, spi_ok, link_ok, i2c_ok, uart_ok);
 }
 
 /**

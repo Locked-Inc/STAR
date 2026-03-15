@@ -392,6 +392,71 @@ static const double s_test_accel_z_mps2       = 9.81;      /**< IMU Z-axis accel
  */
 static const float s_test_float_tolerance = 0.0001F;
 
+/**
+ * @brief PID test values for encode/decode validation
+ * @{
+ */
+static const double s_test_pid_kp       = 0.5;    /**< Proportional gain */
+static const double s_test_pid_ki       = 10.0;   /**< Integral gain */
+static const double s_test_pid_kd       = 0.1;    /**< Derivative gain */
+static const double s_test_pid_out_min  = -100.0; /**< Output min percent */
+static const double s_test_pid_out_max  = 100.0;  /**< Output max percent */
+static const double s_test_pid_int_min  = -50.0;  /**< Integral min clamp */
+static const double s_test_pid_int_max  = 50.0;   /**< Integral max clamp */
+static const double s_test_pid_kp_tuned = 0.286;  /**< MATLAB-tuned Kp */
+static const double s_test_pid_ki_tuned = 8.01;   /**< MATLAB-tuned Ki */
+/** @} */
+
+/**
+ * @brief PID float tolerance for round-trip comparisons
+ */
+static const float s_test_pid_tolerance       = 0.0001F;
+static const float s_test_pid_tight_tolerance = 0.00001F;
+
+/**
+ * @brief Additional integer test constants
+ */
+typedef enum : int32_t {
+  k_test_decode_dummy_len    = 10,  /**< Dummy buffer length for nullptr tests */
+  k_test_decode_buf_size_16  = 16,  /**< 16-byte decode test buffer */
+  k_test_decode_buf_size_64  = 64,  /**< 64-byte decode test buffer */
+  k_test_decode_buf_size_256 = 256, /**< 256-byte encode/decode buffer */
+  k_test_decode_buf_size_600 = 600, /**< Oversized buffer (> 512) */
+  k_test_motor_id_all        = -1,  /**< Motor ID for all motors */
+  k_test_retransmit_retries  = 3,   /**< Retransmit max retries */
+  k_test_retransmit_ack_ms   = 50,  /**< Retransmit ACK timeout ms */
+  k_test_retransmit_backoff  = 400, /**< Retransmit max backoff ms */
+  k_test_long_id_buf_size    = 514, /**< Long request ID buffer size */
+} test_extra_constants_t;
+
+/**
+ * @brief Diff drive test velocities
+ */
+static const double s_test_diff_left_mps  = 0.5; /**< Diff drive left velocity */
+static const double s_test_diff_right_mps = 1.0; /**< Diff drive right velocity */
+
+/**
+ * @brief Float cast of diff drive left velocity for assertion comparisons
+ */
+static const float s_test_diff_left_mps_f = 0.5F; /**< Diff drive left (float) */
+
+/**
+ * @brief Out-of-range velocity for boundary test
+ */
+static const double s_test_velocity_out_of_range = 1001.0; /**< > k_velocity_mps_max */
+
+/**
+ * @brief Invalid protobuf byte pattern for decode error injection
+ */
+typedef enum : uint8_t {
+  k_test_invalid_byte      = 0xFFU, /**< Invalid protobuf wire type byte */
+  k_test_fill_byte         = 0xFFU, /**< Byte pattern for garbage fill */
+  k_test_pb_tag_submsg     = 0x0AU, /**< Protobuf length-delimited field tag (field 1) */
+  k_test_pb_tag_varint     = 0x08U, /**< Protobuf varint field tag (field 1) */
+  k_test_pb_tag_fixed64    = 0x11U, /**< Protobuf fixed64 field tag (field 2) */
+  k_test_pb_small_buf_size = 4U,    /**< Small protobuf test buffer size */
+} test_byte_patterns_t;
+
 /** @} */ /* End of nanopb_test_constants */
 
 /**
@@ -516,7 +581,9 @@ static uint8_t s_buffer[k_test_buffer_size];
  */
 void setUp(void)
 {
-  memset(s_buffer, 0, sizeof(s_buffer));
+  for (uint32_t i = 0; i < sizeof(s_buffer); i++) {
+    s_buffer[i] = 0;
+  }
   rx_nanopb_test_reset_state();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_nanopb_init());
 }
@@ -962,7 +1029,7 @@ void test_encode_velocity_request_not_initialized(void)
 void test_decode_velocity_request_null_buffer(void)
 {
   star_v1_SetVelocityRequest msg;
-  rx_err_t                   err = rx_nanopb_decode_velocity_request(nullptr, 10, &msg);
+  rx_err_t err = rx_nanopb_decode_velocity_request(nullptr, k_test_decode_dummy_len, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -971,8 +1038,8 @@ void test_decode_velocity_request_null_buffer(void)
  */
 void test_decode_velocity_request_null_msg(void)
 {
-  uint8_t  data[16] = {0};
-  rx_err_t err      = rx_nanopb_decode_velocity_request(data, sizeof(data), nullptr);
+  uint8_t  data[k_test_decode_buf_size_16] = {0};
+  rx_err_t err = rx_nanopb_decode_velocity_request(data, sizeof(data), nullptr);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1020,7 +1087,11 @@ void test_decode_velocity_request_empty_buffer(void)
 void test_decode_velocity_request_invalid_data(void)
 {
   /* Invalid protobuf data - starts with invalid wire type */
-  uint8_t invalid_data[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint8_t invalid_data[] = {k_test_fill_byte,
+                            k_test_fill_byte,
+                            k_test_fill_byte,
+                            k_test_fill_byte,
+                            k_test_fill_byte};
 
   star_v1_SetVelocityRequest msg = star_v1_SetVelocityRequest_init_zero;
 
@@ -1037,8 +1108,9 @@ void test_decode_velocity_request_not_initialized(void)
 {
   rx_nanopb_test_reset_state();
 
-  uint8_t                    buffer[] = {0x0A, 0x08, 0x11, 0x00, 0x00, 0x00};
-  star_v1_SetVelocityRequest msg      = star_v1_SetVelocityRequest_init_zero;
+  uint8_t buffer[] =
+    {k_test_pb_tag_submsg, k_test_pb_tag_varint, k_test_pb_tag_fixed64, 0x00, 0x00, 0x00};
+  star_v1_SetVelocityRequest msg = star_v1_SetVelocityRequest_init_zero;
 
   rx_err_t err = rx_nanopb_decode_velocity_request(buffer, sizeof(buffer), &msg);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
@@ -1384,7 +1456,7 @@ void test_encode_velocity_response_not_initialized(void)
 void test_decode_estop_request_null_buffer(void)
 {
   star_v1_EmergencyStopRequest msg;
-  rx_err_t                     err = rx_nanopb_decode_estop_request(nullptr, 10, &msg);
+  rx_err_t err = rx_nanopb_decode_estop_request(nullptr, k_test_decode_dummy_len, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1393,8 +1465,8 @@ void test_decode_estop_request_null_buffer(void)
  */
 void test_decode_estop_request_null_msg(void)
 {
-  uint8_t  data[16] = {0};
-  rx_err_t err      = rx_nanopb_decode_estop_request(data, sizeof(data), nullptr);
+  uint8_t  data[k_test_decode_buf_size_16] = {0};
+  rx_err_t err = rx_nanopb_decode_estop_request(data, sizeof(data), nullptr);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1417,7 +1489,11 @@ void test_decode_estop_request_empty_buffer(void)
  */
 void test_decode_estop_request_invalid_data(void)
 {
-  uint8_t invalid_data[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint8_t invalid_data[] = {k_test_fill_byte,
+                            k_test_fill_byte,
+                            k_test_fill_byte,
+                            k_test_fill_byte,
+                            k_test_fill_byte};
 
   star_v1_EmergencyStopRequest msg = star_v1_EmergencyStopRequest_init_zero;
 
@@ -1432,7 +1508,7 @@ void test_decode_estop_request_not_initialized(void)
 {
   rx_nanopb_test_reset_state();
 
-  uint8_t                      buffer[] = {0x08, 0x01};
+  uint8_t                      buffer[] = {k_test_pb_tag_varint, 0x01};
   star_v1_EmergencyStopRequest msg      = star_v1_EmergencyStopRequest_init_zero;
 
   rx_err_t err = rx_nanopb_decode_estop_request(buffer, sizeof(buffer), &msg);
@@ -1497,7 +1573,7 @@ void test_decode_estop_request_oversized_buffer(void)
 void test_decode_pid_gains_request_null_buffer(void)
 {
   star_v1_SetPIDGainsRequest msg;
-  rx_err_t                   err = rx_nanopb_decode_pid_gains_request(nullptr, 10, &msg);
+  rx_err_t err = rx_nanopb_decode_pid_gains_request(nullptr, k_test_decode_dummy_len, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1506,8 +1582,8 @@ void test_decode_pid_gains_request_null_buffer(void)
  */
 void test_decode_pid_gains_request_null_msg(void)
 {
-  uint8_t  buffer[64] = {0};
-  rx_err_t err        = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), nullptr);
+  uint8_t  buffer[k_test_decode_buf_size_64] = {0};
+  rx_err_t err = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), nullptr);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1517,7 +1593,7 @@ void test_decode_pid_gains_request_null_msg(void)
  */
 void test_decode_pid_gains_request_empty_buffer(void)
 {
-  uint8_t buffer[64] = {0};
+  uint8_t buffer[k_test_decode_buf_size_64] = {0};
 
   star_v1_SetPIDGainsRequest msg;
   rx_err_t                   err = rx_nanopb_decode_pid_gains_request(buffer, 0, &msg);
@@ -1530,12 +1606,14 @@ void test_decode_pid_gains_request_empty_buffer(void)
  */
 void test_decode_pid_gains_request_invalid_data(void)
 {
-  uint8_t buffer[64];
+  uint8_t buffer[k_test_decode_buf_size_64];
 
   star_v1_SetPIDGainsRequest msg;
 
   /* Fill buffer with invalid protobuf data */
-  (void)memset(buffer, 0xFF, sizeof(buffer));
+  for (size_t i = 0; i < sizeof(buffer); i++) {
+    buffer[i] = k_test_invalid_byte;
+  }
 
   rx_err_t err = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), &msg);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
@@ -1546,7 +1624,7 @@ void test_decode_pid_gains_request_invalid_data(void)
  */
 void test_decode_pid_gains_request_not_initialized(void)
 {
-  uint8_t buffer[64] = {0};
+  uint8_t buffer[k_test_decode_buf_size_64] = {0};
 
   star_v1_SetPIDGainsRequest msg;
 
@@ -1565,7 +1643,7 @@ void test_decode_pid_gains_request_not_initialized(void)
  */
 void test_decode_pid_gains_request_oversized_buffer(void)
 {
-  uint8_t                    buffer[600] = {0}; /* Larger than s_nanopb_buffer_size (512) */
+  uint8_t                    buffer[k_test_decode_buf_size_600] = {0};
   star_v1_SetPIDGainsRequest msg;
 
   rx_err_t err = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), &msg);
@@ -1578,21 +1656,21 @@ void test_decode_pid_gains_request_oversized_buffer(void)
  */
 void test_decode_pid_gains_request_valid(void)
 {
-  uint8_t  encode_buffer[256];
+  uint8_t  encode_buffer[k_test_decode_buf_size_256];
   uint32_t encode_len;
 
   star_v1_SetPIDGainsRequest encode_msg = star_v1_SetPIDGainsRequest_init_zero;
 
   /* Build valid PID gains request */
   encode_msg.has_pid_config                = true;
-  encode_msg.pid_config.kp                 = 0.5;
-  encode_msg.pid_config.ki                 = 10.0;
-  encode_msg.pid_config.kd                 = 0.1;
-  encode_msg.pid_config.output_min_percent = -100.0;
-  encode_msg.pid_config.output_max_percent = 100.0;
-  encode_msg.pid_config.integral_min       = -50.0;
-  encode_msg.pid_config.integral_max       = 50.0;
-  encode_msg.motor_id                      = -1; /* Apply to all motors */
+  encode_msg.pid_config.kp                 = s_test_pid_kp;
+  encode_msg.pid_config.ki                 = s_test_pid_ki;
+  encode_msg.pid_config.kd                 = s_test_pid_kd;
+  encode_msg.pid_config.output_min_percent = s_test_pid_out_min;
+  encode_msg.pid_config.output_max_percent = s_test_pid_out_max;
+  encode_msg.pid_config.integral_min       = s_test_pid_int_min;
+  encode_msg.pid_config.integral_max       = s_test_pid_int_max;
+  encode_msg.motor_id                      = k_test_motor_id_all;
 
   /* Encode using nanopb directly (since we don't have encode function yet) */
   pb_ostream_t ostream   = pb_ostream_from_buffer(encode_buffer, sizeof(encode_buffer));
@@ -1606,14 +1684,22 @@ void test_decode_pid_gains_request_valid(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(decode_msg.has_pid_config);
-  TEST_ASSERT_FLOAT_WITHIN(0.0001, 0.5, decode_msg.pid_config.kp);
-  TEST_ASSERT_FLOAT_WITHIN(0.0001, 10.0, decode_msg.pid_config.ki);
-  TEST_ASSERT_FLOAT_WITHIN(0.0001, 0.1, decode_msg.pid_config.kd);
-  TEST_ASSERT_FLOAT_WITHIN(0.0001, -100.0, decode_msg.pid_config.output_min_percent);
-  TEST_ASSERT_FLOAT_WITHIN(0.0001, 100.0, decode_msg.pid_config.output_max_percent);
-  TEST_ASSERT_FLOAT_WITHIN(0.0001, -50.0, decode_msg.pid_config.integral_min);
-  TEST_ASSERT_FLOAT_WITHIN(0.0001, 50.0, decode_msg.pid_config.integral_max);
-  TEST_ASSERT_EQUAL(-1, decode_msg.motor_id);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_pid_tolerance, s_test_pid_kp, decode_msg.pid_config.kp);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_pid_tolerance, s_test_pid_ki, decode_msg.pid_config.ki);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_pid_tolerance, s_test_pid_kd, decode_msg.pid_config.kd);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_pid_tolerance,
+                           s_test_pid_out_min,
+                           decode_msg.pid_config.output_min_percent);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_pid_tolerance,
+                           s_test_pid_out_max,
+                           decode_msg.pid_config.output_max_percent);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_pid_tolerance,
+                           s_test_pid_int_min,
+                           decode_msg.pid_config.integral_min);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_pid_tolerance,
+                           s_test_pid_int_max,
+                           decode_msg.pid_config.integral_max);
+  TEST_ASSERT_EQUAL(k_test_motor_id_all, decode_msg.motor_id);
 }
 
 /**
@@ -1622,20 +1708,20 @@ void test_decode_pid_gains_request_valid(void)
  */
 void test_pid_gains_request_round_trip(void)
 {
-  uint8_t  buffer[256];
+  uint8_t  buffer[k_test_decode_buf_size_256];
   uint32_t encode_len;
 
   star_v1_SetPIDGainsRequest original = star_v1_SetPIDGainsRequest_init_zero;
 
   /* MATLAB-tuned gains for motor system (tau=75ms) */
   original.has_pid_config                = true;
-  original.pid_config.kp                 = 0.286;
-  original.pid_config.ki                 = 8.01;
-  original.pid_config.kd                 = 0.0;
-  original.pid_config.output_min_percent = -100.0;
-  original.pid_config.output_max_percent = 100.0;
-  original.pid_config.integral_min       = -50.0;
-  original.pid_config.integral_max       = 50.0;
+  original.pid_config.kp                 = s_test_pid_kp_tuned;
+  original.pid_config.ki                 = s_test_pid_ki_tuned;
+  original.pid_config.kd                 = s_test_zero_velocity_mps;
+  original.pid_config.output_min_percent = s_test_pid_out_min;
+  original.pid_config.output_max_percent = s_test_pid_out_max;
+  original.pid_config.integral_min       = s_test_pid_int_min;
+  original.pid_config.integral_max       = s_test_pid_int_max;
   original.motor_id                      = 0; /* Front-left motor */
 
   /* Encode */
@@ -1651,9 +1737,15 @@ void test_pid_gains_request_round_trip(void)
   /* Verify lossless round-trip */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(decoded.has_pid_config);
-  TEST_ASSERT_FLOAT_WITHIN(0.00001, original.pid_config.kp, decoded.pid_config.kp);
-  TEST_ASSERT_FLOAT_WITHIN(0.00001, original.pid_config.ki, decoded.pid_config.ki);
-  TEST_ASSERT_FLOAT_WITHIN(0.00001, original.pid_config.kd, decoded.pid_config.kd);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_pid_tight_tolerance,
+                           original.pid_config.kp,
+                           decoded.pid_config.kp);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_pid_tight_tolerance,
+                           original.pid_config.ki,
+                           decoded.pid_config.ki);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_pid_tight_tolerance,
+                           original.pid_config.kd,
+                           decoded.pid_config.kd);
   TEST_ASSERT_EQUAL(original.motor_id, decoded.motor_id);
 }
 
@@ -2140,8 +2232,8 @@ void test_decode_retransmit_config_request_null_buffer(void)
  */
 void test_decode_retransmit_config_request_null_msg(void)
 {
-  uint8_t  buf[4] = {0};
-  rx_err_t err    = rx_nanopb_decode_retransmit_config_request(buf, sizeof(buf), nullptr);
+  uint8_t  buf[k_test_pb_small_buf_size] = {0};
+  rx_err_t err = rx_nanopb_decode_retransmit_config_request(buf, sizeof(buf), nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -2154,9 +2246,9 @@ void test_decode_retransmit_config_request_valid(void)
   star_v1_SetRetransmitConfigRequest orig = star_v1_SetRetransmitConfigRequest_init_zero;
   orig.has_retransmit_config              = true;
   orig.retransmit_config.enabled          = true;
-  orig.retransmit_config.max_retries      = 3;
-  orig.retransmit_config.ack_timeout_ms   = 50;
-  orig.retransmit_config.max_backoff_ms   = 400;
+  orig.retransmit_config.max_retries      = k_test_retransmit_retries;
+  orig.retransmit_config.ack_timeout_ms   = k_test_retransmit_ack_ms;
+  orig.retransmit_config.max_backoff_ms   = k_test_retransmit_backoff;
 
   uint8_t      enc_buf[star_v1_SetRetransmitConfigRequest_size];
   pb_ostream_t ostream   = pb_ostream_from_buffer(enc_buf, sizeof(enc_buf));
@@ -2169,9 +2261,9 @@ void test_decode_retransmit_config_request_valid(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(decoded.has_retransmit_config);
   TEST_ASSERT_TRUE(decoded.retransmit_config.enabled);
-  TEST_ASSERT_EQUAL(3, decoded.retransmit_config.max_retries);
-  TEST_ASSERT_EQUAL(50, decoded.retransmit_config.ack_timeout_ms);
-  TEST_ASSERT_EQUAL(400, decoded.retransmit_config.max_backoff_ms);
+  TEST_ASSERT_EQUAL(k_test_retransmit_retries, decoded.retransmit_config.max_retries);
+  TEST_ASSERT_EQUAL(k_test_retransmit_ack_ms, decoded.retransmit_config.ack_timeout_ms);
+  TEST_ASSERT_EQUAL(k_test_retransmit_backoff, decoded.retransmit_config.max_backoff_ms);
 }
 
 /** @} */ /* End of nanopb_test_retransmit_req_decode */
@@ -2302,7 +2394,10 @@ void test_create_velocity_command_initializes_struct(void)
 {
   star_v1_VelocityCommand cmd;
   /* Fill with garbage */
-  memset(&cmd, 0xFF, sizeof(cmd));
+  uint8_t* cmd_bytes = (uint8_t*)&cmd;
+  for (size_t i = 0; i < sizeof(cmd); i++) {
+    cmd_bytes[i] = k_test_fill_byte;
+  }
 
   rx_velocity_command_params_t params =
     internal_make_velocity_params(s_test_front_left_velocity_mps,
@@ -2340,7 +2435,9 @@ void test_create_velocity_command_initializes_struct(void)
  */
 void test_create_velocity_command_diff_drive_null_cmd(void)
 {
-  rx_velocity_diff_drive_params_t params = {.left_mps = 1.0, .right_mps = 1.0, .sequence = 1};
+  rx_velocity_diff_drive_params_t params = {.left_mps  = s_test_diff_right_mps,
+                                            .right_mps = s_test_diff_right_mps,
+                                            .sequence  = 1};
   rx_err_t err = rx_nanopb_create_velocity_command_diff_drive(nullptr, &params);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -2361,16 +2458,22 @@ void test_create_velocity_command_diff_drive_null_params(void)
 void test_create_velocity_command_diff_drive_valid(void)
 {
   star_v1_VelocityCommand         cmd;
-  rx_velocity_diff_drive_params_t params = {.left_mps = 0.5, .right_mps = 1.0, .sequence = 42};
+  rx_velocity_diff_drive_params_t params = {.left_mps  = s_test_diff_left_mps,
+                                            .right_mps = s_test_diff_right_mps,
+                                            .sequence  = k_test_sequence_number};
 
   rx_err_t err = rx_nanopb_create_velocity_command_diff_drive(&cmd, &params);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 0.5F, (float)cmd.front_left_velocity_mps);
-  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 0.5F, (float)cmd.back_left_velocity_mps);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
+                           s_test_diff_left_mps_f,
+                           (float)cmd.front_left_velocity_mps);
+  TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance,
+                           s_test_diff_left_mps_f,
+                           (float)cmd.back_left_velocity_mps);
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 1.0F, (float)cmd.front_right_velocity_mps);
   TEST_ASSERT_FLOAT_WITHIN(s_test_float_tolerance, 1.0F, (float)cmd.back_right_velocity_mps);
-  TEST_ASSERT_EQUAL(42, cmd.sequence);
+  TEST_ASSERT_EQUAL(k_test_sequence_number, cmd.sequence);
 }
 
 /**
@@ -2686,9 +2789,15 @@ void test_telemetry_fits_in_buffer(void)
 void test_decode_estop_request_valid(void)
 {
   /* Encode a valid EmergencyStopRequest using nanopb directly */
-  star_v1_EmergencyStopRequest orig = star_v1_EmergencyStopRequest_init_zero;
-  (void)strncpy(orig.reason, "test", sizeof(orig.reason) - 1U);
-  orig.reason[sizeof(orig.reason) - 1U] = '\0';
+  star_v1_EmergencyStopRequest orig      = star_v1_EmergencyStopRequest_init_zero;
+  const char*                  test_str  = "test";
+  size_t                       copy_idx  = 0;
+  const size_t                 max_chars = sizeof(orig.reason) - 1U;
+  while (copy_idx < max_chars && test_str[copy_idx] != '\0') {
+    orig.reason[copy_idx] = test_str[copy_idx];
+    copy_idx++;
+  }
+  orig.reason[copy_idx] = '\0';
 
   uint8_t      enc_buf[star_v1_EmergencyStopRequest_size];
   pb_ostream_t ostream   = pb_ostream_from_buffer(enc_buf, sizeof(enc_buf));
@@ -2737,7 +2846,7 @@ void test_encode_pid_gains_response_small_buffer(void)
  */
 void test_decode_retransmit_config_request_zero_len(void)
 {
-  uint8_t                            buf[4] = {0};
+  uint8_t                            buf[k_test_pb_small_buf_size] = {0};
   star_v1_SetRetransmitConfigRequest msg;
   rx_err_t                           err = rx_nanopb_decode_retransmit_config_request(buf, 0, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2763,7 +2872,7 @@ void test_decode_retransmit_config_request_not_initialized(void)
 {
   rx_nanopb_test_reset_state();
 
-  uint8_t                            buf[4] = {0x08, 0x01, 0x00, 0x00};
+  uint8_t buf[k_test_pb_small_buf_size] = {k_test_pb_tag_varint, 0x01, 0x00, 0x00};
   star_v1_SetRetransmitConfigRequest msg;
   rx_err_t err = rx_nanopb_decode_retransmit_config_request(buf, sizeof(buf), &msg);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
@@ -2775,7 +2884,11 @@ void test_decode_retransmit_config_request_not_initialized(void)
  */
 void test_decode_retransmit_config_request_invalid_data(void)
 {
-  uint8_t                            invalid_data[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint8_t                            invalid_data[] = {k_test_fill_byte,
+                                                       k_test_fill_byte,
+                                                       k_test_fill_byte,
+                                                       k_test_fill_byte,
+                                                       k_test_fill_byte};
   star_v1_SetRetransmitConfigRequest msg;
   rx_err_t                           err =
     rx_nanopb_decode_retransmit_config_request(invalid_data, sizeof(invalid_data), &msg);
@@ -2790,9 +2903,12 @@ void test_decode_retransmit_config_request_invalid_data(void)
 void test_create_velocity_command_out_of_range(void)
 {
   star_v1_VelocityCommand      cmd;
-  rx_velocity_command_params_t params =
-    internal_make_velocity_params(1001.0, 0.0, 0.0, 0.0, k_test_sequence_zero);
-  rx_err_t err = rx_nanopb_create_velocity_command(&cmd, &params);
+  rx_velocity_command_params_t params = internal_make_velocity_params(s_test_velocity_out_of_range,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      k_test_sequence_zero);
+  rx_err_t                     err    = rx_nanopb_create_velocity_command(&cmd, &params);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -2804,8 +2920,10 @@ void test_create_velocity_command_out_of_range(void)
 void test_create_response_header_long_request_id(void)
 {
   /* Build a string of length s_nanopb_buffer_size + 1 (513 chars) */
-  static char s_long_id[514];
-  memset(s_long_id, 'A', sizeof(s_long_id) - 1U);
+  static char s_long_id[k_test_long_id_buf_size];
+  for (size_t i = 0; i < sizeof(s_long_id) - 1U; i++) {
+    s_long_id[i] = 'A';
+  }
   s_long_id[sizeof(s_long_id) - 1U] = '\0';
 
   star_v1_ResponseHeader header;
@@ -2852,10 +2970,11 @@ void test_create_response_header_long_request_id(void)
  * @note Build system: CMake with Unity as external dependency
  * @note Run via: `cd build && ctest -R test_rx_nanopb -V`
  */
-int main(void)
+/**
+ * @brief Run velocity and initialization encode/decode tests
+ */
+static void internal_run_velocity_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Initialization tests */
   RUN_TEST(test_nanopb_init_success);
   RUN_TEST(test_nanopb_init_detects_duplicate_call);
@@ -2894,7 +3013,13 @@ int main(void)
   RUN_TEST(test_encode_velocity_response_with_header);
   RUN_TEST(test_encode_velocity_response_error_status);
   RUN_TEST(test_encode_velocity_response_not_initialized);
+}
 
+/**
+ * @brief Run emergency stop and PID gains tests
+ */
+static void internal_run_estop_pid_tests(void)
+{
   /* Emergency stop request decode tests */
   RUN_TEST(test_decode_estop_request_null_buffer);
   RUN_TEST(test_decode_estop_request_null_msg);
@@ -2923,7 +3048,13 @@ int main(void)
   RUN_TEST(test_encode_estop_response_engaged_false);
   RUN_TEST(test_encode_estop_response_estop_active_status);
   RUN_TEST(test_encode_estop_response_not_initialized);
+}
 
+/**
+ * @brief Run telemetry, PID response, and retransmit config tests
+ */
+static void internal_run_telemetry_retransmit_tests(void)
+{
   /* Telemetry encode tests */
   RUN_TEST(test_encode_telemetry_null_msg);
   RUN_TEST(test_encode_telemetry_null_buffer);
@@ -2956,7 +3087,13 @@ int main(void)
   RUN_TEST(test_decode_retransmit_config_request_oversized);
   RUN_TEST(test_decode_retransmit_config_request_not_initialized);
   RUN_TEST(test_decode_retransmit_config_request_invalid_data);
+}
 
+/**
+ * @brief Run helper function, length tracking, and buffer size tests
+ */
+static void internal_run_helper_tests(void)
+{
   /* Helper function tests - velocity command */
   RUN_TEST(test_create_velocity_command_null);
   RUN_TEST(test_create_velocity_command_valid);
@@ -2987,6 +3124,16 @@ int main(void)
   /* Buffer size tests */
   RUN_TEST(test_velocity_request_fits_in_buffer);
   RUN_TEST(test_telemetry_fits_in_buffer);
+}
+
+int main(void)
+{
+  UNITY_BEGIN();
+
+  internal_run_velocity_tests();
+  internal_run_estop_pid_tests();
+  internal_run_telemetry_retransmit_tests();
+  internal_run_helper_tests();
 
   return UNITY_END();
 }

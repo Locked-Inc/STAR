@@ -280,6 +280,22 @@
 #include "unity.h"
 
 /* =============================================================================
+ * Test Constants
+ * =============================================================================
+ */
+
+/** @brief IWDT test timeout and configuration constants */
+typedef enum : uint32_t {
+  k_iwdt_test_timeout_1000_ms  = 1000,  /**< 1 second timeout for tests */
+  k_iwdt_test_timeout_500_ms   = 500,   /**< 500ms timeout for motor active state */
+  k_iwdt_test_timeout_512_ms   = 512,   /**< 512ms for set_timeout_for_current_state test */
+  k_iwdt_test_timeout_50_ms    = 50,    /**< Below-minimum timeout (invalid) */
+  k_iwdt_test_timeout_20000_ms = 20000, /**< Above-maximum timeout (invalid) */
+  k_iwdt_test_invalid_state    = 999,   /**< Out-of-range state value */
+  k_iwdt_test_timeout_tick_101 = 101,   /**< Tick count past 1000ms timeout */
+} iwdt_test_constants_t;
+
+/* =============================================================================
  * Test Helper Functions
  * =============================================================================
  */
@@ -407,7 +423,7 @@ static void test_init_with_custom_config(void)
 {
   test_setup();
 
-  rx_iwdt_config_t config = {.default_timeout_ms     = 1000,
+  rx_iwdt_config_t config = {.default_timeout_ms     = k_iwdt_test_timeout_1000_ms,
                              .enable_task_monitoring = true,
                              .reset_on_timeout       = true};
 
@@ -449,7 +465,7 @@ static void test_init_invalid_timeout_too_low(void)
 {
   test_setup();
 
-  rx_iwdt_config_t config = {.default_timeout_ms     = 50, /* Below minimum */
+  rx_iwdt_config_t config = {.default_timeout_ms     = k_iwdt_test_timeout_50_ms, /* Below min */
                              .enable_task_monitoring = true,
                              .reset_on_timeout       = true};
 
@@ -491,7 +507,7 @@ static void test_init_invalid_timeout_too_high(void)
 {
   test_setup();
 
-  rx_iwdt_config_t config = {.default_timeout_ms     = 20000, /* Above maximum */
+  rx_iwdt_config_t config = {.default_timeout_ms     = k_iwdt_test_timeout_20000_ms, /* Above max */
                              .enable_task_monitoring = true,
                              .reset_on_timeout       = true};
 
@@ -658,7 +674,7 @@ static void test_register_task_null_name(void)
   test_setup();
 
   (void)rx_iwdt_init(nullptr);
-  rx_err_t err = rx_iwdt_register_task(nullptr, 1000);
+  rx_err_t err = rx_iwdt_register_task(nullptr, k_iwdt_test_timeout_1000_ms);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -704,7 +720,7 @@ static void test_register_task_success(void)
   test_setup();
 
   (void)rx_iwdt_init(nullptr);
-  rx_err_t err = rx_iwdt_register_task("TestTask", 1000);
+  rx_err_t err = rx_iwdt_register_task("TestTask", k_iwdt_test_timeout_1000_ms);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -743,7 +759,7 @@ static void test_register_task_invalid_timeout(void)
   test_setup();
 
   (void)rx_iwdt_init(nullptr);
-  rx_err_t err = rx_iwdt_register_task("TestTask", 50); /* Too low */
+  rx_err_t err = rx_iwdt_register_task("TestTask", k_iwdt_test_timeout_50_ms); /* Too low */
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -761,7 +777,7 @@ static void test_register_task_timeout_too_high(void)
 
   (void)rx_iwdt_init(nullptr);
   /* k_iwdt_max_timeout_ms is 16384; pass 20000 > max */
-  rx_err_t err = rx_iwdt_register_task("TestTask", 20000U);
+  rx_err_t err = rx_iwdt_register_task("TestTask", k_iwdt_test_timeout_20000_ms);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -801,10 +817,10 @@ static void test_register_duplicate_task(void)
   test_setup();
 
   (void)rx_iwdt_init(nullptr);
-  (void)rx_iwdt_register_task("TestTask", 1000);
+  (void)rx_iwdt_register_task("TestTask", k_iwdt_test_timeout_1000_ms);
 
   /* Try to register same task again */
-  rx_err_t err = rx_iwdt_register_task("TestTask", 1000);
+  rx_err_t err = rx_iwdt_register_task("TestTask", k_iwdt_test_timeout_1000_ms);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -957,7 +973,7 @@ static void test_heartbeat_registered_task(void)
   test_setup();
 
   (void)rx_iwdt_init(nullptr);
-  (void)rx_iwdt_register_task("TestTask", 1000);
+  (void)rx_iwdt_register_task("TestTask", k_iwdt_test_timeout_1000_ms);
 
   rx_err_t err = rx_iwdt_task_heartbeat("TestTask");
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1029,7 +1045,7 @@ static void test_set_state_invalid(void)
   test_setup();
 
   (void)rx_iwdt_init(nullptr);
-  rx_err_t err = rx_iwdt_set_state((system_state_t)999);
+  rx_err_t err = rx_iwdt_set_state((system_state_t)k_iwdt_test_invalid_state);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1134,7 +1150,8 @@ static void test_set_timeout_for_state(void)
   test_setup();
 
   (void)rx_iwdt_init(nullptr);
-  rx_err_t err = rx_iwdt_set_timeout_for_state(k_system_state_motor_active, 500);
+  rx_err_t err =
+    rx_iwdt_set_timeout_for_state(k_system_state_motor_active, k_iwdt_test_timeout_500_ms);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -1391,12 +1408,12 @@ static void test_check_tasks_task_not_yet_timed_out(void)
 {
   test_setup();
 
-  rx_iwdt_config_t config = {.default_timeout_ms     = 1000,
+  rx_iwdt_config_t config = {.default_timeout_ms     = k_iwdt_test_timeout_1000_ms,
                              .enable_task_monitoring = true,
                              .reset_on_timeout       = false};
   (void)rx_iwdt_init(&config);
   mock_tx_set_time(0);
-  (void)rx_iwdt_register_task("WatchedTask", 1000);
+  (void)rx_iwdt_register_task("WatchedTask", k_iwdt_test_timeout_1000_ms);
 
   /* Immediately check without advancing time: elapsed == 0 <= timeout */
   rx_err_t err = rx_iwdt_check_tasks();
@@ -1453,7 +1470,7 @@ static void test_init_detects_prior_watchdog_reset(void)
   rx_iwdt_status_t status;
   (void)rx_iwdt_get_status(&status);
   TEST_ASSERT_EQUAL(k_iwdt_reset_watchdog, status.last_reset_reason);
-  TEST_ASSERT_EQUAL(1u, status.total_resets);
+  TEST_ASSERT_EQUAL(1U, status.total_resets);
 }
 
 /**
@@ -1472,7 +1489,7 @@ static void test_register_task_before_init_returns_error(void)
 {
   test_setup();
 
-  rx_err_t err = rx_iwdt_register_task("TestTask", 1000);
+  rx_err_t err = rx_iwdt_register_task("TestTask", k_iwdt_test_timeout_1000_ms);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
 }
 
@@ -1493,7 +1510,7 @@ static void test_register_task_empty_name_returns_error(void)
   test_setup();
 
   (void)rx_iwdt_init(nullptr);
-  rx_err_t err = rx_iwdt_register_task("", 1000);
+  rx_err_t err = rx_iwdt_register_task("", k_iwdt_test_timeout_1000_ms);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1515,7 +1532,8 @@ static void test_register_task_long_name_returns_error(void)
 
   (void)rx_iwdt_init(nullptr);
   /* 32 characters -- exactly k_iwdt_task_name_len, so len >= k_iwdt_task_name_len */
-  rx_err_t err = rx_iwdt_register_task("12345678901234567890123456789012", 1000);
+  rx_err_t err =
+    rx_iwdt_register_task("12345678901234567890123456789012", k_iwdt_test_timeout_1000_ms);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1539,7 +1557,8 @@ static void test_register_task_no_free_slot_returns_no_mem(void)
   (void)rx_iwdt_init(nullptr);
 
   /* Fill all k_iwdt_max_tasks (16) slots with unique names */
-  static const char* const k_task_names[16] = {
+  static const char* const s_task_names[16] = {
+    // NOLINT(readability-identifier-naming)
     "task_00",
     "task_01",
     "task_02",
@@ -1558,10 +1577,10 @@ static void test_register_task_no_free_slot_returns_no_mem(void)
     "task_15",
   };
   for (uint32_t i = 0; i < k_iwdt_max_tasks; i++) {
-    (void)rx_iwdt_register_task(k_task_names[i], 1000);
+    (void)rx_iwdt_register_task(s_task_names[i], k_iwdt_test_timeout_1000_ms);
   }
 
-  rx_err_t err = rx_iwdt_register_task("overflow_task", 1000);
+  rx_err_t err = rx_iwdt_register_task("overflow_task", k_iwdt_test_timeout_1000_ms);
   TEST_ASSERT_EQUAL(k_rx_err_no_mem, err);
 }
 
@@ -1602,7 +1621,8 @@ static void test_set_timeout_invalid_state_returns_error(void)
 {
   test_setup();
 
-  rx_err_t err = rx_iwdt_set_timeout_for_state((system_state_t)999u, 1000);
+  rx_err_t err = rx_iwdt_set_timeout_for_state((system_state_t)k_iwdt_test_invalid_state,
+                                               k_iwdt_test_timeout_1000_ms);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1623,7 +1643,7 @@ static void test_set_timeout_before_init_returns_error(void)
 {
   test_setup();
 
-  rx_err_t err = rx_iwdt_set_timeout_for_state(k_system_state_running, 1000);
+  rx_err_t err = rx_iwdt_set_timeout_for_state(k_system_state_running, k_iwdt_test_timeout_1000_ms);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
 }
 
@@ -1645,7 +1665,7 @@ static void test_set_timeout_invalid_value_returns_error(void)
   test_setup();
 
   (void)rx_iwdt_init(nullptr);
-  rx_err_t err = rx_iwdt_set_timeout_for_state(k_system_state_running, 50);
+  rx_err_t err = rx_iwdt_set_timeout_for_state(k_system_state_running, k_iwdt_test_timeout_50_ms);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1663,7 +1683,8 @@ static void test_set_timeout_value_too_high_returns_error(void)
 
   (void)rx_iwdt_init(nullptr);
   /* k_iwdt_max_timeout_ms is 16384; pass 20000 > max */
-  rx_err_t err = rx_iwdt_set_timeout_for_state(k_system_state_running, 20000U);
+  rx_err_t err =
+    rx_iwdt_set_timeout_for_state(k_system_state_running, k_iwdt_test_timeout_20000_ms);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1686,12 +1707,12 @@ static void test_set_timeout_for_current_state_updates_active_timeout(void)
   (void)rx_iwdt_init(nullptr);
 
   /* k_system_state_init is the default state after init */
-  rx_err_t err = rx_iwdt_set_timeout_for_state(k_system_state_init, 512);
+  rx_err_t err = rx_iwdt_set_timeout_for_state(k_system_state_init, k_iwdt_test_timeout_512_ms);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_iwdt_status_t status;
   (void)rx_iwdt_get_status(&status);
-  TEST_ASSERT_EQUAL(512u, status.current_timeout_ms);
+  TEST_ASSERT_EQUAL(k_iwdt_test_timeout_512_ms, status.current_timeout_ms);
 }
 
 /**
@@ -1751,13 +1772,13 @@ static void test_check_tasks_monitoring_disabled_returns_ok(void)
 {
   test_setup();
 
-  rx_iwdt_config_t config = {.default_timeout_ms     = 1000,
+  rx_iwdt_config_t config = {.default_timeout_ms     = k_iwdt_test_timeout_1000_ms,
                              .enable_task_monitoring = false,
                              .reset_on_timeout       = true};
   (void)rx_iwdt_init(&config);
 
   /* Register a task that would otherwise time out */
-  (void)rx_iwdt_register_task("TestTask", 1000);
+  (void)rx_iwdt_register_task("TestTask", k_iwdt_test_timeout_1000_ms);
 
   rx_err_t err = rx_iwdt_check_tasks();
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1785,16 +1806,16 @@ static void test_check_tasks_detects_timeout(void)
 {
   test_setup();
 
-  rx_iwdt_config_t config = {.default_timeout_ms     = 1000,
+  rx_iwdt_config_t config = {.default_timeout_ms     = k_iwdt_test_timeout_1000_ms,
                              .enable_task_monitoring = true,
                              .reset_on_timeout       = true};
   (void)rx_iwdt_init(&config);
   mock_tx_set_time(0);
-  (void)rx_iwdt_register_task("WatchedTask", 1000);
+  (void)rx_iwdt_register_task("WatchedTask", k_iwdt_test_timeout_1000_ms);
 
   /* Advance time past the 1000 ms timeout: 1000 ms / 10 ms per tick = 100 ticks.
    * Set to 101 ticks so elapsed_ticks (101) > timeout_in_ticks (100). */
-  mock_tx_set_time(101);
+  mock_tx_set_time(k_iwdt_test_timeout_tick_101);
 
   rx_err_t err = rx_iwdt_check_tasks();
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);

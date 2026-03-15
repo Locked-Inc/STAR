@@ -10,7 +10,8 @@
 
 #include "mock_rx_obstacle_detect.h"
 
-#include <string.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /* Static return values */
 static rx_err_t s_init_return  = k_rx_ok;
@@ -118,7 +119,12 @@ rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle)
     return k_rx_err_null_ptr;
   }
 
-  (void)memset(handle, 0, sizeof(*handle));
+  {
+    uint8_t* p = (uint8_t*)handle;
+    for (size_t i = 0; i < sizeof(*handle); i++) {
+      p[i] = 0;
+    }
+  }
   s_current_handle = nullptr;
 
   return k_rx_ok;

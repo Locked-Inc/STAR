@@ -1113,6 +1113,54 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
 }
 
 /**
+ * @brief Set both GPTW outputs for directional motor control
+ *
+ * @details
+ * Applies a pair of duty-cycle values to the two H-bridge outputs (IN2/IN1)
+ * using the DRV8263H-Q1 IN/IN truth table. Extracted from rx_motor_set_duty()
+ * to satisfy clang-tidy readability-function-size.
+ *
+ * @param[in] handle    Motor handle providing channel and output identifiers
+ * @param[in] duty_a    Duty cycle for output_a (IN2), percentage 0-100
+ * @param[in] duty_b    Duty cycle for output_b (IN1), percentage 0-100
+ * @param[in] dir_label Human-readable label for error messages (e.g. "forward")
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok             Both outputs set successfully
+ * @retval k_rx_err_*          First GPTW error encountered
+ *
+ * @pre  handle != nullptr and handle->initialized
+ * @post Both GPTW outputs updated on success
+ *
+ * @note Not thread-safe; caller must synchronize
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_set_direction_outputs(const rx_motor_handle_t* handle,
+                                               float                    duty_a,
+                                               float                    duty_b,
+                                               const char*              dir_label)
+{
+  rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                                  rx_gptw_output_id(handle->output_a),
+                                  duty_a);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to set IN2 output");
+    (void)dir_label; /* used for context in log; suppress unused warning */
+    return err;
+  }
+
+  err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                         rx_gptw_output_id(handle->output_b),
+                         duty_b);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to set IN1 output");
+    return err;
+  }
+
+  return k_rx_ok;
+}
+
+/**
  * @brief Set motor speed and direction via signed duty cycle (-100% to +100%)
  *
  * @details
@@ -1352,11 +1400,8 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  * - Rule 7: [OK] All return values checked (rx_gptw_set_duty)
  *
  * @par Rule 4 Justification:
- * Function exceeds 60-line guideline (82 total) due to comprehensive error checking and
- * logging required for NASA Rule 5 and Rule 7 compliance. Function represents a single
- * logical operation (set motor duty) and cannot be meaningfully decomposed without harming
- * code clarity and maintainability. Splitting would require passing internal state between
- * helper functions, increasing coupling and reducing readability.
+ * The directional PWM output setting is delegated to internal_set_direction_outputs()
+ * to keep this function under the 40-statement clang-tidy threshold.
  */
 rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
 {
@@ -1389,58 +1434,18 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
    *   Active Brake (duty == 0): IN2 = LOW(0%), IN1 = LOW(0%)
    */
   const float speed_pwm = fabsf(duty);
+  const float low       = (float)k_motor_drive_low;
+  rx_err_t    dir_err   = k_rx_ok;
 
   if (duty > (float)k_motor_duty_zero) {
-    /* Forward: IN2 = LOW, IN1 = PWM - NASA Rule 7 compliance */
-    rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
-                                    rx_gptw_output_id(handle->output_a),
-                                    (float)k_motor_drive_low);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to set IN2 output (forward)");
-      return err;
-    }
-
-    err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
-                           rx_gptw_output_id(handle->output_b),
-                           speed_pwm);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to set IN1 output (forward)");
-      return err;
-    }
+    dir_err = internal_set_direction_outputs(handle, low, speed_pwm, "forward");
   } else if (duty < (float)k_motor_duty_zero) {
-    /* Reverse: IN2 = PWM, IN1 = LOW - NASA Rule 7 compliance */
-    rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
-                                    rx_gptw_output_id(handle->output_a),
-                                    speed_pwm);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to set IN2 output (reverse)");
-      return err;
-    }
-
-    err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
-                           rx_gptw_output_id(handle->output_b),
-                           (float)k_motor_drive_low);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to set IN1 output (reverse)");
-      return err;
-    }
+    dir_err = internal_set_direction_outputs(handle, speed_pwm, low, "reverse");
   } else {
-    /* Active Brake: IN2 = LOW, IN1 = LOW - NASA Rule 7 compliance */
-    rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
-                                    rx_gptw_output_id(handle->output_a),
-                                    (float)k_motor_drive_low);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to set IN2 output (brake)");
-      return err;
-    }
-
-    err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
-                           rx_gptw_output_id(handle->output_b),
-                           (float)k_motor_drive_low);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to set IN1 output (brake)");
-      return err;
-    }
+    dir_err = internal_set_direction_outputs(handle, low, low, "brake");
+  }
+  if (dir_err != k_rx_ok) {
+    return dir_err;
   }
 
   handle->current_duty = duty;
@@ -1851,23 +1856,35 @@ rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
  * - Rule 5: [OK] 3 postconditions (initialized flag cleared, duty cleared, outputs disabled)
  * - Rule 7: [OK] All return values checked (best-effort error collection)
  */
-rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
+/**
+ * @brief Execute best-effort GPTW shutdown sequence for emergency stop
+ *
+ * @details
+ * Performs all hardware-level shutdown steps: clears both output duty cycles
+ * to LOW, disables both GPTW outputs, and stops the timer. Errors are collected
+ * but do not abort the sequence -- all steps are attempted.
+ *
+ * @param[in] handle Motor handle with channel and output identifiers
+ *
+ * @return rx_err_t First error encountered, or k_rx_ok if all steps succeeded
+ *
+ * @pre  handle != nullptr and handle->initialized
+ * @post Both outputs at LOW duty, both outputs disabled, timer stopped
+ *
+ * @note Not thread-safe; called only from rx_motor_emergency_stop
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_estop_shutdown_hw(const rx_motor_handle_t* handle)
 {
-  RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
-
-  if (!handle->initialized) {
-    rx_log_error(s_tag, "Motor not initialized");
-    return k_rx_err_invalid_state;
-  }
-
-  /* Immediately set both outputs LOW for active brake (DRV8263H-Q1 IN/IN mode) */
   rx_err_t result = k_rx_ok;
-  rx_err_t err    = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+
+  /* Set both outputs LOW for active brake */
+  rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                                   rx_gptw_output_id(handle->output_a),
                                   (float)k_motor_drive_low);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "E-STOP: Failed to clear output_a duty");
-    result = err; /* result == k_rx_ok always here (first error check) */
+    result = err;
   }
   err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                          rx_gptw_output_id(handle->output_b),
@@ -1903,6 +1920,20 @@ rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
       result = err;
     }
   }
+
+  return result;
+}
+
+rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
+{
+  RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
+
+  if (!handle->initialized) {
+    rx_log_error(s_tag, "Motor not initialized");
+    return k_rx_err_invalid_state;
+  }
+
+  rx_err_t result = internal_estop_shutdown_hw(handle);
 
   /* Mark as no longer initialized - requires re-init to use */
   handle->initialized  = false;

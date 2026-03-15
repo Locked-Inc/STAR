@@ -135,19 +135,116 @@ extern rx_err_t internal_handle_reset(rx_i2c_comm_handle_t* handle);
  * @brief Test payload sizes and other numeric constants
  */
 typedef enum : uint16_t {
-  k_test_payload_small   = 4,    /**< Small payload: "TEST" */
-  k_test_payload_medium  = 16,   /**< Medium payload: 16 bytes */
-  k_test_seq_a           = 0,    /**< First expected TX sequence */
-  k_test_seq_b           = 1,    /**< Second expected TX sequence */
-  k_test_timeout_zero    = 0,    /**< Non-blocking receive timeout */
-  k_test_addr_default    = 0x42, /**< Default I2C device address */
-  k_test_channel_default = 0,    /**< RIIC0 channel */
-  k_test_frame_buf_size  = 2048, /**< Buffer for encoded frames */
-  k_test_tx_buf_size     = 256,  /**< Readback buffer size */
-  k_test_payload_large   = 249,  /**< Payload that makes wire_len exceed 256-byte I2C limit */
-  k_test_rx_buf_max      = 2048, /**< k_i2c_comm_rx_buffer_size */
-  k_test_seq_gap_large   = 200,  /**< Sequence number far from expected, triggers validate_fail */
+  k_test_payload_small     = 4,    /**< Small payload: "TEST" */
+  k_test_payload_medium    = 16,   /**< Medium payload: 16 bytes */
+  k_test_seq_a             = 0,    /**< First expected TX sequence */
+  k_test_seq_b             = 1,    /**< Second expected TX sequence */
+  k_test_timeout_zero      = 0,    /**< Non-blocking receive timeout */
+  k_test_addr_default      = 0x42, /**< Default I2C device address */
+  k_test_channel_default   = 0,    /**< RIIC0 channel */
+  k_test_frame_buf_size    = 2048, /**< Buffer for encoded frames */
+  k_test_tx_buf_size       = 256,  /**< Readback buffer size */
+  k_test_payload_large     = 249,  /**< Payload that makes wire_len exceed 256-byte I2C limit */
+  k_test_rx_buf_max        = 2048, /**< k_i2c_comm_rx_buffer_size */
+  k_test_seq_gap_large     = 200,  /**< Sequence number far from expected, triggers validate_fail */
+  k_test_expected_tx_seq   = 2,    /**< Expected TX sequence after two sends */
+  k_test_oversized_payload = 1025, /**< Payload exceeding k_frame_max_payload (1024) */
 } test_i2c_comm_constants_t;
+
+/**
+ * @brief Additional test constants for addresses, indices, and byte values
+ */
+typedef enum : uint8_t {
+  k_test_addr_alt         = 0x50, /**< Alternate I2C device address */
+  k_test_channel_alt      = 1,    /**< Alternate RIIC channel */
+  k_test_garbage_fill     = 0xCC, /**< Fill byte for garbage data (no sync word) */
+  k_test_crc_flip_mask    = 0xFF, /**< XOR mask to corrupt CRC bytes */
+  k_test_garbage_byte0    = 0xDE, /**< Garbage prefix byte 0 */
+  k_test_garbage_byte1    = 0xAD, /**< Garbage prefix byte 1 */
+  k_test_garbage_byte2    = 0xBE, /**< Garbage prefix byte 2 */
+  k_test_garbage_byte3    = 0xEF, /**< Garbage prefix byte 3 */
+  k_test_sync_byte_low    = 0xAA, /**< LE low byte of k_frame_sync_word */
+  k_test_sync_byte_high   = 0x55, /**< LE high byte of k_frame_sync_word */
+  k_test_payload_byte_a   = 0xAA, /**< Test payload data byte A */
+  k_test_payload_byte_b   = 0xBB, /**< Test payload data byte B */
+  k_test_payload_byte_c   = 0xCC, /**< Test payload data byte C */
+  k_test_payload_byte_d   = 0xDD, /**< Test payload data byte D */
+  k_test_len_hi_byte      = 0x05, /**< High byte of oversized LE16 length (0x0500=1280) */
+  k_test_false_sync_hi    = 0x00, /**< Non-matching high byte for false sync test */
+  k_test_frame_type_cmd   = 0x01, /**< Frame type command value for raw header construction */
+  k_test_frame_flags_zero = 0x00, /**< Zero flags value for raw header construction */
+} test_i2c_byte_constants_t;
+
+/**
+ * @brief Additional test constants for offsets and counts
+ */
+typedef enum : uint32_t {
+  k_test_garbage_len       = 4,   /**< Number of garbage prefix bytes */
+  k_test_garbage_arr_len   = 12,  /**< Length of garbage array with no sync */
+  k_test_chunk_size        = 250, /**< Injection chunk size < RIIC transfer limit */
+  k_test_batch_count       = 9,   /**< Number of batches to fill RX buffer */
+  k_test_garbage_buf_len   = 999, /**< Garbage rx_buffer_len for init-clears test */
+  k_test_garbage_buf_pos   = 123, /**< Garbage rx_buffer_pos for init-clears test */
+  k_test_compact_test_len  = 5,   /**< Buffer len for compact no-op test */
+  k_test_compact_bad_pos   = 10,  /**< Buffer pos > len for compact error test */
+  k_test_align_sync_pos    = 5,   /**< Sync position for align test */
+  k_test_align_high_pos    = 10,  /**< High buffer pos for align no-regression test */
+  k_test_align_low_sync    = 3,   /**< Lower sync pos for align no-regression test */
+  k_test_find_sync_len     = 2,   /**< Short buffer len for find_sync error test */
+  k_test_find_sync_bad_pos = 5,   /**< Pos > len for find_sync error test */
+  k_test_small_space       = 16,  /**< Small remaining space for read clamp test */
+  k_test_decode_buf_size   = 32,  /**< Buffer size for decode header tests */
+  k_test_decode_buf_large  = 64,  /**< Larger buffer for decode header tests */
+  k_test_partial_inject    = 4,   /**< Bytes to inject for partial frame test */
+  k_test_seq_five          = 5,   /**< Sequence number for build_frame test */
+  k_test_seq_one           = 1,   /**< Sequence number for build_frame payload test */
+  k_test_seq_three         = 3,   /**< Sequence number for build_frame nonnull-zero-len */
+  k_test_crc_buf_size      = 32,  /**< Buffer size for CRC test */
+  k_test_crc_offset_eight  = 8,   /**< Offset for CRC null-data test */
+  k_test_false_sync_prefix = 2,   /**< False sync prefix length */
+  k_test_header_idx_seq_lo = 2,   /**< Header byte index: sequence low */
+  k_test_header_idx_seq_hi = 3,   /**< Header byte index: sequence high */
+  k_test_header_idx_len_lo = 4,   /**< Header byte index: payload length low */
+  k_test_header_idx_len_hi = 5,   /**< Header byte index: payload length high */
+  k_test_header_idx_type   = 6,   /**< Header byte index: frame type */
+  k_test_header_idx_flags  = 7,   /**< Header byte index: frame flags */
+  k_test_crc_corrupt_idx_2 = 2,   /**< Second-to-last byte for CRC corruption */
+  k_test_sync_fill_step    = 2,   /**< Step size for sync word fill loop */
+} test_i2c_uint32_constants_t;
+
+/**
+ * @brief Zero-initialize a byte buffer
+ * @param[out] buf  Buffer to zero
+ * @param[in]  len  Length in bytes
+ */
+static void helper_zero_buf(void* buf, uint32_t len)
+{
+  uint8_t* ptr = (uint8_t*)buf;
+  for (uint32_t i = 0; i < len; i++) {
+    ptr[i] = 0;
+  }
+}
+
+/**
+ * @brief Fill a byte buffer with a specified value
+ * @param[out] buf  Buffer to fill
+ * @param[in]  val  Fill byte value
+ * @param[in]  len  Length in bytes
+ */
+/**
+ * @brief Copy bytes from src to dst
+ * @param[out] dst  Destination buffer
+ * @param[in]  src  Source buffer
+ * @param[in]  len  Number of bytes to copy
+ */
+static void helper_copy_buf(void* dst, const void* src, uint32_t len)
+{
+  uint8_t*       d = (uint8_t*)dst;
+  const uint8_t* s = (const uint8_t*)src;
+  for (uint32_t i = 0; i < len; i++) {
+    d[i] = s[i];
+  }
+}
 
 /* =============================================================================
  * Test Fixtures
@@ -155,9 +252,11 @@ typedef enum : uint16_t {
  */
 
 /** @brief I2C comm handle under test */
+/* NOLINTNEXTLINE(readability-identifier-naming) -- s_ prefix per CLAUDE.md for statics */
 static rx_i2c_comm_handle_t s_handle;
 
 /** @brief Shared session for sequence tracking */
+/* NOLINTNEXTLINE(readability-identifier-naming) -- s_ prefix per CLAUDE.md for statics */
 static rx_session_state_t s_session;
 
 /* =============================================================================
@@ -210,14 +309,14 @@ static void helper_encode_frame(rx_frame_type_t type,
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&enc));
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   frame.header.sequence = sequence;
   frame.header.length   = (uint16_t)payload_len;
   frame.header.type     = (uint8_t)type;
   frame.header.flags    = k_frame_flag_none;
 
   if (payload != nullptr && payload_len > 0) {
-    memcpy(frame.payload, payload, payload_len);
+    helper_copy_buf(frame.payload, payload, payload_len);
   }
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&enc, &frame, buf, out_len));
@@ -244,7 +343,7 @@ void setUp(void)
 {
   mock_riic_init();
   (void)rx_session_init(&s_session);
-  memset(&s_handle, 0, sizeof(s_handle));
+  helper_zero_buf(&s_handle, sizeof(s_handle));
 }
 
 void tearDown(void)
@@ -332,15 +431,15 @@ void test_i2c_comm_init_stores_channel_and_addr(void)
 {
   rx_i2c_comm_config_t cfg = {
     .session     = &s_session,
-    .channel     = {.value = 1},
-    .device_addr = {.value = 0x50},
+    .channel     = {.value = k_test_channel_alt},
+    .device_addr = {.value = k_test_addr_alt},
   };
 
   rx_err_t err = rx_i2c_comm_init(&s_handle, &cfg);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT8(1, s_handle.channel_value);
-  TEST_ASSERT_EQUAL_UINT8(0x50, s_handle.device_addr);
+  TEST_ASSERT_EQUAL_UINT8(k_test_channel_alt, s_handle.channel_value);
+  TEST_ASSERT_EQUAL_UINT8(k_test_addr_alt, s_handle.device_addr);
 }
 
 /**
@@ -352,8 +451,8 @@ void test_i2c_comm_init_stores_channel_and_addr(void)
 void test_i2c_comm_init_clears_rx_buffer(void)
 {
   /* Pre-populate with garbage */
-  s_handle.rx_buffer_len = 999;
-  s_handle.rx_buffer_pos = 123;
+  s_handle.rx_buffer_len = k_test_garbage_buf_len;
+  s_handle.rx_buffer_pos = k_test_garbage_buf_pos;
 
   helper_init_default();
 
@@ -440,7 +539,7 @@ void test_i2c_comm_deinit_not_initialized_ok(void)
 void test_i2c_comm_send_null_handle_fails(void)
 {
   const uint8_t payload[] = "test";
-  rx_err_t      err       = rx_i2c_comm_send(nullptr, k_frame_type_response, 0, payload, 4);
+  rx_err_t err = rx_i2c_comm_send(nullptr, k_frame_type_response, 0, payload, k_test_payload_small);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -454,7 +553,8 @@ void test_i2c_comm_send_null_handle_fails(void)
 void test_i2c_comm_send_not_initialized_fails(void)
 {
   const uint8_t payload[] = "test";
-  rx_err_t      err       = rx_i2c_comm_send(&s_handle, k_frame_type_response, 0, payload, 4);
+  rx_err_t      err =
+    rx_i2c_comm_send(&s_handle, k_frame_type_response, 0, payload, k_test_payload_small);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -469,7 +569,8 @@ void test_i2c_comm_send_null_payload_nonzero_len_fails(void)
 {
   helper_init_default();
 
-  rx_err_t err = rx_i2c_comm_send(&s_handle, k_frame_type_response, 0, nullptr, 4);
+  rx_err_t err =
+    rx_i2c_comm_send(&s_handle, k_frame_type_response, 0, nullptr, k_test_payload_small);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -573,12 +674,16 @@ void test_i2c_comm_send_increments_tx_sequence(void)
 
   const uint8_t payload[] = "PING";
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_i2c_comm_send(&s_handle, k_frame_type_command, 0, payload, 4));
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_i2c_comm_send(&s_handle, k_frame_type_command, 0, payload, 4));
+  TEST_ASSERT_EQUAL(
+    k_rx_ok,
+    rx_i2c_comm_send(&s_handle, k_frame_type_command, 0, payload, k_test_payload_small));
+  TEST_ASSERT_EQUAL(
+    k_rx_ok,
+    rx_i2c_comm_send(&s_handle, k_frame_type_command, 0, payload, k_test_payload_small));
 
   uint16_t tx_seq = 0;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_get_tx(&s_session, &tx_seq));
-  TEST_ASSERT_EQUAL_UINT16(2, tx_seq);
+  TEST_ASSERT_EQUAL_UINT16(k_test_expected_tx_seq, tx_seq);
 }
 
 /**
@@ -595,7 +700,8 @@ void test_i2c_comm_send_riic_write_failure_propagates(void)
   mock_riic_set_next_error(k_rx_err_timeout);
 
   const uint8_t payload[] = "FAIL";
-  rx_err_t      err       = rx_i2c_comm_send(&s_handle, k_frame_type_response, 0, payload, 4);
+  rx_err_t      err =
+    rx_i2c_comm_send(&s_handle, k_frame_type_response, 0, payload, k_test_payload_small);
 
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 }
@@ -614,7 +720,7 @@ void test_i2c_comm_send_riic_write_failure_propagates(void)
 void test_i2c_comm_receive_null_handle_fails(void)
 {
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(nullptr, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -644,7 +750,7 @@ void test_i2c_comm_receive_null_frame_fails(void)
 void test_i2c_comm_receive_not_initialized_fails(void)
 {
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -661,7 +767,7 @@ void test_i2c_comm_receive_no_data_returns_no_data(void)
   helper_init_default();
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -690,7 +796,7 @@ void test_i2c_comm_receive_valid_frame_success(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -711,16 +817,21 @@ void test_i2c_comm_receive_crc_mismatch_fails(void)
 
   uint8_t  encoded[k_test_frame_buf_size];
   uint32_t encoded_len = 0;
-  helper_encode_frame(k_frame_type_command, 0, (const uint8_t*)"TEST", 4, encoded, &encoded_len);
+  helper_encode_frame(k_frame_type_command,
+                      0,
+                      (const uint8_t*)"TEST",
+                      k_test_payload_small,
+                      encoded,
+                      &encoded_len);
 
   /* Corrupt the last 4 bytes (CRC field) */
-  encoded[encoded_len - 1] ^= 0xFFU;
-  encoded[encoded_len - 2] ^= 0xFFU;
+  encoded[encoded_len - 1] ^= k_test_crc_flip_mask;
+  encoded[encoded_len - k_test_crc_corrupt_idx_2] ^= k_test_crc_flip_mask;
 
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_crc_mismatch, err);
@@ -742,7 +853,7 @@ void test_i2c_comm_receive_invalid_sync_returns_no_data(void)
   helper_inject_rx(garbage, sizeof(garbage));
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -760,20 +871,25 @@ void test_i2c_comm_receive_skips_garbage_before_sync(void)
 
   uint8_t  encoded[k_test_frame_buf_size];
   uint32_t encoded_len = 0;
-  helper_encode_frame(k_frame_type_command, 0, (const uint8_t*)"ABCD", 4, encoded, &encoded_len);
+  helper_encode_frame(k_frame_type_command,
+                      0,
+                      (const uint8_t*)"ABCD",
+                      k_test_payload_small,
+                      encoded,
+                      &encoded_len);
 
   /* Prepend 4 garbage bytes before the valid frame */
   uint8_t buf_with_garbage[k_test_frame_buf_size];
-  buf_with_garbage[0] = 0xDE;
-  buf_with_garbage[1] = 0xAD;
-  buf_with_garbage[2] = 0xBE;
-  buf_with_garbage[3] = 0xEF;
-  memcpy(buf_with_garbage + 4, encoded, encoded_len);
+  buf_with_garbage[0]                        = k_test_garbage_byte0;
+  buf_with_garbage[1]                        = k_test_garbage_byte1;
+  buf_with_garbage[k_test_header_idx_seq_lo] = k_test_garbage_byte2;
+  buf_with_garbage[k_test_header_idx_seq_hi] = k_test_garbage_byte3;
+  helper_copy_buf(buf_with_garbage + k_test_garbage_len, encoded, encoded_len);
 
-  helper_inject_rx(buf_with_garbage, (uint16_t)(encoded_len + 4));
+  helper_inject_rx(buf_with_garbage, (uint16_t)(encoded_len + k_test_garbage_len));
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -792,13 +908,18 @@ void test_i2c_comm_receive_partial_frame_returns_no_data(void)
 
   uint8_t  encoded[k_test_frame_buf_size];
   uint32_t encoded_len = 0;
-  helper_encode_frame(k_frame_type_command, 0, (const uint8_t*)"TEST", 4, encoded, &encoded_len);
+  helper_encode_frame(k_frame_type_command,
+                      0,
+                      (const uint8_t*)"TEST",
+                      k_test_payload_small,
+                      encoded,
+                      &encoded_len);
 
   /* Only inject the first 4 bytes (partial - just sync + partial seq) */
-  helper_inject_rx(encoded, 4);
+  helper_inject_rx(encoded, k_test_partial_inject);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -817,11 +938,16 @@ void test_i2c_comm_receive_response_frame_success(void)
   const uint8_t payload[] = "RESP";
   uint8_t       encoded[k_test_frame_buf_size];
   uint32_t      encoded_len = 0;
-  helper_encode_frame(k_frame_type_response, 0, payload, 4, encoded, &encoded_len);
+  helper_encode_frame(k_frame_type_response,
+                      0,
+                      payload,
+                      k_test_payload_small,
+                      encoded,
+                      &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -844,7 +970,7 @@ void test_i2c_comm_receive_zero_payload_success(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -869,11 +995,16 @@ void test_i2c_comm_receive_correct_sequence_passes(void)
   uint8_t  encoded[k_test_frame_buf_size];
   uint32_t encoded_len = 0;
   /* Sequence 0 matches the session's initial expected RX sequence */
-  helper_encode_frame(k_frame_type_command, 0, (const uint8_t*)"ABCD", 4, encoded, &encoded_len);
+  helper_encode_frame(k_frame_type_command,
+                      0,
+                      (const uint8_t*)"ABCD",
+                      k_test_payload_small,
+                      encoded,
+                      &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -898,11 +1029,16 @@ void test_i2c_comm_receive_ping_triggers_pong(void)
   const uint8_t ping_payload[] = "PING";
   uint8_t       encoded[k_test_frame_buf_size];
   uint32_t      encoded_len = 0;
-  helper_encode_frame(k_frame_type_ping, 0, ping_payload, 4, encoded, &encoded_len);
+  helper_encode_frame(k_frame_type_ping,
+                      0,
+                      ping_payload,
+                      k_test_payload_small,
+                      encoded,
+                      &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   /* After consuming the PING, no non-control frame is available, so no_data */
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
@@ -936,7 +1072,7 @@ void test_i2c_comm_receive_reset_triggers_reset_ack(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* RESET consumed, RESET_ACK sent, then no_data */
@@ -965,11 +1101,16 @@ void test_i2c_comm_receive_compacts_buffer_after_decode(void)
 
   uint8_t  encoded[k_test_frame_buf_size];
   uint32_t encoded_len = 0;
-  helper_encode_frame(k_frame_type_command, 0, (const uint8_t*)"BUFF", 4, encoded, &encoded_len);
+  helper_encode_frame(k_frame_type_command,
+                      0,
+                      (const uint8_t*)"BUFF",
+                      k_test_payload_small,
+                      encoded,
+                      &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero));
 
   TEST_ASSERT_EQUAL_UINT32(0, s_handle.rx_buffer_len);
@@ -988,27 +1129,37 @@ void test_i2c_comm_receive_two_frames_sequential(void)
 
   uint8_t  frame1_enc[k_test_frame_buf_size];
   uint32_t frame1_len = 0;
-  helper_encode_frame(k_frame_type_command, 0, (const uint8_t*)"FRM1", 4, frame1_enc, &frame1_len);
+  helper_encode_frame(k_frame_type_command,
+                      0,
+                      (const uint8_t*)"FRM1",
+                      k_test_payload_small,
+                      frame1_enc,
+                      &frame1_len);
 
   uint8_t  frame2_enc[k_test_frame_buf_size];
   uint32_t frame2_len = 0;
-  helper_encode_frame(k_frame_type_response, 1, (const uint8_t*)"FRM2", 4, frame2_enc, &frame2_len);
+  helper_encode_frame(k_frame_type_response,
+                      1,
+                      (const uint8_t*)"FRM2",
+                      k_test_payload_small,
+                      frame2_enc,
+                      &frame2_len);
 
   /* Concatenate both frames and inject together */
   uint8_t combined[k_test_frame_buf_size];
-  memcpy(combined, frame1_enc, frame1_len);
-  memcpy(combined + frame1_len, frame2_enc, frame2_len);
+  helper_copy_buf(combined, frame1_enc, frame1_len);
+  helper_copy_buf(combined + frame1_len, frame2_enc, frame2_len);
   helper_inject_rx(combined, (uint16_t)(frame1_len + frame2_len));
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
 
   /* First receive: gets frame 1 */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero));
   TEST_ASSERT_EQUAL_UINT8(k_frame_type_command, frame.header.type);
 
   /* Second receive: needs a fresh RIIC read - frame2 still in internal buffer */
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err2 = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
   /* Might be k_rx_ok (if buffered) or k_rx_err_no_data (if buffer was compacted) */
   TEST_ASSERT_TRUE(err2 == k_rx_ok || err2 == k_rx_err_no_data);
@@ -1031,7 +1182,8 @@ void test_i2c_comm_send_after_deinit_fails(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_i2c_comm_deinit(&s_handle));
 
   const uint8_t payload[] = "FAIL";
-  rx_err_t      err       = rx_i2c_comm_send(&s_handle, k_frame_type_response, 0, payload, 4);
+  rx_err_t      err =
+    rx_i2c_comm_send(&s_handle, k_frame_type_response, 0, payload, k_test_payload_small);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -1048,7 +1200,7 @@ void test_i2c_comm_receive_after_deinit_fails(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_i2c_comm_deinit(&s_handle));
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1077,8 +1229,8 @@ void test_i2c_comm_send_wire_len_exceeds_riic_limit(void)
 
   /* 8 header + 249 payload + 4 CRC = 261 > 256 (k_riic_peripheral_transfer_limit) */
   uint8_t large_payload[k_test_payload_large];
-  for (uint16_t i = 0u; i < k_test_payload_large; i++) {
-    large_payload[i] = (uint8_t)(i & 0xFFu);
+  for (uint16_t i = 0; i < k_test_payload_large; i++) {
+    large_payload[i] = (uint8_t)(i & (uint16_t)k_test_crc_flip_mask);
   }
 
   rx_err_t err = rx_i2c_comm_send(&s_handle,
@@ -1112,19 +1264,19 @@ void test_i2c_comm_receive_rx_buffer_full_no_sync(void)
   enum { k_chunk = 250 }; /* injection chunk size < RIIC transfer limit */
 
   uint8_t garbage[k_chunk];
-  for (uint8_t i = 0u; i < k_chunk; i++) {
-    garbage[i] = 0xCCu; /* No sync word (0x55AA) */
+  for (uint32_t i = 0; i < (uint32_t)k_chunk; i++) {
+    garbage[i] = k_test_garbage_fill; /* No sync word (0x55AA) */
   }
 
   /* First receive call fills the buffer via multiple RIIC reads, then returns
    * no_data because there is no sync word in the data. */
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
 
   /* Inject enough garbage to fill the 2048-byte RX buffer across iterations.
    * Each receive iteration reads at most k_riic_peripheral_transfer_limit bytes,
    * so after ~8 full calls the rx_buffer_len will hit 2048 and space==0. */
-  for (uint8_t batch = 0u; batch < 9u; batch++) {
+  for (uint32_t batch = 0; batch < k_test_batch_count; batch++) {
     mock_riic_set_rx_data(k_test_channel_default, garbage, (uint16_t)k_chunk);
   }
 
@@ -1152,7 +1304,7 @@ void test_i2c_comm_receive_riic_read_error_propagates(void)
   mock_riic_set_next_error(k_rx_err_hw_error);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1191,23 +1343,19 @@ void test_i2c_comm_receive_invalid_payload_length_in_header(void)
 
   /* Build a frame with valid sync word but invalid (too-large) payload length */
   uint8_t malformed[k_header_total + k_extra];
+  helper_zero_buf(malformed, sizeof(malformed));
   malformed[0] = k_sync_low;  /* sync byte 0 (LE: 0xAA) */
   malformed[1] = k_sync_high; /* sync byte 1 (LE: 0x55) */
-  malformed[2] = 0x00u;       /* sequence low */
-  malformed[3] = 0x00u;       /* sequence high */
-  malformed[4] = k_len_hi;    /* payload length low = 0xFF */
-  malformed[5] = k_len_hi;    /* payload length high = 0xFF -> 65535 > 1024 */
-  malformed[6] = 0x01u;       /* frame type */
-  malformed[7] = 0x00u;       /* frame flags */
-  /* padding */
-  for (uint8_t i = k_header_total; i < (uint8_t)(k_header_total + k_extra); i++) {
-    malformed[i] = 0x00u;
-  }
+  /* sequence low/high remain 0 from helper_zero_buf */
+  malformed[k_test_header_idx_len_lo] = k_len_hi; /* payload length low = 0xFF */
+  malformed[k_test_header_idx_len_hi] = k_len_hi; /* payload length high = 0xFF -> 65535 > 1024 */
+  malformed[k_test_header_idx_type]   = k_test_frame_type_cmd;   /* frame type */
+  malformed[k_test_header_idx_flags]  = k_test_frame_flags_zero; /* frame flags */
 
   helper_inject_rx(malformed, (uint16_t)(k_header_total + k_extra));
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* Parse-header detects oversized length, advances past sync, no more data */
@@ -1235,7 +1383,7 @@ void test_i2c_comm_receive_pong_silently_consumed(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -1261,7 +1409,7 @@ void test_i2c_comm_receive_reset_ack_silently_consumed(void)
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -1289,13 +1437,13 @@ void test_i2c_comm_receive_sequence_validation_fail_drops_frame(void)
   helper_encode_frame(k_frame_type_command,
                       k_test_seq_gap_large,
                       (const uint8_t*)"DATA",
-                      4,
+                      k_test_payload_small,
                       encoded,
                       &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* Session rejects the sequence gap and returns k_rx_err_protocol_error */
@@ -1320,14 +1468,19 @@ void test_i2c_comm_receive_ping_pong_send_fails(void)
 
   uint8_t  encoded[k_test_frame_buf_size];
   uint32_t encoded_len = 0;
-  helper_encode_frame(k_frame_type_ping, 0, (const uint8_t*)"PING", 4, encoded, &encoded_len);
+  helper_encode_frame(k_frame_type_ping,
+                      0,
+                      (const uint8_t*)"PING",
+                      k_test_payload_small,
+                      encoded,
+                      &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
   /* Stage a write-only error so the frame read succeeds but PONG send fails */
   mock_riic_set_next_write_error(k_rx_err_hw_error);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1357,7 +1510,7 @@ void test_i2c_comm_receive_reset_ack_send_fails(void)
   mock_riic_set_next_write_error(k_rx_err_hw_error);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1408,31 +1561,36 @@ void test_i2c_comm_receive_second_frame_wrong_sequence_dropped(void)
 
   uint8_t  frame1_enc[k_test_frame_buf_size];
   uint32_t frame1_len = 0;
-  helper_encode_frame(k_frame_type_command, 0, (const uint8_t*)"FRM1", 4, frame1_enc, &frame1_len);
+  helper_encode_frame(k_frame_type_command,
+                      0,
+                      (const uint8_t*)"FRM1",
+                      k_test_payload_small,
+                      frame1_enc,
+                      &frame1_len);
 
   uint8_t  frame2_enc[k_test_frame_buf_size];
   uint32_t frame2_len = 0;
   helper_encode_frame(k_frame_type_command,
                       k_test_seq_gap_large, /* wrong sequence */
                       (const uint8_t*)"FRM2",
-                      4,
+                      k_test_payload_small,
                       frame2_enc,
                       &frame2_len);
 
   uint8_t combined[k_test_frame_buf_size];
-  memcpy(combined, frame1_enc, frame1_len);
-  memcpy(combined + frame1_len, frame2_enc, frame2_len);
+  helper_copy_buf(combined, frame1_enc, frame1_len);
+  helper_copy_buf(combined + frame1_len, frame2_enc, frame2_len);
   helper_inject_rx(combined, (uint16_t)(frame1_len + frame2_len));
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
 
   /* First receive: gets frame1 at seq 0 (valid) */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero));
   TEST_ASSERT_EQUAL_UINT16(0, frame.header.sequence);
 
   /* Second receive: frame2 at seq 200 rejected by session (expects 1), protocol error */
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err2 = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err2);
 }
@@ -1456,21 +1614,23 @@ void test_i2c_comm_receive_false_sync_low_then_real_frame(void)
 
   uint8_t  encoded[k_test_frame_buf_size];
   uint32_t encoded_len = 0;
-  helper_encode_frame(k_frame_type_command, 0, (const uint8_t*)"ABCD", 4, encoded, &encoded_len);
+  helper_encode_frame(k_frame_type_command,
+                      0,
+                      (const uint8_t*)"ABCD",
+                      k_test_payload_small,
+                      encoded,
+                      &encoded_len);
 
   /* Prepend [0xAA, 0x00]: sync_low (0xAA) present but sync_high (0x55) absent */
-  enum {
-    k_false_sync_prefix = 2, /**< Bytes prepended before the real frame */
-  };
   uint8_t buf[k_test_frame_buf_size];
-  buf[0] = 0xAAu; /* sync_low matches, but... */
-  buf[1] = 0x00u; /* sync_high does NOT match -> false alarm */
-  memcpy(buf + k_false_sync_prefix, encoded, encoded_len);
+  buf[0] = k_test_sync_byte_low; /* sync_low matches, but... */
+  buf[1] = k_test_false_sync_hi; /* sync_high does NOT match -> false alarm */
+  helper_copy_buf(buf + k_test_false_sync_prefix, encoded, encoded_len);
 
-  helper_inject_rx(buf, (uint16_t)(encoded_len + k_false_sync_prefix));
+  helper_inject_rx(buf, (uint16_t)(encoded_len + k_test_false_sync_prefix));
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1502,19 +1662,19 @@ void test_i2c_comm_receive_partial_frame_header_only(void)
   };
 
   uint8_t partial[k_partial_header];
+  helper_zero_buf(partial, sizeof(partial));
   partial[0] = (uint8_t)k_partial_sync_low;
   partial[1] = (uint8_t)k_partial_sync_high;
-  partial[2] = 0x00u;                      /* sequence low */
-  partial[3] = 0x00u;                      /* sequence high */
-  partial[4] = (uint8_t)k_partial_payload; /* payload_len low */
-  partial[5] = 0x00u;                      /* payload_len high */
-  partial[6] = 0x01u;                      /* frame type (command) */
-  partial[7] = 0x00u;                      /* frame flags */
+  /* sequence low/high remain 0 from helper_zero_buf */
+  partial[k_test_header_idx_len_lo] = (uint8_t)k_partial_payload; /* payload_len low */
+  /* payload_len high remains 0 from helper_zero_buf */
+  partial[k_test_header_idx_type]  = k_test_frame_type_cmd;   /* frame type (command) */
+  partial[k_test_header_idx_flags] = k_test_frame_flags_zero; /* frame flags */
 
   helper_inject_rx(partial, (uint16_t)k_partial_header);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* available(8) < total_size(16), returns no_data */
@@ -1584,12 +1744,14 @@ void test_i2c_comm_receive_rx_buffer_prefilled_no_sync(void)
   helper_init_default();
 
   /* Directly fill the RX buffer with garbage (no sync word = 0xAA 0x55) */
-  memset(s_handle.rx_buffer, 0xCCu, k_test_rx_buf_max);
+  for (uint32_t i = 0; i < (uint32_t)k_test_rx_buf_max; i++) {
+    s_handle.rx_buffer[i] = k_test_garbage_fill;
+  }
   s_handle.rx_buffer_len = (uint32_t)k_test_rx_buf_max;
   s_handle.rx_buffer_pos = 0;
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* Buffer full: space==0 (line 361) -> no read, no sync -> handle_no_sync
@@ -1621,7 +1783,7 @@ void test_i2c_comm_receive_reset_session_next_tx_fails(void)
   (void)rx_session_deinit(&s_session);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
@@ -1658,8 +1820,8 @@ void test_i2c_internal_validate_wire_len_ok(void)
 void test_i2c_internal_decode_header_null_data(void)
 {
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
-  rx_err_t err = internal_decode_header(nullptr, 64, &frame, nullptr);
+  helper_zero_buf(&frame, sizeof(frame));
+  rx_err_t err = internal_decode_header(nullptr, k_test_decode_buf_large, &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1680,7 +1842,7 @@ void test_i2c_internal_decode_header_too_short(void)
 {
   const uint8_t buf[2] = {0};
   rx_frame_t    frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = internal_decode_header(buf, sizeof(buf), &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
@@ -1690,12 +1852,12 @@ void test_i2c_internal_decode_header_too_short(void)
  */
 void test_i2c_internal_decode_header_bad_sync(void)
 {
-  uint8_t buf[32] = {0};
+  uint8_t buf[k_test_decode_buf_size] = {0};
   /* Fill with valid-size but wrong sync */
-  buf[0] = 0xDE;
-  buf[1] = 0xAD;
+  buf[0] = k_test_garbage_byte0;
+  buf[1] = k_test_garbage_byte1;
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = internal_decode_header(buf, sizeof(buf), &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
 }
@@ -1708,17 +1870,15 @@ void test_i2c_internal_decode_header_payload_too_large(void)
   /* Craft a buffer with valid sync but payload_len > k_frame_max_payload (1024) */
   /* k_frame_sync_word = 0x55AA; rx_frame_read_le16 reads buf[0]+buf[1]<<8
    * So to match: buf[0]=0xAA (low byte), buf[1]=0x55 (high byte) */
-  uint8_t buf[64] = {0};
-  buf[0]          = 0xAAU; /* sync low byte */
-  buf[1]          = 0x55U; /* sync high byte */
-  /* seq = 0 */
-  buf[2] = 0;
-  buf[3] = 0;
+  uint8_t buf[k_test_decode_buf_large] = {0};
+  buf[0]                               = k_test_sync_byte_low;  /* sync low byte */
+  buf[1]                               = k_test_sync_byte_high; /* sync high byte */
+  /* seq = 0 (already zero-initialized) */
   /* length field at offset 4: set to 0x0500 (1280) > k_frame_max_payload (1024) */
-  buf[4] = 0x00U;
-  buf[5] = 0x05U; /* big-endian 0x0500 = 1280, but frame uses LE: so actual = 0x0500 */
+  buf[k_test_header_idx_len_lo] = 0x00U;
+  buf[k_test_header_idx_len_hi] = k_test_len_hi_byte; /* LE: 0x0500 = 1280 */
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = internal_decode_header(buf, sizeof(buf), &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
@@ -1735,7 +1895,7 @@ void test_i2c_internal_decode_header_offset_out_set(void)
   helper_encode_frame(k_frame_type_command, 0, nullptr, 0, encoded, &encoded_len);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   uint32_t offset = 0;
   rx_err_t err    = internal_decode_header(encoded, encoded_len, &frame, &offset);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1747,7 +1907,7 @@ void test_i2c_internal_decode_header_offset_out_set(void)
  */
 void test_i2c_internal_verify_crc_null_data(void)
 {
-  rx_err_t err = internal_verify_crc(nullptr, 8, nullptr);
+  rx_err_t err = internal_verify_crc(nullptr, k_test_crc_offset_eight, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1805,8 +1965,8 @@ void test_i2c_internal_compact_rx_buffer_pos_exceeds_len(void)
 {
   helper_init_default();
   /* Corrupt the handle state: pos > len */
-  s_handle.rx_buffer_len = 5;
-  s_handle.rx_buffer_pos = 10;
+  s_handle.rx_buffer_len = k_test_compact_test_len;
+  s_handle.rx_buffer_pos = k_test_compact_bad_pos;
   rx_err_t err           = internal_compact_rx_buffer(&s_handle);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   /* Restore to avoid teardown issues */
@@ -1820,11 +1980,11 @@ void test_i2c_internal_compact_rx_buffer_pos_exceeds_len(void)
 void test_i2c_internal_compact_rx_buffer_noop_when_pos_zero(void)
 {
   helper_init_default();
-  s_handle.rx_buffer_len = 5;
+  s_handle.rx_buffer_len = k_test_compact_test_len;
   s_handle.rx_buffer_pos = 0;
   rx_err_t err           = internal_compact_rx_buffer(&s_handle);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(5, s_handle.rx_buffer_len);
+  TEST_ASSERT_EQUAL(k_test_compact_test_len, s_handle.rx_buffer_len);
 }
 
 /**
@@ -1853,8 +2013,8 @@ void test_i2c_internal_find_sync_null_sync_pos(void)
 void test_i2c_internal_find_sync_pos_exceeds_len(void)
 {
   helper_init_default();
-  s_handle.rx_buffer_len = 2;
-  s_handle.rx_buffer_pos = 5;
+  s_handle.rx_buffer_len = k_test_find_sync_len;
+  s_handle.rx_buffer_pos = k_test_find_sync_bad_pos;
   int32_t  pos           = 0;
   rx_err_t err           = internal_find_sync(&s_handle, &pos);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1878,8 +2038,8 @@ void test_i2c_internal_align_to_sync_advances_pos(void)
 {
   helper_init_default();
   s_handle.rx_buffer_pos = 0;
-  internal_align_to_sync(&s_handle, 5);
-  TEST_ASSERT_EQUAL(5, s_handle.rx_buffer_pos);
+  internal_align_to_sync(&s_handle, (int32_t)k_test_align_sync_pos);
+  TEST_ASSERT_EQUAL(k_test_align_sync_pos, s_handle.rx_buffer_pos);
 }
 
 /**
@@ -1888,9 +2048,9 @@ void test_i2c_internal_align_to_sync_advances_pos(void)
 void test_i2c_internal_align_to_sync_no_regression(void)
 {
   helper_init_default();
-  s_handle.rx_buffer_pos = 10;
-  internal_align_to_sync(&s_handle, 3);
-  TEST_ASSERT_EQUAL(10, s_handle.rx_buffer_pos);
+  s_handle.rx_buffer_pos = k_test_align_high_pos;
+  internal_align_to_sync(&s_handle, (int32_t)k_test_align_low_sync);
+  TEST_ASSERT_EQUAL(k_test_align_high_pos, s_handle.rx_buffer_pos);
 }
 
 /**
@@ -1898,7 +2058,7 @@ void test_i2c_internal_align_to_sync_no_regression(void)
  */
 void test_i2c_internal_build_frame_null_frame(void)
 {
-  const uint8_t payload[4] = {1, 2, 3, 4};
+  const uint8_t payload[k_test_payload_small] = {1, 0, 0, 0};
   rx_err_t      err =
     internal_build_frame(nullptr, 0, k_frame_type_command, 0, payload, sizeof(payload));
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1910,8 +2070,9 @@ void test_i2c_internal_build_frame_null_frame(void)
 void test_i2c_internal_build_frame_null_payload_nonzero_len(void)
 {
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
-  rx_err_t err = internal_build_frame(&frame, 0, k_frame_type_command, 0, nullptr, 4);
+  helper_zero_buf(&frame, sizeof(frame));
+  rx_err_t err =
+    internal_build_frame(&frame, 0, k_frame_type_command, 0, nullptr, k_test_payload_small);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1922,7 +2083,7 @@ void test_i2c_internal_build_frame_payload_too_large(void)
 {
   rx_frame_t    frame;
   const uint8_t big_payload[1025] = {0}; /* k_frame_max_payload is 1024; use 1025 to exceed it */
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err =
     internal_build_frame(&frame, 0, k_frame_type_command, 0, big_payload, sizeof(big_payload));
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
@@ -1934,10 +2095,10 @@ void test_i2c_internal_build_frame_payload_too_large(void)
 void test_i2c_internal_build_frame_zero_payload(void)
 {
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
-  rx_err_t err = internal_build_frame(&frame, 5, k_frame_type_command, 0, nullptr, 0);
+  helper_zero_buf(&frame, sizeof(frame));
+  rx_err_t err = internal_build_frame(&frame, k_test_seq_five, k_frame_type_command, 0, nullptr, 0);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(5, frame.header.sequence);
+  TEST_ASSERT_EQUAL(k_test_seq_five, frame.header.sequence);
   TEST_ASSERT_EQUAL(0, frame.header.length);
 }
 
@@ -1947,9 +2108,13 @@ void test_i2c_internal_build_frame_zero_payload(void)
 void test_i2c_internal_build_frame_with_payload(void)
 {
   rx_frame_t    frame;
-  const uint8_t payload[4] = {0xAA, 0xBB, 0xCC, 0xDD};
-  memset(&frame, 0, sizeof(frame));
-  rx_err_t err = internal_build_frame(&frame, 1, k_frame_type_command, 0, payload, sizeof(payload));
+  const uint8_t payload[k_test_payload_small] = {k_test_payload_byte_a,
+                                                 k_test_payload_byte_b,
+                                                 k_test_payload_byte_c,
+                                                 k_test_payload_byte_d};
+  helper_zero_buf(&frame, sizeof(frame));
+  rx_err_t err =
+    internal_build_frame(&frame, k_test_seq_one, k_frame_type_command, 0, payload, sizeof(payload));
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_MEMORY(payload, frame.payload, sizeof(payload));
 }
@@ -2005,7 +2170,7 @@ void test_i2c_comm_receive_timeout(void)
 
   const uint8_t sync_low  = (uint8_t)(k_frame_sync_word & k_rx_byte_mask);
   const uint8_t sync_high = (uint8_t)(k_frame_sync_word >> k_rx_le16_high_shift);
-  for (uint32_t i = 0; i < k_test_rx_buf_max; i += 2U) {
+  for (uint32_t i = 0; i < k_test_rx_buf_max; i += k_test_sync_fill_step) {
     s_handle.rx_buffer[i]      = sync_low;
     s_handle.rx_buffer[i + 1U] = sync_high;
   }
@@ -2013,7 +2178,7 @@ void test_i2c_comm_receive_timeout(void)
   s_handle.rx_buffer_pos = 0;
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, k_test_timeout_zero);
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
@@ -2039,7 +2204,7 @@ void test_i2c_internal_decode_header_null_offset_valid_header(void)
   helper_encode_frame(k_frame_type_command, 0, nullptr, 0, encoded, &encoded_len);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   /* Pass nullptr for offset_out with valid frame: covers line-208 FALSE branch */
   rx_err_t err = internal_decode_header(encoded, encoded_len, &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2119,7 +2284,7 @@ void test_i2c_comm_receive_riic_read_returns_timeout(void)
   mock_riic_simulate_timeout(true);
 
   rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  helper_zero_buf(&frame, sizeof(frame));
   rx_err_t err = rx_i2c_comm_receive(&s_handle, &frame, 0U);
 
   /* After timeout from RIIC, buffer is empty -> k_rx_err_no_data */
@@ -2140,10 +2305,11 @@ void test_i2c_comm_receive_riic_read_returns_timeout(void)
  * @pre  Unity framework available
  * @post All tests executed, pass/fail reported
  */
-int main(void)
+/**
+ * @brief Run public API tests (init, deinit, send, receive, control frames)
+ */
+static void internal_run_public_api_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Initialization */
   RUN_TEST(test_i2c_comm_init_null_handle_fails);
   RUN_TEST(test_i2c_comm_init_null_config_fails);
@@ -2192,7 +2358,13 @@ int main(void)
   /* Buffer management */
   RUN_TEST(test_i2c_comm_receive_compacts_buffer_after_decode);
   RUN_TEST(test_i2c_comm_receive_two_frames_sequential);
+}
 
+/**
+ * @brief Run coverage and state transition tests
+ */
+static void internal_run_coverage_tests(void)
+{
   /* State transitions */
   RUN_TEST(test_i2c_comm_send_after_deinit_fails);
   RUN_TEST(test_i2c_comm_receive_after_deinit_fails);
@@ -2217,7 +2389,13 @@ int main(void)
   RUN_TEST(test_i2c_comm_send_encoder_not_initialized_fails);
   RUN_TEST(test_i2c_comm_receive_rx_buffer_prefilled_no_sync);
   RUN_TEST(test_i2c_comm_receive_reset_session_next_tx_fails);
+}
 
+/**
+ * @brief Run direct internal-function and branch coverage tests
+ */
+static void internal_run_internal_function_tests(void)
+{
   /* Direct internal-function tests (RX_STATIC_TESTABLE) */
   RUN_TEST(test_i2c_internal_validate_wire_len_too_large);
   RUN_TEST(test_i2c_internal_validate_wire_len_ok);
@@ -2254,6 +2432,15 @@ int main(void)
   RUN_TEST(test_i2c_internal_verify_crc_null_crc_out_valid_frame);
   RUN_TEST(test_i2c_internal_read_i2c_data_small_space);
   RUN_TEST(test_i2c_comm_receive_riic_read_returns_timeout);
+}
+
+int main(void)
+{
+  UNITY_BEGIN();
+
+  internal_run_public_api_tests();
+  internal_run_coverage_tests();
+  internal_run_internal_function_tests();
 
   return UNITY_END();
 }

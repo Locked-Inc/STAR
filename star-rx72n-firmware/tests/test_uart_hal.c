@@ -401,6 +401,97 @@
  * @{
  */
 
+/**
+ * @brief Buffer size constants for UART test data capture
+ *
+ * @details
+ * Defines buffer sizes used for TX/RX data verification in test functions:
+ * - **Small buffer (8)**: Single character or small binary data tests
+ * - **Large buffer (32)**: String and formatted output tests
+ */
+typedef enum : uint8_t {
+  k_test_buf_small = 8,  /**< Small buffer for single-char / binary tests */
+  k_test_buf_large = 32, /**< Large buffer for string / formatted output tests */
+} test_uart_buf_size_t;
+
+/**
+ * @brief Test data constants for binary TX/RX verification
+ *
+ * @details
+ * Named constants for byte values used in binary transfer tests.
+ * Grouped by test scenario to maintain traceability.
+ */
+typedef enum : uint8_t {
+  k_test_byte_01 = 0x01, /**< Binary write test byte 0 */
+  k_test_byte_02 = 0x02, /**< Binary write test byte 1 */
+  k_test_byte_03 = 0x03, /**< Binary write test byte 2 */
+  k_test_byte_04 = 0x04, /**< Binary write test byte 3 */
+  k_test_byte_11 = 0x11, /**< Multi-byte read test byte 0 */
+  k_test_byte_22 = 0x22, /**< Multi-byte read test byte 1 */
+  k_test_byte_33 = 0x33, /**< Multi-byte read test byte 2 */
+  k_test_byte_44 = 0x44, /**< Multi-byte read test byte 3 */
+  k_test_byte_aa = 0xAA, /**< Partial read test byte 0 */
+  k_test_byte_bb = 0xBB, /**< Partial read test byte 1 */
+  k_test_byte_cc = 0xCC, /**< Partial read test byte 2 */
+  k_test_byte_55 = 0x55, /**< RX availability test sentinel byte */
+} test_uart_data_byte_t;
+
+/**
+ * @brief Miscellaneous test parameter constants
+ *
+ * @details
+ * Named constants for lengths, counts, and other numeric parameters
+ * used across multiple test functions.
+ */
+typedef enum : uint16_t {
+  k_test_partial_read_len = 2,     /**< Bytes to read in partial-read test */
+  k_test_null_write_len   = 10,    /**< Length arg for nullptr write/read tests */
+  k_test_hex_digits       = 4,     /**< Number of hex digits for puthex test */
+  k_test_call_idx_deinit  = 2,     /**< Call history index for deinit call */
+  k_test_int_positive     = 12345, /**< Positive integer for debug_putint test */
+  k_test_hex_value        = 0xABCD /**< Hex value for debug_puthex test */
+} test_uart_param_t;
+
+/**
+ * @brief Expected output length constants for TX verification
+ *
+ * @details
+ * Named constants for expected byte counts in TX buffer after transmit
+ * operations. Eliminates magic numbers in TEST_ASSERT_EQUAL calls.
+ */
+typedef enum : uint8_t {
+  k_test_len_neg42_str    = 3, /**< strlen("-42") */
+  k_test_len_newline_conv = 4, /**< "Hi\r\n" after newline conversion */
+  k_test_len_binary_write = 4, /**< 4-byte binary write payload */
+  k_test_len_test_str     = 4, /**< strlen("Test") */
+  k_test_len_hello_str    = 5, /**< strlen("Hello") */
+  k_test_len_12345_str    = 5, /**< strlen("12345") */
+  k_test_len_hex_0xabcd   = 6, /**< strlen("0xABCD") */
+  k_test_len_read_4_bytes = 4, /**< 4 bytes in multi-byte read test */
+  k_test_len_err_write    = 2, /**< 2-byte payload for error injection write */
+  k_test_call_count_3     = 3, /**< Expected call count: init + putc + deinit */
+} test_uart_expected_len_t;
+
+/**
+ * @brief Array index constants for newline conversion verification
+ *
+ * @details
+ * Named indices for verifying "Hi\r\n" output byte-by-byte.
+ */
+typedef enum : uint8_t {
+  k_test_idx_cr = 2, /**< Index of '\r' in "Hi\r\n" output */
+  k_test_idx_lf = 3, /**< Index of '\n' in "Hi\r\n" output */
+} test_uart_newline_idx_t;
+
+/**
+ * @brief Negative integer test value for debug_putint
+ *
+ * @details
+ * Stored as a signed constant because C23 typed enums cannot represent
+ * negative values in unsigned underlying types.
+ */
+static const int32_t k_test_int_negative = -42;
+
 /** @brief Default test pins for SCI9 (PB7/TXD9, PB6/RXD9) */
 static const rx_port_pin_t k_test_tx_gpio =
   k_rx_pb_7; /**< PB7 TX pin (TXD9, connected to CY7C65213 USB bridge) */
@@ -806,7 +897,7 @@ void test_uart_putc_channel_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify data was transmitted */
-  uint8_t  tx_data[8];
+  uint8_t  tx_data[k_test_buf_small];
   uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(1, count);
   TEST_ASSERT_EQUAL('A', tx_data[0]);
@@ -909,10 +1000,10 @@ void test_uart_puts_channel_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify data was transmitted */
-  uint8_t  tx_data[32];
+  uint8_t  tx_data[k_test_buf_large];
   uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
-  TEST_ASSERT_EQUAL(5, count);
-  TEST_ASSERT_EQUAL_STRING_LEN("Hello", tx_data, 5);
+  TEST_ASSERT_EQUAL(k_test_len_hello_str, count);
+  TEST_ASSERT_EQUAL_STRING_LEN("Hello", tx_data, k_test_len_hello_str);
 }
 
 /**
@@ -947,13 +1038,13 @@ void test_uart_puts_channel_newline_conversion(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify \n was converted to \r\n */
-  uint8_t  tx_data[32];
+  uint8_t  tx_data[k_test_buf_large];
   uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
-  TEST_ASSERT_EQUAL(4, count); /* "Hi\r\n" */
+  TEST_ASSERT_EQUAL(k_test_len_newline_conv, count); /* "Hi\r\n" */
   TEST_ASSERT_EQUAL('H', tx_data[0]);
   TEST_ASSERT_EQUAL('i', tx_data[1]);
-  TEST_ASSERT_EQUAL('\r', tx_data[2]);
-  TEST_ASSERT_EQUAL('\n', tx_data[3]);
+  TEST_ASSERT_EQUAL('\r', tx_data[k_test_idx_cr]);
+  TEST_ASSERT_EQUAL('\n', tx_data[k_test_idx_lf]);
 }
 
 /**
@@ -1017,15 +1108,15 @@ void test_uart_write_channel_success(void)
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
-  uint8_t  data[] = {0x01, 0x02, 0x03, 0x04};
+  uint8_t  data[] = {k_test_byte_01, k_test_byte_02, k_test_byte_03, k_test_byte_04};
   rx_err_t err    = uart_write_channel(k_test_channel_sci9, data, sizeof(data));
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify data was transmitted */
-  uint8_t  tx_data[8];
+  uint8_t  tx_data[k_test_buf_small];
   uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
-  TEST_ASSERT_EQUAL(4, count);
-  TEST_ASSERT_EQUAL_MEMORY(data, tx_data, 4);
+  TEST_ASSERT_EQUAL(k_test_len_binary_write, count);
+  TEST_ASSERT_EQUAL_MEMORY(data, tx_data, k_test_len_binary_write);
 }
 
 /**
@@ -1045,7 +1136,7 @@ void test_uart_write_channel_null_data(void)
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
-  rx_err_t err = uart_write_channel(k_test_channel_sci9, nullptr, 10);
+  rx_err_t err = uart_write_channel(k_test_channel_sci9, nullptr, k_test_null_write_len);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1192,16 +1283,16 @@ void test_uart_read_channel_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   /* Inject RX data */
-  uint8_t rx_data[] = {0x11, 0x22, 0x33, 0x44};
+  uint8_t rx_data[] = {k_test_byte_11, k_test_byte_22, k_test_byte_33, k_test_byte_44};
   mock_uart_hw_inject_rx_data(k_test_channel_sci9, rx_data, sizeof(rx_data));
 
   /* Read the data */
-  uint8_t  buffer[8];
+  uint8_t  buffer[k_test_buf_small];
   uint16_t bytes_read;
   rx_err_t err = uart_read_channel(k_test_channel_sci9, buffer, sizeof(buffer), &bytes_read);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(4, bytes_read);
-  TEST_ASSERT_EQUAL_MEMORY(rx_data, buffer, 4);
+  TEST_ASSERT_EQUAL(k_test_len_read_4_bytes, bytes_read);
+  TEST_ASSERT_EQUAL_MEMORY(rx_data, buffer, k_test_len_read_4_bytes);
 }
 
 /**
@@ -1232,17 +1323,18 @@ void test_uart_read_channel_partial(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   /* Inject RX data */
-  uint8_t rx_data[] = {0xAA, 0xBB, 0xCC};
+  uint8_t rx_data[] = {k_test_byte_aa, k_test_byte_bb, k_test_byte_cc};
   mock_uart_hw_inject_rx_data(k_test_channel_sci9, rx_data, sizeof(rx_data));
 
   /* Read only 2 bytes */
-  uint8_t  buffer[8];
+  uint8_t  buffer[k_test_buf_small];
   uint16_t bytes_read;
-  rx_err_t err = uart_read_channel(k_test_channel_sci9, buffer, 2, &bytes_read);
+  rx_err_t err =
+    uart_read_channel(k_test_channel_sci9, buffer, k_test_partial_read_len, &bytes_read);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(2, bytes_read);
-  TEST_ASSERT_EQUAL(0xAA, buffer[0]);
-  TEST_ASSERT_EQUAL(0xBB, buffer[1]);
+  TEST_ASSERT_EQUAL(k_test_partial_read_len, bytes_read);
+  TEST_ASSERT_EQUAL(k_test_byte_aa, buffer[0]);
+  TEST_ASSERT_EQUAL(k_test_byte_bb, buffer[1]);
 
   /* Remaining byte should still be available */
   TEST_ASSERT_EQUAL(1, mock_uart_hw_rx_available(k_test_channel_sci9));
@@ -1266,7 +1358,8 @@ void test_uart_read_channel_null_buffer(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   uint16_t bytes_read;
-  rx_err_t err = uart_read_channel(k_test_channel_sci9, nullptr, 10, &bytes_read);
+  rx_err_t err =
+    uart_read_channel(k_test_channel_sci9, nullptr, k_test_null_write_len, &bytes_read);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1287,7 +1380,7 @@ void test_uart_read_channel_null_bytes_read(void)
                                .rx_gpio  = k_test_rx_gpio};
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
-  uint8_t  buffer[8];
+  uint8_t  buffer[k_test_buf_small];
   rx_err_t err = uart_read_channel(k_test_channel_sci9, buffer, sizeof(buffer), nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
@@ -1322,7 +1415,7 @@ void test_uart_rx_available_success(void)
   TEST_ASSERT_FALSE(available);
 
   /* Inject data */
-  uint8_t byte = 0x55;
+  uint8_t byte = k_test_byte_55;
   mock_uart_hw_inject_rx_data(k_test_channel_sci9, &byte, 1);
 
   err = uart_rx_available(k_test_channel_sci9, &available);
@@ -1418,7 +1511,7 @@ void test_uart_channel_isolation(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_putc_channel(k_test_channel_sci9, 'B'));
 
   /* Verify channel 0 data */
-  uint8_t  tx_data[8];
+  uint8_t  tx_data[k_test_buf_small];
   uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci0, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(1, count);
   TEST_ASSERT_EQUAL('A', tx_data[0]);
@@ -1556,7 +1649,7 @@ void test_uart_write_error_injection(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_init_channel(&cfg));
 
   mock_uart_hw_set_next_error(k_rx_err_timeout);
-  uint8_t  data[] = {0x01, 0x02};
+  uint8_t  data[] = {k_test_byte_01, k_test_byte_02};
   rx_err_t err    = uart_write_channel(k_test_channel_sci9, data, sizeof(data));
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
@@ -1619,7 +1712,7 @@ void test_uart_debug_putc(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_debug_init());
   uart_debug_putc('Z');
 
-  uint8_t  tx_data[8];
+  uint8_t  tx_data[k_test_buf_small];
   uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(1, count);
   TEST_ASSERT_EQUAL('Z', tx_data[0]);
@@ -1636,10 +1729,10 @@ void test_uart_debug_puts(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_debug_init());
   uart_debug_puts("Test");
 
-  uint8_t  tx_data[32];
+  uint8_t  tx_data[k_test_buf_large];
   uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
-  TEST_ASSERT_EQUAL(4, count);
-  TEST_ASSERT_EQUAL_STRING_LEN("Test", tx_data, 4);
+  TEST_ASSERT_EQUAL(k_test_len_test_str, count);
+  TEST_ASSERT_EQUAL_STRING_LEN("Test", tx_data, k_test_len_test_str);
 }
 
 /**
@@ -1656,12 +1749,12 @@ void test_uart_debug_puts(void)
 void test_uart_debug_putint_positive(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, uart_debug_init());
-  uart_debug_putint(12345);
+  uart_debug_putint(k_test_int_positive);
 
-  uint8_t  tx_data[32];
+  uint8_t  tx_data[k_test_buf_large];
   uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
-  TEST_ASSERT_EQUAL(5, count);
-  TEST_ASSERT_EQUAL_STRING_LEN("12345", tx_data, 5);
+  TEST_ASSERT_EQUAL(k_test_len_12345_str, count);
+  TEST_ASSERT_EQUAL_STRING_LEN("12345", tx_data, k_test_len_12345_str);
 }
 
 /**
@@ -1678,12 +1771,12 @@ void test_uart_debug_putint_positive(void)
 void test_uart_debug_putint_negative(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, uart_debug_init());
-  uart_debug_putint(-42);
+  uart_debug_putint(k_test_int_negative);
 
-  uint8_t  tx_data[32];
+  uint8_t  tx_data[k_test_buf_large];
   uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
-  TEST_ASSERT_EQUAL(3, count);
-  TEST_ASSERT_EQUAL_STRING_LEN("-42", tx_data, 3);
+  TEST_ASSERT_EQUAL(k_test_len_neg42_str, count);
+  TEST_ASSERT_EQUAL_STRING_LEN("-42", tx_data, k_test_len_neg42_str);
 }
 
 /**
@@ -1700,12 +1793,12 @@ void test_uart_debug_putint_negative(void)
 void test_uart_debug_puthex(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, uart_debug_init());
-  uart_debug_puthex(0xABCD, 4);
+  uart_debug_puthex(k_test_hex_value, k_test_hex_digits);
 
-  uint8_t  tx_data[32];
+  uint8_t  tx_data[k_test_buf_large];
   uint16_t count = mock_uart_hw_get_tx_data(k_test_channel_sci9, tx_data, sizeof(tx_data));
-  TEST_ASSERT_EQUAL(6, count); /* "0xABCD" */
-  TEST_ASSERT_EQUAL_STRING_LEN("0xABCD", tx_data, 6);
+  TEST_ASSERT_EQUAL(k_test_len_hex_0xabcd, count); /* "0xABCD" */
+  TEST_ASSERT_EQUAL_STRING_LEN("0xABCD", tx_data, k_test_len_hex_0xabcd);
 }
 
 /** @} */ // end of uart_debug_tests
@@ -1758,7 +1851,7 @@ void test_uart_call_history(void)
   TEST_ASSERT_EQUAL(k_rx_ok, uart_putc_channel(k_test_channel_sci9, 'A'));
   TEST_ASSERT_EQUAL(k_rx_ok, uart_deinit_channel(k_test_channel_sci9));
 
-  TEST_ASSERT_EQUAL(3, mock_uart_hw_get_call_count());
+  TEST_ASSERT_EQUAL(k_test_call_count_3, mock_uart_hw_get_call_count());
 
   const mock_uart_call_t* call = mock_uart_hw_get_call(0);
   TEST_ASSERT_NOT_NULL(call);
@@ -1772,7 +1865,7 @@ void test_uart_call_history(void)
   TEST_ASSERT_EQUAL(k_test_channel_sci9, call->channel);
   TEST_ASSERT_EQUAL('A', call->param1);
 
-  call = mock_uart_hw_get_call(2);
+  call = mock_uart_hw_get_call(k_test_call_idx_deinit);
   TEST_ASSERT_NOT_NULL(call);
   TEST_ASSERT_EQUAL(k_mock_uart_call_deinit, call->type);
   TEST_ASSERT_EQUAL(k_test_channel_sci9, call->channel);
@@ -1786,55 +1879,35 @@ void test_uart_call_history(void)
  */
 
 /**
- * @brief Main test runner - executes all UART HAL tests
+ * @brief Run channel initialization and deinitialization tests
  *
  * @details
- * Executes complete test suite for UART HAL driver using Unity framework.
- * Tests are organized into functional groups and executed sequentially.
+ * Executes 6 test cases covering uart_init_channel() and uart_deinit_channel().
  *
- * **Test execution order:**
- * 1. Initialization tests (6 cases)
- * 2. TX operation tests (10 cases)
- * 3. RX operation tests (9 cases)
- * 4. Multi-channel isolation tests (2 cases)
- * 5. Error injection tests (2 cases)
- * 6. Debug wrapper tests (6 cases)
- * 7. Call history tests (1 case)
- *
- * **Total: 36 test cases**
- *
- * **Exit codes:**
- * - 0: All tests passed
- * - Non-zero: Number of failures
- *
- * @return int Test result (0 = pass, >0 = failures)
- *
- * @par Example Output:
- * @verbatim
- * test_uart_hal.c:70:test_uart_init_channel_success:PASS
- * test_uart_hal.c:84:test_uart_init_channel_sci0:PASS
- * ...
- * -----------------------
- * 36 Tests 0 Failures 0 Ignored
- * OK
- * @endverbatim
- *
- * @see setUp() Test fixture initialization
- * @see tearDown() Test fixture cleanup
+ * @pre UNITY_BEGIN() has been called
+ * @post Initialization test results recorded in Unity
  */
-int main(void)
+static void internal_run_init_tests(void)
 {
-  UNITY_BEGIN();
-
-  /* Initialization tests */
   RUN_TEST(test_uart_init_channel_success);
   RUN_TEST(test_uart_init_channel_sci0);
   RUN_TEST(test_uart_init_channel_invalid);
   RUN_TEST(test_uart_init_channel_already_initialized);
   RUN_TEST(test_uart_deinit_channel_success);
   RUN_TEST(test_uart_deinit_channel_invalid);
+}
 
-  /* TX tests */
+/**
+ * @brief Run UART transmit operation tests
+ *
+ * @details
+ * Executes 10 test cases covering putc, puts, and write operations.
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post TX test results recorded in Unity
+ */
+static void internal_run_tx_tests(void)
+{
   RUN_TEST(test_uart_putc_channel_success);
   RUN_TEST(test_uart_putc_channel_not_initialized);
   RUN_TEST(test_uart_putc_channel_invalid_channel);
@@ -1845,8 +1918,19 @@ int main(void)
   RUN_TEST(test_uart_puts_channel_not_initialized);
   RUN_TEST(test_uart_write_channel_success);
   RUN_TEST(test_uart_write_channel_null_data);
+}
 
-  /* RX tests */
+/**
+ * @brief Run UART receive operation tests
+ *
+ * @details
+ * Executes 10 test cases covering getc, read, and rx_available operations.
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post RX test results recorded in Unity
+ */
+static void internal_run_rx_tests(void)
+{
   RUN_TEST(test_uart_getc_channel_success);
   RUN_TEST(test_uart_getc_channel_no_data);
   RUN_TEST(test_uart_getc_channel_null_buffer);
@@ -1857,7 +1941,23 @@ int main(void)
   RUN_TEST(test_uart_read_channel_null_bytes_read);
   RUN_TEST(test_uart_rx_available_success);
   RUN_TEST(test_uart_rx_available_null);
+}
 
+/**
+ * @brief Run multi-channel isolation, error injection, debug, and call history tests
+ *
+ * @details
+ * Executes remaining test groups:
+ * - Multi-channel isolation (2 cases)
+ * - Error injection (2 cases)
+ * - Debug wrapper (6 cases)
+ * - Call history (1 case)
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post All remaining test results recorded in Unity
+ */
+static void internal_run_remaining_tests(void)
+{
   /* Multi-channel tests */
   RUN_TEST(test_uart_channel_isolation);
   RUN_TEST(test_uart_rx_channel_isolation);
@@ -1876,6 +1976,53 @@ int main(void)
 
   /* Call history tests */
   RUN_TEST(test_uart_call_history);
+}
+
+/**
+ * @brief Main test runner - executes all UART HAL tests
+ *
+ * @details
+ * Executes complete test suite for UART HAL driver using Unity framework.
+ * Tests are organized into functional groups and executed sequentially.
+ *
+ * **Test execution order:**
+ * 1. Initialization tests (6 cases)
+ * 2. TX operation tests (10 cases)
+ * 3. RX operation tests (10 cases)
+ * 4. Multi-channel isolation tests (2 cases)
+ * 5. Error injection tests (2 cases)
+ * 6. Debug wrapper tests (6 cases)
+ * 7. Call history tests (1 case)
+ *
+ * **Total: 37 test cases**
+ *
+ * **Exit codes:**
+ * - 0: All tests passed
+ * - Non-zero: Number of failures
+ *
+ * @return int Test result (0 = pass, >0 = failures)
+ *
+ * @par Example Output:
+ * @verbatim
+ * test_uart_hal.c:70:test_uart_init_channel_success:PASS
+ * test_uart_hal.c:84:test_uart_init_channel_sci0:PASS
+ * ...
+ * -----------------------
+ * 37 Tests 0 Failures 0 Ignored
+ * OK
+ * @endverbatim
+ *
+ * @see setUp() Test fixture initialization
+ * @see tearDown() Test fixture cleanup
+ */
+int main(void)
+{
+  UNITY_BEGIN();
+
+  internal_run_init_tests();
+  internal_run_tx_tests();
+  internal_run_rx_tests();
+  internal_run_remaining_tests();
 
   return UNITY_END();
 }

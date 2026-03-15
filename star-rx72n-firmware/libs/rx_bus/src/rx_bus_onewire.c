@@ -77,8 +77,6 @@
 
 #include "rx_bus_onewire.h"
 
-#include <string.h>
-
 #include "hardware.h"
 #include "rx72n_clock.h"
 #ifdef UNIT_TEST
@@ -425,7 +423,9 @@ RX_STATIC_TESTABLE rx_err_t internal_read_line(const rx_bus_config_t* bus_config
  */
 static void internal_reset_search_state(onewire_runtime_state_t* state)
 {
-  memset(state->last_rom, 0, sizeof(state->last_rom));
+  for (uint8_t i = 0; i < k_onewire_rom_bytes; ++i) {
+    state->last_rom[i] = 0;
+  }
   state->last_discrepancy = 0;
   state->last_device_flag = false;
 }
@@ -701,6 +701,55 @@ RX_STATIC_TESTABLE rx_err_t internal_read_byte(rx_bus_config_t*         bus_conf
  *
  * @return k_rx_ok on success, error code on failure
  */
+
+/**
+ * @brief Resolve search direction from bit pair and discrepancy state
+ *
+ * @details
+ * Determines which branch of the ROM search tree to take based on the two
+ * bits read (bit, complement) and the discrepancy tracking state.
+ *
+ * @param[in]  bit            True bit read from bus
+ * @param[in]  comp_bit       Complement bit read from bus
+ * @param[in]  bit_number     Current bit position (1-indexed)
+ * @param[in]  state          Runtime search state with last_discrepancy
+ * @param[in]  rom_byte_index Current byte index in ROM buffer
+ * @param[in]  rom_bit_mask   Current bit mask within ROM byte
+ * @param[out] last_zero      Updated with bit_number when direction is 0
+ *
+ * @return Resolved search direction (true = 1, false = 0)
+ *
+ * @pre All pointer parameters are non-null
+ * @post *last_zero updated if direction is 0 at a discrepancy
+ */
+static bool internal_resolve_search_direction(const bool                     bit,
+                                              const bool                     comp_bit,
+                                              const uint8_t                  bit_number,
+                                              const onewire_runtime_state_t* state,
+                                              const uint8_t                  rom_byte_index,
+                                              const uint8_t                  rom_bit_mask,
+                                              uint8_t*                       last_zero)
+{
+  bool search_direction = false;
+
+  if (!bit && !comp_bit) {
+    if (bit_number == state->last_discrepancy) {
+      search_direction = true;
+    } else if (bit_number > state->last_discrepancy) {
+      search_direction = false;
+    } else {
+      search_direction = ((state->last_rom[rom_byte_index] & rom_bit_mask) != 0U);
+    }
+    if (!search_direction) {
+      *last_zero = bit_number;
+    }
+  } else {
+    search_direction = bit;
+  }
+
+  return search_direction;
+}
+
 RX_STATIC_TESTABLE rx_err_t internal_search_step(rx_bus_config_t*         bus_config,
                                                  onewire_runtime_state_t* state,
                                                  uint8_t                  rom[k_onewire_rom_bytes],
@@ -725,21 +774,14 @@ RX_STATIC_TESTABLE rx_err_t internal_search_step(rx_bus_config_t*         bus_co
   if (bit && comp_bit) {
     return k_rx_err_hw_error;
   }
-  bool search_direction = false;
-  if (!bit && !comp_bit) {
-    if (bit_number == state->last_discrepancy) {
-      search_direction = true;
-    } else if (bit_number > state->last_discrepancy) {
-      search_direction = false;
-    } else {
-      search_direction = ((state->last_rom[*rom_byte_index] & *rom_bit_mask) != 0U);
-    }
-    if (!search_direction) {
-      *last_zero = bit_number;
-    }
-  } else {
-    search_direction = bit;
-  }
+
+  const bool search_direction = internal_resolve_search_direction(bit,
+                                                                  comp_bit,
+                                                                  bit_number,
+                                                                  state,
+                                                                  *rom_byte_index,
+                                                                  *rom_bit_mask,
+                                                                  last_zero);
 
   if (search_direction) {
     rom[*rom_byte_index] |= *rom_bit_mask;
@@ -846,21 +888,78 @@ RX_STATIC_TESTABLE rx_err_t internal_search_bits(rx_bus_config_t*         bus_co
  *
  * @see rx_bus_onewire_search() Public API using this
  */
-RX_STATIC_TESTABLE rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
-                                                      onewire_runtime_state_t* state,
-                                                      uint8_t rom[k_onewire_rom_bytes],
-                                                      bool*   device_found)
+/**
+ * @brief Validate discovered ROM via CRC and update state tracking
+ *
+ * @details
+ * After a successful search-bits pass, copies the ROM into state->last_rom,
+ * updates discrepancy tracking, and validates the CRC-8 byte.
+ *
+ * @param[in,out] state      Runtime search state to update
+ * @param[in]     rom        ROM buffer with discovered address
+ * @param[in]     last_zero  Last discrepancy bit from search
+ * @param[out]    device_found Set to true if ROM CRC is valid
+ *
+ * @return k_rx_ok on success, k_rx_err_crc_mismatch on CRC failure
+ *
+ * @pre state, rom, and device_found are non-null
+ * @post state->last_rom updated with rom contents
+ * @post state->last_device_flag set when no more discrepancies
+ */
+static rx_err_t internal_finalize_search_rom(onewire_runtime_state_t* state,
+                                             const uint8_t            rom[k_onewire_rom_bytes],
+                                             const uint8_t            last_zero,
+                                             bool*                    device_found)
 {
-  RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is nullptr");
-  RX_CHECK_NULL_PTR(state, s_tag, "state pointer is nullptr");
-  RX_CHECK_NULL_PTR(rom, s_tag, "rom pointer is nullptr");
-  RX_CHECK_NULL_PTR(device_found, s_tag, "device_found pointer is nullptr");
-  uint8_t last_zero = k_onewire_search_last_zero_init;
-  *device_found     = false;
+  state->last_discrepancy = last_zero;
+  if (state->last_discrepancy == k_onewire_no_discrepancy) {
+    state->last_device_flag = true;
+  }
+
+  for (uint8_t i = 0; i < k_onewire_rom_bytes; ++i) {
+    state->last_rom[i] = rom[i];
+  }
+
+  uint32_t crc_out = 0U;
+  (void)rx_crc8_maxim(rom, k_onewire_rom_crc_idx, &crc_out);
+  if ((uint8_t)crc_out != rom[k_onewire_rom_crc_idx]) {
+    return k_rx_err_crc_mismatch;
+  }
+
+  *device_found = true;
+  return k_rx_ok;
+}
+
+/**
+ * @brief Begin a search iteration by resetting bus and sending search command
+ *
+ * @details
+ * Performs the bus reset pulse, checks for device presence, and sends the
+ * Search ROM command (0xF0). If no devices are present, updates state to
+ * indicate search completion. If last_device_flag is already set, returns
+ * immediately with skip_search = true.
+ *
+ * @param[in]     bus_config   Bus configuration node
+ * @param[in,out] state        Runtime search state
+ * @param[out]    skip_search  Set to true if search bits should be skipped
+ *
+ * @return k_rx_ok on success, error code on bus failure
+ *
+ * @pre bus_config, state, and skip_search are non-null
+ * @post On presence failure: state flags updated, skip_search set true
+ * @post On success: search ROM command sent, skip_search set false
+ */
+static rx_err_t internal_search_begin_reset(rx_bus_config_t*         bus_config,
+                                            onewire_runtime_state_t* state,
+                                            bool*                    skip_search)
+{
+  *skip_search = false;
 
   if (state->last_device_flag) {
+    *skip_search = true;
     return k_rx_ok;
   }
+
   bool     presence = false;
   rx_err_t err      = internal_reset_pulse(bus_config, state, &presence);
   if (err != k_rx_ok) {
@@ -870,34 +969,70 @@ RX_STATIC_TESTABLE rx_err_t internal_search_iteration(rx_bus_config_t*         b
   if (!presence) {
     state->last_discrepancy = k_onewire_no_discrepancy;
     state->last_device_flag = true;
+    *skip_search            = true;
     return k_rx_ok;
   }
 
   err = internal_write_byte(bus_config, state, k_onewire_cmd_search_rom);
+  return err;
+}
+
+/**
+ * @brief Validate all pointer arguments for internal_search_iteration
+ *
+ * @param[in] bus_config   Bus configuration node (must not be null)
+ * @param[in] state        Runtime search state (must not be null)
+ * @param[in] rom          ROM buffer (must not be null)
+ * @param[in] device_found Device found flag (must not be null)
+ *
+ * @return k_rx_ok if all pointers valid, k_rx_err_null_ptr otherwise
+ *
+ * @pre None
+ * @post No state modified
+ */
+static rx_err_t internal_validate_search_args(const rx_bus_config_t*         bus_config,
+                                              const onewire_runtime_state_t* state,
+                                              const uint8_t*                 rom,
+                                              const bool*                    device_found)
+{
+  RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is nullptr");
+  RX_CHECK_NULL_PTR(state, s_tag, "state pointer is nullptr");
+  RX_CHECK_NULL_PTR(rom, s_tag, "rom pointer is nullptr");
+  RX_CHECK_NULL_PTR(device_found, s_tag, "device_found pointer is nullptr");
+  return k_rx_ok;
+}
+
+RX_STATIC_TESTABLE rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
+                                                      onewire_runtime_state_t* state,
+                                                      uint8_t rom[k_onewire_rom_bytes],
+                                                      bool*   device_found)
+{
+  rx_err_t err = internal_validate_search_args(bus_config, state, rom, device_found);
   if (err != k_rx_ok) {
     return err;
   }
+  uint8_t last_zero = k_onewire_search_last_zero_init;
+  *device_found     = false;
 
-  memset(rom, 0, k_onewire_rom_bytes);
+  bool skip_search = false;
+  err              = internal_search_begin_reset(bus_config, state, &skip_search);
+  if (err != k_rx_ok) {
+    return err;
+  }
+  if (skip_search) {
+    return k_rx_ok;
+  }
+
+  for (uint8_t i = 0; i < k_onewire_rom_bytes; ++i) {
+    rom[i] = 0;
+  }
 
   err = internal_search_bits(bus_config, state, rom, &last_zero);
   if (err != k_rx_ok) {
     return err;
   }
-  state->last_discrepancy = last_zero;
-  if (state->last_discrepancy == k_onewire_no_discrepancy) {
-    state->last_device_flag = true;
-  }
 
-  memcpy(state->last_rom, rom, k_onewire_rom_bytes);
-  uint32_t crc_out = 0U;
-  (void)rx_crc8_maxim(rom, k_onewire_rom_crc_idx, &crc_out);
-  if ((uint8_t)crc_out != rom[k_onewire_rom_crc_idx]) {
-    return k_rx_err_crc_mismatch;
-  }
-
-  *device_found = true;
-  return k_rx_ok;
+  return internal_finalize_search_rom(state, rom, last_zero, device_found);
 }
 /* =============================================================================
  * Callback Context Structures
@@ -1478,12 +1613,40 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_match_rom_callback(rx_bus_config_t*
  * @return propagated error from rx_crc8_maxim() if CRC computation itself fails
  *         (ctx->result is also set to the propagated error in that case)
  */
+/**
+ * @brief Read ROM bytes from bus and validate CRC
+ *
+ * @param[in]  bus_config Bus configuration node
+ * @param[in]  state      Runtime OneWire state
+ * @param[out] rom        Buffer to receive 8-byte ROM code
+ *
+ * @return k_rx_ok on success, k_rx_err_crc_mismatch on CRC failure
+ */
+static rx_err_t internal_read_rom_bytes_and_validate(rx_bus_config_t*         bus_config,
+                                                     onewire_runtime_state_t* state,
+                                                     uint8_t rom[k_onewire_rom_bytes])
+{
+  uint8_t byte = 0;
+  for (uint8_t i = 0; i < k_onewire_rom_bytes; ++i) {
+    const rx_err_t err = internal_read_byte(bus_config, state, &byte);
+    if (err != k_rx_ok) {
+      return err;
+    }
+    rom[i] = byte;
+  }
+
+  uint32_t crc_out = 0U;
+  (void)rx_crc8_maxim(rom, k_onewire_rom_crc_idx, &crc_out);
+  if ((uint8_t)crc_out != rom[k_onewire_rom_crc_idx]) {
+    return k_rx_err_crc_mismatch;
+  }
+  return k_rx_ok;
+}
+
 RX_STATIC_TESTABLE rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config,
                                                                void*            user_ctx)
 {
-  onewire_read_rom_ctx_t* ctx     = (onewire_read_rom_ctx_t*)user_ctx;
-  uint8_t                 byte    = 0;
-  uint32_t                crc_out = 0U;
+  onewire_read_rom_ctx_t* ctx = (onewire_read_rom_ctx_t*)user_ctx;
 
   if (bus_config->type != k_bus_type_onewire || !bus_config->initialized) {
     ctx->result = k_rx_err_invalid_state;
@@ -1512,19 +1675,11 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* 
     ctx->result = err;
     return err;
   }
-  for (uint8_t i = 0; i < k_onewire_rom_bytes; ++i) {
-    err = internal_read_byte(bus_config, state, &byte);
-    if (err != k_rx_ok) {
-      ctx->result = err;
-      return err;
-    }
-    ctx->rom[i] = byte;
-  }
 
-  (void)rx_crc8_maxim(ctx->rom, k_onewire_rom_crc_idx, &crc_out);
-  if ((uint8_t)crc_out != ctx->rom[k_onewire_rom_crc_idx]) {
-    ctx->result = k_rx_err_crc_mismatch;
-    return ctx->result;
+  err = internal_read_rom_bytes_and_validate(bus_config, state, ctx->rom);
+  if (err != k_rx_ok) {
+    ctx->result = err;
+    return err;
   }
   if (ctx->rom[k_onewire_rom_family_code_idx] == k_onewire_invalid_family_code) {
     rx_log_warn(s_tag, "OneWire ROM has invalid family code");
@@ -1547,14 +1702,20 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* 
  * @return k_rx_err_invalid_state if bus not initialized
  * @return k_rx_err_invalid_arg if parameters invalid or max_devices exceeded
  */
-RX_STATIC_TESTABLE rx_err_t internal_onewire_search_callback(rx_bus_config_t* bus_config,
-                                                             void*            user_ctx)
+/**
+ * @brief Validate search callback parameters and bus state
+ *
+ * @param[in]  bus_config Bus configuration node
+ * @param[in]  ctx        Search context to validate
+ *
+ * @return k_rx_ok if valid, error code otherwise
+ *
+ * @pre bus_config and ctx are non-null
+ * @post *ctx->num_devices initialized to 0 on success
+ */
+static rx_err_t internal_validate_search_params(const rx_bus_config_t* bus_config,
+                                                onewire_search_ctx_t*  ctx)
 {
-  onewire_search_ctx_t* ctx = (onewire_search_ctx_t*)user_ctx;
-  uint8_t               rom[k_onewire_rom_bytes];
-  bool                  device_found = false;
-  rx_err_t              err          = k_rx_err_invalid_state;
-
   if (ctx->num_devices == nullptr) {
     ctx->result = k_rx_err_invalid_arg;
     return ctx->result;
@@ -1578,6 +1739,25 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_search_callback(rx_bus_config_t* bu
     ctx->result = k_rx_err_invalid_state;
     return ctx->result;
   }
+  return k_rx_ok;
+}
+
+RX_STATIC_TESTABLE rx_err_t internal_onewire_search_callback(rx_bus_config_t* bus_config,
+                                                             void*            user_ctx)
+{
+  onewire_search_ctx_t* ctx = (onewire_search_ctx_t*)user_ctx;
+  uint8_t               rom[k_onewire_rom_bytes];
+  bool                  device_found = false;
+
+  rx_err_t err = internal_validate_search_params(bus_config, ctx);
+  if (err != k_rx_ok) {
+    return err;
+  }
+  /* Early return if max_devices was 0 (validation set result to k_rx_ok) */
+  if (ctx->max_devices == 0U) {
+    return k_rx_ok;
+  }
+
   onewire_runtime_state_t* state = internal_get_state(bus_config);
   internal_reset_search_state(state);
 
@@ -1593,7 +1773,12 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_search_callback(rx_bus_config_t* bu
       break;
     }
 
-    memcpy(&ctx->roms[*ctx->num_devices * k_onewire_rom_bytes], rom, k_onewire_rom_bytes);
+    {
+      const size_t offset = (size_t)(*ctx->num_devices) * (size_t)k_onewire_rom_bytes;
+      for (uint8_t j = 0; j < k_onewire_rom_bytes; ++j) {
+        ctx->roms[offset + j] = rom[j];
+      }
+    }
     (*ctx->num_devices)++;
 
     if (state->last_device_flag) {
@@ -1893,8 +2078,9 @@ rx_err_t rx_bus_onewire_skip_rom(rx_bus_manager_t* manager, const char* bus_name
  * @return k_rx_ok on success
  * @return k_rx_err_not_found if no device presence detected
  */
-rx_err_t
-rx_bus_onewire_match_rom(rx_bus_manager_t* manager, const char* bus_name, const uint8_t rom[8])
+rx_err_t rx_bus_onewire_match_rom(rx_bus_manager_t* manager,
+                                  const char*       bus_name,
+                                  const uint8_t     rom[k_onewire_rom_bytes])
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
@@ -1923,7 +2109,9 @@ rx_bus_onewire_match_rom(rx_bus_manager_t* manager, const char* bus_name, const 
  * @return k_rx_err_not_found if no device presence detected
  * @return k_rx_err_crc_mismatch if ROM CRC validation fails
  */
-rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager, const char* bus_name, uint8_t rom[8])
+rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager,
+                                 const char*       bus_name,
+                                 uint8_t           rom[k_onewire_rom_bytes])
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");

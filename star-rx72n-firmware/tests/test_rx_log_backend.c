@@ -39,10 +39,103 @@
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_invalid_backend_bit2         = 0x04u, /**< Bit 2 -- first undefined bit above the valid mask */
-  k_invalid_backend_upper_nibble = 0xF0u, /**< Upper nibble -- all high bits set */
-  k_invalid_backend_all_bits     = 0xFFu, /**< All bits set -- includes undefined bits */
+  k_invalid_backend_bit2         = 0x04U, /**< Bit 2 -- first undefined bit above the valid mask */
+  k_invalid_backend_upper_nibble = 0xF0U, /**< Upper nibble -- all high bits set */
+  k_invalid_backend_all_bits     = 0xFFU, /**< All bits set -- includes undefined bits */
 } invalid_backend_test_value_t;
+
+/**
+ * @enum log_test_u8_values_t
+ * @brief Named u8 constants used in internal_rx_log_*_u8 coverage tests
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_log_test_u8_error  = 42U,   /**< Arbitrary u8 for error_u8 test */
+  k_log_test_u8_warn   = 7U,    /**< Arbitrary u8 for warn_u8 test */
+  k_log_test_u8_info   = 255U,  /**< Max u8 for info_u8 test */
+  k_log_test_u8_debug  = 42U,   /**< Arbitrary u8 for debug_u8 test (additional variants) */
+  k_log_test_u8_puthex = 0xABU, /**< Hex byte for puthex edge guard tests */
+} log_test_u8_values_t;
+
+/**
+ * @enum log_test_u16_values_t
+ * @brief Named u16 constants used in internal_rx_log_*_u16 coverage tests
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_log_test_u16_warn     = 500U,  /**< Arbitrary u16 for warn_u16 test */
+  k_log_test_u16_info     = 600U,  /**< Arbitrary u16 for info_u16 test */
+  k_log_test_u16_err_usb  = 1000U, /**< Arbitrary u16 for error_u16 USB backend test */
+  k_log_test_u16_err_both = 500U,  /**< Arbitrary u16 for error_u16 both backend test */
+} log_test_u16_values_t;
+
+/**
+ * @enum log_test_u32_values_t
+ * @brief Named u32 constants used in internal_rx_log_*_u32 coverage tests
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_log_test_u32_warn     = 12345U, /**< Arbitrary u32 for warn_u32 test */
+  k_log_test_u32_debug    = 99U,    /**< Arbitrary u32 for debug_u32 test */
+  k_log_test_u32_info     = 700U,   /**< Arbitrary u32 for info_u32 variant test */
+  k_log_test_u32_err_usb  = 2000U,  /**< Arbitrary u32 for error_u32 USB backend test */
+  k_log_test_u32_err_both = 600U,   /**< Arbitrary u32 for error_u32 both backend test */
+} log_test_u32_values_t;
+
+/**
+ * @enum log_test_strlen_t
+ * @brief Named string-length constants for internal_rx_log_*_str tests
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_log_test_strlen_hello  = 5U,   /**< Length of "hello" */
+  k_log_test_strlen_world  = 5U,   /**< Length of "world" */
+  k_log_test_strlen_val    = 3U,   /**< Length of "val" */
+  k_log_test_strlen_short  = 2U,   /**< Length of "ab", "cd", "ef", "gh", "hi" */
+  k_log_test_strlen_single = 1U,   /**< Length of "x", "y" */
+  k_log_test_strlen_long   = 10U,  /**< Overlong len for null-terminator early exit */
+  k_log_test_max_str_len   = 256U, /**< k_log_str_max_len value */
+} log_test_strlen_t;
+
+/**
+ * @enum log_test_puthex_digits_t
+ * @brief Named constants for puthex edge-case digit counts
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_log_test_puthex_too_large = 9U, /**< digits > max (8) -- clamped down */
+} log_test_puthex_digits_t;
+
+/**
+ * @enum log_test_dispatch_u8_t
+ * @brief Named u8 constants for backend dispatch coverage tests (none/usb/both)
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_log_dispatch_none_u8_err  = 1U,  /**< error_u8 value for none backend */
+  k_log_dispatch_none_u8_warn = 2U,  /**< warn_u8 value for none backend */
+  k_log_dispatch_none_u8_info = 4U,  /**< info_u8 value for none backend */
+  k_log_dispatch_usb_u8_err   = 10U, /**< error_u8 value for USB backend */
+  k_log_dispatch_usb_u8_warn  = 20U, /**< warn_u8 value for USB backend */
+  k_log_dispatch_usb_u8_info  = 40U, /**< info_u8 value for USB backend */
+  k_log_dispatch_both_u8_err  = 11U, /**< error_u8 value for both backends */
+  k_log_dispatch_both_u8_warn = 21U, /**< warn_u8 value for both backends */
+  k_log_dispatch_both_u8_info = 41U, /**< info_u8 value for both backends */
+} log_test_dispatch_u8_t;
+
+/**
+ * @enum log_test_dispatch_u32_t
+ * @brief Named u32 constants for backend dispatch coverage tests (none/usb/both)
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_log_dispatch_none_u32_warn  = 3U,  /**< warn_u32 value for none backend */
+  k_log_dispatch_none_u32_debug = 5U,  /**< debug_u32 value for none backend */
+  k_log_dispatch_usb_u32_warn   = 30U, /**< warn_u32 value for USB backend */
+  k_log_dispatch_usb_u32_debug  = 50U, /**< debug_u32 value for USB backend */
+  k_log_dispatch_both_u32_warn  = 31U, /**< warn_u32 value for both backends */
+  k_log_dispatch_both_u32_debug = 51U, /**< debug_u32 value for both backends */
+} log_test_dispatch_u32_t;
 
 /* =============================================================================
  * Test Fixture
@@ -217,7 +310,7 @@ void test_idempotent_set(void)
  */
 void test_internal_rx_log_error_u8(void)
 {
-  uint8_t val = 42;
+  uint8_t val = k_log_test_u8_error;
   internal_rx_log_error_u8("TEST", "error u8", val);
   TEST_PASS(); /* No crash = pass */
 }
@@ -228,7 +321,7 @@ void test_internal_rx_log_error_u8(void)
 void test_internal_rx_log_error_str(void)
 {
   const char* s = "hello";
-  internal_rx_log_error_str("TEST", "error str", s, 5);
+  internal_rx_log_error_str("TEST", "error str", s, k_log_test_strlen_hello);
   TEST_PASS();
 }
 
@@ -237,7 +330,7 @@ void test_internal_rx_log_error_str(void)
  */
 void test_internal_rx_log_warn_u8(void)
 {
-  uint8_t val = 7;
+  uint8_t val = k_log_test_u8_warn;
   internal_rx_log_warn_u8("TEST", "warn u8", val);
   TEST_PASS();
 }
@@ -247,7 +340,7 @@ void test_internal_rx_log_warn_u8(void)
  */
 void test_internal_rx_log_warn_u32(void)
 {
-  uint32_t val = 12345;
+  uint32_t val = k_log_test_u32_warn;
   internal_rx_log_warn_u32("TEST", "warn u32", val);
   TEST_PASS();
 }
@@ -258,7 +351,7 @@ void test_internal_rx_log_warn_u32(void)
 void test_internal_rx_log_warn_str(void)
 {
   const char* s = "world";
-  internal_rx_log_warn_str("TEST", "warn str", s, 5);
+  internal_rx_log_warn_str("TEST", "warn str", s, k_log_test_strlen_world);
   TEST_PASS();
 }
 
@@ -267,7 +360,7 @@ void test_internal_rx_log_warn_str(void)
  */
 void test_internal_rx_log_info_u8(void)
 {
-  uint8_t val = 255;
+  uint8_t val = k_log_test_u8_info;
   internal_rx_log_info_u8("TEST", "info u8", val);
   TEST_PASS();
 }
@@ -277,7 +370,7 @@ void test_internal_rx_log_info_u8(void)
  */
 void test_internal_rx_log_debug_u32(void)
 {
-  uint32_t val = 99;
+  uint32_t val = k_log_test_u32_debug;
   internal_rx_log_debug_u32("TEST", "debug u32", val);
   TEST_PASS();
 }
@@ -313,10 +406,10 @@ void test_additional_log_variants_uart_backend(void)
   internal_rx_log_debug("TEST", "debug msg");
 
   /* Numeric variants not covered in section 6 */
-  internal_rx_log_warn_u16("TEST", "warn u16", (uint16_t)500u);
-  internal_rx_log_info_u16("TEST", "info u16", (uint16_t)600u);
-  internal_rx_log_info_u32("TEST", "info u32", 700u);
-  internal_rx_log_debug_u8("TEST", "debug u8", 42u);
+  internal_rx_log_warn_u16("TEST", "warn u16", (uint16_t)k_log_test_u16_warn);
+  internal_rx_log_info_u16("TEST", "info u16", (uint16_t)k_log_test_u16_info);
+  internal_rx_log_info_u32("TEST", "info u32", k_log_test_u32_info);
+  internal_rx_log_debug_u8("TEST", "debug u8", k_log_test_u8_debug);
 
   TEST_PASS();
 }
@@ -338,10 +431,10 @@ void test_additional_log_variants_usb_backend(void)
   internal_rx_log_warn("TEST", "warn msg");
   internal_rx_log_info("TEST", "info msg");
   internal_rx_log_debug("TEST", "debug msg");
-  internal_rx_log_warn_u16("TEST", "warn u16", (uint16_t)500u);
-  internal_rx_log_info_u16("TEST", "info u16", (uint16_t)600u);
-  internal_rx_log_info_u32("TEST", "info u32", 700u);
-  internal_rx_log_debug_u8("TEST", "debug u8", 42u);
+  internal_rx_log_warn_u16("TEST", "warn u16", (uint16_t)k_log_test_u16_warn);
+  internal_rx_log_info_u16("TEST", "info u16", (uint16_t)k_log_test_u16_info);
+  internal_rx_log_info_u32("TEST", "info u32", k_log_test_u32_info);
+  internal_rx_log_debug_u8("TEST", "debug u8", k_log_test_u8_debug);
 
   TEST_PASS();
 }
@@ -367,8 +460,9 @@ void test_log_null_and_edge_guards(void)
   uart_debug_puts(nullptr);
 
   /* uart_debug_puthex out-of-range digit counts (min=1, max=8) */
-  uart_debug_puthex(0xABu, 0u); /* digits < min -- clamped up */
-  uart_debug_puthex(0xABu, 9u); /* digits > max -- clamped down */
+  uart_debug_puthex(k_log_test_u8_puthex, 0U); /* digits < min -- clamped up */
+  uart_debug_puthex(k_log_test_u8_puthex,
+                    k_log_test_puthex_too_large); /* digits > max -- clamped down */
 
   /* internal_log_header null guards */
   internal_log_header(nullptr, "TAG");
@@ -381,12 +475,12 @@ void test_log_null_and_edge_guards(void)
   internal_rx_log_debug("TEST", nullptr);
 
   /* internal_rx_log_error_str null guards */
-  internal_rx_log_error_str("TEST", nullptr, "val", 3u);
-  internal_rx_log_error_str("TEST", "msg", nullptr, 3u);
+  internal_rx_log_error_str("TEST", nullptr, "val", k_log_test_strlen_val);
+  internal_rx_log_error_str("TEST", "msg", nullptr, k_log_test_strlen_val);
 
   /* internal_rx_log_warn_str null guards */
-  internal_rx_log_warn_str("TEST", nullptr, "val", 3u);
-  internal_rx_log_warn_str("TEST", "msg", nullptr, 3u);
+  internal_rx_log_warn_str("TEST", nullptr, "val", k_log_test_strlen_val);
+  internal_rx_log_warn_str("TEST", "msg", nullptr, k_log_test_strlen_val);
 
   TEST_PASS();
 }
@@ -418,8 +512,8 @@ void test_log_null_and_edge_guards(void)
 void test_error_u16_u32_err_usb_backend(void)
 {
   (void)rx_log_set_backend(k_log_backend_usb);
-  internal_rx_log_error_u16("T", "eu16", (uint16_t)1000u);
-  internal_rx_log_error_u32("T", "eu32", 2000u);
+  internal_rx_log_error_u16("T", "eu16", (uint16_t)k_log_test_u16_err_usb);
+  internal_rx_log_error_u32("T", "eu32", k_log_test_u32_err_usb);
   internal_rx_log_error_err("T", "eerr", k_rx_ok);
   TEST_PASS();
 }
@@ -437,8 +531,8 @@ void test_error_u16_u32_err_usb_backend(void)
 void test_error_u16_u32_err_both_backends(void)
 {
   (void)rx_log_set_backend(k_log_backend_both);
-  internal_rx_log_error_u16("T", "eu16", (uint16_t)500u);
-  internal_rx_log_error_u32("T", "eu32", 600u);
+  internal_rx_log_error_u16("T", "eu16", (uint16_t)k_log_test_u16_err_both);
+  internal_rx_log_error_u32("T", "eu32", k_log_test_u32_err_both);
   internal_rx_log_error_err("T", "eerr", k_rx_err_null_ptr);
   TEST_PASS();
 }
@@ -458,8 +552,8 @@ void test_error_u16_u32_err_both_backends(void)
 void test_str_log_null_terminator_early_exit(void)
 {
   /* "hi" is 2 chars; len=10 forces the loop to hit '\\0' at index 2 */
-  internal_rx_log_error_str("T", "early exit", "hi", 10u);
-  internal_rx_log_warn_str("T", "early exit", "hi", 10u);
+  internal_rx_log_error_str("T", "early exit", "hi", k_log_test_strlen_long);
+  internal_rx_log_warn_str("T", "early exit", "hi", k_log_test_strlen_long);
   TEST_PASS();
 }
 
@@ -480,17 +574,17 @@ void test_str_log_loop_exhaustion(void)
 {
   /* Fill a 256-byte buffer with 'A' -- no null terminator within bound */
   enum : uint32_t {
-    k_max_len_val = 256u, /**< k_log_str_max_len value */
+    k_max_len_val = 256U, /**< k_log_str_max_len value */
   };
-  static char s_long_str[k_max_len_val + 1u]; /* +1 for safety null outside bound */
+  static char s_long_str[k_max_len_val + 1U]; /* +1 for safety null outside bound */
   for (uint32_t i = 0; i < k_max_len_val; i++) {
     s_long_str[i] = 'A';
   }
   s_long_str[k_max_len_val] = '\0'; /* null beyond the bounded region */
 
   /* len > 256 so i >= len never triggers; loop runs all 256 iterations */
-  internal_rx_log_error_str("T", "full loop", s_long_str, k_max_len_val + 1u);
-  internal_rx_log_warn_str("T", "full loop", s_long_str, k_max_len_val + 1u);
+  internal_rx_log_error_str("T", "full loop", s_long_str, k_max_len_val + 1U);
+  internal_rx_log_warn_str("T", "full loop", s_long_str, k_max_len_val + 1U);
   TEST_PASS();
 }
 
@@ -509,13 +603,13 @@ void test_str_log_loop_exhaustion(void)
 void test_log_dispatch_none_backend(void)
 {
   (void)rx_log_set_backend(k_log_backend_none);
-  internal_rx_log_error_u8("T", "none u8", 1u);
-  internal_rx_log_error_str("T", "none str", "x", 1u);
-  internal_rx_log_warn_u8("T", "none wu8", 2u);
-  internal_rx_log_warn_u32("T", "none wu32", 3u);
-  internal_rx_log_warn_str("T", "none wstr", "y", 1u);
-  internal_rx_log_info_u8("T", "none iu8", 4u);
-  internal_rx_log_debug_u32("T", "none du32", 5u);
+  internal_rx_log_error_u8("T", "none u8", k_log_dispatch_none_u8_err);
+  internal_rx_log_error_str("T", "none str", "x", k_log_test_strlen_single);
+  internal_rx_log_warn_u8("T", "none wu8", k_log_dispatch_none_u8_warn);
+  internal_rx_log_warn_u32("T", "none wu32", k_log_dispatch_none_u32_warn);
+  internal_rx_log_warn_str("T", "none wstr", "y", k_log_test_strlen_single);
+  internal_rx_log_info_u8("T", "none iu8", k_log_dispatch_none_u8_info);
+  internal_rx_log_debug_u32("T", "none du32", k_log_dispatch_none_u32_debug);
   internal_rx_log_debug_err("T", "none derr", k_rx_ok);
   TEST_PASS();
 }
@@ -537,13 +631,13 @@ void test_log_dispatch_none_backend(void)
 void test_log_dispatch_usb_only_backend(void)
 {
   (void)rx_log_set_backend(k_log_backend_usb);
-  internal_rx_log_error_u8("T", "usb u8", 10u);
-  internal_rx_log_error_str("T", "usb str", "ab", 2u);
-  internal_rx_log_warn_u8("T", "usb wu8", 20u);
-  internal_rx_log_warn_u32("T", "usb wu32", 30u);
-  internal_rx_log_warn_str("T", "usb wstr", "cd", 2u);
-  internal_rx_log_info_u8("T", "usb iu8", 40u);
-  internal_rx_log_debug_u32("T", "usb du32", 50u);
+  internal_rx_log_error_u8("T", "usb u8", k_log_dispatch_usb_u8_err);
+  internal_rx_log_error_str("T", "usb str", "ab", k_log_test_strlen_short);
+  internal_rx_log_warn_u8("T", "usb wu8", k_log_dispatch_usb_u8_warn);
+  internal_rx_log_warn_u32("T", "usb wu32", k_log_dispatch_usb_u32_warn);
+  internal_rx_log_warn_str("T", "usb wstr", "cd", k_log_test_strlen_short);
+  internal_rx_log_info_u8("T", "usb iu8", k_log_dispatch_usb_u8_info);
+  internal_rx_log_debug_u32("T", "usb du32", k_log_dispatch_usb_u32_debug);
   internal_rx_log_debug_err("T", "usb derr", k_rx_ok);
   TEST_PASS();
 }
@@ -564,13 +658,13 @@ void test_log_dispatch_usb_only_backend(void)
 void test_log_dispatch_both_backends(void)
 {
   (void)rx_log_set_backend(k_log_backend_both);
-  internal_rx_log_error_u8("T", "both u8", 11u);
-  internal_rx_log_error_str("T", "both str", "ef", 2u);
-  internal_rx_log_warn_u8("T", "both wu8", 21u);
-  internal_rx_log_warn_u32("T", "both wu32", 31u);
-  internal_rx_log_warn_str("T", "both wstr", "gh", 2u);
-  internal_rx_log_info_u8("T", "both iu8", 41u);
-  internal_rx_log_debug_u32("T", "both du32", 51u);
+  internal_rx_log_error_u8("T", "both u8", k_log_dispatch_both_u8_err);
+  internal_rx_log_error_str("T", "both str", "ef", k_log_test_strlen_short);
+  internal_rx_log_warn_u8("T", "both wu8", k_log_dispatch_both_u8_warn);
+  internal_rx_log_warn_u32("T", "both wu32", k_log_dispatch_both_u32_warn);
+  internal_rx_log_warn_str("T", "both wstr", "gh", k_log_test_strlen_short);
+  internal_rx_log_info_u8("T", "both iu8", k_log_dispatch_both_u8_info);
+  internal_rx_log_debug_u32("T", "both du32", k_log_dispatch_both_u32_debug);
   internal_rx_log_debug_err("T", "both derr", k_rx_ok);
   TEST_PASS();
 }

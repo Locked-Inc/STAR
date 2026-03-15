@@ -31,8 +31,6 @@
 
 #include "mock_adc_hal.h"
 
-#include <string.h>
-
 /* =============================================================================
  * Constants
  * =============================================================================
@@ -162,7 +160,12 @@ static rx_err_t internal_check_error(void)
 
 void mock_adc_init(void)
 {
-  memset(&g_mock_adc, 0, sizeof(g_mock_adc));
+  {
+    uint8_t* raw = (uint8_t*)&g_mock_adc;
+    for (size_t i = 0; i < sizeof(g_mock_adc); i++) {
+      raw[i] = 0;
+    }
+  }
 }
 
 void mock_adc_reset(void)

@@ -34,9 +34,58 @@
  * =============================================================================
  */
 
+/** @brief Motor count and array index constants */
 typedef enum : uint8_t {
   k_test_motor_count = 4, /**< Number of motors */
+  k_test_idx_fl      = 0, /**< Front left motor index */
+  k_test_idx_fr      = 1, /**< Front right motor index */
+  k_test_idx_bl      = 2, /**< Back left motor index */
+  k_test_idx_br      = 3, /**< Back right motor index */
 } test_motor_constants_t;
+
+/** @brief Tolerance for TEST_ASSERT_FLOAT_WITHIN (IEEE 754 rounding margin) */
+static const float s_float_epsilon = 0.0001F;
+
+/** @brief PID gain constants for 4-motor test configuration */
+static const float s_test_kp_default      = 0.286F;
+static const float s_test_ki_default      = 8.01F;
+static const float s_test_output_min      = -100.0F;
+static const float s_test_output_max      = 100.0F;
+static const float s_test_integral_min    = -50.0F;
+static const float s_test_integral_max    = 50.0F;
+static const float s_test_pid_compute_out = 50.0F;
+static const float s_test_pid_setpoint    = 1.0F;
+static const float s_test_pid_measured    = 0.5F;
+static const float s_test_pid_dt_sec      = 0.004F;
+
+/** @brief PID gain update test values */
+static const float s_test_kp_update        = 0.5F;
+static const float s_test_ki_update        = 10.0F;
+static const float s_test_kd_update        = 0.1F;
+static const float s_test_output_min_upd   = -80.0F;
+static const float s_test_output_max_upd   = 80.0F;
+static const float s_test_integral_min_upd = -40.0F;
+static const float s_test_integral_max_upd = 40.0F;
+
+/** @brief Velocity command test values */
+static const float s_test_vel_forward = 1.0F;
+static const float s_test_vel_reverse = -0.5F;
+
+/** @brief Motor state test values */
+static const float s_test_vel_fl  = 0.95F;
+static const float s_test_vel_fr  = 1.05F;
+static const float s_test_vel_bl  = -0.48F;
+static const float s_test_vel_br  = -0.52F;
+static const float s_test_duty_fl = 45.0F;
+static const float s_test_duty_fr = 47.0F;
+static const float s_test_duty_bl = -22.0F;
+static const float s_test_duty_br = -23.0F;
+
+/** @brief Misc command metadata test values */
+typedef enum : uint32_t {
+  k_test_cmd_sequence     = 42,   /**< Arbitrary command sequence number */
+  k_test_cmd_timestamp_ms = 1000, /**< Arbitrary command timestamp */
+} test_cmd_metadata_t;
 
 /* =============================================================================
  * Test Fixture
@@ -160,13 +209,13 @@ void test_motor_task_initializes_4_pids(void)
   rx_pid_config_t config = {0};
   rx_err_t        err;
 
-  config.kp           = 0.286f;
-  config.ki           = 8.01f;
-  config.kd           = 0.0f;
-  config.output_min   = -100.0f;
-  config.output_max   = 100.0f;
-  config.integral_min = -50.0f;
-  config.integral_max = 50.0f;
+  config.kp           = s_test_kp_default;
+  config.ki           = s_test_ki_default;
+  config.kd           = 0.0F;
+  config.output_min   = s_test_output_min;
+  config.output_max   = s_test_output_max;
+  config.integral_min = s_test_integral_min;
+  config.integral_max = s_test_integral_max;
 
   /* Call init for 4 motors */
   for (uint8_t i = 0; i < k_test_motor_count; i++) {
@@ -197,35 +246,35 @@ void test_motor_task_pid_compute_parameters(void)
   float           measured;
   float           dt;
 
-  config.kp           = 1.0f;
-  config.ki           = 0.0f;
-  config.kd           = 0.0f;
-  config.output_min   = -100.0f;
-  config.output_max   = 100.0f;
-  config.integral_min = -50.0f;
-  config.integral_max = 50.0f;
+  config.kp           = 1.0F;
+  config.ki           = 0.0F;
+  config.kd           = 0.0F;
+  config.output_min   = s_test_output_min;
+  config.output_max   = s_test_output_max;
+  config.integral_min = s_test_integral_min;
+  config.integral_max = s_test_integral_max;
 
   mock_pid_set_init_return(k_rx_ok);
   err = rx_pid_init(&pid, &config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Set expected compute output */
-  mock_pid_set_compute_output(50.0f);
+  mock_pid_set_compute_output(s_test_pid_compute_out);
   mock_pid_set_compute_return(k_rx_ok);
 
   /* Call compute */
-  err = rx_pid_compute(&pid, 1.0f, 0.5f, 0.004f, &output);
+  err = rx_pid_compute(&pid, s_test_pid_setpoint, s_test_pid_measured, s_test_pid_dt_sec, &output);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_FLOAT(50.0f, output);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, s_test_pid_compute_out, output);
 
   /* Verify compute was called */
   TEST_ASSERT_TRUE(mock_pid_get_compute_count() >= 1);
 
   /* Get the last compute parameters */
   mock_pid_get_last_compute_params(&setpoint, &measured, &dt);
-  TEST_ASSERT_EQUAL_FLOAT(1.0f, setpoint);
-  TEST_ASSERT_EQUAL_FLOAT(0.5f, measured);
-  TEST_ASSERT_EQUAL_FLOAT(0.004f, dt);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, s_test_pid_setpoint, setpoint);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, s_test_pid_measured, measured);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, s_test_pid_dt_sec, dt);
 }
 
 /* =============================================================================
@@ -269,13 +318,13 @@ void test_motor_task_reads_velocity_commands(void)
   rx_err_t        err;
 
   /* Set up velocity command */
-  cmd_in.target_velocity_mps[0] = 1.0f;  /* Front left */
-  cmd_in.target_velocity_mps[1] = 1.0f;  /* Front right */
-  cmd_in.target_velocity_mps[2] = -0.5f; /* Back left (reverse) */
-  cmd_in.target_velocity_mps[3] = -0.5f; /* Back right (reverse) */
+  cmd_in.target_velocity_mps[k_test_idx_fl] = s_test_vel_forward; /* Front left */
+  cmd_in.target_velocity_mps[k_test_idx_fr] = s_test_vel_forward; /* Front right */
+  cmd_in.target_velocity_mps[k_test_idx_bl] = s_test_vel_reverse; /* Back left (reverse) */
+  cmd_in.target_velocity_mps[k_test_idx_br] = s_test_vel_reverse; /* Back right (reverse) */
 
-  cmd_in.sequence     = 42;
-  cmd_in.timestamp_ms = 1000;
+  cmd_in.sequence     = k_test_cmd_sequence;
+  cmd_in.timestamp_ms = k_test_cmd_timestamp_ms;
   cmd_in.valid        = true;
 
   /* Store command via mock */
@@ -287,11 +336,19 @@ void test_motor_task_reads_velocity_commands(void)
   /* Verify command matches */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(cmd_out.valid);
-  TEST_ASSERT_EQUAL_UINT32(42, cmd_out.sequence);
-  TEST_ASSERT_EQUAL_FLOAT(1.0f, cmd_out.target_velocity_mps[0]);
-  TEST_ASSERT_EQUAL_FLOAT(1.0f, cmd_out.target_velocity_mps[1]);
-  TEST_ASSERT_EQUAL_FLOAT(-0.5f, cmd_out.target_velocity_mps[2]);
-  TEST_ASSERT_EQUAL_FLOAT(-0.5f, cmd_out.target_velocity_mps[3]);
+  TEST_ASSERT_EQUAL_UINT32(k_test_cmd_sequence, cmd_out.sequence);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon,
+                           s_test_vel_forward,
+                           cmd_out.target_velocity_mps[k_test_idx_fl]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon,
+                           s_test_vel_forward,
+                           cmd_out.target_velocity_mps[k_test_idx_fr]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon,
+                           s_test_vel_reverse,
+                           cmd_out.target_velocity_mps[k_test_idx_bl]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon,
+                           s_test_vel_reverse,
+                           cmd_out.target_velocity_mps[k_test_idx_br]);
 }
 
 /**
@@ -369,13 +426,13 @@ void test_motor_task_reads_pid_gains(void)
   pid_gains_t gains_out = {0};
   rx_err_t    err;
 
-  gains_in.kp             = 0.5f;
-  gains_in.ki             = 10.0f;
-  gains_in.kd             = 0.1f;
-  gains_in.output_min     = -80.0f;
-  gains_in.output_max     = 80.0f;
-  gains_in.integral_min   = -40.0f;
-  gains_in.integral_max   = 40.0f;
+  gains_in.kp             = s_test_kp_update;
+  gains_in.ki             = s_test_ki_update;
+  gains_in.kd             = s_test_kd_update;
+  gains_in.output_min     = s_test_output_min_upd;
+  gains_in.output_max     = s_test_output_max_upd;
+  gains_in.integral_min   = s_test_integral_min_upd;
+  gains_in.integral_max   = s_test_integral_max_upd;
   gains_in.update_pending = true;
 
   /* Store gains via mock */
@@ -390,11 +447,11 @@ void test_motor_task_reads_pid_gains(void)
 
   /* Verify gains match */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_FLOAT(0.5f, gains_out.kp);
-  TEST_ASSERT_EQUAL_FLOAT(10.0f, gains_out.ki);
-  TEST_ASSERT_EQUAL_FLOAT(0.1f, gains_out.kd);
-  TEST_ASSERT_EQUAL_FLOAT(-80.0f, gains_out.output_min);
-  TEST_ASSERT_EQUAL_FLOAT(80.0f, gains_out.output_max);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, s_test_kp_update, gains_out.kp);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, s_test_ki_update, gains_out.ki);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, s_test_kd_update, gains_out.kd);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, s_test_output_min_upd, gains_out.output_min);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, s_test_output_max_upd, gains_out.output_max);
 }
 
 /**
@@ -436,17 +493,17 @@ void test_motor_task_updates_motor_state(void)
   motor_state_t state_out = {0};
   rx_err_t      err;
 
-  state_in.current_velocity_mps[0] = 0.95f;
-  state_in.current_velocity_mps[1] = 1.05f;
-  state_in.current_velocity_mps[2] = -0.48f;
-  state_in.current_velocity_mps[3] = -0.52f;
-  state_in.duty_cycle_percent[0]   = 45.0f;
-  state_in.duty_cycle_percent[1]   = 47.0f;
-  state_in.duty_cycle_percent[2]   = -22.0f;
-  state_in.duty_cycle_percent[3]   = -23.0f;
-  state_in.mode                    = k_motor_mode_velocity;
-  state_in.estop_active            = false;
-  state_in.estop_reason            = k_estop_reason_none;
+  state_in.current_velocity_mps[k_test_idx_fl] = s_test_vel_fl;
+  state_in.current_velocity_mps[k_test_idx_fr] = s_test_vel_fr;
+  state_in.current_velocity_mps[k_test_idx_bl] = s_test_vel_bl;
+  state_in.current_velocity_mps[k_test_idx_br] = s_test_vel_br;
+  state_in.duty_cycle_percent[k_test_idx_fl]   = s_test_duty_fl;
+  state_in.duty_cycle_percent[k_test_idx_fr]   = s_test_duty_fr;
+  state_in.duty_cycle_percent[k_test_idx_bl]   = s_test_duty_bl;
+  state_in.duty_cycle_percent[k_test_idx_br]   = s_test_duty_br;
+  state_in.mode                                = k_motor_mode_velocity;
+  state_in.estop_active                        = false;
+  state_in.estop_reason                        = k_estop_reason_none;
 
   /* Update motor state */
   err = shared_data_update_motor_state(&state_in);
@@ -460,8 +517,12 @@ void test_motor_task_updates_motor_state(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify state matches */
-  TEST_ASSERT_EQUAL_FLOAT(0.95f, state_out.current_velocity_mps[0]);
-  TEST_ASSERT_EQUAL_FLOAT(1.05f, state_out.current_velocity_mps[1]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon,
+                           s_test_vel_fl,
+                           state_out.current_velocity_mps[k_test_idx_fl]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon,
+                           s_test_vel_fr,
+                           state_out.current_velocity_mps[k_test_idx_fr]);
   TEST_ASSERT_EQUAL(k_motor_mode_velocity, state_out.mode);
   TEST_ASSERT_FALSE(state_out.estop_active);
 }

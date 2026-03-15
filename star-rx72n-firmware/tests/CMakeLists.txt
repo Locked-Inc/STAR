@@ -758,6 +758,17 @@ target_compile_options(test_rx_nanopb PRIVATE
     -Wno-missing-braces
 )
 target_link_libraries(test_rx_nanopb unity m)
+# Disable clang-tidy for nanopb vendor sources compiled into this target.
+# set_target_properties(protobuf-nanopb-static) only covers the library target;
+# these .c files are compiled directly into test_rx_nanopb and need separate treatment.
+if(ENABLE_CLANG_TIDY)
+    set_source_files_properties(
+        ${nanopb_SOURCE_DIR}/pb_common.c
+        ${nanopb_SOURCE_DIR}/pb_encode.c
+        ${nanopb_SOURCE_DIR}/pb_decode.c
+        PROPERTIES SKIP_LINTING ON
+    )
+endif()
 
 # Test: Session State (shared across transports)
 add_executable(test_rx_session

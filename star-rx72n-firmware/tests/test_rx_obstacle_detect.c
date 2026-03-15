@@ -242,14 +242,144 @@
  * @since Version 1.0.0
  */
 
-#include <string.h>
-
 #include "mock_hcsr04_hw.h"
 #include "mock_rx_motor.h"
 #include "rx_hcsr04.h"
 #include "rx_obstacle_detect.h"
 #include "tx_api.h"
 #include "unity.h"
+
+/* =============================================================================
+ * Named Test Constants
+ * =============================================================================
+ */
+
+/**
+ * @defgroup test_constants Named Test Constants
+ * @brief Integer and floating-point constants used throughout the test suite
+ * @{
+ */
+
+/**
+ * @enum test_int_constants_t
+ * @brief Integer constants used across obstacle detection tests
+ */
+typedef enum : uint8_t {
+  k_test_sensor_count     = 2,  /**< Default sensor array size */
+  k_test_motor_count      = 2,  /**< Default motor array size */
+  k_test_debounce_samples = 3,  /**< Default debounce sample count */
+  k_test_debounce_five    = 5,  /**< Debounce sample count for partial tests */
+  k_test_poll_interval_ms = 20, /**< Default poll interval in ms (50 Hz) */
+} test_int_constants_t;
+
+/**
+ * @enum test_stats_constants_t
+ * @brief Constants used for statistics testing
+ */
+typedef enum : uint32_t {
+  k_test_stats_total_polls = 100, /**< Simulated total poll count */
+  k_test_stats_events      = 5,   /**< Simulated obstacle event count */
+  k_test_debounce_preset   = 2,   /**< Pre-set debounce counter value */
+} test_stats_constants_t;
+
+/**
+ * @enum test_validation_constants_t
+ * @brief Constants used for validation boundary tests
+ */
+typedef enum : uint16_t {
+  k_test_motor_count_over_max    = 5,      /**< Above k_obstacle_detect_max_motors */
+  k_test_debounce_over_max       = 11,     /**< Above k_max_debounce (10) */
+  k_test_poll_interval_over_max  = 1001,   /**< Above k_max_poll_interval (1000) */
+  k_test_poll_interval_under_min = 5,      /**< Below k_min_poll_interval (10) */
+  k_test_poll_interval_invalid   = 0xFFFF, /**< Far above maximum allowed */
+  k_test_outer_start_retries     = 2,      /**< Outer loop no-events retry count */
+} test_validation_constants_t;
+
+/**
+ * @var s_threshold_cm
+ * @brief Default detection threshold in centimeters (30 cm)
+ */
+static const float s_threshold_cm = 30.0F;
+
+/**
+ * @var s_threshold_too_high_cm
+ * @brief Detection threshold above HC-SR04 maximum range (500 cm)
+ */
+static const float s_threshold_too_high_cm = 500.0F;
+
+/**
+ * @var s_distance_safe_cm
+ * @brief Safe distance above default threshold (50 cm)
+ */
+static const float s_distance_safe_cm = 50.0F;
+
+/**
+ * @var s_distance_close_cm
+ * @brief Close distance below default threshold (10 cm)
+ */
+static const float s_distance_close_cm = 10.0F;
+
+/**
+ * @var s_distance_emergency_cm
+ * @brief Emergency distance well below threshold (5 cm)
+ */
+static const float s_distance_emergency_cm = 5.0F;
+
+/**
+ * @var s_distance_warning_cm
+ * @brief Warning distance for callback tests (25 cm)
+ */
+static const float s_distance_warning_cm = 25.0F;
+
+/**
+ * @var s_distance_callback_cm
+ * @brief Specific distance for callback parameter tests (15.5 cm)
+ */
+static const float s_distance_callback_cm = 15.5F;
+
+/**
+ * @var s_float_tolerance
+ * @brief Floating-point comparison tolerance (0.01)
+ */
+static const float s_float_tolerance = 0.01F;
+
+/**
+ * @var s_threshold_below_min_cm
+ * @brief Threshold below HC-SR04 minimum range (1.0 cm, below 2 cm minimum)
+ */
+static const float s_threshold_below_min_cm = 1.0F;
+
+/** @} */ /* End of test_constants group */
+
+/* =============================================================================
+ * Helper: byte-level zero initialization (replaces memset)
+ * =============================================================================
+ */
+
+/**
+ * @brief Zero-initialize a memory region byte-by-byte
+ *
+ * @details
+ * Replaces memset(&obj, 0, sizeof(obj)) to satisfy
+ * clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling.
+ *
+ * @param[out] ptr  Pointer to the memory region to zero
+ * @param[in]  size Number of bytes to zero
+ *
+ * @pre ptr != nullptr
+ * @pre size > 0
+ * @post All bytes in [ptr, ptr+size) are set to 0
+ *
+ * @note Not thread-safe (caller must synchronize)
+ * @since Version 1.0.0
+ */
+static inline void internal_zero_mem(void* ptr, size_t size)
+{
+  volatile uint8_t* dst = (volatile uint8_t*)ptr;
+  for (size_t i = 0; i < size; i++) {
+    dst[i] = 0;
+  }
+}
 
 /* =============================================================================
  * Test Fixtures and Global State
@@ -347,7 +477,7 @@ static rx_obstacle_detect_config_t s_config;
  *
  * @par Size: 2 x sizeof(rx_hcsr04_t) (depends on HC-SR04 driver)
  */
-static rx_hcsr04_t s_sensors[2];
+static rx_hcsr04_t s_sensors[k_test_sensor_count];
 
 /**
  * @var s_sensor_ptrs
@@ -361,7 +491,7 @@ static rx_hcsr04_t s_sensors[2];
  * @par Initialized By: setUp() before each test
  * @par Used By: s_config.sensors (configuration field)
  */
-static rx_hcsr04_t* s_sensor_ptrs[2];
+static rx_hcsr04_t* s_sensor_ptrs[k_test_sensor_count];
 
 /**
  * @var s_motors
@@ -383,7 +513,7 @@ static rx_hcsr04_t* s_sensor_ptrs[2];
  *
  * @par Size: 2 x sizeof(rx_motor_handle_t) (depends on motor driver)
  */
-static rx_motor_handle_t s_motors[2];
+static rx_motor_handle_t s_motors[k_test_motor_count];
 
 /**
  * @var s_motor_ptrs
@@ -396,7 +526,7 @@ static rx_motor_handle_t s_motors[2];
  * @par Initialized By: setUp() before each test
  * @par Used By: s_config.motors (configuration field)
  */
-static rx_motor_handle_t* s_motor_ptrs[2];
+static rx_motor_handle_t* s_motor_ptrs[k_test_motor_count];
 
 /**
  * @var s_callback_called
@@ -666,9 +796,9 @@ void setUp(void)
   mock_tx_reset();
 
   /* Clear handles */
-  memset(&s_handle, 0, sizeof(s_handle));
-  memset(&s_sensors, 0, sizeof(s_sensors));
-  memset(&s_motors, 0, sizeof(s_motors));
+  internal_zero_mem(&s_handle, sizeof(s_handle));
+  internal_zero_mem(&s_sensors, sizeof(s_sensors));
+  internal_zero_mem(&s_motors, sizeof(s_motors));
 
   /* Setup sensor pointers */
   s_sensor_ptrs[0] = &s_sensors[0];
@@ -680,12 +810,12 @@ void setUp(void)
 
   /* Default configuration: 2 sensors, 2 motors, 30cm threshold */
   s_config.sensors                = s_sensor_ptrs;
-  s_config.sensor_count           = 2;
+  s_config.sensor_count           = k_test_sensor_count;
   s_config.motors                 = s_motor_ptrs;
-  s_config.motor_count            = 2;
-  s_config.detection_threshold_cm = 30.0f;
-  s_config.debounce_samples       = 3;
-  s_config.poll_interval_ms       = 20;
+  s_config.motor_count            = k_test_motor_count;
+  s_config.detection_threshold_cm = s_threshold_cm;
+  s_config.debounce_samples       = k_test_debounce_samples;
+  s_config.poll_interval_ms       = k_test_poll_interval_ms;
   s_config.callback               = test_callback;
   s_config.user_data              = nullptr;
 
@@ -693,7 +823,7 @@ void setUp(void)
   s_callback_called            = false;
   s_callback_obstacle_detected = false;
   s_callback_sensor_idx        = 0;
-  s_callback_distance_cm       = 0.0f;
+  s_callback_distance_cm       = 0.0F;
 }
 
 /**
@@ -858,9 +988,9 @@ void test_obstacle_detect_init_success(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(s_handle.initialized);
-  TEST_ASSERT_EQUAL(2, s_handle.sensor_count);
-  TEST_ASSERT_EQUAL(2, s_handle.motor_count);
-  TEST_ASSERT_EQUAL_FLOAT(30.0f, s_handle.detection_threshold_cm);
+  TEST_ASSERT_EQUAL(k_test_sensor_count, s_handle.sensor_count);
+  TEST_ASSERT_EQUAL(k_test_motor_count, s_handle.motor_count);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, s_threshold_cm, s_handle.detection_threshold_cm);
   TEST_ASSERT_EQUAL(k_obstacle_detect_state_stopped, s_handle.state);
 }
 
@@ -980,7 +1110,7 @@ void test_obstacle_detect_init_zero_motors_fails(void)
  */
 void test_obstacle_detect_init_invalid_threshold_too_low_fails(void)
 {
-  s_config.detection_threshold_cm = 1.0f; /* Below 2cm minimum */
+  s_config.detection_threshold_cm = s_threshold_below_min_cm; /* Below 2cm minimum */
   rx_err_t err                    = rx_obstacle_detect_init(&s_handle, &s_config);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -995,7 +1125,7 @@ void test_obstacle_detect_init_invalid_threshold_too_low_fails(void)
  */
 void test_obstacle_detect_init_invalid_threshold_too_high_fails(void)
 {
-  s_config.detection_threshold_cm = 500.0f; /* Above 400cm maximum */
+  s_config.detection_threshold_cm = s_threshold_too_high_cm; /* Above 400cm maximum */
   rx_err_t err                    = rx_obstacle_detect_init(&s_handle, &s_config);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1373,9 +1503,9 @@ void test_obstacle_detect_reset_stats_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
 
   /* Manually set some stats */
-  s_handle.total_polls          = 100;
-  s_handle.obstacle_events      = 5;
-  s_handle.false_positive_count = 2;
+  s_handle.total_polls          = k_test_stats_total_polls;
+  s_handle.obstacle_events      = k_test_stats_events;
+  s_handle.false_positive_count = k_test_debounce_preset;
 
   rx_err_t err = rx_obstacle_detect_reset_stats(&s_handle);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1459,7 +1589,7 @@ void test_obstacle_detect_clear_obstacle_success(void)
   /* Manually set obstacle state */
   s_handle.state               = k_obstacle_detect_state_obstacle;
   s_handle.obstacle_active[0]  = true;
-  s_handle.debounce_counter[0] = 5;
+  s_handle.debounce_counter[0] = k_test_debounce_five;
 
   rx_err_t err = rx_obstacle_detect_clear_obstacle(&s_handle);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1592,7 +1722,7 @@ void test_internal_poll_sensors_debounce_counter_reset_on_clear(void)
   s_handle.state = k_obstacle_detect_state_running;
 
   /* Pre-set debounce counter to 2 (below debounce_samples=3) */
-  s_handle.debounce_counter[0]  = 2;
+  s_handle.debounce_counter[0]  = k_test_debounce_preset;
   s_handle.false_positive_count = 0;
 
   /* Calling poll with zero-init sensors (returns k_rx_err_invalid_state = skip).
@@ -1601,7 +1731,7 @@ void test_internal_poll_sensors_debounce_counter_reset_on_clear(void)
   rx_err_t err = internal_poll_sensors(&s_handle);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Counter unchanged since sensor was skipped */
-  TEST_ASSERT_EQUAL(2u, s_handle.debounce_counter[0]);
+  TEST_ASSERT_EQUAL(2U, s_handle.debounce_counter[0]);
   TEST_ASSERT_FALSE(s_handle.obstacle_active[0]);
 }
 
@@ -1620,23 +1750,23 @@ void test_internal_poll_sensors_debounce_counter_reset_on_clear(void)
 void test_internal_poll_sensors_clears_obstacle(void)
 {
   mock_hcsr04_hw_init(nullptr);
-  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1u);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
   /* Set mock distance above threshold (threshold=30cm, mock=50cm) */
-  mock_hcsr04_hw_set_distance(nullptr, 50.0F);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_safe_cm);
 
   static rx_hcsr04_t        s_mock_sensor2;
   static rx_hcsr04_t*       s_mock_ptr2;
   static rx_motor_handle_t  s_mock_motor2;
   static rx_motor_handle_t* s_mock_mptr2;
-  memset(&s_mock_sensor2, 0, sizeof(s_mock_sensor2));
-  memset(&s_mock_motor2, 0, sizeof(s_mock_motor2));
+  internal_zero_mem(&s_mock_sensor2, sizeof(s_mock_sensor2));
+  internal_zero_mem(&s_mock_motor2, sizeof(s_mock_motor2));
   s_mock_ptr2  = &s_mock_sensor2;
   s_mock_mptr2 = &s_mock_motor2;
 
   const rx_hcsr04_config_t hcsr04_cfg = {
     .trigger_pin = k_rx_pc_6,
     .echo_pin    = k_rx_p5_5,
-    .timeout_us  = 30000u,
+    .timeout_us  = 30000U,
     .echo_mode   = k_hcsr04_echo_polling,
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_mock_sensor2, &hcsr04_cfg));
@@ -1646,15 +1776,15 @@ void test_internal_poll_sensors_clears_obstacle(void)
     .sensor_count           = 1,
     .motors                 = &s_mock_mptr2,
     .motor_count            = 1,
-    .detection_threshold_cm = 30.0F,
-    .debounce_samples       = 3,
-    .poll_interval_ms       = 20,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_samples,
+    .poll_interval_ms       = k_test_poll_interval_ms,
     .callback               = test_callback,
     .user_data              = nullptr,
   };
 
   static rx_obstacle_detect_t s_det2;
-  memset(&s_det2, 0, sizeof(s_det2));
+  internal_zero_mem(&s_det2, sizeof(s_det2));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_det2, &cfg));
   s_det2.state              = k_obstacle_detect_state_obstacle;
   s_det2.obstacle_active[0] = true; /* Pre-set obstacle state */
@@ -1681,23 +1811,23 @@ void test_internal_poll_sensors_clears_obstacle(void)
 void test_internal_poll_sensors_counts_false_positives(void)
 {
   mock_hcsr04_hw_init(nullptr);
-  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1u);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
   /* Set mock distance above threshold (no obstacle) */
-  mock_hcsr04_hw_set_distance(nullptr, 50.0F);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_safe_cm);
 
   static rx_hcsr04_t        s_mock_sensor3;
   static rx_hcsr04_t*       s_mock_ptr3;
   static rx_motor_handle_t  s_mock_motor3;
   static rx_motor_handle_t* s_mock_mptr3;
-  memset(&s_mock_sensor3, 0, sizeof(s_mock_sensor3));
-  memset(&s_mock_motor3, 0, sizeof(s_mock_motor3));
+  internal_zero_mem(&s_mock_sensor3, sizeof(s_mock_sensor3));
+  internal_zero_mem(&s_mock_motor3, sizeof(s_mock_motor3));
   s_mock_ptr3  = &s_mock_sensor3;
   s_mock_mptr3 = &s_mock_motor3;
 
   const rx_hcsr04_config_t hcsr04_cfg = {
     .trigger_pin = k_rx_pc_6,
     .echo_pin    = k_rx_p5_5,
-    .timeout_us  = 30000u,
+    .timeout_us  = 30000U,
     .echo_mode   = k_hcsr04_echo_polling,
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_mock_sensor3, &hcsr04_cfg));
@@ -1707,18 +1837,19 @@ void test_internal_poll_sensors_counts_false_positives(void)
     .sensor_count           = 1,
     .motors                 = &s_mock_mptr3,
     .motor_count            = 1,
-    .detection_threshold_cm = 30.0F,
-    .debounce_samples       = 5,
-    .poll_interval_ms       = 20,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_five,
+    .poll_interval_ms       = k_test_poll_interval_ms,
     .callback               = test_callback,
     .user_data              = nullptr,
   };
 
   static rx_obstacle_detect_t s_det3;
-  memset(&s_det3, 0, sizeof(s_det3));
+  internal_zero_mem(&s_det3, sizeof(s_det3));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_det3, &cfg));
-  s_det3.state                = k_obstacle_detect_state_running;
-  s_det3.debounce_counter[0]  = 2; /* Partially debounced (2 < debounce_samples=5) */
+  s_det3.state = k_obstacle_detect_state_running;
+  s_det3.debounce_counter[0] =
+    k_test_debounce_preset; /* Partially debounced (2 < debounce_samples=5) */
   s_det3.false_positive_count = 0;
 
   rx_err_t err = internal_poll_sensors(&s_det3);
@@ -1741,22 +1872,22 @@ void test_internal_poll_sensors_counts_false_positives(void)
 void test_internal_poll_sensors_sensor_timeout_is_clear(void)
 {
   mock_hcsr04_hw_init(nullptr);
-  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1u);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
   mock_hcsr04_hw_set_timeout(nullptr, true);
 
   static rx_hcsr04_t        s_mock_sensor4;
   static rx_hcsr04_t*       s_mock_ptr4;
   static rx_motor_handle_t  s_mock_motor4;
   static rx_motor_handle_t* s_mock_mptr4;
-  memset(&s_mock_sensor4, 0, sizeof(s_mock_sensor4));
-  memset(&s_mock_motor4, 0, sizeof(s_mock_motor4));
+  internal_zero_mem(&s_mock_sensor4, sizeof(s_mock_sensor4));
+  internal_zero_mem(&s_mock_motor4, sizeof(s_mock_motor4));
   s_mock_ptr4  = &s_mock_sensor4;
   s_mock_mptr4 = &s_mock_motor4;
 
   const rx_hcsr04_config_t hcsr04_cfg = {
     .trigger_pin = k_rx_pc_6,
     .echo_pin    = k_rx_p5_5,
-    .timeout_us  = 30000u,
+    .timeout_us  = 30000U,
     .echo_mode   = k_hcsr04_echo_polling,
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_mock_sensor4, &hcsr04_cfg));
@@ -1766,15 +1897,15 @@ void test_internal_poll_sensors_sensor_timeout_is_clear(void)
     .sensor_count           = 1,
     .motors                 = &s_mock_mptr4,
     .motor_count            = 1,
-    .detection_threshold_cm = 30.0F,
-    .debounce_samples       = 3,
-    .poll_interval_ms       = 20,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_samples,
+    .poll_interval_ms       = k_test_poll_interval_ms,
     .callback               = test_callback,
     .user_data              = nullptr,
   };
 
   static rx_obstacle_detect_t s_det4;
-  memset(&s_det4, 0, sizeof(s_det4));
+  internal_zero_mem(&s_det4, sizeof(s_det4));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_det4, &cfg));
   s_det4.state = k_obstacle_detect_state_running;
 
@@ -1830,7 +1961,7 @@ void test_internal_stop_all_motors_motor_stop_failure(void)
   rx_err_t err = internal_stop_all_motors(&s_handle);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   /* Both motors should have been stopped (function continues on error) */
-  TEST_ASSERT_EQUAL(2u, mock_rx_motor_get_stop_count(nullptr));
+  TEST_ASSERT_EQUAL(2U, mock_rx_motor_get_stop_count(nullptr));
 }
 
 /**
@@ -1846,7 +1977,7 @@ void test_internal_stop_all_motors_success(void)
 
   rx_err_t err = internal_stop_all_motors(&s_handle);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(2u, mock_rx_motor_get_stop_count(nullptr));
+  TEST_ASSERT_EQUAL(2U, mock_rx_motor_get_stop_count(nullptr));
 }
 
 /**
@@ -1862,7 +1993,7 @@ void test_internal_stop_all_motors_success(void)
 void test_internal_invoke_callback_null_handle(void)
 {
   /* Should not crash */
-  internal_invoke_callback(nullptr, true, 0, 25.0F);
+  internal_invoke_callback(nullptr, true, 0, s_distance_warning_cm);
   TEST_ASSERT_FALSE(s_callback_called);
 }
 
@@ -1882,7 +2013,7 @@ void test_internal_invoke_callback_null_callback(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
 
   /* Should not crash - handle->callback is nullptr */
-  internal_invoke_callback(&s_handle, true, 0, 25.0F);
+  internal_invoke_callback(&s_handle, true, 0, s_distance_warning_cm);
   TEST_ASSERT_FALSE(s_callback_called);
 }
 
@@ -1896,12 +2027,12 @@ void test_internal_invoke_callback_fires_callback(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
 
-  internal_invoke_callback(&s_handle, true, 1u, 15.5F);
+  internal_invoke_callback(&s_handle, true, 1U, s_distance_callback_cm);
 
   TEST_ASSERT_TRUE(s_callback_called);
   TEST_ASSERT_TRUE(s_callback_obstacle_detected);
-  TEST_ASSERT_EQUAL(1u, s_callback_sensor_idx);
-  TEST_ASSERT_FLOAT_WITHIN(0.01F, 15.5F, s_callback_distance_cm);
+  TEST_ASSERT_EQUAL(1U, s_callback_sensor_idx);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, s_distance_callback_cm, s_callback_distance_cm);
 }
 
 /**
@@ -1918,23 +2049,23 @@ void test_internal_invoke_callback_fires_callback(void)
 void test_internal_poll_sensors_detects_obstacle_fires_callback(void)
 {
   mock_hcsr04_hw_init(nullptr);
-  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1u);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
   /* Distance below 30cm threshold triggers obstacle */
-  mock_hcsr04_hw_set_distance(nullptr, 10.0F);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_close_cm);
 
   static rx_hcsr04_t        s_sensor_ob;
   static rx_hcsr04_t*       s_sensor_ob_ptr;
   static rx_motor_handle_t  s_motor_ob;
   static rx_motor_handle_t* s_motor_ob_ptr;
-  memset(&s_sensor_ob, 0, sizeof(s_sensor_ob));
-  memset(&s_motor_ob, 0, sizeof(s_motor_ob));
+  internal_zero_mem(&s_sensor_ob, sizeof(s_sensor_ob));
+  internal_zero_mem(&s_motor_ob, sizeof(s_motor_ob));
   s_sensor_ob_ptr = &s_sensor_ob;
   s_motor_ob_ptr  = &s_motor_ob;
 
   const rx_hcsr04_config_t hcsr04_cfg = {
     .trigger_pin = k_rx_pc_6,
     .echo_pin    = k_rx_p5_5,
-    .timeout_us  = 30000u,
+    .timeout_us  = 30000U,
     .echo_mode   = k_hcsr04_echo_polling,
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_sensor_ob, &hcsr04_cfg));
@@ -1944,22 +2075,22 @@ void test_internal_poll_sensors_detects_obstacle_fires_callback(void)
     .sensor_count           = 1,
     .motors                 = &s_motor_ob_ptr,
     .motor_count            = 1,
-    .detection_threshold_cm = 30.0F,
+    .detection_threshold_cm = s_threshold_cm,
     .debounce_samples       = 1, /* Immediate detection on first poll */
-    .poll_interval_ms       = 20,
+    .poll_interval_ms       = k_test_poll_interval_ms,
     .callback               = test_callback,
     .user_data              = nullptr,
   };
 
   static rx_obstacle_detect_t s_det_ob;
-  memset(&s_det_ob, 0, sizeof(s_det_ob));
+  internal_zero_mem(&s_det_ob, sizeof(s_det_ob));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_det_ob, &cfg));
   s_det_ob.state = k_obstacle_detect_state_running;
 
   rx_err_t err = internal_poll_sensors(&s_det_ob);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(s_det_ob.obstacle_active[0]);
-  TEST_ASSERT_EQUAL(1u, s_det_ob.obstacle_events);
+  TEST_ASSERT_EQUAL(1U, s_det_ob.obstacle_events);
   TEST_ASSERT_TRUE(s_callback_called);
   TEST_ASSERT_TRUE(s_callback_obstacle_detected);
   TEST_ASSERT_EQUAL(k_obstacle_detect_state_obstacle, s_det_ob.state);
@@ -2044,7 +2175,7 @@ void test_obstacle_detect_init_null_motor_element_fails(void)
  */
 void test_obstacle_detect_init_invalid_poll_interval_fails(void)
 {
-  s_config.poll_interval_ms = 0xFFFFu;
+  s_config.poll_interval_ms = k_test_poll_interval_invalid;
   rx_err_t err              = rx_obstacle_detect_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -2350,22 +2481,22 @@ static void on_sleep_stop_outer_loop(void)
 void test_task_entry_runs_full_detection_loop(void)
 {
   mock_hcsr04_hw_init(nullptr);
-  mock_hcsr04_hw_set_distance(nullptr, 50.0F);
-  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1u);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_safe_cm);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
 
   static rx_hcsr04_t        s_te_sensor;
   static rx_hcsr04_t*       s_te_sensor_ptr;
   static rx_motor_handle_t  s_te_motor;
   static rx_motor_handle_t* s_te_motor_ptr;
-  memset(&s_te_sensor, 0, sizeof(s_te_sensor));
-  memset(&s_te_motor, 0, sizeof(s_te_motor));
+  internal_zero_mem(&s_te_sensor, sizeof(s_te_sensor));
+  internal_zero_mem(&s_te_motor, sizeof(s_te_motor));
   s_te_sensor_ptr = &s_te_sensor;
   s_te_motor_ptr  = &s_te_motor;
 
   const rx_hcsr04_config_t hcsr04_cfg = {
     .trigger_pin = k_rx_pc_6,
     .echo_pin    = k_rx_p5_5,
-    .timeout_us  = 30000u,
+    .timeout_us  = 30000U,
     .echo_mode   = k_hcsr04_echo_polling,
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_te_sensor, &hcsr04_cfg));
@@ -2375,15 +2506,15 @@ void test_task_entry_runs_full_detection_loop(void)
     .sensor_count           = 1,
     .motors                 = &s_te_motor_ptr,
     .motor_count            = 1,
-    .detection_threshold_cm = 30.0F,
-    .debounce_samples       = 3,
-    .poll_interval_ms       = 20,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_samples,
+    .poll_interval_ms       = k_test_poll_interval_ms,
     .callback               = nullptr,
     .user_data              = nullptr,
   };
 
   static rx_obstacle_detect_t s_te_handle;
-  memset(&s_te_handle, 0, sizeof(s_te_handle));
+  internal_zero_mem(&s_te_handle, sizeof(s_te_handle));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_te_handle, &cfg));
 
   /* Arm: first tx_event_flags_get call returns TX_NO_EVENTS (outer start retry) */
@@ -2401,7 +2532,7 @@ void test_task_entry_runs_full_detection_loop(void)
   /* After stop event fires, state should be stopped */
   TEST_ASSERT_EQUAL(k_obstacle_detect_state_stopped, s_te_handle.state);
   /* At least one poll was performed */
-  TEST_ASSERT_GREATER_THAN(0u, s_te_handle.total_polls);
+  TEST_ASSERT_GREATER_THAN(0U, s_te_handle.total_polls);
 }
 
 /**
@@ -2419,22 +2550,22 @@ void test_task_entry_runs_full_detection_loop(void)
 void test_task_entry_start_retries_on_no_events(void)
 {
   mock_hcsr04_hw_init(nullptr);
-  mock_hcsr04_hw_set_distance(nullptr, 50.0F);
-  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1u);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_safe_cm);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
 
   static rx_hcsr04_t        s_te2_sensor;
   static rx_hcsr04_t*       s_te2_sensor_ptr;
   static rx_motor_handle_t  s_te2_motor;
   static rx_motor_handle_t* s_te2_motor_ptr;
-  memset(&s_te2_sensor, 0, sizeof(s_te2_sensor));
-  memset(&s_te2_motor, 0, sizeof(s_te2_motor));
+  internal_zero_mem(&s_te2_sensor, sizeof(s_te2_sensor));
+  internal_zero_mem(&s_te2_motor, sizeof(s_te2_motor));
   s_te2_sensor_ptr = &s_te2_sensor;
   s_te2_motor_ptr  = &s_te2_motor;
 
   const rx_hcsr04_config_t hcsr04_cfg = {
     .trigger_pin = k_rx_pc_6,
     .echo_pin    = k_rx_p5_5,
-    .timeout_us  = 30000u,
+    .timeout_us  = 30000U,
     .echo_mode   = k_hcsr04_echo_polling,
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_te2_sensor, &hcsr04_cfg));
@@ -2444,22 +2575,22 @@ void test_task_entry_start_retries_on_no_events(void)
     .sensor_count           = 1,
     .motors                 = &s_te2_motor_ptr,
     .motor_count            = 1,
-    .detection_threshold_cm = 30.0F,
-    .debounce_samples       = 3,
-    .poll_interval_ms       = 20,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_samples,
+    .poll_interval_ms       = k_test_poll_interval_ms,
     .callback               = nullptr,
     .user_data              = nullptr,
   };
 
   static rx_obstacle_detect_t s_te2_handle;
-  memset(&s_te2_handle, 0, sizeof(s_te2_handle));
+  internal_zero_mem(&s_te2_handle, sizeof(s_te2_handle));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_te2_handle, &cfg));
   /* Set poll_interval_ms=1 directly (bypasses config validation) so that
    * sleep_ticks = (1 * 100) / 1000 = 0 -> triggers the k_min_sleep_ticks branch */
-  s_te2_handle.poll_interval_ms = 1u;
+  s_te2_handle.poll_interval_ms = 1U;
 
   /* Two outer retries before start fires */
-  mock_tx_set_event_flags_get_no_events_count(2);
+  mock_tx_set_event_flags_get_no_events_count(k_test_outer_start_retries);
   mock_tx_event_flags_get_set_on_success_cb(on_start_event_rearm_no_events);
   mock_tx_set_sleep_callback(on_sleep_stop_outer_loop);
   rx_obstacle_detect_test_set_task_running(true);
@@ -2505,22 +2636,22 @@ static void on_start_event_rearm_and_stop_outer(void)
 void test_task_entry_poll_error_stops_inner_loop(void)
 {
   mock_hcsr04_hw_init(nullptr);
-  mock_hcsr04_hw_set_distance(nullptr, 5.0F);
-  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1u);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_emergency_cm);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
 
   static rx_hcsr04_t        s_te3_sensor;
   static rx_hcsr04_t*       s_te3_sensor_ptr;
   static rx_motor_handle_t  s_te3_motor;
   static rx_motor_handle_t* s_te3_motor_ptr;
-  memset(&s_te3_sensor, 0, sizeof(s_te3_sensor));
-  memset(&s_te3_motor, 0, sizeof(s_te3_motor));
+  internal_zero_mem(&s_te3_sensor, sizeof(s_te3_sensor));
+  internal_zero_mem(&s_te3_motor, sizeof(s_te3_motor));
   s_te3_sensor_ptr = &s_te3_sensor;
   s_te3_motor_ptr  = &s_te3_motor;
 
   const rx_hcsr04_config_t hcsr04_cfg = {
     .trigger_pin = k_rx_pc_6,
     .echo_pin    = k_rx_p5_5,
-    .timeout_us  = 30000u,
+    .timeout_us  = 30000U,
     .echo_mode   = k_hcsr04_echo_polling,
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_te3_sensor, &hcsr04_cfg));
@@ -2530,15 +2661,15 @@ void test_task_entry_poll_error_stops_inner_loop(void)
     .sensor_count           = 1,
     .motors                 = &s_te3_motor_ptr,
     .motor_count            = 1,
-    .detection_threshold_cm = 30.0F,
+    .detection_threshold_cm = s_threshold_cm,
     .debounce_samples       = 1, /* Immediate detection on first poll */
-    .poll_interval_ms       = 20,
+    .poll_interval_ms       = k_test_poll_interval_ms,
     .callback               = nullptr,
     .user_data              = nullptr,
   };
 
   static rx_obstacle_detect_t s_te3_handle;
-  memset(&s_te3_handle, 0, sizeof(s_te3_handle));
+  internal_zero_mem(&s_te3_handle, sizeof(s_te3_handle));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_te3_handle, &cfg));
 
   /* Motor stop fails -> internal_poll_sensors returns error */
@@ -2576,22 +2707,22 @@ void test_task_entry_poll_error_stops_inner_loop(void)
 void test_internal_poll_sensors_motor_stop_failure(void)
 {
   mock_hcsr04_hw_init(nullptr);
-  mock_hcsr04_hw_set_distance(nullptr, 5.0F);
-  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1u);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_emergency_cm);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
 
   static rx_hcsr04_t        s_ms_sensor;
   static rx_hcsr04_t*       s_ms_sensor_ptr;
   static rx_motor_handle_t  s_ms_motor;
   static rx_motor_handle_t* s_ms_motor_ptr;
-  memset(&s_ms_sensor, 0, sizeof(s_ms_sensor));
-  memset(&s_ms_motor, 0, sizeof(s_ms_motor));
+  internal_zero_mem(&s_ms_sensor, sizeof(s_ms_sensor));
+  internal_zero_mem(&s_ms_motor, sizeof(s_ms_motor));
   s_ms_sensor_ptr = &s_ms_sensor;
   s_ms_motor_ptr  = &s_ms_motor;
 
   const rx_hcsr04_config_t hcsr04_cfg = {
     .trigger_pin = k_rx_pc_6,
     .echo_pin    = k_rx_p5_5,
-    .timeout_us  = 30000u,
+    .timeout_us  = 30000U,
     .echo_mode   = k_hcsr04_echo_polling,
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_ms_sensor, &hcsr04_cfg));
@@ -2601,15 +2732,15 @@ void test_internal_poll_sensors_motor_stop_failure(void)
     .sensor_count           = 1,
     .motors                 = &s_ms_motor_ptr,
     .motor_count            = 1,
-    .detection_threshold_cm = 30.0F,
+    .detection_threshold_cm = s_threshold_cm,
     .debounce_samples       = 1, /* Immediate detection on first poll */
-    .poll_interval_ms       = 20,
+    .poll_interval_ms       = k_test_poll_interval_ms,
     .callback               = nullptr,
     .user_data              = nullptr,
   };
 
   static rx_obstacle_detect_t s_ms_handle;
-  memset(&s_ms_handle, 0, sizeof(s_ms_handle));
+  internal_zero_mem(&s_ms_handle, sizeof(s_ms_handle));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_ms_handle, &cfg));
   s_ms_handle.state = k_obstacle_detect_state_running;
 
@@ -2645,7 +2776,7 @@ void test_internal_poll_sensors_motor_stop_failure(void)
  */
 void test_obstacle_detect_init_too_many_motors_fails(void)
 {
-  s_config.motor_count = 5u; /* Above k_obstacle_detect_max_motors = 4 */
+  s_config.motor_count = k_test_motor_count_over_max; /* Above k_obstacle_detect_max_motors = 4 */
   rx_err_t err         = rx_obstacle_detect_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -2666,7 +2797,7 @@ void test_obstacle_detect_init_too_many_motors_fails(void)
  */
 void test_obstacle_detect_init_too_many_debounce_samples_fails(void)
 {
-  s_config.debounce_samples = 11u; /* Above k_max_debounce = 10 */
+  s_config.debounce_samples = k_test_debounce_over_max; /* Above k_max_debounce = 10 */
   rx_err_t err              = rx_obstacle_detect_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -2687,7 +2818,7 @@ void test_obstacle_detect_init_too_many_debounce_samples_fails(void)
  */
 void test_obstacle_detect_init_too_large_poll_interval_fails(void)
 {
-  s_config.poll_interval_ms = 1001u; /* Above k_max_poll_interval = 1000 */
+  s_config.poll_interval_ms = k_test_poll_interval_over_max; /* Above k_max_poll_interval = 1000 */
   rx_err_t err              = rx_obstacle_detect_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -2708,7 +2839,7 @@ void test_obstacle_detect_init_too_large_poll_interval_fails(void)
  */
 void test_obstacle_detect_init_too_small_poll_interval_fails(void)
 {
-  s_config.poll_interval_ms = 5u; /* Below k_min_poll_interval = 10 */
+  s_config.poll_interval_ms = k_test_poll_interval_under_min; /* Below k_min_poll_interval = 10 */
   rx_err_t err              = rx_obstacle_detect_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -2730,22 +2861,22 @@ void test_obstacle_detect_init_too_small_poll_interval_fails(void)
 void test_internal_poll_sensors_debounce_accumulates_before_threshold(void)
 {
   mock_hcsr04_hw_init(nullptr);
-  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1u);
-  mock_hcsr04_hw_set_distance(nullptr, 10.0F); /* Below 30cm threshold */
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_close_cm); /* Below 30cm threshold */
 
   static rx_hcsr04_t        s_db_sensor;
   static rx_hcsr04_t*       s_db_sensor_ptr;
   static rx_motor_handle_t  s_db_motor;
   static rx_motor_handle_t* s_db_motor_ptr;
-  memset(&s_db_sensor, 0, sizeof(s_db_sensor));
-  memset(&s_db_motor, 0, sizeof(s_db_motor));
+  internal_zero_mem(&s_db_sensor, sizeof(s_db_sensor));
+  internal_zero_mem(&s_db_motor, sizeof(s_db_motor));
   s_db_sensor_ptr = &s_db_sensor;
   s_db_motor_ptr  = &s_db_motor;
 
   const rx_hcsr04_config_t hcsr04_cfg = {
     .trigger_pin = k_rx_pc_6,
     .echo_pin    = k_rx_p5_5,
-    .timeout_us  = 30000u,
+    .timeout_us  = 30000U,
     .echo_mode   = k_hcsr04_echo_polling,
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_db_sensor, &hcsr04_cfg));
@@ -2755,15 +2886,15 @@ void test_internal_poll_sensors_debounce_accumulates_before_threshold(void)
     .sensor_count           = 1,
     .motors                 = &s_db_motor_ptr,
     .motor_count            = 1,
-    .detection_threshold_cm = 30.0F,
-    .debounce_samples       = 3u, /* Requires 3 consecutive polls to detect */
-    .poll_interval_ms       = 20,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_samples, /* Requires 3 consecutive polls to detect */
+    .poll_interval_ms       = k_test_poll_interval_ms,
     .callback               = test_callback,
     .user_data              = nullptr,
   };
 
   static rx_obstacle_detect_t s_db_handle;
-  memset(&s_db_handle, 0, sizeof(s_db_handle));
+  internal_zero_mem(&s_db_handle, sizeof(s_db_handle));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_db_handle, &cfg));
   s_db_handle.state = k_obstacle_detect_state_running;
 
@@ -2771,7 +2902,7 @@ void test_internal_poll_sensors_debounce_accumulates_before_threshold(void)
    * This covers the FALSE branch where counter < debounce_samples. */
   rx_err_t err = internal_poll_sensors(&s_db_handle);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(1u, s_db_handle.debounce_counter[0]);
+  TEST_ASSERT_EQUAL(1U, s_db_handle.debounce_counter[0]);
   TEST_ASSERT_FALSE(s_db_handle.obstacle_active[0]);
   TEST_ASSERT_FALSE(s_callback_called);
 }
@@ -2796,22 +2927,22 @@ void test_internal_poll_sensors_debounce_accumulates_before_threshold(void)
 void test_internal_poll_sensors_obstacle_already_active_no_callback(void)
 {
   mock_hcsr04_hw_init(nullptr);
-  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1u);
-  mock_hcsr04_hw_set_distance(nullptr, 10.0F); /* Below 30cm threshold */
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_close_cm); /* Below threshold */
 
   static rx_hcsr04_t        s_oa_sensor;
   static rx_hcsr04_t*       s_oa_sensor_ptr;
   static rx_motor_handle_t  s_oa_motor;
   static rx_motor_handle_t* s_oa_motor_ptr;
-  memset(&s_oa_sensor, 0, sizeof(s_oa_sensor));
-  memset(&s_oa_motor, 0, sizeof(s_oa_motor));
+  internal_zero_mem(&s_oa_sensor, sizeof(s_oa_sensor));
+  internal_zero_mem(&s_oa_motor, sizeof(s_oa_motor));
   s_oa_sensor_ptr = &s_oa_sensor;
   s_oa_motor_ptr  = &s_oa_motor;
 
   const rx_hcsr04_config_t hcsr04_cfg = {
     .trigger_pin = k_rx_pc_6,
     .echo_pin    = k_rx_p5_5,
-    .timeout_us  = 30000u,
+    .timeout_us  = 30000U,
     .echo_mode   = k_hcsr04_echo_polling,
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_oa_sensor, &hcsr04_cfg));
@@ -2821,20 +2952,20 @@ void test_internal_poll_sensors_obstacle_already_active_no_callback(void)
     .sensor_count           = 1,
     .motors                 = &s_oa_motor_ptr,
     .motor_count            = 1,
-    .detection_threshold_cm = 30.0F,
-    .debounce_samples       = 1u, /* Immediate detection */
-    .poll_interval_ms       = 20,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = 1U, /* Immediate detection */
+    .poll_interval_ms       = k_test_poll_interval_ms,
     .callback               = test_callback,
     .user_data              = nullptr,
   };
 
   static rx_obstacle_detect_t s_oa_handle;
-  memset(&s_oa_handle, 0, sizeof(s_oa_handle));
+  internal_zero_mem(&s_oa_handle, sizeof(s_oa_handle));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_oa_handle, &cfg));
   s_oa_handle.state               = k_obstacle_detect_state_running;
   s_oa_handle.obstacle_active[0]  = true; /* Pre-set: obstacle already detected */
   s_oa_handle.debounce_counter[0] = 0;    /* Reset counter so it re-increments */
-  s_oa_handle.obstacle_events     = 1u;   /* Already fired once */
+  s_oa_handle.obstacle_events     = 1U;   /* Already fired once */
 
   /* Set state to obstacle (already in obstacle detection state) */
   s_oa_handle.state = k_obstacle_detect_state_obstacle;
@@ -2843,7 +2974,7 @@ void test_internal_poll_sensors_obstacle_already_active_no_callback(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Obstacle still active, but callback should NOT fire again */
   TEST_ASSERT_TRUE(s_oa_handle.obstacle_active[0]);
-  TEST_ASSERT_EQUAL(1u, s_oa_handle.obstacle_events); /* No new event */
+  TEST_ASSERT_EQUAL(1U, s_oa_handle.obstacle_events); /* No new event */
   TEST_ASSERT_FALSE(s_callback_called);               /* Callback NOT re-fired */
   /* State stays at obstacle (already was obstacle) */
   TEST_ASSERT_EQUAL(k_obstacle_detect_state_obstacle, s_oa_handle.state);
@@ -2867,22 +2998,22 @@ void test_internal_poll_sensors_obstacle_already_active_no_callback(void)
 void test_internal_poll_sensors_debounce_at_threshold_no_false_positive(void)
 {
   mock_hcsr04_hw_init(nullptr);
-  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1u);
-  mock_hcsr04_hw_set_distance(nullptr, 50.0F); /* Above 30cm threshold -> clear */
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_safe_cm); /* Above threshold */
 
   static rx_hcsr04_t        s_fp_sensor;
   static rx_hcsr04_t*       s_fp_sensor_ptr;
   static rx_motor_handle_t  s_fp_motor;
   static rx_motor_handle_t* s_fp_motor_ptr;
-  memset(&s_fp_sensor, 0, sizeof(s_fp_sensor));
-  memset(&s_fp_motor, 0, sizeof(s_fp_motor));
+  internal_zero_mem(&s_fp_sensor, sizeof(s_fp_sensor));
+  internal_zero_mem(&s_fp_motor, sizeof(s_fp_motor));
   s_fp_sensor_ptr = &s_fp_sensor;
   s_fp_motor_ptr  = &s_fp_motor;
 
   const rx_hcsr04_config_t hcsr04_cfg = {
     .trigger_pin = k_rx_pc_6,
     .echo_pin    = k_rx_p5_5,
-    .timeout_us  = 30000u,
+    .timeout_us  = 30000U,
     .echo_mode   = k_hcsr04_echo_polling,
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_fp_sensor, &hcsr04_cfg));
@@ -2892,26 +3023,26 @@ void test_internal_poll_sensors_debounce_at_threshold_no_false_positive(void)
     .sensor_count           = 1,
     .motors                 = &s_fp_motor_ptr,
     .motor_count            = 1,
-    .detection_threshold_cm = 30.0F,
-    .debounce_samples       = 3u,
-    .poll_interval_ms       = 20,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_samples,
+    .poll_interval_ms       = k_test_poll_interval_ms,
     .callback               = test_callback,
     .user_data              = nullptr,
   };
 
   static rx_obstacle_detect_t s_fp_handle;
-  memset(&s_fp_handle, 0, sizeof(s_fp_handle));
+  internal_zero_mem(&s_fp_handle, sizeof(s_fp_handle));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_fp_handle, &cfg));
   s_fp_handle.state = k_obstacle_detect_state_running;
   /* Pre-set counter to exactly debounce_samples: counter >= samples, NOT < samples */
-  s_fp_handle.debounce_counter[0]  = 3u; /* Equal to debounce_samples */
-  s_fp_handle.false_positive_count = 0u;
+  s_fp_handle.debounce_counter[0]  = k_test_debounce_samples; /* Equal to debounce_samples */
+  s_fp_handle.false_positive_count = 0U;
 
   rx_err_t err = internal_poll_sensors(&s_fp_handle);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Counter was >= samples (not < samples), so no false positive counted */
-  TEST_ASSERT_EQUAL(0u, s_fp_handle.false_positive_count);
-  TEST_ASSERT_EQUAL(0u, s_fp_handle.debounce_counter[0]); /* Counter reset */
+  TEST_ASSERT_EQUAL(0U, s_fp_handle.false_positive_count);
+  TEST_ASSERT_EQUAL(0U, s_fp_handle.debounce_counter[0]); /* Counter reset */
 }
 
 /**
@@ -2931,22 +3062,22 @@ void test_internal_poll_sensors_debounce_at_threshold_no_false_positive(void)
 void test_internal_poll_sensors_obstacle_clears_from_obstacle_state(void)
 {
   mock_hcsr04_hw_init(nullptr);
-  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1u);
-  mock_hcsr04_hw_set_distance(nullptr, 50.0F); /* Above 30cm threshold -> clear */
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_safe_cm); /* Above threshold */
 
   static rx_hcsr04_t        s_cl_sensor;
   static rx_hcsr04_t*       s_cl_sensor_ptr;
   static rx_motor_handle_t  s_cl_motor;
   static rx_motor_handle_t* s_cl_motor_ptr;
-  memset(&s_cl_sensor, 0, sizeof(s_cl_sensor));
-  memset(&s_cl_motor, 0, sizeof(s_cl_motor));
+  internal_zero_mem(&s_cl_sensor, sizeof(s_cl_sensor));
+  internal_zero_mem(&s_cl_motor, sizeof(s_cl_motor));
   s_cl_sensor_ptr = &s_cl_sensor;
   s_cl_motor_ptr  = &s_cl_motor;
 
   const rx_hcsr04_config_t hcsr04_cfg = {
     .trigger_pin = k_rx_pc_6,
     .echo_pin    = k_rx_p5_5,
-    .timeout_us  = 30000u,
+    .timeout_us  = 30000U,
     .echo_mode   = k_hcsr04_echo_polling,
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_cl_sensor, &hcsr04_cfg));
@@ -2956,15 +3087,15 @@ void test_internal_poll_sensors_obstacle_clears_from_obstacle_state(void)
     .sensor_count           = 1,
     .motors                 = &s_cl_motor_ptr,
     .motor_count            = 1,
-    .detection_threshold_cm = 30.0F,
-    .debounce_samples       = 1u,
-    .poll_interval_ms       = 20,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = 1U,
+    .poll_interval_ms       = k_test_poll_interval_ms,
     .callback               = test_callback,
     .user_data              = nullptr,
   };
 
   static rx_obstacle_detect_t s_cl_handle;
-  memset(&s_cl_handle, 0, sizeof(s_cl_handle));
+  internal_zero_mem(&s_cl_handle, sizeof(s_cl_handle));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_cl_handle, &cfg));
 
   /* Pre-set: in obstacle state with active obstacle */
@@ -3015,36 +3146,21 @@ void test_internal_poll_sensors_obstacle_clears_from_obstacle_state(void)
  */
 
 /**
- * @brief Main test runner entry point
+ * @brief Run public API tests (init, deinit, start/stop, state, stats, clear)
  *
  * @details
- * Executes all obstacle detection unit tests using Unity framework.
- * Each RUN_TEST() call executes:
- * 1. setUp() - Initialize test fixtures
- * 2. test_function() - Execute actual test
- * 3. tearDown() - Clean up test fixtures
+ * Executes all tests that exercise the public obstacle detection API
+ * including initialization, deinitialization, start/stop control,
+ * state queries, statistics, and obstacle clearing.
  *
- * @return Test result code
- * @retval 0 All tests passed
- * @retval non-zero Number of test failures
+ * @pre UNITY_BEGIN() has been called
+ * @post All public API tests executed
  *
- * @note Called by Unity test harness during test execution
- * @note Output printed to stdout (captured by Unity framework)
- *
- * @par Example Output:
- * @verbatim
- * test_rx_obstacle_detect.c:123:test_obstacle_detect_init_success:PASS
- * test_rx_obstacle_detect.c:456:test_obstacle_detect_start_success:PASS
- * ...
- * -----------------------
- * 32 Tests 0 Failures 0 Ignored
- * OK
- * @endverbatim
+ * @note Not thread-safe (Unity is single-threaded)
+ * @since Version 1.0.0
  */
-int main(void)
+static void internal_run_api_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Initialization Tests */
   RUN_TEST(test_obstacle_detect_init_success);
   RUN_TEST(test_obstacle_detect_init_null_handle_fails);
@@ -3095,7 +3211,24 @@ int main(void)
   RUN_TEST(test_obstacle_detect_clear_obstacle_null_handle_fails);
   RUN_TEST(test_obstacle_detect_clear_obstacle_not_initialized);
   RUN_TEST(test_obstacle_detect_clear_obstacle_state_not_obstacle);
+}
 
+/**
+ * @brief Run internal function and coverage tests
+ *
+ * @details
+ * Executes tests for internal functions (poll_sensors, stop_all_motors,
+ * invoke_callback) and additional coverage paths including state queries,
+ * null element validation, and poll interval validation.
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post All internal function tests executed
+ *
+ * @note Not thread-safe (Unity is single-threaded)
+ * @since Version 1.0.0
+ */
+static void internal_run_internal_function_tests(void)
+{
   /* Internal Function Tests (coverage for previously GCOV_EXCL'd paths) */
   RUN_TEST(test_internal_poll_sensors_null_handle);
   RUN_TEST(test_internal_poll_sensors_uninitialized_handle);
@@ -3119,7 +3252,24 @@ int main(void)
   RUN_TEST(test_obstacle_detect_init_null_sensor_element_fails);
   RUN_TEST(test_obstacle_detect_init_null_motor_element_fails);
   RUN_TEST(test_obstacle_detect_init_invalid_poll_interval_fails);
+}
 
+/**
+ * @brief Run RTOS error path, task entry, and branch coverage tests
+ *
+ * @details
+ * Executes tests covering RTOS error paths (ThreadX create/delete failures),
+ * task entry behavior (null handle, detection loop, retries), and additional
+ * branch coverage for debounce, obstacle state, and false positive logic.
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post All integration and branch coverage tests executed
+ *
+ * @note Not thread-safe (Unity is single-threaded)
+ * @since Version 1.0.0
+ */
+static void internal_run_integration_tests(void)
+{
   /* RTOS Error Path Tests */
   RUN_TEST(test_obstacle_detect_init_event_flags_create_fails);
   RUN_TEST(test_obstacle_detect_init_thread_create_fails);
@@ -3148,6 +3298,42 @@ int main(void)
   RUN_TEST(test_internal_poll_sensors_obstacle_already_active_no_callback);
   RUN_TEST(test_internal_poll_sensors_debounce_at_threshold_no_false_positive);
   RUN_TEST(test_internal_poll_sensors_obstacle_clears_from_obstacle_state);
+}
+
+/**
+ * @brief Main test runner entry point
+ *
+ * @details
+ * Executes all obstacle detection unit tests using Unity framework.
+ * Tests are organized into three groups via helper functions:
+ * 1. Public API tests (init, deinit, start/stop, state, stats, clear)
+ * 2. Internal function and coverage tests
+ * 3. RTOS error path, task entry, and branch coverage tests
+ *
+ * @return Test result code
+ * @retval 0 All tests passed
+ * @retval non-zero Number of test failures
+ *
+ * @note Called by Unity test harness during test execution
+ * @note Output printed to stdout (captured by Unity framework)
+ *
+ * @par Example Output:
+ * @verbatim
+ * test_rx_obstacle_detect.c:123:test_obstacle_detect_init_success:PASS
+ * test_rx_obstacle_detect.c:456:test_obstacle_detect_start_success:PASS
+ * ...
+ * -----------------------
+ * 32 Tests 0 Failures 0 Ignored
+ * OK
+ * @endverbatim
+ */
+int main(void)
+{
+  UNITY_BEGIN();
+
+  internal_run_api_tests();
+  internal_run_internal_function_tests();
+  internal_run_integration_tests();
 
   return UNITY_END();
 }

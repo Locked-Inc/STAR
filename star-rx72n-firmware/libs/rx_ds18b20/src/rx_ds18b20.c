@@ -201,7 +201,6 @@
 #include "rx_ds18b20.h"
 
 #include <math.h>
-#include <string.h>
 
 #include "rx_bus_onewire.h"
 #include "rx_check.h"
@@ -223,7 +222,7 @@ static const uint8_t s_ds18b20_family_code = 0x28U;
  * @brief Temperature conversion divisor (raw to Celsius)
  * @details DS18B20 stores temperature in 1/16degC units. Divide by 16 to get Celsius.
  */
-static const float s_temp_conversion_divisor = 16.0f;
+static const float s_temp_conversion_divisor = 16.0F;
 
 /**
  * @brief Reserved byte expected value in scratchpad
@@ -343,9 +342,9 @@ static rx_err_t
                                                      uint8_t scratchpad[k_ds18b20_scratchpad_bytes]);
 static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t*        handle,
                                                   const ds18b20_scratchpad_write_t* scratchpad);
-static uint8_t  internal_ds18b20_resolution_to_config(const ds18b20_resolution_t resolution);
+static uint8_t  internal_ds18b20_resolution_to_config(ds18b20_resolution_t resolution);
 static uint16_t internal_ds18b20_get_temp_mask(ds18b20_resolution_t resolution);
-static float    internal_ds18b20_raw_to_celsius(const int16_t raw_temp);
+static float    internal_ds18b20_raw_to_celsius(int16_t raw_temp);
 
 /* =============================================================================
  * Public API Implementation
@@ -370,7 +369,9 @@ rx_err_t rx_ds18b20_init(rx_ds18b20_handle_t* handle, const rx_ds18b20_config_t*
   handle->use_rom_matching = config->use_rom_matching;
 
   if (config->use_rom_matching) {
-    memcpy(handle->rom, config->rom, k_onewire_rom_bytes);
+    for (uint8_t i = 0; i < k_onewire_rom_bytes; ++i) {
+      handle->rom[i] = config->rom[i];
+    }
   }
 
   /* Verify device presence */
@@ -1106,14 +1107,13 @@ rx_err_t rx_ds18b20_read_power_mode(const rx_ds18b20_handle_t* handle, bool* ext
   }
 
   /* Read power bit (1 = external, 0 = parasitic) */
-  bool power_bit = false;
-  err            = rx_bus_onewire_read_bit(handle->bus_manager, handle->bus_name, &power_bit);
+  *external_power = false;
+  err             = rx_bus_onewire_read_bit(handle->bus_manager, handle->bus_name, external_power);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read power bit");
     return err;
   }
 
-  *external_power = power_bit;
   return k_rx_ok;
 }
 
@@ -1290,7 +1290,7 @@ static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* conf
     return k_rx_err_invalid_arg;
   }
 
-  if (config->use_rom_matching && config->rom[0] != s_ds18b20_family_code) {
+  if ((config->use_rom_matching != false) && config->rom[0] != s_ds18b20_family_code) {
     rx_log_error(s_tag, "Invalid DS18B20 family code");
     return k_rx_err_invalid_arg;
   }
@@ -1599,10 +1599,7 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(const rx_ds18b20_handle_t* 
 
   /* Reset and check presence */
   err = rx_bus_onewire_reset(handle->bus_manager, handle->bus_name, &presence);
-  /* Use bitwise | to evaluate both conditions without short-circuit branches */
-  const bool reset_err   = (err != k_rx_ok);
-  const bool not_present = !presence;
-  if (reset_err | not_present) {
+  if (err != k_rx_ok || !presence) {
     rx_log_error(s_tag, "Device not present for scratchpad read");
     return k_rx_err_invalid_state;
   }
@@ -1757,10 +1754,7 @@ static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t*    
   /* Reset and check presence */
   bool     presence = false;
   rx_err_t err      = rx_bus_onewire_reset(handle->bus_manager, handle->bus_name, &presence);
-  /* Use bitwise | to evaluate both conditions without short-circuit branches */
-  const bool reset_err_w   = (err != k_rx_ok);
-  const bool not_present_w = !presence;
-  if (reset_err_w | not_present_w) {
+  if (err != k_rx_ok || !presence) {
     rx_log_error(s_tag, "Device not present for scratchpad write");
     return k_rx_err_invalid_state;
   }
@@ -1830,8 +1824,7 @@ static uint16_t internal_ds18b20_get_temp_mask(const ds18b20_resolution_t resolu
       return k_ds18b20_temp_mask_10bit;
     case k_ds18b20_resolution_11bit:
       return k_ds18b20_temp_mask_11bit;
-    case k_ds18b20_resolution_12bit:
-      return k_ds18b20_temp_mask_12bit;
+    case k_ds18b20_resolution_12bit: /* fall through */
     default:
       return k_ds18b20_temp_mask_12bit;
   }

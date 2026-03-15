@@ -13,10 +13,44 @@
  */
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "unity.h"
+
+/* =============================================================================
+ * Zero-Fill Helper
+ * =============================================================================
+ */
+
+/**
+ * @brief Zero-fill a memory region byte-by-byte (no memset dependency)
+ *
+ * @param[out] ptr  Pointer to memory region
+ * @param[in]  len  Number of bytes to zero
+ */
+static inline void internal_zero_fill(void* ptr, size_t len)
+{
+  uint8_t* p = (uint8_t*)ptr;
+  for (size_t i = 0; i < len; ++i) {
+    p[i] = 0;
+  }
+}
+
+/* =============================================================================
+ * Mock Register Constants
+ * =============================================================================
+ */
+
+typedef enum : uint8_t {
+  k_port_reg_padding          = 31U,   /**< Padding bytes between PORT register fields */
+  k_port_all_bits_set         = 0xFFU, /**< All bits set in an 8-bit register */
+  k_port_low_nibble           = 0x0FU, /**< Lower nibble mask */
+  k_port_lower_7_bits         = 0x7FU, /**< Lower 7 bits mask (bit 7 clear) */
+  k_port_upper_nibble_or_mask = 0x8FU, /**< Upper bit + lower nibble combined result */
+  k_test_cycle_count          = 5U,    /**< Number of assert/deassert cycles in loop test */
+  k_test_info_count_1         = 1U,    /**< Expected info log count after one operation */
+} test_host_irq_reg_constants_t;
 
 /* =============================================================================
  * Mock Register Areas
@@ -25,11 +59,11 @@
 
 typedef struct {
   volatile uint8_t pdr;
-  uint8_t          pad0[31];
+  uint8_t          pad0[k_port_reg_padding];
   volatile uint8_t podr;
-  uint8_t          pad1[31];
+  uint8_t          pad1[k_port_reg_padding];
   volatile uint8_t pidr;
-  uint8_t          pad2[31];
+  uint8_t          pad2[k_port_reg_padding];
   volatile uint8_t pmr;
 } mock_port_regs_t;
 
@@ -150,7 +184,7 @@ static rx_err_t test_host_irq_is_asserted(bool* asserted)
 
 void setUp(void)
 {
-  memset(&s_mock_port6, 0, sizeof(s_mock_port6));
+  internal_zero_fill(&s_mock_port6, sizeof(s_mock_port6));
   s_error_log_count = 0;
   s_info_log_count  = 0;
   s_initialized     = false;
@@ -165,32 +199,32 @@ void tearDown(void) {}
 
 void test_init_clears_pmr_bit(void)
 {
-  s_mock_port6.pmr = 0xFF;
+  s_mock_port6.pmr = k_port_all_bits_set;
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_init());
-  TEST_ASSERT_BITS(0x80, 0x00, s_mock_port6.pmr);
+  TEST_ASSERT_BITS(k_host_irq_pin_mask, k_host_irq_active, s_mock_port6.pmr);
 }
 
 void test_init_sets_podr_high(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_init());
-  TEST_ASSERT_BITS(0x80, 0x80, s_mock_port6.podr);
+  TEST_ASSERT_BITS(k_host_irq_pin_mask, k_host_irq_pin_mask, s_mock_port6.podr);
 }
 
 void test_init_sets_pdr_output(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_init());
-  TEST_ASSERT_BITS(0x80, 0x80, s_mock_port6.pdr);
+  TEST_ASSERT_BITS(k_host_irq_pin_mask, k_host_irq_pin_mask, s_mock_port6.pdr);
 }
 
 void test_init_preserves_other_bits(void)
 {
-  s_mock_port6.pdr  = 0x0F;
-  s_mock_port6.podr = 0x0F;
-  s_mock_port6.pmr  = 0x7F;
+  s_mock_port6.pdr  = k_port_low_nibble;
+  s_mock_port6.podr = k_port_low_nibble;
+  s_mock_port6.pmr  = k_port_lower_7_bits;
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_init());
-  TEST_ASSERT_EQUAL(0x8F, s_mock_port6.pdr);
-  TEST_ASSERT_EQUAL(0x8F, s_mock_port6.podr);
-  TEST_ASSERT_EQUAL(0x7F, s_mock_port6.pmr);
+  TEST_ASSERT_EQUAL(k_port_upper_nibble_or_mask, s_mock_port6.pdr);
+  TEST_ASSERT_EQUAL(k_port_upper_nibble_or_mask, s_mock_port6.podr);
+  TEST_ASSERT_EQUAL(k_port_lower_7_bits, s_mock_port6.pmr);
 }
 
 void test_init_double_init_returns_error(void)
@@ -202,7 +236,7 @@ void test_init_double_init_returns_error(void)
 void test_init_logs_info(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_init());
-  TEST_ASSERT_EQUAL(1, s_info_log_count);
+  TEST_ASSERT_EQUAL(k_test_info_count_1, s_info_log_count);
 }
 
 /* =============================================================================
@@ -214,7 +248,7 @@ void test_assert_drives_low(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_init());
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_assert());
-  TEST_ASSERT_BITS(0x80, 0x00, s_mock_port6.podr);
+  TEST_ASSERT_BITS(k_host_irq_pin_mask, k_host_irq_active, s_mock_port6.podr);
 }
 
 void test_deassert_drives_high(void)
@@ -222,7 +256,7 @@ void test_deassert_drives_high(void)
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_init());
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_assert());
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_deassert());
-  TEST_ASSERT_BITS(0x80, 0x80, s_mock_port6.podr);
+  TEST_ASSERT_BITS(k_host_irq_pin_mask, k_host_irq_pin_mask, s_mock_port6.podr);
 }
 
 void test_assert_without_init_returns_error(void)
@@ -237,26 +271,26 @@ void test_deassert_without_init_returns_error(void)
 
 void test_assert_preserves_other_bits(void)
 {
-  s_mock_port6.podr = 0x7F;
+  s_mock_port6.podr = k_port_lower_7_bits;
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_init());
   /* init sets bit 7 high: 0x7F | 0x80 = 0xFF */
-  TEST_ASSERT_EQUAL(0xFF, s_mock_port6.podr);
+  TEST_ASSERT_EQUAL(k_port_all_bits_set, s_mock_port6.podr);
 
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_assert());
   /* assert clears bit 7: 0xFF & ~0x80 = 0x7F */
-  TEST_ASSERT_EQUAL(0x7F, s_mock_port6.podr);
+  TEST_ASSERT_EQUAL(k_port_lower_7_bits, s_mock_port6.podr);
 }
 
 void test_multiple_assert_deassert_cycles(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_init());
 
-  for (uint8_t i = 0; i < 5; i++) {
+  for (uint8_t i = 0; i < k_test_cycle_count; i++) {
     TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_assert());
-    TEST_ASSERT_BITS(0x80, 0x00, s_mock_port6.podr);
+    TEST_ASSERT_BITS(k_host_irq_pin_mask, k_host_irq_active, s_mock_port6.podr);
 
     TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_deassert());
-    TEST_ASSERT_BITS(0x80, 0x80, s_mock_port6.podr);
+    TEST_ASSERT_BITS(k_host_irq_pin_mask, k_host_irq_pin_mask, s_mock_port6.podr);
   }
 }
 
@@ -305,10 +339,10 @@ void test_is_asserted_null_returns_error(void)
 void test_deinit_reverts_to_input(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_init());
-  TEST_ASSERT_BITS(0x80, 0x80, s_mock_port6.pdr);
+  TEST_ASSERT_BITS(k_host_irq_pin_mask, k_host_irq_pin_mask, s_mock_port6.pdr);
 
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_deinit());
-  TEST_ASSERT_BITS(0x80, 0x00, s_mock_port6.pdr);
+  TEST_ASSERT_BITS(k_host_irq_pin_mask, k_host_irq_active, s_mock_port6.pdr);
 }
 
 void test_deinit_deasserts_output(void)
@@ -317,7 +351,7 @@ void test_deinit_deasserts_output(void)
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_assert());
 
   TEST_ASSERT_EQUAL(k_rx_ok, test_host_irq_deinit());
-  TEST_ASSERT_BITS(0x80, 0x80, s_mock_port6.podr);
+  TEST_ASSERT_BITS(k_host_irq_pin_mask, k_host_irq_pin_mask, s_mock_port6.podr);
 }
 
 void test_deinit_without_init_returns_error(void)
@@ -342,7 +376,7 @@ void test_pin_mask_matches_bit_position(void)
   const uint8_t expected_mask = (uint8_t)(1U << k_host_irq_pin_bit);
 
   TEST_ASSERT_EQUAL(k_host_irq_pin_mask, expected_mask);
-  TEST_ASSERT_EQUAL(0x80, expected_mask);
+  TEST_ASSERT_EQUAL(k_host_irq_pin_mask, expected_mask);
 }
 
 /* =============================================================================

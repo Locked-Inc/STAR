@@ -12,8 +12,6 @@
 
 #include "mock_time.h"
 
-#include <string.h>
-
 #include "tx_api.h"
 
 /* =============================================================================
@@ -135,9 +133,11 @@ rx_err_t mock_time_init(mock_time_t* mock)
 {
   mock_time_t* m = internal_get_mock(mock);
 
-  memset(m, 0, sizeof(mock_time_t));
-  m->initialized  = true;
-  m->auto_advance = false; /* Default: no auto-advance */
+  m->current_time_ms  = 0;
+  m->sleep_call_count = 0;
+  m->total_sleep_ms   = 0;
+  m->initialized      = true;
+  m->auto_advance     = false; /* Default: no auto-advance */
 
   return k_rx_ok;
 }
@@ -153,7 +153,11 @@ rx_err_t mock_time_deinit(mock_time_t* mock)
 {
   mock_time_t* m = internal_get_mock(mock);
 
-  memset(m, 0, sizeof(mock_time_t));
+  m->current_time_ms  = 0;
+  m->sleep_call_count = 0;
+  m->total_sleep_ms   = 0;
+  m->auto_advance     = false;
+  m->initialized      = false;
 
   return k_rx_ok;
 }

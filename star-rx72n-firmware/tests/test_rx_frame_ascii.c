@@ -505,6 +505,67 @@ typedef enum : uint16_t {
  */
 static const uint32_t k_test_crc_value = 0xDEADBEEF;
 
+/**
+ * @brief Internal helper test constants for buffer sizes, positions, and values
+ *
+ * @details
+ * Constants used in the internal helper branch coverage tests. These define
+ * buffer sizes, positions, and test byte values for exercising assert-false
+ * branches and boundary conditions in RX_STATIC_TESTABLE helper functions.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_test_small_buf_4   = 4,     /**< 4-byte buffer for tight boundary tests */
+  k_test_small_buf_8   = 8,     /**< 8-byte buffer for hex byte/decimal tests */
+  k_test_small_buf_16  = 16,    /**< 16-byte buffer for hex u32 tests */
+  k_test_small_buf_32  = 32,    /**< 32-byte buffer for flag string tests */
+  k_test_small_buf_128 = 128,   /**< 128-byte buffer for header format tests */
+  k_test_small_buf_256 = 256,   /**< 256-byte buffer for payload format tests */
+  k_test_pos_3         = 3,     /**< Position at buffer end (buf_size - 1 for size 4) */
+  k_test_pos_8         = 8,     /**< Position beyond small 4-byte buffer */
+  k_test_pos_16        = 16,    /**< Position beyond 8-byte buffer */
+  k_test_pos_128       = 128,   /**< Position beyond 64-byte section */
+  k_test_pos_256       = 256,   /**< Position beyond 256-byte buffer */
+  k_test_decimal_12345 = 12345, /**< Multi-digit decimal test value */
+  k_test_decimal_len_5 = 5,     /**< Expected output length for "12345" */
+} test_internal_constants_t;
+
+/**
+ * @brief Internal helper test values for hex byte and u16 tests
+ *
+ * @details
+ * Test byte values and hex patterns used in internal helper branch coverage tests.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_test_hex_byte_ab      = 0xABU,       /**< Test byte 0xAB for hex formatting */
+  k_test_hex_u16_1234     = 0x1234U,     /**< Test u16 value for hex formatting */
+  k_test_hex_u32_deadbeef = 0xDEADBEEFU, /**< Test u32 CRC pattern */
+  k_test_max_u32          = 0xFFFFFFFFU, /**< Maximum uint32_t (boundary test) */
+  k_test_u32_buf_7        = 7U,          /**< Buffer size below k_hex_chars_per_u32 */
+} test_hex_constants_t;
+
+/**
+ * @brief Non-printable test payload byte indices and values
+ *
+ * @details
+ * Constants for non-printable character payload test (0x00, 0x01, 0x1F, 0x7F).
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_test_nonprint_idx_0  = 0,    /**< Payload index 0 */
+  k_test_nonprint_idx_1  = 1,    /**< Payload index 1 */
+  k_test_nonprint_idx_2  = 2,    /**< Payload index 2 */
+  k_test_nonprint_idx_3  = 3,    /**< Payload index 3 */
+  k_test_nonprint_val_00 = 0x00, /**< NUL (non-printable) */
+  k_test_nonprint_val_01 = 0x01, /**< SOH (non-printable) */
+  k_test_nonprint_val_1f = 0x1F, /**< US (non-printable, just below space) */
+  k_test_nonprint_val_7f = 0x7F, /**< DEL (non-printable, just above tilde) */
+} test_nonprint_constants_t;
+
 /** @} */ // end of test_rx_frame_ascii_constants
 
 /* =============================================================================
@@ -580,7 +641,9 @@ static char s_output_buffer[k_test_output_buffer_size];
  */
 void setUp(void)
 {
-  memset(s_output_buffer, 0, sizeof(s_output_buffer));
+  for (uint16_t i = 0; i < (uint16_t)sizeof(s_output_buffer); i++) {
+    s_output_buffer[i] = '\0';
+  }
 }
 
 /**
@@ -922,7 +985,8 @@ void test_type_name_invalid(void)
  */
 void test_flags_str_null_buffer(void)
 {
-  const char* result = rx_frame_ascii_flags_str(k_frame_flag_requires_ack, nullptr, 32);
+  const char* result =
+    rx_frame_ascii_flags_str(k_frame_flag_requires_ack, nullptr, k_test_flags_buffer_size);
   TEST_ASSERT_EQUAL_STRING("", result);
 }
 
@@ -1423,6 +1487,19 @@ void test_format_payload_length_too_large(void)
  *
  * @since Version 1.0.0
  */
+/**
+ * @brief Verify empty ACK frame RX output contains expected header fields
+ * @since Version 1.0.0
+ */
+static void internal_verify_empty_frame_rx_header(void)
+{
+  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "[RX]"));
+  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "seq=42"));
+  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "len=0"));
+  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "type=ACK"));
+  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "flags=NONE"));
+}
+
 void test_format_empty_frame_rx(void)
 {
   rx_frame_t frame = {0};
@@ -1438,26 +1515,8 @@ void test_format_empty_frame_rx(void)
     rx_frame_ascii_format(&frame, false, s_output_buffer, sizeof(s_output_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_GREATER_THAN(0, len);
-
-  /* Verify direction indicator */
-  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "[RX]"));
-
-  /* Verify sequence number */
-  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "seq=42"));
-
-  /* Verify length */
-  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "len=0"));
-
-  /* Verify type */
-  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "type=ACK"));
-
-  /* Verify flags */
-  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "flags=NONE"));
-
-  /* Verify empty payload indicator */
+  internal_verify_empty_frame_rx_header();
   TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "[PAYLOAD] (empty)"));
-
-  /* Verify CRC line */
   TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "[CRC]"));
 }
 
@@ -1565,39 +1624,39 @@ void test_format_empty_frame_tx(void)
  *
  * @since Version 1.0.0
  */
+/**
+ * @brief Verify payload frame output contains expected fields and hex dump
+ * @since Version 1.0.0
+ */
+static void internal_verify_payload_frame_fields(void)
+{
+  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "seq=1234"));
+  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "len=4"));
+  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "type=RESPONSE"));
+  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "[0000]"));
+  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "54 45 53 54"));
+  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "TEST"));
+}
+
 void test_format_with_payload(void)
 {
   rx_frame_t frame = {0};
   uint32_t   len   = 0;
 
-  frame.header.sequence = k_test_sequence_1234;
-  frame.header.length   = k_test_payload_4;
-  frame.header.type     = k_frame_type_response;
-  frame.header.flags    = k_frame_flag_priority;
-  memcpy(frame.payload, "TEST", k_test_payload_4);
+  frame.header.sequence                = k_test_sequence_1234;
+  frame.header.length                  = k_test_payload_4;
+  frame.header.type                    = k_frame_type_response;
+  frame.header.flags                   = k_frame_flag_priority;
+  frame.payload[0]                     = 'T';
+  frame.payload[1]                     = 'E';
+  frame.payload[k_test_nonprint_idx_2] = 'S';
+  frame.payload[k_test_nonprint_idx_3] = 'T';
 
   rx_err_t err =
     rx_frame_ascii_format(&frame, false, s_output_buffer, sizeof(s_output_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_GREATER_THAN(0, len);
-
-  /* Verify sequence number */
-  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "seq=1234"));
-
-  /* Verify length */
-  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "len=4"));
-
-  /* Verify type */
-  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "type=RESPONSE"));
-
-  /* Verify hex dump contains offset and hex values */
-  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "[0000]"));
-
-  /* Verify hex values for "TEST" (0x54 0x45 0x53 0x54) */
-  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "54 45 53 54"));
-
-  /* Verify ASCII sidebar contains readable text */
-  TEST_ASSERT_NOT_NULL(strstr(s_output_buffer, "TEST"));
+  internal_verify_payload_frame_fields();
 }
 
 /**
@@ -1649,8 +1708,8 @@ void test_format_with_multiline_payload(void)
   frame.header.flags    = k_frame_flag_none;
 
   /* Fill with pattern: 00 01 02 ... 13 */
-  for (uint8_t i = 0; i < k_test_payload_20; i++) {
-    frame.payload[i] = i;
+  for (uint16_t i = 0; i < k_test_payload_20; i++) {
+    frame.payload[i] = (uint8_t)i;
   }
 
   rx_err_t err =
@@ -1713,10 +1772,10 @@ void test_format_with_non_printable_payload(void)
   frame.header.flags    = k_frame_flag_none;
 
   /* Non-printable characters */
-  frame.payload[0] = 0x00;
-  frame.payload[1] = 0x01;
-  frame.payload[2] = 0x1F;
-  frame.payload[3] = 0x7F;
+  frame.payload[k_test_nonprint_idx_0] = k_test_nonprint_val_00;
+  frame.payload[k_test_nonprint_idx_1] = k_test_nonprint_val_01;
+  frame.payload[k_test_nonprint_idx_2] = k_test_nonprint_val_1f;
+  frame.payload[k_test_nonprint_idx_3] = k_test_nonprint_val_7f;
 
   rx_err_t err =
     rx_frame_ascii_format(&frame, false, s_output_buffer, sizeof(s_output_buffer), &len);
@@ -1919,28 +1978,28 @@ void test_format_crc_displayed(void)
 void test_internal_append_str_assert_pos_beyond_max(void)
 {
 #ifdef UNIT_TEST
-  char        dummy[8] = {0};
-  const char* str      = "hi";
+  char        dummy[k_test_small_buf_8] = {0};
+  const char* str                       = "hi";
 
   /* A=false: buf=nullptr, pos>=max prevents write (D is also false) */
-  uint32_t pos = internal_append_str(nullptr, 8, 4, str);
-  TEST_ASSERT_EQUAL(8, pos);
+  uint32_t pos = internal_append_str(nullptr, k_test_pos_8, k_test_small_buf_4, str);
+  TEST_ASSERT_EQUAL(k_test_pos_8, pos);
 
   /* B=false: str=nullptr, pos>=max prevents *str deref (short-circuit) */
-  pos = internal_append_str(dummy, 8, 4, nullptr);
-  TEST_ASSERT_EQUAL(8, pos);
+  pos = internal_append_str(dummy, k_test_pos_8, k_test_small_buf_4, nullptr);
+  TEST_ASSERT_EQUAL(k_test_pos_8, pos);
 
   /* C=false: max=0, pos=UINT32_MAX so pos >= max-1=UINT32_MAX: no write */
-  pos = internal_append_str(dummy, 0xFFFFFFFFU, 0, str);
-  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+  pos = internal_append_str(dummy, k_test_max_u32, 0, str);
+  TEST_ASSERT_EQUAL(k_test_max_u32, pos);
 
   /* D=false: pos >= max (already covered, reconfirm) */
-  pos = internal_append_str(dummy, 8, 4, str);
-  TEST_ASSERT_EQUAL(8, pos);
+  pos = internal_append_str(dummy, k_test_pos_8, k_test_small_buf_4, str);
+  TEST_ASSERT_EQUAL(k_test_pos_8, pos);
 
   /* Buffer exactly full: pos == max-1 = 3, while exits immediately */
-  pos = internal_append_str(dummy, 3, 4, str);
-  TEST_ASSERT_EQUAL(3, pos);
+  pos = internal_append_str(dummy, k_test_pos_3, k_test_small_buf_4, str);
+  TEST_ASSERT_EQUAL(k_test_pos_3, pos);
 #endif
 }
 
@@ -1955,23 +2014,23 @@ void test_internal_append_str_assert_pos_beyond_max(void)
 void test_internal_append_char_assert_and_full(void)
 {
 #ifdef UNIT_TEST
-  char dummy[4] = {0};
+  char dummy[k_test_small_buf_4] = {0};
 
   /* A=false: buf=nullptr with pos >= max (if body skipped) */
-  uint32_t pos = internal_append_char(nullptr, 8, 4, 'A');
-  TEST_ASSERT_EQUAL(8, pos);
+  uint32_t pos = internal_append_char(nullptr, k_test_pos_8, k_test_small_buf_4, 'A');
+  TEST_ASSERT_EQUAL(k_test_pos_8, pos);
 
   /* B=false: max=0, pos=UINT32_MAX so pos < max-1 = UINT32_MAX is false */
-  pos = internal_append_char(dummy, 0xFFFFFFFFU, 0, 'A');
-  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+  pos = internal_append_char(dummy, k_test_max_u32, 0, 'A');
+  TEST_ASSERT_EQUAL(k_test_max_u32, pos);
 
   /* C=false: pos >= max (already covered, reconfirm) */
-  pos = internal_append_char(dummy, 8, 4, 'A');
-  TEST_ASSERT_EQUAL(8, pos);
+  pos = internal_append_char(dummy, k_test_pos_8, k_test_small_buf_4, 'A');
+  TEST_ASSERT_EQUAL(k_test_pos_8, pos);
 
   /* Buffer full: pos == max-1 = 3, if-false branch */
-  pos = internal_append_char(dummy, 3, 4, 'A');
-  TEST_ASSERT_EQUAL(3, pos);
+  pos = internal_append_char(dummy, k_test_pos_3, k_test_small_buf_4, 'A');
+  TEST_ASSERT_EQUAL(k_test_pos_3, pos);
 #endif
 }
 
@@ -1985,23 +2044,24 @@ void test_internal_append_char_assert_and_full(void)
 void test_internal_append_hex_byte_assert_and_full(void)
 {
 #ifdef UNIT_TEST
-  char dummy[8] = {0};
+  char dummy[k_test_small_buf_8] = {0};
 
   /* C=false: pos >= max (D fails), if body not entered */
-  uint32_t pos = internal_append_hex_byte(dummy, 8, 4, 0xAB);
-  TEST_ASSERT_EQUAL(8, pos);
+  uint32_t pos =
+    internal_append_hex_byte(dummy, k_test_pos_8, k_test_small_buf_4, k_test_hex_byte_ab);
+  TEST_ASSERT_EQUAL(k_test_pos_8, pos);
 
   /* A=false: buf=nullptr, pos >= max prevents write */
-  pos = internal_append_hex_byte(nullptr, 8, 4, 0xAB);
-  TEST_ASSERT_EQUAL(8, pos);
+  pos = internal_append_hex_byte(nullptr, k_test_pos_8, k_test_small_buf_4, k_test_hex_byte_ab);
+  TEST_ASSERT_EQUAL(k_test_pos_8, pos);
 
   /* B=false: max < k_hex_chars_per_byte=2, pos=UINT32_MAX so if body skipped */
-  pos = internal_append_hex_byte(dummy, 0xFFFFFFFFU, 1, 0xAB);
-  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+  pos = internal_append_hex_byte(dummy, k_test_max_u32, 1, k_test_hex_byte_ab);
+  TEST_ASSERT_EQUAL(k_test_max_u32, pos);
 
-  /* Buffer only has 1 byte left: pos = max-1 = 3, if-false at line 389 */
-  pos = internal_append_hex_byte(dummy, 3, 4, 0xAB);
-  TEST_ASSERT_EQUAL(3, pos);
+  /* Buffer only has 1 byte left: pos = max-1 = 3, if-false */
+  pos = internal_append_hex_byte(dummy, k_test_pos_3, k_test_small_buf_4, k_test_hex_byte_ab);
+  TEST_ASSERT_EQUAL(k_test_pos_3, pos);
 #endif
 }
 
@@ -2013,19 +2073,20 @@ void test_internal_append_hex_byte_assert_and_full(void)
 void test_internal_append_hex_u16_assert_pos_beyond_max(void)
 {
 #ifdef UNIT_TEST
-  char dummy[8] = {0};
+  char dummy[k_test_small_buf_8] = {0};
 
   /* C=false: pos >= max */
-  uint32_t pos = internal_append_hex_u16(dummy, 8, 4, 0x1234);
-  TEST_ASSERT_EQUAL(8, pos);
+  uint32_t pos =
+    internal_append_hex_u16(dummy, k_test_pos_8, k_test_small_buf_4, k_test_hex_u16_1234);
+  TEST_ASSERT_EQUAL(k_test_pos_8, pos);
 
   /* A=false: buf=nullptr, pos >= max prevents any write */
-  pos = internal_append_hex_u16(nullptr, 8, 4, 0x1234);
-  TEST_ASSERT_EQUAL(8, pos);
+  pos = internal_append_hex_u16(nullptr, k_test_pos_8, k_test_small_buf_4, k_test_hex_u16_1234);
+  TEST_ASSERT_EQUAL(k_test_pos_8, pos);
 
   /* B=false: max < k_hex_chars_per_u16=4, pos=UINT32_MAX */
-  pos = internal_append_hex_u16(dummy, 0xFFFFFFFFU, 3, 0x1234);
-  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+  pos = internal_append_hex_u16(dummy, k_test_max_u32, k_test_pos_3, k_test_hex_u16_1234);
+  TEST_ASSERT_EQUAL(k_test_max_u32, pos);
 #endif
 }
 
@@ -2037,19 +2098,20 @@ void test_internal_append_hex_u16_assert_pos_beyond_max(void)
 void test_internal_append_hex_u32_assert_pos_beyond_max(void)
 {
 #ifdef UNIT_TEST
-  char dummy[16] = {0};
+  char dummy[k_test_small_buf_16] = {0};
 
   /* B=false: max < k_hex_chars_per_u32=8, pos=UINT32_MAX */
-  uint32_t pos = internal_append_hex_u32(dummy, 0xFFFFFFFFU, 7, 0xDEADBEEF);
-  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+  uint32_t pos =
+    internal_append_hex_u32(dummy, k_test_max_u32, k_test_u32_buf_7, k_test_hex_u32_deadbeef);
+  TEST_ASSERT_EQUAL(k_test_max_u32, pos);
 
   /* A=false: buf=nullptr, B=true (max=8), C=false (pos>=max) */
-  pos = internal_append_hex_u32(nullptr, 16, 8, 0xDEADBEEF);
-  TEST_ASSERT_EQUAL(16, pos);
+  pos = internal_append_hex_u32(nullptr, k_test_pos_16, k_test_pos_8, k_test_hex_u32_deadbeef);
+  TEST_ASSERT_EQUAL(k_test_pos_16, pos);
 
   /* C=false: A=true, B=true (max=8>=8), pos=16>=8 */
-  pos = internal_append_hex_u32(dummy, 16, 8, 0xDEADBEEF);
-  TEST_ASSERT_EQUAL(16, pos);
+  pos = internal_append_hex_u32(dummy, k_test_pos_16, k_test_pos_8, k_test_hex_u32_deadbeef);
+  TEST_ASSERT_EQUAL(k_test_pos_16, pos);
 #endif
 }
 
@@ -2063,24 +2125,25 @@ void test_internal_append_hex_u32_assert_pos_beyond_max(void)
 void test_internal_append_decimal_u16_assert_and_loop(void)
 {
 #ifdef UNIT_TEST
-  char dummy[8] = {0};
+  char dummy[k_test_small_buf_8] = {0};
 
   /* C=false: pos >= max */
-  uint32_t pos = internal_append_decimal_u16(dummy, 8, 4, 42);
-  TEST_ASSERT_EQUAL(8, pos);
+  uint32_t pos =
+    internal_append_decimal_u16(dummy, k_test_pos_8, k_test_small_buf_4, k_test_sequence_42);
+  TEST_ASSERT_EQUAL(k_test_pos_8, pos);
 
   /* A=false: buf=nullptr, pos >= max prevents write */
-  pos = internal_append_decimal_u16(nullptr, 8, 4, 42);
-  TEST_ASSERT_EQUAL(8, pos);
+  pos = internal_append_decimal_u16(nullptr, k_test_pos_8, k_test_small_buf_4, k_test_sequence_42);
+  TEST_ASSERT_EQUAL(k_test_pos_8, pos);
 
   /* B=false: max=0, pos=UINT32_MAX so inner append_char also skips */
-  pos = internal_append_decimal_u16(dummy, 0xFFFFFFFFU, 0, 42);
-  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+  pos = internal_append_decimal_u16(dummy, k_test_max_u32, 0, k_test_sequence_42);
+  TEST_ASSERT_EQUAL(k_test_max_u32, pos);
 
   /* Non-zero value -> the while loop runs then exits naturally when value=0 */
-  pos = internal_append_decimal_u16(dummy, 0, 8, 12345);
+  pos = internal_append_decimal_u16(dummy, 0, k_test_small_buf_8, k_test_decimal_12345);
   /* "12345" is 5 digits, pos should advance to 5 */
-  TEST_ASSERT_EQUAL(5, pos);
+  TEST_ASSERT_EQUAL(k_test_decimal_len_5, pos);
   dummy[pos] = '\0';
   TEST_ASSERT_EQUAL_STRING("12345", dummy);
 #endif
@@ -2096,23 +2159,28 @@ void test_internal_append_decimal_u16_assert_and_loop(void)
 void test_internal_format_payload_assert_violations(void)
 {
 #ifdef UNIT_TEST
-  char          buf[256]   = {0};
-  const uint8_t payload[4] = {0x01, 0x02, 0x03, 0x04};
+  char          buf[k_test_small_buf_256]   = {0};
+  const uint8_t payload[k_test_small_buf_4] = {0x01, 0x02, 0x03, 0x04};
 
-  /* C=false: pos >= max (line 616 assert fires) */
-  uint32_t pos = internal_format_payload(buf, 256, 64, payload, 4);
-  TEST_ASSERT_EQUAL(256, pos);
+  /* C=false: pos >= max (assert fires) */
+  uint32_t pos =
+    internal_format_payload(buf, k_test_pos_256, k_test_min_buffer_size, payload, k_test_payload_4);
+  TEST_ASSERT_EQUAL(k_test_pos_256, pos);
 
   /* A=false: buf=nullptr, pos >= max prevents writes */
-  pos = internal_format_payload(nullptr, 256, 64, payload, 4);
-  TEST_ASSERT_EQUAL(256, pos);
+  pos = internal_format_payload(nullptr,
+                                k_test_pos_256,
+                                k_test_min_buffer_size,
+                                payload,
+                                k_test_payload_4);
+  TEST_ASSERT_EQUAL(k_test_pos_256, pos);
 
   /* B=false: max=0, pos=UINT32_MAX so child append calls all skip */
-  pos = internal_format_payload(buf, 0xFFFFFFFFU, 0, payload, 4);
-  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+  pos = internal_format_payload(buf, k_test_max_u32, 0, payload, k_test_payload_4);
+  TEST_ASSERT_EQUAL(k_test_max_u32, pos);
 
-  /* payload=nullptr with length>0 hits the null guard (line 625 if-false branch) */
-  pos = internal_format_payload(buf, 0, 256, nullptr, 4);
+  /* payload=nullptr with length>0 hits the null guard */
+  pos = internal_format_payload(buf, 0, k_test_small_buf_256, nullptr, k_test_payload_4);
   TEST_ASSERT_EQUAL(0, pos);
 #endif
 }
@@ -2126,28 +2194,28 @@ void test_internal_format_payload_assert_violations(void)
 void test_internal_format_header_assert_pos_beyond_max(void)
 {
 #ifdef UNIT_TEST
-  char              buf[128] = {0};
-  rx_frame_header_t header   = {0};
-  header.sequence            = 1;
-  header.length              = 0;
-  header.type                = (uint8_t)k_frame_type_ping;
-  header.flags               = 0;
+  char              buf[k_test_small_buf_128] = {0};
+  rx_frame_header_t header                    = {0};
+  header.sequence                             = 1;
+  header.length                               = 0;
+  header.type                                 = k_frame_type_ping;
+  header.flags                                = 0;
 
   /* D=false: pos >= max */
-  uint32_t pos = internal_format_header(buf, 128, 64, &header, true);
-  TEST_ASSERT_EQUAL(128, pos);
+  uint32_t pos = internal_format_header(buf, k_test_pos_128, k_test_min_buffer_size, &header, true);
+  TEST_ASSERT_EQUAL(k_test_pos_128, pos);
 
   /* A=false: buf=nullptr, pos >= max prevents writes */
-  pos = internal_format_header(nullptr, 128, 64, &header, true);
-  TEST_ASSERT_EQUAL(128, pos);
+  pos = internal_format_header(nullptr, k_test_pos_128, k_test_min_buffer_size, &header, true);
+  TEST_ASSERT_EQUAL(k_test_pos_128, pos);
 
   /* B=false: header=nullptr, safety guard returns early */
-  pos = internal_format_header(buf, 0, 64, nullptr, true);
+  pos = internal_format_header(buf, 0, k_test_min_buffer_size, nullptr, true);
   TEST_ASSERT_EQUAL(0, pos);
 
   /* C=false: max=0, pos=UINT32_MAX */
-  pos = internal_format_header(buf, 0xFFFFFFFFU, 0, &header, true);
-  TEST_ASSERT_EQUAL(0xFFFFFFFFU, pos);
+  pos = internal_format_header(buf, k_test_max_u32, 0, &header, true);
+  TEST_ASSERT_EQUAL(k_test_max_u32, pos);
 #endif
 }
 
@@ -2161,14 +2229,12 @@ void test_internal_format_header_assert_pos_beyond_max(void)
 void test_internal_append_flag_assert_null_first(void)
 {
 #ifdef UNIT_TEST
-  char dummy[32] = {0};
+  char dummy[k_test_small_buf_32] = {0};
 
-  /* first == nullptr violates assert (line 830 false branch covered).
+  /* first == nullptr violates assert (false branch covered).
    * After assert fires in unit test mode, code checks (flags & flag_bit).
-   * flags=0x01, flag_bit=0x01 so condition is true.
-   * Then accesses *first which is nullptr -> segfault risk.
-   * To avoid: pass flags=0x00 so (flags & flag_bit) is false and body skipped. */
-  uint32_t pos = internal_append_flag(dummy, 0, 32, nullptr, 0x00, 0x01, "ACK");
+   * flags=0x00, flag_bit=0x01 so condition is false and body skipped. */
+  uint32_t pos = internal_append_flag(dummy, 0, k_test_small_buf_32, nullptr, 0x00, 0x01, "ACK");
   TEST_ASSERT_EQUAL(0, pos);
 #endif
 }
@@ -2216,11 +2282,12 @@ void test_internal_append_flag_assert_null_first(void)
  *
  * @since Version 1.0.0
  */
-int main(void)
+/**
+ * @brief Run type name conversion tests
+ * @since Version 1.0.0
+ */
+static void internal_run_type_name_tests(void)
 {
-  UNITY_BEGIN();
-
-  /* Type name tests */
   RUN_TEST(test_type_name_ping);
   RUN_TEST(test_type_name_pong);
   RUN_TEST(test_type_name_command);
@@ -2230,8 +2297,14 @@ int main(void)
   RUN_TEST(test_type_name_reset);
   RUN_TEST(test_type_name_reset_ack);
   RUN_TEST(test_type_name_invalid);
+}
 
-  /* Flags string tests */
+/**
+ * @brief Run flags string generation tests
+ * @since Version 1.0.0
+ */
+static void internal_run_flags_str_tests(void)
+{
   RUN_TEST(test_flags_str_null_buffer);
   RUN_TEST(test_flags_str_zero_length);
   RUN_TEST(test_flags_str_none);
@@ -2242,15 +2315,19 @@ int main(void)
   RUN_TEST(test_flags_str_soft_nack);
   RUN_TEST(test_flags_str_combined_two);
   RUN_TEST(test_flags_str_combined_all);
+}
 
-  /* Format error tests */
+/**
+ * @brief Run format error and success tests
+ * @since Version 1.0.0
+ */
+static void internal_run_format_tests(void)
+{
   RUN_TEST(test_format_null_frame);
   RUN_TEST(test_format_null_output);
   RUN_TEST(test_format_null_output_len);
   RUN_TEST(test_format_buffer_too_small);
   RUN_TEST(test_format_payload_length_too_large);
-
-  /* Format success tests */
   RUN_TEST(test_format_empty_frame_rx);
   RUN_TEST(test_format_empty_frame_tx);
   RUN_TEST(test_format_with_payload);
@@ -2259,8 +2336,14 @@ int main(void)
   RUN_TEST(test_format_nack_with_soft_flag);
   RUN_TEST(test_format_combined_flags);
   RUN_TEST(test_format_crc_displayed);
+}
 
-  /* Internal helper branch coverage tests */
+/**
+ * @brief Run internal helper branch coverage tests
+ * @since Version 1.0.0
+ */
+static void internal_run_internal_helper_tests(void)
+{
   RUN_TEST(test_internal_append_str_assert_pos_beyond_max);
   RUN_TEST(test_internal_append_char_assert_and_full);
   RUN_TEST(test_internal_append_hex_byte_assert_and_full);
@@ -2270,6 +2353,14 @@ int main(void)
   RUN_TEST(test_internal_format_payload_assert_violations);
   RUN_TEST(test_internal_format_header_assert_pos_beyond_max);
   RUN_TEST(test_internal_append_flag_assert_null_first);
+}
 
+int main(void)
+{
+  UNITY_BEGIN();
+  internal_run_type_name_tests();
+  internal_run_flags_str_tests();
+  internal_run_format_tests();
+  internal_run_internal_helper_tests();
   return UNITY_END();
 }

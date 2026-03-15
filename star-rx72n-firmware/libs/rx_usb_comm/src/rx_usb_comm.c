@@ -56,8 +56,6 @@
 
 #include "rx_usb_comm.h"
 
-#include <string.h>
-
 #include "rx_check.h"
 #include "rx_crc.h"
 #include "rx_log.h"
@@ -410,9 +408,11 @@ RX_STATIC_TESTABLE rx_err_t internal_compact_rx_buffer(rx_usb_comm_handle_t* han
     handle->rx_buffer_len = 0;
     handle->rx_buffer_pos = 0;
   } else {
-    /* Move remaining data to beginning */
+    /* Move remaining data to beginning (forward copy safe: dst < src) */
     const uint32_t remaining = handle->rx_buffer_len - handle->rx_buffer_pos;
-    memmove(handle->rx_buffer, handle->rx_buffer + handle->rx_buffer_pos, remaining);
+    for (uint32_t ci = 0; ci < remaining; ci++) {
+      handle->rx_buffer[ci] = handle->rx_buffer[handle->rx_buffer_pos + ci];
+    }
     handle->rx_buffer_len = remaining;
     handle->rx_buffer_pos = 0;
   }
@@ -610,7 +610,9 @@ internal_decode_frame(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uin
 
   /* Read payload */
   if (frame->header.length > 0) {
-    memcpy(frame->payload, &hdr[offset], frame->header.length);
+    for (uint16_t ci = 0; ci < frame->header.length; ci++) {
+      frame->payload[ci] = hdr[offset + ci];
+    }
     offset += frame->header.length;
   }
 
@@ -1010,7 +1012,9 @@ static rx_err_t internal_build_frame(rx_frame_t*           frame,
   frame->header.flags    = flags;
 
   if (payload != nullptr && payload_len > 0) {
-    memcpy(frame->payload, payload, payload_len);
+    for (uint32_t ci = 0; ci < payload_len; ci++) {
+      frame->payload[ci] = payload[ci];
+    }
   }
 
   return k_rx_ok;
@@ -1075,6 +1079,95 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
 }
 
 /* =============================================================================
+ * Control Frame Handling
+ * =============================================================================
+ */
+
+/**
+ * @enum rx_frame_action_t
+ * @brief Action returned by internal_handle_control_frame
+ *
+ * @details Indicates whether a decoded frame was handled internally (control
+ * frame) or should be returned to the caller (data frame).
+ */
+typedef enum : uint8_t {
+  k_frame_action_continue = 0, /**< Control frame handled; loop for next */
+  k_frame_action_return   = 1, /**< Data frame validated; return to caller */
+  k_frame_action_error    = 2, /**< Error occurred; return err */
+} rx_frame_action_t;
+
+/**
+ * @brief Handle a decoded frame: auto-reply to control frames, validate data frames
+ *
+ * @details
+ * Processes PING (sends PONG, invokes callback), RESET (sends RESET_ACK, resets
+ * session, invokes callback), and silently consumes PONG/RESET_ACK. Data frames
+ * (COMMAND, RESPONSE) are validated via session and flagged for return.
+ *
+ * @param[in,out] handle USB comm handle for sending responses and session access
+ * @param[in,out] frame  Decoded frame to inspect and potentially respond to
+ * @param[out]    err    Set to error code on k_frame_action_error
+ *
+ * @return rx_frame_action_t Next action for the receive loop
+ *
+ * @pre  handle != nullptr and handle->initialized
+ * @pre  frame contains a successfully decoded frame
+ * @post On k_frame_action_continue: control frame was handled (response sent)
+ * @post On k_frame_action_return: data frame validated via session
+ * @post On k_frame_action_error: *err contains the error code
+ *
+ * @note Not thread-safe; must be called from single thread
+ * @since Version 1.0.0
+ */
+static rx_frame_action_t
+internal_handle_control_frame(rx_usb_comm_handle_t* handle, rx_frame_t* frame, rx_err_t* err)
+{
+  /* PING: auto-send PONG, invoke callback, loop for next frame */
+  if (frame->header.type == k_frame_type_ping) {
+    *err = rx_usb_comm_send_pong(handle, frame->payload, frame->header.length);
+    if (*err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to send PONG response");
+      return k_frame_action_error;
+    }
+    rx_log_debug(s_tag, "Auto-responded with PONG");
+    if (handle->on_ping_cb != nullptr) {
+      handle->on_ping_cb(frame, handle->cb_ctx);
+    }
+    return k_frame_action_continue;
+  }
+
+  /* RESET: send RESET_ACK, reset session, invoke callback, loop */
+  if (frame->header.type == k_frame_type_reset) {
+    *err = rx_usb_comm_send_reset_ack(handle);
+    if (*err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to send RESET_ACK");
+      return k_frame_action_error;
+    }
+    rx_log_debug(s_tag, "Auto-responded with RESET_ACK");
+    (void)(rx_session_reset(handle->session));
+    if (handle->on_reset_cb != nullptr) {
+      handle->on_reset_cb(frame, handle->cb_ctx);
+    }
+    return k_frame_action_continue;
+  }
+
+  /* PONG / RESET_ACK: consume silently */
+  if (frame->header.type == k_frame_type_pong || frame->header.type == k_frame_type_reset_ack) {
+    return k_frame_action_continue;
+  }
+
+  /* Data frame: validate sequence via session */
+  rx_session_validate_result_t validate_result = k_session_validate_fail;
+  *err = rx_session_validate_rx(handle->session, frame->header.sequence, &validate_result);
+  if (*err != k_rx_ok) {
+    rx_log_error(s_tag, "Session validate_rx returned error");
+    return k_frame_action_error;
+  }
+
+  return k_frame_action_return;
+}
+
+/* =============================================================================
  * Receive API
  * =============================================================================
  */
@@ -1121,60 +1214,15 @@ rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uint3
       continue; /* k_receive_continue: loop continues */
     }
 
-    /* Frame decoded - check for control frames */
-
-    /* PING: auto-send PONG, invoke callback, loop for next frame */
-    if (frame->header.type == k_frame_type_ping) {
-      rx_err_t pong_err = rx_usb_comm_send_pong(handle, frame->payload, frame->header.length);
-      if (pong_err != k_rx_ok) {
-        rx_log_error(s_tag, "Failed to send PONG response");
-        return pong_err;
-      }
-      rx_log_debug(s_tag, "Auto-responded with PONG");
-
-      if (handle->on_ping_cb != nullptr) {
-        handle->on_ping_cb(frame, handle->cb_ctx);
-      }
-
-      continue;
+    /* Frame decoded - dispatch control frames or validate data frame */
+    rx_frame_action_t action = internal_handle_control_frame(handle, frame, &err);
+    if (action == k_frame_action_error) {
+      return err;
     }
-
-    /* RESET: send RESET_ACK first, then reset session, invoke callback, loop */
-    if (frame->header.type == k_frame_type_reset) {
-      rx_err_t ack_err = rx_usb_comm_send_reset_ack(handle);
-      if (ack_err != k_rx_ok) {
-        rx_log_error(s_tag, "Failed to send RESET_ACK");
-        return ack_err;
-      }
-      rx_log_debug(s_tag, "Auto-responded with RESET_ACK");
-
-      /* session_reset only fails with nullptr/uninitialized, both impossible here */
-      (void)(rx_session_reset(handle->session));
-
-      if (handle->on_reset_cb != nullptr) {
-        handle->on_reset_cb(frame, handle->cb_ctx);
-      }
-
-      continue;
+    if (action == k_frame_action_return) {
+      return k_rx_ok;
     }
-
-    /* PONG / RESET_ACK: consume silently, loop for next frame */
-    if (frame->header.type == k_frame_type_pong || frame->header.type == k_frame_type_reset_ack) {
-      continue;
-    }
-
-    /* Data frame (COMMAND, RESPONSE): validate sequence via session, return to caller */
-    rx_session_validate_result_t validate_result = k_session_validate_fail;
-    rx_err_t                     validate_err =
-      rx_session_validate_rx(handle->session, frame->header.sequence, &validate_result);
-    if (validate_err != k_rx_ok) {
-      rx_log_error(s_tag, "Session validate_rx returned error");
-      return validate_err;
-    }
-    /* When validate_err == k_rx_ok, result is always ok or gap (never fail).
-     * rx_session_validate_rx only sets result=fail when it returns an error. */
-
-    return k_rx_ok;
+    /* k_frame_action_continue: control frame handled, loop for next */
   }
 
   /* Exceeded maximum iterations */

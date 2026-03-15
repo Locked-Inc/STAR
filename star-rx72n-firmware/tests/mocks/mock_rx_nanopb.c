@@ -14,7 +14,67 @@
 
 #include "mock_rx_nanopb.h"
 
-#include <string.h>
+#include <stddef.h>
+
+/* =============================================================================
+ * Internal Constants
+ * =============================================================================
+ */
+
+/** @brief Mock nanopb internal constants */
+typedef enum : uint8_t {
+  k_mock_nanopb_motor_idx_bl    = 2,    /**< Back-left motor index */
+  k_mock_nanopb_motor_idx_br    = 3,    /**< Back-right motor index */
+  k_mock_nanopb_dummy_fill_byte = 0xAA, /**< Dummy fill byte for encoded output */
+  k_mock_nanopb_estop_manual    = 1,    /**< Manual e-stop reason code */
+} mock_nanopb_internal_t;
+
+/** @brief Default encode length */
+typedef enum : uint32_t {
+  k_mock_nanopb_default_encode_len = 64, /**< Default encoded output length */
+} mock_nanopb_encode_t;
+
+/**
+ * @brief Zero-fill a byte region using a for-loop (clang-tidy safe)
+ * @param[out] dst  Destination pointer
+ * @param[in]  len  Number of bytes to zero
+ */
+static inline void internal_zero_fill(void* dst, size_t len)
+{
+  uint8_t* p = (uint8_t*)dst;
+  for (size_t i = 0; i < len; i++) {
+    p[i] = 0;
+  }
+}
+
+/**
+ * @brief Copy bytes using a for-loop (clang-tidy safe)
+ * @param[out] dst  Destination pointer
+ * @param[in]  src  Source pointer
+ * @param[in]  len  Number of bytes to copy
+ */
+static inline void internal_byte_copy(void* dst, const void* src, size_t len)
+{
+  uint8_t*       d = (uint8_t*)dst;
+  const uint8_t* s = (const uint8_t*)src;
+  for (size_t i = 0; i < len; i++) {
+    d[i] = s[i];
+  }
+}
+
+/**
+ * @brief Fill a byte region with a given value (clang-tidy safe)
+ * @param[out] dst  Destination pointer
+ * @param[in]  val  Fill value
+ * @param[in]  len  Number of bytes to fill
+ */
+static inline void internal_byte_fill(void* dst, uint8_t val, size_t len)
+{
+  uint8_t* p = (uint8_t*)dst;
+  for (size_t i = 0; i < len; i++) {
+    p[i] = val;
+  }
+}
 
 /* =============================================================================
  * Static Variables - Return Values
@@ -59,7 +119,7 @@ static uint32_t s_encode_telemetry_count = 0;
 static float s_decoded_velocity[k_mock_nanopb_max_motors] = {0.0f};
 
 /** @brief Configured encode length */
-static uint32_t s_encode_length = 64;
+static uint32_t s_encode_length = k_mock_nanopb_default_encode_len;
 
 /** @brief Last telemetry data encoded */
 static star_v1_TelemetryData s_last_telemetry;
@@ -93,10 +153,10 @@ void mock_nanopb_reset(void)
   for (uint8_t i = 0; i < k_mock_nanopb_max_motors; i++) {
     s_decoded_velocity[i] = 0.0f;
   }
-  s_encode_length = 64;
+  s_encode_length = k_mock_nanopb_default_encode_len;
 
   /* Reset captured telemetry */
-  (void)memset(&s_last_telemetry, 0, sizeof(s_last_telemetry));
+  internal_zero_fill(&s_last_telemetry, sizeof(s_last_telemetry));
   s_telemetry_captured = false;
 
   /* Reset state */
@@ -115,10 +175,10 @@ void mock_nanopb_set_decode_velocity_return(rx_err_t err)
 
 void mock_nanopb_set_decoded_velocity(float fl, float fr, float bl, float br)
 {
-  s_decoded_velocity[0] = fl;
-  s_decoded_velocity[1] = fr;
-  s_decoded_velocity[2] = bl;
-  s_decoded_velocity[3] = br;
+  s_decoded_velocity[0]                          = fl;
+  s_decoded_velocity[1]                          = fr;
+  s_decoded_velocity[k_mock_nanopb_motor_idx_bl] = bl;
+  s_decoded_velocity[k_mock_nanopb_motor_idx_br] = br;
 }
 
 void mock_nanopb_set_decode_estop_return(rx_err_t err)
@@ -167,7 +227,7 @@ bool mock_nanopb_get_last_telemetry(star_v1_TelemetryData* out_telemetry)
     return false;
   }
 
-  (void)memcpy(out_telemetry, &s_last_telemetry, sizeof(*out_telemetry));
+  internal_byte_copy(out_telemetry, &s_last_telemetry, sizeof(*out_telemetry));
   return true;
 }
 
@@ -209,8 +269,8 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
     msg->has_command                      = true;
     msg->command.front_left_velocity_mps  = (double)s_decoded_velocity[0];
     msg->command.front_right_velocity_mps = (double)s_decoded_velocity[1];
-    msg->command.back_left_velocity_mps   = (double)s_decoded_velocity[2];
-    msg->command.back_right_velocity_mps  = (double)s_decoded_velocity[3];
+    msg->command.back_left_velocity_mps   = (double)s_decoded_velocity[k_mock_nanopb_motor_idx_bl];
+    msg->command.back_right_velocity_mps  = (double)s_decoded_velocity[k_mock_nanopb_motor_idx_br];
     msg->command.sequence                 = s_decode_velocity_count;
   }
 
@@ -232,7 +292,7 @@ rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
 
   if (s_decode_estop_return == k_rx_ok) {
     msg->reason_present = true;
-    msg->reason         = 1; /* Manual e-stop */
+    msg->reason         = k_mock_nanopb_estop_manual;
   }
 
   return s_decode_estop_return;
@@ -255,11 +315,11 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
 
   if (s_encode_telemetry_return == k_rx_ok) {
     /* Capture telemetry for test verification */
-    (void)memcpy(&s_last_telemetry, msg, sizeof(s_last_telemetry));
+    internal_byte_copy(&s_last_telemetry, msg, sizeof(s_last_telemetry));
     s_telemetry_captured = true;
 
     /* Fill buffer with dummy data */
-    (void)memset(buffer, 0xAA, s_encode_length);
+    internal_byte_fill(buffer, k_mock_nanopb_dummy_fill_byte, s_encode_length);
     *len = s_encode_length;
   }
 

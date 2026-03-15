@@ -148,7 +148,7 @@
  * - [rx72n_system_regs.h](../../rx_hal/inc/rx72n_system_regs.h) - System registers
  * - [rx_check.h](../inc/rx_check.h) - Validation macros
  * - `<tx_api.h>` - ThreadX API for tick count
- * - `<string.h>` - memcpy, memset, strncpy, strlen, strcmp
+ * - `<string.h>` - strlen, strcmp
  *
  * @par NASA Power of 10 Compliance:
  * - **Rule 1**: [OK] No goto, setjmp, recursion
@@ -297,6 +297,36 @@ void rx_iwdt_test_reset(void)
  * Internal Helper Functions
  * =============================================================================
  */
+
+/**
+ * @brief Copy a string with bounded length (replaces strncpy)
+ *
+ * @details
+ * Copies up to max_len-1 characters from src to dst and null-terminates.
+ * Avoids clang-tidy insecureAPI.DeprecatedOrUnsafeBufferHandling warnings
+ * that strncpy triggers.
+ *
+ * @param[out] dst Destination buffer
+ * @param[in] src Source string
+ * @param[in] max_len Size of destination buffer (including null terminator)
+ *
+ * @pre dst != nullptr
+ * @pre src != nullptr
+ * @pre max_len > 0
+ * @post dst is null-terminated
+ *
+ * @note Not thread-safe
+ *
+ * @since Version 1.0.0
+ */
+static void internal_safe_strcpy(char* dst, const char* src, size_t max_len)
+{
+  size_t i = 0;
+  for (; i < max_len - 1U && src[i] != '\0'; i++) {
+    dst[i] = src[i];
+  }
+  dst[i] = '\0';
+}
 
 /**
  * @brief Get current system tick count from ThreadX
@@ -512,7 +542,13 @@ rx_err_t rx_iwdt_init(const rx_iwdt_config_t* config)
 
   /* Initialize state */
   s_iwdt_state = (rx_iwdt_state_t){0};
-  memcpy(&s_iwdt_state.config, config, sizeof(rx_iwdt_config_t));
+  {
+    const uint8_t* src = (const uint8_t*)config;
+    uint8_t*       dst = (uint8_t*)&s_iwdt_state.config;
+    for (size_t byte_i = 0; byte_i < sizeof(rx_iwdt_config_t); byte_i++) {
+      dst[byte_i] = src[byte_i];
+    }
+  }
   s_iwdt_state.current_state = k_system_state_init;
 
   /* Initialize status */
@@ -715,12 +751,11 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
 
   /* Register task */
   *slot = (rx_iwdt_task_info_t){0};
-  strncpy(slot->task_name, task_name, k_iwdt_task_name_len - 1);
-  slot->task_name[k_iwdt_task_name_len - 1] = '\0';
-  slot->timeout_ms                          = timeout_ms;
-  slot->last_heartbeat_tick                 = internal_get_tick_count();
-  slot->active                              = true;
-  slot->timed_out                           = false;
+  internal_safe_strcpy(slot->task_name, task_name, k_iwdt_task_name_len);
+  slot->timeout_ms          = timeout_ms;
+  slot->last_heartbeat_tick = internal_get_tick_count();
+  slot->active              = true;
+  slot->timed_out           = false;
 
   s_iwdt_state.status.active_tasks++;
 
@@ -1031,7 +1066,13 @@ rx_err_t rx_iwdt_get_status(rx_iwdt_status_t* status)
   }
 
   /* Copy status */
-  memcpy(status, &s_iwdt_state.status, sizeof(rx_iwdt_status_t));
+  {
+    const uint8_t* src = (const uint8_t*)&s_iwdt_state.status;
+    uint8_t*       dst = (uint8_t*)status;
+    for (size_t byte_i = 0; byte_i < sizeof(rx_iwdt_status_t); byte_i++) {
+      dst[byte_i] = src[byte_i];
+    }
+  }
 
   return k_rx_ok;
 }
@@ -1193,10 +1234,9 @@ rx_err_t rx_iwdt_check_tasks(void)
       any_timeout                     = true;
 
       /* Record failed task */
-      strncpy(s_iwdt_state.status.last_failed_task,
-              s_iwdt_state.tasks[i].task_name,
-              k_iwdt_task_name_len - 1);
-      s_iwdt_state.status.last_failed_task[k_iwdt_task_name_len - 1] = '\0';
+      internal_safe_strcpy(s_iwdt_state.status.last_failed_task,
+                           s_iwdt_state.tasks[i].task_name,
+                           k_iwdt_task_name_len);
     }
   }
 

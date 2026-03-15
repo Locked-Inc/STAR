@@ -1860,6 +1860,37 @@ RX_STATIC_TESTABLE rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* con
 }
 
 /**
+ * @brief Populate handle fields from config after GPIO setup
+ *
+ * @param[out] handle Sensor handle to populate
+ * @param[in] config Configuration parameters
+ * @param[in] effective_priority ICU priority (non-zero only in IRQ mode)
+ */
+static void internal_populate_handle(rx_hcsr04_t*              handle,
+                                     const rx_hcsr04_config_t* config,
+                                     uint8_t                   effective_priority)
+{
+  handle->trigger_pin = config->trigger_pin;
+  handle->echo_pin    = config->echo_pin;
+  handle->timeout_us  = config->timeout_us;
+  handle->echo_mode   = config->echo_mode;
+  handle->echo_irq =
+    (config->echo_mode == k_hcsr04_echo_irq) ? config->echo_irq : k_hcsr04_irq_none;
+  handle->irq_priority =
+    (rx_hcsr04_irq_priority_t)effective_priority; /* Non-zero only in IRQ mode */
+  handle->initialized               = true;
+  handle->measurement_active        = false;
+  handle->cancel_requested          = false;
+  handle->temperature_celsius       = s_default_temperature_celsius;
+  handle->temp_compensation_enabled = false;
+
+  /* Reset statistics */
+  handle->measurement_count = 0;
+  handle->timeout_count     = 0;
+  handle->range_error_count = 0;
+}
+
+/**
  * @brief Initialize an HC-SR04 sensor handle
  *
  * Configures GPIO pins for trigger and echo, initializes the sensor handle
@@ -1912,25 +1943,8 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
     return k_rx_err_invalid_arg;
   }
 
-  /* Initialize handle */
-  handle->trigger_pin = config->trigger_pin;
-  handle->echo_pin    = config->echo_pin;
-  handle->timeout_us  = config->timeout_us;
-  handle->echo_mode   = config->echo_mode;
-  handle->echo_irq =
-    (config->echo_mode == k_hcsr04_echo_irq) ? config->echo_irq : k_hcsr04_irq_none;
-  handle->irq_priority =
-    (rx_hcsr04_irq_priority_t)effective_priority; /* Non-zero only in IRQ mode */
-  handle->initialized               = true;
-  handle->measurement_active        = false;
-  handle->cancel_requested          = false;
-  handle->temperature_celsius       = s_default_temperature_celsius;
-  handle->temp_compensation_enabled = false;
-
-  /* Reset statistics */
-  handle->measurement_count = 0;
-  handle->timeout_count     = 0;
-  handle->range_error_count = 0;
+  /* Populate handle fields and reset statistics */
+  internal_populate_handle(handle, config, effective_priority);
 
   /* Ensure trigger is low */
   err = hcsr04_hal_gpio_write_low(handle->trigger_pin);

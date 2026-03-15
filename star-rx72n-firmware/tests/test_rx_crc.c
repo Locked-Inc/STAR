@@ -963,10 +963,9 @@ void test_mock_dmaca_preset_timeout_result(void)
  * =============================================================================
  */
 
-int main(void)
+/** @brief Run lifecycle and input validation tests */
+static void internal_run_lifecycle_and_validation_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Lifecycle */
   RUN_TEST(test_crc_init_deinit);
   RUN_TEST(test_crc_double_init_invalid_state);
@@ -986,7 +985,11 @@ int main(void)
   RUN_TEST(test_crc_compute_hw_cpu_msb_first_invalid);
   RUN_TEST(test_crc_compute_hw_dma_msb_first_invalid);
   RUN_TEST(test_crc_compute_invalid_backend);
+}
 
+/** @brief Run all backend polynomial tests */
+static void internal_run_backend_tests(void)
+{
   /* Software backend - all 5 polynomials */
   RUN_TEST(test_crc_sw_crc8_maxim);
   RUN_TEST(test_crc_sw_crc16_ibm);
@@ -1011,7 +1014,11 @@ int main(void)
   /* Backend consistency */
   RUN_TEST(test_crc32_all_backends_match);
   RUN_TEST(test_crc32c_all_backends_match);
+}
 
+/** @brief Run wrapper, incremental, boundary, and mock tests */
+static void internal_run_wrapper_and_edge_tests(void)
+{
   /* Convenience wrappers */
   RUN_TEST(test_crc32_ieee_wrapper_matches_compute);
   RUN_TEST(test_crc32_ieee_wrapper_canonical);
@@ -1036,6 +1043,13 @@ int main(void)
   /* Mock DMA interaction */
   RUN_TEST(test_mock_dmaca_reset_clears_state);
   RUN_TEST(test_mock_dmaca_preset_timeout_result);
+}
 
+int main(void)
+{
+  UNITY_BEGIN();
+  internal_run_lifecycle_and_validation_tests();
+  internal_run_backend_tests();
+  internal_run_wrapper_and_edge_tests();
   return UNITY_END();
 }

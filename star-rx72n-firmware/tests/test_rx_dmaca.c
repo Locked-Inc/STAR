@@ -24,8 +24,8 @@
  */
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "unity.h"
 
@@ -64,10 +64,22 @@ typedef enum : uintptr_t {
 
 /** @brief Byte counts for transfer tests */
 typedef enum : uint32_t {
-  k_test_len_aligned      = 8U,     /**< 8 bytes - multiple of 4 */
-  k_test_len_unaligned    = 7U,     /**< 7 bytes - not multiple of 4 */
-  k_test_len_max_plus_one = 65536U, /**< One beyond the 65535-byte DMA max (invalid) */
+  k_test_len_aligned      = 8U,        /**< 8 bytes - multiple of 4 */
+  k_test_len_unaligned    = 7U,        /**< 7 bytes - not multiple of 4 */
+  k_test_len_max_plus_one = 65536U,    /**< One beyond the 65535-byte DMA max (invalid) */
+  k_test_timeout_over_max = 10000001U, /**< Exceeds k_dmaca_timeout_cycles_max */
 } test_dmaca_len_t;
+
+/** @brief DMACA test register masks and buffer sizes */
+typedef enum : uint16_t {
+  k_test_dmtmd_sz_mask = 0x0300U, /**< DMTMD.SZ field mask (bits 8-9) */
+} test_dmaca_mask_t;
+
+/** @brief DMACA test source buffer and fill constants */
+typedef enum : uint8_t {
+  k_test_src_buf_size  = 16,   /**< Source buffer size for transfer tests */
+  k_test_src_fill_byte = 0xAB, /**< Fill byte for source buffer initialization */
+} test_dmaca_buf_t;
 
 /* =============================================================================
  * Helpers
@@ -75,7 +87,34 @@ typedef enum : uint32_t {
  */
 
 /** @brief Source buffer for transfer tests */
-static uint8_t s_src_buf[16];
+static uint8_t s_src_buf[k_test_src_buf_size];
+
+/**
+ * @brief Zero-fill a byte region using a for-loop (clang-tidy safe)
+ * @param[out] dst  Destination pointer
+ * @param[in]  len  Number of bytes to zero
+ */
+static inline void internal_zero_fill(void* dst, size_t len)
+{
+  uint8_t* p = (uint8_t*)dst;
+  for (size_t i = 0; i < len; i++) {
+    p[i] = 0;
+  }
+}
+
+/**
+ * @brief Fill a byte region with a given value (clang-tidy safe)
+ * @param[out] dst  Destination pointer
+ * @param[in]  val  Fill value
+ * @param[in]  len  Number of bytes to fill
+ */
+static inline void internal_byte_fill(void* dst, uint8_t val, size_t len)
+{
+  uint8_t* p = (uint8_t*)dst;
+  for (size_t i = 0; i < len; i++) {
+    p[i] = val;
+  }
+}
 
 /**
  * @brief Build a valid transfer config for channel 0
@@ -110,11 +149,11 @@ void setUp(void)
   mock_onewire_hw_init();
 
   /* Zero DMAC mock registers */
-  memset(g_mock_dmac_ch, 0, sizeof(g_mock_dmac_ch));
+  internal_zero_fill(g_mock_dmac_ch, sizeof(g_mock_dmac_ch));
   g_mock_dmast = 0;
 
   /* Initialize test source buffer with known data */
-  memset(s_src_buf, 0xAB, sizeof(s_src_buf));
+  internal_byte_fill(s_src_buf, k_test_src_fill_byte, sizeof(s_src_buf));
 }
 
 void tearDown(void)
@@ -266,9 +305,9 @@ void test_transfer_zero_timeout(void)
 void test_transfer_timeout_too_large(void)
 {
   (void)rx_dmaca_init();
-  /* 10000001 > k_dmaca_timeout_cycles_max (10000000) */
+  /* k_test_timeout_over_max > k_dmaca_timeout_cycles_max (10000000) */
   rx_dmaca_config_t cfg =
-    internal_make_config(k_test_len_aligned, k_test_dst_addr_aligned, 10000001U);
+    internal_make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_over_max);
   rx_err_t err = rx_dmaca_transfer_poll(&cfg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -362,7 +401,7 @@ void test_transfer_8bit_mode_unaligned_len(void)
   TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_len_unaligned, g_mock_dmac_ch[0].dmcra);
 
   /* DMTMD: 8-bit mode */
-  uint16_t sz_bits = g_mock_dmac_ch[0].dmtmd & 0x0300U;
+  uint16_t sz_bits = g_mock_dmac_ch[0].dmtmd & k_test_dmtmd_sz_mask;
   TEST_ASSERT_EQUAL_UINT16((uint16_t)k_dmtmd_sz_8bit, sz_bits);
 }
 
@@ -380,7 +419,7 @@ void test_transfer_8bit_mode_unaligned_dst(void)
   /* Count: 8 (8-bit mode, count = len) */
   TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_len_aligned, g_mock_dmac_ch[0].dmcra);
 
-  uint16_t sz_bits = g_mock_dmac_ch[0].dmtmd & 0x0300U;
+  uint16_t sz_bits = g_mock_dmac_ch[0].dmtmd & k_test_dmtmd_sz_mask;
   TEST_ASSERT_EQUAL_UINT16((uint16_t)k_dmtmd_sz_8bit, sz_bits);
 }
 

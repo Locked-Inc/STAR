@@ -292,8 +292,6 @@
  * @since Version 1.0.0
  */
 
-#include <string.h>
-
 #include "rx_bus_command.h"
 #include "rx_bus_config.h"
 #include "rx_bus_manager.h"
@@ -330,7 +328,37 @@
  */
 typedef enum : uint8_t {
   k_test_max_buses_to_add = 35, /**< More than k_max_buses to test overflow (35 > 16) */
+  k_test_bus_name_len     = 16, /**< Buffer size for dynamically generated bus names */
+  k_test_decimal_base     = 10, /**< Base 10 for digit extraction in bus name generation */
+  k_test_uart_channel     = 9,  /**< SCI9 channel for UART test bus */
 } test_constants_t;
+
+/**
+ * @enum test_baud_rate_t
+ * @brief UART baud rate constant for test bus configuration
+ */
+typedef enum : uint32_t {
+  k_test_uart_baud            = 115200, /**< Standard baud rate for UART test bus */
+  k_test_callback_bus_name_sz = 32,     /**< Buffer size for bus name seen by callback */
+  k_test_cmd_sentinel_value   = 42,     /**< Sentinel value set by mock command execute */
+} test_baud_rate_t;
+
+/**
+ * @enum test_name_idx_t
+ * @brief Character indices within a dynamically generated bus name string
+ *
+ * @details
+ * Bus names follow the pattern "bus_XX" where XX is a zero-padded 2-digit number.
+ */
+typedef enum : uint8_t {
+  k_test_name_idx_b    = 0, /**< Index of 'b' in "bus_XX" */
+  k_test_name_idx_u    = 1, /**< Index of 'u' in "bus_XX" */
+  k_test_name_idx_s    = 2, /**< Index of 's' in "bus_XX" */
+  k_test_name_idx_sep  = 3, /**< Index of '_' in "bus_XX" */
+  k_test_name_idx_tens = 4, /**< Index of tens digit in "bus_XX" */
+  k_test_name_idx_ones = 5, /**< Index of ones digit in "bus_XX" */
+  k_test_name_idx_null = 6, /**< Index of null terminator */
+} test_name_idx_t;
 
 /* =============================================================================
  * Test Fixtures
@@ -466,10 +494,10 @@ static rx_bus_config_t s_uart_config;
  */
 void setUp(void)
 {
-  memset(&s_test_manager, 0, sizeof(s_test_manager));
-  memset(&s_gpio_config, 0, sizeof(s_gpio_config));
-  memset(&s_onewire_config, 0, sizeof(s_onewire_config));
-  memset(&s_uart_config, 0, sizeof(s_uart_config));
+  s_test_manager   = (rx_bus_manager_t){0};
+  s_gpio_config    = (rx_bus_config_t){0};
+  s_onewire_config = (rx_bus_config_t){0};
+  s_uart_config    = (rx_bus_config_t){0};
 }
 
 /**
@@ -819,7 +847,12 @@ void test_rx_bus_manager_add_multiple_buses(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Create and add UART bus */
-  err = rx_bus_config_init_uart(&s_uart_config, "uart_bus", 9, k_rx_pb_7, k_rx_pb_6, 115200);
+  err = rx_bus_config_init_uart(&s_uart_config,
+                                "uart_bus",
+                                k_test_uart_channel,
+                                k_rx_pb_7,
+                                k_rx_pb_6,
+                                k_test_uart_baud);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_uart_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -864,7 +897,7 @@ void test_rx_bus_manager_add_bus_null_name(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Manually create config with nullptr name */
-  memset(&s_gpio_config, 0, sizeof(s_gpio_config));
+  s_gpio_config      = (rx_bus_config_t){0};
   s_gpio_config.name = nullptr;
   s_gpio_config.type = k_bus_type_gpio;
 
@@ -882,7 +915,7 @@ void test_rx_bus_manager_add_bus_empty_name(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Manually create config with empty name */
-  memset(&s_gpio_config, 0, sizeof(s_gpio_config));
+  s_gpio_config      = (rx_bus_config_t){0};
   s_gpio_config.name = "";
   s_gpio_config.type = k_bus_type_gpio;
 
@@ -955,19 +988,19 @@ void test_rx_bus_manager_add_bus_max_reached(void)
 
   /* Use an array of bus configs to add k_max_buses buses */
   static rx_bus_config_t configs[k_max_buses];
-  static char            names[k_max_buses][16];
+  static char            names[k_max_buses][k_test_bus_name_len];
 
   for (uint8_t i = 0; i < k_max_buses; ++i) {
     /* Create unique name for each bus */
-    names[i][0] = 'b';
-    names[i][1] = 'u';
-    names[i][2] = 's';
-    names[i][3] = '_';
-    names[i][4] = (char)('0' + (i / 10));
-    names[i][5] = (char)('0' + (i % 10));
-    names[i][6] = '\0';
+    names[i][k_test_name_idx_b]    = 'b';
+    names[i][k_test_name_idx_u]    = 'u';
+    names[i][k_test_name_idx_s]    = 's';
+    names[i][k_test_name_idx_sep]  = '_';
+    names[i][k_test_name_idx_tens] = (char)('0' + (i / k_test_decimal_base));
+    names[i][k_test_name_idx_ones] = (char)('0' + (i % k_test_decimal_base));
+    names[i][k_test_name_idx_null] = '\0';
 
-    memset(&configs[i], 0, sizeof(rx_bus_config_t));
+    configs[i]      = (rx_bus_config_t){0};
     configs[i].name = names[i];
     configs[i].type = k_bus_type_gpio;
 
@@ -1068,7 +1101,12 @@ void test_rx_bus_manager_remove_bus_from_middle(void)
   err = rx_bus_manager_add_bus(&s_test_manager, &s_onewire_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = rx_bus_config_init_uart(&s_uart_config, "bus_3", 9, k_rx_pb_7, k_rx_pb_6, 115200);
+  err = rx_bus_config_init_uart(&s_uart_config,
+                                "bus_3",
+                                k_test_uart_channel,
+                                k_rx_pb_7,
+                                k_rx_pb_6,
+                                k_test_uart_baud);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   err = rx_bus_manager_add_bus(&s_test_manager, &s_uart_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1279,9 +1317,9 @@ void test_rx_bus_manager_find_bus_not_found(void)
  * ```
  */
 typedef struct {
-  bool     callback_called;   /**< Set to true when callback invoked */
-  rx_err_t callback_return;   /**< Return value for callback to produce */
-  char     bus_name_seen[32]; /**< Bus name seen by callback (copied for verification) */
+  bool     callback_called;                            /**< Set to true when callback invoked */
+  rx_err_t callback_return;                            /**< Return value for callback to produce */
+  char     bus_name_seen[k_test_callback_bus_name_sz]; /**< Bus name seen by callback */
 } callback_ctx_t;
 
 /**
@@ -1311,11 +1349,18 @@ static rx_err_t test_callback(rx_bus_config_t* bus_config, void* user_ctx)
 
   ctx->callback_called = true;
   if (bus_config->name != nullptr) {
-    size_t len = strlen(bus_config->name);
+    /* Compute string length without strlen */
+    size_t len = 0;
+    while (bus_config->name[len] != '\0' && len < sizeof(ctx->bus_name_seen)) {
+      ++len;
+    }
     if (len >= sizeof(ctx->bus_name_seen)) {
       len = sizeof(ctx->bus_name_seen) - 1;
     }
-    memcpy(ctx->bus_name_seen, bus_config->name, len);
+    /* Copy bytes without memcpy */
+    for (size_t i = 0; i < len; ++i) {
+      ctx->bus_name_seen[i] = bus_config->name[i];
+    }
     ctx->bus_name_seen[len] = '\0';
   }
 
@@ -1493,7 +1538,7 @@ void test_rx_bus_manager_with_bus_not_found(void)
  * rx_bus_command_init(&cmd, test_command_execute, &data);
  * rx_bus_manager_execute_command(&mgr, "test_bus", &cmd);
  * TEST_ASSERT_TRUE(data.executed);
- * TEST_ASSERT_EQUAL(42, data.value);
+ * TEST_ASSERT_EQUAL(k_test_cmd_sentinel_value, data.value);
  * ```
  */
 typedef struct {
@@ -1526,7 +1571,7 @@ static rx_err_t test_command_execute(rx_bus_config_t* bus, void* data)
 {
   command_test_data_t* cmd_data = (command_test_data_t*)data;
   cmd_data->executed            = true;
-  cmd_data->value               = 42;
+  cmd_data->value               = k_test_cmd_sentinel_value;
 
   (void)bus;
 
@@ -1585,7 +1630,7 @@ void test_rx_bus_manager_execute_command_success(void)
   err = rx_bus_manager_execute_command(&s_test_manager, "cmd_test", &cmd);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(data.executed);
-  TEST_ASSERT_EQUAL(42, data.value);
+  TEST_ASSERT_EQUAL(k_test_cmd_sentinel_value, data.value);
   TEST_ASSERT_EQUAL(k_rx_ok, cmd.result);
 }
 
@@ -1728,8 +1773,12 @@ void test_bus_config_uart_invalid_channel_returns_error(void)
 {
   rx_bus_config_t      config;
   static const uint8_t k_invalid_channel = k_sci_channel_count;
-  rx_err_t             err =
-    rx_bus_config_init_uart(&config, "test", k_invalid_channel, k_rx_pb_7, k_rx_pb_6, 115200U);
+  rx_err_t             err               = rx_bus_config_init_uart(&config,
+                                         "test",
+                                         k_invalid_channel,
+                                         k_rx_pb_7,
+                                         k_rx_pb_6,
+                                         k_test_uart_baud);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1748,10 +1797,13 @@ void test_bus_config_uart_invalid_channel_returns_error(void)
 void test_bus_config_uart_invalid_tx_pin_returns_error(void)
 {
   rx_bus_config_t            config;
-  static const uint8_t       k_valid_channel = 9U;
-  static const rx_port_pin_t k_invalid_tx    = (rx_port_pin_t)0xFF00U;
-  rx_err_t                   err =
-    rx_bus_config_init_uart(&config, "test", k_valid_channel, k_invalid_tx, k_rx_pb_6, 115200U);
+  static const rx_port_pin_t k_invalid_tx = (rx_port_pin_t)0xFF00U;
+  rx_err_t                   err          = rx_bus_config_init_uart(&config,
+                                         "test",
+                                         k_test_uart_channel,
+                                         k_invalid_tx,
+                                         k_rx_pb_6,
+                                         k_test_uart_baud);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1770,10 +1822,13 @@ void test_bus_config_uart_invalid_tx_pin_returns_error(void)
 void test_bus_config_uart_invalid_rx_pin_returns_error(void)
 {
   rx_bus_config_t            config;
-  static const uint8_t       k_valid_channel = 9U;
-  static const rx_port_pin_t k_invalid_rx    = (rx_port_pin_t)0xFF00U;
-  rx_err_t                   err =
-    rx_bus_config_init_uart(&config, "test", k_valid_channel, k_rx_pb_7, k_invalid_rx, 115200U);
+  static const rx_port_pin_t k_invalid_rx = (rx_port_pin_t)0xFF00U;
+  rx_err_t                   err          = rx_bus_config_init_uart(&config,
+                                         "test",
+                                         k_test_uart_channel,
+                                         k_rx_pb_7,
+                                         k_invalid_rx,
+                                         k_test_uart_baud);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1791,10 +1846,9 @@ void test_bus_config_uart_invalid_rx_pin_returns_error(void)
  */
 void test_bus_config_uart_zero_baudrate_returns_error(void)
 {
-  rx_bus_config_t      config;
-  static const uint8_t k_valid_channel = 9U;
-  rx_err_t             err =
-    rx_bus_config_init_uart(&config, "test", k_valid_channel, k_rx_pb_7, k_rx_pb_6, 0U);
+  rx_bus_config_t config;
+  rx_err_t        err =
+    rx_bus_config_init_uart(&config, "test", k_test_uart_channel, k_rx_pb_7, k_rx_pb_6, 0U);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1826,9 +1880,12 @@ void test_bus_config_onewire_invalid_pin_returns_error(void)
  */
 void test_bus_config_uart_null_config_returns_error(void)
 {
-  static const uint8_t k_valid_channel = 9U;
-  rx_err_t             err =
-    rx_bus_config_init_uart(nullptr, "test", k_valid_channel, k_rx_pb_7, k_rx_pb_6, 115200U);
+  rx_err_t err = rx_bus_config_init_uart(nullptr,
+                                         "test",
+                                         k_test_uart_channel,
+                                         k_rx_pb_7,
+                                         k_rx_pb_6,
+                                         k_test_uart_baud);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1840,10 +1897,13 @@ void test_bus_config_uart_null_config_returns_error(void)
  */
 void test_bus_config_uart_null_name_returns_error(void)
 {
-  rx_bus_config_t      config;
-  static const uint8_t k_valid_channel = 9U;
-  rx_err_t             err =
-    rx_bus_config_init_uart(&config, nullptr, k_valid_channel, k_rx_pb_7, k_rx_pb_6, 115200U);
+  rx_bus_config_t config;
+  rx_err_t        err = rx_bus_config_init_uart(&config,
+                                         nullptr,
+                                         k_test_uart_channel,
+                                         k_rx_pb_7,
+                                         k_rx_pb_6,
+                                         k_test_uart_baud);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1877,10 +1937,12 @@ void test_bus_config_onewire_null_name_returns_error(void)
  * =============================================================================
  */
 
-int main(void)
+/**
+ * @brief Run init, registration, removal, and lookup tests
+ * @details 23 tests covering init (5), registration (8), removal (5), and lookup (5).
+ */
+static void internal_run_registry_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Initialization Tests */
   RUN_TEST(test_rx_bus_manager_init_success);
   RUN_TEST(test_rx_bus_manager_init_null_manager);
@@ -1911,7 +1973,14 @@ int main(void)
   RUN_TEST(test_rx_bus_manager_find_bus_null_name);
   RUN_TEST(test_rx_bus_manager_find_bus_null_output);
   RUN_TEST(test_rx_bus_manager_find_bus_not_found);
+}
 
+/**
+ * @brief Run callback, command pattern, and bus config validation tests
+ * @details 22 tests covering with_bus (6), execute_command (7), and config validation (9).
+ */
+static void internal_run_callback_and_command_tests(void)
+{
   /* Thread-Safe Callback Tests */
   RUN_TEST(test_rx_bus_manager_with_bus_success);
   RUN_TEST(test_rx_bus_manager_with_bus_callback_error);
@@ -1939,6 +2008,14 @@ int main(void)
   RUN_TEST(test_bus_config_uart_null_name_returns_error);
   RUN_TEST(test_bus_config_onewire_null_config_returns_error);
   RUN_TEST(test_bus_config_onewire_null_name_returns_error);
+}
+
+int main(void)
+{
+  UNITY_BEGIN();
+
+  internal_run_registry_tests();
+  internal_run_callback_and_command_tests();
 
   return UNITY_END();
 }

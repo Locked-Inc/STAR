@@ -21,8 +21,6 @@
  * @since Version 1.0.0
  */
 
-#include <string.h>
-
 #include "mock_rx_onewire_hw.h"
 #include "mock_rx_tpu_regs.h"
 #include "rx_encoder_tpu.h"
@@ -49,11 +47,37 @@ typedef enum : uint16_t {
 } test_constants_t;
 
 typedef enum : uint16_t {
-  k_test_count_100  = 100,
-  k_test_count_200  = 200,
-  k_test_count_1000 = 1000,
-  k_test_count_1100 = 1100,
+  k_test_count_10    = 10,
+  k_test_count_100   = 100,
+  k_test_count_200   = 200,
+  k_test_count_1000  = 1000,
+  k_test_count_1100  = 1100,
+  k_test_count_5000  = 5000,
+  k_test_count_30000 = 30000,
+  k_test_count_60000 = 60000,
+  k_test_count_65530 = 65530,
 } test_count_values_t;
+
+/** @brief Encoder register index constants */
+typedef enum : uint8_t {
+  k_test_reg_idx_0 = 0, /**< TPU channel 1 -> register index 0 */
+  k_test_reg_idx_1 = 1, /**< TPU channel 2 -> register index 1 */
+  k_test_reg_idx_2 = 2, /**< TPU channel 4 -> register index 2 */
+} test_reg_index_t;
+
+/** @brief 16-bit mask constant for encoder set_count */
+typedef enum : uint32_t {
+  k_test_16bit_mask = 0xFFFF, /**< 16-bit mask for counter truncation */
+} test_mask_values_t;
+
+/** @brief Test assertion constants */
+typedef enum : uint8_t {
+  k_test_invalid_channel_10 = 10, /**< Out-of-range channel for corrupt_cpr test */
+} test_invalid_channel_t;
+
+/** @brief Float constants for velocity/delta-time testing */
+static const float s_test_delta_time_s     = 0.01F;
+static const float s_test_velocity_max_rps = 100.0F;
 
 /* =============================================================================
  * setUp / tearDown
@@ -62,12 +86,21 @@ typedef enum : uint16_t {
 
 void setUp(void)
 {
-  /* Reset all mock TPU registers */
-  memset(&g_mock_tpu_control, 0, sizeof(g_mock_tpu_control));
-  memset(g_mock_tpu_regs, 0, sizeof(g_mock_tpu_regs));
+  /* Reset all mock TPU registers using aggregate zero init (no memset) */
+  {
+    static const rx_tpu_control_regs_t s_zero_control = {0};
+    g_mock_tpu_control                                = s_zero_control;
+  }
+  for (uint8_t i = 0; i < k_mock_tpu_channel_count; i++) {
+    static const rx_tpu_regs_t s_zero_regs = {0};
+    g_mock_tpu_regs[i]                     = s_zero_regs;
+  }
 
   /* Reset system register mocks */
-  memset(&g_mock_onewire_system_regs, 0, sizeof(g_mock_onewire_system_regs));
+  {
+    static const mock_system_regs_t s_zero_sys = {0};
+    g_mock_onewire_system_regs                 = s_zero_sys;
+  }
 
   /* Deinit all channels to clean state */
   (void)rx_tpu_encoder_deinit(k_tpu_channel_1);
@@ -230,21 +263,21 @@ void test_read_count_forward_wrap(void)
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_2));
 
   /* Walk counter up to near overflow in safe steps (<32768 each) */
-  g_mock_tpu_regs[1].tcnt = 30000;
+  g_mock_tpu_regs[k_test_reg_idx_1].tcnt = k_test_count_30000;
   rx_encoder_state_t state;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_read_count(k_tpu_channel_2, &state));
-  TEST_ASSERT_EQUAL_INT32(30000, state.total_count);
+  TEST_ASSERT_EQUAL_INT32(k_test_count_30000, state.total_count);
 
-  g_mock_tpu_regs[1].tcnt = 60000;
+  g_mock_tpu_regs[k_test_reg_idx_1].tcnt = k_test_count_60000;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_read_count(k_tpu_channel_2, &state));
-  TEST_ASSERT_EQUAL_INT32(60000, state.total_count);
+  TEST_ASSERT_EQUAL_INT32(k_test_count_60000, state.total_count);
 
-  g_mock_tpu_regs[1].tcnt = 65530;
+  g_mock_tpu_regs[k_test_reg_idx_1].tcnt = k_test_count_65530;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_read_count(k_tpu_channel_2, &state));
-  TEST_ASSERT_EQUAL_INT32(65530, state.total_count);
+  TEST_ASSERT_EQUAL_INT32(k_test_count_65530, state.total_count);
 
   /* Forward wrap: 65530 -> 10 (16 counts forward across boundary) */
-  g_mock_tpu_regs[1].tcnt = 10;
+  g_mock_tpu_regs[k_test_reg_idx_1].tcnt = k_test_count_10;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_read_count(k_tpu_channel_2, &state));
   TEST_ASSERT_EQUAL_INT32(65546, state.total_count);
 }
@@ -272,13 +305,13 @@ void test_read_count_reverse_wrap(void)
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
 
   /* First read at 10 */
-  g_mock_tpu_regs[0].tcnt = 10;
+  g_mock_tpu_regs[k_test_reg_idx_0].tcnt = k_test_count_10;
   rx_encoder_state_t state;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_read_count(k_tpu_channel_1, &state));
-  TEST_ASSERT_EQUAL_INT32(10, state.total_count);
+  TEST_ASSERT_EQUAL_INT32(k_test_count_10, state.total_count);
 
   /* Second read at 65530 (wrapped backward by 16 counts) */
-  g_mock_tpu_regs[0].tcnt = 65530;
+  g_mock_tpu_regs[k_test_reg_idx_0].tcnt = k_test_count_65530;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_read_count(k_tpu_channel_1, &state));
   /* 10 - 16 = -6 */
   TEST_ASSERT_EQUAL_INT32(-6, state.total_count);
@@ -324,7 +357,7 @@ void test_read_count_inverted(void)
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_init(&config));
 
-  g_mock_tpu_regs[2].tcnt = k_test_count_100;
+  g_mock_tpu_regs[k_test_reg_idx_2].tcnt = k_test_count_100;
   rx_encoder_state_t state;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_read_count(k_tpu_channel_4, &state));
   /* With inversion, forward 100 becomes -100 */
@@ -354,48 +387,50 @@ void test_velocity_forward(void)
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
 
   /* First velocity call establishes baseline */
-  g_mock_tpu_regs[0].tcnt = 0;
-  float velocity          = 0.0f;
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_read_velocity(&velocity, 0.01f, k_tpu_channel_1));
+  g_mock_tpu_regs[k_test_reg_idx_0].tcnt = 0;
+  float velocity                         = 0.0F;
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_tpu_encoder_read_velocity(&velocity, s_test_delta_time_s, k_tpu_channel_1));
 
   /* Second call: 1364 counts in 1 second = 1.0 RPS */
-  g_mock_tpu_regs[0].tcnt = k_test_counts_per_rev;
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_read_velocity(&velocity, 1.0f, k_tpu_channel_1));
-  TEST_ASSERT_FLOAT_WITHIN(0.01f, 1.0f, velocity);
+  g_mock_tpu_regs[k_test_reg_idx_0].tcnt = k_test_counts_per_rev;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_read_velocity(&velocity, 1.0F, k_tpu_channel_1));
+  TEST_ASSERT_FLOAT_WITHIN(s_test_delta_time_s, 1.0F, velocity);
 }
 
 /** @brief Null velocity_rps returns null_ptr */
 void test_velocity_null_ptr(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
-  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, rx_tpu_encoder_read_velocity(NULL, 0.01f, k_tpu_channel_1));
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr,
+                    rx_tpu_encoder_read_velocity(NULL, s_test_delta_time_s, k_tpu_channel_1));
 }
 
 /** @brief Zero delta_time returns invalid_arg */
 void test_velocity_zero_dt(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
-  float velocity = 0.0f;
+  float velocity = 0.0F;
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_tpu_encoder_read_velocity(&velocity, 0.0f, k_tpu_channel_1));
+                    rx_tpu_encoder_read_velocity(&velocity, 0.0F, k_tpu_channel_1));
 }
 
 /** @brief Negative delta_time returns invalid_arg */
 void test_velocity_negative_dt(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
-  float velocity = 0.0f;
+  float velocity = 0.0F;
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_tpu_encoder_read_velocity(&velocity, -1.0f, k_tpu_channel_1));
+                    rx_tpu_encoder_read_velocity(&velocity, -1.0F, k_tpu_channel_1));
 }
 
 /** @brief Velocity on uninit channel returns invalid_state */
 void test_velocity_uninit(void)
 {
-  float velocity = 0.0f;
+  float velocity = 0.0F;
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state,
-                    rx_tpu_encoder_read_velocity(&velocity, 0.01f, k_tpu_channel_1));
+                    rx_tpu_encoder_read_velocity(&velocity, s_test_delta_time_s, k_tpu_channel_1));
 }
 
 /* =============================================================================
@@ -446,19 +481,20 @@ void test_set_count(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_set_count(5000, k_tpu_channel_1));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_set_count(k_test_count_5000, k_tpu_channel_1));
 
   /* Read - delta from set point */
-  g_mock_tpu_regs[0].tcnt = (uint16_t)(5000 & 0xFFFF);
+  g_mock_tpu_regs[k_test_reg_idx_0].tcnt = (uint16_t)(k_test_count_5000 & k_test_16bit_mask);
   rx_encoder_state_t state;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_read_count(k_tpu_channel_1, &state));
-  TEST_ASSERT_EQUAL_INT32(5000, state.total_count);
+  TEST_ASSERT_EQUAL_INT32(k_test_count_5000, state.total_count);
 }
 
 /** @brief Set count on uninit returns invalid_state */
 void test_set_count_uninit(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, rx_tpu_encoder_set_count(100, k_tpu_channel_1));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state,
+                    rx_tpu_encoder_set_count(k_test_count_100, k_tpu_channel_1));
 }
 
 /* =============================================================================
@@ -527,22 +563,23 @@ void test_read_count_invalid_channel(void)
 /** @brief read_velocity with invalid channel (0) returns invalid_arg */
 void test_read_velocity_invalid_channel(void)
 {
-  float velocity = 0.0f;
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_tpu_encoder_read_velocity(&velocity, 0.01f, 0));
+  float velocity = 0.0F;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_tpu_encoder_read_velocity(&velocity, s_test_delta_time_s, 0));
 }
 
 /** @brief set_count with invalid channel (0) returns invalid_arg */
 void test_set_count_invalid_channel(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_tpu_encoder_set_count(100, 0));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_tpu_encoder_set_count(k_test_count_100, 0));
 }
 
 /** @brief read_velocity uninit returns invalid_state */
 void test_read_velocity_uninit_channel(void)
 {
-  float velocity = 0.0f;
+  float velocity = 0.0F;
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state,
-                    rx_tpu_encoder_read_velocity(&velocity, 0.01f, k_tpu_channel_2));
+                    rx_tpu_encoder_read_velocity(&velocity, s_test_delta_time_s, k_tpu_channel_2));
 }
 
 /** @brief init_phase_count fails when TPU already initialized separately */
@@ -572,8 +609,8 @@ void test_velocity_corrupted_cpr(void)
 #ifdef TESTING
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
   rx_tpu_encoder_test_corrupt_cpr(k_tpu_channel_1);
-  float    velocity = 0.0f;
-  rx_err_t err      = rx_tpu_encoder_read_velocity(&velocity, 0.01f, k_tpu_channel_1);
+  float    velocity = 0.0F;
+  rx_err_t err      = rx_tpu_encoder_read_velocity(&velocity, s_test_delta_time_s, k_tpu_channel_1);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 #else
   TEST_IGNORE_MESSAGE("Only testable in TESTING builds");
@@ -586,7 +623,7 @@ void test_set_count_corrupted_cpr(void)
 #ifdef TESTING
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
   rx_tpu_encoder_test_corrupt_cpr(k_tpu_channel_1);
-  rx_err_t err = rx_tpu_encoder_set_count(100, k_tpu_channel_1);
+  rx_err_t err = rx_tpu_encoder_set_count(k_test_count_100, k_tpu_channel_1);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 #else
   TEST_IGNORE_MESSAGE("Only testable in TESTING builds");
@@ -598,7 +635,7 @@ void test_internal_update_state_null_state(void)
 {
 #ifdef UNIT_TEST
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
-  rx_err_t err = internal_update_state(NULL, k_tpu_channel_1, 100);
+  rx_err_t err = internal_update_state(NULL, k_tpu_channel_1, k_test_count_100);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 #else
   TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
@@ -610,7 +647,7 @@ void test_internal_update_state_invalid_channel(void)
 {
 #ifdef UNIT_TEST
   rx_encoder_state_t state;
-  rx_err_t           err = internal_update_state(&state, 0, 100);
+  rx_err_t           err = internal_update_state(&state, 0, k_test_count_100);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 #else
   TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
@@ -623,7 +660,7 @@ void test_internal_update_state_uninit_channel(void)
 #ifdef UNIT_TEST
   rx_encoder_state_t state;
   /* k_tpu_channel_1 is valid but not initialized (setUp deinits all channels) */
-  rx_err_t err = internal_update_state(&state, k_tpu_channel_1, 100);
+  rx_err_t err = internal_update_state(&state, k_tpu_channel_1, k_test_count_100);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 #else
   TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
@@ -637,7 +674,7 @@ void test_internal_update_state_corrupted_cpr(void)
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
   rx_tpu_encoder_test_corrupt_cpr(k_tpu_channel_1);
   rx_encoder_state_t state;
-  rx_err_t           err = internal_update_state(&state, k_tpu_channel_1, 100);
+  rx_err_t           err = internal_update_state(&state, k_tpu_channel_1, k_test_count_100);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 #else
   TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST+TESTING builds");
@@ -656,12 +693,12 @@ void test_velocity_unrealistic(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tpu_encoder_init(&config));
 
   /* Velocity = delta_count / cpr / delta_time = 1000 / 1 / 0.01 = 100000 RPS > max */
-  g_mock_tpu_regs[0].tcnt = 1000;
-  float    velocity       = 0.0f;
-  rx_err_t err            = rx_tpu_encoder_read_velocity(&velocity, 0.01f, k_tpu_channel_1);
+  g_mock_tpu_regs[k_test_reg_idx_0].tcnt = k_test_count_1000;
+  float    velocity                      = 0.0F;
+  rx_err_t err = rx_tpu_encoder_read_velocity(&velocity, s_test_delta_time_s, k_tpu_channel_1);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Velocity exceeds k_tpu_enc_max_velocity_rps (100) - warning triggered */
-  TEST_ASSERT_GREATER_THAN(100.0f, velocity);
+  TEST_ASSERT_GREATER_THAN(s_test_velocity_max_rps, velocity);
 }
 
 /** @brief Two channels operate independently */
@@ -671,8 +708,8 @@ void test_multi_channel_independent(void)
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_2));
 
   /* Set different counts */
-  g_mock_tpu_regs[0].tcnt = k_test_count_100;
-  g_mock_tpu_regs[1].tcnt = k_test_count_200;
+  g_mock_tpu_regs[k_test_reg_idx_0].tcnt = k_test_count_100;
+  g_mock_tpu_regs[k_test_reg_idx_1].tcnt = k_test_count_200;
 
   rx_encoder_state_t state1;
   rx_encoder_state_t state2;
@@ -699,7 +736,7 @@ void test_multi_channel_independent(void)
 void test_corrupt_cpr_invalid_channel_noop(void)
 {
   /* Cast a value above k_tpu_enc_max_channels (6) to exercise the false branch */
-  rx_tpu_encoder_test_corrupt_cpr((rx_tpu_channel_t)10);
+  rx_tpu_encoder_test_corrupt_cpr((rx_tpu_channel_t)k_test_invalid_channel_10);
   /* No assertion needed - just must not crash and not corrupt any array entry */
 }
 
@@ -708,11 +745,8 @@ void test_corrupt_cpr_invalid_channel_noop(void)
  * =============================================================================
  */
 
-int main(void)
+static void run_init_tests(void)
 {
-  UNITY_BEGIN();
-
-  /* Initialization */
   RUN_TEST(test_init_tpu1);
   RUN_TEST(test_init_tpu2);
   RUN_TEST(test_init_tpu4);
@@ -721,7 +755,10 @@ int main(void)
   RUN_TEST(test_init_invalid_channel);
   RUN_TEST(test_init_zero_counts_per_rev);
   RUN_TEST(test_init_double_init);
+}
 
+static void run_read_tests(void)
+{
   /* Raw reads */
   RUN_TEST(test_read_raw_value);
   RUN_TEST(test_read_raw_null);
@@ -737,7 +774,10 @@ int main(void)
   RUN_TEST(test_read_count_uninit);
   RUN_TEST(test_read_count_inverted);
   RUN_TEST(test_read_count_revolutions);
+}
 
+static void run_velocity_reset_set_deinit_tests(void)
+{
   /* Velocity */
   RUN_TEST(test_velocity_forward);
   RUN_TEST(test_velocity_null_ptr);
@@ -762,8 +802,10 @@ int main(void)
 
   /* Multi-channel */
   RUN_TEST(test_multi_channel_independent);
+}
 
-  /* Additional error-path tests */
+static void run_error_path_tests(void)
+{
   RUN_TEST(test_read_raw_invalid_channel);
   RUN_TEST(test_read_count_invalid_channel);
   RUN_TEST(test_read_velocity_invalid_channel);
@@ -778,6 +820,16 @@ int main(void)
   RUN_TEST(test_internal_update_state_corrupted_cpr);
   RUN_TEST(test_velocity_unrealistic);
   RUN_TEST(test_corrupt_cpr_invalid_channel_noop);
+}
+
+int main(void)
+{
+  UNITY_BEGIN();
+
+  run_init_tests();
+  run_read_tests();
+  run_velocity_reset_set_deinit_tests();
+  run_error_path_tests();
 
   return UNITY_END();
 }

@@ -24,8 +24,6 @@
  * SPDX-License-Identifier: MIT
 */
 
-#include <string.h>
-
 #include "rx_session.h"
 #include "unity.h"
 
@@ -40,13 +38,22 @@
  * to improve readability and maintainability per NASA Power of 10 Rule 8.
  */
 typedef enum : uint16_t {
-  k_test_sentinel_seq     = 0xFFFF, /**< Sentinel value to detect unwritten output */
-  k_test_expected_seq_0   = 0,      /**< Expected initial sequence after init/reset */
-  k_test_advance_count    = 100,    /**< Iterations for TX advance loop test */
-  k_test_validate_count   = 50,     /**< Iterations for RX validate loop test */
-  k_test_reset_advance    = 10,     /**< Iterations to advance before reset test */
-  k_test_transport_switch = 5,      /**< Iterations per transport in switch test */
-  k_test_gap_accept_count = 6,      /**< Accept count for gap boundary test (0-5) */
+  k_test_sentinel_seq      = 0xFFFF, /**< Sentinel value to detect unwritten output */
+  k_test_expected_seq_0    = 0,      /**< Expected initial sequence after init/reset */
+  k_test_advance_count     = 100,    /**< Iterations for TX advance loop test */
+  k_test_validate_count    = 50,     /**< Iterations for RX validate loop test */
+  k_test_reset_advance     = 10,     /**< Iterations to advance before reset test */
+  k_test_transport_switch  = 5,      /**< Iterations per transport in switch test */
+  k_test_gap_accept_count  = 6,      /**< Accept count for gap boundary test (0-5) */
+  k_test_wraparound_start  = 0xFFFE, /**< TX/RX sequence near max for wraparound */
+  k_test_wraparound_max    = 0xFFFF, /**< Maximum sequence number before wrap */
+  k_test_gap_one_skip      = 2,      /**< RX seq with 1 frame skipped (gap=1) */
+  k_test_gap_one_next      = 3,      /**< Expected next seq after gap-1 accept */
+  k_test_gap_max_skip      = 10,     /**< RX seq with max accepted gap (diff=9) */
+  k_test_gap_boundary_skip = 11,     /**< RX seq at gap tolerance boundary (diff=10) */
+  k_test_gap_large_skip    = 100,    /**< RX seq with large gap (diff=99) */
+  k_test_dup_upper         = 5,      /**< Upper bound for duplicate test accept loop */
+  k_test_dup_replay        = 3,      /**< Duplicated seq to test rejection */
 } test_session_constants_t;
 
 /* ============================================================================
@@ -75,8 +82,9 @@ static rx_session_state_t s_session;
  */
 void setUp(void)
 {
-  memset(&s_session, 0, sizeof(s_session));
-  rx_err_t err = rx_session_init(&s_session);
+  static const rx_session_state_t s_zero = {0};
+  s_session                              = s_zero;
+  rx_err_t err                           = rx_session_init(&s_session);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -144,9 +152,7 @@ void test_deinit_null_ptr(void)
  */
 void test_deinit_not_initialized(void)
 {
-  rx_session_state_t uninit;
-
-  memset(&uninit, 0, sizeof(uninit));
+  rx_session_state_t uninit = {0};
 
   rx_err_t err = rx_session_deinit(&uninit);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
@@ -205,18 +211,18 @@ void test_next_tx_wraparound(void)
 {
   /* Set tx_sequence close to max via repeated next_tx would be slow.
    * Instead, directly set the internal state for this test. */
-  s_session.tx_sequence = 0xFFFE;
+  s_session.tx_sequence = k_test_wraparound_start;
 
   uint16_t seq;
   rx_err_t err;
 
   err = rx_session_next_tx(&s_session, &seq);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT16(0xFFFE, seq);
+  TEST_ASSERT_EQUAL_UINT16(k_test_wraparound_start, seq);
 
   err = rx_session_next_tx(&s_session, &seq);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT16(0xFFFF, seq);
+  TEST_ASSERT_EQUAL_UINT16(k_test_wraparound_max, seq);
 
   /* Should wrap to 0 */
   err = rx_session_next_tx(&s_session, &seq);
@@ -250,9 +256,7 @@ void test_next_tx_null_sequence(void)
  */
 void test_next_tx_not_initialized(void)
 {
-  rx_session_state_t uninit;
-
-  memset(&uninit, 0, sizeof(uninit));
+  rx_session_state_t uninit = {0};
 
   uint16_t seq;
   rx_err_t err = rx_session_next_tx(&uninit, &seq);
@@ -313,7 +317,7 @@ void test_validate_rx_gap_one_frame(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Skip seq=1, receive seq=2 (gap=1) -> accept with gap */
-  err = rx_session_validate_rx(&s_session, 2, &result);
+  err = rx_session_validate_rx(&s_session, k_test_gap_one_skip, &result);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_session_validate_gap, result);
 
@@ -321,7 +325,7 @@ void test_validate_rx_gap_one_frame(void)
   uint16_t rx_seq;
   err = rx_session_get_rx(&s_session, &rx_seq);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT16(3, rx_seq);
+  TEST_ASSERT_EQUAL_UINT16(k_test_gap_one_next, rx_seq);
 }
 
 /**
@@ -339,7 +343,7 @@ void test_validate_rx_gap_max_accepted(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Skip 9 frames, receive seq=10 (diff=9) -> accept with gap */
-  err = rx_session_validate_rx(&s_session, 10, &result);
+  err = rx_session_validate_rx(&s_session, k_test_gap_max_skip, &result);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_session_validate_gap, result);
 }
@@ -359,7 +363,7 @@ void test_validate_rx_gap_at_boundary(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Skip 10 frames, receive seq=11 (diff=10) -> reject */
-  err = rx_session_validate_rx(&s_session, 11, &result);
+  err = rx_session_validate_rx(&s_session, k_test_gap_boundary_skip, &result);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
   TEST_ASSERT_EQUAL(k_session_validate_fail, result);
 
@@ -383,7 +387,7 @@ void test_validate_rx_large_gap_rejected(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Receive seq=100 (diff=99) -> reject */
-  err = rx_session_validate_rx(&s_session, 100, &result);
+  err = rx_session_validate_rx(&s_session, k_test_gap_large_skip, &result);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
   TEST_ASSERT_EQUAL(k_session_validate_fail, result);
 }
@@ -399,13 +403,13 @@ void test_validate_rx_duplicate_rejected(void)
   rx_session_validate_result_t result;
 
   /* Accept seq 0-5 */
-  for (uint16_t i = 0; i <= 5; i++) {
+  for (uint16_t i = 0; i <= k_test_dup_upper; i++) {
     rx_err_t err = rx_session_validate_rx(&s_session, i, &result);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
   }
 
   /* Receive seq=3 (already processed) -> reject */
-  rx_err_t err = rx_session_validate_rx(&s_session, 3, &result);
+  rx_err_t err = rx_session_validate_rx(&s_session, k_test_dup_replay, &result);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
   TEST_ASSERT_EQUAL(k_session_validate_fail, result);
 }
@@ -436,14 +440,14 @@ void test_validate_rx_null_result_gap(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Skip seq=1, receive seq=2 (gap=1, within tolerance) with NULL result */
-  err = rx_session_validate_rx(&s_session, 2, NULL);
+  err = rx_session_validate_rx(&s_session, k_test_gap_one_skip, NULL);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify rx_sequence updated to 3 (gap was accepted) */
   uint16_t rx_seq;
   err = rx_session_get_rx(&s_session, &rx_seq);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT16(3, rx_seq);
+  TEST_ASSERT_EQUAL_UINT16(k_test_gap_one_next, rx_seq);
 }
 
 /**
@@ -461,7 +465,7 @@ void test_validate_rx_null_result_fail(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Receive seq=100 (diff=99, >= MaxGapTolerance=10) with NULL result */
-  err = rx_session_validate_rx(&s_session, 100, NULL);
+  err = rx_session_validate_rx(&s_session, k_test_gap_large_skip, NULL);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
 
   /* rx_sequence should be unchanged (still expecting 1) */
@@ -487,10 +491,8 @@ void test_validate_rx_null_state(void)
  */
 void test_validate_rx_not_initialized(void)
 {
-  rx_session_state_t           uninit;
+  rx_session_state_t           uninit = {0};
   rx_session_validate_result_t result;
-
-  memset(&uninit, 0, sizeof(uninit));
 
   rx_err_t err = rx_session_validate_rx(&uninit, 0, &result);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
@@ -504,15 +506,15 @@ void test_validate_rx_wraparound(void)
   /* Set rx_sequence near wraparound */
   rx_session_validate_result_t result;
 
-  s_session.rx_sequence = 0xFFFE;
+  s_session.rx_sequence = k_test_wraparound_start;
 
   /* Accept seq=0xFFFE */
-  rx_err_t err = rx_session_validate_rx(&s_session, 0xFFFE, &result);
+  rx_err_t err = rx_session_validate_rx(&s_session, k_test_wraparound_start, &result);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_session_validate_ok, result);
 
   /* Accept seq=0xFFFF */
-  err = rx_session_validate_rx(&s_session, 0xFFFF, &result);
+  err = rx_session_validate_rx(&s_session, k_test_wraparound_max, &result);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_session_validate_ok, result);
 
@@ -576,9 +578,7 @@ void test_reset_null_ptr(void)
  */
 void test_reset_not_initialized(void)
 {
-  rx_session_state_t uninit;
-
-  memset(&uninit, 0, sizeof(uninit));
+  rx_session_state_t uninit = {0};
 
   rx_err_t err = rx_session_reset(&uninit);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
@@ -667,10 +667,8 @@ void test_get_tx_null_output(void)
  */
 void test_get_tx_not_initialized(void)
 {
-  rx_session_state_t uninit;
+  rx_session_state_t uninit = {0};
   uint16_t           seq;
-
-  memset(&uninit, 0, sizeof(uninit));
 
   rx_err_t err = rx_session_get_tx(&uninit, &seq);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
@@ -702,10 +700,8 @@ void test_get_rx_null_output(void)
  */
 void test_get_rx_not_initialized(void)
 {
-  rx_session_state_t uninit;
+  rx_session_state_t uninit = {0};
   uint16_t           seq;
-
-  memset(&uninit, 0, sizeof(uninit));
 
   rx_err_t err = rx_session_get_rx(&uninit, &seq);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);

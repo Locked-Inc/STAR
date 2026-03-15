@@ -35,8 +35,17 @@
  */
 
 typedef enum : uint8_t {
-  k_test_motor_count = 4, /**< Number of motors */
+  k_test_motor_count      = 4, /**< Number of motors */
+  k_test_motor_idx_fl     = 0, /**< Front-left motor index */
+  k_test_motor_idx_fr     = 1, /**< Front-right motor index */
+  k_test_motor_idx_bl     = 2, /**< Back-left motor index */
+  k_test_motor_idx_br     = 3, /**< Back-right motor index */
+  k_test_payload_buf_size = 4, /**< Buffer size for send test payload */
 } test_comm_constants_t;
+
+/** @brief Velocity test values (floating-point, cannot be in enum) */
+static const float s_test_velocity_forward_mps = 1.0F;
+static const float s_test_velocity_reverse_mps = -0.5F;
 
 /* =============================================================================
  * Test Fixture
@@ -203,7 +212,10 @@ void test_comm_task_velocity_cmd_updates_shared_data(void)
   /* Configure mock to return decoded velocity */
   (void)velocity_req; /* Not used directly - mock sets values internally */
 
-  mock_nanopb_set_decoded_velocity(1.0f, 1.0f, -0.5f, -0.5f);
+  mock_nanopb_set_decoded_velocity(s_test_velocity_forward_mps,
+                                   s_test_velocity_forward_mps,
+                                   s_test_velocity_reverse_mps,
+                                   s_test_velocity_reverse_mps);
   mock_nanopb_set_decode_velocity_return(k_rx_ok);
 
   /* Decode velocity request (simulating task behavior) */
@@ -213,13 +225,13 @@ void test_comm_task_velocity_cmd_updates_shared_data(void)
   TEST_ASSERT_TRUE(decoded.has_command);
 
   /* Build and store motor command as task would */
-  motor_command_t cmd        = {0};
-  cmd.target_velocity_mps[0] = (float)decoded.command.front_left_velocity_mps;
-  cmd.target_velocity_mps[1] = (float)decoded.command.front_right_velocity_mps;
-  cmd.target_velocity_mps[2] = (float)decoded.command.back_left_velocity_mps;
-  cmd.target_velocity_mps[3] = (float)decoded.command.back_right_velocity_mps;
-  cmd.sequence               = decoded.command.sequence;
-  cmd.valid                  = true;
+  motor_command_t cmd                          = {0};
+  cmd.target_velocity_mps[k_test_motor_idx_fl] = (float)decoded.command.front_left_velocity_mps;
+  cmd.target_velocity_mps[k_test_motor_idx_fr] = (float)decoded.command.front_right_velocity_mps;
+  cmd.target_velocity_mps[k_test_motor_idx_bl] = (float)decoded.command.back_left_velocity_mps;
+  cmd.target_velocity_mps[k_test_motor_idx_br] = (float)decoded.command.back_right_velocity_mps;
+  cmd.sequence                                 = decoded.command.sequence;
+  cmd.valid                                    = true;
 
   err = shared_data_set_motor_command(&cmd);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -228,10 +240,18 @@ void test_comm_task_velocity_cmd_updates_shared_data(void)
   err = shared_data_get_motor_command(&cmd_out);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(cmd_out.valid);
-  TEST_ASSERT_EQUAL_FLOAT(1.0f, cmd_out.target_velocity_mps[0]);
-  TEST_ASSERT_EQUAL_FLOAT(1.0f, cmd_out.target_velocity_mps[1]);
-  TEST_ASSERT_EQUAL_FLOAT(-0.5f, cmd_out.target_velocity_mps[2]);
-  TEST_ASSERT_EQUAL_FLOAT(-0.5f, cmd_out.target_velocity_mps[3]);
+  /* NOLINTNEXTLINE(readability-magic-numbers) -- Unity macro internal tolerance literal */
+  TEST_ASSERT_EQUAL_FLOAT(s_test_velocity_forward_mps,
+                          cmd_out.target_velocity_mps[k_test_motor_idx_fl]);
+  /* NOLINTNEXTLINE(readability-magic-numbers) -- Unity macro internal tolerance literal */
+  TEST_ASSERT_EQUAL_FLOAT(s_test_velocity_forward_mps,
+                          cmd_out.target_velocity_mps[k_test_motor_idx_fr]);
+  /* NOLINTNEXTLINE(readability-magic-numbers) -- Unity macro internal tolerance literal */
+  TEST_ASSERT_EQUAL_FLOAT(s_test_velocity_reverse_mps,
+                          cmd_out.target_velocity_mps[k_test_motor_idx_bl]);
+  /* NOLINTNEXTLINE(readability-magic-numbers) -- Unity macro internal tolerance literal */
+  TEST_ASSERT_EQUAL_FLOAT(s_test_velocity_reverse_mps,
+                          cmd_out.target_velocity_mps[k_test_motor_idx_br]);
   /* Note: sequence comes from mock which uses decode call count (1) */
   TEST_ASSERT_EQUAL_UINT32(1, cmd_out.sequence);
 }
@@ -366,7 +386,7 @@ void test_comm_task_can_send_response(void)
   /* Initialize manager (required for send to work) */
   rx_comm_manager_t     mgr    = {0};
   rx_comm_send_params_t params = {0};
-  uint8_t               payload[4];
+  uint8_t               payload[k_test_payload_buf_size];
   rx_err_t              err;
 
   mgr.initialized = true;

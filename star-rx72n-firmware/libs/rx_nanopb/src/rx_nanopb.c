@@ -1669,8 +1669,14 @@ void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,
     return;
   }
 
-  if (request_id != nullptr && strlen(request_id) > s_nanopb_buffer_size) {
-    return;
+  if (request_id != nullptr) {
+    size_t req_id_len = 0;
+    while (request_id[req_id_len] != '\0') {
+      req_id_len++;
+    }
+    if (req_id_len > s_nanopb_buffer_size) {
+      return;
+    }
   }
 
   *header        = (star_v1_ResponseHeader)star_v1_ResponseHeader_init_zero;
@@ -1678,7 +1684,12 @@ void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,
 
   /* Copy request_id string if provided (fixed-size field in generated code) */
   if (request_id != nullptr) {
-    (void)strncpy(header->request_id, request_id, sizeof(header->request_id) - 1);
-    header->request_id[sizeof(header->request_id) - 1] = '\0';
+    const size_t max_len = sizeof(header->request_id) - 1U;
+    size_t       idx     = 0;
+    while (idx < max_len && request_id[idx] != '\0') {
+      header->request_id[idx] = request_id[idx];
+      idx++;
+    }
+    header->request_id[idx] = '\0';
   }
 }

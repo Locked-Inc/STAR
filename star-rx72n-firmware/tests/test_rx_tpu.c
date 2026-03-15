@@ -33,7 +33,9 @@
  * @since Version 1.0.0
  */
 
-#include <string.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "mock_rx_tpu_regs.h"
 #include "rx_tpu.h"
@@ -50,6 +52,40 @@
  * directly for setUp/assertions without including all of rx72n_regs.h.
  */
 #include "mock_rx_onewire_hw.h"
+
+/* =============================================================================
+ * Test Constants
+ * =============================================================================
+ */
+
+/** @brief Named constants for TPU test values */
+typedef enum : uint8_t {
+  k_tpu_test_mstpa13_bit = 13, /**< MSTPCRA bit for TPU module clock */
+  k_tpu_test_invalid_ch0 = 0,  /**< Invalid TPU channel 0 (not phase capable) */
+  k_tpu_test_invalid_ch3 = 3,  /**< Invalid TPU channel 3 (not phase capable) */
+} tpu_test_bit_constants_t;
+
+/** @brief Named constants for TPU counter test values */
+typedef enum : uint16_t {
+  k_tpu_test_count_1234  = 1234,   /**< Simulated encoder count */
+  k_tpu_test_count_max   = 0xFFFF, /**< 16-bit max for overflow test */
+  k_tpu_test_count_5000  = 5000,   /**< Non-zero counter value for reset test */
+  k_tpu_test_count_chan1 = 100,    /**< Channel 1 counter value */
+  k_tpu_test_count_chan2 = 200,    /**< Channel 2 counter value */
+} tpu_test_count_constants_t;
+
+/**
+ * @brief Zero-fill a byte region using a for-loop (clang-tidy safe)
+ * @param[out] dst  Destination pointer
+ * @param[in]  len  Number of bytes to zero
+ */
+static inline void internal_zero_fill(volatile void* dst, size_t len)
+{
+  volatile uint8_t* p = (volatile uint8_t*)dst;
+  for (size_t i = 0; i < len; i++) {
+    p[i] = 0;
+  }
+}
 
 /* =============================================================================
  * Mock Register Storage
@@ -70,12 +106,12 @@ rx_tpu_regs_t g_mock_tpu_regs[k_mock_tpu_channel_count];
 void setUp(void)
 {
   /* Clear all mock registers to zero */
-  memset(&g_mock_tpu_control, 0, sizeof(g_mock_tpu_control));
-  memset(g_mock_tpu_regs, 0, sizeof(g_mock_tpu_regs));
-  memset(&g_mock_onewire_system_regs, 0, sizeof(g_mock_onewire_system_regs));
+  internal_zero_fill(&g_mock_tpu_control, sizeof(g_mock_tpu_control));
+  internal_zero_fill(g_mock_tpu_regs, sizeof(g_mock_tpu_regs));
+  internal_zero_fill(&g_mock_onewire_system_regs, sizeof(g_mock_onewire_system_regs));
 
   /* Set MSTPA13 bit to simulate TPU module stopped (reset default) */
-  g_mock_onewire_system_regs.mstpcra = (1U << 13);
+  g_mock_onewire_system_regs.mstpcra = (1U << k_tpu_test_mstpa13_bit);
 
   /* Deinitialize all channels to start fresh */
   (void)rx_tpu_deinit(k_tpu_channel_1);
@@ -84,9 +120,9 @@ void setUp(void)
   (void)rx_tpu_deinit(k_tpu_channel_5);
 
   /* Re-clear mock registers after deinit (deinit writes to them) */
-  memset(&g_mock_tpu_control, 0, sizeof(g_mock_tpu_control));
-  memset(g_mock_tpu_regs, 0, sizeof(g_mock_tpu_regs));
-  g_mock_onewire_system_regs.mstpcra = (1U << 13);
+  internal_zero_fill(&g_mock_tpu_control, sizeof(g_mock_tpu_control));
+  internal_zero_fill(g_mock_tpu_regs, sizeof(g_mock_tpu_regs));
+  g_mock_onewire_system_regs.mstpcra = (1U << k_tpu_test_mstpa13_bit);
 }
 
 void tearDown(void)
@@ -117,7 +153,7 @@ void test_init_tpu1_phase_mode_4(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify MSTPCRA.MSTPA13 was cleared (module clock enabled) */
-  TEST_ASSERT_EQUAL_UINT32(0, g_mock_onewire_system_regs.mstpcra & (1U << 13));
+  TEST_ASSERT_EQUAL_UINT32(0, g_mock_onewire_system_regs.mstpcra & (1U << k_tpu_test_mstpa13_bit));
 
   /* Verify TMDR set to phase counting mode 4 */
   TEST_ASSERT_EQUAL_UINT8(k_tpu_tmdr_md_phase_count_4, tpu1()->tmdr);
@@ -201,7 +237,7 @@ void test_init_null_config(void)
 void test_init_invalid_channel_0(void)
 {
   rx_tpu_config_t config = {
-    .channel    = (rx_tpu_channel_t)0,
+    .channel    = (rx_tpu_channel_t)k_tpu_test_invalid_ch0,
     .phase_mode = k_tpu_phase_mode_4,
   };
 
@@ -215,7 +251,7 @@ void test_init_invalid_channel_0(void)
 void test_init_invalid_channel_3(void)
 {
   rx_tpu_config_t config = {
-    .channel    = (rx_tpu_channel_t)3,
+    .channel    = (rx_tpu_channel_t)k_tpu_test_invalid_ch3,
     .phase_mode = k_tpu_phase_mode_4,
   };
 
@@ -327,7 +363,7 @@ void test_stop_uninit_channel(void)
  */
 void test_start_invalid_channel(void)
 {
-  rx_err_t err = rx_tpu_start((rx_tpu_channel_t)3);
+  rx_err_t err = rx_tpu_start((rx_tpu_channel_t)k_tpu_test_invalid_ch3);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -337,7 +373,7 @@ void test_start_invalid_channel(void)
  */
 void test_stop_invalid_channel(void)
 {
-  rx_err_t err = rx_tpu_stop((rx_tpu_channel_t)0);
+  rx_err_t err = rx_tpu_stop((rx_tpu_channel_t)k_tpu_test_invalid_ch0);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -360,13 +396,13 @@ void test_read_count_tpu1(void)
   (void)rx_tpu_init_phase_count(&config);
   (void)rx_tpu_start(k_tpu_channel_1);
 
-  /* Simulate encoder counting to 1234 */
-  tpu1()->tcnt = 1234;
+  /* Simulate encoder counting to known value */
+  tpu1()->tcnt = k_tpu_test_count_1234;
 
   uint16_t count = 0;
   rx_err_t err   = rx_tpu_read_count(k_tpu_channel_1, &count);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT16(1234, count);
+  TEST_ASSERT_EQUAL_UINT16(k_tpu_test_count_1234, count);
 }
 
 /**
@@ -383,12 +419,12 @@ void test_read_count_max_value(void)
   (void)rx_tpu_start(k_tpu_channel_2);
 
   /* Simulate counter at max */
-  tpu2()->tcnt = 0xFFFF;
+  tpu2()->tcnt = k_tpu_test_count_max;
 
   uint16_t count = 0;
   rx_err_t err   = rx_tpu_read_count(k_tpu_channel_2, &count);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT16(0xFFFF, count);
+  TEST_ASSERT_EQUAL_UINT16(k_tpu_test_count_max, count);
 }
 
 /**
@@ -424,7 +460,7 @@ void test_read_count_uninit(void)
 void test_read_count_invalid_channel(void)
 {
   uint16_t count = 0;
-  rx_err_t err   = rx_tpu_read_count((rx_tpu_channel_t)3, &count);
+  rx_err_t err   = rx_tpu_read_count((rx_tpu_channel_t)k_tpu_test_invalid_ch3, &count);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -511,7 +547,7 @@ void test_read_direction_uninit(void)
 void test_read_direction_invalid_channel(void)
 {
   bool     counting_up = false;
-  rx_err_t err         = rx_tpu_read_direction((rx_tpu_channel_t)0, &counting_up);
+  rx_err_t err = rx_tpu_read_direction((rx_tpu_channel_t)k_tpu_test_invalid_ch0, &counting_up);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -534,7 +570,7 @@ void test_reset_count(void)
   (void)rx_tpu_init_phase_count(&config);
 
   /* Set counter to nonzero value */
-  tpu1()->tcnt = 5000;
+  tpu1()->tcnt = k_tpu_test_count_5000;
 
   rx_err_t err = rx_tpu_reset_count(k_tpu_channel_1);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -546,7 +582,7 @@ void test_reset_count(void)
  */
 void test_reset_count_invalid_channel(void)
 {
-  rx_err_t err = rx_tpu_reset_count((rx_tpu_channel_t)3);
+  rx_err_t err = rx_tpu_reset_count((rx_tpu_channel_t)k_tpu_test_invalid_ch3);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -635,7 +671,7 @@ void test_deinit_then_reinit(void)
  */
 void test_deinit_invalid_channel(void)
 {
-  rx_err_t err = rx_tpu_deinit((rx_tpu_channel_t)0);
+  rx_err_t err = rx_tpu_deinit((rx_tpu_channel_t)k_tpu_test_invalid_ch0);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -651,7 +687,7 @@ void test_deinit_invalid_channel(void)
 void test_init_enables_module_clock(void)
 {
   /* Verify module is stopped before init */
-  TEST_ASSERT_NOT_EQUAL(0, g_mock_onewire_system_regs.mstpcra & (1U << 13));
+  TEST_ASSERT_NOT_EQUAL(0, g_mock_onewire_system_regs.mstpcra & (1U << k_tpu_test_mstpa13_bit));
 
   rx_tpu_config_t config = {
     .channel    = k_tpu_channel_1,
@@ -661,7 +697,7 @@ void test_init_enables_module_clock(void)
   (void)rx_tpu_init_phase_count(&config);
 
   /* Verify MSTPA13 cleared (module clock enabled) */
-  TEST_ASSERT_EQUAL_UINT32(0, g_mock_onewire_system_regs.mstpcra & (1U << 13));
+  TEST_ASSERT_EQUAL_UINT32(0, g_mock_onewire_system_regs.mstpcra & (1U << k_tpu_test_mstpa13_bit));
 }
 
 /* =============================================================================
@@ -731,22 +767,22 @@ void test_multi_channel_independent(void)
   TEST_ASSERT_EQUAL_UINT8(k_tpu_tstr_cst2, tpu_control()->tstr & k_tpu_tstr_cst2);
 
   /* Set different counter values */
-  tpu1()->tcnt = 100;
-  tpu2()->tcnt = 200;
+  tpu1()->tcnt = k_tpu_test_count_chan1;
+  tpu2()->tcnt = k_tpu_test_count_chan2;
 
   uint16_t count1 = 0;
   uint16_t count2 = 0;
   (void)rx_tpu_read_count(k_tpu_channel_1, &count1);
   (void)rx_tpu_read_count(k_tpu_channel_2, &count2);
-  TEST_ASSERT_EQUAL_UINT16(100, count1);
-  TEST_ASSERT_EQUAL_UINT16(200, count2);
+  TEST_ASSERT_EQUAL_UINT16(k_tpu_test_count_chan1, count1);
+  TEST_ASSERT_EQUAL_UINT16(k_tpu_test_count_chan2, count2);
 
   /* Deinit channel 1 should not affect channel 2 */
   (void)rx_tpu_deinit(k_tpu_channel_1);
 
   /* Channel 2 should still be readable */
   (void)rx_tpu_read_count(k_tpu_channel_2, &count2);
-  TEST_ASSERT_EQUAL_UINT16(200, count2);
+  TEST_ASSERT_EQUAL_UINT16(k_tpu_test_count_chan2, count2);
 
   /* Channel 1 should fail (uninit) */
   rx_err_t err = rx_tpu_read_count(k_tpu_channel_1, &count1);
@@ -778,7 +814,7 @@ extern uint8_t                 internal_get_cst_bit(rx_tpu_channel_t channel);
 void test_internal_get_regs_invalid_channel(void)
 {
 #ifdef UNIT_TEST
-  volatile rx_tpu_regs_t* result = internal_get_regs((rx_tpu_channel_t)0);
+  volatile rx_tpu_regs_t* result = internal_get_regs((rx_tpu_channel_t)k_tpu_test_invalid_ch0);
   TEST_ASSERT_NULL((void*)result);
 #else
   TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
@@ -797,7 +833,7 @@ void test_internal_get_regs_invalid_channel(void)
 void test_internal_get_cst_bit_invalid_channel(void)
 {
 #ifdef UNIT_TEST
-  uint8_t result = internal_get_cst_bit((rx_tpu_channel_t)0);
+  uint8_t result = internal_get_cst_bit((rx_tpu_channel_t)k_tpu_test_invalid_ch0);
   TEST_ASSERT_EQUAL_UINT8(0, result);
 #else
   TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
@@ -809,10 +845,9 @@ void test_internal_get_cst_bit_invalid_channel(void)
  * =============================================================================
  */
 
-int main(void)
+/** @brief Run init success and error path tests */
+static void internal_run_init_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Init success tests */
   RUN_TEST(test_init_tpu1_phase_mode_4);
   RUN_TEST(test_init_tpu2_phase_mode_4);
@@ -825,7 +860,11 @@ int main(void)
   RUN_TEST(test_init_invalid_channel_3);
   RUN_TEST(test_init_invalid_phase_mode);
   RUN_TEST(test_init_double_init);
+}
 
+/** @brief Run start/stop and read tests */
+static void internal_run_startstop_and_read_tests(void)
+{
   /* Start/stop tests */
   RUN_TEST(test_start_tpu1);
   RUN_TEST(test_stop_tpu2);
@@ -847,7 +886,11 @@ int main(void)
   RUN_TEST(test_read_direction_null_ptr);
   RUN_TEST(test_read_direction_uninit);
   RUN_TEST(test_read_direction_invalid_channel);
+}
 
+/** @brief Run reset, deinit, clock, and register config tests */
+static void internal_run_lifecycle_and_config_tests(void)
+{
   /* Reset count tests */
   RUN_TEST(test_reset_count);
   RUN_TEST(test_reset_count_invalid_channel);
@@ -870,6 +913,13 @@ int main(void)
   /* Internal helper default-branch tests */
   RUN_TEST(test_internal_get_regs_invalid_channel);
   RUN_TEST(test_internal_get_cst_bit_invalid_channel);
+}
 
+int main(void)
+{
+  UNITY_BEGIN();
+  internal_run_init_tests();
+  internal_run_startstop_and_read_tests();
+  internal_run_lifecycle_and_config_tests();
   return UNITY_END();
 }

@@ -14,7 +14,8 @@
 
 #include "mock_rx_pid.h"
 
-#include <string.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /* =============================================================================
  * Static Variables - Return Values
@@ -259,7 +260,12 @@ rx_err_t rx_pid_deinit(rx_pid_handle_t* handle)
   }
 
   if (s_deinit_return == k_rx_ok) {
-    (void)memset(handle, 0, sizeof(*handle));
+    {
+      uint8_t* p = (uint8_t*)handle;
+      for (size_t i = 0; i < sizeof(*handle); i++) {
+        p[i] = 0;
+      }
+    }
     handle->initialized = false;
   }
 

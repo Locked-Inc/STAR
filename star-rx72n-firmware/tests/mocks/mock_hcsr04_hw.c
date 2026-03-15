@@ -83,12 +83,17 @@ static void internal_record_call(mock_hcsr04_hw_t* mock,
 
   if (m->call_count < k_mock_hcsr04_max_calls) {
     mock_hcsr04_call_t* call = &m->call_history[m->call_count];
-    strncpy(call->function, function, k_mock_hcsr04_func_name_max - 1);
-    call->function[k_mock_hcsr04_func_name_max - 1] = '\0';
-    call->port                                      = port;
-    call->pin                                       = pin;
-    call->value                                     = value;
-    call->return_value                              = ret;
+    {
+      uint8_t ci = 0;
+      for (; ci < k_mock_hcsr04_func_name_max - 1 && function[ci] != '\0'; ci++) {
+        call->function[ci] = function[ci];
+      }
+      call->function[ci] = '\0';
+    }
+    call->port         = port;
+    call->pin          = pin;
+    call->value        = value;
+    call->return_value = ret;
     m->call_count++;
   }
 }
@@ -101,7 +106,12 @@ static void internal_record_call(mock_hcsr04_hw_t* mock,
 void mock_hcsr04_hw_init(mock_hcsr04_hw_t* mock)
 {
   mock_hcsr04_hw_t* m = internal_get_mock(mock);
-  memset(m, 0, sizeof(mock_hcsr04_hw_t));
+  {
+    uint8_t* raw = (uint8_t*)m;
+    for (size_t bi = 0; bi < sizeof(mock_hcsr04_hw_t); bi++) {
+      raw[bi] = 0;
+    }
+  }
   m->initialized       = true;
   m->simulated_echo_us = k_default_test_distance_cm * k_us_per_cm;
   m->auto_advance_time = true;
@@ -124,7 +134,12 @@ void mock_hcsr04_hw_reset(mock_hcsr04_hw_t* mock)
   bool     inject_pin_conflict = m->inject_pin_conflict;
   uint32_t echo_us             = m->simulated_echo_us;
 
-  memset(m, 0, sizeof(mock_hcsr04_hw_t));
+  {
+    uint8_t* raw = (uint8_t*)m;
+    for (size_t bi = 0; bi < sizeof(mock_hcsr04_hw_t); bi++) {
+      raw[bi] = 0;
+    }
+  }
 
   m->initialized         = true;
   m->inject_timeout      = inject_timeout;
@@ -377,10 +392,7 @@ rx_err_t mock_gpio_read(uint8_t port, uint8_t pin, bool* value)
   }
 
   /* Simulate echo behavior based on timing */
-  if (m->inject_timeout) {
-    /* Echo never goes high */
-    *value = false;
-  } else if (m->trigger_pulse_count > 0) {
+  if (!m->inject_timeout && m->trigger_pulse_count > 0) {
     /*
      * After trigger pulse, simulate echo timing:
      * - Echo goes high shortly after trigger (~10us)
@@ -395,13 +407,9 @@ rx_err_t mock_gpio_read(uint8_t port, uint8_t pin, bool* value)
       k_hcsr04_trigger_settle_us + k_hcsr04_trigger_pulse_us; /* Wait for trigger pulse to finish */
     const uint32_t echo_end = echo_start + m->simulated_echo_us;
 
-    if (elapsed >= echo_start && elapsed < echo_end) {
-      *value = true;
-    } else {
-      *value = false;
-    }
+    *value = (elapsed >= echo_start && elapsed < echo_end);
   } else {
-    /* No trigger sent yet, echo is low */
+    /* Timeout injected or no trigger sent yet: echo is low */
     *value = false;
   }
 
@@ -422,10 +430,8 @@ rx_err_t mock_gpio_deinit(uint8_t port, uint8_t pin)
   mock_hcsr04_hw_t* m   = internal_get_mock(nullptr);
   rx_err_t          ret = k_rx_ok;
 
-  if (m->inject_gpio_deinit_error) {
-    ret = k_rx_err_hw_error;
-  } else if (m->gpio_deinit_fail_after_count > 0U &&
-             m->gpio_deinit_count >= m->gpio_deinit_fail_after_count) {
+  if (m->inject_gpio_deinit_error || (m->gpio_deinit_fail_after_count > 0U &&
+                                      m->gpio_deinit_count >= m->gpio_deinit_fail_after_count)) {
     ret = k_rx_err_hw_error;
   }
 

@@ -48,7 +48,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "mock_riic_hal.h"
 #include "rx_bus_config.h"
@@ -89,8 +88,9 @@ typedef enum : uint32_t {
  * @brief Transfer length constants for write/read tests
  */
 typedef enum : uint16_t {
-  k_test_write_len = 3, /**< Bytes in write transfer */
-  k_test_read_len  = 2, /**< Bytes in read transfer */
+  k_test_write_len      = 3, /**< Bytes in write transfer */
+  k_test_read_len       = 2, /**< Bytes in read transfer */
+  k_test_read_buf_extra = 4, /**< Oversized read buffer for zero-length write-read tests */
 } test_i2c_lengths_t;
 
 /**
@@ -942,9 +942,8 @@ typedef enum : uint32_t {
  */
 void test_bus_i2c_init_callback_wrong_bus_type_returns_error(void)
 {
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
-  bus_config.type = k_bus_type_gpio; /* Not I2C */
+  rx_bus_config_t bus_config = {0};
+  bus_config.type            = k_bus_type_gpio; /* Not I2C */
 
   i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error, .manager = &s_test_manager};
 
@@ -971,8 +970,7 @@ void test_bus_i2c_init_callback_wrong_bus_type_returns_error(void)
  */
 void test_bus_i2c_init_callback_channel_out_of_range_returns_error(void)
 {
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
+  rx_bus_config_t bus_config   = {0};
   bus_config.type              = k_bus_type_i2c;
   bus_config.proto.i2c.channel = (uint8_t)k_test_channel_invalid;
 
@@ -1008,8 +1006,7 @@ void test_bus_i2c_init_callback_already_initialized_same_freq_skips_init(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Build a matching bus_config with same channel and frequency */
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
+  rx_bus_config_t bus_config        = {0};
   bus_config.type                   = k_bus_type_i2c;
   bus_config.proto.i2c.channel      = (uint8_t)k_test_i2c_channel;
   bus_config.proto.i2c.frequency_hz = (uint32_t)k_test_i2c_freq_hz;
@@ -1049,8 +1046,7 @@ void test_bus_i2c_init_callback_already_initialized_freq_mismatch_returns_error(
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Build a bus_config for the same channel but different frequency */
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
+  rx_bus_config_t bus_config        = {0};
   bus_config.type                   = k_bus_type_i2c;
   bus_config.proto.i2c.channel      = (uint8_t)k_test_i2c_channel;
   bus_config.proto.i2c.frequency_hz = (uint32_t)k_test_alt_freq_100khz;
@@ -1083,8 +1079,7 @@ void test_bus_i2c_init_callback_already_initialized_freq_mismatch_returns_error(
  */
 void test_bus_i2c_init_callback_addr_exceeds_7bit_logs_warning(void)
 {
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
+  rx_bus_config_t bus_config        = {0};
   bus_config.type                   = k_bus_type_i2c;
   bus_config.proto.i2c.channel      = (uint8_t)k_test_i2c_channel;
   bus_config.proto.i2c.frequency_hz = (uint32_t)k_test_i2c_freq_hz;
@@ -1117,10 +1112,9 @@ void test_bus_i2c_init_callback_addr_exceeds_7bit_logs_warning(void)
  */
 void test_bus_i2c_write_callback_not_initialized_returns_error(void)
 {
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
-  bus_config.type        = k_bus_type_i2c;
-  bus_config.initialized = false;
+  rx_bus_config_t bus_config = {0};
+  bus_config.type            = k_bus_type_i2c;
+  bus_config.initialized     = false;
 
   const uint8_t   tx_data[] = {(uint8_t)k_test_write_byte_0};
   i2c_write_ctx_t ctx       = {
@@ -1153,8 +1147,7 @@ void test_bus_i2c_write_callback_not_initialized_returns_error(void)
  */
 void test_bus_i2c_write_callback_null_data_with_nonzero_length_returns_error(void)
 {
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
+  rx_bus_config_t bus_config        = {0};
   bus_config.type                   = k_bus_type_i2c;
   bus_config.initialized            = true;
   bus_config.proto.i2c.channel      = (uint8_t)k_test_i2c_channel;
@@ -1195,10 +1188,9 @@ void test_bus_i2c_write_callback_null_data_with_nonzero_length_returns_error(voi
  */
 void test_bus_i2c_read_callback_not_initialized_returns_error(void)
 {
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
-  bus_config.type        = k_bus_type_i2c;
-  bus_config.initialized = false;
+  rx_bus_config_t bus_config = {0};
+  bus_config.type            = k_bus_type_i2c;
+  bus_config.initialized     = false;
 
   uint8_t        rx_buf[(uint16_t)k_test_read_len];
   i2c_read_ctx_t ctx = {
@@ -1231,8 +1223,7 @@ void test_bus_i2c_read_callback_not_initialized_returns_error(void)
  */
 void test_bus_i2c_write_read_callback_null_write_data_returns_error(void)
 {
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
+  rx_bus_config_t bus_config        = {0};
   bus_config.type                   = k_bus_type_i2c;
   bus_config.initialized            = true;
   bus_config.proto.i2c.channel      = (uint8_t)k_test_i2c_channel;
@@ -1272,8 +1263,7 @@ void test_bus_i2c_write_read_callback_null_write_data_returns_error(void)
  */
 void test_bus_i2c_write_read_callback_null_read_data_returns_error(void)
 {
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
+  rx_bus_config_t bus_config        = {0};
   bus_config.type                   = k_bus_type_i2c;
   bus_config.initialized            = true;
   bus_config.proto.i2c.channel      = (uint8_t)k_test_i2c_channel;
@@ -1297,9 +1287,8 @@ void test_bus_i2c_write_read_callback_null_read_data_returns_error(void)
 
 void test_bus_i2c_init_callback_null_manager_returns_error(void)
 {
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
-  bus_config.type = k_bus_type_i2c;
+  rx_bus_config_t bus_config = {0};
+  bus_config.type            = k_bus_type_i2c;
 
   /* Pass a ctx with manager == NULL to trigger the defensive null check */
   i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error, .manager = NULL};
@@ -1311,10 +1300,9 @@ void test_bus_i2c_init_callback_null_manager_returns_error(void)
 
 void test_bus_i2c_read_callback_null_data_with_nonzero_length_returns_error(void)
 {
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
-  bus_config.type        = k_bus_type_i2c;
-  bus_config.initialized = true;
+  rx_bus_config_t bus_config = {0};
+  bus_config.type            = k_bus_type_i2c;
+  bus_config.initialized     = true;
 
   /* Pass a ctx with null data but nonzero length */
   i2c_read_ctx_t ctx = {
@@ -1340,10 +1328,9 @@ void test_bus_i2c_read_callback_null_data_with_nonzero_length_returns_error(void
  */
 void test_bus_i2c_read_callback_zero_length_null_data_skips_null_check(void)
 {
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
-  bus_config.type        = k_bus_type_i2c;
-  bus_config.initialized = true;
+  rx_bus_config_t bus_config = {0};
+  bus_config.type            = k_bus_type_i2c;
+  bus_config.initialized     = true;
 
   /* length == 0: (length > 0 && data == nullptr) short-circuits at first operand */
   i2c_read_ctx_t ctx = {
@@ -1367,12 +1354,11 @@ void test_bus_i2c_read_callback_zero_length_null_data_skips_null_check(void)
  */
 void test_bus_i2c_write_read_callback_zero_write_length_skips_null_check(void)
 {
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
-  bus_config.type        = k_bus_type_i2c;
-  bus_config.initialized = true;
+  rx_bus_config_t bus_config = {0};
+  bus_config.type            = k_bus_type_i2c;
+  bus_config.initialized     = true;
 
-  uint8_t              read_buf[4];
+  uint8_t              read_buf[(uint16_t)k_test_read_buf_extra];
   i2c_write_read_ctx_t ctx = {
     .write_data   = NULL,
     .write_length = 0U, /* length == 0: skips null-check for write_data */
@@ -1394,12 +1380,11 @@ void test_bus_i2c_write_read_callback_zero_write_length_skips_null_check(void)
  */
 void test_bus_i2c_write_read_callback_zero_read_length_skips_null_check(void)
 {
-  rx_bus_config_t bus_config;
-  (void)memset(&bus_config, 0, sizeof(bus_config));
-  bus_config.type        = k_bus_type_i2c;
-  bus_config.initialized = true;
+  rx_bus_config_t bus_config = {0};
+  bus_config.type            = k_bus_type_i2c;
+  bus_config.initialized     = true;
 
-  static const uint8_t write_buf[] = {0x01};
+  static const uint8_t write_buf[] = {(uint8_t)k_test_write_byte_0};
   i2c_write_read_ctx_t ctx         = {
             .write_data   = write_buf,
             .write_length = (uint16_t)k_test_len_one,
@@ -1583,10 +1568,12 @@ void test_bus_config_i2c_null_name_returns_error(void)
  *
  * @since Version 1.0.0
  */
-int main(void)
+/**
+ * @brief Run public API tests: init, write, read, and write-read operations
+ * @details 26 tests covering init (5), write (8), read (6), and write-read (7).
+ */
+static void internal_run_public_api_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Init tests */
   RUN_TEST(test_bus_i2c_init_marks_channel_initialized);
   RUN_TEST(test_bus_i2c_init_null_manager_returns_error);
@@ -1620,7 +1607,15 @@ int main(void)
   RUN_TEST(test_bus_i2c_write_read_null_name_returns_error);
   RUN_TEST(test_bus_i2c_write_read_not_initialized_returns_error);
   RUN_TEST(test_bus_i2c_write_read_nack_propagates);
+}
 
+/**
+ * @brief Run callback direct-invocation and bus config validation tests
+ * @details 21 tests covering defensive branch coverage in internal callbacks
+ *          and bus configuration validation.
+ */
+static void internal_run_callback_and_config_tests(void)
+{
   /* Callback direct-invocation tests - cover defensive branches */
   RUN_TEST(test_bus_i2c_init_callback_wrong_bus_type_returns_error);
   RUN_TEST(test_bus_i2c_init_callback_channel_out_of_range_returns_error);
@@ -1645,6 +1640,14 @@ int main(void)
   RUN_TEST(test_bus_config_i2c_invalid_address_returns_error);
   RUN_TEST(test_bus_config_i2c_null_config_returns_error);
   RUN_TEST(test_bus_config_i2c_null_name_returns_error);
+}
+
+int main(void)
+{
+  UNITY_BEGIN();
+
+  internal_run_public_api_tests();
+  internal_run_callback_and_config_tests();
 
   return UNITY_END();
 }

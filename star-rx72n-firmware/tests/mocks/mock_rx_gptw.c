@@ -13,7 +13,6 @@
 #include "mock_rx_gptw.h"
 
 #include <limits.h>
-#include <string.h>
 
 #include "rx72n_clock.h"
 
@@ -73,12 +72,16 @@ static rx_err_t s_enable_output_error_after = k_rx_ok;
 
 void mock_gptw_reset(void)
 {
-  memset(s_initialized, 0, sizeof(s_initialized));
-  memset(s_running, 0, sizeof(s_running));
-  memset(s_period, 0, sizeof(s_period));
-  memset(s_frequency, 0, sizeof(s_frequency));
-  memset(s_duty, 0, sizeof(s_duty));
-  memset(s_output_enabled, 0, sizeof(s_output_enabled));
+  for (uint8_t ch = 0; ch < k_mock_gptw_max_channels; ch++) {
+    s_initialized[ch] = false;
+    s_running[ch]     = false;
+    s_period[ch]      = 0;
+    s_frequency[ch]   = 0;
+    for (uint8_t out = 0; out < k_mock_gptw_outputs_per_ch; out++) {
+      s_duty[ch][out]           = 0.0F;
+      s_output_enabled[ch][out] = false;
+    }
+  }
   s_init_error                      = k_rx_ok;
   s_set_duty_error                  = k_rx_ok;
   s_deinit_error                    = k_rx_ok;

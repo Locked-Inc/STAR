@@ -10,7 +10,8 @@
 
 #include "mock_rx_bmp280.h"
 
-#include <string.h>
+#include <stddef.h>
+#include <stdint.h>
 
 static rx_err_t s_init_return = k_rx_ok;
 static rx_err_t s_read_return = k_rx_ok;
@@ -58,6 +59,11 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
     return k_rx_err_null_ptr;
   }
   s_read_count++;
-  (void)memset(out, 0, sizeof(*out));
+  {
+    uint8_t* p = (uint8_t*)out;
+    for (size_t i = 0; i < sizeof(*out); i++) {
+      p[i] = 0;
+    }
+  }
   return s_read_return;
 }

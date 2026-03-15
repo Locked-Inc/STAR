@@ -624,7 +624,7 @@ void test_staggered_init_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify all 4 channels are initialized and running */
-  for (uint8_t i = k_staggered_start_channel; i < k_staggered_channel_count; i++) {
+  for (uint32_t i = k_staggered_start_channel; i < k_staggered_channel_count; i++) {
     ch = (rx_gptw_channel_t)i;
     TEST_ASSERT_TRUE_MESSAGE(mock_gptw_is_initialized(ch), "Channel not initialized");
     TEST_ASSERT_TRUE_MESSAGE(mock_gptw_is_running(ch), "Channel not running");

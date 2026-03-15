@@ -51,7 +51,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "mock_gpio_hal.h"
 #include "rx_bus_config.h"
@@ -321,10 +320,9 @@ void test_bus_gpio_init_bus_not_found_returns_error(void)
 void test_bus_gpio_init_rejects_wrong_bus_type(void)
 {
   /* Create and register a UART bus (wrong type) */
-  rx_bus_config_t wrong_type_config;
-  memset(&wrong_type_config, 0, sizeof(wrong_type_config));
-  wrong_type_config.type = k_bus_type_uart;
-  wrong_type_config.name = "wrong_type_bus";
+  rx_bus_config_t wrong_type_config = {0};
+  wrong_type_config.type            = k_bus_type_uart;
+  wrong_type_config.name            = "wrong_type_bus";
 
   rx_err_t err = rx_bus_manager_add_bus(&s_test_manager, &wrong_type_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);

@@ -509,7 +509,7 @@ rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
 
   /* Reset HARQ for new transaction. Fails only if harq is null/uninitialized;
    * both are invariants checked above via link->initialized. */
-  rx_err_t err = rx_harq_reset(&link->harq);
+  (void)rx_harq_reset(&link->harq);
 
   /* Prepare payload: FEC encode if enabled, otherwise passthrough.
    * internal_prepare_tx_payload only fails if FEC encode fails, which is
@@ -518,14 +518,14 @@ rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
   uint32_t       tx_len     = 0;
   uint8_t        base_flags = 0;
 
-  err = internal_prepare_tx_payload(link, payload, payload_len, &tx_payload, &tx_len, &base_flags);
+  (void)internal_prepare_tx_payload(link, payload, payload_len, &tx_payload, &tx_len, &base_flags);
 
   /* Retry loop (bounded by max_retries)
      * NOTE: This function is NOT thread-safe. Caller must ensure that
      * rx_spi_link_send() is not called concurrently on the same link handle.
      * Typical enforcement: Single task owns link, or external mutex protection. */
   for (uint8_t attempt = 0; attempt < link->max_retries; attempt++) {
-    err = internal_send_attempt(link, type, base_flags, tx_payload, tx_len, attempt);
+    const rx_err_t err = internal_send_attempt(link, type, base_flags, tx_payload, tx_len, attempt);
 
     if (err == k_rx_ok) {
       /* ACK received - success */
@@ -552,6 +552,42 @@ rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
 /* =============================================================================
  * Receive API Implementation
  * ============================================================================= */
+
+/**
+ * @brief Calculate expected decoded payload length from FEC soft bit count
+ *
+ * @details
+ * The FEC encoder packs output bits into bytes, rounding up to a whole byte.
+ * For N input bytes the encoder produces:
+ *   total_output_bits = (N*8 + k_fec_tail_bits) * k_fec_num_outputs
+ *   encoded_bytes     = ceil(total_output_bits / 8)
+ *
+ * After internal_bytes_to_soft_bits():
+ *   soft_len = encoded_bytes * 8  (may include up to 7 padding bits)
+ *
+ * Working backwards:
+ *   num_symbols (including tail) = soft_len / k_fec_num_outputs
+ *   input_bits  (without tail)   = num_symbols - k_fec_tail_bits
+ *   expected_decoded_len         = input_bits / k_spi_link_bits_per_byte
+ *
+ * Note: integer division truncates, which is correct because the padding
+ * bits in the last encoded byte are zero and do not contribute to symbols.
+ *
+ * @param[in] soft_len Number of soft bits from internal_bytes_to_soft_bits()
+ *
+ * @return Expected decoded payload length in bytes
+ *
+ * @pre soft_len is the output of internal_bytes_to_soft_bits()
+ * @pre soft_len >= k_fec_num_outputs * k_fec_tail_bits (else underflow)
+ * @post Return value represents the original pre-FEC payload size
+ *
+ * @since Version 1.0.0
+ */
+static inline uint32_t internal_fec_decoded_len(uint32_t soft_len)
+{
+  return (soft_len / (uint32_t)k_fec_num_outputs - (uint32_t)k_fec_tail_bits) /
+         (uint32_t)k_spi_link_bits_per_byte;
+}
 
 /**
  * @brief Process received frame with FEC decoding and Chase Combining
@@ -588,83 +624,31 @@ rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
  * @note Thread safety: This function is NOT thread-safe. Must be called from
  * single-threaded SPI receive context (enforced by link state machine).
  *
- * @par State Machine Invariant:
- * This function is called only from rx_spi_link_receive(), which serializes
- * access via the link state machine. Multiple concurrent calls would corrupt
- * the Chase Combiner state and static soft bit buffer.
- *
- * @par Static Buffer Lifetime:
- * Uses static s_soft_bits[k_harq_soft_buffer_size] (16,400 bytes) to avoid
- * stack overflow. Safe because function is never called concurrently. Buffer
- * is overwritten on each call (no persistent state).
- *
- * @par Example (FEC Decode Flow):
- * @code
- * // Receive FEC-encoded frame (2050 bytes encoded payload)
- * rx_frame_t frame;
- * rx_spi_comm_receive(spi, &frame, timeout);
- *
- * // Decode with HARQ + Chase Combining
- * rx_spi_link_receive_result_t result;
- * rx_err_t err = internal_receive_fec_decode(link, &frame, &result);
- *
- * if (err == k_rx_ok) {
- *     // Decode success - payload in result.payload (1024 bytes)
- *     // ACK automatically sent, combiner reset
- *     process_decoded_data(result.payload, result.payload_len);
- * } else {
- *     // Decode failed - NACK sent, waiting for retransmit
- *     // Soft bits accumulated in combiner for next attempt
- * }
- * @endcode
+ * @see internal_fec_decoded_len() FEC decoded length calculation
  */
 RX_STATIC_TESTABLE rx_err_t internal_receive_fec_decode(rx_spi_link_t*                link,
                                                         const rx_frame_t*             frame,
                                                         rx_spi_link_receive_result_t* result)
 {
-  /* FEC decode path: convert bytes to soft bits, then Viterbi decode
+  /* Convert bytes to soft bits for Viterbi decoder.
    * NOTE: Using static buffer to avoid stack overflow (16,400 bytes).
-   * Safe because this function is called from single-threaded context
-   * (SPI receive path protected by link state machine). */
+   * Safe because this function is called from single-threaded context. */
   static rx_soft_bit_t s_soft_bits[k_harq_soft_buffer_size];
   uint32_t             soft_len = 0;
 
-  rx_err_t err = internal_bytes_to_soft_bits(frame->payload,
-                                             frame->header.length,
-                                             s_soft_bits,
-                                             k_harq_soft_buffer_size,
-                                             &soft_len);
-  /* internal_bytes_to_soft_bits can only fail here if frame->header.length
-   * exceeds the soft buffer (> 2050 bytes), which the protocol prevents. */
-
-  /* Calculate expected decoded length from FEC parameters.
-   *
-   * The FEC encoder packs output bits into bytes, rounding up to a whole byte.
-   * For N input bytes the encoder produces:
-   *   total_output_bits = (N*8 + k_fec_tail_bits) * k_fec_num_outputs
-   *   encoded_bytes     = ceil(total_output_bits / 8)
-   *
-   * After internal_bytes_to_soft_bits():
-   *   soft_len = encoded_bytes * 8  (may include up to 7 padding bits)
-   *
-   * Working backwards:
-   *   num_symbols (including tail) = soft_len / k_fec_num_outputs
-   *   input_bits  (without tail)   = num_symbols - k_fec_tail_bits
-   *   expected_decoded_len         = input_bits / k_spi_link_bits_per_byte
-   *
-   * Note: integer division truncates, which is correct because the padding
-   * bits in the last encoded byte are zero and do not contribute to symbols. */
-  const uint32_t expected_decoded_len =
-    (soft_len / (uint32_t)k_fec_num_outputs - (uint32_t)k_fec_tail_bits) /
-    (uint32_t)k_spi_link_bits_per_byte;
+  (void)internal_bytes_to_soft_bits(frame->payload,
+                                    frame->header.length,
+                                    s_soft_bits,
+                                    k_harq_soft_buffer_size,
+                                    &soft_len);
 
   const rx_harq_decode_params_t params = {
     .soft_bits           = s_soft_bits,
     .soft_len            = soft_len,
-    .expected_output_len = expected_decoded_len,
+    .expected_output_len = internal_fec_decoded_len(soft_len),
   };
 
-  err = rx_harq_decode(&link->harq, &params, result->payload, &result->payload_len);
+  const rx_err_t err = rx_harq_decode(&link->harq, &params, result->payload, &result->payload_len);
 
   result->fec_decoded     = true;
   result->combining_count = rx_harq_get_retry_count(&link->harq);
@@ -705,12 +689,16 @@ RX_STATIC_TESTABLE rx_err_t internal_receive_passthrough(rx_spi_link_t*         
 {
   /* No FEC: passthrough (copy payload directly). */
   if (frame->header.length > 0 && frame->header.length <= k_harq_max_payload) {
-    (void)memcpy(result->payload, frame->payload, frame->header.length);
+    for (uint16_t i = 0; i < frame->header.length; i++) {
+      result->payload[i] = frame->payload[i];
+    }
     result->payload_len = frame->header.length;
   } else if (frame->header.length > k_harq_max_payload) {
     /* Defensive: bound payload_len to buffer capacity to prevent out-of-bounds reads */
     rx_log_warn(s_tag, "Passthrough payload too large, truncating");
-    (void)memcpy(result->payload, frame->payload, k_harq_max_payload);
+    for (uint32_t i = 0; i < k_harq_max_payload; i++) {
+      result->payload[i] = frame->payload[i];
+    }
     result->payload_len = k_harq_max_payload;
   } else {
     /* Zero-length payload */

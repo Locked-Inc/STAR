@@ -1178,7 +1178,7 @@ void test_usb_comm_receive_partial_sync_word(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* First inject just partial data (first half of frame) */
-  uint32_t first_half = encoded_len / 2;
+  uint32_t first_half = encoded_len / k_test_len_2;
   rx_usb_rx_push(k_usb_port_proto, encoded, first_half);
 
   /* Try to receive - should timeout waiting for rest of frame */
@@ -1696,7 +1696,7 @@ static void internal_build_crc_mismatch_frames(uint8_t*  bad_encoded,
 
   /* Corrupt the CRC (last 4 bytes) */
   bad_encoded[*bad_encoded_len - 1] ^= k_test_fill_ff;
-  bad_encoded[*bad_encoded_len - 2] ^= k_test_fill_ff;
+  bad_encoded[*bad_encoded_len - k_test_len_2] ^= k_test_fill_ff;
 
   uint8_t payload[] = "GOOD";
   err               = helper_create_encoded_frame(&tx_frame,
@@ -2463,7 +2463,7 @@ void test_internal_verify_crc_null_data_fails(void)
 {
   uint32_t crc = 0;
 
-  rx_err_t err = internal_verify_crc(nullptr, 8, &crc);
+  rx_err_t err = internal_verify_crc(nullptr, k_test_len_8, &crc);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }

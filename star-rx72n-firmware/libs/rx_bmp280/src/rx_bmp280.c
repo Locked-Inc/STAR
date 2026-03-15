@@ -64,6 +64,20 @@
  */
 
 /**
+ * @enum bmp280_sizeof_t
+ * @brief Expected sizes for static assertions in this module
+ *
+ * @details
+ * Named constants used in static_assert comparisons to avoid magic numbers.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_sizeof_int64     = 8, /**< Expected sizeof(int64_t) for overflow-safe pressure math */
+  k_bmp280_calib_tail_bytes = 2, /**< Number of bytes occupied by the final coefficient (P9) */
+} bmp280_sizeof_t;
+
+/**
  * @enum bmp280_le16_idx_t
  * @brief Byte indices for little-endian 16-bit pair (LSB first)
  *
@@ -332,7 +346,8 @@ static inline uint16_t internal_parse_u16_le(const uint8_t* buf)
 {
   /* Pre-condition: buf is always a valid pointer to a calibration or ADC buffer;
    * all callers pass stack-allocated arrays (never NULL). */
-  static_assert(k_bmp280_byte_shift == 8U, "byte shift must be 8 for LE 16-bit assembly");
+  static_assert((uint8_t)k_bmp280_byte_shift == (uint8_t)k_bmp280_sizeof_int64,
+                "byte shift must be 8 for LE 16-bit assembly");
   return (uint16_t)((uint16_t)buf[k_bmp280_le16_lsb_idx] |
                     ((uint16_t)buf[k_bmp280_le16_msb_idx] << k_bmp280_byte_shift));
 }
@@ -534,7 +549,8 @@ static uint32_t internal_finalize_pressure_q8(int64_t p, int64_t var1, int64_t v
 {
   /* Pre-conditions: dig_P1 non-zero is guaranteed by the rx_bmp280_init post-condition check;
    * p is non-negative by construction from the BMP280 datasheet algorithm (var1 > 0 guard). */
-  static_assert(sizeof(int64_t) == 8U, "int64_t must be 64-bit for overflow-safe pressure math");
+  static_assert(sizeof(int64_t) == k_bmp280_sizeof_int64,
+                "int64_t must be 64-bit for overflow-safe pressure math");
   /* Bosch BMP280 datasheet formula (Section 4.2.3):
    * Step 1: shift (p + fine adjustments) right by 8 to get Q8 fixed-point Pa*256
    * Step 2: add dig_P7 offset (left-shifted 4) AFTER the right shift
@@ -644,7 +660,7 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
 static void internal_parse_calibration(const uint8_t* buf)
 {
   /* Pre-condition: buf is a stack-allocated calibration buffer in rx_bmp280_init (never NULL). */
-  static_assert(k_bmp280_calib_p9_lsb + 2U == k_bmp280_calib_byte_count,
+  static_assert(k_bmp280_calib_p9_lsb + k_bmp280_calib_tail_bytes == k_bmp280_calib_byte_count,
                 "P9 coefficient must occupy the final two bytes of the calibration block");
   s_calib.dig_T1 = internal_parse_u16_le(&buf[k_bmp280_calib_t1_lsb]);
   s_calib.dig_T2 = internal_parse_s16_le(&buf[k_bmp280_calib_t2_lsb]);
@@ -667,12 +683,98 @@ static void internal_parse_calibration(const uint8_t* buf)
  */
 
 /**
+ * @brief Verify BMP280 chip ID register reads the expected value
+ *
+ * @details
+ * Reads the chip ID register (0xD0) and compares it to k_bmp280_chip_id_expected.
+ * Clears s_manager on failure so the driver remains in a safe state.
+ *
+ * @return rx_err_t Verification result
+ * @retval k_rx_ok Chip ID matches expected value
+ * @retval k_rx_err_nack I2C NACK (device not responding)
+ * @retval k_rx_err_invalid_state Chip ID mismatch (wrong device on bus)
+ *
+ * @pre s_manager non-NULL
+ * @pre "i2c1_baro" bus initialized
+ * @post s_manager set to NULL on failure
+ * @post No state change on success
+ *
+ * @note Not thread-safe
+ * @see rx_bmp280_init() Sole caller
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_verify_chip_id(void)
+{
+  uint8_t        chip_id = 0U;
+  const rx_err_t err =
+    internal_read_regs((uint8_t)k_bmp280_reg_chip_id, &chip_id, k_bmp280_single_byte);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Chip ID read failed");
+    s_manager = NULL;
+    return err;
+  }
+  if (chip_id != (uint8_t)k_bmp280_chip_id_expected) {
+    rx_log_error_val(s_tag, "Unexpected chip ID", (uint32_t)chip_id);
+    s_manager = NULL;
+    return k_rx_err_invalid_state;
+  }
+  return k_rx_ok;
+}
+
+/**
+ * @brief Read, parse, and validate BMP280 factory calibration coefficients
+ *
+ * @details
+ * Reads 24 bytes of factory-calibrated trimming parameters from OTP registers
+ * 0x88-0x9F, parses them into s_calib, and validates that critical coefficients
+ * (dig_T1 and dig_P1) are non-zero. Clears s_manager on failure.
+ *
+ * @return rx_err_t Calibration result
+ * @retval k_rx_ok Calibration coefficients loaded and validated
+ * @retval k_rx_err_nack I2C NACK during read
+ * @retval k_rx_err_invalid_state dig_T1 or dig_P1 is zero (blank OTP)
+ *
+ * @pre s_manager non-NULL
+ * @pre "i2c1_baro" bus initialized
+ * @post s_calib populated with valid coefficients on k_rx_ok
+ * @post s_manager set to NULL on failure
+ *
+ * @note Not thread-safe
+ * @see rx_bmp280_init() Sole caller
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_read_and_validate_calibration(void)
+{
+  uint8_t        calib_buf[k_bmp280_calib_byte_count];
+  const rx_err_t err =
+    internal_read_regs((uint8_t)k_bmp280_reg_calib_start, calib_buf, k_bmp280_calib_byte_count);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Calibration read failed");
+    s_manager = NULL;
+    return err;
+  }
+
+  internal_parse_calibration(calib_buf);
+
+  const bool t1_zero = (s_calib.dig_T1 == 0U);
+  const bool p1_zero = (s_calib.dig_P1 == 0U);
+  if (t1_zero || p1_zero) {
+    rx_log_error(s_tag, "Invalid calibration: dig_T1 or dig_P1 is zero");
+    s_manager = NULL;
+    return k_rx_err_invalid_state;
+  }
+  return k_rx_ok;
+}
+
+/**
  * @brief Initialize BMP280 sensor and read factory calibration coefficients
  *
  * @details
- * Reads 24 bytes of factory-calibrated trimming parameters from OTP
- * registers k_bmp280_reg_calib_start..k_bmp280_reg_calib_end (0x88-0x9F) and parses them into s_calib. Then configures
- * the IIR filter by writing to the config register 0xF5.
+ * Verifies chip ID, reads and validates 24 bytes of factory-calibrated trimming
+ * parameters from OTP registers, and configures the IIR filter by writing to
+ * the config register 0xF5.
  *
  * @param[in] manager Initialized bus manager with "i2c1_baro" registered
  *
@@ -694,47 +796,20 @@ static void internal_parse_calibration(const uint8_t* buf)
 rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "Bus manager is NULL");
-  /* Pre-condition: s_bus_name is a compile-time string constant; it is never NULL. */
 
   s_manager     = manager;
   s_initialized = false;
 
-  /* Verify chip ID before reading calibration (detects wrong device on bus) */
-  uint8_t  chip_id = 0U;
-  rx_err_t err = internal_read_regs((uint8_t)k_bmp280_reg_chip_id, &chip_id, k_bmp280_single_byte);
+  rx_err_t err = internal_verify_chip_id();
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Chip ID read failed");
-    s_manager = NULL;
-    return err;
-  }
-  if (chip_id != (uint8_t)k_bmp280_chip_id_expected) {
-    rx_log_error_val(s_tag, "Unexpected chip ID", (uint32_t)chip_id);
-    s_manager = NULL;
-    return k_rx_err_invalid_state;
-  }
-
-  /* Read 24-byte factory calibration block from OTP (k_bmp280_reg_calib_start..k_bmp280_reg_calib_end) */
-  uint8_t calib_buf[k_bmp280_calib_byte_count];
-  err = internal_read_regs((uint8_t)k_bmp280_reg_calib_start, calib_buf, k_bmp280_calib_byte_count);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Calibration read failed");
-    s_manager = NULL;
     return err;
   }
 
-  /* Parse calibration coefficients (all little-endian: LSB first) */
-  internal_parse_calibration(calib_buf);
-
-  /* Postcondition: verify critical calibration coefficients are non-zero. */
-  bool t1_zero = (s_calib.dig_T1 == 0U);
-  bool p1_zero = (s_calib.dig_P1 == 0U);
-  if (t1_zero || p1_zero) {
-    rx_log_error(s_tag, "Invalid calibration: dig_T1 or dig_P1 is zero");
-    s_manager = NULL;
-    return k_rx_err_invalid_state;
+  err = internal_read_and_validate_calibration();
+  if (err != k_rx_ok) {
+    return err;
   }
 
-  /* Write IIR filter configuration (filter=2) */
   err = internal_write_reg((uint8_t)k_bmp280_reg_config, (uint8_t)k_bmp280_config_val);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Config register write failed");

@@ -134,8 +134,6 @@
 #include "tx_api.h"
 
 /* Include the module under test */
-#include <string.h>
-
 #include "rx_error_handler.h"
 #include "rx_error_interface.h"
 
@@ -180,7 +178,8 @@ static error_handler_t s_handler;
  */
 void setUp(void)
 {
-  memset(&s_handler, 0, sizeof(s_handler));
+  static const error_handler_t s_zero = {0};
+  s_handler                           = s_zero;
 }
 
 /**
@@ -219,10 +218,11 @@ void tearDown(void)
  */
 
 typedef enum : uint16_t {
-  k_test_max_retries        = 3,
-  k_test_initial_backoff_ms = 100,
-  k_test_max_backoff_ms     = 5000,
-  k_test_zero_retries       = 0,
+  k_test_max_retries          = 3,
+  k_test_initial_backoff_ms   = 100,
+  k_test_max_backoff_ms       = 5000,
+  k_test_zero_retries         = 0,
+  k_test_unlimited_loop_count = 100, /**< Iterations for unlimited retries test */
 } test_constants_t;
 
 /**
@@ -356,9 +356,9 @@ void test_error_handler_deinit_already_deinitialized(void)
  */
 
 /**
- * @brief Test getting interface from initialized handler
+ * @brief Test getting interface from initialized handler - context and error reporting
  */
-void test_error_handler_get_interface_success(void)
+void test_error_handler_get_interface_success_part1(void)
 {
   rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
 
@@ -372,6 +372,21 @@ void test_error_handler_get_interface_success(void)
   TEST_ASSERT_NOT_NULL(iface.report_error);
   TEST_ASSERT_NOT_NULL(iface.get_error_count);
   TEST_ASSERT_NOT_NULL(iface.get_component_error_count);
+}
+
+/**
+ * @brief Test getting interface from initialized handler - retry and backoff
+ */
+void test_error_handler_get_interface_success_part2(void)
+{
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  rx_error_interface_t iface;
+  err = error_handler_get_interface(&iface, &s_handler);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
   TEST_ASSERT_NOT_NULL(iface.clear_errors);
   TEST_ASSERT_NOT_NULL(iface.is_retry_limit_reached);
   TEST_ASSERT_NOT_NULL(iface.reset_retry_counter);
@@ -581,7 +596,7 @@ void test_error_handler_unlimited_retries(void)
   TEST_ASSERT_EQUAL(k_rx_ok, error_handler_get_interface(&iface, &s_handler));
 
   /* Report many errors - should never reach limit */
-  for (uint32_t i = 0; i < 100; i++) {
+  for (uint32_t i = 0; i < k_test_unlimited_loop_count; i++) {
     iface.report_error(iface.ctx, k_rx_fail, "SPI", "Error");
     TEST_ASSERT_FALSE(iface.is_retry_limit_reached(iface.ctx, "SPI"));
   }
@@ -761,11 +776,29 @@ void test_error_handler_max_components(void)
   rx_error_interface_t iface;
   TEST_ASSERT_EQUAL(k_rx_ok, error_handler_get_interface(&iface, &s_handler));
 
+  /* Pre-built component names for all 16 slots */
+  static const char* const s_comp_names[] = {
+    "COMP00",
+    "COMP01",
+    "COMP02",
+    "COMP03",
+    "COMP04",
+    "COMP05",
+    "COMP06",
+    "COMP07",
+    "COMP08",
+    "COMP09",
+    "COMP10",
+    "COMP11",
+    "COMP12",
+    "COMP13",
+    "COMP14",
+    "COMP15",
+  };
+
   /* Fill all component slots */
-  char component_name[k_error_handler_component_name_max];
   for (uint32_t i = 0; i < k_error_handler_max_components; i++) {
-    snprintf(component_name, sizeof(component_name), "COMP%02u", i);
-    iface.report_error(iface.ctx, k_rx_fail, component_name, "Error");
+    iface.report_error(iface.ctx, k_rx_fail, s_comp_names[i], "Error");
   }
 
   /* Verify all slots used */
@@ -815,9 +848,7 @@ void test_error_interface_validate_null(void)
  */
 void test_error_interface_validate_missing_functions(void)
 {
-  rx_error_interface_t iface;
-
-  memset(&iface, 0, sizeof(iface));
+  rx_error_interface_t iface = {0};
 
   rx_err_t err = rx_error_interface_validate(&iface);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1350,12 +1381,12 @@ void test_get_backoff_delay_unlimited_retries_loop_exhaustion(void)
    * With 32+ errors, retries = 32, so the for-loop runs all 31 iterations
    * (i=1..31) without breaking via i>=retries, hitting the for-condition exit. */
   enum : uint32_t {
-    k_num_errors = 33u, /**< > k_error_handler_max_retries (32) */
+    k_num_errors = 33U, /**< > k_error_handler_max_retries (32) */
   };
   const error_handler_config_t config = {
     .max_retries        = 0, /* k_error_handler_no_retry_limit */
     .initial_backoff_ms = 1,
-    .max_backoff_ms     = 0xFFFFFFFFu,
+    .max_backoff_ms     = 0xFFFFFFFFU,
   };
   rx_err_t err = error_handler_init(&s_handler, &config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1396,9 +1427,8 @@ static uint32_t s_stub_get_error_count(void* ctx)
 /** @brief Verify validate rejects when only report_error is set (get_error_count missing) */
 void test_error_interface_validate_missing_get_count(void)
 {
-  rx_error_interface_t iface;
-  memset(&iface, 0, sizeof(iface));
-  iface.report_error = s_stub_report_error;
+  rx_error_interface_t iface = {0};
+  iface.report_error         = s_stub_report_error;
   /* get_error_count and clear_errors remain nullptr */
   rx_err_t err = rx_error_interface_validate(&iface);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1407,10 +1437,9 @@ void test_error_interface_validate_missing_get_count(void)
 /** @brief Verify validate rejects when report_error and get_error_count set but clear_errors missing */
 void test_error_interface_validate_missing_clear_errors(void)
 {
-  rx_error_interface_t iface;
-  memset(&iface, 0, sizeof(iface));
-  iface.report_error    = s_stub_report_error;
-  iface.get_error_count = s_stub_get_error_count;
+  rx_error_interface_t iface = {0};
+  iface.report_error         = s_stub_report_error;
+  iface.get_error_count      = s_stub_get_error_count;
   /* clear_errors remains nullptr */
   rx_err_t err = rx_error_interface_validate(&iface);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1421,10 +1450,11 @@ void test_error_interface_validate_missing_clear_errors(void)
  * =============================================================================
  */
 
-int main(void)
+/**
+ * @brief Run core lifecycle and interface tests
+ */
+static void internal_run_lifecycle_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Initialization tests */
   RUN_TEST(test_error_handler_init_success);
   RUN_TEST(test_error_handler_init_null_pointer);
@@ -1437,7 +1467,8 @@ int main(void)
   RUN_TEST(test_error_handler_deinit_already_deinitialized);
 
   /* Interface tests */
-  RUN_TEST(test_error_handler_get_interface_success);
+  RUN_TEST(test_error_handler_get_interface_success_part1);
+  RUN_TEST(test_error_handler_get_interface_success_part2);
   RUN_TEST(test_error_handler_get_interface_null_iface);
   RUN_TEST(test_error_handler_get_interface_null_handler);
   RUN_TEST(test_error_handler_get_interface_not_initialized);
@@ -1464,7 +1495,13 @@ int main(void)
   /* Multiple component tests */
   RUN_TEST(test_error_handler_multiple_components);
   RUN_TEST(test_error_handler_max_components);
+}
 
+/**
+ * @brief Run null/uninitialized/mutex-fail branch coverage tests
+ */
+static void internal_run_branch_coverage_tests(void)
+{
   /* impl_report_error null/uninitialized/mutex-fail branches */
   RUN_TEST(test_report_error_null_handler);
   RUN_TEST(test_report_error_null_component);
@@ -1501,7 +1538,13 @@ int main(void)
   RUN_TEST(test_reset_retry_counter_not_initialized);
   RUN_TEST(test_reset_retry_counter_mutex_fail);
   RUN_TEST(test_reset_retry_counter_found_component);
+}
 
+/**
+ * @brief Run backoff, init config, and interface validation tests
+ */
+static void internal_run_config_and_interface_tests(void)
+{
   /* impl_get_backoff_delay branches */
   RUN_TEST(test_get_backoff_delay_null_ctx);
   RUN_TEST(test_get_backoff_delay_not_initialized);
@@ -1523,6 +1566,15 @@ int main(void)
   RUN_TEST(test_error_interface_validate_missing_functions);
   RUN_TEST(test_error_interface_validate_missing_get_count);
   RUN_TEST(test_error_interface_validate_missing_clear_errors);
+}
+
+int main(void)
+{
+  UNITY_BEGIN();
+
+  internal_run_lifecycle_tests();
+  internal_run_branch_coverage_tests();
+  internal_run_config_and_interface_tests();
 
   return UNITY_END();
 }

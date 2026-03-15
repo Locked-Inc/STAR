@@ -103,6 +103,23 @@ typedef enum : uint8_t {
 } bno055_i2c_size_t;
 
 /**
+ * @enum bno055_assert_val_t
+ * @brief Compile-time assertion reference values for internal_assemble_int16_le
+ *
+ * @details
+ * Named constants used in static_assert comparisons to avoid magic numbers.
+ * k_bno055_expected_msb_shift verifies that k_bno055_shift_msb == 8 (correct
+ * for little-endian byte assembly). k_bno055_expected_uint16_bits verifies
+ * that uint16_t is exactly 16 bits wide (required for the assembly logic).
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_expected_msb_shift   = 8U,  /**< Expected value of k_bno055_shift_msb */
+  k_bno055_expected_uint16_bits = 16U, /**< Expected bit width of uint16_t */
+} bno055_assert_val_t;
+
+/**
  * @enum bno055_i2c_write_idx_t
  * @brief Byte indices into the 2-byte I2C write buffer
  *
@@ -356,6 +373,7 @@ static rx_err_t       internal_init_configure(void);
 static rx_err_t       internal_init_enter_ndof(void);
 static rx_err_t       internal_verify_chip_id(void);
 static rx_err_t       internal_init_enable_interrupt(void);
+static rx_err_t       internal_init_run_sequence(void);
 
 /* =============================================================================
  * Internal Helpers
@@ -466,8 +484,9 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
  */
 static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high)
 {
-  static_assert(k_bno055_shift_msb == 8U, "MSB shift must be 8 for little-endian assembly");
-  static_assert(sizeof(uint16_t) * CHAR_BIT == 16U,
+  static_assert((uint8_t)k_bno055_shift_msb == (uint8_t)k_bno055_expected_msb_shift,
+                "MSB shift must be 8 for little-endian assembly");
+  static_assert(sizeof(uint16_t) * CHAR_BIT == (unsigned)k_bno055_expected_uint16_bits,
                 "uint16_t must be 16 bits for assembly to be well-defined");
   return (int16_t)((uint16_t)low | ((uint16_t)high << k_bno055_shift_msb));
 }
@@ -525,8 +544,8 @@ static rx_err_t internal_init_reset_and_wait(void)
     return err;
   }
   (void)tx_thread_sleep(
-    (ULONG)(k_bno055_delay_config_ms / k_bno055_ms_per_tick +
-            k_bno055_tick_round_up)); /* 2 ticks @ 10 ms/tick = 20 ms (round up for 19 ms) */
+    (ULONG)k_bno055_delay_config_ms / (ULONG)k_bno055_ms_per_tick +
+    (ULONG)k_bno055_tick_round_up); /* 2 ticks @ 10 ms/tick = 20 ms (round up for 19 ms) */
 
   return k_rx_ok;
 }
@@ -768,6 +787,62 @@ static rx_err_t internal_init_enable_interrupt(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Execute the multi-step BNO055 initialization sequence
+ *
+ * @details
+ * Runs reset, configure, optional interrupt setup, NDOF mode entry, and chip
+ * ID verification. Extracted from rx_bno055_init() to keep that function below
+ * the readability-function-size statement threshold.
+ *
+ * @return rx_err_t Result of the first failing step, or k_rx_ok on success
+ * @retval k_rx_ok All steps completed successfully
+ * @retval k_rx_err_nack I2C NACK (device not found)
+ * @retval k_rx_err_invalid_state CHIP_ID != 0xA0
+ *
+ * @pre s_manager non-NULL (set by caller before invoking)
+ * @pre s_mode set to desired operating mode by caller
+ * @post All BNO055 init registers written; NDOF mode active on k_rx_ok
+ * @post Chip ID verified as 0xA0 on k_rx_ok
+ *
+ * @note Not thread-safe; called only from rx_bno055_init()
+ *
+ * @see internal_init_reset_and_wait() Steps 1-2
+ * @see internal_init_configure() Steps 3-6
+ * @see internal_init_enter_ndof() Step 7
+ * @see internal_verify_chip_id() Step 8
+ * @see internal_init_enable_interrupt() Interrupt engine (interrupt mode only)
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_init_run_sequence(void)
+{
+  rx_err_t err = internal_init_reset_and_wait();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  err = internal_init_configure();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Configure interrupt engine while still in CONFIG mode (BNO055 requires this) */
+  if (s_mode == k_bno055_mode_interrupt) {
+    err = internal_init_enable_interrupt();
+    if (err != k_rx_ok) {
+      return err;
+    }
+  }
+
+  err = internal_init_enter_ndof();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return internal_verify_chip_id();
+}
+
 /* =============================================================================
  * Public API Implementation
  * =============================================================================
@@ -777,10 +852,10 @@ static rx_err_t internal_init_enable_interrupt(void)
  * @brief Initialize BNO055 sensor and configure for NDOF fusion mode
  *
  * @details
- * Executes the complete 8-step initialization sequence as described in the
- * BNO055 datasheet section 3.3.1. Each step is delegated to a helper function.
- * Any failure sets s_manager = NULL before returning so the module is
- * re-initializable.
+ * Validates parameters, stores module state, then delegates the complete
+ * 8-step initialization sequence (BNO055 datasheet section 3.3.1) to
+ * internal_init_run_sequence(). Any failure sets s_manager = NULL before
+ * returning so the module is re-initializable.
  *
  * Delay rationale:
  * - 650 ms after reset: BNO055 internal boot sequence (ARM Cortex-M0 startup)
@@ -811,11 +886,7 @@ static rx_err_t internal_init_enable_interrupt(void)
  * @note Not thread-safe
  * @note Blocks ~700 ms total
  *
- * @see internal_init_reset_and_wait() Steps 1-2
- * @see internal_init_configure() Steps 3-6
- * @see internal_init_enter_ndof() Step 7
- * @see internal_verify_chip_id() Step 8
- * @see internal_init_enable_interrupt() Interrupt engine configuration (interrupt mode only)
+ * @see internal_init_run_sequence() Delegated initialization sequence
  * @see bno055_delay_ms_t Timing constants
  * @see bno055_config_t Configuration struct
  *
@@ -837,34 +908,7 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager, const bno055_config_t* config
   s_mode        = config->mode;
   s_initialized = false;
 
-  rx_err_t err = internal_init_reset_and_wait();
-  if (err != k_rx_ok) {
-    s_manager = NULL;
-    return err;
-  }
-
-  err = internal_init_configure();
-  if (err != k_rx_ok) {
-    s_manager = NULL;
-    return err;
-  }
-
-  /* Configure interrupt engine while still in CONFIG mode (BNO055 requires this) */
-  if (s_mode == k_bno055_mode_interrupt) {
-    err = internal_init_enable_interrupt();
-    if (err != k_rx_ok) {
-      s_manager = NULL;
-      return err;
-    }
-  }
-
-  err = internal_init_enter_ndof();
-  if (err != k_rx_ok) {
-    s_manager = NULL;
-    return err;
-  }
-
-  err = internal_verify_chip_id();
+  const rx_err_t err = internal_init_run_sequence();
   if (err != k_rx_ok) {
     s_manager = NULL;
     return err;

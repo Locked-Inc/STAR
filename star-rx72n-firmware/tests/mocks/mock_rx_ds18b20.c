@@ -10,7 +10,8 @@
 
 #include "mock_rx_ds18b20.h"
 
-#include <string.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /* Static return values */
 static rx_err_t s_init_return       = k_rx_ok;
@@ -23,8 +24,11 @@ static uint32_t s_init_count    = 0;
 static uint32_t s_trigger_count = 0;
 static uint32_t s_read_count    = 0;
 
-/* Configured temperature */
-static float s_temperature = 25.0f;
+/** @brief Default temperature for mock sensor (degrees Celsius) */
+static const float s_default_temperature_celsius = 25.0F;
+
+/* Configured temperature -- initialized in mock_ds18b20_reset() */
+static float s_temperature;
 
 void mock_ds18b20_reset(void)
 {
@@ -35,7 +39,7 @@ void mock_ds18b20_reset(void)
   s_init_count        = 0;
   s_trigger_count     = 0;
   s_read_count        = 0;
-  s_temperature       = 25.0f;
+  s_temperature       = s_default_temperature_celsius;
 }
 
 void mock_ds18b20_set_init_return(rx_err_t err)
@@ -98,7 +102,12 @@ rx_err_t rx_ds18b20_deinit(rx_ds18b20_handle_t* handle)
     return k_rx_err_null_ptr;
   }
 
-  (void)memset(handle, 0, sizeof(*handle));
+  {
+    uint8_t* p = (uint8_t*)handle;
+    for (size_t i = 0; i < sizeof(*handle); i++) {
+      p[i] = 0;
+    }
+  }
   return k_rx_ok;
 }
 

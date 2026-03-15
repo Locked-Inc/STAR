@@ -190,6 +190,9 @@ typedef enum : uint8_t {
   k_hex_chars_per_u32 = 8, /**< Hex characters for uint32_t (e.g., "FFFFFFFF").
                                 @par Value: 8 */
 
+  k_u16_high_byte_shift = 8, /**< Bit shift to extract high byte from uint16_t.
+                                   @par Value: 8 bits */
+
   k_u32_high_u16_shift = 16, /**< Bit shift to extract high uint16 from uint32.
                                   @par Value: 16 bits */
 } buffer_size_constants_t;
@@ -435,7 +438,7 @@ RX_STATIC_TESTABLE uint32_t internal_append_hex_u16(char*    buf,
   RX_ASSERT(buf != nullptr && max >= k_hex_chars_per_u16 && pos < max,
             "internal_append_hex_u16: precondition violated by caller");
 
-  pos = internal_append_hex_byte(buf, pos, max, (uint8_t)(value >> 8));
+  pos = internal_append_hex_byte(buf, pos, max, (uint8_t)(value >> k_u16_high_byte_shift));
   pos = internal_append_hex_byte(buf, pos, max, (uint8_t)(value & k_mask_u8));
   return pos;
 }
@@ -576,7 +579,7 @@ RX_STATIC_TESTABLE uint32_t internal_append_decimal_u16(char*    buf,
  */
 RX_STATIC_TESTABLE bool internal_is_printable(uint8_t c)
 {
-  return (c >= k_printable_min && c <= k_printable_max);
+  return (bool)((c >= k_printable_min) && (c <= k_printable_max));
 }
 
 /**
@@ -621,6 +624,52 @@ RX_STATIC_TESTABLE bool internal_is_printable(uint8_t c)
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
+/**
+ * @brief Format one hex dump line (hex bytes + ASCII sidebar)
+ *
+ * @param[in,out] buf Output buffer
+ * @param[in] pos Current position in buffer
+ * @param[in] max Maximum buffer size
+ * @param[in] payload Payload data
+ * @param[in] offset Byte offset within payload for this line
+ * @param[in] line_bytes Number of payload bytes on this line
+ *
+ * @return Updated position in buffer
+ *
+ * @ingroup frame_ascii_helpers
+ * @since Version 1.0.0
+ */
+static uint32_t internal_format_hex_line(char*          buf,
+                                         uint32_t       pos,
+                                         uint32_t       max,
+                                         const uint8_t* payload,
+                                         uint16_t       offset,
+                                         uint16_t       line_bytes)
+{
+  /* Hex dump */
+  for (uint16_t i = 0; i < k_bytes_per_line; i++) {
+    if (i < line_bytes) {
+      pos = internal_append_hex_byte(buf, pos, max, payload[offset + i]);
+      pos = internal_append_char(buf, pos, max, ' ');
+    } else {
+      pos = internal_append_str(buf, pos, max, "   "); /* Pad short lines */
+    }
+  }
+
+  /* ASCII sidebar */
+  pos = internal_append_char(buf, pos, max, ' ');
+  for (uint16_t i = 0; i < line_bytes; i++) {
+    const uint8_t c          = payload[offset + i];
+    char          display_ch = '.';
+    if (internal_is_printable(c)) {
+      display_ch = (char)c;
+    }
+    pos = internal_append_char(buf, pos, max, display_ch);
+  }
+
+  return pos;
+}
+
 RX_STATIC_TESTABLE uint32_t internal_format_payload(char*          buf,
                                                     uint32_t       pos,
                                                     uint32_t       max,
@@ -654,22 +703,8 @@ RX_STATIC_TESTABLE uint32_t internal_format_payload(char*          buf,
       line_bytes = k_bytes_per_line;
     }
 
-    /* Hex dump */
-    for (uint16_t i = 0; i < k_bytes_per_line; i++) {
-      if (i < line_bytes) {
-        pos = internal_append_hex_byte(buf, pos, max, payload[offset + i]);
-        pos = internal_append_char(buf, pos, max, ' ');
-      } else {
-        pos = internal_append_str(buf, pos, max, "   "); /* Pad short lines */
-      }
-    }
-
-    /* ASCII sidebar */
-    pos = internal_append_char(buf, pos, max, ' ');
-    for (uint16_t i = 0; i < line_bytes; i++) {
-      uint8_t c = payload[offset + i];
-      pos       = internal_append_char(buf, pos, max, internal_is_printable(c) ? (char)c : '.');
-    }
+    /* Format hex bytes and ASCII sidebar */
+    pos = internal_format_hex_line(buf, pos, max, payload, offset, line_bytes);
 
     pos = internal_append_str(buf, pos, max, "\r\n");
     offset += line_bytes;
@@ -737,7 +772,11 @@ RX_STATIC_TESTABLE uint32_t internal_format_header(char*                    buf,
   char flags_buf[k_flags_buf_size];
 
   /* Direction */
-  pos = internal_append_str(buf, pos, max, is_tx ? "[TX] " : "[RX] ");
+  if (is_tx) {
+    pos = internal_append_str(buf, pos, max, "[TX] ");
+  } else {
+    pos = internal_append_str(buf, pos, max, "[RX] ");
+  }
 
   /* Sequence number */
   pos = internal_append_str(buf, pos, max, "seq=");
