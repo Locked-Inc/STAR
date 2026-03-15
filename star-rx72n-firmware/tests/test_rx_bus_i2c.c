@@ -215,11 +215,11 @@ void setUp(void)
   /* Create I2C bus config: channel=0, addr=0x50, 400 kHz, pins P1.2/P1.3 */
   err = rx_bus_config_init_i2c(&s_i2c_config,
                                s_test_bus_name,
-                               (uint8_t)k_test_i2c_channel,
-                               (uint8_t)k_test_i2c_addr,
+                               k_test_i2c_channel,
+                               k_test_i2c_addr,
                                k_rx_p1_2,
                                k_rx_p1_3,
-                               (uint32_t)k_test_i2c_freq_hz);
+                               k_test_i2c_freq_hz);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Register I2C bus with manager */
@@ -375,15 +375,12 @@ void test_bus_i2c_write_sends_data(void)
   rx_err_t err = rx_bus_i2c_init(&s_test_manager, s_test_bus_name);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0,
-                        (uint8_t)k_test_write_byte_1,
-                        (uint8_t)k_test_write_byte_2};
-  err = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, (uint16_t)k_test_write_len);
+  const uint8_t tx[] = {k_test_write_byte_0, k_test_write_byte_1, k_test_write_byte_2};
+  err                = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, k_test_write_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint8_t  captured[(uint16_t)k_test_write_len];
-  uint16_t copied =
-    mock_riic_get_tx_data((uint8_t)k_test_i2c_channel, captured, (uint16_t)k_test_write_len);
+  uint8_t  captured[k_test_write_len];
+  uint16_t copied = mock_riic_get_tx_data(k_test_i2c_channel, captured, k_test_write_len);
   TEST_ASSERT_EQUAL((uint16_t)k_test_write_len, copied);
   TEST_ASSERT_EQUAL_HEX8_ARRAY(tx, captured, (uint16_t)k_test_write_len);
 }
@@ -400,8 +397,8 @@ void test_bus_i2c_write_sends_data(void)
  */
 void test_bus_i2c_write_null_manager_returns_error(void)
 {
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  rx_err_t      err  = rx_bus_i2c_write(nullptr, s_test_bus_name, tx, (uint16_t)k_test_len_one);
+  const uint8_t tx[] = {k_test_write_byte_0};
+  rx_err_t      err  = rx_bus_i2c_write(nullptr, s_test_bus_name, tx, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -418,8 +415,7 @@ void test_bus_i2c_write_null_manager_returns_error(void)
  */
 void test_bus_i2c_write_null_data_returns_error(void)
 {
-  rx_err_t err =
-    rx_bus_i2c_write(&s_test_manager, s_test_bus_name, nullptr, (uint16_t)k_test_len_one);
+  rx_err_t err = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, nullptr, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -436,8 +432,8 @@ void test_bus_i2c_write_null_data_returns_error(void)
  */
 void test_bus_i2c_write_null_name_returns_error(void)
 {
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  rx_err_t      err  = rx_bus_i2c_write(&s_test_manager, nullptr, tx, (uint16_t)k_test_len_one);
+  const uint8_t tx[] = {k_test_write_byte_0};
+  rx_err_t      err  = rx_bus_i2c_write(&s_test_manager, nullptr, tx, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -458,8 +454,8 @@ void test_bus_i2c_write_null_name_returns_error(void)
  */
 void test_bus_i2c_write_not_initialized_returns_error(void)
 {
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  rx_err_t err = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, (uint16_t)k_test_len_one);
+  const uint8_t tx[] = {k_test_write_byte_0};
+  rx_err_t      err  = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -485,8 +481,8 @@ void test_bus_i2c_write_nack_propagates(void)
 
   mock_riic_simulate_nack(true);
 
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  err = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, (uint16_t)k_test_len_one);
+  const uint8_t tx[] = {k_test_write_byte_0};
+  err                = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
 }
 
@@ -512,9 +508,8 @@ void test_bus_i2c_write_snapshot_length_zero_fills_sentinel(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   mock_riic_clear_history();
 
-  uint8_t  dummy = (uint8_t)k_test_snapshot_byte;
-  rx_err_t werr =
-    rx_bus_i2c_write(&s_test_manager, s_test_bus_name, &dummy, (uint16_t)k_test_len_zero);
+  uint8_t  dummy = k_test_snapshot_byte;
+  rx_err_t werr  = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, &dummy, k_test_len_zero);
   TEST_ASSERT_EQUAL(k_rx_ok, werr);
 
   const mock_riic_call_t* call = mock_riic_get_call((uint16_t)k_test_idx_zero);
@@ -546,8 +541,8 @@ void test_bus_i2c_write_snapshot_length_one_fills_first_slot(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   mock_riic_clear_history();
 
-  const uint8_t tx[] = {(uint8_t)k_test_snapshot_byte};
-  rx_err_t werr = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, (uint16_t)k_test_len_one);
+  const uint8_t tx[] = {k_test_snapshot_byte};
+  rx_err_t      werr = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_ok, werr);
 
   const mock_riic_call_t* call = mock_riic_get_call((uint16_t)k_test_idx_zero);
@@ -579,14 +574,14 @@ void test_bus_i2c_write_snapshot_length_one_fills_first_slot(void)
  */
 void test_bus_i2c_read_returns_configured_data(void)
 {
-  const uint8_t expected[] = {(uint8_t)k_test_read_byte_0, (uint8_t)k_test_read_byte_1};
-  mock_riic_set_rx_data((uint8_t)k_test_i2c_channel, expected, (uint16_t)k_test_read_len);
+  const uint8_t expected[] = {k_test_read_byte_0, k_test_read_byte_1};
+  mock_riic_set_rx_data(k_test_i2c_channel, expected, k_test_read_len);
 
   rx_err_t err = rx_bus_i2c_init(&s_test_manager, s_test_bus_name);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint8_t rx_buf[(uint16_t)k_test_read_len];
-  err = rx_bus_i2c_read(&s_test_manager, s_test_bus_name, rx_buf, (uint16_t)k_test_read_len);
+  uint8_t rx_buf[k_test_read_len];
+  err = rx_bus_i2c_read(&s_test_manager, s_test_bus_name, rx_buf, k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_HEX8_ARRAY(expected, rx_buf, (uint16_t)k_test_read_len);
 }
@@ -603,8 +598,8 @@ void test_bus_i2c_read_returns_configured_data(void)
  */
 void test_bus_i2c_read_null_manager_returns_error(void)
 {
-  uint8_t  rx_buf[(uint16_t)k_test_len_one];
-  rx_err_t err = rx_bus_i2c_read(nullptr, s_test_bus_name, rx_buf, (uint16_t)k_test_len_one);
+  uint8_t  rx_buf[k_test_len_one];
+  rx_err_t err = rx_bus_i2c_read(nullptr, s_test_bus_name, rx_buf, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -621,8 +616,7 @@ void test_bus_i2c_read_null_manager_returns_error(void)
  */
 void test_bus_i2c_read_null_buf_returns_error(void)
 {
-  rx_err_t err =
-    rx_bus_i2c_read(&s_test_manager, s_test_bus_name, nullptr, (uint16_t)k_test_len_one);
+  rx_err_t err = rx_bus_i2c_read(&s_test_manager, s_test_bus_name, nullptr, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -639,8 +633,8 @@ void test_bus_i2c_read_null_buf_returns_error(void)
  */
 void test_bus_i2c_read_null_name_returns_error(void)
 {
-  uint8_t  rx_buf[(uint16_t)k_test_len_one];
-  rx_err_t err = rx_bus_i2c_read(&s_test_manager, nullptr, rx_buf, (uint16_t)k_test_len_one);
+  uint8_t  rx_buf[k_test_len_one];
+  rx_err_t err = rx_bus_i2c_read(&s_test_manager, nullptr, rx_buf, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -660,9 +654,8 @@ void test_bus_i2c_read_null_name_returns_error(void)
  */
 void test_bus_i2c_read_not_initialized_returns_error(void)
 {
-  uint8_t  rx_buf[(uint16_t)k_test_len_one];
-  rx_err_t err =
-    rx_bus_i2c_read(&s_test_manager, s_test_bus_name, rx_buf, (uint16_t)k_test_len_one);
+  uint8_t  rx_buf[k_test_len_one];
+  rx_err_t err = rx_bus_i2c_read(&s_test_manager, s_test_bus_name, rx_buf, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -688,8 +681,8 @@ void test_bus_i2c_read_nack_propagates(void)
 
   mock_riic_simulate_nack(true);
 
-  uint8_t rx_buf[(uint16_t)k_test_len_one];
-  err = rx_bus_i2c_read(&s_test_manager, s_test_bus_name, rx_buf, (uint16_t)k_test_len_one);
+  uint8_t rx_buf[k_test_len_one];
+  err = rx_bus_i2c_read(&s_test_manager, s_test_bus_name, rx_buf, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
 }
 
@@ -715,25 +708,24 @@ void test_bus_i2c_read_nack_propagates(void)
  */
 void test_bus_i2c_write_read_sends_and_receives_data(void)
 {
-  const uint8_t rx_expected[] = {(uint8_t)k_test_read_byte_0, (uint8_t)k_test_read_byte_1};
-  mock_riic_set_rx_data((uint8_t)k_test_i2c_channel, rx_expected, (uint16_t)k_test_read_len);
+  const uint8_t rx_expected[] = {k_test_read_byte_0, k_test_read_byte_1};
+  mock_riic_set_rx_data(k_test_i2c_channel, rx_expected, k_test_read_len);
 
   rx_err_t err = rx_bus_i2c_init(&s_test_manager, s_test_bus_name);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  uint8_t       rx_buf[(uint16_t)k_test_read_len];
+  const uint8_t tx[] = {k_test_write_byte_0};
+  uint8_t       rx_buf[k_test_read_len];
   err = rx_bus_i2c_write_read(&s_test_manager,
                               s_test_bus_name,
                               tx,
-                              (uint16_t)k_test_len_one,
+                              k_test_len_one,
                               rx_buf,
-                              (uint16_t)k_test_read_len);
+                              k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint8_t  captured[(uint16_t)k_test_len_one];
-  uint16_t copied =
-    mock_riic_get_tx_data((uint8_t)k_test_i2c_channel, captured, (uint16_t)k_test_len_one);
+  uint8_t  captured[k_test_len_one];
+  uint16_t copied = mock_riic_get_tx_data(k_test_i2c_channel, captured, k_test_len_one);
   TEST_ASSERT_EQUAL((uint16_t)k_test_len_one, copied);
   TEST_ASSERT_EQUAL_HEX8(tx[k_test_idx_zero], captured[k_test_idx_zero]);
   TEST_ASSERT_EQUAL_HEX8_ARRAY(rx_expected, rx_buf, (uint16_t)k_test_read_len);
@@ -751,14 +743,10 @@ void test_bus_i2c_write_read_sends_and_receives_data(void)
  */
 void test_bus_i2c_write_read_null_manager_returns_error(void)
 {
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  uint8_t       rx_buf[(uint16_t)k_test_read_len];
-  rx_err_t      err = rx_bus_i2c_write_read(nullptr,
-                                       s_test_bus_name,
-                                       tx,
-                                       (uint16_t)k_test_len_one,
-                                       rx_buf,
-                                       (uint16_t)k_test_read_len);
+  const uint8_t tx[] = {k_test_write_byte_0};
+  uint8_t       rx_buf[k_test_read_len];
+  rx_err_t      err =
+    rx_bus_i2c_write_read(nullptr, s_test_bus_name, tx, k_test_len_one, rx_buf, k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -775,13 +763,13 @@ void test_bus_i2c_write_read_null_manager_returns_error(void)
  */
 void test_bus_i2c_write_read_null_tx_returns_error(void)
 {
-  uint8_t  rx_buf[(uint16_t)k_test_read_len];
+  uint8_t  rx_buf[k_test_read_len];
   rx_err_t err = rx_bus_i2c_write_read(&s_test_manager,
                                        s_test_bus_name,
                                        nullptr,
-                                       (uint16_t)k_test_len_one,
+                                       k_test_len_one,
                                        rx_buf,
-                                       (uint16_t)k_test_read_len);
+                                       k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -798,13 +786,13 @@ void test_bus_i2c_write_read_null_tx_returns_error(void)
  */
 void test_bus_i2c_write_read_null_rx_returns_error(void)
 {
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
+  const uint8_t tx[] = {k_test_write_byte_0};
   rx_err_t      err  = rx_bus_i2c_write_read(&s_test_manager,
                                        s_test_bus_name,
                                        tx,
-                                       (uint16_t)k_test_len_one,
+                                       k_test_len_one,
                                        nullptr,
-                                       (uint16_t)k_test_read_len);
+                                       k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -821,14 +809,10 @@ void test_bus_i2c_write_read_null_rx_returns_error(void)
  */
 void test_bus_i2c_write_read_null_name_returns_error(void)
 {
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  uint8_t       rx_buf[(uint16_t)k_test_read_len];
-  rx_err_t      err = rx_bus_i2c_write_read(&s_test_manager,
-                                       nullptr,
-                                       tx,
-                                       (uint16_t)k_test_len_one,
-                                       rx_buf,
-                                       (uint16_t)k_test_read_len);
+  const uint8_t tx[] = {k_test_write_byte_0};
+  uint8_t       rx_buf[k_test_read_len];
+  rx_err_t      err =
+    rx_bus_i2c_write_read(&s_test_manager, nullptr, tx, k_test_len_one, rx_buf, k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -848,14 +832,14 @@ void test_bus_i2c_write_read_null_name_returns_error(void)
  */
 void test_bus_i2c_write_read_not_initialized_returns_error(void)
 {
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  uint8_t       rx_buf[(uint16_t)k_test_read_len];
+  const uint8_t tx[] = {k_test_write_byte_0};
+  uint8_t       rx_buf[k_test_read_len];
   rx_err_t      err = rx_bus_i2c_write_read(&s_test_manager,
                                        s_test_bus_name,
                                        tx,
-                                       (uint16_t)k_test_len_one,
+                                       k_test_len_one,
                                        rx_buf,
-                                       (uint16_t)k_test_read_len);
+                                       k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -881,14 +865,14 @@ void test_bus_i2c_write_read_nack_propagates(void)
 
   mock_riic_simulate_nack(true);
 
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  uint8_t       rx_buf[(uint16_t)k_test_read_len];
+  const uint8_t tx[] = {k_test_write_byte_0};
+  uint8_t       rx_buf[k_test_read_len];
   err = rx_bus_i2c_write_read(&s_test_manager,
                               s_test_bus_name,
                               tx,
-                              (uint16_t)k_test_len_one,
+                              k_test_len_one,
                               rx_buf,
-                              (uint16_t)k_test_read_len);
+                              k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
 }
 
@@ -972,7 +956,7 @@ void test_bus_i2c_init_callback_channel_out_of_range_returns_error(void)
 {
   rx_bus_config_t bus_config   = {0};
   bus_config.type              = k_bus_type_i2c;
-  bus_config.proto.i2c.channel = (uint8_t)k_test_channel_invalid;
+  bus_config.proto.i2c.channel = k_test_channel_invalid;
 
   i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error, .manager = &s_test_manager};
 
@@ -1008,8 +992,8 @@ void test_bus_i2c_init_callback_already_initialized_same_freq_skips_init(void)
   /* Build a matching bus_config with same channel and frequency */
   rx_bus_config_t bus_config        = {0};
   bus_config.type                   = k_bus_type_i2c;
-  bus_config.proto.i2c.channel      = (uint8_t)k_test_i2c_channel;
-  bus_config.proto.i2c.frequency_hz = (uint32_t)k_test_i2c_freq_hz;
+  bus_config.proto.i2c.channel      = k_test_i2c_channel;
+  bus_config.proto.i2c.frequency_hz = k_test_i2c_freq_hz;
 
   const uint16_t calls_after_first_init = mock_riic_get_call_count();
 
@@ -1048,8 +1032,8 @@ void test_bus_i2c_init_callback_already_initialized_freq_mismatch_returns_error(
   /* Build a bus_config for the same channel but different frequency */
   rx_bus_config_t bus_config        = {0};
   bus_config.type                   = k_bus_type_i2c;
-  bus_config.proto.i2c.channel      = (uint8_t)k_test_i2c_channel;
-  bus_config.proto.i2c.frequency_hz = (uint32_t)k_test_alt_freq_100khz;
+  bus_config.proto.i2c.channel      = k_test_i2c_channel;
+  bus_config.proto.i2c.frequency_hz = k_test_alt_freq_100khz;
 
   const uint16_t calls_after_first_init = mock_riic_get_call_count();
 
@@ -1081,9 +1065,9 @@ void test_bus_i2c_init_callback_addr_exceeds_7bit_logs_warning(void)
 {
   rx_bus_config_t bus_config        = {0};
   bus_config.type                   = k_bus_type_i2c;
-  bus_config.proto.i2c.channel      = (uint8_t)k_test_i2c_channel;
-  bus_config.proto.i2c.frequency_hz = (uint32_t)k_test_i2c_freq_hz;
-  bus_config.proto.i2c.device_addr  = (uint8_t)k_test_addr_warn_value;
+  bus_config.proto.i2c.channel      = k_test_i2c_channel;
+  bus_config.proto.i2c.frequency_hz = k_test_i2c_freq_hz;
+  bus_config.proto.i2c.device_addr  = k_test_addr_warn_value;
 
   i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error, .manager = &s_test_manager};
 
@@ -1116,10 +1100,10 @@ void test_bus_i2c_write_callback_not_initialized_returns_error(void)
   bus_config.type            = k_bus_type_i2c;
   bus_config.initialized     = false;
 
-  const uint8_t   tx_data[] = {(uint8_t)k_test_write_byte_0};
+  const uint8_t   tx_data[] = {k_test_write_byte_0};
   i2c_write_ctx_t ctx       = {
           .data   = tx_data,
-          .length = (uint16_t)k_test_len_one,
+          .length = k_test_len_one,
           .result = k_rx_err_hw_error,
   };
 
@@ -1150,18 +1134,17 @@ void test_bus_i2c_write_callback_null_data_with_nonzero_length_returns_error(voi
   rx_bus_config_t bus_config        = {0};
   bus_config.type                   = k_bus_type_i2c;
   bus_config.initialized            = true;
-  bus_config.proto.i2c.channel      = (uint8_t)k_test_i2c_channel;
-  bus_config.proto.i2c.frequency_hz = (uint32_t)k_test_i2c_freq_hz;
-  bus_config.proto.i2c.device_addr  = (uint8_t)k_test_i2c_addr;
+  bus_config.proto.i2c.channel      = k_test_i2c_channel;
+  bus_config.proto.i2c.frequency_hz = k_test_i2c_freq_hz;
+  bus_config.proto.i2c.device_addr  = k_test_i2c_addr;
 
   /* Initialize RIIC mock channel so the HAL doesn't reject the channel */
-  (void)riic_init((riic_channel_t){.value = (uint8_t)k_test_i2c_channel},
-                  (uint32_t)k_test_i2c_freq_hz);
+  (void)riic_init((riic_channel_t){.value = k_test_i2c_channel}, k_test_i2c_freq_hz);
   mock_riic_clear_history();
 
   i2c_write_ctx_t ctx = {
     .data   = nullptr, /* null data with length > 0 triggers defensive branch */
-    .length = (uint16_t)k_test_len_one,
+    .length = k_test_len_one,
     .result = k_rx_err_hw_error,
   };
 
@@ -1192,10 +1175,10 @@ void test_bus_i2c_read_callback_not_initialized_returns_error(void)
   bus_config.type            = k_bus_type_i2c;
   bus_config.initialized     = false;
 
-  uint8_t        rx_buf[(uint16_t)k_test_read_len];
+  uint8_t        rx_buf[k_test_read_len];
   i2c_read_ctx_t ctx = {
     .data   = rx_buf,
-    .length = (uint16_t)k_test_read_len,
+    .length = k_test_read_len,
     .result = k_rx_err_hw_error,
   };
 
@@ -1226,16 +1209,16 @@ void test_bus_i2c_write_read_callback_null_write_data_returns_error(void)
   rx_bus_config_t bus_config        = {0};
   bus_config.type                   = k_bus_type_i2c;
   bus_config.initialized            = true;
-  bus_config.proto.i2c.channel      = (uint8_t)k_test_i2c_channel;
-  bus_config.proto.i2c.frequency_hz = (uint32_t)k_test_i2c_freq_hz;
-  bus_config.proto.i2c.device_addr  = (uint8_t)k_test_i2c_addr;
+  bus_config.proto.i2c.channel      = k_test_i2c_channel;
+  bus_config.proto.i2c.frequency_hz = k_test_i2c_freq_hz;
+  bus_config.proto.i2c.device_addr  = k_test_i2c_addr;
 
-  uint8_t              rx_buf[(uint16_t)k_test_read_len];
+  uint8_t              rx_buf[k_test_read_len];
   i2c_write_read_ctx_t ctx = {
     .write_data   = nullptr, /* triggers defensive branch */
-    .write_length = (uint16_t)k_test_len_one,
+    .write_length = k_test_len_one,
     .read_data    = rx_buf,
-    .read_length  = (uint16_t)k_test_read_len,
+    .read_length  = k_test_read_len,
     .result       = k_rx_err_hw_error,
   };
 
@@ -1266,16 +1249,16 @@ void test_bus_i2c_write_read_callback_null_read_data_returns_error(void)
   rx_bus_config_t bus_config        = {0};
   bus_config.type                   = k_bus_type_i2c;
   bus_config.initialized            = true;
-  bus_config.proto.i2c.channel      = (uint8_t)k_test_i2c_channel;
-  bus_config.proto.i2c.frequency_hz = (uint32_t)k_test_i2c_freq_hz;
-  bus_config.proto.i2c.device_addr  = (uint8_t)k_test_i2c_addr;
+  bus_config.proto.i2c.channel      = k_test_i2c_channel;
+  bus_config.proto.i2c.frequency_hz = k_test_i2c_freq_hz;
+  bus_config.proto.i2c.device_addr  = k_test_i2c_addr;
 
-  const uint8_t        tx_data[] = {(uint8_t)k_test_write_byte_0};
+  const uint8_t        tx_data[] = {k_test_write_byte_0};
   i2c_write_read_ctx_t ctx       = {
           .write_data   = tx_data,
-          .write_length = (uint16_t)k_test_len_one,
+          .write_length = k_test_len_one,
           .read_data    = nullptr, /* triggers defensive branch */
-          .read_length  = (uint16_t)k_test_read_len,
+          .read_length  = k_test_read_len,
           .result       = k_rx_err_hw_error,
   };
 
@@ -1307,7 +1290,7 @@ void test_bus_i2c_read_callback_null_data_with_nonzero_length_returns_error(void
   /* Pass a ctx with null data but nonzero length */
   i2c_read_ctx_t ctx = {
     .data   = NULL,
-    .length = (uint16_t)k_test_read_len,
+    .length = k_test_read_len,
     .result = k_rx_err_hw_error,
   };
 
@@ -1358,12 +1341,12 @@ void test_bus_i2c_write_read_callback_zero_write_length_skips_null_check(void)
   bus_config.type            = k_bus_type_i2c;
   bus_config.initialized     = true;
 
-  uint8_t              read_buf[(uint16_t)k_test_read_buf_extra];
+  uint8_t              read_buf[k_test_read_buf_extra];
   i2c_write_read_ctx_t ctx = {
     .write_data   = NULL,
     .write_length = 0U, /* length == 0: skips null-check for write_data */
     .read_data    = read_buf,
-    .read_length  = (uint16_t)k_test_read_len,
+    .read_length  = k_test_read_len,
     .result       = k_rx_err_hw_error,
   };
 
@@ -1384,10 +1367,10 @@ void test_bus_i2c_write_read_callback_zero_read_length_skips_null_check(void)
   bus_config.type            = k_bus_type_i2c;
   bus_config.initialized     = true;
 
-  static const uint8_t write_buf[] = {(uint8_t)k_test_write_byte_0};
+  static const uint8_t write_buf[] = {k_test_write_byte_0};
   i2c_write_read_ctx_t ctx         = {
             .write_data   = write_buf,
-            .write_length = (uint16_t)k_test_len_one,
+            .write_length = k_test_len_one,
             .read_data    = NULL,
             .read_length  = 0U, /* length == 0: skips null-check for read_data */
             .result       = k_rx_err_hw_error,
@@ -1417,8 +1400,9 @@ void test_bus_i2c_write_read_callback_zero_read_length_skips_null_check(void)
 void test_bus_config_i2c_invalid_sda_pin_returns_error(void)
 {
   rx_bus_config_t            config;
-  static const rx_port_pin_t k_invalid_sda = (rx_port_pin_t)0xFF00U;
-  rx_err_t                   err           = rx_bus_config_init_i2c(&config,
+  static const rx_port_pin_t k_invalid_sda =
+    (rx_port_pin_t)0xFF00U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t err = rx_bus_config_init_i2c(&config,
                                         "test",
                                         k_test_i2c_channel,
                                         k_test_i2c_addr,
@@ -1443,8 +1427,9 @@ void test_bus_config_i2c_invalid_sda_pin_returns_error(void)
 void test_bus_config_i2c_invalid_scl_pin_returns_error(void)
 {
   rx_bus_config_t            config;
-  static const rx_port_pin_t k_invalid_scl = (rx_port_pin_t)0xFF00U;
-  rx_err_t                   err           = rx_bus_config_init_i2c(&config,
+  static const rx_port_pin_t k_invalid_scl =
+    (rx_port_pin_t)0xFF00U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t err = rx_bus_config_init_i2c(&config,
                                         "test",
                                         k_test_i2c_channel,
                                         k_test_i2c_addr,
@@ -1516,11 +1501,11 @@ void test_bus_config_i2c_null_config_returns_error(void)
 {
   rx_err_t err = rx_bus_config_init_i2c(nullptr,
                                         "test",
-                                        (uint8_t)k_test_i2c_channel,
-                                        (uint8_t)k_test_i2c_addr,
+                                        k_test_i2c_channel,
+                                        k_test_i2c_addr,
                                         k_rx_p0_5,
                                         k_rx_p0_6,
-                                        (uint32_t)k_test_i2c_freq_hz);
+                                        k_test_i2c_freq_hz);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1535,11 +1520,11 @@ void test_bus_config_i2c_null_name_returns_error(void)
   rx_bus_config_t config;
   rx_err_t        err = rx_bus_config_init_i2c(&config,
                                         nullptr,
-                                        (uint8_t)k_test_i2c_channel,
-                                        (uint8_t)k_test_i2c_addr,
+                                        k_test_i2c_channel,
+                                        k_test_i2c_addr,
                                         k_rx_p0_5,
                                         k_rx_p0_6,
-                                        (uint32_t)k_test_i2c_freq_hz);
+                                        k_test_i2c_freq_hz);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 

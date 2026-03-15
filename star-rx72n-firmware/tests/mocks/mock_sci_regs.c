@@ -126,7 +126,8 @@ void mock_sci_clear_errors(uint8_t channel)
 bool mock_sci_is_tx_enabled(uint8_t channel)
 {
   if (channel < k_mock_sci_channel_count) {
-    return (g_mock_sci[channel].scr & k_mock_sci_scr_te) != 0;
+    return ((g_mock_sci[channel].scr & k_mock_sci_scr_te) !=
+            0); // NOLINT(readability-implicit-bool-conversion)
   }
   return false;
 }
@@ -134,7 +135,8 @@ bool mock_sci_is_tx_enabled(uint8_t channel)
 bool mock_sci_is_rx_enabled(uint8_t channel)
 {
   if (channel < k_mock_sci_channel_count) {
-    return (g_mock_sci[channel].scr & k_mock_sci_scr_re) != 0;
+    return ((g_mock_sci[channel].scr & k_mock_sci_scr_re) !=
+            0); // NOLINT(readability-implicit-bool-conversion)
   }
   return false;
 }

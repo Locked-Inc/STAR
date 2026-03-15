@@ -92,7 +92,7 @@ void mock_tx_set_thread_delete_return(tx_status status)
 
 bool mock_tx_was_thread_create_called(void)
 {
-  return s_thread_create_count > 0;
+  return s_thread_create_count > 0; // NOLINT(readability-implicit-bool-conversion)
 }
 
 uint32_t mock_tx_get_thread_create_count(void)

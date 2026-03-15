@@ -328,7 +328,7 @@ static rx_err_t test_poeg_get_fault_status(uint8_t motor_index, bool* fault_acti
 
   uint32_t status = s_mock_poeg[motor_index].poeggn;
   *fault_active =
-    ((status & (k_poeg_pidf_detected | k_poeg_iocf_detected | k_poeg_ostpf_detected)) != 0);
+    (bool)((status & (k_poeg_pidf_detected | k_poeg_iocf_detected | k_poeg_ostpf_detected)) != 0U);
   return k_rx_ok;
 }
 

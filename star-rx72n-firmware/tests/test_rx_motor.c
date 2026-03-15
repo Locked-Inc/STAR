@@ -383,7 +383,7 @@ void setUp(void)
   s_config.channel      = k_gptw_channel_0;
   s_config.output_a     = k_gptw_output_a;
   s_config.output_b     = k_gptw_output_b;
-  s_config.pwm_freq_hz  = (uint32_t)k_test_freq_20khz;
+  s_config.pwm_freq_hz  = k_test_freq_20khz;
   s_config.dead_time_ns = (uint32_t)k_test_deadtime_1000ns;
   s_config.invert_pwm   = false;
 }
@@ -460,7 +460,7 @@ void test_motor_init_already_initialized_fails(void)
 
 void test_motor_init_frequency_20khz(void)
 {
-  s_config.pwm_freq_hz = (uint32_t)k_test_freq_20khz;
+  s_config.pwm_freq_hz = k_test_freq_20khz;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
 
@@ -469,7 +469,7 @@ void test_motor_init_frequency_20khz(void)
 
 void test_motor_init_frequency_25khz(void)
 {
-  s_config.pwm_freq_hz = (uint32_t)k_test_freq_25khz;
+  s_config.pwm_freq_hz = k_test_freq_25khz;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&s_motor, &s_config));
 
@@ -1177,7 +1177,7 @@ void test_motor_set_duty_rejects_negative_inf(void)
 
 void test_motor_init_rejects_pwm_freq_too_low(void)
 {
-  s_config.pwm_freq_hz = (uint32_t)k_test_freq_below_min;
+  s_config.pwm_freq_hz = k_test_freq_below_min;
 
   rx_err_t err = rx_motor_init(&s_motor, &s_config);
 
@@ -1187,7 +1187,7 @@ void test_motor_init_rejects_pwm_freq_too_low(void)
 
 void test_motor_init_rejects_pwm_freq_too_high(void)
 {
-  s_config.pwm_freq_hz = (uint32_t)k_test_freq_above_max;
+  s_config.pwm_freq_hz = k_test_freq_above_max;
 
   rx_err_t err = rx_motor_init(&s_motor, &s_config);
 
@@ -1197,7 +1197,7 @@ void test_motor_init_rejects_pwm_freq_too_high(void)
 
 void test_motor_init_accepts_pwm_freq_at_min_boundary(void)
 {
-  s_config.pwm_freq_hz = (uint32_t)k_test_freq_1khz;
+  s_config.pwm_freq_hz = k_test_freq_1khz;
 
   rx_err_t err = rx_motor_init(&s_motor, &s_config);
 
@@ -1207,7 +1207,7 @@ void test_motor_init_accepts_pwm_freq_at_min_boundary(void)
 
 void test_motor_init_accepts_pwm_freq_at_max_boundary(void)
 {
-  s_config.pwm_freq_hz = (uint32_t)k_test_freq_50khz;
+  s_config.pwm_freq_hz = k_test_freq_50khz;
 
   rx_err_t err = rx_motor_init(&s_motor, &s_config);
 
@@ -1458,8 +1458,9 @@ void test_motor_emergency_stop_gptw_stop_error(void)
 void test_motor_init_invalid_output_selection(void)
 {
   /* Covers line 679: invalid output value (not output_a or output_b) */
-  s_config.output_a = (rx_gptw_output_t)k_test_invalid_output;
-  rx_err_t err      = rx_motor_init(&s_motor, &s_config);
+  s_config.output_a =
+    (rx_gptw_output_t)k_test_invalid_output; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t err = rx_motor_init(&s_motor, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
   TEST_ASSERT_FALSE(s_motor.initialized);
 }

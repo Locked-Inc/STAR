@@ -341,7 +341,7 @@ uint32_t mock_shared_data_get_motor_state_update_count(void)
 
 bool mock_shared_data_was_initialized(void)
 {
-  return s_init_count > 0;
+  return s_init_count > 0; // NOLINT(readability-implicit-bool-conversion)
 }
 
 /* =============================================================================
@@ -660,7 +660,7 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
 uint8_t shared_data_get_active_channel(void)
 {
   if (!s_initialized) {
-    return (uint8_t)k_mock_channel_usb;
+    return k_mock_channel_usb;
   }
   return s_active_channel;
 }

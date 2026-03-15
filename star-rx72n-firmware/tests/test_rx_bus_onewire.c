@@ -743,11 +743,11 @@ void test_rx_bus_onewire_init_bus_not_found(void)
 void test_rx_bus_onewire_init_wrong_bus_type(void)
 {
   /* Create a GPIO bus (not OneWire) */
-  static rx_bus_config_t gpio_config;
-  rx_err_t               err = rx_bus_config_init_gpio(&gpio_config, "gpio_bus", k_rx_pc_6);
+  static rx_bus_config_t s_gpio_config;
+  rx_err_t               err = rx_bus_config_init_gpio(&s_gpio_config, "gpio_bus", k_rx_pc_6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = rx_bus_manager_add_bus(&s_test_manager, &gpio_config);
+  err = rx_bus_manager_add_bus(&s_test_manager, &s_gpio_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Try to init as OneWire - should fail */
@@ -1289,7 +1289,7 @@ void test_rx_bus_onewire_write_byte_success(void)
 
   mock_gpio_reset_counters();
 
-  err = rx_bus_onewire_write_byte(&s_test_manager, s_test_bus_name, (uint8_t)k_test_write_byte);
+  err = rx_bus_onewire_write_byte(&s_test_manager, s_test_bus_name, k_test_write_byte);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify 8 bits were written (8 low pulses minimum) */
@@ -1482,9 +1482,7 @@ void test_rx_bus_onewire_write_buffer_success(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint8_t data[] = {(uint8_t)k_test_buf_byte_0,
-                    (uint8_t)k_test_buf_byte_1,
-                    (uint8_t)k_test_buf_byte_2};
+  uint8_t data[] = {k_test_buf_byte_0, k_test_buf_byte_1, k_test_buf_byte_2};
   err            = rx_bus_onewire_write(&s_test_manager, s_test_bus_name, data, sizeof(data));
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
@@ -1555,7 +1553,7 @@ void test_rx_bus_onewire_write_buffer_null_data(void)
  */
 void test_rx_bus_onewire_write_buffer_not_initialized(void)
 {
-  uint8_t  data[] = {(uint8_t)k_test_buf_byte_0};
+  uint8_t  data[] = {k_test_buf_byte_0};
   rx_err_t err    = rx_bus_onewire_write(&s_test_manager, s_test_bus_name, data, sizeof(data));
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1850,14 +1848,14 @@ void test_rx_bus_onewire_match_rom_success(void)
   /* Simulate device presence */
   mock_gpio_set_read_value(s_test_pin, false);
 
-  uint8_t rom[k_test_rom_bytes] = {(uint8_t)k_test_rom_family,
-                                   (uint8_t)k_test_rom_byte_1,
-                                   (uint8_t)k_test_rom_byte_2,
-                                   (uint8_t)k_test_rom_byte_3,
-                                   (uint8_t)k_test_rom_byte_4,
-                                   (uint8_t)k_test_rom_byte_5,
-                                   (uint8_t)k_test_rom_byte_6,
-                                   (uint8_t)k_test_rom_crc};
+  uint8_t rom[k_test_rom_bytes] = {k_test_rom_family,
+                                   k_test_rom_byte_1,
+                                   k_test_rom_byte_2,
+                                   k_test_rom_byte_3,
+                                   k_test_rom_byte_4,
+                                   k_test_rom_byte_5,
+                                   k_test_rom_byte_6,
+                                   k_test_rom_crc};
   err                           = rx_bus_onewire_match_rom(&s_test_manager, s_test_bus_name, rom);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
@@ -1884,14 +1882,14 @@ void test_rx_bus_onewire_match_rom_no_device(void)
   /* No device - line stays high */
   mock_gpio_set_read_value(s_test_pin, true);
 
-  uint8_t rom[k_test_rom_bytes] = {(uint8_t)k_test_rom_family,
-                                   (uint8_t)k_test_rom_byte_1,
-                                   (uint8_t)k_test_rom_byte_2,
-                                   (uint8_t)k_test_rom_byte_3,
-                                   (uint8_t)k_test_rom_byte_4,
-                                   (uint8_t)k_test_rom_byte_5,
-                                   (uint8_t)k_test_rom_byte_6,
-                                   (uint8_t)k_test_rom_crc};
+  uint8_t rom[k_test_rom_bytes] = {k_test_rom_family,
+                                   k_test_rom_byte_1,
+                                   k_test_rom_byte_2,
+                                   k_test_rom_byte_3,
+                                   k_test_rom_byte_4,
+                                   k_test_rom_byte_5,
+                                   k_test_rom_byte_6,
+                                   k_test_rom_crc};
   err                           = rx_bus_onewire_match_rom(&s_test_manager, s_test_bus_name, rom);
   TEST_ASSERT_EQUAL(k_rx_err_not_found, err);
 }
@@ -5828,7 +5826,7 @@ void test_onewire_internal_delay_us_large_delay_exercises_counter_max(void)
    * completing in < 1 ms on the x86_64 test host).
    */
   mock_onewire_hw_set_timer_auto_increment(1U);
-  internal_delay_us((uint16_t)k_test_large_delay_us);
+  internal_delay_us(k_test_large_delay_us);
   /* Restore default so subsequent tests are not affected */
   mock_onewire_hw_set_timer_auto_increment(k_mock_onewire_timer_auto_increment_default);
   /* If we get here without hanging, the test passed */

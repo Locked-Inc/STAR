@@ -319,11 +319,11 @@ void setUp(void)
   s_global_callback_count   = 0;
   s_global_callback_context = nullptr;
 
-  s_ctx_marker_1111 = (uint32_t)k_test_ctx_1111;
-  s_ctx_marker_2222 = (uint32_t)k_test_ctx_2222;
-  s_ctx_marker_cafe = (uint32_t)k_test_ctx_cafe;
-  s_ctx_marker_beef = (uint32_t)k_test_ctx_beef;
-  s_ctx_marker_9999 = (uint32_t)k_test_ctx_9999;
+  s_ctx_marker_1111 = k_test_ctx_1111;
+  s_ctx_marker_2222 = k_test_ctx_2222;
+  s_ctx_marker_cafe = k_test_ctx_cafe;
+  s_ctx_marker_beef = k_test_ctx_beef;
+  s_ctx_marker_9999 = k_test_ctx_9999;
 }
 
 void tearDown(void)
@@ -356,7 +356,10 @@ void test_usb_port_invalid_id_returns_error_on_write(void)
   rx_usb_set_state(k_usb_state_configured);
   uint8_t data[] = "test";
 
-  rx_err_t err = rx_usb_write((rx_usb_port_id_t)k_test_invalid_port, data, k_test_len_4_chars);
+  rx_err_t err =
+    rx_usb_write((rx_usb_port_id_t)k_test_invalid_port,
+                 data,
+                 k_test_len_4_chars); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -367,8 +370,10 @@ void test_usb_port_invalid_id_returns_error_on_read(void)
   uint8_t  data[k_test_data_size];
   uint32_t actual_len;
 
-  rx_err_t err =
-    rx_usb_read((rx_usb_port_id_t)k_test_invalid_port, data, sizeof(data), &actual_len);
+  rx_err_t err = rx_usb_read((rx_usb_port_id_t)k_test_invalid_port,
+                             data,
+                             sizeof(data),
+                             &actual_len); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -378,7 +383,8 @@ void test_usb_port_invalid_id_returns_false_on_is_configured(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   rx_usb_set_state(k_usb_state_configured);
 
-  bool configured = rx_usb_is_configured((rx_usb_port_id_t)k_test_invalid_port);
+  bool configured = rx_usb_is_configured(
+    (rx_usb_port_id_t)k_test_invalid_port); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_FALSE(configured);
 }
@@ -388,7 +394,9 @@ void test_usb_port_invalid_id_returns_error_on_rx_available(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   uint32_t available;
 
-  rx_err_t err = rx_usb_rx_available((rx_usb_port_id_t)k_test_invalid_port, &available);
+  rx_err_t err =
+    rx_usb_rx_available((rx_usb_port_id_t)k_test_invalid_port,
+                        &available); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -398,7 +406,9 @@ void test_usb_port_invalid_id_returns_error_on_tx_available(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   uint32_t available;
 
-  rx_err_t err = rx_usb_tx_available((rx_usb_port_id_t)k_test_invalid_port, &available);
+  rx_err_t err =
+    rx_usb_tx_available((rx_usb_port_id_t)k_test_invalid_port,
+                        &available); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1128,7 +1138,9 @@ void test_usb_get_line_coding_invalid_port(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   rx_usb_line_coding_t coding;
 
-  rx_err_t err = rx_usb_get_line_coding((rx_usb_port_id_t)k_test_invalid_port, &coding);
+  rx_err_t err =
+    rx_usb_get_line_coding((rx_usb_port_id_t)k_test_invalid_port,
+                           &coding); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1173,7 +1185,8 @@ void test_usb_flush_invalid_port_returns_error(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
 
-  rx_err_t err = rx_usb_flush((rx_usb_port_id_t)k_test_invalid_port, 0);
+  rx_err_t err = rx_usb_flush((rx_usb_port_id_t)k_test_invalid_port,
+                              0); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }

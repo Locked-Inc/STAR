@@ -86,25 +86,25 @@
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_test_small_buf           = 64u,         /**< Buffer for integer / hex output */
-  k_test_putc_bytes          = 1u,          /**< rx_log_usb_putc() counts as 1 byte */
-  k_test_puts_hello_len      = 5u,          /**< Length of "hello" */
-  k_test_zero_bytes          = 0u,          /**< Expected byte count after no writes */
-  k_test_putint_positive_val = 42u,         /**< Arbitrary positive value */
-  k_test_puthex_val          = 0xDEADBEEFu, /**< Known 8-nibble hex constant */
-  k_test_puthex_8_digits     = 8u,          /**< Full 32-bit hex with 8 digits */
-  k_test_puthex_4_digits     = 4u,          /**< Half-width hex output */
-  k_test_boot_buf_size       = 512u,        /**< Size of internal boot ring buffer */
-  k_test_overflow_fill       = 520u,        /**< More than boot buffer - triggers overflow */
-  k_test_one_byte            = 1u,          /**< One char = one byte */
-  k_test_usb_log_tx_size     = 1024u,       /**< USB log port TX ring buffer capacity */
-  k_test_puthex_9_digits     = 9u,          /**< > 8, triggers clamp to 8 */
-  k_test_puthex_zero_digits  = 0u,          /**< 0 digits, triggers clamp to 1 */
-  k_test_putint_neg_val      = 7u,          /**< Absolute value for negative test */
-  k_test_putint_min_digits   = 2u,          /**< Minimum digits for 2-char output */
-  k_test_puthex_test_byte    = 0xABu,       /**< Test byte for puthex zero digits */
-  k_test_boot_wrap_head      = 42u,         /**< Boot ring buffer head for wrap test */
-  k_test_boot_wrap_count     = 64u,         /**< Boot ring buffer count for wrap test */
+  k_test_small_buf           = 64U,         /**< Buffer for integer / hex output */
+  k_test_putc_bytes          = 1U,          /**< rx_log_usb_putc() counts as 1 byte */
+  k_test_puts_hello_len      = 5U,          /**< Length of "hello" */
+  k_test_zero_bytes          = 0U,          /**< Expected byte count after no writes */
+  k_test_putint_positive_val = 42U,         /**< Arbitrary positive value */
+  k_test_puthex_val          = 0xDEADBEEFU, /**< Known 8-nibble hex constant */
+  k_test_puthex_8_digits     = 8U,          /**< Full 32-bit hex with 8 digits */
+  k_test_puthex_4_digits     = 4U,          /**< Half-width hex output */
+  k_test_boot_buf_size       = 512U,        /**< Size of internal boot ring buffer */
+  k_test_overflow_fill       = 520U,        /**< More than boot buffer - triggers overflow */
+  k_test_one_byte            = 1U,          /**< One char = one byte */
+  k_test_usb_log_tx_size     = 1024U,       /**< USB log port TX ring buffer capacity */
+  k_test_puthex_9_digits     = 9U,          /**< > 8, triggers clamp to 8 */
+  k_test_puthex_zero_digits  = 0U,          /**< 0 digits, triggers clamp to 1 */
+  k_test_putint_neg_val      = 7U,          /**< Absolute value for negative test */
+  k_test_putint_min_digits   = 2U,          /**< Minimum digits for 2-char output */
+  k_test_puthex_test_byte    = 0xABU,       /**< Test byte for puthex zero digits */
+  k_test_boot_wrap_head      = 42U,         /**< Boot ring buffer head for wrap test */
+  k_test_boot_wrap_count     = 64U,         /**< Boot ring buffer count for wrap test */
 } log_usb_test_const_t;
 
 /* =============================================================================
@@ -222,7 +222,7 @@ void test_log_usb_putc_basic(void)
 
   rx_log_usb_putc('A');
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   TEST_ASSERT_GREATER_OR_EQUAL(k_test_putc_bytes, tx_bytes);
@@ -246,7 +246,7 @@ void test_log_usb_putc_before_usb_ready_buffers(void)
   /* USB not configured - should buffer internally */
   rx_log_usb_putc('X');
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   TEST_ASSERT_EQUAL(k_test_zero_bytes, tx_bytes);
@@ -279,7 +279,7 @@ void test_log_usb_puts_basic(void)
 
   rx_log_usb_puts("hello");
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   TEST_ASSERT_GREATER_OR_EQUAL(k_test_puts_hello_len, tx_bytes);
@@ -303,7 +303,7 @@ void test_log_usb_puts_null(void)
 
   rx_log_usb_puts(nullptr);
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   TEST_ASSERT_EQUAL(k_test_zero_bytes, tx_bytes);
@@ -327,7 +327,7 @@ void test_log_usb_puts_empty(void)
 
   rx_log_usb_puts("");
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   TEST_ASSERT_EQUAL(k_test_zero_bytes, tx_bytes);
@@ -348,7 +348,7 @@ void test_log_usb_puts_before_usb_ready_buffers(void)
 {
   rx_log_usb_puts("buffered");
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   TEST_ASSERT_EQUAL(k_test_zero_bytes, tx_bytes);
@@ -378,7 +378,7 @@ void test_log_usb_putint_positive(void)
 
   rx_log_usb_putint((int32_t)k_test_putint_positive_val);
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   /* "42" = 2 bytes */
@@ -402,7 +402,7 @@ void test_log_usb_putint_negative(void)
 
   rx_log_usb_putint(-(int32_t)k_test_putint_neg_val);
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   /* "-7" = 2 bytes (sign + digit) */
@@ -427,7 +427,7 @@ void test_log_usb_putint_zero(void)
 
   rx_log_usb_putint(0);
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   TEST_ASSERT_GREATER_OR_EQUAL(k_test_one_byte, tx_bytes);
@@ -456,7 +456,7 @@ void test_log_usb_puthex_basic(void)
 
   rx_log_usb_puthex(k_test_puthex_val, (uint8_t)k_test_puthex_8_digits);
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   TEST_ASSERT_EQUAL(k_test_puthex_8_digits, tx_bytes);
@@ -477,9 +477,9 @@ void test_log_usb_puthex_zero(void)
 {
   helper_set_usb_configured();
 
-  rx_log_usb_puthex(0u, (uint8_t)k_test_puthex_8_digits);
+  rx_log_usb_puthex(0U, (uint8_t)k_test_puthex_8_digits);
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   TEST_ASSERT_EQUAL(k_test_puthex_8_digits, tx_bytes);
@@ -502,7 +502,7 @@ void test_log_usb_puthex_4_digits(void)
 
   rx_log_usb_puthex(k_test_puthex_val, (uint8_t)k_test_puthex_4_digits);
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   TEST_ASSERT_EQUAL(k_test_puthex_4_digits, tx_bytes);
@@ -611,7 +611,7 @@ void test_log_usb_notify_ready(void)
   /* Explicit flush of boot buffer */
   rx_log_usb_notify_ready();
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   TEST_ASSERT_GREATER_OR_EQUAL(k_test_one_byte, tx_bytes);
@@ -636,7 +636,7 @@ void test_log_usb_notify_ready_usb_not_ready(void)
   /* USB still not configured - notify_ready should be a no-op */
   rx_log_usb_notify_ready();
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   TEST_ASSERT_EQUAL(k_test_zero_bytes, tx_bytes);
@@ -662,13 +662,13 @@ void test_log_usb_notify_ready_idempotent(void)
   /* First call - flushes empty boot buffer (no-op effect) */
   rx_log_usb_notify_ready();
 
-  uint32_t after_first = 0u;
+  uint32_t after_first = 0U;
   helper_get_usb_tx_bytes(&after_first);
 
   /* Second call - must also succeed without crashing */
   rx_log_usb_notify_ready();
 
-  uint32_t after_second = 0u;
+  uint32_t after_second = 0U;
   helper_get_usb_tx_bytes(&after_second);
 
   /* No bytes were produced by notify_ready on an empty boot buffer */
@@ -697,12 +697,12 @@ void test_log_usb_notify_ready_idempotent(void)
 void test_log_usb_boot_buffer_overflow_no_crash(void)
 {
   /* Write more bytes than the 512-byte boot buffer can hold */
-  for (uint32_t i = 0u; i < k_test_overflow_fill; i++) {
+  for (uint32_t i = 0U; i < k_test_overflow_fill; i++) {
     rx_log_usb_putc('X');
   }
 
   /* Must not have crashed. bytes_tx must remain zero (USB not configured). */
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
   TEST_ASSERT_EQUAL(k_test_zero_bytes, tx_bytes);
 
@@ -741,7 +741,7 @@ void test_log_usb_boot_buffer_flushed_on_ready(void)
   rx_log_usb_putc('A');
   rx_log_usb_putc('B');
 
-  uint32_t after_tx = 0u;
+  uint32_t after_tx = 0U;
   helper_get_usb_tx_bytes(&after_tx);
 
   /* Should have received at least 2 bytes: 'A', 'B' */
@@ -771,7 +771,7 @@ void test_log_usb_puthex_zero_digits_clamped_to_1(void)
 
   rx_log_usb_puthex(k_test_puthex_test_byte, (uint8_t)k_test_puthex_zero_digits);
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   /* digits == 0 is clamped to 1; only one hex character written */
@@ -796,7 +796,7 @@ void test_log_usb_puthex_9_digits_clamped_to_8(void)
 
   rx_log_usb_puthex(k_test_puthex_val, (uint8_t)k_test_puthex_9_digits);
 
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
 
   /* digits == 9 is clamped to 8 */
@@ -828,7 +828,7 @@ void test_log_usb_write_busy_increments_dropped_bytes(void)
   /* At this point s_usb_ready is already true (set by notify_ready test earlier).
    * Writes go directly to rx_usb_write without boot-buffer involvement.
    * Fill the USB log TX ring buffer (1024 bytes) one character at a time. */
-  for (uint32_t i = 0u; i < k_test_usb_log_tx_size; i++) {
+  for (uint32_t i = 0U; i < k_test_usb_log_tx_size; i++) {
     rx_log_usb_putc('F');
   }
 
@@ -876,7 +876,7 @@ void test_log_usb_flush_abort_on_busy(void)
   /* Fill the USB log TX ring buffer to capacity using rx_usb_write directly.
    * This bypasses internal_check_usb_ready(), keeping s_usb_ready == false. */
   uint8_t fill_buf[k_test_usb_log_tx_size];
-  for (uint32_t i = 0u; i < k_test_usb_log_tx_size; i++) {
+  for (uint32_t i = 0U; i < k_test_usb_log_tx_size; i++) {
     fill_buf[i] = 'F';
   }
   /* Write exactly the ring-buffer capacity so it is now completely full */
@@ -930,7 +930,7 @@ void test_log_usb_flush_no_overflow_warning(void)
   rx_log_usb_notify_ready();
 
   /* Flush must have completed: bytes reached rx_usb_write. */
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
   TEST_ASSERT_GREATER_OR_EQUAL(k_test_one_byte, tx_bytes);
 }
@@ -976,7 +976,7 @@ void test_log_usb_flush_ring_buffer_wrap_around(void)
   rx_log_usb_notify_ready();
 
   /* At least the wrapped portion must have been flushed without crash. */
-  uint32_t tx_bytes = 0u;
+  uint32_t tx_bytes = 0U;
   helper_get_usb_tx_bytes(&tx_bytes);
   TEST_ASSERT_GREATER_OR_EQUAL(k_test_one_byte, tx_bytes);
 }

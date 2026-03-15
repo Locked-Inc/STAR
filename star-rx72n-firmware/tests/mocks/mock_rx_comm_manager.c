@@ -95,8 +95,8 @@ static uint32_t s_respond_count = 0;
  * @brief Queued frame for poll delivery
  */
 typedef struct {
-  rx_comm_channel_t channel; /**< Channel */
   rx_frame_t        frame;   /**< Frame data */
+  rx_comm_channel_t channel; /**< Channel */
   bool              valid;   /**< Valid entry */
 } mock_queued_frame_t;
 
@@ -307,7 +307,7 @@ uint32_t mock_comm_manager_get_last_send_payload(uint8_t* out_payload, uint32_t 
 
 bool mock_comm_manager_was_initialized(void)
 {
-  return s_init_count > 0;
+  return s_init_count > 0; // NOLINT(readability-implicit-bool-conversion)
 }
 
 uint32_t mock_comm_manager_get_queue_count(void)
@@ -384,7 +384,8 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
   if (s_queue_count > 0) {
     entry = &s_frame_queue[s_queue_read_idx];
 
-    if (entry->valid && mgr->callback != nullptr) {
+    if (entry->valid && // NOLINT(readability-implicit-bool-conversion)
+        mgr->callback != nullptr) {
       /* Invoke callback with queued frame */
       mgr->callback(entry->channel, &entry->frame, mgr->callback_ctx);
     }

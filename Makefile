@@ -7,7 +7,7 @@ CONTAINER_NAME := star-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n
+.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n
 
 help:
 	@echo "STAR Project Development Helper"
@@ -22,6 +22,7 @@ help:
 	@echo "  make build-rx72n-release - Build RX72N firmware (Release, requires GNURX toolchain)"
 	@echo "  make format-rx72n        - Auto-format firmware C/H files with clang-format"
 	@echo "  make check-rx72n         - Check firmware formatting (exit 1 if any file differs)"
+	@echo "  make ci-rx72n            - Run full local CI pipeline (format, build, test, clang-tidy)"
 	@echo "  make proto-gen-firmware  - Generate nanopb protos for RX72N firmware"
 	@echo "  make test-rx72n          - Run RX72N unit tests and show coverage summary"
 	@echo "  make coverage-rx72n      - Show coverage summary without rebuilding"
@@ -169,6 +170,33 @@ format-rx72n:
 check-rx72n:
 	@echo "Checking RX72N firmware formatting..."
 	@bash $(FIRMWARE_DIR)/scripts/format_code.sh --check
+
+# Run the full firmware CI pipeline locally (mirrors .github/workflows/firmware-unit-tests.yml).
+# Steps: format check -> cross-compile -> unit tests -> clang-tidy
+# Stops on first failure. Run before pushing to catch CI issues early.
+ci-rx72n:
+	@echo ""
+	@echo "=========================================="
+	@echo " RX72N Local CI Pipeline"
+	@echo "=========================================="
+	@echo ""
+	@echo "[1/4] clang-format check..."
+	@bash $(FIRMWARE_DIR)/scripts/format_code.sh --check
+	@echo ""
+	@echo "[2/4] Cross-compile (GNURX)..."
+	@cd $(FIRMWARE_DIR) && bash build.sh
+	@echo ""
+	@echo "[3/4] Unit tests..."
+	@cd $(FIRMWARE_DIR)/tests && cmake -B build -DCMAKE_BUILD_TYPE=Debug 2>&1 | tail -3
+	@cmake --build $(FIRMWARE_DIR)/tests/build --parallel 2>&1 | tail -3
+	@ctest --test-dir $(FIRMWARE_DIR)/tests/build --output-on-failure
+	@echo ""
+	@echo "[4/4] clang-tidy (SEI CERT C)..."
+	@bash $(FIRMWARE_DIR)/scripts/clang_tidy.sh --check
+	@echo ""
+	@echo "=========================================="
+	@echo " [PASS] All CI checks passed!"
+	@echo "=========================================="
 
 # Verify LidarScan nanopb max_count bounds are identical in ui.options and gateway_service.options.
 # Fails with a clear SYNC ERROR message if any value diverges between the two files.

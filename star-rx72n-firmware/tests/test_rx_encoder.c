@@ -370,7 +370,8 @@ void test_encoder_init_null_config_fails(void)
 void test_encoder_init_invalid_channel_fails(void)
 {
   /* Channel 5 does not exist in MTU */
-  s_config.channel = (rx_mtu_channel_t)k_test_channel_5;
+  s_config.channel =
+    (rx_mtu_channel_t)k_test_channel_5; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   rx_err_t err = rx_encoder_init(&s_config);
 
@@ -443,7 +444,8 @@ void test_encoder_deinit_out_of_range_channel_fails(void)
 {
   /* Channel value >= k_encoder_max_channels (7) should fail.
    * Use channel 8 since that's definitely out of range. */
-  rx_err_t err = rx_encoder_deinit((rx_mtu_channel_t)k_test_channel_8);
+  rx_err_t err = rx_encoder_deinit(
+    (rx_mtu_channel_t)k_test_channel_8); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -455,7 +457,7 @@ void test_encoder_deinit_clears_state(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_deinit(s_config.channel));
 
   /* Reading after deinit should fail */
-  uint16_t raw;
+  uint16_t raw = 0;
   rx_err_t err = rx_encoder_read_raw(s_config.channel, &raw);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -470,8 +472,8 @@ void test_encoder_read_raw_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
   mock_encoder_set_counter(s_config.channel, k_test_counter_1000);
 
-  uint16_t count;
-  rx_err_t err = rx_encoder_read_raw(s_config.channel, &count);
+  uint16_t count = 0;
+  rx_err_t err   = rx_encoder_read_raw(s_config.channel, &count);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(k_test_counter_1000, count);
@@ -489,8 +491,8 @@ void test_encoder_read_raw_null_pointer_fails(void)
 void test_encoder_read_raw_not_initialized_fails(void)
 {
   /* Do not initialize */
-  uint16_t count;
-  rx_err_t err = rx_encoder_read_raw(s_config.channel, &count);
+  uint16_t count = 0;
+  rx_err_t err   = rx_encoder_read_raw(s_config.channel, &count);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -500,8 +502,8 @@ void test_encoder_read_raw_max_value(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
   mock_encoder_set_counter(s_config.channel, k_test_counter_max_val);
 
-  uint16_t count;
-  rx_err_t err = rx_encoder_read_raw(s_config.channel, &count);
+  uint16_t count = 0;
+  rx_err_t err   = rx_encoder_read_raw(s_config.channel, &count);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(k_test_counter_max_val, count);
@@ -512,8 +514,8 @@ void test_encoder_read_raw_zero_value(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
   mock_encoder_set_counter(s_config.channel, k_test_counter_min_val);
 
-  uint16_t count;
-  rx_err_t err = rx_encoder_read_raw(s_config.channel, &count);
+  uint16_t count = 0;
+  rx_err_t err   = rx_encoder_read_raw(s_config.channel, &count);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(k_test_counter_min_val, count);
@@ -528,8 +530,8 @@ void test_encoder_read_count_initial_zero(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
 
-  rx_encoder_state_t state;
-  rx_err_t           err = rx_encoder_read_count(s_config.channel, &state);
+  rx_encoder_state_t state = {0};
+  rx_err_t           err   = rx_encoder_read_count(s_config.channel, &state);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_INT32(0, state.total_count);
@@ -548,8 +550,8 @@ void test_encoder_read_count_null_pointer_fails(void)
 
 void test_encoder_read_count_not_initialized_fails(void)
 {
-  rx_encoder_state_t state;
-  rx_err_t           err = rx_encoder_read_count(s_config.channel, &state);
+  rx_encoder_state_t state = {0};
+  rx_err_t           err   = rx_encoder_read_count(s_config.channel, &state);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -561,8 +563,8 @@ void test_encoder_read_count_forward_motion(void)
   /* Simulate forward motion of 100 counts */
   mock_encoder_set_counter(s_config.channel, k_test_counter_100);
 
-  rx_encoder_state_t state;
-  rx_err_t           err = rx_encoder_read_count(s_config.channel, &state);
+  rx_encoder_state_t state = {0};
+  rx_err_t           err   = rx_encoder_read_count(s_config.channel, &state);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_INT32(k_test_counter_100, state.total_count);
@@ -574,7 +576,7 @@ void test_encoder_read_count_backward_motion(void)
 
   /* First read to establish baseline at 1000 */
   mock_encoder_set_counter(s_config.channel, k_test_counter_1000);
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_count(s_config.channel, &state));
 
   /* Simulate backward motion (counter decreases from 1000 to 900) */
@@ -601,8 +603,8 @@ void test_encoder_read_count_full_revolution(void)
   /* Simulate full revolution (1364 counts for 341 PPR @ 4x) */
   mock_encoder_set_counter(s_config.channel, k_test_counts_per_rev);
 
-  rx_encoder_state_t state;
-  rx_err_t           err = rx_encoder_read_count(s_config.channel, &state);
+  rx_encoder_state_t state = {0};
+  rx_err_t           err   = rx_encoder_read_count(s_config.channel, &state);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_INT32(k_test_counts_per_rev, state.total_count);
@@ -618,8 +620,8 @@ void test_encoder_read_count_half_revolution(void)
   uint16_t half_rev = k_test_counts_per_rev / k_test_divisor_half;
   mock_encoder_set_counter(s_config.channel, half_rev);
 
-  rx_encoder_state_t state;
-  rx_err_t           err = rx_encoder_read_count(s_config.channel, &state);
+  rx_encoder_state_t state = {0};
+  rx_err_t           err   = rx_encoder_read_count(s_config.channel, &state);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_INT32(half_rev, state.total_count);
@@ -636,7 +638,7 @@ void test_encoder_read_count_overflow_forward(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
 
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
 
   /* Move counter in steps to approach the boundary (staying within half-range).
    * Each step must be <= 32768 counts to be detected as forward motion. */
@@ -671,7 +673,7 @@ void test_encoder_read_count_underflow_reverse(void)
 
   /* Start at 100 */
   mock_encoder_set_counter(s_config.channel, k_test_counter_100);
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_count(s_config.channel, &state));
   TEST_ASSERT_EQUAL_INT32(k_test_counter_100, state.total_count);
 
@@ -693,7 +695,7 @@ void test_encoder_read_count_multiple_overflows(void)
    * Each step stays within half-range to ensure correct direction detection. */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
 
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
 
   /* Move to 30000 */
   mock_encoder_set_counter(s_config.channel, k_test_counter_30000);
@@ -731,7 +733,7 @@ void test_encoder_read_count_multiple_reads_accumulate(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
 
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
 
   /* Read 1: 100 counts */
   mock_encoder_set_counter(s_config.channel, k_test_counter_100);
@@ -767,8 +769,8 @@ void test_encoder_read_count_inverted_direction(void)
   /* Simulate forward motion of 100 counts */
   mock_encoder_set_counter(s_config.channel, k_test_counter_100);
 
-  rx_encoder_state_t state;
-  rx_err_t           err = rx_encoder_read_count(s_config.channel, &state);
+  rx_encoder_state_t state = {0};
+  rx_err_t           err   = rx_encoder_read_count(s_config.channel, &state);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* With inversion, forward motion becomes negative */
@@ -780,7 +782,7 @@ void test_encoder_read_count_inverted_overflow(void)
   s_config.invert_direction = true;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
 
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
 
   /* Move counter in steps to approach the boundary (staying within half-range) */
   /* Step 1: 0 -> 30000 (delta = 30000 inverted = -30000) */
@@ -814,9 +816,9 @@ void test_encoder_read_velocity_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
 
   /* First call establishes baseline */
-  float    velocity_rps;
-  float    delta_time = s_test_delta_time_10ms; /* 10ms = 100Hz control loop */
-  rx_err_t err        = rx_encoder_read_velocity(&velocity_rps, delta_time, s_config.channel);
+  float    velocity_rps = 0.0F;
+  float    delta_time   = s_test_delta_time_10ms; /* 10ms = 100Hz control loop */
+  rx_err_t err          = rx_encoder_read_velocity(&velocity_rps, delta_time, s_config.channel);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, 0.0F, velocity_rps);
 
@@ -840,7 +842,7 @@ void test_encoder_read_velocity_null_pointer_fails(void)
 
 void test_encoder_read_velocity_not_initialized_fails(void)
 {
-  float    velocity_rps;
+  float    velocity_rps = 0.0F;
   rx_err_t err = rx_encoder_read_velocity(&velocity_rps, s_test_delta_time_10ms, s_config.channel);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -850,8 +852,8 @@ void test_encoder_read_velocity_zero_time_fails(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
 
-  float    velocity_rps;
-  rx_err_t err = rx_encoder_read_velocity(&velocity_rps, 0.0F, s_config.channel);
+  float    velocity_rps = 0.0F;
+  rx_err_t err          = rx_encoder_read_velocity(&velocity_rps, 0.0F, s_config.channel);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -860,7 +862,7 @@ void test_encoder_read_velocity_negative_time_fails(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
 
-  float    velocity_rps;
+  float    velocity_rps = 0.0F;
   rx_err_t err = rx_encoder_read_velocity(&velocity_rps, -s_test_delta_time_10ms, s_config.channel);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -871,8 +873,8 @@ void test_encoder_read_velocity_one_revolution_per_second(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
 
   /* First call establishes baseline */
-  float velocity_rps;
-  float delta_time = s_test_delta_time_1s; /* 1 second */
+  float velocity_rps = 0.0F;
+  float delta_time   = s_test_delta_time_1s; /* 1 second */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_velocity(&velocity_rps, delta_time, s_config.channel));
 
   /* Move exactly one revolution */
@@ -889,8 +891,8 @@ void test_encoder_read_velocity_reverse(void)
 
   /* Start at 1000 counts */
   mock_encoder_set_counter(s_config.channel, k_test_counter_1000);
-  float velocity_rps;
-  float delta_time = s_test_delta_time_100ms; /* 100ms */
+  float velocity_rps = 0.0F;
+  float delta_time   = s_test_delta_time_100ms; /* 100ms */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_velocity(&velocity_rps, delta_time, s_config.channel));
 
   /* Move backward by 136 counts (0.1 revolutions) */
@@ -913,7 +915,7 @@ void test_encoder_reset_success(void)
 
   /* Accumulate some counts */
   mock_encoder_set_counter(s_config.channel, k_test_counter_5000);
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_count(s_config.channel, &state));
   TEST_ASSERT_EQUAL_INT32(k_test_counter_5000, state.total_count);
 
@@ -943,7 +945,7 @@ void test_encoder_reset_clears_hardware_counter(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_reset(s_config.channel));
 
-  uint16_t raw;
+  uint16_t raw = 0;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_raw(s_config.channel, &raw));
   TEST_ASSERT_EQUAL_UINT16(0, raw);
 }
@@ -962,7 +964,7 @@ void test_encoder_set_count_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify set count */
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_count(s_config.channel, &state));
   TEST_ASSERT_EQUAL_INT32(k_test_total_10000, state.total_count);
 }
@@ -982,7 +984,7 @@ void test_encoder_set_count_negative_value(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_count(s_config.channel, &state));
   TEST_ASSERT_EQUAL_INT32(k_test_total_neg5000, state.total_count);
 }
@@ -995,7 +997,7 @@ void test_encoder_set_count_calculates_revolutions(void)
   int32_t three_revs = k_test_revolutions_3 * (int32_t)k_test_counts_per_rev;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_set_count(three_revs, s_config.channel));
 
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_count(s_config.channel, &state));
   TEST_ASSERT_EQUAL_INT32(k_test_revolutions_3, state.revolutions);
   TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, 0.0F, state.position_deg);
@@ -1009,7 +1011,7 @@ void test_encoder_set_count_calculates_position(void)
   int32_t two_and_half_revs = (int32_t)(s_test_rev_multiplier_2_5 * (float)k_test_counts_per_rev);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_set_count(two_and_half_revs, s_config.channel));
 
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_count(s_config.channel, &state));
   TEST_ASSERT_EQUAL_INT32(k_test_revolutions_2, state.revolutions);
   TEST_ASSERT_FLOAT_WITHIN(s_test_position_tolerance, s_test_position_180, state.position_deg);
@@ -1021,7 +1023,7 @@ void test_encoder_set_count_updates_hardware_counter(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_set_count(k_test_counter_1234, s_config.channel));
 
-  uint16_t raw;
+  uint16_t raw = 0;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_raw(s_config.channel, &raw));
   TEST_ASSERT_EQUAL_UINT16(k_test_counter_1234, raw);
 }
@@ -1034,11 +1036,11 @@ void test_encoder_set_count_large_value_wraps_hardware(void)
   int32_t large_count = k_test_total_70000; /* 70000 & 0xFFFF = 4464 */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_set_count(large_count, s_config.channel));
 
-  uint16_t raw;
+  uint16_t raw = 0;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_raw(s_config.channel, &raw));
   TEST_ASSERT_EQUAL_UINT16(k_test_counter_4464, raw);
 
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_count(s_config.channel, &state));
   TEST_ASSERT_EQUAL_INT32(k_test_total_70000, state.total_count);
 }
@@ -1068,8 +1070,8 @@ void test_encoder_multiple_channels_independent(void)
   mock_encoder_set_counter(k_mtu_channel_1, k_test_counter_1000);
   mock_encoder_set_counter(k_mtu_channel_2, k_test_counter_2000);
 
-  rx_encoder_state_t state1;
-  rx_encoder_state_t state2;
+  rx_encoder_state_t state1 = {0};
+  rx_encoder_state_t state2 = {0};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_count(k_mtu_channel_1, &state1));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_count(k_mtu_channel_2, &state2));
 
@@ -1094,7 +1096,7 @@ void test_encoder_position_at_180_degrees(void)
   uint16_t half_rev = k_test_counts_per_rev / k_test_divisor_half;
   mock_encoder_set_counter(s_config.channel, half_rev);
 
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_count(s_config.channel, &state));
 
   TEST_ASSERT_FLOAT_WITHIN(s_test_position_tolerance, s_test_position_180, state.position_deg);
@@ -1108,7 +1110,7 @@ void test_encoder_position_at_90_degrees(void)
   uint16_t quarter_rev = k_test_counts_per_rev / k_test_divisor_quarter;
   mock_encoder_set_counter(s_config.channel, quarter_rev);
 
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_read_count(s_config.channel, &state));
 
   TEST_ASSERT_FLOAT_WITHIN(s_test_position_tolerance, s_test_position_90, state.position_deg);
@@ -1118,7 +1120,7 @@ void test_encoder_counter_at_exact_boundary(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
 
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
 
   /* Move counter in steps to approach 65535 */
   mock_encoder_set_counter(s_config.channel, k_test_counter_30000);
@@ -1145,7 +1147,7 @@ void test_encoder_rapid_direction_changes(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_init(&s_config));
 
-  rx_encoder_state_t state;
+  rx_encoder_state_t state = {0};
 
   /* Forward */
   mock_encoder_set_counter(s_config.channel, k_test_counter_100);
@@ -1203,15 +1205,19 @@ void test_encoder_read_raw_invalid_channel_fails(void)
 {
   /* Channel 5 has no base address (nullptr from internal_get_mtu_base) */
   uint16_t count = 0;
-  rx_err_t err   = rx_encoder_read_raw((rx_mtu_channel_t)k_test_channel_5, &count);
+  rx_err_t err =
+    rx_encoder_read_raw((rx_mtu_channel_t)k_test_channel_5,
+                        &count); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_encoder_read_count_invalid_channel_fails(void)
 {
-  rx_encoder_state_t state;
-  rx_err_t           err = rx_encoder_read_count((rx_mtu_channel_t)k_test_channel_5, &state);
+  rx_encoder_state_t state = {0};
+  rx_err_t           err =
+    rx_encoder_read_count((rx_mtu_channel_t)k_test_channel_5,
+                          &state); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1219,22 +1225,27 @@ void test_encoder_read_count_invalid_channel_fails(void)
 void test_encoder_read_velocity_invalid_channel_fails(void)
 {
   float    velocity = 0.0F;
-  rx_err_t err =
-    rx_encoder_read_velocity(&velocity, s_test_delta_time_10ms, (rx_mtu_channel_t)k_test_channel_5);
+  rx_err_t err      = rx_encoder_read_velocity(
+    &velocity,
+    s_test_delta_time_10ms,
+    (rx_mtu_channel_t)k_test_channel_5); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_encoder_reset_invalid_channel_fails(void)
 {
-  rx_err_t err = rx_encoder_reset((rx_mtu_channel_t)k_test_channel_5);
+  rx_err_t err = rx_encoder_reset(
+    (rx_mtu_channel_t)k_test_channel_5); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_encoder_set_count_invalid_channel_fails(void)
 {
-  rx_err_t err = rx_encoder_set_count(0, (rx_mtu_channel_t)k_test_channel_5);
+  rx_err_t err = rx_encoder_set_count(
+    0,
+    (rx_mtu_channel_t)k_test_channel_5); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1272,8 +1283,8 @@ void test_encoder_read_count_corrupted_cpr(void)
   /* Corrupt cpr after init to exercise runtime guard in internal_update_state_from_count */
   rx_mtu_encoder_test_corrupt_cpr(s_config.channel);
 
-  rx_encoder_state_t state;
-  rx_err_t           err = rx_encoder_read_count(s_config.channel, &state);
+  rx_encoder_state_t state = {0};
+  rx_err_t           err   = rx_encoder_read_count(s_config.channel, &state);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -1299,7 +1310,8 @@ void test_encoder_set_count_corrupted_cpr(void)
 void test_internal_enable_mtu_module_channel_out_of_range(void)
 {
   /* Channel > k_mtu_channel_7 triggers first guard in internal_enable_mtu_module */
-  rx_err_t err = internal_enable_mtu_module((rx_mtu_channel_t)k_test_channel_8);
+  rx_err_t err = internal_enable_mtu_module(
+    (rx_mtu_channel_t)k_test_channel_8); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1307,7 +1319,8 @@ void test_internal_enable_mtu_module_channel_out_of_range(void)
 void test_internal_enable_mtu_module_channel_5_no_base(void)
 {
   /* Channel 5 passes the > k_mtu_channel_7 check but has no base address */
-  rx_err_t err = internal_enable_mtu_module((rx_mtu_channel_t)k_test_channel_5);
+  rx_err_t err = internal_enable_mtu_module(
+    (rx_mtu_channel_t)k_test_channel_5); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1359,11 +1372,14 @@ void test_internal_initialize_encoder_state_null_config(void)
 void test_internal_initialize_encoder_state_invalid_channel(void)
 {
   rx_encoder_config_t cfg = {
-    .channel          = (rx_mtu_channel_t)k_test_channel_5,
+    .channel =
+      (rx_mtu_channel_t)k_test_channel_5, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
     .counts_per_rev   = k_test_counts_per_rev,
     .invert_direction = false,
   };
-  rx_err_t err = internal_initialize_encoder_state((rx_mtu_channel_t)k_test_channel_5, &cfg);
+  rx_err_t err =
+    internal_initialize_encoder_state((rx_mtu_channel_t)k_test_channel_5,
+                                      &cfg); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1382,8 +1398,11 @@ void test_internal_initialize_encoder_state_zero_cpr(void)
 
 void test_internal_update_state_from_count_invalid_channel(void)
 {
-  rx_encoder_state_t state;
-  rx_err_t err = internal_update_state_from_count(&state, (rx_mtu_channel_t)k_test_channel_5, 0);
+  rx_encoder_state_t state = {0};
+  rx_err_t           err =
+    internal_update_state_from_count(&state,
+                                     (rx_mtu_channel_t)k_test_channel_5,
+                                     0); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1401,8 +1420,8 @@ void test_internal_update_state_from_count_null_state(void)
 void test_internal_update_state_from_count_uninit_channel(void)
 {
   /* Channel 2 is not initialized */
-  rx_encoder_state_t state;
-  rx_err_t           err = internal_update_state_from_count(&state, k_mtu_channel_2, 0);
+  rx_encoder_state_t state = {0};
+  rx_err_t           err   = internal_update_state_from_count(&state, k_mtu_channel_2, 0);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -1413,8 +1432,8 @@ void test_internal_update_state_from_count_corrupted_cpr(void)
 
   rx_mtu_encoder_test_corrupt_cpr(s_config.channel);
 
-  rx_encoder_state_t state;
-  rx_err_t           err = internal_update_state_from_count(&state, s_config.channel, 0);
+  rx_encoder_state_t state = {0};
+  rx_err_t           err   = internal_update_state_from_count(&state, s_config.channel, 0);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }

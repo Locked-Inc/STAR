@@ -337,14 +337,13 @@ rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
   if (!s_is_initialized) {
     return k_rx_err_not_initialized;
   }
-  if (config->channel >= (uint8_t)k_dmac_channel_count) {
+  if (config->channel >= k_dmac_channel_count) {
     return k_rx_err_invalid_arg;
   }
-  if (config->len == 0U || config->len > (uint32_t)k_mock_dmaca_len_max) {
+  if (config->len == 0U || config->len > k_mock_dmaca_len_max) {
     return k_rx_err_invalid_arg;
   }
-  if (config->timeout_cycles == 0U ||
-      config->timeout_cycles > (uint32_t)k_mock_dmaca_timeout_cycles_max) {
+  if (config->timeout_cycles == 0U || config->timeout_cycles > k_mock_dmaca_timeout_cycles_max) {
     return k_rx_err_invalid_arg;
   }
   if (config->dst_addr == 0U) {
@@ -389,7 +388,7 @@ rx_err_t rx_dmaca_abort(uint8_t channel)
   if (!s_is_initialized) {
     return k_rx_err_not_initialized;
   }
-  if (channel >= (uint8_t)k_dmac_channel_count) {
+  if (channel >= k_dmac_channel_count) {
     return k_rx_err_invalid_arg;
   }
   return k_rx_ok;

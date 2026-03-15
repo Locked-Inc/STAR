@@ -827,7 +827,7 @@ rx_err_t rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, b
     return k_rx_err_hw_error;
   }
 
-  if (s_mock_state.force_presence_false_after &&
+  if ((int)s_mock_state.force_presence_false_after &&
       s_mock_state.reset_call_count >= s_mock_state.presence_false_after) {
     *presence = false;
   } else {
@@ -981,7 +981,7 @@ rx_err_t rx_bus_onewire_read_bit(rx_bus_manager_t* manager, const char* bus_name
     return k_rx_err_hw_error;
   }
 
-  *bit = s_mock_state.power_mode;
+  *bit = (bool)(s_mock_state.power_mode != 0U);
   return k_rx_ok;
 }
 
@@ -1091,7 +1091,7 @@ rx_err_t rx_bus_onewire_write(rx_bus_manager_t* manager,
     return k_rx_err_invalid_state;
   }
 
-  if (s_mock_state.force_write_error || s_mock_state.force_write_data_error) {
+  if ((int)s_mock_state.force_write_error || (int)s_mock_state.force_write_data_error) {
     return k_rx_err_hw_error;
   }
 
@@ -1287,11 +1287,12 @@ rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager,
  * @note Not fully implemented - only returns count, not ROM data
  * @see rx_bus_onewire_search() Real implementation
  */
-rx_err_t rx_bus_onewire_search(rx_bus_manager_t* manager,
-                               const char*       bus_name,
-                               uint8_t*          roms,
-                               uint32_t          max_devices,
-                               uint32_t*         num_devices)
+rx_err_t
+rx_bus_onewire_search(rx_bus_manager_t* manager,
+                      const char*       bus_name,
+                      uint8_t*  roms, // NOLINT(readability-non-const-parameter) - must match header
+                      uint32_t  max_devices,
+                      uint32_t* num_devices)
 {
   (void)roms;
   (void)max_devices;
@@ -1457,7 +1458,7 @@ static void internal_reset_mock_state(void)
 {
   helper_zero_buf((uint8_t*)&s_mock_state, sizeof(s_mock_state));
   s_mock_state.presence_response = true;
-  s_mock_state.power_mode        = true; /* External power */
+  s_mock_state.power_mode        = (uint8_t) true; /* External power */
   s_mock_state.initialized       = false;
 
   /* Default scratchpad: +25.0degC at 12-bit resolution */
@@ -1797,9 +1798,10 @@ void test_ds18b20_init_invalid_resolution(void)
   rx_ds18b20_handle_t handle;
 
   rx_ds18b20_config_t config = {
-    .bus_manager      = &s_mock_bus_manager,
-    .bus_name         = s_test_bus_name,
-    .resolution       = (ds18b20_resolution_t)k_test_invalid_resolution,
+    .bus_manager = &s_mock_bus_manager,
+    .bus_name    = s_test_bus_name,
+    .resolution  = (ds18b20_resolution_t)
+      k_test_invalid_resolution, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
     .use_rom_matching = false,
   };
 
@@ -1860,7 +1862,7 @@ void test_ds18b20_read_temperature_25c(void)
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
   };
-  float temp_c = 0.0f;
+  float temp_c = 0.0F;
 
   internal_init_handle(&handle);
 
@@ -1897,7 +1899,7 @@ void test_ds18b20_read_temperature_0c(void)
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
   };
-  float temp_c = 0.0f;
+  float temp_c = 0.0F;
 
   internal_init_handle(&handle);
 
@@ -1911,7 +1913,7 @@ void test_ds18b20_read_temperature_0c(void)
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_FLOAT_WITHIN(s_temp_tolerance_c, 0.0f, temp_c);
+  TEST_ASSERT_FLOAT_WITHIN(s_temp_tolerance_c, 0.0F, temp_c);
 }
 
 /**
@@ -1945,7 +1947,7 @@ void test_ds18b20_read_temperature_minus_55c(void)
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
   };
-  float temp_c = 0.0f;
+  float temp_c = 0.0F;
 
   internal_init_handle(&handle);
 
@@ -1982,7 +1984,7 @@ void test_ds18b20_read_temperature_125c(void)
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
   };
-  float temp_c = 0.0f;
+  float temp_c = 0.0F;
 
   internal_init_handle(&handle);
 
@@ -2008,7 +2010,7 @@ void test_ds18b20_read_temperature_125c(void)
 void test_ds18b20_read_temperature_not_initialized(void)
 {
   rx_ds18b20_handle_t handle;
-  float               temp_c = 0.0f;
+  float               temp_c = 0.0F;
 
   internal_init_handle(&handle);
 
@@ -2219,7 +2221,7 @@ void test_ds18b20_read_power_mode_external(void)
 
   internal_init_handle(&handle);
 
-  s_mock_state.power_mode = true;
+  s_mock_state.power_mode = (uint8_t) true;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   rx_err_t err = rx_ds18b20_read_power_mode(&handle, &external_power);
@@ -2253,7 +2255,7 @@ void test_ds18b20_read_power_mode_parasitic(void)
 
   internal_init_handle(&handle);
 
-  s_mock_state.power_mode = false;
+  s_mock_state.power_mode = (uint8_t) false;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   rx_err_t err = rx_ds18b20_read_power_mode(&handle, &external_power);
@@ -2577,7 +2579,7 @@ void test_ds18b20_read_temperature_10bit(void)
     .resolution       = k_ds18b20_resolution_10bit,
     .use_rom_matching = false,
   };
-  float temp_c = 0.0f;
+  float temp_c = 0.0F;
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
@@ -2593,7 +2595,7 @@ void test_ds18b20_read_temperature_11bit(void)
     .resolution       = k_ds18b20_resolution_11bit,
     .use_rom_matching = false,
   };
-  float temp_c = 0.0f;
+  float temp_c = 0.0F;
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
@@ -2872,7 +2874,7 @@ void test_ds18b20_read_scratchpad_write_cmd_error(void)
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
   };
-  float temp_c = 0.0f;
+  float temp_c = 0.0F;
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* Inject write error so read_scratchpad_raw's write_byte fails */
@@ -2925,7 +2927,7 @@ void test_ds18b20_read_temperature_9bit(void)
     .resolution       = k_ds18b20_resolution_9bit,
     .use_rom_matching = false,
   };
-  float temp_c = 0.0f;
+  float temp_c = 0.0F;
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   rx_err_t err = rx_ds18b20_read_temperature(&handle, &temp_c);
@@ -2941,7 +2943,7 @@ void test_ds18b20_read_scratchpad_read_error(void)
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
   };
-  float temp_c = 0.0f;
+  float temp_c = 0.0F;
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* Inject read error so rx_bus_onewire_read fails */
@@ -2952,7 +2954,7 @@ void test_ds18b20_read_scratchpad_read_error(void)
 
 void test_ds18b20_read_temperature_null_handle(void)
 {
-  float    temp_c = 0.0f;
+  float    temp_c = 0.0F;
   rx_err_t err    = rx_ds18b20_read_temperature(nullptr, &temp_c);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
@@ -2969,7 +2971,10 @@ void test_ds18b20_set_resolution_invalid_value(void)
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* 0xFF is an invalid resolution value */
-  rx_err_t err = rx_ds18b20_set_resolution(&handle, (ds18b20_resolution_t)k_test_invalid_byte);
+  rx_err_t err = rx_ds18b20_set_resolution(
+    &handle,
+    (ds18b20_resolution_t)
+      k_test_invalid_byte); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -3000,7 +3005,7 @@ void test_ds18b20_scratchpad_crc_error(void)
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
   };
-  float temp_c = 0.0f;
+  float temp_c = 0.0F;
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* Corrupt the CRC byte to trigger CRC mismatch */
@@ -3558,8 +3563,9 @@ void test_ds18b20_get_conversion_time_invalid_resolution(void)
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* Force an invalid resolution to trigger the default case */
-  handle.resolution = (ds18b20_resolution_t)k_test_invalid_byte;
-  uint32_t time_ms  = rx_ds18b20_get_conversion_time_ms(&handle);
+  handle.resolution = (ds18b20_resolution_t)
+    k_test_invalid_byte; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  uint32_t time_ms = rx_ds18b20_get_conversion_time_ms(&handle);
   TEST_ASSERT_EQUAL_UINT32(0U, time_ms);
 }
 
@@ -3643,9 +3649,10 @@ void test_ds18b20_read_temp_raw_invalid_resolution_default(void)
   internal_init_handle(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   /* Force invalid resolution to hit default case in get_temp_mask */
-  handle.resolution = (ds18b20_resolution_t)k_test_invalid_byte;
-  int16_t  raw      = 0;
-  rx_err_t err      = rx_ds18b20_read_temperature_raw(&handle, &raw);
+  handle.resolution = (ds18b20_resolution_t)
+    k_test_invalid_byte; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  int16_t  raw = 0;
+  rx_err_t err = rx_ds18b20_read_temperature_raw(&handle, &raw);
   /* Default mask is k_ds18b20_temp_mask_12bit so reading still succeeds */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }

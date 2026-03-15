@@ -235,8 +235,11 @@ void test_set_backend_none(void)
  */
 void test_bit2_rejected(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_log_set_backend((rx_log_backend_t)k_invalid_backend_bit2));
+  TEST_ASSERT_EQUAL(
+    k_rx_err_invalid_arg,
+    rx_log_set_backend(
+      (rx_log_backend_t)
+        k_invalid_backend_bit2)); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 }
 
 /**
@@ -244,8 +247,11 @@ void test_bit2_rejected(void)
  */
 void test_upper_nibble_rejected(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_log_set_backend((rx_log_backend_t)k_invalid_backend_upper_nibble));
+  TEST_ASSERT_EQUAL(
+    k_rx_err_invalid_arg,
+    rx_log_set_backend(
+      (rx_log_backend_t)
+        k_invalid_backend_upper_nibble)); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 }
 
 /**
@@ -253,8 +259,11 @@ void test_upper_nibble_rejected(void)
  */
 void test_all_bits_rejected(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_log_set_backend((rx_log_backend_t)k_invalid_backend_all_bits));
+  TEST_ASSERT_EQUAL(
+    k_rx_err_invalid_arg,
+    rx_log_set_backend(
+      (rx_log_backend_t)
+        k_invalid_backend_all_bits)); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 }
 
 /* =============================================================================
@@ -272,8 +281,9 @@ void test_all_bits_rejected(void)
 void test_backend_unchanged_after_rejection(void)
 {
   (void)rx_log_set_backend(k_log_backend_usb);
-  (void)rx_log_set_backend(
-    (rx_log_backend_t)(k_invalid_backend_upper_nibble | k_invalid_backend_bit2));
+  (void)rx_log_set_backend((
+    rx_log_backend_t)(k_invalid_backend_upper_nibble |
+                      k_invalid_backend_bit2)); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
   TEST_ASSERT_EQUAL(k_log_backend_usb, rx_log_get_backend());
 }
 
@@ -406,8 +416,8 @@ void test_additional_log_variants_uart_backend(void)
   internal_rx_log_debug("TEST", "debug msg");
 
   /* Numeric variants not covered in section 6 */
-  internal_rx_log_warn_u16("TEST", "warn u16", (uint16_t)k_log_test_u16_warn);
-  internal_rx_log_info_u16("TEST", "info u16", (uint16_t)k_log_test_u16_info);
+  internal_rx_log_warn_u16("TEST", "warn u16", k_log_test_u16_warn);
+  internal_rx_log_info_u16("TEST", "info u16", k_log_test_u16_info);
   internal_rx_log_info_u32("TEST", "info u32", k_log_test_u32_info);
   internal_rx_log_debug_u8("TEST", "debug u8", k_log_test_u8_debug);
 
@@ -431,8 +441,8 @@ void test_additional_log_variants_usb_backend(void)
   internal_rx_log_warn("TEST", "warn msg");
   internal_rx_log_info("TEST", "info msg");
   internal_rx_log_debug("TEST", "debug msg");
-  internal_rx_log_warn_u16("TEST", "warn u16", (uint16_t)k_log_test_u16_warn);
-  internal_rx_log_info_u16("TEST", "info u16", (uint16_t)k_log_test_u16_info);
+  internal_rx_log_warn_u16("TEST", "warn u16", k_log_test_u16_warn);
+  internal_rx_log_info_u16("TEST", "info u16", k_log_test_u16_info);
   internal_rx_log_info_u32("TEST", "info u32", k_log_test_u32_info);
   internal_rx_log_debug_u8("TEST", "debug u8", k_log_test_u8_debug);
 
@@ -512,7 +522,7 @@ void test_log_null_and_edge_guards(void)
 void test_error_u16_u32_err_usb_backend(void)
 {
   (void)rx_log_set_backend(k_log_backend_usb);
-  internal_rx_log_error_u16("T", "eu16", (uint16_t)k_log_test_u16_err_usb);
+  internal_rx_log_error_u16("T", "eu16", k_log_test_u16_err_usb);
   internal_rx_log_error_u32("T", "eu32", k_log_test_u32_err_usb);
   internal_rx_log_error_err("T", "eerr", k_rx_ok);
   TEST_PASS();
@@ -531,7 +541,7 @@ void test_error_u16_u32_err_usb_backend(void)
 void test_error_u16_u32_err_both_backends(void)
 {
   (void)rx_log_set_backend(k_log_backend_both);
-  internal_rx_log_error_u16("T", "eu16", (uint16_t)k_log_test_u16_err_both);
+  internal_rx_log_error_u16("T", "eu16", k_log_test_u16_err_both);
   internal_rx_log_error_u32("T", "eu32", k_log_test_u32_err_both);
   internal_rx_log_error_err("T", "eerr", k_rx_err_null_ptr);
   TEST_PASS();

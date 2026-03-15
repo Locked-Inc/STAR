@@ -413,7 +413,7 @@ static uint8_t internal_get_tmdr_mode(const rx_tpu_phase_mode_t mode)
 static void internal_enable_tpu_module_clock(void)
 {
   *prcr_reg() = k_rx_prcr_unlock_prc1;
-  system_regs()->mstpcra &= ~(uint32_t)k_tpu_mstpcra_mstpa13;
+  system_regs()->mstpcra &= ~k_tpu_mstpcra_mstpa13;
   *prcr_reg() = k_rx_prcr_lock;
 }
 
@@ -720,7 +720,7 @@ rx_err_t rx_tpu_read_direction(const rx_tpu_channel_t channel, bool* counting_up
   /* Read TSR.TCFD bit */
   const volatile rx_tpu_regs_t* regs = internal_get_regs(channel);
 
-  *counting_up = (regs->tsr & k_tpu_tsr_tcfd) != 0;
+  *counting_up = (bool)((regs->tsr & k_tpu_tsr_tcfd) != 0U);
 
   return k_rx_ok;
 }

@@ -306,9 +306,9 @@ static void internal_assert_read_register_sequence(void)
 
   /* Retrieve the last TX data (the ADC data write_read is last; its write byte is 0xF7) */
   uint8_t  tx_byte = 0;
-  uint16_t tx_len  = mock_riic_get_tx_data((uint8_t)k_test_bmp280_riic_ch, &tx_byte, 1U);
+  uint16_t tx_len  = mock_riic_get_tx_data(k_test_bmp280_riic_ch, &tx_byte, 1U);
   TEST_ASSERT_EQUAL(1U, tx_len);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_reg_addr_adc_data, tx_byte);
+  TEST_ASSERT_EQUAL_HEX8(k_reg_addr_adc_data, tx_byte);
 
   /* Verify call types: write for ctrl_meas, write_read for status and ADC */
   const mock_riic_call_t* call_ctrl = mock_riic_get_call((uint16_t)k_read_call_ctrl_meas);
@@ -499,29 +499,29 @@ static rx_bus_config_t s_i2c_config;
  */
 static void internal_load_valid_calib(void)
 {
-  static_assert(k_test_calib_buf_size > 0U, "calibration buffer must be non-empty");
+  static_assert((bool)(k_test_calib_buf_size > 0U), "calibration buffer must be non-empty");
   uint8_t calib[k_test_calib_buf_size];
   internal_zero_fill(calib, sizeof(calib));
 
   /* dig_T1 at bytes 0-1 (unsigned, non-zero required) */
-  calib[k_bmp280_calib_t1_lsb] = (uint8_t)k_calib_t1_lsb;
-  calib[k_bmp280_calib_t1_msb] = (uint8_t)k_calib_t1_msb;
+  calib[k_bmp280_calib_t1_lsb] = k_calib_t1_lsb;
+  calib[k_bmp280_calib_t1_msb] = k_calib_t1_msb;
 
   /* dig_T2 at bytes 2-3 */
-  calib[k_bmp280_calib_t2_lsb] = (uint8_t)k_calib_t2_lsb;
-  calib[k_bmp280_calib_t2_msb] = (uint8_t)k_calib_t2_msb;
+  calib[k_bmp280_calib_t2_lsb] = k_calib_t2_lsb;
+  calib[k_bmp280_calib_t2_msb] = k_calib_t2_msb;
 
   /* dig_T3 at bytes 4-5 */
-  calib[k_bmp280_calib_t3_lsb] = (uint8_t)k_calib_t3_lsb;
-  calib[k_bmp280_calib_t3_msb] = (uint8_t)k_calib_t3_msb;
+  calib[k_bmp280_calib_t3_lsb] = k_calib_t3_lsb;
+  calib[k_bmp280_calib_t3_msb] = k_calib_t3_msb;
 
   /* dig_P1 at bytes 6-7 (unsigned, non-zero required) */
-  calib[k_bmp280_calib_p1_lsb] = (uint8_t)k_calib_p1_lsb;
-  calib[k_bmp280_calib_p1_msb] = (uint8_t)k_calib_p1_msb;
+  calib[k_bmp280_calib_p1_lsb] = k_calib_p1_lsb;
+  calib[k_bmp280_calib_p1_msb] = k_calib_p1_msb;
 
   /* dig_P2 at bytes 8-9 */
-  calib[k_bmp280_calib_p2_lsb] = (uint8_t)k_calib_p2_lsb;
-  calib[k_bmp280_calib_p2_msb] = (uint8_t)k_calib_p2_msb;
+  calib[k_bmp280_calib_p2_lsb] = k_calib_p2_lsb;
+  calib[k_bmp280_calib_p2_msb] = k_calib_p2_msb;
 
   /* Remaining P3-P9 bytes stay zero (set by internal_zero_fill above) */
 
@@ -529,7 +529,7 @@ static void internal_load_valid_calib(void)
   TEST_ASSERT_NOT_EQUAL(0U, calib[k_bmp280_calib_t1_lsb] | calib[k_bmp280_calib_t1_msb]);
   TEST_ASSERT_NOT_EQUAL(0U, calib[k_bmp280_calib_p1_lsb] | calib[k_bmp280_calib_p1_msb]);
 
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, calib, k_test_calib_buf_size);
+  mock_riic_set_rx_data(k_test_bmp280_riic_ch, calib, k_test_calib_buf_size);
 }
 
 /**
@@ -546,13 +546,13 @@ static void internal_load_valid_calib(void)
  */
 static void internal_load_invalid_calib_p1_zero(void)
 {
-  static_assert(k_test_calib_buf_size > 0U, "calibration buffer must be non-empty");
+  static_assert((bool)(k_test_calib_buf_size > 0U), "calibration buffer must be non-empty");
   uint8_t calib[k_test_calib_buf_size];
   internal_zero_fill(calib, sizeof(calib));
 
   /* Only set dig_T1 as non-zero; dig_P1 stays zero */
-  calib[k_bmp280_calib_t1_lsb] = (uint8_t)k_calib_t1_lsb;
-  calib[k_bmp280_calib_t1_msb] = (uint8_t)k_calib_t1_msb;
+  calib[k_bmp280_calib_t1_lsb] = k_calib_t1_lsb;
+  calib[k_bmp280_calib_t1_msb] = k_calib_t1_msb;
   /* dig_P1 bytes 6-7 remain 0x00 (zero) */
 
   /* Postcondition: verify T1 non-zero and P1 zero as intended for this invalid case */
@@ -560,7 +560,7 @@ static void internal_load_invalid_calib_p1_zero(void)
   TEST_ASSERT_EQUAL(0U, calib[k_bmp280_calib_p1_lsb]);
   TEST_ASSERT_EQUAL(0U, calib[k_bmp280_calib_p1_msb]);
 
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, calib, k_test_calib_buf_size);
+  mock_riic_set_rx_data(k_test_bmp280_riic_ch, calib, k_test_calib_buf_size);
 }
 
 /**
@@ -604,21 +604,21 @@ static void internal_load_invalid_calib_p1_zero(void)
  */
 static void internal_load_read_data(void)
 {
-  static_assert(k_read_seq_buf_size > 0U, "read sequence buffer must be non-empty");
+  static_assert((bool)(k_read_seq_buf_size > 0U), "read sequence buffer must be non-empty");
   uint8_t buf[k_read_seq_buf_size];
-  buf[k_read_seq_status_idx]         = (uint8_t)k_status_measuring_done;
-  buf[k_read_seq_adc_press_msb_idx]  = (uint8_t)k_adc_press_msb;
-  buf[k_read_seq_adc_press_lsb_idx]  = (uint8_t)k_adc_press_lsb;
-  buf[k_read_seq_adc_press_xlsb_idx] = (uint8_t)k_adc_press_xlsb;
-  buf[k_read_seq_adc_temp_msb_idx]   = (uint8_t)k_adc_temp_msb;
-  buf[k_read_seq_adc_temp_lsb_idx]   = (uint8_t)k_adc_temp_lsb;
-  buf[k_read_seq_adc_temp_xlsb_idx]  = (uint8_t)k_adc_temp_xlsb;
+  buf[k_read_seq_status_idx]         = k_status_measuring_done;
+  buf[k_read_seq_adc_press_msb_idx]  = k_adc_press_msb;
+  buf[k_read_seq_adc_press_lsb_idx]  = k_adc_press_lsb;
+  buf[k_read_seq_adc_press_xlsb_idx] = k_adc_press_xlsb;
+  buf[k_read_seq_adc_temp_msb_idx]   = k_adc_temp_msb;
+  buf[k_read_seq_adc_temp_lsb_idx]   = k_adc_temp_lsb;
+  buf[k_read_seq_adc_temp_xlsb_idx]  = k_adc_temp_xlsb;
 
   /* Postcondition: verify status byte is set to measuring-done (0x00) */
-  TEST_ASSERT_EQUAL((uint8_t)k_status_measuring_done, buf[k_read_seq_status_idx]);
-  TEST_ASSERT_EQUAL((uint8_t)k_adc_press_msb, buf[k_read_seq_adc_press_msb_idx]);
+  TEST_ASSERT_EQUAL(k_status_measuring_done, buf[k_read_seq_status_idx]);
+  TEST_ASSERT_EQUAL(k_adc_press_msb, buf[k_read_seq_adc_press_msb_idx]);
 
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, buf, k_read_seq_buf_size);
+  mock_riic_set_rx_data(k_test_bmp280_riic_ch, buf, k_read_seq_buf_size);
 }
 
 /* =============================================================================
@@ -641,7 +641,7 @@ static void internal_load_read_data(void)
  */
 static void internal_setup_initialized_bmp280(void)
 {
-  static_assert(k_test_calib_buf_size > 0U, "calibration buffer must be non-empty");
+  static_assert((bool)(k_test_calib_buf_size > 0U), "calibration buffer must be non-empty");
   internal_load_valid_calib();
   const rx_err_t err = rx_bmp280_init(&s_test_manager);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -672,19 +672,19 @@ void setUp(void)
    * making tests order-independent (no persistent state from prior tests). */
   rx_bmp280_test_reset_state();
 
-  (void)mock_riic_init();
-  TEST_ASSERT_FALSE(mock_riic_is_initialized((uint8_t)k_test_bmp280_riic_ch));
+  mock_riic_init();
+  TEST_ASSERT_FALSE(mock_riic_is_initialized(k_test_bmp280_riic_ch));
 
   rx_err_t err = rx_bus_manager_init(&s_test_manager, "BMP280_TEST", nullptr, nullptr);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_config_init_i2c(&s_i2c_config,
                                "i2c1_baro",
-                               (uint8_t)k_test_bmp280_riic_ch,
-                               (uint8_t)k_test_bmp280_i2c_addr,
+                               k_test_bmp280_riic_ch,
+                               k_test_bmp280_i2c_addr,
                                k_rx_p2_0,
                                k_rx_p2_1,
-                               (uint32_t)k_test_bmp280_freq_hz);
+                               k_test_bmp280_freq_hz);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(&s_test_manager, &s_i2c_config);
@@ -712,8 +712,8 @@ void tearDown(void)
 {
   const rx_err_t deinit_err = rx_bus_manager_deinit(&s_test_manager);
   TEST_ASSERT_EQUAL(k_rx_ok, deinit_err);
-  (void)mock_riic_init();
-  TEST_ASSERT_FALSE(mock_riic_is_initialized((uint8_t)k_test_bmp280_riic_ch));
+  mock_riic_init();
+  TEST_ASSERT_FALSE(mock_riic_is_initialized(k_test_bmp280_riic_ch));
 }
 
 /* =============================================================================
@@ -754,14 +754,14 @@ void test_bmp280_init_null_manager_returns_error(void)
  */
 void test_bmp280_init_i2c_error_propagates(void)
 {
-  (void)mock_riic_simulate_nack(true);
+  mock_riic_simulate_nack(true);
 
   rx_err_t err = rx_bmp280_init(&s_test_manager);
 
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 
-  (void)mock_riic_simulate_nack(false);
+  mock_riic_simulate_nack(false);
 }
 
 /**
@@ -928,10 +928,10 @@ void test_bmp280_read_success_forced_mode(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Verify compensation produced non-zero output (algorithm completed without divide-by-zero). */
-  TEST_ASSERT_GREATER_THAN((uint32_t)k_press_nonzero_min, data.press_pa_256);
+  TEST_ASSERT_GREATER_THAN(k_press_nonzero_min, data.press_pa_256);
   /* Verify output is within BMP280 physical operating range [300, 1100] hPa * 256. */
-  TEST_ASSERT_GREATER_OR_EQUAL((uint32_t)k_press_physical_min, data.press_pa_256);
-  TEST_ASSERT_LESS_OR_EQUAL((uint32_t)k_press_physical_max, data.press_pa_256);
+  TEST_ASSERT_GREATER_OR_EQUAL(k_press_physical_min, data.press_pa_256);
+  TEST_ASSERT_LESS_OR_EQUAL(k_press_physical_max, data.press_pa_256);
   /* Verify correct register address sequence to catch address-ordering bugs */
   internal_assert_read_register_sequence();
 }
@@ -955,8 +955,8 @@ void test_bmp280_read_success_forced_mode(void)
 void test_bmp280_read_status_timeout(void)
 {
   internal_setup_initialized_bmp280();
-  uint8_t busy_status = (uint8_t)k_status_measuring_busy;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &busy_status, k_test_single_byte);
+  uint8_t busy_status = k_status_measuring_busy;
+  mock_riic_set_rx_data(k_test_bmp280_riic_ch, &busy_status, k_test_single_byte);
 
   bmp280_data_t data;
   internal_zero_fill(&data, sizeof(data));
@@ -982,7 +982,7 @@ void test_bmp280_read_status_timeout(void)
 void test_bmp280_read_i2c_error_propagates(void)
 {
   internal_setup_initialized_bmp280();
-  (void)mock_riic_simulate_nack(true);
+  mock_riic_simulate_nack(true);
 
   bmp280_data_t data;
   internal_zero_fill(&data, sizeof(data));
@@ -991,7 +991,7 @@ void test_bmp280_read_i2c_error_propagates(void)
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 
-  (void)mock_riic_simulate_nack(false);
+  mock_riic_simulate_nack(false);
 }
 
 /* =============================================================================
@@ -1034,10 +1034,10 @@ void test_bmp280_compensation_known_values(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify both outputs are within the BMP280 physical operating range. */
-  TEST_ASSERT_GREATER_OR_EQUAL((int32_t)k_temp_physical_min_cdegc, data.temp_centi_degc);
-  TEST_ASSERT_LESS_OR_EQUAL((int32_t)k_temp_physical_max_cdegc, data.temp_centi_degc);
-  TEST_ASSERT_GREATER_OR_EQUAL((uint32_t)k_press_physical_min, data.press_pa_256);
-  TEST_ASSERT_LESS_OR_EQUAL((uint32_t)k_press_physical_max, data.press_pa_256);
+  TEST_ASSERT_GREATER_OR_EQUAL(k_temp_physical_min_cdegc, data.temp_centi_degc);
+  TEST_ASSERT_LESS_OR_EQUAL(k_temp_physical_max_cdegc, data.temp_centi_degc);
+  TEST_ASSERT_GREATER_OR_EQUAL(k_press_physical_min, data.press_pa_256);
+  TEST_ASSERT_LESS_OR_EQUAL(k_press_physical_max, data.press_pa_256);
   /* Verify correct register address sequence to catch address-ordering bugs */
   internal_assert_read_register_sequence();
 }
@@ -1096,8 +1096,8 @@ void test_bmp280_read_zero_var1_returns_error(void)
 void test_bmp280_init_wrong_chip_id_returns_error(void)
 {
   /* Load RX buffer with wrong chip ID (0x00 instead of 0x60) */
-  uint8_t wrong_chip_id = (uint8_t)k_extreme_zero;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &wrong_chip_id, k_test_single_byte);
+  uint8_t wrong_chip_id = k_extreme_zero;
+  mock_riic_set_rx_data(k_test_bmp280_riic_ch, &wrong_chip_id, k_test_single_byte);
 
   rx_err_t err = rx_bmp280_init(&s_test_manager);
 
@@ -1120,11 +1120,11 @@ void test_bmp280_init_wrong_chip_id_returns_error(void)
 void test_bmp280_init_calib_read_error_propagates(void)
 {
   /* Load valid chip ID so call 0 succeeds */
-  uint8_t chip_id = (uint8_t)k_calib_t1_lsb; /* 0x60 = chip_id_expected */
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &chip_id, k_test_single_byte);
+  uint8_t chip_id = k_calib_t1_lsb; /* 0x60 = chip_id_expected */
+  mock_riic_set_rx_data(k_test_bmp280_riic_ch, &chip_id, k_test_single_byte);
 
   /* Fail call index 1 (calibration read) */
-  mock_riic_set_nth_call_error((uint8_t)k_init_call_calib_read, k_rx_err_nack);
+  mock_riic_set_nth_call_error((uint16_t)k_init_call_calib_read, k_rx_err_nack);
 
   rx_err_t err = rx_bmp280_init(&s_test_manager);
 
@@ -1152,7 +1152,7 @@ void test_bmp280_init_config_write_error_propagates(void)
   internal_load_valid_calib();
 
   /* Fail call index 2 (config register write) */
-  mock_riic_set_nth_call_error((uint8_t)k_init_call_config_write, k_rx_err_nack);
+  mock_riic_set_nth_call_error((uint16_t)k_init_call_config_write, k_rx_err_nack);
 
   rx_err_t err = rx_bmp280_init(&s_test_manager);
 
@@ -1182,7 +1182,7 @@ void test_bmp280_read_status_read_error_propagates(void)
   internal_setup_initialized_bmp280();
 
   /* Fail call index 1 (status read) */
-  mock_riic_set_nth_call_error((uint8_t)k_read_call_status, k_rx_err_nack);
+  mock_riic_set_nth_call_error((uint16_t)k_read_call_status, k_rx_err_nack);
 
   bmp280_data_t data;
   internal_zero_fill(&data, sizeof(data));
@@ -1210,11 +1210,11 @@ void test_bmp280_read_adc_read_error_propagates(void)
   internal_setup_initialized_bmp280();
 
   /* Load status=0x00 (done) so the status poll clears on call 1 */
-  uint8_t done_status = (uint8_t)k_status_measuring_done;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &done_status, k_test_single_byte);
+  uint8_t done_status = k_status_measuring_done;
+  mock_riic_set_rx_data(k_test_bmp280_riic_ch, &done_status, k_test_single_byte);
 
   /* Fail call index 2 (ADC data read) */
-  mock_riic_set_nth_call_error((uint8_t)k_read_call_adc_data, k_rx_err_nack);
+  mock_riic_set_nth_call_error((uint16_t)k_read_call_adc_data, k_rx_err_nack);
 
   bmp280_data_t data;
   internal_zero_fill(&data, sizeof(data));
@@ -1303,12 +1303,10 @@ static void internal_load_extreme_temp_adc(void)
 {
   uint8_t extreme_adc[k_extreme_adc_buf_size];
   internal_zero_fill(extreme_adc, sizeof(extreme_adc));
-  extreme_adc[k_extreme_adc_temp_msb_idx]  = (uint8_t)k_extreme_adc_max_byte;
-  extreme_adc[k_extreme_adc_temp_lsb_idx]  = (uint8_t)k_extreme_adc_max_byte;
-  extreme_adc[k_extreme_adc_temp_xlsb_idx] = (uint8_t)k_extreme_xlsb_max_nibble;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch,
-                              extreme_adc,
-                              (uint16_t)sizeof(extreme_adc));
+  extreme_adc[k_extreme_adc_temp_msb_idx]  = k_extreme_adc_max_byte;
+  extreme_adc[k_extreme_adc_temp_lsb_idx]  = k_extreme_adc_max_byte;
+  extreme_adc[k_extreme_adc_temp_xlsb_idx] = k_extreme_xlsb_max_nibble;
+  mock_riic_set_rx_data(k_test_bmp280_riic_ch, extreme_adc, (uint16_t)sizeof(extreme_adc));
 }
 
 /**
@@ -1359,14 +1357,12 @@ void test_bmp280_read_pressure_out_of_range_returns_error(void)
 
   uint8_t extreme_press_calib[k_test_calib_buf_size];
   internal_zero_fill(extreme_press_calib, sizeof(extreme_press_calib));
-  extreme_press_calib[k_bmp280_calib_t1_lsb] = (uint8_t)k_calib_t1_lsb;
-  extreme_press_calib[k_bmp280_calib_t1_msb] = (uint8_t)k_calib_t1_msb;
+  extreme_press_calib[k_bmp280_calib_t1_lsb] = k_calib_t1_lsb;
+  extreme_press_calib[k_bmp280_calib_t1_msb] = k_calib_t1_msb;
   /* T2=0, T3=0: bytes 2-5 stay zero */
-  extreme_press_calib[k_bmp280_calib_p1_lsb] = (uint8_t)k_extreme_p1_lsb_one;
-  extreme_press_calib[k_bmp280_calib_p1_msb] = (uint8_t)k_extreme_zero;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch,
-                              extreme_press_calib,
-                              k_test_calib_buf_size);
+  extreme_press_calib[k_bmp280_calib_p1_lsb] = k_extreme_p1_lsb_one;
+  extreme_press_calib[k_bmp280_calib_p1_msb] = k_extreme_zero;
+  mock_riic_set_rx_data(k_test_bmp280_riic_ch, extreme_press_calib, k_test_calib_buf_size);
 
   rx_err_t init_err = rx_bmp280_init(&s_test_manager);
   TEST_ASSERT_EQUAL(k_rx_ok, init_err);
@@ -1374,7 +1370,7 @@ void test_bmp280_read_pressure_out_of_range_returns_error(void)
   /* Load all-zero ADC buffer: status=done(0x00), adc_P=0, adc_T=0 */
   uint8_t adc_buf[k_extreme_adc_buf_size];
   internal_zero_fill(adc_buf, sizeof(adc_buf));
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, adc_buf, (uint16_t)sizeof(adc_buf));
+  mock_riic_set_rx_data(k_test_bmp280_riic_ch, adc_buf, (uint16_t)sizeof(adc_buf));
 
   bmp280_data_t data;
   internal_zero_fill(&data, sizeof(data));

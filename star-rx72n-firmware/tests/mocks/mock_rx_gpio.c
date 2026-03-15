@@ -367,8 +367,8 @@ rx_err_t gpio_read(rx_port_pin_t pin, bool* high)
   }
 
   /* Check for active read sequence on this pin */
-  if (s_mock_gpio.read_seq.active && pin == s_mock_gpio.read_seq_pin &&
-      s_mock_gpio.read_seq.index < s_mock_gpio.read_seq.count) {
+  if (s_mock_gpio.read_seq.active && // NOLINT(readability-implicit-bool-conversion)
+      pin == s_mock_gpio.read_seq_pin && s_mock_gpio.read_seq.index < s_mock_gpio.read_seq.count) {
     *high = s_mock_gpio.read_seq.values[s_mock_gpio.read_seq.index];
     s_mock_gpio.read_seq.index++;
     return k_rx_ok;

@@ -205,9 +205,10 @@ void test_comm_task_polls_comm_manager(void)
  */
 void test_comm_task_velocity_cmd_updates_shared_data(void)
 {
-  star_v1_SetVelocityRequest velocity_req = {0};
-  motor_command_t            cmd_out      = {0};
-  rx_err_t                   err;
+  star_v1_SetVelocityRequest velocity_req; // NOLINT
+  memset(&velocity_req, 0, sizeof(velocity_req));
+  motor_command_t cmd_out = {0};
+  rx_err_t        err;
 
   /* Configure mock to return decoded velocity */
   (void)velocity_req; /* Not used directly - mock sets values internally */
@@ -219,8 +220,9 @@ void test_comm_task_velocity_cmd_updates_shared_data(void)
   mock_nanopb_set_decode_velocity_return(k_rx_ok);
 
   /* Decode velocity request (simulating task behavior) */
-  star_v1_SetVelocityRequest decoded = {0};
-  err                                = rx_nanopb_decode_velocity_request(nullptr, 0, &decoded);
+  star_v1_SetVelocityRequest decoded; // NOLINT
+  memset(&decoded, 0, sizeof(decoded));
+  err = rx_nanopb_decode_velocity_request(nullptr, 0, &decoded);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(decoded.has_command);
 
@@ -292,8 +294,9 @@ void test_comm_task_rejects_null_frame(void)
  */
 void test_comm_task_estop_request_triggers_estop(void)
 {
-  star_v1_EmergencyStopRequest estop_req = {0};
-  rx_err_t                     err;
+  star_v1_EmergencyStopRequest estop_req; // NOLINT
+  memset(&estop_req, 0, sizeof(estop_req));
+  rx_err_t err;
 
   /* Configure mock to return decoded estop request */
   mock_nanopb_set_decode_estop_return(k_rx_ok);
@@ -363,7 +366,7 @@ void test_comm_task_frame_updates_active_channel(void)
   TEST_ASSERT_EQUAL(k_comm_channel_usb, shared_data_get_active_channel());
 
   /* Act: simulate comm task recording an SPI frame receipt */
-  (void)shared_data_update_active_channel((uint8_t)k_comm_channel_spi);
+  (void)shared_data_update_active_channel(k_comm_channel_spi);
 
   /* Assert: active channel updated to SPI */
   TEST_ASSERT_EQUAL(k_comm_channel_spi, shared_data_get_active_channel());
@@ -427,7 +430,8 @@ void test_comm_task_handles_decode_failure(void)
   mock_nanopb_set_decode_velocity_return(k_rx_err_protocol_error);
 
   /* Try to decode (should fail) */
-  star_v1_SetVelocityRequest velocity_req = {0};
+  star_v1_SetVelocityRequest velocity_req; // NOLINT
+  memset(&velocity_req, 0, sizeof(velocity_req));
   err = rx_nanopb_decode_velocity_request(nullptr, 0, &velocity_req);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 

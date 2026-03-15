@@ -310,7 +310,7 @@ static inline bool internal_is_valid_pin(rx_port_pin_t pin)
 
   RX_ASSERT(pin_portion <= k_rx_pin_max, "Pin portion must be <= k_rx_pin_max");
   RX_ASSERT(port_portion <= k_rx_port_j, "Port portion must be <= k_rx_port_j");
-  return (pin <= k_rx_pj_7);
+  return (pin <= k_rx_pj_7); // NOLINT(readability-implicit-bool-conversion)
 }
 
 /**

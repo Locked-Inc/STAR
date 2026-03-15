@@ -394,7 +394,7 @@ void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_encoded_len_none = 0u, /**< Zero bytes encoded; stubs always produce no output */
+  k_encoded_len_none = 0U, /**< Zero bytes encoded; stubs always produce no output */
 } nanopb_stub_len_t;
 
 /**
@@ -419,10 +419,11 @@ typedef enum : uint32_t {
  *
  * @since Version 1.0.0
  */
-rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* msg,
-                                            uint8_t*                           buffer,
-                                            uint32_t                           buffer_size,
-                                            uint32_t*                          len)
+rx_err_t
+rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* msg,
+                                   uint8_t*  buffer, // NOLINT(readability-non-const-parameter)
+                                   uint32_t  buffer_size,
+                                   uint32_t* len)
 {
   (void)msg;
   (void)buffer;
@@ -456,9 +457,9 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
  * @since Version 1.0.0
  */
 rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* msg,
-                                         uint8_t*                             buffer,
-                                         uint32_t                             buffer_size,
-                                         uint32_t*                            len)
+                                         uint8_t* buffer, // NOLINT(readability-non-const-parameter)
+                                         uint32_t buffer_size,
+                                         uint32_t* len)
 {
   (void)msg;
   (void)buffer;
@@ -491,10 +492,11 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  *
  * @since Version 1.0.0
  */
-rx_err_t rx_nanopb_encode_pid_gains_response(const star_v1_SetPIDGainsResponse* msg,
-                                             uint8_t*                           buffer,
-                                             uint32_t                           buffer_size,
-                                             uint32_t*                          len)
+rx_err_t
+rx_nanopb_encode_pid_gains_response(const star_v1_SetPIDGainsResponse* msg,
+                                    uint8_t*  buffer, // NOLINT(readability-non-const-parameter)
+                                    uint32_t  buffer_size,
+                                    uint32_t* len)
 {
   (void)msg;
   (void)buffer;

@@ -77,12 +77,12 @@ const rx_port_pin_t g_pin_host_irq = (rx_port_pin_t)0;
  * @since Version 1.0.0
  */
 rx_err_t
-rx_bus_adc_read_voltage_mv(rx_bus_manager_t* manager, const char* label, uint32_t* voltage_mv_out)
+rx_bus_adc_read_voltage_mv(rx_bus_manager_t* manager, const char* bus_name, uint32_t* voltage_mv)
 {
   (void)manager;
-  (void)label;
-  if (voltage_mv_out != nullptr) {
-    *voltage_mv_out = 0U;
+  (void)bus_name;
+  if (voltage_mv != nullptr) {
+    *voltage_mv = 0U;
   }
   return k_rx_ok;
 }

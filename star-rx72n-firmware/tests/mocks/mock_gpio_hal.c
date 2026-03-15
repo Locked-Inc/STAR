@@ -305,8 +305,9 @@ rx_err_t gpio_set_output(rx_port_pin_t pin)
     return err;
   }
 
-  uint8_t port, pin_num;
-  err = internal_validate_pin(pin, &port, &pin_num);
+  uint8_t port    = 0;
+  uint8_t pin_num = 0;
+  err             = internal_validate_pin(pin, &port, &pin_num);
   if (err != k_rx_ok) {
     return err;
   }
@@ -328,8 +329,9 @@ rx_err_t gpio_set_input(rx_port_pin_t pin)
     return err;
   }
 
-  uint8_t port, pin_num;
-  err = internal_validate_pin(pin, &port, &pin_num);
+  uint8_t port    = 0;
+  uint8_t pin_num = 0;
+  err             = internal_validate_pin(pin, &port, &pin_num);
   if (err != k_rx_ok) {
     return err;
   }
@@ -351,8 +353,9 @@ rx_err_t gpio_write_high(rx_port_pin_t pin)
     return err;
   }
 
-  uint8_t port, pin_num;
-  err = internal_validate_pin(pin, &port, &pin_num);
+  uint8_t port    = 0;
+  uint8_t pin_num = 0;
+  err             = internal_validate_pin(pin, &port, &pin_num);
   if (err != k_rx_ok) {
     return err;
   }
@@ -374,8 +377,9 @@ rx_err_t gpio_write_low(rx_port_pin_t pin)
     return err;
   }
 
-  uint8_t port, pin_num;
-  err = internal_validate_pin(pin, &port, &pin_num);
+  uint8_t port    = 0;
+  uint8_t pin_num = 0;
+  err             = internal_validate_pin(pin, &port, &pin_num);
   if (err != k_rx_ok) {
     return err;
   }
@@ -397,15 +401,16 @@ rx_err_t gpio_toggle(rx_port_pin_t pin)
     return err;
   }
 
-  uint8_t port, pin_num;
-  err = internal_validate_pin(pin, &port, &pin_num);
+  uint8_t port    = 0;
+  uint8_t pin_num = 0;
+  err             = internal_validate_pin(pin, &port, &pin_num);
   if (err != k_rx_ok) {
     return err;
   }
 
   mock_gpio_pin_state_t* state = internal_get_pin_state(port, pin_num);
   if (state != nullptr) {
-    state->output_value = !state->output_value;
+    state->output_value = !state->output_value; // NOLINT(readability-implicit-bool-conversion)
     /* Keep input_value in sync so gpio_read reflects the toggled state */
     state->input_value = state->output_value;
   }
@@ -426,8 +431,9 @@ rx_err_t gpio_read(rx_port_pin_t pin, bool* value)
     return k_rx_err_null_ptr;
   }
 
-  uint8_t port, pin_num;
-  err = internal_validate_pin(pin, &port, &pin_num);
+  uint8_t port    = 0;
+  uint8_t pin_num = 0;
+  err             = internal_validate_pin(pin, &port, &pin_num);
   if (err != k_rx_ok) {
     return err;
   }

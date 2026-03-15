@@ -184,27 +184,27 @@ typedef enum : uint8_t {
   k_crc8_byte_05 = 0x05U, /**< Byte value 0x05: ROM serial byte 6 and ascending test vector */
   k_crc8_byte_06 = 0x06U, /**< Byte value 0x06 used in ascending and descending test vectors */
   k_crc8_byte_07 = 0x07U, /**< Byte value 0x07 used in ascending and descending test vectors */
-  k_crc8_byte_0C = 0x0CU, /**< Byte value 0x0C: scratchpad reserved byte in 85C test vector */
-  k_crc8_byte_0F = 0x0FU, /**< Byte value 0x0F: scratchpad reserved byte in 25C test vector */
+  k_crc8_byte_0c = 0x0CU, /**< Byte value 0x0C: scratchpad reserved byte in 85C test vector */
+  k_crc8_byte_0f = 0x0FU, /**< Byte value 0x0F: scratchpad reserved byte in 25C test vector */
   k_crc8_byte_10 = 0x10U, /**< Byte value 0x10: scratchpad reserved byte (last) */
   k_crc8_byte_16 = 0x16U, /**< Byte value 0x16: ROM serial byte 5 */
-  k_crc8_byte_1E = 0x1EU, /**< Byte value 0x1E: ROM serial byte 3 */
+  k_crc8_byte_1e = 0x1EU, /**< Byte value 0x1E: ROM serial byte 3 */
   k_crc8_byte_28 = 0x28U, /**< Byte value 0x28: DS18B20 family code */
   k_crc8_byte_46 = 0x46U, /**< Byte value 0x46: scratchpad TL alarm register */
-  k_crc8_byte_4B = 0x4BU, /**< Byte value 0x4B: scratchpad TH alarm register */
+  k_crc8_byte_4b = 0x4BU, /**< Byte value 0x4B: scratchpad TH alarm register */
   k_crc8_byte_50 = 0x50U, /**< Byte value 0x50: temperature LSB for 85C reading */
   k_crc8_byte_55 = 0x55U, /**< Byte value 0x55: alternating bit pattern 01010101b */
-  k_crc8_byte_5E = 0x5EU, /**< Byte value 0x5E: temperature LSB for -10.125C reading */
+  k_crc8_byte_5e = 0x5EU, /**< Byte value 0x5E: temperature LSB for -10.125C reading */
   k_crc8_byte_64 = 0x64U, /**< Byte value 0x64: ROM serial byte 2 */
-  k_crc8_byte_7F = 0x7FU, /**< Byte value 0x7F: scratchpad config register (12-bit resolution) */
+  k_crc8_byte_7f = 0x7FU, /**< Byte value 0x7F: scratchpad config register (12-bit resolution) */
   k_crc8_byte_81 = 0x81U, /**< Byte value 0x81: ROM serial byte 4 */
   k_crc8_byte_91 = 0x91U, /**< Byte value 0x91: temperature LSB for +25.0625C reading */
-  k_crc8_byte_AA = 0xAAU, /**< Byte value 0xAA: ROM serial byte 1 and alternating pattern */
-  k_crc8_byte_BB = 0xBBU, /**< Byte value 0xBB: ROM serial byte 2 in ROM-4 test vector */
-  k_crc8_byte_CC = 0xCCU, /**< Byte value 0xCC: ROM serial byte 3 in ROM-4 test vector */
-  k_crc8_byte_DD = 0xDDU, /**< Byte value 0xDD: ROM serial byte 4 in ROM-4 test vector */
-  k_crc8_byte_EE = 0xEEU, /**< Byte value 0xEE: ROM serial byte 5 in ROM-4 test vector */
-  k_crc8_byte_FF = 0xFFU, /**< Byte value 0xFF: all-ones byte (single byte and ROM tests) */
+  k_crc8_byte_aa = 0xAAU, /**< Byte value 0xAA: ROM serial byte 1 and alternating pattern */
+  k_crc8_byte_bb = 0xBBU, /**< Byte value 0xBB: ROM serial byte 2 in ROM-4 test vector */
+  k_crc8_byte_cc = 0xCCU, /**< Byte value 0xCC: ROM serial byte 3 in ROM-4 test vector */
+  k_crc8_byte_dd = 0xDDU, /**< Byte value 0xDD: ROM serial byte 4 in ROM-4 test vector */
+  k_crc8_byte_ee = 0xEEU, /**< Byte value 0xEE: ROM serial byte 5 in ROM-4 test vector */
+  k_crc8_byte_ff = 0xFFU, /**< Byte value 0xFF: all-ones byte (single byte and ROM tests) */
 } crc8_test_bytes_t;
 
 /**
@@ -339,7 +339,7 @@ void test_crc8_single_zero(void)
  */
 void test_crc8_single_ff(void)
 {
-  uint8_t  data[] = {k_crc8_byte_FF};
+  uint8_t  data[] = {k_crc8_byte_ff};
   uint32_t crc    = 0U;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_crc8_maxim(data, 1, &crc));
@@ -446,9 +446,9 @@ void test_crc8_ds18b20_family_code(void)
 void test_crc8_ds18b20_rom_1(void)
 {
   uint8_t  rom[] = {k_crc8_byte_28,
-                    k_crc8_byte_FF,
+                    k_crc8_byte_ff,
                     k_crc8_byte_64,
-                    k_crc8_byte_1E,
+                    k_crc8_byte_1e,
                     k_crc8_byte_81,
                     k_crc8_byte_16,
                     k_crc8_byte_05};
@@ -486,12 +486,12 @@ void test_crc8_ds18b20_rom_2(void)
 void test_crc8_ds18b20_rom_3(void)
 {
   uint8_t  rom[] = {k_crc8_byte_28,
-                    k_crc8_byte_FF,
-                    k_crc8_byte_FF,
-                    k_crc8_byte_FF,
-                    k_crc8_byte_FF,
-                    k_crc8_byte_FF,
-                    k_crc8_byte_FF};
+                    k_crc8_byte_ff,
+                    k_crc8_byte_ff,
+                    k_crc8_byte_ff,
+                    k_crc8_byte_ff,
+                    k_crc8_byte_ff,
+                    k_crc8_byte_ff};
   uint32_t crc   = 0U;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_crc8_maxim(rom, k_rom_data_size, &crc));
@@ -509,11 +509,11 @@ void test_crc8_ds18b20_rom_3(void)
 void test_crc8_ds18b20_rom_4(void)
 {
   uint8_t  rom[] = {k_crc8_byte_28,
-                    k_crc8_byte_AA,
-                    k_crc8_byte_BB,
-                    k_crc8_byte_CC,
-                    k_crc8_byte_DD,
-                    k_crc8_byte_EE,
+                    k_crc8_byte_aa,
+                    k_crc8_byte_bb,
+                    k_crc8_byte_cc,
+                    k_crc8_byte_dd,
+                    k_crc8_byte_ee,
                     0x01};
   uint32_t crc   = 0U;
 
@@ -530,9 +530,9 @@ void test_crc8_ds18b20_rom_4(void)
 void test_crc8_full_rom_validation(void)
 {
   uint8_t  rom_with_crc[] = {k_crc8_byte_28,
-                             k_crc8_byte_FF,
+                             k_crc8_byte_ff,
                              k_crc8_byte_64,
-                             k_crc8_byte_1E,
+                             k_crc8_byte_1e,
                              k_crc8_byte_81,
                              k_crc8_byte_16,
                              k_crc8_byte_05,
@@ -621,11 +621,11 @@ void test_crc8_scratchpad_25c(void)
 {
   uint8_t  scratchpad[] = {k_crc8_byte_91,
                            0x01,
-                           k_crc8_byte_4B,
+                           k_crc8_byte_4b,
                            k_crc8_byte_46,
-                           k_crc8_byte_7F,
-                           k_crc8_byte_FF,
-                           k_crc8_byte_0F,
+                           k_crc8_byte_7f,
+                           k_crc8_byte_ff,
+                           k_crc8_byte_0f,
                            k_crc8_byte_10};
   uint32_t crc          = 0U;
 
@@ -643,11 +643,11 @@ void test_crc8_scratchpad_85c_reset(void)
 {
   uint8_t  scratchpad[] = {k_crc8_byte_50,
                            k_crc8_byte_05,
-                           k_crc8_byte_4B,
+                           k_crc8_byte_4b,
                            k_crc8_byte_46,
-                           k_crc8_byte_7F,
-                           k_crc8_byte_FF,
-                           k_crc8_byte_0C,
+                           k_crc8_byte_7f,
+                           k_crc8_byte_ff,
+                           k_crc8_byte_0c,
                            k_crc8_byte_10};
   uint32_t crc          = 0U;
 
@@ -663,12 +663,12 @@ void test_crc8_scratchpad_85c_reset(void)
  */
 void test_crc8_scratchpad_negative_temp(void)
 {
-  uint8_t  scratchpad[] = {k_crc8_byte_5E,
-                           k_crc8_byte_FF,
-                           k_crc8_byte_4B,
+  uint8_t  scratchpad[] = {k_crc8_byte_5e,
+                           k_crc8_byte_ff,
+                           k_crc8_byte_4b,
                            k_crc8_byte_46,
-                           k_crc8_byte_7F,
-                           k_crc8_byte_FF,
+                           k_crc8_byte_7f,
+                           k_crc8_byte_ff,
                            k_crc8_byte_02,
                            k_crc8_byte_10};
   uint32_t crc          = 0U;
@@ -684,11 +684,11 @@ void test_crc8_full_scratchpad_validation(void)
 {
   uint8_t  scratchpad_with_crc[] = {k_crc8_byte_91,
                                     0x01,
-                                    k_crc8_byte_4B,
+                                    k_crc8_byte_4b,
                                     k_crc8_byte_46,
-                                    k_crc8_byte_7F,
-                                    k_crc8_byte_FF,
-                                    k_crc8_byte_0F,
+                                    k_crc8_byte_7f,
+                                    k_crc8_byte_ff,
+                                    k_crc8_byte_0f,
                                     k_crc8_byte_10,
                                     k_crc8_expected_scratchpad_25c};
   uint32_t crc                   = 0U;
@@ -753,7 +753,7 @@ void test_crc8_descending_sequence(void)
  */
 void test_crc8_alternating_aa(void)
 {
-  uint8_t  data[] = {k_crc8_byte_AA, k_crc8_byte_AA, k_crc8_byte_AA, k_crc8_byte_AA};
+  uint8_t  data[] = {k_crc8_byte_aa, k_crc8_byte_aa, k_crc8_byte_aa, k_crc8_byte_aa};
   uint32_t crc    = 0U;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_crc8_maxim(data, sizeof(data), &crc));

@@ -208,9 +208,9 @@ void setUp(void)
   /* Create ADC bus config: unit=0, channel=0, 12-bit resolution */
   err = rx_bus_config_init_adc(&s_adc_config,
                                s_test_bus_name,
-                               (uint8_t)k_test_adc_unit,
-                               (uint8_t)k_test_adc_channel,
-                               (uint8_t)k_test_adc_bits);
+                               k_test_adc_unit,
+                               k_test_adc_channel,
+                               k_test_adc_bits);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Register ADC bus with manager */
@@ -385,14 +385,12 @@ void test_bus_adc_init_hal_error_propagates(void)
  */
 void test_bus_adc_read_returns_configured_value(void)
 {
-  mock_adc_set_value((uint8_t)k_test_adc_unit,
-                     (uint8_t)k_test_adc_channel,
-                     (uint16_t)k_test_adc_value_mid);
+  mock_adc_set_value(k_test_adc_unit, k_test_adc_channel, k_test_adc_value_mid);
 
   rx_err_t err = rx_bus_adc_init(&s_test_manager, s_test_bus_name);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint16_t value = (uint16_t)k_test_adc_value_zero;
+  uint16_t value = k_test_adc_value_zero;
   err            = rx_bus_adc_read(&s_test_manager, s_test_bus_name, &value);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL((uint16_t)k_test_adc_value_mid, value);
@@ -416,7 +414,7 @@ void test_bus_adc_read_returns_configured_value(void)
 */
 void test_bus_adc_read_null_manager_returns_error(void)
 {
-  uint16_t value = (uint16_t)k_test_adc_value_zero;
+  uint16_t value = k_test_adc_value_zero;
   rx_err_t err   = rx_bus_adc_read(nullptr, s_test_bus_name, &value);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL(k_expected_zero_adc_calls, mock_adc_get_call_count());
@@ -452,7 +450,7 @@ void test_bus_adc_read_null_value_returns_error(void)
  */
 void test_bus_adc_read_null_bus_name_returns_error(void)
 {
-  uint16_t value = (uint16_t)k_test_adc_value_zero;
+  uint16_t value = k_test_adc_value_zero;
   rx_err_t err   = rx_bus_adc_read(&s_test_manager, nullptr, &value);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL(k_expected_zero_adc_calls, mock_adc_get_call_count());
@@ -476,7 +474,7 @@ void test_bus_adc_read_null_bus_name_returns_error(void)
  */
 void test_bus_adc_read_not_initialized_returns_error(void)
 {
-  uint16_t value = (uint16_t)k_test_adc_value_zero;
+  uint16_t value = k_test_adc_value_zero;
   rx_err_t err   = rx_bus_adc_read(&s_test_manager, s_test_bus_name, &value);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   TEST_ASSERT_EQUAL(k_expected_zero_adc_calls, mock_adc_get_call_count());
@@ -506,7 +504,7 @@ void test_bus_adc_read_hal_error_propagates(void)
 
   mock_adc_set_next_error(k_rx_err_timeout);
 
-  uint16_t value = (uint16_t)k_test_adc_value_mid;
+  uint16_t value = k_test_adc_value_mid;
   err            = rx_bus_adc_read(&s_test_manager, s_test_bus_name, &value);
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
   TEST_ASSERT_EQUAL((uint16_t)k_test_adc_value_mid, value);
@@ -536,14 +534,12 @@ void test_bus_adc_read_hal_error_propagates(void)
  */
 void test_bus_adc_read_voltage_returns_nonzero_for_full_scale(void)
 {
-  mock_adc_set_value((uint8_t)k_test_adc_unit,
-                     (uint8_t)k_test_adc_channel,
-                     (uint16_t)k_test_adc_value_max);
+  mock_adc_set_value(k_test_adc_unit, k_test_adc_channel, k_test_adc_value_max);
 
   rx_err_t err = rx_bus_adc_init(&s_test_manager, s_test_bus_name);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint32_t voltage_mv = (uint32_t)k_test_voltage_zero;
+  uint32_t voltage_mv = k_test_voltage_zero;
   err                 = rx_bus_adc_read_voltage_mv(&s_test_manager, s_test_bus_name, &voltage_mv);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_GREATER_THAN((int32_t)k_voltage_threshold_mv, (int32_t)voltage_mv);
@@ -567,7 +563,7 @@ void test_bus_adc_read_voltage_returns_nonzero_for_full_scale(void)
 */
 void test_bus_adc_read_voltage_null_manager_returns_error(void)
 {
-  uint32_t voltage_mv = (uint32_t)k_test_voltage_zero;
+  uint32_t voltage_mv = k_test_voltage_zero;
   rx_err_t err        = rx_bus_adc_read_voltage_mv(nullptr, s_test_bus_name, &voltage_mv);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL(k_expected_zero_adc_calls, mock_adc_get_call_count());
@@ -603,7 +599,7 @@ void test_bus_adc_read_voltage_null_value_returns_error(void)
  */
 void test_bus_adc_read_voltage_null_bus_name_returns_error(void)
 {
-  uint32_t voltage_mv = (uint32_t)k_test_voltage_zero;
+  uint32_t voltage_mv = k_test_voltage_zero;
   rx_err_t err        = rx_bus_adc_read_voltage_mv(&s_test_manager, nullptr, &voltage_mv);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL(k_expected_zero_adc_calls, mock_adc_get_call_count());
@@ -626,7 +622,7 @@ void test_bus_adc_read_voltage_null_bus_name_returns_error(void)
 */
 void test_bus_adc_read_voltage_not_initialized_returns_error(void)
 {
-  uint32_t voltage_mv = (uint32_t)k_test_voltage_zero;
+  uint32_t voltage_mv = k_test_voltage_zero;
   rx_err_t err        = rx_bus_adc_read_voltage_mv(&s_test_manager, s_test_bus_name, &voltage_mv);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   TEST_ASSERT_EQUAL(k_expected_zero_adc_calls, mock_adc_get_call_count());
@@ -708,14 +704,12 @@ void test_bus_adc_read_value_exceeds_max_logs_warning(void)
 {
   /* Set raw value above 12-bit max (4095) to trigger the bounds warning */
   static const uint16_t k_test_out_of_range_value = 5000U;
-  mock_adc_set_value((uint8_t)k_test_adc_unit,
-                     (uint8_t)k_test_adc_channel,
-                     k_test_out_of_range_value);
+  mock_adc_set_value(k_test_adc_unit, k_test_adc_channel, k_test_out_of_range_value);
 
   rx_err_t err = rx_bus_adc_init(&s_test_manager, s_test_bus_name);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint16_t value = (uint16_t)k_test_adc_value_zero;
+  uint16_t value = k_test_adc_value_zero;
   err            = rx_bus_adc_read(&s_test_manager, s_test_bus_name, &value);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL((uint16_t)k_test_out_of_range_value, value);
@@ -744,7 +738,7 @@ void test_bus_adc_read_voltage_hal_error_propagates(void)
 
   mock_adc_set_next_error(k_rx_err_timeout);
 
-  uint32_t voltage_mv = (uint32_t)k_test_voltage_zero;
+  uint32_t voltage_mv = k_test_voltage_zero;
   err                 = rx_bus_adc_read_voltage_mv(&s_test_manager, s_test_bus_name, &voltage_mv);
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
@@ -769,12 +763,12 @@ void test_bus_adc_read_voltage_hal_error_propagates(void)
 void test_bus_adc_read_voltage_exceeds_safety_limit_logs_warning(void)
 {
   /* Set raw value to UINT16_MAX so computed voltage >> 5500 mV */
-  mock_adc_set_value((uint8_t)k_test_adc_unit, (uint8_t)k_test_adc_channel, UINT16_MAX);
+  mock_adc_set_value(k_test_adc_unit, k_test_adc_channel, UINT16_MAX);
 
   rx_err_t err = rx_bus_adc_init(&s_test_manager, s_test_bus_name);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint32_t voltage_mv = (uint32_t)k_test_voltage_zero;
+  uint32_t voltage_mv = k_test_voltage_zero;
   err                 = rx_bus_adc_read_voltage_mv(&s_test_manager, s_test_bus_name, &voltage_mv);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Computed voltage should exceed 5500 mV safety limit */
@@ -858,11 +852,8 @@ void test_bus_config_adc_invalid_resolution_returns_error(void)
  */
 void test_bus_config_adc_null_config_returns_error(void)
 {
-  rx_err_t err = rx_bus_config_init_adc(nullptr,
-                                        "test",
-                                        (uint8_t)k_test_adc_unit,
-                                        (uint8_t)k_test_adc_channel,
-                                        (uint8_t)k_test_adc_bits);
+  rx_err_t err =
+    rx_bus_config_init_adc(nullptr, "test", k_test_adc_unit, k_test_adc_channel, k_test_adc_bits);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -875,11 +866,8 @@ void test_bus_config_adc_null_config_returns_error(void)
 void test_bus_config_adc_null_name_returns_error(void)
 {
   rx_bus_config_t config;
-  rx_err_t        err = rx_bus_config_init_adc(&config,
-                                        nullptr,
-                                        (uint8_t)k_test_adc_unit,
-                                        (uint8_t)k_test_adc_channel,
-                                        (uint8_t)k_test_adc_bits);
+  rx_err_t        err =
+    rx_bus_config_init_adc(&config, nullptr, k_test_adc_unit, k_test_adc_channel, k_test_adc_bits);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -904,9 +892,9 @@ void test_bus_config_adc_resolution_8bit_valid(void)
   rx_bus_config_t config;
   rx_err_t        err = rx_bus_config_init_adc(&config,
                                         "adc0",
-                                        (uint8_t)k_test_adc_unit,
-                                        (uint8_t)k_test_adc_channel,
-                                        (uint8_t)k_adc_resolution_8bit);
+                                        k_test_adc_unit,
+                                        k_test_adc_channel,
+                                        k_adc_resolution_8bit);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL((uint8_t)k_adc_resolution_8bit, config.proto.adc.bits);
 }
@@ -932,9 +920,9 @@ void test_bus_config_adc_resolution_10bit_valid(void)
   rx_bus_config_t config;
   rx_err_t        err = rx_bus_config_init_adc(&config,
                                         "adc0",
-                                        (uint8_t)k_test_adc_unit,
-                                        (uint8_t)k_test_adc_channel,
-                                        (uint8_t)k_adc_resolution_10bit);
+                                        k_test_adc_unit,
+                                        k_test_adc_channel,
+                                        k_adc_resolution_10bit);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL((uint8_t)k_adc_resolution_10bit, config.proto.adc.bits);
 }

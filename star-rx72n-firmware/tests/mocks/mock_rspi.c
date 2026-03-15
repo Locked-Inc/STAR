@@ -67,7 +67,7 @@ rx_err_t mock_rspi_init(mock_rspi_t* mock)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
-  static const mock_rspi_t s_zero = {0};
+  static const mock_rspi_t s_zero = {};
   *m                              = s_zero;
 
   /* Set default return values */
@@ -95,7 +95,7 @@ rx_err_t mock_rspi_deinit(mock_rspi_t* mock)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
-  static const mock_rspi_t s_zero = {0};
+  static const mock_rspi_t s_zero = {};
   *m                              = s_zero;
 
   return k_rx_ok;
@@ -112,7 +112,7 @@ rx_err_t mock_rspi_clear(mock_rspi_t* mock)
   rx_err_t saved_ready     = m->next_ready_return;
   rx_err_t saved_deinit    = m->next_deinit_return;
 
-  static const mock_rspi_channel_t s_zero_ch = {0};
+  static const mock_rspi_channel_t s_zero_ch = {};
   for (uint16_t ch = 0; ch < k_mock_rspi_max_channels; ch++) {
     m->channels[ch] = s_zero_ch;
   }
@@ -237,7 +237,7 @@ void mock_rspi_clear_controller_channel(mock_rspi_t* mock, rspi_channel_t channe
   mock_rspi_t* m = internal_get_mock(mock);
 
   if ((uint8_t)channel < k_mock_rspi_max_channels) {
-    static const mock_rspi_controller_t s_zero_ctrl = {0};
+    static const mock_rspi_controller_t s_zero_ctrl = {};
     m->controller[channel]                          = s_zero_ctrl;
   }
 }
@@ -275,7 +275,7 @@ rx_err_t mock_rspi_inject_rx_data(mock_rspi_t*   mock,
   }
   ch->rx_len         = len;
   ch->rx_pos         = 0;
-  ch->data_available = (len > 0) ? true : false;
+  ch->data_available = (len > 0); // NOLINT(readability-implicit-bool-conversion)
 
   return k_rx_ok;
 }
@@ -851,7 +851,7 @@ rx_err_t rspi_controller_deinit(rspi_channel_t channel)
   rx_err_t ret = mock->next_controller_deinit_return;
 
   if (ret == k_rx_ok) {
-    static const mock_rspi_controller_t s_zero_ctrl = {0};
+    static const mock_rspi_controller_t s_zero_ctrl = {};
     mock->controller[channel]                       = s_zero_ctrl;
   }
 

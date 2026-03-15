@@ -1010,7 +1010,7 @@ void test_encode_null_args(void)
  */
 void test_encode_uninitialized(void)
 {
-  rx_fec_encoder_t enc     = {0};
+  rx_fec_encoder_t enc     = {false};
   uint8_t          input[] = {k_test_input_byte};
   uint8_t          output[k_buf_size_out16];
   uint32_t         len;
@@ -1118,7 +1118,8 @@ void test_encode_deterministic(void)
   uint8_t output1[k_buf_size_out16];
   uint8_t output2[k_buf_size_out16];
 
-  uint32_t len1, len2;
+  uint32_t len1 = 0;
+  uint32_t len2 = 0;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encode(&s_encoder, input, k_input_len_4, output1, &len1));
 
@@ -1899,7 +1900,8 @@ void test_roundtrip_single_byte(void)
   uint8_t encoded[k_buf_size_out16];
   uint8_t decoded[k_buf_size_out16];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
   /* Encode */
   rx_err_t err = rx_fec_encode(&s_encoder, input, k_input_len_1, encoded, &enc_len);
@@ -1950,7 +1952,8 @@ void test_roundtrip_multi_byte(void)
   uint8_t encoded[k_buf_size_enc32];
   uint8_t decoded[k_buf_size_out16];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
   /* Encode */
   rx_err_t err = rx_fec_encode(&s_encoder, input, k_input_len_4, encoded, &enc_len);
@@ -1999,9 +2002,10 @@ void test_roundtrip_all_zeros(void)
   uint8_t encoded[k_buf_size_enc32];
   uint8_t decoded[k_buf_size_out16];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
-  for (uint32_t i = 0; i < (uint32_t)k_input_len_8; i++) {
+  for (uint32_t i = 0; i < k_input_len_8; i++) {
     input[i] = 0x00;
   }
 
@@ -2052,9 +2056,10 @@ void test_roundtrip_all_ones(void)
   uint8_t encoded[k_buf_size_enc32];
   uint8_t decoded[k_buf_size_out16];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
-  for (uint32_t i = 0; i < (uint32_t)k_input_len_8; i++) {
+  for (uint32_t i = 0; i < k_input_len_8; i++) {
     input[i] = k_byte_ff;
   }
 
@@ -2105,7 +2110,8 @@ void test_roundtrip_alternating_pattern(void)
   uint8_t encoded[k_buf_size_enc32];
   uint8_t decoded[k_buf_size_out16];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
   /* Encode */
   rx_err_t err = rx_fec_encode(&s_encoder, input, k_input_len_4, encoded, &enc_len);
@@ -2160,10 +2166,11 @@ void test_roundtrip_larger_payload(void)
   uint8_t encoded[k_enc_buf_128];
   uint8_t decoded[k_dec_buf_64];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
   /* Fill with ascending pattern */
-  for (uint32_t i = 0; i < (uint32_t)k_input_len_32; i++) {
+  for (uint32_t i = 0; i < k_input_len_32; i++) {
     input[i] = (uint8_t)i;
   }
 
@@ -2262,7 +2269,8 @@ void test_single_bit_error_correction(void)
   uint8_t encoded[k_buf_size_out16];
   uint8_t decoded[k_buf_size_out16];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
   /* Encode */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encode(&s_encoder, input, k_input_len_1, encoded, &enc_len));
@@ -2324,7 +2332,8 @@ void test_multiple_bit_error_correction(void)
   uint8_t encoded[k_buf_size_out16];
   uint8_t decoded[k_buf_size_out16];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
   /* Encode */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encode(&s_encoder, input, k_input_len_2, encoded, &enc_len));

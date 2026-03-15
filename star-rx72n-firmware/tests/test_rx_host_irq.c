@@ -173,7 +173,7 @@ static rx_err_t test_host_irq_is_asserted(bool* asserted)
   }
 
   /* Active-low: pin LOW means asserted */
-  *asserted = ((s_mock_port6.podr & k_host_irq_pin_mask) == k_host_irq_active);
+  *asserted = (bool)((s_mock_port6.podr & k_host_irq_pin_mask) == k_host_irq_active);
   return k_rx_ok;
 }
 

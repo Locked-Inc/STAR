@@ -466,10 +466,8 @@ static void internal_load_valid_chip_id(void)
 {
   TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
   TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_test_single_byte_buf);
-  uint8_t chip_id_data = (uint8_t)k_bno055_chip_id_expected;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch,
-                              &chip_id_data,
-                              k_test_single_byte_buf);
+  uint8_t chip_id_data = k_bno055_chip_id_expected;
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, &chip_id_data, k_test_single_byte_buf);
 }
 
 /**
@@ -508,14 +506,14 @@ static void internal_load_read_data(void)
   internal_zero_fill(read_buf, sizeof(read_buf));
 
   /* Euler heading = 0x0140, roll = 0x0010, pitch = 0x0020 */
-  read_buf[k_read_idx_0] = (uint8_t)k_test_euler_h_lsb;
-  read_buf[k_read_idx_1] = (uint8_t)k_test_euler_h_msb;
-  read_buf[k_read_idx_2] = (uint8_t)k_test_euler_r_lsb;
-  read_buf[k_read_idx_3] = (uint8_t)k_test_euler_r_msb;
-  read_buf[k_read_idx_4] = (uint8_t)k_test_euler_p_lsb;
-  read_buf[k_read_idx_5] = (uint8_t)k_test_euler_p_msb;
+  read_buf[k_read_idx_0] = k_test_euler_h_lsb;
+  read_buf[k_read_idx_1] = k_test_euler_h_msb;
+  read_buf[k_read_idx_2] = k_test_euler_r_lsb;
+  read_buf[k_read_idx_3] = k_test_euler_r_msb;
+  read_buf[k_read_idx_4] = k_test_euler_p_lsb;
+  read_buf[k_read_idx_5] = k_test_euler_p_msb;
 
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, read_buf, k_read_buf_size);
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, read_buf, k_read_buf_size);
 }
 
 /**
@@ -537,10 +535,10 @@ static void internal_load_quat_read_data(void)
   TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_quat_buf_size);
   uint8_t quat_buf[k_quat_buf_size];
   internal_zero_fill(quat_buf, sizeof(quat_buf));
-  quat_buf[k_quat_w_lsb_idx] = (uint8_t)k_test_quat_w_lsb;
-  quat_buf[k_quat_w_msb_idx] = (uint8_t)k_test_quat_w_msb;
+  quat_buf[k_quat_w_lsb_idx] = k_test_quat_w_lsb;
+  quat_buf[k_quat_w_msb_idx] = k_test_quat_w_msb;
 
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, quat_buf, k_quat_buf_size);
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, quat_buf, k_quat_buf_size);
 }
 
 /**
@@ -566,9 +564,9 @@ static void internal_load_temp_read_data(void)
   uint8_t temp_buf[k_read_buf_size];
   internal_zero_fill(temp_buf, sizeof(temp_buf));
   /* Position 0 is returned for all single-byte reads; set to k_test_temp_raw (25 degC) */
-  temp_buf[k_read_idx_0] = (uint8_t)k_test_temp_raw;
+  temp_buf[k_read_idx_0] = k_test_temp_raw;
 
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, temp_buf, k_read_buf_size);
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, temp_buf, k_read_buf_size);
 }
 
 /**
@@ -593,10 +591,10 @@ static void internal_load_lia_read_data(void)
   uint8_t lia_buf[k_read_buf_size];
   internal_zero_fill(lia_buf, sizeof(lia_buf));
   /* lin_acc_x = 0x00C8 = 200 raw (2.0 m/s^2 when divided by k_bno055_scale_acc=100) */
-  lia_buf[k_read_idx_0] = (uint8_t)k_test_lia_x_lsb;
-  lia_buf[k_read_idx_1] = (uint8_t)k_test_lia_x_msb;
+  lia_buf[k_read_idx_0] = k_test_lia_x_lsb;
+  lia_buf[k_read_idx_1] = k_test_lia_x_msb;
 
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, lia_buf, k_read_buf_size);
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, lia_buf, k_read_buf_size);
 }
 
 /* =============================================================================
@@ -636,11 +634,11 @@ void setUp(void)
 
   err = rx_bus_config_init_i2c(&s_i2c_config,
                                "i2c1_imu",
-                               (uint8_t)k_test_bno055_riic_ch,
-                               (uint8_t)k_test_bno055_i2c_addr,
+                               k_test_bno055_riic_ch,
+                               k_test_bno055_i2c_addr,
                                k_rx_p2_0,
                                k_rx_p2_1,
-                               (uint32_t)k_test_bno055_freq_hz);
+                               k_test_bno055_freq_hz);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(&s_test_manager, &s_i2c_config);
@@ -669,8 +667,8 @@ void tearDown(void)
 {
   const rx_err_t deinit_err = rx_bus_manager_deinit(&s_test_manager);
   TEST_ASSERT_EQUAL(k_rx_ok, deinit_err);
-  (void)mock_riic_init();
-  TEST_ASSERT_FALSE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
+  mock_riic_init();
+  TEST_ASSERT_FALSE(mock_riic_is_initialized(k_test_bno055_riic_ch));
 }
 
 /* =============================================================================
@@ -700,7 +698,7 @@ static void internal_setup_initialized_driver(void)
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Verify mock HAL is still operational after init (confirms bus communication completed) */
-  TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
+  TEST_ASSERT_TRUE(mock_riic_is_initialized(k_test_bno055_riic_ch));
 }
 
 /* =============================================================================
@@ -748,14 +746,14 @@ void test_bno055_init_null_manager_returns_error(void)
  */
 void test_bno055_init_i2c_error_propagates(void)
 {
-  (void)mock_riic_simulate_nack(true);
+  mock_riic_simulate_nack(true);
 
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
 
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 
-  (void)mock_riic_simulate_nack(false);
+  mock_riic_simulate_nack(false);
 }
 
 /**
@@ -776,8 +774,8 @@ void test_bno055_init_i2c_error_propagates(void)
  */
 void test_bno055_init_wrong_chip_id(void)
 {
-  uint8_t wrong_id = (uint8_t)k_test_wrong_chip_id;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &wrong_id, k_test_single_byte_buf);
+  uint8_t wrong_id = k_test_wrong_chip_id;
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, &wrong_id, k_test_single_byte_buf);
 
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
 
@@ -1042,7 +1040,7 @@ void test_bno055_read_success_lia(void)
 void test_bno055_read_i2c_error_propagates(void)
 {
   internal_setup_initialized_driver();
-  (void)mock_riic_simulate_nack(true);
+  mock_riic_simulate_nack(true);
 
   bno055_data_t data;
   rx_err_t      err = rx_bno055_read(&data);
@@ -1050,7 +1048,7 @@ void test_bno055_read_i2c_error_propagates(void)
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 
-  (void)mock_riic_simulate_nack(false);
+  mock_riic_simulate_nack(false);
 }
 
 /* =============================================================================
@@ -1099,8 +1097,8 @@ void test_bno055_is_calibrated_reads_status(void)
   internal_setup_initialized_driver();
 
   /* Load fully calibrated status */
-  uint8_t calib_full = (uint8_t)k_test_calib_all_full;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &calib_full, k_test_single_byte_buf);
+  uint8_t calib_full = k_test_calib_all_full;
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, &calib_full, k_test_single_byte_buf);
 
   bool     out_calibrated = false;
   rx_err_t err            = rx_bno055_is_calibrated(&out_calibrated);
@@ -1109,8 +1107,8 @@ void test_bno055_is_calibrated_reads_status(void)
   TEST_ASSERT_TRUE(out_calibrated);
 
   /* Load uncalibrated status */
-  uint8_t calib_none = (uint8_t)k_test_calib_none;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &calib_none, k_test_single_byte_buf);
+  uint8_t calib_none = k_test_calib_none;
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, &calib_none, k_test_single_byte_buf);
 
   out_calibrated = true;
   err            = rx_bno055_is_calibrated(&out_calibrated);
@@ -1139,10 +1137,8 @@ void test_bno055_is_calibrated_partial(void)
 {
   internal_setup_initialized_driver();
 
-  uint8_t calib_partial = (uint8_t)k_test_calib_partial;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch,
-                              &calib_partial,
-                              k_test_single_byte_buf);
+  uint8_t calib_partial = k_test_calib_partial;
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, &calib_partial, k_test_single_byte_buf);
 
   bool     out_calibrated = true; /* pre-set true so we can detect false-positive */
   rx_err_t err            = rx_bno055_is_calibrated(&out_calibrated);
@@ -1175,10 +1171,10 @@ void test_bno055_is_calibrated_partial(void)
  */
 static void internal_verify_interrupt_page1_writes(uint16_t base)
 {
-  const mock_riic_call_t* c0 = mock_riic_get_call(base + (uint16_t)k_test_int_idx_page1);
-  const mock_riic_call_t* c1 = mock_riic_get_call(base + (uint16_t)k_test_int_idx_int_msk);
-  const mock_riic_call_t* c2 = mock_riic_get_call(base + (uint16_t)k_test_int_idx_int_en);
-  const mock_riic_call_t* c3 = mock_riic_get_call(base + (uint16_t)k_test_int_idx_page0);
+  const mock_riic_call_t* c0 = mock_riic_get_call(base + k_test_int_idx_page1);
+  const mock_riic_call_t* c1 = mock_riic_get_call(base + k_test_int_idx_int_msk);
+  const mock_riic_call_t* c2 = mock_riic_get_call(base + k_test_int_idx_int_en);
+  const mock_riic_call_t* c3 = mock_riic_get_call(base + k_test_int_idx_page0);
   TEST_ASSERT_NOT_NULL(c0);
   TEST_ASSERT_NOT_NULL(c1);
   TEST_ASSERT_NOT_NULL(c2);
@@ -1241,7 +1237,7 @@ void test_bno055_init_interrupt_mode_succeeds(void)
                     (uint32_t)interrupt_call_count);
 
   /* Verify Page 1 write sequence in call history */
-  const uint16_t base = (uint16_t)(poll_call_count - (uint16_t)k_test_poll_tail_calls);
+  const uint16_t base = (uint16_t)(poll_call_count - k_test_poll_tail_calls);
   internal_verify_interrupt_page1_writes(base);
 
   /* Confirm driver is operational by performing a read */
@@ -1316,7 +1312,7 @@ void test_bno055_init_config_mode_write_fails(void)
  */
 void test_bno055_init_power_mode_write_fails(void)
 {
-  mock_riic_set_nth_call_error((uint8_t)k_init_call_power_mode, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_init_call_power_mode, k_rx_err_nack);
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1335,7 +1331,7 @@ void test_bno055_init_power_mode_write_fails(void)
  */
 void test_bno055_init_unit_sel_write_fails(void)
 {
-  mock_riic_set_nth_call_error((uint8_t)k_init_call_unit_sel, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_init_call_unit_sel, k_rx_err_nack);
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1354,7 +1350,7 @@ void test_bno055_init_unit_sel_write_fails(void)
  */
 void test_bno055_init_axis_map_cfg_write_fails(void)
 {
-  mock_riic_set_nth_call_error((uint8_t)k_init_call_axis_map_cfg, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_init_call_axis_map_cfg, k_rx_err_nack);
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1373,7 +1369,7 @@ void test_bno055_init_axis_map_cfg_write_fails(void)
  */
 void test_bno055_init_axis_map_sgn_write_fails(void)
 {
-  mock_riic_set_nth_call_error((uint8_t)k_init_call_axis_map_sgn, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_init_call_axis_map_sgn, k_rx_err_nack);
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1392,7 +1388,7 @@ void test_bno055_init_axis_map_sgn_write_fails(void)
  */
 void test_bno055_init_sys_trigger_clear_fails(void)
 {
-  mock_riic_set_nth_call_error((uint8_t)k_init_call_sys_trigger, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_init_call_sys_trigger, k_rx_err_nack);
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1411,7 +1407,7 @@ void test_bno055_init_sys_trigger_clear_fails(void)
  */
 void test_bno055_init_ndof_write_fails(void)
 {
-  mock_riic_set_nth_call_error((uint8_t)k_init_call_ndof_mode, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_init_call_ndof_mode, k_rx_err_nack);
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1431,7 +1427,7 @@ void test_bno055_init_ndof_write_fails(void)
  */
 void test_bno055_init_chip_id_read_fails(void)
 {
-  mock_riic_set_nth_call_error((uint8_t)k_init_call_chip_id_read, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_init_call_chip_id_read, k_rx_err_nack);
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1453,7 +1449,7 @@ void test_bno055_init_chip_id_read_fails(void)
  */
 void test_bno055_init_interrupt_page1_write_fails(void)
 {
-  mock_riic_set_nth_call_error((uint8_t)k_int_call_page1, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_int_call_page1, k_rx_err_nack);
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_interrupt_cfg);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1475,7 +1471,7 @@ void test_bno055_init_interrupt_page1_write_fails(void)
  */
 void test_bno055_init_interrupt_int_msk_write_fails(void)
 {
-  mock_riic_set_nth_call_error((uint8_t)k_int_call_int_msk, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_int_call_int_msk, k_rx_err_nack);
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_interrupt_cfg);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1495,7 +1491,7 @@ void test_bno055_init_interrupt_int_msk_write_fails(void)
  */
 void test_bno055_init_interrupt_int_en_write_fails(void)
 {
-  mock_riic_set_nth_call_error((uint8_t)k_int_call_int_en, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_int_call_int_en, k_rx_err_nack);
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_interrupt_cfg);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1516,7 +1512,7 @@ void test_bno055_init_interrupt_int_en_write_fails(void)
 void test_bno055_init_interrupt_page0_restore_fails(void)
 {
   internal_load_valid_chip_id();
-  mock_riic_set_nth_call_error((uint8_t)k_int_call_page0, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_int_call_page0, k_rx_err_nack);
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_interrupt_cfg);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1564,7 +1560,7 @@ void test_bno055_read_euler_i2c_error(void)
 void test_bno055_read_quat_i2c_error(void)
 {
   internal_setup_initialized_driver();
-  mock_riic_set_nth_call_error((uint8_t)k_read_call_quat, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_read_call_quat, k_rx_err_nack);
   bno055_data_t data;
   rx_err_t      err = rx_bno055_read(&data);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
@@ -1586,7 +1582,7 @@ void test_bno055_read_quat_i2c_error(void)
 void test_bno055_read_lia_i2c_error(void)
 {
   internal_setup_initialized_driver();
-  mock_riic_set_nth_call_error((uint8_t)k_read_call_lia, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_read_call_lia, k_rx_err_nack);
   bno055_data_t data;
   rx_err_t      err = rx_bno055_read(&data);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
@@ -1608,7 +1604,7 @@ void test_bno055_read_lia_i2c_error(void)
 void test_bno055_read_temp_i2c_error(void)
 {
   internal_setup_initialized_driver();
-  mock_riic_set_nth_call_error((uint8_t)k_read_call_temp, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_read_call_temp, k_rx_err_nack);
   bno055_data_t data;
   rx_err_t      err = rx_bno055_read(&data);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
@@ -1630,7 +1626,7 @@ void test_bno055_read_temp_i2c_error(void)
 void test_bno055_read_calib_i2c_error(void)
 {
   internal_setup_initialized_driver();
-  mock_riic_set_nth_call_error((uint8_t)k_read_call_calib, k_rx_err_nack);
+  mock_riic_set_nth_call_error(k_read_call_calib, k_rx_err_nack);
   bno055_data_t data;
   rx_err_t      err = rx_bno055_read(&data);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
@@ -1672,12 +1668,12 @@ void test_bno055_is_calibrated_not_initialized(void)
 void test_bno055_is_calibrated_i2c_error(void)
 {
   internal_setup_initialized_driver();
-  (void)mock_riic_simulate_nack(true);
+  mock_riic_simulate_nack(true);
   bool     out_calibrated = false;
   rx_err_t err            = rx_bno055_is_calibrated(&out_calibrated);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
-  (void)mock_riic_simulate_nack(false);
+  mock_riic_simulate_nack(false);
 }
 
 /* =============================================================================

@@ -157,7 +157,7 @@ uint16_t mock_uart_hw_inject_rx_data(uint8_t channel, const uint8_t* data, uint1
 
 uint16_t mock_uart_hw_rx_available(uint8_t channel)
 {
-  if ((uint8_t)channel >= k_mock_uart_channel_count) {
+  if (channel >= k_mock_uart_channel_count) {
     return 0;
   }
 
@@ -190,7 +190,7 @@ uint16_t mock_uart_hw_get_tx_data(uint8_t channel, uint8_t* data, uint16_t max_l
 
 uint16_t mock_uart_hw_tx_count(uint8_t channel)
 {
-  if ((uint8_t)channel >= k_mock_uart_channel_count) {
+  if (channel >= k_mock_uart_channel_count) {
     return 0;
   }
 
@@ -289,9 +289,6 @@ uint32_t mock_uart_hw_get_baudrate(uint8_t channel)
  * =============================================================================
  */
 
-#include "mock_sci_regs.h"
-#include "rx_err.h"
-
 rx_err_t uart_init_channel(const uart_channel_config_t* config)
 {
   if (config == nullptr) {
@@ -312,7 +309,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
     return err;
   }
 
-  if ((uint8_t)channel >= k_mock_uart_channel_count) {
+  if (channel >= k_mock_uart_channel_count) {
     return k_rx_err_invalid_arg;
   }
 
@@ -660,8 +657,8 @@ void uart_debug_puthex(uint32_t value, uint8_t digits)
   static const char s_hex[] = "0123456789ABCDEF";
 
   uart_debug_puts("0x");
-  if (digits > (uint8_t)k_hex_max_digits) {
-    digits = (uint8_t)k_hex_max_digits;
+  if (digits > k_hex_max_digits) {
+    digits = k_hex_max_digits;
   }
   if (digits == 0U) {
     digits = 1U;

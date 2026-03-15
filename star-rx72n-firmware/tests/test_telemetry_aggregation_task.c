@@ -394,7 +394,7 @@ void test_telemetry_transport_selects_usb_when_ready(void)
   } else {
     err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_spi, &spi_ready);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
-    selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
+    selected_channel = (int)spi_ready ? k_comm_channel_spi : k_comm_channel_count;
   }
 
   /* Verify USB was selected (USB ready -> USB preferred) */
@@ -449,7 +449,7 @@ void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(spi_ready);
 
-  selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
+  selected_channel = (int)spi_ready ? k_comm_channel_spi : k_comm_channel_count;
 
   /* Verify SPI was selected (USB not ready -> SPI fallback) */
   TEST_ASSERT_EQUAL(k_comm_channel_spi, selected_channel);
@@ -559,7 +559,7 @@ void test_telemetry_spi_fallback_send_succeeds(void)
   } else {
     err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_spi, &spi_ready);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
-    selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
+    selected_channel = (int)spi_ready ? k_comm_channel_spi : k_comm_channel_count;
   }
 
   /* Verify SPI was selected (USB not ready -> SPI fallback) */
@@ -650,12 +650,12 @@ void test_telemetry_routes_to_spi_after_spi_command(void)
   mock_comm_manager_set_send_return(k_rx_ok);
 
   /* Arrange: SPI command received */
-  (void)shared_data_update_active_channel((uint8_t)k_comm_channel_spi);
+  (void)shared_data_update_active_channel(k_comm_channel_spi);
   TEST_ASSERT_EQUAL_UINT32(1U, mock_shared_data_get_active_channel_update_count());
 
   /* Simulate telemetry routing: read channel, send via comm manager */
   const uint8_t raw_ch = shared_data_get_active_channel();
-  TEST_ASSERT_EQUAL_UINT8((uint8_t)k_comm_channel_spi, raw_ch);
+  TEST_ASSERT_EQUAL_UINT8(k_comm_channel_spi, raw_ch);
 
   params.channel     = (rx_comm_channel_t)raw_ch;
   params.type        = k_frame_type_response;

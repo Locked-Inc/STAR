@@ -114,7 +114,7 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
    */
   uint32_t elapsed = m->current_time_ms - start_ms;
 
-  return elapsed >= timeout_ms;
+  return elapsed >= timeout_ms; // NOLINT(readability-implicit-bool-conversion)
 }
 
 /* =============================================================================

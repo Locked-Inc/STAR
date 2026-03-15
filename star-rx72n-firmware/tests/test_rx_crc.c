@@ -336,7 +336,7 @@ void test_crc_compute_len_too_large(void)
 void test_crc_compute_invalid_poly(void)
 {
   const rx_crc_config_t cfg = {
-    .poly      = (rx_crc_poly_t)0xFFU,
+    .poly      = (rx_crc_poly_t)0xFFU, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
     .bit_order = k_rx_crc_bit_order_lsb_first,
     .backend   = k_rx_crc_backend_software,
     .dma       = {.timeout_cycles = 0U},
@@ -353,7 +353,7 @@ void test_crc_compute_invalid_bit_order(void)
 {
   const rx_crc_config_t cfg = {
     .poly      = k_rx_crc_poly_crc32,
-    .bit_order = (rx_crc_bit_order_t)0xFFU,
+    .bit_order = (rx_crc_bit_order_t)0xFFU, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
     .backend   = k_rx_crc_backend_software,
     .dma       = {.timeout_cycles = 0U},
   };
@@ -418,7 +418,7 @@ void test_crc_compute_invalid_backend(void)
   const rx_crc_config_t cfg = {
     .poly      = k_rx_crc_poly_crc32,
     .bit_order = k_rx_crc_bit_order_lsb_first,
-    .backend   = (rx_crc_backend_t)0xFFU,
+    .backend   = (rx_crc_backend_t)0xFFU, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
     .dma       = {.timeout_cycles = 0U},
   };
   uint32_t result = 0U;
@@ -863,7 +863,7 @@ void test_crc32_update_chunked_matches_single(void)
  */
 void test_crc32_update_null_returns_original(void)
 {
-  uint32_t crc = (uint32_t)k_test_crc32_sentinel;
+  uint32_t crc = k_test_crc32_sentinel;
   TEST_ASSERT_EQUAL_HEX32(crc, rx_crc32_update(crc, nullptr, k_test_vec_9_len));
 }
 
@@ -872,7 +872,7 @@ void test_crc32_update_null_returns_original(void)
  */
 void test_crc32_update_len_too_large_returns_original(void)
 {
-  uint32_t crc = (uint32_t)k_test_crc32_sentinel;
+  uint32_t crc = k_test_crc32_sentinel;
   TEST_ASSERT_EQUAL_HEX32(crc, rx_crc32_update(crc, s_test_vec_9, (uint32_t)k_crc_len_max + 1U));
 }
 
@@ -881,7 +881,7 @@ void test_crc32_update_len_too_large_returns_original(void)
  */
 void test_crc32_update_zero_len_returns_original(void)
 {
-  uint32_t crc = (uint32_t)k_test_crc32_sentinel;
+  uint32_t crc = k_test_crc32_sentinel;
   TEST_ASSERT_EQUAL_HEX32(crc, rx_crc32_update(crc, s_test_vec_9, 0U));
 }
 
@@ -950,8 +950,8 @@ void test_mock_dmaca_preset_timeout_result(void)
     .channel        = (uint8_t)k_mock_dma_channel,
     .src            = s_test_vec_9,
     .len            = k_test_vec_9_len,
-    .dst_addr       = (uintptr_t)k_mock_crc_dst_addr,
-    .timeout_cycles = (uint32_t)k_mock_timeout_cycles,
+    .dst_addr       = k_mock_crc_dst_addr,
+    .timeout_cycles = k_mock_timeout_cycles,
   };
   rx_err_t result = rx_dmaca_transfer_poll(&cfg);
   TEST_ASSERT_EQUAL(k_rx_err_timeout, result);

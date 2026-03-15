@@ -981,7 +981,7 @@ void test_internal_delay_us_over_max(void)
 void test_internal_gpio_write_invalid_port(void)
 {
   /* Port 20 exceeds k_max_port_number (16); defensive guard should return silently */
-  internal_gpio_write((uint8_t)k_test_invalid_port, (uint8_t)k_test_pin_drvoff, true);
+  internal_gpio_write(k_test_invalid_port, k_test_pin_drvoff, true);
   /* No crash and no output pin change on valid port 6 */
   bool pin_state = mock_drv8263_port_get_pin_output(k_test_port_drvoff, k_test_pin_drvoff);
   TEST_ASSERT_FALSE(pin_state);
@@ -991,7 +991,7 @@ void test_internal_gpio_write_invalid_port(void)
 void test_internal_gpio_write_invalid_pin(void)
 {
   /* Pin 8 exceeds k_max_pin_number (7); defensive guard should return silently */
-  internal_gpio_write((uint8_t)k_test_port_drvoff, (uint8_t)k_test_invalid_pin, true);
+  internal_gpio_write(k_test_port_drvoff, k_test_invalid_pin, true);
   /* No pin change should have occurred */
   uint8_t podr = mock_drv8263_port_get_podr(k_test_port_drvoff);
   TEST_ASSERT_EQUAL(0, podr);
@@ -1004,14 +1004,14 @@ void test_internal_gpio_write_invalid_pin(void)
 /** @brief Verify internal_gpio_read returns false for invalid port */
 void test_internal_gpio_read_invalid_port(void)
 {
-  bool result = internal_gpio_read((uint8_t)k_test_invalid_port, (uint8_t)k_test_pin_nfault);
+  bool result = internal_gpio_read(k_test_invalid_port, k_test_pin_nfault);
   TEST_ASSERT_FALSE(result);
 }
 
 /** @brief Verify internal_gpio_read returns false for invalid pin */
 void test_internal_gpio_read_invalid_pin(void)
 {
-  bool result = internal_gpio_read((uint8_t)k_test_port_nfault, (uint8_t)k_test_invalid_pin);
+  bool result = internal_gpio_read(k_test_port_nfault, k_test_invalid_pin);
   TEST_ASSERT_FALSE(result);
 }
 

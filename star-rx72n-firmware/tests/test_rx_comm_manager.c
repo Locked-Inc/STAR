@@ -570,7 +570,8 @@ void test_send_invalid_channel(void)
 
   /* Invalid channel ID */
   const rx_comm_send_params_t params = {
-    .channel     = (rx_comm_channel_t)k_invalid_channel_sentinel,
+    .channel = (rx_comm_channel_t)
+      k_invalid_channel_sentinel, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
     .type        = k_frame_type_command,
     .flags       = k_frame_flag_none,
     .payload     = payload,
@@ -778,9 +779,11 @@ void test_channel_ready_invalid_channel(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_init(&s_manager, nullptr));
   bool ready;
 
-  rx_err_t err = rx_comm_manager_channel_ready(&s_manager,
-                                               (rx_comm_channel_t)k_invalid_channel_sentinel,
-                                               &ready);
+  rx_err_t err = rx_comm_manager_channel_ready(
+    &s_manager,
+    (rx_comm_channel_t)
+      k_invalid_channel_sentinel, // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+    &ready);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
   TEST_ASSERT_FALSE(ready);
 }
@@ -1057,7 +1060,9 @@ void test_link_status_invalid_channel(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_init(&s_manager, nullptr));
   rx_comm_link_status_t status;
   rx_err_t              err =
-    rx_comm_manager_link_status(&s_manager, (rx_comm_channel_t)k_invalid_channel_sentinel, &status);
+    rx_comm_manager_link_status(&s_manager,
+                                (rx_comm_channel_t)k_invalid_channel_sentinel,
+                                &status); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1204,7 +1209,9 @@ void test_channel_name_uart(void)
  */
 void test_channel_name_invalid(void)
 {
-  const char* name = rx_comm_manager_channel_name((rx_comm_channel_t)k_invalid_channel_sentinel);
+  const char* name = rx_comm_manager_channel_name(
+    (rx_comm_channel_t)
+      k_invalid_channel_sentinel); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
   TEST_ASSERT_EQUAL_STRING("UNKNOWN", name);
 }
 
@@ -1458,21 +1465,21 @@ static void helper_init_i2c_manager(rx_session_state_t*            sess,
  */
 static void helper_inject_i2c_frame_seq(uint8_t seq)
 {
-  static rx_frame_encoder_t enc;
-  static rx_frame_t         frame;
-  static uint8_t            encoded[k_test_encoded_buf_size];
+  static rx_frame_encoder_t s_enc;
+  static rx_frame_t         s_frame;
+  static uint8_t            s_encoded[k_test_encoded_buf_size];
   uint32_t                  enc_len = 0;
 
-  frame                 = (rx_frame_t){0};
-  frame.header.type     = k_frame_type_command;
-  frame.header.sequence = seq;
-  frame.header.length   = 0;
-  frame.header.flags    = k_frame_flag_none;
+  s_frame                 = (rx_frame_t){0};
+  s_frame.header.type     = k_frame_type_command;
+  s_frame.header.sequence = seq;
+  s_frame.header.length   = 0;
+  s_frame.header.flags    = k_frame_flag_none;
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&enc));
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&enc, &frame, encoded, &enc_len));
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_deinit(&enc));
-  mock_riic_set_rx_data(0, encoded, (uint16_t)enc_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&s_enc));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_enc, &s_frame, s_encoded, &enc_len));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_deinit(&s_enc));
+  mock_riic_set_rx_data(0, s_encoded, (uint16_t)enc_len);
 }
 
 /**
@@ -1577,21 +1584,21 @@ void test_output_decoded_no_usb_puts_on_empty_len(void)
   helper_init_i2c_manager(&s_sess6, &s_i2c6, nullptr, true);
 
   /* An empty frame (no payload): ascii_format may return len=0 */
-  static rx_frame_encoder_t enc;
-  static rx_frame_t         frame;
-  static uint8_t            encoded[k_test_encoded_buf_size];
+  static rx_frame_encoder_t s_enc;
+  static rx_frame_t         s_frame;
+  static uint8_t            s_encoded[k_test_encoded_buf_size];
   uint32_t                  enc_len = 0;
 
-  frame                 = (rx_frame_t){0};
-  frame.header.type     = k_frame_type_command;
-  frame.header.sequence = 0;
-  frame.header.length   = 0;
-  frame.header.flags    = k_frame_flag_none;
+  s_frame                 = (rx_frame_t){0};
+  s_frame.header.type     = k_frame_type_command;
+  s_frame.header.sequence = 0;
+  s_frame.header.length   = 0;
+  s_frame.header.flags    = k_frame_flag_none;
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&enc));
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&enc, &frame, encoded, &enc_len));
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_deinit(&enc));
-  mock_riic_set_rx_data(0, encoded, (uint16_t)enc_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&s_enc));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_enc, &s_frame, s_encoded, &enc_len));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_deinit(&s_enc));
+  mock_riic_set_rx_data(0, s_encoded, (uint16_t)enc_len);
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_poll(&s_manager));
 
@@ -1611,14 +1618,14 @@ void test_output_decoded_no_usb_puts_on_empty_len(void)
  */
 void test_init_spi_link_without_spi_handle(void)
 {
-  static rx_spi_link_t fake_link;
-  fake_link             = (rx_spi_link_t){0};
-  fake_link.initialized = true;
+  static rx_spi_link_t s_fake_link;
+  s_fake_link             = (rx_spi_link_t){0};
+  s_fake_link.initialized = true;
 
   const rx_comm_manager_config_t cfg = {
     .usb_handle   = nullptr,
     .spi_handle   = nullptr, /* Missing! */
-    .spi_link     = &fake_link,
+    .spi_link     = &s_fake_link,
     .callback     = nullptr,
     .callback_ctx = nullptr,
   };
@@ -1633,16 +1640,16 @@ void test_init_spi_link_without_spi_handle(void)
  */
 void test_init_spi_link_not_initialized(void)
 {
-  static rx_spi_comm_handle_t fake_spi_handle;
-  static rx_spi_link_t        fake_link;
-  fake_link             = (rx_spi_link_t){0};
-  fake_link.initialized = false; /* Not initialized */
-  fake_link.spi_handle  = &fake_spi_handle;
+  static rx_spi_comm_handle_t s_fake_spi_handle;
+  static rx_spi_link_t        s_fake_link;
+  s_fake_link             = (rx_spi_link_t){0};
+  s_fake_link.initialized = false; /* Not initialized */
+  s_fake_link.spi_handle  = &s_fake_spi_handle;
 
   const rx_comm_manager_config_t cfg = {
     .usb_handle   = nullptr,
-    .spi_handle   = &fake_spi_handle,
-    .spi_link     = &fake_link,
+    .spi_handle   = &s_fake_spi_handle,
+    .spi_link     = &s_fake_link,
     .callback     = nullptr,
     .callback_ctx = nullptr,
   };
@@ -1657,17 +1664,17 @@ void test_init_spi_link_not_initialized(void)
  */
 void test_init_spi_link_handle_mismatch(void)
 {
-  static rx_spi_comm_handle_t handle_a;
-  static rx_spi_comm_handle_t handle_b;
-  static rx_spi_link_t        fake_link;
-  fake_link             = (rx_spi_link_t){0};
-  fake_link.initialized = true;
-  fake_link.spi_handle  = &handle_a; /* Points to handle_a */
+  static rx_spi_comm_handle_t s_handle_a;
+  static rx_spi_comm_handle_t s_handle_b;
+  static rx_spi_link_t        s_fake_link;
+  s_fake_link             = (rx_spi_link_t){0};
+  s_fake_link.initialized = true;
+  s_fake_link.spi_handle  = &s_handle_a; /* Points to s_handle_a */
 
   const rx_comm_manager_config_t cfg = {
     .usb_handle   = nullptr,
-    .spi_handle   = &handle_b, /* Different handle! */
-    .spi_link     = &fake_link,
+    .spi_handle   = &s_handle_b, /* Different handle! */
+    .spi_link     = &s_fake_link,
     .callback     = nullptr,
     .callback_ctx = nullptr,
   };

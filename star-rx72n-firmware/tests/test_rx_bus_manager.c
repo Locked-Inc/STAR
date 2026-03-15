@@ -968,7 +968,7 @@ void test_rx_bus_manager_add_bus_duplicate_name(void)
  * ## Implementation Notes
  *
  * Uses static arrays to avoid dynamic allocation:
- * - configs[k_max_buses] - Bus config storage
+ * - s_configs[k_max_buses] - Bus config storage
  * - names[k_max_buses][16] - Bus name strings
  *
  * Name generation: "bus_00", "bus_01", ..., "bus_15"
@@ -987,25 +987,25 @@ void test_rx_bus_manager_add_bus_max_reached(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Use an array of bus configs to add k_max_buses buses */
-  static rx_bus_config_t configs[k_max_buses];
-  static char            names[k_max_buses][k_test_bus_name_len];
+  static rx_bus_config_t s_configs[k_max_buses];
+  static char            s_names[k_max_buses][k_test_bus_name_len];
 
   for (uint8_t i = 0; i < k_max_buses; ++i) {
     /* Create unique name for each bus */
-    names[i][k_test_name_idx_b]    = 'b';
-    names[i][k_test_name_idx_u]    = 'u';
-    names[i][k_test_name_idx_s]    = 's';
-    names[i][k_test_name_idx_sep]  = '_';
-    names[i][k_test_name_idx_tens] = (char)('0' + (i / k_test_decimal_base));
-    names[i][k_test_name_idx_ones] = (char)('0' + (i % k_test_decimal_base));
-    names[i][k_test_name_idx_null] = '\0';
+    s_names[i][k_test_name_idx_b]    = 'b';
+    s_names[i][k_test_name_idx_u]    = 'u';
+    s_names[i][k_test_name_idx_s]    = 's';
+    s_names[i][k_test_name_idx_sep]  = '_';
+    s_names[i][k_test_name_idx_tens] = (char)('0' + (i / k_test_decimal_base));
+    s_names[i][k_test_name_idx_ones] = (char)('0' + (i % k_test_decimal_base));
+    s_names[i][k_test_name_idx_null] = '\0';
 
-    configs[i]      = (rx_bus_config_t){0};
-    configs[i].name = names[i];
-    configs[i].type = k_bus_type_gpio;
+    s_configs[i]      = (rx_bus_config_t){0};
+    s_configs[i].name = s_names[i];
+    s_configs[i].type = k_bus_type_gpio;
 
-    err = rx_bus_manager_add_bus(&s_test_manager, &configs[i]);
-    TEST_ASSERT_EQUAL_MESSAGE(k_rx_ok, err, names[i]);
+    err = rx_bus_manager_add_bus(&s_test_manager, &s_configs[i]);
+    TEST_ASSERT_EQUAL_MESSAGE(k_rx_ok, err, s_names[i]);
   }
 
   /* Verify we hit the limit */
@@ -1797,8 +1797,9 @@ void test_bus_config_uart_invalid_channel_returns_error(void)
 void test_bus_config_uart_invalid_tx_pin_returns_error(void)
 {
   rx_bus_config_t            config;
-  static const rx_port_pin_t k_invalid_tx = (rx_port_pin_t)0xFF00U;
-  rx_err_t                   err          = rx_bus_config_init_uart(&config,
+  static const rx_port_pin_t k_invalid_tx =
+    (rx_port_pin_t)0xFF00U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t err = rx_bus_config_init_uart(&config,
                                          "test",
                                          k_test_uart_channel,
                                          k_invalid_tx,
@@ -1822,8 +1823,9 @@ void test_bus_config_uart_invalid_tx_pin_returns_error(void)
 void test_bus_config_uart_invalid_rx_pin_returns_error(void)
 {
   rx_bus_config_t            config;
-  static const rx_port_pin_t k_invalid_rx = (rx_port_pin_t)0xFF00U;
-  rx_err_t                   err          = rx_bus_config_init_uart(&config,
+  static const rx_port_pin_t k_invalid_rx =
+    (rx_port_pin_t)0xFF00U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t err = rx_bus_config_init_uart(&config,
                                          "test",
                                          k_test_uart_channel,
                                          k_rx_pb_7,
@@ -1867,8 +1869,9 @@ void test_bus_config_uart_zero_baudrate_returns_error(void)
 void test_bus_config_onewire_invalid_pin_returns_error(void)
 {
   rx_bus_config_t            config;
-  static const rx_port_pin_t k_invalid_pin = (rx_port_pin_t)0xFF00U;
-  rx_err_t                   err = rx_bus_config_init_onewire(&config, "test", k_invalid_pin);
+  static const rx_port_pin_t k_invalid_pin =
+    (rx_port_pin_t)0xFF00U; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t err = rx_bus_config_init_onewire(&config, "test", k_invalid_pin);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 

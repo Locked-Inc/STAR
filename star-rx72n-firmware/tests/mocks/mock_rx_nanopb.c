@@ -116,7 +116,7 @@ static uint32_t s_encode_telemetry_count = 0;
  */
 
 /** @brief Configured velocity values for decode */
-static float s_decoded_velocity[k_mock_nanopb_max_motors] = {0.0f};
+static float s_decoded_velocity[k_mock_nanopb_max_motors] = {0.0F};
 
 /** @brief Configured encode length */
 static uint32_t s_encode_length = k_mock_nanopb_default_encode_len;
@@ -151,7 +151,7 @@ void mock_nanopb_reset(void)
 
   /* Reset configured outputs */
   for (uint8_t i = 0; i < k_mock_nanopb_max_motors; i++) {
-    s_decoded_velocity[i] = 0.0f;
+    s_decoded_velocity[i] = 0.0F;
   }
   s_encode_length = k_mock_nanopb_default_encode_len;
 
@@ -233,7 +233,7 @@ bool mock_nanopb_get_last_telemetry(star_v1_TelemetryData* out_telemetry)
 
 bool mock_nanopb_was_initialized(void)
 {
-  return s_init_count > 0;
+  return s_init_count > 0; // NOLINT(readability-implicit-bool-conversion)
 }
 
 /* =============================================================================

@@ -1259,8 +1259,10 @@ void test_hcsr04_stats_initial_zero(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_sensor, &s_config));
 
-  uint32_t measurements, timeouts, range_errors;
-  rx_err_t err = rx_hcsr04_get_stats(&s_sensor, &measurements, &timeouts, &range_errors);
+  uint32_t measurements = 0;
+  uint32_t timeouts     = 0;
+  uint32_t range_errors = 0;
+  rx_err_t err          = rx_hcsr04_get_stats(&s_sensor, &measurements, &timeouts, &range_errors);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT32(0, measurements);
@@ -1947,7 +1949,7 @@ void test_hcsr04_get_temperature_default_20c(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_sensor, &s_config));
 
-  float    temp = 0.0f;
+  float    temp = 0.0F;
   rx_err_t err  = rx_hcsr04_get_temperature(&s_sensor, &temp);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1964,7 +1966,7 @@ void test_hcsr04_get_temperature_default_20c(void)
  */
 void test_hcsr04_get_temperature_null_handle_fails(void)
 {
-  float    temp = 0.0f;
+  float    temp = 0.0F;
   rx_err_t err  = rx_hcsr04_get_temperature(nullptr, &temp);
 
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
@@ -2011,7 +2013,7 @@ void test_hcsr04_measure_with_temp_compensation_10c(void)
   /* Configure mock for 100cm measurement (5800us echo) */
   mock_hcsr04_hw_set_echo_time(nullptr, k_test_echo_100cm_us);
 
-  float    distance_cm = 0.0f;
+  float    distance_cm = 0.0F;
   rx_err_t err         = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2054,7 +2056,7 @@ void test_hcsr04_measure_with_temp_compensation_30c(void)
   /* Configure mock for 100cm measurement (5800us echo) */
   mock_hcsr04_hw_set_echo_time(nullptr, k_test_echo_100cm_us);
 
-  float    distance_cm = 0.0f;
+  float    distance_cm = 0.0F;
   rx_err_t err         = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2092,7 +2094,7 @@ void test_hcsr04_measure_without_temp_compensation_uses_20c(void)
   /* Configure mock for 100cm measurement (5800us echo) */
   mock_hcsr04_hw_set_echo_time(nullptr, k_test_echo_100cm_us);
 
-  float    distance_cm = 0.0f;
+  float    distance_cm = 0.0F;
   rx_err_t err         = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2409,7 +2411,9 @@ void test_hcsr04_trigger_pulse_invalid_pin_returns_error(void)
   const uint8_t bad_port      = 7U;
   const uint8_t bad_pin       = 0U;
   const uint8_t k_wrong_shift = 4U;
-  handle.trigger_pin          = (rx_port_pin_t)((bad_port << k_wrong_shift) | bad_pin);
+  handle.trigger_pin =
+    (rx_port_pin_t)((bad_port << k_wrong_shift) |
+                    bad_pin); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   rx_err_t err = internal_send_trigger_pulse(&handle);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2431,7 +2435,8 @@ void test_hcsr04_trigger_pulse_port_above_j_returns_error(void)
   rx_hcsr04_t handle;
   internal_zero_fill(&handle, sizeof(handle));
   /* port=20 > k_rx_port_j(19) -- encodes as (20 << 8) | 0 */
-  handle.trigger_pin = (rx_port_pin_t)((k_test_port_encode_20 << k_test_port_shift_bits) | 0U);
+  handle.trigger_pin = (rx_port_pin_t)((k_test_port_encode_20 << k_test_port_shift_bits) |
+                                       0U); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   rx_err_t err = internal_send_trigger_pulse(&handle);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2453,8 +2458,8 @@ void test_hcsr04_trigger_pulse_port_in_gap_returns_error(void)
   rx_hcsr04_t handle;
   internal_zero_fill(&handle, sizeof(handle));
   /* port=17 (0x11): > k_rx_port_g(0x10=16) AND < k_rx_port_j(0x13=19) */
-  handle.trigger_pin =
-    (rx_port_pin_t)(((uint32_t)k_test_port_gap_value << k_test_port_shift_bits) | 0U);
+  handle.trigger_pin = (rx_port_pin_t)(((uint32_t)k_test_port_gap_value << k_test_port_shift_bits) |
+                                       0U); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   rx_err_t err = internal_send_trigger_pulse(&handle);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2517,7 +2522,7 @@ void test_hcsr04_wait_for_echo_target_state_reached_returns_ok(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_sensor, &s_config));
 
   /* Simulate a 100cm echo (5800us) so the echo pin goes HIGH after the trigger */
-  mock_hcsr04_hw_set_echo_time(nullptr, (uint32_t)k_test_echo_100cm_us);
+  mock_hcsr04_hw_set_echo_time(nullptr, k_test_echo_100cm_us);
   mock_hcsr04_hw_set_auto_advance(nullptr, true, k_test_auto_advance_step);
 
   /* Send trigger pulse to set trigger_pulse_count and last_trigger_time_us */
@@ -2537,7 +2542,7 @@ void test_hcsr04_wait_for_echo_timeout_returns_timeout(void)
   mock_hcsr04_hw_set_auto_advance(nullptr, true, k_test_auto_advance_fast);
 
   /* Use very short timeout so time expires within the first few iterations */
-  rx_err_t err = internal_wait_for_echo(&s_sensor, true, (uint32_t)k_test_short_timeout_us);
+  rx_err_t err = internal_wait_for_echo(&s_sensor, true, k_test_short_timeout_us);
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
 
@@ -2548,7 +2553,7 @@ void test_hcsr04_measure_echo_pulse_returns_duration(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_sensor, &s_config));
 
   /* Set echo time to 5800us (100cm) so the echo window is wide */
-  mock_hcsr04_hw_set_echo_time(nullptr, (uint32_t)k_test_echo_100cm_us);
+  mock_hcsr04_hw_set_echo_time(nullptr, k_test_echo_100cm_us);
   mock_hcsr04_hw_set_auto_advance(nullptr, true, k_test_auto_advance_step);
 
   /* Send trigger pulse first so the mock timing machinery is armed */
@@ -2583,10 +2588,10 @@ void test_hcsr04_measure_echo_pulse_irq_success_on_injected_duration(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_sensor, &s_config));
   s_sensor.echo_irq   = k_hcsr04_irq_11;
-  s_sensor.timeout_us = (uint32_t)k_hcsr04_timeout_us;
+  s_sensor.timeout_us = k_hcsr04_timeout_us;
 
   /* Inject a successful ISR result for the first get_duration call */
-  mock_rx_hcsr04_isr_inject_success((uint32_t)k_test_irq_echo_us);
+  mock_rx_hcsr04_isr_inject_success(k_test_irq_echo_us);
 
   uint32_t dur = 0U;
   rx_err_t err = internal_measure_echo_pulse_irq(&s_sensor, &dur);
@@ -2600,7 +2605,7 @@ void test_hcsr04_measure_echo_pulse_irq_cancel_returns_cancelled(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_sensor, &s_config));
   s_sensor.echo_irq         = k_hcsr04_irq_11;
-  s_sensor.timeout_us       = (uint32_t)k_hcsr04_timeout_us;
+  s_sensor.timeout_us       = k_hcsr04_timeout_us;
   s_sensor.cancel_requested = true; /* Trigger cancel on first iteration */
 
   /* auto_advance: time does NOT advance so elapsed < timeout_us on first check */
@@ -2637,7 +2642,7 @@ void test_hcsr04_worker_event_shutdown_returns_true(void)
   /* Worker must be initialized to have a valid semaphore magic */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_worker_init());
 
-  bool should_exit = internal_handle_worker_event((unsigned long)k_event_shutdown_request);
+  bool should_exit = internal_handle_worker_event(k_event_shutdown_request);
   TEST_ASSERT_TRUE(should_exit);
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_worker_deinit());
@@ -2659,7 +2664,7 @@ void test_hcsr04_worker_event_measurement_invokes_callback(void)
   s_pending.callback  = test_async_callback;
   s_pending.user_data = nullptr;
 
-  bool should_exit = internal_handle_worker_event((unsigned long)k_event_measurement_request);
+  bool should_exit = internal_handle_worker_event(k_event_measurement_request);
   TEST_ASSERT_FALSE(should_exit);
   TEST_ASSERT_TRUE(s_async_callback_invoked);
   /* handle should be cleared by the event handler */
@@ -2692,8 +2697,9 @@ void test_hcsr04_init_irq_mode_irq_out_of_range_returns_error(void)
 {
   rx_hcsr04_config_t cfg;
   internal_zero_fill(&cfg, sizeof(cfg));
-  cfg.echo_pin      = k_rx_p0_3;
-  cfg.echo_irq      = (rx_hcsr04_irq_t)k_test_irq_below_range; /* Below k_irq_range_min (8) */
+  cfg.echo_pin = k_rx_p0_3;
+  cfg.echo_irq = (rx_hcsr04_irq_t)k_test_irq_below_range;
+  /* Below k_irq_range_min (8) */ // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
   cfg.sensor_index  = k_hcsr04_sensor_front_left;
   uint8_t  priority = 0U;
   rx_err_t err      = internal_init_irq_mode(&cfg, &priority);
@@ -2764,7 +2770,8 @@ void test_hcsr04_init_irq_mode_irq_above_range_max_returns_error(void)
   internal_zero_fill(&cfg, sizeof(cfg));
   cfg.echo_pin = k_rx_p0_3;
   /* Cast to bypass enum - satisfies irq >= min (8) AND irq > max (15) */
-  cfg.echo_irq      = (rx_hcsr04_irq_t)k_test_irq_above_range;
+  cfg.echo_irq =
+    (rx_hcsr04_irq_t)k_test_irq_above_range; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
   cfg.sensor_index  = k_hcsr04_sensor_front_left;
   uint8_t  priority = 0U;
   rx_err_t err      = internal_init_irq_mode(&cfg, &priority);
@@ -2852,7 +2859,7 @@ void test_hcsr04_trigger_and_measure_null_output_returns_null_ptr(void)
 void test_hcsr04_trigger_and_measure_polling_mode_returns_duration(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_sensor, &s_config));
-  mock_hcsr04_hw_set_echo_time(nullptr, (uint32_t)k_test_irq_echo_us);
+  mock_hcsr04_hw_set_echo_time(nullptr, k_test_irq_echo_us);
   mock_hcsr04_hw_set_auto_advance(nullptr, true, k_test_auto_advance_step);
 
   uint32_t echo_us = 0U;
@@ -2872,7 +2879,7 @@ void test_hcsr04_trigger_and_measure_irq_mode_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_sensor, &s_config));
 
   /* Inject a successful ISR duration for the IRQ measurement path */
-  mock_rx_hcsr04_isr_inject_success((uint32_t)k_test_irq_echo_us);
+  mock_rx_hcsr04_isr_inject_success(k_test_irq_echo_us);
   mock_hcsr04_hw_set_auto_advance(nullptr, true, k_test_auto_advance_step);
 
   uint32_t echo_us = 0U;
@@ -2887,8 +2894,9 @@ void test_hcsr04_trigger_and_measure_irq_mode_success(void)
 
 void test_hcsr04_init_invalid_echo_mode_returns_error(void)
 {
-  s_config.echo_mode = (rx_hcsr04_echo_mode_t)(uint8_t)k_test_invalid_echo_mode;
-  rx_err_t err       = rx_hcsr04_init(&s_sensor, &s_config);
+  s_config.echo_mode = (rx_hcsr04_echo_mode_t)
+    k_test_invalid_echo_mode; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  rx_err_t err = rx_hcsr04_init(&s_sensor, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
   TEST_ASSERT_FALSE(s_sensor.initialized);
 }
@@ -3556,7 +3564,7 @@ void test_hcsr04_measure_echo_pulse_irq_non_timeout_error_propagates(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_sensor, &s_config));
   /* echo_irq = 0 is below k_mock_irq_min(8) so get_duration returns invalid_arg */
   s_sensor.echo_irq   = k_hcsr04_irq_none;
-  s_sensor.timeout_us = (uint32_t)k_hcsr04_timeout_us;
+  s_sensor.timeout_us = k_hcsr04_timeout_us;
   mock_hcsr04_hw_set_auto_advance(nullptr, false, 0);
 
   uint32_t dur = 0U;
@@ -3597,7 +3605,7 @@ void test_hcsr04_worker_event_measurement_cancelled(void)
   s_pending.callback  = test_async_callback;
   s_pending.user_data = nullptr;
 
-  bool should_exit = internal_handle_worker_event((unsigned long)k_event_measurement_request);
+  bool should_exit = internal_handle_worker_event(k_event_measurement_request);
   TEST_ASSERT_FALSE(should_exit);
   /* Callback must still be invoked (with error result) */
   TEST_ASSERT_TRUE(s_async_callback_invoked);

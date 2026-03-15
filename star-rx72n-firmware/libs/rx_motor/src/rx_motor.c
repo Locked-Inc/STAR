@@ -1531,7 +1531,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
  * - Rule 5: [OK] 2 postconditions (current_duty = 0, outputs set)
  * - Rule 7: [OK] Return values checked (rx_gptw_set_duty)
  */
-rx_err_t rx_motor_stop(rx_motor_handle_t* handle, const bool brake)
+rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
 {
   rx_err_t err = k_rx_err_invalid_state;
 

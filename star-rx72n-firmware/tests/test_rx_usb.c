@@ -1447,10 +1447,9 @@ void test_usb_flush_with_data_and_zero_timeout_returns_timeout(void)
  * @{
  */
 
-extern void     rx_usb_set_line_coding(rx_usb_port_id_t port, const rx_usb_line_coding_t* coding);
-extern uint32_t rx_usb_tx_pop(rx_usb_port_id_t port, uint8_t* data, uint32_t max_len);
-extern void     rx_usb_count_bus_reset(void);
-extern void     rx_usb_count_suspend(void);
+/* Forward declarations removed — these are already declared in the included
+   rx_usb.h header, so repeating them here triggers
+   readability-redundant-declaration. */
 
 void test_usb_set_state_triggers_callback(void)
 {
@@ -2333,7 +2332,9 @@ void test_usb_set_state_invalid_state_ignored(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   /* k_usb_state_suspended is 6; 7 is outside the valid range */
-  rx_usb_set_state((rx_usb_state_t)k_test_invalid_usb_state);
+  rx_usb_set_state(
+    (rx_usb_state_t)
+      k_test_invalid_usb_state); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   /* State must remain unchanged */
   TEST_ASSERT_EQUAL(k_usb_state_attached, rx_usb_get_state());
@@ -2556,7 +2557,10 @@ void test_usb_priv_set_port_state_invalid_state(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   /* k_usb_state_suspended = 6; 7 is outside the valid state range */
-  rx_usb_priv_set_port_state(k_usb_port_proto, (rx_usb_state_t)k_test_invalid_usb_state);
+  rx_usb_priv_set_port_state(
+    k_usb_port_proto,
+    (rx_usb_state_t)
+      k_test_invalid_usb_state); // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
   /* State must remain attached (unchanged from init) */
   TEST_ASSERT_EQUAL(k_usb_state_attached, rx_usb_get_state());

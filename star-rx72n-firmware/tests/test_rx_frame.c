@@ -1009,8 +1009,8 @@ void test_decode_crc_mismatch(void)
 
   sync_high = (uint8_t)(k_frame_sync_word >> k_test_byte_shift_8);
   sync_low  = (uint8_t)(k_frame_sync_word & k_test_byte_mask);
-  seq_high  = (uint8_t)((uint16_t)k_test_seq_one >> k_test_byte_shift_8);
-  seq_low   = (uint8_t)((uint16_t)k_test_seq_one & k_test_byte_mask);
+  seq_high  = (uint8_t)(k_test_seq_one >> k_test_byte_shift_8);
+  seq_low   = (uint8_t)(k_test_seq_one & k_test_byte_mask);
   len_high  = (uint8_t)((uint16_t)0U >> k_test_byte_shift_8);
   len_low   = (uint8_t)((uint16_t)0U & k_test_byte_mask);
 
@@ -1732,7 +1732,7 @@ void test_cross_compat_pong_seq0_counter42(void)
     0x64,
     0x60 /* CRC-32 LE = 0x60647975 */
   };
-  uint8_t    pong_payload[k_xc_pong_payload_len] = {(uint8_t)k_xc_counter_42, 0, 0, 0};
+  uint8_t    pong_payload[k_xc_pong_payload_len] = {k_xc_counter_42, 0, 0, 0};
   rx_frame_t frame;
   uint8_t    buffer[k_test_small_buffer];
   uint32_t   len;
