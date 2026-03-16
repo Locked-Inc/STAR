@@ -2332,7 +2332,7 @@ void test_i2c_comm_receive_riic_read_returns_timeout(void)
  * @post POST assertion failure branch exercised
  * @post g_rx_assert_post_force_fail restored to false
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_i2c_comm_init_post_assert_force_fail(void)
 {
@@ -2357,7 +2357,7 @@ void test_i2c_comm_init_post_assert_force_fail(void)
  * @pre s_handle is zero-initialized (setUp clears with memset)
  * @post RX_ASSERT_PRE failure branch exercised
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_i2c_comm_deinit_pre_assert_uninitialized(void)
 {

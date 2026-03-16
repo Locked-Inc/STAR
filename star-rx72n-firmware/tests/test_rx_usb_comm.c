@@ -3332,7 +3332,7 @@ void test_usb_comm_data_available_usb_buffer_has_data(void)
  * @post POST assertion failure branch exercised
  * @post g_rx_assert_post_force_fail restored to false
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_usb_comm_init_post_assert_force_fail(void)
 {

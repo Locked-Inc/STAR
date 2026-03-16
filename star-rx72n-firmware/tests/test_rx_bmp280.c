@@ -1411,7 +1411,7 @@ void test_bmp280_read_pressure_out_of_range_returns_error(void)
  * Calls internal_write_reg after rx_bmp280_test_reset_state() clears
  * s_manager to NULL. The first RX_ASSERT_PRE fires.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_bmp280_assert_write_reg_null_manager(void)
 {
@@ -1431,7 +1431,7 @@ void test_bmp280_assert_write_reg_null_manager(void)
  * Calls internal_read_regs after reset so s_manager is NULL. The first
  * RX_ASSERT_PRE fires on the s_manager check.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_bmp280_assert_read_regs_null_manager(void)
 {
@@ -1451,7 +1451,7 @@ void test_bmp280_assert_read_regs_null_manager(void)
  * Passes NULL buf to internal_read_regs with valid s_manager so the second
  * RX_ASSERT_PRE (buf != NULL) fires.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_bmp280_assert_read_regs_null_buf(void)
 {
@@ -1471,7 +1471,7 @@ void test_bmp280_assert_read_regs_null_buf(void)
  * Passes len=0 to internal_read_regs with valid s_manager and buf so the
  * third RX_ASSERT_PRE (len > 0) fires.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_bmp280_assert_read_regs_zero_len(void)
 {
@@ -1498,7 +1498,7 @@ void test_bmp280_assert_read_regs_zero_len(void)
  * Sets g_rx_assert_post_force_fail = true so the RX_ASSERT_POST on result
  * range fires even though the actual result is within [0, 0xFFFFF].
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_bmp280_assert_assemble_adc20_post_force_fail(void)
 {
@@ -1526,7 +1526,7 @@ void test_bmp280_assert_assemble_adc20_post_force_fail(void)
  * @details
  * Passes adc_T = -1 which violates the [0, 0xFFFFF] range precondition.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_bmp280_assert_compensate_temp_adc_out_of_range(void)
 {
@@ -1545,7 +1545,7 @@ void test_bmp280_assert_compensate_temp_adc_out_of_range(void)
  * @details
  * Resets calibration state so dig_P1 == 0, then calls the finalizer directly.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_bmp280_assert_finalize_pressure_null_p1(void)
 {
@@ -1565,7 +1565,7 @@ void test_bmp280_assert_finalize_pressure_null_p1(void)
  * @details
  * Initializes with valid calibration so dig_P1 != 0, then passes p = -1.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_bmp280_assert_finalize_pressure_negative_p(void)
 {
@@ -1584,7 +1584,7 @@ void test_bmp280_assert_finalize_pressure_negative_p(void)
  * @details
  * Resets calibration state so dig_P1 == 0, then calls compensate_pressure.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_bmp280_assert_compensate_pressure_null_p1(void)
 {
@@ -1604,7 +1604,7 @@ void test_bmp280_assert_compensate_pressure_null_p1(void)
  * @details
  * Initializes with valid calibration so dig_P1 != 0, then passes adc_P = -1.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_bmp280_assert_compensate_pressure_negative_adc(void)
 {
@@ -1636,7 +1636,7 @@ void test_bmp280_assert_compensate_pressure_negative_adc(void)
  * Calls internal_read_and_compensate_adc without init so s_initialized is
  * false. The second RX_ASSERT_PRE fires.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_bmp280_assert_read_compensate_not_initialized(void)
 {

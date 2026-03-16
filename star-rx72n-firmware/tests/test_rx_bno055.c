@@ -1697,7 +1697,7 @@ void test_bno055_is_calibrated_i2c_error(void)
  * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
  * @post RX_ASSERT_PRE failure branch exercised
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_internal_write_reg_null_manager(void)
 {
@@ -1717,7 +1717,7 @@ void test_internal_write_reg_null_manager(void)
  * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
  * @post All three RX_ASSERT_PRE failure branches exercised
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_internal_read_regs_null_manager_null_buf_zero_len(void)
 {
@@ -1737,7 +1737,7 @@ void test_internal_read_regs_null_manager_null_buf_zero_len(void)
  * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
  * @post RX_ASSERT_PRE failure branches exercised
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_internal_init_reset_and_wait_null_manager(void)
 {
@@ -1752,7 +1752,7 @@ void test_internal_init_reset_and_wait_null_manager(void)
  * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
  * @post RX_ASSERT_PRE failure branches exercised
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_internal_init_configure_null_manager(void)
 {
@@ -1767,7 +1767,7 @@ void test_internal_init_configure_null_manager(void)
  * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
  * @post RX_ASSERT_PRE failure branches exercised
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_internal_init_enter_ndof_null_manager(void)
 {
@@ -1782,7 +1782,7 @@ void test_internal_init_enter_ndof_null_manager(void)
  * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
  * @post RX_ASSERT_PRE failure branches exercised
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_internal_verify_chip_id_null_manager(void)
 {
@@ -1797,7 +1797,7 @@ void test_internal_verify_chip_id_null_manager(void)
  * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
  * @post RX_ASSERT_PRE failure branches exercised
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_internal_init_enable_interrupt_null_manager(void)
 {
@@ -1816,7 +1816,7 @@ void test_internal_init_enable_interrupt_null_manager(void)
  * @pre setUp() called rx_bno055_test_reset_state() -> s_initialized == false
  * @post Both RX_ASSERT_PRE failure branches exercised
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_internal_read_euler_not_initialized(void)
 {
@@ -1831,7 +1831,7 @@ void test_internal_read_euler_not_initialized(void)
  * @pre setUp() called rx_bno055_test_reset_state() -> s_initialized == false
  * @post Both RX_ASSERT_PRE failure branches exercised
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_internal_read_quat_not_initialized(void)
 {
@@ -1846,7 +1846,7 @@ void test_internal_read_quat_not_initialized(void)
  * @pre setUp() called rx_bno055_test_reset_state() -> s_initialized == false
  * @post Both RX_ASSERT_PRE failure branches exercised
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_internal_read_lia_not_initialized(void)
 {
@@ -1861,7 +1861,7 @@ void test_internal_read_lia_not_initialized(void)
  * @pre setUp() called rx_bno055_test_reset_state() -> s_initialized == false
  * @post Both RX_ASSERT_PRE failure branches exercised
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_internal_read_gyro_not_initialized(void)
 {
@@ -1882,7 +1882,7 @@ void test_internal_read_gyro_not_initialized(void)
  * @post POST assertion failure branches exercised
  * @post g_rx_assert_post_force_fail restored to false
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_reset_state_post_force_fail(void)
 {
@@ -1903,7 +1903,7 @@ void test_reset_state_post_force_fail(void)
  * @pre UNITY_BEGIN() already called
  * @post All assertion coverage tests executed
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static void internal_run_assert_coverage_tests(void)
 {

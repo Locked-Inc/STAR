@@ -710,7 +710,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
  * @see RX_ASSERT_POST() Postcondition counterpart
  * @see RX_STATIC_TESTABLE Exposes internal functions for test-driven coverage
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 #define RX_ASSERT_PRE(condition, message)                                                          \
   do {                                                                                             \
@@ -747,7 +747,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
  * @see RX_ASSERT_PRE() Precondition counterpart
  * @see g_rx_assert_post_force_fail Test-only fault injection flag
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 #ifdef UNIT_TEST
 extern bool g_rx_assert_post_force_fail;

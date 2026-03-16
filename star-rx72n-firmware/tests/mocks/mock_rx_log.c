@@ -24,7 +24,7 @@
  *
  * @note Only exists in UNIT_TEST builds. Declared extern in rx_check.h.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 bool g_rx_assert_post_force_fail = false;
 
