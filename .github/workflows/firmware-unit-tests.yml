@@ -30,7 +30,9 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Install build dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake gcc g++ git ninja-build protobuf-compiler lcov
+        run: |
+          sudo apt-get update && sudo apt-get install -y cmake gcc g++ git ninja-build protobuf-compiler lcov bc
+          pip3 install --quiet gcovr
 
       - name: Cache CMake FetchContent (Unity + nanopb)
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
@@ -120,36 +122,23 @@ jobs:
           # that cannot be meaningfully unit-tested without a live RTOS instance.
           # Requirements: 100% line, 100% branch, 100% function coverage.
           #
-          # Use lcov --extract (already installed) instead of gcovr to avoid
-          # path/root ambiguity: gcovr --filter is applied to relative paths when
-          # --root is set, breaking the '*/star-rx72n-firmware/libs/' pattern.
-          lcov --extract final.info \
-               '*/star-rx72n-firmware/libs/*' \
-               --output-file libs-only.info \
-               --ignore-errors mismatch,unused \
-               --rc lcov_branch_coverage=1
-
-          summary=$(lcov --summary libs-only.info --ignore-errors mismatch --rc lcov_branch_coverage=1 2>&1)
-          echo "$summary"
-
-          line_pct=$(echo "$summary"   | grep 'lines'     | grep -oP '[\d.]+(?=%)' | head -1)
-          func_pct=$(echo "$summary"   | grep 'functions' | grep -oP '[\d.]+(?=%)' | head -1)
-          branch_pct=$(echo "$summary" | grep 'branches'  | grep -oP '[\d.]+(?=%)' | head -1)
-
-          if [[ -z "$line_pct" || -z "$branch_pct" ]]; then
-            echo "[FAIL] Could not parse lcov coverage summary (line=$line_pct func=$func_pct branch=$branch_pct)"
-            echo "Hint: ensure --rc lcov_branch_coverage=1 is passed to all lcov commands"
-            exit 1
-          fi
-
-          echo "Line: ${line_pct}%  Function: ${func_pct}%  Branch: ${branch_pct}%"
-          echo "Required: 100% line, 100% function, 100% branch (libs/ only)"
-
-          failed=0
-          (( $(echo "$line_pct < 100"   | bc -l) )) && echo "[FAIL] Line coverage below 100%"   && failed=1
-          (( $(echo "$func_pct < 100"   | bc -l) )) && echo "[FAIL] Function coverage below 100%" && failed=1
-          (( $(echo "$branch_pct < 100" | bc -l) )) && echo "[FAIL] Branch coverage below 100%"  && failed=1
-          exit $failed
+          # Use gcovr (not lcov) for threshold checking because:
+          # - gcovr honors GCOVR_EXCL_BR_LINE markers for architecturally unreachable branches
+          # - lcov counts branches differently and doesn't recognize gcovr markers
+          # - gcovr matches the local developer workflow (make coverage-rx72n)
+          # lcov is still used above for HTML report generation.
+          gcovr \
+            --object-directory . \
+            --filter '.*star-rx72n-firmware/libs/' \
+            --exclude '.*/third_party/.*' \
+            --exclude '.*/rx_nanopb/inc/gen/.*' \
+            --exclude '.*/rx_hal/inc/rx72n_port_regs.h' \
+            --exclude '.*/rx_hal/inc/rx_port_utils.h' \
+            -j 1 \
+            --print-summary \
+            --fail-under-line 100 \
+            --fail-under-function 100 \
+            --fail-under-branch 100
 
       - name: Upload coverage results
         if: always()

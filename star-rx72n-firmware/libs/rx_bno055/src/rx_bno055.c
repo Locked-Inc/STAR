@@ -411,8 +411,9 @@ RX_STATIC_TESTABLE rx_err_t internal_write_reg(uint8_t reg, uint8_t val)
    * called only after rx_bno055_init stores a valid manager and s_bus_name
    * is a compile-time string constant. */
   RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL before write");
-  RX_ASSERT_PRE(s_bus_name != NULL, /* GCOVR_EXCL_BR_LINE(s_bus_name is a compile-time constant) */
-                "s_bus_name must be non-NULL before write");
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(s_bus_name is a compile-time constant) */
+  RX_ASSERT_PRE(s_bus_name != NULL, "s_bus_name must be non-NULL before write");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
   uint8_t buf[k_bno055_write_buf_size];
   buf[k_bno055_write_idx_reg] = reg;
   buf[k_bno055_write_idx_val] = val;
@@ -535,8 +536,9 @@ RX_STATIC_TESTABLE rx_err_t internal_init_reset_and_wait(void)
   /* Pre-conditions: called only from rx_bno055_init after s_manager is set
    * and s_bus_name is a compile-time string constant (never NULL). */
   RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL for reset");
-  RX_ASSERT_PRE(s_bus_name != NULL, /* GCOVR_EXCL_BR_LINE(s_bus_name is a compile-time constant) */
-                "s_bus_name must be non-NULL for reset sequence");
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(s_bus_name is a compile-time constant) */
+  RX_ASSERT_PRE(s_bus_name != NULL, "s_bus_name must be non-NULL for reset sequence");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
 
   /* Step 1: Software reset, then wait for POR sequence */
   rx_err_t err = internal_write_reg(k_bno055_reg_sys_trigger, k_bno055_sys_trigger_rst);
@@ -592,8 +594,9 @@ RX_STATIC_TESTABLE rx_err_t internal_init_configure(void)
   /* Pre-conditions: called only after rx_bno055_init sets a valid manager;
    * s_bus_name is a compile-time string constant (never NULL). */
   RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL for configure");
-  RX_ASSERT_PRE(s_bus_name != NULL, /* GCOVR_EXCL_BR_LINE(s_bus_name is a compile-time constant) */
-                "s_bus_name must be non-NULL for configure");
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(s_bus_name is a compile-time constant) */
+  RX_ASSERT_PRE(s_bus_name != NULL, "s_bus_name must be non-NULL for configure");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
 
   /* Step 3: Set normal power mode */
   rx_err_t err = internal_write_reg(k_bno055_reg_pwr_mode, k_bno055_pwr_normal);
@@ -663,8 +666,9 @@ RX_STATIC_TESTABLE rx_err_t internal_init_enter_ndof(void)
   /* Pre-conditions: called only after rx_bno055_init sets a valid manager;
    * s_bus_name is a compile-time string constant (never NULL). */
   RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL for NDOF entry");
-  RX_ASSERT_PRE(s_bus_name != NULL, /* GCOVR_EXCL_BR_LINE(s_bus_name is a compile-time constant) */
-                "s_bus_name must be non-NULL");
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(s_bus_name is a compile-time constant) */
+  RX_ASSERT_PRE(s_bus_name != NULL, "s_bus_name must be non-NULL");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
 
   /* Step 7: Enter NDOF fusion mode (full 9-DOF sensor fusion) */
   const rx_err_t err = internal_write_reg(k_bno055_reg_opr_mode, k_bno055_opr_ndof);
@@ -708,8 +712,9 @@ RX_STATIC_TESTABLE rx_err_t internal_verify_chip_id(void)
   /* Pre-conditions: called only after rx_bno055_init sets s_manager;
    * s_bus_name is a compile-time string constant (never NULL). */
   RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL for chip ID verify");
-  RX_ASSERT_PRE(s_bus_name != NULL, /* GCOVR_EXCL_BR_LINE(s_bus_name is a compile-time constant) */
-                "s_bus_name must be non-NULL for chip ID verification");
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(s_bus_name is a compile-time constant) */
+  RX_ASSERT_PRE(s_bus_name != NULL, "s_bus_name must be non-NULL for chip ID verification");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
 
   /* Step 8: Verify chip ID */
   uint8_t  chip_id = 0;
@@ -772,8 +777,9 @@ RX_STATIC_TESTABLE rx_err_t internal_init_enable_interrupt(void)
   /* Pre-conditions: called only after rx_bno055_init sets a valid manager;
    * s_bus_name is a compile-time string constant (never NULL). */
   RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL for interrupt enable");
-  RX_ASSERT_PRE(s_bus_name != NULL, /* GCOVR_EXCL_BR_LINE(s_bus_name is a compile-time constant) */
-                "s_bus_name must be non-NULL for interrupt enable");
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(s_bus_name is a compile-time constant) */
+  RX_ASSERT_PRE(s_bus_name != NULL, "s_bus_name must be non-NULL for interrupt enable");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
 
   /* Switch to Page 1 to access interrupt engine registers */
   rx_err_t err = internal_write_reg(k_bno055_reg_page_id, k_bno055_page1);
@@ -1298,9 +1304,9 @@ void rx_bno055_test_reset_state(void)
   s_mode        = k_bno055_mode_poll;
   /* Post-conditions: s_initialized==false, s_manager==NULL, s_mode==poll
    * are guaranteed by the direct assignments above. */
-  RX_ASSERT_POST(!s_initialized, /* GCOVR_EXCL_BR_LINE(assigned false on line above) */
-                 "s_initialized must be false after reset");
-  RX_ASSERT_POST(s_manager == NULL, /* GCOVR_EXCL_BR_LINE(assigned NULL on line above) */
-                 "s_manager must be NULL after reset");
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(values assigned on lines above) */
+  RX_ASSERT_POST(!s_initialized, "s_initialized must be false after reset");
+  RX_ASSERT_POST(s_manager == NULL, "s_manager must be NULL after reset");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
 }
 #endif /* UNIT_TEST */

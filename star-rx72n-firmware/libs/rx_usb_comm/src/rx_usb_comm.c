@@ -894,8 +894,9 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
   handle->initialized = 1U;
 
   /* Post-condition: initialized and mode were set unconditionally above */
-  RX_ASSERT_POST(handle->initialized, /* GCOVR_EXCL_BR_LINE(assigned 1U on line above) */
-                 "Handle initialization failed");
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(assigned 1U on line above) */
+  RX_ASSERT_POST(handle->initialized, "Handle initialization failed");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
 
   rx_log_debug(s_tag, "USB comm initialized");
   return k_rx_ok;

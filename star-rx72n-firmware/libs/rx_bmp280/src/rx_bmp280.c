@@ -448,10 +448,10 @@ RX_STATIC_TESTABLE int32_t internal_assemble_adc20(const uint8_t* buf)
     (int32_t)(((uint32_t)buf[k_bmp280_adc20_msb_idx] << k_bmp280_shift_msb) |
               ((uint32_t)buf[k_bmp280_adc20_lsb_idx] << k_bmp280_shift_lsb_left) |
               ((uint32_t)buf[k_bmp280_adc20_xlsb_idx] >> k_bmp280_shift_xlsb_right));
-  /* GCOVR_EXCL_BR_START(20-bit mask guarantees range) */
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(20-bit mask guarantees range) */
   RX_ASSERT_POST(result >= 0 && result <= (int32_t)k_bmp280_adc_20bit_max,
                  "ADC20 result out of 20-bit range");
-  /* GCOVR_EXCL_BR_STOP */
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
   return result;
 }
 
@@ -821,9 +821,9 @@ static rx_err_t internal_read_and_validate_calibration(void)
 
   internal_parse_calibration(calib_buf);
 
-  /* GCOVR_EXCL_BR_START(dig_T1 short-circuit: tested via dig_P1==0 path) */
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(dig_T1 short-circuit: tested via dig_P1==0 path) */
   if ((s_calib.dig_T1 == 0U) || (s_calib.dig_P1 == 0U)) {
-    /* GCOVR_EXCL_BR_STOP */
+    /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
     rx_log_error(s_tag, "Invalid calibration: dig_T1 or dig_P1 is zero");
     s_manager = NULL;
     return k_rx_err_invalid_state;
