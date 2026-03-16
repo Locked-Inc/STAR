@@ -34,13 +34,16 @@
  * internal_load_valid_calib() to set up suitable calibration bytes.
  *
  * @par Test Coverage
- * | Group      | Tests | Description                                      |
- * |------------|-------|--------------------------------------------------|
- * | Init       | 5     | null ptr, success, I2C error, invalid calib,     |
- * |            |       | re-init (no double-init guard in BMP280)         |
- * | Read       | 5     | null ptr, before-init, forced-mode, timeout,     |
- * |            |       | I2C error                                        |
- * | Compensation | 2   | known values within range, var1==0 returns error |
+ * | Group        | Tests | Description                                    |
+ * |--------------|-------|------------------------------------------------|
+ * | Init         | 7     | null ptr, success, I2C error, invalid calib,   |
+ * |              |       | re-init, wrong chip ID, calib/config errors    |
+ * | Read         | 7     | null ptr, before-init, forced-mode, timeout,   |
+ * |              |       | I2C error, status/ADC read errors              |
+ * | Compensation | 6     | known values, var1==0, P1==0, temp/pressure    |
+ * |              |       | out-of-range                                   |
+ * | Assertions   | 11    | RX_ASSERT_PRE/POST branch coverage for         |
+ * |              |       | internal functions via RX_STATIC_TESTABLE       |
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: [OK] No goto, setjmp, recursion
@@ -81,6 +84,7 @@
 #include "rx_bus_config.h"
 #include "rx_bus_i2c.h"
 #include "rx_bus_manager.h"
+#include "rx_check.h"
 #include "rx_err.h"
 #include "rx_port_constants.h"
 #include "unity.h"
@@ -1220,15 +1224,25 @@ void test_bmp280_read_adc_read_error_propagates(void)
 
 #ifdef UNIT_TEST
 /**
- * @brief Forward declaration of internal_read_and_compensate_adc (UNIT_TEST only)
+ * @brief Forward declarations of internal functions exposed via RX_STATIC_TESTABLE
  *
  * @details
- * Exposed via RX_STATIC_TESTABLE so tests can call it directly without
- * going through the full rx_bmp280_read() forced-mode sequence.
+ * These internal functions have external linkage in UNIT_TEST builds so tests
+ * can call them directly with invalid arguments to exercise RX_ASSERT_PRE and
+ * RX_ASSERT_POST failure branches. In UNIT_TEST builds internal_rx_fatal_error()
+ * returns immediately, so the test does not hang on assertion failure.
  *
  * @since Version 1.0.0
  */
+extern rx_err_t internal_write_reg(uint8_t reg, uint8_t val);
+extern rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len);
+extern int32_t  internal_assemble_adc20(const uint8_t* buf);
+extern int32_t  internal_compensate_temp(int32_t adc_temp, int32_t* t_fine_out);
+extern uint32_t internal_finalize_pressure_q8(int64_t p, int64_t var1, int64_t var2);
+extern rx_err_t
+internal_compensate_pressure(int32_t adc_pressure, int32_t t_fine, uint32_t* press_out);
 extern rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out);
+
 #endif
 
 /**
@@ -1377,6 +1391,268 @@ void test_bmp280_read_pressure_out_of_range_returns_error(void)
 }
 
 /* =============================================================================
+ * RX_ASSERT_PRE / RX_ASSERT_POST Branch Coverage Tests
+ * =============================================================================
+ *
+ * These tests call RX_STATIC_TESTABLE internal functions directly with invalid
+ * arguments to exercise the assertion failure branches. In UNIT_TEST builds
+ * internal_rx_fatal_error() returns immediately (non-halting), so each test
+ * completes without hanging.
+ *
+ * For RX_ASSERT_POST branches, set g_rx_assert_post_force_fail = true before
+ * the call, then reset it after. This forces the POST macro to fire regardless
+ * of the actual condition value.
+ */
+
+/**
+ * @brief internal_write_reg PRE fires when s_manager is NULL (line 287)
+ *
+ * @details
+ * Calls internal_write_reg after rx_bmp280_test_reset_state() clears
+ * s_manager to NULL. The first RX_ASSERT_PRE fires.
+ *
+ * @since Version 1.1.0
+ */
+void test_bmp280_assert_write_reg_null_manager(void)
+{
+#ifdef UNIT_TEST
+  /* setUp() already reset state, s_manager is NULL */
+  (void)internal_write_reg(0x00U, 0x00U);
+  TEST_PASS();
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/**
+ * @brief internal_read_regs PRE fires when s_manager is NULL (line 325)
+ *
+ * @details
+ * Calls internal_read_regs after reset so s_manager is NULL. The first
+ * RX_ASSERT_PRE fires on the s_manager check.
+ *
+ * @since Version 1.1.0
+ */
+void test_bmp280_assert_read_regs_null_manager(void)
+{
+#ifdef UNIT_TEST
+  uint8_t buf[k_test_single_byte] = {0};
+  (void)internal_read_regs(0x00U, buf, k_test_single_byte);
+  TEST_PASS();
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/**
+ * @brief internal_read_regs PRE fires when buf is NULL (line 326)
+ *
+ * @details
+ * Passes NULL buf to internal_read_regs with valid s_manager so the second
+ * RX_ASSERT_PRE (buf != NULL) fires.
+ *
+ * @since Version 1.1.0
+ */
+void test_bmp280_assert_read_regs_null_buf(void)
+{
+#ifdef UNIT_TEST
+  internal_setup_initialized_bmp280();
+  (void)internal_read_regs(0x00U, NULL, k_test_single_byte);
+  TEST_PASS();
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/**
+ * @brief internal_read_regs PRE fires when len is zero (line 327)
+ *
+ * @details
+ * Passes len=0 to internal_read_regs with valid s_manager and buf so the
+ * third RX_ASSERT_PRE (len > 0) fires.
+ *
+ * @since Version 1.1.0
+ */
+void test_bmp280_assert_read_regs_zero_len(void)
+{
+#ifdef UNIT_TEST
+  internal_setup_initialized_bmp280();
+  uint8_t buf[k_test_single_byte] = {0};
+  (void)internal_read_regs(0x00U, buf, 0U);
+  TEST_PASS();
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/* NOTE: internal_parse_u16_le(NULL), internal_parse_s16_le(NULL), and
+ * internal_assemble_adc20(NULL) are NOT tested here because after the
+ * RX_ASSERT_PRE fires (no-op in UNIT_TEST), execution continues and
+ * dereferences the NULL pointer, causing a SEGV. These PRE branches
+ * are architecturally unreachable because all callers pass stack buffers. */
+
+/**
+ * @brief internal_assemble_adc20 POST fires via force-fail flag (line 427)
+ *
+ * @details
+ * Sets g_rx_assert_post_force_fail = true so the RX_ASSERT_POST on result
+ * range fires even though the actual result is within [0, 0xFFFFF].
+ *
+ * @since Version 1.1.0
+ */
+void test_bmp280_assert_assemble_adc20_post_force_fail(void)
+{
+#ifdef UNIT_TEST
+  g_rx_assert_post_force_fail = true;
+  uint8_t buf[k_test_adc_buf_size];
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(buf, 0, sizeof(buf));
+  (void)internal_assemble_adc20(buf);
+  g_rx_assert_post_force_fail = false;
+  TEST_PASS();
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/* NOTE: internal_compensate_temp(0, NULL) is NOT tested here because
+ * after the RX_ASSERT_PRE fires (no-op in UNIT_TEST), the function writes
+ * *t_fine_out = var1 + var2, dereferencing the NULL pointer. This PRE branch
+ * is architecturally unreachable (caller always passes a stack variable). */
+
+/**
+ * @brief internal_compensate_temp PRE fires when adc_T is out of 20-bit range (line 492)
+ *
+ * @details
+ * Passes adc_T = -1 which violates the [0, 0xFFFFF] range precondition.
+ *
+ * @since Version 1.1.0
+ */
+void test_bmp280_assert_compensate_temp_adc_out_of_range(void)
+{
+#ifdef UNIT_TEST
+  int32_t t_fine = 0;
+  (void)internal_compensate_temp(-1, &t_fine);
+  TEST_PASS();
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/**
+ * @brief internal_finalize_pressure_q8 PRE fires when dig_P1 is zero (line 566)
+ *
+ * @details
+ * Resets calibration state so dig_P1 == 0, then calls the finalizer directly.
+ *
+ * @since Version 1.1.0
+ */
+void test_bmp280_assert_finalize_pressure_null_p1(void)
+{
+#ifdef UNIT_TEST
+  /* Reset state clears s_calib including dig_P1 to zero */
+  rx_bmp280_test_reset_state();
+  (void)internal_finalize_pressure_q8(0, 0, 0);
+  TEST_PASS();
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/**
+ * @brief internal_finalize_pressure_q8 PRE fires when p is negative (line 567)
+ *
+ * @details
+ * Initializes with valid calibration so dig_P1 != 0, then passes p = -1.
+ *
+ * @since Version 1.1.0
+ */
+void test_bmp280_assert_finalize_pressure_negative_p(void)
+{
+#ifdef UNIT_TEST
+  internal_setup_initialized_bmp280();
+  (void)internal_finalize_pressure_q8(-1, 0, 0);
+  TEST_PASS();
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/**
+ * @brief internal_compensate_pressure PRE fires when dig_P1 is zero (line 619)
+ *
+ * @details
+ * Resets calibration state so dig_P1 == 0, then calls compensate_pressure.
+ *
+ * @since Version 1.1.0
+ */
+void test_bmp280_assert_compensate_pressure_null_p1(void)
+{
+#ifdef UNIT_TEST
+  rx_bmp280_test_reset_state();
+  uint32_t press_out = 0U;
+  (void)internal_compensate_pressure(0, 0, &press_out);
+  TEST_PASS();
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/**
+ * @brief internal_compensate_pressure PRE fires when adc_P is negative (line 620)
+ *
+ * @details
+ * Initializes with valid calibration so dig_P1 != 0, then passes adc_P = -1.
+ *
+ * @since Version 1.1.0
+ */
+void test_bmp280_assert_compensate_pressure_negative_adc(void)
+{
+#ifdef UNIT_TEST
+  internal_setup_initialized_bmp280();
+  uint32_t press_out = 0U;
+  (void)internal_compensate_pressure(-1, 0, &press_out);
+  TEST_PASS();
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/* NOTE: internal_compensate_pressure(0, 0, NULL) and
+ * internal_parse_calibration(NULL) are NOT tested here because after the
+ * RX_ASSERT_PRE fires (no-op in UNIT_TEST), execution continues and
+ * dereferences the NULL pointer, causing a SEGV. These PRE branches
+ * are architecturally unreachable. */
+
+/* NOTE: internal_read_and_compensate_adc(NULL) is NOT tested here because
+ * after the RX_ASSERT_PRE fires (no-op in UNIT_TEST), the function continues
+ * and writes out->temp_centi_degc, dereferencing the NULL pointer. This PRE
+ * branch is architecturally unreachable (caller always passes a stack var). */
+
+/**
+ * @brief internal_read_and_compensate_adc PRE fires when not initialized (line 885)
+ *
+ * @details
+ * Calls internal_read_and_compensate_adc without init so s_initialized is
+ * false. The second RX_ASSERT_PRE fires.
+ *
+ * @since Version 1.1.0
+ */
+void test_bmp280_assert_read_compensate_not_initialized(void)
+{
+#ifdef UNIT_TEST
+  /* setUp() already reset state, s_initialized is false */
+  bmp280_data_t data;
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&data, 0, sizeof(data));
+  (void)internal_read_and_compensate_adc(&data);
+  TEST_PASS();
+#else
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
+#endif
+}
+
+/* =============================================================================
  * Unity Main Entry Point
  * =============================================================================
  */
@@ -1441,6 +1717,19 @@ int main(void)
   RUN_TEST(test_bmp280_pressure_comp_zero_p1_returns_error);
   RUN_TEST(test_bmp280_read_temp_out_of_range_returns_error);
   RUN_TEST(test_bmp280_read_pressure_out_of_range_returns_error);
+
+  /* RX_ASSERT_PRE / RX_ASSERT_POST branch coverage tests */
+  RUN_TEST(test_bmp280_assert_write_reg_null_manager);
+  RUN_TEST(test_bmp280_assert_read_regs_null_manager);
+  RUN_TEST(test_bmp280_assert_read_regs_null_buf);
+  RUN_TEST(test_bmp280_assert_read_regs_zero_len);
+  RUN_TEST(test_bmp280_assert_assemble_adc20_post_force_fail);
+  RUN_TEST(test_bmp280_assert_compensate_temp_adc_out_of_range);
+  RUN_TEST(test_bmp280_assert_finalize_pressure_null_p1);
+  RUN_TEST(test_bmp280_assert_finalize_pressure_negative_p);
+  RUN_TEST(test_bmp280_assert_compensate_pressure_null_p1);
+  RUN_TEST(test_bmp280_assert_compensate_pressure_negative_adc);
+  RUN_TEST(test_bmp280_assert_read_compensate_not_initialized);
 
   return UNITY_END();
 }

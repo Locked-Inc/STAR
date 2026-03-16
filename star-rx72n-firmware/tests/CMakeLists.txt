@@ -400,6 +400,7 @@ add_executable(test_rx_fec
     test_rx_fec.c
     ${RX_FEC_SRC}
     ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_fec)
 apply_test_includes(test_rx_fec)
@@ -410,6 +411,7 @@ add_executable(test_rx_harq
     test_rx_harq.c
     ${RX_HARQ_SRC}
     ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_harq)
 apply_test_includes(test_rx_harq)

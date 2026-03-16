@@ -80,9 +80,27 @@
 #include "rx_bus_config.h"
 #include "rx_bus_i2c.h"
 #include "rx_bus_manager.h"
+#include "rx_check.h"
 #include "rx_err.h"
 #include "rx_port_constants.h"
 #include "unity.h"
+
+/* =============================================================================
+ * Extern Declarations for RX_STATIC_TESTABLE Internal Functions
+ * =============================================================================
+ */
+
+extern rx_err_t internal_write_reg(uint8_t reg, uint8_t val);
+extern rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len);
+extern rx_err_t internal_init_reset_and_wait(void);
+extern rx_err_t internal_init_configure(void);
+extern rx_err_t internal_init_enter_ndof(void);
+extern rx_err_t internal_verify_chip_id(void);
+extern rx_err_t internal_init_enable_interrupt(void);
+extern rx_err_t internal_read_euler(bno055_data_t* out);
+extern rx_err_t internal_read_quat(bno055_data_t* out);
+extern rx_err_t internal_read_lia(bno055_data_t* out);
+extern rx_err_t internal_read_gyro(bno055_data_t* out);
 
 /* =============================================================================
  * Test Constants
@@ -1656,6 +1674,254 @@ void test_bno055_is_calibrated_i2c_error(void)
 }
 
 /* =============================================================================
+ * RX_ASSERT_PRE / RX_ASSERT_POST Branch Coverage Tests
+ *
+ * These tests call RX_STATIC_TESTABLE internal functions directly with
+ * invalid state (s_manager==NULL, s_initialized==false) to exercise the
+ * RX_ASSERT_PRE failure branches.  In UNIT_TEST builds internal_rx_fatal_error
+ * returns instead of halting, so execution continues past the assertion.
+ *
+ * The POST assertion in rx_bno055_test_reset_state is tested via the
+ * g_rx_assert_post_force_fail flag.
+ * =============================================================================
+ */
+
+/**
+ * @brief internal_write_reg PRE: s_manager NULL triggers assertion
+ *
+ * @details
+ * After rx_bno055_test_reset_state(), s_manager is NULL. Calling
+ * internal_write_reg fires the RX_ASSERT_PRE(s_manager != NULL) branch.
+ * internal_rx_fatal_error returns in test builds so the test completes.
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
+ * @post RX_ASSERT_PRE failure branch exercised
+ *
+ * @since Version 1.1.0
+ */
+void test_internal_write_reg_null_manager(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_write_reg(0x00, 0x00);
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_read_regs PRE: s_manager NULL, buf NULL, len 0
+ *
+ * @details
+ * After reset, s_manager is NULL. Passing NULL buf and 0 len exercises
+ * all three RX_ASSERT_PRE branches (s_manager, buf, len). Each fires
+ * internal_rx_fatal_error which returns in test builds.
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
+ * @post All three RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.1.0
+ */
+void test_internal_read_regs_null_manager_null_buf_zero_len(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_read_regs(0x00, NULL, 0);
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_init_reset_and_wait PRE: s_manager NULL
+ *
+ * @details
+ * After reset, s_manager is NULL. Calling internal_init_reset_and_wait
+ * fires both RX_ASSERT_PRE branches (s_manager, s_bus_name handled by
+ * internal_write_reg's own assertion when it proceeds).
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
+ * @post RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.1.0
+ */
+void test_internal_init_reset_and_wait_null_manager(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_init_reset_and_wait();
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_init_configure PRE: s_manager NULL
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
+ * @post RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.1.0
+ */
+void test_internal_init_configure_null_manager(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_init_configure();
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_init_enter_ndof PRE: s_manager NULL
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
+ * @post RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.1.0
+ */
+void test_internal_init_enter_ndof_null_manager(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_init_enter_ndof();
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_verify_chip_id PRE: s_manager NULL
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
+ * @post RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.1.0
+ */
+void test_internal_verify_chip_id_null_manager(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_verify_chip_id();
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_init_enable_interrupt PRE: s_manager NULL
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
+ * @post RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.1.0
+ */
+void test_internal_init_enable_interrupt_null_manager(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_init_enable_interrupt();
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_read_euler PRE: s_initialized false, out NULL
+ *
+ * @details
+ * After reset, s_initialized is false. Passing NULL out exercises both
+ * RX_ASSERT_PRE branches (s_initialized, out != NULL).
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_initialized == false
+ * @post Both RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.1.0
+ */
+void test_internal_read_euler_not_initialized(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_read_euler(NULL);
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_read_quat PRE: s_initialized false, out NULL
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_initialized == false
+ * @post Both RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.1.0
+ */
+void test_internal_read_quat_not_initialized(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_read_quat(NULL);
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_read_lia PRE: s_initialized false, out NULL
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_initialized == false
+ * @post Both RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.1.0
+ */
+void test_internal_read_lia_not_initialized(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_read_lia(NULL);
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_read_gyro PRE: s_initialized false, out NULL
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_initialized == false
+ * @post Both RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.1.0
+ */
+void test_internal_read_gyro_not_initialized(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_read_gyro(NULL);
+  TEST_PASS();
+}
+
+/**
+ * @brief rx_bno055_test_reset_state POST: force-fail exercises POST branches
+ *
+ * @details
+ * Sets g_rx_assert_post_force_fail to true before calling
+ * rx_bno055_test_reset_state(). The RX_ASSERT_POST macros fire even though
+ * the postconditions are actually satisfied, exercising the failure branches.
+ *
+ * @pre g_rx_assert_post_force_fail == false
+ * @post POST assertion failure branches exercised
+ * @post g_rx_assert_post_force_fail restored to false
+ *
+ * @since Version 1.1.0
+ */
+void test_reset_state_post_force_fail(void)
+{
+  g_rx_assert_post_force_fail = true;
+  rx_bno055_test_reset_state();
+  g_rx_assert_post_force_fail = false;
+  TEST_PASS();
+}
+
+/**
+ * @brief Run all assertion coverage tests
+ *
+ * @details
+ * Extracted from main() to keep main() under the readability-function-size
+ * threshold (40 statements). Runs all RX_ASSERT_PRE and RX_ASSERT_POST
+ * coverage tests for internal BNO055 functions.
+ *
+ * @pre UNITY_BEGIN() already called
+ * @post All assertion coverage tests executed
+ *
+ * @since Version 1.1.0
+ */
+static void internal_run_assert_coverage_tests(void)
+{
+  RUN_TEST(test_internal_write_reg_null_manager);
+  RUN_TEST(test_internal_read_regs_null_manager_null_buf_zero_len);
+  RUN_TEST(test_internal_init_reset_and_wait_null_manager);
+  RUN_TEST(test_internal_init_configure_null_manager);
+  RUN_TEST(test_internal_init_enter_ndof_null_manager);
+  RUN_TEST(test_internal_verify_chip_id_null_manager);
+  RUN_TEST(test_internal_init_enable_interrupt_null_manager);
+  RUN_TEST(test_internal_read_euler_not_initialized);
+  RUN_TEST(test_internal_read_quat_not_initialized);
+  RUN_TEST(test_internal_read_lia_not_initialized);
+  RUN_TEST(test_internal_read_gyro_not_initialized);
+  RUN_TEST(test_reset_state_post_force_fail);
+}
+
+/* =============================================================================
  * Unity Main Entry Point
  * =============================================================================
  */
@@ -1731,6 +1997,8 @@ int main(void)
   RUN_TEST(test_bno055_is_calibrated_reads_status);
   RUN_TEST(test_bno055_is_calibrated_partial);
   RUN_TEST(test_bno055_is_calibrated_i2c_error);
+
+  internal_run_assert_coverage_tests();
 
   return UNITY_END();
 }

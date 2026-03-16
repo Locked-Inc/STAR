@@ -78,6 +78,7 @@
 #include <string.h>
 
 #include "mock_riic_hal.h"
+#include "rx_check.h"
 #include "rx_frame.h"
 #include "rx_i2c_comm.h"
 #include "rx_session.h"
@@ -2313,6 +2314,60 @@ void test_i2c_comm_receive_riic_read_returns_timeout(void)
 }
 
 /* =============================================================================
+ * RX_ASSERT_POST / RX_ASSERT_PRE Branch Coverage Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief POST assertion in rx_i2c_comm_init: force-fail exercises POST branch
+ *
+ * @details
+ * Sets g_rx_assert_post_force_fail to true before calling rx_i2c_comm_init()
+ * with valid arguments. The RX_ASSERT_POST(handle->initialized, ...) on line
+ * 740 fires even though the postcondition is satisfied, exercising the failure
+ * branch. In UNIT_TEST builds internal_rx_fatal_error is a no-op so execution
+ * continues and init still returns k_rx_ok.
+ *
+ * @pre g_rx_assert_post_force_fail == false
+ * @post POST assertion failure branch exercised
+ * @post g_rx_assert_post_force_fail restored to false
+ *
+ * @since Version 1.1.0
+ */
+void test_i2c_comm_init_post_assert_force_fail(void)
+{
+  rx_i2c_comm_config_t cfg = helper_default_config();
+
+  g_rx_assert_post_force_fail = true;
+  rx_err_t err                = rx_i2c_comm_init(&s_handle, &cfg);
+  g_rx_assert_post_force_fail = false;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief PRE assertion in rx_i2c_comm_deinit: uninitialized handle exercises PRE branch
+ *
+ * @details
+ * Calls rx_i2c_comm_deinit() on a zero-initialized handle (initialized == 0).
+ * The RX_ASSERT_PRE(handle->initialized, ...) on line 752 fires because
+ * handle->initialized is false. In UNIT_TEST builds internal_rx_fatal_error
+ * is a no-op so execution continues through the deinit logic.
+ *
+ * @pre s_handle is zero-initialized (setUp clears with memset)
+ * @post RX_ASSERT_PRE failure branch exercised
+ *
+ * @since Version 1.1.0
+ */
+void test_i2c_comm_deinit_pre_assert_uninitialized(void)
+{
+  /* s_handle is zero-initialized by setUp() -- initialized == 0 */
+  rx_err_t err = rx_i2c_comm_deinit(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/* =============================================================================
  * Unity entry point
  * =============================================================================
  */
@@ -2450,6 +2505,10 @@ static void internal_run_internal_function_tests(void)
   RUN_TEST(test_i2c_internal_verify_crc_null_crc_out_valid_frame);
   RUN_TEST(test_i2c_internal_read_i2c_data_small_space);
   RUN_TEST(test_i2c_comm_receive_riic_read_returns_timeout);
+
+  /* RX_ASSERT_POST / RX_ASSERT_PRE branch coverage */
+  RUN_TEST(test_i2c_comm_init_post_assert_force_fail);
+  RUN_TEST(test_i2c_comm_deinit_pre_assert_uninitialized);
 }
 
 int main(void)

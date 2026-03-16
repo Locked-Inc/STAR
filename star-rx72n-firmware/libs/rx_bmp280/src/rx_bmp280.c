@@ -233,22 +233,27 @@ static const char* const s_bus_name = "i2c1_baro";
  */
 
 /** @brief Write a single byte to a BMP280 register via I2C */
-static rx_err_t internal_write_reg(uint8_t reg, uint8_t val);
+RX_STATIC_TESTABLE rx_err_t internal_write_reg(uint8_t reg, uint8_t val);
 /** @brief Burst-read consecutive registers from BMP280 via I2C write-read */
-static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len);
+RX_STATIC_TESTABLE rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len);
 /** @brief Apply Bosch integer temperature compensation formula (returns centi-degC, sets t_fine) */
-static int32_t internal_compensate_temp(int32_t adc_temp, int32_t* t_fine_out);
+RX_STATIC_TESTABLE int32_t internal_compensate_temp(int32_t adc_temp, int32_t* t_fine_out);
 /** @brief Apply Bosch integer pressure compensation formula (returns Pa*256 in press_out) */
-static rx_err_t
-internal_compensate_pressure(int32_t adc_pressure, int32_t t_fine, uint32_t* press_out);
+RX_STATIC_TESTABLE rx_err_t internal_compensate_pressure(int32_t   adc_pressure,
+                                                         int32_t   t_fine,
+                                                         uint32_t* press_out);
 /** @brief Assemble an unsigned 16-bit little-endian value from two consecutive bytes */
-static inline uint16_t internal_parse_u16_le(const uint8_t* buf);
+RX_STATIC_TESTABLE uint16_t internal_parse_u16_le(const uint8_t* buf);
 /** @brief Assemble a signed 16-bit little-endian value from two consecutive bytes */
-static inline int16_t internal_parse_s16_le(const uint8_t* buf);
+RX_STATIC_TESTABLE int16_t internal_parse_s16_le(const uint8_t* buf);
 /** @brief Assemble a 20-bit signed ADC value from a 3-byte MSB/LSB/XLSB buffer */
-static inline int32_t internal_assemble_adc20(const uint8_t* buf);
+RX_STATIC_TESTABLE int32_t internal_assemble_adc20(const uint8_t* buf);
+/** @brief Parse 24-byte OTP calibration block into s_calib coefficients */
+RX_STATIC_TESTABLE void internal_parse_calibration(const uint8_t* buf);
+/** @brief Apply final Q8 fixed-point scaling and dig_P7 offset to pressure intermediate */
+RX_STATIC_TESTABLE uint32_t internal_finalize_pressure_q8(int64_t p, int64_t var1, int64_t var2);
 /** @brief Read ADC registers, assemble values, apply compensation, and validate range */
-static rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out);
+RX_STATIC_TESTABLE rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out);
 
 /* =============================================================================
  * Internal Helpers
@@ -279,11 +284,13 @@ static rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out);
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_write_reg(uint8_t reg, uint8_t val)
+RX_STATIC_TESTABLE rx_err_t internal_write_reg(uint8_t reg, uint8_t val)
 {
   /* Pre-conditions: s_manager and s_bus_name are non-NULL by construction;
    * internal_write_reg is only called after rx_bmp280_init stores a valid
    * manager pointer and s_bus_name is a compile-time string constant. */
+  RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL before write");
+  RX_ASSERT_PRE(s_bus_name != NULL, "s_bus_name must be non-NULL");
   uint8_t buf[k_bmp280_write_buf_size];
   buf[k_bmp280_write_idx_reg] = reg;
   buf[k_bmp280_write_idx_val] = val;
@@ -316,10 +323,13 @@ static rx_err_t internal_write_reg(uint8_t reg, uint8_t val)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
+RX_STATIC_TESTABLE rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
 {
   /* Pre-conditions: s_manager is non-NULL (only called after successful init),
    * buf is a local stack buffer (never NULL), len is an enum constant (always > 0). */
+  RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL before read");
+  RX_ASSERT_PRE(buf != NULL, "buf must be non-NULL for read operation");
+  RX_ASSERT_PRE(len > 0U, "len must be positive for read operation");
   return rx_bus_i2c_write_read(s_manager, s_bus_name, &reg, k_bmp280_read_cmd_size, buf, len);
 }
 
@@ -343,10 +353,11 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
  *
  * @since Version 1.0.0
  */
-static inline uint16_t internal_parse_u16_le(const uint8_t* buf)
+RX_STATIC_TESTABLE uint16_t internal_parse_u16_le(const uint8_t* buf)
 {
   /* Pre-condition: buf is always a valid pointer to a calibration or ADC buffer;
    * all callers pass stack-allocated arrays (never NULL). */
+  RX_ASSERT_PRE(buf != NULL, "buf must not be NULL");
   static_assert((bool)(((unsigned)k_bmp280_byte_shift == (unsigned)k_bmp280_sizeof_int64) != 0),
                 "byte shift must be 8 for LE 16-bit assembly");
   return (uint16_t)((uint16_t)buf[k_bmp280_le16_lsb_idx] |
@@ -373,9 +384,10 @@ static inline uint16_t internal_parse_u16_le(const uint8_t* buf)
  *
  * @since Version 1.0.0
  */
-static inline int16_t internal_parse_s16_le(const uint8_t* buf)
+RX_STATIC_TESTABLE int16_t internal_parse_s16_le(const uint8_t* buf)
 {
   /* Pre-condition: buf is always a valid calibration buffer pointer (never NULL). */
+  RX_ASSERT_PRE(buf != NULL, "buf must not be NULL");
   static_assert((bool)((sizeof(int16_t) == sizeof(uint16_t)) != 0),
                 "int16_t and uint16_t must be same size for safe reinterpret cast");
   return (int16_t)internal_parse_u16_le(buf);
@@ -406,16 +418,19 @@ static inline int16_t internal_parse_s16_le(const uint8_t* buf)
  *
  * @since Version 1.0.0
  */
-static inline int32_t internal_assemble_adc20(const uint8_t* buf)
+RX_STATIC_TESTABLE int32_t internal_assemble_adc20(const uint8_t* buf)
 {
   /* Pre-condition: buf is a 6-byte ADC read buffer (never NULL).
    * Post-condition: result is in [0, 0xFFFFF] because only 20 bits are
    * assembled (MSB contributes bits[19:12], LSB bits[11:4], XLSB bits[3:0]). */
+  RX_ASSERT_PRE(buf != NULL, "buf must not be NULL");
   /* Assembly: (MSB << 12) | (LSB << 4) | (XLSB >> 4) produces 20-bit value */
   const int32_t result =
     (int32_t)(((uint32_t)buf[k_bmp280_adc20_msb_idx] << k_bmp280_shift_msb) |
               ((uint32_t)buf[k_bmp280_adc20_lsb_idx] << k_bmp280_shift_lsb_left) |
               ((uint32_t)buf[k_bmp280_adc20_xlsb_idx] >> k_bmp280_shift_xlsb_right));
+  RX_ASSERT_POST(result >= 0 && result <= (int32_t)k_bmp280_adc_20bit_max,
+                 "ADC20 result out of 20-bit range");
   return result;
 }
 
@@ -474,10 +489,13 @@ typedef enum : int32_t {
  *
  * @since Version 1.0.0
  */
-static int32_t internal_compensate_temp(int32_t adc_temp, int32_t* t_fine_out)
+RX_STATIC_TESTABLE int32_t internal_compensate_temp(int32_t adc_temp, int32_t* t_fine_out)
 {
   /* Pre-conditions: t_fine_out is a local stack variable (never NULL);
    * adc_temp is produced by internal_assemble_adc20 which masks to 20 bits. */
+  RX_ASSERT_PRE(t_fine_out != NULL, "t_fine_out must be non-NULL");
+  RX_ASSERT_PRE(adc_temp >= 0 && adc_temp <= (int32_t)k_bmp280_adc_20bit_max,
+                "adc_T must be a 20-bit ADC value");
   const int32_t var1 =
     ((((adc_temp >> k_temp_shift_adc_3) - ((int32_t)s_calib.dig_T1 << k_temp_shift_t1_1))) *
      ((int32_t)s_calib.dig_T2)) >>
@@ -546,10 +564,12 @@ typedef enum : int32_t {
  *
  * @since Version 1.0.0
  */
-static uint32_t internal_finalize_pressure_q8(int64_t p, int64_t var1, int64_t var2)
+RX_STATIC_TESTABLE uint32_t internal_finalize_pressure_q8(int64_t p, int64_t var1, int64_t var2)
 {
   /* Pre-conditions: dig_P1 non-zero is guaranteed by the rx_bmp280_init post-condition check;
    * p is non-negative by construction from the BMP280 datasheet algorithm (var1 > 0 guard). */
+  RX_ASSERT_PRE(s_calib.dig_P1 != 0U, "s_calib must be initialized before finalizing pressure");
+  RX_ASSERT_PRE(p >= 0, "p must be non-negative before final Q8 scaling");
   static_assert((bool)((sizeof(int64_t) == k_bmp280_sizeof_int64) != 0),
                 "int64_t must be 64-bit for overflow-safe pressure math");
   /* Bosch BMP280 datasheet formula (Section 4.2.3):
@@ -594,12 +614,16 @@ static uint32_t internal_finalize_pressure_q8(int64_t p, int64_t var1, int64_t v
  *
  * @since Version 1.0.0
  */
-static rx_err_t
-internal_compensate_pressure(int32_t adc_pressure, int32_t t_fine, uint32_t* press_out)
+RX_STATIC_TESTABLE rx_err_t internal_compensate_pressure(int32_t   adc_pressure,
+                                                         int32_t   t_fine,
+                                                         uint32_t* press_out)
 {
   /* Pre-conditions: dig_P1 non-zero is validated by rx_bmp280_init before any read is possible;
    * adc_pressure is a 20-bit value from internal_assemble_adc20 (always >= 0);
    * press_out is a local stack variable passed by internal_read_and_compensate_adc (never NULL). */
+  RX_ASSERT_PRE(s_calib.dig_P1 != 0U, "dig_P1 must be non-zero (factory calibration)");
+  RX_ASSERT_PRE(adc_pressure >= 0, "adc_P must be non-negative (20-bit unsigned ADC value)");
+  RX_ASSERT_PRE(press_out != NULL, "press_out must not be NULL");
 
   /* k_press_base_one must be int64_t (not enum) because the expression
    * (k_press_base_one << k_press_shift_47) requires a 48-bit value.
@@ -659,9 +683,10 @@ internal_compensate_pressure(int32_t adc_pressure, int32_t t_fine, uint32_t* pre
  *
  * @since Version 1.0.0
  */
-static void internal_parse_calibration(const uint8_t* buf)
+RX_STATIC_TESTABLE void internal_parse_calibration(const uint8_t* buf)
 {
   /* Pre-condition: buf is a stack-allocated calibration buffer in rx_bmp280_init (never NULL). */
+  RX_ASSERT_PRE(buf != NULL, "calibration buffer must not be NULL");
   static_assert(
     (bool)((k_bmp280_calib_p9_lsb + k_bmp280_calib_tail_bytes == k_bmp280_calib_byte_count) != 0),
     "P9 coefficient must occupy the final two bytes of the calibration block");
@@ -796,6 +821,7 @@ static rx_err_t internal_read_and_validate_calibration(void)
 rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "Bus manager is NULL");
+  RX_ASSERT_PRE(s_bus_name != NULL, "Bus name must not be NULL");
 
   s_manager     = manager;
   s_initialized = false;
@@ -861,6 +887,8 @@ RX_STATIC_TESTABLE rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out)
 {
   /* Pre-conditions: out is a local stack variable in rx_bmp280_read (never NULL);
    * s_initialized is true because rx_bmp280_read checks it via RX_CHECK_INITIALIZED. */
+  RX_ASSERT_PRE(out != NULL, "out must be non-NULL");
+  RX_ASSERT_PRE(s_initialized, "BMP280 must be initialized before ADC read");
 
   /* Step 1: Read 6 bytes of ADC data: pressure[3] + temperature[3] */
   uint8_t        adc_buf[k_bmp280_adc_buf_size];

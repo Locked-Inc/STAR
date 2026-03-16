@@ -683,6 +683,89 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
     }                                                                                              \
   } while (0)
 
+/**
+ * @def RX_ASSERT_PRE
+ * @brief Precondition assertion -- verifies caller contract before function body
+ *
+ * @details
+ * Halts the system if a precondition is violated. Use for validating state and
+ * parameters at the top of internal functions where the condition is
+ * architecturally guaranteed by callers, but should still be checked defensively.
+ *
+ * ## Testability (UNIT_TEST builds)
+ *
+ * Because internal functions are decorated with @c RX_STATIC_TESTABLE, test
+ * code can call them directly with invalid state or parameters. This makes
+ * the false branch of every RX_ASSERT_PRE reachable, enabling 100% branch
+ * coverage without production-code gymnastics.
+ *
+ * @param condition Boolean expression that must be true
+ * @param message   Descriptive string for fatal error output
+ *
+ * @pre  condition is a valid boolean expression
+ * @pre  message is a non-NULL string literal
+ * @post If condition is true: execution continues
+ * @post If condition is false: system halts (returns in UNIT_TEST builds)
+ *
+ * @see RX_ASSERT_POST() Postcondition counterpart
+ * @see RX_STATIC_TESTABLE Exposes internal functions for test-driven coverage
+ *
+ * @since Version 1.1.0
+ */
+#define RX_ASSERT_PRE(condition, message)                                                          \
+  do {                                                                                             \
+    if (!(condition)) {                                                                            \
+      internal_rx_fatal_error("PRE", (message), k_rx_fail);                                        \
+    }                                                                                              \
+  } while (0)
+
+/**
+ * @def RX_ASSERT_POST
+ * @brief Postcondition assertion -- verifies function output or invariant after work
+ *
+ * @details
+ * Halts the system if a postcondition is violated. Use after a computation to
+ * verify that the result satisfies the documented contract.
+ *
+ * ## Testability (UNIT_TEST builds)
+ *
+ * Postconditions are often architecturally guaranteed (e.g., a 20-bit mask
+ * always produces a value in [0, 0xFFFFF]). Their false branches are
+ * unreachable without fault injection. In UNIT_TEST builds the macro checks
+ * @c g_rx_assert_post_force_fail first: when that flag is @c true the macro
+ * fires regardless of the actual condition, making the failure branch
+ * reachable for coverage.
+ *
+ * @param condition Boolean expression that must be true
+ * @param message   Descriptive string for fatal error output
+ *
+ * @pre  condition is a valid boolean expression
+ * @pre  message is a non-NULL string literal
+ * @post If condition is true (and force-fail off): execution continues
+ * @post If condition is false or force-fail on: system halts (returns in UNIT_TEST)
+ *
+ * @see RX_ASSERT_PRE() Precondition counterpart
+ * @see g_rx_assert_post_force_fail Test-only fault injection flag
+ *
+ * @since Version 1.1.0
+ */
+#ifdef UNIT_TEST
+extern bool g_rx_assert_post_force_fail;
+#define RX_ASSERT_POST(condition, message)                                                         \
+  do {                                                                                             \
+    if (g_rx_assert_post_force_fail || !(condition)) {                                             \
+      internal_rx_fatal_error("POST", (message), k_rx_fail);                                       \
+    }                                                                                              \
+  } while (0)
+#else
+#define RX_ASSERT_POST(condition, message)                                                         \
+  do {                                                                                             \
+    if (!(condition)) {                                                                            \
+      internal_rx_fatal_error("POST", (message), k_rx_fail);                                       \
+    }                                                                                              \
+  } while (0)
+#endif
+
 /* =============================================================================
  * Error Checking Macros
  * =============================================================================

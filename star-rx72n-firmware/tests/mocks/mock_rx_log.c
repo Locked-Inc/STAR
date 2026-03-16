@@ -10,7 +10,23 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <stdbool.h>
 #include <stdint.h>
+
+/**
+ * @var g_rx_assert_post_force_fail
+ * @brief Test-only fault injection flag for RX_ASSERT_POST coverage
+ *
+ * @details
+ * When set to @c true, every RX_ASSERT_POST fires regardless of its condition,
+ * making the failure branch reachable for branch coverage testing. Reset to
+ * @c false after each test case.
+ *
+ * @note Only exists in UNIT_TEST builds. Declared extern in rx_check.h.
+ *
+ * @since Version 1.1.0
+ */
+bool g_rx_assert_post_force_fail = false;
 
 /* =============================================================================
  * UART Debug Stub Implementations

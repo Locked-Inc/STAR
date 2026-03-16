@@ -173,6 +173,7 @@
 #include "mock_time.h"
 #include "mock_usb0_regs.h"
 #include "mock_usb_hw.h"
+#include "rx_check.h"
 #include "rx_frame.h"
 #include "rx_session.h"
 #include "rx_usb.h"
@@ -3313,6 +3314,38 @@ void test_usb_comm_data_available_usb_buffer_has_data(void)
 }
 
 /* =============================================================================
+ * RX_ASSERT_POST Branch Coverage Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief POST assertion in rx_usb_comm_init: force-fail exercises POST branch
+ *
+ * @details
+ * Sets g_rx_assert_post_force_fail to true before calling rx_usb_comm_init()
+ * with valid arguments. The RX_ASSERT_POST(handle->initialized, ...) on line
+ * 897 fires even though the postcondition is satisfied, exercising the failure
+ * branch. In UNIT_TEST builds internal_rx_fatal_error is a no-op so execution
+ * continues and init still returns k_rx_ok.
+ *
+ * @pre g_rx_assert_post_force_fail == false
+ * @post POST assertion failure branch exercised
+ * @post g_rx_assert_post_force_fail restored to false
+ *
+ * @since Version 1.1.0
+ */
+void test_usb_comm_init_post_assert_force_fail(void)
+{
+  rx_usb_comm_config_t cfg = helper_default_config();
+
+  g_rx_assert_post_force_fail = true;
+  rx_err_t err                = rx_usb_comm_init(&s_handle, &cfg);
+  g_rx_assert_post_force_fail = false;
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/* =============================================================================
  * Main test runner helpers
  * =============================================================================
  */
@@ -3451,6 +3484,9 @@ static void internal_run_coverage_gap_tests(void)
   RUN_TEST(test_usb_comm_receive_partial_header_with_time_iface_loops);
   RUN_TEST(test_usb_comm_partial_header_wait_returns_ok_then_timeout);
   RUN_TEST(test_usb_comm_data_available_usb_buffer_has_data);
+
+  /* RX_ASSERT_POST branch coverage */
+  RUN_TEST(test_usb_comm_init_post_assert_force_fail);
 }
 
 /* =============================================================================

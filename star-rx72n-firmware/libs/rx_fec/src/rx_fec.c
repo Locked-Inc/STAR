@@ -147,7 +147,7 @@ typedef enum : uint8_t {
  * @param[in] x Input byte
  * @return 0 if even parity (even number of 1s), 1 if odd parity
  */
-static uint8_t internal_parity(uint8_t x)
+RX_STATIC_TESTABLE uint8_t internal_parity(uint8_t x)
 {
   /* Compute parity using parallel XOR reduction */
   x ^= x >> k_fec_parity_shift_nibble; /* XOR upper nibble with lower nibble */
@@ -157,6 +157,9 @@ static uint8_t internal_parity(uint8_t x)
   const uint8_t result = x & k_fec_bit_mask;
 
   /* Post-condition: Result must be 0 or 1 */
+  RX_ASSERT_POST((result == k_fec_zero) || (result == k_fec_bit_mask),
+                 "Parity result must be 0 or 1");
+  RX_ASSERT_POST(result <= k_fec_bit_mask, "Parity result must be within bit mask");
 
   return result;
 }
@@ -173,11 +176,21 @@ static uint8_t internal_parity(uint8_t x)
  * @param[in]  bit_idx Bit index (0 = MSB of first byte)
  * @param[in]  value Bit value (0 or 1)
  */
-static void internal_set_output_bit(uint8_t* output, const uint32_t bit_idx, uint8_t value)
+RX_STATIC_TESTABLE void
+internal_set_output_bit(uint8_t* output, const uint32_t bit_idx, uint8_t value)
 {
   /* Pre-condition 1: output must be valid */
+  RX_ASSERT_PRE(output != nullptr, "Output buffer must not be nullptr");
 
   /* Pre-condition 2: bit index must be within maximum symbol range */
+  RX_ASSERT_PRE(bit_idx < (k_fec_max_symbols * k_rx_bits_per_byte), "Bit index out of range");
+
+#ifdef UNIT_TEST
+  if ((output == nullptr) || (bit_idx >= (k_fec_max_symbols * k_rx_bits_per_byte))) {
+    return;
+  }
+#endif
+
   value = (value != 0) ? k_fec_bit_mask : 0;
 
   const uint32_t byte_idx = bit_idx / k_rx_bits_per_byte;
@@ -200,9 +213,16 @@ static void internal_set_output_bit(uint8_t* output, const uint32_t bit_idx, uin
  * @param[in] bit_idx Bit index (0 = MSB of first byte)
  * @return Bit value (0 or 1)
  */
-static uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx)
+RX_STATIC_TESTABLE uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx)
 {
   /* Pre-condition: data must be valid */
+  RX_ASSERT_PRE(data != nullptr, "Data buffer must not be nullptr");
+
+#ifdef UNIT_TEST
+  if (data == nullptr) {
+    return 0;
+  }
+#endif
 
   const uint32_t byte_idx = bit_idx / k_rx_bits_per_byte;
   const uint32_t bit_pos  = k_fec_msb_bit_position - (bit_idx % k_rx_bits_per_byte); /* MSB first */
@@ -210,6 +230,7 @@ static uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx)
   const uint8_t result = (data[byte_idx] >> bit_pos) & k_fec_bit_mask;
 
   /* Post-condition: result must be 0 or 1 */
+  RX_ASSERT_POST((result == k_fec_zero) || (result == k_fec_bit_mask), "Bit result must be 0 or 1");
 
   return result;
 }
@@ -223,12 +244,23 @@ static uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx)
  * @param[out]    out0 First output bit (G1)
  * @param[out]    out1 Second output bit (G2)
  */
-static void
+RX_STATIC_TESTABLE void
 internal_encode_bit(uint8_t* state, const uint8_t input_bit, uint8_t* out0, uint8_t* out1)
 {
   /* Pre-condition 1: All pointers must be valid */
+  RX_ASSERT_PRE(state != nullptr, "State pointer must not be nullptr");
+  RX_ASSERT_PRE(out0 != nullptr, "Output 0 pointer must not be nullptr");
+  RX_ASSERT_PRE(out1 != nullptr, "Output 1 pointer must not be nullptr");
 
   /* Pre-condition 2: input_bit must be 0 or 1 */
+  RX_ASSERT_PRE((input_bit == k_fec_zero) || (input_bit == k_fec_bit_mask),
+                "Input bit must be 0 or 1");
+
+#ifdef UNIT_TEST
+  if ((state == nullptr) || (out0 == nullptr) || (out1 == nullptr)) {
+    return;
+  }
+#endif
 
   /* Shift in the new bit (input is MSB of the combined state) */
   const uint8_t combined = (uint8_t)((input_bit << k_fec_shift_register_bits) | *state);
@@ -275,12 +307,21 @@ static void internal_init_branch_table(
  * @param[in] exp1 Expected second bit (0 or 1)
  * @return Branch metric (lower is better)
  */
-static int32_t internal_branch_metric(const rx_soft_bit_t soft0,
-                                      const rx_soft_bit_t soft1,
-                                      const uint8_t       exp0,
-                                      const uint8_t       exp1)
+RX_STATIC_TESTABLE int32_t internal_branch_metric(const rx_soft_bit_t soft0,
+                                                  const rx_soft_bit_t soft1,
+                                                  const uint8_t       exp0,
+                                                  const uint8_t       exp1)
 {
   /* Pre-conditions: expected bits must be 0 or 1 */
+  RX_ASSERT_PRE((exp0 == k_fec_zero) || (exp0 == k_fec_bit_mask), "Expected bit 0 must be 0 or 1");
+  RX_ASSERT_PRE((exp1 == k_fec_zero) || (exp1 == k_fec_bit_mask), "Expected bit 1 must be 0 or 1");
+
+#ifdef UNIT_TEST
+  if (((exp0 != k_fec_zero) && (exp0 != k_fec_bit_mask)) ||
+      ((exp1 != k_fec_zero) && (exp1 != k_fec_bit_mask))) {
+    return 0;
+  }
+#endif
 
   /* Convert expected bits to soft values: 0 -> -127, 1 -> +127 */
   const int32_t exp0_soft = (exp0 != 0) ? k_soft_bit_max : k_soft_bit_min;
@@ -343,11 +384,25 @@ static void internal_viterbi_process_transition(rx_fec_decoder_t*   dec,
  * @param[in]     soft1 Second soft bit of symbol pair
  * @param[in]     symbol_idx Time step index
  */
-static void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
-                                            const rx_soft_bit_t soft0,
-                                            const rx_soft_bit_t soft1,
-                                            const uint32_t      symbol_idx)
+RX_STATIC_TESTABLE void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
+                                                        const rx_soft_bit_t soft0,
+                                                        const rx_soft_bit_t soft1,
+                                                        const uint32_t      symbol_idx)
 {
+  /* Pre-conditions: valid decoder handle, symbol index in bounds */
+  RX_ASSERT_PRE(dec != nullptr, "Decoder handle must not be nullptr");
+#ifdef UNIT_TEST
+  if (dec == nullptr) {
+    return;
+  }
+#endif
+  RX_ASSERT_PRE(symbol_idx < dec->survivors_len, "Symbol index exceeds survivors buffer length");
+#ifdef UNIT_TEST
+  if (symbol_idx >= dec->survivors_len) {
+    return;
+  }
+#endif
+
   /* Reset new path metrics and clear survivors for this time step */
   for (uint8_t i = k_fec_zero; i < k_fec_num_states; i++) {
     dec->new_path_metrics[i] = INT32_MAX;
@@ -381,11 +436,19 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
  * @param[in]     soft_bits Received soft bits (pairs)
  * @param[in]     num_symbols Number of symbols to process
  */
-static void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
-                                          const rx_soft_bit_t* soft_bits,
-                                          const uint32_t       num_symbols)
+RX_STATIC_TESTABLE void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
+                                                      const rx_soft_bit_t* soft_bits,
+                                                      const uint32_t       num_symbols)
 {
   /* Pre-conditions */
+  RX_ASSERT_PRE(dec != nullptr, "Decoder handle must not be nullptr");
+  RX_ASSERT_PRE(soft_bits != nullptr, "Soft bits buffer must not be nullptr");
+
+#ifdef UNIT_TEST
+  if ((dec == nullptr) || (soft_bits == nullptr)) {
+    return;
+  }
+#endif
 
   /* Initialize path metrics: state 0 = 0, others = MAX */
   for (uint8_t i = k_fec_zero; i < k_fec_num_states; i++) {
@@ -403,6 +466,40 @@ static void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
 }
 
 /**
+ * @brief Validate traceback preconditions
+ *
+ * @param[in] dec Decoder handle
+ * @param[in] num_symbols Total number of symbols processed
+ * @param[in] output Decoded output buffer
+ * @param[in] output_bytes Number of output bytes
+ * @return true if all preconditions met, false otherwise
+ */
+RX_STATIC_TESTABLE bool internal_viterbi_traceback_validate(const rx_fec_decoder_t* dec,
+                                                            const uint32_t          num_symbols,
+                                                            const uint8_t*          output,
+                                                            const uint32_t          output_bytes)
+{
+  RX_ASSERT_PRE(dec != nullptr, "Decoder handle must not be nullptr");
+  RX_ASSERT_PRE(output != nullptr, "Output buffer must not be nullptr");
+  RX_ASSERT_PRE(output_bytes > k_fec_zero, "Output bytes must be greater than zero");
+  bool valid = true;
+#ifdef UNIT_TEST
+  if ((dec == nullptr) || (output == nullptr) || (output_bytes == k_fec_zero)) {
+    valid = false;
+  }
+#endif
+  if (valid) {
+    RX_ASSERT_PRE(num_symbols <= dec->survivors_len, "Number of symbols exceeds survivors buffer");
+#ifdef UNIT_TEST
+    if (num_symbols > dec->survivors_len) {
+      valid = false;
+    }
+#endif
+  }
+  return valid;
+}
+
+/**
  * @brief Perform Viterbi traceback to extract decoded bits
  *
  * Works backwards through the trellis from the terminal state to recover
@@ -414,12 +511,15 @@ static void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
  * @param[out] output Decoded output buffer
  * @param[out] output_bytes Number of output bytes
  */
-static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
-                                       const uint32_t          num_symbols,
-                                       const uint32_t          data_bits,
-                                       uint8_t*                output,
-                                       const uint32_t          output_bytes)
+RX_STATIC_TESTABLE void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
+                                                   const uint32_t          num_symbols,
+                                                   const uint32_t          data_bits,
+                                                   uint8_t*                output,
+                                                   const uint32_t          output_bytes)
 {
+  if (!internal_viterbi_traceback_validate(dec, num_symbols, output, output_bytes)) {
+    return;
+  }
 
   /* Clear output buffer */
   for (uint32_t i = k_fec_zero; i < output_bytes; i++) {

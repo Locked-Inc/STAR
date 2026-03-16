@@ -737,6 +737,7 @@ rx_err_t rx_i2c_comm_init(rx_i2c_comm_handle_t* handle, const rx_i2c_comm_config
   handle->rx_buffer_len = 0;
   handle->rx_buffer_pos = 0;
   handle->initialized   = 1U;
+  RX_ASSERT_POST(handle->initialized, "Handle initialization failed");
 
   rx_log_debug(s_tag, "I2C comm initialized");
   return k_rx_ok;
@@ -747,6 +748,8 @@ rx_err_t rx_i2c_comm_deinit(rx_i2c_comm_handle_t* handle)
   if (handle == nullptr) {
     return k_rx_err_invalid_arg;
   }
+
+  RX_ASSERT_PRE(handle->initialized, "Attempt to deinitialize uninitialized I2C comm handle");
 
   (void)rx_frame_encoder_deinit(&handle->encoder);
   (void)rx_frame_decoder_deinit(&handle->decoder);

@@ -285,8 +285,36 @@
  * @see DOXYGEN_ROADMAP.md Complete documentation tracking
  */
 
+#include "rx_check.h"
 #include "rx_fec.h"
 #include "unity.h"
+
+/* =============================================================================
+ * Extern Internal Functions (RX_STATIC_TESTABLE)
+ *
+ * These functions are compiled as non-static in UNIT_TEST builds via the
+ * RX_STATIC_TESTABLE macro, allowing direct invocation for branch coverage
+ * of RX_ASSERT_PRE and RX_ASSERT_POST failure paths.
+ * =============================================================================
+ */
+extern uint8_t internal_parity(uint8_t x);
+extern void    internal_set_output_bit(uint8_t* output, uint32_t bit_idx, uint8_t value);
+extern uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx);
+extern void    internal_encode_bit(uint8_t* state, uint8_t input_bit, uint8_t* out0, uint8_t* out1);
+extern int32_t
+internal_branch_metric(rx_soft_bit_t soft0, rx_soft_bit_t soft1, uint8_t exp0, uint8_t exp1);
+extern void internal_viterbi_process_symbol(rx_fec_decoder_t* dec,
+                                            rx_soft_bit_t     soft0,
+                                            rx_soft_bit_t     soft1,
+                                            uint32_t          symbol_idx);
+extern void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
+                                          const rx_soft_bit_t* soft_bits,
+                                          uint32_t             num_symbols);
+extern void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
+                                       uint32_t                num_symbols,
+                                       uint32_t                data_bits,
+                                       uint8_t*                output,
+                                       uint32_t                output_bytes);
 
 /* =============================================================================
  * Test Fixtures
@@ -2360,6 +2388,292 @@ void test_multiple_bit_error_correction(void)
 /** @} */ // end of test_fec_error_correction
 
 /* =============================================================================
+ * Internal Function Assertion Coverage Tests (RX_STATIC_TESTABLE)
+ *
+ * These tests exercise the failure branches of RX_ASSERT_PRE and
+ * RX_ASSERT_POST in internal helper functions.  In UNIT_TEST builds the
+ * fatal-error handler is a no-op, so the tests simply verify no crash.
+ * =============================================================================
+ */
+
+/**
+ * @brief Overflow constant for internal_set_output_bit bit_idx range check
+ *
+ * @details Any value >= k_fec_max_symbols * k_rx_bits_per_byte triggers the
+ * RX_ASSERT_PRE on line 184.
+ */
+typedef enum : uint32_t {
+  k_bit_idx_overflow = 70000U, /**< Exceeds k_fec_max_symbols * 8 (65600) */
+} fec_assert_test_constants_t;
+
+/**
+ * @brief Invalid input bit value for internal_encode_bit PRE assertion
+ */
+typedef enum : uint8_t {
+  k_invalid_bit_value = 0x02U, /**< Neither 0 nor 1 */
+} fec_invalid_bit_t;
+
+/* ---- internal_parity POST assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_parity POST assertion via force-fail flag
+ *
+ * @details
+ * internal_parity always returns 0 or 1, so the POST assertions on lines
+ * 160-161 can only fire via the g_rx_assert_post_force_fail test hook.
+ * This test sets the flag, calls with valid input, then resets it.
+ *
+ * @test Covers lines 160-161 (RX_ASSERT_POST failure branch)
+ */
+void test_internal_parity_post_force_fail(void)
+{
+  g_rx_assert_post_force_fail = true;
+  (void)internal_parity(k_byte_55);
+  g_rx_assert_post_force_fail = false;
+  TEST_PASS();
+}
+
+/* ---- internal_set_output_bit PRE assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_set_output_bit with nullptr output
+ *
+ * @test Covers line 181 (RX_ASSERT_PRE: output != nullptr)
+ */
+void test_internal_set_output_bit_null(void)
+{
+  internal_set_output_bit(nullptr, 0, 0);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_set_output_bit with out-of-range bit_idx
+ *
+ * @test Covers line 184 (RX_ASSERT_PRE: bit_idx < k_fec_max_symbols * 8)
+ */
+void test_internal_set_output_bit_index_overflow(void)
+{
+  uint8_t buf[k_buf_size_enc32] = {0};
+  internal_set_output_bit(buf, k_bit_idx_overflow, 1);
+  TEST_PASS();
+}
+
+/* ---- internal_get_bit PRE/POST assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_get_bit with nullptr data
+ *
+ * @test Covers line 210 (RX_ASSERT_PRE: data != nullptr)
+ */
+void test_internal_get_bit_null(void)
+{
+  (void)internal_get_bit(nullptr, 0);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_get_bit POST assertion via force-fail flag
+ *
+ * @details
+ * internal_get_bit always returns 0 or 1 with valid data, so the POST
+ * assertion on line 218 can only fire via g_rx_assert_post_force_fail.
+ *
+ * @test Covers line 218 (RX_ASSERT_POST failure branch)
+ */
+void test_internal_get_bit_post_force_fail(void)
+{
+  const uint8_t data[] = {k_byte_aa};
+
+  g_rx_assert_post_force_fail = true;
+  (void)internal_get_bit(data, 0);
+  g_rx_assert_post_force_fail = false;
+  TEST_PASS();
+}
+
+/* ---- internal_encode_bit PRE assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_encode_bit with nullptr state
+ *
+ * @test Covers line 236 (RX_ASSERT_PRE: state != nullptr)
+ */
+void test_internal_encode_bit_null_state(void)
+{
+  uint8_t out0 = 0;
+  uint8_t out1 = 0;
+  internal_encode_bit(nullptr, 0, &out0, &out1);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_encode_bit with nullptr out0
+ *
+ * @test Covers line 237 (RX_ASSERT_PRE: out0 != nullptr)
+ */
+void test_internal_encode_bit_null_out0(void)
+{
+  uint8_t state = 0;
+  uint8_t out1  = 0;
+  internal_encode_bit(&state, 0, nullptr, &out1);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_encode_bit with nullptr out1
+ *
+ * @test Covers line 238 (RX_ASSERT_PRE: out1 != nullptr)
+ */
+void test_internal_encode_bit_null_out1(void)
+{
+  uint8_t state = 0;
+  uint8_t out0  = 0;
+  internal_encode_bit(&state, 0, &out0, nullptr);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_encode_bit with invalid input_bit value
+ *
+ * @details
+ * Passes 0x02 as input_bit, which is neither 0 nor 1, triggering the
+ * RX_ASSERT_PRE on line 241.
+ *
+ * @test Covers line 241 (RX_ASSERT_PRE: input_bit == 0 || input_bit == 1)
+ */
+void test_internal_encode_bit_invalid_input(void)
+{
+  uint8_t state = 0;
+  uint8_t out0  = 0;
+  uint8_t out1  = 0;
+  internal_encode_bit(&state, k_invalid_bit_value, &out0, &out1);
+  TEST_PASS();
+}
+
+/* ---- internal_branch_metric PRE assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_branch_metric with invalid expected bit values
+ *
+ * @details
+ * Passes 0x02 for exp0 and exp1, triggering the RX_ASSERT_PRE assertions
+ * on lines 294-295.
+ *
+ * @test Covers lines 294-295 (RX_ASSERT_PRE: exp0/exp1 must be 0 or 1)
+ */
+void test_internal_branch_metric_invalid_expected(void)
+{
+  (void)internal_branch_metric(0, 0, k_invalid_bit_value, k_invalid_bit_value);
+  TEST_PASS();
+}
+
+/* ---- internal_viterbi_process_symbol PRE assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_viterbi_process_symbol with nullptr decoder
+ *
+ * @test Covers line 364 (RX_ASSERT_PRE: dec != nullptr)
+ */
+void test_internal_viterbi_process_symbol_null(void)
+{
+  internal_viterbi_process_symbol(nullptr, 0, 0, 0);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_viterbi_process_symbol with out-of-range symbol_idx
+ *
+ * @details
+ * Uses the initialized s_decoder (survivors_len = k_fec_max_symbols) and
+ * passes symbol_idx = k_fec_max_symbols, which equals survivors_len and
+ * therefore fails the < check on line 367.
+ *
+ * @test Covers line 367 (RX_ASSERT_PRE: symbol_idx < dec->survivors_len)
+ */
+void test_internal_viterbi_process_symbol_idx_overflow(void)
+{
+  internal_viterbi_process_symbol(&s_decoder, 0, 0, k_fec_max_symbols);
+  TEST_PASS();
+}
+
+/* ---- internal_viterbi_forward_pass PRE assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_viterbi_forward_pass with nullptr decoder
+ *
+ * @test Covers line 407 (RX_ASSERT_PRE: dec != nullptr)
+ */
+void test_internal_viterbi_forward_pass_null_dec(void)
+{
+  rx_soft_bit_t soft[k_buf_size_enc32] = {0};
+  internal_viterbi_forward_pass(nullptr, soft, 0);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_viterbi_forward_pass with nullptr soft_bits
+ *
+ * @test Covers line 408 (RX_ASSERT_PRE: soft_bits != nullptr)
+ */
+void test_internal_viterbi_forward_pass_null_soft(void)
+{
+  internal_viterbi_forward_pass(&s_decoder, nullptr, 0);
+  TEST_PASS();
+}
+
+/* ---- internal_viterbi_traceback PRE assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_viterbi_traceback with nullptr decoder
+ *
+ * @test Covers line 444 (RX_ASSERT_PRE: dec != nullptr)
+ */
+void test_internal_viterbi_traceback_null_dec(void)
+{
+  uint8_t output[k_buf_size_out16] = {0};
+  internal_viterbi_traceback(nullptr, 0, 0, output, k_input_len_1);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_viterbi_traceback with nullptr output
+ *
+ * @test Covers line 445 (RX_ASSERT_PRE: output != nullptr)
+ */
+void test_internal_viterbi_traceback_null_output(void)
+{
+  internal_viterbi_traceback(&s_decoder, 0, 0, nullptr, k_input_len_1);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_viterbi_traceback with zero output_bytes
+ *
+ * @test Covers line 446 (RX_ASSERT_PRE: output_bytes > 0)
+ */
+void test_internal_viterbi_traceback_zero_output_bytes(void)
+{
+  uint8_t output[k_buf_size_out16] = {0};
+  internal_viterbi_traceback(&s_decoder, 0, 0, output, 0);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_viterbi_traceback with num_symbols > survivors_len
+ *
+ * @details
+ * Uses s_decoder with survivors_len = k_fec_max_symbols and passes
+ * num_symbols = k_fec_max_symbols + 1, triggering the <= check on line 447.
+ *
+ * @test Covers line 447 (RX_ASSERT_PRE: num_symbols <= dec->survivors_len)
+ */
+void test_internal_viterbi_traceback_num_symbols_overflow(void)
+{
+  uint8_t output[k_buf_size_out16] = {0};
+  internal_viterbi_traceback(&s_decoder, k_fec_max_symbols + 1U, 0, output, k_input_len_1);
+  TEST_PASS();
+}
+
+/* =============================================================================
  * Main
  * =============================================================================
  */
@@ -2477,6 +2791,54 @@ static void internal_run_roundtrip_and_error_tests(void)
 }
 
 /**
+ * @brief Run internal function assertion coverage tests
+ *
+ * @details
+ * Groups RX_ASSERT_PRE and RX_ASSERT_POST failure-branch coverage tests
+ * for RX_STATIC_TESTABLE internal helper functions. These tests exercise
+ * the assertion failure paths that are unreachable through the public API.
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post 18 tests queued for execution
+ */
+static void internal_run_assert_coverage_tests(void)
+{
+  /* internal_parity POST */
+  RUN_TEST(test_internal_parity_post_force_fail);
+
+  /* internal_set_output_bit PRE */
+  RUN_TEST(test_internal_set_output_bit_null);
+  RUN_TEST(test_internal_set_output_bit_index_overflow);
+
+  /* internal_get_bit PRE/POST */
+  RUN_TEST(test_internal_get_bit_null);
+  RUN_TEST(test_internal_get_bit_post_force_fail);
+
+  /* internal_encode_bit PRE */
+  RUN_TEST(test_internal_encode_bit_null_state);
+  RUN_TEST(test_internal_encode_bit_null_out0);
+  RUN_TEST(test_internal_encode_bit_null_out1);
+  RUN_TEST(test_internal_encode_bit_invalid_input);
+
+  /* internal_branch_metric PRE */
+  RUN_TEST(test_internal_branch_metric_invalid_expected);
+
+  /* internal_viterbi_process_symbol PRE */
+  RUN_TEST(test_internal_viterbi_process_symbol_null);
+  RUN_TEST(test_internal_viterbi_process_symbol_idx_overflow);
+
+  /* internal_viterbi_forward_pass PRE */
+  RUN_TEST(test_internal_viterbi_forward_pass_null_dec);
+  RUN_TEST(test_internal_viterbi_forward_pass_null_soft);
+
+  /* internal_viterbi_traceback PRE */
+  RUN_TEST(test_internal_viterbi_traceback_null_dec);
+  RUN_TEST(test_internal_viterbi_traceback_null_output);
+  RUN_TEST(test_internal_viterbi_traceback_zero_output_bytes);
+  RUN_TEST(test_internal_viterbi_traceback_num_symbols_overflow);
+}
+
+/**
  * @brief Main test runner for FEC unit tests
  *
  * @details
@@ -2504,5 +2866,6 @@ int main(void)
   internal_run_encode_and_conversion_tests();
   internal_run_decode_validation_tests();
   internal_run_roundtrip_and_error_tests();
+  internal_run_assert_coverage_tests();
   return UNITY_END();
 }

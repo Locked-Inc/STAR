@@ -209,6 +209,10 @@ RX_STATIC_TESTABLE void internal_delay_timer_init(void)
     return;
   }
 
+  RX_ASSERT_PRE(system_regs() != nullptr, "System registers unavailable");
+  RX_ASSERT_PRE(cmt_ctrl() != nullptr, "CMT control registers unavailable");
+  RX_ASSERT_PRE(cmt3() != nullptr, "CMT3 registers unavailable");
+
   /* Enable CMT module clock */
   *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
   system_regs()->mstpcrb &= ~(k_onewire_bit_set << k_onewire_mstpb_cmt_bit);
