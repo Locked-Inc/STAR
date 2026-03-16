@@ -1436,7 +1436,7 @@ static void internal_reset_mock_state(void)
   /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset((uint8_t*)&s_mock_state, 0, sizeof(s_mock_state));
   s_mock_state.presence_response = true;
-  s_mock_state.power_mode        = (uint8_t) true; /* External power */
+  s_mock_state.power_mode        = (uint8_t)true; /* External power */
   s_mock_state.initialized       = false;
 
   /* Default scratchpad: +25.0degC at 12-bit resolution */
@@ -2200,7 +2200,7 @@ void test_ds18b20_read_power_mode_external(void)
 
   internal_init_handle(&handle);
 
-  s_mock_state.power_mode = (uint8_t) true;
+  s_mock_state.power_mode = (uint8_t)true;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   rx_err_t err = rx_ds18b20_read_power_mode(&handle, &external_power);
@@ -2234,7 +2234,7 @@ void test_ds18b20_read_power_mode_parasitic(void)
 
   internal_init_handle(&handle);
 
-  s_mock_state.power_mode = (uint8_t) false;
+  s_mock_state.power_mode = (uint8_t)false;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
   rx_err_t err = rx_ds18b20_read_power_mode(&handle, &external_power);

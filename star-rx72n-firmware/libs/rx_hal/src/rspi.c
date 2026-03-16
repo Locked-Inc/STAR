@@ -764,7 +764,7 @@ rx_err_t rspi_peripheral_transfer(const rspi_channel_t channel,
     rx_data[i] = (uint8_t)rspi->spdr;
 
     /* Clear status flags */
-    rspi->spsr &= (uint8_t) ~(uint8_t)(k_rspi_spsr_sprf | k_rspi_spsr_ovrf);
+    rspi->spsr &= (uint8_t)~(uint8_t)(k_rspi_spsr_sprf | k_rspi_spsr_ovrf);
   }
 
   return k_rx_ok;
@@ -1623,7 +1623,7 @@ static rx_err_t internal_controller_do_16bit_transfer(volatile rx_rspi_regs_t* r
   *rx_data = (uint16_t)rspi->spdr;
 
   /* Clear status flags */
-  rspi->spsr &= (uint8_t) ~(uint8_t)(k_rspi_spsr_sprf | k_rspi_spsr_ovrf);
+  rspi->spsr &= (uint8_t)~(uint8_t)(k_rspi_spsr_sprf | k_rspi_spsr_ovrf);
 
   return k_rx_ok;
 }
