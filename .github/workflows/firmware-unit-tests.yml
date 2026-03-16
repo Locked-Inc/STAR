@@ -135,6 +135,7 @@ jobs:
             --exclude '.*/rx_nanopb/inc/gen/.*' \
             --exclude '.*/rx_hal/inc/rx72n_port_regs.h' \
             --exclude '.*/rx_hal/inc/rx_port_utils.h' \
+            --exclude '.*/CMakeFiles/.*' \
             -j 1 \
             --print-summary \
             --fail-under-line 100 \

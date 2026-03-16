@@ -66,6 +66,11 @@ if(ENABLE_CLANG_TIDY)
 
     message(STATUS "clang-tidy enabled: ${CLANG_TIDY_EXE} (version ${CLANG_TIDY_VERSION_MAJOR})")
 
+    # Do NOT use --config-file here.  Omitting it lets clang-tidy walk up the
+    # directory tree from each source file, picking up tests/.clang-tidy (which
+    # relaxes function-size limits for Unity test runners) before falling through
+    # to star-rx72n-firmware/.clang-tidy for production code.
+    #
     # -std=c2x: pre-ratification name for C23; supported by clang-16+ and required
     # for typed enum syntax (typedef enum : uint8_t {}).  Use c2x rather than c23
     # for maximum clang version compatibility.
@@ -73,7 +78,6 @@ if(ENABLE_CLANG_TIDY)
     # static analysis sees the same conditional flags as the test build.
     set(CMAKE_C_CLANG_TIDY
         "${CLANG_TIDY_EXE}"
-        "--config-file=${_clang_tidy_config}"
         "--extra-arg=-std=c2x"
         "--extra-arg=-DUNIT_TEST"
         "--extra-arg=-DRX_SIMULATOR_MODE"
