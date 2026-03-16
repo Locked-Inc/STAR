@@ -254,10 +254,10 @@ jobs:
             });
             const botComment = comments.find(comment =>
               comment.user.type === 'Bot' &&
-              comment.body.includes('🤖 Automated Code Review')
+              comment.body.includes('[BOT] Automated Code Review')
             );
 
-            const body = '## 🤖 Automated Code Review\n\n```\n' + truncated + '\n```';
+            const body = '## [BOT] Automated Code Review\n\n```\n' + truncated + '\n```';
 
             if (botComment) {
               // Update existing comment

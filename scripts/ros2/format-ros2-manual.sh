@@ -4,7 +4,7 @@ IFS=$'\n\t'
 # Manual ROS2 formatting instructions
 # Use this when devcontainer is not available
 
-echo "📋 Manual ROS2 Formatting Instructions"
+echo " Manual ROS2 Formatting Instructions"
 echo "========================================"
 echo ""
 echo "Since ament_uncrustify requires ROS2, you need to run these commands"
@@ -14,7 +14,7 @@ echo "Option 1: Using VS Code Devcontainer (Recommended)"
 echo "---------------------------------------------------"
 echo "1. Open VS Code"
 echo "2. Click 'Reopen in Container' (bottom-right notification)"
-echo "   Or: Cmd+Shift+P → 'Dev Containers: Reopen in Container'"
+echo "   Or: Cmd+Shift+P -> 'Dev Containers: Reopen in Container'"
 echo "3. Open a terminal in VS Code"
 echo "4. Run: ./scripts/ros2/format-ros2.sh"
 echo ""

@@ -83,12 +83,17 @@ static void internal_record_call(mock_hcsr04_hw_t* mock,
 
   if (m->call_count < k_mock_hcsr04_max_calls) {
     mock_hcsr04_call_t* call = &m->call_history[m->call_count];
-    strncpy(call->function, function, k_mock_hcsr04_func_name_max - 1);
-    call->function[k_mock_hcsr04_func_name_max - 1] = '\0';
-    call->port                                      = port;
-    call->pin                                       = pin;
-    call->value                                     = value;
-    call->return_value                              = ret;
+    {
+      uint8_t ci = 0;
+      for (; ci < k_mock_hcsr04_func_name_max - 1 && function[ci] != '\0'; ci++) {
+        call->function[ci] = function[ci];
+      }
+      call->function[ci] = '\0';
+    }
+    call->port         = port;
+    call->pin          = pin;
+    call->value        = value;
+    call->return_value = ret;
     m->call_count++;
   }
 }
@@ -101,6 +106,7 @@ static void internal_record_call(mock_hcsr04_hw_t* mock,
 void mock_hcsr04_hw_init(mock_hcsr04_hw_t* mock)
 {
   mock_hcsr04_hw_t* m = internal_get_mock(mock);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(m, 0, sizeof(mock_hcsr04_hw_t));
   m->initialized       = true;
   m->simulated_echo_us = k_default_test_distance_cm * k_us_per_cm;
@@ -124,6 +130,7 @@ void mock_hcsr04_hw_reset(mock_hcsr04_hw_t* mock)
   bool     inject_pin_conflict = m->inject_pin_conflict;
   uint32_t echo_us             = m->simulated_echo_us;
 
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(m, 0, sizeof(mock_hcsr04_hw_t));
 
   m->initialized         = true;
@@ -167,6 +174,48 @@ void mock_hcsr04_hw_set_gpio_error(mock_hcsr04_hw_t* mock, bool error)
 {
   mock_hcsr04_hw_t* m  = internal_get_mock(mock);
   m->inject_gpio_error = error;
+}
+
+void mock_hcsr04_hw_set_gpio_input_error(mock_hcsr04_hw_t* mock, bool error)
+{
+  mock_hcsr04_hw_t* m        = internal_get_mock(mock);
+  m->inject_gpio_input_error = error;
+}
+
+void mock_hcsr04_hw_set_gpio_read_error(mock_hcsr04_hw_t* mock, bool error)
+{
+  mock_hcsr04_hw_t* m       = internal_get_mock(mock);
+  m->inject_gpio_read_error = error;
+}
+
+void mock_hcsr04_hw_set_gpio_write_error(mock_hcsr04_hw_t* mock, bool error)
+{
+  mock_hcsr04_hw_t* m        = internal_get_mock(mock);
+  m->inject_gpio_write_error = error;
+}
+
+void mock_hcsr04_hw_set_gpio_write_high_error(mock_hcsr04_hw_t* mock, bool error)
+{
+  mock_hcsr04_hw_t* m             = internal_get_mock(mock);
+  m->inject_gpio_write_high_error = error;
+}
+
+void mock_hcsr04_hw_set_gpio_write_low_fail_after(mock_hcsr04_hw_t* mock, uint32_t count)
+{
+  mock_hcsr04_hw_t* m                = internal_get_mock(mock);
+  m->gpio_write_low_fail_after_count = count;
+}
+
+void mock_hcsr04_hw_set_gpio_deinit_error(mock_hcsr04_hw_t* mock, bool error)
+{
+  mock_hcsr04_hw_t* m         = internal_get_mock(mock);
+  m->inject_gpio_deinit_error = error;
+}
+
+void mock_hcsr04_hw_set_gpio_deinit_fail_after(mock_hcsr04_hw_t* mock, uint32_t count)
+{
+  mock_hcsr04_hw_t* m             = internal_get_mock(mock);
+  m->gpio_deinit_fail_after_count = count;
 }
 
 void mock_hcsr04_hw_set_pin_conflict(mock_hcsr04_hw_t* mock, bool conflict)
@@ -262,7 +311,7 @@ rx_err_t mock_gpio_set_input(uint8_t port, uint8_t pin)
   mock_hcsr04_hw_t* m   = internal_get_mock(nullptr);
   rx_err_t          ret = k_rx_ok;
 
-  if (m->inject_gpio_error) {
+  if (m->inject_gpio_input_error) {
     ret = k_rx_err_hw_init_failed;
   } else if (m->inject_pin_conflict) {
     ret = k_rx_err_gpio_conflict;
@@ -276,29 +325,49 @@ rx_err_t mock_gpio_set_input(uint8_t port, uint8_t pin)
 
 rx_err_t mock_gpio_write_high(uint8_t port, uint8_t pin)
 {
-  mock_hcsr04_hw_t* m = internal_get_mock(nullptr);
+  mock_hcsr04_hw_t* m   = internal_get_mock(nullptr);
+  rx_err_t          ret = k_rx_ok;
+
+  if (m->inject_gpio_write_high_error) {
+    internal_record_call(nullptr, "gpio_write_high", port, pin, true, k_rx_err_hw_error);
+    m->gpio_write_high_count++;
+    return k_rx_err_hw_error;
+  }
 
   m->trigger_pin_state = true;
-  internal_record_call(nullptr, "gpio_write_high", port, pin, true, k_rx_ok);
+  internal_record_call(nullptr, "gpio_write_high", port, pin, true, ret);
   m->gpio_write_high_count++;
 
-  return k_rx_ok;
+  return ret;
 }
 
 rx_err_t mock_gpio_write_low(uint8_t port, uint8_t pin)
 {
-  mock_hcsr04_hw_t* m = internal_get_mock(nullptr);
+  mock_hcsr04_hw_t* m   = internal_get_mock(nullptr);
+  rx_err_t          ret = k_rx_ok;
+
+  if (m->inject_gpio_write_error) {
+    ret = k_rx_err_hw_error;
+  } else if (m->gpio_write_low_fail_after_count > 0) {
+    m->gpio_write_low_fail_after_count--;
+    if (m->gpio_write_low_fail_after_count == 0) {
+      ret = k_rx_err_hw_error;
+    }
+  }
 
   /* Detect trigger pulse completion (high->low transition) */
-  if (m->trigger_pin_state) {
+  /* NOLINTNEXTLINE(readability-implicit-bool-conversion) */
+  if (ret == k_rx_ok && m->trigger_pin_state) {
     m->trigger_pulse_count++;
   }
 
-  m->trigger_pin_state = false;
-  internal_record_call(nullptr, "gpio_write_low", port, pin, false, k_rx_ok);
+  if (ret == k_rx_ok) {
+    m->trigger_pin_state = false;
+  }
+  internal_record_call(nullptr, "gpio_write_low", port, pin, false, ret);
   m->gpio_write_low_count++;
 
-  return k_rx_ok;
+  return ret;
 }
 
 rx_err_t mock_gpio_read(uint8_t port, uint8_t pin, bool* value)
@@ -309,11 +378,14 @@ rx_err_t mock_gpio_read(uint8_t port, uint8_t pin, bool* value)
     return k_rx_err_null_ptr;
   }
 
+  if (m->inject_gpio_read_error) {
+    internal_record_call(nullptr, "gpio_read", port, pin, false, k_rx_err_hw_error);
+    m->gpio_read_count++;
+    return k_rx_err_hw_error;
+  }
+
   /* Simulate echo behavior based on timing */
-  if (m->inject_timeout) {
-    /* Echo never goes high */
-    *value = false;
-  } else if (m->trigger_pulse_count > 0) {
+  if (!m->inject_timeout && m->trigger_pulse_count > 0) {
     /*
      * After trigger pulse, simulate echo timing:
      * - Echo goes high shortly after trigger (~10us)
@@ -328,13 +400,9 @@ rx_err_t mock_gpio_read(uint8_t port, uint8_t pin, bool* value)
       k_hcsr04_trigger_settle_us + k_hcsr04_trigger_pulse_us; /* Wait for trigger pulse to finish */
     const uint32_t echo_end = echo_start + m->simulated_echo_us;
 
-    if (elapsed >= echo_start && elapsed < echo_end) {
-      *value = true;
-    } else {
-      *value = false;
-    }
+    *value = (bool)(elapsed >= echo_start && elapsed < echo_end);
   } else {
-    /* No trigger sent yet, echo is low */
+    /* Timeout injected or no trigger sent yet: echo is low */
     *value = false;
   }
 
@@ -352,8 +420,18 @@ rx_err_t mock_gpio_read(uint8_t port, uint8_t pin, bool* value)
 
 rx_err_t mock_gpio_deinit(uint8_t port, uint8_t pin)
 {
-  internal_record_call(nullptr, "gpio_deinit", port, pin, false, k_rx_ok);
-  return k_rx_ok;
+  mock_hcsr04_hw_t* m   = internal_get_mock(nullptr);
+  rx_err_t          ret = k_rx_ok;
+
+  /* NOLINTNEXTLINE(readability-implicit-bool-conversion) */
+  if (m->inject_gpio_deinit_error || (m->gpio_deinit_fail_after_count > 0U &&
+                                      m->gpio_deinit_count >= m->gpio_deinit_fail_after_count)) {
+    ret = k_rx_err_hw_error;
+  }
+
+  internal_record_call(nullptr, "gpio_deinit", port, pin, false, ret);
+  m->gpio_deinit_count++;
+  return ret;
 }
 
 /* =============================================================================

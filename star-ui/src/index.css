@@ -4,7 +4,7 @@
 :root {
   --font-sans: "SF Pro Display", -apple-system, blinkmacsystemfont, "Inter", sans-serif;
 
-  /* ── Dark theme (default) ── */
+  /* -- Dark theme (default) -- */
   --color-text: #FFFFFF;
   --color-text-muted: #8E8E93;
   --color-text-dim: #AEAEB2;
@@ -40,7 +40,7 @@
   --placeholder-border: rgba(0, 200, 255, 0.5);
   --drag-opacity: 0.6;
 
-  /* Text at various opacities — used by inline panel styles */
+  /* Text at various opacities -- used by inline panel styles */
   --text-85: rgba(255, 255, 255, 0.85);
   --text-80: rgba(255, 255, 255, 0.8);
   --text-70: rgba(255, 255, 255, 0.7);
@@ -65,7 +65,7 @@
   --divider: rgba(255, 255, 255, 0.4);
 }
 
-/* ── Light theme ── */
+/* -- Light theme -- */
 [data-theme="light"] {
   --color-text: #1C1C1E;
   --color-text-muted: #636366;
@@ -517,9 +517,9 @@ body {
   overflow-x: hidden;
 }
 
-/* ────────────────────────────────────
+/* ------------------------------------
    Panel Maximize Button
-   ──────────────────────────────────── */
+   ------------------------------------ */
 .panel-maximize-btn {
   position: absolute;
   top: 8px;
@@ -550,9 +550,9 @@ body {
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* ────────────────────────────────────
+/* ------------------------------------
    Maximize Overlay (fullscreen panel)
-   ──────────────────────────────────── */
+   ------------------------------------ */
 .panel-maximize-overlay {
   position: fixed;
   inset: 0;

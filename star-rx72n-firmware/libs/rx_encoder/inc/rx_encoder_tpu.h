@@ -82,7 +82,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -339,6 +338,46 @@ rx_tpu_encoder_read_velocity(float* velocity_rps, float delta_time_s, rx_tpu_cha
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_tpu_encoder_deinit(rx_tpu_channel_t channel);
+
+#ifdef UNIT_TEST
+/**
+ * @brief Corrupt the counts_per_rev field for a channel (test-only)
+ *
+ * @details
+ * Sets s_counts_per_rev[channel] = 0 to exercise runtime cpr-corrupted guards
+ * in internal_update_state(), rx_tpu_encoder_read_velocity(), and
+ * rx_tpu_encoder_set_count(). Available only in UNIT_TEST builds.
+ *
+ * @param[in] channel TPU channel (must be valid: 1, 2, 4, or 5)
+ * @post s_counts_per_rev[channel] == 0
+ *
+ * @note Test-only; not compiled into production firmware
+ * @since Version 1.0.0
+ */
+void rx_tpu_encoder_test_corrupt_cpr(rx_tpu_channel_t channel);
+#endif /* UNIT_TEST */
+
+#ifdef UNIT_TEST
+/**
+ * @brief Direct access to internal_update_state for white-box testing (test-only)
+ *
+ * @details
+ * Exposes the RX_STATIC_TESTABLE internal_update_state() function when compiled
+ * with UNIT_TEST defined. Allows tests to exercise defensive guard paths that
+ * are unreachable through the public API (null state, uninit channel, position
+ * overflow) without modifying production code paths.
+ *
+ * @param[out] state Output state structure (may be NULL to test null guard)
+ * @param[in] channel TPU channel (may be invalid to test channel guard)
+ * @param[in] current_count Current 16-bit TCNT value
+ *
+ * @return rx_err_t Error code as returned by internal_update_state
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t
+internal_update_state(rx_encoder_state_t* state, rx_tpu_channel_t channel, uint16_t current_count);
+#endif /* UNIT_TEST */
 
 #ifdef __cplusplus
 }

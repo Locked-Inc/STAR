@@ -162,6 +162,7 @@ static rx_err_t internal_check_error(void)
 
 void mock_adc_init(void)
 {
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&g_mock_adc, 0, sizeof(g_mock_adc));
 }
 
@@ -314,9 +315,8 @@ rx_err_t adc_init(adc_unit_t unit, adc_channel_t channel, adc_resolution_t bits)
   }
 
   /* Validate resolution */
-  if ((uint8_t)bits != (uint8_t)k_mock_adc_resolution_8bit &&
-      (uint8_t)bits != (uint8_t)k_mock_adc_resolution_10bit &&
-      (uint8_t)bits != (uint8_t)k_mock_adc_resolution_12bit) {
+  if ((uint8_t)bits != k_mock_adc_resolution_8bit && (uint8_t)bits != k_mock_adc_resolution_10bit &&
+      (uint8_t)bits != k_mock_adc_resolution_12bit) {
     return k_rx_err_invalid_arg;
   }
 
@@ -482,15 +482,15 @@ rx_err_t adc_read_voltage_mv(adc_unit_t       unit,
   }
 
   /* Validate resolution */
-  if ((uint8_t)bits != (uint8_t)k_mock_adc_resolution_8bit &&
-      (uint8_t)bits != (uint8_t)k_mock_adc_resolution_10bit &&
-      (uint8_t)bits != (uint8_t)k_mock_adc_resolution_12bit) {
+  if ((uint8_t)bits != k_mock_adc_resolution_8bit && (uint8_t)bits != k_mock_adc_resolution_10bit &&
+      (uint8_t)bits != k_mock_adc_resolution_12bit) {
     return k_rx_err_invalid_arg;
   }
 
   /* Validate resolution matches unit's configured resolution (matches production behavior) */
-  if ((uint8_t)unit < k_mock_adc_max_units && g_mock_adc.units[unit].initialized &&
-      g_mock_adc.units[unit].resolution != (uint8_t)bits) {
+  if ((uint8_t)unit < k_mock_adc_max_units &&
+      /* NOLINTNEXTLINE(readability-implicit-bool-conversion) */
+      g_mock_adc.units[unit].initialized && g_mock_adc.units[unit].resolution != (uint8_t)bits) {
     return k_rx_err_invalid_arg;
   }
 

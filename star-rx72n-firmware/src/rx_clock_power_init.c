@@ -310,6 +310,200 @@ typedef enum : uint8_t {
  */
 
 /**
+ * @brief Wait for hardware PLL to achieve frequency lock
+ *
+ * @details
+ * Polls the OSCOVFSR register until the PLL stable flag is set.
+ * Bounded by k_pll_stabilization_timeout to satisfy NASA Rule 2.
+ * Returns immediately in simulator mode (hardware PLL not modeled).
+ *
+ * @return rx_err_t Result code
+ * @retval k_rx_ok PLL locked within timeout
+ * @retval k_rx_err_hw_timeout PLL did not lock before timeout expired
+ *
+ * @pre PLL must be enabled (pllcr2 = k_pll_enabled) before calling
+ * @pre PRCR registers must be unlocked
+ *
+ * @post On success: PLL oscillator is stable and locked
+ * @post On failure: PRCR is re-locked before returning error
+ *
+ * @note Not thread-safe; call only during single-threaded boot
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_wait_pll_lock(void)
+{
+#if RX_IS_SIMULATOR
+  /* Simulator: PLL stable immediately (no hardware PLL circuit to lock) */
+  return k_rx_ok;
+#else
+  uint32_t timeout = k_pll_stabilization_timeout;
+  while ((system_regs()->oscovfsr & k_pll_stable_flag) == k_pll_stable_flag_unset &&
+         timeout > k_pll_stabilization_timeout_expired) {
+    timeout--;
+  }
+  if (timeout == k_pll_stabilization_timeout_expired) {
+    *prcr_reg() = k_rx_prcr_lock;
+    return k_rx_err_hw_timeout;
+  }
+  return k_rx_ok;
+#endif
+}
+
+/**
+ * @brief Wait for hardware PPLL (USB clock) to achieve frequency lock
+ *
+ * @details
+ * Polls the OSCOVFSR register until the PPLL stable flag is set.
+ * Bounded by k_pll_stabilization_timeout to satisfy NASA Rule 2.
+ * Returns immediately in simulator mode (hardware PPLL not modeled).
+ *
+ * @return rx_err_t Result code
+ * @retval k_rx_ok PPLL locked within timeout
+ * @retval k_rx_err_hw_timeout PPLL did not lock before timeout expired
+ *
+ * @pre PPLL must be enabled (ppllcr2 = k_ppll_enabled) before calling
+ * @pre PRCR registers must be unlocked
+ *
+ * @post On success: PPLL oscillator is stable and locked
+ * @post On failure: PRCR is re-locked before returning error
+ *
+ * @note Not thread-safe; call only during single-threaded boot
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_wait_ppll_lock(void)
+{
+#if RX_IS_SIMULATOR
+  /* Simulator: PPLL stable immediately (no hardware PPLL circuit to lock) */
+  return k_rx_ok;
+#else
+  uint32_t timeout = k_pll_stabilization_timeout;
+  while ((system_regs()->oscovfsr & k_ppll_stable_flag) == k_ppll_stable_flag_unset &&
+         timeout > k_pll_stabilization_timeout_expired) {
+    timeout--;
+  }
+  if (timeout == k_pll_stabilization_timeout_expired) {
+    *prcr_reg() = k_rx_prcr_lock;
+    return k_rx_err_hw_timeout;
+  }
+  /* Post-condition: Verify PPLL is stable (NASA Rule 5) */
+  RX_ASSERT((system_regs()->oscovfsr & k_ppll_stable_flag) != 0,
+            "Postcondition: PPLL stabilization verification failed");
+  return k_rx_ok;
+#endif
+}
+
+/**
+ * @brief Configure main oscillator, PLL, and PPLL
+ *
+ * @details
+ * Performs the oscillator and PLL/PPLL configuration steps for 240 MHz operation:
+ * - Stops sub-clock and disables RTC sub-clock
+ * - Starts the 24 MHz main oscillator and waits for stabilization
+ * - Configures PLL (24 MHz x 10 / 1 = 240 MHz) and waits for lock
+ * - Configures PPLL (24 MHz x 8 / 4 = 48 MHz USB) and waits for lock
+ *
+ * @return rx_err_t Result code
+ * @retval k_rx_ok All oscillators started and PLLs locked
+ * @retval k_rx_err_hw_timeout PLL or PPLL failed to lock within timeout
+ *
+ * @pre PRCR must be unlocked before calling
+ * @pre External 24 MHz crystal must be connected
+ *
+ * @post Main oscillator running at 24 MHz
+ * @post PLL locked at 240 MHz
+ * @post PPLL locked at 48 MHz
+ *
+ * @note Not thread-safe; call only during single-threaded boot
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_start_oscillators_and_plls(void)
+{
+  /* Stop sub-clock oscillator (not used) */
+  system_regs()->sosccr = k_sub_clock_stopped;
+
+  /* Disable RTC to fully disable sub-clock (RCR3.RTCEN = 0)
+   * Required for complete sub-clock shutdown as per hardware manual */
+  *rtc_rcr3_reg() = k_rcr3_rtcen_disable;
+
+  /* Start main oscillator (24 MHz external crystal) */
+  system_regs()->mosccr = k_main_osc_enabled;
+
+  /* Wait for main oscillator stabilization (typically 10ms)
+   * NOTE: Busy-wait required - runs before ThreadX initialization */
+#if !RX_IS_SIMULATOR
+  for (volatile uint32_t i = 0; i < k_main_osc_stabilization_cycles; i++) {
+    __asm__ volatile("nop");
+  }
+#endif
+
+  /* Configure PLL: 240 MHz = (24 MHz x 10) / 1 */
+  system_regs()->pllcr  = k_pll_multiplier_10_div_1;
+  system_regs()->pllcr2 = k_pll_enabled;
+
+  const rx_err_t pll_err = internal_wait_pll_lock();
+  if (pll_err != k_rx_ok) {
+    return pll_err;
+  }
+
+  /* Configure PPLL for 48 MHz USB clock: 48 MHz = (24 MHz x 8) / 4 */
+  *ppllcr_reg()  = k_ppll_config_48mhz;
+  *ppllcr2_reg() = k_ppll_enabled;
+
+  return internal_wait_ppll_lock();
+}
+
+/**
+ * @brief Configure MEMWAIT and switch system clock to PLL
+ *
+ * @details
+ * Performs the final clock switch steps:
+ * - Sets MEMWAIT=1 for safe flash access at 240 MHz (must be before clock switch)
+ * - Configures system clock dividers (ICLK=240, PCLKA=120, PCLKB/C/D/FCLK=60 MHz)
+ * - Switches system clock source to PLL
+ * - Verifies PLL selection took effect
+ *
+ * @return rx_err_t Always k_rx_ok (assertions halt on failure)
+ *
+ * @pre PLL must be locked before calling (call internal_start_oscillators_and_plls first)
+ * @pre PRCR must be unlocked
+ *
+ * @post MEMWAIT=1 configured for 240 MHz flash access
+ * @post System clock running at 240 MHz from PLL
+ * @post PRCR NOT re-locked (caller must lock after calling this function)
+ *
+ * @note Not thread-safe; call only during single-threaded boot
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_switch_to_pll_clock(void)
+{
+  /* CRITICAL: Must set MEMWAIT BEFORE switching to 240 MHz (per RX72N manual Ch09 sec 9.2.2)
+   * "Set MEMWAIT to 1 before increasing ICLK above 120 MHz" */
+  *memwait_reg() = k_memwait_one_wait;
+  RX_ASSERT(*memwait_reg() == k_memwait_one_wait, "Precondition: MEMWAIT configuration failed");
+
+  /* Configure system clock dividers */
+  system_regs()->sckcr = k_system_clock_dividers;
+
+  /* Verify MEMWAIT still set after clock divider change */
+  RX_ASSERT(*memwait_reg() == k_memwait_one_wait,
+            "Postcondition: MEMWAIT corrupted after clock switch");
+
+  /* Switch clock source to PLL */
+  system_regs()->sckcr3 = k_system_clock_source_pll;
+
+#if !RX_IS_SIMULATOR
+  RX_ASSERT((system_regs()->sckcr3 == k_system_clock_source_pll) &&
+              ((system_regs()->oscovfsr & k_pll_stable_flag) != 0),
+            "Postcondition: PLL selection and stability verification failed");
+#else
+  RX_ASSERT(system_regs()->sckcr3 == k_system_clock_source_pll,
+            "Postcondition: PLL selection verified (simulator mode)");
+#endif
+
+  return k_rx_ok;
+}
+
+/**
  * @brief Initialize clock system to 240 MHz
  *
  * @details
@@ -352,138 +546,26 @@ static rx_err_t internal_clock_init(void)
 {
   /* Unlock protection for clock registers */
   *prcr_reg() = k_rx_prcr_unlock_all;
+
   /* Precondition: Verify PRCR unlock took effect
    * Note: PRCR key byte (upper 8 bits) reads back as 0x00, so we must mask it */
   RX_ASSERT((*prcr_reg() & k_rx_prcr_readback_mask) ==
               (k_rx_prcr_unlock_all & k_rx_prcr_readback_mask),
             "Precondition: PRCR unlock failed");
 
-  /* Stop sub-clock oscillator (not used) */
-  system_regs()->sosccr = k_sub_clock_stopped;
-
-  /* Disable RTC to fully disable sub-clock (RCR3.RTCEN = 0)
-   * Required for complete sub-clock shutdown as per hardware manual
-   * NOTE: Uses direct accessor rtc_rcr3_reg() at correct address 0x0008C426
-   * Previous struct-based access had wrong offset (0x1A instead of 0x26) */
-  *rtc_rcr3_reg() = k_rcr3_rtcen_disable;
-
-  /* Start main oscillator (24 MHz external crystal) */
-  system_regs()->mosccr = k_main_osc_enabled;
-
-  /* Wait for main oscillator stabilization (typically 10ms) */
-  /* NOTE: Busy-wait required - runs before ThreadX initialization */
-#if RX_IS_SIMULATOR
-  /* Simulator: Oscillator stable immediately (no external crystal to stabilize) */
-#else
-  /* Hardware: Wait ~10ms for 24 MHz external crystal to stabilize */
-  for (volatile uint32_t i = 0; i < k_main_osc_stabilization_cycles; i++) {
-    __asm__ volatile("nop");
-  }
-#endif
-
-  /* Configure PLL */
-  /* PLL = (Main OSC x PLIDIV) / PLLSTBY */
-  /* 240 MHz = (24 MHz x 10) / 1 */
-  system_regs()->pllcr  = k_pll_multiplier_10_div_1;
-  system_regs()->pllcr2 = k_pll_enabled;
-
-  /* Wait for PLL stabilization */
-  /* NOTE: Busy-wait polling required - runs before ThreadX initialization */
-#if RX_IS_SIMULATOR
-  /* Simulator: PLL stable immediately (no hardware PLL circuit to lock) */
-#else
-  /* Hardware: Poll OSCOVFSR until PLL locks (typically ~200 us) */
-  {
-    uint32_t timeout = k_pll_stabilization_timeout;
-    while ((system_regs()->oscovfsr & k_pll_stable_flag) == k_pll_stable_flag_unset &&
-           timeout > k_pll_stabilization_timeout_expired) {
-      timeout--;
-    }
-    if (timeout == k_pll_stabilization_timeout_expired) {
-      *prcr_reg() = k_rx_prcr_lock;
-      return k_rx_err_hw_timeout;
-    }
-  }
-#endif
-
-  /* =========================================================================
-   * Configure PPLL for USB Clock (UCLK = 48 MHz)
-   * =========================================================================
-   * Per RX72N manual Ch09:
-   * - USB requires UCLK = 48 MHz (exact)
-   * - PPLL generates USB clock from main oscillator
-   * - Configuration: 48 MHz = (24 MHz x 8) / 4
-   */
-
-  /* Configure PPLL for 48 MHz USB clock */
-  *ppllcr_reg()  = k_ppll_config_48mhz;
-  *ppllcr2_reg() = k_ppll_enabled;
-
-  /* Wait for PPLL stabilization */
-#if RX_IS_SIMULATOR
-  /* Simulator: PPLL stable immediately (no hardware PPLL circuit to lock) */
-#else
-  /* Hardware: Poll OSCOVFSR until PPLL locks (typically ~200 us) */
-  {
-    uint32_t timeout = k_pll_stabilization_timeout;
-    while ((system_regs()->oscovfsr & k_ppll_stable_flag) == k_ppll_stable_flag_unset &&
-           timeout > k_pll_stabilization_timeout_expired) {
-      timeout--;
-    }
-    if (timeout == k_pll_stabilization_timeout_expired) {
-      *prcr_reg() = k_rx_prcr_lock;
-      return k_rx_err_hw_timeout;
-    }
+  /* Start oscillators and PLLs (main osc, PLL at 240 MHz, PPLL at 48 MHz USB) */
+  const rx_err_t osc_err = internal_start_oscillators_and_plls();
+  if (osc_err != k_rx_ok) {
+    *prcr_reg() = k_rx_prcr_lock;
+    return osc_err;
   }
 
-  /* Post-condition: Verify PPLL is stable (NASA Rule 5) */
-  RX_ASSERT((system_regs()->oscovfsr & k_ppll_stable_flag) != 0,
-            "Postcondition: PPLL stabilization verification failed");
-#endif
-
-  /* =========================================================================
-   * CRITICAL: Configure MEMWAIT for ICLK > 120 MHz
-   * =========================================================================
-   * Per RX72N manual Ch09 section 9.2.2, page 341, line 962:
-   * "Set the MEMWAIT to 1 (one wait cycle) if the ICLK frequency is to be
-   * above 120 MHz."
-   *
-   * MUST be set BEFORE changing SCKCR to 240 MHz.
-   *
-   * Manual lines 986-989: "To change the frequency of the ICLK from 120 MHz
-   * or less to above 120 MHz, start by setting the MEMWAIT bit to 1 (one
-   * wait cycle), and then change the frequency setting in the SCKCR register."
-   */
-
-  /* Set MEMWAIT = 1 for 240 MHz operation */
-  *memwait_reg() = k_memwait_one_wait;
-
-  /* Pre-condition: Verify MEMWAIT was set correctly (NASA Rule 5) */
-  RX_ASSERT(*memwait_reg() == k_memwait_one_wait, "Precondition: MEMWAIT configuration failed");
-
-  /* Configure system clocks */
-  /* ICLK=240MHz, PCLKA=120MHz, PCLKB=60MHz, PCLKC=60MHz,
-     * PCLKD=60MHz, BCLK=120MHz, FCLK=60MHz */
-  system_regs()->sckcr = k_system_clock_dividers;
-
-  /* Post-condition: Verify MEMWAIT remains set after clock change (NASA Rule 5) */
-  RX_ASSERT(*memwait_reg() == k_memwait_one_wait,
-            "Postcondition: MEMWAIT corrupted after clock switch");
-
-  /* Select PLL as system clock */
-  system_regs()->sckcr3 = k_system_clock_source_pll;
-
-  /* Postcondition: Verify PLL selection took effect */
-#if !RX_IS_SIMULATOR
-  /* Hardware: Verify PLL selected and stable */
-  RX_ASSERT((system_regs()->sckcr3 == k_system_clock_source_pll) &&
-              ((system_regs()->oscovfsr & k_pll_stable_flag) != 0),
-            "Postcondition: PLL selection and stability verification failed");
-#else
-  /* Simulator: Verify PLL selected (skip stability check - not modeled in simulator) */
-  RX_ASSERT(system_regs()->sckcr3 == k_system_clock_source_pll,
-            "Postcondition: PLL selection verified (simulator mode)");
-#endif
+  /* Set MEMWAIT and switch system clock to 240 MHz PLL */
+  const rx_err_t clk_err = internal_switch_to_pll_clock();
+  if (clk_err != k_rx_ok) {
+    *prcr_reg() = k_rx_prcr_lock;
+    return clk_err;
+  }
 
   /* Lock protection */
   *prcr_reg() = k_rx_prcr_lock;
@@ -508,40 +590,65 @@ static rx_err_t internal_clock_init(void)
  *
  * @return k_rx_ok on success, k_rx_err if verification fails after retries
  */
+/**
+ * @brief Perform one attempt to clear module stop register bits and verify
+ *
+ * @details
+ * Unlocks PRCR, clears the designated MSTPCRA/B/C bits to enable CMT, MTU,
+ * RSPI0, RSPI1, and S12AD modules, re-locks PRCR, then verifies the bits
+ * were accepted by hardware.
+ *
+ * @param[in] mstpcra_clear_mask Bit mask to clear in MSTPCRA
+ * @param[in] mstpcrb_clear_mask Bit mask to clear in MSTPCRB
+ * @param[in] mstpcrc_clear_mask Bit mask to clear in MSTPCRC
+ *
+ * @return bool true if all bits verified clear, false if any bit still set
+ *
+ * @pre PRCR accessible (not in protected state requiring special unlock)
+ * @post PRCR re-locked on return
+ *
+ * @note Not thread-safe; call only during single-threaded boot
+ * @since Version 1.0.0
+ */
+static bool internal_module_stop_attempt(uint32_t mstpcra_clear_mask,
+                                         uint32_t mstpcrb_clear_mask,
+                                         uint32_t mstpcrc_clear_mask)
+{
+  *prcr_reg() = k_rx_prcr_unlock_all;
+  system_regs()->mstpcra &= ~mstpcra_clear_mask;
+  system_regs()->mstpcrb &= ~mstpcrb_clear_mask;
+  system_regs()->mstpcrc &= ~mstpcrc_clear_mask;
+  *prcr_reg() = k_rx_prcr_lock;
+
+  const uint32_t mstpcra_actual = system_regs()->mstpcra & mstpcra_clear_mask;
+  const uint32_t mstpcrb_actual = system_regs()->mstpcrb & mstpcrb_clear_mask;
+  const uint32_t mstpcrc_actual = system_regs()->mstpcrc & mstpcrc_clear_mask;
+  if ((mstpcra_actual != 0U) || (mstpcrb_actual != 0U) || (mstpcrc_actual != 0U)) {
+    return false;
+  }
+
+  const uint32_t verify_a = system_regs()->mstpcra & mstpcra_clear_mask;
+  const uint32_t verify_b = system_regs()->mstpcrb & mstpcrb_clear_mask;
+  const uint32_t verify_c = system_regs()->mstpcrc & mstpcrc_clear_mask;
+  RX_ASSERT((verify_a == 0) && (verify_b == 0) && (verify_c == 0),
+            "Postcondition: Module stop bits remain cleared");
+  return true;
+}
+
 static rx_err_t internal_module_stop_init(void)
 {
   const uint32_t mstpcra_clear_mask = (1UL << k_mstpcra_cmt) | (1UL << k_mstpcra_mtu);
   const uint32_t mstpcrb_clear_mask = (1UL << k_mstpcrb_rspi0) | (1UL << k_mstpcrb_rspi1);
   const uint32_t mstpcrc_clear_mask = (1UL << k_mstpcrc_s12ad);
+
   for (uint8_t attempt = 0; attempt < k_retry_count_module_stop; attempt++) {
-    /* Protect off */
-    *prcr_reg() = k_rx_prcr_unlock_all;
-    /* Module Stop Control Register A */
-    system_regs()->mstpcra &= ~mstpcra_clear_mask; /* CMT0, CMT1, MTU */
-    /* Module Stop Control Register B */
-    /* Note: SCI modules are enabled per-channel in uart_init_channel() */
-    system_regs()->mstpcrb &= ~mstpcrb_clear_mask; /* RSPI0, RSPI1 */
-    /* Module Stop Control Register C */
-    system_regs()->mstpcrc &= ~mstpcrc_clear_mask; /* S12AD */
-    /* Protect on */
-    *prcr_reg() = k_rx_prcr_lock;
-    /* Post-condition: Verify bits are cleared */
-    const uint32_t mstpcra_actual = system_regs()->mstpcra & mstpcra_clear_mask;
-    const uint32_t mstpcrb_actual = system_regs()->mstpcrb & mstpcrb_clear_mask;
-    const uint32_t mstpcrc_actual = system_regs()->mstpcrc & mstpcrc_clear_mask;
-    if ((mstpcra_actual == 0) && (mstpcrb_actual == 0) && (mstpcrc_actual == 0)) {
-      /* Postcondition: Re-read hardware registers to verify stability */
-      const uint32_t verify_a = system_regs()->mstpcra & mstpcra_clear_mask;
-      const uint32_t verify_b = system_regs()->mstpcrb & mstpcrb_clear_mask;
-      const uint32_t verify_c = system_regs()->mstpcrc & mstpcrc_clear_mask;
-      RX_ASSERT((verify_a == 0) && (verify_b == 0) && (verify_c == 0),
-                "Postcondition: Module stop bits remain cleared");
+    const bool ok =
+      internal_module_stop_attempt(mstpcra_clear_mask, mstpcrb_clear_mask, mstpcrc_clear_mask);
+    if (ok) {
       return k_rx_ok;
     }
-    /* If verification failed and this isn't the last attempt, retry */
   }
 
-  /* All retries exhausted - return error */
   return k_rx_err_hw_timeout;
 }
 

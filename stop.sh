@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# STAR stop — kill all components. Safe to run when nothing is running.
+# STAR stop -- kill all components. Safe to run when nothing is running.
 
 STAR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -10,7 +10,7 @@ warn() { echo -e "${YELLOW}[stop]${NC} $*"; }
 # ROS2 bridge first (gRPC client; shut before server)
 pkill -f "star_gateway_bridge_main"           2>/dev/null && say "gateway_bridge stopped"    || true
 
-# ros2 launch groups — killing the launch process cascades to children
+# ros2 launch groups -- killing the launch process cascades to children
 pkill -f "star_spi_bridge.launch.py"          2>/dev/null && say "spi_bridge launch stopped" || true
 pkill -f "slam.launch.py"                     2>/dev/null && say "slam launch stopped"        || true
 

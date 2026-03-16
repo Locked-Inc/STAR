@@ -16,7 +16,8 @@
 
 #include "mock_rx_bno055.h"
 
-#include <string.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /** @brief Injected return value for rx_bno055_init() (default k_rx_ok) */
 static rx_err_t s_init_return = k_rx_ok;
@@ -167,7 +168,12 @@ rx_err_t rx_bno055_read(bno055_data_t* out)
   s_read_count++;
   const rx_err_t ret = s_read_return;
   if (ret == k_rx_ok) {
-    (void)memset(out, 0, sizeof(*out));
+    {
+      uint8_t* p = (uint8_t*)out;
+      for (size_t i = 0; i < sizeof(*out); i++) {
+        p[i] = 0;
+      }
+    }
   }
   return ret;
 }

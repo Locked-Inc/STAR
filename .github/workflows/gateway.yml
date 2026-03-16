@@ -21,7 +21,7 @@ on:
       - '.github/workflows/gateway.yml'
 
 env:
-  GO_VERSION: '1.25.7'
+  GO_VERSION: '1.25.8'
   GOLANGCI_LINT_VERSION: 'v2.4'  # golangci-lint v2 (required for action v8)
   MIN_COVERAGE: 65
   GOWORK: off  # Disable go.work in CI, use go.mod replace directive
@@ -85,7 +85,7 @@ jobs:
 
           # Extract test results
           passed=$(grep -c "PASS: TestCDCTransportMock" cdc-test.log || echo "0")
-          echo "✅ **CDC Mock Tests Passed:** $passed" >> $GITHUB_STEP_SUMMARY
+          echo "[PASS] **CDC Mock Tests Passed:** $passed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "<details>" >> $GITHUB_STEP_SUMMARY
           echo "<summary>CDC Test Coverage</summary>" >> $GITHUB_STEP_SUMMARY
@@ -118,10 +118,10 @@ jobs:
           echo "Coverage: ${coverage}%"
           echo "Threshold: ${{ env.MIN_COVERAGE }}%"
           if (( $(echo "$coverage < ${{ env.MIN_COVERAGE }}" | bc -l) )); then
-            echo "❌ Coverage ${coverage}% is below threshold ${{ env.MIN_COVERAGE }}%"
+            echo "[FAIL] Coverage ${coverage}% is below threshold ${{ env.MIN_COVERAGE }}%"
             exit 1
           else
-            echo "✅ Coverage ${coverage}% meets threshold ${{ env.MIN_COVERAGE }}%"
+            echo "[PASS] Coverage ${coverage}% meets threshold ${{ env.MIN_COVERAGE }}%"
           fi
 
       - name: Generate coverage report
@@ -179,7 +179,7 @@ jobs:
         run: |
           go mod tidy
           git diff --exit-code go.mod go.sum || {
-            echo "❌ go.mod or go.sum is not tidy. Run 'go mod tidy' and commit changes."
+            echo "[FAIL] go.mod or go.sum is not tidy. Run 'go mod tidy' and commit changes."
             exit 1
           }
 
@@ -195,19 +195,19 @@ jobs:
              --exclude="*_test.go" \
              --exclude-dir="vendor" \
              .; then
-            echo "❌ ERROR: Found binary.BigEndian in production code!"
+            echo "[FAIL] ERROR: Found binary.BigEndian in production code!"
             echo "All multi-byte fields must use binary.LittleEndian after endianness migration."
             echo "See /workspaces/STAR/CLAUDE.md for protocol specification."
             exit 1
           fi
-          echo "✅ No BigEndian usage detected (expected after migration)"
+          echo "[PASS] No BigEndian usage detected (expected after migration)"
         working-directory: .
 
       - name: Check gofmt
         run: |
           unformatted=$(gofmt -l .)
           if [ -n "$unformatted" ]; then
-            echo "❌ The following files are not formatted:"
+            echo "[FAIL] The following files are not formatted:"
             echo "$unformatted"
             echo "Run 'gofmt -w .' to fix formatting issues."
             exit 1
@@ -474,9 +474,9 @@ jobs:
              [ "${{ needs.security.result }}" != "success" ] || \
              [ "${{ needs.cross-compile.result }}" != "success" ]; then
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "❌ **CI Failed** - Please check the logs above." >> $GITHUB_STEP_SUMMARY
+            echo "[FAIL] **CI Failed** - Please check the logs above." >> $GITHUB_STEP_SUMMARY
             exit 1
           else
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "✅ **All Checks Passed**" >> $GITHUB_STEP_SUMMARY
+            echo "[PASS] **All Checks Passed**" >> $GITHUB_STEP_SUMMARY
           fi

@@ -176,7 +176,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_bus_manager.h"
@@ -681,6 +680,146 @@ rx_bus_onewire_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_
                                              uint8_t*          roms,
                                              uint32_t          max_devices,
                                              uint32_t*         num_devices);
+
+#ifdef UNIT_TEST
+
+/**
+ * @defgroup onewire_unit_test_internals OneWire Internal API (Unit Test Only)
+ * @brief Internal types and functions exposed for unit testing via RX_STATIC_TESTABLE.
+ * @{
+ */
+
+/* Internal context structs for callback functions (exposed for direct test invocation) */
+
+/** @brief Simple callback context with only a result field. */
+typedef struct {
+  rx_err_t result; /**< Operation result code */
+} onewire_simple_ctx_t;
+
+/** @brief Context for reset callback (presence pointer + result). */
+typedef struct {
+  bool*    presence; /**< Output: true if device presence detected */
+  rx_err_t result;   /**< Operation result code */
+} onewire_reset_ctx_t;
+
+/** @brief Context for write_bit callback. */
+typedef struct {
+  bool     bit;    /**< Bit value to write */
+  rx_err_t result; /**< Operation result code */
+} onewire_write_bit_ctx_t;
+
+/** @brief Context for read_bit callback. */
+typedef struct {
+  bool*    bit;    /**< Output bit pointer */
+  rx_err_t result; /**< Operation result code */
+} onewire_read_bit_ctx_t;
+
+/** @brief Context for write_byte callback. */
+typedef struct {
+  uint8_t  byte;   /**< Byte value to write */
+  rx_err_t result; /**< Operation result code */
+} onewire_write_byte_ctx_t;
+
+/** @brief Context for read_byte callback. */
+typedef struct {
+  uint8_t* byte;   /**< Output byte pointer */
+  rx_err_t result; /**< Operation result code */
+} onewire_read_byte_ctx_t;
+
+/** @brief Context for write_buffer callback. */
+typedef struct {
+  const uint8_t* data;   /**< Data buffer to write */
+  uint32_t       length; /**< Number of bytes to write */
+  rx_err_t       result; /**< Operation result code */
+} onewire_write_buf_ctx_t;
+
+/** @brief Context for read_buffer callback. */
+typedef struct {
+  uint8_t* data;   /**< Output data buffer */
+  uint32_t length; /**< Number of bytes to read */
+  rx_err_t result; /**< Operation result code */
+} onewire_read_buf_ctx_t;
+
+/** @brief Context for match_rom callback. */
+typedef struct {
+  const uint8_t* rom;    /**< 8-byte ROM address */
+  rx_err_t       result; /**< Operation result code */
+} onewire_match_rom_ctx_t;
+
+/** @brief Context for read_rom callback. */
+typedef struct {
+  uint8_t* rom;    /**< Output 8-byte ROM buffer */
+  rx_err_t result; /**< Operation result code */
+} onewire_read_rom_ctx_t;
+
+/** @brief Context for search callback. */
+typedef struct {
+  uint8_t*  roms;        /**< Output ROM array */
+  uint32_t  max_devices; /**< Maximum number of devices to find */
+  uint32_t* num_devices; /**< Output: number of devices found */
+  rx_err_t  result;      /**< Operation result code */
+} onewire_search_ctx_t;
+
+/**
+ * @brief Runtime state per OneWire bus (exposed for testing).
+ */
+typedef struct {
+  uint8_t last_rom[k_onewire_rom_bytes]; /**< Last ROM discovered */
+  uint8_t last_discrepancy;              /**< Search tree discrepancy bit */
+  bool    last_device_flag;              /**< True when last device enumerated */
+  bool    line_is_output;                /**< Current GPIO drive mode */
+} onewire_runtime_state_t;
+
+/* Internal functions exposed for unit testing */
+void     internal_delay_timer_init(void);
+void     internal_delay_timer_reset(void);
+void     internal_delay_us(uint32_t microseconds);
+rx_err_t internal_set_drive_mode(const rx_bus_config_t*   bus_config,
+                                 onewire_runtime_state_t* state,
+                                 bool                     output);
+rx_err_t internal_drive_low(rx_bus_config_t* bus_config, onewire_runtime_state_t* state);
+rx_err_t internal_release_line(rx_bus_config_t* bus_config, onewire_runtime_state_t* state);
+rx_err_t internal_read_line(const rx_bus_config_t* bus_config, bool* high);
+rx_err_t
+internal_reset_pulse(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool* presence);
+rx_err_t internal_write_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool bit);
+rx_err_t internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool* bit);
+rx_err_t
+internal_write_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, uint8_t byte);
+rx_err_t
+internal_read_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, uint8_t* byte);
+rx_err_t internal_search_step(rx_bus_config_t*         bus_config,
+                              onewire_runtime_state_t* state,
+                              uint8_t                  rom[k_onewire_rom_bytes],
+                              uint8_t                  bit_number,
+                              uint8_t*                 rom_byte_index,
+                              uint8_t*                 rom_bit_mask,
+                              uint8_t*                 last_zero);
+rx_err_t internal_search_bits(rx_bus_config_t*         bus_config,
+                              onewire_runtime_state_t* state,
+                              uint8_t                  rom[k_onewire_rom_bytes],
+                              uint8_t*                 last_zero);
+rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
+                                   onewire_runtime_state_t* state,
+                                   uint8_t                  rom[k_onewire_rom_bytes],
+                                   bool*                    device_found);
+rx_err_t internal_onewire_init_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_onewire_deinit_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_onewire_reset_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_onewire_write_bit_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_onewire_read_bit_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_onewire_write_byte_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_onewire_read_byte_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_onewire_write_buffer_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_onewire_read_buffer_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_onewire_skip_rom_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_onewire_match_rom_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_onewire_search_callback(rx_bus_config_t* bus_config, void* user_ctx);
+
+/** @} */ /* end of onewire_unit_test_internals */
+
+#endif /* UNIT_TEST */
 
 #ifdef __cplusplus
 }

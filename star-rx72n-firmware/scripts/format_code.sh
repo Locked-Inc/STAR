@@ -203,10 +203,10 @@ format_files() {
             cp "$temp_file" "$file"
             ((formatted_count++)) || true
             if [ "$VERBOSE" = true ]; then
-                echo "    ✓ Formatted" >&2
+                echo "    [PASS] Formatted" >&2
             fi
         elif [ "$VERBOSE" = true ]; then
-            echo "    • No changes needed" >&2
+            echo "    - No changes needed" >&2
         fi
         
         rm "$temp_file"

@@ -41,7 +41,10 @@ rx_err_t mock_usb_hw_init(mock_usb_hw_t* mock)
 {
   mock_usb_hw_t* m = internal_get_mock(mock);
 
-  memset(m, 0, sizeof(mock_usb_hw_t));
+  uint8_t* const p_m = (uint8_t*)m;
+  for (uint32_t i = 0U; i < sizeof(mock_usb_hw_t); i++) {
+    p_m[i] = 0U;
+  }
 
   /* Set default return values (success) */
   m->next_init_return   = k_rx_ok;
@@ -54,8 +57,11 @@ rx_err_t mock_usb_hw_init(mock_usb_hw_t* mock)
 
 rx_err_t mock_usb_hw_deinit(mock_usb_hw_t* mock)
 {
-  mock_usb_hw_t* m = internal_get_mock(mock);
-  memset(m, 0, sizeof(mock_usb_hw_t));
+  mock_usb_hw_t* m   = internal_get_mock(mock);
+  uint8_t* const p_m = (uint8_t*)m;
+  for (uint32_t i = 0U; i < sizeof(mock_usb_hw_t); i++) {
+    p_m[i] = 0U;
+  }
   return k_rx_ok;
 }
 
@@ -68,7 +74,10 @@ rx_err_t mock_usb_hw_clear(mock_usb_hw_t* mock)
   rx_err_t saved_attach_ret = m->next_attach_return;
   bool     saved_fifo_ready = m->fifo_ready;
 
-  memset(m, 0, sizeof(mock_usb_hw_t));
+  uint8_t* const p_m = (uint8_t*)m;
+  for (uint32_t i = 0U; i < sizeof(mock_usb_hw_t); i++) {
+    p_m[i] = 0U;
+  }
 
   m->next_init_return   = saved_init_ret;
   m->next_attach_return = saved_attach_ret;
@@ -133,7 +142,9 @@ mock_usb_hw_inject_rx_data(mock_usb_hw_t* mock, uint8_t pipe, const uint8_t* dat
   }
 
   /* Copy data */
-  memcpy(p->rx_data + p->rx_len, data, len);
+  for (uint32_t i = 0U; i < len; i++) {
+    p->rx_data[p->rx_len + i] = data[i];
+  }
   p->rx_len += len;
 
   return k_rx_ok;
@@ -159,12 +170,17 @@ rx_err_t mock_usb_hw_get_tx_data(mock_usb_hw_t* mock,
 
   /* Copy available data */
   uint32_t to_read = (p->tx_len < max_len) ? p->tx_len : max_len;
-  memcpy(data, p->tx_data, to_read);
+  for (uint32_t i = 0U; i < to_read; i++) {
+    data[i] = p->tx_data[i];
+  }
   *actual_len = to_read;
 
-  /* Remove read data by shifting */
+  /* Remove read data by shifting (src > dst so forward copy is safe) */
   if (to_read < p->tx_len) {
-    memmove(p->tx_data, p->tx_data + to_read, p->tx_len - to_read);
+    uint32_t remain = p->tx_len - to_read;
+    for (uint32_t i = 0U; i < remain; i++) {
+      p->tx_data[i] = p->tx_data[to_read + i];
+    }
   }
   p->tx_len -= to_read;
 
@@ -176,7 +192,10 @@ void mock_usb_hw_clear_pipe(mock_usb_hw_t* mock, uint8_t pipe)
   mock_usb_hw_t* m = internal_get_mock(mock);
 
   if (pipe < MOCK_USB_HW_MAX_PIPES) {
-    memset(&m->pipes[pipe], 0, sizeof(mock_pipe_state_t));
+    uint8_t* const p_pipe = (uint8_t*)&m->pipes[pipe];
+    for (uint32_t i = 0U; i < sizeof(mock_pipe_state_t); i++) {
+      p_pipe[i] = 0U;
+    }
   }
 }
 
@@ -196,12 +215,15 @@ void mock_usb_hw_record_call(mock_usb_hw_t* mock,
 
   mock_usb_hw_call_t* call = &m->call_history[m->call_write_index];
 
-  strncpy(call->function, func, MOCK_USB_HW_FUNC_NAME_MAX - 1);
-  call->function[MOCK_USB_HW_FUNC_NAME_MAX - 1] = '\0';
-  call->arg1                                    = arg1;
-  call->arg2                                    = arg2;
-  call->arg3                                    = arg3;
-  call->return_value                            = ret;
+  uint32_t j;
+  for (j = 0U; j < (uint32_t)(MOCK_USB_HW_FUNC_NAME_MAX - 1) && func[j] != '\0'; j++) {
+    call->function[j] = func[j];
+  }
+  call->function[j]  = '\0';
+  call->arg1         = arg1;
+  call->arg2         = arg2;
+  call->arg3         = arg3;
+  call->return_value = ret;
 
   m->call_write_index = (m->call_write_index + 1) % MOCK_USB_HW_CALL_HISTORY_SIZE;
   m->call_count++;
@@ -209,7 +231,7 @@ void mock_usb_hw_record_call(mock_usb_hw_t* mock,
 
 bool mock_usb_hw_was_called(mock_usb_hw_t* mock, const char* func)
 {
-  return mock_usb_hw_get_call_count(mock, func) > 0;
+  return (bool)(mock_usb_hw_get_call_count(mock, func) > 0);
 }
 
 uint32_t mock_usb_hw_get_call_count(mock_usb_hw_t* mock, const char* func)
@@ -242,7 +264,7 @@ mock_usb_hw_get_last_call(mock_usb_hw_t* mock, const char* func, mock_usb_hw_cal
     (m->call_count < MOCK_USB_HW_CALL_HISTORY_SIZE) ? m->call_count : MOCK_USB_HW_CALL_HISTORY_SIZE;
 
   /* Search backwards for most recent call */
-  for (int32_t i = history_size - 1; i >= 0; i--) {
+  for (int32_t i = (int32_t)history_size - 1; i >= 0; i--) {
     uint32_t idx =
       (m->call_write_index - 1 - i + MOCK_USB_HW_CALL_HISTORY_SIZE) % MOCK_USB_HW_CALL_HISTORY_SIZE;
 
@@ -259,7 +281,15 @@ void mock_usb_hw_clear_calls(mock_usb_hw_t* mock)
 {
   mock_usb_hw_t* m = internal_get_mock(mock);
 
-  memset(m->call_history, 0, sizeof(m->call_history));
+  for (uint32_t i = 0; i < MOCK_USB_HW_CALL_HISTORY_SIZE; i++) {
+    for (uint32_t j = 0; j < MOCK_USB_HW_FUNC_NAME_MAX; j++) {
+      m->call_history[i].function[j] = '\0';
+    }
+    m->call_history[i].arg1         = 0U;
+    m->call_history[i].arg2         = 0U;
+    m->call_history[i].arg3         = 0U;
+    m->call_history[i].return_value = k_rx_ok;
+  }
   m->call_count       = 0;
   m->call_write_index = 0;
 }
@@ -353,7 +383,9 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
   uint32_t to_read   = (available < max_len) ? available : max_len;
 
   if (to_read > 0 && data != nullptr) {
-    memcpy(data, p->rx_data + p->rx_pos, to_read);
+    for (uint32_t i = 0; i < to_read; i++) {
+      data[i] = p->rx_data[p->rx_pos + i];
+    }
     p->rx_pos += to_read;
   }
 
@@ -380,7 +412,9 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   uint32_t to_write = (len < space) ? len : space;
 
   if (to_write > 0 && data != nullptr) {
-    memcpy(p->tx_data + p->tx_len, data, to_write);
+    for (uint32_t i = 0; i < to_write; i++) {
+      p->tx_data[p->tx_len + i] = data[i];
+    }
     p->tx_len += to_write;
   }
 
@@ -443,11 +477,19 @@ rx_err_t rx_usb_hw_configure_pipe(uint8_t  pipe,
  * =============================================================================
  */
 
+static rx_err_t s_cdc_init_return = k_rx_ok;
+
+void mock_usb_hw_set_cdc_init_return(rx_err_t ret)
+{
+  s_cdc_init_return = ret;
+}
+
 rx_err_t rx_usb_cdc_init(void)
 {
   mock_usb_hw_t* m = &g_mock_usb_hw;
 
-  rx_err_t ret = k_rx_ok; /* CDC init always succeeds in mock */
+  rx_err_t ret      = s_cdc_init_return;
+  s_cdc_init_return = k_rx_ok; /* Reset after one use */
   mock_usb_hw_record_call(m, "rx_usb_cdc_init", 0, 0, 0, ret);
 
   return ret;

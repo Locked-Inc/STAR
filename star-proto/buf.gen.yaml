@@ -52,8 +52,8 @@ plugins:
   # ============================================
   # C++ for star-ros2 (ROS2 bridge node)
   # Pinned to match Ubuntu 24.04 (ROS Jazzy):
-  #   - protobuf 3.21.12 → v21.12
-  #   - grpc 1.51.1 → v1.51.1
+  #   - protobuf 3.21.12 -> v21.12
+  #   - grpc 1.51.1 -> v1.51.1
   # ============================================
   - plugin: buf.build/protocolbuffers/cpp:v21.12
     out: gen/cpp

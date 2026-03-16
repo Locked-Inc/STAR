@@ -1,5 +1,5 @@
 /**
- * @file rx72n_dmac_regs.h
+ * @file mock_rx72n_dmac_regs.h
  * @brief Mock DMAC Register Definitions for Host-Side Unit Testing
  *
  * @details
@@ -7,8 +7,9 @@
  * Provides RAM-backed register structures and inline accessor functions pointing
  * to mock storage, enabling unit testing of the DMAC driver without RX72N hardware.
  *
- * CMake prepends tests/mocks/ to the include path (BEFORE real headers).
- * When code does `#include "rx72n_dmac_regs.h"`, it resolves to THIS file.
+ * Source files that use DMAC registers include this header explicitly via
+ * `#ifdef UNIT_TEST` guards: `#include "mock_rx72n_dmac_regs.h"` in test builds
+ * and `#include "rx72n_dmac_regs.h"` in production builds.
  *
  * Global mock storage (g_mock_dmac_ch[], g_mock_dmast) must be defined by the
  * test file (see test_rx_dmaca.c for the definition pattern).

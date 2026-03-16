@@ -168,7 +168,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_bit_constants.h"
@@ -990,8 +989,8 @@ typedef enum : uint16_t {
   k_fec_max_input_bytes = (uint16_t)((k_fec_max_symbols - k_fec_tail_bits) / k_rx_bits_per_byte),
 } rx_fec_buffer_limits_t;
 
-static_assert(k_fec_max_input_bytes ==
-                (uint16_t)((k_fec_max_symbols - k_fec_tail_bits) / k_rx_bits_per_byte),
+static_assert((bool)(k_fec_max_input_bytes ==
+                     (uint16_t)((k_fec_max_symbols - k_fec_tail_bits) / k_rx_bits_per_byte)),
               "k_fec_max_input_bytes mismatch with k_fec_max_symbols");
 
 /**

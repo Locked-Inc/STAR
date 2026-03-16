@@ -43,7 +43,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <stdbool.h>
+#include <limits.h>
 #include <stdint.h>
 
 #include "mock_adc_hal.h"
@@ -207,9 +207,9 @@ void setUp(void)
   /* Create ADC bus config: unit=0, channel=0, 12-bit resolution */
   err = rx_bus_config_init_adc(&s_adc_config,
                                s_test_bus_name,
-                               (uint8_t)k_test_adc_unit,
-                               (uint8_t)k_test_adc_channel,
-                               (uint8_t)k_test_adc_bits);
+                               k_test_adc_unit,
+                               k_test_adc_channel,
+                               k_test_adc_bits);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Register ADC bus with manager */
@@ -384,14 +384,12 @@ void test_bus_adc_init_hal_error_propagates(void)
  */
 void test_bus_adc_read_returns_configured_value(void)
 {
-  mock_adc_set_value((uint8_t)k_test_adc_unit,
-                     (uint8_t)k_test_adc_channel,
-                     (uint16_t)k_test_adc_value_mid);
+  mock_adc_set_value(k_test_adc_unit, k_test_adc_channel, k_test_adc_value_mid);
 
   rx_err_t err = rx_bus_adc_init(&s_test_manager, s_test_bus_name);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint16_t value = (uint16_t)k_test_adc_value_zero;
+  uint16_t value = k_test_adc_value_zero;
   err            = rx_bus_adc_read(&s_test_manager, s_test_bus_name, &value);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL((uint16_t)k_test_adc_value_mid, value);
@@ -415,7 +413,7 @@ void test_bus_adc_read_returns_configured_value(void)
 */
 void test_bus_adc_read_null_manager_returns_error(void)
 {
-  uint16_t value = (uint16_t)k_test_adc_value_zero;
+  uint16_t value = k_test_adc_value_zero;
   rx_err_t err   = rx_bus_adc_read(nullptr, s_test_bus_name, &value);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL(k_expected_zero_adc_calls, mock_adc_get_call_count());
@@ -445,6 +443,19 @@ void test_bus_adc_read_null_value_returns_error(void)
 }
 
 /**
+ * @brief rx_bus_adc_read with null bus_name returns k_rx_err_null_ptr
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_adc_read_null_bus_name_returns_error(void)
+{
+  uint16_t value = k_test_adc_value_zero;
+  rx_err_t err   = rx_bus_adc_read(&s_test_manager, nullptr, &value);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+  TEST_ASSERT_EQUAL(k_expected_zero_adc_calls, mock_adc_get_call_count());
+}
+
+/**
  * @brief rx_bus_adc_read on uninitialized bus returns k_rx_err_invalid_state
  *
  * @details
@@ -462,7 +473,7 @@ void test_bus_adc_read_null_value_returns_error(void)
  */
 void test_bus_adc_read_not_initialized_returns_error(void)
 {
-  uint16_t value = (uint16_t)k_test_adc_value_zero;
+  uint16_t value = k_test_adc_value_zero;
   rx_err_t err   = rx_bus_adc_read(&s_test_manager, s_test_bus_name, &value);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   TEST_ASSERT_EQUAL(k_expected_zero_adc_calls, mock_adc_get_call_count());
@@ -492,7 +503,7 @@ void test_bus_adc_read_hal_error_propagates(void)
 
   mock_adc_set_next_error(k_rx_err_timeout);
 
-  uint16_t value = (uint16_t)k_test_adc_value_mid;
+  uint16_t value = k_test_adc_value_mid;
   err            = rx_bus_adc_read(&s_test_manager, s_test_bus_name, &value);
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
   TEST_ASSERT_EQUAL((uint16_t)k_test_adc_value_mid, value);
@@ -522,14 +533,12 @@ void test_bus_adc_read_hal_error_propagates(void)
  */
 void test_bus_adc_read_voltage_returns_nonzero_for_full_scale(void)
 {
-  mock_adc_set_value((uint8_t)k_test_adc_unit,
-                     (uint8_t)k_test_adc_channel,
-                     (uint16_t)k_test_adc_value_max);
+  mock_adc_set_value(k_test_adc_unit, k_test_adc_channel, k_test_adc_value_max);
 
   rx_err_t err = rx_bus_adc_init(&s_test_manager, s_test_bus_name);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint32_t voltage_mv = (uint32_t)k_test_voltage_zero;
+  uint32_t voltage_mv = k_test_voltage_zero;
   err                 = rx_bus_adc_read_voltage_mv(&s_test_manager, s_test_bus_name, &voltage_mv);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_GREATER_THAN((int32_t)k_voltage_threshold_mv, (int32_t)voltage_mv);
@@ -553,7 +562,7 @@ void test_bus_adc_read_voltage_returns_nonzero_for_full_scale(void)
 */
 void test_bus_adc_read_voltage_null_manager_returns_error(void)
 {
-  uint32_t voltage_mv = (uint32_t)k_test_voltage_zero;
+  uint32_t voltage_mv = k_test_voltage_zero;
   rx_err_t err        = rx_bus_adc_read_voltage_mv(nullptr, s_test_bus_name, &voltage_mv);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL(k_expected_zero_adc_calls, mock_adc_get_call_count());
@@ -583,6 +592,19 @@ void test_bus_adc_read_voltage_null_value_returns_error(void)
 }
 
 /**
+ * @brief rx_bus_adc_read_voltage_mv with null bus_name returns k_rx_err_null_ptr
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_adc_read_voltage_null_bus_name_returns_error(void)
+{
+  uint32_t voltage_mv = k_test_voltage_zero;
+  rx_err_t err        = rx_bus_adc_read_voltage_mv(&s_test_manager, nullptr, &voltage_mv);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+  TEST_ASSERT_EQUAL(k_expected_zero_adc_calls, mock_adc_get_call_count());
+}
+
+/**
  * @brief rx_bus_adc_read_voltage_mv on uninitialized bus returns k_rx_err_invalid_state
  *
  * @details
@@ -599,10 +621,309 @@ void test_bus_adc_read_voltage_null_value_returns_error(void)
 */
 void test_bus_adc_read_voltage_not_initialized_returns_error(void)
 {
-  uint32_t voltage_mv = (uint32_t)k_test_voltage_zero;
+  uint32_t voltage_mv = k_test_voltage_zero;
   rx_err_t err        = rx_bus_adc_read_voltage_mv(&s_test_manager, s_test_bus_name, &voltage_mv);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   TEST_ASSERT_EQUAL(k_expected_zero_adc_calls, mock_adc_get_call_count());
+}
+
+/* =============================================================================
+ * Additional Coverage Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief rx_bus_adc_init with wrong bus type returns error from callback
+ *
+ * @details
+ * Tampers the registered bus config type to a non-ADC type, then calls
+ * rx_bus_adc_init(). The internal callback detects the mismatch and returns
+ * k_rx_err_invalid_arg, covering lines 404-406.
+ *
+ * @pre s_test_manager initialized; s_adc_config registered as ADC type
+ * @pre s_adc_config.type patched to k_bus_type_gpio to simulate wrong type
+ * @post rx_bus_adc_init returns k_rx_err_invalid_arg
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_adc_init_wrong_bus_type_returns_error(void)
+{
+  /* Patch the registered config to look like a non-ADC bus */
+  s_adc_config.type = k_bus_type_gpio;
+
+  rx_err_t err = rx_bus_adc_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief rx_bus_adc_init with post-init read failure still succeeds
+ *
+ * @details
+ * Enables timeout simulation so that adc_read() returns an error during the
+ * post-init verification step (line 428-431). The init callback logs a warning
+ * and continues, returning k_rx_ok. Covers line 429.
+ *
+ * @pre s_test_manager initialized; s_test_bus_name registered as ADC
+ * @pre mock timeout simulation enabled BEFORE calling rx_bus_adc_init
+ * @post rx_bus_adc_init returns k_rx_ok (warning logged, init still succeeds)
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_adc_init_post_init_read_failure_still_succeeds(void)
+{
+  /* Let adc_init() succeed but make adc_read() return timeout */
+  mock_adc_simulate_timeout(true);
+
+  rx_err_t err = rx_bus_adc_init(&s_test_manager, s_test_bus_name);
+  /* Init should still succeed - post-init read failure is a warning only */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bus_adc_read with value exceeding 12-bit maximum logs warning but succeeds
+ *
+ * @details
+ * Sets the mock raw value to 5000 (> 4095, the maximum for 12-bit resolution).
+ * The read callback logs a warning and continues, covering line 534.
+ *
+ * @pre s_test_manager initialized; ADC bus initialized with 12-bit resolution
+ * @pre mock raw value set to 5000 (> 2^12 - 1)
+ * @post rx_bus_adc_read returns k_rx_ok
+ * @post Returned value is 5000 (warning logged but read succeeds)
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_adc_read_value_exceeds_max_logs_warning(void)
+{
+  /* Set raw value above 12-bit max (4095) to trigger the bounds warning */
+  static const uint16_t k_test_out_of_range_value = 5000U;
+  mock_adc_set_value(k_test_adc_unit, k_test_adc_channel, k_test_out_of_range_value);
+
+  rx_err_t err = rx_bus_adc_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  uint16_t value = k_test_adc_value_zero;
+  err            = rx_bus_adc_read(&s_test_manager, s_test_bus_name, &value);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL((uint16_t)k_test_out_of_range_value, value);
+}
+
+/**
+ * @brief rx_bus_adc_read_voltage_mv HAL error propagates correctly
+ *
+ * @details
+ * Injects an error on the next ADC HAL call (adc_read_voltage_mv), then
+ * verifies the function returns that error. Covers lines 649-651.
+ *
+ * @pre s_test_manager initialized; ADC bus initialized
+ * @pre mock error injected via mock_adc_set_next_error
+ * @post rx_bus_adc_read_voltage_mv returns k_rx_err_timeout
+ * @post voltage_mv output argument is not modified
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_adc_read_voltage_hal_error_propagates(void)
+{
+  rx_err_t err = rx_bus_adc_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  mock_adc_set_next_error(k_rx_err_timeout);
+
+  uint32_t voltage_mv = k_test_voltage_zero;
+  err                 = rx_bus_adc_read_voltage_mv(&s_test_manager, s_test_bus_name, &voltage_mv);
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
+/**
+ * @brief rx_bus_adc_read_voltage_mv with value exceeding safety limit logs warning
+ *
+ * @details
+ * Sets the raw mock value to UINT16_MAX so that the computed voltage
+ * (65535 * 3300 / 4095 = ~52812 mV) exceeds k_adc_max_safety_voltage_mv (5500 mV).
+ * The callback logs a warning and continues, covering line 656.
+ *
+ * @pre s_test_manager initialized; ADC bus initialized with 12-bit resolution
+ * @pre mock raw value set to UINT16_MAX
+ * @post rx_bus_adc_read_voltage_mv returns k_rx_ok (warning logged, read succeeds)
+ * @post Returned voltage_mv > k_adc_max_safety_voltage_mv
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_adc_read_voltage_exceeds_safety_limit_logs_warning(void)
+{
+  /* Set raw value to UINT16_MAX so computed voltage >> 5500 mV */
+  mock_adc_set_value(k_test_adc_unit, k_test_adc_channel, UINT16_MAX);
+
+  rx_err_t err = rx_bus_adc_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  uint32_t voltage_mv = k_test_voltage_zero;
+  err                 = rx_bus_adc_read_voltage_mv(&s_test_manager, s_test_bus_name, &voltage_mv);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* Computed voltage should exceed 5500 mV safety limit */
+  static const uint32_t k_safety_voltage_mv = 5500U;
+  TEST_ASSERT_GREATER_THAN(k_safety_voltage_mv, voltage_mv);
+}
+
+/* =============================================================================
+ * Bus Config Validation Coverage Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Invalid ADC unit in rx_bus_config_init_adc returns error
+ *
+ * @details
+ * Passes unit >= k_adc_unit_count (2) to trigger the invalid-unit branch
+ * inside rx_bus_config_init_adc (lines 661-662).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers lines 661-662 of rx_bus_config.c
+ */
+void test_bus_config_adc_invalid_unit_returns_error(void)
+{
+  rx_bus_config_t      config;
+  static const uint8_t k_invalid_unit = k_adc_unit_count;
+  rx_err_t             err =
+    rx_bus_config_init_adc(&config, "test", k_invalid_unit, k_test_adc_channel, k_test_adc_bits);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Invalid ADC channel in rx_bus_config_init_adc returns error
+ *
+ * @details
+ * Passes channel > k_adc_channel_max (7) to trigger the invalid-channel branch
+ * inside rx_bus_config_init_adc (lines 667-668).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers lines 667-668 of rx_bus_config.c
+ */
+void test_bus_config_adc_invalid_channel_returns_error(void)
+{
+  rx_bus_config_t      config;
+  static const uint8_t k_invalid_channel = k_adc_channel_max + 1U;
+  rx_err_t             err =
+    rx_bus_config_init_adc(&config, "test", k_test_adc_unit, k_invalid_channel, k_test_adc_bits);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Invalid ADC resolution in rx_bus_config_init_adc returns error
+ *
+ * @details
+ * Passes bits=9 (not 8, 10, or 12) to trigger the invalid-resolution branch
+ * inside rx_bus_config_init_adc (lines 674-675).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers lines 674-675 of rx_bus_config.c
+ */
+void test_bus_config_adc_invalid_resolution_returns_error(void)
+{
+  rx_bus_config_t      config;
+  static const uint8_t k_invalid_bits = 9U;
+  rx_err_t             err =
+    rx_bus_config_init_adc(&config, "test", k_test_adc_unit, k_test_adc_channel, k_invalid_bits);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Null config pointer to rx_bus_config_init_adc returns error
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(config, ...) branch at line 656 of rx_bus_config.c.
+ */
+void test_bus_config_adc_null_config_returns_error(void)
+{
+  rx_err_t err =
+    rx_bus_config_init_adc(nullptr, "test", k_test_adc_unit, k_test_adc_channel, k_test_adc_bits);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Null name pointer to rx_bus_config_init_adc returns error
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(name, ...) branch at line 657 of rx_bus_config.c.
+ */
+void test_bus_config_adc_null_name_returns_error(void)
+{
+  rx_bus_config_t config;
+  rx_err_t        err =
+    rx_bus_config_init_adc(&config, nullptr, k_test_adc_unit, k_test_adc_channel, k_test_adc_bits);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief 8-bit ADC resolution accepted by rx_bus_config_init_adc
+ *
+ * @details
+ * Exercises the `bits != k_adc_resolution_8bit` = FALSE short-circuit path
+ * at line 672 of rx_bus_config.c. When bits==8 the first operand of the &&
+ * chain is false, so the entire condition short-circuits to false and the
+ * function proceeds without returning an error.
+ *
+ * @pre rx_bus_config_init_adc compiled with branch coverage instrumentation
+ * @pre k_adc_resolution_8bit == 8
+ * @post config initialised successfully with bits == k_adc_resolution_8bit
+ * @post return value is k_rx_ok
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_config_adc_resolution_8bit_valid(void)
+{
+  rx_bus_config_t config;
+  rx_err_t        err = rx_bus_config_init_adc(&config,
+                                        "adc0",
+                                        k_test_adc_unit,
+                                        k_test_adc_channel,
+                                        k_adc_resolution_8bit);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL((uint8_t)k_adc_resolution_8bit, config.proto.adc.bits);
+}
+
+/**
+ * @brief 10-bit ADC resolution accepted by rx_bus_config_init_adc
+ *
+ * @details
+ * Exercises the `bits != k_adc_resolution_10bit` = FALSE short-circuit path
+ * at line 672 of rx_bus_config.c. When bits==10 the first operand is true
+ * (bits != 8) but the second operand is false (bits == 10), so the && chain
+ * short-circuits to false and the function proceeds without returning an error.
+ *
+ * @pre rx_bus_config_init_adc compiled with branch coverage instrumentation
+ * @pre k_adc_resolution_10bit == 10
+ * @post config initialised successfully with bits == k_adc_resolution_10bit
+ * @post return value is k_rx_ok
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_config_adc_resolution_10bit_valid(void)
+{
+  rx_bus_config_t config;
+  rx_err_t        err = rx_bus_config_init_adc(&config,
+                                        "adc0",
+                                        k_test_adc_unit,
+                                        k_test_adc_channel,
+                                        k_adc_resolution_10bit);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL((uint8_t)k_adc_resolution_10bit, config.proto.adc.bits);
 }
 
 /* =============================================================================
@@ -640,19 +961,35 @@ int main(void)
   RUN_TEST(test_bus_adc_init_null_name_returns_error);
   RUN_TEST(test_bus_adc_init_bus_not_found_returns_error);
   RUN_TEST(test_bus_adc_init_hal_error_propagates);
+  RUN_TEST(test_bus_adc_init_wrong_bus_type_returns_error);
+  RUN_TEST(test_bus_adc_init_post_init_read_failure_still_succeeds);
 
   /* Read raw value tests */
   RUN_TEST(test_bus_adc_read_returns_configured_value);
   RUN_TEST(test_bus_adc_read_null_manager_returns_error);
+  RUN_TEST(test_bus_adc_read_null_bus_name_returns_error);
   RUN_TEST(test_bus_adc_read_null_value_returns_error);
   RUN_TEST(test_bus_adc_read_not_initialized_returns_error);
   RUN_TEST(test_bus_adc_read_hal_error_propagates);
+  RUN_TEST(test_bus_adc_read_value_exceeds_max_logs_warning);
 
   /* Read voltage tests */
   RUN_TEST(test_bus_adc_read_voltage_returns_nonzero_for_full_scale);
   RUN_TEST(test_bus_adc_read_voltage_null_manager_returns_error);
+  RUN_TEST(test_bus_adc_read_voltage_null_bus_name_returns_error);
   RUN_TEST(test_bus_adc_read_voltage_null_value_returns_error);
   RUN_TEST(test_bus_adc_read_voltage_not_initialized_returns_error);
+  RUN_TEST(test_bus_adc_read_voltage_hal_error_propagates);
+  RUN_TEST(test_bus_adc_read_voltage_exceeds_safety_limit_logs_warning);
+
+  /* Bus config validation tests */
+  RUN_TEST(test_bus_config_adc_invalid_unit_returns_error);
+  RUN_TEST(test_bus_config_adc_invalid_channel_returns_error);
+  RUN_TEST(test_bus_config_adc_invalid_resolution_returns_error);
+  RUN_TEST(test_bus_config_adc_null_config_returns_error);
+  RUN_TEST(test_bus_config_adc_null_name_returns_error);
+  RUN_TEST(test_bus_config_adc_resolution_8bit_valid);
+  RUN_TEST(test_bus_config_adc_resolution_10bit_valid);
 
   return UNITY_END();
 }

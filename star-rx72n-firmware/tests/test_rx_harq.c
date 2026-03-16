@@ -802,7 +802,7 @@ void test_combiner_deinit_null(void)
  */
 void test_combiner_add_null_combiner(void)
 {
-  rx_soft_bit_t soft[k_test_array_size_large] = {0};
+  rx_soft_bit_t soft[k_test_array_size_large] = {};
   rx_err_t      err = rx_chase_combiner_add(nullptr, soft, k_test_array_size_large);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -842,8 +842,8 @@ void test_combiner_add_null_soft(void)
  */
 void test_combiner_add_uninitialized(void)
 {
-  rx_chase_combiner_t comb                          = {0};
-  rx_soft_bit_t       soft[k_test_array_size_large] = {0};
+  rx_chase_combiner_t comb                          = {};
+  rx_soft_bit_t       soft[k_test_array_size_large] = {};
   rx_err_t            err = rx_chase_combiner_add(&comb, soft, k_test_array_size_large);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1116,6 +1116,44 @@ void test_combiner_combined_no_add(void)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
+/**
+ * @brief Test rx_chase_combiner_combined() with null pointer arguments
+ *
+ * @details
+ * Verifies that rx_chase_combiner_combined() returns k_rx_err_invalid_arg for
+ * null combiner, null output, and null len.
+ *
+ * @test Validates nullptr rejection in rx_chase_combiner_combined (line 238)
+ */
+void test_combiner_combined_null_args(void)
+{
+  rx_soft_bit_t output[k_test_array_size_small];
+  uint32_t      len;
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_chase_combiner_combined(nullptr, output, &len));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_chase_combiner_combined(&s_combiner, nullptr, &len));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_chase_combiner_combined(&s_combiner, output, nullptr));
+}
+
+/**
+ * @brief Test rx_chase_combiner_combined() with uninitialized combiner
+ *
+ * @details
+ * Verifies that rx_chase_combiner_combined() returns k_rx_err_invalid_state
+ * for an uninitialized combiner.
+ *
+ * @test Validates uninitialized combiner rejection in rx_chase_combiner_combined (line 242)
+ */
+void test_combiner_combined_uninitialized(void)
+{
+  rx_chase_combiner_t comb = {};
+  rx_soft_bit_t       output[k_test_array_size_small];
+  uint32_t            len;
+
+  rx_err_t err = rx_chase_combiner_combined(&comb, output, &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
 /** @} */ /* End of harq_combiner_accumulation_tests */
 
 /* =============================================================================
@@ -1306,7 +1344,7 @@ void test_combiner_reset_null(void)
  */
 void test_combiner_reset_uninitialized(void)
 {
-  rx_chase_combiner_t comb = {0};
+  rx_chase_combiner_t comb = {};
   rx_err_t            err  = rx_chase_combiner_reset(&comb);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1543,7 +1581,7 @@ void test_harq_reset_null(void)
  */
 void test_harq_reset_uninitialized(void)
 {
-  rx_harq_handle_t harq = {0};
+  rx_harq_handle_t harq = {};
   rx_err_t         err  = rx_harq_reset(&harq);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1612,7 +1650,7 @@ void test_harq_encode_null_args(void)
  */
 void test_harq_encode_uninitialized(void)
 {
-  rx_harq_handle_t harq      = {0};
+  rx_harq_handle_t harq      = {};
   uint8_t          payload[] = {k_test_byte_answer};
   uint8_t          output[k_test_buf_large];
   uint32_t         len;
@@ -2005,8 +2043,8 @@ void test_harq_decode_null_args(void)
  */
 void test_harq_decode_uninitialized(void)
 {
-  rx_harq_handle_t        harq                 = {0};
-  rx_soft_bit_t           soft[k_test_buf_std] = {0};
+  rx_harq_handle_t        harq                 = {};
+  rx_soft_bit_t           soft[k_test_buf_std] = {};
   uint8_t                 output[k_test_buf_medium];
   uint32_t                len;
   rx_harq_decode_params_t params =
@@ -2050,6 +2088,231 @@ void test_harq_decode_zero_length(void)
   /* Zero soft_len returns k_rx_err_invalid_arg */
   rx_err_t err = rx_harq_decode(&s_harq, &params, output, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test rx_harq_decode() with expected_output_len=0 in non-FEC mode
+ *
+ * @details
+ * Verifies that internal_soft_to_hard rejects max_output_bytes==0.
+ * Covers lines 542 (max_output_bytes==0 guard) and 649 (non-FEC error return).
+ *
+ * @pre None
+ * @post Decode returns k_rx_err_invalid_arg, no output written
+ *
+ * @test Covers internal_soft_to_hard max_output_bytes==0 path
+ */
+void test_harq_decode_no_fec_zero_output_len(void)
+{
+  rx_harq_config_t config = {.fec_enabled = k_test_count_zero};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, &config));
+
+  rx_soft_bit_t soft[k_test_buf_std];
+  for (uint32_t i = k_test_count_zero; i < k_test_buf_std; i++) {
+    soft[i] = k_test_soft_pos_10;
+  }
+  uint8_t  output[k_test_buf_medium];
+  uint32_t len;
+
+  /* expected_output_len = 0 causes internal_soft_to_hard to return invalid_arg */
+  rx_harq_decode_params_t params = {
+    .soft_bits           = soft,
+    .soft_len            = k_test_buf_std,
+    .expected_output_len = k_test_count_zero,
+  };
+
+  rx_err_t err = rx_harq_decode(&s_harq, &params, output, &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test rx_harq_decode() non-FEC path with expected_output_len < actual decoded bytes
+ *
+ * @details
+ * Verifies that internal_soft_to_hard truncates output when out_bytes > max_output_bytes.
+ * Covers line 548 (truncation: out_bytes > max_output_bytes clamped to max).
+ *
+ * @pre None
+ * @post Decode returns k_rx_ok, output length clamped to expected_output_len
+ *
+ * @test Covers internal_soft_to_hard truncation path at line 548
+ */
+void test_harq_decode_no_fec_output_truncated(void)
+{
+  rx_harq_config_t config = {.fec_enabled = k_test_count_zero};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, &config));
+
+  /* Encode 2 bytes to get 2-byte output (no FEC = passthrough) */
+  uint8_t  payload[] = {k_test_byte_answer, k_test_byte_next};
+  uint8_t  encoded[k_test_buf_large];
+  uint32_t enc_len = k_test_count_zero;
+  uint8_t  bit;
+
+  rx_err_t err =
+    rx_harq_encode(&s_harq, payload, k_test_buf_small, encoded, k_test_buf_large, &enc_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_test_buf_small, enc_len);
+
+  /* Convert to soft bits (16 soft bits for 2 bytes) */
+  rx_soft_bit_t soft[k_test_buf_xlarge];
+  uint32_t      soft_len = enc_len * k_bits_per_byte;
+  for (uint32_t i = k_test_count_zero; i < enc_len; i++) {
+    for (int8_t b = k_bit_idx_msb; b >= k_bit_idx_lsb; b--) {
+      bit                                             = (encoded[i] >> b) & k_bit_mask;
+      soft[i * k_bits_per_byte + (k_bit_idx_msb - b)] = rx_fec_hard_to_soft(bit);
+    }
+  }
+
+  /* Reset HARQ for decode */
+  (void)rx_harq_reset(&s_harq);
+
+  /* Request only 1 byte output while soft bits decode to 2 bytes -> truncation */
+  uint8_t                 output[k_test_buf_medium];
+  uint32_t                dec_len;
+  rx_harq_decode_params_t params = {
+    .soft_bits           = soft,
+    .soft_len            = soft_len,
+    .expected_output_len = k_test_buf_tiny, /* 1 byte, but 2 bytes encoded */
+  };
+
+  err = rx_harq_decode(&s_harq, &params, output, &dec_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* Output should be truncated to 1 byte */
+  TEST_ASSERT_EQUAL(k_test_buf_tiny, dec_len);
+}
+
+/**
+ * @brief Test rx_harq_decode() FEC failure triggers combining state
+ *
+ * @details
+ * Verifies that when FEC decode fails and retries remain, HARQ transitions to
+ * k_harq_state_combining and returns k_rx_err_protocol_error.
+ * Covers lines 597-599 (decode fail + retries available path).
+ *
+ * @pre None
+ * @post State is k_harq_state_combining, k_rx_err_protocol_error returned
+ *
+ * @test Covers internal_handle_fec_result retry-available path
+ */
+void test_harq_decode_fec_fail_retry(void)
+{
+  /* FEC enabled by default, max_retries=3, max_combines=3 */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
+
+  /* 48 soft bits (even number, good for FEC), but expected_output_len=0
+   * causes num_symbols=0 < k_fec_tail_bits -> rx_fec_decode_soft returns error */
+  rx_soft_bit_t soft[k_test_fec_len_2_byte * k_bits_per_byte];
+  for (uint32_t i = k_test_count_zero; i < (uint32_t)(k_test_fec_len_2_byte * k_bits_per_byte);
+       i++) {
+    soft[i] = k_test_soft_pos_10;
+  }
+  uint8_t  output[k_test_buf_medium];
+  uint32_t len;
+
+  rx_harq_decode_params_t params = {
+    .soft_bits           = soft,
+    .soft_len            = k_test_fec_len_2_byte * k_bits_per_byte,
+    .expected_output_len = k_test_count_zero, /* 0 causes FEC decode to fail */
+  };
+
+  rx_err_t err = rx_harq_decode(&s_harq, &params, output, &len);
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
+  TEST_ASSERT_EQUAL(k_harq_state_combining, rx_harq_get_state(&s_harq));
+}
+
+/**
+ * @brief Test rx_harq_decode() FEC failure exhausts max retries
+ *
+ * @details
+ * Verifies that when FEC decode fails and max retries are exhausted, HARQ
+ * transitions to k_harq_state_error and returns the original error code.
+ * Covers lines 603-605 (decode fail + max retries reached path).
+ *
+ * @pre None
+ * @post State is k_harq_state_error after 3 failed decode attempts
+ *
+ * @test Covers internal_handle_fec_result max-retries-exhausted path
+ */
+void test_harq_decode_fec_fail_exhausted(void)
+{
+  /* FEC enabled by default, max_retries=3, max_combines=3 */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
+
+  /* 48 soft bits with expected_output_len=0 -> FEC always fails */
+  rx_soft_bit_t soft[k_test_fec_len_2_byte * k_bits_per_byte];
+  for (uint32_t i = k_test_count_zero; i < (uint32_t)(k_test_fec_len_2_byte * k_bits_per_byte);
+       i++) {
+    soft[i] = k_test_soft_pos_10;
+  }
+  uint8_t  output[k_test_buf_medium];
+  uint32_t len;
+
+  rx_harq_decode_params_t params = {
+    .soft_bits           = soft,
+    .soft_len            = k_test_fec_len_2_byte * k_bits_per_byte,
+    .expected_output_len = k_test_count_zero, /* 0 causes FEC decode to fail */
+  };
+
+  /* First two attempts -> k_harq_state_combining */
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, rx_harq_decode(&s_harq, &params, output, &len));
+  TEST_ASSERT_EQUAL(k_harq_state_combining, rx_harq_get_state(&s_harq));
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, rx_harq_decode(&s_harq, &params, output, &len));
+  TEST_ASSERT_EQUAL(k_harq_state_combining, rx_harq_get_state(&s_harq));
+
+  /* Third attempt -> max retries (retry_count == max_retries=3) -> error state */
+  rx_err_t err = rx_harq_decode(&s_harq, &params, output, &len);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_harq_state_error, rx_harq_get_state(&s_harq));
+}
+
+/**
+ * @brief Test rx_harq_decode() when combiner_add fails due to soft length mismatch
+ *
+ * @details
+ * Verifies that when combiner already has data from a prior decode attempt and
+ * a new decode call provides a different soft_len, combiner_add returns
+ * k_rx_err_invalid_size which propagates out of rx_harq_decode.
+ * Covers line 631 (combiner_add non-ok, non-busy error propagation).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_size returned when soft_len mismatches prior call
+ *
+ * @test Covers combiner_add length-mismatch error propagation at line 631
+ */
+void test_harq_decode_combiner_add_mismatch(void)
+{
+  /* FEC enabled, put HARQ into combining state first */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
+
+  /* First decode: soft_len=48 (FEC, expected_output_len=0) -> fails -> state=combining */
+  rx_soft_bit_t soft_48[k_test_fec_len_2_byte * k_bits_per_byte];
+  for (uint32_t i = k_test_count_zero; i < (uint32_t)(k_test_fec_len_2_byte * k_bits_per_byte);
+       i++) {
+    soft_48[i] = k_test_soft_pos_10;
+  }
+  uint8_t  output[k_test_buf_medium];
+  uint32_t len;
+
+  rx_harq_decode_params_t params_48 = {
+    .soft_bits           = soft_48,
+    .soft_len            = k_test_fec_len_2_byte * k_bits_per_byte,
+    .expected_output_len = k_test_count_zero,
+  };
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, rx_harq_decode(&s_harq, &params_48, output, &len));
+  TEST_ASSERT_EQUAL(k_harq_state_combining, rx_harq_get_state(&s_harq));
+
+  /* Second decode: soft_len=32 (different length) -> combiner_add returns invalid_size */
+  rx_soft_bit_t soft_32[k_test_buf_std];
+  for (uint32_t i = k_test_count_zero; i < k_test_buf_std; i++) {
+    soft_32[i] = k_test_soft_pos_10;
+  }
+  rx_harq_decode_params_t params_32 = {
+    .soft_bits           = soft_32,
+    .soft_len            = k_test_buf_std,
+    .expected_output_len = k_test_count_zero,
+  };
+  rx_err_t err = rx_harq_decode(&s_harq, &params_32, output, &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 /* =============================================================================
@@ -2119,6 +2382,66 @@ void test_harq_decode_zero_length(void)
  *
  * @test Validates FEC integration and round-trip correctness
  */
+/**
+ * @brief Test HARQ decode round-trip without FEC (internal_soft_to_hard path)
+ *
+ * @details
+ * Verifies the non-FEC decode path using internal_soft_to_hard. With FEC
+ * disabled, encoded output equals input so the soft-bit conversion is trivial.
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ with fec_enabled=0
+ * 2. Encode payload [0x42, 0x43] -> 2 bytes (passthrough)
+ * 3. Convert encoded hard bits to soft bits
+ * 4. Reset HARQ state
+ * 5. Decode soft bits -> expect 2 bytes decoded
+ * 6. Verify decoded == original payload
+ *
+ * @pre None
+ * @post Validates non-FEC soft-to-hard conversion path
+ *
+ * @test Covers internal_soft_to_hard via the fec_enabled==0 decode branch
+ */
+void test_harq_roundtrip_without_fec(void)
+{
+  rx_harq_config_t config = {.fec_enabled = k_test_count_zero};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, &config));
+
+  uint8_t  payload[] = {k_test_byte_answer, k_test_byte_next};
+  uint8_t  encoded[k_test_buf_large];
+  uint32_t enc_len = 0;
+  uint8_t  bit;
+
+  rx_err_t err =
+    rx_harq_encode(&s_harq, payload, k_test_buf_small, encoded, k_test_buf_large, &enc_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_test_buf_small, enc_len);
+
+  /* Convert encoded hard bits to soft bits */
+  rx_soft_bit_t soft[k_test_buf_xlarge];
+  uint32_t      soft_len = enc_len * k_bits_per_byte;
+
+  for (uint32_t i = k_test_count_zero; i < enc_len; i++) {
+    for (int8_t b = k_bit_idx_msb; b >= k_bit_idx_lsb; b--) {
+      bit                                             = (encoded[i] >> b) & k_bit_mask;
+      soft[i * k_bits_per_byte + (k_bit_idx_msb - b)] = rx_fec_hard_to_soft(bit);
+    }
+  }
+
+  /* Reset HARQ for decode */
+  (void)rx_harq_reset(&s_harq);
+
+  /* Decode via non-FEC path (internal_soft_to_hard) */
+  uint8_t                 decoded[k_test_buf_large];
+  uint32_t                dec_len;
+  rx_harq_decode_params_t params = internal_make_decode_params(soft, soft_len, k_test_buf_small);
+
+  err = rx_harq_decode(&s_harq, &params, decoded, &dec_len);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_test_buf_small, dec_len);
+  TEST_ASSERT_EQUAL_MEMORY(payload, decoded, k_test_buf_small);
+}
+
 void test_harq_roundtrip_with_fec(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
@@ -2261,6 +2584,48 @@ void test_harq_combining_improves_reception(void)
 
 /** @} */ /* End of harq_integration_tests */
 
+/**
+ * @brief rx_chase_combiner_can_add() with non-null but uninitialized combiner
+ *
+ * @details
+ * Exercises the second guard in rx_chase_combiner_can_add():
+ * the split "if (combiner->initialized == k_harq_false)" path.
+ */
+void test_combiner_can_add_uninitialized(void)
+{
+  rx_chase_combiner_t comb = {}; /* initialized field == k_harq_false (0) */
+  TEST_ASSERT_FALSE(rx_chase_combiner_can_add(&comb));
+}
+
+/**
+ * @brief rx_harq_can_retry() with non-null but uninitialized harq handle
+ *
+ * @details
+ * Exercises the second guard in rx_harq_can_retry():
+ * the split "if (harq->initialized == k_harq_false)" path.
+ */
+void test_harq_can_retry_uninitialized(void)
+{
+  rx_harq_handle_t harq = {}; /* initialized field == k_harq_false (0) */
+  TEST_ASSERT_FALSE(rx_harq_can_retry(&harq));
+}
+
+/**
+ * @brief rx_harq_decode() with nullptr params argument
+ *
+ * @details
+ * Exercises the params_null branch in the null-check at the top of rx_harq_decode().
+ */
+void test_harq_decode_null_params(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
+
+  uint8_t  output[k_test_buf_large];
+  uint32_t len;
+  rx_err_t err = rx_harq_decode(&s_harq, nullptr, output, &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
 /* =============================================================================
  * Main Test Runner
  * =============================================================================
@@ -2313,17 +2678,12 @@ void test_harq_combining_improves_reception(void)
  *
  * @since Version 1.0.0
  */
-int main(void)
+static void internal_run_combiner_tests(void)
 {
-  UNITY_BEGIN();
-
-  /* Chase Combiner init tests */
   RUN_TEST(test_combiner_init_null);
   RUN_TEST(test_combiner_init_success);
   RUN_TEST(test_combiner_init_default_max);
   RUN_TEST(test_combiner_deinit_null);
-
-  /* Chase Combiner add tests */
   RUN_TEST(test_combiner_add_null_combiner);
   RUN_TEST(test_combiner_add_null_soft);
   RUN_TEST(test_combiner_add_uninitialized);
@@ -2332,59 +2692,74 @@ int main(void)
   RUN_TEST(test_combiner_add_single);
   RUN_TEST(test_combiner_add_length_mismatch);
   RUN_TEST(test_combiner_add_max_reached);
+}
 
-  /* Chase Combiner accumulation tests */
+static void internal_run_combiner_acc_tests(void)
+{
   RUN_TEST(test_combiner_accumulation);
   RUN_TEST(test_combiner_combined_output);
   RUN_TEST(test_combiner_combined_no_add);
-
-  /* Chase Combiner helper tests */
+  RUN_TEST(test_combiner_combined_null_args);
+  RUN_TEST(test_combiner_combined_uninitialized);
   RUN_TEST(test_combiner_can_add);
   RUN_TEST(test_combiner_can_add_null);
+  RUN_TEST(test_combiner_can_add_uninitialized);
   RUN_TEST(test_combiner_count);
   RUN_TEST(test_combiner_count_null);
   RUN_TEST(test_combiner_reset);
   RUN_TEST(test_combiner_reset_null);
   RUN_TEST(test_combiner_reset_uninitialized);
+}
 
-  /* HARQ init tests */
+static void internal_run_harq_encode_tests(void)
+{
   RUN_TEST(test_harq_init_null);
   RUN_TEST(test_harq_init_default_config);
   RUN_TEST(test_harq_init_custom_config);
   RUN_TEST(test_harq_deinit_null);
-
-  /* HARQ state tests */
   RUN_TEST(test_harq_get_state_null);
   RUN_TEST(test_harq_get_state_idle);
   RUN_TEST(test_harq_reset);
   RUN_TEST(test_harq_reset_null);
   RUN_TEST(test_harq_reset_uninitialized);
-
-  /* HARQ encode tests */
   RUN_TEST(test_harq_encode_null_args);
   RUN_TEST(test_harq_encode_uninitialized);
   RUN_TEST(test_harq_encode_zero_payload);
   RUN_TEST(test_harq_encode_too_large);
+}
+
+static void internal_run_harq_decode_tests(void)
+{
   RUN_TEST(test_harq_encode_with_fec);
   RUN_TEST(test_harq_encode_without_fec);
   RUN_TEST(test_harq_encode_buffer_too_small);
   RUN_TEST(test_harq_encode_buffer_too_small_no_fec);
-
-  /* HARQ retry tests */
   RUN_TEST(test_harq_get_retry_count_null);
   RUN_TEST(test_harq_get_retry_count);
   RUN_TEST(test_harq_can_retry_null);
+  RUN_TEST(test_harq_can_retry_uninitialized);
   RUN_TEST(test_harq_can_retry_fresh);
   RUN_TEST(test_harq_can_retry_exhausted);
-
-  /* HARQ decode parameter validation tests */
   RUN_TEST(test_harq_decode_null_args);
+  RUN_TEST(test_harq_decode_null_params);
   RUN_TEST(test_harq_decode_uninitialized);
   RUN_TEST(test_harq_decode_zero_length);
-
-  /* HARQ integration tests */
+  RUN_TEST(test_harq_decode_no_fec_zero_output_len);
+  RUN_TEST(test_harq_decode_no_fec_output_truncated);
+  RUN_TEST(test_harq_decode_fec_fail_retry);
+  RUN_TEST(test_harq_decode_fec_fail_exhausted);
+  RUN_TEST(test_harq_decode_combiner_add_mismatch);
   RUN_TEST(test_harq_roundtrip_with_fec);
+  RUN_TEST(test_harq_roundtrip_without_fec);
   RUN_TEST(test_harq_combining_improves_reception);
+}
 
+int main(void)
+{
+  UNITY_BEGIN();
+  internal_run_combiner_tests();
+  internal_run_combiner_acc_tests();
+  internal_run_harq_encode_tests();
+  internal_run_harq_decode_tests();
   return UNITY_END();
 }

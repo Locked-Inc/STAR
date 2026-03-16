@@ -204,8 +204,11 @@ typedef enum : uint16_t {
 
 /* =============================================================================
  * Callback Context Structures
+ * In UNIT_TEST builds these typedefs are provided by rx_bus_i2c.h so that
+ * test files can construct context values and call the callbacks directly.
  * =============================================================================
  */
+#ifndef UNIT_TEST
 
 /**
  * @struct i2c_init_ctx_t
@@ -411,6 +414,8 @@ typedef struct {
   rx_err_t result;      /**< Operation result: k_rx_ok on success, error code on failure */
 } i2c_write_read_ctx_t;
 
+#endif /* ifndef UNIT_TEST */
+
 /* =============================================================================
  * Private Callback Functions
  * =============================================================================
@@ -491,7 +496,44 @@ typedef struct {
  * - **Rule 5**: 2 preconditions, 2 postconditions
  * - **Rule 4**: Function is 20 lines (well under 60 limit)
  */
-static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
+/**
+ * @brief Handle RIIC channel already-initialized case
+ *
+ * @details
+ * When a physical RIIC channel was previously initialized, validates that
+ * the requested frequency matches the active frequency. On match, marks
+ * the bus as initialized without re-calling riic_init(). On mismatch,
+ * returns an error.
+ *
+ * @param[in,out] bus_config Bus to mark initialized on success
+ * @param[in]     ctx        Init context with manager and result storage
+ * @param[in]     channel    RIIC channel index
+ *
+ * @return k_rx_ok on frequency match, k_rx_err_invalid_arg on mismatch
+ *
+ * @pre channel < k_riic_channel_count
+ * @pre ctx->manager->riic_initialized[channel] == true
+ * @post bus_config->initialized == true on success
+ */
+static rx_err_t internal_i2c_handle_shared_channel(rx_bus_config_t* bus_config,
+                                                   i2c_init_ctx_t*  ctx,
+                                                   const uint8_t    channel)
+{
+  const uint32_t active_freq    = ctx->manager->riic_freq_hz[channel];
+  const uint32_t requested_freq = bus_config->proto.i2c.frequency_hz;
+  if (active_freq != requested_freq) {
+    rx_log_error_val(s_tag, "RIIC channel frequency mismatch: active_freq_hz", active_freq);
+    rx_log_error_val(s_tag, "RIIC channel frequency mismatch: requested_freq_hz", requested_freq);
+    ctx->result = k_rx_err_invalid_arg;
+    return k_rx_err_invalid_arg;
+  }
+  rx_log_debug(s_tag, "RIIC channel already initialized - skipping riic_init");
+  bus_config->initialized = true;
+  ctx->result             = k_rx_ok;
+  return k_rx_ok;
+}
+
+RX_STATIC_TESTABLE rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   i2c_init_ctx_t* const ctx = (i2c_init_ctx_t*)user_ctx;
 
@@ -519,24 +561,9 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
   }
 
   /* Channel-level guard: skip riic_init() if this physical RIIC channel was
-   * already initialized by a prior rx_bus_i2c_init() call. Multiple logical
-   * buses may share one physical RIIC channel (e.g., "i2c1" and "i2c1_baro"
-   * both use RIIC1). Re-initializing an active channel causes I2C bus glitches.
-   * Verify frequency matches to catch misconfigured shared-channel buses.
-   */
+   * already initialized by a prior rx_bus_i2c_init() call. */
   if (ctx->manager->riic_initialized[channel]) {
-    const uint32_t active_freq    = ctx->manager->riic_freq_hz[channel];
-    const uint32_t requested_freq = bus_config->proto.i2c.frequency_hz;
-    if (active_freq != requested_freq) {
-      rx_log_error_val(s_tag, "RIIC channel frequency mismatch: active_freq_hz", active_freq);
-      rx_log_error_val(s_tag, "RIIC channel frequency mismatch: requested_freq_hz", requested_freq);
-      ctx->result = k_rx_err_invalid_arg;
-      return k_rx_err_invalid_arg;
-    }
-    rx_log_debug(s_tag, "RIIC channel already initialized - skipping riic_init");
-    bus_config->initialized = true;
-    ctx->result             = k_rx_ok;
-    return k_rx_ok;
+    return internal_i2c_handle_shared_channel(bus_config, ctx, channel);
   }
 
   /* Initialize RIIC channel for the first logical bus on this physical channel */
@@ -552,7 +579,6 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
   /* Post-condition: Verify I2C channel is responsive (check configuration) */
   if (bus_config->proto.i2c.device_addr > k_i2c_addr_max_7bit) {
     rx_log_warn(s_tag, "I2C device address exceeds 7-bit maximum");
-    /* Continue anyway - HAL should validate, but flag if misconfigured */
   }
 
   /* Record that this physical RIIC channel is now initialized and store its frequency */
@@ -641,7 +667,7 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
  * - **Rule 4**: Function is 20 lines (well under 60 limit)
  * - **Rule 7**: All riic_write() return values checked
  */
-static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* user_ctx)
+RX_STATIC_TESTABLE rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   i2c_write_ctx_t* const ctx = (i2c_write_ctx_t*)user_ctx;
 
@@ -750,7 +776,7 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
  * - **Rule 4**: Function is 20 lines (well under 60 limit)
  * - **Rule 7**: All riic_read() return values checked
  */
-static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
+RX_STATIC_TESTABLE rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   i2c_read_ctx_t* const ctx = (i2c_read_ctx_t*)user_ctx;
 
@@ -847,7 +873,8 @@ static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* us
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
+RX_STATIC_TESTABLE rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config,
+                                                             void*            user_ctx)
 {
   i2c_write_read_ctx_t* const ctx = (i2c_write_read_ctx_t*)user_ctx;
 

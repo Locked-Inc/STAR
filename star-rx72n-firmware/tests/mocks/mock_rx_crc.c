@@ -9,7 +9,6 @@
 
 #include "mock_rx_crc.h"
 
-#include <stdbool.h>
 #include <stddef.h>
 
 #include "rx_crc.h"
@@ -118,7 +117,7 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
     return k_rx_err_null_ptr;
   }
 
-  if (len == 0U || len > (uint32_t)k_crc_len_max) {
+  if (len == 0U || len > k_crc_len_max) {
     return k_rx_err_invalid_arg;
   }
 
@@ -133,7 +132,7 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
   }
 
   /* CRC-8/Maxim computation - only supported polynomial for this mock */
-  uint8_t crc = (uint8_t)k_crc8_init_value;
+  uint8_t crc = k_crc8_init_value;
 
   for (uint32_t i = 0U; i < k_crc_len_max; ++i) {
     if (i >= len) {
@@ -252,7 +251,7 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len)
   }
 
   /* Un-finalize previous CRC, process bytes, re-finalize (matches rx_crc_sw.c) */
-  uint32_t work = crc ^ (uint32_t)k_crc32_xor_mask;
+  uint32_t work = crc ^ k_crc32_xor_mask;
 
   for (uint32_t i = 0U; i < k_crc_len_max; ++i) {
     if (i >= len) {
@@ -260,13 +259,13 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len)
     }
     work ^= (uint32_t)data[i];
     for (uint8_t b = 0U; b < k_bits_per_byte; ++b) {
-      if ((work & (uint32_t)k_crc32_lsb_mask) != 0U) {
-        work = (work >> k_shift_one_bit) ^ (uint32_t)k_crc32_poly;
+      if ((work & k_crc32_lsb_mask) != 0U) {
+        work = (work >> k_shift_one_bit) ^ k_crc32_poly;
       } else {
         work >>= k_shift_one_bit;
       }
     }
   }
 
-  return work ^ (uint32_t)k_crc32_xor_mask;
+  return work ^ k_crc32_xor_mask;
 }

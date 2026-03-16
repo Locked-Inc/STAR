@@ -171,7 +171,16 @@ REPLACEMENTS = [
     ("\u00df",   "ss"),      # sharp s
 ]
 
-SOURCE_EXTENSIONS = {".c", ".h", ".go", ".cpp", ".hpp", ".proto", ".ts", ".md"}
+SOURCE_EXTENSIONS = {
+    ".c", ".h", ".go", ".cpp", ".hpp", ".proto", ".ts", ".md",
+    ".yml", ".yaml", ".sh", ".py", ".cmake", ".json", ".toml",
+    ".cfg", ".conf", ".tex", ".bib", ".css", ".html", ".xml",
+    ".txt", ".ini", ".rs", ".java", ".rb", ".lua", ".js",
+}
+
+# Filenames without extensions that should also be checked
+SOURCE_FILENAMES = {"Makefile", "Dockerfile", ".clang-format", ".clang-tidy",
+                    ".cppcheck-suppressions"}
 
 SKIP_DIRS = {".git", ".worktrees", "node_modules", "__pycache__", "build",
              ".cache", "vendor", "third_party", "nanopb", "dist", "gen"}
@@ -222,7 +231,7 @@ def collect_targets(root_path):
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
 
         for f in files:
-            if os.path.splitext(f)[1] in SOURCE_EXTENSIONS:
+            if os.path.splitext(f)[1] in SOURCE_EXTENSIONS or f in SOURCE_FILENAMES:
                 targets.append(os.path.join(dp, f))
     return targets
 

@@ -457,10 +457,34 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
  *
  * @par NASA Power of 10 Compliance:
  * - **Rule 5**: 6 preconditions, 6 postconditions documented
- * - **Rule 4**: Function is 44 lines (under 60 line limit)
+ * - **Rule 4**: Function delegates to helpers to stay under statement limit
  * - **Rule 7**: All return values checked (err != k_rx_ok, status != TX_SUCCESS)
  * - **Rule 3**: No dynamic allocation (static manager structure)
  */
+
+/**
+ * @brief Validate error and pin interfaces for bus manager init
+ *
+ * @param[in] error_iface Error interface to validate
+ * @param[in] pin_iface   Pin interface to validate
+ * @return k_rx_ok on success, error code on validation failure
+ */
+static rx_err_t internal_validate_bus_manager_interfaces(rx_error_interface_t* error_iface,
+                                                         rx_pin_interface_t*   pin_iface)
+{
+  rx_err_t err = rx_error_interface_validate(error_iface);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Error interface validation failed");
+    return err;
+  }
+  err = rx_pin_interface_validate(pin_iface);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Pin interface validation failed");
+    return err;
+  }
+  return k_rx_ok;
+}
+
 rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
                              const char*           tag,
                              rx_error_interface_t* error_iface,
@@ -471,38 +495,25 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
   RX_CHECK_NULL_PTR(error_iface, s_tag, "Error interface is nullptr");
   RX_CHECK_NULL_PTR(pin_iface, s_tag, "Pin interface is nullptr");
 
-  /* Validate interfaces */
-  rx_err_t err = rx_error_interface_validate(error_iface);
+  rx_err_t err = internal_validate_bus_manager_interfaces(error_iface, pin_iface);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Error interface validation failed");
     return err;
   }
 
-  err = rx_pin_interface_validate(pin_iface);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Pin interface validation failed");
-    return err;
-  }
+  *manager = (rx_bus_manager_t){};
 
-  /* Clear manager state */
-  *manager = (rx_bus_manager_t){0};
-
-  /* Create ThreadX mutex for thread safety */
-  UINT status = tx_mutex_create(&manager->mutex, "BusMgr", TX_NO_INHERIT);
+  const UINT status = tx_mutex_create(&manager->mutex, "BusMgr", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "ThreadX mutex creation failed");
     return k_rx_err_threadx;
   }
 
-  /* Store injected interfaces */
   manager->tag         = tag;
   manager->error_iface = error_iface;
   manager->pin_iface   = pin_iface;
-  manager->buses       = nullptr;
-  manager->bus_count   = 0;
+  /* manager->buses and manager->bus_count are already zero from (rx_bus_manager_t){} above */
 
   rx_log_info(s_tag, "Bus manager initialized");
-
   return k_rx_ok;
 }
 
@@ -681,7 +692,7 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
   }
 
   /* Clear manager state */
-  *manager = (rx_bus_manager_t){0};
+  *manager = (rx_bus_manager_t){};
 
   rx_log_info(s_tag, "Bus manager deinitialized");
 
@@ -870,34 +881,23 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
  *
  * @par NASA Power of 10 Compliance:
  * - **Rule 5**: 5 preconditions, 4 postconditions documented
- * - **Rule 4**: Function is 53 lines (under 60 line limit)
+ * - **Rule 4**: Function delegates locked section to helper to stay under statement limit
  * - **Rule 2**: while(current) loop bounded by k_max_buses
  * - **Rule 7**: All returns checked (status != TX_SUCCESS)
  */
-rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_config)
+
+/**
+ * @brief Perform bus add while mutex is held: check duplicate name, capacity, then insert
+ *
+ * @pre Manager mutex is held by caller
+ * @post Manager mutex is released on all return paths
+ *
+ * @param[in,out] manager    Bus manager (mutex already acquired)
+ * @param[in,out] bus_config Bus configuration to add
+ * @return k_rx_ok on success, error code otherwise
+ */
+static rx_err_t internal_add_bus_locked(rx_bus_manager_t* manager, rx_bus_config_t* bus_config)
 {
-  RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
-  RX_CHECK_NULL_PTR(bus_config, s_tag, "Bus config pointer is nullptr");
-  RX_CHECK_NULL_PTR(bus_config->name, s_tag, "Bus name is nullptr");
-
-  /* Check for empty bus name */
-  if (bus_config->name[0] == '\0') {
-    rx_log_error(s_tag, "Bus name is empty");
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Convert timeout from ms to ThreadX ticks */
-  const ULONG timeout_ticks =
-    (k_bus_manager_mutex_timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
-
-  /* Lock mutex for thread-safe access */
-  UINT status = tx_mutex_get(&manager->mutex, timeout_ticks);
-  if (status != TX_SUCCESS) {
-    rx_log_error(s_tag, "Mutex timeout in add_bus");
-    return k_rx_err_timeout;
-  }
-
-  /* Check for duplicate name */
   const rx_bus_config_t* current = manager->buses;
   while (current != nullptr) {
     if (strncmp(current->name, bus_config->name, k_max_bus_name_len) == 0) {
@@ -908,24 +908,40 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
     current = current->next;
   }
 
-  /* Check maximum buses limit */
   if (manager->bus_count >= k_max_buses) {
     (void)tx_mutex_put(&manager->mutex);
     rx_log_error(s_tag, "Maximum buses limit reached");
     return k_rx_err_no_mem;
   }
 
-  /* Add to front of linked list */
   bus_config->next = manager->buses;
   manager->buses   = bus_config;
   manager->bus_count++;
-
-  /* Unlock mutex */
   (void)tx_mutex_put(&manager->mutex);
-
   rx_log_info(s_tag, "Bus added successfully");
-
   return k_rx_ok;
+}
+
+rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_config)
+{
+  RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
+  RX_CHECK_NULL_PTR(bus_config, s_tag, "Bus config pointer is nullptr");
+  RX_CHECK_NULL_PTR(bus_config->name, s_tag, "Bus name is nullptr");
+
+  if (bus_config->name[0] == '\0') {
+    rx_log_error(s_tag, "Bus name is empty");
+    return k_rx_err_invalid_arg;
+  }
+
+  const ULONG timeout_ticks =
+    (k_bus_manager_mutex_timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
+  const UINT status = tx_mutex_get(&manager->mutex, timeout_ticks);
+  if (status != TX_SUCCESS) {
+    rx_log_error(s_tag, "Mutex timeout in add_bus");
+    return k_rx_err_timeout;
+  }
+
+  return internal_add_bus_locked(manager, bus_config);
 }
 
 /**

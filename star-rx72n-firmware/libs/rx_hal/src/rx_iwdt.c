@@ -1256,7 +1256,7 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-static task_monitor_state_t s_task_monitor = {0};
+static task_monitor_state_t s_task_monitor = {};
 
 /**
  * @brief Find task index by name in the registered tasks array

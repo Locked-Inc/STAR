@@ -12,8 +12,6 @@
 
 #include "mock_sci_regs.h"
 
-#include <string.h>
-
 #include "rx72n_sci_regs.h"
 
 /* =============================================================================
@@ -47,7 +45,11 @@ void mock_sci_regs_init(void)
 
 void mock_sci_regs_clear(void)
 {
-  memset(g_mock_sci, 0, sizeof(g_mock_sci));
+  uint8_t* const p   = (uint8_t*)g_mock_sci;
+  const uint32_t len = (uint32_t)sizeof(g_mock_sci);
+  for (uint32_t i = 0U; i < len; i++) {
+    p[i] = 0U;
+  }
 }
 
 void mock_sci_set_ssr(uint8_t channel, uint8_t value)
@@ -124,7 +126,7 @@ void mock_sci_clear_errors(uint8_t channel)
 bool mock_sci_is_tx_enabled(uint8_t channel)
 {
   if (channel < k_mock_sci_channel_count) {
-    return (g_mock_sci[channel].scr & k_mock_sci_scr_te) != 0;
+    return (bool)((g_mock_sci[channel].scr & k_mock_sci_scr_te) != 0U);
   }
   return false;
 }
@@ -132,7 +134,7 @@ bool mock_sci_is_tx_enabled(uint8_t channel)
 bool mock_sci_is_rx_enabled(uint8_t channel)
 {
   if (channel < k_mock_sci_channel_count) {
-    return (g_mock_sci[channel].scr & k_mock_sci_scr_re) != 0;
+    return (bool)((g_mock_sci[channel].scr & k_mock_sci_scr_re) != 0U);
   }
   return false;
 }

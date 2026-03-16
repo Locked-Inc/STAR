@@ -208,7 +208,8 @@ static pin_validator_t s_validator;
  */
 void setUp(void)
 {
-  memset(&s_validator, 0, sizeof(s_validator));
+  static const pin_validator_t s_zero = {};
+  s_validator                         = s_zero;
 }
 
 /**
@@ -248,18 +249,19 @@ void tearDown(void)
  */
 
 typedef enum : uint8_t {
-  k_test_port_0   = 0,
-  k_test_port_5   = 5,
-  k_test_port_9   = 9,
-  k_test_port_a   = 0xA,
-  k_test_port_b   = 0xB,
-  k_test_port_g   = 0x10,
-  k_test_pin_0    = 0,
-  k_test_pin_3    = 3,
-  k_test_pin_7    = 7,
-  k_test_pin_8    = 8,    /* Invalid: max is 7 */
-  k_test_port_bad = 0x11, /* Invalid: exceeds max port */
-  k_test_port_gap = 0x08, /* Gap port (8 is valid) */
+  k_test_port_0         = 0,
+  k_test_port_5         = 5,
+  k_test_port_9         = 9,
+  k_test_port_a         = 0xA,
+  k_test_port_b         = 0xB,
+  k_test_port_g         = 0x10,
+  k_test_pin_0          = 0,
+  k_test_pin_3          = 3,
+  k_test_pin_7          = 7,
+  k_test_pin_8          = 8,    /* Invalid: max is 7 */
+  k_test_port_bad       = 0x11, /* Invalid: exceeds max port */
+  k_test_port_gap       = 0x08, /* Gap port (8 is valid) */
+  k_test_long_name_size = 64,   /* Buffer size for truncation test */
 } test_constants_t;
 
 /* =============================================================================
@@ -289,6 +291,16 @@ void test_pin_validator_init_null_pointer(void)
 }
 
 /**
+ * @brief Helper: verify all reservations are cleared on a given port
+ */
+static void internal_assert_port_cleared(const pin_validator_t* v, uint32_t port)
+{
+  for (uint32_t pin = 0; pin < k_pin_validator_max_pins; pin++) {
+    TEST_ASSERT_FALSE(v->reservations[port][pin].reserved);
+  }
+}
+
+/**
  * @brief Test initialization clears all reservations
  */
 void test_pin_validator_init_clears_reservations(void)
@@ -298,9 +310,7 @@ void test_pin_validator_init_clears_reservations(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   for (uint32_t port = 0; port < k_pin_validator_max_ports; port++) {
-    for (uint32_t pin = 0; pin < k_pin_validator_max_pins; pin++) {
-      TEST_ASSERT_FALSE(s_validator.reservations[port][pin].reserved);
-    }
+    internal_assert_port_cleared(&s_validator, port);
   }
 }
 
@@ -350,6 +360,27 @@ void test_pin_validator_deinit_already_deinitialized(void)
  */
 
 /**
+ * @brief Helper: verify core interface function pointers are non-null
+ */
+static void internal_assert_iface_core_ptrs(const rx_pin_interface_t* iface)
+{
+  TEST_ASSERT_NOT_NULL(iface->ctx);
+  TEST_ASSERT_NOT_NULL(iface->validate_pin);
+  TEST_ASSERT_NOT_NULL(iface->reserve_pin);
+  TEST_ASSERT_NOT_NULL(iface->release_pin);
+}
+
+/**
+ * @brief Helper: verify extended interface function pointers are non-null
+ */
+static void internal_assert_iface_ext_ptrs(const rx_pin_interface_t* iface)
+{
+  TEST_ASSERT_NOT_NULL(iface->is_pin_reserved);
+  TEST_ASSERT_NOT_NULL(iface->get_pin_function);
+  TEST_ASSERT_NOT_NULL(iface->clear_all_reservations);
+}
+
+/**
  * @brief Test getting interface from initialized validator
  */
 void test_pin_validator_get_interface_success(void)
@@ -362,13 +393,8 @@ void test_pin_validator_get_interface_success(void)
   err = pin_validator_get_interface(&iface, &s_validator);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  TEST_ASSERT_NOT_NULL(iface.ctx);
-  TEST_ASSERT_NOT_NULL(iface.validate_pin);
-  TEST_ASSERT_NOT_NULL(iface.reserve_pin);
-  TEST_ASSERT_NOT_NULL(iface.release_pin);
-  TEST_ASSERT_NOT_NULL(iface.is_pin_reserved);
-  TEST_ASSERT_NOT_NULL(iface.get_pin_function);
-  TEST_ASSERT_NOT_NULL(iface.clear_all_reservations);
+  internal_assert_iface_core_ptrs(&iface);
+  internal_assert_iface_ext_ptrs(&iface);
 }
 
 /**
@@ -424,8 +450,8 @@ void test_pin_validator_validate_decimal_ports(void)
   TEST_ASSERT_EQUAL(k_rx_ok, pin_validator_get_interface(&iface, &s_validator));
 
   /* Test all decimal ports with pin 0 */
-  for (uint8_t port = 0; port <= k_max_decimal_port; port++) {
-    err = iface.validate_pin(iface.ctx, port, k_test_pin_0);
+  for (uint16_t port = 0; port <= k_max_decimal_port; port++) {
+    err = iface.validate_pin(iface.ctx, (uint8_t)port, k_test_pin_0);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
   }
 }
@@ -443,8 +469,8 @@ void test_pin_validator_validate_hex_ports(void)
   TEST_ASSERT_EQUAL(k_rx_ok, pin_validator_get_interface(&iface, &s_validator));
 
   /* Test all hex ports with pin 0 */
-  for (uint8_t port = k_hex_port_start; port <= k_hex_port_end; port++) {
-    err = iface.validate_pin(iface.ctx, port, k_test_pin_0);
+  for (uint16_t port = k_hex_port_start; port <= k_hex_port_end; port++) {
+    err = iface.validate_pin(iface.ctx, (uint8_t)port, k_test_pin_0);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
   }
 }
@@ -462,8 +488,8 @@ void test_pin_validator_validate_all_pins(void)
   TEST_ASSERT_EQUAL(k_rx_ok, pin_validator_get_interface(&iface, &s_validator));
 
   /* Test all pins on port 0 */
-  for (uint8_t pin = 0; pin < k_pins_per_port; pin++) {
-    err = iface.validate_pin(iface.ctx, k_test_port_0, pin);
+  for (uint16_t pin = 0; pin < k_pins_per_port; pin++) {
+    err = iface.validate_pin(iface.ctx, k_test_port_0, (uint8_t)pin);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
   }
 }
@@ -837,24 +863,46 @@ void test_pin_validator_all_ports_coverage(void)
   rx_pin_interface_t iface;
   TEST_ASSERT_EQUAL(k_rx_ok, pin_validator_get_interface(&iface, &s_validator));
 
-  /* Test decimal ports 0-9 */
-  for (uint8_t port = 0; port <= k_max_decimal_port; port++) {
-    char function_name[k_pin_function_name_max_len];
-    snprintf(function_name, sizeof(function_name), "PORT%d_PIN0", port);
+  /* Pre-built function names for decimal ports 0-9 */
+  static const char* const s_decimal_names[] = {
+    "PORT0_PIN0",
+    "PORT1_PIN0",
+    "PORT2_PIN0",
+    "PORT3_PIN0",
+    "PORT4_PIN0",
+    "PORT5_PIN0",
+    "PORT6_PIN0",
+    "PORT7_PIN0",
+    "PORT8_PIN0",
+    "PORT9_PIN0",
+  };
 
-    err = iface.reserve_pin(iface.ctx, port, k_test_pin_0, function_name);
+  /* Test decimal ports 0-9 */
+  for (uint16_t port = 0; port <= k_max_decimal_port; port++) {
+    err = iface.reserve_pin(iface.ctx, (uint8_t)port, k_test_pin_0, s_decimal_names[port]);
     TEST_ASSERT_EQUAL_MESSAGE(k_rx_ok, err, "Failed to reserve decimal port");
-    TEST_ASSERT_TRUE(iface.is_pin_reserved(iface.ctx, port, k_test_pin_0));
+    TEST_ASSERT_TRUE(iface.is_pin_reserved(iface.ctx, (uint8_t)port, k_test_pin_0));
   }
 
-  /* Test hex ports A-G (0xA-0x10) */
-  for (uint8_t port = k_hex_port_start; port <= k_hex_port_end; port++) {
-    char function_name[k_pin_function_name_max_len];
-    snprintf(function_name, sizeof(function_name), "PORT%X_PIN0", port);
+  /* Pre-built function names for hex ports A-G (0xA-0x10) */
+  static const char* const s_hex_names[] = {
+    "PORTA_PIN0",
+    "PORTB_PIN0",
+    "PORTC_PIN0",
+    "PORTD_PIN0",
+    "PORTE_PIN0",
+    "PORTF_PIN0",
+    "PORTG_PIN0",
+  };
 
-    err = iface.reserve_pin(iface.ctx, port, k_test_pin_0, function_name);
+  /* Test hex ports A-G (0xA-0x10) */
+  for (uint16_t port = k_hex_port_start; port <= k_hex_port_end; port++) {
+    err = iface.reserve_pin(iface.ctx,
+                            (uint8_t)port,
+                            k_test_pin_0,
+                            s_hex_names[port - k_hex_port_start]);
     TEST_ASSERT_EQUAL_MESSAGE(k_rx_ok, err, "Failed to reserve hex port");
-    TEST_ASSERT_TRUE(iface.is_pin_reserved(iface.ctx, port, k_test_pin_0));
+    TEST_ASSERT_TRUE(iface.is_pin_reserved(iface.ctx, (uint8_t)port, k_test_pin_0));
   }
 }
 
@@ -870,14 +918,23 @@ void test_pin_validator_all_pins_on_port(void)
   rx_pin_interface_t iface;
   TEST_ASSERT_EQUAL(k_rx_ok, pin_validator_get_interface(&iface, &s_validator));
 
-  /* Reserve all 8 pins on port A */
-  for (uint8_t pin = 0; pin < k_pins_per_port; pin++) {
-    char function_name[k_pin_function_name_max_len];
-    snprintf(function_name, sizeof(function_name), "FUNC_PIN%d", pin);
+  /* Pre-built function names for pins 0-7 */
+  static const char* const s_pin_names[] = {
+    "FUNC_PIN0",
+    "FUNC_PIN1",
+    "FUNC_PIN2",
+    "FUNC_PIN3",
+    "FUNC_PIN4",
+    "FUNC_PIN5",
+    "FUNC_PIN6",
+    "FUNC_PIN7",
+  };
 
-    err = iface.reserve_pin(iface.ctx, k_test_port_a, pin, function_name);
+  /* Reserve all 8 pins on port A */
+  for (uint16_t pin = 0; pin < k_pins_per_port; pin++) {
+    err = iface.reserve_pin(iface.ctx, k_test_port_a, (uint8_t)pin, s_pin_names[pin]);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
-    TEST_ASSERT_TRUE(iface.is_pin_reserved(iface.ctx, k_test_port_a, pin));
+    TEST_ASSERT_TRUE(iface.is_pin_reserved(iface.ctx, k_test_port_a, (uint8_t)pin));
   }
 }
 
@@ -885,6 +942,51 @@ void test_pin_validator_all_pins_on_port(void)
  * Interface Validation Tests
  * =============================================================================
  */
+
+/* Minimal stub implementations used by partial-interface tests below */
+static rx_err_t s_stub_validate_pin(void* ctx, uint8_t port, uint8_t pin)
+{
+  (void)ctx;
+  (void)port;
+  (void)pin;
+  return k_rx_ok;
+}
+
+static rx_err_t s_stub_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const char* fn)
+{
+  (void)ctx;
+  (void)port;
+  (void)pin;
+  (void)fn;
+  return k_rx_ok;
+}
+
+static rx_err_t s_stub_release_pin(void* ctx, uint8_t port, uint8_t pin)
+{
+  (void)ctx;
+  (void)port;
+  (void)pin;
+  return k_rx_ok;
+}
+
+static bool s_stub_is_pin_reserved(void* ctx, uint8_t port, uint8_t pin)
+{
+  (void)ctx;
+  (void)port;
+  (void)pin;
+  return false;
+}
+
+static rx_err_t /* NOLINTNEXTLINE(readability-non-const-parameter) -- matches rx_pin_get_function_fn */
+s_stub_get_pin_function(void* ctx, uint8_t port, uint8_t pin, char* out_buf, uint32_t buf_size)
+{
+  (void)ctx;
+  (void)port;
+  (void)pin;
+  (void)out_buf;
+  (void)buf_size;
+  return k_rx_ok;
+}
 
 /**
  * @brief Test interface validation with valid interface
@@ -917,9 +1019,97 @@ void test_pin_interface_validate_null(void)
  */
 void test_pin_interface_validate_missing_functions(void)
 {
-  rx_pin_interface_t iface;
+  rx_pin_interface_t iface = {};
 
-  memset(&iface, 0, sizeof(iface));
+  rx_err_t err = rx_pin_interface_validate(&iface);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test interface validation when only validate_pin is set (reserve_pin null)
+ *
+ * @details
+ * Covers the branch where validate_pin is non-null but reserve_pin is null,
+ * exercising the second operand of the || chain at line 1227.
+ */
+void test_pin_interface_validate_only_validate_set(void)
+{
+  rx_pin_interface_t iface = {};
+  iface.validate_pin       = s_stub_validate_pin;
+
+  rx_err_t err = rx_pin_interface_validate(&iface);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test interface validation when validate_pin and reserve_pin are set but release_pin is null
+ *
+ * @details
+ * Covers the branch where the first two function pointers are non-null but
+ * release_pin is null, exercising the first operand of line 1228.
+ */
+void test_pin_interface_validate_missing_release_pin(void)
+{
+  rx_pin_interface_t iface = {};
+  iface.validate_pin       = s_stub_validate_pin;
+  iface.reserve_pin        = s_stub_reserve_pin;
+
+  rx_err_t err = rx_pin_interface_validate(&iface);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test interface validation when first three are set but is_pin_reserved is null
+ *
+ * @details
+ * Covers the branch where validate_pin, reserve_pin, and release_pin are non-null
+ * but is_pin_reserved is null, exercising the second operand of line 1228.
+ */
+void test_pin_interface_validate_missing_is_pin_reserved(void)
+{
+  rx_pin_interface_t iface = {};
+  iface.validate_pin       = s_stub_validate_pin;
+  iface.reserve_pin        = s_stub_reserve_pin;
+  iface.release_pin        = s_stub_release_pin;
+
+  rx_err_t err = rx_pin_interface_validate(&iface);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test interface validation when first four are set but get_pin_function is null
+ *
+ * @details
+ * Covers the branch where the first four function pointers are non-null but
+ * get_pin_function is null, exercising the first operand of line 1229.
+ */
+void test_pin_interface_validate_missing_get_pin_function(void)
+{
+  rx_pin_interface_t iface = {};
+  iface.validate_pin       = s_stub_validate_pin;
+  iface.reserve_pin        = s_stub_reserve_pin;
+  iface.release_pin        = s_stub_release_pin;
+  iface.is_pin_reserved    = s_stub_is_pin_reserved;
+
+  rx_err_t err = rx_pin_interface_validate(&iface);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test interface validation when all except clear_all_reservations are set
+ *
+ * @details
+ * Covers the branch where the first five function pointers are non-null but
+ * clear_all_reservations is null, exercising the second operand of line 1229.
+ */
+void test_pin_interface_validate_missing_clear_all(void)
+{
+  rx_pin_interface_t iface = {};
+  iface.validate_pin       = s_stub_validate_pin;
+  iface.reserve_pin        = s_stub_reserve_pin;
+  iface.release_pin        = s_stub_release_pin;
+  iface.is_pin_reserved    = s_stub_is_pin_reserved;
+  iface.get_pin_function   = s_stub_get_pin_function;
 
   rx_err_t err = rx_pin_interface_validate(&iface);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -975,8 +1165,10 @@ void test_pin_validator_long_function_name(void)
   TEST_ASSERT_EQUAL(k_rx_ok, pin_validator_get_interface(&iface, &s_validator));
 
   /* Create a very long function name */
-  char long_name[64];
-  memset(long_name, 'A', sizeof(long_name) - 1);
+  char long_name[k_test_long_name_size];
+  for (uint32_t i = 0; i < sizeof(long_name) - 1; i++) {
+    long_name[i] = 'A';
+  }
   long_name[sizeof(long_name) - 1] = '\0';
 
   err = iface.reserve_pin(iface.ctx, k_test_port_a, k_test_pin_3, long_name);
@@ -994,14 +1186,185 @@ void test_pin_validator_long_function_name(void)
 }
 
 /* =============================================================================
- * Main
+ * Additional Coverage Tests
  * =============================================================================
  */
 
-int main(void)
+/**
+ * @brief Test release_pin with null ctx returns null ptr error
+ *
+ * @details
+ * Verifies that impl_release_pin guards against a null ctx (validator) pointer.
+ * The interface ctx is set to nullptr after obtaining a valid interface, then
+ * release_pin is called to exercise the null-check branch.
+ *
+ * @pre s_validator initialized
+ * @post k_rx_err_null_ptr returned
+ *
+ * @note Covers line 604-606 in rx_pin_validator.c
+ */
+/**
+ * @brief Test reserve_pin with null ctx (validator) returns null ptr error
+ *
+ * @details
+ * Exercises the first operand of the `||` at rx_pin_validator.c line 531:
+ * `(validator == nullptr) || (function == nullptr)`. When ctx is null and
+ * function is non-null, the first operand short-circuits. The existing
+ * test_pin_validator_reserve_null_function covers the second operand.
+ *
+ * @pre s_validator initialized
+ * @post k_rx_err_null_ptr returned
+ *
+ * @since Version 1.0.0
+ */
+void test_pin_validator_reserve_pin_null_ctx_returns_error(void)
 {
-  UNITY_BEGIN();
+  rx_err_t err = pin_validator_init(&s_validator);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
 
+  rx_pin_interface_t iface;
+  TEST_ASSERT_EQUAL(k_rx_ok, pin_validator_get_interface(&iface, &s_validator));
+
+  /* Tamper ctx to null: validator==nullptr triggers first operand of || */
+  iface.ctx = nullptr;
+  err       = iface.reserve_pin(iface.ctx, k_test_port_a, k_test_pin_3, "SPI_COPI");
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+void test_pin_validator_release_pin_null_ctx_returns_error(void)
+{
+  rx_err_t err = pin_validator_init(&s_validator);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  rx_pin_interface_t iface;
+  TEST_ASSERT_EQUAL(k_rx_ok, pin_validator_get_interface(&iface, &s_validator));
+
+  /* Tamper ctx to null to hit the null-check in impl_release_pin */
+  iface.ctx = nullptr;
+  err       = iface.release_pin(iface.ctx, k_test_port_a, k_test_pin_3);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test is_pin_reserved with null ctx returns false
+ *
+ * @details
+ * Verifies that impl_is_pin_reserved guards against a null ctx pointer,
+ * returning false rather than crashing.
+ *
+ * @pre s_validator initialized
+ * @post false returned
+ *
+ * @note Covers lines 699-701 in rx_pin_validator.c
+ */
+void test_pin_validator_is_reserved_null_ctx_returns_false(void)
+{
+  rx_err_t err = pin_validator_init(&s_validator);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  rx_pin_interface_t iface;
+  TEST_ASSERT_EQUAL(k_rx_ok, pin_validator_get_interface(&iface, &s_validator));
+
+  /* Tamper ctx to null to hit the null-check in impl_is_pin_reserved */
+  iface.ctx     = nullptr;
+  bool reserved = iface.is_pin_reserved(iface.ctx, k_test_port_a, k_test_pin_3);
+  TEST_ASSERT_FALSE(reserved);
+}
+
+/**
+ * @brief Test get_pin_function with null ctx returns null ptr error
+ *
+ * @details
+ * Verifies that impl_get_pin_function guards against a null ctx pointer.
+ *
+ * @pre s_validator initialized
+ * @post k_rx_err_null_ptr returned
+ *
+ * @note Covers line 802 (null-ptr branch) in rx_pin_validator.c
+ */
+void test_pin_validator_get_function_null_ctx_returns_error(void)
+{
+  rx_err_t err = pin_validator_init(&s_validator);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  rx_pin_interface_t iface;
+  TEST_ASSERT_EQUAL(k_rx_ok, pin_validator_get_interface(&iface, &s_validator));
+
+  /* Tamper ctx to null to hit the null-check in impl_get_pin_function */
+  iface.ctx = nullptr;
+  char function_out[k_pin_function_name_max_len];
+  err = iface.get_pin_function(iface.ctx,
+                               k_test_port_a,
+                               k_test_pin_3,
+                               function_out,
+                               sizeof(function_out));
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test get_pin_function with invalid port returns error from impl_validate_pin
+ *
+ * @details
+ * Verifies that impl_get_pin_function propagates errors from impl_validate_pin
+ * when given an out-of-range port number.
+ *
+ * @pre s_validator initialized
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers line 812 in rx_pin_validator.c
+ */
+void test_pin_validator_get_function_invalid_port_returns_error(void)
+{
+  rx_err_t err = pin_validator_init(&s_validator);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  rx_pin_interface_t iface;
+  TEST_ASSERT_EQUAL(k_rx_ok, pin_validator_get_interface(&iface, &s_validator));
+
+  char function_out[k_pin_function_name_max_len];
+  err = iface.get_pin_function(iface.ctx,
+                               k_test_port_bad,
+                               k_test_pin_3,
+                               function_out,
+                               sizeof(function_out));
+  TEST_ASSERT_EQUAL(k_rx_err_gpio_invalid_port, err);
+}
+
+/**
+ * @brief Test clear_all_reservations with null ctx returns null ptr error
+ *
+ * @details
+ * Verifies that impl_clear_all_reservations guards against a null ctx pointer.
+ *
+ * @pre s_validator initialized
+ * @post k_rx_err_null_ptr returned
+ *
+ * @note Covers lines 913-915 in rx_pin_validator.c
+ */
+void test_pin_validator_clear_all_null_ctx_returns_error(void)
+{
+  rx_err_t err = pin_validator_init(&s_validator);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  rx_pin_interface_t iface;
+  TEST_ASSERT_EQUAL(k_rx_ok, pin_validator_get_interface(&iface, &s_validator));
+
+  /* Tamper ctx to null to hit the null-check in impl_clear_all_reservations */
+  iface.ctx = nullptr;
+  err       = iface.clear_all_reservations(iface.ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/* =============================================================================
+ * Test Runners
+ * =============================================================================
+ */
+
+/**
+ * @brief Run lifecycle and core validation tests
+ */
+static void internal_run_lifecycle_tests(void)
+{
   /* Initialization tests */
   RUN_TEST(test_pin_validator_init_success);
   RUN_TEST(test_pin_validator_init_null_pointer);
@@ -1047,7 +1410,13 @@ int main(void)
 
   /* Clear all reservations tests */
   RUN_TEST(test_pin_validator_clear_all_reservations);
+}
 
+/**
+ * @brief Run coverage, edge case, and interface validation tests
+ */
+static void internal_run_coverage_tests(void)
+{
   /* Port coverage tests */
   RUN_TEST(test_pin_validator_all_ports_coverage);
   RUN_TEST(test_pin_validator_all_pins_on_port);
@@ -1056,11 +1425,37 @@ int main(void)
   RUN_TEST(test_pin_interface_validate_success);
   RUN_TEST(test_pin_interface_validate_null);
   RUN_TEST(test_pin_interface_validate_missing_functions);
+  RUN_TEST(test_pin_interface_validate_only_validate_set);
+  RUN_TEST(test_pin_interface_validate_missing_release_pin);
+  RUN_TEST(test_pin_interface_validate_missing_is_pin_reserved);
+  RUN_TEST(test_pin_interface_validate_missing_get_pin_function);
+  RUN_TEST(test_pin_interface_validate_missing_clear_all);
 
   /* Edge case tests */
   RUN_TEST(test_pin_validator_is_reserved_invalid_port);
   RUN_TEST(test_pin_validator_is_reserved_invalid_pin);
   RUN_TEST(test_pin_validator_long_function_name);
+
+  /* Null ctx coverage tests */
+  RUN_TEST(test_pin_validator_release_pin_null_ctx_returns_error);
+  RUN_TEST(test_pin_validator_is_reserved_null_ctx_returns_false);
+  RUN_TEST(test_pin_validator_get_function_null_ctx_returns_error);
+  RUN_TEST(test_pin_validator_get_function_invalid_port_returns_error);
+  RUN_TEST(test_pin_validator_clear_all_null_ctx_returns_error);
+  RUN_TEST(test_pin_validator_reserve_pin_null_ctx_returns_error);
+}
+
+/* =============================================================================
+ * Main
+ * =============================================================================
+ */
+
+int main(void)
+{
+  UNITY_BEGIN();
+
+  internal_run_lifecycle_tests();
+  internal_run_coverage_tests();
 
   return UNITY_END();
 }

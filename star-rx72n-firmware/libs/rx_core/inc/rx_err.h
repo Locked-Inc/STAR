@@ -101,7 +101,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -1254,7 +1253,7 @@ static inline rx_err_t rx_err_from_threadx(uint32_t tx_status)
  */
 static inline bool rx_err_is_ok(rx_err_t err)
 {
-  return (err == k_rx_ok);
+  return (bool)(err == k_rx_ok);
 }
 
 /**
@@ -1394,7 +1393,7 @@ static inline bool rx_err_is_ok(rx_err_t err)
  */
 static inline bool rx_err_is_error(rx_err_t err)
 {
-  return (err != k_rx_ok);
+  return (bool)(err != k_rx_ok);
 }
 
 #ifdef __cplusplus

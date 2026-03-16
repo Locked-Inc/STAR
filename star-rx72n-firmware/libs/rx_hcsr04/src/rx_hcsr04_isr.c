@@ -319,7 +319,7 @@ rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const rx_hcsr04_sensor_in
   RX_CHECK_RANGE(irq_num, k_irq_min, k_irq_max, k_rx_err_invalid_arg);
 
   /* Validate sensor index (must be a valid sensor array index 0..k_hcsr04_sensor_count-1) */
-  if ((uint8_t)sensor_index >= (uint8_t)k_hcsr04_sensor_count) {
+  if (sensor_index >= k_hcsr04_sensor_count) {
     return k_rx_err_invalid_arg;
   }
 

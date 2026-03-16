@@ -211,7 +211,7 @@ static pin_validator_t s_global_pin_validator;
  *
  * @since Version 1.0.0
  */
-static rx_error_interface_t s_global_error_interface = {0};
+static rx_error_interface_t s_global_error_interface = {};
 
 /**
  * @var s_global_pin_interface
@@ -232,7 +232,7 @@ static rx_error_interface_t s_global_error_interface = {0};
  *
  * @since Version 1.0.0
  */
-static rx_pin_interface_t s_global_pin_interface = {0};
+static rx_pin_interface_t s_global_pin_interface = {};
 
 /**
  * @var s_infrastructure_initialized

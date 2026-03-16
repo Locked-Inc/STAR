@@ -1,10 +1,10 @@
 /**
- * @file rx72n_port_regs.h
- * @brief Mock PORT register definitions for DRV8263 unit testing
+ * @file mock_rx72n_port_regs.h
+ * @brief Mock PORT register definitions for unit testing
  *
  * @details
  * Provides RAM-based mock of RX72N PORT register structures. This mock
- * shadows the real rx72n_port_regs.h header so that rx_drv8263.c can be
+ * replaces the real rx72n_port_regs.h header so that firmware modules can be
  * compiled and tested on the host without hardware.
  *
  * The rx_port_regs_t struct layout matches the real hardware struct exactly

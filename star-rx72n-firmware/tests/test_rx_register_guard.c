@@ -147,6 +147,22 @@
 #include "rx_register_guard.h"
 
 /* =============================================================================
+ * Test Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief Named constants for register guard test loop bounds
+ *
+ * @details Eliminates magic numbers in loop bounds per readability-magic-numbers.
+ */
+typedef enum : uint32_t {
+  k_test_refresh_count_100  = 100,  /**< Multiple refresh calls for safety test */
+  k_test_refresh_count_10   = 10,   /**< Workflow refresh loop count */
+  k_test_refresh_count_1000 = 1000, /**< Stress test refresh count */
+} test_register_guard_constants_t;
+
+/* =============================================================================
  * Test Fixtures
  * =============================================================================
  */
@@ -342,7 +358,7 @@ void test_register_guard_refresh_multiple_calls(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_register_guard_init());
 
   /* Call refresh multiple times - should not crash */
-  for (uint32_t i = 0; i < 100; i++) {
+  for (uint32_t i = 0; i < k_test_refresh_count_100; i++) {
     rx_register_guard_refresh();
   }
 
@@ -362,7 +378,7 @@ void test_register_guard_refresh_no_host_corruption(void)
   TEST_ASSERT_EQUAL_UINT32(0, rx_register_guard_get_correction_count());
 
   /* Multiple refreshes should not change count on host */
-  for (uint32_t i = 0; i < 10; i++) {
+  for (uint32_t i = 0; i < k_test_refresh_count_10; i++) {
     rx_register_guard_refresh();
   }
 
@@ -388,7 +404,7 @@ void test_register_guard_typical_workflow(void)
   TEST_ASSERT_TRUE(rx_register_guard_is_initialized());
 
   /* Step 2: Periodic refresh (simulating main loop) */
-  for (uint32_t loop = 0; loop < 10; loop++) {
+  for (uint32_t loop = 0; loop < k_test_refresh_count_10; loop++) {
     rx_register_guard_refresh();
   }
 
@@ -402,7 +418,7 @@ void test_register_guard_typical_workflow(void)
   TEST_ASSERT_EQUAL_UINT32(0, rx_register_guard_get_correction_count());
 
   /* Step 5: Continue with more refreshes */
-  for (uint32_t loop = 0; loop < 10; loop++) {
+  for (uint32_t loop = 0; loop < k_test_refresh_count_10; loop++) {
     rx_register_guard_refresh();
   }
 
@@ -450,7 +466,7 @@ void test_register_guard_many_refreshes(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_register_guard_init());
 
   /* Large number of refreshes */
-  for (uint32_t i = 0; i < 1000; i++) {
+  for (uint32_t i = 0; i < k_test_refresh_count_1000; i++) {
     rx_register_guard_refresh();
   }
 
@@ -488,6 +504,24 @@ void test_register_guard_get_count_before_init(void)
   TEST_PASS();
 }
 
+/**
+ * @brief Test refresh before init is a safe no-op
+ *
+ * @details
+ * Must run before any rx_register_guard_init() call in the test binary.
+ * Verifies that calling refresh() when s_state.initialized == false
+ * returns immediately without crashing.
+ *
+ * @pre Guard not yet initialized (static default: initialized=false)
+ * @post Guard still not initialized
+ */
+void test_register_guard_refresh_before_init(void)
+{
+  /* Should not crash - returns immediately when not initialized */
+  rx_register_guard_refresh();
+  TEST_ASSERT_FALSE(rx_register_guard_is_initialized());
+}
+
 /* =============================================================================
  * Main
  * =============================================================================
@@ -496,6 +530,12 @@ void test_register_guard_get_count_before_init(void)
 int main(void)
 {
   UNITY_BEGIN();
+
+  /* Before-init edge cases must run FIRST (before any init() call).
+   * Order matters: refresh/get_count before reset_before_init (which calls init). */
+  RUN_TEST(test_register_guard_refresh_before_init);
+  RUN_TEST(test_register_guard_get_count_before_init);
+  RUN_TEST(test_register_guard_reset_before_init);
 
   /* Initialization tests */
   RUN_TEST(test_register_guard_init_success);
@@ -521,8 +561,6 @@ int main(void)
 
   /* Edge case tests */
   RUN_TEST(test_register_guard_many_refreshes);
-  RUN_TEST(test_register_guard_reset_before_init);
-  RUN_TEST(test_register_guard_get_count_before_init);
 
   return UNITY_END();
 }

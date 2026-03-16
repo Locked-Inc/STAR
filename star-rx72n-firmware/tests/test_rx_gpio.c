@@ -68,10 +68,111 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "rx72n_port_regs.h"
 #include "unity.h"
+
+/* =============================================================================
+ * Test Constants
+ * =============================================================================
+ */
+
+/**
+ * @enum gpio_test_addr_t
+ * @brief Expected hardware addresses for GPIO register verification
+ *
+ * @details
+ * All expected addresses from RX72N hardware manual Chapter 22 for
+ * verifying GPIO port register accessors and struct field offsets.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uintptr_t {
+  /* PORT0 register addresses */
+  k_gpio_port0_pdr  = 0x0008C000U, /**< PORT0.PDR address */
+  k_gpio_port0_podr = 0x0008C020U, /**< PORT0.PODR address */
+  k_gpio_port0_pidr = 0x0008C040U, /**< PORT0.PIDR address */
+  k_gpio_port0_pmr  = 0x0008C060U, /**< PORT0.PMR address */
+  k_gpio_port0_odr  = 0x0008C080U, /**< PORT0.ODR address */
+  k_gpio_port0_pcr  = 0x0008C0C0U, /**< PORT0.PCR address */
+  k_gpio_port0_dscr = 0x0008C0E0U, /**< PORT0.DSCR address */
+
+  /* PORT1 register addresses */
+  k_gpio_port1_base = 0x0008C001U, /**< PORT1 base (PDR) address */
+  k_gpio_port1_podr = 0x0008C021U, /**< PORT1.PODR address */
+  k_gpio_port1_pidr = 0x0008C041U, /**< PORT1.PIDR address */
+  k_gpio_port1_pmr  = 0x0008C061U, /**< PORT1.PMR address */
+  k_gpio_port1_odr  = 0x0008C082U, /**< PORT1.ODR address (16-bit spacing) */
+  k_gpio_port1_pcr  = 0x0008C0C1U, /**< PORT1.PCR address */
+  k_gpio_port1_dscr = 0x0008C0E1U, /**< PORT1.DSCR address */
+
+  /* PORT2 register addresses */
+  k_gpio_port2_base = 0x0008C002U, /**< PORT2 base (PDR) address */
+  k_gpio_port2_podr = 0x0008C022U, /**< PORT2.PODR address */
+  k_gpio_port2_pidr = 0x0008C042U, /**< PORT2.PIDR address */
+
+  /* PORTA register addresses */
+  k_gpio_porta_base = 0x0008C00AU, /**< PORTA base (PDR) address */
+  k_gpio_porta_podr = 0x0008C02AU, /**< PORTA.PODR address */
+  k_gpio_porta_pidr = 0x0008C04AU, /**< PORTA.PIDR address */
+  k_gpio_porta_pmr  = 0x0008C06AU, /**< PORTA.PMR address */
+  k_gpio_porta_odr  = 0x0008C094U, /**< PORTA.ODR address */
+  k_gpio_porta_pcr  = 0x0008C0CAU, /**< PORTA.PCR address */
+  k_gpio_porta_dscr = 0x0008C0EAU, /**< PORTA.DSCR address */
+
+  /* PORTB register addresses */
+  k_gpio_portb_base = 0x0008C00BU, /**< PORTB base (PDR) address */
+  k_gpio_portb_podr = 0x0008C02BU, /**< PORTB.PODR address */
+
+  /* PORTC register addresses */
+  k_gpio_portc_base = 0x0008C00CU, /**< PORTC base (PDR) address */
+  k_gpio_portc_podr = 0x0008C02CU, /**< PORTC.PODR address */
+
+  /* PORTD register addresses */
+  k_gpio_portd_base = 0x0008C00DU, /**< PORTD base (PDR) address */
+  k_gpio_portd_podr = 0x0008C02DU, /**< PORTD.PODR address */
+
+  /* PORTE register addresses */
+  k_gpio_porte_base = 0x0008C00EU, /**< PORTE base (PDR) address */
+  k_gpio_porte_podr = 0x0008C02EU, /**< PORTE.PODR address */
+
+  /* PORTJ register addresses */
+  k_gpio_portj_base = 0x0008C012U, /**< PORTJ base (PDR) address */
+  k_gpio_portj_podr = 0x0008C032U, /**< PORTJ.PODR address */
+  k_gpio_portj_pidr = 0x0008C052U, /**< PORTJ.PIDR address */
+  k_gpio_portj_pmr  = 0x0008C072U, /**< PORTJ.PMR address */
+  k_gpio_portj_odr  = 0x0008C0A4U, /**< PORTJ.ODR address */
+  k_gpio_portj_pcr  = 0x0008C0D2U, /**< PORTJ.PCR address */
+  k_gpio_portj_dscr = 0x0008C0F2U, /**< PORTJ.DSCR address */
+} gpio_test_addr_t;
+
+/**
+ * @enum gpio_test_offset_t
+ * @brief Expected struct offsets for GPIO register layout verification
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_gpio_off_pdr  = 0x00U, /**< PDR offset in struct */
+  k_gpio_off_podr = 0x20U, /**< PODR offset in struct */
+  k_gpio_off_pidr = 0x40U, /**< PIDR offset in struct */
+  k_gpio_off_pmr  = 0x60U, /**< PMR offset in struct */
+  k_gpio_off_pcr  = 0xC0U, /**< PCR offset in struct */
+  k_gpio_off_dscr = 0xE0U, /**< DSCR offset in struct */
+} gpio_test_offset_t;
+
+/**
+ * @enum gpio_test_size_t
+ * @brief Expected sizes for GPIO struct and register verification
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_gpio_struct_size = 0x129U, /**< Total rx_port_regs_t size (297 bytes) */
+  k_gpio_reg_8bit    = 1U,     /**< 8-bit register size */
+  k_gpio_reg_16bit   = 2U,     /**< 16-bit register size (ODR) */
+  k_gpio_odr_spacing = 2U,     /**< Inter-port ODR spacing (bytes) */
+} gpio_test_size_t;
 
 /* =============================================================================
  * Test Setup and Teardown
@@ -143,25 +244,25 @@ void tearDown(void)
 void test_port_base_addresses(void)
 {
   /* PDR (Port Direction Register) base */
-  TEST_ASSERT_EQUAL_HEX32(0x0008C000, k_port_pdr_base);
+  TEST_ASSERT_EQUAL_HEX32(k_gpio_port0_pdr, k_port_pdr_base);
 
   /* PODR (Port Output Data Register) base */
-  TEST_ASSERT_EQUAL_HEX32(0x0008C020, k_port_podr_base);
+  TEST_ASSERT_EQUAL_HEX32(k_gpio_port0_podr, k_port_podr_base);
 
   /* PIDR (Port Input Data Register) base */
-  TEST_ASSERT_EQUAL_HEX32(0x0008C040, k_port_pidr_base);
+  TEST_ASSERT_EQUAL_HEX32(k_gpio_port0_pidr, k_port_pidr_base);
 
   /* PMR (Port Mode Register) base */
-  TEST_ASSERT_EQUAL_HEX32(0x0008C060, k_port_pmr_base);
+  TEST_ASSERT_EQUAL_HEX32(k_gpio_port0_pmr, k_port_pmr_base);
 
   /* ODR0 (Open Drain Control 0) base */
-  TEST_ASSERT_EQUAL_HEX32(0x0008C080, k_port_odr0_base);
+  TEST_ASSERT_EQUAL_HEX32(k_gpio_port0_odr, k_port_odr0_base);
 
   /* PCR (Pull-up Control Register) base */
-  TEST_ASSERT_EQUAL_HEX32(0x0008C0C0, k_port_pcr_base);
+  TEST_ASSERT_EQUAL_HEX32(k_gpio_port0_pcr, k_port_pcr_base);
 
   /* DSCR (Drive Capacity Control Register) base */
-  TEST_ASSERT_EQUAL_HEX32(0x0008C0E0, k_port_dscr_base);
+  TEST_ASSERT_EQUAL_HEX32(k_gpio_port0_dscr, k_port_dscr_base);
 }
 
 /* =============================================================================
@@ -269,12 +370,12 @@ void test_port_struct_offsets(void)
 {
   /* Verify each register offset within the struct */
   /* Note: ODR is not in struct - uses word-addressed accessor functions */
-  TEST_ASSERT_EQUAL_size_t(0x00, offsetof(rx_port_regs_t, pdr));
-  TEST_ASSERT_EQUAL_size_t(0x20, offsetof(rx_port_regs_t, podr));
-  TEST_ASSERT_EQUAL_size_t(0x40, offsetof(rx_port_regs_t, pidr));
-  TEST_ASSERT_EQUAL_size_t(0x60, offsetof(rx_port_regs_t, pmr));
-  TEST_ASSERT_EQUAL_size_t(0xC0, offsetof(rx_port_regs_t, pcr));
-  TEST_ASSERT_EQUAL_size_t(0xE0, offsetof(rx_port_regs_t, dscr));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_off_pdr, offsetof(rx_port_regs_t, pdr));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_off_podr, offsetof(rx_port_regs_t, podr));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_off_pidr, offsetof(rx_port_regs_t, pidr));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_off_pmr, offsetof(rx_port_regs_t, pmr));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_off_pcr, offsetof(rx_port_regs_t, pcr));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_off_dscr, offsetof(rx_port_regs_t, dscr));
 }
 
 /**
@@ -304,7 +405,7 @@ void test_port_struct_offsets(void)
 void test_port_struct_size(void)
 {
   /* Struct size should be 0x129 (297 bytes) - includes DSCR2 register */
-  TEST_ASSERT_EQUAL_size_t(0x129, sizeof(rx_port_regs_t));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_struct_size, sizeof(rx_port_regs_t));
 }
 
 /* =============================================================================
@@ -341,16 +442,16 @@ void test_port_struct_size(void)
 void test_port0_accessor(void)
 {
   volatile rx_port_regs_t* p = port0();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C000, (void*)p);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port0_pdr, (uintptr_t)p);
 
   /* Verify individual register addresses */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C000, (void*)&p->pdr);     /* PDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C020, (void*)&p->podr);    /* PODR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C040, (void*)&p->pidr);    /* PIDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C060, (void*)&p->pmr);     /* PMR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C080, (void*)port0_odr()); /* ODR (word-addressed) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0C0, (void*)&p->pcr);     /* PCR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0E0, (void*)&p->dscr);    /* DSCR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port0_pdr, (uintptr_t)&p->pdr);     /* PDR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port0_podr, (uintptr_t)&p->podr);   /* PODR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port0_pidr, (uintptr_t)&p->pidr);   /* PIDR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port0_pmr, (uintptr_t)&p->pmr);     /* PMR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port0_odr, (uintptr_t)port0_odr()); /* ODR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port0_pcr, (uintptr_t)&p->pcr);     /* PCR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port0_dscr, (uintptr_t)&p->dscr);   /* DSCR */
 }
 
 /**
@@ -382,16 +483,16 @@ void test_port0_accessor(void)
 void test_port1_accessor(void)
 {
   volatile rx_port_regs_t* p = port1();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C001, (void*)p);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port1_base, (uintptr_t)p);
 
   /* Verify individual register addresses */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C001, (void*)&p->pdr);     /* PDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C021, (void*)&p->podr);    /* PODR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C041, (void*)&p->pidr);    /* PIDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C061, (void*)&p->pmr);     /* PMR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C082, (void*)port1_odr()); /* ODR (word-addressed) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0C1, (void*)&p->pcr);     /* PCR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0E1, (void*)&p->dscr);    /* DSCR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port1_base, (uintptr_t)&p->pdr);    /* PDR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port1_podr, (uintptr_t)&p->podr);   /* PODR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port1_pidr, (uintptr_t)&p->pidr);   /* PIDR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port1_pmr, (uintptr_t)&p->pmr);     /* PMR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port1_odr, (uintptr_t)port1_odr()); /* ODR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port1_pcr, (uintptr_t)&p->pcr);     /* PCR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port1_dscr, (uintptr_t)&p->dscr);   /* DSCR */
 }
 
 /**
@@ -411,12 +512,12 @@ void test_port1_accessor(void)
 void test_port2_accessor(void)
 {
   volatile rx_port_regs_t* p = port2();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C002, (void*)p);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port2_base, (uintptr_t)p);
 
   /* Verify key registers */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C002, (void*)&p->pdr);  /* PDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C022, (void*)&p->podr); /* PODR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C042, (void*)&p->pidr); /* PIDR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port2_base, (uintptr_t)&p->pdr);  /* PDR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port2_podr, (uintptr_t)&p->podr); /* PODR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port2_pidr, (uintptr_t)&p->pidr); /* PIDR */
 }
 
 /**
@@ -449,16 +550,16 @@ void test_port2_accessor(void)
 void test_porta_accessor(void)
 {
   volatile rx_port_regs_t* p = porta();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C00A, (void*)p);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_porta_base, (uintptr_t)p);
 
   /* Verify individual register addresses */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C00A, (void*)&p->pdr);     /* PDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C02A, (void*)&p->podr);    /* PODR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C04A, (void*)&p->pidr);    /* PIDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C06A, (void*)&p->pmr);     /* PMR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C094, (void*)porta_odr()); /* ODR (word-addressed) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0CA, (void*)&p->pcr);     /* PCR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0EA, (void*)&p->dscr);    /* DSCR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_porta_base, (uintptr_t)&p->pdr);    /* PDR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_porta_podr, (uintptr_t)&p->podr);   /* PODR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_porta_pidr, (uintptr_t)&p->pidr);   /* PIDR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_porta_pmr, (uintptr_t)&p->pmr);     /* PMR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_porta_odr, (uintptr_t)porta_odr()); /* ODR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_porta_pcr, (uintptr_t)&p->pcr);     /* PCR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_porta_dscr, (uintptr_t)&p->dscr);   /* DSCR */
 }
 
 /**
@@ -478,11 +579,11 @@ void test_porta_accessor(void)
 void test_portb_accessor(void)
 {
   volatile rx_port_regs_t* p = portb();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C00B, (void*)p);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portb_base, (uintptr_t)p);
 
   /* Verify key registers */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C00B, (void*)&p->pdr);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C02B, (void*)&p->podr);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portb_base, (uintptr_t)&p->pdr);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portb_podr, (uintptr_t)&p->podr);
 }
 
 /**
@@ -502,11 +603,11 @@ void test_portb_accessor(void)
 void test_portc_accessor(void)
 {
   volatile rx_port_regs_t* p = portc();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C00C, (void*)p);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portc_base, (uintptr_t)p);
 
   /* Verify key registers */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C00C, (void*)&p->pdr);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C02C, (void*)&p->podr);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portc_base, (uintptr_t)&p->pdr);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portc_podr, (uintptr_t)&p->podr);
 }
 
 /**
@@ -526,11 +627,11 @@ void test_portc_accessor(void)
 void test_portd_accessor(void)
 {
   volatile rx_port_regs_t* p = portd();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C00D, (void*)p);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portd_base, (uintptr_t)p);
 
   /* Verify key registers */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C00D, (void*)&p->pdr);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C02D, (void*)&p->podr);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portd_base, (uintptr_t)&p->pdr);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portd_podr, (uintptr_t)&p->podr);
 }
 
 /**
@@ -550,11 +651,11 @@ void test_portd_accessor(void)
 void test_porte_accessor(void)
 {
   volatile rx_port_regs_t* p = porte();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C00E, (void*)p);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_porte_base, (uintptr_t)p);
 
   /* Verify key registers */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C00E, (void*)&p->pdr);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C02E, (void*)&p->podr);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_porte_base, (uintptr_t)&p->pdr);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_porte_podr, (uintptr_t)&p->podr);
 }
 
 /**
@@ -588,16 +689,16 @@ void test_porte_accessor(void)
 void test_portj_accessor(void)
 {
   volatile rx_port_regs_t* p = portj();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C012, (void*)p);
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portj_base, (uintptr_t)p);
 
   /* Verify individual register addresses */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C012, (void*)&p->pdr);     /* PDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C032, (void*)&p->podr);    /* PODR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C052, (void*)&p->pidr);    /* PIDR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C072, (void*)&p->pmr);     /* PMR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0A4, (void*)portj_odr()); /* ODR (word-addressed) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0D2, (void*)&p->pcr);     /* PCR */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C0F2, (void*)&p->dscr);    /* DSCR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portj_base, (uintptr_t)&p->pdr);    /* PDR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portj_podr, (uintptr_t)&p->podr);   /* PODR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portj_pidr, (uintptr_t)&p->pidr);   /* PIDR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portj_pmr, (uintptr_t)&p->pmr);     /* PMR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portj_odr, (uintptr_t)portj_odr()); /* ODR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portj_pcr, (uintptr_t)&p->pcr);     /* PCR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_portj_dscr, (uintptr_t)&p->dscr);   /* DSCR */
 }
 
 /* =============================================================================
@@ -639,16 +740,16 @@ void test_portj_accessor(void)
 void test_odr_layout(void)
 {
   /* ODR is 16-bit register accessed via dedicated accessor functions */
-  TEST_ASSERT_EQUAL_size_t(2, sizeof(*port0_odr()));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_reg_16bit, sizeof(*port0_odr()));
 
   /* Verify ODR address spacing between ports (word addressing) */
   /* PORT0.ODR at 0x0008C080, PORT1.ODR at 0x0008C082 (2-byte spacing) */
   uintptr_t odr0_addr = (uintptr_t)port0_odr();
   uintptr_t odr1_addr = (uintptr_t)port1_odr();
 
-  TEST_ASSERT_EQUAL_HEX32(0x0008C080, odr0_addr);     /* PORT0.ODR */
-  TEST_ASSERT_EQUAL_HEX32(0x0008C082, odr1_addr);     /* PORT1.ODR */
-  TEST_ASSERT_EQUAL_UINT32(2, odr1_addr - odr0_addr); /* 2-byte spacing */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port0_odr, odr0_addr); /* PORT0.ODR */
+  TEST_ASSERT_EQUAL_HEX64(k_gpio_port1_odr, odr1_addr); /* PORT1.ODR */
+  TEST_ASSERT_EQUAL_UINT32(k_gpio_odr_spacing, odr1_addr - odr0_addr);
 }
 
 /* =============================================================================
@@ -683,18 +784,16 @@ void test_odr_layout(void)
  */
 void test_register_field_widths(void)
 {
-  volatile rx_port_regs_t* p = port0();
-
   /* All single registers should be 8-bit (1 byte) */
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(p->pdr));
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(p->podr));
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(p->pidr));
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(p->pmr));
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(p->pcr));
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(p->dscr));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_reg_8bit, sizeof(((rx_port_regs_t*)0)->pdr));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_reg_8bit, sizeof(((rx_port_regs_t*)0)->podr));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_reg_8bit, sizeof(((rx_port_regs_t*)0)->pidr));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_reg_8bit, sizeof(((rx_port_regs_t*)0)->pmr));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_reg_8bit, sizeof(((rx_port_regs_t*)0)->pcr));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_reg_8bit, sizeof(((rx_port_regs_t*)0)->dscr));
 
   /* ODR should be 16-bit (2 bytes) - accessed via port*_odr() functions */
-  TEST_ASSERT_EQUAL_size_t(2, sizeof(*port0_odr()));
+  TEST_ASSERT_EQUAL_size_t(k_gpio_reg_16bit, sizeof(*port0_odr()));
 }
 
 /* =============================================================================

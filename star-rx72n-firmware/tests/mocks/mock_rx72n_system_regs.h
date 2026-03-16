@@ -1,5 +1,5 @@
 /**
- * @file rx72n_system_regs.h
+ * @file mock_rx72n_system_regs.h
  * @brief Mock RX72N System Control Register Definitions for Host-Side Unit Testing
  *
  * @details
@@ -25,22 +25,13 @@
  * - Reset source detection
  * - Clock configuration algorithms
  *
- * ## Include Path Shadowing
+ * ## Test vs Production Build Selection
  *
  * **How This File Replaces Real Hardware:**
  * 1. Production builds: `lib/rx_hal/inc/rx72n_system_regs.h` is used (real hardware)
- * 2. Unit test builds: CMake prepends `tests/mocks/` to include path
- * 3. `#include "rx72n_system_regs.h"` resolves to THIS file instead of real one
- * 4. Production code unchanged - same include statements work for target and host
- *
- * **CMakeLists.txt Configuration:**
- * @code{.cmake}
- * add_executable(test_system_init test_system_init.c)
- * target_include_directories(test_system_init PRIVATE
- *     ${CMAKE_SOURCE_DIR}/tests/mocks      # THIS file used
- *     ${CMAKE_SOURCE_DIR}/lib/rx_hal/inc   # Real file shadowed
- * )
- * @endcode
+ * 2. Unit test builds: source files use `#ifdef UNIT_TEST` guards to explicitly
+ *    include `mock_rx72n_system_regs.h` instead of the real hardware header
+ * 3. The `UNIT_TEST` macro is defined by CMake for all test build targets
  *
  * ## Mock Register Categories
  *
@@ -106,7 +97,7 @@
  *
  * ### Test 1: Module Stop Control (Peripheral Enable)
  * @code{.c}
- * #include "rx72n_system_regs.h"
+ * #include "mock_rx72n_system_regs.h"
  *
  * void test_usb_module_enable(void)
  * {
@@ -296,7 +287,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #ifdef __cplusplus

@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -115,6 +114,24 @@ bool mock_gpio_is_output(rx_port_pin_t pin);
  * @param[in] err Error to return on next GPIO call
  */
 void mock_gpio_set_next_error(rx_err_t err);
+
+/**
+ * @brief Set an error to be returned on the Nth GPIO call
+ *
+ * @details
+ * Programs the mock to return an error on a specific call number. The call
+ * counter increments across all GPIO HAL functions (gpio_set_output,
+ * gpio_set_input, gpio_write_low, gpio_write_high, gpio_read). Useful for
+ * injecting errors mid-sequence, e.g. failing the 3rd GPIO call in a function
+ * that makes 4 calls.
+ *
+ * The injection is single-shot: after firing it is automatically cleared.
+ * Call number 1 means the very next call regardless of function type.
+ *
+ * @param[in] call_number 1-based call number to inject (1 = next call)
+ * @param[in] err Error code to return
+ */
+void mock_gpio_set_error_on_nth_call(uint32_t call_number, rx_err_t err);
 
 /**
  * @brief Get number of times gpio_write_low was called

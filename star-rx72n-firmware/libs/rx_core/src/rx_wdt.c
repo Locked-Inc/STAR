@@ -167,8 +167,6 @@
 
 #include "rx_wdt.h"
 
-#include <string.h>
-
 #include "rx72n_system_regs.h"
 #include "rx72n_wdt_regs.h"
 
@@ -244,7 +242,46 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-static rx_wdt_state_t s_wdt_state = {0};
+static rx_wdt_state_t s_wdt_state = {};
+
+/* =============================================================================
+ * Private Helpers
+ * =============================================================================
+ */
+
+/**
+ * @brief Write WDT hardware registers from validated config.
+ * @param[in] config Validated WDT configuration (must not be nullptr).
+ * @pre config is not nullptr and has been validated.
+ * @pre WDT registers are accessible (clock enabled).
+ * @post WDTCR and WDTRCR registers written.
+ * @since Version 1.0.0
+ */
+static void internal_configure_wdt_registers(const rx_wdt_config_t* config)
+{
+  volatile rx_wdt_regs_t* const regs = wdt();
+
+  /* Configure WDTCR register (can only be written once before first refresh!)
+   * Bits 1:0 (TOPS): Timeout period cycles
+   * Bits 7:4 (CKS): Clock division ratio
+   * Bits 9:8 (RPES): Window end position (set to 0% = no window)
+   * Bits 13:12 (RPSS): Window start position (set to 100% = no window)
+   */
+  uint16_t wdtcr_val = (uint16_t)config->timeout_cycles;               /* TOPS[1:0] */
+  wdtcr_val |= ((uint16_t)config->clock_division << k_wdt_cr_cks_pos); /* CKS[7:4] */
+  wdtcr_val |= k_wdt_rpes_0;                                           /* No window end */
+  wdtcr_val |= k_wdt_rpss_100;                                         /* No window start */
+  regs->wdtcr = wdtcr_val;
+
+  /* Configure WDTRCR register (reset vs NMI selection)
+   * Bit 7 (RSTIRQS): 1 = reset, 0 = NMI
+   */
+  if (config->reset_on_timeout) {
+    regs->wdtrcr = k_wdt_rstirqs_reset;
+  } else {
+    regs->wdtrcr = k_wdt_rstirqs_nmi;
+  }
+}
 
 /* =============================================================================
  * Public API Implementation
@@ -327,7 +364,7 @@ rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
   }
 
   /* Use default config if none provided */
-  rx_wdt_config_t default_config = {0};
+  rx_wdt_config_t default_config = {};
   if (config == nullptr) {
     default_config.timeout_cycles   = k_wdt_timeout_16384_cycles;
     default_config.clock_division   = k_wdt_clock_div_8192;
@@ -351,31 +388,11 @@ rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
     return k_rx_err_invalid_arg;
   }
 
-  volatile rx_wdt_regs_t* const regs = wdt();
-
-  /* Configure WDTCR register (can only be written once before first refresh!)
-   * Bits 1:0 (TOPS): Timeout period cycles
-   * Bits 7:4 (CKS): Clock division ratio
-   * Bits 9:8 (RPES): Window end position (set to 0% = no window)
-   * Bits 13:12 (RPSS): Window start position (set to 100% = no window)
-   */
-  uint16_t wdtcr_val = (uint16_t)config->timeout_cycles;               /* TOPS[1:0] */
-  wdtcr_val |= ((uint16_t)config->clock_division << k_wdt_cr_cks_pos); /* CKS[7:4] */
-  wdtcr_val |= k_wdt_rpes_0;                                           /* No window end */
-  wdtcr_val |= k_wdt_rpss_100;                                         /* No window start */
-  regs->wdtcr = wdtcr_val;
-
-  /* Configure WDTRCR register (reset vs NMI selection)
-   * Bit 7 (RSTIRQS): 1 = reset, 0 = NMI
-   */
-  if (config->reset_on_timeout) {
-    regs->wdtrcr = k_wdt_rstirqs_reset;
-  } else {
-    regs->wdtrcr = k_wdt_rstirqs_nmi;
-  }
+  /* Write hardware registers from validated config */
+  internal_configure_wdt_registers(config);
 
   /* Store configuration */
-  memcpy(&s_wdt_state.config, config, sizeof(rx_wdt_config_t));
+  s_wdt_state.config      = *config;
   s_wdt_state.initialized = true;
   s_wdt_state.running     = false;
 

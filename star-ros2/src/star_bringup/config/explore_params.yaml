@@ -31,5 +31,5 @@ explore:
     # TF tolerance for coordinate transforms
     transform_tolerance: 0.3
 
-    # Minimum frontier edge length in meters — ignore tiny gaps
+    # Minimum frontier edge length in meters -- ignore tiny gaps
     min_frontier_size: 0.75

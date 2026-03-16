@@ -27,11 +27,25 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     curl \
     wget \
     ca-certificates \
-    clangd \
-    clang-format \
-    clang \
+    lcov \
     vim \
     cmake
+
+# Install clang-18 toolchain from LLVM apt repo (pinned to 18.1.8).
+# Matches CI workflow (firmware-unit-tests.yml) which also uses clang-18.
+# The unversioned Ubuntu packages (clang, clang-tidy, clang-format) resolve
+# to whatever version Ubuntu ships, which can drift between base images.
+RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null && \
+    echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-18 main" | tee /etc/apt/sources.list.d/llvm-18.list >/dev/null && \
+    apt-get update && apt-get install -y --no-install-recommends \
+    clang-18 \
+    clangd-18 \
+    clang-format-18 \
+    clang-tidy-18 && \
+    update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100 && \
+    update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-18 100 && \
+    update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-18 100 && \
+    update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-18 100
 
 # Install Doxygen documentation toolchain with minimal LaTeX
 # - graphviz: For @dot, @callgraph, @callergraph diagrams
@@ -132,7 +146,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # Install nanopb for Protocol Buffer C code generation
 # Required for star-rx72n-firmware embedded target
 RUN rm -f /usr/lib/python*/EXTERNALLY-MANAGED && \
-    python3 -m pip install --no-cache-dir nanopb
+    python3 -m pip install --no-cache-dir nanopb gcovr
 
 # Verify nanopb installation (fails fast if installation broken)
 RUN python3 -m pip show nanopb > /dev/null || (echo "ERROR: nanopb installation failed" && exit 1)

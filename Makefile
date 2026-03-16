@@ -7,7 +7,7 @@ CONTAINER_NAME := star-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n
+.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n
 
 help:
 	@echo "STAR Project Development Helper"
@@ -22,8 +22,10 @@ help:
 	@echo "  make build-rx72n-release - Build RX72N firmware (Release, requires GNURX toolchain)"
 	@echo "  make format-rx72n        - Auto-format firmware C/H files with clang-format"
 	@echo "  make check-rx72n         - Check firmware formatting (exit 1 if any file differs)"
+	@echo "  make ci-rx72n            - Run full local CI pipeline (format, build, test, clang-tidy)"
 	@echo "  make proto-gen-firmware  - Generate nanopb protos for RX72N firmware"
-	@echo "  make test-rx72n          - Run RX72N unit tests (regenerates protos first)"
+	@echo "  make test-rx72n          - Run RX72N unit tests and show coverage summary"
+	@echo "  make coverage-rx72n      - Show coverage summary without rebuilding"
 	@echo "  make doxygen-html        - Generate unified HTML docs (all features, all cross-links)"
 	@echo "  make doxygen-pdf-src     - Generate PDF for firmware src/"
 	@echo "  make doxygen-pdf-<lib>   - Generate PDF for a specific library (e.g. doxygen-pdf-rx_pid)"
@@ -99,14 +101,14 @@ proto-gen: proto-gen-go proto-gen-ros2 proto-gen-firmware proto-check-nanopb-syn
 proto-gen-go:
 	@echo "Generating protocol buffers (Go, TS, C, C++)..."
 	@buf generate star-proto/proto
-	@echo "✓ Code generated under star-proto/gen/"
+	@echo "[PASS] Code generated under star-proto/gen/"
 	@echo "Setting up Go module for generated code..."
 	@if [ ! -f star-proto/gen/go/go.mod ]; then \
 		cd star-proto/gen/go && go mod init github.com/Locked-Inc/star-proto/gen/go; \
 	fi
 	@cd star-proto/gen/go && go mod tidy
 	@go work sync
-	@echo "✓ Go workspace synchronized"
+	@echo "[PASS] Go workspace synchronized"
 
 # Placeholder for ROS2-specific generation (if distinct tooling is added)
 proto-gen-ros2:
@@ -126,12 +128,30 @@ proto-gen-firmware: proto-gen-go
 		base=$$(basename "$$header" .pb.h); \
 		cp -v "$$src_gen/$$base.pb.h" "$$src_gen/$$base.pb.c" "$$dst/"; \
 	done
-	@echo "✓ Firmware protos updated"
+	@echo "[PASS] Firmware protos updated"
 
-# Test RX72N firmware (regenerates protos first)
+# Test RX72N firmware (regenerates protos first) and show coverage summary
 test-rx72n: proto-gen-firmware
 	@echo "Running RX72N unit tests..."
 	@cd star-rx72n-firmware/tests && bash run_tests.sh
+	@$(MAKE) --no-print-directory coverage-rx72n
+
+# Show coverage summary for RX72N firmware (requires tests/build to exist)
+coverage-rx72n:
+	@echo ""
+	@echo "=== RX72N Coverage Summary ==="
+	@gcovr \
+		--object-directory star-rx72n-firmware/tests/build \
+		--filter 'star-rx72n-firmware/libs/' \
+		--exclude 'star-rx72n-firmware/libs/threadx/' \
+		--exclude 'star-rx72n-firmware/libs/rx_nanopb/nanopb/' \
+		--exclude 'star-rx72n-firmware/libs/rx_nanopb/inc/gen/' \
+		--exclude 'star-rx72n-firmware/libs/rx_hal/inc/rx72n_port_regs.h' \
+		--exclude 'star-rx72n-firmware/libs/rx_hal/inc/rx_port_utils.h' \
+		--exclude '.*/third_party/.*' \
+		-j 1 \
+		--print-summary \
+		2>/dev/null || echo "(run 'make test-rx72n' first to generate coverage data)"
 
 # Build RX72N firmware binary (Debug) - requires GNURX toolchain (rx-elf-gcc)
 build-rx72n:
@@ -152,6 +172,53 @@ format-rx72n:
 check-rx72n:
 	@echo "Checking RX72N firmware formatting..."
 	@bash $(FIRMWARE_DIR)/scripts/format_code.sh --check
+
+# Run the full firmware CI pipeline locally (mirrors .github/workflows/firmware-unit-tests.yml).
+# Steps: format check -> cross-compile -> unit tests -> clang-tidy
+# Stops on first failure. Run before pushing to catch CI issues early.
+ci-rx72n:
+	@echo ""
+	@echo "=========================================="
+	@echo " RX72N Local CI Pipeline"
+	@echo "=========================================="
+	@echo ""
+	@echo "[1/5] C23 pattern enforcement..."
+	@c23_fail=0; \
+	for f in $$(find $(FIRMWARE_DIR)/libs $(FIRMWARE_DIR)/src $(FIRMWARE_DIR)/tests \
+	  -name '*.c' -o -name '*.h' | grep -v '/build/' | grep -v '/third_party/' | grep -v '/nanopb/'); do \
+	  if grep -qn '_Static_assert' "$$f" 2>/dev/null; then \
+	    echo "[FAIL] C11 _Static_assert in $$f (use static_assert)"; c23_fail=1; fi; \
+	  if grep -qE '= \{0\}' "$$f" 2>/dev/null; then \
+	    echo "[FAIL] C11 = {0} in $$f (use = {})"; c23_fail=1; fi; \
+	  if grep -qn '#include <stdbool.h>' "$$f" 2>/dev/null; then \
+	    echo "[FAIL] Unnecessary #include <stdbool.h> in $$f"; c23_fail=1; fi; \
+	done; \
+	if [ "$$c23_fail" -ne 0 ]; then \
+	  echo ""; echo "Fix C11 patterns above, then retry."; exit 1; \
+	fi
+	@echo ""
+	@echo "[2/5] clang-format check..."
+	@bash $(FIRMWARE_DIR)/scripts/format_code.sh --check
+	@echo ""
+	@echo "[3/5] Cross-compile (GNURX)..."
+	@cd $(FIRMWARE_DIR) && bash build.sh
+	@echo ""
+	@echo "[4/5] Unit tests..."
+	@cd $(FIRMWARE_DIR)/tests && cmake -B build -DCMAKE_BUILD_TYPE=Debug 2>&1 | tail -3
+	@cmake --build $(FIRMWARE_DIR)/tests/build --parallel 2>&1 | tail -3
+	@ctest --test-dir $(FIRMWARE_DIR)/tests/build --output-on-failure
+	@echo ""
+	@echo "[5/5] clang-tidy (SEI CERT C) -- CMake-integrated, mirrors CI exactly..."
+	@cd $(FIRMWARE_DIR)/tests && cmake -B build/tidy \
+		-DCMAKE_BUILD_TYPE=Debug \
+		-DENABLE_CLANG_TIDY=ON \
+		-DCMAKE_C_COMPILER=clang-18 \
+		-Wno-dev 2>&1 | tail -3
+	@cmake --build $(FIRMWARE_DIR)/tests/build/tidy --parallel 2>&1
+	@echo ""
+	@echo "=========================================="
+	@echo " [PASS] All CI checks passed!"
+	@echo "=========================================="
 
 # Verify LidarScan nanopb max_count bounds are identical in ui.options and gateway_service.options.
 # Fails with a clear SYNC ERROR message if any value diverges between the two files.

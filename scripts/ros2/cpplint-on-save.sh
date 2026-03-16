@@ -24,12 +24,12 @@ fi
 
 # Check if ament_cpplint is available
 if ! command -v ament_cpplint &> /dev/null; then
-    echo "⚠️  ament_cpplint not found - skipping lint"
+    echo "[WARN]  ament_cpplint not found - skipping lint"
     exit 0
 fi
 
 # Run cpplint on the file
-echo "🔍 Checking $file..."
+echo " Checking $file..."
 set +e
 output=$(ament_cpplint "$file" 2>&1)
 exit_code=$?
@@ -38,8 +38,8 @@ set -e
 echo "$output" | grep -v "^Done processing"
 
 if [ $exit_code -eq 0 ]; then
-    echo "✅ Style check passed"
+    echo "[PASS] Style check passed"
 else
-    echo "❌ Style violations found - see above"
+    echo "[FAIL] Style violations found - see above"
     exit 1
 fi

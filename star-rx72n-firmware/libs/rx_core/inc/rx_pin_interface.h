@@ -188,7 +188,7 @@
  * // In test:
  * void test_spi_init(void)
  * {
- *   mock_pin_validator_t mock = {0};
+ *   mock_pin_validator_t mock = {};
  *   rx_pin_interface_t iface = {
  *     .ctx = &mock,
  *     .reserve_pin = mock_reserve_pin,
@@ -299,7 +299,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -947,7 +946,7 @@ typedef rx_err_t (*rx_pin_clear_all_fn)(void* ctx);
  * }
  *
  * // Create mock interface:
- * mock_pin_validator_t mock = {0};
+ * mock_pin_validator_t mock = {};
  * rx_pin_interface_t mock_iface = {
  *   .ctx = &mock,
  *   .reserve_pin = mock_reserve,

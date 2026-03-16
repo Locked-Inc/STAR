@@ -11,6 +11,7 @@
 
 #include "mock_riic_hal.h"
 
+#include <stddef.h>
 #include <string.h>
 
 /* =============================================================================
@@ -24,6 +25,21 @@ typedef enum : uint32_t {
   k_mock_riic_freq_400khz = 400000,  /**< Fast mode */
   k_mock_riic_freq_1mhz   = 1000000, /**< Fast mode plus */
 } mock_riic_frequency_t;
+
+/**
+ * @enum mock_riic_length_t
+ * @brief Named constants for clearing receive-length fields in mock state
+ *
+ * @details
+ * Used instead of the magic literal 0 when resetting ch->rx_length after
+ * peripheral-read data has been consumed, making the intent explicit.
+ *
+ * @see riic_peripheral_read() Consumes rx_buffer and resets rx_length
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_mock_riic_length_cleared = 0U, /**< Sentinel: receive buffer fully consumed */
+} mock_riic_length_t;
 
 /* =============================================================================
  * Global State
@@ -65,6 +81,17 @@ static void internal_record_call(mock_riic_call_type_t type,
  */
 static rx_err_t internal_check_error(void)
 {
+  /* Check nth-call error injection first */
+  if (g_mock_riic.nth_call_error_set) {
+    if (g_mock_riic.nth_call_counter == g_mock_riic.nth_call_target) {
+      rx_err_t err                   = g_mock_riic.nth_call_error;
+      g_mock_riic.nth_call_error_set = false;
+      g_mock_riic.nth_call_counter++;
+      return err;
+    }
+    g_mock_riic.nth_call_counter++;
+  }
+
   if (g_mock_riic.error_set) {
     rx_err_t err          = g_mock_riic.next_error;
     g_mock_riic.error_set = false;
@@ -122,21 +149,21 @@ static rx_err_t internal_check_simulated_errors(void)
  *
  * @code
  * // Length 0: both slots receive the empty sentinel (0x100)
- * mock_riic_call_t e0 = {0};
+ * mock_riic_call_t e0 = {};
  * internal_record_tx_snapshot(&e0, nullptr, 0);
  * // e0.tx_snapshot[k_mock_riic_snapshot_reg_idx] == k_mock_riic_snapshot_empty
  * // e0.tx_snapshot[k_mock_riic_snapshot_val_idx] == k_mock_riic_snapshot_empty
  *
  * // Length 1: slot 0 has the byte; slot 1 receives the sentinel
  * uint8_t buf1[] = {0x07U};
- * mock_riic_call_t e1 = {0};
+ * mock_riic_call_t e1 = {};
  * internal_record_tx_snapshot(&e1, buf1, 1);
  * // e1.tx_snapshot[k_mock_riic_snapshot_reg_idx] == 0x07U
  * // e1.tx_snapshot[k_mock_riic_snapshot_val_idx] == k_mock_riic_snapshot_empty
  *
  * // Length 2: both slots have real bytes
  * uint8_t buf2[] = {0x07U, 0x01U};
- * mock_riic_call_t e2 = {0};
+ * mock_riic_call_t e2 = {};
  * internal_record_tx_snapshot(&e2, buf2, 2);
  * // e2.tx_snapshot[k_mock_riic_snapshot_reg_idx] == 0x07U
  * // e2.tx_snapshot[k_mock_riic_snapshot_val_idx] == 0x01U
@@ -160,6 +187,7 @@ internal_record_tx_snapshot(mock_riic_call_t* entry, const uint8_t* data, uint16
 
 void mock_riic_init(void)
 {
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&g_mock_riic, 0, sizeof(g_mock_riic));
 }
 
@@ -180,7 +208,9 @@ void mock_riic_set_rx_data(uint8_t channel, const uint8_t* data, uint16_t length
   }
 
   uint16_t to_copy = (length < k_mock_riic_buffer_size) ? length : k_mock_riic_buffer_size;
-  memcpy(g_mock_riic.channels[channel].rx_buffer, data, to_copy);
+  for (uint16_t i = 0; i < to_copy; i++) {
+    g_mock_riic.channels[channel].rx_buffer[i] = data[i];
+  }
   g_mock_riic.channels[channel].rx_length = to_copy;
 }
 
@@ -205,9 +235,25 @@ void mock_riic_set_next_error(rx_err_t err)
   g_mock_riic.error_set  = true;
 }
 
+void mock_riic_set_next_write_error(rx_err_t err)
+{
+  g_mock_riic.next_write_error = err;
+  g_mock_riic.write_error_set  = true;
+}
+
 void mock_riic_clear_error(void)
 {
-  g_mock_riic.error_set = false;
+  g_mock_riic.error_set          = false;
+  g_mock_riic.write_error_set    = false;
+  g_mock_riic.nth_call_error_set = false;
+}
+
+void mock_riic_set_nth_call_error(uint16_t n, rx_err_t err)
+{
+  g_mock_riic.nth_call_target    = n;
+  g_mock_riic.nth_call_error     = err;
+  g_mock_riic.nth_call_error_set = true;
+  g_mock_riic.nth_call_counter   = 0U;
 }
 
 /* =============================================================================
@@ -239,7 +285,9 @@ uint16_t mock_riic_get_tx_data(uint8_t channel, uint8_t* data, uint16_t max_leng
 
   mock_riic_channel_state_t* ch      = &g_mock_riic.channels[channel];
   uint16_t                   to_copy = (max_length < ch->tx_length) ? max_length : ch->tx_length;
-  memcpy(data, ch->tx_buffer, to_copy);
+  for (uint16_t i = 0; i < to_copy; i++) {
+    data[i] = ch->tx_buffer[i];
+  }
   return to_copy;
 }
 
@@ -272,6 +320,39 @@ uint16_t mock_riic_get_call_count(void)
 void mock_riic_clear_history(void)
 {
   g_mock_riic.call_count = 0;
+}
+
+/**
+ * @brief Validate channel, initialization, and simulated error conditions
+ *
+ * @details
+ * Shared pre-check for riic_write, riic_read, and riic_write_read that validates
+ * channel range, channel initialization state, and simulated error injection.
+ *
+ * @param[in] channel RIIC channel wrapper
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok                 All checks passed
+ * @retval k_rx_err_invalid_arg    channel.value >= k_mock_riic_max_channels
+ * @retval k_rx_err_invalid_state  Channel not initialized
+ * @retval k_rx_err_timeout        Simulated busy or timeout condition
+ * @retval k_rx_err_nack           Simulated NACK condition
+ *
+ * @pre  channel.value < k_mock_riic_max_channels
+ * @post No state modification on any return
+ *
+ * @note Not thread-safe; must be called from a single test thread
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_validate_channel(riic_channel_t channel)
+{
+  if (channel.value >= k_mock_riic_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+  if (!g_mock_riic.channels[channel.value].initialized) {
+    return k_rx_err_invalid_state;
+  }
+  return internal_check_simulated_errors();
 }
 
 /* =============================================================================
@@ -344,7 +425,9 @@ rx_err_t riic_write(riic_channel_t    channel,
   /* Store transmitted data */
   mock_riic_channel_state_t* ch = &g_mock_riic.channels[channel.value];
   uint16_t to_copy = (length < k_mock_riic_buffer_size) ? length : k_mock_riic_buffer_size;
-  memcpy(ch->tx_buffer, data, to_copy);
+  for (uint16_t ci = 0; ci < to_copy; ci++) {
+    ch->tx_buffer[ci] = data[ci];
+  }
   ch->tx_length        = to_copy;
   ch->last_device_addr = device_addr.value;
 
@@ -394,7 +477,9 @@ rx_err_t riic_read(riic_channel_t    channel,
   /* Copy pre-loaded RX data */
   mock_riic_channel_state_t* ch      = &g_mock_riic.channels[channel.value];
   uint16_t                   to_copy = (length < ch->rx_length) ? length : ch->rx_length;
-  memcpy(data, ch->rx_buffer, to_copy);
+  for (uint16_t ci = 0; ci < to_copy; ci++) {
+    data[ci] = ch->rx_buffer[ci];
+  }
   ch->last_device_addr = device_addr.value;
 
   return k_rx_ok;
@@ -421,25 +506,12 @@ rx_err_t riic_write_read(riic_channel_t    channel,
   }
 
   /* Null pointer checks */
-  if (write_data == nullptr) {
-    return k_rx_err_null_ptr;
-  }
-  if (read_data == nullptr) {
+  if (write_data == nullptr || read_data == nullptr) {
     return k_rx_err_null_ptr;
   }
 
-  /* Validate channel */
-  if (channel.value >= k_mock_riic_max_channels) {
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Check initialization */
-  if (!g_mock_riic.channels[channel.value].initialized) {
-    return k_rx_err_invalid_state;
-  }
-
-  /* Check for simulated errors */
-  err = internal_check_simulated_errors();
+  /* Validate channel, init state, and simulated errors */
+  err = internal_validate_channel(channel);
   if (err != k_rx_ok) {
     return err;
   }
@@ -448,18 +520,272 @@ rx_err_t riic_write_read(riic_channel_t    channel,
   mock_riic_channel_state_t* ch = &g_mock_riic.channels[channel.value];
   uint16_t                   to_write =
     (write_length < k_mock_riic_buffer_size) ? write_length : k_mock_riic_buffer_size;
-  memcpy(ch->tx_buffer, write_data, to_write);
+  for (uint16_t ci = 0; ci < to_write; ci++) {
+    ch->tx_buffer[ci] = write_data[ci];
+  }
   ch->tx_length        = to_write;
   ch->last_device_addr = device_addr.value;
 
   /* Copy pre-loaded RX data */
   uint16_t to_read = (read_length < ch->rx_length) ? read_length : ch->rx_length;
-  memcpy(read_data, ch->rx_buffer, to_read);
+  for (uint16_t ci = 0; ci < to_read; ci++) {
+    read_data[ci] = ch->rx_buffer[ci];
+  }
 
   /* Snapshot first 2 TX bytes into the freshly appended call history entry */
   if (g_mock_riic.call_count > count_before) {
     internal_record_tx_snapshot(&g_mock_riic.call_history[count_before], write_data, write_length);
   }
 
+  return k_rx_ok;
+}
+
+/**
+ * @brief Consume pre-loaded RX data from a channel, shifting remaining bytes
+ *
+ * @details
+ * Copies up to max_length bytes from ch->rx_buffer into data, then shifts any
+ * remaining bytes down. If all bytes are consumed, rx_length is cleared.
+ *
+ * @param[in,out] ch         Channel state containing rx_buffer/rx_length
+ * @param[out]    data       Destination buffer for consumed bytes
+ * @param[in]     max_length Maximum bytes to consume
+ *
+ * @return Number of bytes actually copied
+ *
+ * @pre  ch != nullptr
+ * @pre  data != nullptr
+ * @post ch->rx_length reduced by returned count
+ *
+ * @note Not thread-safe; called from single test thread
+ * @since Version 1.0.0
+ */
+static uint16_t
+internal_consume_rx_data(mock_riic_channel_state_t* ch, uint8_t* data, uint16_t max_length)
+{
+  uint16_t to_read = (max_length < ch->rx_length) ? max_length : ch->rx_length;
+  for (uint16_t ci = 0; ci < to_read; ci++) {
+    data[ci] = ch->rx_buffer[ci];
+  }
+  if (to_read > 0) {
+    if (to_read == ch->rx_length) {
+      ch->rx_length = k_mock_riic_length_cleared;
+    } else {
+      const uint16_t remaining = (uint16_t)(ch->rx_length - to_read);
+      for (uint16_t ci = 0; ci < remaining; ci++) {
+        ch->rx_buffer[ci] = ch->rx_buffer[ci + to_read];
+      }
+      ch->rx_length = remaining;
+    }
+  }
+  return to_read;
+}
+
+/* =============================================================================
+ * Peripheral Mode Mock Implementations
+ * =============================================================================
+ */
+
+/**
+ * @brief Mock implementation of riic_init_peripheral()
+ *
+ * @details
+ * Marks the specified channel as initialized in mock state and records the
+ * call in global call history. Error injection (internal_check_error()) is
+ * applied before validating the channel index so test fixtures can simulate
+ * hardware init failures. A channel.value out of range returns
+ * k_rx_err_invalid_arg without modifying any channel state.
+ *
+ * @param[in] channel     RIIC channel wrapper (channel.value range: 0 to
+ *                        k_mock_riic_max_channels - 1)
+ * @param[in] device_addr 7-bit I2C peripheral address the mock should respond to.
+ *                        Recorded in call history; not range-validated by mock.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok                 Channel marked initialized
+ * @retval k_rx_err_invalid_arg    channel.value >= k_mock_riic_max_channels
+ * @retval Other                   Injected error from mock_riic_set_next_error()
+ *
+ * @pre  channel.value < k_mock_riic_max_channels
+ * @pre  mock state must be initialized via mock_riic_init() before use
+ * @post On k_rx_ok: g_mock_riic.channels[channel.value].initialized == true
+ * @post call recorded in g_mock_riic.call_history (if history not full)
+ *
+ * @note Not thread-safe; must be called from a single test thread
+ * @see  mock_riic_init()        Reset mock state before each test
+ * @see  riic_init_peripheral()  Real HAL function this mock replaces
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t riic_init_peripheral(const riic_channel_t channel, const i2c_device_addr_t device_addr)
+{
+  internal_record_call(k_mock_riic_call_init, channel.value, device_addr.value, 0, 0);
+
+  rx_err_t err = internal_check_error();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  if (channel.value >= k_mock_riic_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  g_mock_riic.channels[channel.value].initialized = true;
+  return k_rx_ok;
+}
+
+/**
+ * @brief Mock implementation of riic_peripheral_read()
+ *
+ * @details
+ * Returns pre-loaded RX data set by mock_riic_set_rx_data() as if the I2C
+ * controller (RPi5) had written bytes to this peripheral. After the data is
+ * consumed, ch->rx_length is reset to k_mock_riic_length_cleared so
+ * subsequent calls return bytes_read=0 (no new data). Error injection and
+ * simulated error conditions are applied before any data copy.
+ *
+ * @param[in]  channel     RIIC channel wrapper (channel.value range: 0 to
+ *                         k_mock_riic_max_channels - 1)
+ * @param[out] data        Buffer to receive copied bytes (must not be nullptr)
+ * @param[in]  max_length  Maximum bytes to copy (1..k_riic_peripheral_transfer_limit)
+ * @param[out] bytes_read  Actual bytes copied (may be 0 if no pre-loaded data)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok               Data (possibly 0 bytes) placed in @p data
+ * @retval k_rx_err_null_ptr     data or bytes_read is nullptr
+ * @retval k_rx_err_invalid_arg  channel.value >= k_mock_riic_max_channels,
+ *                               max_length == 0, or
+ *                               max_length > k_riic_peripheral_transfer_limit
+ * @retval k_rx_err_invalid_state Channel not initialized via
+ *                                riic_init_peripheral() mock
+ * @retval Other                 Injected error from mock_riic_set_next_error()
+ *                               or simulated error (timeout, NACK, busy)
+ *
+ * @pre  channel.value < k_mock_riic_max_channels
+ * @pre  channel must be initialized via riic_init_peripheral() mock first
+ * @post On k_rx_ok: *bytes_read contains bytes copied (0 to max_length)
+ * @post On k_rx_ok: only consumed bytes are removed from rx_buffer;
+ *       any remaining bytes are shifted down and rx_length updated
+ *
+ * @note Not thread-safe; must be called from a single test thread
+ * @note Call mock_riic_set_rx_data() before this function to pre-load data
+ * @see  mock_riic_set_rx_data()   Load data for the mock to return
+ * @see  riic_peripheral_read()    Real HAL function this mock replaces
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t riic_peripheral_read(const riic_channel_t channel,
+                              uint8_t*             data,
+                              const uint16_t       max_length,
+                              uint16_t*            bytes_read)
+{
+  internal_record_call(k_mock_riic_call_read, channel.value, 0, 0, max_length);
+
+  rx_err_t err = internal_check_error();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  if (data == nullptr || bytes_read == nullptr) {
+    return k_rx_err_null_ptr;
+  }
+  if (channel.value >= k_mock_riic_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+  if (max_length == 0 || max_length > k_riic_peripheral_transfer_limit) {
+    return k_rx_err_invalid_arg;
+  }
+  if (!g_mock_riic.channels[channel.value].initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  err = internal_check_simulated_errors();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  mock_riic_channel_state_t* ch = &g_mock_riic.channels[channel.value];
+  *bytes_read                   = internal_consume_rx_data(ch, data, max_length);
+  return k_rx_ok;
+}
+
+/**
+ * @brief Mock implementation of riic_peripheral_write()
+ *
+ * @details
+ * Records data bytes that the peripheral would transmit to the I2C controller.
+ * Copies up to k_mock_riic_buffer_size bytes from @p data into the channel's
+ * tx_buffer and updates tx_length. Also records the call in the global call
+ * history via internal_record_call() so tests can inspect the call count and
+ * arguments. Error injection (internal_check_error()) and simulated error
+ * conditions (internal_check_simulated_errors()) are applied before copying.
+ *
+ * @param[in] channel RIIC channel wrapper (channel.value range: 0-2)
+ * @param[in] data    Buffer containing bytes to write (must not be nullptr)
+ * @param[in] length  Number of bytes in @p data (1..k_riic_peripheral_transfer_limit)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok         Data stored in tx_buffer; tx_length updated
+ * @retval k_rx_err_null_ptr  @p data is nullptr
+ * @retval k_rx_err_invalid_arg  channel.value >= k_mock_riic_max_channels,
+ *         length == 0, or length > k_riic_peripheral_transfer_limit
+ * @retval k_rx_err_invalid_state  Channel not initialized via riic_init_peripheral() mock
+ * @retval Other  Injected error from mock_riic_set_next_error()
+ *
+ * @pre channel.value < k_mock_riic_max_channels
+ * @pre data != nullptr with at least length valid bytes
+ * @pre length >= 1
+ * @post On k_rx_ok: g_mock_riic.channels[channel.value].tx_buffer[0..to_write-1]
+ *       contain a copy of data[0..to_write-1]
+ * @post On k_rx_ok: g_mock_riic.channels[channel.value].tx_length == to_write
+ *
+ * @note Not thread-safe; must be called from a single test thread
+ * @note Truncates silently to k_mock_riic_buffer_size bytes if length exceeds it
+ *
+ * @see riic_init_peripheral()   Initialize channel before calling this mock
+ * @see mock_riic_get_tx_data()  Retrieve stored TX bytes from tests
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t
+riic_peripheral_write(const riic_channel_t channel, const uint8_t* data, const uint16_t length)
+{
+  internal_record_call(k_mock_riic_call_write, channel.value, 0, length, 0);
+
+  rx_err_t err = internal_check_error();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  if (g_mock_riic.write_error_set) {
+    rx_err_t write_err          = g_mock_riic.next_write_error;
+    g_mock_riic.write_error_set = false;
+    return write_err;
+  }
+
+  if (data == nullptr) {
+    return k_rx_err_null_ptr;
+  }
+  if (channel.value >= k_mock_riic_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+  if (length == 0 || length > k_riic_peripheral_transfer_limit) {
+    return k_rx_err_invalid_arg;
+  }
+  if (!g_mock_riic.channels[channel.value].initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  err = internal_check_simulated_errors();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  mock_riic_channel_state_t* ch = &g_mock_riic.channels[channel.value];
+  uint16_t to_write = (length < k_mock_riic_buffer_size) ? length : k_mock_riic_buffer_size;
+  for (uint16_t ci = 0; ci < to_write; ci++) {
+    ch->tx_buffer[ci] = data[ci];
+  }
+  ch->tx_length = to_write;
   return k_rx_ok;
 }

@@ -367,8 +367,6 @@
 
 #include "shared_data.h"
 
-#include <string.h>
-
 #include "rx_bus_types.h"
 #include "rx_check.h"
 #include "rx_comm_manager.h"
@@ -391,14 +389,15 @@ typedef enum : uint8_t {
   k_shared_channel_usb_default =
     0, /**< Fail-safe USB channel value (== k_comm_channel_usb); avoids rx_comm_manager.h include */
   k_shared_channel_count =
-    2, /**< Number of valid channels (== k_comm_channel_count); avoids rx_comm_manager.h include */
+    4, /**< Number of valid channels (== k_comm_channel_count); avoids rx_comm_manager.h include */
 } shared_data_internal_constants_t;
 
 /* Compile-time guard: k_shared_channel_count must stay equal to k_comm_channel_count.
  * If rx_comm_channel_t gains a new value, update k_shared_channel_count to match. */
-static_assert((uint8_t)k_shared_channel_count == (uint8_t)k_comm_channel_count,
+static_assert((bool)((unsigned int)k_shared_channel_count == (unsigned int)k_comm_channel_count),
               "k_shared_channel_count out of sync with k_comm_channel_count");
-static_assert((uint8_t)k_shared_channel_usb_default == (uint8_t)k_comm_channel_usb,
+static_assert((bool)((unsigned int)k_shared_channel_usb_default ==
+                     (unsigned int)k_comm_channel_usb),
               "k_shared_channel_usb_default out of sync with k_comm_channel_usb");
 
 /**
@@ -562,7 +561,7 @@ static volatile estop_reason_t s_pending_estop_reason = k_estop_reason_none;
  * @see rx_bus_manager_init() Initialize bus manager (in hardware_init.c)
  * @see rx_bus_types.h Bus abstraction API
  */
-rx_bus_manager_t g_bus_manager = {0};
+rx_bus_manager_t g_bus_manager = {};
 
 /**
  * @var g_shared_data
@@ -591,7 +590,7 @@ rx_bus_manager_t g_bus_manager = {0};
  * @see shared_data_init() Create mutexes and event flags
  * @see shared_data_t Structure definition (in shared_data.h)
  */
-shared_data_t g_shared_data = {0};
+shared_data_t g_shared_data = {};
 
 /* =============================================================================
  * Initialization
@@ -758,6 +757,8 @@ typedef enum : uint8_t {
  * @note Not thread-safe; called only during single-threaded initialization
  * @since Version 1.0.0
  */
+static rx_err_t internal_create_shared_sync_objects(void);
+
 static void internal_cleanup_mutexes(uint8_t count)
 {
   TX_MUTEX* const mutexes[k_mutex_idx_baro] = {
@@ -768,10 +769,71 @@ static void internal_cleanup_mutexes(uint8_t count)
     &g_shared_data.imu_mutex,
     &g_shared_data.baro_mutex,
   };
-  const uint8_t limit = (count < k_mutex_idx_baro) ? count : (uint8_t)k_mutex_idx_baro;
+  const uint8_t limit = (count < k_mutex_idx_baro) ? count : k_mutex_idx_baro;
   for (uint8_t i = limit; i > 0U; i--) {
     (void)tx_mutex_delete(mutexes[i - 1U]);
   }
+}
+
+/**
+ * @brief Create all ThreadX mutexes and the event-flags group for shared_data
+ *
+ * @details
+ * Attempts to create 6 priority-inheritance mutexes (motor, temp, obstacle,
+ * estop, imu, baro) and one TX_EVENT_FLAGS_GROUP. On any failure, already-
+ * created mutexes are deleted in reverse order before returning.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All RTOS objects created successfully
+ * @retval k_rx_err_rtos_mutex A tx_mutex_create() call failed
+ * @retval k_rx_err_rtos_error tx_event_flags_create() failed
+ *
+ * @pre ThreadX kernel is running (tx_application_define has been called)
+ * @pre g_shared_data.initialized == false (called only from shared_data_init)
+ * @post All 6 mutexes and 1 event-flags group are created on k_rx_ok
+ * @post g_shared_data RTOS objects deleted/uncreated on any error return
+ *
+ * @note Not thread-safe; called once during single-threaded init
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_create_shared_sync_objects(void)
+{
+  UINT tx_status = tx_mutex_create(&g_shared_data.motor_mutex, "MotorMutex", (UINT)k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+  tx_status = tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", (UINT)k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_motor);
+    return k_rx_err_rtos_mutex;
+  }
+  tx_status =
+    tx_mutex_create(&g_shared_data.obstacle_mutex, "ObstacleMutex", (UINT)k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_temp);
+    return k_rx_err_rtos_mutex;
+  }
+  tx_status = tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", (UINT)k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_obstacle);
+    return k_rx_err_rtos_mutex;
+  }
+  tx_status = tx_mutex_create(&g_shared_data.imu_mutex, "ImuMutex", (UINT)k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_estop);
+    return k_rx_err_rtos_mutex;
+  }
+  tx_status = tx_mutex_create(&g_shared_data.baro_mutex, "BaroMutex", (UINT)k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_imu);
+    return k_rx_err_rtos_mutex;
+  }
+  tx_status = tx_event_flags_create(&g_shared_data.event_flags, "SharedEvents");
+  if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_baro);
+    return k_rx_err_rtos_error;
+  }
+  return k_rx_ok;
 }
 
 rx_err_t shared_data_init(void)
@@ -781,52 +843,9 @@ rx_err_t shared_data_init(void)
     return k_rx_err_invalid_state;
   }
 
-  /* Create motor_mutex with priority inheritance */
-  UINT tx_status = tx_mutex_create(&g_shared_data.motor_mutex, "MotorMutex", k_mutex_inherit);
-  if (tx_status != TX_SUCCESS) {
-    return k_rx_err_rtos_mutex;
-  }
-
-  /* Create temp_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", k_mutex_inherit);
-  if (tx_status != TX_SUCCESS) {
-    internal_cleanup_mutexes(k_mutex_idx_motor);
-    return k_rx_err_rtos_mutex;
-  }
-
-  /* Create obstacle_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.obstacle_mutex, "ObstacleMutex", k_mutex_inherit);
-  if (tx_status != TX_SUCCESS) {
-    internal_cleanup_mutexes(k_mutex_idx_temp);
-    return k_rx_err_rtos_mutex;
-  }
-
-  /* Create estop_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", k_mutex_inherit);
-  if (tx_status != TX_SUCCESS) {
-    internal_cleanup_mutexes(k_mutex_idx_obstacle);
-    return k_rx_err_rtos_mutex;
-  }
-
-  /* Create imu_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.imu_mutex, "ImuMutex", k_mutex_inherit);
-  if (tx_status != TX_SUCCESS) {
-    internal_cleanup_mutexes(k_mutex_idx_estop);
-    return k_rx_err_rtos_mutex;
-  }
-
-  /* Create baro_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.baro_mutex, "BaroMutex", k_mutex_inherit);
-  if (tx_status != TX_SUCCESS) {
-    internal_cleanup_mutexes(k_mutex_idx_imu);
-    return k_rx_err_rtos_mutex;
-  }
-
-  /* Create event_flags group */
-  tx_status = tx_event_flags_create(&g_shared_data.event_flags, "SharedEvents");
-  if (tx_status != TX_SUCCESS) {
-    internal_cleanup_mutexes(k_mutex_idx_baro);
-    return k_rx_err_rtos_error;
+  const rx_err_t sync_err = internal_create_shared_sync_objects();
+  if (sync_err != k_rx_ok) {
+    return sync_err;
   }
 
   /* Initialize default PID gains (from MATLAB tuning) */
@@ -983,7 +1002,7 @@ rx_err_t shared_data_set_motor_command(const motor_command_t* cmd)
   }
 
   /* Copy command data */
-  (void)memcpy(&g_shared_data.motor_command, cmd, sizeof(motor_command_t));
+  g_shared_data.motor_command = *cmd;
 
   /* Update timestamp */
   g_shared_data.motor_command.timestamp_ms = tx_time_get();
@@ -1080,7 +1099,7 @@ rx_err_t shared_data_get_motor_command(motor_command_t* out_cmd)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(out_cmd, &g_shared_data.motor_command, sizeof(motor_command_t));
+  *out_cmd = g_shared_data.motor_command;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 
@@ -1170,7 +1189,7 @@ rx_err_t shared_data_update_motor_state(const motor_state_t* state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(&g_shared_data.motor_state, state, sizeof(motor_state_t));
+  g_shared_data.motor_state = *state;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 
@@ -1244,7 +1263,7 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(out_state, &g_shared_data.motor_state, sizeof(motor_state_t));
+  *out_state = g_shared_data.motor_state;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 
@@ -1343,7 +1362,7 @@ rx_err_t shared_data_set_pid_gains(const pid_gains_t* gains)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(&g_shared_data.pid_gains, gains, sizeof(pid_gains_t));
+  g_shared_data.pid_gains                = *gains;
   g_shared_data.pid_gains.update_pending = true;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
@@ -1429,7 +1448,7 @@ rx_err_t shared_data_get_pid_gains(pid_gains_t* out_gains)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(out_gains, &g_shared_data.pid_gains, sizeof(pid_gains_t));
+  *out_gains = g_shared_data.pid_gains;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 
@@ -2167,7 +2186,7 @@ rx_err_t shared_data_update_temp(const temp_sensor_state_t* state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(&g_shared_data.temp_state, state, sizeof(temp_sensor_state_t));
+  g_shared_data.temp_state = *state;
 
   (void)tx_mutex_put(&g_shared_data.temp_mutex);
 
@@ -2242,7 +2261,7 @@ rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(out_state, &g_shared_data.temp_state, sizeof(temp_sensor_state_t));
+  *out_state = g_shared_data.temp_state;
 
   (void)tx_mutex_put(&g_shared_data.temp_mutex);
 
@@ -2339,7 +2358,7 @@ rx_err_t shared_data_update_obstacle(const obstacle_state_t* state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(&g_shared_data.obstacle_state, state, sizeof(obstacle_state_t));
+  g_shared_data.obstacle_state = *state;
 
   (void)tx_mutex_put(&g_shared_data.obstacle_mutex);
 
@@ -2419,7 +2438,7 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(out_state, &g_shared_data.obstacle_state, sizeof(obstacle_state_t));
+  *out_state = g_shared_data.obstacle_state;
 
   (void)tx_mutex_put(&g_shared_data.obstacle_mutex);
 
@@ -2546,7 +2565,7 @@ bool shared_data_is_comm_timeout(void)
   /* ThreadX tick rate is 100 Hz (10ms per tick) */
   const uint32_t elapsed_ms = (current_tick - last_tick) * k_ms_per_tick;
 
-  const bool timeout = (elapsed_ms > k_shared_comm_timeout_ms);
+  const bool timeout = (bool)(elapsed_ms > k_shared_comm_timeout_ms);
 
   if (timeout) {
     /* Signal timeout event */
@@ -2624,7 +2643,7 @@ void shared_data_update_last_comm_tick(void)
  * that the host is actively using.
  *
  * @param[in] channel Channel that delivered the frame (rx_comm_channel_t cast to uint8_t;
- *                    must be k_comm_channel_usb (0) or k_comm_channel_spi (1))
+ *                    valid values: 0=USB, 1=SPI, 2=I2C, 3=UART; must be < k_comm_channel_count)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Channel stored successfully
@@ -2651,7 +2670,7 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
     return k_rx_err_not_initialized;
   }
 
-  if (channel >= (uint8_t)k_shared_channel_count) {
+  if (channel >= k_shared_channel_count) {
     return k_rx_err_invalid_arg;
   }
 
@@ -2677,12 +2696,14 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
  * been received yet or on any error.
  *
  * @return uint8_t Active communication channel (rx_comm_channel_t cast to uint8_t)
- * @retval 0 (k_comm_channel_usb) Default before any command received, or on error
- * @retval 1 (k_comm_channel_spi) SPI was the last channel to deliver a command
+ * @retval 0 (k_comm_channel_usb)  Default before any command received, or on error
+ * @retval 1 (k_comm_channel_spi)  SPI was the last channel to deliver a command
+ * @retval 2 (k_comm_channel_i2c)  I2C was the last channel to deliver a command
+ * @retval 3 (k_comm_channel_uart) UART was the last channel to deliver a command
  *
  * @pre shared_data_init() has been called (returns USB default if not)
  * @pre At least one valid frame has been received for a non-default result
- * @post Return value is 0 (USB) or 1 (SPI) matching rx_comm_channel_t values
+ * @post Return value is 0-3 matching rx_comm_channel_t values (USB/SPI/I2C/UART)
  * @post g_shared_data state is unchanged (read-only accessor)
  *
  * @note Thread safety: active_channel_valid and active_channel both read inside mutex
@@ -2704,8 +2725,8 @@ uint8_t shared_data_get_active_channel(void)
     return k_shared_channel_usb_default;
   }
 
-  const uint8_t ch = g_shared_data.active_channel_valid ? g_shared_data.active_channel
-                                                        : k_shared_channel_usb_default;
+  const uint8_t ch = (int)g_shared_data.active_channel_valid ? g_shared_data.active_channel
+                                                             : k_shared_channel_usb_default;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 
@@ -2957,7 +2978,7 @@ shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_
  * @par Example Usage:
  * @code{.c}
  * // In imu_task - after successful BNO055 read
- * imu_state_t imu = {0};
+ * imu_state_t imu = {};
  * imu.heading_deg16 = bno055_data.heading_deg16;
  * imu.timestamp_ms  = (uint32_t)tx_time_get();
  * imu.valid         = true;
@@ -2984,7 +3005,7 @@ rx_err_t shared_data_update_imu(const imu_state_t* state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(&g_shared_data.imu_state, state, sizeof(imu_state_t));
+  g_shared_data.imu_state = *state;
 
   (void)tx_mutex_put(&g_shared_data.imu_mutex);
 
@@ -3030,7 +3051,7 @@ rx_err_t shared_data_update_imu(const imu_state_t* state)
  * @par Example Usage:
  * @code{.c}
  * // In telemetry_task - read current IMU state
- * imu_state_t imu = {0};
+ * imu_state_t imu = {};
  * rx_err_t err = shared_data_get_imu(&imu);
  * if (err == k_rx_ok && imu.valid) {
  *     float heading_deg = (float)imu.heading_deg16 / (float)k_imu_scale_euler;
@@ -3054,7 +3075,7 @@ rx_err_t shared_data_get_imu(imu_state_t* out_state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(out_state, &g_shared_data.imu_state, sizeof(imu_state_t));
+  *out_state = g_shared_data.imu_state;
 
   (void)tx_mutex_put(&g_shared_data.imu_mutex);
 
@@ -3105,7 +3126,7 @@ rx_err_t shared_data_get_imu(imu_state_t* out_state)
  * @par Example Usage:
  * @code{.c}
  * // In imu_task - after successful BMP280 read
- * baro_state_t baro = {0};
+ * baro_state_t baro = {};
  * baro.temp_centi_degc = bmp280_data.temp_centi_degc;
  * baro.press_pa_256    = bmp280_data.press_pa_256;
  * baro.timestamp_ms    = (uint32_t)tx_time_get();
@@ -3133,7 +3154,7 @@ rx_err_t shared_data_update_baro(const baro_state_t* state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(&g_shared_data.baro_state, state, sizeof(baro_state_t));
+  g_shared_data.baro_state = *state;
 
   (void)tx_mutex_put(&g_shared_data.baro_mutex);
 
@@ -3179,7 +3200,7 @@ rx_err_t shared_data_update_baro(const baro_state_t* state)
  * @par Example Usage:
  * @code{.c}
  * // In telemetry_task - read current baro state
- * baro_state_t baro = {0};
+ * baro_state_t baro = {};
  * rx_err_t err = shared_data_get_baro(&baro);
  * if (err == k_rx_ok && baro.valid) {
  *     float temp_c    = (float)baro.temp_centi_degc / (float)k_baro_scale_temp;
@@ -3204,7 +3225,7 @@ rx_err_t shared_data_get_baro(baro_state_t* out_state)
     return k_rx_err_rtos_mutex;
   }
 
-  (void)memcpy(out_state, &g_shared_data.baro_state, sizeof(baro_state_t));
+  *out_state = g_shared_data.baro_state;
 
   (void)tx_mutex_put(&g_shared_data.baro_mutex);
 

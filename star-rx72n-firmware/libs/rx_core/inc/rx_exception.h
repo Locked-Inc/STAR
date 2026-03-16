@@ -198,6 +198,27 @@ typedef enum : uint8_t {
 } rx_exception_vector_offset_t;
 
 /* ============================================================================
+ * Exception Frame Size Constants
+ * ============================================================================ */
+
+/**
+ * @enum rx_exception_frame_size_t
+ * @brief Size constants for rx_exception_frame_t
+ *
+ * @details
+ * Named constants for the exception frame structure sizes used in static
+ * assertions and structure field sizing.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_exception_frame_reserved_size =
+    3, /**< Padding bytes to align rx_exception_frame_t to 4 bytes */
+  k_exception_frame_total_size =
+    12, /**< Total size of rx_exception_frame_t in bytes (pc:4 + psw:4 + type:1 + reserved:3) */
+} rx_exception_frame_size_t;
+
+/* ============================================================================
  * Exception Frame Structure
  * ============================================================================ */
 
@@ -263,12 +284,13 @@ typedef struct {
      * @brief Padding for alignment
      * @details Ensures structure is 4-byte aligned
      */
-  uint8_t reserved[3];
+  uint8_t reserved[k_exception_frame_reserved_size];
 
 } rx_exception_frame_t;
 
 /* Static assertion for structure size */
-static_assert(sizeof(rx_exception_frame_t) == 12, "rx_exception_frame_t must be 12 bytes");
+static_assert((bool)(sizeof(rx_exception_frame_t) == k_exception_frame_total_size),
+              "rx_exception_frame_t must be 12 bytes");
 
 /* ============================================================================
  * Exception Statistics

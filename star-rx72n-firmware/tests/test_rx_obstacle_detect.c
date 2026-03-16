@@ -242,11 +242,145 @@
  * @since Version 1.0.0
  */
 
-#include <string.h>
-
+#include "mock_hcsr04_hw.h"
 #include "mock_rx_motor.h"
+#include "rx_hcsr04.h"
 #include "rx_obstacle_detect.h"
+#include "tx_api.h"
 #include "unity.h"
+
+/* =============================================================================
+ * Named Test Constants
+ * =============================================================================
+ */
+
+/**
+ * @defgroup test_constants Named Test Constants
+ * @brief Integer and floating-point constants used throughout the test suite
+ * @{
+ */
+
+/**
+ * @enum test_int_constants_t
+ * @brief Integer constants used across obstacle detection tests
+ */
+typedef enum : uint8_t {
+  k_test_sensor_count     = 2,  /**< Default sensor array size */
+  k_test_motor_count      = 2,  /**< Default motor array size */
+  k_test_debounce_samples = 3,  /**< Default debounce sample count */
+  k_test_debounce_five    = 5,  /**< Debounce sample count for partial tests */
+  k_test_poll_interval_ms = 20, /**< Default poll interval in ms (50 Hz) */
+} test_int_constants_t;
+
+/**
+ * @enum test_stats_constants_t
+ * @brief Constants used for statistics testing
+ */
+typedef enum : uint32_t {
+  k_test_stats_total_polls = 100, /**< Simulated total poll count */
+  k_test_stats_events      = 5,   /**< Simulated obstacle event count */
+  k_test_debounce_preset   = 2,   /**< Pre-set debounce counter value */
+} test_stats_constants_t;
+
+/**
+ * @enum test_validation_constants_t
+ * @brief Constants used for validation boundary tests
+ */
+typedef enum : uint16_t {
+  k_test_motor_count_over_max    = 5,      /**< Above k_obstacle_detect_max_motors */
+  k_test_debounce_over_max       = 11,     /**< Above k_max_debounce (10) */
+  k_test_poll_interval_over_max  = 1001,   /**< Above k_max_poll_interval (1000) */
+  k_test_poll_interval_under_min = 5,      /**< Below k_min_poll_interval (10) */
+  k_test_poll_interval_invalid   = 0xFFFF, /**< Far above maximum allowed */
+  k_test_outer_start_retries     = 2,      /**< Outer loop no-events retry count */
+  k_test_no_events_large         = 99,     /**< Large no-events count to keep armed */
+} test_validation_constants_t;
+
+/**
+ * @var s_threshold_cm
+ * @brief Default detection threshold in centimeters (30 cm)
+ */
+static const float s_threshold_cm = 30.0F;
+
+/**
+ * @var s_threshold_too_high_cm
+ * @brief Detection threshold above HC-SR04 maximum range (500 cm)
+ */
+static const float s_threshold_too_high_cm = 500.0F;
+
+/**
+ * @var s_distance_safe_cm
+ * @brief Safe distance above default threshold (50 cm)
+ */
+static const float s_distance_safe_cm = 50.0F;
+
+/**
+ * @var s_distance_close_cm
+ * @brief Close distance below default threshold (10 cm)
+ */
+static const float s_distance_close_cm = 10.0F;
+
+/**
+ * @var s_distance_emergency_cm
+ * @brief Emergency distance well below threshold (5 cm)
+ */
+static const float s_distance_emergency_cm = 5.0F;
+
+/**
+ * @var s_distance_warning_cm
+ * @brief Warning distance for callback tests (25 cm)
+ */
+static const float s_distance_warning_cm = 25.0F;
+
+/**
+ * @var s_distance_callback_cm
+ * @brief Specific distance for callback parameter tests (15.5 cm)
+ */
+static const float s_distance_callback_cm = 15.5F;
+
+/**
+ * @var s_float_tolerance
+ * @brief Floating-point comparison tolerance (0.01)
+ */
+static const float s_float_tolerance = 0.01F;
+
+/**
+ * @var s_threshold_below_min_cm
+ * @brief Threshold below HC-SR04 minimum range (1.0 cm, below 2 cm minimum)
+ */
+static const float s_threshold_below_min_cm = 1.0F;
+
+/** @} */ /* End of test_constants group */
+
+/* =============================================================================
+ * Helper: byte-level zero initialization (replaces memset)
+ * =============================================================================
+ */
+
+/**
+ * @brief Zero-initialize a memory region byte-by-byte
+ *
+ * @details
+ * Replaces memset(&obj, 0, sizeof(obj)) to satisfy
+ * clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling.
+ *
+ * @param[out] ptr  Pointer to the memory region to zero
+ * @param[in]  size Number of bytes to zero
+ *
+ * @pre ptr != nullptr
+ * @pre size > 0
+ * @post All bytes in [ptr, ptr+size) are set to 0
+ *
+ * @note Not thread-safe (caller must synchronize)
+ * @since Version 1.0.0
+ */
+static inline void internal_zero_mem(void* ptr, size_t size)
+{
+  volatile uint8_t* dst = (volatile uint8_t*)ptr;
+  for (size_t i = 0; i < size; i++) {
+    dst[i] = 0;
+  }
+}
 
 /* =============================================================================
  * Test Fixtures and Global State
@@ -344,7 +478,7 @@ static rx_obstacle_detect_config_t s_config;
  *
  * @par Size: 2 x sizeof(rx_hcsr04_t) (depends on HC-SR04 driver)
  */
-static rx_hcsr04_t s_sensors[2];
+static rx_hcsr04_t s_sensors[k_test_sensor_count];
 
 /**
  * @var s_sensor_ptrs
@@ -358,7 +492,7 @@ static rx_hcsr04_t s_sensors[2];
  * @par Initialized By: setUp() before each test
  * @par Used By: s_config.sensors (configuration field)
  */
-static rx_hcsr04_t* s_sensor_ptrs[2];
+static rx_hcsr04_t* s_sensor_ptrs[k_test_sensor_count];
 
 /**
  * @var s_motors
@@ -380,7 +514,7 @@ static rx_hcsr04_t* s_sensor_ptrs[2];
  *
  * @par Size: 2 x sizeof(rx_motor_handle_t) (depends on motor driver)
  */
-static rx_motor_handle_t s_motors[2];
+static rx_motor_handle_t s_motors[k_test_motor_count];
 
 /**
  * @var s_motor_ptrs
@@ -393,7 +527,7 @@ static rx_motor_handle_t s_motors[2];
  * @par Initialized By: setUp() before each test
  * @par Used By: s_config.motors (configuration field)
  */
-static rx_motor_handle_t* s_motor_ptrs[2];
+static rx_motor_handle_t* s_motor_ptrs[k_test_motor_count];
 
 /**
  * @var s_callback_called
@@ -660,11 +794,12 @@ void setUp(void)
 {
   /* Initialize mocks */
   mock_rx_motor_init();
+  mock_tx_reset();
 
   /* Clear handles */
-  memset(&s_handle, 0, sizeof(s_handle));
-  memset(&s_sensors, 0, sizeof(s_sensors));
-  memset(&s_motors, 0, sizeof(s_motors));
+  internal_zero_mem(&s_handle, sizeof(s_handle));
+  internal_zero_mem(&s_sensors, sizeof(s_sensors));
+  internal_zero_mem(&s_motors, sizeof(s_motors));
 
   /* Setup sensor pointers */
   s_sensor_ptrs[0] = &s_sensors[0];
@@ -676,12 +811,12 @@ void setUp(void)
 
   /* Default configuration: 2 sensors, 2 motors, 30cm threshold */
   s_config.sensors                = s_sensor_ptrs;
-  s_config.sensor_count           = 2;
+  s_config.sensor_count           = k_test_sensor_count;
   s_config.motors                 = s_motor_ptrs;
-  s_config.motor_count            = 2;
-  s_config.detection_threshold_cm = 30.0f;
-  s_config.debounce_samples       = 3;
-  s_config.poll_interval_ms       = 20;
+  s_config.motor_count            = k_test_motor_count;
+  s_config.detection_threshold_cm = s_threshold_cm;
+  s_config.debounce_samples       = k_test_debounce_samples;
+  s_config.poll_interval_ms       = k_test_poll_interval_ms;
   s_config.callback               = test_callback;
   s_config.user_data              = nullptr;
 
@@ -689,7 +824,7 @@ void setUp(void)
   s_callback_called            = false;
   s_callback_obstacle_detected = false;
   s_callback_sensor_idx        = 0;
-  s_callback_distance_cm       = 0.0f;
+  s_callback_distance_cm       = 0.0F;
 }
 
 /**
@@ -854,9 +989,9 @@ void test_obstacle_detect_init_success(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(s_handle.initialized);
-  TEST_ASSERT_EQUAL(2, s_handle.sensor_count);
-  TEST_ASSERT_EQUAL(2, s_handle.motor_count);
-  TEST_ASSERT_EQUAL_FLOAT(30.0f, s_handle.detection_threshold_cm);
+  TEST_ASSERT_EQUAL(k_test_sensor_count, s_handle.sensor_count);
+  TEST_ASSERT_EQUAL(k_test_motor_count, s_handle.motor_count);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, s_threshold_cm, s_handle.detection_threshold_cm);
   TEST_ASSERT_EQUAL(k_obstacle_detect_state_stopped, s_handle.state);
 }
 
@@ -976,7 +1111,7 @@ void test_obstacle_detect_init_zero_motors_fails(void)
  */
 void test_obstacle_detect_init_invalid_threshold_too_low_fails(void)
 {
-  s_config.detection_threshold_cm = 1.0f; /* Below 2cm minimum */
+  s_config.detection_threshold_cm = s_threshold_below_min_cm; /* Below 2cm minimum */
   rx_err_t err                    = rx_obstacle_detect_init(&s_handle, &s_config);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -991,7 +1126,7 @@ void test_obstacle_detect_init_invalid_threshold_too_low_fails(void)
  */
 void test_obstacle_detect_init_invalid_threshold_too_high_fails(void)
 {
-  s_config.detection_threshold_cm = 500.0f; /* Above 400cm maximum */
+  s_config.detection_threshold_cm = s_threshold_too_high_cm; /* Above 400cm maximum */
   rx_err_t err                    = rx_obstacle_detect_init(&s_handle, &s_config);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1190,6 +1325,26 @@ void test_obstacle_detect_stop_null_handle_fails(void)
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
+/** @brief Test stop fails when handle not initialized */
+void test_obstacle_detect_stop_not_initialized_fails(void)
+{
+  /* s_handle is zeroed in setUp, not initialized */
+  rx_err_t err = rx_obstacle_detect_stop(&s_handle);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/** @brief Test start when state is not stopped (skips thread resume) */
+void test_obstacle_detect_start_when_already_running(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+  /* Manually set state to running to simulate already-started system */
+  s_handle.state = k_obstacle_detect_state_running;
+
+  /* Start should succeed without resuming thread again */
+  rx_err_t err = rx_obstacle_detect_start(&s_handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
 /** @} */ /* End of test_control group */
 
 /* =============================================================================
@@ -1349,9 +1504,9 @@ void test_obstacle_detect_reset_stats_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
 
   /* Manually set some stats */
-  s_handle.total_polls          = 100;
-  s_handle.obstacle_events      = 5;
-  s_handle.false_positive_count = 2;
+  s_handle.total_polls          = k_test_stats_total_polls;
+  s_handle.obstacle_events      = k_test_stats_events;
+  s_handle.false_positive_count = k_test_debounce_preset;
 
   rx_err_t err = rx_obstacle_detect_reset_stats(&s_handle);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1368,6 +1523,33 @@ void test_obstacle_detect_reset_stats_null_handle_fails(void)
   rx_err_t err = rx_obstacle_detect_reset_stats(nullptr);
 
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/** @brief Test get_stats with uninitialized handle returns invalid_state */
+void test_obstacle_detect_get_stats_uninitialized(void)
+{
+  /* Handle not initialized (s_handle is zeroed in setUp) */
+  uint32_t total_polls = 0;
+  rx_err_t err         = rx_obstacle_detect_get_stats(&s_handle, &total_polls, nullptr, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/** @brief Test get_stats accepts nullptr for individual out parameters */
+void test_obstacle_detect_get_stats_null_out_args(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+
+  /* Pass nullptr for each individual output arg - function should succeed */
+  rx_err_t err = rx_obstacle_detect_get_stats(&s_handle, nullptr, nullptr, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/** @brief Test is_obstacle_detected with uninitialized handle returns false */
+void test_obstacle_detect_is_obstacle_detected_uninitialized(void)
+{
+  /* Handle not initialized */
+  bool detected = rx_obstacle_detect_is_obstacle_detected(&s_handle);
+  TEST_ASSERT_FALSE(detected);
 }
 
 /** @} */ /* End of test_statistics group */
@@ -1408,7 +1590,7 @@ void test_obstacle_detect_clear_obstacle_success(void)
   /* Manually set obstacle state */
   s_handle.state               = k_obstacle_detect_state_obstacle;
   s_handle.obstacle_active[0]  = true;
-  s_handle.debounce_counter[0] = 5;
+  s_handle.debounce_counter[0] = k_test_debounce_five;
 
   rx_err_t err = rx_obstacle_detect_clear_obstacle(&s_handle);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1427,7 +1609,1609 @@ void test_obstacle_detect_clear_obstacle_null_handle_fails(void)
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
+/** @brief Test clear obstacle fails when not initialized */
+void test_obstacle_detect_clear_obstacle_not_initialized(void)
+{
+  /* s_handle is zeroed in setUp, not initialized */
+  rx_err_t err = rx_obstacle_detect_clear_obstacle(&s_handle);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/** @brief Test clear obstacle when state is not obstacle (state stays unchanged) */
+void test_obstacle_detect_clear_obstacle_state_not_obstacle(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+  /* State is stopped after init - clearing obstacle when not in obstacle state */
+  s_handle.state = k_obstacle_detect_state_running;
+
+  rx_err_t err = rx_obstacle_detect_clear_obstacle(&s_handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* State stays running (the else branch of state == obstacle check) */
+  TEST_ASSERT_EQUAL(k_obstacle_detect_state_running, s_handle.state);
+}
+
 /** @} */ /* End of test_clear_obstacle group */
+
+/* =============================================================================
+ * Internal Function Tests (RX_STATIC_TESTABLE coverage)
+ * =============================================================================
+ */
+
+/**
+ * @brief Test internal_poll_sensors returns null ptr error for nullptr handle
+ *
+ * @details
+ * Directly calls the RX_STATIC_TESTABLE internal function with a nullptr
+ * handle to exercise the defensive null check that was previously
+ * excluded from coverage.
+ *
+ * @pre UNIT_TEST is defined (exposes internal_poll_sensors)
+ * @post Returns k_rx_err_null_ptr
+ */
+void test_internal_poll_sensors_null_handle(void)
+{
+  rx_err_t err = internal_poll_sensors(nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test internal_poll_sensors returns invalid state for uninitialized handle
+ *
+ * @details
+ * Directly calls internal_poll_sensors with a handle that has
+ * initialized=false to exercise the uninitialized guard.
+ *
+ * @pre s_handle is zeroed by setUp() (initialized=false)
+ * @post Returns k_rx_err_invalid_state
+ */
+void test_internal_poll_sensors_uninitialized_handle(void)
+{
+  /* s_handle is zero-initialized by setUp(), so initialized=false */
+  rx_err_t err = internal_poll_sensors(&s_handle);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test internal_poll_sensors with sensors returning non-timeout errors
+ *
+ * @details
+ * Initializes the obstacle detect handle so internal_poll_sensors can proceed.
+ * The sensors are zero-initialized (initialized=false), so measure_blocking
+ * returns k_rx_err_invalid_state for each, which the function treats as
+ * "skip this sensor" (continue). The poll should complete and return k_rx_ok.
+ *
+ * @pre obstacle detect handle initialized
+ * @pre sensors zero-initialized (not initialized)
+ * @post Returns k_rx_ok (sensors skipped, no obstacle)
+ */
+void test_internal_poll_sensors_skips_invalid_sensors(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+
+  /* Sensors are zero-initialized (initialized=false), so measure_blocking
+   * returns k_rx_err_invalid_state for each. The poll skips them. */
+  rx_err_t err = internal_poll_sensors(&s_handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* No obstacle events since all sensors were skipped */
+  TEST_ASSERT_EQUAL(0, s_handle.obstacle_events);
+}
+
+/**
+ * @brief Test internal_poll_sensors detects obstacle state machine via pre-set debounce
+ *
+ * @details
+ * Tests the obstacle detection state machine transition by directly manipulating
+ * debounce_counter to reach the detection threshold. This exercises the
+ * was_obstacle_active -> obstacle_active state transition and callback invocation.
+ *
+ * The underlying sensor measurement path is NOT tested here (that requires
+ * full hcsr04 hardware mock setup). Instead, this test drives the debounce
+ * counter to just below debounce_samples, then uses a timeout sensor response
+ * (treated as clear) to verify the counter-reset path.
+ *
+ * @pre obstacle detect initialized
+ * @pre debounce_counter[0] pre-set to debounce_samples - 1 (just below threshold)
+ * @post obstacle_active[0] remains false (counter reset on clear measurement)
+ * @post false_positive_count incremented
+ */
+void test_internal_poll_sensors_debounce_counter_reset_on_clear(void)
+{
+  /* Use zero-initialized (invalid) sensors so measure returns k_rx_err_invalid_state.
+   * The function will skip all sensors (continue), and since no sensor is active,
+   * it returns k_rx_ok. This tests the poll+skip code path. */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+  s_handle.state = k_obstacle_detect_state_running;
+
+  /* Pre-set debounce counter to 2 (below debounce_samples=3) */
+  s_handle.debounce_counter[0]  = k_test_debounce_preset;
+  s_handle.false_positive_count = 0;
+
+  /* Calling poll with zero-init sensors (returns k_rx_err_invalid_state = skip).
+   * Since the sensor is skipped, debounce_counter is NOT reset in this poll.
+   * This confirms the skip path leaves counters unchanged. */
+  rx_err_t err = internal_poll_sensors(&s_handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* Counter unchanged since sensor was skipped */
+  TEST_ASSERT_EQUAL(2U, s_handle.debounce_counter[0]);
+  TEST_ASSERT_FALSE(s_handle.obstacle_active[0]);
+}
+
+/**
+ * @brief Test internal_poll_sensors clears obstacle when distance exceeds threshold
+ *
+ * @details
+ * Sets up an obstacle state (obstacle_active=true), then polls with a
+ * distance above the threshold. The obstacle should be cleared and the
+ * callback invoked with obstacle_detected=false.
+ *
+ * @pre Sensor returns distance >= threshold
+ * @post obstacle_active[0] = false
+ * @post callback invoked with obstacle_detected=false
+ */
+void test_internal_poll_sensors_clears_obstacle(void)
+{
+  mock_hcsr04_hw_init(nullptr);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+  /* Set mock distance above threshold (threshold=30cm, mock=50cm) */
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_safe_cm);
+
+  static rx_hcsr04_t        s_mock_sensor2;
+  static rx_hcsr04_t*       s_mock_ptr2;
+  static rx_motor_handle_t  s_mock_motor2;
+  static rx_motor_handle_t* s_mock_mptr2;
+  internal_zero_mem(&s_mock_sensor2, sizeof(s_mock_sensor2));
+  internal_zero_mem(&s_mock_motor2, sizeof(s_mock_motor2));
+  s_mock_ptr2  = &s_mock_sensor2;
+  s_mock_mptr2 = &s_mock_motor2;
+
+  const rx_hcsr04_config_t hcsr04_cfg = {
+    .trigger_pin = k_rx_pc_6,
+    .echo_pin    = k_rx_p5_5,
+    .timeout_us  = 30000U,
+    .echo_mode   = k_hcsr04_echo_polling,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_mock_sensor2, &hcsr04_cfg));
+
+  rx_obstacle_detect_config_t cfg = {
+    .sensors                = &s_mock_ptr2,
+    .sensor_count           = 1,
+    .motors                 = &s_mock_mptr2,
+    .motor_count            = 1,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_samples,
+    .poll_interval_ms       = k_test_poll_interval_ms,
+    .callback               = test_callback,
+    .user_data              = nullptr,
+  };
+
+  static rx_obstacle_detect_t s_det2;
+  internal_zero_mem(&s_det2, sizeof(s_det2));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_det2, &cfg));
+  s_det2.state              = k_obstacle_detect_state_obstacle;
+  s_det2.obstacle_active[0] = true; /* Pre-set obstacle state */
+
+  rx_err_t err = internal_poll_sensors(&s_det2);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(s_det2.obstacle_active[0]);
+  /* Callback should fire with obstacle_detected=false */
+  TEST_ASSERT_TRUE(s_callback_called);
+  TEST_ASSERT_FALSE(s_callback_obstacle_detected);
+}
+
+/**
+ * @brief Test internal_poll_sensors increments false_positive_count
+ *
+ * @details
+ * Sets debounce_counter to a non-zero value below debounce_samples for a
+ * sensor, then polls with a clear distance. The false positive counter
+ * should increment.
+ *
+ * @pre debounce_counter[0] > 0 but < debounce_samples
+ * @post false_positive_count incremented
+ */
+void test_internal_poll_sensors_counts_false_positives(void)
+{
+  mock_hcsr04_hw_init(nullptr);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+  /* Set mock distance above threshold (no obstacle) */
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_safe_cm);
+
+  static rx_hcsr04_t        s_mock_sensor3;
+  static rx_hcsr04_t*       s_mock_ptr3;
+  static rx_motor_handle_t  s_mock_motor3;
+  static rx_motor_handle_t* s_mock_mptr3;
+  internal_zero_mem(&s_mock_sensor3, sizeof(s_mock_sensor3));
+  internal_zero_mem(&s_mock_motor3, sizeof(s_mock_motor3));
+  s_mock_ptr3  = &s_mock_sensor3;
+  s_mock_mptr3 = &s_mock_motor3;
+
+  const rx_hcsr04_config_t hcsr04_cfg = {
+    .trigger_pin = k_rx_pc_6,
+    .echo_pin    = k_rx_p5_5,
+    .timeout_us  = 30000U,
+    .echo_mode   = k_hcsr04_echo_polling,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_mock_sensor3, &hcsr04_cfg));
+
+  rx_obstacle_detect_config_t cfg = {
+    .sensors                = &s_mock_ptr3,
+    .sensor_count           = 1,
+    .motors                 = &s_mock_mptr3,
+    .motor_count            = 1,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_five,
+    .poll_interval_ms       = k_test_poll_interval_ms,
+    .callback               = test_callback,
+    .user_data              = nullptr,
+  };
+
+  static rx_obstacle_detect_t s_det3;
+  internal_zero_mem(&s_det3, sizeof(s_det3));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_det3, &cfg));
+  s_det3.state = k_obstacle_detect_state_running;
+  s_det3.debounce_counter[0] =
+    k_test_debounce_preset; /* Partially debounced (2 < debounce_samples=5) */
+  s_det3.false_positive_count = 0;
+
+  rx_err_t err = internal_poll_sensors(&s_det3);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* Distance > threshold -> clears debounce counter, increments false_positive_count */
+  TEST_ASSERT_EQUAL(1, (int)s_det3.false_positive_count);
+  TEST_ASSERT_EQUAL(0, (int)s_det3.debounce_counter[0]);
+}
+
+/**
+ * @brief Test internal_poll_sensors sensor returns timeout (no echo)
+ *
+ * @details
+ * Configures the mock to return a timeout, which the function treats as
+ * "no object = clear distance" (distance set to threshold + offset).
+ *
+ * @pre Mock configured for timeout
+ * @post No obstacle detected, return k_rx_ok
+ */
+void test_internal_poll_sensors_sensor_timeout_is_clear(void)
+{
+  mock_hcsr04_hw_init(nullptr);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+  mock_hcsr04_hw_set_timeout(nullptr, true);
+
+  static rx_hcsr04_t        s_mock_sensor4;
+  static rx_hcsr04_t*       s_mock_ptr4;
+  static rx_motor_handle_t  s_mock_motor4;
+  static rx_motor_handle_t* s_mock_mptr4;
+  internal_zero_mem(&s_mock_sensor4, sizeof(s_mock_sensor4));
+  internal_zero_mem(&s_mock_motor4, sizeof(s_mock_motor4));
+  s_mock_ptr4  = &s_mock_sensor4;
+  s_mock_mptr4 = &s_mock_motor4;
+
+  const rx_hcsr04_config_t hcsr04_cfg = {
+    .trigger_pin = k_rx_pc_6,
+    .echo_pin    = k_rx_p5_5,
+    .timeout_us  = 30000U,
+    .echo_mode   = k_hcsr04_echo_polling,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_mock_sensor4, &hcsr04_cfg));
+
+  rx_obstacle_detect_config_t cfg = {
+    .sensors                = &s_mock_ptr4,
+    .sensor_count           = 1,
+    .motors                 = &s_mock_mptr4,
+    .motor_count            = 1,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_samples,
+    .poll_interval_ms       = k_test_poll_interval_ms,
+    .callback               = test_callback,
+    .user_data              = nullptr,
+  };
+
+  static rx_obstacle_detect_t s_det4;
+  internal_zero_mem(&s_det4, sizeof(s_det4));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_det4, &cfg));
+  s_det4.state = k_obstacle_detect_state_running;
+
+  rx_err_t err = internal_poll_sensors(&s_det4);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(s_det4.obstacle_active[0]);
+  TEST_ASSERT_FALSE(s_callback_called);
+}
+
+/**
+ * @brief Test internal_stop_all_motors returns null ptr error for nullptr handle
+ *
+ * @pre Handle is nullptr
+ * @post Returns k_rx_err_null_ptr
+ */
+void test_internal_stop_all_motors_null_handle(void)
+{
+  rx_err_t err = internal_stop_all_motors(nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test internal_stop_all_motors returns invalid state for uninitialized handle
+ *
+ * @pre s_handle is zero-initialized (initialized=false)
+ * @post Returns k_rx_err_invalid_state
+ */
+void test_internal_stop_all_motors_uninitialized(void)
+{
+  rx_err_t err = internal_stop_all_motors(&s_handle);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test internal_stop_all_motors returns first error when a motor stop fails
+ *
+ * @details
+ * Initializes the handle with 2 motors, configures mock to return error on
+ * the first motor stop call, verifies that internal_stop_all_motors
+ * returns the first error while still attempting to stop remaining motors.
+ *
+ * @pre 2 motors configured, first motor_stop returns k_rx_err_invalid_state
+ * @post Returns k_rx_err_invalid_state (first error)
+ * @post Both motors had stop called (continues after first failure)
+ */
+void test_internal_stop_all_motors_motor_stop_failure(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+
+  /* Configure mock to return error on motor stop */
+  mock_rx_motor_set_stop_return(k_rx_err_invalid_state);
+
+  rx_err_t err = internal_stop_all_motors(&s_handle);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+  /* Both motors should have been stopped (function continues on error) */
+  TEST_ASSERT_EQUAL(2U, mock_rx_motor_get_stop_count(nullptr));
+}
+
+/**
+ * @brief Test internal_stop_all_motors succeeds with valid handle
+ *
+ * @pre 2 motors configured, mock returns k_rx_ok
+ * @post Returns k_rx_ok
+ * @post Both motors had stop called
+ */
+void test_internal_stop_all_motors_success(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+
+  rx_err_t err = internal_stop_all_motors(&s_handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(2U, mock_rx_motor_get_stop_count(nullptr));
+}
+
+/**
+ * @brief Test internal_invoke_callback with nullptr handle (no crash)
+ *
+ * @details
+ * Directly calls internal_invoke_callback with a nullptr handle.
+ * The function should return silently without accessing any pointer.
+ *
+ * @pre Handle is nullptr
+ * @post No crash, no callback invoked
+ */
+void test_internal_invoke_callback_null_handle(void)
+{
+  /* Should not crash */
+  internal_invoke_callback(nullptr, true, 0, s_distance_warning_cm);
+  TEST_ASSERT_FALSE(s_callback_called);
+}
+
+/**
+ * @brief Test internal_invoke_callback with nullptr callback (no crash)
+ *
+ * @details
+ * Initializes handle without a callback, then calls internal_invoke_callback.
+ * The function should return silently because handle->callback is nullptr.
+ *
+ * @pre Handle initialized, callback=nullptr in config
+ * @post No crash, s_callback_called remains false
+ */
+void test_internal_invoke_callback_null_callback(void)
+{
+  s_config.callback = nullptr;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+
+  /* Should not crash - handle->callback is nullptr */
+  internal_invoke_callback(&s_handle, true, 0, s_distance_warning_cm);
+  TEST_ASSERT_FALSE(s_callback_called);
+}
+
+/**
+ * @brief Test internal_invoke_callback fires callback with correct parameters
+ *
+ * @pre Handle initialized with test_callback
+ * @post Callback invoked with exact parameters
+ */
+void test_internal_invoke_callback_fires_callback(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+
+  internal_invoke_callback(&s_handle, true, 1U, s_distance_callback_cm);
+
+  TEST_ASSERT_TRUE(s_callback_called);
+  TEST_ASSERT_TRUE(s_callback_obstacle_detected);
+  TEST_ASSERT_EQUAL(1U, s_callback_sensor_idx);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance, s_distance_callback_cm, s_callback_distance_cm);
+}
+
+/**
+ * @brief Test internal_poll_sensors detects obstacle and fires callback
+ *
+ * @details
+ * Sets up a properly initialized sensor with distance below threshold (10cm < 30cm)
+ * and debounce_samples=1 so the first poll immediately sets obstacle_active.
+ * Verifies callback fires with obstacle_detected=true and obstacle_events increments.
+ *
+ * @pre Sensor initialized and returning distance < threshold
+ * @post obstacle_active[0] = true, obstacle_events = 1, callback called
+ */
+void test_internal_poll_sensors_detects_obstacle_fires_callback(void)
+{
+  mock_hcsr04_hw_init(nullptr);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+  /* Distance below 30cm threshold triggers obstacle */
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_close_cm);
+
+  static rx_hcsr04_t        s_sensor_ob;
+  static rx_hcsr04_t*       s_sensor_ob_ptr;
+  static rx_motor_handle_t  s_motor_ob;
+  static rx_motor_handle_t* s_motor_ob_ptr;
+  internal_zero_mem(&s_sensor_ob, sizeof(s_sensor_ob));
+  internal_zero_mem(&s_motor_ob, sizeof(s_motor_ob));
+  s_sensor_ob_ptr = &s_sensor_ob;
+  s_motor_ob_ptr  = &s_motor_ob;
+
+  const rx_hcsr04_config_t hcsr04_cfg = {
+    .trigger_pin = k_rx_pc_6,
+    .echo_pin    = k_rx_p5_5,
+    .timeout_us  = 30000U,
+    .echo_mode   = k_hcsr04_echo_polling,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_sensor_ob, &hcsr04_cfg));
+
+  rx_obstacle_detect_config_t cfg = {
+    .sensors                = &s_sensor_ob_ptr,
+    .sensor_count           = 1,
+    .motors                 = &s_motor_ob_ptr,
+    .motor_count            = 1,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = 1, /* Immediate detection on first poll */
+    .poll_interval_ms       = k_test_poll_interval_ms,
+    .callback               = test_callback,
+    .user_data              = nullptr,
+  };
+
+  static rx_obstacle_detect_t s_det_ob;
+  internal_zero_mem(&s_det_ob, sizeof(s_det_ob));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_det_ob, &cfg));
+  s_det_ob.state = k_obstacle_detect_state_running;
+
+  rx_err_t err = internal_poll_sensors(&s_det_ob);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_det_ob.obstacle_active[0]);
+  TEST_ASSERT_EQUAL(1U, s_det_ob.obstacle_events);
+  TEST_ASSERT_TRUE(s_callback_called);
+  TEST_ASSERT_TRUE(s_callback_obstacle_detected);
+  TEST_ASSERT_EQUAL(k_obstacle_detect_state_obstacle, s_det_ob.state);
+}
+
+/**
+ * @brief Test get_state returns error when handle not initialized
+ *
+ * @details
+ * Calls rx_obstacle_detect_get_state with an uninitialized handle.
+ * Verifies that k_rx_err_invalid_state is returned.
+ *
+ * @pre handle.initialized = false
+ * @post returns k_rx_err_invalid_state
+ */
+void test_obstacle_detect_get_state_not_initialized(void)
+{
+  rx_obstacle_detect_state_t state = k_obstacle_detect_state_stopped;
+  rx_err_t                   err   = rx_obstacle_detect_get_state(&s_handle, &state);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test reset_stats returns error when handle not initialized
+ *
+ * @details
+ * Calls rx_obstacle_detect_reset_stats with an uninitialized handle.
+ * Verifies that k_rx_err_invalid_state is returned.
+ *
+ * @pre handle.initialized = false
+ * @post returns k_rx_err_invalid_state
+ */
+void test_obstacle_detect_reset_stats_not_initialized(void)
+{
+  rx_err_t err = rx_obstacle_detect_reset_stats(&s_handle);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/**
+ * @brief Test init fails when sensors array contains a null element
+ *
+ * @details
+ * Sets s_sensor_ptrs[0] to nullptr before calling rx_obstacle_detect_init.
+ * Verifies that k_rx_err_null_ptr is returned.
+ *
+ * @pre s_config.sensors[0] = nullptr
+ * @post returns k_rx_err_null_ptr
+ */
+void test_obstacle_detect_init_null_sensor_element_fails(void)
+{
+  s_sensor_ptrs[0] = nullptr;
+  rx_err_t err     = rx_obstacle_detect_init(&s_handle, &s_config);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test init fails when motors array contains a null element
+ *
+ * @details
+ * Sets s_motor_ptrs[0] to nullptr before calling rx_obstacle_detect_init.
+ * Verifies that k_rx_err_null_ptr is returned.
+ *
+ * @pre s_config.motors[0] = nullptr
+ * @post returns k_rx_err_null_ptr
+ */
+void test_obstacle_detect_init_null_motor_element_fails(void)
+{
+  s_motor_ptrs[0] = nullptr;
+  rx_err_t err    = rx_obstacle_detect_init(&s_handle, &s_config);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Test init fails with invalid poll_interval_ms (too high)
+ *
+ * @details
+ * Sets poll_interval_ms above maximum allowed value and verifies
+ * that k_rx_err_invalid_arg is returned.
+ *
+ * @pre config.poll_interval_ms = 0xFFFF (above max)
+ * @post returns k_rx_err_invalid_arg
+ */
+void test_obstacle_detect_init_invalid_poll_interval_fails(void)
+{
+  s_config.poll_interval_ms = k_test_poll_interval_invalid;
+  rx_err_t err              = rx_obstacle_detect_init(&s_handle, &s_config);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/** @} */ /* End of internal function tests group */
+
+/* =============================================================================
+ * RTOS Error Path Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Test init returns RTOS error when tx_event_flags_create fails
+ *
+ * @details
+ * Configures the mock to return TX_NO_MEMORY from tx_event_flags_create.
+ * Verifies that rx_obstacle_detect_init returns k_rx_err_rtos_error.
+ *
+ * @pre mock_tx_set_event_flags_create_return(TX_NO_MEMORY)
+ * @post returns k_rx_err_rtos_error
+ * @post handle->initialized = false
+ */
+void test_obstacle_detect_init_event_flags_create_fails(void)
+{
+  mock_tx_set_event_flags_create_return(TX_NO_MEMORY);
+
+  rx_err_t err = rx_obstacle_detect_init(&s_handle, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_err_rtos_error, err);
+  TEST_ASSERT_FALSE(s_handle.initialized);
+}
+
+/**
+ * @brief Test init returns RTOS error when tx_thread_create fails, deletes event flags
+ *
+ * @details
+ * Allows tx_event_flags_create to succeed, then configures the mock to
+ * return TX_NO_MEMORY from tx_thread_create. Verifies that init returns
+ * k_rx_err_rtos_error and the event flags group is cleaned up.
+ *
+ * @pre mock_tx_set_thread_create_return(TX_NO_MEMORY)
+ * @post returns k_rx_err_rtos_error
+ * @post handle->initialized = false
+ */
+void test_obstacle_detect_init_thread_create_fails(void)
+{
+  mock_tx_set_thread_create_return(TX_NO_MEMORY);
+
+  rx_err_t err = rx_obstacle_detect_init(&s_handle, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_err_rtos_error, err);
+  TEST_ASSERT_FALSE(s_handle.initialized);
+}
+
+/**
+ * @brief Test deinit calls stop when state is not stopped
+ *
+ * @details
+ * Initializes the handle and manually sets state to running, then calls
+ * deinit. Verifies that stop is invoked internally and deinit succeeds.
+ *
+ * @pre handle initialized and state = k_obstacle_detect_state_running
+ * @post returns k_rx_ok
+ * @post handle->initialized = false
+ */
+void test_obstacle_detect_deinit_calls_stop_when_running(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+  s_handle.state = k_obstacle_detect_state_running;
+
+  rx_err_t err = rx_obstacle_detect_deinit(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(s_handle.initialized);
+}
+
+/**
+ * @brief Test deinit returns RTOS error when tx_thread_terminate fails
+ *
+ * @details
+ * Initializes the handle, then corrupts the thread ID so that
+ * tx_thread_terminate returns TX_DELETED (not TX_SUCCESS or TX_THREAD_ERROR).
+ * Verifies that deinit returns k_rx_err_rtos_error.
+ *
+ * @pre handle initialized, thread.tx_thread_id manually corrupted
+ * @post returns k_rx_err_rtos_error
+ */
+void test_obstacle_detect_deinit_thread_terminate_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+  /* Corrupt thread ID so terminate returns TX_DELETED */
+  s_handle.thread.tx_thread_id = k_tx_invalid_id;
+
+  rx_err_t err = rx_obstacle_detect_deinit(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_err_rtos_error, err);
+}
+
+/**
+ * @brief Test deinit returns RTOS error when tx_thread_delete fails
+ *
+ * @details
+ * Initializes the handle and configures the mock to return a delete error
+ * from tx_thread_delete. Verifies that deinit returns k_rx_err_rtos_error.
+ *
+ * @pre handle initialized, mock configured to fail thread delete
+ * @post returns k_rx_err_rtos_error
+ */
+void test_obstacle_detect_deinit_thread_delete_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+  mock_tx_set_thread_delete_return(TX_PTR_ERROR);
+
+  rx_err_t err = rx_obstacle_detect_deinit(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_err_rtos_error, err);
+}
+
+/**
+ * @brief Test deinit returns RTOS error when tx_event_flags_delete fails
+ *
+ * @details
+ * Initializes the handle, then corrupts the event flags ID so that
+ * tx_event_flags_delete returns TX_PTR_ERROR.
+ * Verifies that deinit returns k_rx_err_rtos_error.
+ *
+ * @pre handle initialized, event_flags.tx_event_flags_id corrupted
+ * @post returns k_rx_err_rtos_error
+ */
+void test_obstacle_detect_deinit_event_flags_delete_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+  /* Corrupt event flags ID so delete returns TX_PTR_ERROR */
+  s_handle.event_flags.tx_event_flags_id = k_tx_invalid_id;
+
+  rx_err_t err = rx_obstacle_detect_deinit(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_err_rtos_error, err);
+}
+
+/**
+ * @brief Test start returns RTOS error when tx_thread_resume fails
+ *
+ * @details
+ * Initializes the handle (state=stopped), then corrupts the thread ID so
+ * tx_thread_resume returns TX_DELETED. Verifies that start returns
+ * k_rx_err_rtos_error.
+ *
+ * @pre handle initialized, state=stopped, thread ID corrupted
+ * @post returns k_rx_err_rtos_error
+ */
+void test_obstacle_detect_start_thread_resume_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+  /* Corrupt thread ID so resume returns TX_DELETED */
+  s_handle.thread.tx_thread_id = k_tx_invalid_id;
+
+  rx_err_t err = rx_obstacle_detect_start(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_err_rtos_error, err);
+}
+
+/**
+ * @brief Test start returns RTOS error when tx_event_flags_set fails
+ *
+ * @details
+ * Initializes the handle and sets state to running (skips thread_resume),
+ * then corrupts the event flags ID so tx_event_flags_set returns TX_DELETED.
+ * Verifies that start returns k_rx_err_rtos_error.
+ *
+ * @pre handle initialized, state=running, event_flags ID corrupted
+ * @post returns k_rx_err_rtos_error
+ */
+void test_obstacle_detect_start_event_flags_set_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+  s_handle.state                         = k_obstacle_detect_state_running;
+  s_handle.event_flags.tx_event_flags_id = k_tx_invalid_id;
+
+  rx_err_t err = rx_obstacle_detect_start(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_err_rtos_error, err);
+}
+
+/**
+ * @brief Test stop returns RTOS error when tx_event_flags_set fails
+ *
+ * @details
+ * Initializes the handle and corrupts the event flags ID so that
+ * tx_event_flags_set returns TX_DELETED. Verifies that stop returns
+ * k_rx_err_rtos_error.
+ *
+ * @pre handle initialized, event_flags ID corrupted
+ * @post returns k_rx_err_rtos_error
+ */
+void test_obstacle_detect_stop_event_flags_set_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+  s_handle.event_flags.tx_event_flags_id = k_tx_invalid_id;
+
+  rx_err_t err = rx_obstacle_detect_stop(&s_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_err_rtos_error, err);
+}
+
+/* =============================================================================
+ * Task Entry Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Test rx_obstacle_detect_test_set_task_running sets internal flag
+ *
+ * @details
+ * Calls the UNIT_TEST helper to set the task running flag to false, then
+ * calls rx_obstacle_detect_test_run_task_entry with a valid handle.
+ * With task_running=false the outer while(TASK_SHOULD_CONTINUE()) exits
+ * immediately, verifying the function returns cleanly.
+ *
+ * @pre handle initialized, task running flag set to false
+ * @post function returns without entering outer loop
+ */
+void test_task_entry_exits_when_task_running_false(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_handle, &s_config));
+
+  rx_obstacle_detect_test_set_task_running(false);
+  rx_obstacle_detect_test_run_task_entry((ULONG)(uintptr_t)&s_handle);
+
+  /* Verify handle state unchanged (outer loop never ran) */
+  TEST_ASSERT_EQUAL(k_obstacle_detect_state_stopped, s_handle.state);
+}
+
+/**
+ * @brief Test task entry wrapper with null handle returns without crash
+ *
+ * @details
+ * Calls rx_obstacle_detect_test_run_task_entry with input=0 (nullptr).
+ * The RX_ASSERT fires (non-fatal in UNIT_TEST builds) and the function
+ * returns immediately. Verifies no crash occurs.
+ *
+ * @pre input = 0 (nullptr handle)
+ * @post Function returns without crash
+ */
+void test_task_entry_null_handle_returns(void)
+{
+  rx_obstacle_detect_test_set_task_running(false);
+  /* Should not crash -- RX_ASSERT is non-fatal in UNIT_TEST builds */
+  rx_obstacle_detect_test_run_task_entry(0UL);
+  TEST_ASSERT_TRUE(true); /* Reached = no crash */
+}
+
+/** @cond INTERNAL */
+/* (intentionally empty - helpers below use local statics for independence) */
+/** @endcond */
+
+/**
+ * @brief Callback invoked on first tx_event_flags_get TX_SUCCESS (start event)
+ *
+ * @details
+ * Re-arms the event-flags-get mock so that the NEXT call (the inner loop
+ * stop-event check) returns TX_NO_EVENTS. Clears itself so it only fires once.
+ */
+static void on_start_event_rearm_no_events(void)
+{
+  mock_tx_event_flags_get_reset_count();
+  mock_tx_set_event_flags_get_no_events_count(1);
+  mock_tx_event_flags_get_set_on_success_cb(nullptr);
+}
+
+/**
+ * @brief Sleep callback: stops outer task loop and arms stop to fire next
+ *
+ * @details
+ * Sets task_running=false so the outer loop exits after the inner loop breaks.
+ * Re-arms event-flags-get to return TX_SUCCESS (stop fires) on the next call.
+ */
+static void on_sleep_stop_outer_loop(void)
+{
+  rx_obstacle_detect_test_set_task_running(false);
+  /* Clear no-events so the next inner-loop stop check fires TX_SUCCESS */
+  mock_tx_set_event_flags_get_no_events_count(0);
+}
+
+/**
+ * @brief Test task entry outer loop executes start event and inner detection loop
+ *
+ * @details
+ * Verifies that the task entry function:
+ * 1. Waits for start event (outer loop TX_NO_EVENTS first, then TX_SUCCESS)
+ * 2. Sets state to running
+ * 3. Polls sensors (safe distance -> no obstacle)
+ * 4. Calls tx_thread_sleep (sleep callback stops outer loop and arms stop)
+ * 5. Checks stop event (TX_SUCCESS) -> inner loop breaks
+ * 6. Outer loop exits (TASK_SHOULD_CONTINUE() = false)
+ *
+ * The on_start_event callback re-arms mock to return TX_NO_EVENTS for the
+ * first inner stop check, allowing poll_sensors and sleep to execute.
+ *
+ * @pre handle initialized, sensor configured with safe distance (50cm)
+ * @post state = k_obstacle_detect_state_stopped (stop event fired)
+ */
+void test_task_entry_runs_full_detection_loop(void)
+{
+  mock_hcsr04_hw_init(nullptr);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_safe_cm);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+
+  static rx_hcsr04_t        s_te_sensor;
+  static rx_hcsr04_t*       s_te_sensor_ptr;
+  static rx_motor_handle_t  s_te_motor;
+  static rx_motor_handle_t* s_te_motor_ptr;
+  internal_zero_mem(&s_te_sensor, sizeof(s_te_sensor));
+  internal_zero_mem(&s_te_motor, sizeof(s_te_motor));
+  s_te_sensor_ptr = &s_te_sensor;
+  s_te_motor_ptr  = &s_te_motor;
+
+  const rx_hcsr04_config_t hcsr04_cfg = {
+    .trigger_pin = k_rx_pc_6,
+    .echo_pin    = k_rx_p5_5,
+    .timeout_us  = 30000U,
+    .echo_mode   = k_hcsr04_echo_polling,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_te_sensor, &hcsr04_cfg));
+
+  rx_obstacle_detect_config_t cfg = {
+    .sensors                = &s_te_sensor_ptr,
+    .sensor_count           = 1,
+    .motors                 = &s_te_motor_ptr,
+    .motor_count            = 1,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_samples,
+    .poll_interval_ms       = k_test_poll_interval_ms,
+    .callback               = nullptr,
+    .user_data              = nullptr,
+  };
+
+  static rx_obstacle_detect_t s_te_handle;
+  internal_zero_mem(&s_te_handle, sizeof(s_te_handle));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_te_handle, &cfg));
+
+  /* Arm: first tx_event_flags_get call returns TX_NO_EVENTS (outer start retry) */
+  mock_tx_set_event_flags_get_no_events_count(1);
+  /* When start event fires (TX_SUCCESS), re-arm so inner stop check gets TX_NO_EVENTS */
+  mock_tx_event_flags_get_set_on_success_cb(on_start_event_rearm_no_events);
+  /* When sleep is called, stop the outer loop and let stop event fire next */
+  mock_tx_set_sleep_callback(on_sleep_stop_outer_loop);
+  /* Allow outer loop to run */
+  rx_obstacle_detect_test_set_task_running(true);
+
+  /* Run the task entry -- must exit after one complete detection cycle */
+  rx_obstacle_detect_test_run_task_entry((ULONG)(uintptr_t)&s_te_handle);
+
+  /* After stop event fires, state should be stopped */
+  TEST_ASSERT_EQUAL(k_obstacle_detect_state_stopped, s_te_handle.state);
+  /* At least one poll was performed */
+  TEST_ASSERT_GREATER_THAN(0U, s_te_handle.total_polls);
+}
+
+/**
+ * @brief Test task entry status_start != TX_SUCCESS path triggers continue
+ *
+ * @details
+ * Configures tx_event_flags_get to return TX_NO_EVENTS twice (outer start
+ * retries twice), then TX_SUCCESS on the third call (start fires). After
+ * start fires the sleep callback stops the outer loop and arms stop.
+ * Verifies lines 1036-1037 are covered.
+ *
+ * @pre handle initialized, no_events_count=2
+ * @post state = k_obstacle_detect_state_stopped
+ */
+void test_task_entry_start_retries_on_no_events(void)
+{
+  mock_hcsr04_hw_init(nullptr);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_safe_cm);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+
+  static rx_hcsr04_t        s_te2_sensor;
+  static rx_hcsr04_t*       s_te2_sensor_ptr;
+  static rx_motor_handle_t  s_te2_motor;
+  static rx_motor_handle_t* s_te2_motor_ptr;
+  internal_zero_mem(&s_te2_sensor, sizeof(s_te2_sensor));
+  internal_zero_mem(&s_te2_motor, sizeof(s_te2_motor));
+  s_te2_sensor_ptr = &s_te2_sensor;
+  s_te2_motor_ptr  = &s_te2_motor;
+
+  const rx_hcsr04_config_t hcsr04_cfg = {
+    .trigger_pin = k_rx_pc_6,
+    .echo_pin    = k_rx_p5_5,
+    .timeout_us  = 30000U,
+    .echo_mode   = k_hcsr04_echo_polling,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_te2_sensor, &hcsr04_cfg));
+
+  rx_obstacle_detect_config_t cfg = {
+    .sensors                = &s_te2_sensor_ptr,
+    .sensor_count           = 1,
+    .motors                 = &s_te2_motor_ptr,
+    .motor_count            = 1,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_samples,
+    .poll_interval_ms       = k_test_poll_interval_ms,
+    .callback               = nullptr,
+    .user_data              = nullptr,
+  };
+
+  static rx_obstacle_detect_t s_te2_handle;
+  internal_zero_mem(&s_te2_handle, sizeof(s_te2_handle));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_te2_handle, &cfg));
+  /* Set poll_interval_ms=1 directly (bypasses config validation) so that
+   * sleep_ticks = (1 * 100) / 1000 = 0 -> triggers the k_min_sleep_ticks branch */
+  s_te2_handle.poll_interval_ms = 1U;
+
+  /* Two outer retries before start fires */
+  mock_tx_set_event_flags_get_no_events_count(k_test_outer_start_retries);
+  mock_tx_event_flags_get_set_on_success_cb(on_start_event_rearm_no_events);
+  mock_tx_set_sleep_callback(on_sleep_stop_outer_loop);
+  rx_obstacle_detect_test_set_task_running(true);
+
+  rx_obstacle_detect_test_run_task_entry((ULONG)(uintptr_t)&s_te2_handle);
+
+  TEST_ASSERT_EQUAL(k_obstacle_detect_state_stopped, s_te2_handle.state);
+}
+
+/**
+ * @brief Callback: re-arms no_events for inner stop AND stops the outer loop
+ *
+ * @details
+ * Fired when tx_event_flags_get returns TX_SUCCESS (the start event).
+ * Resets the call counter and sets no_events_count=1 so the NEXT call
+ * (inner loop stop check) returns TX_NO_EVENTS. Also sets task_running=false
+ * so the outer loop exits after the inner loop body completes.
+ */
+static void on_start_event_rearm_and_stop_outer(void)
+{
+  mock_tx_event_flags_get_reset_count();
+  mock_tx_set_event_flags_get_no_events_count(1);
+  mock_tx_event_flags_get_set_on_success_cb(nullptr);
+  rx_obstacle_detect_test_set_task_running(false);
+}
+
+/**
+ * @brief Test task entry poll sensors failure stops inner loop via error path
+ *
+ * @details
+ * Uses on_start_event_rearm_and_stop_outer to:
+ * 1. Let the start event fire (TX_SUCCESS)
+ * 2. Re-arm so the inner stop check returns TX_NO_EVENTS (poll runs)
+ * 3. Set task_running=false so outer loop exits after inner breaks
+ *
+ * Motor stop is configured to fail, so internal_poll_sensors returns an error
+ * covering lines 1243-1244. The task entry detects the error (lines 1064-1070)
+ * and breaks the inner loop. Outer loop then exits.
+ *
+ * @pre Motor configured to fail, sensor reads 5cm (below threshold), debounce=1
+ * @post state = k_obstacle_detect_state_stopped (error path)
+ */
+void test_task_entry_poll_error_stops_inner_loop(void)
+{
+  mock_hcsr04_hw_init(nullptr);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_emergency_cm);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+
+  static rx_hcsr04_t        s_te3_sensor;
+  static rx_hcsr04_t*       s_te3_sensor_ptr;
+  static rx_motor_handle_t  s_te3_motor;
+  static rx_motor_handle_t* s_te3_motor_ptr;
+  internal_zero_mem(&s_te3_sensor, sizeof(s_te3_sensor));
+  internal_zero_mem(&s_te3_motor, sizeof(s_te3_motor));
+  s_te3_sensor_ptr = &s_te3_sensor;
+  s_te3_motor_ptr  = &s_te3_motor;
+
+  const rx_hcsr04_config_t hcsr04_cfg = {
+    .trigger_pin = k_rx_pc_6,
+    .echo_pin    = k_rx_p5_5,
+    .timeout_us  = 30000U,
+    .echo_mode   = k_hcsr04_echo_polling,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_te3_sensor, &hcsr04_cfg));
+
+  rx_obstacle_detect_config_t cfg = {
+    .sensors                = &s_te3_sensor_ptr,
+    .sensor_count           = 1,
+    .motors                 = &s_te3_motor_ptr,
+    .motor_count            = 1,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = 1, /* Immediate detection on first poll */
+    .poll_interval_ms       = k_test_poll_interval_ms,
+    .callback               = nullptr,
+    .user_data              = nullptr,
+  };
+
+  static rx_obstacle_detect_t s_te3_handle;
+  internal_zero_mem(&s_te3_handle, sizeof(s_te3_handle));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_te3_handle, &cfg));
+
+  /* Motor stop fails -> internal_poll_sensors returns error */
+  mock_rx_motor_set_stop_return(k_rx_err_invalid_state);
+
+  /* Start fires immediately (no_events=0), on_success re-arms + stops outer */
+  mock_tx_set_event_flags_get_no_events_count(0);
+  mock_tx_event_flags_get_set_on_success_cb(on_start_event_rearm_and_stop_outer);
+  rx_obstacle_detect_test_set_task_running(true);
+
+  rx_obstacle_detect_test_run_task_entry((ULONG)(uintptr_t)&s_te3_handle);
+
+  TEST_ASSERT_EQUAL(k_obstacle_detect_state_stopped, s_te3_handle.state);
+}
+
+/* =============================================================================
+ * Poll Sensors Motor Stop Failure Test
+ * =============================================================================
+ */
+
+/**
+ * @brief Test internal_poll_sensors returns error when motor stop fails (safety path)
+ *
+ * @details
+ * Configures one sensor below the detection threshold with debounce_samples=1
+ * (immediate detection). Configures motor stop to fail. Calls
+ * internal_poll_sensors() directly. Verifies that the function returns the
+ * motor stop error and sets state to stopped (safety-critical path,
+ * lines 1243-1244).
+ *
+ * @pre Sensor reads 5cm (below 30cm threshold), debounce=1, motor stop fails
+ * @post Returns k_rx_err_invalid_state (first motor error)
+ * @post state = k_obstacle_detect_state_stopped (safety: halted on error)
+ */
+void test_internal_poll_sensors_motor_stop_failure(void)
+{
+  mock_hcsr04_hw_init(nullptr);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_emergency_cm);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+
+  static rx_hcsr04_t        s_ms_sensor;
+  static rx_hcsr04_t*       s_ms_sensor_ptr;
+  static rx_motor_handle_t  s_ms_motor;
+  static rx_motor_handle_t* s_ms_motor_ptr;
+  internal_zero_mem(&s_ms_sensor, sizeof(s_ms_sensor));
+  internal_zero_mem(&s_ms_motor, sizeof(s_ms_motor));
+  s_ms_sensor_ptr = &s_ms_sensor;
+  s_ms_motor_ptr  = &s_ms_motor;
+
+  const rx_hcsr04_config_t hcsr04_cfg = {
+    .trigger_pin = k_rx_pc_6,
+    .echo_pin    = k_rx_p5_5,
+    .timeout_us  = 30000U,
+    .echo_mode   = k_hcsr04_echo_polling,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_ms_sensor, &hcsr04_cfg));
+
+  rx_obstacle_detect_config_t cfg = {
+    .sensors                = &s_ms_sensor_ptr,
+    .sensor_count           = 1,
+    .motors                 = &s_ms_motor_ptr,
+    .motor_count            = 1,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = 1, /* Immediate detection on first poll */
+    .poll_interval_ms       = k_test_poll_interval_ms,
+    .callback               = nullptr,
+    .user_data              = nullptr,
+  };
+
+  static rx_obstacle_detect_t s_ms_handle;
+  internal_zero_mem(&s_ms_handle, sizeof(s_ms_handle));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_ms_handle, &cfg));
+  s_ms_handle.state = k_obstacle_detect_state_running;
+
+  /* Configure motor stop to fail */
+  mock_rx_motor_set_stop_return(k_rx_err_invalid_state);
+
+  rx_err_t err = internal_poll_sensors(&s_ms_handle);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+  TEST_ASSERT_EQUAL(k_obstacle_detect_state_stopped, s_ms_handle.state);
+}
+
+/** @} */ /* End of internal function tests group */
+
+/* =============================================================================
+ * Additional Branch Coverage Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Test init fails when motor_count exceeds k_obstacle_detect_max_motors
+ *
+ * @details
+ * Sets motor_count to 5 (> k_obstacle_detect_max_motors = 4).
+ * The condition `motor_count == 0 || motor_count > k_obstacle_detect_max_motors`
+ * evaluates the second operand (motor_count > max) after the first is FALSE,
+ * covering the right-side branch of the || operator.
+ *
+ * @pre s_config.motor_count = 5 (above maximum of 4)
+ * @post returns k_rx_err_invalid_arg
+ *
+ * @since Version 1.0.0
+ */
+void test_obstacle_detect_init_too_many_motors_fails(void)
+{
+  s_config.motor_count = k_test_motor_count_over_max; /* Above k_obstacle_detect_max_motors = 4 */
+  rx_err_t err         = rx_obstacle_detect_init(&s_handle, &s_config);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test init fails when debounce_samples exceeds k_max_debounce
+ *
+ * @details
+ * Sets debounce_samples to 11 (> k_max_debounce = 10).
+ * The condition `debounce_samples < min || debounce_samples > max`
+ * evaluates the second operand after the first is FALSE,
+ * covering the right-side branch of the || operator at line 1138.
+ *
+ * @pre s_config.debounce_samples = 11 (above maximum of 10)
+ * @post returns k_rx_err_invalid_arg
+ *
+ * @since Version 1.0.0
+ */
+void test_obstacle_detect_init_too_many_debounce_samples_fails(void)
+{
+  s_config.debounce_samples = k_test_debounce_over_max; /* Above k_max_debounce = 10 */
+  rx_err_t err              = rx_obstacle_detect_init(&s_handle, &s_config);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test init fails when poll_interval_ms exceeds k_max_poll_interval
+ *
+ * @details
+ * Sets poll_interval_ms to 1001 (> k_max_poll_interval = 1000).
+ * The condition `poll_interval_ms < min || poll_interval_ms > max`
+ * evaluates the second operand after the first is FALSE (>= 10),
+ * covering the right-side branch of the || operator at line 1142.
+ *
+ * @pre s_config.poll_interval_ms = 1001 (above maximum of 1000)
+ * @post returns k_rx_err_invalid_arg
+ *
+ * @since Version 1.0.0
+ */
+void test_obstacle_detect_init_too_large_poll_interval_fails(void)
+{
+  s_config.poll_interval_ms = k_test_poll_interval_over_max; /* Above k_max_poll_interval = 1000 */
+  rx_err_t err              = rx_obstacle_detect_init(&s_handle, &s_config);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test init fails when poll_interval_ms is below k_min_poll_interval
+ *
+ * @details
+ * Sets poll_interval_ms to 5 (< k_min_poll_interval = 10).
+ * The condition `poll_interval_ms < min || poll_interval_ms > max`
+ * takes the first (left-side) TRUE branch immediately,
+ * covering the left-side TRUE branch of the || operator at line 1142.
+ *
+ * @pre s_config.poll_interval_ms = 5 (below minimum of 10ms)
+ * @post returns k_rx_err_invalid_arg
+ *
+ * @since Version 1.0.0
+ */
+void test_obstacle_detect_init_too_small_poll_interval_fails(void)
+{
+  s_config.poll_interval_ms = k_test_poll_interval_under_min; /* Below k_min_poll_interval = 10 */
+  rx_err_t err              = rx_obstacle_detect_init(&s_handle, &s_config);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test internal_poll_sensors debounce accumulates before threshold
+ *
+ * @details
+ * Uses debounce_samples=3 and calls poll twice with close distance.
+ * First poll: debounce_counter goes from 0 to 1 (< 3), no obstacle.
+ * Second poll: debounce_counter goes from 1 to 2 (< 3), no obstacle.
+ * Covers the FALSE branch at line 1198 (counter < samples, not at threshold).
+ *
+ * @pre sensor reads 10cm (below 30cm threshold), debounce_samples=3
+ * @post obstacle_active[0] = false after first two polls
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_poll_sensors_debounce_accumulates_before_threshold(void)
+{
+  mock_hcsr04_hw_init(nullptr);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_close_cm); /* Below 30cm threshold */
+
+  static rx_hcsr04_t        s_db_sensor;
+  static rx_hcsr04_t*       s_db_sensor_ptr;
+  static rx_motor_handle_t  s_db_motor;
+  static rx_motor_handle_t* s_db_motor_ptr;
+  internal_zero_mem(&s_db_sensor, sizeof(s_db_sensor));
+  internal_zero_mem(&s_db_motor, sizeof(s_db_motor));
+  s_db_sensor_ptr = &s_db_sensor;
+  s_db_motor_ptr  = &s_db_motor;
+
+  const rx_hcsr04_config_t hcsr04_cfg = {
+    .trigger_pin = k_rx_pc_6,
+    .echo_pin    = k_rx_p5_5,
+    .timeout_us  = 30000U,
+    .echo_mode   = k_hcsr04_echo_polling,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_db_sensor, &hcsr04_cfg));
+
+  rx_obstacle_detect_config_t cfg = {
+    .sensors                = &s_db_sensor_ptr,
+    .sensor_count           = 1,
+    .motors                 = &s_db_motor_ptr,
+    .motor_count            = 1,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_samples, /* Requires 3 consecutive polls to detect */
+    .poll_interval_ms       = k_test_poll_interval_ms,
+    .callback               = test_callback,
+    .user_data              = nullptr,
+  };
+
+  static rx_obstacle_detect_t s_db_handle;
+  internal_zero_mem(&s_db_handle, sizeof(s_db_handle));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_db_handle, &cfg));
+  s_db_handle.state = k_obstacle_detect_state_running;
+
+  /* One poll: counter goes 0->1 (below threshold of 3), no obstacle yet.
+   * This covers the FALSE branch where counter < debounce_samples. */
+  rx_err_t err = internal_poll_sensors(&s_db_handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(1U, s_db_handle.debounce_counter[0]);
+  TEST_ASSERT_FALSE(s_db_handle.obstacle_active[0]);
+  TEST_ASSERT_FALSE(s_callback_called);
+}
+
+/**
+ * @brief Test internal_poll_sensors obstacle active flag already set on repeat poll
+ *
+ * @details
+ * After an obstacle is detected (obstacle_active=true, state=obstacle), polling
+ * again with the same close distance causes debounce_counter to increment past
+ * debounce_samples again. The was_obstacle_active flag is TRUE this time, so
+ * the callback is NOT re-fired. Covers line 1203 FALSE branch (was already active).
+ *
+ * Also covers line 1237 branch 3 (is_obstacle_active && state == obstacle_state),
+ * where the state is already obstacle but we don't change it again.
+ *
+ * @pre sensor reads 10cm (below threshold), debounce=1, obstacle already active
+ * @post callback NOT re-fired, obstacle_events stays at 1
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_poll_sensors_obstacle_already_active_no_callback(void)
+{
+  mock_hcsr04_hw_init(nullptr);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_close_cm); /* Below threshold */
+
+  static rx_hcsr04_t        s_oa_sensor;
+  static rx_hcsr04_t*       s_oa_sensor_ptr;
+  static rx_motor_handle_t  s_oa_motor;
+  static rx_motor_handle_t* s_oa_motor_ptr;
+  internal_zero_mem(&s_oa_sensor, sizeof(s_oa_sensor));
+  internal_zero_mem(&s_oa_motor, sizeof(s_oa_motor));
+  s_oa_sensor_ptr = &s_oa_sensor;
+  s_oa_motor_ptr  = &s_oa_motor;
+
+  const rx_hcsr04_config_t hcsr04_cfg = {
+    .trigger_pin = k_rx_pc_6,
+    .echo_pin    = k_rx_p5_5,
+    .timeout_us  = 30000U,
+    .echo_mode   = k_hcsr04_echo_polling,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_oa_sensor, &hcsr04_cfg));
+
+  rx_obstacle_detect_config_t cfg = {
+    .sensors                = &s_oa_sensor_ptr,
+    .sensor_count           = 1,
+    .motors                 = &s_oa_motor_ptr,
+    .motor_count            = 1,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = 1U, /* Immediate detection */
+    .poll_interval_ms       = k_test_poll_interval_ms,
+    .callback               = test_callback,
+    .user_data              = nullptr,
+  };
+
+  static rx_obstacle_detect_t s_oa_handle;
+  internal_zero_mem(&s_oa_handle, sizeof(s_oa_handle));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_oa_handle, &cfg));
+  s_oa_handle.state               = k_obstacle_detect_state_running;
+  s_oa_handle.obstacle_active[0]  = true; /* Pre-set: obstacle already detected */
+  s_oa_handle.debounce_counter[0] = 0;    /* Reset counter so it re-increments */
+  s_oa_handle.obstacle_events     = 1U;   /* Already fired once */
+
+  /* Set state to obstacle (already in obstacle detection state) */
+  s_oa_handle.state = k_obstacle_detect_state_obstacle;
+
+  rx_err_t err = internal_poll_sensors(&s_oa_handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* Obstacle still active, but callback should NOT fire again */
+  TEST_ASSERT_TRUE(s_oa_handle.obstacle_active[0]);
+  TEST_ASSERT_EQUAL(1U, s_oa_handle.obstacle_events); /* No new event */
+  TEST_ASSERT_FALSE(s_callback_called);               /* Callback NOT re-fired */
+  /* State stays at obstacle (already was obstacle) */
+  TEST_ASSERT_EQUAL(k_obstacle_detect_state_obstacle, s_oa_handle.state);
+}
+
+/**
+ * @brief Test internal_poll_sensors false positive at exactly debounce threshold
+ *
+ * @details
+ * Pre-sets debounce_counter to exactly debounce_samples. Then polls with
+ * a clear distance (above threshold). The condition
+ * `debounce_counter > 0 && debounce_counter < debounce_samples` evaluates
+ * to FALSE (counter is NOT < samples), so no false_positive is counted.
+ * Covers line 1211 FALSE branch.
+ *
+ * @pre debounce_counter[0] = debounce_samples = 3, distance = 50cm (clear)
+ * @post false_positive_count = 0 (not incremented when counter == samples)
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_poll_sensors_debounce_at_threshold_no_false_positive(void)
+{
+  mock_hcsr04_hw_init(nullptr);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_safe_cm); /* Above threshold */
+
+  static rx_hcsr04_t        s_fp_sensor;
+  static rx_hcsr04_t*       s_fp_sensor_ptr;
+  static rx_motor_handle_t  s_fp_motor;
+  static rx_motor_handle_t* s_fp_motor_ptr;
+  internal_zero_mem(&s_fp_sensor, sizeof(s_fp_sensor));
+  internal_zero_mem(&s_fp_motor, sizeof(s_fp_motor));
+  s_fp_sensor_ptr = &s_fp_sensor;
+  s_fp_motor_ptr  = &s_fp_motor;
+
+  const rx_hcsr04_config_t hcsr04_cfg = {
+    .trigger_pin = k_rx_pc_6,
+    .echo_pin    = k_rx_p5_5,
+    .timeout_us  = 30000U,
+    .echo_mode   = k_hcsr04_echo_polling,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_fp_sensor, &hcsr04_cfg));
+
+  rx_obstacle_detect_config_t cfg = {
+    .sensors                = &s_fp_sensor_ptr,
+    .sensor_count           = 1,
+    .motors                 = &s_fp_motor_ptr,
+    .motor_count            = 1,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_samples,
+    .poll_interval_ms       = k_test_poll_interval_ms,
+    .callback               = test_callback,
+    .user_data              = nullptr,
+  };
+
+  static rx_obstacle_detect_t s_fp_handle;
+  internal_zero_mem(&s_fp_handle, sizeof(s_fp_handle));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_fp_handle, &cfg));
+  s_fp_handle.state = k_obstacle_detect_state_running;
+  /* Pre-set counter to exactly debounce_samples: counter >= samples, NOT < samples */
+  s_fp_handle.debounce_counter[0]  = k_test_debounce_samples; /* Equal to debounce_samples */
+  s_fp_handle.false_positive_count = 0U;
+
+  rx_err_t err = internal_poll_sensors(&s_fp_handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* Counter was >= samples (not < samples), so no false positive counted */
+  TEST_ASSERT_EQUAL(0U, s_fp_handle.false_positive_count);
+  TEST_ASSERT_EQUAL(0U, s_fp_handle.debounce_counter[0]); /* Counter reset */
+}
+
+/**
+ * @brief Test internal_poll_sensors obstacle clears from obstacle detection state
+ *
+ * @details
+ * Pre-sets state to k_obstacle_detect_state_obstacle and obstacle_active=true,
+ * then polls with a clear distance. The obstacle clears, callback fires with
+ * false, and state transitions to running.
+ * Covers line 1246 branch 1 (!is_obstacle_active && state == obstacle).
+ *
+ * @pre state=obstacle, obstacle_active=true, distance=50cm (clear)
+ * @post state=running, obstacle_active=false, callback fired with false
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_poll_sensors_obstacle_clears_from_obstacle_state(void)
+{
+  mock_hcsr04_hw_init(nullptr);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_safe_cm); /* Above threshold */
+
+  static rx_hcsr04_t        s_cl_sensor;
+  static rx_hcsr04_t*       s_cl_sensor_ptr;
+  static rx_motor_handle_t  s_cl_motor;
+  static rx_motor_handle_t* s_cl_motor_ptr;
+  internal_zero_mem(&s_cl_sensor, sizeof(s_cl_sensor));
+  internal_zero_mem(&s_cl_motor, sizeof(s_cl_motor));
+  s_cl_sensor_ptr = &s_cl_sensor;
+  s_cl_motor_ptr  = &s_cl_motor;
+
+  const rx_hcsr04_config_t hcsr04_cfg = {
+    .trigger_pin = k_rx_pc_6,
+    .echo_pin    = k_rx_p5_5,
+    .timeout_us  = 30000U,
+    .echo_mode   = k_hcsr04_echo_polling,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_cl_sensor, &hcsr04_cfg));
+
+  rx_obstacle_detect_config_t cfg = {
+    .sensors                = &s_cl_sensor_ptr,
+    .sensor_count           = 1,
+    .motors                 = &s_cl_motor_ptr,
+    .motor_count            = 1,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = 1U,
+    .poll_interval_ms       = k_test_poll_interval_ms,
+    .callback               = test_callback,
+    .user_data              = nullptr,
+  };
+
+  static rx_obstacle_detect_t s_cl_handle;
+  internal_zero_mem(&s_cl_handle, sizeof(s_cl_handle));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_cl_handle, &cfg));
+
+  /* Pre-set: in obstacle state with active obstacle */
+  s_cl_handle.state              = k_obstacle_detect_state_obstacle;
+  s_cl_handle.obstacle_active[0] = true;
+
+  rx_err_t err = internal_poll_sensors(&s_cl_handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* Obstacle cleared, callback fired with false, state -> running */
+  TEST_ASSERT_FALSE(s_cl_handle.obstacle_active[0]);
+  TEST_ASSERT_TRUE(s_callback_called);
+  TEST_ASSERT_FALSE(s_callback_obstacle_detected);
+  TEST_ASSERT_EQUAL(k_obstacle_detect_state_running, s_cl_handle.state);
+}
+
+/** @} */ /* End of additional branch coverage tests group */
+
+/* =============================================================================
+ * stop_requested || Short-Circuit Coverage
+ * =============================================================================
+ */
+
+/**
+ * @brief Pointer to obstacle detect handle for sleep callback injection.
+ * @details
+ * Set before calling rx_obstacle_detect_test_run_task_entry() so the sleep
+ * callback can reach the handle to set stop_requested = true.
+ */
+static rx_obstacle_detect_t* s_stop_req_handle_ptr;
+
+/**
+ * @brief Sleep callback that sets stop_requested instead of firing stop event.
+ *
+ * @details
+ * Stops the outer loop and sets handle->stop_requested = true. The inner
+ * detection loop's next stop check sees TX_NO_EVENTS (stop_event_fired=false)
+ * but handle->stop_requested = true, covering the second operand of the ||
+ * at rx_obstacle_detect.c line 1114.
+ */
+static void on_sleep_set_stop_requested(void)
+{
+  rx_obstacle_detect_test_set_task_running(false);
+  s_stop_req_handle_ptr->stop_requested = true;
+  /* Keep no_events armed so stop event does NOT fire */
+  mock_tx_event_flags_get_reset_count();
+  mock_tx_set_event_flags_get_no_events_count(k_test_no_events_large);
+}
+
+/**
+ * @brief Test task entry stops via handle->stop_requested (not event flag).
+ *
+ * @details
+ * Exercises the second operand of the `||` at rx_obstacle_detect.c line 1114:
+ * `(int)stop_event_fired || (int)handle->stop_requested`. The sleep callback
+ * sets stop_requested=true while stop_event_fired remains false.
+ *
+ * @pre handle initialized, sensor safe distance
+ * @post state = k_obstacle_detect_state_stopped (via stop_requested)
+ *
+ * @since Version 1.0.0
+ */
+void test_task_entry_stop_via_stop_requested_flag(void)
+{
+  mock_hcsr04_hw_init(nullptr);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_safe_cm);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+
+  static rx_hcsr04_t        s_sr_sensor;
+  static rx_hcsr04_t*       s_sr_sensor_ptr;
+  static rx_motor_handle_t  s_sr_motor;
+  static rx_motor_handle_t* s_sr_motor_ptr;
+  internal_zero_mem(&s_sr_sensor, sizeof(s_sr_sensor));
+  internal_zero_mem(&s_sr_motor, sizeof(s_sr_motor));
+  s_sr_sensor_ptr = &s_sr_sensor;
+  s_sr_motor_ptr  = &s_sr_motor;
+
+  const rx_hcsr04_config_t hcsr04_cfg = {
+    .trigger_pin = k_rx_pc_6,
+    .echo_pin    = k_rx_p5_5,
+    .timeout_us  = 30000U,
+    .echo_mode   = k_hcsr04_echo_polling,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_sr_sensor, &hcsr04_cfg));
+
+  rx_obstacle_detect_config_t cfg = {
+    .sensors                = &s_sr_sensor_ptr,
+    .sensor_count           = 1,
+    .motors                 = &s_sr_motor_ptr,
+    .motor_count            = 1,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_samples,
+    .poll_interval_ms       = k_test_poll_interval_ms,
+    .callback               = nullptr,
+    .user_data              = nullptr,
+  };
+
+  static rx_obstacle_detect_t s_sr_handle;
+  internal_zero_mem(&s_sr_handle, sizeof(s_sr_handle));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_sr_handle, &cfg));
+
+  /* Store handle pointer for sleep callback */
+  s_stop_req_handle_ptr = &s_sr_handle;
+
+  /* Start fires immediately; on_success re-arms inner stop to TX_NO_EVENTS */
+  mock_tx_set_event_flags_get_no_events_count(0);
+  mock_tx_event_flags_get_set_on_success_cb(on_start_event_rearm_no_events);
+  /* Sleep callback: set stop_requested=true instead of firing stop event */
+  mock_tx_set_sleep_callback(on_sleep_set_stop_requested);
+  rx_obstacle_detect_test_set_task_running(true);
+
+  rx_obstacle_detect_test_run_task_entry((ULONG)(uintptr_t)&s_sr_handle);
+
+  TEST_ASSERT_EQUAL(k_obstacle_detect_state_stopped, s_sr_handle.state);
+  TEST_ASSERT_FALSE(s_sr_handle.stop_requested);
+}
 
 /* =============================================================================
  * Main Test Runner
@@ -1462,36 +3246,21 @@ void test_obstacle_detect_clear_obstacle_null_handle_fails(void)
  */
 
 /**
- * @brief Main test runner entry point
+ * @brief Run public API tests (init, deinit, start/stop, state, stats, clear)
  *
  * @details
- * Executes all obstacle detection unit tests using Unity framework.
- * Each RUN_TEST() call executes:
- * 1. setUp() - Initialize test fixtures
- * 2. test_function() - Execute actual test
- * 3. tearDown() - Clean up test fixtures
+ * Executes all tests that exercise the public obstacle detection API
+ * including initialization, deinitialization, start/stop control,
+ * state queries, statistics, and obstacle clearing.
  *
- * @return Test result code
- * @retval 0 All tests passed
- * @retval non-zero Number of test failures
+ * @pre UNITY_BEGIN() has been called
+ * @post All public API tests executed
  *
- * @note Called by Unity test harness during test execution
- * @note Output printed to stdout (captured by Unity framework)
- *
- * @par Example Output:
- * @verbatim
- * test_rx_obstacle_detect.c:123:test_obstacle_detect_init_success:PASS
- * test_rx_obstacle_detect.c:456:test_obstacle_detect_start_success:PASS
- * ...
- * -----------------------
- * 32 Tests 0 Failures 0 Ignored
- * OK
- * @endverbatim
+ * @note Not thread-safe (Unity is single-threaded)
+ * @since Version 1.0.0
  */
-int main(void)
+static void internal_run_api_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Initialization Tests */
   RUN_TEST(test_obstacle_detect_init_success);
   RUN_TEST(test_obstacle_detect_init_null_handle_fails);
@@ -1516,8 +3285,10 @@ int main(void)
   RUN_TEST(test_obstacle_detect_start_success);
   RUN_TEST(test_obstacle_detect_start_null_handle_fails);
   RUN_TEST(test_obstacle_detect_start_not_initialized_fails);
+  RUN_TEST(test_obstacle_detect_start_when_already_running);
   RUN_TEST(test_obstacle_detect_stop_success);
   RUN_TEST(test_obstacle_detect_stop_null_handle_fails);
+  RUN_TEST(test_obstacle_detect_stop_not_initialized_fails);
 
   /* State Tests */
   RUN_TEST(test_obstacle_detect_get_state_success);
@@ -1529,12 +3300,143 @@ int main(void)
   /* Statistics Tests */
   RUN_TEST(test_obstacle_detect_get_stats_success);
   RUN_TEST(test_obstacle_detect_get_stats_null_handle_fails);
+  RUN_TEST(test_obstacle_detect_get_stats_uninitialized);
+  RUN_TEST(test_obstacle_detect_get_stats_null_out_args);
+  RUN_TEST(test_obstacle_detect_is_obstacle_detected_uninitialized);
   RUN_TEST(test_obstacle_detect_reset_stats_success);
   RUN_TEST(test_obstacle_detect_reset_stats_null_handle_fails);
 
   /* Clear Obstacle Tests */
   RUN_TEST(test_obstacle_detect_clear_obstacle_success);
   RUN_TEST(test_obstacle_detect_clear_obstacle_null_handle_fails);
+  RUN_TEST(test_obstacle_detect_clear_obstacle_not_initialized);
+  RUN_TEST(test_obstacle_detect_clear_obstacle_state_not_obstacle);
+}
+
+/**
+ * @brief Run internal function and coverage tests
+ *
+ * @details
+ * Executes tests for internal functions (poll_sensors, stop_all_motors,
+ * invoke_callback) and additional coverage paths including state queries,
+ * null element validation, and poll interval validation.
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post All internal function tests executed
+ *
+ * @note Not thread-safe (Unity is single-threaded)
+ * @since Version 1.0.0
+ */
+static void internal_run_internal_function_tests(void)
+{
+  /* Internal Function Tests (coverage for previously GCOV_EXCL'd paths) */
+  RUN_TEST(test_internal_poll_sensors_null_handle);
+  RUN_TEST(test_internal_poll_sensors_uninitialized_handle);
+  RUN_TEST(test_internal_poll_sensors_skips_invalid_sensors);
+  RUN_TEST(test_internal_poll_sensors_debounce_counter_reset_on_clear);
+  RUN_TEST(test_internal_poll_sensors_clears_obstacle);
+  RUN_TEST(test_internal_poll_sensors_counts_false_positives);
+  RUN_TEST(test_internal_poll_sensors_sensor_timeout_is_clear);
+  RUN_TEST(test_internal_stop_all_motors_null_handle);
+  RUN_TEST(test_internal_stop_all_motors_uninitialized);
+  RUN_TEST(test_internal_stop_all_motors_motor_stop_failure);
+  RUN_TEST(test_internal_stop_all_motors_success);
+  RUN_TEST(test_internal_invoke_callback_null_handle);
+  RUN_TEST(test_internal_invoke_callback_null_callback);
+  RUN_TEST(test_internal_invoke_callback_fires_callback);
+
+  /* Additional coverage tests */
+  RUN_TEST(test_internal_poll_sensors_detects_obstacle_fires_callback);
+  RUN_TEST(test_obstacle_detect_get_state_not_initialized);
+  RUN_TEST(test_obstacle_detect_reset_stats_not_initialized);
+  RUN_TEST(test_obstacle_detect_init_null_sensor_element_fails);
+  RUN_TEST(test_obstacle_detect_init_null_motor_element_fails);
+  RUN_TEST(test_obstacle_detect_init_invalid_poll_interval_fails);
+}
+
+/**
+ * @brief Run RTOS error path, task entry, and branch coverage tests
+ *
+ * @details
+ * Executes tests covering RTOS error paths (ThreadX create/delete failures),
+ * task entry behavior (null handle, detection loop, retries), and additional
+ * branch coverage for debounce, obstacle state, and false positive logic.
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post All integration and branch coverage tests executed
+ *
+ * @note Not thread-safe (Unity is single-threaded)
+ * @since Version 1.0.0
+ */
+static void internal_run_integration_tests(void)
+{
+  /* RTOS Error Path Tests */
+  RUN_TEST(test_obstacle_detect_init_event_flags_create_fails);
+  RUN_TEST(test_obstacle_detect_init_thread_create_fails);
+  RUN_TEST(test_obstacle_detect_deinit_calls_stop_when_running);
+  RUN_TEST(test_obstacle_detect_deinit_thread_terminate_fails);
+  RUN_TEST(test_obstacle_detect_deinit_thread_delete_fails);
+  RUN_TEST(test_obstacle_detect_deinit_event_flags_delete_fails);
+  RUN_TEST(test_obstacle_detect_start_thread_resume_fails);
+  RUN_TEST(test_obstacle_detect_start_event_flags_set_fails);
+  RUN_TEST(test_obstacle_detect_stop_event_flags_set_fails);
+
+  /* Task Entry Tests */
+  RUN_TEST(test_task_entry_exits_when_task_running_false);
+  RUN_TEST(test_task_entry_null_handle_returns);
+  RUN_TEST(test_task_entry_runs_full_detection_loop);
+  RUN_TEST(test_task_entry_start_retries_on_no_events);
+  RUN_TEST(test_task_entry_poll_error_stops_inner_loop);
+  RUN_TEST(test_internal_poll_sensors_motor_stop_failure);
+
+  /* Additional branch coverage tests */
+  RUN_TEST(test_obstacle_detect_init_too_many_motors_fails);
+  RUN_TEST(test_obstacle_detect_init_too_many_debounce_samples_fails);
+  RUN_TEST(test_obstacle_detect_init_too_large_poll_interval_fails);
+  RUN_TEST(test_obstacle_detect_init_too_small_poll_interval_fails);
+  RUN_TEST(test_internal_poll_sensors_debounce_accumulates_before_threshold);
+  RUN_TEST(test_internal_poll_sensors_obstacle_already_active_no_callback);
+  RUN_TEST(test_internal_poll_sensors_debounce_at_threshold_no_false_positive);
+  RUN_TEST(test_internal_poll_sensors_obstacle_clears_from_obstacle_state);
+
+  /* stop_requested || short-circuit coverage */
+  RUN_TEST(test_task_entry_stop_via_stop_requested_flag);
+}
+
+/**
+ * @brief Main test runner entry point
+ *
+ * @details
+ * Executes all obstacle detection unit tests using Unity framework.
+ * Tests are organized into three groups via helper functions:
+ * 1. Public API tests (init, deinit, start/stop, state, stats, clear)
+ * 2. Internal function and coverage tests
+ * 3. RTOS error path, task entry, and branch coverage tests
+ *
+ * @return Test result code
+ * @retval 0 All tests passed
+ * @retval non-zero Number of test failures
+ *
+ * @note Called by Unity test harness during test execution
+ * @note Output printed to stdout (captured by Unity framework)
+ *
+ * @par Example Output:
+ * @verbatim
+ * test_rx_obstacle_detect.c:123:test_obstacle_detect_init_success:PASS
+ * test_rx_obstacle_detect.c:456:test_obstacle_detect_start_success:PASS
+ * ...
+ * -----------------------
+ * 32 Tests 0 Failures 0 Ignored
+ * OK
+ * @endverbatim
+ */
+int main(void)
+{
+  UNITY_BEGIN();
+
+  internal_run_api_tests();
+  internal_run_internal_function_tests();
+  internal_run_integration_tests();
 
   return UNITY_END();
 }

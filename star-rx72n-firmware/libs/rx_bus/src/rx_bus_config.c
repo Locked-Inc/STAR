@@ -300,6 +300,33 @@ static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, const char* 
   return k_rx_ok;
 }
 
+/**
+ * @brief Initialize common bus configuration fields
+ *
+ * @details
+ * Zeros the config structure and sets all common fields shared by every bus
+ * type. Called by each bus-specific init function after validation passes.
+ *
+ * @param[out] config   Config to initialize (already validated non-null)
+ * @param[in]  name     Bus name string (already validated non-null)
+ * @param[in]  bus_type Bus type enum value to set
+ *
+ * @pre config != nullptr
+ * @pre name != nullptr
+ * @post config zeroed and common fields set
+ */
+static void
+internal_set_common_fields(rx_bus_config_t* config, const char* name, const rx_bus_type_t bus_type)
+{
+  *config             = (rx_bus_config_t){};
+  config->name        = name;
+  config->type        = bus_type;
+  config->initialized = false;
+  config->handle      = nullptr;
+  config->user_ctx    = nullptr;
+  config->next        = nullptr;
+}
+
 /* =============================================================================
  * GPIO Bus Configuration
  * =============================================================================
@@ -442,16 +469,8 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
     return err;
   }
 
-  /* Zero out config structure */
-  *config = (rx_bus_config_t){0};
-
-  /* Set common fields */
-  config->name        = name;
-  config->type        = k_bus_type_gpio;
-  config->initialized = false;
-  config->handle      = nullptr;
-  config->user_ctx    = nullptr;
-  config->next        = nullptr;
+  /* Set common fields (zeros config and sets name, type, etc.) */
+  internal_set_common_fields(config, name, k_bus_type_gpio);
 
   /* Set GPIO-specific fields */
   config->proto.gpio.pin = pin;
@@ -675,16 +694,8 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
     return k_rx_err_invalid_arg;
   }
 
-  /* Zero out config structure */
-  *config = (rx_bus_config_t){0};
-
-  /* Set common fields */
-  config->name        = name;
-  config->type        = k_bus_type_adc;
-  config->initialized = false;
-  config->handle      = nullptr;
-  config->user_ctx    = nullptr;
-  config->next        = nullptr;
+  /* Set common fields (zeros config and sets name, type, etc.) */
+  internal_set_common_fields(config, name, k_bus_type_adc);
 
   /* Set ADC-specific fields */
   config->proto.adc.unit    = unit;
@@ -938,16 +949,8 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t*    config,
     return k_rx_err_invalid_arg;
   }
 
-  /* Zero out config structure */
-  *config = (rx_bus_config_t){0};
-
-  /* Set common fields */
-  config->name        = name;
-  config->type        = k_bus_type_i2c;
-  config->initialized = false;
-  config->handle      = nullptr;
-  config->user_ctx    = nullptr;
-  config->next        = nullptr;
+  /* Set common fields (zeros config and sets name, type, etc.) */
+  internal_set_common_fields(config, name, k_bus_type_i2c);
 
   /* Set I2C-specific fields */
   config->proto.i2c.channel      = channel;
@@ -1217,16 +1220,8 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
     return k_rx_err_invalid_arg;
   }
 
-  /* Zero out config structure */
-  *config = (rx_bus_config_t){0};
-
-  /* Set common fields */
-  config->name        = name;
-  config->type        = k_bus_type_uart;
-  config->initialized = false;
-  config->handle      = nullptr;
-  config->user_ctx    = nullptr;
-  config->next        = nullptr;
+  /* Set common fields (zeros config and sets name, type, etc.) */
+  internal_set_common_fields(config, name, k_bus_type_uart);
 
   /* Set UART-specific fields */
   config->proto.uart.channel  = channel;
@@ -1489,16 +1484,8 @@ rx_err_t rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, r
     return err;
   }
 
-  /* Zero out config structure */
-  *config = (rx_bus_config_t){0};
-
-  /* Set common fields */
-  config->name        = name;
-  config->type        = k_bus_type_onewire;
-  config->initialized = false;
-  config->handle      = nullptr;
-  config->user_ctx    = nullptr;
-  config->next        = nullptr;
+  /* Set common fields (zeros config and sets name, type, etc.) */
+  internal_set_common_fields(config, name, k_bus_type_onewire);
 
   /* Set OneWire-specific fields */
   config->proto.onewire.pin = pin;

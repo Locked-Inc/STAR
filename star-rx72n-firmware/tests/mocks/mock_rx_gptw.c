@@ -12,7 +12,7 @@
 
 #include "mock_rx_gptw.h"
 
-#include <string.h>
+#include <limits.h>
 
 #include "rx72n_clock.h"
 
@@ -41,10 +41,29 @@ typedef enum : uint8_t {
 
 static bool     s_initialized[k_mock_gptw_max_channels]                                = {false};
 static bool     s_running[k_mock_gptw_max_channels]                                    = {false};
-static uint32_t s_period[k_mock_gptw_max_channels]                                     = {0};
-static uint32_t s_frequency[k_mock_gptw_max_channels]                                  = {0};
-static float    s_duty[k_mock_gptw_max_channels][k_mock_gptw_outputs_per_ch]           = {{0}};
-static bool     s_output_enabled[k_mock_gptw_max_channels][k_mock_gptw_outputs_per_ch] = {{false}};
+static uint32_t s_period[k_mock_gptw_max_channels]                                     = {};
+static uint32_t s_frequency[k_mock_gptw_max_channels]                                  = {};
+static float    s_duty[k_mock_gptw_max_channels][k_mock_gptw_outputs_per_ch]           = {};
+static bool     s_output_enabled[k_mock_gptw_max_channels][k_mock_gptw_outputs_per_ch] = {};
+
+/** @brief Error injection: force rx_gptw_init_pwm() to return this error (k_rx_ok = no error) */
+static rx_err_t s_init_error = k_rx_ok;
+/** @brief Error injection: force rx_gptw_set_duty() to return this error (k_rx_ok = no error) */
+static rx_err_t s_set_duty_error = k_rx_ok;
+/** @brief Error injection: force rx_gptw_deinit() to return this error (k_rx_ok = no error) */
+static rx_err_t s_deinit_error = k_rx_ok;
+/** @brief Error injection: force rx_gptw_stop() to return this error (k_rx_ok = no error) */
+static rx_err_t s_stop_error = k_rx_ok;
+/** @brief Error injection: force rx_gptw_enable_output() to return this error (k_rx_ok = no error) */
+static rx_err_t s_enable_output_error = k_rx_ok;
+/** @brief Number of successful set_duty() calls remaining before injecting s_set_duty_error_after */
+static uint32_t s_set_duty_success_remaining = UINT32_MAX;
+/** @brief Error to inject after s_set_duty_success_remaining calls succeed (k_rx_ok = disabled) */
+static rx_err_t s_set_duty_error_after = k_rx_ok;
+/** @brief Number of successful enable_output() calls remaining before injecting error */
+static uint32_t s_enable_output_success_remaining = UINT32_MAX;
+/** @brief Error to inject after s_enable_output_success_remaining calls succeed (k_rx_ok = disabled) */
+static rx_err_t s_enable_output_error_after = k_rx_ok;
 
 /* =============================================================================
  * Mock Test Helpers
@@ -53,12 +72,62 @@ static bool     s_output_enabled[k_mock_gptw_max_channels][k_mock_gptw_outputs_p
 
 void mock_gptw_reset(void)
 {
-  memset(s_initialized, 0, sizeof(s_initialized));
-  memset(s_running, 0, sizeof(s_running));
-  memset(s_period, 0, sizeof(s_period));
-  memset(s_frequency, 0, sizeof(s_frequency));
-  memset(s_duty, 0, sizeof(s_duty));
-  memset(s_output_enabled, 0, sizeof(s_output_enabled));
+  for (uint8_t ch = 0; ch < k_mock_gptw_max_channels; ch++) {
+    s_initialized[ch] = false;
+    s_running[ch]     = false;
+    s_period[ch]      = 0;
+    s_frequency[ch]   = 0;
+    for (uint8_t out = 0; out < k_mock_gptw_outputs_per_ch; out++) {
+      s_duty[ch][out]           = 0.0F;
+      s_output_enabled[ch][out] = false;
+    }
+  }
+  s_init_error                      = k_rx_ok;
+  s_set_duty_error                  = k_rx_ok;
+  s_deinit_error                    = k_rx_ok;
+  s_stop_error                      = k_rx_ok;
+  s_enable_output_error             = k_rx_ok;
+  s_set_duty_success_remaining      = UINT32_MAX;
+  s_set_duty_error_after            = k_rx_ok;
+  s_enable_output_success_remaining = UINT32_MAX;
+  s_enable_output_error_after       = k_rx_ok;
+}
+
+void mock_gptw_set_init_error(rx_err_t err)
+{
+  s_init_error = err;
+}
+
+void mock_gptw_set_duty_error(rx_err_t err)
+{
+  s_set_duty_error = err;
+}
+
+void mock_gptw_set_duty_error_after_n(uint32_t n, rx_err_t err)
+{
+  s_set_duty_success_remaining = n;
+  s_set_duty_error_after       = err;
+}
+
+void mock_gptw_set_deinit_error(rx_err_t err)
+{
+  s_deinit_error = err;
+}
+
+void mock_gptw_set_stop_error(rx_err_t err)
+{
+  s_stop_error = err;
+}
+
+void mock_gptw_set_enable_output_error(rx_err_t err)
+{
+  s_enable_output_error = err;
+}
+
+void mock_gptw_set_enable_output_error_after_n(uint32_t n, rx_err_t err)
+{
+  s_enable_output_success_remaining = n;
+  s_enable_output_error_after       = err;
 }
 
 bool mock_gptw_is_initialized(rx_gptw_channel_t channel)
@@ -73,7 +142,7 @@ float mock_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output)
 {
   if ((int32_t)channel >= k_mock_gptw_max_channels ||
       (int32_t)output >= k_mock_gptw_outputs_per_ch) {
-    return 0.0f;
+    return 0.0F;
   }
   return s_duty[channel][output];
 }
@@ -130,13 +199,17 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
     return k_rx_err_invalid_arg;
   }
 
+  if (s_init_error != k_rx_ok) {
+    return s_init_error;
+  }
+
   /* Calculate period */
   s_period[channel]    = k_pclka_hz / config->frequency_hz;
   s_frequency[channel] = config->frequency_hz;
 
   /* Initialize outputs to 0% duty, enabled */
-  s_duty[channel][k_mock_gptw_output_a]           = 0.0f;
-  s_duty[channel][k_mock_gptw_output_b]           = 0.0f;
+  s_duty[channel][k_mock_gptw_output_a]           = 0.0F;
+  s_duty[channel][k_mock_gptw_output_b]           = 0.0F;
   s_output_enabled[channel][k_mock_gptw_output_a] = true;
   s_output_enabled[channel][k_mock_gptw_output_b] = true;
 
@@ -188,8 +261,19 @@ rx_gptw_set_duty(rx_gptw_channel_id_t channel, rx_gptw_output_id_t output, float
     return k_rx_err_invalid_arg;
   }
 
-  if (duty_percent < 0.0f || duty_percent > (float)k_mock_duty_percent_max) {
+  if (duty_percent < 0.0F || duty_percent > (float)k_mock_duty_percent_max) {
     return k_rx_err_invalid_arg;
+  }
+
+  if (s_set_duty_error != k_rx_ok) {
+    return s_set_duty_error;
+  }
+
+  if (s_set_duty_error_after != k_rx_ok) {
+    if (s_set_duty_success_remaining == 0) {
+      return s_set_duty_error_after;
+    }
+    s_set_duty_success_remaining--;
   }
 
   s_duty[channel_value][output_value] = duty_percent;
@@ -258,6 +342,17 @@ rx_err_t rx_gptw_enable_output(rx_gptw_channel_t channel, rx_gptw_output_t outpu
     return k_rx_err_invalid_arg;
   }
 
+  if (s_enable_output_error != k_rx_ok) {
+    return s_enable_output_error;
+  }
+
+  if (s_enable_output_error_after != k_rx_ok) {
+    if (s_enable_output_success_remaining == 0) {
+      return s_enable_output_error_after;
+    }
+    s_enable_output_success_remaining--;
+  }
+
   s_output_enabled[channel][output] = enable;
   return k_rx_ok;
 }
@@ -278,6 +373,10 @@ rx_err_t rx_gptw_stop(rx_gptw_channel_t channel)
     return k_rx_err_invalid_arg;
   }
 
+  if (s_stop_error != k_rx_ok) {
+    return s_stop_error;
+  }
+
   s_running[channel] = false;
   return k_rx_ok;
 }
@@ -288,12 +387,16 @@ rx_err_t rx_gptw_deinit(rx_gptw_channel_t channel)
     return k_rx_err_invalid_arg;
   }
 
+  if (s_deinit_error != k_rx_ok) {
+    return s_deinit_error;
+  }
+
   s_initialized[channel]                          = false;
   s_running[channel]                              = false;
   s_period[channel]                               = 0;
   s_frequency[channel]                            = 0;
-  s_duty[channel][k_mock_gptw_output_a]           = 0.0f;
-  s_duty[channel][k_mock_gptw_output_b]           = 0.0f;
+  s_duty[channel][k_mock_gptw_output_a]           = 0.0F;
+  s_duty[channel][k_mock_gptw_output_b]           = 0.0F;
   s_output_enabled[channel][k_mock_gptw_output_a] = false;
   s_output_enabled[channel][k_mock_gptw_output_b] = false;
 

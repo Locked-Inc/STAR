@@ -1,5 +1,5 @@
 /**
- * @file rx72n_cmt_regs.h
+ * @file mock_rx72n_cmt_regs.h
  * @brief Mock CMT (Compare Match Timer) Register Definitions for Host-Side Unit Testing
  *
  * @details
@@ -17,9 +17,10 @@
  *
  * ## How It Works
  *
- * 1. **Include Path Shadowing**: When CMake configures unit tests, the `tests/mocks/`
- *    directory is added to the include path BEFORE `lib/rx_hal/inc/`. This causes
- *    `#include "rx72n_cmt_regs.h"` to resolve to THIS file instead of the real one.
+ * 1. **Explicit UNIT_TEST Guard**: Source files that include the real CMT register
+ *    header use a `#ifdef UNIT_TEST` guard to select this mock header by name
+ *    (`#include "mock_rx72n_cmt_regs.h"`) in test builds, and the real hardware
+ *    header (`#include "rx72n_cmt_regs.h"`) in production builds.
  *
  * 2. **Type Aliasing**: This file defines `rx_cmt_channel_regs_t` and
  *    `rx_cmt_control_regs_t` as aliases for mock structures. Production code uses
@@ -38,7 +39,7 @@
  *
  * ### Basic Test Setup
  * @code{.c}
- * #include "rx72n_cmt_regs.h"  // Resolves to THIS mock file
+ * #include "mock_rx72n_cmt_regs.h"
  * #include "mock_rx_onewire_hw.h"
  *
  * void test_onewire_timing(void)

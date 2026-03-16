@@ -88,10 +88,120 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "rx72n_mpc_regs.h"
 #include "unity.h"
+
+/* =============================================================================
+ * Test Constants
+ * =============================================================================
+ */
+
+/**
+ * @enum mpc_test_addr_t
+ * @brief Expected hardware addresses for MPC register verification
+ *
+ * @details
+ * All expected addresses from RX72N hardware manual Chapter 23 for
+ * verifying MPC register accessors and struct field offsets.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uintptr_t {
+  k_mpc_base   = 0x0008C100U, /**< MPC register block base */
+  k_mpc_pfcss0 = 0x0008C102U, /**< PFCSS0 address */
+  k_mpc_pfcss1 = 0x0008C103U, /**< PFCSS1 address */
+  k_mpc_pfaoe0 = 0x0008C104U, /**< PFAOE0 address */
+  k_mpc_pfaoe1 = 0x0008C105U, /**< PFAOE1 address */
+  k_mpc_pfbcr0 = 0x0008C106U, /**< PFBCR0 address */
+  k_mpc_pfenet = 0x0008C10EU, /**< PFENET address */
+  k_mpc_pwpr   = 0x0008C11FU, /**< PWPR address */
+  k_mpc_p00pfs = 0x0008C140U, /**< P00PFS address */
+  k_mpc_p01pfs = 0x0008C141U, /**< P01PFS address */
+  k_mpc_p02pfs = 0x0008C142U, /**< P02PFS address */
+  k_mpc_p03pfs = 0x0008C143U, /**< P03PFS address */
+  k_mpc_p04pfs = 0x0008C144U, /**< P04PFS address */
+  k_mpc_p05pfs = 0x0008C145U, /**< P05PFS address */
+  k_mpc_p06pfs = 0x0008C146U, /**< P06PFS address */
+  k_mpc_p07pfs = 0x0008C147U, /**< P07PFS address */
+  k_mpc_p10pfs = 0x0008C148U, /**< P10PFS address */
+  k_mpc_p11pfs = 0x0008C149U, /**< P11PFS address */
+  k_mpc_p12pfs = 0x0008C14AU, /**< P12PFS address */
+  k_mpc_p13pfs = 0x0008C14BU, /**< P13PFS address */
+  k_mpc_p14pfs = 0x0008C14CU, /**< P14PFS address */
+  k_mpc_p15pfs = 0x0008C14DU, /**< P15PFS address */
+  k_mpc_p16pfs = 0x0008C14EU, /**< P16PFS address */
+  k_mpc_p17pfs = 0x0008C14FU, /**< P17PFS address */
+  k_mpc_p20pfs = 0x0008C150U, /**< P20PFS address */
+  k_mpc_p21pfs = 0x0008C151U, /**< P21PFS address */
+  k_mpc_p22pfs = 0x0008C152U, /**< P22PFS address */
+  k_mpc_p23pfs = 0x0008C153U, /**< P23PFS address */
+  k_mpc_p24pfs = 0x0008C154U, /**< P24PFS address */
+  k_mpc_p25pfs = 0x0008C155U, /**< P25PFS address */
+  k_mpc_p26pfs = 0x0008C156U, /**< P26PFS address */
+  k_mpc_p27pfs = 0x0008C157U, /**< P27PFS address */
+  k_mpc_p50pfs = 0x0008C168U, /**< P50PFS address */
+  k_mpc_pa0pfs = 0x0008C190U, /**< PA0PFS address */
+  k_mpc_pa1pfs = 0x0008C191U, /**< PA1PFS address */
+  k_mpc_pa2pfs = 0x0008C192U, /**< PA2PFS address */
+  k_mpc_pa3pfs = 0x0008C193U, /**< PA3PFS address */
+  k_mpc_pa4pfs = 0x0008C194U, /**< PA4PFS address */
+  k_mpc_pa5pfs = 0x0008C195U, /**< PA5PFS address */
+  k_mpc_pa6pfs = 0x0008C196U, /**< PA6PFS address */
+  k_mpc_pa7pfs = 0x0008C197U, /**< PA7PFS address */
+  k_mpc_pe0pfs = 0x0008C1B0U, /**< PE0PFS address */
+  k_mpc_pe1pfs = 0x0008C1B1U, /**< PE1PFS address */
+  k_mpc_pe2pfs = 0x0008C1B2U, /**< PE2PFS address */
+  k_mpc_pe3pfs = 0x0008C1B3U, /**< PE3PFS address */
+  k_mpc_pe4pfs = 0x0008C1B4U, /**< PE4PFS address */
+  k_mpc_pe5pfs = 0x0008C1B5U, /**< PE5PFS address */
+  k_mpc_pe6pfs = 0x0008C1B6U, /**< PE6PFS address */
+  k_mpc_pe7pfs = 0x0008C1B7U, /**< PE7PFS address */
+  k_mpc_pj0pfs = 0x0008C1D0U, /**< PJ0PFS address */
+  k_mpc_pj1pfs = 0x0008C1D1U, /**< PJ1PFS address */
+  k_mpc_pj2pfs = 0x0008C1D2U, /**< PJ2PFS address */
+  k_mpc_pj3pfs = 0x0008C1D3U, /**< PJ3PFS address */
+  k_mpc_pj5pfs = 0x0008C1D5U, /**< PJ5PFS address */
+} mpc_test_addr_t;
+
+/**
+ * @enum mpc_test_offset_t
+ * @brief Expected struct offsets for MPC register layout verification
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_mpc_off_pfcse  = 0x00U,         /**< PFCSE offset in struct */
+  k_mpc_off_pwpr   = 0x1FU,         /**< PWPR offset in struct */
+  k_mpc_off_p00pfs = 0x40U,         /**< P00PFS offset in struct */
+  k_mpc_off_p50pfs = 0x40U + 0x28U, /**< P50PFS offset in struct */
+  k_mpc_off_pa0pfs = 0x40U + 0x50U, /**< PA0PFS offset in struct */
+  k_mpc_off_pe0pfs = 0x40U + 0x70U, /**< PE0PFS offset in struct */
+  k_mpc_off_pj0pfs = 0x40U + 0x90U, /**< PJ0PFS offset in struct */
+} mpc_test_offset_t;
+
+/**
+ * @enum mpc_test_size_t
+ * @brief Expected sizes for MPC struct and register verification
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_mpc_struct_size  = 0x40U + 152U, /**< Total rx_mpc_regs_t size */
+  k_mpc_pfs_reg_size = 1U,           /**< PFS register size (8-bit) */
+} mpc_test_size_t;
+
+/**
+ * @enum mpc_test_mask_t
+ * @brief Test mask and value constants for PSEL range verification
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_mpc_psel_max_value = 31U,   /**< Maximum PSEL 5-bit value */
+  k_mpc_psel_above_max = 32U,   /**< First value above PSEL max (masked to 0) */
+  k_mpc_psel_all_bits  = 0xFFU, /**< All bits set (masked to 0x1F) */
+} mpc_test_mask_t;
 
 /* =============================================================================
  * Test Setup and Teardown
@@ -161,7 +271,7 @@ void tearDown(void)
  */
 void test_mpc_base_address(void)
 {
-  TEST_ASSERT_EQUAL_HEX32(0x0008C100, k_mpc_base_addr);
+  TEST_ASSERT_EQUAL_HEX32(k_mpc_base, k_mpc_base_addr);
 }
 
 /**
@@ -171,7 +281,7 @@ void test_mpc_base_address(void)
 void test_mpc_accessor(void)
 {
   volatile rx_mpc_regs_t* m = mpc();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C100, (void*)m);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_base, (uintptr_t)m);
 }
 
 /* =============================================================================
@@ -185,10 +295,10 @@ void test_mpc_accessor(void)
  */
 void test_pfcse_offset(void)
 {
-  TEST_ASSERT_EQUAL_size_t(0x00, offsetof(rx_mpc_regs_t, pfcse));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_off_pfcse, offsetof(rx_mpc_regs_t, pfcse));
 
   volatile rx_mpc_regs_t* m = mpc();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C100, (void*)&m->pfcse);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_base, (uintptr_t)&m->pfcse);
 }
 
 /**
@@ -216,22 +326,22 @@ void test_pfcse_offset(void)
  */
 void test_pwpr_offset(void)
 {
-  TEST_ASSERT_EQUAL_size_t(0x1F, offsetof(rx_mpc_regs_t, pwpr));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_off_pwpr, offsetof(rx_mpc_regs_t, pwpr));
 
   volatile rx_mpc_regs_t* m = mpc();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C11F, (void*)&m->pwpr);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pwpr, (uintptr_t)&m->pwpr);
 }
 
 /**
  * @brief Test P00PFS register offset
- * @details P00PFS (Port 0 Pin 0 Function Select) should be at offset 0x40 (address 0x0008C140)
+ * @details P00PFS should be at offset 0x40 (address 0x0008C140)
  */
 void test_p00pfs_offset(void)
 {
-  TEST_ASSERT_EQUAL_size_t(0x40, offsetof(rx_mpc_regs_t, p00pfs));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_off_p00pfs, offsetof(rx_mpc_regs_t, p00pfs));
 
   volatile rx_mpc_regs_t* m = mpc();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C140, (void*)&m->p00pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p00pfs, (uintptr_t)&m->p00pfs);
 }
 
 /* =============================================================================
@@ -247,14 +357,14 @@ void test_port0_pfs_addresses(void)
 {
   volatile rx_mpc_regs_t* m = mpc();
 
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C140, (void*)&m->p00pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C141, (void*)&m->p01pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C142, (void*)&m->p02pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C143, (void*)&m->p03pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C144, (void*)&m->p04pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C145, (void*)&m->p05pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C146, (void*)&m->p06pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C147, (void*)&m->p07pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p00pfs, (uintptr_t)&m->p00pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p01pfs, (uintptr_t)&m->p01pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p02pfs, (uintptr_t)&m->p02pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p03pfs, (uintptr_t)&m->p03pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p04pfs, (uintptr_t)&m->p04pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p05pfs, (uintptr_t)&m->p05pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p06pfs, (uintptr_t)&m->p06pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p07pfs, (uintptr_t)&m->p07pfs);
 }
 
 /**
@@ -265,14 +375,14 @@ void test_port1_pfs_addresses(void)
 {
   volatile rx_mpc_regs_t* m = mpc();
 
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C148, (void*)&m->p10pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C149, (void*)&m->p11pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C14A, (void*)&m->p12pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C14B, (void*)&m->p13pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C14C, (void*)&m->p14pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C14D, (void*)&m->p15pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C14E, (void*)&m->p16pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C14F, (void*)&m->p17pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p10pfs, (uintptr_t)&m->p10pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p11pfs, (uintptr_t)&m->p11pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p12pfs, (uintptr_t)&m->p12pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p13pfs, (uintptr_t)&m->p13pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p14pfs, (uintptr_t)&m->p14pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p15pfs, (uintptr_t)&m->p15pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p16pfs, (uintptr_t)&m->p16pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p17pfs, (uintptr_t)&m->p17pfs);
 }
 
 /**
@@ -283,14 +393,14 @@ void test_port2_pfs_addresses(void)
 {
   volatile rx_mpc_regs_t* m = mpc();
 
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C150, (void*)&m->p20pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C151, (void*)&m->p21pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C152, (void*)&m->p22pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C153, (void*)&m->p23pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C154, (void*)&m->p24pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C155, (void*)&m->p25pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C156, (void*)&m->p26pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C157, (void*)&m->p27pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p20pfs, (uintptr_t)&m->p20pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p21pfs, (uintptr_t)&m->p21pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p22pfs, (uintptr_t)&m->p22pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p23pfs, (uintptr_t)&m->p23pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p24pfs, (uintptr_t)&m->p24pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p25pfs, (uintptr_t)&m->p25pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p26pfs, (uintptr_t)&m->p26pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p27pfs, (uintptr_t)&m->p27pfs);
 }
 
 /**
@@ -299,10 +409,10 @@ void test_port2_pfs_addresses(void)
  */
 void test_port5_pfs_addresses(void)
 {
-  TEST_ASSERT_EQUAL_size_t(0x40 + 0x28, offsetof(rx_mpc_regs_t, p50pfs));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_off_p50pfs, offsetof(rx_mpc_regs_t, p50pfs));
 
   volatile rx_mpc_regs_t* m = mpc();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C168, (void*)&m->p50pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_p50pfs, (uintptr_t)&m->p50pfs);
 }
 
 /**
@@ -311,17 +421,17 @@ void test_port5_pfs_addresses(void)
  */
 void test_porta_pfs_addresses(void)
 {
-  TEST_ASSERT_EQUAL_size_t(0x40 + 0x50, offsetof(rx_mpc_regs_t, pa0pfs));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_off_pa0pfs, offsetof(rx_mpc_regs_t, pa0pfs));
 
   volatile rx_mpc_regs_t* m = mpc();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C190, (void*)&m->pa0pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C191, (void*)&m->pa1pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C192, (void*)&m->pa2pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C193, (void*)&m->pa3pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C194, (void*)&m->pa4pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C195, (void*)&m->pa5pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C196, (void*)&m->pa6pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C197, (void*)&m->pa7pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pa0pfs, (uintptr_t)&m->pa0pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pa1pfs, (uintptr_t)&m->pa1pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pa2pfs, (uintptr_t)&m->pa2pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pa3pfs, (uintptr_t)&m->pa3pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pa4pfs, (uintptr_t)&m->pa4pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pa5pfs, (uintptr_t)&m->pa5pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pa6pfs, (uintptr_t)&m->pa6pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pa7pfs, (uintptr_t)&m->pa7pfs);
 }
 
 /**
@@ -330,17 +440,17 @@ void test_porta_pfs_addresses(void)
  */
 void test_porte_pfs_addresses(void)
 {
-  TEST_ASSERT_EQUAL_size_t(0x40 + 0x70, offsetof(rx_mpc_regs_t, pe0pfs));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_off_pe0pfs, offsetof(rx_mpc_regs_t, pe0pfs));
 
   volatile rx_mpc_regs_t* m = mpc();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C1B0, (void*)&m->pe0pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C1B1, (void*)&m->pe1pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C1B2, (void*)&m->pe2pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C1B3, (void*)&m->pe3pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C1B4, (void*)&m->pe4pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C1B5, (void*)&m->pe5pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C1B6, (void*)&m->pe6pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C1B7, (void*)&m->pe7pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pe0pfs, (uintptr_t)&m->pe0pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pe1pfs, (uintptr_t)&m->pe1pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pe2pfs, (uintptr_t)&m->pe2pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pe3pfs, (uintptr_t)&m->pe3pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pe4pfs, (uintptr_t)&m->pe4pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pe5pfs, (uintptr_t)&m->pe5pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pe6pfs, (uintptr_t)&m->pe6pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pe7pfs, (uintptr_t)&m->pe7pfs);
 }
 
 /**
@@ -349,15 +459,15 @@ void test_porte_pfs_addresses(void)
  */
 void test_portj_pfs_addresses(void)
 {
-  TEST_ASSERT_EQUAL_size_t(0x40 + 0x90, offsetof(rx_mpc_regs_t, pj0pfs));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_off_pj0pfs, offsetof(rx_mpc_regs_t, pj0pfs));
 
   volatile rx_mpc_regs_t* m = mpc();
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C1D0, (void*)&m->pj0pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C1D1, (void*)&m->pj1pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C1D2, (void*)&m->pj2pfs);
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C1D3, (void*)&m->pj3pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pj0pfs, (uintptr_t)&m->pj0pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pj1pfs, (uintptr_t)&m->pj1pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pj2pfs, (uintptr_t)&m->pj2pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pj3pfs, (uintptr_t)&m->pj3pfs);
   /* PJ4 is reserved/not available */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C1D5, (void*)&m->pj5pfs);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pj5pfs, (uintptr_t)&m->pj5pfs);
 }
 
 /* =============================================================================
@@ -374,7 +484,7 @@ void test_mpc_struct_size(void)
   /* Base registers (0x00-0x3F) = 64 bytes
    * PFS registers (0x40-0xD7) = 152 bytes
    * Total = 216 bytes */
-  TEST_ASSERT_EQUAL_size_t(0x40 + 152, sizeof(rx_mpc_regs_t));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_struct_size, sizeof(rx_mpc_regs_t));
 }
 
 /* =============================================================================
@@ -450,7 +560,7 @@ void test_pfs_bit_definitions(void)
 void test_pfs_bitfield_struct_size(void)
 {
   /* PFS bitfield struct should be exactly 1 byte (8 bits) */
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(rx_pfs_regs_t));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_pfs_reg_size, sizeof(rx_pfs_regs_t));
 }
 
 /* =============================================================================
@@ -539,14 +649,14 @@ void test_pwpr_lock_sequence_values(void)
 void test_psel_value_range(void)
 {
   /* PSEL is 5 bits, so valid range is 0-31 */
-  for (uint8_t psel = 0; psel <= 31; psel++) {
+  for (uint8_t psel = 0; psel <= k_mpc_psel_max_value; psel++) {
     /* PSEL value should fit within mask */
     TEST_ASSERT_EQUAL_UINT8(psel, psel & k_pfs_psel_mask);
   }
 
   /* Values above 31 should be masked */
-  TEST_ASSERT_EQUAL_UINT8(0x00, 32 & k_pfs_psel_mask);
-  TEST_ASSERT_EQUAL_UINT8(0x1F, 0xFF & k_pfs_psel_mask);
+  TEST_ASSERT_EQUAL_UINT8(0x00, k_mpc_psel_above_max & k_pfs_psel_mask);
+  TEST_ASSERT_EQUAL_UINT8(0x1F, k_mpc_psel_all_bits & k_pfs_psel_mask);
 }
 
 /* =============================================================================
@@ -563,25 +673,25 @@ void test_bus_control_register_offsets(void)
   volatile rx_mpc_regs_t* m = mpc();
 
   /* PFCSE @ 0x0008C100 (offset 0x00) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C100, (void*)&m->pfcse);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_base, (uintptr_t)&m->pfcse);
 
   /* PFCSS0 @ 0x0008C102 (offset 0x02, after 1 reserved byte) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C102, (void*)&m->pfcss0);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pfcss0, (uintptr_t)&m->pfcss0);
 
   /* PFCSS1 @ 0x0008C103 (offset 0x03) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C103, (void*)&m->pfcss1);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pfcss1, (uintptr_t)&m->pfcss1);
 
   /* PFAOE0 @ 0x0008C104 (offset 0x04) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C104, (void*)&m->pfaoe0);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pfaoe0, (uintptr_t)&m->pfaoe0);
 
   /* PFAOE1 @ 0x0008C105 (offset 0x05) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C105, (void*)&m->pfaoe1);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pfaoe1, (uintptr_t)&m->pfaoe1);
 
   /* PFBCR0 @ 0x0008C106 (offset 0x06) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C106, (void*)&m->pfbcr0);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pfbcr0, (uintptr_t)&m->pfbcr0);
 
   /* PFENET @ 0x0008C10E (offset 0x0E) */
-  TEST_ASSERT_EQUAL_PTR((void*)0x0008C10E, (void*)&m->pfenet);
+  TEST_ASSERT_EQUAL_HEX64(k_mpc_pfenet, (uintptr_t)&m->pfenet);
 }
 
 /* =============================================================================
@@ -595,25 +705,23 @@ void test_bus_control_register_offsets(void)
  */
 void test_register_field_widths(void)
 {
-  volatile rx_mpc_regs_t* m = mpc();
-
   /* Bus control registers - all 8-bit */
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(m->pfcse));
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(m->pfcss0));
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(m->pfcss1));
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(m->pfaoe0));
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(m->pfaoe1));
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(m->pfbcr0));
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(m->pfenet));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_pfs_reg_size, sizeof(((rx_mpc_regs_t*)0)->pfcse));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_pfs_reg_size, sizeof(((rx_mpc_regs_t*)0)->pfcss0));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_pfs_reg_size, sizeof(((rx_mpc_regs_t*)0)->pfcss1));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_pfs_reg_size, sizeof(((rx_mpc_regs_t*)0)->pfaoe0));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_pfs_reg_size, sizeof(((rx_mpc_regs_t*)0)->pfaoe1));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_pfs_reg_size, sizeof(((rx_mpc_regs_t*)0)->pfbcr0));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_pfs_reg_size, sizeof(((rx_mpc_regs_t*)0)->pfenet));
 
   /* PWPR - 8-bit */
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(m->pwpr));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_pfs_reg_size, sizeof(((rx_mpc_regs_t*)0)->pwpr));
 
   /* PFS registers - all 8-bit */
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(m->p00pfs));
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(m->pa0pfs));
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(m->pe0pfs));
-  TEST_ASSERT_EQUAL_size_t(1, sizeof(m->pj0pfs));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_pfs_reg_size, sizeof(((rx_mpc_regs_t*)0)->p00pfs));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_pfs_reg_size, sizeof(((rx_mpc_regs_t*)0)->pa0pfs));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_pfs_reg_size, sizeof(((rx_mpc_regs_t*)0)->pe0pfs));
+  TEST_ASSERT_EQUAL_size_t(k_mpc_pfs_reg_size, sizeof(((rx_mpc_regs_t*)0)->pj0pfs));
 }
 
 /* =============================================================================

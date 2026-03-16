@@ -228,7 +228,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -677,7 +676,7 @@ typedef struct {
  *
  * @par Example (Error Handling):
  * @code{.c}
- * rx_wdt_config_t config = {0};
+ * rx_wdt_config_t config = {};
  * rx_err_t err = rx_wdt_init(&config);
  *
  * switch (err) {

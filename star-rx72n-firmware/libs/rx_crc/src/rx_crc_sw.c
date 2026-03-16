@@ -226,10 +226,7 @@ static uint32_t internal_crc32_compute(const uint8_t* data, uint32_t len)
 {
   uint32_t crc = k_crc32_init_value;
 
-  for (uint32_t i = 0U; i < k_crc_len_max; i++) {
-    if (i >= len) {
-      break;
-    }
+  for (uint32_t i = 0U; i < len; i++) {
     crc = s_crc32_table[(uint8_t)(crc ^ data[i])] ^ (crc >> k_crc_byte_shift);
   }
 
@@ -260,10 +257,7 @@ static uint32_t internal_crc32c_compute(const uint8_t* data, uint32_t len)
 {
   uint32_t crc = k_crc32_init_value;
 
-  for (uint32_t i = 0U; i < k_crc_len_max; i++) {
-    if (i >= len) {
-      break;
-    }
+  for (uint32_t i = 0U; i < len; i++) {
     crc = s_crc32c_table[(uint8_t)(crc ^ data[i])] ^ (crc >> k_crc_byte_shift);
   }
 
@@ -293,16 +287,13 @@ static uint32_t internal_crc32c_compute(const uint8_t* data, uint32_t len)
  */
 static uint16_t internal_crc16_ibm_compute(const uint8_t* data, uint32_t len)
 {
-  uint16_t crc = (uint16_t)k_crc16_init;
+  uint16_t crc = k_crc16_init;
 
-  for (uint32_t i = 0U; i < k_crc_len_max; i++) {
-    if (i >= len) {
-      break;
-    }
+  for (uint32_t i = 0U; i < len; i++) {
     crc ^= (uint16_t)data[i];
     for (uint8_t b = 0U; b < k_bits_per_byte; b++) {
       if ((crc & (uint16_t)k_crc_lsb_mask) != 0U) {
-        crc = (uint16_t)((crc >> k_crc_shift_1bit) ^ (uint16_t)k_crc16_ibm_poly);
+        crc = (uint16_t)((crc >> k_crc_shift_1bit) ^ k_crc16_ibm_poly);
       } else {
         crc >>= k_crc_shift_1bit;
       }
@@ -335,16 +326,13 @@ static uint16_t internal_crc16_ibm_compute(const uint8_t* data, uint32_t len)
  */
 static uint16_t internal_crc_ccitt_compute(const uint8_t* data, uint32_t len)
 {
-  uint16_t crc = (uint16_t)k_crc_ccitt_init;
+  uint16_t crc = k_crc_ccitt_init;
 
-  for (uint32_t i = 0U; i < k_crc_len_max; i++) {
-    if (i >= len) {
-      break;
-    }
+  for (uint32_t i = 0U; i < len; i++) {
     crc ^= (uint16_t)data[i];
     for (uint8_t b = 0U; b < k_bits_per_byte; b++) {
       if ((crc & (uint16_t)k_crc_lsb_mask) != 0U) {
-        crc = (uint16_t)((crc >> k_crc_shift_1bit) ^ (uint16_t)k_crc_ccitt_poly);
+        crc = (uint16_t)((crc >> k_crc_shift_1bit) ^ k_crc_ccitt_poly);
       } else {
         crc >>= k_crc_shift_1bit;
       }
@@ -377,12 +365,9 @@ static uint16_t internal_crc_ccitt_compute(const uint8_t* data, uint32_t len)
  */
 static uint8_t internal_crc8_maxim_compute(const uint8_t* data, uint32_t len)
 {
-  uint8_t crc = (uint8_t)k_crc8_init;
+  uint8_t crc = k_crc8_init;
 
-  for (uint32_t i = 0U; i < k_crc_len_max; i++) {
-    if (i >= len) {
-      break;
-    }
+  for (uint32_t i = 0U; i < len; i++) {
     crc ^= data[i];
     for (uint8_t b = 0U; b < k_bits_per_byte; b++) {
       if ((crc & k_crc_lsb_mask) != 0U) {
@@ -478,18 +463,22 @@ uint32_t internal_crc_sw_compute(rx_crc_poly_t poly, const uint8_t* data, uint32
  * re-finalizes by XOR with k_crc32_final_xor. Used by rx_crc32_update() to
  * support incremental (streaming) CRC-32 computation over multiple chunks.
  *
- * Pass-through cases: returns crc unchanged if data is nullptr or len == 0.
+ * Pass-through case: returns crc unchanged if len exceeds k_crc_len_max.
+ * Caller (rx_crc32_update) is responsible for filtering null data and zero len
+ * before invoking this function.
  *
  * @param[in] crc  Previous finalized CRC-32 value (0U for first chunk)
- * @param[in] data Additional data buffer; NULL causes pass-through
- * @param[in] len  Number of bytes to process; 0 causes pass-through
+ * @param[in] data Additional data buffer (caller ensures non-NULL, len > 0)
+ * @param[in] len  Number of bytes to process (caller ensures > 0);
+ *                 returns crc unchanged if len > k_crc_len_max
  *
  * @return uint32_t Updated finalized CRC-32/IEEE value
- * @retval 0x00000000..0xFFFFFFFF Updated CRC, or original crc on pass-through
+ * @retval 0x00000000..0xFFFFFFFF Updated CRC, or original crc if len > k_crc_len_max
  *
  * @pre crc is either 0U (first call) or the return value of a prior
  *      internal_crc32_sw_update() / rx_crc32_update() call
- * @pre data points to len valid bytes, or is NULL (pass-through)
+ * @pre data points to len valid bytes (caller enforces non-NULL)
+ * @pre len > 0 (caller enforces)
  * @post Returns finalized CRC-32 with final XOR applied
  * @post No side effects (stateless, read-only table access)
  *
@@ -498,17 +487,14 @@ uint32_t internal_crc_sw_compute(rx_crc_poly_t poly, const uint8_t* data, uint32
  */
 uint32_t internal_crc32_sw_update(uint32_t crc, const uint8_t* data, uint32_t len)
 {
-  if (data == nullptr || len == 0U || len > k_crc_len_max) {
+  if (len > k_crc_len_max) {
     return crc;
   }
 
   /* Un-finalize previous CRC to get internal accumulator state */
   uint32_t work = crc ^ k_crc32_final_xor;
 
-  for (uint32_t i = 0U; i < k_crc_len_max; i++) {
-    if (i >= len) {
-      break;
-    }
+  for (uint32_t i = 0U; i < len; i++) {
     work = s_crc32_table[(uint8_t)(work ^ data[i])] ^ (work >> k_crc_byte_shift);
   }
 

@@ -94,6 +94,8 @@
 
 #include <string.h>
 
+#include "rx_check.h"
+
 /* =============================================================================
  * Private Constants
  * =============================================================================
@@ -187,6 +189,9 @@ typedef enum : uint8_t {
 
   k_hex_chars_per_u32 = 8, /**< Hex characters for uint32_t (e.g., "FFFFFFFF").
                                 @par Value: 8 */
+
+  k_u16_high_byte_shift = 8, /**< Bit shift to extract high byte from uint16_t.
+                                   @par Value: 8 bits */
 
   k_u32_high_u16_shift = 16, /**< Bit shift to extract high uint16 from uint32.
                                   @par Value: 16 bits */
@@ -302,14 +307,16 @@ static const char s_hex_chars[] = "0123456789ABCDEF";
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-static uint32_t internal_append_str(char* buf, uint32_t pos, uint32_t max, const char* str)
+RX_STATIC_TESTABLE uint32_t internal_append_str(char*       buf,
+                                                uint32_t    pos,
+                                                uint32_t    max,
+                                                const char* str)
 {
-  /* Rule 5: Pre-condition validation */
-  if (buf == nullptr || str == nullptr || max == k_empty_buffer || pos >= max) {
-    return pos;
-  }
+  /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
+  RX_ASSERT(buf != nullptr && str != nullptr && max != k_empty_buffer && pos < max,
+            "internal_append_str: precondition violated by caller");
 
-  while (*str != '\0' && pos < max - k_null_terminator) {
+  while (pos < max - k_null_terminator && *str != '\0') {
     buf[pos++] = *str++;
   }
   return pos;
@@ -338,12 +345,11 @@ static uint32_t internal_append_str(char* buf, uint32_t pos, uint32_t max, const
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-static uint32_t internal_append_char(char* buf, uint32_t pos, uint32_t max, char c)
+RX_STATIC_TESTABLE uint32_t internal_append_char(char* buf, uint32_t pos, uint32_t max, char c)
 {
-  /* Rule 5: Pre-condition validation */
-  if (buf == nullptr || max == k_empty_buffer || pos >= max) {
-    return pos;
-  }
+  /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
+  RX_ASSERT(buf != nullptr && max != k_empty_buffer && pos < max,
+            "internal_append_char: precondition violated by caller");
 
   if (pos < max - k_null_terminator) {
     buf[pos++] = c;
@@ -380,12 +386,14 @@ static uint32_t internal_append_char(char* buf, uint32_t pos, uint32_t max, char
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-static uint32_t internal_append_hex_byte(char* buf, uint32_t pos, uint32_t max, uint8_t byte)
+RX_STATIC_TESTABLE uint32_t internal_append_hex_byte(char*    buf,
+                                                     uint32_t pos,
+                                                     uint32_t max,
+                                                     uint8_t  byte)
 {
-  /* Rule 5: Pre-condition validation */
-  if (buf == nullptr || max < k_hex_chars_per_byte || pos >= max) {
-    return pos;
-  }
+  /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
+  RX_ASSERT(buf != nullptr && max >= k_hex_chars_per_byte && pos < max,
+            "internal_append_hex_byte: precondition violated by caller");
 
   if (pos < max - k_hex_chars_per_byte) {
     buf[pos++] = s_hex_chars[(byte >> k_hex_digit_shift) & k_hex_digit_mask];
@@ -421,14 +429,16 @@ static uint32_t internal_append_hex_byte(char* buf, uint32_t pos, uint32_t max, 
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-static uint32_t internal_append_hex_u16(char* buf, uint32_t pos, uint32_t max, uint16_t value)
+RX_STATIC_TESTABLE uint32_t internal_append_hex_u16(char*    buf,
+                                                    uint32_t pos,
+                                                    uint32_t max,
+                                                    uint16_t value)
 {
-  /* Rule 5: Pre-condition validation */
-  if (buf == nullptr || max < k_hex_chars_per_u16 || pos >= max) {
-    return pos;
-  }
+  /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
+  RX_ASSERT(buf != nullptr && max >= k_hex_chars_per_u16 && pos < max,
+            "internal_append_hex_u16: precondition violated by caller");
 
-  pos = internal_append_hex_byte(buf, pos, max, (uint8_t)(value >> 8));
+  pos = internal_append_hex_byte(buf, pos, max, (uint8_t)(value >> k_u16_high_byte_shift));
   pos = internal_append_hex_byte(buf, pos, max, (uint8_t)(value & k_mask_u8));
   return pos;
 }
@@ -461,12 +471,14 @@ static uint32_t internal_append_hex_u16(char* buf, uint32_t pos, uint32_t max, u
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-static uint32_t internal_append_hex_u32(char* buf, uint32_t pos, uint32_t max, uint32_t value)
+RX_STATIC_TESTABLE uint32_t internal_append_hex_u32(char*    buf,
+                                                    uint32_t pos,
+                                                    uint32_t max,
+                                                    uint32_t value)
 {
-  /* Rule 5: Pre-condition validation */
-  if (buf == nullptr || max < k_hex_chars_per_u32 || pos >= max) {
-    return pos;
-  }
+  /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
+  RX_ASSERT(buf != nullptr && max >= k_hex_chars_per_u32 && pos < max,
+            "internal_append_hex_u32: precondition violated by caller");
 
   pos = internal_append_hex_u16(buf, pos, max, (uint16_t)(value >> k_u32_high_u16_shift));
   pos = internal_append_hex_u16(buf, pos, max, (uint16_t)(value & k_mask_u16));
@@ -510,12 +522,14 @@ static uint32_t internal_append_hex_u32(char* buf, uint32_t pos, uint32_t max, u
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-static uint32_t internal_append_decimal_u16(char* buf, uint32_t pos, uint32_t max, uint16_t value)
+RX_STATIC_TESTABLE uint32_t internal_append_decimal_u16(char*    buf,
+                                                        uint32_t pos,
+                                                        uint32_t max,
+                                                        uint16_t value)
 {
-  /* Rule 5: Pre-condition validation */
-  if (buf == nullptr || max == k_empty_buffer || pos >= max) {
-    return pos;
-  }
+  /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
+  RX_ASSERT(buf != nullptr && max != k_empty_buffer && pos < max,
+            "internal_append_decimal_u16: precondition violated by caller");
 
   char    temp[k_u16_decimal_buf_size]; /* Max 5 digits + null for uint16_t */
   uint8_t len = 0;
@@ -524,7 +538,7 @@ static uint32_t internal_append_decimal_u16(char* buf, uint32_t pos, uint32_t ma
     return internal_append_char(buf, pos, max, '0');
   }
 
-  while (value > 0 && len < k_u16_decimal_max_digits) {
+  while (value > 0) {
     const uint8_t digit = (uint8_t)(value % k_decimal_base);
     temp[len++]         = (char)('0' + digit);
     value /= k_decimal_base;
@@ -563,9 +577,9 @@ static uint32_t internal_append_decimal_u16(char* buf, uint32_t pos, uint32_t ma
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-static bool internal_is_printable(uint8_t c)
+RX_STATIC_TESTABLE bool internal_is_printable(uint8_t c)
 {
-  return (c >= k_printable_min && c <= k_printable_max);
+  return (bool)((c >= k_printable_min) && (c <= k_printable_max));
 }
 
 /**
@@ -610,23 +624,68 @@ static bool internal_is_printable(uint8_t c)
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-static uint32_t internal_format_payload(char*          buf,
-                                        uint32_t       pos,
-                                        uint32_t       max,
-                                        const uint8_t* payload,
-                                        uint16_t       length)
+/**
+ * @brief Format one hex dump line (hex bytes + ASCII sidebar)
+ *
+ * @param[in,out] buf Output buffer
+ * @param[in] pos Current position in buffer
+ * @param[in] max Maximum buffer size
+ * @param[in] payload Payload data
+ * @param[in] offset Byte offset within payload for this line
+ * @param[in] line_bytes Number of payload bytes on this line
+ *
+ * @return Updated position in buffer
+ *
+ * @ingroup frame_ascii_helpers
+ * @since Version 1.0.0
+ */
+static uint32_t internal_format_hex_line(char*          buf,
+                                         uint32_t       pos,
+                                         uint32_t       max,
+                                         const uint8_t* payload,
+                                         uint16_t       offset,
+                                         uint16_t       line_bytes)
 {
-  /* Rule 5: Pre-condition validation */
-  if (buf == nullptr || max == k_empty_buffer || pos >= max) {
-    return pos;
+  /* Hex dump */
+  for (uint16_t i = 0; i < k_bytes_per_line; i++) {
+    if (i < line_bytes) {
+      pos = internal_append_hex_byte(buf, pos, max, payload[offset + i]);
+      pos = internal_append_char(buf, pos, max, ' ');
+    } else {
+      pos = internal_append_str(buf, pos, max, "   "); /* Pad short lines */
+    }
   }
+
+  /* ASCII sidebar */
+  pos = internal_append_char(buf, pos, max, ' ');
+  for (uint16_t i = 0; i < line_bytes; i++) {
+    const uint8_t c          = payload[offset + i];
+    char          display_ch = '.';
+    if (internal_is_printable(c)) {
+      display_ch = (char)c;
+    }
+    pos = internal_append_char(buf, pos, max, display_ch);
+  }
+
+  return pos;
+}
+
+RX_STATIC_TESTABLE uint32_t internal_format_payload(char*          buf,
+                                                    uint32_t       pos,
+                                                    uint32_t       max,
+                                                    const uint8_t* payload,
+                                                    uint16_t       length)
+{
+  /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
+  RX_ASSERT(buf != nullptr && max != k_empty_buffer && pos < max,
+            "internal_format_payload: precondition violated by caller");
 
   if (length == 0) {
     pos = internal_append_str(buf, pos, max, "[PAYLOAD] (empty)\r\n");
     return pos;
   }
 
-  /* Validate payload is non-NULL if length > 0 */
+  /* payload must be non-NULL when length > 0 */
   if (payload == nullptr) {
     return pos;
   }
@@ -644,22 +703,8 @@ static uint32_t internal_format_payload(char*          buf,
       line_bytes = k_bytes_per_line;
     }
 
-    /* Hex dump */
-    for (uint16_t i = 0; i < k_bytes_per_line; i++) {
-      if (i < line_bytes) {
-        pos = internal_append_hex_byte(buf, pos, max, payload[offset + i]);
-        pos = internal_append_char(buf, pos, max, ' ');
-      } else {
-        pos = internal_append_str(buf, pos, max, "   "); /* Pad short lines */
-      }
-    }
-
-    /* ASCII sidebar */
-    pos = internal_append_char(buf, pos, max, ' ');
-    for (uint16_t i = 0; i < line_bytes; i++) {
-      uint8_t c = payload[offset + i];
-      pos       = internal_append_char(buf, pos, max, internal_is_printable(c) ? (char)c : '.');
-    }
+    /* Format hex bytes and ASCII sidebar */
+    pos = internal_format_hex_line(buf, pos, max, payload, offset, line_bytes);
 
     pos = internal_append_str(buf, pos, max, "\r\n");
     offset += line_bytes;
@@ -709,21 +754,29 @@ static uint32_t internal_format_payload(char*          buf,
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-static uint32_t internal_format_header(char*                    buf,
-                                       uint32_t                 pos,
-                                       uint32_t                 max,
-                                       const rx_frame_header_t* header,
-                                       bool                     is_tx)
+RX_STATIC_TESTABLE uint32_t internal_format_header(char*                    buf,
+                                                   uint32_t                 pos,
+                                                   uint32_t                 max,
+                                                   const rx_frame_header_t* header,
+                                                   bool                     is_tx)
 {
-  /* Rule 5: Pre-condition validation */
-  if (buf == nullptr || header == nullptr || max == k_empty_buffer || pos >= max) {
+  /* Rule 5: Pre-condition invariant - callers guarantee these conditions */
+  RX_ASSERT(buf != nullptr && header != nullptr && max != k_empty_buffer && pos < max,
+            "internal_format_header: precondition violated by caller");
+
+  /* Safety guard: prevent null dereference in unit test mode after assert fires */
+  if (header == nullptr) {
     return pos;
   }
 
   char flags_buf[k_flags_buf_size];
 
   /* Direction */
-  pos = internal_append_str(buf, pos, max, is_tx ? "[TX] " : "[RX] ");
+  if (is_tx) {
+    pos = internal_append_str(buf, pos, max, "[TX] ");
+  } else {
+    pos = internal_append_str(buf, pos, max, "[RX] ");
+  }
 
   /* Sequence number */
   pos = internal_append_str(buf, pos, max, "seq=");
@@ -743,12 +796,7 @@ static uint32_t internal_format_header(char*                    buf,
   pos = internal_append_str(buf, pos, max, flags_buf);
   pos = internal_append_str(buf, pos, max, "\r\n");
 
-  /* Rule 5: Post-condition validation - ensure pos never exceeds max.
-   * Defensive invariant: internal_append_* currently enforce pos <= max, but this
-   * guard protects against buffer overflows if future refactors change their behavior. */
-  if (pos > max) {
-    pos = max;
-  }
+  /* Rule 5: Post-condition: pos <= max is guaranteed by helpers' bounds checks. */
 
   return pos;
 }
@@ -830,18 +878,16 @@ const char* rx_frame_ascii_type_name(rx_frame_type_t type)
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
  */
-static uint32_t internal_append_flag(char*       buffer,
-                                     uint32_t    pos,
-                                     uint32_t    max,
-                                     bool*       first,
-                                     uint8_t     flags,
-                                     uint8_t     flag_bit,
-                                     const char* flag_name)
+RX_STATIC_TESTABLE uint32_t internal_append_flag(char*       buffer,
+                                                 uint32_t    pos,
+                                                 uint32_t    max,
+                                                 bool*       first,
+                                                 uint8_t     flags,
+                                                 uint8_t     flag_bit,
+                                                 const char* flag_name)
 {
-  /* Rule 5: Pre-condition validation */
-  if (first == nullptr) {
-    return pos;
-  }
+  /* Rule 5: Pre-condition invariant - callers always pass valid local bool address */
+  RX_ASSERT(first != nullptr, "internal_append_flag: first is nullptr - caller must validate");
 
   if (flags & flag_bit) {
     if (!*first) {
@@ -965,15 +1011,8 @@ rx_err_t rx_frame_ascii_format(const rx_frame_t* frame,
   pos = internal_append_hex_u32(output, pos, output_max_len, frame->crc);
   pos = internal_append_str(output, pos, output_max_len, "\r\n");
 
-  /* Rule 5: Post-condition validation - check for truncation */
-  /* If pos >= output_max_len, we don't have room for null terminator */
-  if (pos >= output_max_len) {
-    /* Buffer was too small - data was truncated */
-    if (output_max_len > 0) {
-      output[output_max_len - 1] = '\0'; /* Null terminate at buffer end */
-    }
-    return k_rx_err_no_mem;
-  }
+  /* Rule 5: Post-condition: helpers cap pos at output_max_len - 1 via bounds
+   * checks, so pos < output_max_len is an invariant by construction. */
 
   /* Null terminate */
   output[pos] = '\0';

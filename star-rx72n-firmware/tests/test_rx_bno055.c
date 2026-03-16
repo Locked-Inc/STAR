@@ -69,7 +69,7 @@
  * @since Version 1.0.0
  */
 
-#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -79,9 +79,27 @@
 #include "rx_bus_config.h"
 #include "rx_bus_i2c.h"
 #include "rx_bus_manager.h"
+#include "rx_check.h"
 #include "rx_err.h"
 #include "rx_port_constants.h"
 #include "unity.h"
+
+/* =============================================================================
+ * Extern Declarations for RX_STATIC_TESTABLE Internal Functions
+ * =============================================================================
+ */
+
+extern rx_err_t internal_write_reg(uint8_t reg, uint8_t val);
+extern rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len);
+extern rx_err_t internal_init_reset_and_wait(void);
+extern rx_err_t internal_init_configure(void);
+extern rx_err_t internal_init_enter_ndof(void);
+extern rx_err_t internal_verify_chip_id(void);
+extern rx_err_t internal_init_enable_interrupt(void);
+extern rx_err_t internal_read_euler(bno055_data_t* out);
+extern rx_err_t internal_read_quat(bno055_data_t* out);
+extern rx_err_t internal_read_lia(bno055_data_t* out);
+extern rx_err_t internal_read_gyro(bno055_data_t* out);
 
 /* =============================================================================
  * Test Constants
@@ -316,6 +334,64 @@ typedef enum : uint8_t {
   k_quat_w_msb_idx = 1, /**< W MSB position in quat buffer */
 } test_bno055_quat_buf_idx_t;
 
+/**
+ * @enum test_bno055_init_call_idx_t
+ * @brief RIIC call indices for poll-mode init error injection
+ *
+ * @details
+ * Each value corresponds to the 0-based RIIC call index within a poll-mode
+ * rx_bno055_init() sequence. Used with mock_riic_set_nth_call_error() to
+ * inject failures at specific init steps.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_init_call_power_mode   = 2U, /**< Call 2: power mode write */
+  k_init_call_unit_sel     = 3U, /**< Call 3: unit selection write */
+  k_init_call_axis_map_cfg = 4U, /**< Call 4: axis map config write */
+  k_init_call_axis_map_sgn = 5U, /**< Call 5: axis map sign write */
+  k_init_call_sys_trigger  = 6U, /**< Call 6: sys trigger clear write */
+  k_init_call_ndof_mode    = 7U, /**< Call 7: NDOF mode write */
+  k_init_call_chip_id_read = 8U, /**< Call 8: chip ID write-read */
+} test_bno055_init_call_idx_t;
+
+/**
+ * @enum test_bno055_int_call_idx_t
+ * @brief RIIC call indices for interrupt-mode init error injection
+ *
+ * @details
+ * In interrupt mode, the 4-step Page 1 register sequence is inserted after
+ * internal_init_configure() (call 6) and before internal_init_enter_ndof().
+ * These indices correspond to the interrupt-specific RIIC calls.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_int_call_page1   = 7U,  /**< Call 7: PAGE_ID=1 write (interrupt mode) */
+  k_int_call_int_msk = 8U,  /**< Call 8: INT_MSK write (interrupt mode) */
+  k_int_call_int_en  = 9U,  /**< Call 9: INT_EN write (interrupt mode) */
+  k_int_call_page0   = 10U, /**< Call 10: PAGE_ID=0 restore write (interrupt mode) */
+} test_bno055_int_call_idx_t;
+
+/**
+ * @enum test_bno055_read_call_idx_t
+ * @brief RIIC call indices for read-path error injection
+ *
+ * @details
+ * After a successful init, mock_riic_set_nth_call_error() uses these indices
+ * to inject failures during rx_bno055_read() sub-transactions. Call 0 (gyro)
+ * is tested via direct NACK injection rather than nth-call, so only calls
+ * 2-5 are named here.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_read_call_quat  = 2U, /**< Call 2: quaternion write-read */
+  k_read_call_lia   = 3U, /**< Call 3: linear accel write-read */
+  k_read_call_temp  = 4U, /**< Call 4: temperature write-read */
+  k_read_call_calib = 5U, /**< Call 5: calib status write-read */
+} test_bno055_read_call_idx_t;
+
 /* =============================================================================
  * Test Fixtures
  * =============================================================================
@@ -378,10 +454,8 @@ static void internal_load_valid_chip_id(void)
 {
   TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
   TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_test_single_byte_buf);
-  uint8_t chip_id_data = (uint8_t)k_bno055_chip_id_expected;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch,
-                              &chip_id_data,
-                              k_test_single_byte_buf);
+  uint8_t chip_id_data = k_bno055_chip_id_expected;
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, &chip_id_data, k_test_single_byte_buf);
 }
 
 /**
@@ -417,17 +491,18 @@ static void internal_load_read_data(void)
   TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
   TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_read_buf_size);
   uint8_t read_buf[k_read_buf_size];
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(read_buf, 0, sizeof(read_buf));
 
   /* Euler heading = 0x0140, roll = 0x0010, pitch = 0x0020 */
-  read_buf[k_read_idx_0] = (uint8_t)k_test_euler_h_lsb;
-  read_buf[k_read_idx_1] = (uint8_t)k_test_euler_h_msb;
-  read_buf[k_read_idx_2] = (uint8_t)k_test_euler_r_lsb;
-  read_buf[k_read_idx_3] = (uint8_t)k_test_euler_r_msb;
-  read_buf[k_read_idx_4] = (uint8_t)k_test_euler_p_lsb;
-  read_buf[k_read_idx_5] = (uint8_t)k_test_euler_p_msb;
+  read_buf[k_read_idx_0] = k_test_euler_h_lsb;
+  read_buf[k_read_idx_1] = k_test_euler_h_msb;
+  read_buf[k_read_idx_2] = k_test_euler_r_lsb;
+  read_buf[k_read_idx_3] = k_test_euler_r_msb;
+  read_buf[k_read_idx_4] = k_test_euler_p_lsb;
+  read_buf[k_read_idx_5] = k_test_euler_p_msb;
 
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, read_buf, k_read_buf_size);
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, read_buf, k_read_buf_size);
 }
 
 /**
@@ -448,11 +523,12 @@ static void internal_load_quat_read_data(void)
   TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
   TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_quat_buf_size);
   uint8_t quat_buf[k_quat_buf_size];
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(quat_buf, 0, sizeof(quat_buf));
-  quat_buf[k_quat_w_lsb_idx] = (uint8_t)k_test_quat_w_lsb;
-  quat_buf[k_quat_w_msb_idx] = (uint8_t)k_test_quat_w_msb;
+  quat_buf[k_quat_w_lsb_idx] = k_test_quat_w_lsb;
+  quat_buf[k_quat_w_msb_idx] = k_test_quat_w_msb;
 
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, quat_buf, k_quat_buf_size);
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, quat_buf, k_quat_buf_size);
 }
 
 /**
@@ -476,11 +552,12 @@ static void internal_load_temp_read_data(void)
   TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
   TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_read_buf_size);
   uint8_t temp_buf[k_read_buf_size];
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(temp_buf, 0, sizeof(temp_buf));
   /* Position 0 is returned for all single-byte reads; set to k_test_temp_raw (25 degC) */
-  temp_buf[k_read_idx_0] = (uint8_t)k_test_temp_raw;
+  temp_buf[k_read_idx_0] = k_test_temp_raw;
 
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, temp_buf, k_read_buf_size);
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, temp_buf, k_read_buf_size);
 }
 
 /**
@@ -503,12 +580,13 @@ static void internal_load_lia_read_data(void)
   TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
   TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_test_lia_buf_size);
   uint8_t lia_buf[k_read_buf_size];
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(lia_buf, 0, sizeof(lia_buf));
   /* lin_acc_x = 0x00C8 = 200 raw (2.0 m/s^2 when divided by k_bno055_scale_acc=100) */
-  lia_buf[k_read_idx_0] = (uint8_t)k_test_lia_x_lsb;
-  lia_buf[k_read_idx_1] = (uint8_t)k_test_lia_x_msb;
+  lia_buf[k_read_idx_0] = k_test_lia_x_lsb;
+  lia_buf[k_read_idx_1] = k_test_lia_x_msb;
 
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, lia_buf, k_read_buf_size);
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, lia_buf, k_read_buf_size);
 }
 
 /* =============================================================================
@@ -548,11 +626,11 @@ void setUp(void)
 
   err = rx_bus_config_init_i2c(&s_i2c_config,
                                "i2c1_imu",
-                               (uint8_t)k_test_bno055_riic_ch,
-                               (uint8_t)k_test_bno055_i2c_addr,
+                               k_test_bno055_riic_ch,
+                               k_test_bno055_i2c_addr,
                                k_rx_p2_0,
                                k_rx_p2_1,
-                               (uint32_t)k_test_bno055_freq_hz);
+                               k_test_bno055_freq_hz);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(&s_test_manager, &s_i2c_config);
@@ -581,8 +659,8 @@ void tearDown(void)
 {
   const rx_err_t deinit_err = rx_bus_manager_deinit(&s_test_manager);
   TEST_ASSERT_EQUAL(k_rx_ok, deinit_err);
-  (void)mock_riic_init();
-  TEST_ASSERT_FALSE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
+  mock_riic_init();
+  TEST_ASSERT_FALSE(mock_riic_is_initialized(k_test_bno055_riic_ch));
 }
 
 /* =============================================================================
@@ -612,7 +690,7 @@ static void internal_setup_initialized_driver(void)
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Verify mock HAL is still operational after init (confirms bus communication completed) */
-  TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
+  TEST_ASSERT_TRUE(mock_riic_is_initialized(k_test_bno055_riic_ch));
 }
 
 /* =============================================================================
@@ -660,14 +738,14 @@ void test_bno055_init_null_manager_returns_error(void)
  */
 void test_bno055_init_i2c_error_propagates(void)
 {
-  (void)mock_riic_simulate_nack(true);
+  mock_riic_simulate_nack(true);
 
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
 
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 
-  (void)mock_riic_simulate_nack(false);
+  mock_riic_simulate_nack(false);
 }
 
 /**
@@ -688,8 +766,8 @@ void test_bno055_init_i2c_error_propagates(void)
  */
 void test_bno055_init_wrong_chip_id(void)
 {
-  uint8_t wrong_id = (uint8_t)k_test_wrong_chip_id;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &wrong_id, k_test_single_byte_buf);
+  uint8_t wrong_id = k_test_wrong_chip_id;
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, &wrong_id, k_test_single_byte_buf);
 
   rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
 
@@ -831,6 +909,7 @@ void test_bno055_read_success_euler(void)
   internal_load_read_data();
 
   bno055_data_t data;
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&data, 0, sizeof(data));
 
   rx_err_t err = rx_bno055_read(&data);
@@ -866,6 +945,7 @@ void test_bno055_read_success_quaternion(void)
   internal_load_quat_read_data();
 
   bno055_data_t data;
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&data, 0, sizeof(data));
 
   rx_err_t err = rx_bno055_read(&data);
@@ -898,6 +978,7 @@ void test_bno055_read_success_temperature(void)
   internal_load_temp_read_data();
 
   bno055_data_t data;
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&data, 0, sizeof(data));
 
   rx_err_t err = rx_bno055_read(&data);
@@ -928,6 +1009,7 @@ void test_bno055_read_success_lia(void)
   internal_load_lia_read_data();
 
   bno055_data_t data;
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&data, 0, sizeof(data));
 
   rx_err_t err = rx_bno055_read(&data);
@@ -954,7 +1036,7 @@ void test_bno055_read_success_lia(void)
 void test_bno055_read_i2c_error_propagates(void)
 {
   internal_setup_initialized_driver();
-  (void)mock_riic_simulate_nack(true);
+  mock_riic_simulate_nack(true);
 
   bno055_data_t data;
   rx_err_t      err = rx_bno055_read(&data);
@@ -962,7 +1044,7 @@ void test_bno055_read_i2c_error_propagates(void)
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 
-  (void)mock_riic_simulate_nack(false);
+  mock_riic_simulate_nack(false);
 }
 
 /* =============================================================================
@@ -1011,8 +1093,8 @@ void test_bno055_is_calibrated_reads_status(void)
   internal_setup_initialized_driver();
 
   /* Load fully calibrated status */
-  uint8_t calib_full = (uint8_t)k_test_calib_all_full;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &calib_full, k_test_single_byte_buf);
+  uint8_t calib_full = k_test_calib_all_full;
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, &calib_full, k_test_single_byte_buf);
 
   bool     out_calibrated = false;
   rx_err_t err            = rx_bno055_is_calibrated(&out_calibrated);
@@ -1021,8 +1103,8 @@ void test_bno055_is_calibrated_reads_status(void)
   TEST_ASSERT_TRUE(out_calibrated);
 
   /* Load uncalibrated status */
-  uint8_t calib_none = (uint8_t)k_test_calib_none;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &calib_none, k_test_single_byte_buf);
+  uint8_t calib_none = k_test_calib_none;
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, &calib_none, k_test_single_byte_buf);
 
   out_calibrated = true;
   err            = rx_bno055_is_calibrated(&out_calibrated);
@@ -1051,10 +1133,8 @@ void test_bno055_is_calibrated_partial(void)
 {
   internal_setup_initialized_driver();
 
-  uint8_t calib_partial = (uint8_t)k_test_calib_partial;
-  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch,
-                              &calib_partial,
-                              k_test_single_byte_buf);
+  uint8_t calib_partial = k_test_calib_partial;
+  mock_riic_set_rx_data(k_test_bno055_riic_ch, &calib_partial, k_test_single_byte_buf);
 
   bool     out_calibrated = true; /* pre-set true so we can detect false-positive */
   rx_err_t err            = rx_bno055_is_calibrated(&out_calibrated);
@@ -1067,6 +1147,49 @@ void test_bno055_is_calibrated_partial(void)
  * Interrupt Mode Init Tests
  * =============================================================================
  */
+
+/**
+ * @brief Verify the 4-step Page 1 interrupt register write sequence in RIIC call history
+ *
+ * @details
+ * Asserts that the RIIC call history at the given base index contains the
+ * expected PAGE_ID=1, INT_MSK, INT_EN, PAGE_ID=0 write sequence for
+ * interrupt-mode initialization.
+ *
+ * @param[in] base Starting index in the RIIC call history for the 4-step sequence
+ *
+ * @pre mock_riic call history contains at least base + 4 entries
+ * @pre Interrupt-mode init completed successfully before calling
+ * @post Assertions pass if all 4 register writes match expected values
+ * @post TEST_ASSERT fires on first mismatch
+ *
+ * @since Version 1.0.0
+ */
+static void internal_verify_interrupt_page1_writes(uint16_t base)
+{
+  const mock_riic_call_t* c0 = mock_riic_get_call(base + k_test_int_idx_page1);
+  const mock_riic_call_t* c1 = mock_riic_get_call(base + k_test_int_idx_int_msk);
+  const mock_riic_call_t* c2 = mock_riic_get_call(base + k_test_int_idx_int_en);
+  const mock_riic_call_t* c3 = mock_riic_get_call(base + k_test_int_idx_page0);
+  TEST_ASSERT_NOT_NULL(c0);
+  TEST_ASSERT_NOT_NULL(c1);
+  TEST_ASSERT_NOT_NULL(c2);
+  TEST_ASSERT_NOT_NULL(c3);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_page_id,
+                         c0->tx_snapshot[k_mock_riic_snapshot_reg_idx]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_page1, c0->tx_snapshot[k_mock_riic_snapshot_val_idx]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_int_msk,
+                         c1->tx_snapshot[k_mock_riic_snapshot_reg_idx]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_int_msk_acc_bsx_drdy,
+                         c1->tx_snapshot[k_mock_riic_snapshot_val_idx]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_int_en,
+                         c2->tx_snapshot[k_mock_riic_snapshot_reg_idx]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_int_en_acc_bsx_drdy,
+                         c2->tx_snapshot[k_mock_riic_snapshot_val_idx]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_page_id,
+                         c3->tx_snapshot[k_mock_riic_snapshot_reg_idx]);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_page0, c3->tx_snapshot[k_mock_riic_snapshot_val_idx]);
+}
 
 /**
  * @brief rx_bno055_init in interrupt mode succeeds when all writes succeed
@@ -1109,32 +1232,9 @@ void test_bno055_init_interrupt_mode_succeeds(void)
   TEST_ASSERT_EQUAL((uint32_t)((uint32_t)poll_call_count + (uint32_t)k_test_interrupt_extra_writes),
                     (uint32_t)interrupt_call_count);
 
-  /* Verify Page 1 write sequence: PAGE_ID=1, INT_MSK=0x01, INT_EN=0x01, PAGE_ID=0.
-   * The 4 Page 1 writes are inserted after configure() and before enter_ndof(), so they
-   * sit at index (poll_call_count - k_test_poll_tail_calls) in the interrupt-mode history. */
-  const uint16_t          base = (uint16_t)(poll_call_count - (uint16_t)k_test_poll_tail_calls);
-  const mock_riic_call_t* c0   = mock_riic_get_call(base + (uint16_t)k_test_int_idx_page1);
-  const mock_riic_call_t* c1   = mock_riic_get_call(base + (uint16_t)k_test_int_idx_int_msk);
-  const mock_riic_call_t* c2   = mock_riic_get_call(base + (uint16_t)k_test_int_idx_int_en);
-  const mock_riic_call_t* c3   = mock_riic_get_call(base + (uint16_t)k_test_int_idx_page0);
-  TEST_ASSERT_NOT_NULL(c0);
-  TEST_ASSERT_NOT_NULL(c1);
-  TEST_ASSERT_NOT_NULL(c2);
-  TEST_ASSERT_NOT_NULL(c3);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_page_id,
-                         c0->tx_snapshot[k_mock_riic_snapshot_reg_idx]);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_page1, c0->tx_snapshot[k_mock_riic_snapshot_val_idx]);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_int_msk,
-                         c1->tx_snapshot[k_mock_riic_snapshot_reg_idx]);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_int_msk_acc_bsx_drdy,
-                         c1->tx_snapshot[k_mock_riic_snapshot_val_idx]);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_int_en,
-                         c2->tx_snapshot[k_mock_riic_snapshot_reg_idx]);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_int_en_acc_bsx_drdy,
-                         c2->tx_snapshot[k_mock_riic_snapshot_val_idx]);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_reg_page_id,
-                         c3->tx_snapshot[k_mock_riic_snapshot_reg_idx]);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_bno055_page0, c3->tx_snapshot[k_mock_riic_snapshot_val_idx]);
+  /* Verify Page 1 write sequence in call history */
+  const uint16_t base = (uint16_t)(poll_call_count - k_test_poll_tail_calls);
+  internal_verify_interrupt_page1_writes(base);
 
   /* Confirm driver is operational by performing a read */
   internal_load_read_data();
@@ -1165,6 +1265,659 @@ void test_bno055_init_null_config(void)
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT32((uint32_t)before_count, (uint32_t)mock_riic_get_call_count());
+}
+
+/* =============================================================================
+ * Additional Init Error-Path Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief rx_bno055_init propagates error when CONFIG mode write fails
+ *
+ * @details
+ * Injects an error on RIIC call index 1 (0-based) so the first write (software
+ * reset) succeeds but the second write (set CONFIG mode) fails. Verifies that
+ * the driver returns the injected error and leaves s_initialized false.
+ *
+ * @pre s_initialized == false
+ * @pre setUp() has initialized bus manager and mock RIIC HAL
+ * @post s_initialized == false (error path does not set it)
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_init_config_mode_write_fails(void)
+{
+  mock_riic_set_nth_call_error(1U, k_rx_err_nack);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_init propagates error when power mode write fails
+ *
+ * @details
+ * Injects error on RIIC call index 2 so the reset and CONFIG mode writes succeed
+ * but the power mode write (first write of internal_init_configure) fails.
+ *
+ * @pre s_initialized == false
+ * @post s_initialized == false
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_init_power_mode_write_fails(void)
+{
+  mock_riic_set_nth_call_error(k_init_call_power_mode, k_rx_err_nack);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_init propagates error when unit selection write fails
+ *
+ * @details
+ * Injects error on RIIC call index 3 (unit sel write in internal_init_configure).
+ *
+ * @pre s_initialized == false
+ * @post s_initialized == false
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_init_unit_sel_write_fails(void)
+{
+  mock_riic_set_nth_call_error(k_init_call_unit_sel, k_rx_err_nack);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_init propagates error when axis map config write fails
+ *
+ * @details
+ * Injects error on RIIC call index 4 (axis_map_cfg write in internal_init_configure).
+ *
+ * @pre s_initialized == false
+ * @post s_initialized == false
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_init_axis_map_cfg_write_fails(void)
+{
+  mock_riic_set_nth_call_error(k_init_call_axis_map_cfg, k_rx_err_nack);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_init propagates error when axis map sign write fails
+ *
+ * @details
+ * Injects error on RIIC call index 5 (axis_map_sgn write in internal_init_configure).
+ *
+ * @pre s_initialized == false
+ * @post s_initialized == false
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_init_axis_map_sgn_write_fails(void)
+{
+  mock_riic_set_nth_call_error(k_init_call_axis_map_sgn, k_rx_err_nack);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_init propagates error when sys trigger clear write fails
+ *
+ * @details
+ * Injects error on RIIC call index 6 (sys_trigger_clear write in internal_init_configure).
+ *
+ * @pre s_initialized == false
+ * @post s_initialized == false
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_init_sys_trigger_clear_fails(void)
+{
+  mock_riic_set_nth_call_error(k_init_call_sys_trigger, k_rx_err_nack);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_init propagates error when NDOF mode write fails
+ *
+ * @details
+ * Injects error on RIIC call index 7 (NDOF mode write in internal_init_enter_ndof).
+ *
+ * @pre s_initialized == false
+ * @post s_initialized == false
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_init_ndof_write_fails(void)
+{
+  mock_riic_set_nth_call_error(k_init_call_ndof_mode, k_rx_err_nack);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_init propagates error when chip ID read fails
+ *
+ * @details
+ * Injects error on RIIC call index 8 (chip ID read in internal_verify_chip_id).
+ * The preceding 7 writes succeed; the chip ID write-read fails.
+ *
+ * @pre s_initialized == false
+ * @post s_initialized == false
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_init_chip_id_read_fails(void)
+{
+  mock_riic_set_nth_call_error(k_init_call_chip_id_read, k_rx_err_nack);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_poll_cfg);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_init propagates error when interrupt PAGE_ID=1 write fails
+ *
+ * @details
+ * Uses interrupt mode. Injects error on RIIC call index 7 which is the
+ * PAGE_ID=1 write in internal_init_enable_interrupt (interrupt mode inserts
+ * this before internal_init_enter_ndof). The 7 preceding writes succeed;
+ * the page switch fails and the driver must return the error.
+ *
+ * @pre s_initialized == false
+ * @post s_initialized == false
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_init_interrupt_page1_write_fails(void)
+{
+  mock_riic_set_nth_call_error(k_int_call_page1, k_rx_err_nack);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_interrupt_cfg);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_init propagates error when interrupt INT_MSK write fails
+ *
+ * @details
+ * Uses interrupt mode. Injects error on RIIC call index 8 (INT_MSK write).
+ * The PAGE_ID=1 write (call 7) succeeds; then INT_MSK fails. The driver
+ * must attempt a best-effort PAGE_ID=0 restore (call 8 error propagates but
+ * the page restore write uses mock which succeeds after nth-call is consumed).
+ *
+ * @pre s_initialized == false
+ * @post s_initialized == false
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_init_interrupt_int_msk_write_fails(void)
+{
+  mock_riic_set_nth_call_error(k_int_call_int_msk, k_rx_err_nack);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_interrupt_cfg);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_init propagates error when interrupt INT_EN write fails
+ *
+ * @details
+ * Uses interrupt mode. Injects error on RIIC call index 9 (INT_EN write).
+ * PAGE_ID=1 and INT_MSK succeed; INT_EN fails. The driver attempts page restore.
+ *
+ * @pre s_initialized == false
+ * @post s_initialized == false
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_init_interrupt_int_en_write_fails(void)
+{
+  mock_riic_set_nth_call_error(k_int_call_int_en, k_rx_err_nack);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_interrupt_cfg);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_init propagates error when interrupt PAGE_ID=0 restore write fails
+ *
+ * @details
+ * Uses interrupt mode. Injects error on RIIC call index 10 (final PAGE_ID=0 write).
+ * PAGE_ID=1, INT_MSK, INT_EN all succeed; then the page restore fails.
+ *
+ * @pre s_initialized == false
+ * @post s_initialized == false
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_init_interrupt_page0_restore_fails(void)
+{
+  internal_load_valid_chip_id();
+  mock_riic_set_nth_call_error(k_int_call_page0, k_rx_err_nack);
+  rx_err_t err = rx_bno055_init(&s_test_manager, &s_interrupt_cfg);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/* =============================================================================
+ * Additional Read Error-Path Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief rx_bno055_read propagates error when euler read fails
+ *
+ * @details
+ * After init, injects NACK on RIIC call index 1 (euler write-read).
+ * Call 0 = gyro read succeeds; call 1 = euler read fails.
+ *
+ * @pre s_initialized == true (set by internal_setup_initialized_driver)
+ * @post rx_bno055_read returns k_rx_err_nack
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_read_euler_i2c_error(void)
+{
+  internal_setup_initialized_driver();
+  mock_riic_set_nth_call_error(1U, k_rx_err_nack);
+  bno055_data_t data;
+  rx_err_t      err = rx_bno055_read(&data);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_read propagates error when quat read fails
+ *
+ * @details
+ * After init, injects NACK on RIIC call index 2 (quat write-read).
+ * Calls 0 and 1 (gyro, euler) succeed; call 2 (quat) fails.
+ *
+ * @pre s_initialized == true
+ * @post rx_bno055_read returns k_rx_err_nack
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_read_quat_i2c_error(void)
+{
+  internal_setup_initialized_driver();
+  mock_riic_set_nth_call_error(k_read_call_quat, k_rx_err_nack);
+  bno055_data_t data;
+  rx_err_t      err = rx_bno055_read(&data);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_read propagates error when lia read fails
+ *
+ * @details
+ * After init, injects NACK on RIIC call index 3 (LIA write-read).
+ * Calls 0, 1, 2 (gyro, euler, quat) succeed; call 3 (lia) fails.
+ *
+ * @pre s_initialized == true
+ * @post rx_bno055_read returns k_rx_err_nack
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_read_lia_i2c_error(void)
+{
+  internal_setup_initialized_driver();
+  mock_riic_set_nth_call_error(k_read_call_lia, k_rx_err_nack);
+  bno055_data_t data;
+  rx_err_t      err = rx_bno055_read(&data);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_read propagates error when temperature read fails
+ *
+ * @details
+ * After init, injects NACK on RIIC call index 4 (temp write-read).
+ * Calls 0-3 (gyro, euler, quat, lia) succeed; call 4 (temp) fails.
+ *
+ * @pre s_initialized == true
+ * @post rx_bno055_read returns k_rx_err_nack
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_read_temp_i2c_error(void)
+{
+  internal_setup_initialized_driver();
+  mock_riic_set_nth_call_error(k_read_call_temp, k_rx_err_nack);
+  bno055_data_t data;
+  rx_err_t      err = rx_bno055_read(&data);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_read propagates error when calib status read fails
+ *
+ * @details
+ * After init, injects NACK on RIIC call index 5 (calib write-read).
+ * Calls 0-4 (gyro, euler, quat, lia, temp) succeed; call 5 (calib) fails.
+ *
+ * @pre s_initialized == true
+ * @post rx_bno055_read returns k_rx_err_nack
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_read_calib_i2c_error(void)
+{
+  internal_setup_initialized_driver();
+  mock_riic_set_nth_call_error(k_read_call_calib, k_rx_err_nack);
+  bno055_data_t data;
+  rx_err_t      err = rx_bno055_read(&data);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_is_calibrated before init returns k_rx_err_not_initialized
+ *
+ * @details
+ * Verifies the not-initialized guard in rx_bno055_is_calibrated runs before
+ * any I2C communication when s_initialized is false.
+ *
+ * @pre s_initialized == false (setUp resets it)
+ * @post rx_bno055_is_calibrated returns k_rx_err_not_initialized
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_is_calibrated_not_initialized(void)
+{
+  bool     out_calibrated = false;
+  rx_err_t err            = rx_bno055_is_calibrated(&out_calibrated);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_is_calibrated propagates I2C error from calib register read
+ *
+ * @details
+ * After init, injects NACK before calling rx_bno055_is_calibrated. The
+ * single RIIC read (call 0) fails and the error propagates.
+ *
+ * @pre s_initialized == true
+ * @post rx_bno055_is_calibrated returns k_rx_err_nack
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_is_calibrated_i2c_error(void)
+{
+  internal_setup_initialized_driver();
+  mock_riic_simulate_nack(true);
+  bool     out_calibrated = false;
+  rx_err_t err            = rx_bno055_is_calibrated(&out_calibrated);
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  mock_riic_simulate_nack(false);
+}
+
+/* =============================================================================
+ * RX_ASSERT_PRE / RX_ASSERT_POST Branch Coverage Tests
+ *
+ * These tests call RX_STATIC_TESTABLE internal functions directly with
+ * invalid state (s_manager==NULL, s_initialized==false) to exercise the
+ * RX_ASSERT_PRE failure branches.  In UNIT_TEST builds internal_rx_fatal_error
+ * returns instead of halting, so execution continues past the assertion.
+ *
+ * The POST assertion in rx_bno055_test_reset_state is tested via the
+ * g_rx_assert_post_force_fail flag.
+ * =============================================================================
+ */
+
+/**
+ * @brief internal_write_reg PRE: s_manager NULL triggers assertion
+ *
+ * @details
+ * After rx_bno055_test_reset_state(), s_manager is NULL. Calling
+ * internal_write_reg fires the RX_ASSERT_PRE(s_manager != NULL) branch.
+ * internal_rx_fatal_error returns in test builds so the test completes.
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
+ * @post RX_ASSERT_PRE failure branch exercised
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_write_reg_null_manager(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_write_reg(0x00, 0x00);
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_read_regs PRE: s_manager NULL, buf NULL, len 0
+ *
+ * @details
+ * After reset, s_manager is NULL. Passing NULL buf and 0 len exercises
+ * all three RX_ASSERT_PRE branches (s_manager, buf, len). Each fires
+ * internal_rx_fatal_error which returns in test builds.
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
+ * @post All three RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_read_regs_null_manager_null_buf_zero_len(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_read_regs(0x00, NULL, 0);
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_init_reset_and_wait PRE: s_manager NULL
+ *
+ * @details
+ * After reset, s_manager is NULL. Calling internal_init_reset_and_wait
+ * fires both RX_ASSERT_PRE branches (s_manager, s_bus_name handled by
+ * internal_write_reg's own assertion when it proceeds).
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
+ * @post RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_init_reset_and_wait_null_manager(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_init_reset_and_wait();
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_init_configure PRE: s_manager NULL
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
+ * @post RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_init_configure_null_manager(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_init_configure();
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_init_enter_ndof PRE: s_manager NULL
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
+ * @post RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_init_enter_ndof_null_manager(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_init_enter_ndof();
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_verify_chip_id PRE: s_manager NULL
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
+ * @post RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_verify_chip_id_null_manager(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_verify_chip_id();
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_init_enable_interrupt PRE: s_manager NULL
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_manager == NULL
+ * @post RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_init_enable_interrupt_null_manager(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_init_enable_interrupt();
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_read_euler PRE: s_initialized false, out NULL
+ *
+ * @details
+ * After reset, s_initialized is false. Passing NULL out exercises both
+ * RX_ASSERT_PRE branches (s_initialized, out != NULL).
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_initialized == false
+ * @post Both RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_read_euler_not_initialized(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_read_euler(NULL);
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_read_quat PRE: s_initialized false, out NULL
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_initialized == false
+ * @post Both RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_read_quat_not_initialized(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_read_quat(NULL);
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_read_lia PRE: s_initialized false, out NULL
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_initialized == false
+ * @post Both RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_read_lia_not_initialized(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_read_lia(NULL);
+  TEST_PASS();
+}
+
+/**
+ * @brief internal_read_gyro PRE: s_initialized false, out NULL
+ *
+ * @pre setUp() called rx_bno055_test_reset_state() -> s_initialized == false
+ * @post Both RX_ASSERT_PRE failure branches exercised
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_read_gyro_not_initialized(void)
+{
+  rx_bno055_test_reset_state();
+  (void)internal_read_gyro(NULL);
+  TEST_PASS();
+}
+
+/**
+ * @brief rx_bno055_test_reset_state POST: force-fail exercises POST branches
+ *
+ * @details
+ * Sets g_rx_assert_post_force_fail to true before calling
+ * rx_bno055_test_reset_state(). The RX_ASSERT_POST macros fire even though
+ * the postconditions are actually satisfied, exercising the failure branches.
+ *
+ * @pre g_rx_assert_post_force_fail == false
+ * @post POST assertion failure branches exercised
+ * @post g_rx_assert_post_force_fail restored to false
+ *
+ * @since Version 1.0.0
+ */
+void test_reset_state_post_force_fail(void)
+{
+  g_rx_assert_post_force_fail = true;
+  rx_bno055_test_reset_state();
+  g_rx_assert_post_force_fail = false;
+  TEST_PASS();
+}
+
+/**
+ * @brief Run all assertion coverage tests
+ *
+ * @details
+ * Extracted from main() to keep main() under the readability-function-size
+ * threshold (40 statements). Runs all RX_ASSERT_PRE and RX_ASSERT_POST
+ * coverage tests for internal BNO055 functions.
+ *
+ * @pre UNITY_BEGIN() already called
+ * @post All assertion coverage tests executed
+ *
+ * @since Version 1.0.0
+ */
+static void internal_run_assert_coverage_tests(void)
+{
+  RUN_TEST(test_internal_write_reg_null_manager);
+  RUN_TEST(test_internal_read_regs_null_manager_null_buf_zero_len);
+  RUN_TEST(test_internal_init_reset_and_wait_null_manager);
+  RUN_TEST(test_internal_init_configure_null_manager);
+  RUN_TEST(test_internal_init_enter_ndof_null_manager);
+  RUN_TEST(test_internal_verify_chip_id_null_manager);
+  RUN_TEST(test_internal_init_enable_interrupt_null_manager);
+  RUN_TEST(test_internal_read_euler_not_initialized);
+  RUN_TEST(test_internal_read_quat_not_initialized);
+  RUN_TEST(test_internal_read_lia_not_initialized);
+  RUN_TEST(test_internal_read_gyro_not_initialized);
+  RUN_TEST(test_reset_state_post_force_fail);
 }
 
 /* =============================================================================
@@ -1210,6 +1963,20 @@ int main(void)
   RUN_TEST(test_bno055_init_double_init_returns_error);
   RUN_TEST(test_bno055_init_interrupt_mode_succeeds);
 
+  /* Init error-path tests (nth-call injection) */
+  RUN_TEST(test_bno055_init_config_mode_write_fails);
+  RUN_TEST(test_bno055_init_power_mode_write_fails);
+  RUN_TEST(test_bno055_init_unit_sel_write_fails);
+  RUN_TEST(test_bno055_init_axis_map_cfg_write_fails);
+  RUN_TEST(test_bno055_init_axis_map_sgn_write_fails);
+  RUN_TEST(test_bno055_init_sys_trigger_clear_fails);
+  RUN_TEST(test_bno055_init_ndof_write_fails);
+  RUN_TEST(test_bno055_init_chip_id_read_fails);
+  RUN_TEST(test_bno055_init_interrupt_page1_write_fails);
+  RUN_TEST(test_bno055_init_interrupt_int_msk_write_fails);
+  RUN_TEST(test_bno055_init_interrupt_int_en_write_fails);
+  RUN_TEST(test_bno055_init_interrupt_page0_restore_fails);
+
   /* Read tests (null-ptr test does not require init; others call internal_setup_initialized_driver) */
   RUN_TEST(test_bno055_read_null_ptr_returns_error);
   RUN_TEST(test_bno055_read_success_euler);
@@ -1217,11 +1984,20 @@ int main(void)
   RUN_TEST(test_bno055_read_success_temperature);
   RUN_TEST(test_bno055_read_success_lia);
   RUN_TEST(test_bno055_read_i2c_error_propagates);
+  RUN_TEST(test_bno055_read_euler_i2c_error);
+  RUN_TEST(test_bno055_read_quat_i2c_error);
+  RUN_TEST(test_bno055_read_lia_i2c_error);
+  RUN_TEST(test_bno055_read_temp_i2c_error);
+  RUN_TEST(test_bno055_read_calib_i2c_error);
 
   /* Calibration tests - require s_initialized == true */
   RUN_TEST(test_bno055_is_calibrated_null_returns_error);
+  RUN_TEST(test_bno055_is_calibrated_not_initialized);
   RUN_TEST(test_bno055_is_calibrated_reads_status);
   RUN_TEST(test_bno055_is_calibrated_partial);
+  RUN_TEST(test_bno055_is_calibrated_i2c_error);
+
+  internal_run_assert_coverage_tests();
 
   return UNITY_END();
 }

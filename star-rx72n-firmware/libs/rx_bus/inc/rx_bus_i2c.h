@@ -628,6 +628,50 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
                                              uint8_t*          read_data,
                                              uint16_t          read_length);
 
+#ifdef UNIT_TEST
+/* =============================================================================
+ * Internal callback context types exposed for unit testing.
+ * These types are defined in rx_bus_i2c.c and only declared here when
+ * UNIT_TEST is defined so that test files can call the callbacks directly
+ * to exercise defensive branches that are unreachable through the public API.
+ * =============================================================================
+ */
+
+/** @brief Init callback context (mirrors i2c_init_ctx_t in rx_bus_i2c.c) */
+typedef struct {
+  rx_err_t          result;  /**< Operation result */
+  rx_bus_manager_t* manager; /**< Bus manager pointer */
+} i2c_init_ctx_t;
+
+/** @brief Write callback context (mirrors i2c_write_ctx_t in rx_bus_i2c.c) */
+typedef struct {
+  const uint8_t* data;   /**< Data to write */
+  uint16_t       length; /**< Number of bytes */
+  rx_err_t       result; /**< Operation result */
+} i2c_write_ctx_t;
+
+/** @brief Read callback context (mirrors i2c_read_ctx_t in rx_bus_i2c.c) */
+typedef struct {
+  uint8_t* data;   /**< Buffer to fill */
+  uint16_t length; /**< Number of bytes to read */
+  rx_err_t result; /**< Operation result */
+} i2c_read_ctx_t;
+
+/** @brief Write-read callback context (mirrors i2c_write_read_ctx_t in rx_bus_i2c.c) */
+typedef struct {
+  const uint8_t* write_data;   /**< Data to write */
+  uint16_t       write_length; /**< Write byte count */
+  uint8_t*       read_data;    /**< Buffer to fill */
+  uint16_t       read_length;  /**< Read byte count */
+  rx_err_t       result;       /**< Operation result */
+} i2c_write_read_ctx_t;
+
+rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* user_ctx);
+rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, void* user_ctx);
+#endif /* UNIT_TEST */
+
 #ifdef __cplusplus
 }
 #endif

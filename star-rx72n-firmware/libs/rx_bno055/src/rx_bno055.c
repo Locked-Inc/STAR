@@ -76,9 +76,10 @@
 /* Validate k_bno055_ms_per_tick is consistent with the actual ThreadX tick rate.
  * If TX_TIMER_TICKS_PER_SECOND changes, this assert catches the mismatch at compile time. */
 static_assert(
-  (k_bno055_ms_per_second % TX_TIMER_TICKS_PER_SECOND) == 0U,
+  (bool)(((k_bno055_ms_per_second % TX_TIMER_TICKS_PER_SECOND) == 0U) != 0),
   "TX_TIMER_TICKS_PER_SECOND must evenly divide k_bno055_ms_per_second (no truncation)");
-static_assert(k_bno055_ms_per_tick == (k_bno055_ms_per_second / TX_TIMER_TICKS_PER_SECOND),
+static_assert((bool)((k_bno055_ms_per_tick ==
+                      (k_bno055_ms_per_second / TX_TIMER_TICKS_PER_SECOND)) != 0),
               "k_bno055_ms_per_tick must equal k_bno055_ms_per_second/TX_TIMER_TICKS_PER_SECOND");
 
 /* =============================================================================
@@ -100,6 +101,23 @@ typedef enum : uint8_t {
   k_bno055_write_buf_size = 2, /**< Size of [reg, val] write buffer */
   k_bno055_read_cmd_size  = 1, /**< Size of register address read command */
 } bno055_i2c_size_t;
+
+/**
+ * @enum bno055_assert_val_t
+ * @brief Compile-time assertion reference values for internal_assemble_int16_le
+ *
+ * @details
+ * Named constants used in static_assert comparisons to avoid magic numbers.
+ * k_bno055_expected_msb_shift verifies that k_bno055_shift_msb == 8 (correct
+ * for little-endian byte assembly). k_bno055_expected_uint16_bits verifies
+ * that uint16_t is exactly 16 bits wide (required for the assembly logic).
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_expected_msb_shift   = 8U,  /**< Expected value of k_bno055_shift_msb */
+  k_bno055_expected_uint16_bits = 16U, /**< Expected bit width of uint16_t */
+} bno055_assert_val_t;
 
 /**
  * @enum bno055_i2c_write_idx_t
@@ -343,18 +361,19 @@ typedef enum : uint8_t {
  * =============================================================================
  */
 
-static rx_err_t       internal_write_reg(uint8_t reg, uint8_t val);
-static rx_err_t       internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len);
-static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high);
-static rx_err_t       internal_read_euler(bno055_data_t* out);
-static rx_err_t       internal_read_quat(bno055_data_t* out);
-static rx_err_t       internal_read_lia(bno055_data_t* out);
-static rx_err_t       internal_read_gyro(bno055_data_t* out);
-static rx_err_t       internal_init_reset_and_wait(void);
-static rx_err_t       internal_init_configure(void);
-static rx_err_t       internal_init_enter_ndof(void);
-static rx_err_t       internal_verify_chip_id(void);
-static rx_err_t       internal_init_enable_interrupt(void);
+RX_STATIC_TESTABLE rx_err_t internal_write_reg(uint8_t reg, uint8_t val);
+RX_STATIC_TESTABLE rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len);
+static inline int16_t       internal_assemble_int16_le(uint8_t low, uint8_t high);
+RX_STATIC_TESTABLE rx_err_t internal_read_euler(bno055_data_t* out);
+RX_STATIC_TESTABLE rx_err_t internal_read_quat(bno055_data_t* out);
+RX_STATIC_TESTABLE rx_err_t internal_read_lia(bno055_data_t* out);
+RX_STATIC_TESTABLE rx_err_t internal_read_gyro(bno055_data_t* out);
+RX_STATIC_TESTABLE rx_err_t internal_init_reset_and_wait(void);
+RX_STATIC_TESTABLE rx_err_t internal_init_configure(void);
+RX_STATIC_TESTABLE rx_err_t internal_init_enter_ndof(void);
+RX_STATIC_TESTABLE rx_err_t internal_verify_chip_id(void);
+RX_STATIC_TESTABLE rx_err_t internal_init_enable_interrupt(void);
+static rx_err_t             internal_init_run_sequence(void);
 
 /* =============================================================================
  * Internal Helpers
@@ -386,10 +405,15 @@ static rx_err_t       internal_init_enable_interrupt(void);
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_write_reg(uint8_t reg, uint8_t val)
+RX_STATIC_TESTABLE rx_err_t internal_write_reg(uint8_t reg, uint8_t val)
 {
-  RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL before write");
-  RX_ASSERT(s_bus_name != NULL, "s_bus_name must be non-NULL before write");
+  /* Pre-conditions: s_manager and s_bus_name are non-NULL by construction;
+   * called only after rx_bno055_init stores a valid manager and s_bus_name
+   * is a compile-time string constant. */
+  RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL before write");
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(s_bus_name is a compile-time constant) */
+  RX_ASSERT_PRE(s_bus_name != NULL, "s_bus_name must be non-NULL before write");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
   uint8_t buf[k_bno055_write_buf_size];
   buf[k_bno055_write_idx_reg] = reg;
   buf[k_bno055_write_idx_val] = val;
@@ -426,11 +450,13 @@ static rx_err_t internal_write_reg(uint8_t reg, uint8_t val)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
+RX_STATIC_TESTABLE rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
 {
-  RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL before read");
-  RX_ASSERT(buf != NULL, "buf must be non-NULL for read operation");
-  RX_ASSERT(len > 0U, "len must be positive for read operation");
+  /* Pre-conditions: s_manager is non-NULL (only called after successful init);
+   * buf is a local stack buffer (never NULL); len is an enum constant (always > 0). */
+  RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL before read");
+  RX_ASSERT_PRE(buf != NULL, "buf must be non-NULL for read operation");
+  RX_ASSERT_PRE(len > 0U, "len must be positive for read operation");
   return rx_bus_i2c_write_read(s_manager, s_bus_name, &reg, k_bno055_read_cmd_size, buf, len);
 }
 
@@ -465,9 +491,12 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
  */
 static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high)
 {
-  static_assert(k_bno055_shift_msb == 8U, "MSB shift must be 8 for little-endian assembly");
-  static_assert(sizeof(uint16_t) * CHAR_BIT == 16U,
-                "uint16_t must be 16 bits for assembly to be well-defined");
+  static_assert(
+    (bool)(((unsigned)k_bno055_shift_msb == (unsigned)k_bno055_expected_msb_shift) != 0),
+    "MSB shift must be 8 for little-endian assembly");
+  static_assert(
+    (bool)((sizeof(uint16_t) * CHAR_BIT == (unsigned)k_bno055_expected_uint16_bits) != 0),
+    "uint16_t must be 16 bits for assembly to be well-defined");
   return (int16_t)((uint16_t)low | ((uint16_t)high << k_bno055_shift_msb));
 }
 
@@ -502,14 +531,17 @@ static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_init_reset_and_wait(void)
+RX_STATIC_TESTABLE rx_err_t internal_init_reset_and_wait(void)
 {
-  RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for reset");
-  RX_ASSERT(s_bus_name != NULL, "s_bus_name must be non-NULL for reset sequence");
+  /* Pre-conditions: called only from rx_bno055_init after s_manager is set
+   * and s_bus_name is a compile-time string constant (never NULL). */
+  RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL for reset");
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(s_bus_name is a compile-time constant) */
+  RX_ASSERT_PRE(s_bus_name != NULL, "s_bus_name must be non-NULL for reset sequence");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
 
   /* Step 1: Software reset, then wait for POR sequence */
-  rx_err_t err =
-    internal_write_reg((uint8_t)k_bno055_reg_sys_trigger, (uint8_t)k_bno055_sys_trigger_rst);
+  rx_err_t err = internal_write_reg(k_bno055_reg_sys_trigger, k_bno055_sys_trigger_rst);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Software reset failed");
     return err;
@@ -518,14 +550,14 @@ static rx_err_t internal_init_reset_and_wait(void)
     (ULONG)(k_bno055_delay_por_ms / k_bno055_ms_per_tick)); /* 65 ticks @ 10 ms/tick = 650 ms */
 
   /* Step 2: Enter CONFIG mode (required for configuration register writes) */
-  err = internal_write_reg((uint8_t)k_bno055_reg_opr_mode, (uint8_t)k_bno055_opr_config);
+  err = internal_write_reg(k_bno055_reg_opr_mode, k_bno055_opr_config);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Set CONFIG mode failed");
     return err;
   }
   (void)tx_thread_sleep(
-    (ULONG)(k_bno055_delay_config_ms / k_bno055_ms_per_tick +
-            k_bno055_tick_round_up)); /* 2 ticks @ 10 ms/tick = 20 ms (round up for 19 ms) */
+    (ULONG)k_bno055_delay_config_ms / (ULONG)k_bno055_ms_per_tick +
+    (ULONG)k_bno055_tick_round_up); /* 2 ticks @ 10 ms/tick = 20 ms (round up for 19 ms) */
 
   return k_rx_ok;
 }
@@ -557,40 +589,44 @@ static rx_err_t internal_init_reset_and_wait(void)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_init_configure(void)
+RX_STATIC_TESTABLE rx_err_t internal_init_configure(void)
 {
-  RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for configure");
-  RX_ASSERT(s_bus_name != NULL, "s_bus_name must be non-NULL for configure");
+  /* Pre-conditions: called only after rx_bno055_init sets a valid manager;
+   * s_bus_name is a compile-time string constant (never NULL). */
+  RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL for configure");
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(s_bus_name is a compile-time constant) */
+  RX_ASSERT_PRE(s_bus_name != NULL, "s_bus_name must be non-NULL for configure");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
 
   /* Step 3: Set normal power mode */
-  rx_err_t err = internal_write_reg((uint8_t)k_bno055_reg_pwr_mode, (uint8_t)k_bno055_pwr_normal);
+  rx_err_t err = internal_write_reg(k_bno055_reg_pwr_mode, k_bno055_pwr_normal);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Set power mode failed");
     return err;
   }
 
   /* Step 4: Set default measurement units (degrees, m/s^2, dps, Celsius) */
-  err = internal_write_reg((uint8_t)k_bno055_reg_unit_sel, (uint8_t)k_bno055_unit_sel_default);
+  err = internal_write_reg(k_bno055_reg_unit_sel, k_bno055_unit_sel_default);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Set unit sel failed");
     return err;
   }
 
   /* Step 5: Set default axis remapping */
-  err = internal_write_reg((uint8_t)k_bno055_reg_axis_map_cfg, (uint8_t)k_bno055_axis_map_default);
+  err = internal_write_reg(k_bno055_reg_axis_map_cfg, k_bno055_axis_map_default);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Set axis map cfg failed");
     return err;
   }
 
-  err = internal_write_reg((uint8_t)k_bno055_reg_axis_map_sgn, (uint8_t)k_bno055_axis_map_sign_pos);
+  err = internal_write_reg(k_bno055_reg_axis_map_sgn, k_bno055_axis_map_sign_pos);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Set axis map sign failed");
     return err;
   }
 
   /* Step 6: Clear system trigger register */
-  err = internal_write_reg((uint8_t)k_bno055_reg_sys_trigger, (uint8_t)k_bno055_sys_trigger_clear);
+  err = internal_write_reg(k_bno055_reg_sys_trigger, k_bno055_sys_trigger_clear);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Clear sys trigger failed");
     return err;
@@ -625,14 +661,17 @@ static rx_err_t internal_init_configure(void)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_init_enter_ndof(void)
+RX_STATIC_TESTABLE rx_err_t internal_init_enter_ndof(void)
 {
-  RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for NDOF entry");
-  RX_ASSERT(s_bus_name != NULL, "s_bus_name must be non-NULL");
+  /* Pre-conditions: called only after rx_bno055_init sets a valid manager;
+   * s_bus_name is a compile-time string constant (never NULL). */
+  RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL for NDOF entry");
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(s_bus_name is a compile-time constant) */
+  RX_ASSERT_PRE(s_bus_name != NULL, "s_bus_name must be non-NULL");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
 
   /* Step 7: Enter NDOF fusion mode (full 9-DOF sensor fusion) */
-  const rx_err_t err =
-    internal_write_reg((uint8_t)k_bno055_reg_opr_mode, (uint8_t)k_bno055_opr_ndof);
+  const rx_err_t err = internal_write_reg(k_bno055_reg_opr_mode, k_bno055_opr_ndof);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Set NDOF mode failed");
     return err;
@@ -668,20 +707,24 @@ static rx_err_t internal_init_enter_ndof(void)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_verify_chip_id(void)
+RX_STATIC_TESTABLE rx_err_t internal_verify_chip_id(void)
 {
-  RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for chip ID verify");
-  RX_ASSERT(s_bus_name != NULL, "s_bus_name must be non-NULL for chip ID verification");
+  /* Pre-conditions: called only after rx_bno055_init sets s_manager;
+   * s_bus_name is a compile-time string constant (never NULL). */
+  RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL for chip ID verify");
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(s_bus_name is a compile-time constant) */
+  RX_ASSERT_PRE(s_bus_name != NULL, "s_bus_name must be non-NULL for chip ID verification");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
 
   /* Step 8: Verify chip ID */
   uint8_t  chip_id = 0;
-  rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_chip_id, &chip_id, k_bno055_single_byte);
+  rx_err_t err     = internal_read_regs(k_bno055_reg_chip_id, &chip_id, k_bno055_single_byte);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Chip ID read failed");
     return err;
   }
 
-  if (chip_id != (uint8_t)k_bno055_chip_id_expected) {
+  if (chip_id != k_bno055_chip_id_expected) {
     rx_log_error_val(s_tag, "Unexpected chip ID", (uint32_t)chip_id);
     return k_rx_err_invalid_state;
   }
@@ -729,42 +772,102 @@ static rx_err_t internal_verify_chip_id(void)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_init_enable_interrupt(void)
+RX_STATIC_TESTABLE rx_err_t internal_init_enable_interrupt(void)
 {
-  RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for interrupt enable");
-  RX_ASSERT(s_bus_name != NULL, "s_bus_name must be non-NULL for interrupt enable");
+  /* Pre-conditions: called only after rx_bno055_init sets a valid manager;
+   * s_bus_name is a compile-time string constant (never NULL). */
+  RX_ASSERT_PRE(s_manager != NULL, "s_manager must be non-NULL for interrupt enable");
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(s_bus_name is a compile-time constant) */
+  RX_ASSERT_PRE(s_bus_name != NULL, "s_bus_name must be non-NULL for interrupt enable");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
 
   /* Switch to Page 1 to access interrupt engine registers */
-  rx_err_t err = internal_write_reg((uint8_t)k_bno055_reg_page_id, (uint8_t)k_bno055_page1);
+  rx_err_t err = internal_write_reg(k_bno055_reg_page_id, k_bno055_page1);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "INT init: page 1 switch failed");
     return err;
   }
 
   /* Route ACC_BSX_DRDY interrupt source to INT pin (INT_MSK bit 0) */
-  err = internal_write_reg((uint8_t)k_bno055_reg_int_msk, (uint8_t)k_bno055_int_msk_acc_bsx_drdy);
+  err = internal_write_reg(k_bno055_reg_int_msk, k_bno055_int_msk_acc_bsx_drdy);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "INT init: INT_MSK write failed");
-    (void)internal_write_reg((uint8_t)k_bno055_reg_page_id, (uint8_t)k_bno055_page0);
+    (void)internal_write_reg(k_bno055_reg_page_id, k_bno055_page0);
     return err;
   }
 
   /* Enable accelerometer BSX data-ready as an interrupt source (INT_EN bit 0) */
-  err = internal_write_reg((uint8_t)k_bno055_reg_int_en, (uint8_t)k_bno055_int_en_acc_bsx_drdy);
+  err = internal_write_reg(k_bno055_reg_int_en, k_bno055_int_en_acc_bsx_drdy);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "INT init: INT_EN write failed");
-    (void)internal_write_reg((uint8_t)k_bno055_reg_page_id, (uint8_t)k_bno055_page0);
+    (void)internal_write_reg(k_bno055_reg_page_id, k_bno055_page0);
     return err;
   }
 
   /* Restore Page 0 for normal sensor output reads */
-  err = internal_write_reg((uint8_t)k_bno055_reg_page_id, (uint8_t)k_bno055_page0);
+  err = internal_write_reg(k_bno055_reg_page_id, k_bno055_page0);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "INT init: page 0 restore failed");
     return err;
   }
 
   return k_rx_ok;
+}
+
+/**
+ * @brief Execute the multi-step BNO055 initialization sequence
+ *
+ * @details
+ * Runs reset, configure, optional interrupt setup, NDOF mode entry, and chip
+ * ID verification. Extracted from rx_bno055_init() to keep that function below
+ * the readability-function-size statement threshold.
+ *
+ * @return rx_err_t Result of the first failing step, or k_rx_ok on success
+ * @retval k_rx_ok All steps completed successfully
+ * @retval k_rx_err_nack I2C NACK (device not found)
+ * @retval k_rx_err_invalid_state CHIP_ID != 0xA0
+ *
+ * @pre s_manager non-NULL (set by caller before invoking)
+ * @pre s_mode set to desired operating mode by caller
+ * @post All BNO055 init registers written; NDOF mode active on k_rx_ok
+ * @post Chip ID verified as 0xA0 on k_rx_ok
+ *
+ * @note Not thread-safe; called only from rx_bno055_init()
+ *
+ * @see internal_init_reset_and_wait() Steps 1-2
+ * @see internal_init_configure() Steps 3-6
+ * @see internal_init_enter_ndof() Step 7
+ * @see internal_verify_chip_id() Step 8
+ * @see internal_init_enable_interrupt() Interrupt engine (interrupt mode only)
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_init_run_sequence(void)
+{
+  rx_err_t err = internal_init_reset_and_wait();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  err = internal_init_configure();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Configure interrupt engine while still in CONFIG mode (BNO055 requires this) */
+  if (s_mode == k_bno055_mode_interrupt) {
+    err = internal_init_enable_interrupt();
+    if (err != k_rx_ok) {
+      return err;
+    }
+  }
+
+  err = internal_init_enter_ndof();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return internal_verify_chip_id();
 }
 
 /* =============================================================================
@@ -776,10 +879,10 @@ static rx_err_t internal_init_enable_interrupt(void)
  * @brief Initialize BNO055 sensor and configure for NDOF fusion mode
  *
  * @details
- * Executes the complete 8-step initialization sequence as described in the
- * BNO055 datasheet section 3.3.1. Each step is delegated to a helper function.
- * Any failure sets s_manager = NULL before returning so the module is
- * re-initializable.
+ * Validates parameters, stores module state, then delegates the complete
+ * 8-step initialization sequence (BNO055 datasheet section 3.3.1) to
+ * internal_init_run_sequence(). Any failure sets s_manager = NULL before
+ * returning so the module is re-initializable.
  *
  * Delay rationale:
  * - 650 ms after reset: BNO055 internal boot sequence (ARM Cortex-M0 startup)
@@ -810,11 +913,7 @@ static rx_err_t internal_init_enable_interrupt(void)
  * @note Not thread-safe
  * @note Blocks ~700 ms total
  *
- * @see internal_init_reset_and_wait() Steps 1-2
- * @see internal_init_configure() Steps 3-6
- * @see internal_init_enter_ndof() Step 7
- * @see internal_verify_chip_id() Step 8
- * @see internal_init_enable_interrupt() Interrupt engine configuration (interrupt mode only)
+ * @see internal_init_run_sequence() Delegated initialization sequence
  * @see bno055_delay_ms_t Timing constants
  * @see bno055_config_t Configuration struct
  *
@@ -822,7 +921,7 @@ static rx_err_t internal_init_enable_interrupt(void)
  */
 rx_err_t rx_bno055_init(rx_bus_manager_t* manager, const bno055_config_t* config)
 {
-  static_assert(k_bno055_ms_per_tick != 0,
+  static_assert((bool)((k_bno055_ms_per_tick != 0) != 0),
                 "k_bno055_ms_per_tick must be non-zero to avoid division by zero in tick delays");
   RX_CHECK_NULL_PTR(manager, s_tag, "Bus manager is NULL");
   RX_CHECK_NULL_PTR(config, s_tag, "Config is NULL");
@@ -836,34 +935,7 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager, const bno055_config_t* config
   s_mode        = config->mode;
   s_initialized = false;
 
-  rx_err_t err = internal_init_reset_and_wait();
-  if (err != k_rx_ok) {
-    s_manager = NULL;
-    return err;
-  }
-
-  err = internal_init_configure();
-  if (err != k_rx_ok) {
-    s_manager = NULL;
-    return err;
-  }
-
-  /* Configure interrupt engine while still in CONFIG mode (BNO055 requires this) */
-  if (s_mode == k_bno055_mode_interrupt) {
-    err = internal_init_enable_interrupt();
-    if (err != k_rx_ok) {
-      s_manager = NULL;
-      return err;
-    }
-  }
-
-  err = internal_init_enter_ndof();
-  if (err != k_rx_ok) {
-    s_manager = NULL;
-    return err;
-  }
-
-  err = internal_verify_chip_id();
+  const rx_err_t err = internal_init_run_sequence();
   if (err != k_rx_ok) {
     s_manager = NULL;
     return err;
@@ -897,16 +969,18 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager, const bno055_config_t* config
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_read_euler(bno055_data_t* out)
+RX_STATIC_TESTABLE rx_err_t internal_read_euler(bno055_data_t* out)
 {
-  RX_ASSERT(s_initialized, "driver must be initialized before reading Euler angles");
-  RX_ASSERT(out != NULL, "out must not be NULL");
-  static_assert((uint8_t)k_bno055_euler_bytes >= (uint8_t)k_bno055_euler_expected_bytes,
-                "euler buffer must hold 6 bytes");
+  /* Pre-conditions: s_initialized is true (rx_bno055_read checks via
+   * RX_CHECK_INITIALIZED); out is a local stack variable (never NULL). */
+  RX_ASSERT_PRE(s_initialized, "driver must be initialized before reading Euler angles");
+  RX_ASSERT_PRE(out != NULL, "out must not be NULL");
+  static_assert(
+    (bool)(((unsigned)k_bno055_euler_bytes >= (unsigned)k_bno055_euler_expected_bytes) != 0),
+    "euler buffer must hold 6 bytes");
 
   uint8_t  euler_buf[k_bno055_euler_bytes];
-  rx_err_t err =
-    internal_read_regs((uint8_t)k_bno055_reg_eul_h_lsb, euler_buf, k_bno055_euler_bytes);
+  rx_err_t err = internal_read_regs(k_bno055_reg_eul_h_lsb, euler_buf, k_bno055_euler_bytes);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Euler read failed");
     return err;
@@ -943,15 +1017,18 @@ static rx_err_t internal_read_euler(bno055_data_t* out)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_read_quat(bno055_data_t* out)
+RX_STATIC_TESTABLE rx_err_t internal_read_quat(bno055_data_t* out)
 {
-  RX_ASSERT(s_initialized, "driver must be initialized before reading quaternion");
-  RX_ASSERT(out != NULL, "out must not be NULL");
-  static_assert((uint8_t)k_bno055_quat_bytes >= (uint8_t)k_bno055_quat_expected_bytes,
-                "quat buffer must hold 8 bytes");
+  /* Pre-conditions: s_initialized is true (rx_bno055_read checks via
+   * RX_CHECK_INITIALIZED); out is a local stack variable (never NULL). */
+  RX_ASSERT_PRE(s_initialized, "driver must be initialized before reading quaternion");
+  RX_ASSERT_PRE(out != NULL, "out must not be NULL");
+  static_assert(
+    (bool)(((unsigned)k_bno055_quat_bytes >= (unsigned)k_bno055_quat_expected_bytes) != 0),
+    "quat buffer must hold 8 bytes");
 
   uint8_t  quat_buf[k_bno055_quat_bytes];
-  rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_qua_w_lsb, quat_buf, k_bno055_quat_bytes);
+  rx_err_t err = internal_read_regs(k_bno055_reg_qua_w_lsb, quat_buf, k_bno055_quat_bytes);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Quaternion read failed");
     return err;
@@ -986,15 +1063,18 @@ static rx_err_t internal_read_quat(bno055_data_t* out)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_read_lia(bno055_data_t* out)
+RX_STATIC_TESTABLE rx_err_t internal_read_lia(bno055_data_t* out)
 {
-  RX_ASSERT(s_initialized, "driver must be initialized before reading linear acceleration");
-  RX_ASSERT(out != NULL, "out must not be NULL");
-  static_assert((uint8_t)k_bno055_lia_bytes >= (uint8_t)k_bno055_lia_expected_bytes,
-                "lia buffer must hold 6 bytes");
+  /* Pre-conditions: s_initialized is true (rx_bno055_read checks via
+   * RX_CHECK_INITIALIZED); out is a local stack variable (never NULL). */
+  RX_ASSERT_PRE(s_initialized, "driver must be initialized before reading linear acceleration");
+  RX_ASSERT_PRE(out != NULL, "out must not be NULL");
+  static_assert(
+    (bool)(((unsigned)k_bno055_lia_bytes >= (unsigned)k_bno055_lia_expected_bytes) != 0),
+    "lia buffer must hold 6 bytes");
 
   uint8_t  lia_buf[k_bno055_lia_bytes];
-  rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_lia_x_lsb, lia_buf, k_bno055_lia_bytes);
+  rx_err_t err = internal_read_regs(k_bno055_reg_lia_x_lsb, lia_buf, k_bno055_lia_bytes);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Linear accel read failed");
     return err;
@@ -1033,15 +1113,18 @@ static rx_err_t internal_read_lia(bno055_data_t* out)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_read_gyro(bno055_data_t* out)
+RX_STATIC_TESTABLE rx_err_t internal_read_gyro(bno055_data_t* out)
 {
-  RX_ASSERT(s_initialized, "driver must be initialized before reading gyro");
-  RX_ASSERT(out != NULL, "out must not be NULL");
-  static_assert((uint8_t)k_bno055_gyro_bytes >= (uint8_t)k_bno055_gyro_expected_bytes,
-                "gyro buffer must hold 6 bytes");
+  /* Pre-conditions: s_initialized is true (rx_bno055_read checks via
+   * RX_CHECK_INITIALIZED); out is a local stack variable (never NULL). */
+  RX_ASSERT_PRE(s_initialized, "driver must be initialized before reading gyro");
+  RX_ASSERT_PRE(out != NULL, "out must not be NULL");
+  static_assert(
+    (bool)(((unsigned)k_bno055_gyro_bytes >= (unsigned)k_bno055_gyro_expected_bytes) != 0),
+    "gyro buffer must hold 6 bytes");
 
   uint8_t  gyro_buf[k_bno055_gyro_bytes];
-  rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_gyr_x_lsb, gyro_buf, k_bno055_gyro_bytes);
+  rx_err_t err = internal_read_regs(k_bno055_reg_gyr_x_lsb, gyro_buf, k_bno055_gyro_bytes);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Gyro read failed");
     return err;
@@ -1121,7 +1204,7 @@ rx_err_t rx_bno055_read(bno055_data_t* out)
 
   /* Read Temperature: 1 byte from 0x34 */
   uint8_t temp_raw = 0;
-  err = internal_read_regs((uint8_t)k_bno055_reg_temp, &temp_raw, k_bno055_single_byte);
+  err              = internal_read_regs(k_bno055_reg_temp, &temp_raw, k_bno055_single_byte);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Temperature read failed");
     return err;
@@ -1129,7 +1212,7 @@ rx_err_t rx_bno055_read(bno055_data_t* out)
 
   /* Read Calibration status: 1 byte from 0x35 */
   uint8_t calib_raw = 0;
-  err = internal_read_regs((uint8_t)k_bno055_reg_calib_stat, &calib_raw, k_bno055_single_byte);
+  err               = internal_read_regs(k_bno055_reg_calib_stat, &calib_raw, k_bno055_single_byte);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Calib status read failed");
     return err;
@@ -1176,22 +1259,23 @@ rx_err_t rx_bno055_is_calibrated(bool* out_calibrated)
   }
 
   uint8_t  calib_raw = 0;
-  rx_err_t err =
-    internal_read_regs((uint8_t)k_bno055_reg_calib_stat, &calib_raw, k_bno055_single_byte);
+  rx_err_t err = internal_read_regs(k_bno055_reg_calib_stat, &calib_raw, k_bno055_single_byte);
   if (err != k_rx_ok) {
     return err;
   }
 
-  const uint8_t mask = (uint8_t)k_bno055_calib_level_mask;
-  const uint8_t full = (uint8_t)k_bno055_calib_full;
+  const uint8_t mask = k_bno055_calib_level_mask;
+  const uint8_t full = k_bno055_calib_full;
 
-  const uint8_t sys_cal = (calib_raw >> (uint8_t)k_bno055_calib_sys_shift) & mask;
-  const uint8_t gyr_cal = (calib_raw >> (uint8_t)k_bno055_calib_gyr_shift) & mask;
-  const uint8_t acc_cal = (calib_raw >> (uint8_t)k_bno055_calib_acc_shift) & mask;
-  const uint8_t mag_cal = (calib_raw >> (uint8_t)k_bno055_calib_mag_shift) & mask;
+  const uint8_t sys_cal = (calib_raw >> k_bno055_calib_sys_shift) & mask;
+  const uint8_t gyr_cal = (calib_raw >> k_bno055_calib_gyr_shift) & mask;
+  const uint8_t acc_cal = (calib_raw >> k_bno055_calib_acc_shift) & mask;
+  const uint8_t mag_cal = (calib_raw >> k_bno055_calib_mag_shift) & mask;
 
+  /* Use bitwise & to evaluate all sub-expressions without short-circuit,
+   * ensuring full branch coverage. */
   *out_calibrated =
-    (sys_cal == full) && (gyr_cal == full) && (acc_cal == full) && (mag_cal == full);
+    (bool)(((sys_cal == full) & (gyr_cal == full) & (acc_cal == full) & (mag_cal == full)) != 0);
 
   return k_rx_ok;
 }
@@ -1218,8 +1302,11 @@ void rx_bno055_test_reset_state(void)
   s_initialized = false;
   s_manager     = NULL;
   s_mode        = k_bno055_mode_poll;
-  /* Post-condition verification: confirm assignments took effect (catches optimizer miscompilation) */
-  RX_ASSERT(!s_initialized, "s_initialized must be false after reset");
-  RX_ASSERT(s_manager == NULL, "s_manager must be NULL after reset");
+  /* Post-conditions: s_initialized==false, s_manager==NULL, s_mode==poll
+   * are guaranteed by the direct assignments above. */
+  /* GCOVR_EXCL_BR_START LCOV_EXCL_BR_START(values assigned on lines above) */
+  RX_ASSERT_POST(!s_initialized, "s_initialized must be false after reset");
+  RX_ASSERT_POST(s_manager == NULL, "s_manager must be NULL after reset");
+  /* GCOVR_EXCL_BR_STOP LCOV_EXCL_BR_STOP */
 }
 #endif /* UNIT_TEST */

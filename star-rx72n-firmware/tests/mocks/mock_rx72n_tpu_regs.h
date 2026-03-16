@@ -1,5 +1,5 @@
 /**
- * @file rx72n_tpu_regs.h
+ * @file mock_rx72n_tpu_regs.h
  * @brief Mock TPU Register Definitions for Host-Side Unit Testing
  *
  * @details
@@ -8,11 +8,11 @@
  * functions pointing to mock storage, enabling unit testing of the TPU HAL
  * driver without RX72N hardware.
  *
- * ## Include Path Shadowing
+ * ## Test vs Production Build Selection
  *
- * CMake prepends tests/mocks/ to the include path (BEFORE real headers).
- * When rx72n_regs.h does `#include "rx72n_tpu_regs.h"`, it resolves to THIS
- * file instead of the real hardware header.
+ * `mock_rx72n_regs.h` explicitly includes this file via
+ * `#include "mock_rx72n_tpu_regs.h"`. Source files that need TPU registers
+ * select the mock aggregate header via `#ifdef UNIT_TEST` guards.
  *
  * @see rx_tpu.h TPU HAL driver API
  * @see rx_tpu.c TPU HAL driver implementation

@@ -14,7 +14,8 @@
 
 #include "mock_rx_pid.h"
 
-#include <string.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /* =============================================================================
  * Static Variables - Return Values
@@ -74,16 +75,16 @@ static uint32_t s_set_integral_limits_count = 0;
  */
 
 /** @brief Configured output value for rx_pid_compute() */
-static float s_compute_output = 0.0f;
+static float s_compute_output = 0.0F;
 
 /** @brief Last setpoint passed to rx_pid_compute() */
-static float s_last_setpoint = 0.0f;
+static float s_last_setpoint = 0.0F;
 
 /** @brief Last measured value passed to rx_pid_compute() */
-static float s_last_measured = 0.0f;
+static float s_last_measured = 0.0F;
 
 /** @brief Last dt passed to rx_pid_compute() */
-static float s_last_dt = 0.0f;
+static float s_last_dt = 0.0F;
 
 /* =============================================================================
  * Mock Control Functions
@@ -111,10 +112,10 @@ void mock_pid_reset(void)
   s_set_integral_limits_count = 0;
 
   /* Reset compute parameters */
-  s_compute_output = 0.0f;
-  s_last_setpoint  = 0.0f;
-  s_last_measured  = 0.0f;
-  s_last_dt        = 0.0f;
+  s_compute_output = 0.0F;
+  s_last_setpoint  = 0.0F;
+  s_last_measured  = 0.0F;
+  s_last_dt        = 0.0F;
 }
 
 void mock_pid_set_init_return(rx_err_t err)
@@ -204,7 +205,7 @@ float mock_pid_get_last_dt(void)
 
 bool mock_pid_was_initialized(void)
 {
-  return s_init_count > 0;
+  return (bool)(s_init_count > 0);
 }
 
 void mock_pid_get_last_compute_params(float* setpoint, float* measured, float* dt)
@@ -242,8 +243,8 @@ rx_err_t rx_pid_init(rx_pid_handle_t* handle, const rx_pid_config_t* config)
     handle->output_max   = config->output_max;
     handle->integral_min = config->integral_min;
     handle->integral_max = config->integral_max;
-    handle->integral     = 0.0f;
-    handle->prev_error   = 0.0f;
+    handle->integral     = 0.0F;
+    handle->prev_error   = 0.0F;
     handle->initialized  = true;
   }
 
@@ -259,7 +260,12 @@ rx_err_t rx_pid_deinit(rx_pid_handle_t* handle)
   }
 
   if (s_deinit_return == k_rx_ok) {
-    (void)memset(handle, 0, sizeof(*handle));
+    {
+      uint8_t* p = (uint8_t*)handle;
+      for (size_t i = 0; i < sizeof(*handle); i++) {
+        p[i] = 0;
+      }
+    }
     handle->initialized = false;
   }
 
@@ -296,8 +302,8 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
   }
 
   if (s_reset_return == k_rx_ok) {
-    handle->integral   = 0.0f;
-    handle->prev_error = 0.0f;
+    handle->integral   = 0.0F;
+    handle->prev_error = 0.0F;
   }
 
   return s_reset_return;

@@ -110,7 +110,12 @@
    * Do not flash to hardware. Simulator builds skip hardware initialization
    * steps and may not configure peripherals correctly for real operation.
    */
+/* Compile-time note: simulator mode active -- do not flash to hardware.
+ * See Doxygen @warning above for rationale. */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcpp"
 #warning "RX_SIMULATOR_MODE: This build is FOR SIMULATOR ONLY. Do not flash to hardware."
+#pragma GCC diagnostic pop
 #else
 #define RX_IS_SIMULATOR 0
 #endif

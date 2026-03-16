@@ -22,7 +22,10 @@ echo "Running pre-commit checks..."
 # -----------------------------------------------------------------------------
 ascii_ok=true
 while IFS= read -r staged_file; do
-    if [[ "$staged_file" =~ \.(c|h|go|cpp|hpp|proto|ts|md)$ ]]; then
+    # Check all text source files, not just C/Go/Proto/TS/MD.
+    # Match by extension or by specific filename (Makefile, Dockerfile, etc.).
+    if [[ "$staged_file" =~ \.(c|h|go|cpp|hpp|proto|ts|md|yml|yaml|sh|py|cmake|json|toml|cfg|conf|tex|bib|css|html|xml|txt|ini|rs|java|rb|lua|js)$ ]] \
+       || [[ "$(basename "$staged_file")" =~ ^(Makefile|Dockerfile|\.clang-format|\.clang-tidy|\.cppcheck-suppressions)$ ]]; then
         if grep -qP "[^\x00-\x7F]" "$staged_file" 2>/dev/null; then
             echo "ERROR: Non-ASCII characters in staged file: $staged_file"
             grep -nP "[^\x00-\x7F]" "$staged_file" | head -5
@@ -171,6 +174,101 @@ if [[ -n "$rx72n_files" ]]; then
         echo ""
         echo "WARNING: clang-format not found -- RX72N formatting check SKIPPED."
         echo "   Install: sudo apt install clang-format"
+    fi
+
+    # C23 pattern enforcement: reject C11-era constructs in STAR-owned code
+    c23_ok=true
+    for f in $rx72n_files; do
+        # _Static_assert -> static_assert
+        if grep -qn '_Static_assert' "$f" 2>/dev/null; then
+            echo "[FAIL] C11 _Static_assert in $f (use static_assert)"
+            grep -n '_Static_assert' "$f"
+            c23_ok=false
+        fi
+        # = {0} -> = {} (zero-initializers only, not {0x...} or {0,...values})
+        if grep -qnE '= \{0\}' "$f" 2>/dev/null; then
+            echo "[FAIL] C11 = {0} initializer in $f (use = {})"
+            grep -nE '= \{0\}' "$f" | head -5
+            c23_ok=false
+        fi
+        # #include <stdbool.h> (unnecessary in C23)
+        if grep -qn '#include <stdbool.h>' "$f" 2>/dev/null; then
+            echo "[FAIL] Unnecessary #include <stdbool.h> in $f (bool is a C23 keyword)"
+            c23_ok=false
+        fi
+    done
+    if [[ "$c23_ok" == "false" ]]; then
+        echo ""
+        echo "STAR policy: Use C23 constructs (static_assert, = {}, no stdbool.h)."
+        error_found=1
+    fi
+
+    if command -v clang-tidy &>/dev/null || command -v clang-tidy-18 &>/dev/null; then
+        if ! bash star-rx72n-firmware/scripts/clang_tidy.sh --check; then
+            echo "[FAIL] RX72N clang-tidy violations found."
+            echo "   Fix violations above, then re-stage and commit."
+            error_found=1
+        fi
+    else
+        echo ""
+        echo "WARNING: clang-tidy not found -- static analysis SKIPPED."
+        echo "   Install: sudo apt install clang-tidy"
+        echo "   CI will enforce clang-tidy on push."
+    fi
+
+    # Coverage gate: libs/ line coverage >= 80%, function coverage = 100%
+    # Skipped if gcovr is not installed or tests have not been built.
+    if command -v gcovr &>/dev/null && [[ -d "star-rx72n-firmware/tests/build" ]]; then
+        echo "Checking coverage thresholds..."
+        # Verify bc is available before using it for floating-point comparisons
+        if ! command -v bc &>/dev/null; then
+            echo "[FAIL] 'bc' not found -- cannot evaluate coverage thresholds."
+            echo "   Install: sudo apt install bc"
+            error_found=1
+        else
+            cov_output=$(gcovr \
+                --object-directory star-rx72n-firmware/tests/build \
+                --filter '.*star-rx72n-firmware/libs/' \
+                --exclude '.*/third_party/.*' \
+                --exclude '.*/rx_nanopb/inc/gen/.*' \
+                -j 1 \
+                --print-summary 2>/dev/null)
+            gcovr_exit=$?
+            if [[ $gcovr_exit -ne 0 ]]; then
+                echo "[FAIL] gcovr exited with status $gcovr_exit -- coverage check failed."
+                error_found=1
+            else
+                line_pct=$(echo "$cov_output" | grep 'lines:'     | sed 's/.*lines: \([0-9.]*\)%.*/\1/')
+                func_pct=$(echo "$cov_output" | grep 'functions:' | sed 's/.*functions: \([0-9.]*\)%.*/\1/')
+                bran_pct=$(echo "$cov_output" | grep 'branches:'  | sed 's/.*branches: \([0-9.]*\)%.*/\1/')
+                if [[ -z "$line_pct" ]]; then
+                    echo "[FAIL] gcovr produced no coverage summary -- coverage check failed."
+                    error_found=1
+                else
+                    echo "  Line coverage:     ${line_pct}% (required 100%)"
+                    echo "  Branch coverage:   ${bran_pct}% (required 100%)"
+                    echo "  Function coverage: ${func_pct}% (required 100%)"
+                    if (( $(echo "$line_pct < 100" | bc -l) )); then
+                        echo "[FAIL] Line coverage ${line_pct}% is below 100%."
+                        error_found=1
+                    fi
+                    if (( $(echo "$bran_pct < 100" | bc -l) )); then
+                        echo "[FAIL] Branch coverage ${bran_pct}% is below 100%."
+                        error_found=1
+                    fi
+                    if (( $(echo "$func_pct < 100" | bc -l) )); then
+                        echo "[FAIL] Function coverage ${func_pct}% is below 100%."
+                        error_found=1
+                    fi
+                fi
+            fi
+        fi
+    else
+        echo ""
+        echo "WARNING: gcovr not installed or test build missing -- coverage check SKIPPED."
+        echo "   Install: pip3 install gcovr"
+        echo "   Build tests: cmake --build star-rx72n-firmware/tests/build --parallel"
+        echo "   CI will enforce coverage thresholds on push."
     fi
 fi
 

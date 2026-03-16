@@ -137,6 +137,28 @@ typedef enum : uint16_t {
 } imu_task_time_t;
 
 /**
+ * @enum imu_ceil_div_t
+ * @brief Rounding constants for ceiling-division tick computation
+ *
+ * @details
+ * Provides named constants for the ceiling-division formula used in timeout
+ * and hardware reset tick calculations:
+ *   ticks = (ms * TX_TIMER_TICKS_PER_SECOND + k_imu_ceiling_addend) / k_imu_ms_per_second + 1
+ *
+ * k_imu_uint8_max_val is used in the static_assert that verifies
+ * k_imu_int_timeout_ticks does not overflow uint8_t.
+ *
+ * @invariant k_imu_ceiling_addend == k_imu_ms_per_second - 1
+ * @see imu_task_hw_rst_t Tick counts using ceiling division
+ * @see imu_task_int_cfg_t INT timeout tick count using ceiling division
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_imu_ceiling_addend = 999U,  /**< Addend for ceiling division: (ms * TICKS + 999) / 1000 */
+  k_imu_uint8_max_val  = 0xFFU, /**< Maximum uint8_t value (255) for overflow static_assert */
+} imu_ceil_div_t;
+
+/**
  * @enum imu_task_hw_rst_ms_t
  * @brief BNO055 hardware reset minimum durations in milliseconds (from datasheet)
  *
@@ -259,19 +281,22 @@ typedef enum : uint8_t {
 #endif /* __RX__ */
 
 static_assert(
-  (((uint32_t)k_imu_int_timeout_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND + 999U) / 1000U + 1U) <=
-    0xFFU,
+  (bool)((((uint32_t)k_imu_int_timeout_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND +
+           k_imu_ceiling_addend) /
+            (uint32_t)k_imu_ms_per_second +
+          1U) <= k_imu_uint8_max_val),
   "k_imu_int_timeout_ticks overflows uint8_t; reduce k_imu_int_timeout_ms or use a wider type");
-static_assert(TX_TIMER_TICKS_PER_SECOND != 0U, "TX_TIMER_TICKS_PER_SECOND must be non-zero");
-static_assert(k_imu_ms_per_second > 0U, "k_imu_ms_per_second must be positive");
-static_assert(((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) %
-                  (uint32_t)k_imu_ms_per_second ==
-                0U,
+static_assert((bool)(TX_TIMER_TICKS_PER_SECOND != 0U),
+              "TX_TIMER_TICKS_PER_SECOND must be non-zero");
+static_assert((bool)(k_imu_ms_per_second > 0U), "k_imu_ms_per_second must be positive");
+static_assert((bool)(((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) %
+                       (uint32_t)k_imu_ms_per_second ==
+                     0U),
               "IMU period must map to a whole number of ThreadX ticks");
 static_assert(
-  (uint32_t)k_imu_task_period_ticks ==
-    (((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) /
-     (uint32_t)k_imu_ms_per_second),
+  (bool)((uint32_t)k_imu_task_period_ticks ==
+         (((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) /
+          (uint32_t)k_imu_ms_per_second)),
   "k_imu_task_period_ticks must match k_imu_task_period_ms / TX_TIMER_TICKS_PER_SECOND");
 
 /* =============================================================================
@@ -401,6 +426,7 @@ static void              internal_read_and_publish_baro(void);
 static rx_err_t          internal_imu_hardware_reset(void);
 static imu_wait_result_t internal_wait_for_imu_int(void);
 static void              internal_imu_task_entry(ULONG input);
+static void              internal_init_sensors(bool* bno_ready, bool* bmp_ready);
 
 /* =============================================================================
  * Static Inline Helpers
@@ -605,10 +631,10 @@ static void internal_read_and_publish_imu(void)
   RX_ASSERT(s_imu_created, "IMU task must be created before reading IMU");
   RX_ASSERT(s_tag != NULL, "s_tag must not be NULL");
 
-  bno055_data_t  bno_data = {0};
+  bno055_data_t  bno_data = {};
   const rx_err_t err      = rx_bno055_read(&bno_data);
 
-  imu_state_t imu  = {0};
+  imu_state_t imu  = {};
   imu.timestamp_ms = internal_ticks_to_ms();
 
   if (err == k_rx_ok) {
@@ -664,10 +690,10 @@ static void internal_read_and_publish_baro(void)
   RX_ASSERT(s_imu_created, "IMU task must be created before reading baro");
   RX_ASSERT(s_tag != NULL, "s_tag must not be NULL");
 
-  bmp280_data_t  bmp_data = {0};
+  bmp280_data_t  bmp_data = {};
   const rx_err_t err      = rx_bmp280_read(&bmp_data);
 
-  baro_state_t baro = {0};
+  baro_state_t baro = {};
   baro.timestamp_ms = internal_ticks_to_ms();
 
   if (err == k_rx_ok) {
@@ -835,7 +861,6 @@ static imu_wait_result_t internal_wait_for_imu_int(void)
  *
  * @since Version 1.0.0
  */
-void INT_IRQ12(void);
 void INT_IRQ12(void)
 {
 #ifdef __RX__
@@ -853,6 +878,82 @@ void INT_IRQ12(void)
 
   /* Signal the IMU task that BNO055 data is ready */
   (void)tx_event_flags_set(&s_imu_event_flags, (ULONG)k_imu_event_data_ready, TX_OR);
+}
+
+/**
+ * @brief Initialize BNO055 and BMP280 sensors during IMU task startup
+ *
+ * @details
+ * Performs the three-step startup sequence:
+ * 1. Feed IWDT heartbeat before the long reset sequence (~1.37 s total)
+ * 2. Hardware reset BNO055 via P83 (IMU RST, active-low): >= 10 ms assert +
+ *    >= 650 ms POR (with +1 tick slack each); then feed IWDT heartbeat
+ * 3. Initialize BNO055 via rx_bno055_init() (~700 ms); then feed IWDT heartbeat
+ * 4. Initialize BMP280 via rx_bmp280_init() (~2 ms)
+ *
+ * Outputs the sensor-ready flags to the caller so the main loop knows which
+ * sensors are available for reading.
+ *
+ * @param[out] bno_ready Set to true if BNO055 init succeeded, false otherwise
+ * @param[out] bmp_ready Set to true if BMP280 init succeeded, false otherwise
+ *
+ * @pre internal_send_iwdt_heartbeat() callable (IWDT registered)
+ * @pre internal_imu_hardware_reset() callable (P83 GPIO configured)
+ * @pre g_bus_manager initialized with "i2c1_imu" bus
+ *
+ * @post *bno_ready reflects BNO055 initialization outcome
+ * @post *bmp_ready reflects BMP280 initialization outcome
+ * @post IWDT heartbeat fed three times (before reset, after reset, after BNO055 init)
+ *
+ * @note Not thread-safe; called once from internal_imu_task_entry() at startup
+ *
+ * @see internal_imu_task_entry() Sole caller
+ * @see rx_bno055_init() BNO055 software init
+ * @see rx_bmp280_init() BMP280 init
+ * @see internal_imu_hardware_reset() BNO055 hardware reset
+ *
+ * @since Version 1.0.0
+ */
+static void internal_init_sensors(bool* bno_ready, bool* bmp_ready)
+{
+  /* Feed watchdog before the long startup sequence (~1.37 s total) so the IWDT
+   * registration window is refreshed and the system does not reset during init. */
+  internal_send_iwdt_heartbeat();
+
+  /* Step 1: Hardware reset BNO055 via P83 (IMU RST, active-low) to guarantee clean state.
+   * Asserts RST LOW for >= 10 ms then releases; waits >= 650 ms for POR to complete. */
+  const rx_err_t err_rst = internal_imu_hardware_reset();
+  if (err_rst != k_rx_ok) {
+    rx_log_error_val(s_tag, "BNO055 HW reset failed - will skip init", (uint32_t)err_rst);
+  }
+
+  /* Feed watchdog after the hardware reset block (~670 ms) before BNO055 software
+   * init (~700 ms) to prevent IWDT expiry during the combined ~1.37 s startup. */
+  internal_send_iwdt_heartbeat();
+
+  /* Step 2: Initialize BNO055 (software reset + config, blocks ~700 ms) */
+  if (err_rst == k_rx_ok) {
+    const bno055_config_t bno_cfg = {.mode = k_bno055_mode_interrupt};
+    const rx_err_t        err_bno = rx_bno055_init(&g_bus_manager, &bno_cfg);
+    if (err_bno != k_rx_ok) {
+      rx_log_error_val(s_tag, "BNO055 init failed - will retry in loop", (uint32_t)err_bno);
+    } else {
+      *bno_ready = true;
+      rx_log_info(s_tag, "BNO055 initialized in NDOF mode");
+    }
+  }
+
+  /* Feed watchdog after BNO055 init before BMP280 init */
+  internal_send_iwdt_heartbeat();
+
+  /* Step 3: Initialize BMP280 (~2 ms for calibration burst read) */
+  const rx_err_t err_bmp = rx_bmp280_init(&g_bus_manager);
+  if (err_bmp != k_rx_ok) {
+    rx_log_error_val(s_tag, "BMP280 init failed - will retry in loop", (uint32_t)err_bmp);
+  } else {
+    *bmp_ready = true;
+    rx_log_info(s_tag, "BMP280 initialized in forced mode");
+  }
 }
 
 /**
@@ -921,46 +1022,9 @@ static void internal_imu_task_entry(ULONG input)
 
   rx_log_info(s_tag, "IMU task starting - initializing sensors");
 
-  /* Feed watchdog before the long startup sequence (~1.37 s total) so the IWDT
-   * registration window is refreshed and the system does not reset during init. */
-  internal_send_iwdt_heartbeat();
-
-  /* Step 1: Hardware reset BNO055 via P83 (IMU RST, active-low) to guarantee clean state.
-   * Asserts RST LOW for >= 10 ms then releases; waits >= 650 ms for POR to complete. */
-  bool           bno_ready = false;
-  const rx_err_t err_rst   = internal_imu_hardware_reset();
-  if (err_rst != k_rx_ok) {
-    rx_log_error_val(s_tag, "BNO055 HW reset failed - will skip init", (uint32_t)err_rst);
-  }
-
-  /* Feed watchdog after the hardware reset block (~670 ms) before BNO055 software
-   * init (~700 ms) to prevent IWDT expiry during the combined ~1.37 s startup. */
-  internal_send_iwdt_heartbeat();
-
-  /* Step 2: Initialize BNO055 (software reset + config, blocks ~700 ms) */
-  if (err_rst == k_rx_ok) {
-    const bno055_config_t bno_cfg = {.mode = k_bno055_mode_interrupt};
-    const rx_err_t        err_bno = rx_bno055_init(&g_bus_manager, &bno_cfg);
-    if (err_bno != k_rx_ok) {
-      rx_log_error_val(s_tag, "BNO055 init failed - will retry in loop", (uint32_t)err_bno);
-    } else {
-      bno_ready = true;
-      rx_log_info(s_tag, "BNO055 initialized in NDOF mode");
-    }
-  }
-
-  /* Feed watchdog after BNO055 init before BMP280 init */
-  internal_send_iwdt_heartbeat();
-
-  /* Step 3: Initialize BMP280 (~2 ms for calibration burst read) */
-  bool           bmp_ready = false;
-  const rx_err_t err_bmp   = rx_bmp280_init(&g_bus_manager);
-  if (err_bmp != k_rx_ok) {
-    rx_log_error_val(s_tag, "BMP280 init failed - will retry in loop", (uint32_t)err_bmp);
-  } else {
-    bmp_ready = true;
-    rx_log_info(s_tag, "BMP280 initialized in forced mode");
-  }
+  bool bno_ready = false;
+  bool bmp_ready = false;
+  internal_init_sensors(&bno_ready, &bmp_ready);
 
   /* Step 4: Interrupt-driven loop - block on BNO055 INT event flag */
   rx_log_info(s_tag, "IMU interrupt-driven mode: blocking on IRQ12 event flag");

@@ -26,9 +26,9 @@ declare -a ISSUES
 
 # Print functions
 print_status() { echo -e "${BLUE}[INFO]${NC} $1"; }
-print_success() { echo -e "${GREEN}[✓]${NC} $1"; }
-print_failure() { echo -e "${RED}[✗]${NC} $1"; }
-print_warning() { echo -e "${YELLOW}[⚠]${NC} $1"; }
+print_success() { echo -e "${GREEN}[[PASS]]${NC} $1"; }
+print_failure() { echo -e "${RED}[[FAIL]]${NC} $1"; }
+print_warning() { echo -e "${YELLOW}[[WARN]]${NC} $1"; }
 
 # Usage
 usage() {
@@ -561,9 +561,9 @@ generate_report() {
     output+="Pass rate: $percentage%\n"
 
     if [ $FAILED_CHECKS -eq 0 ]; then
-        output+="Status: ✅ PASS\n"
+        output+="Status: [PASS] PASS\n"
     else
-        output+="Status: ❌ FAIL ($FAILED_CHECKS issues)\n"
+        output+="Status: [FAIL] FAIL ($FAILED_CHECKS issues)\n"
     fi
     output+="========================================\n"
 

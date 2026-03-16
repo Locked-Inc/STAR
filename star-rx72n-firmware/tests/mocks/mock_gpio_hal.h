@@ -152,7 +152,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -216,6 +215,8 @@ typedef struct {
   uint16_t              call_count; /**< Number of calls recorded */
   rx_err_t              next_error; /**< Error to return on next call */
   bool                  error_set;  /**< Whether error injection is active */
+  rx_err_t              nth_error;  /**< Error to inject on Nth call */
+  uint16_t error_call_index;        /**< 1-based call index to inject nth_error (0=disabled) */
 } mock_gpio_state_t;
 
 /* =============================================================================
@@ -364,6 +365,26 @@ void mock_gpio_set_next_error(rx_err_t err);
  * @since Version 1.0.0
  */
 void mock_gpio_clear_error(void);
+
+/**
+ * @brief Inject a GPIO error on a specific call index (1-based).
+ *
+ * @details
+ * Schedules an error to be returned on the Nth GPIO HAL call (counting from 1).
+ * Useful for testing error paths that only trigger on the 2nd or 3rd GPIO
+ * operation within a single function, where single-shot injection fires too early.
+ * The error is consumed once triggered (single-shot behavior).
+ *
+ * @param[in] call_index 1-based call index at which to inject the error (0 = disable)
+ * @param[in] err        Error code to return at that call
+ *
+ * @note call_count is reset by mock_gpio_init(). Count restarts from 1 after each init.
+ * @note Single-shot: clears after firing.
+ *
+ * @see mock_gpio_set_next_error() Single-shot error on very next call
+ * @since Version 1.0.0
+ */
+void mock_gpio_set_error_on_nth_call(uint16_t call_index, rx_err_t err);
 
 /* =============================================================================
  * State Inspection Functions
