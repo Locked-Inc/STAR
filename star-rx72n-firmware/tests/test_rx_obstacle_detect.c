@@ -293,6 +293,7 @@ typedef enum : uint16_t {
   k_test_poll_interval_under_min = 5,      /**< Below k_min_poll_interval (10) */
   k_test_poll_interval_invalid   = 0xFFFF, /**< Far above maximum allowed */
   k_test_outer_start_retries     = 2,      /**< Outer loop no-events retry count */
+  k_test_no_events_large         = 99,     /**< Large no-events count to keep armed */
 } test_validation_constants_t;
 
 /**
@@ -3141,7 +3142,7 @@ static void on_sleep_set_stop_requested(void)
   s_stop_req_handle_ptr->stop_requested = true;
   /* Keep no_events armed so stop event does NOT fire */
   mock_tx_event_flags_get_reset_count();
-  mock_tx_set_event_flags_get_no_events_count(99);
+  mock_tx_set_event_flags_get_no_events_count(k_test_no_events_large);
 }
 
 /**

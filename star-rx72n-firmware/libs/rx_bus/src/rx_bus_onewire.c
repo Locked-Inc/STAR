@@ -232,6 +232,7 @@ RX_STATIC_TESTABLE void internal_delay_timer_init(void)
   s_delay_timer_initialized = true;
 }
 
+#ifdef UNIT_TEST
 /**
  * @brief Reset delay timer initialization state (test-only)
  *
@@ -251,10 +252,11 @@ RX_STATIC_TESTABLE void internal_delay_timer_init(void)
  *
  * @since Version 1.0.0
  */
-RX_STATIC_TESTABLE void internal_delay_timer_reset(void)
+void internal_delay_timer_reset(void)
 {
   s_delay_timer_initialized = false;
 }
+#endif /* UNIT_TEST */
 
 /**
  * @brief Delay for specified microseconds using CMT3 timer

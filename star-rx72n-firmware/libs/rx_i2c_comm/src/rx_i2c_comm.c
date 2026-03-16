@@ -737,7 +737,8 @@ rx_err_t rx_i2c_comm_init(rx_i2c_comm_handle_t* handle, const rx_i2c_comm_config
   handle->rx_buffer_len = 0;
   handle->rx_buffer_pos = 0;
   handle->initialized   = 1U;
-  RX_ASSERT_POST(handle->initialized, "Handle initialization failed"); /* GCOVR_EXCL_BR_LINE */
+  RX_ASSERT_POST(handle->initialized, /* GCOVR_EXCL_BR_LINE(assigned 1U on line above) */
+                 "Handle initialization failed");
 
   rx_log_debug(s_tag, "I2C comm initialized");
   return k_rx_ok;
