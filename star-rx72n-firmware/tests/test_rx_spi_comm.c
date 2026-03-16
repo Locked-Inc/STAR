@@ -285,9 +285,9 @@ extern rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
  */
 extern rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
                                       const uint8_t*        tx_data,
-                                      const uint32_t        tx_len,
+                                      uint32_t              tx_len,
                                       uint8_t*              rx_data,
-                                      const uint32_t        rx_len);
+                                      uint32_t              rx_len);
 
 /* =============================================================================
  * Mock Assertion Helpers
@@ -420,9 +420,10 @@ typedef enum : uint8_t {
 
 /** @brief Mock failure injection constants */
 typedef enum : uint8_t {
-  k_test_fail_on_call_2   = 2,  /**< Fail on 2nd transfer call */
-  k_test_header_body_size = 8,  /**< Header body size (sync2+seq2+len2+type1+flags1) */
-  k_test_pong_frame_size  = 16, /**< PONG frame: 8 header + 4 payload + 4 CRC */
+  k_test_fail_on_call_2   = 2,    /**< Fail on 2nd transfer call */
+  k_test_header_body_size = 8,    /**< Header body size (sync2+seq2+len2+type1+flags1) */
+  k_test_pong_frame_size  = 16,   /**< PONG frame: 8 header + 4 payload + 4 CRC */
+  k_test_dummy_tx_byte    = 0xAA, /**< Arbitrary non-zero byte for dummy TX buffer */
 } test_misc_constants_t;
 
 /* =============================================================================
@@ -3379,7 +3380,7 @@ void test_internal_spi_transfer_nonnull_tx_zero_len(void)
 
   /* tx_data non-null but tx_len=0 => has_tx false (short-circuit on tx_len > 0).
    * rx_len=1 ensures transfer_len > 0 so the mock transfer succeeds. */
-  uint8_t  dummy_tx = 0xAA;
+  uint8_t  dummy_tx = k_test_dummy_tx_byte;
   uint8_t  rx_buf   = 0;
   rx_err_t err      = internal_spi_transfer(&s_handle, &dummy_tx, 0, &rx_buf, 1);
 

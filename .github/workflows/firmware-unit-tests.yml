@@ -62,25 +62,33 @@ jobs:
       - name: Generate coverage
         working-directory: star-rx72n-firmware/tests/build
         run: |
+          # Enable branch coverage throughout the lcov pipeline.
+          # Without --rc lcov_branch_coverage=1, lcov strips branch data from
+          # .info files and --summary omits the 'branches' line entirely.
+          BRANCH_RC="--rc lcov_branch_coverage=1"
+
           # Step 1: Baseline -- capture 0-coverage for ALL compiled sources.
           # This ensures every firmware file (including untested ones) appears
           # in the HTML report, even if it shows 0% coverage.
           lcov --capture --initial \
                --directory . \
                --output-file baseline.info \
-               --ignore-errors mismatch
+               --ignore-errors mismatch \
+               $BRANCH_RC
 
           # Step 2: Actual -- capture execution data from the test run.
           lcov --capture \
                --directory . \
                --output-file coverage.info \
-               --ignore-errors mismatch
+               --ignore-errors mismatch \
+               $BRANCH_RC
 
           # Step 3: Merge baseline + actual so untested files appear as 0%.
           lcov --add-tracefile baseline.info \
                --add-tracefile coverage.info \
                --output-file merged.info \
-               --ignore-errors mismatch
+               --ignore-errors mismatch \
+               $BRANCH_RC
 
           # Step 4: Remove vendor / generated / non-firmware paths.
           # --ignore-errors unused: suppress "pattern matched no files" for paths
@@ -94,7 +102,8 @@ jobs:
                '*/smc/*' \
                '*/tests/mocks/*' \
                --output-file final.info \
-               --ignore-errors mismatch,unused
+               --ignore-errors mismatch,unused \
+               $BRANCH_RC
 
           # Step 5: Generate HTML report with per-file line and branch coverage.
           genhtml final.info \
@@ -117,17 +126,19 @@ jobs:
           lcov --extract final.info \
                '*/star-rx72n-firmware/libs/*' \
                --output-file libs-only.info \
-               --ignore-errors mismatch,unused
+               --ignore-errors mismatch,unused \
+               --rc lcov_branch_coverage=1
 
-          summary=$(lcov --summary libs-only.info --ignore-errors mismatch 2>&1)
+          summary=$(lcov --summary libs-only.info --ignore-errors mismatch --rc lcov_branch_coverage=1 2>&1)
           echo "$summary"
 
           line_pct=$(echo "$summary"   | grep 'lines'     | grep -oP '[\d.]+(?=%)' | head -1)
           func_pct=$(echo "$summary"   | grep 'functions' | grep -oP '[\d.]+(?=%)' | head -1)
           branch_pct=$(echo "$summary" | grep 'branches'  | grep -oP '[\d.]+(?=%)' | head -1)
 
-          if [[ -z "$line_pct" ]]; then
-            echo "[FAIL] Could not parse lcov coverage summary"
+          if [[ -z "$line_pct" || -z "$branch_pct" ]]; then
+            echo "[FAIL] Could not parse lcov coverage summary (line=$line_pct func=$func_pct branch=$branch_pct)"
+            echo "Hint: ensure --rc lcov_branch_coverage=1 is passed to all lcov commands"
             exit 1
           fi
 
