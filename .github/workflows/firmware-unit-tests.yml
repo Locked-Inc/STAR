@@ -116,7 +116,6 @@ jobs:
                --ignore-errors mismatch
 
       - name: Check coverage thresholds (libs/ only)
-        working-directory: star-rx72n-firmware/tests/build
         run: |
           # Measure coverage on libs/ only -- src/tasks/ are ThreadX RTOS entry points
           # that cannot be meaningfully unit-tested without a live RTOS instance.
@@ -127,9 +126,11 @@ jobs:
           # - lcov counts branches differently and doesn't recognize gcovr markers
           # - gcovr matches the local developer workflow (make coverage-rx72n)
           # lcov is still used above for HTML report generation.
+          #
+          # Run from repo root (not build/) so --filter paths match naturally.
           gcovr \
-            --object-directory . \
-            --filter '.*star-rx72n-firmware/libs/' \
+            --object-directory star-rx72n-firmware/tests/build \
+            --filter 'star-rx72n-firmware/libs/' \
             --exclude '.*/third_party/.*' \
             --exclude '.*/rx_nanopb/inc/gen/.*' \
             --exclude '.*/rx_hal/inc/rx72n_port_regs.h' \

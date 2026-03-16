@@ -430,10 +430,13 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_extreme_adc_temp_msb_idx  = 3, /**< Temp MSB index in 7-byte status+ADC buffer */
-  k_extreme_adc_temp_lsb_idx  = 4, /**< Temp LSB index in 7-byte status+ADC buffer */
-  k_extreme_adc_temp_xlsb_idx = 5, /**< Temp XLSB index in 7-byte status+ADC buffer */
-  k_extreme_adc_buf_size      = 7, /**< Size of status + ADC combined buffer */
+  k_extreme_adc_press_msb_idx  = 0, /**< Press MSB index in 7-byte status+ADC buffer */
+  k_extreme_adc_press_lsb_idx  = 1, /**< Press LSB index in 7-byte status+ADC buffer */
+  k_extreme_adc_press_xlsb_idx = 2, /**< Press XLSB index in 7-byte status+ADC buffer */
+  k_extreme_adc_temp_msb_idx   = 3, /**< Temp MSB index in 7-byte status+ADC buffer */
+  k_extreme_adc_temp_lsb_idx   = 4, /**< Temp LSB index in 7-byte status+ADC buffer */
+  k_extreme_adc_temp_xlsb_idx  = 5, /**< Temp XLSB index in 7-byte status+ADC buffer */
+  k_extreme_adc_buf_size       = 7, /**< Size of status + ADC combined buffer */
 } test_bmp280_extreme_idx_t;
 
 /* =============================================================================
@@ -1672,7 +1675,7 @@ static void test_bmp280_assert_compensate_temp_adc_above_max(void)
 {
 #ifdef UNIT_TEST
   int32_t t_fine = 0;
-  (void)internal_compensate_temp((int32_t)k_test_adc_above_20bit_max, &t_fine);
+  (void)internal_compensate_temp(k_test_adc_above_20bit_max, &t_fine);
   TEST_PASS();
 #else
   TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
@@ -2012,9 +2015,9 @@ static void test_bmp280_read_pressure_below_range_returns_error(void)
   uint8_t adc_buf[k_extreme_adc_buf_size];
   /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(adc_buf, 0, sizeof(adc_buf));
-  adc_buf[0] = k_press_below_status_and_p_msb;
-  adc_buf[1] = k_press_below_p_lsb;
-  adc_buf[2] = k_press_below_p_xlsb;
+  adc_buf[k_extreme_adc_press_msb_idx]  = k_press_below_status_and_p_msb;
+  adc_buf[k_extreme_adc_press_lsb_idx]  = k_press_below_p_lsb;
+  adc_buf[k_extreme_adc_press_xlsb_idx] = k_press_below_p_xlsb;
   /* temp bytes [3..5] stay zero -> adc_T = 0 */
   mock_riic_set_rx_data(k_test_bmp280_riic_ch, adc_buf, (uint16_t)sizeof(adc_buf));
 

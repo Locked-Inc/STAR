@@ -1,0 +1,10 @@
+---
+# Override for test files: relax function-size limits.
+# Unity test runner main() and large test setup functions legitimately
+# exceed the 60-line / 40-statement thresholds enforced in production code.
+InheritParentConfig: true
+CheckOptions:
+  - key: readability-function-size.LineThreshold
+    value: "500"
+  - key: readability-function-size.StatementThreshold
+    value: "500"

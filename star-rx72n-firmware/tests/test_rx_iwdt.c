@@ -1909,7 +1909,7 @@ void setUp(void)
 
 void tearDown(void) {}
 
-int main(void) /* NOLINT(readability-function-size) */
+int main(void)
 {
   UNITY_BEGIN();
 
