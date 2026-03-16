@@ -390,11 +390,14 @@
 #include "rx_check.h"
 #include "rx_comm_manager.h"
 #include "rx_frame.h"
+#include "rx_i2c_comm.h"
 #include "rx_iwdt.h"
 #include "rx_log.h"
 #include "rx_nanopb.h"
 #include "rx_spi_comm.h"
+#include "rx_spi_link.h"
 #include "rx_time_constants.h"
+#include "rx_uart_comm.h"
 #include "rx_usb_comm.h"
 #include "shared_data.h"
 #include "tx_api.h"
@@ -499,6 +502,49 @@ rx_comm_manager_t g_comm_manager;
 /** @brief Log tag for this module */
 static const char* const s_tag = "COMM";
 
+/**
+ * @var s_enabled_channels
+ * @brief Runtime bitmask of comm channels to initialize
+ *
+ * @details
+ * Set by comm_task_apply_system_config() before comm_task_create() is called.
+ * Consumed by internal_init_transports() to skip channels that should remain
+ * disabled (e.g. UART comm when UART log backend is active on SCI9).
+ *
+ * Default matches k_system_config_default.comm_channels: USB + SPI + I2C.
+ * UART (SCI9) is excluded by default to avoid conflict with the SCI9 log
+ * backend. Callers that skip comm_task_apply_system_config() will therefore
+ * attempt USB, SPI, and I2C transports only.
+ *
+ * @note File-scoped static. Must not be modified directly outside of
+ *       comm_task_apply_system_config().
+ * @since Version 1.0.0
+ */
+static rx_comm_channel_mask_t s_enabled_channels =
+  (rx_comm_channel_mask_t)(k_comm_channel_mask_usb | k_comm_channel_mask_spi |
+                           k_comm_channel_mask_i2c);
+
+/* =============================================================================
+ * Public Constants
+ * =============================================================================
+ */
+
+/**
+ * @var k_system_config_default
+ * @brief Safe default system configuration
+ *
+ * @details
+ * Enables USB + SPI + I2C comm channels (UART excluded to avoid SCI9 conflict)
+ * with logs directed to both UART and USB CDC Port 2.
+ *
+ * @since Version 1.0.0
+ */
+const rx_system_config_t k_system_config_default = {
+  .comm_channels = (rx_comm_channel_mask_t)(k_comm_channel_mask_usb | k_comm_channel_mask_spi |
+                                            k_comm_channel_mask_i2c),
+  .log_backends  = k_log_backend_both,
+};
+
 /* =============================================================================
  * File-Scoped Transport Handles (Static Instances)
  * =============================================================================
@@ -582,6 +628,35 @@ static rx_spi_comm_handle_t s_spi_comm_handle;
 static rx_spi_link_t s_spi_link;
 
 /**
+ * @var s_i2c_comm_handle
+ * @brief I2C peripheral communication handle (RIIC0)
+ *
+ * @details
+ * Stores runtime state for the I2C peripheral transport layer. The RX72N acts
+ * as I2C peripheral (device) and the RPi5 acts as I2C controller. Initialized
+ * during transport setup via rx_i2c_comm_init() using a configuration structure
+ * that references s_session_state for sequence tracking.
+ *
+ * @note File-scoped static owned by comm_task.c.
+ * @since Version 1.0.0
+ */
+static rx_i2c_comm_handle_t s_i2c_comm_handle;
+
+/**
+ * @var s_uart_comm_handle
+ * @brief UART (SCI9) communication handle
+ *
+ * @details
+ * Stores runtime state for the UART transport layer using SCI9 (TXD9/RXD9).
+ * Initialized during transport setup via rx_uart_comm_init() using a
+ * configuration structure that references s_session_state for sequence tracking.
+ *
+ * @note File-scoped static owned by comm_task.c.
+ * @since Version 1.0.0
+ */
+static rx_uart_comm_handle_t s_uart_comm_handle;
+
+/**
  * @var s_response_buffer
  * @brief Static buffer for encoding command response messages (NASA Rule 3 - no dynamic allocation)
  *
@@ -619,6 +694,66 @@ static bool internal_handle_retransmit_config_command(const rx_frame_t* frame);
  * Public Functions
  * =============================================================================
  */
+
+/**
+ * @brief Validate and apply a system configuration atomically
+ *
+ * @details
+ * Checks for unknown bits and the SCI9 conflict (UART comm + UART log)
+ * before modifying any persistent state. If all checks pass, the log
+ * backend and comm-channel mask are updated atomically from the caller's
+ * perspective (both writes succeed or neither happens).
+ *
+ * @param[in] config System configuration to validate and apply
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok              Configuration applied
+ * @retval k_rx_err_null_ptr    config is NULL
+ * @retval k_rx_err_invalid_arg Unknown bits or SCI9 conflict detected
+ *
+ * @pre config != NULL
+ * @pre Must be called before comm_task_create()
+ * @post rx_log_get_backend() reflects log_backends on k_rx_ok
+ * @post s_enabled_channels reflects comm_channels on k_rx_ok
+ *
+ * @note Not thread-safe. Call once at startup.
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: [PASS] 2 preconditions, 2 postconditions
+ *
+ * @callgraph
+ * @callergraph
+ */
+rx_err_t comm_task_apply_system_config(const rx_system_config_t* config)
+{
+  RX_CHECK_NULL_PTR(config, s_tag, "config must not be NULL");
+
+  /* Validate no unknown bits in log_backends */
+  if (((uint8_t)config->log_backends & (uint8_t)(~k_log_backend_both)) != 0U) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate no unknown bits in comm_channels */
+  if (((uint8_t)config->comm_channels & (uint8_t)(~k_comm_channel_mask_all)) != 0U) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Conflict: UART comm and UART log both use SCI9 -- reject at config time */
+  if ((config->comm_channels & k_comm_channel_mask_uart) != k_comm_channel_mask_none &&
+      (config->log_backends & k_log_backend_uart) != k_log_backend_none) {
+    rx_log_error(s_tag, "Config conflict: UART comm and UART log both use SCI9");
+    return k_rx_err_invalid_arg;
+  }
+
+  rx_err_t err = rx_log_set_backend(config->log_backends);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  s_enabled_channels = config->comm_channels;
+  return k_rx_ok;
+}
 
 /**
  * @brief Create the Communication task (HIGHEST PRIORITY application task)
@@ -926,35 +1061,258 @@ rx_err_t comm_task_create(void)
  */
 
 /**
- * @brief Initialize USB and SPI transport layers and wire into comm manager config
+ * @brief Initialize USB transport layer
  *
  * @details
- * Performs complete initialization of USB CDC and SPI communication transport layers,
- * including handle initialization, error handling, and validation logging. This function
- * populates the rx_comm_manager_config_t structure with either real transport handles
- * (on success) or nullptr (on failure) to enable graceful degradation.
+ * Attempts to initialize the USB CDC communication transport if USB is enabled
+ * in the channel mask. On failure, logs an error but allows graceful degradation.
  *
- * **Algorithm Steps:**
- * 1. **Initialize USB transport**: Call rx_usb_comm_init() with shared session state
- * 2. **Handle USB failure**: Log error if init fails, set handle to nullptr
- * 3. **Initialize SPI transport**: Call rx_spi_comm_init() with shared session state
- * 4. **Handle SPI failure**: Log error if init fails, set handle to nullptr
- * 5. **Initialize HARQ link**: If spi_ok, call rx_spi_link_init(&s_spi_link, &link_cfg);
- *    config->spi_link = &s_spi_link on k_rx_ok, nullptr otherwise (or when spi_ok is false)
- * 6. **Wire handles**: Assign valid or nullptr handles to config structure
- * 7. **Validate transports**: Log critical error if both transports failed
- * 8. **Log success**: Log info for each successfully initialized transport
+ * @return true if USB transport initialized successfully, false otherwise
  *
- * **Graceful Degradation:**
- * - If one transport fails: Other transport continues (logged warning)
- * - If both transports fail: Config wired with nullptr handles (logged critical error)
- * - If SPI transport fails: config->spi_link is set to nullptr (HARQ skipped)
- * - Comm manager will return k_rx_err_timeout on poll for nullptr handles
+ * @pre s_session_state must be zero-initialized (static storage)
+ * @pre s_enabled_channels must be configured before calling
+ * @post s_usb_comm_handle initialized on success
+ * @post Failure logged via rx_log_error
+ *
+ * @note Called once during single-threaded task initialization; not thread-safe
+ *
+ * @since Version 1.0.0
+ * @see rx_usb_comm_init() USB transport layer initialization
+ */
+static bool internal_init_usb_transport(void)
+{
+  if ((s_enabled_channels & k_comm_channel_mask_usb) == k_comm_channel_mask_none) {
+    rx_log_info(s_tag, "USB comm disabled by config");
+    return false;
+  }
+
+  rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr};
+  bool                 usb_ok  = (bool)(rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
+  if (!usb_ok) {
+    rx_log_error(s_tag, "USB comm init failed");
+  }
+  return usb_ok;
+}
+
+/**
+ * @brief Initialize SPI transport layer and HARQ link
+ *
+ * @details
+ * Attempts to initialize the SPI communication transport (RSPI2 channel 2) if SPI
+ * is enabled in the channel mask. When SPI transport succeeds, also initializes the
+ * HARQ link layer for reliable communication. Sets config->spi_link accordingly.
+ *
+ * @param[out] config Comm manager configuration; spi_link field populated
+ * @param[out] link_ok_out Set to true if HARQ link initialized successfully
+ *
+ * @return true if SPI transport initialized successfully, false otherwise
+ *
+ * @pre config must be non-NULL
+ * @pre s_session_state must be zero-initialized (static storage)
+ * @pre RSPI2 peripheral must be initialized before calling
+ * @post s_spi_comm_handle initialized on success
+ * @post config->spi_link set to &s_spi_link or nullptr
+ * @post Failure logged via rx_log_error
+ *
+ * @note Called once during single-threaded task initialization; not thread-safe
+ *
+ * @since Version 1.0.0
+ * @see rx_spi_comm_init() SPI transport layer initialization
+ * @see rx_spi_link_init() HARQ link layer initialization
+ */
+static bool internal_init_spi_transport(rx_comm_manager_config_t* config, bool* link_ok_out)
+{
+  *link_ok_out = false;
+
+  if ((s_enabled_channels & k_comm_channel_mask_spi) == k_comm_channel_mask_none) {
+    rx_log_info(s_tag, "SPI comm disabled by config");
+    config->spi_link = nullptr;
+    return false;
+  }
+
+  rx_spi_comm_config_t spi_cfg = {.session     = &s_session_state,
+                                  .channel     = k_rspi_channel_2,
+                                  .spi_mode    = k_spi_comm_default_mode,
+                                  .fec_enabled = false};
+  bool                 spi_ok  = (bool)(rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg) == k_rx_ok);
+  if (!spi_ok) {
+    rx_log_error(s_tag, "SPI comm init failed");
+    rx_log_warn(s_tag, "Skipping SPI HARQ link init because SPI transport failed");
+    config->spi_link = nullptr;
+    return false;
+  }
+
+  /* Only attempt to configure the HARQ link when the underlying SPI transport
+   * succeeded.  Passing an invalid handle into rx_spi_link_init would trigger
+   * undefined behaviour, so skip the whole block if spi_ok is false. */
+  rx_spi_link_config_t link_cfg = {
+    .spi_handle  = &s_spi_comm_handle,
+    .fec_enabled = true,
+    .max_retries = k_spi_link_default_max_retries,
+  };
+
+  *link_ok_out = (bool)(rx_spi_link_init(&s_spi_link, &link_cfg) == k_rx_ok);
+  if (!(*link_ok_out)) {
+    rx_log_error(s_tag, "SPI link (HARQ) init failed");
+  }
+  config->spi_link = (int)(*link_ok_out) ? &s_spi_link : nullptr;
+  return true;
+}
+
+/**
+ * @brief Initialize I2C transport layer
+ *
+ * @details
+ * Attempts to initialize the I2C communication transport (RIIC0, peripheral mode,
+ * address 0x42) if I2C is enabled in the channel mask. On failure, logs an error
+ * but allows graceful degradation.
+ *
+ * @return true if I2C transport initialized successfully, false otherwise
+ *
+ * @pre s_session_state must be zero-initialized (static storage)
+ * @pre s_enabled_channels must be configured before calling
+ * @post s_i2c_comm_handle initialized on success
+ * @post Failure logged via rx_log_error
+ *
+ * @note Called once during single-threaded task initialization; not thread-safe
+ *
+ * @since Version 1.0.0
+ * @see rx_i2c_comm_init() I2C transport layer initialization
+ */
+static bool internal_init_i2c_transport(void)
+{
+  if ((s_enabled_channels & k_comm_channel_mask_i2c) == k_comm_channel_mask_none) {
+    rx_log_info(s_tag, "I2C comm disabled by config");
+    return false;
+  }
+
+  rx_i2c_comm_config_t i2c_cfg = {
+    .session     = &s_session_state,
+    .channel     = {.value = k_i2c_comm_default_channel},
+    .device_addr = {.value = k_i2c_comm_default_addr},
+  };
+  bool i2c_ok = (bool)(rx_i2c_comm_init(&s_i2c_comm_handle, &i2c_cfg) == k_rx_ok);
+  if (!i2c_ok) {
+    rx_log_error(s_tag, "I2C comm init failed");
+  }
+  return i2c_ok;
+}
+
+/**
+ * @brief Initialize UART transport layer
+ *
+ * @details
+ * Attempts to initialize the UART communication transport (SCI9) if UART is
+ * enabled in the channel mask. On failure, logs an error but allows graceful
+ * degradation.
+ *
+ * @return true if UART transport initialized successfully, false otherwise
+ *
+ * @pre s_session_state must be zero-initialized (static storage)
+ * @pre s_enabled_channels must be configured before calling
+ * @post s_uart_comm_handle initialized on success
+ * @post Failure logged via rx_log_error
+ *
+ * @note Called once during single-threaded task initialization; not thread-safe
+ *
+ * @since Version 1.0.0
+ * @see rx_uart_comm_init() UART transport layer initialization
+ */
+static bool internal_init_uart_transport(void)
+{
+  if ((s_enabled_channels & k_comm_channel_mask_uart) == k_comm_channel_mask_none) {
+    rx_log_info(s_tag, "UART comm disabled by config");
+    return false;
+  }
+
+  rx_uart_comm_config_t uart_cfg = {
+    .session = &s_session_state,
+    .channel = k_uart_channel_9,
+  };
+  bool uart_ok = (bool)(rx_uart_comm_init(&s_uart_comm_handle, &uart_cfg) == k_rx_ok);
+  if (!uart_ok) {
+    rx_log_error(s_tag, "UART comm init failed");
+  }
+  return uart_ok;
+}
+
+/**
+ * @brief Log transport initialization status and detect total failure
+ *
+ * @details
+ * Logs which transports initialized successfully and fires a critical error
+ * when at least one channel was enabled but all enabled channels failed.
+ * Disabled channels are excluded from failure detection.
+ *
+ * @param[in] usb_ok  true if USB transport initialized successfully
+ * @param[in] spi_ok  true if SPI transport initialized successfully
+ * @param[in] link_ok true if SPI HARQ link initialized successfully
+ * @param[in] i2c_ok  true if I2C transport initialized successfully
+ * @param[in] uart_ok true if UART transport initialized successfully
+ *
+ * @pre s_enabled_channels must be configured before calling
+ * @pre All *_ok parameters must reflect actual init results
+ * @post Critical error logged if all enabled channels failed
+ * @post Info logged for each successfully initialized transport
+ *
+ * @note Called once during single-threaded task initialization; not thread-safe
+ *
+ * @since Version 1.0.0
+ */
+static void
+internal_log_transport_status(bool usb_ok, bool spi_ok, bool link_ok, bool i2c_ok, bool uart_ok)
+{
+  const bool usb_enabled =
+    (bool)((s_enabled_channels & k_comm_channel_mask_usb) != k_comm_channel_mask_none);
+  const bool spi_enabled =
+    (bool)((s_enabled_channels & k_comm_channel_mask_spi) != k_comm_channel_mask_none);
+  const bool i2c_enabled =
+    (bool)((s_enabled_channels & k_comm_channel_mask_i2c) != k_comm_channel_mask_none);
+  const bool uart_enabled =
+    (bool)((s_enabled_channels & k_comm_channel_mask_uart) != k_comm_channel_mask_none);
+  const bool any_enabled =
+    (bool)((int)usb_enabled | (int)spi_enabled | (int)i2c_enabled | (int)uart_enabled);
+  /* At least one enabled channel initialized successfully. */
+  const bool any_enabled_succeeded =
+    (bool)(((int)usb_enabled & (int)usb_ok) | ((int)spi_enabled & (int)spi_ok) |
+           ((int)i2c_enabled & (int)i2c_ok) | ((int)uart_enabled & (int)uart_ok));
+
+  if ((int)any_enabled && !(int)any_enabled_succeeded) {
+    rx_log_error(s_tag, "CRITICAL: All transport channels failed to initialize");
+    return;
+  }
+
+  if (usb_ok) {
+    rx_log_info(s_tag, "USB transport initialized");
+  }
+  if (spi_ok) {
+    rx_log_info(s_tag, "SPI transport initialized");
+  }
+  if (link_ok) {
+    rx_log_info(s_tag, "SPI HARQ link initialized (FEC with Chase Combining)");
+  }
+  if (i2c_ok) {
+    rx_log_info(s_tag, "I2C peripheral transport initialized");
+  }
+  if (uart_ok) {
+    rx_log_info(s_tag, "UART transport initialized");
+  }
+}
+
+/**
+ * @brief Initialize all transport layers and wire into comm manager config
+ *
+ * @details
+ * Orchestrates initialization of all communication transport layers (USB, SPI,
+ * I2C, UART) by delegating to per-channel helper functions. Populates the
+ * rx_comm_manager_config_t structure with either real transport handles (on
+ * success) or nullptr (on failure) to enable graceful degradation.
  *
  * @param[out] config Comm manager configuration to populate
  *   - **Valid range**: Non-nullptr to rx_comm_manager_config_t
  *   - **Constraints**: Must be zeroed before calling this function
- *   - **Side effects**: usb_handle, spi_handle, and spi_link fields populated
+ *   - **Side effects**: usb_handle, spi_handle, i2c_handle, uart_handle,
+ *     and spi_link fields populated
  *
  * @return void This function does not return a value
  *
@@ -967,22 +1325,20 @@ rx_err_t comm_task_create(void)
  * @post At least one transport handle set on success (best effort)
  * @post All init failures logged via rx_log_error
  *
- * @note This function does NOT initialize RSPI hardware - caller must ensure
- *       RSPI2 peripheral is initialized before calling
  * @note Called once during single-threaded task initialization; not thread-safe
- * @warning Function has no return value - check config->usb_handle,
- *          config->spi_handle, and config->spi_link for nullptr to detect degraded modes
+ * @warning Function has no return value - check config handle fields for nullptr
+ *          to detect degraded modes
  *
  * @par Thread Safety:
  * This function is **not thread-safe**. It must be called only once during
- * task initialization in a single-threaded context. The function modifies
- * file-scoped static variables (s_usb_comm_handle, s_spi_comm_handle) and
- * should not be called concurrently from multiple threads.
+ * task initialization in a single-threaded context.
  *
  * @since Version 1.0.0
- * @see rx_usb_comm_init() USB transport layer initialization
- * @see rx_spi_comm_init() SPI transport layer initialization
- * @see rx_spi_link_init() HARQ link layer initialization (called internally when spi_ok)
+ * @see internal_init_usb_transport() USB channel initialization
+ * @see internal_init_spi_transport() SPI channel and HARQ link initialization
+ * @see internal_init_i2c_transport() I2C channel initialization
+ * @see internal_init_uart_transport() UART channel initialization
+ * @see internal_log_transport_status() Validation and status logging
  */
 static void internal_init_transports(rx_comm_manager_config_t* config)
 {
@@ -990,63 +1346,21 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
   RX_ASSERT(config != nullptr, "Config pointer must not be NULL");
   RX_ASSERT(s_tag != nullptr, "Log tag must be initialized");
 
-  /* Initialize USB communication layer */
-  rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr};
-  bool                 usb_ok  = (rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
-  if (!usb_ok) {
-    rx_log_error(s_tag, "USB comm init failed");
-  }
+  /* Initialize each transport channel via dedicated helpers */
+  const bool usb_ok  = internal_init_usb_transport();
+  bool       link_ok = false;
+  const bool spi_ok  = internal_init_spi_transport(config, &link_ok);
+  const bool i2c_ok  = internal_init_i2c_transport();
+  const bool uart_ok = internal_init_uart_transport();
 
-  /* Initialize SPI communication layer (RSPI2 channel 2 - host peripheral) */
-  rx_spi_comm_config_t spi_cfg = {.session     = &s_session_state,
-                                  .channel     = k_rspi_channel_2,
-                                  .spi_mode    = k_spi_comm_default_mode,
-                                  .fec_enabled = false};
-  bool                 spi_ok  = (rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg) == k_rx_ok);
-  if (!spi_ok) {
-    rx_log_error(s_tag, "SPI comm init failed");
-  }
+  /* Wire handles - pass nullptr for disabled/failed transports */
+  config->usb_handle  = (int)usb_ok ? &s_usb_comm_handle : nullptr;
+  config->spi_handle  = (int)spi_ok ? &s_spi_comm_handle : nullptr;
+  config->i2c_handle  = (int)i2c_ok ? &s_i2c_comm_handle : nullptr;
+  config->uart_handle = (int)uart_ok ? &s_uart_comm_handle : nullptr;
 
-  bool link_ok = false;
-
-  if (spi_ok) {
-    /* Only attempt to configure the HARQ link when the underlying SPI transport
-     * succeeded.  Passing an invalid handle into rx_spi_link_init would trigger
-     * undefined behaviour, so skip the whole block if spi_ok is false. */
-    rx_spi_link_config_t link_cfg = {
-      .spi_handle  = &s_spi_comm_handle,
-      .fec_enabled = k_spi_link_default_fec_enabled,
-      .max_retries = k_spi_link_default_max_retries,
-    };
-
-    link_ok = (rx_spi_link_init(&s_spi_link, &link_cfg) == k_rx_ok);
-    if (!link_ok) {
-      rx_log_error(s_tag, "SPI link (HARQ) init failed");
-    }
-    config->spi_link = link_ok ? &s_spi_link : nullptr;
-  } else {
-    rx_log_warn(s_tag, "Skipping SPI HARQ link init because SPI transport failed");
-    config->spi_link = nullptr;
-  }
-
-  /* Wire handles - pass nullptr for failed transports (triggers timeout in comm_manager) */
-  config->usb_handle = usb_ok ? &s_usb_comm_handle : nullptr;
-  config->spi_handle = spi_ok ? &s_spi_comm_handle : nullptr;
-
-  /* Validation logging */
-  if (!usb_ok && !spi_ok) {
-    rx_log_error(s_tag, "CRITICAL: Both USB and SPI transports failed to initialize");
-  } else {
-    if (usb_ok) {
-      rx_log_info(s_tag, "USB transport initialized");
-    }
-    if (spi_ok) {
-      rx_log_info(s_tag, "SPI transport initialized");
-    }
-    if (link_ok) {
-      rx_log_info(s_tag, "SPI HARQ link initialized (FEC with Chase Combining)");
-    }
-  }
+  /* Log results and detect total failure */
+  internal_log_transport_status(usb_ok, spi_ok, link_ok, i2c_ok, uart_ok);
 }
 
 /**
@@ -1354,7 +1668,8 @@ static void internal_comm_task_entry(ULONG input)
   rx_log_info(s_tag, "Communication task starting");
 
   /* Initialize transport layers and wire into comm manager config */
-  rx_comm_manager_config_t config = {0};
+  rx_comm_manager_config_t config = {};
+  config.enabled_channels         = s_enabled_channels;
   internal_init_transports(&config);
   config.callback              = internal_frame_callback;
   config.callback_ctx          = &g_comm_manager;
@@ -1943,7 +2258,7 @@ static void internal_send_command_response(rx_comm_channel_t channel,
  */
 static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
-  star_v1_SetVelocityRequest velocity_req = {0};
+  star_v1_SetVelocityRequest velocity_req = star_v1_SetVelocityRequest_init_zero;
   const rx_err_t             err =
     rx_nanopb_decode_velocity_request(frame->payload, frame->header.length, &velocity_req);
   if (err != k_rx_ok || !velocity_req.has_command) {
@@ -1951,7 +2266,7 @@ static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx
   }
 
   /* Build motor command from protobuf doubles -> firmware floats */
-  motor_command_t cmd = {0};
+  motor_command_t cmd = {};
   cmd.target_velocity_mps[k_motor_idx_front_left] =
     (float)velocity_req.command.front_left_velocity_mps;
   cmd.target_velocity_mps[k_motor_idx_front_right] =
@@ -1978,7 +2293,7 @@ static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx
     response.has_header = true;
     const star_v1_Status resp_status =
       (set_err == k_rx_ok) ? star_v1_Status_STATUS_OK : star_v1_Status_STATUS_INTERNAL_ERROR;
-    const char* req_id = velocity_req.has_header ? velocity_req.header.request_id : nullptr;
+    const char* req_id = (int)velocity_req.has_header ? velocity_req.header.request_id : nullptr;
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 
     uint32_t       encoded_len = 0;
@@ -2044,7 +2359,7 @@ static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx
  */
 static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
-  star_v1_EmergencyStopRequest estop_req = {0};
+  star_v1_EmergencyStopRequest estop_req = star_v1_EmergencyStopRequest_init_zero;
   const rx_err_t               err =
     rx_nanopb_decode_estop_request(frame->payload, frame->header.length, &estop_req);
   if (err != k_rx_ok) {
@@ -2063,10 +2378,10 @@ static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_fr
     star_v1_EmergencyStopResponse response =
       (star_v1_EmergencyStopResponse)star_v1_EmergencyStopResponse_init_zero;
     response.has_header    = true;
-    response.estop_engaged = (trigger_err == k_rx_ok);
+    response.estop_engaged = (bool)(trigger_err == k_rx_ok);
     const star_v1_Status resp_status =
       (trigger_err == k_rx_ok) ? star_v1_Status_STATUS_OK : star_v1_Status_STATUS_INTERNAL_ERROR;
-    const char* req_id = estop_req.has_header ? estop_req.header.request_id : nullptr;
+    const char* req_id = (int)estop_req.has_header ? estop_req.header.request_id : nullptr;
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 
     uint32_t       encoded_len = 0;
@@ -2134,7 +2449,7 @@ static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_fr
  */
 static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
-  star_v1_SetPIDGainsRequest pid_req = {0};
+  star_v1_SetPIDGainsRequest pid_req = star_v1_SetPIDGainsRequest_init_zero;
   const rx_err_t             err =
     rx_nanopb_decode_pid_gains_request(frame->payload, frame->header.length, &pid_req);
   if (err != k_rx_ok || !pid_req.has_pid_config) {
@@ -2144,7 +2459,7 @@ static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const r
   rx_log_info(s_tag, "PID gains request received");
 
   /* Convert protobuf PID config to firmware structure */
-  pid_gains_t gains    = {0};
+  pid_gains_t gains    = {};
   gains.kp             = (float)pid_req.pid_config.kp;
   gains.ki             = (float)pid_req.pid_config.ki;
   gains.kd             = (float)pid_req.pid_config.kd;
@@ -2166,11 +2481,11 @@ static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const r
     star_v1_SetPIDGainsResponse response =
       (star_v1_SetPIDGainsResponse)star_v1_SetPIDGainsResponse_init_zero;
     response.has_header = true;
-    response.success    = (set_err == k_rx_ok);
+    response.success    = (bool)(set_err == k_rx_ok);
     /* response.message left as init_zero: NULL callback skips optional string field */
     const star_v1_Status resp_status =
       (set_err == k_rx_ok) ? star_v1_Status_STATUS_OK : star_v1_Status_STATUS_INTERNAL_ERROR;
-    const char* req_id = pid_req.has_header ? pid_req.header.request_id : nullptr;
+    const char* req_id = (int)pid_req.has_header ? pid_req.header.request_id : nullptr;
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 
     uint32_t       encoded_len = 0;
@@ -2242,7 +2557,7 @@ static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const r
  */
 static bool internal_handle_retransmit_config_command(const rx_frame_t* frame)
 {
-  star_v1_SetRetransmitConfigRequest retransmit_req = {0};
+  star_v1_SetRetransmitConfigRequest retransmit_req = star_v1_SetRetransmitConfigRequest_init_zero;
   const rx_err_t err = rx_nanopb_decode_retransmit_config_request(frame->payload,
                                                                   frame->header.length,
                                                                   &retransmit_req);
@@ -2264,7 +2579,7 @@ static bool internal_handle_retransmit_config_command(const rx_frame_t* frame)
     return false;
   }
 
-  rx_spi_comm_retransmit_config_t cfg = {0};
+  rx_spi_comm_retransmit_config_t cfg = {};
   cfg.max_retries                     = (uint8_t)max_retries;
   cfg.ack_timeout_ms                  = (uint16_t)ack_timeout;
   cfg.max_backoff_ms                  = (uint16_t)max_backoff;

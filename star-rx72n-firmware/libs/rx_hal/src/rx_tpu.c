@@ -100,7 +100,11 @@
 
 #include <stddef.h>
 
+#ifdef UNIT_TEST
+#include "mock_rx72n_regs.h"
+#else
 #include "rx72n_regs.h"
+#endif
 #include "rx_check.h"
 #include "rx_log.h"
 #include "rx_register_protection.h"
@@ -290,7 +294,7 @@ static rx_err_t internal_channel_to_index(const rx_tpu_channel_t channel, uint8_
  * @see tpu1(), tpu2(), tpu4(), tpu5() Underlying accessor functions
  * @since Version 1.0.0
  */
-static volatile rx_tpu_regs_t* internal_get_regs(const rx_tpu_channel_t channel)
+RX_STATIC_TESTABLE volatile rx_tpu_regs_t* internal_get_regs(const rx_tpu_channel_t channel)
 {
   switch (channel) {
     case k_tpu_channel_1:
@@ -302,6 +306,7 @@ static volatile rx_tpu_regs_t* internal_get_regs(const rx_tpu_channel_t channel)
     case k_tpu_channel_5:
       return tpu5();
     default:
+      RX_ASSERT(false, "Post-condition: channel must be valid (1,2,4,5) - caller validates");
       return nullptr;
   }
 }
@@ -330,7 +335,7 @@ static volatile rx_tpu_regs_t* internal_get_regs(const rx_tpu_channel_t channel)
  *
  * @since Version 1.0.0
  */
-static uint8_t internal_get_cst_bit(const rx_tpu_channel_t channel)
+RX_STATIC_TESTABLE uint8_t internal_get_cst_bit(const rx_tpu_channel_t channel)
 {
   switch (channel) {
     case k_tpu_channel_1:
@@ -342,6 +347,7 @@ static uint8_t internal_get_cst_bit(const rx_tpu_channel_t channel)
     case k_tpu_channel_5:
       return k_tpu_tstr_cst5;
     default:
+      RX_ASSERT(false, "Post-condition: channel must be valid (1,2,4,5) - caller validates");
       return 0;
   }
 }
@@ -407,7 +413,7 @@ static uint8_t internal_get_tmdr_mode(const rx_tpu_phase_mode_t mode)
 static void internal_enable_tpu_module_clock(void)
 {
   *prcr_reg() = k_rx_prcr_unlock_prc1;
-  system_regs()->mstpcra &= ~(uint32_t)k_tpu_mstpcra_mstpa13;
+  system_regs()->mstpcra &= ~k_tpu_mstpcra_mstpa13;
   *prcr_reg() = k_rx_prcr_lock;
 }
 
@@ -464,9 +470,6 @@ rx_err_t rx_tpu_init_phase_count(const rx_tpu_config_t* config)
 
   /* 2. Get register pointer */
   volatile rx_tpu_regs_t* regs = internal_get_regs(config->channel);
-  if (regs == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
 
   /* 3. Stop counter */
   const uint8_t cst_bit = internal_get_cst_bit(config->channel);
@@ -653,9 +656,6 @@ rx_err_t rx_tpu_read_count(const rx_tpu_channel_t channel, uint16_t* count)
 
   /* Read TCNT register */
   const volatile rx_tpu_regs_t* regs = internal_get_regs(channel);
-  if (regs == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
 
   *count = regs->tcnt;
 
@@ -719,11 +719,8 @@ rx_err_t rx_tpu_read_direction(const rx_tpu_channel_t channel, bool* counting_up
 
   /* Read TSR.TCFD bit */
   const volatile rx_tpu_regs_t* regs = internal_get_regs(channel);
-  if (regs == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
 
-  *counting_up = (regs->tsr & k_tpu_tsr_tcfd) != 0;
+  *counting_up = (bool)((regs->tsr & k_tpu_tsr_tcfd) != 0U);
 
   return k_rx_ok;
 }
@@ -779,9 +776,6 @@ rx_err_t rx_tpu_reset_count(const rx_tpu_channel_t channel)
 
   /* Write 0 to TCNT */
   volatile rx_tpu_regs_t* const regs = internal_get_regs(channel);
-  if (regs == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
 
   regs->tcnt = k_tpu_tcnt_zero;
 
@@ -840,9 +834,6 @@ rx_err_t rx_tpu_deinit(const rx_tpu_channel_t channel)
 
   /* Get register pointer (no init check - allow deinit of partially init'd channel) */
   volatile rx_tpu_regs_t* const regs = internal_get_regs(channel);
-  if (regs == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
 
   /* 1. Stop counter */
   const uint8_t cst_bit = internal_get_cst_bit(channel);

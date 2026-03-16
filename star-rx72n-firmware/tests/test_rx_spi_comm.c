@@ -229,6 +229,67 @@
 #include "unity.h"
 
 /* =============================================================================
+ * Internal (RX_STATIC_TESTABLE) function declarations
+ * =============================================================================
+ */
+
+/**
+ * @brief Decode frame header from a raw byte buffer (RX_STATIC_TESTABLE)
+ * @param[in]  data       Raw bytes buffer
+ * @param[in]  data_len   Buffer length
+ * @param[out] frame      Output frame (header fields filled)
+ * @param[out] offset_out Byte offset after header on success
+ * @return rx_err_t error code
+ */
+extern rx_err_t internal_decode_header(const uint8_t* data,
+                                       uint32_t       data_len,
+                                       rx_frame_t*    frame,
+                                       uint32_t*      offset_out);
+
+/**
+ * @brief Verify CRC-32 of a frame in a raw buffer (RX_STATIC_TESTABLE)
+ * @param[in]  data    Raw bytes buffer (header + payload)
+ * @param[in]  offset  Byte count of data before CRC field
+ * @param[out] crc_out CRC value read from frame (may be nullptr)
+ * @return rx_err_t error code
+ */
+extern rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32_t* crc_out);
+
+/**
+ * @brief Build rx_frame_t from components (RX_STATIC_TESTABLE)
+ * @param[in]  handle      SPI comm handle (for fec_enabled flag)
+ * @param[in]  sequence    TX sequence number
+ * @param[in]  type        Frame type
+ * @param[in]  flags       Frame flags
+ * @param[in]  payload     Payload data (may be nullptr)
+ * @param[in]  payload_len Payload length
+ * @param[out] frame       Output frame
+ * @return rx_err_t error code
+ */
+extern rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
+                                     uint16_t                    sequence,
+                                     rx_frame_type_t             type,
+                                     uint8_t                     flags,
+                                     const uint8_t*              payload,
+                                     uint32_t                    payload_len,
+                                     rx_frame_t*                 frame);
+
+/**
+ * @brief SPI transfer function (RX_STATIC_TESTABLE)
+ * @param[in]  handle  SPI comm handle
+ * @param[in]  tx_data TX data pointer (may be nullptr)
+ * @param[in]  tx_len  TX data length
+ * @param[out] rx_data RX data pointer (may be nullptr)
+ * @param[in]  rx_len  RX data length
+ * @return rx_err_t error code
+ */
+extern rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
+                                      const uint8_t*        tx_data,
+                                      uint32_t              tx_len,
+                                      uint8_t*              rx_data,
+                                      uint32_t              rx_len);
+
+/* =============================================================================
  * Mock Assertion Helpers
  * =============================================================================
  */
@@ -266,15 +327,24 @@ static void internal_assert_get_tx(rspi_channel_t channel,
 
 /** @brief Test constant values */
 typedef enum : uint16_t {
-  k_test_sequence_a     = 42,
-  k_test_sequence_b     = 123,
-  k_test_sequence_max   = 0xFFFF,
-  k_test_timeout_zero   = 0,
-  k_test_timeout_short  = 100,
-  k_test_payload_small  = 4,
-  k_test_payload_medium = 64,
-  k_test_payload_large  = 256,
+  k_test_sequence_a       = 42,
+  k_test_sequence_b       = 123,
+  k_test_sequence_max     = 0xFFFF,
+  k_test_timeout_zero     = 0,
+  k_test_timeout_short    = 100,
+  k_test_payload_small    = 4,
+  k_test_payload_medium   = 64,
+  k_test_payload_large    = 256,
+  k_test_payload_hello    = 10,
+  k_test_timeout_large_ms = 1000,
 } test_constants_t;
+
+/** @brief Buffer size constants for test arrays */
+typedef enum : uint16_t {
+  k_test_buf_small    = 32,  /**< Buffer for ACK/NACK frames */
+  k_test_buf_medium   = 64,  /**< Buffer for encoded frames and TX data */
+  k_test_buf_combined = 192, /**< Buffer for concatenated multi-frame injection */
+} test_buffer_sizes_t;
 
 /** @brief Retransmit test constant values */
 typedef enum : uint16_t {
@@ -287,6 +357,74 @@ typedef enum : uint16_t {
   k_test_retransmit_limit_check_time_ms   = 200,
   k_test_retransmit_flags_offset          = 7,
 } test_retransmit_constants_t;
+
+/** @brief Retransmit timing constants for exponential backoff tests */
+typedef enum : uint16_t {
+  k_test_backoff_first_trigger_ms  = 50,  /**< First timeout trigger (50 << 0) */
+  k_test_backoff_first_early_ms    = 49,  /**< Just before first timeout */
+  k_test_backoff_second_trigger_ms = 150, /**< Second timeout trigger (50 + 100) */
+  k_test_backoff_second_early_ms   = 149, /**< Just before second timeout */
+  k_test_backoff_third_trigger_ms  = 250, /**< Third timeout trigger with cap */
+  k_test_backoff_third_early_ms    = 249, /**< Just before third timeout */
+  k_test_backoff_ack_plus_ms       = 51,  /**< Just past ack_timeout_ms default */
+} test_backoff_timing_t;
+
+/** @brief Session and callback test values */
+typedef enum : uint16_t {
+  k_test_session_tx_preset = 50,  /**< Pre-set TX sequence for reset tests */
+  k_test_session_rx_preset = 100, /**< Pre-set RX sequence for reset tests */
+  k_test_ctx_value_a       = 42,  /**< Context value for callback tests */
+  k_test_ctx_value_b       = 99,  /**< Context value for reset callback test */
+  k_test_ctx_value_c       = 77,  /**< Context value for NACK callback test */
+  k_test_seq_gap           = 10,  /**< Sequence gap for validation fail test */
+  k_test_nack_wrong_seq    = 99,  /**< Non-matching NACK sequence */
+} test_session_constants_t;
+
+/** @brief Frame field byte values for raw frame construction */
+typedef enum : uint8_t {
+  k_test_sync_low          = 0xAA, /**< SYNC word low byte (LE) */
+  k_test_sync_high         = 0x55, /**< SYNC word high byte (LE) */
+  k_test_len_high_oversize = 0x80, /**< LEN high byte for oversized payload (32768) */
+  k_test_payload_len_small = 0x04, /**< LEN low byte for 4-byte payload */
+  k_test_type_command      = 0x01, /**< TYPE byte for command frame */
+  k_test_crc_invalid_0     = 0xDE, /**< Invalid CRC byte 0 */
+  k_test_crc_invalid_1     = 0xAD, /**< Invalid CRC byte 1 */
+  k_test_crc_invalid_2     = 0xBE, /**< Invalid CRC byte 2 */
+  k_test_crc_invalid_3     = 0xEF, /**< Invalid CRC byte 3 */
+  k_test_fill_pattern      = 0xAA, /**< Fill pattern for payload initialization */
+  k_test_byte_mask         = 0xFF, /**< Byte mask for pattern generation */
+} test_frame_bytes_t;
+
+/** @brief Payload byte values for PONG echo test */
+typedef enum : uint8_t {
+  k_test_pong_byte_0 = 0xDE, /**< PONG test payload byte 0 */
+  k_test_pong_byte_1 = 0xAD, /**< PONG test payload byte 1 */
+  k_test_pong_byte_2 = 0xBE, /**< PONG test payload byte 2 */
+  k_test_pong_byte_3 = 0xEF, /**< PONG test payload byte 3 */
+} test_pong_bytes_t;
+
+/** @brief Ping counter payload values */
+typedef enum : uint8_t {
+  k_test_ping_counter_1 = 0x01, /**< Ping counter value 1 */
+  k_test_ping_counter_2 = 0x02, /**< Ping counter value 2 */
+  k_test_ping_counter_3 = 0x03, /**< Ping counter value 3 */
+} test_ping_counters_t;
+
+/** @brief Test payload byte values for second transfer fail test */
+typedef enum : uint8_t {
+  k_test_seq_payload_0 = 0x01, /**< Sequential test payload byte 0 */
+  k_test_seq_payload_1 = 0x02, /**< Sequential test payload byte 1 */
+  k_test_seq_payload_2 = 0x03, /**< Sequential test payload byte 2 */
+  k_test_seq_payload_3 = 0x04, /**< Sequential test payload byte 3 */
+} test_seq_payload_t;
+
+/** @brief Mock failure injection constants */
+typedef enum : uint8_t {
+  k_test_fail_on_call_2   = 2,    /**< Fail on 2nd transfer call */
+  k_test_header_body_size = 8,    /**< Header body size (sync2+seq2+len2+type1+flags1) */
+  k_test_pong_frame_size  = 16,   /**< PONG frame: 8 header + 4 payload + 4 CRC */
+  k_test_dummy_tx_byte    = 0xAA, /**< Arbitrary non-zero byte for dummy TX buffer */
+} test_misc_constants_t;
 
 /* =============================================================================
  * Test Fixtures
@@ -369,15 +507,16 @@ static void helper_create_encoded_frame(rx_frame_type_t type,
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&encoder));
 
-  rx_frame_t frame;
-  memset(&frame, 0, sizeof(frame));
+  rx_frame_t frame      = {};
   frame.header.sequence = sequence;
   frame.header.length   = (uint16_t)payload_len;
   frame.header.type     = (uint8_t)type;
   frame.header.flags    = k_frame_flag_none;
 
   if (payload != nullptr && payload_len > 0) {
-    memcpy(frame.payload, payload, payload_len);
+    for (uint32_t i = 0; i < payload_len; i++) {
+      frame.payload[i] = payload[i];
+    }
   }
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&encoder, &frame, out_buffer, out_len));
@@ -413,14 +552,14 @@ void setUp(void)
   (void)rx_session_init(&s_session);
 
   /* Clear handle */
-  memset(&s_handle, 0, sizeof(s_handle));
+  s_handle = (rx_spi_comm_handle_t){};
 
   /* Reset callback tracking */
-  s_ping_cb_count  = 0;
-  s_reset_cb_count = 0;
-  memset(&s_last_ping_frame, 0, sizeof(s_last_ping_frame));
-  memset(&s_last_reset_frame, 0, sizeof(s_last_reset_frame));
-  s_last_cb_ctx = NULL;
+  s_ping_cb_count    = 0;
+  s_reset_cb_count   = 0;
+  s_last_ping_frame  = (rx_frame_t){};
+  s_last_reset_frame = (rx_frame_t){};
+  s_last_cb_ctx      = NULL;
 
   /* Reset retransmit callback tracking */
   s_ack_cb_count           = 0;
@@ -539,7 +678,7 @@ void test_spi_comm_send_null_handle_fails(void)
 {
   uint8_t data[] = "test";
 
-  rx_err_t err = rx_spi_comm_send(nullptr, k_frame_type_response, 0, data, 4);
+  rx_err_t err = rx_spi_comm_send(nullptr, k_frame_type_response, 0, data, k_test_payload_small);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -548,7 +687,7 @@ void test_spi_comm_send_not_initialized_fails(void)
 {
   uint8_t data[] = "test";
 
-  rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4);
+  rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_small);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -563,7 +702,8 @@ void test_spi_comm_send_null_payload_with_len_fails(void)
                                                              .fec_enabled = false}));
   helper_init_rspi_channel(k_rspi_channel_0);
 
-  rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, nullptr, 10);
+  rx_err_t err =
+    rx_spi_comm_send(&s_handle, k_frame_type_response, 0, nullptr, k_test_payload_hello);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -611,7 +751,7 @@ void test_spi_comm_send_with_payload_succeeds(void)
   helper_init_rspi_channel(k_rspi_channel_0);
   uint8_t data[] = "Hello SPI!";
 
-  rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 10);
+  rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_hello);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(1, helper_get_tx_seq());
@@ -628,9 +768,15 @@ void test_spi_comm_send_increments_sequence(void)
   helper_init_rspi_channel(k_rspi_channel_0);
   uint8_t data[] = "test";
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4));
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4));
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4));
+  TEST_ASSERT_EQUAL(
+    k_rx_ok,
+    rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_small));
+  TEST_ASSERT_EQUAL(
+    k_rx_ok,
+    rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_small));
+  TEST_ASSERT_EQUAL(
+    k_rx_ok,
+    rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_small));
 
   TEST_ASSERT_EQUAL_UINT16(3, helper_get_tx_seq());
 }
@@ -647,7 +793,9 @@ void test_spi_comm_send_sequence_wraps(void)
   s_session.tx_sequence = k_test_sequence_max;
   uint8_t data[]        = "test";
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4));
+  TEST_ASSERT_EQUAL(
+    k_rx_ok,
+    rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_small));
 
   /* 0xFFFF + 1 wraps to 0x0000 */
   TEST_ASSERT_EQUAL_UINT16(0, helper_get_tx_seq());
@@ -663,12 +811,12 @@ void test_spi_comm_send_with_fec_flag(void)
   helper_init_rspi_channel(k_rspi_channel_0);
   uint8_t data[] = "test";
 
-  rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4);
+  rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_small);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify FEC flag is set in the transmitted frame */
-  uint8_t  tx_data[64];
+  uint8_t  tx_data[k_test_buf_medium];
   uint32_t tx_len = 0;
   internal_assert_get_tx(k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
@@ -690,7 +838,7 @@ void test_spi_comm_send_transfer_error_propagates(void)
   mock_rspi_set_transfer_return(nullptr, k_rx_err_timeout);
   uint8_t data[] = "test";
 
-  rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4);
+  rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_small);
 
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
@@ -707,7 +855,7 @@ void test_spi_comm_send_large_payload(void)
 
   uint8_t data[k_test_payload_large];
   for (uint32_t i = 0; i < k_test_payload_large; i++) {
-    data[i] = (uint8_t)(i & 0xFF);
+    data[i] = (uint8_t)(i & k_test_byte_mask);
   }
 
   rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_large);
@@ -729,7 +877,7 @@ void test_spi_comm_send_missing_host_ack_times_out(void)
 
   uint8_t data[] = "test";
 
-  rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4);
+  rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_small);
 
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 
@@ -774,7 +922,7 @@ void test_spi_comm_send_ack_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify ACK frame was transmitted */
-  uint8_t  tx_data[32];
+  uint8_t  tx_data[k_test_buf_small];
   uint32_t tx_len = 0;
   internal_assert_get_tx(k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
@@ -827,7 +975,7 @@ void test_spi_comm_send_nack_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify NACK frame was transmitted */
-  uint8_t  tx_data[32];
+  uint8_t  tx_data[k_test_buf_small];
   uint32_t tx_len = 0;
   internal_assert_get_tx(k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
@@ -935,9 +1083,14 @@ void test_spi_comm_receive_valid_frame_success(void)
 
   /* Create and inject a valid frame (seq=0 matches initial session rx_sequence) */
   uint8_t  payload[] = "TEST";
-  uint8_t  encoded_frame[64];
+  uint8_t  encoded_frame[k_test_buf_medium];
   uint32_t encoded_len = 0;
-  helper_create_encoded_frame(k_frame_type_command, 0, payload, 4, encoded_frame, &encoded_len);
+  helper_create_encoded_frame(k_frame_type_command,
+                              0,
+                              payload,
+                              k_test_payload_small,
+                              encoded_frame,
+                              &encoded_len);
 
   internal_assert_inject_rx(k_rspi_channel_0, encoded_frame, encoded_len);
 
@@ -947,8 +1100,8 @@ void test_spi_comm_receive_valid_frame_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(0, frame.header.sequence);
   TEST_ASSERT_EQUAL_UINT8(k_frame_type_command, frame.header.type);
-  TEST_ASSERT_EQUAL_UINT16(4, frame.header.length);
-  TEST_ASSERT_EQUAL_MEMORY(payload, frame.payload, 4);
+  TEST_ASSERT_EQUAL_UINT16(k_test_payload_small, frame.header.length);
+  TEST_ASSERT_EQUAL_MEMORY(payload, frame.payload, k_test_payload_small);
 }
 
 void test_spi_comm_receive_updates_rx_sequence(void)
@@ -962,7 +1115,7 @@ void test_spi_comm_receive_updates_rx_sequence(void)
   helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Session starts at rx_sequence=0, so receive frame with matching sequence */
-  uint8_t  encoded_frame[64];
+  uint8_t  encoded_frame[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_command, 0, nullptr, 0, encoded_frame, &encoded_len);
 
@@ -1020,7 +1173,7 @@ void test_spi_comm_receive_transfer_error_propagates(void)
   helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Inject valid frame to pass availability check */
-  uint8_t  encoded_frame[64];
+  uint8_t  encoded_frame[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_command, 0, nullptr, 0, encoded_frame, &encoded_len);
   internal_assert_inject_rx(k_rspi_channel_0, encoded_frame, encoded_len);
@@ -1162,7 +1315,7 @@ void test_spi_comm_rx_sequence_wraparound(void)
   s_session.rx_sequence = k_test_sequence_max;
 
   /* Receive a frame with sequence 0xFFFF (exact match with pre-advanced session) */
-  uint8_t  encoded_frame[64];
+  uint8_t  encoded_frame[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_command,
                               k_test_sequence_max,
@@ -1194,7 +1347,9 @@ void test_spi_comm_uses_configured_channel(void)
   helper_init_rspi_channel(k_rspi_channel_1);
   uint8_t data[] = "test";
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4));
+  TEST_ASSERT_EQUAL(
+    k_rx_ok,
+    rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_small));
 
   /* Verify transfer was called on channel 1 */
   mock_rspi_call_t call;
@@ -1229,7 +1384,9 @@ void test_spi_comm_max_payload_fits_in_buffer(void)
 
   /* Create maximum size payload */
   uint8_t data[k_frame_max_payload];
-  memset(data, 0xAA, k_frame_max_payload);
+  for (uint32_t i = 0; i < k_frame_max_payload; i++) {
+    data[i] = k_test_fill_pattern;
+  }
 
   rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_frame_max_payload);
 
@@ -1253,7 +1410,9 @@ void test_spi_comm_transfer_is_called_on_send(void)
   mock_rspi_clear_calls(nullptr);
   uint8_t data[] = "test";
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4));
+  TEST_ASSERT_EQUAL(
+    k_rx_ok,
+    rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_small));
 
   TEST_ASSERT_TRUE(mock_rspi_was_called(nullptr, "rspi_peripheral_transfer"));
 }
@@ -1286,9 +1445,15 @@ void test_spi_comm_transfer_count(void)
   helper_init_rspi_channel(k_rspi_channel_0);
   uint8_t data[] = "test";
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4));
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4));
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4));
+  TEST_ASSERT_EQUAL(
+    k_rx_ok,
+    rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_small));
+  TEST_ASSERT_EQUAL(
+    k_rx_ok,
+    rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_small));
+  TEST_ASSERT_EQUAL(
+    k_rx_ok,
+    rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, k_test_payload_small));
 
   /* Each send calls transfer once */
   uint32_t count = mock_rspi_get_call_count(nullptr, "rspi_peripheral_transfer");
@@ -1304,7 +1469,7 @@ static void test_ping_callback(const rx_frame_t* frame, void* ctx)
 {
   s_ping_cb_count++;
   if (frame != NULL) {
-    memcpy(&s_last_ping_frame, frame, sizeof(rx_frame_t));
+    s_last_ping_frame = *frame;
   }
   s_last_cb_ctx = ctx;
 }
@@ -1313,7 +1478,7 @@ static void test_reset_callback(const rx_frame_t* frame, void* ctx)
 {
   s_reset_cb_count++;
   if (frame != NULL) {
-    memcpy(&s_last_reset_frame, frame, sizeof(rx_frame_t));
+    s_last_reset_frame = *frame;
   }
   s_last_cb_ctx = ctx;
 }
@@ -1332,6 +1497,14 @@ void test_spi_comm_set_callbacks_null_handle_fails(void)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
+void test_spi_comm_set_callbacks_not_initialized_fails(void)
+{
+  /* s_handle is zero-initialized by setUp; not_initialized = true */
+  rx_err_t err =
+    rx_spi_comm_set_control_callbacks(&s_handle, test_ping_callback, test_reset_callback, NULL);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
 void test_spi_comm_set_callbacks_success(void)
 {
   (void)rx_spi_comm_init(&s_handle,
@@ -1339,7 +1512,7 @@ void test_spi_comm_set_callbacks_success(void)
                                                  .channel     = k_rspi_channel_0,
                                                  .spi_mode    = 0,
                                                  .fec_enabled = false});
-  uint32_t ctx_val = 42;
+  uint32_t ctx_val = k_test_ctx_value_a;
 
   rx_err_t err =
     rx_spi_comm_set_control_callbacks(&s_handle, test_ping_callback, test_reset_callback, &ctx_val);
@@ -1382,22 +1555,25 @@ void test_spi_comm_send_pong_echoes_payload(void)
                                                  .fec_enabled = false});
   helper_init_rspi_channel(k_rspi_channel_0);
 
-  uint8_t  payload[] = {0xDE, 0xAD, 0xBE, 0xEF};
+  uint8_t  payload[] = {k_test_pong_byte_0,
+                        k_test_pong_byte_1,
+                        k_test_pong_byte_2,
+                        k_test_pong_byte_3};
   rx_err_t err       = rx_spi_comm_send_pong(&s_handle, payload, k_test_payload_small);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify PONG frame was transmitted */
-  uint8_t  tx_data[64];
+  uint8_t  tx_data[k_test_buf_medium];
   uint32_t tx_len = 0;
   internal_assert_get_tx(k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   /* PONG frame: 8 header + 4 payload + 4 CRC = 16 bytes */
-  TEST_ASSERT_EQUAL_UINT32(16, tx_len);
+  TEST_ASSERT_EQUAL_UINT32(k_test_pong_frame_size, tx_len);
   TEST_ASSERT_EQUAL_HEX8(k_frame_type_pong, tx_data[6]);
 
   /* PONG should echo the payload (starts at offset 8) */
-  TEST_ASSERT_EQUAL_MEMORY(payload, &tx_data[8], k_test_payload_small);
+  TEST_ASSERT_EQUAL_MEMORY(payload, &tx_data[k_test_header_body_size], k_test_payload_small);
 }
 
 /* =============================================================================
@@ -1433,7 +1609,7 @@ void test_spi_comm_send_reset_ack_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify RESET_ACK frame was transmitted */
-  uint8_t  tx_data[32];
+  uint8_t  tx_data[k_test_buf_small];
   uint32_t tx_len = 0;
   internal_assert_get_tx(k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
@@ -1457,8 +1633,8 @@ void test_spi_comm_receive_ping_auto_pong(void)
   helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Create PING frame with 4-byte counter payload */
-  uint8_t  ping_payload[] = {0x00, 0x00, 0x00, 0x01};
-  uint8_t  encoded[64];
+  uint8_t  ping_payload[] = {0x00, 0x00, 0x00, k_test_ping_counter_1};
+  uint8_t  encoded[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ping,
                               0,
@@ -1476,16 +1652,56 @@ void test_spi_comm_receive_ping_auto_pong(void)
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 
   /* Verify PONG was transmitted (last SPI transfer was the PONG send) */
-  uint8_t  tx_data[64];
+  uint8_t  tx_data[k_test_buf_medium];
   uint32_t tx_len = 0;
   internal_assert_get_tx(k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   /* PONG frame: 8 header + 4 payload + 4 CRC = 16 bytes */
-  TEST_ASSERT_EQUAL_UINT32(16, tx_len);
+  TEST_ASSERT_EQUAL_UINT32(k_test_pong_frame_size, tx_len);
   TEST_ASSERT_EQUAL_HEX8(k_frame_type_pong, tx_data[6]);
 
   /* PONG should echo the PING payload (offset 8) */
-  TEST_ASSERT_EQUAL_MEMORY(ping_payload, &tx_data[8], k_test_payload_small);
+  TEST_ASSERT_EQUAL_MEMORY(ping_payload, &tx_data[k_test_header_body_size], k_test_payload_small);
+}
+
+/**
+ * @brief Concatenate two frames with optional padding into a combined injection buffer
+ *
+ * @details
+ * SPI is full-duplex: a TX transfer also reads from the RX buffer. This helper
+ * inserts padding between frames so the TX reply (e.g. PONG) consumes padding
+ * instead of the second frame.
+ *
+ * @param[in]  frame_a     First frame data
+ * @param[in]  frame_a_len First frame length
+ * @param[in]  padding_len Number of zero-padding bytes between frames
+ * @param[in]  frame_b     Second frame data
+ * @param[in]  frame_b_len Second frame length
+ * @param[out] combined    Output buffer (must be large enough)
+ * @return Total combined length
+ */
+static uint32_t internal_concat_frames_with_padding(const uint8_t* frame_a,
+                                                    uint32_t       frame_a_len,
+                                                    uint32_t       padding_len,
+                                                    const uint8_t* frame_b,
+                                                    uint32_t       frame_b_len,
+                                                    uint8_t*       combined)
+{
+  uint32_t offset = 0;
+
+  for (uint32_t i = 0; i < frame_a_len; i++) {
+    combined[offset + i] = frame_a[i];
+  }
+  offset += frame_a_len;
+  for (uint32_t i = 0; i < padding_len; i++) {
+    combined[offset + i] = 0; /* padding consumed by TX reply */
+  }
+  offset += padding_len;
+  for (uint32_t i = 0; i < frame_b_len; i++) {
+    combined[offset + i] = frame_b[i];
+  }
+  offset += frame_b_len;
+  return offset;
 }
 
 void test_spi_comm_receive_ping_then_command(void)
@@ -1498,8 +1714,8 @@ void test_spi_comm_receive_ping_then_command(void)
   helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Create PING frame */
-  uint8_t  ping_payload[] = {0x00, 0x00, 0x00, 0x02};
-  uint8_t  ping_encoded[64];
+  uint8_t  ping_payload[] = {0x00, 0x00, 0x00, k_test_ping_counter_2};
+  uint8_t  ping_encoded[k_test_buf_medium];
   uint32_t ping_len = 0;
   helper_create_encoded_frame(k_frame_type_ping,
                               0,
@@ -1510,7 +1726,7 @@ void test_spi_comm_receive_ping_then_command(void)
 
   /* Create COMMAND frame */
   uint8_t  cmd_payload[] = "DATA";
-  uint8_t  cmd_encoded[64];
+  uint8_t  cmd_encoded[k_test_buf_medium];
   uint32_t cmd_len = 0;
   helper_create_encoded_frame(k_frame_type_command,
                               1,
@@ -1519,25 +1735,15 @@ void test_spi_comm_receive_ping_then_command(void)
                               cmd_encoded,
                               &cmd_len);
 
-  /*
-   * Concatenate PING + padding + COMMAND into injection buffer.
-   *
-   * SPI is full-duplex: the PONG send transfer also reads from the RX
-   * buffer.  The PONG wire frame is the same size as the PING (both carry
-   * a 4-byte payload), so insert that many padding bytes between the two
-   * frames so the PONG send consumes the padding instead of the COMMAND.
-   */
-  const uint32_t pong_wire_len = ping_len; /* PONG echoes same payload size */
-  uint8_t        combined[192];
-  uint32_t       offset = 0;
-
-  memcpy(combined + offset, ping_encoded, ping_len);
-  offset += ping_len;
-  memset(combined + offset, 0, pong_wire_len); /* padding consumed by PONG TX */
-  offset += pong_wire_len;
-  memcpy(combined + offset, cmd_encoded, cmd_len);
-  offset += cmd_len;
-  internal_assert_inject_rx(k_rspi_channel_0, combined, offset);
+  /* PONG echoes same payload size as PING, so use ping_len as padding */
+  uint8_t        combined[k_test_buf_combined];
+  const uint32_t total = internal_concat_frames_with_padding(ping_encoded,
+                                                             ping_len,
+                                                             ping_len,
+                                                             cmd_encoded,
+                                                             cmd_len,
+                                                             combined);
+  internal_assert_inject_rx(k_rspi_channel_0, combined, total);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1564,11 +1770,11 @@ void test_spi_comm_receive_reset_auto_ack(void)
   helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Set non-zero sequences to verify reset */
-  s_session.tx_sequence = 50;
-  s_session.rx_sequence = 100;
+  s_session.tx_sequence = k_test_session_tx_preset;
+  s_session.rx_sequence = k_test_session_rx_preset;
 
   /* Create RESET frame (no payload) */
-  uint8_t  encoded[64];
+  uint8_t  encoded[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_reset, 0, NULL, 0, encoded, &encoded_len);
 
@@ -1581,7 +1787,7 @@ void test_spi_comm_receive_reset_auto_ack(void)
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 
   /* Verify RESET_ACK was transmitted */
-  uint8_t  tx_data[32];
+  uint8_t  tx_data[k_test_buf_small];
   uint32_t tx_len = 0;
   internal_assert_get_tx(k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
@@ -1607,15 +1813,15 @@ void test_spi_comm_receive_ping_callback_invoked(void)
                                                  .fec_enabled = false});
   helper_init_rspi_channel(k_rspi_channel_0);
 
-  uint32_t ctx_value = 42;
+  uint32_t ctx_value = k_test_ctx_value_a;
   (void)rx_spi_comm_set_control_callbacks(&s_handle,
                                           test_ping_callback,
                                           test_reset_callback,
                                           &ctx_value);
 
   /* Create and inject PING */
-  uint8_t  ping_payload[] = {0x00, 0x00, 0x00, 0x03};
-  uint8_t  encoded[64];
+  uint8_t  ping_payload[] = {0x00, 0x00, 0x00, k_test_ping_counter_3};
+  uint8_t  encoded[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ping,
                               0,
@@ -1645,17 +1851,17 @@ void test_spi_comm_receive_reset_callback_invoked(void)
                                                  .fec_enabled = false});
   helper_init_rspi_channel(k_rspi_channel_0);
 
-  s_session.tx_sequence = 50;
-  s_session.rx_sequence = 100;
+  s_session.tx_sequence = k_test_session_tx_preset;
+  s_session.rx_sequence = k_test_session_rx_preset;
 
-  uint32_t ctx_value = 99;
+  uint32_t ctx_value = k_test_ctx_value_b;
   (void)rx_spi_comm_set_control_callbacks(&s_handle,
                                           test_ping_callback,
                                           test_reset_callback,
                                           &ctx_value);
 
   /* Create and inject RESET */
-  uint8_t  encoded[64];
+  uint8_t  encoded[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_reset, 0, NULL, 0, encoded, &encoded_len);
   internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
@@ -1724,7 +1930,7 @@ void test_retransmit_defaults_applied_for_zero_values(void)
     .spi_mode          = 0,
     .fec_enabled       = false,
     .auto_retransmit   = true,
-    .retransmit_config = {0},
+    .retransmit_config = {},
   };
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
@@ -1850,7 +2056,7 @@ void test_retransmit_ack_clears_retry(void)
   TEST_ASSERT_TRUE(s_handle.retry_pending);
 
   /* Inject ACK frame with matching sequence (0) */
-  uint8_t  encoded[64];
+  uint8_t  encoded[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
   internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
@@ -1880,7 +2086,7 @@ void test_retransmit_ack_wrong_seq_ignored(void)
                                      k_test_payload_small));
 
   /* Inject ACK with wrong sequence (99 instead of 0) */
-  uint8_t  encoded[64];
+  uint8_t  encoded[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, k_test_sequence_b, NULL, 0, encoded, &encoded_len);
   internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
@@ -1914,7 +2120,7 @@ void test_retransmit_ack_callback_invoked(void)
                                      data,
                                      k_test_payload_small));
 
-  uint8_t  encoded[64];
+  uint8_t  encoded[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
   internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
@@ -1937,7 +2143,7 @@ void test_retransmit_ack_not_consumed_when_off(void)
   helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Inject ACK frame */
-  uint8_t  encoded[64];
+  uint8_t  encoded[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
   internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
@@ -1960,7 +2166,7 @@ void test_retransmit_ack_non_pending_ignored(void)
   /* NO send -> no pending retry */
   TEST_ASSERT_FALSE(s_handle.retry_pending);
 
-  uint8_t  encoded[64];
+  uint8_t  encoded[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
   internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
@@ -1995,7 +2201,7 @@ void test_retransmit_nack_triggers_retry(void)
   TEST_ASSERT_EQUAL_UINT8(0, s_handle.retry_count);
 
   /* Inject NACK with matching sequence */
-  uint8_t  encoded[64];
+  uint8_t  encoded[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
   internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
@@ -2028,7 +2234,7 @@ void test_retransmit_nack_retransmit_flag_set(void)
                          s_handle.retry_buffer[k_test_retransmit_flags_offset] &
                            k_frame_flag_retransmit);
 
-  uint8_t  encoded[64];
+  uint8_t  encoded[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
   internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
@@ -2049,7 +2255,7 @@ void test_retransmit_nack_callback_invoked(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
   helper_init_rspi_channel(k_rspi_channel_0);
 
-  uint32_t ctx_value = 77;
+  uint32_t ctx_value = k_test_ctx_value_c;
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_set_retransmit_callbacks(&s_handle,
                                                          test_ack_callback,
@@ -2064,7 +2270,7 @@ void test_retransmit_nack_callback_invoked(void)
                                      data,
                                      k_test_payload_small));
 
-  uint8_t  encoded[64];
+  uint8_t  encoded[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
   internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
@@ -2085,7 +2291,7 @@ void test_retransmit_nack_not_consumed_when_off(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &default_cfg));
   helper_init_rspi_channel(k_rspi_channel_0);
 
-  uint8_t  encoded[64];
+  uint8_t  encoded[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
   internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
@@ -2120,7 +2326,7 @@ void test_retransmit_process_triggers_after_timeout(void)
   s_handle.retry_send_time_ms = 0;
 
   /* Call with time > ack_timeout_ms (default 50) */
-  rx_err_t err = rx_spi_comm_process_retransmits(&s_handle, 51);
+  rx_err_t err = rx_spi_comm_process_retransmits(&s_handle, k_test_backoff_ack_plus_ms);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT8(1, s_handle.retry_count);
@@ -2152,19 +2358,23 @@ void test_retransmit_process_exponential_backoff(void)
   s_handle.retry_send_time_ms = 0;
 
   /* First timeout: 50ms (50 << 0) -- too early at 49 */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 49));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_process_retransmits(&s_handle, k_test_backoff_first_early_ms));
   TEST_ASSERT_EQUAL_UINT8(0, s_handle.retry_count);
 
   /* First timeout: triggers at 50ms */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 50));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_process_retransmits(&s_handle, k_test_backoff_first_trigger_ms));
   TEST_ASSERT_EQUAL_UINT8(1, s_handle.retry_count);
 
   /* Second timeout: 100ms (50 << 1), from retry_send_time=50 -- too early at 149 */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 149));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_process_retransmits(&s_handle, k_test_backoff_second_early_ms));
   TEST_ASSERT_EQUAL_UINT8(1, s_handle.retry_count);
 
   /* Second timeout: triggers at 150ms (50 + 100) */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 150));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_process_retransmits(&s_handle, k_test_backoff_second_trigger_ms));
   TEST_ASSERT_EQUAL_UINT8(2, s_handle.retry_count);
 }
 
@@ -2193,19 +2403,23 @@ void test_retransmit_process_max_backoff_cap(void)
   s_handle.retry_send_time_ms = 0;
 
   /* First timeout: min(50 << 0, 100) = 50ms */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 50));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_process_retransmits(&s_handle, k_test_backoff_first_trigger_ms));
   TEST_ASSERT_EQUAL_UINT8(1, s_handle.retry_count);
 
   /* Second timeout: min(50 << 1, 100) = 100ms from send_time=50 */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 150));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_process_retransmits(&s_handle, k_test_backoff_second_trigger_ms));
   TEST_ASSERT_EQUAL_UINT8(2, s_handle.retry_count);
 
   /* Third timeout: min(50 << 2, 100) = min(200, 100) = 100ms (capped) */
   /* From send_time=150, need elapsed >= 100, so time >= 250 */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 249));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_process_retransmits(&s_handle, k_test_backoff_third_early_ms));
   TEST_ASSERT_EQUAL_UINT8(2, s_handle.retry_count); /* 249-150=99 < 100, too early */
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 250));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_process_retransmits(&s_handle, k_test_backoff_third_trigger_ms));
   TEST_ASSERT_EQUAL_UINT8(3, s_handle.retry_count); /* 250-150=100 >= 100, triggered */
 }
 
@@ -2238,7 +2452,7 @@ void test_retransmit_process_noop_when_nothing_pending(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
 
-  rx_err_t err = rx_spi_comm_process_retransmits(&s_handle, 1000);
+  rx_err_t err = rx_spi_comm_process_retransmits(&s_handle, k_test_timeout_large_ms);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
@@ -2268,7 +2482,8 @@ void test_retransmit_retry_limit_returns_error(void)
   s_handle.retry_send_time_ms = 0;
 
   /* First retransmit succeeds (retry_count 0 -> 1) */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 50));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_process_retransmits(&s_handle, k_test_backoff_first_trigger_ms));
   TEST_ASSERT_EQUAL_UINT8(1, s_handle.retry_count);
 
   /* Second attempt: retry_count (1) >= max_retries (1) -> limit exceeded */
@@ -2297,10 +2512,11 @@ void test_retransmit_retry_limit_clears_pending(void)
   s_handle.retry_send_time_ms = 0;
 
   /* First retransmit (retry_count 0 -> 1) */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 50));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_process_retransmits(&s_handle, k_test_backoff_first_trigger_ms));
 
   /* Limit exceeded */
-  (void)rx_spi_comm_process_retransmits(&s_handle, 200);
+  (void)rx_spi_comm_process_retransmits(&s_handle, k_test_retransmit_limit_check_time_ms);
 
   TEST_ASSERT_FALSE(s_handle.retry_pending);
   TEST_ASSERT_EQUAL_UINT8(0, s_handle.retry_count);
@@ -2407,7 +2623,796 @@ void test_retransmit_process_ok_when_disabled(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &default_cfg));
 
-  rx_err_t err = rx_spi_comm_process_retransmits(&s_handle, 1000);
+  rx_err_t err = rx_spi_comm_process_retransmits(&s_handle, k_test_timeout_large_ms);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/* =============================================================================
+ * Additional coverage tests: internal_decode_header
+ * =============================================================================
+ */
+
+/** @brief Test internal_decode_header: nullptr data -> k_rx_err_invalid_arg */
+void test_internal_decode_header_null_data(void)
+{
+  rx_frame_t frame;
+  uint32_t   offset = 0;
+
+  rx_err_t err = internal_decode_header(nullptr, k_frame_min_size, &frame, &offset);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/** @brief Test internal_decode_header: data_len < k_frame_min_size -> k_rx_err_invalid_size */
+void test_internal_decode_header_too_small(void)
+{
+  uint8_t    data[k_test_payload_small] = {};
+  rx_frame_t frame;
+  uint32_t   offset = 0;
+
+  rx_err_t err = internal_decode_header(data, sizeof(data), &frame, &offset);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/** @brief Test internal_decode_header: bad sync word -> k_rx_err_protocol_error */
+void test_internal_decode_header_bad_sync(void)
+{
+  uint8_t data[k_frame_min_size] = {
+    0x00,
+    0x00, /* Bad SYNC (not 0x55AA) */
+    0x00,
+    0x01, /* SEQ = 1 */
+    0x00,
+    0x00, /* LEN = 0 */
+    0x01, /* TYPE */
+    0x00, /* FLAGS */
+    0x00,
+    0x00,
+    0x00,
+    0x00, /* CRC */
+  };
+  rx_frame_t frame;
+  uint32_t   offset = 0;
+
+  rx_err_t err = internal_decode_header(data, sizeof(data), &frame, &offset);
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
+}
+
+/** @brief Test internal_decode_header: payload length > k_frame_max_payload -> k_rx_err_invalid_size */
+void test_internal_decode_header_payload_too_large(void)
+{
+  /* Build header with LEN = 0x8000 (32768, greater than k_frame_max_payload=1024) */
+  uint8_t data[k_frame_min_size] = {
+    k_test_sync_low,
+    k_test_sync_high, /* SYNC = 0x55AA (little-endian) */
+    0x00,
+    0x01, /* SEQ = 1 */
+    0x00,
+    k_test_len_high_oversize, /* LEN = 0x8000 (little-endian = 32768) */
+    k_test_type_command,      /* TYPE */
+    0x00,                     /* FLAGS */
+    0x00,
+    0x00,
+    0x00,
+    0x00, /* CRC */
+  };
+  rx_frame_t frame;
+  uint32_t   offset = 0;
+
+  rx_err_t err = internal_decode_header(data, sizeof(data), &frame, &offset);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/** @brief Test internal_decode_header: total frame too small for payload -> k_rx_err_invalid_size */
+void test_internal_decode_header_data_too_small_for_payload(void)
+{
+  /* Build header with LEN = 4 (4-byte payload) but only provide 12 bytes total
+   * (minimum frame size, not enough for 4+CRC bytes of payload+CRC) */
+  uint8_t data[k_frame_min_size] = {
+    k_test_sync_low,
+    k_test_sync_high, /* SYNC = 0x55AA (little-endian) */
+    0x00,
+    0x01, /* SEQ = 1 */
+    k_test_payload_len_small,
+    0x00,                /* LEN = 4 (little-endian) */
+    k_test_type_command, /* TYPE */
+    0x00,                /* FLAGS */
+    0x00,
+    0x00,
+    0x00,
+    0x00, /* CRC */
+  };
+  rx_frame_t frame;
+  uint32_t   offset = 0;
+
+  /* With 4-byte payload: expected_size = 12 + 4 = 16 but data_len = 12 */
+  rx_err_t err = internal_decode_header(data, sizeof(data), &frame, &offset);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/* =============================================================================
+ * Additional coverage tests: internal_verify_crc
+ * =============================================================================
+ */
+
+/** @brief Test internal_verify_crc: nullptr data -> k_rx_err_invalid_arg */
+void test_internal_verify_crc_null_data(void)
+{
+  uint32_t crc_out = 0;
+
+  rx_err_t err = internal_verify_crc(nullptr, 0, &crc_out);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/** @brief Test internal_verify_crc: CRC mismatch -> k_rx_err_crc_mismatch */
+void test_internal_verify_crc_mismatch(void)
+{
+  /* Build a valid-looking header with a deliberately wrong CRC at the end */
+  uint8_t data[k_frame_min_size] = {
+    k_test_sync_low,
+    k_test_sync_high, /* SYNC = 0x55AA (little-endian) */
+    0x00,
+    0x01, /* SEQ = 1 */
+    0x00,
+    0x00,                /* LEN = 0 */
+    k_test_type_command, /* TYPE */
+    0x00,                /* FLAGS */
+    k_test_crc_invalid_0,
+    k_test_crc_invalid_1,
+    k_test_crc_invalid_2,
+    k_test_crc_invalid_3, /* Wrong CRC */
+  };
+  uint32_t crc_out = 0;
+  /* offset = 8 (header bytes before CRC: sync + seq + len + type + flags) */
+  const uint32_t header_offset = 8;
+
+  rx_err_t err = internal_verify_crc(data, header_offset, &crc_out);
+  TEST_ASSERT_EQUAL(k_rx_err_crc_mismatch, err);
+}
+
+/* =============================================================================
+ * Additional coverage tests: internal_build_frame
+ * =============================================================================
+ */
+
+/** @brief Helper to initialize s_handle in a minimal way for internal_build_frame tests */
+static void helper_init_handle_for_build(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_init(&s_handle,
+                                     &(rx_spi_comm_config_t){.session     = &s_session,
+                                                             .channel     = k_rspi_channel_0,
+                                                             .spi_mode    = 0,
+                                                             .fec_enabled = false}));
+}
+
+/** @brief Test internal_build_frame: null handle -> k_rx_err_invalid_arg */
+void test_internal_build_frame_null_handle(void)
+{
+  rx_frame_t frame;
+  rx_err_t   err = internal_build_frame(nullptr, 0, k_frame_type_command, 0, nullptr, 0, &frame);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/** @brief Test internal_build_frame: null payload with nonzero len -> k_rx_err_invalid_arg */
+void test_internal_build_frame_null_payload_nonzero_len(void)
+{
+  helper_init_handle_for_build();
+  rx_frame_t frame;
+  rx_err_t   err = internal_build_frame(&s_handle,
+                                      0,
+                                      k_frame_type_command,
+                                      0,
+                                      nullptr,
+                                      k_test_payload_small,
+                                      &frame);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/** @brief Test internal_build_frame: payload_len > k_frame_max_payload -> k_rx_err_invalid_size */
+void test_internal_build_frame_payload_too_large(void)
+{
+  helper_init_handle_for_build();
+  uint8_t    payload[k_test_payload_small] = {};
+  rx_frame_t frame;
+  rx_err_t   err = internal_build_frame(&s_handle,
+                                      0,
+                                      k_frame_type_command,
+                                      0,
+                                      payload,
+                                      (uint32_t)k_frame_max_payload + 1,
+                                      &frame);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/* =============================================================================
+ * Additional coverage tests: receive path errors
+ * =============================================================================
+ */
+
+/** @brief Test receive with nonzero timeout and no data -> k_rx_err_timeout (line 1697) */
+void test_spi_comm_receive_nonzero_timeout_no_data(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_init(&s_handle,
+                                     &(rx_spi_comm_config_t){.session     = &s_session,
+                                                             .channel     = k_rspi_channel_0,
+                                                             .spi_mode    = 0,
+                                                             .fec_enabled = false}));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  rx_frame_t frame;
+  /* Nonzero timeout: host build ignores timeout, returns after no-data check */
+  rx_err_t err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_short);
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
+/** @brief Test receive with header indicating payload too large -> k_rx_err_invalid_size */
+void test_spi_comm_receive_header_payload_too_large(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_init(&s_handle,
+                                     &(rx_spi_comm_config_t){.session     = &s_session,
+                                                             .channel     = k_rspi_channel_0,
+                                                             .spi_mode    = 0,
+                                                             .fec_enabled = false}));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* Inject header with oversized payload length (0x8000 = 32768 > 1024) */
+  uint8_t bad_header[k_frame_min_size] = {
+    k_test_sync_low,
+    k_test_sync_high, /* SYNC = 0x55AA */
+    0x00,
+    0x01, /* SEQ = 1 */
+    0x00,
+    k_test_len_high_oversize, /* LEN = 32768 */
+    k_test_type_command,      /* TYPE = command */
+    0x00,                     /* FLAGS */
+    0x00,
+    0x00,
+    0x00,
+    0x00, /* Placeholder CRC */
+  };
+  internal_assert_inject_rx(k_rspi_channel_0, bad_header, sizeof(bad_header));
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/** @brief Test receive: CRC mismatch in received frame -> k_rx_err_crc_mismatch */
+void test_spi_comm_receive_crc_mismatch(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_init(&s_handle,
+                                     &(rx_spi_comm_config_t){.session     = &s_session,
+                                                             .channel     = k_rspi_channel_0,
+                                                             .spi_mode    = 0,
+                                                             .fec_enabled = false}));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* Build a valid-structured frame but with wrong CRC */
+  uint8_t bad_crc_frame[k_frame_min_size] = {
+    k_test_sync_low,
+    k_test_sync_high, /* SYNC = 0x55AA */
+    0x00,
+    0x01, /* SEQ = 1 */
+    0x00,
+    0x00,                /* LEN = 0 */
+    k_test_type_command, /* TYPE = command */
+    0x00,                /* FLAGS */
+    k_test_crc_invalid_0,
+    k_test_crc_invalid_1,
+    k_test_crc_invalid_2,
+    k_test_crc_invalid_3, /* Wrong CRC */
+  };
+  internal_assert_inject_rx(k_rspi_channel_0, bad_crc_frame, sizeof(bad_crc_frame));
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_crc_mismatch, err);
+}
+
+/** @brief Test receive: 2nd SPI transfer (payload) fails -> error propagated */
+void test_spi_comm_receive_second_transfer_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_init(&s_handle,
+                                     &(rx_spi_comm_config_t){.session     = &s_session,
+                                                             .channel     = k_rspi_channel_0,
+                                                             .spi_mode    = 0,
+                                                             .fec_enabled = false}));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* Build a frame with 4-byte payload to trigger a 2nd transfer for payload+CRC */
+  uint8_t  encoded_frame[k_test_buf_medium];
+  uint32_t encoded_len = 0;
+  uint8_t  payload[]   = {k_test_seq_payload_0,
+                          k_test_seq_payload_1,
+                          k_test_seq_payload_2,
+                          k_test_seq_payload_3};
+  helper_create_encoded_frame(k_frame_type_command,
+                              1,
+                              payload,
+                              sizeof(payload),
+                              encoded_frame,
+                              &encoded_len);
+
+  /* Inject the complete encoded frame so the 1st SPI transfer (header read) succeeds.
+   * Use mock_rspi_set_fail_transfer_on_call_n to fail on the 2nd transfer call
+   * (payload+CRC read), exercising the error path at rx_spi_comm.c line 2081. */
+  internal_assert_inject_rx(k_rspi_channel_0, encoded_frame, encoded_len);
+  mock_rspi_set_fail_transfer_on_call_n(nullptr, k_test_fail_on_call_2, k_rx_err_spi_error);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_spi_error, err);
+}
+
+/** @brief Test receive: too many control frames without data -> k_rx_err_timeout */
+void test_spi_comm_receive_too_many_control_frames(void)
+{
+  /* Use auto_retransmit=true so ACK frames are consumed as control frames
+   * without triggering a TX (PONG) operation. This avoids the mock's rx_pos
+   * being consumed by a TX transfer, keeping the concatenated frame buffer valid. */
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* Build a single ACK frame: auto_retransmit=true with retry_pending=false means
+   * the ACK is simply consumed (k_ctrl_consumed) with no TX operation. */
+  uint8_t  ack_frame[k_test_buf_medium];
+  uint32_t ack_len = 0;
+  helper_create_encoded_frame(k_frame_type_ack, 0, nullptr, 0, ack_frame, &ack_len);
+
+  /* Concatenate 16 ACK frames into a single RX injection.
+   * The mock advances rx_pos sequentially so all 16 frames are decoded in order.
+   * Each ACK is consumed (ctrl_result = k_ctrl_consumed -> continue). After 16
+   * control frames the receive loop exits with k_rx_err_timeout (rx_spi_comm.c line 2123). */
+  enum : uint32_t { k_num_ctrl_frames = 16 };
+  uint8_t  combined[k_num_ctrl_frames * k_test_buf_medium];
+  uint32_t combined_len = 0;
+  for (uint32_t i = 0; i < k_num_ctrl_frames; i++) {
+    for (uint32_t j = 0; j < ack_len; j++) {
+      combined[combined_len + j] = ack_frame[j];
+    }
+    combined_len += ack_len;
+  }
+  internal_assert_inject_rx(k_rspi_channel_0, combined, combined_len);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
+/** @brief Test receive: sequence validation fail -> frame dropped, loop continues -> timeout */
+void test_spi_comm_receive_sequence_validation_fail(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_init(&s_handle,
+                                     &(rx_spi_comm_config_t){.session     = &s_session,
+                                                             .channel     = k_rspi_channel_0,
+                                                             .spi_mode    = 0,
+                                                             .fec_enabled = false}));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* Inject a command frame with sequence 10 but session expects sequence 0.
+   * rx_session_validate_rx should reject a jump of 10 (gap > 1). */
+  uint8_t  encoded_frame[k_test_buf_medium];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_command,
+                              k_test_seq_gap,
+                              nullptr,
+                              0,
+                              encoded_frame,
+                              &encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded_frame, encoded_len);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+  /* Sequence gap >= k_session_max_gap_tolerance: rx_session_validate_rx returns
+   * k_rx_err_protocol_error which the receive loop propagates immediately. */
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
+}
+
+/* =============================================================================
+ * Additional coverage tests: PONG/RESET_ACK error paths
+ * =============================================================================
+ */
+
+/** @brief Test receive PING when PONG send fails (write not ready) -> error logged, loop continues */
+void test_spi_comm_receive_ping_pong_send_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_init(&s_handle,
+                                     &(rx_spi_comm_config_t){.session     = &s_session,
+                                                             .channel     = k_rspi_channel_0,
+                                                             .spi_mode    = 0,
+                                                             .fec_enabled = false}));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* Inject the PING frame first so the RX reads succeed, then disable write_ready
+   * so the subsequent PONG send (TX) fails with k_rx_err_timeout. RX-only transfers
+   * inside the receive path do not check write_ready, so the PING is decoded
+   * successfully. PONG send failure is logged; dispatch returns k_rx_ok with
+   * k_ctrl_consumed. The loop continues, then times out on next iteration. */
+  uint8_t  ping_frame[k_test_buf_medium];
+  uint32_t ping_len = 0;
+  helper_create_encoded_frame(k_frame_type_ping, 0, nullptr, 0, ping_frame, &ping_len);
+  internal_assert_inject_rx(k_rspi_channel_0, ping_frame, ping_len);
+  mock_rspi_set_write_ready(nullptr, k_rspi_channel_0, false);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+  /* PONG send failed but dispatch succeeded; loop hits timeout */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
+/** @brief Test receive RESET when RESET_ACK send fails -> error logged, session NOT reset */
+void test_spi_comm_receive_reset_ack_send_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_init(&s_handle,
+                                     &(rx_spi_comm_config_t){.session     = &s_session,
+                                                             .channel     = k_rspi_channel_0,
+                                                             .spi_mode    = 0,
+                                                             .fec_enabled = false}));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* Inject the RESET frame first so the RX reads succeed, then disable write_ready
+   * so the RESET_ACK send (TX) fails. The dispatch logs the error and returns
+   * k_rx_ok with k_ctrl_consumed (session NOT reset). Loop continues then times out. */
+  uint8_t  reset_frame[k_test_buf_medium];
+  uint32_t reset_len = 0;
+  helper_create_encoded_frame(k_frame_type_reset, 0, nullptr, 0, reset_frame, &reset_len);
+  internal_assert_inject_rx(k_rspi_channel_0, reset_frame, reset_len);
+  mock_rspi_set_write_ready(nullptr, k_rspi_channel_0, false);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+  /* RESET_ACK failed -> consumed but session not reset -> loop timeout */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
+/** @brief Test NACK-triggered retransmit fails -> error logged (retransmit SPI failure) */
+void test_spi_comm_nack_retransmit_transfer_fails(void)
+{
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_rspi_channel_0);
+  mock_rspi_set_write_ready(nullptr, k_rspi_channel_0, true);
+
+  /* Send a frame with REQUIRES_ACK so it gets buffered for retransmit */
+  uint8_t  data[]   = {0x01};
+  rx_err_t send_err = rx_spi_comm_send(&s_handle,
+                                       k_frame_type_command,
+                                       k_frame_flag_requires_ack,
+                                       data,
+                                       sizeof(data));
+  TEST_ASSERT_EQUAL(k_rx_ok, send_err);
+  TEST_ASSERT_TRUE(s_handle.retry_pending);
+
+  /* Inject NACK frame BEFORE disabling write_ready, so inject succeeds.
+   * Then disable write_ready: the NACK read uses RX-only transfers (no wait_for_ack),
+   * so the NACK frame is decoded successfully. When the retransmit fires (TX),
+   * internal_wait_for_ack loops until timeout because write_ready=false.
+   * This hits line 1871: "NACK-triggered retransmit failed". */
+  const uint16_t retry_seq = s_handle.retry_sequence;
+  uint8_t        nack_frame[k_test_buf_medium];
+  uint32_t       nack_len = 0;
+  helper_create_encoded_frame(k_frame_type_nack, retry_seq, nullptr, 0, nack_frame, &nack_len);
+  internal_assert_inject_rx(k_rspi_channel_0, nack_frame, nack_len);
+  mock_rspi_set_write_ready(nullptr, k_rspi_channel_0, false);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* Retransmit SPI failure logged; dispatch returns k_rx_ok; loop times out */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+}
+
+/* =============================================================================
+ * Additional coverage tests: retransmit API not-initialized paths
+ * =============================================================================
+ */
+
+/** @brief Test process_retransmits when handle not initialized -> k_rx_err_invalid_state */
+void test_retransmit_process_not_initialized(void)
+{
+  /* Don't initialize s_handle; just call process_retransmits directly */
+  rx_err_t err = rx_spi_comm_process_retransmits(&s_handle, k_test_timeout_large_ms);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/** @brief Test set_auto_retransmit when handle not initialized -> k_rx_err_invalid_state */
+void test_retransmit_set_auto_retransmit_not_initialized(void)
+{
+  /* Don't initialize s_handle */
+  rx_err_t err = rx_spi_comm_set_auto_retransmit(&s_handle, true, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/** @brief Test set_auto_retransmit applies defaults for zero fields (no explicit config) */
+void test_retransmit_set_auto_retransmit_default_values(void)
+{
+  rx_spi_comm_config_t default_cfg = {.session = &s_session};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &default_cfg));
+
+  /* Pass a config with all zeros to trigger default application */
+  rx_spi_comm_retransmit_config_t zero_cfg = {};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_set_auto_retransmit(&s_handle, true, &zero_cfg));
+
+  /* Defaults should be applied for any zero fields */
+  TEST_ASSERT_NOT_EQUAL(0, s_handle.retransmit_cfg.max_retries);
+  TEST_ASSERT_NOT_EQUAL(0, s_handle.retransmit_cfg.ack_timeout_ms);
+  TEST_ASSERT_NOT_EQUAL(0, s_handle.retransmit_cfg.max_backoff_ms);
+}
+
+/** @brief Test set_retransmit_callbacks when handle not initialized -> k_rx_err_invalid_state */
+void test_retransmit_set_callbacks_not_initialized(void)
+{
+  /* Don't initialize s_handle */
+  rx_err_t err = rx_spi_comm_set_retransmit_callbacks(&s_handle, nullptr, nullptr, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+}
+
+/** @brief Test retransmit SPI transfer failure path in internal_retransmit_frame */
+void test_retransmit_frame_spi_transfer_fails(void)
+{
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_rspi_channel_0);
+  mock_rspi_set_write_ready(nullptr, k_rspi_channel_0, true);
+
+  /* Buffer a frame for retransmit */
+  uint8_t data[] = {0x01};
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_command,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     sizeof(data)));
+  TEST_ASSERT_TRUE(s_handle.retry_pending);
+
+  /* Make SPI transfer fail */
+  mock_rspi_set_transfer_return(nullptr, k_rx_err_spi_error);
+
+  /* Process retransmit with elapsed time > ack_timeout_ms to trigger retry */
+  const uint32_t large_time = (uint32_t)s_handle.retransmit_cfg.ack_timeout_ms + 1000U;
+  rx_err_t       err        = rx_spi_comm_process_retransmits(&s_handle, large_time);
+
+  /* SPI transfer failure -> k_rx_err_spi_error propagated */
+  TEST_ASSERT_EQUAL(k_rx_err_spi_error, err);
+
+  /* Reset transfer return */
+  mock_rspi_set_transfer_return(nullptr, k_rx_ok);
+}
+
+/* =============================================================================
+ * Additional coverage tests: missing branch paths
+ * =============================================================================
+ */
+
+/** @brief Test internal_decode_header: null frame -> k_rx_err_invalid_arg (line 449 false-2) */
+void test_internal_decode_header_null_frame(void)
+{
+  uint8_t data[k_frame_min_size] = {
+    k_test_sync_low,
+    k_test_sync_high, /* SYNC = 0x55AA */
+    0x00,
+    0x01, /* SEQ = 1 */
+    0x00,
+    0x00,                /* LEN = 0 */
+    k_test_type_command, /* TYPE */
+    0x00,                /* FLAGS */
+    0x00,
+    0x00,
+    0x00,
+    0x00, /* CRC */
+  };
+  uint32_t offset = 0;
+
+  rx_err_t err = internal_decode_header(data, sizeof(data), nullptr, &offset);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/** @brief Test internal_decode_header: null offset_out (line 485 false branch -- no assignment) */
+void test_internal_decode_header_null_offset_out(void)
+{
+  uint8_t data[k_frame_min_size] = {
+    k_test_sync_low,
+    k_test_sync_high, /* SYNC = 0x55AA */
+    0x00,
+    0x01, /* SEQ = 1 */
+    0x00,
+    0x00,                /* LEN = 0 */
+    k_test_type_command, /* TYPE */
+    0x00,                /* FLAGS */
+    0x00,
+    0x00,
+    0x00,
+    0x00, /* CRC */
+  };
+  rx_frame_t frame;
+
+  /* offset_out=nullptr: line 485 if-false branch, returns k_rx_ok without storing offset */
+  rx_err_t err = internal_decode_header(data, sizeof(data), &frame, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/** @brief Test internal_verify_crc: valid CRC with null crc_out (line 593 false branch) */
+void test_internal_verify_crc_valid_crc_null_crc_out(void)
+{
+  /* Build a correctly-encoded frame (valid CRC) */
+  uint8_t  encoded[k_test_buf_medium];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_command, 1, nullptr, 0, encoded, &encoded_len);
+
+  /* offset = 8 bytes (sync2 + seq2 + len2 + type1 + flags1) */
+  const uint32_t k_header_body_size = 8U;
+  /* crc_out=nullptr: line 593 condition false, no assignment but still returns k_rx_ok */
+  rx_err_t err = internal_verify_crc(encoded, k_header_body_size, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/** @brief Test internal_build_frame: null frame -> k_rx_err_invalid_arg (line 1300 false-2) */
+void test_internal_build_frame_null_frame(void)
+{
+  helper_init_handle_for_build();
+  rx_err_t err = internal_build_frame(&s_handle, 0, k_frame_type_command, 0, nullptr, 0, nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/** @brief Test internal_build_frame: non-null payload with len=0 (line 1319 false branch) */
+void test_internal_build_frame_nonnull_payload_zero_len(void)
+{
+  helper_init_handle_for_build();
+  const uint8_t payload[4] = {0xAA, 0xBB, 0xCC, 0xDD};
+  rx_frame_t    frame;
+  /* payload != nullptr but payload_len == 0: line 1319 && second operand is FALSE */
+  rx_err_t err = internal_build_frame(&s_handle, 0, k_frame_type_command, 0, payload, 0, &frame);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT16(0, frame.header.length);
+}
+
+/** @brief Test NACK receive with non-matching sequence when retry_pending (line 1872 false) */
+void test_retransmit_nack_wrong_seq_not_retransmitted(void)
+{
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* Send a frame -- retry_sequence becomes 0 */
+  uint8_t data[] = {0x01};
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     sizeof(data)));
+  TEST_ASSERT_TRUE(s_handle.retry_pending);
+  TEST_ASSERT_EQUAL_UINT16(0, s_handle.retry_sequence);
+
+  /* Inject NACK with sequence=99 (does NOT match retry_sequence=0) */
+  uint8_t  encoded[k_test_buf_medium];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_nack,
+                              k_test_nack_wrong_seq,
+                              nullptr,
+                              0,
+                              encoded,
+                              &encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
+
+  rx_frame_t frame;
+  (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* retry_count should NOT increment since sequence didn't match */
+  TEST_ASSERT_EQUAL_UINT8(0, s_handle.retry_count);
+  /* retry_pending still true (not cleared) */
+  TEST_ASSERT_TRUE(s_handle.retry_pending);
+}
+
+/**
+ * @brief Test NACK received when retry_pending is false (no prior send)
+ *
+ * @details
+ * Covers line 1830 false branch in internal_dispatch_ack_nack(): the first
+ * operand of the && short-circuits when handle->retry_pending is false.
+ * With auto_retransmit enabled but no send performed, retry_pending stays
+ * false. A NACK is injected and consumed by the retransmit subsystem
+ * without triggering a retransmit.
+ *
+ * @pre auto_retransmit == true
+ * @pre retry_pending == false (no send performed)
+ * @post NACK consumed, no retransmit triggered
+ */
+void test_retransmit_nack_non_pending_ignored(void)
+{
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* NO send -> no pending retry */
+  TEST_ASSERT_FALSE(s_handle.retry_pending);
+
+  uint8_t  encoded[k_test_buf_medium];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_nack, 0, nullptr, 0, encoded, &encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* NACK consumed (auto_retransmit is on), but nothing to retransmit */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+  TEST_ASSERT_FALSE(s_handle.retry_pending);
+}
+
+/* =============================================================================
+ * internal_spi_transfer short-circuit branch coverage
+ * =============================================================================
+ */
+
+/**
+ * @brief Test internal_spi_transfer with non-null tx_data but zero tx_len
+ *
+ * @details
+ * Covers the has_tx false branch at line 906 when tx_data is non-null but tx_len
+ * is 0: the && short-circuits because tx_len > 0 is false. This inconsistent
+ * combination never occurs through public callers, so direct invocation via
+ * RX_STATIC_TESTABLE is required.
+ *
+ * @pre Handle initialized via rx_spi_comm_init()
+ * @post Transfer succeeds with no TX data sent
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_spi_transfer_nonnull_tx_zero_len(void)
+{
+  rx_spi_comm_config_t config = {.session = &s_session};
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* tx_data non-null but tx_len=0 => has_tx false (short-circuit on tx_len > 0).
+   * rx_len=1 ensures transfer_len > 0 so the mock transfer succeeds. */
+  uint8_t  dummy_tx = k_test_dummy_tx_byte;
+  uint8_t  rx_buf   = 0;
+  rx_err_t err      = internal_spi_transfer(&s_handle, &dummy_tx, 0, &rx_buf, 1);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test internal_spi_transfer with non-null rx_data but zero rx_len
+ *
+ * @details
+ * Covers the has_rx false branch at line 938 when rx_data is non-null but rx_len
+ * is 0: the && short-circuits because rx_len > 0 is false. This inconsistent
+ * combination never occurs through public callers, so direct invocation via
+ * RX_STATIC_TESTABLE is required.
+ *
+ * @pre Handle initialized via rx_spi_comm_init()
+ * @post Transfer succeeds with no RX data copied
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_spi_transfer_nonnull_rx_zero_len(void)
+{
+  rx_spi_comm_config_t config = {.session = &s_session};
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* rx_data non-null but rx_len=0 => has_rx false (short-circuit on rx_len > 0).
+   * tx_data=nullptr with tx_len=1 => has_tx false (short-circuit on nullptr).
+   * transfer_len = max(1,0) = 1 so the mock transfer succeeds. */
+  uint8_t  dummy_rx = 0;
+  rx_err_t err      = internal_spi_transfer(&s_handle, nullptr, 1, &dummy_rx, 0);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
@@ -2417,10 +3422,9 @@ void test_retransmit_process_ok_when_disabled(void)
  * =============================================================================
  */
 
-int main(void)
+/** @brief Run initialization and send tests */
+static void internal_run_init_and_send_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Initialization tests */
   RUN_TEST(test_spi_comm_init_null_handle_fails);
   RUN_TEST(test_spi_comm_init_success_default_config);
@@ -2453,7 +3457,11 @@ int main(void)
   RUN_TEST(test_spi_comm_send_nack_not_initialized_fails);
   RUN_TEST(test_spi_comm_send_nack_success);
   RUN_TEST(test_spi_comm_send_nack_transfer_error_propagates);
+}
 
+/** @brief Run receive and data-available tests */
+static void internal_run_receive_tests(void)
+{
   /* Receive tests */
   RUN_TEST(test_spi_comm_receive_null_handle_fails);
   RUN_TEST(test_spi_comm_receive_null_frame_fails);
@@ -2477,7 +3485,11 @@ int main(void)
   RUN_TEST(test_spi_comm_init_null_config_fails);
   RUN_TEST(test_spi_comm_init_null_session_fails);
   RUN_TEST(test_spi_comm_rx_sequence_wraparound);
+}
 
+/** @brief Run channel, buffer, mock, and control frame tests */
+static void internal_run_control_frame_tests(void)
+{
   /* Channel configuration tests */
   RUN_TEST(test_spi_comm_uses_configured_channel);
 
@@ -2492,6 +3504,7 @@ int main(void)
 
   /* Set control callbacks tests */
   RUN_TEST(test_spi_comm_set_callbacks_null_handle_fails);
+  RUN_TEST(test_spi_comm_set_callbacks_not_initialized_fails);
   RUN_TEST(test_spi_comm_set_callbacks_success);
 
   /* Send PONG tests */
@@ -2514,7 +3527,11 @@ int main(void)
   /* Control frame callback tests */
   RUN_TEST(test_spi_comm_receive_ping_callback_invoked);
   RUN_TEST(test_spi_comm_receive_reset_callback_invoked);
+}
 
+/** @brief Run retransmit configuration, buffering, ACK/NACK, and timeout tests */
+static void internal_run_retransmit_tests(void)
+{
   /* Retransmit configuration tests */
   RUN_TEST(test_retransmit_disabled_by_default);
   RUN_TEST(test_retransmit_enabled_via_config);
@@ -2538,6 +3555,7 @@ int main(void)
   RUN_TEST(test_retransmit_nack_retransmit_flag_set);
   RUN_TEST(test_retransmit_nack_callback_invoked);
   RUN_TEST(test_retransmit_nack_not_consumed_when_off);
+  RUN_TEST(test_retransmit_nack_non_pending_ignored);
 
   /* Retransmit timeout (process_retransmits) tests */
   RUN_TEST(test_retransmit_process_triggers_after_timeout);
@@ -2562,6 +3580,63 @@ int main(void)
   /* Retransmit process API validation tests */
   RUN_TEST(test_retransmit_process_null_handle);
   RUN_TEST(test_retransmit_process_ok_when_disabled);
+}
+
+/** @brief Run internal function, error path, and branch coverage tests */
+static void internal_run_coverage_tests(void)
+{
+  /* Internal function direct tests */
+  RUN_TEST(test_internal_decode_header_null_data);
+  RUN_TEST(test_internal_decode_header_too_small);
+  RUN_TEST(test_internal_decode_header_bad_sync);
+  RUN_TEST(test_internal_decode_header_payload_too_large);
+  RUN_TEST(test_internal_decode_header_data_too_small_for_payload);
+  RUN_TEST(test_internal_verify_crc_null_data);
+  RUN_TEST(test_internal_verify_crc_mismatch);
+  RUN_TEST(test_internal_build_frame_null_handle);
+  RUN_TEST(test_internal_build_frame_null_payload_nonzero_len);
+  RUN_TEST(test_internal_build_frame_payload_too_large);
+
+  /* Receive path error tests */
+  RUN_TEST(test_spi_comm_receive_nonzero_timeout_no_data);
+  RUN_TEST(test_spi_comm_receive_header_payload_too_large);
+  RUN_TEST(test_spi_comm_receive_crc_mismatch);
+  RUN_TEST(test_spi_comm_receive_second_transfer_fails);
+  RUN_TEST(test_spi_comm_receive_too_many_control_frames);
+  RUN_TEST(test_spi_comm_receive_sequence_validation_fail);
+  RUN_TEST(test_spi_comm_receive_ping_pong_send_fails);
+  RUN_TEST(test_spi_comm_receive_reset_ack_send_fails);
+  RUN_TEST(test_spi_comm_nack_retransmit_transfer_fails);
+
+  /* Retransmit not-initialized and default-values tests */
+  RUN_TEST(test_retransmit_process_not_initialized);
+  RUN_TEST(test_retransmit_set_auto_retransmit_not_initialized);
+  RUN_TEST(test_retransmit_set_auto_retransmit_default_values);
+  RUN_TEST(test_retransmit_set_callbacks_not_initialized);
+  RUN_TEST(test_retransmit_frame_spi_transfer_fails);
+
+  /* Missing branch coverage tests */
+  RUN_TEST(test_internal_decode_header_null_frame);
+  RUN_TEST(test_internal_decode_header_null_offset_out);
+  RUN_TEST(test_internal_verify_crc_valid_crc_null_crc_out);
+  RUN_TEST(test_internal_build_frame_null_frame);
+  RUN_TEST(test_internal_build_frame_nonnull_payload_zero_len);
+  RUN_TEST(test_retransmit_nack_wrong_seq_not_retransmitted);
+
+  /* internal_spi_transfer short-circuit branch coverage */
+  RUN_TEST(test_internal_spi_transfer_nonnull_tx_zero_len);
+  RUN_TEST(test_internal_spi_transfer_nonnull_rx_zero_len);
+}
+
+int main(void)
+{
+  UNITY_BEGIN();
+
+  internal_run_init_and_send_tests();
+  internal_run_receive_tests();
+  internal_run_control_frame_tests();
+  internal_run_retransmit_tests();
+  internal_run_coverage_tests();
 
   return UNITY_END();
 }

@@ -26,7 +26,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -178,6 +177,13 @@ rx_err_t mock_usb_hw_clear(mock_usb_hw_t* mock);
  * @param ret Return value to use
  */
 void mock_usb_hw_set_init_return(mock_usb_hw_t* mock, rx_err_t ret);
+
+/**
+ * @brief Set return value for next rx_usb_cdc_init call
+ *
+ * @param ret Return value to use (one-shot: resets to k_rx_ok after use)
+ */
+void mock_usb_hw_set_cdc_init_return(rx_err_t ret);
 
 /**
  * @brief Set return value for next hw_attach call

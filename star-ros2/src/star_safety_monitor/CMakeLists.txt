@@ -52,7 +52,7 @@ install(DIRECTORY config
 )
 
 if(BUILD_TESTING)
-  # NOTE: Linting disabled — ament_copyright requires full MIT license text in every
+  # NOTE: Linting disabled -- ament_copyright requires full MIT license text in every
   # file header, which conflicts with STAR project's Doxygen-style header convention.
   # Consistent with star_gateway_bridge and star_spi_bridge which also disable lint_auto.
   # find_package(ament_lint_auto REQUIRED)

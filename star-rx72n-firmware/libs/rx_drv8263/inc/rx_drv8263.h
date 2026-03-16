@@ -63,8 +63,6 @@
 
 #pragma once
 
-#include <assert.h>
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -280,7 +278,7 @@ typedef struct {
  * @invariant initialized is false until rx_drv8263_init() succeeds
  *
  * @code
- * rx_drv8263_handle_t drv = {0};
+ * rx_drv8263_handle_t drv = {};
  * rx_err_t err = rx_drv8263_init(&drv, &config);
  * if (drv.initialized) { // ready to use }
  * @endcode
@@ -465,23 +463,10 @@ typedef struct {
  */
 static inline float rx_drv8263_adc_to_amps(float adc_voltage_v)
 {
-  /* Non-negative lower bound for input voltage and output current assertions */
-  static const float s_min_nonneg = 0.0F;
-
-  /* Upper bound for ADC input voltage (3.3V full-scale for RX72N ADC) */
-  static const float s_max_adc_v = 3.3F;
-
-  assert(adc_voltage_v >= s_min_nonneg); /* Precondition: non-negative voltage */
-  assert(adc_voltage_v <= s_max_adc_v);  /* Precondition: within ADC full-scale */
-
   /* Combined IPROPI conversion factor: 202e-6 * 5100 = 1.0302 */
   static const float s_ipropi_divisor = 1.0302F;
 
-  const float result = adc_voltage_v / s_ipropi_divisor;
-
-  assert(result >= s_min_nonneg); /* Postcondition: non-negative current */
-
-  return result;
+  return adc_voltage_v / s_ipropi_divisor;
 }
 
 /**
@@ -539,6 +524,24 @@ static inline float rx_drv8263_adc_to_amps(float adc_voltage_v)
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_drv8263_set_olp_fault_enable(rx_drv8263_handle_t* handle, bool enable);
+
+/* =============================================================================
+ * Internal Functions (exposed for unit testing only)
+ * ============================================================================= */
+
+#ifdef UNIT_TEST
+#include "rx_check.h"
+void     internal_delay_us(uint32_t us);
+rx_err_t internal_validate_config(const rx_drv8263_config_t* config);
+void     internal_gpio_write(uint8_t port, uint8_t pin, bool high);
+bool     internal_gpio_read(uint8_t port, uint8_t pin);
+void     internal_olp_apply_patterns(const rx_drv8263_handle_t* handle, bool nfault_readings[]);
+void     internal_olp_decode_results(bool                     f0,
+                                     bool                     f1,
+                                     bool                     f2,
+                                     rx_drv8263_olp_result_t* result_out1,
+                                     rx_drv8263_olp_result_t* result_out2);
+#endif /* UNIT_TEST */
 
 #ifdef __cplusplus
 }

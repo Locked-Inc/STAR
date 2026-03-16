@@ -11,13 +11,88 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.21")
     set(CMAKE_C_STANDARD_REQUIRED ON)
 endif()
 
+# =============================================================================
+# clang-tidy integration (optional, default OFF)
+#
+# Enable with: cmake -B build/tidy -S . -DENABLE_CLANG_TIDY=ON
+# Requires clang-tidy >= 16 for C23 typed enum syntax support.
+# Runs against this host build's compile_commands.json so that all firmware
+# source files are analyzed without cross-compiler flag conflicts.
+# =============================================================================
+option(ENABLE_CLANG_TIDY "Run clang-tidy on all compiled sources" OFF)
+
+if(ENABLE_CLANG_TIDY)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+    # Prefer versioned clang-tidy binaries (require >= 16 for C23 typed enums)
+    find_program(CLANG_TIDY_EXE
+        NAMES clang-tidy-18 clang-tidy-17 clang-tidy-16 clang-tidy
+        DOC "Path to clang-tidy executable"
+    )
+
+    if(NOT CLANG_TIDY_EXE)
+        message(FATAL_ERROR
+            "ENABLE_CLANG_TIDY=ON but clang-tidy not found.\n"
+            "Install with: sudo apt-get install clang-tidy"
+        )
+    endif()
+
+    # Verify the found clang-tidy is >= 16 (required for C23 typed enum syntax).
+    execute_process(
+        COMMAND "${CLANG_TIDY_EXE}" --version
+        OUTPUT_VARIABLE CLANG_TIDY_VERSION_OUTPUT
+        ERROR_QUIET
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    string(REGEX MATCH "version ([0-9]+)" _ "${CLANG_TIDY_VERSION_OUTPUT}")
+    set(CLANG_TIDY_VERSION_MAJOR "${CMAKE_MATCH_1}")
+    if(NOT CLANG_TIDY_VERSION_MAJOR OR CLANG_TIDY_VERSION_MAJOR LESS 16)
+        message(FATAL_ERROR
+            "clang-tidy >= 16 required for C23 typed enum support.\n"
+            "Found: ${CLANG_TIDY_EXE} (version ${CLANG_TIDY_VERSION_MAJOR}).\n"
+            "Install with: sudo apt-get install clang-tidy-18"
+        )
+    endif()
+
+    # Verify .clang-tidy config exists before configuring CMAKE_C_CLANG_TIDY
+    # so that a misconfigured build fails early with a clear message.
+    set(_clang_tidy_config "${CMAKE_SOURCE_DIR}/../.clang-tidy")
+    if(NOT EXISTS "${_clang_tidy_config}")
+        message(FATAL_ERROR
+            ".clang-tidy config not found at ${_clang_tidy_config}.\n"
+            "Ensure star-rx72n-firmware/.clang-tidy exists in the repository."
+        )
+    endif()
+
+    message(STATUS "clang-tidy enabled: ${CLANG_TIDY_EXE} (version ${CLANG_TIDY_VERSION_MAJOR})")
+
+    # Do NOT use --config-file here.  Omitting it lets clang-tidy walk up the
+    # directory tree from each source file, picking up tests/.clang-tidy (which
+    # relaxes function-size limits for Unity test runners) before falling through
+    # to star-rx72n-firmware/.clang-tidy for production code.
+    #
+    # -std=c2x: pre-ratification name for C23; supported by clang-16+ and required
+    # for typed enum syntax (typedef enum : uint8_t {}).  Use c2x rather than c23
+    # for maximum clang version compatibility.
+    # -DUSE_MOCK_SCI_REGS: matches apply_strict_warnings() compile definitions so
+    # static analysis sees the same conditional flags as the test build.
+    set(CMAKE_C_CLANG_TIDY
+        "${CLANG_TIDY_EXE}"
+        "--extra-arg=-std=c2x"
+        "--extra-arg=-DUNIT_TEST"
+        "--extra-arg=-DRX_SIMULATOR_MODE"
+        "--extra-arg=-DUSE_MOCK_SCI_REGS"
+    )
+endif()
+
 # Helper function to apply strict warnings/defines to our test targets only
 function(apply_strict_warnings target)
-    target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -Wpedantic -Wno-error=cpp -Wno-error=format-truncation=)
+    target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -Wpedantic --coverage)
+    target_link_options(${target} PRIVATE --coverage)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${target} PRIVATE -fshort-enums)
     endif()
-    target_compile_definitions(${target} PRIVATE USE_MOCK_SCI_REGS UNIT_TEST RX_SIMULATOR_MODE USB_LOG_MIRROR=0)
+    target_compile_definitions(${target} PRIVATE USE_MOCK_SCI_REGS UNIT_TEST RX_SIMULATOR_MODE)
 endfunction()
 
 # Helper function to apply common include paths per target
@@ -35,8 +110,10 @@ function(apply_test_includes target)
         ${CMAKE_SOURCE_DIR}/../libs/rx_core/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_usb/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_usb_comm/inc
+        ${CMAKE_SOURCE_DIR}/../libs/rx_i2c_comm/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_spi_comm/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_spi_link/inc
+        ${CMAKE_SOURCE_DIR}/../libs/rx_uart_comm/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_frame_ascii/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_comm_manager/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_hcsr04/inc
@@ -71,6 +148,13 @@ FetchContent_Declare(
     GIT_TAG 0.4.9.1
 )
 FetchContent_MakeAvailable(nanopb)
+
+# Disable clang-tidy for nanopb and Unity vendor sources -- they don't follow
+# STAR coding standards (magic numbers, cognitive complexity, insecure APIs).
+if(ENABLE_CLANG_TIDY)
+    set_target_properties(protobuf-nanopb-static PROPERTIES C_CLANG_TIDY "")
+    set_target_properties(unity PROPERTIES C_CLANG_TIDY "")
+endif()
 
 # =============================================================================
 # Library Sources (copied for host compilation)
@@ -116,9 +200,15 @@ set(MOCK_USB_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_usb0_regs.c
 )
 
-# Log mock source
+# rx_log backend implementation (runtime backend selection)
+set(RX_LOG_SRC
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log.c
+)
+
+# Log mock source (UART/USB stub functions + runtime backend implementation)
 set(MOCK_LOG_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_log.c
+    ${RX_LOG_SRC}
 )
 
 # UART mock sources
@@ -150,7 +240,7 @@ set(RX_HCSR04_SRC
 # HC-SR04 mock source (includes IRQ mode mocks)
 set(MOCK_HCSR04_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_hcsr04_hw.c
-    ${CMAKE_SOURCE_DIR}/mocks/rx_hcsr04_hal_mock.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_hcsr04_hal.c
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_hcsr04_irq.c
 )
 
@@ -174,6 +264,14 @@ set(MOCK_RSPI_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rspi.c
 )
 
+# Mock RIIC HAL source for I2C peripheral mode testing.
+# NOTE: mock_riic_hal.c also appears in MOCK_HAL_SRC (used by GPIO/ADC/bus
+# tests that need a combined HAL mock).  Targets must use EITHER MOCK_HAL_SRC
+# OR MOCK_RIIC_HAL_SRC - never both, as that would produce duplicate symbols.
+set(MOCK_RIIC_HAL_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_riic_hal.c
+)
+
 # rx_spi_comm source
 set(RX_SPI_COMM_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_spi_comm/src/rx_spi_comm.c
@@ -192,6 +290,16 @@ set(RX_FRAME_ASCII_SRC
 # rx_session source
 set(RX_SESSION_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_session/src/rx_session.c
+)
+
+# rx_i2c_comm source
+set(RX_I2C_COMM_SRC
+    ${CMAKE_SOURCE_DIR}/../libs/rx_i2c_comm/src/rx_i2c_comm.c
+)
+
+# rx_uart_comm source
+set(RX_UART_COMM_SRC
+    ${CMAKE_SOURCE_DIR}/../libs/rx_uart_comm/src/rx_uart_comm.c
 )
 
 # rx_comm_manager source
@@ -286,6 +394,7 @@ add_executable(test_rx_frame
     test_rx_frame.c
     ${RX_FRAME_SRC}
     ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_frame)
 apply_test_includes(test_rx_frame)
@@ -296,6 +405,7 @@ add_executable(test_rx_fec
     test_rx_fec.c
     ${RX_FEC_SRC}
     ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_fec)
 apply_test_includes(test_rx_fec)
@@ -306,6 +416,7 @@ add_executable(test_rx_harq
     test_rx_harq.c
     ${RX_HARQ_SRC}
     ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_harq)
 apply_test_includes(test_rx_harq)
@@ -319,6 +430,7 @@ add_executable(test_rx_usb
 )
 apply_strict_warnings(test_rx_usb)
 apply_test_includes(test_rx_usb)
+target_include_directories(test_rx_usb PRIVATE ${CMAKE_SOURCE_DIR}/../libs/rx_usb/src)
 target_link_libraries(test_rx_usb unity)
 
 # Test: USB CDC Multi-Port (Composite Device)
@@ -361,10 +473,19 @@ add_executable(test_rx_hcsr04
     ${RX_HCSR04_SRC}
     ${MOCK_HCSR04_SRC}
     ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tx_api.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tasks.c
 )
 apply_strict_warnings(test_rx_hcsr04)
 apply_test_includes(test_rx_hcsr04)
 target_link_libraries(test_rx_hcsr04 unity)
+target_compile_definitions(test_rx_hcsr04 PRIVATE
+    MOCK_TX_THREAD_CREATE
+    MOCK_TX_THREAD_DELETE
+    MOCK_TX_EVENT_FLAGS_CREATE
+    MOCK_TX_EVENT_FLAGS_GET
+)
 
 # Test: Obstacle Detection
 add_executable(test_rx_obstacle_detect
@@ -374,10 +495,20 @@ add_executable(test_rx_obstacle_detect
     ${MOCK_HCSR04_SRC}
     ${MOCK_MOTOR_SRC}
     ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tx_api.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tasks.c
 )
 apply_strict_warnings(test_rx_obstacle_detect)
 apply_test_includes(test_rx_obstacle_detect)
 target_link_libraries(test_rx_obstacle_detect unity)
+target_compile_definitions(test_rx_obstacle_detect PRIVATE
+    MOCK_TX_THREAD_CREATE
+    MOCK_TX_THREAD_DELETE
+    MOCK_TX_EVENT_FLAGS_CREATE
+    MOCK_TX_EVENT_FLAGS_GET
+    MOCK_TX_THREAD_SLEEP
+)
 
 # Test: UART HAL Driver
 add_executable(test_uart_hal
@@ -432,11 +563,7 @@ add_executable(test_rx_drv8263
 )
 apply_strict_warnings(test_rx_drv8263)
 apply_test_includes(test_rx_drv8263)
-# Mock drv8263/ dir must come BEFORE all others to shadow rx72n_port_regs.h
-# with RAM-based mock port registers instead of hardware addresses
-target_include_directories(test_rx_drv8263 BEFORE PRIVATE
-    ${CMAKE_SOURCE_DIR}/mocks/drv8263
-)
+target_compile_definitions(test_rx_drv8263 PRIVATE UNIT_TEST)
 target_include_directories(test_rx_drv8263 PRIVATE
     ${CMAKE_SOURCE_DIR}/../libs/rx_drv8263/inc
 )
@@ -463,7 +590,7 @@ set(MOCK_ONEWIRE_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_gpio.c
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_crc.c
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_onewire_hw.c
-    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_log.c
+    ${MOCK_LOG_SRC}
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_system_regs.c
 )
 
@@ -471,7 +598,7 @@ set(MOCK_ONEWIRE_SRC
 add_executable(test_rx_bus_manager
     test_rx_bus_manager.c
     ${MOCK_BUS_MANAGER_SRC}
-    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_log.c
+    ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_bus_manager)
 apply_test_includes(test_rx_bus_manager)
@@ -571,6 +698,7 @@ target_link_libraries(test_rx_pid unity m)
 # We need to use a wrapper source file that includes mock headers before the encoder
 add_executable(test_rx_encoder
     test_rx_encoder.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_encoder/src/rx_mtu_encoder.c
     ${MOCK_MTU_ENCODER_SRC}
     ${MOCK_LOG_SRC}
 )
@@ -637,6 +765,17 @@ target_compile_options(test_rx_nanopb PRIVATE
     -Wno-missing-braces
 )
 target_link_libraries(test_rx_nanopb unity m)
+# Disable clang-tidy for nanopb vendor sources compiled into this target.
+# set_target_properties(protobuf-nanopb-static) only covers the library target;
+# these .c files are compiled directly into test_rx_nanopb and need separate treatment.
+if(ENABLE_CLANG_TIDY)
+    set_source_files_properties(
+        ${nanopb_SOURCE_DIR}/pb_common.c
+        ${nanopb_SOURCE_DIR}/pb_encode.c
+        ${nanopb_SOURCE_DIR}/pb_decode.c
+        PROPERTIES SKIP_LINTING ON
+    )
+endif()
 
 # Test: Session State (shared across transports)
 add_executable(test_rx_session
@@ -654,6 +793,7 @@ add_executable(test_rx_frame_ascii
     ${RX_FRAME_ASCII_SRC}
     ${RX_FRAME_SRC}
     ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_frame_ascii)
 apply_test_includes(test_rx_frame_ascii)
@@ -675,17 +815,73 @@ add_executable(test_rx_comm_manager
     ${RX_SPI_LINK_SRC}
     ${RX_FEC_SRC}
     ${RX_HARQ_SRC}
+    ${RX_I2C_COMM_SRC}
+    ${RX_UART_COMM_SRC}
     ${MOCK_USB_SRC}
     ${MOCK_RSPI_SRC}
+    ${MOCK_UART_SRC}
+    ${MOCK_RIIC_HAL_SRC}
     ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_comm_manager)
 apply_test_includes(test_rx_comm_manager)
+# Force RX_STATIC_TESTABLE=static to prevent symbol collisions when both
+# rx_i2c_comm.c and rx_uart_comm.c (which share internal function names)
+# are compiled into the same binary under UNIT_TEST mode.
+target_compile_definitions(test_rx_comm_manager PRIVATE RX_STATIC_TESTABLE=static)
 target_include_directories(test_rx_comm_manager PRIVATE
     ${CMAKE_SOURCE_DIR}/../libs/rx_frame_ascii/inc
     ${CMAKE_SOURCE_DIR}/../libs/rx_comm_manager/inc
 )
 target_link_libraries(test_rx_comm_manager unity)
+
+# Test: I2C Comm Layer (RIIC0 peripheral frame protocol)
+add_executable(test_rx_i2c_comm
+    test_rx_i2c_comm.c
+    ${RX_I2C_COMM_SRC}
+    ${RX_FRAME_SRC}
+    ${RX_SESSION_SRC}
+    ${MOCK_RIIC_HAL_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_i2c_comm)
+apply_test_includes(test_rx_i2c_comm)
+target_include_directories(test_rx_i2c_comm PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_i2c_comm/inc
+)
+target_link_libraries(test_rx_i2c_comm unity)
+
+# Test: UART Comm Layer (SCI9 frame protocol)
+add_executable(test_rx_uart_comm
+    test_rx_uart_comm.c
+    ${RX_UART_COMM_SRC}
+    ${RX_FRAME_SRC}
+    ${RX_SESSION_SRC}
+    ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_uart_comm)
+apply_test_includes(test_rx_uart_comm)
+target_include_directories(test_rx_uart_comm PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_uart_comm/inc
+)
+target_link_libraries(test_rx_uart_comm unity)
+
+# Test: USB Log Backend (rx_log_usb.c)
+add_executable(test_rx_log_usb
+    test_rx_log_usb.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_usb.c
+    ${RX_USB_SRC}
+    ${RX_LOG_SRC}
+    ${MOCK_USB_SRC}
+)
+apply_strict_warnings(test_rx_log_usb)
+apply_test_includes(test_rx_log_usb)
+target_include_directories(test_rx_log_usb PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_usb/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/inc
+)
+target_link_libraries(test_rx_log_usb unity)
 
 # Test: Independent Watchdog Timer (IWDT) Driver
 add_executable(test_rx_iwdt
@@ -814,6 +1010,13 @@ set(MOCK_OBSTACLE_DETECT_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_obstacle_detect.c
 )
 
+# Mock comm transport sources: stubs for transport inits, IWDT heartbeat,
+# and comm_manager/nanopb helpers absent from the standard mocks.
+# Required when linking the real comm_task.c in test_rx_system_config.
+set(MOCK_COMM_TRANSPORTS_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_comm_transports.c
+)
+
 set(MOCK_DS18B20_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_ds18b20.c
 )
@@ -933,6 +1136,38 @@ target_include_directories(test_imu_task PRIVATE
 target_link_libraries(test_imu_task unity)
 set_target_properties(test_imu_task PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
 
+# Test: rx_log.c runtime backend selection
+add_executable(test_rx_log_backend
+    test_rx_log_backend.c
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_log_backend)
+apply_test_includes(test_rx_log_backend)
+set_target_properties(test_rx_log_backend PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
+target_link_libraries(test_rx_log_backend unity)
+
+# Test: comm_task_apply_system_config() unified config + conflict detection
+add_executable(test_rx_system_config
+    test_rx_system_config.c
+    ${TASK_COMM_SRC}
+    ${MOCK_TX_API_SRC}
+    ${MOCK_TIME_SRC}
+    ${MOCK_SHARED_DATA_SRC}
+    ${MOCK_COMM_MANAGER_SRC_TASK}
+    ${MOCK_NANOPB_SRC}
+    ${MOCK_LOG_SRC}
+    ${MOCK_COMM_TRANSPORTS_SRC}
+)
+apply_strict_warnings(test_rx_system_config)
+apply_test_includes(test_rx_system_config)
+target_compile_definitions(test_rx_system_config PRIVATE MOCK_TX_THREAD_CREATE)
+target_include_directories(test_rx_system_config PRIVATE
+    ${CMAKE_SOURCE_DIR}/../src/shared
+    ${CMAKE_SOURCE_DIR}/../src/tasks/inc
+)
+set_target_properties(test_rx_system_config PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
+target_link_libraries(test_rx_system_config unity)
+
 # Test: Telemetry Aggregation Task
 add_executable(test_telemetry_aggregation_task
     test_telemetry_aggregation_task.c
@@ -1001,8 +1236,6 @@ add_executable(test_rx_bmp280
     ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_bmp280)
-# TESTING: enables rx_bmp280_test_reset_state() for test-order independence
-target_compile_definitions(test_rx_bmp280 PRIVATE TESTING)
 apply_test_includes(test_rx_bmp280)
 target_include_directories(test_rx_bmp280 PRIVATE
     ${CMAKE_SOURCE_DIR}/../libs/rx_bmp280/inc
@@ -1052,6 +1285,9 @@ set(ALL_TEST_TARGETS
     test_rx_frame_ascii
     test_rx_session
     test_rx_comm_manager
+    test_rx_i2c_comm
+    test_rx_uart_comm
+    test_rx_log_usb
     test_rx_iwdt
     test_rx_gpio
     test_rx_mpc
@@ -1064,6 +1300,9 @@ set(ALL_TEST_TARGETS
     test_rx_stack_monitor
     test_rx_bno055
     test_rx_bmp280
+    # Runtime backend and system config tests
+    test_rx_log_backend
+    test_rx_system_config
     # Multi-task firmware tests
     test_motor_control_task
     test_communication_task
@@ -1107,6 +1346,9 @@ add_test(NAME test_rx_drv8263 COMMAND test_rx_drv8263)
 add_test(NAME test_rx_frame_ascii COMMAND test_rx_frame_ascii)
 add_test(NAME test_rx_session COMMAND test_rx_session)
 add_test(NAME test_rx_comm_manager COMMAND test_rx_comm_manager)
+add_test(NAME test_rx_i2c_comm COMMAND test_rx_i2c_comm)
+add_test(NAME test_rx_uart_comm COMMAND test_rx_uart_comm)
+add_test(NAME test_rx_log_usb COMMAND test_rx_log_usb)
 add_test(NAME test_rx_iwdt COMMAND test_rx_iwdt)
 add_test(NAME test_rx_gpio COMMAND test_rx_gpio)
 add_test(NAME test_rx_mpc COMMAND test_rx_mpc)
@@ -1119,6 +1361,8 @@ add_test(NAME test_rx_host_irq COMMAND test_rx_host_irq)
 add_test(NAME test_rx_stack_monitor COMMAND test_rx_stack_monitor)
 add_test(NAME test_rx_bno055 COMMAND test_rx_bno055)
 add_test(NAME test_rx_bmp280 COMMAND test_rx_bmp280)
+add_test(NAME test_rx_log_backend COMMAND test_rx_log_backend)
+add_test(NAME test_rx_system_config COMMAND test_rx_system_config)
 
 # Multi-task firmware tests
 add_test(NAME test_motor_control_task COMMAND test_motor_control_task)
@@ -1127,6 +1371,146 @@ add_test(NAME test_obstacle_detection_task COMMAND test_obstacle_detection_task)
 add_test(NAME test_temperature_sensing_task COMMAND test_temperature_sensing_task)
 add_test(NAME test_telemetry_aggregation_task COMMAND test_telemetry_aggregation_task)
 add_test(NAME test_imu_task COMMAND test_imu_task)
+
+# =============================================================================
+# Coverage Baseline: compile all firmware source files
+#
+# Every source file in libs/ and src/ that is not already compiled by another
+# test is compiled here with the same flags (--coverage, UNIT_TEST,
+# RX_SIMULATOR_MODE).  The resulting .gcno instrumentation files allow
+# lcov --initial to report 0% coverage for untested code paths, making all
+# firmware files visible in the HTML coverage report.
+#
+# Files guarded entirely by #ifdef __RX__ will compile but contribute 0
+# instrumented lines -- they appear in the report as "N/A" (no executable
+# lines on the host), which is correct: those paths require the hardware build.
+#
+# Boot files (smc_generated, r_bsp, resetprg, vecttbl, etc.) depend on
+# GNURX-specific startup ABI and are excluded; they are tested by the
+# cross-compile CI job instead.
+# =============================================================================
+
+# Task source files not linked into any other test executable
+set(COVERAGE_EXTRA_TASK_SRCS
+    ${CMAKE_SOURCE_DIR}/../src/tasks/motor_control_task.c
+    ${CMAKE_SOURCE_DIR}/../src/tasks/obstacle_detect_task.c
+    ${CMAKE_SOURCE_DIR}/../src/tasks/temp_sensor_task.c
+    ${CMAKE_SOURCE_DIR}/../src/tasks/telemetry_task.c
+    ${CMAKE_SOURCE_DIR}/../src/tasks/imu_task.c
+    ${CMAKE_SOURCE_DIR}/../src/tasks/led_status_task.c
+    ${CMAKE_SOURCE_DIR}/../src/tasks/watchdog_monitor_task.c
+)
+
+# Core runtime files not linked into any other test executable.
+# rx_wdt.c, rx_time_threadx.c, rx_exception.c, rx_infrastructure.c are
+# hardware/RTOS-specific (depend on __RX__ registers or ThreadX internals)
+# and cannot be compiled on the host test build; they are tested by the
+# cross-compile CI job.  Only rx_log_usb.c is host-compilable.
+set(COVERAGE_EXTRA_CORE_SRCS
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_usb.c
+)
+
+# HAL and USB ISR source files are replaced by mocks in all other tests and
+# depend on hardware-specific register types that are not available in the
+# host build (guarded by #ifdef __RX__ or __attribute__((interrupt))).
+# They are excluded from host coverage; coverage for HAL is achieved through
+# the mock-based tests that exercise the HAL interface contract.
+# (No COVERAGE_EXTRA_HAL_SRCS or COVERAGE_EXTRA_USB_SRCS intentionally.)
+
+# Remaining source files compilable on host
+set(COVERAGE_EXTRA_MISC_SRCS
+    ${CMAKE_SOURCE_DIR}/../src/shared/shared_data.c
+)
+
+# OBJECT library: compiles all coverage-extra files with host flags + --coverage.
+# Not linked into a runnable test; .gcno files it produces are sufficient for
+# lcov --initial to register each source file in the coverage database.
+add_library(firmware_coverage_obj OBJECT
+    ${COVERAGE_EXTRA_TASK_SRCS}
+    ${COVERAGE_EXTRA_CORE_SRCS}
+    ${COVERAGE_EXTRA_MISC_SRCS}
+)
+
+apply_strict_warnings(firmware_coverage_obj)
+apply_test_includes(firmware_coverage_obj)
+
+# Additional includes required by task sources
+target_include_directories(firmware_coverage_obj PRIVATE
+    ${CMAKE_SOURCE_DIR}/../src/shared
+    ${CMAKE_SOURCE_DIR}/../src/tasks/inc
+    ${CMAKE_SOURCE_DIR}/../src/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_ds18b20/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bno055/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bmp280/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_drv8263/inc
+    ${CMAKE_SOURCE_DIR}/../libs/threadx
+    ${CMAKE_SOURCE_DIR}/mocks
+)
+
+# firmware_coverage_obj compiles real task/shared sources on the host.
+# All root-cause warnings have been fixed; no blanket suppression needed.
+# (See shared_data.c tx_inherit_option cast, tx_api.h declarations, rx_simulator_config.h pragma.)
+
+target_compile_definitions(firmware_coverage_obj PRIVATE
+    MOCK_TX_THREAD_CREATE
+    MOCK_TX_EVENT_FLAGS_CREATE
+    USE_MOCK_SCI_REGS
+    UNIT_TEST
+    RX_SIMULATOR_MODE
+)
+
+# Dummy test that links firmware_coverage_obj so CMake actually compiles it.
+# The test body is empty; its sole purpose is to ensure .gcno files exist for
+# all extra firmware sources so lcov --initial can account for them.
+#
+# NOTE: firmware_coverage_obj compiles the REAL implementations of:
+#   - All task source files (motor_control_task.c, etc.)
+#   - shared_data.c
+#   - rx_log_usb.c
+# Therefore we must NOT include their mock equivalents here (MOCK_TASKS_SRC,
+# MOCK_SHARED_DATA_SRC, mock_rx_log.c), which would produce duplicate symbols.
+# We use ${RX_LOG_SRC} (rx_log.c only) instead of the full MOCK_LOG_SRC set.
+add_executable(test_coverage_compile_all
+    test_coverage_compile_all.c
+    $<TARGET_OBJECTS:firmware_coverage_obj>
+    ${MOCK_TX_API_SRC}
+    ${RX_LOG_SRC}
+    ${MOCK_COMM_MANAGER_SRC_TASK}
+    ${MOCK_NANOPB_SRC}
+    ${MOCK_USB_SRC}
+    ${MOCK_UART_SRC}
+    ${MOCK_HAL_SRC}
+    ${MOCK_MOTOR_SRC}
+    ${MOCK_RSPI_SRC}
+    ${MOCK_GPTW_SRC}
+    ${MOCK_DS18B20_SRC}
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_bmp280.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_bno055.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_coverage_stubs.c
+)
+apply_strict_warnings(test_coverage_compile_all)
+apply_test_includes(test_coverage_compile_all)
+target_include_directories(test_coverage_compile_all PRIVATE
+    ${CMAKE_SOURCE_DIR}/../src/shared
+    ${CMAKE_SOURCE_DIR}/../src/tasks/inc
+    ${CMAKE_SOURCE_DIR}/../src/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_ds18b20/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bno055/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bmp280/inc
+    ${CMAKE_SOURCE_DIR}/../libs/rx_drv8263/inc
+    ${CMAKE_SOURCE_DIR}/../libs/threadx
+)
+target_compile_definitions(test_coverage_compile_all PRIVATE
+    MOCK_TX_THREAD_CREATE
+    MOCK_TX_EVENT_FLAGS_CREATE
+    USE_MOCK_SCI_REGS
+    UNIT_TEST
+    RX_SIMULATOR_MODE
+)
+target_link_libraries(test_coverage_compile_all unity)
+
+list(APPEND ALL_TEST_TARGETS test_coverage_compile_all)
+add_test(NAME test_coverage_compile_all COMMAND test_coverage_compile_all)
 
 # =============================================================================
 # Convenience Targets

@@ -98,7 +98,13 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
   }
 
   /* Clear manager state */
-  (void)memset(manager, 0, sizeof(rx_bus_manager_t));
+  {
+    uint8_t*     dst = (uint8_t*)manager;
+    const size_t len = sizeof(rx_bus_manager_t);
+    for (size_t i = 0; i < len; ++i) {
+      dst[i] = 0;
+    }
+  }
 
   /* Store configuration */
   manager->tag         = tag;

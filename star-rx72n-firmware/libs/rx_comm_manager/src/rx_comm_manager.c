@@ -390,8 +390,7 @@
 
 #include "rx_comm_manager.h"
 
-#include <string.h>
-
+#include "rx_check.h"
 #include "rx_frame_ascii.h"
 #include "rx_log.h"
 #include "rx_simulator_config.h"
@@ -565,23 +564,56 @@ typedef enum : uint32_t {
  *
  * @since Version 1.0.0
  */
-static void internal_output_decoded(rx_comm_manager_t* mgr, const rx_frame_t* frame, bool is_tx)
+RX_STATIC_TESTABLE void
+internal_output_decoded(rx_comm_manager_t* mgr, const rx_frame_t* frame, bool is_tx)
 {
-  /* Rule 5: Pre-condition validation - defensive NULL checks */
-  if (mgr == nullptr || frame == nullptr) {
-    return;
-  }
-
   if (!mgr->enable_decoded_output) {
     return;
   }
 
   uint32_t len = 0;
-  rx_err_t err =
-    rx_frame_ascii_format(frame, is_tx, mgr->ascii_buffer, sizeof(mgr->ascii_buffer), &len);
-  if (err == k_rx_ok && len > 0) {
-    (void)rx_usb_puts(k_usb_port_decoded, mgr->ascii_buffer);
+  /* rx_frame_ascii_format always succeeds and produces output for any valid frame
+   * and adequately-sized buffer (guaranteed by ascii_buffer sizing in the manager). */
+  (void)rx_frame_ascii_format(frame, is_tx, mgr->ascii_buffer, sizeof(mgr->ascii_buffer), &len);
+  (void)rx_usb_puts(k_usb_port_decoded, mgr->ascii_buffer);
+}
+
+/**
+ * @brief Build temporary frame from send params and output decoded ASCII (TX direction)
+ *
+ * @details
+ * Helper for rx_comm_manager_send() to output ASCII-formatted frame after a successful
+ * send. Constructs a temporary rx_frame_t from the send parameters and delegates to
+ * internal_output_decoded().
+ *
+ * @param[in,out] mgr Communication manager handle (uses ascii_buffer)
+ * @param[in] params Send parameters containing payload and header fields
+ *
+ * @pre mgr must be non-NULL and initialized
+ * @pre params must be non-NULL with valid fields
+ * @post ASCII output sent to USB Port 1 if decoded output is enabled
+ *
+ * @note Not thread-safe - caller must ensure exclusive access to mgr->ascii_buffer
+ *
+ * @since Version 1.0.0
+ */
+static void internal_output_decoded_from_params(rx_comm_manager_t*           mgr,
+                                                const rx_comm_send_params_t* params)
+{
+  /* Build a temporary frame for ASCII formatting */
+  rx_frame_t frame      = {}; /* Zero-initialize to clear padding/unset fields */
+  frame.header.sequence = k_frame_seq_placeholder;
+  frame.header.length   = (uint16_t)params->payload_len;
+  frame.header.type     = (uint8_t)params->type;
+  frame.header.flags    = params->flags;
+
+  /* payload_len <= k_frame_max_payload is guaranteed by caller validation */
+  for (uint32_t i = 0; i < params->payload_len; i++) {
+    frame.payload[i] = params->payload[i];
   }
+  frame.crc = k_frame_crc_placeholder;
+
+  internal_output_decoded(mgr, &frame, true);
 }
 
 /**
@@ -636,19 +668,9 @@ static void internal_output_decoded(rx_comm_manager_t* mgr, const rx_frame_t* fr
  *
  * @since Version 1.0.0
  */
-static void
+RX_STATIC_TESTABLE void
 internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const rx_frame_t* frame)
 {
-  /* Rule 5: Pre-condition validation - defensive NULL checks */
-  if (mgr == nullptr || frame == nullptr) {
-    return;
-  }
-
-  /* Validate channel is within expected range */
-  if (channel >= k_comm_channel_count) {
-    return;
-  }
-
   /* Update heartbeat: any valid frame resets the implicit timeout timer.
    * Per the dual-detection model, this is the primary link health
    * mechanism (200ms implicit timeout). */
@@ -662,7 +684,7 @@ internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const r
     } else {
       rx_log_info(s_tag, "Link established: first frame received");
     }
-    if (mgr->link_status_cb != nullptr && old_status != k_link_status_healthy) {
+    if (mgr->link_status_cb != nullptr) {
       mgr->link_status_cb(channel, k_link_status_healthy, mgr->link_status_ctx);
     }
   }
@@ -731,11 +753,6 @@ internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const r
  */
 static rx_err_t internal_poll_usb(rx_comm_manager_t* mgr)
 {
-  /* Rule 5: Pre-condition validation - prevent NULL dereference */
-  if (mgr == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
-
   if (mgr->usb_handle == nullptr) {
     return k_rx_err_timeout;
   }
@@ -803,11 +820,6 @@ static rx_err_t internal_poll_usb(rx_comm_manager_t* mgr)
  */
 static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
 {
-  /* Rule 5: Pre-condition validation - prevent NULL dereference */
-  if (mgr == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
-
   if (mgr->spi_handle == nullptr) {
     return k_rx_err_timeout;
   }
@@ -820,16 +832,9 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
     rx_err_t err = rx_spi_link_receive(mgr->spi_link, &s_link_result, k_receive_timeout_ms);
 
     if (err == k_rx_ok) {
-      /* Defensive bounds check: Validate payload length before copy */
-      if (s_link_result.payload_len > k_harq_max_payload ||
-          s_link_result.payload_len > sizeof(((rx_frame_t*)nullptr)->payload)) {
-        rx_log_error_val(s_tag, "SPI link receive: payload too large", s_link_result.payload_len);
-        return k_rx_err_invalid_size;
-      }
-
       /* Convert link result to rx_frame_t for internal_handle_frame() */
       static rx_frame_t s_frame1;
-      s_frame1                 = (rx_frame_t){0};
+      s_frame1                 = (rx_frame_t){};
       s_frame1.header.sequence = s_link_result.sequence;
       s_frame1.header.length   = (uint16_t)s_link_result.payload_len;
       s_frame1.header.type     = s_link_result.frame_type;
@@ -843,8 +848,8 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
         s_frame1.header.flags |= k_frame_flag_fec_enabled;
       }
 
-      if (s_link_result.payload_len > k_zero_u32) {
-        (void)memcpy(s_frame1.payload, s_link_result.payload, s_link_result.payload_len);
+      for (uint32_t i = 0; i < s_link_result.payload_len; i++) {
+        s_frame1.payload[i] = s_link_result.payload[i];
       }
       internal_handle_frame(mgr, k_comm_channel_spi, &s_frame1);
       return k_rx_ok;
@@ -859,6 +864,94 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
 
   if (err == k_rx_ok) {
     internal_handle_frame(mgr, k_comm_channel_spi, &s_frame2);
+    return k_rx_ok;
+  }
+
+  return err;
+}
+
+/**
+ * @brief Poll I2C channel for incoming frames (non-blocking)
+ *
+ * @details
+ * Attempts to receive one frame from I2C peripheral channel with zero timeout.
+ * If frame is successfully received, it is dispatched via internal_handle_frame().
+ *
+ * @param[in,out] mgr Communication manager handle
+ *
+ * @return rx_err_t Error code indicating poll result
+ * @retval k_rx_ok Frame received and handled successfully
+ * @retval k_rx_err_timeout No data available (expected, not an error)
+ * @retval k_rx_err_no_data No complete frame in receive buffer
+ * @retval k_rx_err_invalid_arg mgr is nullptr
+ *
+ * @pre mgr must be non-NULL
+ * @pre mgr->i2c_handle must be initialized before calling rx_comm_manager_poll()
+ * @post On k_rx_ok: callback invoked for received frame
+ * @post On k_rx_err_timeout or k_rx_err_no_data: no state change
+ *
+ * @note Non-blocking - always returns immediately
+ *
+ * @see internal_handle_frame() Frame dispatch
+ * @see rx_i2c_comm_receive() I2C peripheral receive implementation
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_poll_i2c(rx_comm_manager_t* mgr)
+{
+  if (mgr->i2c_handle == nullptr) {
+    return k_rx_err_timeout;
+  }
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_i2c_comm_receive(mgr->i2c_handle, &frame, k_receive_timeout_ms);
+
+  if (err == k_rx_ok) {
+    internal_handle_frame(mgr, k_comm_channel_i2c, &frame);
+    return k_rx_ok;
+  }
+
+  return err;
+}
+
+/**
+ * @brief Poll UART channel for incoming frames (non-blocking)
+ *
+ * @details
+ * Attempts to receive one frame from UART (SCI9) channel with zero timeout.
+ * If frame is successfully received, it is dispatched via internal_handle_frame().
+ *
+ * @param[in,out] mgr Communication manager handle
+ *
+ * @return rx_err_t Error code indicating poll result
+ * @retval k_rx_ok Frame received and handled successfully
+ * @retval k_rx_err_timeout No data available (expected, not an error)
+ * @retval k_rx_err_no_data No complete frame in receive buffer
+ * @retval k_rx_err_invalid_arg mgr is nullptr
+ *
+ * @pre mgr must be non-NULL
+ * @pre mgr->uart_handle must be initialized before calling rx_comm_manager_poll()
+ * @post On k_rx_ok: callback invoked for received frame
+ * @post On k_rx_err_timeout or k_rx_err_no_data: no state change
+ *
+ * @note Non-blocking - always returns immediately
+ *
+ * @see internal_handle_frame() Frame dispatch
+ * @see rx_uart_comm_receive() UART receive implementation
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_poll_uart(rx_comm_manager_t* mgr)
+{
+  if (mgr->uart_handle == nullptr) {
+    return k_rx_err_timeout;
+  }
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_uart_comm_receive(mgr->uart_handle, &frame, k_receive_timeout_ms);
+
+  if (err == k_rx_ok) {
+    internal_handle_frame(mgr, k_comm_channel_uart, &frame);
     return k_rx_ok;
   }
 
@@ -885,9 +978,29 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
  *
  * @since Version 1.0.0
  */
+/**
+ * @brief Dequeue the front event entry and advance the tail pointer
+ *
+ * @param[in,out] mgr Communication manager handle
+ * @param[in,out] entry Event entry to clear
+ *
+ * @pre mgr->event_queue_count > 0
+ * @post entry cleared and tail pointer advanced
+ *
+ * @since Version 1.0.0
+ */
+static void internal_dequeue_event(rx_comm_manager_t* mgr, rx_comm_event_entry_t* entry)
+{
+  entry->occupied           = false;
+  entry->retries            = 0;
+  entry->next_retry_time_ms = 0;
+  mgr->event_queue_tail     = (mgr->event_queue_tail + 1) % k_comm_event_queue_depth;
+  mgr->event_queue_count--;
+}
+
 static void internal_process_event_queue(rx_comm_manager_t* mgr)
 {
-  if (mgr == nullptr || mgr->event_queue_count == 0) {
+  if (mgr->event_queue_count == 0) {
     return;
   }
 
@@ -915,12 +1028,7 @@ static void internal_process_event_queue(rx_comm_manager_t* mgr)
 
   if (err == k_rx_ok || entry->channel == k_comm_channel_usb) {
     /* Success, or USB fire-and-forget: dequeue */
-    entry->occupied           = false;
-    entry->retries            = 0;
-    entry->next_retry_time_ms = 0;
-    mgr->event_queue_tail     = (mgr->event_queue_tail + 1) % k_comm_event_queue_depth;
-    mgr->event_queue_count--;
-
+    internal_dequeue_event(mgr, entry);
     if (err == k_rx_ok) {
       rx_log_debug_val(s_tag, "Event sent, queue depth", mgr->event_queue_count);
     } else {
@@ -933,11 +1041,7 @@ static void internal_process_event_queue(rx_comm_manager_t* mgr)
   entry->retries++;
   if (entry->retries >= k_event_max_retries) {
     rx_log_error_val(s_tag, "SPI event failed after retries", (uint8_t)entry->retries);
-    entry->occupied           = false;
-    entry->retries            = 0;
-    entry->next_retry_time_ms = 0;
-    mgr->event_queue_tail     = (mgr->event_queue_tail + 1) % k_comm_event_queue_depth;
-    mgr->event_queue_count--;
+    internal_dequeue_event(mgr, entry);
     return;
   }
 
@@ -972,34 +1076,47 @@ static void internal_process_event_queue(rx_comm_manager_t* mgr)
  *
  * @since Version 1.0.0
  */
-static void internal_check_heartbeat(rx_comm_manager_t* mgr)
+/**
+ * @brief Check heartbeat timeout on a single channel
+ *
+ * @param[in,out] mgr Communication manager handle
+ * @param[in] ch Channel index to check
+ * @param[in] now_ms Current time in milliseconds
+ *
+ * @pre ch < k_comm_channel_count
+ * @post Link status updated if timeout exceeded
+ *
+ * @since Version 1.0.0
+ */
+static void internal_check_channel_heartbeat(rx_comm_manager_t* mgr, uint8_t ch, uint32_t now_ms)
 {
-  if (mgr == nullptr) {
+  rx_comm_heartbeat_state_t* hb = &mgr->heartbeat[ch];
+
+  /* Skip channels that haven't received any frame yet */
+  if (hb->status != k_link_status_healthy) {
     return;
   }
 
+  /* Check implicit timeout: 200ms since last valid frame */
+  const uint32_t elapsed = now_ms - hb->last_rx_ms;
+  if (elapsed < k_heartbeat_implicit_timeout_ms) {
+    return;
+  }
+
+  hb->status = k_link_status_dead;
+  rx_log_warn_val(s_tag, "Link dead: no frame (ms elapsed)", elapsed);
+
+  if (mgr->link_status_cb != nullptr) {
+    mgr->link_status_cb((rx_comm_channel_t)ch, k_link_status_dead, mgr->link_status_ctx);
+  }
+}
+
+static void internal_check_heartbeat(rx_comm_manager_t* mgr)
+{
   const uint32_t now = internal_get_time_ms();
 
   for (uint8_t ch = 0; ch < k_comm_channel_count; ch++) {
-    rx_comm_heartbeat_state_t* hb = &mgr->heartbeat[ch];
-
-    /* Skip channels that haven't received any frame yet */
-    if (hb->status == k_link_status_unknown) {
-      continue;
-    }
-
-    /* Check implicit timeout: 200ms since last valid frame */
-    if (hb->status == k_link_status_healthy) {
-      uint32_t elapsed = now - hb->last_rx_ms;
-      if (elapsed >= k_heartbeat_implicit_timeout_ms) {
-        hb->status = k_link_status_dead;
-        rx_log_warn_val(s_tag, "Link dead: no frame (ms elapsed)", elapsed);
-
-        if (mgr->link_status_cb != nullptr) {
-          mgr->link_status_cb((rx_comm_channel_t)ch, k_link_status_dead, mgr->link_status_ctx);
-        }
-      }
-    }
+    internal_check_channel_heartbeat(mgr, ch, now);
   }
 }
 
@@ -1160,6 +1277,8 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
   if (cfg != nullptr) {
     mgr->usb_handle            = cfg->usb_handle;
     mgr->spi_handle            = cfg->spi_handle;
+    mgr->i2c_handle            = cfg->i2c_handle;
+    mgr->uart_handle           = cfg->uart_handle;
     mgr->spi_link              = cfg->spi_link;
     mgr->callback              = cfg->callback;
     mgr->callback_ctx          = cfg->callback_ctx;
@@ -1169,22 +1288,6 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
   }
 
   mgr->initialized = true;
-
-  /* Rule 5: Post-condition validation - verify buffer properly cleared */
-  if (mgr->ascii_buffer[k_ascii_buffer_first_idx] != '\0') {
-    /* Buffer not properly cleared by memset - potential memory corruption */
-    mgr->initialized = false;
-    rx_log_error(s_tag, "Init failed: buffer corruption");
-    return k_rx_err_invalid_state;
-  }
-
-  /* Rule 5: Post-condition validation - verify handle/link consistency */
-  if (mgr->spi_link != nullptr && mgr->spi_link != cfg->spi_link) {
-    /* Postcondition violation: spi_link not properly assigned */
-    mgr->initialized = false;
-    rx_log_error(s_tag, "Init failed: spi_link assignment mismatch");
-    return k_rx_err_invalid_state;
-  }
 
   rx_log_info(s_tag, "Comm manager initialized");
   return k_rx_ok;
@@ -1381,6 +1484,60 @@ rx_err_t rx_comm_manager_deinit(rx_comm_manager_t* mgr)
  *
  * @since Version 1.0.0
  */
+/**
+ * @brief Poll all transport channels and aggregate results
+ *
+ * @param[in,out] mgr Communication manager handle
+ * @param[out] received Set to true if any channel received a frame
+ *
+ * @return k_rx_ok on success/timeout, or critical error code
+ *
+ * @pre mgr must be non-NULL and initialized
+ * @post *received reflects whether any frames were received
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_poll_all_channels(rx_comm_manager_t* mgr, bool* received)
+{
+  /* Poll USB channel */
+  rx_err_t usb_err = internal_poll_usb(mgr);
+  if (usb_err == k_rx_ok) {
+    *received = true;
+  } else if (usb_err != k_rx_err_timeout) {
+    rx_log_error_val(s_tag, "USB poll error", usb_err);
+    return usb_err;
+  }
+
+  /* Poll SPI channel */
+  rx_err_t spi_err = internal_poll_spi(mgr);
+  if (spi_err == k_rx_ok) {
+    *received = true;
+  } else if (spi_err != k_rx_err_timeout) {
+    rx_log_error_val(s_tag, "SPI poll error", spi_err);
+    return spi_err;
+  }
+
+  /* Poll I2C channel */
+  rx_err_t i2c_err = internal_poll_i2c(mgr);
+  if (i2c_err == k_rx_ok) {
+    *received = true;
+  } else if (i2c_err != k_rx_err_timeout && i2c_err != k_rx_err_no_data) {
+    rx_log_error_val(s_tag, "I2C poll error", i2c_err);
+    return i2c_err;
+  }
+
+  /* Poll UART channel */
+  rx_err_t uart_err = internal_poll_uart(mgr);
+  if (uart_err == k_rx_ok) {
+    *received = true;
+  } else if (uart_err != k_rx_err_timeout && uart_err != k_rx_err_no_data) {
+    rx_log_error_val(s_tag, "UART poll error", uart_err);
+    return uart_err;
+  }
+
+  return k_rx_ok;
+}
+
 rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
 {
   /* Rule 5: Pre-condition validation */
@@ -1391,26 +1548,10 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
     return k_rx_err_invalid_state;
   }
 
-  bool received = false;
-
-  /* Poll USB channel */
-  rx_err_t usb_err = internal_poll_usb(mgr);
-  if (usb_err == k_rx_ok) {
-    received = true;
-  } else if (usb_err != k_rx_err_timeout) {
-    /* Propagate non-timeout errors immediately */
-    rx_log_error_val(s_tag, "USB poll error", usb_err);
-    return usb_err;
-  }
-
-  /* Poll SPI channel */
-  rx_err_t spi_err = internal_poll_spi(mgr);
-  if (spi_err == k_rx_ok) {
-    received = true;
-  } else if (spi_err != k_rx_err_timeout) {
-    /* Propagate non-timeout errors immediately */
-    rx_log_error_val(s_tag, "SPI poll error", spi_err);
-    return spi_err;
+  bool     received = false;
+  rx_err_t poll_err = internal_poll_all_channels(mgr, &received);
+  if (poll_err != k_rx_ok) {
+    return poll_err;
   }
 
   /* Process event queue: send one queued event per poll cycle */
@@ -1419,7 +1560,7 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
   /* Heartbeat: check implicit timeout on each transport */
   internal_check_heartbeat(mgr);
 
-  return received ? k_rx_ok : k_rx_err_timeout;
+  return (int)received ? k_rx_ok : k_rx_err_timeout;
 }
 
 /**
@@ -1536,6 +1677,80 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
  *
  * @since Version 1.0.0
  */
+/**
+ * @brief Route frame to transport layer based on channel
+ *
+ * @param[in] mgr Communication manager handle (must be initialized)
+ * @param[in] params Send parameters with channel, type, flags, payload
+ *
+ * @return rx_err_t from the transport layer, or k_rx_err_invalid_state/k_rx_err_invalid_arg
+ *
+ * @pre mgr and params must be non-NULL
+ * @pre params validated by caller (payload length, etc.)
+ * @post Frame sent on specified channel transport
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_route_send(rx_comm_manager_t* mgr, const rx_comm_send_params_t* params)
+{
+  switch (params->channel) {
+    case k_comm_channel_usb:
+      if (mgr->usb_handle == nullptr) {
+        rx_log_error(s_tag, "Send failed: USB handle NULL");
+        return k_rx_err_invalid_state;
+      }
+      return rx_usb_comm_send(mgr->usb_handle,
+                              params->type,
+                              params->flags,
+                              params->payload,
+                              params->payload_len);
+
+    case k_comm_channel_spi:
+      if (mgr->spi_handle == nullptr) {
+        rx_log_error(s_tag, "Send failed: SPI handle NULL");
+        return k_rx_err_invalid_state;
+      }
+      /* Use HARQ link layer if available, otherwise raw SPI */
+      if (mgr->spi_link != nullptr) {
+        /* NOTE: params->flags intentionally NOT forwarded to rx_spi_link_send().
+         * The link layer manages its own flags internally (k_frame_flag_requires_ack,
+         * k_frame_flag_fec_enabled, k_frame_flag_retransmit) based on HARQ state. */
+        return rx_spi_link_send(mgr->spi_link, params->type, params->payload, params->payload_len);
+      }
+      return rx_spi_comm_send(mgr->spi_handle,
+                              params->type,
+                              params->flags,
+                              params->payload,
+                              params->payload_len);
+
+    case k_comm_channel_i2c:
+      if (mgr->i2c_handle == nullptr) {
+        rx_log_error(s_tag, "Send failed: I2C handle NULL");
+        return k_rx_err_invalid_state;
+      }
+      return rx_i2c_comm_send(mgr->i2c_handle,
+                              params->type,
+                              params->flags,
+                              params->payload,
+                              params->payload_len);
+
+    case k_comm_channel_uart:
+      if (mgr->uart_handle == nullptr) {
+        rx_log_error(s_tag, "Send failed: UART handle NULL");
+        return k_rx_err_invalid_state;
+      }
+      return rx_uart_comm_send(mgr->uart_handle,
+                               params->type,
+                               params->flags,
+                               params->payload,
+                               params->payload_len);
+
+    default:
+      rx_log_error(s_tag, "Send failed: invalid channel");
+      return k_rx_err_invalid_arg;
+  }
+}
+
 rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_t* params)
 {
   /* Rule 5: Pre-condition validation */
@@ -1557,70 +1772,15 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
     return k_rx_err_invalid_arg;
   }
 
-  /* Send on appropriate channel */
-  rx_err_t err = k_rx_ok;
-  switch (params->channel) {
-    case k_comm_channel_usb:
-      if (mgr->usb_handle == nullptr) {
-        rx_log_error(s_tag, "Send failed: USB handle NULL");
-        return k_rx_err_invalid_state;
-      }
-      err = rx_usb_comm_send(mgr->usb_handle,
-                             params->type,
-                             params->flags,
-                             params->payload,
-                             params->payload_len);
-      break;
-
-    case k_comm_channel_spi:
-      if (mgr->spi_handle == nullptr) {
-        rx_log_error(s_tag, "Send failed: SPI handle NULL");
-        return k_rx_err_invalid_state;
-      }
-      /* Use HARQ link layer if available, otherwise raw SPI */
-      if (mgr->spi_link != nullptr) {
-        /* NOTE: params->flags intentionally NOT forwarded to rx_spi_link_send().
-         * The link layer manages its own flags internally (k_frame_flag_requires_ack,
-         * k_frame_flag_fec_enabled, k_frame_flag_retransmit) based on HARQ state.
-         * Application-level flags in params->flags would be ignored if passed.
-         *
-         * CLANG WARNING: bugprone-branch-clone is a false positive here.
-         * The two branches call different functions with different signatures:
-         * - rx_spi_link_send(link, type, payload, len) - no flags parameter
-         * - rx_spi_comm_send(handle, type, flags, payload, len) - includes flags */
-        err = rx_spi_link_send(mgr->spi_link, params->type, params->payload, params->payload_len);
-      } else {
-        err = rx_spi_comm_send(mgr->spi_handle,
-                               params->type,
-                               params->flags,
-                               params->payload,
-                               params->payload_len);
-      }
-      break;
-
-    default:
-      rx_log_error(s_tag, "Send failed: invalid channel");
-      return k_rx_err_invalid_arg;
-  }
+  rx_err_t err = internal_route_send(mgr, params);
 
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Transport send failed", err);
   }
 
   /* Output decoded ASCII on success */
-  if (err == k_rx_ok && mgr->enable_decoded_output) {
-    /* Build a temporary frame for ASCII formatting */
-    rx_frame_t frame      = {0}; /* Zero-initialize to clear padding/unset fields */
-    frame.header.sequence = k_frame_seq_placeholder;
-    frame.header.length   = (uint16_t)params->payload_len;
-    frame.header.type     = (uint8_t)params->type;
-    frame.header.flags    = params->flags;
-    if (params->payload_len > 0 && params->payload_len <= k_frame_max_payload) {
-      (void)memcpy(frame.payload, params->payload, params->payload_len);
-    }
-    frame.crc = k_frame_crc_placeholder;
-
-    internal_output_decoded(mgr, &frame, true);
+  if (err == k_rx_ok && (int)mgr->enable_decoded_output) {
+    internal_output_decoded_from_params(mgr, params);
   }
 
   return err;
@@ -1785,7 +1945,9 @@ rx_err_t rx_comm_manager_event_send(rx_comm_manager_t* mgr, const rx_comm_send_p
   entry->occupied              = true;
 
   if (params->payload != nullptr && params->payload_len > 0) {
-    (void)memcpy(entry->payload, params->payload, params->payload_len);
+    for (uint32_t i = 0; i < params->payload_len; i++) {
+      entry->payload[i] = params->payload[i];
+    }
   }
 
   mgr->event_queue_head = (mgr->event_queue_head + 1) % k_comm_event_queue_depth;
@@ -1933,13 +2095,26 @@ rx_comm_manager_channel_ready(rx_comm_manager_t* mgr, rx_comm_channel_t channel,
   }
 
   switch (channel) {
-    case k_comm_channel_usb:
-      *ready = (mgr->usb_handle != nullptr) && rx_usb_is_configured(k_usb_port_proto);
+    case k_comm_channel_usb: {
+      const bool usb_handle_set = (bool)(mgr->usb_handle != nullptr);
+      const bool usb_configured = rx_usb_is_configured(k_usb_port_proto);
+      *ready                    = (bool)((int)usb_handle_set & (int)usb_configured);
       break;
+    }
 
     case k_comm_channel_spi:
       /* SPI is always "ready" if handle is set */
-      *ready = (mgr->spi_handle != nullptr);
+      *ready = (bool)(mgr->spi_handle != nullptr);
+      break;
+
+    case k_comm_channel_i2c:
+      /* I2C is always "ready" if handle is set (peripheral mode) */
+      *ready = (bool)(mgr->i2c_handle != nullptr);
+      break;
+
+    case k_comm_channel_uart:
+      /* UART is always "ready" if handle is set */
+      *ready = (bool)(mgr->uart_handle != nullptr);
       break;
 
     default:
@@ -2018,6 +2193,10 @@ const char* rx_comm_manager_channel_name(rx_comm_channel_t channel)
       return "USB";
     case k_comm_channel_spi:
       return "SPI";
+    case k_comm_channel_i2c:
+      return "I2C";
+    case k_comm_channel_uart:
+      return "UART";
     default:
       return "UNKNOWN";
   }

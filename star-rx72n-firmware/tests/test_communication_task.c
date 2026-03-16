@@ -35,8 +35,20 @@
  */
 
 typedef enum : uint8_t {
-  k_test_motor_count = 4, /**< Number of motors */
+  k_test_motor_count      = 4, /**< Number of motors */
+  k_test_motor_idx_fl     = 0, /**< Front-left motor index */
+  k_test_motor_idx_fr     = 1, /**< Front-right motor index */
+  k_test_motor_idx_bl     = 2, /**< Back-left motor index */
+  k_test_motor_idx_br     = 3, /**< Back-right motor index */
+  k_test_payload_buf_size = 4, /**< Buffer size for send test payload */
 } test_comm_constants_t;
+
+/** @brief Velocity test values (floating-point, cannot be in enum) */
+static const float s_test_velocity_forward_mps = 1.0F;
+static const float s_test_velocity_reverse_mps = -0.5F;
+
+/** @brief Tolerance for float comparisons (replaces Unity UNITY_FLOAT_PRECISION literal) */
+static const float s_float_tolerance = 0.00001F;
 
 /* =============================================================================
  * Test Fixture
@@ -143,8 +155,8 @@ void test_comm_task_create_already_created(void)
 void test_comm_task_initializes_comm_manager(void)
 {
   /* Configure mock */
-  rx_comm_manager_t        mgr    = {0};
-  rx_comm_manager_config_t config = {0};
+  rx_comm_manager_t        mgr    = {};
+  rx_comm_manager_config_t config = {};
   rx_err_t                 err;
 
   mock_comm_manager_set_init_return(k_rx_ok);
@@ -166,7 +178,7 @@ void test_comm_task_initializes_comm_manager(void)
 void test_comm_task_polls_comm_manager(void)
 {
   /* Initialize manager (required for poll to work) */
-  rx_comm_manager_t mgr = {0};
+  rx_comm_manager_t mgr = {};
   rx_err_t          err;
 
   mgr.initialized = true;
@@ -196,30 +208,37 @@ void test_comm_task_polls_comm_manager(void)
  */
 void test_comm_task_velocity_cmd_updates_shared_data(void)
 {
-  star_v1_SetVelocityRequest velocity_req = {0};
-  motor_command_t            cmd_out      = {0};
-  rx_err_t                   err;
+  star_v1_SetVelocityRequest velocity_req;
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&velocity_req, 0, sizeof(velocity_req));
+  motor_command_t cmd_out = {};
+  rx_err_t        err;
 
   /* Configure mock to return decoded velocity */
   (void)velocity_req; /* Not used directly - mock sets values internally */
 
-  mock_nanopb_set_decoded_velocity(1.0f, 1.0f, -0.5f, -0.5f);
+  mock_nanopb_set_decoded_velocity(s_test_velocity_forward_mps,
+                                   s_test_velocity_forward_mps,
+                                   s_test_velocity_reverse_mps,
+                                   s_test_velocity_reverse_mps);
   mock_nanopb_set_decode_velocity_return(k_rx_ok);
 
   /* Decode velocity request (simulating task behavior) */
-  star_v1_SetVelocityRequest decoded = {0};
-  err                                = rx_nanopb_decode_velocity_request(nullptr, 0, &decoded);
+  star_v1_SetVelocityRequest decoded;
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&decoded, 0, sizeof(decoded));
+  err = rx_nanopb_decode_velocity_request(nullptr, 0, &decoded);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(decoded.has_command);
 
   /* Build and store motor command as task would */
-  motor_command_t cmd        = {0};
-  cmd.target_velocity_mps[0] = (float)decoded.command.front_left_velocity_mps;
-  cmd.target_velocity_mps[1] = (float)decoded.command.front_right_velocity_mps;
-  cmd.target_velocity_mps[2] = (float)decoded.command.back_left_velocity_mps;
-  cmd.target_velocity_mps[3] = (float)decoded.command.back_right_velocity_mps;
-  cmd.sequence               = decoded.command.sequence;
-  cmd.valid                  = true;
+  motor_command_t cmd                          = {};
+  cmd.target_velocity_mps[k_test_motor_idx_fl] = (float)decoded.command.front_left_velocity_mps;
+  cmd.target_velocity_mps[k_test_motor_idx_fr] = (float)decoded.command.front_right_velocity_mps;
+  cmd.target_velocity_mps[k_test_motor_idx_bl] = (float)decoded.command.back_left_velocity_mps;
+  cmd.target_velocity_mps[k_test_motor_idx_br] = (float)decoded.command.back_right_velocity_mps;
+  cmd.sequence                                 = decoded.command.sequence;
+  cmd.valid                                    = true;
 
   err = shared_data_set_motor_command(&cmd);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -228,10 +247,18 @@ void test_comm_task_velocity_cmd_updates_shared_data(void)
   err = shared_data_get_motor_command(&cmd_out);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(cmd_out.valid);
-  TEST_ASSERT_EQUAL_FLOAT(1.0f, cmd_out.target_velocity_mps[0]);
-  TEST_ASSERT_EQUAL_FLOAT(1.0f, cmd_out.target_velocity_mps[1]);
-  TEST_ASSERT_EQUAL_FLOAT(-0.5f, cmd_out.target_velocity_mps[2]);
-  TEST_ASSERT_EQUAL_FLOAT(-0.5f, cmd_out.target_velocity_mps[3]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           s_test_velocity_forward_mps,
+                           cmd_out.target_velocity_mps[k_test_motor_idx_fl]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           s_test_velocity_forward_mps,
+                           cmd_out.target_velocity_mps[k_test_motor_idx_fr]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           s_test_velocity_reverse_mps,
+                           cmd_out.target_velocity_mps[k_test_motor_idx_bl]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           s_test_velocity_reverse_mps,
+                           cmd_out.target_velocity_mps[k_test_motor_idx_br]);
   /* Note: sequence comes from mock which uses decode call count (1) */
   TEST_ASSERT_EQUAL_UINT32(1, cmd_out.sequence);
 }
@@ -272,8 +299,10 @@ void test_comm_task_rejects_null_frame(void)
  */
 void test_comm_task_estop_request_triggers_estop(void)
 {
-  star_v1_EmergencyStopRequest estop_req = {0};
-  rx_err_t                     err;
+  star_v1_EmergencyStopRequest estop_req;
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&estop_req, 0, sizeof(estop_req));
+  rx_err_t err;
 
   /* Configure mock to return decoded estop request */
   mock_nanopb_set_decode_estop_return(k_rx_ok);
@@ -343,7 +372,7 @@ void test_comm_task_frame_updates_active_channel(void)
   TEST_ASSERT_EQUAL(k_comm_channel_usb, shared_data_get_active_channel());
 
   /* Act: simulate comm task recording an SPI frame receipt */
-  (void)shared_data_update_active_channel((uint8_t)k_comm_channel_spi);
+  (void)shared_data_update_active_channel(k_comm_channel_spi);
 
   /* Assert: active channel updated to SPI */
   TEST_ASSERT_EQUAL(k_comm_channel_spi, shared_data_get_active_channel());
@@ -364,9 +393,9 @@ void test_comm_task_frame_updates_active_channel(void)
 void test_comm_task_can_send_response(void)
 {
   /* Initialize manager (required for send to work) */
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
-  uint8_t               payload[4];
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
+  uint8_t               payload[k_test_payload_buf_size];
   rx_err_t              err;
 
   mgr.initialized = true;
@@ -401,13 +430,15 @@ void test_comm_task_can_send_response(void)
 void test_comm_task_handles_decode_failure(void)
 {
   /* Configure nanopb to fail decoding */
-  motor_command_t cmd_out = {0};
+  motor_command_t cmd_out = {};
   rx_err_t        err;
 
   mock_nanopb_set_decode_velocity_return(k_rx_err_protocol_error);
 
   /* Try to decode (should fail) */
-  star_v1_SetVelocityRequest velocity_req = {0};
+  star_v1_SetVelocityRequest velocity_req;
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&velocity_req, 0, sizeof(velocity_req));
   err = rx_nanopb_decode_velocity_request(nullptr, 0, &velocity_req);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 

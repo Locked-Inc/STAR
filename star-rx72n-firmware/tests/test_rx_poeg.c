@@ -12,11 +12,32 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "unity.h"
+
+/* =============================================================================
+ * Mock Register Area Constants
+ * =============================================================================
+ */
+
+/** @brief Mock register array and struct sizing constants */
+typedef enum : uint8_t {
+  k_poeg_group_count      = 4,   /**< Number of POEG groups / motors */
+  k_icu_ir_count_hi       = 0,   /**< High byte placeholder for 256 */
+  k_icu_ier_count         = 32,  /**< ICU IER register count */
+  k_gptw_padding_count    = 13,  /**< GPTW padding slots (0x04-0x34) */
+  k_gptw_rest_count       = 38,  /**< GPTW remaining registers */
+  k_icu_reserved0_count   = 192, /**< ICU reserved0 byte count (uint8_t) */
+  k_icu_reserved1_count   = 14,  /**< ICU reserved1 byte count */
+  k_icu_reserved2_count   = 14,  /**< ICU reserved2 byte count */
+  k_estop_reason_obstacle = 2,   /**< Obstacle estop reason code */
+} mock_sizing_constants_t;
+
+/** @brief 16-bit sized mock register constants */
+typedef enum : uint16_t {
+  k_icu_256 = 256, /**< ICU IR/DTCER/IPR array size */
+} mock_sizing_u16_t;
 
 /* =============================================================================
  * Mock Register Areas
@@ -35,44 +56,39 @@ typedef struct {
   volatile uint32_t poeggn;
 } mock_poegg_regs_t;
 
-static mock_poegg_regs_t s_mock_poeg[4];
-
+static mock_poegg_regs_t s_mock_poeg[k_poeg_group_count];
 /* Mock GPTW channel registers (simplified - only fields used by POEG) */
 typedef struct {
   volatile uint32_t gtwp;
-  uint32_t          padding[13]; /* 0x04-0x34 */
+  uint32_t          padding[k_gptw_padding_count];
   volatile uint32_t gtintad;
-  uint32_t          rest[38]; /* remaining registers */
+  uint32_t          rest[k_gptw_rest_count];
 } mock_gptw_channel_t;
 
-static mock_gptw_channel_t s_mock_gptw[4];
-
+static mock_gptw_channel_t s_mock_gptw[k_poeg_group_count];
 /* Mock ICU registers (simplified) */
 typedef struct {
-  volatile uint8_t ir[256];
-  uint8_t          dtcer[256];
-  volatile uint8_t ier[32];
-  uint8_t          reserved0[192];
+  volatile uint8_t ir[k_icu_256];
+  uint8_t          dtcer[k_icu_256];
+  volatile uint8_t ier[k_icu_ier_count];
+  uint8_t          reserved0[k_icu_reserved0_count];
   uint8_t          swintr;
   uint8_t          swint2r;
-  uint8_t          reserved1[14];
+  uint8_t          reserved1[k_icu_reserved1_count];
   uint16_t         fir;
-  uint8_t          reserved2[14];
-  volatile uint8_t ipr[256];
+  uint8_t          reserved2[k_icu_reserved2_count];
+  volatile uint8_t ipr[k_icu_256];
 } mock_icu_regs_t;
 
 static mock_icu_regs_t s_mock_icu;
-
 /* Mock shared_data state */
 static bool     s_estop_active;
 static uint8_t  s_estop_reason;
 static uint32_t s_estop_trigger_count;
-
 /* Mock log state */
 static uint32_t s_error_log_count;
 static uint32_t s_warn_log_count;
 static uint32_t s_info_log_count;
-
 /* =============================================================================
  * Mock Function Implementations
  * =============================================================================
@@ -216,9 +232,8 @@ enum {
 enum { k_poeg_motor_count = 4 };
 
 /* Redirect register accessors to mocks */
-#define s_poeg_groups_test   s_mock_poeg
-#define s_gptw_channels_test s_mock_gptw
-
+#define s_poeg_groups_test   s_mock_poeg /* NOLINT(readability-identifier-naming) */
+#define s_gptw_channels_test s_mock_gptw /* NOLINT(readability-identifier-naming) */
 /* ICU constants */
 enum {
   k_icu_ir_clear_test     = 0,
@@ -227,18 +242,39 @@ enum {
   k_poeg_isr_priority_t   = 14,
 };
 
+/* ICU IER test verification constants */
+typedef enum : uint8_t {
+  k_icu_ier_reg_23    = 23,   /**< IER register index for vectors 184-191 */
+  k_icu_ier_bit4_mask = 0x10, /**< Bit 4 mask for vector 188 */
+  k_icu_ier_bit5_mask = 0x20, /**< Bit 5 mask for vector 189 */
+  k_icu_ier_bit6_mask = 0x40, /**< Bit 6 mask for vector 190 */
+  k_icu_ier_bit7_mask = 0x80, /**< Bit 7 mask for vector 191 */
+} icu_ier_test_constants_t;
+
+/* Test assertion magic number constants */
+typedef enum : uint8_t {
+  k_test_motor_idx_0      = 0, /**< Motor index 0 */
+  k_test_motor_idx_1      = 1, /**< Motor index 1 */
+  k_test_motor_idx_2      = 2, /**< Motor index 2 */
+  k_test_motor_idx_3      = 3, /**< Motor index 3 */
+  k_test_invalid_motor_4  = 4, /**< Invalid motor index 4 */
+  k_test_invalid_motor_5  = 5, /**< Invalid motor index 5 */
+  k_test_expected_count_2 = 2, /**< Expected count of 2 */
+  k_test_expected_count_4 = 4, /**< Expected count of 4 */
+} test_motor_constants_t;
+
 /* POEG init config */
 static const uint32_t k_poeg_init_value_test =
   (k_poeg_pide_enable | k_poeg_inv_invert | k_poeg_nfen_enable | k_poeg_nfcs_pclkb_div8);
 
-static const uint32_t s_gtintad_values_test[4] = {
+static const uint32_t s_gtintad_values_test[k_poeg_group_count] = {
   (k_gptw_gtintad_grp_a | k_gptw_gtintad_grpdte | k_gptw_gtintad_grpabl),
   (k_gptw_gtintad_grp_b | k_gptw_gtintad_grpdte | k_gptw_gtintad_grpabl),
   (k_gptw_gtintad_grp_c | k_gptw_gtintad_grpdte | k_gptw_gtintad_grpabl),
   (k_gptw_gtintad_grp_d | k_gptw_gtintad_grpdte | k_gptw_gtintad_grpabl),
 };
 
-static const uint16_t s_poeg_vectors_test[4] = {
+static const uint16_t s_poeg_vectors_test[k_poeg_group_count] = {
   k_poeg_irq_group_a,
   k_poeg_irq_group_b,
   k_poeg_irq_group_c,
@@ -248,7 +284,7 @@ static const uint16_t s_poeg_vectors_test[4] = {
 /* --- test_rx_poeg_init --- */
 static rx_err_t test_poeg_init(void)
 {
-  for (uint8_t i = 0; i < k_poeg_motor_count; i++) {
+  for (uint32_t i = 0; i < k_poeg_motor_count; i++) {
     s_mock_poeg[i].poeggn = k_poeg_init_value_test;
 
     /* Verify PIDE was set */
@@ -283,7 +319,7 @@ static rx_err_t test_poeg_get_fault_status(uint8_t motor_index, bool* fault_acti
 
   uint32_t status = s_mock_poeg[motor_index].poeggn;
   *fault_active =
-    ((status & (k_poeg_pidf_detected | k_poeg_iocf_detected | k_poeg_ostpf_detected)) != 0);
+    (bool)((status & (k_poeg_pidf_detected | k_poeg_iocf_detected | k_poeg_ostpf_detected)) != 0U);
   return k_rx_ok;
 }
 
@@ -354,11 +390,56 @@ static void test_poeg_isr_handler(uint8_t motor_index, uint16_t vector)
  * =============================================================================
  */
 
+static void test_reset_mock_poeg(void)
+{
+  for (uint32_t i = 0; i < k_poeg_group_count; i++) {
+    s_mock_poeg[i].poeggn = 0;
+  }
+}
+
+static void test_reset_mock_gptw(void)
+{
+  for (uint32_t i = 0; i < k_poeg_group_count; i++) {
+    s_mock_gptw[i].gtwp    = 0;
+    s_mock_gptw[i].gtintad = 0;
+    for (uint32_t j = 0; j < k_gptw_padding_count; j++) {
+      s_mock_gptw[i].padding[j] = 0;
+    }
+    for (uint32_t j = 0; j < k_gptw_rest_count; j++) {
+      s_mock_gptw[i].rest[j] = 0;
+    }
+  }
+}
+
+static void test_reset_mock_icu(void)
+{
+  for (uint16_t i = 0; i < k_icu_256; i++) {
+    s_mock_icu.ir[i]    = 0;
+    s_mock_icu.dtcer[i] = 0;
+    s_mock_icu.ipr[i]   = 0;
+  }
+  for (uint32_t i = 0; i < k_icu_ier_count; i++) {
+    s_mock_icu.ier[i] = 0;
+  }
+  for (uint32_t i = 0; i < k_icu_reserved0_count; i++) {
+    s_mock_icu.reserved0[i] = 0;
+  }
+  s_mock_icu.swintr  = 0;
+  s_mock_icu.swint2r = 0;
+  for (uint32_t i = 0; i < k_icu_reserved1_count; i++) {
+    s_mock_icu.reserved1[i] = 0;
+  }
+  s_mock_icu.fir = 0;
+  for (uint32_t i = 0; i < k_icu_reserved2_count; i++) {
+    s_mock_icu.reserved2[i] = 0;
+  }
+}
+
 static void test_reset(void)
 {
-  memset(s_mock_poeg, 0, sizeof(s_mock_poeg));
-  memset(s_mock_gptw, 0, sizeof(s_mock_gptw));
-  memset(&s_mock_icu, 0, sizeof(s_mock_icu));
+  test_reset_mock_poeg();
+  test_reset_mock_gptw();
+  test_reset_mock_icu();
 
   s_estop_active        = false;
   s_estop_reason        = k_estop_reason_none;
@@ -388,7 +469,7 @@ void test_poeg_init_configures_all_groups(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify all 4 POEG groups have correct config */
-  for (uint8_t i = 0; i < 4; i++) {
+  for (uint32_t i = 0; i < k_poeg_group_count; i++) {
     TEST_ASSERT_BITS_HIGH(k_poeg_pide_enable, s_mock_poeg[i].poeggn);
     TEST_ASSERT_BITS_HIGH(k_poeg_inv_invert, s_mock_poeg[i].poeggn);
     TEST_ASSERT_BITS_HIGH(k_poeg_nfen_enable, s_mock_poeg[i].poeggn);
@@ -402,16 +483,20 @@ void test_poeg_init_links_gptw_to_poeg_groups(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* GPTW0 -> POEG Group A */
-  TEST_ASSERT_EQUAL_HEX32(s_gtintad_values_test[0], s_mock_gptw[0].gtintad);
+  TEST_ASSERT_EQUAL_HEX32(s_gtintad_values_test[k_test_motor_idx_0],
+                          s_mock_gptw[k_test_motor_idx_0].gtintad);
 
   /* GPTW1 -> POEG Group B */
-  TEST_ASSERT_EQUAL_HEX32(s_gtintad_values_test[1], s_mock_gptw[1].gtintad);
+  TEST_ASSERT_EQUAL_HEX32(s_gtintad_values_test[k_test_motor_idx_1],
+                          s_mock_gptw[k_test_motor_idx_1].gtintad);
 
   /* GPTW2 -> POEG Group C */
-  TEST_ASSERT_EQUAL_HEX32(s_gtintad_values_test[2], s_mock_gptw[2].gtintad);
+  TEST_ASSERT_EQUAL_HEX32(s_gtintad_values_test[k_test_motor_idx_2],
+                          s_mock_gptw[k_test_motor_idx_2].gtintad);
 
   /* GPTW3 -> POEG Group D */
-  TEST_ASSERT_EQUAL_HEX32(s_gtintad_values_test[3], s_mock_gptw[3].gtintad);
+  TEST_ASSERT_EQUAL_HEX32(s_gtintad_values_test[k_test_motor_idx_3],
+                          s_mock_gptw[k_test_motor_idx_3].gtintad);
 }
 
 void test_poeg_init_enables_icu_interrupts(void)
@@ -421,20 +506,20 @@ void test_poeg_init_enables_icu_interrupts(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Vector 188: IER[23] bit 4 (188/8=23, 188%8=4) */
-  TEST_ASSERT_BITS_HIGH(0x10, s_mock_icu.ier[23]);
-  TEST_ASSERT_EQUAL(k_poeg_isr_priority_t, s_mock_icu.ipr[188]);
+  TEST_ASSERT_BITS_HIGH(k_icu_ier_bit4_mask, s_mock_icu.ier[k_icu_ier_reg_23]);
+  TEST_ASSERT_EQUAL(k_poeg_isr_priority_t, s_mock_icu.ipr[k_poeg_irq_group_a]);
 
   /* Vector 189: IER[23] bit 5 */
-  TEST_ASSERT_BITS_HIGH(0x20, s_mock_icu.ier[23]);
-  TEST_ASSERT_EQUAL(k_poeg_isr_priority_t, s_mock_icu.ipr[189]);
+  TEST_ASSERT_BITS_HIGH(k_icu_ier_bit5_mask, s_mock_icu.ier[k_icu_ier_reg_23]);
+  TEST_ASSERT_EQUAL(k_poeg_isr_priority_t, s_mock_icu.ipr[k_poeg_irq_group_b]);
 
   /* Vector 190: IER[23] bit 6 */
-  TEST_ASSERT_BITS_HIGH(0x40, s_mock_icu.ier[23]);
-  TEST_ASSERT_EQUAL(k_poeg_isr_priority_t, s_mock_icu.ipr[190]);
+  TEST_ASSERT_BITS_HIGH(k_icu_ier_bit6_mask, s_mock_icu.ier[k_icu_ier_reg_23]);
+  TEST_ASSERT_EQUAL(k_poeg_isr_priority_t, s_mock_icu.ipr[k_poeg_irq_group_c]);
 
   /* Vector 191: IER[23] bit 7 */
-  TEST_ASSERT_BITS_HIGH(0x80, s_mock_icu.ier[23]);
-  TEST_ASSERT_EQUAL(k_poeg_isr_priority_t, s_mock_icu.ipr[191]);
+  TEST_ASSERT_BITS_HIGH(k_icu_ier_bit7_mask, s_mock_icu.ier[k_icu_ier_reg_23]);
+  TEST_ASSERT_EQUAL(k_poeg_isr_priority_t, s_mock_icu.ipr[k_poeg_irq_group_d]);
 }
 
 void test_poeg_init_fails_if_pide_not_accepted(void)
@@ -455,7 +540,7 @@ void test_poeg_init_fails_if_pide_not_accepted(void)
 void test_poeg_get_fault_status_no_fault(void)
 {
   bool     fault = true;
-  rx_err_t err   = test_poeg_get_fault_status(0, &fault);
+  rx_err_t err   = test_poeg_get_fault_status(k_test_motor_idx_0, &fault);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(fault);
@@ -463,34 +548,34 @@ void test_poeg_get_fault_status_no_fault(void)
 
 void test_poeg_get_fault_status_pidf_set(void)
 {
-  s_mock_poeg[0].poeggn = k_poeg_pidf_detected;
-  bool     fault        = false;
-  rx_err_t err          = test_poeg_get_fault_status(0, &fault);
+  s_mock_poeg[k_test_motor_idx_0].poeggn = k_poeg_pidf_detected;
+  bool     fault                         = false;
+  rx_err_t err                           = test_poeg_get_fault_status(k_test_motor_idx_0, &fault);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(fault);
 }
 
 void test_poeg_get_fault_status_iocf_set(void)
 {
-  s_mock_poeg[1].poeggn = k_poeg_iocf_detected;
-  bool     fault        = false;
-  rx_err_t err          = test_poeg_get_fault_status(1, &fault);
+  s_mock_poeg[k_test_motor_idx_1].poeggn = k_poeg_iocf_detected;
+  bool     fault                         = false;
+  rx_err_t err                           = test_poeg_get_fault_status(k_test_motor_idx_1, &fault);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(fault);
 }
 
 void test_poeg_get_fault_status_ostpf_set(void)
 {
-  s_mock_poeg[2].poeggn = k_poeg_ostpf_detected;
-  bool     fault        = false;
-  rx_err_t err          = test_poeg_get_fault_status(2, &fault);
+  s_mock_poeg[k_test_motor_idx_2].poeggn = k_poeg_ostpf_detected;
+  bool     fault                         = false;
+  rx_err_t err                           = test_poeg_get_fault_status(k_test_motor_idx_2, &fault);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(fault);
 }
 
 void test_poeg_get_fault_status_null_ptr(void)
 {
-  rx_err_t err = test_poeg_get_fault_status(0, ((void*)0));
+  rx_err_t err = test_poeg_get_fault_status(k_test_motor_idx_0, ((void*)0));
 
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
@@ -498,7 +583,7 @@ void test_poeg_get_fault_status_null_ptr(void)
 void test_poeg_get_fault_status_invalid_motor(void)
 {
   bool     fault;
-  rx_err_t err = test_poeg_get_fault_status(4, &fault);
+  rx_err_t err = test_poeg_get_fault_status(k_test_invalid_motor_4, &fault);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -506,22 +591,22 @@ void test_poeg_get_fault_status_invalid_motor(void)
 void test_poeg_get_fault_status_all_motors(void)
 {
   /* Set different faults on each motor */
-  s_mock_poeg[0].poeggn = k_poeg_pidf_detected;
-  s_mock_poeg[1].poeggn = 0; /* no fault */
-  s_mock_poeg[2].poeggn = k_poeg_iocf_detected;
-  s_mock_poeg[3].poeggn = k_poeg_ostpf_detected;
+  s_mock_poeg[k_test_motor_idx_0].poeggn = k_poeg_pidf_detected;
+  s_mock_poeg[k_test_motor_idx_1].poeggn = 0; /* no fault */
+  s_mock_poeg[k_test_motor_idx_2].poeggn = k_poeg_iocf_detected;
+  s_mock_poeg[k_test_motor_idx_3].poeggn = k_poeg_ostpf_detected;
 
   bool fault;
-  TEST_ASSERT_EQUAL(k_rx_ok, test_poeg_get_fault_status(0, &fault));
+  TEST_ASSERT_EQUAL(k_rx_ok, test_poeg_get_fault_status(k_test_motor_idx_0, &fault));
   TEST_ASSERT_TRUE(fault);
 
-  TEST_ASSERT_EQUAL(k_rx_ok, test_poeg_get_fault_status(1, &fault));
+  TEST_ASSERT_EQUAL(k_rx_ok, test_poeg_get_fault_status(k_test_motor_idx_1, &fault));
   TEST_ASSERT_FALSE(fault);
 
-  TEST_ASSERT_EQUAL(k_rx_ok, test_poeg_get_fault_status(2, &fault));
+  TEST_ASSERT_EQUAL(k_rx_ok, test_poeg_get_fault_status(k_test_motor_idx_2, &fault));
   TEST_ASSERT_TRUE(fault);
 
-  TEST_ASSERT_EQUAL(k_rx_ok, test_poeg_get_fault_status(3, &fault));
+  TEST_ASSERT_EQUAL(k_rx_ok, test_poeg_get_fault_status(k_test_motor_idx_3, &fault));
   TEST_ASSERT_TRUE(fault);
 }
 
@@ -533,15 +618,16 @@ void test_poeg_get_fault_status_all_motors(void)
 void test_poeg_clear_fault_success(void)
 {
   /* Simulate: fault was active, now resolved (ST=1 means pin is high/OK) */
-  s_mock_poeg[0].poeggn = k_poeg_pidf_detected | k_poeg_st_high | k_poeg_pide_enable;
-  s_estop_reason        = k_estop_reason_driver_fault;
-  s_estop_active        = true;
+  s_mock_poeg[k_test_motor_idx_0].poeggn =
+    k_poeg_pidf_detected | k_poeg_st_high | k_poeg_pide_enable;
+  s_estop_reason = k_estop_reason_driver_fault;
+  s_estop_active = true;
 
-  rx_err_t err = test_poeg_clear_fault(0);
+  rx_err_t err = test_poeg_clear_fault(k_test_motor_idx_0);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* PIDF should be cleared */
-  TEST_ASSERT_BITS_LOW(k_poeg_pidf_detected, s_mock_poeg[0].poeggn);
+  TEST_ASSERT_BITS_LOW(k_poeg_pidf_detected, s_mock_poeg[k_test_motor_idx_0].poeggn);
 
   /* E-stop should be cleared */
   TEST_ASSERT_FALSE(s_estop_active);
@@ -550,19 +636,19 @@ void test_poeg_clear_fault_success(void)
 void test_poeg_clear_fault_busy_when_still_active(void)
 {
   /* Simulate: fault still active (ST=0 with INV means nFAULT still low) */
-  s_mock_poeg[0].poeggn = k_poeg_pidf_detected; /* ST=0 */
+  s_mock_poeg[k_test_motor_idx_0].poeggn = k_poeg_pidf_detected; /* ST=0 */
 
-  rx_err_t err = test_poeg_clear_fault(0);
+  rx_err_t err = test_poeg_clear_fault(k_test_motor_idx_0);
 
   TEST_ASSERT_EQUAL(k_rx_err_busy, err);
 
   /* PIDF should NOT be cleared */
-  TEST_ASSERT_BITS_HIGH(k_poeg_pidf_detected, s_mock_poeg[0].poeggn);
+  TEST_ASSERT_BITS_HIGH(k_poeg_pidf_detected, s_mock_poeg[k_test_motor_idx_0].poeggn);
 }
 
 void test_poeg_clear_fault_invalid_motor(void)
 {
-  rx_err_t err = test_poeg_clear_fault(4);
+  rx_err_t err = test_poeg_clear_fault(k_test_invalid_motor_4);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -570,26 +656,27 @@ void test_poeg_clear_fault_invalid_motor(void)
 void test_poeg_clear_fault_preserves_enable_bits(void)
 {
   /* Set up: PIDF fault with PIDE+INV+NFEN enabled, fault resolved */
-  s_mock_poeg[1].poeggn = k_poeg_pidf_detected | k_poeg_st_high | k_poeg_pide_enable |
-                          k_poeg_inv_invert | k_poeg_nfen_enable;
+  s_mock_poeg[k_test_motor_idx_1].poeggn = k_poeg_pidf_detected | k_poeg_st_high |
+                                           k_poeg_pide_enable | k_poeg_inv_invert |
+                                           k_poeg_nfen_enable;
   s_estop_reason = k_estop_reason_driver_fault;
 
-  rx_err_t err = test_poeg_clear_fault(1);
+  rx_err_t err = test_poeg_clear_fault(k_test_motor_idx_1);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Enable/config bits should be preserved */
-  TEST_ASSERT_BITS_HIGH(k_poeg_pide_enable, s_mock_poeg[1].poeggn);
-  TEST_ASSERT_BITS_HIGH(k_poeg_inv_invert, s_mock_poeg[1].poeggn);
-  TEST_ASSERT_BITS_HIGH(k_poeg_nfen_enable, s_mock_poeg[1].poeggn);
+  TEST_ASSERT_BITS_HIGH(k_poeg_pide_enable, s_mock_poeg[k_test_motor_idx_1].poeggn);
+  TEST_ASSERT_BITS_HIGH(k_poeg_inv_invert, s_mock_poeg[k_test_motor_idx_1].poeggn);
+  TEST_ASSERT_BITS_HIGH(k_poeg_nfen_enable, s_mock_poeg[k_test_motor_idx_1].poeggn);
 }
 
 void test_poeg_clear_fault_no_estop_clear_if_other_reason(void)
 {
-  s_mock_poeg[0].poeggn = k_poeg_pidf_detected | k_poeg_st_high;
-  s_estop_reason        = 2; /* obstacle reason, not driver fault */
-  s_estop_active        = true;
+  s_mock_poeg[k_test_motor_idx_0].poeggn = k_poeg_pidf_detected | k_poeg_st_high;
+  s_estop_reason = k_estop_reason_obstacle; /* obstacle reason, not driver fault */
+  s_estop_active = true;
 
-  rx_err_t err = test_poeg_clear_fault(0);
+  rx_err_t err = test_poeg_clear_fault(k_test_motor_idx_0);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* E-stop should NOT be cleared (different reason) */
@@ -603,44 +690,44 @@ void test_poeg_clear_fault_no_estop_clear_if_other_reason(void)
 
 void test_poeg_software_stop_sets_ssf(void)
 {
-  rx_err_t err = test_poeg_software_stop(0);
+  rx_err_t err = test_poeg_software_stop(k_test_motor_idx_0);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_BITS_HIGH(k_poeg_ssf_stop, s_mock_poeg[0].poeggn);
+  TEST_ASSERT_BITS_HIGH(k_poeg_ssf_stop, s_mock_poeg[k_test_motor_idx_0].poeggn);
 }
 
 void test_poeg_software_stop_invalid_motor(void)
 {
-  rx_err_t err = test_poeg_software_stop(4);
+  rx_err_t err = test_poeg_software_stop(k_test_invalid_motor_4);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_poeg_software_stop_preserves_other_bits(void)
 {
-  s_mock_poeg[2].poeggn = k_poeg_pide_enable | k_poeg_nfen_enable;
+  s_mock_poeg[k_test_motor_idx_2].poeggn = k_poeg_pide_enable | k_poeg_nfen_enable;
 
-  rx_err_t err = test_poeg_software_stop(2);
+  rx_err_t err = test_poeg_software_stop(k_test_motor_idx_2);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_BITS_HIGH(k_poeg_ssf_stop, s_mock_poeg[2].poeggn);
-  TEST_ASSERT_BITS_HIGH(k_poeg_pide_enable, s_mock_poeg[2].poeggn);
-  TEST_ASSERT_BITS_HIGH(k_poeg_nfen_enable, s_mock_poeg[2].poeggn);
+  TEST_ASSERT_BITS_HIGH(k_poeg_ssf_stop, s_mock_poeg[k_test_motor_idx_2].poeggn);
+  TEST_ASSERT_BITS_HIGH(k_poeg_pide_enable, s_mock_poeg[k_test_motor_idx_2].poeggn);
+  TEST_ASSERT_BITS_HIGH(k_poeg_nfen_enable, s_mock_poeg[k_test_motor_idx_2].poeggn);
 }
 
 void test_poeg_clear_software_stop_clears_ssf(void)
 {
-  s_mock_poeg[3].poeggn = k_poeg_ssf_stop | k_poeg_pide_enable;
+  s_mock_poeg[k_test_motor_idx_3].poeggn = k_poeg_ssf_stop | k_poeg_pide_enable;
 
-  rx_err_t err = test_poeg_clear_software_stop(3);
+  rx_err_t err = test_poeg_clear_software_stop(k_test_motor_idx_3);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_BITS_LOW(k_poeg_ssf_stop, s_mock_poeg[3].poeggn);
+  TEST_ASSERT_BITS_LOW(k_poeg_ssf_stop, s_mock_poeg[k_test_motor_idx_3].poeggn);
   /* Preserve PIDE */
-  TEST_ASSERT_BITS_HIGH(k_poeg_pide_enable, s_mock_poeg[3].poeggn);
+  TEST_ASSERT_BITS_HIGH(k_poeg_pide_enable, s_mock_poeg[k_test_motor_idx_3].poeggn);
 }
 
 void test_poeg_clear_software_stop_invalid_motor(void)
 {
-  rx_err_t err = test_poeg_clear_software_stop(5);
+  rx_err_t err = test_poeg_clear_software_stop(k_test_invalid_motor_5);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -652,19 +739,19 @@ void test_poeg_clear_software_stop_invalid_motor(void)
 
 void test_poeg_isr_clears_ir_flag(void)
 {
-  s_mock_icu.ir[k_poeg_irq_group_a] = 1; /* Pending interrupt */
-  s_mock_poeg[0].poeggn             = k_poeg_pidf_detected;
+  s_mock_icu.ir[k_poeg_irq_group_a]      = 1; /* Pending interrupt */
+  s_mock_poeg[k_test_motor_idx_0].poeggn = k_poeg_pidf_detected;
 
-  test_poeg_isr_handler(0, k_poeg_irq_group_a);
+  test_poeg_isr_handler(k_test_motor_idx_0, k_poeg_irq_group_a);
 
   TEST_ASSERT_EQUAL(0, s_mock_icu.ir[k_poeg_irq_group_a]);
 }
 
 void test_poeg_isr_triggers_estop(void)
 {
-  s_mock_poeg[1].poeggn = k_poeg_pidf_detected;
+  s_mock_poeg[k_test_motor_idx_1].poeggn = k_poeg_pidf_detected;
 
-  test_poeg_isr_handler(1, k_poeg_irq_group_b);
+  test_poeg_isr_handler(k_test_motor_idx_1, k_poeg_irq_group_b);
 
   TEST_ASSERT_TRUE(s_estop_active);
   TEST_ASSERT_EQUAL(k_estop_reason_driver_fault, s_estop_reason);
@@ -672,42 +759,42 @@ void test_poeg_isr_triggers_estop(void)
 
 void test_poeg_isr_logs_pidf_fault(void)
 {
-  s_mock_poeg[0].poeggn = k_poeg_pidf_detected;
+  s_mock_poeg[k_test_motor_idx_0].poeggn = k_poeg_pidf_detected;
 
-  test_poeg_isr_handler(0, k_poeg_irq_group_a);
+  test_poeg_isr_handler(k_test_motor_idx_0, k_poeg_irq_group_a);
 
   TEST_ASSERT_GREATER_THAN(0, s_error_log_count);
 }
 
 void test_poeg_isr_logs_iocf_fault(void)
 {
-  s_mock_poeg[0].poeggn = k_poeg_iocf_detected;
+  s_mock_poeg[k_test_motor_idx_0].poeggn = k_poeg_iocf_detected;
 
-  test_poeg_isr_handler(0, k_poeg_irq_group_a);
+  test_poeg_isr_handler(k_test_motor_idx_0, k_poeg_irq_group_a);
 
   TEST_ASSERT_GREATER_THAN(0, s_error_log_count);
 }
 
 void test_poeg_isr_logs_both_pidf_and_iocf(void)
 {
-  s_mock_poeg[2].poeggn = k_poeg_pidf_detected | k_poeg_iocf_detected;
+  s_mock_poeg[k_test_motor_idx_2].poeggn = k_poeg_pidf_detected | k_poeg_iocf_detected;
 
-  test_poeg_isr_handler(2, k_poeg_irq_group_c);
+  test_poeg_isr_handler(k_test_motor_idx_2, k_poeg_irq_group_c);
 
   /* Both fault types logged */
-  TEST_ASSERT_EQUAL(2, s_error_log_count);
+  TEST_ASSERT_EQUAL(k_test_expected_count_2, s_error_log_count);
 }
 
 void test_poeg_isr_all_groups(void)
 {
   /* Trigger ISR on all 4 groups */
-  for (uint8_t i = 0; i < 4; i++) {
+  for (uint32_t i = 0; i < k_poeg_group_count; i++) {
     s_mock_poeg[i].poeggn = k_poeg_pidf_detected;
-    test_poeg_isr_handler(i, s_poeg_vectors_test[i]);
+    test_poeg_isr_handler((uint8_t)i, s_poeg_vectors_test[i]);
   }
 
-  TEST_ASSERT_EQUAL(4, s_estop_trigger_count);
-  TEST_ASSERT_EQUAL(4, s_error_log_count);
+  TEST_ASSERT_EQUAL(k_test_expected_count_4, s_estop_trigger_count);
+  TEST_ASSERT_EQUAL(k_test_expected_count_4, s_error_log_count);
 }
 
 /* =============================================================================
@@ -723,28 +810,28 @@ void test_poeg_full_fault_lifecycle(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* 2. Fault occurs: nFAULT goes low -> PIDF set */
-  s_mock_poeg[0].poeggn |= k_poeg_pidf_detected;
+  s_mock_poeg[k_test_motor_idx_0].poeggn |= k_poeg_pidf_detected;
   /* ST=0 because nFAULT is still active */
 
   /* 3. ISR fires */
-  test_poeg_isr_handler(0, k_poeg_irq_group_a);
+  test_poeg_isr_handler(k_test_motor_idx_0, k_poeg_irq_group_a);
   TEST_ASSERT_TRUE(s_estop_active);
 
   /* 4. Try to clear while fault still active -> busy */
-  err = test_poeg_clear_fault(0);
+  err = test_poeg_clear_fault(k_test_motor_idx_0);
   TEST_ASSERT_EQUAL(k_rx_err_busy, err);
 
   /* 5. Fault resolves: nFAULT deasserted -> ST goes high */
-  s_mock_poeg[0].poeggn |= k_poeg_st_high;
+  s_mock_poeg[k_test_motor_idx_0].poeggn |= k_poeg_st_high;
 
   /* 6. Clear fault -> success */
-  err = test_poeg_clear_fault(0);
+  err = test_poeg_clear_fault(k_test_motor_idx_0);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(s_estop_active);
 
   /* 7. Verify PIDF cleared but config preserved */
-  TEST_ASSERT_BITS_LOW(k_poeg_pidf_detected, s_mock_poeg[0].poeggn);
-  TEST_ASSERT_BITS_HIGH(k_poeg_pide_enable, s_mock_poeg[0].poeggn);
+  TEST_ASSERT_BITS_LOW(k_poeg_pidf_detected, s_mock_poeg[k_test_motor_idx_0].poeggn);
+  TEST_ASSERT_BITS_HIGH(k_poeg_pide_enable, s_mock_poeg[k_test_motor_idx_0].poeggn);
 }
 
 void test_poeg_software_estop_lifecycle(void)
@@ -755,15 +842,15 @@ void test_poeg_software_estop_lifecycle(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* 2. Software stop all motors */
-  for (uint8_t i = 0; i < 4; i++) {
-    err = test_poeg_software_stop(i);
+  for (uint32_t i = 0; i < k_poeg_group_count; i++) {
+    err = test_poeg_software_stop((uint8_t)i);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_BITS_HIGH(k_poeg_ssf_stop, s_mock_poeg[i].poeggn);
   }
 
   /* 3. Release all motors */
-  for (uint8_t i = 0; i < 4; i++) {
-    err = test_poeg_clear_software_stop(i);
+  for (uint32_t i = 0; i < k_poeg_group_count; i++) {
+    err = test_poeg_clear_software_stop((uint8_t)i);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_BITS_LOW(k_poeg_ssf_stop, s_mock_poeg[i].poeggn);
   }

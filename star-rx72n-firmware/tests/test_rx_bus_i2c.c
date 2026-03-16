@@ -46,9 +46,7 @@
  * @see rx_bus_manager.h
  */
 
-#include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "mock_riic_hal.h"
 #include "rx_bus_config.h"
@@ -89,8 +87,9 @@ typedef enum : uint32_t {
  * @brief Transfer length constants for write/read tests
  */
 typedef enum : uint16_t {
-  k_test_write_len = 3, /**< Bytes in write transfer */
-  k_test_read_len  = 2, /**< Bytes in read transfer */
+  k_test_write_len      = 3, /**< Bytes in write transfer */
+  k_test_read_len       = 2, /**< Bytes in read transfer */
+  k_test_read_buf_extra = 4, /**< Oversized read buffer for zero-length write-read tests */
 } test_i2c_lengths_t;
 
 /**
@@ -215,11 +214,11 @@ void setUp(void)
   /* Create I2C bus config: channel=0, addr=0x50, 400 kHz, pins P1.2/P1.3 */
   err = rx_bus_config_init_i2c(&s_i2c_config,
                                s_test_bus_name,
-                               (uint8_t)k_test_i2c_channel,
-                               (uint8_t)k_test_i2c_addr,
+                               k_test_i2c_channel,
+                               k_test_i2c_addr,
                                k_rx_p1_2,
                                k_rx_p1_3,
-                               (uint32_t)k_test_i2c_freq_hz);
+                               k_test_i2c_freq_hz);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Register I2C bus with manager */
@@ -375,15 +374,12 @@ void test_bus_i2c_write_sends_data(void)
   rx_err_t err = rx_bus_i2c_init(&s_test_manager, s_test_bus_name);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0,
-                        (uint8_t)k_test_write_byte_1,
-                        (uint8_t)k_test_write_byte_2};
-  err = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, (uint16_t)k_test_write_len);
+  const uint8_t tx[] = {k_test_write_byte_0, k_test_write_byte_1, k_test_write_byte_2};
+  err                = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, k_test_write_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint8_t  captured[(uint16_t)k_test_write_len];
-  uint16_t copied =
-    mock_riic_get_tx_data((uint8_t)k_test_i2c_channel, captured, (uint16_t)k_test_write_len);
+  uint8_t  captured[k_test_write_len];
+  uint16_t copied = mock_riic_get_tx_data(k_test_i2c_channel, captured, k_test_write_len);
   TEST_ASSERT_EQUAL((uint16_t)k_test_write_len, copied);
   TEST_ASSERT_EQUAL_HEX8_ARRAY(tx, captured, (uint16_t)k_test_write_len);
 }
@@ -400,8 +396,8 @@ void test_bus_i2c_write_sends_data(void)
  */
 void test_bus_i2c_write_null_manager_returns_error(void)
 {
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  rx_err_t      err  = rx_bus_i2c_write(nullptr, s_test_bus_name, tx, (uint16_t)k_test_len_one);
+  const uint8_t tx[] = {k_test_write_byte_0};
+  rx_err_t      err  = rx_bus_i2c_write(nullptr, s_test_bus_name, tx, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -418,8 +414,7 @@ void test_bus_i2c_write_null_manager_returns_error(void)
  */
 void test_bus_i2c_write_null_data_returns_error(void)
 {
-  rx_err_t err =
-    rx_bus_i2c_write(&s_test_manager, s_test_bus_name, nullptr, (uint16_t)k_test_len_one);
+  rx_err_t err = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, nullptr, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -436,8 +431,8 @@ void test_bus_i2c_write_null_data_returns_error(void)
  */
 void test_bus_i2c_write_null_name_returns_error(void)
 {
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  rx_err_t      err  = rx_bus_i2c_write(&s_test_manager, nullptr, tx, (uint16_t)k_test_len_one);
+  const uint8_t tx[] = {k_test_write_byte_0};
+  rx_err_t      err  = rx_bus_i2c_write(&s_test_manager, nullptr, tx, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -458,8 +453,8 @@ void test_bus_i2c_write_null_name_returns_error(void)
  */
 void test_bus_i2c_write_not_initialized_returns_error(void)
 {
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  rx_err_t err = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, (uint16_t)k_test_len_one);
+  const uint8_t tx[] = {k_test_write_byte_0};
+  rx_err_t      err  = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -485,8 +480,8 @@ void test_bus_i2c_write_nack_propagates(void)
 
   mock_riic_simulate_nack(true);
 
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  err = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, (uint16_t)k_test_len_one);
+  const uint8_t tx[] = {k_test_write_byte_0};
+  err                = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
 }
 
@@ -512,9 +507,8 @@ void test_bus_i2c_write_snapshot_length_zero_fills_sentinel(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   mock_riic_clear_history();
 
-  uint8_t  dummy = (uint8_t)k_test_snapshot_byte;
-  rx_err_t werr =
-    rx_bus_i2c_write(&s_test_manager, s_test_bus_name, &dummy, (uint16_t)k_test_len_zero);
+  uint8_t  dummy = k_test_snapshot_byte;
+  rx_err_t werr  = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, &dummy, k_test_len_zero);
   TEST_ASSERT_EQUAL(k_rx_ok, werr);
 
   const mock_riic_call_t* call = mock_riic_get_call((uint16_t)k_test_idx_zero);
@@ -546,8 +540,8 @@ void test_bus_i2c_write_snapshot_length_one_fills_first_slot(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   mock_riic_clear_history();
 
-  const uint8_t tx[] = {(uint8_t)k_test_snapshot_byte};
-  rx_err_t werr = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, (uint16_t)k_test_len_one);
+  const uint8_t tx[] = {k_test_snapshot_byte};
+  rx_err_t      werr = rx_bus_i2c_write(&s_test_manager, s_test_bus_name, tx, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_ok, werr);
 
   const mock_riic_call_t* call = mock_riic_get_call((uint16_t)k_test_idx_zero);
@@ -579,14 +573,14 @@ void test_bus_i2c_write_snapshot_length_one_fills_first_slot(void)
  */
 void test_bus_i2c_read_returns_configured_data(void)
 {
-  const uint8_t expected[] = {(uint8_t)k_test_read_byte_0, (uint8_t)k_test_read_byte_1};
-  mock_riic_set_rx_data((uint8_t)k_test_i2c_channel, expected, (uint16_t)k_test_read_len);
+  const uint8_t expected[] = {k_test_read_byte_0, k_test_read_byte_1};
+  mock_riic_set_rx_data(k_test_i2c_channel, expected, k_test_read_len);
 
   rx_err_t err = rx_bus_i2c_init(&s_test_manager, s_test_bus_name);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint8_t rx_buf[(uint16_t)k_test_read_len];
-  err = rx_bus_i2c_read(&s_test_manager, s_test_bus_name, rx_buf, (uint16_t)k_test_read_len);
+  uint8_t rx_buf[k_test_read_len];
+  err = rx_bus_i2c_read(&s_test_manager, s_test_bus_name, rx_buf, k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_HEX8_ARRAY(expected, rx_buf, (uint16_t)k_test_read_len);
 }
@@ -603,8 +597,8 @@ void test_bus_i2c_read_returns_configured_data(void)
  */
 void test_bus_i2c_read_null_manager_returns_error(void)
 {
-  uint8_t  rx_buf[(uint16_t)k_test_len_one];
-  rx_err_t err = rx_bus_i2c_read(nullptr, s_test_bus_name, rx_buf, (uint16_t)k_test_len_one);
+  uint8_t  rx_buf[k_test_len_one];
+  rx_err_t err = rx_bus_i2c_read(nullptr, s_test_bus_name, rx_buf, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -621,8 +615,7 @@ void test_bus_i2c_read_null_manager_returns_error(void)
  */
 void test_bus_i2c_read_null_buf_returns_error(void)
 {
-  rx_err_t err =
-    rx_bus_i2c_read(&s_test_manager, s_test_bus_name, nullptr, (uint16_t)k_test_len_one);
+  rx_err_t err = rx_bus_i2c_read(&s_test_manager, s_test_bus_name, nullptr, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -639,8 +632,8 @@ void test_bus_i2c_read_null_buf_returns_error(void)
  */
 void test_bus_i2c_read_null_name_returns_error(void)
 {
-  uint8_t  rx_buf[(uint16_t)k_test_len_one];
-  rx_err_t err = rx_bus_i2c_read(&s_test_manager, nullptr, rx_buf, (uint16_t)k_test_len_one);
+  uint8_t  rx_buf[k_test_len_one];
+  rx_err_t err = rx_bus_i2c_read(&s_test_manager, nullptr, rx_buf, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -660,9 +653,8 @@ void test_bus_i2c_read_null_name_returns_error(void)
  */
 void test_bus_i2c_read_not_initialized_returns_error(void)
 {
-  uint8_t  rx_buf[(uint16_t)k_test_len_one];
-  rx_err_t err =
-    rx_bus_i2c_read(&s_test_manager, s_test_bus_name, rx_buf, (uint16_t)k_test_len_one);
+  uint8_t  rx_buf[k_test_len_one];
+  rx_err_t err = rx_bus_i2c_read(&s_test_manager, s_test_bus_name, rx_buf, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -688,8 +680,8 @@ void test_bus_i2c_read_nack_propagates(void)
 
   mock_riic_simulate_nack(true);
 
-  uint8_t rx_buf[(uint16_t)k_test_len_one];
-  err = rx_bus_i2c_read(&s_test_manager, s_test_bus_name, rx_buf, (uint16_t)k_test_len_one);
+  uint8_t rx_buf[k_test_len_one];
+  err = rx_bus_i2c_read(&s_test_manager, s_test_bus_name, rx_buf, k_test_len_one);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
 }
 
@@ -715,25 +707,24 @@ void test_bus_i2c_read_nack_propagates(void)
  */
 void test_bus_i2c_write_read_sends_and_receives_data(void)
 {
-  const uint8_t rx_expected[] = {(uint8_t)k_test_read_byte_0, (uint8_t)k_test_read_byte_1};
-  mock_riic_set_rx_data((uint8_t)k_test_i2c_channel, rx_expected, (uint16_t)k_test_read_len);
+  const uint8_t rx_expected[] = {k_test_read_byte_0, k_test_read_byte_1};
+  mock_riic_set_rx_data(k_test_i2c_channel, rx_expected, k_test_read_len);
 
   rx_err_t err = rx_bus_i2c_init(&s_test_manager, s_test_bus_name);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  uint8_t       rx_buf[(uint16_t)k_test_read_len];
+  const uint8_t tx[] = {k_test_write_byte_0};
+  uint8_t       rx_buf[k_test_read_len];
   err = rx_bus_i2c_write_read(&s_test_manager,
                               s_test_bus_name,
                               tx,
-                              (uint16_t)k_test_len_one,
+                              k_test_len_one,
                               rx_buf,
-                              (uint16_t)k_test_read_len);
+                              k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint8_t  captured[(uint16_t)k_test_len_one];
-  uint16_t copied =
-    mock_riic_get_tx_data((uint8_t)k_test_i2c_channel, captured, (uint16_t)k_test_len_one);
+  uint8_t  captured[k_test_len_one];
+  uint16_t copied = mock_riic_get_tx_data(k_test_i2c_channel, captured, k_test_len_one);
   TEST_ASSERT_EQUAL((uint16_t)k_test_len_one, copied);
   TEST_ASSERT_EQUAL_HEX8(tx[k_test_idx_zero], captured[k_test_idx_zero]);
   TEST_ASSERT_EQUAL_HEX8_ARRAY(rx_expected, rx_buf, (uint16_t)k_test_read_len);
@@ -751,14 +742,10 @@ void test_bus_i2c_write_read_sends_and_receives_data(void)
  */
 void test_bus_i2c_write_read_null_manager_returns_error(void)
 {
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  uint8_t       rx_buf[(uint16_t)k_test_read_len];
-  rx_err_t      err = rx_bus_i2c_write_read(nullptr,
-                                       s_test_bus_name,
-                                       tx,
-                                       (uint16_t)k_test_len_one,
-                                       rx_buf,
-                                       (uint16_t)k_test_read_len);
+  const uint8_t tx[] = {k_test_write_byte_0};
+  uint8_t       rx_buf[k_test_read_len];
+  rx_err_t      err =
+    rx_bus_i2c_write_read(nullptr, s_test_bus_name, tx, k_test_len_one, rx_buf, k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -775,13 +762,13 @@ void test_bus_i2c_write_read_null_manager_returns_error(void)
  */
 void test_bus_i2c_write_read_null_tx_returns_error(void)
 {
-  uint8_t  rx_buf[(uint16_t)k_test_read_len];
+  uint8_t  rx_buf[k_test_read_len];
   rx_err_t err = rx_bus_i2c_write_read(&s_test_manager,
                                        s_test_bus_name,
                                        nullptr,
-                                       (uint16_t)k_test_len_one,
+                                       k_test_len_one,
                                        rx_buf,
-                                       (uint16_t)k_test_read_len);
+                                       k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -798,13 +785,13 @@ void test_bus_i2c_write_read_null_tx_returns_error(void)
  */
 void test_bus_i2c_write_read_null_rx_returns_error(void)
 {
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
+  const uint8_t tx[] = {k_test_write_byte_0};
   rx_err_t      err  = rx_bus_i2c_write_read(&s_test_manager,
                                        s_test_bus_name,
                                        tx,
-                                       (uint16_t)k_test_len_one,
+                                       k_test_len_one,
                                        nullptr,
-                                       (uint16_t)k_test_read_len);
+                                       k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -821,14 +808,10 @@ void test_bus_i2c_write_read_null_rx_returns_error(void)
  */
 void test_bus_i2c_write_read_null_name_returns_error(void)
 {
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  uint8_t       rx_buf[(uint16_t)k_test_read_len];
-  rx_err_t      err = rx_bus_i2c_write_read(&s_test_manager,
-                                       nullptr,
-                                       tx,
-                                       (uint16_t)k_test_len_one,
-                                       rx_buf,
-                                       (uint16_t)k_test_read_len);
+  const uint8_t tx[] = {k_test_write_byte_0};
+  uint8_t       rx_buf[k_test_read_len];
+  rx_err_t      err =
+    rx_bus_i2c_write_read(&s_test_manager, nullptr, tx, k_test_len_one, rx_buf, k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -848,14 +831,14 @@ void test_bus_i2c_write_read_null_name_returns_error(void)
  */
 void test_bus_i2c_write_read_not_initialized_returns_error(void)
 {
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  uint8_t       rx_buf[(uint16_t)k_test_read_len];
+  const uint8_t tx[] = {k_test_write_byte_0};
+  uint8_t       rx_buf[k_test_read_len];
   rx_err_t      err = rx_bus_i2c_write_read(&s_test_manager,
                                        s_test_bus_name,
                                        tx,
-                                       (uint16_t)k_test_len_one,
+                                       k_test_len_one,
                                        rx_buf,
-                                       (uint16_t)k_test_read_len);
+                                       k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
 }
@@ -881,15 +864,667 @@ void test_bus_i2c_write_read_nack_propagates(void)
 
   mock_riic_simulate_nack(true);
 
-  const uint8_t tx[] = {(uint8_t)k_test_write_byte_0};
-  uint8_t       rx_buf[(uint16_t)k_test_read_len];
+  const uint8_t tx[] = {k_test_write_byte_0};
+  uint8_t       rx_buf[k_test_read_len];
   err = rx_bus_i2c_write_read(&s_test_manager,
                               s_test_bus_name,
                               tx,
-                              (uint16_t)k_test_len_one,
+                              k_test_len_one,
                               rx_buf,
-                              (uint16_t)k_test_read_len);
+                              k_test_read_len);
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+}
+
+/* =============================================================================
+ * Callback Direct-Invocation Tests (covers defensive branches unreachable via
+ * public API due to NULL checks in rx_bus_i2c_write/read/write_read)
+ * =============================================================================
+ */
+
+/**
+ * @enum test_i2c_out_of_range_t
+ * @brief Constants for testing out-of-range I2C channel and address values.
+ *
+ * @details
+ * k_test_channel_invalid is one above the maximum RIIC channel (3), used to
+ * trigger the channel-out-of-range branch in internal_i2c_init_callback.
+ * k_test_addr_invalid is one above the maximum 7-bit I2C address (127), used
+ * to trigger the device-address-exceeds-7-bit warning path.
+ * k_test_addr_warn_value is an address > 127 but still fitting uint8_t.
+ */
+typedef enum : uint8_t {
+  k_test_channel_invalid = 3U,   /**< One above k_riic_channel_count (3) */
+  k_test_addr_warn_value = 200U, /**< Device address > k_i2c_addr_max_7bit (127) */
+} test_i2c_out_of_range_t;
+
+/**
+ * @enum test_i2c_alt_freq_t
+ * @brief Alternative I2C frequency for frequency-mismatch tests
+ *
+ * @details
+ * Used to verify that internal_i2c_init_callback detects a frequency mismatch
+ * when a channel that was initialized at 400 kHz is re-initialized at 100 kHz.
+ */
+typedef enum : uint32_t {
+  k_test_alt_freq_100khz = 100000U, /**< Standard mode 100 kHz (differs from default 400 kHz) */
+} test_i2c_alt_freq_t;
+
+/**
+ * @brief internal_i2c_init_callback rejects a non-I2C bus type
+ *
+ * @details
+ * Directly invokes internal_i2c_init_callback with a bus_config whose type
+ * field is set to k_bus_type_gpio (not k_bus_type_i2c). Verifies the callback
+ * returns k_rx_err_invalid_arg and sets ctx.result accordingly.
+ *
+ * @pre mock RIIC HAL state is clean
+ * @post No RIIC HAL calls recorded (callback returns before riic_init)
+ * @post ctx.result == k_rx_err_invalid_arg
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ */
+void test_bus_i2c_init_callback_wrong_bus_type_returns_error(void)
+{
+  rx_bus_config_t bus_config = {};
+  bus_config.type            = k_bus_type_gpio; /* Not I2C */
+
+  i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error, .manager = &s_test_manager};
+
+  rx_err_t err = internal_i2c_init_callback(&bus_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, ctx.result);
+  TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
+}
+
+/**
+ * @brief internal_i2c_init_callback rejects a channel index out of range
+ *
+ * @details
+ * Directly invokes internal_i2c_init_callback with a bus_config whose
+ * proto.i2c.channel is set to k_test_channel_invalid (3), which is >=
+ * k_riic_channel_count (3). Verifies the callback returns
+ * k_rx_err_invalid_arg without calling riic_init.
+ *
+ * @pre mock RIIC HAL state is clean
+ * @post No RIIC HAL calls recorded
+ * @post ctx.result == k_rx_err_invalid_arg
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ */
+void test_bus_i2c_init_callback_channel_out_of_range_returns_error(void)
+{
+  rx_bus_config_t bus_config   = {};
+  bus_config.type              = k_bus_type_i2c;
+  bus_config.proto.i2c.channel = k_test_channel_invalid;
+
+  i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error, .manager = &s_test_manager};
+
+  rx_err_t err = internal_i2c_init_callback(&bus_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, ctx.result);
+  TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
+}
+
+/**
+ * @brief internal_i2c_init_callback skips riic_init when channel already initialized
+ *        with matching frequency
+ *
+ * @details
+ * Initializes the bus once, then directly calls internal_i2c_init_callback
+ * again with the same bus_config (same channel, same frequency). Because the
+ * channel is already recorded in manager->riic_initialized, the callback must
+ * skip riic_init and return k_rx_ok without a second HAL call.
+ *
+ * @pre s_test_manager initialized; bus fully initialized via rx_bus_i2c_init
+ * @post Only one riic_init call recorded in total (from first init)
+ * @post ctx.result == k_rx_ok
+ * @post bus_config.initialized == true
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ */
+void test_bus_i2c_init_callback_already_initialized_same_freq_skips_init(void)
+{
+  /* First init via public API so manager records channel as initialized */
+  rx_err_t err = rx_bus_i2c_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Build a matching bus_config with same channel and frequency */
+  rx_bus_config_t bus_config        = {};
+  bus_config.type                   = k_bus_type_i2c;
+  bus_config.proto.i2c.channel      = k_test_i2c_channel;
+  bus_config.proto.i2c.frequency_hz = k_test_i2c_freq_hz;
+
+  const uint16_t calls_after_first_init = mock_riic_get_call_count();
+
+  i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error, .manager = &s_test_manager};
+  err                = internal_i2c_init_callback(&bus_config, &ctx);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_rx_ok, ctx.result);
+  TEST_ASSERT_TRUE(bus_config.initialized);
+  /* No additional riic_init calls - callback returned early */
+  TEST_ASSERT_EQUAL(calls_after_first_init, mock_riic_get_call_count());
+}
+
+/**
+ * @brief internal_i2c_init_callback rejects already-initialized channel with
+ *        mismatching frequency
+ *
+ * @details
+ * Initializes the bus once at 400 kHz, then directly calls
+ * internal_i2c_init_callback with the same channel but a different frequency
+ * (100 kHz). The callback must detect the mismatch and return
+ * k_rx_err_invalid_arg without modifying hardware.
+ *
+ * @pre s_test_manager initialized; bus fully initialized via rx_bus_i2c_init
+ * @post ctx.result == k_rx_err_invalid_arg
+ * @post No additional riic_init calls made
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ */
+void test_bus_i2c_init_callback_already_initialized_freq_mismatch_returns_error(void)
+{
+  /* First init via public API at 400 kHz */
+  rx_err_t err = rx_bus_i2c_init(&s_test_manager, s_test_bus_name);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Build a bus_config for the same channel but different frequency */
+  rx_bus_config_t bus_config        = {};
+  bus_config.type                   = k_bus_type_i2c;
+  bus_config.proto.i2c.channel      = k_test_i2c_channel;
+  bus_config.proto.i2c.frequency_hz = k_test_alt_freq_100khz;
+
+  const uint16_t calls_after_first_init = mock_riic_get_call_count();
+
+  i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error, .manager = &s_test_manager};
+  err                = internal_i2c_init_callback(&bus_config, &ctx);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, ctx.result);
+  /* No additional riic_init calls */
+  TEST_ASSERT_EQUAL(calls_after_first_init, mock_riic_get_call_count());
+}
+
+/**
+ * @brief internal_i2c_init_callback logs warning when device address > 127
+ *
+ * @details
+ * Directly calls internal_i2c_init_callback with a bus_config whose
+ * proto.i2c.device_addr is set to k_test_addr_warn_value (200), which exceeds
+ * the maximum 7-bit I2C address (127). The callback should log a warning but
+ * still return k_rx_ok because the HAL is responsible for address validation.
+ *
+ * @pre mock RIIC HAL state is clean
+ * @post riic_init called once (HAL accepts any frequency for testing)
+ * @post ctx.result == k_rx_ok (warning does not fail initialization)
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ */
+void test_bus_i2c_init_callback_addr_exceeds_7bit_logs_warning(void)
+{
+  rx_bus_config_t bus_config        = {};
+  bus_config.type                   = k_bus_type_i2c;
+  bus_config.proto.i2c.channel      = k_test_i2c_channel;
+  bus_config.proto.i2c.frequency_hz = k_test_i2c_freq_hz;
+  bus_config.proto.i2c.device_addr  = k_test_addr_warn_value;
+
+  i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error, .manager = &s_test_manager};
+
+  rx_err_t err = internal_i2c_init_callback(&bus_config, &ctx);
+  /* Warning path - init still succeeds */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_rx_ok, ctx.result);
+  TEST_ASSERT_TRUE(bus_config.initialized);
+}
+
+/**
+ * @brief internal_i2c_write_callback rejects when bus not initialized
+ *
+ * @details
+ * Directly invokes internal_i2c_write_callback with a bus_config whose
+ * initialized field is false. Verifies the callback returns
+ * k_rx_err_invalid_state without making any RIIC HAL calls.
+ * This branch is unreachable via rx_bus_i2c_write() since write always
+ * calls init first in practice, but is a valid defensive check.
+ *
+ * @pre mock RIIC HAL state is clean
+ * @post No RIIC HAL calls recorded
+ * @post ctx.result == k_rx_err_invalid_state
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ */
+void test_bus_i2c_write_callback_not_initialized_returns_error(void)
+{
+  rx_bus_config_t bus_config = {};
+  bus_config.type            = k_bus_type_i2c;
+  bus_config.initialized     = false;
+
+  const uint8_t   tx_data[] = {k_test_write_byte_0};
+  i2c_write_ctx_t ctx       = {
+          .data   = tx_data,
+          .length = k_test_len_one,
+          .result = k_rx_err_hw_error,
+  };
+
+  rx_err_t err = internal_i2c_write_callback(&bus_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, ctx.result);
+  TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
+}
+
+/**
+ * @brief internal_i2c_write_callback rejects null data when length > 0
+ *
+ * @details
+ * Directly invokes internal_i2c_write_callback with bus initialized but
+ * ctx.data == NULL and ctx.length == 1. This branch is unreachable through
+ * rx_bus_i2c_write() because RX_CHECK_NULL_PTR rejects NULL data before
+ * the callback is invoked. The defensive check in the callback itself must
+ * be exercised directly for 100% coverage.
+ *
+ * @pre mock RIIC HAL state is clean; bus config marked initialized
+ * @post No RIIC HAL calls recorded
+ * @post ctx.result == k_rx_err_invalid_arg
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ */
+void test_bus_i2c_write_callback_null_data_with_nonzero_length_returns_error(void)
+{
+  rx_bus_config_t bus_config        = {};
+  bus_config.type                   = k_bus_type_i2c;
+  bus_config.initialized            = true;
+  bus_config.proto.i2c.channel      = k_test_i2c_channel;
+  bus_config.proto.i2c.frequency_hz = k_test_i2c_freq_hz;
+  bus_config.proto.i2c.device_addr  = k_test_i2c_addr;
+
+  /* Initialize RIIC mock channel so the HAL doesn't reject the channel */
+  (void)riic_init((riic_channel_t){.value = k_test_i2c_channel}, k_test_i2c_freq_hz);
+  mock_riic_clear_history();
+
+  i2c_write_ctx_t ctx = {
+    .data   = nullptr, /* null data with length > 0 triggers defensive branch */
+    .length = k_test_len_one,
+    .result = k_rx_err_hw_error,
+  };
+
+  rx_err_t err = internal_i2c_write_callback(&bus_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, ctx.result);
+  /* No riic_write calls made */
+  TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
+}
+
+/**
+ * @brief internal_i2c_read_callback rejects when bus not initialized
+ *
+ * @details
+ * Directly invokes internal_i2c_read_callback with a bus_config whose
+ * initialized field is false. Verifies the callback returns
+ * k_rx_err_invalid_state.
+ *
+ * @pre mock RIIC HAL state is clean
+ * @post No RIIC HAL calls recorded
+ * @post ctx.result == k_rx_err_invalid_state
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ */
+void test_bus_i2c_read_callback_not_initialized_returns_error(void)
+{
+  rx_bus_config_t bus_config = {};
+  bus_config.type            = k_bus_type_i2c;
+  bus_config.initialized     = false;
+
+  uint8_t        rx_buf[k_test_read_len];
+  i2c_read_ctx_t ctx = {
+    .data   = rx_buf,
+    .length = k_test_read_len,
+    .result = k_rx_err_hw_error,
+  };
+
+  rx_err_t err = internal_i2c_read_callback(&bus_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, ctx.result);
+  TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
+}
+
+/**
+ * @brief internal_i2c_write_read_callback rejects null write_data when
+ *        write_length > 0
+ *
+ * @details
+ * Directly invokes internal_i2c_write_read_callback with bus initialized,
+ * write_data == NULL, and write_length == 1. This branch is unreachable via
+ * rx_bus_i2c_write_read() because RX_CHECK_NULL_PTR blocks NULL write_data
+ * at the public API boundary.
+ *
+ * @pre mock RIIC HAL state is clean; bus config marked initialized
+ * @post No RIIC HAL calls recorded
+ * @post ctx.result == k_rx_err_invalid_arg
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ */
+void test_bus_i2c_write_read_callback_null_write_data_returns_error(void)
+{
+  rx_bus_config_t bus_config        = {};
+  bus_config.type                   = k_bus_type_i2c;
+  bus_config.initialized            = true;
+  bus_config.proto.i2c.channel      = k_test_i2c_channel;
+  bus_config.proto.i2c.frequency_hz = k_test_i2c_freq_hz;
+  bus_config.proto.i2c.device_addr  = k_test_i2c_addr;
+
+  uint8_t              rx_buf[k_test_read_len];
+  i2c_write_read_ctx_t ctx = {
+    .write_data   = nullptr, /* triggers defensive branch */
+    .write_length = k_test_len_one,
+    .read_data    = rx_buf,
+    .read_length  = k_test_read_len,
+    .result       = k_rx_err_hw_error,
+  };
+
+  rx_err_t err = internal_i2c_write_read_callback(&bus_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, ctx.result);
+  TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
+}
+
+/**
+ * @brief internal_i2c_write_read_callback rejects null read_data when
+ *        read_length > 0
+ *
+ * @details
+ * Directly invokes internal_i2c_write_read_callback with bus initialized,
+ * valid write_data, but read_data == NULL and read_length > 0. This branch
+ * is unreachable via rx_bus_i2c_write_read() because RX_CHECK_NULL_PTR
+ * blocks NULL read_data at the public API boundary.
+ *
+ * @pre mock RIIC HAL state is clean; bus config marked initialized
+ * @post No RIIC HAL calls recorded
+ * @post ctx.result == k_rx_err_invalid_arg
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ */
+void test_bus_i2c_write_read_callback_null_read_data_returns_error(void)
+{
+  rx_bus_config_t bus_config        = {};
+  bus_config.type                   = k_bus_type_i2c;
+  bus_config.initialized            = true;
+  bus_config.proto.i2c.channel      = k_test_i2c_channel;
+  bus_config.proto.i2c.frequency_hz = k_test_i2c_freq_hz;
+  bus_config.proto.i2c.device_addr  = k_test_i2c_addr;
+
+  const uint8_t        tx_data[] = {k_test_write_byte_0};
+  i2c_write_read_ctx_t ctx       = {
+          .write_data   = tx_data,
+          .write_length = k_test_len_one,
+          .read_data    = nullptr, /* triggers defensive branch */
+          .read_length  = k_test_read_len,
+          .result       = k_rx_err_hw_error,
+  };
+
+  rx_err_t err = internal_i2c_write_read_callback(&bus_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, ctx.result);
+  TEST_ASSERT_EQUAL((int32_t)k_test_zero_calls, mock_riic_get_call_count());
+}
+
+void test_bus_i2c_init_callback_null_manager_returns_error(void)
+{
+  rx_bus_config_t bus_config = {};
+  bus_config.type            = k_bus_type_i2c;
+
+  /* Pass a ctx with manager == NULL to trigger the defensive null check */
+  i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error, .manager = NULL};
+
+  rx_err_t err = internal_i2c_init_callback(&bus_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, ctx.result);
+}
+
+void test_bus_i2c_read_callback_null_data_with_nonzero_length_returns_error(void)
+{
+  rx_bus_config_t bus_config = {};
+  bus_config.type            = k_bus_type_i2c;
+  bus_config.initialized     = true;
+
+  /* Pass a ctx with null data but nonzero length */
+  i2c_read_ctx_t ctx = {
+    .data   = NULL,
+    .length = k_test_read_len,
+    .result = k_rx_err_hw_error,
+  };
+
+  rx_err_t err = internal_i2c_read_callback(&bus_config, &ctx);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, ctx.result);
+}
+
+/**
+ * @brief Read callback with null data but zero length skips null check and calls HAL
+ *
+ * @details
+ * When length == 0, the condition (length > 0 && data == nullptr) short-circuits
+ * on the first operand (false), skipping the null pointer check. Covers the
+ * length == 0 false branch at line 770.
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_i2c_read_callback_zero_length_null_data_skips_null_check(void)
+{
+  rx_bus_config_t bus_config = {};
+  bus_config.type            = k_bus_type_i2c;
+  bus_config.initialized     = true;
+
+  /* length == 0: (length > 0 && data == nullptr) short-circuits at first operand */
+  i2c_read_ctx_t ctx = {
+    .data   = NULL,
+    .length = 0U,
+    .result = k_rx_err_hw_error,
+  };
+
+  /* With length=0, the null-check is skipped; riic_read is called (mock returns ok) */
+  (void)internal_i2c_read_callback(&bus_config, &ctx);
+  /* Just verify no crash and the null-check error was not returned */
+  TEST_ASSERT_NOT_EQUAL(k_rx_err_invalid_arg, ctx.result);
+}
+
+/**
+ * @brief Write-read callback with zero write_length skips write-data null check
+ *
+ * @details Covers the write_length == 0 false branch at line 868.
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_i2c_write_read_callback_zero_write_length_skips_null_check(void)
+{
+  rx_bus_config_t bus_config = {};
+  bus_config.type            = k_bus_type_i2c;
+  bus_config.initialized     = true;
+
+  uint8_t              read_buf[k_test_read_buf_extra];
+  i2c_write_read_ctx_t ctx = {
+    .write_data   = NULL,
+    .write_length = 0U, /* length == 0: skips null-check for write_data */
+    .read_data    = read_buf,
+    .read_length  = k_test_read_len,
+    .result       = k_rx_err_hw_error,
+  };
+
+  (void)internal_i2c_write_read_callback(&bus_config, &ctx);
+  TEST_ASSERT_NOT_EQUAL(k_rx_err_invalid_arg, ctx.result);
+}
+
+/**
+ * @brief Write-read callback with zero read_length skips read-data null check
+ *
+ * @details Covers the read_length == 0 false branch at line 875.
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_i2c_write_read_callback_zero_read_length_skips_null_check(void)
+{
+  rx_bus_config_t bus_config = {};
+  bus_config.type            = k_bus_type_i2c;
+  bus_config.initialized     = true;
+
+  static const uint8_t write_buf[] = {k_test_write_byte_0};
+  i2c_write_read_ctx_t ctx         = {
+            .write_data   = write_buf,
+            .write_length = k_test_len_one,
+            .read_data    = NULL,
+            .read_length  = 0U, /* length == 0: skips null-check for read_data */
+            .result       = k_rx_err_hw_error,
+  };
+
+  (void)internal_i2c_write_read_callback(&bus_config, &ctx);
+  TEST_ASSERT_NOT_EQUAL(k_rx_err_invalid_arg, ctx.result);
+}
+
+/* =============================================================================
+ * Bus Config Validation Coverage Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Invalid SDA pin in rx_bus_config_init_i2c returns error
+ *
+ * @details
+ * Passes an SDA pin with port > k_rx_port_j to trigger the invalid-SDA-port
+ * branch inside rx_bus_config_init_i2c (line 920).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers line 920 of rx_bus_config.c
+ */
+void test_bus_config_i2c_invalid_sda_pin_returns_error(void)
+{
+  rx_bus_config_t            config;
+  static const rx_port_pin_t k_invalid_sda =
+    (rx_port_pin_t)0xFF00U; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+  rx_err_t err = rx_bus_config_init_i2c(&config,
+                                        "test",
+                                        k_test_i2c_channel,
+                                        k_test_i2c_addr,
+                                        k_invalid_sda,
+                                        k_rx_p0_5,
+                                        k_test_i2c_freq_hz);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Invalid SCL pin in rx_bus_config_init_i2c returns error
+ *
+ * @details
+ * Passes a valid SDA but invalid SCL pin to trigger the invalid-SCL-port
+ * branch inside rx_bus_config_init_i2c (line 926).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers line 926 of rx_bus_config.c
+ */
+void test_bus_config_i2c_invalid_scl_pin_returns_error(void)
+{
+  rx_bus_config_t            config;
+  static const rx_port_pin_t k_invalid_scl =
+    (rx_port_pin_t)0xFF00U; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+  rx_err_t err = rx_bus_config_init_i2c(&config,
+                                        "test",
+                                        k_test_i2c_channel,
+                                        k_test_i2c_addr,
+                                        k_rx_p0_5,
+                                        k_invalid_scl,
+                                        k_test_i2c_freq_hz);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Invalid channel in rx_bus_config_init_i2c returns error
+ *
+ * @details
+ * Passes channel >= k_riic_channel_count (3) to trigger the invalid-channel
+ * branch inside rx_bus_config_init_i2c (lines 931-932).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers lines 931-932 of rx_bus_config.c
+ */
+void test_bus_config_i2c_invalid_channel_returns_error(void)
+{
+  rx_bus_config_t      config;
+  static const uint8_t k_invalid_channel = k_riic_channel_count;
+  rx_err_t             err               = rx_bus_config_init_i2c(&config,
+                                        "test",
+                                        k_invalid_channel,
+                                        k_test_i2c_addr,
+                                        k_rx_p0_5,
+                                        k_rx_p0_6,
+                                        k_test_i2c_freq_hz);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Invalid device address in rx_bus_config_init_i2c returns error
+ *
+ * @details
+ * Passes device_addr > k_i2c_addr_max_7bit (127) to trigger the invalid-address
+ * branch inside rx_bus_config_init_i2c (lines 937-938).
+ *
+ * @pre None
+ * @post k_rx_err_invalid_arg returned
+ *
+ * @note Covers lines 937-938 of rx_bus_config.c
+ */
+void test_bus_config_i2c_invalid_address_returns_error(void)
+{
+  rx_bus_config_t      config;
+  static const uint8_t k_invalid_addr = k_i2c_addr_max_7bit + 1U;
+  rx_err_t             err            = rx_bus_config_init_i2c(&config,
+                                        "test",
+                                        k_test_i2c_channel,
+                                        k_invalid_addr,
+                                        k_rx_p0_5,
+                                        k_rx_p0_6,
+                                        k_test_i2c_freq_hz);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Null config pointer to rx_bus_config_init_i2c returns error
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(config, ...) branch at line 914 of rx_bus_config.c.
+ */
+void test_bus_config_i2c_null_config_returns_error(void)
+{
+  rx_err_t err = rx_bus_config_init_i2c(nullptr,
+                                        "test",
+                                        k_test_i2c_channel,
+                                        k_test_i2c_addr,
+                                        k_rx_p0_5,
+                                        k_rx_p0_6,
+                                        k_test_i2c_freq_hz);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/**
+ * @brief Null name pointer to rx_bus_config_init_i2c returns error
+ *
+ * @details
+ * Covers the RX_CHECK_NULL_PTR(name, ...) branch at line 915 of rx_bus_config.c.
+ */
+void test_bus_config_i2c_null_name_returns_error(void)
+{
+  rx_bus_config_t config;
+  rx_err_t        err = rx_bus_config_init_i2c(&config,
+                                        nullptr,
+                                        k_test_i2c_channel,
+                                        k_test_i2c_addr,
+                                        k_rx_p0_5,
+                                        k_rx_p0_6,
+                                        k_test_i2c_freq_hz);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /* =============================================================================
@@ -917,10 +1552,12 @@ void test_bus_i2c_write_read_nack_propagates(void)
  *
  * @since Version 1.0.0
  */
-int main(void)
+/**
+ * @brief Run public API tests: init, write, read, and write-read operations
+ * @details 26 tests covering init (5), write (8), read (6), and write-read (7).
+ */
+static void internal_run_public_api_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Init tests */
   RUN_TEST(test_bus_i2c_init_marks_channel_initialized);
   RUN_TEST(test_bus_i2c_init_null_manager_returns_error);
@@ -954,6 +1591,47 @@ int main(void)
   RUN_TEST(test_bus_i2c_write_read_null_name_returns_error);
   RUN_TEST(test_bus_i2c_write_read_not_initialized_returns_error);
   RUN_TEST(test_bus_i2c_write_read_nack_propagates);
+}
+
+/**
+ * @brief Run callback direct-invocation and bus config validation tests
+ * @details 21 tests covering defensive branch coverage in internal callbacks
+ *          and bus configuration validation.
+ */
+static void internal_run_callback_and_config_tests(void)
+{
+  /* Callback direct-invocation tests - cover defensive branches */
+  RUN_TEST(test_bus_i2c_init_callback_wrong_bus_type_returns_error);
+  RUN_TEST(test_bus_i2c_init_callback_channel_out_of_range_returns_error);
+  RUN_TEST(test_bus_i2c_init_callback_already_initialized_same_freq_skips_init);
+  RUN_TEST(test_bus_i2c_init_callback_already_initialized_freq_mismatch_returns_error);
+  RUN_TEST(test_bus_i2c_init_callback_addr_exceeds_7bit_logs_warning);
+  RUN_TEST(test_bus_i2c_write_callback_not_initialized_returns_error);
+  RUN_TEST(test_bus_i2c_write_callback_null_data_with_nonzero_length_returns_error);
+  RUN_TEST(test_bus_i2c_read_callback_not_initialized_returns_error);
+  RUN_TEST(test_bus_i2c_write_read_callback_null_write_data_returns_error);
+  RUN_TEST(test_bus_i2c_write_read_callback_null_read_data_returns_error);
+  RUN_TEST(test_bus_i2c_init_callback_null_manager_returns_error);
+  RUN_TEST(test_bus_i2c_read_callback_null_data_with_nonzero_length_returns_error);
+  RUN_TEST(test_bus_i2c_read_callback_zero_length_null_data_skips_null_check);
+  RUN_TEST(test_bus_i2c_write_read_callback_zero_write_length_skips_null_check);
+  RUN_TEST(test_bus_i2c_write_read_callback_zero_read_length_skips_null_check);
+
+  /* Bus config validation tests */
+  RUN_TEST(test_bus_config_i2c_invalid_sda_pin_returns_error);
+  RUN_TEST(test_bus_config_i2c_invalid_scl_pin_returns_error);
+  RUN_TEST(test_bus_config_i2c_invalid_channel_returns_error);
+  RUN_TEST(test_bus_config_i2c_invalid_address_returns_error);
+  RUN_TEST(test_bus_config_i2c_null_config_returns_error);
+  RUN_TEST(test_bus_config_i2c_null_name_returns_error);
+}
+
+int main(void)
+{
+  UNITY_BEGIN();
+
+  internal_run_public_api_tests();
+  internal_run_callback_and_config_tests();
 
   return UNITY_END();
 }

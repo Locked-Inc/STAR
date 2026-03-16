@@ -957,18 +957,38 @@ typedef struct __attribute__((packed)) {
   uint16_t data[];          /**< wData: UTF-16LE string data */
 } usb_string_descriptor_t;
 
+/** @brief Expected sizes for USB/CDC descriptor structs (bytes) */
+typedef enum : uint8_t {
+  k_usb_device_descriptor_size    = 18, /**< USB Device Descriptor size in bytes */
+  k_usb_config_descriptor_size    = 9,  /**< USB Configuration Descriptor size in bytes */
+  k_usb_iad_descriptor_size       = 8,  /**< USB IAD Descriptor size in bytes */
+  k_usb_interface_descriptor_size = 9,  /**< USB Interface Descriptor size in bytes */
+  k_usb_endpoint_descriptor_size  = 7,  /**< USB Endpoint Descriptor size in bytes */
+  k_cdc_header_descriptor_size    = 5,  /**< CDC Header Descriptor size in bytes */
+  k_cdc_call_mgmt_descriptor_size = 5,  /**< CDC Call Management Descriptor size in bytes */
+  k_cdc_acm_descriptor_size       = 4,  /**< CDC ACM Descriptor size in bytes */
+  k_cdc_union_descriptor_size     = 5,  /**< CDC Union Descriptor size in bytes */
+} usb_descriptor_size_t;
+
 /* Compile-time size verification */
-static_assert(sizeof(usb_device_descriptor_t) == 18, "Device descriptor must be 18 bytes");
-static_assert(sizeof(usb_configuration_descriptor_t) == 9,
+static_assert((bool)(sizeof(usb_device_descriptor_t) == k_usb_device_descriptor_size),
+              "Device descriptor must be 18 bytes");
+static_assert((bool)(sizeof(usb_configuration_descriptor_t) == k_usb_config_descriptor_size),
               "Configuration descriptor must be 9 bytes");
-static_assert(sizeof(usb_iad_descriptor_t) == 8, "IAD descriptor must be 8 bytes");
-static_assert(sizeof(usb_interface_descriptor_t) == 9, "Interface descriptor must be 9 bytes");
-static_assert(sizeof(usb_endpoint_descriptor_t) == 7, "Endpoint descriptor must be 7 bytes");
-static_assert(sizeof(cdc_header_descriptor_t) == 5, "CDC Header descriptor must be 5 bytes");
-static_assert(sizeof(cdc_call_management_descriptor_t) == 5,
+static_assert((bool)(sizeof(usb_iad_descriptor_t) == k_usb_iad_descriptor_size),
+              "IAD descriptor must be 8 bytes");
+static_assert((bool)(sizeof(usb_interface_descriptor_t) == k_usb_interface_descriptor_size),
+              "Interface descriptor must be 9 bytes");
+static_assert((bool)(sizeof(usb_endpoint_descriptor_t) == k_usb_endpoint_descriptor_size),
+              "Endpoint descriptor must be 7 bytes");
+static_assert((bool)(sizeof(cdc_header_descriptor_t) == k_cdc_header_descriptor_size),
+              "CDC Header descriptor must be 5 bytes");
+static_assert((bool)(sizeof(cdc_call_management_descriptor_t) == k_cdc_call_mgmt_descriptor_size),
               "CDC Call Management descriptor must be 5 bytes");
-static_assert(sizeof(cdc_acm_descriptor_t) == 4, "CDC ACM descriptor must be 4 bytes");
-static_assert(sizeof(cdc_union_descriptor_t) == 5, "CDC Union descriptor must be 5 bytes");
+static_assert((bool)(sizeof(cdc_acm_descriptor_t) == k_cdc_acm_descriptor_size),
+              "CDC ACM descriptor must be 4 bytes");
+static_assert((bool)(sizeof(cdc_union_descriptor_t) == k_cdc_union_descriptor_size),
+              "CDC Union descriptor must be 5 bytes");
 
 /* =============================================================================
  * USB Descriptor Instances
@@ -1085,7 +1105,7 @@ typedef enum : uint16_t {
   k_composite_config_size = 207,
 } composite_config_size_t;
 
-static_assert(sizeof(usb_composite_config_descriptor_t) == k_composite_config_size,
+static_assert((bool)(sizeof(usb_composite_config_descriptor_t) == k_composite_config_size),
               "Composite config descriptor must be 207 bytes");
 
 /** @brief Configuration Descriptor Instance */
@@ -1605,6 +1625,156 @@ static void internal_rollback_pipes(uint8_t failed_pipe)
 }
 
 /**
+ * @brief Configure Port 0 pipes (bulk IN/OUT + interrupt IN)
+ *
+ * @return true on success, false on failure (STALL already set)
+ */
+static bool internal_configure_port0_pipes(void)
+{
+  rx_err_t err = rx_usb_hw_configure_pipe(k_usb_port0_pipe_bulk_in,
+                                          k_usb_port0_pipe_bulk_in,
+                                          true,
+                                          k_usb_pipecfg_type_bulk,
+                                          k_usb_bulk_packet_size);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to configure Port 0 Bulk IN pipe");
+    usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+    return false;
+  }
+  err = rx_usb_hw_configure_pipe(k_usb_port0_pipe_bulk_out,
+                                 k_usb_port0_pipe_bulk_out,
+                                 false,
+                                 k_usb_pipecfg_type_bulk,
+                                 k_usb_bulk_packet_size);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to configure Port 0 Bulk OUT pipe");
+    internal_rollback_pipes(k_usb_port0_pipe_bulk_out);
+    usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+    return false;
+  }
+  err = rx_usb_hw_configure_pipe(k_usb_port0_pipe_int_in,
+                                 k_usb_port0_pipe_int_in,
+                                 true,
+                                 k_usb_pipecfg_type_int,
+                                 k_usb_interrupt_packet_size);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to configure Port 0 Interrupt IN pipe");
+    internal_rollback_pipes(k_usb_port0_pipe_int_in);
+    usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Configure Port 1 pipes (bulk IN/OUT + interrupt IN)
+ *
+ * @return true on success, false on failure (STALL already set)
+ */
+static bool internal_configure_port1_pipes(void)
+{
+  rx_err_t err = rx_usb_hw_configure_pipe(k_usb_port1_pipe_bulk_in,
+                                          k_usb_port1_pipe_bulk_in,
+                                          true,
+                                          k_usb_pipecfg_type_bulk,
+                                          k_usb_bulk_packet_size);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to configure Port 1 Bulk IN pipe");
+    internal_rollback_pipes(k_usb_port1_pipe_bulk_in);
+    usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+    return false;
+  }
+  err = rx_usb_hw_configure_pipe(k_usb_port1_pipe_bulk_out,
+                                 k_usb_port1_pipe_bulk_out,
+                                 false,
+                                 k_usb_pipecfg_type_bulk,
+                                 k_usb_bulk_packet_size);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to configure Port 1 Bulk OUT pipe");
+    internal_rollback_pipes(k_usb_port1_pipe_bulk_out);
+    usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+    return false;
+  }
+  err = rx_usb_hw_configure_pipe(k_usb_port1_pipe_int_in,
+                                 k_usb_port1_pipe_int_in,
+                                 true,
+                                 k_usb_pipecfg_type_int,
+                                 k_usb_interrupt_packet_size);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to configure Port 1 Interrupt IN pipe");
+    internal_rollback_pipes(k_usb_port1_pipe_int_in);
+    usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Configure Port 2 pipes (bulk IN/OUT + interrupt IN)
+ *
+ * @return true on success, false on failure (STALL already set)
+ */
+static bool internal_configure_port2_pipes(void)
+{
+  rx_err_t err = rx_usb_hw_configure_pipe(k_usb_port2_pipe_bulk_in,
+                                          k_usb_port2_pipe_bulk_in,
+                                          true,
+                                          k_usb_pipecfg_type_bulk,
+                                          k_usb_bulk_packet_size);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to configure Port 2 Bulk IN pipe");
+    internal_rollback_pipes(k_usb_port2_pipe_bulk_in);
+    usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+    return false;
+  }
+  err = rx_usb_hw_configure_pipe(k_usb_port2_pipe_bulk_out,
+                                 k_usb_port2_pipe_bulk_out,
+                                 false,
+                                 k_usb_pipecfg_type_bulk,
+                                 k_usb_bulk_packet_size);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to configure Port 2 Bulk OUT pipe");
+    internal_rollback_pipes(k_usb_port2_pipe_bulk_out);
+    usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+    return false;
+  }
+  err = rx_usb_hw_configure_pipe(k_usb_port2_pipe_int_in,
+                                 k_usb_port2_pipe_int_in,
+                                 true,
+                                 k_usb_pipecfg_type_int,
+                                 k_usb_interrupt_packet_size);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to configure Port 2 Interrupt IN pipe");
+    internal_rollback_pipes(k_usb_port2_pipe_int_in);
+    usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Enable pipe interrupts and notify all CDC ports of configuration
+ */
+static void internal_enable_interrupts_and_notify(void)
+{
+  /* Enable BRDY interrupt for Bulk OUT pipes (receive from host) */
+  usb0()->brdyenb |= k_usb_pipe_bit_2 | /* Port 0: Bulk OUT pipe 2 */
+                     k_usb_pipe_bit_5 | /* Port 1: Bulk OUT pipe 5 */
+                     k_usb_pipe_bit_8;  /* Port 2: Bulk OUT pipe 8 */
+
+  /* Enable BEMP interrupt for Bulk IN pipes (transmit complete) */
+  usb0()->bempenb |= k_usb_pipe_bit_1 | /* Port 0: Bulk IN pipe 1 */
+                     k_usb_pipe_bit_4 | /* Port 1: Bulk IN pipe 4 */
+                     k_usb_pipe_bit_7;  /* Port 2: Bulk IN pipe 7 */
+
+  rx_usb_set_state(k_usb_state_configured);
+  rx_usb_invoke_callback(k_usb_port_proto, k_usb_event_configured);
+  rx_usb_invoke_callback(k_usb_port_decoded, k_usb_event_configured);
+  rx_usb_invoke_callback(k_usb_port_log, k_usb_event_configured);
+  rx_log_info(s_tag, "Composite device configured (3 CDC ports)");
+}
+
+/**
  * @brief Handle SET_CONFIGURATION request for composite device
  *
  * Configures all pipes for both CDC ports.
@@ -1619,158 +1789,16 @@ static void internal_handle_set_configuration(const uint16_t usb_value)
             "USB configuration out of range");
 
   if (config == k_usb_config_value_1) {
-    /* ========================================================================
-     * Configure Port 0 pipes
-     * ======================================================================== */
-
-    /* Pipe 1: Port 0 Bulk IN (EP1) */
-    rx_err_t err = rx_usb_hw_configure_pipe(k_usb_port0_pipe_bulk_in,
-                                            k_usb_port0_pipe_bulk_in, /* EP number = pipe number */
-                                            true,
-                                            k_usb_pipecfg_type_bulk,
-                                            k_usb_bulk_packet_size);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to configure Port 0 Bulk IN pipe");
-      usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+    if (!internal_configure_port0_pipes()) {
       return;
     }
-
-    /* Pipe 2: Port 0 Bulk OUT (EP2) */
-    err = rx_usb_hw_configure_pipe(k_usb_port0_pipe_bulk_out,
-                                   k_usb_port0_pipe_bulk_out,
-                                   false,
-                                   k_usb_pipecfg_type_bulk,
-                                   k_usb_bulk_packet_size);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to configure Port 0 Bulk OUT pipe");
-      internal_rollback_pipes(k_usb_port0_pipe_bulk_out);
-      usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+    if (!internal_configure_port1_pipes()) {
       return;
     }
-
-    /* Pipe 3: Port 0 Interrupt IN (EP3) */
-    err = rx_usb_hw_configure_pipe(k_usb_port0_pipe_int_in,
-                                   k_usb_port0_pipe_int_in,
-                                   true,
-                                   k_usb_pipecfg_type_int,
-                                   k_usb_interrupt_packet_size);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to configure Port 0 Interrupt IN pipe");
-      internal_rollback_pipes(k_usb_port0_pipe_int_in);
-      usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
+    if (!internal_configure_port2_pipes()) {
       return;
     }
-
-    /* ========================================================================
-     * Configure Port 1 pipes
-     * ======================================================================== */
-
-    /* Pipe 4: Port 1 Bulk IN (EP4) */
-    err = rx_usb_hw_configure_pipe(k_usb_port1_pipe_bulk_in,
-                                   k_usb_port1_pipe_bulk_in,
-                                   true,
-                                   k_usb_pipecfg_type_bulk,
-                                   k_usb_bulk_packet_size);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to configure Port 1 Bulk IN pipe");
-      internal_rollback_pipes(k_usb_port1_pipe_bulk_in);
-      usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
-      return;
-    }
-
-    /* Pipe 5: Port 1 Bulk OUT (EP5) */
-    err = rx_usb_hw_configure_pipe(k_usb_port1_pipe_bulk_out,
-                                   k_usb_port1_pipe_bulk_out,
-                                   false,
-                                   k_usb_pipecfg_type_bulk,
-                                   k_usb_bulk_packet_size);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to configure Port 1 Bulk OUT pipe");
-      internal_rollback_pipes(k_usb_port1_pipe_bulk_out);
-      usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
-      return;
-    }
-
-    /* Pipe 6: Port 1 Interrupt IN (EP6) */
-    err = rx_usb_hw_configure_pipe(k_usb_port1_pipe_int_in,
-                                   k_usb_port1_pipe_int_in,
-                                   true,
-                                   k_usb_pipecfg_type_int,
-                                   k_usb_interrupt_packet_size);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to configure Port 1 Interrupt IN pipe");
-      internal_rollback_pipes(k_usb_port1_pipe_int_in);
-      usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
-      return;
-    }
-
-    /* ========================================================================
-     * Configure Port 2 pipes
-     * ======================================================================== */
-
-    /* Pipe 7: Port 2 Bulk IN (EP7) */
-    err = rx_usb_hw_configure_pipe(k_usb_port2_pipe_bulk_in,
-                                   k_usb_port2_pipe_bulk_in,
-                                   true,
-                                   k_usb_pipecfg_type_bulk,
-                                   k_usb_bulk_packet_size);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to configure Port 2 Bulk IN pipe");
-      internal_rollback_pipes(k_usb_port2_pipe_bulk_in);
-      usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
-      return;
-    }
-
-    /* Pipe 8: Port 2 Bulk OUT (EP8) */
-    err = rx_usb_hw_configure_pipe(k_usb_port2_pipe_bulk_out,
-                                   k_usb_port2_pipe_bulk_out,
-                                   false,
-                                   k_usb_pipecfg_type_bulk,
-                                   k_usb_bulk_packet_size);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to configure Port 2 Bulk OUT pipe");
-      internal_rollback_pipes(k_usb_port2_pipe_bulk_out);
-      usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
-      return;
-    }
-
-    /* Pipe 9: Port 2 Interrupt IN (EP9) */
-    err = rx_usb_hw_configure_pipe(k_usb_port2_pipe_int_in,
-                                   k_usb_port2_pipe_int_in,
-                                   true,
-                                   k_usb_pipecfg_type_int,
-                                   k_usb_interrupt_packet_size);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to configure Port 2 Interrupt IN pipe");
-      internal_rollback_pipes(k_usb_port2_pipe_int_in);
-      usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
-      return;
-    }
-
-    /* ========================================================================
-     * Enable interrupts for all data pipes
-     * ======================================================================== */
-
-    /* Enable BRDY interrupt for Bulk OUT pipes (receive from host) */
-    /* Use named constants instead of bit shifts for clarity */
-    usb0()->brdyenb |= k_usb_pipe_bit_2 | /* Port 0: Bulk OUT pipe 2 */
-                       k_usb_pipe_bit_5 | /* Port 1: Bulk OUT pipe 5 */
-                       k_usb_pipe_bit_8;  /* Port 2: Bulk OUT pipe 8 */
-
-    /* Enable BEMP interrupt for Bulk IN pipes (transmit complete) */
-    /* CRITICAL FIX: Use named constants instead of bit shifts for clarity */
-    usb0()->bempenb |= k_usb_pipe_bit_1 | /* Port 0: Bulk IN pipe 1 */
-                       k_usb_pipe_bit_4 | /* Port 1: Bulk IN pipe 4 */
-                       k_usb_pipe_bit_7;  /* Port 2: Bulk IN pipe 7 */
-
-    rx_usb_set_state(k_usb_state_configured);
-
-    /* Notify all ports of configuration */
-    rx_usb_invoke_callback(k_usb_port_proto, k_usb_event_configured);
-    rx_usb_invoke_callback(k_usb_port_decoded, k_usb_event_configured);
-    rx_usb_invoke_callback(k_usb_port_log, k_usb_event_configured);
-
-    rx_log_info(s_tag, "Composite device configured (3 CDC ports)");
+    internal_enable_interrupts_and_notify();
   } else if (config == k_usb_config_unconfigured) {
     rx_usb_set_state(k_usb_state_addressed);
   }

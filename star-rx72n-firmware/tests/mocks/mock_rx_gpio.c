@@ -9,6 +9,7 @@
 
 #include "mock_rx_gpio.h"
 
+#include <stddef.h>
 #include <string.h>
 
 /* =============================================================================
@@ -42,13 +43,16 @@ typedef struct {
   mock_pin_state_t     pins[k_mock_gpio_max_pins];
   mock_read_sequence_t read_seq;     /**< Single read sequence (one pin at a time) */
   rx_port_pin_t        read_seq_pin; /**< Pin the read sequence is assigned to */
-  rx_err_t             next_error;
+  rx_err_t             next_error;   /**< Single-shot error for next call */
   uint32_t             write_low_count;
   uint32_t             write_high_count;
   uint32_t             set_output_count;
   uint32_t             set_input_count;
   uint32_t             read_count;
   bool                 initialized;
+  uint32_t             total_call_count; /**< Total calls across all GPIO functions */
+  uint32_t             nth_call_number;  /**< 1-based call number to inject error (0=disabled) */
+  rx_err_t             nth_call_error;   /**< Error to inject on nth call */
 } mock_gpio_state_t;
 
 static mock_gpio_state_t s_mock_gpio;
@@ -57,6 +61,30 @@ static mock_gpio_state_t s_mock_gpio;
  * Internal Helpers
  * =============================================================================
  */
+
+/**
+ * @brief Increment total call counter and check for Nth-call error injection
+ *
+ * @details
+ * Called at the start of every GPIO HAL function. Increments the total call
+ * counter across all GPIO functions. If a Nth-call injection is armed and the
+ * current call number matches, consumes the injection and returns the error.
+ * Otherwise returns k_rx_ok so the caller continues normally.
+ *
+ * @return Injected error if this is the Nth call, k_rx_ok otherwise
+ */
+static rx_err_t internal_check_nth_call(void)
+{
+  s_mock_gpio.total_call_count++;
+  if (s_mock_gpio.nth_call_number != 0U &&
+      s_mock_gpio.total_call_count == s_mock_gpio.nth_call_number) {
+    rx_err_t err                = s_mock_gpio.nth_call_error;
+    s_mock_gpio.nth_call_number = 0U;
+    s_mock_gpio.nth_call_error  = k_rx_ok;
+    return err;
+  }
+  return k_rx_ok;
+}
 
 /**
  * @brief Convert rx_port_pin_t to array index
@@ -74,9 +102,23 @@ static uint32_t internal_pin_to_index(rx_port_pin_t pin)
  * =============================================================================
  */
 
+/**
+ * @brief Zero-initialize all fields of mock_gpio_state_t
+ *
+ * @param[out] state Pointer to mock GPIO state struct to clear
+ *
+ * @pre state != nullptr
+ * @post All bytes in *state are zero
+ */
+static void internal_zero_gpio_state(mock_gpio_state_t* state)
+{
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(state, 0, sizeof(*state));
+}
+
 void mock_gpio_init(void)
 {
-  memset(&s_mock_gpio, 0, sizeof(s_mock_gpio));
+  internal_zero_gpio_state(&s_mock_gpio);
   s_mock_gpio.initialized = true;
 
   /* Default all pins to high (external pull-up for OneWire) */
@@ -87,7 +129,7 @@ void mock_gpio_init(void)
 
 void mock_gpio_deinit(void)
 {
-  memset(&s_mock_gpio, 0, sizeof(s_mock_gpio));
+  internal_zero_gpio_state(&s_mock_gpio);
 }
 
 void mock_gpio_set_read_value(rx_port_pin_t pin, bool high)
@@ -122,6 +164,12 @@ bool mock_gpio_is_output(rx_port_pin_t pin)
 void mock_gpio_set_next_error(rx_err_t err)
 {
   s_mock_gpio.next_error = err;
+}
+
+void mock_gpio_set_error_on_nth_call(uint32_t call_number, rx_err_t err)
+{
+  s_mock_gpio.nth_call_number = call_number;
+  s_mock_gpio.nth_call_error  = err;
 }
 
 uint32_t mock_gpio_get_write_low_count(void)
@@ -194,6 +242,11 @@ rx_err_t gpio_set_output(rx_port_pin_t pin)
 {
   s_mock_gpio.set_output_count++;
 
+  rx_err_t nth_err = internal_check_nth_call();
+  if (nth_err != k_rx_ok) {
+    return nth_err;
+  }
+
   if (s_mock_gpio.next_error != k_rx_ok) {
     rx_err_t err           = s_mock_gpio.next_error;
     s_mock_gpio.next_error = k_rx_ok;
@@ -213,6 +266,11 @@ rx_err_t gpio_set_output(rx_port_pin_t pin)
 rx_err_t gpio_set_input(rx_port_pin_t pin)
 {
   s_mock_gpio.set_input_count++;
+
+  rx_err_t nth_err = internal_check_nth_call();
+  if (nth_err != k_rx_ok) {
+    return nth_err;
+  }
 
   if (s_mock_gpio.next_error != k_rx_ok) {
     rx_err_t err           = s_mock_gpio.next_error;
@@ -234,6 +292,11 @@ rx_err_t gpio_write_low(rx_port_pin_t pin)
 {
   s_mock_gpio.write_low_count++;
 
+  rx_err_t nth_err = internal_check_nth_call();
+  if (nth_err != k_rx_ok) {
+    return nth_err;
+  }
+
   if (s_mock_gpio.next_error != k_rx_ok) {
     rx_err_t err           = s_mock_gpio.next_error;
     s_mock_gpio.next_error = k_rx_ok;
@@ -253,6 +316,11 @@ rx_err_t gpio_write_low(rx_port_pin_t pin)
 rx_err_t gpio_write_high(rx_port_pin_t pin)
 {
   s_mock_gpio.write_high_count++;
+
+  rx_err_t nth_err = internal_check_nth_call();
+  if (nth_err != k_rx_ok) {
+    return nth_err;
+  }
 
   if (s_mock_gpio.next_error != k_rx_ok) {
     rx_err_t err           = s_mock_gpio.next_error;
@@ -279,6 +347,11 @@ rx_err_t gpio_read(rx_port_pin_t pin, bool* high)
     return k_rx_err_null_ptr;
   }
 
+  rx_err_t nth_err = internal_check_nth_call();
+  if (nth_err != k_rx_ok) {
+    return nth_err;
+  }
+
   /* Check for injected error */
   if (s_mock_gpio.next_error != k_rx_ok) {
     rx_err_t err           = s_mock_gpio.next_error;
@@ -293,6 +366,7 @@ rx_err_t gpio_read(rx_port_pin_t pin, bool* high)
   }
 
   /* Check for active read sequence on this pin */
+  /* NOLINTNEXTLINE(readability-implicit-bool-conversion) */
   if (s_mock_gpio.read_seq.active && pin == s_mock_gpio.read_seq_pin &&
       s_mock_gpio.read_seq.index < s_mock_gpio.read_seq.count) {
     *high = s_mock_gpio.read_seq.values[s_mock_gpio.read_seq.index];

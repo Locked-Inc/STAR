@@ -10,6 +10,7 @@
 
 #include "mock_shared_data.h"
 
+#include <stddef.h>
 #include <string.h>
 
 /* =============================================================================
@@ -71,6 +72,27 @@ static uint32_t s_motor_state_update_count = k_mock_count_reset;
 static uint32_t s_set_event_count = k_mock_count_reset;
 
 /* =============================================================================
+ * Default PID Gain Constants (MATLAB-tuned)
+ * =============================================================================
+ */
+
+/**
+ * @brief Default PID gains from MATLAB system identification
+ *
+ * @details
+ * These are the MATLAB-tuned default PID gains used to initialize the mock
+ * shared data on reset. They match the values in the production shared_data
+ * module.
+ */
+static const float s_default_kp           = 0.286F;
+static const float s_default_ki           = 8.01F;
+static const float s_default_kd           = 0.0F;
+static const float s_default_output_min   = -100.0F;
+static const float s_default_output_max   = 100.0F;
+static const float s_default_integral_min = -50.0F;
+static const float s_default_integral_max = 50.0F;
+
+/* =============================================================================
  * Static State
  * =============================================================================
  */
@@ -82,13 +104,13 @@ static bool           s_comm_timeout                = false;
 static uint8_t        s_active_channel              = k_mock_channel_usb;
 static uint32_t       s_active_channel_update_count = k_mock_count_reset;
 
-static motor_command_t s_motor_command      = {0};
-static motor_state_t   s_motor_state        = {0};
-static pid_gains_t     s_pid_gains          = {0};
+static motor_command_t s_motor_command      = {};
+static motor_state_t   s_motor_state        = {};
+static pid_gains_t     s_pid_gains          = {};
 static bool            s_pid_update_pending = false;
 
-static temp_sensor_state_t s_temp_state     = {0};
-static obstacle_state_t    s_obstacle_state = {0};
+static temp_sensor_state_t s_temp_state     = {};
+static obstacle_state_t    s_obstacle_state = {};
 
 static estop_reason_t s_last_triggered_reason = k_estop_reason_none;
 
@@ -128,22 +150,27 @@ void mock_shared_data_reset(void)
   s_estop_reason = k_estop_reason_none;
   s_comm_timeout = false;
 
-  (void)memset(&s_motor_command, 0, sizeof(s_motor_command));
-  (void)memset(&s_motor_state, 0, sizeof(s_motor_state));
-  (void)memset(&s_pid_gains, 0, sizeof(s_pid_gains));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_motor_command, 0, sizeof(s_motor_command));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_motor_state, 0, sizeof(s_motor_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_pid_gains, 0, sizeof(s_pid_gains));
   s_pid_update_pending = false;
 
   /* Set default PID gains (MATLAB-tuned) */
-  s_pid_gains.kp           = 0.286f;
-  s_pid_gains.ki           = 8.01f;
-  s_pid_gains.kd           = 0.0f;
-  s_pid_gains.output_min   = -100.0f;
-  s_pid_gains.output_max   = 100.0f;
-  s_pid_gains.integral_min = -50.0f;
-  s_pid_gains.integral_max = 50.0f;
+  s_pid_gains.kp           = s_default_kp;
+  s_pid_gains.ki           = s_default_ki;
+  s_pid_gains.kd           = s_default_kd;
+  s_pid_gains.output_min   = s_default_output_min;
+  s_pid_gains.output_max   = s_default_output_max;
+  s_pid_gains.integral_min = s_default_integral_min;
+  s_pid_gains.integral_max = s_default_integral_max;
 
-  (void)memset(&s_temp_state, 0, sizeof(s_temp_state));
-  (void)memset(&s_obstacle_state, 0, sizeof(s_obstacle_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_temp_state, 0, sizeof(s_temp_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_obstacle_state, 0, sizeof(s_obstacle_state));
 
   s_last_triggered_reason       = k_estop_reason_none;
   s_set_event_count             = k_mock_count_reset;
@@ -171,14 +198,16 @@ void mock_shared_data_set_comm_timeout(bool timeout)
 void mock_shared_data_set_motor_command(const motor_command_t* cmd)
 {
   if (cmd != nullptr) {
-    (void)memcpy(&s_motor_command, cmd, sizeof(s_motor_command));
+    /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+    memcpy(&s_motor_command, cmd, sizeof(s_motor_command));
   }
 }
 
 void mock_shared_data_set_pid_gains(const pid_gains_t* gains)
 {
   if (gains != nullptr) {
-    (void)memcpy(&s_pid_gains, gains, sizeof(s_pid_gains));
+    /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+    memcpy(&s_pid_gains, gains, sizeof(s_pid_gains));
   }
 }
 
@@ -272,7 +301,8 @@ rx_err_t mock_shared_data_get_last_motor_state(motor_state_t* out_state)
     return k_rx_err_null_ptr;
   }
 
-  (void)memcpy(out_state, &s_motor_state, sizeof(*out_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_state, &s_motor_state, sizeof(*out_state));
   return k_rx_ok;
 }
 
@@ -283,7 +313,7 @@ uint32_t mock_shared_data_get_motor_state_update_count(void)
 
 bool mock_shared_data_was_initialized(void)
 {
-  return s_init_count > 0;
+  return (bool)(s_init_count > 0);
 }
 
 /* =============================================================================
@@ -309,7 +339,8 @@ rx_err_t shared_data_set_motor_command(const motor_command_t* cmd)
     return k_rx_err_null_ptr;
   }
 
-  (void)memcpy(&s_motor_command, cmd, sizeof(s_motor_command));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(&s_motor_command, cmd, sizeof(s_motor_command));
   return k_rx_ok;
 }
 
@@ -319,7 +350,8 @@ rx_err_t shared_data_get_motor_command(motor_command_t* out_cmd)
     return k_rx_err_null_ptr;
   }
 
-  (void)memcpy(out_cmd, &s_motor_command, sizeof(*out_cmd));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_cmd, &s_motor_command, sizeof(*out_cmd));
   return k_rx_ok;
 }
 
@@ -331,7 +363,8 @@ rx_err_t shared_data_update_motor_state(const motor_state_t* state)
   }
 
   s_motor_state_update_count++;
-  (void)memcpy(&s_motor_state, state, sizeof(s_motor_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(&s_motor_state, state, sizeof(s_motor_state));
   return k_rx_ok;
 }
 
@@ -341,7 +374,8 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
     return k_rx_err_null_ptr;
   }
 
-  (void)memcpy(out_state, &s_motor_state, sizeof(*out_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_state, &s_motor_state, sizeof(*out_state));
   return k_rx_ok;
 }
 
@@ -352,7 +386,8 @@ rx_err_t shared_data_set_pid_gains(const pid_gains_t* gains)
     return k_rx_err_null_ptr;
   }
 
-  (void)memcpy(&s_pid_gains, gains, sizeof(s_pid_gains));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(&s_pid_gains, gains, sizeof(s_pid_gains));
   s_pid_update_pending = true;
   return k_rx_ok;
 }
@@ -363,7 +398,8 @@ rx_err_t shared_data_get_pid_gains(pid_gains_t* out_gains)
     return k_rx_err_null_ptr;
   }
 
-  (void)memcpy(out_gains, &s_pid_gains, sizeof(*out_gains));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_gains, &s_pid_gains, sizeof(*out_gains));
   return k_rx_ok;
 }
 
@@ -411,7 +447,8 @@ rx_err_t shared_data_update_temp(const temp_sensor_state_t* state)
     return k_rx_err_null_ptr;
   }
 
-  (void)memcpy(&s_temp_state, state, sizeof(s_temp_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(&s_temp_state, state, sizeof(s_temp_state));
   return k_rx_ok;
 }
 
@@ -421,7 +458,8 @@ rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
     return k_rx_err_null_ptr;
   }
 
-  (void)memcpy(out_state, &s_temp_state, sizeof(*out_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_state, &s_temp_state, sizeof(*out_state));
   return k_rx_ok;
 }
 
@@ -432,7 +470,8 @@ rx_err_t shared_data_update_obstacle(const obstacle_state_t* state)
     return k_rx_err_null_ptr;
   }
 
-  (void)memcpy(&s_obstacle_state, state, sizeof(s_obstacle_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(&s_obstacle_state, state, sizeof(s_obstacle_state));
   return k_rx_ok;
 }
 
@@ -442,7 +481,8 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
     return k_rx_err_null_ptr;
   }
 
-  (void)memcpy(out_state, &s_obstacle_state, sizeof(*out_state));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_state, &s_obstacle_state, sizeof(*out_state));
   return k_rx_ok;
 }
 
@@ -602,7 +642,7 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
 uint8_t shared_data_get_active_channel(void)
 {
   if (!s_initialized) {
-    return (uint8_t)k_mock_channel_usb;
+    return k_mock_channel_usb;
   }
   return s_active_channel;
 }

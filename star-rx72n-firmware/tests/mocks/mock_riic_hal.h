@@ -160,7 +160,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "hardware.h"
@@ -291,12 +290,18 @@ typedef struct {
 typedef struct {
   mock_riic_channel_state_t channels[k_mock_riic_max_channels];          /**< Per-channel state */
   mock_riic_call_t          call_history[k_mock_riic_call_history_size]; /**< Call history */
-  uint16_t                  call_count;       /**< Number of calls recorded */
-  rx_err_t                  next_error;       /**< Error to return on next call */
-  bool                      error_set;        /**< Whether error injection is active */
-  bool                      simulate_nack;    /**< Simulate NACK response */
-  bool                      simulate_timeout; /**< Simulate timeout */
-  bool                      simulate_busy;    /**< Simulate bus busy */
+  uint16_t                  call_count; /**< Number of calls recorded */
+  rx_err_t                  next_error; /**< Error to return on next call */
+  bool                      error_set;  /**< Whether error injection is active */
+  rx_err_t next_write_error;   /**< Error to return on next riic_peripheral_write() call only */
+  bool     write_error_set;    /**< Whether write-only error injection is active */
+  bool     simulate_nack;      /**< Simulate NACK response */
+  bool     simulate_timeout;   /**< Simulate timeout */
+  bool     simulate_busy;      /**< Simulate bus busy */
+  rx_err_t nth_call_error;     /**< Error to return on the nth call */
+  bool     nth_call_error_set; /**< Whether nth-call error injection is active */
+  uint16_t nth_call_target;    /**< Call index (0-based) at which to inject error */
+  uint16_t nth_call_counter;   /**< Running count of calls seen */
 } mock_riic_state_t;
 
 /* =============================================================================
@@ -367,9 +372,34 @@ void mock_riic_simulate_busy(bool simulate);
 void mock_riic_set_next_error(rx_err_t err);
 
 /**
+ * @brief Set error to return on next riic_peripheral_write() call only
+ *
+ * Unlike mock_riic_set_next_error(), this error is NOT consumed by read
+ * functions (riic_peripheral_read). Use this when the test needs a read to
+ * succeed but the subsequent write to fail (e.g., PING->PONG, RESET->ACK).
+ *
+ * @param[in] err Error code to return on next write
+ */
+void mock_riic_set_next_write_error(rx_err_t err);
+
+/**
  * @brief Clear any pending error injection
  */
 void mock_riic_clear_error(void);
+
+/**
+ * @brief Set error to inject on the Nth I2C call (0-based index)
+ *
+ * @details
+ * After mock_riic_set_nth_call_error(n, err) is called, the next n successful
+ * I2C calls will succeed normally. On the (n+1)th call (index n), err is
+ * returned and the injection is consumed. Call indices reset when
+ * mock_riic_init() is called.
+ *
+ * @param[in] n    Zero-based call index at which to inject the error
+ * @param[in] err  Error code to return at call index n
+ */
+void mock_riic_set_nth_call_error(uint16_t n, rx_err_t err);
 
 /* =============================================================================
  * State Inspection Functions

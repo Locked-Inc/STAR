@@ -38,7 +38,7 @@ fi
 CF_VERSION=$(clang-format --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
 CF_MAJOR=$(echo "${CF_VERSION}" | cut -d. -f1)
 if [[ "${CF_MAJOR}" != "18" ]]; then
-    echo "WARNING: clang-format version ${CF_VERSION} detected; STM32CubeIDE targets v18.x — results may differ"
+    echo "WARNING: clang-format version ${CF_VERSION} detected; STM32CubeIDE targets v18.x -- results may differ"
 fi
 
 # Require a .clang-format config at the repo root

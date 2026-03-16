@@ -190,7 +190,7 @@
  *     rx_usb_comm_init(&config);
  *
  *     // Start operation that should timeout
- *     uint8_t data[64] = {0};
+ *     uint8_t data[64] = {};
  *     rx_err_t err = usb_send_with_timeout(&mock_time, data, sizeof(data));
  *
  *     // Manually advance time past timeout
@@ -237,7 +237,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -789,7 +788,7 @@ typedef bool (*rx_time_is_elapsed_fn)(void* ctx, uint32_t start_ms, uint32_t tim
  *     usb_init(&usb_time);
  *
  *     // SPI uses null time (polling only, instant returns)
- *     rx_time_interface_t spi_time = {0};
+ *     rx_time_interface_t spi_time = {};
  *     spi_time.get_ms = hardware_timer_get_ms;  // Still need timeouts
  *     spi_time.sleep_ms = null_sleep;  // No-op sleep
  *     spi_init(&spi_time);
@@ -972,7 +971,7 @@ struct rx_time_interface {
  * }
  *
  * void test_validate_catches_missing_sleep(void) {
- *     rx_time_interface_t time = {0};
+ *     rx_time_interface_t time = {};
  *     time.get_ms = mock_get_ms;  // Only get_ms populated
  *     // Missing sleep_ms!
  *
@@ -981,7 +980,7 @@ struct rx_time_interface {
  * }
  *
  * void test_validate_allows_null_ctx(void) {
- *     rx_time_interface_t time = {0};
+ *     rx_time_interface_t time = {};
  *     time.ctx = nullptr;  // ctx can benullptr
  *     time.sleep_ms = mock_sleep_ms;
  *     time.get_ms = mock_get_ms;

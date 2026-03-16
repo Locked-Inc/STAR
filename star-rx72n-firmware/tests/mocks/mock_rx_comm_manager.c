@@ -14,6 +14,8 @@
 
 #include "mock_rx_comm_manager.h"
 
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 /* =============================================================================
@@ -66,8 +68,8 @@ static uint32_t s_respond_count = 0;
  * @brief Queued frame for poll delivery
  */
 typedef struct {
-  rx_comm_channel_t channel; /**< Channel */
   rx_frame_t        frame;   /**< Frame data */
+  rx_comm_channel_t channel; /**< Channel */
   bool              valid;   /**< Valid entry */
 } mock_queued_frame_t;
 
@@ -149,7 +151,8 @@ void mock_comm_manager_reset(void)
   s_last_send_channel     = k_comm_channel_usb;
   s_last_send_type        = k_frame_type_ping;
   s_last_send_payload_len = 0;
-  (void)memset(s_last_send_payload, 0, sizeof(s_last_send_payload));
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(s_last_send_payload, 0, sizeof(s_last_send_payload));
 
   /* Reset channel ready status */
   for (uint32_t i = 0; i < k_comm_channel_count; i++) {
@@ -202,7 +205,8 @@ bool mock_comm_manager_queue_frame(rx_comm_channel_t channel,
   entry->frame.header.flags    = 0;
 
   if (payload != nullptr && len > 0) {
-    (void)memcpy(entry->frame.payload, payload, len);
+    /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+    memcpy(entry->frame.payload, payload, len);
   }
 
   entry->valid = true;
@@ -271,14 +275,15 @@ uint32_t mock_comm_manager_get_last_send_payload(uint8_t* out_payload, uint32_t 
     copy_len = max_len;
   }
 
-  (void)memcpy(out_payload, s_last_send_payload, copy_len);
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memcpy(out_payload, s_last_send_payload, copy_len);
 
   return copy_len;
 }
 
 bool mock_comm_manager_was_initialized(void)
 {
-  return s_init_count > 0;
+  return (bool)(s_init_count > 0);
 }
 
 uint32_t mock_comm_manager_get_queue_count(void)
@@ -329,7 +334,8 @@ rx_err_t rx_comm_manager_deinit(rx_comm_manager_t* mgr)
   }
 
   if (s_deinit_return == k_rx_ok) {
-    (void)memset(mgr, 0, sizeof(*mgr));
+    /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+    memset(mgr, 0, sizeof(*mgr));
     mgr->initialized  = false;
     s_current_manager = nullptr;
   }
@@ -355,6 +361,7 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
   if (s_queue_count > 0) {
     entry = &s_frame_queue[s_queue_read_idx];
 
+    /* NOLINTNEXTLINE(readability-implicit-bool-conversion) */
     if (entry->valid && mgr->callback != nullptr) {
       /* Invoke callback with queued frame */
       mgr->callback(entry->channel, &entry->frame, mgr->callback_ctx);
@@ -393,7 +400,8 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
       if (copy_len > k_mock_comm_max_payload_size) {
         copy_len = k_mock_comm_max_payload_size;
       }
-      (void)memcpy(s_last_send_payload, params->payload, copy_len);
+      /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+      memcpy(s_last_send_payload, params->payload, copy_len);
       s_last_send_payload_len = copy_len;
     } else {
       s_last_send_payload_len = 0;

@@ -14,7 +14,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -23,6 +22,22 @@
 /***********************************************************************************************************************
  * Forward Declarations and Type Definitions
  ***********************************************************************************************************************/
+
+/**
+ * @enum shared_data_counts_t
+ * @brief Hardware count constants for array sizing in shared data structures
+ *
+ * @details
+ * Provides named constants for the number of motors, temperature sensors,
+ * and obstacle sensors in the STAR platform hardware configuration.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_shared_motor_count           = 4U, /**< Number of brushed DC gearmotors (one per wheel) */
+  k_shared_temp_sensor_count     = 4U, /**< Number of DS18B20 temperature sensors */
+  k_shared_obstacle_sensor_count = 4U, /**< Number of HC-SR04 ultrasonic obstacle sensors */
+} shared_data_counts_t;
 
 /**
  * @brief Emergency stop reason codes
@@ -51,24 +66,24 @@ typedef enum : uint8_t {
  * @brief Motor velocity command from RPi5
  */
 typedef struct {
-  float    target_velocity_mps[4]; /**< Target velocity for each motor (m/s) */
-  uint32_t sequence;               /**< Command sequence number */
-  uint32_t timestamp_ms;           /**< ThreadX tick when command received (ms) */
-  bool     valid;                  /**< true if command is valid, false if not set yet */
+  float    target_velocity_mps[k_shared_motor_count]; /**< Target velocity for each motor (m/s) */
+  uint32_t sequence;                                  /**< Command sequence number */
+  uint32_t timestamp_ms; /**< ThreadX tick when command received (ms) */
+  bool     valid;        /**< true if command is valid, false if not set yet */
 } motor_command_t;
 
 /**
  * @brief Motor state telemetry
  */
 typedef struct {
-  float          current_velocity_mps[4]; /**< Current velocity for each motor (m/s) */
-  float          current_ma[4];           /**< Current for each motor (mA) */
-  int32_t        encoder_counts[4];       /**< Encoder counts for each motor (signed) */
-  uint8_t        fault_flags[4];          /**< Fault flags for each motor */
-  float          duty_cycle_percent[4];   /**< PWM duty cycle for each motor (%) */
-  bool           estop_active;            /**< Emergency stop active flag */
-  estop_reason_t estop_reason;            /**< Emergency stop reason code */
-  motor_mode_t   mode;                    /**< Current motor control mode */
+  float   current_velocity_mps[k_shared_motor_count]; /**< Current velocity for each motor (m/s) */
+  float   current_ma[k_shared_motor_count];           /**< Current for each motor (mA) */
+  int32_t encoder_counts[k_shared_motor_count];       /**< Encoder counts for each motor (signed) */
+  uint8_t fault_flags[k_shared_motor_count];          /**< Fault flags for each motor */
+  float   duty_cycle_percent[k_shared_motor_count];   /**< PWM duty cycle for each motor (%) */
+  bool    estop_active;                               /**< Emergency stop active flag */
+  estop_reason_t estop_reason;                        /**< Emergency stop reason code */
+  motor_mode_t   mode;                                /**< Current motor control mode */
 } motor_state_t;
 
 /**
@@ -89,20 +104,22 @@ typedef struct {
  * @brief Temperature sensor state
  */
 typedef struct {
-  int16_t  temperature_cdegc[4]; /**< Temperature for each sensor (centi-degrees C) */
-  bool     sensor_valid[4];      /**< Validity flag for each sensor */
-  uint8_t  sensor_count;         /**< Number of sensors */
-  uint32_t timestamp_ms;         /**< Timestamp (ms) */
+  int16_t temperature_cdegc
+    [k_shared_temp_sensor_count]; /**< Temperature for each sensor (centi-degrees C) */
+  bool     sensor_valid[k_shared_temp_sensor_count]; /**< Validity flag for each sensor */
+  uint8_t  sensor_count;                             /**< Number of sensors */
+  uint32_t timestamp_ms;                             /**< Timestamp (ms) */
 } temp_sensor_state_t;
 
 /**
  * @brief Obstacle detection state
  */
 typedef struct {
-  uint16_t distance_cm[4];       /**< Distance for each sensor (cm) */
-  bool     obstacle_detected[4]; /**< Obstacle detected flag for each sensor */
-  bool     any_obstacle;         /**< true if any sensor detects obstacle */
-  uint32_t timestamp_ms;         /**< Timestamp (ms) */
+  uint16_t distance_cm[k_shared_obstacle_sensor_count]; /**< Distance for each sensor (cm) */
+  bool     obstacle_detected
+    [k_shared_obstacle_sensor_count]; /**< Obstacle detected flag for each sensor */
+  bool     any_obstacle;              /**< true if any sensor detects obstacle */
+  uint32_t timestamp_ms;              /**< Timestamp (ms) */
 } obstacle_state_t;
 
 /**

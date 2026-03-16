@@ -269,7 +269,7 @@ typedef struct {
  */
 [[nodiscard]] rx_err_t rx_bmp280_read(bmp280_data_t* out);
 
-#ifdef TESTING
+#ifdef UNIT_TEST
 /**
  * @brief Reset BMP280 driver static state for unit test isolation
  *
@@ -277,7 +277,7 @@ typedef struct {
  * Clears s_initialized to false and zeroes the calibration struct.
  * Call from setUp() before each test so tests can run in any order
  * without depending on prior test state. Available only in test builds
- * (TESTING macro defined by CMakeLists.txt for the test target).
+ * Available only in UNIT_TEST builds.
  *
  * @pre None (may be called before init)
  * @post s_initialized == false; driver in pre-init state
@@ -288,7 +288,62 @@ typedef struct {
  * @since Version 1.0.0
  */
 void rx_bmp280_test_reset_state(void);
-#endif /* TESTING */
+
+/**
+ * @brief Set s_initialized and s_manager for direct internal function testing
+ *
+ * @details
+ * Allows tests to bypass the init sequence and inject arbitrary module state
+ * so internal functions can be called without going through rx_bmp280_init().
+ *
+ * @param[in] manager  Bus manager pointer to store in s_manager (may be NULL)
+ * @param[in] init_val Value to write to s_initialized
+ *
+ * @pre No concurrent access from other threads (test runs single-threaded)
+ * @pre Called from test setup after rx_bmp280_test_reset_state()
+ * @post s_initialized == init_val
+ * @post s_manager == manager
+ *
+ * @note Test-only helper; not compiled into production firmware
+ * @since Version 1.0.0
+ */
+void rx_bmp280_test_set_state(rx_bus_manager_t* manager, bool init_val);
+
+/**
+ * @brief Force s_calib.dig_P1 to zero for division-by-zero coverage testing
+ *
+ * @details
+ * Corrupts dig_P1 to zero so that internal_compensate_pressure() hits the
+ * var1==0 guard when called via internal_read_and_compensate_adc().
+ *
+ * @pre rx_bmp280_test_set_state() or rx_bmp280_init() called
+ * @pre No concurrent access from other threads (test runs single-threaded)
+ * @post s_calib.dig_P1 == 0; other calibration fields unchanged
+ * @post internal_compensate_pressure() will return k_rx_err_invalid_state when called
+ *
+ * @note Test-only helper; not compiled into production firmware
+ * @since Version 1.0.0
+ */
+void rx_bmp280_test_zero_calib_p1(void);
+
+/**
+ * @brief Override s_bus_name for branch coverage testing
+ *
+ * @details
+ * Sets s_bus_name to the given pointer (which may be NULL) so that the
+ * RX_ASSERT_PRE(s_bus_name != NULL, ...) branches in internal_write_reg
+ * and rx_bmp280_init can be exercised in unit tests.
+ *
+ * @param[in] name New bus name pointer (may be NULL for assertion testing)
+ *
+ * @pre UNIT_TEST defined
+ * @post s_bus_name == name
+ *
+ * @note Test-only helper; not compiled into production firmware
+ * @since Version 1.0.0
+ */
+void rx_bmp280_test_set_bus_name(const char* name);
+#endif /* UNIT_TEST */
 
 #ifdef __cplusplus
 }

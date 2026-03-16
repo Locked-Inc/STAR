@@ -18,8 +18,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <string.h>
-
 #include "mock_rx_comm_manager.h"
 #include "mock_rx_nanopb.h"
 #include "mock_shared_data.h"
@@ -39,8 +37,43 @@ typedef enum : uint8_t {
 } test_telem_motor_constants_t;
 
 typedef enum : uint16_t {
-  k_test_buffer_size = 512, /**< Telemetry buffer size */
+  k_test_buffer_size = 512,  /**< Telemetry buffer size */
+  k_test_temp_cdegc  = 2550, /**< 25.50 degC in centi-degrees */
 } test_telem_buffer_constants_t;
+
+typedef enum : uint32_t {
+  k_test_timestamp_us = 1000000U, /**< Telemetry timestamp in microseconds */
+  k_test_frame_seq    = 42U,      /**< Frame sequence number for protobuf test */
+  k_test_encoded_len  = 64U,      /**< Mock encoded output length in bytes */
+} test_telem_large_constants_t;
+
+typedef enum : int32_t {
+  k_test_encoder_0 = 1000, /**< Expected encoder count for motor 0 */
+  k_test_encoder_1 = 1050, /**< Expected encoder count for motor 1 */
+  k_test_encoder_2 = 995,  /**< Expected encoder count for motor 2 */
+  k_test_encoder_3 = 1005, /**< Expected encoder count for motor 3 */
+} test_telem_encoder_constants_t;
+
+typedef enum : uint8_t {
+  k_test_motor_idx_0 = 0, /**< Motor index 0 */
+  k_test_motor_idx_1 = 1, /**< Motor index 1 */
+  k_test_motor_idx_2 = 2, /**< Motor index 2 */
+  k_test_motor_idx_3 = 3, /**< Motor index 3 */
+  k_test_sensor_idx  = 0, /**< Temperature sensor index 0 */
+  k_test_sensor_cnt  = 1, /**< Number of temperature sensors in test */
+} test_telem_index_constants_t;
+
+/** @brief Velocity of motor 0 in m/s for encoder data test */
+static const float s_test_velocity_0 = 0.95F;
+/** @brief Velocity of motor 1 in m/s for encoder data test */
+static const float s_test_velocity_1 = 1.00F;
+/** @brief Velocity of motor 2 in m/s (negative = reverse) for encoder data test */
+static const float s_test_velocity_2 = -0.48F;
+/** @brief Velocity of motor 3 in m/s (negative = reverse) for encoder data test */
+static const float s_test_velocity_3 = -0.50F;
+
+/** @brief Tolerance for float comparisons (replaces Unity UNITY_FLOAT_PRECISION literal) */
+static const float s_float_tolerance = 0.00001F;
 
 /* =============================================================================
  * Test Fixture
@@ -140,20 +173,20 @@ void test_telemetry_task_create_already_created(void)
 void test_telemetry_task_collects_encoder_data(void)
 {
   /* Set up motor state with encoder data */
-  motor_state_t state_in  = {0};
-  motor_state_t state_out = {0};
+  motor_state_t state_in  = {};
+  motor_state_t state_out = {};
   rx_err_t      err;
 
-  state_in.encoder_counts[0]       = 1000;
-  state_in.encoder_counts[1]       = 1050;
-  state_in.encoder_counts[2]       = 995;
-  state_in.encoder_counts[3]       = 1005;
-  state_in.current_velocity_mps[0] = 0.95f;
-  state_in.current_velocity_mps[1] = 1.00f;
-  state_in.current_velocity_mps[2] = -0.48f;
-  state_in.current_velocity_mps[3] = -0.50f;
-  state_in.estop_active            = false;
-  state_in.mode                    = k_motor_mode_velocity;
+  state_in.encoder_counts[k_test_motor_idx_0]       = k_test_encoder_0;
+  state_in.encoder_counts[k_test_motor_idx_1]       = k_test_encoder_1;
+  state_in.encoder_counts[k_test_motor_idx_2]       = k_test_encoder_2;
+  state_in.encoder_counts[k_test_motor_idx_3]       = k_test_encoder_3;
+  state_in.current_velocity_mps[k_test_motor_idx_0] = s_test_velocity_0;
+  state_in.current_velocity_mps[k_test_motor_idx_1] = s_test_velocity_1;
+  state_in.current_velocity_mps[k_test_motor_idx_2] = s_test_velocity_2;
+  state_in.current_velocity_mps[k_test_motor_idx_3] = s_test_velocity_3;
+  state_in.estop_active                             = false;
+  state_in.mode                                     = k_motor_mode_velocity;
 
   /* Store in shared data */
   err = shared_data_update_motor_state(&state_in);
@@ -164,12 +197,16 @@ void test_telemetry_task_collects_encoder_data(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify encoder data accessible */
-  TEST_ASSERT_EQUAL_INT32(1000, state_out.encoder_counts[0]);
-  TEST_ASSERT_EQUAL_INT32(1050, state_out.encoder_counts[1]);
-  TEST_ASSERT_EQUAL_INT32(995, state_out.encoder_counts[2]);
-  TEST_ASSERT_EQUAL_INT32(1005, state_out.encoder_counts[3]);
-  TEST_ASSERT_EQUAL_FLOAT(0.95f, state_out.current_velocity_mps[0]);
-  TEST_ASSERT_EQUAL_FLOAT(1.00f, state_out.current_velocity_mps[1]);
+  TEST_ASSERT_EQUAL_INT32(k_test_encoder_0, state_out.encoder_counts[k_test_motor_idx_0]);
+  TEST_ASSERT_EQUAL_INT32(k_test_encoder_1, state_out.encoder_counts[k_test_motor_idx_1]);
+  TEST_ASSERT_EQUAL_INT32(k_test_encoder_2, state_out.encoder_counts[k_test_motor_idx_2]);
+  TEST_ASSERT_EQUAL_INT32(k_test_encoder_3, state_out.encoder_counts[k_test_motor_idx_3]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           s_test_velocity_0,
+                           state_out.current_velocity_mps[k_test_motor_idx_0]);
+  TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
+                           s_test_velocity_1,
+                           state_out.current_velocity_mps[k_test_motor_idx_1]);
 }
 
 /**
@@ -180,14 +217,14 @@ void test_telemetry_task_collects_encoder_data(void)
  */
 void test_telemetry_task_collects_temp_data(void)
 {
-  /* Set up temp state (25.50degC = 2550 centi-degrees) */
-  temp_sensor_state_t temp_in  = {0};
-  temp_sensor_state_t temp_out = {0};
+  /* Set up temp state (25.50 degC = 2550 centi-degrees) */
+  temp_sensor_state_t temp_in  = {};
+  temp_sensor_state_t temp_out = {};
   rx_err_t            err;
 
-  temp_in.temperature_cdegc[0] = 2550;
-  temp_in.sensor_valid[0]      = true;
-  temp_in.sensor_count         = 1;
+  temp_in.temperature_cdegc[k_test_sensor_idx] = (int16_t)k_test_temp_cdegc;
+  temp_in.sensor_valid[k_test_sensor_idx]      = true;
+  temp_in.sensor_count                         = k_test_sensor_cnt;
 
   /* Store */
   err = shared_data_update_temp(&temp_in);
@@ -198,8 +235,9 @@ void test_telemetry_task_collects_temp_data(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify */
-  TEST_ASSERT_TRUE(temp_out.sensor_valid[0]);
-  TEST_ASSERT_EQUAL_INT16(2550, temp_out.temperature_cdegc[0]);
+  TEST_ASSERT_TRUE(temp_out.sensor_valid[k_test_sensor_idx]);
+  TEST_ASSERT_EQUAL_INT16((int16_t)k_test_temp_cdegc,
+                          temp_out.temperature_cdegc[k_test_sensor_idx]);
 }
 
 /* =============================================================================
@@ -222,19 +260,19 @@ void test_telemetry_task_encodes_protobuf(void)
   rx_err_t              err;
 
   /* Set up telemetry data */
-  telemetry.timestamp_us   = 1000000;
-  telemetry.frame_sequence = 42;
+  telemetry.timestamp_us   = k_test_timestamp_us;
+  telemetry.frame_sequence = k_test_frame_seq;
   telemetry.emergency_stop = false;
   /* Configure mock to succeed */
   mock_nanopb_set_encode_telemetry_return(k_rx_ok);
-  mock_nanopb_set_encode_length(64);
+  mock_nanopb_set_encode_length(k_test_encoded_len);
 
   /* Encode */
   err = rx_nanopb_encode_telemetry(&telemetry, buffer, k_test_buffer_size, &encoded_len);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT32(64, encoded_len);
-  TEST_ASSERT_EQUAL_UINT32(1, mock_nanopb_get_encode_telemetry_count());
+  TEST_ASSERT_EQUAL_UINT32(k_test_encoded_len, encoded_len);
+  TEST_ASSERT_EQUAL_UINT32(1U, mock_nanopb_get_encode_telemetry_count());
 }
 
 /**
@@ -273,9 +311,9 @@ void test_telemetry_task_handles_encode_failure(void)
 void test_telemetry_task_broadcasts_to_usb(void)
 {
   /* Initialize manager (required for send to work) */
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
-  uint8_t               payload[64];
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
+  uint8_t               payload[k_test_encoded_len];
   rx_err_t              err;
 
   mgr.initialized = true;
@@ -285,7 +323,7 @@ void test_telemetry_task_broadcasts_to_usb(void)
   params.type        = k_frame_type_response;
   params.flags       = 0;
   params.payload     = payload;
-  params.payload_len = 64;
+  params.payload_len = k_test_encoded_len;
 
   /* Configure mock */
   mock_comm_manager_set_send_return(k_rx_ok);
@@ -294,7 +332,7 @@ void test_telemetry_task_broadcasts_to_usb(void)
   err = rx_comm_manager_send(&mgr, &params);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT32(1, mock_comm_manager_get_send_count());
+  TEST_ASSERT_EQUAL_UINT32(1U, mock_comm_manager_get_send_count());
 }
 
 /**
@@ -306,8 +344,8 @@ void test_telemetry_task_broadcasts_to_usb(void)
 void test_telemetry_task_handles_send_failure(void)
 {
   /* Configure mock to fail */
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
   rx_err_t              err;
 
   mock_comm_manager_set_send_return(k_rx_err_timeout);
@@ -336,8 +374,8 @@ void test_telemetry_task_handles_send_failure(void)
  */
 void test_telemetry_transport_selects_usb_when_ready(void)
 {
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
   rx_err_t              err;
   bool                  usb_ready        = false;
   bool                  spi_ready        = false;
@@ -359,7 +397,7 @@ void test_telemetry_transport_selects_usb_when_ready(void)
   } else {
     err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_spi, &spi_ready);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
-    selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
+    selected_channel = (int)spi_ready ? k_comm_channel_spi : k_comm_channel_count;
   }
 
   /* Verify USB was selected (USB ready -> USB preferred) */
@@ -390,8 +428,8 @@ void test_telemetry_transport_selects_usb_when_ready(void)
  */
 void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
 {
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
   rx_err_t              err;
   bool                  usb_ready        = false;
   bool                  spi_ready        = false;
@@ -414,7 +452,7 @@ void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(spi_ready);
 
-  selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
+  selected_channel = (int)spi_ready ? k_comm_channel_spi : k_comm_channel_count;
 
   /* Verify SPI was selected (USB not ready -> SPI fallback) */
   TEST_ASSERT_EQUAL(k_comm_channel_spi, selected_channel);
@@ -440,7 +478,7 @@ void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
  */
 void test_telemetry_channel_ready_usb_reports_correctly(void)
 {
-  rx_comm_manager_t mgr   = {0};
+  rx_comm_manager_t mgr   = {};
   bool              ready = false;
   rx_err_t          err;
 
@@ -468,7 +506,7 @@ void test_telemetry_channel_ready_usb_reports_correctly(void)
  */
 void test_telemetry_channel_ready_spi_reports_correctly(void)
 {
-  rx_comm_manager_t mgr   = {0};
+  rx_comm_manager_t mgr   = {};
   bool              ready = false;
   rx_err_t          err;
 
@@ -501,9 +539,9 @@ void test_telemetry_channel_ready_spi_reports_correctly(void)
  */
 void test_telemetry_spi_fallback_send_succeeds(void)
 {
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
-  uint8_t               payload[64];
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
+  uint8_t               payload[k_test_encoded_len];
   rx_err_t              err;
   bool                  usb_ready        = false;
   bool                  spi_ready        = false;
@@ -524,7 +562,7 @@ void test_telemetry_spi_fallback_send_succeeds(void)
   } else {
     err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_spi, &spi_ready);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
-    selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
+    selected_channel = (int)spi_ready ? k_comm_channel_spi : k_comm_channel_count;
   }
 
   /* Verify SPI was selected (USB not ready -> SPI fallback) */
@@ -541,7 +579,7 @@ void test_telemetry_spi_fallback_send_succeeds(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_comm_channel_spi, mock_comm_manager_get_last_send_channel());
-  TEST_ASSERT_EQUAL_UINT32(1, mock_comm_manager_get_send_count());
+  TEST_ASSERT_EQUAL_UINT32(1U, mock_comm_manager_get_send_count());
 }
 
 /**
@@ -563,8 +601,8 @@ void test_telemetry_spi_fallback_send_succeeds(void)
  */
 void test_telemetry_defaults_to_usb_before_any_command(void)
 {
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
   rx_err_t              err;
 
   mgr.initialized = true;
@@ -573,7 +611,7 @@ void test_telemetry_defaults_to_usb_before_any_command(void)
   /* With no command received, active channel must default to USB */
   const uint8_t raw_ch = shared_data_get_active_channel();
   TEST_ASSERT_EQUAL_UINT8((uint8_t)k_comm_channel_usb, raw_ch);
-  TEST_ASSERT_EQUAL_UINT32(0, mock_shared_data_get_active_channel_update_count());
+  TEST_ASSERT_EQUAL_UINT32(0U, mock_shared_data_get_active_channel_update_count());
 
   /* Simulate telemetry routing: read channel, send via comm manager */
   params.channel     = (rx_comm_channel_t)raw_ch;
@@ -585,7 +623,7 @@ void test_telemetry_defaults_to_usb_before_any_command(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_comm_channel_usb, mock_comm_manager_get_last_send_channel());
-  TEST_ASSERT_EQUAL_UINT32(1, mock_comm_manager_get_send_count());
+  TEST_ASSERT_EQUAL_UINT32(1U, mock_comm_manager_get_send_count());
 }
 
 /**
@@ -607,20 +645,20 @@ void test_telemetry_defaults_to_usb_before_any_command(void)
  */
 void test_telemetry_routes_to_spi_after_spi_command(void)
 {
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
   rx_err_t              err;
 
   mgr.initialized = true;
   mock_comm_manager_set_send_return(k_rx_ok);
 
   /* Arrange: SPI command received */
-  (void)shared_data_update_active_channel((uint8_t)k_comm_channel_spi);
-  TEST_ASSERT_EQUAL_UINT32(1, mock_shared_data_get_active_channel_update_count());
+  (void)shared_data_update_active_channel(k_comm_channel_spi);
+  TEST_ASSERT_EQUAL_UINT32(1U, mock_shared_data_get_active_channel_update_count());
 
   /* Simulate telemetry routing: read channel, send via comm manager */
   const uint8_t raw_ch = shared_data_get_active_channel();
-  TEST_ASSERT_EQUAL_UINT8((uint8_t)k_comm_channel_spi, raw_ch);
+  TEST_ASSERT_EQUAL_UINT8(k_comm_channel_spi, raw_ch);
 
   params.channel     = (rx_comm_channel_t)raw_ch;
   params.type        = k_frame_type_response;
@@ -631,7 +669,7 @@ void test_telemetry_routes_to_spi_after_spi_command(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_comm_channel_spi, mock_comm_manager_get_last_send_channel());
-  TEST_ASSERT_EQUAL_UINT32(1, mock_comm_manager_get_send_count());
+  TEST_ASSERT_EQUAL_UINT32(1U, mock_comm_manager_get_send_count());
 }
 
 /* =============================================================================

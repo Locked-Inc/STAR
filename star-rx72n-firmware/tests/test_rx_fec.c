@@ -285,15 +285,127 @@
  * @see DOXYGEN_ROADMAP.md Complete documentation tracking
  */
 
-#include <string.h>
-
+#include "rx_check.h"
 #include "rx_fec.h"
 #include "unity.h"
+
+/* =============================================================================
+ * Extern Internal Functions (RX_STATIC_TESTABLE)
+ *
+ * These functions are compiled as non-static in UNIT_TEST builds via the
+ * RX_STATIC_TESTABLE macro, allowing direct invocation for branch coverage
+ * of RX_ASSERT_PRE and RX_ASSERT_POST failure paths.
+ * =============================================================================
+ */
+extern uint8_t internal_parity(uint8_t x);
+extern void    internal_set_output_bit(uint8_t* output, uint32_t bit_idx, uint8_t value);
+extern uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx);
+extern void    internal_encode_bit(uint8_t* state, uint8_t input_bit, uint8_t* out0, uint8_t* out1);
+extern int32_t
+internal_branch_metric(rx_soft_bit_t soft0, rx_soft_bit_t soft1, uint8_t exp0, uint8_t exp1);
+extern void internal_viterbi_process_symbol(rx_fec_decoder_t* dec,
+                                            rx_soft_bit_t     soft0,
+                                            rx_soft_bit_t     soft1,
+                                            uint32_t          symbol_idx);
+extern void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
+                                          const rx_soft_bit_t* soft_bits,
+                                          uint32_t             num_symbols);
+extern void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
+                                       uint32_t                num_symbols,
+                                       uint32_t                data_bits,
+                                       uint8_t*                output,
+                                       uint32_t                output_bytes);
 
 /* =============================================================================
  * Test Fixtures
  * =============================================================================
  */
+
+/**
+ * @defgroup test_fec_constants FEC Test Constants
+ * @brief Named constants for FEC unit tests
+ * @{
+ */
+
+/**
+ * @brief Arbitrary survivors buffer count used in decoder init parameter validation tests
+ * @details A non-zero, non-max count passed to rx_fec_decoder_init() to exercise
+ *          valid-argument code paths in null-pointer and zero-length rejection tests.
+ */
+typedef enum : uint32_t {
+  k_test_survivors_count = 100U, /**< Arbitrary valid count for init tests */
+} fec_test_counts_t;
+
+/**
+ * @brief Test byte value used as a single-element input buffer for encode null-arg tests
+ * @details Arbitrary non-zero byte to satisfy the input buffer requirement when testing
+ *          null pointer rejection of other parameters.
+ */
+typedef enum : uint8_t {
+  k_test_input_byte = 0x42U, /**< Arbitrary test byte for encode null-arg tests */
+} fec_test_bytes_t;
+
+/**
+ * @brief DEADBEEF byte constants for multi-byte encode/decode tests
+ * @details Well-known 4-byte pattern used as round-trip test vector.
+ */
+typedef enum : uint8_t {
+  k_byte_de = 0xDEU, /**< 0xDE byte of DEADBEEF pattern */
+  k_byte_ad = 0xADU, /**< 0xAD byte of DEADBEEF pattern */
+  k_byte_be = 0xBEU, /**< 0xBE byte of DEADBEEF pattern */
+  k_byte_ef = 0xEFU, /**< 0xEF byte of DEADBEEF pattern */
+} fec_test_pattern_bytes_t;
+
+/**
+ * @brief Buffer size constants for FEC unit tests
+ * @details Named sizes for encode/decode intermediate buffers.
+ */
+typedef enum : uint32_t {
+  k_buf_size_sm     = 10U,   /**< Small soft/hard buffer (insufficient for 2-byte decode) */
+  k_buf_size_out16  = 16U,   /**< Small decode output buffer (enough for <=8 decoded bytes) */
+  k_buf_size_enc32  = 32U,   /**< Encoded buffer for up to 4 input bytes (4*2+2=10 bytes, padded) */
+  k_buf_size_soft64 = 64U,   /**< Soft-bit buffer for 22 symbols (22*2=44, padded to 64) */
+  k_soft_len_odd    = 33U,   /**< Odd soft bit length (triggers invalid_arg rejection) */
+  k_soft_len_22sym  = 44U,   /**< Soft bits for 22 symbols: 22 * k_fec_num_outputs */
+  k_big_out_buf     = 4200U, /**< Output buffer large enough for k_fec_max_input_bytes+1 input */
+  k_expected_out_too_large = 1025U, /**< expected_output_len that overflows num_symbols bound */
+} fec_test_buf_sizes_t;
+
+/**
+ * @brief Input/output length constants for FEC unit tests
+ * @details Named lengths for encode/decode operations in test functions.
+ */
+typedef enum : uint32_t {
+  k_input_len_1       = 1U,    /**< Single-byte encode/decode input length */
+  k_input_len_2       = 2U,    /**< Two-byte expected output length for decode params */
+  k_input_len_4       = 4U,    /**< Four-byte encode/decode input length */
+  k_input_len_8       = 8U,    /**< Eight-byte encode/decode input (all-zeros/ones tests) */
+  k_enc_len_1byte     = 4U,    /**< Encoded length for 1-byte input: ceil((8+6)*2/8)=4 */
+  k_hard_data_len     = 16U,   /**< hard[] buffer length used in decode_hard tests */
+  k_input_len_32      = 32U,   /**< 32-byte input for larger payload round-trip test */
+  k_enc_buf_128       = 128U,  /**< Encoded buffer for 32-byte input: ~66 bytes, padded to 128 */
+  k_dec_buf_64        = 64U,   /**< Decode output buffer for 32-byte expected output */
+  k_enc_len_1byte_val = 4U,    /**< Expected encoded output bytes for 1-byte input: (8+6)*2/8=4 */
+  k_enc_len_2byte_val = 6U,    /**< Expected encoded output bytes for 2-byte input: (16+6)*2/8=6 */
+  k_enc_len_max_val   = 2050U, /**< Expected encoded output bytes for 1024-byte input */
+  k_large_soft_pad    = 32U, /**< Extra padding added to large soft buffer to exceed max symbols */
+} fec_test_lengths_t;
+
+/**
+ * @brief Byte pattern constants for round-trip and error correction tests
+ * @details Named byte values used as test input patterns and XOR error masks.
+ */
+typedef enum : uint8_t {
+  k_byte_ff       = 0xFFU, /**< All-ones byte pattern for all-ones round-trip test */
+  k_byte_aa       = 0xAAU, /**< Alternating 10101010 pattern for alternating round-trip test */
+  k_byte_55       = 0x55U, /**< Alternating 01010101 pattern for alternating round-trip test */
+  k_byte_ab       = 0xABU, /**< First byte of multi-bit error correction test vector */
+  k_byte_cd       = 0xCDU, /**< Second byte of multi-bit error correction test vector */
+  k_xor_flip_bit1 = 0x02U, /**< XOR mask to flip bit 1 in encoded[0] for error injection */
+  k_xor_flip_bit3 = 0x08U, /**< XOR mask to flip bit 3 in encoded[1] for error injection */
+} fec_test_pattern_t;
+
+/** @} */ /* end of test_fec_constants */
 
 /**
  * @defgroup test_fec_fixtures FEC Test Fixtures
@@ -597,7 +709,7 @@ void test_encoder_deinit_null(void)
  */
 void test_decoder_init_null_dec(void)
 {
-  rx_err_t err = rx_fec_decoder_init(nullptr, s_survivors, 100);
+  rx_err_t err = rx_fec_decoder_init(nullptr, s_survivors, k_test_survivors_count);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -621,7 +733,7 @@ void test_decoder_init_null_dec(void)
 void test_decoder_init_null_buffer(void)
 {
   rx_fec_decoder_t dec;
-  rx_err_t         err = rx_fec_decoder_init(&dec, nullptr, 100);
+  rx_err_t         err = rx_fec_decoder_init(&dec, nullptr, k_test_survivors_count);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -680,7 +792,7 @@ void test_decoder_init_zero_length(void)
 void test_decoder_init_success(void)
 {
   rx_fec_decoder_t dec;
-  rx_err_t         err = rx_fec_decoder_init(&dec, s_survivors, 100);
+  rx_err_t         err = rx_fec_decoder_init(&dec, s_survivors, k_test_survivors_count);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_NOT_EQUAL(0, dec.initialized);
@@ -759,7 +871,7 @@ void test_encoded_len_zero(void)
 void test_encoded_len_one_byte(void)
 {
   /* 1 byte = 8 bits, + 6 tail bits = 14 bits, * 2 = 28 bits = 4 bytes */
-  TEST_ASSERT_EQUAL(4, rx_fec_encoded_len(1));
+  TEST_ASSERT_EQUAL(k_enc_len_1byte_val, rx_fec_encoded_len(k_input_len_1));
 }
 
 /**
@@ -785,7 +897,7 @@ void test_encoded_len_one_byte(void)
 void test_encoded_len_two_bytes(void)
 {
   /* 2 bytes = 16 bits, + 6 tail bits = 22 bits, * 2 = 44 bits = 6 bytes */
-  TEST_ASSERT_EQUAL(6, rx_fec_encoded_len(2));
+  TEST_ASSERT_EQUAL(k_enc_len_2byte_val, rx_fec_encoded_len(k_input_len_2));
 }
 
 /**
@@ -815,7 +927,23 @@ void test_encoded_len_max_payload(void)
 {
   /* 1024 bytes = 8192 bits, + 6 tail bits = 8198 bits, * 2 = 16396 bits */
   /* 16396 / 8 = 2049.5, rounded up = 2050 bytes */
-  TEST_ASSERT_EQUAL(2050, rx_fec_encoded_len(1024));
+  TEST_ASSERT_EQUAL(k_enc_len_max_val, rx_fec_encoded_len(k_fec_max_input_bytes));
+}
+
+/**
+ * @brief Test encoded_len with input_len exceeding k_fec_max_input_bytes
+ *
+ * @details
+ * Verifies that rx_fec_encoded_len() returns 0 when input_len > k_fec_max_input_bytes (1024).
+ *
+ * @pre No precondition
+ * @post Returns 0 indicating error
+ *
+ * @test Validates input_len > k_fec_max_input_bytes returns 0 (line 523)
+ */
+void test_encoded_len_too_large(void)
+{
+  TEST_ASSERT_EQUAL(0, rx_fec_encoded_len(k_fec_max_input_bytes + 1U));
 }
 
 /** @} */ // end of test_fec_encoded_len
@@ -873,14 +1001,18 @@ void test_encoded_len_max_payload(void)
  */
 void test_encode_null_args(void)
 {
-  uint8_t  input[] = {0x42};
-  uint8_t  output[16];
+  uint8_t  input[] = {k_test_input_byte};
+  uint8_t  output[k_buf_size_out16];
   uint32_t len;
 
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_fec_encode(nullptr, input, 1, output, &len));
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_fec_encode(&s_encoder, nullptr, 1, output, &len));
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_fec_encode(&s_encoder, input, 1, nullptr, &len));
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_fec_encode(&s_encoder, input, 1, output, nullptr));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_fec_encode(nullptr, input, k_input_len_1, output, &len));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_fec_encode(&s_encoder, nullptr, k_input_len_1, output, &len));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_fec_encode(&s_encoder, input, k_input_len_1, nullptr, &len));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_fec_encode(&s_encoder, input, k_input_len_1, output, nullptr));
 }
 
 /**
@@ -906,12 +1038,12 @@ void test_encode_null_args(void)
  */
 void test_encode_uninitialized(void)
 {
-  rx_fec_encoder_t enc     = {0};
-  uint8_t          input[] = {0x42};
-  uint8_t          output[16];
+  rx_fec_encoder_t enc     = {false};
+  uint8_t          input[] = {k_test_input_byte};
+  uint8_t          output[k_buf_size_out16];
   uint32_t         len;
 
-  rx_err_t err = rx_fec_encode(&enc, input, 1, output, &len);
+  rx_err_t err = rx_fec_encode(&enc, input, k_input_len_1, output, &len);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -934,8 +1066,8 @@ void test_encode_uninitialized(void)
  */
 void test_encode_zero_length(void)
 {
-  uint8_t  input[] = {0x42};
-  uint8_t  output[16];
+  uint8_t  input[] = {k_test_input_byte};
+  uint8_t  output[k_buf_size_out16];
   uint32_t len;
 
   rx_err_t err = rx_fec_encode(&s_encoder, input, 0, output, &len);
@@ -973,13 +1105,13 @@ void test_encode_zero_length(void)
 void test_encode_single_byte(void)
 {
   uint8_t  input[] = {0x00};
-  uint8_t  output[16];
+  uint8_t  output[k_buf_size_out16];
   uint32_t len;
 
-  rx_err_t err = rx_fec_encode(&s_encoder, input, 1, output, &len);
+  rx_err_t err = rx_fec_encode(&s_encoder, input, k_input_len_1, output, &len);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(4, len); /* (8+6)*2/8 = 4 bytes */
+  TEST_ASSERT_EQUAL(k_enc_len_1byte, len); /* (8+6)*2/8 = 4 bytes */
 }
 
 /**
@@ -1010,22 +1142,46 @@ void test_encode_single_byte(void)
 void test_encode_deterministic(void)
 {
   /* Encoding the same data twice should produce identical output */
-  uint8_t input[] = {0xDE, 0xAD, 0xBE, 0xEF};
-  uint8_t output1[16];
-  uint8_t output2[16];
+  uint8_t input[] = {k_byte_de, k_byte_ad, k_byte_be, k_byte_ef};
+  uint8_t output1[k_buf_size_out16];
+  uint8_t output2[k_buf_size_out16];
 
-  uint32_t len1, len2;
+  uint32_t len1 = 0;
+  uint32_t len2 = 0;
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encode(&s_encoder, input, 4, output1, &len1));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encode(&s_encoder, input, k_input_len_4, output1, &len1));
 
   /* Re-init encoder to reset state */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encoder_deinit(&s_encoder));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encoder_init(&s_encoder));
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encode(&s_encoder, input, 4, output2, &len2));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encode(&s_encoder, input, k_input_len_4, output2, &len2));
 
   TEST_ASSERT_EQUAL(len1, len2);
   TEST_ASSERT_EQUAL_MEMORY(output1, output2, len1);
+}
+
+/**
+ * @brief Test encode with input_len exceeding k_fec_max_input_bytes
+ *
+ * @details
+ * Verifies that rx_fec_encode() returns k_rx_err_invalid_size when
+ * input_len > k_fec_max_input_bytes (1024).
+ *
+ * @pre setUp() has initialized s_encoder
+ * @post No encoding performed
+ *
+ * @test Validates input_len > k_fec_max_input_bytes rejection (line 578)
+ */
+void test_encode_too_large(void)
+{
+  static uint8_t s_big_input[k_fec_max_input_bytes + 1U];
+  static uint8_t s_big_output[k_big_out_buf];
+  uint32_t       len;
+
+  rx_err_t err =
+    rx_fec_encode(&s_encoder, s_big_input, k_fec_max_input_bytes + 1U, s_big_output, &len);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 /** @} */ // end of test_fec_encode
@@ -1177,14 +1333,14 @@ void test_soft_to_hard(void)
  */
 void test_decode_null_args(void)
 {
-  rx_soft_bit_t soft[32];
-  uint8_t       output[16];
+  rx_soft_bit_t soft[k_buf_size_enc32];
+  uint8_t       output[k_buf_size_out16];
   uint32_t      len;
 
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
-    .soft_len            = 32,
-    .expected_output_len = 2,
+    .soft_len            = k_buf_size_enc32,
+    .expected_output_len = k_input_len_2,
     .output              = output,
     .output_len          = &len,
   };
@@ -1229,15 +1385,15 @@ void test_decode_null_args(void)
  */
 void test_decode_uninitialized(void)
 {
-  rx_fec_decoder_t dec = {0};
-  rx_soft_bit_t    soft[32];
-  uint8_t          output[16];
+  rx_fec_decoder_t dec = {};
+  rx_soft_bit_t    soft[k_buf_size_enc32];
+  uint8_t          output[k_buf_size_out16];
   uint32_t         len;
 
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
-    .soft_len            = 32,
-    .expected_output_len = 2,
+    .soft_len            = k_buf_size_enc32,
+    .expected_output_len = k_input_len_2,
     .output              = output,
     .output_len          = &len,
   };
@@ -1269,14 +1425,14 @@ void test_decode_uninitialized(void)
  */
 void test_decode_odd_soft_length(void)
 {
-  rx_soft_bit_t soft[33];
-  uint8_t       output[16];
+  rx_soft_bit_t soft[k_soft_len_odd];
+  uint8_t       output[k_buf_size_out16];
   uint32_t      len;
 
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
-    .soft_len            = 33,
-    .expected_output_len = 2,
+    .soft_len            = k_soft_len_odd,
+    .expected_output_len = k_input_len_2,
     .output              = output,
     .output_len          = &len,
   };
@@ -1305,19 +1461,167 @@ void test_decode_odd_soft_length(void)
  */
 void test_decode_zero_length(void)
 {
-  rx_soft_bit_t soft[32];
-  uint8_t       output[16];
+  rx_soft_bit_t soft[k_buf_size_enc32];
+  uint8_t       output[k_buf_size_out16];
   uint32_t      len;
 
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
     .soft_len            = 0,
-    .expected_output_len = 2,
+    .expected_output_len = k_input_len_2,
     .output              = output,
     .output_len          = &len,
   };
 
   rx_err_t err = rx_fec_decode_soft(&s_decoder, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test decode_soft with expected_output_len producing zero symbols
+ *
+ * @details
+ * When expected_output_len == 0, the num_symbols ternary evaluates to 0,
+ * which is less than k_fec_tail_bits (6), triggering the too-small check.
+ *
+ * @pre setUp() has initialized s_decoder
+ * @post No decoding performed
+ *
+ * @test Validates num_symbols < k_fec_tail_bits rejection (line 684)
+ */
+void test_decode_soft_num_symbols_too_small(void)
+{
+  rx_soft_bit_t soft[k_buf_size_enc32];
+  uint8_t       output[k_buf_size_out16];
+  uint32_t      len;
+
+  rx_fec_decode_soft_params_t params = {
+    .soft_bits           = soft,
+    .soft_len            = k_buf_size_enc32,
+    .expected_output_len = 0,
+    .output              = output,
+    .output_len          = &len,
+  };
+
+  rx_err_t err = rx_fec_decode_soft(&s_decoder, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test decode_soft with expected_output_len exceeding k_fec_max_symbols
+ *
+ * @details
+ * When expected_output_len == 1025, num_symbols = (1025 * 8) + 6 = 8206 > 8200 (k_fec_max_symbols),
+ * triggering the too-large check.
+ *
+ * @pre setUp() has initialized s_decoder
+ * @post No decoding performed
+ *
+ * @test Validates num_symbols > k_fec_max_symbols rejection (line 688)
+ */
+void test_decode_soft_num_symbols_too_large(void)
+{
+  /* Use a local soft buffer large enough to pass the soft_len check */
+  static rx_soft_bit_t s_large_soft[k_fec_max_symbols * k_fec_num_outputs + k_large_soft_pad];
+  uint8_t              output[k_buf_size_out16];
+  uint32_t             len;
+
+  rx_fec_decode_soft_params_t params = {
+    .soft_bits           = s_large_soft,
+    .soft_len            = sizeof(s_large_soft) / sizeof(s_large_soft[0]),
+    .expected_output_len = k_expected_out_too_large,
+    .output              = output,
+    .output_len          = &len,
+  };
+
+  rx_err_t err = rx_fec_decode_soft(&s_decoder, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test decode_soft with insufficient soft_len for requested symbols
+ *
+ * @details
+ * Provides expected_output_len = 2 (num_symbols = 22), but only 10 soft bits,
+ * so num_symbols * k_fec_num_outputs (44) > soft_len (10), triggering rejection.
+ *
+ * @pre setUp() has initialized s_decoder
+ * @post No decoding performed
+ *
+ * @test Validates soft_len < num_symbols * k_fec_num_outputs rejection (line 698)
+ */
+void test_decode_soft_insufficient_soft_len(void)
+{
+  rx_soft_bit_t soft[k_buf_size_sm];
+  uint8_t       output[k_buf_size_out16];
+  uint32_t      len;
+
+  rx_fec_decode_soft_params_t params = {
+    .soft_bits           = soft,
+    .soft_len            = k_buf_size_sm,
+    .expected_output_len = k_input_len_2,
+    .output              = output,
+    .output_len          = &len,
+  };
+
+  rx_err_t err = rx_fec_decode_soft(&s_decoder, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test decode_soft with survivors buffer too small for requested symbols
+ *
+ * @details
+ * Creates a decoder with a survivors buffer of only 10 entries, then requests
+ * decoding with expected_output_len = 2 (num_symbols = 22 > 10),
+ * triggering the survivors_len check.
+ *
+ * @pre setUp() has initialized s_soft_bits_buffer
+ * @post No decoding performed
+ *
+ * @test Validates num_symbols > dec->survivors_len rejection (line 702)
+ */
+void test_decode_soft_survivors_too_small(void)
+{
+  /* Create a decoder with small survivors buffer */
+  static uint64_t             s_small_survivors[k_buf_size_sm];
+  rx_fec_decoder_t            small_dec;
+  rx_fec_decode_soft_params_t params;
+
+  rx_err_t init_err = rx_fec_decoder_init(&small_dec,
+                                          s_small_survivors,
+                                          sizeof(s_small_survivors) / sizeof(s_small_survivors[0]));
+  TEST_ASSERT_EQUAL(k_rx_ok, init_err);
+
+  /* expected_output_len=2: num_symbols=(2*8)+6=22 > survivors_len=10 */
+  rx_soft_bit_t soft[k_buf_size_soft64];
+  uint8_t       output[k_buf_size_out16];
+  uint32_t      len;
+
+  params.soft_bits           = soft;
+  params.soft_len            = k_soft_len_22sym; /* 22 * 2 = 44 */
+  params.expected_output_len = k_input_len_2;
+  params.output              = output;
+  params.output_len          = &len;
+
+  rx_err_t err = rx_fec_decode_soft(&small_dec, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test rx_fec_decoder_deinit with null pointer
+ *
+ * @details
+ * Verifies that rx_fec_decoder_deinit() rejects nullptr with k_rx_err_invalid_arg.
+ *
+ * @pre No precondition
+ * @post Nothing modified
+ *
+ * @test Validates nullptr rejection in decoder_deinit (line 762)
+ */
+void test_decoder_deinit_null(void)
+{
+  rx_err_t err = rx_fec_decoder_deinit(nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1374,14 +1678,14 @@ void test_decode_zero_length(void)
  */
 void test_decode_hard_null_args(void)
 {
-  uint8_t  hard[16] = {0};
-  uint8_t  output[16];
+  uint8_t  hard[k_hard_data_len] = {};
+  uint8_t  output[k_buf_size_out16];
   uint32_t len;
 
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
-    .data_len            = 16,
-    .expected_output_len = 2,
+    .data_len            = k_hard_data_len,
+    .expected_output_len = k_input_len_2,
     .output              = output,
     .output_len          = &len,
     .soft_bits_buffer    = s_soft_bits_buffer,
@@ -1433,15 +1737,15 @@ void test_decode_hard_null_args(void)
  */
 void test_decode_hard_uninitialized(void)
 {
-  rx_fec_decoder_t dec      = {0};
-  uint8_t          hard[16] = {0};
-  uint8_t          output[16];
+  rx_fec_decoder_t dec                   = {};
+  uint8_t          hard[k_hard_data_len] = {};
+  uint8_t          output[k_buf_size_out16];
   uint32_t         len;
 
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
-    .data_len            = 16,
-    .expected_output_len = 2,
+    .data_len            = k_hard_data_len,
+    .expected_output_len = k_input_len_2,
     .output              = output,
     .output_len          = &len,
     .soft_bits_buffer    = s_soft_bits_buffer,
@@ -1471,14 +1775,14 @@ void test_decode_hard_uninitialized(void)
  */
 void test_decode_hard_zero_length(void)
 {
-  uint8_t  hard[16] = {0};
-  uint8_t  output[16];
+  uint8_t  hard[k_hard_data_len] = {};
+  uint8_t  output[k_buf_size_out16];
   uint32_t len;
 
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
     .data_len            = 0,
-    .expected_output_len = 2,
+    .expected_output_len = k_input_len_2,
     .output              = output,
     .output_len          = &len,
     .soft_bits_buffer    = s_soft_bits_buffer,
@@ -1487,6 +1791,72 @@ void test_decode_hard_zero_length(void)
 
   rx_err_t err = rx_fec_decode_hard(&s_decoder, &params);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test decode_hard with data_len exceeding k_fec_max_input_bytes
+ *
+ * @details
+ * Verifies that rx_fec_decode_hard() returns k_rx_err_invalid_size when
+ * data_len > k_fec_max_input_bytes (1024).
+ *
+ * @pre setUp() has initialized s_decoder and s_soft_bits_buffer
+ * @post No decoding performed
+ *
+ * @test Validates data_len > k_fec_max_input_bytes rejection (line 964)
+ */
+void test_decode_hard_data_too_large(void)
+{
+  static uint8_t s_big_hard[k_fec_max_input_bytes + 1U];
+  uint8_t        output[k_buf_size_out16];
+  uint32_t       len;
+
+  rx_fec_decode_hard_params_t params = {
+    .data                = s_big_hard,
+    .data_len            = k_fec_max_input_bytes + 1U,
+    .expected_output_len = k_input_len_2,
+    .output              = output,
+    .output_len          = &len,
+    .soft_bits_buffer    = s_soft_bits_buffer,
+    .soft_buffer_len     = sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]),
+  };
+
+  rx_err_t err = rx_fec_decode_hard(&s_decoder, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
+}
+
+/**
+ * @brief Test decode_hard with soft_buffer_len insufficient for num_bits
+ *
+ * @details
+ * Verifies that rx_fec_decode_hard() returns k_rx_err_invalid_size when
+ * soft_buffer_len < data_len * 8 (num_bits > soft_buffer_len).
+ * Uses data_len = 4 (32 bits) but soft_buffer_len = 10 (< 32).
+ *
+ * @pre setUp() has initialized s_decoder
+ * @post No decoding performed
+ *
+ * @test Validates num_bits > soft_buffer_len rejection (line 972)
+ */
+void test_decode_hard_soft_buffer_too_small(void)
+{
+  static rx_soft_bit_t s_tiny_soft[k_buf_size_sm];
+  uint8_t              hard[k_input_len_4] = {};
+  uint8_t              output[k_buf_size_out16];
+  uint32_t             len;
+
+  rx_fec_decode_hard_params_t params = {
+    .data                = hard,
+    .data_len            = k_input_len_4,
+    .expected_output_len = k_input_len_2,
+    .output              = output,
+    .output_len          = &len,
+    .soft_bits_buffer    = s_tiny_soft,
+    .soft_buffer_len     = k_buf_size_sm, /* < 32 = 4 bytes * 8 bits */
+  };
+
+  rx_err_t err = rx_fec_decode_hard(&s_decoder, &params);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 /** @} */ // end of test_fec_decode_hard
@@ -1554,21 +1924,22 @@ void test_decode_hard_zero_length(void)
  */
 void test_roundtrip_single_byte(void)
 {
-  uint8_t input[] = {0x42};
-  uint8_t encoded[16];
-  uint8_t decoded[16];
+  uint8_t input[] = {k_test_input_byte};
+  uint8_t encoded[k_buf_size_out16];
+  uint8_t decoded[k_buf_size_out16];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
   /* Encode */
-  rx_err_t err = rx_fec_encode(&s_encoder, input, 1, encoded, &enc_len);
+  rx_err_t err = rx_fec_encode(&s_encoder, input, k_input_len_1, encoded, &enc_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Decode using hard decision */
   rx_fec_decode_hard_params_t params = {
     .data                = encoded,
     .data_len            = enc_len,
-    .expected_output_len = 1,
+    .expected_output_len = k_input_len_1,
     .output              = decoded,
     .output_len          = &dec_len,
     .soft_bits_buffer    = s_soft_bits_buffer,
@@ -1576,8 +1947,8 @@ void test_roundtrip_single_byte(void)
   };
   err = rx_fec_decode_hard(&s_decoder, &params);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(1, dec_len);
-  TEST_ASSERT_EQUAL_HEX8(0x42, decoded[0]);
+  TEST_ASSERT_EQUAL(k_input_len_1, dec_len);
+  TEST_ASSERT_EQUAL_HEX8(k_test_input_byte, decoded[0]);
 }
 
 /**
@@ -1605,21 +1976,22 @@ void test_roundtrip_single_byte(void)
  */
 void test_roundtrip_multi_byte(void)
 {
-  uint8_t input[] = {0xDE, 0xAD, 0xBE, 0xEF};
-  uint8_t encoded[32];
-  uint8_t decoded[16];
+  uint8_t input[] = {k_byte_de, k_byte_ad, k_byte_be, k_byte_ef};
+  uint8_t encoded[k_buf_size_enc32];
+  uint8_t decoded[k_buf_size_out16];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
   /* Encode */
-  rx_err_t err = rx_fec_encode(&s_encoder, input, 4, encoded, &enc_len);
+  rx_err_t err = rx_fec_encode(&s_encoder, input, k_input_len_4, encoded, &enc_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Decode */
   rx_fec_decode_hard_params_t params = {
     .data                = encoded,
     .data_len            = enc_len,
-    .expected_output_len = 4,
+    .expected_output_len = k_input_len_4,
     .output              = decoded,
     .output_len          = &dec_len,
     .soft_bits_buffer    = s_soft_bits_buffer,
@@ -1627,8 +1999,8 @@ void test_roundtrip_multi_byte(void)
   };
   err = rx_fec_decode_hard(&s_decoder, &params);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(4, dec_len);
-  TEST_ASSERT_EQUAL_MEMORY(input, decoded, 4);
+  TEST_ASSERT_EQUAL(k_input_len_4, dec_len);
+  TEST_ASSERT_EQUAL_MEMORY(input, decoded, k_input_len_4);
 }
 
 /**
@@ -1654,23 +2026,26 @@ void test_roundtrip_multi_byte(void)
  */
 void test_roundtrip_all_zeros(void)
 {
-  uint8_t input[8];
-  uint8_t encoded[32];
-  uint8_t decoded[16];
+  uint8_t input[k_input_len_8];
+  uint8_t encoded[k_buf_size_enc32];
+  uint8_t decoded[k_buf_size_out16];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
-  memset(input, 0x00, 8);
+  for (uint32_t i = 0; i < k_input_len_8; i++) {
+    input[i] = 0x00;
+  }
 
   /* Encode */
-  rx_err_t err = rx_fec_encode(&s_encoder, input, 8, encoded, &enc_len);
+  rx_err_t err = rx_fec_encode(&s_encoder, input, k_input_len_8, encoded, &enc_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Decode */
   rx_fec_decode_hard_params_t params = {
     .data                = encoded,
     .data_len            = enc_len,
-    .expected_output_len = 8,
+    .expected_output_len = k_input_len_8,
     .output              = decoded,
     .output_len          = &dec_len,
     .soft_bits_buffer    = s_soft_bits_buffer,
@@ -1678,8 +2053,8 @@ void test_roundtrip_all_zeros(void)
   };
   err = rx_fec_decode_hard(&s_decoder, &params);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(8, dec_len);
-  TEST_ASSERT_EQUAL_MEMORY(input, decoded, 8);
+  TEST_ASSERT_EQUAL(k_input_len_8, dec_len);
+  TEST_ASSERT_EQUAL_MEMORY(input, decoded, k_input_len_8);
 }
 
 /**
@@ -1705,23 +2080,26 @@ void test_roundtrip_all_zeros(void)
  */
 void test_roundtrip_all_ones(void)
 {
-  uint8_t input[8];
-  uint8_t encoded[32];
-  uint8_t decoded[16];
+  uint8_t input[k_input_len_8];
+  uint8_t encoded[k_buf_size_enc32];
+  uint8_t decoded[k_buf_size_out16];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
-  memset(input, 0xFF, 8);
+  for (uint32_t i = 0; i < k_input_len_8; i++) {
+    input[i] = k_byte_ff;
+  }
 
   /* Encode */
-  rx_err_t err = rx_fec_encode(&s_encoder, input, 8, encoded, &enc_len);
+  rx_err_t err = rx_fec_encode(&s_encoder, input, k_input_len_8, encoded, &enc_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Decode */
   rx_fec_decode_hard_params_t params = {
     .data                = encoded,
     .data_len            = enc_len,
-    .expected_output_len = 8,
+    .expected_output_len = k_input_len_8,
     .output              = decoded,
     .output_len          = &dec_len,
     .soft_bits_buffer    = s_soft_bits_buffer,
@@ -1729,8 +2107,8 @@ void test_roundtrip_all_ones(void)
   };
   err = rx_fec_decode_hard(&s_decoder, &params);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(8, dec_len);
-  TEST_ASSERT_EQUAL_MEMORY(input, decoded, 8);
+  TEST_ASSERT_EQUAL(k_input_len_8, dec_len);
+  TEST_ASSERT_EQUAL_MEMORY(input, decoded, k_input_len_8);
 }
 
 /**
@@ -1756,21 +2134,22 @@ void test_roundtrip_all_ones(void)
  */
 void test_roundtrip_alternating_pattern(void)
 {
-  uint8_t input[] = {0xAA, 0x55, 0xAA, 0x55};
-  uint8_t encoded[32];
-  uint8_t decoded[16];
+  uint8_t input[] = {k_byte_aa, k_byte_55, k_byte_aa, k_byte_55};
+  uint8_t encoded[k_buf_size_enc32];
+  uint8_t decoded[k_buf_size_out16];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
   /* Encode */
-  rx_err_t err = rx_fec_encode(&s_encoder, input, 4, encoded, &enc_len);
+  rx_err_t err = rx_fec_encode(&s_encoder, input, k_input_len_4, encoded, &enc_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Decode */
   rx_fec_decode_hard_params_t params = {
     .data                = encoded,
     .data_len            = enc_len,
-    .expected_output_len = 4,
+    .expected_output_len = k_input_len_4,
     .output              = decoded,
     .output_len          = &dec_len,
     .soft_bits_buffer    = s_soft_bits_buffer,
@@ -1778,8 +2157,8 @@ void test_roundtrip_alternating_pattern(void)
   };
   err = rx_fec_decode_hard(&s_decoder, &params);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(4, dec_len);
-  TEST_ASSERT_EQUAL_MEMORY(input, decoded, 4);
+  TEST_ASSERT_EQUAL(k_input_len_4, dec_len);
+  TEST_ASSERT_EQUAL_MEMORY(input, decoded, k_input_len_4);
 }
 
 /**
@@ -1811,26 +2190,27 @@ void test_roundtrip_alternating_pattern(void)
  */
 void test_roundtrip_larger_payload(void)
 {
-  uint8_t input[32];
-  uint8_t encoded[128];
-  uint8_t decoded[64];
+  uint8_t input[k_input_len_32];
+  uint8_t encoded[k_enc_buf_128];
+  uint8_t decoded[k_dec_buf_64];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
   /* Fill with ascending pattern */
-  for (uint32_t i = 0; i < 32; i++) {
+  for (uint32_t i = 0; i < k_input_len_32; i++) {
     input[i] = (uint8_t)i;
   }
 
   /* Encode */
-  rx_err_t err = rx_fec_encode(&s_encoder, input, 32, encoded, &enc_len);
+  rx_err_t err = rx_fec_encode(&s_encoder, input, k_input_len_32, encoded, &enc_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Decode */
   rx_fec_decode_hard_params_t params = {
     .data                = encoded,
     .data_len            = enc_len,
-    .expected_output_len = 32,
+    .expected_output_len = k_input_len_32,
     .output              = decoded,
     .output_len          = &dec_len,
     .soft_bits_buffer    = s_soft_bits_buffer,
@@ -1838,8 +2218,8 @@ void test_roundtrip_larger_payload(void)
   };
   err = rx_fec_decode_hard(&s_decoder, &params);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(32, dec_len);
-  TEST_ASSERT_EQUAL_MEMORY(input, decoded, 32);
+  TEST_ASSERT_EQUAL(k_input_len_32, dec_len);
+  TEST_ASSERT_EQUAL_MEMORY(input, decoded, k_input_len_32);
 }
 
 /** @} */ // end of test_fec_roundtrip
@@ -1913,14 +2293,15 @@ void test_roundtrip_larger_payload(void)
  */
 void test_single_bit_error_correction(void)
 {
-  uint8_t input[] = {0x42};
-  uint8_t encoded[16];
-  uint8_t decoded[16];
+  uint8_t input[] = {k_test_input_byte};
+  uint8_t encoded[k_buf_size_out16];
+  uint8_t decoded[k_buf_size_out16];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
   /* Encode */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encode(&s_encoder, input, 1, encoded, &enc_len));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encode(&s_encoder, input, k_input_len_1, encoded, &enc_len));
 
   /* Flip a single bit in the encoded data */
   encoded[0] ^= 0x01;
@@ -1929,7 +2310,7 @@ void test_single_bit_error_correction(void)
   rx_fec_decode_hard_params_t params = {
     .data                = encoded,
     .data_len            = enc_len,
-    .expected_output_len = 1,
+    .expected_output_len = k_input_len_1,
     .output              = decoded,
     .output_len          = &dec_len,
     .soft_bits_buffer    = s_soft_bits_buffer,
@@ -1937,7 +2318,7 @@ void test_single_bit_error_correction(void)
   };
   rx_err_t err = rx_fec_decode_hard(&s_decoder, &params);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_HEX8(0x42, decoded[0]);
+  TEST_ASSERT_EQUAL_HEX8(k_test_input_byte, decoded[0]);
 }
 
 /**
@@ -1975,24 +2356,25 @@ void test_single_bit_error_correction(void)
  */
 void test_multiple_bit_error_correction(void)
 {
-  uint8_t input[] = {0xAB, 0xCD};
-  uint8_t encoded[16];
-  uint8_t decoded[16];
+  uint8_t input[] = {k_byte_ab, k_byte_cd};
+  uint8_t encoded[k_buf_size_out16];
+  uint8_t decoded[k_buf_size_out16];
 
-  uint32_t enc_len, dec_len;
+  uint32_t enc_len = 0;
+  uint32_t dec_len = 0;
 
   /* Encode */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encode(&s_encoder, input, 2, encoded, &enc_len));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encode(&s_encoder, input, k_input_len_2, encoded, &enc_len));
 
   /* Flip a couple bits in different positions */
-  encoded[0] ^= 0x02;
-  encoded[1] ^= 0x08;
+  encoded[0] ^= k_xor_flip_bit1;
+  encoded[1] ^= k_xor_flip_bit3;
 
   /* K=7 Viterbi can typically correct multiple scattered errors */
   rx_fec_decode_hard_params_t params = {
     .data                = encoded,
     .data_len            = enc_len,
-    .expected_output_len = 2,
+    .expected_output_len = k_input_len_2,
     .output              = decoded,
     .output_len          = &dec_len,
     .soft_bits_buffer    = s_soft_bits_buffer,
@@ -2000,10 +2382,273 @@ void test_multiple_bit_error_correction(void)
   };
   rx_err_t err = rx_fec_decode_hard(&s_decoder, &params);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_MEMORY(input, decoded, 2);
+  TEST_ASSERT_EQUAL_MEMORY(input, decoded, k_input_len_2);
 }
 
 /** @} */ // end of test_fec_error_correction
+
+/* =============================================================================
+ * Internal Function Assertion Coverage Tests (RX_STATIC_TESTABLE)
+ *
+ * These tests exercise the failure branches of RX_ASSERT_PRE and
+ * RX_ASSERT_POST in internal helper functions.  In UNIT_TEST builds the
+ * fatal-error handler is a no-op, so the tests simply verify no crash.
+ * =============================================================================
+ */
+
+/**
+ * @brief Overflow constant for internal_set_output_bit bit_idx range check
+ *
+ * @details Any value >= k_fec_max_symbols * k_rx_bits_per_byte triggers the
+ * RX_ASSERT_PRE on line 184.
+ */
+typedef enum : uint32_t {
+  k_bit_idx_overflow = 70000U, /**< Exceeds k_fec_max_symbols * 8 (65600) */
+} fec_assert_test_constants_t;
+
+/**
+ * @brief Invalid input bit value for internal_encode_bit PRE assertion
+ */
+typedef enum : uint8_t {
+  k_invalid_bit_value = 0x02U, /**< Neither 0 nor 1 */
+} fec_invalid_bit_t;
+
+/* ---- internal_set_output_bit PRE assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_set_output_bit with nullptr output
+ *
+ * @test Covers line 181 (RX_ASSERT_PRE: output != nullptr)
+ */
+void test_internal_set_output_bit_null(void)
+{
+  internal_set_output_bit(nullptr, 0, 0);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_set_output_bit with out-of-range bit_idx
+ *
+ * @test Covers line 184 (RX_ASSERT_PRE: bit_idx < k_fec_max_symbols * 8)
+ */
+void test_internal_set_output_bit_index_overflow(void)
+{
+  uint8_t buf[k_buf_size_enc32] = {};
+  internal_set_output_bit(buf, k_bit_idx_overflow, 1);
+  TEST_PASS();
+}
+
+/* ---- internal_get_bit PRE/POST assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_get_bit with nullptr data
+ *
+ * @test Covers line 210 (RX_ASSERT_PRE: data != nullptr)
+ */
+void test_internal_get_bit_null(void)
+{
+  (void)internal_get_bit(nullptr, 0);
+  TEST_PASS();
+}
+
+/* ---- internal_encode_bit PRE assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_encode_bit with nullptr state
+ *
+ * @test Covers line 236 (RX_ASSERT_PRE: state != nullptr)
+ */
+void test_internal_encode_bit_null_state(void)
+{
+  uint8_t out0 = 0;
+  uint8_t out1 = 0;
+  internal_encode_bit(nullptr, 0, &out0, &out1);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_encode_bit with nullptr out0
+ *
+ * @test Covers line 237 (RX_ASSERT_PRE: out0 != nullptr)
+ */
+void test_internal_encode_bit_null_out0(void)
+{
+  uint8_t state = 0;
+  uint8_t out1  = 0;
+  internal_encode_bit(&state, 0, nullptr, &out1);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_encode_bit with nullptr out1
+ *
+ * @test Covers line 238 (RX_ASSERT_PRE: out1 != nullptr)
+ */
+void test_internal_encode_bit_null_out1(void)
+{
+  uint8_t state = 0;
+  uint8_t out0  = 0;
+  internal_encode_bit(&state, 0, &out0, nullptr);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_encode_bit with invalid input_bit value
+ *
+ * @details
+ * Passes 0x02 as input_bit, which is neither 0 nor 1, triggering the
+ * RX_ASSERT_PRE on line 241.
+ *
+ * @test Covers line 241 (RX_ASSERT_PRE: input_bit == 0 || input_bit == 1)
+ */
+void test_internal_encode_bit_invalid_input(void)
+{
+  uint8_t state = 0;
+  uint8_t out0  = 0;
+  uint8_t out1  = 0;
+  internal_encode_bit(&state, k_invalid_bit_value, &out0, &out1);
+  TEST_PASS();
+}
+
+/* ---- internal_branch_metric PRE assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_branch_metric with invalid expected bit values
+ *
+ * @details
+ * Passes 0x02 for exp0 and exp1, triggering the RX_ASSERT_PRE assertions
+ * on lines 294-295.
+ *
+ * @test Covers lines 294-295 (RX_ASSERT_PRE: exp0/exp1 must be 0 or 1)
+ */
+void test_internal_branch_metric_invalid_expected(void)
+{
+  (void)internal_branch_metric(0, 0, k_invalid_bit_value, k_invalid_bit_value);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_branch_metric with valid exp0 but invalid exp1
+ *
+ * @details
+ * Passes valid exp0 (0) and invalid exp1 (0x02). The left side of the UNIT_TEST
+ * guard evaluates to false (exp0 is valid), so the right side is evaluated.
+ * This covers the exp1 validation branch on the right side of the || guard.
+ *
+ * @test Covers line 321 (UNIT_TEST guard: exp1 invalid branch)
+ */
+void test_internal_branch_metric_invalid_exp1_only(void)
+{
+  (void)internal_branch_metric(0, 0, 0, k_invalid_bit_value);
+  TEST_PASS();
+}
+
+/* ---- internal_viterbi_process_symbol PRE assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_viterbi_process_symbol with nullptr decoder
+ *
+ * @test Covers line 364 (RX_ASSERT_PRE: dec != nullptr)
+ */
+void test_internal_viterbi_process_symbol_null(void)
+{
+  internal_viterbi_process_symbol(nullptr, 0, 0, 0);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_viterbi_process_symbol with out-of-range symbol_idx
+ *
+ * @details
+ * Uses the initialized s_decoder (survivors_len = k_fec_max_symbols) and
+ * passes symbol_idx = k_fec_max_symbols, which equals survivors_len and
+ * therefore fails the < check on line 367.
+ *
+ * @test Covers line 367 (RX_ASSERT_PRE: symbol_idx < dec->survivors_len)
+ */
+void test_internal_viterbi_process_symbol_idx_overflow(void)
+{
+  internal_viterbi_process_symbol(&s_decoder, 0, 0, k_fec_max_symbols);
+  TEST_PASS();
+}
+
+/* ---- internal_viterbi_forward_pass PRE assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_viterbi_forward_pass with nullptr decoder
+ *
+ * @test Covers line 407 (RX_ASSERT_PRE: dec != nullptr)
+ */
+void test_internal_viterbi_forward_pass_null_dec(void)
+{
+  rx_soft_bit_t soft[k_buf_size_enc32] = {};
+  internal_viterbi_forward_pass(nullptr, soft, 0);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_viterbi_forward_pass with nullptr soft_bits
+ *
+ * @test Covers line 408 (RX_ASSERT_PRE: soft_bits != nullptr)
+ */
+void test_internal_viterbi_forward_pass_null_soft(void)
+{
+  internal_viterbi_forward_pass(&s_decoder, nullptr, 0);
+  TEST_PASS();
+}
+
+/* ---- internal_viterbi_traceback PRE assertion coverage ---- */
+
+/**
+ * @brief Exercise internal_viterbi_traceback with nullptr decoder
+ *
+ * @test Covers line 444 (RX_ASSERT_PRE: dec != nullptr)
+ */
+void test_internal_viterbi_traceback_null_dec(void)
+{
+  uint8_t output[k_buf_size_out16] = {};
+  internal_viterbi_traceback(nullptr, 0, 0, output, k_input_len_1);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_viterbi_traceback with nullptr output
+ *
+ * @test Covers line 445 (RX_ASSERT_PRE: output != nullptr)
+ */
+void test_internal_viterbi_traceback_null_output(void)
+{
+  internal_viterbi_traceback(&s_decoder, 0, 0, nullptr, k_input_len_1);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_viterbi_traceback with zero output_bytes
+ *
+ * @test Covers line 446 (RX_ASSERT_PRE: output_bytes > 0)
+ */
+void test_internal_viterbi_traceback_zero_output_bytes(void)
+{
+  uint8_t output[k_buf_size_out16] = {};
+  internal_viterbi_traceback(&s_decoder, 0, 0, output, 0);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_viterbi_traceback with num_symbols > survivors_len
+ *
+ * @details
+ * Uses s_decoder with survivors_len = k_fec_max_symbols and passes
+ * num_symbols = k_fec_max_symbols + 1, triggering the <= check on line 447.
+ *
+ * @test Covers line 447 (RX_ASSERT_PRE: num_symbols <= dec->survivors_len)
+ */
+void test_internal_viterbi_traceback_num_symbols_overflow(void)
+{
+  uint8_t output[k_buf_size_out16] = {};
+  internal_viterbi_traceback(&s_decoder, k_fec_max_symbols + 1U, 0, output, k_input_len_1);
+  TEST_PASS();
+}
 
 /* =============================================================================
  * Main
@@ -2011,35 +2656,17 @@ void test_multiple_bit_error_correction(void)
  */
 
 /**
- * @brief Main test runner for FEC unit tests
+ * @brief Run encoder init, decoder init, and encoded-length tests
  *
  * @details
- * Executes all FEC unit tests using Unity framework. Tests are organized into
- * logical groups and run sequentially.
+ * Groups encoder/decoder initialization and encoded-length calculation tests.
+ * Called from main() to keep main() within function-size limits.
  *
- * **Test Execution Order:**
- * 1. Encoder initialization tests (3 tests)
- * 2. Decoder initialization tests (4 tests)
- * 3. Encoded length calculation tests (4 tests)
- * 4. Encode tests (5 tests)
- * 5. Soft/hard bit conversion tests (2 tests)
- * 6. Decode soft tests (4 tests)
- * 7. Decode hard tests (3 tests)
- * 8. Round-trip tests (6 tests)
- * 9. Error correction tests (2 tests)
- *
- * **Total:** 33 tests
- *
- * **Exit Codes:**
- * - 0: All tests passed
- * - Non-zero: At least one test failed (Unity returns number of failures)
- *
- * @return 0 if all tests pass, non-zero if any test fails
+ * @pre UNITY_BEGIN() has been called
+ * @post 12 tests queued for execution
  */
-int main(void)
+static void internal_run_init_and_length_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Encoder init tests */
   RUN_TEST(test_encoder_init_null);
   RUN_TEST(test_encoder_init_success);
@@ -2056,29 +2683,77 @@ int main(void)
   RUN_TEST(test_encoded_len_one_byte);
   RUN_TEST(test_encoded_len_two_bytes);
   RUN_TEST(test_encoded_len_max_payload);
+  RUN_TEST(test_encoded_len_too_large);
+}
 
+/**
+ * @brief Run encode parameter validation and soft/hard bit conversion tests
+ *
+ * @details
+ * Groups encode API validation and bit-conversion tests.
+ * Called from main() to keep main() within function-size limits.
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post 8 tests queued for execution
+ */
+static void internal_run_encode_and_conversion_tests(void)
+{
   /* Encode tests */
   RUN_TEST(test_encode_null_args);
   RUN_TEST(test_encode_uninitialized);
   RUN_TEST(test_encode_zero_length);
   RUN_TEST(test_encode_single_byte);
   RUN_TEST(test_encode_deterministic);
+  RUN_TEST(test_encode_too_large);
 
   /* Soft/hard bit conversion tests */
   RUN_TEST(test_hard_to_soft);
   RUN_TEST(test_soft_to_hard);
+}
 
+/**
+ * @brief Run decode soft and decode hard parameter validation tests
+ *
+ * @details
+ * Groups soft-decision and hard-decision decode API validation tests.
+ * Called from main() to keep main() within function-size limits.
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post 14 tests queued for execution
+ */
+static void internal_run_decode_validation_tests(void)
+{
   /* Decode soft tests */
   RUN_TEST(test_decode_null_args);
   RUN_TEST(test_decode_uninitialized);
   RUN_TEST(test_decode_odd_soft_length);
   RUN_TEST(test_decode_zero_length);
+  RUN_TEST(test_decode_soft_num_symbols_too_small);
+  RUN_TEST(test_decode_soft_num_symbols_too_large);
+  RUN_TEST(test_decode_soft_insufficient_soft_len);
+  RUN_TEST(test_decode_soft_survivors_too_small);
+  RUN_TEST(test_decoder_deinit_null);
 
   /* Decode hard tests */
   RUN_TEST(test_decode_hard_null_args);
   RUN_TEST(test_decode_hard_uninitialized);
   RUN_TEST(test_decode_hard_zero_length);
+  RUN_TEST(test_decode_hard_data_too_large);
+  RUN_TEST(test_decode_hard_soft_buffer_too_small);
+}
 
+/**
+ * @brief Run round-trip and error correction tests
+ *
+ * @details
+ * Groups encode/decode round-trip and error correction tests.
+ * Called from main() to keep main() within function-size limits.
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post 8 tests queued for execution
+ */
+static void internal_run_roundtrip_and_error_tests(void)
+{
   /* Round-trip tests */
   RUN_TEST(test_roundtrip_single_byte);
   RUN_TEST(test_roundtrip_multi_byte);
@@ -2090,6 +2765,81 @@ int main(void)
   /* Error correction tests */
   RUN_TEST(test_single_bit_error_correction);
   RUN_TEST(test_multiple_bit_error_correction);
+}
 
+/**
+ * @brief Run internal function assertion coverage tests
+ *
+ * @details
+ * Groups RX_ASSERT_PRE and RX_ASSERT_POST failure-branch coverage tests
+ * for RX_STATIC_TESTABLE internal helper functions. These tests exercise
+ * the assertion failure paths that are unreachable through the public API.
+ *
+ * @pre UNITY_BEGIN() has been called
+ * @post 18 tests queued for execution
+ */
+static void internal_run_assert_coverage_tests(void)
+{
+  /* internal_set_output_bit PRE */
+  RUN_TEST(test_internal_set_output_bit_null);
+  RUN_TEST(test_internal_set_output_bit_index_overflow);
+
+  /* internal_get_bit PRE */
+  RUN_TEST(test_internal_get_bit_null);
+
+  /* internal_encode_bit PRE */
+  RUN_TEST(test_internal_encode_bit_null_state);
+  RUN_TEST(test_internal_encode_bit_null_out0);
+  RUN_TEST(test_internal_encode_bit_null_out1);
+  RUN_TEST(test_internal_encode_bit_invalid_input);
+
+  /* internal_branch_metric PRE + UNIT_TEST guard */
+  RUN_TEST(test_internal_branch_metric_invalid_expected);
+  RUN_TEST(test_internal_branch_metric_invalid_exp1_only);
+
+  /* internal_viterbi_process_symbol PRE */
+  RUN_TEST(test_internal_viterbi_process_symbol_null);
+  RUN_TEST(test_internal_viterbi_process_symbol_idx_overflow);
+
+  /* internal_viterbi_forward_pass PRE */
+  RUN_TEST(test_internal_viterbi_forward_pass_null_dec);
+  RUN_TEST(test_internal_viterbi_forward_pass_null_soft);
+
+  /* internal_viterbi_traceback PRE */
+  RUN_TEST(test_internal_viterbi_traceback_null_dec);
+  RUN_TEST(test_internal_viterbi_traceback_null_output);
+  RUN_TEST(test_internal_viterbi_traceback_zero_output_bytes);
+  RUN_TEST(test_internal_viterbi_traceback_num_symbols_overflow);
+}
+
+/**
+ * @brief Main test runner for FEC unit tests
+ *
+ * @details
+ * Executes all FEC unit tests using Unity framework. Tests are organized into
+ * logical groups and run sequentially via static helper functions.
+ *
+ * **Test Execution Order:**
+ * 1. internal_run_init_and_length_tests()    - 12 tests
+ * 2. internal_run_encode_and_conversion_tests() - 8 tests
+ * 3. internal_run_decode_validation_tests()  - 14 tests
+ * 4. internal_run_roundtrip_and_error_tests() - 8 tests
+ *
+ * **Total:** 42 tests
+ *
+ * **Exit Codes:**
+ * - 0: All tests passed
+ * - Non-zero: At least one test failed (Unity returns number of failures)
+ *
+ * @return 0 if all tests pass, non-zero if any test fails
+ */
+int main(void)
+{
+  UNITY_BEGIN();
+  internal_run_init_and_length_tests();
+  internal_run_encode_and_conversion_tests();
+  internal_run_decode_validation_tests();
+  internal_run_roundtrip_and_error_tests();
+  internal_run_assert_coverage_tests();
   return UNITY_END();
 }

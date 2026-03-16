@@ -508,6 +508,12 @@ typedef enum : uint16_t {
   k_usb_fifo_byte_mask          = 0xFF, /**< Byte mask for 8-bit FIFO read */
 } usb_fifo_constants_t;
 
+/** @brief FIFO 16-bit access constants (RX72N Manual Ch40: CFIFO is 16-bit) */
+typedef enum : uint8_t {
+  k_usb_fifo_word_size_bytes = 2, /**< 16-bit word is 2 bytes (step per iteration) */
+  k_usb_fifo_high_byte_shift = 8, /**< Shift to extract high byte from 16-bit word */
+} usb_fifo_access_t;
+
 /** @brief USB address mask */
 typedef enum : uint8_t {
   k_usb_address_mask_hw = 0x7F, /**< USB address mask (7 bits, 0-127) */
@@ -540,6 +546,66 @@ static bool s_hw_initialized = false;
  */
 
 /**
+ * @brief Enable USB0 module clock and wait for PLL stabilization
+ */
+static void internal_usb_enable_module_clock(void)
+{
+  /* Unlock protection */
+  *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
+  /* Clear module stop bit for USB0 (bit 19 in MSTPCRB) */
+  system_regs()->mstpcrb &= ~(1UL << k_mstpb_usb0);
+  /* Lock protection */
+  *prcr_reg() = k_rx_prcr_lock;
+
+  /* Disable USB module before configuration */
+  usb0()->syscfg = k_usb_syscfg_disabled;
+
+  /* Wait for USB PLL to stabilize (USB requires 48 MHz clock from main PLL) */
+  uint32_t pll_ticks = k_usb_pll_stabilization_ms / k_threadx_ms_per_tick;
+  if (pll_ticks == k_min_transfer_size) {
+    pll_ticks = k_min_sleep_ticks;
+  }
+  tx_thread_sleep(pll_ticks);
+}
+
+/**
+ * @brief Configure USB0 clock and enable module
+ */
+static void internal_usb_configure_clock(void)
+{
+  /* Function mode: DCFM=0, DRPD=0, DPRPU=0, USBE=0 */
+  usb0()->syscfg = k_usb_syscfg_disabled;
+  /* Enable USB clock (SCKE=1) */
+  usb0()->syscfg |= k_usb_syscfg_scke;
+
+  /* Wait for clock to stabilize */
+  uint32_t clock_ticks = k_usb_clock_stabilization_ms / k_threadx_ms_per_tick;
+  if (clock_ticks == k_min_transfer_size) {
+    clock_ticks = k_min_sleep_ticks;
+  }
+  tx_thread_sleep(clock_ticks);
+
+  /* Enable USB module */
+  usb0()->syscfg |= k_usb_syscfg_usbe;
+}
+
+/**
+ * @brief Configure USB0 interrupts (USB and ICU)
+ */
+static void internal_usb_configure_interrupts(void)
+{
+  /* Enable: VBUS, device state, control transfer, buffer ready/empty */
+  usb0()->intenb0 = k_usb_intenb0_vbse | k_usb_intenb0_dvse | k_usb_intenb0_ctre |
+                    k_usb_intenb0_brdye | k_usb_intenb0_bempe;
+
+  /* Configure ICU: clear pending, set priority, enable */
+  icu()->ir[k_vect_usb0_usbi]  = 0;
+  icu()->ipr[k_vect_usb0_usbi] = k_usb_interrupt_priority;
+  icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register] |=
+    (1 << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
+}
+
+/**
  * @brief Initialize USB0 hardware
  *
  * This function:
@@ -556,71 +622,15 @@ rx_err_t rx_usb_hw_init(void)
 
   rx_log_debug(s_tag, "Initializing USB0 hardware");
 
-  /* 1. Enable USB0 module clock */
-  /* Unlock protection */
-  *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
+  internal_usb_enable_module_clock();
+  internal_usb_configure_clock();
+  internal_usb_configure_interrupts();
 
-  /* Clear module stop bit for USB0 (bit 19 in MSTPCRB) */
-  system_regs()->mstpcrb &= ~(1UL << k_mstpb_usb0);
-
-  /* Lock protection */
-  *prcr_reg() = k_rx_prcr_lock;
-
-  /* 2. Disable USB module before configuration */
-  usb0()->syscfg = k_usb_syscfg_disabled;
-
-  /* 3. Wait for USB PLL to stabilize */
-  /* Note: USB requires 48 MHz clock from main PLL */
-  uint32_t pll_ticks = k_usb_pll_stabilization_ms / k_threadx_ms_per_tick;
-  if (pll_ticks == k_min_transfer_size) {
-    pll_ticks = k_min_sleep_ticks;
-  }
-  tx_thread_sleep(pll_ticks);
-
-  /* 4. Configure USB0 for Function (peripheral) mode */
-  /* DCFM = 0: Function mode (not host) */
-  /* DRPD = 0: Disable D+/D- pull-down (function mode) */
-  /* DPRPU = 0: D+ pull-up disabled initially (enabled on attach) */
-  /* USBE = 0: USB module disabled initially */
-  usb0()->syscfg = k_usb_syscfg_disabled;
-
-  /* 5. Configure USB clock */
-  /* SCKE = 1: Enable USB clock */
-  usb0()->syscfg |= k_usb_syscfg_scke;
-
-  /* Wait for clock to stabilize */
-  uint32_t clock_ticks = k_usb_clock_stabilization_ms / k_threadx_ms_per_tick;
-  if (clock_ticks == k_min_transfer_size) {
-    clock_ticks = k_min_sleep_ticks;
-  }
-  tx_thread_sleep(clock_ticks);
-
-  /* 6. Enable USB module */
-  usb0()->syscfg |= k_usb_syscfg_usbe;
-
-  /* 7. Configure interrupts */
-  /* Enable: VBUS, device state, control transfer, buffer ready/empty */
-  usb0()->intenb0 = k_usb_intenb0_vbse | k_usb_intenb0_dvse | k_usb_intenb0_ctre |
-                    k_usb_intenb0_brdye | k_usb_intenb0_bempe;
-
-  /* 8. Configure Interrupt Controller (ICU) */
-  /* Clear pending interrupt */
-  icu()->ir[k_vect_usb0_usbi] = 0;
-
-  /* Set interrupt priority */
-  icu()->ipr[k_vect_usb0_usbi] = k_usb_interrupt_priority;
-
-  /* Enable interrupt in IER */
-  icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register] |=
-    (1 << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
-
-  /* 9. Set default control pipe max packet size (64 bytes for FS) */
+  /* Set default control pipe max packet size (64 bytes for FS) */
   usb0()->dcpmaxp = k_usb_cdc_max_packet_fs;
 
   s_hw_initialized = true;
-
   rx_log_info(s_tag, "USB0 hardware initialized");
-
   return k_rx_ok;
 }
 
@@ -735,11 +745,12 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
 
   /* Read data from FIFO (16-bit access required by RX72N Manual Ch40 40.3.9) */
   /* CRITICAL FIX: CFIFO is 16-bit register, must read 16 bits at a time */
-  for (uint32_t i = 0; i < len; i += 2) {
-    const uint16_t word = usb0()->cfifo;          /* Read 16-bit word */
-    data[i]             = (uint8_t)(word & 0xFF); /* Low byte */
+  for (uint32_t i = 0; i < len; i += k_usb_fifo_word_size_bytes) {
+    const uint16_t word = usb0()->cfifo;                          /* Read 16-bit word */
+    data[i]             = (uint8_t)(word & k_usb_fifo_byte_mask); /* Low byte */
     if ((i + 1) < len) {
-      data[i + 1] = (uint8_t)((word >> 8) & 0xFF); /* High byte */
+      data[i + 1] =
+        (uint8_t)((word >> k_usb_fifo_high_byte_shift) & k_usb_fifo_byte_mask); /* High byte */
     }
   }
 
@@ -808,10 +819,10 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
 
   /* Write data to FIFO (16-bit access required by RX72N Manual Ch40 40.3.9) */
   /* CRITICAL FIX: CFIFO is 16-bit register, must write 16 bits at a time */
-  for (uint32_t i = 0; i < len; i += 2) {
+  for (uint32_t i = 0; i < len; i += k_usb_fifo_word_size_bytes) {
     uint16_t word = data[i]; /* Low byte */
     if ((i + 1) < len) {
-      word |= ((uint16_t)data[i + 1] << 8); /* High byte */
+      word |= ((uint16_t)data[i + 1] << k_usb_fifo_high_byte_shift); /* High byte */
     }
     usb0()->cfifo = word; /* Write 16-bit word */
   }

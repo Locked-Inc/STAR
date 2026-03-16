@@ -91,6 +91,67 @@ typedef enum : uint8_t {
 } mock_irq_constants_t;
 
 /* =============================================================================
+ * Injectable Error State
+ * =============================================================================
+ */
+
+/**
+ * @brief Injectable failure flag for rx_mpc_set_irq().
+ *
+ * @details
+ * When true, the next call to rx_mpc_set_irq() returns k_rx_err_hw_init_failed
+ * instead of k_rx_ok. The flag is NOT auto-cleared; caller must reset it.
+ *
+ * @note Reset via mock_rx_hcsr04_irq_reset_mpc_fail().
+ */
+static bool s_mock_mpc_set_irq_fail = false;
+
+/**
+ * @brief Injectable failure flag for rx_hcsr04_isr_register().
+ *
+ * @details
+ * When true, the next call to rx_hcsr04_isr_register() returns
+ * k_rx_err_invalid_state instead of k_rx_ok (for valid arguments).
+ * The flag is NOT auto-cleared; caller must reset it.
+ *
+ * @note Reset by setting to false via mock_rx_hcsr04_irq_set_isr_register_fail().
+ */
+static bool s_mock_isr_register_fail = false;
+
+/**
+ * @brief Injectable failure flag for rx_hcsr04_isr_unregister().
+ *
+ * @details
+ * When true, rx_hcsr04_isr_unregister() returns k_rx_err_invalid_state
+ * even for valid arguments, enabling the "secondary error save" path in
+ * rx_hcsr04_deinit (line 1986).
+ */
+static bool s_mock_isr_unregister_fail = false;
+
+/**
+ * @brief Injectable failure flag for rx_mpc_set_gpio().
+ *
+ * @details
+ * When true, rx_mpc_set_gpio() returns k_rx_err_hw_init_failed instead of
+ * k_rx_ok, enabling the secondary-error-save path in rx_hcsr04_deinit (line 1992).
+ */
+static bool s_mock_mpc_set_gpio_fail = false;
+
+/**
+ * @brief Injectable duration value for rx_hcsr04_isr_get_duration().
+ *
+ * @details
+ * When s_mock_isr_inject_success is true the next call to
+ * rx_hcsr04_isr_get_duration() writes s_mock_isr_duration_us and returns
+ * k_rx_ok instead of the default k_rx_err_timeout.  The flag is cleared
+ * after one successful injection so subsequent calls revert to k_rx_err_timeout.
+ *
+ * @note Reset via mock_rx_hcsr04_irq_reset_isr_inject().
+ */
+static bool     s_mock_isr_inject_success = false;
+static uint32_t s_mock_isr_duration_us    = 0U;
+
+/* =============================================================================
  * MPC Mock Functions
  * =============================================================================
  */
@@ -127,6 +188,9 @@ typedef enum : uint8_t {
 rx_err_t rx_mpc_set_gpio(const rx_port_pin_t pin)
 {
   (void)pin;
+  if (s_mock_mpc_set_gpio_fail) {
+    return k_rx_err_hw_init_failed;
+  }
   return k_rx_ok;
 }
 
@@ -162,6 +226,9 @@ rx_err_t rx_mpc_set_gpio(const rx_port_pin_t pin)
 rx_err_t rx_mpc_set_irq(const rx_port_pin_t pin)
 {
   (void)pin;
+  if (s_mock_mpc_set_irq_fail) {
+    return k_rx_err_hw_init_failed;
+  }
   return k_rx_ok;
 }
 
@@ -301,6 +368,9 @@ rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const rx_hcsr04_sensor_in
   if ((uint8_t)sensor_index >= k_mock_sensor_count) {
     return k_rx_err_invalid_arg;
   }
+  if (s_mock_isr_register_fail) {
+    return k_rx_err_invalid_state;
+  }
   return k_rx_ok;
 }
 
@@ -339,6 +409,9 @@ rx_err_t rx_hcsr04_isr_unregister(const uint8_t irq_num)
 {
   if (irq_num < k_mock_irq_min || irq_num > k_mock_irq_max) {
     return k_rx_err_invalid_arg;
+  }
+  if (s_mock_isr_unregister_fail) {
+    return k_rx_err_invalid_state;
   }
   return k_rx_ok;
 }
@@ -427,6 +500,11 @@ rx_err_t rx_hcsr04_isr_get_duration(const uint8_t irq_num, uint32_t* const durat
   if (irq_num < k_mock_irq_min || irq_num > k_mock_irq_max) {
     return k_rx_err_invalid_arg;
   }
+  if (s_mock_isr_inject_success) {
+    *duration_us              = s_mock_isr_duration_us;
+    s_mock_isr_inject_success = false; /* Consume injection (one-shot) */
+    return k_rx_ok;
+  }
   return k_rx_err_timeout; /* ISR never fires in unit test environment */
 }
 
@@ -467,4 +545,83 @@ rx_err_t rx_hcsr04_isr_disarm(const uint8_t irq_num)
     return k_rx_err_invalid_arg;
   }
   return k_rx_ok;
+}
+
+/* =============================================================================
+ * Test-only helpers for injectable ISR duration
+ * =============================================================================
+ */
+
+/**
+ * @brief Inject a successful ISR duration for the next get_duration call.
+ *
+ * @details
+ * When called, the very next invocation of rx_hcsr04_isr_get_duration() with
+ * a valid irq_num will write duration_us to the output pointer and return
+ * k_rx_ok instead of the default k_rx_err_timeout.  The injection is
+ * consumed after one call.
+ *
+ * @param[in] duration_us Echo pulse duration to inject (microseconds).
+ */
+void mock_rx_hcsr04_isr_inject_success(uint32_t duration_us)
+{
+  s_mock_isr_inject_success = true;
+  s_mock_isr_duration_us    = duration_us;
+}
+
+/**
+ * @brief Reset injectable ISR state to default (always timeout).
+ */
+void mock_rx_hcsr04_isr_reset_inject(void)
+{
+  s_mock_isr_inject_success = false;
+  s_mock_isr_duration_us    = 0U;
+}
+
+/**
+ * @brief Set rx_mpc_set_irq to return failure on the next call.
+ *
+ * @param[in] fail True to make rx_mpc_set_irq return k_rx_err_hw_init_failed.
+ */
+void mock_rx_hcsr04_irq_set_mpc_fail(bool fail)
+{
+  s_mock_mpc_set_irq_fail = fail;
+}
+
+/**
+ * @brief Reset rx_mpc_set_irq to succeed.
+ */
+void mock_rx_hcsr04_irq_reset_mpc_fail(void)
+{
+  s_mock_mpc_set_irq_fail = false;
+}
+
+/**
+ * @brief Set rx_hcsr04_isr_register to return failure (even for valid arguments).
+ *
+ * @param[in] fail True to make rx_hcsr04_isr_register return k_rx_err_invalid_state.
+ */
+void mock_rx_hcsr04_irq_set_isr_register_fail(bool fail)
+{
+  s_mock_isr_register_fail = fail;
+}
+
+/**
+ * @brief Set rx_hcsr04_isr_unregister to return failure (even for valid arguments).
+ *
+ * @param[in] fail True to make rx_hcsr04_isr_unregister return k_rx_err_invalid_state.
+ */
+void mock_rx_hcsr04_irq_set_isr_unregister_fail(bool fail)
+{
+  s_mock_isr_unregister_fail = fail;
+}
+
+/**
+ * @brief Set rx_mpc_set_gpio to return failure on the next call.
+ *
+ * @param[in] fail True to make rx_mpc_set_gpio return k_rx_err_hw_init_failed.
+ */
+void mock_rx_hcsr04_irq_set_mpc_gpio_fail(bool fail)
+{
+  s_mock_mpc_set_gpio_fail = fail;
 }

@@ -190,7 +190,6 @@ static void internal_stack_overflow_handler(TX_THREAD* thread_ptr)
   internal_rx_fatal_error(s_tag, "Stack overflow - system halted", k_rx_fail);
 #else
   (void)thread_ptr;
-  return;
 #endif
 }
 

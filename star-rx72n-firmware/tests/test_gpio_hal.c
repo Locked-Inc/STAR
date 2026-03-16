@@ -496,6 +496,7 @@ void test_gpio_set_output_invalid_port(void)
     k_invalid_port = k_rx_port_j + 1,
     k_invalid_pin  = k_rx_pin_0,
   };
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_invalid_port << k_port_shift) | k_invalid_pin);
 
   rx_err_t err = gpio_set_output(invalid_pin);
@@ -533,6 +534,7 @@ void test_gpio_set_output_invalid_pin(void)
 {
   /* Pin 8 is invalid (only 0-7 allowed) */
   enum : uint8_t { k_invalid_pin = k_rx_pin_max + 1 };
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_rx_port_b << k_port_shift) | k_invalid_pin);
 
   rx_err_t err = gpio_set_output(invalid_pin);
@@ -688,6 +690,7 @@ void test_gpio_set_input_valid_pin(void)
  */
 void test_gpio_set_input_invalid_port(void)
 {
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_invalid_port_1 << k_port_shift) | k_rx_pin_0);
 
   rx_err_t err = gpio_set_input(invalid_pin);
@@ -705,6 +708,7 @@ void test_gpio_set_input_invalid_port(void)
  */
 void test_gpio_set_input_invalid_pin(void)
 {
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_rx_port_b << k_port_shift) | k_invalid_pin_1);
 
   rx_err_t err = gpio_set_input(invalid_pin);
@@ -768,6 +772,7 @@ void test_gpio_write_high_sets_value(void)
  */
 void test_gpio_write_high_invalid_port(void)
 {
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_invalid_port_2 << k_port_shift) | k_rx_pin_0);
 
   rx_err_t err = gpio_write_high(invalid_pin);
@@ -832,6 +837,7 @@ void test_gpio_write_low_clears_value(void)
  */
 void test_gpio_write_low_invalid_port(void)
 {
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_invalid_port_3 << k_port_shift) | k_rx_pin_0);
 
   rx_err_t err = gpio_write_low(invalid_pin);
@@ -910,6 +916,7 @@ void test_gpio_toggle_toggles_value(void)
  */
 void test_gpio_toggle_invalid_pin(void)
 {
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_rx_port_b << k_port_shift) | k_invalid_pin_2);
 
   rx_err_t err = gpio_toggle(invalid_pin);
@@ -1039,6 +1046,7 @@ void test_gpio_read_null_pointer(void)
  */
 void test_gpio_read_invalid_port(void)
 {
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_invalid_port_4 << k_port_shift) | k_rx_pin_0);
   bool          value;
 
@@ -1057,6 +1065,7 @@ void test_gpio_read_invalid_port(void)
  */
 void test_gpio_read_invalid_pin(void)
 {
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_rx_port_b << k_port_shift) | k_invalid_pin_3);
   bool          value;
 

@@ -15,7 +15,7 @@
 /* Include mock regs header FIRST to define mock types before real headers */
 #include "mock_rx_mtu_encoder.h"
 
-#include <string.h>
+#include <stddef.h>
 
 #include "mock_rx_mtu_regs.h"
 
@@ -28,9 +28,23 @@
  * @brief Counter wrap constant
  */
 typedef enum : uint32_t {
-  k_counter_max  = 65536,  /**< 16-bit counter maximum + 1 */
-  k_counter_mask = 0xFFFF, /**< 16-bit mask */
+  k_counter_max  = 65536,   /**< 16-bit counter maximum + 1 */
+  k_counter_mask = 0xFFFFU, /**< 16-bit mask */
 } counter_constants_t;
+
+/**
+ * @brief Channel index mapping constants
+ */
+typedef enum : int32_t {
+  k_ch_idx_0       = 0,  /**< Array index for channel 0 */
+  k_ch_idx_1       = 1,  /**< Array index for channel 1 */
+  k_ch_idx_2       = 2,  /**< Array index for channel 2 */
+  k_ch_idx_3       = 3,  /**< Array index for channel 3 */
+  k_ch_idx_4       = 4,  /**< Array index for channel 4 */
+  k_ch_idx_6       = 5,  /**< Array index for channel 6 */
+  k_ch_idx_7       = 6,  /**< Array index for channel 7 */
+  k_ch_idx_invalid = -1, /**< Invalid channel sentinel */
+} channel_index_t;
 
 /* =============================================================================
  * Global Mock Instance and Registers
@@ -59,21 +73,21 @@ static int32_t internal_channel_to_index(rx_mtu_channel_t channel)
 {
   switch (channel) {
     case k_mtu_channel_0:
-      return 0;
+      return k_ch_idx_0;
     case k_mtu_channel_1:
-      return 1;
+      return k_ch_idx_1;
     case k_mtu_channel_2:
-      return 2;
+      return k_ch_idx_2;
     case k_mtu_channel_3:
-      return 3;
+      return k_ch_idx_3;
     case k_mtu_channel_4:
-      return 4;
+      return k_ch_idx_4;
     case k_mtu_channel_6:
-      return 5;
+      return k_ch_idx_6;
     case k_mtu_channel_7:
-      return 6;
+      return k_ch_idx_7;
     default:
-      return -1;
+      return k_ch_idx_invalid;
   }
 }
 
@@ -84,9 +98,21 @@ static int32_t internal_channel_to_index(rx_mtu_channel_t channel)
 
 void mock_encoder_init(void)
 {
-  memset(&g_mock_encoder_state, 0, sizeof(g_mock_encoder_state));
-  memset(g_mock_mtu_regs, 0, sizeof(g_mock_mtu_regs));
-  memset(&g_mock_system_regs, 0, sizeof(g_mock_system_regs));
+  uint8_t* enc_ptr = (uint8_t*)&g_mock_encoder_state;
+  for (size_t i = 0; i < sizeof(g_mock_encoder_state); i++) {
+    enc_ptr[i] = 0;
+  }
+
+  uint8_t* reg_ptr = (uint8_t*)g_mock_mtu_regs;
+  for (size_t i = 0; i < sizeof(g_mock_mtu_regs); i++) {
+    reg_ptr[i] = 0;
+  }
+
+  uint8_t* sys_ptr = (uint8_t*)&g_mock_system_regs;
+  for (size_t i = 0; i < sizeof(g_mock_system_regs); i++) {
+    sys_ptr[i] = 0;
+  }
+
   g_mock_encoder_state.initialized = true;
 }
 

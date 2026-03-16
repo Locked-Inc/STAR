@@ -15,9 +15,8 @@
 #include "mock_rx_dmaca.h"
 
 #include <stddef.h>
-#include <string.h>
 
-#include "rx72n_dmac_regs.h"
+#include "mock_rx72n_dmac_regs.h"
 
 /* =============================================================================
  * Private Constants (mirror rx_dmaca.c internal limits for validation parity)
@@ -98,7 +97,12 @@ void mock_rx_dmaca_reset(void)
   s_deinit_count    = 0;
   s_transfer_count  = 0;
   s_transfer_result = k_rx_ok;
-  memset(&s_last_config, 0, sizeof(s_last_config));
+  {
+    uint8_t* p = (uint8_t*)&s_last_config;
+    for (size_t i = 0; i < sizeof(s_last_config); i++) {
+      p[i] = 0;
+    }
+  }
   s_transfer_called = false;
   s_is_initialized  = false;
 }
@@ -333,14 +337,13 @@ rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
   if (!s_is_initialized) {
     return k_rx_err_not_initialized;
   }
-  if (config->channel >= (uint8_t)k_dmac_channel_count) {
+  if (config->channel >= k_dmac_channel_count) {
     return k_rx_err_invalid_arg;
   }
-  if (config->len == 0U || config->len > (uint32_t)k_mock_dmaca_len_max) {
+  if (config->len == 0U || config->len > k_mock_dmaca_len_max) {
     return k_rx_err_invalid_arg;
   }
-  if (config->timeout_cycles == 0U ||
-      config->timeout_cycles > (uint32_t)k_mock_dmaca_timeout_cycles_max) {
+  if (config->timeout_cycles == 0U || config->timeout_cycles > k_mock_dmaca_timeout_cycles_max) {
     return k_rx_err_invalid_arg;
   }
   if (config->dst_addr == 0U) {
@@ -385,7 +388,7 @@ rx_err_t rx_dmaca_abort(uint8_t channel)
   if (!s_is_initialized) {
     return k_rx_err_not_initialized;
   }
-  if (channel >= (uint8_t)k_dmac_channel_count) {
+  if (channel >= k_dmac_channel_count) {
     return k_rx_err_invalid_arg;
   }
   return k_rx_ok;

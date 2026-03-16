@@ -928,54 +928,88 @@ typedef enum : uint16_t {
  * =============================================================================
  */
 
+/**
+ * @enum rx_port_verify_t
+ * @brief Expected values used in static assertion verification
+ *
+ * @details
+ * Provides named constants for the right-hand sides of port/pin static
+ * assertions, eliminating magic numbers from assertion expressions.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_verify_port_0     = 0x0000U, /**< Expected value of k_rx_port_0 (0x00) */
+  k_verify_port_1     = 0x0001U, /**< Expected value of k_rx_port_1 (0x01) */
+  k_verify_port_5     = 0x0005U, /**< Expected value of k_rx_port_5 (0x05) */
+  k_verify_port_a     = 0x000AU, /**< Expected value of k_rx_port_a (0x0A) */
+  k_verify_port_b     = 0x000BU, /**< Expected value of k_rx_port_b (0x0B) */
+  k_verify_port_c     = 0x000CU, /**< Expected value of k_rx_port_c (0x0C) */
+  k_verify_port_e     = 0x000EU, /**< Expected value of k_rx_port_e (0x0E) */
+  k_verify_port_j     = 0x0013U, /**< Expected value of k_rx_port_j (0x13) - non-contiguous */
+  k_verify_pin_2      = 0x0002U, /**< Expected value of k_rx_pin_2 (2) */
+  k_verify_pin_7      = 0x0007U, /**< Expected value of k_rx_pin_7 (7) */
+  k_verify_port_shift = 0x0008U, /**< Expected value of k_port_shift (8) */
+  k_verify_enc_pb_2   = 0x0B02U, /**< Expected encoding of Port B Pin 2 */
+  k_verify_enc_pe_5   = 0x0E05U, /**< Expected encoding of Port E Pin 5 */
+  k_verify_enc_p0_7   = 0x0007U, /**< Expected encoding of Port 0 Pin 7 */
+  k_verify_p0_4       = 0x0004U, /**< Expected value of k_rx_p0_4 */
+  k_verify_p2_5       = 0x0205U, /**< Expected value of k_rx_p2_5 */
+  k_verify_pa_2       = 0x0A02U, /**< Expected value of k_rx_pa_2 */
+  k_verify_pb_2       = 0x0B02U, /**< Expected value of k_rx_pb_2 */
+  k_verify_pe_5       = 0x0E05U, /**< Expected value of k_rx_pe_5 */
+  k_verify_pj_3       = 0x1303U, /**< Expected value of k_rx_pj_3 */
+} rx_port_verify_t;
+
 /*
  * Verify port number constants match expected hex values.
  * These assertions ensure that the port numbering matches Renesas RX72N
  * documentation and the encoding used in hardware_pinout.h.
  */
-static_assert(k_rx_port_0 == 0x00, "Port 0 must be 0x00");
-static_assert(k_rx_port_1 == 0x01, "Port 1 must be 0x01");
-static_assert(k_rx_port_5 == 0x05, "Port 5 must be 0x05");
-static_assert(k_rx_port_a == 0x0A, "Port A must be 0x0A");
-static_assert(k_rx_port_b == 0x0B, "Port B must be 0x0B");
-static_assert(k_rx_port_c == 0x0C, "Port C must be 0x0C");
-static_assert(k_rx_port_e == 0x0E, "Port E must be 0x0E");
-static_assert(k_rx_port_j == 0x13, "Port J must be 0x13 (not contiguous)");
+static_assert((bool)((uint16_t)k_rx_port_0 == k_verify_port_0), "Port 0 must be 0x00");
+static_assert((bool)((uint16_t)k_rx_port_1 == k_verify_port_1), "Port 1 must be 0x01");
+static_assert((bool)((uint16_t)k_rx_port_5 == k_verify_port_5), "Port 5 must be 0x05");
+static_assert((bool)((uint16_t)k_rx_port_a == k_verify_port_a), "Port A must be 0x0A");
+static_assert((bool)((uint16_t)k_rx_port_b == k_verify_port_b), "Port B must be 0x0B");
+static_assert((bool)((uint16_t)k_rx_port_c == k_verify_port_c), "Port C must be 0x0C");
+static_assert((bool)((uint16_t)k_rx_port_e == k_verify_port_e), "Port E must be 0x0E");
+static_assert((bool)((uint16_t)k_rx_port_j == k_verify_port_j),
+              "Port J must be 0x13 (not contiguous)");
 
 /*
  * Verify pin number constants match expected values.
  */
-static_assert(k_rx_pin_0 == 0, "Pin 0 must be 0");
-static_assert(k_rx_pin_2 == 2, "Pin 2 must be 2");
-static_assert(k_rx_pin_7 == 7, "Pin 7 must be 7");
-static_assert(k_rx_pin_min == 0, "Minimum pin number must be 0");
-static_assert(k_rx_pin_max == 7, "Maximum pin number must be 7");
+static_assert((bool)((uint16_t)k_rx_pin_0 == 0), "Pin 0 must be 0");
+static_assert((bool)((uint16_t)k_rx_pin_2 == k_verify_pin_2), "Pin 2 must be 2");
+static_assert((bool)((uint16_t)k_rx_pin_7 == k_verify_pin_7), "Pin 7 must be 7");
+static_assert((bool)((uint16_t)k_rx_pin_min == 0), "Minimum pin number must be 0");
+static_assert((bool)((uint16_t)k_rx_pin_max == k_verify_pin_7), "Maximum pin number must be 7");
 
 /*
  * Verify shift constant is correct.
  */
-static_assert(k_port_shift == 8, "Port shift must be 8 bits");
+static_assert((bool)((uint16_t)k_port_shift == k_verify_port_shift), "Port shift must be 8 bits");
 
 /*
  * Verify encoding matches expected pattern: (port << 8) | pin
  * Example: Port B (0x0B), Pin 2 (0x02) = 0x0B02
  */
-static_assert(((k_rx_port_b << k_port_shift) | k_rx_pin_2) == 0x0B02,
+static_assert((bool)((uint16_t)((k_rx_port_b << k_port_shift) | k_rx_pin_2) == k_verify_enc_pb_2),
               "Port B Pin 2 encoding must be 0x0B02");
-static_assert(((k_rx_port_e << k_port_shift) | k_rx_pin_5) == 0x0E05,
+static_assert((bool)((uint16_t)((k_rx_port_e << k_port_shift) | k_rx_pin_5) == k_verify_enc_pe_5),
               "Port E Pin 5 encoding must be 0x0E05");
-static_assert(((k_rx_port_0 << k_port_shift) | k_rx_pin_7) == 0x0007,
+static_assert((bool)((uint16_t)((k_rx_port_0 << k_port_shift) | k_rx_pin_7) == k_verify_enc_p0_7),
               "Port 0 Pin 7 encoding must be 0x0007");
 
 /*
  * Verify pre-computed port/pin combinations are correct.
  */
-static_assert(k_rx_p0_4 == 0x0004, "P04 must be 0x0004");
-static_assert(k_rx_p2_5 == 0x0205, "P25 must be 0x0205");
-static_assert(k_rx_pa_2 == 0x0A02, "PA2 must be 0x0A02");
-static_assert(k_rx_pb_2 == 0x0B02, "PB2 must be 0x0B02");
-static_assert(k_rx_pe_5 == 0x0E05, "PE5 must be 0x0E05");
-static_assert(k_rx_pj_3 == 0x1303, "PJ3 must be 0x1303");
+static_assert((bool)((unsigned int)k_rx_p0_4 == (unsigned int)k_verify_p0_4), "P04 must be 0x0004");
+static_assert((bool)((unsigned int)k_rx_p2_5 == (unsigned int)k_verify_p2_5), "P25 must be 0x0205");
+static_assert((bool)((unsigned int)k_rx_pa_2 == (unsigned int)k_verify_pa_2), "PA2 must be 0x0A02");
+static_assert((bool)((unsigned int)k_rx_pb_2 == (unsigned int)k_verify_pb_2), "PB2 must be 0x0B02");
+static_assert((bool)((unsigned int)k_rx_pe_5 == (unsigned int)k_verify_pe_5), "PE5 must be 0x0E05");
+static_assert((bool)((unsigned int)k_rx_pj_3 == (unsigned int)k_verify_pj_3), "PJ3 must be 0x1303");
 
 /* =============================================================================
  * Pin Extraction Inline Functions

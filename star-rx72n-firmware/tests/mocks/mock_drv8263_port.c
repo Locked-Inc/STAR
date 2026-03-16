@@ -5,7 +5,7 @@
  * @details
  * Provides RAM-based port register storage and test helper functions.
  * The g_mock_port_regs array is referenced by the mock port accessor
- * functions in drv8263/rx72n_port_regs.h.
+ * functions in mock_rx72n_port_regs.h.
  *
  * @author Locked, Inc.
  * @date 2026-03-03
@@ -28,9 +28,8 @@
 #include "mock_drv8263_port.h"
 
 #include <assert.h>
-#include <string.h>
 
-#include "rx72n_port_regs.h"
+#include "mock_rx72n_port_regs.h"
 
 /* =============================================================================
  * File-Scope Named Constants
@@ -108,7 +107,7 @@ typedef enum : uint8_t {
  * accessor functions (port0() through portj()). Zeroed by
  * mock_drv8263_port_reset() before each test.
  *
- * @note Accessed by port accessor inlines in drv8263/rx72n_port_regs.h
+ * @note Accessed by port accessor inlines in mock_rx72n_port_regs.h
  *
  * @warning Do not modify directly in test code; use the mock_drv8263_port_*
  *          helper functions for clean test interfaces
@@ -121,9 +120,9 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-/* k_mock_port_max (from rx72n_port_regs.h) == k_mock_port_count (from mock_drv8263_port.h);
- * using k_mock_port_max here to match the extern declaration in rx72n_port_regs.h. */
-static_assert((uint32_t)k_mock_port_max == (uint32_t)k_mock_port_count,
+/* k_mock_port_max (from mock_rx72n_port_regs.h) == k_mock_port_count (from mock_drv8263_port.h);
+ * using k_mock_port_max here to match the extern declaration in mock_rx72n_port_regs.h. */
+static_assert((bool)((uint32_t)k_mock_port_max == (uint32_t)k_mock_port_count),
               "k_mock_port_max and k_mock_port_count must be equal");
 rx_port_regs_t g_mock_port_regs[k_mock_port_max];
 
@@ -150,10 +149,11 @@ rx_port_regs_t g_mock_port_regs[k_mock_port_max];
  */
 void mock_drv8263_port_reset(void)
 {
-  /** @brief Minimum valid array size (at least one port entry) */
-  enum : uint8_t { k_mock_port_min_size = 1 };
-  assert(sizeof(g_mock_port_regs) >= k_mock_port_min_size * sizeof(rx_port_regs_t));
-  (void)memset(g_mock_port_regs, k_memset_zero, sizeof(g_mock_port_regs));
+  static_assert((bool)(sizeof(g_mock_port_regs) >= sizeof(rx_port_regs_t)),
+                "g_mock_port_regs must hold at least one port entry");
+  for (uint8_t i = 0; i < k_mock_port_count; ++i) {
+    g_mock_port_regs[i] = (rx_port_regs_t){};
+  }
   assert(g_mock_port_regs[k_mock_port_first_index].podr == k_mock_port_reset_value);
 }
 
@@ -214,7 +214,8 @@ void mock_drv8263_port_set_pidr(uint8_t port, uint8_t value)
 uint8_t mock_drv8263_port_get_podr(uint8_t port)
 {
   assert(port < k_mock_port_count);
-  assert(sizeof(g_mock_port_regs) == k_mock_port_count * sizeof(rx_port_regs_t));
+  static_assert((bool)(sizeof(g_mock_port_regs) == k_mock_port_count * sizeof(rx_port_regs_t)),
+                "g_mock_port_regs size must match k_mock_port_count entries");
   if (port < k_mock_port_count) {
     return g_mock_port_regs[port].podr;
   }
@@ -251,8 +252,8 @@ bool mock_drv8263_port_get_pin_output(uint8_t port, uint8_t pin)
   assert(port < k_mock_port_count);
   assert(pin < k_mock_pins_per_port);
   if (port < k_mock_port_count && pin < k_mock_pins_per_port) {
-    return (g_mock_port_regs[port].podr & (uint8_t)((uint8_t)k_bit_shift_base << pin)) !=
-           (uint8_t)k_bit_clear;
+    return (bool)((g_mock_port_regs[port].podr & (uint8_t)(k_bit_shift_base << pin)) !=
+                  k_bit_clear);
   }
   return false;
 }
@@ -285,7 +286,7 @@ void mock_drv8263_port_set_pin_input(uint8_t port, uint8_t pin, bool high)
   assert(port < k_mock_port_count);
   assert(pin < k_mock_pins_per_port);
   if (port < k_mock_port_count && pin < k_mock_pins_per_port) {
-    const uint8_t mask = (uint8_t)((uint8_t)k_bit_shift_base << pin);
+    const uint8_t mask = (uint8_t)(k_bit_shift_base << pin);
     if (high) {
       g_mock_port_regs[port].pidr |= mask;
     } else {

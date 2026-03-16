@@ -1,5 +1,5 @@
 /**
- * @file rx_hcsr04_hal_mock.c
+ * @file mock_rx_hcsr04_hal.c
  * @brief HC-SR04 Ultrasonic Sensor Mock HAL Implementation for Host-Side Testing
  *
  * @details
@@ -87,7 +87,7 @@
  *   rankdir=TB;
  *   node [shape=box, style=rounded];
  *
- *   mock_hal [label="rx_hcsr04_hal_mock.c\n(This Module)", fillcolor=lightblue, style=filled];
+ *   mock_hal [label="mock_rx_hcsr04_hal.c\n(This Module)", fillcolor=lightblue, style=filled];
  *   hal_interface [label="rx_hcsr04_hal.h\nInterface", shape=ellipse];
  *   driver [label="rx_hcsr04.c\nDriver"];
  *   mock_hw [label="mock_hcsr04_hw\nTest Infrastructure", fillcolor=lightgray, style=filled];
@@ -138,9 +138,6 @@
  *
  * @since Version 1.0.0
  */
-
-#include <stdio.h>
-#include <string.h>
 
 #include "mock_hcsr04_hw.h"
 #include "rx_check.h"
@@ -313,7 +310,7 @@ static inline bool internal_is_valid_pin(rx_port_pin_t pin)
 
   RX_ASSERT(pin_portion <= k_rx_pin_max, "Pin portion must be <= k_rx_pin_max");
   RX_ASSERT(port_portion <= k_rx_port_j, "Port portion must be <= k_rx_port_j");
-  return (pin <= k_rx_pj_7);
+  return (bool)(pin <= k_rx_pj_7);
 }
 
 /**
@@ -1064,29 +1061,20 @@ rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
 void hcsr04_hal_delay_us(uint32_t us)
 {
   char     message[k_hcsr04_log_msg_max];
-  uint32_t message_len     = k_hcsr04_message_len_init;
-  int32_t  snprintf_result = 0;
+  uint32_t message_len = k_hcsr04_message_len_init;
 
   if (us == k_hcsr04_delay_none) {
     return;
   }
 
   if (us > k_hcsr04_delay_max_us) {
-    snprintf_result = snprintf(message,
-                               sizeof(message),
-                               "Delay request %lu exceeds max %lu us",
-                               (unsigned long)us,
-                               (unsigned long)k_hcsr04_delay_max_us);
-    if (snprintf_result < 0) {
-      rx_log_error_str("HCSR04", "Delay request formatting error", "", 0U);
-      message_len = (uint32_t)(k_hcsr04_log_msg_max - k_hcsr04_log_null_terminator);
-      (void)memset(message, 0, sizeof(message));
-    } else {
-      message_len = (uint32_t)snprintf_result;
-      if (message_len >= k_hcsr04_log_msg_max) {
-        message_len = (uint32_t)(k_hcsr04_log_msg_max - k_hcsr04_log_null_terminator);
-      }
+    /* Build message manually to avoid banned snprintf/memset */
+    static const char s_delay_exceed_msg[] = "Delay request exceeds max us";
+    message_len = sizeof(s_delay_exceed_msg) - k_hcsr04_log_null_terminator;
+    for (uint32_t ci = 0; ci < message_len; ci++) {
+      message[ci] = s_delay_exceed_msg[ci];
     }
+    message[message_len] = '\0';
     rx_log_warn_str("HCSR04", "Delay request warning", message, message_len);
     return;
   }

@@ -34,11 +34,27 @@
  */
 
 typedef enum : uint8_t {
-  k_test_sensor_count = 4,  /**< Number of sensors */
-  k_test_threshold_cm = 30, /**< Detection threshold */
-  k_test_sensor_idx_0 = 0,  /**< Sensor index 0 */
-  k_test_sensor_idx_1 = 1,  /**< Sensor index 1 */
+  k_test_sensor_count       = 4,  /**< Number of sensors */
+  k_test_threshold_cm       = 30, /**< Detection threshold */
+  k_test_sensor_idx_0       = 0,  /**< Sensor index 0 */
+  k_test_sensor_idx_1       = 1,  /**< Sensor index 1 */
+  k_test_debounce_samples   = 3,  /**< Debounce sample count */
+  k_test_poll_interval_ms   = 20, /**< Polling interval in ms */
+  k_test_false_positive_cnt = 2,  /**< False positive count for stats test */
+  k_test_obstacle_event_cnt = 5,  /**< Obstacle event count for stats test */
 } test_obstacle_constants_t;
+
+/** @brief Named constants for obstacle distance and timestamp values */
+typedef enum : uint16_t {
+  k_test_distance_near_cm = 25,   /**< Near obstacle distance (25 cm) */
+  k_test_distance_far_cm  = 100,  /**< Far distance (100 cm, no obstacle) */
+  k_test_timestamp_ms     = 1000, /**< Test timestamp value */
+} test_obstacle_distance_t;
+
+/** @brief Named constants for stats total polls */
+typedef enum : uint32_t {
+  k_test_total_polls = 1000, /**< Total polls for stats test */
+} test_obstacle_stats_t;
 
 /* =============================================================================
  * Test Fixture
@@ -164,8 +180,8 @@ void test_obstacle_task_create_already_created(void)
 void test_obstacle_task_init_and_start(void)
 {
   /* Configure mocks for success */
-  rx_obstacle_detect_t        handle = {0};
-  rx_obstacle_detect_config_t config = {0};
+  rx_obstacle_detect_t        handle = {};
+  rx_obstacle_detect_config_t config = {};
 
   mock_obstacle_detect_set_init_return(k_rx_ok);
   mock_obstacle_detect_set_start_return(k_rx_ok);
@@ -173,8 +189,8 @@ void test_obstacle_task_init_and_start(void)
   /* Configure detection */
   config.sensor_count           = k_test_sensor_count;
   config.detection_threshold_cm = (float)k_test_threshold_cm;
-  config.debounce_samples       = 3;
-  config.poll_interval_ms       = 20;
+  config.debounce_samples       = k_test_debounce_samples;
+  config.poll_interval_ms       = k_test_poll_interval_ms;
   config.callback               = nullptr; /* Would be internal callback */
   config.user_data              = nullptr;
 
@@ -221,17 +237,17 @@ void test_obstacle_callback_sets_emergency_flag(void)
  */
 void test_obstacle_distances_stored_in_shared_data(void)
 {
-  obstacle_state_t state_in  = {0};
-  obstacle_state_t state_out = {0};
+  obstacle_state_t state_in  = {};
+  obstacle_state_t state_out = {};
 
   /* Simulate callback storing obstacle state */
-  state_in.distance_cm[k_test_sensor_idx_0] = 25; /* 25 cm */
+  state_in.distance_cm[k_test_sensor_idx_0] = k_test_distance_near_cm;
 
   state_in.obstacle_detected[k_test_sensor_idx_0] = true;
-  state_in.distance_cm[k_test_sensor_idx_1]       = 100; /* 100 cm (no obstacle) */
+  state_in.distance_cm[k_test_sensor_idx_1]       = k_test_distance_far_cm;
   state_in.obstacle_detected[k_test_sensor_idx_1] = false;
   state_in.any_obstacle                           = true;
-  state_in.timestamp_ms                           = 1000;
+  state_in.timestamp_ms                           = k_test_timestamp_ms;
 
   /* Store in shared data */
   rx_err_t err = shared_data_update_obstacle(&state_in);
@@ -243,9 +259,9 @@ void test_obstacle_distances_stored_in_shared_data(void)
 
   /* Verify */
   TEST_ASSERT_TRUE(state_out.any_obstacle);
-  TEST_ASSERT_EQUAL_UINT16(25, state_out.distance_cm[k_test_sensor_idx_0]);
+  TEST_ASSERT_EQUAL_UINT16(k_test_distance_near_cm, state_out.distance_cm[k_test_sensor_idx_0]);
   TEST_ASSERT_TRUE(state_out.obstacle_detected[k_test_sensor_idx_0]);
-  TEST_ASSERT_EQUAL_UINT16(100, state_out.distance_cm[k_test_sensor_idx_1]);
+  TEST_ASSERT_EQUAL_UINT16(k_test_distance_far_cm, state_out.distance_cm[k_test_sensor_idx_1]);
   TEST_ASSERT_FALSE(state_out.obstacle_detected[k_test_sensor_idx_1]);
 }
 
@@ -284,21 +300,23 @@ void test_obstacle_cleared_keeps_estop_active(void)
 void test_obstacle_get_stats(void)
 {
   /* Configure mock stats */
-  rx_obstacle_detect_t handle          = {0};
+  rx_obstacle_detect_t handle          = {};
   uint32_t             total_polls     = 0;
   uint32_t             obstacle_events = 0;
   uint32_t             false_positives = 0;
 
-  mock_obstacle_detect_set_stats(1000, 5, 2);
+  mock_obstacle_detect_set_stats(k_test_total_polls,
+                                 k_test_obstacle_event_cnt,
+                                 k_test_false_positive_cnt);
 
   /* Get stats */
   const rx_err_t err =
     rx_obstacle_detect_get_stats(&handle, &total_polls, &obstacle_events, &false_positives);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT32(1000, total_polls);
-  TEST_ASSERT_EQUAL_UINT32(5, obstacle_events);
-  TEST_ASSERT_EQUAL_UINT32(2, false_positives);
+  TEST_ASSERT_EQUAL_UINT32(k_test_total_polls, total_polls);
+  TEST_ASSERT_EQUAL_UINT32(k_test_obstacle_event_cnt, obstacle_events);
+  TEST_ASSERT_EQUAL_UINT32(k_test_false_positive_cnt, false_positives);
 }
 
 /* =============================================================================

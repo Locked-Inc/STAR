@@ -22,10 +22,13 @@
 
 #include "rx_dmaca.h"
 
-#include <stdbool.h>
 #include <stddef.h>
 
+#ifdef UNIT_TEST
+#include "mock_rx72n_regs.h"
+#else
 #include "rx72n_regs.h"
+#endif
 #include "rx_check.h"
 #include "rx_register_protection.h"
 
@@ -103,10 +106,9 @@ static void internal_configure_channel(const rx_dmaca_config_t* config)
   ch->dmsar = (uint32_t)(uintptr_t)config->src;
   ch->dmdar = (uint32_t)config->dst_addr;
   ch->dmcra = config->len; /* Normal mode: lower 16 bits = transfer count */
-  ch->dmtmd = (uint16_t)((uint16_t)k_dmtmd_md_normal | (uint16_t)k_dmtmd_dctg_software |
-                         (uint16_t)k_dmtmd_sz_8bit);
-  ch->dmamd = (uint16_t)((uint16_t)k_dmamd_sm_increment | (uint16_t)k_dmamd_dm_fixed);
-  ch->dmint = (uint8_t)k_dmint_disabled; /* No interrupts in polling mode */
+  ch->dmtmd = (uint16_t)(k_dmtmd_md_normal | k_dmtmd_dctg_software | k_dmtmd_sz_8bit);
+  ch->dmamd = (uint16_t)(k_dmamd_sm_increment | k_dmamd_dm_fixed);
+  ch->dmint = k_dmint_disabled; /* No interrupts in polling mode */
 }
 
 /**
@@ -158,7 +160,7 @@ static void internal_configure_channel(const rx_dmaca_config_t* config)
 static rx_err_t internal_poll_act(uint8_t channel, uint32_t timeout_cycles)
 {
   for (uint32_t i = 0U; i < timeout_cycles; i++) {
-    if ((dmac_channel(channel)->dmsts & (uint8_t)k_dmsts_act) == 0U) {
+    if ((dmac_channel(channel)->dmsts & k_dmsts_act) == 0U) {
       dmac_channel(channel)->dmsts = 0U; /* Clear DTIF flag after ACT=0 */
       return k_rx_ok;
     }
@@ -204,7 +206,7 @@ rx_err_t rx_dmaca_init(void)
   *prcr_reg() = k_rx_prcr_lock;
 
   /* Start DMAC module (DMAST.DMST = 1) */
-  *dmac_dmast_reg() = (uint8_t)k_dmast_dmst;
+  *dmac_dmast_reg() = k_dmast_dmst;
 
   /* Post-condition: module operational */
   s_dmaca_initialized = true;
@@ -289,7 +291,7 @@ rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
     return k_rx_err_not_initialized;
   }
 
-  if (config->channel >= (uint8_t)k_dmac_channel_count) {
+  if (config->channel >= k_dmac_channel_count) {
     return k_rx_err_invalid_arg;
   }
 
@@ -312,10 +314,10 @@ rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
 
   /* DMA start sequence (mandatory order per HW manual section 18): */
   /* 1. DTE = 1 (channel enable) */
-  dmac_channel(config->channel)->dmcnt = (uint8_t)k_dmcnt_dte;
+  dmac_channel(config->channel)->dmcnt = k_dmcnt_dte;
 
   /* 2. SWREQ = 1 + CLRS = 1 (trigger and auto-clear) */
-  dmac_channel(config->channel)->dmreq = (uint8_t)((uint8_t)k_dmreq_swreq | (uint8_t)k_dmreq_clrs);
+  dmac_channel(config->channel)->dmreq = (uint8_t)(k_dmreq_swreq | k_dmreq_clrs);
 
   /* Poll until complete or timeout */
   rx_err_t ret = internal_poll_act(config->channel, config->timeout_cycles);
@@ -358,7 +360,7 @@ rx_err_t rx_dmaca_abort(uint8_t channel)
     return k_rx_err_not_initialized;
   }
 
-  if (channel >= (uint8_t)k_dmac_channel_count) {
+  if (channel >= k_dmac_channel_count) {
     return k_rx_err_invalid_arg;
   }
 

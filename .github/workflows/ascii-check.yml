@@ -1,7 +1,7 @@
 # ascii-check.yml - ASCII-only source file enforcement for STAR project
 #
 # Rejects any commit that introduces non-ASCII characters into source files.
-# Covers .c .h .go .cpp .hpp .proto .ts .md files.
+# Covers ALL text source files tracked by git, excluding binary files.
 #
 # STAR Project - Texas A&M University
 
@@ -25,9 +25,28 @@ jobs:
         run: |
           echo "Scanning source files for non-ASCII characters..."
 
-          # Find all tracked source files of interest
+          # All text source file extensions and specific filenames to check.
+          # Excludes binary formats (images, PDFs, compiled objects, archives).
+          # Include text source file patterns, exclude vendor/binary/build paths.
+          # Uses :(exclude) pathspec (not :!) for reliable directory exclusion.
           mapfile -t files < <(git ls-files -- \
-            '*.c' '*.h' '*.go' '*.cpp' '*.hpp' '*.proto' '*.ts' '*.md')
+            '*.c' '*.h' '*.go' '*.cpp' '*.hpp' '*.proto' '*.ts' '*.md' \
+            '*.yml' '*.yaml' '*.sh' '*.py' '*.cmake' '*.json' '*.toml' \
+            '*.cfg' '*.conf' '*.tex' '*.bib' '*.css' '*.html' '*.xml' \
+            '*.txt' '*.ini' '*.rs' '*.java' '*.rb' '*.lua' '*.js' \
+            'Makefile' '*Makefile' 'Dockerfile' '*Dockerfile*' \
+            '.clang-format' '.clang-tidy' '.cppcheck-suppressions' \
+            ':(exclude)build/**' \
+            ':(exclude)**/build/**' \
+            ':(exclude)**/_deps/**' \
+            ':(exclude)node_modules/**' \
+            ':(exclude)dist/**' \
+            ':(exclude)**/gen/**' \
+            ':(exclude)vendor/**' \
+            ':(exclude)**/third_party/**' \
+            ':(exclude)schematic/symbols-and-footprints/**' \
+            ':(exclude)star-rx72n-firmware/LICENSE.txt' \
+            ':(exclude)star-rx72n-firmware/LICENSED-HARDWARE.txt')
 
           failed=0
           for f in "${files[@]}"; do

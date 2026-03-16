@@ -53,7 +53,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -116,9 +115,18 @@ typedef struct {
   uint32_t time_step_us;         /**< Time step per auto-advance */
 
   /* Error injection */
-  bool inject_timeout;      /**< Simulate timeout (no echo) */
-  bool inject_gpio_error;   /**< Simulate GPIO init failure */
-  bool inject_pin_conflict; /**< Simulate pin already reserved */
+  bool inject_timeout;               /**< Simulate timeout (no echo) */
+  bool inject_gpio_error;            /**< Simulate GPIO set_output failure */
+  bool inject_gpio_input_error;      /**< Simulate GPIO set_input failure */
+  bool inject_gpio_read_error;       /**< Simulate GPIO read failure */
+  bool inject_gpio_write_error;      /**< Simulate GPIO write_low failure (all calls) */
+  bool inject_gpio_write_high_error; /**< Simulate GPIO write_high failure */
+  uint32_t
+    gpio_write_low_fail_after_count; /**< Fail write_low after this many successes (0=disabled) */
+  bool inject_gpio_deinit_error;     /**< Simulate GPIO deinit failure on all calls */
+  uint32_t
+    gpio_deinit_fail_after_count; /**< Fail gpio_deinit after this many successes (0 = disabled) */
+  bool inject_pin_conflict;       /**< Simulate pin already reserved */
 
   /* Call tracking */
   mock_hcsr04_call_t call_history[k_mock_hcsr04_max_calls]; /**< Call log */
@@ -131,6 +139,7 @@ typedef struct {
   uint32_t gpio_write_high_count; /**< gpio_write_high calls */
   uint32_t gpio_write_low_count;  /**< gpio_write_low calls */
   uint32_t gpio_read_count;       /**< gpio_read calls */
+  uint32_t gpio_deinit_count;     /**< gpio_deinit calls */
 
   /* Statistics */
   uint32_t total_delay_us; /**< Total simulated delay */
@@ -220,6 +229,65 @@ void mock_hcsr04_hw_set_timeout(mock_hcsr04_hw_t* mock, bool timeout);
  * @param[in] error True to inject GPIO init failure
  */
 void mock_hcsr04_hw_set_gpio_error(mock_hcsr04_hw_t* mock, bool error);
+
+/**
+ * @brief Set GPIO set_input error injection (independent of set_output)
+ *
+ * @param[in] mock  Mock instance (NULL = use global)
+ * @param[in] error True to inject GPIO set_input failure
+ */
+void mock_hcsr04_hw_set_gpio_input_error(mock_hcsr04_hw_t* mock, bool error);
+
+/**
+ * @brief Set GPIO read error injection
+ *
+ * @param[in] mock  Mock instance (NULL = use global)
+ * @param[in] error True to inject GPIO read failure
+ */
+void mock_hcsr04_hw_set_gpio_read_error(mock_hcsr04_hw_t* mock, bool error);
+
+/**
+ * @brief Set GPIO write_low error injection
+ *
+ * @param[in] mock  Mock instance (NULL = use global)
+ * @param[in] error True to inject GPIO write_low failure
+ */
+void mock_hcsr04_hw_set_gpio_write_error(mock_hcsr04_hw_t* mock, bool error);
+
+/**
+ * @brief Set GPIO write_high error injection
+ *
+ * @param[in] mock  Mock instance (NULL = use global)
+ * @param[in] error True to inject GPIO write_high failure
+ */
+void mock_hcsr04_hw_set_gpio_write_high_error(mock_hcsr04_hw_t* mock, bool error);
+
+/**
+ * @brief Set GPIO write_low to fail after N successful calls
+ *
+ * @param[in] mock  Mock instance (NULL = use global)
+ * @param[in] count Number of successful write_low calls before failure (0 = disabled)
+ */
+void mock_hcsr04_hw_set_gpio_write_low_fail_after(mock_hcsr04_hw_t* mock, uint32_t count);
+
+/**
+ * @brief Set GPIO deinit error injection
+ *
+ * @param[in] mock  Mock instance (NULL = use global)
+ * @param[in] error True to inject GPIO deinit failure on all calls
+ */
+void mock_hcsr04_hw_set_gpio_deinit_error(mock_hcsr04_hw_t* mock, bool error);
+
+/**
+ * @brief Set GPIO deinit to fail after N successful calls
+ *
+ * When count > 0, the (count+1)th gpio_deinit call will return k_rx_err_hw_error.
+ * Set count to 0 to disable this feature.
+ *
+ * @param[in] mock  Mock instance (NULL = use global)
+ * @param[in] count Number of successful deinit calls before failure
+ */
+void mock_hcsr04_hw_set_gpio_deinit_fail_after(mock_hcsr04_hw_t* mock, uint32_t count);
 
 /**
  * @brief Set pin conflict injection

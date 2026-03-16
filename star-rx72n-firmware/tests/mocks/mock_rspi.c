@@ -18,6 +18,16 @@
 #include "rx_port_constants.h"
 
 /* =============================================================================
+ * Controller Transfer Constants
+ * =============================================================================
+ */
+
+/** @brief Constants for 16-bit TX history storage */
+typedef enum : uint32_t {
+  k_tx_history_bytes_per_word = 2, /**< Number of bytes per 16-bit word in TX history */
+} mock_rspi_tx_constants_t;
+
+/* =============================================================================
  * Byte Extraction Constants
  * =============================================================================
  */
@@ -57,7 +67,8 @@ rx_err_t mock_rspi_init(mock_rspi_t* mock)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
-  memset(m, 0, sizeof(mock_rspi_t));
+  static const mock_rspi_t s_zero = {};
+  *m                              = s_zero;
 
   /* Set default return values */
   m->next_init_return      = k_rx_ok;
@@ -73,7 +84,7 @@ rx_err_t mock_rspi_init(mock_rspi_t* mock)
   m->next_controller_deinit_return   = k_rx_ok;
 
   /* Default all channels to write ready */
-  for (uint8_t i = 0; i < k_mock_rspi_max_channels; i++) {
+  for (uint16_t i = 0; i < k_mock_rspi_max_channels; i++) {
     m->channels[i].write_ready = true;
   }
 
@@ -84,7 +95,8 @@ rx_err_t mock_rspi_deinit(mock_rspi_t* mock)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
-  memset(m, 0, sizeof(mock_rspi_t));
+  static const mock_rspi_t s_zero = {};
+  *m                              = s_zero;
 
   return k_rx_ok;
 }
@@ -100,10 +112,16 @@ rx_err_t mock_rspi_clear(mock_rspi_t* mock)
   rx_err_t saved_ready     = m->next_ready_return;
   rx_err_t saved_deinit    = m->next_deinit_return;
 
-  memset(m->channels, 0, sizeof(m->channels));
+  static const mock_rspi_channel_t s_zero_ch = {};
+  for (uint16_t ch = 0; ch < k_mock_rspi_max_channels; ch++) {
+    m->channels[ch] = s_zero_ch;
+  }
 
   /* Clear call history */
-  memset(m->call_history, 0, sizeof(m->call_history));
+  static const mock_rspi_call_t s_zero_call = {};
+  for (uint16_t ci = 0; ci < k_mock_rspi_call_history_max; ci++) {
+    m->call_history[ci] = s_zero_call;
+  }
   m->call_count       = 0;
   m->call_write_index = 0;
 
@@ -122,7 +140,7 @@ rx_err_t mock_rspi_clear(mock_rspi_t* mock)
   m->next_deinit_return    = saved_deinit;
 
   /* Default all channels to write ready */
-  for (uint8_t i = 0; i < k_mock_rspi_max_channels; i++) {
+  for (uint16_t i = 0; i < k_mock_rspi_max_channels; i++) {
     m->channels[i].write_ready = true;
   }
 
@@ -162,6 +180,13 @@ void mock_rspi_set_deinit_return(mock_rspi_t* mock, rx_err_t ret)
 {
   mock_rspi_t* m        = internal_get_mock(mock);
   m->next_deinit_return = ret;
+}
+
+void mock_rspi_set_fail_transfer_on_call_n(mock_rspi_t* mock, uint32_t n, rx_err_t err)
+{
+  mock_rspi_t* m                 = internal_get_mock(mock);
+  m->fail_transfer_on_call_n     = n;
+  m->fail_transfer_on_call_n_err = err;
 }
 
 void mock_rspi_set_controller_init_return(mock_rspi_t* mock, rx_err_t ret)
@@ -212,7 +237,8 @@ void mock_rspi_clear_controller_channel(mock_rspi_t* mock, rspi_channel_t channe
   mock_rspi_t* m = internal_get_mock(mock);
 
   if ((uint8_t)channel < k_mock_rspi_max_channels) {
-    memset(&m->controller[channel], 0, sizeof(mock_rspi_controller_t));
+    static const mock_rspi_controller_t s_zero_ctrl = {};
+    m->controller[channel]                          = s_zero_ctrl;
   }
 }
 
@@ -243,11 +269,13 @@ rx_err_t mock_rspi_inject_rx_data(mock_rspi_t*   mock,
   mock_rspi_channel_t* ch = &m->channels[channel];
 
   if (data != nullptr && len > 0) {
-    memcpy(ch->rx_data, data, len);
+    for (uint32_t i = 0; i < len; i++) {
+      ch->rx_data[i] = data[i];
+    }
   }
   ch->rx_len         = len;
   ch->rx_pos         = 0;
-  ch->data_available = (len > 0);
+  ch->data_available = (bool)(len > 0);
 
   return k_rx_ok;
 }
@@ -271,7 +299,9 @@ rx_err_t mock_rspi_get_tx_data(mock_rspi_t*   mock,
   mock_rspi_channel_t* ch = &m->channels[channel];
 
   uint32_t copy_len = (ch->tx_len < max_len) ? ch->tx_len : max_len;
-  memcpy(data, ch->tx_data, copy_len);
+  for (uint32_t i = 0; i < copy_len; i++) {
+    data[i] = ch->tx_data[i];
+  }
   *actual_len = copy_len;
 
   return k_rx_ok;
@@ -302,8 +332,10 @@ void mock_rspi_clear_channel(mock_rspi_t* mock, rspi_channel_t channel)
   if ((uint8_t)channel < k_mock_rspi_max_channels) {
     mock_rspi_channel_t* ch = &m->channels[channel];
 
-    memset(ch->rx_data, 0, sizeof(ch->rx_data));
-    memset(ch->tx_data, 0, sizeof(ch->tx_data));
+    for (uint16_t i = 0; i < k_mock_rspi_buffer_size; i++) {
+      ch->rx_data[i] = 0;
+      ch->tx_data[i] = 0;
+    }
     ch->rx_len         = 0;
     ch->rx_pos         = 0;
     ch->tx_len         = 0;
@@ -357,7 +389,7 @@ rx_err_t mock_rspi_get_last_call(mock_rspi_t* mock, const char* func, mock_rspi_
        i--) {
     uint32_t idx = (uint32_t)i % k_mock_rspi_call_history_max;
     if (strncmp(m->call_history[idx].function, func, k_mock_rspi_func_name_max) == 0) {
-      memcpy(out_call, &m->call_history[idx], sizeof(mock_rspi_call_t));
+      *out_call = m->call_history[idx];
       return k_rx_ok;
     }
   }
@@ -369,7 +401,10 @@ void mock_rspi_clear_calls(mock_rspi_t* mock)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
-  memset(m->call_history, 0, sizeof(m->call_history));
+  static const mock_rspi_call_t s_zero_call = {};
+  for (uint16_t i = 0; i < k_mock_rspi_call_history_max; i++) {
+    m->call_history[i] = s_zero_call;
+  }
   m->call_count       = 0;
   m->call_write_index = 0;
 }
@@ -385,7 +420,12 @@ void mock_rspi_record_call(mock_rspi_t* mock,
 
   mock_rspi_call_t* call = &m->call_history[m->call_write_index];
 
-  strncpy(call->function, func, k_mock_rspi_func_name_max - 1);
+  for (uint16_t i = 0; i < k_mock_rspi_func_name_max - 1; i++) {
+    call->function[i] = func[i];
+    if (func[i] == '\0') {
+      break;
+    }
+  }
   call->function[k_mock_rspi_func_name_max - 1] = '\0';
   call->channel                                 = channel;
   call->arg1                                    = arg1;
@@ -419,7 +459,7 @@ rx_err_t rspi_init_peripheral(rspi_channel_t channel, const rspi_config_t* confi
                           "rspi_init_peripheral",
                           channel,
                           config->spi_mode,
-                          config->use_16bit,
+                          (uint32_t)config->use_16bit,
                           ret);
     return ret;
   }
@@ -437,13 +477,58 @@ rx_err_t rspi_init_peripheral(rspi_channel_t channel, const rspi_config_t* confi
                         "rspi_init_peripheral",
                         channel,
                         config->spi_mode,
-                        config->use_16bit,
+                        (uint32_t)config->use_16bit,
                         ret);
 
   /* Reset to default for next call */
   mock->next_init_return = k_rx_ok;
 
   return ret;
+}
+
+/**
+ * @brief Execute mock data exchange for a peripheral transfer
+ *
+ * @details
+ * Captures TX data into the channel buffer and provides RX data from
+ * the injected buffer. Zero-fills remaining RX bytes if not enough
+ * injected data is available. Updates the data_available flag.
+ *
+ * @param[in,out] ch      Channel state
+ * @param[in]     tx_data Data transmitted by the caller
+ * @param[out]    rx_data Buffer for received data
+ * @param[in]     length  Transfer length in bytes
+ */
+static void internal_transfer_data(mock_rspi_channel_t* ch,
+                                   const uint8_t*       tx_data,
+                                   uint8_t*             rx_data,
+                                   uint16_t             length)
+{
+  /* Capture TX data */
+  uint32_t copy_len = (length < k_mock_rspi_buffer_size) ? length : k_mock_rspi_buffer_size;
+  for (uint32_t i = 0; i < copy_len; i++) {
+    ch->tx_data[i] = tx_data[i];
+  }
+  ch->tx_len = copy_len;
+
+  /* Provide RX data from injected buffer */
+  uint32_t avail   = (ch->rx_len > ch->rx_pos) ? (ch->rx_len - ch->rx_pos) : 0;
+  uint32_t rx_copy = (length < avail) ? length : avail;
+
+  for (uint32_t i = 0; i < rx_copy; i++) {
+    rx_data[i] = ch->rx_data[ch->rx_pos + i];
+  }
+  ch->rx_pos += rx_copy;
+
+  /* Zero-fill any remaining bytes if not enough RX data */
+  for (uint32_t i = rx_copy; i < length; i++) {
+    rx_data[i] = 0;
+  }
+
+  /* Update data available flag */
+  if (ch->rx_pos >= ch->rx_len) {
+    ch->data_available = false;
+  }
 }
 
 rx_err_t rspi_peripheral_transfer(rspi_channel_t channel,
@@ -482,37 +567,22 @@ rx_err_t rspi_peripheral_transfer(rspi_channel_t channel,
     return ret;
   }
 
-  rx_err_t ret = mock->next_transfer_return;
+  /* Check deferred-failure injection: fail on the Nth call */
+  rx_err_t ret = k_rx_ok;
+  if (mock->fail_transfer_on_call_n > 0 && mock->transfer_calls == mock->fail_transfer_on_call_n) {
+    ret                           = mock->fail_transfer_on_call_n_err;
+    mock->fail_transfer_on_call_n = 0; /* Consume the deferred failure */
+  } else {
+    ret = mock->next_transfer_return;
+  }
 
   if (ret == k_rx_ok) {
-    /* Capture TX data */
-    uint32_t copy_len = (length < k_mock_rspi_buffer_size) ? length : k_mock_rspi_buffer_size;
-    (void)memcpy(ch->tx_data, tx_data, copy_len);
-    ch->tx_len = copy_len;
-
-    /* Provide RX data from injected buffer */
-    uint32_t avail   = (ch->rx_len > ch->rx_pos) ? (ch->rx_len - ch->rx_pos) : 0;
-    uint32_t rx_copy = (length < avail) ? length : avail;
-
-    if (rx_copy > 0) {
-      (void)memcpy(rx_data, &ch->rx_data[ch->rx_pos], rx_copy);
-      ch->rx_pos += rx_copy;
-    }
-
-    /* Zero-fill any remaining bytes if not enough RX data */
-    if (rx_copy < length) {
-      (void)memset(rx_data + rx_copy, 0, length - rx_copy);
-    }
-
-    /* Update data available flag */
-    if (ch->rx_pos >= ch->rx_len) {
-      ch->data_available = false;
-    }
+    internal_transfer_data(ch, tx_data, rx_data, length);
   }
 
   mock_rspi_record_call(mock, "rspi_peripheral_transfer", channel, length, 0, ret);
 
-  /* Reset to default for next call */
+  /* Reset one-shot next_transfer_return to default for next call */
   mock->next_transfer_return = k_rx_ok;
 
   return ret;
@@ -684,7 +754,7 @@ rx_err_t rspi_controller_set_cs(rspi_channel_t channel, bool active)
 
   if ((uint8_t)channel >= k_mock_rspi_max_channels) {
     rx_err_t ret = k_rx_err_invalid_state;
-    mock_rspi_record_call(mock, "rspi_controller_set_cs", channel, active, 0, ret);
+    mock_rspi_record_call(mock, "rspi_controller_set_cs", channel, (uint32_t)active, 0, ret);
     return ret;
   }
 
@@ -692,7 +762,7 @@ rx_err_t rspi_controller_set_cs(rspi_channel_t channel, bool active)
 
   if (!ctrl->initialized) {
     rx_err_t ret = k_rx_err_invalid_state;
-    mock_rspi_record_call(mock, "rspi_controller_set_cs", channel, active, 0, ret);
+    mock_rspi_record_call(mock, "rspi_controller_set_cs", channel, (uint32_t)active, 0, ret);
     return ret;
   }
 
@@ -702,7 +772,7 @@ rx_err_t rspi_controller_set_cs(rspi_channel_t channel, bool active)
     ctrl->cs_active = active;
   }
 
-  mock_rspi_record_call(mock, "rspi_controller_set_cs", channel, active, 0, ret);
+  mock_rspi_record_call(mock, "rspi_controller_set_cs", channel, (uint32_t)active, 0, ret);
 
   /* Reset to default for next call */
   mock->next_controller_cs_return = k_rx_ok;
@@ -744,7 +814,7 @@ rx_err_t rspi_controller_transfer_16bit(rspi_channel_t channel, uint16_t tx_data
     ctrl->last_tx_data = tx_data;
 
     /* Store in history buffer */
-    if (ctrl->tx_history_len + 2 <= k_mock_rspi_buffer_size) {
+    if (ctrl->tx_history_len + k_tx_history_bytes_per_word <= k_mock_rspi_buffer_size) {
       ctrl->tx_history[ctrl->tx_history_len++] = (uint8_t)(tx_data >> k_byte_shift_high);
       ctrl->tx_history[ctrl->tx_history_len++] = (uint8_t)(tx_data & k_byte_mask_low);
     }
@@ -781,7 +851,8 @@ rx_err_t rspi_controller_deinit(rspi_channel_t channel)
   rx_err_t ret = mock->next_controller_deinit_return;
 
   if (ret == k_rx_ok) {
-    memset(&mock->controller[channel], 0, sizeof(mock_rspi_controller_t));
+    static const mock_rspi_controller_t s_zero_ctrl = {};
+    mock->controller[channel]                       = s_zero_ctrl;
   }
 
   mock_rspi_record_call(mock, "rspi_controller_deinit", channel, 0, 0, ret);

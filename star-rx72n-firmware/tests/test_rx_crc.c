@@ -35,7 +35,6 @@
  * @since Version 1.0.0
  */
 
-#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -328,6 +327,103 @@ void test_crc_compute_len_too_large(void)
   uint32_t result = 0U;
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                     rx_crc_compute(&cfg, s_test_vec_9, (uint32_t)k_crc_len_max + 1U, &result));
+}
+
+/**
+ * @brief Out-of-range poly value returns invalid_arg.
+ */
+void test_crc_compute_invalid_poly(void)
+{
+  const rx_crc_config_t cfg = {
+    .poly      = (rx_crc_poly_t)0xFFU, /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+    .bit_order = k_rx_crc_bit_order_lsb_first,
+    .backend   = k_rx_crc_backend_software,
+    .dma       = {.timeout_cycles = 0U},
+  };
+  uint32_t result = 0U;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+}
+
+/**
+ * @brief Out-of-range bit_order value returns invalid_arg.
+ */
+void test_crc_compute_invalid_bit_order(void)
+{
+  const rx_crc_config_t cfg = {
+    .poly = k_rx_crc_poly_crc32,
+    .bit_order =
+      (rx_crc_bit_order_t)0xFFU, /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+    .backend = k_rx_crc_backend_software,
+    .dma     = {.timeout_cycles = 0U},
+  };
+  uint32_t result = 0U;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+}
+
+/**
+ * @brief Software backend with msb_first bit order returns invalid_arg.
+ */
+void test_crc_compute_sw_msb_first_invalid(void)
+{
+  const rx_crc_config_t cfg = {
+    .poly      = k_rx_crc_poly_crc32,
+    .bit_order = k_rx_crc_bit_order_msb_first,
+    .backend   = k_rx_crc_backend_software,
+    .dma       = {.timeout_cycles = 0U},
+  };
+  uint32_t result = 0U;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+}
+
+/**
+ * @brief hw_cpu backend with msb_first bit order returns invalid_arg on host.
+ */
+void test_crc_compute_hw_cpu_msb_first_invalid(void)
+{
+  const rx_crc_config_t cfg = {
+    .poly      = k_rx_crc_poly_crc32,
+    .bit_order = k_rx_crc_bit_order_msb_first,
+    .backend   = k_rx_crc_backend_hw_cpu,
+    .dma       = {.timeout_cycles = 0U},
+  };
+  uint32_t result = 0U;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+}
+
+/**
+ * @brief hw_dma backend with msb_first bit order returns invalid_arg on host.
+ */
+void test_crc_compute_hw_dma_msb_first_invalid(void)
+{
+  const rx_crc_config_t cfg = {
+    .poly      = k_rx_crc_poly_crc32,
+    .bit_order = k_rx_crc_bit_order_msb_first,
+    .backend   = k_rx_crc_backend_hw_dma,
+    .dma       = {.timeout_cycles = 0U},
+  };
+  uint32_t result = 0U;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
+}
+
+/**
+ * @brief Invalid backend value returns invalid_arg (default switch case).
+ */
+void test_crc_compute_invalid_backend(void)
+{
+  const rx_crc_config_t cfg = {
+    .poly      = k_rx_crc_poly_crc32,
+    .bit_order = k_rx_crc_bit_order_lsb_first,
+    .backend   = (rx_crc_backend_t)0xFFU, /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
+    .dma       = {.timeout_cycles = 0U},
+  };
+  uint32_t result = 0U;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, &result));
 }
 
 /* =============================================================================
@@ -767,8 +863,17 @@ void test_crc32_update_chunked_matches_single(void)
  */
 void test_crc32_update_null_returns_original(void)
 {
-  uint32_t crc = (uint32_t)k_test_crc32_sentinel;
+  uint32_t crc = k_test_crc32_sentinel;
   TEST_ASSERT_EQUAL_HEX32(crc, rx_crc32_update(crc, nullptr, k_test_vec_9_len));
+}
+
+/**
+ * @brief rx_crc32_update() with len > k_crc_len_max returns crc unchanged.
+ */
+void test_crc32_update_len_too_large_returns_original(void)
+{
+  uint32_t crc = k_test_crc32_sentinel;
+  TEST_ASSERT_EQUAL_HEX32(crc, rx_crc32_update(crc, s_test_vec_9, (uint32_t)k_crc_len_max + 1U));
 }
 
 /**
@@ -776,7 +881,7 @@ void test_crc32_update_null_returns_original(void)
  */
 void test_crc32_update_zero_len_returns_original(void)
 {
-  uint32_t crc = (uint32_t)k_test_crc32_sentinel;
+  uint32_t crc = k_test_crc32_sentinel;
   TEST_ASSERT_EQUAL_HEX32(crc, rx_crc32_update(crc, s_test_vec_9, 0U));
 }
 
@@ -845,8 +950,8 @@ void test_mock_dmaca_preset_timeout_result(void)
     .channel        = (uint8_t)k_mock_dma_channel,
     .src            = s_test_vec_9,
     .len            = k_test_vec_9_len,
-    .dst_addr       = (uintptr_t)k_mock_crc_dst_addr,
-    .timeout_cycles = (uint32_t)k_mock_timeout_cycles,
+    .dst_addr       = k_mock_crc_dst_addr,
+    .timeout_cycles = k_mock_timeout_cycles,
   };
   rx_err_t result = rx_dmaca_transfer_poll(&cfg);
   TEST_ASSERT_EQUAL(k_rx_err_timeout, result);
@@ -858,10 +963,9 @@ void test_mock_dmaca_preset_timeout_result(void)
  * =============================================================================
  */
 
-int main(void)
+/** @brief Run lifecycle and input validation tests */
+static void internal_run_lifecycle_and_validation_tests(void)
 {
-  UNITY_BEGIN();
-
   /* Lifecycle */
   RUN_TEST(test_crc_init_deinit);
   RUN_TEST(test_crc_double_init_invalid_state);
@@ -875,7 +979,17 @@ int main(void)
   RUN_TEST(test_crc_compute_null_result);
   RUN_TEST(test_crc_compute_zero_len);
   RUN_TEST(test_crc_compute_len_too_large);
+  RUN_TEST(test_crc_compute_invalid_poly);
+  RUN_TEST(test_crc_compute_invalid_bit_order);
+  RUN_TEST(test_crc_compute_sw_msb_first_invalid);
+  RUN_TEST(test_crc_compute_hw_cpu_msb_first_invalid);
+  RUN_TEST(test_crc_compute_hw_dma_msb_first_invalid);
+  RUN_TEST(test_crc_compute_invalid_backend);
+}
 
+/** @brief Run all backend polynomial tests */
+static void internal_run_backend_tests(void)
+{
   /* Software backend - all 5 polynomials */
   RUN_TEST(test_crc_sw_crc8_maxim);
   RUN_TEST(test_crc_sw_crc16_ibm);
@@ -900,7 +1014,11 @@ int main(void)
   /* Backend consistency */
   RUN_TEST(test_crc32_all_backends_match);
   RUN_TEST(test_crc32c_all_backends_match);
+}
 
+/** @brief Run wrapper, incremental, boundary, and mock tests */
+static void internal_run_wrapper_and_edge_tests(void)
+{
   /* Convenience wrappers */
   RUN_TEST(test_crc32_ieee_wrapper_matches_compute);
   RUN_TEST(test_crc32_ieee_wrapper_canonical);
@@ -916,6 +1034,7 @@ int main(void)
   RUN_TEST(test_crc32_update_chunked_matches_single);
   RUN_TEST(test_crc32_update_null_returns_original);
   RUN_TEST(test_crc32_update_zero_len_returns_original);
+  RUN_TEST(test_crc32_update_len_too_large_returns_original);
 
   /* Single-byte edge cases */
   RUN_TEST(test_crc32_ieee_single_zero);
@@ -924,6 +1043,13 @@ int main(void)
   /* Mock DMA interaction */
   RUN_TEST(test_mock_dmaca_reset_clears_state);
   RUN_TEST(test_mock_dmaca_preset_timeout_result);
+}
 
+int main(void)
+{
+  UNITY_BEGIN();
+  internal_run_lifecycle_and_validation_tests();
+  internal_run_backend_tests();
+  internal_run_wrapper_and_edge_tests();
   return UNITY_END();
 }

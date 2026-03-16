@@ -134,6 +134,11 @@ typedef enum : uint8_t {
   k_test_invalid_pin  = 8,  /**< Out-of-range pin number (max valid is 7) */
 } test_invalid_gpio_t;
 
+/** @brief Delay values used in internal_delay_us boundary tests */
+typedef enum : uint32_t {
+  k_test_delay_over_max = 101, /**< Exceeds k_max_delay_us (100) for boundary test */
+} test_delay_boundary_t;
+
 /**
  * @var s_adc_voltage_zero
  * @brief ADC input voltage of zero volts
@@ -281,6 +286,7 @@ static void internal_init_handle(void)
 void setUp(void)
 {
   mock_drv8263_port_reset();
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&s_handle, 0, sizeof(s_handle));
   s_config = internal_make_valid_config();
 }
@@ -948,6 +954,197 @@ void test_adc_to_amps_typical_motor_current(void)
 }
 
 /* =============================================================================
+ * Internal Delay Tests
+ * ============================================================================= */
+
+/** @brief Verify internal_delay_us returns without crash for zero us */
+void test_internal_delay_us_zero(void)
+{
+  /* us=0 triggers the guard branch; should return silently */
+  internal_delay_us(0);
+}
+
+/** @brief Verify internal_delay_us returns without crash for us exceeding max */
+void test_internal_delay_us_over_max(void)
+{
+  /* us=101 exceeds k_max_delay_us (100); should return silently */
+  internal_delay_us(k_test_delay_over_max);
+}
+
+/* =============================================================================
+ * Internal GPIO Write Tests
+ * ============================================================================= */
+
+/** @brief Verify internal_gpio_write returns without crash for invalid port */
+void test_internal_gpio_write_invalid_port(void)
+{
+  /* Port 20 exceeds k_max_port_number (16); defensive guard should return silently */
+  internal_gpio_write(k_test_invalid_port, k_test_pin_drvoff, true);
+  /* No crash and no output pin change on valid port 6 */
+  bool pin_state = mock_drv8263_port_get_pin_output(k_test_port_drvoff, k_test_pin_drvoff);
+  TEST_ASSERT_FALSE(pin_state);
+}
+
+/** @brief Verify internal_gpio_write returns without crash for invalid pin */
+void test_internal_gpio_write_invalid_pin(void)
+{
+  /* Pin 8 exceeds k_max_pin_number (7); defensive guard should return silently */
+  internal_gpio_write(k_test_port_drvoff, k_test_invalid_pin, true);
+  /* No pin change should have occurred */
+  uint8_t podr = mock_drv8263_port_get_podr(k_test_port_drvoff);
+  TEST_ASSERT_EQUAL(0, podr);
+}
+
+/* =============================================================================
+ * Internal GPIO Read Tests
+ * ============================================================================= */
+
+/** @brief Verify internal_gpio_read returns false for invalid port */
+void test_internal_gpio_read_invalid_port(void)
+{
+  bool result = internal_gpio_read(k_test_invalid_port, k_test_pin_nfault);
+  TEST_ASSERT_FALSE(result);
+}
+
+/** @brief Verify internal_gpio_read returns false for invalid pin */
+void test_internal_gpio_read_invalid_pin(void)
+{
+  bool result = internal_gpio_read(k_test_port_nfault, k_test_invalid_pin);
+  TEST_ASSERT_FALSE(result);
+}
+
+/* =============================================================================
+ * Internal Validate Config Tests
+ * ============================================================================= */
+
+/** @brief Verify internal_validate_config returns null_ptr for null config */
+void test_internal_validate_config_null(void)
+{
+  rx_err_t err = internal_validate_config(nullptr);
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
+/* =============================================================================
+ * Internal OLP Apply Patterns Tests
+ * ============================================================================= */
+
+/** @brief Verify internal_olp_apply_patterns returns without crash for null handle */
+void test_internal_olp_apply_patterns_null_handle(void)
+{
+  bool readings[k_drv8263_olp_pattern_count] = {false};
+  internal_olp_apply_patterns(nullptr, readings);
+  /* Should return without modifying readings */
+  TEST_ASSERT_FALSE(readings[0]);
+  TEST_ASSERT_FALSE(readings[1]);
+  TEST_ASSERT_FALSE(readings[2]);
+}
+
+/** @brief Verify internal_olp_apply_patterns returns without crash for null readings array */
+void test_internal_olp_apply_patterns_null_readings(void)
+{
+  internal_init_handle();
+  /* Should return without crash when readings array is null */
+  internal_olp_apply_patterns(&s_handle, nullptr);
+}
+
+/* =============================================================================
+ * Internal OLP Decode Results Tests
+ * ============================================================================= */
+
+/** @brief Verify internal_olp_decode_results handles null result_out1 */
+void test_internal_olp_decode_results_null_out1(void)
+{
+  rx_drv8263_olp_result_t r2 = k_drv8263_olp_unknown;
+  internal_olp_decode_results(true, true, true, nullptr, &r2);
+  /* Should return without crash; r2 unchanged */
+  TEST_ASSERT_EQUAL(k_drv8263_olp_unknown, r2);
+}
+
+/** @brief Verify internal_olp_decode_results handles null result_out2 */
+void test_internal_olp_decode_results_null_out2(void)
+{
+  rx_drv8263_olp_result_t r1 = k_drv8263_olp_unknown;
+  internal_olp_decode_results(true, true, true, &r1, nullptr);
+  /* Should return without crash; r1 unchanged */
+  TEST_ASSERT_EQUAL(k_drv8263_olp_unknown, r1);
+}
+
+/** @brief Verify {1,1,0} pattern decodes to normal OUT1, open load OUT2 */
+void test_internal_olp_decode_open_load_out2(void)
+{
+  rx_drv8263_olp_result_t r1 = k_drv8263_olp_unknown;
+  rx_drv8263_olp_result_t r2 = k_drv8263_olp_unknown;
+  internal_olp_decode_results(true, true, false, &r1, &r2);
+  TEST_ASSERT_EQUAL(k_drv8263_olp_normal, r1);
+  TEST_ASSERT_EQUAL(k_drv8263_olp_open_load, r2);
+}
+
+/** @brief Verify {1,0,1} pattern decodes to open load OUT1, normal OUT2 */
+void test_internal_olp_decode_open_load_out1(void)
+{
+  rx_drv8263_olp_result_t r1 = k_drv8263_olp_unknown;
+  rx_drv8263_olp_result_t r2 = k_drv8263_olp_unknown;
+  internal_olp_decode_results(true, false, true, &r1, &r2);
+  TEST_ASSERT_EQUAL(k_drv8263_olp_open_load, r1);
+  TEST_ASSERT_EQUAL(k_drv8263_olp_normal, r2);
+}
+
+/** @brief Verify {0,1,1} pattern decodes to short to GND on both outputs */
+void test_internal_olp_decode_short_to_gnd(void)
+{
+  rx_drv8263_olp_result_t r1 = k_drv8263_olp_unknown;
+  rx_drv8263_olp_result_t r2 = k_drv8263_olp_unknown;
+  internal_olp_decode_results(false, true, true, &r1, &r2);
+  TEST_ASSERT_EQUAL(k_drv8263_olp_short_to_gnd, r1);
+  TEST_ASSERT_EQUAL(k_drv8263_olp_short_to_gnd, r2);
+}
+
+/** @brief Verify unexpected nFAULT pattern {1,0,0} decodes to unknown */
+void test_internal_olp_decode_unknown_pattern_100(void)
+{
+  /* {1,0,0} is not in the truth table */
+  rx_drv8263_olp_result_t r1 = k_drv8263_olp_normal;
+  rx_drv8263_olp_result_t r2 = k_drv8263_olp_normal;
+  internal_olp_decode_results(true, false, false, &r1, &r2);
+  TEST_ASSERT_EQUAL(k_drv8263_olp_unknown, r1);
+  TEST_ASSERT_EQUAL(k_drv8263_olp_unknown, r2);
+}
+
+/** @brief Verify unexpected nFAULT pattern {0,1,0} decodes to unknown */
+void test_internal_olp_decode_unknown_pattern_010(void)
+{
+  /* {0,1,0} is not in the truth table */
+  rx_drv8263_olp_result_t r1 = k_drv8263_olp_normal;
+  rx_drv8263_olp_result_t r2 = k_drv8263_olp_normal;
+  internal_olp_decode_results(false, true, false, &r1, &r2);
+  TEST_ASSERT_EQUAL(k_drv8263_olp_unknown, r1);
+  TEST_ASSERT_EQUAL(k_drv8263_olp_unknown, r2);
+}
+
+/** @brief Verify unexpected nFAULT pattern {0,0,1} decodes to unknown */
+void test_internal_olp_decode_unknown_pattern_001(void)
+{
+  /* {0,0,1} is not in the truth table */
+  rx_drv8263_olp_result_t r1 = k_drv8263_olp_normal;
+  rx_drv8263_olp_result_t r2 = k_drv8263_olp_normal;
+  internal_olp_decode_results(false, false, true, &r1, &r2);
+  TEST_ASSERT_EQUAL(k_drv8263_olp_unknown, r1);
+  TEST_ASSERT_EQUAL(k_drv8263_olp_unknown, r2);
+}
+
+/** @brief Verify boot OLP with abnormal load condition logs a warning */
+void test_init_boot_olp_abnormal_result(void)
+{
+  /* Enable boot OLP; nFAULT LOW -> short-to-VM -> abnormal result branch in init */
+  s_config.olp_enable_boot = true;
+  mock_drv8263_port_set_pin_input(k_test_port_nfault, k_test_pin_nfault, false);
+  rx_err_t err = rx_drv8263_init(&s_handle, &s_config);
+  /* Init succeeds even with abnormal OLP result (only logged as warning) */
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_handle.initialized);
+}
+
+/* =============================================================================
  * OLP Enable/Disable Configuration Tests
  * ============================================================================= */
 
@@ -1027,11 +1224,8 @@ void test_set_olp_fault_enable_success(void)
  *
  * @since Version 1.0.0
  */
-int main(void)
+static void internal_run_init_and_control_tests(void)
 {
-  UNITY_BEGIN();
-
-  /* Initialization */
   RUN_TEST(test_init_success);
   RUN_TEST(test_init_null_handle);
   RUN_TEST(test_init_null_config);
@@ -1047,19 +1241,13 @@ int main(void)
   RUN_TEST(test_init_invalid_in2_port);
   RUN_TEST(test_init_copies_config);
   RUN_TEST(test_init_with_boot_olp_enabled);
-
-  /* DRVOFF control */
   RUN_TEST(test_set_drvoff_null_handle);
   RUN_TEST(test_set_drvoff_not_initialized);
   RUN_TEST(test_set_drvoff_active);
   RUN_TEST(test_set_drvoff_inactive);
-
-  /* Latched fault clear */
   RUN_TEST(test_clear_fault_null_handle);
   RUN_TEST(test_clear_fault_not_initialized);
   RUN_TEST(test_clear_fault_nsleep_returns_high);
-
-  /* OLP diagnostics */
   RUN_TEST(test_olp_null_handle);
   RUN_TEST(test_olp_null_result_out1);
   RUN_TEST(test_olp_null_result_out2);
@@ -1068,20 +1256,44 @@ int main(void)
   RUN_TEST(test_olp_short_to_vm_all_nfault_low);
   RUN_TEST(test_olp_drvoff_restored_after_diagnostic);
   RUN_TEST(test_olp_in1_in2_restored_to_low);
-
-  /* ADC-to-amps conversion */
   RUN_TEST(test_adc_to_amps_zero_voltage);
   RUN_TEST(test_adc_to_amps_one_volt);
   RUN_TEST(test_adc_to_amps_full_scale);
   RUN_TEST(test_adc_to_amps_typical_motor_current);
-
-  /* OLP enable/disable */
   RUN_TEST(test_set_olp_boot_enable_null_handle);
   RUN_TEST(test_set_olp_boot_enable_not_initialized);
   RUN_TEST(test_set_olp_boot_enable_success);
   RUN_TEST(test_set_olp_fault_enable_null_handle);
   RUN_TEST(test_set_olp_fault_enable_not_initialized);
   RUN_TEST(test_set_olp_fault_enable_success);
+}
 
+static void internal_run_internal_function_tests(void)
+{
+  RUN_TEST(test_internal_delay_us_zero);
+  RUN_TEST(test_internal_delay_us_over_max);
+  RUN_TEST(test_internal_gpio_write_invalid_port);
+  RUN_TEST(test_internal_gpio_write_invalid_pin);
+  RUN_TEST(test_internal_gpio_read_invalid_port);
+  RUN_TEST(test_internal_gpio_read_invalid_pin);
+  RUN_TEST(test_internal_validate_config_null);
+  RUN_TEST(test_internal_olp_apply_patterns_null_handle);
+  RUN_TEST(test_internal_olp_apply_patterns_null_readings);
+  RUN_TEST(test_internal_olp_decode_results_null_out1);
+  RUN_TEST(test_internal_olp_decode_results_null_out2);
+  RUN_TEST(test_internal_olp_decode_open_load_out2);
+  RUN_TEST(test_internal_olp_decode_open_load_out1);
+  RUN_TEST(test_internal_olp_decode_short_to_gnd);
+  RUN_TEST(test_internal_olp_decode_unknown_pattern_100);
+  RUN_TEST(test_internal_olp_decode_unknown_pattern_010);
+  RUN_TEST(test_internal_olp_decode_unknown_pattern_001);
+  RUN_TEST(test_init_boot_olp_abnormal_result);
+}
+
+int main(void)
+{
+  UNITY_BEGIN();
+  internal_run_init_and_control_tests();
+  internal_run_internal_function_tests();
   return UNITY_END();
 }

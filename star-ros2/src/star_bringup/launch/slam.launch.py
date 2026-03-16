@@ -140,7 +140,7 @@ def generate_launch_description():
         }.items(),
     )
 
-    # Nav2 navigation stack (navigation_launch.py — no map server, uses /map from SLAM).
+    # Nav2 navigation stack (navigation_launch.py -- no map server, uses /map from SLAM).
     # Requires: sudo apt install ros-jazzy-navigation2 ros-jazzy-nav2-bringup
     # PathJoinSubstitution is resolved lazily at launch time; IfCondition(false) prevents
     # execution so FindPackageShare never runs when use_nav2:=false and nav2_bringup is absent.

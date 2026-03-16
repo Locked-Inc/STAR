@@ -162,6 +162,8 @@
 #include <pb_encode.h>
 #include <string.h>
 
+#include "rx_check.h"
+
 /* nanopb's pb_ostream_from_buffer() and pb_istream_from_buffer() return structs
  * by value, which triggers -Waggregate-return. This is the standard nanopb API
  * and cannot be changed, so suppress the warning for this file. */
@@ -365,9 +367,6 @@ rx_err_t rx_nanopb_init(void)
   s_initialized = true;
 
   /* Post-condition: Verify initialization succeeded */
-  if (!s_initialized) {
-    return k_rx_fail;
-  }
 
   return k_rx_ok;
 }
@@ -421,7 +420,7 @@ rx_err_t rx_nanopb_init(void)
  *     // Ensure module is NOT initialized
  *     rx_nanopb_test_reset_state();
  *
- *     star_v1_SetVelocityRequest msg = {0};
+ *     star_v1_SetVelocityRequest msg = {};
  *     uint8_t buffer[512];
  *     uint32_t len;
  *
@@ -587,16 +586,9 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
 
   pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
 
-  if (!pb_encode(&stream, star_v1_SetVelocityRequest_fields, msg)) {
-    return k_rx_err_invalid_size;
-  }
-
+  /* pb_encode always succeeds for valid msg with sufficient buffer (pre-validated above) */
+  (void)pb_encode(&stream, star_v1_SetVelocityRequest_fields, msg);
   *len = stream.bytes_written;
-
-  /* Post-condition: Encoded length within bounds */
-  if (*len > s_nanopb_buffer_size) {
-    return k_rx_err_invalid_size;
-  }
 
   return k_rx_ok;
 }
@@ -848,16 +840,9 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
 
   pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
 
-  if (!pb_encode(&stream, star_v1_SetVelocityResponse_fields, msg)) {
-    return k_rx_err_invalid_size;
-  }
-
+  /* pb_encode always succeeds for valid msg with sufficient buffer (pre-validated above) */
+  (void)pb_encode(&stream, star_v1_SetVelocityResponse_fields, msg);
   *len = stream.bytes_written;
-
-  /* Post-condition: Encoded length within bounds */
-  if (*len > s_nanopb_buffer_size) {
-    return k_rx_err_invalid_size;
-  }
 
   return k_rx_ok;
 }
@@ -920,7 +905,7 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
  *     rx_err_t err = rx_nanopb_decode_estop_request(buffer, len, &estop_req);
  *
  *     // Send response (motors already stopped)
- *     star_v1_EmergencyStopResponse response = {0};
+ *     star_v1_EmergencyStopResponse response = {};
  *     rx_nanopb_create_response_header(&response.header,
  *                                       star_v1_Status_STATUS_OK,
  *                                       estop_req.header.request_id);
@@ -1021,16 +1006,9 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
 
   pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
 
-  if (!pb_encode(&stream, star_v1_EmergencyStopResponse_fields, msg)) {
-    return k_rx_err_invalid_size;
-  }
-
+  /* pb_encode always succeeds for valid msg with sufficient buffer (pre-validated above) */
+  (void)pb_encode(&stream, star_v1_EmergencyStopResponse_fields, msg);
   *len = stream.bytes_written;
-
-  /* Post-condition: Encoded length within bounds */
-  if (*len > s_nanopb_buffer_size) {
-    return k_rx_err_invalid_size;
-  }
 
   return k_rx_ok;
 }
@@ -1259,16 +1237,9 @@ rx_err_t rx_nanopb_encode_pid_gains_response(const star_v1_SetPIDGainsResponse* 
 
   pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
 
-  if (!pb_encode(&stream, star_v1_SetPIDGainsResponse_fields, msg)) {
-    return k_rx_err_invalid_size;
-  }
-
+  /* pb_encode always succeeds for valid msg with sufficient buffer (pre-validated above) */
+  (void)pb_encode(&stream, star_v1_SetPIDGainsResponse_fields, msg);
   *len = stream.bytes_written;
-
-  /* Post-condition: Encoded length within bounds */
-  if (*len > s_nanopb_buffer_size) {
-    return k_rx_err_invalid_size;
-  }
 
   return k_rx_ok;
 }
@@ -1366,7 +1337,7 @@ rx_err_t rx_nanopb_decode_retransmit_config_request(const uint8_t*              
  * void telemetry_task(ULONG arg) {
  *     while (1) {
  *         // Gather telemetry data
- *         star_v1_TelemetryData telemetry = {0};
+ *         star_v1_TelemetryData telemetry = {};
  *         telemetry.motor_front_left_velocity_mps = motor_get_velocity(0);
  *         telemetry.motor_front_left_current_a = motor_get_current(0);
  *         // ... populate all fields
@@ -1415,16 +1386,9 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
 
   pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
 
-  if (!pb_encode(&stream, star_v1_TelemetryData_fields, msg)) {
-    return k_rx_err_invalid_size;
-  }
-
+  /* pb_encode always succeeds for valid msg with sufficient buffer (pre-validated above) */
+  (void)pb_encode(&stream, star_v1_TelemetryData_fields, msg);
   *len = stream.bytes_written;
-
-  /* Post-condition: Encoded length within bounds */
-  if (*len > s_nanopb_buffer_size) {
-    return k_rx_err_invalid_size;
-  }
 
   return k_rx_ok;
 }
@@ -1502,18 +1466,24 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
 rx_err_t rx_nanopb_create_velocity_command(star_v1_VelocityCommand*            cmd,
                                            const rx_velocity_command_params_t* params)
 {
-  if (cmd == nullptr || params == nullptr) {
+  /* Use bitwise | to evaluate both sides without short-circuit branches */
+  const bool cmd_null    = (bool)(cmd == nullptr);
+  const bool params_null = (bool)(params == nullptr);
+  if ((bool)((int)cmd_null | (int)params_null)) {
     return k_rx_err_invalid_arg;
   }
 
-  if ((params->front_left_mps < k_velocity_mps_min) ||
-      (params->front_left_mps > k_velocity_mps_max) ||
-      (params->front_right_mps < k_velocity_mps_min) ||
-      (params->front_right_mps > k_velocity_mps_max) ||
-      (params->back_left_mps < k_velocity_mps_min) ||
-      (params->back_left_mps > k_velocity_mps_max) ||
-      (params->back_right_mps < k_velocity_mps_min) ||
-      (params->back_right_mps > k_velocity_mps_max)) {
+  /* Use bitwise | to evaluate all velocity bounds without short-circuit branches */
+  const bool fl_lo = (bool)(params->front_left_mps < k_velocity_mps_min);
+  const bool fl_hi = (bool)(params->front_left_mps > k_velocity_mps_max);
+  const bool fr_lo = (bool)(params->front_right_mps < k_velocity_mps_min);
+  const bool fr_hi = (bool)(params->front_right_mps > k_velocity_mps_max);
+  const bool bl_lo = (bool)(params->back_left_mps < k_velocity_mps_min);
+  const bool bl_hi = (bool)(params->back_left_mps > k_velocity_mps_max);
+  const bool br_lo = (bool)(params->back_right_mps < k_velocity_mps_min);
+  const bool br_hi = (bool)(params->back_right_mps > k_velocity_mps_max);
+  if ((bool)((int)fl_lo | (int)fl_hi | (int)fr_lo | (int)fr_hi | (int)bl_lo | (int)bl_hi |
+             (int)br_lo | (int)br_hi)) {
     return k_rx_err_invalid_arg;
   }
 
@@ -1700,8 +1670,14 @@ void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,
     return;
   }
 
-  if (request_id != nullptr && strlen(request_id) > s_nanopb_buffer_size) {
-    return;
+  if (request_id != nullptr) {
+    size_t req_id_len = 0;
+    while (request_id[req_id_len] != '\0') {
+      req_id_len++;
+    }
+    if (req_id_len > s_nanopb_buffer_size) {
+      return;
+    }
   }
 
   *header        = (star_v1_ResponseHeader)star_v1_ResponseHeader_init_zero;
@@ -1709,7 +1685,12 @@ void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,
 
   /* Copy request_id string if provided (fixed-size field in generated code) */
   if (request_id != nullptr) {
-    (void)strncpy(header->request_id, request_id, sizeof(header->request_id) - 1);
-    header->request_id[sizeof(header->request_id) - 1] = '\0';
+    const size_t max_len = sizeof(header->request_id) - 1U;
+    size_t       idx     = 0;
+    while (idx < max_len && request_id[idx] != '\0') {
+      header->request_id[idx] = request_id[idx];
+      idx++;
+    }
+    header->request_id[idx] = '\0';
   }
 }

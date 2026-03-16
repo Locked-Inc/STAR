@@ -10,7 +10,7 @@
  * using actual RX72N peripherals (GPIO ports, CMT2 timer).
  *
  * This implementation is linked into firmware builds targeting the RX72N platform.
- * For host-side unit testing, the build system links `tests/mocks/rx_hcsr04_hal_mock.c` instead.
+ * For host-side unit testing, the build system links `tests/mocks/mock_rx_hcsr04_hal.c` instead.
  *
  * # Architecture
  *
@@ -425,8 +425,6 @@
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */
-
-#include <stdbool.h>
 
 #include "hardware.h"
 #include "rx72n_clock.h"
@@ -1375,8 +1373,8 @@ void hcsr04_hal_delay_us(uint32_t us)
  */
 uint32_t hcsr04_hal_get_time_us(void)
 {
-  static uint32_t overflow_count = 0;
-  static uint16_t last_counter   = 0;
+  static uint32_t s_overflow_count = 0;
+  static uint16_t s_last_counter   = 0;
 
   internal_cmt2_init();
 
@@ -1396,13 +1394,14 @@ uint32_t hcsr04_hal_get_time_us(void)
   const uint16_t current_counter = cmt2()->cmcnt;
 
   /* Detect overflow (counter wrapped around) */
-  if (current_counter < last_counter) {
-    overflow_count++;
+  if (current_counter < s_last_counter) {
+    s_overflow_count++;
   }
-  last_counter = current_counter;
+  s_last_counter = current_counter;
 
   /* Calculate total ticks including overflows */
-  const uint64_t total_ticks = ((uint64_t)overflow_count << k_timer_counter_bits) | current_counter;
+  const uint64_t total_ticks =
+    ((uint64_t)s_overflow_count << k_timer_counter_bits) | current_counter;
 
   /* Convert ticks to microseconds */
   const uint32_t timer_hz = k_pclkb_hz / k_cmt2_divider;

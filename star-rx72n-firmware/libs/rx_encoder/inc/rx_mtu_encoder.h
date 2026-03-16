@@ -203,7 +203,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -457,7 +456,7 @@ typedef struct {
  * @par Velocity Calculation Example:
  * @code{.c}
  * // Track encoder state across iterations
- * static rx_encoder_state_t last_state = {0};
+ * static rx_encoder_state_t last_state = {};
  * static bool first_iteration = true;
  *
  * // Called at 250 Hz (every 4ms)
@@ -700,7 +699,7 @@ typedef struct {
  *
  * @par Error Handling Example:
  * @code{.c}
- * rx_encoder_config_t config = {0};
+ * rx_encoder_config_t config = {};
  *
  * rx_err_t err = rx_encoder_init(&config);
  * switch (err) {
@@ -1089,6 +1088,24 @@ rx_encoder_read_velocity(float* velocity_rps, float delta_time_s, rx_mtu_channel
  * @return k_rx_err_invalid_arg if channel is invalid
  */
 [[nodiscard]] rx_err_t rx_encoder_deinit(rx_mtu_channel_t channel);
+
+#ifdef UNIT_TEST
+/**
+ * @brief Corrupt s_counts_per_rev for a channel (test-only)
+ *
+ * @details
+ * Sets s_counts_per_rev[channel] = 0 to exercise runtime cpr-corrupted guards in
+ * internal_update_state_from_count(), rx_encoder_read_velocity(), and rx_encoder_set_count().
+ * Available only in UNIT_TEST builds.
+ *
+ * @param[in] channel MTU channel (must be a valid array index: 0-7)
+ * @post s_counts_per_rev[channel] == 0
+ *
+ * @note Test-only; not compiled into production firmware
+ * @since Version 1.0.0
+ */
+void rx_mtu_encoder_test_corrupt_cpr(rx_mtu_channel_t channel);
+#endif /* UNIT_TEST */
 
 #ifdef __cplusplus
 }

@@ -19,7 +19,27 @@
 
 #include "mock_hal_regs.h"
 
+#include <stddef.h>
 #include <string.h>
+
+/* =============================================================================
+ * Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief ADC channel indices for mock register mapping
+ */
+typedef enum : uint8_t {
+  k_mock_adc_ch_0 = 0, /**< ADC channel 0 */
+  k_mock_adc_ch_1 = 1, /**< ADC channel 1 */
+  k_mock_adc_ch_2 = 2, /**< ADC channel 2 */
+  k_mock_adc_ch_3 = 3, /**< ADC channel 3 */
+  k_mock_adc_ch_4 = 4, /**< ADC channel 4 */
+  k_mock_adc_ch_5 = 5, /**< ADC channel 5 */
+  k_mock_adc_ch_6 = 6, /**< ADC channel 6 */
+  k_mock_adc_ch_7 = 7, /**< ADC channel 7 */
+} mock_hal_adc_channel_t;
 
 /* =============================================================================
  * Global State
@@ -35,6 +55,7 @@ mock_hal_state_t g_mock_hal;
 
 void mock_hal_init(void)
 {
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&g_mock_hal, 0, sizeof(g_mock_hal));
 
   /* Set default ADC behavior - conversion completes immediately */
@@ -113,28 +134,28 @@ void mock_hal_set_adc_value(uint8_t unit, uint8_t channel, uint16_t value)
 
   mock_adc_regs_t* adc = &g_mock_hal.adc[unit];
   switch (channel) {
-    case 0:
+    case k_mock_adc_ch_0:
       adc->addr0 = value;
       break;
-    case 1:
+    case k_mock_adc_ch_1:
       adc->addr1 = value;
       break;
-    case 2:
+    case k_mock_adc_ch_2:
       adc->addr2 = value;
       break;
-    case 3:
+    case k_mock_adc_ch_3:
       adc->addr3 = value;
       break;
-    case 4:
+    case k_mock_adc_ch_4:
       adc->addr4 = value;
       break;
-    case 5:
+    case k_mock_adc_ch_5:
       adc->addr5 = value;
       break;
-    case 6:
+    case k_mock_adc_ch_6:
       adc->addr6 = value;
       break;
-    case 7:
+    case k_mock_adc_ch_7:
       adc->addr7 = value;
       break;
     default:

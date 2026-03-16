@@ -722,7 +722,7 @@ extern "C" {
  *
  * void run_test_suite(void)
  * {
- *   test_fixture_t fixture = {0};
+ *   test_fixture_t fixture = {};
  *
  *   test_setup(&fixture);
  *   test_motor_functions();

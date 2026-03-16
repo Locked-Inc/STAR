@@ -26,7 +26,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -134,11 +133,14 @@ typedef enum : uint8_t {
   TX_FEATURE_NOT_ENABLED = 0xFFU,
 } tx_status;
 
-/** @brief ThreadX wait options */
-typedef enum tx_wait_option : uint32_t {
-  TX_NO_WAIT      = 0U,
-  TX_WAIT_FOREVER = 0xFFFFFFFFU,
-} tx_wait_option;
+/** @brief ThreadX wait option type (ULONG tick count, or TX_NO_WAIT/TX_WAIT_FOREVER) */
+typedef ULONG tx_wait_option;
+
+/** @brief Return immediately if resource unavailable */
+static const tx_wait_option TX_NO_WAIT = 0U;
+
+/** @brief Wait indefinitely for resource */
+static const tx_wait_option TX_WAIT_FOREVER = 0xFFFFFFFFU;
 
 /** @brief ThreadX inheritance options */
 typedef enum : uint8_t {
@@ -269,8 +271,7 @@ typedef struct TX_EVENT_FLAGS_GROUP_STRUCT {
  *
  * @return TX_SUCCESS on success
  */
-static inline tx_status
-tx_mutex_create(TX_MUTEX* mutex_ptr, CHAR* name_ptr, tx_inherit_option inherit)
+static inline tx_status tx_mutex_create(TX_MUTEX* mutex_ptr, CHAR* name_ptr, UINT inherit)
 {
   (void)inherit;
 
@@ -435,6 +436,11 @@ static inline tx_status tx_thread_create(TX_THREAD* thread_ptr,
  *
  * @return TX_SUCCESS on success
  */
+#ifdef MOCK_TX_THREAD_DELETE
+/* When MOCK_TX_THREAD_DELETE is defined, use non-inline declaration.
+ * Implementation in mock_tx_api.c allows controlling the return value. */
+tx_status tx_thread_delete(TX_THREAD* thread_ptr);
+#else
 static inline tx_status tx_thread_delete(TX_THREAD* thread_ptr)
 {
   if (thread_ptr == nullptr) {
@@ -448,6 +454,7 @@ static inline tx_status tx_thread_delete(TX_THREAD* thread_ptr)
   thread_ptr->tx_thread_id = k_tx_invalid_id;
   return TX_SUCCESS;
 }
+#endif /* MOCK_TX_THREAD_DELETE */
 
 /**
  * @brief Terminate a thread
@@ -502,6 +509,11 @@ static inline tx_status tx_thread_resume(TX_THREAD* thread_ptr)
  *
  * @return TX_SUCCESS on success
  */
+#ifdef MOCK_TX_THREAD_SLEEP
+/* When MOCK_TX_THREAD_SLEEP is defined, use non-inline declaration.
+ * Implementation in mock_tx_api.c allows registering a callback. */
+tx_status tx_thread_sleep(ULONG timer_ticks);
+#else
 static inline tx_status tx_thread_sleep(ULONG timer_ticks)
 {
   if (timer_ticks == TX_WAIT_FOREVER) {
@@ -514,6 +526,53 @@ static inline tx_status tx_thread_sleep(ULONG timer_ticks)
 
   return TX_SUCCESS;
 }
+#endif /* MOCK_TX_THREAD_SLEEP */
+
+/**
+ * @brief Suspend a thread (mock declaration -- implemented in mock_coverage_stubs.c).
+ *
+ * @details
+ * In real ThreadX this moves the thread to the suspended state. The mock
+ * implementation is a no-op that returns TX_SUCCESS so that firmware code
+ * calling tx_thread_suspend() compiles and links on the host without a
+ * kernel dependency.
+ *
+ * @param[in] thread_ptr Thread control block pointer.
+ *
+ * @return TX_SUCCESS always.
+ *
+ * @pre  thread_ptr points to a valid TX_THREAD (or may be nullptr in mocks).
+ * @pre  Called from a single-threaded test context (no real scheduling).
+ * @post Thread state is unchanged in the host environment.
+ * @post Returns synchronously with no scheduling side-effects.
+ *
+ * @note Thread safety: N/A in single-threaded host test environment.
+ * @since Version 1.0.0
+ */
+UINT tx_thread_suspend(TX_THREAD* thread_ptr);
+
+/**
+ * @brief Identify the currently running thread (mock declaration -- implemented
+ *        in mock_coverage_stubs.c).
+ *
+ * @details
+ * In real ThreadX this returns a pointer to the currently executing TX_THREAD
+ * control block, or nullptr if called from initialization or a timer ISR. The
+ * mock always returns nullptr to signal "not inside a thread" so that firmware
+ * code that guards critical sections with tx_thread_identify() != nullptr takes
+ * the non-thread path on the host.
+ *
+ * @return nullptr always.
+ *
+ * @pre  Called from a single-threaded test context (no real scheduling).
+ * @pre  No ThreadX scheduler is running on the host.
+ * @post Return value is nullptr.
+ * @post No state is modified.
+ *
+ * @note Thread safety: N/A in single-threaded host test environment.
+ * @since Version 1.0.0
+ */
+TX_THREAD* tx_thread_identify(void);
 
 /* =============================================================================
  * ThreadX Event Flags Functions (Mock Implementations)
@@ -718,6 +777,15 @@ tx_event_flags_set(TX_EVENT_FLAGS_GROUP* group_ptr, ULONG flags_to_set, UINT set
  *
  * @return TX_SUCCESS on success
  */
+#ifdef MOCK_TX_EVENT_FLAGS_GET
+/* When MOCK_TX_EVENT_FLAGS_GET is defined, use non-inline declaration.
+ * Implementation in mock_tx_api.c allows controlling return values per call. */
+tx_status tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
+                             ULONG                 requested_flags,
+                             UINT                  get_option,
+                             ULONG*                actual_flags_ptr,
+                             tx_wait_option        wait_option);
+#else
 static inline tx_status tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
                                            ULONG                 requested_flags,
                                            UINT                  get_option,
@@ -744,6 +812,7 @@ static inline tx_status tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
 
   return TX_SUCCESS;
 }
+#endif /* MOCK_TX_EVENT_FLAGS_GET */
 
 /* =============================================================================
  * ThreadX Timer Tick Constants and Functions
@@ -754,6 +823,88 @@ static inline tx_status tx_event_flags_get(TX_EVENT_FLAGS_GROUP* group_ptr,
 #ifndef TX_TIMER_TICKS_PER_SECOND
 #define TX_TIMER_TICKS_PER_SECOND (100UL)
 #endif
+
+/* =============================================================================
+ * ThreadX Interrupt Control Constants and Functions
+ * =============================================================================
+ */
+
+/**
+ * @def TX_INT_DISABLE
+ * @brief Argument to tx_interrupt_control() that disables interrupts.
+ *
+ * @details
+ * In real ThreadX this is a platform-specific mask value (typically 0xC0 on
+ * ARM Cortex-M).  The mock uses 0x1 as a sentinel so that test code can
+ * distinguish between "disable" and "restore to prior state" call patterns.
+ *
+ * @note Intentional macro: must match the ThreadX API call convention where
+ *       TX_INT_DISABLE is passed directly as a UINT argument. Cannot be an
+ *       enum constant because the argument and return types carry interrupt
+ *       state as an opaque UINT.
+ *
+ * @since Version 1.0.0
+ */
+#ifndef TX_INT_DISABLE
+#define TX_INT_DISABLE 0x1U
+#endif
+
+/**
+ * @enum tx_interrupt_prior_state_t
+ * @brief Named constants for the prior interrupt-enable state returned by
+ *        tx_interrupt_control() in the mock.
+ *
+ * @details
+ * The real ThreadX API returns an opaque UINT platform bitmask. In the mock
+ * we return a named constant instead of the magic literal 0U so that the
+ * return value is self-documenting and auditable.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : UINT {
+  k_tx_int_was_enabled = 0U, /**< Prior state: interrupts were enabled. */
+} tx_interrupt_prior_state_t;
+
+/**
+ * @brief Save the current interrupt-enable state and optionally disable
+ *        interrupts (mock implementation).
+ *
+ * @details
+ * In real ThreadX this performs a platform-specific atomic
+ * read-modify-write on the CPU interrupt-mask register.  The mock
+ * simply returns a fixed "previously enabled" sentinel so that firmware
+ * code that saves and later restores the state compiles and links on the
+ * host without any kernel dependency.
+ *
+ * Typical usage in firmware:
+ * @code
+ * UINT saved = tx_interrupt_control(TX_INT_DISABLE);
+ * // ... critical section ...
+ * (void)tx_interrupt_control(saved);
+ * @endcode
+ *
+ * @param[in] new_posture Desired interrupt state; TX_INT_DISABLE to disable,
+ *            or a previously returned value to restore.
+ *
+ * @return Previous interrupt-enable state (mock always returns 0 = "was
+ *         enabled before disable").
+ *
+ * @pre  Called from a single-threaded test context (no real scheduling).
+ * @pre  No concurrent access to this mock (single-threaded host environment).
+ * @post Interrupt state is unchanged in the host environment (mock is a no-op).
+ * @post Mock performs no heap or I/O side-effects.
+ * @post Returns synchronously; no scheduling occurred.
+ *
+ * @note Thread safety: N/A in single-threaded host test environment.
+ *
+ * @since Version 1.0.0
+ */
+static inline UINT tx_interrupt_control(UINT new_posture)
+{
+  (void)new_posture;
+  /* Mock: always report "interrupts were enabled" as the prior state. */
+  return (UINT)k_tx_int_was_enabled;
+}
 
 /**
  * @brief Get current timer tick count (mock implementation)
@@ -853,6 +1004,20 @@ void mock_tx_set_thread_create_return(tx_status status);
  */
 void mock_tx_set_event_flags_create_return(tx_status status);
 
+#ifdef MOCK_TX_THREAD_DELETE
+/**
+ * @brief Set return value for tx_thread_delete()
+ *
+ * @details
+ * Overrides the next tx_thread_delete() call to return the given status.
+ * After one call the override is cleared (one-shot). Set TX_SUCCESS to
+ * restore normal behavior.
+ *
+ * @param[in] status Status to return from tx_thread_delete()
+ */
+void mock_tx_set_thread_delete_return(tx_status status);
+#endif /* MOCK_TX_THREAD_DELETE */
+
 /**
  * @brief Check if tx_thread_create() was called
  *
@@ -866,6 +1031,92 @@ bool mock_tx_was_thread_create_called(void);
  * @return Number of times tx_thread_create() was called
  */
 uint32_t mock_tx_get_thread_create_count(void);
+
+#ifdef MOCK_TX_EVENT_FLAGS_GET
+/**
+ * @brief Set return value for tx_event_flags_get() on the Nth call
+ *
+ * @details
+ * The first N-1 calls return TX_NO_EVENTS (flag not set), the Nth and
+ * subsequent calls return TX_SUCCESS. Set N=0 to always return TX_SUCCESS.
+ * Use this to control whether a specific event is "ready" on the Nth poll.
+ *
+ * @param[in] success_after_n_calls Number of calls that return TX_NO_EVENTS
+ *   before switching to TX_SUCCESS. 0 = always TX_SUCCESS.
+ */
+void mock_tx_set_event_flags_get_no_events_count(uint32_t success_after_n_calls);
+
+/**
+ * @brief Reset the tx_event_flags_get() call counter to zero
+ *
+ * @details
+ * Resets the internal call counter used by
+ * mock_tx_set_event_flags_get_no_events_count() so that the "first N calls
+ * return TX_NO_EVENTS" window starts over from the next call. Use from a
+ * sleep callback or obstacle callback to re-arm the no-events window between
+ * the outer and inner task-loop calls.
+ *
+ * @note Only available when MOCK_TX_EVENT_FLAGS_GET is defined.
+ *
+ * @since Version 1.0.0
+ */
+void mock_tx_event_flags_get_reset_count(void);
+
+/**
+ * @brief Register a callback invoked each time tx_event_flags_get() returns TX_SUCCESS
+ *
+ * @details
+ * The registered function is called immediately after tx_event_flags_get()
+ * determines it will return TX_SUCCESS but before returning to the caller.
+ * Use this to re-arm the no-events counter so that the NEXT call to
+ * tx_event_flags_get() starts a fresh no-events window.
+ *
+ * Example: to let the outer "wait for start" fire (TX_SUCCESS), then make
+ * the first inner "check stop" return TX_NO_EVENTS:
+ * @code
+ * static void on_start_event(void) {
+ *   mock_tx_event_flags_get_reset_count();
+ *   mock_tx_set_event_flags_get_no_events_count(1);
+ *   mock_tx_event_flags_get_set_on_success_cb(nullptr); // fire once only
+ * }
+ * mock_tx_event_flags_get_set_on_success_cb(on_start_event);
+ * @endcode
+ *
+ * @param[in] cb Callback function pointer, or nullptr to clear.
+ *
+ * @note Only available when MOCK_TX_EVENT_FLAGS_GET is defined.
+ *
+ * @since Version 1.0.0
+ */
+void mock_tx_event_flags_get_set_on_success_cb(void (*cb)(void));
+
+/**
+ * @brief Set a bitmask applied to the flags returned by tx_event_flags_get()
+ *
+ * @details
+ * The returned actual_flags are ANDed with mask before being written to the
+ * caller. Use to suppress specific flag bits on a call (e.g., exclude the
+ * shutdown bit so the worker loop continues rather than exits).
+ * Reset mask to ~0 to restore normal (all-flags) behavior.
+ *
+ * @param[in] mask Bitmask to AND with returned flags (default ~0 = all bits set)
+ */
+void mock_tx_event_flags_get_set_mask(ULONG mask);
+#endif /* MOCK_TX_EVENT_FLAGS_GET */
+
+#ifdef MOCK_TX_THREAD_SLEEP
+/**
+ * @brief Register a callback invoked each time tx_thread_sleep() is called
+ *
+ * @details
+ * The registered function is called immediately when tx_thread_sleep() is
+ * invoked (before returning TX_SUCCESS). Use this in task-entry tests to
+ * modify state (e.g., stop the outer task loop) at a predictable point.
+ *
+ * @param[in] cb Callback function pointer, or nullptr to clear.
+ */
+void mock_tx_set_sleep_callback(void (*cb)(void));
+#endif /* MOCK_TX_THREAD_SLEEP */
 
 #ifdef __cplusplus
 }

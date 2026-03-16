@@ -50,7 +50,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_gptw.h"
@@ -173,6 +172,102 @@ bool mock_gptw_is_output_enabled(rx_gptw_channel_t channel, rx_gptw_output_t out
  * @see rx_gptw_stop() Real driver timer stop function
  */
 bool mock_gptw_is_running(rx_gptw_channel_t channel);
+
+/**
+ * @brief Set the error return code for rx_gptw_init_pwm() calls
+ *
+ * @details
+ * When set to a non-zero value, subsequent calls to rx_gptw_init_pwm() will
+ * return this error code. Use mock_gptw_reset() to clear the error injection.
+ *
+ * @param[in] err Error code to return (k_rx_ok = no error)
+ *
+ * @see mock_gptw_reset() Clear all error injection
+ */
+void mock_gptw_set_init_error(rx_err_t err);
+
+/**
+ * @brief Set the error return code for rx_gptw_set_duty() calls
+ *
+ * @details
+ * When set to a non-zero value, subsequent calls to rx_gptw_set_duty() will
+ * return this error code. Use mock_gptw_reset() to clear the error injection.
+ *
+ * @param[in] err Error code to return (k_rx_ok = no error)
+ *
+ * @see mock_gptw_reset() Clear all error injection
+ */
+void mock_gptw_set_duty_error(rx_err_t err);
+
+/**
+ * @brief Inject a duty error only after N successful set_duty() calls
+ *
+ * @details
+ * The first n calls to rx_gptw_set_duty() succeed normally; the (n+1)-th and
+ * all subsequent calls return err. Use this to cover "second set_duty fails"
+ * branches that cannot be reached with the global duty error flag alone.
+ * Cleared by mock_gptw_reset().
+ *
+ * @param[in] n   Number of successful calls before injecting the error (0 = fail immediately)
+ * @param[in] err Error code to return after n successful calls
+ *
+ * @see mock_gptw_reset() Clear all error injection
+ */
+void mock_gptw_set_duty_error_after_n(uint32_t n, rx_err_t err);
+
+/**
+ * @brief Set the error return code for rx_gptw_deinit() calls
+ *
+ * @details
+ * When set to a non-zero value, subsequent calls to rx_gptw_deinit() will
+ * return this error code. Use mock_gptw_reset() to clear the error injection.
+ *
+ * @param[in] err Error code to return (k_rx_ok = no error)
+ *
+ * @see mock_gptw_reset() Clear all error injection
+ */
+void mock_gptw_set_deinit_error(rx_err_t err);
+
+/**
+ * @brief Set the error return code for rx_gptw_stop() calls
+ *
+ * @details
+ * When set to a non-zero value, subsequent calls to rx_gptw_stop() will
+ * return this error code. Use mock_gptw_reset() to clear the error injection.
+ *
+ * @param[in] err Error code to return (k_rx_ok = no error)
+ *
+ * @see mock_gptw_reset() Clear all error injection
+ */
+void mock_gptw_set_stop_error(rx_err_t err);
+
+/**
+ * @brief Set the error return code for rx_gptw_enable_output() calls
+ *
+ * @details
+ * When set to a non-zero value, subsequent calls to rx_gptw_enable_output() will
+ * return this error code. Use mock_gptw_reset() to clear the error injection.
+ *
+ * @param[in] err Error code to return (k_rx_ok = no error)
+ *
+ * @see mock_gptw_reset() Clear all error injection
+ */
+void mock_gptw_set_enable_output_error(rx_err_t err);
+
+/**
+ * @brief Inject an enable_output error only after N successful calls
+ *
+ * @details
+ * The first n calls to rx_gptw_enable_output() succeed normally; the (n+1)-th and
+ * all subsequent calls return err. Use this to cover "second enable_output fails"
+ * branches. Cleared by mock_gptw_reset().
+ *
+ * @param[in] n   Number of successful calls before injecting the error (0 = fail immediately)
+ * @param[in] err Error code to return after n successful calls
+ *
+ * @see mock_gptw_reset() Clear all error injection
+ */
+void mock_gptw_set_enable_output_error_after_n(uint32_t n, rx_err_t err);
 
 /**
  * @brief Initialize all 4 GPTW channels with 90 degree phase staggering (Mock)

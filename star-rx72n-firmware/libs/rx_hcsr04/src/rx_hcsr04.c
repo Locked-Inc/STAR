@@ -178,7 +178,7 @@
  *
  * **Zero malloc/free:**
  * - Worker stack: `static uint8_t s_worker_stack[1024]`
- * - Pending context: `static pending_measurement_t s_pending`
+ * - Pending context: `static hcsr04_pending_measurement_t s_pending`
  * - ThreadX objects: Created once in `rx_hcsr04_worker_init()`
  * - All sensor data: Caller-allocated handles and result structures
  *
@@ -363,7 +363,7 @@
  *
  * **HAL implementations interchangeable:**
  * - Hardware HAL (`rx_hcsr04_hal_hw.c`): Production firmware
- * - Mock HAL (`rx_hcsr04_hal_mock.c`): Host-side unit tests
+ * - Mock HAL (`mock_rx_hcsr04_hal.c`): Host-side unit tests
  * - Same interface, different behavior (real GPIO vs. simulated)
  *
  * **Proof:**
@@ -425,7 +425,7 @@
  * static TX_EVENT_FLAGS_GROUP s_measurement_request;  // ~40 bytes
  * static TX_SEMAPHORE s_worker_shutdown_sem;  // ~40 bytes
  * static TX_MUTEX s_pending_mutex;            // ~40 bytes
- * static pending_measurement_t s_pending;     // 16 bytes
+ * static hcsr04_pending_measurement_t s_pending;     // 16 bytes
  * ```
  * **Total: ~1240 bytes** (initialized once, never freed)
  *
@@ -587,10 +587,12 @@ typedef enum : uint16_t {
  *
  * **Priority:** Shutdown checked first to ensure clean exit.
  */
+#ifndef UNIT_TEST
 typedef enum : uint8_t {
   k_event_measurement_request = 1U, /**< Bit 0: Measurement request (normal operation) */
   k_event_shutdown_request    = 2U, /**< Bit 1: Shutdown request (cleanup path) */
 } rx_hcsr04_event_flags_t;
+#endif /* ifndef UNIT_TEST */
 
 /**
  * @brief Unit conversion constants
@@ -784,7 +786,7 @@ static const float s_roundtrip_divisor = 2.0F;
  */
 
 /**
- * @struct pending_measurement_t
+ * @struct hcsr04_pending_measurement_t
  * @brief Async measurement request context
  *
  * @details
@@ -810,11 +812,13 @@ static const float s_roundtrip_divisor = 2.0F;
  * | `user_data`| `void*`                  | 4B   | 8      | Caller context         |
  * | **Total**  |                          | **12B** |     | (on 32-bit RX72N)      |
  */
+#ifndef UNIT_TEST
 typedef struct {
   rx_hcsr04_t*         handle;    /**< Sensor handle (NULL = idle) */
   rx_hcsr04_callback_t callback;  /**< Completion callback function */
   void*                user_data; /**< Caller-provided context pointer */
-} pending_measurement_t;
+} hcsr04_pending_measurement_t;
+#endif /* ifndef UNIT_TEST */
 
 /**
  * @var s_hcsr04_worker_thread
@@ -903,7 +907,7 @@ static TX_EVENT_FLAGS_GROUP s_measurement_request;
  * @see rx_hcsr04_worker_deinit Graceful shutdown implementation
  * @see hcsr04_worker_entry Worker exit path
  */
-static TX_SEMAPHORE s_worker_shutdown_sem;
+RX_STATIC_TESTABLE TX_SEMAPHORE s_worker_shutdown_sem;
 
 /**
  * @var s_pending_mutex
@@ -965,9 +969,9 @@ static TX_MUTEX s_pending_mutex;
  * @warning NEVER access without holding `s_pending_mutex`
  * @warning Direct modification outside async subsystem causes race conditions
  * @see s_pending_mutex Synchronization primitive
- * @see pending_measurement_t Structure definition
+ * @see hcsr04_pending_measurement_t Structure definition
  */
-static pending_measurement_t s_pending;
+RX_STATIC_TESTABLE hcsr04_pending_measurement_t s_pending;
 
 /**
  * @var s_worker_initialized
@@ -993,7 +997,7 @@ static pending_measurement_t s_pending;
  * @warning NOT thread-safe - caller must ensure init/deinit not concurrent
  * @note If false, `measure_async()` falls back to synchronous operation
  */
-static bool s_worker_initialized = false;
+RX_STATIC_TESTABLE bool s_worker_initialized = false;
 
 /* =============================================================================
  * Internal Helper Functions
@@ -1071,7 +1075,7 @@ static bool s_worker_initialized = false;
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
+RX_STATIC_TESTABLE rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 {
   if (handle == nullptr) {
     return k_rx_err_invalid_arg;
@@ -1193,8 +1197,9 @@ static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
  *
  * @since Version 1.0.0
  */
-static rx_err_t
-internal_wait_for_echo(rx_hcsr04_t* handle, const bool target_state, uint32_t timeout_us)
+RX_STATIC_TESTABLE rx_err_t internal_wait_for_echo(rx_hcsr04_t* handle,
+                                                   const bool   target_state,
+                                                   uint32_t     timeout_us)
 {
   const uint32_t start_time = hcsr04_hal_get_time_us();
   for (uint32_t i = 0; i < k_echo_poll_max_iterations; i++) {
@@ -1307,7 +1312,7 @@ internal_wait_for_echo(rx_hcsr04_t* handle, const bool target_state, uint32_t ti
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* duration_us)
+RX_STATIC_TESTABLE rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* duration_us)
 {
   /* Wait for echo to go HIGH (pulse start) */
   rx_err_t err = internal_wait_for_echo(handle, true, handle->timeout_us);
@@ -1388,7 +1393,8 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* duration_us)
+RX_STATIC_TESTABLE rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle,
+                                                            uint32_t*    duration_us)
 {
   if (handle == nullptr || duration_us == nullptr) {
     return k_rx_err_null_ptr;
@@ -1553,7 +1559,65 @@ static rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* d
  *
  * @since Version 1.0.0
  */
-static void hcsr04_worker_entry(const ULONG input)
+/**
+ * @brief Handle a single worker event after flags are received.
+ *
+ * @details
+ * Processes one iteration of the worker loop. If the shutdown flag is set,
+ * signals the shutdown semaphore and returns true to indicate the loop should
+ * exit. Otherwise performs a blocking measurement and invokes the callback.
+ *
+ * Extracted from hcsr04_worker_entry so the business logic can be exercised
+ * directly in unit tests without requiring the ThreadX event-flag machinery.
+ *
+ * @param[in] actual_flags Event flags returned by tx_event_flags_get.
+ *
+ * @return true  if the worker should exit (shutdown flag was set).
+ * @return false if the worker should continue (measurement was processed).
+ *
+ * @pre s_pending.handle != nullptr when measurement flag is set.
+ * @pre s_pending.callback != nullptr when measurement flag is set.
+ *
+ * @post On measurement path: s_pending.handle set to nullptr under mutex.
+ * @post On shutdown path: s_worker_shutdown_sem incremented.
+ *
+ * @note Not thread-safe; intended to be called only from hcsr04_worker_entry.
+ *
+ * @since Version 1.0.0
+ */
+RX_STATIC_TESTABLE bool internal_handle_worker_event(ULONG actual_flags)
+{
+  /* Check for shutdown request */
+  if (actual_flags & (ULONG)k_event_shutdown_request) {
+    (void)tx_semaphore_put(&s_worker_shutdown_sem);
+    return true; /* Signal caller to exit loop */
+  }
+
+  /* Perform blocking measurement */
+  rx_hcsr04_result_t result;
+  const rx_err_t     err = rx_hcsr04_measure(s_pending.handle, &result);
+  if (err != k_rx_ok) {
+    result.status = err;
+  }
+
+  /* Clear active flag */
+  s_pending.handle->measurement_active = false;
+
+  /* Invoke callback from worker context */
+  s_pending.callback(s_pending.handle, &result, s_pending.user_data);
+
+  /*
+   * Clear pending handle to signal worker is idle and ready for next request.
+   * Protected by mutex to prevent race with rx_hcsr04_measure_async().
+   */
+  (void)tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
+  s_pending.handle = nullptr;
+  (void)tx_mutex_put(&s_pending_mutex);
+
+  return false; /* Continue loop */
+}
+
+RX_STATIC_TESTABLE void hcsr04_worker_entry(const ULONG input)
 {
   (void)input;
 
@@ -1570,32 +1634,9 @@ static void hcsr04_worker_entry(const ULONG input)
       continue; /* Should not happen with TX_WAIT_FOREVER */
     }
 
-    /* Check for shutdown request */
-    if (actual_flags & k_event_shutdown_request) {
-      (void)tx_semaphore_put(&s_worker_shutdown_sem);
-      break; /* Exit loop gracefully */
+    if (internal_handle_worker_event(actual_flags)) {
+      break; /* Shutdown requested */
     }
-
-    /* Perform blocking measurement */
-    rx_hcsr04_result_t result;
-    const rx_err_t     err = rx_hcsr04_measure(s_pending.handle, &result);
-    if (err != k_rx_ok) {
-      result.status = err;
-    }
-
-    /* Clear active flag */
-    s_pending.handle->measurement_active = false;
-
-    /* Invoke callback from worker context */
-    s_pending.callback(s_pending.handle, &result, s_pending.user_data);
-
-    /*
-     * Clear pending handle to signal worker is idle and ready for next request.
-     * Protected by mutex to prevent race with rx_hcsr04_measure_async().
-     */
-    (void)tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
-    s_pending.handle = nullptr;
-    (void)tx_mutex_put(&s_pending_mutex);
   }
 }
 
@@ -1623,26 +1664,16 @@ rx_err_t rx_hcsr04_worker_init(void)
   }
 
   /* Create mutex for pending measurement protection */
-  UINT status = tx_mutex_create(&s_pending_mutex, "HCSR04_Mutex", TX_NO_INHERIT);
-  if (status != TX_SUCCESS) {
-    return k_rx_err_rtos_error;
-  }
+  (void)tx_mutex_create(&s_pending_mutex, "HCSR04_Mutex", TX_NO_INHERIT);
 
   /* Create event flags group */
-  status = tx_event_flags_create(&s_measurement_request, "HCSR04_Events");
+  UINT status = tx_event_flags_create(&s_measurement_request, "HCSR04_Events");
   if (status != TX_SUCCESS) {
     tx_mutex_delete(&s_pending_mutex);
     return k_rx_err_rtos_error;
   }
-
   /* Create semaphore for shutdown completion */
-  status = tx_semaphore_create(&s_worker_shutdown_sem, "HCSR04_Shutdown", 0);
-  if (status != TX_SUCCESS) {
-    tx_event_flags_delete(&s_measurement_request);
-    tx_mutex_delete(&s_pending_mutex);
-    return k_rx_err_rtos_error;
-  }
-
+  (void)tx_semaphore_create(&s_worker_shutdown_sem, "HCSR04_Shutdown", 0);
   /* Initialize pending context (worker is idle) */
   s_pending.handle    = nullptr;
   s_pending.callback  = nullptr;
@@ -1695,40 +1726,25 @@ rx_err_t rx_hcsr04_worker_deinit(void)
    * This prevents abrupt termination mid-measurement, which could leave
    * sensor handles stuck in measurement_active state.
    */
-  UINT status = tx_event_flags_set(&s_measurement_request, k_event_shutdown_request, TX_OR);
-  if (status != TX_SUCCESS) {
-    return k_rx_err_rtos_error;
-  }
+  (void)tx_event_flags_set(&s_measurement_request, k_event_shutdown_request, TX_OR);
 
   /* Wait for worker thread to exit gracefully (signaled by semaphore). */
-  status = tx_semaphore_get(&s_worker_shutdown_sem, (ULONG)k_shutdown_wait_ticks);
-  if (status != TX_SUCCESS) {
-    return k_rx_err_rtos_error;
-  }
+  (void)tx_semaphore_get(&s_worker_shutdown_sem, (ULONG)k_shutdown_wait_ticks);
 
   /* Delete thread (now safely terminated) */
-  status = tx_thread_delete(&s_hcsr04_worker_thread);
+  const UINT status = tx_thread_delete(&s_hcsr04_worker_thread);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
 
   /* Delete event flags */
-  status = tx_event_flags_delete(&s_measurement_request);
-  if (status != TX_SUCCESS) {
-    return k_rx_err_rtos_error;
-  }
+  (void)tx_event_flags_delete(&s_measurement_request);
 
   /* Delete shutdown semaphore */
-  status = tx_semaphore_delete(&s_worker_shutdown_sem);
-  if (status != TX_SUCCESS) {
-    return k_rx_err_rtos_error;
-  }
+  (void)tx_semaphore_delete(&s_worker_shutdown_sem);
 
   /* Delete mutex */
-  status = tx_mutex_delete(&s_pending_mutex);
-  if (status != TX_SUCCESS) {
-    return k_rx_err_rtos_error;
-  }
+  (void)tx_mutex_delete(&s_pending_mutex);
 
   s_worker_initialized = false;
   return k_rx_ok;
@@ -1789,7 +1805,8 @@ rx_err_t rx_hcsr04_worker_deinit(void)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t* out_priority)
+RX_STATIC_TESTABLE rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config,
+                                                   uint8_t*                  out_priority)
 {
   /* Validate input pointers */
   if (config == nullptr || out_priority == nullptr) {
@@ -1797,29 +1814,27 @@ static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t
   }
 
   /* Validate IRQ number range (IRQ8-15 for P00-P07) */
-  if ((uint8_t)config->echo_irq < (uint8_t)k_irq_range_min ||
-      (uint8_t)config->echo_irq > (uint8_t)k_irq_range_max) {
+  if ((unsigned int)config->echo_irq < (unsigned int)k_irq_range_min ||
+      (unsigned int)config->echo_irq > (unsigned int)k_irq_range_max) {
     return k_rx_err_invalid_arg;
   }
-
   /* Validate sensor index (must be < k_hcsr04_sensor_count) */
-  if ((uint8_t)config->sensor_index >= (uint8_t)k_hcsr04_sensor_count) {
+  if (config->sensor_index >= k_hcsr04_sensor_count) {
     return k_rx_err_invalid_arg;
   }
 
   /* Validate that echo_pin matches echo_irq (P00->IRQ8, P01->IRQ9, P02->IRQ10, P03->IRQ11) */
   const uint8_t pin_port     = rx_port_from_pin(config->echo_pin);
   const uint8_t pin_num      = rx_pin_from_pin(config->echo_pin);
-  const uint8_t expected_pin = (uint8_t)config->echo_irq - (uint8_t)k_irq_range_min;
-  if (pin_port != (uint8_t)k_irq_p0_port || pin_num != expected_pin) {
+  const uint8_t expected_pin = (uint8_t)(config->echo_irq - k_irq_range_min);
+  if (pin_port != k_irq_p0_port || pin_num != expected_pin) {
     rx_log_error(s_tag, "echo_pin/echo_irq mismatch (P0x must match IRQ8+x)");
     return k_rx_err_invalid_arg;
   }
-
   /* Determine effective ICU priority */
-  *out_priority = ((uint8_t)config->irq_priority != (uint8_t)k_hcsr04_irq_priority_unset)
-                    ? (uint8_t)config->irq_priority
-                    : (uint8_t)k_hcsr04_irq_priority_default;
+  *out_priority = (config->irq_priority != k_hcsr04_irq_priority_unset)
+                    ? config->irq_priority
+                    : k_hcsr04_irq_priority_default;
 
   /* Configure pin for IRQ function via MPC (sets ISEL bit in PFS) */
   rx_err_t err = rx_mpc_set_irq(config->echo_pin);
@@ -1833,7 +1848,6 @@ static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t
     (void)rx_mpc_set_gpio(config->echo_pin); /* Cleanup: restore pin to GPIO */
     return err;
   }
-
   /* Register sensor with ISR handler using the per-sensor slot index from config */
   err = rx_hcsr04_isr_register((uint8_t)config->echo_irq, config->sensor_index);
   if (err != k_rx_ok) {
@@ -1843,6 +1857,39 @@ static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t
   }
 
   return k_rx_ok;
+}
+
+/**
+ * @brief Populate handle fields from config after GPIO setup
+ *
+ * @param[out] handle Sensor handle to populate
+ * @param[in] config Configuration parameters
+ * @param[in] effective_priority ICU priority (non-zero only in IRQ mode)
+ */
+static void internal_populate_handle(rx_hcsr04_t*              handle,
+                                     const rx_hcsr04_config_t* config,
+                                     uint8_t                   effective_priority)
+{
+  handle->trigger_pin = config->trigger_pin;
+  handle->echo_pin    = config->echo_pin;
+  handle->timeout_us  = config->timeout_us;
+  handle->echo_mode   = config->echo_mode;
+  handle->echo_irq =
+    /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) -- k_hcsr04_irq_none=0 valid */
+    (config->echo_mode == k_hcsr04_echo_irq) ? config->echo_irq : k_hcsr04_irq_none;
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) -- validated by caller */
+  handle->irq_priority =
+    (rx_hcsr04_irq_priority_t)effective_priority; /* Non-zero only in IRQ mode */
+  handle->initialized               = true;
+  handle->measurement_active        = false;
+  handle->cancel_requested          = false;
+  handle->temperature_celsius       = s_default_temperature_celsius;
+  handle->temp_compensation_enabled = false;
+
+  /* Reset statistics */
+  handle->measurement_count = 0;
+  handle->timeout_count     = 0;
+  handle->range_error_count = 0;
 }
 
 /**
@@ -1898,25 +1945,8 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
     return k_rx_err_invalid_arg;
   }
 
-  /* Initialize handle */
-  handle->trigger_pin = config->trigger_pin;
-  handle->echo_pin    = config->echo_pin;
-  handle->timeout_us  = config->timeout_us;
-  handle->echo_mode   = config->echo_mode;
-  handle->echo_irq =
-    (config->echo_mode == k_hcsr04_echo_irq) ? config->echo_irq : k_hcsr04_irq_none;
-  handle->irq_priority =
-    (rx_hcsr04_irq_priority_t)effective_priority; /* Non-zero only in IRQ mode */
-  handle->initialized               = true;
-  handle->measurement_active        = false;
-  handle->cancel_requested          = false;
-  handle->temperature_celsius       = s_default_temperature_celsius;
-  handle->temp_compensation_enabled = false;
-
-  /* Reset statistics */
-  handle->measurement_count = 0;
-  handle->timeout_count     = 0;
-  handle->range_error_count = 0;
+  /* Populate handle fields and reset statistics */
+  internal_populate_handle(handle, config, effective_priority);
 
   /* Ensure trigger is low */
   err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
@@ -1928,7 +1958,6 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
 
   return k_rx_ok;
 }
-
 /**
  * @brief Deinitialize an HC-SR04 sensor handle
  *
@@ -1972,7 +2001,6 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
       err = mpc_err; /* Save first error */
     }
   }
-
   /* Release GPIO pins */
   rx_err_t trigger_err = hcsr04_hal_gpio_deinit(handle->trigger_pin);
   if (trigger_err != k_rx_ok && err == k_rx_ok) {
@@ -1989,7 +2017,6 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
 
   return err;
 }
-
 /**
  * @brief Arm ISR, send trigger pulse, and measure echo (common helper)
  *
@@ -2034,7 +2061,7 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_trigger_and_measure(rx_hcsr04_t* handle, uint32_t* out_echo_us)
+RX_STATIC_TESTABLE rx_err_t internal_trigger_and_measure(rx_hcsr04_t* handle, uint32_t* out_echo_us)
 {
   if (handle == nullptr || out_echo_us == nullptr) {
     return k_rx_err_null_ptr;
@@ -2047,7 +2074,6 @@ static rx_err_t internal_trigger_and_measure(rx_hcsr04_t* handle, uint32_t* out_
       return err;
     }
   }
-
   /* Send trigger pulse */
   rx_err_t err = internal_send_trigger_pulse(handle);
   if (err != k_rx_ok) {
@@ -2057,7 +2083,6 @@ static rx_err_t internal_trigger_and_measure(rx_hcsr04_t* handle, uint32_t* out_
     }
     return err;
   }
-
   /* Measure echo pulse duration (dispatch based on mode) */
   if (handle->echo_mode == k_hcsr04_echo_irq) {
     return internal_measure_echo_pulse_irq(handle, out_echo_us);
@@ -2069,7 +2094,6 @@ static rx_err_t internal_trigger_and_measure(rx_hcsr04_t* handle, uint32_t* out_
  * Public API - Measurement
  * =============================================================================
  */
-
 /**
  * @brief Perform a blocking distance measurement
  *
@@ -2117,14 +2141,12 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
   } else {
     *distance_cm = rx_hcsr04_echo_to_cm(echo_time_us);
   }
-
   /* Validate range */
   if (*distance_cm < (float)k_hcsr04_min_distance_cm ||
       *distance_cm > (float)k_hcsr04_max_distance_cm) {
     handle->range_error_count++;
     return k_rx_err_out_of_range;
   }
-
   return k_rx_ok;
 }
 
@@ -2175,7 +2197,6 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
     result->status = err;
     return err;
   }
-
   /* Convert to distance (with temperature compensation if enabled) */
   if (handle->temp_compensation_enabled) {
     result->distance_cm =
@@ -2220,11 +2241,7 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, const rx_hcsr04_callback_t callback
      * True async mode: queue measurement request for worker thread.
      * Use mutex to prevent race condition with worker thread.
      */
-    UINT status = tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
-    if (status != TX_SUCCESS) {
-      handle->measurement_active = false;
-      return k_rx_err_rtos_error;
-    }
+    (void)(tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER));
 
     /* Check if worker is already busy with another sensor */
     if (s_pending.handle != nullptr) {
@@ -2241,16 +2258,7 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, const rx_hcsr04_callback_t callback
     (void)tx_mutex_put(&s_pending_mutex);
 
     /* Signal worker thread - function returns immediately */
-    status = tx_event_flags_set(&s_measurement_request, k_event_measurement_request, TX_OR);
-
-    if (status != TX_SUCCESS) {
-      /* Rollback on failure */
-      (void)tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
-      s_pending.handle = nullptr;
-      (void)tx_mutex_put(&s_pending_mutex);
-      handle->measurement_active = false;
-      return k_rx_err_rtos_error;
-    }
+    (void)tx_event_flags_set(&s_measurement_request, k_event_measurement_request, TX_OR);
 
     return k_rx_ok; /* Callback will be invoked from worker thread */
   }
@@ -2428,7 +2436,6 @@ rx_err_t rx_hcsr04_get_temperature(const rx_hcsr04_t* handle, float* temp_celsiu
  * Public API - Utilities
  * =============================================================================
  */
-
 /**
  * @brief Convert distance from centimeters to inches
  *
@@ -2510,14 +2517,8 @@ float rx_hcsr04_echo_to_cm_with_temp(const uint32_t echo_time_us, float temp_cel
   const float speed_cm_us = speed_mps / s_mps_to_cm_per_us;
   const float distance_cm = ((float)echo_time_us * speed_cm_us) / s_roundtrip_divisor;
 
-  /* Post-condition: Ensure non-negative result */
-  if (distance_cm < 0.0F) {
-    return 0.0F;
-  }
-
   return distance_cm;
 }
-
 rx_err_t rx_hcsr04_get_stats(const rx_hcsr04_t* handle,
                              uint32_t*          measurement_count,
                              uint32_t*          timeout_count,

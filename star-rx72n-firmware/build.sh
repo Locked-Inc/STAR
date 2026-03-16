@@ -43,7 +43,7 @@ if ! command -v rx-elf-gcc &> /dev/null; then
     fi
 fi
 
-echo -e "${GREEN}✓ GNURX toolchain found:${NC} $(rx-elf-gcc --version | head -1)"
+echo -e "${GREEN}[PASS] GNURX toolchain found:${NC} $(rx-elf-gcc --version | head -1)"
 
 # Parse arguments
 BUILD_TYPE="Debug"
@@ -91,7 +91,7 @@ done
 if [ "$CLEAN" = true ]; then
     echo -e "${YELLOW}Cleaning build directory...${NC}"
     rm -rf "$BUILD_DIR"
-    echo -e "${GREEN}✓ Clean complete${NC}"
+    echo -e "${GREEN}[PASS] Clean complete${NC}"
 fi
 
 # Create build directory
@@ -107,7 +107,7 @@ cmake \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     ..
 
-echo -e "${GREEN}✓ Configuration complete${NC}"
+echo -e "${GREEN}[PASS] Configuration complete${NC}"
 
 # Build
 echo -e "${YELLOW}Building firmware...${NC}"
@@ -126,7 +126,7 @@ else
 fi
 
 echo ""
-echo -e "${GREEN}✓ Build successful!${NC}"
+echo -e "${GREEN}[PASS] Build successful!${NC}"
 echo ""
 echo -e "${GREEN}Build artifacts:${NC}"
 find . -maxdepth 1 \( -name '*.elf' -o -name '*.mot' -o -name '*.map' \) -exec ls -lh {} + 2>/dev/null | awk '{print "  " $9 " (" $5 ")"}'

@@ -171,6 +171,35 @@
 #include "unity.h"
 
 /* =============================================================================
+ * Test Constants (C23 typed enums -- no magic numbers)
+ * =============================================================================
+ */
+
+/**
+ * @brief Time values used across mock time tests
+ */
+typedef enum : uint32_t {
+  k_time_10_ms                = 10,
+  k_time_20_ms                = 20,
+  k_time_30_ms                = 30,
+  k_time_50_ms                = 50,
+  k_time_60_ms                = 60,
+  k_time_100_ms               = 100,
+  k_time_150_ms               = 150,
+  k_time_500_ms               = 500,
+  k_time_near_max             = 0xFFFFFFF0,
+  k_time_wraparound_advance   = 0x20,
+  k_time_wraparound_threshold = 0x10,
+} test_time_values_t;
+
+/**
+ * @brief Expected call counts for sleep tracking tests
+ */
+typedef enum : uint32_t {
+  k_expected_sleep_count_3 = 3,
+} test_expected_counts_t;
+
+/* =============================================================================
  * Test Fixtures
  * =============================================================================
  */
@@ -281,7 +310,7 @@ void test_mock_time_deinit_clears_state(void)
   mock_time_t mock;
 
   mock_time_init(&mock);
-  mock_time_advance(&mock, 100);
+  mock_time_advance(&mock, k_time_100_ms);
 
   mock_time_deinit(&mock);
 
@@ -315,26 +344,26 @@ void test_mock_time_get_interface_populates_iface(void)
 
 void test_mock_time_advance_increments_time(void)
 {
-  mock_time_advance(&s_mock, 100);
+  mock_time_advance(&s_mock, k_time_100_ms);
 
-  TEST_ASSERT_EQUAL_UINT32(100, s_iface.get_ms(s_iface.ctx));
+  TEST_ASSERT_EQUAL_UINT32(k_time_100_ms, s_iface.get_ms(s_iface.ctx));
 }
 
 void test_mock_time_advance_accumulates(void)
 {
-  mock_time_advance(&s_mock, 50);
-  mock_time_advance(&s_mock, 30);
-  mock_time_advance(&s_mock, 20);
+  mock_time_advance(&s_mock, k_time_50_ms);
+  mock_time_advance(&s_mock, k_time_30_ms);
+  mock_time_advance(&s_mock, k_time_20_ms);
 
-  TEST_ASSERT_EQUAL_UINT32(100, s_iface.get_ms(s_iface.ctx));
+  TEST_ASSERT_EQUAL_UINT32(k_time_100_ms, s_iface.get_ms(s_iface.ctx));
 }
 
 void test_mock_time_set_overrides_time(void)
 {
-  mock_time_advance(&s_mock, 100);
-  mock_time_set(&s_mock, 500);
+  mock_time_advance(&s_mock, k_time_100_ms);
+  mock_time_set(&s_mock, k_time_500_ms);
 
-  TEST_ASSERT_EQUAL_UINT32(500, s_iface.get_ms(s_iface.ctx));
+  TEST_ASSERT_EQUAL_UINT32(k_time_500_ms, s_iface.get_ms(s_iface.ctx));
 }
 
 /* =============================================================================
@@ -344,24 +373,24 @@ void test_mock_time_set_overrides_time(void)
 
 void test_mock_time_sleep_increments_count(void)
 {
-  s_iface.sleep_ms(s_iface.ctx, 10);
+  s_iface.sleep_ms(s_iface.ctx, k_time_10_ms);
 
   TEST_ASSERT_EQUAL_UINT32(1, mock_time_get_sleep_count(&s_mock));
 }
 
 void test_mock_time_sleep_accumulates_total(void)
 {
-  s_iface.sleep_ms(s_iface.ctx, 10);
-  s_iface.sleep_ms(s_iface.ctx, 20);
-  s_iface.sleep_ms(s_iface.ctx, 30);
+  s_iface.sleep_ms(s_iface.ctx, k_time_10_ms);
+  s_iface.sleep_ms(s_iface.ctx, k_time_20_ms);
+  s_iface.sleep_ms(s_iface.ctx, k_time_30_ms);
 
-  TEST_ASSERT_EQUAL_UINT32(60, mock_time_get_total_sleep(&s_mock));
-  TEST_ASSERT_EQUAL_UINT32(3, mock_time_get_sleep_count(&s_mock));
+  TEST_ASSERT_EQUAL_UINT32(k_time_60_ms, mock_time_get_total_sleep(&s_mock));
+  TEST_ASSERT_EQUAL_UINT32(k_expected_sleep_count_3, mock_time_get_sleep_count(&s_mock));
 }
 
 void test_mock_time_sleep_no_auto_advance_by_default(void)
 {
-  s_iface.sleep_ms(s_iface.ctx, 100);
+  s_iface.sleep_ms(s_iface.ctx, k_time_100_ms);
 
   /* Time should NOT advance because auto_advance is off */
   TEST_ASSERT_EQUAL_UINT32(0, s_iface.get_ms(s_iface.ctx));
@@ -371,21 +400,21 @@ void test_mock_time_sleep_with_auto_advance(void)
 {
   mock_time_set_auto_advance(&s_mock, true);
 
-  s_iface.sleep_ms(s_iface.ctx, 50);
+  s_iface.sleep_ms(s_iface.ctx, k_time_50_ms);
 
   /* Time should advance by sleep amount */
-  TEST_ASSERT_EQUAL_UINT32(50, s_iface.get_ms(s_iface.ctx));
+  TEST_ASSERT_EQUAL_UINT32(k_time_50_ms, s_iface.get_ms(s_iface.ctx));
 }
 
 void test_mock_time_sleep_auto_advance_accumulates(void)
 {
   mock_time_set_auto_advance(&s_mock, true);
 
-  s_iface.sleep_ms(s_iface.ctx, 10);
-  s_iface.sleep_ms(s_iface.ctx, 20);
-  s_iface.sleep_ms(s_iface.ctx, 30);
+  s_iface.sleep_ms(s_iface.ctx, k_time_10_ms);
+  s_iface.sleep_ms(s_iface.ctx, k_time_20_ms);
+  s_iface.sleep_ms(s_iface.ctx, k_time_30_ms);
 
-  TEST_ASSERT_EQUAL_UINT32(60, s_iface.get_ms(s_iface.ctx));
+  TEST_ASSERT_EQUAL_UINT32(k_time_60_ms, s_iface.get_ms(s_iface.ctx));
 }
 
 /* =============================================================================
@@ -397,41 +426,41 @@ void test_mock_time_is_elapsed_false_before_timeout(void)
 {
   uint32_t start = s_iface.get_ms(s_iface.ctx);
 
-  mock_time_advance(&s_mock, 50);
+  mock_time_advance(&s_mock, k_time_50_ms);
 
-  TEST_ASSERT_FALSE(s_iface.is_elapsed(s_iface.ctx, start, 100));
+  TEST_ASSERT_FALSE(s_iface.is_elapsed(s_iface.ctx, start, k_time_100_ms));
 }
 
 void test_mock_time_is_elapsed_true_at_timeout(void)
 {
   uint32_t start = s_iface.get_ms(s_iface.ctx);
 
-  mock_time_advance(&s_mock, 100);
+  mock_time_advance(&s_mock, k_time_100_ms);
 
-  TEST_ASSERT_TRUE(s_iface.is_elapsed(s_iface.ctx, start, 100));
+  TEST_ASSERT_TRUE(s_iface.is_elapsed(s_iface.ctx, start, k_time_100_ms));
 }
 
 void test_mock_time_is_elapsed_true_after_timeout(void)
 {
   uint32_t start = s_iface.get_ms(s_iface.ctx);
 
-  mock_time_advance(&s_mock, 150);
+  mock_time_advance(&s_mock, k_time_150_ms);
 
-  TEST_ASSERT_TRUE(s_iface.is_elapsed(s_iface.ctx, start, 100));
+  TEST_ASSERT_TRUE(s_iface.is_elapsed(s_iface.ctx, start, k_time_100_ms));
 }
 
 void test_mock_time_is_elapsed_handles_wraparound(void)
 {
   /* Set time near max value */
-  mock_time_set(&s_mock, 0xFFFFFFF0);
+  mock_time_set(&s_mock, k_time_near_max);
 
   uint32_t start = s_iface.get_ms(s_iface.ctx);
 
   /* Advance past wraparound */
-  mock_time_advance(&s_mock, 0x20);
+  mock_time_advance(&s_mock, k_time_wraparound_advance);
 
   /* Should correctly detect elapsed time across wraparound */
-  TEST_ASSERT_TRUE(s_iface.is_elapsed(s_iface.ctx, start, 0x10));
+  TEST_ASSERT_TRUE(s_iface.is_elapsed(s_iface.ctx, start, k_time_wraparound_threshold));
 }
 
 /* =============================================================================
@@ -441,8 +470,8 @@ void test_mock_time_is_elapsed_handles_wraparound(void)
 
 void test_mock_time_reset_counters_clears_counts(void)
 {
-  s_iface.sleep_ms(s_iface.ctx, 100);
-  mock_time_advance(&s_mock, 50);
+  s_iface.sleep_ms(s_iface.ctx, k_time_100_ms);
+  mock_time_advance(&s_mock, k_time_50_ms);
 
   mock_time_reset_counters(&s_mock);
 
@@ -452,13 +481,13 @@ void test_mock_time_reset_counters_clears_counts(void)
 
 void test_mock_time_reset_counters_preserves_time(void)
 {
-  mock_time_advance(&s_mock, 500);
-  s_iface.sleep_ms(s_iface.ctx, 100);
+  mock_time_advance(&s_mock, k_time_500_ms);
+  s_iface.sleep_ms(s_iface.ctx, k_time_100_ms);
 
   mock_time_reset_counters(&s_mock);
 
   /* Time should be preserved */
-  TEST_ASSERT_EQUAL_UINT32(500, s_iface.get_ms(s_iface.ctx));
+  TEST_ASSERT_EQUAL_UINT32(k_time_500_ms, s_iface.get_ms(s_iface.ctx));
 }
 
 /* =============================================================================
@@ -482,7 +511,7 @@ void test_time_interface_validate_success(void)
 
 void test_time_interface_validate_missing_sleep_fails(void)
 {
-  rx_time_interface_t bad_iface = {0};
+  rx_time_interface_t bad_iface = {};
 
   bad_iface.get_ms     = s_iface.get_ms;
   bad_iface.is_elapsed = s_iface.is_elapsed;
@@ -495,7 +524,7 @@ void test_time_interface_validate_missing_sleep_fails(void)
 
 void test_time_interface_validate_missing_get_ms_fails(void)
 {
-  rx_time_interface_t bad_iface = {0};
+  rx_time_interface_t bad_iface = {};
 
   bad_iface.sleep_ms   = s_iface.sleep_ms;
   bad_iface.is_elapsed = s_iface.is_elapsed;
@@ -520,8 +549,8 @@ void test_mock_time_null_uses_global(void)
   mock_time_get_interface(&global_iface, nullptr);
 
   /* Should work with global instance */
-  mock_time_advance(nullptr, 100);
-  TEST_ASSERT_EQUAL_UINT32(100, global_iface.get_ms(global_iface.ctx));
+  mock_time_advance(nullptr, k_time_100_ms);
+  TEST_ASSERT_EQUAL_UINT32(k_time_100_ms, global_iface.get_ms(global_iface.ctx));
 
   mock_time_deinit(nullptr);
 }

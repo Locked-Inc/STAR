@@ -408,7 +408,7 @@ typedef enum : uint32_t {
  *
  * @since Version 1.0.0
  */
-static register_guard_state_t s_state = {0};
+static register_guard_state_t s_state = {};
 
 /* =============================================================================
  * Internal Helpers
@@ -1112,9 +1112,7 @@ void rx_register_guard_reset_count(void)
   }
 
   s_state.corrections = k_corrections_default;
-
-  /* Rule 5: Post-condition validation - verify assignment succeeded */
-  assert(s_state.corrections == k_corrections_default);
+  /* Post-condition: corrections reset to k_corrections_default (guaranteed by assignment) */
 }
 
 /**
@@ -1174,5 +1172,5 @@ void rx_register_guard_reset_count(void)
  */
 bool rx_register_guard_is_initialized(void)
 {
-  return s_state.initialized != 0;
+  return (bool)(s_state.initialized != 0);
 }

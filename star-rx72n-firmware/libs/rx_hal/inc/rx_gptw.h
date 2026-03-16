@@ -193,7 +193,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_check.h"
@@ -567,10 +566,7 @@ static inline rx_gptw_channel_id_t rx_gptw_channel_id(rx_gptw_channel_t value)
   /* Note: value >= k_gptw_channel_0 is always true for uint8_t since k_gptw_channel_0 == 0 */
   RX_ASSERT(value <= k_gptw_channel_3, "GPTW channel out of range");
 
-  rx_gptw_channel_id_t id = {.value = value};
-
-  /* Post-condition: wrapper must store value correctly */
-  RX_ASSERT(id.value == value, "GPTW channel wrapper mismatch");
+  const rx_gptw_channel_id_t id = {.value = value};
 
   return id;
 }
@@ -605,10 +601,7 @@ static inline rx_gptw_output_id_t rx_gptw_output_id(rx_gptw_output_t value)
   /* Note: value >= k_gptw_output_a is always true for uint8_t since k_gptw_output_a == 0 */
   RX_ASSERT(value <= k_gptw_output_b, "GPTW output out of range");
 
-  rx_gptw_output_id_t id = {.value = value};
-
-  /* Post-condition: wrapper must store value correctly */
-  RX_ASSERT(id.value == value, "GPTW output wrapper mismatch");
+  const rx_gptw_output_id_t id = {.value = value};
 
   return id;
 }
