@@ -705,7 +705,7 @@ rx_err_t timer_init(void)
   rx_log_info(s_tag, "Initializing CMT0 for ThreadX tick");
 
   /* Stop CMT0 if running */
-  cmt_ctrl()->cmstr0 &= (uint16_t) ~(uint16_t)k_cmt0_cmstr_start_bit;
+  cmt_ctrl()->cmstr0 &= (uint16_t)~(uint16_t)k_cmt0_cmstr_start_bit;
 
   /* Configure CMT0 */
   /* CMCR: Clock = PCLK/128, interrupt enabled */
@@ -823,7 +823,7 @@ rx_err_t timer_stop(void)
   rx_log_info(s_tag, "Stopping CMT0");
 
   /* Stop CMT0 */
-  cmt_ctrl()->cmstr0 &= (uint16_t) ~(uint16_t)k_cmt0_cmstr_start_bit;
+  cmt_ctrl()->cmstr0 &= (uint16_t)~(uint16_t)k_cmt0_cmstr_start_bit;
 
   if ((cmt_ctrl()->cmstr0 & (uint16_t)k_cmt0_cmstr_start_bit) != 0) {
     return k_rx_err_hw_error;

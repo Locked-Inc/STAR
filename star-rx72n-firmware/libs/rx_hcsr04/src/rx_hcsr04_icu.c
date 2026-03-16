@@ -260,7 +260,7 @@ rx_err_t rx_hcsr04_icu_disable(const uint8_t irq_num)
   }
 
   /* Disable interrupt in IER register */
-  icu()->ier[ier_index] &= (uint8_t) ~(k_bit_base << ier_bit);
+  icu()->ier[ier_index] &= (uint8_t)~(k_bit_base << ier_bit);
 
   /* Clear any pending interrupt flag */
   icu()->ir[vector] = k_ir_flag_clear;
