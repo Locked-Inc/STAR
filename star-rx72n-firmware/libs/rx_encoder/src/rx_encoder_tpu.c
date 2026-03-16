@@ -100,16 +100,16 @@ static const float k_tpu_enc_max_delta_time_s     = 10.0F;
 static bool s_initialized[k_tpu_enc_max_channels] = {false};
 
 /** @brief Per-channel encoder state (accumulated count, position) */
-static rx_encoder_state_t s_state[k_tpu_enc_max_channels] = {0};
+static rx_encoder_state_t s_state[k_tpu_enc_max_channels] = {};
 
 /** @brief Per-channel counts per revolution */
-static uint16_t s_counts_per_rev[k_tpu_enc_max_channels] = {0};
+static uint16_t s_counts_per_rev[k_tpu_enc_max_channels] = {};
 
 /** @brief Per-channel direction inversion flag */
 static bool s_invert_direction[k_tpu_enc_max_channels] = {false};
 
 /** @brief Per-channel last total count for velocity delta */
-static int32_t s_last_count[k_tpu_enc_max_channels] = {0};
+static int32_t s_last_count[k_tpu_enc_max_channels] = {};
 
 /* =============================================================================
  * Internal Helpers

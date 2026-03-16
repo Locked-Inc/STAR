@@ -41,7 +41,6 @@
 #include "rx_err.h"
 
 /* Transport init headers - needed for proper handle/config types */
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_comm_manager.h"

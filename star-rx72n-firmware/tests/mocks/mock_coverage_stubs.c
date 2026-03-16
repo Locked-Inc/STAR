@@ -19,7 +19,6 @@
  * @since Version 1.0.0
  */
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_bus_adc.h"
@@ -148,7 +147,7 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
 {
   (void)channel;
   if (state != nullptr) {
-    *state = (rx_encoder_state_t){0};
+    *state = (rx_encoder_state_t){};
   }
   return k_rx_ok;
 }
@@ -455,7 +454,7 @@ rx_err_t rx_tpu_encoder_read_count(rx_tpu_channel_t channel, rx_encoder_state_t*
 {
   (void)channel;
   if (state != nullptr) {
-    *state = (rx_encoder_state_t){0};
+    *state = (rx_encoder_state_t){};
   }
   return k_rx_ok;
 }

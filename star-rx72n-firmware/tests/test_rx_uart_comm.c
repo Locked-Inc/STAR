@@ -299,7 +299,7 @@ static void helper_encode_frame(rx_frame_type_t type,
   rx_frame_encoder_t enc;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&enc));
 
-  rx_frame_t frame      = {0};
+  rx_frame_t frame      = {};
   frame.header.sequence = sequence;
   frame.header.length   = (uint16_t)payload_len;
   frame.header.type     = (uint8_t)type;
@@ -715,7 +715,7 @@ void test_uart_comm_send_uart_write_failure_propagates(void)
  */
 void test_uart_comm_receive_null_handle_fails(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(nullptr, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -744,7 +744,7 @@ void test_uart_comm_receive_null_frame_fails(void)
  */
 void test_uart_comm_receive_not_initialized_fails(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -760,7 +760,7 @@ void test_uart_comm_receive_no_data_returns_no_data(void)
 {
   helper_init_default();
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -787,7 +787,7 @@ void test_uart_comm_receive_valid_frame_success(void)
                       &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -821,7 +821,7 @@ void test_uart_comm_receive_crc_mismatch_fails(void)
 
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_crc_mismatch, err);
@@ -841,7 +841,7 @@ void test_uart_comm_receive_invalid_sync_returns_no_data(void)
     {0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77};
   helper_inject_rx(garbage, sizeof(garbage));
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -876,7 +876,7 @@ void test_uart_comm_receive_skips_garbage_before_sync(void)
 
   helper_inject_rx(buf_with_garbage, (uint16_t)(encoded_len + k_test_garbage_prefix_len));
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -905,7 +905,7 @@ void test_uart_comm_receive_partial_frame_returns_no_data(void)
   /* Only inject first 4 bytes */
   helper_inject_rx(encoded, k_test_payload_small);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -932,7 +932,7 @@ void test_uart_comm_receive_response_frame_success(void)
                       &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -954,7 +954,7 @@ void test_uart_comm_receive_zero_payload_success(void)
   helper_encode_frame(k_frame_type_command, 0, nullptr, 0, encoded, &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -986,7 +986,7 @@ void test_uart_comm_receive_correct_sequence_passes(void)
                       &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1019,7 +1019,7 @@ void test_uart_comm_receive_ping_triggers_pong(void)
                       &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -1048,7 +1048,7 @@ void test_uart_comm_receive_reset_triggers_reset_ack(void)
   helper_encode_frame(k_frame_type_reset, 0, nullptr, 0, encoded, &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -1072,7 +1072,7 @@ void test_uart_comm_receive_pong_silently_consumed(void)
   helper_encode_frame(k_frame_type_pong, 0, nullptr, 0, encoded, &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* PONG consumed silently; no data to return */
@@ -1104,7 +1104,7 @@ void test_uart_comm_receive_compacts_buffer_after_decode(void)
                       &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero));
 
   TEST_ASSERT_EQUAL_UINT32(0, s_handle.rx_buffer_len);
@@ -1145,7 +1145,7 @@ void test_uart_comm_receive_after_deinit_fails(void)
   helper_init_default();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_uart_comm_deinit(&s_handle));
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1174,7 +1174,7 @@ void test_uart_comm_receive_uart_avail_error_propagates(void)
   /* Inject error for uart_rx_available call */
   mock_uart_hw_set_next_error(k_rx_err_hw_error);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1217,7 +1217,7 @@ void test_uart_comm_receive_invalid_payload_length_in_header(void)
 
   helper_inject_rx(malformed, (uint16_t)(k_hdr_total_size + k_test_malformed_extra));
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -1243,7 +1243,7 @@ void test_uart_comm_receive_reset_ack_silently_consumed(void)
   helper_encode_frame(k_frame_type_reset_ack, 0, nullptr, 0, encoded, &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -1275,7 +1275,7 @@ void test_uart_comm_receive_sequence_validation_fail_drops_frame(void)
                       &encoded_len);
   helper_inject_rx(encoded, (uint16_t)encoded_len);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* Session rejects the sequence gap and returns k_rx_err_protocol_error */
@@ -1310,7 +1310,7 @@ void test_uart_comm_receive_ping_pong_send_fails(void)
   /* Stage a write-only error so the frame read succeeds but PONG send fails */
   mock_uart_hw_set_next_write_error(k_rx_err_hw_error);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1339,7 +1339,7 @@ void test_uart_comm_receive_reset_ack_send_fails(void)
   /* Stage a write-only error so the frame read succeeds but RESET_ACK send fails */
   mock_uart_hw_set_next_write_error(k_rx_err_hw_error);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -1386,7 +1386,7 @@ void test_uart_comm_receive_second_frame_wrong_sequence_dropped(void)
   memcpy(combined + frame1_len, frame2_enc, frame2_len);
   helper_inject_rx(combined, (uint16_t)(frame1_len + frame2_len));
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
 
   /* First receive: frame1 at seq 0 (valid) */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero));
@@ -1428,7 +1428,7 @@ void test_uart_comm_receive_uart_read_error_propagates(void)
    * but uart_read_channel will fail) */
   mock_uart_hw_set_next_error(k_rx_err_hw_error);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* The error from uart_read_channel propagates via internal_receive_iteration */
@@ -1470,7 +1470,7 @@ void test_uart_comm_receive_false_sync_low_then_real_frame(void)
 
   helper_inject_rx(buf, (uint16_t)(encoded_len + k_test_false_sync_prefix));
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1505,7 +1505,7 @@ void test_uart_comm_receive_partial_frame_header_only(void)
 
   helper_inject_rx(partial, (uint16_t)k_hdr_total_size);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* available(8) < total_size(16), returns no_data */
@@ -1580,7 +1580,7 @@ void test_uart_comm_receive_rx_buffer_prefilled_no_sync(void)
   s_handle.rx_buffer_len = (uint32_t)k_test_rx_buf_max;
   s_handle.rx_buffer_pos = 0;
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* Buffer full: space==0 (line 342) -> no read, no sync -> handle_no_sync
@@ -1611,7 +1611,7 @@ void test_uart_comm_receive_reset_session_next_tx_fails(void)
   /* Deinit the session so rx_session_next_tx fails inside internal_handle_reset */
   (void)rx_session_deinit(&s_session);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
@@ -1646,7 +1646,7 @@ void test_uart_comm_receive_uart_read_channel_error_propagates(void)
    * uart_read_channel fails */
   mock_uart_hw_set_next_read_error(k_rx_err_hw_error);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
@@ -1662,7 +1662,7 @@ void test_uart_comm_receive_uart_read_channel_error_propagates(void)
  */
 void test_uart_internal_decode_header_null_data(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = internal_decode_header(nullptr, k_test_oversized_buf, &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1672,7 +1672,7 @@ void test_uart_internal_decode_header_null_data(void)
  */
 void test_uart_internal_decode_header_null_frame(void)
 {
-  const uint8_t buf[k_test_decode_hdr_buf_sz] = {0};
+  const uint8_t buf[k_test_decode_hdr_buf_sz] = {};
   rx_err_t      err = internal_decode_header(buf, sizeof(buf), nullptr, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1682,8 +1682,8 @@ void test_uart_internal_decode_header_null_frame(void)
  */
 void test_uart_internal_decode_header_too_short(void)
 {
-  const uint8_t buf[k_test_decode_too_short] = {0};
-  rx_frame_t    frame                        = {0};
+  const uint8_t buf[k_test_decode_too_short] = {};
+  rx_frame_t    frame                        = {};
   rx_err_t      err = internal_decode_header(buf, sizeof(buf), &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
@@ -1693,10 +1693,10 @@ void test_uart_internal_decode_header_too_short(void)
  */
 void test_uart_internal_decode_header_bad_sync(void)
 {
-  uint8_t buf[k_test_bad_sync_buf_sz] = {0};
+  uint8_t buf[k_test_bad_sync_buf_sz] = {};
   buf[0]                              = k_test_bad_sync_byte_0;
   buf[1]                              = k_test_bad_sync_byte_1;
-  rx_frame_t frame                    = {0};
+  rx_frame_t frame                    = {};
   rx_err_t   err                      = internal_decode_header(buf, sizeof(buf), &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
 }
@@ -1708,7 +1708,7 @@ void test_uart_internal_decode_header_bad_sync(void)
  */
 void test_uart_internal_decode_header_payload_too_large(void)
 {
-  uint8_t buf[k_test_oversized_buf] = {0};
+  uint8_t buf[k_test_oversized_buf] = {};
   buf[k_hdr_off_sync_low]           = (uint8_t)k_test_sync_byte_low;
   buf[k_hdr_off_sync_high]          = (uint8_t)k_test_sync_byte_high;
   /* seq = 0 */
@@ -1717,7 +1717,7 @@ void test_uart_internal_decode_header_payload_too_large(void)
   /* length LE16 at offset 4: 0x0500 = 1280 (> 1024) -> buf[4]=0x00, buf[5]=0x05 */
   buf[k_hdr_off_len_low]  = 0x00U;
   buf[k_hdr_off_len_high] = k_test_oversized_len_hi;
-  rx_frame_t frame        = {0};
+  rx_frame_t frame        = {};
   rx_err_t   err          = internal_decode_header(buf, sizeof(buf), &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
@@ -1732,7 +1732,7 @@ void test_uart_internal_decode_header_offset_out_set(void)
   uint32_t encoded_len = 0;
   helper_encode_frame(k_frame_type_command, 0, nullptr, 0, encoded, &encoded_len);
 
-  rx_frame_t frame  = {0};
+  rx_frame_t frame  = {};
   uint32_t   offset = 0;
   rx_err_t   err    = internal_decode_header(encoded, encoded_len, &frame, &offset);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1753,7 +1753,7 @@ void test_uart_internal_verify_crc_null_data(void)
  */
 void test_uart_internal_verify_crc_offset_too_small(void)
 {
-  const uint8_t buf[k_test_bad_sync_buf_sz] = {0};
+  const uint8_t buf[k_test_bad_sync_buf_sz] = {};
   rx_err_t      err                         = internal_verify_crc(buf, 0, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1914,7 +1914,7 @@ void test_uart_internal_build_frame_null_frame(void)
  */
 void test_uart_internal_build_frame_null_payload_nonzero_len(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err =
     internal_build_frame(&frame, 0, k_frame_type_command, 0, nullptr, k_test_payload_small);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1926,8 +1926,8 @@ void test_uart_internal_build_frame_null_payload_nonzero_len(void)
 void test_uart_internal_build_frame_payload_too_large(void)
 {
   rx_frame_t    frame;
-  const uint8_t big_payload[1025] = {0};
-  frame                           = (rx_frame_t){0};
+  const uint8_t big_payload[1025] = {};
+  frame                           = (rx_frame_t){};
   rx_err_t err =
     internal_build_frame(&frame, 0, k_frame_type_command, 0, big_payload, sizeof(big_payload));
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
@@ -1938,7 +1938,7 @@ void test_uart_internal_build_frame_payload_too_large(void)
  */
 void test_uart_internal_build_frame_zero_payload(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err =
     internal_build_frame(&frame, k_test_build_frame_seq_5, k_frame_type_command, 0, nullptr, 0);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1950,7 +1950,7 @@ void test_uart_internal_build_frame_zero_payload(void)
  */
 void test_uart_internal_build_frame_with_payload(void)
 {
-  rx_frame_t    frame                         = {0};
+  rx_frame_t    frame                         = {};
   const uint8_t payload[k_test_payload_small] = {k_test_byte_aa,
                                                  k_test_byte_bb,
                                                  k_test_byte_cc,
@@ -1970,7 +1970,7 @@ void test_uart_internal_build_frame_with_payload(void)
  */
 void test_uart_internal_handle_ping_null_handle(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = internal_handle_ping(nullptr, &frame);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -2039,7 +2039,7 @@ void test_uart_comm_receive_timeout(void)
   s_handle.rx_buffer_len = k_test_rx_buf_max;
   s_handle.rx_buffer_pos = k_test_timeout_zero;
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
@@ -2062,7 +2062,7 @@ void test_uart_internal_decode_header_null_offset_valid_header(void)
   uint32_t encoded_len = 0;
   helper_encode_frame(k_frame_type_command, 0, nullptr, 0, encoded, &encoded_len);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   /* Pass nullptr for offset_out with valid frame: covers line-175 FALSE branch */
   rx_err_t err = internal_decode_header(encoded, encoded_len, &frame, nullptr);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2106,7 +2106,7 @@ void test_uart_internal_verify_crc_null_crc_out_valid_frame(void)
  */
 void test_uart_internal_build_frame_nonnull_payload_zero_len(void)
 {
-  rx_frame_t    frame                         = {0};
+  rx_frame_t    frame                         = {};
   const uint8_t payload[k_test_payload_small] = {k_test_byte_aa,
                                                  k_test_byte_bb,
                                                  k_test_byte_cc,
@@ -2145,7 +2145,7 @@ void test_uart_comm_receive_read_returns_timeout(void)
   /* Make uart_read_channel return k_rx_err_timeout */
   mock_uart_hw_set_next_read_error(k_rx_err_timeout);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err   = rx_uart_comm_receive(&s_handle, &frame, k_test_timeout_zero);
 
   /* Buffer is effectively empty after the failed read, so k_rx_err_no_data */

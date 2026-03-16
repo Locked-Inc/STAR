@@ -631,10 +631,10 @@ static void internal_read_and_publish_imu(void)
   RX_ASSERT(s_imu_created, "IMU task must be created before reading IMU");
   RX_ASSERT(s_tag != NULL, "s_tag must not be NULL");
 
-  bno055_data_t  bno_data = {0};
+  bno055_data_t  bno_data = {};
   const rx_err_t err      = rx_bno055_read(&bno_data);
 
-  imu_state_t imu  = {0};
+  imu_state_t imu  = {};
   imu.timestamp_ms = internal_ticks_to_ms();
 
   if (err == k_rx_ok) {
@@ -690,10 +690,10 @@ static void internal_read_and_publish_baro(void)
   RX_ASSERT(s_imu_created, "IMU task must be created before reading baro");
   RX_ASSERT(s_tag != NULL, "s_tag must not be NULL");
 
-  bmp280_data_t  bmp_data = {0};
+  bmp280_data_t  bmp_data = {};
   const rx_err_t err      = rx_bmp280_read(&bmp_data);
 
-  baro_state_t baro = {0};
+  baro_state_t baro = {};
   baro.timestamp_ms = internal_ticks_to_ms();
 
   if (err == k_rx_ok) {

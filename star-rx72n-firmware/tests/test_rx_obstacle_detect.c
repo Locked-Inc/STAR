@@ -3114,6 +3114,105 @@ void test_internal_poll_sensors_obstacle_clears_from_obstacle_state(void)
 /** @} */ /* End of additional branch coverage tests group */
 
 /* =============================================================================
+ * stop_requested || Short-Circuit Coverage
+ * =============================================================================
+ */
+
+/**
+ * @brief Pointer to obstacle detect handle for sleep callback injection.
+ * @details
+ * Set before calling rx_obstacle_detect_test_run_task_entry() so the sleep
+ * callback can reach the handle to set stop_requested = true.
+ */
+static rx_obstacle_detect_t* s_stop_req_handle_ptr;
+
+/**
+ * @brief Sleep callback that sets stop_requested instead of firing stop event.
+ *
+ * @details
+ * Stops the outer loop and sets handle->stop_requested = true. The inner
+ * detection loop's next stop check sees TX_NO_EVENTS (stop_event_fired=false)
+ * but handle->stop_requested = true, covering the second operand of the ||
+ * at rx_obstacle_detect.c line 1114.
+ */
+static void on_sleep_set_stop_requested(void)
+{
+  rx_obstacle_detect_test_set_task_running(false);
+  s_stop_req_handle_ptr->stop_requested = true;
+  /* Keep no_events armed so stop event does NOT fire */
+  mock_tx_event_flags_get_reset_count();
+  mock_tx_set_event_flags_get_no_events_count(99);
+}
+
+/**
+ * @brief Test task entry stops via handle->stop_requested (not event flag).
+ *
+ * @details
+ * Exercises the second operand of the `||` at rx_obstacle_detect.c line 1114:
+ * `(int)stop_event_fired || (int)handle->stop_requested`. The sleep callback
+ * sets stop_requested=true while stop_event_fired remains false.
+ *
+ * @pre handle initialized, sensor safe distance
+ * @post state = k_obstacle_detect_state_stopped (via stop_requested)
+ *
+ * @since Version 1.0.0
+ */
+void test_task_entry_stop_via_stop_requested_flag(void)
+{
+  mock_hcsr04_hw_init(nullptr);
+  mock_hcsr04_hw_set_distance(nullptr, s_distance_safe_cm);
+  mock_hcsr04_hw_set_auto_advance(nullptr, true, 1U);
+
+  static rx_hcsr04_t        s_sr_sensor;
+  static rx_hcsr04_t*       s_sr_sensor_ptr;
+  static rx_motor_handle_t  s_sr_motor;
+  static rx_motor_handle_t* s_sr_motor_ptr;
+  internal_zero_mem(&s_sr_sensor, sizeof(s_sr_sensor));
+  internal_zero_mem(&s_sr_motor, sizeof(s_sr_motor));
+  s_sr_sensor_ptr = &s_sr_sensor;
+  s_sr_motor_ptr  = &s_sr_motor;
+
+  const rx_hcsr04_config_t hcsr04_cfg = {
+    .trigger_pin = k_rx_pc_6,
+    .echo_pin    = k_rx_p5_5,
+    .timeout_us  = 30000U,
+    .echo_mode   = k_hcsr04_echo_polling,
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_hcsr04_init(&s_sr_sensor, &hcsr04_cfg));
+
+  rx_obstacle_detect_config_t cfg = {
+    .sensors                = &s_sr_sensor_ptr,
+    .sensor_count           = 1,
+    .motors                 = &s_sr_motor_ptr,
+    .motor_count            = 1,
+    .detection_threshold_cm = s_threshold_cm,
+    .debounce_samples       = k_test_debounce_samples,
+    .poll_interval_ms       = k_test_poll_interval_ms,
+    .callback               = nullptr,
+    .user_data              = nullptr,
+  };
+
+  static rx_obstacle_detect_t s_sr_handle;
+  internal_zero_mem(&s_sr_handle, sizeof(s_sr_handle));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_obstacle_detect_init(&s_sr_handle, &cfg));
+
+  /* Store handle pointer for sleep callback */
+  s_stop_req_handle_ptr = &s_sr_handle;
+
+  /* Start fires immediately; on_success re-arms inner stop to TX_NO_EVENTS */
+  mock_tx_set_event_flags_get_no_events_count(0);
+  mock_tx_event_flags_get_set_on_success_cb(on_start_event_rearm_no_events);
+  /* Sleep callback: set stop_requested=true instead of firing stop event */
+  mock_tx_set_sleep_callback(on_sleep_set_stop_requested);
+  rx_obstacle_detect_test_set_task_running(true);
+
+  rx_obstacle_detect_test_run_task_entry((ULONG)(uintptr_t)&s_sr_handle);
+
+  TEST_ASSERT_EQUAL(k_obstacle_detect_state_stopped, s_sr_handle.state);
+  TEST_ASSERT_FALSE(s_sr_handle.stop_requested);
+}
+
+/* =============================================================================
  * Main Test Runner
  * =============================================================================
  */
@@ -3298,6 +3397,9 @@ static void internal_run_integration_tests(void)
   RUN_TEST(test_internal_poll_sensors_obstacle_already_active_no_callback);
   RUN_TEST(test_internal_poll_sensors_debounce_at_threshold_no_false_positive);
   RUN_TEST(test_internal_poll_sensors_obstacle_clears_from_obstacle_state);
+
+  /* stop_requested || short-circuit coverage */
+  RUN_TEST(test_task_entry_stop_via_stop_requested_flag);
 }
 
 /**

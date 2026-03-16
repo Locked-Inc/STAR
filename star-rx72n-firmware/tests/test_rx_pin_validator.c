@@ -208,7 +208,7 @@ static pin_validator_t s_validator;
  */
 void setUp(void)
 {
-  static const pin_validator_t s_zero = {0};
+  static const pin_validator_t s_zero = {};
   s_validator                         = s_zero;
 }
 
@@ -1019,7 +1019,7 @@ void test_pin_interface_validate_null(void)
  */
 void test_pin_interface_validate_missing_functions(void)
 {
-  rx_pin_interface_t iface = {0};
+  rx_pin_interface_t iface = {};
 
   rx_err_t err = rx_pin_interface_validate(&iface);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1034,7 +1034,7 @@ void test_pin_interface_validate_missing_functions(void)
  */
 void test_pin_interface_validate_only_validate_set(void)
 {
-  rx_pin_interface_t iface = {0};
+  rx_pin_interface_t iface = {};
   iface.validate_pin       = s_stub_validate_pin;
 
   rx_err_t err = rx_pin_interface_validate(&iface);
@@ -1050,7 +1050,7 @@ void test_pin_interface_validate_only_validate_set(void)
  */
 void test_pin_interface_validate_missing_release_pin(void)
 {
-  rx_pin_interface_t iface = {0};
+  rx_pin_interface_t iface = {};
   iface.validate_pin       = s_stub_validate_pin;
   iface.reserve_pin        = s_stub_reserve_pin;
 
@@ -1067,7 +1067,7 @@ void test_pin_interface_validate_missing_release_pin(void)
  */
 void test_pin_interface_validate_missing_is_pin_reserved(void)
 {
-  rx_pin_interface_t iface = {0};
+  rx_pin_interface_t iface = {};
   iface.validate_pin       = s_stub_validate_pin;
   iface.reserve_pin        = s_stub_reserve_pin;
   iface.release_pin        = s_stub_release_pin;
@@ -1085,7 +1085,7 @@ void test_pin_interface_validate_missing_is_pin_reserved(void)
  */
 void test_pin_interface_validate_missing_get_pin_function(void)
 {
-  rx_pin_interface_t iface = {0};
+  rx_pin_interface_t iface = {};
   iface.validate_pin       = s_stub_validate_pin;
   iface.reserve_pin        = s_stub_reserve_pin;
   iface.release_pin        = s_stub_release_pin;
@@ -1104,7 +1104,7 @@ void test_pin_interface_validate_missing_get_pin_function(void)
  */
 void test_pin_interface_validate_missing_clear_all(void)
 {
-  rx_pin_interface_t iface = {0};
+  rx_pin_interface_t iface = {};
   iface.validate_pin       = s_stub_validate_pin;
   iface.reserve_pin        = s_stub_reserve_pin;
   iface.release_pin        = s_stub_release_pin;
@@ -1203,6 +1203,34 @@ void test_pin_validator_long_function_name(void)
  *
  * @note Covers line 604-606 in rx_pin_validator.c
  */
+/**
+ * @brief Test reserve_pin with null ctx (validator) returns null ptr error
+ *
+ * @details
+ * Exercises the first operand of the `||` at rx_pin_validator.c line 531:
+ * `(validator == nullptr) || (function == nullptr)`. When ctx is null and
+ * function is non-null, the first operand short-circuits. The existing
+ * test_pin_validator_reserve_null_function covers the second operand.
+ *
+ * @pre s_validator initialized
+ * @post k_rx_err_null_ptr returned
+ *
+ * @since Version 1.0.0
+ */
+void test_pin_validator_reserve_pin_null_ctx_returns_error(void)
+{
+  rx_err_t err = pin_validator_init(&s_validator);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  rx_pin_interface_t iface;
+  TEST_ASSERT_EQUAL(k_rx_ok, pin_validator_get_interface(&iface, &s_validator));
+
+  /* Tamper ctx to null: validator==nullptr triggers first operand of || */
+  iface.ctx = nullptr;
+  err       = iface.reserve_pin(iface.ctx, k_test_port_a, k_test_pin_3, "SPI_COPI");
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+}
+
 void test_pin_validator_release_pin_null_ctx_returns_error(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
@@ -1414,6 +1442,7 @@ static void internal_run_coverage_tests(void)
   RUN_TEST(test_pin_validator_get_function_null_ctx_returns_error);
   RUN_TEST(test_pin_validator_get_function_invalid_port_returns_error);
   RUN_TEST(test_pin_validator_clear_all_null_ctx_returns_error);
+  RUN_TEST(test_pin_validator_reserve_pin_null_ctx_returns_error);
 }
 
 /* =============================================================================

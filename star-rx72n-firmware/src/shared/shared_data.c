@@ -561,7 +561,7 @@ static volatile estop_reason_t s_pending_estop_reason = k_estop_reason_none;
  * @see rx_bus_manager_init() Initialize bus manager (in hardware_init.c)
  * @see rx_bus_types.h Bus abstraction API
  */
-rx_bus_manager_t g_bus_manager = {0};
+rx_bus_manager_t g_bus_manager = {};
 
 /**
  * @var g_shared_data
@@ -590,7 +590,7 @@ rx_bus_manager_t g_bus_manager = {0};
  * @see shared_data_init() Create mutexes and event flags
  * @see shared_data_t Structure definition (in shared_data.h)
  */
-shared_data_t g_shared_data = {0};
+shared_data_t g_shared_data = {};
 
 /* =============================================================================
  * Initialization
@@ -2978,7 +2978,7 @@ shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_
  * @par Example Usage:
  * @code{.c}
  * // In imu_task - after successful BNO055 read
- * imu_state_t imu = {0};
+ * imu_state_t imu = {};
  * imu.heading_deg16 = bno055_data.heading_deg16;
  * imu.timestamp_ms  = (uint32_t)tx_time_get();
  * imu.valid         = true;
@@ -3051,7 +3051,7 @@ rx_err_t shared_data_update_imu(const imu_state_t* state)
  * @par Example Usage:
  * @code{.c}
  * // In telemetry_task - read current IMU state
- * imu_state_t imu = {0};
+ * imu_state_t imu = {};
  * rx_err_t err = shared_data_get_imu(&imu);
  * if (err == k_rx_ok && imu.valid) {
  *     float heading_deg = (float)imu.heading_deg16 / (float)k_imu_scale_euler;
@@ -3126,7 +3126,7 @@ rx_err_t shared_data_get_imu(imu_state_t* out_state)
  * @par Example Usage:
  * @code{.c}
  * // In imu_task - after successful BMP280 read
- * baro_state_t baro = {0};
+ * baro_state_t baro = {};
  * baro.temp_centi_degc = bmp280_data.temp_centi_degc;
  * baro.press_pa_256    = bmp280_data.press_pa_256;
  * baro.timestamp_ms    = (uint32_t)tx_time_get();
@@ -3200,7 +3200,7 @@ rx_err_t shared_data_update_baro(const baro_state_t* state)
  * @par Example Usage:
  * @code{.c}
  * // In telemetry_task - read current baro state
- * baro_state_t baro = {0};
+ * baro_state_t baro = {};
  * rx_err_t err = shared_data_get_baro(&baro);
  * if (err == k_rx_ok && baro.valid) {
  *     float temp_c    = (float)baro.temp_centi_degc / (float)k_baro_scale_temp;

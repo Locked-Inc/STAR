@@ -1038,7 +1038,7 @@ void test_decode_velocity_request_null_buffer(void)
  */
 void test_decode_velocity_request_null_msg(void)
 {
-  uint8_t  data[k_test_decode_buf_size_16] = {0};
+  uint8_t  data[k_test_decode_buf_size_16] = {};
   rx_err_t err = rx_nanopb_decode_velocity_request(data, sizeof(data), nullptr);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1049,7 +1049,7 @@ void test_decode_velocity_request_null_msg(void)
  */
 void test_decode_velocity_request_empty_buffer(void)
 {
-  uint8_t data[1] = {0};
+  uint8_t data[1] = {};
 
   star_v1_SetVelocityRequest msg = star_v1_SetVelocityRequest_init_zero;
 
@@ -1465,7 +1465,7 @@ void test_decode_estop_request_null_buffer(void)
  */
 void test_decode_estop_request_null_msg(void)
 {
-  uint8_t  data[k_test_decode_buf_size_16] = {0};
+  uint8_t  data[k_test_decode_buf_size_16] = {};
   rx_err_t err = rx_nanopb_decode_estop_request(data, sizeof(data), nullptr);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1476,7 +1476,7 @@ void test_decode_estop_request_null_msg(void)
  */
 void test_decode_estop_request_empty_buffer(void)
 {
-  uint8_t data[1] = {0};
+  uint8_t data[1] = {};
 
   star_v1_EmergencyStopRequest msg = star_v1_EmergencyStopRequest_init_zero;
 
@@ -1582,7 +1582,7 @@ void test_decode_pid_gains_request_null_buffer(void)
  */
 void test_decode_pid_gains_request_null_msg(void)
 {
-  uint8_t  buffer[k_test_decode_buf_size_64] = {0};
+  uint8_t  buffer[k_test_decode_buf_size_64] = {};
   rx_err_t err = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), nullptr);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1593,7 +1593,7 @@ void test_decode_pid_gains_request_null_msg(void)
  */
 void test_decode_pid_gains_request_empty_buffer(void)
 {
-  uint8_t buffer[k_test_decode_buf_size_64] = {0};
+  uint8_t buffer[k_test_decode_buf_size_64] = {};
 
   star_v1_SetPIDGainsRequest msg;
   rx_err_t                   err = rx_nanopb_decode_pid_gains_request(buffer, 0, &msg);
@@ -1624,7 +1624,7 @@ void test_decode_pid_gains_request_invalid_data(void)
  */
 void test_decode_pid_gains_request_not_initialized(void)
 {
-  uint8_t buffer[k_test_decode_buf_size_64] = {0};
+  uint8_t buffer[k_test_decode_buf_size_64] = {};
 
   star_v1_SetPIDGainsRequest msg;
 
@@ -1643,7 +1643,7 @@ void test_decode_pid_gains_request_not_initialized(void)
  */
 void test_decode_pid_gains_request_oversized_buffer(void)
 {
-  uint8_t                    buffer[k_test_decode_buf_size_600] = {0};
+  uint8_t                    buffer[k_test_decode_buf_size_600] = {};
   star_v1_SetPIDGainsRequest msg;
 
   rx_err_t err = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), &msg);
@@ -2232,7 +2232,7 @@ void test_decode_retransmit_config_request_null_buffer(void)
  */
 void test_decode_retransmit_config_request_null_msg(void)
 {
-  uint8_t  buf[k_test_pb_small_buf_size] = {0};
+  uint8_t  buf[k_test_pb_small_buf_size] = {};
   rx_err_t err = rx_nanopb_decode_retransmit_config_request(buf, sizeof(buf), nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -2846,7 +2846,7 @@ void test_encode_pid_gains_response_small_buffer(void)
  */
 void test_decode_retransmit_config_request_zero_len(void)
 {
-  uint8_t                            buf[k_test_pb_small_buf_size] = {0};
+  uint8_t                            buf[k_test_pb_small_buf_size] = {};
   star_v1_SetRetransmitConfigRequest msg;
   rx_err_t                           err = rx_nanopb_decode_retransmit_config_request(buf, 0, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2934,6 +2934,37 @@ void test_create_response_header_long_request_id(void)
   star_v1_ResponseHeader header2 = star_v1_ResponseHeader_init_zero;
   rx_nanopb_create_response_header(&header2, star_v1_Status_STATUS_OK, nullptr);
   TEST_ASSERT_EQUAL(star_v1_Status_STATUS_OK, header2.status);
+}
+
+/**
+ * @brief Test create_response_header with request_id that exactly fills the buffer.
+ *
+ * @details
+ * Passes a 63-character request_id so that the while-loop at rx_nanopb.c line
+ * 1690 exits via `idx < max_len` becoming false rather than `request_id[idx]
+ * != '\0'`. This covers the previously uncovered branch.
+ *
+ * @pre Module initialized
+ * @post request_id copied and truncated at 63 characters
+ *
+ * @since Version 1.0.0
+ */
+void test_create_response_header_max_length_request_id(void)
+{
+  /* Build a 63-character string (sizeof(header->request_id) - 1 = 63) */
+  enum : uint32_t { k_request_id_max_len = 63 };
+  static char s_max_id[k_request_id_max_len + 1U];
+  for (size_t i = 0; i < k_request_id_max_len; i++) {
+    s_max_id[i] = 'R';
+  }
+  s_max_id[k_request_id_max_len] = '\0';
+
+  star_v1_ResponseHeader header;
+  rx_nanopb_create_response_header(&header, star_v1_Status_STATUS_OK, s_max_id);
+
+  TEST_ASSERT_EQUAL(star_v1_Status_STATUS_OK, header.status);
+  /* Verify the full 63-character string was copied */
+  TEST_ASSERT_EQUAL_STRING(s_max_id, header.request_id);
 }
 
 /* =============================================================================
@@ -3116,6 +3147,7 @@ static void internal_run_helper_tests(void)
   RUN_TEST(test_create_response_header_null_request_id);
   RUN_TEST(test_create_response_header_all_status_codes);
   RUN_TEST(test_create_response_header_long_request_id);
+  RUN_TEST(test_create_response_header_max_length_request_id);
 
   /* Length tracking tests */
   RUN_TEST(test_encoded_length_increases_with_data);

@@ -149,10 +149,10 @@ rx_port_regs_t g_mock_port_regs[k_mock_port_max];
  */
 void mock_drv8263_port_reset(void)
 {
-  _Static_assert((bool)(sizeof(g_mock_port_regs) >= sizeof(rx_port_regs_t)),
-                 "g_mock_port_regs must hold at least one port entry");
+  static_assert((bool)(sizeof(g_mock_port_regs) >= sizeof(rx_port_regs_t)),
+                "g_mock_port_regs must hold at least one port entry");
   for (uint8_t i = 0; i < k_mock_port_count; ++i) {
-    g_mock_port_regs[i] = (rx_port_regs_t){0};
+    g_mock_port_regs[i] = (rx_port_regs_t){};
   }
   assert(g_mock_port_regs[k_mock_port_first_index].podr == k_mock_port_reset_value);
 }
@@ -214,8 +214,8 @@ void mock_drv8263_port_set_pidr(uint8_t port, uint8_t value)
 uint8_t mock_drv8263_port_get_podr(uint8_t port)
 {
   assert(port < k_mock_port_count);
-  _Static_assert((bool)(sizeof(g_mock_port_regs) == k_mock_port_count * sizeof(rx_port_regs_t)),
-                 "g_mock_port_regs size must match k_mock_port_count entries");
+  static_assert((bool)(sizeof(g_mock_port_regs) == k_mock_port_count * sizeof(rx_port_regs_t)),
+                "g_mock_port_regs size must match k_mock_port_count entries");
   if (port < k_mock_port_count) {
     return g_mock_port_regs[port].podr;
   }

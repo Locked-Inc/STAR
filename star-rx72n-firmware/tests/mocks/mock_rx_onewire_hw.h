@@ -108,6 +108,10 @@ extern mock_system_regs_t g_mock_onewire_system_regs;
 extern uint16_t           g_mock_cmt3_counter_shadow;
 extern uint16_t g_mock_onewire_timer_auto_increment; /**< Runtime-configurable increment */
 
+extern uint8_t g_mock_onewire_null_system_regs_count; /**< Return nullptr for this many calls */
+extern uint8_t g_mock_onewire_null_cmt_ctrl_count;    /**< Return nullptr for this many calls */
+extern uint8_t g_mock_onewire_null_cmt3_count;        /**< Return nullptr for this many calls */
+
 /* =============================================================================
  * Mock Hardware Access Functions
  * =============================================================================
@@ -124,6 +128,10 @@ extern uint16_t g_mock_onewire_timer_auto_increment; /**< Runtime-configurable i
  */
 static inline volatile mock_cmt_channel_t* cmt3(void)
 {
+  if (g_mock_onewire_null_cmt3_count > 0) {
+    g_mock_onewire_null_cmt3_count--;
+    return nullptr;
+  }
   g_mock_cmt3_counter_shadow =
     (uint16_t)(g_mock_cmt3_counter_shadow + g_mock_onewire_timer_auto_increment);
   g_mock_cmt3.cmcnt = g_mock_cmt3_counter_shadow;
@@ -155,6 +163,10 @@ void mock_onewire_hw_set_timer_auto_increment(uint16_t increment);
  */
 static inline volatile mock_cmt_ctrl_t* cmt_ctrl(void)
 {
+  if (g_mock_onewire_null_cmt_ctrl_count > 0) {
+    g_mock_onewire_null_cmt_ctrl_count--;
+    return nullptr;
+  }
   return &g_mock_cmt_ctrl;
 }
 
@@ -164,6 +176,10 @@ static inline volatile mock_cmt_ctrl_t* cmt_ctrl(void)
  */
 static inline volatile mock_system_regs_t* system_regs(void)
 {
+  if (g_mock_onewire_null_system_regs_count > 0) {
+    g_mock_onewire_null_system_regs_count--;
+    return nullptr;
+  }
   return &g_mock_onewire_system_regs;
 }
 #endif

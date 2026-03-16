@@ -44,7 +44,6 @@
  */
 
 #include <limits.h>
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "mock_adc_hal.h"

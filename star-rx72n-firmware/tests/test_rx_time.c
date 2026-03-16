@@ -511,7 +511,7 @@ void test_time_interface_validate_success(void)
 
 void test_time_interface_validate_missing_sleep_fails(void)
 {
-  rx_time_interface_t bad_iface = {0};
+  rx_time_interface_t bad_iface = {};
 
   bad_iface.get_ms     = s_iface.get_ms;
   bad_iface.is_elapsed = s_iface.is_elapsed;
@@ -524,7 +524,7 @@ void test_time_interface_validate_missing_sleep_fails(void)
 
 void test_time_interface_validate_missing_get_ms_fails(void)
 {
-  rx_time_interface_t bad_iface = {0};
+  rx_time_interface_t bad_iface = {};
 
   bad_iface.sleep_ms   = s_iface.sleep_ms;
   bad_iface.is_elapsed = s_iface.is_elapsed;

@@ -747,7 +747,7 @@ void test_ring_buffer_read_multiple_bytes(void)
   uint8_t write_data[] = "Hello";
   priv_ring_buffer_write(&s_test_buffer, write_data, k_test_size_5);
 
-  uint8_t  read_data[k_test_size_10] = {0};
+  uint8_t  read_data[k_test_size_10] = {};
   uint32_t read_count = priv_ring_buffer_read(&s_test_buffer, read_data, k_test_size_10);
 
   TEST_ASSERT_EQUAL_UINT32(k_test_size_5, read_count);
@@ -895,7 +895,7 @@ void test_usb_init_transitions_to_attached(void)
 void test_usb_init_with_callback(void)
 {
   static uint32_t s_ctx_deadbeef = k_test_hex_deadbeef;
-  rx_usb_config_t config         = {0};
+  rx_usb_config_t config         = {};
 
   config.callback = test_callback;
   config.ctx      = &s_ctx_deadbeef;
@@ -1454,7 +1454,7 @@ void test_usb_flush_with_data_and_zero_timeout_returns_timeout(void)
 void test_usb_set_state_triggers_callback(void)
 {
   static uint32_t s_ctx_marker = k_test_hex_cafebabe;
-  rx_usb_config_t config       = {0};
+  rx_usb_config_t config       = {};
 
   config.callback = test_callback;
   config.ctx      = &s_ctx_marker;
@@ -1469,7 +1469,7 @@ void test_usb_set_state_triggers_callback(void)
 
 void test_usb_set_state_no_callback_if_same_state(void)
 {
-  rx_usb_config_t config = {0};
+  rx_usb_config_t config = {};
 
   config.callback = test_callback;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(&config));
@@ -1483,7 +1483,7 @@ void test_usb_set_state_no_callback_if_same_state(void)
 void test_usb_set_state_triggers_callback_on_configured(void)
 {
   static uint32_t s_ctx_marker2 = k_test_hex_cafebabe;
-  rx_usb_config_t config        = {0};
+  rx_usb_config_t config        = {};
 
   config.callback = test_callback;
   config.ctx      = &s_ctx_marker2;

@@ -494,10 +494,10 @@ static rx_bus_config_t s_uart_config;
  */
 void setUp(void)
 {
-  s_test_manager   = (rx_bus_manager_t){0};
-  s_gpio_config    = (rx_bus_config_t){0};
-  s_onewire_config = (rx_bus_config_t){0};
-  s_uart_config    = (rx_bus_config_t){0};
+  s_test_manager   = (rx_bus_manager_t){};
+  s_gpio_config    = (rx_bus_config_t){};
+  s_onewire_config = (rx_bus_config_t){};
+  s_uart_config    = (rx_bus_config_t){};
 }
 
 /**
@@ -897,7 +897,7 @@ void test_rx_bus_manager_add_bus_null_name(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Manually create config with nullptr name */
-  s_gpio_config      = (rx_bus_config_t){0};
+  s_gpio_config      = (rx_bus_config_t){};
   s_gpio_config.name = nullptr;
   s_gpio_config.type = k_bus_type_gpio;
 
@@ -915,7 +915,7 @@ void test_rx_bus_manager_add_bus_empty_name(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Manually create config with empty name */
-  s_gpio_config      = (rx_bus_config_t){0};
+  s_gpio_config      = (rx_bus_config_t){};
   s_gpio_config.name = "";
   s_gpio_config.type = k_bus_type_gpio;
 
@@ -1000,7 +1000,7 @@ void test_rx_bus_manager_add_bus_max_reached(void)
     s_names[i][k_test_name_idx_ones] = (char)('0' + (i % k_test_decimal_base));
     s_names[i][k_test_name_idx_null] = '\0';
 
-    s_configs[i]      = (rx_bus_config_t){0};
+    s_configs[i]      = (rx_bus_config_t){};
     s_configs[i].name = s_names[i];
     s_configs[i].type = k_bus_type_gpio;
 

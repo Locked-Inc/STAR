@@ -325,6 +325,24 @@ void rx_bmp280_test_set_state(rx_bus_manager_t* manager, bool init_val);
  * @since Version 1.0.0
  */
 void rx_bmp280_test_zero_calib_p1(void);
+
+/**
+ * @brief Override s_bus_name for branch coverage testing
+ *
+ * @details
+ * Sets s_bus_name to the given pointer (which may be NULL) so that the
+ * RX_ASSERT_PRE(s_bus_name != NULL, ...) branches in internal_write_reg
+ * and rx_bmp280_init can be exercised in unit tests.
+ *
+ * @param[in] name New bus name pointer (may be NULL for assertion testing)
+ *
+ * @pre UNIT_TEST defined
+ * @post s_bus_name == name
+ *
+ * @note Test-only helper; not compiled into production firmware
+ * @since Version 1.0.0
+ */
+void rx_bmp280_test_set_bus_name(const char* name);
 #endif /* UNIT_TEST */
 
 #ifdef __cplusplus

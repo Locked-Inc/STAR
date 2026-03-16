@@ -9,7 +9,6 @@
 
 #include "mock_rx_crc.h"
 
-#include <stdbool.h>
 #include <stddef.h>
 
 #include "rx_crc.h"

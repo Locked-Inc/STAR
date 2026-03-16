@@ -1668,7 +1668,7 @@ static void internal_comm_task_entry(ULONG input)
   rx_log_info(s_tag, "Communication task starting");
 
   /* Initialize transport layers and wire into comm manager config */
-  rx_comm_manager_config_t config = {0};
+  rx_comm_manager_config_t config = {};
   config.enabled_channels         = s_enabled_channels;
   internal_init_transports(&config);
   config.callback              = internal_frame_callback;
@@ -2266,7 +2266,7 @@ static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx
   }
 
   /* Build motor command from protobuf doubles -> firmware floats */
-  motor_command_t cmd = {0};
+  motor_command_t cmd = {};
   cmd.target_velocity_mps[k_motor_idx_front_left] =
     (float)velocity_req.command.front_left_velocity_mps;
   cmd.target_velocity_mps[k_motor_idx_front_right] =
@@ -2459,7 +2459,7 @@ static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const r
   rx_log_info(s_tag, "PID gains request received");
 
   /* Convert protobuf PID config to firmware structure */
-  pid_gains_t gains    = {0};
+  pid_gains_t gains    = {};
   gains.kp             = (float)pid_req.pid_config.kp;
   gains.ki             = (float)pid_req.pid_config.ki;
   gains.kd             = (float)pid_req.pid_config.kd;
@@ -2579,7 +2579,7 @@ static bool internal_handle_retransmit_config_command(const rx_frame_t* frame)
     return false;
   }
 
-  rx_spi_comm_retransmit_config_t cfg = {0};
+  rx_spi_comm_retransmit_config_t cfg = {};
   cfg.max_retries                     = (uint8_t)max_retries;
   cfg.ack_timeout_ms                  = (uint16_t)ack_timeout;
   cfg.max_backoff_ms                  = (uint16_t)max_backoff;

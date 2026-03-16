@@ -173,8 +173,8 @@ void test_telemetry_task_create_already_created(void)
 void test_telemetry_task_collects_encoder_data(void)
 {
   /* Set up motor state with encoder data */
-  motor_state_t state_in  = {0};
-  motor_state_t state_out = {0};
+  motor_state_t state_in  = {};
+  motor_state_t state_out = {};
   rx_err_t      err;
 
   state_in.encoder_counts[k_test_motor_idx_0]       = k_test_encoder_0;
@@ -218,8 +218,8 @@ void test_telemetry_task_collects_encoder_data(void)
 void test_telemetry_task_collects_temp_data(void)
 {
   /* Set up temp state (25.50 degC = 2550 centi-degrees) */
-  temp_sensor_state_t temp_in  = {0};
-  temp_sensor_state_t temp_out = {0};
+  temp_sensor_state_t temp_in  = {};
+  temp_sensor_state_t temp_out = {};
   rx_err_t            err;
 
   temp_in.temperature_cdegc[k_test_sensor_idx] = (int16_t)k_test_temp_cdegc;
@@ -311,8 +311,8 @@ void test_telemetry_task_handles_encode_failure(void)
 void test_telemetry_task_broadcasts_to_usb(void)
 {
   /* Initialize manager (required for send to work) */
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
   uint8_t               payload[k_test_encoded_len];
   rx_err_t              err;
 
@@ -344,8 +344,8 @@ void test_telemetry_task_broadcasts_to_usb(void)
 void test_telemetry_task_handles_send_failure(void)
 {
   /* Configure mock to fail */
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
   rx_err_t              err;
 
   mock_comm_manager_set_send_return(k_rx_err_timeout);
@@ -374,8 +374,8 @@ void test_telemetry_task_handles_send_failure(void)
  */
 void test_telemetry_transport_selects_usb_when_ready(void)
 {
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
   rx_err_t              err;
   bool                  usb_ready        = false;
   bool                  spi_ready        = false;
@@ -428,8 +428,8 @@ void test_telemetry_transport_selects_usb_when_ready(void)
  */
 void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
 {
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
   rx_err_t              err;
   bool                  usb_ready        = false;
   bool                  spi_ready        = false;
@@ -478,7 +478,7 @@ void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
  */
 void test_telemetry_channel_ready_usb_reports_correctly(void)
 {
-  rx_comm_manager_t mgr   = {0};
+  rx_comm_manager_t mgr   = {};
   bool              ready = false;
   rx_err_t          err;
 
@@ -506,7 +506,7 @@ void test_telemetry_channel_ready_usb_reports_correctly(void)
  */
 void test_telemetry_channel_ready_spi_reports_correctly(void)
 {
-  rx_comm_manager_t mgr   = {0};
+  rx_comm_manager_t mgr   = {};
   bool              ready = false;
   rx_err_t          err;
 
@@ -539,8 +539,8 @@ void test_telemetry_channel_ready_spi_reports_correctly(void)
  */
 void test_telemetry_spi_fallback_send_succeeds(void)
 {
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
   uint8_t               payload[k_test_encoded_len];
   rx_err_t              err;
   bool                  usb_ready        = false;
@@ -601,8 +601,8 @@ void test_telemetry_spi_fallback_send_succeeds(void)
  */
 void test_telemetry_defaults_to_usb_before_any_command(void)
 {
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
   rx_err_t              err;
 
   mgr.initialized = true;
@@ -645,8 +645,8 @@ void test_telemetry_defaults_to_usb_before_any_command(void)
  */
 void test_telemetry_routes_to_spi_after_spi_command(void)
 {
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
   rx_err_t              err;
 
   mgr.initialized = true;

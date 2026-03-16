@@ -155,8 +155,8 @@ void test_comm_task_create_already_created(void)
 void test_comm_task_initializes_comm_manager(void)
 {
   /* Configure mock */
-  rx_comm_manager_t        mgr    = {0};
-  rx_comm_manager_config_t config = {0};
+  rx_comm_manager_t        mgr    = {};
+  rx_comm_manager_config_t config = {};
   rx_err_t                 err;
 
   mock_comm_manager_set_init_return(k_rx_ok);
@@ -178,7 +178,7 @@ void test_comm_task_initializes_comm_manager(void)
 void test_comm_task_polls_comm_manager(void)
 {
   /* Initialize manager (required for poll to work) */
-  rx_comm_manager_t mgr = {0};
+  rx_comm_manager_t mgr = {};
   rx_err_t          err;
 
   mgr.initialized = true;
@@ -211,7 +211,7 @@ void test_comm_task_velocity_cmd_updates_shared_data(void)
   star_v1_SetVelocityRequest velocity_req;
   /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&velocity_req, 0, sizeof(velocity_req));
-  motor_command_t cmd_out = {0};
+  motor_command_t cmd_out = {};
   rx_err_t        err;
 
   /* Configure mock to return decoded velocity */
@@ -232,7 +232,7 @@ void test_comm_task_velocity_cmd_updates_shared_data(void)
   TEST_ASSERT_TRUE(decoded.has_command);
 
   /* Build and store motor command as task would */
-  motor_command_t cmd                          = {0};
+  motor_command_t cmd                          = {};
   cmd.target_velocity_mps[k_test_motor_idx_fl] = (float)decoded.command.front_left_velocity_mps;
   cmd.target_velocity_mps[k_test_motor_idx_fr] = (float)decoded.command.front_right_velocity_mps;
   cmd.target_velocity_mps[k_test_motor_idx_bl] = (float)decoded.command.back_left_velocity_mps;
@@ -393,8 +393,8 @@ void test_comm_task_frame_updates_active_channel(void)
 void test_comm_task_can_send_response(void)
 {
   /* Initialize manager (required for send to work) */
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr    = {};
+  rx_comm_send_params_t params = {};
   uint8_t               payload[k_test_payload_buf_size];
   rx_err_t              err;
 
@@ -430,7 +430,7 @@ void test_comm_task_can_send_response(void)
 void test_comm_task_handles_decode_failure(void)
 {
   /* Configure nanopb to fail decoding */
-  motor_command_t cmd_out = {0};
+  motor_command_t cmd_out = {};
   rx_err_t        err;
 
   mock_nanopb_set_decode_velocity_return(k_rx_err_protocol_error);

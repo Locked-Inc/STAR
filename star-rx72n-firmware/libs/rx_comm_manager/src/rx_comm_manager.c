@@ -601,7 +601,7 @@ static void internal_output_decoded_from_params(rx_comm_manager_t*           mgr
                                                 const rx_comm_send_params_t* params)
 {
   /* Build a temporary frame for ASCII formatting */
-  rx_frame_t frame      = {0}; /* Zero-initialize to clear padding/unset fields */
+  rx_frame_t frame      = {}; /* Zero-initialize to clear padding/unset fields */
   frame.header.sequence = k_frame_seq_placeholder;
   frame.header.length   = (uint16_t)params->payload_len;
   frame.header.type     = (uint8_t)params->type;
@@ -834,7 +834,7 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
     if (err == k_rx_ok) {
       /* Convert link result to rx_frame_t for internal_handle_frame() */
       static rx_frame_t s_frame1;
-      s_frame1                 = (rx_frame_t){0};
+      s_frame1                 = (rx_frame_t){};
       s_frame1.header.sequence = s_link_result.sequence;
       s_frame1.header.length   = (uint16_t)s_link_result.payload_len;
       s_frame1.header.type     = s_link_result.frame_type;

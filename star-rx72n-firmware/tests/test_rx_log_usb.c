@@ -59,7 +59,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -193,7 +192,7 @@ static void helper_set_usb_configured(void)
  */
 static void helper_get_usb_tx_bytes(uint32_t* out_bytes)
 {
-  rx_usb_stats_t stats = {0};
+  rx_usb_stats_t stats = {};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_get_stats(k_usb_port_log, &stats));
   *out_bytes = stats.bytes_tx;
 }
@@ -251,7 +250,7 @@ void test_log_usb_putc_before_usb_ready_buffers(void)
 
   TEST_ASSERT_EQUAL(k_test_zero_bytes, tx_bytes);
 
-  usb_log_stats_t log_stats = {0};
+  usb_log_stats_t log_stats = {};
   rx_log_usb_get_stats(&log_stats);
   TEST_ASSERT_GREATER_OR_EQUAL(k_test_one_byte, log_stats.boot_buffered);
 }
@@ -550,7 +549,7 @@ void test_log_usb_get_stats_basic(void)
 
   rx_log_usb_putc('Z');
 
-  usb_log_stats_t stats = {0};
+  usb_log_stats_t stats = {};
   rx_log_usb_get_stats(&stats);
 
   TEST_ASSERT_GREATER_OR_EQUAL(k_test_one_byte, stats.total_bytes);
@@ -573,7 +572,7 @@ void test_log_usb_get_stats_boot_buffered(void)
   /* Do NOT set USB configured - write goes to boot buffer */
   rx_log_usb_putc('B');
 
-  usb_log_stats_t stats = {0};
+  usb_log_stats_t stats = {};
   rx_log_usb_get_stats(&stats);
 
   TEST_ASSERT_GREATER_OR_EQUAL(k_test_one_byte, stats.boot_buffered);
@@ -707,7 +706,7 @@ void test_log_usb_boot_buffer_overflow_no_crash(void)
   TEST_ASSERT_EQUAL(k_test_zero_bytes, tx_bytes);
 
   /* stats.boot_buffered must not exceed the 512-byte buffer size */
-  usb_log_stats_t stats = {0};
+  usb_log_stats_t stats = {};
   rx_log_usb_get_stats(&stats);
   TEST_ASSERT_LESS_OR_EQUAL(k_test_boot_buf_size, stats.boot_buffered);
 }
@@ -836,7 +835,7 @@ void test_log_usb_write_busy_increments_dropped_bytes(void)
    * rx_log_usb increments dropped_bytes when it gets k_rx_err_busy (line 402). */
   rx_log_usb_putc('Z');
 
-  usb_log_stats_t stats = {0};
+  usb_log_stats_t stats = {};
   rx_log_usb_get_stats(&stats);
 
   /* dropped_bytes must be >= 1 */

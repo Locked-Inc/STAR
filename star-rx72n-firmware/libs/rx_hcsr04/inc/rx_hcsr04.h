@@ -263,7 +263,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -682,7 +681,7 @@ typedef struct {
  * thereafter. Do not modify fields directly after initialization.
  *
  * **Lifecycle:**
- * 1. Declare uninitialized (zero-initialize with `= {0}` is safe)
+ * 1. Declare uninitialized (zero-initialize with `= {}` is safe)
  * 2. Call rx_hcsr04_init() to configure GPIO/ICU and set all fields
  * 3. Call rx_hcsr04_measure_blocking() or rx_hcsr04_measure() as needed
  * 4. Call rx_hcsr04_deinit() to release GPIO reservations
@@ -692,7 +691,7 @@ typedef struct {
  * @invariant measurement_count >= timeout_count + range_error_count
  *
  * @code
- * rx_hcsr04_t sensor = {0};  // Zero-initialize before calling init
+ * rx_hcsr04_t sensor = {};  // Zero-initialize before calling init
  * rx_hcsr04_config_t cfg = {
  *     .trigger_pin  = k_rx_pf_5,
  *     .echo_pin     = k_rx_p0_3,
@@ -807,7 +806,7 @@ typedef void (*rx_hcsr04_callback_t)(rx_hcsr04_t*              handle,
  *
  * @par Example: Initialize Polling Mode Sensor
  * @code
- * rx_hcsr04_t sensor = {0};
+ * rx_hcsr04_t sensor = {};
  * rx_hcsr04_config_t cfg = {
  *     .trigger_pin = k_rx_pf_5,
  *     .echo_pin    = k_rx_p0_3,
@@ -823,7 +822,7 @@ typedef void (*rx_hcsr04_callback_t)(rx_hcsr04_t*              handle,
  *
  * @par Example: Initialize IRQ Mode Sensor
  * @code
- * rx_hcsr04_t sensor = {0};
+ * rx_hcsr04_t sensor = {};
  * rx_hcsr04_config_t cfg = {
  *     .trigger_pin  = k_rx_pf_5,
  *     .echo_pin     = k_rx_p0_3,

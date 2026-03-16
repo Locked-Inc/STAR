@@ -176,7 +176,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_bus_manager.h"
@@ -773,6 +772,7 @@ typedef struct {
 
 /* Internal functions exposed for unit testing */
 void     internal_delay_timer_init(void);
+void     internal_delay_timer_reset(void);
 void     internal_delay_us(uint32_t microseconds);
 rx_err_t internal_set_drive_mode(const rx_bus_config_t*   bus_config,
                                  onewire_runtime_state_t* state,

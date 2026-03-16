@@ -149,21 +149,21 @@ static rx_err_t internal_check_simulated_errors(void)
  *
  * @code
  * // Length 0: both slots receive the empty sentinel (0x100)
- * mock_riic_call_t e0 = {0};
+ * mock_riic_call_t e0 = {};
  * internal_record_tx_snapshot(&e0, nullptr, 0);
  * // e0.tx_snapshot[k_mock_riic_snapshot_reg_idx] == k_mock_riic_snapshot_empty
  * // e0.tx_snapshot[k_mock_riic_snapshot_val_idx] == k_mock_riic_snapshot_empty
  *
  * // Length 1: slot 0 has the byte; slot 1 receives the sentinel
  * uint8_t buf1[] = {0x07U};
- * mock_riic_call_t e1 = {0};
+ * mock_riic_call_t e1 = {};
  * internal_record_tx_snapshot(&e1, buf1, 1);
  * // e1.tx_snapshot[k_mock_riic_snapshot_reg_idx] == 0x07U
  * // e1.tx_snapshot[k_mock_riic_snapshot_val_idx] == k_mock_riic_snapshot_empty
  *
  * // Length 2: both slots have real bytes
  * uint8_t buf2[] = {0x07U, 0x01U};
- * mock_riic_call_t e2 = {0};
+ * mock_riic_call_t e2 = {};
  * internal_record_tx_snapshot(&e2, buf2, 2);
  * // e2.tx_snapshot[k_mock_riic_snapshot_reg_idx] == 0x07U
  * // e2.tx_snapshot[k_mock_riic_snapshot_val_idx] == 0x01U

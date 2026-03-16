@@ -104,13 +104,13 @@ static bool           s_comm_timeout                = false;
 static uint8_t        s_active_channel              = k_mock_channel_usb;
 static uint32_t       s_active_channel_update_count = k_mock_count_reset;
 
-static motor_command_t s_motor_command      = {0};
-static motor_state_t   s_motor_state        = {0};
-static pid_gains_t     s_pid_gains          = {0};
+static motor_command_t s_motor_command      = {};
+static motor_state_t   s_motor_state        = {};
+static pid_gains_t     s_pid_gains          = {};
 static bool            s_pid_update_pending = false;
 
-static temp_sensor_state_t s_temp_state     = {0};
-static obstacle_state_t    s_obstacle_state = {0};
+static temp_sensor_state_t s_temp_state     = {};
+static obstacle_state_t    s_obstacle_state = {};
 
 static estop_reason_t s_last_triggered_reason = k_estop_reason_none;
 

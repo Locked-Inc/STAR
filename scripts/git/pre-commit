@@ -176,6 +176,33 @@ if [[ -n "$rx72n_files" ]]; then
         echo "   Install: sudo apt install clang-format"
     fi
 
+    # C23 pattern enforcement: reject C11-era constructs in STAR-owned code
+    c23_ok=true
+    for f in $rx72n_files; do
+        # _Static_assert -> static_assert
+        if grep -qn '_Static_assert' "$f" 2>/dev/null; then
+            echo "[FAIL] C11 _Static_assert in $f (use static_assert)"
+            grep -n '_Static_assert' "$f"
+            c23_ok=false
+        fi
+        # = {0} -> = {} (zero-initializers only, not {0x...} or {0,...values})
+        if grep -qnE '= \{0\}' "$f" 2>/dev/null; then
+            echo "[FAIL] C11 = {0} initializer in $f (use = {})"
+            grep -nE '= \{0\}' "$f" | head -5
+            c23_ok=false
+        fi
+        # #include <stdbool.h> (unnecessary in C23)
+        if grep -qn '#include <stdbool.h>' "$f" 2>/dev/null; then
+            echo "[FAIL] Unnecessary #include <stdbool.h> in $f (bool is a C23 keyword)"
+            c23_ok=false
+        fi
+    done
+    if [[ "$c23_ok" == "false" ]]; then
+        echo ""
+        echo "STAR policy: Use C23 constructs (static_assert, = {}, no stdbool.h)."
+        error_found=1
+    fi
+
     if command -v clang-tidy &>/dev/null || command -v clang-tidy-18 &>/dev/null; then
         if ! bash star-rx72n-firmware/scripts/clang_tidy.sh --check; then
             echo "[FAIL] RX72N clang-tidy violations found."
@@ -204,6 +231,7 @@ if [[ -n "$rx72n_files" ]]; then
                 --filter '.*star-rx72n-firmware/libs/' \
                 --exclude '.*/third_party/.*' \
                 --exclude '.*/rx_nanopb/inc/gen/.*' \
+                -j 1 \
                 --print-summary 2>/dev/null)
             gcovr_exit=$?
             if [[ $gcovr_exit -ne 0 ]]; then

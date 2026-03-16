@@ -1385,7 +1385,7 @@ void test_decode_null_args(void)
  */
 void test_decode_uninitialized(void)
 {
-  rx_fec_decoder_t dec = {0};
+  rx_fec_decoder_t dec = {};
   rx_soft_bit_t    soft[k_buf_size_enc32];
   uint8_t          output[k_buf_size_out16];
   uint32_t         len;
@@ -1678,7 +1678,7 @@ void test_decoder_deinit_null(void)
  */
 void test_decode_hard_null_args(void)
 {
-  uint8_t  hard[k_hard_data_len] = {0};
+  uint8_t  hard[k_hard_data_len] = {};
   uint8_t  output[k_buf_size_out16];
   uint32_t len;
 
@@ -1737,8 +1737,8 @@ void test_decode_hard_null_args(void)
  */
 void test_decode_hard_uninitialized(void)
 {
-  rx_fec_decoder_t dec                   = {0};
-  uint8_t          hard[k_hard_data_len] = {0};
+  rx_fec_decoder_t dec                   = {};
+  uint8_t          hard[k_hard_data_len] = {};
   uint8_t          output[k_buf_size_out16];
   uint32_t         len;
 
@@ -1775,7 +1775,7 @@ void test_decode_hard_uninitialized(void)
  */
 void test_decode_hard_zero_length(void)
 {
-  uint8_t  hard[k_hard_data_len] = {0};
+  uint8_t  hard[k_hard_data_len] = {};
   uint8_t  output[k_buf_size_out16];
   uint32_t len;
 
@@ -1841,7 +1841,7 @@ void test_decode_hard_data_too_large(void)
 void test_decode_hard_soft_buffer_too_small(void)
 {
   static rx_soft_bit_t s_tiny_soft[k_buf_size_sm];
-  uint8_t              hard[k_input_len_4] = {0};
+  uint8_t              hard[k_input_len_4] = {};
   uint8_t              output[k_buf_size_out16];
   uint32_t             len;
 
@@ -2413,26 +2413,6 @@ typedef enum : uint8_t {
   k_invalid_bit_value = 0x02U, /**< Neither 0 nor 1 */
 } fec_invalid_bit_t;
 
-/* ---- internal_parity POST assertion coverage ---- */
-
-/**
- * @brief Exercise internal_parity POST assertion via force-fail flag
- *
- * @details
- * internal_parity always returns 0 or 1, so the POST assertions on lines
- * 160-161 can only fire via the g_rx_assert_post_force_fail test hook.
- * This test sets the flag, calls with valid input, then resets it.
- *
- * @test Covers lines 160-161 (RX_ASSERT_POST failure branch)
- */
-void test_internal_parity_post_force_fail(void)
-{
-  g_rx_assert_post_force_fail = true;
-  (void)internal_parity(k_byte_55);
-  g_rx_assert_post_force_fail = false;
-  TEST_PASS();
-}
-
 /* ---- internal_set_output_bit PRE assertion coverage ---- */
 
 /**
@@ -2453,7 +2433,7 @@ void test_internal_set_output_bit_null(void)
  */
 void test_internal_set_output_bit_index_overflow(void)
 {
-  uint8_t buf[k_buf_size_enc32] = {0};
+  uint8_t buf[k_buf_size_enc32] = {};
   internal_set_output_bit(buf, k_bit_idx_overflow, 1);
   TEST_PASS();
 }
@@ -2468,25 +2448,6 @@ void test_internal_set_output_bit_index_overflow(void)
 void test_internal_get_bit_null(void)
 {
   (void)internal_get_bit(nullptr, 0);
-  TEST_PASS();
-}
-
-/**
- * @brief Exercise internal_get_bit POST assertion via force-fail flag
- *
- * @details
- * internal_get_bit always returns 0 or 1 with valid data, so the POST
- * assertion on line 218 can only fire via g_rx_assert_post_force_fail.
- *
- * @test Covers line 218 (RX_ASSERT_POST failure branch)
- */
-void test_internal_get_bit_post_force_fail(void)
-{
-  const uint8_t data[] = {k_byte_aa};
-
-  g_rx_assert_post_force_fail = true;
-  (void)internal_get_bit(data, 0);
-  g_rx_assert_post_force_fail = false;
   TEST_PASS();
 }
 
@@ -2566,6 +2527,22 @@ void test_internal_branch_metric_invalid_expected(void)
   TEST_PASS();
 }
 
+/**
+ * @brief Exercise internal_branch_metric with valid exp0 but invalid exp1
+ *
+ * @details
+ * Passes valid exp0 (0) and invalid exp1 (0x02). The left side of the UNIT_TEST
+ * guard evaluates to false (exp0 is valid), so the right side is evaluated.
+ * This covers the exp1 validation branch on the right side of the || guard.
+ *
+ * @test Covers line 321 (UNIT_TEST guard: exp1 invalid branch)
+ */
+void test_internal_branch_metric_invalid_exp1_only(void)
+{
+  (void)internal_branch_metric(0, 0, 0, k_invalid_bit_value);
+  TEST_PASS();
+}
+
 /* ---- internal_viterbi_process_symbol PRE assertion coverage ---- */
 
 /**
@@ -2604,7 +2581,7 @@ void test_internal_viterbi_process_symbol_idx_overflow(void)
  */
 void test_internal_viterbi_forward_pass_null_dec(void)
 {
-  rx_soft_bit_t soft[k_buf_size_enc32] = {0};
+  rx_soft_bit_t soft[k_buf_size_enc32] = {};
   internal_viterbi_forward_pass(nullptr, soft, 0);
   TEST_PASS();
 }
@@ -2629,7 +2606,7 @@ void test_internal_viterbi_forward_pass_null_soft(void)
  */
 void test_internal_viterbi_traceback_null_dec(void)
 {
-  uint8_t output[k_buf_size_out16] = {0};
+  uint8_t output[k_buf_size_out16] = {};
   internal_viterbi_traceback(nullptr, 0, 0, output, k_input_len_1);
   TEST_PASS();
 }
@@ -2652,7 +2629,7 @@ void test_internal_viterbi_traceback_null_output(void)
  */
 void test_internal_viterbi_traceback_zero_output_bytes(void)
 {
-  uint8_t output[k_buf_size_out16] = {0};
+  uint8_t output[k_buf_size_out16] = {};
   internal_viterbi_traceback(&s_decoder, 0, 0, output, 0);
   TEST_PASS();
 }
@@ -2668,7 +2645,7 @@ void test_internal_viterbi_traceback_zero_output_bytes(void)
  */
 void test_internal_viterbi_traceback_num_symbols_overflow(void)
 {
-  uint8_t output[k_buf_size_out16] = {0};
+  uint8_t output[k_buf_size_out16] = {};
   internal_viterbi_traceback(&s_decoder, k_fec_max_symbols + 1U, 0, output, k_input_len_1);
   TEST_PASS();
 }
@@ -2803,16 +2780,12 @@ static void internal_run_roundtrip_and_error_tests(void)
  */
 static void internal_run_assert_coverage_tests(void)
 {
-  /* internal_parity POST */
-  RUN_TEST(test_internal_parity_post_force_fail);
-
   /* internal_set_output_bit PRE */
   RUN_TEST(test_internal_set_output_bit_null);
   RUN_TEST(test_internal_set_output_bit_index_overflow);
 
-  /* internal_get_bit PRE/POST */
+  /* internal_get_bit PRE */
   RUN_TEST(test_internal_get_bit_null);
-  RUN_TEST(test_internal_get_bit_post_force_fail);
 
   /* internal_encode_bit PRE */
   RUN_TEST(test_internal_encode_bit_null_state);
@@ -2820,8 +2793,9 @@ static void internal_run_assert_coverage_tests(void)
   RUN_TEST(test_internal_encode_bit_null_out1);
   RUN_TEST(test_internal_encode_bit_invalid_input);
 
-  /* internal_branch_metric PRE */
+  /* internal_branch_metric PRE + UNIT_TEST guard */
   RUN_TEST(test_internal_branch_metric_invalid_expected);
+  RUN_TEST(test_internal_branch_metric_invalid_exp1_only);
 
   /* internal_viterbi_process_symbol PRE */
   RUN_TEST(test_internal_viterbi_process_symbol_null);

@@ -203,7 +203,7 @@ static bool s_mtu_initialized[k_mtu_max_channels] = {false};
  * @warning Do not modify directly - value must match hardware TGRA register
  * @since Version 1.0.0
  */
-static uint16_t s_mtu_period[k_mtu_max_channels] = {0};
+static uint16_t s_mtu_period[k_mtu_max_channels] = {};
 
 /* =============================================================================
  * Internal Helper Functions

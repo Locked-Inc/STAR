@@ -82,7 +82,7 @@ static rx_session_state_t s_session;
  */
 void setUp(void)
 {
-  static const rx_session_state_t s_zero = {0};
+  static const rx_session_state_t s_zero = {};
   s_session                              = s_zero;
   rx_err_t err                           = rx_session_init(&s_session);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -152,7 +152,7 @@ void test_deinit_null_ptr(void)
  */
 void test_deinit_not_initialized(void)
 {
-  rx_session_state_t uninit = {0};
+  rx_session_state_t uninit = {};
 
   rx_err_t err = rx_session_deinit(&uninit);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
@@ -256,7 +256,7 @@ void test_next_tx_null_sequence(void)
  */
 void test_next_tx_not_initialized(void)
 {
-  rx_session_state_t uninit = {0};
+  rx_session_state_t uninit = {};
 
   uint16_t seq;
   rx_err_t err = rx_session_next_tx(&uninit, &seq);
@@ -491,7 +491,7 @@ void test_validate_rx_null_state(void)
  */
 void test_validate_rx_not_initialized(void)
 {
-  rx_session_state_t           uninit = {0};
+  rx_session_state_t           uninit = {};
   rx_session_validate_result_t result;
 
   rx_err_t err = rx_session_validate_rx(&uninit, 0, &result);
@@ -578,7 +578,7 @@ void test_reset_null_ptr(void)
  */
 void test_reset_not_initialized(void)
 {
-  rx_session_state_t uninit = {0};
+  rx_session_state_t uninit = {};
 
   rx_err_t err = rx_session_reset(&uninit);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
@@ -667,7 +667,7 @@ void test_get_tx_null_output(void)
  */
 void test_get_tx_not_initialized(void)
 {
-  rx_session_state_t uninit = {0};
+  rx_session_state_t uninit = {};
   uint16_t           seq;
 
   rx_err_t err = rx_session_get_tx(&uninit, &seq);
@@ -700,7 +700,7 @@ void test_get_rx_null_output(void)
  */
 void test_get_rx_not_initialized(void)
 {
-  rx_session_state_t uninit = {0};
+  rx_session_state_t uninit = {};
   uint16_t           seq;
 
   rx_err_t err = rx_session_get_rx(&uninit, &seq);

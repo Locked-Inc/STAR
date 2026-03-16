@@ -89,7 +89,7 @@ static uint32_t s_encode_telemetry_count = 0;
  */
 
 /** @brief Configured velocity values for decode */
-static float s_decoded_velocity[k_mock_nanopb_max_motors] = {0.0F};
+static float s_decoded_velocity[k_mock_nanopb_max_motors] = {};
 
 /** @brief Configured encode length */
 static uint32_t s_encode_length = k_mock_nanopb_default_encode_len;

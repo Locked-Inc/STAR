@@ -274,6 +274,21 @@ extern rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
                                      uint32_t                    payload_len,
                                      rx_frame_t*                 frame);
 
+/**
+ * @brief SPI transfer function (RX_STATIC_TESTABLE)
+ * @param[in]  handle  SPI comm handle
+ * @param[in]  tx_data TX data pointer (may be nullptr)
+ * @param[in]  tx_len  TX data length
+ * @param[out] rx_data RX data pointer (may be nullptr)
+ * @param[in]  rx_len  RX data length
+ * @return rx_err_t error code
+ */
+extern rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
+                                      const uint8_t*        tx_data,
+                                      const uint32_t        tx_len,
+                                      uint8_t*              rx_data,
+                                      const uint32_t        rx_len);
+
 /* =============================================================================
  * Mock Assertion Helpers
  * =============================================================================
@@ -491,7 +506,7 @@ static void helper_create_encoded_frame(rx_frame_type_t type,
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&encoder));
 
-  rx_frame_t frame      = {0};
+  rx_frame_t frame      = {};
   frame.header.sequence = sequence;
   frame.header.length   = (uint16_t)payload_len;
   frame.header.type     = (uint8_t)type;
@@ -536,13 +551,13 @@ void setUp(void)
   (void)rx_session_init(&s_session);
 
   /* Clear handle */
-  s_handle = (rx_spi_comm_handle_t){0};
+  s_handle = (rx_spi_comm_handle_t){};
 
   /* Reset callback tracking */
   s_ping_cb_count    = 0;
   s_reset_cb_count   = 0;
-  s_last_ping_frame  = (rx_frame_t){0};
-  s_last_reset_frame = (rx_frame_t){0};
+  s_last_ping_frame  = (rx_frame_t){};
+  s_last_reset_frame = (rx_frame_t){};
   s_last_cb_ctx      = NULL;
 
   /* Reset retransmit callback tracking */
@@ -1914,7 +1929,7 @@ void test_retransmit_defaults_applied_for_zero_values(void)
     .spi_mode          = 0,
     .fec_enabled       = false,
     .auto_retransmit   = true,
-    .retransmit_config = {0},
+    .retransmit_config = {},
   };
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
@@ -2630,7 +2645,7 @@ void test_internal_decode_header_null_data(void)
 /** @brief Test internal_decode_header: data_len < k_frame_min_size -> k_rx_err_invalid_size */
 void test_internal_decode_header_too_small(void)
 {
-  uint8_t    data[k_test_payload_small] = {0};
+  uint8_t    data[k_test_payload_small] = {};
   rx_frame_t frame;
   uint32_t   offset = 0;
 
@@ -2797,7 +2812,7 @@ void test_internal_build_frame_null_payload_nonzero_len(void)
 void test_internal_build_frame_payload_too_large(void)
 {
   helper_init_handle_for_build();
-  uint8_t    payload[k_test_payload_small] = {0};
+  uint8_t    payload[k_test_payload_small] = {};
   rx_frame_t frame;
   rx_err_t   err = internal_build_frame(&s_handle,
                                       0,
@@ -3124,7 +3139,7 @@ void test_retransmit_set_auto_retransmit_default_values(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &default_cfg));
 
   /* Pass a config with all zeros to trigger default application */
-  rx_spi_comm_retransmit_config_t zero_cfg = {0};
+  rx_spi_comm_retransmit_config_t zero_cfg = {};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_set_auto_retransmit(&s_handle, true, &zero_cfg));
 
   /* Defaults should be applied for any zero fields */
@@ -3299,6 +3314,108 @@ void test_retransmit_nack_wrong_seq_not_retransmitted(void)
   TEST_ASSERT_TRUE(s_handle.retry_pending);
 }
 
+/**
+ * @brief Test NACK received when retry_pending is false (no prior send)
+ *
+ * @details
+ * Covers line 1830 false branch in internal_dispatch_ack_nack(): the first
+ * operand of the && short-circuits when handle->retry_pending is false.
+ * With auto_retransmit enabled but no send performed, retry_pending stays
+ * false. A NACK is injected and consumed by the retransmit subsystem
+ * without triggering a retransmit.
+ *
+ * @pre auto_retransmit == true
+ * @pre retry_pending == false (no send performed)
+ * @post NACK consumed, no retransmit triggered
+ */
+void test_retransmit_nack_non_pending_ignored(void)
+{
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* NO send -> no pending retry */
+  TEST_ASSERT_FALSE(s_handle.retry_pending);
+
+  uint8_t  encoded[k_test_buf_medium];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_nack, 0, nullptr, 0, encoded, &encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
+
+  /* NACK consumed (auto_retransmit is on), but nothing to retransmit */
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+  TEST_ASSERT_FALSE(s_handle.retry_pending);
+}
+
+/* =============================================================================
+ * internal_spi_transfer short-circuit branch coverage
+ * =============================================================================
+ */
+
+/**
+ * @brief Test internal_spi_transfer with non-null tx_data but zero tx_len
+ *
+ * @details
+ * Covers the has_tx false branch at line 906 when tx_data is non-null but tx_len
+ * is 0: the && short-circuits because tx_len > 0 is false. This inconsistent
+ * combination never occurs through public callers, so direct invocation via
+ * RX_STATIC_TESTABLE is required.
+ *
+ * @pre Handle initialized via rx_spi_comm_init()
+ * @post Transfer succeeds with no TX data sent
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_spi_transfer_nonnull_tx_zero_len(void)
+{
+  rx_spi_comm_config_t config = {.session = &s_session};
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* tx_data non-null but tx_len=0 => has_tx false (short-circuit on tx_len > 0).
+   * rx_len=1 ensures transfer_len > 0 so the mock transfer succeeds. */
+  uint8_t  dummy_tx = 0xAA;
+  uint8_t  rx_buf   = 0;
+  rx_err_t err      = internal_spi_transfer(&s_handle, &dummy_tx, 0, &rx_buf, 1);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test internal_spi_transfer with non-null rx_data but zero rx_len
+ *
+ * @details
+ * Covers the has_rx false branch at line 938 when rx_data is non-null but rx_len
+ * is 0: the && short-circuits because rx_len > 0 is false. This inconsistent
+ * combination never occurs through public callers, so direct invocation via
+ * RX_STATIC_TESTABLE is required.
+ *
+ * @pre Handle initialized via rx_spi_comm_init()
+ * @post Transfer succeeds with no RX data copied
+ *
+ * @since Version 1.0.0
+ */
+void test_internal_spi_transfer_nonnull_rx_zero_len(void)
+{
+  rx_spi_comm_config_t config = {.session = &s_session};
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* rx_data non-null but rx_len=0 => has_rx false (short-circuit on rx_len > 0).
+   * tx_data=nullptr with tx_len=1 => has_tx false (short-circuit on nullptr).
+   * transfer_len = max(1,0) = 1 so the mock transfer succeeds. */
+  uint8_t  dummy_rx = 0;
+  rx_err_t err      = internal_spi_transfer(&s_handle, nullptr, 1, &dummy_rx, 0);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
 /* =============================================================================
  * Main
  * =============================================================================
@@ -3437,6 +3554,7 @@ static void internal_run_retransmit_tests(void)
   RUN_TEST(test_retransmit_nack_retransmit_flag_set);
   RUN_TEST(test_retransmit_nack_callback_invoked);
   RUN_TEST(test_retransmit_nack_not_consumed_when_off);
+  RUN_TEST(test_retransmit_nack_non_pending_ignored);
 
   /* Retransmit timeout (process_retransmits) tests */
   RUN_TEST(test_retransmit_process_triggers_after_timeout);
@@ -3503,6 +3621,10 @@ static void internal_run_coverage_tests(void)
   RUN_TEST(test_internal_build_frame_null_frame);
   RUN_TEST(test_internal_build_frame_nonnull_payload_zero_len);
   RUN_TEST(test_retransmit_nack_wrong_seq_not_retransmitted);
+
+  /* internal_spi_transfer short-circuit branch coverage */
+  RUN_TEST(test_internal_spi_transfer_nonnull_tx_zero_len);
+  RUN_TEST(test_internal_spi_transfer_nonnull_rx_zero_len);
 }
 
 int main(void)

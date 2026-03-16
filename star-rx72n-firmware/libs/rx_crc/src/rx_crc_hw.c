@@ -31,7 +31,6 @@
 
 #ifdef __RX__
 
-#include <stdbool.h>
 #include <stddef.h>
 
 #include "rx72n_regs.h"

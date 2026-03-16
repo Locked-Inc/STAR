@@ -148,6 +148,8 @@ coverage-rx72n:
 		--exclude 'star-rx72n-firmware/libs/rx_nanopb/inc/gen/' \
 		--exclude 'star-rx72n-firmware/libs/rx_hal/inc/rx72n_port_regs.h' \
 		--exclude 'star-rx72n-firmware/libs/rx_hal/inc/rx_port_utils.h' \
+		--exclude '.*/third_party/.*' \
+		-j 1 \
 		--print-summary \
 		2>/dev/null || echo "(run 'make test-rx72n' first to generate coverage data)"
 
@@ -180,18 +182,33 @@ ci-rx72n:
 	@echo " RX72N Local CI Pipeline"
 	@echo "=========================================="
 	@echo ""
-	@echo "[1/4] clang-format check..."
+	@echo "[1/5] C23 pattern enforcement..."
+	@c23_fail=0; \
+	for f in $$(find $(FIRMWARE_DIR)/libs $(FIRMWARE_DIR)/src $(FIRMWARE_DIR)/tests \
+	  -name '*.c' -o -name '*.h' | grep -v '/build/' | grep -v '/third_party/' | grep -v '/nanopb/'); do \
+	  if grep -qn '_Static_assert' "$$f" 2>/dev/null; then \
+	    echo "[FAIL] C11 _Static_assert in $$f (use static_assert)"; c23_fail=1; fi; \
+	  if grep -qE '= \{0\}' "$$f" 2>/dev/null; then \
+	    echo "[FAIL] C11 = {0} in $$f (use = {})"; c23_fail=1; fi; \
+	  if grep -qn '#include <stdbool.h>' "$$f" 2>/dev/null; then \
+	    echo "[FAIL] Unnecessary #include <stdbool.h> in $$f"; c23_fail=1; fi; \
+	done; \
+	if [ "$$c23_fail" -ne 0 ]; then \
+	  echo ""; echo "Fix C11 patterns above, then retry."; exit 1; \
+	fi
+	@echo ""
+	@echo "[2/5] clang-format check..."
 	@bash $(FIRMWARE_DIR)/scripts/format_code.sh --check
 	@echo ""
-	@echo "[2/4] Cross-compile (GNURX)..."
+	@echo "[3/5] Cross-compile (GNURX)..."
 	@cd $(FIRMWARE_DIR) && bash build.sh
 	@echo ""
-	@echo "[3/4] Unit tests..."
+	@echo "[4/5] Unit tests..."
 	@cd $(FIRMWARE_DIR)/tests && cmake -B build -DCMAKE_BUILD_TYPE=Debug 2>&1 | tail -3
 	@cmake --build $(FIRMWARE_DIR)/tests/build --parallel 2>&1 | tail -3
 	@ctest --test-dir $(FIRMWARE_DIR)/tests/build --output-on-failure
 	@echo ""
-	@echo "[4/4] clang-tidy (SEI CERT C) -- CMake-integrated, mirrors CI exactly..."
+	@echo "[5/5] clang-tidy (SEI CERT C) -- CMake-integrated, mirrors CI exactly..."
 	@cd $(FIRMWARE_DIR)/tests && cmake -B build/tidy \
 		-DCMAKE_BUILD_TYPE=Debug \
 		-DENABLE_CLANG_TIDY=ON \

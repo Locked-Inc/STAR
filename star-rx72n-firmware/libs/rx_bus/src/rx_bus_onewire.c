@@ -233,6 +233,30 @@ RX_STATIC_TESTABLE void internal_delay_timer_init(void)
 }
 
 /**
+ * @brief Reset delay timer initialization state (test-only)
+ *
+ * @details
+ * Clears s_delay_timer_initialized so that internal_delay_timer_init() will
+ * re-execute its full body on the next call. This exists solely to allow
+ * unit tests to exercise both the "assert-passes" and "assert-fires" branches
+ * of the RX_ASSERT_PRE checks on lines 212-214, which require entering the
+ * function body multiple times with different mock configurations.
+ *
+ * @pre Must only be called from unit tests (UNIT_TEST build)
+ * @post s_delay_timer_initialized == false
+ *
+ * @note Not thread-safe; test-only function
+ *
+ * @see internal_delay_timer_init() Function whose state is reset
+ *
+ * @since Version 1.0.0
+ */
+RX_STATIC_TESTABLE void internal_delay_timer_reset(void)
+{
+  s_delay_timer_initialized = false;
+}
+
+/**
  * @brief Delay for specified microseconds using CMT3 timer
  *
  * @details
@@ -338,7 +362,7 @@ static rx_err_t internal_acquire_state(rx_bus_config_t* bus_config, onewire_runt
   for (uint32_t i = k_onewire_instance_idx_start; i < k_onewire_max_instances; ++i) {
     if (!s_state_pool[i].in_use) {
       s_state_pool[i].in_use = true;
-      s_state_pool[i].state  = (onewire_runtime_state_t){0};
+      s_state_pool[i].state  = (onewire_runtime_state_t){};
       bus_config->handle     = &s_state_pool[i].state;
       *state                 = &s_state_pool[i].state;
       return k_rx_ok;
@@ -1196,7 +1220,7 @@ static void internal_release_state(rx_bus_config_t* bus_config)
       (bool)(&s_state_pool[i].state == (onewire_runtime_state_t*)bus_config->handle);
     if ((bool)((int)slot_in_use & (int)handle_matches)) {
       s_state_pool[i].in_use = false;
-      s_state_pool[i].state  = (onewire_runtime_state_t){0};
+      s_state_pool[i].state  = (onewire_runtime_state_t){};
       break;
     }
   }

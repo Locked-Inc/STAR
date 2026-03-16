@@ -100,7 +100,6 @@
 extern "C" {
 #endif
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_bus_manager.h"

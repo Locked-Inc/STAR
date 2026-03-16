@@ -404,7 +404,7 @@ void test_crc32_sync_word(void)
  */
 void test_crc32_eight_zeros(void)
 {
-  uint8_t  data[k_crc_len_8] = {0};
+  uint8_t  data[k_crc_len_8] = {};
   uint32_t crc               = 0U;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(data, k_crc_len_8, &crc));

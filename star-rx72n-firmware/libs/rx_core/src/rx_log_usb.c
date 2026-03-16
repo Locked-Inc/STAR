@@ -40,7 +40,6 @@
  * SPDX-License-Identifier: MIT
 */
 
-#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -129,13 +128,13 @@ typedef struct {
  */
 
 /** @brief Boot log buffer (used until USB configured) */
-static usb_log_boot_buffer_t s_boot_buffer = {0};
+static usb_log_boot_buffer_t s_boot_buffer = {};
 
 /** @brief USB ready flag (set when k_usb_state_configured reached) */
 static volatile bool s_usb_ready = false;
 
 /** @brief Logging statistics */
-static usb_log_stats_t s_stats = {0};
+static usb_log_stats_t s_stats = {};
 
 /** @brief ThreadX mutex for thread safety */
 static TX_MUTEX s_log_mutex;
@@ -967,9 +966,9 @@ void rx_log_usb_notify_ready(void)
  */
 void rx_log_usb_test_reset_state(void)
 {
-  s_boot_buffer       = (usb_log_boot_buffer_t){0};
+  s_boot_buffer       = (usb_log_boot_buffer_t){};
   s_usb_ready         = false;
-  s_stats             = (usb_log_stats_t){0};
+  s_stats             = (usb_log_stats_t){};
   s_mutex_initialized = false;
 }
 

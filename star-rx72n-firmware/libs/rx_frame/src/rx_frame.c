@@ -908,7 +908,7 @@ rx_err_t rx_frame_create_ack(rx_frame_t* frame, const uint16_t sequence)
     return k_rx_err_invalid_arg;
   }
 
-  *frame                 = (rx_frame_t){0};
+  *frame                 = (rx_frame_t){};
   frame->header.sequence = sequence;
   frame->header.length   = 0;
   frame->header.type     = k_frame_type_ack;
@@ -939,7 +939,7 @@ rx_err_t rx_frame_create_nack(rx_frame_t* frame, const uint16_t sequence, uint8_
     return k_rx_err_invalid_arg;
   }
 
-  *frame                 = (rx_frame_t){0};
+  *frame                 = (rx_frame_t){};
   frame->header.sequence = sequence;
   frame->header.length   = 0;
   frame->header.type     = k_frame_type_nack;
@@ -993,7 +993,7 @@ rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
     return k_rx_err_invalid_size;
   }
 
-  *frame                 = (rx_frame_t){0};
+  *frame                 = (rx_frame_t){};
   frame->header.sequence = sequence;
   frame->header.length   = (uint16_t)payload_len;
   frame->header.type     = k_frame_type_ping;
@@ -1052,7 +1052,7 @@ rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
     return k_rx_err_invalid_size;
   }
 
-  *frame                 = (rx_frame_t){0};
+  *frame                 = (rx_frame_t){};
   frame->header.sequence = sequence;
   frame->header.length   = (uint16_t)payload_len;
   frame->header.type     = k_frame_type_pong;
@@ -1099,7 +1099,7 @@ rx_err_t rx_frame_create_reset(rx_frame_t* frame, const uint16_t sequence)
     return k_rx_err_invalid_arg;
   }
 
-  *frame                 = (rx_frame_t){0};
+  *frame                 = (rx_frame_t){};
   frame->header.sequence = sequence;
   frame->header.length   = 0;
   frame->header.type     = k_frame_type_reset;
@@ -1139,7 +1139,7 @@ rx_err_t rx_frame_create_reset_ack(rx_frame_t* frame, const uint16_t sequence)
     return k_rx_err_invalid_arg;
   }
 
-  *frame                 = (rx_frame_t){0};
+  *frame                 = (rx_frame_t){};
   frame->header.sequence = sequence;
   frame->header.length   = 0;
   frame->header.type     = k_frame_type_reset_ack;

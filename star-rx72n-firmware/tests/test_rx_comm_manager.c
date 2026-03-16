@@ -271,7 +271,7 @@ static rx_comm_manager_t s_manager;
  */
 void setUp(void)
 {
-  s_manager = (rx_comm_manager_t){0};
+  s_manager = (rx_comm_manager_t){};
 }
 
 /**
@@ -463,7 +463,7 @@ void test_poll_no_channels(void)
  */
 void test_send_null_manager(void)
 {
-  uint8_t                     payload[k_test_payload_size] = {0};
+  uint8_t                     payload[k_test_payload_size] = {};
   const rx_comm_send_params_t params                       = {
                           .channel     = k_comm_channel_usb,
                           .type        = k_frame_type_command,
@@ -482,7 +482,7 @@ void test_send_null_manager(void)
  */
 void test_send_uninitialized(void)
 {
-  uint8_t                     payload[k_test_payload_size] = {0};
+  uint8_t                     payload[k_test_payload_size] = {};
   const rx_comm_send_params_t params                       = {
                           .channel     = k_comm_channel_usb,
                           .type        = k_frame_type_command,
@@ -522,7 +522,7 @@ void test_send_null_payload_with_length(void)
 void test_send_usb_channel_not_enabled(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_init(&s_manager, nullptr));
-  uint8_t payload[k_test_payload_size] = {0};
+  uint8_t payload[k_test_payload_size] = {};
 
   /* USB handle is nullptr, so send should fail */
   const rx_comm_send_params_t params = {
@@ -544,7 +544,7 @@ void test_send_usb_channel_not_enabled(void)
 void test_send_spi_channel_not_enabled(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_init(&s_manager, nullptr));
-  uint8_t payload[k_test_payload_size] = {0};
+  uint8_t payload[k_test_payload_size] = {};
 
   /* SPI handle is nullptr, so send should fail */
   const rx_comm_send_params_t params = {
@@ -566,7 +566,7 @@ void test_send_spi_channel_not_enabled(void)
 void test_send_invalid_channel(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_init(&s_manager, nullptr));
-  uint8_t payload[k_test_payload_size] = {0};
+  uint8_t payload[k_test_payload_size] = {};
 
   /* Invalid channel ID */
   const rx_comm_send_params_t params = {
@@ -629,7 +629,7 @@ void test_send_empty_payload_allowed(void)
  */
 void test_respond_null_manager(void)
 {
-  uint8_t  payload[k_test_payload_size] = {0};
+  uint8_t  payload[k_test_payload_size] = {};
   rx_err_t err = rx_comm_manager_respond(nullptr, k_comm_channel_usb, payload, sizeof(payload));
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -642,7 +642,7 @@ void test_respond_null_manager(void)
  */
 void test_respond_uninitialized(void)
 {
-  uint8_t  payload[k_test_payload_size] = {0};
+  uint8_t  payload[k_test_payload_size] = {};
   rx_err_t err = rx_comm_manager_respond(&s_manager, k_comm_channel_usb, payload, sizeof(payload));
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -656,7 +656,7 @@ void test_respond_uninitialized(void)
 void test_respond_channel_not_enabled(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_init(&s_manager, nullptr));
-  uint8_t payload[k_test_payload_size] = {0};
+  uint8_t payload[k_test_payload_size] = {};
 
   rx_err_t err = rx_comm_manager_respond(&s_manager, k_comm_channel_usb, payload, sizeof(payload));
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -801,7 +801,7 @@ void test_channel_ready_invalid_channel(void)
 void test_send_i2c_channel_not_enabled(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_init(&s_manager, nullptr));
-  uint8_t payload[k_test_payload_size] = {0};
+  uint8_t payload[k_test_payload_size] = {};
 
   const rx_comm_send_params_t params = {
     .channel     = k_comm_channel_i2c,
@@ -822,7 +822,7 @@ void test_send_i2c_channel_not_enabled(void)
 void test_send_uart_channel_not_enabled(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_comm_manager_init(&s_manager, nullptr));
-  uint8_t payload[k_test_payload_size] = {0};
+  uint8_t payload[k_test_payload_size] = {};
 
   const rx_comm_send_params_t params = {
     .channel     = k_comm_channel_uart,
@@ -1278,11 +1278,11 @@ void test_poll_i2c_valid_frame_triggers_callback(void)
   mock_riic_init();
 
   static rx_session_state_t s_sess;
-  s_sess = (rx_session_state_t){0};
+  s_sess = (rx_session_state_t){};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_init(&s_sess));
 
   static rx_i2c_comm_handle_t s_i2c;
-  s_i2c                              = (rx_i2c_comm_handle_t){0};
+  s_i2c                              = (rx_i2c_comm_handle_t){};
   const rx_i2c_comm_config_t i2c_cfg = {
     .session     = &s_sess,
     .channel     = {.value = 0},
@@ -1307,7 +1307,7 @@ void test_poll_i2c_valid_frame_triggers_callback(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&enc));
 
   rx_frame_t frame;
-  frame                 = (rx_frame_t){0};
+  frame                 = (rx_frame_t){};
   frame.header.type     = k_frame_type_command;
   frame.header.sequence = 1;
   frame.header.length   = 0;
@@ -1349,11 +1349,11 @@ void test_poll_i2c_decoded_output_enabled(void)
   mock_riic_init();
 
   static rx_session_state_t s_sess2;
-  s_sess2 = (rx_session_state_t){0};
+  s_sess2 = (rx_session_state_t){};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_init(&s_sess2));
 
   static rx_i2c_comm_handle_t s_i2c2;
-  s_i2c2                              = (rx_i2c_comm_handle_t){0};
+  s_i2c2                              = (rx_i2c_comm_handle_t){};
   const rx_i2c_comm_config_t i2c_cfg2 = {
     .session     = &s_sess2,
     .channel     = {.value = 0},
@@ -1378,7 +1378,7 @@ void test_poll_i2c_decoded_output_enabled(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&enc2));
 
   rx_frame_t frame2;
-  frame2                 = (rx_frame_t){0};
+  frame2                 = (rx_frame_t){};
   frame2.header.type     = k_frame_type_command;
   frame2.header.sequence = k_test_sequence_2;
   frame2.header.length   = 0;
@@ -1433,9 +1433,9 @@ static void helper_init_i2c_manager(rx_session_state_t*            sess,
                                     bool                           dcout)
 {
   mock_riic_init();
-  *sess = (rx_session_state_t){0};
+  *sess = (rx_session_state_t){};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_init(sess));
-  *i2c                               = (rx_i2c_comm_handle_t){0};
+  *i2c                               = (rx_i2c_comm_handle_t){};
   const rx_i2c_comm_config_t i2c_cfg = {
     .session     = sess,
     .channel     = {.value = 0},
@@ -1470,7 +1470,7 @@ static void helper_inject_i2c_frame_seq(uint8_t seq)
   static uint8_t            s_encoded[k_test_encoded_buf_size];
   uint32_t                  enc_len = 0;
 
-  s_frame                 = (rx_frame_t){0};
+  s_frame                 = (rx_frame_t){};
   s_frame.header.type     = k_frame_type_command;
   s_frame.header.sequence = seq;
   s_frame.header.length   = 0;
@@ -1589,7 +1589,7 @@ void test_output_decoded_no_usb_puts_on_empty_len(void)
   static uint8_t            s_encoded[k_test_encoded_buf_size];
   uint32_t                  enc_len = 0;
 
-  s_frame                 = (rx_frame_t){0};
+  s_frame                 = (rx_frame_t){};
   s_frame.header.type     = k_frame_type_command;
   s_frame.header.sequence = 0;
   s_frame.header.length   = 0;
@@ -1619,7 +1619,7 @@ void test_output_decoded_no_usb_puts_on_empty_len(void)
 void test_init_spi_link_without_spi_handle(void)
 {
   static rx_spi_link_t s_fake_link;
-  s_fake_link             = (rx_spi_link_t){0};
+  s_fake_link             = (rx_spi_link_t){};
   s_fake_link.initialized = true;
 
   const rx_comm_manager_config_t cfg = {
@@ -1642,7 +1642,7 @@ void test_init_spi_link_not_initialized(void)
 {
   static rx_spi_comm_handle_t s_fake_spi_handle;
   static rx_spi_link_t        s_fake_link;
-  s_fake_link             = (rx_spi_link_t){0};
+  s_fake_link             = (rx_spi_link_t){};
   s_fake_link.initialized = false; /* Not initialized */
   s_fake_link.spi_handle  = &s_fake_spi_handle;
 
@@ -1667,7 +1667,7 @@ void test_init_spi_link_handle_mismatch(void)
   static rx_spi_comm_handle_t s_handle_a;
   static rx_spi_comm_handle_t s_handle_b;
   static rx_spi_link_t        s_fake_link;
-  s_fake_link             = (rx_spi_link_t){0};
+  s_fake_link             = (rx_spi_link_t){};
   s_fake_link.initialized = true;
   s_fake_link.spi_handle  = &s_handle_a; /* Points to s_handle_a */
 
@@ -1696,9 +1696,9 @@ void test_init_spi_link_handle_mismatch(void)
 static void helper_init_i2c_manager_send(rx_session_state_t* sess, rx_i2c_comm_handle_t* i2c)
 {
   mock_riic_init();
-  *sess = (rx_session_state_t){0};
+  *sess = (rx_session_state_t){};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_init(sess));
-  *i2c                               = (rx_i2c_comm_handle_t){0};
+  *i2c                               = (rx_i2c_comm_handle_t){};
   const rx_i2c_comm_config_t i2c_cfg = {
     .session     = sess,
     .channel     = {.value = 0},
@@ -1757,9 +1757,9 @@ void test_send_i2c_with_decoded_output(void)
   mock_riic_init();
   static rx_session_state_t   s_sess_sd;
   static rx_i2c_comm_handle_t s_i2c_sd;
-  s_sess_sd = (rx_session_state_t){0};
+  s_sess_sd = (rx_session_state_t){};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_init(&s_sess_sd));
-  s_i2c_sd                              = (rx_i2c_comm_handle_t){0};
+  s_i2c_sd                              = (rx_i2c_comm_handle_t){};
   const rx_i2c_comm_config_t i2c_cfg_sd = {
     .session     = &s_sess_sd,
     .channel     = {.value = 0},
@@ -1816,9 +1816,9 @@ void test_send_uart_channel_succeeds(void)
 
   static rx_session_state_t    s_sess_u;
   static rx_uart_comm_handle_t s_uart;
-  s_sess_u = (rx_session_state_t){0};
+  s_sess_u = (rx_session_state_t){};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_init(&s_sess_u));
-  s_uart                               = (rx_uart_comm_handle_t){0};
+  s_uart                               = (rx_uart_comm_handle_t){};
   const rx_uart_comm_config_t uart_cfg = {
     .session = &s_sess_u,
     .channel = k_uart_channel_9,
@@ -2063,9 +2063,9 @@ void test_heartbeat_timeout_fires_dead_callback(void)
  */
 static void helper_init_usb_handle(rx_session_state_t* sess, rx_usb_comm_handle_t* usb)
 {
-  *sess = (rx_session_state_t){0};
+  *sess = (rx_session_state_t){};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_init(sess));
-  *usb                               = (rx_usb_comm_handle_t){0};
+  *usb                               = (rx_usb_comm_handle_t){};
   const rx_usb_comm_config_t usb_cfg = {
     .session    = sess,
     .time_iface = nullptr,
@@ -2092,9 +2092,9 @@ static void helper_init_spi_handle(rx_session_state_t* sess, rx_spi_comm_handle_
   TEST_ASSERT_EQUAL(k_rx_ok, rspi_init_peripheral(k_rspi_channel_0, &rspi_cfg));
   mock_rspi_set_write_ready(nullptr, k_rspi_channel_0, true);
 
-  *sess = (rx_session_state_t){0};
+  *sess = (rx_session_state_t){};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_init(sess));
-  *spi                               = (rx_spi_comm_handle_t){0};
+  *spi                               = (rx_spi_comm_handle_t){};
   const rx_spi_comm_config_t spi_cfg = {
     .session     = sess,
     .channel     = k_rspi_channel_0,
@@ -2336,9 +2336,9 @@ void test_poll_uart_valid_frame_triggers_callback(void)
 
   static rx_session_state_t    s_sess_ur;
   static rx_uart_comm_handle_t s_uart_ur;
-  s_sess_ur = (rx_session_state_t){0};
+  s_sess_ur = (rx_session_state_t){};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_init(&s_sess_ur));
-  s_uart_ur                               = (rx_uart_comm_handle_t){0};
+  s_uart_ur                               = (rx_uart_comm_handle_t){};
   const rx_uart_comm_config_t uart_cfg_ur = {
     .session = &s_sess_ur,
     .channel = k_uart_channel_9,
@@ -2362,7 +2362,7 @@ void test_poll_uart_valid_frame_triggers_callback(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&enc_ur));
 
   rx_frame_t frame_ur;
-  frame_ur                 = (rx_frame_t){0};
+  frame_ur                 = (rx_frame_t){};
   frame_ur.header.type     = k_frame_type_command;
   frame_ur.header.sequence = 1;
   frame_ur.header.length   = 0;
@@ -2718,9 +2718,9 @@ void test_poll_i2c_error_propagates(void)
 
   static rx_session_state_t   s_sess_ie;
   static rx_i2c_comm_handle_t s_i2c_ie;
-  s_sess_ie = (rx_session_state_t){0};
+  s_sess_ie = (rx_session_state_t){};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_init(&s_sess_ie));
-  s_i2c_ie                              = (rx_i2c_comm_handle_t){0};
+  s_i2c_ie                              = (rx_i2c_comm_handle_t){};
   const rx_i2c_comm_config_t i2c_cfg_ie = {
     .session     = &s_sess_ie,
     .channel     = {.value = 0},
@@ -2774,9 +2774,9 @@ void test_poll_uart_error_propagates(void)
 
   static rx_session_state_t    s_sess_ue;
   static rx_uart_comm_handle_t s_uart_ue;
-  s_sess_ue = (rx_session_state_t){0};
+  s_sess_ue = (rx_session_state_t){};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_init(&s_sess_ue));
-  s_uart_ue                               = (rx_uart_comm_handle_t){0};
+  s_uart_ue                               = (rx_uart_comm_handle_t){};
   const rx_uart_comm_config_t uart_cfg_ue = {
     .session = &s_sess_ue,
     .channel = k_uart_channel_9,
@@ -2851,9 +2851,9 @@ void test_poll_i2c_frame_received_no_callback(void)
 
   static rx_session_state_t   s_sess_nc;
   static rx_i2c_comm_handle_t s_i2c_nc;
-  s_sess_nc = (rx_session_state_t){0};
+  s_sess_nc = (rx_session_state_t){};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_init(&s_sess_nc));
-  s_i2c_nc                              = (rx_i2c_comm_handle_t){0};
+  s_i2c_nc                              = (rx_i2c_comm_handle_t){};
   const rx_i2c_comm_config_t i2c_cfg_nc = {
     .session     = &s_sess_nc,
     .channel     = {.value = 0},
@@ -2877,7 +2877,7 @@ void test_poll_i2c_frame_received_no_callback(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&enc_nc));
 
   rx_frame_t frame_nc;
-  frame_nc                 = (rx_frame_t){0};
+  frame_nc                 = (rx_frame_t){};
   frame_nc.header.type     = k_frame_type_command;
   frame_nc.header.sequence = 1;
   frame_nc.header.length   = 0;
@@ -2915,7 +2915,7 @@ void test_init_spi_link_matching_succeeds(void)
   helper_init_spi_handle(&s_sess_lm, &s_spi_lm);
 
   static rx_spi_link_t s_link_lm;
-  s_link_lm                              = (rx_spi_link_t){0};
+  s_link_lm                              = (rx_spi_link_t){};
   const rx_spi_link_config_t link_cfg_lm = {
     .spi_handle  = &s_spi_lm,
     .fec_enabled = false,
@@ -2961,7 +2961,7 @@ void test_send_spi_via_spi_link(void)
   helper_init_spi_handle(&s_sess_sl, &s_spi_sl);
 
   static rx_spi_link_t s_link_sl;
-  s_link_sl                              = (rx_spi_link_t){0};
+  s_link_sl                              = (rx_spi_link_t){};
   const rx_spi_link_config_t link_cfg_sl = {
     .spi_handle  = &s_spi_sl,
     .fec_enabled = false,
@@ -3014,7 +3014,7 @@ void test_poll_spi_with_spi_link_no_data(void)
   helper_init_spi_handle(&s_sess_psl, &s_spi_psl);
 
   static rx_spi_link_t s_link_psl;
-  s_link_psl                              = (rx_spi_link_t){0};
+  s_link_psl                              = (rx_spi_link_t){};
   const rx_spi_link_config_t link_cfg_psl = {
     .spi_handle  = &s_spi_psl,
     .fec_enabled = false,
@@ -3065,9 +3065,9 @@ void test_poll_uart_handle_set_no_data(void)
 
   static rx_session_state_t    s_sess_nd;
   static rx_uart_comm_handle_t s_uart_nd;
-  s_sess_nd = (rx_session_state_t){0};
+  s_sess_nd = (rx_session_state_t){};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_init(&s_sess_nd));
-  s_uart_nd                               = (rx_uart_comm_handle_t){0};
+  s_uart_nd                               = (rx_uart_comm_handle_t){};
   const rx_uart_comm_config_t uart_cfg_nd = {
     .session = &s_sess_nd,
     .channel = k_uart_channel_9,
@@ -3213,9 +3213,9 @@ void test_send_i2c_decoded_empty_payload(void)
   mock_riic_init();
   static rx_session_state_t   s_sess_dep;
   static rx_i2c_comm_handle_t s_i2c_dep;
-  s_sess_dep = (rx_session_state_t){0};
+  s_sess_dep = (rx_session_state_t){};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_session_init(&s_sess_dep));
-  s_i2c_dep                              = (rx_i2c_comm_handle_t){0};
+  s_i2c_dep                              = (rx_i2c_comm_handle_t){};
   const rx_i2c_comm_config_t i2c_cfg_dep = {
     .session     = &s_sess_dep,
     .channel     = {.value = 0},
@@ -3270,7 +3270,7 @@ static void helper_encode_cmd_frame_ex(const uint8_t* payload,
   rx_frame_encoder_t enc;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&enc));
   rx_frame_t frame;
-  frame                 = (rx_frame_t){0};
+  frame                 = (rx_frame_t){};
   frame.header.type     = k_frame_type_command;
   frame.header.sequence = 1;
   frame.header.length   = (uint16_t)payload_len;
@@ -3412,7 +3412,7 @@ void test_poll_spi_with_link_success_path(void)
   helper_init_spi_handle(&s_sess_slr, &s_spi_slr);
 
   static rx_spi_link_t s_link_slr;
-  s_link_slr                          = (rx_spi_link_t){0};
+  s_link_slr                          = (rx_spi_link_t){};
   const rx_spi_link_config_t link_cfg = {
     .spi_handle  = &s_spi_slr,
     .fec_enabled = false,
@@ -3472,7 +3472,7 @@ void test_poll_spi_with_link_zero_payload(void)
   helper_init_spi_handle(&s_sess_zpay, &s_spi_zpay);
 
   static rx_spi_link_t s_link_zpay;
-  s_link_zpay                              = (rx_spi_link_t){0};
+  s_link_zpay                              = (rx_spi_link_t){};
   const rx_spi_link_config_t link_cfg_zpay = {
     .spi_handle  = &s_spi_zpay,
     .fec_enabled = false,
@@ -3532,7 +3532,7 @@ static void helper_build_fec_wire_frame(rx_harq_handle_t* harq,
 
   rx_frame_encoder_t enc;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&enc));
-  rx_frame_t frame      = {0};
+  rx_frame_t frame      = {};
   frame.header.type     = k_frame_type_command;
   frame.header.sequence = 1;
   frame.header.length   = (uint16_t)fec_len;
@@ -3556,7 +3556,7 @@ void test_poll_spi_with_link_fec_decoded(void)
   helper_init_spi_handle(&s_sess_fec, &s_spi_fec);
 
   static rx_spi_link_t s_link_fec;
-  s_link_fec                              = (rx_spi_link_t){0};
+  s_link_fec                              = (rx_spi_link_t){};
   const rx_spi_link_config_t link_cfg_fec = {
     .spi_handle  = &s_spi_fec,
     .fec_enabled = true, /* Enable FEC to trigger fec_decoded=true path */

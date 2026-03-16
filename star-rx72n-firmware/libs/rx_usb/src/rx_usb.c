@@ -1868,7 +1868,7 @@ rx_err_t rx_usb_get_stats(const rx_usb_port_id_t port, rx_usb_stats_t* stats)
 void rx_usb_reset_stats(const rx_usb_port_id_t port)
 {
   if (internal_port_is_valid(port)) {
-    s_usb.ports[port].stats = (rx_usb_stats_t){0};
+    s_usb.ports[port].stats = (rx_usb_stats_t){};
   }
 }
 

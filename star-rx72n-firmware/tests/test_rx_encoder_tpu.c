@@ -88,17 +88,17 @@ void setUp(void)
 {
   /* Reset all mock TPU registers using aggregate zero init (no memset) */
   {
-    static const rx_tpu_control_regs_t s_zero_control = {0};
+    static const rx_tpu_control_regs_t s_zero_control = {};
     g_mock_tpu_control                                = s_zero_control;
   }
   for (uint8_t i = 0; i < k_mock_tpu_channel_count; i++) {
-    static const rx_tpu_regs_t s_zero_regs = {0};
+    static const rx_tpu_regs_t s_zero_regs = {};
     g_mock_tpu_regs[i]                     = s_zero_regs;
   }
 
   /* Reset system register mocks */
   {
-    static const mock_system_regs_t s_zero_sys = {0};
+    static const mock_system_regs_t s_zero_sys = {};
     g_mock_onewire_system_regs                 = s_zero_sys;
   }
 

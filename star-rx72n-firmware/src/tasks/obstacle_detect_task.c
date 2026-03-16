@@ -1594,7 +1594,7 @@ static rx_err_t internal_init_sensors(void)
  */
 static void internal_init_obstacle_detect(uint8_t motor_count, rx_motor_handle_t** motors)
 {
-  rx_obstacle_detect_config_t config = {0};
+  rx_obstacle_detect_config_t config = {};
   config.sensor_count                = k_obstacle_sensor_count;
   config.sensors                     = s_sensor_ptrs;
   config.motor_count                 = motor_count;
@@ -2196,7 +2196,7 @@ static void internal_obstacle_callback(bool    obstacle_detected,
                                        float   distance_cm,
                                        void*   user_data)
 {
-  obstacle_state_t state = {0};
+  obstacle_state_t state = {};
   (void)user_data;
 
   if (obstacle_detected) {

@@ -802,7 +802,7 @@ void test_combiner_deinit_null(void)
  */
 void test_combiner_add_null_combiner(void)
 {
-  rx_soft_bit_t soft[k_test_array_size_large] = {0};
+  rx_soft_bit_t soft[k_test_array_size_large] = {};
   rx_err_t      err = rx_chase_combiner_add(nullptr, soft, k_test_array_size_large);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -842,8 +842,8 @@ void test_combiner_add_null_soft(void)
  */
 void test_combiner_add_uninitialized(void)
 {
-  rx_chase_combiner_t comb                          = {0};
-  rx_soft_bit_t       soft[k_test_array_size_large] = {0};
+  rx_chase_combiner_t comb                          = {};
+  rx_soft_bit_t       soft[k_test_array_size_large] = {};
   rx_err_t            err = rx_chase_combiner_add(&comb, soft, k_test_array_size_large);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1146,7 +1146,7 @@ void test_combiner_combined_null_args(void)
  */
 void test_combiner_combined_uninitialized(void)
 {
-  rx_chase_combiner_t comb = {0};
+  rx_chase_combiner_t comb = {};
   rx_soft_bit_t       output[k_test_array_size_small];
   uint32_t            len;
 
@@ -1344,7 +1344,7 @@ void test_combiner_reset_null(void)
  */
 void test_combiner_reset_uninitialized(void)
 {
-  rx_chase_combiner_t comb = {0};
+  rx_chase_combiner_t comb = {};
   rx_err_t            err  = rx_chase_combiner_reset(&comb);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1581,7 +1581,7 @@ void test_harq_reset_null(void)
  */
 void test_harq_reset_uninitialized(void)
 {
-  rx_harq_handle_t harq = {0};
+  rx_harq_handle_t harq = {};
   rx_err_t         err  = rx_harq_reset(&harq);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1650,7 +1650,7 @@ void test_harq_encode_null_args(void)
  */
 void test_harq_encode_uninitialized(void)
 {
-  rx_harq_handle_t harq      = {0};
+  rx_harq_handle_t harq      = {};
   uint8_t          payload[] = {k_test_byte_answer};
   uint8_t          output[k_test_buf_large];
   uint32_t         len;
@@ -2043,8 +2043,8 @@ void test_harq_decode_null_args(void)
  */
 void test_harq_decode_uninitialized(void)
 {
-  rx_harq_handle_t        harq                 = {0};
-  rx_soft_bit_t           soft[k_test_buf_std] = {0};
+  rx_harq_handle_t        harq                 = {};
+  rx_soft_bit_t           soft[k_test_buf_std] = {};
   uint8_t                 output[k_test_buf_medium];
   uint32_t                len;
   rx_harq_decode_params_t params =
@@ -2593,7 +2593,7 @@ void test_harq_combining_improves_reception(void)
  */
 void test_combiner_can_add_uninitialized(void)
 {
-  rx_chase_combiner_t comb = {0}; /* initialized field == k_harq_false (0) */
+  rx_chase_combiner_t comb = {}; /* initialized field == k_harq_false (0) */
   TEST_ASSERT_FALSE(rx_chase_combiner_can_add(&comb));
 }
 
@@ -2606,7 +2606,7 @@ void test_combiner_can_add_uninitialized(void)
  */
 void test_harq_can_retry_uninitialized(void)
 {
-  rx_harq_handle_t harq = {0}; /* initialized field == k_harq_false (0) */
+  rx_harq_handle_t harq = {}; /* initialized field == k_harq_false (0) */
   TEST_ASSERT_FALSE(rx_harq_can_retry(&harq));
 }
 

@@ -1838,7 +1838,7 @@ void test_i2c_internal_decode_header_null_data(void)
  */
 void test_i2c_internal_decode_header_null_frame(void)
 {
-  const uint8_t buf[8] = {0};
+  const uint8_t buf[8] = {};
   rx_err_t      err    = internal_decode_header(buf, sizeof(buf), nullptr, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1848,7 +1848,7 @@ void test_i2c_internal_decode_header_null_frame(void)
  */
 void test_i2c_internal_decode_header_too_short(void)
 {
-  const uint8_t buf[2] = {0};
+  const uint8_t buf[2] = {};
   rx_frame_t    frame;
   /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&frame, 0, sizeof(frame));
@@ -1861,7 +1861,7 @@ void test_i2c_internal_decode_header_too_short(void)
  */
 void test_i2c_internal_decode_header_bad_sync(void)
 {
-  uint8_t buf[k_test_decode_buf_size] = {0};
+  uint8_t buf[k_test_decode_buf_size] = {};
   /* Fill with valid-size but wrong sync */
   buf[0] = k_test_garbage_byte0;
   buf[1] = k_test_garbage_byte1;
@@ -1880,7 +1880,7 @@ void test_i2c_internal_decode_header_payload_too_large(void)
   /* Craft a buffer with valid sync but payload_len > k_frame_max_payload (1024) */
   /* k_frame_sync_word = 0x55AA; rx_frame_read_le16 reads buf[0]+buf[1]<<8
    * So to match: buf[0]=0xAA (low byte), buf[1]=0x55 (high byte) */
-  uint8_t buf[k_test_decode_buf_large] = {0};
+  uint8_t buf[k_test_decode_buf_large] = {};
   buf[0]                               = k_test_sync_byte_low;  /* sync low byte */
   buf[1]                               = k_test_sync_byte_high; /* sync high byte */
   /* seq = 0 (already zero-initialized) */
@@ -1928,7 +1928,7 @@ void test_i2c_internal_verify_crc_null_data(void)
  */
 void test_i2c_internal_verify_crc_offset_too_small(void)
 {
-  const uint8_t buf[32] = {0};
+  const uint8_t buf[32] = {};
   /* offset < (k_frame_min_size - k_frame_crc_size) */
   rx_err_t err = internal_verify_crc(buf, 0, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2095,7 +2095,7 @@ void test_i2c_internal_build_frame_null_payload_nonzero_len(void)
 void test_i2c_internal_build_frame_payload_too_large(void)
 {
   rx_frame_t    frame;
-  const uint8_t big_payload[1025] = {0}; /* k_frame_max_payload is 1024; use 1025 to exceed it */
+  const uint8_t big_payload[1025] = {}; /* k_frame_max_payload is 1024; use 1025 to exceed it */
   /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&frame, 0, sizeof(frame));
   rx_err_t err =

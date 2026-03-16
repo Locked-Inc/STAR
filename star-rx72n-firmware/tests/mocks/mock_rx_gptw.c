@@ -41,10 +41,10 @@ typedef enum : uint8_t {
 
 static bool     s_initialized[k_mock_gptw_max_channels]                                = {false};
 static bool     s_running[k_mock_gptw_max_channels]                                    = {false};
-static uint32_t s_period[k_mock_gptw_max_channels]                                     = {0};
-static uint32_t s_frequency[k_mock_gptw_max_channels]                                  = {0};
-static float    s_duty[k_mock_gptw_max_channels][k_mock_gptw_outputs_per_ch]           = {{0}};
-static bool     s_output_enabled[k_mock_gptw_max_channels][k_mock_gptw_outputs_per_ch] = {{false}};
+static uint32_t s_period[k_mock_gptw_max_channels]                                     = {};
+static uint32_t s_frequency[k_mock_gptw_max_channels]                                  = {};
+static float    s_duty[k_mock_gptw_max_channels][k_mock_gptw_outputs_per_ch]           = {};
+static bool     s_output_enabled[k_mock_gptw_max_channels][k_mock_gptw_outputs_per_ch] = {};
 
 /** @brief Error injection: force rx_gptw_init_pwm() to return this error (k_rx_ok = no error) */
 static rx_err_t s_init_error = k_rx_ok;

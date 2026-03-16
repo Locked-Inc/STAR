@@ -118,7 +118,7 @@ rx_err_t mock_rspi_clear(mock_rspi_t* mock)
   }
 
   /* Clear call history */
-  static const mock_rspi_call_t s_zero_call = {0};
+  static const mock_rspi_call_t s_zero_call = {};
   for (uint16_t ci = 0; ci < k_mock_rspi_call_history_max; ci++) {
     m->call_history[ci] = s_zero_call;
   }
@@ -401,7 +401,7 @@ void mock_rspi_clear_calls(mock_rspi_t* mock)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
-  static const mock_rspi_call_t s_zero_call = {0};
+  static const mock_rspi_call_t s_zero_call = {};
   for (uint16_t i = 0; i < k_mock_rspi_call_history_max; i++) {
     m->call_history[i] = s_zero_call;
   }

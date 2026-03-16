@@ -884,7 +884,7 @@ rx_err_t rx_uart_comm_send(rx_uart_comm_handle_t* handle,
     return err;
   }
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   /* build_frame only fails on nullptr frame (impossible: &frame), payload_len > max
    * (already validated above), or null payload with nonzero len (validated above) */
   (void)internal_build_frame(&frame, sequence, type, flags, payload, payload_len);
@@ -981,7 +981,7 @@ RX_STATIC_TESTABLE rx_err_t internal_handle_reset(rx_uart_comm_handle_t* handle)
     return seq_err;
   }
 
-  rx_frame_t reset_ack_frame = {0};
+  rx_frame_t reset_ack_frame = {};
   (void)(rx_frame_create_reset_ack(&reset_ack_frame, reset_ack_seq));
   /* Post-condition: create_reset_ack only fails on nullptr; &reset_ack_frame is never null */
 

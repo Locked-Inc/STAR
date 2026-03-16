@@ -201,7 +201,7 @@ typedef enum : uint8_t {
 /** @brief Track initialized channels */
 static bool s_gptw_initialized[k_gptw_max_channels] = {false};
 /** @brief Period values for each channel */
-static uint32_t s_gptw_period[k_gptw_max_channels] = {0};
+static uint32_t s_gptw_period[k_gptw_max_channels] = {};
 
 /* =============================================================================
  * Internal Helper Functions

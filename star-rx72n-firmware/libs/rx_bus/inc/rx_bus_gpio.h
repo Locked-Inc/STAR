@@ -296,8 +296,6 @@
 
 #pragma once
 
-#include <stdbool.h>
-
 #include "rx_bus_manager.h"
 #include "rx_err.h"
 

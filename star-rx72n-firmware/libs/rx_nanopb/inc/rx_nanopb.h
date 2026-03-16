@@ -163,7 +163,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -703,7 +702,7 @@ rx_nanopb_decode_retransmit_config_request(const uint8_t*                      b
  *
  * @par Example:
  * @code
- * star_v1_TelemetryData telemetry = {0};
+ * star_v1_TelemetryData telemetry = {};
  *
  * // Populate motor data
  * telemetry.motor_front_left_velocity_mps = motor_get_velocity(0);

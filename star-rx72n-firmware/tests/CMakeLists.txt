@@ -83,7 +83,8 @@ endif()
 
 # Helper function to apply strict warnings/defines to our test targets only
 function(apply_strict_warnings target)
-    target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -Wpedantic)
+    target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -Wpedantic --coverage)
+    target_link_options(${target} PRIVATE --coverage)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${target} PRIVATE -fshort-enums)
     endif()

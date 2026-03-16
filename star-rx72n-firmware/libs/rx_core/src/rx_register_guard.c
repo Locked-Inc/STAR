@@ -408,7 +408,7 @@ typedef enum : uint32_t {
  *
  * @since Version 1.0.0
  */
-static register_guard_state_t s_state = {0};
+static register_guard_state_t s_state = {};
 
 /* =============================================================================
  * Internal Helpers

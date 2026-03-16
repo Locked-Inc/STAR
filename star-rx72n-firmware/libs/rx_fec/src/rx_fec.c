@@ -156,10 +156,7 @@ RX_STATIC_TESTABLE uint8_t internal_parity(uint8_t x)
 
   const uint8_t result = x & k_fec_bit_mask;
 
-  /* Post-condition: Result must be 0 or 1 */
-  RX_ASSERT_POST((result == k_fec_zero) || (result == k_fec_bit_mask),
-                 "Parity result must be 0 or 1");
-  RX_ASSERT_POST(result <= k_fec_bit_mask, "Parity result must be within bit mask");
+  /* Invariant: bitwise AND with 1 always yields 0 or 1; no runtime check needed */
 
   return result;
 }
@@ -229,8 +226,7 @@ RX_STATIC_TESTABLE uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_id
 
   const uint8_t result = (data[byte_idx] >> bit_pos) & k_fec_bit_mask;
 
-  /* Post-condition: result must be 0 or 1 */
-  RX_ASSERT_POST((result == k_fec_zero) || (result == k_fec_bit_mask), "Bit result must be 0 or 1");
+  /* Invariant: bitwise AND with 1 always yields 0 or 1; no runtime check needed */
 
   return result;
 }

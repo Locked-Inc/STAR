@@ -352,7 +352,7 @@
  * void test_my_new_ascii_feature(void)
  * {
  *     // Arrange: Set up test data
- *     rx_frame_t frame = {0};
+ *     rx_frame_t frame = {};
  *     frame.header.sequence = 42;
  *     frame.header.type = k_frame_type_command;
  *     // ...
@@ -1323,7 +1323,7 @@ void test_format_null_frame(void)
  */
 void test_format_null_output(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   uint32_t   len;
   rx_err_t   err = rx_frame_ascii_format(&frame, false, nullptr, k_test_output_buffer_size, &len);
 
@@ -1352,7 +1352,7 @@ void test_format_null_output(void)
  */
 void test_format_null_output_len(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   rx_err_t   err =
 
     rx_frame_ascii_format(&frame, false, s_output_buffer, sizeof(s_output_buffer), nullptr);
@@ -1383,7 +1383,7 @@ void test_format_null_output_len(void)
  */
 void test_format_buffer_too_small(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   uint32_t   len;
   char       small_buffer[k_test_too_small_buffer];
   rx_err_t   err = rx_frame_ascii_format(&frame, false, small_buffer, sizeof(small_buffer), &len);
@@ -1405,7 +1405,7 @@ void test_format_buffer_too_small(void)
  */
 void test_format_payload_length_too_large(void)
 {
-  rx_frame_t frame    = {0};
+  rx_frame_t frame    = {};
   uint32_t   len      = 0;
   frame.header.length = k_frame_max_payload + 1U;
 
@@ -1504,7 +1504,7 @@ static void internal_verify_empty_frame_rx_header(void)
 
 void test_format_empty_frame_rx(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_42;
@@ -1563,7 +1563,7 @@ void test_format_empty_frame_rx(void)
  */
 void test_format_empty_frame_tx(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_42;
@@ -1642,7 +1642,7 @@ static void internal_verify_payload_frame_fields(void)
 
 void test_format_with_payload(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   uint32_t   len   = 0;
 
   frame.header.sequence                = k_test_sequence_1234;
@@ -1701,7 +1701,7 @@ void test_format_with_payload(void)
  */
 void test_format_with_multiline_payload(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_42;
@@ -1765,7 +1765,7 @@ void test_format_with_multiline_payload(void)
  */
 void test_format_with_non_printable_payload(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_42;
@@ -1826,7 +1826,7 @@ void test_format_with_non_printable_payload(void)
  */
 void test_format_nack_with_soft_flag(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_42;
@@ -1881,7 +1881,7 @@ void test_format_nack_with_soft_flag(void)
  */
 void test_format_combined_flags(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_42;
@@ -1934,7 +1934,7 @@ void test_format_combined_flags(void)
  */
 void test_format_crc_displayed(void)
 {
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   uint32_t   len   = 0;
 
   frame.header.sequence = k_test_sequence_42;
@@ -1980,7 +1980,7 @@ void test_format_crc_displayed(void)
 void test_internal_append_str_assert_pos_beyond_max(void)
 {
 #ifdef UNIT_TEST
-  char        dummy[k_test_small_buf_8] = {0};
+  char        dummy[k_test_small_buf_8] = {};
   const char* str                       = "hi";
 
   /* A=false: buf=nullptr, pos>=max prevents write (D is also false) */
@@ -2016,7 +2016,7 @@ void test_internal_append_str_assert_pos_beyond_max(void)
 void test_internal_append_char_assert_and_full(void)
 {
 #ifdef UNIT_TEST
-  char dummy[k_test_small_buf_4] = {0};
+  char dummy[k_test_small_buf_4] = {};
 
   /* A=false: buf=nullptr with pos >= max (if body skipped) */
   uint32_t pos = internal_append_char(nullptr, k_test_pos_8, k_test_small_buf_4, 'A');
@@ -2046,7 +2046,7 @@ void test_internal_append_char_assert_and_full(void)
 void test_internal_append_hex_byte_assert_and_full(void)
 {
 #ifdef UNIT_TEST
-  char dummy[k_test_small_buf_8] = {0};
+  char dummy[k_test_small_buf_8] = {};
 
   /* C=false: pos >= max (D fails), if body not entered */
   uint32_t pos =
@@ -2075,7 +2075,7 @@ void test_internal_append_hex_byte_assert_and_full(void)
 void test_internal_append_hex_u16_assert_pos_beyond_max(void)
 {
 #ifdef UNIT_TEST
-  char dummy[k_test_small_buf_8] = {0};
+  char dummy[k_test_small_buf_8] = {};
 
   /* C=false: pos >= max */
   uint32_t pos =
@@ -2100,7 +2100,7 @@ void test_internal_append_hex_u16_assert_pos_beyond_max(void)
 void test_internal_append_hex_u32_assert_pos_beyond_max(void)
 {
 #ifdef UNIT_TEST
-  char dummy[k_test_small_buf_16] = {0};
+  char dummy[k_test_small_buf_16] = {};
 
   /* B=false: max < k_hex_chars_per_u32=8, pos=UINT32_MAX */
   uint32_t pos =
@@ -2127,7 +2127,7 @@ void test_internal_append_hex_u32_assert_pos_beyond_max(void)
 void test_internal_append_decimal_u16_assert_and_loop(void)
 {
 #ifdef UNIT_TEST
-  char dummy[k_test_small_buf_8] = {0};
+  char dummy[k_test_small_buf_8] = {};
 
   /* C=false: pos >= max */
   uint32_t pos =
@@ -2161,7 +2161,7 @@ void test_internal_append_decimal_u16_assert_and_loop(void)
 void test_internal_format_payload_assert_violations(void)
 {
 #ifdef UNIT_TEST
-  char          buf[k_test_small_buf_256]   = {0};
+  char          buf[k_test_small_buf_256]   = {};
   const uint8_t payload[k_test_small_buf_4] = {0x01, 0x02, 0x03, 0x04};
 
   /* C=false: pos >= max (assert fires) */
@@ -2196,8 +2196,8 @@ void test_internal_format_payload_assert_violations(void)
 void test_internal_format_header_assert_pos_beyond_max(void)
 {
 #ifdef UNIT_TEST
-  char              buf[k_test_small_buf_128] = {0};
-  rx_frame_header_t header                    = {0};
+  char              buf[k_test_small_buf_128] = {};
+  rx_frame_header_t header                    = {};
   header.sequence                             = 1;
   header.length                               = 0;
   header.type                                 = k_frame_type_ping;
@@ -2231,7 +2231,7 @@ void test_internal_format_header_assert_pos_beyond_max(void)
 void test_internal_append_flag_assert_null_first(void)
 {
 #ifdef UNIT_TEST
-  char dummy[k_test_small_buf_32] = {0};
+  char dummy[k_test_small_buf_32] = {};
 
   /* first == nullptr violates assert (false branch covered).
    * After assert fires in unit test mode, code checks (flags & flag_bit).

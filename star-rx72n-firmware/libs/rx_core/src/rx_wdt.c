@@ -242,7 +242,7 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-static rx_wdt_state_t s_wdt_state = {0};
+static rx_wdt_state_t s_wdt_state = {};
 
 /* =============================================================================
  * Private Helpers
@@ -364,7 +364,7 @@ rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
   }
 
   /* Use default config if none provided */
-  rx_wdt_config_t default_config = {0};
+  rx_wdt_config_t default_config = {};
   if (config == nullptr) {
     default_config.timeout_cycles   = k_wdt_timeout_16384_cycles;
     default_config.clock_division   = k_wdt_clock_div_8192;

@@ -439,10 +439,10 @@ static const float k_max_delta_time_s = 10.0F; /**< Maximum delta time for veloc
  */
 
 static bool               s_encoder_initialized[k_encoder_max_channels] = {false};
-static rx_encoder_state_t s_encoder_state[k_encoder_max_channels]       = {0};
-static uint16_t           s_counts_per_rev[k_encoder_max_channels]      = {0};
+static rx_encoder_state_t s_encoder_state[k_encoder_max_channels]       = {};
+static uint16_t           s_counts_per_rev[k_encoder_max_channels]      = {};
 static bool               s_invert_direction[k_encoder_max_channels]    = {false};
-static int32_t            s_last_count[k_encoder_max_channels]          = {0};
+static int32_t            s_last_count[k_encoder_max_channels]          = {};
 
 /* =============================================================================
  * Internal Helper Functions
@@ -965,7 +965,7 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
   RX_VALIDATE_INIT(s_encoder_initialized[channel], s_tag, "Encoder not initialized");
 
   /* Read current count */
-  rx_encoder_state_t state = {0};
+  rx_encoder_state_t state = {};
   (void)(internal_update_state_from_count(&state, channel, mtu->tcnt));
   /* channel is valid and initialized - internal_update_state_from_count cannot fail here */
 

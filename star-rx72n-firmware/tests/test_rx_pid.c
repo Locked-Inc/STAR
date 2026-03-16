@@ -518,7 +518,7 @@ static rx_pid_config_t create_default_config(void)
  */
 static rx_err_t init_default_pid(rx_pid_handle_t* handle)
 {
-  rx_pid_handle_t zero   = {0};
+  rx_pid_handle_t zero   = {};
   *handle                = zero;
   rx_pid_config_t config = create_default_config();
   return rx_pid_init(handle, &config);
@@ -547,7 +547,7 @@ static rx_err_t init_default_pid(rx_pid_handle_t* handle)
  */
 void test_pid_init_success(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   rx_err_t err = rx_pid_init(&pid, &config);
@@ -596,7 +596,7 @@ void test_pid_init_null_handle(void)
  */
 void test_pid_init_null_config(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   rx_err_t err = rx_pid_init(&pid, nullptr);
 
@@ -617,7 +617,7 @@ void test_pid_init_null_config(void)
  */
 void test_pid_init_already_initialized(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   rx_err_t err = rx_pid_init(&pid, &config);
@@ -645,7 +645,7 @@ void test_pid_init_already_initialized(void)
  */
 void test_pid_init_invalid_output_limits(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.output_min = s_setpoint_100;
@@ -677,7 +677,7 @@ void test_pid_init_invalid_output_limits(void)
  */
 void test_pid_init_invalid_integral_limits(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.integral_min = s_setpoint_50;
@@ -713,7 +713,7 @@ void test_pid_init_invalid_integral_limits(void)
  */
 void test_pid_deinit_success(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
 
@@ -754,7 +754,7 @@ void test_pid_deinit_null_handle(void)
  */
 void test_pid_deinit_not_initialized(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   rx_err_t err = rx_pid_deinit(&pid);
 
@@ -781,7 +781,7 @@ void test_pid_deinit_not_initialized(void)
  */
 void test_pid_compute_proportional_only(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp = s_kp_double;
@@ -812,7 +812,7 @@ void test_pid_compute_proportional_only(void)
  */
 void test_pid_compute_proportional_negative_error(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp = s_kp_negative_err;
@@ -841,7 +841,7 @@ void test_pid_compute_proportional_negative_error(void)
  */
 void test_pid_compute_proportional_zero_error(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
 
@@ -873,7 +873,7 @@ void test_pid_compute_proportional_zero_error(void)
  */
 void test_pid_compute_integral_accumulation(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp = 0.0F;
@@ -913,7 +913,7 @@ void test_pid_compute_integral_accumulation(void)
  */
 void test_pid_compute_integral_antiwindup_upper(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp           = 0.0F;
@@ -947,7 +947,7 @@ void test_pid_compute_integral_antiwindup_upper(void)
  */
 void test_pid_compute_integral_antiwindup_lower(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp           = 0.0F;
@@ -986,7 +986,7 @@ void test_pid_compute_integral_antiwindup_lower(void)
  */
 void test_pid_compute_derivative_response(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp         = 0.0F;
@@ -1027,7 +1027,7 @@ void test_pid_compute_derivative_response(void)
  */
 void test_pid_compute_derivative_constant_error(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp = 0.0F;
@@ -1065,7 +1065,7 @@ void test_pid_compute_derivative_constant_error(void)
 void test_pid_compute_output_clamp_upper(void)
 {
   rx_pid_config_t config = create_default_config();
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   config.kp              = s_kp_high;
 
   config.output_max = s_output_limit_50;
@@ -1095,7 +1095,7 @@ void test_pid_compute_output_clamp_upper(void)
 void test_pid_compute_output_clamp_lower(void)
 {
   rx_pid_config_t config = create_default_config();
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   config.kp              = s_kp_high;
 
   config.output_max = s_output_limit_50;
@@ -1138,7 +1138,7 @@ void test_pid_compute_null_handle(void)
  */
 void test_pid_compute_null_output(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
 
@@ -1155,7 +1155,7 @@ void test_pid_compute_null_output(void)
  */
 void test_pid_compute_not_initialized(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   float           output = 0.0F;
 
   rx_err_t err = rx_pid_compute(&pid, s_setpoint_100, s_measured_90, s_dt_seconds, &output);
@@ -1171,7 +1171,7 @@ void test_pid_compute_not_initialized(void)
  */
 void test_pid_compute_invalid_dt(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   float output = 0.0F;
@@ -1193,7 +1193,7 @@ void test_pid_compute_invalid_dt(void)
  */
 void test_pid_compute_nan_setpoint(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   float output = 0.0F;
@@ -1211,7 +1211,7 @@ void test_pid_compute_nan_setpoint(void)
  */
 void test_pid_compute_nan_measured(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   float output = 0.0F;
@@ -1229,7 +1229,7 @@ void test_pid_compute_nan_measured(void)
  */
 void test_pid_compute_inf_setpoint(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   float output = 0.0F;
@@ -1247,7 +1247,7 @@ void test_pid_compute_inf_setpoint(void)
  */
 void test_pid_compute_inf_measured(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   float output = 0.0F;
@@ -1271,7 +1271,7 @@ void test_pid_compute_inf_measured(void)
  */
 void test_pid_reset_clears_state(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.ki = 1.0F;
@@ -1310,7 +1310,7 @@ void test_pid_reset_null_handle(void)
  */
 void test_pid_reset_not_initialized(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   rx_err_t err = rx_pid_reset(&pid);
 
@@ -1327,7 +1327,7 @@ void test_pid_reset_not_initialized(void)
  */
 void test_pid_set_gains_success(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
 
@@ -1344,7 +1344,7 @@ void test_pid_set_gains_success(void)
  */
 void test_pid_set_gains_preserves_state(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.ki = 1.0F;
@@ -1375,7 +1375,7 @@ void test_pid_set_gains_null_handle(void)
 
 void test_pid_set_gains_not_initialized(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
   rx_err_t        err = rx_pid_set_gains(&pid, 1.0F, 1.0F, 1.0F);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1383,7 +1383,7 @@ void test_pid_set_gains_not_initialized(void)
 
 void test_pid_set_gains_negative_kp(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   rx_err_t err = rx_pid_set_gains(&pid, -1.0F, 1.0F, 1.0F);
@@ -1392,7 +1392,7 @@ void test_pid_set_gains_negative_kp(void)
 
 void test_pid_set_gains_negative_ki(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   rx_err_t err = rx_pid_set_gains(&pid, 1.0F, -s_kd_update_half, 1.0F);
@@ -1401,7 +1401,7 @@ void test_pid_set_gains_negative_ki(void)
 
 void test_pid_set_gains_negative_kd(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   rx_err_t err = rx_pid_set_gains(&pid, 1.0F, 1.0F, -s_gain_update_2);
@@ -1410,7 +1410,7 @@ void test_pid_set_gains_negative_kd(void)
 
 void test_pid_set_gains_nan_kp(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   rx_err_t err = rx_pid_set_gains(&pid, NAN, 1.0F, 1.0F);
@@ -1419,7 +1419,7 @@ void test_pid_set_gains_nan_kp(void)
 
 void test_pid_set_gains_nan_ki(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   rx_err_t err = rx_pid_set_gains(&pid, 1.0F, NAN, 1.0F);
@@ -1428,7 +1428,7 @@ void test_pid_set_gains_nan_ki(void)
 
 void test_pid_set_gains_nan_kd(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   rx_err_t err = rx_pid_set_gains(&pid, 1.0F, 1.0F, NAN);
@@ -1437,7 +1437,7 @@ void test_pid_set_gains_nan_kd(void)
 
 void test_pid_set_gains_inf_kp(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   rx_err_t err = rx_pid_set_gains(&pid, INFINITY, 1.0F, 1.0F);
@@ -1446,7 +1446,7 @@ void test_pid_set_gains_inf_kp(void)
 
 void test_pid_set_gains_inf_ki(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   rx_err_t err = rx_pid_set_gains(&pid, 1.0F, INFINITY, 1.0F);
@@ -1455,7 +1455,7 @@ void test_pid_set_gains_inf_ki(void)
 
 void test_pid_set_gains_inf_kd(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   rx_err_t err = rx_pid_set_gains(&pid, 1.0F, 1.0F, INFINITY);
@@ -1469,7 +1469,7 @@ void test_pid_set_gains_inf_kd(void)
 
 void test_pid_set_output_limits_success(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
 
@@ -1482,7 +1482,7 @@ void test_pid_set_output_limits_success(void)
 
 void test_pid_set_output_limits_invalid(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
 
@@ -1503,7 +1503,7 @@ void test_pid_set_output_limits_null_handle(void)
 
 void test_pid_set_output_limits_not_initialized(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
   rx_err_t        err = rx_pid_set_output_limits(&pid, -s_output_limit_50, s_output_limit_50);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1516,7 +1516,7 @@ void test_pid_set_output_limits_not_initialized(void)
 
 void test_pid_set_integral_limits_success(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
 
@@ -1536,7 +1536,7 @@ void test_pid_set_integral_limits_success(void)
  */
 void test_pid_set_integral_limits_clamps_existing(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.ki           = 1.0F;
@@ -1561,7 +1561,7 @@ void test_pid_set_integral_limits_clamps_existing(void)
 
 void test_pid_set_integral_limits_invalid(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
 
@@ -1582,7 +1582,7 @@ void test_pid_set_integral_limits_null_handle(void)
 
 void test_pid_set_integral_limits_not_initialized(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
   rx_err_t        err = rx_pid_set_integral_limits(&pid, -s_integral_limit_25, s_integral_limit_25);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1598,7 +1598,7 @@ void test_pid_set_integral_limits_not_initialized(void)
  */
 void test_pid_compute_full_pid(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp = 1.0F;
@@ -1625,7 +1625,7 @@ void test_pid_compute_full_pid(void)
  */
 void test_pid_step_response(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp         = s_kp_combined;
@@ -1659,7 +1659,7 @@ void test_pid_step_response(void)
  */
 void test_pid_matlab_tuned_parameters(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp = s_matlab_kp;
@@ -1689,7 +1689,7 @@ void test_pid_matlab_tuned_parameters(void)
  */
 void test_pid_matlab_control_loop(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp           = s_matlab_kp;
@@ -1730,7 +1730,7 @@ void test_pid_matlab_control_loop(void)
  */
 void test_pid_ramp_tracking(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp = 1.0F;
@@ -1763,8 +1763,8 @@ void test_pid_ramp_tracking(void)
  */
 void test_pid_deterministic_behavior(void)
 {
-  rx_pid_handle_t pid1   = {0};
-  rx_pid_handle_t pid2   = {0};
+  rx_pid_handle_t pid1   = {};
+  rx_pid_handle_t pid2   = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp = s_kp_determinism;
@@ -1796,7 +1796,7 @@ void test_pid_deterministic_behavior(void)
  */
 void test_pid_zero_gains(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp = 0.0F;
@@ -1817,7 +1817,7 @@ void test_pid_zero_gains(void)
  */
 void test_pid_small_dt(void)
 {
-  rx_pid_handle_t pid = {0};
+  rx_pid_handle_t pid = {};
 
   init_default_pid(&pid);
   float output = 0.0F;
@@ -1836,7 +1836,7 @@ void test_pid_small_dt(void)
  */
 void test_pid_asymmetric_output_limits(void)
 {
-  rx_pid_handle_t pid    = {0};
+  rx_pid_handle_t pid    = {};
   rx_pid_config_t config = create_default_config();
 
   config.kp         = s_kp_high;

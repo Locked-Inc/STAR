@@ -17,7 +17,6 @@
  * @since Version 1.0.0
  */
 
-#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 

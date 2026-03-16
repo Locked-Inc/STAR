@@ -500,7 +500,7 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
     return err;
   }
 
-  *manager = (rx_bus_manager_t){0};
+  *manager = (rx_bus_manager_t){};
 
   const UINT status = tx_mutex_create(&manager->mutex, "BusMgr", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
@@ -511,7 +511,7 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
   manager->tag         = tag;
   manager->error_iface = error_iface;
   manager->pin_iface   = pin_iface;
-  /* manager->buses and manager->bus_count are already zero from (rx_bus_manager_t){0} above */
+  /* manager->buses and manager->bus_count are already zero from (rx_bus_manager_t){} above */
 
   rx_log_info(s_tag, "Bus manager initialized");
   return k_rx_ok;
@@ -692,7 +692,7 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
   }
 
   /* Clear manager state */
-  *manager = (rx_bus_manager_t){0};
+  *manager = (rx_bus_manager_t){};
 
   rx_log_info(s_tag, "Bus manager deinitialized");
 

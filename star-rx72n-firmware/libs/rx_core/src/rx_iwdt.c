@@ -273,7 +273,7 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-static rx_iwdt_state_t s_iwdt_state = {0};
+static rx_iwdt_state_t s_iwdt_state = {};
 
 /* =============================================================================
  * Test Support Functions
@@ -289,7 +289,7 @@ static rx_iwdt_state_t s_iwdt_state = {0};
  */
 void rx_iwdt_test_reset(void)
 {
-  s_iwdt_state = (rx_iwdt_state_t){0};
+  s_iwdt_state = (rx_iwdt_state_t){};
 }
 #endif
 
@@ -542,7 +542,7 @@ rx_err_t rx_iwdt_init(const rx_iwdt_config_t* config)
   }
 
   /* Initialize state */
-  s_iwdt_state = (rx_iwdt_state_t){0};
+  s_iwdt_state = (rx_iwdt_state_t){};
   {
     const uint8_t* src = (const uint8_t*)config;
     uint8_t*       dst = (uint8_t*)&s_iwdt_state.config;
@@ -751,7 +751,7 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
   }
 
   /* Register task */
-  *slot = (rx_iwdt_task_info_t){0};
+  *slot = (rx_iwdt_task_info_t){};
   internal_safe_strcpy(slot->task_name, task_name, k_iwdt_task_name_len);
   slot->timeout_ms          = timeout_ms;
   slot->last_heartbeat_tick = internal_get_tick_count();

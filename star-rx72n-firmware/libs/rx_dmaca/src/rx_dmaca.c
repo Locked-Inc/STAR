@@ -22,7 +22,6 @@
 
 #include "rx_dmaca.h"
 
-#include <stdbool.h>
 #include <stddef.h>
 
 #ifdef UNIT_TEST

@@ -276,9 +276,9 @@ static rx_session_state_t s_session;
 void setUp(void)
 {
   mock_rspi_init(nullptr);
-  static const rx_spi_link_t        s_zero_link     = {0};
-  static const rx_spi_comm_handle_t s_zero_spi_comm = {0};
-  static const rx_session_state_t   s_zero_session  = {0};
+  static const rx_spi_link_t        s_zero_link     = {};
+  static const rx_spi_comm_handle_t s_zero_spi_comm = {};
+  static const rx_session_state_t   s_zero_session  = {};
   s_link                                            = s_zero_link;
   s_spi_comm                                        = s_zero_spi_comm;
   s_session                                         = s_zero_session;
@@ -1230,7 +1230,7 @@ void test_state_query_null_and_error(void)
   TEST_ASSERT_EQUAL(k_spi_link_state_error, rx_spi_link_get_state(nullptr));
 
   /* Uninitialized link (all zeros) also returns error state */
-  rx_spi_link_t uninit_link = {0};
+  rx_spi_link_t uninit_link = {};
   /* Should return error (initialized flag is false) */
   TEST_ASSERT_EQUAL(k_spi_link_state_error, rx_spi_link_get_state(&uninit_link));
 }
@@ -1545,7 +1545,7 @@ void test_receive_passthrough_copies_payload(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  rx_frame_t frame                       = {0};
+  rx_frame_t frame                       = {};
   frame.header.length                    = k_rx_spi_test_three_bytes;
   frame.header.flags                     = 0; /* no ACK required */
   frame.header.sequence                  = 1;
@@ -1553,7 +1553,7 @@ void test_receive_passthrough_copies_payload(void)
   frame.payload[1]                       = k_rx_spi_test_data_bb;
   frame.payload[k_rx_spi_test_two_bytes] = k_rx_spi_test_data_cc;
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   err = internal_receive_passthrough(&s_link, &frame, &result);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1577,12 +1577,12 @@ void test_receive_passthrough_zero_payload(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  rx_frame_t frame      = {0};
+  rx_frame_t frame      = {};
   frame.header.length   = 0;
   frame.header.flags    = 0;
   frame.header.sequence = k_rx_spi_test_seq_2;
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   err = internal_receive_passthrough(&s_link, &frame, &result);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1611,7 +1611,7 @@ void test_receive_fec_decode_runs(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Build a frame with a small but non-zero payload; the content is arbitrary */
-  rx_frame_t frame                         = {0};
+  rx_frame_t frame                         = {};
   frame.header.length                      = k_rx_spi_test_four_bytes; /* 4 bytes = 32 soft bits */
   frame.header.flags                       = k_frame_flag_fec_enabled;
   frame.header.sequence                    = k_rx_spi_test_seq_5;
@@ -1620,7 +1620,7 @@ void test_receive_fec_decode_runs(void)
   frame.payload[k_rx_spi_test_two_bytes]   = k_rx_spi_test_data_byte3;
   frame.payload[k_rx_spi_test_three_bytes] = k_rx_spi_test_data_byte4;
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   err = internal_receive_fec_decode(&s_link, &frame, &result);
   /* Either succeeds or fails with protocol error - both are acceptable */
@@ -1797,14 +1797,14 @@ void test_receive_passthrough_with_requires_ack(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  rx_frame_t frame      = {0};
+  rx_frame_t frame      = {};
   frame.header.length   = k_rx_spi_test_two_bytes;
   frame.header.flags    = k_frame_flag_requires_ack;
   frame.header.sequence = k_rx_spi_test_seq_3;
   frame.payload[0]      = k_rx_spi_test_data_55;
   frame.payload[1]      = k_rx_spi_test_data_66;
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   err = internal_receive_passthrough(&s_link, &frame, &result);
   /* ACK send will fail with no hardware but function still returns k_rx_ok */
@@ -1892,7 +1892,7 @@ static void helper_encode_frame(rx_frame_type_t type,
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encoder_init(&encoder));
 
-  rx_frame_t frame      = {0};
+  rx_frame_t frame      = {};
   frame.header.type     = (uint8_t)type;
   frame.header.sequence = sequence;
   frame.header.flags    = flags;
@@ -2232,7 +2232,7 @@ void test_receive_passthrough_oversized_payload(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   /* header.length is uint16_t; set to k_harq_max_payload + 1 to trigger truncation */
   frame.header.length   = (uint16_t)(k_harq_max_payload + 1);
   frame.header.flags    = k_frame_flag_none;
@@ -2242,7 +2242,7 @@ void test_receive_passthrough_oversized_payload(void)
     frame.payload[i] = (uint8_t)k_rx_spi_test_fill_pattern;
   }
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   err = internal_receive_passthrough(&s_link, &frame, &result);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2269,7 +2269,7 @@ void test_receive_filters_ack_frame(void)
 
   helper_inject_frame(k_frame_type_ack, 0, k_frame_flag_none, nullptr, 0);
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -2289,7 +2289,7 @@ void test_receive_filters_nack_frame(void)
 
   helper_inject_frame(k_frame_type_nack, 0, k_frame_flag_none, nullptr, 0);
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -2316,7 +2316,7 @@ void test_receive_filters_ping_frame(void)
   /* PONG is returned by rx_spi_comm_receive; exercises the filter branch */
   helper_inject_frame(k_frame_type_pong, 1, k_frame_flag_none, nullptr, 0);
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -2336,7 +2336,7 @@ void test_receive_filters_pong_frame(void)
 
   helper_inject_frame(k_frame_type_pong, 0, k_frame_flag_none, nullptr, 0);
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -2364,7 +2364,7 @@ void test_receive_filters_reset_frame(void)
   /* RESET_ACK is returned by rx_spi_comm_receive; exercises the filter branch */
   helper_inject_frame(k_frame_type_reset_ack, 1, k_frame_flag_none, nullptr, 0);
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -2385,7 +2385,7 @@ void test_receive_filters_reset_ack_frame(void)
 
   helper_inject_frame(k_frame_type_reset_ack, 0, k_frame_flag_none, nullptr, 0);
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_err_no_data, err);
@@ -2413,7 +2413,7 @@ void test_receive_data_frame_passthrough(void)
                       data,
                       sizeof(data));
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2446,7 +2446,7 @@ void test_receive_data_frame_retransmit_flag(void)
                       data,
                       sizeof(data));
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   rx_err_t err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2494,7 +2494,7 @@ void test_receive_fec_decode_success_path(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Build a frame with the encoded payload */
-  rx_frame_t frame      = {0};
+  rx_frame_t frame      = {};
   frame.header.length   = (uint16_t)encoded_len;
   frame.header.flags    = k_frame_flag_fec_enabled;
   frame.header.sequence = k_rx_spi_test_seq_10;
@@ -2502,7 +2502,7 @@ void test_receive_fec_decode_success_path(void)
     frame.payload[i] = encoded[i];
   }
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   err = internal_receive_fec_decode(&s_link, &frame, &result);
   /* Viterbi decode succeeds for a properly encoded payload; ACK send may log a
@@ -2534,7 +2534,7 @@ void test_receive_fec_decode_failure_nack_path(void)
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_link_with_mock_rspi(true)); /* FEC enabled */
 
   /* Build a frame with a valid-looking FEC-encoded payload (4 bytes) */
-  rx_frame_t frame                           = {0};
+  rx_frame_t frame                           = {};
   frame.header.length                        = k_rx_spi_test_four_bytes;
   frame.header.flags                         = k_frame_flag_fec_enabled;
   frame.header.sequence                      = k_rx_spi_test_seq_7;
@@ -2547,7 +2547,7 @@ void test_receive_fec_decode_failure_nack_path(void)
    * This triggers the NACK path in internal_receive_fec_decode(). */
   s_link.harq.initialized = 0;
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   rx_err_t err = internal_receive_fec_decode(&s_link, &frame, &result);
   /* HARQ not initialized -> rx_harq_decode fails -> NACK sent -> protocol_error */
@@ -2661,7 +2661,7 @@ void test_receive_data_frame_fec_path(void)
   /* Inject the FEC-encoded frame via mock RSPI */
   helper_inject_frame(k_frame_type_command, 0, k_frame_flag_fec_enabled, encoded, encoded_len);
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal);
 
@@ -2751,14 +2751,14 @@ void test_receive_passthrough_ack_succeeds(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_link_with_mock_rspi(false));
 
-  rx_frame_t frame      = {0};
+  rx_frame_t frame      = {};
   frame.header.length   = k_rx_spi_test_two_bytes;
   frame.header.flags    = k_frame_flag_requires_ack;
   frame.header.sequence = k_rx_spi_test_seq_7;
   frame.payload[0]      = k_rx_spi_test_data_aa;
   frame.payload[1]      = k_rx_spi_test_data_bb;
 
-  rx_spi_link_receive_result_t result = {0};
+  rx_spi_link_receive_result_t result = {};
 
   /* With write_ready=true, ACK send succeeds: ack_err == k_rx_ok */
   rx_err_t err = internal_receive_passthrough(&s_link, &frame, &result);

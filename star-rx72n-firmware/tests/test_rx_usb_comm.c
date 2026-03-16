@@ -2389,7 +2389,7 @@ void test_internal_decode_header_null_data_fails(void)
 
 void test_internal_decode_header_null_frame_fails(void)
 {
-  uint8_t  data[k_test_len_20] = {0};
+  uint8_t  data[k_test_len_20] = {};
   uint32_t offset              = 0;
 
   rx_err_t err = internal_decode_header(data, k_test_len_20, nullptr, &offset);
@@ -2399,7 +2399,7 @@ void test_internal_decode_header_null_frame_fails(void)
 
 void test_internal_decode_header_too_small_fails(void)
 {
-  uint8_t    data[k_test_len_4] = {0};
+  uint8_t    data[k_test_len_4] = {};
   rx_frame_t frame;
   uint32_t   offset = 0;
 
@@ -2471,7 +2471,7 @@ void test_internal_verify_crc_null_data_fails(void)
 
 void test_internal_verify_crc_small_offset_fails(void)
 {
-  uint8_t  data[k_test_len_12] = {0};
+  uint8_t  data[k_test_len_12] = {};
   uint32_t crc                 = 0;
 
   /* offset < (k_frame_min_size - k_frame_crc_size) = 12 - 4 = 8 */

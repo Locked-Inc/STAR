@@ -420,7 +420,7 @@ rx_err_t rx_nanopb_init(void)
  *     // Ensure module is NOT initialized
  *     rx_nanopb_test_reset_state();
  *
- *     star_v1_SetVelocityRequest msg = {0};
+ *     star_v1_SetVelocityRequest msg = {};
  *     uint8_t buffer[512];
  *     uint32_t len;
  *
@@ -905,7 +905,7 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
  *     rx_err_t err = rx_nanopb_decode_estop_request(buffer, len, &estop_req);
  *
  *     // Send response (motors already stopped)
- *     star_v1_EmergencyStopResponse response = {0};
+ *     star_v1_EmergencyStopResponse response = {};
  *     rx_nanopb_create_response_header(&response.header,
  *                                       star_v1_Status_STATUS_OK,
  *                                       estop_req.header.request_id);
@@ -1337,7 +1337,7 @@ rx_err_t rx_nanopb_decode_retransmit_config_request(const uint8_t*              
  * void telemetry_task(ULONG arg) {
  *     while (1) {
  *         // Gather telemetry data
- *         star_v1_TelemetryData telemetry = {0};
+ *         star_v1_TelemetryData telemetry = {};
  *         telemetry.motor_front_left_velocity_mps = motor_get_velocity(0);
  *         telemetry.motor_front_left_current_a = motor_get_current(0);
  *         // ... populate all fields

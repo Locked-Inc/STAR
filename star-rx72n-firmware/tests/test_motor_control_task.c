@@ -205,8 +205,8 @@ void test_motor_task_initializes_4_pids(void)
    * the mock is properly configured for the pattern */
 
   /* For this test, directly verify the mock pattern works */
-  rx_pid_handle_t pid    = {0};
-  rx_pid_config_t config = {0};
+  rx_pid_handle_t pid    = {};
+  rx_pid_config_t config = {};
   rx_err_t        err;
 
   config.kp           = s_test_kp_default;
@@ -238,8 +238,8 @@ void test_motor_task_initializes_4_pids(void)
 void test_motor_task_pid_compute_parameters(void)
 {
   /* Initialize PID */
-  rx_pid_handle_t pid    = {0};
-  rx_pid_config_t config = {0};
+  rx_pid_handle_t pid    = {};
+  rx_pid_config_t config = {};
   rx_err_t        err;
   float           output;
   float           setpoint;
@@ -313,8 +313,8 @@ void test_motor_task_estop_active_skips_control(void)
  */
 void test_motor_task_reads_velocity_commands(void)
 {
-  motor_command_t cmd_in  = {0};
-  motor_command_t cmd_out = {0};
+  motor_command_t cmd_in  = {};
+  motor_command_t cmd_out = {};
   rx_err_t        err;
 
   /* Set up velocity command */
@@ -361,7 +361,7 @@ void test_motor_task_reads_velocity_commands(void)
 void test_motor_task_invalid_command_zero_duty(void)
 {
   /* Set up invalid command */
-  motor_command_t cmd = {0};
+  motor_command_t cmd = {};
   rx_err_t        err;
 
   cmd.valid = false;
@@ -422,8 +422,8 @@ void test_motor_task_comm_timeout_triggers_estop(void)
 void test_motor_task_reads_pid_gains(void)
 {
   /* Set up PID gains */
-  pid_gains_t gains_in  = {0};
-  pid_gains_t gains_out = {0};
+  pid_gains_t gains_in  = {};
+  pid_gains_t gains_out = {};
   rx_err_t    err;
 
   gains_in.kp             = s_test_kp_update;
@@ -489,8 +489,8 @@ void test_motor_task_clears_pid_update_flag(void)
 void test_motor_task_updates_motor_state(void)
 {
   /* Set up motor state */
-  motor_state_t state_in  = {0};
-  motor_state_t state_out = {0};
+  motor_state_t state_in  = {};
+  motor_state_t state_out = {};
   rx_err_t      err;
 
   state_in.current_velocity_mps[k_test_idx_fl] = s_test_vel_fl;

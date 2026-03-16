@@ -318,7 +318,7 @@ static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, const char* 
 static void
 internal_set_common_fields(rx_bus_config_t* config, const char* name, const rx_bus_type_t bus_type)
 {
-  *config             = (rx_bus_config_t){0};
+  *config             = (rx_bus_config_t){};
   config->name        = name;
   config->type        = bus_type;
   config->initialized = false;

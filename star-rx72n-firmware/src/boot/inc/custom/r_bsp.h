@@ -36,7 +36,6 @@ extern "C" {
 
 /** @name Standard C Headers */
 /** @{ */
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>

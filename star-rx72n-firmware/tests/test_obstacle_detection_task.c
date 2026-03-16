@@ -180,8 +180,8 @@ void test_obstacle_task_create_already_created(void)
 void test_obstacle_task_init_and_start(void)
 {
   /* Configure mocks for success */
-  rx_obstacle_detect_t        handle = {0};
-  rx_obstacle_detect_config_t config = {0};
+  rx_obstacle_detect_t        handle = {};
+  rx_obstacle_detect_config_t config = {};
 
   mock_obstacle_detect_set_init_return(k_rx_ok);
   mock_obstacle_detect_set_start_return(k_rx_ok);
@@ -237,8 +237,8 @@ void test_obstacle_callback_sets_emergency_flag(void)
  */
 void test_obstacle_distances_stored_in_shared_data(void)
 {
-  obstacle_state_t state_in  = {0};
-  obstacle_state_t state_out = {0};
+  obstacle_state_t state_in  = {};
+  obstacle_state_t state_out = {};
 
   /* Simulate callback storing obstacle state */
   state_in.distance_cm[k_test_sensor_idx_0] = k_test_distance_near_cm;
@@ -300,7 +300,7 @@ void test_obstacle_cleared_keeps_estop_active(void)
 void test_obstacle_get_stats(void)
 {
   /* Configure mock stats */
-  rx_obstacle_detect_t handle          = {0};
+  rx_obstacle_detect_t handle          = {};
   uint32_t             total_polls     = 0;
   uint32_t             obstacle_events = 0;
   uint32_t             false_positives = 0;

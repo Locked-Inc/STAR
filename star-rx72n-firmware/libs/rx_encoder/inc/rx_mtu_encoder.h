@@ -203,7 +203,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -457,7 +456,7 @@ typedef struct {
  * @par Velocity Calculation Example:
  * @code{.c}
  * // Track encoder state across iterations
- * static rx_encoder_state_t last_state = {0};
+ * static rx_encoder_state_t last_state = {};
  * static bool first_iteration = true;
  *
  * // Called at 250 Hz (every 4ms)
@@ -700,7 +699,7 @@ typedef struct {
  *
  * @par Error Handling Example:
  * @code{.c}
- * rx_encoder_config_t config = {0};
+ * rx_encoder_config_t config = {};
  *
  * rx_err_t err = rx_encoder_init(&config);
  * switch (err) {

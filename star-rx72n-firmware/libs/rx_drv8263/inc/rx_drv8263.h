@@ -63,7 +63,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -279,7 +278,7 @@ typedef struct {
  * @invariant initialized is false until rx_drv8263_init() succeeds
  *
  * @code
- * rx_drv8263_handle_t drv = {0};
+ * rx_drv8263_handle_t drv = {};
  * rx_err_t err = rx_drv8263_init(&drv, &config);
  * if (drv.initialized) { // ready to use }
  * @endcode

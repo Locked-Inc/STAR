@@ -37,6 +37,10 @@ mock_system_regs_t g_mock_onewire_system_regs;
 uint16_t           g_mock_cmt3_counter_shadow = 0;
 uint16_t g_mock_onewire_timer_auto_increment  = k_mock_onewire_timer_auto_increment_default;
 
+uint8_t g_mock_onewire_null_system_regs_count = 0;
+uint8_t g_mock_onewire_null_cmt_ctrl_count    = 0;
+uint8_t g_mock_onewire_null_cmt3_count        = 0;
+
 /* =============================================================================
  * Internal Helpers
  * =============================================================================
@@ -90,6 +94,10 @@ void mock_onewire_hw_init(void)
   g_mock_cmt3_counter_shadow          = 0;
   g_mock_onewire_timer_auto_increment = k_mock_onewire_timer_auto_increment_default;
 
+  g_mock_onewire_null_system_regs_count = 0;
+  g_mock_onewire_null_cmt_ctrl_count    = 0;
+  g_mock_onewire_null_cmt3_count        = 0;
+
   /* Set default system register values */
   g_mock_onewire_system_regs.prcr    = 0;
   g_mock_onewire_system_regs.mstpcrb = k_mock_mstpcrb_all_stopped;
@@ -102,6 +110,10 @@ void mock_onewire_hw_deinit(void)
   internal_clear_system_regs(&g_mock_onewire_system_regs);
   g_mock_cmt3_counter_shadow          = 0;
   g_mock_onewire_timer_auto_increment = k_mock_onewire_timer_auto_increment_default;
+
+  g_mock_onewire_null_system_regs_count = 0;
+  g_mock_onewire_null_cmt_ctrl_count    = 0;
+  g_mock_onewire_null_cmt3_count        = 0;
 }
 
 void mock_onewire_hw_set_timer_auto_increment(uint16_t increment)

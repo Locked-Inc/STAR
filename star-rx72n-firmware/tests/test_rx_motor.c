@@ -377,7 +377,7 @@ static rx_motor_config_t s_config;
 void setUp(void)
 {
   mock_gptw_reset();
-  s_motor = (rx_motor_handle_t){0};
+  s_motor = (rx_motor_handle_t){};
 
   /* Default config for channel 0 */
   s_config.channel      = k_gptw_channel_0;
@@ -1032,8 +1032,8 @@ void test_motor_set_duty_not_initialized_fails(void)
 
 void test_motor_multiple_channels_independent(void)
 {
-  rx_motor_handle_t motor0 = {0};
-  rx_motor_handle_t motor1 = {0};
+  rx_motor_handle_t motor0 = {};
+  rx_motor_handle_t motor1 = {};
 
   rx_motor_config_t config0 = s_config;
 
@@ -1068,7 +1068,7 @@ void test_motor_multiple_channels_independent(void)
 void test_motor_all_four_channels(void)
 {
   /* Initialize all 4 motors */
-  rx_motor_handle_t motors[k_test_num_motors] = {0};
+  rx_motor_handle_t motors[k_test_num_motors] = {};
   rx_motor_config_t configs[k_test_num_motors];
 
   for (uint8_t i = 0; i < k_test_num_motors; i++) {

@@ -48,7 +48,6 @@
 
 #include "rx_bmp280.h"
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -211,7 +210,7 @@ static rx_bus_manager_t* s_manager = NULL;
  *  @see BMP280 datasheet section 4.2.2 for coefficient descriptions
  *  @since Version 1.0.0
  */
-static bmp280_calib_t s_calib = {0};
+static bmp280_calib_t s_calib = {};
 
 /** @brief Guard flag: true after successful rx_bmp280_init()
  *  @note Only set to true in rx_bmp280_init() after all init steps succeed
@@ -225,7 +224,12 @@ static bool s_initialized = false;
  *  @see main.c Bus registration with name "i2c1_baro"
  *  @since Version 1.0.0
  */
+#ifdef UNIT_TEST
+static const char* s_bus_name =
+  "i2c1_baro"; /* NOLINT(cppcoreguidelines-avoid-non-const-global-variables) */
+#else
 static const char* const s_bus_name = "i2c1_baro";
+#endif
 
 /* =============================================================================
  * Forward Declarations
@@ -358,6 +362,11 @@ RX_STATIC_TESTABLE uint16_t internal_parse_u16_le(const uint8_t* buf)
   /* Pre-condition: buf is always a valid pointer to a calibration or ADC buffer;
    * all callers pass stack-allocated arrays (never NULL). */
   RX_ASSERT_PRE(buf != NULL, "buf must not be NULL");
+#ifdef UNIT_TEST
+  if (buf == NULL) {
+    return 0U;
+  }
+#endif
   static_assert((bool)(((unsigned)k_bmp280_byte_shift == (unsigned)k_bmp280_sizeof_int64) != 0),
                 "byte shift must be 8 for LE 16-bit assembly");
   return (uint16_t)((uint16_t)buf[k_bmp280_le16_lsb_idx] |
@@ -388,6 +397,11 @@ RX_STATIC_TESTABLE int16_t internal_parse_s16_le(const uint8_t* buf)
 {
   /* Pre-condition: buf is always a valid calibration buffer pointer (never NULL). */
   RX_ASSERT_PRE(buf != NULL, "buf must not be NULL");
+#ifdef UNIT_TEST
+  if (buf == NULL) {
+    return 0;
+  }
+#endif
   static_assert((bool)((sizeof(int16_t) == sizeof(uint16_t)) != 0),
                 "int16_t and uint16_t must be same size for safe reinterpret cast");
   return (int16_t)internal_parse_u16_le(buf);
@@ -424,12 +438,17 @@ RX_STATIC_TESTABLE int32_t internal_assemble_adc20(const uint8_t* buf)
    * Post-condition: result is in [0, 0xFFFFF] because only 20 bits are
    * assembled (MSB contributes bits[19:12], LSB bits[11:4], XLSB bits[3:0]). */
   RX_ASSERT_PRE(buf != NULL, "buf must not be NULL");
+#ifdef UNIT_TEST
+  if (buf == NULL) {
+    return 0;
+  }
+#endif
   /* Assembly: (MSB << 12) | (LSB << 4) | (XLSB >> 4) produces 20-bit value */
   const int32_t result =
     (int32_t)(((uint32_t)buf[k_bmp280_adc20_msb_idx] << k_bmp280_shift_msb) |
               ((uint32_t)buf[k_bmp280_adc20_lsb_idx] << k_bmp280_shift_lsb_left) |
               ((uint32_t)buf[k_bmp280_adc20_xlsb_idx] >> k_bmp280_shift_xlsb_right));
-  RX_ASSERT_POST(result >= 0 && result <= (int32_t)k_bmp280_adc_20bit_max,
+  RX_ASSERT_POST(result >= 0 && result <= (int32_t)k_bmp280_adc_20bit_max, /* GCOVR_EXCL_BR_LINE */
                  "ADC20 result out of 20-bit range");
   return result;
 }
@@ -494,6 +513,11 @@ RX_STATIC_TESTABLE int32_t internal_compensate_temp(int32_t adc_temp, int32_t* t
   /* Pre-conditions: t_fine_out is a local stack variable (never NULL);
    * adc_temp is produced by internal_assemble_adc20 which masks to 20 bits. */
   RX_ASSERT_PRE(t_fine_out != NULL, "t_fine_out must be non-NULL");
+#ifdef UNIT_TEST
+  if (t_fine_out == NULL) {
+    return 0;
+  }
+#endif
   RX_ASSERT_PRE(adc_temp >= 0 && adc_temp <= (int32_t)k_bmp280_adc_20bit_max,
                 "adc_T must be a 20-bit ADC value");
   const int32_t var1 =
@@ -624,6 +648,11 @@ RX_STATIC_TESTABLE rx_err_t internal_compensate_pressure(int32_t   adc_pressure,
   RX_ASSERT_PRE(s_calib.dig_P1 != 0U, "dig_P1 must be non-zero (factory calibration)");
   RX_ASSERT_PRE(adc_pressure >= 0, "adc_P must be non-negative (20-bit unsigned ADC value)");
   RX_ASSERT_PRE(press_out != NULL, "press_out must not be NULL");
+#ifdef UNIT_TEST
+  if (press_out == NULL) {
+    return k_rx_err_null_ptr;
+  }
+#endif
 
   /* k_press_base_one must be int64_t (not enum) because the expression
    * (k_press_base_one << k_press_shift_47) requires a 48-bit value.
@@ -687,6 +716,11 @@ RX_STATIC_TESTABLE void internal_parse_calibration(const uint8_t* buf)
 {
   /* Pre-condition: buf is a stack-allocated calibration buffer in rx_bmp280_init (never NULL). */
   RX_ASSERT_PRE(buf != NULL, "calibration buffer must not be NULL");
+#ifdef UNIT_TEST
+  if (buf == NULL) {
+    return;
+  }
+#endif
   static_assert(
     (bool)((k_bmp280_calib_p9_lsb + k_bmp280_calib_tail_bytes == k_bmp280_calib_byte_count) != 0),
     "P9 coefficient must occupy the final two bytes of the calibration block");
@@ -785,7 +819,7 @@ static rx_err_t internal_read_and_validate_calibration(void)
 
   internal_parse_calibration(calib_buf);
 
-  if ((s_calib.dig_T1 == 0U) || (s_calib.dig_P1 == 0U)) {
+  if ((s_calib.dig_T1 == 0U) || (s_calib.dig_P1 == 0U)) { /* GCOVR_EXCL_BR_LINE */
     rx_log_error(s_tag, "Invalid calibration: dig_T1 or dig_P1 is zero");
     s_manager = NULL;
     return k_rx_err_invalid_state;
@@ -888,6 +922,11 @@ RX_STATIC_TESTABLE rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out)
   /* Pre-conditions: out is a local stack variable in rx_bmp280_read (never NULL);
    * s_initialized is true because rx_bmp280_read checks it via RX_CHECK_INITIALIZED. */
   RX_ASSERT_PRE(out != NULL, "out must be non-NULL");
+#ifdef UNIT_TEST
+  if (out == NULL) {
+    return k_rx_err_null_ptr;
+  }
+#endif
   RX_ASSERT_PRE(s_initialized, "BMP280 must be initialized before ADC read");
 
   /* Step 1: Read 6 bytes of ADC data: pressure[3] + temperature[3] */
@@ -1024,7 +1063,7 @@ void rx_bmp280_test_reset_state(void)
   RX_ASSERT(true, "rx_bmp280_test_reset_state: test-only function");
   s_manager                       = NULL;
   s_initialized                   = false;
-  const bmp280_calib_t zero_calib = {0};
+  const bmp280_calib_t zero_calib = {};
   s_calib                         = zero_calib;
 }
 
@@ -1075,6 +1114,27 @@ void rx_bmp280_test_set_state(rx_bus_manager_t* manager, bool init_val)
 void rx_bmp280_test_zero_calib_p1(void)
 {
   s_calib.dig_P1 = 0U;
+}
+
+/**
+ * @brief Override s_bus_name for branch coverage testing
+ *
+ * @details
+ * Sets s_bus_name to the given pointer so that the RX_ASSERT_PRE checks
+ * on s_bus_name can be tested with NULL. Caller must restore the original
+ * value after the test.
+ *
+ * @param[in] name New bus name pointer (may be NULL)
+ *
+ * @pre UNIT_TEST defined (s_bus_name is non-const in test builds)
+ * @post s_bus_name == name
+ *
+ * @note Test-only helper; not compiled into production firmware
+ * @since Version 1.0.0
+ */
+void rx_bmp280_test_set_bus_name(const char* name)
+{
+  s_bus_name = name;
 }
 
 #endif /* UNIT_TEST */

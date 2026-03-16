@@ -203,7 +203,6 @@
 
 #ifdef __RX__
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "hardware.h"

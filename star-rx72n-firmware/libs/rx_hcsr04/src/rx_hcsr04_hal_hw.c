@@ -426,8 +426,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <stdbool.h>
-
 #include "hardware.h"
 #include "rx72n_clock.h"
 #include "rx72n_cmt_regs.h"

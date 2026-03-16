@@ -2947,7 +2947,7 @@ static void internal_check_comm_timeout(void)
  */
 static void internal_update_motor_state(void)
 {
-  motor_state_t state = {0};
+  motor_state_t state = {};
 
   /* Collect state for each motor */
   for (uint8_t i = 0; i < k_motor_count; i++) {

@@ -268,7 +268,6 @@
  * @since Version 1.0.0
  */
 
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -1878,6 +1877,31 @@ static void test_check_tasks_detects_timeout(void)
  * @since Version 1.0.0
  */
 
+/**
+ * @brief Test registering a task whose name exactly fills the buffer.
+ *
+ * @details
+ * Registers a 31-character task name (k_iwdt_task_name_len - 1) so that
+ * internal_safe_strcpy's loop exits via the `i < max_len - 1U` condition
+ * rather than the `src[i] != '\0'` condition. This covers the previously
+ * uncovered branch at rx_iwdt.c line 325.
+ *
+ * @pre Driver is initialized
+ * @post Task registered successfully with truncated-at-limit name
+ *
+ * @since Version 1.0.0
+ */
+static void test_register_task_max_length_name_succeeds(void)
+{
+  test_setup();
+
+  (void)rx_iwdt_init(nullptr);
+  /* Exactly 31 characters -- fills buffer completely (k_iwdt_task_name_len - 1) */
+  rx_err_t err =
+    rx_iwdt_register_task("1234567890123456789012345678901", k_iwdt_test_timeout_1000_ms);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
 void setUp(void)
 {
   test_setup();
@@ -1942,6 +1966,9 @@ int main(void)
   RUN_TEST(test_get_status_before_init_returns_error);
   RUN_TEST(test_check_tasks_monitoring_disabled_returns_ok);
   RUN_TEST(test_check_tasks_detects_timeout);
+
+  /* internal_safe_strcpy loop boundary coverage */
+  RUN_TEST(test_register_task_max_length_name_succeeds);
 
   return UNITY_END();
 }

@@ -884,11 +884,11 @@ static rx_err_t internal_wait_for_ack(const rx_spi_comm_handle_t* handle, uint32
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
-                                      const uint8_t*        tx_data,
-                                      const uint32_t        tx_len,
-                                      uint8_t*              rx_data,
-                                      const uint32_t        rx_len)
+RX_STATIC_TESTABLE rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
+                                                  const uint8_t*        tx_data,
+                                                  const uint32_t        tx_len,
+                                                  uint8_t*              rx_data,
+                                                  const uint32_t        rx_len)
 {
   /* Pre-condition 1: Handle pointer is always non-null (all callers validate before calling). */
 
@@ -1308,7 +1308,7 @@ RX_STATIC_TESTABLE rx_err_t internal_build_frame(const rx_spi_comm_handle_t* han
     return k_rx_err_invalid_size;
   }
 
-  *frame                 = (rx_frame_t){0};
+  *frame                 = (rx_frame_t){};
   frame->header.sequence = sequence;
   frame->header.length   = (uint16_t)payload_len;
   frame->header.type     = (uint8_t)type;

@@ -30,7 +30,6 @@
 extern "C" {
 #endif
 
-#include <stdbool.h>
 #include <stdint.h>
 
 /* Pull in real types so mock functions have compatible signatures */

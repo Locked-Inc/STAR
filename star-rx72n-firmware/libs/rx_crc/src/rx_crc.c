@@ -17,7 +17,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <stdbool.h>
 #include <stddef.h>
 
 #include "rx_crc_internal.h"

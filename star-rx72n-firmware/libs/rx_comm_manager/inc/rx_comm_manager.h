@@ -385,7 +385,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -1051,7 +1050,7 @@ typedef struct {
  * **Initialization:**
  * Zero-initialize structure before passing to `rx_comm_manager_init()`:
  * @code{.c}
- * rx_comm_manager_t mgr = {0};  // Or use memset
+ * rx_comm_manager_t mgr = {};  // Or use memset
  * @endcode
  *
  * **Memory Layout:** See file-level documentation for detailed breakdown.

@@ -498,6 +498,8 @@ typedef struct {
   uint32_t
     presence_false_after;    /**< Return presence=false after this many resets (0=immediately) */
   uint32_t reset_call_count; /**< Counter for reset calls */
+  bool     force_reset_error_after; /**< If true, return error after N successful resets */
+  uint32_t reset_error_after;       /**< Return error when reset_call_count >= this value */
 } mock_onewire_state_t;
 
 /**
@@ -577,6 +579,10 @@ typedef enum : uint8_t {
   k_test_write_fail_after_2 = 2U,    /**< Fail write after 2 successful calls */
   k_test_skip_rom_fail_at_4 = 4U,    /**< Fail skip_rom on 4th call */
   k_test_presence_fail_at_5 = 5U,    /**< Fail presence on 5th reset */
+  k_test_reset_error_after_4 =
+    4U, /**< Fail reset on 5th call (read_scratchpad in set_resolution) */
+  k_test_reset_error_after_5 =
+    5U, /**< Fail reset on 6th call (write_scratchpad in set_resolution) */
 } ds18b20_mock_constants_t;
 
 /**
@@ -787,6 +793,12 @@ rx_err_t rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, b
   }
 
   if (s_mock_state.force_reset_error) {
+    return k_rx_err_hw_error;
+  }
+
+  if ((int)s_mock_state.force_reset_error_after &&
+      s_mock_state.reset_call_count >= s_mock_state.reset_error_after) {
+    s_mock_state.reset_call_count++;
     return k_rx_err_hw_error;
   }
 
@@ -3683,6 +3695,71 @@ void test_ds18b20_read_scratchpad_reserved_byte_warning(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
+/**
+ * @brief Test read_scratchpad_raw reset error covers err != k_rx_ok branch (line 1602)
+ *
+ * @details
+ * Covers Branch 1 at line 1602: `err != k_rx_ok || !presence` where
+ * `err != k_rx_ok` is true (short-circuits without evaluating !presence).
+ * Init consumes 4 resets (verify_presence + read_scratchpad + set_resolution's
+ * read_scratchpad + write_scratchpad). The post-init set_resolution call's
+ * read_scratchpad_raw triggers reset #4, which is forced to fail.
+ *
+ * @pre Init succeeds (resets 0-3 pass)
+ * @post Reset #4 fails, covering the err short-circuit branch
+ */
+void test_ds18b20_read_scratchpad_reset_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+
+  /* After init: reset_call_count == 4. Fail on reset #4 (read_scratchpad_raw). */
+  s_mock_state.force_reset_error_after = true;
+  s_mock_state.reset_error_after       = k_test_reset_error_after_4;
+
+  rx_err_t err = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_10bit);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test write_scratchpad reset error covers err != k_rx_ok branch (line 1757)
+ *
+ * @details
+ * Covers Branch 1 at line 1757: `err != k_rx_ok || !presence` where
+ * `err != k_rx_ok` is true. Init consumes 4 resets. The post-init
+ * set_resolution call has read_scratchpad (reset #4 ok) then
+ * write_scratchpad (reset #5 forced to fail).
+ *
+ * @pre Init succeeds (resets 0-3 pass)
+ * @post Reset #5 fails, covering the err short-circuit branch
+ */
+void test_ds18b20_write_scratchpad_reset_error(void)
+{
+  rx_ds18b20_handle_t handle;
+  rx_ds18b20_config_t config = {
+    .bus_manager      = &s_mock_bus_manager,
+    .bus_name         = s_test_bus_name,
+    .resolution       = k_ds18b20_resolution_12bit,
+    .use_rom_matching = false,
+  };
+  internal_init_handle(&handle);
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_ds18b20_init(&handle, &config));
+
+  /* After init: reset_call_count == 4. Fail on reset #5 (write_scratchpad). */
+  s_mock_state.force_reset_error_after = true;
+  s_mock_state.reset_error_after       = k_test_reset_error_after_5;
+
+  rx_err_t err = rx_ds18b20_set_resolution(&handle, k_ds18b20_resolution_10bit);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
 /* =============================================================================
  * Unity Test Runner
  * =============================================================================
@@ -3846,6 +3923,8 @@ static void internal_run_error_path_tests(void)
   RUN_TEST(test_ds18b20_set_resolution_read_scratchpad_error);
   RUN_TEST(test_ds18b20_set_resolution_write_scratchpad_error);
   RUN_TEST(test_ds18b20_init_set_resolution_error);
+  RUN_TEST(test_ds18b20_read_scratchpad_reset_error);
+  RUN_TEST(test_ds18b20_write_scratchpad_reset_error);
 }
 
 int main(void)

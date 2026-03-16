@@ -894,7 +894,7 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
   handle->initialized = 1U;
 
   /* Post-condition: initialized and mode were set unconditionally above */
-  RX_ASSERT_POST(handle->initialized, "Handle initialization failed");
+  RX_ASSERT_POST(handle->initialized, "Handle initialization failed"); /* GCOVR_EXCL_BR_LINE */
 
   rx_log_debug(s_tag, "USB comm initialized");
   return k_rx_ok;
@@ -1063,7 +1063,7 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
   (void)rx_session_next_tx(handle->session, &sequence);
 
   /* Build frame: all args valid (checked above) so always succeeds */
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   (void)internal_build_frame(&frame, sequence, type, flags, payload, payload_len);
 
   /* Encode frame: encoder initialized, payload within bounds, so always succeeds */
@@ -1421,7 +1421,7 @@ rx_err_t rx_usb_comm_send_pong(rx_usb_comm_handle_t* handle,
   (void)(rx_session_next_tx(handle->session, &sequence));
 
   /* Build PONG frame: frame ptr is valid, payload is from received ping frame */
-  rx_frame_t pong_frame = {0};
+  rx_frame_t pong_frame = {};
   (void)(rx_frame_create_pong(&pong_frame, sequence, payload, payload_len));
 
   /* Encode: encoder initialized, frame valid, always succeeds */
@@ -1474,7 +1474,7 @@ rx_err_t rx_usb_comm_send_reset_ack(rx_usb_comm_handle_t* handle)
   (void)(rx_session_next_tx(handle->session, &sequence));
 
   /* Build RESET_ACK frame: frame ptr is valid, always succeeds */
-  rx_frame_t reset_ack_frame = {0};
+  rx_frame_t reset_ack_frame = {};
   (void)(rx_frame_create_reset_ack(&reset_ack_frame, sequence));
 
   /* Encode: encoder initialized, frame valid, always succeeds */

@@ -12,7 +12,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "unity.h"

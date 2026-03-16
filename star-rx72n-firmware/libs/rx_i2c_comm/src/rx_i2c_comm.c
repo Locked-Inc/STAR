@@ -737,7 +737,7 @@ rx_err_t rx_i2c_comm_init(rx_i2c_comm_handle_t* handle, const rx_i2c_comm_config
   handle->rx_buffer_len = 0;
   handle->rx_buffer_pos = 0;
   handle->initialized   = 1U;
-  RX_ASSERT_POST(handle->initialized, "Handle initialization failed");
+  RX_ASSERT_POST(handle->initialized, "Handle initialization failed"); /* GCOVR_EXCL_BR_LINE */
 
   rx_log_debug(s_tag, "I2C comm initialized");
   return k_rx_ok;
@@ -861,7 +861,7 @@ rx_err_t rx_i2c_comm_send(rx_i2c_comm_handle_t* handle,
     return err;
   }
 
-  rx_frame_t frame = {0};
+  rx_frame_t frame = {};
   /* internal_build_frame only fails for invalid params; all params are validated above */
   (void)internal_build_frame(&frame, sequence, type, flags, payload, payload_len);
 
@@ -955,7 +955,7 @@ RX_STATIC_TESTABLE rx_err_t internal_handle_reset(rx_i2c_comm_handle_t* handle)
     return seq_err;
   }
 
-  rx_frame_t reset_ack_frame = {0};
+  rx_frame_t reset_ack_frame = {};
   /* rx_frame_create_reset_ack only fails for nullptr; reset_ack_frame is on the stack */
   (void)rx_frame_create_reset_ack(&reset_ack_frame, reset_ack_seq);
 

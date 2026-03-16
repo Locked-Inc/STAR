@@ -178,7 +178,7 @@ static error_handler_t s_handler;
  */
 void setUp(void)
 {
-  static const error_handler_t s_zero = {0};
+  static const error_handler_t s_zero = {};
   s_handler                           = s_zero;
 }
 
@@ -876,7 +876,7 @@ void test_error_interface_validate_null(void)
  */
 void test_error_interface_validate_missing_functions(void)
 {
-  rx_error_interface_t iface = {0};
+  rx_error_interface_t iface = {};
 
   rx_err_t err = rx_error_interface_validate(&iface);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -1434,6 +1434,72 @@ void test_get_backoff_delay_unlimited_retries_loop_exhaustion(void)
   TEST_ASSERT_GREATER_THAN_UINT32(0, delay);
 }
 
+/**
+ * @brief Test impl_get_backoff_delay with null component (non-null handler).
+ *
+ * @details
+ * Exercises the second operand of the `||` at rx_error_handler.c line 1010:
+ * `(handler == nullptr) || (component == nullptr)`. Passes valid ctx but
+ * nullptr component to cover the case where handler is non-null.
+ *
+ * @pre Handler initialized
+ * @post Returns 0 (rejected by null component check)
+ *
+ * @since Version 1.0.0
+ */
+void test_get_backoff_delay_null_component(void)
+{
+  rx_err_t err = internal_init_handler(&s_handler, k_test_max_retries);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  rx_error_interface_t iface;
+  TEST_ASSERT_EQUAL(k_rx_ok, error_handler_get_interface(&iface, &s_handler));
+
+  uint32_t delay = iface.get_backoff_delay(iface.ctx, nullptr);
+  TEST_ASSERT_EQUAL_UINT32(0, delay);
+}
+
+/**
+ * @brief Test impl_get_backoff_delay with max_retries > k_error_handler_max_retries.
+ *
+ * @details
+ * Exercises the second operand of the `||` at rx_error_handler.c line 1031:
+ * `handler->max_retries == k_error_handler_no_retry_limit || handler->max_retries
+ * > k_error_handler_max_retries`. Initializes handler with max_retries=33
+ * (> k_error_handler_max_retries=32) so the first operand is false but the
+ * second is true, covering the short-circuit branch.
+ *
+ * @pre Handler initialized with max_retries=33
+ * @post Returns non-zero delay (retries capped at 32)
+ *
+ * @since Version 1.0.0
+ */
+void test_get_backoff_delay_excessive_max_retries(void)
+{
+  enum : uint32_t {
+    k_excessive_max_retries = 33U,
+    k_num_errors            = 2U,
+  };
+  const error_handler_config_t config = {
+    .max_retries        = k_excessive_max_retries,
+    .initial_backoff_ms = 1,
+    .max_backoff_ms     = 0xFFFFFFFFU,
+  };
+  rx_err_t err = error_handler_init(&s_handler, &config);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  rx_error_interface_t iface;
+  TEST_ASSERT_EQUAL(k_rx_ok, error_handler_get_interface(&iface, &s_handler));
+
+  /* Report errors to set retry_count > 0 */
+  for (uint32_t i = 0; i < k_num_errors; i++) {
+    iface.report_error(iface.ctx, k_rx_fail, "SPI", "err");
+  }
+
+  uint32_t delay = iface.get_backoff_delay(iface.ctx, "SPI");
+  TEST_ASSERT_GREATER_THAN_UINT32(0, delay);
+}
+
 /** @brief Dummy report_error stub for validate sub-branch tests */
 static rx_err_t
 s_stub_report_error(void* ctx, rx_err_t err, const char* component, const char* message)
@@ -1455,7 +1521,7 @@ static uint32_t s_stub_get_error_count(void* ctx)
 /** @brief Verify validate rejects when only report_error is set (get_error_count missing) */
 void test_error_interface_validate_missing_get_count(void)
 {
-  rx_error_interface_t iface = {0};
+  rx_error_interface_t iface = {};
   iface.report_error         = s_stub_report_error;
   /* get_error_count and clear_errors remain nullptr */
   rx_err_t err = rx_error_interface_validate(&iface);
@@ -1465,7 +1531,7 @@ void test_error_interface_validate_missing_get_count(void)
 /** @brief Verify validate rejects when report_error and get_error_count set but clear_errors missing */
 void test_error_interface_validate_missing_clear_errors(void)
 {
-  rx_error_interface_t iface = {0};
+  rx_error_interface_t iface = {};
   iface.report_error         = s_stub_report_error;
   iface.get_error_count      = s_stub_get_error_count;
   /* clear_errors remains nullptr */
@@ -1588,6 +1654,8 @@ static void internal_run_config_and_interface_tests(void)
   RUN_TEST(test_init_null_handler_direct);
   RUN_TEST(test_init_null_config);
   RUN_TEST(test_get_backoff_delay_unlimited_retries_loop_exhaustion);
+  RUN_TEST(test_get_backoff_delay_null_component);
+  RUN_TEST(test_get_backoff_delay_excessive_max_retries);
 
   /* Interface validation tests */
   RUN_TEST(test_error_interface_validate_success);

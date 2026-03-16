@@ -1176,7 +1176,7 @@ rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config
    * which is caught by the preceding check. No RX_ASSERT needed. */
 
   /* Clear all state */
-  *handler = (error_handler_t){0};
+  *handler = (error_handler_t){};
 
   /* Initialize configuration */
   handler->max_retries        = config->max_retries;

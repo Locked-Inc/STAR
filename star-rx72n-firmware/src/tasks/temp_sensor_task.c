@@ -1191,7 +1191,7 @@ static void internal_send_iwdt_heartbeat(void)
  */
 static void internal_init_ds18b20(void)
 {
-  rx_ds18b20_config_t config = {0};
+  rx_ds18b20_config_t config = {};
   config.bus_manager         = &g_bus_manager;
   config.bus_name            = s_onewire_bus_name;
   config.resolution          = k_ds18b20_resolution_12bit;
@@ -1215,7 +1215,7 @@ static void internal_temp_task_entry(ULONG input)
   /* Main polling loop */
   while (true) {
     /* Build state structure with common fields */
-    temp_sensor_state_t state = {0};
+    temp_sensor_state_t state = {};
     state.sensor_count        = k_temp_sensor_count;
     state.timestamp_ms        = tx_time_get();
 
