@@ -136,6 +136,8 @@ jobs:
             --exclude '.*/rx_hal/inc/rx72n_port_regs.h' \
             --exclude '.*/rx_hal/inc/rx_port_utils.h' \
             --exclude '.*/CMakeFiles/.*' \
+            --gcov-ignore-errors=source_not_found \
+            --gcov-ignore-errors=no_working_dir_found \
             -j 1 \
             --print-summary \
             --fail-under-line 100 \
