@@ -361,8 +361,8 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
   if (s_queue_count > 0) {
     entry = &s_frame_queue[s_queue_read_idx];
 
-    if (entry->valid && /* NOLINT(readability-implicit-bool-conversion) */
-        mgr->callback != nullptr) {
+    /* NOLINTNEXTLINE(readability-implicit-bool-conversion) */
+    if (entry->valid && mgr->callback != nullptr) {
       /* Invoke callback with queued frame */
       mgr->callback(entry->channel, &entry->frame, mgr->callback_ctx);
     }

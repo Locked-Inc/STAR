@@ -22,7 +22,7 @@
  * 5. Return k_rx_ok (or validation error)
  *
  * @par Implementation Notes:
- * - Uses byte-level for-loop for state reset (avoids banned memset)
+ * - Uses memset for state reset (with NOLINT for clang-analyzer)
  * - Uses nullptr (C23) for NULL checks
  * - Pin state stored as 2D array: pins[port][pin_num]
  * - Call history is circular buffer (oldest dropped when full)
@@ -39,6 +39,8 @@
  */
 
 #include "mock_gpio_hal.h"
+
+#include <string.h>
 
 #include "rx_port_constants.h"
 
@@ -193,12 +195,8 @@ static mock_gpio_pin_state_t* internal_get_pin_state(uint8_t port, uint8_t pin)
 
 void mock_gpio_init(void)
 {
-  {
-    uint8_t* raw = (uint8_t*)&g_mock_gpio;
-    for (size_t i = 0; i < sizeof(g_mock_gpio); i++) {
-      raw[i] = 0;
-    }
-  }
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&g_mock_gpio, 0, sizeof(g_mock_gpio));
 }
 
 void mock_gpio_reset(void)

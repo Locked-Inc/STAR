@@ -35,6 +35,8 @@
  * @see mock_drv8263_port.h Mock PORT register API
  */
 
+#include <string.h>
+
 #include "mock_drv8263_port.h"
 #include "rx_drv8263.h"
 #include "unity.h"
@@ -284,12 +286,8 @@ static void internal_init_handle(void)
 void setUp(void)
 {
   mock_drv8263_port_reset();
-  {
-    uint8_t* raw = (uint8_t*)&s_handle;
-    for (size_t i = 0; i < sizeof(s_handle); i++) {
-      raw[i] = 0;
-    }
-  }
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&s_handle, 0, sizeof(s_handle));
   s_config = internal_make_valid_config();
 }
 

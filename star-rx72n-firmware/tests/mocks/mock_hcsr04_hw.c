@@ -106,12 +106,8 @@ static void internal_record_call(mock_hcsr04_hw_t* mock,
 void mock_hcsr04_hw_init(mock_hcsr04_hw_t* mock)
 {
   mock_hcsr04_hw_t* m = internal_get_mock(mock);
-  {
-    uint8_t* raw = (uint8_t*)m;
-    for (size_t bi = 0; bi < sizeof(mock_hcsr04_hw_t); bi++) {
-      raw[bi] = 0;
-    }
-  }
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(m, 0, sizeof(mock_hcsr04_hw_t));
   m->initialized       = true;
   m->simulated_echo_us = k_default_test_distance_cm * k_us_per_cm;
   m->auto_advance_time = true;
@@ -134,12 +130,8 @@ void mock_hcsr04_hw_reset(mock_hcsr04_hw_t* mock)
   bool     inject_pin_conflict = m->inject_pin_conflict;
   uint32_t echo_us             = m->simulated_echo_us;
 
-  {
-    uint8_t* raw = (uint8_t*)m;
-    for (size_t bi = 0; bi < sizeof(mock_hcsr04_hw_t); bi++) {
-      raw[bi] = 0;
-    }
-  }
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(m, 0, sizeof(mock_hcsr04_hw_t));
 
   m->initialized         = true;
   m->inject_timeout      = inject_timeout;
@@ -364,7 +356,8 @@ rx_err_t mock_gpio_write_low(uint8_t port, uint8_t pin)
   }
 
   /* Detect trigger pulse completion (high->low transition) */
-  if (ret == k_rx_ok && m->trigger_pin_state) { /* NOLINT(readability-implicit-bool-conversion) */
+  /* NOLINTNEXTLINE(readability-implicit-bool-conversion) */
+  if (ret == k_rx_ok && m->trigger_pin_state) {
     m->trigger_pulse_count++;
   }
 
@@ -430,9 +423,9 @@ rx_err_t mock_gpio_deinit(uint8_t port, uint8_t pin)
   mock_hcsr04_hw_t* m   = internal_get_mock(nullptr);
   rx_err_t          ret = k_rx_ok;
 
-  if (m->inject_gpio_deinit_error || /* NOLINT(readability-implicit-bool-conversion) */
-      (m->gpio_deinit_fail_after_count > 0U &&
-       m->gpio_deinit_count >= m->gpio_deinit_fail_after_count)) {
+  /* NOLINTNEXTLINE(readability-implicit-bool-conversion) */
+  if (m->inject_gpio_deinit_error || (m->gpio_deinit_fail_after_count > 0U &&
+                                      m->gpio_deinit_count >= m->gpio_deinit_fail_after_count)) {
     ret = k_rx_err_hw_error;
   }
 

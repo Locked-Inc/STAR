@@ -31,6 +31,8 @@
 
 #include "mock_adc_hal.h"
 
+#include <string.h>
+
 /* =============================================================================
  * Constants
  * =============================================================================
@@ -160,12 +162,8 @@ static rx_err_t internal_check_error(void)
 
 void mock_adc_init(void)
 {
-  {
-    uint8_t* raw = (uint8_t*)&g_mock_adc;
-    for (size_t i = 0; i < sizeof(g_mock_adc); i++) {
-      raw[i] = 0;
-    }
-  }
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&g_mock_adc, 0, sizeof(g_mock_adc));
 }
 
 void mock_adc_reset(void)
@@ -491,8 +489,8 @@ rx_err_t adc_read_voltage_mv(adc_unit_t       unit,
 
   /* Validate resolution matches unit's configured resolution (matches production behavior) */
   if ((uint8_t)unit < k_mock_adc_max_units &&
-      g_mock_adc.units[unit].initialized && /* NOLINT(readability-implicit-bool-conversion) */
-      g_mock_adc.units[unit].resolution != (uint8_t)bits) {
+      /* NOLINTNEXTLINE(readability-implicit-bool-conversion) */
+      g_mock_adc.units[unit].initialized && g_mock_adc.units[unit].resolution != (uint8_t)bits) {
     return k_rx_err_invalid_arg;
   }
 

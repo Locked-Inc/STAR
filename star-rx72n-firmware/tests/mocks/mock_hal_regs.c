@@ -20,6 +20,7 @@
 #include "mock_hal_regs.h"
 
 #include <stddef.h>
+#include <string.h>
 
 /* =============================================================================
  * Constants
@@ -54,12 +55,8 @@ mock_hal_state_t g_mock_hal;
 
 void mock_hal_init(void)
 {
-  {
-    uint8_t* raw = (uint8_t*)&g_mock_hal;
-    for (size_t i = 0; i < sizeof(g_mock_hal); i++) {
-      raw[i] = 0;
-    }
-  }
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&g_mock_hal, 0, sizeof(g_mock_hal));
 
   /* Set default ADC behavior - conversion completes immediately */
   g_mock_hal.adc_simulate_timeout = false;

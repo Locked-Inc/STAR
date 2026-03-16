@@ -12,6 +12,7 @@
 #include "mock_riic_hal.h"
 
 #include <stddef.h>
+#include <string.h>
 
 /* =============================================================================
  * Constants
@@ -186,12 +187,8 @@ internal_record_tx_snapshot(mock_riic_call_t* entry, const uint8_t* data, uint16
 
 void mock_riic_init(void)
 {
-  {
-    uint8_t* raw = (uint8_t*)&g_mock_riic;
-    for (size_t i = 0; i < sizeof(g_mock_riic); i++) {
-      raw[i] = 0;
-    }
-  }
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&g_mock_riic, 0, sizeof(g_mock_riic));
 }
 
 void mock_riic_reset(void)
