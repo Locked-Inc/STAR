@@ -1071,7 +1071,7 @@ void rx_hal_iwdt_clear_status(void)
    *
    * Bits 14-15 are write-0-to-clear
    */
-  iwdt()->iwdtsr &= (uint16_t)~(uint16_t)(k_iwdt_sr_undff | k_iwdt_sr_refef);
+  iwdt()->iwdtsr &= (uint16_t) ~(uint16_t)(k_iwdt_sr_undff | k_iwdt_sr_refef);
 
 #else
   /* Host-side stub - no operation */

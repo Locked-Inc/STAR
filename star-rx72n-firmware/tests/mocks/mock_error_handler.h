@@ -202,8 +202,8 @@
  *         k_rx_err_invalid_arg if index out of range
  */
   rx_err_t mock_error_handler_get_error_at(mock_error_handler_t * handler,
-                                           uint32_t     index,
-                                           rx_err_t*    out_error,
+                                           uint32_t index,
+                                           rx_err_t * out_error,
                                            const char** out_component,
                                            const char** out_message);
 

@@ -7,7 +7,7 @@ CONTAINER_NAME := star-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n
+.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell
 
 help:
 	@echo "STAR Project Development Helper"
@@ -43,6 +43,11 @@ help:
 	@echo "  make up           - Start a persistent background container named '$(CONTAINER_NAME)'"
 	@echo "  make exec         - Connect to the running persistent container"
 	@echo "  make stop         - Stop and remove the persistent container"
+	@echo ""
+	@echo "Dev Container (no VS Code required):"
+	@echo "  make devcontainer         - Build and start the dev container"
+	@echo "  make devcontainer-rebuild - Force rebuild (applies devcontainer.json changes)"
+	@echo "  make devcontainer-shell   - Open a shell in the running dev container"
 
 # Build the Docker image (cached)
 build-image:
@@ -89,6 +94,35 @@ stop:
 	@echo "Stopping $(CONTAINER_NAME)..."
 	@docker stop $(CONTAINER_NAME) || true
 	@docker rm $(CONTAINER_NAME) || true
+
+# ------------------------------------------------------------
+# Dev Container (runs without VS Code via devcontainer CLI)
+#
+# Prerequisites (Arch Linux):
+#   sudo pacman -S nodejs npm docker docker-buildx
+#   sudo systemctl enable --now docker
+#   sudo usermod -aG docker $USER   # then log out and back in
+#   sudo npm install -g @devcontainers/cli
+#
+# First run pulls osrf/ros:jazzy-desktop (~1 GB) and installs all
+# devcontainer features -- expect 10-30 min. Subsequent runs use
+# the cached image and start in seconds.
+#
+# DOCKER_BUILDKIT=1 is required because the Dockerfile uses
+# --mount=type=cache which is a BuildKit-only feature.
+# ------------------------------------------------------------
+
+devcontainer:
+	@echo "Starting dev container..."
+	@DOCKER_BUILDKIT=1 devcontainer up --workspace-folder .
+
+devcontainer-rebuild:
+	@echo "Rebuilding dev container..."
+	@DOCKER_BUILDKIT=1 devcontainer up --workspace-folder . --remove-existing-container
+
+devcontainer-shell:
+	@echo "Opening shell in dev container..."
+	@devcontainer exec --workspace-folder . bash
 
 # ------------------------------------------------------------
 # Protocol Buffer Generation (monorepo-wide)

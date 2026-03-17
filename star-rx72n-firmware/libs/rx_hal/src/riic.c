@@ -889,7 +889,7 @@ static rx_err_t internal_send_start(volatile rx_riic_regs_t* riic)
   }
 
   /* Clear start flag */
-  riic->icsr2 &= (uint8_t)~(uint8_t)k_riic_icsr2_start;
+  riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_start;
 
   return k_rx_ok;
 }
@@ -975,7 +975,7 @@ static rx_err_t internal_send_stop(volatile rx_riic_regs_t* riic)
   }
 
   /* Clear stop flag */
-  riic->icsr2 &= (uint8_t)~(uint8_t)k_riic_icsr2_stop;
+  riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_stop;
 
   return k_rx_ok;
 }
@@ -1069,7 +1069,7 @@ static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, const uint8_t
 
   /* Check for NACK */
   if (riic->icsr2 & k_riic_icsr2_nackf) {
-    riic->icsr2 &= (uint8_t)~(uint8_t)k_riic_icsr2_nackf;
+    riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_nackf;
     rx_log_error(s_tag, "NACK received");
     return k_rx_err_nack;
   }
@@ -1167,7 +1167,7 @@ internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data, const bool send
   if (!send_ack) {
     riic->icmr3 |= k_riic_icmr3_ackbt_mask; /* ACKBT = 1 (NACK) */
   } else {
-    riic->icmr3 &= (uint8_t)~(uint8_t)k_riic_icmr3_ackbt_mask; /* ACKBT = 0 (ACK) */
+    riic->icmr3 &= (uint8_t) ~(uint8_t)k_riic_icmr3_ackbt_mask; /* ACKBT = 0 (ACK) */
   }
 
   /* Read data */
@@ -1346,7 +1346,7 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
     return k_rx_err_timeout;
   }
 
-  riic->icsr2 &= (uint8_t)~(uint8_t)k_riic_icsr2_start;
+  riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_start;
 
   /* Set controller receive mode */
   riic->iccr2 = k_riic_iccr2_mst;

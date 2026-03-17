@@ -1291,9 +1291,9 @@ RX_STATIC_TESTABLE rx_err_t internal_enable_mtu_module(const rx_mtu_channel_t ch
   *prcr_reg() = k_rx_prcr_unlock_all; /* Enable writes to MSTPCR (0xA50F) */
 
   if (channel <= k_mtu_channel_4) {
-    system_regs()->mstpcra &= (uint32_t)~(1UL << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
+    system_regs()->mstpcra &= (uint32_t) ~(1UL << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
   } else {
-    system_regs()->mstpcra &= (uint32_t)~(1UL << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
+    system_regs()->mstpcra &= (uint32_t) ~(1UL << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
   }
 
   *prcr_reg() = k_rx_prcr_lock; /* Lock MSTPCR (0xA500) */

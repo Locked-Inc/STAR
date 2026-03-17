@@ -1196,7 +1196,7 @@ static void internal_cmt2_init(void)
   volatile uint16_t* const cmstr1 = &(cmt_ctrl()->cmstr1);
 
   /* Stop CMT2 (bit 0 of CMSTR1) */
-  *cmstr1 &= (uint16_t)~(uint16_t)k_cmstr1_cmt2_enable_bit;
+  *cmstr1 &= (uint16_t) ~(uint16_t)k_cmstr1_cmt2_enable_bit;
 
   /* Configure CMT2: PCLK/8, no interrupt */
   cmt2()->cmcr = k_cmt2_divider_bits;
