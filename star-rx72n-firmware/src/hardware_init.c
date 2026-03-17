@@ -780,11 +780,11 @@ static inline void internal_gpio_set_output(rx_port_pin_t port_pin, bool initial
   volatile rx_port_regs_t* regs = rx_port_get_base(port);
   RX_ASSERT(regs != nullptr, "Invalid GPIO port for output pin");
   RX_ASSERT(pin <= k_gpio_max_pin_number, "GPIO pin number out of range (0-7)");
-  regs->pmr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
+  regs->pmr &= (uint8_t) ~(uint16_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
   if (initial_high) {
     regs->podr |= (uint8_t)(k_gpio_single_bit_mask << pin);
   } else {
-    regs->podr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin);
+    regs->podr &= (uint8_t) ~(uint16_t)(k_gpio_single_bit_mask << pin);
   }
   regs->pdr |= (uint8_t)(k_gpio_single_bit_mask << pin); /* Output direction */
 }
@@ -830,8 +830,8 @@ static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
   volatile rx_port_regs_t* regs = rx_port_get_base(port);
   RX_ASSERT(regs != nullptr, "Invalid GPIO port for input pin");
   RX_ASSERT(pin <= k_gpio_max_pin_number, "GPIO pin number out of range (0-7)");
-  regs->pmr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
-  regs->pdr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin); /* Input direction */
+  regs->pmr &= (uint8_t) ~(uint16_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
+  regs->pdr &= (uint8_t) ~(uint16_t)(k_gpio_single_bit_mask << pin); /* Input direction */
 }
 
 /**
