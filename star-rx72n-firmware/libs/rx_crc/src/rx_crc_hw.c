@@ -37,6 +37,7 @@
 #include "rx_check.h"
 #include "rx_dmaca.h"
 #include "rx_register_protection.h"
+#include "rx_stdckdint.h"
 
 /* =============================================================================
  * Private Constants
@@ -468,8 +469,9 @@ rx_err_t internal_crc_hw_dma_compute(const rx_crc_config_t* config,
   }
   if (err != k_rx_ok) {
     /* Transient DMA failure (timeout): record for observability (saturating), fall back to CPU */
-    if (s_dma_fallback_count < UINT32_MAX) {
-      s_dma_fallback_count++;
+    uint32_t incremented;
+    if (!ckd_add(&incremented, s_dma_fallback_count, 1U)) {
+      s_dma_fallback_count = incremented;
     }
     return internal_crc_hw_cpu_compute(config, data, len, result_out);
   }

@@ -1243,6 +1243,26 @@ target_include_directories(test_rx_bmp280 PRIVATE
 target_link_libraries(test_rx_bmp280 PRIVATE unity m)
 set_target_properties(test_rx_bmp280 PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
 
+# Test: C23 Checked Integer Arithmetic (rx_stdckdint.h polyfill)
+# Header-only test -- no library sources needed.
+add_executable(test_rx_stdckdint
+    test_rx_stdckdint.c
+)
+apply_strict_warnings(test_rx_stdckdint)
+apply_test_includes(test_rx_stdckdint)
+target_link_libraries(test_rx_stdckdint PRIVATE unity)
+set_target_properties(test_rx_stdckdint PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
+
+# Test: C23 Bit Manipulation (rx_stdbit.h polyfill)
+# Header-only test -- no library sources needed.
+add_executable(test_rx_stdbit
+    test_rx_stdbit.c
+)
+apply_strict_warnings(test_rx_stdbit)
+apply_test_includes(test_rx_stdbit)
+target_link_libraries(test_rx_stdbit PRIVATE unity)
+set_target_properties(test_rx_stdbit PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
+
 # =============================================================================
 # CTest Integration
 # =============================================================================
@@ -1310,6 +1330,9 @@ set(ALL_TEST_TARGETS
     test_temperature_sensing_task
     test_telemetry_aggregation_task
     test_imu_task
+    # C23 standard header polyfill tests
+    test_rx_stdckdint
+    test_rx_stdbit
 )
 
 add_test(NAME test_rx_crc32 COMMAND test_rx_crc32)
@@ -1371,6 +1394,10 @@ add_test(NAME test_obstacle_detection_task COMMAND test_obstacle_detection_task)
 add_test(NAME test_temperature_sensing_task COMMAND test_temperature_sensing_task)
 add_test(NAME test_telemetry_aggregation_task COMMAND test_telemetry_aggregation_task)
 add_test(NAME test_imu_task COMMAND test_imu_task)
+
+# C23 standard header polyfill tests
+add_test(NAME test_rx_stdckdint COMMAND test_rx_stdckdint)
+add_test(NAME test_rx_stdbit COMMAND test_rx_stdbit)
 
 # =============================================================================
 # Coverage Baseline: compile all firmware source files
