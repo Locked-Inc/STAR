@@ -92,14 +92,20 @@
 
 #include "rx_fec.h"
 
-#include <stdckdint.h>
-
 /*
- * C23 <stdbit.h>: GNURX GCC 14.2 does not ship this header (its newlib sysroot
- * predates C23 library support), so we gate usage behind __has_include.
- * clang-18 and host GCC 14+ provide it natively. Once Renesas ships an updated
- * newlib with <stdbit.h>, remove the #if and the manual fallback below.
+ * C23 <stdckdint.h> / <stdbit.h>: GNURX GCC 14.2's newlib sysroot predates
+ * C23 library support, so not all headers are available. We gate each behind
+ * __has_include and provide manual fallbacks. clang-18 has both; GNURX has
+ * <stdckdint.h> but not <stdbit.h>. Once Renesas ships an updated newlib,
+ * remove the #if guards and the fallback code paths.
  */
+#if __has_include(<stdckdint.h>)
+#include <stdckdint.h>
+#define RX_HAS_STDCKDINT 1
+#else
+#define RX_HAS_STDCKDINT 0
+#endif
+
 #if __has_include(<stdbit.h>)
 #include <stdbit.h>
 #define RX_HAS_STDBIT 1
@@ -630,7 +636,9 @@ uint32_t rx_fec_encoded_len(const uint32_t input_len)
     return k_fec_zero;
   }
 
-  /* Output bits = (input bits + tail bits) * 2, with overflow checks */
+  /* Output bits = (input bits + tail bits) * 2 */
+#if RX_HAS_STDCKDINT
+  /* C23 checked arithmetic: overflow returns 0 */
   uint32_t input_bits = 0;
   if (ckd_mul(&input_bits, input_len, (uint32_t)k_rx_bits_per_byte)) {
     return k_fec_zero;
@@ -646,12 +654,19 @@ uint32_t rx_fec_encoded_len(const uint32_t input_len)
     return k_fec_zero;
   }
 
-  /* Round up to full bytes */
   uint32_t rounded = 0;
   if (ckd_add(&rounded, total_output_bits, (uint32_t)k_fec_msb_bit_position)) {
     return k_fec_zero;
   }
+#else
+  /* Fallback: input_len <= k_fec_max_input_bytes (1024) guarantees no overflow */
+  const uint32_t input_bits        = input_len * (uint32_t)k_rx_bits_per_byte;
+  const uint32_t total_input_bits  = input_bits + (uint32_t)k_fec_tail_bits;
+  const uint32_t total_output_bits = total_input_bits * (uint32_t)k_fec_num_outputs;
+  const uint32_t rounded           = total_output_bits + (uint32_t)k_fec_msb_bit_position;
+#endif
 
+  /* Round up to full bytes */
   return rounded / k_rx_bits_per_byte;
 }
 
