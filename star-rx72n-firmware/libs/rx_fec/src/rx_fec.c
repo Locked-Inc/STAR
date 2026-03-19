@@ -92,6 +92,21 @@
 
 #include "rx_fec.h"
 
+#include <stdckdint.h>
+
+/*
+ * C23 <stdbit.h>: GNURX GCC 14.2 does not ship this header (its newlib sysroot
+ * predates C23 library support), so we gate usage behind __has_include.
+ * clang-18 and host GCC 14+ provide it natively. Once Renesas ships an updated
+ * newlib with <stdbit.h>, remove the #if and the manual fallback below.
+ */
+#if __has_include(<stdbit.h>)
+#include <stdbit.h>
+#define RX_HAS_STDBIT 1
+#else
+#define RX_HAS_STDBIT 0
+#endif
+
 #include "rx_bit_constants.h"
 #include "rx_check.h"
 
@@ -149,12 +164,16 @@ typedef enum : uint8_t {
  */
 RX_STATIC_TESTABLE uint8_t internal_parity(uint8_t x)
 {
-  /* Compute parity using parallel XOR reduction */
-  x ^= x >> k_fec_parity_shift_nibble; /* XOR upper nibble with lower nibble */
-  x ^= x >> k_fec_parity_shift_pair;   /* XOR bit pairs */
-  x ^= x >> k_fec_bit_mask;            /* XOR final pair */
-
+#if RX_HAS_STDBIT
+  /* C23 stdc_count_ones_uc: UB-free popcount; parity = LSB of popcount */
+  const uint8_t result = (uint8_t)(stdc_count_ones_uc(x) & k_fec_bit_mask);
+#else
+  /* Fallback: parallel XOR reduction (GNURX lacks <stdbit.h>) */
+  x ^= x >> k_fec_parity_shift_nibble;
+  x ^= x >> k_fec_parity_shift_pair;
+  x ^= x >> k_fec_bit_mask;
   const uint8_t result = x & k_fec_bit_mask;
+#endif
 
   /* Invariant: bitwise AND with 1 always yields 0 or 1; no runtime check needed */
 
@@ -611,13 +630,29 @@ uint32_t rx_fec_encoded_len(const uint32_t input_len)
     return k_fec_zero;
   }
 
-  /* Output bits = (input bits + tail bits) * 2 */
-  const uint32_t input_bits        = input_len * k_rx_bits_per_byte;
-  const uint32_t total_input_bits  = input_bits + k_fec_tail_bits;
-  const uint32_t total_output_bits = total_input_bits * k_fec_num_outputs;
+  /* Output bits = (input bits + tail bits) * 2, with overflow checks */
+  uint32_t input_bits = 0;
+  if (ckd_mul(&input_bits, input_len, (uint32_t)k_rx_bits_per_byte)) {
+    return k_fec_zero;
+  }
+
+  uint32_t total_input_bits = 0;
+  if (ckd_add(&total_input_bits, input_bits, (uint32_t)k_fec_tail_bits)) {
+    return k_fec_zero;
+  }
+
+  uint32_t total_output_bits = 0;
+  if (ckd_mul(&total_output_bits, total_input_bits, (uint32_t)k_fec_num_outputs)) {
+    return k_fec_zero;
+  }
 
   /* Round up to full bytes */
-  return (total_output_bits + k_fec_msb_bit_position) / k_rx_bits_per_byte;
+  uint32_t rounded = 0;
+  if (ckd_add(&rounded, total_output_bits, (uint32_t)k_fec_msb_bit_position)) {
+    return k_fec_zero;
+  }
+
+  return rounded / k_rx_bits_per_byte;
 }
 
 /**

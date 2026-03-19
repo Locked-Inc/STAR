@@ -238,7 +238,7 @@ ci-rx72n:
 	@cd $(FIRMWARE_DIR) && bash build.sh
 	@echo ""
 	@echo "[4/5] Unit tests..."
-	@cd $(FIRMWARE_DIR)/tests && cmake -B build -DCMAKE_BUILD_TYPE=Debug 2>&1 | tail -3
+	@cd $(FIRMWARE_DIR)/tests && cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-18 2>&1 | tail -3
 	@cmake --build $(FIRMWARE_DIR)/tests/build --parallel 2>&1 | tail -3
 	@ctest --test-dir $(FIRMWARE_DIR)/tests/build --output-on-failure
 	@echo ""

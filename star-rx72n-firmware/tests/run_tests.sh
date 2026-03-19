@@ -18,7 +18,7 @@ cd "${BUILD_DIR}"
 
 # Configure with CMake
 echo "Configuring tests..."
-cmake .. -DCMAKE_BUILD_TYPE=Debug
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-18
 
 # Build tests
 echo ""
