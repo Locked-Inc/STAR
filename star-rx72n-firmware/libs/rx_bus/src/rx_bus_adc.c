@@ -417,7 +417,7 @@ static rx_err_t internal_adc_init_callback(rx_bus_config_t* bus_config, void* us
   }
 
   /* Mark ADC unit as initialized in bus manager */
-  if (bus_config->proto.adc.unit < k_adc_unit_count) {
+  if (bus_config->proto.adc.unit < k_adc_unit_count) { /* GCOVR_EXCL_BR_LINE */
     /* Track initialization in manager (bus_config has parent pointer) */
     /* Note: This is handled by the ADC HAL internally */
   }

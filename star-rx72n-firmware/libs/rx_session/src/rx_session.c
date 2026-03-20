@@ -295,7 +295,9 @@ rx_err_t rx_session_next_tx(rx_session_state_t* state, uint16_t* sequence)
   internal_unlock();
 
   /* Post-condition: output within valid range (checked after unlock to avoid mutex leak) */
+  /* GCOVR_EXCL_BR_START -- macro: clang counts extra branches */
   RX_CHECK_RANGE_TAG(*sequence, 0, k_session_seq_wrap_mask, k_rx_err_invalid_state, s_tag);
+  /* GCOVR_EXCL_BR_STOP */
 
   return k_rx_ok;
 }
@@ -479,7 +481,9 @@ rx_err_t rx_session_get_tx(const rx_session_state_t* state, uint16_t* sequence)
   internal_unlock();
 
   /* Post-condition: output within valid range (checked after unlock to avoid mutex leak) */
+  /* GCOVR_EXCL_BR_START -- macro: clang counts extra branches */
   RX_CHECK_RANGE_TAG(*sequence, 0, k_session_seq_wrap_mask, k_rx_err_invalid_state, s_tag);
+  /* GCOVR_EXCL_BR_STOP */
 
   return k_rx_ok;
 }
@@ -527,7 +531,9 @@ rx_err_t rx_session_get_rx(const rx_session_state_t* state, uint16_t* sequence)
   internal_unlock();
 
   /* Post-condition: output within valid range (checked after unlock to avoid mutex leak) */
+  /* GCOVR_EXCL_BR_START -- macro: clang counts extra branches */
   RX_CHECK_RANGE_TAG(*sequence, 0, k_session_seq_wrap_mask, k_rx_err_invalid_state, s_tag);
+  /* GCOVR_EXCL_BR_STOP */
 
   return k_rx_ok;
 }
