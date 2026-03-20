@@ -31,8 +31,7 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          sudo apt-get update && sudo apt-get install -y cmake gcc g++ git ninja-build protobuf-compiler lcov bc \
-            clang-18 llvm-18 libclang-rt-18-dev
+          sudo apt-get update && sudo apt-get install -y cmake gcc-14 g++ git ninja-build protobuf-compiler lcov bc
           pip3 install --quiet gcovr
 
       - name: Cache CMake FetchContent (Unity + nanopb)
@@ -50,7 +49,7 @@ jobs:
         # Prevents sporadic SSL/429 failures when multiple PRs hit a cache miss simultaneously.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-18 -DCMAKE_C_FLAGS="--coverage" -DCMAKE_CXX_FLAGS="--coverage" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_C_FLAGS="--coverage" -DCMAKE_CXX_FLAGS="--coverage" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
 
       - name: Build tests
         working-directory: star-rx72n-firmware/tests
@@ -70,12 +69,7 @@ jobs:
           # .info files and --summary omits the 'branches' line entirely.
           BRANCH_RC="--rc lcov_branch_coverage=1"
 
-          # clang-18 emits coverage in its own format; lcov's default gcov
-          # cannot parse it. Create a wrapper that invokes llvm-cov in gcov
-          # compatibility mode, then pass it to lcov via --gcov-tool.
-          printf '#!/bin/sh\nexec llvm-cov-18 gcov "$@"\n' > /tmp/llvm-gcov.sh
-          chmod +x /tmp/llvm-gcov.sh
-          GCOV_TOOL="--gcov-tool /tmp/llvm-gcov.sh"
+          GCOV_TOOL=""
 
           # Step 1: Baseline -- capture 0-coverage for ALL compiled sources.
           # This ensures every firmware file (including untested ones) appears
@@ -144,7 +138,7 @@ jobs:
             --exclude '.*/rx_hal/inc/rx72n_port_regs.h' \
             --exclude '.*/rx_hal/inc/rx_port_utils.h' \
             --exclude '.*/CMakeFiles/.*' \
-            --gcov-executable 'llvm-cov-18 gcov' \
+            --gcov-executable gcov-14 \
             --gcov-ignore-errors=source_not_found \
             --gcov-ignore-errors=no_working_dir_found \
             -j 1 \

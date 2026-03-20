@@ -16,20 +16,26 @@ echo ""
 mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}"
 
-# Validate clang-18 availability and C23 header support
-if ! command -v clang-18 &> /dev/null; then
-  echo "ERROR: clang-18 not found. Install with: apt install clang-18" >&2
+# Validate C compiler with C23 header support.
+# gcc-14+ and clang-18+ both provide <stdckdint.h> and <stdbit.h>.
+# Default to gcc-14; fall back to clang-18 if gcc-14 is unavailable.
+if command -v gcc-14 &> /dev/null; then
+  TEST_CC=gcc-14
+elif command -v clang-18 &> /dev/null; then
+  TEST_CC=clang-18
+else
+  echo "ERROR: No C23-capable compiler found. Install gcc-14 or clang-18." >&2
   exit 1
 fi
 
-if ! echo '#include <stdckdint.h>' | clang-18 -x c -fsyntax-only - 2>/dev/null; then
-  echo "ERROR: clang-18 lacks C23 <stdckdint.h>. Ensure libc6-dev >= 2.38 is installed." >&2
+if ! echo '#include <stdckdint.h>' | "$TEST_CC" -std=c2x -x c -fsyntax-only - 2>/dev/null; then
+  echo "ERROR: $TEST_CC lacks C23 <stdckdint.h>." >&2
   exit 1
 fi
 
 # Configure with CMake
-echo "Configuring tests..."
-cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-18
+echo "Configuring tests (compiler: $TEST_CC)..."
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER="$TEST_CC"
 
 # Build tests
 echo ""
