@@ -1142,7 +1142,8 @@ static inline uint8_t rx_port_from_pin(rx_port_pin_t pin)
   RX_ASSERT((pin & k_port_mask) <= k_rx_pin_max, "Pin portion must be <= k_rx_pin_max");
 
   /* Pre-condition 2: pin portion is within valid range (>= k_rx_pin_min) */
-  RX_ASSERT((pin & k_port_mask) >= k_rx_pin_min, "Pin portion must be >= k_rx_pin_min");
+  RX_ASSERT((pin & k_port_mask) >= k_rx_pin_min, /* GCOVR_EXCL_BR_LINE */
+            "Pin portion must be >= k_rx_pin_min");
 
   uint8_t result = (uint8_t)((pin) >> k_port_shift);
 

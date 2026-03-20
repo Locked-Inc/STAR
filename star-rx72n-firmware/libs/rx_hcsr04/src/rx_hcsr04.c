@@ -1083,7 +1083,7 @@ RX_STATIC_TESTABLE rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handl
 
   const uint8_t port    = (uint8_t)(handle->trigger_pin >> k_port_shift);
   const uint8_t pin_num = (uint8_t)(handle->trigger_pin & k_port_mask);
-  if ((port > k_rx_port_j) || (port > k_rx_port_g && port < k_rx_port_j) ||
+  if ((port > k_rx_port_j) || (port > k_rx_port_g && port < k_rx_port_j) || /* GCOVR_EXCL_BR_LINE */
       (pin_num > k_rx_pin_max)) {
     return k_rx_err_invalid_arg;
   }

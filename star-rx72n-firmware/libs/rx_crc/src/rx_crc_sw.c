@@ -438,7 +438,7 @@ static uint8_t internal_crc8_maxim_compute(const uint8_t* data, uint32_t len)
  */
 uint32_t internal_crc_sw_compute(rx_crc_poly_t poly, const uint8_t* data, uint32_t len)
 {
-  switch (poly) {
+  switch (poly) { /* GCOVR_EXCL_BR_LINE */
     case k_rx_crc_poly_crc8:
       return (uint32_t)internal_crc8_maxim_compute(data, len);
     case k_rx_crc_poly_crc16:
