@@ -2493,6 +2493,7 @@ void test_hcsr04_trigger_pulse_port_j_invalid_pin_returns_error(void)
   memset(&handle, 0, sizeof(handle));
   /* port=19 (k_rx_port_j): port-range check FALSE; pin_num=8 > k_rx_pin_max=7: error */
   handle.trigger_pin =
+    /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
     (rx_port_pin_t)(((uint32_t)k_test_port_j_boundary << k_test_port_shift_bits) |
                     k_test_pin_above_max);
 
