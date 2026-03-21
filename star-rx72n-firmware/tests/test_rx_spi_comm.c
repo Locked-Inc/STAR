@@ -2470,8 +2470,7 @@ void test_retransmit_process_shift_cap(void)
   s_handle.retry_count        = k_test_backoff_shift_cap; /* Force shift clamping */
 
   /* At retry_count=31, shift is clamped; backoff wraps to 0 so retransmit fires */
-  TEST_ASSERT_EQUAL(k_rx_ok,
-                    rx_spi_comm_process_retransmits(&s_handle, k_test_timeout_large_ms));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, k_test_timeout_large_ms));
   TEST_ASSERT_EQUAL_UINT8(k_test_backoff_shift_cap + 1U, s_handle.retry_count);
 }
 
