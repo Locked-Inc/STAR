@@ -1119,9 +1119,9 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
     rx_log_error(s_tag, "Failed to initialize USB CDC");
     /* Cleanup: deinit hardware (Rule 7: check return even in error path) */
     const rx_err_t deinit_err = rx_usb_hw_deinit();
-    if (deinit_err != k_rx_ok) { /* GCOVR_EXCL_BR_LINE -- mock always succeeds */
-      rx_log_warn(s_tag, "Hardware deinit failed during cleanup"); /* GCOVR_EXCL_LINE */
-    } /* GCOVR_EXCL_LINE */
+    if (deinit_err != k_rx_ok) {
+      rx_log_warn(s_tag, "Hardware deinit failed during cleanup");
+    }
     return err;
   }
 
@@ -1131,9 +1131,9 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
     rx_log_error(s_tag, "Failed to attach to USB bus");
     /* Cleanup: deinit hardware (Rule 7: check return even in error path) */
     const rx_err_t deinit_err = rx_usb_hw_deinit();
-    if (deinit_err != k_rx_ok) { /* GCOVR_EXCL_BR_LINE -- mock always succeeds */
-      rx_log_warn(s_tag, "Hardware deinit failed during cleanup"); /* GCOVR_EXCL_LINE */
-    } /* GCOVR_EXCL_LINE */
+    if (deinit_err != k_rx_ok) {
+      rx_log_warn(s_tag, "Hardware deinit failed during cleanup");
+    }
     return err;
   }
 
@@ -1163,15 +1163,15 @@ rx_err_t rx_usb_deinit(void)
 
   /* Detach from USB bus (Rule 7: check return value) */
   const rx_err_t detach_err = rx_usb_hw_detach();
-  if (detach_err != k_rx_ok) { /* GCOVR_EXCL_BR_LINE -- mock always succeeds */
-    rx_log_warn(s_tag, "USB detach failed during deinit"); /* GCOVR_EXCL_LINE */
-  } /* GCOVR_EXCL_LINE */
+  if (detach_err != k_rx_ok) {
+    rx_log_warn(s_tag, "USB detach failed during deinit");
+  }
 
   /* Deinitialize hardware (Rule 7: check return value) */
   const rx_err_t deinit_err = rx_usb_hw_deinit();
-  if (deinit_err != k_rx_ok) {                    /* GCOVR_EXCL_BR_LINE -- mock always succeeds */
-    rx_log_warn(s_tag, "Hardware deinit failed"); /* GCOVR_EXCL_LINE */
-  } /* GCOVR_EXCL_LINE */
+  if (deinit_err != k_rx_ok) {
+    rx_log_warn(s_tag, "Hardware deinit failed");
+  }
 
   /* Clear state */
   s_usb.initialized  = false;

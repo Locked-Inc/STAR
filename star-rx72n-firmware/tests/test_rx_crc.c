@@ -1016,6 +1016,30 @@ static void internal_run_backend_tests(void)
   RUN_TEST(test_crc32c_all_backends_match);
 }
 
+/**
+ * @brief internal_crc_sw_compute with an unrecognized poly hits the default case.
+ *
+ * @details
+ * The switch in internal_crc_sw_compute has a `default:` label that shares its
+ * return with `case k_rx_crc_poly_crc32:`. Passing an out-of-range poly value
+ * forces execution through the implicit "no case matched" path to the default
+ * label, covering the branch that the public rx_crc_compute() guards against.
+ *
+ * @pre None (internal function, no initialization required)
+ * @post Return value matches CRC-32/IEEE of the input (default falls through to crc32)
+ */
+void test_sw_compute_unknown_poly_returns_crc32(void)
+{
+  /* Use an enum value beyond k_rx_crc_poly_crc32c to force the default branch.
+   * Cast is intentional: testing the default label in the internal switch. */
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) -- intentional for default branch */
+  const rx_crc_poly_t unknown_poly = (rx_crc_poly_t)(k_rx_crc_poly_crc32c + 1U);
+  const uint32_t      result       = internal_crc_sw_compute(unknown_poly, s_test_vec_9, 9U);
+
+  /* Default falls through to CRC-32/IEEE -- verify against canonical test vector */
+  TEST_ASSERT_EQUAL_UINT32(0xCBF43926UL, result);
+}
+
 /** @brief Run wrapper, incremental, boundary, and mock tests */
 static void internal_run_wrapper_and_edge_tests(void)
 {
@@ -1043,6 +1067,9 @@ static void internal_run_wrapper_and_edge_tests(void)
   /* Mock DMA interaction */
   RUN_TEST(test_mock_dmaca_reset_clears_state);
   RUN_TEST(test_mock_dmaca_preset_timeout_result);
+
+  /* Internal switch default branch */
+  RUN_TEST(test_sw_compute_unknown_poly_returns_crc32);
 }
 
 int main(void)

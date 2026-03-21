@@ -285,6 +285,8 @@
  * @see DOXYGEN_ROADMAP.md Complete documentation tracking
  */
 
+#include <stdint.h>
+
 #include "rx_check.h"
 #include "rx_fec.h"
 #include "unity.h"
@@ -298,6 +300,7 @@
  * =============================================================================
  */
 extern uint8_t internal_parity(uint8_t x);
+extern bool    internal_fec_compute_encoded_bytes(uint32_t input_len, uint32_t* out_bytes);
 extern void    internal_set_output_bit(uint8_t* output, uint32_t bit_idx, uint8_t value);
 extern uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx);
 extern void    internal_encode_bit(uint8_t* state, uint8_t input_bit, uint8_t* out0, uint8_t* out1);
@@ -2403,7 +2406,8 @@ void test_multiple_bit_error_correction(void)
  * RX_ASSERT_PRE on line 184.
  */
 typedef enum : uint32_t {
-  k_bit_idx_overflow = 70000U, /**< Exceeds k_fec_max_symbols * 8 (65600) */
+  k_bit_idx_overflow = 70000U,       /**< Exceeds k_fec_max_symbols * 8 (65600) */
+  k_out_sentinel     = 0xDEADBEEFUL, /**< Sentinel to detect unwritten output */
 } fec_assert_test_constants_t;
 
 /**
@@ -2597,6 +2601,25 @@ void test_internal_viterbi_forward_pass_null_soft(void)
   TEST_PASS();
 }
 
+/**
+ * @brief Exercise internal_viterbi_forward_pass with num_symbols > k_fec_max_symbols
+ *
+ * @details
+ * Verifies the defensive limit cap activates: when num_symbols exceeds k_fec_max_symbols,
+ * the loop is clamped to process exactly k_fec_max_symbols symbols to prevent
+ * out-of-bounds access on the soft_bits and survivors buffers.
+ *
+ * The s_soft_bits_buffer and s_survivors buffers (both sized k_fec_max_symbols) are safe
+ * because the cap ensures at most k_fec_max_symbols iterations.
+ *
+ * @test Covers the TRUE branch of the limit cap in internal_viterbi_forward_pass
+ */
+void test_internal_viterbi_forward_pass_limit_cap(void)
+{
+  internal_viterbi_forward_pass(&s_decoder, s_soft_bits_buffer, k_fec_max_symbols + 1U);
+  TEST_PASS();
+}
+
 /* ---- internal_viterbi_traceback PRE assertion coverage ---- */
 
 /**
@@ -2647,6 +2670,28 @@ void test_internal_viterbi_traceback_num_symbols_overflow(void)
 {
   uint8_t output[k_buf_size_out16] = {};
   internal_viterbi_traceback(&s_decoder, k_fec_max_symbols + 1U, 0, output, k_input_len_1);
+  TEST_PASS();
+}
+
+/**
+ * @brief Exercise internal_viterbi_traceback limit cap with a larger decoder
+ *
+ * @details
+ * Initializes a decoder claiming survivors_len = k_fec_max_symbols + 1 so that the
+ * validate precondition passes for num_symbols = k_fec_max_symbols + 1, then verifies
+ * the defensive limit cap clamps actual traceback iteration to k_fec_max_symbols steps.
+ *
+ * Reuses s_survivors (sized k_fec_max_symbols) which is safe because the cap ensures
+ * access is bounded to indices 0..k_fec_max_symbols-1.
+ *
+ * @test Covers the TRUE branch of the limit cap in internal_viterbi_traceback
+ */
+void test_internal_viterbi_traceback_limit_cap(void)
+{
+  rx_fec_decoder_t dec_oversized;
+  (void)rx_fec_decoder_init(&dec_oversized, s_survivors, k_fec_max_symbols + 1U);
+  uint8_t output[k_buf_size_out16] = {};
+  internal_viterbi_traceback(&dec_oversized, k_fec_max_symbols + 1U, 0U, output, k_input_len_1);
   TEST_PASS();
 }
 
@@ -2778,6 +2823,95 @@ static void internal_run_roundtrip_and_error_tests(void)
  * @pre UNITY_BEGIN() has been called
  * @post 18 tests queued for execution
  */
+/**
+ * @brief internal_fec_compute_encoded_bytes: null out_bytes returns false immediately.
+ *
+ * @details
+ * Passing nullptr for out_bytes triggers the UNIT_TEST null-guard at the top of the
+ * function, covering the return false path that the public API can never reach
+ * (rx_fec_encoded_len validates its own output pointer before delegating).
+ *
+ * @pre UNIT_TEST must be defined (test build only)
+ * @post Returns false without dereferencing out_bytes
+ */
+void test_internal_fec_compute_encoded_bytes_null_out_bytes(void)
+{
+  const bool result = internal_fec_compute_encoded_bytes(0U, nullptr);
+  TEST_ASSERT_FALSE(result);
+}
+
+/**
+ * @brief internal_fec_compute_encoded_bytes: ckd_mul overflow on input_bits (step 1).
+ *
+ * @details
+ * input_len = UINT32_MAX causes ckd_mul(&input_bits, UINT32_MAX, 8) to overflow.
+ * This exercises the first checked-arithmetic branch. The public rx_fec_encoded_len()
+ * rejects input_len > k_fec_max_input_bytes = 1024 before reaching this code.
+ *
+ * @pre RX_HAS_STDCKDINT must be (1) (clang-18 has <stdckdint.h>)
+ * @post Returns false, *out_bytes == 0
+ */
+void test_internal_fec_compute_encoded_bytes_overflow_input_bits(void)
+{
+#if __has_include(<stdckdint.h>)
+  uint32_t   out        = k_out_sentinel;
+  const bool overflowed = internal_fec_compute_encoded_bytes(UINT32_MAX, &out);
+  TEST_ASSERT_FALSE(overflowed);
+  TEST_ASSERT_EQUAL_UINT32(0U, out);
+#else
+  TEST_IGNORE_MESSAGE("<stdckdint.h> not available; overflow paths not compiled in");
+#endif
+}
+
+/**
+ * @brief internal_fec_compute_encoded_bytes: ckd_mul overflow on total_output_bits (step 3).
+ *
+ * @details
+ * input_len = 268435706 gives:
+ *   input_bits = 268435706 * 8 = 2147485648 (fits uint32, no step-1 overflow)
+ *   total_input_bits = 2147485648 + 6 = 2147485654 (fits uint32, no step-2 overflow)
+ *   total_output_bits = 2147485654 * 2 = 4294971308 > UINT32_MAX  -> step-3 overflow
+ *
+ * @pre RX_HAS_STDCKDINT must be (1)
+ * @post Returns false, *out_bytes == 0
+ */
+void test_internal_fec_compute_encoded_bytes_overflow_output_bits(void)
+{
+#if __has_include(<stdckdint.h>)
+  uint32_t   out        = k_out_sentinel;
+  const bool overflowed = internal_fec_compute_encoded_bytes(268435706U, &out);
+  TEST_ASSERT_FALSE(overflowed);
+  TEST_ASSERT_EQUAL_UINT32(0U, out);
+#else
+  TEST_IGNORE_MESSAGE("<stdckdint.h> not available; overflow paths not compiled in");
+#endif
+}
+
+/**
+ * @brief internal_fec_compute_encoded_bytes: ckd_add overflow on rounded (step 4).
+ *
+ * @details
+ * input_len = 268435455 gives:
+ *   input_bits = 268435455 * 8 = 2147483640 (no step-1 overflow)
+ *   total_input_bits = 2147483640 + 6 = 2147483646 (no step-2 overflow)
+ *   total_output_bits = 2147483646 * 2 = 4294967292 (no step-3 overflow, <= UINT32_MAX)
+ *   rounded = 4294967292 + 7 = 4294967299 > UINT32_MAX  -> step-4 overflow
+ *
+ * @pre RX_HAS_STDCKDINT must be (1)
+ * @post Returns false, *out_bytes == 0
+ */
+void test_internal_fec_compute_encoded_bytes_overflow_rounded(void)
+{
+#if __has_include(<stdckdint.h>)
+  uint32_t   out        = k_out_sentinel;
+  const bool overflowed = internal_fec_compute_encoded_bytes(268435455U, &out);
+  TEST_ASSERT_FALSE(overflowed);
+  TEST_ASSERT_EQUAL_UINT32(0U, out);
+#else
+  TEST_IGNORE_MESSAGE("<stdckdint.h> not available; overflow paths not compiled in");
+#endif
+}
+
 static void internal_run_assert_coverage_tests(void)
 {
   /* internal_set_output_bit PRE */
@@ -2804,12 +2938,20 @@ static void internal_run_assert_coverage_tests(void)
   /* internal_viterbi_forward_pass PRE */
   RUN_TEST(test_internal_viterbi_forward_pass_null_dec);
   RUN_TEST(test_internal_viterbi_forward_pass_null_soft);
+  RUN_TEST(test_internal_viterbi_forward_pass_limit_cap);
 
   /* internal_viterbi_traceback PRE */
   RUN_TEST(test_internal_viterbi_traceback_null_dec);
   RUN_TEST(test_internal_viterbi_traceback_null_output);
   RUN_TEST(test_internal_viterbi_traceback_zero_output_bytes);
   RUN_TEST(test_internal_viterbi_traceback_num_symbols_overflow);
+  RUN_TEST(test_internal_viterbi_traceback_limit_cap);
+
+  /* internal_fec_compute_encoded_bytes null pointer and overflow paths */
+  RUN_TEST(test_internal_fec_compute_encoded_bytes_null_out_bytes);
+  RUN_TEST(test_internal_fec_compute_encoded_bytes_overflow_input_bits);
+  RUN_TEST(test_internal_fec_compute_encoded_bytes_overflow_output_bits);
+  RUN_TEST(test_internal_fec_compute_encoded_bytes_overflow_rounded);
 }
 
 /**

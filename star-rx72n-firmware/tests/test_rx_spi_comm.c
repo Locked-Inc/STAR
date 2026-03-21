@@ -356,6 +356,7 @@ typedef enum : uint16_t {
   k_test_retransmit_single_retry          = 1,
   k_test_retransmit_limit_check_time_ms   = 200,
   k_test_retransmit_flags_offset          = 7,
+  k_test_retransmit_uncapped_max_retries  = 50, /**< Higher than k_max_backoff_shift (31) */
 } test_retransmit_constants_t;
 
 /** @brief Retransmit timing constants for exponential backoff tests */
@@ -368,6 +369,11 @@ typedef enum : uint16_t {
   k_test_backoff_third_early_ms    = 249, /**< Just before third timeout */
   k_test_backoff_ack_plus_ms       = 51,  /**< Just past ack_timeout_ms default */
 } test_backoff_timing_t;
+
+/** @brief Shift cap value for backoff clamping test */
+typedef enum : uint8_t {
+  k_test_backoff_shift_cap = 31U, /**< Matches k_max_backoff_shift in rx_spi_comm.c */
+} test_backoff_shift_cap_t;
 
 /** @brief Session and callback test values */
 typedef enum : uint16_t {
@@ -2423,6 +2429,52 @@ void test_retransmit_process_max_backoff_cap(void)
   TEST_ASSERT_EQUAL_UINT8(3, s_handle.retry_count); /* 250-150=100 >= 100, triggered */
 }
 
+/**
+ * @brief Verify shift cap clamps retry_count to k_max_backoff_shift before left-shift
+ *
+ * @details
+ * When retry_count >= k_max_backoff_shift (31), the shift value is clamped to 31
+ * to prevent undefined behavior from shifting a 32-bit value by >= 32. At shift=31
+ * with ack_timeout_ms=50, the product wraps to 0 (mod 2^32), which is always <=
+ * max_backoff_ms, so the retransmit fires immediately regardless of elapsed time.
+ *
+ * @pre handle initialized with auto_retransmit=true
+ * @post retry_count incremented by 1 after retransmit fires
+ *
+ * @test Covers the TRUE branch of shift capping (handle->retry_count >= k_max_backoff_shift)
+ */
+void test_retransmit_process_shift_cap(void)
+{
+  rx_spi_comm_config_t config = {
+    .session         = &s_session,
+    .auto_retransmit = true,
+    .retransmit_config =
+      {
+        /* max_retries > k_test_backoff_shift_cap (31) to bypass retry-limit check */
+        .max_retries    = k_test_retransmit_uncapped_max_retries,
+        .ack_timeout_ms = k_retransmit_default_ack_timeout_ms,
+        .max_backoff_ms = k_retransmit_default_max_backoff_ms,
+      },
+  };
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  uint8_t data[] = "test";
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_send(&s_handle,
+                                     k_frame_type_response,
+                                     k_frame_flag_requires_ack,
+                                     data,
+                                     k_test_payload_small));
+  s_handle.retry_send_time_ms = 0;
+  s_handle.retry_count        = k_test_backoff_shift_cap; /* Force shift clamping */
+
+  /* At retry_count=31, shift is clamped; backoff wraps to 0 so retransmit fires */
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_process_retransmits(&s_handle, k_test_timeout_large_ms));
+  TEST_ASSERT_EQUAL_UINT8(k_test_backoff_shift_cap + 1U, s_handle.retry_count);
+}
+
 void test_retransmit_process_no_action_before_timeout(void)
 {
   rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
@@ -3561,6 +3613,7 @@ static void internal_run_retransmit_tests(void)
   RUN_TEST(test_retransmit_process_triggers_after_timeout);
   RUN_TEST(test_retransmit_process_exponential_backoff);
   RUN_TEST(test_retransmit_process_max_backoff_cap);
+  RUN_TEST(test_retransmit_process_shift_cap);
   RUN_TEST(test_retransmit_process_no_action_before_timeout);
   RUN_TEST(test_retransmit_process_noop_when_nothing_pending);
 

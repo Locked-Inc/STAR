@@ -22,7 +22,7 @@ if ! command -v clang-18 &> /dev/null; then
   exit 1
 fi
 
-if ! echo '#include <stdckdint.h>' | clang-18 -x c -fsyntax-only - 2>/dev/null; then
+if ! echo '#include <stdckdint.h>' | clang-18 -std=c23 -x c -fsyntax-only - 2>/dev/null; then
   echo "ERROR: clang-18 lacks C23 <stdckdint.h>." >&2
   exit 1
 fi
