@@ -3,11 +3,10 @@
 # Standardizes build, format, and shell access without memorizing Docker flags.
 
 IMAGE_NAME := star-ros2-dev
-CONTAINER_NAME := star-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell
+.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell
 
 help:
 	@echo "STAR Project Development Helper"
@@ -39,11 +38,6 @@ help:
 	@echo "  make proto-gen    - Generate all proto code and setup Go modules (Go, TS, C/nanopb)"
 	@echo "  make proto-check-nanopb-sync - Verify LidarScan nanopb bounds are in sync"
 	@echo ""
-	@echo "Persistent Container (optional):"
-	@echo "  make up           - Start a persistent background container named '$(CONTAINER_NAME)'"
-	@echo "  make exec         - Connect to the running persistent container"
-	@echo "  make stop         - Stop and remove the persistent container"
-	@echo ""
 	@echo "Dev Container (no VS Code required):"
 	@echo "  make devcontainer         - Build and start the dev container"
 	@echo "  make devcontainer-rebuild - Force rebuild (applies devcontainer.json changes)"
@@ -73,27 +67,6 @@ check: build-image
 shell: build-image
 	@echo "Starting ephemeral shell..."
 	@docker run --rm -it -v "$(CURRENT_DIR):$(WORK_DIR)" -w $(WORK_DIR) $(IMAGE_NAME) /bin/bash
-
-# Start a persistent background container
-up: build-image
-	@if docker ps -q -f name=^$(CONTAINER_NAME)$$ | grep -q .; then \
-		echo "$(CONTAINER_NAME) is already running."; \
-	else \
-		docker rm -f $(CONTAINER_NAME) 2>/dev/null || true; \
-		echo "Starting $(CONTAINER_NAME)..."; \
-		docker run -d -it --name $(CONTAINER_NAME) -v "$(CURRENT_DIR):$(WORK_DIR)" -w $(WORK_DIR) $(IMAGE_NAME) /bin/bash; \
-	fi
-
-# Connect to the persistent container
-exec:
-	@echo "Connecting to $(CONTAINER_NAME)..."
-	@docker exec -it $(CONTAINER_NAME) /bin/bash
-
-# Stop the persistent container
-stop:
-	@echo "Stopping $(CONTAINER_NAME)..."
-	@docker stop $(CONTAINER_NAME) || true
-	@docker rm $(CONTAINER_NAME) || true
 
 # ------------------------------------------------------------
 # Dev Container (runs without VS Code via devcontainer CLI)
