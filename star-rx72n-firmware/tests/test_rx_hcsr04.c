@@ -369,6 +369,7 @@ typedef enum : uint8_t {
   k_test_irq_below_range         = 7,  /**< IRQ number below valid range minimum (8) */
   k_test_port_gap_value          = 17, /**< Port in gap between k_rx_port_g and k_rx_port_j */
   k_test_port_j_boundary         = 19, /**< Port boundary value (== k_rx_port_j) */
+  k_test_pin_above_max           = 8,  /**< Pin number one above k_rx_pin_max (7) */
   k_test_irq_above_range         = 16, /**< IRQ number above valid range maximum (15) */
   k_test_irq_outside_mock        = 12, /**< IRQ in firmware range but outside mock [8..11] */
   k_test_invalid_sensor_idx_cast = 4,  /**< Out-of-range sensor index (== sensor_count) */
@@ -2399,12 +2400,12 @@ void test_hcsr04_trigger_pulse_invalid_pin_returns_error(void)
  * @brief Test internal_send_trigger_pulse rejects port above k_rx_port_j
  *
  * @details
- * Covers the first sub-expression "port > k_rx_port_j" (TRUE path) in line 1086.
- * Uses trigger_pin encoded with port=20 (> k_rx_port_j=0x13=19). Port encoding
- * uses k_port_shift=8, so trigger_pin = (20 << 8) | 0 = 0x1400.
+ * Covers the port-range if: "port > k_rx_port_g && port != k_rx_port_j" TRUE path.
+ * Port 20 satisfies: 20 > k_rx_port_g(16) = TRUE and 20 != k_rx_port_j(19) = TRUE.
+ * Port encoding uses k_port_shift=8: trigger_pin = (20 << 8) | 0 = 0x1400.
  *
  * @pre Handle not necessarily initialized (function validates before HAL calls)
- * @post Returns k_rx_err_invalid_arg from first OR sub-expression
+ * @post Returns k_rx_err_invalid_arg (port out of valid range)
  */
 void test_hcsr04_trigger_pulse_port_above_j_returns_error(void)
 {
@@ -2423,19 +2424,19 @@ void test_hcsr04_trigger_pulse_port_above_j_returns_error(void)
  * @brief Test internal_send_trigger_pulse rejects port in gap between G and J
  *
  * @details
- * Covers the second sub-expression "(port > k_rx_port_g && port < k_rx_port_j)"
- * in line 1086. Port 0x11 (=17) satisfies: 17 > k_rx_port_g(16) AND 17 < k_rx_port_j(19).
+ * Covers the port-range if: "port > k_rx_port_g && port != k_rx_port_j" TRUE path.
+ * Port 17 satisfies: 17 > k_rx_port_g(16) = TRUE and 17 != k_rx_port_j(19) = TRUE.
  * Uses trigger_pin encoded with port=17, k_port_shift=8: trigger_pin = (17 << 8) | 0.
  *
  * @pre Handle not necessarily initialized
- * @post Returns k_rx_err_invalid_arg from second OR sub-expression
+ * @post Returns k_rx_err_invalid_arg (port in gap H/I are reserved, not valid)
  */
 void test_hcsr04_trigger_pulse_port_in_gap_returns_error(void)
 {
   rx_hcsr04_t handle;
   /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&handle, 0, sizeof(handle));
-  /* port=17 (0x11): > k_rx_port_g(0x10=16) AND < k_rx_port_j(0x13=19) */
+  /* port=17 (0x11): > k_rx_port_g(0x10=16) AND != k_rx_port_j(0x13=19) */
   handle.trigger_pin =
     /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
     (rx_port_pin_t)(((uint32_t)k_test_port_gap_value << k_test_port_shift_bits) | 0U);
@@ -2445,39 +2446,58 @@ void test_hcsr04_trigger_pulse_port_in_gap_returns_error(void)
 }
 
 /**
- * @brief Test internal_send_trigger_pulse rejects port equal to k_rx_port_j boundary
+ * @brief Test internal_send_trigger_pulse accepts port equal to k_rx_port_j
  *
  * @details
- * Covers the FALSE branch of "port < k_rx_port_j" (C=FALSE path) in the
- * compound condition at line 1086:
+ * Covers the FALSE branch of "port != k_rx_port_j" in the port-range if:
  *
- *   (port > k_rx_port_g && port < k_rx_port_j)
+ *   (port > k_rx_port_g) && (port != k_rx_port_j)
  *
- * Port 19 (= k_rx_port_j = 0x13) satisfies A=FALSE (19 > 19 is false),
- * B=TRUE (19 > k_rx_port_g=16), C=FALSE (19 < 19 is false).  With A and C
- * both FALSE and B TRUE the compound condition evaluates to FALSE, so the if
- * body is not entered.  The pin is also valid (pin=0 <= 7), so the overall
- * condition is FALSE and the function proceeds to gpio_write_low.
- *
- * Since port=19 is not a reserved gap (it IS k_rx_port_j), the port check
- * at lines 1086-1087 evaluates to FALSE and the function returns k_rx_ok
- * (gpio_write_low always succeeds in the mock).
+ * Port 19 (= k_rx_port_j = 0x13): port > k_rx_port_g(16) = TRUE, but
+ * port != k_rx_port_j(19) = FALSE.  Short-circuit AND stops here -- the
+ * if body is not entered.  Pin=0 is also valid, so the function proceeds.
  *
  * @pre Handle not necessarily initialized
- * @post Returns k_rx_ok (port=j is valid, pin=0 valid, mock gpio always ok)
+ * @post Returns k_rx_ok (port J is valid, pin=0 valid, mock gpio always ok)
  */
 void test_hcsr04_trigger_pulse_port_j_boundary_valid(void)
 {
   rx_hcsr04_t handle;
   /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&handle, 0, sizeof(handle));
-  /* port=19 (= k_rx_port_j=0x13): A=FALSE, B=TRUE, C=FALSE -> condition FALSE */
+  /* port=19 (= k_rx_port_j=0x13): B1=TRUE, B2(port!=j)=FALSE -> port-range if FALSE */
   handle.trigger_pin =
     (rx_port_pin_t)(((uint32_t)k_test_port_j_boundary << k_test_port_shift_bits) | 0U);
 
   rx_err_t err = internal_send_trigger_pulse(&handle);
-  /* Port-in-gap check is FALSE; pin=0 is valid; mock gpio always ok */
+  /* Port-range check is FALSE; pin=0 is valid; mock gpio always ok */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief Test internal_send_trigger_pulse rejects port_j + invalid pin
+ *
+ * @details
+ * Covers the pin-range if TRUE path with valid port (port J, pin=8).
+ * port = k_rx_port_j (19): port > k_rx_port_g(16) = TRUE, port != k_rx_port_j = FALSE
+ * -> port-range if is FALSE (port J is valid).
+ * pin_num = k_test_pin_above_max (8): 8 > k_rx_pin_max(7) = TRUE -> pin-range if taken.
+ *
+ * @pre Handle not necessarily initialized
+ * @post Returns k_rx_err_invalid_arg (pin exceeds k_rx_pin_max)
+ */
+void test_hcsr04_trigger_pulse_port_j_invalid_pin_returns_error(void)
+{
+  rx_hcsr04_t handle;
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  memset(&handle, 0, sizeof(handle));
+  /* port=19 (k_rx_port_j): port-range check FALSE; pin_num=8 > k_rx_pin_max=7: error */
+  handle.trigger_pin =
+    (rx_port_pin_t)(((uint32_t)k_test_port_j_boundary << k_test_port_shift_bits) |
+                    k_test_pin_above_max);
+
+  rx_err_t err = internal_send_trigger_pulse(&handle);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /* ---- internal_wait_for_echo --------------------------------------------- */
@@ -4453,6 +4473,7 @@ static void internal_run_internal_function_tests(void)
   RUN_TEST(test_hcsr04_trigger_pulse_port_above_j_returns_error);
   RUN_TEST(test_hcsr04_trigger_pulse_port_in_gap_returns_error);
   RUN_TEST(test_hcsr04_trigger_pulse_port_j_boundary_valid);
+  RUN_TEST(test_hcsr04_trigger_pulse_port_j_invalid_pin_returns_error);
   RUN_TEST(test_hcsr04_wait_for_echo_cancel_returns_cancelled);
   RUN_TEST(test_hcsr04_wait_for_echo_target_state_reached_returns_ok);
   RUN_TEST(test_hcsr04_wait_for_echo_timeout_returns_timeout);

@@ -1138,12 +1138,9 @@ static_assert((bool)((unsigned int)k_rx_pj_3 == (unsigned int)k_verify_pj_3), "P
  */
 static inline uint8_t rx_port_from_pin(rx_port_pin_t pin)
 {
-  /* Pre-condition 1: pin portion fits encoding scheme (pin & k_port_mask <= k_rx_pin_max) */
+  /* Pre-condition: pin portion fits encoding scheme (k_rx_pin_min == 0, so >= 0 is always
+   * true for unsigned types; only the upper bound requires an explicit check) */
   RX_ASSERT((pin & k_port_mask) <= k_rx_pin_max, "Pin portion must be <= k_rx_pin_max");
-
-  /* Pre-condition 2: pin portion is within valid range (>= k_rx_pin_min) */
-  RX_ASSERT((pin & k_port_mask) >= k_rx_pin_min, /* GCOVR_EXCL_BR_LINE */
-            "Pin portion must be >= k_rx_pin_min");
 
   uint8_t result = (uint8_t)((pin) >> k_port_shift);
 

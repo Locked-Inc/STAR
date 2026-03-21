@@ -101,16 +101,16 @@
  */
 #if __has_include(<stdckdint.h>)
 #include <stdckdint.h>
-#define RX_HAS_STDCKDINT 1
+#define RX_HAS_STDCKDINT (1)
 #else
-#define RX_HAS_STDCKDINT 0
+#define RX_HAS_STDCKDINT (0)
 #endif
 
 #if __has_include(<stdbit.h>)
 #include <stdbit.h>
-#define RX_HAS_STDBIT 1
+#define RX_HAS_STDBIT (1)
 #else
-#define RX_HAS_STDBIT 0
+#define RX_HAS_STDBIT (0)
 #endif
 
 #include "rx_bit_constants.h"
@@ -478,8 +478,10 @@ RX_STATIC_TESTABLE void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
   dec->path_metrics[k_fec_zero] = k_fec_zero;
 
   /* Process each symbol pair through the trellis */
-  const uint32_t limit =
-    (num_symbols < k_fec_max_symbols) ? num_symbols : k_fec_max_symbols; /* GCOVR_EXCL_BR_LINE */
+  uint32_t limit = num_symbols;
+  if (num_symbols > k_fec_max_symbols) {
+    limit = k_fec_max_symbols;
+  }
   for (uint32_t t = k_fec_zero; t < limit; t++) {
     const rx_soft_bit_t soft0 = soft_bits[t * k_fec_num_outputs + k_fec_output_g1];
     const rx_soft_bit_t soft1 = soft_bits[t * k_fec_num_outputs + k_fec_output_g2];
@@ -552,8 +554,10 @@ RX_STATIC_TESTABLE void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
   uint8_t state = k_fec_zero;
 
   /* Traceback: work backwards through the trellis */
-  const uint32_t limit =
-    (num_symbols < k_fec_max_symbols) ? num_symbols : k_fec_max_symbols; /* GCOVR_EXCL_BR_LINE */
+  uint32_t limit = num_symbols;
+  if (num_symbols > k_fec_max_symbols) {
+    limit = k_fec_max_symbols;
+  }
   for (uint32_t t = limit; t > k_fec_zero; t--) {
     const uint32_t t_idx = t - k_fec_bit_mask;
 
@@ -617,6 +621,78 @@ rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc)
 }
 
 /**
+ * @brief Compute encoded bit count from raw input length (unchecked)
+ *
+ * @details
+ * Computes the number of output bits for FEC encoding using the formula:
+ * output_bits = round_up_8((input_len * 8 + tail_bits) * 2 + 7)
+ *
+ * With C23 checked arithmetic (RX_HAS_STDCKDINT), any overflow returns 0.
+ * Without it, unchecked arithmetic is used (caller must ensure no overflow).
+ *
+ * This function does NOT validate input_len. It is exposed as RX_STATIC_TESTABLE
+ * so that unit tests can exercise the overflow paths with values larger than
+ * k_fec_max_input_bytes (which the public rx_fec_encoded_len() rejects first).
+ *
+ * @param[in]  input_len   Unconstrained input length in bytes
+ * @param[out] out_bytes   Encoded output size in bytes; valid only on true return
+ *
+ * @return true  on success (*out_bytes is valid)
+ * @return false on overflow (any ckd_* operation overflowed); *out_bytes = 0
+ *
+ * @pre out_bytes must not be nullptr
+ * @post *out_bytes == 0 if overflow detected; otherwise rounded-up byte count
+ *
+ * @note Not thread-safe (pure computation, no shared state)
+ * @since Version 1.0.0
+ */
+RX_STATIC_TESTABLE bool internal_fec_compute_encoded_bytes(uint32_t input_len, uint32_t* out_bytes)
+{
+  RX_ASSERT_PRE(out_bytes != nullptr, "out_bytes must not be nullptr");
+#ifdef UNIT_TEST
+  if (out_bytes == nullptr) {
+    return false;
+  }
+#endif
+
+  /* Output bits = (input bits + tail bits) * 2, rounded up to whole bytes */
+#if RX_HAS_STDCKDINT
+  uint32_t input_bits = 0;
+  if (ckd_mul(&input_bits, input_len, (uint32_t)k_rx_bits_per_byte)) {
+    *out_bytes = k_fec_zero;
+    return false;
+  }
+
+  /* Step-2 ckd_add not needed: if step-1 passes, input_bits <= 536870911*8 = 4294967288,
+   * so input_bits + k_fec_tail_bits (6) <= 4294967294 <= UINT32_MAX, no overflow. */
+  const uint32_t total_input_bits = input_bits + (uint32_t)k_fec_tail_bits;
+
+  uint32_t total_output_bits = 0;
+  if (ckd_mul(&total_output_bits, total_input_bits, (uint32_t)k_fec_num_outputs)) {
+    *out_bytes = k_fec_zero;
+    return false;
+  }
+
+  uint32_t rounded = 0;
+  if (ckd_add(&rounded, total_output_bits, (uint32_t)k_fec_msb_bit_position)) {
+    *out_bytes = k_fec_zero;
+    return false;
+  }
+
+  *out_bytes = rounded / (uint32_t)k_rx_bits_per_byte;
+  return true;
+#else
+  /* Fallback: caller must ensure input_len <= k_fec_max_input_bytes (1024) */
+  const uint32_t input_bits        = input_len * (uint32_t)k_rx_bits_per_byte;
+  const uint32_t total_input_bits  = input_bits + (uint32_t)k_fec_tail_bits;
+  const uint32_t total_output_bits = total_input_bits * (uint32_t)k_fec_num_outputs;
+  const uint32_t rounded           = total_output_bits + (uint32_t)k_fec_msb_bit_position;
+  *out_bytes                       = rounded / (uint32_t)k_rx_bits_per_byte;
+  return true;
+#endif
+}
+
+/**
  * @brief Calculate encoded output length for given input
  *
  * Computes the number of bytes required for FEC-encoded output
@@ -627,6 +703,12 @@ rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc)
  * @return Encoded output length in bytes, or 0 if input length invalid
  *
  * @pre input_len must be in range [1, k_fec_max_input_bytes]
+ * @pre k_fec_max_input_bytes <= 1024 (guarantees no overflow in arithmetic)
+ * @post Return value is 0 if input_len is 0 or > k_fec_max_input_bytes
+ * @post Return value > 0 for valid input_len
+ *
+ * @note Thread-safe (pure computation, no shared state)
+ * @since Version 1.0.0
  */
 uint32_t rx_fec_encoded_len(const uint32_t input_len)
 {
@@ -638,44 +720,10 @@ uint32_t rx_fec_encoded_len(const uint32_t input_len)
     return k_fec_zero;
   }
 
-  /* Output bits = (input bits + tail bits) * 2 */
-#if RX_HAS_STDCKDINT
-  /* C23 checked arithmetic: overflow returns 0.
-   * Overflow is unreachable because input_len <= k_fec_max_input_bytes (1024),
-   * but ckd_* provides defense-in-depth without sanitizer support on RX72N. */
-  uint32_t input_bits = 0;
-  if (ckd_mul(&input_bits, input_len, (uint32_t)k_rx_bits_per_byte)) { /* GCOVR_EXCL_BR_LINE */
-    return k_fec_zero; /* GCOVR_EXCL_LINE -- unreachable: input_len <= 1024 */
-  }
-
-  uint32_t total_input_bits = 0;
-  if (ckd_add(&total_input_bits, input_bits, (uint32_t)k_fec_tail_bits)) { /* GCOVR_EXCL_BR_LINE */
-    return k_fec_zero; /* GCOVR_EXCL_LINE -- unreachable: max 8198 fits uint32 */
-  }
-
-  uint32_t total_output_bits = 0;
-  /* GCOVR_EXCL_BR_START -- unreachable: max 16396 fits uint32 */
-  if (ckd_mul(&total_output_bits, total_input_bits, (uint32_t)k_fec_num_outputs)) {
-    return k_fec_zero; /* GCOVR_EXCL_LINE */
-  }
-  /* GCOVR_EXCL_BR_STOP */
-
-  uint32_t rounded = 0;
-  /* GCOVR_EXCL_BR_START -- unreachable: max 16403 fits uint32 */
-  if (ckd_add(&rounded, total_output_bits, (uint32_t)k_fec_msb_bit_position)) {
-    return k_fec_zero; /* GCOVR_EXCL_LINE */
-  }
-  /* GCOVR_EXCL_BR_STOP */
-#else
-  /* Fallback: input_len <= k_fec_max_input_bytes (1024) guarantees no overflow */
-  const uint32_t input_bits        = input_len * (uint32_t)k_rx_bits_per_byte;
-  const uint32_t total_input_bits  = input_bits + (uint32_t)k_fec_tail_bits;
-  const uint32_t total_output_bits = total_input_bits * (uint32_t)k_fec_num_outputs;
-  const uint32_t rounded           = total_output_bits + (uint32_t)k_fec_msb_bit_position;
-#endif
-
-  /* Round up to full bytes */
-  return rounded / k_rx_bits_per_byte;
+  /* Validated: input_len in [1, k_fec_max_input_bytes], no overflow possible */
+  uint32_t result = k_fec_zero;
+  (void)internal_fec_compute_encoded_bytes(input_len, &result);
+  return result;
 }
 
 /**
@@ -785,12 +833,10 @@ rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
   }
 
   /* Encode input bytes then flush with tail bits */
-  uint8_t  state       = k_fec_zero;
-  uint32_t out_bit_idx = k_fec_zero;
-  /* GCOVR_EXCL_BR_START -- ternary: clang counts extra branch */
-  const uint32_t byte_limit =
-    (input_len < k_fec_max_input_bytes) ? input_len : k_fec_max_input_bytes;
-  /* GCOVR_EXCL_BR_STOP */
+  /* input_len validated <= k_fec_max_input_bytes above; use directly. */
+  uint8_t        state       = k_fec_zero;
+  uint32_t       out_bit_idx = k_fec_zero;
+  const uint32_t byte_limit  = input_len;
 
   internal_encode_data_bytes(input, byte_limit, output, &state, &out_bit_idx);
   internal_encode_tail_bits(output, &state, &out_bit_idx);

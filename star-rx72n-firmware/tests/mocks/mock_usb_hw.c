@@ -48,7 +48,9 @@ rx_err_t mock_usb_hw_init(mock_usb_hw_t* mock)
 
   /* Set default return values (success) */
   m->next_init_return   = k_rx_ok;
+  m->next_deinit_return = k_rx_ok;
   m->next_attach_return = k_rx_ok;
+  m->next_detach_return = k_rx_ok;
   m->fifo_ready         = true;
   m->bus_state          = k_usb_state_detached;
 
@@ -71,7 +73,9 @@ rx_err_t mock_usb_hw_clear(mock_usb_hw_t* mock)
 
   /* Preserve configuration but clear state */
   rx_err_t saved_init_ret   = m->next_init_return;
+  rx_err_t saved_deinit_ret = m->next_deinit_return;
   rx_err_t saved_attach_ret = m->next_attach_return;
+  rx_err_t saved_detach_ret = m->next_detach_return;
   bool     saved_fifo_ready = m->fifo_ready;
 
   uint8_t* const p_m = (uint8_t*)m;
@@ -80,7 +84,9 @@ rx_err_t mock_usb_hw_clear(mock_usb_hw_t* mock)
   }
 
   m->next_init_return   = saved_init_ret;
+  m->next_deinit_return = saved_deinit_ret;
   m->next_attach_return = saved_attach_ret;
+  m->next_detach_return = saved_detach_ret;
   m->fifo_ready         = saved_fifo_ready;
 
   return k_rx_ok;
@@ -95,6 +101,18 @@ void mock_usb_hw_set_init_return(mock_usb_hw_t* mock, rx_err_t ret)
 {
   mock_usb_hw_t* m    = internal_get_mock(mock);
   m->next_init_return = ret;
+}
+
+void mock_usb_hw_set_deinit_return(mock_usb_hw_t* mock, rx_err_t ret)
+{
+  mock_usb_hw_t* m      = internal_get_mock(mock);
+  m->next_deinit_return = ret;
+}
+
+void mock_usb_hw_set_detach_return(mock_usb_hw_t* mock, rx_err_t ret)
+{
+  mock_usb_hw_t* m      = internal_get_mock(mock);
+  m->next_detach_return = ret;
 }
 
 void mock_usb_hw_set_attach_return(mock_usb_hw_t* mock, rx_err_t ret)
@@ -324,12 +342,17 @@ rx_err_t rx_usb_hw_deinit(void)
 {
   mock_usb_hw_t* m = &g_mock_usb_hw;
 
-  rx_err_t ret = k_rx_ok;
+  rx_err_t ret = m->next_deinit_return;
   mock_usb_hw_record_call(m, "rx_usb_hw_deinit", 0, 0, 0, ret);
   m->deinit_calls++;
 
-  m->initialized = false;
-  m->attached    = false;
+  if (ret == k_rx_ok) {
+    m->initialized = false;
+    m->attached    = false;
+  }
+
+  /* Reset to default for next call */
+  m->next_deinit_return = k_rx_ok;
 
   return ret;
 }
@@ -356,11 +379,16 @@ rx_err_t rx_usb_hw_detach(void)
 {
   mock_usb_hw_t* m = &g_mock_usb_hw;
 
-  rx_err_t ret = k_rx_ok;
+  rx_err_t ret = m->next_detach_return;
   mock_usb_hw_record_call(m, "rx_usb_hw_detach", 0, 0, 0, ret);
   m->detach_calls++;
 
-  m->attached = false;
+  if (ret == k_rx_ok) {
+    m->attached = false;
+  }
+
+  /* Reset to default for next call */
+  m->next_detach_return = k_rx_ok;
 
   return ret;
 }
