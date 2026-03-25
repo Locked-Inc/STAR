@@ -114,7 +114,9 @@ typedef struct {
 
   /* Configurable return values for error injection */
   rx_err_t next_init_return;   /**< Return value for next hw_init call */
+  rx_err_t next_deinit_return; /**< Return value for next hw_deinit call */
   rx_err_t next_attach_return; /**< Return value for next hw_attach call */
+  rx_err_t next_detach_return; /**< Return value for next hw_detach call */
   bool     fifo_ready;         /**< FIFO ready flag (affects reads/writes) */
   uint32_t fifo_timeout_after; /**< Simulate timeout after N accesses */
 
@@ -177,6 +179,22 @@ rx_err_t mock_usb_hw_clear(mock_usb_hw_t* mock);
  * @param ret Return value to use
  */
 void mock_usb_hw_set_init_return(mock_usb_hw_t* mock, rx_err_t ret);
+
+/**
+ * @brief Set return value for next hw_deinit call
+ *
+ * @param mock Mock instance (use NULL for global)
+ * @param ret Return value to use (one-shot: resets to k_rx_ok after use)
+ */
+void mock_usb_hw_set_deinit_return(mock_usb_hw_t* mock, rx_err_t ret);
+
+/**
+ * @brief Set return value for next hw_detach call
+ *
+ * @param mock Mock instance (use NULL for global)
+ * @param ret Return value to use (one-shot: resets to k_rx_ok after use)
+ */
+void mock_usb_hw_set_detach_return(mock_usb_hw_t* mock, rx_err_t ret);
 
 /**
  * @brief Set return value for next rx_usb_cdc_init call

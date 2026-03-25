@@ -1005,6 +1005,47 @@ RX_STATIC_TESTABLE bool s_worker_initialized = false;
  */
 
 /**
+ * @brief Validate that a trigger pin encodes a legal RX72N port/pin combination
+ *
+ * @details
+ * The RX72N GPIO matrix exposes ports 0..G (0x00..0x10) and port J (0x13).
+ * Ports H (0x11) and I (0x12) do not exist on this device, so any encoded port
+ * in the range (k_rx_port_g, k_rx_port_j) exclusive must be rejected.
+ * Pin numbers above k_rx_pin_max (7) are also illegal.
+ *
+ * Validation rules:
+ * 1. Port must be <= k_rx_port_g OR exactly == k_rx_port_j
+ * 2. Pin number must be <= k_rx_pin_max
+ *
+ * @param[in] trigger_pin Encoded port/pin value (rx_port_pin_t)
+ *
+ * @return true  Trigger pin is a legal RX72N port/pin combination
+ * @return false Trigger pin encodes an invalid port or out-of-range pin
+ *
+ * @pre trigger_pin is a value previously stored in rx_hcsr04_t.trigger_pin
+ * @post No side effects; read-only validation
+ *
+ * @note Pure function - no globals read or written
+ *
+ * @see internal_send_trigger_pulse Sole caller; calls before HAL access
+ * @see k_rx_port_g   Highest valid contiguous port (port G = 0x10)
+ * @see k_rx_port_j   Only valid non-contiguous port (port J = 0x13)
+ * @see k_rx_pin_max  Maximum valid pin index (7)
+ *
+ * @since Version 1.0.0
+ */
+static bool internal_is_trigger_pin_valid(rx_port_pin_t trigger_pin)
+{
+  const uint8_t port    = (uint8_t)(trigger_pin >> k_port_shift);
+  const uint8_t pin_num = (uint8_t)(trigger_pin & k_port_mask);
+  /* Valid ports: 0..k_rx_port_g (0x10) and k_rx_port_j (0x13); reject all others. */
+  if ((port > k_rx_port_g) && (port != k_rx_port_j)) {
+    return false;
+  }
+  return (bool)(pin_num <= k_rx_pin_max);
+}
+
+/**
  * @brief Send 10us trigger pulse to initiate HC-SR04 measurement
  *
  * @details
@@ -1081,10 +1122,7 @@ RX_STATIC_TESTABLE rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handl
     return k_rx_err_invalid_arg;
   }
 
-  const uint8_t port    = (uint8_t)(handle->trigger_pin >> k_port_shift);
-  const uint8_t pin_num = (uint8_t)(handle->trigger_pin & k_port_mask);
-  if ((port > k_rx_port_j) || (port > k_rx_port_g && port < k_rx_port_j) ||
-      (pin_num > k_rx_pin_max)) {
+  if (!internal_is_trigger_pin_valid(handle->trigger_pin)) {
     return k_rx_err_invalid_arg;
   }
 

@@ -41,7 +41,8 @@ RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.
     clang-18 \
     clangd-18 \
     clang-format-18 \
-    clang-tidy-18 && \
+    clang-tidy-18 \
+    libclang-rt-18-dev && \
     update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100 && \
     update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-18 100 && \
     update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-18 100 && \
@@ -143,6 +144,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libusb-1.0-0-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Install CodeRabbit CLI for code review
+RUN curl -fsSL https://cli.coderabbit.ai/install.sh | sh
+
 # Install nanopb for Protocol Buffer C code generation
 # Required for star-rx72n-firmware embedded target
 RUN rm -f /usr/lib/python*/EXTERNALLY-MANAGED && \
@@ -200,6 +204,7 @@ WORKDIR /workspaces/STAR
 
 # Source ROS2 setup and add GNURX to PATH in bashrc
 RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc && \
-    echo 'export PATH="/opt/gnurx/bin:$PATH"' >> /home/$USERNAME/.bashrc
+    echo 'export PATH="/opt/gnurx/bin:$PATH"' >> /home/$USERNAME/.bashrc && \
+    echo "alias claudee='claude --allow-dangerously-skip-permissions'" >> /home/$USERNAME/.bashrc
 
 USER $USERNAME

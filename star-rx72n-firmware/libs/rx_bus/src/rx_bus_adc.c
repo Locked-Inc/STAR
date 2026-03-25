@@ -416,12 +416,6 @@ static rx_err_t internal_adc_init_callback(rx_bus_config_t* bus_config, void* us
     return err;
   }
 
-  /* Mark ADC unit as initialized in bus manager */
-  if (bus_config->proto.adc.unit < k_adc_unit_count) {
-    /* Track initialization in manager (bus_config has parent pointer) */
-    /* Note: This is handled by the ADC HAL internally */
-  }
-
   /* Post-condition: Verify ADC channel is responsive with a test read */
   /* adc_init() above succeeded, so unit/channel are in-range; cast is safe */
   uint16_t test_value = 0;

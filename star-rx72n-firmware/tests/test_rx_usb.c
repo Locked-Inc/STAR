@@ -971,6 +971,82 @@ void test_usb_init_attach_failure_propagates_and_cleans_up(void)
   TEST_ASSERT_EQUAL_UINT32(1, mock_usb_hw_get_call_count(nullptr, "rx_usb_hw_deinit"));
 }
 
+/**
+ * @brief When cdc_init fails, the cleanup hw_deinit failure is logged but
+ *        does not change the return value (original cdc_init error propagates).
+ *
+ * @pre mock returns error for both cdc_init and hw_deinit
+ * @post rx_usb_init returns the cdc_init error code
+ * @post hw_deinit was called exactly once
+ */
+void test_usb_init_cdc_init_fail_deinit_fail_returns_cdc_error(void)
+{
+  mock_usb_hw_set_cdc_init_return(k_rx_err_hw_error);
+  mock_usb_hw_set_deinit_return(nullptr, k_rx_err_hw_error);
+
+  rx_err_t err = rx_usb_init(nullptr);
+
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+  TEST_ASSERT_EQUAL_UINT32(1, mock_usb_hw_get_call_count(nullptr, "rx_usb_hw_deinit"));
+}
+
+/**
+ * @brief When hw_attach fails, the cleanup hw_deinit failure is logged but
+ *        does not change the return value (original attach error propagates).
+ *
+ * @pre mock returns error for hw_attach and hw_deinit
+ * @post rx_usb_init returns the attach error code
+ * @post hw_deinit was called exactly once
+ */
+void test_usb_init_attach_fail_deinit_fail_returns_attach_error(void)
+{
+  mock_usb_hw_set_attach_return(nullptr, k_rx_err_hw_error);
+  mock_usb_hw_set_deinit_return(nullptr, k_rx_err_hw_error);
+
+  rx_err_t err = rx_usb_init(nullptr);
+
+  TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
+  TEST_ASSERT_EQUAL_UINT32(1, mock_usb_hw_get_call_count(nullptr, "rx_usb_hw_deinit"));
+}
+
+/**
+ * @brief When hw_detach fails during rx_usb_deinit, function still returns k_rx_ok.
+ *
+ * @pre USB initialized; hw_detach configured to fail
+ * @post rx_usb_deinit returns k_rx_ok (detach error is logged, not propagated)
+ * @post s_usb.initialized is false after deinit
+ */
+void test_usb_deinit_detach_failure_does_not_propagate(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+
+  mock_usb_hw_set_detach_return(nullptr, k_rx_err_hw_error);
+
+  rx_err_t err = rx_usb_deinit();
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, rx_usb_deinit()); /* confirms deinitialized */
+}
+
+/**
+ * @brief When hw_deinit fails during rx_usb_deinit, function still returns k_rx_ok.
+ *
+ * @pre USB initialized; hw_deinit configured to fail
+ * @post rx_usb_deinit returns k_rx_ok (deinit error is logged, not propagated)
+ * @post s_usb.initialized is false after deinit
+ */
+void test_usb_deinit_hw_deinit_failure_does_not_propagate(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
+
+  mock_usb_hw_set_deinit_return(nullptr, k_rx_err_hw_error);
+
+  rx_err_t err = rx_usb_deinit();
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, rx_usb_deinit()); /* confirms deinitialized */
+}
+
 void test_pipe_bounds_validation_at_max(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
@@ -3219,6 +3295,8 @@ static void internal_run_init_tests(void)
   RUN_TEST(test_error_propagation_from_attach);
   RUN_TEST(test_cleanup_on_attach_failure);
   RUN_TEST(test_usb_init_attach_failure_propagates_and_cleans_up);
+  RUN_TEST(test_usb_init_cdc_init_fail_deinit_fail_returns_cdc_error);
+  RUN_TEST(test_usb_init_attach_fail_deinit_fail_returns_attach_error);
   RUN_TEST(test_pipe_bounds_validation_at_max);
   RUN_TEST(test_endpoint_bounds_max_valid);
 
@@ -3226,6 +3304,8 @@ static void internal_run_init_tests(void)
   RUN_TEST(test_usb_deinit_not_initialized_fails);
   RUN_TEST(test_usb_deinit_success);
   RUN_TEST(test_usb_deinit_sets_detached_state);
+  RUN_TEST(test_usb_deinit_detach_failure_does_not_propagate);
+  RUN_TEST(test_usb_deinit_hw_deinit_failure_does_not_propagate);
 
   /* USB state query tests */
   RUN_TEST(test_usb_is_configured_when_not_initialized);
