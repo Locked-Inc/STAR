@@ -2466,8 +2466,10 @@ rx_err_t rx_spi_comm_process_retransmits(rx_spi_comm_handle_t* handle,
 
   /* Compute exponential backoff: ack_timeout_ms * 2^retry_count, capped.
    * Clamp shift to 31 to avoid undefined behavior when retry_count >= 32. */
-  const uint8_t shift =
-    (handle->retry_count < k_max_backoff_shift) ? handle->retry_count : k_max_backoff_shift;
+  uint8_t shift = handle->retry_count;
+  if (handle->retry_count >= k_max_backoff_shift) {
+    shift = k_max_backoff_shift;
+  }
   uint32_t backoff_ms = (uint32_t)handle->retransmit_cfg.ack_timeout_ms << shift;
 
   if (backoff_ms > handle->retransmit_cfg.max_backoff_ms) {
