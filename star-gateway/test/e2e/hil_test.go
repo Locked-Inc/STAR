@@ -703,13 +703,13 @@ func TestHIL_SimpleUSBSimulation(t *testing.T) {
 	// 5. Verify telemetry contains expected simulator data
 	telemetry := telemetryResp.Telemetry
 	if telemetry.Imu == nil {
-		t.Error("Expected non-nil IMU data")
+		t.Fatal("Expected non-nil IMU data")
 	}
 	if telemetry.EncoderFrontLeft == nil {
-		t.Error("Expected non-nil front left encoder data")
+		t.Fatal("Expected non-nil front left encoder data")
 	}
 	if telemetry.EncoderFrontRight == nil {
-		t.Error("Expected non-nil front right encoder data")
+		t.Fatal("Expected non-nil front right encoder data")
 	}
 
 	t.Logf("Simple-USB telemetry OK: IMU accel_z=%.2f m/s^2, encoder_fl=%d ticks",

@@ -3,6 +3,9 @@
 // These tests verify behavior at protocol boundaries: uint16 wraparound,
 // maximum gap tolerance, duplicate rejection, and simple mode permissiveness.
 //
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+//
 // STAR Project - Texas A&M University
 // April 2026
 package link
@@ -61,7 +64,9 @@ func TestCDCLink_SequenceWraparound(t *testing.T) {
 	// Simplest: use simple mode to accept any seq, then disable it.
 	session.SetSimpleMode(true)
 	transport.QueueReceive(encodeTestFrame(t, 65533, "a"))
-	link.Receive(context.Background())
+	if _, err := link.Receive(context.Background()); err != nil {
+		t.Fatalf("failed to prime RX sequence near wraparound: %v", err)
+	}
 	session.SetSimpleMode(false)
 	// Now session expects seq=65534
 
