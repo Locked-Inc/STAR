@@ -23,23 +23,24 @@ ekf_filter_node:
     odom0_pose_rejection_threshold: 5.0
     odom0_twist_rejection_threshold: 5.0
 
-    # IMU from BBB (MPU-9250 polling mode): fuse gyro yaw rate + planar accel.
+    # IMU from BBB (MPU-9250 polling mode): fuse gyro yaw rate ONLY.
     # BBB polling mode provides raw accel + gyro but no fused orientation.
     # The bridge sets orientation_covariance[0]=-1 (REP-145) when no quaternion
     # is available, so robot_localization ignores orientation automatically.
-    # We also disable yaw in imu0_config for clarity.
+    # DO NOT fuse raw accelerometer (ax/ay) -- uncalibrated MPU-9250 accel with
+    # gravity removal errors causes position estimate to drift to infinity.
     imu0: /imu/data
     imu0_config: [false, false, false,   # x, y, z (position -- not from IMU)
                   false, false, false,   # roll, pitch, yaw -- no orientation from BBB
                   false, false, false,   # vx, vy, vz
                   false, false, true,    # vroll, vpitch, vyaw -- yaw rate from gyro
-                  true,  true,  false]   # ax, ay, az -- planar accel
+                  false, false, false]   # ax, ay, az -- DO NOT fuse (causes drift)
     imu0_differential: false
     imu0_relative: false
     imu0_remove_gravitational_acceleration: true
     imu0_queue_size: 10
-    imu0_pose_rejection_threshold: 5.0
-    imu0_twist_rejection_threshold: 5.0
+    imu0_pose_rejection_threshold: 0.8
+    imu0_twist_rejection_threshold: 0.8
 
     # 15x15 diagonal; state order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
     # Observed states: x=0.1, y=0.1, yaw=0.1 (+/-0.3 m / +/-17deg); vx=0.01, vyaw=0.01
