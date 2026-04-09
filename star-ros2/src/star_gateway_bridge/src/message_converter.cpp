@@ -11,6 +11,7 @@
 #include <cassert>
 #include <chrono>
 #include <cmath>
+#include <stdexcept>
 
 namespace star::star_gateway_bridge
 {
@@ -546,9 +547,15 @@ void MessageConverter::obstacle_distance_to_range(
 
 void MessageConverter::init_bbb_params(const BbbParams & params)
 {
-  assert(params.wheel_base > 0.0);
-  assert(params.wheel_radius > 0.0);
-  assert(params.ticks_per_rev > 0);
+  if (params.wheel_base <= 0.0 || params.wheel_radius <= 0.0 ||
+    params.ticks_per_rev <= 0)
+  {
+    throw std::invalid_argument(
+      "BBB params must be positive (wheel_base=" +
+      std::to_string(params.wheel_base) + ", wheel_radius=" +
+      std::to_string(params.wheel_radius) + ", ticks_per_rev=" +
+      std::to_string(params.ticks_per_rev) + ")");
+  }
   bbb_params_ = params;
   bbb_params_initialized_ = true;
   // Reset dead-reckoning state
@@ -562,11 +569,22 @@ void MessageConverter::init_bbb_params(const BbbParams & params)
   first_odom_msg_ = true;
 }
 
-void MessageConverter::telemetry_to_odometry(
+bool MessageConverter::telemetry_to_odometry(
   const ::star::v1::TelemetryData & telemetry,
   nav_msgs::msg::Odometry & odom)
 {
-  assert(bbb_params_initialized_);
+  if (!bbb_params_initialized_) {
+    return false;
+  }
+
+  // Validate all four encoder sub-messages are present
+  if (!telemetry.has_encoder_front_left() ||
+    !telemetry.has_encoder_front_right() ||
+    !telemetry.has_encoder_back_left() ||
+    !telemetry.has_encoder_back_right())
+  {
+    return false;
+  }
 
   const auto & enc_fl = telemetry.encoder_front_left();
   const auto & enc_fr = telemetry.encoder_front_right();
@@ -584,7 +602,7 @@ void MessageConverter::telemetry_to_odometry(
     prev_ticks_bl_ = ticks_bl;
     prev_ticks_br_ = ticks_br;
     first_odom_msg_ = false;
-    // Publish zero-pose on first message
+    // First message seeds baselines; publish zero-pose
   }
 
   int64_t delta_fl = ticks_fl - prev_ticks_fl_;
@@ -656,12 +674,18 @@ void MessageConverter::telemetry_to_odometry(
   odom.twist.covariance[21] = 1e6;   // roll rate
   odom.twist.covariance[28] = 1e6;   // pitch rate
   odom.twist.covariance[35] = 0.05;  // yaw rate
+
+  return true;
 }
 
-void MessageConverter::telemetry_to_imu(
+bool MessageConverter::telemetry_to_imu(
   const ::star::v1::TelemetryData & telemetry,
   sensor_msgs::msg::Imu & imu_msg)
 {
+  if (!telemetry.has_imu()) {
+    return false;
+  }
+
   imu_msg.header.frame_id = "imu_link";
 
   const auto & imu = telemetry.imu();
@@ -697,13 +721,25 @@ void MessageConverter::telemetry_to_imu(
   imu_msg.linear_acceleration_covariance[0] = 0.1;
   imu_msg.linear_acceleration_covariance[4] = 0.1;
   imu_msg.linear_acceleration_covariance[8] = 0.1;
+
+  return true;
 }
 
-void MessageConverter::telemetry_to_joint_state(
+bool MessageConverter::telemetry_to_joint_state(
   const ::star::v1::TelemetryData & telemetry,
   sensor_msgs::msg::JointState & joint_state)
 {
-  assert(bbb_params_initialized_);
+  if (!bbb_params_initialized_) {
+    return false;
+  }
+
+  if (!telemetry.has_encoder_front_left() ||
+    !telemetry.has_encoder_front_right() ||
+    !telemetry.has_encoder_back_left() ||
+    !telemetry.has_encoder_back_right())
+  {
+    return false;
+  }
 
   const auto & enc_fl = telemetry.encoder_front_left();
   const auto & enc_fr = telemetry.encoder_front_right();
@@ -727,6 +763,8 @@ void MessageConverter::telemetry_to_joint_state(
     enc_fr.velocity_mps() * inv_radius,
     enc_bl.velocity_mps() * inv_radius,
     enc_br.velocity_mps() * inv_radius};
+
+  return true;
 }
 
 double MessageConverter::normalize_angle(double angle)

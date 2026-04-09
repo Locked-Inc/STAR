@@ -138,7 +138,16 @@ StarGatewayBridgeNode::~StarGatewayBridgeNode()
   obstacle_br_pub_.reset();
   obstacle_detected_pub_.reset();
 
-  // Send stop command before shutdown
+  // Cancel BBB telemetry timer and send zero velocity to BBB
+  if (bbb_telemetry_timer_) {
+    bbb_telemetry_timer_->cancel();
+    bbb_telemetry_timer_.reset();
+  }
+  if (use_bbb_telemetry_) {
+    send_zero_velocity_to_bbb();
+  }
+
+  // Send stop command on teleop topic before shutdown
   auto zero_twist = geometry_msgs::msg::Twist();
   if (teleop_cmd_vel_pub_) {
     teleop_cmd_vel_pub_->publish(zero_twist);
@@ -779,6 +788,7 @@ void StarGatewayBridgeNode::cmd_vel_callback(
         code == grpc::StatusCode::DEADLINE_EXCEEDED ||
         code == grpc::StatusCode::INTERNAL)
       {
+        send_zero_velocity_to_bbb();
         grpc_connected_ = false;
       }
     }
@@ -830,23 +840,26 @@ void StarGatewayBridgeNode::bbb_telemetry_poll_timer_callback()
     const auto & telemetry = response.telemetry();
     const rclcpp::Time stamp = this->now();
 
-    // Publish odometry from encoder dead-reckoning
+    // Publish odometry from encoder dead-reckoning (skip if data incomplete)
     nav_msgs::msg::Odometry odom;
-    converter_.telemetry_to_odometry(telemetry, odom);
-    odom.header.stamp = stamp;
-    bbb_odom_pub_->publish(odom);
+    if (converter_.telemetry_to_odometry(telemetry, odom)) {
+      odom.header.stamp = stamp;
+      bbb_odom_pub_->publish(odom);
+    }
 
-    // Publish IMU data
+    // Publish IMU data (skip if IMU sub-message absent)
     sensor_msgs::msg::Imu imu_msg;
-    converter_.telemetry_to_imu(telemetry, imu_msg);
-    imu_msg.header.stamp = stamp;
-    bbb_imu_pub_->publish(imu_msg);
+    if (MessageConverter::telemetry_to_imu(telemetry, imu_msg)) {
+      imu_msg.header.stamp = stamp;
+      bbb_imu_pub_->publish(imu_msg);
+    }
 
-    // Publish joint states
+    // Publish joint states (skip if encoder data incomplete)
     sensor_msgs::msg::JointState joint_state;
-    converter_.telemetry_to_joint_state(telemetry, joint_state);
-    joint_state.header.stamp = stamp;
-    bbb_joint_state_pub_->publish(joint_state);
+    if (converter_.telemetry_to_joint_state(telemetry, joint_state)) {
+      joint_state.header.stamp = stamp;
+      bbb_joint_state_pub_->publish(joint_state);
+    }
 
   } catch (const std::exception & e) {
     RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
@@ -855,6 +868,48 @@ void StarGatewayBridgeNode::bbb_telemetry_poll_timer_callback()
   } catch (...) {
     RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
                           "Unknown exception in bbb_telemetry_poll_timer_callback");
+  }
+}
+
+void StarGatewayBridgeNode::send_zero_velocity_to_bbb()
+{
+  if (!motor_control_stub_ || !grpc_channel_) {
+    return;
+  }
+
+  try {
+    grpc::ClientContext context;
+    context.set_deadline(std::chrono::system_clock::now() +
+                         std::chrono::milliseconds(grpc_deadline_ms_));
+
+    star::v1::SetVelocityRequest request;
+    auto * header = request.mutable_header();
+    header->set_request_id("estop_zero");
+
+    auto * command = request.mutable_command();
+    command->set_front_left_velocity_mps(0.0F);
+    command->set_front_right_velocity_mps(0.0F);
+    command->set_back_left_velocity_mps(0.0F);
+    command->set_back_right_velocity_mps(0.0F);
+    command->set_timestamp_us(
+        std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::system_clock::now().time_since_epoch())
+            .count());
+
+    star::v1::SetVelocityResponse response;
+    grpc::Status status =
+      motor_control_stub_->SetVelocity(&context, request, &response);
+
+    if (status.ok()) {
+      RCLCPP_INFO(this->get_logger(), "Sent zero velocity to BBB (safety stop)");
+    } else {
+      RCLCPP_WARN(this->get_logger(),
+                  "Failed to send zero velocity to BBB: %s",
+                  status.error_message().c_str());
+    }
+  } catch (...) {
+    RCLCPP_WARN(this->get_logger(),
+                "Exception sending zero velocity to BBB (best-effort)");
   }
 }
 

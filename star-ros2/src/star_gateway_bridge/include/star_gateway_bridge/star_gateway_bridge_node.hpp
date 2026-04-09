@@ -233,14 +233,21 @@ private:
    * @details
    * Only active when use_bbb_telemetry_ is true. Converts the incoming Twist
    * to a VelocityCommand protobuf and sends it to the Go gateway, which
-   * forwards it over USB CDC to the BeagleBone Blue.
+   * forwards it over USB CDC to the BeagleBone Blue. On gRPC failure, sends
+   * a zero-velocity command to stop the motors before marking the connection
+   * as lost.
    *
    * @param[in] msg Velocity command from Nav2 or teleop.
    *
    * @pre use_bbb_telemetry_ must be true and motor_control_stub_ non-null.
    * @post VelocityCommand sent to gateway via gRPC or error logged.
    *
+   * @throw None. All exceptions are caught internally.
    * @note Not thread-safe; called from ROS2 executor only.
+   *
+   * @see MotorControlService::SetVelocity  gRPC method called.
+   * @see send_zero_velocity_to_bbb()       Called on transport failure.
+   *
    * @since Version 1.1.0
    */
   void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
@@ -256,13 +263,46 @@ private:
    *   - /imu/data (sensor_msgs/Imu) from BNO055/MPU-9250
    *   - /joint_states (sensor_msgs/JointState) from encoder ticks
    *
+   * Incomplete telemetry (missing encoder or IMU sub-messages) is silently
+   * skipped; only fully-populated fields are published.
+   *
    * @pre grpc_connected_ and telemetry_svc_stub_ must be valid.
    * @post ROS2 messages published for EKF and robot_state_publisher consumption.
    *
+   * @throw None. All exceptions are caught internally.
    * @note Not thread-safe; called from ROS2 timer executor only.
+   *
+   * @see TelemetryService::GetTelemetry  gRPC method called.
+   * @see MessageConverter::telemetry_to_odometry()  Encoder conversion.
+   * @see MessageConverter::telemetry_to_imu()       IMU conversion.
+   *
    * @since Version 1.1.0
    */
   void bbb_telemetry_poll_timer_callback();
+
+  /**
+   * @brief Send a zero-velocity command to BBB motors via gRPC.
+   *
+   * @details
+   * Idempotent safety helper. Constructs a VelocityCommand with all zero
+   * wheel velocities and sends it via MotorControlService::SetVelocity.
+   * Called from the destructor and from cmd_vel_callback on transport failure
+   * to ensure BBB motors are stopped when the ROS2 node shuts down or loses
+   * connectivity.
+   *
+   * No-op if motor_control_stub_ is null or grpc_channel_ is not available.
+   *
+   * @pre motor_control_stub_ may or may not be valid (checked internally).
+   * @post Zero-velocity command sent if gRPC channel is available.
+   *
+   * @throw None. All gRPC errors are swallowed (best-effort stop).
+   * @note Not thread-safe; called from destructor or ROS2 executor only.
+   *
+   * @see cmd_vel_callback()  Calls this on transport failure.
+   *
+   * @since Version 1.1.0
+   */
+  void send_zero_velocity_to_bbb();
 
   // ===========================================================================
   // gRPC Helpers
@@ -291,9 +331,14 @@ private:
   // ROS2 Publishers
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr teleop_cmd_vel_pub_;
 
-  // BBB telemetry publishers (active when use_bbb_telemetry_ == true)
+  /** @brief Publisher for BBB wheel odometry on /odom/unfiltered (nav_msgs/Odometry).
+   *         Created only when use_bbb_telemetry_ is true. Fed to EKF. */
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr bbb_odom_pub_;
+  /** @brief Publisher for BBB IMU data on /imu/data (sensor_msgs/Imu).
+   *         Created only when use_bbb_telemetry_ is true. Fed to EKF. */
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr bbb_imu_pub_;
+  /** @brief Publisher for BBB wheel joint states on /joint_states (sensor_msgs/JointState).
+   *         Created only when use_bbb_telemetry_ is true. */
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr bbb_joint_state_pub_;
 
   /** @brief Publisher for front-left HC-SR04 sensor distance (sensor_msgs/Range). */
@@ -330,7 +375,10 @@ private:
   /** @brief Timer that polls TelemetryService::GetTelemetry and publishes
    *         obstacle data at telemetry_rate_hz_ (default 10 Hz). */
   rclcpp::TimerBase::SharedPtr obstacle_timer_;
-  rclcpp::TimerBase::SharedPtr bbb_telemetry_timer_; /**< BBB odom/IMU polling */
+  /** @brief Timer that polls TelemetryService::GetTelemetry and publishes BBB
+   *         odom/IMU/joint_state data at telemetry_rate_hz_ (default 10 Hz).
+   *         Created only when use_bbb_telemetry_ is true. */
+  rclcpp::TimerBase::SharedPtr bbb_telemetry_timer_;
 
   // gRPC Client
   std::shared_ptr<grpc::Channel> grpc_channel_;
@@ -347,7 +395,13 @@ private:
    * @since Version 1.0.0
    */
   std::unique_ptr<star::v1::TelemetryService::Stub> telemetry_svc_stub_;
-  std::unique_ptr<star::v1::MotorControlService::Stub> motor_control_stub_; /**< BBB motor commands */
+  /** @brief gRPC stub for MotorControlService (SetVelocity) on the same channel.
+   *         Used by cmd_vel_callback() and send_zero_velocity_to_bbb() to forward
+   *         velocity commands to the BBB via the Go gateway. Created in
+   *         initialize_grpc_client(); null when gRPC is not connected.
+   *         @note Shares grpc_channel_ with other stubs.
+   *         @since Version 1.1.0 */
+  std::unique_ptr<star::v1::MotorControlService::Stub> motor_control_stub_;
 
   // Cached telemetry data (protected by mutexes)
   std::mutex robot_status_mutex_;
