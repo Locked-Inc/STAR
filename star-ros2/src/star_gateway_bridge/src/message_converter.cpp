@@ -696,13 +696,13 @@ bool MessageConverter::telemetry_to_imu(
   // (covariance[0] = -1 tells robot_localization to ignore orientation).
   // Check for valid quaternion: non-zero and approximately normalized.
   // BBB polling mode sends all zeros; DMP/BNO055 sends normalized quaternion.
-  constexpr double kQuatMagSqMin = 0.9;  // lower bound for |q|^2
-  constexpr double kQuatMagSqMax = 1.1;  // upper bound for |q|^2
+  constexpr double QUAT_MAG_SQ_MIN = 0.9;  // lower bound for |q|^2
+  constexpr double QUAT_MAG_SQ_MAX = 1.1;  // upper bound for |q|^2
   const double quat_mag_sq =
     imu.quat_w() * imu.quat_w() + imu.quat_x() * imu.quat_x() +
     imu.quat_y() * imu.quat_y() + imu.quat_z() * imu.quat_z();
   const bool has_orientation =
-    (quat_mag_sq >= kQuatMagSqMin && quat_mag_sq <= kQuatMagSqMax);
+    (quat_mag_sq >= QUAT_MAG_SQ_MIN && quat_mag_sq <= QUAT_MAG_SQ_MAX);
   if (has_orientation) {
     imu_msg.orientation.x = imu.quat_x();
     imu_msg.orientation.y = imu.quat_y();
@@ -729,18 +729,14 @@ bool MessageConverter::telemetry_to_imu(
   // row-major 3x3: roll, pitch, yaw
   if (has_orientation) {
     // Zero the full 3x3 matrix, then set diagonals.
-    for (size_t i = 0; i < 9; ++i) {
-      imu_msg.orientation_covariance[i] = 0.0;
-    }
+    imu_msg.orientation_covariance.fill(0.0);
     imu_msg.orientation_covariance[0] = 1e6;   // roll (not used in 2D)
     imu_msg.orientation_covariance[4] = 1e6;   // pitch (not used in 2D)
     imu_msg.orientation_covariance[8] = 0.01;  // yaw
   } else {
     // -1 in first element = orientation data should be ignored (REP-145)
+    imu_msg.orientation_covariance.fill(0.0);
     imu_msg.orientation_covariance[0] = -1.0;
-    for (size_t i = 1; i < 9; ++i) {
-      imu_msg.orientation_covariance[i] = 0.0;
-    }
   }
 
   // Angular velocity covariance
