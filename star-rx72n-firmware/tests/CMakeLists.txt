@@ -400,6 +400,17 @@ apply_strict_warnings(test_rx_frame)
 apply_test_includes(test_rx_frame)
 target_link_libraries(test_rx_frame unity)
 
+# Test: Frame Go Cross-Language Compatibility
+add_executable(test_frame_go_compat
+    test_frame_go_compat.c
+    ${RX_FRAME_SRC}
+    ${MOCK_UART_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_frame_go_compat)
+apply_test_includes(test_frame_go_compat)
+target_link_libraries(test_frame_go_compat unity)
+
 # Test: FEC Codec
 add_executable(test_rx_fec
     test_rx_fec.c
@@ -1255,6 +1266,7 @@ set(ALL_TEST_TARGETS
     test_rx_crc8
     test_rx_crc
     test_rx_frame
+    test_frame_go_compat
     test_rx_fec
     test_rx_harq
     test_rx_usb
@@ -1316,6 +1328,7 @@ add_test(NAME test_rx_crc32 COMMAND test_rx_crc32)
 add_test(NAME test_rx_crc8 COMMAND test_rx_crc8)
 add_test(NAME test_rx_crc COMMAND test_rx_crc)
 add_test(NAME test_rx_frame COMMAND test_rx_frame)
+add_test(NAME test_frame_go_compat COMMAND test_frame_go_compat)
 add_test(NAME test_rx_fec COMMAND test_rx_fec)
 add_test(NAME test_rx_harq COMMAND test_rx_harq)
 add_test(NAME test_rx_usb COMMAND test_rx_usb)
