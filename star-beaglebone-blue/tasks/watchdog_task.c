@@ -68,10 +68,10 @@ void* bb_watchdog_task(void* arg)
     (void)clock_gettime(CLOCK_MONOTONIC, &next);
 
     /* Watchdog threshold in microseconds */
-    typedef enum : uint64_t {
+    enum : uint64_t {
         k_us_per_ms   = 1000ULL,
         k_watchdog_us = (uint64_t)k_bb_watchdog_ms * k_us_per_ms,
-    } watchdog_threshold_t;
+    };
 
     while (rc_get_state() != EXITING) {
         uint64_t last_us = 0U;
