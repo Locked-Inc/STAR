@@ -33,9 +33,10 @@ pkill -f "star_spi_bridge_node"               2>/dev/null || true
 pkill -f "robot_state_publisher"              2>/dev/null || true
 pkill -f "static_transform_publisher"         2>/dev/null && say "fake odom TF stopped" || true
 
-# Go binaries (match full path to avoid false positives)
-pkill -f "$STAR_DIR/star-gateway/star-gateway"  2>/dev/null && say "gateway stopped"        || true
-pkill -f "$STAR_DIR/star-gateway/virtual_rx72n" 2>/dev/null && say "virtual_rx72n stopped"  || true
+# Go binaries -- match binary name (not full path, which varies by how it was started)
+pkill -f "[s]tar-gateway$"                        2>/dev/null && say "gateway stopped"        || true
+pkill -f "$STAR_DIR/star-gateway/star-gateway"    2>/dev/null || true  # fallback: full path
+pkill -f "[v]irtual_rx72n"                        2>/dev/null && say "virtual_rx72n stopped"  || true
 
 # Foxglove bridge
 pkill -f "foxglove_bridge" 2>/dev/null && say "foxglove_bridge stopped" || true
