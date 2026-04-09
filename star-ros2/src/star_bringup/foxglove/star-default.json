@@ -73,7 +73,7 @@
       "isSynced": true,
       "xAxisVal": "timestamp",
       "sidebarDimension": 240,
-      "title": "IMU Accel (m/s²)"
+      "title": "IMU Accel (m/s^2)"
     },
     "Plot!stargy": {
       "paths": [

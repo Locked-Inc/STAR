@@ -205,7 +205,7 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 		tm.mu.Unlock()
 
 		// Simple USB mode: skip reset handshake and enable permissive sequence validation.
-		// USB CDC is reliable at the hardware level — the handshake/sequence enforcement
+		// USB CDC is reliable at the hardware level -- the handshake/sequence enforcement
 		// was designed for SPI and causes 30s startup delays + false frame rejection on USB.
 		if tm.config.Mode == ModeSimpleUSB {
 			tm.sessionState.SetSimpleMode(true)

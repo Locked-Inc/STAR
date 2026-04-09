@@ -283,7 +283,9 @@ func validateOrUseDefault(logger *slog.Logger, config *manager.Config) *manager.
 			slog.Any("error", err),
 			slog.String("requested_mode", string(config.Mode)))
 		defaults := manager.DefaultConfig()
-		defaults.Mode = config.Mode
+		if config.Mode.IsValid() {
+			defaults.Mode = config.Mode
+		}
 		return defaults
 	}
 	return config
@@ -303,7 +305,7 @@ func initializeTransports(appConfig Config, tm *manager.TransportManager, logger
 	// Get shared session state from manager (single source of truth)
 	session := tm.GetSessionState()
 
-	// Simple USB mode: skip SPI entirely — BBB only uses USB CDC.
+	// Simple USB mode: skip SPI entirely -- BBB only uses USB CDC.
 	// This prevents any failover attempts and eliminates SPI-related errors.
 	if appConfig.TransportMode == manager.ModeSimpleUSB {
 		logger.Info("simple-usb mode: skipping SPI transport registration")

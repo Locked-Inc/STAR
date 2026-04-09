@@ -694,9 +694,15 @@ bool MessageConverter::telemetry_to_imu(
   // BBB polling mode only provides accel+gyro -- quaternion fields are zero.
   // A zero quaternion is invalid; set identity and mark orientation unknown
   // (covariance[0] = -1 tells robot_localization to ignore orientation).
+  // Check for valid quaternion: non-zero and approximately normalized.
+  // BBB polling mode sends all zeros; DMP/BNO055 sends normalized quaternion.
+  constexpr double kQuatMagSqMin = 0.9;  // lower bound for |q|^2
+  constexpr double kQuatMagSqMax = 1.1;  // upper bound for |q|^2
+  const double quat_mag_sq =
+    imu.quat_w() * imu.quat_w() + imu.quat_x() * imu.quat_x() +
+    imu.quat_y() * imu.quat_y() + imu.quat_z() * imu.quat_z();
   const bool has_orientation =
-    (imu.quat_w() != 0.0 || imu.quat_x() != 0.0 ||
-     imu.quat_y() != 0.0 || imu.quat_z() != 0.0);
+    (quat_mag_sq >= kQuatMagSqMin && quat_mag_sq <= kQuatMagSqMax);
   if (has_orientation) {
     imu_msg.orientation.x = imu.quat_x();
     imu_msg.orientation.y = imu.quat_y();
@@ -728,6 +734,9 @@ bool MessageConverter::telemetry_to_imu(
   } else {
     // -1 in first element = orientation data should be ignored (REP-145)
     imu_msg.orientation_covariance[0] = -1.0;
+    for (size_t i = 1; i < 9; ++i) {
+      imu_msg.orientation_covariance[i] = 0.0;
+    }
   }
 
   // Angular velocity covariance

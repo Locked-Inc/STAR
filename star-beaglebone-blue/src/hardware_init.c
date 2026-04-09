@@ -10,7 +10,7 @@
  * Initialization sequence:
  *   1. rc_motor_init() -- enables DRV8838 motor driver H-bridges
  *   2. rc_encoder_eqep_init() -- enables eQEP quadrature decoder
- *   3. rc_mpu_initialize_dmp() -- configures MPU-9250 with DMP at 100 Hz
+ *   3. rc_mpu_initialize() -- configures MPU-9250 for direct polling reads
  *
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
@@ -24,7 +24,7 @@
 
 /**
  * @var g_bb_mpu_data
- * @brief MPU-9250 data populated by DMP interrupt callback.
+ * @brief MPU-9250 data buffer updated by polling reads in imu_task.
  *
  * @since Version 1.0.0
  */

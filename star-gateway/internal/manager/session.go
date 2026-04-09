@@ -101,7 +101,7 @@ func (s *SessionState) ValidateRxSequence(seq uint16) bool {
 	defer s.mu.Unlock()
 
 	// Simple mode: accept all frames, track sequence for diagnostics only.
-	// USB CDC is reliable at the hardware level — sequence enforcement is
+	// USB CDC is reliable at the hardware level -- sequence enforcement is
 	// unnecessary and causes false rejections on gateway/firmware restart.
 	if s.simpleMode {
 		s.rxSequence = (seq + 1) & seqMask
