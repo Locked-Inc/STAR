@@ -277,11 +277,16 @@ func validateOrUseDefault(logger *slog.Logger, config *manager.Config) *manager.
 
 	// Validate configuration
 	if err := config.Validate(); err != nil {
-		// Log validation failure and use default configuration
+		// Log validation failure and use default configuration, preserving the
+		// requested transport mode so --simple / TRANSPORT_MODE is not lost.
 		logger.Error("manager config validation failed, using defaults",
 			slog.Any("error", err),
 			slog.String("requested_mode", string(config.Mode)))
-		return manager.DefaultConfig()
+		defaults := manager.DefaultConfig()
+		if config.Mode.IsValid() {
+			defaults.Mode = config.Mode
+		}
+		return defaults
 	}
 	return config
 }
@@ -300,8 +305,11 @@ func initializeTransports(appConfig Config, tm *manager.TransportManager, logger
 	// Get shared session state from manager (single source of truth)
 	session := tm.GetSessionState()
 
-	// SPI/Socket initialization (non-fatal unless force-spi mode)
-	if appConfig.SimulationMode {
+	// Simple USB mode: skip SPI entirely -- BBB only uses USB CDC.
+	// This prevents any failover attempts and eliminates SPI-related errors.
+	if appConfig.TransportMode == manager.ModeSimpleUSB {
+		logger.Info("simple-usb mode: skipping SPI transport registration")
+	} else if appConfig.SimulationMode {
 		// Simulation mode: use socket transport
 		socketTransport, err := createSocketTransport(appConfig.SocketPath)
 		if err != nil {
@@ -346,10 +354,10 @@ func initializeTransports(appConfig Config, tm *manager.TransportManager, logger
 	usbLink, err := createUSBLink(session)
 	if err != nil {
 		logger.Error("usb cdc initialization failed", slog.Any("error", err))
-		// If force-usb mode, this is fatal
-		if appConfig.TransportMode == manager.ModeForceUSB {
-			logger.Error("force-usb mode requires usb transport")
-			return fmt.Errorf("force-USB mode requires USB transport: %w", err)
+		// If force-usb or simple-usb mode, USB is required
+		if appConfig.TransportMode == manager.ModeForceUSB || appConfig.TransportMode == manager.ModeSimpleUSB {
+			logger.Error("USB mode requires usb transport", slog.String("mode", string(appConfig.TransportMode)))
+			return fmt.Errorf("%s mode requires USB transport: %w", appConfig.TransportMode, err)
 		}
 	} else {
 		tm.RegisterTransport(manager.TransportNameUSB, usbLink, manager.PriorityUSB)

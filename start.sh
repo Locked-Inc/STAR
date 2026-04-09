@@ -75,11 +75,30 @@ set -u
 
 # -- Phase 2: hardware auto-detection -----------------------------------------
 DEV_MODE=false   # default; overridden below
+BBB_MODE=false   # BeagleBone Blue over USB CDC
 HAS_LIDAR=false
 PROBE_PID=""
 SPI_BRIDGE_PID=""  # set if probe succeeds and we keep the process
 
-if [[ "${STAR_SIMULATION_MODE:-}" == "true" ]]; then
+# BBB connection parameters (override with env vars if needed)
+BBB_HOST="${BBB_HOST:-192.168.7.2}"
+BBB_USER="${BBB_USER:-debian}"
+BBB_PASS="${BBB_PASS:-StarBBB2026!}"
+BBB_FW_PATH="${BBB_FW_PATH:-/home/debian/star-beaglebone-blue}"
+
+# Check for BeagleBone Blue on USB first (takes priority over RX72N)
+if [[ -e /dev/ttyACM0 ]] && [[ -f /sys/class/tty/ttyACM0/device/../idVendor ]]; then
+    BBB_VID=$(cat /sys/class/tty/ttyACM0/device/../idVendor 2>/dev/null || echo "")
+    BBB_PID=$(cat /sys/class/tty/ttyACM0/device/../idProduct 2>/dev/null || echo "")
+    if [[ "$BBB_VID" == "1d6b" && "$BBB_PID" == "0104" ]]; then
+        say "BeagleBone Blue detected on /dev/ttyACM0 (VID:PID $BBB_VID:$BBB_PID)"
+        BBB_MODE=true
+    fi
+fi
+
+if [[ "$BBB_MODE" == "true" ]]; then
+    say "BBB mode: USB CDC motor controller (skipping RX72N/SPI)"
+elif [[ "${STAR_SIMULATION_MODE:-}" == "true" ]]; then
     say "STAR_SIMULATION_MODE=true -> forcing DEV mode"
     DEV_MODE=true
 elif [[ "${STAR_SIMULATION_MODE:-}" == "false" ]]; then
@@ -123,12 +142,15 @@ else
 fi
 
 # -- Detection banner ----------------------------------------------------------
-if [[ "$DEV_MODE" == "true" ]]; then
+if [[ "$BBB_MODE" == "true" ]]; then
+    MODE_LABEL="BBB MODE  (BeagleBone Blue USB)"
+    MC_LABEL="BeagleBone Blue (USB CDC)"
+elif [[ "$DEV_MODE" == "true" ]]; then
     MODE_LABEL="DEV MODE  (virtual RX72N)"
-    RX72N_LABEL="virtual (no hardware detected)"
+    MC_LABEL="virtual (no hardware detected)"
 else
     MODE_LABEL="HW MODE   (real RX72N)"
-    RX72N_LABEL="real RX72N (SPI)"
+    MC_LABEL="real RX72N (SPI)"
 fi
 
 if [[ "$HAS_LIDAR" == "true" ]]; then
@@ -141,7 +163,7 @@ echo -e ""
 echo -e "${BOLD}${CYAN}+==========================================+${NC}"
 printf "${BOLD}${CYAN}|${NC}  STAR  --  %-32s${BOLD}${CYAN}|${NC}\n" "$MODE_LABEL"
 echo -e "${BOLD}${CYAN}+==========================================+${NC}"
-echo -e "  RX72N  : $RX72N_LABEL"
+echo -e "  Motor  : $MC_LABEL"
 echo -e "  LiDAR  : $LIDAR_LABEL"
 echo -e ""
 
@@ -168,6 +190,27 @@ PID_SLAM=""
 PID_GWBRIDGE=""
 PID_UI=""
 PID_RVIZ=""
+PID_FOXGLOVE=""
+
+# -- Step 0: BBB firmware (BBB mode only) --------------------------------------
+PID_BBB_FW=""
+if [[ "$BBB_MODE" == "true" ]]; then
+    say "Starting BBB firmware via SSH ($BBB_USER@$BBB_HOST)..."
+    # Kill any existing firmware, then start fresh
+    sshpass -p "$BBB_PASS" ssh -o StrictHostKeyChecking=no "$BBB_USER@$BBB_HOST" \
+        "echo '$BBB_PASS' | sudo -S killall -9 star-beaglebone-blue 2>/dev/null; \
+         sleep 1; \
+         echo '$BBB_PASS' | sudo -S nohup $BBB_FW_PATH > /tmp/firmware.log 2>&1 &" \
+        >"$LOG_DIR/bbb_ssh.log" 2>&1
+    sleep 3
+    # Verify firmware is running
+    if sshpass -p "$BBB_PASS" ssh -o StrictHostKeyChecking=no "$BBB_USER@$BBB_HOST" \
+        "pgrep -f star-beaglebone-blue >/dev/null 2>&1"; then
+        say "BBB firmware running on $BBB_HOST"
+    else
+        warn "BBB firmware may have failed -- check $BBB_HOST:/tmp/firmware.log"
+    fi
+fi
 
 # -- Step 1: virtual_rx72n (DEV mode only) ------------------------------------
 if [[ "$DEV_MODE" == "true" ]]; then
@@ -189,10 +232,27 @@ GW_ENV=""
 if [[ "$DEV_MODE" == "true" ]]; then
     GW_ENV="STAR_SIMULATION_MODE=true"
 fi
-env WS_STRICT_ORIGIN=false ${GW_ENV} \
-    "$STAR_DIR/star-gateway/star-gateway" \
-    >"$LOG_DIR/gateway.log" 2>&1 &
-PID_GW=$!
+
+# Retry gateway start up to 3 times -- the serial port may still be releasing
+# from the previous instance after stop.sh.
+GW_STARTED=false
+for gw_attempt in 1 2 3; do
+    env WS_STRICT_ORIGIN=false ${GW_ENV} \
+        "$STAR_DIR/star-gateway/star-gateway" \
+        >"$LOG_DIR/gateway.log" 2>&1 &
+    PID_GW=$!
+    sleep 2
+    if kill -0 "$PID_GW" 2>/dev/null; then
+        GW_STARTED=true
+        break
+    fi
+    warn "star-gateway attempt $gw_attempt failed -- retrying in 3s..."
+    sleep 3
+done
+
+if [[ "$GW_STARTED" == "false" ]]; then
+    die "star-gateway failed to start after 3 attempts -- check $LOG_DIR/gateway.log"
+fi
 
 say "Waiting for gRPC :50051..."
 wait_port localhost 50051 "star-gateway" 10
@@ -205,10 +265,12 @@ if [[ "$HAS_LIDAR" == "true" ]]; then
     # chmod not needed: udev rule sets GROUP=dialout MODE=0660
 fi
 
-# -- Step 4: star_spi_bridge ---------------------------------------------------
+# -- Step 4: star_spi_bridge (skip in BBB mode) --------------------------------
 SPI_BRIDGE_LAUNCH="$STAR_DIR/star-ros2/src/star_spi_bridge/launch/star_spi_bridge.launch.py"
 
-if [[ "$DEV_MODE" == "false" && -n "$SPI_BRIDGE_PID" ]]; then
+if [[ "$BBB_MODE" == "true" ]]; then
+    say "Skipping spi_bridge (BBB uses USB CDC via gateway)"
+elif [[ "$DEV_MODE" == "false" && -n "$SPI_BRIDGE_PID" ]]; then
     say "spi_bridge already running from probe (PID $SPI_BRIDGE_PID)"
     SPI_BRIDGE_PID="$SPI_BRIDGE_PID"
 else
@@ -263,12 +325,26 @@ if [[ "$HAS_LIDAR" == "true" ]]; then
     fi
 else
     say "Skipping SLAM stack (no LiDAR)"
+    # Launch foxglove_bridge standalone so telemetry/IMU/odom are still visualizable
+    say "Starting foxglove_bridge standalone (ws://0.0.0.0:8765)..."
+    ros2 run foxglove_bridge foxglove_bridge --ros-args \
+        -p port:=8765 -p address:="0.0.0.0" -p send_buffer_limit:=10000000 \
+        >"$LOG_DIR/foxglove.log" 2>&1 &
+    PID_FOXGLOVE=$!
+    sleep 1
+    say "foxglove_bridge running (PID $PID_FOXGLOVE)"
 fi
 
 # -- Step 6: star_gateway_bridge_main -----------------------------------------
 say "Starting star_gateway_bridge_main..."
-ros2 run star_gateway_bridge star_gateway_bridge_main \
-    >"$LOG_DIR/gw_bridge.log" 2>&1 &
+if [[ "$BBB_MODE" == "true" ]]; then
+    ros2 run star_gateway_bridge star_gateway_bridge_main \
+        --ros-args -p use_bbb_telemetry:=true \
+        >"$LOG_DIR/gw_bridge.log" 2>&1 &
+else
+    ros2 run star_gateway_bridge star_gateway_bridge_main \
+        >"$LOG_DIR/gw_bridge.log" 2>&1 &
+fi
 PID_GWBRIDGE=$!
 
 # Wait up to 10 s for "connected to Gateway" in log
@@ -325,6 +401,9 @@ echo -e "${BOLD}${CYAN}======================================================${N
 printf "${BOLD}${CYAN}  STAR Robot -- %s   [%s]${NC}\n" "$TIMESTAMP" "$MODE_LABEL"
 echo -e "${BOLD}${CYAN}======================================================${NC}"
 
+if [[ "$BBB_MODE" == "true" ]]; then
+    printf "  %-18s %s (remote SSH)\n" "bbb_firmware" "$BBB_HOST"
+fi
 if [[ "$DEV_MODE" == "true" && -n "$PID_VRXN" ]]; then
     printf "  %-18s PID %s\n" "virtual_rx72n" "$PID_VRXN"
 fi
@@ -332,7 +411,9 @@ printf "  %-18s PID %s   gRPC :50051   WS :8080\n" "star-gateway" "$PID_GW"
 if [[ "$DEV_MODE" == "true" && -n "$PID_FAKEODOM" ]]; then
     printf "  %-18s PID %s   odom->base_link (static)\n" "fake_odom" "$PID_FAKEODOM"
 fi
-printf "  %-18s PID %s\n" "spi_bridge" "${SPI_BRIDGE_PID:-unknown}"
+if [[ "$BBB_MODE" != "true" ]]; then
+    printf "  %-18s PID %s\n" "spi_bridge" "${SPI_BRIDGE_PID:-unknown}"
+fi
 if [[ -n "$PID_SLAM" ]]; then
     printf "  %-18s PID %s   /scan @ 10 Hz\n" "slam" "$PID_SLAM"
 fi
@@ -343,6 +424,7 @@ fi
 if [[ -n "$PID_RVIZ" ]]; then
     printf "  %-18s PID %s\n" "rviz2" "$PID_RVIZ"
 fi
+printf "  %-18s ws://%s:8765  (open app.foxglove.dev)\n" "Foxglove" "$LOCAL_IP"
 
 echo -e ""
 echo -e "  Logs : $LOG_DIR/"

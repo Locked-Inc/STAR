@@ -690,11 +690,30 @@ bool MessageConverter::telemetry_to_imu(
 
   const auto & imu = telemetry.imu();
 
-  // Orientation from BNO055 quaternion
-  imu_msg.orientation.x = imu.quat_x();
-  imu_msg.orientation.y = imu.quat_y();
-  imu_msg.orientation.z = imu.quat_z();
-  imu_msg.orientation.w = imu.quat_w();
+  // Orientation from quaternion (BNO055 or MPU-9250 DMP).
+  // BBB polling mode only provides accel+gyro -- quaternion fields are zero.
+  // A zero quaternion is invalid; set identity and mark orientation unknown
+  // (covariance[0] = -1 tells robot_localization to ignore orientation).
+  // Check for valid quaternion: non-zero and approximately normalized.
+  // BBB polling mode sends all zeros; DMP/BNO055 sends normalized quaternion.
+  constexpr double kQuatMagSqMin = 0.9;  // lower bound for |q|^2
+  constexpr double kQuatMagSqMax = 1.1;  // upper bound for |q|^2
+  const double quat_mag_sq =
+    imu.quat_w() * imu.quat_w() + imu.quat_x() * imu.quat_x() +
+    imu.quat_y() * imu.quat_y() + imu.quat_z() * imu.quat_z();
+  const bool has_orientation =
+    (quat_mag_sq >= kQuatMagSqMin && quat_mag_sq <= kQuatMagSqMax);
+  if (has_orientation) {
+    imu_msg.orientation.x = imu.quat_x();
+    imu_msg.orientation.y = imu.quat_y();
+    imu_msg.orientation.z = imu.quat_z();
+    imu_msg.orientation.w = imu.quat_w();
+  } else {
+    imu_msg.orientation.x = 0.0;
+    imu_msg.orientation.y = 0.0;
+    imu_msg.orientation.z = 0.0;
+    imu_msg.orientation.w = 1.0;  // identity quaternion
+  }
 
   // Angular velocity (gyro)
   imu_msg.angular_velocity.x = imu.gyro_x_rad_per_s();
@@ -708,9 +727,21 @@ bool MessageConverter::telemetry_to_imu(
 
   // Orientation covariance (yaw-only for 2D EKF fusion)
   // row-major 3x3: roll, pitch, yaw
-  imu_msg.orientation_covariance[0] = 1e6;   // roll (not used in 2D)
-  imu_msg.orientation_covariance[4] = 1e6;   // pitch (not used in 2D)
-  imu_msg.orientation_covariance[8] = 0.01;  // yaw
+  if (has_orientation) {
+    // Zero the full 3x3 matrix, then set diagonals.
+    for (size_t i = 0; i < 9; ++i) {
+      imu_msg.orientation_covariance[i] = 0.0;
+    }
+    imu_msg.orientation_covariance[0] = 1e6;   // roll (not used in 2D)
+    imu_msg.orientation_covariance[4] = 1e6;   // pitch (not used in 2D)
+    imu_msg.orientation_covariance[8] = 0.01;  // yaw
+  } else {
+    // -1 in first element = orientation data should be ignored (REP-145)
+    imu_msg.orientation_covariance[0] = -1.0;
+    for (size_t i = 1; i < 9; ++i) {
+      imu_msg.orientation_covariance[i] = 0.0;
+    }
+  }
 
   // Angular velocity covariance
   imu_msg.angular_velocity_covariance[0] = 0.01;

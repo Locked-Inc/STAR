@@ -80,12 +80,13 @@ void* bb_motor_control_task(void* arg)
                                (double)cmd.duty_percent[k_bb_motor_idx_rr]);
         }
 
-        /* Read encoder feedback */
+        /* Read encoder feedback (eQEP channels 1-3 only).
+         * Channel 4 (rear-right) uses the PRU encoder which is not available
+         * on the 5.10-ti kernel. Left at zero to avoid stderr spam. */
         bb_encoder_data_t enc = {0};
         enc.ticks[k_bb_motor_idx_fl] = rc_encoder_read(k_bb_encoder_front_left);
         enc.ticks[k_bb_motor_idx_fr] = rc_encoder_read(k_bb_encoder_front_right);
         enc.ticks[k_bb_motor_idx_rl] = rc_encoder_read(k_bb_encoder_rear_left);
-        enc.ticks[k_bb_motor_idx_rr] = rc_encoder_read(k_bb_encoder_rear_right);
 
         (void)bb_shared_data_set_encoder(sd, &enc);
 

@@ -35,6 +35,9 @@
        Pass ignore-src flag to rosdep install to skip this dependency. -->
   <exec_depend>explore_lite</exec_depend>
 
+  <!-- Foxglove Studio WebSocket bridge (optional, gated by use_foxglove arg) -->
+  <exec_depend>foxglove_bridge</exec_depend>
+
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 

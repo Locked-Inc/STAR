@@ -10,7 +10,7 @@
  * Initialization sequence:
  *   1. rc_motor_init() -- enables DRV8838 motor driver H-bridges
  *   2. rc_encoder_eqep_init() -- enables eQEP quadrature decoder
- *   3. rc_mpu_initialize_dmp() -- configures MPU-9250 with DMP at 100 Hz
+ *   3. rc_mpu_initialize() -- configures MPU-9250 for direct polling reads
  *
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
@@ -24,7 +24,7 @@
 
 /**
  * @var g_bb_mpu_data
- * @brief MPU-9250 data populated by DMP interrupt callback.
+ * @brief MPU-9250 data buffer updated by polling reads in imu_task.
  *
  * @since Version 1.0.0
  */
@@ -64,11 +64,14 @@ bb_err_t bb_hardware_init(void)
         return k_bb_err_hardware;
     }
 
-    /* MPU-9250 with DMP at IMU task rate */
+    /* MPU-9250 in polling mode.
+     * DMP interrupt mode (rc_mpu_initialize_dmp) does not work on the 5.10-ti
+     * kernel -- the GPIO interrupt thread never fires, leaving g_bb_mpu_data
+     * at zero. Polling mode (rc_mpu_initialize + explicit reads in imu_task)
+     * works reliably. The imu_task calls rc_mpu_read_accel/gyro at 100 Hz. */
     rc_mpu_config_t mpu_cfg = rc_mpu_default_config();
-    mpu_cfg.dmp_sample_rate = k_bb_rate_imu_hz;
 
-    if (rc_mpu_initialize_dmp(&g_bb_mpu_data, mpu_cfg) != 0) {
+    if (rc_mpu_initialize(&g_bb_mpu_data, mpu_cfg) != 0) {
         rc_encoder_eqep_cleanup();
         rc_motor_cleanup();
         return k_bb_err_hardware;
