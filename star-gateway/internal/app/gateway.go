@@ -293,7 +293,8 @@ func validateOrUseDefault(logger *slog.Logger, config *manager.Config) *manager.
 
 // initializeTransports initializes all available transports based on configuration.
 // This function attempts to initialize SPI/Socket (for simulation) and USB transports.
-// Transport initialization is non-fatal unless explicitly required by TransportMode.
+// In simulation mode, a socket transport replaces real hardware.
+// For ModeSimpleUSB simulation, the socket is registered as USB transport.
 //
 // CRITICAL: All transports MUST use the shared SessionState from TransportManager
 // (via tm.GetSessionState()) to ensure sequence continuity during failover.
@@ -305,9 +306,26 @@ func initializeTransports(appConfig Config, tm *manager.TransportManager, logger
 	// Get shared session state from manager (single source of truth)
 	session := tm.GetSessionState()
 
-	// Simple USB mode: skip SPI entirely -- BBB only uses USB CDC.
-	// This prevents any failover attempts and eliminates SPI-related errors.
+	// Simple USB mode: skip SPI entirely -- only uses USB CDC.
+	// In simulation mode, use socket transport registered as USB.
 	if appConfig.TransportMode == manager.ModeSimpleUSB {
+		if appConfig.SimulationMode {
+			socketTransport, err := createSocketTransport(appConfig.SocketPath)
+			if err != nil {
+				return fmt.Errorf("simple-usb simulation requires socket transport: %w", err)
+			}
+			socketLink, err := link.NewCDCLink(socketTransport, session)
+			if err != nil {
+				if closeErr := socketTransport.Close(); closeErr != nil {
+					logger.Error("failed to close socket after link error", slog.Any("error", closeErr))
+				}
+				return fmt.Errorf("simple-usb simulation link creation failed: %w", err)
+			}
+			tm.RegisterTransport(manager.TransportNameUSB, socketLink, manager.PriorityUSB)
+			logger.Info("simple-usb simulation: socket registered as USB transport",
+				slog.String("socket_path", appConfig.SocketPath))
+			return nil // Socket replaces real USB; skip hardware init below
+		}
 		logger.Info("simple-usb mode: skipping SPI transport registration")
 	} else if appConfig.SimulationMode {
 		// Simulation mode: use socket transport

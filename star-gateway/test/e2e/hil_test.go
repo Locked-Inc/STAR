@@ -20,6 +20,7 @@ import (
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/app"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/manager"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -544,4 +545,125 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 	}
 
 	t.Logf("GetTeleopCommand success: available=%v", resp.CommandAvailable)
+}
+
+// TestHIL_SimpleUSBSimulation verifies that ModeSimpleUSB works end-to-end
+// with the virtual RX72N over a socket transport. This exercises the code
+// path where the gateway skips the RESET handshake, uses permissive sequence
+// validation, and registers the socket as a USB transport.
+func TestHIL_SimpleUSBSimulation(t *testing.T) {
+	// 1. Setup Mock RX72N
+	tempDir, err := os.MkdirTemp("", "star_e2e_simple_usb")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	t.Cleanup(func() { os.RemoveAll(tempDir) })
+
+	socketPath := filepath.Join(tempDir, "rx72n.sock")
+	mockDevice, err := NewMockRX72N(socketPath)
+	if err != nil {
+		t.Fatalf("Failed to create MockRX72N: %v", err)
+	}
+	mockDevice.Start()
+	t.Cleanup(func() { mockDevice.Stop() })
+
+	time.Sleep(connectionInitDelay)
+
+	// 2. Start Gateway in simple-usb simulation mode
+	ctx, cancel := context.WithCancel(context.Background())
+
+	cfg := app.Config{
+		SimulationMode: true,
+		SocketPath:     socketPath,
+		TransportMode:  manager.ModeSimpleUSB,
+	}
+
+	errChan := make(chan error, 1)
+	startTime := time.Now()
+	go func() {
+		errChan <- app.Run(ctx, cfg)
+	}()
+
+	// 3. Wait for Gateway to initialize -- should be fast (no reset handshake)
+	deadline := time.Now().Add(gatewayStartupTimeout)
+	var conn *grpc.ClientConn
+	for time.Now().Before(deadline) {
+		select {
+		case crashErr := <-errChan:
+			t.Fatalf("Gateway crashed during startup: %v", crashErr)
+		default:
+		}
+
+		conn, err = grpc.NewClient("[::1]:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err == nil {
+			break
+		}
+		time.Sleep(telemetryRetryInterval)
+	}
+
+	if conn == nil {
+		t.Fatalf("Failed to connect to Gateway within timeout: %v", err)
+	}
+	t.Cleanup(func() { conn.Close() })
+
+	startupDuration := time.Since(startTime)
+	t.Logf("Gateway started in %v (simple-usb, no reset handshake)", startupDuration)
+
+	// Graceful shutdown cleanup
+	t.Cleanup(func() {
+		t.Log("Cleanup: Triggering gateway shutdown...")
+		cancel()
+		select {
+		case err := <-errChan:
+			if err != nil && err != context.Canceled {
+				t.Errorf("Gateway shutdown error: %v", err)
+			} else {
+				t.Logf("Gateway shutdown completed gracefully")
+			}
+		case <-time.After(gatewayShutdownTimeout):
+			t.Errorf("Gateway did not shut down in time")
+		}
+	})
+
+	telemetryClient := starv1.NewTelemetryServiceClient(conn)
+
+	// 4. Verify telemetry flows through the simple-USB path
+	var telemetryResp *starv1.GetTelemetryResponse
+	telemetryReq := &starv1.GetTelemetryRequest{
+		Header: &starv1.RequestHeader{RequestId: "simple-usb-test"},
+	}
+
+	deadline = time.Now().Add(grpcRequestTimeout)
+	for {
+		reqCtx, reqCancel := context.WithTimeout(context.Background(), 1*time.Second)
+		telemetryResp, err = telemetryClient.GetTelemetry(reqCtx, telemetryReq)
+		reqCancel()
+
+		if err == nil && telemetryResp != nil && telemetryResp.Telemetry != nil {
+			break
+		}
+
+		if time.Now().After(deadline) {
+			if err != nil {
+				t.Fatalf("GetTelemetry failed after timeout: %v", err)
+			}
+			t.Fatal("GetTelemetry returned empty response after timeout")
+		}
+		time.Sleep(telemetryRetryInterval)
+	}
+
+	// 5. Verify telemetry contains expected simulator data
+	telemetry := telemetryResp.Telemetry
+	if telemetry.Imu == nil {
+		t.Error("Expected non-nil IMU data")
+	}
+	if telemetry.EncoderFrontLeft == nil {
+		t.Error("Expected non-nil front left encoder data")
+	}
+	if telemetry.EncoderFrontRight == nil {
+		t.Error("Expected non-nil front right encoder data")
+	}
+
+	t.Logf("Simple-USB telemetry OK: IMU accel_z=%.2f m/s^2, encoder_fl=%d ticks",
+		telemetry.Imu.AccelZMps2, telemetry.EncoderFrontLeft.Ticks)
 }
