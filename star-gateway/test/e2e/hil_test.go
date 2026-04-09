@@ -161,8 +161,7 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 
 		// Check if this is a dummy read (Gateway polling for data)
 		if isDummyRead(buf[:n]) {
-			// Send frame if we haven't sent one since last ACK
-			// Generate frame if this is the first interaction
+			// Send buffered frame, or generate fresh telemetry
 			if lastFrameToRetransmit == nil {
 				lastFrameToRetransmit = m.generateTelemetryFrame(sequenceNum, &timestamp)
 				sequenceNum++
@@ -170,6 +169,11 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 			if err := m.sendFrame(c, encoder, lastFrameToRetransmit); err != nil {
 				log.Printf("MockRX72N: Failed to send frame: %v", err)
 				return
+			}
+			// Control frames (RESET_ACK, PONG) are one-shot: clear after sending
+			// so the next dummy read generates telemetry instead of repeating.
+			if lastFrameToRetransmit.Type != frame.FrameTypeResponse {
+				lastFrameToRetransmit = nil
 			}
 			continue
 		}
@@ -219,13 +223,57 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 			// Don't set nextFrame - let the next dummy read trigger new telemetry
 			continue
 
-		case frame.FrameTypeCommand, frame.FrameTypeReset, frame.FrameTypePing:
-			// Phase 1: ACK/NACK Protocol Support
+		case frame.FrameTypePing:
+			// Real firmware: send PONG echoing payload (rx_usb_comm.c:1130-1141).
+			// In socket simulation, Send() consumes the Transfer response slot, so
+			// the PONG sent here is discarded. Set as nextFrame (sent this cycle) but
+			// don't persist in lastFrameToRetransmit -- the implicit heartbeat timer
+			// (OnFrameReceived on any valid frame) is the primary liveness detector.
+			nextFrame = &frame.Frame{
+				Header: frame.Header{
+					Sequence: sequenceNum,
+					Length:   uint16(len(decodedFrame.Payload)),
+					Flags:    frame.FlagNone,
+				},
+				Type:    frame.FrameTypePong,
+				Payload: decodedFrame.Payload,
+			}
+			sequenceNum++
+			m.debugLog("Prepared PONG for PING Seq=%d", decodedFrame.Header.Sequence)
+
+		case frame.FrameTypeReset:
+			// Real firmware: send RESET_ACK echoing session ID, reset session
+			// (rx_usb_comm.c:1144-1156).
+			//
+			// Socket transport detail: SocketTransport.Send() calls Transfer()
+			// which writes the RESET then reads the response -- and DISCARDS it.
+			// So the RESET_ACK sent in THIS cycle is lost. By also setting
+			// lastFrameToRetransmit, the RESET_ACK is re-sent on the NEXT dummy
+			// read (triggered by drainUntilResetAck -> Receive -> Transfer(zeros)).
+			nextFrame = &frame.Frame{
+				Header: frame.Header{
+					Sequence: sequenceNum,
+					Length:   uint16(len(decodedFrame.Payload)),
+					Flags:    frame.FlagNone,
+				},
+				Type:    frame.FrameTypeResetAck,
+				Payload: decodedFrame.Payload,
+			}
+			lastFrameToRetransmit = nextFrame
+			m.debugLog("Prepared RESET_ACK, resetting session (was seq=%d)", sequenceNum)
+			sequenceNum = 0
+
+		case frame.FrameTypePong, frame.FrameTypeResetAck:
+			// Real firmware: consume silently (rx_usb_comm.c:1158-1161)
+			m.debugLog("Consumed %s silently", decodedFrame.Type)
+			continue
+
+		case frame.FrameTypeCommand:
 			// If the frame requires an ACK, send it first
 			if (decodedFrame.Header.Flags & frame.FlagRequiresAck) != 0 {
 				ackFrame := &frame.Frame{
 					Header: frame.Header{
-						Sequence: decodedFrame.Header.Sequence, // Echo sequence
+						Sequence: decodedFrame.Header.Sequence,
 						Length:   0,
 						Flags:    frame.FlagNone,
 					},
@@ -237,7 +285,7 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 					log.Printf("MockRX72N: Failed to send ACK: %v", err)
 					return
 				}
-				m.debugLog("Sent ACK for Seq=%d Type=%s", decodedFrame.Header.Sequence, decodedFrame.Type)
+				m.debugLog("Sent ACK for Seq=%d", decodedFrame.Header.Sequence)
 			}
 
 			// Generate telemetry response
