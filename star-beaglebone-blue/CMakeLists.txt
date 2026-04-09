@@ -92,7 +92,7 @@ target_include_directories(star-beaglebone-blue PRIVATE
 
 ###################### COMPILER FLAGS ######################################
 target_compile_options(star-beaglebone-blue PRIVATE
-    -std=gnu23
+    -std=gnu2x
     -Wall
     -Wextra
     -Wpedantic
@@ -102,8 +102,19 @@ target_compile_options(star-beaglebone-blue PRIVATE
     $<$<CONFIG:Release>:-O2 -DNDEBUG>
 )
 
+###################### CROSS-COMPILE SYSROOT (optional) ####################
+# Set BBB_EXTRA_INCLUDE / BBB_EXTRA_LIBDIR via CMakeUserPresets.json when
+# cross-compiling without a full sysroot (e.g. Pi5 with only librobotcontrol).
+if(BBB_EXTRA_INCLUDE)
+    target_include_directories(star-beaglebone-blue SYSTEM PRIVATE ${BBB_EXTRA_INCLUDE})
+endif()
+if(BBB_EXTRA_LIBDIR)
+    target_link_directories(star-beaglebone-blue PRIVATE ${BBB_EXTRA_LIBDIR})
+endif()
+
 ###################### LINKER FLAGS ######################################
 target_link_libraries(star-beaglebone-blue PRIVATE
+    protobuf-nanopb-static  # nanopb runtime (pb_encode, pb_decode, pb_common)
     robotcontrol   # librobotcontrol: motor, encoder, IMU, servo
     pthread        # POSIX threads
     m              # libm: math functions
@@ -124,7 +135,7 @@ endif()
 enable_testing()
 
 # Common test compile options
-set(TEST_COMPILE_OPTIONS -std=gnu23 -Wall -Wextra -Wpedantic -Werror)
+set(TEST_COMPILE_OPTIONS -std=gnu2x -Wall -Wextra -Wpedantic -Werror)
 set(TEST_INCLUDE_DIRS
     src/inc
     tasks/inc
