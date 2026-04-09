@@ -39,9 +39,13 @@
 #include <std_msgs/msg/string.hpp>
 #include <std_srvs/srv/set_bool.hpp>
 
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
+
 #include <grpcpp/grpcpp.h>  // NOLINT(build/include_order)
 
 #include "star/v1/gateway_service.grpc.pb.h"
+#include "star/v1/motor_control.grpc.pb.h"
 #include "star/v1/telemetry.grpc.pb.h"
 #include "star_gateway_bridge/message_converter.hpp"
 
@@ -90,6 +94,9 @@ public:
    * - teleop_timeout_ms: Teleop command staleness timeout (default: 500ms)
    * - grpc_deadline_ms: gRPC call deadline (default: 100ms)
    * - wheel_base: Distance between wheels in meters (default: 0.150m)
+   * - use_bbb_telemetry: Enable BBB telemetry bridging (default: false)
+   * - wheel_radius: Wheel radius in meters (default: 0.0325m)
+   * - ticks_per_rev: Encoder ticks per revolution (default: 11599)
    *
    * @param options ROS2 node options for component configuration
    */
@@ -216,6 +223,48 @@ private:
   void obstacle_poll_timer_callback();
 
   // ===========================================================================
+  // BBB Telemetry Bridging
+  // ===========================================================================
+
+  /**
+   * @brief Callback for /cmd_vel topic -- forwards velocity commands to BBB via
+   *        MotorControlService::SetVelocity gRPC.
+   *
+   * @details
+   * Only active when use_bbb_telemetry_ is true. Converts the incoming Twist
+   * to a VelocityCommand protobuf and sends it to the Go gateway, which
+   * forwards it over USB CDC to the BeagleBone Blue.
+   *
+   * @param[in] msg Velocity command from Nav2 or teleop.
+   *
+   * @pre use_bbb_telemetry_ must be true and motor_control_stub_ non-null.
+   * @post VelocityCommand sent to gateway via gRPC or error logged.
+   *
+   * @note Not thread-safe; called from ROS2 executor only.
+   * @since Version 1.1.0
+   */
+  void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
+
+  /**
+   * @brief Timer callback that polls gateway telemetry and publishes BBB sensor
+   *        data to ROS2 topics at telemetry_rate_hz_.
+   *
+   * @details
+   * Only active when use_bbb_telemetry_ is true. Calls
+   * TelemetryService::GetTelemetry and publishes:
+   *   - /odom/unfiltered (nav_msgs/Odometry) from encoder dead-reckoning
+   *   - /imu/data (sensor_msgs/Imu) from BNO055/MPU-9250
+   *   - /joint_states (sensor_msgs/JointState) from encoder ticks
+   *
+   * @pre grpc_connected_ and telemetry_svc_stub_ must be valid.
+   * @post ROS2 messages published for EKF and robot_state_publisher consumption.
+   *
+   * @note Not thread-safe; called from ROS2 timer executor only.
+   * @since Version 1.1.0
+   */
+  void bbb_telemetry_poll_timer_callback();
+
+  // ===========================================================================
   // gRPC Helpers
   // ===========================================================================
 
@@ -242,6 +291,11 @@ private:
   // ROS2 Publishers
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr teleop_cmd_vel_pub_;
 
+  // BBB telemetry publishers (active when use_bbb_telemetry_ == true)
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr bbb_odom_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr bbb_imu_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr bbb_joint_state_pub_;
+
   /** @brief Publisher for front-left HC-SR04 sensor distance (sensor_msgs/Range). */
   rclcpp::Publisher<sensor_msgs::msg::Range>::SharedPtr obstacle_fl_pub_;
   /** @brief Publisher for front-right HC-SR04 sensor distance (sensor_msgs/Range). */
@@ -255,6 +309,7 @@ private:
 
   // ROS2 Subscribers
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robot_status_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_; /**< BBB cmd_vel forwarding */
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr
     odom_sub_;   /**< Receives filtered odometry and updates
                     cached_ekf_odometry_ under odometry_mutex_. */
@@ -275,6 +330,7 @@ private:
   /** @brief Timer that polls TelemetryService::GetTelemetry and publishes
    *         obstacle data at telemetry_rate_hz_ (default 10 Hz). */
   rclcpp::TimerBase::SharedPtr obstacle_timer_;
+  rclcpp::TimerBase::SharedPtr bbb_telemetry_timer_; /**< BBB odom/IMU polling */
 
   // gRPC Client
   std::shared_ptr<grpc::Channel> grpc_channel_;
@@ -291,6 +347,7 @@ private:
    * @since Version 1.0.0
    */
   std::unique_ptr<star::v1::TelemetryService::Stub> telemetry_svc_stub_;
+  std::unique_ptr<star::v1::MotorControlService::Stub> motor_control_stub_; /**< BBB motor commands */
 
   // Cached telemetry data (protected by mutexes)
   std::mutex robot_status_mutex_;
@@ -319,6 +376,10 @@ private:
   int teleop_timeout_ms_;
   int grpc_deadline_ms_;
   double wheel_base_;
+  bool use_bbb_telemetry_; /**< Enable BBB telemetry bridging mode. */
+  double wheel_radius_;    /**< Wheel radius in metres. */
+  int ticks_per_rev_;      /**< Encoder ticks per revolution. */
+  uint32_t cmd_vel_sequence_{0}; /**< Incrementing sequence for SetVelocity. */
 
   // Connection state
   bool grpc_connected_;

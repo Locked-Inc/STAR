@@ -540,4 +540,204 @@ void MessageConverter::obstacle_distance_to_range(
                        std::min(HC_SR04_MAX_RANGE_M, distance_m));
 }
 
+// ===========================================================================
+// BBB Telemetry -> ROS2 Conversions
+// ===========================================================================
+
+void MessageConverter::init_bbb_params(const BbbParams & params)
+{
+  assert(params.wheel_base > 0.0);
+  assert(params.wheel_radius > 0.0);
+  assert(params.ticks_per_rev > 0);
+  bbb_params_ = params;
+  bbb_params_initialized_ = true;
+  // Reset dead-reckoning state
+  dr_x_ = 0.0;
+  dr_y_ = 0.0;
+  dr_theta_ = 0.0;
+  prev_ticks_fl_ = 0;
+  prev_ticks_fr_ = 0;
+  prev_ticks_bl_ = 0;
+  prev_ticks_br_ = 0;
+  first_odom_msg_ = true;
+}
+
+void MessageConverter::telemetry_to_odometry(
+  const ::star::v1::TelemetryData & telemetry,
+  nav_msgs::msg::Odometry & odom)
+{
+  assert(bbb_params_initialized_);
+
+  const auto & enc_fl = telemetry.encoder_front_left();
+  const auto & enc_fr = telemetry.encoder_front_right();
+  const auto & enc_bl = telemetry.encoder_back_left();
+  const auto & enc_br = telemetry.encoder_back_right();
+
+  int64_t ticks_fl = enc_fl.ticks();
+  int64_t ticks_fr = enc_fr.ticks();
+  int64_t ticks_bl = enc_bl.ticks();
+  int64_t ticks_br = enc_br.ticks();
+
+  if (first_odom_msg_) {
+    prev_ticks_fl_ = ticks_fl;
+    prev_ticks_fr_ = ticks_fr;
+    prev_ticks_bl_ = ticks_bl;
+    prev_ticks_br_ = ticks_br;
+    first_odom_msg_ = false;
+    // Publish zero-pose on first message
+  }
+
+  int64_t delta_fl = ticks_fl - prev_ticks_fl_;
+  int64_t delta_fr = ticks_fr - prev_ticks_fr_;
+  int64_t delta_bl = ticks_bl - prev_ticks_bl_;
+  int64_t delta_br = ticks_br - prev_ticks_br_;
+
+  prev_ticks_fl_ = ticks_fl;
+  prev_ticks_fr_ = ticks_fr;
+  prev_ticks_bl_ = ticks_bl;
+  prev_ticks_br_ = ticks_br;
+
+  double m_per_tick =
+    (2.0 * PI * bbb_params_.wheel_radius) / bbb_params_.ticks_per_rev;
+
+  double dist_fl = delta_fl * m_per_tick;
+  double dist_fr = delta_fr * m_per_tick;
+  double dist_bl = delta_bl * m_per_tick;
+  double dist_br = delta_br * m_per_tick;
+
+  double dist_left = (dist_fl + dist_bl) / 2.0;
+  double dist_right = (dist_fr + dist_br) / 2.0;
+
+  double dist_center = (dist_right + dist_left) / 2.0;
+  double delta_theta = (dist_right - dist_left) / bbb_params_.wheel_base;
+
+  double avg_theta = dr_theta_ + delta_theta / 2.0;
+  dr_x_ += dist_center * std::cos(avg_theta);
+  dr_y_ += dist_center * std::sin(avg_theta);
+  dr_theta_ = normalize_angle(dr_theta_ + delta_theta);
+
+  odom.header.frame_id = "odom";
+  odom.child_frame_id = "base_link";
+
+  odom.pose.pose.position.x = dr_x_;
+  odom.pose.pose.position.y = dr_y_;
+  odom.pose.pose.position.z = 0.0;
+
+  // Yaw -> quaternion
+  double half_yaw = dr_theta_ / 2.0;
+  odom.pose.pose.orientation.x = 0.0;
+  odom.pose.pose.orientation.y = 0.0;
+  odom.pose.pose.orientation.z = std::sin(half_yaw);
+  odom.pose.pose.orientation.w = std::cos(half_yaw);
+
+  // Velocity from encoder-reported velocities
+  double v_fl = enc_fl.velocity_mps();
+  double v_fr = enc_fr.velocity_mps();
+  double v_bl = enc_bl.velocity_mps();
+  double v_br = enc_br.velocity_mps();
+
+  double v_left = (v_fl + v_bl) / 2.0;
+  double v_right = (v_fr + v_br) / 2.0;
+  odom.twist.twist.linear.x = (v_right + v_left) / 2.0;
+  odom.twist.twist.angular.z = (v_right - v_left) / bbb_params_.wheel_base;
+
+  // Pose covariance (6x6 row-major: x, y, z, roll, pitch, yaw)
+  odom.pose.covariance[0] = 0.1;     // x
+  odom.pose.covariance[7] = 0.1;     // y
+  odom.pose.covariance[14] = 1e6;    // z (not observed)
+  odom.pose.covariance[21] = 1e6;    // roll (not observed)
+  odom.pose.covariance[28] = 1e6;    // pitch (not observed)
+  odom.pose.covariance[35] = 0.1;    // yaw
+
+  // Twist covariance
+  odom.twist.covariance[0] = 0.05;   // vx
+  odom.twist.covariance[7] = 1e6;    // vy (diff drive constraint)
+  odom.twist.covariance[14] = 1e6;   // vz
+  odom.twist.covariance[21] = 1e6;   // roll rate
+  odom.twist.covariance[28] = 1e6;   // pitch rate
+  odom.twist.covariance[35] = 0.05;  // yaw rate
+}
+
+void MessageConverter::telemetry_to_imu(
+  const ::star::v1::TelemetryData & telemetry,
+  sensor_msgs::msg::Imu & imu_msg)
+{
+  imu_msg.header.frame_id = "imu_link";
+
+  const auto & imu = telemetry.imu();
+
+  // Orientation from BNO055 quaternion
+  imu_msg.orientation.x = imu.quat_x();
+  imu_msg.orientation.y = imu.quat_y();
+  imu_msg.orientation.z = imu.quat_z();
+  imu_msg.orientation.w = imu.quat_w();
+
+  // Angular velocity (gyro)
+  imu_msg.angular_velocity.x = imu.gyro_x_rad_per_s();
+  imu_msg.angular_velocity.y = imu.gyro_y_rad_per_s();
+  imu_msg.angular_velocity.z = imu.gyro_z_rad_per_s();
+
+  // Linear acceleration
+  imu_msg.linear_acceleration.x = imu.accel_x_mps2();
+  imu_msg.linear_acceleration.y = imu.accel_y_mps2();
+  imu_msg.linear_acceleration.z = imu.accel_z_mps2();
+
+  // Orientation covariance (yaw-only for 2D EKF fusion)
+  // row-major 3x3: roll, pitch, yaw
+  imu_msg.orientation_covariance[0] = 1e6;   // roll (not used in 2D)
+  imu_msg.orientation_covariance[4] = 1e6;   // pitch (not used in 2D)
+  imu_msg.orientation_covariance[8] = 0.01;  // yaw
+
+  // Angular velocity covariance
+  imu_msg.angular_velocity_covariance[0] = 0.01;
+  imu_msg.angular_velocity_covariance[4] = 0.01;
+  imu_msg.angular_velocity_covariance[8] = 0.01;
+
+  // Linear acceleration covariance
+  imu_msg.linear_acceleration_covariance[0] = 0.1;
+  imu_msg.linear_acceleration_covariance[4] = 0.1;
+  imu_msg.linear_acceleration_covariance[8] = 0.1;
+}
+
+void MessageConverter::telemetry_to_joint_state(
+  const ::star::v1::TelemetryData & telemetry,
+  sensor_msgs::msg::JointState & joint_state)
+{
+  assert(bbb_params_initialized_);
+
+  const auto & enc_fl = telemetry.encoder_front_left();
+  const auto & enc_fr = telemetry.encoder_front_right();
+  const auto & enc_bl = telemetry.encoder_back_left();
+  const auto & enc_br = telemetry.encoder_back_right();
+
+  joint_state.name = {
+    "front_left_wheel", "front_right_wheel",
+    "back_left_wheel", "back_right_wheel"};
+
+  double rad_per_tick = (2.0 * PI) / bbb_params_.ticks_per_rev;
+  joint_state.position = {
+    static_cast<double>(enc_fl.ticks()) * rad_per_tick,
+    static_cast<double>(enc_fr.ticks()) * rad_per_tick,
+    static_cast<double>(enc_bl.ticks()) * rad_per_tick,
+    static_cast<double>(enc_br.ticks()) * rad_per_tick};
+
+  double inv_radius = 1.0 / bbb_params_.wheel_radius;
+  joint_state.velocity = {
+    enc_fl.velocity_mps() * inv_radius,
+    enc_fr.velocity_mps() * inv_radius,
+    enc_bl.velocity_mps() * inv_radius,
+    enc_br.velocity_mps() * inv_radius};
+}
+
+double MessageConverter::normalize_angle(double angle)
+{
+  while (angle > PI) {
+    angle -= 2.0 * PI;
+  }
+  while (angle < -PI) {
+    angle += 2.0 * PI;
+  }
+  return angle;
+}
+
 }  // namespace star::star_gateway_bridge
