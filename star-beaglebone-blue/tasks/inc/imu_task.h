@@ -4,8 +4,8 @@
  *
  * @details
  * imu_task runs at 100 Hz and is responsible for:
- * - Reading 9-axis IMU data (accel, gyro, mag) via rc_mpu_read_accel_data(),
- *   rc_mpu_read_gyro_data(), rc_mpu_read_mag_data()
+ * - Polling 9-axis IMU data (accel, gyro, mag) via rc_mpu_read_accel(),
+ *   rc_mpu_read_gyro(), rc_mpu_read_mag(), rc_mpu_read_temp()
  * - Writing IMU data to bb_shared_data via bb_shared_data_set_imu()
  *
  * The BeagleBone Blue uses an MPU-9250 (accelerometer + gyroscope) with

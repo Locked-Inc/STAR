@@ -36,6 +36,11 @@ type SessionState struct {
 	sessionID             uint32 // Monotonically increasing, incremented on each reset
 	resetBarrierActive    bool   // True when waiting for RESET_ACK
 	resetBarrierSessionID uint32 // The session ID this barrier expects in RESET_ACK
+
+	// simpleMode disables strict sequence validation for reliable USB CDC transports.
+	// When true, ValidateRxSequence accepts all frames and tracks sequence for
+	// diagnostics only. Set via SetSimpleMode() when using ModeSimpleUSB.
+	simpleMode bool
 }
 
 // NewSessionState creates a new SessionState with initial sequence 0.
@@ -62,8 +67,23 @@ func (s *SessionState) NextTxSequence() uint16 {
 	return seq
 }
 
+// SetSimpleMode enables or disables simple mode for reliable USB CDC transports.
+// In simple mode, ValidateRxSequence accepts all frames regardless of sequence
+// number. Sequence tracking continues for diagnostics but never rejects frames.
+//
+// Thread Safety: Uses mutex to ensure atomicity.
+func (s *SessionState) SetSimpleMode(enabled bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.simpleMode = enabled
+}
+
 // ValidateRxSequence checks if the received sequence is valid.
 // Returns true if valid (exact match or small gap), false if duplicate or large gap.
+//
+// In simple mode (ModeSimpleUSB), all frames are accepted and the sequence is
+// updated to track the remote side. This is safe because USB CDC provides
+// hardware-level reliability (CRC-16 + automatic retransmission).
 //
 // CRITICAL FIX #6: Allow small gaps for lightweight USB protocol (no retransmission).
 // If USB drops a single frame due to rare bit flip, we accept the gap and continue
@@ -79,6 +99,14 @@ func (s *SessionState) NextTxSequence() uint16 {
 func (s *SessionState) ValidateRxSequence(seq uint16) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	// Simple mode: accept all frames, track sequence for diagnostics only.
+	// USB CDC is reliable at the hardware level -- sequence enforcement is
+	// unnecessary and causes false rejections on gateway/firmware restart.
+	if s.simpleMode {
+		s.rxSequence = (seq + 1) & seqMask
+		return true
+	}
 
 	// Reset barrier: reject ALL data frames while barrier is active.
 	// Stale frames from USB FIFO buffers must be discarded during reset handshake.

@@ -21,7 +21,7 @@ on:
       - '.github/workflows/gateway.yml'
 
 env:
-  GO_VERSION: '1.26.1'
+  GO_VERSION: '1.26.2'
   GOLANGCI_LINT_VERSION: 'v2.11'  # golangci-lint v2 (required for action v8)
   MIN_COVERAGE: 65
   GOWORK: off  # Disable go.work in CI, use go.mod replace directive
