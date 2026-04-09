@@ -894,7 +894,7 @@ void StarGatewayBridgeNode::send_zero_velocity_to_bbb()
     command->set_timestamp_us(
         std::chrono::duration_cast<std::chrono::microseconds>(
             std::chrono::system_clock::now().time_since_epoch())
-            .count());
+      .count());
 
     star::v1::SetVelocityResponse response;
     grpc::Status status =
