@@ -728,6 +728,10 @@ bool MessageConverter::telemetry_to_imu(
   // Orientation covariance (yaw-only for 2D EKF fusion)
   // row-major 3x3: roll, pitch, yaw
   if (has_orientation) {
+    // Zero the full 3x3 matrix, then set diagonals.
+    for (size_t i = 0; i < 9; ++i) {
+      imu_msg.orientation_covariance[i] = 0.0;
+    }
     imu_msg.orientation_covariance[0] = 1e6;   // roll (not used in 2D)
     imu_msg.orientation_covariance[4] = 1e6;   // pitch (not used in 2D)
     imu_msg.orientation_covariance[8] = 0.01;  // yaw

@@ -68,10 +68,13 @@ void* bb_imu_task(void* arg)
          * reliable and produces fresh sensor data every cycle. */
         const int accel_status = rc_mpu_read_accel(&g_bb_mpu_data);
         const int gyro_status = rc_mpu_read_gyro(&g_bb_mpu_data);
+        const int mag_status  = rc_mpu_read_mag(&g_bb_mpu_data);
+        const int temp_status = rc_mpu_read_temp(&g_bb_mpu_data);
 
-        /* Only publish when both reads succeed; stale data is worse than a
+        /* Only publish when all reads succeed; stale data is worse than a
          * skipped cycle. The sleep at the bottom still runs to keep cadence. */
-        if ((accel_status == 0) && (gyro_status == 0)) {
+        if ((accel_status == 0) && (gyro_status == 0) &&
+            (mag_status == 0) && (temp_status == 0)) {
             imu.accel_mps2[k_bb_axis_x] = (float)g_bb_mpu_data.accel[k_bb_axis_x];
             imu.accel_mps2[k_bb_axis_y] = (float)g_bb_mpu_data.accel[k_bb_axis_y];
             imu.accel_mps2[k_bb_axis_z] = (float)g_bb_mpu_data.accel[k_bb_axis_z];

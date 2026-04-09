@@ -123,7 +123,7 @@ func NewTransportManager(config *Config) *TransportManager {
 	// only failure mode is physical disconnect (detected by heartbeat at 2s).
 	failureTimeout := DefaultFailureTimeout // 200ms for SPI/auto
 	if config.Mode == ModeSimpleUSB {
-		failureTimeout = 2 * time.Second // BBB telemetry at 10Hz; generous margin
+		failureTimeout = SimpleUSBFailureTimeout
 	}
 
 	heartbeat, err := NewHeartbeatManager(
