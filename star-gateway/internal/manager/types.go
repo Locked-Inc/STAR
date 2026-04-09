@@ -25,6 +25,13 @@ const (
 
 	// ModeForceSPI only uses SPI transport. USB hot-plug is disabled in this mode.
 	ModeForceSPI TransportMode = "force-spi"
+
+	// ModeSimpleUSB uses USB CDC without HARQ overhead. Designed for BeagleBone Blue
+	// where USB is the only transport and is inherently reliable (USB 2.0 CRC-16 +
+	// automatic retransmission at hardware level). Skips reset handshake, disables
+	// strict sequence validation, and relaxes health monitoring. CRC-32 frame
+	// validation is still performed as defense-in-depth. Wire protocol is unchanged.
+	ModeSimpleUSB TransportMode = "simple-usb"
 )
 const (
 	InvalidTransportModeError = "invalid transport mode: %q"
@@ -33,7 +40,7 @@ const (
 // IsValid checks if the TransportMode is one of the defined constants.
 func (tm TransportMode) IsValid() bool {
 	switch tm {
-	case ModeAuto, ModeForceUSB, ModeForceSPI:
+	case ModeAuto, ModeForceUSB, ModeForceSPI, ModeSimpleUSB:
 		return true
 	default:
 		return false

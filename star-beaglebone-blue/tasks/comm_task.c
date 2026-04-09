@@ -85,6 +85,36 @@ static void internal_send_ack(const uint16_t seq)
 }
 
 /**
+ * @brief Send a RESET_ACK frame echoing the RESET payload (session ID).
+ *
+ * @param[in] reset Received RESET frame whose payload (session ID) is echoed back
+ *
+ * @pre reset must point to a valid decoded frame with type RESET
+ * @post A RESET_ACK frame with the same sequence and payload is sent over USB CDC
+ *
+ * @since Version 1.1.0
+ */
+static void internal_send_reset_ack(const bb_frame_t* reset)
+{
+    bb_frame_t ack = {0};
+    ack.header.sequence = reset->header.sequence;
+    ack.header.length   = reset->header.length;
+    ack.header.type     = k_bb_frame_type_reset_ack;
+    ack.header.flags    = 0U;
+
+    if (reset->header.length > 0U) {
+        (void)memcpy(ack.payload, reset->payload, reset->header.length);
+    }
+
+    static uint8_t s_reset_ack_buf[k_wire_buf_size];
+    uint32_t wire_len = 0U;
+
+    if (bb_frame_encode(&ack, s_reset_ack_buf, k_wire_buf_size, &wire_len) == k_bb_err_ok) {
+        (void)bb_usb_cdc_send(s_reset_ack_buf, wire_len, 0U);
+    }
+}
+
+/**
  * @brief Send a PONG frame echoing the PING payload.
  *
  * @param[in] ping Received PING frame whose payload is echoed back
@@ -277,8 +307,12 @@ void* bb_comm_task(void* arg)
                     internal_send_pong(&frame);
                     break;
 
+                case k_bb_frame_type_reset:
+                    internal_send_reset_ack(&frame);
+                    break;
+
                 default:
-                    /* ACK, NACK, RESPONSE, PONG -- ignore */
+                    /* ACK, NACK, RESPONSE, PONG, RESET_ACK -- ignore */
                     break;
                 }
             }

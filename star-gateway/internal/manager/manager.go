@@ -118,12 +118,17 @@ func NewTransportManager(config *Config) *TransportManager {
 		tm.hotPlugDetector = NewHotPlugDetector(config.HotPlugPollInterval, config.USBVID, config.USBPID)
 	}
 
-	// Heartbeat manager for hybrid implicit/explicit connectivity detection
-	// Uses default intervals: DefaultPingInterval (1s), DefaultFailureTimeout (200ms)
-	// onFailure callback triggers automatic failover
+	// Heartbeat manager for hybrid implicit/explicit connectivity detection.
+	// Simple USB mode uses relaxed timeouts since USB CDC is reliable and the
+	// only failure mode is physical disconnect (detected by heartbeat at 2s).
+	failureTimeout := DefaultFailureTimeout // 200ms for SPI/auto
+	if config.Mode == ModeSimpleUSB {
+		failureTimeout = 2 * time.Second // BBB telemetry at 10Hz; generous margin
+	}
+
 	heartbeat, err := NewHeartbeatManager(
-		DefaultPingInterval,   // 1s - rare idle-link probe (implicit timeout fires first)
-		DefaultFailureTimeout, // 200ms - declare link dead if no frames
+		DefaultPingInterval, // 1s - idle-link probe
+		failureTimeout,      // 200ms (SPI/auto) or 2s (simple-usb)
 		func() {
 			// Callback to trigger failover on heartbeat timeout
 			log.Printf("Heartbeat failure detected, triggering failover")
@@ -199,11 +204,19 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 		// performResetHandshake calls Send/Receive which may acquire locks
 		tm.mu.Unlock()
 
-		// CRITICAL FIX #4: Send Reset handshake before entering Active state
-		// This synchronizes sequence numbers with RX72N after Gateway restart
-		if err := tm.performResetHandshake(tm.ctx); err != nil {
-			log.Printf("WARNING: Reset handshake failed: %v (continuing anyway)", err)
-			// Don't fail startup - RX72N might be rebooting
+		// Simple USB mode: skip reset handshake and enable permissive sequence validation.
+		// USB CDC is reliable at the hardware level — the handshake/sequence enforcement
+		// was designed for SPI and causes 30s startup delays + false frame rejection on USB.
+		if tm.config.Mode == ModeSimpleUSB {
+			tm.sessionState.SetSimpleMode(true)
+			log.Printf("Simple USB mode: skipped reset handshake, sequence validation relaxed")
+		} else {
+			// CRITICAL FIX #4: Send Reset handshake before entering Active state
+			// This synchronizes sequence numbers with RX72N after Gateway restart
+			if err := tm.performResetHandshake(tm.ctx); err != nil {
+				log.Printf("WARNING: Reset handshake failed: %v (continuing anyway)", err)
+				// Don't fail startup - RX72N might be rebooting
+			}
 		}
 
 		// Reacquire mutex to update state
@@ -214,7 +227,7 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 	} else {
 		tm.state = StateFailed
 		// Check if this is acceptable based on mode
-		if tm.config.Mode == ModeForceUSB || tm.config.Mode == ModeForceSPI {
+		if tm.config.Mode == ModeForceUSB || tm.config.Mode == ModeForceSPI || tm.config.Mode == ModeSimpleUSB {
 			tm.mu.Unlock() // Release before error return
 			return fmt.Errorf("no %s transport available (required by mode)", tm.config.Mode)
 		}

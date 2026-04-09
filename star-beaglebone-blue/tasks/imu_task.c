@@ -64,23 +64,13 @@ void* bb_imu_task(void* arg)
     while (rc_get_state() != EXITING) {
         bb_imu_data_t imu = {0};
 
-        /*
-         * Atomicity model for g_bb_mpu_data reads:
-         *
-         * Each individual double field is read atomically on ARM Cortex-A8
-         * with VFP (VLDR is a single 64-bit load). However, cross-field
-         * consistency is NOT guaranteed -- accel may come from DMP sample N
-         * while gyro comes from sample N+1 if the DMP ISR fires mid-copy.
-         *
-         * This is acceptable for 100 Hz telemetry because:
-         *   - DMP runs at the same 100 Hz rate (k_bb_rate_imu_hz)
-         *   - One-sample jitter across fields is within noise margin
-         *   - No control loop depends on cross-field coherence here
-         *
-         * For safety-critical paths requiring a fully consistent snapshot,
-         * use rc_mpu_set_data_func() to register a DMP callback that copies
-         * g_bb_mpu_data under a mutex instead of reading it directly.
-         */
+        /* Poll MPU-9250 accelerometer and gyroscope.
+         * DMP interrupt mode does not work on 5.10-ti kernel (GPIO ISR
+         * never fires). Polling at 100 Hz via rc_mpu_read_accel/gyro is
+         * reliable and produces fresh sensor data every cycle. */
+        (void)rc_mpu_read_accel(&g_bb_mpu_data);
+        (void)rc_mpu_read_gyro(&g_bb_mpu_data);
+
         imu.accel_mps2[k_bb_axis_x] = (float)g_bb_mpu_data.accel[k_bb_axis_x];
         imu.accel_mps2[k_bb_axis_y] = (float)g_bb_mpu_data.accel[k_bb_axis_y];
         imu.accel_mps2[k_bb_axis_z] = (float)g_bb_mpu_data.accel[k_bb_axis_z];
