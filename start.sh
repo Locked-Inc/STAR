@@ -232,10 +232,27 @@ GW_ENV=""
 if [[ "$DEV_MODE" == "true" ]]; then
     GW_ENV="STAR_SIMULATION_MODE=true"
 fi
-env WS_STRICT_ORIGIN=false ${GW_ENV} \
-    "$STAR_DIR/star-gateway/star-gateway" \
-    >"$LOG_DIR/gateway.log" 2>&1 &
-PID_GW=$!
+
+# Retry gateway start up to 3 times -- the serial port may still be releasing
+# from the previous instance after stop.sh.
+GW_STARTED=false
+for gw_attempt in 1 2 3; do
+    env WS_STRICT_ORIGIN=false ${GW_ENV} \
+        "$STAR_DIR/star-gateway/star-gateway" \
+        >"$LOG_DIR/gateway.log" 2>&1 &
+    PID_GW=$!
+    sleep 2
+    if kill -0 "$PID_GW" 2>/dev/null; then
+        GW_STARTED=true
+        break
+    fi
+    warn "star-gateway attempt $gw_attempt failed -- retrying in 3s..."
+    sleep 3
+done
+
+if [[ "$GW_STARTED" == "false" ]]; then
+    die "star-gateway failed to start after 3 attempts -- check $LOG_DIR/gateway.log"
+fi
 
 say "Waiting for gRPC :50051..."
 wait_port localhost 50051 "star-gateway" 10

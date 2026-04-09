@@ -37,6 +37,8 @@ pkill -f "static_transform_publisher"         2>/dev/null && say "fake odom TF s
 pkill -f "[s]tar-gateway$"                        2>/dev/null && say "gateway stopped"        || true
 pkill -f "$STAR_DIR/star-gateway/star-gateway"    2>/dev/null || true  # fallback: full path
 pkill -f "[v]irtual_rx72n"                        2>/dev/null && say "virtual_rx72n stopped"  || true
+# Wait for serial port to be fully released (prevents "Serial port busy" on restart)
+sleep 2
 
 # Foxglove bridge
 pkill -f "foxglove_bridge" 2>/dev/null && say "foxglove_bridge stopped" || true
