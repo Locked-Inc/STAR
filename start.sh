@@ -190,6 +190,7 @@ PID_SLAM=""
 PID_GWBRIDGE=""
 PID_UI=""
 PID_RVIZ=""
+PID_FOXGLOVE=""
 
 # -- Step 0: BBB firmware (BBB mode only) --------------------------------------
 PID_BBB_FW=""
@@ -307,6 +308,14 @@ if [[ "$HAS_LIDAR" == "true" ]]; then
     fi
 else
     say "Skipping SLAM stack (no LiDAR)"
+    # Launch foxglove_bridge standalone so telemetry/IMU/odom are still visualizable
+    say "Starting foxglove_bridge standalone (ws://0.0.0.0:8765)..."
+    ros2 run foxglove_bridge foxglove_bridge --ros-args \
+        -p port:=8765 -p address:="0.0.0.0" -p send_buffer_limit:=10000000 \
+        >"$LOG_DIR/foxglove.log" 2>&1 &
+    PID_FOXGLOVE=$!
+    sleep 1
+    say "foxglove_bridge running (PID $PID_FOXGLOVE)"
 fi
 
 # -- Step 6: star_gateway_bridge_main -----------------------------------------
@@ -398,6 +407,7 @@ fi
 if [[ -n "$PID_RVIZ" ]]; then
     printf "  %-18s PID %s\n" "rviz2" "$PID_RVIZ"
 fi
+printf "  %-18s ws://%s:8765  (open app.foxglove.dev)\n" "Foxglove" "$LOCAL_IP"
 
 echo -e ""
 echo -e "  Logs : $LOG_DIR/"

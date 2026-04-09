@@ -37,6 +37,9 @@ pkill -f "static_transform_publisher"         2>/dev/null && say "fake odom TF s
 pkill -f "$STAR_DIR/star-gateway/star-gateway"  2>/dev/null && say "gateway stopped"        || true
 pkill -f "$STAR_DIR/star-gateway/virtual_rx72n" 2>/dev/null && say "virtual_rx72n stopped"  || true
 
+# Foxglove bridge
+pkill -f "foxglove_bridge" 2>/dev/null && say "foxglove_bridge stopped" || true
+
 # UI
 pkill -f "vite"   2>/dev/null && say "UI dev server stopped" || true
 

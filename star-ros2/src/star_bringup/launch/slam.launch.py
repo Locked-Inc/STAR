@@ -164,6 +164,24 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('use_nav2')),
     )
 
+    # Foxglove Studio WebSocket bridge -- enables browser-based visualization
+    # at app.foxglove.dev without X11. Connects via ws://<PI5_IP>:8765.
+    # Install: sudo apt install ros-jazzy-foxglove-bridge
+    foxglove_bridge = Node(
+        package='foxglove_bridge',
+        executable='foxglove_bridge',
+        name='foxglove_bridge',
+        output='log',
+        parameters=[{
+            'port': 8765,
+            'address': '0.0.0.0',
+            'send_buffer_limit': 10000000,
+            'use_sim_time': False,
+        }],
+        respawn=True,
+        respawn_delay=RESPAWN_DELAY_SEC,
+    )
+
     # Gateway bridge node -- bridges ROS2 to Go gateway via gRPC.
     # When use_bbb is true, also bridges BBB telemetry to ROS2 topics and
     # forwards /cmd_vel to BBB motors via gateway.
@@ -194,6 +212,7 @@ def generate_launch_description():
         ekf,
         static_odom_tf,
         rplidar,
+        foxglove_bridge,
         gateway_bridge,
         slam,
         nav2,
