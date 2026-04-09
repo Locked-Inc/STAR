@@ -14,10 +14,10 @@ func FuzzFrameDecode(f *testing.F) {
 	}
 
 	// Seed with a few degenerate inputs that exercise early-exit paths.
-	f.Add([]byte{})                 // empty
-	f.Add([]byte{0xAA})            // partial sync
-	f.Add([]byte{0xAA, 0x55})      // sync only, no header
-	f.Add([]byte{0x00, 0x00})      // wrong sync word
+	f.Add([]byte{})                   // empty
+	f.Add([]byte{0xAA})               // partial sync
+	f.Add([]byte{0xAA, 0x55})         // sync only, no header
+	f.Add([]byte{0x00, 0x00})         // wrong sync word
 	f.Add(make([]byte, MinFrameSize)) // minimum size, all zeros (bad sync)
 
 	f.Fuzz(func(t *testing.T, data []byte) {

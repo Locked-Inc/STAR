@@ -52,10 +52,10 @@
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_wire_empty   = 12, /**< Frames with no payload: 2+6+0+4 */
-  k_wire_4_byte  = 16, /**< Frames with 4-byte payload: 2+6+4+4 */
-  k_wire_2_byte  = 14, /**< Frames with 2-byte payload: 2+6+2+4 */
-  k_encode_buf   = 64, /**< Encode buffer (generous for any vector) */
+  k_wire_empty  = 12, /**< Frames with no payload: 2+6+0+4 */
+  k_wire_4_byte = 16, /**< Frames with 4-byte payload: 2+6+4+4 */
+  k_wire_2_byte = 14, /**< Frames with 2-byte payload: 2+6+2+4 */
+  k_encode_buf  = 64, /**< Encode buffer (generous for any vector) */
 } go_compat_wire_sizes_t;
 
 /**
@@ -65,13 +65,13 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_payload_len_4   = 4,  /**< 4-byte payload length ("TEST", counter) */
-  k_payload_len_2   = 2,  /**< 2-byte payload length ("OK") */
-  k_counter_42      = 42, /**< PONG counter value */
-  k_idx_0           = 0,  /**< Payload byte index 0 */
-  k_idx_1           = 1,  /**< Payload byte index 1 */
-  k_idx_2           = 2,  /**< Payload byte index 2 */
-  k_idx_3           = 3,  /**< Payload byte index 3 */
+  k_payload_len_4 = 4,  /**< 4-byte payload length ("TEST", counter) */
+  k_payload_len_2 = 2,  /**< 2-byte payload length ("OK") */
+  k_counter_42    = 42, /**< PONG counter value */
+  k_idx_0         = 0,  /**< Payload byte index 0 */
+  k_idx_1         = 1,  /**< Payload byte index 1 */
+  k_idx_2         = 2,  /**< Payload byte index 2 */
+  k_idx_3         = 3,  /**< Payload byte index 3 */
 } go_compat_payload_t;
 
 /* =============================================================================
@@ -126,14 +126,8 @@ void tearDown(void)
  */
 void test_go_compat_ping_seq0_empty(void)
 {
-  static const uint8_t expected[] = {
-    0xAA, 0x55,
-    0x00, 0x00,
-    0x00, 0x00,
-    0x00,
-    0x00,
-    0x3D, 0xE2, 0x42, 0x2F
-  };
+  static const uint8_t expected[] =
+    {0xAA, 0x55, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3D, 0xE2, 0x42, 0x2F};
 
   rx_frame_t frame;
   uint8_t    buf[k_encode_buf];
@@ -170,15 +164,22 @@ void test_go_compat_ping_seq0_empty(void)
  */
 void test_go_compat_pong_seq0_counter42(void)
 {
-  static const uint8_t expected[] = {
-    0xAA, 0x55,
-    0x00, 0x00,
-    0x04, 0x00,
-    0x01,
-    0x00,
-    0x2A, 0x00, 0x00, 0x00,
-    0x75, 0x79, 0x64, 0x60
-  };
+  static const uint8_t expected[] = {0xAA,
+                                     0x55,
+                                     0x00,
+                                     0x00,
+                                     0x04,
+                                     0x00,
+                                     0x01,
+                                     0x00,
+                                     0x2A,
+                                     0x00,
+                                     0x00,
+                                     0x00,
+                                     0x75,
+                                     0x79,
+                                     0x64,
+                                     0x60};
 
   uint8_t    payload[k_payload_len_4] = {k_counter_42, 0, 0, 0};
   rx_frame_t frame;
@@ -216,28 +217,35 @@ void test_go_compat_pong_seq0_counter42(void)
  */
 void test_go_compat_command_seq1_test(void)
 {
-  static const uint8_t expected[] = {
-    0xAA, 0x55,
-    0x01, 0x00,
-    0x04, 0x00,
-    0x10,
-    0x01,
-    0x54, 0x45, 0x53, 0x54,
-    0x3B, 0xE9, 0x6D, 0x7A
-  };
+  static const uint8_t expected[] = {0xAA,
+                                     0x55,
+                                     0x01,
+                                     0x00,
+                                     0x04,
+                                     0x00,
+                                     0x10,
+                                     0x01,
+                                     0x54,
+                                     0x45,
+                                     0x53,
+                                     0x54,
+                                     0x3B,
+                                     0xE9,
+                                     0x6D,
+                                     0x7A};
 
   rx_frame_t frame = {};
   uint8_t    buf[k_encode_buf];
   uint32_t   len;
 
-  frame.header.sequence      = 1;
-  frame.header.length        = k_payload_len_4;
-  frame.header.type          = k_frame_type_command;
-  frame.header.flags         = k_frame_flag_requires_ack;
-  frame.payload[k_idx_0]     = 'T';
-  frame.payload[k_idx_1]     = 'E';
-  frame.payload[k_idx_2]     = 'S';
-  frame.payload[k_idx_3]     = 'T';
+  frame.header.sequence  = 1;
+  frame.header.length    = k_payload_len_4;
+  frame.header.type      = k_frame_type_command;
+  frame.header.flags     = k_frame_flag_requires_ack;
+  frame.payload[k_idx_0] = 'T';
+  frame.payload[k_idx_1] = 'E';
+  frame.payload[k_idx_2] = 'S';
+  frame.payload[k_idx_3] = 'T';
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buf, &len));
   TEST_ASSERT_EQUAL_UINT32(k_wire_4_byte, len);
@@ -269,26 +277,19 @@ void test_go_compat_command_seq1_test(void)
  */
 void test_go_compat_response_seq1_ok(void)
 {
-  static const uint8_t expected[] = {
-    0xAA, 0x55,
-    0x01, 0x00,
-    0x02, 0x00,
-    0x11,
-    0x00,
-    0x4F, 0x4B,
-    0xEA, 0xAC, 0x1D, 0x9A
-  };
+  static const uint8_t expected[] =
+    {0xAA, 0x55, 0x01, 0x00, 0x02, 0x00, 0x11, 0x00, 0x4F, 0x4B, 0xEA, 0xAC, 0x1D, 0x9A};
 
   rx_frame_t frame = {};
   uint8_t    buf[k_encode_buf];
   uint32_t   len;
 
-  frame.header.sequence      = 1;
-  frame.header.length        = k_payload_len_2;
-  frame.header.type          = k_frame_type_response;
-  frame.header.flags         = k_frame_flag_none;
-  frame.payload[k_idx_0]     = 'O';
-  frame.payload[k_idx_1]     = 'K';
+  frame.header.sequence  = 1;
+  frame.header.length    = k_payload_len_2;
+  frame.header.type      = k_frame_type_response;
+  frame.header.flags     = k_frame_flag_none;
+  frame.payload[k_idx_0] = 'O';
+  frame.payload[k_idx_1] = 'K';
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buf, &len));
   TEST_ASSERT_EQUAL_UINT32(k_wire_2_byte, len);
@@ -319,14 +320,8 @@ void test_go_compat_response_seq1_ok(void)
  */
 void test_go_compat_ack_seq1_empty(void)
 {
-  static const uint8_t expected[] = {
-    0xAA, 0x55,
-    0x01, 0x00,
-    0x00, 0x00,
-    0x12,
-    0x00,
-    0x4B, 0x41, 0xEA, 0x9C
-  };
+  static const uint8_t expected[] =
+    {0xAA, 0x55, 0x01, 0x00, 0x00, 0x00, 0x12, 0x00, 0x4B, 0x41, 0xEA, 0x9C};
 
   rx_frame_t frame;
   uint8_t    buf[k_encode_buf];
@@ -362,14 +357,8 @@ void test_go_compat_ack_seq1_empty(void)
  */
 void test_go_compat_nack_seq1_empty(void)
 {
-  static const uint8_t expected[] = {
-    0xAA, 0x55,
-    0x01, 0x00,
-    0x00, 0x00,
-    0x13,
-    0x00,
-    0x0A, 0x70, 0xF1, 0x85
-  };
+  static const uint8_t expected[] =
+    {0xAA, 0x55, 0x01, 0x00, 0x00, 0x00, 0x13, 0x00, 0x0A, 0x70, 0xF1, 0x85};
 
   rx_frame_t frame;
   uint8_t    buf[k_encode_buf];
@@ -405,14 +394,8 @@ void test_go_compat_nack_seq1_empty(void)
  */
 void test_go_compat_reset_seq0_empty(void)
 {
-  static const uint8_t expected[] = {
-    0xAA, 0x55,
-    0x00, 0x00,
-    0x00, 0x00,
-    0xFF,
-    0x00,
-    0x4F, 0x1F, 0x66, 0xBC
-  };
+  static const uint8_t expected[] =
+    {0xAA, 0x55, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x4F, 0x1F, 0x66, 0xBC};
 
   rx_frame_t frame;
   uint8_t    buf[k_encode_buf];
@@ -448,14 +431,8 @@ void test_go_compat_reset_seq0_empty(void)
  */
 void test_go_compat_reset_ack_seq0_empty(void)
 {
-  static const uint8_t expected[] = {
-    0xAA, 0x55,
-    0x00, 0x00,
-    0x00, 0x00,
-    0xFE,
-    0x00,
-    0x0E, 0x2E, 0x7D, 0xA5
-  };
+  static const uint8_t expected[] =
+    {0xAA, 0x55, 0x00, 0x00, 0x00, 0x00, 0xFE, 0x00, 0x0E, 0x2E, 0x7D, 0xA5};
 
   rx_frame_t frame;
   uint8_t    buf[k_encode_buf];
