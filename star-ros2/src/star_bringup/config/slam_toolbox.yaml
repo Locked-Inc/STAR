@@ -39,7 +39,7 @@ slam_toolbox:
     use_scan_barycenter: true
     # minimum_travel_distance [m] and minimum_travel_heading [rad]
     # Set to 0.0 to allow pure scan-matching without odom. This is needed when
-    # EKF is disabled (no wheel encoders) — SLAM determines motion purely from
+    # EKF is disabled (no wheel encoders) -- SLAM determines motion purely from
     # consecutive scan differences. When wheels are connected and EKF is active,
     # increase to 0.2m / 0.15rad to reduce CPU on Pi 5.
     minimum_travel_distance: 0.0
