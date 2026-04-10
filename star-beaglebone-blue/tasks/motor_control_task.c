@@ -50,10 +50,10 @@ enum : uint64_t { k_adc_interval_ns = 100000000ULL };
  */
 static float internal_get_max_duty(void)
 {
-    static float s_max_duty = 0.65F; /* s_bb_duty_fallback_max */
-    static struct timespec s_last_read = {0};
+    static float s_max_duty = s_bb_duty_fallback_max;
+    static struct timespec s_last_read = {};
 
-    struct timespec now = {0};
+    struct timespec now = {};
     (void)clock_gettime(CLOCK_MONOTONIC, &now);
 
     /* Signed arithmetic for correct elapsed time when tv_nsec wraps.
