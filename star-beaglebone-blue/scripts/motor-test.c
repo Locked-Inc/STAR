@@ -17,7 +17,7 @@
  * Requires: librobotcontrol (patched for 5.10-ti kernel)
  * Power: Motors need barrel jack (9-18V) or 2S LiPo. USB alone = no motors.
  *
- * Copyright (c) 2026 Locked Inc.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */
 
@@ -198,6 +198,13 @@ int main(int argc, char *argv[])
     /* Init hardware */
     print_header("Hardware Init");
 
+    printf("  ADC: ");
+    if (rc_adc_init() == 0) {
+        printf("OK\n");
+    } else {
+        printf("FAIL (battery monitoring unavailable)\n");
+    }
+
     printf("  Motors: ");
     if (rc_motor_init() == 0) {
         printf("OK\n");
@@ -228,7 +235,7 @@ int main(int argc, char *argv[])
 
     printf("  Battery: ");
     double vbatt = rc_adc_batt();
-    if (vbatt > 0) {
+    if (vbatt > 1.0) {  /* rc_adc_batt() deadzone: returns 0.0 below 1.0V */
         printf("%.2f V", vbatt);
         if (vbatt < 6.0) printf(" (LOW -- motors may not work on USB power)");
         printf("\n");
@@ -277,6 +284,7 @@ int main(int argc, char *argv[])
     print_header("Cleanup");
     rc_motor_set(0, 0.0);  /* all motors off */
     rc_mpu_power_off();
+    rc_adc_cleanup();
     rc_encoder_eqep_cleanup();
     rc_motor_cleanup();
     rc_remove_pid_file();
