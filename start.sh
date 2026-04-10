@@ -324,10 +324,15 @@ if [[ "$HAS_LIDAR" == "true" ]]; then
     SLAM_ARGS="use_nav2:=false use_foxglove:=true"
     if [[ "$BBB_MODE" == "true" ]]; then
         SLAM_ARGS="$SLAM_ARGS use_bbb:=true"
-        # Disable EKF for now -- BBB has no wheel encoders providing velocity,
-        # so EKF odom stays at origin and SLAM can't match scans.
-        # Pure scan-matching works for hand-carry testing.
-        # Re-enable when wheels are connected.
+        # TODO(wheels): Remove use_ekf:=false once wheel encoders provide odom.
+        # Without wheel encoders, EKF odom stays at origin and SLAM can't stitch
+        # scans. Pure scan-matching works for hand-carry testing but is less
+        # accurate than EKF-fused odom. When wheels are connected:
+        #   1. Remove the line below (let use_ekf default to true)
+        #   2. In slam_toolbox.yaml, restore minimum_travel_distance: 0.2
+        #      and minimum_travel_heading: 0.15
+        #   3. In ekf.yaml, consider re-enabling imu0 yaw orientation if
+        #      DMP mode is fixed (provides fused quaternion)
         SLAM_ARGS="$SLAM_ARGS use_ekf:=false"
     fi
     if [[ "$DEV_MODE" == "true" ]]; then
