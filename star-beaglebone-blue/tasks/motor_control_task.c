@@ -21,12 +21,55 @@
 #include "motor_control_task.h"
 #include "hardware_config.h"
 
-#include <math.h>
 #include <robotcontrol.h>
 #include <time.h>
 
-/** ADC read divider: read battery voltage every 10th iteration (10 Hz). */
-enum : uint32_t { k_adc_read_divider = 10U };
+/* ---------------------------------------------------------------------------
+ * Battery voltage sampling (timer-based, 10 Hz)
+ * ---------------------------------------------------------------------------*/
+
+/** Minimum interval between ADC reads in nanoseconds (100 ms = 10 Hz). */
+enum : uint64_t { k_adc_interval_ns = 100000000ULL };
+
+/**
+ * @brief Compute the voltage-proportional max duty cycle.
+ *
+ * Reads rc_adc_batt() at most once per k_adc_interval_ns. Returns a cached
+ * value between calls. Protects 6V motors from overvoltage on 2S LiPo by
+ * clamping: max_duty = 0.95 * (6.0 / V_batt).
+ *
+ * @return float Max allowable abs(duty), in [0, 1].
+ * @since Version 1.1.0
+ */
+static float internal_get_max_duty(void)
+{
+    static float s_max_duty = 0.65F; /* k_bb_duty_fallback_max */
+    static struct timespec s_last_read = {0};
+
+    struct timespec now = {0};
+    (void)clock_gettime(CLOCK_MONOTONIC, &now);
+
+    uint64_t elapsed_ns = (uint64_t)(now.tv_sec - s_last_read.tv_sec)
+                        * k_bb_ns_per_sec
+                        + (uint64_t)(now.tv_nsec - s_last_read.tv_nsec);
+
+    if (elapsed_ns >= k_adc_interval_ns) {
+        s_last_read = now;
+
+        double vbatt = rc_adc_batt();
+        if (vbatt > 1.0) {
+            s_max_duty = k_bb_duty_derating
+                       * (k_bb_motor_rated_v / (float)vbatt);
+            if (s_max_duty > 1.0F) {
+                s_max_duty = 1.0F;
+            }
+        } else {
+            s_max_duty = k_bb_duty_fallback_max;
+        }
+    }
+
+    return s_max_duty;
+}
 
 /* Motor indices from hardware_config.h: k_bb_motor_idx_fl/fr/rl/rr */
 
@@ -59,27 +102,8 @@ void* bb_motor_control_task(void* arg)
     struct timespec next = {0};
     (void)clock_gettime(CLOCK_MONOTONIC, &next);
 
-    float max_duty = k_bb_duty_fallback_max; /* safe default until ADC reads */
-    uint32_t loop_count = 0U;
-
     while (rc_get_state() != EXITING) {
-        /* Read battery voltage at 10 Hz (every k_adc_read_divider iterations).
-         * Compute voltage-proportional duty clamp to protect 6V motors from
-         * overvoltage on 2S LiPo (up to 8.4V). DRV8838 passes V_batt directly
-         * to motors: V_motor = duty * V_batt. */
-        if ((loop_count % k_adc_read_divider) == 0U) {
-            double vbatt = rc_adc_batt();
-            if (vbatt > 1.0) {
-                max_duty = k_bb_duty_derating
-                         * (k_bb_motor_rated_v / (float)vbatt);
-                if (max_duty > 1.0F) {
-                    max_duty = 1.0F;
-                }
-            } else {
-                max_duty = k_bb_duty_fallback_max;
-            }
-        }
-        loop_count++;
+        const float max_duty = internal_get_max_duty();
 
         bool estop = false;
         (void)bb_shared_data_get_estop(sd, &estop);
