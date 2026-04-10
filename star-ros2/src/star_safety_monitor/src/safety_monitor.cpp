@@ -128,6 +128,10 @@ SafetyMonitor::on_activate(const rclcpp_lifecycle::State & previous_state)
     diagnostics_pub_->on_activate();
     emergency_stop_pub_->on_activate();
 
+    // Reset heartbeat baseline so the first timer tick doesn't
+    // immediately trigger a heartbeat timeout.
+    last_diagnostics_time_ = std::chrono::system_clock::now();
+
     // Create bond to nav2_lifecycle_manager (heartbeat keepalive)
     bond_ = std::make_shared<bond::Bond>("bond", get_name(), shared_from_this());
     bond_->setHeartbeatPeriod(0.25);
@@ -239,11 +243,18 @@ void SafetyMonitor::odometry_callback(const nav_msgs::msg::Odometry::SharedPtr m
 void SafetyMonitor::diagnostics_callback(
   const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg)
 {
-  last_diagnostics_time_ = std::chrono::system_clock::now();
-
-  // Update heartbeat times for known nodes
+  // Ignore our own diagnostics (we publish on the same topic).
+  // Only count messages from external nodes as heartbeats.
+  bool from_self = true;
   for (const auto & status : msg->status) {
-    heartbeat_times_[status.name] = std::chrono::system_clock::now();
+    if (status.hardware_id != "safety_monitor") {
+      from_self = false;
+      heartbeat_times_[status.name] = std::chrono::system_clock::now();
+    }
+  }
+
+  if (!from_self) {
+    last_diagnostics_time_ = std::chrono::system_clock::now();
   }
 }
 

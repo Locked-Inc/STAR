@@ -69,9 +69,9 @@ def generate_test_description():
     return launch.LaunchDescription([
         sim_launch,
         TimerAction(period=20.0, actions=[safety_monitor]),
-        TimerAction(period=25.0, actions=[configure]),
-        TimerAction(period=28.0, actions=[activate]),
-        TimerAction(period=32.0, actions=[
+        TimerAction(period=35.0, actions=[configure]),
+        TimerAction(period=50.0, actions=[activate]),
+        TimerAction(period=55.0, actions=[
             launch_testing.actions.ReadyToTest(),
         ]),
     ]), {}
@@ -136,7 +136,7 @@ class TestStallDetection(unittest.TestCase):
         # Command the robot forward into the wall
         cmd = Twist()
         cmd.linear.x = 0.4
-        self.estop_received = False
+        type(self).estop_received = False
 
         # Keep commanding for up to 10 seconds, check for e-stop
         timeout = time.time() + 10.0

@@ -65,9 +65,9 @@ def generate_test_description():
     return launch.LaunchDescription([
         sim_launch,
         TimerAction(period=20.0, actions=[safety_monitor]),
-        TimerAction(period=25.0, actions=[configure]),
-        TimerAction(period=28.0, actions=[activate]),
-        TimerAction(period=32.0, actions=[
+        TimerAction(period=35.0, actions=[configure]),
+        TimerAction(period=50.0, actions=[activate]),
+        TimerAction(period=55.0, actions=[
             launch_testing.actions.ReadyToTest(),
         ]),
     ]), {}
@@ -98,6 +98,21 @@ class TestObstacleEstopLatency(unittest.TestCase):
 
     def test_estop_latency_under_500ms(self):
         """Publish close-range sonar, measure time to e-stop."""
+        # Allow DDS discovery between test node and safety monitor
+        end_discovery = time.time() + 5.0
+        safe_msg = Range()
+        safe_msg.header.frame_id = 'front_left_sonar_link'
+        safe_msg.radiation_type = Range.ULTRASOUND
+        safe_msg.field_of_view = 0.26
+        safe_msg.min_range = 0.02
+        safe_msg.max_range = 4.0
+        safe_msg.range = 2.0  # safe distance during discovery
+        while time.time() < end_discovery:
+            safe_msg.header.stamp = self.node.get_clock().now().to_msg()
+            self.sonar_pub.publish(safe_msg)
+            rclpy.spin_once(self.node, timeout_sec=0.05)
+
+        # Now publish close-range sonar and measure latency
         range_msg = Range()
         range_msg.header.frame_id = 'front_left_sonar_link'
         range_msg.radiation_type = Range.ULTRASOUND
@@ -107,9 +122,9 @@ class TestObstacleEstopLatency(unittest.TestCase):
         range_msg.range = 0.05
 
         publish_time = time.monotonic()
-        self.estop_time = None
+        type(self).estop_time = None
 
-        timeout = time.time() + 5.0
+        timeout = time.time() + 15.0
         while time.time() < timeout:
             range_msg.header.stamp = self.node.get_clock().now().to_msg()
             self.sonar_pub.publish(range_msg)
