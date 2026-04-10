@@ -17,7 +17,7 @@
  * Requires: librobotcontrol (patched for 5.10-ti kernel)
  * Power: Motors need barrel jack (9-18V) or 2S LiPo. USB alone = no motors.
  *
- * Copyright (c) 2026 Locked Inc.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */
 
