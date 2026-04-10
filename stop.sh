@@ -49,10 +49,8 @@ pkill -f "vite"   2>/dev/null && say "UI dev server stopped" || true
 # RViz
 pkill -f "rviz2"  2>/dev/null && say "rviz2 stopped"         || true
 
-# Restore ModemManager (we stop it only to free /dev/ttyUSB0)
-sudo systemctl start ModemManager 2>/dev/null \
-    && say "ModemManager restored" \
-    || warn "ModemManager restart skipped (not installed?)"
+# Do NOT restore ModemManager -- it grabs /dev/ttyUSB0 and disconnects the
+# RPLiDAR C1. ModemManager is stopped by start.sh and stays stopped.
 
 sleep 1
 say "Done."
