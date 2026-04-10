@@ -71,6 +71,14 @@ def generate_launch_description():
         value=os.path.dirname(pkg_star_simulation),
     )
 
+    # Force software rendering via llvmpipe when no hardware GPU is available.
+    # Pi5's VideoCore VII only supports OpenGL 3.1 (OGRE2 needs 3.3).
+    # Xvfb + llvmpipe provides OpenGL 4.5 in software.
+    gz_display = SetEnvironmentVariable(
+        name='DISPLAY',
+        value=os.environ.get('DISPLAY', ':99'),
+    )
+
     # ------------------------------------------------------------------ #
     # Process URDF via xacro                                               #
     # ------------------------------------------------------------------ #
@@ -117,6 +125,7 @@ def generate_launch_description():
     )
 
     # Start Gazebo server only (no GUI) for CI/headless testing.
+    # Sensors still render via Xvfb + llvmpipe (set DISPLAY above).
     gazebo_headless = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([
@@ -126,7 +135,7 @@ def generate_launch_description():
         launch_arguments={
             'gz_args': [
                 LaunchConfiguration('world'),
-                ' -r -s',
+                ' -r --headless-rendering',
             ],
             'on_exit_shutdown': 'true',
         }.items(),
@@ -254,6 +263,7 @@ def generate_launch_description():
         use_ekf_arg,
         # Environment
         gz_resource_path,
+        gz_display,
         # Gazebo
         gazebo,
         gazebo_headless,

@@ -144,6 +144,7 @@ private:
   int obstacle_clear_count_required_{10}; // Consecutive clear checks before recovery
   std::array<double, NUM_SONARS> sonar_ranges_;
   bool obstacle_too_close_{false};
+  bool obstacle_estop_triggered_{false};
   int obstacle_clear_count_{0};
 
   SeverityLevel overall_severity_{SeverityLevel::OK};

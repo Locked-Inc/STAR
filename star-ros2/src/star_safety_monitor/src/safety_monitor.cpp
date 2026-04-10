@@ -106,6 +106,7 @@ SafetyMonitor::on_configure(const rclcpp_lifecycle::State & previous_state)
     heartbeat_timeout_triggered_ = false;
     emergency_stop_active_ = false;
     motor_stall_detected_ = false;
+    obstacle_estop_triggered_ = false;
     stall_detection_count_ = 0;
     overall_severity_ = SeverityLevel::OK;
 
@@ -296,10 +297,7 @@ void SafetyMonitor::check_heartbeat_health()
     if (!heartbeat_timeout_triggered_) {
       RCLCPP_WARN(get_logger(), "Heartbeat timeout detected!");
       heartbeat_timeout_triggered_ = true;
-      if (enable_auto_estop_) {
-        emergency_stop_active_ = true;
-        estop_trigger_time_ = now;
-      }
+      estop_trigger_time_ = now;
     }
   } else {
     // Reset timeout if heartbeat recovered
@@ -357,10 +355,7 @@ void SafetyMonitor::check_motor_stall()
           "Motor stall detected: cmd=%.2f m/s, actual=%.2f m/s",
           cmd_linear, current_linear_velocity_);
         motor_stall_detected_ = true;
-        if (enable_auto_estop_) {
-          emergency_stop_active_ = true;
-          estop_trigger_time_ = now;
-        }
+        estop_trigger_time_ = now;
       }
     } else {
       // Motor is responding, reset counter
@@ -385,30 +380,30 @@ void SafetyMonitor::check_obstacle_proximity()
     }
 
     if (range < obstacle_estop_distance_) {
-      RCLCPP_WARN(get_logger(),
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
         "Obstacle E-STOP: %s sonar reads %.3f m (threshold: %.2f m)",
         SONAR_NAMES[i], range, obstacle_estop_distance_);
       obstacle_too_close_ = true;
       if (enable_auto_estop_) {
-        emergency_stop_active_ = true;
+        obstacle_estop_triggered_ = true;
         estop_trigger_time_ = std::chrono::system_clock::now();
       }
     } else if (range < obstacle_warn_distance_) {
-      RCLCPP_WARN(get_logger(),
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
         "Obstacle warning: %s sonar reads %.3f m (threshold: %.2f m)",
         SONAR_NAMES[i], range, obstacle_warn_distance_);
     }
   }
 
-  // Obstacle recovery: release e-stop after consecutive clear readings
-  // (matches Nav2 collision_monitor release_consecutive_points pattern)
-  if (!obstacle_too_close_ && emergency_stop_active_) {
+  // Obstacle recovery: only release the obstacle-sourced e-stop.
+  // Do NOT clear emergency_stop_active_ if heartbeat or stall also set it.
+  if (!obstacle_too_close_ && obstacle_estop_triggered_) {
     obstacle_clear_count_++;
     if (obstacle_clear_count_ >= obstacle_clear_count_required_) {
       RCLCPP_INFO(get_logger(),
-        "Obstacle cleared for %d consecutive checks, releasing E-stop",
+        "Obstacle cleared for %d consecutive checks, releasing obstacle E-stop",
         obstacle_clear_count_required_);
-      emergency_stop_active_ = false;
+      obstacle_estop_triggered_ = false;
       obstacle_clear_count_ = 0;
     }
   } else if (obstacle_too_close_) {
@@ -433,6 +428,12 @@ void SafetyMonitor::update_overall_state()
     overall_severity_ = SeverityLevel::WARN;
   } else if (velocity_exceeded_) {
     overall_severity_ = SeverityLevel::WARN;
+  }
+
+  // Derive emergency_stop_active_ from all independent sources.
+  if (enable_auto_estop_) {
+    emergency_stop_active_ = heartbeat_timeout_triggered_ ||
+      obstacle_estop_triggered_ || motor_stall_detected_;
   }
 
   // Publish emergency stop signal if needed

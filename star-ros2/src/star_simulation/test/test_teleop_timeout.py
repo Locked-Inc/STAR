@@ -105,8 +105,6 @@ class TestTeleopTimeout(unittest.TestCase):
             rclpy.spin_once(self.node, timeout_sec=0.05)
             if self.get_linear_speed() > SPEED_THRESHOLD:
                 moving = True
-                # Keep driving a bit more to establish steady state
-                self.spin_for(2.0)
                 break
 
         # Keep publishing for a couple more wall seconds

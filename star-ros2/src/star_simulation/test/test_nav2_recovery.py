@@ -113,7 +113,6 @@ class TestNav2Recovery(unittest.TestCase):
 
         if goal_handle is None or not goal_handle.accepted:
             self.skipTest('Nav2 rejected goal (may need more startup time)')
-            return
 
         # Wait for result with timeout
         result_future = goal_handle.get_result_async()

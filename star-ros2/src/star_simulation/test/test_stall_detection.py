@@ -123,13 +123,15 @@ class TestStallDetection(unittest.TestCase):
             '</collision></link></model>'
         )
         sdf_request = "sdf: '" + wall_sdf + "'"
-        subprocess.run([
+        result = subprocess.run([
             'gz', 'service', '-s', '/world/indoor_slam_test/create',
             '--reqtype', 'gz.msgs.EntityFactory',
             '--reptype', 'gz.msgs.Boolean',
             '--timeout', '5000',
             '--req', sdf_request,
         ], capture_output=True, timeout=10)
+        self.assertEqual(result.returncode, 0,
+                         f'Failed to spawn test wall: {result.stderr.decode()}')
 
         self.spin_for(1.0)
 
