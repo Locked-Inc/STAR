@@ -38,12 +38,12 @@ slam_toolbox:
     use_scan_matching: true
     use_scan_barycenter: true
     # minimum_travel_distance [m] and minimum_travel_heading [rad]
-    # Typical defaults are ~0.5 m / 0.5 rad. STAR runs lower thresholds on Pi 5
-    # to improve low-speed mapping responsiveness while keeping CPU stable.
-    # With minimum_time_interval=0.2 s, scan-matching runs at <= 5 Hz, which is
-    # expected to remain within Pi 5 headroom during normal operation.
-    minimum_travel_distance: 0.2
-    minimum_travel_heading: 0.15
+    # Set to 0.0 to allow pure scan-matching without odom. This is needed when
+    # EKF is disabled (no wheel encoders) — SLAM determines motion purely from
+    # consecutive scan differences. When wheels are connected and EKF is active,
+    # increase to 0.2m / 0.15rad to reduce CPU on Pi 5.
+    minimum_travel_distance: 0.0
+    minimum_travel_heading: 0.0
     scan_buffer_size: 10
     do_loop_closing: true
     loop_search_maximum_distance: 5.0
