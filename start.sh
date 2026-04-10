@@ -320,14 +320,16 @@ fi
 SLAM_LAUNCH="$STAR_DIR/star-ros2/src/star_bringup/launch/slam.launch.py"
 
 if [[ "$HAS_LIDAR" == "true" ]]; then
-    say "Starting SLAM stack (slam.launch.py)..."
-    if [[ "$DEV_MODE" == "true" ]]; then
-        ros2 launch "$SLAM_LAUNCH" use_nav2:=false use_ekf:=false \
-            >"$LOG_DIR/slam.log" 2>&1 &
-    else
-        ros2 launch "$SLAM_LAUNCH" use_nav2:=false \
-            >"$LOG_DIR/slam.log" 2>&1 &
+    say "Starting SLAM stack (slam.launch.py + foxglove + gateway_bridge)..."
+    SLAM_ARGS="use_nav2:=false use_foxglove:=true"
+    if [[ "$BBB_MODE" == "true" ]]; then
+        SLAM_ARGS="$SLAM_ARGS use_bbb:=true"
     fi
+    if [[ "$DEV_MODE" == "true" ]]; then
+        SLAM_ARGS="$SLAM_ARGS use_ekf:=false"
+    fi
+    ros2 launch "$SLAM_LAUNCH" $SLAM_ARGS \
+        >"$LOG_DIR/slam.log" 2>&1 &
     PID_SLAM=$!
     say "Waiting ~8 s for LiDAR init..."
     sleep 8
@@ -349,34 +351,25 @@ else
 fi
 
 # -- Step 6: star_gateway_bridge_main -----------------------------------------
-say "Starting star_gateway_bridge_main..."
-if [[ "$BBB_MODE" == "true" ]]; then
-    ros2 run star_gateway_bridge star_gateway_bridge_main \
-        --ros-args -p use_bbb_telemetry:=true \
-        >"$LOG_DIR/gw_bridge.log" 2>&1 &
+# When SLAM is running, slam.launch.py already includes gateway_bridge and foxglove.
+# Only launch standalone bridge when SLAM is NOT running.
+if [[ "$HAS_LIDAR" == "true" ]]; then
+    say "gateway_bridge + foxglove launched by slam.launch.py (skipping standalone)"
+    PID_GWBRIDGE=""
 else
-    ros2 run star_gateway_bridge star_gateway_bridge_main \
-        >"$LOG_DIR/gw_bridge.log" 2>&1 &
+    say "Starting star_gateway_bridge_main (standalone)..."
+    if [[ "$BBB_MODE" == "true" ]]; then
+        ros2 run star_gateway_bridge star_gateway_bridge_main \
+            --ros-args -p use_bbb_telemetry:=true \
+            >"$LOG_DIR/gw_bridge.log" 2>&1 &
+    else
+        ros2 run star_gateway_bridge star_gateway_bridge_main \
+            >"$LOG_DIR/gw_bridge.log" 2>&1 &
+    fi
+    PID_GWBRIDGE=$!
+    sleep 3
+    say "gateway_bridge running (PID $PID_GWBRIDGE)"
 fi
-PID_GWBRIDGE=$!
-
-# Wait up to 10 s for "connected to Gateway" in log
-say "Waiting for gateway_bridge to connect..."
-BRIDGE_TIMEOUT=10
-for i in $(seq 1 "$BRIDGE_TIMEOUT"); do
-    if grep -q "connected to Gateway\|Connected to gateway\|gRPC" "$LOG_DIR/gw_bridge.log" 2>/dev/null; then
-        say "gateway_bridge connected (PID $PID_GWBRIDGE)"
-        break
-    fi
-    if ! kill -0 "$PID_GWBRIDGE" 2>/dev/null; then
-        warn "gateway_bridge exited -- check $LOG_DIR/gw_bridge.log"
-        break
-    fi
-    sleep 1
-    if [[ $i -eq $BRIDGE_TIMEOUT ]]; then
-        warn "gateway_bridge: no 'connected' message after ${BRIDGE_TIMEOUT}s -- continuing"
-    fi
-done
 
 # -- Step 7: UI dev server -----------------------------------------------------
 if [[ "$OPT_NO_UI" == "false" ]]; then
@@ -447,3 +440,6 @@ echo -e ""
 
 # Remove INT trap -- startup is complete, daemons run in background
 trap - INT
+
+# Disown all background processes so they survive shell exit (prevents SIGHUP)
+disown -a

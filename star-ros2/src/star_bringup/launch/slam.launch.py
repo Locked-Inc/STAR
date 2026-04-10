@@ -170,8 +170,8 @@ def generate_launch_description():
     )
 
     # Foxglove Studio WebSocket bridge -- enables browser-based visualization
-    # at app.foxglove.dev without X11. Bound to localhost (ws://127.0.0.1:8765).
-    # For remote access, use SSH tunnel: ssh -L 8765:localhost:8765 pi@<PI5_IP>
+    # at app.foxglove.dev without X11. Bound to 0.0.0.0 for remote browser access.
+    # Connect from laptop: ws://<PI5_IP>:8765
     # Install: sudo apt install ros-jazzy-foxglove-bridge
     foxglove_bridge = Node(
         package='foxglove_bridge',
@@ -180,7 +180,7 @@ def generate_launch_description():
         output='log',
         parameters=[{
             'port': 8765,
-            'address': '127.0.0.1',
+            'address': '0.0.0.0',
             'send_buffer_limit': 10000000,
             'use_sim_time': False,
         }],
