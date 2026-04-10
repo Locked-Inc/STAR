@@ -21,8 +21,12 @@
 #include "motor_control_task.h"
 #include "hardware_config.h"
 
+#include <math.h>
 #include <robotcontrol.h>
 #include <time.h>
+
+/** ADC read divider: read battery voltage every 10th iteration (10 Hz). */
+enum : uint32_t { k_adc_read_divider = 10U };
 
 /* Motor indices from hardware_config.h: k_bb_motor_idx_fl/fr/rl/rr */
 
@@ -55,7 +59,28 @@ void* bb_motor_control_task(void* arg)
     struct timespec next = {0};
     (void)clock_gettime(CLOCK_MONOTONIC, &next);
 
+    float max_duty = k_bb_duty_fallback_max; /* safe default until ADC reads */
+    uint32_t loop_count = 0U;
+
     while (rc_get_state() != EXITING) {
+        /* Read battery voltage at 10 Hz (every k_adc_read_divider iterations).
+         * Compute voltage-proportional duty clamp to protect 6V motors from
+         * overvoltage on 2S LiPo (up to 8.4V). DRV8838 passes V_batt directly
+         * to motors: V_motor = duty * V_batt. */
+        if ((loop_count % k_adc_read_divider) == 0U) {
+            double vbatt = rc_adc_batt();
+            if (vbatt > 1.0) {
+                max_duty = k_bb_duty_derating
+                         * (k_bb_motor_rated_v / (float)vbatt);
+                if (max_duty > 1.0F) {
+                    max_duty = 1.0F;
+                }
+            } else {
+                max_duty = k_bb_duty_fallback_max;
+            }
+        }
+        loop_count++;
+
         bool estop = false;
         (void)bb_shared_data_get_estop(sd, &estop);
 
@@ -66,9 +91,16 @@ void* bb_motor_control_task(void* arg)
             (void)rc_motor_set(k_bb_motor_rear_left, 0.0);
             (void)rc_motor_set(k_bb_motor_rear_right, 0.0);
         } else {
-            /* Apply motor commands from shared_data */
+            /* Apply motor commands with voltage-based duty clamp */
             bb_motor_cmd_t cmd = {0};
             (void)bb_shared_data_get_motor_cmd(sd, &cmd);
+
+            for (uint8_t i = 0U; i < (uint8_t)k_bb_motor_count; i++) {
+                float d = cmd.duty_percent[i];
+                if (d > max_duty)  { d = max_duty; }
+                if (d < -max_duty) { d = -max_duty; }
+                cmd.duty_percent[i] = d;
+            }
 
             (void)rc_motor_set(k_bb_motor_front_left,
                                (double)cmd.duty_percent[k_bb_motor_idx_fl]);

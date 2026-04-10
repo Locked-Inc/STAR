@@ -198,6 +198,13 @@ int main(int argc, char *argv[])
     /* Init hardware */
     print_header("Hardware Init");
 
+    printf("  ADC: ");
+    if (rc_adc_init() == 0) {
+        printf("OK\n");
+    } else {
+        printf("FAIL (battery monitoring unavailable)\n");
+    }
+
     printf("  Motors: ");
     if (rc_motor_init() == 0) {
         printf("OK\n");

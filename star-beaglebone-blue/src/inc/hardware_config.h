@@ -194,6 +194,37 @@ typedef enum : uint8_t {
  */
 static const float s_bb_duty_percent_scale = 100.0F;
 
+/* ---------------------------------------------------------------------------
+ * Motor voltage protection
+ * ---------------------------------------------------------------------------*/
+
+/**
+ * @brief Motor rated voltage (DFRobot FIT0520: 6V brushed DC gearmotor).
+ *
+ * The DRV8838 H-bridge passes V_battery directly to motors. With a 2S LiPo
+ * (up to 8.4V), 100% duty would deliver 40% overvoltage to 6V motors.
+ * The motor_control_task clamps duty to: 0.95 * (6.0 / V_batt).
+ *
+ * @since Version 1.1.0
+ */
+static const float k_bb_motor_rated_v = 6.0F;
+
+/**
+ * @brief Duty cycle derating factor (5% margin for ADC tolerance).
+ * @since Version 1.1.0
+ */
+static const float k_bb_duty_derating = 0.95F;
+
+/**
+ * @brief Fallback max duty when battery voltage is unknown (USB power).
+ *
+ * Assumes worst-case 8.8V (freshly charged 2S with surface charge).
+ * 0.95 * 6.0 / 8.8 = 0.648, rounded down to 0.65.
+ *
+ * @since Version 1.1.0
+ */
+static const float k_bb_duty_fallback_max = 0.65F;
+
 #ifdef __cplusplus
 }
 #endif
