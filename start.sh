@@ -207,6 +207,15 @@ if [[ "$BBB_MODE" == "true" ]]; then
     if sshpass -p "$BBB_PASS" ssh -o StrictHostKeyChecking=no "$BBB_USER@$BBB_HOST" \
         "pgrep -f star-beaglebone-blue >/dev/null 2>&1"; then
         say "BBB firmware running on $BBB_HOST"
+        # Wait for ttyACM0 to settle after firmware opens /dev/ttyGS0
+        say "Waiting for USB CDC to stabilize..."
+        for _i in $(seq 1 10); do
+            if python3 -c "import serial; s=serial.Serial('/dev/ttyACM0',timeout=0.1); s.close()" 2>/dev/null; then
+                say "USB CDC ready"
+                break
+            fi
+            sleep 1
+        done
     else
         warn "BBB firmware may have failed -- check $BBB_HOST:/tmp/firmware.log"
     fi
