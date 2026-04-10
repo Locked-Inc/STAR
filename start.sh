@@ -129,16 +129,22 @@ else
     fi
 fi
 
-# LiDAR detection
+# LiDAR detection -- stop ModemManager FIRST (it grabs /dev/ttyUSB0 on boot
+# and resets the CP210x USB-UART bridge, disconnecting the RPLiDAR C1).
+say "Stopping ModemManager (interferes with LiDAR)..."
+sudo systemctl stop ModemManager 2>/dev/null || true
+sleep 2  # give ttyUSB0 time to re-enumerate after ModemManager releases it
+
 if [[ "$OPT_NO_LIDAR" == "true" ]]; then
     HAS_LIDAR=false
     warn "--no-lidar flag set: skipping LiDAR/SLAM"
-elif [[ -L /dev/rplidar || -c /dev/rplidar ]]; then
+elif [[ -L /dev/rplidar || -c /dev/rplidar || -c /dev/ttyUSB0 ]]; then
     HAS_LIDAR=true
-    say "LiDAR detected: /dev/rplidar"
+    LIDAR_DEV=$(ls /dev/rplidar /dev/ttyUSB0 2>/dev/null | head -1)
+    say "LiDAR detected: $LIDAR_DEV"
 else
     HAS_LIDAR=false
-    warn "No LiDAR found at /dev/rplidar -- SLAM will be skipped"
+    warn "No LiDAR found at /dev/rplidar or /dev/ttyUSB0 -- SLAM will be skipped"
 fi
 
 # -- Detection banner ----------------------------------------------------------
@@ -267,11 +273,9 @@ say "Waiting for gRPC :50051..."
 wait_port localhost 50051 "star-gateway" 10
 say "star-gateway running (PID $PID_GW)"
 
-# -- Step 3: LiDAR setup (ModemManager + permissions) -------------------------
+# -- Step 3: LiDAR permissions (ModemManager already stopped above) -----------
 if [[ "$HAS_LIDAR" == "true" ]]; then
-    say "Stopping ModemManager (safety, udev rule already blocks probe)..."
-    sudo systemctl stop ModemManager 2>/dev/null || true
-    # chmod not needed: udev rule sets GROUP=dialout MODE=0660
+    sudo chmod a+rw "$LIDAR_DEV" 2>/dev/null || true
 fi
 
 # -- Step 4: star_spi_bridge (skip in BBB mode) --------------------------------
