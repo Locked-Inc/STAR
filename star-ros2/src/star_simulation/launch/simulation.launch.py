@@ -125,7 +125,9 @@ def generate_launch_description():
     )
 
     # Start Gazebo server only (no GUI) for CI/headless testing.
-    # Sensors still render via Xvfb + llvmpipe (set DISPLAY above).
+    # NOTE: Sensor rendering (lidar, sonar) requires OpenGL 3.3+.
+    # On systems without GPU (Pi5, Docker CI), only physics-based tests work.
+    # For full sensor tests, run with headless:=false and a display or Xvfb.
     gazebo_headless = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([
@@ -135,7 +137,7 @@ def generate_launch_description():
         launch_arguments={
             'gz_args': [
                 LaunchConfiguration('world'),
-                ' -r --headless-rendering',
+                ' -r -s',
             ],
             'on_exit_shutdown': 'true',
         }.items(),
