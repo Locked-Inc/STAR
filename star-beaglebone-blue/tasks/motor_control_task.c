@@ -34,11 +34,18 @@ enum : uint64_t { k_adc_interval_ns = 100000000ULL };
 /**
  * @brief Compute the voltage-proportional max duty cycle.
  *
- * Reads rc_adc_batt() at most once per k_adc_interval_ns. Returns a cached
- * value between calls. Protects 6V motors from overvoltage on 2S LiPo by
- * clamping: max_duty = 0.95 * (6.0 / V_batt).
+ * Reads rc_adc_batt() at most once per k_adc_interval_ns using
+ * CLOCK_MONOTONIC for timing (immune to wall-clock adjustments).
+ * Returns a cached value between calls. First call always reads ADC
+ * (s_last_read initializes to zero, so elapsed is always large).
+ *
+ * Protects 6V motors from overvoltage on 2S LiPo by clamping:
+ * max_duty = 0.95 * (6.0 / V_batt).
  *
  * @return float Max allowable abs(duty), in [0, 1].
+ *
+ * @warning NOT thread-safe. Must be called from the motor control
+ *          thread only (single-caller assumption).
  * @since Version 1.1.0
  */
 static float internal_get_max_duty(void)
@@ -49,11 +56,14 @@ static float internal_get_max_duty(void)
     struct timespec now = {0};
     (void)clock_gettime(CLOCK_MONOTONIC, &now);
 
-    uint64_t elapsed_ns = (uint64_t)(now.tv_sec - s_last_read.tv_sec)
-                        * k_bb_ns_per_sec
-                        + (uint64_t)(now.tv_nsec - s_last_read.tv_nsec);
+    /* Signed arithmetic for correct elapsed time when tv_nsec wraps.
+     * Example: now={10, 0.1s} last={9, 0.9s} -> elapsed = 0.2s.
+     * Using unsigned would underflow (0.1 - 0.9 wraps to ~18e18). */
+    int64_t elapsed_ns = (int64_t)(now.tv_sec - s_last_read.tv_sec)
+                       * (int64_t)k_bb_ns_per_sec
+                       + (int64_t)(now.tv_nsec - s_last_read.tv_nsec);
 
-    if (elapsed_ns >= k_adc_interval_ns) {
+    if (elapsed_ns >= (int64_t)k_adc_interval_ns) {
         s_last_read = now;
 
         double vbatt = rc_adc_batt();
