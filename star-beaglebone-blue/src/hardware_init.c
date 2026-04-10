@@ -105,8 +105,8 @@ bb_err_t bb_hardware_deinit(void)
 {
     (void)rc_motor_set(k_bb_motor_all, 0.0);
     rc_mpu_power_off();
-    rc_adc_cleanup();
-    rc_motor_cleanup();
-    rc_encoder_eqep_cleanup();
+    (void)rc_adc_cleanup();
+    (void)rc_motor_cleanup();
+    (void)rc_encoder_eqep_cleanup();
     return k_bb_err_ok;
 }

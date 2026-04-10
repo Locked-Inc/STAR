@@ -50,7 +50,7 @@ enum : uint64_t { k_adc_interval_ns = 100000000ULL };
  */
 static float internal_get_max_duty(void)
 {
-    static float s_max_duty = 0.65F; /* k_bb_duty_fallback_max */
+    static float s_max_duty = 0.65F; /* s_bb_duty_fallback_max */
     static struct timespec s_last_read = {0};
 
     struct timespec now = {0};
@@ -67,14 +67,14 @@ static float internal_get_max_duty(void)
         s_last_read = now;
 
         double vbatt = rc_adc_batt();
-        if (vbatt > 1.0) {
-            s_max_duty = k_bb_duty_derating
-                       * (k_bb_motor_rated_v / (float)vbatt);
+        if (vbatt > (double)s_bb_batt_deadzone_v) {
+            s_max_duty = s_bb_duty_derating
+                       * (s_bb_motor_rated_v / (float)vbatt);
             if (s_max_duty > 1.0F) {
                 s_max_duty = 1.0F;
             }
         } else {
-            s_max_duty = k_bb_duty_fallback_max;
+            s_max_duty = s_bb_duty_fallback_max;
         }
     }
 

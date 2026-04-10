@@ -207,13 +207,13 @@ static const float s_bb_duty_percent_scale = 100.0F;
  *
  * @since Version 1.1.0
  */
-static const float k_bb_motor_rated_v = 6.0F;
+static const float s_bb_motor_rated_v = 6.0F;
 
 /**
  * @brief Duty cycle derating factor (5% margin for ADC tolerance).
  * @since Version 1.1.0
  */
-static const float k_bb_duty_derating = 0.95F;
+static const float s_bb_duty_derating = 0.95F;
 
 /**
  * @brief Fallback max duty when battery voltage is unknown (USB power).
@@ -223,7 +223,18 @@ static const float k_bb_duty_derating = 0.95F;
  *
  * @since Version 1.1.0
  */
-static const float k_bb_duty_fallback_max = 0.65F;
+static const float s_bb_duty_fallback_max = 0.65F;
+
+/**
+ * @brief ADC battery voltage deadzone threshold (volts).
+ *
+ * librobotcontrol's rc_adc_batt() returns 0.0 when the raw reading is
+ * below 1.0V (disconnected battery or USB-only power). We use the same
+ * threshold to decide whether battery monitoring is available.
+ *
+ * @since Version 1.1.0
+ */
+static const float s_bb_batt_deadzone_v = 1.0F;
 
 #ifdef __cplusplus
 }
