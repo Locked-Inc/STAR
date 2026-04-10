@@ -822,7 +822,14 @@ function MainScreen({
                             />
                           );
                         })}
-                        <MetricTile label="Odometry" tone="accent" value={`${formatNumber(odometry?.xM ?? 0, 2)} m`} detail={`Heading ${formatHeading(odometry?.thetaRad)}`} />
+                        <div className="odometry-metric">
+                          <MetricTile
+                            label="Odometry"
+                            tone="accent"
+                            value={`${formatNumber(odometry?.xM ?? 0, 2)} m`}
+                            detail={`Heading ${formatHeading(odometry?.thetaRad)}`}
+                          />
+                        </div>
                       </div>
                     </div>
                   </section>

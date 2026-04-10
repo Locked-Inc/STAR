@@ -579,6 +579,15 @@ a {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.odometry-metric {
+  display: flex;
+  min-width: 0;
+}
+
+.odometry-metric .metric-tile {
+  width: 100%;
+}
+
 .metrics-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -1160,6 +1169,19 @@ a {
   .metrics-grid--three,
   .trace-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1181px) {
+  .sensor-metrics--five .odometry-metric {
+    margin-left: 4px;
+    padding-left: 10px;
+    border-left: 1px solid rgba(124, 152, 184, 0.18);
+  }
+
+  .sensor-metrics--five .odometry-metric .metric-tile {
+    padding-left: 14px;
+    padding-right: 12px;
   }
 }
 
