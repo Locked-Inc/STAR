@@ -324,6 +324,11 @@ if [[ "$HAS_LIDAR" == "true" ]]; then
     SLAM_ARGS="use_nav2:=false use_foxglove:=true"
     if [[ "$BBB_MODE" == "true" ]]; then
         SLAM_ARGS="$SLAM_ARGS use_bbb:=true"
+        # Disable EKF for now -- BBB has no wheel encoders providing velocity,
+        # so EKF odom stays at origin and SLAM can't match scans.
+        # Pure scan-matching works for hand-carry testing.
+        # Re-enable when wheels are connected.
+        SLAM_ARGS="$SLAM_ARGS use_ekf:=false"
     fi
     if [[ "$DEV_MODE" == "true" ]]; then
         SLAM_ARGS="$SLAM_ARGS use_ekf:=false"
