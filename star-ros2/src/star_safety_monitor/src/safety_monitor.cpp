@@ -41,6 +41,9 @@ SafetyMonitor::on_configure(const rclcpp_lifecycle::State & previous_state)
     declare_parameter("stall_detection_threshold", 0.05);
     declare_parameter("stall_samples_required", 5);
     declare_parameter("cmd_vel_timeout_ms", 500);
+    declare_parameter("obstacle_estop_distance", 0.10);
+    declare_parameter("obstacle_warn_distance", 0.30);
+    declare_parameter("obstacle_clear_count_required", 10);
 
     heartbeat_timeout_ms_ = get_parameter("heartbeat_timeout_ms").as_int();
     max_linear_velocity_ = get_parameter("max_linear_velocity").as_double();
@@ -51,6 +54,9 @@ SafetyMonitor::on_configure(const rclcpp_lifecycle::State & previous_state)
     stall_detection_threshold_ = get_parameter("stall_detection_threshold").as_double();
     stall_samples_required_ = get_parameter("stall_samples_required").as_int();
     cmd_vel_timeout_ms_ = get_parameter("cmd_vel_timeout_ms").as_int();
+    obstacle_estop_distance_ = get_parameter("obstacle_estop_distance").as_double();
+    obstacle_warn_distance_ = get_parameter("obstacle_warn_distance").as_double();
+    obstacle_clear_count_required_ = get_parameter("obstacle_clear_count_required").as_int();
 
     RCLCPP_INFO(get_logger(), "Configuration loaded:");
     RCLCPP_INFO(get_logger(), "  Heartbeat timeout: %d ms", heartbeat_timeout_ms_);
@@ -74,6 +80,21 @@ SafetyMonitor::on_configure(const rclcpp_lifecycle::State & previous_state)
     cmd_vel_sub_ = create_subscription<geometry_msgs::msg::Twist>(
       "/cmd_vel", 10,
       std::bind(&SafetyMonitor::cmd_vel_callback, this, std::placeholders::_1));
+
+    // Subscribe to ultrasonic sonar Range topics
+    for (size_t i = 0; i < NUM_SONARS; ++i) {
+      sonar_subs_[i] = create_subscription<sensor_msgs::msg::Range>(
+        std::string(SONAR_TOPICS[i]), 10,
+        [this, i](const sensor_msgs::msg::Range::SharedPtr msg) {
+          sonar_callback(msg, i);
+        });
+      sonar_ranges_[i] = std::numeric_limits<double>::infinity();
+    }
+
+    RCLCPP_INFO(get_logger(), "  Obstacle E-stop distance: %.2f m",
+      obstacle_estop_distance_);
+    RCLCPP_INFO(get_logger(), "  Obstacle warn distance: %.2f m",
+      obstacle_warn_distance_);
 
     // Initialize state
     last_diagnostics_time_ = std::chrono::system_clock::now();
@@ -107,6 +128,12 @@ SafetyMonitor::on_activate(const rclcpp_lifecycle::State & previous_state)
     diagnostics_pub_->on_activate();
     emergency_stop_pub_->on_activate();
 
+    // Create bond to nav2_lifecycle_manager (heartbeat keepalive)
+    bond_ = std::make_shared<bond::Bond>("bond", get_name(), shared_from_this());
+    bond_->setHeartbeatPeriod(0.25);
+    bond_->setHeartbeatTimeout(4.0);
+    bond_->start();
+
     // Create monitoring timer (10 Hz by default)
     auto timer_period = std::chrono::milliseconds(
       static_cast<int>(1000.0 / publish_rate_));
@@ -129,6 +156,9 @@ SafetyMonitor::on_deactivate(const rclcpp_lifecycle::State & previous_state)
   RCLCPP_INFO(get_logger(), "Deactivating SafetyMonitor");
 
   try {
+    // Destroy bond before deactivating
+    bond_.reset();
+
     // Cancel timer
     if (monitoring_timer_) {
       monitoring_timer_->cancel();
@@ -154,12 +184,16 @@ SafetyMonitor::on_cleanup(const rclcpp_lifecycle::State & previous_state)
   RCLCPP_INFO(get_logger(), "Cleaning up SafetyMonitor");
 
   try {
-    // Reset publishers and subscribers
+    // Reset bond, publishers and subscribers
+    bond_.reset();
     diagnostics_pub_.reset();
     emergency_stop_pub_.reset();
     odom_sub_.reset();
     diag_sub_.reset();
     cmd_vel_sub_.reset();
+    for (auto & sub : sonar_subs_) {
+      sub.reset();
+    }
 
     // Clear state
     heartbeat_times_.clear();
@@ -220,12 +254,21 @@ void SafetyMonitor::cmd_vel_callback(
   last_cmd_vel_time_ = std::chrono::system_clock::now();
 }
 
+void SafetyMonitor::sonar_callback(
+  const sensor_msgs::msg::Range::SharedPtr msg, size_t sonar_index)
+{
+  if (sonar_index < NUM_SONARS) {
+    sonar_ranges_[sonar_index] = static_cast<double>(msg->range);
+  }
+}
+
 void SafetyMonitor::monitoring_timer_callback()
 {
   // Perform safety checks
   check_heartbeat_health();
   check_velocity_limits();
   check_motor_stall();
+  check_obstacle_proximity();
   check_diagnostic_health();
   update_overall_state();
   publish_diagnostics();
@@ -318,6 +361,50 @@ void SafetyMonitor::check_motor_stall()
   }
 }
 
+void SafetyMonitor::check_obstacle_proximity()
+{
+  obstacle_too_close_ = false;
+
+  for (size_t i = 0; i < NUM_SONARS; ++i) {
+    double range = sonar_ranges_[i];
+
+    // Skip infinite/NaN readings (no obstacle in range)
+    if (!std::isfinite(range)) {
+      continue;
+    }
+
+    if (range < obstacle_estop_distance_) {
+      RCLCPP_WARN(get_logger(),
+        "Obstacle E-STOP: %s sonar reads %.3f m (threshold: %.2f m)",
+        SONAR_NAMES[i], range, obstacle_estop_distance_);
+      obstacle_too_close_ = true;
+      if (enable_auto_estop_) {
+        emergency_stop_active_ = true;
+        estop_trigger_time_ = std::chrono::system_clock::now();
+      }
+    } else if (range < obstacle_warn_distance_) {
+      RCLCPP_WARN(get_logger(),
+        "Obstacle warning: %s sonar reads %.3f m (threshold: %.2f m)",
+        SONAR_NAMES[i], range, obstacle_warn_distance_);
+    }
+  }
+
+  // Obstacle recovery: release e-stop after consecutive clear readings
+  // (matches Nav2 collision_monitor release_consecutive_points pattern)
+  if (!obstacle_too_close_ && emergency_stop_active_) {
+    obstacle_clear_count_++;
+    if (obstacle_clear_count_ >= obstacle_clear_count_required_) {
+      RCLCPP_INFO(get_logger(),
+        "Obstacle cleared for %d consecutive checks, releasing E-stop",
+        obstacle_clear_count_required_);
+      emergency_stop_active_ = false;
+      obstacle_clear_count_ = 0;
+    }
+  } else if (obstacle_too_close_) {
+    obstacle_clear_count_ = 0;
+  }
+}
+
 void SafetyMonitor::check_diagnostic_health()
 {
   // Additional diagnostic checks can be added here
@@ -329,7 +416,7 @@ void SafetyMonitor::update_overall_state()
   // Determine overall severity level
   overall_severity_ = SeverityLevel::OK;
 
-  if (heartbeat_timeout_triggered_) {
+  if (heartbeat_timeout_triggered_ || obstacle_too_close_) {
     overall_severity_ = SeverityLevel::ERROR;
   } else if (motor_stall_detected_) {
     overall_severity_ = SeverityLevel::WARN;
@@ -388,9 +475,26 @@ void SafetyMonitor::publish_diagnostics()
   kv.value = heartbeat_timeout_triggered_ ? "true" : "false";
   system_status.values.push_back(kv);
 
+  kv.key = "Obstacle Too Close";
+  kv.value = obstacle_too_close_ ? "true" : "false";
+  system_status.values.push_back(kv);
+
   kv.key = "Emergency Stop Active";
   kv.value = emergency_stop_active_ ? "true" : "false";
   system_status.values.push_back(kv);
+
+  // Sonar readings
+  for (size_t i = 0; i < NUM_SONARS; ++i) {
+    kv.key = std::string("Sonar ") + SONAR_NAMES[i] + " (m)";
+    if (std::isfinite(sonar_ranges_[i])) {
+      std::ostringstream oss;
+      oss << std::fixed << std::setprecision(3) << sonar_ranges_[i];
+      kv.value = oss.str();
+    } else {
+      kv.value = "inf";
+    }
+    system_status.values.push_back(kv);
+  }
 
   // Add heartbeat information for each tracked node
   diagnostic_msgs::msg::DiagnosticStatus heartbeat_status;

@@ -14,6 +14,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
+find_package(bondcpp REQUIRED)
 
 # Safety monitor node
 add_executable(safety_monitor_node
@@ -34,6 +35,7 @@ ament_target_dependencies(safety_monitor_node
   geometry_msgs
   nav_msgs
   diagnostic_msgs
+  bondcpp
 )
 
 # Install targets
@@ -78,6 +80,7 @@ if(BUILD_TESTING)
     geometry_msgs
     nav_msgs
     diagnostic_msgs
+    bondcpp
   )
 
   # Unit tests
@@ -99,6 +102,7 @@ if(BUILD_TESTING)
     geometry_msgs
     nav_msgs
     diagnostic_msgs
+    bondcpp
   )
 endif()
 

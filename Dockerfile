@@ -144,6 +144,23 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libusb-1.0-0-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Gazebo Harmonic simulation stack for star_simulation package
+# - ros-jazzy-ros-gz: Meta-package bridging ROS2 Jazzy and Gazebo Harmonic
+# - ros-jazzy-ros-gz-sim: Launch Gazebo from ROS2 launch files
+# - ros-jazzy-ros-gz-bridge: Bidirectional topic bridge (Gazebo <-> ROS2)
+# Install SLAM, sensor fusion, and navigation (used by sim and real robot)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y \
+    ros-jazzy-ros-gz \
+    ros-jazzy-ros-gz-sim \
+    ros-jazzy-ros-gz-bridge \
+    ros-jazzy-slam-toolbox \
+    ros-jazzy-robot-localization \
+    ros-jazzy-navigation2 \
+    ros-jazzy-nav2-bringup \
+    ros-jazzy-bondcpp
+
 # Install CodeRabbit CLI for code review
 RUN curl -fsSL https://cli.coderabbit.ai/install.sh | sh
 

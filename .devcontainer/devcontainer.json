@@ -12,7 +12,8 @@
   "runArgs": [
     "--platform=linux/amd64",
     "--privileged",
-    "--device=/dev/bus/usb"
+    "--device=/dev/bus/usb",
+    "--shm-size=512m"
   ],
   "features": {
     "ghcr.io/devcontainers/features/git-lfs:1": {},
