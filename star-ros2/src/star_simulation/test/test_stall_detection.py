@@ -1,27 +1,33 @@
 #!/usr/bin/env python3
+# Copyright 2026 Locked Inc.
+#
+# Use of this source code is governed by an MIT-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
 """Test: Safety monitor detects motor stall and triggers e-stop."""
 
-import time
 import subprocess
+import time
 import unittest
 
+from geometry_msgs.msg import Twist
 import launch
-import launch_testing
-import launch_testing.actions
 from launch.actions import (
-    IncludeLaunchDescription, TimerAction, ExecuteProcess,
+    ExecuteProcess, IncludeLaunchDescription, TimerAction,
 )
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.substitutions import FindPackageShare
 from launch.substitutions import PathJoinSubstitution
-
+from launch_ros.substitutions import FindPackageShare
+import launch_testing
+import launch_testing.actions
+from launch_testing.ready_to_test_action_timeout import ready_to_test_action_timeout
+from nav_msgs.msg import Odometry
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
-from nav_msgs.msg import Odometry
 from std_msgs.msg import Bool
 
 
+@ready_to_test_action_timeout(60)
 def generate_test_description():
     """Launch sim + safety monitor for stall detection test."""
     sim_launch = IncludeLaunchDescription(
@@ -109,17 +115,20 @@ class TestStallDetection(unittest.TestCase):
     def test_stall_triggers_estop(self):
         """Drive robot into a wall, verify stall detected -> e-stop."""
         # Spawn a thick wall directly in front of the robot
+        wall_sdf = (
+            '<model name="test_wall"><static>true</static>'
+            '<pose>0.25 0 0.25 0 0 0</pose>'
+            '<link name="link"><collision name="col">'
+            '<geometry><box><size>0.5 2.0 0.5</size></box></geometry>'
+            '</collision></link></model>'
+        )
+        sdf_request = "sdf: '" + wall_sdf + "'"
         subprocess.run([
             'gz', 'service', '-s', '/world/indoor_slam_test/create',
             '--reqtype', 'gz.msgs.EntityFactory',
             '--reptype', 'gz.msgs.Boolean',
             '--timeout', '5000',
-            '--req',
-            "sdf: '<model name=\"test_wall\"><static>true</static>"
-            "<pose>0.25 0 0.25 0 0 0</pose>"
-            "<link name=\"link\"><collision name=\"col\">"
-            "<geometry><box><size>0.5 2.0 0.5</size></box></geometry>"
-            "</collision></link></model>'",
+            '--req', sdf_request,
         ], capture_output=True, timeout=10)
 
         self.spin_for(1.0)
@@ -138,7 +147,7 @@ class TestStallDetection(unittest.TestCase):
                 break
 
         self.assertTrue(self.estop_received,
-                        "Safety monitor should have detected stall and fired e-stop")
+                        'Safety monitor should have detected stall and fired e-stop')
 
 
 @launch_testing.post_shutdown_test()

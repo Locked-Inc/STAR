@@ -1,25 +1,31 @@
 #!/usr/bin/env python3
+# Copyright 2026 Locked Inc.
+#
+# Use of this source code is governed by an MIT-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
 """Test: Measure e-stop latency from sonar trigger to emergency_stop publish."""
 
 import time
 import unittest
 
 import launch
-import launch_testing
-import launch_testing.actions
 from launch.actions import (
-    IncludeLaunchDescription, TimerAction, ExecuteProcess,
+    ExecuteProcess, IncludeLaunchDescription, TimerAction,
 )
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.substitutions import FindPackageShare
 from launch.substitutions import PathJoinSubstitution
-
+from launch_ros.substitutions import FindPackageShare
+import launch_testing
+import launch_testing.actions
+from launch_testing.ready_to_test_action_timeout import ready_to_test_action_timeout
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Range
 from std_msgs.msg import Bool
 
 
+@ready_to_test_action_timeout(60)
 def generate_test_description():
     sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -112,13 +118,13 @@ class TestObstacleEstopLatency(unittest.TestCase):
                 break
 
         self.assertIsNotNone(self.estop_time,
-                             "E-stop should have been triggered")
+                             'E-stop should have been triggered')
 
         latency_ms = (self.estop_time - publish_time) * 1000
         self.assertLess(latency_ms, 500.0,
-                        f"E-stop latency {latency_ms:.1f}ms exceeds 500ms limit")
+                        f'E-stop latency {latency_ms:.1f}ms exceeds 500ms limit')
 
-        print(f"\n  E-stop latency: {latency_ms:.1f} ms\n")
+        print(f'\n  E-stop latency: {latency_ms:.1f} ms\n')
 
 
 @launch_testing.post_shutdown_test()

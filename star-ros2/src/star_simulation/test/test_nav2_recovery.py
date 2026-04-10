@@ -1,27 +1,32 @@
 #!/usr/bin/env python3
+# Copyright 2026 Locked Inc.
+#
+# Use of this source code is governed by an MIT-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
 """Test: Nav2 recovery behaviors work when robot is stuck."""
 
+import math
 import time
 import unittest
 
+from geometry_msgs.msg import PoseStamped
 import launch
-import launch_testing
-import launch_testing.actions
 from launch.actions import IncludeLaunchDescription, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.substitutions import FindPackageShare
 from launch.substitutions import PathJoinSubstitution
-
-import rclpy
-from rclpy.node import Node
-from rclpy.action import ActionClient
-from geometry_msgs.msg import PoseStamped
+from launch_ros.substitutions import FindPackageShare
+import launch_testing
+import launch_testing.actions
+from launch_testing.ready_to_test_action_timeout import ready_to_test_action_timeout
 from nav2_msgs.action import NavigateToPose
 from nav_msgs.msg import Odometry
+import rclpy
+from rclpy.action import ActionClient
+from rclpy.node import Node
 
-import math
 
-
+@ready_to_test_action_timeout(90)
 def generate_test_description():
     sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -78,11 +83,11 @@ class TestNav2Recovery(unittest.TestCase):
         # Wait for Nav2 to be ready
         self.assertTrue(
             self.nav_client.wait_for_server(timeout_sec=30.0),
-            "Nav2 action server should be available")
+            'Nav2 action server should be available')
 
         # Wait for initial odom
         self.spin_for(2.0)
-        self.assertIsNotNone(self.last_odom, "Should have odom")
+        self.assertIsNotNone(self.last_odom, 'Should have odom')
 
         start_x = self.last_odom.pose.pose.position.x
         start_y = self.last_odom.pose.pose.position.y
@@ -103,11 +108,11 @@ class TestNav2Recovery(unittest.TestCase):
         while not future.done() and time.time() < timeout:
             rclpy.spin_once(self.node, timeout_sec=0.1)
 
-        self.assertTrue(future.done(), "Goal should be accepted or rejected")
+        self.assertTrue(future.done(), 'Goal should be accepted or rejected')
         goal_handle = future.result()
 
         if goal_handle is None or not goal_handle.accepted:
-            self.skipTest("Nav2 rejected goal (may need more startup time)")
+            self.skipTest('Nav2 rejected goal (may need more startup time)')
             return
 
         # Wait for result with timeout
@@ -123,11 +128,11 @@ class TestNav2Recovery(unittest.TestCase):
             (end_x - start_x) ** 2 + (end_y - start_y) ** 2)
 
         self.assertGreater(distance_moved, 0.3,
-                           f"Robot should have moved >0.3m, moved {distance_moved:.2f}m")
+                           f'Robot should have moved >0.3m, moved {distance_moved:.2f}m')
 
-        print(f"\n  Robot moved: {distance_moved:.2f} m")
-        print(f"  Start: ({start_x:.2f}, {start_y:.2f})")
-        print(f"  End: ({end_x:.2f}, {end_y:.2f})\n")
+        print(f'\n  Robot moved: {distance_moved:.2f} m')
+        print(f'  Start: ({start_x:.2f}, {start_y:.2f})')
+        print(f'  End: ({end_x:.2f}, {end_y:.2f})\n')
 
 
 @launch_testing.post_shutdown_test()

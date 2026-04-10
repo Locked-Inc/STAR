@@ -26,7 +26,7 @@
   gz_type_name: "gz.msgs.Odometry"
   direction: GZ_TO_ROS
 
-# 2D lidar scan from Gazebo GPU lidar -> slam_toolbox input
+# 2D lidar scan from Gazebo lidar -> slam_toolbox input
 - ros_topic_name: "/scan"
   gz_topic_name: "/scan"
   ros_type_name: "sensor_msgs/msg/LaserScan"

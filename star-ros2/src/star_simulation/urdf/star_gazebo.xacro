@@ -2,7 +2,7 @@
 <!--
   Gazebo Harmonic plugin declarations for STAR simulation.
   Included by star_sim.urdf.xacro. Declares the DiffDrive controller,
-  joint state publisher, IMU sensor, and GPU lidar sensor.
+  joint state publisher, IMU sensor, and lidar sensor.
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
@@ -89,11 +89,12 @@
   </gazebo>
 
   <!-- ================================================================== -->
-  <!-- GPU Lidar on laser_frame (simulates RPLiDAR C1)                     -->
+  <!-- Lidar on laser_frame (simulates RPLiDAR C1)                         -->
   <!-- 360 deg, 640 samples, 12 m range, 10 Hz                            -->
+  <!-- Uses CPU ray sensor (not gpu_lidar) for Pi5/CI compatibility.       -->
   <!-- ================================================================== -->
   <gazebo reference="laser_frame">
-    <sensor name="gpu_lidar" type="gpu_lidar">
+    <sensor name="lidar" type="lidar">
       <always_on>true</always_on>
       <update_rate>10</update_rate>
       <topic>scan</topic>
@@ -128,7 +129,7 @@
   <!-- ================================================================== -->
   <xacro:macro name="sonar_sensor" params="name link_name">
     <gazebo reference="${link_name}">
-      <sensor name="${name}_sonar" type="gpu_lidar">
+      <sensor name="${name}_sonar" type="lidar">
         <always_on>true</always_on>
         <update_rate>10</update_rate>
         <topic>star/obstacle/${name}</topic>

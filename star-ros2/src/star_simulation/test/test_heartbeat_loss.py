@@ -1,25 +1,31 @@
 #!/usr/bin/env python3
+# Copyright 2026 Locked Inc.
+#
+# Use of this source code is governed by an MIT-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
 """Test: Heartbeat loss triggers e-stop and holds until recovery."""
 
 import time
 import unittest
 
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 import launch
-import launch_testing
-import launch_testing.actions
 from launch.actions import (
-    IncludeLaunchDescription, TimerAction, ExecuteProcess,
+    ExecuteProcess, IncludeLaunchDescription, TimerAction,
 )
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.substitutions import FindPackageShare
 from launch.substitutions import PathJoinSubstitution
-
+from launch_ros.substitutions import FindPackageShare
+import launch_testing
+import launch_testing.actions
+from launch_testing.ready_to_test_action_timeout import ready_to_test_action_timeout
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Bool
-from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 
 
+@ready_to_test_action_timeout(60)
 def generate_test_description():
     sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -113,19 +119,19 @@ class TestHeartbeatLoss(unittest.TestCase):
             self.spin_for(0.1)
 
         self.assertFalse(self.estop_active,
-                         "E-stop should NOT be active while heartbeats flowing")
+                         'E-stop should NOT be active while heartbeats flowing')
 
         # Phase 2: Stop heartbeats, wait for timeout (500ms + margin)
         self.spin_for(1.5)
 
         self.assertTrue(self.estop_active,
-                        "E-stop should be active after heartbeat timeout")
+                        'E-stop should be active after heartbeat timeout')
 
     def test_heartbeat_recovery(self):
         """After heartbeat loss, resume heartbeats and verify recovery."""
         # Trigger heartbeat timeout first
         self.spin_for(1.5)
-        self.assertTrue(self.estop_active, "E-stop should be active")
+        self.assertTrue(self.estop_active, 'E-stop should be active')
 
         # Resume heartbeats and wait for recovery delay (2.0s)
         end = time.time() + 4.0
@@ -135,7 +141,7 @@ class TestHeartbeatLoss(unittest.TestCase):
 
         # After recovery delay, e-stop should clear
         self.assertFalse(self.estop_active,
-                         "E-stop should recover after heartbeats resume + delay")
+                         'E-stop should recover after heartbeats resume + delay')
 
 
 @launch_testing.post_shutdown_test()

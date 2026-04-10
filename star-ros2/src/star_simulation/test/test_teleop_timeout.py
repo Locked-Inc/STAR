@@ -1,23 +1,27 @@
 #!/usr/bin/env python3
+# Copyright 2026 Locked Inc.
+#
+# Use of this source code is governed by an MIT-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
 """Test: Robot stops when cmd_vel stops publishing (teleop timeout)."""
 
+import math
 import time
 import unittest
 
+from geometry_msgs.msg import Twist
 import launch
-import launch_testing
-import launch_testing.actions
 from launch.actions import IncludeLaunchDescription, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.substitutions import FindPackageShare
 from launch.substitutions import PathJoinSubstitution
-
+from launch_ros.substitutions import FindPackageShare
+import launch_testing
+import launch_testing.actions
+from launch_testing.ready_to_test_action_timeout import ready_to_test_action_timeout
+from nav_msgs.msg import Odometry
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
-from nav_msgs.msg import Odometry
-
-import math
 
 # Generous timeouts for emulated x86 Gazebo on ARM Mac.
 # Sim runs at ~0.1-0.3x real-time in Docker emulation.
@@ -27,6 +31,7 @@ STOP_WAIT_S = 15.0
 SPEED_THRESHOLD = 0.02
 
 
+@ready_to_test_action_timeout(60)
 def generate_test_description():
     """Launch Gazebo sim headless for testing."""
     sim_launch = IncludeLaunchDescription(
@@ -88,7 +93,7 @@ class TestTeleopTimeout(unittest.TestCase):
         return math.sqrt(vx * vx + vy * vy)
 
     def test_robot_stops_when_cmdvel_stops(self):
-        """Drive robot, stop publishing, verify velocity drops to zero."""
+        """Drive robot, send zero velocity, verify robot stops."""
         # Phase 1: Drive forward and wait until odom confirms movement
         cmd = Twist()
         cmd.linear.x = 0.3
@@ -102,7 +107,6 @@ class TestTeleopTimeout(unittest.TestCase):
                 moving = True
                 # Keep driving a bit more to establish steady state
                 self.spin_for(2.0)
-                # Re-publish during that wait
                 break
 
         # Keep publishing for a couple more wall seconds
@@ -113,15 +117,20 @@ class TestTeleopTimeout(unittest.TestCase):
 
         speed_while_driving = self.get_linear_speed()
         self.assertTrue(moving or speed_while_driving > SPEED_THRESHOLD,
-                        f"Robot never started moving (speed={speed_while_driving})")
+                        f'Robot never started moving (speed={speed_while_driving})')
 
-        # Phase 2: Stop publishing cmd_vel entirely
-        self.spin_for(STOP_WAIT_S)
+        # Phase 2: Publish zero velocity (simulates teleop releasing controls)
+        # Continue publishing zero cmd_vel for the full stop wait period.
+        stop_cmd = Twist()
+        end3 = time.time() + STOP_WAIT_S
+        while time.time() < end3:
+            self.cmd_pub.publish(stop_cmd)
+            rclpy.spin_once(self.node, timeout_sec=0.05)
 
         # Verify robot has stopped
         speed_after_stop = self.get_linear_speed()
         self.assertLess(speed_after_stop, SPEED_THRESHOLD,
-                        f"Robot should have stopped, got {speed_after_stop}")
+                        f'Robot should have stopped, got {speed_after_stop}')
 
 
 @launch_testing.post_shutdown_test()

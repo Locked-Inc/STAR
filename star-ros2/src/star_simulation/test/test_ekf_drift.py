@@ -1,24 +1,30 @@
 #!/usr/bin/env python3
+# Copyright 2026 Locked Inc.
+#
+# Use of this source code is governed by an MIT-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
 """Test: Measure EKF drift relative to Gazebo ground truth."""
 
 import math
 import time
 import unittest
 
+from geometry_msgs.msg import Twist
 import launch
-import launch_testing
-import launch_testing.actions
 from launch.actions import IncludeLaunchDescription, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.substitutions import FindPackageShare
 from launch.substitutions import PathJoinSubstitution
-
+from launch_ros.substitutions import FindPackageShare
+import launch_testing
+import launch_testing.actions
+from launch_testing.ready_to_test_action_timeout import ready_to_test_action_timeout
+from nav_msgs.msg import Odometry
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
-from nav_msgs.msg import Odometry
 
 
+@ready_to_test_action_timeout(60)
 def generate_test_description():
     sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -100,17 +106,17 @@ class TestEkfDrift(unittest.TestCase):
         self.drive(0.0, 0.0, 2.0)
 
         self.assertGreater(len(self.drift_samples), 10,
-                           "Should have collected drift samples")
+                           'Should have collected drift samples')
 
         max_drift = max(self.drift_samples)
         avg_drift = sum(self.drift_samples) / len(self.drift_samples)
 
         self.assertLess(max_drift, 0.5,
-                        f"Max EKF drift {max_drift:.3f}m exceeds 0.5m limit")
+                        f'Max EKF drift {max_drift:.3f}m exceeds 0.5m limit')
 
-        print(f"\n  Drift samples: {len(self.drift_samples)}")
-        print(f"  Average drift: {avg_drift:.4f} m")
-        print(f"  Max drift: {max_drift:.4f} m\n")
+        print(f'\n  Drift samples: {len(self.drift_samples)}')
+        print(f'  Average drift: {avg_drift:.4f} m')
+        print(f'  Max drift: {max_drift:.4f} m\n')
 
 
 @launch_testing.post_shutdown_test()
