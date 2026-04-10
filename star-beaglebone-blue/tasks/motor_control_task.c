@@ -24,6 +24,63 @@
 #include <robotcontrol.h>
 #include <time.h>
 
+/* ---------------------------------------------------------------------------
+ * Battery voltage sampling (timer-based, 10 Hz)
+ * ---------------------------------------------------------------------------*/
+
+/** Minimum interval between ADC reads in nanoseconds (100 ms = 10 Hz). */
+enum : uint64_t { k_adc_interval_ns = 100000000ULL };
+
+/**
+ * @brief Compute the voltage-proportional max duty cycle.
+ *
+ * Reads rc_adc_batt() at most once per k_adc_interval_ns using
+ * CLOCK_MONOTONIC for timing (immune to wall-clock adjustments).
+ * Returns a cached value between calls. First call always reads ADC
+ * (s_last_read initializes to zero, so elapsed is always large).
+ *
+ * Protects 6V motors from overvoltage on 2S LiPo by clamping:
+ * max_duty = 0.95 * (6.0 / V_batt).
+ *
+ * @return float Max allowable abs(duty), in [0, 1].
+ *
+ * @warning NOT thread-safe. Must be called from the motor control
+ *          thread only (single-caller assumption).
+ * @since Version 1.1.0
+ */
+static float internal_get_max_duty(void)
+{
+    static float s_max_duty = s_bb_duty_fallback_max;
+    static struct timespec s_last_read = {};
+
+    struct timespec now = {};
+    (void)clock_gettime(CLOCK_MONOTONIC, &now);
+
+    /* Signed arithmetic for correct elapsed time when tv_nsec wraps.
+     * Example: now={10, 0.1s} last={9, 0.9s} -> elapsed = 0.2s.
+     * Using unsigned would underflow (0.1 - 0.9 wraps to ~18e18). */
+    int64_t elapsed_ns = (int64_t)(now.tv_sec - s_last_read.tv_sec)
+                       * (int64_t)k_bb_ns_per_sec
+                       + (int64_t)(now.tv_nsec - s_last_read.tv_nsec);
+
+    if (elapsed_ns >= (int64_t)k_adc_interval_ns) {
+        s_last_read = now;
+
+        double vbatt = rc_adc_batt();
+        if (vbatt > (double)s_bb_batt_deadzone_v) {
+            s_max_duty = s_bb_duty_derating
+                       * (s_bb_motor_rated_v / (float)vbatt);
+            if (s_max_duty > 1.0F) {
+                s_max_duty = 1.0F;
+            }
+        } else {
+            s_max_duty = s_bb_duty_fallback_max;
+        }
+    }
+
+    return s_max_duty;
+}
+
 /* Motor indices from hardware_config.h: k_bb_motor_idx_fl/fr/rl/rr */
 
 /**
@@ -56,6 +113,8 @@ void* bb_motor_control_task(void* arg)
     (void)clock_gettime(CLOCK_MONOTONIC, &next);
 
     while (rc_get_state() != EXITING) {
+        const float max_duty = internal_get_max_duty();
+
         bool estop = false;
         (void)bb_shared_data_get_estop(sd, &estop);
 
@@ -66,9 +125,16 @@ void* bb_motor_control_task(void* arg)
             (void)rc_motor_set(k_bb_motor_rear_left, 0.0);
             (void)rc_motor_set(k_bb_motor_rear_right, 0.0);
         } else {
-            /* Apply motor commands from shared_data */
+            /* Apply motor commands with voltage-based duty clamp */
             bb_motor_cmd_t cmd = {0};
             (void)bb_shared_data_get_motor_cmd(sd, &cmd);
+
+            for (uint8_t i = 0U; i < (uint8_t)k_bb_motor_count; i++) {
+                float d = cmd.duty_percent[i];
+                if (d > max_duty)  { d = max_duty; }
+                if (d < -max_duty) { d = -max_duty; }
+                cmd.duty_percent[i] = d;
+            }
 
             (void)rc_motor_set(k_bb_motor_front_left,
                                (double)cmd.duty_percent[k_bb_motor_idx_fl]);

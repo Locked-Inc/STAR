@@ -77,6 +77,12 @@ bb_err_t bb_hardware_init(void)
         return k_bb_err_hardware;
     }
 
+    /* ADC for battery voltage monitoring. Non-fatal -- USB power has no battery
+     * ADC and motor_control_task falls back to k_bb_duty_fallback_max. */
+    if (rc_adc_init() != 0) {
+        fprintf(stderr, "WARN: rc_adc_init failed (battery monitoring unavailable)\n");
+    }
+
     return k_bb_err_ok;
 }
 
@@ -99,7 +105,8 @@ bb_err_t bb_hardware_deinit(void)
 {
     (void)rc_motor_set(k_bb_motor_all, 0.0);
     rc_mpu_power_off();
-    rc_motor_cleanup();
-    rc_encoder_eqep_cleanup();
+    (void)rc_adc_cleanup();
+    (void)rc_motor_cleanup();
+    (void)rc_encoder_eqep_cleanup();
     return k_bb_err_ok;
 }
