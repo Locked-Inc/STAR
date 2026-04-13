@@ -17,6 +17,26 @@ Tell Claude:
 
 ---
 
+## Two-Pass Verification Strategy
+
+This project requires **two complete passes** through all the material. Both passes are
+mandatory and must be thorough -- do not rush either one.
+
+### Pass 1: PDF -> CODE (Manual-Driven)
+Read every relevant page of the manual. For each register, offset, bit mask, or constant
+described in the manual: find the corresponding value in our code and verify it is correct.
+Fix anything wrong. Document anything the chip supports that we don't implement.
+
+### Pass 2: CODE -> PDF (Code-Driven)
+Read every source file in the firmware. For each register address, offset, bit mask,
+constant, or configuration value written in our code: look it up in the manual and
+confirm it is correct. This catches anything Pass 1 missed because the code references
+something not obvious from the manual's table-of-contents structure.
+
+Both passes log to VERIFICATION_LOG.md and follow the same fix/commit workflow.
+
+---
+
 ## Rules (Mandatory for All Sessions)
 
 1. **Verify-only scope:** Only fix things that are WRONG in existing code.
@@ -30,6 +50,8 @@ Tell Claude:
 5. **Do NOT push** to remote at any point.
 6. **Log all work** in `docs/rx72n-manual/VERIFICATION_LOG.md` as you go.
 7. **Update this file** at the end of every session: set `Last page verified` and `Status`.
+8. **Read fully:** Every page of the manual and every line of each source file must be
+   read -- do not skim or skip. Thoroughness is the point.
 
 ---
 
@@ -159,12 +181,12 @@ Example:
 Read: docs/rx72n-manual/pages/page-0001.pdf
 ```
 
-### Verification Checklist
+### PASS 1: PDF -> CODE Checklist
 
-Check off each section as COMPLETE. Add findings to VERIFICATION_LOG.md.
+Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 
-| Section | Code File | Pages | Status | Issues Found |
-|---------|-----------|-------|--------|--------------|
+| Section | Code File | Pages (approx) | Status | Issues Found |
+|---------|-----------|----------------|--------|--------------|
 | TOC / Overview | -- | ~1-30 | [ ] NOT STARTED | |
 | Operating Modes / LPC | rx72n_lpc_regs.h | ~121-160 | [ ] NOT STARTED | |
 | Clock Generation (SYSTEM) | rx72n_system_regs.h, rx72n_clock.h | ~161-220 | [ ] NOT STARTED | |
@@ -191,25 +213,91 @@ Check off each section as COMPLETE. Add findings to VERIFICATION_LOG.md.
 | USB | rx72n_usb_regs.h | ~2451-2650 | [ ] NOT STARTED | |
 | WDT / IWDT | rx72n_wdt_regs.h, rx72n_iwdt_regs.h | ~2651-2750 | [ ] NOT STARTED | |
 
-### Last Page Verified
-`none` -- not started yet
+**Pass 1 last page verified:** `none -- not started`
+
+---
+
+### PASS 2: CODE -> PDF Checklist
+
+Begin Pass 2 only after Pass 1 is fully complete.
+
+Each row is one firmware source file. Read the entire file, find every hex constant,
+enum address, or hardware value, cross-reference it against the manual.
+
+| Source File | Status | Issues Found |
+|-------------|--------|--------------|
+| rx_hal/inc/rx72n_system_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_port_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_adc_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_sci_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_riic_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_rspi_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_cmt_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_icu_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_iwdt_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_wdt_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_crc_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_usb_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_mtu_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_gptw_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_poeg_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_tpu_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_lvda_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_mpc_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_flash_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_ram_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_dmac_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_dtc_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_mpu_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_lpc_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_elc_regs.h | [ ] NOT STARTED | |
+| rx_hal/inc/rx72n_clock.h | [ ] NOT STARTED | |
+| rx_hal/src/adc.c | [ ] NOT STARTED | |
+| rx_hal/src/gpio.c | [ ] NOT STARTED | |
+| rx_hal/src/riic.c | [ ] NOT STARTED | |
+| rx_hal/src/rspi.c | [ ] NOT STARTED | |
+| rx_hal/src/rx_cmt.c | [ ] NOT STARTED | |
+| rx_hal/src/rx_gptw.c | [ ] NOT STARTED | |
+| rx_hal/src/rx_host_irq.c | [ ] NOT STARTED | |
+| rx_hal/src/rx_irq_filter.c | [ ] NOT STARTED | |
+| rx_crc/src/rx_crc_hw.c | [ ] NOT STARTED | |
+| rx_dmaca/src/rx_dmaca.c | [ ] NOT STARTED | |
+| rx_core/src/rx_infrastructure.c | [ ] NOT STARTED | |
+| rx_core/src/rx_iwdt.c | [ ] NOT STARTED | |
+| rx_core/src/rx_wdt.c | [ ] NOT STARTED | |
+| rx_encoder/src/rx_encoder_tpu.c | [ ] NOT STARTED | |
+| rx_encoder/src/rx_mtu_encoder.c | [ ] NOT STARTED | |
+| rx_bus/src/rx_bus_adc.c | [ ] NOT STARTED | |
+| rx_bus/src/rx_bus_i2c.c | [ ] NOT STARTED | |
+| rx_bus/src/rx_bus_gpio.c | [ ] NOT STARTED | |
+
+**Pass 2 last file verified:** `none -- not started`
 
 ---
 
 ## Session Workflow
 
-Each session should follow this sequence:
+### Pass 1 session steps:
+1. Read this file to know where to resume (find last `[~] IN PROGRESS` or first `[ ] NOT STARTED`)
+2. Read the manual pages for that section (use Read tool on `pages/page-NNNN.pdf`)
+3. Read the corresponding code file fully
+4. For each register/value in the manual: find it in our code and verify it
+5. Fix anything wrong immediately
+6. If the manual shows a feature we don't use: add it to AVAILABLE_FEATURES.md
+7. Log all findings in VERIFICATION_LOG.md (both OK and FIXED entries)
+8. Commit fixes (natural message, no AI attribution)
+9. Update Pass 1 checklist table (mark `[x] COMPLETE`)
+10. Update "Pass 1 last page verified"
 
-1. Read this file (`VERIFICATION_PLAN.md`) to know where to resume
-2. Read the relevant pages from `docs/rx72n-manual/pages/`
-3. Read the corresponding code file from `star-rx72n-firmware/libs/rx_hal/inc/`
-4. For each register/value in the code: confirm it matches the manual exactly
-5. Fix any wrong values immediately (Edit tool)
-6. If the manual describes a feature we don't use: add it to AVAILABLE_FEATURES.md
-7. Log all findings (right or wrong) in VERIFICATION_LOG.md
-8. Commit fixes with a natural commit message (no AI attribution)
-9. Update the checklist table above (change `[ ] NOT STARTED` to `[x] COMPLETE` or `[~] IN PROGRESS`)
-10. Update "Last Page Verified"
+### Pass 2 session steps:
+1. Read this file to know where to resume (find last `[~] IN PROGRESS` or first `[ ] NOT STARTED` in Pass 2 table)
+2. Read the source file fully
+3. For each hex constant, address, or hardware value in that file: find it in the manual
+4. Fix anything wrong
+5. Log all findings in VERIFICATION_LOG.md
+6. Commit fixes
+7. Update Pass 2 checklist (mark `[x] COMPLETE`)
+8. Update "Pass 2 last file verified"
 
 ---
 
