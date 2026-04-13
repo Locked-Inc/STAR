@@ -307,14 +307,17 @@ typedef enum : uint8_t {
  * when an event signal is received. These 2-bit fields are used
  * in the ELOPx registers.
  *
- * @note Manual ref: Ch21 sections 21.2.3-21.2.8
+ * For MTU/TPU timers (ELOPA, ELOPF): 0x02 = Input capture (TCNT -> TGRA).
+ * For CMT/TMR/CMTW timers (ELOPC, ELOPD, ELOPH): 0x02 = Event counter.
+ *
+ * @note Manual ref: Ch21 sections 21.2.3-21.2.8, Table 21.5
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_elop_timer_compare_match = 0x00U, /**< Compare match */
-  k_elop_timer_input_capture = 0x01U, /**< Input capture */
-  k_elop_timer_reserved      = 0x02U, /**< Reserved - do not use */
-  k_elop_timer_disabled      = 0x03U, /**< Event output disabled */
+  k_elop_timer_count_start   = 0x00U, /**< Counting is started */
+  k_elop_timer_count_restart = 0x01U, /**< Counting is restarted */
+  k_elop_timer_input_capture = 0x02U, /**< Input capture (MTU/TPU) or event counter (CMT/TMR/CMTW) */
+  k_elop_timer_disabled      = 0x03U, /**< Event output is disabled */
 } elop_timer_op_t;
 
 /**
@@ -322,20 +325,19 @@ typedef enum : uint8_t {
  * @brief ELOPA register bit positions (MTU0/MTU3)
  *
  * @par Register Layout (8-bit @ 0x0008B11F)
- * | Bits | Field    | Description                 |
- * |------|----------|-----------------------------|
- * | 1:0  | MTU0OP   | MTU0 operation setting      |
- * | 3:2  | -        | Reserved                    |
- * | 5:4  | MTU3OP   | MTU3 operation setting      |
- * | 7:6  | -        | Reserved                    |
+ * | Bits | Field     | Description                 |
+ * |------|-----------|-----------------------------|
+ * | 1:0  | MTU0MD    | MTU0 operation setting      |
+ * | 5:2  | -         | Reserved                    |
+ * | 7:6  | MTU3MD    | MTU3 operation setting      |
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_elopa_mtu0op_shift = 0U,    /**< MTU0 operation field shift */
+  k_elopa_mtu0op_shift = 0U,    /**< MTU0 operation field shift (bits 1:0) */
   k_elopa_mtu0op_mask  = 0x03U, /**< MTU0 operation field mask */
-  k_elopa_mtu3op_shift = 4U,    /**< MTU3 operation field shift */
-  k_elopa_mtu3op_mask  = 0x30U, /**< MTU3 operation field mask */
+  k_elopa_mtu3op_shift = 6U,    /**< MTU3 operation field shift (bits 7:6) */
+  k_elopa_mtu3op_mask  = 0xC0U, /**< MTU3 operation field mask */
 } elopa_bits_t;
 
 /**
@@ -362,14 +364,15 @@ typedef enum : uint8_t {
  * @par Register Layout (8-bit @ 0x0008B121)
  * | Bits | Field    | Description                 |
  * |------|----------|-----------------------------|
- * | 1:0  | CMT1OP   | CMT1 operation setting      |
- * | 7:2  | -        | Reserved                    |
+ * | 1:0  | -        | Reserved                    |
+ * | 3:2  | CMT1MD   | CMT1 operation setting      |
+ * | 7:4  | -        | Reserved                    |
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_elopc_cmt1op_shift = 0U,    /**< CMT1 operation field shift */
-  k_elopc_cmt1op_mask  = 0x03U, /**< CMT1 operation field mask */
+  k_elopc_cmt1op_shift = 2U,    /**< CMT1 operation field shift (bits 3:2) */
+  k_elopc_cmt1op_mask  = 0x0CU, /**< CMT1 operation field mask */
 } elopc_bits_t;
 
 /**
@@ -407,26 +410,34 @@ typedef enum : uint8_t {
  * @brief Port Group Control (PGC1/PGC2) register bit definitions
  *
  * @par Register Layout (8-bit @ 0x0008B125/0x0008B126)
- * | Bits | Field    | Description                       |
- * |------|----------|-----------------------------------|
- * | 0    | PGCOVE   | Port group output value transfer  |
- * | 1    | PGCOSEL  | Output value selection            |
- * | 2    | -        | Reserved                          |
- * | 3    | PGCO     | Output event output control       |
- * | 5:4  | PGCI     | Input port group op mode select   |
- * | 7:6  | -        | Reserved                          |
+ * | Bits | Field       | Description                             |
+ * |------|-------------|-----------------------------------------|
+ * | 1:0  | PGCI[1:0]   | Event output edge select (input ports)  |
+ * | 2    | PGCOVE      | PDBF overwrite enable                   |
+ * | 3    | -           | Reserved                                |
+ * | 6:4  | PGCO[2:0]   | Port group operation select             |
+ * | 7    | -           | Reserved                                |
  *
+ * @note Manual ref: Ch21 section 21.2.10
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_pgc_pgcove     = 0x01U, /**< Port group output value transfer enable */
-  k_pgc_pgcosel    = 0x02U, /**< Output value selection (0=ELSR, 1=PDBF) */
-  k_pgc_pgco       = 0x08U, /**< Output event output control */
-  k_pgc_pgci_shift = 4U,    /**< Input port group mode shift */
-  k_pgc_pgci_mask  = 0x30U, /**< Input port group mode mask */
-  k_pgc_pgci_and   = 0x00U, /**< AND operation */
-  k_pgc_pgci_or    = 0x10U, /**< OR operation */
-  k_pgc_pgci_xor   = 0x20U, /**< XOR operation */
+  /* PGCI[1:0] - Event Output Edge Select for input port groups (bits 1:0) */
+  k_pgc_pgci_shift   = 0U,    /**< PGCI field shift */
+  k_pgc_pgci_mask    = 0x03U, /**< PGCI field mask */
+  k_pgc_pgci_rising  = 0x00U, /**< Event on rising edge of input signal */
+  k_pgc_pgci_falling = 0x01U, /**< Event on falling edge of input signal */
+  k_pgc_pgci_both    = 0x02U, /**< Event on both edges of input signal (1x) */
+  /* PGCOVE - PDBF Overwrite enable (bit 2) */
+  k_pgc_pgcove       = 0x04U, /**< PDBF overwrite enable (0=disabled, 1=enabled) */
+  /* PGCO[2:0] - Port Group Operation Select for output port groups (bits 6:4) */
+  k_pgc_pgco_shift   = 4U,    /**< PGCO field shift */
+  k_pgc_pgco_mask    = 0x70U, /**< PGCO field mask */
+  k_pgc_pgco_low     = 0x00U, /**< Output low when event signal is input */
+  k_pgc_pgco_high    = 0x10U, /**< Output high when event signal is input */
+  k_pgc_pgco_toggle  = 0x20U, /**< Toggle output when event signal is input */
+  k_pgc_pgco_buffer  = 0x30U, /**< Output buffer (PDBF) value when event signal is input */
+  k_pgc_pgco_rotate  = 0x40U, /**< Rotate output MSB-to-LSB when event signal is input (1xx) */
 } pgc_bits_t;
 
 /**
@@ -434,27 +445,31 @@ typedef enum : uint8_t {
  * @brief Port Event Link (PEL0-3) register bit definitions
  *
  * @par Register Layout (8-bit @ 0x0008B129-0x0008B12C)
- * | Bits | Field  | Description                      |
- * |------|--------|----------------------------------|
- * | 1:0  | PSB    | Port B pin select                |
- * | 2    | PSP    | Port select (0=Port B, 1=Port E) |
- * | 3    | PSM    | Mode select (0=single, 1=group)  |
- * | 4    | -      | Reserved                         |
- * | 6:5  | ELD    | Edge detection select            |
- * | 7    | -      | Reserved                         |
+ * | Bits | Field      | Description                                      |
+ * |------|------------|--------------------------------------------------|
+ * | 2:0  | PSB[2:0]   | Bit number for single port (pin 0-7)             |
+ * | 4:3  | PSP[1:0]   | Port select (00=disabled, 01=Port B, 10=Port E)  |
+ * | 6:5  | PSM[1:0]   | Event link spec (edge or output mode)            |
+ * | 7    | -          | Reserved                                         |
  *
+ * @note Manual ref: Ch21 section 21.2.12
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_pel_psb_mask    = 0x03U, /**< Port B pin select mask (bits 1:0) */
-  k_pel_psp_porte   = 0x04U, /**< Select Port E (else Port B) */
-  k_pel_psm_group   = 0x08U, /**< Group mode (else single mode) */
-  k_pel_eld_shift   = 5U,    /**< Edge detection shift */
-  k_pel_eld_mask    = 0x60U, /**< Edge detection mask */
-  k_pel_eld_none    = 0x00U, /**< No edge detection */
-  k_pel_eld_rising  = 0x20U, /**< Rising edge detection */
-  k_pel_eld_falling = 0x40U, /**< Falling edge detection */
-  k_pel_eld_both    = 0x60U, /**< Both edges detection */
+  /* PSB[2:0] - Bit Number Specification (bits 2:0) */
+  k_pel_psb_mask     = 0x07U, /**< 3-bit pin select mask (pins 0-7) */
+  /* PSP[1:0] - Port Number Specification (bits 4:3) */
+  k_pel_psp_shift    = 3U,    /**< PSP field shift */
+  k_pel_psp_mask     = 0x18U, /**< PSP field mask */
+  k_pel_psp_disabled = 0x00U, /**< Setting disabled */
+  k_pel_psp_portb    = 0x08U, /**< Port B (corresponding to PGR1) */
+  k_pel_psp_porte    = 0x10U, /**< Port E (corresponding to PGR2) */
+  /* PSM[1:0] - Event Link Specification (bits 6:5) */
+  k_pel_psm_shift    = 5U,    /**< PSM field shift */
+  k_pel_psm_mask     = 0x60U, /**< PSM field mask */
+  k_pel_psm_rising   = 0x00U, /**< Rising edge (input port) or output low (output port) */
+  k_pel_psm_falling  = 0x20U, /**< Falling edge (input port) or output high (output port) */
+  k_pel_psm_both     = 0x40U, /**< Both edges (input port) or toggle output (output port) (1x) */
 } pel_bits_t;
 
 /**
@@ -505,6 +520,39 @@ typedef enum : uint32_t {
 } elc_mstpcr_t;
 
 /* =============================================================================
+ * ELSRn Address Range Adjustments
+ * =============================================================================
+ */
+
+/**
+ * @enum elsr_range_adj_t
+ * @brief Address computation adjustments for the three ELSRn register ranges
+ *
+ * @details
+ * ELSRn registers are NOT contiguous -- option and port registers occupy the
+ * gaps. There are three separate address ranges:
+ *
+ * Range A  n=0..28  : address = base + k_elsr_range_a_adj + n  (0x0008B101..0x0008B11D)
+ * Range B  n=33..45 : address = base + k_elsr_range_b_adj + n  (0x0008B131..0x0008B13D)
+ * Range C  n=48..57 : address = base + k_elsr_range_c_adj + n  (0x0008B146..0x0008B14F)
+ *
+ * Derivation:
+ *   ELSR0  = 0x0008B101 = base + 1 + 0   -> adj_a = 1
+ *   ELSR33 = 0x0008B131 = base + 0x10 + 33 -> adj_b = 0x10
+ *   ELSR48 = 0x0008B146 = base + 0x16 + 48 -> adj_c = 0x16
+ *
+ * @note Manual ref: Ch21 section 21.2.2, address list
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_elsr_range_a_adj = 0x01U, /**< Adjustment for n=0..28 */
+  k_elsr_range_b_adj = 0x10U, /**< Adjustment for n=33..45 */
+  k_elsr_range_c_adj = 0x16U, /**< Adjustment for n=48..57 */
+  k_elsr_range_a_max = 28U,   /**< Last valid n in range A */
+  k_elsr_range_b_max = 45U,   /**< Last valid n in range B */
+} elsr_range_adj_t;
+
+/* =============================================================================
  * Register Accessor Functions
  * =============================================================================
  */
@@ -523,12 +571,21 @@ static inline volatile uint8_t* elc_elcr_reg(void)
  * @brief Get pointer to ELSRn register
  * @param n Register index (0, 3, 4, 7, 10-13, 15, 16, 18-28, 33, 35-38, 45, 48-57)
  * @return Volatile pointer to ELSRn register (8-bit)
- * @warning Not all indices are valid - check manual for valid values
+ * @warning Not all indices in [0..57] are valid -- consult Table 21.2 for the
+ *          valid set. Passing an invalid index returns a pointer to a reserved
+ *          or wrong address.
+ * @note ELSRn registers occupy three non-contiguous ranges; see elsr_range_adj_t.
  * @since Version 1.0.0
  */
 static inline volatile uint8_t* elc_elsr_reg(uint8_t n)
 {
-  return (volatile uint8_t*)(uintptr_t)(k_elc_base_addr + 1U + n);
+  if (n <= k_elsr_range_a_max) {
+    return (volatile uint8_t*)(uintptr_t)(k_elc_base_addr + k_elsr_range_a_adj + n);
+  }
+  if (n <= k_elsr_range_b_max) {
+    return (volatile uint8_t*)(uintptr_t)(k_elc_base_addr + k_elsr_range_b_adj + n);
+  }
+  return (volatile uint8_t*)(uintptr_t)(k_elc_base_addr + k_elsr_range_c_adj + n);
 }
 
 /**

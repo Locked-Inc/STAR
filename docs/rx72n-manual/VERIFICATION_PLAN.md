@@ -232,7 +232,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 62: Flash Memory | rx72n_flash_regs.h | 2992-3233 | [ ] NOT STARTED | |
 | Ch 60: RAM Control | rx72n_ram_regs.h | 2977-2990 | [ ] NOT STARTED | |
 | Ch 17: MPU | rx72n_mpu_regs.h | 657-676 | [x] COMPLETE | All region + ctrl addrs OK (Ch 5 + header) |
-| Ch 21: ELC | rx72n_elc_regs.h | 835-860 | [ ] NOT STARTED | |
+| Ch 21: ELC | rx72n_elc_regs.h | 835-860 | [x] COMPLETE | FIXED: ELOPA MTU3 shift/mask, ELOPC CMT1 shift/mask, elop_timer_op_t values swapped, pgc_bits_t entire layout wrong, pel_bits_t PSB/PSP/PSM wrong, elc_elsr_reg() formula wrong for n>=33 |
 | Ch 31: CMT Timer | rx72n_cmt_regs.h | 1581-1588 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 | Ch 28: TPU | rx72n_tpu_regs.h | 1442-1519 | [ ] NOT STARTED | |
 | Ch 24: MTU | rx72n_mtu_regs.h | 960-1198 | [x] COMPLETE | FIXED: rx_mtu34_channel_regs_t had completely wrong sparse layout; renamed + rewritten; rx_mtu.c/rx_mtu_encoder.c MTU3/4 cases now return nullptr |
@@ -247,7 +247,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 34: WDT | rx72n_wdt_regs.h | 1666-1679 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 | Ch 35: IWDT | rx72n_iwdt_regs.h | 1680-1698 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 
-**Pass 1 last page verified:** `449 (Ch 3+11 Operating Modes/LPC complete 2026-04-13), 334 (Ch 8 LVDA complete 2026-04-13), 389 (Ch 9 Clock Generation complete 2026-04-13)`
+**Pass 1 last page verified:** `449 (Ch 3+11 Operating Modes/LPC complete 2026-04-13), 334 (Ch 8 LVDA complete 2026-04-13), 389 (Ch 9 Clock Generation complete 2026-04-13), 860 (Ch 21 ELC complete 2026-04-13)`
 
 ---
 
