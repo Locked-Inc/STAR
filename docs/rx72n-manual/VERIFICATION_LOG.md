@@ -280,7 +280,77 @@ what was fixed. Update this file as you work.
 - [OK] GTUDDTYC, GTDTCR, GTSTR/GTSTP/GTCLR bit definitions -- correct
 
 ### Commits
-- (pending)
+- c6ecedd3d -- fix(gptw_regs): correct GTIOR OAE/OBE bits, GTBER enum, and init_high value
+
+---
+
+## 2026-04-13 -- Ch 25 POE3a Registers
+
+**Pages read:** 1199-1235 (Ch 25 complete)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_poe3_regs.h
+
+### Findings
+- [OK] k_poe3_base_addr=0x00008900 -- matches manual p.1199
+- [OK] ICSR1 at +0x00, ICSR2 at +0x04, ICSR3 at +0x08, ICSR4 at +0x0C, ICSR5 at +0x10 -- correct
+- [OK] ICSR6 at +0x14 -- correct
+- [OK] OCSR1 at +0x02, OCSR2 at +0x06 -- correct
+- [OK] ALR1 at +0x1A -- correct
+- [OK] SPOER at +0x20, POECR1 at +0x21, POECR2 at +0x22, POECR3 at +0x24 -- correct
+- [OK] POECR4 at +0x26, POECR5 at +0x28 -- correct
+- [OK] ICSR1/2/3 bit enums: PIE=b0, POE0M/4M/8M=b2:b1, PIE6=b6, PIDE=b4, POF=b12 -- correct
+- [OK] ICSR4 bits: IC4PIE=b0, IC4POE4M=b2:b1 -- correct
+- [OK] ICSR5 bits: IC5PIE=b0, IC5POE4M=b2:b1 -- correct
+- [OK] ICSR6 POE10M/11M fields, POE10E/11E enable bits -- correct
+- [FIXED] ICSR6.OSTSTE: was 0x0100U (bit 8), manual p.1219 says bit 9 -- corrected to 0x0200U
+- [OK] OCSR1/2 bits: OCE=b8, OCF=b9 -- correct
+- [OK] SPOER bits: MTUCH0HIZ=b0, MTUCH67HIZ=b1, MTUCH34HIZ=b2 -- correct
+- [OK] POECR1 bits: MTU0AZE=b0, MTU0BZE=b1, MTU0CZE=b2, MTU0DZE=b3, MTU0E1ZE=b4, MTU0E2ZE=b5 -- correct
+- [FIXED] POECR2: was uint8_t with 3 wrong values; manual p.1221 shows 16-bit register with
+  MTU3/4 bits at 10:8 and MTU6/7 bits at 2:0 -- rewritten as uint16_t with 6 correct values:
+  k_poecr2_mtu7bdze=0x0001, k_poecr2_mtu7acze=0x0002, k_poecr2_mtu6bdze=0x0004,
+  k_poecr2_mtu4bdze=0x0100, k_poecr2_mtu4acze=0x0200, k_poecr2_mtu3bdze=0x0400
+- [FIXED] poe3_poecr2_reg() accessor: was volatile uint8_t*, corrected to volatile uint16_t*
+- [OK] POECR3 bits: MTU3BDZE=b0, MTU3ACZE=b1, MTU4BDZE=b2, MTU4ACZE=b3 (8-bit reg) -- correct
+- [FIXED] POECR4: was wrong MTU6/7 ZE bits; manual p.1229 shows ICxADDMT34/67ZE conditional
+  hi-Z source bits -- rewritten with 8 correct values:
+  k_poecr4_ic2addmt34ze=0x0004, k_poecr4_ic3addmt34ze=0x0008, k_poecr4_ic4addmt34ze=0x0010,
+  k_poecr4_ic5addmt34ze=0x0020, k_poecr4_ic1addmt67ze=0x0200, k_poecr4_ic3addmt67ze=0x0800,
+  k_poecr4_ic4addmt67ze=0x1000, k_poecr4_ic5addmt67ze=0x2000
+- [FIXED] POECR5: was wrong POE10/11 mapping; manual p.1232 shows ICxADDMT0ZE conditional
+  hi-Z source bits -- rewritten with 4 correct values:
+  k_poecr5_ic1addmt0ze=0x0002, k_poecr5_ic2addmt0ze=0x0004,
+  k_poecr5_ic4addmt0ze=0x0010, k_poecr5_ic5addmt0ze=0x0020
+- [AVAILABLE] POE3a peripheral (MTU-based PWM emergency stop) -- added to AVAILABLE_FEATURES.md
+
+### Commits
+- f558aeaf0 -- fix(poe3): correct ICSR6 OSTSTE bit, POECR2 size/layout, POECR4/5 bit definitions
+
+---
+
+## 2026-04-13 -- Ch 27 POEG Registers
+
+**Pages read:** 1432-1441 (Ch 27 complete)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_poeg_regs.h,
+                  star-rx72n-firmware/libs/rx_hal/src/rx_poeg.c
+
+### Findings
+- [OK] k_poegga_base_addr=0x0009E000, k_poeggb_base_addr=0x0009E100,
+  k_poeggc_base_addr=0x0009E200, k_poeggd_base_addr=0x0009E300 -- match manual p.1432
+- [OK] POEGGn register at offset +0x00 (single 32-bit register per group) -- correct
+- [OK] PIDF=b0, IOCF=b1, OSTPF=b2, SSF=b3 (status/fault flags) -- correct
+- [OK] PIDE=b4, IOCE=b5, OSTPE=b6 (enable bits) -- correct
+- [OK] ST=b16 (pin state read-back) -- correct
+- [OK] INV=b28 (input invert), NFEN=b29 (noise filter enable) -- correct
+- [OK] NFCS[1:0]=b31:b30 (noise filter clock select) -- correct
+- [OK] NFCS values: div1=0x00000000, div8=0x40000000, div32=0x80000000, div128=0xC0000000 -- correct
+- [OK] k_poeg_ssf_stop (bit 3 / SSF) -- correct
+- [OK] k_poeg_pide_enable, k_poeg_nfen_enable -- correct
+- [OK] POEG interrupt vectors 188-191: valid BL2 group software-configurable interrupt B
+  assignments per ICU Table 15.7 (range 144-207) -- correct design choice
+- [OK] rx_poeg.c init sequence (PIDE+INV+NFEN+NFCS write, GTINTAD linkage, ICU setup) -- correct
+
+### Commits
+- (none, all OK, no fixes needed)
 
 ---
 
