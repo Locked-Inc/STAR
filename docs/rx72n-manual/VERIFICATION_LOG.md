@@ -376,4 +376,64 @@ what was fixed. Update this file as you work.
 
 ---
 
+## 2026-04-13 -- Ch 9 Clock Generation
+
+**Pages read:** 335-389 (Ch 9 complete)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_system_regs.h,
+                  star-rx72n-firmware/libs/rx_hal/inc/rx72n_clock.h,
+                  star-rx72n-firmware/libs/rx_core/src/rx_infrastructure.c
+
+### Findings
+
+- [OK] rx_system_regs_t base address = 0x00080000 -- matches manual p.335
+- [OK] sckcr offset = +0x20 (0x00080020) -- matches manual p.337
+- [OK] sckcr2 offset = +0x24 (0x00080024) -- matches manual p.342
+- [OK] sckcr3 offset = +0x26 (0x00080026) -- matches manual p.343
+- [OK] pllcr offset = +0x28 (0x00080028) -- matches manual p.345
+- [OK] pllcr2 offset = +0x2A (0x0008002A) -- matches manual p.347
+- [OK] bckcr offset = +0x30 (0x00080030) -- matches manual p.348
+- [OK] mosccr offset = +0x32 (0x00080032) -- matches manual p.349
+- [OK] sosccr offset = +0x33 (0x00080033) -- matches manual p.350
+- [OK] lococr offset = +0x34 (0x00080034) -- matches manual p.351
+- [OK] ilococr offset = +0x35 (0x00080035) -- matches manual p.352
+- [OK] hococr offset = +0x36 (0x00080036) -- matches manual p.353
+- [OK] hococr2 offset = +0x37 (0x00080037) -- matches manual p.353
+- [OK] oscovfsr offset = +0x3C (0x0008003C) -- matches manual p.354
+- [OK] ckocr offset = +0x3E (0x0008003E) -- matches manual p.363
+- [OK] ostdcr offset = +0x40 (0x00080040) -- matches manual p.369
+- [OK] ostdsr offset = +0x41 (0x00080041) -- matches manual p.371
+- [OK] sckcr SCKCR3[2:0] (CKSEL) at bits 10:8 (shift 8, mask 0x700) -- matches manual p.344
+- [OK] sckcr3_cksel LOCO=0x0000, HOCO=0x0100, MAIN=0x0200, SUBCLOCK=0x0300, PLL=0x0400 -- match manual p.344
+- [OK] pllcr PLLMUL field at bits 13:8 (k_pllcr_pllmul_x10=0x1300) -- matches manual p.345-346
+- [OK] pllcr2 PLLEN bit 0 (0=enable, 1=disable) -- matches manual p.347
+- [OK] hococr HCSTP bit 0 (0=operate, 1=stop) -- matches manual p.353
+- [OK] mosccr MOSTP bit 0 (0=operate, 1=stop) -- matches manual p.349
+- [OK] bckcr BCLKDIV bit 0 (0=/1, 1=/2) -- matches manual p.348
+- [OK] rx_clock_frequencies_t enum values: ICLK=240000000, PCLKA=120000000, PCLKB=60000000 -- correct for 24 MHz x10 PLL configuration
+- [OK] rx_ppll_addresses_t: PPLLCR=0x00080046, PPLLCR2=0x00080048 -- match manual p.366,367
+- [OK] PPLLCR PPLSTC field at bits 13:8 -- matches manual p.366
+- [FIXED] sckcr_divider_t: contained k_clock_div_128=8 -- manual p.339-340 shows SCKCR divider fields only accept values 0-6 (/1 through /64); value 7 and above are PROHIBITED. Removed k_clock_div_128. Added k_bck_div_3=9 (/3, valid ONLY for BCK field, binary 1001 per p.339).
+- [FIXED] sckcr_bits_t PSTOP0/PSTOP1 comments: code said "PCLKA/PCLKB stop" and "USB clock stop" -- manual p.340 says PSTOP0 controls SDCLK pin output, PSTOP1 controls BCLK pin output. Corrected both comments.
+- [FIXED] sckcr3_cksel_t: contained k_sckcr3_cksel_ppll=0x0500 as a valid SCKCR3 CKSEL value -- manual p.344 shows only values 000-100 (LOCO/HOCO/Main/Sub/PLL) are valid; 101-111 are PROHIBITED. PPLL is not a valid system clock source. Removed k_sckcr3_cksel_ppll entirely.
+- [FIXED] pllcr_bits_t: k_pllcr_plidiv_4=0x0002 was named as if binary 10 divides by 4 -- manual p.345 PLIDIV table: 00=/1, 01=/2, 10=/3, 11=PROHIBITED. Binary 10 divides by 3, not 4. Renamed to k_pllcr_plidiv_3=0x0002.
+- [FIXED] ckocr_bits_t: k_ckocr_ckodiv_32=(5U<<12), k_ckocr_ckodiv_64=(6U<<12), k_ckocr_ckodiv_128=(7U<<12) -- manual p.364 CKODIV table: 000=/1 through 100=/16 (values 0-4 valid); values 5, 6, 7 are PROHIBITED. Removed all three invalid entries. Also added missing k_ckocr_ckosel_ppll=(6U<<8) (PPLL circuit, valid per manual p.364).
+- [FIXED] rx_ppll_config_t: k_ppll_config_48mhz=0x0703 -- lower 2 bits (0x03=binary 11) set PPLIDIV to 11 which is PROHIBITED per manual p.366. Correct PPLL config: PPLSTC=7 at bits 13:8, PPLIDIV=00 at bits 1:0 => 0x0700. Fixed to 0x0700.
+- [FIXED] rx_ppll_flags_t: k_ppll_stable_flag=0x08 claiming "OSCOVFSR bit 3 = PPLL stable" -- manual p.355 OSCOVFSR bit 3 is HCOVF (HOCO stabilization), not PPLL. PPLOVF (PPLL stabilization) is bit 5 = mask 0x20. Corrected from 0x08 to 0x20. This bug caused the PPLL stability wait loop to check the HOCO stable bit instead of the PPLL stable bit.
+- [FIXED] oscovfsr struct member comment: said "Bit 3: PPLL stable" -- manual p.355 lists all 6 OSCOVFSR bits: Bit 0 MOOVF (main), Bit 1 SOOVF (sub), Bit 2 PLOVF (PLL), Bit 3 HCOVF (HOCO), Bit 4 ILCOVF (IWDT clock), Bit 5 PPLOVF (PPLL). Rewrote comment listing all 6 bits with correct symbol names.
+- [AVAILABLE] MOSCWTCR (0x00080A2) -- main clock wait control; STAR uses default -- logged to AVAILABLE_FEATURES.md
+- [AVAILABLE] SOSCWTCR (0x00080A3) -- sub-clock wait control; sub-clock unused -- logged to AVAILABLE_FEATURES.md
+- [AVAILABLE] MOFCR (0x0008C293) -- main oscillator forced oscillation control; STAR uses default -- logged to AVAILABLE_FEATURES.md
+- [AVAILABLE] HOCOPCR (0x0008C294) -- HOCO power supply control; STAR does not power down HOCO -- logged to AVAILABLE_FEATURES.md
+- [AVAILABLE] PACKCR (0x00080044) -- USB/Ethernet specific-use clock control; STAR does not configure -- logged to AVAILABLE_FEATURES.md
+- [AVAILABLE] PPLLCR3 (0x0008004B) -- PPLL frequency divider; never written in firmware -- logged to AVAILABLE_FEATURES.md
+- [AVAILABLE] Oscillation stop detection via OSTDCR/OSTDSR; registers defined but OSTDE never enabled -- logged to AVAILABLE_FEATURES.md
+- [AVAILABLE] CLKOUT pin output via CKOCR; register defined but CKOEN never set -- logged to AVAILABLE_FEATURES.md
+- [AVAILABLE] SDCLK pin output via SCKCR.PSTOP0; STAR has no SDRAM -- logged to AVAILABLE_FEATURES.md
+- [AVAILABLE] Sub-clock oscillator (SOSCCR); STAR does not start sub-clock -- logged to AVAILABLE_FEATURES.md
+
+### Commits
+- (see next commit)
+
+---
+
 (future sessions go below this line)
