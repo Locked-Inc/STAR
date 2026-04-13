@@ -334,4 +334,46 @@ what was fixed. Update this file as you work.
 
 ---
 
+## 2026-04-13 -- Ch 8 LVDA (Voltage Detection Circuit) Registers
+
+**Pages read:** 316-334 (Ch 8 complete)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_lvda_regs.h
+
+### Findings
+
+- [OK] k_lvd1cr1_addr=0x000800E0 -- matches manual p.319 (section 8.2.1)
+- [OK] k_lvd1sr_addr=0x000800E1 -- matches manual p.319 (section 8.2.2)
+- [OK] k_lvd2cr1_addr=0x000800E2 -- matches manual p.320 (section 8.2.3)
+- [OK] k_lvd2sr_addr=0x000800E3 -- matches manual p.320 (section 8.2.4)
+- [OK] k_lvcmpcr_addr=0x0008C297 -- matches manual p.321 (section 8.2.5)
+- [OK] k_lvdlvlr_addr=0x0008C298 -- matches manual p.322 (section 8.2.6)
+- [OK] 0x0008C299 reserved (no register) -- correctly noted in code comment
+- [OK] k_lvd1cr0_addr=0x0008C29A -- matches manual p.323 (section 8.2.7)
+- [OK] k_lvd2cr0_addr=0x0008C29B -- matches manual p.324 (section 8.2.8)
+- [OK] LVD1CR1/LVD2CR1 bit layout: LVD1IDTSEL[1:0]=b1:b0, LVD1IRQSEL=b2, b7:b3=reserved -- correct
+- [OK] LVD1CR1 reset value=0x01 (b0=1) -- matches manual p.319
+- [OK] IDTSEL encoding: 00=rise, 01=drop, 10=both (k_lvd_idtsel_rise/drop/both) -- matches p.319
+- [OK] IRQSEL: 0=NMI, 1=maskable (k_lvd_irqsel_nmi/maskable at bit 2) -- matches p.319/320
+- [OK] LVD1SR/LVD2SR bit layout: LVD1DET=b0, LVD1MON=b1, b7:b2=reserved -- correct
+- [OK] LVD1SR reset value=0x02 (b1=1, b0=0) -- matches manual p.319
+- [OK] k_lvd_det_clear/detected, k_lvd_mon_below/above -- correct values and bit positions
+- [OK] LVCMPCR bit layout: b4:b0=reserved, b5=LVD1E, b6=LVD2E, b7=reserved -- matches p.321
+- [OK] k_lvd1e_enable=(1<<5)=0x20, k_lvd2e_enable=(1<<6)=0x40 -- correct
+- [OK] LVDLVLR bit layout: b3:b0=LVD1LVL[3:0], b7:b4=LVD2LVL[3:0] -- matches p.322
+- [OK] LVDLVLR reset value=0xBB (1011_1011b = both at 2.85V) -- matches p.322
+- [OK] k_lvd1lvl_2v99=0x09 (1001b), k_lvd1lvl_2v92=0x0A, k_lvd1lvl_2v85=0x0B -- matches p.322
+- [OK] k_lvd2lvl_2v99=0x90, k_lvd2lvl_2v92=0xA0, k_lvd2lvl_2v85=0xB0 -- correct (bits 7:4)
+- [OK] LVD1CR0/LVD2CR0 bit layout: RIE=b0, DFDIS=b1, CMPE=b2, b3=reserved, FSAMP=b5:b4, RI=b6, RN=b7 -- matches p.323/324
+- [OK] FSAMP encoding: 00=LOCO/2, 01=LOCO/4, 10=LOCO/8, 11=LOCO/16 -- matches p.323
+- [OK] RI: 0=interrupt mode, 1=reset mode -- matches p.323
+- [OK] RN: 0=negate after VCC>Vdet stabilization, 1=negate after assert stabilization -- matches p.323
+- [OK] k_lvd1_irq=88, k_lvd2_irq=89 -- confirmed correct from Table 15.5 p.512 (LVD1=vec88, LVD2=vec89)
+- [FIXED] rx_lvd_interrupts_t: used uint16_t for vector numbers 88 and 89 -- values fit in uint8_t; corrected to uint8_t per project coding standard (smallest type that fits all values)
+- [OK] No LVDA usage found in rx_hal/src/ -- header-only peripheral definition
+
+### Commits
+- (see next commit)
+
+---
+
 (future sessions go below this line)

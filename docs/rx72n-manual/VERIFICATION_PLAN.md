@@ -223,7 +223,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 5: I/O Register Addresses | ALL | 206-282 | [x] COMPLETE | Addr table used to verify DTC/DMAC/MPU/CMT/CRC/WDT/IWDT |
 | Ch 3+11: Operating Modes / LPC | rx72n_lpc_regs.h | 195-202, 401-449 | [x] COMPLETE | FIXED: system_regs.h doc comment said "Ch 7" instead of "Ch 11" |
 | Ch 9: Clock Generation | rx72n_system_regs.h, rx72n_clock.h | 335-389 | [ ] NOT STARTED | |
-| Ch 8: Voltage Monitor (LVDA) | rx72n_lvda_regs.h | 316-334 | [ ] NOT STARTED | |
+| Ch 8: Voltage Monitor (LVDA) | rx72n_lvda_regs.h | 316-334 | [x] COMPLETE | FIXED: rx_lvd_interrupts_t used uint16_t, corrected to uint8_t (vectors 88/89 fit in uint8_t) |
 | Ch 22: GPIO Ports | rx72n_port_regs.h | 861-881 | [x] COMPLETE | All base addrs + offsets + ODR word-addr OK; FIXED: 8 doc refs said "Ch 21", corrected to "Ch 22" |
 | Ch 23: MPC Pin Multiplex | rx72n_mpc_regs.h | 882-959 | [x] COMPLETE | All PFS addrs + PWPR + bit fields OK; FIXED: 5 doc refs said "Ch 20"/"Ch23", corrected to "Ch 23" |
 | Ch 15: ICU Interrupts | rx72n_icu_regs.h | 466-541 | [x] COMPLETE | All addrs + reserved gaps + DMRSR 4-byte alignment + CMT vectors 28/29 OK |
@@ -247,7 +247,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 34: WDT | rx72n_wdt_regs.h | 1666-1679 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 | Ch 35: IWDT | rx72n_iwdt_regs.h | 1680-1698 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 
-**Pass 1 last page verified:** `449 (Ch 3+11 Operating Modes/LPC complete 2026-04-13)`
+**Pass 1 last page verified:** `449 (Ch 3+11 Operating Modes/LPC complete 2026-04-13), 334 (Ch 8 LVDA complete 2026-04-13)`
 
 ---
 
