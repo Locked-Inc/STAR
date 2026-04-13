@@ -34,6 +34,20 @@ Do NOT add any code. Just document it here.
 | Ch 9 (Clock Generation) | Sub-clock oscillator (SOSCCR / SOSCK) | 346, 361 | 32.768 kHz sub-clock oscillator is available (used for RTC in other applications); STAR does not start the sub-clock |
 | Ch 11 (SBYCR) | Software Standby mode -- SBYCR.SSBY (b15) enters standby; SBYCR.OPE (b14) controls bus pin state in standby | 405, 436-442 | sbycr struct field exists at correct offset 0x0C but no named bit constants (k_sbycr_ssby, k_sbycr_ope) are defined; STAR never executes the WAIT instruction with SSBY=1 |
 | Ch 11 (MSTPCRA) | All-Module Clock Stop mode -- MSTPCRA.ACSE (b31) enables the mode; requires all modules set to module-stop state | 406-407, 438-439 | MSTPCRA struct field exists; individual module-stop bits (MSTPA0-31) can be set; but ACSE bit is not defined as a named constant and the all-module clock stop entry sequence is not implemented |
+| Ch 21: ELC | ELC link to RTC (periodic event, 0x2Eh) | 839 | RTC not implemented in STAR |
+| Ch 21: ELC | ELC link to IWDT underflow/refresh error (0x31h) | 839 | IWDT present but event link unused |
+| Ch 21: ELC | ELC link to SCI5 events (0x3A-0x3Dh: error, rx full, tx empty, tx end) | 839 | SCI not implemented in STAR |
+| Ch 21: ELC | ELC link to RIIC0 events (0x4E-0x51h: error, rx full, tx empty, tx end) | 839 | RIIC present but event link unused |
+| Ch 21: ELC | ELC link to RSPI0 events (0x52-0x56h: error, idle, rx full, tx empty, tx end) | 840 | RSPI present but event link unused |
+| Ch 21: ELC | ELC link to LVD1/LVD2 voltage detection (0x5B-0x5Ch) | 840 | LVD present but event link unused |
+| Ch 21: ELC | ELC link to oscillation stop detection (0x62h) | 840 | Clock generation circuit, unused |
+| Ch 21: ELC | ELC link to DOC data operation condition met (0x6Ah) | 840 | DOC not implemented in STAR |
+| Ch 21: ELC | ELC link to Ethernet EPTPC STCA timer events (0xA0-0xABh) | 841 | Ethernet not implemented in STAR |
+| Ch 21: ELC | ELOPF register bit definitions (TPU0-3 operation select) | 845 | TPU present but ELOPF bit enums not defined |
+| Ch 21: ELC | ELOPH register bit definitions (CMTW0 operation select) | 846 | CMTW not implemented; ELOPH accessor exists but no bit enum |
+| Ch 21: ELC | Port group event I/O (Port B / Port E via PGRn/PGCn/PDBFn) | 847-849 | Port event I/O not used in STAR |
+| Ch 21: ELC | Single port event link (PEL0-3) | 850 | Port event link not used in STAR |
+| Ch 21: ELC | Software event generation (ELSEGR) | 851 | Accessor defined but feature unused in STAR |
 
 ---
 
