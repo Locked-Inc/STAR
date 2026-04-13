@@ -284,4 +284,69 @@ what was fixed. Update this file as you work.
 
 ---
 
+## 2026-04-13 -- Ch 21 ELC (Event Link Controller)
+
+**Pages read:** 835-860 (Ch 21 complete)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_elc_regs.h
+
+### Findings
+
+- [OK] ELCR @ 0x0008B100: ELCON=bit7=0x80, reserved bits 6:0 = 0x7F -- correct
+- [OK] All ELSRn base addresses: ELSR0=0x0008B101, ELSR3=0x0008B104, ELSR4=0x0008B105,
+  ELSR7=0x0008B108, ELSR10-13=0x0008B10B-10E, ELSR15-16=0x0008B110-111,
+  ELSR18-28=0x0008B113-11D -- all match manual p.837
+- [OK] ELSR33=0x0008B131, ELSR35-38=0x0008B133-136, ELSR45=0x0008B13D,
+  ELSR48-57=0x0008B146-14F -- all match manual p.837
+- [OK] ELOPA=0x0008B11F, ELOPB=0x0008B120, ELOPC=0x0008B121, ELOPD=0x0008B122 -- correct
+- [OK] ELOPF=0x0008B13F, ELOPH=0x0008B141 -- correct
+- [OK] PGR1=0x0008B123, PGR2=0x0008B124, PGC1=0x0008B125, PGC2=0x0008B126 -- correct
+- [OK] PDBF1=0x0008B127, PDBF2=0x0008B128, PEL0-3=0x0008B129-12C, ELSEGR=0x0008B12D -- correct
+- [OK] ELSRn event values: MTU0 (0x01-0x07), MTU3 (0x10-0x14), MTU4 (0x15-0x1A),
+  CMT1 (0x1F), TMR0 (0x22-0x24), S12AD (0x58), S12AD1 (0x6C), DMAC0-3 (0x5D-0x60),
+  DTC (0x61), port events (0x63-0x68), software (0x69), GPTW0-3 (0x80-0x9F) -- all correct
+- [OK] ELOPB MTU4MD[1:0] at bits 1:0 (shift=0, mask=0x03) -- correct
+- [OK] ELOPD TMR0-3MD[1:0] fields at bits 1:0/3:2/5:4/7:6 -- correct
+- [OK] ELSEGR SEG=bit0=0x01, WE=bit6=0x40, WI=bit7=0x80 -- correct
+- [OK] elc_mstpcr_t: MSTPCRB bit 9 = (1<<9) -- correct
+- [OK] PGR1/PGR2 bit layout: PGR0-7 at bits 0-7 -- correct
+- [FIXED] ELOPA MTU3MD[1:0]: shift was 4/mask 0x30 -- manual p.843 shows bits 7:6;
+  corrected to shift=6/mask=0xC0. Also fixed layout comment (4-bit reserved [5:2],
+  MTU3MD at [7:6]; not 2-bit reserved then MTU3 at [5:4]).
+- [FIXED] ELOPC CMT1MD[1:0]: shift was 0/mask 0x03 -- manual p.844 shows bits 3:2;
+  corrected to shift=2/mask=0x0C. Fixed layout comment (b1:b0 reserved, b3:b2 CMT1MD,
+  b7:b4 reserved; not b1:b0 CMT1MD and b7:b2 reserved).
+- [FIXED] elop_timer_op_t: values 0x01 and 0x02 were swapped. Manual p.843-846 says
+  0x01=counting restarted, 0x02=input capture (MTU/TPU) / event counter (CMT/TMR/CMTW).
+  Was: compare_match=0x00, input_capture=0x01, reserved=0x02, disabled=0x03.
+  Now: count_start=0x00, count_restart=0x01, input_capture=0x02, disabled=0x03.
+- [FIXED] pgc_bits_t: entire register layout was wrong. Manual p.848 shows PGCI[1:0]
+  at bits 1:0, PGCOVE at bit 2, PGCO[2:0] at bits 6:4. Code had PGCOVE=0x01 (bit 0),
+  spurious PGCOSEL field at bit 1, single-bit PGCO=0x08 (bit 3), PGCI at shift=4/
+  mask=0x30. Rewrote with correct positions, added PGCO 3-bit operation values
+  (low/high/toggle/buffer/rotate), fixed PGCI edge values (rising=0x00, falling=0x01,
+  both=0x02). Removed nonexistent PGCOSEL and wrong AND/OR/XOR labels.
+- [FIXED] pel_bits_t: three bugs. (a) PSB mask was 0x03 (2-bit) -- manual p.850 shows
+  PSB[2:0] is a 3-bit field for pins 0-7; corrected to 0x07. (b) Port E was 0x04
+  (bit 2) -- PSP[1:0] is at bits 4:3; Port E=PSP=10b=bit4=0x10, Port B=0x08; corrected
+  to 0x10. (c) ELD/PSM values were wrong: code named PSM=0x00 as "none", 0x20 as
+  "rising", 0x40 as "falling" -- manual shows 0x00=rising, 0x20=falling, 0x40=both;
+  names and semantics were shifted/swapped. Removed nonexistent "psm_group" field.
+  Rewrote with PSB/PSP/PSM naming matching the manual.
+- [FIXED] elc_elsr_reg(n): formula was base+1+n for all n, but ELSR33 is at
+  0x0008B131=base+0x10+33, not base+1+33=0x0008B122 (ELOPD!). Added elsr_range_adj_t
+  enum with adjustments for the three non-contiguous address ranges, and rewrote
+  function to select the correct adjustment per range.
+- [AVAILABLE] Multiple ELC event sources not declared in elsr_event_t: RTC, IWDT, SCI5,
+  RIIC0, RSPI0, LVD1/2, oscillation stop, DOC, Ethernet EPTPC -- logged in
+  AVAILABLE_FEATURES.md
+- [AVAILABLE] ELOPF bit definitions (TPU0-3 operation select) not defined -- logged
+- [AVAILABLE] ELOPH bit definitions (CMTW0 operation select) not defined -- logged
+- [AVAILABLE] Port event I/O (PGRn, PGCn, PDBFn, PELm) and software event (ELSEGR)
+  registers are defined but not used in STAR firmware -- logged
+
+### Commits
+- 5ba8a4338 -- fix(elc): correct ELOPA/ELOPC bit positions, timer op values, PGC/PEL layout, ELSRn formula
+
+---
+
 (future sessions go below this line)
