@@ -501,9 +501,9 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint16_t {
-  k_lvd1_irq = 88, /**< LVD1 - Voltage monitor 1 interrupt */
-  k_lvd2_irq = 89, /**< LVD2 - Voltage monitor 2 interrupt */
+typedef enum : uint8_t {
+  k_lvd1_irq = 88, /**< LVD1 - Voltage monitor 1 interrupt (Table 15.5 p.512) */
+  k_lvd2_irq = 89, /**< LVD2 - Voltage monitor 2 interrupt (Table 15.5 p.512) */
 } rx_lvd_interrupts_t;
 
 /* =============================================================================
