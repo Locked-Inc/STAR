@@ -19,7 +19,8 @@ Do NOT add any code. Just document it here.
 
 | Manual Chapter | Feature | Manual Pages | Notes |
 |----------------|---------|--------------|-------|
-| (populate as manual is reviewed) | | | |
+| Ch 8 (LVDA) | Voltage Monitor 0 (Vdet0) | 316, 327 | Configured via OFS1 option-setting memory (not a runtime register); always-on reset source; STAR does not configure OFS1.LVDAS or OFS1.VDSEL |
+| Ch 8 (LVDA) | LVDA ELC Event Link Output | 334 | LVD1/LVD2 can output Vdet passage detection events to ELC for cross-peripheral triggering; STAR code does not configure ELC for LVDA events |
 
 ---
 
