@@ -53,6 +53,14 @@ Do NOT add any code. Just document it here.
 | Ch 25 (POE3a) | Configurable alternative output level (ALR1) | 1219 | Set output state when hi-Z triggered (instead of tristate); could drive a known-safe level |
 | Ch 25 (POE3a) | Software output disable (SPOER) | 1220 | Software-only MTU hi-Z without hardware fault; MTUCH0HIZ/67HIZ/34HIZ bits |
 | Ch 25 (POE3a) | Conditional hi-Z source expansion (POECR4, POECR5) | 1229-1232 | Add extra POE# flag conditions on top of base POECR2/3 hi-Z; ICxADDMT34/67ZE and ICxADDMT0ZE |
+| Ch 28 (TPU) | Compare match / PWM output on TIOC pins | 1446-1452, 1461 | TPU TIOR I/O control register allows output on TIOCnA/B pins; STAR only uses phase counting (input). |
+| Ch 28 (TPU) | Input capture mode | 1452-1453 | TPU can latch TCNT into TGR on pin edge; STAR uses phase counting only. |
+| Ch 28 (TPU) | Cascaded 32-bit counter (TPU1+TPU2 or TPU4+TPU5) | 1479-1480 | TMDR.TCFD bit + TSYR sync start allows 32-bit chained counter; STAR uses them as independent 16-bit phase counters. |
+| Ch 28 (TPU) | Buffer operation (TMDR BFA/BFB bits) | 1481, 1498-1499 | TGR buffer registers for glitch-free compare-match/PWM updates; not used in phase counting mode. |
+| Ch 28 (TPU) | A/D conversion start trigger (TIER.TTGE) | 1464, 1494 | TIER bit 7 allows TPU compare match to trigger S12AD conversion; not wired up in STAR. |
+| Ch 28 (TPU) | DTC/DMAC activation from TPU interrupts | 1495 | TPU TGIA/TGIB/TCIV interrupt sources can activate DTC or DMAC transfers; not used in STAR. |
+| Ch 28 (TPU) | ELC event link (start / restart / input capture) | 1513-1519 | TPU can start counting, restart TCNT, or trigger input capture in response to ELC event signals; not used in STAR. |
+| Ch 28 (TPU) | Noise filter (NFCR register) | 1469-1470 | Per-channel noise filter on TCLK/TIOC pins; configurable 1/2/4/8 PCLK sampling; STAR does not enable it. |
 
 ---
 
