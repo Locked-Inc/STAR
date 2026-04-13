@@ -150,4 +150,32 @@ what was fixed. Update this file as you work.
 
 ---
 
+## 2026-04-13 -- Ch 15 ICU (Interrupt Controller) Registers
+
+**Pages read:** 466-541 (Ch 15 complete)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_icu_regs.h
+
+### Findings
+- [OK] k_icu_base_addr=0x00087000 -- matches manual p.467
+- [OK] ir[256] at +0x000 (IR016=0x00087010, IR255=0x000870FF) -- correct
+- [OK] dtcer[256] at +0x100 (DTCER026=0x0008711A, DTCER255=0x000871FF) -- correct
+- [OK] ier[32] at +0x200 (IER02=0x00087202 to IER1F=0x0008721F) -- correct
+- [OK] swintr at +0x2E0, swint2r at +0x2E1 -- match manual p.472
+- [OK] fir (uint16_t) at +0x2F0 -- match manual p.471
+- [OK] ipr[256] at +0x300 (IPR000=0x00087300 to IPR255=0x000873FF) -- correct
+- [OK] dmrsr[8] at +0x400 (DMRSR0=0x400, DMRSR1=0x404, ..., DMRSR7=0x41C, 4-byte spacing) -- correct
+- [OK] irqcr[16] at +0x500 (IRQCR0=0x00087500 to IRQCR15=0x0008750F) -- correct
+- [OK] irqflte[2] (uint8_t) at +0x520, irqfltc[2] (uint16_t) at +0x528 -- correct
+- [OK] IRQFLTE0=0x520, IRQFLTE1=0x521, IRQFLTC0=0x528, IRQFLTC1=0x52A -- correct
+- [OK] nmisr=+0x580, nmier=+0x581, nmiclr=+0x582, nmicr=+0x583 -- match manual p.479
+- [OK] exnmisr=+0x584, exnmier=+0x585, exnmiclr=+0x586 -- correct
+- [OK] nmiflte=+0x590, nmifltc=+0x594 -- match manual p.483-484
+- [OK] All 9 reserved byte gap sizes verified correct (192,14,14,224,16,6,84,9,3)
+- [OK] CMT vector numbers: CMT0_CMI0=28, CMT1_CMI1=29, IER03.IEN4/5 -- match manual p.503
+
+### Commits
+- (none, all OK, no fixes needed)
+
+---
+
 (future sessions go below this line)
