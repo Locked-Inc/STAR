@@ -284,4 +284,56 @@ what was fixed. Update this file as you work.
 
 ---
 
+## 2026-04-13 -- Ch 41 SCI (Serial Communications Interface) Registers
+
+**Pages read:** 2037-2216 (Ch 41 complete)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_sci_regs.h
+
+### Findings
+
+- [OK] All 13 base addresses match manual Table 41.1:
+  - SCI0=0x0008A000, SCI1=0x0008A020, SCI2=0x0008A040, SCI3=0x0008A060,
+    SCI4=0x0008A080, SCI5=0x0008A0A0, SCI6=0x0008A0C0 (SCIj, PCLKB, 0x20 spacing)
+  - SCI7=0x000D00E0, SCI8=0x000D0000, SCI9=0x000D0020, SCI10=0x000D0040,
+    SCI11=0x000D0060 (SCIi, PCLKA, non-uniform spacing)
+  - SCI12=0x0008B300 (SCIh, PCLKB, standalone)
+- [OK] All 14 register offsets within rx_sci_regs_t correct:
+  - SMR=+0x00, BRR=+0x01, SCR=+0x02, TDR=+0x03, SSR=+0x04, RDR=+0x05
+  - SCMR=+0x06, SEMR=+0x07, SNFR=+0x08, SIMR1=+0x09, SIMR2=+0x0A
+  - SIMR3=+0x0B, SISR=+0x0C, SPMR=+0x0D
+- [OK] sizeof(rx_sci_regs_t) == 14 (static_assert present) -- correct
+- [FIXED] SCMR Doxygen comment had wrong bit positions and missing bits:
+  - Was: Bit4=SDIR, Bit3=SINV, Bits2-1=Reserved, Bit0=SMIF
+  - Manual p.2072 (sec 41.2.16): Bit7=BCP2, Bits6-5=Reserved(w1), Bit4=CHR1,
+    Bit3=SDIR, Bit2=SINV, Bit1=Reserved(w1), Bit0=SMIF
+  - Corrected: added BCP2 at b7, moved SDIR to b3, moved SINV to b2, added CHR1 at b4
+- [FIXED] SEMR Doxygen comment incorrectly grouped b1 and b0 as both Reserved:
+  - Was: "Bits 1-0: Reserved"
+  - Manual p.2088 (sec 41.2.17): Bit1=Reserved, Bit0=ACS0 (Asynchronous mode clock
+    source select 0)
+  - Corrected: split to "Bit 1: Reserved" and "Bit 0: ACS0 - Asynchronous mode clock
+    source select 0"
+- [FIXED] SPMR Doxygen comment was missing CTSE bit and reserved bit at b3:
+  - Was: b7=CKPH, b6=CKPOL, b4=MFF, b2=MSS, b0=SSE (b1 completely absent, b3 absent)
+  - Manual p.2097 (sec 41.2.21): also b3=Reserved, b1=CTSE (CTS enable)
+  - Corrected: added "Bit 3: Reserved" and "Bit 1: CTSE - CTS enable"
+- [AVAILABLE] TDRH/TDRL (+0x0E/+0x0F): 9-bit transmit registers -- added to AVAILABLE_FEATURES.md
+- [AVAILABLE] RDRH/RDRL (+0x10/+0x11): 9-bit receive registers -- added to AVAILABLE_FEATURES.md
+- [AVAILABLE] MDDR (+0x12): Modulation Duty Register -- added to AVAILABLE_FEATURES.md
+- [AVAILABLE] DCCR (+0x13): Data Comparison Control Register -- added to AVAILABLE_FEATURES.md
+- [AVAILABLE] SSRFIFO, FCR, FDR, LSR, FTDR, FRDR (SCI7-11 FIFO mode) -- added to AVAILABLE_FEATURES.md
+- [AVAILABLE] CDR (+0x1A/+0x1B): Comparison Data Register -- added to AVAILABLE_FEATURES.md
+- [AVAILABLE] SPTR (+0x1C): Serial Port Register -- added to AVAILABLE_FEATURES.md
+- [AVAILABLE] SCI12 extended serial mode registers (ESMER, CR0-CR3, PCR, ICR, STR, STCR,
+  CF0DR, CF0CR, CF0RR, PCF1DR, SCF1DR, CF1CR, CF1RR, TCR, TMR, TPRE, TCNT) -- added
+- [NOTE] Pages 2117-2216 (sections 41.3 onward) are entirely operational/behavioral:
+  async mode, multi-processor, clock-sync, smart card, simple I2C, simple SPI, bit rate
+  modulation, extended serial mode, noise cancellation, interrupt sources, event linking,
+  usage notes -- no new register addresses or bit constants to verify
+
+### Commits
+- bb64ca644 -- fix(sci): correct SCMR/SEMR/SPMR bit descriptions
+
+---
+
 (future sessions go below this line)
