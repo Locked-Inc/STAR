@@ -19,7 +19,11 @@ Do NOT add any code. Just document it here.
 
 | Manual Chapter | Feature | Manual Pages | Notes |
 |----------------|---------|--------------|-------|
-| (populate as manual is reviewed) | | | |
+| Ch 25 (POE3a) | MTU-based PWM emergency stop via external POE# pins | 1199-1235 | STAR uses GPTW+POEG instead; POE3a would add hi-Z control for MTU0/3/4/6/7 complementary outputs via ICSR1-6 (POE0#, POE4#, POE8#, POE10#, POE11# inputs) |
+| Ch 25 (POE3a) | Overcurrent detection hi-Z (OCSR1, OCSR2) | 1214-1216 | Hardware OC-pin triggered output disable for MTU outputs; complements pin-based ICSR detection |
+| Ch 25 (POE3a) | Configurable alternative output level (ALR1) | 1219 | Set output state when hi-Z triggered (instead of tristate); could drive a known-safe level |
+| Ch 25 (POE3a) | Software output disable (SPOER) | 1220 | Software-only MTU hi-Z without hardware fault; MTUCH0HIZ/67HIZ/34HIZ bits |
+| Ch 25 (POE3a) | Conditional hi-Z source expansion (POECR4, POECR5) | 1229-1232 | Add extra POE# flag conditions on top of base POECR2/3 hi-Z; ICxADDMT34/67ZE and ICxADDMT0ZE |
 
 ---
 
