@@ -225,7 +225,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 9: Clock Generation | rx72n_system_regs.h, rx72n_clock.h | 335-389 | [ ] NOT STARTED | |
 | Ch 8: Voltage Monitor (LVDA) | rx72n_lvda_regs.h | 316-334 | [ ] NOT STARTED | |
 | Ch 22: GPIO Ports | rx72n_port_regs.h | 861-881 | [x] COMPLETE | All base addrs + offsets + ODR word-addr OK; FIXED: 8 doc refs said "Ch 21", corrected to "Ch 22" |
-| Ch 23: MPC Pin Multiplex | rx72n_mpc_regs.h | 882-959 | [ ] NOT STARTED | |
+| Ch 23: MPC Pin Multiplex | rx72n_mpc_regs.h | 882-959 | [x] COMPLETE | All PFS addrs + PWPR + bit fields OK; FIXED: 5 doc refs said "Ch 20"/"Ch23", corrected to "Ch 23" |
 | Ch 15: ICU Interrupts | rx72n_icu_regs.h | 466-541 | [ ] NOT STARTED | |
 | Ch 20: DTC | rx72n_dtc_regs.h | 786-834 | [x] COMPLETE | All 9 addrs OK (Ch 5 + header) |
 | Ch 18: DMAC | rx72n_dmac_regs.h | 677-717 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
@@ -247,7 +247,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 34: WDT | rx72n_wdt_regs.h | 1666-1679 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 | Ch 35: IWDT | rx72n_iwdt_regs.h | 1680-1698 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 
-**Pass 1 last page verified:** `881 (Ch 22 GPIO complete 2026-04-13)`
+**Pass 1 last page verified:** `959 (Ch 23 MPC complete 2026-04-13)`
 
 ---
 
