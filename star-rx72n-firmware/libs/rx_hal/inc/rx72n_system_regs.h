@@ -93,7 +93,7 @@
  * - Chapter 5: I/O Registers (address map)
  * - Chapter 9: Clock Generation Circuit
  * - Chapter 13: Register Write Protection
- * - Chapter 7: Low Power Modes
+ * - Chapter 11: Low Power Consumption
  *
  * @par Verification Status
  * [PASS] VERIFIED (2026-01-28) - All base addresses and register offsets verified

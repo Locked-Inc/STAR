@@ -284,4 +284,54 @@ what was fixed. Update this file as you work.
 
 ---
 
+## 2026-04-13 -- Ch 3 Operating Modes + Ch 11 Low Power Consumption
+
+**Pages read:** 195-202 (Ch 3 complete), 401-449 (Ch 11 complete)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_lpc_regs.h,
+                  star-rx72n-firmware/libs/rx_hal/inc/rx72n_system_regs.h
+
+### Findings
+
+**Ch 3 -- Operating Modes (pages 195-202)**
+
+- [OK] MDMONR @ 0x00080000 (struct offset 0x00, 16-bit): k_mdmonr_md=0x0001 (b0=MD pin status) -- matches manual p.196
+- [OK] SYSCR0 @ 0x00080006 (struct offset 0x06, 16-bit): k_syscr0_rome=0x0001 (b0), k_syscr0_exbe=0x0002 (b1), k_syscr0_key=0x5A00 (b15:b8) -- matches manual p.197
+- [OK] SYSCR1 @ 0x00080008 (struct offset 0x08, 16-bit): k_syscr1_rame=0x0001 (b0), k_syscr1_eccrame=0x0040 (b6), k_syscr1_sbyrame=0x0080 (b7), reserved_mask=0x003E (b5:b1) -- matches manual p.198
+- [OK] rx_system_regs_t struct: reserved0[4] @ 0x02-0x05, reserved1[2] @ 0x0A-0x0B, all gap sizes correct -- matches manual address layout
+- [AVAILABLE] External bus mode (SYSCR0.EXBE) -- added to AVAILABLE_FEATURES.md
+
+**Ch 11 -- Low Power Consumption (pages 401-449)**
+
+- [OK] SBYCR @ 0x0008000C (struct offset 0x0C, 16-bit): field exists at correct address; reserved2[2] @ 0x0E-0x0F gap correct -- matches manual p.405
+- [OK] MSTPCRA @ 0x00080010 (struct offset 0x10, 32-bit): k_mstpa_cmt23=14 (b14=CMT unit 1, CMT2/CMT3) -- matches manual p.406
+- [OK] MSTPCRB @ 0x00080014 (struct offset 0x14, 32-bit): k_mstpb_usb0=19 (b19=USB0), k_mstpb_crc=23 (b23=CRC) -- matches manual p.408-409
+- [OK] MSTPCRC @ 0x00080018 (struct offset 0x18, 32-bit): field at correct address -- matches manual p.410-411
+- [OK] MSTPCRD @ 0x0008001C (struct offset 0x1C, 32-bit): field at correct address -- matches manual p.412-413
+- [OK] OPCCR @ 0x000800A0 (8-bit): k_opccr_opcm_highspeed=0x00 (000b), k_opccr_opcm_lowspeed1=0x06 (110b), k_opccr_opcm_lowspeed2=0x07 (111b), k_opccr_opcm_mask=0x07, k_opccr_opcmtsf=0x10 (b4) -- matches manual p.414
+- [OK] RSTCKCR @ 0x000800A1 (8-bit): k_rstckcr_rstcksel_hoco=0x01 (001b), k_rstckcr_rstcksel_main=0x02 (010b), k_rstckcr_rstcksel_mask=0x07, k_rstckcr_rstcken=0x80 (b7) -- matches manual p.417
+- [OK] DPSBYCR @ 0x0008C280 (8-bit): k_dpsbycr_deepcut_ram_usb_on=0x00, k_dpsbycr_deepcut_ram_usb_off=0x01, k_dpsbycr_deepcut_lvd_off=0x03, k_dpsbycr_deepcut_mask=0x03, k_dpsbycr_iokeep=0x40 (b6), k_dpsbycr_dpsby=0x80 (b7) -- matches manual p.418
+- [OK] DPSIER0 @ 0x0008C282 (8-bit): DIRQ0E-DIRQ7E = 0x01-0x80 (b0-b7) -- matches manual p.420
+- [OK] DPSIER1 @ 0x0008C283 (8-bit): DIRQ8E-DIRQ15E = 0x01-0x80 (b0-b7) -- matches manual p.421
+- [OK] DPSIER2 @ 0x0008C284 (8-bit): DLVD1IE=0x01(b0), DLVD2IE=0x02(b1), DRTCIIE=0x04(b2), DRTCAIE=0x08(b3), DNMIE=0x10(b4), DRIICDIE=0x20(b5), DRIICCIE=0x40(b6), DUSBIE=0x80(b7) -- matches manual p.422
+- [OK] DPSIER3 @ 0x0008C285 (8-bit): k_dpsier3_dcanie=0x01 (b0=DCANIE=CRX1-DS) -- matches manual p.423
+- [OK] DPSIFR0 @ 0x0008C286 (8-bit): DIRQ0F-DIRQ7F = 0x01-0x80 (b0-b7) -- matches manual p.424
+- [OK] DPSIFR1 @ 0x0008C287 (8-bit): DIRQ8F-DIRQ15F = 0x01-0x80 (b0-b7) -- matches manual p.425
+- [OK] DPSIFR2 @ 0x0008C288 (8-bit): DLVD1IF=0x01, DLVD2IF=0x02, DRTCIIF=0x04, DRTCAIF=0x08, DNMIF=0x10, DRIICDIF=0x20, DRIICCIF=0x40, DUSBIF=0x80 -- matches manual p.426
+- [OK] DPSIFR3 @ 0x0008C289 (8-bit): k_dpsifr3_dcanif=0x01 (b0=DCANIF=CRX1-DS) -- matches manual p.429
+- [OK] DPSIEGR0 @ 0x0008C28A (8-bit): DIRQ0EG-DIRQ7EG = 0x01-0x80 (b0-b7, 0=fall/1=rise) -- matches manual p.430
+- [OK] DPSIEGR1 @ 0x0008C28B (8-bit): DIRQ8EG-DIRQ15EG = 0x01-0x80 (b0-b7) -- matches manual p.431
+- [OK] DPSIEGR2 @ 0x0008C28C (8-bit): DLVD1EG=0x01(b0), DLVD2EG=0x02(b1), DNMIEG=0x10(b4), DRIICDEG=0x20(b5), DRIICCEG=0x40(b6) -- matches manual p.432; b3:b2 and b7 reserved (no code values, correct)
+- [OK] DPSIEGR3 @ 0x0008C28D (8-bit): k_dpsiegr3_dcanieg=0x01 (b0=DCANIEG) -- matches manual p.432
+- [OK] DPSBKRy @ 0x0008C2A0-0x0008C2BF: k_dpsbkr_base_addr=0x0008C2A0, k_dpsbkr_size=32 -- matches manual p.433
+- [OK] rx_dps_regs_t struct: dpsbycr@+0x00, reserved@+0x01, dpsier0@+0x02, ..., dpsiegr3@+0x0D (14 bytes total) -- matches manual register layout
+- [OK] All static_assert address checks in lpc_regs.h match manual exactly (all 14 assertions)
+- [FIXED] system_regs.h @par Manual References: "Chapter 7: Low Power Modes" was wrong; Chapter 7 is Option-Setting Memory; corrected to "Chapter 11: Low Power Consumption"
+- [AVAILABLE] Software Standby Mode (SBYCR.SSBY=b15, SBYCR.OPE=b14) -- added to AVAILABLE_FEATURES.md
+- [AVAILABLE] All-Module Clock Stop Mode (MSTPCRA.ACSE=b31) -- added to AVAILABLE_FEATURES.md
+
+### Commits
+- (see next commit)
+
+---
+
 (future sessions go below this line)
