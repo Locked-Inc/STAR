@@ -812,4 +812,46 @@ what was fixed. Update this file as you work.
 
 ---
 
+## 2026-04-13 -- Ch 62 Flash Memory Registers
+
+**Pages read:** 2992-3123 (Ch 62 complete; pages 3124+ are Ch 63 Electrical Characteristics)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_flash_regs.h
+
+### Findings
+
+- [OK] ROM Cache: ROMCE=0x00081000, ROMCIV=0x00081004, NCRG0=0x00081040, NCRC0=0x00081044, NCRG1=0x00081048, NCRC1=0x0008104C -- all correct
+- [OK] FWEPROR at 0x0008C296, FLWE[1:0] at bits 1:0, reset=0x02 -- correct
+- [OK] All 23 FACI register addresses (0x007FE010-0x007FE0E8 range) -- all correct
+- [OK] FASTAT: CFAE=b7, CMDLK=b4, DFAE=b3 -- match manual p.3011
+- [OK] FAEINT: CFAEIE=b7, CMDLKIE=b4, DFAEIE=b3, reset=0x98 -- match manual p.3012
+- [OK] FSTATR: FLWEERR=b6, PRGSPD=b8, ERSSPD=b9, DBFULL=b10, SUSRDY=b11, PRGERR=b12, ERSERR=b13, ILGLERR=b14, FRDY=b15, OTERR=b20, SECERR=b21, FESETERR=b22, ILGCOMERR=b23, reset=0x00008000 -- all correct
+- [OK] FENTRYR: FENTRYC=b0, FENTRYD=b7, key=0xAA00, code_pe=0xAA01, data_pe=0xAA80, read_mode=0xAA00 -- correct
+- [OK] FSUINITR: SUINIT=b0, key=0x2D00, init_cmd=0x2D01 -- correct
+- [OK] FRESETR: FRESET=b0, key=0x2D00, reset_cmd=0x2D01 -- correct
+- [OK] FEXCR, FEADDR, FRSPE, FCMDB, FPEADR: all register address constants and basic bit structure -- correct
+- [OK] FBCCNT: BCDIR=b0 -- correct
+- [OK] FBCSTAT: BCST=b0 -- correct
+- [OK] FAWMON, FCPSR, FSUACR: register addresses correct; bit-field details not fully enumerated in code (see AVAILABLE_FEATURES.md)
+- [OK] FPCKAR: PCKA[7:0] mask=0x00FF, key=0x1E00 -- correct
+- [OK] EEPFCLK at 0x007FC040 -- correct
+- [OK] UIDR0-3 at 0xFE7F7D90/7D94/7D98/7D9C (4-byte spacing) -- correct
+- [OK] Code flash range: 0xFFC00000-0xFFFFFFFF (4MB) -- correct
+- [OK] Data flash range: 0x00100000-0x00107FFF (32KB) -- correct
+- [OK] FACI command area at 0x007E0000 -- correct
+- [OK] FACI commands: program=0xE8, block_erase=0x20, pe_suspend=0xB0, pe_resume=0xD0, status_clear=0x50, forced_stop=0xB3, blank_check=0x71, config_set=0x40, d0=0xD0 -- all correct
+- [FIXED] FCMDR bit masks/shifts were BACKWARDS (p.3015 sec 62.4.14): manual says b7:b0=PCMDR (prev cmd, low byte), b15:b8=CMDR (cur cmd, high byte). Code had pcmdr_mask=0xFF00/shift=8 and cmdr_mask=0x00FF. Corrected to pcmdr_mask=0x00FF/shift=0 and cmdr_mask=0xFF00/shift=8
+- [FIXED] Code flash 32KB block count invariant: was 120, manual Fig 62.2 (p.2995) shows blocks 8-133 = 126 blocks. Corrected @invariant comment.
+- [FIXED] FPSADDR register name wrong in 3 places: was "Flash Processing Switch Address"; correct name per manual Table 62.1 is "Data Flash Programming Start Address"
+- [FIXED] Removed k_faci_cmd_lockbit_read=0x71: there is no separate lock-bit-read FACI command; 0x71 is exclusively the blank check command. Was a duplicate of k_faci_cmd_blank_check with a misleading name.
+- [AVAILABLE] Multi-block erase FACI command (0x21) -- added to AVAILABLE_FEATURES.md
+- [AVAILABLE] Dual bank flash mode -- added to AVAILABLE_FEATURES.md
+- [AVAILABLE] Trusted Memory (TM) protection -- added to AVAILABLE_FEATURES.md
+- [AVAILABLE] Background Operation (BGO) -- added to AVAILABLE_FEATURES.md
+- [AVAILABLE] FSUACR.SAS startup area selection -- added to AVAILABLE_FEATURES.md
+
+### Commits
+- 0246dd8bc -- fix(flash): correct FCMDR bit masks, block count, FPSADDR name, remove lockbit_read
+
+---
+
 (future sessions go below this line)
