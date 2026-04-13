@@ -229,7 +229,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 15: ICU Interrupts | rx72n_icu_regs.h | 466-541 | [x] COMPLETE | All addrs + reserved gaps + DMRSR 4-byte alignment + CMT vectors 28/29 OK |
 | Ch 20: DTC | rx72n_dtc_regs.h | 786-834 | [x] COMPLETE | All 9 addrs OK (Ch 5 + header) |
 | Ch 18: DMAC | rx72n_dmac_regs.h | 677-717 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
-| Ch 62: Flash Memory | rx72n_flash_regs.h | 2992-3233 | [ ] NOT STARTED | |
+| Ch 62: Flash Memory | rx72n_flash_regs.h | 2992-3233 | [x] COMPLETE | FIXED: FCMDR masks swapped, block count 120->126, FPSADDR name wrong, lockbit_read duplicate removed |
 | Ch 60: RAM Control | rx72n_ram_regs.h | 2977-2990 | [ ] NOT STARTED | |
 | Ch 17: MPU | rx72n_mpu_regs.h | 657-676 | [x] COMPLETE | All region + ctrl addrs OK (Ch 5 + header) |
 | Ch 21: ELC | rx72n_elc_regs.h | 835-860 | [ ] NOT STARTED | |
