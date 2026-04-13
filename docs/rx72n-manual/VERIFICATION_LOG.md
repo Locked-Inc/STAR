@@ -105,4 +105,25 @@ what was fixed. Update this file as you work.
 
 ---
 
+## 2026-04-13 -- Ch 22 I/O Ports (GPIO) Registers
+
+**Pages read:** 861-881 (Ch 22 complete)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_port_regs.h
+
+### Findings
+- [OK] PDR base=0x0008C000, PODR base=0x0008C020, PIDR base=0x0008C040 -- match manual p.863-864
+- [OK] PMR base=0x0008C060, ODR0 base=0x0008C080 -- match manual p.865-866
+- [OK] PCR base=0x0008C0C0, DSCR base=0x0008C0E0, DSCR2 base=0x0008C128 -- match manual p.870-873
+- [OK] Port offsets 0x00-0x0E (ports 0-9, A-F) and 0x12 (port J) -- correct (144-pin: no G, H, K, L, M, N, Q)
+- [OK] ODR word-addressing: portN_odr() = k_port_odr0_base + (port_offset * 2) -- all 14 accessors correct
+- [OK] Struct offsets: pdr=+0x00, podr=+0x20, pidr=+0x40, pmr=+0x60, pcr=+0xC0, dscr=+0xE0, dscr2=+0x128 -- correct
+- [OK] sizeof(rx_port_regs_t) == 0x129 = 297 bytes (static_assert present) -- correct
+- [FIXED] 8 doc comments referenced "Chapter 21 (I/O Ports)" -- manual section numbers are "22.3.x", corrected to "Chapter 22"
+  - Also corrected "Section 21.2" -> "Section 22.3" and "Section 21.3" -> "Section 22.4" throughout
+
+### Commits
+- (see next commit)
+
+---
+
 (future sessions go below this line)
