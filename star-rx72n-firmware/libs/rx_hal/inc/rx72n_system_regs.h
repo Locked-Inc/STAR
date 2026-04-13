@@ -1177,89 +1177,196 @@ static inline volatile uint8_t* ppllcr2_reg(void)
 }
 
 /* =============================================================================
+ * Reference Constants for Static Assertions
+ * Named constants eliminate magic-number literals in the static_assert checks
+ * below. Values are authoritative per RX72N Hardware Manual.
+ * =============================================================================
+ */
+
+/**
+ * @enum rx_system_addr_refs_t
+ * @brief Expected hardware addresses per RX72N Hardware Manual
+ * @details
+ * Each member documents the address mandated by the hardware manual chapter
+ * cited in the comment. Used in static_assert to cross-check address enum
+ * definitions against the manual reference values.
+ * @since Version 1.0.0
+ */
+typedef enum : uintptr_t {
+  k_ref_system_base = 0x00080000, /**< System register base address (Ch05, Sec 5.2.2) */
+  k_ref_prcr        = 0x000803FE, /**< PRCR address -- outside system struct (Ch05) */
+  k_ref_rstsr0      = 0x0008C290, /**< RSTSR0 address (Ch05) */
+  k_ref_rstsr1      = 0x0008C291, /**< RSTSR1 address (Ch05) */
+  k_ref_rstsr2      = 0x000800C0, /**< RSTSR2 address (Ch05) */
+  k_ref_swrr        = 0x000800C2, /**< SWRR address (Ch06) */
+  k_ref_memwait     = 0x0008101C, /**< MEMWAIT address (Ch09) */
+  k_ref_ppllcr      = 0x00080048, /**< PPLLCR address (Ch09) */
+  k_ref_ppllcr2     = 0x0008004A, /**< PPLLCR2 address (Ch09) */
+} rx_system_addr_refs_t;
+
+/**
+ * @enum rx_system_struct_layout_t
+ * @brief Expected size and member offsets for rx_system_regs_t
+ * @details
+ * Authoritative per RX72N Hardware Manual Ch05, Section 5.2.2 address map.
+ * Used in static_assert to verify the compiler produces the correct layout.
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_sys_regs_size        = 0x42, /**< Total size of rx_system_regs_t (66 bytes, 0x00-0x41) */
+  k_sys_reg_mdmonr_off   = 0x00, /**< Offset of MDMONR (mode monitor) */
+  k_sys_reg_syscr0_off   = 0x06, /**< Offset of SYSCR0 */
+  k_sys_reg_syscr1_off   = 0x08, /**< Offset of SYSCR1 */
+  k_sys_reg_sbycr_off    = 0x0C, /**< Offset of SBYCR (standby control) */
+  k_sys_reg_mstpcra_off  = 0x10, /**< Offset of MSTPCRA */
+  k_sys_reg_mstpcrb_off  = 0x14, /**< Offset of MSTPCRB */
+  k_sys_reg_mstpcrc_off  = 0x18, /**< Offset of MSTPCRC */
+  k_sys_reg_mstpcrd_off  = 0x1C, /**< Offset of MSTPCRD */
+  k_sys_reg_sckcr_off    = 0x20, /**< Offset of SCKCR (system clock control) */
+  k_sys_reg_sckcr2_off   = 0x24, /**< Offset of SCKCR2 */
+  k_sys_reg_sckcr3_off   = 0x26, /**< Offset of SCKCR3 (clock source select) */
+  k_sys_reg_pllcr_off    = 0x28, /**< Offset of PLLCR */
+  k_sys_reg_pllcr2_off   = 0x2A, /**< Offset of PLLCR2 (PLL enable) */
+  k_sys_reg_bckcr_off    = 0x30, /**< Offset of BCKCR (external bus clock) */
+  k_sys_reg_mosccr_off   = 0x32, /**< Offset of MOSCCR (main oscillator control) */
+  k_sys_reg_sosccr_off   = 0x33, /**< Offset of SOSCCR (sub-clock control) */
+  k_sys_reg_lococr_off   = 0x34, /**< Offset of LOCOCR (LOCO control) */
+  k_sys_reg_ilococr_off  = 0x35, /**< Offset of ILOCOCR (IWDT oscillator control) */
+  k_sys_reg_hococr_off   = 0x36, /**< Offset of HOCOCR (HOCO control) */
+  k_sys_reg_hococr2_off  = 0x37, /**< Offset of HOCOCR2 (HOCO frequency) */
+  k_sys_reg_oscovfsr_off = 0x3C, /**< Offset of OSCOVFSR (oscillation stable flags) */
+  k_sys_reg_ckocr_off    = 0x3E, /**< Offset of CKOCR (clock output control) */
+  k_sys_reg_ostdcr_off   = 0x40, /**< Offset of OSTDCR (oscillation stop detect control) */
+  k_sys_reg_ostdsr_off   = 0x41, /**< Offset of OSTDSR (oscillation stop detect status) */
+} rx_system_struct_layout_t;
+
+/**
+ * @enum rx_rstsr01_layout_t
+ * @brief Expected size and member offsets for rx_rstsr01_regs_t
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_rstsr01_struct_size = 2, /**< Total size of rx_rstsr01_regs_t (2 bytes) */
+  k_rstsr0_member_off   = 0, /**< Byte offset of rstsr0 member */
+  k_rstsr1_member_off   = 1, /**< Byte offset of rstsr1 member */
+} rx_rstsr01_layout_t;
+
+/**
+ * @enum rx_prcr_offset_t
+ * @brief PRCR register offset from system register base address
+ * @details PRCR is not part of rx_system_regs_t; it sits at base+0x3FE.
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_prcr_from_sys_base = 0x03FE, /**< PRCR offset from system base (NOT in system struct) */
+} rx_prcr_offset_t;
+
+/**
+ * @enum rx_clock_verify_t
+ * @brief Reference values for clock field-width and PLL multiplier assertions
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_nibble_all_ones    = 0x0F, /**< All bits set in 4-bit field (verifies 4-bit mask width) */
+  k_pllcr_stc_for_x10 = 9,    /**< PLLCR STC field value for 10x multiply (STC = mul - 1) */
+} rx_clock_verify_t;
+
+/* =============================================================================
  * Static Assertions - Verify Register Layout at Compile Time
  * Verified against RX72N Manual Ch05, Section 5.2.2 Address Map
  * =============================================================================
  */
 
 /* Verify base addresses match Hardware Manual Ch05 */
-static_assert(k_system_base_addr == 0x00080000, "System register base address incorrect");
-static_assert(k_prcr_addr == 0x000803FE,
+static_assert((uintptr_t)k_system_base_addr == (uintptr_t)k_ref_system_base,
+              "System register base address incorrect");
+static_assert((uintptr_t)k_prcr_addr == (uintptr_t)k_ref_prcr,
               "PRCR address incorrect (must be 0x000803FE, NOT in system struct)");
 
 /* Verify system register structure layout - offsets per RX72N Manual Ch05 */
-static_assert(sizeof(rx_system_regs_t) == 0x42,
+static_assert(sizeof(rx_system_regs_t) == k_sys_regs_size,
               "System register structure size incorrect (expected 0x42)");
-static_assert(offsetof(rx_system_regs_t, mdmonr) == 0x00,
+static_assert(offsetof(rx_system_regs_t, mdmonr) == k_sys_reg_mdmonr_off,
               "MDMONR offset incorrect (expected 0x00)");
-static_assert(offsetof(rx_system_regs_t, syscr0) == 0x06,
+static_assert(offsetof(rx_system_regs_t, syscr0) == k_sys_reg_syscr0_off,
               "SYSCR0 offset incorrect (expected 0x06)");
-static_assert(offsetof(rx_system_regs_t, syscr1) == 0x08,
+static_assert(offsetof(rx_system_regs_t, syscr1) == k_sys_reg_syscr1_off,
               "SYSCR1 offset incorrect (expected 0x08)");
-static_assert(offsetof(rx_system_regs_t, sbycr) == 0x0C, "SBYCR offset incorrect (expected 0x0C)");
-static_assert(offsetof(rx_system_regs_t, mstpcra) == 0x10,
+static_assert(offsetof(rx_system_regs_t, sbycr) == k_sys_reg_sbycr_off,
+              "SBYCR offset incorrect (expected 0x0C)");
+static_assert(offsetof(rx_system_regs_t, mstpcra) == k_sys_reg_mstpcra_off,
               "MSTPCRA offset incorrect (expected 0x10)");
-static_assert(offsetof(rx_system_regs_t, mstpcrb) == 0x14,
+static_assert(offsetof(rx_system_regs_t, mstpcrb) == k_sys_reg_mstpcrb_off,
               "MSTPCRB offset incorrect (expected 0x14)");
-static_assert(offsetof(rx_system_regs_t, mstpcrc) == 0x18,
+static_assert(offsetof(rx_system_regs_t, mstpcrc) == k_sys_reg_mstpcrc_off,
               "MSTPCRC offset incorrect (expected 0x18)");
-static_assert(offsetof(rx_system_regs_t, mstpcrd) == 0x1C,
+static_assert(offsetof(rx_system_regs_t, mstpcrd) == k_sys_reg_mstpcrd_off,
               "MSTPCRD offset incorrect (expected 0x1C)");
-static_assert(offsetof(rx_system_regs_t, sckcr) == 0x20, "SCKCR offset incorrect (expected 0x20)");
-static_assert(offsetof(rx_system_regs_t, sckcr2) == 0x24,
+static_assert(offsetof(rx_system_regs_t, sckcr) == k_sys_reg_sckcr_off,
+              "SCKCR offset incorrect (expected 0x20)");
+static_assert(offsetof(rx_system_regs_t, sckcr2) == k_sys_reg_sckcr2_off,
               "SCKCR2 offset incorrect (expected 0x24)");
-static_assert(offsetof(rx_system_regs_t, sckcr3) == 0x26,
+static_assert(offsetof(rx_system_regs_t, sckcr3) == k_sys_reg_sckcr3_off,
               "SCKCR3 offset incorrect (expected 0x26)");
-static_assert(offsetof(rx_system_regs_t, pllcr) == 0x28, "PLLCR offset incorrect (expected 0x28)");
-static_assert(offsetof(rx_system_regs_t, pllcr2) == 0x2A,
+static_assert(offsetof(rx_system_regs_t, pllcr) == k_sys_reg_pllcr_off,
+              "PLLCR offset incorrect (expected 0x28)");
+static_assert(offsetof(rx_system_regs_t, pllcr2) == k_sys_reg_pllcr2_off,
               "PLLCR2 offset incorrect (expected 0x2A)");
-static_assert(offsetof(rx_system_regs_t, bckcr) == 0x30, "BCKCR offset incorrect (expected 0x30)");
-static_assert(offsetof(rx_system_regs_t, mosccr) == 0x32,
+static_assert(offsetof(rx_system_regs_t, bckcr) == k_sys_reg_bckcr_off,
+              "BCKCR offset incorrect (expected 0x30)");
+static_assert(offsetof(rx_system_regs_t, mosccr) == k_sys_reg_mosccr_off,
               "MOSCCR offset incorrect (expected 0x32)");
-static_assert(offsetof(rx_system_regs_t, sosccr) == 0x33,
+static_assert(offsetof(rx_system_regs_t, sosccr) == k_sys_reg_sosccr_off,
               "SOSCCR offset incorrect (expected 0x33)");
-static_assert(offsetof(rx_system_regs_t, lococr) == 0x34,
+static_assert(offsetof(rx_system_regs_t, lococr) == k_sys_reg_lococr_off,
               "LOCOCR offset incorrect (expected 0x34)");
-static_assert(offsetof(rx_system_regs_t, ilococr) == 0x35,
+static_assert(offsetof(rx_system_regs_t, ilococr) == k_sys_reg_ilococr_off,
               "ILOCOCR offset incorrect (expected 0x35)");
-static_assert(offsetof(rx_system_regs_t, hococr) == 0x36,
+static_assert(offsetof(rx_system_regs_t, hococr) == k_sys_reg_hococr_off,
               "HOCOCR offset incorrect (expected 0x36)");
-static_assert(offsetof(rx_system_regs_t, hococr2) == 0x37,
+static_assert(offsetof(rx_system_regs_t, hococr2) == k_sys_reg_hococr2_off,
               "HOCOCR2 offset incorrect (expected 0x37)");
-static_assert(offsetof(rx_system_regs_t, oscovfsr) == 0x3C,
+static_assert(offsetof(rx_system_regs_t, oscovfsr) == k_sys_reg_oscovfsr_off,
               "OSCOVFSR offset incorrect (expected 0x3C)");
-static_assert(offsetof(rx_system_regs_t, ckocr) == 0x3E, "CKOCR offset incorrect (expected 0x3E)");
-static_assert(offsetof(rx_system_regs_t, ostdcr) == 0x40,
+static_assert(offsetof(rx_system_regs_t, ckocr) == k_sys_reg_ckocr_off,
+              "CKOCR offset incorrect (expected 0x3E)");
+static_assert(offsetof(rx_system_regs_t, ostdcr) == k_sys_reg_ostdcr_off,
               "OSTDCR offset incorrect (expected 0x40)");
-static_assert(offsetof(rx_system_regs_t, ostdsr) == 0x41,
+static_assert(offsetof(rx_system_regs_t, ostdsr) == k_sys_reg_ostdsr_off,
               "OSTDSR offset incorrect (expected 0x41)");
 
 /* Verify RSTSR addresses match Hardware Manual Ch05 */
-static_assert(k_rstsr0_addr == 0x0008C290, "RSTSR0 address incorrect");
-static_assert(k_rstsr1_addr == 0x0008C291, "RSTSR1 address incorrect");
-static_assert(k_rstsr2_addr == 0x000800C0, "RSTSR2 address incorrect");
-static_assert(sizeof(rx_rstsr01_regs_t) == 2, "RSTSR01 structure size incorrect");
-static_assert(offsetof(rx_rstsr01_regs_t, rstsr0) == 0, "RSTSR0 offset incorrect");
-static_assert(offsetof(rx_rstsr01_regs_t, rstsr1) == 1, "RSTSR1 offset incorrect");
+static_assert((uintptr_t)k_rstsr0_addr == (uintptr_t)k_ref_rstsr0, "RSTSR0 address incorrect");
+static_assert((uintptr_t)k_rstsr1_addr == (uintptr_t)k_ref_rstsr1, "RSTSR1 address incorrect");
+static_assert((uintptr_t)k_rstsr2_addr == (uintptr_t)k_ref_rstsr2, "RSTSR2 address incorrect");
+static_assert(sizeof(rx_rstsr01_regs_t) == k_rstsr01_struct_size,
+              "RSTSR01 structure size incorrect");
+static_assert(offsetof(rx_rstsr01_regs_t, rstsr0) == k_rstsr0_member_off,
+              "RSTSR0 offset incorrect");
+static_assert(offsetof(rx_rstsr01_regs_t, rstsr1) == k_rstsr1_member_off,
+              "RSTSR1 offset incorrect");
 
 /* Verify SWRR address matches Hardware Manual Ch06 */
-static_assert(k_swrr_addr == 0x000800C2, "SWRR address incorrect");
+static_assert((uintptr_t)k_swrr_addr == (uintptr_t)k_ref_swrr, "SWRR address incorrect");
 
 /* Verify MEMWAIT address match Hardware Manual Ch09 */
-static_assert(k_memwait_addr == 0x0008101C, "MEMWAIT address incorrect");
+static_assert((uintptr_t)k_memwait_addr == (uintptr_t)k_ref_memwait, "MEMWAIT address incorrect");
 
 /* Verify PPLL addresses match Hardware Manual Ch09 */
-static_assert(k_ppllcr_addr == 0x00080048, "PPLLCR address incorrect");
-static_assert(k_ppllcr2_addr == 0x0008004A, "PPLLCR2 address incorrect");
+static_assert((uintptr_t)k_ppllcr_addr == (uintptr_t)k_ref_ppllcr, "PPLLCR address incorrect");
+static_assert((uintptr_t)k_ppllcr2_addr == (uintptr_t)k_ref_ppllcr2, "PPLLCR2 address incorrect");
 
 /* Verify PRCR is NOT embedded in system struct (critical check) */
-static_assert((k_prcr_addr - k_system_base_addr) == 0x3FE,
+static_assert((uintptr_t)(k_prcr_addr - k_system_base_addr) == (uintptr_t)k_prcr_from_sys_base,
               "PRCR must be at offset 0x3FE from system base, not embedded in struct");
 
 /* Verify SCKCR clock divider field positions and masks */
-static_assert((k_sckcr_pckd_mask >> k_sckcr_pckd_shift) == 0xF, "SCKCR PCKD field mask incorrect");
-static_assert((k_sckcr_ick_mask >> k_sckcr_ick_shift) == 0xF, "SCKCR ICK field mask incorrect");
-static_assert((k_sckcr_fck_mask >> k_sckcr_fck_shift) == 0xF, "SCKCR FCK field mask incorrect");
+static_assert((k_sckcr_pckd_mask >> k_sckcr_pckd_shift) == (uint32_t)k_nibble_all_ones,
+              "SCKCR PCKD field mask incorrect");
+static_assert((k_sckcr_ick_mask >> k_sckcr_ick_shift) == (uint32_t)k_nibble_all_ones,
+              "SCKCR ICK field mask incorrect");
+static_assert((k_sckcr_fck_mask >> k_sckcr_fck_shift) == (uint32_t)k_nibble_all_ones,
+              "SCKCR FCK field mask incorrect");
 
 /* Verify STAR project SCKCR configuration value */
 static_assert((k_sckcr_star_240mhz & k_sckcr_ick_mask) ==
@@ -1276,7 +1383,8 @@ static_assert((k_sckcr_star_240mhz & k_sckcr_fck_mask) ==
               "STAR SCKCR: FCLK should be /4 (60 MHz)");
 
 /* Verify PLLCR multiplier encoding */
-static_assert((k_pllcr_star_24mhz_to_240mhz & k_pllcr_stc_mask) == (9U << k_pllcr_stc_shift),
+static_assert((k_pllcr_star_24mhz_to_240mhz & k_pllcr_stc_mask) ==
+                ((uint32_t)k_pllcr_stc_for_x10 << k_pllcr_stc_shift),
               "STAR PLLCR: STC should be 9 (multiply by 10)");
 static_assert((k_pllcr_star_24mhz_to_240mhz & k_pllcr_plidiv_mask) == k_pllcr_plidiv_1,
               "STAR PLLCR: PLIDIV should be /1");
