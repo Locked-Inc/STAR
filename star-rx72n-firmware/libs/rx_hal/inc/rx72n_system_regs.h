@@ -326,45 +326,53 @@ typedef enum : uint16_t {
  * | 3     | Sub-clock  | Sub-clock oscillator           |
  * | 4     | PLL        | PLL output                     |
  *
- * @par Clock Output Dividers (CKODIV)
+ * @par Clock Output Dividers (CKODIV[2:0] at bits 14:12)
  * | Value | Divider | Output Frequency     |
  * |-------|---------|----------------------|
- * | 0     | /1      | f (source frequency) |
- * | 1     | /2      | f/2                  |
- * | 2     | /4      | f/4                  |
- * | 3     | /8      | f/8                  |
- * | 4     | /16     | f/16                 |
- * | 5     | /32     | f/32                 |
- * | 6     | /64     | f/64                 |
- * | 7     | /128    | f/128                |
+ * | 000   | /1      | f (source frequency) |
+ * | 001   | /2      | f/2                  |
+ * | 010   | /4      | f/4                  |
+ * | 011   | /8      | f/8                  |
+ * | 100   | /16     | f/16                 |
+ * | other | --      | PROHIBITED           |
+ *
+ * @par Clock Output Sources (CKOSEL[2:0] at bits 10:8)
+ * | Value | Source       |
+ * |-------|--------------|
+ * | 000   | LOCO         |
+ * | 001   | HOCO         |
+ * | 010   | Main clock   |
+ * | 011   | Sub-clock    |
+ * | 100   | PLL circuit  |
+ * | 110   | PPLL circuit |
+ * | other | PROHIBITED   |
  *
  * @warning Clock output disabled by default (CKOSTP = 1)
+ * @warning CKODIV values 5, 6, 7 are PROHIBITED (max divisor is /16)
  * @note Requires PRCR unlock (PRC0) before modification
- * @see Manual Ch09 section 9.2.6
+ * @see Manual Ch09 section 9.2.21 CKOCR
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  /* Clock output source select (bits 10:8) */
+  /* Clock output source select (CKOSEL, bits 10:8) */
   k_ckocr_ckosel_loco     = (0U << 8), /**< LOCO (low-speed on-chip osc) */
   k_ckocr_ckosel_hoco     = (1U << 8), /**< HOCO (high-speed on-chip osc) */
   k_ckocr_ckosel_main     = (2U << 8), /**< Main oscillator */
   k_ckocr_ckosel_subclock = (3U << 8), /**< Sub-clock oscillator */
   k_ckocr_ckosel_pll      = (4U << 8), /**< PLL output */
+  k_ckocr_ckosel_ppll     = (6U << 8), /**< PPLL output (110b, not 101b) */
   k_ckocr_ckosel_mask     = (7U << 8), /**< CKOSEL field mask */
 
-  /* Clock output divider (bits 14:12) */
+  /* Clock output divider (CKODIV, bits 14:12) -- max is /16, values 5-7 PROHIBITED */
   k_ckocr_ckodiv_1    = (0U << 12), /**< Divide by 1 */
   k_ckocr_ckodiv_2    = (1U << 12), /**< Divide by 2 */
   k_ckocr_ckodiv_4    = (2U << 12), /**< Divide by 4 */
   k_ckocr_ckodiv_8    = (3U << 12), /**< Divide by 8 */
-  k_ckocr_ckodiv_16   = (4U << 12), /**< Divide by 16 */
-  k_ckocr_ckodiv_32   = (5U << 12), /**< Divide by 32 */
-  k_ckocr_ckodiv_64   = (6U << 12), /**< Divide by 64 */
-  k_ckocr_ckodiv_128  = (7U << 12), /**< Divide by 128 */
+  k_ckocr_ckodiv_16   = (4U << 12), /**< Divide by 16 (maximum valid divisor) */
   k_ckocr_ckodiv_mask = (7U << 12), /**< CKODIV field mask */
 
-  /* Clock output stop (bit 15) */
-  k_ckocr_ckostp = (1U << 15), /**< Clock output stop (1=stopped, 0=running) */
+  /* Clock output stop (CKOSTP, bit 15) */
+  k_ckocr_ckostp = (1U << 15), /**< Clock output stop (1=stopped/low, 0=running) */
 
   /* Convenience values */
   k_ckocr_output_disabled = k_ckocr_ckostp, /**< Default: output disabled */
@@ -380,7 +388,7 @@ typedef enum : uint16_t {
  * All SCKCR clock divider fields use the same encoding. Value N means divide
  * by 2^N. For example, 0b0010 (2) means divide by 4.
  *
- * @par Divider Encoding
+ * @par Divider Encoding (for PCKD, PCKC, PCKB, PCKA, ICK, FCK fields)
  * | Bits | Divider | Example (240 MHz input) |
  * |------|---------|-------------------------|
  * | 0000 | /1      | 240 MHz                 |
@@ -390,21 +398,25 @@ typedef enum : uint16_t {
  * | 0100 | /16     | 15 MHz                  |
  * | 0101 | /32     | 7.5 MHz                 |
  * | 0110 | /64     | 3.75 MHz                |
- * | 1000 | /128    | 1.875 MHz               |
+ * | other| --      | PROHIBITED              |
  *
- * @warning Not all dividers valid for all clocks - check manual
- * @see Manual Ch09 section 9.2.2
+ * @note The BCK field also accepts 1001 (x1/3) as an additional valid setting.
+ * @warning Values 0111 and 1000 are PROHIBITED for all SCKCR fields.
+ * @see Manual Ch09 section 9.2.1 Table 9.1, section 9.2.2
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_clock_div_1   = 0, /**< Divide by 1 (no division) */
-  k_clock_div_2   = 1, /**< Divide by 2 */
-  k_clock_div_4   = 2, /**< Divide by 4 */
-  k_clock_div_8   = 3, /**< Divide by 8 */
-  k_clock_div_16  = 4, /**< Divide by 16 */
-  k_clock_div_32  = 5, /**< Divide by 32 */
-  k_clock_div_64  = 6, /**< Divide by 64 */
-  k_clock_div_128 = 8, /**< Divide by 128 (note: value is 8, not 7!) */
+  k_clock_div_1  = 0, /**< Divide by 1 (no division) */
+  k_clock_div_2  = 1, /**< Divide by 2 */
+  k_clock_div_4  = 2, /**< Divide by 4 */
+  k_clock_div_8  = 3, /**< Divide by 8 */
+  k_clock_div_16 = 4, /**< Divide by 16 */
+  k_clock_div_32 = 5, /**< Divide by 32 */
+  k_clock_div_64 = 6, /**< Divide by 64 */
+  /* NOTE: /128 does NOT exist in SCKCR. Maximum divisor is /64 (0110 = 6).  */
+  /* Values 7 and 8 are PROHIBITED per RX72N Manual Ch09 section 9.2.2.      */
+  /* BCK field additionally accepts k_bck_div_3 = 9 (binary 1001 = x1/3).   */
+  k_bck_div_3 = 9, /**< Divide by 3 (ONLY valid for BCK[3:0] field, binary 1001) */
 } sckcr_divider_t;
 
 /**
@@ -463,9 +475,9 @@ typedef enum : uint32_t {
   k_sckcr_ick_mask  = 0xFUL << k_sckcr_ick_shift,
   k_sckcr_fck_mask  = 0xFUL << k_sckcr_fck_shift,
 
-  /* PSTOP bits (peripheral clock stop) */
-  k_sckcr_pstop0 = (1UL << 22), /**< PCLKA/PCLKB stop (1=stopped) */
-  k_sckcr_pstop1 = (1UL << 23), /**< USB clock stop (1=stopped) */
+  /* PSTOP bits (pin output control) */
+  k_sckcr_pstop0 = (1UL << 22), /**< SDCLK pin output control (0=enabled, 1=disabled/fixed-high) */
+  k_sckcr_pstop1 = (1UL << 23), /**< BCLK pin output control (0=enabled, 1=disabled/fixed-high) */
 
   /* STAR Project configuration value (24 MHz x 10 = 240 MHz) */
   k_sckcr_star_240mhz =
@@ -488,7 +500,7 @@ typedef enum : uint32_t {
  * Selects which oscillator/PLL output is used as the system clock source.
  * This is the clock that feeds into SCKCR dividers.
  *
- * @par Clock Sources
+ * @par Clock Sources (CKSEL[2:0] at bits 10:8 of SCKCR3)
  * | Value | Source     | Typical Frequency  | Use Case                |
  * |-------|------------|--------------------|-------------------------|
  * | 0     | LOCO       | 240 kHz (typ)      | Low power mode          |
@@ -496,7 +508,10 @@ typedef enum : uint32_t {
  * | 2     | Main clock | 24 MHz (STAR)      | External crystal        |
  * | 3     | Sub-clock  | 32.768 kHz         | RTC, ultra low power    |
  * | 4     | PLL        | 240 MHz (STAR)     | Normal operation        |
- * | 5     | PPLL       | 48 MHz (USB)       | Special purposes        |
+ * | other | --         | PROHIBITED         | --                      |
+ *
+ * @note PPLL is NOT a valid SCKCR3 CKSEL option. PPLL is used only as
+ *       the USB clock source, selected via PACKCR.UPLLSEL.
  *
  * @par STAR Project Settings
  * - Boot: LOCO (default after reset)
@@ -504,7 +519,7 @@ typedef enum : uint32_t {
  *
  * @warning Switching clock sources requires waiting for oscillator stabilization
  * @note Requires PRCR unlock (PRC0) before modification
- * @see Manual Ch09 section 9.2.3
+ * @see Manual Ch09 section 9.2.4 SCKCR3
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
@@ -512,8 +527,7 @@ typedef enum : uint16_t {
   k_sckcr3_cksel_hoco     = 0x0100, /**< HOCO (High-speed On-Chip Oscillator, 16-20 MHz) */
   k_sckcr3_cksel_main     = 0x0200, /**< Main clock oscillator (STAR: 24 MHz crystal) */
   k_sckcr3_cksel_subclock = 0x0300, /**< Sub-clock oscillator (32.768 kHz) */
-  k_sckcr3_cksel_pll      = 0x0400, /**< PLL circuit (STAR: 240 MHz) */
-  k_sckcr3_cksel_ppll     = 0x0500, /**< PPLL circuit (USB: 48 MHz) */
+  k_sckcr3_cksel_pll      = 0x0400, /**< PLL circuit (STAR: 240 MHz). Values 5-7 are prohibited. */
   k_sckcr3_cksel_mask     = 0x0700, /**< CKSEL field mask (bits 10:8) */
 } sckcr3_cksel_t;
 
@@ -526,14 +540,22 @@ typedef enum : uint16_t {
  * PLL output frequency = (Input / PLIDIV) x (STC + 1)
  *
  * @par Register Layout (16-bit @ offset 0x28)
- * | Bits  | Field     | Description                          |
- * |-------|-----------|--------------------------------------|
- * | 1:0   | PLIDIV    | PLL input divider (00=/1, 01=/2, 10=/4) |
- * | 3:2   | -         | Reserved                             |
- * | 4     | PLLSRCSEL | PLL source (0=main osc, 1=HOCO)      |
- * | 7:5   | -         | Reserved                             |
- * | 13:8  | STC       | PLL multiplier (value N -> x(N+1))    |
- * | 15:14 | -         | Reserved                             |
+ * | Bits  | Field     | Description                             |
+ * |-------|-----------|---------------------------------------- |
+ * | 1:0   | PLIDIV    | PLL input divider (00=/1, 01=/2, 10=/3) |
+ * | 3:2   | -         | Reserved                                |
+ * | 4     | PLLSRCSEL | PLL source (0=main osc, 1=HOCO)         |
+ * | 7:5   | -         | Reserved                                |
+ * | 13:8  | STC       | PLL multiplier (value N -> x(N+1))      |
+ * | 15:14 | -         | Reserved                                |
+ *
+ * @par PLIDIV Encoding (bits 1:0)
+ * | Value | Divider | Note                 |
+ * |-------|---------|----------------------|
+ * | 00    | /1      | No division          |
+ * | 01    | /2      |                      |
+ * | 10    | /3      |                      |
+ * | 11    | --      | PROHIBITED           |
  *
  * @par STAR Project PLL Configuration
  * Input: 24 MHz main oscillator
@@ -546,14 +568,14 @@ typedef enum : uint16_t {
  *
  * @warning PLL must be stopped (PLLCR2.PLLEN = 1) before changing PLLCR
  * @note Requires PRCR unlock (PRC0) before modification
- * @see Manual Ch09 section 9.2.4
+ * @see Manual Ch09 section 9.2.5 PLLCR
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
   /* PLL input divider (PLIDIV, bits 1:0) */
-  k_pllcr_plidiv_1    = 0x0000, /**< Divide PLL input by 1 */
-  k_pllcr_plidiv_2    = 0x0001, /**< Divide PLL input by 2 */
-  k_pllcr_plidiv_4    = 0x0002, /**< Divide PLL input by 4 */
+  k_pllcr_plidiv_1    = 0x0000, /**< Divide PLL input by 1 (binary 00) */
+  k_pllcr_plidiv_2    = 0x0001, /**< Divide PLL input by 2 (binary 01) */
+  k_pllcr_plidiv_3    = 0x0002, /**< Divide PLL input by 3 (binary 10); value 11 is PROHIBITED */
   k_pllcr_plidiv_mask = 0x0003, /**< PLIDIV field mask */
 
   /* PLL source select (PLLSRCSEL, bit 4) */
@@ -832,10 +854,14 @@ typedef struct __attribute__((packed)) {
 
   /**
    * @brief Oscillation Stabilization Flag Register (OSCOVFSR) @ 0x3C
-   * @details Indicates when oscillators are stable:
-   * - Bit 0: Main oscillator stable
-   * - Bit 2: PLL stable
-   * - Bit 3: PPLL stable
+   * @details Indicates when oscillators are stable (1=stable, 0=not stable):
+   * - Bit 0 (MOOVF):  Main clock oscillation stable
+   * - Bit 1 (SOOVF):  Sub-clock oscillation stable
+   * - Bit 2 (PLOVF):  PLL clock oscillation stable
+   * - Bit 3 (HCOVF):  HOCO clock oscillation stable
+   * - Bit 4 (ILCOVF): IWDT-dedicated clock oscillation stable
+   * - Bit 5 (PPLOVF): PPLL clock oscillation stable
+   * - Bits 7:6: Reserved
    */
   volatile uint8_t oscovfsr;
   uint8_t          reserved6[k_system_reserved_3d]; /**< Reserved @ 0x3D */
@@ -1094,14 +1120,19 @@ typedef enum : uintptr_t {
 /**
  * @brief PPLL configuration values
  * @details
- * PPLL generates 48 MHz USB clock from 24 MHz main oscillator.
- * Calculation: 48 MHz = (24 MHz x 8) / 4
- * - PPLSTBY[1:0] = 01 (divide by 2)
- * - STC[5:0] = 07h (multiply by 8)
- * - PPLSRCSEL = 0 (main clock source)
+ * PPLL generates 192 MHz internal clock from 24 MHz main oscillator.
+ * PPLLCR3 then divides by 4 to produce 48 MHz USB clock (UCLK).
+ * Calculation: 24 MHz * 8 = 192 MHz (PPLL output); 192 / 4 = 48 MHz (UCLK)
+ * - PPLIDIV[1:0] = 00 (divide input by 1, binary 00)
+ * - PPLSTC[5:0] = 07h (multiply by 8, STC at bits 13:8)
+ * - PPLSRCSEL = 0 (main clock source, shared with PLL via PLLCR.PLLSRCSEL)
+ * - PPLLCR = 0x0700
+ *
+ * PPLIDIV encoding (bits 1:0): 00=/1, 01=/2, 10=/3, 11=PROHIBITED
+ * The value 0x0703 is WRONG: lower byte 0x03 = binary 11 = PROHIBITED.
  */
 typedef enum : uint16_t {
-  k_ppll_config_48mhz = 0x0703, /**< PPLLCR: 48MHz from 24MHz main osc */
+  k_ppll_config_48mhz = 0x0700, /**< PPLLCR: PPLSTC=7 (x8), PPLIDIV=00 (/1): 24MHz*8=192MHz */
 } rx_ppll_config_t;
 
 /**
@@ -1114,9 +1145,17 @@ typedef enum : uint8_t {
 
 /**
  * @brief PPLL stabilization flag in OSCOVFSR
+ * @details
+ * OSCOVFSR bit layout (manual Ch09 section 9.2.14):
+ * - b0 MOOVF:  Main clock oscillation stabilization flag
+ * - b1 SOOVF:  Sub-clock oscillation stabilization flag
+ * - b2 PLOVF:  PLL clock oscillation stabilization flag
+ * - b3 HCOVF:  HOCO clock oscillation stabilization flag
+ * - b4 ILCOVF: IWDT-dedicated clock oscillation stabilization flag
+ * - b5 PPLOVF: PPLL clock oscillation stabilization flag
  */
 typedef enum : uint8_t {
-  k_ppll_stable_flag = 0x08, /**< OSCOVFSR: PPLL stabilization flag bit 3 */
+  k_ppll_stable_flag = 0x20, /**< OSCOVFSR: PPLOVF at bit 5 (0x20); NOT bit 3 */
 } rx_ppll_flags_t;
 
 /**
