@@ -238,7 +238,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 24: MTU | rx72n_mtu_regs.h | 960-1198 | [x] COMPLETE | FIXED: rx_mtu34_channel_regs_t had completely wrong sparse layout; renamed + rewritten; rx_mtu.c/rx_mtu_encoder.c MTU3/4 cases now return nullptr |
 | Ch 26: GPTW (PWM) | rx72n_gptw_regs.h | 1236-1431 | [x] COMPLETE | FIXED: OAE=b8, OBE=b24, init_high=0x16, GTBER enum completely wrong (3 values), rx_gptw.c was disabling instead of enabling buffer |
 | Ch 25+27: POE3 / POEG | rx72n_poeg_regs.h | 1199-1235, 1432-1441 | [ ] NOT STARTED | |
-| Ch 56: S12AD (ADC) | rx72n_adc_regs.h | 2809-2949 | [ ] NOT STARTED | |
+| Ch 56: S12AD (ADC) | rx72n_adc_regs.h | 2809-2949 | [x] COMPLETE | FIXED: ADDR0-7 struct offsets +2 (reserved gap 0x20-0x21); ADST bit 0x1000->0x8000; ADCS scan mode desc; ADSTRGR trigger 0x09 label; S12AD1 base comment |
 | Ch 41: SCI | rx72n_sci_regs.h | 2037-2216 | [ ] NOT STARTED | |
 | Ch 42: RIIC (I2C) | rx72n_riic_regs.h | 2217-2293 | [x] COMPLETE | All addrs + offsets + bit enums OK |
 | Ch 44: RSPI (SPI) | rx72n_rspi_regs.h | 2349-2433 | [x] COMPLETE | FIXED: SPPCR MOIFE/MOIFV bits; SPDCR SPLW/SPRDTD bits |
@@ -247,7 +247,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 34: WDT | rx72n_wdt_regs.h | 1666-1679 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 | Ch 35: IWDT | rx72n_iwdt_regs.h | 1680-1698 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 
-**Pass 1 last page verified:** `1285 (Ch 26 GPTW complete 2026-04-13)`
+**Pass 1 last page verified:** `2949 (Ch 56 S12AD ADC complete 2026-04-13)`
 
 ---
 
