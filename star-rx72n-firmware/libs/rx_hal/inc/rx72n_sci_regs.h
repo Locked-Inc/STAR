@@ -392,11 +392,13 @@ typedef struct {
   /**
    * @brief Smart Card Mode Register (SCMR) - smart card and bit order settings
    * @details
-   * - Bit 4: SDIR - Data transfer direction (0=LSB first, 1=MSB first)
-   * - Bit 3: SINV - Smart card data inversion
-   * - Bit 2: Reserved
-   * - Bit 1: Reserved
-   * - Bit 0: SMIF - Smart card interface mode
+   * - Bit 7: BCP2 - Base clock pulse 2 (smart card clock cycles per ETU)
+   * - Bits 6-5: Reserved (write 1)
+   * - Bit 4: CHR1 - Character length 1 (0=9/8 bit, 1=8/7 bit; use with SMR.CHR)
+   * - Bit 3: SDIR - Data transfer direction (0=LSB first, 1=MSB first)
+   * - Bit 2: SINV - Smart card data inversion (0=no inversion, 1=inverted)
+   * - Bit 1: Reserved (write 1)
+   * - Bit 0: SMIF - Smart card interface mode (0=disabled, 1=enabled)
    *
    * @note For SPI mode, set SDIR=1 for MSB-first transfers.
    */
@@ -411,7 +413,8 @@ typedef struct {
    * - Bit 4: ABCS - Asynchronous mode base clock select
    * - Bit 3: ABCSE - Asynchronous mode extended base clock select
    * - Bit 2: BRME - Bit rate modulation enable
-   * - Bits 1-0: Reserved
+   * - Bit 1: Reserved
+   * - Bit 0: ACS0 - Asynchronous mode clock source select 0
    */
   volatile uint8_t semr;
 
@@ -452,7 +455,9 @@ typedef struct {
    * - Bit 7: CKPH - Clock phase (inverted from standard CPHA in some Renesas docs)
    * - Bit 6: CKPOL - Clock polarity (0=idle LOW, 1=idle HIGH)
    * - Bit 4: MFF - Mode fault flag
+   * - Bit 3: Reserved
    * - Bit 2: MSS - Controller/peripheral select (0=controller, 1=peripheral)
+   * - Bit 1: CTSE - CTS enable (0=disabled, 1=CTS output enabled)
    * - Bit 0: SSE - SS pin enable
    */
   volatile uint8_t spmr;
