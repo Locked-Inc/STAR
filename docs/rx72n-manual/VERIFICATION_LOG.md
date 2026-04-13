@@ -763,4 +763,53 @@ what was fixed. Update this file as you work.
 ### Commits
 - 8f5fe255c -- fix(adc): correct ADDR0-7 struct offsets, ADST bit, and documentation errors
 
+---
+
+## 2026-04-13 -- Ch 60 RAM Control Registers
+
+**Pages read:** 2977-2990 (Ch 60 complete)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_ram_regs.h
+
+### Findings
+
+- [OK] Memory regions: RAM=0x00000000-0x0007FFFF (512KB), EXRAM=0x00800000-0x0087FFFF (512KB),
+  ECCRAM=0x00FF8000-0x00FFFFFF (32KB) -- all match Table 60.1 p.2977
+- [OK] Register base addresses: RAM=0x00081200, EXRAM=0x00081240, ECCRAM=0x000812C0 -- all correct
+- [OK] RAMMODE (60.2.1) @ 0x00081200: RAMMODE[1:0] at b1:b0; 0x00=disabled, 0x01=enabled -- correct
+- [OK] RAMSTS (60.2.2) @ 0x00081201: RAMERR at b0 -- correct
+- [OK] RAMECAD (60.2.3) @ 0x00081208: READ field at b18:b3 -- correct (32-bit reg)
+- [OK] RAMPRCR (60.2.4) @ 0x00081204: RAMPRCR at b0, KW[6:0] at b7:b1 -- correct
+- [OK] EXRAMMODE (60.2.5) @ 0x00081240: same structure as RAMMODE -- correct
+- [OK] EXRAMSTS (60.2.6) @ 0x00081241: EXRAMERR at b0 -- correct
+- [OK] EXRAMECAD (60.2.7) @ 0x00081248: same structure as RAMECAD -- correct
+- [OK] EXRAMPRCR (60.2.8) @ 0x00081244: same structure as RAMPRCR -- correct
+- [OK] ECCRAMMODE (60.2.9) @ 0x000812C0: RAMMOD[1:0] at b1:b0; 00=off, 01=prohibited, 10=ECC no-check, 11=ECC with-check -- correct
+- [OK] ECCRAM2STS (60.2.10) @ 0x000812C1: ECC2ERR at b0 -- correct
+- [OK] ECCRAM1STSEN (60.2.11) @ 0x000812C2: ECC1STSEN at b0 -- correct
+- [OK] ECCRAM1STS (60.2.12) @ 0x000812C3: ECC1ERR at b0 -- correct
+- [OK] ECCRAMPRCR (60.2.13) @ 0x000812C4: PRCR at b0, KW[6:0] at b7:b1 -- correct
+- [OK] ECCRAM2ECAD (60.2.14) @ 0x000812C8: ECC2EAD field at b14:b3 -- correct (32-bit reg)
+- [OK] ECCRAM1ECAD (60.2.15) @ 0x000812CC: ECC1EAD field at b14:b3 -- correct (32-bit reg)
+- [OK] ECCRAMPRCR2 (60.2.16) @ 0x000812D0: PRCR2 at b0, KW2[6:0] at b7:b1 -- correct
+- [OK] ECCRAMETST (60.2.17) @ 0x000812D4: TSTBYP at b0 -- correct
+- [OK] MSTPCRC bits (60.4.1): MSTPC0=RAM, MSTPC2=EXRAM, MSTPC6=ECCRAM -- correct
+- [OK] All struct offsets and sizeof assertions -- correct
+- [FIXED] RAMPRCR protection register key/unlock/lock values were wrong.
+  Manual Ch60 s.60.2.4: KW[6:0] = 1111000b occupies bits[7:1] of the register byte.
+  Correct register write values: key=0xF0, unlock=0xF1, lock=0xF0.
+  Code had: key=0x78, unlock=0x79, lock=0x78.
+  With 0x79, the KW[6:0] field in the register reads as 0111100b (not 1111000b),
+  so the hardware silently rejects the write -- RAM parity could never be enabled.
+  Confirmed by Figure 60.1 ECC test flow: "Write F1h to the ECCRAM protection register."
+- [FIXED] EXRAMPRCR (60.2.8): same wrong key/unlock/lock values -- corrected to 0xF0/0xF1/0xF0
+- [FIXED] ECCRAMPRCR (60.2.13): same wrong key/unlock/lock values -- corrected to 0xF0/0xF1/0xF0
+- [FIXED] ECCRAMPRCR2 (60.2.16): same wrong key/unlock/lock values -- corrected to 0xF0/0xF1/0xF0
+- [FIXED] Three static_assert checks updated from 0x79 to 0xF1 with corrected messages
+- [FIXED] @details doc comments for EXRAMPRCR, ECCRAMPRCR, ECCRAMPRCR2 updated from "Write 0x79" to "Write 0xF1"
+
+### Commits
+- 98c9ac6b1 -- fix(ram): correct protection register key values from 0x79/0x78 to 0xF1/0xF0
+
+---
+
 (future sessions go below this line)
