@@ -222,7 +222,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 |---------|-----------|--------------|--------|--------------|
 | Ch 5: I/O Register Addresses | ALL | 206-282 | [x] COMPLETE | Addr table used to verify DTC/DMAC/MPU/CMT/CRC/WDT/IWDT |
 | Ch 3+11: Operating Modes / LPC | rx72n_lpc_regs.h | 195-202, 401-449 | [ ] NOT STARTED | |
-| Ch 9: Clock Generation | rx72n_system_regs.h, rx72n_clock.h | 335-389 | [ ] NOT STARTED | |
+| Ch 9: Clock Generation | rx72n_system_regs.h, rx72n_clock.h | 335-389 | [x] COMPLETE | FIXED: k_clock_div_128 prohibited; PSTOP0/1 wrong pin descriptions; k_sckcr3_cksel_ppll invalid value; k_pllcr_plidiv_4 should be plidiv_3; CKODIV /32/64/128 prohibited; k_ppll_config_48mhz lower byte wrong (0x03->0x00); k_ppll_stable_flag wrong bit (0x08->0x20 PPLOVF is bit 5 not 3); oscovfsr comment wrong |
 | Ch 8: Voltage Monitor (LVDA) | rx72n_lvda_regs.h | 316-334 | [ ] NOT STARTED | |
 | Ch 22: GPIO Ports | rx72n_port_regs.h | 861-881 | [x] COMPLETE | All base addrs + offsets + ODR word-addr OK; FIXED: 8 doc refs said "Ch 21", corrected to "Ch 22" |
 | Ch 23: MPC Pin Multiplex | rx72n_mpc_regs.h | 882-959 | [x] COMPLETE | All PFS addrs + PWPR + bit fields OK; FIXED: 5 doc refs said "Ch 20"/"Ch23", corrected to "Ch 23" |
@@ -247,7 +247,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 34: WDT | rx72n_wdt_regs.h | 1666-1679 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 | Ch 35: IWDT | rx72n_iwdt_regs.h | 1680-1698 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 
-**Pass 1 last page verified:** `1285 (Ch 26 GPTW complete 2026-04-13)`
+**Pass 1 last page verified:** `389 (Ch 9 Clock Generation complete 2026-04-13)`
 
 ---
 

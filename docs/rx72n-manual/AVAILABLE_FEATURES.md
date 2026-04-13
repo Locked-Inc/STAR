@@ -19,7 +19,16 @@ Do NOT add any code. Just document it here.
 
 | Manual Chapter | Feature | Manual Pages | Notes |
 |----------------|---------|--------------|-------|
-| (populate as manual is reviewed) | | | |
+| Ch 9 (Clock Generation) | MOSCWTCR -- Main Clock Oscillator Wait Control Register (0x00080A2) | 360 | Controls stabilization wait time for main clock oscillator; STAR uses default wait time |
+| Ch 9 (Clock Generation) | SOSCWTCR -- Sub-Clock Oscillator Wait Control Register (0x00080A3) | 361 | Controls stabilization wait time for sub-clock oscillator; STAR does not use sub-clock |
+| Ch 9 (Clock Generation) | MOFCR -- Main Clock Oscillator Forced Oscillation Control Register (0x0008C293) | 362 | Configures oscillator drive strength (MODRV[1:0]) and oscillation mode (MOSEL); STAR uses default |
+| Ch 9 (Clock Generation) | HOCOPCR -- HOCO Power Supply Control Register (0x0008C294) | 363 | Can power down HOCO oscillator to save current; STAR does not power it down |
+| Ch 9 (Clock Generation) | PACKCR -- Specific-Use Clock Control Register (0x00080044) | 365 | Selects USB clock source (UPLLSEL: 0=PPLL, 1=PLL) and Ethernet clock divider (BCLKDIV); STAR does not configure PACKCR |
+| Ch 9 (Clock Generation) | PPLLCR3 -- PPLL Control Register 3 (0x0008004B) | 368 | Sets PPLL output frequency divider (PPLLCR3[1:0]); STAR expects 48 MHz USB but PPLLCR3 is never written in firmware |
+| Ch 9 (Clock Generation) | Oscillation Stop Detection (OSTDCR/OSTDSR) | 369-371 | Hardware can detect main-clock oscillation failure and generate NMI/reset; OSTDCR/OSTDSR registers are defined in code but the feature is not enabled (OSTDE bit never set) |
+| Ch 9 (Clock Generation) | CLKOUT pin output (CKOCR) | 363-364 | Chip can output any internal clock on the CLKOUT pin via CKOCR; register is defined in code but CKOUT is never enabled (CKOSEL/CKOEN fields never written) |
+| Ch 9 (Clock Generation) | SDCLK pin output (SCKCR.PSTOP0) | 340 | SDCLK can be driven onto a pin for SDRAM use; STAR does not use SDRAM so PSTOP0 is left at default (SDCLK output disabled) |
+| Ch 9 (Clock Generation) | Sub-clock oscillator (SOSCCR / SOSCK) | 346, 361 | 32.768 kHz sub-clock oscillator is available (used for RTC in other applications); STAR does not start the sub-clock |
 
 ---
 
