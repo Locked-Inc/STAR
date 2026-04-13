@@ -571,4 +571,41 @@ what was fixed. Update this file as you work.
 
 ---
 
+## 2026-04-13 -- Ch 28 TPU (Timer Pulse Unit) Registers
+
+**Pages read:** 1442-1519 (Ch 28 complete)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_tpu_regs.h,
+                  star-rx72n-firmware/libs/rx_hal/src/rx_tpu.c,
+                  star-rx72n-firmware/libs/rx_encoder/src/rx_encoder_tpu.c
+
+### Findings
+
+- [OK] k_tpu_base_addr=0x000C1200 (control regs), k_tpu_ext0_base_addr=0x000C1100 (TPU0 ext), k_tpu3_base_addr=0x000C1180 (TPU3) -- match manual p.1442
+- [OK] k_tpu1_base_addr=0x000C1108, k_tpu2_base_addr=0x000C1118, k_tpu4_base_addr=0x000C1188, k_tpu5_base_addr=0x000C1198 -- match Ch 5 address table
+- [OK] rx_tpu_control_regs_t: tstr=+0x00, tsyr=+0x01, reserved[6]=+0x02, nfcr[6]=+0x08 -- correct (total 14 bytes)
+- [OK] rx_tpu_ext_regs_t (TPU0/3): tcr=+0x00, tmdr=+0x01, tiorh=+0x02, tiorl=+0x03, tier=+0x04, tsr=+0x05, tcnt=+0x06, tgra=+0x08, tgrb=+0x0A, tgrc=+0x0C, tgrd=+0x0E -- match manual p.1443-1444
+- [OK] rx_tpu_regs_t (TPU1/2/4/5): tcr=+0x00, tmdr=+0x01, tior=+0x02, reserved=+0x03, tier=+0x04, tsr=+0x05, tcnt=+0x06, tgra=+0x08, tgrb=+0x0A, reserved2[4]=+0x0C -- correct
+- [OK] TSTR bit values: k_tpu_tstr_cst0=bit0=0x01, cst1=bit1=0x02, cst2=bit2=0x04, cst3=bit3=0x08, cst4=bit4=0x10, cst5=bit5=0x20 -- match manual p.1445
+- [OK] TSYR bit values: k_tpu_tsyr_sync0..sync5=bits 0-5 -- match manual p.1446
+- [OK] TMDR mode encoding: k_tpu_tmdr_md_normal=0x00, buffer_a=0x04, buffer_ab=0x06, pwm1=0x02, pwm2=0x03, phase_count_1=0x04...phase_count_4=0x07 -- match manual Table 28.5 p.1448
+- [OK] TIER bit values: tgiea=bit0=0x01, tgieb=bit1=0x02, tgiec=bit2=0x04, tgied=bit3=0x08, tciev=bit4=0x10, tcieu=bit5=0x20, ttge=bit7=0x80 -- match manual p.1461
+- [OK] TSR status bit values: tgfa=bit0=0x01, tgfb=bit1=0x02, tgfc=bit2=0x04, tgfd=bit3=0x08, tcfv=bit4=0x10, tcfu=bit5=0x20, tcfd=bit7=0x80 -- match manual p.1462-1463
+- [OK] NFCR bit values: nfaen=bit0=0x01, nfben=bit1=0x02, nfcen=bit2=0x04, nfden=bit3=0x08, nfcs[1:0]=bits 4-5 -- match manual p.1469
+- [OK] k_tpu_tmdr_md_phase_count_4=0x07 (phase counting mode 4, 4x resolution) -- match manual Table 28.5 p.1448
+- [OK] rx_tpu_init_phase_count() writes TCR=0x00 (free-run, internal clock), TMDR=phase_mode, TCNT=0x0000 -- correct per manual p.1446-1449
+- [OK] rx_tpu_start() sets TSTR.CSTn bit to start counter -- correct
+- [OK] rx_tpu_stop() clears TSTR.CSTn bit to stop counter -- correct
+- [OK] rx_encoder_tpu.c: uses HAL API only, no direct register writes -- clean
+- [FIXED] k_tpu_tier_all_disabled: was 0x00, manual p.1461 states TIER bit 6 is reserved
+  and "must be written as 1" (reset value 0x40). Writing 0x00 violates specification.
+  Corrected to 0x40 in tpu_tier_disable_t enum in rx_tpu.c (affects init path line ~485
+  and deinit path line ~846). Updated Doxygen comment to explain the bit 6 constraint.
+- [AVAILABLE] TPU PWM output, input capture, cascaded 32-bit counter, buffer operation,
+  A/D trigger, DTC/DMAC activation, ELC event link, noise filter -- added to AVAILABLE_FEATURES.md
+
+### Commits
+- (see next commit)
+
+---
+
 (future sessions go below this line)

@@ -234,7 +234,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 17: MPU | rx72n_mpu_regs.h | 657-676 | [x] COMPLETE | All region + ctrl addrs OK (Ch 5 + header) |
 | Ch 21: ELC | rx72n_elc_regs.h | 835-860 | [x] COMPLETE | FIXED: ELOPA MTU3 shift/mask, ELOPC CMT1 shift/mask, elop_timer_op_t values swapped, pgc_bits_t entire layout wrong, pel_bits_t PSB/PSP/PSM wrong, elc_elsr_reg() formula wrong for n>=33 |
 | Ch 31: CMT Timer | rx72n_cmt_regs.h | 1581-1588 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
-| Ch 28: TPU | rx72n_tpu_regs.h | 1442-1519 | [ ] NOT STARTED | |
+| Ch 28: TPU | rx72n_tpu_regs.h | 1442-1519 | [x] COMPLETE | FIXED: k_tpu_tier_all_disabled was 0x00, TIER bit 6 reserved/must-write-1 (reset=0x40), corrected to 0x40 in rx_tpu.c |
 | Ch 24: MTU | rx72n_mtu_regs.h | 960-1198 | [x] COMPLETE | FIXED: rx_mtu34_channel_regs_t had completely wrong sparse layout; renamed + rewritten; rx_mtu.c/rx_mtu_encoder.c MTU3/4 cases now return nullptr |
 | Ch 26: GPTW (PWM) | rx72n_gptw_regs.h | 1236-1431 | [x] COMPLETE | FIXED: OAE=b8, OBE=b24, init_high=0x16, GTBER enum completely wrong (3 values), rx_gptw.c was disabling instead of enabling buffer |
 | Ch 25+27: POE3 / POEG | rx72n_poe3_regs.h, rx72n_poeg_regs.h | 1199-1235, 1432-1441 | [x] COMPLETE | FIXED: ICSR6 OSTSTE b9 not b8; POECR2 16-bit with MT34/67 layout; POECR4/5 ICxADD bits wrong; POEG all OK |
@@ -247,7 +247,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 34: WDT | rx72n_wdt_regs.h | 1666-1679 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 | Ch 35: IWDT | rx72n_iwdt_regs.h | 1680-1698 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 
-**Pass 1 last page verified:** `449 (Ch 3+11 Operating Modes/LPC complete 2026-04-13), 334 (Ch 8 LVDA complete 2026-04-13), 389 (Ch 9 Clock Generation complete 2026-04-13), 860 (Ch 21 ELC complete 2026-04-13), 1441 (Ch 25+27 POE3/POEG complete 2026-04-13)`
+**Pass 1 last page verified:** `449 (Ch 3+11 Operating Modes/LPC complete 2026-04-13), 334 (Ch 8 LVDA complete 2026-04-13), 389 (Ch 9 Clock Generation complete 2026-04-13), 860 (Ch 21 ELC complete 2026-04-13), 1441 (Ch 25+27 POE3/POEG complete 2026-04-13), 1519 (Ch 28 TPU complete 2026-04-13)`
 
 ---
 
