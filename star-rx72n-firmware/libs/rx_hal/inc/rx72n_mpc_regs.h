@@ -37,7 +37,7 @@
  *   |(B0WI=0)|    |(PFSWE=1)|    |         |    |(PFSWE=0|    |(B0WI=1)|
  *   +--------+    +---------+    +---------+    +--------+    +--------+
  *
- *   Memory Map (Verified against RX72N Manual Ch20):
+ *   Memory Map (Verified against RX72N Manual Ch23):
  *   +------------+----------------------------------------------+
  *   |  Address   |  Register                                    |
  *   +------------+----------------------------------------------+
@@ -118,11 +118,11 @@
  * - Interface Segregation: Minimal API - just register access functions
  *
  * @par Manual Reference
- * RX72N Group User's Manual: Hardware, Chapter 20 (Multi-Function Pin Controller)
+ * RX72N Group User's Manual: Hardware, Chapter 23 (Multi-Function Pin Controller)
  *
  * @par Verification Status
  * [PASS] VERIFIED (2026-01-28) - All register addresses and offsets verified
- * against RX72N Manual Chapter 20 and Appendix pin function tables.
+ * against RX72N Manual Chapter 23 and Appendix pin function tables.
  *
  * @see rx72n_port_regs.h GPIO port direction and data registers
  * @see rx_mpc.h Higher-level MPC driver with PSEL constants
@@ -154,7 +154,7 @@ extern "C" {
 
 /**
  * @enum rx_mpc_addresses_t
- * @brief MPC base address (verified against RX72N Hardware Manual Ch20)
+ * @brief MPC base address (verified against RX72N Hardware Manual Ch23)
  *
  * @details
  * The MPC module is located at a single base address. All registers are
@@ -507,7 +507,7 @@ typedef enum : uint8_t {
  * These static assertions verify the struct layout matches hardware exactly.
  * If any assertion fails, the struct definition is WRONG and must be fixed!
  *
- * Reference: RX72N Group User's Manual: Hardware, Chapter 20, Section 20.2
+ * Reference: RX72N Group User's Manual: Hardware, Chapter 23, Section 23.2
  * =============================================================================
  */
 
