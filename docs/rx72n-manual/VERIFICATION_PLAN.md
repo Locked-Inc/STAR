@@ -235,7 +235,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 21: ELC | rx72n_elc_regs.h | 835-860 | [ ] NOT STARTED | |
 | Ch 31: CMT Timer | rx72n_cmt_regs.h | 1581-1588 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 | Ch 28: TPU | rx72n_tpu_regs.h | 1442-1519 | [ ] NOT STARTED | |
-| Ch 24: MTU | rx72n_mtu_regs.h | 960-1198 | [ ] NOT STARTED | |
+| Ch 24: MTU | rx72n_mtu_regs.h | 960-1198 | [x] COMPLETE | FIXED: rx_mtu34_channel_regs_t had completely wrong sparse layout; renamed + rewritten; rx_mtu.c/rx_mtu_encoder.c MTU3/4 cases now return nullptr |
 | Ch 26: GPTW (PWM) | rx72n_gptw_regs.h | 1236-1431 | [ ] NOT STARTED | |
 | Ch 25+27: POE3 / POEG | rx72n_poeg_regs.h | 1199-1235, 1432-1441 | [ ] NOT STARTED | |
 | Ch 56: S12AD (ADC) | rx72n_adc_regs.h | 2809-2949 | [ ] NOT STARTED | |
@@ -247,7 +247,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 34: WDT | rx72n_wdt_regs.h | 1666-1679 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 | Ch 35: IWDT | rx72n_iwdt_regs.h | 1680-1698 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 
-**Pass 1 last page verified:** `541 (Ch 15 ICU complete 2026-04-13)`
+**Pass 1 last page verified:** `1198 (Ch 24 MTU complete 2026-04-13)`
 
 ---
 
