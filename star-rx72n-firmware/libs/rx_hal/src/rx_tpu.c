@@ -188,10 +188,17 @@ typedef enum : uint8_t {
 /**
  * @enum tpu_tier_disable_t
  * @brief TIER register value with all interrupts disabled
+ *
+ * @details
+ * Bit 6 of TIER is reserved and must always be written as 1 (manual p.1461:
+ * "This bit is read as 1. The write value should be 1."). The reset value of
+ * TIER is 0x40 (bit 6 set). Writing 0x00 violates the specification; 0x40
+ * disables all interrupt sources while preserving the reserved bit.
+ *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_tpu_tier_all_disabled = 0x00, /**< All interrupt sources disabled */
+  k_tpu_tier_all_disabled = 0x40, /**< All interrupts disabled; bit 6 reserved, must be 1 */
 } tpu_tier_disable_t;
 
 /**
