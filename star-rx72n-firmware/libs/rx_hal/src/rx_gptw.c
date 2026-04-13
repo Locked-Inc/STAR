@@ -877,8 +877,8 @@ static rx_err_t internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t
   /* Clear counter */
   gptw->gtcnt = k_gptw_period_zero;
 
-  /* Enable buffer operation for glitch-free updates */
-  gptw->gtber = k_gptw_gtber_ccra_buf | k_gptw_gtber_ccrb_buf;
+  /* Enable single-buffer mode for glitch-free duty cycle updates */
+  gptw->gtber = k_gptw_gtber_ccra_single | k_gptw_gtber_ccrb_single;
 
   /* Configure dead time if requested */
   if (config->deadtime_ns > k_gptw_deadtime_disabled) {
