@@ -711,4 +711,56 @@ what was fixed. Update this file as you work.
 
 ---
 
+## 2026-04-13 -- Ch 56 S12AD (12-bit ADC) Registers
+
+**Pages read:** 2809-2949 (Ch 56 complete)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_adc_regs.h,
+                  star-rx72n-firmware/libs/rx_hal/src/adc.c,
+                  star-rx72n-firmware/libs/rx_bus/src/rx_bus_adc.c
+
+### Findings
+
+- [OK] S12AD0 base address: 0x00089000 -- matches manual p.2816
+- [OK] S12AD1 base address: 0x00089100 -- matches manual p.2816
+- [OK] ADCSR offset: 0x00 (abs 0x9000) -- correct
+- [OK] ADANSA0 offset: 0x04 (abs 0x9004) -- correct
+- [OK] ADANSA1 offset: 0x06 (abs 0x9006) -- correct
+- [OK] ADADS0 offset: 0x08 (abs 0x9008) -- correct
+- [OK] ADADS1 offset: 0x0A (abs 0x900A) -- correct
+- [OK] ADADC offset: 0x0C (abs 0x900C) -- correct
+- [OK] ADCER offset: 0x0E (abs 0x900E) -- correct
+- [OK] ADSTRGR offset: 0x10 (abs 0x9010) -- correct
+- [OK] ADANSB0 offset: 0x14 (abs 0x9014) -- correct
+- [OK] ADDBLDR offset: 0x18 (abs 0x9018) -- correct
+- [OK] ADRD offset: 0x1E (abs 0x901E) -- correct
+- [FIXED] ADDR0 offset: was 0x20 in struct, manual p.2816 shows abs 0x9022 = offset 0x22.
+  Root cause: missing 2-byte reserved gap (0x20-0x21) after ADRD. Added reserved5[2].
+  All ADDR0-7 offsets were 2 bytes too low; sizeof was 0x30 instead of 0x32.
+- [FIXED] k_s12ad_offset_addr0: 0x20 -> 0x22; k_s12ad_offset_addr7: 0x2E -> 0x30
+- [FIXED] sizeof(rx_s12ad_regs_t) static_assert: 0x30 -> 0x32
+- [FIXED] static_assert addr0: 0x20->0x22, addr1: 0x22->0x24, addr2: 0x24->0x26,
+  addr3: 0x26->0x28, addr4: 0x28->0x2A, addr5: 0x2A->0x2C, addr6: 0x2C->0x2E, addr7: 0x2E->0x30
+- [OK] ADCSR.ADST bit 15 = 0x8000 -- manual p.2818
+- [FIXED] k_adc_adcsr_adst: was 4096U (0x1000 = ADIE bit 12); must be 32768U (0x8000 = bit 15).
+  This caused adc_read() to write to ADIE (interrupt enable) instead of ADST (start conversion).
+- [FIXED] ADCSR ADCS scan mode comment: "00=single, 01=continuous" -> "00=single, 01=group, 10=continuous"
+- [OK] ADCER.ADPRC[1:0] values: 00=12-bit, 01=10-bit, 10=8-bit -- manual p.2839
+- [OK] ADADC values: 000=1x, 001=2x, 010=3x, 011=4x, 101=16x -- manual p.2828
+- [FIXED] ADSTRGR TRSA bit field description: said "[5:0]", actually TRSA[5:0] at bits [13:8],
+  TRSB[5:0] at bits [5:0] -- manual p.2824
+- [FIXED] ADSTRGR trigger 0x09 comment: said "GPTW0 GTADTRA"; manual Table 56.10 p.2826
+  shows 0x09 (001001b) = TRG4AN = MTU4.TADCORA
+- [FIXED] Example code comment: `0x4000: ADCS[1:0]=01 (continuous scan)` was wrong on both
+  counts -- 0x4000 = bits[14:13]=10 = continuous (not 01=group); corrected comment
+- [FIXED] internal_get_adc_base() comment table: S12AD1 base was 0x00089200, is 0x00089100
+- [FIXED] internal_read_channel_value() offset table: all ADDR0-7 offsets were 2 bytes low
+  (0x020->0x022, 0x022->0x024, ..., 0x02E->0x030)
+- [OK] k_adc_mstpra_s12ad0 = 17 (MSTPCRA bit 17), k_adc_mstpra_s12ad1 = 16 -- matches
+  documented ADC initialization sequence and cross-referenced with rx_bus_adc.c comments
+- [OK] rx_bus_adc.c: callback logic, context structs, voltage scaling -- no register-level issues found
+- [AVAILABLE] 18 unused ADC features documented in AVAILABLE_FEATURES.md
+
+### Commits
+- 8f5fe255c -- fix(adc): correct ADDR0-7 struct offsets, ADST bit, and documentation errors
+
 (future sessions go below this line)
