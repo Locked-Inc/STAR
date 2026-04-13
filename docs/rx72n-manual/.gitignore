@@ -1,0 +1,2 @@
+# Ignore the split pages directory - 3233 individual PDFs, not for version control
+pages/
