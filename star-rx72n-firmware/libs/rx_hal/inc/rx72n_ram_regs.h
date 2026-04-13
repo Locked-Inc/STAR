@@ -218,12 +218,12 @@ typedef enum : uint8_t {
   k_rx_ramprcr_ramprcr_bit = 0,
   /** @brief RAMPRCR enable mask */
   k_rx_ramprcr_ramprcr_mask = 0x01,
-  /** @brief Key word for enabling RAMPRCR write (KW[6:0] = 1111000b) */
-  k_rx_ramprcr_key = 0x78,
+  /** @brief Key byte: KW[6:0] = 1111000b placed in bits[7:1] of register */
+  k_rx_ramprcr_key = 0xF0,
   /** @brief Complete value to enable RAMMODE writes (key + RAMPRCR=1) */
-  k_rx_ramprcr_unlock = 0x79,
+  k_rx_ramprcr_unlock = 0xF1,
   /** @brief Complete value to disable RAMMODE writes (key + RAMPRCR=0) */
-  k_rx_ramprcr_lock = 0x78,
+  k_rx_ramprcr_lock = 0xF0,
 } rx_ramprcr_bits_t;
 
 /**
@@ -260,19 +260,19 @@ typedef enum : uint8_t {
  *
  * @details
  * Expansion RAM Protection Register from Manual Ch60, section 60.2.8.
- * Write 0x79 to enable writing to EXRAMMODE register.
+ * Write 0xF1 to enable writing to EXRAMMODE register.
  */
 typedef enum : uint8_t {
   /** @brief EXRAMPRCR bit position */
   k_rx_exramprcr_exramprcr_bit = 0,
   /** @brief EXRAMPRCR enable mask */
   k_rx_exramprcr_exramprcr_mask = 0x01,
-  /** @brief Key word for enabling EXRAMPRCR write */
-  k_rx_exramprcr_key = 0x78,
+  /** @brief Key byte: KW[6:0] = 1111000b placed in bits[7:1] of register */
+  k_rx_exramprcr_key = 0xF0,
   /** @brief Complete value to enable EXRAMMODE writes */
-  k_rx_exramprcr_unlock = 0x79,
+  k_rx_exramprcr_unlock = 0xF1,
   /** @brief Complete value to disable EXRAMMODE writes */
-  k_rx_exramprcr_lock = 0x78,
+  k_rx_exramprcr_lock = 0xF0,
 } rx_exramprcr_bits_t;
 
 /**
@@ -341,19 +341,19 @@ typedef enum : uint8_t {
  *
  * @details
  * ECCRAM Protection Register from Manual Ch60, section 60.2.13.
- * Write 0x79 to enable writing to ECCRAMMODE and ECCRAM1STSEN registers.
+ * Write 0xF1 to enable writing to ECCRAMMODE and ECCRAM1STSEN registers.
  */
 typedef enum : uint8_t {
   /** @brief PRCR bit position */
   k_rx_eccramprcr_prcr_bit = 0,
   /** @brief PRCR enable mask */
   k_rx_eccramprcr_prcr_mask = 0x01,
-  /** @brief Key word for enabling ECCRAMPRCR write */
-  k_rx_eccramprcr_key = 0x78,
+  /** @brief Key byte: KW[6:0] = 1111000b placed in bits[7:1] of register */
+  k_rx_eccramprcr_key = 0xF0,
   /** @brief Complete value to enable ECCRAMMODE/ECCRAM1STSEN writes */
-  k_rx_eccramprcr_unlock = 0x79,
+  k_rx_eccramprcr_unlock = 0xF1,
   /** @brief Complete value to disable writes */
-  k_rx_eccramprcr_lock = 0x78,
+  k_rx_eccramprcr_lock = 0xF0,
 } rx_eccramprcr_bits_t;
 
 /**
@@ -362,19 +362,19 @@ typedef enum : uint8_t {
  *
  * @details
  * ECCRAM Protection Register 2 from Manual Ch60, section 60.2.16.
- * Write 0x79 to enable writing to ECCRAMETST register.
+ * Write 0xF1 to enable writing to ECCRAMETST register.
  */
 typedef enum : uint8_t {
   /** @brief PRCR2 bit position */
   k_rx_eccramprcr2_prcr2_bit = 0,
   /** @brief PRCR2 enable mask */
   k_rx_eccramprcr2_prcr2_mask = 0x01,
-  /** @brief Key word for enabling ECCRAMPRCR2 write */
-  k_rx_eccramprcr2_key = 0x78,
+  /** @brief Key byte: KW2[6:0] = 1111000b placed in bits[7:1] of register */
+  k_rx_eccramprcr2_key = 0xF0,
   /** @brief Complete value to enable ECCRAMETST writes */
-  k_rx_eccramprcr2_unlock = 0x79,
+  k_rx_eccramprcr2_unlock = 0xF1,
   /** @brief Complete value to disable writes */
-  k_rx_eccramprcr2_lock = 0x78,
+  k_rx_eccramprcr2_lock = 0xF0,
 } rx_eccramprcr2_bits_t;
 
 /**
@@ -587,9 +587,9 @@ static_assert(k_rx_eccram_base_addr == 0x00FF8000, "ECCRAM base must be 0x00FF80
 static_assert(k_rx_eccram_size == 0x00008000, "ECCRAM size must be 32 KB (0x8000)");
 
 /* Protection register key values */
-static_assert(k_rx_ramprcr_unlock == 0x79, "RAMPRCR unlock value must be 0x79");
-static_assert(k_rx_exramprcr_unlock == 0x79, "EXRAMPRCR unlock value must be 0x79");
-static_assert(k_rx_eccramprcr_unlock == 0x79, "ECCRAMPRCR unlock value must be 0x79");
+static_assert(k_rx_ramprcr_unlock == 0xF1, "RAMPRCR unlock value must be 0xF1");
+static_assert(k_rx_exramprcr_unlock == 0xF1, "EXRAMPRCR unlock value must be 0xF1");
+static_assert(k_rx_eccramprcr_unlock == 0xF1, "ECCRAMPRCR unlock value must be 0xF1");
 
 #ifdef __cplusplus
 }
