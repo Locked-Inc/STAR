@@ -132,40 +132,73 @@ star-rx72n-firmware/libs/
 The manual (r01uh0824ej0111_rx72n-2931480.pdf) is the Renesas RX72N Group User's Manual:
 Hardware. The chapter/section structure is standard Renesas layout:
 
-| Chapter | Topic | Pages (approx) | Our Code File |
-|---------|-------|----------------|---------------|
-| 1 | Overview / Features | 1-30 | N/A |
-| 2 | CPU | 31-120 | N/A (ThreadX handles) |
-| 3 | Operating Modes | 121-160 | rx72n_lpc_regs.h |
-| 4 | Clock Generation | 161-220 | rx72n_system_regs.h, rx72n_clock.h |
-| 5 | Power-On Reset / Voltage Monitor | 221-260 | rx72n_lvda_regs.h |
-| 6 | I/O Ports | 261-400 | rx72n_port_regs.h |
-| 7 | MPC (Pin Multiplex) | 401-500 | rx72n_mpc_regs.h |
-| 8 | Interrupt Controller (ICU) | 501-650 | rx72n_icu_regs.h |
-| 9 | DTC | 651-720 | rx72n_dtc_regs.h |
-| 10 | DMAC | 721-820 | rx72n_dmac_regs.h |
-| 11 | Flash Memory | 821-950 | rx72n_flash_regs.h |
-| 12 | RAM/EXRAM/ECCRAM | 951-1000 | rx72n_ram_regs.h |
-| 13 | MPU | 1001-1050 | rx72n_mpu_regs.h |
-| 14 | ELC | 1051-1120 | rx72n_elc_regs.h |
-| 15 | CMT | 1121-1160 | rx72n_cmt_regs.h |
-| 16 | TPU | 1161-1280 | rx72n_tpu_regs.h |
-| 17 | MTU | 1281-1500 | rx72n_mtu_regs.h |
-| 18 | GPTW | 1501-1700 | rx72n_gptw_regs.h |
-| 19 | POE3 / POEG | 1701-1780 | rx72n_poeg_regs.h |
-| 20 | S12AD (ADC) | 1781-1950 | rx72n_adc_regs.h |
-| 21 | SCI (UART/SCI) | 1951-2100 | rx72n_sci_regs.h |
-| 22 | RIIC (I2C) | 2101-2250 | rx72n_riic_regs.h |
-| 23 | RSPI (SPI) | 2251-2400 | rx72n_rspi_regs.h |
-| 24 | CRC | 2401-2450 | rx72n_crc_regs.h |
-| 25 | USB | 2451-2650 | rx72n_usb_regs.h |
-| 26 | Watchdog (WDT/IWDT) | 2651-2750 | rx72n_wdt_regs.h, rx72n_iwdt_regs.h |
-| 27 | LVDA | 2751-2800 | rx72n_lvda_regs.h |
-| 28+ | Electrical / Package | 2800+ | N/A |
+Manual is **Rev.1.11, Feb 2021** (our code comments said Rev.1.00 Feb 2019 -- minor note only).
 
-**IMPORTANT:** Page numbers above are approximate estimates from the chapter list.
-The actual page numbers must be confirmed by reading the manual TOC pages (approx page-0003
-to page-0010). Update this table with real page numbers after reading the TOC.
+| Ch | Topic | PDF Pages | Our Code File | Notes |
+|----|-------|-----------|---------------|-------|
+| 1 | Overview / Features | 75-154 | N/A | |
+| 2 | CPU | 155-194 | N/A (ThreadX) | |
+| 3 | Operating Modes | 195-202 | rx72n_lpc_regs.h | SYSCR0, SYSCR1, MDMONR |
+| 4 | Address Space | 203-205 | N/A | |
+| **5** | **I/O Register Addresses** | **206-282** | **ALL** | **Complete address table -- read first** |
+| 6 | Resets | 283-294 | rx72n_system_regs.h | RSTSR0/1/2, SWRR |
+| 7 | Option-Setting Memory | 295-315 | N/A | OFS, MDE, FAW -- not runtime regs |
+| 8 | LVDA (Voltage Detection) | 316-334 | rx72n_lvda_regs.h | LVD1CR0/1, LVD2CR0/1, LVCMPCR |
+| 9 | Clock Generation | 335-389 | rx72n_system_regs.h, rx72n_clock.h | SCKCR, PLL, oscillator regs |
+| 10 | CAC | 390-400 | NOT USED | Available feature |
+| 11 | Low Power Consumption | 401-449 | rx72n_lpc_regs.h | Deep standby, sleep regs |
+| 12 | Battery Backup | 450-452 | NOT USED | Available feature |
+| 13 | Register Write Protection | 453-454 | rx72n_system_regs.h | PRCR register |
+| 14 | Exception Handling | 455-465 | N/A | CPU-level, ThreadX handles |
+| 15 | Interrupt Controller (ICU) | 466-541 | rx72n_icu_regs.h | IR, IER, IPR, SWINTR |
+| 16 | Buses | 542-656 | N/A | Bus matrix, no direct regs |
+| 17 | MPU | 657-676 | rx72n_mpu_regs.h | RSPAGE, REPAGE, MPEN |
+| 18 | DMAC (DMACAa) | 677-717 | rx72n_dmac_regs.h | DMSAR, DMDAR, DMCRA, DMCSL |
+| 19 | EXDMAC | 718-785 | NOT USED | Available feature |
+| 20 | DTC | 786-834 | rx72n_dtc_regs.h | DTCVBR, DTCST, DTCADMOD |
+| 21 | ELC | 835-860 | rx72n_elc_regs.h | ELSR, ELOPA, ELOPB, ELOPC, ELOPD |
+| 22 | I/O Ports (GPIO) | 861-881 | rx72n_port_regs.h | PDR, PODR, PIDR, PMR, PCR, DSCR |
+| 23 | MPC (Pin Multiplex) | 882-959 | rx72n_mpc_regs.h | PWPR, PFS registers |
+| 24 | MTU3a | 960-1198 | rx72n_mtu_regs.h | TCR, TMDR, TIORH/L, TIER, TSR, TCNT |
+| 25 | POE3a | 1199-1235 | rx72n_poe3_regs.h | ICSR, OCSR, ALR, SPOER, POECR |
+| 26 | GPTW | 1236-1431 | rx72n_gptw_regs.h | GTCR, GTST, GTBER, GTCNT, GTPR |
+| 27 | POEG | 1432-1441 | rx72n_poeg_regs.h | POEGG0-3 |
+| 28 | TPU (TPUa) | 1442-1519 | rx72n_tpu_regs.h | TCR, TMDR, TIOR, TIER, TSR, TCNT |
+| 29 | PPG | 1520-1552 | NOT USED | Available feature |
+| 30 | TMR (8-bit) | 1553-1580 | NOT USED | Available feature |
+| 31 | CMT | 1581-1588 | rx72n_cmt_regs.h | CMSTR0/1, CMCR, CMCNT, CMCOR |
+| 32 | CMTW | 1589-1615 | NOT USED | Available feature |
+| 33 | RTC | 1616-1665 | NOT USED | Available feature |
+| 34 | WDT | 1666-1679 | rx72n_wdt_regs.h | WDTRR, WDTCR, WDTSR, WDTRCR |
+| 35 | IWDT | 1680-1698 | rx72n_iwdt_regs.h | IWDTRR, IWDTCR, IWDTSR, IWDTRCR |
+| 36 | Ethernet (ETHERC) | 1699-1729 | NOT USED | Available feature |
+| 37 | PTP (EPTPC) | 1730-1871 | NOT USED | Available feature |
+| 38 | EDMA (Ethernet DMA) | 1872-1913 | NOT USED | Available feature |
+| 39 | PMGI | 1914-1927 | NOT USED | Available feature |
+| 40 | USB 2.0 FS | 1928-2036 | rx72n_usb_regs.h | SYSCFG, SYSSTS0, DVSTCTR0, CFIFO |
+| 41 | SCI | 2037-2216 | rx72n_sci_regs.h | SMR, BRR, SCR, TDR, SSR, RDR, SCMR |
+| 42 | RIIC (I2C) | 2217-2293 | rx72n_riic_regs.h | ICCR1/2, ICMR1/2/3, ICIER, ICSR1/2 |
+| 43 | CAN | 2294-2348 | NOT USED | Available feature |
+| 44 | RSPI | 2349-2433 | rx72n_rspi_regs.h | SPCR, SPSR, SPDR, SPSCR, SPBR |
+| 45 | QSPI | 2434-2479 | NOT USED | Available feature |
+| 46 | CRC | 2480-2487 | rx72n_crc_regs.h | CRCCR, CRCDIR, CRCDOR |
+| 47 | SSIE | 2488-2528 | NOT USED | Available feature |
+| 48 | SDHI | 2529-2582 | NOT USED | Available feature |
+| 49 | MMCIF | 2583-2626 | NOT USED | Available feature |
+| 50 | PDC | 2627-2653 | NOT USED | Available feature |
+| 51 | GLCDC | 2654-2774 | NOT USED | Available feature |
+| 53 | Boundary Scan | 2775-2797 | NOT USED | |
+| 54 | TFU | 2798 | NOT USED | Available feature |
+| 55 | TSIP | 2799-2962 | NOT USED | Available feature |
+| 58 | Temperature Sensor | 2963-2969 | NOT USED | Available feature |
+| 59 | DOC | 2970-2976 | NOT USED | Available feature |
+| 60 | RAM | 2977-2990 | rx72n_ram_regs.h | RAMMODE, EXRAMMODE, ECCRAM regs |
+| 61 | Standby RAM | 2991 | NOT USED | Available feature |
+| 62 | Flash Memory | 2992-3233 | rx72n_flash_regs.h | FSTATR, FENTRYR, FRESETR, FPCKAR |
+
+| 52 | DRW2D (2D Drawing Engine) | 2745-2774 | NOT USED | Available feature |
+| 56 | S12AD (12-bit ADC) | 2809-2949 | rx72n_adc_regs.h | ADCSR, ADANSA, ADCER, ADDR |
+| 57 | DAC (R12DAa) | 2950-2962 | NOT USED | Available feature |
 
 ---
 
@@ -185,35 +218,36 @@ Read: docs/rx72n-manual/pages/page-0001.pdf
 
 Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 
-| Section | Code File | Pages (approx) | Status | Issues Found |
-|---------|-----------|----------------|--------|--------------|
-| TOC / Overview | -- | ~1-30 | [ ] NOT STARTED | |
-| Operating Modes / LPC | rx72n_lpc_regs.h | ~121-160 | [ ] NOT STARTED | |
-| Clock Generation (SYSTEM) | rx72n_system_regs.h, rx72n_clock.h | ~161-220 | [ ] NOT STARTED | |
-| Voltage Monitor (LVDA) | rx72n_lvda_regs.h | ~221-260, ~2751-2800 | [ ] NOT STARTED | |
-| GPIO Ports | rx72n_port_regs.h | ~261-400 | [ ] NOT STARTED | |
-| MPC Pin Multiplex | rx72n_mpc_regs.h | ~401-500 | [ ] NOT STARTED | |
-| ICU Interrupts | rx72n_icu_regs.h | ~501-650 | [ ] NOT STARTED | |
-| DTC | rx72n_dtc_regs.h | ~651-720 | [ ] NOT STARTED | |
-| DMAC | rx72n_dmac_regs.h | ~721-820 | [ ] NOT STARTED | |
-| Flash Memory | rx72n_flash_regs.h | ~821-950 | [ ] NOT STARTED | |
-| RAM Control | rx72n_ram_regs.h | ~951-1000 | [ ] NOT STARTED | |
-| MPU | rx72n_mpu_regs.h | ~1001-1050 | [ ] NOT STARTED | |
-| ELC | rx72n_elc_regs.h | ~1051-1120 | [ ] NOT STARTED | |
-| CMT Timer | rx72n_cmt_regs.h | ~1121-1160 | [ ] NOT STARTED | |
-| TPU | rx72n_tpu_regs.h | ~1161-1280 | [ ] NOT STARTED | |
-| MTU | rx72n_mtu_regs.h | ~1281-1500 | [ ] NOT STARTED | |
-| GPTW (PWM) | rx72n_gptw_regs.h | ~1501-1700 | [ ] NOT STARTED | |
-| POE3 / POEG | rx72n_poeg_regs.h | ~1701-1780 | [ ] NOT STARTED | |
-| S12AD (ADC) | rx72n_adc_regs.h | ~1781-1950 | [ ] NOT STARTED | |
-| SCI (UART) | rx72n_sci_regs.h | ~1951-2100 | [ ] NOT STARTED | |
-| RIIC (I2C) | rx72n_riic_regs.h | ~2101-2250 | [ ] NOT STARTED | |
-| RSPI (SPI) | rx72n_rspi_regs.h | ~2251-2400 | [ ] NOT STARTED | |
-| CRC Calculator | rx72n_crc_regs.h | ~2401-2450 | [ ] NOT STARTED | |
-| USB | rx72n_usb_regs.h | ~2451-2650 | [ ] NOT STARTED | |
-| WDT / IWDT | rx72n_wdt_regs.h, rx72n_iwdt_regs.h | ~2651-2750 | [ ] NOT STARTED | |
+| Section | Code File | Pages (real) | Status | Issues Found |
+|---------|-----------|--------------|--------|--------------|
+| Ch 5: I/O Register Addresses | ALL | 206-282 | [x] COMPLETE | Addr table used to verify DTC/DMAC/MPU/CMT/CRC/WDT/IWDT |
+| Ch 3+11: Operating Modes / LPC | rx72n_lpc_regs.h | 195-202, 401-449 | [ ] NOT STARTED | |
+| Ch 9: Clock Generation | rx72n_system_regs.h, rx72n_clock.h | 335-389 | [ ] NOT STARTED | |
+| Ch 8: Voltage Monitor (LVDA) | rx72n_lvda_regs.h | 316-334 | [ ] NOT STARTED | |
+| Ch 22: GPIO Ports | rx72n_port_regs.h | 861-881 | [ ] NOT STARTED | |
+| Ch 23: MPC Pin Multiplex | rx72n_mpc_regs.h | 882-959 | [ ] NOT STARTED | |
+| Ch 15: ICU Interrupts | rx72n_icu_regs.h | 466-541 | [ ] NOT STARTED | |
+| Ch 20: DTC | rx72n_dtc_regs.h | 786-834 | [x] COMPLETE | All 9 addrs OK (Ch 5 + header) |
+| Ch 18: DMAC | rx72n_dmac_regs.h | 677-717 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
+| Ch 62: Flash Memory | rx72n_flash_regs.h | 2992-3233 | [ ] NOT STARTED | |
+| Ch 60: RAM Control | rx72n_ram_regs.h | 2977-2990 | [ ] NOT STARTED | |
+| Ch 17: MPU | rx72n_mpu_regs.h | 657-676 | [x] COMPLETE | All region + ctrl addrs OK (Ch 5 + header) |
+| Ch 21: ELC | rx72n_elc_regs.h | 835-860 | [ ] NOT STARTED | |
+| Ch 31: CMT Timer | rx72n_cmt_regs.h | 1581-1588 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
+| Ch 28: TPU | rx72n_tpu_regs.h | 1442-1519 | [ ] NOT STARTED | |
+| Ch 24: MTU | rx72n_mtu_regs.h | 960-1198 | [ ] NOT STARTED | |
+| Ch 26: GPTW (PWM) | rx72n_gptw_regs.h | 1236-1431 | [ ] NOT STARTED | |
+| Ch 25+27: POE3 / POEG | rx72n_poeg_regs.h | 1199-1235, 1432-1441 | [ ] NOT STARTED | |
+| Ch 56: S12AD (ADC) | rx72n_adc_regs.h | 2809-2949 | [ ] NOT STARTED | |
+| Ch 41: SCI | rx72n_sci_regs.h | 2037-2216 | [ ] NOT STARTED | |
+| Ch 42: RIIC (I2C) | rx72n_riic_regs.h | 2217-2293 | [x] COMPLETE | All addrs + offsets + bit enums OK |
+| Ch 44: RSPI (SPI) | rx72n_rspi_regs.h | 2349-2433 | [x] COMPLETE | FIXED: SPPCR MOIFE/MOIFV bits; SPDCR SPLW/SPRDTD bits |
+| Ch 46: CRC | rx72n_crc_regs.h | 2480-2487 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
+| Ch 40: USB | rx72n_usb_regs.h | 1928-2036 | [ ] NOT STARTED | |
+| Ch 34: WDT | rx72n_wdt_regs.h | 1666-1679 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
+| Ch 35: IWDT | rx72n_iwdt_regs.h | 1680-1698 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 
-**Pass 1 last page verified:** `none -- not started`
+**Pass 1 last page verified:** `2433 (Ch 44 RSPI complete 2026-04-13)`
 
 ---
 
