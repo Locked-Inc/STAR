@@ -35,9 +35,12 @@ what was fixed. Update this file as you work.
   - 28 libraries, 76 source files, 115 header files
   - All peripheral register headers identified (see VERIFICATION_PLAN.md)
   - Approximate chapter-to-page mapping created (needs confirmation from TOC)
+- Two-pass strategy finalized:
+  - Pass 1: PDF -> CODE (manual-driven, read every manual page)
+  - Pass 2: CODE -> PDF (code-driven, read every source file)
 
 ### Commits
-- (initial commit with plan documents)
+- 6bd48a498 -- docs: add RX72N manual and verification plan
 
 ---
 
