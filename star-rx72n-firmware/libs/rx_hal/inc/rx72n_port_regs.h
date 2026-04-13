@@ -124,9 +124,9 @@
  * - Port J: PJ3, PJ5 (2 pins)
  *
  * @par Hardware Reference
- * - RX72N Group User's Manual: Hardware, Chapter 21 (I/O Ports)
- * - Section 21.2: Register Descriptions
- * - Section 21.3: Pin Functions
+ * - RX72N Group User's Manual: Hardware, Chapter 22 (I/O Ports)
+ * - Section 22.3: Register Descriptions
+ * - Section 22.4: Initialization
  *
  * @par NASA Power of 10 Compliance
  * - Rule 1: [OK] No goto, setjmp, or recursion
@@ -147,7 +147,7 @@
  * - [rx72n_sci_regs.h](rx72n__sci__regs_8h.html): UART pins
  * - [rx72n_rspi_regs.h](rx72n__rspi__regs_8h.html): SPI pins
  *
- * @see RX72N Hardware Manual Chapter 21 for complete I/O Ports specification
+ * @see RX72N Hardware Manual Chapter 22 for complete I/O Ports specification
  * @see DOXYGEN_ROADMAP.md for documentation standards
  *
  * @author Locked, Inc. Contributors
@@ -205,7 +205,7 @@ extern "C" {
  * - PORTD.PODR = k_port_podr_base + k_port_offset_d = 0x0008C02D
  *
  * @see rx_port_offsets_t for port offset values
- * @see RX72N Hardware Manual Section 21.2 (Register Descriptions)
+ * @see RX72N Hardware Manual Section 22.3 (Register Descriptions)
  */
 typedef enum : uintptr_t {
   /**
@@ -308,7 +308,7 @@ typedef enum : uintptr_t {
  * @endcode
  *
  * @see rx_port_reg_bases_t for register base addresses
- * @see RX72N Hardware Manual Chapter 21.1.1 (Package Pin Availability)
+ * @see RX72N Hardware Manual Chapter 22.1.1 (Package Pin Availability)
  */
 typedef enum : uint8_t {
   /** @brief Port 0 offset - P00-P03, P05, P07 (6 pins) */
@@ -458,7 +458,7 @@ typedef enum : uint8_t {
  *
  * @see rx_port_reg_bases_t for register base addresses
  * @see rx_port_offsets_t for port offset values
- * @see RX72N Hardware Manual Section 21.2 (Register Descriptions)
+ * @see RX72N Hardware Manual Section 22.3 (Register Descriptions)
  */
 typedef struct __attribute__((packed)) {
   /**
@@ -545,8 +545,8 @@ typedef struct __attribute__((packed)) {
  * exactly matches the RX72N hardware register addresses. Any mismatch
  * will cause a compile-time error, preventing runtime GPIO bugs.
  *
- * Reference: RX72N Group User's Manual: Hardware, Chapter 21 (I/O Ports)
- *            Section 21.2: Register Descriptions
+ * Reference: RX72N Group User's Manual: Hardware, Chapter 22 (I/O Ports)
+ *            Section 22.3: Register Descriptions
  */
 
 /** @name PORT Register Offset Verification
