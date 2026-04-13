@@ -235,4 +235,53 @@ what was fixed. Update this file as you work.
 
 ---
 
+## 2026-04-13 -- Ch 26 GPTW (General PWM Timer) Registers
+
+**Pages read:** 1240-1285 (Ch 26 register descriptions)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_gptw_regs.h,
+                  star-rx72n-firmware/libs/rx_hal/src/rx_gptw.c
+
+### Findings
+
+- [FIXED] GTIOR OAE (GTIOCA Output Enable): was `(1 << 6)` = b6 (OADFLT -- output value at
+  count stop), manual p.1267 says OAE is **b8** -- corrected to `(1 << 8)`
+- [FIXED] GTIOR OBE (GTIOCB Output Enable): was `(1 << 22)` = b22 (OBDFLT), manual p.1267
+  says OBE is **b24** -- corrected to `(1 << 24)`
+- [FIXED] GTIOR `oa_init_high = 0x0A`: Table 26.4 p.1269 shows 0x0A = b4=0 = initial LOW
+  (not HIGH). Correct "initial HIGH, complementary" value is **0x16** (b4=1, low at EOC,
+  high at compare match). Renamed comment to reflect actual behavior.
+- [FIXED] GTIOR `ob_init_high = (0x0A << 16)`: same issue -- corrected to `(0x16 << 16)`
+- [FIXED] GTIOR example comment: "high on compare match" was wrong for 0x09; Table 26.4
+  shows 0x09 = b1:b0=01 = LOW at compare match. Corrected to "high at end-of-cycle, low
+  at compare match".
+- [FIXED] GTBER enum: all three values were wrong:
+  - `ccra_buf = (1 << 0)` was BD[0] = GTCCRA/GTCCRB buffer **Disable** (not enable)
+  - `ccrb_buf = (1 << 1)` was BD[1] = **GTPR** buffer Disable (not GTCCRB!)
+  - `pr_buf = (1 << 16)` was CCRA[0] (GTCCRA mode bit), not GTPR
+  Manual p.1277: CCRA single-buffer = `(0x01 << 16)`, CCRB single-buffer = `(0x01 << 18)`,
+  PR single-buffer = `(0x01 << 20)`. BD[0:3] at b3:b0 are disable bits (1=disabled).
+  Replaced entire enum with BD[0:3] disable bits plus ccra/ccrb/pr single/double constants.
+- [FIXED] rx_gptw.c: `gptw->gtber = ccra_buf | ccrb_buf` was setting BD[0]=1 BD[1]=1
+  which **disabled** GTCCRA/GTCCRB and GTPR buffering -- opposite of the "Enable buffer
+  operation for glitch-free updates" comment intent. Corrected to
+  `k_gptw_gtber_ccra_single | k_gptw_gtber_ccrb_single`.
+- [FIXED] Added `gptw_padding_sizes_t` enum for struct reserved array sizes (replaces
+  magic numbers `reserved[6]` and `reserved0[5]`)
+- [FIXED] Added `gptw_ch_reg_offsets_t`, `gptw_common_reg_offsets_t`, and
+  `gptw_periph_space_t` enums for all static_assert comparisons (replaces raw hex literals)
+- [OK] GTINTAD: GRP[1:0]=b25:b24, GRPDTE=b28, GRPABH=b29, GRPABL=b30 -- match p.1270
+- [OK] GTST: TUCF=b15 -- matches p.1273 (session summary erroneously said b14)
+- [OK] All 55 channel register offsets and 6 common register offsets -- correct
+- [OK] Base addresses: GPTW0=0x000C2000, GPTW1=0x000C2100, GPTW2=0x000C2200,
+  GPTW3=0x000C2300, common=0x000C2B00 -- match manual p.1240
+- [OK] sizeof(rx_gptw_channel_regs_t) == 0xD8 (216 bytes) -- correct
+- [OK] sizeof(rx_gptw_common_regs_t) == 0x2C (44 bytes) -- correct
+- [OK] GTCR: CST=b0, MD[2:0]=b18:b16, TPCS[3:0]=b26:b23 -- correct
+- [OK] GTUDDTYC, GTDTCR, GTSTR/GTSTP/GTCLR bit definitions -- correct
+
+### Commits
+- (pending)
+
+---
+
 (future sessions go below this line)

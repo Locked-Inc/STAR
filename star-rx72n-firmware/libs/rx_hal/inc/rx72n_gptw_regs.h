@@ -159,7 +159,7 @@ extern "C" {
  * // 5. Set initial duty to 0%
  * gptw->gtccra = 0;
  *
- * // 6. Configure GTIOCA output: initial low, high on compare match
+ * // 6. Configure GTIOCA output: initial low, high at end-of-cycle, low at compare match
  * gptw->gtior = k_gptw_gtior_oa_init_low | k_gptw_gtior_oae;
  *
  * // 7. Clear counter
@@ -197,6 +197,16 @@ extern "C" {
  * - GPTW2: PE3/GTIOC2A, PE0/GTIOC2B
  * - GPTW3: PE7/GTIOC3A, PE6/GTIOC3B
  */
+
+/* =============================================================================
+ * Struct Padding Sizes - Named array counts for reserved fields
+ * =============================================================================
+ */
+
+typedef enum : uint8_t {
+  k_gptw_ch_reserved_count      = 6U, /**< Reserved uint32_t count in channel struct (0xB8-0xCC) */
+  k_gptw_common_reserved0_count = 5U, /**< Reserved uint32_t count in common struct (0x0C-0x1C) */
+} gptw_padding_sizes_t;
 
 /**
  * @struct rx_gptw_channel_regs_t
@@ -302,7 +312,7 @@ typedef struct {
   volatile uint32_t gteitli1;    /**< 0xAC: Extended Interrupt Skipping Setting Register 1 */
   volatile uint32_t gteitli2;    /**< 0xB0: Extended Interrupt Skipping Setting Register 2 */
   volatile uint32_t gteitlb;     /**< 0xB4: Extended Buffer Transfer Skipping Setting */
-  uint32_t          reserved[6]; /**< 0xB8-0xCC: Reserved */
+  uint32_t          reserved[k_gptw_ch_reserved_count]; /**< 0xB8-0xCC: Reserved */
   volatile uint32_t gtsecsr; /**< 0xD0: Operation Enable Bit Simultaneous Control Channel Select */
   volatile uint32_t gtsecr;  /**< 0xD4: Operation Enable Bit Simultaneous Control */
 } rx_gptw_channel_regs_t;
@@ -317,7 +327,7 @@ typedef struct {
   volatile uint32_t gtstra;       /**< 0x00: General Timer Start Register A */
   volatile uint32_t gtstpa;       /**< 0x04: General Timer Stop Register A */
   volatile uint32_t gtclra;       /**< 0x08: General Timer Clear Register A */
-  uint32_t          reserved0[5]; /**< Reserved */
+  uint32_t          reserved0[k_gptw_common_reserved0_count]; /**< Reserved */
   volatile uint32_t gtstra2;      /**< 0x20: General Timer Start Register A2 */
   volatile uint32_t gtstpa2;      /**< 0x24: General Timer Stop Register A2 */
   volatile uint32_t gtclra2;      /**< 0x28: General Timer Clear Register A2 */
@@ -444,11 +454,11 @@ typedef enum : uint32_t {
   k_gptw_gtior_oa_low_cmpup  = 0x01, /**< Low on compare match (up) */
   k_gptw_gtior_oa_high_cmpup = 0x02, /**< High on compare match (up) */
   k_gptw_gtior_oa_toggle     = 0x03, /**< Toggle on compare match */
-  k_gptw_gtior_oa_init_low   = 0x09, /**< Initial low, PWM output */
-  k_gptw_gtior_oa_init_high  = 0x0A, /**< Initial high, PWM output */
+  k_gptw_gtior_oa_init_low   = 0x09, /**< Initial LOW; high at end-of-cycle; low at compare match (active-high sawtooth PWM) */
+  k_gptw_gtior_oa_init_high  = 0x16, /**< Initial HIGH; low at end-of-cycle; high at compare match (complement of init_low) */
 
-  /* GTIOCA Output Enable (bit 6) */
-  k_gptw_gtior_oae = (1 << 6), /**< GTIOCA Output Enable */
+  /* GTIOCA Output Enable (bit 8) */
+  k_gptw_gtior_oae = (1 << 8), /**< GTIOCA Output Enable */
 
   /* GTIOCB Output Control (bits 16-20) */
   k_gptw_gtior_ob_shift      = 16,
@@ -457,11 +467,11 @@ typedef enum : uint32_t {
   k_gptw_gtior_ob_low_cmpup  = (0x01 << 16), /**< Low on compare match (up) */
   k_gptw_gtior_ob_high_cmpup = (0x02 << 16), /**< High on compare match (up) */
   k_gptw_gtior_ob_toggle     = (0x03 << 16), /**< Toggle on compare match */
-  k_gptw_gtior_ob_init_low   = (0x09 << 16), /**< Initial low, PWM output */
-  k_gptw_gtior_ob_init_high  = (0x0A << 16), /**< Initial high, PWM output */
+  k_gptw_gtior_ob_init_low   = (0x09 << 16), /**< Initial LOW; high at end-of-cycle; low at compare match */
+  k_gptw_gtior_ob_init_high  = (0x16 << 16), /**< Initial HIGH; low at end-of-cycle; high at compare match */
 
-  /* GTIOCB Output Enable (bit 22) */
-  k_gptw_gtior_obe = (1 << 22), /**< GTIOCB Output Enable */
+  /* GTIOCB Output Enable (bit 24) */
+  k_gptw_gtior_obe = (1 << 24), /**< GTIOCB Output Enable */
 } gptw_gtior_bits_t;
 
 /* =============================================================================
@@ -518,9 +528,21 @@ typedef enum : uint32_t {
  */
 
 typedef enum : uint32_t {
-  k_gptw_gtber_ccra_buf = (1 << 0),  /**< GTCCRA buffer enable */
-  k_gptw_gtber_ccrb_buf = (1 << 1),  /**< GTCCRB buffer enable */
-  k_gptw_gtber_pr_buf   = (1 << 16), /**< GTPR buffer enable */
+  /* BD[3:0] - Buffer Operation Disable (b3:b0).
+   * Set 1 to DISABLE buffer operation for the register group. Reset = 0 (buffer enabled). */
+  k_gptw_gtber_bd0 = (1U << 0), /**< Disable buffer op for GTCCRA/GTCCRB (1=disabled) */
+  k_gptw_gtber_bd1 = (1U << 1), /**< Disable buffer op for GTPR (1=disabled) */
+  k_gptw_gtber_bd2 = (1U << 2), /**< Disable buffer op for GTADTRA/GTADTRB (1=disabled) */
+  k_gptw_gtber_bd3 = (1U << 3), /**< Disable buffer op for GTDVU/GTDVD (1=disabled) */
+  /* CCRA[1:0] - GTCCRA Buffer Operation (b17:b16). BD[0]=0 required for buffer to be active. */
+  k_gptw_gtber_ccra_single = (0x01U << 16), /**< GTCCRA single-buffer: GTCCRC -> GTCCRA */
+  k_gptw_gtber_ccra_double = (0x02U << 16), /**< GTCCRA double-buffer: GTCCRD -> GTCCRC -> GTCCRA */
+  /* CCRB[1:0] - GTCCRB Buffer Operation (b19:b18). BD[0]=0 required for buffer to be active. */
+  k_gptw_gtber_ccrb_single = (0x01U << 18), /**< GTCCRB single-buffer: GTCCRE -> GTCCRB */
+  k_gptw_gtber_ccrb_double = (0x02U << 18), /**< GTCCRB double-buffer: GTCCRF -> GTCCRE -> GTCCRB */
+  /* PR[1:0] - GTPR Buffer Operation (b21:b20). BD[1]=0 required for buffer to be active. */
+  k_gptw_gtber_pr_single = (0x01U << 20), /**< GTPR single-buffer: GTPBR -> GTPR */
+  k_gptw_gtber_pr_double = (0x02U << 20), /**< GTPR double-buffer: GTPDBR -> GTPBR -> GTPR */
 } gptw_gtber_bits_t;
 
 /* =============================================================================
@@ -688,140 +710,212 @@ typedef enum : uint8_t {
 } gptw_mpc_psel_t;
 
 /* =============================================================================
+ * Register Offset Constants - Named constants for compile-time assertions
+ * =============================================================================
+ */
+
+typedef enum : uint8_t {
+  k_gptw_ch_off_gtwp      = 0x00U, /**< Write Protection Register */
+  k_gptw_ch_off_gtstr     = 0x04U, /**< Software Start Register */
+  k_gptw_ch_off_gtstp     = 0x08U, /**< Software Stop Register */
+  k_gptw_ch_off_gtclr     = 0x0CU, /**< Software Clear Register */
+  k_gptw_ch_off_gtssr     = 0x10U, /**< Start Source Select Register */
+  k_gptw_ch_off_gtpsr     = 0x14U, /**< Stop Source Select Register */
+  k_gptw_ch_off_gtcsr     = 0x18U, /**< Clear Source Select Register */
+  k_gptw_ch_off_gtupsr    = 0x1CU, /**< Count-Up Source Select Register */
+  k_gptw_ch_off_gtdnsr    = 0x20U, /**< Count-Down Source Select Register */
+  k_gptw_ch_off_gticasr   = 0x24U, /**< Input Capture Source Select A */
+  k_gptw_ch_off_gticbsr   = 0x28U, /**< Input Capture Source Select B */
+  k_gptw_ch_off_gtcr      = 0x2CU, /**< Control Register */
+  k_gptw_ch_off_gtuddtyc  = 0x30U, /**< Count Direction and Duty Setting Register */
+  k_gptw_ch_off_gtior     = 0x34U, /**< I/O Control Register */
+  k_gptw_ch_off_gtintad   = 0x38U, /**< Interrupt Output Setting Register */
+  k_gptw_ch_off_gtst      = 0x3CU, /**< Status Register */
+  k_gptw_ch_off_gtber     = 0x40U, /**< Buffer Enable Register */
+  k_gptw_ch_off_gtitc     = 0x44U, /**< Interrupt Skipping Setting Register */
+  k_gptw_ch_off_gtcnt     = 0x48U, /**< Counter */
+  k_gptw_ch_off_gtccra    = 0x4CU, /**< Compare Capture Register A */
+  k_gptw_ch_off_gtccrb    = 0x50U, /**< Compare Capture Register B */
+  k_gptw_ch_off_gtccrc    = 0x54U, /**< Compare Capture Register C */
+  k_gptw_ch_off_gtccre    = 0x58U, /**< Compare Capture Register E */
+  k_gptw_ch_off_gtccrd    = 0x5CU, /**< Compare Capture Register D */
+  k_gptw_ch_off_gtccrf    = 0x60U, /**< Compare Capture Register F */
+  k_gptw_ch_off_gtpr      = 0x64U, /**< Cycle Setting Register */
+  k_gptw_ch_off_gtpbr     = 0x68U, /**< Cycle Setting Buffer Register */
+  k_gptw_ch_off_gtpdbr    = 0x6CU, /**< Cycle Setting Double-Buffer Register */
+  k_gptw_ch_off_gtadtra   = 0x70U, /**< A/D Conversion Start Request Timing Register A */
+  k_gptw_ch_off_gtadtbra  = 0x74U, /**< A/D Conversion Start Request Timing Buffer Register A */
+  k_gptw_ch_off_gtadtdbra = 0x78U, /**< A/D Conversion Start Request Timing Double-Buffer Register A */
+  k_gptw_ch_off_gtadtrb   = 0x7CU, /**< A/D Conversion Start Request Timing Register B */
+  k_gptw_ch_off_gtadtbrb  = 0x80U, /**< A/D Conversion Start Request Timing Buffer Register B */
+  k_gptw_ch_off_gtadtdbrb = 0x84U, /**< A/D Conversion Start Request Timing Double-Buffer Register B */
+  k_gptw_ch_off_gtdtcr    = 0x88U, /**< Dead-Time Control Register */
+  k_gptw_ch_off_gtdvu     = 0x8CU, /**< Dead-Time Value Register U */
+  k_gptw_ch_off_gtdvd     = 0x90U, /**< Dead-Time Value Register D */
+  k_gptw_ch_off_gtdbu     = 0x94U, /**< Dead-Time Buffer Register U */
+  k_gptw_ch_off_gtdbd     = 0x98U, /**< Dead-Time Buffer Register D */
+  k_gptw_ch_off_gtsos     = 0x9CU, /**< Output Protection Function Status Register */
+  k_gptw_ch_off_gtsotr    = 0xA0U, /**< Output Protection Function Temporary Release Register */
+  k_gptw_ch_off_gtadsmr   = 0xA4U, /**< A/D Conversion Start Request Signal Monitoring Register */
+  k_gptw_ch_off_gteitc    = 0xA8U, /**< Extended Interrupt Skipping Counter Control Register */
+  k_gptw_ch_off_gteitli1  = 0xACU, /**< Extended Interrupt Skipping Setting Register 1 */
+  k_gptw_ch_off_gteitli2  = 0xB0U, /**< Extended Interrupt Skipping Setting Register 2 */
+  k_gptw_ch_off_gteitlb   = 0xB4U, /**< Extended Buffer Transfer Skipping Setting Register */
+  k_gptw_ch_off_reserved  = 0xB8U, /**< Reserved region start */
+  k_gptw_ch_off_gtsecsr   = 0xD0U, /**< Operation Enable Bit Simultaneous Control Channel Select */
+  k_gptw_ch_off_gtsecr    = 0xD4U, /**< Operation Enable Bit Simultaneous Control Register */
+  k_gptw_ch_struct_size   = 0xD8U, /**< Total channel structure size in bytes */
+} gptw_ch_reg_offsets_t;
+
+typedef enum : uint8_t {
+  k_gptw_common_off_gtstpa  = 0x04U, /**< General Timer Stop Register A */
+  k_gptw_common_off_gtclra  = 0x08U, /**< General Timer Clear Register A */
+  k_gptw_common_off_gtstra2 = 0x20U, /**< General Timer Start Register A2 */
+  k_gptw_common_off_gtstpa2 = 0x24U, /**< General Timer Stop Register A2 */
+  k_gptw_common_off_gtclra2 = 0x28U, /**< General Timer Clear Register A2 */
+  k_gptw_common_struct_size = 0x2CU, /**< Total common structure size in bytes */
+} gptw_common_reg_offsets_t;
+
+typedef enum : uintptr_t {
+  k_gptw_periph_space_mask = 0xFFFF0000U, /**< Mask to extract peripheral space from address */
+  k_gptw_periph_space_base = 0x000C0000U, /**< GPTW peripheral space base (0x000Cxxxx) */
+} gptw_periph_space_t;
+
+/* =============================================================================
  * Static Assertions - Compile-time verification of register layout
  * =============================================================================
  */
 
 /* Verify GPTW channel register structure size and critical offsets */
-static_assert(sizeof(rx_gptw_channel_regs_t) == 0xD8,
+static_assert(sizeof(rx_gptw_channel_regs_t) == k_gptw_ch_struct_size,
               "GPTW channel register structure size mismatch");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtwp) == 0x00,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtwp) == k_gptw_ch_off_gtwp,
               "GPTW GTWP register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtcr) == 0x2C,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtcr) == k_gptw_ch_off_gtcr,
               "GPTW GTCR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtcnt) == 0x48,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtcnt) == k_gptw_ch_off_gtcnt,
               "GPTW GTCNT register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtccra) == 0x4C,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtccra) == k_gptw_ch_off_gtccra,
               "GPTW GTCCRA register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtpr) == 0x64,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtpr) == k_gptw_ch_off_gtpr,
               "GPTW GTPR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtdtcr) == 0x88,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtdtcr) == k_gptw_ch_off_gtdtcr,
               "GPTW GTDTCR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtsotr) == 0xA0,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtsotr) == k_gptw_ch_off_gtsotr,
               "GPTW GTSOTR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtadsmr) == 0xA4,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtadsmr) == k_gptw_ch_off_gtadsmr,
               "GPTW GTADSMR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gteitc) == 0xA8,
+static_assert(offsetof(rx_gptw_channel_regs_t, gteitc) == k_gptw_ch_off_gteitc,
               "GPTW GTEITC register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gteitli1) == 0xAC,
+static_assert(offsetof(rx_gptw_channel_regs_t, gteitli1) == k_gptw_ch_off_gteitli1,
               "GPTW GTEITLI1 register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gteitli2) == 0xB0,
+static_assert(offsetof(rx_gptw_channel_regs_t, gteitli2) == k_gptw_ch_off_gteitli2,
               "GPTW GTEITLI2 register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gteitlb) == 0xB4,
+static_assert(offsetof(rx_gptw_channel_regs_t, gteitlb) == k_gptw_ch_off_gteitlb,
               "GPTW GTEITLB register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtsecsr) == 0xD0,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtsecsr) == k_gptw_ch_off_gtsecsr,
               "GPTW GTSECSR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtsecr) == 0xD4,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtsecr) == k_gptw_ch_off_gtsecr,
               "GPTW GTSECR register offset incorrect");
 
 /* Additional channel register offset verification (100% coverage) */
-static_assert(offsetof(rx_gptw_channel_regs_t, gtstr) == 0x04,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtstr) == k_gptw_ch_off_gtstr,
               "GPTW GTSTR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtstp) == 0x08,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtstp) == k_gptw_ch_off_gtstp,
               "GPTW GTSTP register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtclr) == 0x0C,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtclr) == k_gptw_ch_off_gtclr,
               "GPTW GTCLR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtssr) == 0x10,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtssr) == k_gptw_ch_off_gtssr,
               "GPTW GTSSR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtpsr) == 0x14,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtpsr) == k_gptw_ch_off_gtpsr,
               "GPTW GTPSR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtcsr) == 0x18,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtcsr) == k_gptw_ch_off_gtcsr,
               "GPTW GTCSR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtupsr) == 0x1C,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtupsr) == k_gptw_ch_off_gtupsr,
               "GPTW GTUPSR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtdnsr) == 0x20,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtdnsr) == k_gptw_ch_off_gtdnsr,
               "GPTW GTDNSR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gticasr) == 0x24,
+static_assert(offsetof(rx_gptw_channel_regs_t, gticasr) == k_gptw_ch_off_gticasr,
               "GPTW GTICASR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gticbsr) == 0x28,
+static_assert(offsetof(rx_gptw_channel_regs_t, gticbsr) == k_gptw_ch_off_gticbsr,
               "GPTW GTICBSR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtuddtyc) == 0x30,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtuddtyc) == k_gptw_ch_off_gtuddtyc,
               "GPTW GTUDDTYC register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtior) == 0x34,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtior) == k_gptw_ch_off_gtior,
               "GPTW GTIOR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtintad) == 0x38,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtintad) == k_gptw_ch_off_gtintad,
               "GPTW GTINTAD register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtst) == 0x3C,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtst) == k_gptw_ch_off_gtst,
               "GPTW GTST register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtber) == 0x40,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtber) == k_gptw_ch_off_gtber,
               "GPTW GTBER register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtitc) == 0x44,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtitc) == k_gptw_ch_off_gtitc,
               "GPTW GTITC register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtccrb) == 0x50,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtccrb) == k_gptw_ch_off_gtccrb,
               "GPTW GTCCRB register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtccrc) == 0x54,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtccrc) == k_gptw_ch_off_gtccrc,
               "GPTW GTCCRC register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtccre) == 0x58,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtccre) == k_gptw_ch_off_gtccre,
               "GPTW GTCCRE register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtccrd) == 0x5C,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtccrd) == k_gptw_ch_off_gtccrd,
               "GPTW GTCCRD register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtccrf) == 0x60,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtccrf) == k_gptw_ch_off_gtccrf,
               "GPTW GTCCRF register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtpbr) == 0x68,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtpbr) == k_gptw_ch_off_gtpbr,
               "GPTW GTPBR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtpdbr) == 0x6C,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtpdbr) == k_gptw_ch_off_gtpdbr,
               "GPTW GTPDBR register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtadtra) == 0x70,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtadtra) == k_gptw_ch_off_gtadtra,
               "GPTW GTADTRA register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtadtbra) == 0x74,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtadtbra) == k_gptw_ch_off_gtadtbra,
               "GPTW GTADTBRA register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtadtdbra) == 0x78,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtadtdbra) == k_gptw_ch_off_gtadtdbra,
               "GPTW GTADTDBRA register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtadtrb) == 0x7C,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtadtrb) == k_gptw_ch_off_gtadtrb,
               "GPTW GTADTRB register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtadtbrb) == 0x80,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtadtbrb) == k_gptw_ch_off_gtadtbrb,
               "GPTW GTADTBRB register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtadtdbrb) == 0x84,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtadtdbrb) == k_gptw_ch_off_gtadtdbrb,
               "GPTW GTADTDBRB register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtdvu) == 0x8C,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtdvu) == k_gptw_ch_off_gtdvu,
               "GPTW GTDVU register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtdvd) == 0x90,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtdvd) == k_gptw_ch_off_gtdvd,
               "GPTW GTDVD register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtdbu) == 0x94,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtdbu) == k_gptw_ch_off_gtdbu,
               "GPTW GTDBU register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtdbd) == 0x98,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtdbd) == k_gptw_ch_off_gtdbd,
               "GPTW GTDBD register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, gtsos) == 0x9C,
+static_assert(offsetof(rx_gptw_channel_regs_t, gtsos) == k_gptw_ch_off_gtsos,
               "GPTW GTSOS register offset incorrect");
-static_assert(offsetof(rx_gptw_channel_regs_t, reserved) == 0xB8,
+static_assert(offsetof(rx_gptw_channel_regs_t, reserved) == k_gptw_ch_off_reserved,
               "GPTW reserved register offset incorrect");
 
 /* Verify GPTW common register structure size */
-static_assert(sizeof(rx_gptw_common_regs_t) == 0x2C,
+static_assert(sizeof(rx_gptw_common_regs_t) == k_gptw_common_struct_size,
               "GPTW common register structure size mismatch");
 
 /* Verify GPTW common register offsets (100% coverage) */
 static_assert(offsetof(rx_gptw_common_regs_t, gtstra) == 0x00,
               "GPTW common GTSTRA register offset incorrect");
-static_assert(offsetof(rx_gptw_common_regs_t, gtstpa) == 0x04,
+static_assert(offsetof(rx_gptw_common_regs_t, gtstpa) == k_gptw_common_off_gtstpa,
               "GPTW common GTSTPA register offset incorrect");
-static_assert(offsetof(rx_gptw_common_regs_t, gtclra) == 0x08,
+static_assert(offsetof(rx_gptw_common_regs_t, gtclra) == k_gptw_common_off_gtclra,
               "GPTW common GTCLRA register offset incorrect");
-static_assert(offsetof(rx_gptw_common_regs_t, gtstra2) == 0x20,
+static_assert(offsetof(rx_gptw_common_regs_t, gtstra2) == k_gptw_common_off_gtstra2,
               "GPTW common GTSTRA2 register offset incorrect");
-static_assert(offsetof(rx_gptw_common_regs_t, gtstpa2) == 0x24,
+static_assert(offsetof(rx_gptw_common_regs_t, gtstpa2) == k_gptw_common_off_gtstpa2,
               "GPTW common GTSTPA2 register offset incorrect");
-static_assert(offsetof(rx_gptw_common_regs_t, gtclra2) == 0x28,
+static_assert(offsetof(rx_gptw_common_regs_t, gtclra2) == k_gptw_common_off_gtclra2,
               "GPTW common GTCLRA2 register offset incorrect");
 
 /* Verify base addresses are in correct peripheral space (0x000C2xxx) */
-static_assert((k_gptw0_base_addr & 0xFFFF0000) == 0x000C0000,
+static_assert((k_gptw0_base_addr & k_gptw_periph_space_mask) == k_gptw_periph_space_base,
               "GPTW0 base address not in GPTW peripheral space");
-static_assert((k_gptw1_base_addr & 0xFFFF0000) == 0x000C0000,
+static_assert((k_gptw1_base_addr & k_gptw_periph_space_mask) == k_gptw_periph_space_base,
               "GPTW1 base address not in GPTW peripheral space");
-static_assert((k_gptw2_base_addr & 0xFFFF0000) == 0x000C0000,
+static_assert((k_gptw2_base_addr & k_gptw_periph_space_mask) == k_gptw_periph_space_base,
               "GPTW2 base address not in GPTW peripheral space");
-static_assert((k_gptw3_base_addr & 0xFFFF0000) == 0x000C0000,
+static_assert((k_gptw3_base_addr & k_gptw_periph_space_mask) == k_gptw_periph_space_base,
               "GPTW3 base address not in GPTW peripheral space");
 
 /* Verify channel spacing is correct */
