@@ -608,4 +608,55 @@ what was fixed. Update this file as you work.
 
 ---
 
+## 2026-04-13 -- Ch 40 USB 2.0 Full-Speed (USBb) Registers
+
+**Pages read:** 1928-2036 (Ch 40 complete)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_usb_regs.h,
+                  star-rx72n-firmware/libs/rx_usb/src/rx_usb_hw.c,
+                  star-rx72n-firmware/libs/rx_usb/src/rx_usb_isr.c
+
+### Findings
+
+- [OK] k_usb0_base_addr = 0x000A0000 -- matches manual p.1929 (Table 40.1)
+- [OK] SYSCFG offset = 0x0000, SYSSTS0 = 0x0004, DVSTCTR0 = 0x0008 -- correct
+- [OK] CFIFO = 0x0014, D0FIFO = 0x0018, D1FIFO = 0x001C (16-bit WORD registers) -- correct
+- [OK] CFIFOSEL = 0x0020, CFIFOCTR = 0x0022, D0FIFOSEL = 0x0028, D0FIFOCTR = 0x002A -- correct
+- [OK] D1FIFOSEL = 0x002C, D1FIFOCTR = 0x002E -- correct
+- [OK] INTENB0 = 0x0030, INTENB1 = 0x0032, BRDYENB = 0x0036, NRDYENB = 0x0038, BEMPENB = 0x003A -- correct
+- [OK] SOFCFG = 0x003C, PHYSET = 0x003E, INTSTS0 = 0x0040, INTSTS1 = 0x0042 -- correct
+- [OK] BRDYSTS = 0x0046, NRDYSTS = 0x0048, BEMPSTS = 0x004A -- correct
+- [OK] FRMNUM = 0x004C, DVCHGR = 0x004E, USBADDR = 0x0050, USBREQ = 0x0054 -- correct
+- [OK] USBVAL = 0x0056, USBINDX = 0x0058, USBLENG = 0x005A -- correct
+- [OK] DCPCFG = 0x005C, DCPMAXP = 0x005E, DCPCTR = 0x0060 -- correct
+- [OK] PIPESEL = 0x0064, PIPECFG = 0x0068, PIPEMAXP = 0x006C, PIPEPERI = 0x006E -- correct
+- [OK] PIPE1CTR = 0x0070, PIPE2CTR = 0x0072, ..., PIPE9CTR = 0x0080 -- correct
+- [OK] PIPE1TRE = 0x0090, PIPE1TRN = 0x0092, ..., PIPE5TRE = 0x0098, PIPE5TRN = 0x009A -- correct
+- [OK] DEVADD0 = 0x00D0, DEVADD1 = 0x00D2, ..., DEVADD10 = 0x00E4 -- correct
+- [OK] PHYSLEW = 0x00F0 -- correct
+- [OK] DCPMAXP.DEVSEL[3:0] = b15:b12; DEVADD.USBSPD[1:0] = b9:b8, HUBPORT[2:0] = b12:b10 -- correct
+- [OK] SYSCFG bits: SCKE=b10, HSE=b7, DCFM=b6, DRPD=b5, DPRPU=b4, USBE=b0 -- correct
+- [OK] SYSSTS0 bits: LNST[1:0]=b1:b0, SOFEN=b5, OVCMON[1:0]=b14:b15 -- correct
+- [OK] DVSTCTR0 bits: RHST[2:0], UACT=b4, RESUME=b5, USBRST=b6, RWUPE=b7, WKUP=b8, VBUSEN=b9, EXICEN=b10, HOSTPC=b11 -- correct
+- [OK] INTENB0 bits: all 13 interrupt enable flags at correct bit positions -- correct
+- [OK] INTSTS0 bits: CTSQ[2:0], VALID, DVSQ[2:0], VBSTS, BRDY, NRDY, BEMP, CTRT, DVST, SOFR, RESM, VBINT -- correct
+- [OK] DCPCFG.DIR=b4; DCPCTR.CCPL=b2, PID[1:0]=b1:b0, BSTS=b15, SQCLR/SQSET/SQMON=b8/b9/b10 -- correct
+- [OK] PIPECFG bits: TYPE[1:0]=b15:b14, BFRE=b10, DBLB=b9, SHTNAK=b7, DIR=b4, EPNUM[3:0]=b3:b0 -- correct
+- [OK] PIPECTR bits: PID[1:0]=b1:b0, PBUSY=b5, SQMON=b6, SQSET=b7, SQCLR=b8, ACLRM=b9, ATREPM=b10, INBUFM=b14, BSTS=b15 -- correct
+- [OK] FIFOSEL bits: CURPIPE[3:0]=b3:b0, ISEL=b5, BIGEND=b8, MBW=b10, DREQE=b12, DCLRM=b13 -- correct
+- [OK] FIFOCTR bits: FRDY=b13, BCLR=b14, BVAL=b15 -- correct (b13, not b15)
+- [FIXED] usb_fifosel_bits_t: k_usb_fifosel_mbw_mask was (3U<<10) (2-bit mask) -- manual p.1939 shows MBW is a 1-bit field at b10 only; corrected to (1U<<10)
+- [FIXED] usb_fifosel_bits_t: k_usb_fifosel_mbw_32 = (2U<<10) -- no 32-bit FIFO access mode exists in this peripheral (full-speed only, 16-bit max); removed
+- [FIXED] usb_fifosel_bits_t: k_usb_fifosel_rcl = (1U<<14) -- manual p.1939 names b14 "REW" (Buffer Pointer Rewind), not "RCL"; renamed to k_usb_fifosel_rew
+- [FIXED] usb_fifosel_bits_t: k_usb_fifosel_frdy = (1U<<15) -- manual p.1939 names b15 "RCNT" (Read Count Mode); FRDY is in FIFOCTR at b13, not here; renamed to k_usb_fifosel_rcnt
+- [FIXED] usb_fifoctr_bits_t: k_usb_fifoctr_dtln_mask = 0x0FFF (12-bit mask) -- manual p.1943 shows DTLN[8:0] is a 9-bit field (b8:b0); corrected to 0x01FF
+- [AVAILABLE] DPUSR0R (0x000A0400) -- deep standby USB transceiver control register; added to AVAILABLE_FEATURES.md
+- [AVAILABLE] DPUSR1R (0x000A0404) -- deep standby USB wakeup interrupt register; added to AVAILABLE_FEATURES.md
+- [AVAILABLE] DMA/DTC via D0FIFO/D1FIFO (DREQE/DCLRM bits) -- added to AVAILABLE_FEATURES.md
+- [AVAILABLE] Isochronous transfers (pipes 1-2), transaction counter (pipes 1-5), double buffer, auto response mode -- added to AVAILABLE_FEATURES.md
+
+### Commits
+- (see next commit)
+
+---
+
 (future sessions go below this line)

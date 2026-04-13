@@ -243,7 +243,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 42: RIIC (I2C) | rx72n_riic_regs.h | 2217-2293 | [x] COMPLETE | All addrs + offsets + bit enums OK |
 | Ch 44: RSPI (SPI) | rx72n_rspi_regs.h | 2349-2433 | [x] COMPLETE | FIXED: SPPCR MOIFE/MOIFV bits; SPDCR SPLW/SPRDTD bits |
 | Ch 46: CRC | rx72n_crc_regs.h | 2480-2487 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
-| Ch 40: USB | rx72n_usb_regs.h | 1928-2036 | [ ] NOT STARTED | |
+| Ch 40: USB | rx72n_usb_regs.h | 1928-2036 | [x] COMPLETE | 5 bugs fixed: mbw_mask width, mbw_32 removed, rcl->rew, frdy->rcnt in FIFOSEL; dtln_mask 0x0FFF->0x01FF in FIFOCTR |
 | Ch 34: WDT | rx72n_wdt_regs.h | 1666-1679 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 | Ch 35: IWDT | rx72n_iwdt_regs.h | 1680-1698 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 
