@@ -396,52 +396,107 @@ typedef struct {
 } rx_mtu_channel_regs_t;
 
 /**
- * @struct rx_mtu34_channel_regs_t
- * @brief MTU3/MTU4 extended channel register map with complementary PWM support
+ * @enum mtu3_padding_sizes_t
+ * @brief Named padding array sizes for rx_mtu3_channel_regs_t reserved fields
  *
  * @details
- * Extended register structure for MTU3 and MTU4 channels which support
- * complementary PWM generation for H-bridge motor driver control. These
- * channels include additional TGR E/F registers and buffer transfer mode.
+ * Each constant names the number of reserved bytes between two adjacent MTU3
+ * registers in the hardware layout.  The comments show which hardware registers
+ * occupy those byte ranges (verified against RX72N Ch 5 I/O Register Address
+ * Table).
  *
- * @par Complementary PWM for Motor Control
- * MTU3 and MTU4 are designed as a paired timer unit for generating
- * complementary PWM signals with programmable dead-time:
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  /** @brief 2 reserved bytes at +0x06-0x07: MTU4.TIORH, MTU4.TIORL */
+  k_mtu3_pad_after_tiorl = 2U,
+
+  /** @brief 7 reserved bytes at +0x09-0x0F: MTU4.TIER, MTU.TOERA, reserved x2,
+   *         MTU.TGCRA, MTU.TOCR1A, MTU.TOCR2A */
+  k_mtu3_pad_after_tier = 7U,
+
+  /** @brief 6 reserved bytes at +0x12-0x17: MTU4.TCNT(2), MTU.TCDRA(2), MTU.TDDRA(2) */
+  k_mtu3_pad_after_tcnt = 6U,
+
+  /** @brief 8 reserved bytes at +0x1C-0x23: MTU4.TGRA(2), MTU4.TGRB(2),
+   *         MTU.TCNTSA(2), MTU.TCBRA(2) */
+  k_mtu3_pad_after_tgrb = 8U,
+
+  /** @brief 4 reserved bytes at +0x28-0x2B: MTU4.TGRC(2), MTU4.TGRD(2) */
+  k_mtu3_pad_after_tgrd = 4U,
+
+  /** @brief 11 reserved bytes at +0x2D-0x37: MTU4.TSR, reserved x2, MTU.TITCR1A,
+   *         MTU.TITCNT1A, MTU.TBTERA, reserved, MTU.TDERA, reserved, MTU.TOLBRA,
+   *         reserved */
+  k_mtu3_pad_after_tsr = 11U,
+
+  /** @brief 19 reserved bytes at +0x39-0x4B: MTU4.TBTM, MTU.TITMRA, MTU.TITCR2A,
+   *         MTU.TITCNT2A, reserved, MTU4.TADCR(2), reserved(2), MTU4.TADCORA(2),
+   *         MTU4.TADCORB(2), MTU4.TADCOBRA(2), MTU4.TADCOBRB(2) */
+  k_mtu3_pad_after_tbtm = 19U,
+
+  /** @brief 37 reserved bytes at +0x4D-0x71: MTU4.TCR2, reserved x18, MTU.TWCRA,
+   *         reserved x15, MTU.TMDR2A, reserved */
+  k_mtu3_pad_after_tcr2 = 37U,
+} mtu3_padding_sizes_t;
+
+/**
+ * @struct rx_mtu3_channel_regs_t
+ * @brief MTU3 register map accessed via base address 0x000C1200
  *
+ * @details
+ * Memory-mapped register structure for MTU3 channel, which supports
+ * complementary PWM generation for H-bridge motor driver control along
+ * with standard timer/counter and phase-counting encoder modes.
+ *
+ * The MTU3/MTU4 peripheral block places MTU3 and MTU4 registers at
+ * INTERLEAVED addresses starting at 0x000C1200. MTU3 registers are NOT
+ * at consecutive byte offsets -- there are large gaps between them where
+ * MTU4-specific registers and shared MTU3/4 control registers reside.
+ *
+ * @warning This struct is ONLY valid for MTU3 (mtu3() base 0x000C1200).
+ *          MTU4 registers have DIFFERENT offsets relative to the MTU4 base
+ *          address (0x000C1201) and CANNOT use this struct.  For MTU4,
+ *          compute each register address individually using the Ch 5 I/O
+ *          address table (e.g. MTU4.TIORH = 0x000C1206, not base+0x04).
+ *          See RX72N Hardware Manual Ch 5 I/O Register Address Table.
+ *
+ * @par Register Memory Layout (Ch 5 I/O Register Address Table, verified)
  * @verbatim
- *   MTU3 TIOC3A ----+    +-------------------------+
- *                   +--->| High-Side Gate (DRV8263H)|---> Motor +
- *   MTU4 TIOC4A ----+    +-------------------------+
- *                                ^v Dead-time
- *   MTU3 TIOC3B ----+    +-------------------------+
- *                   +--->| Low-Side Gate (DRV8263H) |---> Motor -
- *   MTU4 TIOC4B ----+    +-------------------------+
+ *   Offset  Size  Register  Address       Description
+ *   ----------------------------------------------------------
+ *   0x00    1     tcr       0x000C1200    Timer Control (prescaler, clear source)
+ *   0x01    -     [MTU4.TCR]              (reserved -- do not access via this struct)
+ *   0x02    1     tmdr1     0x000C1202    Timer Mode Register 1 (normal/PWM/phase)
+ *   0x03    -     [MTU4.TMDR1]            (reserved)
+ *   0x04    1     tiorh     0x000C1204    Timer I/O Control H (TIOCA/TIOCB output)
+ *   0x05    1     tiorl     0x000C1205    Timer I/O Control L (TIOCC/TIOCD output)
+ *   0x06    -     [MTU4.TIORH]            (reserved)
+ *   0x07    -     [MTU4.TIORL]            (reserved)
+ *   0x08    1     tier      0x000C1208    Timer Interrupt Enable
+ *   0x09-0x0F -   [shared/MTU4]           (reserved -- TOERA, TGCRA, TOCR1A, TOCR2A)
+ *   0x10    2     tcnt      0x000C1210    Timer Counter (16-bit)
+ *   0x12-0x17 -  [shared/MTU4]           (reserved -- MTU4.TCNT, TCDRA, TDDRA)
+ *   0x18    2     tgra      0x000C1218    Timer General Register A (period/capture)
+ *   0x1A    2     tgrb      0x000C121A    Timer General Register B (duty/capture)
+ *   0x1C-0x23 -  [shared/MTU4]           (reserved -- MTU4.TGRA/B, TCNTSA, TCBRA)
+ *   0x24    2     tgrc      0x000C1224    Timer General Register C (buffer/capture)
+ *   0x26    2     tgrd      0x000C1226    Timer General Register D (buffer/capture)
+ *   0x28-0x2B -  [MTU4.TGRC/D]           (reserved)
+ *   0x2C    1     tsr       0x000C122C    Timer Status Register (interrupt flags)
+ *   0x2D-0x37 -  [shared/MTU4]           (reserved -- MTU4.TSR, TITCR1A, TBTERA, etc.)
+ *   0x38    1     tbtm      0x000C1238    Timer Buffer Transfer Mode
+ *   0x39-0x4B -  [shared/MTU4]           (reserved -- MTU4.TBTM, TITMRA, MTU4.TADCR etc.)
+ *   0x4C    1     tcr2      0x000C124C    Timer Control Register 2 (phase count edge)
+ *   0x4D-0x71 -  [shared/MTU4]           (reserved -- MTU4.TCR2, TWCRA, TMDR2A, etc.)
+ *   0x72    2     tgre      0x000C1272    Timer General Register E (dead-time/extended)
  * @endverbatim
  *
- * @par Register Memory Layout (21 bytes total)
- * @verbatim
- *   Offset  Size  Register  Description
- *   --------------------------------------------------------------
- *   0x00    1     TCR       Timer Control (prescaler, edge, clear)
- *   0x01    1     TMDR      Timer Mode (complementary PWM mode)
- *   0x02    1     TIORH     Timer I/O Control H (output A/B)
- *   0x03    1     TIORL     Timer I/O Control L (output C/D)
- *   0x04    1     TIER      Timer Interrupt Enable
- *   0x05    1     TSR       Timer Status (flags)
- *   0x06    2     TCNT      Timer Counter (16-bit)
- *   0x08    2     TGRA      Timer General Register A
- *   0x0A    2     TGRB      Timer General Register B
- *   0x0C    2     TGRC      Timer General Register C
- *   0x0E    2     TGRD      Timer General Register D
- *   0x10    2     TGRE      Timer General Register E (extended)
- *   0x12    2     TGRF      Timer General Register F (extended)
- *   0x14    1     TIER2     Timer Interrupt Enable 2
- *   0x15    1     TSR2      Timer Status 2
- *   0x16    1     TBTM      Timer Buffer Transfer Mode
- * @endverbatim
+ * @note MTU3 has NO TGRF register. Only MTU4 has TGRF (at 0x000C1276).
  *
- * @par Dead-Time Insertion
- * TGRE and TGRF provide dead-time values to prevent H-bridge shoot-through:
+ * @par Dead-Time Insertion via TGRE
+ * TGRE provides dead-time values to prevent H-bridge shoot-through.
+ * MTU4.TGRE and MTU4.TGRF must be set separately using direct address access.
  * @f[
  * t_{dead} = \frac{\text{TGRE}}{f_{PCLKA}} = \frac{\text{TGRE}}{120\text{ MHz}}
  * @f]
@@ -451,21 +506,22 @@ typedef struct {
  * @par Complementary PWM Example
  * @code
  * // Configure MTU3/4 for complementary PWM with 500ns dead-time
- * volatile rx_mtu34_channel_regs_t* mtu = mtu3();
+ * volatile rx_mtu3_channel_regs_t* mtu = mtu3();
  *
  * // Stop both timers
  * mtu_tstra()->tstr &= ~(k_mtu_tstr_cst3 | k_mtu_tstr_cst4);
  *
- * // Configure for complementary PWM mode
- * mtu->tmdr = 0x0D;  // Complementary PWM mode
+ * // Configure for complementary PWM mode (via TMDR1)
+ * mtu->tmdr1 = 0x0D;  // Complementary PWM mode
  *
  * // Set period (TGRA) and duty cycle (TGRB)
- * mtu->tgra = 5999;  // 20 kHz period
- * mtu->tgrb = 3000;  // 50% duty cycle
+ * mtu->tgra = 5999;   // 20 kHz period at 120 MHz PCLKA
+ * mtu->tgrb = 3000;   // 50% duty cycle
  *
- * // Set dead-time (TGRE for rising edge, TGRF for falling)
- * mtu->tgre = 60;    // 500ns at 120 MHz
- * mtu->tgrf = 60;    // 500ns at 120 MHz
+ * // Set dead-time for MTU3 (TGRE at 0x000C1272)
+ * mtu->tgre = 60;     // 500ns at 120 MHz
+ * // MTU4.TGRF must be set via direct address (MTU4 uses different struct offsets):
+ * *(volatile uint16_t*)0x000C1276U = 60;  // MTU4.TGRF = 500ns dead-time
  *
  * // Enable buffer transfer on counter clear
  * mtu->tbtm = 0x03;
@@ -474,99 +530,128 @@ typedef struct {
  * mtu_tstra()->tstr |= (k_mtu_tstr_cst3 | k_mtu_tstr_cst4);
  * @endcode
  *
- * @invariant Structure size must be exactly 23 bytes (0x17)
- * @invariant MTU3/MTU4 registers are interleaved at base address 0x000C1200
+ * @invariant Struct size is 0x74 bytes (116) covering MTU3 registers up to TGRE
+ * @invariant Only valid when cast from mtu3() base address (0x000C1200)
+ * @invariant MTU4 registers CANNOT use this struct (different relative offsets)
  *
- * @see rx_mtu_channel_regs_t for standard channel registers
- * @see RX72N Hardware Manual Section 24.2.7 (MTU3/MTU4 Registers)
- * @see RX72N Hardware Manual Section 24.3.7 (Complementary PWM Mode)
+ * @see rx_mtu_channel_regs_t for MTU0/1/2/6/7/8 standard channel struct
+ * @see RX72N Hardware Manual Ch 5 I/O Register Address Table (MTU3a registers)
+ * @see RX72N Hardware Manual Section 24.2 (MTU3/MTU4 Register Descriptions)
  */
 typedef struct {
-  /**
-   * @brief Timer Control Register (TCR) - prescaler and clear source
-   * @see mtu_tcr_bits_t for bit field definitions
-   */
+  /** @brief TCR -- Timer Control Register (+0x00 = 0x000C1200) */
   volatile uint8_t tcr;
 
-  /**
-   * @brief Timer Mode Register (TMDR) - operating mode
-   * @details Includes complementary PWM mode (0x0D) for MTU3/4.
-   * @see mtu_tmdr_bits_t for mode values
-   */
-  volatile uint8_t tmdr;
+  /** @brief Reserved -- MTU4.TCR at this address (+0x01 = 0x000C1201) */
+  volatile uint8_t reserved_01;
 
-  /**
-   * @brief Timer I/O Control Register H - TIOCA/TIOCB output control
-   * @see mtu_tior_bits_t for output mode values
-   */
+  /** @brief TMDR1 -- Timer Mode Register 1 (+0x02 = 0x000C1202) */
+  volatile uint8_t tmdr1;
+
+  /** @brief Reserved -- MTU4.TMDR1 at this address (+0x03 = 0x000C1203) */
+  volatile uint8_t reserved_03;
+
+  /** @brief TIORH -- Timer I/O Control H: TIOCA/TIOCB output modes (+0x04 = 0x000C1204) */
   volatile uint8_t tiorh;
 
-  /**
-   * @brief Timer I/O Control Register L - TIOCC/TIOCD output control
-   * @see mtu_tior_bits_t for output mode values
-   */
+  /** @brief TIORL -- Timer I/O Control L: TIOCC/TIOCD output modes (+0x05 = 0x000C1205) */
   volatile uint8_t tiorl;
 
-  /**
-   * @brief Timer Interrupt Enable Register (TIER)
-   * @details Enables TGIA-D compare match and overflow interrupts.
-   */
+  /** @brief Reserved -- MTU4.TIORH and MTU4.TIORL occupy +0x06 and +0x07 */
+  volatile uint8_t reserved_06[k_mtu3_pad_after_tiorl];
+
+  /** @brief TIER -- Timer Interrupt Enable Register (+0x08 = 0x000C1208) */
   volatile uint8_t tier;
 
   /**
-   * @brief Timer Status Register (TSR) - interrupt flags
-   * @details Read to check flags, write 0 to clear.
+   * @brief Reserved (+0x09-0x0F) -- MTU4.TIER, MTU.TOERA, reserved x2,
+   *        MTU.TGCRA, MTU.TOCR1A, MTU.TOCR2A occupy these addresses
    */
+  volatile uint8_t reserved_09[k_mtu3_pad_after_tier];
+
+  /** @brief TCNT -- Timer Counter 16-bit (+0x10 = 0x000C1210) */
+  volatile uint16_t tcnt;
+
+  /**
+   * @brief Reserved (+0x12-0x17) -- MTU4.TCNT(2), MTU.TCDRA(2),
+   *        MTU.TDDRA(2) occupy these addresses
+   */
+  volatile uint8_t reserved_12[k_mtu3_pad_after_tcnt];
+
+  /** @brief TGRA -- Timer General Register A: period in PWM mode (+0x18 = 0x000C1218) */
+  volatile uint16_t tgra;
+
+  /** @brief TGRB -- Timer General Register B: duty cycle in PWM mode (+0x1A = 0x000C121A) */
+  volatile uint16_t tgrb;
+
+  /**
+   * @brief Reserved (+0x1C-0x23) -- MTU4.TGRA(2), MTU4.TGRB(2),
+   *        MTU.TCNTSA(2), MTU.TCBRA(2) occupy these addresses
+   */
+  volatile uint8_t reserved_1c[k_mtu3_pad_after_tgrb];
+
+  /** @brief TGRC -- Timer General Register C: buffer for TGRA (+0x24 = 0x000C1224) */
+  volatile uint16_t tgrc;
+
+  /** @brief TGRD -- Timer General Register D: buffer for TGRB (+0x26 = 0x000C1226) */
+  volatile uint16_t tgrd;
+
+  /** @brief Reserved (+0x28-0x2B) -- MTU4.TGRC(2), MTU4.TGRD(2) */
+  volatile uint8_t reserved_28[k_mtu3_pad_after_tgrd];
+
+  /** @brief TSR -- Timer Status Register: interrupt flags, write 0 to clear (+0x2C = 0x000C122C) */
   volatile uint8_t tsr;
 
   /**
-   * @brief Timer Counter (TCNT) - 16-bit counter value
-   * @details Shared between MTU3 and MTU4 for synchronized operation.
+   * @brief Reserved (+0x2D-0x37) -- MTU4.TSR, reserved x2, MTU.TITCR1A,
+   *        MTU.TITCNT1A, MTU.TBTERA, reserved, MTU.TDERA, reserved,
+   *        MTU.TOLBRA, reserved occupy these addresses
    */
-  volatile uint16_t tcnt;
+  volatile uint8_t reserved_2d[k_mtu3_pad_after_tsr];
 
-  /** @brief Timer General Register A - period (complementary PWM) */
-  volatile uint16_t tgra;
-
-  /** @brief Timer General Register B - duty cycle (complementary PWM) */
-  volatile uint16_t tgrb;
-
-  /** @brief Timer General Register C - buffer for TGRA */
-  volatile uint16_t tgrc;
-
-  /** @brief Timer General Register D - buffer for TGRB */
-  volatile uint16_t tgrd;
+  /** @brief TBTM -- Timer Buffer Transfer Mode Register (+0x38 = 0x000C1238) */
+  volatile uint8_t tbtm;
 
   /**
-   * @brief Timer General Register E - dead-time (rising edge)
-   * @details MTU3/4 only. Delay before high-side turns on.
+   * @brief Reserved (+0x39-0x4B) -- MTU4.TBTM, MTU.TITMRA, MTU.TITCR2A,
+   *        MTU.TITCNT2A, reserved, MTU4.TADCR(2), reserved(2),
+   *        MTU4.TADCORA(2), MTU4.TADCORB(2), MTU4.TADCOBRA(2),
+   *        MTU4.TADCOBRB(2) occupy these addresses
+   */
+  volatile uint8_t reserved_39[k_mtu3_pad_after_tbtm];
+
+  /** @brief TCR2 -- Timer Control Register 2: phase count clock edge (+0x4C = 0x000C124C) */
+  volatile uint8_t tcr2;
+
+  /**
+   * @brief Reserved (+0x4D-0x71) -- MTU4.TCR2, reserved x18, MTU.TWCRA,
+   *        reserved x15, MTU.TMDR2A, reserved occupy these addresses
+   */
+  volatile uint8_t reserved_4d[k_mtu3_pad_after_tcr2];
+
+  /**
+   * @brief TGRE -- Timer General Register E: dead-time / extended TGR (+0x72 = 0x000C1272)
+   * @details MTU3 has TGRE only. MTU4 has both TGRE (0x000C1274) and TGRF (0x000C1276).
+   *          MTU3 does NOT have a TGRF register.
    */
   volatile uint16_t tgre;
+} rx_mtu3_channel_regs_t;
 
-  /**
-   * @brief Timer General Register F - dead-time (falling edge)
-   * @details MTU3/4 only. Delay before low-side turns on.
-   */
-  volatile uint16_t tgrf;
-
-  /**
-   * @brief Timer Interrupt Enable Register 2 (TIER2)
-   * @details Enables TGIE and TGIF compare match interrupts.
-   */
-  volatile uint8_t tier2;
-
-  /**
-   * @brief Timer Status Register 2 (TSR2)
-   * @details Contains TGIE and TGIF interrupt flags.
-   */
-  volatile uint8_t tsr2;
-
-  /**
-   * @brief Timer Buffer Transfer Mode Register (TBTM)
-   * @details Controls automatic buffer transfer from TGRC->TGRA, TGRD->TGRB.
-   */
-  volatile uint8_t tbtm;
-} rx_mtu34_channel_regs_t;
+/**
+ * @enum mtu12_phase_padding_sizes_t
+ * @brief Named padding array sizes for rx_mtu12_phase_regs_t reserved fields
+ *
+ * @details
+ * Each constant names the number of reserved bytes between two adjacent
+ * registers in the 32-bit phase counting register layout.
+ * Verified against RX72N Hardware Manual Ch 5 I/O Register Address Table.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  /** @brief 14 reserved bytes at offset 0x12-0x1F (gap before 32-bit long-word regs) */
+  k_mtu12p_pad_before_tcntlw = 14U,
+} mtu12_phase_padding_sizes_t;
 
 /**
  * @struct rx_mtu12_phase_regs_t
@@ -740,8 +825,8 @@ typedef struct {
    */
   volatile uint8_t tmdr3;
 
-  /** @brief Reserved bytes at offset 0x12-0x1F (14 bytes) */
-  uint8_t reserved2[14];
+  /** @brief Reserved bytes at offset 0x12-0x1F (14 bytes, before 32-bit long-word regs) */
+  uint8_t reserved2[k_mtu12p_pad_before_tcntlw];
 
   /**
    * @brief 32-bit Cascaded Counter (TCNTLW) - atomic position value
@@ -891,55 +976,70 @@ static inline volatile rx_mtu12_phase_regs_t* mtu2_phase(void)
 }
 
 /**
- * @brief Get pointer to MTU3 registers
+ * @brief Get pointer to MTU3 registers via rx_mtu3_channel_regs_t struct
  *
- * @details MTU3 and MTU4 share the same base address (0x000C1200) by hardware design.
- * This is intentional per the RX72N hardware manual - MTU3 and MTU4 are a "paired"
- * timer unit designed for complementary PWM generation.
+ * @details
+ * Returns a pointer to MTU3's register space cast to rx_mtu3_channel_regs_t.
+ * The struct has been carefully padded to match the actual hardware layout
+ * verified against the RX72N Ch 5 I/O Register Address Table.
  *
- * The MTU3/MTU4 register layout within the shared base address:
- * - MTU3 registers: Offsets 0x00-0x16 (TCR, TMDR, TIORH, TIORL, TIER, TSR, TCNT, TGRx, etc.)
- * - MTU4 registers: Offsets 0x01-0x17 (interleaved with MTU3)
+ * MTU3 and MTU4 registers are interleaved at 0x000C1200: MTU3 at
+ * 0x000C1200, MTU4 at 0x000C1201, with shared MTU3/4 registers interspersed.
+ * The struct fields (tcr, tmdr1, tiorh, tiorl, tier, tcnt, tgra, tgrb, tgrc,
+ * tgrd, tsr, tbtm, tcr2, tgre) are placed at the correct byte offsets for
+ * MTU3.  The gap bytes in the struct are reserved/MTU4/shared-register space.
  *
- * Both mtu3() and mtu4() return the same base pointer because the rx_mtu34_channel_regs_t
- * structure represents the combined MTU3/MTU4 register block. The caller accesses
- * MTU3-specific or MTU4-specific registers through the same structure.
+ * @warning Do NOT use this pointer for MTU4 register access.  MTU4 registers
+ *          are at different offsets relative to the MTU4 base (0x000C1201).
+ *          Access MTU4 registers using the individual address constants or
+ *          by computing addresses manually from k_mtu4_base_addr.
  *
- * The static assertions at lines 283-284 verify this shared base address is intentional.
+ * @return Volatile pointer to MTU3 register structure (base 0x000C1200)
  *
- * @return Volatile pointer to MTU3/MTU4 register structure
- *
- * @see RX72N Hardware Manual Section 22.2.7 for MTU3/MTU4 register map
+ * @see rx_mtu3_channel_regs_t for complete register layout with addresses
+ * @see RX72N Hardware Manual Ch 5 I/O Register Address Table (MTU3a)
  */
-static inline volatile rx_mtu34_channel_regs_t* mtu3(void)
+static inline volatile rx_mtu3_channel_regs_t* mtu3(void)
 {
-  return (volatile rx_mtu34_channel_regs_t*)k_mtu3_base_addr;
+  return (volatile rx_mtu3_channel_regs_t*)k_mtu3_base_addr;
 }
 
 /**
- * @brief Get pointer to MTU4 registers
+ * @brief Get raw base address pointer for MTU4 register access
  *
- * @details MTU3 and MTU4 share the same base address (0x000C1200) by hardware design.
- * This is intentional per the RX72N hardware manual - MTU3 and MTU4 are a "paired"
- * timer unit designed for complementary PWM generation.
+ * @details
+ * Returns the MTU4 base address (0x000C1201) as a void pointer.  MTU4 registers
+ * are at DIFFERENT relative offsets than MTU3 registers, so the rx_mtu3_channel_regs_t
+ * struct CANNOT be used for MTU4.
  *
- * Both mtu3() and mtu4() return the same base pointer because the rx_mtu34_channel_regs_t
- * structure represents the combined MTU3/MTU4 register block. Within this block:
- * - MTU3 registers are at even offsets (TCR3 at 0x00, TMDR3 at 0x02, etc.)
- * - MTU4 registers are at odd offsets (TCR4 at 0x01, TMDR4 at 0x03, etc.)
+ * MTU4 register addresses from the RX72N Ch 5 I/O Address Table:
+ * - MTU4.TCR   = 0x000C1201  (k_mtu4_base_addr + 0x00)
+ * - MTU4.TMDR1 = 0x000C1203  (k_mtu4_base_addr + 0x02)
+ * - MTU4.TIORH = 0x000C1206  (k_mtu4_base_addr + 0x05) -- NOTE: +0x05, not +0x04
+ * - MTU4.TIORL = 0x000C1207  (k_mtu4_base_addr + 0x06)
+ * - MTU4.TIER  = 0x000C1209  (k_mtu4_base_addr + 0x08)
+ * - MTU4.TCNT  = 0x000C1212  (k_mtu4_base_addr + 0x11) -- NOTE: odd address
+ * - MTU4.TGRA  = 0x000C121C  (k_mtu4_base_addr + 0x1B)
+ * - MTU4.TGRB  = 0x000C121E  (k_mtu4_base_addr + 0x1D)
+ * - MTU4.TGRC  = 0x000C1228  (k_mtu4_base_addr + 0x27)
+ * - MTU4.TGRD  = 0x000C122A  (k_mtu4_base_addr + 0x29)
+ * - MTU4.TSR   = 0x000C122D  (k_mtu4_base_addr + 0x2C)
+ * - MTU4.TBTM  = 0x000C1239  (k_mtu4_base_addr + 0x38)
+ * - MTU4.TCR2  = 0x000C124D  (k_mtu4_base_addr + 0x4C)
+ * - MTU4.TGRE  = 0x000C1274  (k_mtu4_base_addr + 0x73)
+ * - MTU4.TGRF  = 0x000C1276  (k_mtu4_base_addr + 0x75) -- MTU3 has no TGRF
  *
- * The static assertions at lines 283-284 verify this shared base address is intentional.
+ * Access MTU4 registers by casting the returned pointer to the appropriate
+ * volatile integer pointer and applying the correct offset, e.g.:
+ *   *(volatile uint8_t*)((uintptr_t)mtu4() + 0x05U) = value;  // MTU4.TIORH
  *
- * @note For most applications, use mtu3() for both MTU3 and MTU4 access since they
- * share the register structure. The mtu4() function is provided for API symmetry.
+ * @return Volatile void pointer to MTU4 base address (0x000C1201)
  *
- * @return Volatile pointer to MTU3/MTU4 register structure (same as mtu3())
- *
- * @see RX72N Hardware Manual Section 22.2.7 for MTU3/MTU4 register map
+ * @see RX72N Hardware Manual Ch 5 I/O Register Address Table (MTU3a)
  */
-static inline volatile rx_mtu34_channel_regs_t* mtu4(void)
+static inline volatile void* mtu4(void)
 {
-  return (volatile rx_mtu34_channel_regs_t*)k_mtu4_base_addr;
+  return (volatile void*)k_mtu4_base_addr;
 }
 
 /**
@@ -1281,6 +1381,124 @@ typedef enum : uint8_t {
   k_mtu_tstr_cst7 = (k_mtu_bit_value_set << k_mtu_tstr_cst7_shift),
 } mtu_tstrb_bits_t;
 
+/**
+ * @enum mtu_channel_reg_offsets_t
+ * @brief Byte offsets of registers within rx_mtu_channel_regs_t
+ *
+ * @details
+ * Named constants used in compile-time layout verification.
+ * Applies to standard MTU channels (MTU0, MTU1, MTU2, MTU6, MTU7).
+ * Verified against RX72N Hardware Manual Ch 5 I/O Register Address Table.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  /** @brief TCR at offset 0x00 (first register in channel block) */
+  k_mtu_ch_off_tcr  = 0x00U,
+  /** @brief TCNT at offset 0x06 */
+  k_mtu_ch_off_tcnt = 0x06U,
+  /** @brief TGRA at offset 0x08 */
+  k_mtu_ch_off_tgra = 0x08U,
+  /** @brief TGRB at offset 0x0A */
+  k_mtu_ch_off_tgrb = 0x0AU,
+} mtu_channel_reg_offsets_t;
+
+/**
+ * @enum mtu3_reg_offsets_t
+ * @brief Byte offsets of MTU3 registers from base 0x000C1200
+ *
+ * @details
+ * Named constants for compile-time layout verification of rx_mtu3_channel_regs_t.
+ * The MTU3/MTU4 interleaved layout means offsets are sparse -- see the struct
+ * definition for the full picture of which bytes belong to MTU4 vs. shared regs.
+ * All values verified against RX72N Hardware Manual Ch 5 I/O Register Address Table.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  /** @brief TCR at offset 0x00 = 0x000C1200 */
+  k_mtu3_off_tcr     = 0x00U,
+  /** @brief TMDR1 at offset 0x02 = 0x000C1202 */
+  k_mtu3_off_tmdr1   = 0x02U,
+  /** @brief TIORH at offset 0x04 = 0x000C1204 */
+  k_mtu3_off_tiorh   = 0x04U,
+  /** @brief TIORL at offset 0x05 = 0x000C1205 */
+  k_mtu3_off_tiorl   = 0x05U,
+  /** @brief TIER at offset 0x08 = 0x000C1208 */
+  k_mtu3_off_tier    = 0x08U,
+  /** @brief TCNT at offset 0x10 = 0x000C1210 */
+  k_mtu3_off_tcnt    = 0x10U,
+  /** @brief TGRA at offset 0x18 = 0x000C1218 */
+  k_mtu3_off_tgra    = 0x18U,
+  /** @brief TGRB at offset 0x1A = 0x000C121A */
+  k_mtu3_off_tgrb    = 0x1AU,
+  /** @brief TGRC at offset 0x24 = 0x000C1224 */
+  k_mtu3_off_tgrc    = 0x24U,
+  /** @brief TGRD at offset 0x26 = 0x000C1226 */
+  k_mtu3_off_tgrd    = 0x26U,
+  /** @brief TSR at offset 0x2C = 0x000C122C */
+  k_mtu3_off_tsr     = 0x2CU,
+  /** @brief TBTM at offset 0x38 = 0x000C1238 */
+  k_mtu3_off_tbtm    = 0x38U,
+  /** @brief TCR2 at offset 0x4C = 0x000C124C */
+  k_mtu3_off_tcr2    = 0x4CU,
+  /** @brief TGRE at offset 0x72 = 0x000C1272 */
+  k_mtu3_off_tgre    = 0x72U,
+  /** @brief Total size of rx_mtu3_channel_regs_t = 0x74 bytes (116) */
+  k_mtu3_struct_size = 0x74U,
+} mtu3_reg_offsets_t;
+
+/**
+ * @enum mtu12_phase_reg_offsets_t
+ * @brief Byte offsets of registers within rx_mtu12_phase_regs_t
+ *
+ * @details
+ * Named constants for compile-time layout verification of the 32-bit phase
+ * counting register struct.  Verified against RX72N Hardware Manual
+ * Ch 5 I/O Register Address Table and Ch 24 Table 24.11.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  /** @brief TCR at offset 0x00 */
+  k_mtu12p_off_tcr     = 0x00U,
+  /** @brief TMDR at offset 0x01 */
+  k_mtu12p_off_tmdr    = 0x01U,
+  /** @brief TCNT at offset 0x06 */
+  k_mtu12p_off_tcnt    = 0x06U,
+  /** @brief TGRA at offset 0x08 */
+  k_mtu12p_off_tgra    = 0x08U,
+  /** @brief TGRB at offset 0x0A */
+  k_mtu12p_off_tgrb    = 0x0AU,
+  /** @brief TMDR3 at offset 0x11 (32-bit mode enable register) */
+  k_mtu12p_off_tmdr3   = 0x11U,
+  /** @brief TCNTLW at offset 0x20 (32-bit counter in long-word mode) */
+  k_mtu12p_off_tcntlw  = 0x20U,
+  /** @brief TGRALW at offset 0x24 (32-bit compare A in long-word mode) */
+  k_mtu12p_off_tgralw  = 0x24U,
+  /** @brief TGRBLW at offset 0x28 (32-bit compare B in long-word mode) */
+  k_mtu12p_off_tgrblw  = 0x28U,
+  /** @brief Total size of rx_mtu12_phase_regs_t = 0x2C bytes (44) */
+  k_mtu12p_struct_size = 0x2CU,
+} mtu12_phase_reg_offsets_t;
+
+/**
+ * @enum mtu_periph_space_t
+ * @brief Address space mask and expected base for MTU peripheral verification
+ *
+ * @details
+ * Used in static_assert to verify MTU base addresses fall in the correct
+ * peripheral address space (0x000Cxxxx), as required by the RX72N memory map.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uintptr_t {
+  /** @brief Mask selecting the upper 16 bits of a 32-bit address */
+  k_mtu_periph_space_mask = 0xFFFF0000U,
+  /** @brief Expected upper 16 bits of all MTU base addresses */
+  k_mtu_periph_space_base = 0x000C0000U,
+} mtu_periph_space_t;
+
 /* =============================================================================
  * Static Assertions - Compile-time Register Layout Verification
  * =============================================================================
@@ -1289,62 +1507,95 @@ typedef enum : uint8_t {
  * the hardware register addresses defined in the RX72N User's Manual.
  * Any mismatch will cause a compile-time error, preventing runtime bugs.
  *
- * Reference: RX72N Group User's Manual: Hardware, Chapter 24 (MTU3a)
- *            Section 24.2: Register Descriptions, Table 24.11
+ * Reference: RX72N Group User's Manual: Hardware, Chapter 5 I/O Register
+ *            Address Table (MTU3a section), and Chapter 24 (MTU3a).
+ *
+ * All MTU3 offsets verified against Ch 5 I/O Register Address Table:
+ *   TCR=0x000C1200, TMDR1=0x000C1202, TIORH=0x000C1204, TIORL=0x000C1205,
+ *   TIER=0x000C1208, TCNT=0x000C1210, TGRA=0x000C1218, TGRB=0x000C121A,
+ *   TGRC=0x000C1224, TGRD=0x000C1226, TSR=0x000C122C, TBTM=0x000C1238,
+ *   TCR2=0x000C124C, TGRE=0x000C1272
  */
 
 /** @name MTU Channel Register Offset Verification
  *  @brief Verify rx_mtu_channel_regs_t matches hardware layout
  *  @{
  */
-static_assert(offsetof(rx_mtu_channel_regs_t, tcr) == 0x00, "MTU TCR register offset incorrect");
-static_assert(offsetof(rx_mtu_channel_regs_t, tcnt) == 0x06, "MTU TCNT register offset incorrect");
-static_assert(offsetof(rx_mtu_channel_regs_t, tgra) == 0x08, "MTU TGRA register offset incorrect");
-static_assert(offsetof(rx_mtu_channel_regs_t, tgrb) == 0x0A, "MTU TGRB register offset incorrect");
+static_assert(offsetof(rx_mtu_channel_regs_t, tcr)  == k_mtu_ch_off_tcr,
+              "MTU TCR register offset incorrect");
+static_assert(offsetof(rx_mtu_channel_regs_t, tcnt) == k_mtu_ch_off_tcnt,
+              "MTU TCNT register offset incorrect");
+static_assert(offsetof(rx_mtu_channel_regs_t, tgra) == k_mtu_ch_off_tgra,
+              "MTU TGRA register offset incorrect");
+static_assert(offsetof(rx_mtu_channel_regs_t, tgrb) == k_mtu_ch_off_tgrb,
+              "MTU TGRB register offset incorrect");
 
-/* Verify MTU3/4 extended register critical offsets */
-static_assert(offsetof(rx_mtu34_channel_regs_t, tcr) == 0x00,
-              "MTU3/4 TCR register offset incorrect");
-static_assert(offsetof(rx_mtu34_channel_regs_t, tcnt) == 0x06,
-              "MTU3/4 TCNT register offset incorrect");
-static_assert(offsetof(rx_mtu34_channel_regs_t, tgra) == 0x08,
-              "MTU3/4 TGRA register offset incorrect");
-static_assert(offsetof(rx_mtu34_channel_regs_t, tgre) == 0x10,
-              "MTU3/4 TGRE register offset incorrect");
-static_assert(offsetof(rx_mtu34_channel_regs_t, tgrf) == 0x12,
-              "MTU3/4 TGRF register offset incorrect");
+/* Verify MTU3 register offsets match Ch 5 I/O Register Address Table.
+ * These offsets reflect the actual sparse/interleaved hardware layout, not
+ * the previous wrong consecutive-byte layout.
+ * (MTU3 base = 0x000C1200; each offset added to base gives the hardware addr) */
+static_assert(offsetof(rx_mtu3_channel_regs_t, tcr)   == k_mtu3_off_tcr,
+              "MTU3 TCR register offset incorrect -- expected 0x000C1200");
+static_assert(offsetof(rx_mtu3_channel_regs_t, tmdr1) == k_mtu3_off_tmdr1,
+              "MTU3 TMDR1 register offset incorrect -- expected 0x000C1202");
+static_assert(offsetof(rx_mtu3_channel_regs_t, tiorh) == k_mtu3_off_tiorh,
+              "MTU3 TIORH register offset incorrect -- expected 0x000C1204");
+static_assert(offsetof(rx_mtu3_channel_regs_t, tiorl) == k_mtu3_off_tiorl,
+              "MTU3 TIORL register offset incorrect -- expected 0x000C1205");
+static_assert(offsetof(rx_mtu3_channel_regs_t, tier)  == k_mtu3_off_tier,
+              "MTU3 TIER register offset incorrect -- expected 0x000C1208");
+static_assert(offsetof(rx_mtu3_channel_regs_t, tcnt)  == k_mtu3_off_tcnt,
+              "MTU3 TCNT register offset incorrect -- expected 0x000C1210");
+static_assert(offsetof(rx_mtu3_channel_regs_t, tgra)  == k_mtu3_off_tgra,
+              "MTU3 TGRA register offset incorrect -- expected 0x000C1218");
+static_assert(offsetof(rx_mtu3_channel_regs_t, tgrb)  == k_mtu3_off_tgrb,
+              "MTU3 TGRB register offset incorrect -- expected 0x000C121A");
+static_assert(offsetof(rx_mtu3_channel_regs_t, tgrc)  == k_mtu3_off_tgrc,
+              "MTU3 TGRC register offset incorrect -- expected 0x000C1224");
+static_assert(offsetof(rx_mtu3_channel_regs_t, tgrd)  == k_mtu3_off_tgrd,
+              "MTU3 TGRD register offset incorrect -- expected 0x000C1226");
+static_assert(offsetof(rx_mtu3_channel_regs_t, tsr)   == k_mtu3_off_tsr,
+              "MTU3 TSR register offset incorrect -- expected 0x000C122C");
+static_assert(offsetof(rx_mtu3_channel_regs_t, tbtm)  == k_mtu3_off_tbtm,
+              "MTU3 TBTM register offset incorrect -- expected 0x000C1238");
+static_assert(offsetof(rx_mtu3_channel_regs_t, tcr2)  == k_mtu3_off_tcr2,
+              "MTU3 TCR2 register offset incorrect -- expected 0x000C124C");
+static_assert(offsetof(rx_mtu3_channel_regs_t, tgre)  == k_mtu3_off_tgre,
+              "MTU3 TGRE register offset incorrect -- expected 0x000C1272");
+static_assert(sizeof(rx_mtu3_channel_regs_t)          == k_mtu3_struct_size,
+              "MTU3 register structure size incorrect (expected 0x74 = 116 bytes)");
 
 /* Verify MTU1/2 32-bit phase counting register offsets (Ch24 Table 24.11) */
-static_assert(offsetof(rx_mtu12_phase_regs_t, tcr) == 0x00,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tcr)    == k_mtu12p_off_tcr,
               "MTU1/2 Phase TCR register offset incorrect");
-static_assert(offsetof(rx_mtu12_phase_regs_t, tmdr) == 0x01,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tmdr)   == k_mtu12p_off_tmdr,
               "MTU1/2 Phase TMDR register offset incorrect");
-static_assert(offsetof(rx_mtu12_phase_regs_t, tcnt) == 0x06,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tcnt)   == k_mtu12p_off_tcnt,
               "MTU1/2 Phase TCNT register offset incorrect");
-static_assert(offsetof(rx_mtu12_phase_regs_t, tgra) == 0x08,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tgra)   == k_mtu12p_off_tgra,
               "MTU1/2 Phase TGRA register offset incorrect");
-static_assert(offsetof(rx_mtu12_phase_regs_t, tgrb) == 0x0A,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tgrb)   == k_mtu12p_off_tgrb,
               "MTU1/2 Phase TGRB register offset incorrect");
-static_assert(offsetof(rx_mtu12_phase_regs_t, tmdr3) == 0x11,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tmdr3)  == k_mtu12p_off_tmdr3,
               "MTU1/2 Phase TMDR3 register offset incorrect");
-static_assert(offsetof(rx_mtu12_phase_regs_t, tcntlw) == 0x20,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tcntlw) == k_mtu12p_off_tcntlw,
               "MTU1/2 Phase TCNTLW register offset incorrect");
-static_assert(offsetof(rx_mtu12_phase_regs_t, tgralw) == 0x24,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tgralw) == k_mtu12p_off_tgralw,
               "MTU1/2 Phase TGRALW register offset incorrect");
-static_assert(offsetof(rx_mtu12_phase_regs_t, tgrblw) == 0x28,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tgrblw) == k_mtu12p_off_tgrblw,
               "MTU1/2 Phase TGRBLW register offset incorrect");
-static_assert(sizeof(rx_mtu12_phase_regs_t) == 0x2C,
+static_assert(sizeof(rx_mtu12_phase_regs_t)           == k_mtu12p_struct_size,
               "MTU1/2 Phase register structure size incorrect (expected 44 bytes)");
 
 /* Verify TSTR register structure */
 static_assert(sizeof(rx_mtu_tstr_regs_t) == 1, "MTU TSTR register structure size mismatch");
 
 /* Verify base addresses are in correct peripheral space (0x000C1xxx) */
-static_assert((k_mtu0_base_addr & 0xFFFF0000) == 0x000C0000,
+static_assert((k_mtu0_base_addr & k_mtu_periph_space_mask) == k_mtu_periph_space_base,
               "MTU0 base address not in MTU peripheral space");
-static_assert((k_mtu3_base_addr & 0xFFFF0000) == 0x000C0000,
+static_assert((k_mtu3_base_addr & k_mtu_periph_space_mask) == k_mtu_periph_space_base,
               "MTU3 base address not in MTU peripheral space");
-static_assert((k_mtu6_base_addr & 0xFFFF0000) == 0x000C0000,
+static_assert((k_mtu6_base_addr & k_mtu_periph_space_mask) == k_mtu_periph_space_base,
               "MTU6 base address not in MTU peripheral space");
 
 /* Verify MTU3 and MTU4 are interleaved (MTU4 = MTU3 + 1 byte) */

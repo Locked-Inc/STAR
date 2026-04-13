@@ -178,4 +178,61 @@ what was fixed. Update this file as you work.
 
 ---
 
+## 2026-04-13 -- Ch 24 MTU3a Registers
+
+**Pages read:** 960-1198 (Ch 24) + Ch 5 I/O Address Table (MTU3a section, already read)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/inc/rx72n_mtu_regs.h,
+                  star-rx72n-firmware/libs/rx_hal/src/rx_mtu.c,
+                  star-rx72n-firmware/libs/rx_encoder/src/rx_mtu_encoder.c
+
+### Findings
+
+- [FIXED] `rx_mtu34_channel_regs_t`: CRITICAL -- struct assumed MTU3 registers were at
+  consecutive byte offsets, but the actual RX72N hardware interleaves MTU3 and MTU4
+  registers starting at 0x000C1200/0x000C1201 respectively, with shared MTU registers
+  occupying many of the gaps.  Old struct used wrong offsets for EVERY register after TCR:
+    - tmdr at +0x01 (was pointing to MTU4.TCR!)
+    - tiorh at +0x02 (was pointing to MTU3.TMDR1!)
+    - tiorl at +0x03 (was pointing to MTU4.TMDR1!)
+    - tier at +0x04 (was pointing to MTU3.TIORH!)
+    - tsr at +0x05 (was pointing to MTU3.TIORL!)
+    - tcnt at +0x06 (was pointing to MTU4.TIORH!)
+    - tgra at +0x08 (was pointing to MTU3.TIER!)
+    - tgre at +0x10 (was pointing to MTU3.TCNT!)
+    - tgrf field existed but MTU3 has NO TGRF (only MTU4 does)
+    - tier2/tsr2 fields at completely wrong positions
+  Actual MTU3 hardware offsets (Ch 5 I/O Table): TCR=+0x00, TMDR1=+0x02, TIORH=+0x04,
+  TIORL=+0x05, TIER=+0x08, TCNT=+0x10, TGRA=+0x18, TGRB=+0x1A, TGRC=+0x24,
+  TGRD=+0x26, TSR=+0x2C, TBTM=+0x38, TCR2=+0x4C, TGRE=+0x72 (total 0x74 bytes)
+- [FIXED] Renamed `rx_mtu34_channel_regs_t` -> `rx_mtu3_channel_regs_t`; rewrote struct
+  with correct reserved-byte padding (verified each gap against Ch 5 address table);
+  added `mtu3_padding_sizes_t` enum with named constants for all padding array sizes
+- [FIXED] `mtu3()` return type updated to `volatile rx_mtu3_channel_regs_t*`
+- [FIXED] `mtu4()` changed to return `volatile void*` with documentation of MTU4's
+  different offsets (MTU4 base=0x000C1201, registers at different relative offsets)
+- [FIXED] All static assertions for `rx_mtu3_channel_regs_t` rewritten to verify
+  actual hardware offsets; old assertions only checked struct-internal consistency
+- [FIXED] Added `mtu_channel_reg_offsets_t`, `mtu3_reg_offsets_t`,
+  `mtu12_phase_reg_offsets_t`, `mtu_periph_space_t` enums so static_assert
+  comparisons use named constants (no magic numbers)
+- [FIXED] Added `mtu12_phase_padding_sizes_t` enum for the 14-byte reserved gap
+  in `rx_mtu12_phase_regs_t` between TMDR3 (+0x11) and TCNTLW (+0x20)
+- [FIXED] `rx_mtu.c` internal_get_mtu_base(): MTU3/MTU4 cases now return nullptr
+  instead of forwarding to mtu3()/mtu4() -- prevents callers from applying
+  rx_mtu_channel_regs_t struct offset mapping to hardware that doesn't support it
+- [FIXED] `rx_mtu_encoder.c` internal_get_mtu_base(): same fix as rx_mtu.c;
+  MTU3/MTU4 encoder use unsupported; internal_is_valid_channel() now correctly
+  returns false for those channels
+- [OK] MTU0, MTU1, MTU2, MTU6, MTU7: standard rx_mtu_channel_regs_t layout correct
+- [OK] rx_mtu12_phase_regs_t (used for STAR encoder 32-bit phase counting): layout
+  verified; tcr=+0x00, tmdr=+0x01, tcnt=+0x06, tgra=+0x08, tgrb=+0x0A,
+  tmdr3=+0x11, tcntlw=+0x20, tgralw=+0x24, tgrblw=+0x28, sizeof=0x2C -- all correct
+- [OK] MTU base addresses: MTU0=0x000C1290, MTU1=0x000C1290, MTU2=0x000C1292,
+  MTU3=0x000C1200, MTU4=0x000C1201, MTU6/7=0x000C1A00 -- match Ch 5 table
+
+### Commits
+- (see next commit)
+
+---
+
 (future sessions go below this line)

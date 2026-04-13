@@ -478,10 +478,9 @@ internal_get_mtu_base(const rx_mtu_channel_t channel)
       return mtu1();
     case k_mtu_channel_2:
       return mtu2();
-    case k_mtu_channel_3:
-      return (volatile rx_mtu_channel_regs_t*)mtu3();
-    case k_mtu_channel_4:
-      return (volatile rx_mtu_channel_regs_t*)mtu4();
+    case k_mtu_channel_3: /* fall through -- sparse layout, incompatible with standard API */
+    case k_mtu_channel_4: /* MTU3/4 use rx_mtu3_channel_regs_t; call mtu3()/mtu4() directly */
+      return nullptr;
     case k_mtu_channel_6:
       return mtu6();
     case k_mtu_channel_7:
