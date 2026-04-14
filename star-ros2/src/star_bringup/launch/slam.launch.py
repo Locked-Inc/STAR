@@ -62,6 +62,17 @@ def generate_launch_description():
         description='Run EKF odometry fusion (disable in dev mode - use static odom TF instead)'
     )
 
+    use_bbb_arg = DeclareLaunchArgument(
+        'use_bbb', default_value='true',
+        description='Enable BeagleBone Blue telemetry bridging (publishes /odom/unfiltered, '
+                    '/imu/data, /joint_states from BBB via gateway and forwards /cmd_vel to BBB)'
+    )
+
+    use_foxglove_arg = DeclareLaunchArgument(
+        'use_foxglove', default_value='false',
+        description='Launch Foxglove Studio WebSocket bridge for browser-based visualization'
+    )
+
     # RPLiDAR C1 requires sllidar_ros2 (Slamtec's newer driver with SDK 2.x).
     # rplidar_ros 2.1.0 uses SDK 1.12.0 which returns 0x80008000/0x80008002 for the C1's
     # DTOF scan protocol. sllidar_ros2 uses the updated SDK that supports C1 natively.
@@ -158,14 +169,59 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('use_nav2')),
     )
 
+    # Foxglove Studio WebSocket bridge -- enables browser-based visualization
+    # at app.foxglove.dev without X11. Bound to 0.0.0.0 for remote browser access.
+    # Connect from laptop: ws://<PI5_IP>:8765
+    # Install: sudo apt install ros-jazzy-foxglove-bridge
+    foxglove_bridge = Node(
+        package='foxglove_bridge',
+        executable='foxglove_bridge',
+        name='foxglove_bridge',
+        output='log',
+        parameters=[{
+            'port': 8765,
+            'address': '0.0.0.0',
+            'send_buffer_limit': 10000000,
+            'use_sim_time': False,
+        }],
+        respawn=True,
+        respawn_delay=RESPAWN_DELAY_SEC,
+        condition=IfCondition(LaunchConfiguration('use_foxglove')),
+    )
+
+    # Gateway bridge node -- bridges ROS2 to Go gateway via gRPC.
+    # When use_bbb is true, also bridges BBB telemetry to ROS2 topics and
+    # forwards /cmd_vel to BBB motors via gateway.
+    gateway_bridge = Node(
+        package='star_gateway_bridge',
+        executable='star_gateway_bridge_main',
+        name='star_gateway_bridge',
+        output='screen',
+        parameters=[{
+            'gateway_address': 'localhost:50051',
+            'telemetry_rate_hz': 10.0,
+            'teleop_rate_hz': 50.0,
+            'use_bbb_telemetry': LaunchConfiguration('use_bbb'),
+            'wheel_base': 0.150,
+            'wheel_radius': 0.0325,
+            'ticks_per_rev': 11599,
+        }],
+        respawn=True,
+        respawn_delay=RESPAWN_DELAY_SEC,
+    )
+
     return LaunchDescription([
         serial_port_arg,
         use_nav2_arg,
         use_ekf_arg,
+        use_bbb_arg,
+        use_foxglove_arg,
         static_tf,
         ekf,
         static_odom_tf,
         rplidar,
+        foxglove_bridge,
+        gateway_bridge,
         slam,
         nav2,
     ])

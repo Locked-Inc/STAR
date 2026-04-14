@@ -75,11 +75,30 @@ set -u
 
 # -- Phase 2: hardware auto-detection -----------------------------------------
 DEV_MODE=false   # default; overridden below
+BBB_MODE=false   # BeagleBone Blue over USB CDC
 HAS_LIDAR=false
 PROBE_PID=""
 SPI_BRIDGE_PID=""  # set if probe succeeds and we keep the process
 
-if [[ "${STAR_SIMULATION_MODE:-}" == "true" ]]; then
+# BBB connection parameters (override with env vars if needed)
+BBB_HOST="${BBB_HOST:-192.168.7.2}"
+BBB_USER="${BBB_USER:-debian}"
+BBB_PASS="${BBB_PASS:-StarBBB2026!}"
+BBB_FW_PATH="${BBB_FW_PATH:-/home/debian/star-beaglebone-blue}"
+
+# Check for BeagleBone Blue on USB first (takes priority over RX72N)
+if [[ -e /dev/ttyACM0 ]] && [[ -f /sys/class/tty/ttyACM0/device/../idVendor ]]; then
+    BBB_VID=$(cat /sys/class/tty/ttyACM0/device/../idVendor 2>/dev/null || echo "")
+    BBB_PID=$(cat /sys/class/tty/ttyACM0/device/../idProduct 2>/dev/null || echo "")
+    if [[ "$BBB_VID" == "1d6b" && "$BBB_PID" == "0104" ]]; then
+        say "BeagleBone Blue detected on /dev/ttyACM0 (VID:PID $BBB_VID:$BBB_PID)"
+        BBB_MODE=true
+    fi
+fi
+
+if [[ "$BBB_MODE" == "true" ]]; then
+    say "BBB mode: USB CDC motor controller (skipping RX72N/SPI)"
+elif [[ "${STAR_SIMULATION_MODE:-}" == "true" ]]; then
     say "STAR_SIMULATION_MODE=true -> forcing DEV mode"
     DEV_MODE=true
 elif [[ "${STAR_SIMULATION_MODE:-}" == "false" ]]; then
@@ -110,25 +129,34 @@ else
     fi
 fi
 
-# LiDAR detection
+# LiDAR detection -- stop ModemManager FIRST (it grabs /dev/ttyUSB0 on boot
+# and resets the CP210x USB-UART bridge, disconnecting the RPLiDAR C1).
+say "Stopping ModemManager (interferes with LiDAR)..."
+sudo systemctl stop ModemManager 2>/dev/null || true
+sleep 2  # give ttyUSB0 time to re-enumerate after ModemManager releases it
+
 if [[ "$OPT_NO_LIDAR" == "true" ]]; then
     HAS_LIDAR=false
     warn "--no-lidar flag set: skipping LiDAR/SLAM"
-elif [[ -L /dev/rplidar || -c /dev/rplidar ]]; then
+elif [[ -L /dev/rplidar || -c /dev/rplidar || -c /dev/ttyUSB0 ]]; then
     HAS_LIDAR=true
-    say "LiDAR detected: /dev/rplidar"
+    LIDAR_DEV=$(ls /dev/rplidar /dev/ttyUSB0 2>/dev/null | head -1)
+    say "LiDAR detected: $LIDAR_DEV"
 else
     HAS_LIDAR=false
-    warn "No LiDAR found at /dev/rplidar -- SLAM will be skipped"
+    warn "No LiDAR found at /dev/rplidar or /dev/ttyUSB0 -- SLAM will be skipped"
 fi
 
 # -- Detection banner ----------------------------------------------------------
-if [[ "$DEV_MODE" == "true" ]]; then
+if [[ "$BBB_MODE" == "true" ]]; then
+    MODE_LABEL="BBB MODE  (BeagleBone Blue USB)"
+    MC_LABEL="BeagleBone Blue (USB CDC)"
+elif [[ "$DEV_MODE" == "true" ]]; then
     MODE_LABEL="DEV MODE  (virtual RX72N)"
-    RX72N_LABEL="virtual (no hardware detected)"
+    MC_LABEL="virtual (no hardware detected)"
 else
     MODE_LABEL="HW MODE   (real RX72N)"
-    RX72N_LABEL="real RX72N (SPI)"
+    MC_LABEL="real RX72N (SPI)"
 fi
 
 if [[ "$HAS_LIDAR" == "true" ]]; then
@@ -141,7 +169,7 @@ echo -e ""
 echo -e "${BOLD}${CYAN}+==========================================+${NC}"
 printf "${BOLD}${CYAN}|${NC}  STAR  --  %-32s${BOLD}${CYAN}|${NC}\n" "$MODE_LABEL"
 echo -e "${BOLD}${CYAN}+==========================================+${NC}"
-echo -e "  RX72N  : $RX72N_LABEL"
+echo -e "  Motor  : $MC_LABEL"
 echo -e "  LiDAR  : $LIDAR_LABEL"
 echo -e ""
 
@@ -168,6 +196,36 @@ PID_SLAM=""
 PID_GWBRIDGE=""
 PID_UI=""
 PID_RVIZ=""
+PID_FOXGLOVE=""
+
+# -- Step 0: BBB firmware (BBB mode only) --------------------------------------
+PID_BBB_FW=""
+if [[ "$BBB_MODE" == "true" ]]; then
+    say "Starting BBB firmware via SSH ($BBB_USER@$BBB_HOST)..."
+    # Kill any existing firmware, then start fresh
+    sshpass -p "$BBB_PASS" ssh -o StrictHostKeyChecking=no "$BBB_USER@$BBB_HOST" \
+        "echo '$BBB_PASS' | sudo -S killall -9 star-beaglebone-blue 2>/dev/null; \
+         sleep 1; \
+         echo '$BBB_PASS' | sudo -S nohup $BBB_FW_PATH > /tmp/firmware.log 2>&1 &" \
+        >"$LOG_DIR/bbb_ssh.log" 2>&1
+    sleep 3
+    # Verify firmware is running
+    if sshpass -p "$BBB_PASS" ssh -o StrictHostKeyChecking=no "$BBB_USER@$BBB_HOST" \
+        "pgrep -f star-beaglebone-blue >/dev/null 2>&1"; then
+        say "BBB firmware running on $BBB_HOST"
+        # Wait for ttyACM0 to settle after firmware opens /dev/ttyGS0
+        say "Waiting for USB CDC to stabilize..."
+        for _i in $(seq 1 10); do
+            if python3 -c "import serial; s=serial.Serial('/dev/ttyACM0',timeout=0.1); s.close()" 2>/dev/null; then
+                say "USB CDC ready"
+                break
+            fi
+            sleep 1
+        done
+    else
+        warn "BBB firmware may have failed -- check $BBB_HOST:/tmp/firmware.log"
+    fi
+fi
 
 # -- Step 1: virtual_rx72n (DEV mode only) ------------------------------------
 if [[ "$DEV_MODE" == "true" ]]; then
@@ -189,26 +247,43 @@ GW_ENV=""
 if [[ "$DEV_MODE" == "true" ]]; then
     GW_ENV="STAR_SIMULATION_MODE=true"
 fi
-env WS_STRICT_ORIGIN=false ${GW_ENV} \
-    "$STAR_DIR/star-gateway/star-gateway" \
-    >"$LOG_DIR/gateway.log" 2>&1 &
-PID_GW=$!
+
+# Retry gateway start up to 3 times -- the serial port may still be releasing
+# from the previous instance after stop.sh.
+GW_STARTED=false
+for gw_attempt in 1 2 3; do
+    env WS_STRICT_ORIGIN=false ${GW_ENV} \
+        "$STAR_DIR/star-gateway/star-gateway" \
+        >"$LOG_DIR/gateway.log" 2>&1 &
+    PID_GW=$!
+    sleep 2
+    if kill -0 "$PID_GW" 2>/dev/null; then
+        GW_STARTED=true
+        break
+    fi
+    warn "star-gateway attempt $gw_attempt failed -- retrying in 3s..."
+    sleep 3
+done
+
+if [[ "$GW_STARTED" == "false" ]]; then
+    die "star-gateway failed to start after 3 attempts -- check $LOG_DIR/gateway.log"
+fi
 
 say "Waiting for gRPC :50051..."
 wait_port localhost 50051 "star-gateway" 10
 say "star-gateway running (PID $PID_GW)"
 
-# -- Step 3: LiDAR setup (ModemManager + permissions) -------------------------
+# -- Step 3: LiDAR permissions (ModemManager already stopped above) -----------
 if [[ "$HAS_LIDAR" == "true" ]]; then
-    say "Stopping ModemManager (safety, udev rule already blocks probe)..."
-    sudo systemctl stop ModemManager 2>/dev/null || true
-    # chmod not needed: udev rule sets GROUP=dialout MODE=0660
+    sudo chmod a+rw "$LIDAR_DEV" 2>/dev/null || true
 fi
 
-# -- Step 4: star_spi_bridge ---------------------------------------------------
+# -- Step 4: star_spi_bridge (skip in BBB mode) --------------------------------
 SPI_BRIDGE_LAUNCH="$STAR_DIR/star-ros2/src/star_spi_bridge/launch/star_spi_bridge.launch.py"
 
-if [[ "$DEV_MODE" == "false" && -n "$SPI_BRIDGE_PID" ]]; then
+if [[ "$BBB_MODE" == "true" ]]; then
+    say "Skipping spi_bridge (BBB uses USB CDC via gateway)"
+elif [[ "$DEV_MODE" == "false" && -n "$SPI_BRIDGE_PID" ]]; then
     say "spi_bridge already running from probe (PID $SPI_BRIDGE_PID)"
     SPI_BRIDGE_PID="$SPI_BRIDGE_PID"
 else
@@ -245,14 +320,26 @@ fi
 SLAM_LAUNCH="$STAR_DIR/star-ros2/src/star_bringup/launch/slam.launch.py"
 
 if [[ "$HAS_LIDAR" == "true" ]]; then
-    say "Starting SLAM stack (slam.launch.py)..."
-    if [[ "$DEV_MODE" == "true" ]]; then
-        ros2 launch "$SLAM_LAUNCH" use_nav2:=false use_ekf:=false \
-            >"$LOG_DIR/slam.log" 2>&1 &
-    else
-        ros2 launch "$SLAM_LAUNCH" use_nav2:=false \
-            >"$LOG_DIR/slam.log" 2>&1 &
+    say "Starting SLAM stack (slam.launch.py + foxglove + gateway_bridge)..."
+    SLAM_ARGS="use_nav2:=false use_foxglove:=true"
+    if [[ "$BBB_MODE" == "true" ]]; then
+        SLAM_ARGS="$SLAM_ARGS use_bbb:=true"
+        # TODO(wheels): Remove use_ekf:=false once wheel encoders provide odom.
+        # Without wheel encoders, EKF odom stays at origin and SLAM can't stitch
+        # scans. Pure scan-matching works for hand-carry testing but is less
+        # accurate than EKF-fused odom. When wheels are connected:
+        #   1. Remove the line below (let use_ekf default to true)
+        #   2. In slam_toolbox.yaml, restore minimum_travel_distance: 0.2
+        #      and minimum_travel_heading: 0.15
+        #   3. In ekf.yaml, consider re-enabling imu0 yaw orientation if
+        #      DMP mode is fixed (provides fused quaternion)
+        SLAM_ARGS="$SLAM_ARGS use_ekf:=false"
     fi
+    if [[ "$DEV_MODE" == "true" ]]; then
+        SLAM_ARGS="$SLAM_ARGS use_ekf:=false"
+    fi
+    ros2 launch "$SLAM_LAUNCH" $SLAM_ARGS \
+        >"$LOG_DIR/slam.log" 2>&1 &
     PID_SLAM=$!
     say "Waiting ~8 s for LiDAR init..."
     sleep 8
@@ -263,31 +350,36 @@ if [[ "$HAS_LIDAR" == "true" ]]; then
     fi
 else
     say "Skipping SLAM stack (no LiDAR)"
+    # Launch foxglove_bridge standalone so telemetry/IMU/odom are still visualizable
+    say "Starting foxglove_bridge standalone (ws://0.0.0.0:8765)..."
+    ros2 run foxglove_bridge foxglove_bridge --ros-args \
+        -p port:=8765 -p address:="0.0.0.0" -p send_buffer_limit:=10000000 \
+        >"$LOG_DIR/foxglove.log" 2>&1 &
+    PID_FOXGLOVE=$!
+    sleep 1
+    say "foxglove_bridge running (PID $PID_FOXGLOVE)"
 fi
 
 # -- Step 6: star_gateway_bridge_main -----------------------------------------
-say "Starting star_gateway_bridge_main..."
-ros2 run star_gateway_bridge star_gateway_bridge_main \
-    >"$LOG_DIR/gw_bridge.log" 2>&1 &
-PID_GWBRIDGE=$!
-
-# Wait up to 10 s for "connected to Gateway" in log
-say "Waiting for gateway_bridge to connect..."
-BRIDGE_TIMEOUT=10
-for i in $(seq 1 "$BRIDGE_TIMEOUT"); do
-    if grep -q "connected to Gateway\|Connected to gateway\|gRPC" "$LOG_DIR/gw_bridge.log" 2>/dev/null; then
-        say "gateway_bridge connected (PID $PID_GWBRIDGE)"
-        break
+# When SLAM is running, slam.launch.py already includes gateway_bridge and foxglove.
+# Only launch standalone bridge when SLAM is NOT running.
+if [[ "$HAS_LIDAR" == "true" ]]; then
+    say "gateway_bridge + foxglove launched by slam.launch.py (skipping standalone)"
+    PID_GWBRIDGE=""
+else
+    say "Starting star_gateway_bridge_main (standalone)..."
+    if [[ "$BBB_MODE" == "true" ]]; then
+        ros2 run star_gateway_bridge star_gateway_bridge_main \
+            --ros-args -p use_bbb_telemetry:=true \
+            >"$LOG_DIR/gw_bridge.log" 2>&1 &
+    else
+        ros2 run star_gateway_bridge star_gateway_bridge_main \
+            >"$LOG_DIR/gw_bridge.log" 2>&1 &
     fi
-    if ! kill -0 "$PID_GWBRIDGE" 2>/dev/null; then
-        warn "gateway_bridge exited -- check $LOG_DIR/gw_bridge.log"
-        break
-    fi
-    sleep 1
-    if [[ $i -eq $BRIDGE_TIMEOUT ]]; then
-        warn "gateway_bridge: no 'connected' message after ${BRIDGE_TIMEOUT}s -- continuing"
-    fi
-done
+    PID_GWBRIDGE=$!
+    sleep 3
+    say "gateway_bridge running (PID $PID_GWBRIDGE)"
+fi
 
 # -- Step 7: UI dev server -----------------------------------------------------
 if [[ "$OPT_NO_UI" == "false" ]]; then
@@ -325,6 +417,9 @@ echo -e "${BOLD}${CYAN}======================================================${N
 printf "${BOLD}${CYAN}  STAR Robot -- %s   [%s]${NC}\n" "$TIMESTAMP" "$MODE_LABEL"
 echo -e "${BOLD}${CYAN}======================================================${NC}"
 
+if [[ "$BBB_MODE" == "true" ]]; then
+    printf "  %-18s %s (remote SSH)\n" "bbb_firmware" "$BBB_HOST"
+fi
 if [[ "$DEV_MODE" == "true" && -n "$PID_VRXN" ]]; then
     printf "  %-18s PID %s\n" "virtual_rx72n" "$PID_VRXN"
 fi
@@ -332,7 +427,9 @@ printf "  %-18s PID %s   gRPC :50051   WS :8080\n" "star-gateway" "$PID_GW"
 if [[ "$DEV_MODE" == "true" && -n "$PID_FAKEODOM" ]]; then
     printf "  %-18s PID %s   odom->base_link (static)\n" "fake_odom" "$PID_FAKEODOM"
 fi
-printf "  %-18s PID %s\n" "spi_bridge" "${SPI_BRIDGE_PID:-unknown}"
+if [[ "$BBB_MODE" != "true" ]]; then
+    printf "  %-18s PID %s\n" "spi_bridge" "${SPI_BRIDGE_PID:-unknown}"
+fi
 if [[ -n "$PID_SLAM" ]]; then
     printf "  %-18s PID %s   /scan @ 10 Hz\n" "slam" "$PID_SLAM"
 fi
@@ -343,6 +440,7 @@ fi
 if [[ -n "$PID_RVIZ" ]]; then
     printf "  %-18s PID %s\n" "rviz2" "$PID_RVIZ"
 fi
+printf "  %-18s ws://%s:8765  (open app.foxglove.dev)\n" "Foxglove" "$LOCAL_IP"
 
 echo -e ""
 echo -e "  Logs : $LOG_DIR/"
@@ -352,3 +450,6 @@ echo -e ""
 
 # Remove INT trap -- startup is complete, daemons run in background
 trap - INT
+
+# Disown all background processes so they survive shell exit (prevents SIGHUP)
+disown -a
