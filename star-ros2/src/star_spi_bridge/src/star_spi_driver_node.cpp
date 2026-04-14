@@ -38,7 +38,7 @@ StarSpiDriverNode::StarSpiDriverNode(const rclcpp::NodeOptions & options)
   declare_parameter("spi_speed_hz", 10000000);  // 10 MHz
   declare_parameter("cmd_vel_timeout_ms", 500);
   declare_parameter("wheel_base", 0.150);
-  declare_parameter("wheel_radius", 0.0325);
+  declare_parameter("wheel_radius", 0.072);
   declare_parameter("ticks_per_rev", 11599);
 }
 

@@ -259,10 +259,10 @@ typedef enum : uint32_t {
 } bb_wheel_geometry_t;
 
 /**
- * @brief Wheel radius in meters (32.5 mm, DFRobot 65mm rover wheel).
+ * @brief Wheel radius in meters (72 mm, goBILDA 3616-0014-0144 Wasteland 144mm).
  * @since Version 1.2.0
  */
-static const float s_bb_wheel_radius_m = 0.0325F;
+static const float s_bb_wheel_radius_m = 0.072F;
 
 #ifdef __cplusplus
 }

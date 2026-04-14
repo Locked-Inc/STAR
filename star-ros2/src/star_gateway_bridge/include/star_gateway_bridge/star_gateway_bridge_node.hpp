@@ -95,7 +95,7 @@ public:
    * - grpc_deadline_ms: gRPC call deadline (default: 100ms)
    * - wheel_base: Distance between wheels in meters (default: 0.150m)
    * - use_bbb_telemetry: Enable BBB telemetry bridging (default: false)
-   * - wheel_radius: Wheel radius in meters (default: 0.0325m)
+   * - wheel_radius: Wheel radius in meters (default: 0.072m)
    * - ticks_per_rev: Encoder ticks per revolution (default: 11599)
    *
    * @param options ROS2 node options for component configuration

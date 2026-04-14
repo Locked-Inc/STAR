@@ -10,10 +10,10 @@
     - Gazebo plugin declarations (via star_gazebo.xacro include)
 
   Robot specs (DFRobot FIT0520 motors, MPU-9250 IMU, RPLiDAR C1):
-    - Wheel radius: 0.0325 m
-    - Track width (wheel separation): 0.150 m
-    - Wheelbase (front-to-back): 0.120 m
-    - Chassis: 0.20 x 0.15 x 0.08 m (L x W x H)
+    - Wheel radius: 0.072 m (goBILDA Wasteland 144mm, part 3616-0014-0144)
+    - Track width (wheel separation): 0.150 m  -- TODO: update for 312mm U-channel chassis
+    - Wheelbase (front-to-back): 0.120 m       -- TODO: update for 312mm U-channel chassis
+    - Chassis: 0.20 x 0.15 x 0.08 m (L x W x H) -- TODO: update for new chassis
     - Total mass: ~2.4 kg (2.0 kg chassis + 4 x 0.1 kg wheels)
 -->
 <robot name="star" xmlns:xacro="http://www.ros.org/wiki/xacro">
@@ -26,7 +26,7 @@
   <xacro:property name="chassis_height" value="0.08"/>
   <xacro:property name="chassis_mass" value="2.0"/>
 
-  <xacro:property name="wheel_radius" value="0.0325"/>
+  <xacro:property name="wheel_radius" value="0.072"/>
   <xacro:property name="wheel_width" value="0.030"/>
   <xacro:property name="wheel_mass" value="0.1"/>
 

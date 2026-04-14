@@ -23,7 +23,7 @@ def generate_launch_description():
             'spi_speed_hz': 10000000,
             'cmd_vel_timeout_ms': 500,
             'wheel_base': 0.150,
-            'wheel_radius': 0.0325,
+            'wheel_radius': 0.072,
             'ticks_per_rev': 11599
         }]
     )
