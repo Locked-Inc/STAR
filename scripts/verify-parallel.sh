@@ -20,7 +20,7 @@ mkdir -p "$SCRIPTS_DIR"
 
 tmux kill-session -t "$SESSION" 2>/dev/null || true
 
-# ── helpers ──────────────────────────────────────────────────────────────────
+# -- helpers ------------------------------------------------------------------
 
 first_window=true
 open_window() {
@@ -33,7 +33,7 @@ open_window() {
     fi
 }
 
-# ── Ch 3+11: LPC ─────────────────────────────────────────────────────────────
+# -- Ch 3+11: LPC -------------------------------------------------------------
 cat > "$SCRIPTS_DIR/ch3-lpc.sh" << 'SCRIPT_EOF'
 #!/usr/bin/env bash
 cd /home/bsikar/Documents/github/STAR-ch3-lpc
@@ -63,7 +63,7 @@ SCRIPT_EOF
 chmod +x "$SCRIPTS_DIR/ch3-lpc.sh"
 open_window "ch3-lpc" "$BASE/STAR-ch3-lpc" "$SCRIPTS_DIR/ch3-lpc.sh"
 
-# ── Ch 8: LVDA ───────────────────────────────────────────────────────────────
+# -- Ch 8: LVDA ---------------------------------------------------------------
 cat > "$SCRIPTS_DIR/ch8-lvda.sh" << 'SCRIPT_EOF'
 #!/usr/bin/env bash
 cd /home/bsikar/Documents/github/STAR-ch8-lvda
@@ -93,7 +93,7 @@ SCRIPT_EOF
 chmod +x "$SCRIPTS_DIR/ch8-lvda.sh"
 open_window "ch8-lvda" "$BASE/STAR-ch8-lvda" "$SCRIPTS_DIR/ch8-lvda.sh"
 
-# ── Ch 9: Clock ───────────────────────────────────────────────────────────────
+# -- Ch 9: Clock ---------------------------------------------------------------
 cat > "$SCRIPTS_DIR/ch9-clock.sh" << 'SCRIPT_EOF'
 #!/usr/bin/env bash
 cd /home/bsikar/Documents/github/STAR-ch9-clock
@@ -125,7 +125,7 @@ SCRIPT_EOF
 chmod +x "$SCRIPTS_DIR/ch9-clock.sh"
 open_window "ch9-clock" "$BASE/STAR-ch9-clock" "$SCRIPTS_DIR/ch9-clock.sh"
 
-# ── Ch 21: ELC ───────────────────────────────────────────────────────────────
+# -- Ch 21: ELC ---------------------------------------------------------------
 cat > "$SCRIPTS_DIR/ch21-elc.sh" << 'SCRIPT_EOF'
 #!/usr/bin/env bash
 cd /home/bsikar/Documents/github/STAR-ch21-elc
@@ -154,7 +154,7 @@ SCRIPT_EOF
 chmod +x "$SCRIPTS_DIR/ch21-elc.sh"
 open_window "ch21-elc" "$BASE/STAR-ch21-elc" "$SCRIPTS_DIR/ch21-elc.sh"
 
-# ── Ch 25+27: POE3 / POEG ────────────────────────────────────────────────────
+# -- Ch 25+27: POE3 / POEG ----------------------------------------------------
 cat > "$SCRIPTS_DIR/ch25-poe.sh" << 'SCRIPT_EOF'
 #!/usr/bin/env bash
 cd /home/bsikar/Documents/github/STAR-ch25-poe
@@ -188,7 +188,7 @@ SCRIPT_EOF
 chmod +x "$SCRIPTS_DIR/ch25-poe.sh"
 open_window "ch25-poe" "$BASE/STAR-ch25-poe" "$SCRIPTS_DIR/ch25-poe.sh"
 
-# ── Ch 28: TPU ───────────────────────────────────────────────────────────────
+# -- Ch 28: TPU ---------------------------------------------------------------
 cat > "$SCRIPTS_DIR/ch28-tpu.sh" << 'SCRIPT_EOF'
 #!/usr/bin/env bash
 cd /home/bsikar/Documents/github/STAR-ch28-tpu
@@ -220,7 +220,7 @@ SCRIPT_EOF
 chmod +x "$SCRIPTS_DIR/ch28-tpu.sh"
 open_window "ch28-tpu" "$BASE/STAR-ch28-tpu" "$SCRIPTS_DIR/ch28-tpu.sh"
 
-# ── Ch 40: USB ───────────────────────────────────────────────────────────────
+# -- Ch 40: USB ---------------------------------------------------------------
 cat > "$SCRIPTS_DIR/ch40-usb.sh" << 'SCRIPT_EOF'
 #!/usr/bin/env bash
 cd /home/bsikar/Documents/github/STAR-ch40-usb
@@ -250,7 +250,7 @@ SCRIPT_EOF
 chmod +x "$SCRIPTS_DIR/ch40-usb.sh"
 open_window "ch40-usb" "$BASE/STAR-ch40-usb" "$SCRIPTS_DIR/ch40-usb.sh"
 
-# ── Ch 41: SCI ───────────────────────────────────────────────────────────────
+# -- Ch 41: SCI ---------------------------------------------------------------
 cat > "$SCRIPTS_DIR/ch41-sci.sh" << 'SCRIPT_EOF'
 #!/usr/bin/env bash
 cd /home/bsikar/Documents/github/STAR-ch41-sci
@@ -279,7 +279,7 @@ SCRIPT_EOF
 chmod +x "$SCRIPTS_DIR/ch41-sci.sh"
 open_window "ch41-sci" "$BASE/STAR-ch41-sci" "$SCRIPTS_DIR/ch41-sci.sh"
 
-# ── Ch 56: ADC ───────────────────────────────────────────────────────────────
+# -- Ch 56: ADC ---------------------------------------------------------------
 cat > "$SCRIPTS_DIR/ch56-adc.sh" << 'SCRIPT_EOF'
 #!/usr/bin/env bash
 cd /home/bsikar/Documents/github/STAR-ch56-adc
@@ -311,7 +311,7 @@ SCRIPT_EOF
 chmod +x "$SCRIPTS_DIR/ch56-adc.sh"
 open_window "ch56-adc" "$BASE/STAR-ch56-adc" "$SCRIPTS_DIR/ch56-adc.sh"
 
-# ── Ch 60: RAM ───────────────────────────────────────────────────────────────
+# -- Ch 60: RAM ---------------------------------------------------------------
 cat > "$SCRIPTS_DIR/ch60-ram.sh" << 'SCRIPT_EOF'
 #!/usr/bin/env bash
 cd /home/bsikar/Documents/github/STAR-ch60-ram
@@ -340,7 +340,7 @@ SCRIPT_EOF
 chmod +x "$SCRIPTS_DIR/ch60-ram.sh"
 open_window "ch60-ram" "$BASE/STAR-ch60-ram" "$SCRIPTS_DIR/ch60-ram.sh"
 
-# ── Ch 62: Flash ─────────────────────────────────────────────────────────────
+# -- Ch 62: Flash -------------------------------------------------------------
 cat > "$SCRIPTS_DIR/ch62-flash.sh" << 'SCRIPT_EOF'
 #!/usr/bin/env bash
 cd /home/bsikar/Documents/github/STAR-ch62-flash
@@ -369,7 +369,7 @@ SCRIPT_EOF
 chmod +x "$SCRIPTS_DIR/ch62-flash.sh"
 open_window "ch62-flash" "$BASE/STAR-ch62-flash" "$SCRIPTS_DIR/ch62-flash.sh"
 
-# ── Attach ────────────────────────────────────────────────────────────────────
+# -- Attach --------------------------------------------------------------------
 echo ""
 echo "All 11 verification sessions launched in tmux session '$SESSION'."
 echo ""
@@ -381,7 +381,7 @@ echo "  Detach:          Ctrl-b d"
 echo ""
 tmux attach -t "$SESSION"
 
-# ── Merge all branches when done ─────────────────────────────────────────────
+# -- Merge all branches when done ---------------------------------------------
 #
 # After all 11 instances finish their work, run this from the STAR repo root
 # to merge everything into feat/rx72n-manual-verification:
