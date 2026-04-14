@@ -194,7 +194,7 @@ Manual is **Rev.1.11, Feb 2021** (our code comments said Rev.1.00 Feb 2019 -- mi
 | 59 | DOC | 2970-2976 | NOT USED | Available feature |
 | 60 | RAM | 2977-2990 | rx72n_ram_regs.h | RAMMODE, EXRAMMODE, ECCRAM regs |
 | 61 | Standby RAM | 2991 | NOT USED | Available feature |
-| 62 | Flash Memory | 2992-3233 | rx72n_flash_regs.h | FSTATR, FENTRYR, FRESETR, FPCKAR |
+| 62 | Flash Memory | 2992-3123 | rx72n_flash_regs.h | FSTATR, FENTRYR, FRESETR, FPCKAR |
 
 | 52 | DRW2D (2D Drawing Engine) | 2745-2774 | NOT USED | Available feature |
 | 56 | S12AD (12-bit ADC) | 2809-2949 | rx72n_adc_regs.h | ADCSR, ADANSA, ADCER, ADDR |
@@ -229,7 +229,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 15: ICU Interrupts | rx72n_icu_regs.h | 466-541 | [x] COMPLETE | All addrs + reserved gaps + DMRSR 4-byte alignment + CMT vectors 28/29 OK |
 | Ch 20: DTC | rx72n_dtc_regs.h | 786-834 | [x] COMPLETE | All 9 addrs OK (Ch 5 + header) |
 | Ch 18: DMAC | rx72n_dmac_regs.h | 677-717 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
-| Ch 62: Flash Memory | rx72n_flash_regs.h | 2992-3233 | [x] COMPLETE | FIXED: FCMDR masks swapped, block count 120->126, FPSADDR name wrong, lockbit_read duplicate removed |
+| Ch 62: Flash Memory | rx72n_flash_regs.h | 2992-3123 | [x] COMPLETE | FIXED: FCMDR masks swapped, block count 120->126, FPSADDR name wrong, lockbit_read duplicate removed |
 | Ch 60: RAM Control | rx72n_ram_regs.h | 2977-2990 | [x] COMPLETE | FIXED: all 4 protection register key/unlock/lock values wrong (0x79->0xF1, 0x78->0xF0); KW[6:0]=1111000b occupies bits[7:1] so byte value is 0xF0/0xF1, not 0x78/0x79 |
 | Ch 17: MPU | rx72n_mpu_regs.h | 657-676 | [x] COMPLETE | All region + ctrl addrs OK (Ch 5 + header) |
 | Ch 21: ELC | rx72n_elc_regs.h | 835-860 | [x] COMPLETE | FIXED: ELOPA MTU3 shift/mask, ELOPC CMT1 shift/mask, elop_timer_op_t values swapped, pgc_bits_t entire layout wrong, pel_bits_t PSB/PSP/PSM wrong, elc_elsr_reg() formula wrong for n>=33 |
@@ -247,7 +247,7 @@ Statuses: `[ ] NOT STARTED` | `[~] IN PROGRESS (page NNN)` | `[x] COMPLETE`
 | Ch 34: WDT | rx72n_wdt_regs.h | 1666-1679 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 | Ch 35: IWDT | rx72n_iwdt_regs.h | 1680-1698 | [x] COMPLETE | All addrs + offsets OK (Ch 5 + header) |
 
-**Pass 1 last page verified:** `449 (Ch 3+11 Operating Modes/LPC complete 2026-04-13), 334 (Ch 8 LVDA complete 2026-04-13), 389 (Ch 9 Clock Generation complete 2026-04-13), 860 (Ch 21 ELC complete 2026-04-13), 1441 (Ch 25+27 POE3/POEG complete 2026-04-13), 1519 (Ch 28 TPU complete 2026-04-13), 2036 (Ch 40 USB complete 2026-04-13), 2216 (Ch 41 SCI complete 2026-04-13), 2949 (Ch 56 S12AD ADC complete 2026-04-13), 2990 (Ch 60 RAM complete 2026-04-13), 3233 (Ch 62 Flash complete 2026-04-13)`
+**Pass 1 last page verified:** `449 (Ch 3+11 Operating Modes/LPC complete 2026-04-13), 334 (Ch 8 LVDA complete 2026-04-13), 389 (Ch 9 Clock Generation complete 2026-04-13), 860 (Ch 21 ELC complete 2026-04-13), 1441 (Ch 25+27 POE3/POEG complete 2026-04-13), 1519 (Ch 28 TPU complete 2026-04-13), 2036 (Ch 40 USB complete 2026-04-13), 2216 (Ch 41 SCI complete 2026-04-13), 2949 (Ch 56 S12AD ADC complete 2026-04-13), 2990 (Ch 60 RAM complete 2026-04-13), 3123 (Ch 62 Flash complete 2026-04-13)`
 
 ---
 

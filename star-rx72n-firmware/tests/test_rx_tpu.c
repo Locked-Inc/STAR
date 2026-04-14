@@ -153,8 +153,9 @@ void test_init_tpu1_phase_mode_4(void)
   /* Verify TCR set to free-running */
   TEST_ASSERT_EQUAL_UINT8(0x00, tpu1()->tcr);
 
-  /* Verify TIER set to all disabled */
-  TEST_ASSERT_EQUAL_UINT8(0x00, tpu1()->tier);
+  /* Verify TIER set to all disabled (bit 6 reserved/must-write-1, reset value 0x40) */
+  /* TIER reset value 0x40: bit 6 reserved/must-write-1 per Ch 28 manual */
+  TEST_ASSERT_EQUAL_UINT8(0x40, tpu1()->tier);
 
   /* Verify TCNT cleared */
   TEST_ASSERT_EQUAL_UINT16(0, tpu1()->tcnt);
@@ -620,8 +621,9 @@ void test_deinit_resets_registers(void)
   /* Verify TMDR reset to normal mode */
   TEST_ASSERT_EQUAL_UINT8(0x00, tpu1()->tmdr);
 
-  /* Verify TIER cleared */
-  TEST_ASSERT_EQUAL_UINT8(0x00, tpu1()->tier);
+  /* Verify TIER reset (bit 6 reserved/must-write-1, reset value 0x40) */
+  /* TIER reset value 0x40: bit 6 reserved/must-write-1 per Ch 28 manual */
+  TEST_ASSERT_EQUAL_UINT8(0x40, tpu1()->tier);
 
   /* Verify TCNT cleared */
   TEST_ASSERT_EQUAL_UINT16(0, tpu1()->tcnt);

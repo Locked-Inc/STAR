@@ -250,6 +250,12 @@ typedef enum : uint8_t {
   k_s12ad_offset_addbldr = 0x18, /**< Double Trigger Data: double-trigger mode result */
   k_s12ad_offset_adrd    = 0x1E, /**< Self-Diagnosis Data: internal reference result */
   k_s12ad_offset_addr0   = 0x22, /**< Data Register 0: AN000/AN100 conversion result */
+  k_s12ad_offset_addr1   = 0x24, /**< Data Register 1: AN001/AN101 conversion result */
+  k_s12ad_offset_addr2   = 0x26, /**< Data Register 2: AN002/AN102 conversion result */
+  k_s12ad_offset_addr3   = 0x28, /**< Data Register 3: AN003/AN103 conversion result */
+  k_s12ad_offset_addr4   = 0x2A, /**< Data Register 4: AN004/AN104 conversion result */
+  k_s12ad_offset_addr5   = 0x2C, /**< Data Register 5: AN005/AN105 conversion result */
+  k_s12ad_offset_addr6   = 0x2E, /**< Data Register 6: AN006/AN106 conversion result */
   k_s12ad_offset_addr7   = 0x30, /**< Data Register 7: AN007/AN107 conversion result */
 } s12ad_offsets_t;
 
@@ -705,14 +711,22 @@ static_assert(offsetof(rx_s12ad_regs_t, adansb0) == 0x14,
 static_assert(offsetof(rx_s12ad_regs_t, addbldr) == 0x18,
               "ADDBLDR offset incorrect (expected 0x18)");
 static_assert(offsetof(rx_s12ad_regs_t, adrd) == 0x1E, "ADRD offset incorrect (expected 0x1E)");
-static_assert(offsetof(rx_s12ad_regs_t, addr0) == 0x22, "ADDR0 offset incorrect (expected 0x22)");
-static_assert(offsetof(rx_s12ad_regs_t, addr1) == 0x24, "ADDR1 offset incorrect (expected 0x24)");
-static_assert(offsetof(rx_s12ad_regs_t, addr2) == 0x26, "ADDR2 offset incorrect (expected 0x26)");
-static_assert(offsetof(rx_s12ad_regs_t, addr3) == 0x28, "ADDR3 offset incorrect (expected 0x28)");
-static_assert(offsetof(rx_s12ad_regs_t, addr4) == 0x2A, "ADDR4 offset incorrect (expected 0x2A)");
-static_assert(offsetof(rx_s12ad_regs_t, addr5) == 0x2C, "ADDR5 offset incorrect (expected 0x2C)");
-static_assert(offsetof(rx_s12ad_regs_t, addr6) == 0x2E, "ADDR6 offset incorrect (expected 0x2E)");
-static_assert(offsetof(rx_s12ad_regs_t, addr7) == 0x30, "ADDR7 offset incorrect (expected 0x30)");
+static_assert(offsetof(rx_s12ad_regs_t, addr0) == k_s12ad_offset_addr0,
+              "ADDR0 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr1) == k_s12ad_offset_addr1,
+              "ADDR1 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr2) == k_s12ad_offset_addr2,
+              "ADDR2 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr3) == k_s12ad_offset_addr3,
+              "ADDR3 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr4) == k_s12ad_offset_addr4,
+              "ADDR4 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr5) == k_s12ad_offset_addr5,
+              "ADDR5 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr6) == k_s12ad_offset_addr6,
+              "ADDR6 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr7) == k_s12ad_offset_addr7,
+              "ADDR7 offset incorrect");
 
 /** @} */ /* End of rx_adc_regs group */
 
