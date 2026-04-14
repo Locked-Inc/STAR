@@ -17,6 +17,11 @@ safety_monitor:
     # System monitoring
     publish_rate: 10.0         # Diagnostic message publish rate (Hz)
 
+    # Obstacle proximity detection (HC-SR04 ultrasonics)
+    obstacle_estop_distance: 0.10       # E-stop if any sonar reads closer than 10 cm
+    obstacle_warn_distance: 0.30        # Log warning if any sonar reads closer than 30 cm
+    obstacle_clear_count_required: 10   # Consecutive clear checks before releasing E-stop (10 @ 10 Hz = 1s)
+
     # Emergency stop configuration
     enable_auto_estop: true    # Automatically trigger E-Stop on critical violations
     estop_recovery_delay: 5.0  # Delay before allowing E-Stop recovery (seconds)

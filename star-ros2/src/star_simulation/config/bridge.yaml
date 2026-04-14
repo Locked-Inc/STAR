@@ -1,0 +1,78 @@
+# ros_gz_bridge topic mapping for STAR simulation.
+#
+# Maps Gazebo Harmonic internal topics to the ROS2 topic names that the
+# existing SLAM, EKF, and Nav2 configs expect. This lets the autonomy stack
+# run unchanged in simulation -- same topics, same message types.
+
+# Simulation clock (required for use_sim_time: true)
+- ros_topic_name: "/clock"
+  gz_topic_name: "/clock"
+  ros_type_name: "rosgraph_msgs/msg/Clock"
+  gz_type_name: "gz.msgs.Clock"
+  direction: GZ_TO_ROS
+
+# Velocity commands from Nav2/teleop to Gazebo DiffDrive plugin
+- ros_topic_name: "/cmd_vel"
+  gz_topic_name: "/cmd_vel"
+  ros_type_name: "geometry_msgs/msg/Twist"
+  gz_type_name: "gz.msgs.Twist"
+  direction: ROS_TO_GZ
+
+# Wheel odometry from Gazebo DiffDrive -> EKF input
+# Maps to /odom/unfiltered so the existing ekf.yaml (odom0) works unchanged.
+- ros_topic_name: "/odom/unfiltered"
+  gz_topic_name: "/odometry"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "gz.msgs.Odometry"
+  direction: GZ_TO_ROS
+
+# 2D lidar scan from Gazebo lidar -> slam_toolbox input
+- ros_topic_name: "/scan"
+  gz_topic_name: "/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+
+# IMU data from Gazebo IMU sensor -> EKF input
+- ros_topic_name: "/imu/data"
+  gz_topic_name: "/imu/data"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+
+# Joint states from Gazebo -> robot_state_publisher
+- ros_topic_name: "/joint_states"
+  gz_topic_name: "/world/indoor_slam_test/model/star/joint_state"
+  ros_type_name: "sensor_msgs/msg/JointState"
+  gz_type_name: "gz.msgs.Model"
+  direction: GZ_TO_ROS
+
+# HC-SR04 ultrasonic sensors (simulated as narrow-FOV lidar)
+- ros_topic_name: "/star/obstacle/front_left"
+  gz_topic_name: "/star/obstacle/front_left"
+  ros_type_name: "sensor_msgs/msg/Range"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/star/obstacle/front_right"
+  gz_topic_name: "/star/obstacle/front_right"
+  ros_type_name: "sensor_msgs/msg/Range"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/star/obstacle/back_left"
+  gz_topic_name: "/star/obstacle/back_left"
+  ros_type_name: "sensor_msgs/msg/Range"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/star/obstacle/back_right"
+  gz_topic_name: "/star/obstacle/back_right"
+  ros_type_name: "sensor_msgs/msg/Range"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+
+# NOTE: DiffDrive odom->base_link TF is NOT bridged here.
+# When use_ekf:=true, robot_localization publishes this transform.
+# When use_ekf:=false, static_transform_publisher provides it.
+# Bridging DiffDrive TF would conflict with either source.
