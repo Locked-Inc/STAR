@@ -51,7 +51,7 @@ LDFLAGS := $(CPU) -nostartfiles -Wl,-e_PowerON_Reset_PC -T linker.ld \
 # ----------------------------------------------------------------------------
 # Application sources (this directory)
 # ----------------------------------------------------------------------------
-APP_CSRC := main.c clock.c cmt0.c log_stubs.c
+APP_CSRC := main.c clock.c cmt0.c log_stubs.c sci9_debug.c
 APP_ASRC := startup.S vectors.S
 
 # ----------------------------------------------------------------------------
