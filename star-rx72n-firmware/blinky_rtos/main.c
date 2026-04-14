@@ -9,14 +9,13 @@
  *                   software-PWM breathing effect to each one in turn.
  *                   After completing a full cycle it posts a semaphore.
  *
- *   flash_task   -- waits on the semaphore, flashes all 6 LEDs together
- *                   three times as a cycle-complete indicator, then signals
- *                   breathe_task to start the next cycle.
+ *   flash_task   -- waits on the semaphore, runs a wave sequence: each LED
+ *                   lights up one at a time in order (k_flash_count passes),
+ *                   then signals breathe_task to start the next cycle.
  *
  * Threading replaces the single infinite loop of the bare-metal version.
- * tx_thread_sleep() drives the flash timing; software PWM busy-waits are
- * still used for sub-tick LED dimming (the 100 Hz tick is too coarse for
- * smooth PWM).
+ * Busy-wait delays are used for both PWM and wave timing; the 100 Hz tick is
+ * too coarse for smooth dimming and tx_thread_sleep is not used.
  *
  * Clock: LOCO default at 240 kHz (OFS1 = 0xFFFFFFFF, factory reset state).
  * Tick:  CMT0 at PCLKB/8 = 30 kHz, CMCOR = 299 -> 100 Hz (10 ms/tick).
@@ -107,9 +106,9 @@ typedef enum : uint8_t {
 typedef enum : uint32_t {
     k_max_bright       = 50U,    /**< PWM duty-cycle upper bound */
     k_reps_per_step    = 5U,     /**< PWM cycles per brightness step */
-    k_flash_count      = 3U,     /**< All-LED flashes at cycle end */
-    k_flash_on_iters   = 1600U,  /**< Flash ON busy-wait iters (~80 ms at LOCO 240 kHz) */
-    k_flash_off_iters  = 1600U,  /**< Flash OFF busy-wait iters (~80 ms at LOCO 240 kHz) */
+    k_flash_count      = 3U,     /**< Wave passes at cycle end */
+    k_flash_on_iters   = 4000U,  /**< Wave LED ON busy-wait iters (~200 ms at LOCO 240 kHz) */
+    k_flash_off_iters  = 2000U,  /**< Wave LED OFF gap busy-wait iters (~100 ms at LOCO 240 kHz) */
 } breathe_params_t;
 
 /* ==========================================================================
@@ -326,19 +325,16 @@ static void flash_task_entry(ULONG arg)
         /* Wait for breathe_task to complete one full cycle */
         (void)tx_semaphore_get(&s_cycle_done_sem, TX_WAIT_FOREVER);
 
-        /* Flash all LEDs k_flash_count times using busy-wait for timing.
+        /* Wave: light each LED one at a time in sequence, k_flash_count passes.
          * breathe_task is blocked on s_flash_done_sem during this window,
          * so busy-waiting here is safe and avoids any ThreadX sleep dependency. */
         for (f = 0U; f < k_flash_count; f++) {
             for (i = 0U; i < k_num_leds; i++) {
                 led_on(&s_leds[i]);
-            }
-            pwm_delay(k_flash_on_iters);
-
-            for (i = 0U; i < k_num_leds; i++) {
+                pwm_delay(k_flash_on_iters);
                 led_off(&s_leds[i]);
+                pwm_delay(k_flash_off_iters);
             }
-            pwm_delay(k_flash_off_iters);
         }
 
         /* Tell breathe_task it can start the next cycle */
