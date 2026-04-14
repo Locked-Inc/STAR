@@ -1,6 +1,8 @@
-/*
- * blinky/main.c -- Minimal bare-metal RX72N test: blink P54 LED.
+/**
+ * @file main.c
+ * @brief Minimal bare-metal RX72N test: blink P54 LED.
  *
+ * @details
  * No RTOS. No BSP. No external clock config -- runs on the default clock
  * selected by OFS1 in option-setting memory. On a factory chip with OFS1
  * left at 0xFFFFFFFF this is the LOCO at 240 kHz, NOT HOCO at 16 MHz.
@@ -13,6 +15,9 @@
  * After reset, PMR5 = 0x00 (all GPIO, not peripheral) -- no MPC unlock needed.
  *
  * Built with -O0 so the volatile delay loop isn't optimised out.
+ *
+ * SPDX-License-Identifier: MIT
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include <stdint.h>
