@@ -24,15 +24,46 @@ from rclpy.node import Node
 from sensor_msgs.msg import Range
 from std_msgs.msg import Bool
 
-# Test parameters (must be < obstacle_estop_distance=0.10 to trigger e-stop).
+# Test parameters.
+
+#: Close-range sonar reading used to trigger the e-stop. Must be below
+#: the safety_monitor obstacle_estop_distance (0.10 m by default).
 TRIGGER_RANGE_M = 0.05
+
+#: Sonar field-of-view in radians. Matches the URDF/sim sensor model
+#: for the front-left sonar.
 SONAR_FIELD_OF_VIEW_RAD = 0.26
+
+#: Minimum reportable range for the simulated sonar (meters).
 SONAR_MIN_RANGE_M = 0.02
+
+#: Maximum reportable range for the simulated sonar (meters).
 SONAR_MAX_RANGE_M = 4.0
+
+#: Acceptable upper bound on the publish-to-estop latency (milliseconds).
+#: 500 ms is the safety SLA for the obstacle e-stop pipeline.
 LATENCY_LIMIT_MS = 500.0
+
+#: How long to wait for the e-stop to fire before declaring the test
+#: failed (seconds). Generous to account for DDS discovery jitter.
 ESTOP_WAIT_TIMEOUT_S = 15.0
+
+#: How long to publish safe-range sonar before switching to the trigger
+#: range, allowing DDS to discover the test publisher and the safety
+#: monitor subscriber (seconds).
 DDS_DISCOVERY_WINDOW_S = 5.0
+
+#: Safe sonar range (meters) used during the discovery phase, well
+#: above the obstacle_estop_distance threshold.
 SAFE_RANGE_M = 2.0
+
+#: rclpy.spin_once timeout (seconds) during DDS discovery. Coarse
+#: enough to keep CPU low while the publisher warms up.
+SPIN_TIMEOUT_DISCOVERY_S = 0.05
+
+#: rclpy.spin_once timeout (seconds) during latency measurement.
+#: Tighter for measurement accuracy.
+SPIN_TIMEOUT_MEASUREMENT_S = 0.01
 
 
 @ready_to_test_action_timeout(60)
@@ -120,7 +151,7 @@ class TestObstacleEstopLatency(unittest.TestCase):
         while time.time() < end_discovery:
             safe_msg.header.stamp = self.node.get_clock().now().to_msg()
             self.sonar_pub.publish(safe_msg)
-            rclpy.spin_once(self.node, timeout_sec=0.05)
+            rclpy.spin_once(self.node, timeout_sec=SPIN_TIMEOUT_DISCOVERY_S)
 
         # Now publish close-range sonar and measure latency.
         range_msg = Range()
@@ -133,25 +164,28 @@ class TestObstacleEstopLatency(unittest.TestCase):
 
         # Reset on the class because _estop_cb writes to the class attribute.
         type(self).estop_time = None
-        last_publish_time = None
+
+        # Capture the timestamp of the FIRST trigger-range publish. The
+        # e-stop cannot have been triggered before any trigger publish
+        # arrived at the safety monitor, so (estop_time - first_publish)
+        # is a true upper bound on the obstacle-to-estop latency. Earlier
+        # versions of this test updated the timestamp on every iteration,
+        # which produced a *lower* bound that could mask SLA violations.
+        first_publish_time = time.monotonic()
+        range_msg.header.stamp = self.node.get_clock().now().to_msg()
+        self.sonar_pub.publish(range_msg)
+        rclpy.spin_once(self.node, timeout_sec=SPIN_TIMEOUT_MEASUREMENT_S)
 
         timeout = time.time() + ESTOP_WAIT_TIMEOUT_S
-        while time.time() < timeout:
+        while time.time() < timeout and type(self).estop_time is None:
             range_msg.header.stamp = self.node.get_clock().now().to_msg()
-            last_publish_time = time.monotonic()
             self.sonar_pub.publish(range_msg)
-            rclpy.spin_once(self.node, timeout_sec=0.01)
-            if type(self).estop_time is not None:
-                break
+            rclpy.spin_once(self.node, timeout_sec=SPIN_TIMEOUT_MEASUREMENT_S)
 
         self.assertIsNotNone(type(self).estop_time,
                              'E-stop should have been triggered')
 
-        # Worst-case latency: from the most recent publish before e-stop
-        # arrived. The e-stop must have been triggered by that publish or
-        # an earlier one still propagating through the pipeline, so this
-        # bounds the true latency from above.
-        latency_ms = (type(self).estop_time - last_publish_time) * 1000
+        latency_ms = (type(self).estop_time - first_publish_time) * 1000
         self.assertLess(latency_ms, LATENCY_LIMIT_MS,
                         f'E-stop latency {latency_ms:.1f}ms exceeds '
                         f'{LATENCY_LIMIT_MS:.0f}ms limit')

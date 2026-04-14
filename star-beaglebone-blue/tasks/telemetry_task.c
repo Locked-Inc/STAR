@@ -29,6 +29,13 @@
 #include <string.h>
 #include <time.h>
 
+/* M_PI is a POSIX/GNU extension and not guaranteed by strict C23. Provide
+ * a fallback so this file compiles even if the system math.h is built
+ * without _GNU_SOURCE. */
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 /* ---------------------------------------------------------------------------
  * Private constants
  * ---------------------------------------------------------------------------*/
@@ -43,6 +50,9 @@ typedef enum : uint32_t {
     k_pb_buf_size   = 1024U, /**< Protobuf encode buffer */
     k_wire_buf_size = 1036U, /**< Maximum encoded frame size */
 } telem_buf_t;
+
+/** Multiplier for full revolution in radians (2 * pi). */
+static const float s_bb_two_pi = 2.0F * (float)M_PI;
 
 /* Motor/encoder indices and axis indices from hardware_config.h */
 
@@ -106,7 +116,7 @@ void* bb_telemetry_task(void* arg)
     static int32_t s_prev_ticks[k_bb_encoder_count] = {0};
     static int64_t s_prev_us = 0;
     static bool    s_have_prev = false;
-    const float    m_per_tick = (2.0F * (float)M_PI * s_bb_wheel_radius_m)
+    const float    m_per_tick = (s_bb_two_pi * s_bb_wheel_radius_m)
                               / (float)k_bb_ticks_per_rev;
 
     /* Period derived from k_bb_rate_telemetry_hz in hardware_config.h */
@@ -129,7 +139,7 @@ void* bb_telemetry_task(void* arg)
         /* Compute per-wheel velocity from tick deltas. Zero on the first
          * iteration and on any non-positive dt. Uses CLOCK_MONOTONIC so it
          * is immune to wall-clock adjustments. */
-        float vel_mps[k_bb_encoder_count] = {0.0F, 0.0F, 0.0F, 0.0F};
+        float vel_mps[k_bb_encoder_count] = {0};
         if (s_have_prev) {
             const int64_t dt_us = now_us - s_prev_us;
             if (dt_us > 0) {

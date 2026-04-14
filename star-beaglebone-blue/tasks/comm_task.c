@@ -31,9 +31,29 @@
 #include <pb_decode.h>
 #include <star/v1/wire.pb.h>
 
+#include <assert.h>
+#include <math.h>
 #include <robotcontrol.h>
 #include <string.h>
 #include <time.h>
+
+/* ---------------------------------------------------------------------------
+ * Velocity setpoint sanity bound
+ * ---------------------------------------------------------------------------*/
+
+/**
+ * @brief Maximum sane wheel surface velocity in m/s.
+ *
+ * @details
+ * Used to clamp incoming VelocityCommand setpoints from the gateway so a
+ * malformed or malicious frame cannot inject unreasonable values into the
+ * PID. The physical ground-speed ceiling for the goBILDA Wasteland +
+ * 6V 210 RPM gearmotor stack is about 1.58 m/s; 5.0 m/s gives a generous
+ * margin for future motor swaps without rejecting legitimate commands.
+ *
+ * @since Version 1.2.0
+ */
+static const float s_bb_max_wheel_velocity_mps = 5.0F;
 
 /* ---------------------------------------------------------------------------
  * Private constants
@@ -51,6 +71,38 @@ typedef enum : uint32_t {
 } comm_buf_t;
 
 /* Motor indices from hardware_config.h: k_bb_motor_idx_fl/fr/rl/rr */
+
+/**
+ * @brief Sanitize a wheel velocity setpoint received from the gateway.
+ *
+ * @details
+ * Rejects NaN/Infinity (returns 0) and clamps the magnitude to the
+ * physical bound s_bb_max_wheel_velocity_mps so the closed-loop PID
+ * never sees an out-of-range setpoint. Mirrors the defensive pattern
+ * used by internal_clamp_duty() for the direct-duty path.
+ *
+ * @param[in] val Raw velocity from the protobuf wire format.
+ *
+ * @return float Sanitized value in [-s_bb_max_wheel_velocity_mps,
+ *               +s_bb_max_wheel_velocity_mps], or 0 if val is non-finite.
+ *
+ * @pre None
+ * @post Return value is finite
+ * @post |return value| <= s_bb_max_wheel_velocity_mps
+ *
+ * @note Pure function; thread-safe.
+ *
+ * @since Version 1.2.0
+ */
+static inline float internal_sanitize_velocity(const float val)
+{
+    if (!isfinite(val)) {
+        return 0.0F;
+    }
+    if (val >  s_bb_max_wheel_velocity_mps) { return  s_bb_max_wheel_velocity_mps; }
+    if (val < -s_bb_max_wheel_velocity_mps) { return -s_bb_max_wheel_velocity_mps; }
+    return val;
+}
 
 /* ---------------------------------------------------------------------------
  * Internal helpers
@@ -181,6 +233,10 @@ static inline float internal_clamp_duty(const float val)
 static void internal_process_command(bb_shared_data_t* sd,
                                      const bb_frame_t* frame)
 {
+    /* Pre-conditions: non-null inputs (Doxygen contract enforcement) */
+    assert(sd != NULL);
+    assert(frame != NULL);
+
     star_v1_WireMessage msg = star_v1_WireMessage_init_zero;
 
     pb_istream_t stream = pb_istream_from_buffer(frame->payload,
@@ -203,10 +259,14 @@ static void internal_process_command(bb_shared_data_t* sd,
          * setpoint and replaced it with a duty fraction, making real
          * closed-loop control impossible. */
         cmd.control_mode = k_bb_ctrl_mode_velocity;
-        cmd.velocity_setpoint_mps[k_bb_motor_idx_fl] = (float)vc->front_left_velocity_mps;
-        cmd.velocity_setpoint_mps[k_bb_motor_idx_fr] = (float)vc->front_right_velocity_mps;
-        cmd.velocity_setpoint_mps[k_bb_motor_idx_rl] = (float)vc->back_left_velocity_mps;
-        cmd.velocity_setpoint_mps[k_bb_motor_idx_rr] = (float)vc->back_right_velocity_mps;
+        cmd.velocity_setpoint_mps[k_bb_motor_idx_fl] =
+            internal_sanitize_velocity((float)vc->front_left_velocity_mps);
+        cmd.velocity_setpoint_mps[k_bb_motor_idx_fr] =
+            internal_sanitize_velocity((float)vc->front_right_velocity_mps);
+        cmd.velocity_setpoint_mps[k_bb_motor_idx_rl] =
+            internal_sanitize_velocity((float)vc->back_left_velocity_mps);
+        cmd.velocity_setpoint_mps[k_bb_motor_idx_rr] =
+            internal_sanitize_velocity((float)vc->back_right_velocity_mps);
 
         (void)bb_shared_data_set_motor_cmd(sd, &cmd);
         break;

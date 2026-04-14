@@ -42,6 +42,15 @@ FRAME_BASE_LINK = 'base_link'
 # Default respawn delay (seconds) for nodes configured with respawn=True.
 RESPAWN_DELAY_SEC = 2.0
 
+# Drivetrain kinematics for the BBB skid-steer platform. Source: CAD
+# measurement of the goBILDA Wasteland chassis (2026-04 build) and goBILDA
+# motor datasheet. Mirrored in star_spi_bridge.launch.py and the BBB
+# hardware_config.h to keep producers and consumers in sync; bump all
+# three together if the chassis or motor changes.
+WHEEL_BASE_M = 0.356            # track width: left-right wheel center-to-center
+WHEEL_RADIUS_M = 0.072          # rolling radius: 144 mm wheel / 2
+ENCODER_TICKS_PER_REV = 11599   # 341 PPR Hall encoder x 34.02:1 gearbox
+
 
 def generate_launch_description():
     pkg_star_bringup = get_package_share_directory('star_bringup')
@@ -202,9 +211,9 @@ def generate_launch_description():
             'telemetry_rate_hz': 10.0,
             'teleop_rate_hz': 50.0,
             'use_bbb_telemetry': LaunchConfiguration('use_bbb'),
-            'wheel_base': 0.356,
-            'wheel_radius': 0.072,
-            'ticks_per_rev': 11599,
+            'wheel_base': WHEEL_BASE_M,
+            'wheel_radius': WHEEL_RADIUS_M,
+            'ticks_per_rev': ENCODER_TICKS_PER_REV,
         }],
         respawn=True,
         respawn_delay=RESPAWN_DELAY_SEC,

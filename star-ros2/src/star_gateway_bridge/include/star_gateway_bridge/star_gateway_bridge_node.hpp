@@ -93,7 +93,13 @@ public:
    * - watchdog_timeout_sec: Connection health check interval (default: 5.0s)
    * - teleop_timeout_ms: Teleop command staleness timeout (default: 500ms)
    * - grpc_deadline_ms: gRPC call deadline (default: 100ms)
-   * - wheel_base: Track width (left-right wheel center-to-center) in meters (default: 0.356m)
+   * - wheel_base: Distance between left and right wheel centers in meters
+   *               (default: 0.356m). Note: legacy name -- this parameter is
+   *               actually the track width used for differential-drive
+   *               twist-to-wheel-velocity conversion. A rename to
+   *               'track_width' is tracked as a separate cleanup task to
+   *               avoid touching gateway_bridge + spi_bridge + 30+ test
+   *               sites + launch files in this PR.
    * - use_bbb_telemetry: Enable BBB telemetry bridging (default: false)
    * - wheel_radius: Wheel radius in meters (default: 0.072m)
    * - ticks_per_rev: Encoder ticks per revolution (default: 11599)

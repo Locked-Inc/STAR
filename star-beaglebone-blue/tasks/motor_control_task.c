@@ -38,9 +38,20 @@
 #include "bb_pid_config.h"
 #include "hardware_config.h"
 
+#include <assert.h>
 #include <math.h>
 #include <robotcontrol.h>
 #include <time.h>
+
+/* ---------------------------------------------------------------------------
+ * Numeric constants (no magic numbers)
+ * ---------------------------------------------------------------------------*/
+
+/** Multiplier for full revolution in radians (2 * pi). */
+static const float s_bb_two_pi = 2.0F * (float)M_PI;
+
+/** Minimum loop dt floor to keep PID divisions safe (1 microsecond in s). */
+static const float s_bb_min_dt_s = 1.0e-6F;
 
 /* ---------------------------------------------------------------------------
  * Battery voltage sampling (timer-based, 10 Hz)
@@ -146,6 +157,10 @@ static bool s_loop_first_iter = true;
  */
 static bb_err_t internal_init_pids(void)
 {
+    /* Pre-conditions: gain limits in bb_pid_config.h are well-formed */
+    assert(s_bb_pid_output_max > s_bb_pid_output_min);
+    assert(s_bb_pid_integral_max > s_bb_pid_integral_min);
+
     const bb_pid_config_t cfg = {
         .kp           = s_bb_pid_velocity_kp,
         .ki           = s_bb_pid_velocity_ki,
@@ -162,6 +177,10 @@ static bb_err_t internal_init_pids(void)
             return err;
         }
     }
+
+    /* Post-condition: all handles initialized */
+    assert(s_pid[k_bb_motor_idx_fl].initialized);
+    assert(s_pid[k_bb_motor_idx_rr].initialized);
 
     return k_bb_err_ok;
 }
@@ -193,14 +212,23 @@ static bb_err_t internal_init_pids(void)
 static float internal_dt_seconds(const struct timespec* now,
                                  const struct timespec* previous)
 {
+    /* Pre-conditions: non-null timestamps */
+    assert(now != NULL);
+    assert(previous != NULL);
+
     const int64_t elapsed_ns = (int64_t)(now->tv_sec - previous->tv_sec)
                              * (int64_t)k_bb_ns_per_sec
                              + (int64_t)(now->tv_nsec - previous->tv_nsec);
 
     float dt = (float)elapsed_ns / (float)k_bb_ns_per_sec;
-    if (dt < 1.0e-6F) {
-        dt = 1.0e-6F;
+    if (dt < s_bb_min_dt_s) {
+        dt = s_bb_min_dt_s;
     }
+
+    /* Post-conditions: positive and finite */
+    assert(dt >= s_bb_min_dt_s);
+    assert(isfinite(dt));
+
     return dt;
 }
 
@@ -221,9 +249,18 @@ static float internal_dt_seconds(const struct timespec* now,
  */
 static float internal_saturate_duty(const float duty_frac, const float max_duty)
 {
-    if (duty_frac >  max_duty) { return  max_duty; }
-    if (duty_frac < -max_duty) { return -max_duty; }
-    return duty_frac;
+    /* Pre-conditions: max_duty non-negative, duty_frac is a finite float */
+    assert(max_duty >= 0.0F);
+    assert(isfinite(duty_frac));
+
+    float result = duty_frac;
+    if (result >  max_duty) { result =  max_duty; }
+    if (result < -max_duty) { result = -max_duty; }
+
+    /* Post-condition: result is within +/- max_duty */
+    assert((result >= -max_duty) && (result <= max_duty));
+
+    return result;
 }
 
 /* ---------------------------------------------------------------------------
@@ -273,7 +310,7 @@ void* bb_motor_control_task(void* arg)
 
     /* Tick-to-rad conversion factor for output-shaft angular velocity.
      * Same constant used by telemetry_task for its m/s computation. */
-    const float rad_per_tick = (2.0F * (float)M_PI) / (float)k_bb_ticks_per_rev;
+    const float rad_per_tick = s_bb_two_pi / (float)k_bb_ticks_per_rev;
 
     struct timespec next = {0};
     (void)clock_gettime(CLOCK_MONOTONIC, &next);

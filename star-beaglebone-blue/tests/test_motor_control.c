@@ -404,7 +404,12 @@ static test_result_t test_motor_cmd_default_mode_is_velocity(void)
 {
     s_tests_run++;
     bb_shared_data_t sd;
-    (void)bb_shared_data_init(&sd);
+    bb_err_t err = bb_shared_data_init(&sd);
+    if (err != k_bb_err_ok) {
+        fprintf(stderr,
+                "[FAIL] test_motor_cmd_default_mode_is_velocity: init failed\n");
+        return k_test_fail;
+    }
 
     bb_motor_cmd_t cmd_out = {0};
     (void)bb_shared_data_get_motor_cmd(&sd, &cmd_out);
@@ -438,7 +443,12 @@ static test_result_t test_motor_cmd_control_mode_round_trip(void)
 {
     s_tests_run++;
     bb_shared_data_t sd;
-    (void)bb_shared_data_init(&sd);
+    bb_err_t err = bb_shared_data_init(&sd);
+    if (err != k_bb_err_ok) {
+        fprintf(stderr,
+                "[FAIL] test_motor_cmd_control_mode_round_trip: init failed\n");
+        return k_test_fail;
+    }
 
     /* Switch to direct duty */
     bb_motor_cmd_t cmd_dd = {
