@@ -105,11 +105,11 @@ typedef enum : uint8_t {
  *   tx_thread_sleep() granularity = 10 ms/tick.
  * ========================================================================== */
 typedef enum : uint32_t {
-    k_max_bright       = 50U,  /**< PWM duty-cycle upper bound */
-    k_reps_per_step    = 5U,   /**< PWM cycles per brightness step */
-    k_flash_count      = 3U,   /**< All-LED flashes at cycle end */
-    k_flash_on_ticks   = 8U,   /**< Flash ON duration (ticks, 10 ms each) */
-    k_flash_off_ticks  = 8U,   /**< Flash OFF duration (ticks) */
+    k_max_bright       = 50U,    /**< PWM duty-cycle upper bound */
+    k_reps_per_step    = 5U,     /**< PWM cycles per brightness step */
+    k_flash_count      = 3U,     /**< All-LED flashes at cycle end */
+    k_flash_on_iters   = 1600U,  /**< Flash ON busy-wait iters (~80 ms at LOCO 240 kHz) */
+    k_flash_off_iters  = 1600U,  /**< Flash OFF busy-wait iters (~80 ms at LOCO 240 kHz) */
 } breathe_params_t;
 
 /* ==========================================================================
@@ -326,17 +326,19 @@ static void flash_task_entry(ULONG arg)
         /* Wait for breathe_task to complete one full cycle */
         (void)tx_semaphore_get(&s_cycle_done_sem, TX_WAIT_FOREVER);
 
-        /* Flash all LEDs k_flash_count times using ThreadX sleep for timing */
+        /* Flash all LEDs k_flash_count times using busy-wait for timing.
+         * breathe_task is blocked on s_flash_done_sem during this window,
+         * so busy-waiting here is safe and avoids any ThreadX sleep dependency. */
         for (f = 0U; f < k_flash_count; f++) {
             for (i = 0U; i < k_num_leds; i++) {
                 led_on(&s_leds[i]);
             }
-            tx_thread_sleep(k_flash_on_ticks);
+            pwm_delay(k_flash_on_iters);
 
             for (i = 0U; i < k_num_leds; i++) {
                 led_off(&s_leds[i]);
             }
-            tx_thread_sleep(k_flash_off_ticks);
+            pwm_delay(k_flash_off_iters);
         }
 
         /* Tell breathe_task it can start the next cycle */
