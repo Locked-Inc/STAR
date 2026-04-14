@@ -557,8 +557,9 @@ rx_err_t rspi_init_peripheral(const rspi_channel_t channel, const rspi_config_t*
 
   /* Step 3b: Configure data length in SPCMD0 and access mode in SPDCR */
   if (config->use_16bit) {
-    spcmd |= (k_rspi_spcmd_16bit << k_rspi_spcmd_spl_shift);          /* 16-bit data */
-    rspi->spdcr = (uint8_t)(k_rspi_bit_set << k_rspi_spdcr_splw_pos); /* Longword (32-bit) access mode */
+    spcmd |= (k_rspi_spcmd_16bit << k_rspi_spcmd_spl_shift); /* 16-bit data */
+    rspi->spdcr =
+      (uint8_t)(k_rspi_bit_set << k_rspi_spdcr_splw_pos); /* Longword (32-bit) access mode */
   } else {
     spcmd |= (k_rspi_spcmd_8bit << k_rspi_spcmd_spl_shift); /* 8-bit data */
     rspi->spdcr = k_rspi_spdcr_byte_mode;                   /* Byte access mode */
@@ -764,7 +765,7 @@ rx_err_t rspi_peripheral_transfer(const rspi_channel_t channel,
     rx_data[i] = (uint8_t)rspi->spdr;
 
     /* Clear status flags */
-    rspi->spsr &= (uint8_t) ~(uint8_t)(k_rspi_spsr_sprf | k_rspi_spsr_ovrf);
+    rspi->spsr &= (uint8_t)~(uint8_t)(k_rspi_spsr_sprf | k_rspi_spsr_ovrf);
   }
 
   return k_rx_ok;
@@ -1310,7 +1311,8 @@ static rx_err_t internal_configure_registers(const rspi_channel_t            cha
   rspi->spbr = spbr;
 
   /* Step 4: Configure data access width (longword/32-bit mode) and command register */
-  rspi->spdcr  = (uint8_t)(k_rspi_bit_set << k_rspi_spdcr_splw_pos); /* Longword (32-bit) access mode */
+  rspi->spdcr =
+    (uint8_t)(k_rspi_bit_set << k_rspi_spdcr_splw_pos); /* Longword (32-bit) access mode */
   rspi->spcmd0 = spcmd;
 
   /* Step 5: Configure pin control (no loopback) - MUST be written before SPCR.SPE
@@ -1623,7 +1625,7 @@ static rx_err_t internal_controller_do_16bit_transfer(volatile rx_rspi_regs_t* r
   *rx_data = (uint16_t)rspi->spdr;
 
   /* Clear status flags */
-  rspi->spsr &= (uint8_t) ~(uint8_t)(k_rspi_spsr_sprf | k_rspi_spsr_ovrf);
+  rspi->spsr &= (uint8_t)~(uint8_t)(k_rspi_spsr_sprf | k_rspi_spsr_ovrf);
 
   return k_rx_ok;
 }

@@ -316,8 +316,9 @@ typedef enum : uint8_t {
 typedef enum : uint8_t {
   k_elop_timer_count_start   = 0x00U, /**< Counting is started */
   k_elop_timer_count_restart = 0x01U, /**< Counting is restarted */
-  k_elop_timer_input_capture = 0x02U, /**< Input capture (MTU/TPU) or event counter (CMT/TMR/CMTW) */
-  k_elop_timer_disabled      = 0x03U, /**< Event output is disabled */
+  k_elop_timer_input_capture =
+    0x02U,                       /**< Input capture (MTU/TPU) or event counter (CMT/TMR/CMTW) */
+  k_elop_timer_disabled = 0x03U, /**< Event output is disabled */
 } elop_timer_op_t;
 
 /**
@@ -429,15 +430,15 @@ typedef enum : uint8_t {
   k_pgc_pgci_falling = 0x01U, /**< Event on falling edge of input signal */
   k_pgc_pgci_both    = 0x02U, /**< Event on both edges of input signal (1x) */
   /* PGCOVE - PDBF Overwrite enable (bit 2) */
-  k_pgc_pgcove       = 0x04U, /**< PDBF overwrite enable (0=disabled, 1=enabled) */
+  k_pgc_pgcove = 0x04U, /**< PDBF overwrite enable (0=disabled, 1=enabled) */
   /* PGCO[2:0] - Port Group Operation Select for output port groups (bits 6:4) */
-  k_pgc_pgco_shift   = 4U,    /**< PGCO field shift */
-  k_pgc_pgco_mask    = 0x70U, /**< PGCO field mask */
-  k_pgc_pgco_low     = 0x00U, /**< Output low when event signal is input */
-  k_pgc_pgco_high    = 0x10U, /**< Output high when event signal is input */
-  k_pgc_pgco_toggle  = 0x20U, /**< Toggle output when event signal is input */
-  k_pgc_pgco_buffer  = 0x30U, /**< Output buffer (PDBF) value when event signal is input */
-  k_pgc_pgco_rotate  = 0x40U, /**< Rotate output MSB-to-LSB when event signal is input (1xx) */
+  k_pgc_pgco_shift  = 4U,    /**< PGCO field shift */
+  k_pgc_pgco_mask   = 0x70U, /**< PGCO field mask */
+  k_pgc_pgco_low    = 0x00U, /**< Output low when event signal is input */
+  k_pgc_pgco_high   = 0x10U, /**< Output high when event signal is input */
+  k_pgc_pgco_toggle = 0x20U, /**< Toggle output when event signal is input */
+  k_pgc_pgco_buffer = 0x30U, /**< Output buffer (PDBF) value when event signal is input */
+  k_pgc_pgco_rotate = 0x40U, /**< Rotate output MSB-to-LSB when event signal is input (1xx) */
 } pgc_bits_t;
 
 /**
@@ -457,7 +458,7 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   /* PSB[2:0] - Bit Number Specification (bits 2:0) */
-  k_pel_psb_mask     = 0x07U, /**< 3-bit pin select mask (pins 0-7) */
+  k_pel_psb_mask = 0x07U, /**< 3-bit pin select mask (pins 0-7) */
   /* PSP[1:0] - Port Number Specification (bits 4:3) */
   k_pel_psp_shift    = 3U,    /**< PSP field shift */
   k_pel_psp_mask     = 0x18U, /**< PSP field mask */
@@ -465,11 +466,11 @@ typedef enum : uint8_t {
   k_pel_psp_portb    = 0x08U, /**< Port B (corresponding to PGR1) */
   k_pel_psp_porte    = 0x10U, /**< Port E (corresponding to PGR2) */
   /* PSM[1:0] - Event Link Specification (bits 6:5) */
-  k_pel_psm_shift    = 5U,    /**< PSM field shift */
-  k_pel_psm_mask     = 0x60U, /**< PSM field mask */
-  k_pel_psm_rising   = 0x00U, /**< Rising edge (input port) or output low (output port) */
-  k_pel_psm_falling  = 0x20U, /**< Falling edge (input port) or output high (output port) */
-  k_pel_psm_both     = 0x40U, /**< Both edges (input port) or toggle output (output port) (1x) */
+  k_pel_psm_shift   = 5U,    /**< PSM field shift */
+  k_pel_psm_mask    = 0x60U, /**< PSM field mask */
+  k_pel_psm_rising  = 0x00U, /**< Rising edge (input port) or output low (output port) */
+  k_pel_psm_falling = 0x20U, /**< Falling edge (input port) or output high (output port) */
+  k_pel_psm_both    = 0x40U, /**< Both edges (input port) or toggle output (output port) (1x) */
 } pel_bits_t;
 
 /**

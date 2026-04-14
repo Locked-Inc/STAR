@@ -1394,7 +1394,7 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   /** @brief TCR at offset 0x00 (first register in channel block) */
-  k_mtu_ch_off_tcr  = 0x00U,
+  k_mtu_ch_off_tcr = 0x00U,
   /** @brief TCNT at offset 0x06 */
   k_mtu_ch_off_tcnt = 0x06U,
   /** @brief TGRA at offset 0x08 */
@@ -1417,33 +1417,33 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   /** @brief TCR at offset 0x00 = 0x000C1200 */
-  k_mtu3_off_tcr     = 0x00U,
+  k_mtu3_off_tcr = 0x00U,
   /** @brief TMDR1 at offset 0x02 = 0x000C1202 */
-  k_mtu3_off_tmdr1   = 0x02U,
+  k_mtu3_off_tmdr1 = 0x02U,
   /** @brief TIORH at offset 0x04 = 0x000C1204 */
-  k_mtu3_off_tiorh   = 0x04U,
+  k_mtu3_off_tiorh = 0x04U,
   /** @brief TIORL at offset 0x05 = 0x000C1205 */
-  k_mtu3_off_tiorl   = 0x05U,
+  k_mtu3_off_tiorl = 0x05U,
   /** @brief TIER at offset 0x08 = 0x000C1208 */
-  k_mtu3_off_tier    = 0x08U,
+  k_mtu3_off_tier = 0x08U,
   /** @brief TCNT at offset 0x10 = 0x000C1210 */
-  k_mtu3_off_tcnt    = 0x10U,
+  k_mtu3_off_tcnt = 0x10U,
   /** @brief TGRA at offset 0x18 = 0x000C1218 */
-  k_mtu3_off_tgra    = 0x18U,
+  k_mtu3_off_tgra = 0x18U,
   /** @brief TGRB at offset 0x1A = 0x000C121A */
-  k_mtu3_off_tgrb    = 0x1AU,
+  k_mtu3_off_tgrb = 0x1AU,
   /** @brief TGRC at offset 0x24 = 0x000C1224 */
-  k_mtu3_off_tgrc    = 0x24U,
+  k_mtu3_off_tgrc = 0x24U,
   /** @brief TGRD at offset 0x26 = 0x000C1226 */
-  k_mtu3_off_tgrd    = 0x26U,
+  k_mtu3_off_tgrd = 0x26U,
   /** @brief TSR at offset 0x2C = 0x000C122C */
-  k_mtu3_off_tsr     = 0x2CU,
+  k_mtu3_off_tsr = 0x2CU,
   /** @brief TBTM at offset 0x38 = 0x000C1238 */
-  k_mtu3_off_tbtm    = 0x38U,
+  k_mtu3_off_tbtm = 0x38U,
   /** @brief TCR2 at offset 0x4C = 0x000C124C */
-  k_mtu3_off_tcr2    = 0x4CU,
+  k_mtu3_off_tcr2 = 0x4CU,
   /** @brief TGRE at offset 0x72 = 0x000C1272 */
-  k_mtu3_off_tgre    = 0x72U,
+  k_mtu3_off_tgre = 0x72U,
   /** @brief Total size of rx_mtu3_channel_regs_t = 0x74 bytes (116) */
   k_mtu3_struct_size = 0x74U,
 } mtu3_reg_offsets_t;
@@ -1461,23 +1461,23 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   /** @brief TCR at offset 0x00 */
-  k_mtu12p_off_tcr     = 0x00U,
+  k_mtu12p_off_tcr = 0x00U,
   /** @brief TMDR at offset 0x01 */
-  k_mtu12p_off_tmdr    = 0x01U,
+  k_mtu12p_off_tmdr = 0x01U,
   /** @brief TCNT at offset 0x06 */
-  k_mtu12p_off_tcnt    = 0x06U,
+  k_mtu12p_off_tcnt = 0x06U,
   /** @brief TGRA at offset 0x08 */
-  k_mtu12p_off_tgra    = 0x08U,
+  k_mtu12p_off_tgra = 0x08U,
   /** @brief TGRB at offset 0x0A */
-  k_mtu12p_off_tgrb    = 0x0AU,
+  k_mtu12p_off_tgrb = 0x0AU,
   /** @brief TMDR3 at offset 0x11 (32-bit mode enable register) */
-  k_mtu12p_off_tmdr3   = 0x11U,
+  k_mtu12p_off_tmdr3 = 0x11U,
   /** @brief TCNTLW at offset 0x20 (32-bit counter in long-word mode) */
-  k_mtu12p_off_tcntlw  = 0x20U,
+  k_mtu12p_off_tcntlw = 0x20U,
   /** @brief TGRALW at offset 0x24 (32-bit compare A in long-word mode) */
-  k_mtu12p_off_tgralw  = 0x24U,
+  k_mtu12p_off_tgralw = 0x24U,
   /** @brief TGRBLW at offset 0x28 (32-bit compare B in long-word mode) */
-  k_mtu12p_off_tgrblw  = 0x28U,
+  k_mtu12p_off_tgrblw = 0x28U,
   /** @brief Total size of rx_mtu12_phase_regs_t = 0x2C bytes (44) */
   k_mtu12p_struct_size = 0x2CU,
 } mtu12_phase_reg_offsets_t;
@@ -1521,7 +1521,7 @@ typedef enum : uintptr_t {
  *  @brief Verify rx_mtu_channel_regs_t matches hardware layout
  *  @{
  */
-static_assert(offsetof(rx_mtu_channel_regs_t, tcr)  == k_mtu_ch_off_tcr,
+static_assert(offsetof(rx_mtu_channel_regs_t, tcr) == k_mtu_ch_off_tcr,
               "MTU TCR register offset incorrect");
 static_assert(offsetof(rx_mtu_channel_regs_t, tcnt) == k_mtu_ch_off_tcnt,
               "MTU TCNT register offset incorrect");
@@ -1534,7 +1534,7 @@ static_assert(offsetof(rx_mtu_channel_regs_t, tgrb) == k_mtu_ch_off_tgrb,
  * These offsets reflect the actual sparse/interleaved hardware layout, not
  * the previous wrong consecutive-byte layout.
  * (MTU3 base = 0x000C1200; each offset added to base gives the hardware addr) */
-static_assert(offsetof(rx_mtu3_channel_regs_t, tcr)   == k_mtu3_off_tcr,
+static_assert(offsetof(rx_mtu3_channel_regs_t, tcr) == k_mtu3_off_tcr,
               "MTU3 TCR register offset incorrect -- expected 0x000C1200");
 static_assert(offsetof(rx_mtu3_channel_regs_t, tmdr1) == k_mtu3_off_tmdr1,
               "MTU3 TMDR1 register offset incorrect -- expected 0x000C1202");
@@ -1542,41 +1542,41 @@ static_assert(offsetof(rx_mtu3_channel_regs_t, tiorh) == k_mtu3_off_tiorh,
               "MTU3 TIORH register offset incorrect -- expected 0x000C1204");
 static_assert(offsetof(rx_mtu3_channel_regs_t, tiorl) == k_mtu3_off_tiorl,
               "MTU3 TIORL register offset incorrect -- expected 0x000C1205");
-static_assert(offsetof(rx_mtu3_channel_regs_t, tier)  == k_mtu3_off_tier,
+static_assert(offsetof(rx_mtu3_channel_regs_t, tier) == k_mtu3_off_tier,
               "MTU3 TIER register offset incorrect -- expected 0x000C1208");
-static_assert(offsetof(rx_mtu3_channel_regs_t, tcnt)  == k_mtu3_off_tcnt,
+static_assert(offsetof(rx_mtu3_channel_regs_t, tcnt) == k_mtu3_off_tcnt,
               "MTU3 TCNT register offset incorrect -- expected 0x000C1210");
-static_assert(offsetof(rx_mtu3_channel_regs_t, tgra)  == k_mtu3_off_tgra,
+static_assert(offsetof(rx_mtu3_channel_regs_t, tgra) == k_mtu3_off_tgra,
               "MTU3 TGRA register offset incorrect -- expected 0x000C1218");
-static_assert(offsetof(rx_mtu3_channel_regs_t, tgrb)  == k_mtu3_off_tgrb,
+static_assert(offsetof(rx_mtu3_channel_regs_t, tgrb) == k_mtu3_off_tgrb,
               "MTU3 TGRB register offset incorrect -- expected 0x000C121A");
-static_assert(offsetof(rx_mtu3_channel_regs_t, tgrc)  == k_mtu3_off_tgrc,
+static_assert(offsetof(rx_mtu3_channel_regs_t, tgrc) == k_mtu3_off_tgrc,
               "MTU3 TGRC register offset incorrect -- expected 0x000C1224");
-static_assert(offsetof(rx_mtu3_channel_regs_t, tgrd)  == k_mtu3_off_tgrd,
+static_assert(offsetof(rx_mtu3_channel_regs_t, tgrd) == k_mtu3_off_tgrd,
               "MTU3 TGRD register offset incorrect -- expected 0x000C1226");
-static_assert(offsetof(rx_mtu3_channel_regs_t, tsr)   == k_mtu3_off_tsr,
+static_assert(offsetof(rx_mtu3_channel_regs_t, tsr) == k_mtu3_off_tsr,
               "MTU3 TSR register offset incorrect -- expected 0x000C122C");
-static_assert(offsetof(rx_mtu3_channel_regs_t, tbtm)  == k_mtu3_off_tbtm,
+static_assert(offsetof(rx_mtu3_channel_regs_t, tbtm) == k_mtu3_off_tbtm,
               "MTU3 TBTM register offset incorrect -- expected 0x000C1238");
-static_assert(offsetof(rx_mtu3_channel_regs_t, tcr2)  == k_mtu3_off_tcr2,
+static_assert(offsetof(rx_mtu3_channel_regs_t, tcr2) == k_mtu3_off_tcr2,
               "MTU3 TCR2 register offset incorrect -- expected 0x000C124C");
-static_assert(offsetof(rx_mtu3_channel_regs_t, tgre)  == k_mtu3_off_tgre,
+static_assert(offsetof(rx_mtu3_channel_regs_t, tgre) == k_mtu3_off_tgre,
               "MTU3 TGRE register offset incorrect -- expected 0x000C1272");
-static_assert(sizeof(rx_mtu3_channel_regs_t)          == k_mtu3_struct_size,
+static_assert(sizeof(rx_mtu3_channel_regs_t) == k_mtu3_struct_size,
               "MTU3 register structure size incorrect (expected 0x74 = 116 bytes)");
 
 /* Verify MTU1/2 32-bit phase counting register offsets (Ch24 Table 24.11) */
-static_assert(offsetof(rx_mtu12_phase_regs_t, tcr)    == k_mtu12p_off_tcr,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tcr) == k_mtu12p_off_tcr,
               "MTU1/2 Phase TCR register offset incorrect");
-static_assert(offsetof(rx_mtu12_phase_regs_t, tmdr)   == k_mtu12p_off_tmdr,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tmdr) == k_mtu12p_off_tmdr,
               "MTU1/2 Phase TMDR register offset incorrect");
-static_assert(offsetof(rx_mtu12_phase_regs_t, tcnt)   == k_mtu12p_off_tcnt,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tcnt) == k_mtu12p_off_tcnt,
               "MTU1/2 Phase TCNT register offset incorrect");
-static_assert(offsetof(rx_mtu12_phase_regs_t, tgra)   == k_mtu12p_off_tgra,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tgra) == k_mtu12p_off_tgra,
               "MTU1/2 Phase TGRA register offset incorrect");
-static_assert(offsetof(rx_mtu12_phase_regs_t, tgrb)   == k_mtu12p_off_tgrb,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tgrb) == k_mtu12p_off_tgrb,
               "MTU1/2 Phase TGRB register offset incorrect");
-static_assert(offsetof(rx_mtu12_phase_regs_t, tmdr3)  == k_mtu12p_off_tmdr3,
+static_assert(offsetof(rx_mtu12_phase_regs_t, tmdr3) == k_mtu12p_off_tmdr3,
               "MTU1/2 Phase TMDR3 register offset incorrect");
 static_assert(offsetof(rx_mtu12_phase_regs_t, tcntlw) == k_mtu12p_off_tcntlw,
               "MTU1/2 Phase TCNTLW register offset incorrect");
@@ -1584,7 +1584,7 @@ static_assert(offsetof(rx_mtu12_phase_regs_t, tgralw) == k_mtu12p_off_tgralw,
               "MTU1/2 Phase TGRALW register offset incorrect");
 static_assert(offsetof(rx_mtu12_phase_regs_t, tgrblw) == k_mtu12p_off_tgrblw,
               "MTU1/2 Phase TGRBLW register offset incorrect");
-static_assert(sizeof(rx_mtu12_phase_regs_t)           == k_mtu12p_struct_size,
+static_assert(sizeof(rx_mtu12_phase_regs_t) == k_mtu12p_struct_size,
               "MTU1/2 Phase register structure size incorrect (expected 44 bytes)");
 
 /* Verify TSTR register structure */

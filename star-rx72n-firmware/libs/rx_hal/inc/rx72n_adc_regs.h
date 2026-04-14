@@ -711,22 +711,14 @@ static_assert(offsetof(rx_s12ad_regs_t, adansb0) == 0x14,
 static_assert(offsetof(rx_s12ad_regs_t, addbldr) == 0x18,
               "ADDBLDR offset incorrect (expected 0x18)");
 static_assert(offsetof(rx_s12ad_regs_t, adrd) == 0x1E, "ADRD offset incorrect (expected 0x1E)");
-static_assert(offsetof(rx_s12ad_regs_t, addr0) == k_s12ad_offset_addr0,
-              "ADDR0 offset incorrect");
-static_assert(offsetof(rx_s12ad_regs_t, addr1) == k_s12ad_offset_addr1,
-              "ADDR1 offset incorrect");
-static_assert(offsetof(rx_s12ad_regs_t, addr2) == k_s12ad_offset_addr2,
-              "ADDR2 offset incorrect");
-static_assert(offsetof(rx_s12ad_regs_t, addr3) == k_s12ad_offset_addr3,
-              "ADDR3 offset incorrect");
-static_assert(offsetof(rx_s12ad_regs_t, addr4) == k_s12ad_offset_addr4,
-              "ADDR4 offset incorrect");
-static_assert(offsetof(rx_s12ad_regs_t, addr5) == k_s12ad_offset_addr5,
-              "ADDR5 offset incorrect");
-static_assert(offsetof(rx_s12ad_regs_t, addr6) == k_s12ad_offset_addr6,
-              "ADDR6 offset incorrect");
-static_assert(offsetof(rx_s12ad_regs_t, addr7) == k_s12ad_offset_addr7,
-              "ADDR7 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr0) == k_s12ad_offset_addr0, "ADDR0 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr1) == k_s12ad_offset_addr1, "ADDR1 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr2) == k_s12ad_offset_addr2, "ADDR2 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr3) == k_s12ad_offset_addr3, "ADDR3 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr4) == k_s12ad_offset_addr4, "ADDR4 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr5) == k_s12ad_offset_addr5, "ADDR5 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr6) == k_s12ad_offset_addr6, "ADDR6 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr7) == k_s12ad_offset_addr7, "ADDR7 offset incorrect");
 
 /** @} */ /* End of rx_adc_regs group */
 
