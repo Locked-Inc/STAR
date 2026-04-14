@@ -55,7 +55,7 @@
  * - Sample hold: Internal S&H capacitor charged during sampling phase
  *
  * @par Memory Usage:
- * - Register structure size: 48 bytes (0x30)
+ * - Register structure size: 50 bytes (0x32)
  * - No dynamic allocation required
  * - Direct memory-mapped register access
  *
@@ -91,9 +91,9 @@
  * @enddot
  *
  * @par Verification Status:
- * [PASS] VERIFIED (2026-01-28) - All base addresses and register offsets verified
+ * [PASS] VERIFIED (2026-04-13) - All base addresses and register offsets verified
  * against RX72N Manual Ch56 section 56.2. Critical bug fixed: ADDR0-7 were at
- * wrong offsets (was 0x16, now correct at 0x20).
+ * wrong offsets (was 0x20, now correct at 0x22); missing reserved5[2] added.
  *
  * @author Locked, Inc.
  * @date 2026-01-28
@@ -230,9 +230,9 @@ typedef enum : uintptr_t {
  * | 0x14   | ADANSB0  | 16   | Channel select Group B        |
  * | 0x18   | ADDBLDR  | 16   | Double trigger mode data      |
  * | 0x1E   | ADRD     | 16   | Self-diagnosis data           |
- * | 0x20   | ADDR0    | 16   | Conversion result channel 0   |
+ * | 0x22   | ADDR0    | 16   | Conversion result channel 0   |
  * | ...    | ...      | ...  | (2-byte spacing per channel)  |
- * | 0x2E   | ADDR7    | 16   | Conversion result channel 7   |
+ * | 0x30   | ADDR7    | 16   | Conversion result channel 7   |
  *
  * @note Offsets are 8-bit values (max 255), sufficient for S12AD register space
  *
@@ -249,8 +249,14 @@ typedef enum : uint8_t {
   k_s12ad_offset_adansb0 = 0x14, /**< Channel Select B0: channels for group B scan */
   k_s12ad_offset_addbldr = 0x18, /**< Double Trigger Data: double-trigger mode result */
   k_s12ad_offset_adrd    = 0x1E, /**< Self-Diagnosis Data: internal reference result */
-  k_s12ad_offset_addr0   = 0x20, /**< Data Register 0: AN000/AN100 conversion result */
-  k_s12ad_offset_addr7   = 0x2E, /**< Data Register 7: AN007/AN107 conversion result */
+  k_s12ad_offset_addr0   = 0x22, /**< Data Register 0: AN000/AN100 conversion result */
+  k_s12ad_offset_addr1   = 0x24, /**< Data Register 1: AN001/AN101 conversion result */
+  k_s12ad_offset_addr2   = 0x26, /**< Data Register 2: AN002/AN102 conversion result */
+  k_s12ad_offset_addr3   = 0x28, /**< Data Register 3: AN003/AN103 conversion result */
+  k_s12ad_offset_addr4   = 0x2A, /**< Data Register 4: AN004/AN104 conversion result */
+  k_s12ad_offset_addr5   = 0x2C, /**< Data Register 5: AN005/AN105 conversion result */
+  k_s12ad_offset_addr6   = 0x2E, /**< Data Register 6: AN006/AN106 conversion result */
+  k_s12ad_offset_addr7   = 0x30, /**< Data Register 7: AN007/AN107 conversion result */
 } s12ad_offsets_t;
 
 /**
@@ -273,6 +279,7 @@ typedef enum : uint8_t {
   k_s12ad_reserved_12_13 = 2, /**< Padding after ADSTRGR to ADANSB0 */
   k_s12ad_reserved_16_17 = 2, /**< Padding after ADANSB0 to ADDBLDR */
   k_s12ad_reserved_1a_1d = 4, /**< Padding after ADDBLDR to ADRD */
+  k_s12ad_reserved_20_21 = 2, /**< Padding after ADRD (0x1E) to ADDR0 (0x22) */
 } s12ad_reserved_sizes_t;
 
 /**
@@ -284,7 +291,7 @@ typedef enum : uint8_t {
  * provides direct hardware access to ADC control and data registers for
  * motor current sensing and analog input measurement.
  *
- * @par Memory Layout (Total: 48 bytes = 0x30):
+ * @par Memory Layout (Total: 50 bytes = 0x32):
  *
  * | Offset | Size | Field     | Description                        |
  * |--------|------|-----------|------------------------------------|
@@ -304,14 +311,15 @@ typedef enum : uint8_t {
  * | 0x18   | 2    | addbldr   | Double trigger data                |
  * | 0x1A   | 4    | reserved  | Reserved padding                   |
  * | 0x1E   | 2    | adrd      | Self-diagnosis data                |
- * | 0x20   | 2    | addr0     | Result register AN0/AN100          |
- * | 0x22   | 2    | addr1     | Result register AN1/AN101          |
- * | 0x24   | 2    | addr2     | Result register AN2/AN102          |
- * | 0x26   | 2    | addr3     | Result register AN3/AN103          |
- * | 0x28   | 2    | addr4     | Result register AN4/AN104          |
- * | 0x2A   | 2    | addr5     | Result register AN5/AN105          |
- * | 0x2C   | 2    | addr6     | Result register AN6/AN106          |
- * | 0x2E   | 2    | addr7     | Result register AN7/AN107          |
+ * | 0x20   | 2    | reserved  | Reserved padding                   |
+ * | 0x22   | 2    | addr0     | Result register AN0/AN100          |
+ * | 0x24   | 2    | addr1     | Result register AN1/AN101          |
+ * | 0x26   | 2    | addr2     | Result register AN2/AN102          |
+ * | 0x28   | 2    | addr3     | Result register AN3/AN103          |
+ * | 0x2A   | 2    | addr4     | Result register AN4/AN104          |
+ * | 0x2C   | 2    | addr5     | Result register AN5/AN105          |
+ * | 0x2E   | 2    | addr6     | Result register AN6/AN106          |
+ * | 0x30   | 2    | addr7     | Result register AN7/AN107          |
  *
  * @par Usage Example - Single Channel Conversion:
  * @code{.c}
@@ -359,7 +367,7 @@ typedef enum : uint8_t {
  * adc->adansa0 = 0x00F0;  // Bits [7:4] = channels 4-7
  *
  * // Configure continuous scan mode
- * adc->adcsr = 0x4000;  // ADCS[1:0]=01 (continuous scan)
+ * adc->adcsr = 0x4000;  // ADCS[1:0]=10 (continuous scan), bits[14:13]=10
  *
  * // Start continuous conversion
  * adc->adcsr |= 0x8000;
@@ -383,7 +391,7 @@ typedef enum : uint8_t {
  *
  * @warning Reserved fields must never be written. Reading returns undefined values.
  *
- * @invariant sizeof(rx_s12ad_regs_t) == 0x30 (48 bytes)
+ * @invariant sizeof(rx_s12ad_regs_t) == 0x32 (50 bytes)
  * @invariant All register offsets match RX72N Manual Ch56 Table 56.1
  * @invariant Data registers ADDR0-ADDR7 have 2-byte spacing
  *
@@ -402,7 +410,7 @@ typedef struct {
    * | Bits    | Name  | R/W | Description                          |
    * |---------|-------|-----|--------------------------------------|
    * | [15]    | ADST  | R/W | Conversion start (1=start/running)   |
-   * | [14:13] | ADCS  | R/W | Scan mode (00=single, 01=continuous) |
+   * | [14:13] | ADCS  | R/W | Scan mode (00=single, 01=group, 10=continuous) |
    * | [12]    | ADIE  | R/W | Scan end interrupt enable            |
    * | [6]     | TRGE  | R/W | Trigger enable (0=software only)     |
    * | [5]     | EXTRG | R/W | External trigger select              |
@@ -513,13 +521,13 @@ typedef struct {
    * Selects the trigger source for starting A/D conversion when
    * hardware triggering is enabled (ADCSR.TRGE = 1).
    *
-   * @par Trigger Sources (TRSA bits [5:0]):
+   * @par Trigger Sources (TRSA[5:0] at bits [13:8]; TRSB[5:0] at bits [5:0]):
    * | Value | Source           | Use Case                |
    * |-------|------------------|-------------------------|
    * | 0x00  | Software (ADST)  | Polled conversion       |
    * | 0x01  | MTU0 TGIA        | Motor PWM sync          |
    * | 0x02  | MTU0 TGIB        | Motor PWM sync          |
-   * | 0x09  | GPTW0 GTADTRA    | GPTW PWM sync           |
+   * | 0x09  | MTU4 TADCORA     | MTU4 PWM sync           |
    */
   volatile uint16_t adstrgr;
 
@@ -556,8 +564,10 @@ typedef struct {
    */
   volatile uint16_t adrd;
 
+  uint8_t reserved5[k_s12ad_reserved_20_21]; /**< Reserved @ 0x20-0x21 - do not access */
+
   /**
-   * @brief A/D Data Register 0 (ADDR0) @ offset 0x20
+   * @brief A/D Data Register 0 (ADDR0) @ offset 0x22
    *
    * @details
    * 12-bit conversion result for channel AN000 (Unit 0) or AN100 (Unit 1).
@@ -573,13 +583,13 @@ typedef struct {
    */
   volatile uint16_t addr0;
 
-  volatile uint16_t addr1; /**< A/D Data Register 1 @ 0x22: AN001/AN101 */
-  volatile uint16_t addr2; /**< A/D Data Register 2 @ 0x24: AN002/AN102 */
-  volatile uint16_t addr3; /**< A/D Data Register 3 @ 0x26: AN003/AN103 */
-  volatile uint16_t addr4; /**< A/D Data Register 4 @ 0x28: AN004/AN104 (Motor 3 current) */
-  volatile uint16_t addr5; /**< A/D Data Register 5 @ 0x2A: AN005/AN105 (Motor 2 current) */
-  volatile uint16_t addr6; /**< A/D Data Register 6 @ 0x2C: AN006/AN106 (Motor 1 current) */
-  volatile uint16_t addr7; /**< A/D Data Register 7 @ 0x2E: AN007/AN107 (Motor 0 current) */
+  volatile uint16_t addr1; /**< A/D Data Register 1 @ 0x24: AN001/AN101 */
+  volatile uint16_t addr2; /**< A/D Data Register 2 @ 0x26: AN002/AN102 */
+  volatile uint16_t addr3; /**< A/D Data Register 3 @ 0x28: AN003/AN103 */
+  volatile uint16_t addr4; /**< A/D Data Register 4 @ 0x2A: AN004/AN104 (Motor 3 current) */
+  volatile uint16_t addr5; /**< A/D Data Register 5 @ 0x2C: AN005/AN105 (Motor 2 current) */
+  volatile uint16_t addr6; /**< A/D Data Register 6 @ 0x2E: AN006/AN106 (Motor 1 current) */
+  volatile uint16_t addr7; /**< A/D Data Register 7 @ 0x30: AN007/AN107 (Motor 0 current) */
 } rx_s12ad_regs_t;
 
 /**
@@ -683,8 +693,8 @@ static_assert((k_s12ad1_base_addr - k_s12ad0_base_addr) == 0x100,
               "S12AD0 to S12AD1 spacing incorrect");
 
 /* Verify register structure layout - offsets per RX72N Manual Ch56 */
-static_assert(sizeof(rx_s12ad_regs_t) == 0x30,
-              "S12AD register structure size incorrect (expected 0x30)");
+static_assert(sizeof(rx_s12ad_regs_t) == 0x32,
+              "S12AD register structure size incorrect (expected 0x32)");
 static_assert(offsetof(rx_s12ad_regs_t, adcsr) == 0x00, "ADCSR offset incorrect (expected 0x00)");
 static_assert(offsetof(rx_s12ad_regs_t, adansa0) == 0x04,
               "ADANSA0 offset incorrect (expected 0x04)");
@@ -701,14 +711,14 @@ static_assert(offsetof(rx_s12ad_regs_t, adansb0) == 0x14,
 static_assert(offsetof(rx_s12ad_regs_t, addbldr) == 0x18,
               "ADDBLDR offset incorrect (expected 0x18)");
 static_assert(offsetof(rx_s12ad_regs_t, adrd) == 0x1E, "ADRD offset incorrect (expected 0x1E)");
-static_assert(offsetof(rx_s12ad_regs_t, addr0) == 0x20, "ADDR0 offset incorrect (expected 0x20)");
-static_assert(offsetof(rx_s12ad_regs_t, addr1) == 0x22, "ADDR1 offset incorrect (expected 0x22)");
-static_assert(offsetof(rx_s12ad_regs_t, addr2) == 0x24, "ADDR2 offset incorrect (expected 0x24)");
-static_assert(offsetof(rx_s12ad_regs_t, addr3) == 0x26, "ADDR3 offset incorrect (expected 0x26)");
-static_assert(offsetof(rx_s12ad_regs_t, addr4) == 0x28, "ADDR4 offset incorrect (expected 0x28)");
-static_assert(offsetof(rx_s12ad_regs_t, addr5) == 0x2A, "ADDR5 offset incorrect (expected 0x2A)");
-static_assert(offsetof(rx_s12ad_regs_t, addr6) == 0x2C, "ADDR6 offset incorrect (expected 0x2C)");
-static_assert(offsetof(rx_s12ad_regs_t, addr7) == 0x2E, "ADDR7 offset incorrect (expected 0x2E)");
+static_assert(offsetof(rx_s12ad_regs_t, addr0) == k_s12ad_offset_addr0, "ADDR0 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr1) == k_s12ad_offset_addr1, "ADDR1 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr2) == k_s12ad_offset_addr2, "ADDR2 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr3) == k_s12ad_offset_addr3, "ADDR3 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr4) == k_s12ad_offset_addr4, "ADDR4 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr5) == k_s12ad_offset_addr5, "ADDR5 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr6) == k_s12ad_offset_addr6, "ADDR6 offset incorrect");
+static_assert(offsetof(rx_s12ad_regs_t, addr7) == k_s12ad_offset_addr7, "ADDR7 offset incorrect");
 
 /** @} */ /* End of rx_adc_regs group */
 

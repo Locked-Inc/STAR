@@ -224,18 +224,23 @@ static uint16_t s_mtu_period[k_mtu_max_channels] = {};
  * | MTU0 | 0x000C1290 | 16-bit timer with 4 outputs |
  * | MTU1 | 0x000C1290 | 16-bit timer with 2 outputs |
  * | MTU2 | 0x000C1292 | 16-bit timer with 2 outputs |
- * | MTU3 | 0x000C1200 | 16-bit timer with 4 outputs |
- * | MTU4 | 0x000C1200 | 16-bit timer with 4 outputs |
+ * | MTU3 | (nullptr)  | sparse layout, cannot use standard struct API |
+ * | MTU4 | (nullptr)  | sparse layout, cannot use standard struct API |
  * | MTU6 | 0x000C1A00 | 16-bit timer with 4 outputs |
  * | MTU7 | 0x000C1A00 | 16-bit timer with 4 outputs |
  *
+ * MTU3 and MTU4 have a sparse/interleaved register layout that is incompatible
+ * with rx_mtu_channel_regs_t.  Use mtu3() / mtu4() with rx_mtu3_channel_regs_t
+ * directly; this function returns nullptr for those channels to prevent callers
+ * from applying the wrong struct offset mapping.
+ *
  * @param[in] channel MTU channel identifier
- *   - Valid: k_mtu_channel_0 through k_mtu_channel_7 (excluding 5)
- *   - Invalid values returnnullptr
+ *   - Valid: k_mtu_channel_0 through k_mtu_channel_7 (excluding 3, 4, 5)
+ *   - Invalid values return nullptr
  *
  * @return Pointer to MTU register base
- * @retval Non-NULL Pointer to register structure for valid channels
- * @retval NULL Invalid channel (including k_mtu_channel_5)
+ * @retval Non-NULL Pointer to register structure for valid channels (0,1,2,6,7)
+ * @retval NULL Invalid channel, k_mtu_channel_5, k_mtu_channel_3, or k_mtu_channel_4
  *
  * @pre Module clock must be enabled before accessing returned pointer
  *
@@ -259,10 +264,9 @@ static volatile void* internal_get_mtu_base(const rx_mtu_channel_t channel)
       return (volatile void*)mtu1();
     case k_mtu_channel_2:
       return (volatile void*)mtu2();
-    case k_mtu_channel_3:
-      return (volatile void*)mtu3();
-    case k_mtu_channel_4:
-      return (volatile void*)mtu4();
+    case k_mtu_channel_3: /* fall through -- sparse layout, incompatible with standard API */
+    case k_mtu_channel_4: /* MTU3/4 use rx_mtu3_channel_regs_t; call mtu3()/mtu4() directly */
+      return nullptr;
     case k_mtu_channel_6:
       return (volatile void*)mtu6();
     case k_mtu_channel_7:

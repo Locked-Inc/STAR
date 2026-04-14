@@ -33,9 +33,9 @@
  * | 0x08 | 16 | ICSR3 | Input Level Control/Status 3 (POE8#) |
  * | 0x0A | 8 | SPOER | Software Port Output Enable |
  * | 0x0B | 8 | POECR1 | Port Output Enable Control 1 |
- * | 0x0C | 8 | POECR2 | Port Output Enable Control 2 |
- * | 0x10 | 16 | POECR4 | Port Output Enable Control 4 |
- * | 0x12 | 16 | POECR5 | Port Output Enable Control 5 |
+ * | 0x0C | 16 | POECR2 | Port Output Enable Control 2 (MTU3/4 b10:8, MTU6/7 b2:0) |
+ * | 0x10 | 16 | POECR4 | Port Output Enable Control 4 (ICxADD conditions MT34/MT67) |
+ * | 0x12 | 16 | POECR5 | Port Output Enable Control 5 (ICxADD conditions MT0) |
  * | 0x16 | 16 | ICSR4 | Input Level Control/Status 4 (POE10#) |
  * | 0x18 | 16 | ICSR5 | Input Level Control/Status 5 (POE11#) |
  * | 0x1A | 16 | ALR1 | Active Level Register 1 |
@@ -267,17 +267,17 @@ typedef enum : uint16_t {
  * @par Register Layout (16-bit @ 0x0008C4DC)
  * | Bits | Field | Description |
  * |------|-------|-------------|
- * | 7:0 | - | Reserved |
- * | 8 | OSTSTE | Osc stop high-impedance enable |
- * | 11:9 | - | Reserved |
+ * | 8:0 | - | Reserved |
+ * | 9 | OSTSTE | Osc stop high-impedance enable |
+ * | 11:10 | - | Reserved |
  * | 12 | OSTSTF | Osc stop flag |
  * | 15:13 | - | Reserved |
  *
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  /** @brief Oscillation Stop High-Impedance Enable (bit 8) */
-  k_icsr6_ostste = 0x0100U,
+  /** @brief Oscillation Stop High-Impedance Enable (bit 9) */
+  k_icsr6_ostste = 0x0200U,
 
   /** @brief Oscillation Stop Flag (bit 12) */
   k_icsr6_oststf = 0x1000U,
@@ -392,23 +392,38 @@ typedef enum : uint8_t {
 
 /**
  * @enum poecr2_bits_t
- * @brief POECR2 bit definitions (MTU3/4 complementary PWM control)
+ * @brief POECR2 bit definitions (MTU3/4 and MTU6/7 complementary PWM control)
  *
- * @par Register Layout (8-bit @ 0x0008C4CC)
- * | Bit | Field | Description |
- * |-----|-------|-------------|
- * | 0 | MTU3BDZE | MTIOC3B/3D high-impedance enable |
- * | 1 | MTU4ACZE | MTIOC4A/4C high-impedance enable |
- * | 2 | MTU4BDZE | MTIOC4B/4D high-impedance enable |
- * | 7:3 | - | Reserved |
+ * @par Register Layout (16-bit @ 0x0008C4CC)
+ * | Bits  | Field     | Description                                |
+ * |-------|-----------|--------------------------------------------|
+ * | 1:0   | -         | Reserved (MTU7BDZE, MTU7ACZE in b0,b1)     |
+ * | 0     | MTU7BDZE  | MTIOC7B/7D high-impedance enable           |
+ * | 1     | MTU7ACZE  | MTIOC7A/7C high-impedance enable           |
+ * | 2     | MTU6BDZE  | MTIOC6B/6D high-impedance enable           |
+ * | 7:3   | -         | Reserved                                   |
+ * | 8     | MTU4BDZE  | MTIOC4B/4D high-impedance enable           |
+ * | 9     | MTU4ACZE  | MTIOC4A/4C high-impedance enable           |
+ * | 10    | MTU3BDZE  | MTIOC3B/3D high-impedance enable           |
+ * | 15:11 | -         | Reserved                                   |
+ *
+ * @details
+ * Reset value: b10=1, b9=1, b8=1, b2=1, b1=1, b0=1 (all ZE bits set).
+ * Note 2 in the manual: Set MTU6/7 bits (b2:b0) to 0 when MTU6 or MTU7
+ * is not used.
  *
  * @note These bits can only be modified once after reset.
  * @since Version 1.0.0
  */
-typedef enum : uint8_t {
-  k_poecr2_mtu3bdze = 0x01U, /**< MTIOC3B/3D high-impedance enable */
-  k_poecr2_mtu4acze = 0x02U, /**< MTIOC4A/4C high-impedance enable */
-  k_poecr2_mtu4bdze = 0x04U, /**< MTIOC4B/4D high-impedance enable */
+typedef enum : uint16_t {
+  /* MTU6/7 hi-Z enable (lower byte, bits 2:0) */
+  k_poecr2_mtu7bdze = 0x0001U, /**< MTIOC7B/7D high-impedance enable (bit 0) */
+  k_poecr2_mtu7acze = 0x0002U, /**< MTIOC7A/7C high-impedance enable (bit 1) */
+  k_poecr2_mtu6bdze = 0x0004U, /**< MTIOC6B/6D high-impedance enable (bit 2) */
+  /* MTU3/4 hi-Z enable (upper byte, bits 10:8) */
+  k_poecr2_mtu4bdze = 0x0100U, /**< MTIOC4B/4D high-impedance enable (bit 8) */
+  k_poecr2_mtu4acze = 0x0200U, /**< MTIOC4A/4C high-impedance enable (bit 9) */
+  k_poecr2_mtu3bdze = 0x0400U, /**< MTIOC3B/3D high-impedance enable (bit 10) */
 } poecr2_bits_t;
 
 /* =============================================================================
@@ -418,23 +433,42 @@ typedef enum : uint8_t {
 
 /**
  * @enum poecr4_bits_t
- * @brief POECR4 bit definitions (MTU6/7 complementary PWM control)
+ * @brief POECR4 bit definitions (add POE# flag conditions for MTU3/4 and MTU6/7)
  *
  * @par Register Layout (16-bit @ 0x0008C4D0)
- * | Bits | Field | Description |
- * |------|-------|-------------|
- * | 0 | MTU6BDZE | MTIOC6B/6D high-impedance enable |
- * | 1 | MTU7ACZE | MTIOC7A/7C high-impedance enable |
- * | 2 | MTU7BDZE | MTIOC7B/7D high-impedance enable |
- * | 15:3 | - | Reserved |
+ * | Bits  | Field           | Description                                        |
+ * |-------|-----------------|----------------------------------------------------|
+ * | 1:0   | -               | Reserved (b0 reads 0, b1 reads 1, write as read)   |
+ * | 2     | IC2ADDMT34ZE    | Add POE4F condition to MTU3/4 hi-Z                 |
+ * | 3     | IC3ADDMT34ZE    | Add POE8F condition to MTU3/4 hi-Z                 |
+ * | 4     | IC4ADDMT34ZE    | Add POE10F condition to MTU3/4 hi-Z                |
+ * | 5     | IC5ADDMT34ZE    | Add POE11F condition to MTU3/4 hi-Z                |
+ * | 8:6   | -               | Reserved                                           |
+ * | 9     | IC1ADDMT67ZE    | Add POE0F condition to MTU6/7 hi-Z                 |
+ * | 10    | -               | Reserved (reads 1, write 1)                        |
+ * | 11    | IC3ADDMT67ZE    | Add POE8F condition to MTU6/7 hi-Z                 |
+ * | 12    | IC4ADDMT67ZE    | Add POE10F condition to MTU6/7 hi-Z                |
+ * | 13    | IC5ADDMT67ZE    | Add POE11F condition to MTU6/7 hi-Z                |
+ * | 15:14 | -               | Reserved                                           |
+ *
+ * @details
+ * POECR4 extends the high-impedance control conditions for MTU3/4 and MTU6/7
+ * pins by adding optional POE# flag triggers.
  *
  * @note These bits can only be modified once after reset.
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_poecr4_mtu6bdze = 0x0001U, /**< MTIOC6B/6D high-impedance enable */
-  k_poecr4_mtu7acze = 0x0002U, /**< MTIOC7A/7C high-impedance enable */
-  k_poecr4_mtu7bdze = 0x0004U, /**< MTIOC7B/7D high-impedance enable */
+  /* MTU3/4 additional condition bits */
+  k_poecr4_ic2addmt34ze = 0x0004U, /**< Add POE4F condition to MTU3/4 hi-Z (bit 2) */
+  k_poecr4_ic3addmt34ze = 0x0008U, /**< Add POE8F condition to MTU3/4 hi-Z (bit 3) */
+  k_poecr4_ic4addmt34ze = 0x0010U, /**< Add POE10F condition to MTU3/4 hi-Z (bit 4) */
+  k_poecr4_ic5addmt34ze = 0x0020U, /**< Add POE11F condition to MTU3/4 hi-Z (bit 5) */
+  /* MTU6/7 additional condition bits */
+  k_poecr4_ic1addmt67ze = 0x0200U, /**< Add POE0F condition to MTU6/7 hi-Z (bit 9) */
+  k_poecr4_ic3addmt67ze = 0x0800U, /**< Add POE8F condition to MTU6/7 hi-Z (bit 11) */
+  k_poecr4_ic4addmt67ze = 0x1000U, /**< Add POE10F condition to MTU6/7 hi-Z (bit 12) */
+  k_poecr4_ic5addmt67ze = 0x2000U, /**< Add POE11F condition to MTU6/7 hi-Z (bit 13) */
 } poecr4_bits_t;
 
 /* =============================================================================
@@ -444,23 +478,31 @@ typedef enum : uint16_t {
 
 /**
  * @enum poecr5_bits_t
- * @brief POECR5 bit definitions (additional POE# to pin mappings)
+ * @brief POECR5 bit definitions (add POE# flag conditions for MTU0 pins)
  *
  * @par Register Layout (16-bit @ 0x0008C4D2)
- * Controls which POE# signals affect which MTU outputs.
+ * | Bits  | Field          | Description                                       |
+ * |-------|----------------|---------------------------------------------------|
+ * | 0     | -              | Reserved (reads 0, write 0)                       |
+ * | 1     | IC1ADDMT0ZE    | Add POE0F condition to MTU0 hi-Z                  |
+ * | 2     | IC2ADDMT0ZE    | Add POE4F condition to MTU0 hi-Z                  |
+ * | 3     | -              | Reserved (reads 1, write 1)                       |
+ * | 4     | IC4ADDMT0ZE    | Add POE10F condition to MTU0 hi-Z                 |
+ * | 5     | IC5ADDMT0ZE    | Add POE11F condition to MTU0 hi-Z                 |
+ * | 15:6  | -              | Reserved                                          |
  *
+ * @details
+ * POECR5 extends the high-impedance control conditions for MTU0 pins by
+ * adding optional POE# flag triggers beyond the default POE8F/SPOER conditions.
+ *
+ * @note These bits can only be modified once after reset.
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  /* POE10# to MTU mapping (bits 7:4) */
-  k_poecr5_poe10e_mtu0  = 0x0010U, /**< POE10# affects MTU0 */
-  k_poecr5_poe10e_mtu34 = 0x0020U, /**< POE10# affects MTU3/4 */
-  k_poecr5_poe10e_mtu67 = 0x0040U, /**< POE10# affects MTU6/7 */
-
-  /* POE11# to MTU mapping (bits 11:8) */
-  k_poecr5_poe11e_mtu0  = 0x0100U, /**< POE11# affects MTU0 */
-  k_poecr5_poe11e_mtu34 = 0x0200U, /**< POE11# affects MTU3/4 */
-  k_poecr5_poe11e_mtu67 = 0x0400U, /**< POE11# affects MTU6/7 */
+  k_poecr5_ic1addmt0ze = 0x0002U, /**< Add POE0F condition to MTU0 hi-Z (bit 1) */
+  k_poecr5_ic2addmt0ze = 0x0004U, /**< Add POE4F condition to MTU0 hi-Z (bit 2) */
+  k_poecr5_ic4addmt0ze = 0x0010U, /**< Add POE10F condition to MTU0 hi-Z (bit 4) */
+  k_poecr5_ic5addmt0ze = 0x0020U, /**< Add POE11F condition to MTU0 hi-Z (bit 5) */
 } poecr5_bits_t;
 
 /* =============================================================================
@@ -641,17 +683,17 @@ static inline volatile uint8_t* poe3_poecr1_reg(void)
 }
 
 /**
- * @brief Get pointer to POECR2 register (MTU3/4 pin control)
- * @return Volatile pointer to POECR2 register (8-bit)
+ * @brief Get pointer to POECR2 register (MTU3/4 and MTU6/7 pin control)
+ * @return Volatile pointer to POECR2 register (16-bit)
  * @since Version 1.0.0
  */
-static inline volatile uint8_t* poe3_poecr2_reg(void)
+static inline volatile uint16_t* poe3_poecr2_reg(void)
 {
-  return (volatile uint8_t*)k_poe3_poecr2_addr;
+  return (volatile uint16_t*)k_poe3_poecr2_addr;
 }
 
 /**
- * @brief Get pointer to POECR4 register (MTU6/7 pin control)
+ * @brief Get pointer to POECR4 register (MTU3/4 and MTU6/7 additional POE# conditions)
  * @return Volatile pointer to POECR4 register (16-bit)
  * @since Version 1.0.0
  */
@@ -661,7 +703,7 @@ static inline volatile uint16_t* poe3_poecr4_reg(void)
 }
 
 /**
- * @brief Get pointer to POECR5 register (additional control)
+ * @brief Get pointer to POECR5 register (MTU0 additional POE# conditions)
  * @return Volatile pointer to POECR5 register (16-bit)
  * @since Version 1.0.0
  */

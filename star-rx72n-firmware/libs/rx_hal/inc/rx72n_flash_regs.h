@@ -249,7 +249,7 @@ static inline volatile uint8_t* fwepror_reg(void)
  * | 0x007FE0A0   | FCMDR    | 16   | FACI Command Register             |
  * | 0x007FE0D0   | FBCCNT   | 8    | Blank Check Control               |
  * | 0x007FE0D4   | FBCSTAT  | 8    | Blank Check Status                |
- * | 0x007FE0D8   | FPSADDR  | 32   | Flash Processing Switch Address   |
+ * | 0x007FE0D8   | FPSADDR  | 32   | Data Flash Programming Start Address |
  * | 0x007FE0DC   | FAWMON   | 32   | Flash Access Window Monitor       |
  * | 0x007FE0E0   | FCPSR    | 16   | Flash Sequencer Processing Switch |
  * | 0x007FE0E4   | FPCKAR   | 16   | Flash Sequencer Clock Notify      |
@@ -270,7 +270,7 @@ typedef enum : uintptr_t {
   k_fcmdr_addr     = 0x007FE0A0, /**< FACI Command Register */
   k_fbccnt_addr    = 0x007FE0D0, /**< Blank Check Control Register */
   k_fbcstat_addr   = 0x007FE0D4, /**< Blank Check Status Register */
-  k_fpsaddr_addr   = 0x007FE0D8, /**< Flash Processing Switch Address */
+  k_fpsaddr_addr   = 0x007FE0D8, /**< Data Flash Programming Start Address */
   k_fawmon_addr    = 0x007FE0DC, /**< Flash Access Window Monitor */
   k_fcpsr_addr     = 0x007FE0E0, /**< Flash Sequencer Processing Switch */
   k_fpckar_addr    = 0x007FE0E4, /**< Flash Sequencer Clock Frequency */
@@ -591,9 +591,10 @@ static inline volatile uint32_t* feaddr_reg(void)
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_fcmdr_pcmdr_mask  = 0xFF00, /**< Previous command mask */
-  k_fcmdr_pcmdr_shift = 8,      /**< Previous command position */
-  k_fcmdr_cmdr_mask   = 0x00FF, /**< Current command mask */
+  k_fcmdr_pcmdr_mask  = 0x00FF, /**< Previous command mask (bits 7:0) */
+  k_fcmdr_pcmdr_shift = 0,      /**< Previous command shift */
+  k_fcmdr_cmdr_mask   = 0xFF00, /**< Current command mask (bits 15:8) */
+  k_fcmdr_cmdr_shift  = 8,      /**< Current command shift */
 } rx_fcmdr_bits_t;
 
 /**
@@ -630,7 +631,6 @@ typedef enum : uint8_t {
   k_faci_cmd_forced_stop  = 0xB3, /**< Forced stop command */
   k_faci_cmd_blank_check  = 0x71, /**< Blank check command */
   k_faci_cmd_config_set   = 0x40, /**< Configuration set command */
-  k_faci_cmd_lockbit_read = 0x71, /**< Lock bit read command */
   k_faci_cmd_d0           = 0xD0, /**< Command terminator */
 } rx_faci_commands_t;
 
@@ -756,7 +756,7 @@ static inline volatile uint8_t* fbcstat_reg(void)
  */
 
 /**
- * @brief Get pointer to Flash Processing Switch Address (FPSADDR)
+ * @brief Get pointer to Data Flash Programming Start Address (FPSADDR)
  * @return Volatile pointer to FPSADDR register
  * @since Version 1.0.0
  */
@@ -961,7 +961,7 @@ typedef enum : uintptr_t {
  * @note The program unit constraints are enforced in hardware; the FCU will
  *       set FSTATR.PRGERR if an unaligned or undersized write is attempted.
  *
- * @invariant k_code_flash_size == (k_code_flash_block_8k * 8) + (k_code_flash_block_32k * 120)
+ * @invariant k_code_flash_size == (k_code_flash_block_8k * 8) + (k_code_flash_block_32k * 126)
  * @invariant k_data_flash_size == k_data_flash_block_64 * 512
  *
  * @par Usage Example:
