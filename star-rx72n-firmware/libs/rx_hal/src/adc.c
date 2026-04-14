@@ -265,7 +265,7 @@ typedef enum : uint16_t {
  * Defines bit values for the ADCSR (A/D Control Status Register) which
  * controls conversion start and indicates conversion status.
  *
- * ## ADCSR Bit 12 (ADST) - A/D Conversion Start
+ * ## ADCSR Bit 15 (ADST) - A/D Conversion Start
  *
  * | Value | Read Meaning | Write Meaning |
  * |-------|--------------|---------------|
@@ -277,8 +277,8 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_adc_adcsr_idle = 0U,    /**< Idle state: ADST=0 (conversion complete) */
-  k_adc_adcsr_adst = 4096U, /**< Start bit: ADST=1 (bit 12 = 0x1000 = 4096) */
+  k_adc_adcsr_idle = 0U,     /**< Idle state: ADST=0 (conversion complete) */
+  k_adc_adcsr_adst = 32768U, /**< Start bit: ADST=1 (bit 15 = 0x8000 = 32768) */
 } adc_adcsr_bits_t;
 
 /**
@@ -421,7 +421,7 @@ static adc_resolution_t s_adc_unit_resolution[k_adc_max_units] = {k_adc_resoluti
  * | Unit | Peripheral | Base Address |
  * |------|------------|--------------|
  * | 0 | S12AD0 | 0x00089000 |
- * | 1 | S12AD1 | 0x00089200 |
+ * | 1 | S12AD1 | 0x00089100 |
  *
  * @param[in] unit ADC unit number
  *                 - k_adc_unit_0: S12AD0
@@ -607,14 +607,14 @@ static rx_err_t internal_validate_unit_channel(const uint8_t unit, uint8_t chann
  *
  * | Channel | Register | Offset |
  * |---------|----------|--------|
- * | 0 | ADDR0 | 0x020 |
- * | 1 | ADDR1 | 0x022 |
- * | 2 | ADDR2 | 0x024 |
- * | 3 | ADDR3 | 0x026 |
- * | 4 | ADDR4 | 0x028 |
- * | 5 | ADDR5 | 0x02A |
- * | 6 | ADDR6 | 0x02C |
- * | 7 | ADDR7 | 0x02E |
+ * | 0 | ADDR0 | 0x022 |
+ * | 1 | ADDR1 | 0x024 |
+ * | 2 | ADDR2 | 0x026 |
+ * | 3 | ADDR3 | 0x028 |
+ * | 4 | ADDR4 | 0x02A |
+ * | 5 | ADDR5 | 0x02C |
+ * | 6 | ADDR6 | 0x02E |
+ * | 7 | ADDR7 | 0x030 |
  *
  * @param[in] adc Pointer to ADC register base (must not be NULL)
  * @param[in] channel ADC channel to read from (0-7)

@@ -1206,28 +1206,30 @@ void test_encoder_rapid_direction_changes(void)
 
 /* =============================================================================
  * Additional Channel Tests (covers internal_get_mtu_base ch3/ch4 paths)
+ *
+ * MTU3/MTU4 use a sparse register layout (rx_mtu3_channel_regs_t) that is
+ * incompatible with the standard rx_mtu_channel_regs_t API used by the
+ * encoder driver. internal_get_mtu_base() returns nullptr for these channels,
+ * so encoder init is expected to fail.
  * =============================================================================
  */
 
-void test_encoder_init_channel_3_success(void)
+void test_encoder_init_channel_3_unsupported(void)
 {
   s_config.channel = k_mtu_channel_3;
 
   rx_err_t err = rx_encoder_init(&s_config);
 
-  TEST_ASSERT_EQUAL(k_rx_ok, err);
-  /* Teardown needs to deinit ch3 explicitly */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_deinit(k_mtu_channel_3));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
-void test_encoder_init_channel_4_success(void)
+void test_encoder_init_channel_4_unsupported(void)
 {
   s_config.channel = k_mtu_channel_4;
 
   rx_err_t err = rx_encoder_init(&s_config);
 
-  TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_encoder_deinit(k_mtu_channel_4));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /* =============================================================================
@@ -1557,8 +1559,8 @@ static void internal_run_extended_tests(void)
   RUN_TEST(test_encoder_rapid_direction_changes);
 
   /* Additional channel tests (ch3, ch4) */
-  RUN_TEST(test_encoder_init_channel_3_success);
-  RUN_TEST(test_encoder_init_channel_4_success);
+  RUN_TEST(test_encoder_init_channel_3_unsupported);
+  RUN_TEST(test_encoder_init_channel_4_unsupported);
 
   /* Invalid channel tests for read/reset/set_count */
   RUN_TEST(test_encoder_read_raw_invalid_channel_fails);

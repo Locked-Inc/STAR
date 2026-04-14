@@ -398,19 +398,18 @@ typedef enum : uint16_t {
   k_usb_fifosel_curpipe_dcp  = 0x0000,
   k_usb_fifosel_isel         = (1U << 5),
   k_usb_fifosel_bigend       = (1U << 8),
-  k_usb_fifosel_mbw_mask     = (3U << 10),
+  k_usb_fifosel_mbw_mask     = (1U << 10),
   k_usb_fifosel_mbw_8        = (0U << 10),
   k_usb_fifosel_mbw_16       = (1U << 10),
-  k_usb_fifosel_mbw_32       = (2U << 10),
   k_usb_fifosel_dreqe        = (1U << 12),
   k_usb_fifosel_dclrm        = (1U << 13),
-  k_usb_fifosel_rcl          = (1U << 14),
-  k_usb_fifosel_frdy         = (1U << 15),
+  k_usb_fifosel_rew          = (1U << 14),
+  k_usb_fifosel_rcnt         = (1U << 15),
 } usb_fifosel_bits_t;
 
 /* FIFOCTR bits */
 typedef enum : uint16_t {
-  k_usb_fifoctr_dtln_mask = 0x0FFF,
+  k_usb_fifoctr_dtln_mask = 0x01FF,
   k_usb_fifoctr_frdy      = (1U << 13),
   k_usb_fifoctr_bclr      = (1U << 14),
   k_usb_fifoctr_bval      = (1U << 15),

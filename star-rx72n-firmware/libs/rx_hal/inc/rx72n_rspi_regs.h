@@ -355,8 +355,8 @@ typedef struct __attribute__((packed)) {
    * @brief SPI Pin Control Register (SPPCR) @ offset 0x02
    * @details Controls loopback modes and COPI idle value.
    * @par Bit Fields:
-   * - Bit 5 (MOIFV): COPI idle value (0=low, 1=high)
-   * - Bit 4 (MOIFE): Enable COPI idle value fixing
+   * - Bit 5 (MOIFE): Enable COPI idle value fixing
+   * - Bit 4 (MOIFV): COPI idle value (0=low, 1=high)
    * - Bit 1 (SPLP2): Loopback mode 2 (no inversion)
    * - Bit 0 (SPLP): Loopback mode (with inversion)
    * @see rspi_sppcr_bits_t Bit definitions
@@ -452,15 +452,16 @@ typedef struct __attribute__((packed)) {
    * @brief SPI Command Register 0 (SPCMD0) @ offset 0x10
    * @details Primary command configuration for transfer parameters.
    * @par Bit Fields:
-   * - Bits 15:12 (SCKDEN): Clock delay setting
-   * - Bits 11:8 (SLNDEN): SSL negation delay setting
-   * - Bit 7 (SPNDEN): Next-access delay enable
-   * - Bit 6 (LSBF): LSB-first transfer (0=MSB first)
-   * - Bits 5:4 (SPB): Data length (0111=8bit, 1111=16bit, etc.)
-   * - Bit 3 (BRDV): Bit rate division
-   * - Bit 2 (SSLA): SSL signal assertion
-   * - Bit 1 (CPHA): Clock phase
-   * - Bit 0 (CPOL): Clock polarity
+   * - Bit 15 (SCKDEN): RSPCK delay enable
+   * - Bit 14 (SLNDEN): SSL negation delay enable
+   * - Bit 13 (SPNDEN): Next-access delay enable
+   * - Bit 12 (LSBF): LSB-first transfer (0=MSB first)
+   * - Bits 11:8 (SPB[3:0]): Data length (0111=8bit, 1111=16bit, etc.)
+   * - Bit 7 (SSLKP): SSL signal level keep (burst transfer)
+   * - Bits 6:4 (SSLA[2:0]): SSL signal assertion select (0=SSL0)
+   * - Bits 3:2 (BRDV[1:0]): Bit rate division (0=base, 1=/2, 2=/4, 3=/8)
+   * - Bit 1 (CPOL): Clock polarity (0=low when idle)
+   * - Bit 0 (CPHA): Clock phase (0=sample odd edge)
    */
   volatile uint16_t spcmd0;
 
@@ -780,9 +781,10 @@ typedef enum : uint8_t {
  * | Bit | Name  | R/W | Description                                       |
  * |-----|-------|-----|---------------------------------------------------|
  * | 7   | -     | -   | Reserved                                          |
- * | 6   | MOIFE | R/W | COPI idle fixed value enable                      |
- * | 5   | MOIFV | R/W | COPI idle fixed value (0=low, 1=high)             |
- * | 4:2 | -     | -   | Reserved                                          |
+ * | 6   | -     | -   | Reserved                                          |
+ * | 5   | MOIFE | R/W | COPI idle fixed value enable                      |
+ * | 4   | MOIFV | R/W | COPI idle fixed value (0=low, 1=high)             |
+ * | 3:2 | -     | -   | Reserved                                          |
  * | 1   | SPLP2 | R/W | Loopback mode 2 (no inversion)                    |
  * | 0   | SPLP  | R/W | Loopback mode (with inversion)                    |
  *
@@ -808,18 +810,18 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   /**
-   * @brief COPI Idle Fixed Value Enable (MOIFE) - Bit 6
+   * @brief COPI Idle Fixed Value Enable (MOIFE) - Bit 5
    * @details When set, COPI pin is driven to MOIFV value during idle.
    */
-  k_rspi_sppcr_moife = (1 << 6),
+  k_rspi_sppcr_moife = (1 << 5),
 
   /**
-   * @brief COPI Idle Fixed Value (MOIFV) - Bit 5
+   * @brief COPI Idle Fixed Value (MOIFV) - Bit 4
    * @details COPI idle level when MOIFE is enabled:
    * - 0: Drive COPI low during idle
    * - 1: Drive COPI high during idle
    */
-  k_rspi_sppcr_moifv = (1 << 5),
+  k_rspi_sppcr_moifv = (1 << 4),
 
   /**
    * @brief Loopback Mode 2 (SPLP2) - Bit 1
@@ -847,15 +849,17 @@ typedef enum : uint8_t {
  * @par Register Layout (8-bit @ offset 0x0B)
  * | Bit | Name   | R/W | Description                                      |
  * |-----|--------|-----|--------------------------------------------------|
- * | 7:6 | -      | -   | Reserved                                         |
- * | 5   | SPRDTD | R/W | Receive data ready detection timing              |
- * | 4   | SPLW   | R/W | Word access mode (0=byte, 1=word)                |
- * | 3:0 | -      | -   | Reserved                                         |
+ * | 7   | -      | -   | Reserved                                         |
+ * | 6   | SPBYT  | R/W | Byte access (1=8-bit, 0=word/longword per SPLW)  |
+ * | 5   | SPLW   | R/W | Longword access (0=word/16-bit, 1=longword/32-bit)|
+ * | 4   | SPRDTD | R/W | Receive data ready timing (0=RX buf, 1=TX buf)   |
+ * | 3:2 | -      | -   | Reserved                                         |
+ * | 1:0 | SPFC   | R/W | Number of frames (0=1, 1=2, 2=3, 3=4)           |
  *
  * @par Access Mode Selection
- * The SPLW bit determines how the SPDR register is accessed:
- * - **Byte access (SPLW=0)**: 8-bit read/write, lower byte only
- * - **Word access (SPLW=1)**: 32-bit read/write, full register
+ * The SPLW bit determines how the SPDR register is accessed (when SPBYT=0):
+ * - **Word access (SPLW=0)**: 16-bit read/write (for 8-16 bit SPI frames)
+ * - **Longword access (SPLW=1)**: 32-bit read/write (for 20/24/32 bit SPI frames)
  *
  * @par Example
  * @code{.c}
@@ -871,21 +875,21 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   /**
-   * @brief Receive Data Ready Detection (SPRDTD) - Bit 5
-   * @details Controls when SPRF flag is set:
-   * - 0: Set when receive shift register transfer to SPDR completes
-   * - 1: Set when SPDR contains valid data
+   * @brief Receive Data Ready Detection (SPRDTD) - Bit 4
+   * @details Selects whether SPDR reads return receive or transmit buffer:
+   * - 0: SPDR reads from receive buffer (normal operation)
+   * - 1: SPDR reads from transmit buffer
    */
-  k_rspi_spdcr_sprdtd = (1 << 5),
+  k_rspi_spdcr_sprdtd = (1 << 4),
 
   /**
-   * @brief Word Access Mode (SPLW) - Bit 4
-   * @details SPDR access width selection:
-   * - 0: Byte access (8-bit)
-   * - 1: Word access (32-bit)
-   * @note Word access is more efficient for 16/32-bit transfers
+   * @brief Longword Access Mode (SPLW) - Bit 5
+   * @details SPDR access width selection (when SPBYT=0):
+   * - 0: Word access (16-bit) -- use for 8-16 bit SPI frames
+   * - 1: Longword access (32-bit) -- use for 20/24/32 bit SPI frames
+   * @note For 8-bit SPI (RPi5 communication), leave at 0 (default)
    */
-  k_rspi_spdcr_splw = (1 << 4),
+  k_rspi_spdcr_splw = (1 << 5),
 } rspi_spdcr_bits_t;
 
 /* =============================================================================
