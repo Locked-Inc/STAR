@@ -26,7 +26,7 @@
  *     +-- 5. Set phase counting mode (TMDR.MD = mode)
  *     +-- 6. Set TCR to free-running (CCLR = disabled)
  *     +-- 7. Clear TCNT to zero
- *     +-- 8. Disable interrupts (TIER = 0)
+ *     +-- 8. Disable interrupts (TIER = 0x40; bit 6 reserved/must-write-1)
  *     +-- 9. Mark channel as initialized
  * @endverbatim
  *
@@ -797,7 +797,7 @@ rx_err_t rx_tpu_reset_count(const rx_tpu_channel_t channel)
  * 1. Validate channel and get array index
  * 2. Stop counter (clear CSTn in TSTR)
  * 3. Reset TMDR to normal operation mode (0x00)
- * 4. Disable all interrupts (TIER = 0)
+ * 4. Disable all interrupts (TIER = 0x40; bit 6 reserved/must-write-1)
  * 5. Clear counter (TCNT = 0)
  * 6. Mark channel as uninitialized in s_tpu_initialized[]
  *

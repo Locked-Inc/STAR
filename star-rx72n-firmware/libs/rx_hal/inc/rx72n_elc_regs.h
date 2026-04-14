@@ -550,6 +550,8 @@ typedef enum : uint8_t {
   k_elsr_range_c_adj = 0x16U, /**< Adjustment for n=48..57 */
   k_elsr_range_a_max = 28U,   /**< Last valid n in range A */
   k_elsr_range_b_max = 45U,   /**< Last valid n in range B */
+  k_elsr_range_c_min = 48U,   /**< First valid n in range C */
+  k_elsr_range_c_max = 57U,   /**< Last valid n in range C */
 } elsr_range_adj_t;
 
 /* =============================================================================
@@ -582,10 +584,13 @@ static inline volatile uint8_t* elc_elsr_reg(uint8_t n)
   if (n <= k_elsr_range_a_max) {
     return (volatile uint8_t*)(uintptr_t)(k_elc_base_addr + k_elsr_range_a_adj + n);
   }
-  if (n <= k_elsr_range_b_max) {
+  if ((n >= k_elsr_range_a_max + 1U) && (n <= k_elsr_range_b_max)) {
     return (volatile uint8_t*)(uintptr_t)(k_elc_base_addr + k_elsr_range_b_adj + n);
   }
-  return (volatile uint8_t*)(uintptr_t)(k_elc_base_addr + k_elsr_range_c_adj + n);
+  if ((n >= k_elsr_range_c_min) && (n <= k_elsr_range_c_max)) {
+    return (volatile uint8_t*)(uintptr_t)(k_elc_base_addr + k_elsr_range_c_adj + n);
+  }
+  return nullptr;
 }
 
 /**

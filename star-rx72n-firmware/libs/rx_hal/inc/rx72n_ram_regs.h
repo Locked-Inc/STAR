@@ -590,6 +590,7 @@ static_assert(k_rx_eccram_size == 0x00008000, "ECCRAM size must be 32 KB (0x8000
 static_assert(k_rx_ramprcr_unlock == 0xF1, "RAMPRCR unlock value must be 0xF1");
 static_assert(k_rx_exramprcr_unlock == 0xF1, "EXRAMPRCR unlock value must be 0xF1");
 static_assert(k_rx_eccramprcr_unlock == 0xF1, "ECCRAMPRCR unlock value must be 0xF1");
+static_assert(k_rx_eccramprcr2_unlock == 0xF1, "ECCRAMPRCR2 unlock value must be 0xF1");
 
 #ifdef __cplusplus
 }
