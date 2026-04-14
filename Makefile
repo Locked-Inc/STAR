@@ -6,7 +6,7 @@ IMAGE_NAME := star-ros2-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell build-blinky clean-blinky flash-blinky
+.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell build-blinky clean-blinky flash-blinky flash-blinky-sci
 
 help:
 	@echo "STAR Project Development Helper"
@@ -18,7 +18,8 @@ help:
 	@echo ""
 	@echo "RX72N Firmware:"
 	@echo "  make build-blinky        - Build bare-metal P54 LED test (requires GNURX toolchain)"
-	@echo "  make flash-blinky        - Flash blinky.mot via E2 Lite (builds first, FINE @ 250kbps)"
+	@echo "  make flash-blinky        - Flash blinky.elf via E2 Lite (builds first, FINE @ 250kbps)"
+	@echo "  make flash-blinky-sci    - Flash blinky.elf via USB-UART SCI Boot Mode (SW4 Pin1=ON)"
 	@echo "  make clean-blinky        - Remove blinky build artifacts"
 	@echo "  make build-rx72n         - Build RX72N firmware (Debug, requires GNURX toolchain)"
 	@echo "  make build-rx72n-release - Build RX72N firmware (Release, requires GNURX toolchain)"
@@ -171,21 +172,16 @@ build-blinky:
 clean-blinky:
 	@$(MAKE) -C star-rx72n-firmware/blinky clean
 
-# Flash blinky.mot to RX72N via E2 Lite (FINE interface, 250 kbps for signal integrity).
-# Requires: E2 Lite plugged in, board externally powered (e.g. USB-UART cable),
-# SW4 Pin1=OFF Pin2=OFF (Single Chip Mode), rfp-cli at /opt/rfp/linux-x64/rfp-cli.
-# ID code 0xFF*16 is the factory default for un-programmed chips.
+# Flash blinky.elf to RX72N via E2 Lite (FINE interface, 250 kbps).
+# Requires: E2 Lite plugged in, board externally powered, SW4 Pin1=OFF Pin2=OFF.
 flash-blinky: build-blinky
-	@echo "Flashing blinky.mot to RX72N via E2 Lite..."
-	@PATH="/opt/rfp/linux-x64:$$PATH" rfp-cli \
-		-device RX72x \
-		-tool e2l \
-		-if fine \
-		-s 250000 \
-		-auth id FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF \
-		-a \
-		-file star-rx72n-firmware/blinky/blinky.mot \
-		-run
+	@bash scripts/flash-rx72n.sh star-rx72n-firmware/blinky/blinky.elf e2lite
+
+# Flash blinky.elf to RX72N via USB-UART SCI Boot Mode.
+# Requires: USB-UART cable providing /dev/ttyACM0, SW4 Pin1=ON Pin2=OFF,
+# and a power-cycle AFTER setting the switch so the MCU enters boot mode.
+flash-blinky-sci: build-blinky
+	@bash scripts/flash-rx72n.sh star-rx72n-firmware/blinky/blinky.elf sci
 
 build-rx72n:
 	@echo "Building RX72N firmware (Debug)..."
