@@ -13,11 +13,15 @@
 #include <memory>
 #include <string>
 
+#include <array>
+
+#include <bondcpp/bond.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include <sensor_msgs/msg/range.hpp>
 #include <std_msgs/msg/bool.hpp>
 
 namespace star_safety_monitor
@@ -54,6 +58,8 @@ private:
   void diagnostics_callback(
     const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg);
   void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
+  void sonar_callback(
+    const sensor_msgs::msg::Range::SharedPtr msg, size_t sonar_index);
 
   // Timer callback for monitoring and publishing diagnostics
   void monitoring_timer_callback();
@@ -62,6 +68,7 @@ private:
   void check_heartbeat_health();
   void check_velocity_limits();
   void check_motor_stall();
+  void check_obstacle_proximity();
   void check_diagnostic_health();
   void update_overall_state();
   void publish_diagnostics();
@@ -73,16 +80,33 @@ private:
     const std::string & name, SeverityLevel level,
     const std::string & message);
 
+  // Sonar topic names (must match gateway bridge topic constants)
+  static constexpr size_t NUM_SONARS = 4;
+  static constexpr std::array<const char *, NUM_SONARS> SONAR_TOPICS = {{
+    "/star/obstacle/front_left",
+    "/star/obstacle/front_right",
+    "/star/obstacle/back_left",
+    "/star/obstacle/back_right",
+  }};
+  static constexpr std::array<const char *, NUM_SONARS> SONAR_NAMES = {{
+    "front_left", "front_right", "back_left", "back_right",
+  }};
+
   // Publishers and Subscribers
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
   rclcpp::Subscription<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr
     diag_sub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
+  std::array<rclcpp::Subscription<sensor_msgs::msg::Range>::SharedPtr,
+    NUM_SONARS> sonar_subs_;
 
   rclcpp_lifecycle::LifecyclePublisher<
     diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostics_pub_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Bool>::SharedPtr
     emergency_stop_pub_;
+
+  // Bond (heartbeat to nav2_lifecycle_manager)
+  std::shared_ptr<bond::Bond> bond_;
 
   // Timer
   rclcpp::TimerBase::SharedPtr monitoring_timer_;
@@ -113,6 +137,15 @@ private:
   std::chrono::system_clock::time_point last_cmd_vel_time_;
   int stall_detection_count_{0};
   bool motor_stall_detected_{false};
+
+  // Obstacle proximity tracking (HC-SR04 ultrasonics)
+  double obstacle_estop_distance_{0.10};  // E-stop if closer than 10 cm
+  double obstacle_warn_distance_{0.30};   // Warn if closer than 30 cm
+  int obstacle_clear_count_required_{10}; // Consecutive clear checks before recovery
+  std::array<double, NUM_SONARS> sonar_ranges_;
+  bool obstacle_too_close_{false};
+  bool obstacle_estop_triggered_{false};
+  int obstacle_clear_count_{0};
 
   SeverityLevel overall_severity_{SeverityLevel::OK};
 };
