@@ -1267,7 +1267,7 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_nibble_all_ones    = 0x0F, /**< All bits set in 4-bit field (verifies 4-bit mask width) */
+  k_nibble_all_ones   = 0x0F, /**< All bits set in 4-bit field (verifies 4-bit mask width) */
   k_pllcr_stc_for_x10 = 9,    /**< PLLCR STC field value for 10x multiply (STC = mul - 1) */
 } rx_clock_verify_t;
 

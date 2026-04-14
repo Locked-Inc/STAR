@@ -266,52 +266,52 @@ typedef enum : uint8_t {
  * @see rx_gptw_common_regs_t Common registers for synchronized control
  */
 typedef struct {
-  volatile uint32_t gtwp;        /**< 0x00: Write Protection Register */
-  volatile uint32_t gtstr;       /**< 0x04: Software Start Register */
-  volatile uint32_t gtstp;       /**< 0x08: Software Stop Register */
-  volatile uint32_t gtclr;       /**< 0x0C: Software Clear Register */
-  volatile uint32_t gtssr;       /**< 0x10: Start Source Select Register */
-  volatile uint32_t gtpsr;       /**< 0x14: Stop Source Select Register */
-  volatile uint32_t gtcsr;       /**< 0x18: Clear Source Select Register */
-  volatile uint32_t gtupsr;      /**< 0x1C: Count-Up Source Select Register */
-  volatile uint32_t gtdnsr;      /**< 0x20: Count-Down Source Select Register */
-  volatile uint32_t gticasr;     /**< 0x24: Input Capture Source Select A */
-  volatile uint32_t gticbsr;     /**< 0x28: Input Capture Source Select B */
-  volatile uint32_t gtcr;        /**< 0x2C: Control Register */
-  volatile uint32_t gtuddtyc;    /**< 0x30: Up/Down Count Duty Setting */
-  volatile uint32_t gtior;       /**< 0x34: I/O Control Register */
-  volatile uint32_t gtintad;     /**< 0x38: Interrupt Output Setting */
-  volatile uint32_t gtst;        /**< 0x3C: Status Register */
-  volatile uint32_t gtber;       /**< 0x40: Buffer Enable Register */
-  volatile uint32_t gtitc;       /**< 0x44: Interrupt/ADC Trigger Control */
-  volatile uint32_t gtcnt;       /**< 0x48: Counter */
-  volatile uint32_t gtccra;      /**< 0x4C: Compare Capture Register A */
-  volatile uint32_t gtccrb;      /**< 0x50: Compare Capture Register B */
-  volatile uint32_t gtccrc;      /**< 0x54: Compare Capture Register C */
-  volatile uint32_t gtccre;      /**< 0x58: Compare Capture Register E */
-  volatile uint32_t gtccrd;      /**< 0x5C: Compare Capture Register D */
-  volatile uint32_t gtccrf;      /**< 0x60: Compare Capture Register F */
-  volatile uint32_t gtpr;        /**< 0x64: Cycle Setting Register (Period) */
-  volatile uint32_t gtpbr;       /**< 0x68: Cycle Setting Buffer Register */
-  volatile uint32_t gtpdbr;      /**< 0x6C: Cycle Setting Double Buffer */
-  volatile uint32_t gtadtra;     /**< 0x70: A/D Trigger Register A */
-  volatile uint32_t gtadtbra;    /**< 0x74: A/D Trigger Buffer Register A */
-  volatile uint32_t gtadtdbra;   /**< 0x78: A/D Trigger Double Buffer A */
-  volatile uint32_t gtadtrb;     /**< 0x7C: A/D Trigger Register B */
-  volatile uint32_t gtadtbrb;    /**< 0x80: A/D Trigger Buffer Register B */
-  volatile uint32_t gtadtdbrb;   /**< 0x84: A/D Trigger Double Buffer B */
-  volatile uint32_t gtdtcr;      /**< 0x88: Dead Time Control Register */
-  volatile uint32_t gtdvu;       /**< 0x8C: Dead Time Value Upper */
-  volatile uint32_t gtdvd;       /**< 0x90: Dead Time Value Down */
-  volatile uint32_t gtdbu;       /**< 0x94: Dead Time Buffer Upper */
-  volatile uint32_t gtdbd;       /**< 0x98: Dead Time Buffer Down */
-  volatile uint32_t gtsos;       /**< 0x9C: Output Protection Status */
-  volatile uint32_t gtsotr;      /**< 0xA0: Output Protection Trigger */
-  volatile uint32_t gtadsmr;     /**< 0xA4: A/D Conversion Start Request Signal Monitoring */
-  volatile uint32_t gteitc;      /**< 0xA8: Extended Interrupt Skipping Counter Control */
-  volatile uint32_t gteitli1;    /**< 0xAC: Extended Interrupt Skipping Setting Register 1 */
-  volatile uint32_t gteitli2;    /**< 0xB0: Extended Interrupt Skipping Setting Register 2 */
-  volatile uint32_t gteitlb;     /**< 0xB4: Extended Buffer Transfer Skipping Setting */
+  volatile uint32_t gtwp;      /**< 0x00: Write Protection Register */
+  volatile uint32_t gtstr;     /**< 0x04: Software Start Register */
+  volatile uint32_t gtstp;     /**< 0x08: Software Stop Register */
+  volatile uint32_t gtclr;     /**< 0x0C: Software Clear Register */
+  volatile uint32_t gtssr;     /**< 0x10: Start Source Select Register */
+  volatile uint32_t gtpsr;     /**< 0x14: Stop Source Select Register */
+  volatile uint32_t gtcsr;     /**< 0x18: Clear Source Select Register */
+  volatile uint32_t gtupsr;    /**< 0x1C: Count-Up Source Select Register */
+  volatile uint32_t gtdnsr;    /**< 0x20: Count-Down Source Select Register */
+  volatile uint32_t gticasr;   /**< 0x24: Input Capture Source Select A */
+  volatile uint32_t gticbsr;   /**< 0x28: Input Capture Source Select B */
+  volatile uint32_t gtcr;      /**< 0x2C: Control Register */
+  volatile uint32_t gtuddtyc;  /**< 0x30: Up/Down Count Duty Setting */
+  volatile uint32_t gtior;     /**< 0x34: I/O Control Register */
+  volatile uint32_t gtintad;   /**< 0x38: Interrupt Output Setting */
+  volatile uint32_t gtst;      /**< 0x3C: Status Register */
+  volatile uint32_t gtber;     /**< 0x40: Buffer Enable Register */
+  volatile uint32_t gtitc;     /**< 0x44: Interrupt/ADC Trigger Control */
+  volatile uint32_t gtcnt;     /**< 0x48: Counter */
+  volatile uint32_t gtccra;    /**< 0x4C: Compare Capture Register A */
+  volatile uint32_t gtccrb;    /**< 0x50: Compare Capture Register B */
+  volatile uint32_t gtccrc;    /**< 0x54: Compare Capture Register C */
+  volatile uint32_t gtccre;    /**< 0x58: Compare Capture Register E */
+  volatile uint32_t gtccrd;    /**< 0x5C: Compare Capture Register D */
+  volatile uint32_t gtccrf;    /**< 0x60: Compare Capture Register F */
+  volatile uint32_t gtpr;      /**< 0x64: Cycle Setting Register (Period) */
+  volatile uint32_t gtpbr;     /**< 0x68: Cycle Setting Buffer Register */
+  volatile uint32_t gtpdbr;    /**< 0x6C: Cycle Setting Double Buffer */
+  volatile uint32_t gtadtra;   /**< 0x70: A/D Trigger Register A */
+  volatile uint32_t gtadtbra;  /**< 0x74: A/D Trigger Buffer Register A */
+  volatile uint32_t gtadtdbra; /**< 0x78: A/D Trigger Double Buffer A */
+  volatile uint32_t gtadtrb;   /**< 0x7C: A/D Trigger Register B */
+  volatile uint32_t gtadtbrb;  /**< 0x80: A/D Trigger Buffer Register B */
+  volatile uint32_t gtadtdbrb; /**< 0x84: A/D Trigger Double Buffer B */
+  volatile uint32_t gtdtcr;    /**< 0x88: Dead Time Control Register */
+  volatile uint32_t gtdvu;     /**< 0x8C: Dead Time Value Upper */
+  volatile uint32_t gtdvd;     /**< 0x90: Dead Time Value Down */
+  volatile uint32_t gtdbu;     /**< 0x94: Dead Time Buffer Upper */
+  volatile uint32_t gtdbd;     /**< 0x98: Dead Time Buffer Down */
+  volatile uint32_t gtsos;     /**< 0x9C: Output Protection Status */
+  volatile uint32_t gtsotr;    /**< 0xA0: Output Protection Trigger */
+  volatile uint32_t gtadsmr;   /**< 0xA4: A/D Conversion Start Request Signal Monitoring */
+  volatile uint32_t gteitc;    /**< 0xA8: Extended Interrupt Skipping Counter Control */
+  volatile uint32_t gteitli1;  /**< 0xAC: Extended Interrupt Skipping Setting Register 1 */
+  volatile uint32_t gteitli2;  /**< 0xB0: Extended Interrupt Skipping Setting Register 2 */
+  volatile uint32_t gteitlb;   /**< 0xB4: Extended Buffer Transfer Skipping Setting */
   uint32_t          reserved[k_gptw_ch_reserved_count]; /**< 0xB8-0xCC: Reserved */
   volatile uint32_t gtsecsr; /**< 0xD0: Operation Enable Bit Simultaneous Control Channel Select */
   volatile uint32_t gtsecr;  /**< 0xD4: Operation Enable Bit Simultaneous Control */
@@ -324,13 +324,13 @@ typedef struct {
  * Base address: k_gptw_common_base_addr (0x000C2B00) in gptw_addresses_t.
  */
 typedef struct {
-  volatile uint32_t gtstra;       /**< 0x00: General Timer Start Register A */
-  volatile uint32_t gtstpa;       /**< 0x04: General Timer Stop Register A */
-  volatile uint32_t gtclra;       /**< 0x08: General Timer Clear Register A */
+  volatile uint32_t gtstra; /**< 0x00: General Timer Start Register A */
+  volatile uint32_t gtstpa; /**< 0x04: General Timer Stop Register A */
+  volatile uint32_t gtclra; /**< 0x08: General Timer Clear Register A */
   uint32_t          reserved0[k_gptw_common_reserved0_count]; /**< Reserved */
-  volatile uint32_t gtstra2;      /**< 0x20: General Timer Start Register A2 */
-  volatile uint32_t gtstpa2;      /**< 0x24: General Timer Stop Register A2 */
-  volatile uint32_t gtclra2;      /**< 0x28: General Timer Clear Register A2 */
+  volatile uint32_t gtstra2; /**< 0x20: General Timer Start Register A2 */
+  volatile uint32_t gtstpa2; /**< 0x24: General Timer Stop Register A2 */
+  volatile uint32_t gtclra2; /**< 0x28: General Timer Clear Register A2 */
 } rx_gptw_common_regs_t;
 
 /* =============================================================================
@@ -454,8 +454,10 @@ typedef enum : uint32_t {
   k_gptw_gtior_oa_low_cmpup  = 0x01, /**< Low on compare match (up) */
   k_gptw_gtior_oa_high_cmpup = 0x02, /**< High on compare match (up) */
   k_gptw_gtior_oa_toggle     = 0x03, /**< Toggle on compare match */
-  k_gptw_gtior_oa_init_low   = 0x09, /**< Initial LOW; high at end-of-cycle; low at compare match (active-high sawtooth PWM) */
-  k_gptw_gtior_oa_init_high  = 0x16, /**< Initial HIGH; low at end-of-cycle; high at compare match (complement of init_low) */
+  k_gptw_gtior_oa_init_low =
+    0x09, /**< Initial LOW; high at end-of-cycle; low at compare match (active-high sawtooth PWM) */
+  k_gptw_gtior_oa_init_high =
+    0x16, /**< Initial HIGH; low at end-of-cycle; high at compare match (complement of init_low) */
 
   /* GTIOCA Output Enable (bit 8) */
   k_gptw_gtior_oae = (1 << 8), /**< GTIOCA Output Enable */
@@ -467,8 +469,10 @@ typedef enum : uint32_t {
   k_gptw_gtior_ob_low_cmpup  = (0x01 << 16), /**< Low on compare match (up) */
   k_gptw_gtior_ob_high_cmpup = (0x02 << 16), /**< High on compare match (up) */
   k_gptw_gtior_ob_toggle     = (0x03 << 16), /**< Toggle on compare match */
-  k_gptw_gtior_ob_init_low   = (0x09 << 16), /**< Initial LOW; high at end-of-cycle; low at compare match */
-  k_gptw_gtior_ob_init_high  = (0x16 << 16), /**< Initial HIGH; low at end-of-cycle; high at compare match */
+  k_gptw_gtior_ob_init_low =
+    (0x09 << 16), /**< Initial LOW; high at end-of-cycle; low at compare match */
+  k_gptw_gtior_ob_init_high =
+    (0x16 << 16), /**< Initial HIGH; low at end-of-cycle; high at compare match */
 
   /* GTIOCB Output Enable (bit 24) */
   k_gptw_gtior_obe = (1 << 24), /**< GTIOCB Output Enable */
@@ -715,56 +719,58 @@ typedef enum : uint8_t {
  */
 
 typedef enum : uint8_t {
-  k_gptw_ch_off_gtwp      = 0x00U, /**< Write Protection Register */
-  k_gptw_ch_off_gtstr     = 0x04U, /**< Software Start Register */
-  k_gptw_ch_off_gtstp     = 0x08U, /**< Software Stop Register */
-  k_gptw_ch_off_gtclr     = 0x0CU, /**< Software Clear Register */
-  k_gptw_ch_off_gtssr     = 0x10U, /**< Start Source Select Register */
-  k_gptw_ch_off_gtpsr     = 0x14U, /**< Stop Source Select Register */
-  k_gptw_ch_off_gtcsr     = 0x18U, /**< Clear Source Select Register */
-  k_gptw_ch_off_gtupsr    = 0x1CU, /**< Count-Up Source Select Register */
-  k_gptw_ch_off_gtdnsr    = 0x20U, /**< Count-Down Source Select Register */
-  k_gptw_ch_off_gticasr   = 0x24U, /**< Input Capture Source Select A */
-  k_gptw_ch_off_gticbsr   = 0x28U, /**< Input Capture Source Select B */
-  k_gptw_ch_off_gtcr      = 0x2CU, /**< Control Register */
-  k_gptw_ch_off_gtuddtyc  = 0x30U, /**< Count Direction and Duty Setting Register */
-  k_gptw_ch_off_gtior     = 0x34U, /**< I/O Control Register */
-  k_gptw_ch_off_gtintad   = 0x38U, /**< Interrupt Output Setting Register */
-  k_gptw_ch_off_gtst      = 0x3CU, /**< Status Register */
-  k_gptw_ch_off_gtber     = 0x40U, /**< Buffer Enable Register */
-  k_gptw_ch_off_gtitc     = 0x44U, /**< Interrupt Skipping Setting Register */
-  k_gptw_ch_off_gtcnt     = 0x48U, /**< Counter */
-  k_gptw_ch_off_gtccra    = 0x4CU, /**< Compare Capture Register A */
-  k_gptw_ch_off_gtccrb    = 0x50U, /**< Compare Capture Register B */
-  k_gptw_ch_off_gtccrc    = 0x54U, /**< Compare Capture Register C */
-  k_gptw_ch_off_gtccre    = 0x58U, /**< Compare Capture Register E */
-  k_gptw_ch_off_gtccrd    = 0x5CU, /**< Compare Capture Register D */
-  k_gptw_ch_off_gtccrf    = 0x60U, /**< Compare Capture Register F */
-  k_gptw_ch_off_gtpr      = 0x64U, /**< Cycle Setting Register */
-  k_gptw_ch_off_gtpbr     = 0x68U, /**< Cycle Setting Buffer Register */
-  k_gptw_ch_off_gtpdbr    = 0x6CU, /**< Cycle Setting Double-Buffer Register */
-  k_gptw_ch_off_gtadtra   = 0x70U, /**< A/D Conversion Start Request Timing Register A */
-  k_gptw_ch_off_gtadtbra  = 0x74U, /**< A/D Conversion Start Request Timing Buffer Register A */
-  k_gptw_ch_off_gtadtdbra = 0x78U, /**< A/D Conversion Start Request Timing Double-Buffer Register A */
-  k_gptw_ch_off_gtadtrb   = 0x7CU, /**< A/D Conversion Start Request Timing Register B */
-  k_gptw_ch_off_gtadtbrb  = 0x80U, /**< A/D Conversion Start Request Timing Buffer Register B */
-  k_gptw_ch_off_gtadtdbrb = 0x84U, /**< A/D Conversion Start Request Timing Double-Buffer Register B */
-  k_gptw_ch_off_gtdtcr    = 0x88U, /**< Dead-Time Control Register */
-  k_gptw_ch_off_gtdvu     = 0x8CU, /**< Dead-Time Value Register U */
-  k_gptw_ch_off_gtdvd     = 0x90U, /**< Dead-Time Value Register D */
-  k_gptw_ch_off_gtdbu     = 0x94U, /**< Dead-Time Buffer Register U */
-  k_gptw_ch_off_gtdbd     = 0x98U, /**< Dead-Time Buffer Register D */
-  k_gptw_ch_off_gtsos     = 0x9CU, /**< Output Protection Function Status Register */
-  k_gptw_ch_off_gtsotr    = 0xA0U, /**< Output Protection Function Temporary Release Register */
-  k_gptw_ch_off_gtadsmr   = 0xA4U, /**< A/D Conversion Start Request Signal Monitoring Register */
-  k_gptw_ch_off_gteitc    = 0xA8U, /**< Extended Interrupt Skipping Counter Control Register */
-  k_gptw_ch_off_gteitli1  = 0xACU, /**< Extended Interrupt Skipping Setting Register 1 */
-  k_gptw_ch_off_gteitli2  = 0xB0U, /**< Extended Interrupt Skipping Setting Register 2 */
-  k_gptw_ch_off_gteitlb   = 0xB4U, /**< Extended Buffer Transfer Skipping Setting Register */
-  k_gptw_ch_off_reserved  = 0xB8U, /**< Reserved region start */
-  k_gptw_ch_off_gtsecsr   = 0xD0U, /**< Operation Enable Bit Simultaneous Control Channel Select */
-  k_gptw_ch_off_gtsecr    = 0xD4U, /**< Operation Enable Bit Simultaneous Control Register */
-  k_gptw_ch_struct_size   = 0xD8U, /**< Total channel structure size in bytes */
+  k_gptw_ch_off_gtwp     = 0x00U, /**< Write Protection Register */
+  k_gptw_ch_off_gtstr    = 0x04U, /**< Software Start Register */
+  k_gptw_ch_off_gtstp    = 0x08U, /**< Software Stop Register */
+  k_gptw_ch_off_gtclr    = 0x0CU, /**< Software Clear Register */
+  k_gptw_ch_off_gtssr    = 0x10U, /**< Start Source Select Register */
+  k_gptw_ch_off_gtpsr    = 0x14U, /**< Stop Source Select Register */
+  k_gptw_ch_off_gtcsr    = 0x18U, /**< Clear Source Select Register */
+  k_gptw_ch_off_gtupsr   = 0x1CU, /**< Count-Up Source Select Register */
+  k_gptw_ch_off_gtdnsr   = 0x20U, /**< Count-Down Source Select Register */
+  k_gptw_ch_off_gticasr  = 0x24U, /**< Input Capture Source Select A */
+  k_gptw_ch_off_gticbsr  = 0x28U, /**< Input Capture Source Select B */
+  k_gptw_ch_off_gtcr     = 0x2CU, /**< Control Register */
+  k_gptw_ch_off_gtuddtyc = 0x30U, /**< Count Direction and Duty Setting Register */
+  k_gptw_ch_off_gtior    = 0x34U, /**< I/O Control Register */
+  k_gptw_ch_off_gtintad  = 0x38U, /**< Interrupt Output Setting Register */
+  k_gptw_ch_off_gtst     = 0x3CU, /**< Status Register */
+  k_gptw_ch_off_gtber    = 0x40U, /**< Buffer Enable Register */
+  k_gptw_ch_off_gtitc    = 0x44U, /**< Interrupt Skipping Setting Register */
+  k_gptw_ch_off_gtcnt    = 0x48U, /**< Counter */
+  k_gptw_ch_off_gtccra   = 0x4CU, /**< Compare Capture Register A */
+  k_gptw_ch_off_gtccrb   = 0x50U, /**< Compare Capture Register B */
+  k_gptw_ch_off_gtccrc   = 0x54U, /**< Compare Capture Register C */
+  k_gptw_ch_off_gtccre   = 0x58U, /**< Compare Capture Register E */
+  k_gptw_ch_off_gtccrd   = 0x5CU, /**< Compare Capture Register D */
+  k_gptw_ch_off_gtccrf   = 0x60U, /**< Compare Capture Register F */
+  k_gptw_ch_off_gtpr     = 0x64U, /**< Cycle Setting Register */
+  k_gptw_ch_off_gtpbr    = 0x68U, /**< Cycle Setting Buffer Register */
+  k_gptw_ch_off_gtpdbr   = 0x6CU, /**< Cycle Setting Double-Buffer Register */
+  k_gptw_ch_off_gtadtra  = 0x70U, /**< A/D Conversion Start Request Timing Register A */
+  k_gptw_ch_off_gtadtbra = 0x74U, /**< A/D Conversion Start Request Timing Buffer Register A */
+  k_gptw_ch_off_gtadtdbra =
+    0x78U, /**< A/D Conversion Start Request Timing Double-Buffer Register A */
+  k_gptw_ch_off_gtadtrb  = 0x7CU, /**< A/D Conversion Start Request Timing Register B */
+  k_gptw_ch_off_gtadtbrb = 0x80U, /**< A/D Conversion Start Request Timing Buffer Register B */
+  k_gptw_ch_off_gtadtdbrb =
+    0x84U, /**< A/D Conversion Start Request Timing Double-Buffer Register B */
+  k_gptw_ch_off_gtdtcr   = 0x88U, /**< Dead-Time Control Register */
+  k_gptw_ch_off_gtdvu    = 0x8CU, /**< Dead-Time Value Register U */
+  k_gptw_ch_off_gtdvd    = 0x90U, /**< Dead-Time Value Register D */
+  k_gptw_ch_off_gtdbu    = 0x94U, /**< Dead-Time Buffer Register U */
+  k_gptw_ch_off_gtdbd    = 0x98U, /**< Dead-Time Buffer Register D */
+  k_gptw_ch_off_gtsos    = 0x9CU, /**< Output Protection Function Status Register */
+  k_gptw_ch_off_gtsotr   = 0xA0U, /**< Output Protection Function Temporary Release Register */
+  k_gptw_ch_off_gtadsmr  = 0xA4U, /**< A/D Conversion Start Request Signal Monitoring Register */
+  k_gptw_ch_off_gteitc   = 0xA8U, /**< Extended Interrupt Skipping Counter Control Register */
+  k_gptw_ch_off_gteitli1 = 0xACU, /**< Extended Interrupt Skipping Setting Register 1 */
+  k_gptw_ch_off_gteitli2 = 0xB0U, /**< Extended Interrupt Skipping Setting Register 2 */
+  k_gptw_ch_off_gteitlb  = 0xB4U, /**< Extended Buffer Transfer Skipping Setting Register */
+  k_gptw_ch_off_reserved = 0xB8U, /**< Reserved region start */
+  k_gptw_ch_off_gtsecsr  = 0xD0U, /**< Operation Enable Bit Simultaneous Control Channel Select */
+  k_gptw_ch_off_gtsecr   = 0xD4U, /**< Operation Enable Bit Simultaneous Control Register */
+  k_gptw_ch_struct_size  = 0xD8U, /**< Total channel structure size in bytes */
 } gptw_ch_reg_offsets_t;
 
 typedef enum : uint8_t {
