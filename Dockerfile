@@ -161,6 +161,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     ros-jazzy-nav2-bringup \
     ros-jazzy-bondcpp
 
+# Install Renesas Flash Programmer CLI for RX72N flashing via E2 Lite
+ARG RFP_CLI_URL="https://github.com/Locked-Inc/STAR/raw/main/RFP_CLI_Linux_V32200_x64.tgz"
+RUN curl -sSL "${RFP_CLI_URL}" -o /tmp/rfp-cli.tgz && \
+    tar -xzf /tmp/rfp-cli.tgz -C /opt && \
+    mv /opt/linux-x64 /opt/rfp && \
+    rm /tmp/rfp-cli.tgz && \
+    ln -s /opt/rfp/rfp-cli /usr/local/bin/rfp-cli && \
+    chmod +x /opt/rfp/rfp-cli
+
 # Install CodeRabbit CLI for code review
 RUN curl -fsSL https://cli.coderabbit.ai/install.sh | sh
 
