@@ -332,7 +332,7 @@ public:
    * All values must be strictly positive.
    *
    * @code
-   * MessageConverter::BbbParams params{0.150, 0.072, 11599};
+   * MessageConverter::BbbParams params{0.356, 0.072, 11599};
    * converter.init_bbb_params(params);
    * @endcode
    *
@@ -371,7 +371,7 @@ public:
    * @note Not thread-safe; call from a single thread before starting timers.
    *
    * @code
-   * MessageConverter::BbbParams p{0.150, 0.072, 11599};
+   * MessageConverter::BbbParams p{0.356, 0.072, 11599};
    * converter.init_bbb_params(p);
    * @endcode
    *
@@ -538,7 +538,7 @@ public:
 
 private:
   // BBB dead-reckoning state (for telemetry_to_odometry)
-  BbbParams bbb_params_{0.150, 0.072, 11599};
+  BbbParams bbb_params_{0.356, 0.072, 11599};
   bool bbb_params_initialized_{false};
   double dr_x_{0.0};      /**< Dead-reckoning X position (m). */
   double dr_y_{0.0};      /**< Dead-reckoning Y position (m). */

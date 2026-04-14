@@ -93,7 +93,7 @@ public:
    * - watchdog_timeout_sec: Connection health check interval (default: 5.0s)
    * - teleop_timeout_ms: Teleop command staleness timeout (default: 500ms)
    * - grpc_deadline_ms: gRPC call deadline (default: 100ms)
-   * - wheel_base: Distance between wheels in meters (default: 0.150m)
+   * - wheel_base: Track width (left-right wheel center-to-center) in meters (default: 0.356m)
    * - use_bbb_telemetry: Enable BBB telemetry bridging (default: false)
    * - wheel_radius: Wheel radius in meters (default: 0.072m)
    * - ticks_per_rev: Encoder ticks per revolution (default: 11599)

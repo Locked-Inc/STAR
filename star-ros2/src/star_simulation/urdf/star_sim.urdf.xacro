@@ -9,33 +9,34 @@
     - LiDAR and IMU visual geometry
     - Gazebo plugin declarations (via star_gazebo.xacro include)
 
-  Robot specs (DFRobot FIT0520 motors, MPU-9250 IMU, RPLiDAR C1):
+  Robot specs (goBILDA Wasteland chassis, 312mm U-channels, miter-gear drive):
     - Wheel radius: 0.072 m (goBILDA Wasteland 144mm, part 3616-0014-0144)
-    - Track width (wheel separation): 0.150 m  -- TODO: update for 312mm U-channel chassis
-    - Wheelbase (front-to-back): 0.120 m       -- TODO: update for 312mm U-channel chassis
-    - Chassis: 0.20 x 0.15 x 0.08 m (L x W x H) -- TODO: update for new chassis
-    - Total mass: ~2.4 kg (2.0 kg chassis + 4 x 0.1 kg wheels)
+    - Wheel width: 0.052 m
+    - Track width (wheel center-to-center, left-right): 0.356 m (304 mm inner + 52 mm wheel)
+    - Wheelbase (front-to-back, axle-to-axle): 0.264 m (per CAD)
+    - Chassis bounding (from STAR.stl): 0.346 x 0.292 x 0.118 m (L x W x H)
+    - Total mass: TBD
 -->
 <robot name="star" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <!-- ================================================================== -->
   <!-- Properties                                                          -->
   <!-- ================================================================== -->
-  <xacro:property name="chassis_length" value="0.20"/>
-  <xacro:property name="chassis_width" value="0.15"/>
-  <xacro:property name="chassis_height" value="0.08"/>
+  <xacro:property name="chassis_length" value="0.346"/>
+  <xacro:property name="chassis_width" value="0.292"/>
+  <xacro:property name="chassis_height" value="0.118"/>
   <xacro:property name="chassis_mass" value="2.0"/>
 
   <xacro:property name="wheel_radius" value="0.072"/>
-  <xacro:property name="wheel_width" value="0.030"/>
+  <xacro:property name="wheel_width" value="0.052"/>
   <xacro:property name="wheel_mass" value="0.1"/>
 
   <!-- Half track width: center of left wheel to center of right wheel -->
-  <xacro:property name="track_half" value="0.075"/>
+  <xacro:property name="track_half" value="0.178"/>
   <!-- Wheel Y offset: half track + half wheel width (wheel outside chassis) -->
-  <xacro:property name="wheel_y_offset" value="0.090"/>
-  <!-- Front/back wheel X offset from base_link center -->
-  <xacro:property name="wheel_x_offset" value="0.060"/>
+  <xacro:property name="wheel_y_offset" value="0.204"/>
+  <!-- Front/back wheel X offset from base_link center (half of 264mm wheelbase) -->
+  <xacro:property name="wheel_x_offset" value="0.132"/>
 
   <!-- base_link sits at wheel axle height. Chassis center is above axle. -->
   <xacro:property name="chassis_z_offset" value="${chassis_height / 2}"/>

@@ -22,7 +22,7 @@ def generate_launch_description():
             'spi_device_path': LaunchConfiguration('spi_device_path'),
             'spi_speed_hz': 10000000,
             'cmd_vel_timeout_ms': 500,
-            'wheel_base': 0.150,
+            'wheel_base': 0.356,
             'wheel_radius': 0.072,
             'ticks_per_rev': 11599
         }]

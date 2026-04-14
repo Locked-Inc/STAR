@@ -202,7 +202,7 @@ def generate_launch_description():
             'telemetry_rate_hz': 10.0,
             'teleop_rate_hz': 50.0,
             'use_bbb_telemetry': LaunchConfiguration('use_bbb'),
-            'wheel_base': 0.150,
+            'wheel_base': 0.356,
             'wheel_radius': 0.072,
             'ticks_per_rev': 11599,
         }],

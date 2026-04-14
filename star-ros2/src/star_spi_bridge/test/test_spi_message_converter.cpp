@@ -16,7 +16,7 @@ using star_spi_bridge::SpiMessageConverter;
 class SpiMessageConverterTest : public ::testing::Test
 {
 protected:
-  SpiMessageConverter::Parameters params{0.150, 0.072, 11599};
+  SpiMessageConverter::Parameters params{0.356, 0.072, 11599};
   SpiMessageConverter converter{params};
 };
 
