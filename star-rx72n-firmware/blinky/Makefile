@@ -22,7 +22,9 @@ LDFLAGS := $(CPU) -nostartfiles -Wl,-e_PowerON_Reset_PC -T linker.ld
 SRCS    := startup.S main.c
 TARGET  := blinky
 
-.PHONY: all clean
+RFP_CLI := rfp-cli
+
+.PHONY: all flash clean
 
 all: $(TARGET).elf $(TARGET).mot $(TARGET).hex
 	@echo ""
@@ -36,6 +38,10 @@ $(TARGET).mot: $(TARGET).elf
 
 $(TARGET).hex: $(TARGET).elf
 	$(OBJCOPY) -O ihex $< $@
+
+flash: $(TARGET).mot
+	sudo $(RFP_CLI) -d RX72N -t e2l -if fine -run \
+	    -auth id FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF -a $<
 
 clean:
 	rm -f $(TARGET).elf $(TARGET).mot $(TARGET).hex
