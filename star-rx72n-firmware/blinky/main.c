@@ -29,11 +29,10 @@
 
 /*
  * Tuned for LOCO = 240 kHz (factory-default internal clock).
- * At 240 kHz with -O0 the volatile delay loop runs ~20 kHz, so 60000
- * iterations is roughly 3 seconds -- slow but unambiguously visible.
- * If the chip is actually on HOCO (16 MHz) it will blink fast instead.
+ * 30000 iterations gives roughly a 1.5 s period -- half the previous
+ * 60000-count version, so it is obvious when a new image was flashed.
  */
-#define DELAY_COUNT 60000U
+#define DELAY_COUNT 30000U
 
 static void delay(uint32_t count)
 {
