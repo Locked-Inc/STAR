@@ -148,11 +148,17 @@ void* bb_motor_control_task(void* arg)
 
         /* Read encoder feedback (eQEP channels 1-3 only).
          * Channel 4 (rear-right) uses the PRU encoder which is not available
-         * on the 5.10-ti kernel. Left at zero to avoid stderr spam. */
+         * on the 5.10-ti kernel. As a degraded-mode workaround, mirror the
+         * front-right tick count onto rear-right: in skid-steer both right-
+         * side wheels are commanded together and slip-couple through the
+         * chassis, so FR is the closest available proxy. Without this, the
+         * gateway's right-side average becomes (fr + 0)/2 = fr/2 and pose
+         * drifts rightward on straight-line motion. */
         bb_encoder_data_t enc = {0};
         enc.ticks[k_bb_motor_idx_fl] = rc_encoder_read(k_bb_encoder_front_left);
         enc.ticks[k_bb_motor_idx_fr] = rc_encoder_read(k_bb_encoder_front_right);
         enc.ticks[k_bb_motor_idx_rl] = rc_encoder_read(k_bb_encoder_rear_left);
+        enc.ticks[k_bb_motor_idx_rr] = enc.ticks[k_bb_motor_idx_fr];
 
         (void)bb_shared_data_set_encoder(sd, &enc);
 

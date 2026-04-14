@@ -236,6 +236,34 @@ static const float s_bb_duty_fallback_max = 0.65F;
  */
 static const float s_bb_batt_deadzone_v = 1.0F;
 
+/* ---------------------------------------------------------------------------
+ * Wheel geometry (used for tick -> velocity conversion in telemetry_task)
+ * ---------------------------------------------------------------------------*/
+
+/**
+ * @enum bb_wheel_geometry_t
+ * @brief Wheel geometry constants for encoder velocity computation.
+ *
+ * @details
+ * Source of truth lives in star-ros2/.../star_gateway_bridge_node.cpp
+ * (parameters `wheel_radius`, `ticks_per_rev`). These constants must match
+ * the gateway parameters or odometry pose (gateway-side) and twist (BBB-
+ * side) will disagree.
+ *
+ * 341 PPR Hall encoder x 34.02:1 gearbox = 11599 ticks per output revolution.
+ *
+ * @since Version 1.2.0
+ */
+typedef enum : uint32_t {
+    k_bb_ticks_per_rev = 11599U,
+} bb_wheel_geometry_t;
+
+/**
+ * @brief Wheel radius in meters (32.5 mm, DFRobot 65mm rover wheel).
+ * @since Version 1.2.0
+ */
+static const float s_bb_wheel_radius_m = 0.0325F;
+
 #ifdef __cplusplus
 }
 #endif

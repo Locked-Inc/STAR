@@ -24,6 +24,7 @@
 #include <pb_encode.h>
 #include <star/v1/wire.pb.h>
 
+#include <math.h>
 #include <robotcontrol.h>
 #include <string.h>
 #include <time.h>
@@ -100,6 +101,14 @@ void* bb_telemetry_task(void* arg)
     static uint8_t s_wire_buf[k_wire_buf_size];
     static uint16_t s_tx_seq = 0U;
 
+    /* Velocity is derived from tick deltas across the telemetry period.
+     * First message seeds prev_ticks/prev_us and reports zero velocity. */
+    static int32_t s_prev_ticks[k_bb_encoder_count] = {0};
+    static int64_t s_prev_us = 0;
+    static bool    s_have_prev = false;
+    const float    m_per_tick = (2.0F * (float)M_PI * s_bb_wheel_radius_m)
+                              / (float)k_bb_ticks_per_rev;
+
     /* Period derived from k_bb_rate_telemetry_hz in hardware_config.h */
 
     struct timespec next = {0};
@@ -117,6 +126,26 @@ void* bb_telemetry_task(void* arg)
 
         const int64_t now_us = internal_now_us();
 
+        /* Compute per-wheel velocity from tick deltas. Zero on the first
+         * iteration and on any non-positive dt. Uses CLOCK_MONOTONIC so it
+         * is immune to wall-clock adjustments. */
+        float vel_mps[k_bb_encoder_count] = {0.0F, 0.0F, 0.0F, 0.0F};
+        if (s_have_prev) {
+            const int64_t dt_us = now_us - s_prev_us;
+            if (dt_us > 0) {
+                const float dt_s = (float)dt_us / (float)k_bb_us_per_sec;
+                for (uint8_t i = 0U; i < (uint8_t)k_bb_encoder_count; i++) {
+                    const int32_t d_ticks = enc.ticks[i] - s_prev_ticks[i];
+                    vel_mps[i] = ((float)d_ticks * m_per_tick) / dt_s;
+                }
+            }
+        }
+        for (uint8_t i = 0U; i < (uint8_t)k_bb_encoder_count; i++) {
+            s_prev_ticks[i] = enc.ticks[i];
+        }
+        s_prev_us = now_us;
+        s_have_prev = true;
+
         /* Build TelemetryData */
         star_v1_TelemetryData telem = star_v1_TelemetryData_init_zero;
 
@@ -133,21 +162,25 @@ void* bb_telemetry_task(void* arg)
         telem.has_encoder_front_left  = true;
         telem.encoder_front_left.motor_id     = (int32_t)k_bb_motor_idx_fl;
         telem.encoder_front_left.ticks        = (int64_t)enc.ticks[k_bb_motor_idx_fl];
+        telem.encoder_front_left.velocity_mps = (double)vel_mps[k_bb_motor_idx_fl];
         telem.encoder_front_left.timestamp_us = now_us;
 
         telem.has_encoder_front_right = true;
         telem.encoder_front_right.motor_id     = (int32_t)k_bb_motor_idx_fr;
         telem.encoder_front_right.ticks        = (int64_t)enc.ticks[k_bb_motor_idx_fr];
+        telem.encoder_front_right.velocity_mps = (double)vel_mps[k_bb_motor_idx_fr];
         telem.encoder_front_right.timestamp_us = now_us;
 
         telem.has_encoder_back_left = true;
         telem.encoder_back_left.motor_id     = (int32_t)k_bb_motor_idx_rl;
         telem.encoder_back_left.ticks        = (int64_t)enc.ticks[k_bb_motor_idx_rl];
+        telem.encoder_back_left.velocity_mps = (double)vel_mps[k_bb_motor_idx_rl];
         telem.encoder_back_left.timestamp_us = now_us;
 
         telem.has_encoder_back_right = true;
         telem.encoder_back_right.motor_id     = (int32_t)k_bb_motor_idx_rr;
         telem.encoder_back_right.ticks        = (int64_t)enc.ticks[k_bb_motor_idx_rr];
+        telem.encoder_back_right.velocity_mps = (double)vel_mps[k_bb_motor_idx_rr];
         telem.encoder_back_right.timestamp_us = now_us;
 
         /* Status */
