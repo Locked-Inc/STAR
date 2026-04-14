@@ -435,43 +435,41 @@ static void internal_handle_ctrt_interrupt(void)
   const uint16_t ctsq    = intsts0 & k_usb_intsts0_ctsq_mask;
 
   switch (ctsq) {
-    case k_usb_intsts0_ctsq_idle:
-      /* Idle or setup stage - check for valid SETUP packet */
-      if (intsts0 & k_usb_intsts0_valid) {
-        rx_usb_cdc_handle_setup();
-        /* Clear VALID flag */
-        usb0()->intsts0 = (uint16_t)~k_usb_intsts0_valid;
-      }
+    case k_usb_intsts0_ctsq_rd_data: /* Control IN, data stage just entered */
+    case k_usb_intsts0_ctsq_wr_data: /* Control OUT, data stage just entered */
+    case k_usb_intsts0_ctsq_wr_nd:   /* Control OUT, no data (e.g. SET_ADDRESS) */
+      /*
+       * The host just issued a SETUP token and the peripheral has now
+       * transitioned into the matching data-stage state.  USBREQ /
+       * USBVAL / USBINDX / USBLENG are valid to read RIGHT NOW.
+       * Clear the VALID bit BEFORE reading them, per RX72N HW manual
+       * Ch40, so a racing second SETUP cannot overwrite the registers
+       * mid-read.
+       */
+      usb0()->intsts0 = (uint16_t) ~k_usb_intsts0_valid;
+      rx_usb_cdc_handle_setup();
       break;
-    case k_usb_intsts0_ctsq_rd_data:
-      /* Control read data stage - send data to host */
-      /* Handled via SETUP packet handler */
+
+    case k_usb_intsts0_ctsq_rd_status: /* IN status stage  -- nothing to do */
+    case k_usb_intsts0_ctsq_wr_status: /* OUT status stage -- nothing to do */
+      /*
+       * CCPL was already written by the SETUP request handler when the
+       * data stage finished; the hardware autonomously completes the
+       * status stage.  Writing CCPL again here causes double-completion
+       * and confuses the state machine.
+       */
       break;
-    case k_usb_intsts0_ctsq_rd_status:
-      /* Control read status stage - host sends ZLP ACK */
-      /* Complete the control transfer */
-      usb0()->dcpctr |= k_usb_dcpctr_ccpl;
-      break;
-    case k_usb_intsts0_ctsq_wr_data:
-      /* Control write data stage - receive data from host */
-      /* Handled via SETUP packet handler */
-      break;
-    case k_usb_intsts0_ctsq_wr_status:
-      /* Control write status stage - send ZLP ACK */
-      /* Complete the control transfer */
-      usb0()->dcpctr |= k_usb_dcpctr_ccpl;
-      break;
-    case k_usb_intsts0_ctsq_wr_nd:
-      /* Control write with no data - status stage */
-      usb0()->dcpctr |= k_usb_dcpctr_ccpl;
-      break;
+
     case k_usb_intsts0_ctsq_seq_err:
       /* Sequence error - stall the pipe */
       rx_log_warn(s_tag, "CTRT: Sequence error");
       usb0()->dcpctr =
-        (uint16_t)((usb0()->dcpctr & (uint16_t)~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall);
+        (uint16_t)((usb0()->dcpctr & (uint16_t) ~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall);
       break;
+
+    case k_usb_intsts0_ctsq_idle:
     default:
+      /* Reset / power-on state -- nothing to do here. */
       break;
   }
 
