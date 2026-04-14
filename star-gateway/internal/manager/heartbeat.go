@@ -25,6 +25,11 @@ const (
 	// Any valid frame (data or control) resets this timer via OnFrameReceived().
 	DefaultFailureTimeout = 200 * time.Millisecond
 
+	// SimpleUSBFailureTimeout is the heartbeat timeout for ModeSimpleUSB.
+	// BBB telemetry arrives at 10 Hz (100ms). 2s gives a generous margin
+	// for USB CDC where the only real failure mode is physical disconnect.
+	SimpleUSBFailureTimeout = 2 * time.Second
+
 	// pingPayloadSize is the size of PING frame payload (4-byte counter).
 	pingPayloadSize = 4
 

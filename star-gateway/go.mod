@@ -1,6 +1,6 @@
 module github.com/Locked-Inc/STAR/star-gateway
 
-go 1.26.1
+go 1.26.2
 
 require (
 	github.com/Locked-Inc/star-proto/gen/go v0.0.0
@@ -8,7 +8,7 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/stretchr/testify v1.11.1
 	go.bug.st/serial v1.6.4
-	google.golang.org/grpc v1.79.3
+	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
 	periph.io/x/conn/v3 v3.7.2
 	periph.io/x/host/v3 v3.8.5

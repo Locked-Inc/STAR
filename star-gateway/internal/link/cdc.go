@@ -258,12 +258,14 @@ func (c *CDCLink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 	// Validate CRC32 (decoder already does this - if we got here, CRC is valid)
 	// Drop frame if corrupt (NO retry request for USB)
 
-	// Validate sequence using SHARED state (detects duplicates across transports)
-	// CRITICAL FIX #6: Gap tolerance allows recovery from rare USB packet loss
-	if !c.sessionState.ValidateRxSequence(f.Header.Sequence) {
-		// Out of sequence - likely duplicate or large gap
-		// For USB, this is rare but possible during transport switching
-		return nil, harq.ErrDuplicateFrame
+	// Validate sequence on DATA frames only (COMMAND, RESPONSE).
+	// Control frames (PING, PONG, RESET, RESET_ACK, ACK, NACK) bypass
+	// sequence validation so they are delivered during reset handshakes
+	// when the barrier is active.
+	if f.Type == frame.FrameTypeCommand || f.Type == frame.FrameTypeResponse {
+		if !c.sessionState.ValidateRxSequence(f.Header.Sequence) {
+			return nil, harq.ErrDuplicateFrame
+		}
 	}
 
 	return &harq.ReceiveResult{

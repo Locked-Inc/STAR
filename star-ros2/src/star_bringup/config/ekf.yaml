@@ -23,16 +23,22 @@ ekf_filter_node:
     odom0_pose_rejection_threshold: 5.0
     odom0_twist_rejection_threshold: 5.0
 
-    # IMU from RX72N: fuse yaw orientation and yaw rate only.
-    # With two_d_mode:true the EKF ignores roll/pitch from the state; enabling them in
-    # imu0_config inflates the Mahalanobis residual with real-world IMU tilt, causing
-    # silent yaw rejection beyond the 0.8 threshold.
+    # TODO(wheels): When wheel encoders provide real odom velocity, consider:
+    #   1. Re-enable yaw orientation (set row 2 col 3 to true) IF DMP mode is
+    #      fixed and the bridge provides a valid quaternion (w != 0)
+    #   2. Keep ax/ay disabled -- raw accel double-integration drifts to infinity
+    #   3. The odom0_config already fuses x, y, yaw, vx from encoder odom
+    #
+    # IMU from BBB (MPU-9250 polling mode): fuse gyro yaw rate ONLY.
+    # BBB polling mode provides raw accel + gyro but no fused orientation.
+    # The bridge sets orientation_covariance[0]=-1 (REP-145) when no quaternion
+    # is available, so robot_localization ignores orientation automatically.
     imu0: /imu/data
     imu0_config: [false, false, false,   # x, y, z (position -- not from IMU)
-                  false, false, true,    # roll, pitch, yaw -- yaw only
+                  false, false, false,   # roll, pitch, yaw -- no orientation from BBB
                   false, false, false,   # vx, vy, vz
-                  false, false, true,    # vroll, vpitch, vyaw -- yaw rate only
-                  false, false, false]   # ax, ay, az
+                  false, false, true,    # vroll, vpitch, vyaw -- yaw rate from gyro
+                  false, false, false]   # ax, ay, az -- DO NOT fuse (causes drift)
     imu0_differential: false
     imu0_relative: false
     imu0_remove_gravitational_acceleration: true
