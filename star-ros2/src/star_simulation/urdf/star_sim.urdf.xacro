@@ -92,7 +92,9 @@
       <xacro:cylinder_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_width}"/>
       <visual>
         <geometry>
-          <mesh filename="package://star_simulation/meshes/wheel_visual.stl"/>
+          <!-- STL exports are in millimeters; URDF distances are in meters. -->
+          <mesh filename="package://star_simulation/meshes/wheel_visual.stl"
+                scale="0.001 0.001 0.001"/>
         </geometry>
         <material name="wheel_black">
           <color rgba="0.1 0.1 0.1 1"/>
@@ -100,7 +102,8 @@
       </visual>
       <collision>
         <geometry>
-          <mesh filename="package://star_simulation/meshes/wheel_collision.stl"/>
+          <mesh filename="package://star_simulation/meshes/wheel_collision.stl"
+                scale="0.001 0.001 0.001"/>
         </geometry>
       </collision>
     </link>
@@ -116,7 +119,9 @@
                        z="${chassis_height}"/>
     <visual>
       <geometry>
-        <mesh filename="package://star_simulation/meshes/chassis_visual.stl"/>
+        <!-- STL exports are in millimeters; URDF distances are in meters. -->
+        <mesh filename="package://star_simulation/meshes/chassis_visual.stl"
+              scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="chassis_blue">
         <color rgba="0.2 0.3 0.7 1"/>
@@ -124,7 +129,8 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://star_simulation/meshes/chassis_collision.stl"/>
+        <mesh filename="package://star_simulation/meshes/chassis_collision.stl"
+              scale="0.001 0.001 0.001"/>
       </geometry>
     </collision>
   </link>

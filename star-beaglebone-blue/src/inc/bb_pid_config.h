@@ -37,6 +37,8 @@
 
 #include <stdint.h>
 
+#include "hardware_config.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -46,16 +48,20 @@ extern "C" {
  * @brief Closed-loop control rate constants.
  *
  * @details
- * The BBB velocity PID runs in the same 100 Hz tick as motor_control_task,
- * so the loop period is identical to k_bb_motor_period_ns from
- * hardware_config.h. This constant exists to make the rate explicit at the
- * tuning call site and to allow the discretization assumption to be
- * verified against the timer at runtime if needed.
+ * The BBB velocity PID runs in the same control tick as
+ * motor_control_task, so the rate is derived directly from
+ * k_bb_motor_period_ns in hardware_config.h. Deriving (rather than
+ * hardcoding) ensures the discretization assumption documented above
+ * (Tustin transform at the sample rate) cannot drift away from the
+ * actual loop period if the motor task rate ever changes.
+ *
+ * @invariant k_bb_pid_loop_hz == 1 / k_bb_motor_period_seconds
  *
  * @since Version 1.2.0
  */
 typedef enum : uint32_t {
-    k_bb_pid_loop_hz = 100U, /**< PID compute rate (Hz) */
+    k_bb_pid_loop_hz =
+        (uint32_t)(k_bb_ns_per_sec / k_bb_motor_period_ns), /**< PID compute rate (Hz) */
 } bb_pid_loop_t;
 
 /**

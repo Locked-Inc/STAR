@@ -372,8 +372,22 @@ void* bb_motor_control_task(void* arg)
              * output-shaft rad/s * radius == wheel surface m/s exactly),
              * then run the per-motor PID. */
             for (uint8_t i = 0U; i < (uint8_t)k_bb_motor_count; i++) {
+                /* Rear-right's encoder feedback is mirrored from front-
+                 * right above (PRU encoder ch4 is unsupported on 5.10-ti).
+                 * Mirror its SETPOINT too: if the gateway sends a non-
+                 * symmetric right-side command, an independent RR PID
+                 * would chase its own target while its feedback reports
+                 * what FR is doing, causing the integral term to diverge
+                 * and drive the right side against itself. With both
+                 * input and feedback mirrored, the RR PID tracks the
+                 * FR PID exactly. */
+                float setpoint_mps = cmd.velocity_setpoint_mps[i];
+                if (i == (uint8_t)k_bb_motor_idx_rr) {
+                    setpoint_mps =
+                        cmd.velocity_setpoint_mps[k_bb_motor_idx_fr];
+                }
                 const float omega_setpoint =
-                    cmd.velocity_setpoint_mps[i] / s_bb_wheel_radius_m;
+                    setpoint_mps / s_bb_wheel_radius_m;
 
                 float duty_pct = 0.0F;
                 bb_err_t err = bb_pid_compute(&s_pid[i],
@@ -387,12 +401,21 @@ void* bb_motor_control_task(void* arg)
                     duty_out[i] = duty_pct / s_bb_duty_percent_scale;
                 }
             }
-        } else {
+        } else if (cmd.control_mode == k_bb_ctrl_mode_direct_duty) {
             /* Direct-duty debug path: pass the duty values through with
              * no PID involvement. Used by motor_power_command for manual
              * bench testing. */
             for (uint8_t i = 0U; i < (uint8_t)k_bb_motor_count; i++) {
                 duty_out[i] = cmd.duty_percent[i];
+            }
+        } else {
+            /* Unknown control mode -- fail closed. duty_out stays at
+             * zero, and PID integrals are reset so the next valid
+             * command starts from a clean slate. This catches enum
+             * corruption from shared memory and any future enum
+             * additions that forget to update this dispatch. */
+            for (uint8_t i = 0U; i < (uint8_t)k_bb_motor_count; i++) {
+                (void)bb_pid_reset(&s_pid[i]);
             }
         }
 
