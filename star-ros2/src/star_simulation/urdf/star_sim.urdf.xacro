@@ -17,16 +17,19 @@
     - Chassis bounding (from STAR.stl): 0.346 x 0.292 x 0.118 m (L x W x H)
     - Masses (Gazebo sim only, not used on real hardware):
         * wheel_mass:   0.348 kg each (goBILDA Wasteland, measured)
-        * chassis_mass: 3.6 kg lumped, breakdown:
+        * chassis_mass: 4.2 kg lumped, breakdown:
             - 2x 312mm U-channel  @ 206 g =  0.412 kg  (measured)
             - 18" x 18" x 1/8" aluminum sheet, 80% used = 1.430 kg
               (0.209 m^2 * 0.80 * 0.003175 m * 2700 kg/m^3)
             - 4x DC gearmotor     @  96 g =  0.384 kg  (datasheet)
             - Drivetrain (4 miter gear pairs, shafts, hubs,
-              bearings, collars)         ~= 0.9 kg    (estimate)
-            - Electronics (BBB + battery + sensors + cabling)
-                                          ~= 0.5 kg    (estimate)
-          Refine the 0.9 and 0.5 estimates as hardware is weighed.
+              bearings, collars)         ~= 0.900 kg  (estimate)
+            - Milwaukee M18 XC 5.0Ah battery (48-11-1850)
+                                           = 0.699 kg  (1.54 lb
+              per Home Depot listing; envelope 114x79x73 mm)
+            - Electronics (BBB + battery mount + sensors +
+              cabling)                   ~= 0.400 kg  (estimate)
+          Refine the 0.9 and 0.4 estimates as hardware is weighed.
 -->
 <robot name="star" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
@@ -36,7 +39,7 @@
   <xacro:property name="chassis_length" value="0.346"/>
   <xacro:property name="chassis_width" value="0.292"/>
   <xacro:property name="chassis_height" value="0.118"/>
-  <xacro:property name="chassis_mass" value="3.6"/>
+  <xacro:property name="chassis_mass" value="4.2"/>
 
   <xacro:property name="wheel_radius" value="0.072"/>
   <xacro:property name="wheel_width" value="0.052"/>
