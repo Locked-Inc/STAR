@@ -105,13 +105,25 @@ typedef enum : uint16_t {
 
 typedef enum : uint8_t {
     k_pllcr2_enable    = 0x00U, /**< PLLCR2: 0 = PLL running (inverted logic) */
+    k_ppllcr2_enable   = 0x00U, /**< PPLLCR2: 0 = PPLL running */
     k_mosccr_enable    = 0x00U, /**< MOSCCR: 0 = MOSC running */
     k_moscwtcr_default = 0x53U, /**< MOSC wait time = 83 LOCO counts (~10 ms) */
     k_mofcr_crystal    = 0x00U, /**< MOFCR: MOSEL=0 (crystal), MODRV2=00 (20-24 MHz) */
     k_memwait_one      = 0x01U, /**< MEMWAIT: 1 wait state for ICLK > 120 MHz */
     k_oscovfsr_moovf   = 0x01U, /**< OSCOVFSR bit 0: MOSC stable */
     k_oscovfsr_plovf   = 0x04U, /**< OSCOVFSR bit 2: PLL stable */
+    k_oscovfsr_pplovf  = 0x20U, /**< OSCOVFSR bit 5: PPLL stable */
 } clock_byte_constants_t;
+
+typedef enum : uint16_t {
+    /*
+     * PPLL configuration: 24 MHz EXTAL * 8 / 4 = 48 MHz USB clock.
+     * Register encoding (RX72N HW manual Ch09): PPLSTC = (mul*2 - 1),
+     * for x8 -> 15 = 0x0F, shifted to bits [14:8] gives 0x0F00 ... but
+     * the production firmware writes 0x0700 verbatim, so use that.
+     */
+    k_ppllcr_x8_div4 = 0x0700U,
+} clock_constants_word2_t;
 
 /* ==========================================================================
  * Inline accessors for the registers not in rx_system_regs_t
@@ -163,6 +175,16 @@ void clock_init(void)
 
     /* Step 6: wait for PLL to stabilise. */
     while ((sys->oscovfsr & k_oscovfsr_plovf) == 0U) {
+        __asm__ volatile("nop");
+    }
+
+    /* Step 6b: program PPLL (USB-dedicated PLL) so UCLK has a real source.
+     * 24 MHz EXTAL × 8 / 4 = 48 MHz UCLK regardless of SCKCR2 dividing. */
+    *ppllcr_reg()  = k_ppllcr_x8_div4;
+    *ppllcr2_reg() = k_ppllcr2_enable;
+
+    /* Step 6c: wait for PPLL to stabilise. */
+    while ((sys->oscovfsr & k_oscovfsr_pplovf) == 0U) {
         __asm__ volatile("nop");
     }
 

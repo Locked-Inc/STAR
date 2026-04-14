@@ -22,12 +22,19 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "rx72n_regs.h"
 #include "rx_err.h"
 #include "rx_usb.h"
 #include "tx_api.h"
 
 extern void clock_init(void);
 extern void cmt0_init(void);
+
+extern void sci9_debug_init(void);
+extern void sci9_debug_putc(char c);
+extern void sci9_debug_puts(const char *s);
+extern void sci9_debug_puthex32(uint32_t v);
+extern void sci9_debug_puthex16(uint16_t v);
 
 /* PORTA accessor for visual heartbeat LED on PA7 (same LED used by blinky). */
 typedef enum : uintptr_t {
@@ -71,6 +78,24 @@ static uint8_t   s_usb_stack[k_usb_task_stack_sz];
  * blinking but no /dev/ttyACMx appears, the bug is in USB.  If the LED is
  * dark or stuck, the bug is in clock/CMT/ThreadX/init.
  * ========================================================================== */
+static void dump_usb_state(const char *tag)
+{
+    sci9_debug_puts(tag);
+    sci9_debug_puts(" SYSCFG=");
+    sci9_debug_puthex16(usb0()->syscfg);
+    sci9_debug_puts(" SYSSTS0=");
+    sci9_debug_puthex16(usb0()->syssts0);
+    sci9_debug_puts(" DVSTCTR=");
+    sci9_debug_puthex16(usb0()->dvstctr0);
+    sci9_debug_puts(" INTSTS0=");
+    sci9_debug_puthex16(usb0()->intsts0);
+    sci9_debug_puts(" INTENB0=");
+    sci9_debug_puthex16(usb0()->intenb0);
+    sci9_debug_puts(" DCPCTR=");
+    sci9_debug_puthex16(usb0()->dcpctr);
+    sci9_debug_puts("\r\n");
+}
+
 static void usb_heartbeat_task(ULONG arg)
 {
     (void)arg;
@@ -79,19 +104,20 @@ static void usb_heartbeat_task(ULONG arg)
     *porta_pdr() |= k_pa7_mask;
     *porta_podr() &= (uint8_t)~k_pa7_mask;
 
+    /* SCI9 deferred -- the init currently hangs the firmware. */
+
     /* Bring up USB hardware (calls tx_thread_sleep internally so this MUST
      * run from a task, not from main() before tx_kernel_enter()). */
     rx_usb_config_t cfg = { .callback = (rx_usb_callback_t)0, .ctx = (void *)0 };
-    (void)rx_usb_init(&cfg);
+    rx_err_t init_err = rx_usb_init(&cfg);
+    (void)init_err;
 
     /* LED on means rx_usb_init returned (clock + USB hw init both finished).
      * If it gets here the firmware ran past clock_init, cmt0_init, ThreadX
      * boot, and the entire rx_usb stack init. */
     *porta_podr() |= k_pa7_mask;
 
-    /* Wait for the host to send SET_CONFIGURATION on the protocol port.
-     * While waiting, blink PA7 at ~5 Hz so we can see we're alive but
-     * stuck in enumeration. */
+    /* Periodic blink while waiting for enumeration -- LED only, no SCI9. */
     while (!rx_usb_is_configured(k_usb_port_proto)) {
         *porta_podr() ^= k_pa7_mask;
         tx_thread_sleep(10U);
@@ -167,6 +193,8 @@ int main(void)
 {
     clock_init();
     cmt0_init();
+    /* SCI9 deferred: it currently hangs the firmware in init.  USB USES the
+     * heartbeat thread to instrument state instead. */
     tx_kernel_enter(); /* Never returns */
     return 0;
 }
