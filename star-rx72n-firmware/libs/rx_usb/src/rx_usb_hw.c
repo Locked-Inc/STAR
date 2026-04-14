@@ -575,7 +575,12 @@ static void internal_usb_configure_clock(void)
 {
   /* Function mode: DCFM=0, DRPD=0, DPRPU=0, USBE=0 */
   usb0()->syscfg = k_usb_syscfg_disabled;
-  /* Enable USB clock (SCKE=1) */
+
+  /* Enable USB module FIRST (USBE=1), THEN clock (SCKE=1).
+   * This matches the Renesas FSP r_usb_basic init sequence for RX
+   * function mode -- the opposite order leaves the controller in a
+   * state where SETUP packets are received but not propagated. */
+  usb0()->syscfg |= k_usb_syscfg_usbe;
   usb0()->syscfg |= k_usb_syscfg_scke;
 
   /* Wait for clock to stabilize */
@@ -584,9 +589,6 @@ static void internal_usb_configure_clock(void)
     clock_ticks = k_min_sleep_ticks;
   }
   tx_thread_sleep(clock_ticks);
-
-  /* Enable USB module */
-  usb0()->syscfg |= k_usb_syscfg_usbe;
 }
 
 /**
@@ -628,6 +630,22 @@ rx_err_t rx_usb_hw_init(void)
 
   /* Set default control pipe max packet size (64 bytes for FS) */
   usb0()->dcpmaxp = k_usb_cdc_max_packet_fs;
+
+  /*
+   * Prime the Default Control Pipe so the hardware will actually respond
+   * to incoming SETUP packets:
+   *   - DCPCFG = 0           : DIR=0, SHTNAK=0 (USB-spec defaults)
+   *   - DCPCTR = PID_BUF     : enable EP0 to ACK transfers
+   *   - BRDYENB / BEMPENB    : enable DCP (pipe 0) buffer events so
+   *                            multi-packet control transfers can finish
+   *
+   * Without these, the host's GET_DESCRIPTOR(Device) is silently NAKed
+   * and enumeration times out with -110.
+   */
+  usb0()->dcpcfg = 0U;
+  usb0()->dcpctr = (uint16_t)k_usb_dcpctr_pid_buf;
+  usb0()->brdyenb |= (uint16_t)k_usb_pipe_bit_0;
+  usb0()->bempenb |= (uint16_t)k_usb_pipe_bit_0;
 
   s_hw_initialized = true;
   rx_log_info(s_tag, "USB0 hardware initialized");
@@ -721,8 +739,9 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
     return k_min_transfer_size;
   }
 
-  /* Select pipe for CFIFO access */
-  usb0()->cfifosel = (pipe & k_usb_fifosel_curpipe_mask);
+  /* Select pipe for CFIFO access -- 16-bit width to match the uint16_t
+   * accesses below.  ISEL=0 = read direction (device OUT). */
+  usb0()->cfifosel = (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_mbw_16;
 
   /* Wait for FIFO ready (hardware polling) */
   /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
@@ -787,8 +806,15 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     return k_min_transfer_size;
   }
 
-  /* Select pipe for CFIFO access with write direction */
-  usb0()->cfifosel = (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_isel;
+  /*
+   * Select pipe for CFIFO access:
+   *   ISEL = 1   write direction (device IN preparation)
+   *   MBW  = 16  16-bit FIFO width MUST match the uint16_t access we do
+   *              below; without MBW=16 the FIFO mis-counts byte writes
+   *              and the host receives garbage / nothing.
+   */
+  usb0()->cfifosel =
+    (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_isel | k_usb_fifosel_mbw_16;
 
   /* Wait for FIFO ready (hardware polling) */
   /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
