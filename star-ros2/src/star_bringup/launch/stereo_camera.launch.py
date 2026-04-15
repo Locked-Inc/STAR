@@ -62,7 +62,8 @@ STEREO_BASELINE_M = 0.083
 
 
 def _gst_pipeline(camera_id: str, width: str, height: str, fps: str) -> str:
-    """Build the GStreamer pipeline string for one IMX219 sensor.
+    """
+    Build the GStreamer pipeline string for one IMX219 sensor.
 
     The pipeline is:
       libcamerasrc -> Bayer 16-bit -> bayer2rgb -> videoconvert -> RGB
