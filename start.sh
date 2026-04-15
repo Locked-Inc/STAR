@@ -360,6 +360,28 @@ else
     say "foxglove_bridge running (PID $PID_FOXGLOVE)"
 fi
 
+# -- Step 5b: stereo camera (Waveshare IMX219-83) ------------------------------
+STEREO_LAUNCH="$STAR_DIR/star-ros2/src/star_bringup/launch/stereo_camera.launch.py"
+PID_STEREO=""
+
+if [[ -e /dev/media2 && -e /dev/media3 ]]; then
+    say "Starting stereo camera (IMX219-83)..."
+    # LD_LIBRARY_PATH fix: system libpisp 1.2.1 must precede ROS libpisp 1.3.0
+    LD_LIBRARY_PATH="/usr/lib/aarch64-linux-gnu:${LD_LIBRARY_PATH:-}" \
+        ros2 launch "$STEREO_LAUNCH" \
+        >"$LOG_DIR/stereo_camera.log" 2>&1 &
+    PID_STEREO=$!
+    sleep 3
+    if ! kill -0 "$PID_STEREO" 2>/dev/null; then
+        warn "Stereo camera may have exited -- check $LOG_DIR/stereo_camera.log"
+        PID_STEREO=""
+    else
+        say "Stereo camera running (PID $PID_STEREO)"
+    fi
+else
+    warn "Stereo camera not found (/dev/media2 or /dev/media3 missing) -- skipping"
+fi
+
 # -- Step 6: star_gateway_bridge_main -----------------------------------------
 # When SLAM is running, slam.launch.py already includes gateway_bridge and foxglove.
 # Only launch standalone bridge when SLAM is NOT running.
@@ -432,6 +454,9 @@ if [[ "$BBB_MODE" != "true" ]]; then
 fi
 if [[ -n "$PID_SLAM" ]]; then
     printf "  %-18s PID %s   /scan @ 10 Hz\n" "slam" "$PID_SLAM"
+fi
+if [[ -n "$PID_STEREO" ]]; then
+    printf "  %-18s PID %s   /cam0 /cam1 @ 15 Hz\n" "stereo_camera" "$PID_STEREO"
 fi
 printf "  %-18s PID %s\n" "gw_bridge" "${PID_GWBRIDGE:-unknown}"
 if [[ -n "$PID_UI" ]]; then
