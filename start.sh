@@ -134,6 +134,14 @@ if [[ "$OPT_NO_AP" == "false" ]]; then
     fi
 fi
 
+# Resolve display IP now -- used in step log messages and summary banner.
+# AP_ACTIVE is final at this point; hostname -I is the fallback.
+if [[ "$AP_ACTIVE" == "true" ]]; then
+    DISPLAY_IP="$AP_IP"
+else
+    DISPLAY_IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
+fi
+
 # -- Phase 1: stop anything already running -----------------------------------
 say "Stopping any running STAR components..."
 "$STAR_DIR/stop.sh"
@@ -535,11 +543,6 @@ fi
 
 # -- Phase 4: summary banner ---------------------------------------------------
 TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S')"
-if [[ "$AP_ACTIVE" == "true" ]]; then
-    DISPLAY_IP="$AP_IP"
-else
-    DISPLAY_IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
-fi
 
 echo -e ""
 echo -e "${BOLD}${CYAN}======================================================${NC}"
