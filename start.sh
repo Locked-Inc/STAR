@@ -161,6 +161,20 @@ source "$ROS2_SETUP"
 source "$ROS2_WS_SETUP"
 set -u
 
+# CycloneDDS config: raise participant index limit and disable multicast.
+# Without this, stale participants from crashed nodes exhaust the default
+# pool of 10 slots and new nodes fail with "Failed to find a free
+# participant index for domain 0".
+export CYCLONEDDS_URI="file://$STAR_DIR/config/cyclonedds.xml"
+
+# Flush the ROS2 daemon's stale participant cache before launching nodes.
+# The daemon caches DDS discovery state; restarting it clears zombie entries
+# left by previous crashes without waiting for lease expiry.
+say "Restarting ROS2 daemon to flush stale DDS participants..."
+ros2 daemon stop 2>/dev/null || true
+sleep 1
+ros2 daemon start 2>/dev/null || true
+
 # -- Phase 2: hardware auto-detection -----------------------------------------
 DEV_MODE=false   # default; overridden below
 BBB_MODE=false   # BeagleBone Blue over USB CDC

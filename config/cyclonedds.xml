@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  CycloneDDS configuration for the STAR robot stack.
+
+  Problems this fixes:
+    - "Failed to find a free participant index for domain 0"
+      Default MaxAutoParticipantIndex is 9 (10 slots). Stale entries from
+      crashed nodes fill the pool and block new nodes from joining domain 0.
+    - Multicast-related discovery failures on the Pi5 AP network interface.
+
+  Apply with:
+    export CYCLONEDDS_URI="file:///workspaces/STAR/config/cyclonedds.xml"
+  (already set in ~/.bashrc and by start.sh)
+-->
+<CycloneDDS
+  xmlns="https://cdds.io/config"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="https://cdds.io/config
+    https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/master/etc/cyclonedds.xsd">
+
+  <Domain id="any">
+
+    <General>
+      <!--
+        Disable multicast discovery.
+        Rationale:
+          - Pi5 WiFi AP (wlan0 in AP mode) does not forward multicast reliably.
+          - Avoids "no route to host" DDS errors when multiple network
+            interfaces are active (wlan0 AP + lo + BBB USB-ethernet).
+          - Unicast-only discovery is sufficient for a single-host ROS2 stack.
+      -->
+      <AllowMulticast>false</AllowMulticast>
+    </General>
+
+    <Discovery>
+      <!--
+        Raise the auto-assigned participant index ceiling.
+        Default is 9 (indices 0-9 = 10 slots). After repeated crashes or
+        restarts without a clean shutdown, stale SPDP records occupy slots
+        until their lease expires (~10 s by default). Setting this to 120
+        provides 121 slots so normal operation never exhausts the pool.
+      -->
+      <MaxAutoParticipantIndex>120</MaxAutoParticipantIndex>
+
+      <!--
+        Shorten the participant lease duration so stale entries from
+        crashed nodes are reclaimed quickly (default is 10 s).
+      -->
+      <LeaseDuration>5000ms</LeaseDuration>
+    </Discovery>
+
+  </Domain>
+
+</CycloneDDS>
