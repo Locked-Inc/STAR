@@ -21,6 +21,9 @@ OPT_NO_UI=false
 OPT_RVIZ=false
 OPT_NO_AP=false
 
+LICHTBLICK_WEB_DIR="/opt/star-lichtblick-web"
+LICHTBLICK_PORT=8081
+
 WIFI_SSID="${STAR_WIFI_SSID:-STAR-Robot}"
 WIFI_PASS="${STAR_WIFI_PASS:-STAR2026!}"
 WIFI_IFACE="${STAR_WIFI_IFACE:-wlan0}"
@@ -84,7 +87,8 @@ if [[ "$OPT_NO_AP" == "false" ]]; then
             sudo ufw allow from 192.168.50.0/24 to any port 8080 proto tcp >/dev/null 2>&1 || true
             sudo ufw allow from 192.168.50.0/24 to any port 8765 proto tcp >/dev/null 2>&1 || true
             sudo ufw allow from 192.168.50.0/24 to any port 5173 proto tcp >/dev/null 2>&1 || true
-            say "UFW: ports 8080 (gateway), 8765 (foxglove), 5173 (UI) open for AP clients"
+            sudo ufw allow from 192.168.50.0/24 to any port "$LICHTBLICK_PORT" proto tcp >/dev/null 2>&1 || true
+            say "UFW: ports 8080 8765 5173 $LICHTBLICK_PORT open for AP clients"
         fi
 
         # If already active, reuse it (idempotent across start.sh re-runs)
@@ -506,6 +510,29 @@ if [[ "$OPT_RVIZ" == "true" ]]; then
     say "RViz2 running (PID $PID_RVIZ)"
 fi
 
+# -- Step 9: Lichtblick self-hosted web app ------------------------------------
+# Lichtblick is the open-source Foxglove Studio fork. Served locally so the
+# laptop can use it without internet while connected to the AP.
+# One-time setup: ./scripts/setup-lichtblick-web.sh (needs internet).
+PID_LICHTBLICK=""
+if [[ -f "$LICHTBLICK_WEB_DIR/index.html" ]]; then
+    say "Starting Lichtblick web server (:$LICHTBLICK_PORT)..."
+    # npx serve --single: SPA mode -- all 404s return index.html for client routing
+    npx --yes serve --single "$LICHTBLICK_WEB_DIR" \
+        --listen "$LICHTBLICK_PORT" \
+        >"$LOG_DIR/lichtblick.log" 2>&1 &
+    PID_LICHTBLICK=$!
+    sleep 2
+    if ! kill -0 "$PID_LICHTBLICK" 2>/dev/null; then
+        warn "Lichtblick server may have exited -- check $LOG_DIR/lichtblick.log"
+        PID_LICHTBLICK=""
+    else
+        say "Lichtblick running (PID $PID_LICHTBLICK) -- http://$DISPLAY_IP:$LICHTBLICK_PORT"
+    fi
+else
+    warn "Lichtblick not installed -- run ./scripts/setup-lichtblick-web.sh (needs internet)"
+fi
+
 # -- Phase 4: summary banner ---------------------------------------------------
 TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S')"
 if [[ "$AP_ACTIVE" == "true" ]]; then
@@ -545,19 +572,29 @@ fi
 if [[ -n "$PID_RVIZ" ]]; then
     printf "  %-18s PID %s\n" "rviz2" "$PID_RVIZ"
 fi
-printf "  %-18s ws://%s:8765  (open app.foxglove.dev)\n" "Foxglove" "$DISPLAY_IP"
+printf "  %-18s ws://%s:8765\n" "foxglove_bridge" "$DISPLAY_IP"
+if [[ -n "$PID_LICHTBLICK" ]]; then
+    printf "  %-18s PID %s   http://%s:%s\n" "lichtblick" "$PID_LICHTBLICK" "$DISPLAY_IP" "$LICHTBLICK_PORT"
+else
+    printf "  %-18s not installed (run ./scripts/setup-lichtblick-web.sh)\n" "lichtblick"
+fi
 
 if [[ "$AP_ACTIVE" == "true" ]]; then
     echo -e ""
     echo -e "  ${BOLD}WiFi AP -- connect your laptop to '$WIFI_SSID'${NC}"
-    printf "    %-12s %s\n"            "SSID"     "$WIFI_SSID"
-    printf "    %-12s %s\n"            "Password" "$WIFI_PASS"
-    printf "    %-12s %s\n"            "Pi5 IP"   "$AP_IP"
+    printf "    %-12s %s\n"             "SSID"     "$WIFI_SSID"
+    printf "    %-12s %s\n"             "Password" "$WIFI_PASS"
+    printf "    %-12s %s\n"             "Pi5 IP"   "$AP_IP"
     echo -e ""
-    printf "    %-12s ssh star@%s\n"   "SSH"      "$AP_IP"
-    printf "    %-12s http://%s:5173\n" "UI"      "$AP_IP"
-    printf "    %-12s ws://%s:8080/ws\n" "Gateway" "$AP_IP"
-    printf "    %-12s ws://%s:8765\n"  "Foxglove" "$AP_IP"
+    printf "    %-12s ssh star@%s\n"    "SSH"       "$AP_IP"
+    printf "    %-12s http://%s:5173\n" "UI"        "$AP_IP"
+    printf "    %-12s ws://%s:8080/ws\n" "Gateway"  "$AP_IP"
+    if [[ -n "$PID_LICHTBLICK" ]]; then
+        printf "    %-12s http://%s:%s\n" "Lichtblick" "$AP_IP" "$LICHTBLICK_PORT"
+        printf "    %-12s ws://%s:8765  (paste into Lichtblick open dialog)\n" "Bridge WS" "$AP_IP"
+    else
+        printf "    %-12s ws://%s:8765  (use Foxglove/Lichtblick desktop app)\n" "Bridge WS" "$AP_IP"
+    fi
 fi
 
 echo -e ""
