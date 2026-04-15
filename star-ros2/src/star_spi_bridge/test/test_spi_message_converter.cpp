@@ -56,9 +56,9 @@ TEST_F(SpiMessageConverterTest, TwistToVelocity_RotateLeft)
   //   v_left  = linear - angular * (track_width / 2)
   // For linear=0, angular=2: |v| = track_width.
   const double expected_right = twist.angular.z * (kTestTrackWidthM / 2.0);
-  const double expected_left  = -expected_right;
+  const double expected_left = -expected_right;
   EXPECT_NEAR(cmd.front_right_velocity_mps(), expected_right, 0.001);
-  EXPECT_NEAR(cmd.front_left_velocity_mps(),  expected_left,  0.001);
+  EXPECT_NEAR(cmd.front_left_velocity_mps(), expected_left, 0.001);
 }
 
 TEST_F(SpiMessageConverterTest, TwistToVelocity_NaN)
@@ -235,11 +235,11 @@ TEST_F(SpiMessageConverterTest, RoundTrip_TwistToVelocityToJointState)
   //   v_left  = linear - angular * (track_width / 2)
   const double half_track = kTestTrackWidthM / 2.0;
   const double expected_right = twist.linear.x + twist.angular.z * half_track;
-  const double expected_left  = twist.linear.x - twist.angular.z * half_track;
+  const double expected_left = twist.linear.x - twist.angular.z * half_track;
   EXPECT_NEAR(cmd.front_right_velocity_mps(), expected_right, 0.001);
-  EXPECT_NEAR(cmd.front_left_velocity_mps(),  expected_left,  0.001);
-  EXPECT_NEAR(cmd.back_right_velocity_mps(),  expected_right, 0.001);
-  EXPECT_NEAR(cmd.back_left_velocity_mps(),   expected_left,  0.001);
+  EXPECT_NEAR(cmd.front_left_velocity_mps(), expected_left, 0.001);
+  EXPECT_NEAR(cmd.back_right_velocity_mps(), expected_right, 0.001);
+  EXPECT_NEAR(cmd.back_left_velocity_mps(), expected_left, 0.001);
 
   // Create telemetry with matching velocities (simulating firmware response)
   star::v1::TelemetryData telemetry;

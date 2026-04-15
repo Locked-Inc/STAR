@@ -28,15 +28,14 @@ import os
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 # ---------------------------------------------------------------------------
 # Camera hardware identifiers (set by dtoverlay=imx219,cam0 / cam1 in
 # /boot/firmware/config.txt).  These are stable across reboots.
 # ---------------------------------------------------------------------------
-CAM0_ID = "/base/axi/pcie@120000/rp1/i2c@88000/imx219@10"
-CAM1_ID = "/base/axi/pcie@120000/rp1/i2c@80000/imx219@10"
+CAM0_ID = '/base/axi/pcie@120000/rp1/i2c@88000/imx219@10'
+CAM1_ID = '/base/axi/pcie@120000/rp1/i2c@80000/imx219@10'
 
 # ---------------------------------------------------------------------------
 # Default capture resolution.  IMX219 native modes:
@@ -44,15 +43,15 @@ CAM1_ID = "/base/axi/pcie@120000/rp1/i2c@80000/imx219@10"
 #   1640x1232 @ 30 fps   (2x2 binned, recommended for stereo)
 #    640x480  @ 30 fps   (4x4 binned, lowest CPU)
 # ---------------------------------------------------------------------------
-DEFAULT_WIDTH = "1640"
-DEFAULT_HEIGHT = "1232"
-DEFAULT_FPS = "15"
+DEFAULT_WIDTH = '1640'
+DEFAULT_HEIGHT = '1232'
+DEFAULT_FPS = '15'
 
 # ---------------------------------------------------------------------------
 # libpisp ABI fix: system libpisp 1.2.1 must precede ROS libpisp 1.3.0.
 # Without this the IPA proxy fails with an undefined symbol error.
 # ---------------------------------------------------------------------------
-SYSTEM_LIB_PATH = "/usr/lib/aarch64-linux-gnu"
+SYSTEM_LIB_PATH = '/usr/lib/aarch64-linux-gnu'
 
 # ---------------------------------------------------------------------------
 # Stereo baseline geometry (Waveshare IMX219-83: 83 mm horizontal baseline).
@@ -68,13 +67,13 @@ def _gst_pipeline(camera_id: str, width: str, height: str, fps: str) -> str:
     The pipeline is:
       libcamerasrc -> Bayer 16-bit -> bayer2rgb -> videoconvert -> RGB
     """
-    caps = f"video/x-bayer,format=bggr16le,width={width},height={height},framerate={fps}/1"
+    caps = f'video/x-bayer,format=bggr16le,width={width},height={height},framerate={fps}/1'
     return (
-        f"libcamerasrc camera-name={camera_id} "
-        f"! {caps} "
-        "! bayer2rgb "
-        "! videoconvert "
-        "! video/x-raw,format=RGB"
+        f'libcamerasrc camera-name={camera_id} '
+        f'! {caps} '
+        '! bayer2rgb '
+        '! videoconvert '
+        '! video/x-raw,format=RGB'
     )
 
 
@@ -82,136 +81,132 @@ def _cam_env() -> dict:
     """Environment overrides applied to every gscam node."""
     env = dict(os.environ)
     # Prepend system lib directory so libpisp 1.2.1 is found before ROS 1.3.0
-    ld_path = env.get("LD_LIBRARY_PATH", "")
-    env["LD_LIBRARY_PATH"] = (
-        f"{SYSTEM_LIB_PATH}:{ld_path}" if ld_path else SYSTEM_LIB_PATH
+    ld_path = env.get('LD_LIBRARY_PATH', '')
+    env['LD_LIBRARY_PATH'] = (
+        f'{SYSTEM_LIB_PATH}:{ld_path}' if ld_path else SYSTEM_LIB_PATH
     )
     return env
 
 
 def generate_launch_description() -> LaunchDescription:
     width_arg = DeclareLaunchArgument(
-        "width",
+        'width',
         default_value=DEFAULT_WIDTH,
-        description="Capture width in pixels (must match an IMX219 native mode)",
+        description='Capture width in pixels (must match an IMX219 native mode)',
     )
     height_arg = DeclareLaunchArgument(
-        "height",
+        'height',
         default_value=DEFAULT_HEIGHT,
-        description="Capture height in pixels (must match an IMX219 native mode)",
+        description='Capture height in pixels (must match an IMX219 native mode)',
     )
     fps_arg = DeclareLaunchArgument(
-        "fps",
+        'fps',
         default_value=DEFAULT_FPS,
-        description="Capture framerate (integer, frames per second)",
+        description='Capture framerate (integer, frames per second)',
     )
-
-    width = LaunchConfiguration("width")
-    height = LaunchConfiguration("height")
-    fps = LaunchConfiguration("fps")
 
     env = _cam_env()
 
     cam0_node = Node(
-        package="gscam",
-        executable="gscam_node",
-        name="cam0",
-        namespace="cam0",
-        output="screen",
+        package='gscam',
+        executable='gscam_node',
+        name='cam0',
+        namespace='cam0',
+        output='screen',
         env=env,
         parameters=[
             {
-                "gscam_config": _gst_pipeline(CAM0_ID, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_FPS),
-                "camera_name": "cam0",
-                "frame_id": "cam0_optical_frame",
-                "image_encoding": "rgb8",
+                'gscam_config': _gst_pipeline(CAM0_ID, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_FPS),
+                'camera_name': 'cam0',
+                'frame_id': 'cam0_optical_frame',
+                'image_encoding': 'rgb8',
             }
         ],
     )
 
     cam1_node = Node(
-        package="gscam",
-        executable="gscam_node",
-        name="cam1",
-        namespace="cam1",
-        output="screen",
+        package='gscam',
+        executable='gscam_node',
+        name='cam1',
+        namespace='cam1',
+        output='screen',
         env=env,
         parameters=[
             {
-                "gscam_config": _gst_pipeline(CAM1_ID, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_FPS),
-                "camera_name": "cam1",
-                "frame_id": "cam1_optical_frame",
-                "image_encoding": "rgb8",
+                'gscam_config': _gst_pipeline(CAM1_ID, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_FPS),
+                'camera_name': 'cam1',
+                'frame_id': 'cam1_optical_frame',
+                'image_encoding': 'rgb8',
             }
         ],
     )
 
     # Static transform: base_link -> cam0_link (left sensor, at origin)
     cam0_tf = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        name="cam0_tf",
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='cam0_tf',
         arguments=[
-            "--x", "0.0",
-            "--y", "0.0",
-            "--z", "0.0",
-            "--roll", "0.0",
-            "--pitch", "0.0",
-            "--yaw", "0.0",
-            "--frame-id", "base_link",
-            "--child-frame-id", "cam0_link",
+            '--x', '0.0',
+            '--y', '0.0',
+            '--z', '0.0',
+            '--roll', '0.0',
+            '--pitch', '0.0',
+            '--yaw', '0.0',
+            '--frame-id', 'base_link',
+            '--child-frame-id', 'cam0_link',
         ],
     )
 
     # Optical frame: cam0_link -> cam0_optical_frame
     # ROS convention: optical frame has Z forward, X right, Y down
     cam0_optical_tf = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        name="cam0_optical_tf",
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='cam0_optical_tf',
         arguments=[
-            "--x", "0.0",
-            "--y", "0.0",
-            "--z", "0.0",
-            "--roll", "-1.5708",
-            "--pitch", "0.0",
-            "--yaw", "-1.5708",
-            "--frame-id", "cam0_link",
-            "--child-frame-id", "cam0_optical_frame",
+            '--x', '0.0',
+            '--y', '0.0',
+            '--z', '0.0',
+            '--roll', '-1.5708',
+            '--pitch', '0.0',
+            '--yaw', '-1.5708',
+            '--frame-id', 'cam0_link',
+            '--child-frame-id', 'cam0_optical_frame',
         ],
     )
 
     # Static transform: base_link -> cam1_link (right sensor, +83 mm in Y)
     cam1_tf = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        name="cam1_tf",
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='cam1_tf',
         arguments=[
-            "--x", "0.0",
-            "--y", str(STEREO_BASELINE_M),
-            "--z", "0.0",
-            "--roll", "0.0",
-            "--pitch", "0.0",
-            "--yaw", "0.0",
-            "--frame-id", "base_link",
-            "--child-frame-id", "cam1_link",
+            '--x', '0.0',
+            '--y', str(STEREO_BASELINE_M),
+            '--z', '0.0',
+            '--roll', '0.0',
+            '--pitch', '0.0',
+            '--yaw', '0.0',
+            '--frame-id', 'base_link',
+            '--child-frame-id', 'cam1_link',
         ],
     )
 
     # Optical frame: cam1_link -> cam1_optical_frame
     cam1_optical_tf = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        name="cam1_optical_tf",
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='cam1_optical_tf',
         arguments=[
-            "--x", "0.0",
-            "--y", "0.0",
-            "--z", "0.0",
-            "--roll", "-1.5708",
-            "--pitch", "0.0",
-            "--yaw", "-1.5708",
-            "--frame-id", "cam1_link",
-            "--child-frame-id", "cam1_optical_frame",
+            '--x', '0.0',
+            '--y', '0.0',
+            '--z', '0.0',
+            '--roll', '-1.5708',
+            '--pitch', '0.0',
+            '--yaw', '-1.5708',
+            '--frame-id', 'cam1_link',
+            '--child-frame-id', 'cam1_optical_frame',
         ],
     )
 

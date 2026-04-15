@@ -9,6 +9,9 @@
  *
  * Do NOT include this header from source files. It is injected by the
  * build system for indexer correctness only.
+ *
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once
