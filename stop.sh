@@ -7,6 +7,14 @@ GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
 say()  { echo -e "${GREEN}[stop]${NC} $*"; }
 warn() { echo -e "${YELLOW}[stop]${NC} $*"; }
 
+OPT_STOP_AP=false
+AP_CON="STAR-Hotspot"
+for arg in "$@"; do
+    case "$arg" in
+        --stop-ap) OPT_STOP_AP=true ;;
+    esac
+done
+
 # BBB firmware (remote, best-effort)
 BBB_HOST="${BBB_HOST:-192.168.7.2}"
 BBB_USER="${BBB_USER:-debian}"
@@ -54,3 +62,16 @@ pkill -f "rviz2"  2>/dev/null && say "rviz2 stopped"         || true
 
 sleep 1
 say "Done."
+
+# WiFi AP -- default: leave running so the user stays connected.
+# Pass --stop-ap to tear it down (will disconnect any WiFi clients).
+if [[ "$OPT_STOP_AP" == "true" ]]; then
+    if sudo nmcli connection show --active 2>/dev/null | grep -q "$AP_CON"; then
+        sudo nmcli connection down "$AP_CON" 2>/dev/null \
+            && say "WiFi AP '$AP_CON' stopped" || true
+    fi
+else
+    if sudo nmcli connection show --active 2>/dev/null | grep -q "$AP_CON"; then
+        warn "WiFi AP '$AP_CON' still running -- pass --stop-ap to tear it down"
+    fi
+fi

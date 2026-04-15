@@ -99,6 +99,32 @@
     "RosOut!starlog": {
       "searchTerms": [],
       "minLogLevel": 1
+    },
+    "Image!cam0img": {
+      "topic": "/cam0/image_raw",
+      "calibrationTopic": "/cam0/camera_info",
+      "flipHorizontal": false,
+      "flipVertical": false,
+      "rotation": 0,
+      "minValue": 0,
+      "maxValue": 10000,
+      "smooth": false,
+      "transformMarkers": false,
+      "synchronize": false,
+      "zoomMode": "fit"
+    },
+    "Image!cam1img": {
+      "topic": "/cam1/image_raw",
+      "calibrationTopic": "/cam1/camera_info",
+      "flipHorizontal": false,
+      "flipVertical": false,
+      "rotation": 0,
+      "minValue": 0,
+      "maxValue": 10000,
+      "smooth": false,
+      "transformMarkers": false,
+      "synchronize": false,
+      "zoomMode": "fit"
     }
   },
   "globalVariables": {},
@@ -122,10 +148,20 @@
     },
     "second": {
       "direction": "column",
-      "first": "DiagnosticSummary!stardg",
-      "second": "RosOut!starlog",
+      "first": {
+        "direction": "row",
+        "first": "Image!cam0img",
+        "second": "Image!cam1img",
+        "splitPercentage": 50
+      },
+      "second": {
+        "direction": "column",
+        "first": "DiagnosticSummary!stardg",
+        "second": "RosOut!starlog",
+        "splitPercentage": 50
+      },
       "splitPercentage": 50
     },
-    "splitPercentage": 75
+    "splitPercentage": 72
   }
 }
