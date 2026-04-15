@@ -159,7 +159,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     ros-jazzy-robot-localization \
     ros-jazzy-navigation2 \
     ros-jazzy-nav2-bringup \
-    ros-jazzy-bondcpp
+    ros-jazzy-bondcpp \
+    ros-jazzy-ros2run
 
 # Install Renesas Flash Programmer CLI for RX72N flashing via E2 Lite
 ARG RFP_CLI_URL="https://github.com/Locked-Inc/STAR/raw/main/RFP_CLI_Linux_V32200_x64.tgz"
