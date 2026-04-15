@@ -38,12 +38,10 @@ slam_toolbox:
     use_scan_matching: true
     use_scan_barycenter: true
     # minimum_travel_distance [m] and minimum_travel_heading [rad]
-    # TODO(wheels): Restore to 0.2 / 0.15 once wheel encoders provide odom.
-    # Currently 0.0 to allow pure scan-matching without odom (EKF disabled).
-    # With 0.0 SLAM adds scans every cycle based on scan-matching alone.
-    # With wheels: set 0.2m / 0.15rad to reduce CPU and rely on odom deltas.
-    minimum_travel_distance: 0.0
-    minimum_travel_heading: 0.0
+    # EKF fuses wheel encoder odom + gyro -- rely on real odom deltas to gate
+    # when SLAM adds new scans. Reduces CPU vs pure scan-matching every cycle.
+    minimum_travel_distance: 0.2
+    minimum_travel_heading: 0.15
     scan_buffer_size: 10
     do_loop_closing: true
     loop_search_maximum_distance: 5.0
