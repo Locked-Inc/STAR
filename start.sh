@@ -369,7 +369,7 @@ fi
 if [[ "$DEV_MODE" == "true" ]]; then
   say "Starting virtual_rx72n..."
   STAR_SIMULATION_MODE=true \
-    "$STAR_DIR/star-gateway/virtual_rx72n" \
+    "$STAR_DIR/star-gateway/bin/virtual_rx72n" \
     >"$LOG_DIR/virtual_rx72n.log" 2>&1 &
   PID_VRXN=$!
   sleep 1
@@ -391,7 +391,7 @@ fi
 GW_STARTED=false
 for gw_attempt in 1 2 3; do
   env WS_STRICT_ORIGIN=false ${GW_ENV} \
-    "$STAR_DIR/star-gateway/star-gateway" \
+    "$STAR_DIR/star-gateway/bin/star-gateway" \
     >"$LOG_DIR/gateway.log" 2>&1 &
   PID_GW=$!
   sleep 2
