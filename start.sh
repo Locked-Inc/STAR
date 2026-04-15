@@ -76,6 +76,17 @@ if [[ "$OPT_NO_AP" == "false" ]]; then
         warn "If you are connected via WiFi SSH, your session will drop momentarily."
         warn "Reconnect after joining '$WIFI_SSID': ssh star@$AP_IP"
 
+        # Open STAR service ports in UFW so AP clients can reach them.
+        # UFW defaults to blocking all inbound; without these rules the Mac
+        # will connect to the AP but WebSocket/UI connections will be refused.
+        if sudo ufw status 2>/dev/null | grep -q "Status: active"; then
+            say "UFW is active -- allowing STAR ports from AP subnet (192.168.50.0/24)..."
+            sudo ufw allow from 192.168.50.0/24 to any port 8080 proto tcp >/dev/null 2>&1 || true
+            sudo ufw allow from 192.168.50.0/24 to any port 8765 proto tcp >/dev/null 2>&1 || true
+            sudo ufw allow from 192.168.50.0/24 to any port 5173 proto tcp >/dev/null 2>&1 || true
+            say "UFW: ports 8080 (gateway), 8765 (foxglove), 5173 (UI) open for AP clients"
+        fi
+
         # If already active, reuse it (idempotent across start.sh re-runs)
         if sudo nmcli -t -f NAME,DEVICE connection show --active 2>/dev/null \
                 | grep -q "^${AP_CON}:"; then
