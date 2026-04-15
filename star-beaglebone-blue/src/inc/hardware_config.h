@@ -236,6 +236,63 @@ static const float s_bb_duty_fallback_max = 0.65F;
  */
 static const float s_bb_batt_deadzone_v = 1.0F;
 
+/* ---------------------------------------------------------------------------
+ * Wheel geometry (used for tick -> velocity conversion in telemetry_task)
+ * ---------------------------------------------------------------------------*/
+
+/**
+ * @enum bb_wheel_geometry_t
+ * @brief Wheel geometry constants for encoder velocity computation.
+ *
+ * @details
+ * Encoder ticks per output-shaft revolution for the goBILDA + DFRobot
+ * gearmotor stack used by the BBB target. Used by motor_control_task to
+ * convert tick deltas into output-shaft angular velocity (rad/s) for
+ * the velocity PID, and by telemetry_task to convert ticks into wheel
+ * surface velocity (m/s) for upstream odometry.
+ *
+ * 341 PPR Hall encoder * 34.02:1 gearbox = 11599 ticks per output rev.
+ *
+ * @invariant k_bb_ticks_per_rev MUST match the `ticks_per_rev` ROS2
+ *            parameter declared in
+ *            star-ros2/.../star_gateway_bridge_node.cpp and
+ *            star-ros2/.../star_spi_driver_node.cpp. If the values
+ *            disagree, the gateway's pose integration and the BBB's
+ *            twist computation will diverge.
+ *
+ * @code
+ * const float rad_per_tick = (2.0F * (float)M_PI)
+ *                          / (float)k_bb_ticks_per_rev;
+ * @endcode
+ *
+ * @see s_bb_wheel_radius_m The wheel radius companion constant.
+ * @see star_gateway_bridge_node.cpp The ROS2 source of truth.
+ *
+ * @since Version 1.2.0
+ */
+typedef enum : uint32_t {
+    k_bb_ticks_per_rev = 11599U, /**< Quadrature ticks per gearbox output revolution */
+} bb_wheel_geometry_t;
+
+/**
+ * @brief Wheel rolling radius in meters.
+ *
+ * @details
+ * goBILDA 3616-0014-0144 Wasteland 144 mm wheel, diameter / 2 = 0.072 m.
+ * Used by motor_control_task to convert m/s setpoints into output-shaft
+ * rad/s setpoints for the velocity PID, and by telemetry_task to
+ * convert tick-derived rad/s into wheel surface m/s for upstream
+ * odometry.
+ *
+ * Must match the `wheel_radius` ROS2 parameter declared in the gateway
+ * and SPI bridge nodes; see the @invariant note on @ref bb_wheel_geometry_t.
+ *
+ * @note Float, not enum, because C enums cannot hold non-integral values.
+ *
+ * @since Version 1.2.0
+ */
+static const float s_bb_wheel_radius_m = 0.072F;
+
 #ifdef __cplusplus
 }
 #endif

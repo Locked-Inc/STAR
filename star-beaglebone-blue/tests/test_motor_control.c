@@ -338,6 +338,155 @@ static test_result_t test_last_cmd_us_after_set(void)
 }
 
 /**
+ * @brief Test: velocity_setpoint_mps round-trip through shared data.
+ *
+ * @details
+ * Verifies that the new velocity setpoint field added in version 1.2.0
+ * survives a set_motor_cmd / get_motor_cmd round-trip with bit-exact
+ * values for all four motors.
+ *
+ * @return test_result_t k_test_pass or k_test_fail
+ *
+ * @since Version 1.2.0
+ */
+static test_result_t test_motor_cmd_velocity_setpoint_round_trip(void)
+{
+    s_tests_run++;
+    bb_shared_data_t sd;
+    bb_err_t err = bb_shared_data_init(&sd);
+    if (err != k_bb_err_ok) {
+        fprintf(stderr,
+                "[FAIL] test_motor_cmd_velocity_setpoint_round_trip: init failed\n");
+        return k_test_fail;
+    }
+
+    bb_motor_cmd_t cmd_in = {
+        .control_mode = k_bb_ctrl_mode_velocity,
+        .velocity_setpoint_mps = {0.5F, -0.5F, 1.0F, -1.0F},
+    };
+    (void)bb_shared_data_set_motor_cmd(&sd, &cmd_in);
+
+    bb_motor_cmd_t cmd_out = {0};
+    (void)bb_shared_data_get_motor_cmd(&sd, &cmd_out);
+
+    for (uint8_t i = 0U; i < (uint8_t)k_bb_motor_count; i++) {
+        if (cmd_out.velocity_setpoint_mps[i] !=
+            cmd_in.velocity_setpoint_mps[i]) {
+            fprintf(stderr,
+                    "[FAIL] test_motor_cmd_velocity_setpoint_round_trip: channel %u mismatch\n",
+                    i);
+            (void)bb_shared_data_destroy(&sd);
+            return k_test_fail;
+        }
+    }
+
+    (void)bb_shared_data_destroy(&sd);
+    fprintf(stdout, "[PASS] test_motor_cmd_velocity_setpoint_round_trip\n");
+    return k_test_pass;
+}
+
+/**
+ * @brief Test: bb_motor_cmd_t.control_mode default after init is velocity.
+ *
+ * @details
+ * The motor control task dispatches on control_mode. A freshly
+ * initialized shared_data must default to k_bb_ctrl_mode_velocity (the
+ * zero value of the enum) so a robot with no command yet behaves as
+ * "velocity setpoint = 0" rather than "duty = 0" -- both produce a
+ * stopped motor, but the velocity path goes through the PID and is the
+ * intended steady state.
+ *
+ * @return test_result_t k_test_pass or k_test_fail
+ *
+ * @since Version 1.2.0
+ */
+static test_result_t test_motor_cmd_default_mode_is_velocity(void)
+{
+    s_tests_run++;
+    bb_shared_data_t sd;
+    bb_err_t err = bb_shared_data_init(&sd);
+    if (err != k_bb_err_ok) {
+        fprintf(stderr,
+                "[FAIL] test_motor_cmd_default_mode_is_velocity: init failed\n");
+        return k_test_fail;
+    }
+
+    bb_motor_cmd_t cmd_out = {0};
+    (void)bb_shared_data_get_motor_cmd(&sd, &cmd_out);
+
+    if (cmd_out.control_mode != k_bb_ctrl_mode_velocity) {
+        fprintf(stderr,
+                "[FAIL] test_motor_cmd_default_mode_is_velocity: mode = %d (expected %d)\n",
+                (int)cmd_out.control_mode, (int)k_bb_ctrl_mode_velocity);
+        (void)bb_shared_data_destroy(&sd);
+        return k_test_fail;
+    }
+
+    (void)bb_shared_data_destroy(&sd);
+    fprintf(stdout, "[PASS] test_motor_cmd_default_mode_is_velocity\n");
+    return k_test_pass;
+}
+
+/**
+ * @brief Test: control_mode round-trips between velocity and direct_duty.
+ *
+ * @details
+ * Switching from the closed-loop velocity dispatch to the open-loop
+ * direct-duty debug path (and back) must persist through shared data
+ * unchanged.
+ *
+ * @return test_result_t k_test_pass or k_test_fail
+ *
+ * @since Version 1.2.0
+ */
+static test_result_t test_motor_cmd_control_mode_round_trip(void)
+{
+    s_tests_run++;
+    bb_shared_data_t sd;
+    bb_err_t err = bb_shared_data_init(&sd);
+    if (err != k_bb_err_ok) {
+        fprintf(stderr,
+                "[FAIL] test_motor_cmd_control_mode_round_trip: init failed\n");
+        return k_test_fail;
+    }
+
+    /* Switch to direct duty */
+    bb_motor_cmd_t cmd_dd = {
+        .control_mode = k_bb_ctrl_mode_direct_duty,
+        .duty_percent = {0.1F, 0.2F, 0.3F, 0.4F},
+    };
+    (void)bb_shared_data_set_motor_cmd(&sd, &cmd_dd);
+
+    bb_motor_cmd_t cmd_out = {0};
+    (void)bb_shared_data_get_motor_cmd(&sd, &cmd_out);
+    if (cmd_out.control_mode != k_bb_ctrl_mode_direct_duty) {
+        fprintf(stderr,
+                "[FAIL] test_motor_cmd_control_mode_round_trip: direct_duty not persisted\n");
+        (void)bb_shared_data_destroy(&sd);
+        return k_test_fail;
+    }
+
+    /* Switch back to velocity */
+    bb_motor_cmd_t cmd_vel = {
+        .control_mode = k_bb_ctrl_mode_velocity,
+        .velocity_setpoint_mps = {0.0F, 0.0F, 0.0F, 0.0F},
+    };
+    (void)bb_shared_data_set_motor_cmd(&sd, &cmd_vel);
+
+    (void)bb_shared_data_get_motor_cmd(&sd, &cmd_out);
+    if (cmd_out.control_mode != k_bb_ctrl_mode_velocity) {
+        fprintf(stderr,
+                "[FAIL] test_motor_cmd_control_mode_round_trip: velocity not persisted\n");
+        (void)bb_shared_data_destroy(&sd);
+        return k_test_fail;
+    }
+
+    (void)bb_shared_data_destroy(&sd);
+    fprintf(stdout, "[PASS] test_motor_cmd_control_mode_round_trip\n");
+    return k_test_pass;
+}
+
+/**
  * @brief Test: destroy then reinit succeeds and zeroes state.
  *
  * @return test_result_t k_test_pass or k_test_fail
@@ -414,6 +563,9 @@ int main(void)
     failures += (int)test_encoder_round_trip();
     failures += (int)test_concurrent_set_get();
     failures += (int)test_last_cmd_us_after_set();
+    failures += (int)test_motor_cmd_velocity_setpoint_round_trip();
+    failures += (int)test_motor_cmd_default_mode_is_velocity();
+    failures += (int)test_motor_cmd_control_mode_round_trip();
     failures += (int)test_destroy_reinit();
 
     if (failures == 0) {
