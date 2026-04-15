@@ -76,7 +76,7 @@ public:
    * @note Thread-safe; compile-time constant, read-only.
    * @since Version 1.0.0
    */
-  static constexpr double DEFAULT_WHEEL_BASE_M = 0.150;
+  static constexpr double DEFAULT_WHEEL_BASE_M = 0.356;
 
   // ===========================================================================
   // ROS2 -> Protobuf Conversions
@@ -101,7 +101,8 @@ public:
    *
    * @param twist ROS2 Twist message (differential drive command)
    * @param command Output VelocityCommand protobuf
-   * @param wheel_base Distance between wheels in meters (default: 0.150m)
+   * @param wheel_base Distance between wheels in meters (default: 0.356m
+   *                   for the goBILDA Wasteland chassis)
    * @param sequence Optional sequence number for command ordering
    * @return true if conversion successful, false if input validation failed
    */
@@ -251,7 +252,8 @@ public:
    *
    * @param command Input VelocityCommand protobuf
    * @param twist Output ROS2 Twist message
-   * @param wheel_base Distance between wheels in meters (default: 0.150m)
+   * @param wheel_base Distance between wheels in meters (default: 0.356m
+   *                   for the goBILDA Wasteland chassis)
    * @return true if conversion successful, false if input validation failed
    */
   static bool
@@ -332,7 +334,7 @@ public:
    * All values must be strictly positive.
    *
    * @code
-   * MessageConverter::BbbParams params{0.150, 0.0325, 11599};
+   * MessageConverter::BbbParams params{0.356, 0.072, 11599};
    * converter.init_bbb_params(params);
    * @endcode
    *
@@ -371,7 +373,7 @@ public:
    * @note Not thread-safe; call from a single thread before starting timers.
    *
    * @code
-   * MessageConverter::BbbParams p{0.150, 0.0325, 11599};
+   * MessageConverter::BbbParams p{0.356, 0.072, 11599};
    * converter.init_bbb_params(p);
    * @endcode
    *
@@ -538,7 +540,7 @@ public:
 
 private:
   // BBB dead-reckoning state (for telemetry_to_odometry)
-  BbbParams bbb_params_{0.150, 0.0325, 11599};
+  BbbParams bbb_params_{0.356, 0.072, 11599};
   bool bbb_params_initialized_{false};
   double dr_x_{0.0};      /**< Dead-reckoning X position (m). */
   double dr_y_{0.0};      /**< Dead-reckoning Y position (m). */

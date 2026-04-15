@@ -17,8 +17,14 @@
       <left_joint>back_left_wheel_joint</left_joint>
       <right_joint>front_right_wheel_joint</right_joint>
       <right_joint>back_right_wheel_joint</right_joint>
-      <wheel_separation>0.150</wheel_separation>
-      <wheel_radius>0.0325</wheel_radius>
+      <!-- wheel_separation: track width (left-to-right wheel center-to-center)
+           in meters. Source: CAD measurement, 304 mm inside-of-wheel-to-
+           inside-of-wheel + 52 mm goBILDA Wasteland wheel width. Must match
+           the gateway/SPI bridge ROS2 parameters used for diff-drive. -->
+      <wheel_separation>0.356</wheel_separation>
+      <!-- wheel_radius: rolling radius in meters. Source: goBILDA Wasteland
+           144 mm wheel (part 3616-0014-0144), diameter / 2. -->
+      <wheel_radius>0.072</wheel_radius>
       <max_linear_acceleration>1.0</max_linear_acceleration>
       <min_linear_acceleration>-1.0</min_linear_acceleration>
       <max_angular_acceleration>2.0</max_angular_acceleration>
