@@ -111,7 +111,7 @@ func NewTransportManager(config *Config) *TransportManager {
 	tm.operationsCond = sync.NewCond(&tm.operationsMu)
 
 	// Health monitor is always created
-	tm.healthMonitor = NewHealthMonitor(config.HealthCheckInterval)
+	tm.healthMonitor = NewHealthMonitor(config.HealthCheckInterval, config.USBVID, config.USBPID)
 
 	// Hot-plug detector only if enabled and not in force-spi mode
 	if config.EnableHotPlug && config.Mode != ModeForceSPI {
