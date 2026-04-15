@@ -19,6 +19,14 @@ die()  { echo -e "${RED}[start] ERROR:${NC} $*" >&2; exit 1; }
 OPT_NO_LIDAR=false
 OPT_NO_UI=false
 OPT_RVIZ=false
+OPT_NO_AP=false
+
+WIFI_SSID="${STAR_WIFI_SSID:-STAR-Robot}"
+WIFI_PASS="${STAR_WIFI_PASS:-STAR2026!}"
+WIFI_IFACE="${STAR_WIFI_IFACE:-wlan0}"
+AP_CON="STAR-Hotspot"
+AP_IP="192.168.50.1"
+AP_ACTIVE=false
 
 usage() {
     cat <<EOF
@@ -27,12 +35,16 @@ Usage: ./start.sh [OPTIONS]
   (no flags)   Auto-detect hardware; start everything
   --no-lidar   Skip LiDAR/SLAM/EKF even if /dev/rplidar is present
   --no-ui      Skip npm dev server
+  --no-ap      Skip WiFi AP setup (use when connected via Ethernet)
   --rviz       Launch RViz2 after startup
   --help       Print this help
 
 Environment overrides (checked before auto-detection):
   STAR_SIMULATION_MODE=true   Force dev mode (virtual RX72N, no real SPI)
   STAR_SIMULATION_MODE=false  Force HW mode (real SPI, no virtual RX72N)
+  STAR_WIFI_SSID=MyNet        Custom AP SSID       (default: STAR-Robot)
+  STAR_WIFI_PASS=secret       Custom AP password   (default: STAR2026!)
+  STAR_WIFI_IFACE=wlan1       Custom WiFi interface (default: wlan0)
 EOF
     exit 0
 }
@@ -41,6 +53,7 @@ for arg in "$@"; do
     case "$arg" in
         --no-lidar) OPT_NO_LIDAR=true ;;
         --no-ui)    OPT_NO_UI=true ;;
+        --no-ap)    OPT_NO_AP=true ;;
         --rviz)     OPT_RVIZ=true ;;
         --help|-h)  usage ;;
         *) die "Unknown option: $arg (try --help)" ;;
@@ -53,6 +66,58 @@ trap 'echo -e "\n${YELLOW}[start] Interrupted -- stopping all components...${NC}
 # -- fresh log directory -------------------------------------------------------
 rm -rf "$LOG_DIR"
 mkdir -p "$LOG_DIR"
+
+# -- Phase 0: WiFi Access Point -----------------------------------------------
+if [[ "$OPT_NO_AP" == "false" ]]; then
+    if ! ip link show "$WIFI_IFACE" &>/dev/null; then
+        warn "WiFi interface $WIFI_IFACE not found -- skipping AP (use --no-ap to suppress)"
+    else
+        say "Setting up WiFi AP: SSID=$WIFI_SSID on $WIFI_IFACE..."
+        warn "If you are connected via WiFi SSH, your session will drop momentarily."
+        warn "Reconnect after joining '$WIFI_SSID': ssh star@$AP_IP"
+
+        # If already active, reuse it (idempotent across start.sh re-runs)
+        if sudo nmcli -t -f NAME,DEVICE connection show --active 2>/dev/null \
+                | grep -q "^${AP_CON}:"; then
+            say "WiFi AP '$AP_CON' already active -- reusing"
+            AP_ACTIVE=true
+        else
+            # Remove any stale profile from a previous run
+            sudo nmcli connection delete "$AP_CON" 2>/dev/null || true
+
+            # Drop current wlan0 station link so the chip can enter AP mode
+            sudo nmcli device disconnect "$WIFI_IFACE" 2>/dev/null || true
+            sleep 1
+
+            # Create the AP connection profile
+            sudo nmcli connection add \
+                type wifi \
+                ifname "$WIFI_IFACE" \
+                con-name "$AP_CON" \
+                autoconnect no \
+                wifi.mode ap \
+                wifi.ssid "$WIFI_SSID" \
+                wifi.band bg \
+                wifi.channel 6 \
+                wifi-sec.key-mgmt wpa-psk \
+                wifi-sec.psk "$WIFI_PASS" \
+                ipv4.method shared \
+                ipv4.addresses "${AP_IP}/24" \
+                ipv6.method disabled \
+                >/dev/null 2>&1
+
+            # Activate
+            if sudo nmcli connection up "$AP_CON" >/dev/null 2>&1; then
+                sleep 2
+                AP_ACTIVE=true
+                say "WiFi AP active -- SSID: $WIFI_SSID  IP: $AP_IP"
+            else
+                warn "WiFi AP failed to start -- check: sudo nmcli connection up $AP_CON"
+                warn "Continuing without AP (use --no-ap to suppress this warning)"
+            fi
+        fi
+    fi
+fi
 
 # -- Phase 1: stop anything already running -----------------------------------
 say "Stopping any running STAR components..."
@@ -432,7 +497,11 @@ fi
 
 # -- Phase 4: summary banner ---------------------------------------------------
 TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S')"
-LOCAL_IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
+if [[ "$AP_ACTIVE" == "true" ]]; then
+    DISPLAY_IP="$AP_IP"
+else
+    DISPLAY_IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
+fi
 
 echo -e ""
 echo -e "${BOLD}${CYAN}======================================================${NC}"
@@ -460,16 +529,29 @@ if [[ -n "$PID_STEREO" ]]; then
 fi
 printf "  %-18s PID %s\n" "gw_bridge" "${PID_GWBRIDGE:-unknown}"
 if [[ -n "$PID_UI" ]]; then
-    printf "  %-18s PID %s   http://%s:5173\n" "UI" "$PID_UI" "$LOCAL_IP"
+    printf "  %-18s PID %s   http://%s:5173\n" "UI" "$PID_UI" "$DISPLAY_IP"
 fi
 if [[ -n "$PID_RVIZ" ]]; then
     printf "  %-18s PID %s\n" "rviz2" "$PID_RVIZ"
 fi
-printf "  %-18s ws://%s:8765  (open app.foxglove.dev)\n" "Foxglove" "$LOCAL_IP"
+printf "  %-18s ws://%s:8765  (open app.foxglove.dev)\n" "Foxglove" "$DISPLAY_IP"
+
+if [[ "$AP_ACTIVE" == "true" ]]; then
+    echo -e ""
+    echo -e "  ${BOLD}WiFi AP -- connect your laptop to '$WIFI_SSID'${NC}"
+    printf "    %-12s %s\n"            "SSID"     "$WIFI_SSID"
+    printf "    %-12s %s\n"            "Password" "$WIFI_PASS"
+    printf "    %-12s %s\n"            "Pi5 IP"   "$AP_IP"
+    echo -e ""
+    printf "    %-12s ssh star@%s\n"   "SSH"      "$AP_IP"
+    printf "    %-12s http://%s:5173\n" "UI"      "$AP_IP"
+    printf "    %-12s ws://%s:8080/ws\n" "Gateway" "$AP_IP"
+    printf "    %-12s ws://%s:8765\n"  "Foxglove" "$AP_IP"
+fi
 
 echo -e ""
 echo -e "  Logs : $LOG_DIR/"
-echo -e "  Stop : ./stop.sh"
+echo -e "  Stop : ./stop.sh  (AP stays up)  |  ./stop.sh --stop-ap  (tear down AP too)"
 echo -e "${BOLD}${CYAN}======================================================${NC}"
 echo -e ""
 
