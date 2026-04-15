@@ -765,7 +765,7 @@ function MainScreen({
                 </div>
               </div>
 
-              <div className="panel-card__body">
+              <div className="panel-card__body panel-card__body--map">
                 <div className="panel-card__heading">
                   <div className="panel-title">
                     <Glyph accent="accent" label="MAP" />
@@ -809,19 +809,21 @@ function MainScreen({
                       <p>Wheel RPM estimates and global pose tracking.</p>
                     </div>
                     <div className="subpanel-card__content">
-                      <div className="sensor-metrics sensor-metrics--five">
-                        {['FL', 'FR', 'RL', 'RR'].map((label, index) => {
-                          const motor = motorValues[index];
-                          const rpm = ((motor?.velocityMps ?? 0) / 0.2) * 60;
-                          return (
-                            <MetricTile
-                              key={label}
-                              label={`Encoder ${label}`}
-                              tone={eStopActive ? 'neutral' : 'good'}
-                              value={`${formatNumber(rpm, 0)} RPM`}
-                            />
-                          );
-                        })}
+                      <div className="encoder-odometry-layout">
+                        <div className="sensor-metrics sensor-metrics--encoders">
+                          {['FL', 'FR', 'RL', 'RR'].map((label, index) => {
+                            const motor = motorValues[index];
+                            const rpm = ((motor?.velocityMps ?? 0) / 0.2) * 60;
+                            return (
+                              <MetricTile
+                                key={label}
+                                label={`Encoder ${label}`}
+                                tone={eStopActive ? 'neutral' : 'good'}
+                                value={`${formatNumber(rpm, 0)} RPM`}
+                              />
+                            );
+                          })}
+                        </div>
                         <div className="odometry-metric">
                           <MetricTile
                             label="Odometry"

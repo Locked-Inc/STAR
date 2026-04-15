@@ -379,7 +379,7 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.02);
 }
@@ -415,19 +415,56 @@ a {
 }
 
 .panel-card__body {
-  padding: 16px;
+  padding: 18px;
 }
 
 .panel-card__body--compact {
-  padding: 0 16px 16px;
+  padding: 16px 18px 18px;
 }
 
 .panel-card__heading {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.panel-card > .panel-card__heading {
+  padding: 18px 18px 14px;
+  margin-bottom: 0;
+}
+
+.panel-card > .panel-card__heading .panel-title {
+  gap: 16px;
+}
+
+.panel-card > .panel-card__heading .panel-title p {
+  margin-top: 8px;
+}
+
+.panel-card > .panel-card__body {
+  padding: 0 18px 18px;
+}
+
+.panel-card > .panel-card__body.panel-card__body--compact {
+  padding: 0 18px 18px;
+}
+
+.panel-card > .panel-card__body.panel-card__body--map {
+  padding: 18px 18px 18px;
+}
+
+.panel-card__body--map .panel-card__heading {
+  margin-bottom: 18px;
+}
+
+.panel-card__body--map .panel-title {
+  gap: 16px;
+}
+
+.panel-card__body--map .panel-title p {
+  margin-top: 8px;
 }
 
 .panel-card__meta {
@@ -438,8 +475,8 @@ a {
 
 .panel-title {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 14px;
 }
 
 .panel-title h2 {
@@ -449,9 +486,10 @@ a {
 }
 
 .panel-title p {
-  margin: 4px 0 0;
+  margin: 6px 0 0;
   color: var(--muted);
   font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 .legend-row {
@@ -540,7 +578,7 @@ a {
 }
 
 .subpanel-card__header {
-  padding: 14px 14px 10px;
+  padding: 16px 16px 12px;
   border-bottom: 1px solid rgba(124, 152, 184, 0.16);
 }
 
@@ -550,19 +588,20 @@ a {
 }
 
 .subpanel-card__header p {
-  margin: 6px 0 0;
+  margin: 7px 0 0;
   color: var(--muted);
   font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 .subpanel-card__content {
-  padding: 14px;
+  padding: 16px;
 }
 
 .subpanel-card__content--split {
   display: grid;
   grid-template-columns: minmax(120px, 150px) minmax(0, 1fr);
-  gap: 16px;
+  gap: 18px;
   align-items: center;
 }
 
@@ -579,13 +618,31 @@ a {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.encoder-odometry-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.sensor-metrics--encoders {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
 .odometry-metric {
   display: flex;
   min-width: 0;
+  align-self: stretch;
+  padding-top: 14px;
+  border-top: 1px solid rgba(124, 152, 184, 0.18);
 }
 
 .odometry-metric .metric-tile {
   width: 100%;
+  min-width: 0;
+  height: 100%;
+  align-content: start;
 }
 
 .metrics-grid {
@@ -599,7 +656,7 @@ a {
 .metric-tile {
   display: grid;
   gap: 6px;
-  padding: 12px;
+  padding: 12px 13px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.04);
@@ -956,8 +1013,8 @@ a {
 
 .trace-card {
   display: grid;
-  gap: 10px;
-  padding: 12px;
+  gap: 12px;
+  padding: 14px;
   border-radius: 12px;
   border: 1px solid rgba(124, 152, 184, 0.16);
   background: rgba(4, 8, 14, 0.68);
@@ -968,7 +1025,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
 }
 
 .trace-card__header h3 {
@@ -977,10 +1034,11 @@ a {
 }
 
 .trace-card__header p {
-  margin: 4px 0 0;
+  margin: 6px 0 0;
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: 0.78rem;
+  line-height: 1.4;
 }
 
 .trace-card__badge {
@@ -1154,6 +1212,12 @@ a {
   color: var(--muted);
 }
 
+@media (min-width: 1480px) {
+  .sensor-metrics--encoders {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1180px) {
   .dashboard-layout,
   .ros-grid,
@@ -1165,23 +1229,13 @@ a {
     grid-column: auto;
   }
 
-  .sensor-metrics--five,
   .metrics-grid--three,
   .trace-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
 
-@media (min-width: 1181px) {
-  .sensor-metrics--five .odometry-metric {
-    margin-left: 4px;
-    padding-left: 10px;
-    border-left: 1px solid rgba(124, 152, 184, 0.18);
-  }
-
-  .sensor-metrics--five .odometry-metric .metric-tile {
-    padding-left: 14px;
-    padding-right: 12px;
+  .sensor-metrics--encoders {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1202,7 +1256,7 @@ a {
 
   .button-pair,
   .metrics-grid,
-  .sensor-metrics--five,
+  .sensor-metrics--encoders,
   .metrics-grid--three,
   .trace-grid,
   .cell-balance__grid,
