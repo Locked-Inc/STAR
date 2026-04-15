@@ -183,8 +183,9 @@ sleep 1
 ros2 daemon start 2>/dev/null || true
 
 # -- Phase 2: hardware auto-detection -----------------------------------------
-DEV_MODE=false # default; overridden below
-BBB_MODE=false # BeagleBone Blue over USB CDC
+DEV_MODE=false  # default; overridden below
+BBB_MODE=false  # BeagleBone Blue over USB CDC
+BBB_DEV=""      # /dev/ttyACMN path discovered by VID:PID scan
 HAS_LIDAR=false
 PROBE_PID=""
 SPI_BRIDGE_PID="" # set if probe succeeds and we keep the process
@@ -195,15 +196,30 @@ BBB_USER="${BBB_USER:-debian}"
 BBB_PASS="${BBB_PASS:-StarBBB2026!}"
 BBB_FW_PATH="${BBB_FW_PATH:-/home/debian/star-beaglebone-blue}"
 
-# Check for BeagleBone Blue on USB first (takes priority over RX72N)
-if [[ -e /dev/ttyACM0 ]] && [[ -f /sys/class/tty/ttyACM0/device/../idVendor ]]; then
-  BBB_VID=$(cat /sys/class/tty/ttyACM0/device/../idVendor 2>/dev/null || echo "")
-  BBB_PID=$(cat /sys/class/tty/ttyACM0/device/../idProduct 2>/dev/null || echo "")
-  if [[ "$BBB_VID" == "1d6b" && "$BBB_PID" == "0104" ]]; then
-    say "BeagleBone Blue detected on /dev/ttyACM0 (VID:PID $BBB_VID:$BBB_PID)"
+# ------------------------------------------------------------------
+# Detect BeagleBone Blue by USB VID:PID (1d6b:0104) across all
+# ttyACM* devices.  After a disconnect/reconnect the kernel may
+# assign a different minor number (ttyACM0 -> ttyACM1), so we scan
+# every ttyACM* entry in sysfs rather than assuming a fixed name.
+#
+# sysfs layout:
+#   /sys/class/tty/ttyACMN/device  -> symlink to USB interface dir
+#   readlink -f resolves it to: .../2-1:1.0  (USB interface)
+#   dirname gives:               .../2-1      (USB device, has idVendor)
+# ------------------------------------------------------------------
+for _tty_link in /sys/class/tty/ttyACM*/device; do
+  [[ -e "$_tty_link" ]] || continue
+  _iface_dir=$(readlink -f "$_tty_link" 2>/dev/null) || continue
+  _usb_dir=$(dirname "$_iface_dir")
+  _vid=$(cat "$_usb_dir/idVendor" 2>/dev/null | tr -d '[:space:]')
+  _pid=$(cat "$_usb_dir/idProduct" 2>/dev/null | tr -d '[:space:]')
+  if [[ "$_vid" == "1d6b" && "$_pid" == "0104" ]]; then
+    BBB_DEV="/dev/$(basename "$(dirname "$_tty_link")")"
     BBB_MODE=true
+    say "BeagleBone Blue detected at $BBB_DEV (VID:PID 1d6b:0104)"
+    break
   fi
-fi
+done
 
 if [[ "$BBB_MODE" == "true" ]]; then
   say "BBB mode: USB CDC motor controller (skipping RX72N/SPI)"
@@ -259,7 +275,7 @@ fi
 # -- Detection banner ----------------------------------------------------------
 if [[ "$BBB_MODE" == "true" ]]; then
   MODE_LABEL="BBB MODE  (BeagleBone Blue USB)"
-  MC_LABEL="BeagleBone Blue (USB CDC)"
+  MC_LABEL="BeagleBone Blue ($BBB_DEV -- USB CDC only, no SPI)"
 elif [[ "$DEV_MODE" == "true" ]]; then
   MODE_LABEL="DEV MODE  (virtual RX72N)"
   MC_LABEL="virtual (no hardware detected)"
@@ -322,11 +338,24 @@ if [[ "$BBB_MODE" == "true" ]]; then
   if sshpass -p "$BBB_PASS" ssh -o StrictHostKeyChecking=no "$BBB_USER@$BBB_HOST" \
     "pgrep -f star-beaglebone-blue >/dev/null 2>&1"; then
     say "BBB firmware running on $BBB_HOST"
-    # Wait for ttyACM0 to settle after firmware opens /dev/ttyGS0
+    # Wait for the USB CDC port to settle after firmware opens /dev/ttyGS0.
+    # Re-scan for the BBB device in case the minor number changed after
+    # firmware init (the kernel may re-enumerate the CDC ACM interface).
     say "Waiting for USB CDC to stabilize..."
     for _i in $(seq 1 10); do
-      if python3 -c "import serial; s=serial.Serial('/dev/ttyACM0',timeout=0.1); s.close()" 2>/dev/null; then
-        say "USB CDC ready"
+      # Re-detect BBB_DEV in case minor changed
+      for _tl in /sys/class/tty/ttyACM*/device; do
+        [[ -e "$_tl" ]] || continue
+        _id=$(readlink -f "$_tl" 2>/dev/null) || continue
+        _v=$(cat "$(dirname "$_id")/idVendor" 2>/dev/null | tr -d '[:space:]')
+        _p=$(cat "$(dirname "$_id")/idProduct" 2>/dev/null | tr -d '[:space:]')
+        if [[ "$_v" == "1d6b" && "$_p" == "0104" ]]; then
+          BBB_DEV="/dev/$(basename "$(dirname "$_tl")")"
+          break
+        fi
+      done
+      if python3 -c "import serial; s=serial.Serial('${BBB_DEV}',timeout=0.1); s.close()" 2>/dev/null; then
+        say "USB CDC ready at $BBB_DEV"
         break
       fi
       sleep 1
@@ -571,7 +600,7 @@ printf "${BOLD}${CYAN}  STAR Robot -- %s   [%s]${NC}\n" "$TIMESTAMP" "$MODE_LABE
 echo -e "${BOLD}${CYAN}======================================================${NC}"
 
 if [[ "$BBB_MODE" == "true" ]]; then
-  printf "  %-18s %s (remote SSH)\n" "bbb_firmware" "$BBB_HOST"
+  printf "  %-18s %s  CDC: %s\n" "bbb_firmware" "$BBB_HOST" "$BBB_DEV"
 fi
 if [[ "$DEV_MODE" == "true" && -n "$PID_VRXN" ]]; then
   printf "  %-18s PID %s\n" "virtual_rx72n" "$PID_VRXN"
