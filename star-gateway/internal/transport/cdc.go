@@ -175,17 +175,25 @@ func (c *CDCTransport) Open() error {
 	return nil
 }
 
-// autoDetect finds the first available CDC device.
+// autoDetect finds the first available CDC device matching the configured VID:PID.
 //
-// Note: VID/PID filtering is not implemented in the current version because
-// go.bug.st/serial does not provide USB device enumeration. For production use,
-// either specify the device path explicitly in config, or implement platform-specific
-// VID/PID filtering using sysfs on Linux (/sys/class/tty/*/device/../../idVendor).
+// When VID or PID is non-zero, sysfs-based discovery (FindCDCDevice) is used to
+// locate the correct ttyACMN device regardless of which minor number the kernel
+// assigned. This is robust to disconnect/reconnect cycles where the minor number
+// may change (e.g., ttyACM0 -> ttyACM1).
 //
-// This function returns the first available serial port and the full ports list
-// for logging purposes. Returns typically /dev/ttyACM0 on Linux when only one
-// RX72N is connected.
+// When VID and PID are both zero, falls back to returning the first available
+// serial port from the OS port list.
 func (c *CDCTransport) autoDetect() (string, []string, error) {
+	// Prefer VID:PID-based sysfs discovery when credentials are configured.
+	if c.config.VID != 0 || c.config.PID != 0 {
+		device, err := FindCDCDevice(c.config.VID, c.config.PID)
+		if err == nil {
+			return device, []string{device}, nil
+		}
+		// Fall through to port-list enumeration if sysfs lookup fails.
+	}
+
 	ports, err := serial.GetPortsList()
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to enumerate ports: %w", err)
@@ -195,8 +203,7 @@ func (c *CDCTransport) autoDetect() (string, []string, error) {
 		return "", nil, ErrDeviceNotFound
 	}
 
-	// Return first port (typically /dev/ttyACM0 on Linux)
-	// TODO: Implement VID/PID filtering using platform-specific APIs if needed
+	// Return first port when VID:PID filtering is unavailable.
 	return ports[0], ports, nil
 }
 
