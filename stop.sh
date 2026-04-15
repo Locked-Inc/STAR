@@ -40,10 +40,12 @@ pkill -f "ekf_node"                           2>/dev/null || true
 pkill -f "star_spi_bridge_node"               2>/dev/null || true
 pkill -f "robot_state_publisher"              2>/dev/null || true
 pkill -f "static_transform_publisher"         2>/dev/null && say "fake odom TF stopped" || true
+pkill -f "gscam_node"                         2>/dev/null && say "camera nodes stopped" || true
+pkill -f "stereo_camera.launch.py"            2>/dev/null || true
 
 # Go binaries -- match binary name (not full path, which varies by how it was started)
 pkill -f "[s]tar-gateway$"                        2>/dev/null && say "gateway stopped"        || true
-pkill -f "$STAR_DIR/star-gateway/star-gateway"    2>/dev/null || true  # fallback: full path
+pkill -f "$STAR_DIR/star-gateway/bin/star-gateway" 2>/dev/null || true  # fallback: full path
 pkill -f "[v]irtual_rx72n"                        2>/dev/null && say "virtual_rx72n stopped"  || true
 # Wait for serial port to be fully released (prevents "Serial port busy" on restart)
 sleep 2
