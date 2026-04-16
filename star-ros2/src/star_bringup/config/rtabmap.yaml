@@ -1,0 +1,44 @@
+# RTAB-Map stereo 3D mapping for STAR robot.
+# Runs alongside slam_toolbox (publish_tf=false).
+# Fed by stereo rectified images from stereo_image_proc.
+#
+# Stereo depth usable range: 0.47-3.0 m (61 mm baseline, 640x480).
+# Detection rate capped at 2 Hz to stay within Pi5 CPU budget.
+
+/**:
+  ros__parameters:
+    # TF: do NOT publish map->odom (slam_toolbox owns that)
+    publish_tf: false
+    frame_id: base_link
+    odom_frame_id: odom
+    map_frame_id: map
+
+    # Stereo input
+    subscribe_stereo: true
+    subscribe_depth: false
+    subscribe_scan: false
+    subscribe_scan_cloud: false
+    approx_sync: true
+    queue_size: 10
+
+    # Database: in-memory only (no disk writes during operation)
+    database_path: ''
+
+    # Feature detection tuned for Pi5 (reduce CPU load)
+    Vis/MaxFeatures: '300'
+    Vis/MinInliers: '15'
+    GFTT/MinDistance: '7'
+
+    # Memory management for Pi5 8GB
+    Mem/STMSize: '30'
+    Mem/IncrementalMemory: 'true'
+    Rtabmap/DetectionRate: '2.0'
+
+    # 3D grid (built-in OctoMap)
+    Grid/FromDepth: 'true'
+    Grid/3D: 'true'
+    Grid/RangeMax: '3.0'
+    Grid/CellSize: '0.10'
+    Grid/MinClusterSize: '20'
+    GridGlobal/MinSize: '0.0'
+    GridGlobal/OccupancyThr: '0.5'

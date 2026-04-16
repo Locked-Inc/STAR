@@ -15,20 +15,8 @@ whether the ROS workspace has been sourced.
 
 When use_stereo_proc is true (default), stereo_image_proc runs alongside
 the cameras to produce rectified images, a disparity map, and a 3D point
-cloud.  The point cloud is published on /stereo/points2 in the
-cam0_optical_frame and can be consumed by Nav2's costmap obstacle layer.
-
-Topics published (raw):
-  /cam0/camera/image_raw     sensor_msgs/Image        (left)
-  /cam0/camera/camera_info   sensor_msgs/CameraInfo
-  /cam1/camera/image_raw     sensor_msgs/Image        (right)
-  /cam1/camera/camera_info   sensor_msgs/CameraInfo
-
-Topics published (stereo_image_proc, when enabled):
-  /cam0/camera/image_rect_color   sensor_msgs/Image   (rectified left)
-  /cam1/camera/image_rect_color   sensor_msgs/Image   (rectified right)
-  /stereo/disparity               stereo_msgs/DisparityImage
-  /stereo/points2                 sensor_msgs/PointCloud2
+cloud.  When use_rtabmap is true, RTAB-Map runs in parallel with
+slam_toolbox (publish_tf=false) to build a 3D map from stereo vision.
 
 TF frames:
   base_link -> cam0_link -> cam0_optical_frame  (left sensor)
@@ -37,6 +25,7 @@ TF frames:
 
 import os
 
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
@@ -128,6 +117,11 @@ def generate_launch_description() -> LaunchDescription:
         'use_stereo_proc',
         default_value='true',
         description='Run stereo_image_proc for rectification, disparity, and point cloud',
+    )
+    use_rtabmap_arg = DeclareLaunchArgument(
+        'use_rtabmap',
+        default_value='true',
+        description='Run RTAB-Map 3D stereo mapping (publish_tf=false, alongside slam_toolbox)',
     )
 
     env = _cam_env()
@@ -248,6 +242,30 @@ def generate_launch_description() -> LaunchDescription:
         output='screen',
     )
 
+    # -----------------------------------------------------------------------
+    # RTAB-Map 3D stereo mapping.  Runs alongside slam_toolbox with
+    # publish_tf=false so slam_toolbox owns the map->odom transform.
+    # Builds an independent 3D map from stereo vision at ~2 Hz.
+    # -----------------------------------------------------------------------
+    pkg_star_bringup = get_package_share_directory('star_bringup')
+    rtabmap_node = Node(
+        condition=IfCondition(LaunchConfiguration('use_rtabmap')),
+        package='rtabmap_slam',
+        executable='rtabmap',
+        name='rtabmap',
+        output='screen',
+        parameters=[
+            os.path.join(pkg_star_bringup, 'config', 'rtabmap.yaml'),
+        ],
+        remappings=[
+            ('left/image_rect', '/cam0/camera/image_rect_color'),
+            ('left/camera_info', '/cam0/camera/camera_info'),
+            ('right/image_rect', '/cam1/camera/image_rect_color'),
+            ('right/camera_info', '/cam1/camera/camera_info'),
+            ('odom', '/odometry/filtered'),
+        ],
+    )
+
     # Static transform: base_link -> cam0_link (left sensor, at origin)
     cam0_tf = Node(
         package='tf2_ros',
@@ -322,9 +340,11 @@ def generate_launch_description() -> LaunchDescription:
             height_arg,
             fps_arg,
             use_stereo_proc_arg,
+            use_rtabmap_arg,
             cam0_node,
             cam1_node,
             stereo_proc,
+            rtabmap_node,
             cam0_tf,
             cam0_optical_tf,
             cam1_tf,
