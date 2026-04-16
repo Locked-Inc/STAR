@@ -167,6 +167,7 @@ SWEEP_PATTERNS=(
     "star-gateway"
     "virtual_rx72n"
     "/opt/star-lichtblick-web"
+    "rtabmap"
 )
 for pat in "${SWEEP_PATTERNS[@]}"; do
     survivors=$(pgrep -f "$pat" 2>/dev/null) || true
