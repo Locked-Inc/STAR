@@ -22,6 +22,31 @@ die() {
   exit 1
 }
 
+# Verify persistent Pi5 host setup (installed by scripts/setup-pi5-host.sh).
+# Warn-only -- never blocks startup -- so a fresh Pi5 still boots the stack.
+# Wifi power-save is intentionally NOT checked during development.
+# TODO(pre-field): re-enable a power-save check once
+#   /etc/NetworkManager/conf.d/10-wifi-powersave.conf is in place.
+require_host_setup() {
+  local problems=0
+  if [[ ! -f /etc/udev/rules.d/70-star-usb-no-autosuspend.rules ]]; then
+    warn "USB autosuspend udev rule missing -- run: sudo bash $STAR_DIR/scripts/setup-pi5-host.sh"
+    problems=$((problems + 1))
+  fi
+  if [[ "$(cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor 2>/dev/null)" != "schedutil" ]]; then
+    warn "CPU governor not schedutil -- run: sudo bash $STAR_DIR/scripts/setup-pi5-host.sh"
+    problems=$((problems + 1))
+  fi
+  if [[ ! -f /etc/logrotate.d/star-robot ]]; then
+    warn "logrotate config missing -- run: sudo bash $STAR_DIR/scripts/setup-pi5-host.sh"
+    problems=$((problems + 1))
+  fi
+  if (( problems > 0 )); then
+    warn "$problems host-setup issue(s); robot may be unreliable on long runs"
+  fi
+  return 0
+}
+
 # -- argument parsing ----------------------------------------------------------
 OPT_NO_LIDAR=false
 OPT_NO_UI=false
@@ -76,6 +101,9 @@ trap 'echo -e "\n${YELLOW}[start] Interrupted -- stopping all components...${NC}
 # -- fresh log directory -------------------------------------------------------
 rm -rf "$LOG_DIR"
 mkdir -p "$LOG_DIR"
+
+# -- verify persistent host setup ---------------------------------------------
+require_host_setup
 
 # -- Phase 0: WiFi Access Point -----------------------------------------------
 if [[ "$OPT_NO_AP" == "false" ]]; then
@@ -167,6 +195,12 @@ source "$ROS2_SETUP"
 # shellcheck disable=SC1090
 source "$ROS2_WS_SETUP"
 set -u
+
+# Explicit ROS2 environment overrides -- safe under systemd/cron/ssh
+# (non-login shells that don't source ~/.bashrc).
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-42}"
+export RCUTILS_COLORIZED_OUTPUT=1
 
 # CycloneDDS config: raise participant index limit and disable multicast.
 # Without this, stale participants from crashed nodes exhaust the default
