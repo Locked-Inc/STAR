@@ -54,11 +54,13 @@ DEFAULT_FPS = '15'
 SYSTEM_LIB_PATH = '/usr/lib/aarch64-linux-gnu'
 
 # ---------------------------------------------------------------------------
-# Stereo baseline geometry (Waveshare IMX219-83: 83 mm horizontal baseline).
-# CAM0 is the left sensor; CAM1 is offset +83 mm along the Y axis of
+# Stereo baseline geometry.  Physically measured at 61 mm (confirmed by
+# calibration which computed ~60 mm).  The Waveshare "83" in IMX219-83
+# refers to the field of view, not the baseline distance.
+# CAM0 is the left sensor; CAM1 is offset +61 mm along the Y axis of
 # base_link when the board faces forward.
 # ---------------------------------------------------------------------------
-STEREO_BASELINE_M = 0.083
+STEREO_BASELINE_M = 0.061
 
 
 def _gst_pipeline(camera_id: str, width: str, height: str, fps: str) -> str:
