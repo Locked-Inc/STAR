@@ -16,7 +16,7 @@ CC      := rx-elf-gcc
 OBJCOPY := rx-elf-objcopy
 SIZE    := rx-elf-size
 
-CPU     := -mcpu=rx72t -misa=v3 -mlittle-endian-data
+CPU     := -mcpu=rx72n -misa=v3 -mlittle-endian-data
 
 # ----------------------------------------------------------------------------
 # Vendored libraries
@@ -56,7 +56,7 @@ TX_AOBJS  := $(notdir $(TX_ASRC:.S=.o))
 
 TARGET := gpio_test
 
-RFP_CLI := /opt/rfp/linux-x64/rfp-cli
+RFP_CLI ?= $(HOME)/tools/rfp-cli/bin/rfp-cli
 
 .PHONY: all flash clean
 
@@ -100,7 +100,7 @@ $(TARGET).hex: $(TARGET).elf
 # Flash via the E2 Lite + rfp-cli
 # ----------------------------------------------------------------------------
 flash: $(TARGET).mot
-	sudo $(RFP_CLI) -d RX72N -t e2l -if fine -run \
+	$(RFP_CLI) -d RX720 -t e2l -if fine -run \
 	    -auth id FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF -a $<
 
 clean:
