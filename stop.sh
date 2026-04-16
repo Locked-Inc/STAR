@@ -137,6 +137,7 @@ sleep 2
 # ---------------------------------------------------------------------------
 stop_proc "UI (vite)" "vite" 3
 stop_proc "rviz2" "rviz2" 3
+stop_proc "lichtblick (serve)" "serve.*star-lichtblick-web" 3
 
 # ---------------------------------------------------------------------------
 # Final sweep -- catch anything that slipped through (e.g. orphaned children
