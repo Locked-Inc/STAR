@@ -263,6 +263,7 @@ def generate_launch_description() -> LaunchDescription:
             ('right/image_rect', '/cam1/camera/image_raw'),
             ('right/camera_info', '/cam1/camera/camera_info'),
             ('odom', '/odometry/filtered'),
+            ('scan', '/scan'),
         ],
     )
 
