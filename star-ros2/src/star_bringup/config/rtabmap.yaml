@@ -21,6 +21,9 @@
     approx_sync: true
     queue_size: 10
 
+    # Convert stereo pair to depth image internally (required for 3D grid)
+    stereo_to_depth: true
+
     # Database: in-memory only (no disk writes during operation)
     database_path: ''
 
@@ -32,7 +35,7 @@
     # Memory management for Pi5 8GB
     Mem/STMSize: '30'
     Mem/IncrementalMemory: 'true'
-    Rtabmap/DetectionRate: '2.0'
+    Rtabmap/DetectionRate: '1.0'
 
     # 3D grid (built-in OctoMap)
     Grid/FromDepth: 'true'
