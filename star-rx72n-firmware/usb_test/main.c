@@ -1,49 +1,54 @@
 /**
  * @file main.c
- * @brief USB CDC bring-up test for RX72N.
+ * @brief Minimal USB device bring-up test for RX72N (rx_usb bypass version).
  *
  * @details
- * Boots RX72N from LOCO 240 kHz to PLL 240 MHz (ICLK 240, PCKB 60, UCK 48),
- * starts the ThreadX 100 Hz tick on CMT0, then enters ThreadX.  Inside
- * tx_application_define() we create one task that:
+ * Boots clocks, starts CMT0 ticker, enters ThreadX.  The heartbeat task calls
+ * usb_min_init() (a 200-line hand-coded USB device that bypasses libs/rx_usb)
+ * and then blinks PA7 forever while waiting for the host to enumerate.
  *
- *   1. Calls rx_usb_init() to bring up the existing 3-port CDC-ACM
- *      composite stack from libs/rx_usb.
- *   2. Waits for the host to enumerate and configure the protocol port.
- *   3. Writes a counter line every second on /dev/ttyACM0.
- *
- * If everything works the host sees three new /dev/ttyACM* devices appear
- * with VID/PID 045B:0235 (Renesas test allocation, set in rx_usb_cdc.c).
+ * If the host can read the device + config descriptors and assign an
+ * address, we know the RX72N USB hardware setup is correct and the bug
+ * is somewhere inside libs/rx_usb.
  *
  * SPDX-License-Identifier: MIT
  * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include <stdint.h>
-#include <string.h>
 
-#include "rx72n_regs.h"
-#include "rx_err.h"
-#include "rx_usb.h"
 #include "tx_api.h"
 
 extern void clock_init(void);
 extern void cmt0_init(void);
+extern void usb_min_init(void);
 
-extern void sci9_debug_init(void);
-extern void sci9_debug_putc(char c);
-extern void sci9_debug_puts(const char *s);
-extern void sci9_debug_puthex32(uint32_t v);
-extern void sci9_debug_puthex16(uint16_t v);
-
-/* PORTA accessor for visual heartbeat LED on PA7 (same LED used by blinky). */
+/*
+ * Multi-LED diagnostic encoding (same six LEDs as blinky):
+ *   PA7  -- heartbeat (always toggles, proves the firmware loop is alive)
+ *   PB0  -- isr_count > 0 (the USB0 USBI ISR has fired at least once)
+ *   P71  -- setup_count > 0 (a SETUP packet has reached handle_setup)
+ *   P72  -- dvst_count > 0 (a bus-reset / device-state event has fired)
+ *
+ * If only PA7 toggles -> ISR isn't firing at all.
+ * If PA7 + PB0       -> ISR fires but no SETUP packets.
+ * If PA7 + PB0 + P72 -> bus reset arrives but no SETUP yet.
+ * If PA7 + PB0 + P71 + P72 -> SETUP is being processed by us.
+ */
 typedef enum : uintptr_t {
     k_porta_pdr_addr  = 0x0008C00AU,
     k_porta_podr_addr = 0x0008C02AU,
+    k_portb_pdr_addr  = 0x0008C00BU,
+    k_portb_podr_addr = 0x0008C02BU,
+    k_port7_pdr_addr  = 0x0008C007U,
+    k_port7_podr_addr = 0x0008C027U,
 } gpio_addrs_t;
 
 typedef enum : uint8_t {
     k_pa7_mask = (uint8_t)(1U << 7U),
+    k_pb0_mask = (uint8_t)(1U << 0U),
+    k_p71_mask = (uint8_t)(1U << 1U),
+    k_p72_mask = (uint8_t)(1U << 2U),
 } gpio_bits_t;
 
 static inline volatile uint8_t *porta_pdr(void)
@@ -54,128 +59,77 @@ static inline volatile uint8_t *porta_podr(void)
 {
     return (volatile uint8_t *)k_porta_podr_addr;
 }
+static inline volatile uint8_t *portb_pdr(void)
+{
+    return (volatile uint8_t *)k_portb_pdr_addr;
+}
+static inline volatile uint8_t *portb_podr(void)
+{
+    return (volatile uint8_t *)k_portb_podr_addr;
+}
+static inline volatile uint8_t *port7_pdr(void)
+{
+    return (volatile uint8_t *)k_port7_pdr_addr;
+}
+static inline volatile uint8_t *port7_podr(void)
+{
+    return (volatile uint8_t *)k_port7_podr_addr;
+}
+
+extern volatile uint32_t g_usb_isr_count;
+extern volatile uint32_t g_usb_setup_count;
+extern volatile uint32_t g_usb_dvst_count;
 
 /* ==========================================================================
- * ThreadX task
+ * ThreadX task config
  * ========================================================================== */
 typedef enum : uint16_t {
-    k_usb_task_stack_sz = 2048U, /**< Bytes of stack for the USB heartbeat task */
+    k_usb_task_stack_sz = 2048U,
 } usb_task_stack_t;
 
 typedef enum : uint8_t {
     k_usb_task_priority = 10U,
-    k_heartbeat_period_ticks = 100U, /**< 100 ticks * 10 ms = 1 s */
+    k_blink_period_ticks = 25U, /**< 25 ticks * 10 ms = 250 ms = 2 Hz */
 } usb_task_cfg_t;
 
 static TX_THREAD s_usb_tcb;
 static uint8_t   s_usb_stack[k_usb_task_stack_sz];
 
-/* ==========================================================================
- * Heartbeat task: drives /dev/ttyACM0 once enumerated.
- *
- * Toggles the PA7 LED every iteration so we have a visual confirmation that
- * the firmware is running even when USB enumeration fails.  If the LED is
- * blinking but no /dev/ttyACMx appears, the bug is in USB.  If the LED is
- * dark or stuck, the bug is in clock/CMT/ThreadX/init.
- * ========================================================================== */
-static void dump_usb_state(const char *tag)
-{
-    sci9_debug_puts(tag);
-    sci9_debug_puts(" SYSCFG=");
-    sci9_debug_puthex16(usb0()->syscfg);
-    sci9_debug_puts(" SYSSTS0=");
-    sci9_debug_puthex16(usb0()->syssts0);
-    sci9_debug_puts(" DVSTCTR=");
-    sci9_debug_puthex16(usb0()->dvstctr0);
-    sci9_debug_puts(" INTSTS0=");
-    sci9_debug_puthex16(usb0()->intsts0);
-    sci9_debug_puts(" INTENB0=");
-    sci9_debug_puthex16(usb0()->intenb0);
-    sci9_debug_puts(" DCPCTR=");
-    sci9_debug_puthex16(usb0()->dcpctr);
-    sci9_debug_puts("\r\n");
-}
-
 static void usb_heartbeat_task(ULONG arg)
 {
     (void)arg;
 
-    /* PA7 as output -- the GPIO bit for the visual heartbeat. */
+    /* All four diagnostic LEDs as outputs, all off at start. */
     *porta_pdr() |= k_pa7_mask;
+    *portb_pdr() |= k_pb0_mask;
+    *port7_pdr() |= (uint8_t)(k_p71_mask | k_p72_mask);
     *porta_podr() &= (uint8_t)~k_pa7_mask;
+    *portb_podr() &= (uint8_t)~k_pb0_mask;
+    *port7_podr() &= (uint8_t)~(k_p71_mask | k_p72_mask);
 
-    /* SCI9 deferred -- the init currently hangs the firmware. */
+    usb_min_init();
 
-    /* Bring up USB hardware (calls tx_thread_sleep internally so this MUST
-     * run from a task, not from main() before tx_kernel_enter()). */
-    rx_usb_config_t cfg = { .callback = (rx_usb_callback_t)0, .ctx = (void *)0 };
-    rx_err_t init_err = rx_usb_init(&cfg);
-    (void)init_err;
-
-    /* LED on means rx_usb_init returned (clock + USB hw init both finished).
-     * If it gets here the firmware ran past clock_init, cmt0_init, ThreadX
-     * boot, and the entire rx_usb stack init. */
-    *porta_podr() |= k_pa7_mask;
-
-    /* Periodic blink while waiting for enumeration -- LED only, no SCI9. */
-    while (!rx_usb_is_configured(k_usb_port_proto)) {
-        *porta_podr() ^= k_pa7_mask;
-        tx_thread_sleep(10U);
-    }
-
-    /* LED solid on once enumeration completes. */
-    *porta_podr() |= k_pa7_mask;
-
-    /* Steady-state: print a counter line every second. */
-    static const char banner[] = "STAR USB CDC heartbeat\r\n";
-    (void)rx_usb_write(k_usb_port_proto,
-                       (const uint8_t *)banner,
-                       (uint32_t)(sizeof banner - 1U));
-
-    uint32_t tick = 0U;
-    char     line[32];
     for (;;) {
-        /* Tiny formatter: "tick=NNNNN\r\n" without pulling in printf. */
-        line[0]  = 't';
-        line[1]  = 'i';
-        line[2]  = 'c';
-        line[3]  = 'k';
-        line[4]  = '=';
-        uint32_t value = tick;
-        char     digits[10];
-        uint8_t  d = 0U;
-        if (value == 0U) {
-            digits[d++] = '0';
+        *porta_podr() ^= k_pa7_mask;
+        if (g_usb_isr_count > 0U) {
+            *portb_podr() |= k_pb0_mask;
         }
-        else {
-            while (value != 0U && d < (uint8_t)sizeof digits) {
-                digits[d++] = (char)('0' + (value % 10U));
-                value /= 10U;
-            }
+        if (g_usb_setup_count > 0U) {
+            *port7_podr() |= k_p71_mask;
         }
-        uint8_t out_len = 5U;
-        while (d > 0U) {
-            d--;
-            line[out_len++] = digits[d];
+        if (g_usb_dvst_count > 0U) {
+            *port7_podr() |= k_p72_mask;
         }
-        line[out_len++] = '\r';
-        line[out_len++] = '\n';
-        (void)rx_usb_write(k_usb_port_proto, (const uint8_t *)line, (uint32_t)out_len);
-
-        tx_thread_sleep((ULONG)k_heartbeat_period_ticks);
-        tick++;
+        tx_thread_sleep((ULONG)k_blink_period_ticks);
     }
 }
 
-/* ==========================================================================
- * tx_application_define -- ThreadX entry point after tx_kernel_enter().
- * ========================================================================== */
 void tx_application_define(void *first_unused_memory)
 {
     (void)first_unused_memory;
 
     (void)tx_thread_create(&s_usb_tcb,
-                           "usb_hb",
+                           "usb_min",
                            usb_heartbeat_task,
                            0U,
                            s_usb_stack,
@@ -186,15 +140,10 @@ void tx_application_define(void *first_unused_memory)
                            TX_AUTO_START);
 }
 
-/* ==========================================================================
- * main -- clock + tick + ThreadX kernel.
- * ========================================================================== */
 int main(void)
 {
     clock_init();
     cmt0_init();
-    /* SCI9 deferred: it currently hangs the firmware in init.  USB USES the
-     * heartbeat thread to instrument state instead. */
     tx_kernel_enter(); /* Never returns */
     return 0;
 }

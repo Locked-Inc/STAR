@@ -38,9 +38,11 @@ gradle-app.setting
 # Local configuration files
 local.properties
 
-# KiCad lock files
+# KiCad lock files and local history
 *.kicad_sch.lck
 *.kicad_pcb.lck
+*.kicad_pro.lck
+schematic/.history/
 
 # Windows paths and logs
 **/C:*
