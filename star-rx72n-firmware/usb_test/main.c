@@ -22,6 +22,10 @@
 extern void clock_init(void);
 extern void cmt0_init(void);
 extern void usb_min_init(void);
+extern void sci9_debug_init(void);
+extern void sci9_debug_puts(const char *s);
+extern void sci9_debug_puthex16(uint16_t v);
+extern void sci9_debug_puthex32(uint32_t v);
 
 /*
  * Multi-LED diagnostic encoding (same six LEDs as blinky):
@@ -79,6 +83,8 @@ static inline volatile uint8_t *port7_podr(void)
 extern volatile uint32_t g_usb_isr_count;
 extern volatile uint32_t g_usb_setup_count;
 extern volatile uint32_t g_usb_dvst_count;
+extern volatile uint16_t g_usb_last_intsts;
+extern volatile uint16_t g_usb_last_breq;
 
 /* ==========================================================================
  * ThreadX task config
@@ -107,7 +113,10 @@ static void usb_heartbeat_task(ULONG arg)
     *portb_podr() &= (uint8_t)~k_pb0_mask;
     *port7_podr() &= (uint8_t)~(k_p71_mask | k_p72_mask);
 
+    sci9_debug_puts("\n=== usb_test task started ===\n");
+
     usb_min_init();
+    sci9_debug_puts("usb_min_init done, D+ pull-up active\n");
 
     for (;;) {
         *porta_podr() ^= k_pa7_mask;
@@ -120,6 +129,19 @@ static void usb_heartbeat_task(ULONG arg)
         if (g_usb_dvst_count > 0U) {
             *port7_podr() |= k_p72_mask;
         }
+
+        sci9_debug_puts("isr=");
+        sci9_debug_puthex32(g_usb_isr_count);
+        sci9_debug_puts(" setup=");
+        sci9_debug_puthex32(g_usb_setup_count);
+        sci9_debug_puts(" dvst=");
+        sci9_debug_puthex32(g_usb_dvst_count);
+        sci9_debug_puts(" intsts=");
+        sci9_debug_puthex16(g_usb_last_intsts);
+        sci9_debug_puts(" breq=");
+        sci9_debug_puthex16(g_usb_last_breq);
+        sci9_debug_puts("\n");
+
         tx_thread_sleep((ULONG)k_blink_period_ticks);
     }
 }
@@ -140,10 +162,40 @@ void tx_application_define(void *first_unused_memory)
                            TX_AUTO_START);
 }
 
+/**
+ * @brief Quick visual heartbeat: flash PA7 N times at LOCO speed.
+ * Proves firmware is alive BEFORE clock_init() or ThreadX.
+ */
+static void early_blink(uint8_t count)
+{
+    *porta_pdr()  |= k_pa7_mask;
+    *porta_podr() &= (uint8_t)~k_pa7_mask;
+    for (uint8_t n = 0U; n < count; n++) {
+        *porta_podr() |= k_pa7_mask;
+        for (volatile uint32_t d = 0U; d < 20000U; d++) { __asm__ volatile("nop"); }
+        *porta_podr() &= (uint8_t)~k_pa7_mask;
+        for (volatile uint32_t d = 0U; d < 20000U; d++) { __asm__ volatile("nop"); }
+    }
+}
+
 int main(void)
 {
+    /* 1 blink = firmware entry (still on LOCO 240 kHz) */
+    early_blink(1U);
+
     clock_init();
+
+    /* 2 blinks = clock_init() returned OK (PLL running) */
+    early_blink(2U);
+
+    sci9_debug_init();
+    sci9_debug_puts("\n\n>>> main() alive, clock_init done <<<\n");
     cmt0_init();
+    sci9_debug_puts(">>> cmt0_init done, entering ThreadX <<<\n");
+
+    /* 3 blinks = about to enter ThreadX */
+    early_blink(3U);
+
     tx_kernel_enter(); /* Never returns */
     return 0;
 }

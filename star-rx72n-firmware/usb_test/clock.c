@@ -151,60 +151,36 @@ void clock_init(void)
 {
     volatile rx_system_regs_t *sys = system_regs();
 
-    /* Step 0: unlock PRC0 (clock) + PRC1 (module stop) */
+    /* Unlock PRC0 (clock) + PRC1 (module stop) */
     *prcr_reg() = k_rx_prcr_unlock_prc0_prc1;
 
-    /* Step 1: configure MOSC for a 24 MHz crystal.
-     *         MOSEL=0 (crystal), MODRV2=00 (20-24 MHz drive). */
-    *mofcr_reg() = k_mofcr_crystal;
-
-    /* Step 2: program the main OSC wait time before enabling MOSC. */
-    *moscwtcr_reg() = k_moscwtcr_default;
-
-    /* Step 3: start the main oscillator. */
-    sys->mosccr = k_mosccr_enable;
-
-    /* Step 4: wait for MOSC to stabilise. */
-    while ((sys->oscovfsr & k_oscovfsr_moovf) == 0U) {
+    /* Start HOCO (internal 16 MHz, runs even without crystal) */
+    sys->hococr = 0x00U;
+    while ((sys->oscovfsr & 0x08U) == 0U) {
         __asm__ volatile("nop");
     }
 
-    /* Step 5: program PLL multiplier (24 MHz / 1 * 10 = 240 MHz) and enable. */
-    sys->pllcr  = k_pllcr_24mhz_x10;
+    /* PLL from HOCO: 16 MHz x12 = 192 MHz.
+     * STC=(12*2-1)=23=0x17, PLLSRCSEL=1(HOCO), PLIDIV=/1. */
+    sys->pllcr  = 0x1710U;
     sys->pllcr2 = k_pllcr2_enable;
 
-    /* Step 6: wait for PLL to stabilise. */
     while ((sys->oscovfsr & k_oscovfsr_plovf) == 0U) {
         __asm__ volatile("nop");
     }
 
-    /* Step 6b: program PPLL (USB-dedicated PLL) so UCLK has a real source.
-     * 24 MHz EXTAL × 8 / 4 = 48 MHz UCLK regardless of SCKCR2 dividing. */
-    *ppllcr_reg()  = k_ppllcr_x8_div4;
-    *ppllcr2_reg() = k_ppllcr2_enable;
-
-    /* Step 6c: wait for PPLL to stabilise. */
-    while ((sys->oscovfsr & k_oscovfsr_pplovf) == 0U) {
-        __asm__ volatile("nop");
-    }
-
-    /* Step 7: MANDATORY -- raise flash wait state before ICLK exceeds 120 MHz. */
+    /* MEMWAIT (harmless at 96 MHz but safe for future changes) */
     *memwait_reg() = k_memwait_one;
 
-    /* Step 8: program all bus dividers.
-     *         FCK=/4(60), ICK=/1(240), BCK=/2(120), PCKA=/2(120),
-     *         PCKB=/4(60), PCKC=/4(60), PCKD=/4(60). */
+    /* Bus dividers (same as production) */
     sys->sckcr = k_sckcr_value;
 
-    /* Step 9: select main PLL as the UCLK divider source (UPLLSEL=0). */
+    /* USB clock: PLL 192 MHz / 4 = 48 MHz (even duty cycle) */
     *packcr_reg() = k_packcr_pll_source;
+    sys->sckcr2 = 0x0031U;  /* UCK=3 -> /4 */
 
-    /* Step 10: program the USB clock divider.  /5 of 240 MHz PLL = 48 MHz. */
-    sys->sckcr2 = k_sckcr2_uck_div5;
-
-    /* Step 11: switch the system clock source to PLL. */
+    /* Switch CPU to PLL */
     sys->sckcr3 = k_sckcr3_cksel_pll_value;
 
-    /* Step 12: relock PRCR. */
     *prcr_reg() = k_rx_prcr_lock;
 }
