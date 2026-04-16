@@ -16,7 +16,10 @@ CC      := rx-elf-gcc
 OBJCOPY := rx-elf-objcopy
 SIZE    := rx-elf-size
 
-CPU     := -mcpu=rx72n -misa=v3 -mlittle-endian-data
+# GCC for RX only accepts a fixed set of -mcpu values (rx100 rx13t rx140 rx200
+# rx230 rx600 rx610 rx64m rx66t rx71m rx72t). RX72N shares the RXv3 core/ISA
+# with rx72t, so rx72t is the correct flag for this board.
+CPU     := -mcpu=rx72t -misa=v3 -mlittle-endian-data
 
 # ----------------------------------------------------------------------------
 # Vendored libraries
