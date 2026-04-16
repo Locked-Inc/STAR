@@ -42,6 +42,24 @@
         "/map": {
           "visible": true
         },
+        "/cloud_map": {
+          "visible": true,
+          "pointSize": 3,
+          "colorMode": "flat",
+          "flatColor": "#ff6600"
+        },
+        "/octomap_occupied_space": {
+          "visible": true,
+          "pointSize": 4,
+          "colorMode": "flat",
+          "flatColor": "#ff2266"
+        },
+        "/stereo/points2": {
+          "visible": false,
+          "pointSize": 2,
+          "colorMode": "flat",
+          "flatColor": "#4488ff"
+        },
         "/tf": {
           "visible": true
         },
@@ -101,8 +119,8 @@
       "minLogLevel": 1
     },
     "Image!cam0img": {
-      "topic": "/cam0/image_raw",
-      "calibrationTopic": "/cam0/camera_info",
+      "topic": "/cam0/camera/image_raw",
+      "calibrationTopic": "/cam0/camera/camera_info",
       "flipHorizontal": false,
       "flipVertical": false,
       "rotation": 0,
@@ -114,8 +132,8 @@
       "zoomMode": "fit"
     },
     "Image!cam1img": {
-      "topic": "/cam1/image_raw",
-      "calibrationTopic": "/cam1/camera_info",
+      "topic": "/cam1/camera/image_raw",
+      "calibrationTopic": "/cam1/camera/camera_info",
       "flipHorizontal": false,
       "flipVertical": false,
       "rotation": 0,
