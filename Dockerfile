@@ -105,22 +105,25 @@ RUN if [ ! -f /opt/gnurx/bin/rx-elf-gcc ]; then \
 # Add GNURX toolchain to PATH
 ENV PATH="/opt/gnurx/bin:${PATH}"
 
-# Install buf
+# Install buf and Doxygen 1.16.1 in one layer (both are small curl-based
+# downloads from GitHub releases; batching them cuts one image layer and keeps
+# cache invalidation scoped together).
+# Doxygen note: Ubuntu 24.04 apt only ships 1.9.8 which uses the unmaintained
+# tabu/longtabu LaTeX package that fails with TeX Live 2022+. Doxygen 1.10+
+# dropped tabu, so we must install from GitHub releases.
 ARG BUF_VERSION=1.28.1
-RUN curl -sSL "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-$(uname -s)-$(uname -m)" -o /usr/local/bin/buf \
-    && chmod +x /usr/local/bin/buf
-
-# Install Doxygen 1.16.1 from GitHub releases.
-# Ubuntu 24.04 apt only has 1.9.8 which uses the unmaintained tabu/longtabu
-# LaTeX package that fails with TeX Live 2022+. Doxygen 1.10+ dropped tabu.
 ARG DOXYGEN_VERSION=1.16.1
 RUN set -eux; \
+    curl -sSL "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-$(uname -s)-$(uname -m)" \
+        -o /usr/local/bin/buf; \
+    chmod +x /usr/local/bin/buf; \
     DOXYGEN_TAG=$(echo "$DOXYGEN_VERSION" | tr '.' '_'); \
     curl -fsSL \
       "https://github.com/doxygen/doxygen/releases/download/Release_${DOXYGEN_TAG}/doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz" \
       -o /tmp/doxygen.tar.gz; \
     tar -xzf /tmp/doxygen.tar.gz -C /usr/local --strip-components=1; \
     rm /tmp/doxygen.tar.gz; \
+    buf --version; \
     doxygen --version
 
 # Install ARM bare-metal toolchain for STM32 development
@@ -141,8 +144,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     openocd \
     stlink-tools \
     usbutils \
-    libusb-1.0-0-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libusb-1.0-0-dev
 
 # Install Gazebo Harmonic simulation stack for star_simulation package
 # - ros-jazzy-ros-gz: Meta-package bridging ROS2 Jazzy and Gazebo Harmonic
