@@ -370,6 +370,84 @@ def print_report(results: list[PinResult]) -> None:
         sys.exit(1)
 
 
+def auto_discover_mapping(all_edges: list[EdgeEvent]) -> dict[tuple[int, int], str]:
+    """
+    Figure out which AD2 channel maps to which firmware pin without any
+    prior wiring information.
+
+    How it works:
+      1. The firmware toggles pins in the known order in FIRMWARE_PIN_ORDER,
+         each pin HIGH for 50 ms then LOW for 50 ms (100 ms per pin).
+      2. Between cycles there is a 1000 ms quiet gap (no edges).
+      3. We find the longest edge-free interval across all channels; the
+         edge immediately AFTER that gap is pin index 0's rising edge.
+      4. Every other channel's rising edge timestamp, relative to that
+         anchor, tells us which pin index it's wired to:
+             pin_index = round((t_edge - t_anchor) / 100)
+      5. Look up FIRMWARE_PIN_ORDER[pin_index] for the pin name.
+    """
+    rising_times = sorted(e.timestamp_ms for e in all_edges if e.rising)
+    if len(rising_times) < 2:
+        print("  auto-map: not enough rising edges to infer mapping")
+        return {}
+
+    # Find the longest gap between consecutive rising edges across all
+    # channels. The firmware cycle gap (~1000 ms) is the only interval
+    # longer than the 100 ms pin period, so it wins.
+    gaps = [(rising_times[i + 1] - rising_times[i], rising_times[i + 1])
+            for i in range(len(rising_times) - 1)]
+    gap_duration, t_anchor = max(gaps, key=lambda x: x[0])
+
+    if gap_duration < 500.0:
+        print(f"  auto-map: longest gap is only {gap_duration:.0f} ms "
+              f"(expected ~1000 ms). Capture too short or firmware not running?")
+        return {}
+
+    print(f"  auto-map: cycle boundary at t = {t_anchor:.0f} ms "
+          f"(gap = {gap_duration:.0f} ms)")
+
+    # Group rising edges per (ad2, channel); first edge after anchor is that
+    # channel's pin.
+    per_channel: dict[tuple[int, int], list[float]] = {}
+    for e in all_edges:
+        if e.rising:
+            per_channel.setdefault((e.ad2_index, e.channel), []).append(
+                e.timestamp_ms)
+
+    mapping: dict[tuple[int, int], str] = {}
+    cycle_end = t_anchor + NUM_PINS * PIN_PERIOD_MS
+    for key, times in per_channel.items():
+        after = [t for t in times if t_anchor - 20.0 <= t < cycle_end]
+        if not after:
+            continue
+        t_edge = min(after)
+        pin_idx = round((t_edge - t_anchor) / PIN_PERIOD_MS)
+        if 0 <= pin_idx < NUM_PINS:
+            mapping[key] = FIRMWARE_PIN_ORDER[pin_idx]
+    return mapping
+
+
+def print_auto_mapping(mapping: dict[tuple[int, int], str]) -> None:
+    """Print a paste-ready CHANNEL_TO_PIN dict for the user."""
+    if not mapping:
+        print("\nAuto-map produced no results. Check wiring and re-run.")
+        return
+    print("\n" + "=" * 72)
+    print("AUTO-DETECTED CHANNEL_TO_PIN MAPPING")
+    print("Paste this into gpio_verify.py to replace the current dict.")
+    print("=" * 72)
+    print("CHANNEL_TO_PIN = {")
+    last_ad2 = -1
+    for (ad2, ch) in sorted(mapping):
+        if ad2 != last_ad2:
+            print(f"    # AD2 #{ad2}")
+            last_ad2 = ad2
+        print(f'    ({ad2}, {ch:2d}): "{mapping[(ad2, ch)]}",')
+    print("}")
+    print("=" * 72)
+    print(f"Mapped {len(mapping)} channels total.\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="GPIO breakout board verification via AD2")
@@ -381,18 +459,30 @@ def main() -> None:
                         help="Print detailed edge info for failures")
     parser.add_argument("--dry-run", action="store_true",
                         help="Print config and exit without capturing")
+    parser.add_argument("--auto-map", action="store_true",
+                        help="Auto-discover which channel is wired to which "
+                             "pin. Captures 2 cycles and prints a paste-ready "
+                             "CHANNEL_TO_PIN dict. Skip verification step.")
     args = parser.parse_args()
+
+    # Auto-map forces 2 capture cycles so the cycle-gap anchor is always in
+    # range regardless of when the capture starts relative to firmware boot.
+    if args.auto_map and args.cycles < 2:
+        args.cycles = 2
 
     print(f"GPIO Breakout Board Verification")
     print(f"  Pins:        {NUM_PINS}")
     print(f"  Sample rate: {args.sample_rate} Hz")
     print(f"  Cycle time:  {CYCLE_DURATION_MS} ms")
-    print(f"  Mapped channels: {len(CHANNEL_TO_PIN)}")
+    print(f"  Mode:        {'AUTO-MAP' if args.auto_map else 'VERIFY'}")
+    if not args.auto_map:
+        print(f"  Mapped channels: {len(CHANNEL_TO_PIN)}")
     print()
 
-    if len(CHANNEL_TO_PIN) == 0:
+    if not args.auto_map and len(CHANNEL_TO_PIN) == 0:
         print("WARNING: No AD2 channels mapped to pins yet.")
-        print("Edit CHANNEL_TO_PIN in this script after wiring the AD2 probes.")
+        print("Either edit CHANNEL_TO_PIN in this script or re-run with "
+              "--auto-map to discover the mapping automatically.")
         if not args.dry_run:
             print("Proceeding with capture anyway (edge detection only).\n")
 
@@ -423,6 +513,11 @@ def main() -> None:
             edges = detect_edges(samples, i, args.sample_rate)
             all_edges.extend(edges)
             print(f"  AD2 #{i}: {len(edges)} edges detected")
+
+        if args.auto_map:
+            mapping = auto_discover_mapping(all_edges)
+            print_auto_mapping(mapping)
+            return
 
         # Verify
         print("Verifying pin toggles ...")
