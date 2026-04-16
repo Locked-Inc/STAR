@@ -190,7 +190,7 @@ def generate_launch_description():
         parameters=[{
             'port': 8765,
             'address': '0.0.0.0',
-            'send_buffer_limit': 10000000,
+            'send_buffer_limit': 50000000,
             'use_sim_time': False,
         }],
         respawn=True,
