@@ -13,22 +13,37 @@ the LD_LIBRARY_PATH search; this file prepends /usr/lib/aarch64-linux-gnu
 in each node's env so the Pi IPA module loads correctly regardless of
 whether the ROS workspace has been sourced.
 
-Topics published:
-  /cam0/image_raw        sensor_msgs/Image   (CAM0 -- left)
-  /cam0/camera_info      sensor_msgs/CameraInfo
-  /cam1/image_raw        sensor_msgs/Image   (CAM1 -- right)
-  /cam1/camera_info      sensor_msgs/CameraInfo
+When use_stereo_proc is true (default), stereo_image_proc runs alongside
+the cameras to produce rectified images, a disparity map, and a 3D point
+cloud.  The point cloud is published on /stereo/points2 in the
+cam0_optical_frame and can be consumed by Nav2's costmap obstacle layer.
+
+Topics published (raw):
+  /cam0/camera/image_raw     sensor_msgs/Image        (left)
+  /cam0/camera/camera_info   sensor_msgs/CameraInfo
+  /cam1/camera/image_raw     sensor_msgs/Image        (right)
+  /cam1/camera/camera_info   sensor_msgs/CameraInfo
+
+Topics published (stereo_image_proc, when enabled):
+  /cam0/camera/image_rect_color   sensor_msgs/Image   (rectified left)
+  /cam1/camera/image_rect_color   sensor_msgs/Image   (rectified right)
+  /stereo/disparity               stereo_msgs/DisparityImage
+  /stereo/points2                 sensor_msgs/PointCloud2
 
 TF frames:
   base_link -> cam0_link -> cam0_optical_frame  (left sensor)
-  base_link -> cam1_link -> cam1_optical_frame  (right sensor, +83 mm in Y)
+  base_link -> cam1_link -> cam1_optical_frame  (right sensor, +61 mm in Y)
 """
 
 import os
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.conditions import IfCondition
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
 
 # ---------------------------------------------------------------------------
 # Camera hardware identifiers.  Mapping verified by stereo calibration:
@@ -84,7 +99,6 @@ def _gst_pipeline(camera_id: str, width: str, height: str, fps: str) -> str:
 def _cam_env() -> dict:
     """Environment overrides applied to every gscam node."""
     env = dict(os.environ)
-    # Prepend system lib directory so libpisp 1.2.1 is found before ROS 1.3.0
     ld_path = env.get('LD_LIBRARY_PATH', '')
     env['LD_LIBRARY_PATH'] = (
         f'{SYSTEM_LIB_PATH}:{ld_path}' if ld_path else SYSTEM_LIB_PATH
@@ -108,6 +122,11 @@ def generate_launch_description() -> LaunchDescription:
         default_value=DEFAULT_FPS,
         description='Capture framerate (integer, frames per second)',
     )
+    use_stereo_proc_arg = DeclareLaunchArgument(
+        'use_stereo_proc',
+        default_value='true',
+        description='Run stereo_image_proc for rectification, disparity, and point cloud',
+    )
 
     env = _cam_env()
 
@@ -120,7 +139,9 @@ def generate_launch_description() -> LaunchDescription:
         env=env,
         parameters=[
             {
-                'gscam_config': _gst_pipeline(CAM0_ID, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_FPS),
+                'gscam_config': _gst_pipeline(
+                    CAM0_ID, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_FPS
+                ),
                 'camera_name': 'cam0',
                 'frame_id': 'cam0_optical_frame',
                 'image_encoding': 'rgb8',
@@ -138,13 +159,42 @@ def generate_launch_description() -> LaunchDescription:
         env=env,
         parameters=[
             {
-                'gscam_config': _gst_pipeline(CAM1_ID, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_FPS),
+                'gscam_config': _gst_pipeline(
+                    CAM1_ID, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_FPS
+                ),
                 'camera_name': 'cam1',
                 'frame_id': 'cam1_optical_frame',
                 'image_encoding': 'rgb8',
                 'camera_info_url': 'package://star_bringup/config/camera_info/cam1.yaml',
             }
         ],
+    )
+
+    # -----------------------------------------------------------------------
+    # stereo_image_proc: rectification + disparity (block matching) + point
+    # cloud.  Uses approximate_sync because the two IMX219 sensors are NOT
+    # hardware-synced.  The namespace 'stereo' puts disparity and points2
+    # under /stereo/*.
+    # -----------------------------------------------------------------------
+    stereo_proc = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            FindPackageShare('stereo_image_proc'),
+            '/launch/stereo_image_proc.launch.py',
+        ]),
+        launch_arguments={
+            'left_namespace': 'cam0/camera',
+            'right_namespace': 'cam1/camera',
+            'namespace': 'stereo',
+            'approximate_sync': 'True',
+            'stereo_algorithm': '0',
+            'correlation_window_size': '15',
+            'disparity_range': '64',
+            'speckle_size': '100',
+            'speckle_range': '4',
+            'uniqueness_ratio': '15.0',
+            'use_color': 'True',
+        }.items(),
+        condition=IfCondition(LaunchConfiguration('use_stereo_proc')),
     )
 
     # Static transform: base_link -> cam0_link (left sensor, at origin)
@@ -165,7 +215,6 @@ def generate_launch_description() -> LaunchDescription:
     )
 
     # Optical frame: cam0_link -> cam0_optical_frame
-    # ROS convention: optical frame has Z forward, X right, Y down
     cam0_optical_tf = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
@@ -182,7 +231,7 @@ def generate_launch_description() -> LaunchDescription:
         ],
     )
 
-    # Static transform: base_link -> cam1_link (right sensor, +83 mm in Y)
+    # Static transform: base_link -> cam1_link (right sensor, +61 mm in Y)
     cam1_tf = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
@@ -221,8 +270,10 @@ def generate_launch_description() -> LaunchDescription:
             width_arg,
             height_arg,
             fps_arg,
+            use_stereo_proc_arg,
             cam0_node,
             cam1_node,
+            stereo_proc,
             cam0_tf,
             cam0_optical_tf,
             cam1_tf,
