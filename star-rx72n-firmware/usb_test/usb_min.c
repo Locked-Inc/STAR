@@ -96,15 +96,23 @@ typedef enum : uint16_t {
  * Hardcoded device + config descriptors.  Vendor-class device, one dummy
  * interface, no extra endpoints, bus-powered, 100 mA.  pid.codes test VID/PID.
  * ========================================================================== */
-/* GARBAGE descriptor: every byte is 0xAA except the first which is 0xAB.
- * If the host sees these bytes literally, our firmware's TX path works.
- * If the host still sees 12 01 00 02 00 00 00 08, our firmware never
- * actually wrote to the FIFO -- and the bytes the kernel reports are
- * synthetic defaults, not real device data. */
+/* Real USB 2.0 device descriptor.  pid.codes test VID/PID (1209:0001).
+ * Vendor-class device, 64-byte max packet on EP0 (full-speed). */
 static const uint8_t s_device_desc[18] = {
-    0xAB, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-    0xAA, 0xAA,
+    0x12,           /* bLength = 18                                      */
+    0x01,           /* bDescriptorType = DEVICE                          */
+    0x00, 0x02,     /* bcdUSB = 2.00                                     */
+    0xFF,           /* bDeviceClass = vendor-specific                    */
+    0x00,           /* bDeviceSubClass                                   */
+    0x00,           /* bDeviceProtocol                                   */
+    0x40,           /* bMaxPacketSize0 = 64                              */
+    0x09, 0x12,     /* idVendor = 0x1209 (pid.codes)                    */
+    0x01, 0x00,     /* idProduct = 0x0001 (pid.codes test PID)           */
+    0x00, 0x01,     /* bcdDevice = 1.00                                  */
+    0x00,           /* iManufacturer = 0 (no string)                     */
+    0x00,           /* iProduct = 0 (no string)                          */
+    0x00,           /* iSerialNumber = 0 (no string)                     */
+    0x01,           /* bNumConfigurations = 1                            */
 };
 
 static const uint8_t s_config_desc[18] = {
