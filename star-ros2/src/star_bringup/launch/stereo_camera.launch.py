@@ -31,11 +31,11 @@ from launch.actions import DeclareLaunchArgument
 from launch_ros.actions import Node
 
 # ---------------------------------------------------------------------------
-# Camera hardware identifiers (set by dtoverlay=imx219,cam0 / cam1 in
-# /boot/firmware/config.txt).  These are stable across reboots.
+# Camera hardware identifiers.  Mapping verified by stereo calibration:
+# physical-left sensor is on the i2c@80000 bus, physical-right on i2c@88000.
 # ---------------------------------------------------------------------------
-CAM0_ID = '/base/axi/pcie@120000/rp1/i2c@88000/imx219@10'
-CAM1_ID = '/base/axi/pcie@120000/rp1/i2c@80000/imx219@10'
+CAM0_ID = '/base/axi/pcie@120000/rp1/i2c@80000/imx219@10'
+CAM1_ID = '/base/axi/pcie@120000/rp1/i2c@88000/imx219@10'
 
 # ---------------------------------------------------------------------------
 # Default capture resolution.  IMX219 native modes:
@@ -65,14 +65,15 @@ def _gst_pipeline(camera_id: str, width: str, height: str, fps: str) -> str:
     """
     Build the GStreamer pipeline string for one IMX219 sensor.
 
-    The pipeline is:
-      libcamerasrc -> Bayer 16-bit -> bayer2rgb -> videoconvert -> RGB
+    The pipeline lets libcamera's PiSP ISP debayer in hardware and output
+    RGB directly.  The previous software bayer2rgb approach produced broken
+    images (horizontal line artifacts) because it cannot handle the 16-bit
+    Bayer output from libcamerasrc on Pi5.
     """
-    caps = f'video/x-bayer,format=bggr16le,width={width},height={height},framerate={fps}/1'
     return (
         f'libcamerasrc camera-name={camera_id} '
-        f'! {caps} '
-        '! bayer2rgb '
+        f'! video/x-raw,format=RGB,width={width},height={height},'
+        f'framerate={fps}/1 '
         '! videoconvert '
         '! video/x-raw,format=RGB'
     )
@@ -121,6 +122,7 @@ def generate_launch_description() -> LaunchDescription:
                 'camera_name': 'cam0',
                 'frame_id': 'cam0_optical_frame',
                 'image_encoding': 'rgb8',
+                'camera_info_url': 'package://star_bringup/config/camera_info/cam0.yaml',
             }
         ],
     )
@@ -138,6 +140,7 @@ def generate_launch_description() -> LaunchDescription:
                 'camera_name': 'cam1',
                 'frame_id': 'cam1_optical_frame',
                 'image_encoding': 'rgb8',
+                'camera_info_url': 'package://star_bringup/config/camera_info/cam1.yaml',
             }
         ],
     )
