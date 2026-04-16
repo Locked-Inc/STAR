@@ -38,12 +38,11 @@ TF frames:
 import os
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
+from launch_ros.actions import ComposableNodeContainer, Node
+from launch_ros.descriptions import ComposableNode
 
 # ---------------------------------------------------------------------------
 # Camera hardware identifiers.  Mapping verified by stereo calibration:
@@ -55,11 +54,14 @@ CAM1_ID = '/base/axi/pcie@120000/rp1/i2c@88000/imx219@10'
 # ---------------------------------------------------------------------------
 # Default capture resolution.  IMX219 native modes:
 #   3280x2464 @ 15 fps   (full)
-#   1640x1232 @ 30 fps   (2x2 binned, recommended for stereo)
-#    640x480  @ 30 fps   (4x4 binned, lowest CPU)
+#   1640x1232 @ 30 fps   (2x2 binned)
+#    640x480  @ 30 fps   (4x4 binned, optimal for stereo on Pi5)
+#
+# 640x480 gives ~5-10 Hz stereo matching vs ~1-2 Hz at 1640x1232.
+# Calibration YAMLs in config/camera_info/ are scaled to match.
 # ---------------------------------------------------------------------------
-DEFAULT_WIDTH = '1640'
-DEFAULT_HEIGHT = '1232'
+DEFAULT_WIDTH = '640'
+DEFAULT_HEIGHT = '480'
 DEFAULT_FPS = '15'
 
 # ---------------------------------------------------------------------------
@@ -171,30 +173,79 @@ def generate_launch_description() -> LaunchDescription:
     )
 
     # -----------------------------------------------------------------------
-    # stereo_image_proc: rectification + disparity (block matching) + point
-    # cloud.  Uses approximate_sync because the two IMX219 sensors are NOT
+    # Stereo processing pipeline: rectify + disparity + point cloud.
+    #
+    # Runs in a multi-threaded component container for better throughput on
+    # Pi5 (4 cores).  At 640x480 with block matching this produces ~5-10 Hz
+    # disparity and point cloud.
+    #
+    # approximate_sync is required because the two IMX219 sensors are NOT
     # hardware-synced.  The namespace 'stereo' puts disparity and points2
     # under /stereo/*.
     # -----------------------------------------------------------------------
-    stereo_proc = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([
-            FindPackageShare('stereo_image_proc'),
-            '/launch/stereo_image_proc.launch.py',
-        ]),
-        launch_arguments={
-            'left_namespace': 'cam0/camera',
-            'right_namespace': 'cam1/camera',
-            'namespace': 'stereo',
-            'approximate_sync': 'True',
-            'stereo_algorithm': '0',
-            'correlation_window_size': '15',
-            'disparity_range': '64',
-            'speckle_size': '100',
-            'speckle_range': '4',
-            'uniqueness_ratio': '15.0',
-            'use_color': 'True',
-        }.items(),
+    stereo_proc = ComposableNodeContainer(
         condition=IfCondition(LaunchConfiguration('use_stereo_proc')),
+        name='stereo_pipeline',
+        namespace='',
+        package='rclcpp_components',
+        executable='component_container_mt',
+        composable_node_descriptions=[
+            ComposableNode(
+                package='image_proc',
+                plugin='image_proc::RectifyNode',
+                name='rectify_left',
+                namespace='cam0/camera',
+                remappings=[
+                    ('image', 'image_raw'),
+                    ('image_rect', 'image_rect_color'),
+                ],
+            ),
+            ComposableNode(
+                package='image_proc',
+                plugin='image_proc::RectifyNode',
+                name='rectify_right',
+                namespace='cam1/camera',
+                remappings=[
+                    ('image', 'image_raw'),
+                    ('image_rect', 'image_rect_color'),
+                ],
+            ),
+            ComposableNode(
+                package='stereo_image_proc',
+                plugin='stereo_image_proc::DisparityNode',
+                namespace='stereo',
+                parameters=[{
+                    'approximate_sync': True,
+                    'stereo_algorithm': 0,
+                    'correlation_window_size': 15,
+                    'disparity_range': 64,
+                    'speckle_size': 100,
+                    'speckle_range': 4,
+                    'uniqueness_ratio': 15.0,
+                }],
+                remappings=[
+                    ('left/image_rect', '/cam0/camera/image_rect_color'),
+                    ('left/camera_info', '/cam0/camera/camera_info'),
+                    ('right/image_rect', '/cam1/camera/image_rect_color'),
+                    ('right/camera_info', '/cam1/camera/camera_info'),
+                ],
+            ),
+            ComposableNode(
+                package='stereo_image_proc',
+                plugin='stereo_image_proc::PointCloudNode',
+                namespace='stereo',
+                parameters=[{
+                    'approximate_sync': True,
+                    'use_color': True,
+                }],
+                remappings=[
+                    ('left/image_rect_color', '/cam0/camera/image_rect_color'),
+                    ('left/camera_info', '/cam0/camera/camera_info'),
+                    ('right/camera_info', '/cam1/camera/camera_info'),
+                ],
+            ),
+        ],
+        output='screen',
     )
 
     # Static transform: base_link -> cam0_link (left sensor, at origin)
