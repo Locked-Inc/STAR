@@ -32,6 +32,15 @@
     Vis/MinInliers: '15'
     GFTT/MinDistance: '7'
 
+    # Stereo matching: use block matching (SSD) instead of optical flow.
+    # Optical flow fails with our unsynchronized cameras because left/right
+    # exposure can differ significantly. SSD is more robust.
+    Stereo/OpticalFlow: 'false'
+    Stereo/MinDisparity: '1'
+    Stereo/MaxDisparity: '128'
+    Stereo/SSD: 'true'
+    Stereo/Eps: '0.0'
+
     # Memory management for Pi5 8GB
     Mem/STMSize: '30'
     Mem/IncrementalMemory: 'true'
@@ -40,8 +49,8 @@
     # 3D grid (built-in OctoMap)
     Grid/FromDepth: 'true'
     Grid/3D: 'true'
-    Grid/RangeMax: '3.0'
+    Grid/RangeMax: '5.0'
     Grid/CellSize: '0.10'
-    Grid/MinClusterSize: '20'
+    Grid/MinClusterSize: '0'
     GridGlobal/MinSize: '0.0'
     GridGlobal/OccupancyThr: '0.5'
