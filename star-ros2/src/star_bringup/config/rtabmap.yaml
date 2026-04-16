@@ -13,10 +13,11 @@
     odom_frame_id: odom
     map_frame_id: map
 
-    # Stereo input
+    # Stereo + lidar input (fused: stereo gives 3D height up to ~3m,
+    # lidar gives 2D range out to 12m — together they build a bigger map)
     subscribe_stereo: true
     subscribe_depth: false
-    subscribe_scan: false
+    subscribe_scan: true
     subscribe_scan_cloud: false
     approx_sync: true
     queue_size: 10
@@ -57,7 +58,7 @@
     # 3D grid (built-in OctoMap)
     Grid/FromDepth: 'true'
     Grid/3D: 'true'
-    Grid/RangeMax: '5.0'
+    Grid/RangeMax: '12.0'
     Grid/CellSize: '0.05'
     Grid/MinClusterSize: '0'
     GridGlobal/MinSize: '0.0'
