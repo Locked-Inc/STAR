@@ -145,7 +145,12 @@ sleep 2
 # ---------------------------------------------------------------------------
 stop_proc "UI (vite)" "vite" 3
 stop_proc "rviz2" "rviz2" 3
-stop_proc "lichtblick (serve)" "serve.*star-lichtblick-web" 3
+# Use the literal install path as the match, not "serve.*star-lichtblick-web".
+# The regex form false-matches any bash -c wrapper whose argv happens to
+# contain that substring (e.g. in stop.sh testing harnesses); the literal
+# path /opt/star-lichtblick-web does not appear outside the actual serve
+# process.
+stop_proc "lichtblick (serve)" "/opt/star-lichtblick-web" 3
 
 # ---------------------------------------------------------------------------
 # Final sweep -- catch anything that slipped through (e.g. orphaned children
@@ -161,7 +166,7 @@ SWEEP_PATTERNS=(
     "static_transform_publisher"
     "star-gateway"
     "virtual_rx72n"
-    "serve.*star-lichtblick-web"
+    "/opt/star-lichtblick-web"
 )
 for pat in "${SWEEP_PATTERNS[@]}"; do
     survivors=$(pgrep -f "$pat" 2>/dev/null) || true
