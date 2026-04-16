@@ -205,3 +205,50 @@ cd /workspaces/STAR
 git pull
 ./build-ros2.sh   # rebuild if star-ros2/ or star-proto/ changed
 ```
+
+---
+
+## Host-Level Robot Settings (one-time)
+
+Run once on every Pi5 after flashing the OS:
+
+```bash
+sudo bash /workspaces/STAR/scripts/setup-pi5-host.sh
+```
+
+That installs:
+
+| File | Purpose |
+|------|---------|
+| `/etc/udev/rules.d/70-star-usb-no-autosuspend.rules` | Disables USB autosuspend for BeagleBone Blue (`1d6b:0104`) and RPLiDAR C1 (`10c4:ea60`). Prevents `/dev/ttyACM0` and `/dev/ttyUSB0` from dropping under idle. |
+| `/etc/systemd/system/star-cpu-governor.service` | Pins CPU governor to `schedutil` very early in boot (`DefaultDependencies=no`, runs before `base.target`). Enabled automatically. |
+| `/etc/logrotate.d/star-robot` | Rotates `/tmp/star-logs/*.log` daily, 3 rotations, 20 MB cap. Prevents tmpfs OOM on long runs. |
+| `/etc/systemd/system/star-robot.service` | Optional boot-time robot launch unit (`Type=oneshot + RemainAfterExit=yes` so `systemctl status` correctly reflects running state). **Installed but NOT enabled.** |
+
+`start.sh` calls `require_host_setup` on launch and prints a single warning block listing any missing pieces.
+
+## Pre-Field-Deployment Checklist
+
+Do NOT do these during active development -- they interfere with dev workflows -- but they MUST be done before any real field deployment:
+
+1. **Disable wifi power-save.** `wlan0 power_save` defaults to `on`; under ROS2 traffic on the AP this causes latency spikes and occasional drops. Drop this file and restart NetworkManager:
+
+   ```ini
+   # /etc/NetworkManager/conf.d/10-wifi-powersave.conf
+   [connection]
+   wifi.powersave = 2     ; 0=default 1=ignore 2=disable 3=enable
+   ```
+
+   Then re-enable the power-save check inside `require_host_setup` in `start.sh` (currently a `TODO(pre-field)` comment).
+
+2. **Enable `star-robot.service`** for auto-boot on power-on:
+
+   ```bash
+   sudo systemctl enable --now star-robot.service
+   ```
+
+   Verify with `journalctl -u star-robot.service -n 50 --no-pager` and `systemctl status star-robot.service`; expect `active (exited)`.
+
+3. **Review AP credentials.** Defaults `STAR_WIFI_SSID=STAR-Robot` / `STAR_WIFI_PASS=STAR2026!` are dev-grade; set a stronger password for field via env vars or by editing `start.sh`.
+
+4. **(Optional) STA-fallback.** Current pure-AP mode is the standard field-robot pattern (Clearpath, Hello Robot Stretch, REV Control Hub all do it). Consider a fallback-STA-then-AP wrapper only if the robot operates in both lab and field.

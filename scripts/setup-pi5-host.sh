@@ -28,14 +28,21 @@ cat > /etc/udev/rules.d/70-star-usb-no-autosuspend.rules <<'RULE'
 # STAR robot: force USB autosuspend off for critical serial links.
 # Installed by scripts/setup-pi5-host.sh -- do not edit by hand.
 #
+# ENV{DEVTYPE}=="usb_device" restricts to device-level events (not
+# usb_interface), so idVendor/idProduct/power/control are all direct
+# attributes of the current node and ATTR{} works without parent walk.
+# Reference: kernel.org/doc/Documentation/usb/power-management.txt
+#
 # BeagleBone Blue (Linux Foundation Multifunction Composite Gadget)
-ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1d6b", ATTR{idProduct}=="0104", ATTR{power/control}="on", ATTR{power/autosuspend_delay_ms}="-1"
+ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="1d6b", ATTR{idProduct}=="0104", ATTR{power/control}="on"
 # RPLiDAR C1 (Silicon Labs CP2102N USB-UART bridge)
-ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="10c4", ATTR{idProduct}=="ea60", ATTR{power/control}="on", ATTR{power/autosuspend_delay_ms}="-1"
+ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="10c4", ATTR{idProduct}=="ea60", ATTR{power/control}="on"
 RULE
 
 udevadm control --reload-rules
-udevadm trigger --subsystem-match=usb || true
+# --action=change avoids re-firing add handlers (e.g. ModemManager) on every
+# existing USB device; we only need to re-apply power/control attributes.
+udevadm trigger --action=change --subsystem-match=usb || true
 
 # -----------------------------------------------------------------------------
 # 2. CPU governor: pin to schedutil via one-shot systemd unit.
@@ -44,7 +51,14 @@ say "Installing /etc/systemd/system/star-cpu-governor.service"
 cat > /etc/systemd/system/star-cpu-governor.service <<'UNIT'
 [Unit]
 Description=STAR: set CPU governor to schedutil
-After=multi-user.target
+# Run very early, before normal services: skip the default dependency on
+# sysinit.target and friends, and order before base.target so this is set
+# before the rest of user-space comes up. Reference:
+# https://www.freedesktop.org/software/systemd/man/systemd.special.html
+DefaultDependencies=no
+After=sysinit.target
+Before=base.target shutdown.target
+Conflicts=shutdown.target
 
 [Service]
 Type=oneshot
@@ -82,7 +96,12 @@ After=network-online.target NetworkManager.service star-cpu-governor.service
 Wants=network-online.target
 
 [Service]
-Type=simple
+# start.sh backgrounds every component and calls 'disown -a' before exiting,
+# so the ExecStart PID exits cleanly. RemainAfterExit=yes keeps systemd's
+# view of the unit 'active' so ExecStop runs on host shutdown and
+# 'systemctl status' reflects reality.
+Type=oneshot
+RemainAfterExit=yes
 User=star
 Group=star
 WorkingDirectory=${STAR_DIR}
@@ -90,8 +109,7 @@ Environment=HOME=/home/star
 Environment=PATH=/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin
 ExecStart=${STAR_DIR}/start.sh --no-ui
 ExecStop=${STAR_DIR}/stop.sh
-Restart=on-failure
-RestartSec=15
+TimeoutStartSec=120
 TimeoutStopSec=30
 StandardOutput=append:/tmp/star-logs/systemd.log
 StandardError=append:/tmp/star-logs/systemd.log

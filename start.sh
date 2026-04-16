@@ -28,21 +28,29 @@ die() {
 # TODO(pre-field): re-enable a power-save check once
 #   /etc/NetworkManager/conf.d/10-wifi-powersave.conf is in place.
 require_host_setup() {
-  local problems=0
-  if [[ ! -f /etc/udev/rules.d/70-star-usb-no-autosuspend.rules ]]; then
-    warn "USB autosuspend udev rule missing -- run: sudo bash $STAR_DIR/scripts/setup-pi5-host.sh"
-    problems=$((problems + 1))
+  local issues=()
+  local rule_file=/etc/udev/rules.d/70-star-usb-no-autosuspend.rules
+  if [[ ! -f "$rule_file" ]]; then
+    issues+=("USB autosuspend udev rule missing ($rule_file)")
+  elif ! grep -q '1d6b.*0104.*power/control' "$rule_file" 2>/dev/null; then
+    issues+=("USB autosuspend udev rule present but BBB entry looks wrong ($rule_file)")
   fi
-  if [[ "$(cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor 2>/dev/null)" != "schedutil" ]]; then
-    warn "CPU governor not schedutil -- run: sudo bash $STAR_DIR/scripts/setup-pi5-host.sh"
-    problems=$((problems + 1))
-  fi
+  # Pi5 has a single cpufreq policy (policy0) covering all 4 cores, but loop
+  # over every policy so this also works on multi-policy hosts.
+  for _pol in /sys/devices/system/cpu/cpufreq/policy*/scaling_governor; do
+    [[ -e "$_pol" ]] || continue
+    if [[ "$(cat "$_pol" 2>/dev/null)" != "schedutil" ]]; then
+      issues+=("CPU governor not schedutil on $(basename "$(dirname "$_pol")")")
+      break
+    fi
+  done
   if [[ ! -f /etc/logrotate.d/star-robot ]]; then
-    warn "logrotate config missing -- run: sudo bash $STAR_DIR/scripts/setup-pi5-host.sh"
-    problems=$((problems + 1))
+    issues+=("logrotate config missing (/etc/logrotate.d/star-robot)")
   fi
-  if (( problems > 0 )); then
-    warn "$problems host-setup issue(s); robot may be unreliable on long runs"
+  if (( ${#issues[@]} > 0 )); then
+    warn "Pi5 host setup incomplete -- robot may be unreliable on long runs:"
+    for _msg in "${issues[@]}"; do warn "  - $_msg"; done
+    warn "To fix: sudo bash $STAR_DIR/scripts/setup-pi5-host.sh"
   fi
   return 0
 }
@@ -198,15 +206,19 @@ set -u
 
 # Explicit ROS2 environment overrides -- safe under systemd/cron/ssh
 # (non-login shells that don't source ~/.bashrc).
+#
+# RMW is FORCED (no :- default): we never want FastDDS in this project,
+# even if a stray caller env var says so. ROS_DOMAIN_ID respects caller
+# override so multi-robot/multi-operator setups can pick a unique id.
+#
+# CYCLONEDDS_URI points at our config/cyclonedds.xml, which raises the
+# participant index limit and disables multicast. Without it, stale
+# participants from crashed nodes exhaust the default 10-slot pool and
+# new nodes fail with "Failed to find a free participant index".
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-42}"
-export RCUTILS_COLORIZED_OUTPUT=1
-
-# CycloneDDS config: raise participant index limit and disable multicast.
-# Without this, stale participants from crashed nodes exhaust the default
-# pool of 10 slots and new nodes fail with "Failed to find a free
-# participant index for domain 0".
 export CYCLONEDDS_URI="file://$STAR_DIR/config/cyclonedds.xml"
+export RCUTILS_COLORIZED_OUTPUT=1
 
 # Flush the ROS2 daemon's stale participant cache before launching nodes.
 # The daemon caches DDS discovery state; restarting it clears zombie entries

@@ -31,6 +31,14 @@ done
 # (default 3) for them to exit, then SIGKILL any survivors. Kills both the
 # matched process AND its entire process group so that launch-file children
 # don't linger after their parent exits.
+#
+# Design note: this function already extracts pgid via `ps -o pgid=` and
+# kills the whole process group, which is functionally equivalent to the
+# setsid-wrap + PID-file approach (writing .pgid files in start.sh and
+# calling `kill -- -$pgid`). We deliberately keep pattern-based lookup
+# because start.sh already uses `&` backgrounding and doesn't install
+# pidfiles, so pgrep+pgid is the minimum-footprint path to the same
+# behaviour.
 # ---------------------------------------------------------------------------
 stop_proc() {
     local label="$1"
@@ -153,6 +161,7 @@ SWEEP_PATTERNS=(
     "static_transform_publisher"
     "star-gateway"
     "virtual_rx72n"
+    "serve.*star-lichtblick-web"
 )
 for pat in "${SWEEP_PATTERNS[@]}"; do
     survivors=$(pgrep -f "$pat" 2>/dev/null) || true
