@@ -46,10 +46,13 @@
     Mem/IncrementalMemory: 'true'
     Rtabmap/DetectionRate: '1.0'
 
-    # Dense point cloud output (full resolution, no decimation)
-    cloud_decimation: 1
-    cloud_voxel_size: 0.0
-    cloud_output_voxelized: false
+    # Point cloud density (balance detail vs browser performance)
+    # decimation=2: use every other pixel (2x denser than default 4)
+    # voxel_size=0.02: 2cm output voxels prevent duplicate points
+    # from overlapping viewpoints, keeping the total cloud manageable
+    cloud_decimation: 2
+    cloud_voxel_size: 0.02
+    cloud_output_voxelized: true
 
     # 3D grid (built-in OctoMap)
     Grid/FromDepth: 'true'
