@@ -258,9 +258,9 @@ def generate_launch_description() -> LaunchDescription:
             os.path.join(pkg_star_bringup, 'config', 'rtabmap.yaml'),
         ],
         remappings=[
-            ('left/image_rect', '/cam0/camera/image_rect_color'),
+            ('left/image_rect', '/cam0/camera/image_raw'),
             ('left/camera_info', '/cam0/camera/camera_info'),
-            ('right/image_rect', '/cam1/camera/image_rect_color'),
+            ('right/image_rect', '/cam1/camera/image_raw'),
             ('right/camera_info', '/cam1/camera/camera_info'),
             ('odom', '/odometry/filtered'),
         ],
