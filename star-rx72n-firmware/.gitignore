@@ -26,10 +26,17 @@ cmake-build-*/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
+# NOTE: sub-project Makefiles (blinky/, blinky_rtos/, usb_test/, gpio_test/)
+# are hand-written and force-added with `git add -f`.  This rule only catches
+# CMake-generated Makefiles in the build/ tree.
 Makefile
+
+# Compiled objects and linker outputs
+*.o
 *.elf
 *.bin
 *.hex
+*.mot
 *.map
 
 # GCC coverage instrumentation files

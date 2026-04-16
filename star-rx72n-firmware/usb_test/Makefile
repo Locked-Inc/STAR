@@ -28,9 +28,13 @@ TX_INC      := $(TX_ROOT)/common/inc $(TX_ROOT)/ports/rxv3/gnu/inc $(TX_ROOT)
 TX_CSRC     := $(wildcard $(TX_ROOT)/common/src/*.c)
 TX_ASRC     := $(wildcard $(TX_ROOT)/ports/rxv3/gnu/src/*.S)
 
+# libs/rx_usb is intentionally NOT compiled in this build -- usb_min.c
+# replaces the entire stack so we can isolate hardware bring-up bugs from
+# rx_usb library bugs.  Headers are still on the include path because we
+# borrow rx72n_regs.h via the aggregator.
 USB_ROOT    := ../libs/rx_usb
 USB_INC     := $(USB_ROOT)/inc $(USB_ROOT)/src
-USB_CSRC    := $(wildcard $(USB_ROOT)/src/*.c)
+USB_CSRC    :=
 
 CORE_ROOT   := ../libs/rx_core
 CORE_INC    := $(CORE_ROOT)/inc
@@ -51,7 +55,7 @@ LDFLAGS := $(CPU) -nostartfiles -Wl,-e_PowerON_Reset_PC -T linker.ld \
 # ----------------------------------------------------------------------------
 # Application sources (this directory)
 # ----------------------------------------------------------------------------
-APP_CSRC := main.c clock.c cmt0.c log_stubs.c sci9_debug.c
+APP_CSRC := main.c clock.c cmt0.c usb_min.c
 APP_ASRC := startup.S vectors.S
 
 # ----------------------------------------------------------------------------
