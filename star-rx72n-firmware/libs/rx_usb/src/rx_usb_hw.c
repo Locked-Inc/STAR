@@ -821,8 +821,7 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
    *              with even lengths so it never tripped the bug.  See
    *              `usb_test/USB_BRINGUP_STATUS.md` "Bug 10".
    */
-  usb0()->cfifosel =
-    (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_isel | k_usb_fifosel_mbw_8;
+  usb0()->cfifosel = (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_isel | k_usb_fifosel_mbw_8;
 
   /* Wait for FIFO ready (hardware polling) */
   /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
