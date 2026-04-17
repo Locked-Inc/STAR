@@ -34,7 +34,7 @@ type HealthMonitor struct {
 // NewHealthMonitor creates a new HealthMonitor with the given check interval and USB VID:PID.
 //
 // vid and pid are used by probeUSB to locate the current CDC ACM device via sysfs rather than
-// assuming a fixed /dev/ttyACM0 path. Pass zeros to fall back to the default device path.
+// assuming a fixed /dev/ttyUSB0 path. Pass zeros to fall back to the default device path.
 func NewHealthMonitor(interval time.Duration, vid, pid uint16) *HealthMonitor {
 	if interval <= 0 {
 		panic("HealthMonitor: interval must be positive")
@@ -133,12 +133,12 @@ func (hm *HealthMonitor) probeTransport(wrapper *TransportWrapper) bool {
 // probeUSB checks if the USB CDC device exists and is accessible.
 //
 // This is a non-intrusive check that:
-//  1. Locates the current ttyACMN device via sysfs VID:PID scan (when configured)
+//  1. Locates the current ttyUSBN device via sysfs VID:PID scan (when configured)
 //  2. Attempts to open the device and immediately closes it
 //
 // Using sysfs discovery (FindCDCDevice) means the probe succeeds even when the
 // kernel assigned a different minor number after a disconnect/reconnect cycle
-// (e.g., the device moved from /dev/ttyACM0 to /dev/ttyACM1).
+// (e.g., the device moved from /dev/ttyUSB0 to /dev/ttyUSB1).
 //
 // Returns true if device is accessible, false otherwise.
 // Does NOT interfere with active connections (only probes inactive transports).

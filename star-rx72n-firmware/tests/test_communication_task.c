@@ -369,7 +369,7 @@ void test_comm_task_frame_updates_active_channel(void)
    * channel, exercising the same API surface that the comm task calls. */
 
   /* Arrange: default is USB */
-  TEST_ASSERT_EQUAL(k_comm_channel_usb, shared_data_get_active_channel());
+  TEST_ASSERT_EQUAL(k_comm_channel_uart, shared_data_get_active_channel());
 
   /* Act: simulate comm task recording an SPI frame receipt */
   (void)shared_data_update_active_channel(k_comm_channel_spi);
@@ -401,7 +401,7 @@ void test_comm_task_can_send_response(void)
   mgr.initialized = true;
 
   /* Set up send parameters */
-  params.channel     = k_comm_channel_usb;
+  params.channel     = k_comm_channel_uart;
   params.type        = k_frame_type_ack;
   params.flags       = 0;
   params.payload     = payload;

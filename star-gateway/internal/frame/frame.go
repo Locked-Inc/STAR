@@ -67,6 +67,11 @@ const (
 	FrameTypeAck      Type = 0x12 // Acknowledgment
 	FrameTypeNack     Type = 0x13 // Negative acknowledgment
 
+	// Firmware runtime log payload (ASCII bytes from rx_log_uart on the RX72N).
+	// Multiplexed onto the same UART byte stream as command/response frames so
+	// the frame sync word cannot collide with log text.
+	FrameTypeLogMessage Type = 0x20
+
 	// Legacy/Unknown
 	FrameTypeUnknown Type = 0x14 // Unknown frame type
 )
@@ -89,6 +94,8 @@ func (ft Type) String() string {
 		return "ACK"
 	case FrameTypeNack:
 		return "NACK"
+	case FrameTypeLogMessage:
+		return "LOG_MESSAGE"
 	default:
 		return "UNKNOWN"
 	}

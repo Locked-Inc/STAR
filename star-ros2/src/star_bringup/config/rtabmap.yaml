@@ -14,7 +14,7 @@
     map_frame_id: map
 
     # Stereo + lidar input (fused: stereo gives 3D height up to ~3m,
-    # lidar gives 2D range out to 12m — together they build a bigger map)
+    # lidar gives 2D range out to 12m -- together they build a bigger map)
     subscribe_stereo: true
     subscribe_depth: false
     subscribe_scan: true

@@ -721,7 +721,7 @@ void shared_data_update_last_comm_tick(void);
  * using, avoiding asymmetric USB/SPI usage in SPI-only mode.
  *
  * @param[in] channel Channel on which the frame was received (rx_comm_channel_t cast to uint8_t).
- *                    Must be k_comm_channel_usb (0) or k_comm_channel_spi (1).
+ *                    Must be k_comm_channel_uart (0) or k_comm_channel_spi (1).
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Channel stored successfully
@@ -750,11 +750,11 @@ rx_err_t shared_data_update_active_channel(uint8_t channel);
  * @details
  * Used by the telemetry task to select the outgoing transport channel so
  * that telemetry replies travel on the same physical link as commands.
- * Returns k_comm_channel_usb when no command has been received yet
+ * Returns k_comm_channel_uart when no command has been received yet
  * (active_channel_valid == false), preserving existing USB-default behaviour.
  *
  * @return uint8_t Active communication channel (rx_comm_channel_t cast to uint8_t)
- * @retval 0 (k_comm_channel_usb) Default before any command is received, or on
+ * @retval 0 (k_comm_channel_uart) Default before any command is received, or on
  *           mutex failure, or when USB was the last channel
  * @retval 1 (k_comm_channel_spi) SPI was the last channel to deliver a command
  *
@@ -764,7 +764,7 @@ rx_err_t shared_data_update_active_channel(uint8_t channel);
  * @post g_shared_data is unchanged (read-only accessor)
  *
  * @note Thread safety: protected by motor_mutex
- * @note Fail-safe: returns 0 (k_comm_channel_usb) on any error
+ * @note Fail-safe: returns 0 (k_comm_channel_uart) on any error
  * @note Uses uint8_t to avoid including rx_comm_manager.h in this header
  *
  * @see shared_data_update_active_channel() Writer called by comm task

@@ -386,19 +386,19 @@
 typedef enum : uint8_t {
   k_mutex_inherit = 1,  /**< TX_INHERIT for mutex creation (priority inheritance enabled) */
   k_ms_per_tick   = 10, /**< ThreadX milliseconds per tick (100 Hz tick rate = 10ms/tick) */
-  k_shared_channel_usb_default =
-    0, /**< Fail-safe USB channel value (== k_comm_channel_usb); avoids rx_comm_manager.h include */
+  k_shared_channel_uart_default =
+    0, /**< Fail-safe UART channel value (== k_comm_channel_uart); avoids rx_comm_manager.h include */
   k_shared_channel_count =
-    4, /**< Number of valid channels (== k_comm_channel_count); avoids rx_comm_manager.h include */
+    3, /**< Number of valid channels (== k_comm_channel_count); avoids rx_comm_manager.h include */
 } shared_data_internal_constants_t;
 
 /* Compile-time guard: k_shared_channel_count must stay equal to k_comm_channel_count.
  * If rx_comm_channel_t gains a new value, update k_shared_channel_count to match. */
 static_assert((bool)((unsigned int)k_shared_channel_count == (unsigned int)k_comm_channel_count),
               "k_shared_channel_count out of sync with k_comm_channel_count");
-static_assert((bool)((unsigned int)k_shared_channel_usb_default ==
-                     (unsigned int)k_comm_channel_usb),
-              "k_shared_channel_usb_default out of sync with k_comm_channel_usb");
+static_assert((bool)((unsigned int)k_shared_channel_uart_default ==
+                     (unsigned int)k_comm_channel_uart),
+              "k_shared_channel_uart_default out of sync with k_comm_channel_uart");
 
 /**
  * @var s_default_pid_kp
@@ -2696,7 +2696,7 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
  * been received yet or on any error.
  *
  * @return uint8_t Active communication channel (rx_comm_channel_t cast to uint8_t)
- * @retval 0 (k_comm_channel_usb)  Default before any command received, or on error
+ * @retval 0 (k_comm_channel_uart)  Default before any command received, or on error
  * @retval 1 (k_comm_channel_spi)  SPI was the last channel to deliver a command
  * @retval 2 (k_comm_channel_i2c)  I2C was the last channel to deliver a command
  * @retval 3 (k_comm_channel_uart) UART was the last channel to deliver a command
@@ -2707,7 +2707,7 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
  * @post g_shared_data state is unchanged (read-only accessor)
  *
  * @note Thread safety: active_channel_valid and active_channel both read inside mutex
- * @note Fail-safe: returns 0 (k_comm_channel_usb) on any error or before first frame
+ * @note Fail-safe: returns 0 (k_comm_channel_uart) on any error or before first frame
  * @note Uses uint8_t to avoid including rx_comm_manager.h in shared_data.h
  *
  * @see shared_data_update_active_channel() Writer called by comm task
@@ -2717,16 +2717,16 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
 uint8_t shared_data_get_active_channel(void)
 {
   if (!g_shared_data.initialized) {
-    return k_shared_channel_usb_default;
+    return k_shared_channel_uart_default;
   }
 
   const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
-    return k_shared_channel_usb_default;
+    return k_shared_channel_uart_default;
   }
 
   const uint8_t ch = (int)g_shared_data.active_channel_valid ? g_shared_data.active_channel
-                                                             : k_shared_channel_usb_default;
+                                                             : k_shared_channel_uart_default;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 

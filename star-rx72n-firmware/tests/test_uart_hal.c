@@ -525,7 +525,8 @@ static const uart_channel_t k_test_channel_invalid =
  * Both rates are within +/-2% error tolerance at PCLKB = 60 MHz.
  */
 typedef enum : uint32_t {
-  k_test_baudrate_115200 = 115200, /**< High-speed: SCI9 debug UART */
+  k_test_baudrate_921600 = 921600, /**< Production debug/comm rate (CY7C65213 bridge) */
+  k_test_baudrate_115200 = 115200, /**< Legacy reference rate */
   k_test_baudrate_9600   = 9600,   /**< Low-speed: Multi-channel isolation test */
 } test_uart_baudrate_t;
 
@@ -1698,7 +1699,7 @@ void test_uart_debug_init(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(k_test_channel_sci9));
-  TEST_ASSERT_EQUAL(k_test_baudrate_115200, mock_uart_hw_get_baudrate(k_test_channel_sci9));
+  TEST_ASSERT_EQUAL(k_test_baudrate_921600, mock_uart_hw_get_baudrate(k_test_channel_sci9));
 }
 
 /**
