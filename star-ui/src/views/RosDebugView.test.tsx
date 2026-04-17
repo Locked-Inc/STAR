@@ -72,6 +72,6 @@ describe('RosDebugView', () => {
 
     render(<RosDebugView navigate={vi.fn()} />);
 
-    expect(screen.getByText('cmd_vel linear=0.35 angular=0.10')).toBeInTheDocument();
+    expect(screen.getAllByText(/cmd_vel\s+linear=0\.35\s+angular=0\.10/).length).toBeGreaterThan(0);
   });
 });

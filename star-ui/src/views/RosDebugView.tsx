@@ -48,7 +48,7 @@ function calculateObservedRateHz(sampleTimestampsMs: number[]): number | undefin
 
   const intervalsMs: number[] = [];
   for (let index = 1; index < sampleTimestampsMs.length; index += 1) {
-    const intervalMs = sampleTimestampsMs[index - 1] - sampleTimestampsMs[index];
+    const intervalMs = Math.abs(sampleTimestampsMs[index] - sampleTimestampsMs[index - 1]);
     if (intervalMs > 0) {
       intervalsMs.push(intervalMs);
     }

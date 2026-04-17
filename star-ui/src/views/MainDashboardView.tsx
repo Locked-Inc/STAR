@@ -392,7 +392,7 @@ export function MainDashboardView({
                     <div className="subpanel-card__content">
                       <div className="encoder-odometry-layout">
                         <div className="sensor-metrics sensor-metrics--encoders">
-                          {['FL', 'FR', 'RL', 'RR'].map((label, index) => {
+                          {['FL', 'FR', 'BL', 'BR'].map((label, index) => {
                             const motor = motorValues[index];
                             const rpm = motor
                               ? (motor.velocityMps / wheelCircumferenceMeters) * secondsPerMinute
@@ -622,7 +622,12 @@ export function MainDashboardView({
 
               <div className="panel-card__body">
                 <div className="metrics-grid">
-                  <MetricTile label="WiFi" tone={toneFromScore(wifiScore)} value={wifiSignal != null ? `${wifiSignal} dBm` : '--'} detail={connectionState} />
+                  <MetricTile
+                    label="WiFi"
+                    tone={toneFromScore(wifiScore)}
+                    value={wifiSignal != null ? `${wifiSignal} dBm` : '--'}
+                    detail={connectionStateDisplay.label}
+                  />
                   <MetricTile
                     label="CPU"
                     tone={toneFromScore(cpuScore)}
