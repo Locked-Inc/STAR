@@ -6,6 +6,13 @@ breakout PCB pin numbers (silk-screen labels on the back of the board).
 Cross-referenced against `star-rx72n-firmware/gpio_test/pin_map.md` to resolve
 each breakout pin number to an RX72N port/pin name.
 
+## Verification status
+
+**Last full-board sweep: 2026-04-16 -- PASS (46/46 wired pins).** Captured
+over 13 s with `gpio_verify.py` against the ThreadX build of gpio_test;
+sweep order matched `FIRMWARE_PIN_ORDER`, no noise on the two VCC-rail
+channels or the unwired DIO 15 slots.
+
 > **Source of truth: TOM's physical breakout PCB silkscreen, not the KiCad
 > schematic.** TOM's breakout is an independent board whose layout may drift
 > from anything in `Schematic/*.kicad_sch`. If in doubt, trust the silkscreen
