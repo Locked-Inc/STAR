@@ -63,6 +63,7 @@ Testing/
 !**/tests/test_*.c
 !**/tests/test_*.cpp
 !**/tests/test_*.h
+!**/tests/test_*.py
 !**/tests/*.cmake
 
 *.zip
