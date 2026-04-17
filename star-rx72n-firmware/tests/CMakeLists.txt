@@ -1050,6 +1050,20 @@ target_include_directories(test_imu_task PRIVATE
 target_link_libraries(test_imu_task unity)
 set_target_properties(test_imu_task PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
 
+# Test: rx_log_uart ring buffer backend
+add_executable(test_rx_log_uart
+    test_rx_log_uart.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_uart.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tx_api.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tasks.c
+)
+apply_strict_warnings(test_rx_log_uart)
+apply_test_includes(test_rx_log_uart)
+target_include_directories(test_rx_log_uart PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/inc
+)
+target_link_libraries(test_rx_log_uart unity)
+
 # Test: comm_task_apply_system_config() unified config
 add_executable(test_rx_system_config
     test_rx_system_config.c
@@ -1200,6 +1214,7 @@ set(ALL_TEST_TARGETS
     test_rx_stack_monitor
     test_rx_bno055
     test_rx_bmp280
+    test_rx_log_uart
     # System config test
     test_rx_system_config
     # Multi-task firmware tests
@@ -1256,6 +1271,7 @@ add_test(NAME test_rx_host_irq COMMAND test_rx_host_irq)
 add_test(NAME test_rx_stack_monitor COMMAND test_rx_stack_monitor)
 add_test(NAME test_rx_bno055 COMMAND test_rx_bno055)
 add_test(NAME test_rx_bmp280 COMMAND test_rx_bmp280)
+add_test(NAME test_rx_log_uart COMMAND test_rx_log_uart)
 add_test(NAME test_rx_system_config COMMAND test_rx_system_config)
 
 # Multi-task firmware tests

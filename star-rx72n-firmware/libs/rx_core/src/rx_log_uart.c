@@ -148,8 +148,8 @@ void rx_log_uart_putint(int32_t value)
   char* p = &buf[sizeof(buf) - 1U];
   *p      = '\0';
 
-  const bool     negative  = (value < 0);
-  uint32_t       abs_value = negative ? (uint32_t)(-value) : (uint32_t)value;
+  const bool negative  = (bool)(value < 0);
+  uint32_t   abs_value = (int)negative ? (uint32_t)(-value) : (uint32_t)value;
 
   do {
     --p;
@@ -239,6 +239,7 @@ rx_err_t rx_log_uart_drain(uint8_t* out_buf, uint32_t max_len, uint32_t* out_len
   }
 
   if (to_copy > 0U) {
+    /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
     (void)memcpy(out_buf, &s_ring[s_tail], to_copy);
     s_tail = (s_tail + to_copy) % k_rx_log_uart_ring_size;
     s_count -= to_copy;
