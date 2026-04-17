@@ -340,10 +340,16 @@ typedef enum : uint8_t {
  * =============================================================================
  */
 
-void __attribute__((interrupt)) usb0_usbi_isr(void);
-void __attribute__((interrupt)) usb0_d0fifo_isr(void);
-void __attribute__((interrupt)) usb0_d1fifo_isr(void);
-void __attribute__((interrupt)) usb0_usbr_isr(void);
+/* Place each ISR in the .rvectors table at the RX72N ICU vector number that
+ * the peripheral actually signals.  Without the section+vector parameters
+ * GNURX generates the prologue/epilogue but leaves $tableentry$N$.rvectors
+ * undefined, so the linker_script_rvectors.inc substitution falls through
+ * to 0xFFFFFFFF and the first USB interrupt jumps into unmapped memory.
+ * Numbers come from rx_hal/inc/rx72n_usb_regs.h and the RX72N ICU table. */
+void __attribute__((interrupt(".rvectors", 36))) usb0_usbi_isr(void);
+void __attribute__((interrupt(".rvectors", 34))) usb0_d0fifo_isr(void);
+void __attribute__((interrupt(".rvectors", 35))) usb0_d1fifo_isr(void);
+void __attribute__((interrupt(".rvectors", 90))) usb0_usbr_isr(void);
 
 /* =============================================================================
  * Private Functions
@@ -435,43 +441,41 @@ static void internal_handle_ctrt_interrupt(void)
   const uint16_t ctsq    = intsts0 & k_usb_intsts0_ctsq_mask;
 
   switch (ctsq) {
-    case k_usb_intsts0_ctsq_idle:
-      /* Idle or setup stage - check for valid SETUP packet */
-      if (intsts0 & k_usb_intsts0_valid) {
-        rx_usb_cdc_handle_setup();
-        /* Clear VALID flag */
-        usb0()->intsts0 = (uint16_t)~k_usb_intsts0_valid;
-      }
+    case k_usb_intsts0_ctsq_rd_data: /* Control IN, data stage just entered */
+    case k_usb_intsts0_ctsq_wr_data: /* Control OUT, data stage just entered */
+    case k_usb_intsts0_ctsq_wr_nd:   /* Control OUT, no data (e.g. SET_ADDRESS) */
+      /*
+       * The host just issued a SETUP token and the peripheral has now
+       * transitioned into the matching data-stage state.  USBREQ /
+       * USBVAL / USBINDX / USBLENG are valid to read RIGHT NOW.
+       * Clear the VALID bit BEFORE reading them, per RX72N HW manual
+       * Ch40, so a racing second SETUP cannot overwrite the registers
+       * mid-read.
+       */
+      usb0()->intsts0 = (uint16_t)~k_usb_intsts0_valid;
+      rx_usb_cdc_handle_setup();
       break;
-    case k_usb_intsts0_ctsq_rd_data:
-      /* Control read data stage - send data to host */
-      /* Handled via SETUP packet handler */
+
+    case k_usb_intsts0_ctsq_rd_status: /* IN status stage  -- nothing to do */
+    case k_usb_intsts0_ctsq_wr_status: /* OUT status stage -- nothing to do */
+      /*
+       * CCPL was already written by the SETUP request handler when the
+       * data stage finished; the hardware autonomously completes the
+       * status stage.  Writing CCPL again here causes double-completion
+       * and confuses the state machine.
+       */
       break;
-    case k_usb_intsts0_ctsq_rd_status:
-      /* Control read status stage - host sends ZLP ACK */
-      /* Complete the control transfer */
-      usb0()->dcpctr |= k_usb_dcpctr_ccpl;
-      break;
-    case k_usb_intsts0_ctsq_wr_data:
-      /* Control write data stage - receive data from host */
-      /* Handled via SETUP packet handler */
-      break;
-    case k_usb_intsts0_ctsq_wr_status:
-      /* Control write status stage - send ZLP ACK */
-      /* Complete the control transfer */
-      usb0()->dcpctr |= k_usb_dcpctr_ccpl;
-      break;
-    case k_usb_intsts0_ctsq_wr_nd:
-      /* Control write with no data - status stage */
-      usb0()->dcpctr |= k_usb_dcpctr_ccpl;
-      break;
+
     case k_usb_intsts0_ctsq_seq_err:
       /* Sequence error - stall the pipe */
       rx_log_warn(s_tag, "CTRT: Sequence error");
       usb0()->dcpctr =
         (uint16_t)((usb0()->dcpctr & (uint16_t)~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall);
       break;
+
+    case k_usb_intsts0_ctsq_idle:
     default:
+      /* Reset / power-on state -- nothing to do here. */
       break;
   }
 
@@ -620,7 +624,7 @@ void rx_usb_isr_handler(void)
  * This is the actual interrupt handler that is registered in the vector table.
  * It calls the main ISR handler.
  */
-void __attribute__((interrupt)) usb0_usbi_isr(void)
+void __attribute__((interrupt(".rvectors", 36))) usb0_usbi_isr(void)
 {
   /* Clear interrupt request flag in ICU */
   icu()->ir[k_vect_usb0_usbi] = 0;
@@ -634,7 +638,7 @@ void __attribute__((interrupt)) usb0_usbi_isr(void)
  *
  * DMA-related interrupt for D0FIFO (not used in this implementation).
  */
-void __attribute__((interrupt)) usb0_d0fifo_isr(void)
+void __attribute__((interrupt(".rvectors", 34))) usb0_d0fifo_isr(void)
 {
   /* Clear interrupt request flag */
   icu()->ir[k_vect_usb0_d0fifo] = 0;
@@ -647,7 +651,7 @@ void __attribute__((interrupt)) usb0_d0fifo_isr(void)
  *
  * DMA-related interrupt for D1FIFO (not used in this implementation).
  */
-void __attribute__((interrupt)) usb0_d1fifo_isr(void)
+void __attribute__((interrupt(".rvectors", 35))) usb0_d1fifo_isr(void)
 {
   /* Clear interrupt request flag */
   icu()->ir[k_vect_usb0_d1fifo] = 0;
@@ -660,7 +664,7 @@ void __attribute__((interrupt)) usb0_d1fifo_isr(void)
  *
  * Separate resume interrupt for wakeup from low-power modes.
  */
-void __attribute__((interrupt)) usb0_usbr_isr(void)
+void __attribute__((interrupt(".rvectors", 90))) usb0_usbr_isr(void)
 {
   /* Clear interrupt request flag */
   icu()->ir[k_vect_usb0_usbr] = 0;

@@ -52,22 +52,33 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1" >&2
 }
 
-# Check if clang-format is installed
+# The project is pinned to clang-format 18.1.8. Ubuntu 24.04 ships
+# 18.1.3 by default; both CI (via LLVM apt repo) and the devcontainer
+# install the -18 package explicitly, so prefer clang-format-18 when
+# present to keep local and CI in sync. Fall back to plain
+# `clang-format` for developer machines that only have the one binary.
+CLANG_FORMAT_BIN=""
+
+# Resolve the clang-format binary once, with logging
 check_clang_format() {
-    if ! command -v clang-format &> /dev/null; then
+    if command -v clang-format-18 &> /dev/null; then
+        CLANG_FORMAT_BIN="clang-format-18"
+    elif command -v clang-format &> /dev/null; then
+        CLANG_FORMAT_BIN="clang-format"
+    else
         print_error "clang-format not found!"
         echo ""
         echo "Please install clang-format:"
         echo "  macOS: brew install clang-format"
-        echo "  Ubuntu/Debian: sudo apt-get install clang-format"
+        echo "  Ubuntu/Debian: sudo apt-get install clang-format-18"
         echo "  Fedora: sudo dnf install clang"
         exit 1
     fi
-    
+
     local version
-    version=$(clang-format --version | head -n1)
+    version=$("$CLANG_FORMAT_BIN" --version | head -n1)
     if [ "$VERBOSE" = true ]; then
-        print_status "Found $version"
+        print_status "Found $version (binary: $CLANG_FORMAT_BIN)"
     fi
 }
 
@@ -153,14 +164,20 @@ check_formatting() {
             echo "  Checking: $file" >&2
         fi
         
-        # Check if file would be changed by clang-format
-        if ! clang-format --dry-run --Werror "$file" >/dev/null 2>&1; then
+        # Check if file would be changed by clang-format. On failure,
+        # print the actual unified diff so CI / reviewers can see WHY
+        # the file is considered unformatted -- the old "filename only"
+        # output made it nearly impossible to debug CI-only discrepancies.
+        if ! "$CLANG_FORMAT_BIN" --dry-run --Werror "$file" >/dev/null 2>&1; then
             if [ "$issues_found" = false ]; then
                 echo "" >&2
                 print_warning "Formatting issues found in:"
                 issues_found=true
             fi
             echo "  $file" >&2
+            echo "    ---- proposed diff ($CLANG_FORMAT_BIN) ----" >&2
+            diff -u "$file" <("$CLANG_FORMAT_BIN" "$file") >&2 || true
+            echo "    ---- end diff ----" >&2
         fi
     done
     
@@ -192,7 +209,7 @@ format_files() {
         temp_file=$(mktemp)
 
         # Format the file to temp
-        clang-format "$file" > "$temp_file" 2>&1 || {
+        "$CLANG_FORMAT_BIN" "$file" > "$temp_file" 2>&1 || {
             echo "ERROR: clang-format failed on $file" >&2
             rm "$temp_file"
             continue

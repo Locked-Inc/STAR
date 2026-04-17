@@ -1,6 +1,9 @@
 # Claude Code local overrides (machine-specific, not shared)
 CLAUDE.local.md
 
+# Git worktrees (project-local, isolated workspaces)
+.worktrees/
+
 # macOS system files
 .DS_Store
 .DS_Store?
@@ -38,9 +41,11 @@ gradle-app.setting
 # Local configuration files
 local.properties
 
-# KiCad lock files
+# KiCad lock files and local history
 *.kicad_sch.lck
 *.kicad_pcb.lck
+*.kicad_pro.lck
+schematic/.history/
 
 # Windows paths and logs
 **/C:*
