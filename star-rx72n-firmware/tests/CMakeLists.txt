@@ -1064,6 +1064,22 @@ target_include_directories(test_rx_log_uart PRIVATE
 )
 target_link_libraries(test_rx_log_uart unity)
 
+# Test: rx_log.h inline coverage (every rx_log_* macro variant + simulator uart_debug_*)
+add_executable(test_rx_log
+    test_rx_log.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_uart.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tx_api.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tasks.c
+)
+apply_strict_warnings(test_rx_log)
+apply_test_includes(test_rx_log)
+target_include_directories(test_rx_log PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/inc
+)
+# Force LOG_LEVEL=verbose so every level-gated macro expands to a real call.
+target_compile_definitions(test_rx_log PRIVATE LOG_LEVEL=k_log_verbose)
+target_link_libraries(test_rx_log unity)
+
 # Test: comm_task_apply_system_config() unified config
 add_executable(test_rx_system_config
     test_rx_system_config.c
@@ -1215,6 +1231,7 @@ set(ALL_TEST_TARGETS
     test_rx_bno055
     test_rx_bmp280
     test_rx_log_uart
+    test_rx_log
     # System config test
     test_rx_system_config
     # Multi-task firmware tests
@@ -1272,6 +1289,7 @@ add_test(NAME test_rx_stack_monitor COMMAND test_rx_stack_monitor)
 add_test(NAME test_rx_bno055 COMMAND test_rx_bno055)
 add_test(NAME test_rx_bmp280 COMMAND test_rx_bmp280)
 add_test(NAME test_rx_log_uart COMMAND test_rx_log_uart)
+add_test(NAME test_rx_log COMMAND test_rx_log)
 add_test(NAME test_rx_system_config COMMAND test_rx_system_config)
 
 # Multi-task firmware tests
