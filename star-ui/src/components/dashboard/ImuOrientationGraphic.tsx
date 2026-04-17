@@ -1,15 +1,23 @@
 import { clamp } from '../../lib/dashboard';
 
+const ROLL_VISUAL_GAIN = 0.65;
+const PITCH_VISUAL_GAIN = 0.42;
+const ROLL_VISUAL_LIMIT = 22;
+const PITCH_VISUAL_LIMIT = 7;
+const VIEWBOX_CENTER_Y = 50;
+const ARROW_BASE_Y = -30;
+const ARROW_PITCH_SCALE = 0.35;
+
 interface ImuOrientationGraphicProps {
   pitchDeg: number;
   rollDeg: number;
 }
 
 export function ImuOrientationGraphic({ pitchDeg, rollDeg }: ImuOrientationGraphicProps) {
-  const visualRoll = clamp(rollDeg * 0.65, -22, 22);
-  const visualPitch = clamp(pitchDeg * 0.42, -7, 7);
-  const deckY = 50 + visualPitch;
-  const arrowY = -30 - visualPitch * 0.35;
+  const visualRoll = clamp(rollDeg * ROLL_VISUAL_GAIN, -ROLL_VISUAL_LIMIT, ROLL_VISUAL_LIMIT);
+  const visualPitch = clamp(pitchDeg * PITCH_VISUAL_GAIN, -PITCH_VISUAL_LIMIT, PITCH_VISUAL_LIMIT);
+  const deckY = VIEWBOX_CENTER_Y + visualPitch;
+  const arrowY = ARROW_BASE_Y - visualPitch * ARROW_PITCH_SCALE;
 
   return (
     <div className="imu-orientation">

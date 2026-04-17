@@ -90,13 +90,15 @@ export function StarMapCanvas({ lidarScan, odometry }: StarMapCanvasProps) {
     context.strokeStyle = 'rgba(112, 145, 183, 0.18)';
     context.lineWidth = 1;
     for (let offset = -20; offset <= 20; offset += gridSpacingMeters) {
-      const x = canvasWidth / 2 + offset * pixelsPerMeter - ((origin.x * pixelsPerMeter) % (gridSpacingMeters * pixelsPerMeter));
-      context.beginPath();
+      const gridPx = gridSpacingMeters * pixelsPerMeter;
+      const xMod = (((origin.x * pixelsPerMeter) % gridPx) + gridPx) % gridPx;
+      const x = canvasWidth / 2 + offset * pixelsPerMeter - xMod;
       context.moveTo(x, 0);
       context.lineTo(x, canvasHeight);
       context.stroke();
 
-      const y = canvasHeight / 2 + offset * pixelsPerMeter + ((origin.y * pixelsPerMeter) % (gridSpacingMeters * pixelsPerMeter));
+      const yMod = (((origin.y * pixelsPerMeter) % gridPx) + gridPx) % gridPx;
+      const y = canvasHeight / 2 + offset * pixelsPerMeter - yMod;
       context.beginPath();
       context.moveTo(0, y);
       context.lineTo(canvasWidth, y);
@@ -139,7 +141,7 @@ export function StarMapCanvas({ lidarScan, odometry }: StarMapCanvasProps) {
     });
     context.restore();
 
-    if (lidarScan) {
+    if (lidarScan && odometry) {
       context.save();
       context.lineWidth = 1;
       context.shadowColor = 'rgba(255, 91, 91, 0.22)';

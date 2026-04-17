@@ -1,9 +1,12 @@
 import { useEffect, useRef } from 'react';
 import type { ControllerState } from '../proto/star/v1/controller';
 import { controllerSendIntervalMs } from '../lib/dashboard';
-import { useGamepad } from './useGamepad';
+import { useGamepad, type GamepadState } from './useGamepad';
 
-export function useControllerBridge(sendControllerState: (state: ControllerState) => void, enabled: boolean) {
+export function useControllerBridge(
+  sendControllerState: (state: ControllerState) => void,
+  enabled: boolean,
+): GamepadState {
   const gamepadState = useGamepad();
   const sendRef = useRef(sendControllerState);
   const gamepadRef = useRef(gamepadState);
@@ -27,7 +30,7 @@ export function useControllerBridge(sendControllerState: (state: ControllerState
       return;
     }
 
-    const interval = window.setInterval(() => {
+    const tick = () => {
       const controllerState = gamepadRef.current;
       sendRef.current({
         linearVel: controllerState.linearVel,
@@ -35,7 +38,9 @@ export function useControllerBridge(sendControllerState: (state: ControllerState
         timestamp: String(Date.now()),
         debug: false,
       });
-    }, controllerSendIntervalMs);
+    };
+    tick();
+    const interval = window.setInterval(tick, controllerSendIntervalMs);
 
     return () => window.clearInterval(interval);
   }, [enabled]);

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { pushTraceSample, traceHistoryLength } from '../lib/dashboard';
+import { pushTraceSample, traceHistoryLength, traceSampleIntervalMs } from '../lib/dashboard';
 import type { TraceHistory } from '../types/dashboard';
 
 interface TraceSamples {
@@ -12,10 +12,10 @@ interface TraceSamples {
 export function useTraceHistory(samples: TraceSamples): TraceHistory {
   const latestTraceSamplesRef = useRef(samples);
   const [traceHistory, setTraceHistory] = useState<TraceHistory>(() => ({
-    cpu: Array.from({ length: traceHistoryLength }, () => samples.cpu),
-    lidar: Array.from({ length: traceHistoryLength }, () => samples.lidar),
-    temperature: Array.from({ length: traceHistoryLength }, () => samples.temperature),
-    velocity: Array.from({ length: traceHistoryLength }, () => samples.velocity),
+    cpu: Array(traceHistoryLength).fill(Number.NaN),
+    lidar: Array(traceHistoryLength).fill(Number.NaN),
+    temperature: Array(traceHistoryLength).fill(Number.NaN),
+    velocity: Array(traceHistoryLength).fill(Number.NaN),
   }));
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export function useTraceHistory(samples: TraceSamples): TraceHistory {
         temperature: pushTraceSample(currentHistory.temperature, latestTraceSamplesRef.current.temperature),
         velocity: pushTraceSample(currentHistory.velocity, latestTraceSamplesRef.current.velocity),
       }));
-    }, 1000);
+     }, traceSampleIntervalMs);
 
     return () => window.clearInterval(interval);
   }, []);

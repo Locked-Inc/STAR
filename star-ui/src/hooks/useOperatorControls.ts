@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { coverageStepPercent, coverageTickIntervalMs } from '../lib/dashboard';
+import { coverageStepPercent, coverageTickIntervalMs, msToUs } from '../lib/dashboard';
 import { AlertLevel } from '../proto/star/v1/ui';
 import { useDashboardStore } from '../store/dashboardStore';
 import type { Tone, UiMode } from '../types/dashboard';
@@ -41,6 +41,7 @@ export function useOperatorControls({
   sendEStop,
   sendEStopRelease,
 }: UseOperatorControlsArgs): OperatorControls {
+  const mountedRef = useRef<boolean>(false);
   const [selectedMode, setSelectedMode] = useState<UiMode>('autonomous');
   const [autonomyRequested, setAutonomyRequested] = useState(false);
   const [coveragePercent, setCoveragePercent] = useState(0);
@@ -51,6 +52,14 @@ export function useOperatorControls({
   const modeChangeDisabled = eStopActive || reportedMode !== null;
   const missionProgressAvailable = demoMode;
   const autonomyRunning = demoMode && autonomyRequested && uiMode === 'autonomous' && !eStopActive && !taskCompleted;
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!autonomyRunning) {
@@ -76,6 +85,10 @@ export function useOperatorControls({
 
     if (eStopActive) {
       const released = await sendEStopRelease();
+      if (!mountedRef.current) {
+        return;
+      }
+
       const snapshot = estopResumeRef.current;
 
       store.releaseEStop();
@@ -93,7 +106,7 @@ export function useOperatorControls({
           level: AlertLevel.WARN,
           message: 'Resume applied locally; backend release confirmation was not received.',
           source: 'ui',
-          timestampUs: String(Date.now() * 1000),
+          timestampUs: String(msToUs(Date.now())),
         });
       }
       return;
@@ -134,7 +147,7 @@ export function useOperatorControls({
         level: AlertLevel.INFO,
         message: 'Live mission progress is unavailable without an operator demo feed.',
         source: 'ui',
-        timestampUs: String(Date.now() * 1000),
+        timestampUs: String(msToUs(Date.now())),
       });
       return;
     }

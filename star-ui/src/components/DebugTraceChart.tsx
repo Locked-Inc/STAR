@@ -36,10 +36,11 @@ export function DebugTraceChart({
 }: DebugTraceChartProps) {
   const chartWidth = 280;
   const chartHeight = 110;
-  const safeSamples = samples.length > 0 ? samples : [0];
+  const plottedSamples = samples.filter((sample) => Number.isFinite(sample));
+  const safeSamples = plottedSamples.length > 0 ? plottedSamples : [0];
   const computedMin = min ?? Math.min(...safeSamples);
   const computedMax = max ?? Math.max(...safeSamples, computedMin + 1);
-  const currentValue = safeSamples[safeSamples.length - 1] ?? 0;
+  const currentValue = plottedSamples[plottedSamples.length - 1] ?? 0;
   const path = buildPath(safeSamples, computedMin, computedMax, chartWidth, chartHeight);
   const areaPath = `${path} L ${chartWidth} ${chartHeight} L 0 ${chartHeight} Z`;
 
@@ -50,7 +51,7 @@ export function DebugTraceChart({
           <h3>{title}</h3>
           <p>{formatValue(currentValue)}</p>
         </div>
-        <span className={`trace-card__badge trace-card__badge--${accent}`}>{safeSamples.length} pts</span>
+        <span className={`trace-card__badge trace-card__badge--${accent}`}>{plottedSamples.length} pts</span>
       </div>
 
       <svg aria-hidden="true" className="trace-card__svg" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>

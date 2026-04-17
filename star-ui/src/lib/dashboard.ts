@@ -8,8 +8,14 @@ export const recentPacketWindowMs = 8_000;
 export const coverageTickIntervalMs = 450;
 export const coverageStepPercent = 1.5;
 export const traceHistoryLength = 28;
+export const traceSampleIntervalMs = 1000;
 
 const validAlertTimestampFloorMs = Date.parse('2020-01-01T00:00:00Z');
+const microsecondsPerMillisecond = 1000;
+
+export function msToUs(milliseconds: number): number {
+  return milliseconds * microsecondsPerMillisecond;
+}
 
 export const demoModeEnabled = import.meta.env.VITE_DEMO_MODE === 'true';
 

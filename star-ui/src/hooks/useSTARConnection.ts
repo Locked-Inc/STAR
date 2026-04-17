@@ -1,10 +1,10 @@
 import { useRef, useEffect } from 'react';
+import { msToUs } from '../lib/dashboard';
 import { STAREnvelope } from '../proto/star/v1/ui';
 import type { ControllerState } from '../proto/star/v1/controller';
 import { useDashboardStore } from '../store/dashboardStore';
 import { recordPacket } from '../services/GatewayService';
 
-const msToUs = 1000;
 const baseDelayMs = 500;
 const maxDelayMs = 30_000;
 const jitterFactor = 0.3;
@@ -120,7 +120,7 @@ export function useSTARConnection(url: string): {
       const env = STAREnvelope.create({
         payload: {
           oneofKind: 'estop',
-          estop: { active: true, reason, timestampUs: String(Date.now() * msToUs) },
+          estop: { active: true, reason, timestampUs: String(msToUs(Date.now())) },
         },
       });
       sendRaw(env);
@@ -135,7 +135,7 @@ export function useSTARConnection(url: string): {
     const env = STAREnvelope.create({
       payload: {
         oneofKind: 'estop',
-        estop: { active: false, reason: 'User released E-Stop', timestampUs: String(Date.now() * msToUs) },
+        estop: { active: false, reason: 'User released E-Stop', timestampUs: String(msToUs(Date.now())) },
       },
     });
 

@@ -15,7 +15,7 @@ export function useAppRoute(): { route: AppRoute; navigate: (route: AppRoute) =>
   }, []);
 
   function navigate(nextRoute: AppRoute): void {
-    if (normalizeRoute(window.location.pathname) !== nextRoute) {
+    if (window.location.pathname !== nextRoute) {
       window.history.pushState({}, '', nextRoute);
     }
     setRoute(nextRoute);

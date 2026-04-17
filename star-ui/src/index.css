@@ -532,7 +532,6 @@ a {
 .trace-card__footer,
 .empty-state {
   overflow-wrap: anywhere;
-  word-break: break-word;
 }
 
 .legend-row {

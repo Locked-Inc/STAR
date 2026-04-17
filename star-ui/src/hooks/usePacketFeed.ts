@@ -8,10 +8,10 @@ interface PacketFeedState {
 }
 
 export function usePacketFeed(): PacketFeedState {
-  const [feed, setFeed] = useState<PacketFeedState>({
+  const [feed, setFeed] = useState<PacketFeedState>(() => ({
     packets: getRecentPackets(),
-    sampledAtMs: 0,
-  });
+    sampledAtMs: Date.now(),
+  }));
 
   useEffect(() => {
     const interval = window.setInterval(() => {
