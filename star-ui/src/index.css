@@ -92,10 +92,6 @@ a {
   margin: 0 auto;
 }
 
-.shell-container--ros {
-  max-width: 1280px;
-}
-
 .screen-header {
   display: flex;
   align-items: center;
@@ -869,7 +865,7 @@ a {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  box-shadow: 0 0 12px currentColor;
+  box-shadow: 0 0 12px currentcolor;
 }
 
 .status-dot--neutral {
@@ -1493,12 +1489,12 @@ a {
 @media (min-width: 1024px) and (max-width: 1180px) {
   .app-shell--dashboard,
   .app-shell--ros-view {
-    padding: 8px;
+    padding: clamp(8px, 0.9vw, 12px);
   }
 
   .shell-container--dashboard,
   .shell-container--ros-view {
-    gap: 8px;
+    gap: clamp(8px, 0.8vw, 12px);
   }
 
   .screen-header--dashboard {
@@ -1535,12 +1531,16 @@ a {
   }
 
   .dashboard-layout--main {
-    gap: 12px;
+    gap: clamp(10px, 0.8vw + 2px, 14px);
     grid-template-columns: minmax(0, 1.5fr) minmax(340px, 0.96fr);
   }
 
+  .dashboard-layout--main > .dashboard-main {
+    min-height: auto;
+  }
+
   .dashboard-layout--main .dashboard-sidebar {
-    gap: 8px;
+    gap: clamp(8px, 0.8vw, 10px);
   }
 
   .dashboard-layout--main .panel-card--health > .panel-card__body {
@@ -1623,6 +1623,7 @@ a {
   }
 
   .dashboard-layout--main .subpanel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     margin-top: 10px;
   }
@@ -1740,8 +1741,8 @@ a {
   }
 
   .dashboard-layout--main .panel-card--compass .compass-ring {
-    width: 72px;
-    height: 72px;
+    width: clamp(76px, 8vw, 100px);
+    height: clamp(76px, 8vw, 100px);
   }
 
   .dashboard-layout--main .panel-card--compass .compass-label {
@@ -1765,7 +1766,7 @@ a {
   }
 
   .dashboard-layout--main .panel-card--compass .compass-needle {
-    height: 20px;
+    height: clamp(22px, 2.4vw, 32px);
   }
 
   .dashboard-layout--main .panel-card--compass .compass-readout span {
@@ -1783,6 +1784,7 @@ a {
 
   .dashboard-layout--main .panel-card--telemetry .metrics-grid {
     gap: 6px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .dashboard-layout--main .panel-card--telemetry .metric-tile {
@@ -1830,8 +1832,14 @@ a {
   }
 
   .ros-grid--viewport {
-    gap: 10px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "topics nodes"
+      "traces params"
+      "traces logs";
+    gap: clamp(8px, 0.7vw, 10px);
+    overflow: visible;
+    align-content: stretch;
   }
 
   .ros-grid--viewport > .panel-card > .panel-card__heading {
@@ -1905,136 +1913,9 @@ a {
   .ros-grid--viewport .panel-card--ros-params .metrics-grid--three {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
 
-@media (min-width: 1480px) {
-  .sensor-metrics--encoders {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 1180px) {
-  .dashboard-layout,
-  .ros-grid,
-  .subpanel-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .panel-card--wide {
-    grid-column: auto;
-  }
-
-  .metrics-grid--three,
-  .trace-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .sensor-metrics--encoders {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 860px) {
-  .app-shell {
-    padding: 14px;
-  }
-
-  .screen-header,
-  .panel-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .screen-header__actions {
-    justify-content: flex-start;
-  }
-
-  .button-pair,
-  .metrics-grid,
-  .sensor-metrics--encoders,
-  .metrics-grid--three,
-  .trace-grid,
-  .manual-status__metrics,
-  .subpanel-card__content--split {
-    grid-template-columns: 1fr;
-  }
-
-  .panel-title {
-    align-items: flex-start;
-  }
-
-  .log-terminal {
-    min-height: 320px;
-  }
-}
-
-@media (min-width: 1181px) and (max-width: 1360px) {
-  .dashboard-layout--main {
-    grid-template-columns: minmax(0, 1.5fr) minmax(340px, 0.95fr);
-    gap: 14px;
-    align-items: start;
-  }
-
-  .dashboard-layout--main .subpanel-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .ros-grid--viewport {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-areas:
-      "topics nodes"
-      "traces params"
-      "traces logs";
-    gap: 12px;
-  }
-}
-
-@media (min-width: 1024px) and (max-width: 1180px) {
-  .app-shell--dashboard,
-  .app-shell--ros-view {
-    padding: clamp(8px, 0.9vw, 12px);
-  }
-
-  .shell-container--dashboard,
-  .shell-container--ros-view {
-    gap: clamp(8px, 0.8vw, 12px);
-  }
-
-  .dashboard-layout--main {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto;
-    gap: clamp(8px, 0.8vw, 12px);
-    overflow: visible;
-    align-content: stretch;
-  }
-
-  .dashboard-layout--main > .dashboard-main {
-    min-height: auto;
-  }
-
-  .dashboard-layout--main > .dashboard-sidebar {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: auto;
-    gap: clamp(8px, 0.8vw, 10px);
-    overflow: visible;
-    padding-right: 0;
-    align-content: start;
-  }
-
-  .dashboard-layout--main .panel-card--control,
-  .dashboard-layout--main .panel-card--mission,
-  .dashboard-layout--main .panel-card--telemetry {
-    grid-column: 1 / -1;
-  }
-
-  .dashboard-layout--main .panel-card--health,
-  .dashboard-layout--main .panel-card--compass {
-    grid-column: span 1;
-  }
-
-  .dashboard-layout--main .subpanel-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .ros-grid--viewport .panel-card--ros-logs .log-terminal {
+    min-height: clamp(210px, 26vh, 290px);
   }
 
   .dashboard-layout--main .map-surface {
@@ -2045,87 +1926,6 @@ a {
     overflow: visible;
   }
 
-  .dashboard-layout--main .panel-card--health > .panel-card__body,
-  .dashboard-layout--main .panel-card--telemetry > .panel-card__body,
-  .dashboard-layout--main .panel-card--compass > .panel-card__body {
-    padding-bottom: clamp(8px, 0.7vw, 12px);
-  }
-
-  .dashboard-layout--main .panel-card--compass .compass-ring {
-    width: clamp(76px, 8vw, 100px);
-    height: clamp(76px, 8vw, 100px);
-  }
-
-  .dashboard-layout--main .panel-card--compass .compass-needle {
-    height: clamp(22px, 2.4vw, 32px);
-  }
-
-  .dashboard-layout--main .panel-card--telemetry .metrics-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .ros-grid--viewport {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-areas:
-      "topics nodes"
-      "traces params"
-      "traces logs";
-    gap: clamp(8px, 0.7vw, 10px);
-    overflow: visible;
-    align-content: stretch;
-  }
-
-  .ros-grid--viewport .panel-card--ros-params .metrics-grid--three {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .ros-grid--viewport .panel-card--ros-logs .log-terminal {
-    min-height: clamp(210px, 26vh, 290px);
-  }
-}
-
-@media (min-width: 1024px) and (max-width: 1060px) {
-  .dashboard-layout--main {
-    grid-template-rows: auto;
-  }
-
-  .dashboard-layout--main > .dashboard-sidebar {
-    grid-template-columns: 1fr;
-    overflow: visible;
-    padding-right: 0;
-  }
-
-  .dashboard-layout--main .subpanel-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-layout--main .subpanel-card__content--split {
-    grid-template-columns: 1fr;
-    justify-items: center;
-  }
-
-  .dashboard-layout--main .panel-card--telemetry .metrics-grid,
-  .dashboard-layout--main .manual-status__metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .ros-grid--viewport {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "topics"
-      "nodes"
-      "params"
-      "traces"
-      "logs";
-  }
-
-  .ros-grid--viewport .trace-grid,
-  .ros-grid--viewport .metrics-grid--three {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1024px) and (max-width: 1180px) {
   .panel-card__heading > *,
   .panel-title > div,
   .subpanel-card__header > *,
@@ -2417,6 +2217,131 @@ a {
     line-height: 1.34;
   }
 }
+
+@media (min-width: 1480px) {
+  .sensor-metrics--encoders {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1180px) {
+  .dashboard-layout,
+  .ros-grid,
+  .subpanel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-card--wide {
+    grid-column: auto;
+  }
+
+  .metrics-grid--three,
+  .trace-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sensor-metrics--encoders {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .app-shell {
+    padding: 14px;
+  }
+
+  .screen-header,
+  .panel-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .screen-header__actions {
+    justify-content: flex-start;
+  }
+
+  .button-pair,
+  .metrics-grid,
+  .sensor-metrics--encoders,
+  .metrics-grid--three,
+  .trace-grid,
+  .manual-status__metrics,
+  .subpanel-card__content--split {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-title {
+    align-items: flex-start;
+  }
+
+  .log-terminal {
+    min-height: 320px;
+  }
+}
+
+@media (min-width: 1181px) and (max-width: 1360px) {
+  .dashboard-layout--main {
+    grid-template-columns: minmax(0, 1.5fr) minmax(340px, 0.95fr);
+    gap: 14px;
+    align-items: start;
+  }
+
+  .dashboard-layout--main .subpanel-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ros-grid--viewport {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "topics nodes"
+      "traces params"
+      "traces logs";
+    gap: 12px;
+  }
+}
+
+
+@media (min-width: 1024px) and (max-width: 1060px) {
+  .dashboard-layout--main {
+    grid-template-rows: auto;
+  }
+
+  .dashboard-layout--main > .dashboard-sidebar {
+    grid-template-columns: 1fr;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .dashboard-layout--main .subpanel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-layout--main .subpanel-card__content--split {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .dashboard-layout--main .panel-card--telemetry .metrics-grid,
+  .dashboard-layout--main .manual-status__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ros-grid--viewport {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "topics"
+      "nodes"
+      "params"
+      "traces"
+      "logs";
+  }
+
+  .ros-grid--viewport .trace-grid,
+  .ros-grid--viewport .metrics-grid--three {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 
 @media (min-width: 1361px) {
   .dashboard-layout--main {
