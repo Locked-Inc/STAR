@@ -393,9 +393,9 @@
 #include "rx_check.h"
 #include "rx_frame_ascii.h"
 #include "rx_log.h"
+#include "rx_log_uart.h"
 #include "rx_simulator_config.h"
 #include "rx_time_constants.h"
-#include "rx_usb.h"
 
 #if !RX_IS_SIMULATOR
 #include "tx_api.h"
@@ -575,7 +575,10 @@ internal_output_decoded(rx_comm_manager_t* mgr, const rx_frame_t* frame, bool is
   /* rx_frame_ascii_format always succeeds and produces output for any valid frame
    * and adequately-sized buffer (guaranteed by ascii_buffer sizing in the manager). */
   (void)rx_frame_ascii_format(frame, is_tx, mgr->ascii_buffer, sizeof(mgr->ascii_buffer), &len);
-  (void)rx_usb_puts(k_usb_port_decoded, mgr->ascii_buffer);
+  /* The old decoded-debug path wrote to USB CDC port 1; with USB0 gone, we
+   * route the ASCII dump through the UART log ring so it still shows up on
+   * the gateway prefixed with [RX72N]. */
+  rx_log_uart_puts(mgr->ascii_buffer);
 }
 
 /**
