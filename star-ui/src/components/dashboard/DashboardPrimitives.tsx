@@ -76,6 +76,9 @@ interface HeaderLinkProps {
 
 export function HeaderLink({ href, onNavigate, label, accent, glyph }: HeaderLinkProps) {
   function handleClick(event: ReactMouseEvent<HTMLAnchorElement>): void {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+      return;
+    }
     event.preventDefault();
     onNavigate(href);
   }
