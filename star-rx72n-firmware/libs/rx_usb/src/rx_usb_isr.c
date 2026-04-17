@@ -340,10 +340,16 @@ typedef enum : uint8_t {
  * =============================================================================
  */
 
-void __attribute__((interrupt)) usb0_usbi_isr(void);
-void __attribute__((interrupt)) usb0_d0fifo_isr(void);
-void __attribute__((interrupt)) usb0_d1fifo_isr(void);
-void __attribute__((interrupt)) usb0_usbr_isr(void);
+/* Place each ISR in the .rvectors table at the RX72N ICU vector number that
+ * the peripheral actually signals.  Without the section+vector parameters
+ * GNURX generates the prologue/epilogue but leaves $tableentry$N$.rvectors
+ * undefined, so the linker_script_rvectors.inc substitution falls through
+ * to 0xFFFFFFFF and the first USB interrupt jumps into unmapped memory.
+ * Numbers come from rx_hal/inc/rx72n_usb_regs.h and the RX72N ICU table. */
+void __attribute__((interrupt(".rvectors", 36))) usb0_usbi_isr(void);
+void __attribute__((interrupt(".rvectors", 34))) usb0_d0fifo_isr(void);
+void __attribute__((interrupt(".rvectors", 35))) usb0_d1fifo_isr(void);
+void __attribute__((interrupt(".rvectors", 90))) usb0_usbr_isr(void);
 
 /* =============================================================================
  * Private Functions
@@ -618,7 +624,7 @@ void rx_usb_isr_handler(void)
  * This is the actual interrupt handler that is registered in the vector table.
  * It calls the main ISR handler.
  */
-void __attribute__((interrupt)) usb0_usbi_isr(void)
+void __attribute__((interrupt(".rvectors", 36))) usb0_usbi_isr(void)
 {
   /* Clear interrupt request flag in ICU */
   icu()->ir[k_vect_usb0_usbi] = 0;
@@ -632,7 +638,7 @@ void __attribute__((interrupt)) usb0_usbi_isr(void)
  *
  * DMA-related interrupt for D0FIFO (not used in this implementation).
  */
-void __attribute__((interrupt)) usb0_d0fifo_isr(void)
+void __attribute__((interrupt(".rvectors", 34))) usb0_d0fifo_isr(void)
 {
   /* Clear interrupt request flag */
   icu()->ir[k_vect_usb0_d0fifo] = 0;
@@ -645,7 +651,7 @@ void __attribute__((interrupt)) usb0_d0fifo_isr(void)
  *
  * DMA-related interrupt for D1FIFO (not used in this implementation).
  */
-void __attribute__((interrupt)) usb0_d1fifo_isr(void)
+void __attribute__((interrupt(".rvectors", 35))) usb0_d1fifo_isr(void)
 {
   /* Clear interrupt request flag */
   icu()->ir[k_vect_usb0_d1fifo] = 0;
@@ -658,7 +664,7 @@ void __attribute__((interrupt)) usb0_d1fifo_isr(void)
  *
  * Separate resume interrupt for wakeup from low-power modes.
  */
-void __attribute__((interrupt)) usb0_usbr_isr(void)
+void __attribute__((interrupt(".rvectors", 90))) usb0_usbr_isr(void)
 {
   /* Clear interrupt request flag */
   icu()->ir[k_vect_usb0_usbr] = 0;

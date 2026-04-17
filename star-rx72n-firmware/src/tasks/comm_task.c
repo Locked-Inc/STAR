@@ -398,6 +398,7 @@
 #include "rx_spi_link.h"
 #include "rx_time_constants.h"
 #include "rx_uart_comm.h"
+#include "rx_usb.h"
 #include "rx_usb_comm.h"
 #include "shared_data.h"
 #include "tx_api.h"
@@ -1083,6 +1084,20 @@ static bool internal_init_usb_transport(void)
 {
   if ((s_enabled_channels & k_comm_channel_mask_usb) == k_comm_channel_mask_none) {
     rx_log_info(s_tag, "USB comm disabled by config");
+    return false;
+  }
+
+  /* Bring up the USB0 peripheral before initialising the transport handle.
+   * rx_usb_init() configures the USB0 PHY, initialises the CDC composite
+   * descriptors, and asserts the D+ pull-up.  rx_usb_comm_init() below only
+   * wires up the frame codec and session state -- it does not touch USB
+   * hardware (see rx_usb_comm.h: "USB hardware must be initialized
+   * separately via rx_usb_init()"). */
+  const rx_err_t hw_err = rx_usb_init(nullptr);
+  if (hw_err != k_rx_ok && hw_err != k_rx_err_invalid_state) {
+    /* invalid_state = already initialised; tolerate it so warm restarts of
+     * the comm task during development do not fail the whole transport. */
+    rx_log_error(s_tag, "rx_usb_init failed");
     return false;
   }
 
