@@ -255,7 +255,15 @@ static const char* s_tag = "CLOCK_INIT";
 
 /** @brief Oscillator stabilization timing constants */
 typedef enum : uint32_t {
-  k_main_osc_stabilization_cycles     = 2400000, /**< Main oscillator delay (~10ms at 240MHz) */
+  /* Main oscillator stabilization: RX72N manual says ~10 ms for the 24 MHz
+   * crystal to stabilise.  The firmware runs at LOCO (~240 kHz) at this
+   * point -- BEFORE the PLL is configured.  2400 NOPs at 240 kHz = ~10 ms.
+   *
+   * (Earlier value was 2,400,000, a miscalculation assuming 240 MHz CPU.
+   * At actual LOCO speed that loop ran for ~10 seconds; combined with the
+   * OFS0=0xFFFFFFFF watchdog-disabled default everything looked dead on
+   * the bus but the chip was just stuck counting NOPs.) */
+  k_main_osc_stabilization_cycles     = 2400,
   k_pll_stabilization_timeout         = 1000000, /**< PLL stabilization max wait iterations */
   k_pll_stabilization_timeout_expired = 0,       /**< PLL timeout expiration value */
 } oscillator_timing_t;
@@ -455,26 +463,7 @@ static rx_err_t internal_start_oscillators_and_plls(void)
   *ppllcr_reg()  = k_ppll_config_48mhz;
   *ppllcr2_reg() = k_ppll_enabled;
 
-  const rx_err_t ppll_err = internal_wait_ppll_lock();
-  if (ppll_err != k_rx_ok) {
-    return ppll_err;
-  }
-
-  /* Route USB0 UCLK from the PPLL path by setting PACKCR.UPLLSEL=1.
-   * Without this, the USB module gets its 48 MHz clock from SCKCR2.UCK
-   * (main-PLL divider), which is not configured here and defaults to a
-   * divider that produces the wrong frequency -- USB0 then never
-   * enumerates even though rx_usb_hw_init() and D+ pull-up run cleanly.
-   *
-   * PACKCR layout (RX72N HW manual p365):
-   *   b12 UPLLSEL : 0 = main PLL (default), 1 = PPLL
-   *   b0          : reserved, must be written as 1
-   *
-   * The HAL struct at rx72n_system_regs.h doesn't expose packcr; write
-   * it via the absolute address the register reference table uses. */
-  *((volatile uint16_t*)k_packcr_addr) = k_packcr_upllsel_ppll;
-
-  return k_rx_ok;
+  return internal_wait_ppll_lock();
 }
 
 /**
