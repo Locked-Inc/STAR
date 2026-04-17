@@ -49,7 +49,15 @@ export function useControllerBridge(
     tick();
     const interval = window.setInterval(tick, controllerSendIntervalMs);
 
-    return () => window.clearInterval(interval);
+    return () => {
+      window.clearInterval(interval);
+      sendRef.current({
+        linearVel: 0,
+        angularVel: 0,
+        timestamp: String(Date.now()),
+        debug: false,
+      });
+    };
   }, [enabled]);
 
   return gamepadState;

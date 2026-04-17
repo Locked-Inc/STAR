@@ -37,7 +37,7 @@ export function useTraceHistory(samples: TraceSamples): TraceHistory {
         temperature: pushTraceSample(currentHistory.temperature, latestTraceSamplesRef.current.temperature),
         velocity: pushTraceSample(currentHistory.velocity, latestTraceSamplesRef.current.velocity),
       }));
-     }, traceSampleIntervalMs);
+    }, traceSampleIntervalMs);
 
     return () => window.clearInterval(interval);
   }, []);

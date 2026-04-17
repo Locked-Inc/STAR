@@ -88,12 +88,9 @@ export function useOperatorControls({
     if (coveragePercent < 100 || !autonomyRequested) {
       return;
     }
+    
+    setAutonomyRequested(false);
 
-    const timeout = window.setTimeout(() => {
-      setAutonomyRequested(false);
-    }, 0);
-
-    return () => window.clearTimeout(timeout);
   }, [coveragePercent, autonomyRequested]);
 
   async function handleEStopToggle(): Promise<void> {
@@ -142,15 +139,13 @@ export function useOperatorControls({
       return;
     }
 
-    setSelectedMode((currentMode) => {
-      const nextMode: UiMode = currentMode === 'autonomous' ? 'manual' : 'autonomous';
-      if (nextMode === 'manual') {
-        setAutonomyRequested(false);
-      } else {
-        setCoveragePercent(0);
-      }
-      return nextMode;
-    });
+    const nextMode: UiMode = selectedMode === 'autonomous' ? 'manual' : 'autonomous';
+    setSelectedMode(nextMode);
+    if (nextMode === 'manual') {
+      setAutonomyRequested(false);
+    } else {
+      setCoveragePercent(0);
+    }
   }
 
   function handleAutonomyStart(): void {
