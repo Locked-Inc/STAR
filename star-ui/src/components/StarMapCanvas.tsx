@@ -18,6 +18,7 @@ const maxPathPoints = 220;
 const maxObstaclePoints = 5000;
 const gridSpacingMeters = 0.5;
 const lidarRangeLimitMeters = 12;
+const pathPointThresholdMeters = 0.05;
 
 function project(point: WorldPoint, origin: WorldPoint): { x: number; y: number } {
   return {
@@ -33,6 +34,7 @@ export function StarMapCanvas({ lidarScan, odometry }: StarMapCanvasProps) {
 
   useEffect(() => {
     if (!odometry) {
+      pathRef.current = [];
       return;
     }
 
@@ -40,7 +42,7 @@ export function StarMapCanvas({ lidarScan, odometry }: StarMapCanvasProps) {
     const currentPath = pathRef.current;
     const previousPoint = currentPath[currentPath.length - 1];
 
-    if (!previousPoint || Math.hypot(previousPoint.x - latestPoint.x, previousPoint.y - latestPoint.y) > 0.05) {
+    if (!previousPoint || Math.hypot(previousPoint.x - latestPoint.x, previousPoint.y - latestPoint.y) > pathPointThresholdMeters) {
       pathRef.current = [...currentPath, latestPoint].slice(-maxPathPoints);
     }
   }, [odometry]);
@@ -89,10 +91,14 @@ export function StarMapCanvas({ lidarScan, odometry }: StarMapCanvasProps) {
     context.save();
     context.strokeStyle = 'rgba(112, 145, 183, 0.18)';
     context.lineWidth = 1;
-    for (let offset = -20; offset <= 20; offset += gridSpacingMeters) {
+
+    const gridHalfExtentMeters = 20
+
+    for (let offset = -gridHalfExtentMeters; offset <= gridHalfExtentMeters; offset += gridSpacingMeters) {
       const gridPx = gridSpacingMeters * pixelsPerMeter;
       const xMod = (((origin.x * pixelsPerMeter) % gridPx) + gridPx) % gridPx;
       const x = canvasWidth / 2 + offset * pixelsPerMeter - xMod;
+      context.beginPath();
       context.moveTo(x, 0);
       context.lineTo(x, canvasHeight);
       context.stroke();
@@ -153,9 +159,10 @@ export function StarMapCanvas({ lidarScan, odometry }: StarMapCanvasProps) {
           continue;
         }
 
+        const worldAngle = odometry.thetaRad + angle;
         const beamEnd = {
-          x: origin.x + Math.cos((odometry?.thetaRad ?? 0) + angle) * range,
-          y: origin.y + Math.sin((odometry?.thetaRad ?? 0) + angle) * range,
+          x: origin.x + Math.cos(worldAngle) * range,
+          y: origin.y + Math.sin(worldAngle) * range,
         };
         const projected = project(beamEnd, origin);
         const gradient = context.createLinearGradient(canvasWidth / 2, canvasHeight / 2, projected.x, projected.y);
