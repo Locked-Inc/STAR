@@ -9,6 +9,7 @@ import {
   formatNumber,
   formatTimestamp,
   formatUptime,
+  connectionStateDisplayByState,
   levelLabel,
   parseTimestampUs,
   recentPacketWindowMs,
@@ -18,7 +19,7 @@ import {
 import { usePacketFeed } from '../hooks/usePacketFeed';
 import { useTraceHistory } from '../hooks/useTraceHistory';
 import { useDashboardStore } from '../store/dashboardStore';
-import type { AppRoute, LogLine, Tone } from '../types/dashboard';
+import type { AppRoute, LogLine } from '../types/dashboard';
 
 const demoRosNodes = [
   { name: '/slam_toolbox', description: 'SLAM mapping and localization', tone: 'good' as const },
@@ -72,6 +73,8 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
     return seen;
   }, [packets]);
 
+  const connectionStateDisplay = connectionStateDisplayByState[connectionState];
+
   const activeTopics = useMemo(
     () =>
       rosTopicDefinitions.map((topicRow) => {
@@ -95,7 +98,7 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
           isLive,
         };
       }),
-    [lidarPointCount, odometry, packetTopics, sampledAtMs, telemetry],
+    [lidarPointCount, odometry, packetTopics, sampledAtMs, telemetry?.imu],
   );
 
   const logLines = useMemo<LogLine[]>(() => {
@@ -140,9 +143,7 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
 
           <div className="screen-header__actions">
             {demoModeEnabled ? <Chip tone="warn">Demo Mode</Chip> : null}
-            <Chip tone={connectionState === 'connected' ? 'good' : connectionState === 'disconnected' ? 'danger' : 'warn'}>
-              {connectionState === 'connected' ? 'Connected' : connectionState === 'reconnecting' ? 'Reconnecting' : connectionState}
-            </Chip>
+            <Chip tone={connectionStateDisplay.tone}>{connectionStateDisplay.label}</Chip>
           </div>
         </header>
 
@@ -193,7 +194,7 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
                     <div className="list-card" key={node.name}>
                       <div className="list-card__header">
                         <span className="mono accent-text accent-text--warn">{node.name}</span>
-                        <StatusDot tone={node.tone as Tone} />
+                        <StatusDot tone={node.tone} />
                       </div>
                       <div className="list-card__footer">{node.description}</div>
                     </div>

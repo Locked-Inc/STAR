@@ -1,5 +1,6 @@
 import { AlertLevel } from '../proto/star/v1/ui';
 import { RobotMode } from '../proto/star/v1/telemetry';
+import type { ConnectionState } from '../store/dashboardStore';
 import type { RosTopicDefinition, Tone, UiMode } from '../types/dashboard';
 
 export const controllerSendIntervalMs = 20;
@@ -9,6 +10,8 @@ export const coverageTickIntervalMs = 450;
 export const coverageStepPercent = 1.5;
 export const traceHistoryLength = 28;
 export const traceSampleIntervalMs = 1000;
+export const wheelDiameterMeters = 0.2;
+export const secondsPerMinute = 60;
 
 const validAlertTimestampFloorMs = Date.parse('2020-01-01T00:00:00Z');
 const microsecondsPerMillisecond = 1000;
@@ -19,7 +22,7 @@ export function msToUs(milliseconds: number): number {
 
 export const demoModeEnabled = import.meta.env.VITE_DEMO_MODE === 'true';
 
-export const rosTopicDefinitions: RosTopicDefinition[] = [
+export const rosTopicDefinitions: readonly RosTopicDefinition[] = [
   {
     packetType: 'lidar',
     topic: '/scan',
@@ -118,7 +121,7 @@ export function formatTimestamp(tsMs: number): string {
 
 export function parseTimestampUs(timestampUs: string | undefined): number | null {
   const raw = Number(timestampUs ?? 0);
-  const ms = raw / 1000;
+  const ms = raw / microsecondsPerMillisecond;
   if (!Number.isFinite(ms) || ms < validAlertTimestampFloorMs) {
     return null;
   }
@@ -180,6 +183,13 @@ export function toneLabel(tone: Tone): string {
       return 'Unavailable';
   }
 }
+
+export const connectionStateDisplayByState: Record<ConnectionState, { label: string; tone: Tone }> = {
+  connected: { label: 'Connected', tone: 'good' },
+  connecting: { label: 'Connecting', tone: 'warn' },
+  reconnecting: { label: 'Reconnecting', tone: 'warn' },
+  disconnected: { label: 'Disconnected', tone: 'danger' },
+};
 
 export function levelLabel(level: AlertLevel): string {
   switch (level) {

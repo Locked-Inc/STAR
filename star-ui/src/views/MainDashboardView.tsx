@@ -12,6 +12,7 @@ import {
   formatNumber,
   formatTimestamp,
   formatUptime,
+  connectionStateDisplayByState,
   levelLabel,
   modeLabel,
   parseTimestampUs,
@@ -20,6 +21,8 @@ import {
   toneFromScore,
   toneLabel,
   uiModeFromRobotMode,
+  wheelDiameterMeters,
+  secondsPerMinute
 } from '../lib/dashboard';
 import { useControllerBridge } from '../hooks/useControllerBridge';
 import { useOperatorControls } from '../hooks/useOperatorControls';
@@ -84,6 +87,7 @@ export function MainDashboardView({
 
   const [alertsOpen, setAlertsOpen] = useState(false);
   const alertsRef = useRef<HTMLDivElement | null>(null);
+  const connectionStateDisplay = connectionStateDisplayByState[connectionState];
 
   const reportedMode = uiModeFromRobotMode(systemStatus?.mode);
   const {
@@ -121,8 +125,26 @@ export function MainDashboardView({
       }
     }
 
+    function handleTouchOutside(event: TouchEvent): void {
+      if (alertsRef.current && !alertsRef.current.contains(event.target as Node)) {
+        setAlertsOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent): void {
+      if (event.key === 'Escape') {
+        setAlertsOpen(false);
+      }
+    }
+
     document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleTouchOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleTouchOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [alertsOpen]);
 
   const motorValues = motors ?? [];
@@ -201,15 +223,13 @@ export function MainDashboardView({
             {demoModeEnabled ? <Chip tone="warn">Demo Mode</Chip> : null}
             <Chip tone={controllerTone}>Controller: {toneLabel(controllerTone)}</Chip>
             <HeaderLink href="/ros" onNavigate={navigate} label="Debug" accent="accent" glyph="RX" />
-            <Chip tone={connectionState === 'connected' ? 'good' : connectionState === 'disconnected' ? 'danger' : 'warn'}>
-              {connectionState === 'connected' ? 'Connected' : connectionState === 'reconnecting' ? 'Reconnecting' : connectionState}
-            </Chip>
+            <Chip tone={connectionStateDisplay.tone}>{connectionStateDisplay.label}</Chip>
             {uiMode === 'manual' ? (
               <Chip tone={gamepadState.connected ? 'good' : 'warn'}>{gamepadState.connected ? 'Gamepad' : 'No Gamepad'}</Chip>
             ) : null}
 
             <div className="alerts-anchor" ref={alertsRef}>
-              <AlertsButton count={alertPreview.length} onClick={handleAlertsToggle} />
+              <AlertsButton count={alerts.length} onClick={handleAlertsToggle} />
 
               {alertsOpen ? (
                 <div className="alerts-popover">
@@ -326,7 +346,9 @@ export function MainDashboardView({
                         <div className="sensor-metrics sensor-metrics--encoders">
                           {['FL', 'FR', 'RL', 'RR'].map((label, index) => {
                             const motor = motorValues[index];
-                            const rpm = motor ? (motor.velocityMps / 0.2) * 60 : undefined;
+                            const rpm = motor
+                              ? (motor.velocityMps / (Math.PI * wheelDiameterMeters)) * secondsPerMinute
+                              : undefined;
                             return (
                               <MetricTile
                                 key={label}
