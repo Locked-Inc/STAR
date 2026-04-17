@@ -501,8 +501,12 @@ static volatile uint8_t* internal_get_pfs_register(const uint8_t port, uint8_t p
       port_offset = k_mpc_porte_offset;
       break;
     case k_mpc_port_f:
+      /* Port F is partially populated on the 144-pin LFQFP package
+       * (PF0-PF5 exist; sonar trig0 lives on PF5). */
+      port_offset = k_mpc_portf_offset;
+      break;
     case k_mpc_port_g:
-      /* Ports G, H not available on 144-pin LFQFP package */
+      /* Port G not available on 144-pin LFQFP package */
       rx_log_error(s_tag, "Port not available on this package");
       return nullptr;
     case k_mpc_port_j:
