@@ -1,3 +1,9 @@
+/**
+ * @file StarMapCanvas.tsx
+ * @brief Canvas renderer for live SLAM map, robot pose, and LIDAR obstacles.
+ * @copyright Copyright (c) Project Star UI Contributors.
+ * @license Licensed under the repository license.
+ */
 import { useEffect, useRef } from 'react';
 import type { LidarScan, OdometryData } from '../proto/star/v1/ui';
 
