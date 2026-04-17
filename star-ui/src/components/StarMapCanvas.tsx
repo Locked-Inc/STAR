@@ -19,7 +19,38 @@ const maxObstaclePoints = 5000;
 const gridSpacingMeters = 0.5;
 const lidarRangeLimitMeters = 12;
 const pathPointThresholdMeters = 0.05;
-const obstacleCullMarginPx = 8
+const obstacleCullMarginPx = 8;
+const canvasCenterXPx = canvasWidth / 2;
+const canvasCenterYPx = canvasHeight / 2;
+
+const robotWidthMeters = 20 / pixelsPerMeter;
+const robotHeightMeters = 16 / pixelsPerMeter;
+const robotBodyWidthPx = robotWidthMeters * pixelsPerMeter;
+const robotBodyHeightPx = robotHeightMeters * pixelsPerMeter;
+const robotHalfWidthPx = robotBodyWidthPx / 2;
+const robotHalfHeightPx = robotBodyHeightPx / 2;
+
+const robotBodyLineWidthPx = 1.2;
+const robotAxisLineWidthPx = 2.2;
+
+const headingLengthMeters = 24 / pixelsPerMeter;
+const headingLengthPx = headingLengthMeters * pixelsPerMeter;
+const headingArrowTipOffsetMeters = 2 / pixelsPerMeter;
+const headingArrowTipOffsetPx = headingArrowTipOffsetMeters * pixelsPerMeter;
+const headingArrowHalfWidthMeters = 4 / pixelsPerMeter;
+const headingArrowHalfWidthPx = headingArrowHalfWidthMeters * pixelsPerMeter;
+
+const referenceTickLengthMeters = 22 / pixelsPerMeter;
+const referenceTickLengthPx = referenceTickLengthMeters * pixelsPerMeter;
+const referenceArrowTipOffsetMeters = 2 / pixelsPerMeter;
+const referenceArrowTipOffsetPx = referenceArrowTipOffsetMeters * pixelsPerMeter;
+const referenceArrowBaseOffsetMeters = 4 / pixelsPerMeter;
+const referenceArrowBaseOffsetPx = referenceArrowBaseOffsetMeters * pixelsPerMeter;
+const referenceArrowHalfWidthMeters = 4 / pixelsPerMeter;
+const referenceArrowHalfWidthPx = referenceArrowHalfWidthMeters * pixelsPerMeter;
+
+const markerRadiusMeters = 2.2 / pixelsPerMeter;
+const markerRadiusPx = markerRadiusMeters * pixelsPerMeter;
 
 function project(point: WorldPoint, origin: WorldPoint): { x: number; y: number } {
   return {
@@ -169,62 +200,64 @@ export function StarMapCanvas({ lidarScan, odometry }: StarMapCanvasProps) {
           y: origin.y + Math.sin(worldAngle) * range,
         };
         const projected = project(beamEnd, origin);
-        const gradient = context.createLinearGradient(canvasWidth / 2, canvasHeight / 2, projected.x, projected.y);
+        const gradient = context.createLinearGradient(canvasCenterXPx, canvasCenterYPx, projected.x, projected.y);
         gradient.addColorStop(0, 'rgba(255, 92, 92, 0.32)');
         gradient.addColorStop(1, 'rgba(255, 92, 92, 0.04)');
         context.strokeStyle = gradient;
         context.beginPath();
-        context.moveTo(canvasWidth / 2, canvasHeight / 2);
+        context.moveTo(canvasCenterXPx, canvasCenterYPx);
         context.lineTo(projected.x, projected.y);
         context.stroke();
       }
       context.restore();
     }
 
-    context.save();
-    context.translate(canvasWidth / 2, canvasHeight / 2);
-    context.rotate(odometry?.thetaRad ?? 0);
+    if (odometry) {
+      context.save();
+      context.translate(canvasCenterXPx, canvasCenterYPx);
+      context.rotate(odometry.thetaRad);
 
-    context.fillStyle = '#111827';
-    context.strokeStyle = '#31425f';
-    context.lineWidth = 1.2;
-    context.fillRect(-10, -8, 20, 16);
-    context.strokeRect(-10, -8, 20, 16);
+      context.fillStyle = '#111827';
+      context.strokeStyle = '#31425f';
+      context.lineWidth = robotBodyLineWidthPx;
+      context.fillRect(-robotHalfWidthPx, -robotHalfHeightPx, robotBodyWidthPx, robotBodyHeightPx);
+      context.strokeRect(-robotHalfWidthPx, -robotHalfHeightPx, robotBodyWidthPx, robotBodyHeightPx);
 
-    context.strokeStyle = '#ef4444';
-    context.lineWidth = 2.2;
-    context.beginPath();
-    context.moveTo(0, 0);
-    context.lineTo(24, 0);
-    context.stroke();
+      context.strokeStyle = '#ef4444';
+      context.lineWidth = robotAxisLineWidthPx;
+      context.beginPath();
+      context.moveTo(0, 0);
+      context.lineTo(headingLengthPx, 0);
+      context.stroke();
 
-    context.fillStyle = '#ef4444';
-    context.beginPath();
-    context.moveTo(26, 0);
-    context.lineTo(20, -4);
-    context.lineTo(20, 4);
-    context.closePath();
-    context.fill();
+      context.fillStyle = '#ef4444';
+      context.beginPath();
+      context.moveTo(headingLengthPx + headingArrowTipOffsetPx, 0);
+      context.lineTo(headingLengthPx - headingArrowHalfWidthPx, -headingArrowHalfWidthPx);
+      context.lineTo(headingLengthPx - headingArrowHalfWidthPx, headingArrowHalfWidthPx);
+      context.closePath();
+      context.fill();
 
-    context.strokeStyle = '#22c55e';
-    context.beginPath();
-    context.moveTo(0, 0);
-    context.lineTo(0, -22);
-    context.stroke();
+      context.strokeStyle = '#22c55e';
+      context.beginPath();
+      context.moveTo(0, 0);
+      context.lineTo(0, -referenceTickLengthPx);
+      context.stroke();
 
-    context.fillStyle = '#22c55e';
-    context.beginPath();
-    context.moveTo(0, -24);
-    context.lineTo(-4, -18);
-    context.lineTo(4, -18);
-    context.closePath();
-    context.fill();
+      context.fillStyle = '#22c55e';
+      context.beginPath();
+      context.moveTo(0, -(referenceTickLengthPx + referenceArrowTipOffsetPx));
+      context.lineTo(-referenceArrowHalfWidthPx, -(referenceTickLengthPx - referenceArrowBaseOffsetPx));
+      context.lineTo(referenceArrowHalfWidthPx, -(referenceTickLengthPx - referenceArrowBaseOffsetPx));
+      context.closePath();
+      context.fill();
 
-    context.fillStyle = '#38bdf8';
-    context.beginPath();
-    context.arc(0, 0, 2.2, 0, Math.PI * 2);
-    context.fill();
-    context.restore();
+      context.fillStyle = '#38bdf8';
+      context.beginPath();
+      context.arc(0, 0, markerRadiusPx, 0, Math.PI * 2);
+      context.fill();
+      context.restore();
+    }
   }, [lidarScan, odometry]);
 
   return (

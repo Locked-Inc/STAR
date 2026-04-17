@@ -7,7 +7,8 @@ const defaultWsPort = 8080;
 const minTcpPort = 1;
 const maxTcpPort = 65535;
 const rawWsPort = import.meta.env.VITE_WS_PORT;
-const parsedWsPort = rawWsPort === undefined ? undefined : Number.parseInt(rawWsPort, 10);
+const parsedWsPort =
+  rawWsPort === undefined ? undefined : (/^\d+$/.test(rawWsPort.trim()) ? Number(rawWsPort) : Number.NaN);
 const wsPortIsValid =
   parsedWsPort !== undefined &&
   Number.isFinite(parsedWsPort) &&

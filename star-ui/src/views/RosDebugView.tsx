@@ -30,14 +30,41 @@ const demoRosNodes = [
   { name: '/robot_state_publisher', description: 'Robot kinematic model', tone: 'good' as const },
 ];
 
-const demoParameterCards = [
-  { label: 'scan_frequency', value: '10 Hz' },
-  { label: 'map_resolution', value: '0.05 m/cell' },
-  { label: 'wheel_diameter', value: '0.20 m' },
-  { label: 'controller_frequency', value: '50 Hz' },
-];
-
 const maxTerminalLogLines = 20;
+const minimumRateSampleCount = 2;
+
+function formatObservedRate(rateHz: number | undefined): string {
+  if (rateHz == null || !Number.isFinite(rateHz) || rateHz <= 0) {
+    return '--';
+  }
+
+  return `${formatNumber(rateHz, rateHz >= 10 ? 0 : 1)} Hz`;
+}
+
+function calculateObservedRateHz(sampleTimestampsMs: number[]): number | undefined {
+  if (sampleTimestampsMs.length < minimumRateSampleCount) {
+    return undefined;
+  }
+
+  const intervalsMs: number[] = [];
+  for (let index = 1; index < sampleTimestampsMs.length; index += 1) {
+    const intervalMs = sampleTimestampsMs[index - 1] - sampleTimestampsMs[index];
+    if (intervalMs > 0) {
+      intervalsMs.push(intervalMs);
+    }
+  }
+
+  if (intervalsMs.length === 0) {
+    return undefined;
+  }
+
+  const averageIntervalMs = intervalsMs.reduce((sum, intervalMs) => sum + intervalMs, 0) / intervalsMs.length;
+  if (averageIntervalMs <= 0) {
+    return undefined;
+  }
+
+  return 1000 / averageIntervalMs;
+}
 
 interface RosDebugViewProps {
   navigate: (route: AppRoute) => void;
@@ -75,12 +102,60 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
     return seen;
   }, [packets]);
 
+  const observedRatesByPacketType = useMemo(() => {
+    const timestampsByPacketType = new Map<string, number[]>();
+
+    packets.forEach((packet) => {
+      if (sampledAtMs - packet.tsMs >= recentPacketWindowMs) {
+        return;
+      }
+
+      const packetTimestampsMs = timestampsByPacketType.get(packet.type);
+      if (packetTimestampsMs) {
+        packetTimestampsMs.push(packet.tsMs);
+        return;
+      }
+
+      timestampsByPacketType.set(packet.type, [packet.tsMs]);
+    });
+
+    return new Map(
+      Array.from(timestampsByPacketType.entries(), ([packetType, sampleTimestampsMs]) => [
+        packetType,
+        calculateObservedRateHz(sampleTimestampsMs),
+      ]),
+    );
+  }, [packets, sampledAtMs]);
+
   const connectionStateDisplay = connectionStateDisplayByState[connectionState];
+
+  const parameterCards = useMemo(
+    () => [
+      {
+        label: 'scan_frequency',
+        value: formatObservedRate(observedRatesByPacketType.get('lidar')),
+      },
+      {
+        label: 'map_resolution',
+        value: '0.05 m/cell',
+      },
+      {
+        label: 'wheel_diameter',
+        value: '0.20 m',
+      },
+      {
+        label: 'controller_frequency',
+        value: formatObservedRate(observedRatesByPacketType.get('controller')),
+      },
+    ],
+    [observedRatesByPacketType],
+  );
 
   const activeTopics = useMemo(
     () =>
       rosTopicDefinitions.map((topicRow) => {
         const packet = packetTopics.get(topicRow.topic);
+        const observedRateHz = observedRatesByPacketType.get(topicRow.packetType);
         const isLive = packet ? sampledAtMs > 0 && sampledAtMs - packet.tsMs < recentPacketWindowMs : false;
 
         let detail = packet?.preview ? packet.preview : 'No recent traffic observed.';
@@ -98,9 +173,10 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
           ...topicRow,
           detail,
           isLive,
+          rateLabel: formatObservedRate(observedRateHz),
         };
       }),
-    [lidarPointCount, odometry, packetTopics, sampledAtMs, telemetry?.imu],
+    [lidarPointCount, observedRatesByPacketType, odometry, packetTopics, sampledAtMs, telemetry?.imu],
   );
 
   const logLines = useMemo<LogLine[]>(() => {
@@ -172,7 +248,9 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
                   <div className="list-card" key={topic.topic}>
                     <div className="list-card__header">
                       <span className={`mono accent-text accent-text--${topic.isLive ? 'good' : 'warn'}`}>{topic.topic}</span>
-                      <span className="list-card__caption">{topic.type}</span>
+                      <span className="list-card__caption">
+                        {topic.type} | observed {topic.rateLabel}
+                      </span>
                     </div>
                     <div className="list-card__footer">
                       {topic.description} <span className="mono">{topic.detail}</span>
@@ -271,7 +349,7 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
             <div className="panel-card__body">
               {demoModeEnabled ? (
                 <div className="metrics-grid metrics-grid--three">
-                  {demoParameterCards.map((parameter) => (
+                  {parameterCards.map((parameter) => (
                     <MetricTile key={parameter.label} label={parameter.label} tone="warn" value={parameter.value} />
                   ))}
                 </div>

@@ -51,17 +51,15 @@ export function DebugTraceChart({
     throw new Error('DebugTraceChart expects min < max when both bounds are provided.');
   }
 
-  const computedMin =
-    min !== undefined ? Math.min(Math.max(min, sampleMin), sampleMax) : sampleMin;
-  let computedMax =
-    max !== undefined ? Math.min(Math.max(max, sampleMin), sampleMax) : sampleMax;
-
+  const computedMin = min !== undefined ? Math.min(min, sampleMin) : sampleMin;
+  let computedMax = max !== undefined ? Math.max(max, sampleMax) : sampleMax;
   if (computedMax <= computedMin) {
     computedMax = computedMin + 1;
   }
+
   const currentValue = plottedSamples[plottedSamples.length - 1] ?? 0;
   const path = buildPath(safeSamples, computedMin, computedMax, chartWidth, chartHeight);
-  const areaPath = `${path} L ${chartWidth} ${chartHeight} L 0 ${chartHeight} Z`;
+  const areaPath = path ? `${path} L ${chartWidth} ${chartHeight} L 0 ${chartHeight} Z` : '';
 
   return (
     <div className="trace-card">

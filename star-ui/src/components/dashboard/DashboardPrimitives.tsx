@@ -105,7 +105,9 @@ export function ControlButton({ label, tone, onClick, disabled }: ControlButtonP
       disabled={disabled}
       type="button"
       onClick={() => {
-        void onClick();
+        Promise.resolve(onClick()).catch((error: unknown) => {
+          console.error('ControlButton onClick rejected', { label, error });
+        });
       }}
     >
       {label}
