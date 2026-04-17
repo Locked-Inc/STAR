@@ -35,21 +35,21 @@ typedef enum : uint32_t {
 } test_rx_log_uart_sizes_t;
 
 typedef enum : uint32_t {
-  k_test_putint_positive      = 42U,
-  k_test_putint_negative_abs  = 123U,
-  k_test_int32_max            = 2147483647U,
-  k_test_uint32_max           = 4294967295U,
-  k_test_puthex_small         = 0xAU,
-  k_test_puthex_large         = 0xDEADBEEFU,
-  k_test_puthex_padded_value  = 0x7U,
-  k_test_digits_nine_clamped  = 9U,
-  k_test_digits_four          = 4U,
-  k_test_sentinel_out_len     = 42U,
-  k_test_drain_max            = 16U,
-  k_test_prefill_trailing     = 16U,
-  k_test_wrap_x_count         = 32U,
-  k_test_wrap_y_count         = 32U,
-  k_test_wrap_first_chunk_len = 16U,
+  k_test_putint_positive       = 42U,
+  k_test_putint_negative_abs   = 123U,
+  k_test_int32_max             = 2147483647U,
+  k_test_uint32_max            = 4294967295U,
+  k_test_puthex_small          = 0xAU,
+  k_test_puthex_large          = 0xDEADBEEFU,
+  k_test_puthex_padded_value   = 0x7U,
+  k_test_digits_nine_clamped   = 9U,
+  k_test_digits_four           = 4U,
+  k_test_sentinel_out_len      = 42U,
+  k_test_drain_max             = 16U,
+  k_test_prefill_trailing      = 16U,
+  k_test_wrap_x_count          = 32U,
+  k_test_wrap_y_count          = 32U,
+  k_test_wrap_first_chunk_len  = 16U,
   k_test_wrap_second_chunk_len = 48U,
 } test_rx_log_uart_values_t;
 
@@ -257,9 +257,7 @@ void test_drain_returns_only_pre_wrap_portion_when_split(void)
   for (uint32_t i = 0U; i < k_test_wrap_first_chunk_len; ++i) {
     TEST_ASSERT_EQUAL_UINT8((uint8_t)'X', chunk2[i]);
   }
-  for (uint32_t i = k_test_wrap_first_chunk_len;
-       i < k_test_wrap_second_chunk_len;
-       ++i) {
+  for (uint32_t i = k_test_wrap_first_chunk_len; i < k_test_wrap_second_chunk_len; ++i) {
     TEST_ASSERT_EQUAL_UINT8((uint8_t)'Y', chunk2[i]);
   }
   TEST_ASSERT_EQUAL_UINT32(0U, rx_log_uart_pending_len());
@@ -272,15 +270,13 @@ void test_drain_returns_only_pre_wrap_portion_when_split(void)
 void test_drain_null_buf_is_invalid_arg(void)
 {
   uint32_t out_len = 0U;
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_log_uart_drain(NULL, k_test_drain_max, &out_len));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_log_uart_drain(NULL, k_test_drain_max, &out_len));
 }
 
 void test_drain_null_out_len_is_invalid_arg(void)
 {
   uint8_t buf[k_test_small_buf] = {0};
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_log_uart_drain(buf, k_test_drain_max, NULL));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_log_uart_drain(buf, k_test_drain_max, NULL));
 }
 
 void test_drain_zero_max_len_is_invalid_arg(void)
@@ -324,8 +320,7 @@ void test_drain_respects_max_len_cap(void)
   uint32_t len                        = 0U;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_log_uart_drain(chunk, k_drain_cap_max_len, &len));
   TEST_ASSERT_EQUAL_UINT32(k_drain_cap_max_len, len);
-  TEST_ASSERT_EQUAL_UINT32(k_drain_cap_pending - k_drain_cap_max_len,
-                           rx_log_uart_pending_len());
+  TEST_ASSERT_EQUAL_UINT32(k_drain_cap_pending - k_drain_cap_max_len, rx_log_uart_pending_len());
 }
 
 /* =============================================================================

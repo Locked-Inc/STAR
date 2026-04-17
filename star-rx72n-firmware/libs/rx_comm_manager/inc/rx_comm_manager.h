@@ -767,11 +767,11 @@ typedef void (*rx_comm_link_status_callback_t)(rx_comm_channel_t     channel,
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_comm_channel_mask_none = 0x00U,                        /**< No channels enabled */
-  k_comm_channel_mask_uart = 0x01U,                        /**< UART (k_comm_channel_uart = 0) */
-  k_comm_channel_mask_spi  = 0x02U,                        /**< SPI  (k_comm_channel_spi  = 1) */
-  k_comm_channel_mask_i2c  = 0x04U,                        /**< I2C  (k_comm_channel_i2c  = 2) */
-  k_comm_channel_mask_all =                                /**< All three channels */
+  k_comm_channel_mask_none = 0x00U, /**< No channels enabled */
+  k_comm_channel_mask_uart = 0x01U, /**< UART (k_comm_channel_uart = 0) */
+  k_comm_channel_mask_spi  = 0x02U, /**< SPI  (k_comm_channel_spi  = 1) */
+  k_comm_channel_mask_i2c  = 0x04U, /**< I2C  (k_comm_channel_i2c  = 2) */
+  k_comm_channel_mask_all  =        /**< All three channels */
   (k_comm_channel_mask_uart | k_comm_channel_mask_spi | k_comm_channel_mask_i2c),
 } rx_comm_channel_mask_t;
 
@@ -1003,9 +1003,10 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  rx_uart_comm_handle_t* uart_handle; /**< UART (SCI9 via CY7C65213 bridge) comm handle -- primary */
-  rx_spi_comm_handle_t*  spi_handle;  /**< SPI comm handle (NULL disables SPI channel) */
-  rx_i2c_comm_handle_t*  i2c_handle;  /**< I2C peripheral comm handle (NULL disables I2C channel) */
+  rx_uart_comm_handle_t*
+                        uart_handle; /**< UART (SCI9 via CY7C65213 bridge) comm handle -- primary */
+  rx_spi_comm_handle_t* spi_handle;  /**< SPI comm handle (NULL disables SPI channel) */
+  rx_i2c_comm_handle_t* i2c_handle;  /**< I2C peripheral comm handle (NULL disables I2C channel) */
 
   /**< @brief Optional SPI link layer with HARQ (NULL if disabled)
    * @details

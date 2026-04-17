@@ -35,13 +35,9 @@ typedef enum : uint8_t {
   k_test_invalid_comm_bits = 0xF0U, /**< Bits above the highest defined channel bit */
 } test_invalid_mask_t;
 
-void setUp(void)
-{
-}
+void setUp(void) {}
 
-void tearDown(void)
-{
-}
+void tearDown(void) {}
 
 /* 1. NULL guard */
 void test_null_config_returns_null_ptr_error(void)

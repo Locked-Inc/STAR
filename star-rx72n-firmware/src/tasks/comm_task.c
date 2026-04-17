@@ -393,10 +393,10 @@
 #include "rx_i2c_comm.h"
 #include "rx_iwdt.h"
 #include "rx_log.h"
+#include "rx_log_uart.h"
 #include "rx_nanopb.h"
 #include "rx_spi_comm.h"
 #include "rx_spi_link.h"
-#include "rx_log_uart.h"
 #include "rx_time_constants.h"
 #include "rx_uart_comm.h"
 #include "shared_data.h"
@@ -2371,7 +2371,7 @@ static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_fr
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 
     uint32_t       encoded_len = 0;
-    const rx_err_t enc_err     = rx_nanopb_encode_estop_response(&response,
+    const rx_err_t enc_err = rx_nanopb_encode_estop_response(&response,
                                                              s_response_buffer,
                                                              (uint32_t)k_comm_response_buffer_size,
                                                              &encoded_len);

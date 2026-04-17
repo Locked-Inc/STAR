@@ -40,15 +40,15 @@ typedef enum : uint16_t {
 } test_log_u16_values_t;
 
 typedef enum : uint32_t {
-  k_log_test_u32_typical    = 12345U,
-  k_log_test_u32_large      = 0xDEADBEEFU,
-  k_log_test_hex_digits_min = 0U, /* clamped up to 1 */
-  k_log_test_hex_digits_mid = 4U,
-  k_log_test_hex_digits_max = 8U,
+  k_log_test_u32_typical     = 12345U,
+  k_log_test_u32_large       = 0xDEADBEEFU,
+  k_log_test_hex_digits_min  = 0U, /* clamped up to 1 */
+  k_log_test_hex_digits_mid  = 4U,
+  k_log_test_hex_digits_max  = 8U,
   k_log_test_hex_digits_over = 9U, /* clamped down to 8 */
-  k_log_test_str_len_zero   = 0U,
-  k_log_test_str_len_small  = 5U,
-  k_log_test_str_len_over   = 300U, /* larger than k_log_str_max_len to hit bound */
+  k_log_test_str_len_zero    = 0U,
+  k_log_test_str_len_small   = 5U,
+  k_log_test_str_len_over    = 300U, /* larger than k_log_str_max_len to hit bound */
 } test_log_u32_values_t;
 
 typedef enum : int32_t {

@@ -196,9 +196,7 @@ void rx_log_uart_puthex(uint32_t value, uint8_t digits)
   for (uint8_t i = 0U; i < digits; ++i) {
     --p;
     const uint8_t nibble = (uint8_t)(value & (uint32_t)k_nibble_mask);
-    *p                   = (char)((nibble < k_decimal_base)
-                                    ? ('0' + nibble)
-                                    : ('A' + (nibble - k_decimal_base)));
+    *p = (char)((nibble < k_decimal_base) ? ('0' + nibble) : ('A' + (nibble - k_decimal_base)));
     value >>= (uint32_t)k_nibble_shift;
   }
 

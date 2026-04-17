@@ -1722,8 +1722,7 @@ static void internal_telem_task_entry(ULONG input)
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_telem_supported_channel_count =
-    3U, /**< UART + SPI + I2C; must match k_comm_channel_count */
+  k_telem_supported_channel_count = 3U, /**< UART + SPI + I2C; must match k_comm_channel_count */
 } telem_channel_contract_t;
 
 static telemetry_transport_t internal_select_transport(void)
