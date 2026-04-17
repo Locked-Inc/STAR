@@ -308,6 +308,26 @@ void test_drain_on_empty_ring_returns_zero(void)
   TEST_ASSERT_EQUAL_UINT32(0U, out_len);
 }
 
+/* Hit the `s_count < max_len` FALSE branch of the ternary at the top of
+ * rx_log_uart_drain by enqueueing more bytes than the caller's buffer can
+ * hold in one call. The ring-overflow and wrap-around tests both happen to
+ * drain with max_len > pending bytes, so they only exercise the TRUE branch. */
+void test_drain_respects_max_len_cap(void)
+{
+  enum : uint32_t { k_drain_cap_pending = 100U, k_drain_cap_max_len = 32U };
+  for (uint32_t i = 0U; i < k_drain_cap_pending; ++i) {
+    rx_log_uart_putc('P');
+  }
+  TEST_ASSERT_EQUAL_UINT32(k_drain_cap_pending, rx_log_uart_pending_len());
+
+  uint8_t  chunk[k_drain_cap_max_len] = {0};
+  uint32_t len                        = 0U;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_log_uart_drain(chunk, k_drain_cap_max_len, &len));
+  TEST_ASSERT_EQUAL_UINT32(k_drain_cap_max_len, len);
+  TEST_ASSERT_EQUAL_UINT32(k_drain_cap_pending - k_drain_cap_max_len,
+                           rx_log_uart_pending_len());
+}
+
 /* =============================================================================
  * Unity runner
  * ============================================================================= */
@@ -334,5 +354,6 @@ int main(void)
   RUN_TEST(test_drain_zero_max_len_is_invalid_arg);
   RUN_TEST(test_get_stats_null_is_noop);
   RUN_TEST(test_drain_on_empty_ring_returns_zero);
+  RUN_TEST(test_drain_respects_max_len_cap);
   return UNITY_END();
 }

@@ -210,8 +210,13 @@ void test_rx_log_str_happy_path_all_levels(void)
   rx_log_verbose_str(k_tag, "str", short_str, k_log_test_str_len_small);
 
   /* Hit the null-terminator early-break branch in the bounded loop by passing
-   * a len > strlen(short_str). */
+   * a len > strlen(short_str). Must be fired for every level so each inline
+   * sees the `str_value[i] == '\0'` branch taken (branch 2 of the ||). */
   rx_log_error_str(k_tag, "str", short_str, k_log_test_str_len_over);
+  rx_log_warn_str(k_tag, "str", short_str, k_log_test_str_len_over);
+  rx_log_info_str(k_tag, "str", short_str, k_log_test_str_len_over);
+  rx_log_debug_str(k_tag, "str", short_str, k_log_test_str_len_over);
+  rx_log_verbose_str(k_tag, "str", short_str, k_log_test_str_len_over);
   TEST_PASS();
 }
 
