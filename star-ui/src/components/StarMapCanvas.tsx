@@ -50,6 +50,7 @@ export function StarMapCanvas({ lidarScan, odometry }: StarMapCanvasProps) {
 
   useEffect(() => {
     if (!lidarScan || !odometry) {
+      obstacleRef.current = [];
       return;
     }
 
