@@ -33,7 +33,6 @@
 #include "rx_obstacle_detect.h"
 #include "rx_pid.h"
 #include "rx_port_constants.h"
-#include "rx_usb.h"
 #include "tx_api.h"
 
 /* =============================================================================
@@ -478,52 +477,7 @@ rx_tpu_encoder_read_velocity(float* velocity_rps, float delta_time_s, rx_tpu_cha
   return k_rx_ok;
 }
 
-/* =============================================================================
- * USB Stubs
- * =============================================================================
- */
-
-/**
- * @brief Stub for rx_usb_is_configured.
- * @param[in] port USB port identifier (unused in stub).
- * @return false always (USB not present in test environment).
- * @since Version 1.0.0
- */
-bool rx_usb_is_configured(rx_usb_port_id_t port)
-{
-  (void)port;
-  return false;
-}
-
-/**
- * @brief Stub for rx_usb_puts.
- * @param[in] port USB port identifier (unused in stub).
- * @param[in] str  String to write (unused in stub).
- * @return k_rx_ok always.
- * @since Version 1.0.0
- */
-rx_err_t rx_usb_puts(rx_usb_port_id_t port, const char* str)
-{
-  (void)port;
-  (void)str;
-  return k_rx_ok;
-}
-
-/**
- * @brief Stub for rx_usb_write.
- * @param[in] port USB port identifier (unused in stub).
- * @param[in] data Data buffer (unused in stub).
- * @param[in] len  Data length (unused in stub).
- * @return k_rx_ok always.
- * @since Version 1.0.0
- */
-rx_err_t rx_usb_write(rx_usb_port_id_t port, const uint8_t* data, uint32_t len)
-{
-  (void)port;
-  (void)data;
-  (void)len;
-  return k_rx_ok;
-}
+/* USB0 stubs removed with the USB0 library purge. */
 
 /* =============================================================================
  * ThreadX Stubs

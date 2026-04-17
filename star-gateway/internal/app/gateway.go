@@ -86,13 +86,13 @@ type Config struct {
 	// "auto", "force-usb", "force-spi"
 	TransportMode manager.TransportMode
 
-	// CDCDevice is the /dev path for the USB CDC serial port (e.g., /dev/ttyACM1).
+	// CDCDevice is the /dev path for the USB CDC serial port (e.g., /dev/ttyUSB1).
 	// Leave empty to auto-detect via USBVID:USBPID sysfs scan.
 	CDCDevice string
 
 	// USBVID is the USB Vendor ID of the connected motor controller.
 	// Used for VID:PID-based device discovery and health monitoring.
-	// Set to 0 to disable (falls back to default /dev/ttyACM0).
+	// Set to 0 to disable (falls back to default /dev/ttyUSB0).
 	USBVID uint16
 
 	// USBPID is the USB Product ID of the connected motor controller.
@@ -489,7 +489,7 @@ func createSPILink(spiTransport transport.Device, session *manager.SessionState)
 // createUSBLink creates a USB CDC link using the provided session state.
 // Returns the USB link (harq.HARQ) or an error if initialization fails.
 //
-// device is the /dev path for the CDC serial port (e.g., /dev/ttyACM1). When
+// device is the /dev path for the CDC serial port (e.g., /dev/ttyUSB1). When
 // empty, the CDCTransport auto-detects via VID:PID sysfs scan using the VID:PID
 // in DefaultCDCConfig (Renesas). For BBB, always pass the detected device path.
 //

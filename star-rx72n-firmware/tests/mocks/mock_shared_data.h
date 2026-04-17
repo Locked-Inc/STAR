@@ -57,7 +57,7 @@ typedef enum : uint16_t {
  * redeclaration conflicts with mock frame types in unit test builds).
  * Values MUST remain bit-for-bit identical to rx_comm_channel_t.
  *
- * @invariant k_mock_channel_usb == k_comm_channel_usb (0)
+ * @invariant k_mock_channel_uart == k_comm_channel_uart (0)
  * @invariant k_mock_channel_spi == k_comm_channel_spi (1)
  *
  * @code
@@ -73,8 +73,9 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_mock_channel_usb = 0U, /**< USB CDC channel (matches k_comm_channel_usb) */
-  k_mock_channel_spi = 1U, /**< SPI channel (matches k_comm_channel_spi) */
+  k_mock_channel_uart = 0U, /**< UART channel (matches k_comm_channel_uart) */
+  k_mock_channel_spi  = 1U, /**< SPI channel  (matches k_comm_channel_spi) */
+  k_mock_channel_i2c  = 2U, /**< I2C channel  (matches k_comm_channel_i2c) */
 } mock_shared_channel_t;
 
 /**
@@ -402,7 +403,7 @@ void shared_data_update_last_comm_tick(void);
  * against this mock.
  *
  * @param[in] channel Channel to record (rx_comm_channel_t cast to uint8_t;
- *                    use k_mock_channel_usb (0) or k_mock_channel_spi (1))
+ *                    use k_mock_channel_uart (0) or k_mock_channel_spi (1))
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Always succeeds in mock
@@ -433,17 +434,17 @@ rx_err_t shared_data_update_active_channel(uint8_t channel);
  * @details
  * Returns s_active_channel, reflecting the last value stored by
  * shared_data_update_active_channel() or mock_shared_data_set_active_channel().
- * Defaults to k_mock_channel_usb (0) after mock_shared_data_reset().
+ * Defaults to k_mock_channel_uart (0) after mock_shared_data_reset().
  *
  * @return uint8_t Active communication channel (rx_comm_channel_t cast to uint8_t)
- * @retval k_mock_channel_usb (0) Default before any update or after reset
+ * @retval k_mock_channel_uart (0) Default before any update or after reset
  * @retval k_mock_channel_spi (1) SPI was the last channel stored
  *
  * @pre mock_shared_data_reset() has been called at least once (setUp)
  * @pre s_active_channel set via shared_data_update_active_channel() or
  *      mock_shared_data_set_active_channel()
  * @post s_active_channel is unchanged (read-only accessor)
- * @post Return value is k_mock_channel_usb or k_mock_channel_spi
+ * @post Return value is k_mock_channel_uart or k_mock_channel_spi
  *
  * @note Thread safety: read-only; safe in single-threaded test context only
  * @note Mock only: no mutex, always returns the raw stored value
@@ -503,10 +504,10 @@ rx_err_t shared_data_set_event(shared_event_flags_t flags);
  * update -- call shared_data_update_active_channel() for that purpose.
  *
  * @param[in] channel Channel to store; must be a valid mock_shared_channel_t value
- *                    (k_mock_channel_usb or k_mock_channel_spi)
+ *                    (k_mock_channel_uart or k_mock_channel_spi)
  *
  * @pre mock_shared_data_reset() called at least once (setUp)
- * @pre channel is k_mock_channel_usb (0) or k_mock_channel_spi (1)
+ * @pre channel is k_mock_channel_uart (0) or k_mock_channel_spi (1)
  * @post shared_data_get_active_channel() returns (uint8_t)channel
  * @post s_active_channel_update_count is unchanged
  *
@@ -521,7 +522,7 @@ rx_err_t shared_data_set_event(shared_event_flags_t flags);
  *
  * @see shared_data_update_active_channel() Runtime writer (increments update count)
  * @see mock_shared_data_get_active_channel_update_count() Retrieves update call count
- * @see mock_shared_data_reset() Resets channel to k_mock_channel_usb (0)
+ * @see mock_shared_data_reset() Resets channel to k_mock_channel_uart (0)
  *
  * @since Version 1.0.0
  */

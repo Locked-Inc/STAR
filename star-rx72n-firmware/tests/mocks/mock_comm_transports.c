@@ -49,37 +49,11 @@
 #include "rx_spi_comm.h"
 #include "rx_spi_link.h"
 #include "rx_uart_comm.h"
-#include "rx_usb_comm.h"
 
 /* =============================================================================
  * Transport Init Stubs
  * =============================================================================
  */
-
-/**
- * @brief Stub for rx_usb_comm_init() -- always succeeds
- *
- * @details
- * No-op test stub that immediately returns k_rx_ok without touching hardware
- * or initializing any transport state. Satisfies the linker for test targets
- * that link comm_task.c but do not exercise USB transport initialization.
- *
- * @param[out] handle Ignored (may be NULL)
- * @param[in]  config Ignored (may be NULL)
- *
- * @retval k_rx_ok Always; stub never fails
- *
- * @pre  None -- stub accepts any pointer including NULL
- * @pre  Caller context is single-threaded test execution
- * @post No USB hardware or handle state modified
- * @post Returns k_rx_ok unconditionally
- */
-rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config_t* config)
-{
-  (void)handle;
-  (void)config;
-  return k_rx_ok;
-}
 
 /**
  * @brief Stub for rx_spi_comm_init() -- always succeeds

@@ -220,8 +220,19 @@
 
 /** @brief UART configuration constants */
 typedef enum : uint32_t {
-  k_uart_default_baudrate      = 115200, /**< Default baud rate: 115200 bps */
-  k_uart_bit_time_delay_cycles = 1000,   /**< Bit time delay (~8.68us at 115200 bps, >520 cycles) */
+  /**
+   * @brief Default baud rate: 921600 bps
+   *
+   * Max standard rate that hits <2%% error on SCI9 with PCLK=60 MHz.
+   * Formula (ABCS=0/CKS=00): BRR = PCLK / (32 * B) - 1.
+   *   60e6 / (32 * 921600) - 1 = 1.034 -> BRR = 1
+   *   Actual rate = 60e6 / (32 * (1 + 1)) = 937500 bps
+   *   Error vs 921600 = (937500 - 921600) / 921600 = +1.72%% (well within ~3%% UART tolerance)
+   *
+   * Well within the CY7C65213 USB-UART bridge's 3 Mbps ceiling.
+   */
+  k_uart_default_baudrate      = 921600,
+  k_uart_bit_time_delay_cycles = 125, /**< ~1.09us at 921600 bps, ~260 cycles @240 MHz */
 } uart_config_constants_t;
 
 /** @brief SCI register values */
