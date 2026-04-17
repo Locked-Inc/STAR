@@ -37,6 +37,59 @@ interface MainDashboardViewProps {
   sendEStopRelease: () => Promise<boolean>;
 }
 
+const healthScoreMax = 100;
+const healthScoreMin = 0;
+const wifiSignalFloorDbm = -100;
+const wifiSignalRangeDb = 70;
+const thermalBaselineCelsius = 32;
+const thermalScaleFactor = 4;
+const connectedSubsystemScore = 100;
+const disconnectedSubsystemScore = 0;
+const connectionScoreMap = {
+  connected: 100,
+  connecting: 70,
+  reconnecting: 70,
+  disconnected: 35,
+} as const;
+
+function deriveControllerTone({
+  connectionState,
+  eStopActive,
+  gamepadConnected,
+  uiMode,
+}: {
+  connectionState: keyof typeof connectionScoreMap;
+  eStopActive: boolean;
+  gamepadConnected: boolean;
+  uiMode: 'autonomous' | 'manual';
+}): Tone {
+  if (eStopActive) {
+    return 'danger';
+  }
+
+  if (uiMode === 'manual') {
+    return gamepadConnected ? 'good' : 'warn';
+  }
+
+  if (connectionState === 'connected') {
+    return 'good';
+  }
+
+  if (connectionState === 'disconnected') {
+    return 'danger';
+  }
+
+  return 'warn';
+}
+
+function radiansToCompassDegrees(radians: number | undefined): number {
+  if (radians == null || !Number.isFinite(radians)) {
+    return 0;
+  }
+
+  return (((radians * 180) / Math.PI) + 360) % 360;
+}
+
 function AlertsButton({
   count,
   onClick,
@@ -158,33 +211,28 @@ export function MainDashboardView({
   const temperature = telemetry?.temperatureCelsius;
   const motorLoad = telemetry?.motorLoadPercent;
 
-  const wifiScore = wifiSignal != null ? clamp(((wifiSignal + 100) / 70) * 100, 0, 100) : undefined;
-  const cpuScore = cpuUsage != null ? clamp(100 - cpuUsage, 0, 100) : undefined;
-  const tempScore = temperature != null ? clamp(100 - Math.max(0, temperature - 32) * 4, 0, 100) : undefined;
+  const wifiScore = wifiSignal != null
+    ? clamp(((wifiSignal - wifiSignalFloorDbm) / wifiSignalRangeDb) * healthScoreMax, healthScoreMin, healthScoreMax)
+    : undefined;
+  const cpuScore = cpuUsage != null ? clamp(healthScoreMax - cpuUsage, healthScoreMin, healthScoreMax) : undefined;
+  const tempScore = temperature != null
+    ? clamp(healthScoreMax - Math.max(0, temperature - thermalBaselineCelsius) * thermalScaleFactor, healthScoreMin, healthScoreMax)
+    : undefined;
   const connectivityScore = averageDefined([
-    systemStatus ? (systemStatus.esp32Connected ? 100 : 0) : undefined,
-    systemStatus ? (systemStatus.lidarConnected ? 100 : 0) : undefined,
-    systemStatus ? (systemStatus.rosConnected ? 100 : 0) : undefined,
-    connectionState === 'connected'
-      ? 100
-      : connectionState === 'connecting' || connectionState === 'reconnecting'
-        ? 70
-        : 35,
+    systemStatus ? (systemStatus.esp32Connected ? connectedSubsystemScore : disconnectedSubsystemScore) : undefined,
+    systemStatus ? (systemStatus.lidarConnected ? connectedSubsystemScore : disconnectedSubsystemScore) : undefined,
+    systemStatus ? (systemStatus.rosConnected ? connectedSubsystemScore : disconnectedSubsystemScore) : undefined,
+    connectionScoreMap[connectionState],
   ]);
   const overallHealthScore = averageDefined([wifiScore, cpuScore, tempScore, connectivityScore]);
   const overallHealth = overallHealthScore != null ? Math.round(overallHealthScore) : undefined;
 
-  const controllerTone: Tone = eStopActive
-    ? 'danger'
-    : uiMode === 'manual'
-      ? gamepadState.connected
-        ? 'good'
-        : 'warn'
-      : connectionState === 'connected'
-        ? 'good'
-        : connectionState === 'disconnected'
-          ? 'danger'
-          : 'warn';
+  const controllerTone = deriveControllerTone({
+    connectionState,
+    eStopActive,
+    gamepadConnected: gamepadState.connected,
+    uiMode,
+  });
   const lidarTone = toneFromBoolean(systemStatus?.lidarConnected, lidarPointCount === 0 && connectionState === 'connected');
   const controllerMcuTone = toneFromBoolean(systemStatus?.esp32Connected, motorValues.length === 0 && connectionState === 'connected');
   const rosTone = toneFromBoolean(systemStatus?.rosConnected, dataIsStale || seqGapDetected);
@@ -549,7 +597,7 @@ export function MainDashboardView({
                     <span className="compass-label compass-label--west">W</span>
                     <div
                       className="compass-needle"
-                      style={{ transform: `translate(-50%, -100%) rotate(${headingRadians != null ? ((headingRadians * 180) / Math.PI + 360) % 360 : 0}deg)` }}
+                      style={{ transform: `translate(-50%, -100%) rotate(${radiansToCompassDegrees(headingRadians)}deg)` }}
                     />
                     <div className="compass-center" />
                   </div>
