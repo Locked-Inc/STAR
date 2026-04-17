@@ -223,7 +223,7 @@ func TestProbeTransport_USB(t *testing.T) {
 	}
 
 	// This will call probeUSB() which attempts serial.Open()
-	// Result depends on whether /dev/ttyACM0 exists on test system
+	// Result depends on whether /dev/ttyUSB0 exists on test system
 	// We just verify it doesn't panic
 	_ = hm.probeTransport(wrapper)
 }

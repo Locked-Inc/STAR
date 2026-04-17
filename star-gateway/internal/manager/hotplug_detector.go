@@ -21,7 +21,7 @@ import (
 // polling-based approaches.
 //
 // Device matching is VID:PID-based, not name-based. After a disconnect/reconnect
-// cycle the kernel may assign a different ttyACMN minor number; matching by
+// cycle the kernel may assign a different ttyUSBN minor number; matching by
 // VID:PID ensures the correct device is always identified.
 type HotPlugDetector struct {
 	vendorID          uint16
@@ -139,10 +139,10 @@ func (hpd *HotPlugDetector) runInotify(ctx context.Context, eventHandler func(Ho
 // matchesTargetDevice checks if the sysfs path corresponds to the target USB device.
 //
 // Matching is done in two steps:
-//  1. The sysfs entry must expose at least one ttyACM* interface (CDC ACM class).
+//  1. The sysfs entry must expose at least one ttyUSB* interface (CDC ACM class).
 //  2. When VID:PID are non-zero, the device's USB identifiers must match.
 //
-// This approach is device-name-agnostic: it correctly handles ttyACM1, ttyACM2,
+// This approach is device-name-agnostic: it correctly handles ttyUSB0, ttyUSB1,
 // etc. that appear after disconnect/reconnect cycles.
 func (hpd *HotPlugDetector) matchesTargetDevice(sysfsPath string) bool {
 	if sysfsPath == "" {
@@ -151,10 +151,10 @@ func (hpd *HotPlugDetector) matchesTargetDevice(sysfsPath string) bool {
 
 	ttyNames := hpd.findTTYNames(sysfsPath)
 
-	// Require at least one CDC ACM interface (any ttyACM* suffix).
+	// Require at least one CDC ACM interface (any ttyUSB* suffix).
 	hasCDCACM := false
 	for _, name := range ttyNames {
-		if strings.HasPrefix(name, "ttyACM") {
+		if strings.HasPrefix(name, "ttyUSB") {
 			hasCDCACM = true
 			break
 		}
@@ -177,16 +177,16 @@ func (hpd *HotPlugDetector) matchesTargetDevice(sysfsPath string) bool {
 
 // getDevicePath converts a sysfs path to a /dev device path.
 //
-// Returns the first ttyACM* device found in the sysfs entry, allowing correct
-// identification of ttyACM1, ttyACM2, etc. after disconnect/reconnect cycles.
-// Falls back to the first available tty device if no ttyACM* is found.
+// Returns the first ttyUSB* device found in the sysfs entry, allowing correct
+// identification of ttyUSB0, ttyUSB1, etc. after disconnect/reconnect cycles.
+// Falls back to the first available tty device if no ttyUSB* is found.
 func (hpd *HotPlugDetector) getDevicePath(sysfsPath string) string {
 	devRoot := hpd.devRootDir()
 	ttyNames := hpd.findTTYNames(sysfsPath)
 
-	// Prefer any ttyACM* (CDC ACM) device.
+	// Prefer any ttyUSB* (CDC ACM) device.
 	for _, name := range ttyNames {
-		if strings.HasPrefix(name, "ttyACM") {
+		if strings.HasPrefix(name, "ttyUSB") {
 			return filepath.Join(devRoot, name)
 		}
 	}

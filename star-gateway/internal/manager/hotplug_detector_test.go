@@ -61,8 +61,8 @@ func TestHotPlugDetectorMatchesTargetDevice(t *testing.T) {
 
 	usbRoot := t.TempDir()
 	deviceDir := filepath.Join(usbRoot, "1-2.3")
-	// Use ttyACM0 as the tty directory name -- matches any ttyACM*
-	ttyDir := filepath.Join(deviceDir, "1-2.3:1.0", "tty", "ttyACM0")
+	// Use ttyUSB0 as the tty directory name -- matches any ttyUSB*
+	ttyDir := filepath.Join(deviceDir, "1-2.3:1.0", "tty", "ttyUSB0")
 	if err := os.MkdirAll(ttyDir, 0o755); err != nil {
 		t.Fatalf("failed to create tty directory: %v", err)
 	}
@@ -85,11 +85,11 @@ func TestHotPlugDetectorMatchesTargetDevice(t *testing.T) {
 }
 
 // TestHotPlugDetectorMatchesAnyTTYACM verifies that matching works for non-zero
-// minor numbers (ttyACM1, ttyACM2, etc.) -- the core of the minor-number fix.
+// minor numbers (ttyUSB1, ttyACM2, etc.) -- the core of the minor-number fix.
 func TestHotPlugDetectorMatchesAnyTTYACM(t *testing.T) {
 	const pollInterval = time.Second
 
-	for _, ttyName := range []string{"ttyACM0", "ttyACM1", "ttyACM7"} {
+	for _, ttyName := range []string{"ttyUSB0", "ttyUSB1", "ttyUSB7"} {
 		t.Run(ttyName, func(t *testing.T) {
 			usbRoot := t.TempDir()
 			deviceDir := filepath.Join(usbRoot, "1-2.3")
@@ -118,7 +118,7 @@ func TestHotPlugDetectorGetDevicePath(t *testing.T) {
 	devRoot := t.TempDir()
 
 	deviceDir := filepath.Join(sysfsRoot, "2-1.4")
-	targetDir := filepath.Join(deviceDir, "2-1.4:1.0", "tty", "ttyACM0")
+	targetDir := filepath.Join(deviceDir, "2-1.4:1.0", "tty", "ttyUSB0")
 	if err := os.MkdirAll(targetDir, 0o755); err != nil {
 		t.Fatalf("failed to create target tty directory: %v", err)
 	}
@@ -127,7 +127,7 @@ func TestHotPlugDetectorGetDevicePath(t *testing.T) {
 	hpd.devRoot = devRoot
 
 	got := hpd.getDevicePath(deviceDir)
-	want := filepath.Join(devRoot, "ttyACM0")
+	want := filepath.Join(devRoot, "ttyUSB0")
 	if got != want {
 		t.Fatalf("getDevicePath = %q, want %q", got, want)
 	}
@@ -145,7 +145,7 @@ func TestHotPlugDetectorGetDevicePath(t *testing.T) {
 }
 
 // TestHotPlugDetectorGetDevicePathAlternateMinor verifies that getDevicePath
-// returns the actual device name (e.g., ttyACM1) not a hardcoded ttyACM0.
+// returns the actual device name (e.g., ttyUSB1) not a hardcoded ttyUSB0.
 func TestHotPlugDetectorGetDevicePathAlternateMinor(t *testing.T) {
 	const pollInterval = time.Second
 
@@ -153,7 +153,7 @@ func TestHotPlugDetectorGetDevicePathAlternateMinor(t *testing.T) {
 	devRoot := t.TempDir()
 
 	deviceDir := filepath.Join(sysfsRoot, "2-1.4")
-	targetDir := filepath.Join(deviceDir, "2-1.4:1.0", "tty", "ttyACM1")
+	targetDir := filepath.Join(deviceDir, "2-1.4:1.0", "tty", "ttyUSB1")
 	if err := os.MkdirAll(targetDir, 0o755); err != nil {
 		t.Fatalf("failed to create target tty directory: %v", err)
 	}
@@ -162,7 +162,7 @@ func TestHotPlugDetectorGetDevicePathAlternateMinor(t *testing.T) {
 	hpd.devRoot = devRoot
 
 	got := hpd.getDevicePath(deviceDir)
-	want := filepath.Join(devRoot, "ttyACM1")
+	want := filepath.Join(devRoot, "ttyUSB1")
 	if got != want {
 		t.Fatalf("getDevicePath = %q, want %q", got, want)
 	}
@@ -201,7 +201,7 @@ func TestHotPlugDetectorRunInotify(t *testing.T) {
 	defer os.RemoveAll(stagingDir)
 
 	deviceDir := filepath.Join(stagingDir, "1-9.1")
-	ttyDir := filepath.Join(deviceDir, "1-9.1:1.0", "tty", "ttyACM0")
+	ttyDir := filepath.Join(deviceDir, "1-9.1:1.0", "tty", "ttyUSB0")
 	if err := os.MkdirAll(ttyDir, 0o755); err != nil {
 		t.Fatalf("failed to create staging tty dir: %v", err)
 	}
@@ -216,7 +216,7 @@ func TestHotPlugDetectorRunInotify(t *testing.T) {
 		if event.Action != "add" {
 			t.Fatalf("event action = %q, want %q", event.Action, "add")
 		}
-		wantDevice := filepath.Join(devRoot, "ttyACM0")
+		wantDevice := filepath.Join(devRoot, "ttyUSB0")
 		if event.Device != wantDevice {
 			t.Fatalf("event device = %q, want %q", event.Device, wantDevice)
 		}

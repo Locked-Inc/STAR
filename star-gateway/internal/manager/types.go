@@ -246,7 +246,7 @@ type HotPlugEvent struct {
 	// Action is either "add" or "remove".
 	Action string
 
-	// Device is the device path (e.g., "/dev/ttyACM0").
+	// Device is the device path (e.g., "/dev/ttyUSB0").
 	Device string
 
 	// Timestamp is when the event was detected.
