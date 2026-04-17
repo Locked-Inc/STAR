@@ -27,32 +27,27 @@ static bool      s_usb_created = false;
 static const char* s_tag = "USB_TASK";
 
 /**
- * @brief USB task entry: bring up production stack then poll forever.
+ * @brief USB task entry: poll the production ISR dispatcher forever.
+ *
+ * @details
+ * The USB0 peripheral is attached pre-kernel by main()'s inline attach
+ * block (SYSCFG / DCPCFG / DCPCTR / INTENB0 / DPRPU), which also services
+ * the initial enumeration via an inline SETUP handler so Linux completes
+ * GET_DESCRIPTOR + SET_ADDRESS inside its retry window.  Once
+ * tx_kernel_enter() runs, main's loop exits and this task takes over:
+ * it calls the production rx_usb_isr_handler every 10 ms so any later
+ * SETUPs (e.g. string descriptor requests) get routed through the full
+ * rx_usb_cdc stack rather than the inline stub handler.
+ *
+ * Priority 4 is the highest app-task priority so comm_task (5) and
+ * everything below can't starve USB servicing.
  */
 static void internal_usb_task_entry(ULONG input)
 {
   (void)input;
 
-  /* Bring up the USB0 peripheral via the production rx_usb stack.
-   * rx_usb_init() runs `internal_usb_enable_module_clock` /
-   * `internal_usb_configure_clock` which both call `tx_thread_sleep`, so
-   * this cannot run pre-kernel.  Running here -- at priority 4, before
-   * comm_task (5) gets CPU -- guarantees DPRPU is asserted before any
-   * other transport init touches SPI / I2C / UART. */
-  const rx_err_t err = rx_usb_init(nullptr);
-  if (err != k_rx_ok && err != k_rx_err_invalid_state) {
-    rx_log_error_val(s_tag, "rx_usb_init failed", (uint32_t)err);
-    /* Fall through: the inline USB attach in main() already got us to a
-     * state where rx_usb_isr_handler can service SETUP on pipe 0, so
-     * enumeration still works even without the full production init. */
-  }
-
   rx_log_info(s_tag, "USB polling loop entering");
 
-  /* The USBI vector does not fire on this chip.  Poll the production ISR
-   * dispatcher every ThreadX tick (10 ms) -- fast enough that Linux's
-   * SETUP retries (~50 ms) never time out, cheap enough that
-   * lower-priority tasks keep running. */
   for (;;) {
     rx_usb_isr_handler();
     (void)tx_thread_sleep(1U);
