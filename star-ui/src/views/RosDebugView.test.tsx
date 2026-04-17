@@ -64,6 +64,7 @@ describe('RosDebugView', () => {
           seq: 7,
           type: 'controller',
           direction: 'rx',
+          sizeBytes: 64,
           preview: 'cmd_vel linear=0.35 angular=0.10',
         },
       ],

@@ -78,20 +78,17 @@ export function useOperatorControls({
     }
 
     const interval = window.setInterval(() => {
-      setCoveragePercent((currentCoverage) => Math.min(100, currentCoverage + coverageStepPercent));
+      setCoveragePercent((currentCoverage) => {
+        const nextCoverage = Math.min(100, currentCoverage + coverageStepPercent);
+        if (nextCoverage >= 100) {
+          setAutonomyRequested(false);
+        }
+        return nextCoverage;
+      });
     }, coverageTickIntervalMs);
 
     return () => window.clearInterval(interval);
   }, [autonomyRunning]);
-
-  useEffect(() => {
-    if (coveragePercent < 100 || !autonomyRequested) {
-      return;
-    }
-    
-    setAutonomyRequested(false);
-
-  }, [coveragePercent, autonomyRequested]);
 
   async function handleEStopToggle(): Promise<void> {
     const store = useDashboardStore.getState();

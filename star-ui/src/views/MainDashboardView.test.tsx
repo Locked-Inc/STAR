@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useControllerBridge } from '../hooks/useControllerBridge';
 import { useDashboardStore } from '../store/dashboardStore';
@@ -49,7 +49,7 @@ describe('MainDashboardView', () => {
     expect(screen.getByText('System Telemetry')).toBeInTheDocument();
   });
 
-  it('exercises injected callbacks through UI interactions', () => {
+  it('exercises injected callbacks through UI interactions', async () => {
     const navigate = vi.fn();
     const sendControllerState = vi.fn();
     const sendEStop = vi.fn();
@@ -66,13 +66,19 @@ describe('MainDashboardView', () => {
 
     expect(mockedUseControllerBridge).toHaveBeenCalledWith(sendControllerState, false);
 
-    fireEvent.click(screen.getByRole('link', { name: /debug/i }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('link', { name: /debug/i }));
+    });
     expect(navigate).toHaveBeenCalledWith('/ros');
 
-    fireEvent.click(screen.getByRole('button', { name: 'EMERGENCY STOP' }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'EMERGENCY STOP' }));
+    });
     expect(sendEStop).toHaveBeenCalledWith('user_ui_button');
 
-    fireEvent.click(screen.getByRole('button', { name: 'RESUME' }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'RESUME' }));
+    });
     expect(sendEStopRelease).toHaveBeenCalledTimes(1);
   });
 
@@ -86,7 +92,9 @@ describe('MainDashboardView', () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Autonomous Mode' }));
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Autonomous Mode' }));
+    });
 
     expect(screen.getByText('Gamepad Connected')).toBeInTheDocument();
     expect(screen.getByText('0.42')).toBeInTheDocument();
