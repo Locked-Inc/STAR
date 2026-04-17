@@ -1,5 +1,6 @@
-type TraceAccent = 'good' | 'warn' | 'accent' | 'danger' | 'neutral';
+import type { Tone } from '../types/dashboard';
 
+export type TraceAccent = Tone;
 interface DebugTraceChartProps {
   accent: TraceAccent;
   formatValue: (value: number) => string;
@@ -14,7 +15,11 @@ function buildPath(samples: number[], min: number, max: number, width: number, h
     return '';
   }
 
-  const span = Math.max(max - min, 1);
+  const span = max - min;
+
+  if (span <= 0) {
+    return '';
+  }
 
   return samples
     .map((sample, index) => {
@@ -26,6 +31,9 @@ function buildPath(samples: number[], min: number, max: number, width: number, h
     .join(' ');
 }
 
+const chartWidth = 280;
+const chartHeight = 110;
+
 export function DebugTraceChart({
   accent,
   formatValue,
@@ -34,12 +42,23 @@ export function DebugTraceChart({
   samples,
   title,
 }: DebugTraceChartProps) {
-  const chartWidth = 280;
-  const chartHeight = 110;
   const plottedSamples = samples.filter((sample) => Number.isFinite(sample));
   const safeSamples = plottedSamples.length > 0 ? plottedSamples : [0];
-  const computedMin = min ?? Math.min(...safeSamples);
-  const computedMax = max ?? Math.max(...safeSamples, computedMin + 1);
+  const sampleMin = Math.min(...safeSamples);
+  const sampleMax = Math.max(...safeSamples);
+
+  if (min !== undefined && max !== undefined && min >= max) {
+    throw new Error('DebugTraceChart expects min < max when both bounds are provided.');
+  }
+
+  const computedMin =
+    min !== undefined ? Math.min(Math.max(min, sampleMin), sampleMax) : sampleMin;
+  let computedMax =
+    max !== undefined ? Math.min(Math.max(max, sampleMin), sampleMax) : sampleMax;
+
+  if (computedMax <= computedMin) {
+    computedMax = computedMin + 1;
+  }
   const currentValue = plottedSamples[plottedSamples.length - 1] ?? 0;
   const path = buildPath(safeSamples, computedMin, computedMax, chartWidth, chartHeight);
   const areaPath = `${path} L ${chartWidth} ${chartHeight} L 0 ${chartHeight} Z`;

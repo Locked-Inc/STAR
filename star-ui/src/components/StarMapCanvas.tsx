@@ -19,6 +19,7 @@ const maxObstaclePoints = 5000;
 const gridSpacingMeters = 0.5;
 const lidarRangeLimitMeters = 12;
 const pathPointThresholdMeters = 0.05;
+const obstacleCullMarginPx = 8
 
 function project(point: WorldPoint, origin: WorldPoint): { x: number; y: number } {
   return {
@@ -92,7 +93,9 @@ export function StarMapCanvas({ lidarScan, odometry }: StarMapCanvasProps) {
     context.strokeStyle = 'rgba(112, 145, 183, 0.18)';
     context.lineWidth = 1;
 
-    const gridHalfExtentMeters = 20
+    const halfWidthMeters = canvasWidth / 2 / pixelsPerMeter;
+    const halfHeightMeters = canvasHeight / 2 / pixelsPerMeter;
+    const gridHalfExtentMeters = Math.ceil(Math.max(halfWidthMeters, halfHeightMeters) + gridSpacingMeters);
 
     for (let offset = -gridHalfExtentMeters; offset <= gridHalfExtentMeters; offset += gridSpacingMeters) {
       const gridPx = gridSpacingMeters * pixelsPerMeter;
@@ -138,7 +141,7 @@ export function StarMapCanvas({ lidarScan, odometry }: StarMapCanvasProps) {
     context.fillStyle = 'rgba(0, 0, 0, 0.9)';
     obstacleRef.current.forEach((point) => {
       const projected = project(point, origin);
-      if (projected.x < -8 || projected.x > canvasWidth + 8 || projected.y < -8 || projected.y > canvasHeight + 8) {
+      if (projected.x < -obstacleCullMarginPx || projected.x > canvasWidth + obstacleCullMarginPx || projected.y < -obstacleCullMarginPx || projected.y > canvasHeight + obstacleCullMarginPx) {
         return;
       }
       context.beginPath();
