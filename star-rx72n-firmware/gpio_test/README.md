@@ -1,7 +1,9 @@
 # GPIO Pin Test (gpio_test)
 
-Automated GPIO verification for the STAR RX72N board using 3x Digilent
-Analog Discovery 2 (48 channels total: IO 0-15 on each AD2).
+Automated GPIO verification for the STAR RX72N breakout board using 3x
+Digilent Analog Discovery 2 (48 channels total: DIO 0-15 on each AD2).
+Implementation is polling-based; no RTOS is used so the MCU boot path
+stays trivial.
 
 ## Hardware Setup
 
@@ -61,9 +63,12 @@ IO 15 = pin ???               IO 15 = pin ???               IO 15 = pin ???
 
 ## Test Strategy
 
-1. **Firmware** (`gpio_test/`): sequentially drives each GPIO pin
-   HIGH for 50 ms then LOW for 50 ms, advancing through all 100 pins.
-   1 s gap between full cycles. Uses ThreadX + CMT0 for accurate timing.
+1. **Firmware** (`gpio_test/`): sequentially drives each of 98 GPIO pins
+   (all breakout GPIOs except PJ3/PJ5, which are JTAG TMS/TDO and hang
+   the MCU when driven while the E2 Lite is attached). Each pin pulses
+   HIGH for ~5 ms then LOW for ~5 ms using a nop busy-wait at ICLK 96
+   MHz. After a full sweep there is a long quiet gap (~40x one pin
+   period) so the host can anchor timing to it.
 
 2. **Host script** (`host/gpio_verify.py`): captures the AD2 digital
    inputs at 1 kHz, detects rising/falling edges, and matches them to
@@ -78,13 +83,12 @@ IO 15 = pin ???               IO 15 = pin ???               IO 15 = pin ???
 gpio_test/
   README.md       -- this file
   pin_map.md      -- breakout board pin-to-GPIO mapping table
-  main.c          -- firmware: sequential GPIO toggle (100 pins)
+  main.c          -- firmware: sequential GPIO toggle (98 pins)
   Makefile        -- build + flash
-  startup.S       -- RX72N startup (reused from usb_test)
-  linker.ld       -- linker script (reused from usb_test)
-  vectors.S       -- minimal vector table (CMT0 + SWINT only)
+  startup.S       -- RX72N startup
+  linker.ld       -- linker script
+  vectors.S       -- minimal vector table (all slots to _default_isr)
   clock.c         -- HOCO 16 MHz -> PLL 192 MHz clock init
-  cmt0.c          -- 100 Hz ThreadX tick source
   host/
     gpio_verify.py -- AD2 capture + verify script
 ```
@@ -117,6 +121,8 @@ python3 gpio_verify.py --dry-run
 
 ## Dependencies
 
-- **Firmware**: GNURX toolchain (rx-elf-gcc), same as blinky/usb_test
-- **Host script**: Python 3.8+, pydwf >= 1.1.19, libdwf >= 3.24.3
-  - `dwfcmd` CLI also available at `/usr/bin/dwfcmd`
+- **Firmware**: GNURX toolchain (rx-elf-gcc). Use the dev container:
+  `devcontainer exec --workspace-folder <repo> bash -lc 'cd star-rx72n-firmware/gpio_test && make'`.
+- **Flash**: macOS-native `rfp-cli` at `~/tools/rfp-cli/bin/rfp-cli`.
+- **Host script**: Python 3.8+, pydwf >= 1.1.19, libdwf >= 3.25.1
+  (WaveForms runtime installed to `/Library/Frameworks/dwf.framework`).

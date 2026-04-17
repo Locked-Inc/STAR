@@ -34,7 +34,8 @@ import time
 from dataclasses import dataclass, field
 
 try:
-    from pydwf import DwfLibrary
+    from pydwf import (DwfLibrary, DwfDigitalInClockSource,
+                       DwfAcquisitionMode)
     from pydwf.utilities import openDwfDevice
 except ImportError:
     print("ERROR: pydwf not installed. Run: pip install pydwf", file=sys.stderr)
@@ -175,53 +176,46 @@ def configure_digital_input(dev, sample_rate_hz: int) -> None:
     dio = dev.digitalIn
 
     # Use internal clock, sample rate
-    dio.clockSourceSet(0)  # internal
+    dio.clockSourceSet(DwfDigitalInClockSource.Internal)
     dio.dividerSet(int(100e6 / sample_rate_hz))  # 100 MHz base clock
 
-    # Enable all 16 channels
+    # Use Record mode so we can stream samples longer than the buffer
     dio.bufferSizeSet(4096)
-
-    # Single acquisition mode -- we will poll manually
-    dio.acquisitionModeSet(0)  # single
+    dio.acquisitionModeSet(DwfAcquisitionMode.Record)
 
     # 16-bit sample format
     dio.sampleFormatSet(16)
 
 
 def capture_cycle(devices: list, sample_rate_hz: int,
-                  duration_ms: float) -> list[list[list[int]]]:
+                  duration_ms: float) -> list[list[int]]:
     """
     Capture digital samples from all AD2s for the specified duration.
 
-    Returns: list of per-AD2 sample buffers.
-    Each buffer is a list of 16-bit values (one per sample, each bit = one DIO).
+    Returns: list of per-AD2 sample buffers (numpy arrays of uint16,
+    each bit in a sample = one DIO channel).
     """
-    import ctypes
-
     total_samples = int(sample_rate_hz * duration_ms / 1000)
     all_samples: list[list[int]] = [[] for _ in range(len(devices))]
 
     # Start acquisition on all devices
     for dev in devices:
-        dio = dev.digitalIn
-        dio.configure(False, True)  # reconfigure=False, start=True
+        dev.digitalIn.configure(False, True)  # reconfigure=False, start=True
 
     print(f"  Capturing {total_samples} samples over {duration_ms:.0f} ms ...")
 
     start_time = time.monotonic()
-    deadline = start_time + (duration_ms / 1000.0) + 0.5  # 500ms margin
+    deadline = start_time + (duration_ms / 1000.0) + 0.5  # 500 ms margin
 
     while time.monotonic() < deadline:
         for i, dev in enumerate(devices):
             dio = dev.digitalIn
-            status = dio.status(True)  # read data
+            dio.status(True)  # update internal buffers
 
-            # Read available samples
-            available = dio.statusSamplesValid()
+            available, _lost, _corrupt = dio.statusRecord()
             if available > 0:
-                buf = (ctypes.c_uint16 * available)()
-                dio.statusData(buf, available)
-                all_samples[i].extend(buf)
+                samples = dio.statusData(available, sample_format=16)
+                all_samples[i].extend(int(s) for s in samples)
 
         time.sleep(0.001)  # 1 ms poll interval
 
@@ -371,54 +365,95 @@ def print_report(results: list[PinResult]) -> None:
         sys.exit(1)
 
 
-def auto_discover_mapping(all_edges: list[EdgeEvent]) -> dict[tuple[int, int], str]:
+def per_channel_stats(all_edges: list[EdgeEvent]) -> dict:
+    """Group edges by (ad2, channel) and compute stats for noise filtering."""
+    per_channel: dict[tuple[int, int], dict] = {}
+    for e in all_edges:
+        key = (e.ad2_index, e.channel)
+        entry = per_channel.setdefault(
+            key, {"rising": [], "falling": []})
+        (entry["rising"] if e.rising else entry["falling"]).append(
+            e.timestamp_ms)
+    return per_channel
+
+
+def classify_channels(stats: dict, num_cycles: int) -> dict:
+    """
+    Mark each channel as signal / noise / silent.
+
+    A real GPIO toggle at 10 Hz (100 ms period) with HIGH for 50 ms and LOW
+    for 50 ms produces exactly num_cycles rising edges per wired channel.
+    Anything well above that is floating / noise pickup; well below means
+    the pin never toggled during capture.
+    """
+    classified = {}
+    expected_edges = num_cycles  # one rising per cycle per wired pin
+    noise_threshold = max(expected_edges * 4, 20)  # generous upper bound
+    for key, entry in stats.items():
+        n = len(entry["rising"])
+        if n == 0:
+            verdict = "silent"
+        elif n > noise_threshold:
+            verdict = "noise"
+        else:
+            verdict = "signal"
+        classified[key] = {"verdict": verdict, "n_rising": n}
+    return classified
+
+
+def auto_discover_mapping(all_edges: list[EdgeEvent],
+                          num_cycles: int = 2) -> dict[tuple[int, int], str]:
     """
     Figure out which AD2 channel maps to which firmware pin without any
     prior wiring information.
 
-    How it works:
-      1. The firmware toggles pins in the known order in FIRMWARE_PIN_ORDER,
-         each pin HIGH for 50 ms then LOW for 50 ms (100 ms per pin).
-      2. Between cycles there is a 1000 ms quiet gap (no edges).
-      3. We find the longest edge-free interval across all channels; the
-         edge immediately AFTER that gap is pin index 0's rising edge.
-      4. Every other channel's rising edge timestamp, relative to that
-         anchor, tells us which pin index it's wired to:
-             pin_index = round((t_edge - t_anchor) / 100)
-      5. Look up FIRMWARE_PIN_ORDER[pin_index] for the pin name.
+    Filters out noisy channels first (floating/EMI), then uses only the
+    signal channels' rising edges to find the ~1 s firmware cycle gap.
+    Each signal channel's first rising edge after the anchor identifies
+    its firmware pin index.
     """
-    rising_times = sorted(e.timestamp_ms for e in all_edges if e.rising)
-    if len(rising_times) < 2:
-        print("  auto-map: not enough rising edges to infer mapping")
+    stats = per_channel_stats(all_edges)
+    cls = classify_channels(stats, num_cycles)
+
+    n_signal = sum(1 for v in cls.values() if v["verdict"] == "signal")
+    n_noise = sum(1 for v in cls.values() if v["verdict"] == "noise")
+    n_silent = sum(1 for v in cls.values() if v["verdict"] == "silent")
+    print(f"  channels: signal={n_signal} noise={n_noise} silent={n_silent}")
+
+    if n_signal == 0:
+        print("  auto-map: zero signal channels -- firmware not running "
+              "or all probes are floating")
         return {}
 
-    # Find the longest gap between consecutive rising edges across all
-    # channels. The firmware cycle gap (~1000 ms) is the only interval
-    # longer than the 100 ms pin period, so it wins.
+    # Pool rising edges from signal channels only to find the cycle gap.
+    rising_times: list[float] = []
+    for key, entry in stats.items():
+        if cls[key]["verdict"] == "signal":
+            rising_times.extend(entry["rising"])
+    rising_times.sort()
+
+    if len(rising_times) < 2:
+        print("  auto-map: not enough signal-channel edges to anchor")
+        return {}
+
     gaps = [(rising_times[i + 1] - rising_times[i], rising_times[i + 1])
             for i in range(len(rising_times) - 1)]
     gap_duration, t_anchor = max(gaps, key=lambda x: x[0])
 
     if gap_duration < 500.0:
-        print(f"  auto-map: longest gap is only {gap_duration:.0f} ms "
-              f"(expected ~1000 ms). Capture too short or firmware not running?")
+        print(f"  auto-map: longest signal-channel gap is only "
+              f"{gap_duration:.0f} ms (expected ~1000 ms)")
         return {}
 
     print(f"  auto-map: cycle boundary at t = {t_anchor:.0f} ms "
           f"(gap = {gap_duration:.0f} ms)")
 
-    # Group rising edges per (ad2, channel); first edge after anchor is that
-    # channel's pin.
-    per_channel: dict[tuple[int, int], list[float]] = {}
-    for e in all_edges:
-        if e.rising:
-            per_channel.setdefault((e.ad2_index, e.channel), []).append(
-                e.timestamp_ms)
-
     mapping: dict[tuple[int, int], str] = {}
     cycle_end = t_anchor + NUM_PINS * PIN_PERIOD_MS
-    for key, times in per_channel.items():
-        after = [t for t in times if t_anchor - 20.0 <= t < cycle_end]
+    for key, entry in stats.items():
+        if cls[key]["verdict"] != "signal":
+            continue
+        after = [t for t in entry["rising"] if t_anchor - 20.0 <= t < cycle_end]
         if not after:
             continue
         t_edge = min(after)
@@ -426,6 +461,21 @@ def auto_discover_mapping(all_edges: list[EdgeEvent]) -> dict[tuple[int, int], s
         if 0 <= pin_idx < NUM_PINS:
             mapping[key] = FIRMWARE_PIN_ORDER[pin_idx]
     return mapping
+
+
+def print_channel_diagnostics(all_edges: list[EdgeEvent],
+                              num_cycles: int) -> None:
+    """Print a terse per-channel edge-count table, sorted by AD2 then DIO."""
+    stats = per_channel_stats(all_edges)
+    cls = classify_channels(stats, num_cycles)
+    print("\n--- Per-channel edge counts ---")
+    for key in sorted(cls):
+        entry = stats[key]
+        verdict = cls[key]["verdict"]
+        n_r = len(entry["rising"])
+        n_f = len(entry["falling"])
+        print(f"  AD2[{key[0]}] DIO{key[1]:2d}:  "
+              f"rising={n_r:5d}  falling={n_f:5d}  [{verdict}]")
 
 
 def print_auto_mapping(mapping: dict[tuple[int, int], str]) -> None:
@@ -516,7 +566,8 @@ def main() -> None:
             print(f"  AD2 #{i}: {len(edges)} edges detected")
 
         if args.auto_map:
-            mapping = auto_discover_mapping(all_edges)
+            print_channel_diagnostics(all_edges, args.cycles)
+            mapping = auto_discover_mapping(all_edges, args.cycles)
             print_auto_mapping(mapping)
             return
 
