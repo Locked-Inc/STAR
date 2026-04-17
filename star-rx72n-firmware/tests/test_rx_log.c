@@ -243,15 +243,15 @@ void test_rx_log_str_null_value_all_levels(void)
 void test_rx_log_str_hits_max_len_bound_all_levels(void)
 {
   enum : uint32_t { k_no_null_buf_size = 300U, k_no_null_len = 300U };
-  static char no_null_buf[k_no_null_buf_size];
+  static char s_no_null_buf[k_no_null_buf_size];
   /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
-  (void)memset(no_null_buf, (int)'Q', sizeof(no_null_buf));
+  (void)memset(s_no_null_buf, 'Q', sizeof(s_no_null_buf));
 
-  rx_log_error_str(k_tag, "long", no_null_buf, k_no_null_len);
-  rx_log_warn_str(k_tag, "long", no_null_buf, k_no_null_len);
-  rx_log_info_str(k_tag, "long", no_null_buf, k_no_null_len);
-  rx_log_debug_str(k_tag, "long", no_null_buf, k_no_null_len);
-  rx_log_verbose_str(k_tag, "long", no_null_buf, k_no_null_len);
+  rx_log_error_str(k_tag, "long", s_no_null_buf, k_no_null_len);
+  rx_log_warn_str(k_tag, "long", s_no_null_buf, k_no_null_len);
+  rx_log_info_str(k_tag, "long", s_no_null_buf, k_no_null_len);
+  rx_log_debug_str(k_tag, "long", s_no_null_buf, k_no_null_len);
+  rx_log_verbose_str(k_tag, "long", s_no_null_buf, k_no_null_len);
   TEST_PASS();
 }
 
