@@ -6,6 +6,13 @@ breakout PCB pin numbers (silk-screen labels on the back of the board).
 Cross-referenced against `star-rx72n-firmware/gpio_test/pin_map.md` to resolve
 each breakout pin number to an RX72N port/pin name.
 
+> **Source of truth: TOM's physical breakout PCB silkscreen, not the KiCad
+> schematic.** TOM's breakout is an independent board whose layout may drift
+> from anything in `Schematic/*.kicad_sch`. If in doubt, trust the silkscreen
+> on the actual board and `pin_map.md` (which was produced from that
+> silkscreen). Do not cross-check against the KiCad schematic -- it can be
+> slightly different.
+
 ## AD2 A (unit identity TBD)
 
 Wired first. Serial number not yet confirmed -- run `gpio_verify.py --auto-map`
