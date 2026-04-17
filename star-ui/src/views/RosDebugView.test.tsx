@@ -64,7 +64,6 @@ describe('RosDebugView', () => {
           seq: 7,
           type: 'controller',
           direction: 'rx',
-          sizeBytes: 64,
           preview: 'cmd_vel linear=0.35 angular=0.10',
         },
       ],
@@ -73,6 +72,6 @@ describe('RosDebugView', () => {
 
     render(<RosDebugView navigate={vi.fn()} />);
 
-    expect(screen.getAllByText('cmd_vel linear=0.35 angular=0.10').length).toBeGreaterThan(0);
+    expect(screen.getByText('cmd_vel linear=0.35 angular=0.10')).toBeInTheDocument();
   });
 });
