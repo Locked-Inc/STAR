@@ -1,13 +1,18 @@
-"""
-Launch test that boots stereo_camera.launch.py and confirms every
-stereo topic publishes within a timeout.
+#!/usr/bin/env python3
+# Copyright 2026 Locked Inc.
+#
+# Use of this source code is governed by an MIT-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
+"""Launch test: stereo topics publish within the timeout on IMX219 hardware.
 
-Run on a Pi 5 with both IMX219-83 sensors connected:
+Boots stereo_camera.launch.py and confirms every stereo topic publishes
+within WAIT_SECONDS. Skips the assertion body when the IMX219-83 sensors
+are not present on the host (CI, dev machines without the ribbon cable).
+Run on a Pi 5 with both sensors connected::
 
     colcon test --packages-select star_bringup --event-handlers console_direct+
     launch_test install/star_bringup/share/star_bringup/test/launch_test_stereo_topics.py
-
-Skips gracefully when the sensors are not present.
 """
 
 import os
@@ -15,9 +20,7 @@ import time
 import unittest
 
 import launch
-import launch_ros
 import launch_testing.actions
-import launch_testing.asserts
 import pytest
 
 import rclpy
@@ -26,16 +29,16 @@ from rclpy.node import Node
 
 # Every stereo topic the pipeline is expected to publish.
 EXPECTED_TOPICS = [
-    ("/cam0/image_raw", "sensor_msgs/msg/Image"),
-    ("/cam1/image_raw", "sensor_msgs/msg/Image"),
-    ("/cam0/camera/image_rect_color", "sensor_msgs/msg/Image"),
-    ("/cam1/camera/image_rect_color", "sensor_msgs/msg/Image"),
-    ("/stereo/disparity", "stereo_msgs/msg/DisparityImage"),
-    ("/stereo/points2", "sensor_msgs/msg/PointCloud2"),
+    ('/cam0/image_raw', 'sensor_msgs/msg/Image'),
+    ('/cam1/image_raw', 'sensor_msgs/msg/Image'),
+    ('/cam0/camera/image_rect_color', 'sensor_msgs/msg/Image'),
+    ('/cam1/camera/image_rect_color', 'sensor_msgs/msg/Image'),
+    ('/stereo/disparity', 'stereo_msgs/msg/DisparityImage'),
+    ('/stereo/points2', 'sensor_msgs/msg/PointCloud2'),
 ]
 
 WAIT_SECONDS = 30.0
-HARDWARE_MARKER = "/dev/media2"
+HARDWARE_MARKER = '/dev/media2'
 
 
 def _hardware_present() -> bool:
@@ -44,14 +47,24 @@ def _hardware_present() -> bool:
 
 @pytest.mark.launch_test
 def generate_test_description():
+    """Return the launch description used by the test harness.
+
+    On hosts without the IMX219 hardware marker we return a minimal
+    LaunchDescription that just signals readiness: the real assertion in
+    ``test_every_stereo_topic_publishes_within_timeout`` calls
+    ``self.skipTest`` so the per-test xunit result is SKIPPED (not FAILED)
+    which ament_cmake's run_test.py wrapper honors as a pass.
+    """
     if not _hardware_present():
-        pytest.skip("IMX219-83 not detected (/dev/media2 missing)")
+        return launch.LaunchDescription([
+            launch_testing.actions.ReadyToTest(),
+        ])
 
     stereo_launch_path = os.path.join(
         os.path.dirname(__file__),
-        "..",
-        "launch",
-        "stereo_camera.launch.py",
+        '..',
+        'launch',
+        'stereo_camera.launch.py',
     )
     stereo = launch.actions.IncludeLaunchDescription(
         launch.launch_description_sources.PythonLaunchDescriptionSource(
@@ -70,7 +83,7 @@ class TestStereoTopicsPublishing(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         rclpy.init()
-        cls.node = Node("stereo_launch_test_observer")
+        cls.node = Node('stereo_launch_test_observer')
 
     @classmethod
     def tearDownClass(cls):
@@ -78,8 +91,11 @@ class TestStereoTopicsPublishing(unittest.TestCase):
         rclpy.shutdown()
 
     def test_every_stereo_topic_publishes_within_timeout(self):
+        if not _hardware_present():
+            self.skipTest('IMX219-83 not detected (/dev/media2 missing)')
+
         deadline = time.time() + WAIT_SECONDS
-        missing = set(name for name, _ in EXPECTED_TOPICS)
+        missing = {name for name, _ in EXPECTED_TOPICS}
         while time.time() < deadline and missing:
             rclpy.spin_once(self.node, timeout_sec=0.5)
             seen = dict(self.node.get_topic_names_and_types())
@@ -88,5 +104,5 @@ class TestStereoTopicsPublishing(unittest.TestCase):
                     missing.discard(name)
         self.assertFalse(
             missing,
-            f"Stereo topics never published: {sorted(missing)}",
+            f'Stereo topics never published: {sorted(missing)}',
         )
