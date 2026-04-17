@@ -269,7 +269,7 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
                 </div>
               ) : (
                 <div className="empty-state">
-                  Live parameter values are unavailable from the current gateway. Firmware {systemStatus?.firmwareVersion || '--'} · Uptime{' '}
+                  Live parameter values are unavailable from the current gateway. Firmware {systemStatus?.firmwareVersion || '--'} | Uptime{' '}
                   {formatUptime(systemStatus?.uptimeS)}.
                 </div>
               )}

@@ -87,7 +87,7 @@ export function formatHeading(radians: number | undefined): string {
   }
 
   const degrees = ((radians * 180) / Math.PI + 360) % 360;
-  return `${degrees.toFixed(1)}°`;
+  return `${degrees.toFixed(1)} deg`;
 }
 
 export function formatUptime(seconds: string | undefined): string {

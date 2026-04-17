@@ -361,9 +361,9 @@ export function MainDashboardView({
                       />
 
                       <div className="orientation-values">
-                        <MetricTile label="Roll" tone="accent" value={`${formatNumber(imu ? (imu.rollRad * 180) / Math.PI : undefined, 1)}°`} />
-                        <MetricTile label="Pitch" tone="accent" value={`${formatNumber(imu ? (imu.pitchRad * 180) / Math.PI : undefined, 1)}°`} />
-                        <MetricTile label="Yaw" tone="accent" value={`${formatNumber(headingRadians != null ? (headingRadians * 180) / Math.PI : undefined, 1)}°`} />
+                        <MetricTile label="Roll" tone="accent" value={`${formatNumber(imu ? (imu.rollRad * 180) / Math.PI : undefined, 1)} deg`} />
+                        <MetricTile label="Pitch" tone="accent" value={`${formatNumber(imu ? (imu.pitchRad * 180) / Math.PI : undefined, 1)} deg`} />
+                        <MetricTile label="Yaw" tone="accent" value={`${formatNumber(headingRadians != null ? (headingRadians * 180) / Math.PI : undefined, 1)} deg`} />
                         <MetricTile
                           label="Accel X/Y/Z"
                           tone="good"
