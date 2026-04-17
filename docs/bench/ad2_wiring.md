@@ -169,8 +169,15 @@ CHANNEL_TO_PIN = {
 }
 ```
 
+## AD2 C -- SN `210321A2AE49` (index 2)
+
+Third unit, located after AD2 A and AD2 B were mapped. Not yet wired.
+Gives us 48 total DIO channels, enough to cover ~half of the firmware's
+100 pins per capture pass.
+
 ## Identification method used
 
 Unplugged the second AD2, re-enumerated with `pydwf`. Whichever SN
 stayed enumerated is AD2 A. `210321A36AA3` was the one that remained,
-so the unplugged unit is `210321A36AAE` (AD2 B).
+so the unplugged unit is `210321A36AAE` (AD2 B). AD2 C
+(`210321A2AE49`) was added after both A and B were already identified.
