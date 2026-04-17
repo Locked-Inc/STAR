@@ -112,6 +112,7 @@ stop_proc "gateway_bridge" "star_gateway_bridge_main" 3
 # children via the process group.
 # ---------------------------------------------------------------------------
 stop_proc "slam launch" "slam.launch.py" 5
+stop_proc "compliance launch" "compliance.launch.py" 5
 stop_proc "spi_bridge launch" "star_spi_bridge.launch.py" 3
 stop_proc "stereo camera launch" "stereo_camera.launch.py" 5
 
@@ -168,6 +169,13 @@ SWEEP_PATTERNS=(
     "virtual_rx72n"
     "/opt/star-lichtblick-web"
     "rtabmap"
+    "star_ramp_slope_node"
+    "star_door_clear_width_node"
+    "star_door_threshold_node"
+    "star_protruding_objects_node"
+    "star_path_blockage_node"
+    "star_dynamic_obstacle_node"
+    "star_compliance_monitor_node"
 )
 for pat in "${SWEEP_PATTERNS[@]}"; do
     survivors=$(pgrep -f "$pat" 2>/dev/null) || true

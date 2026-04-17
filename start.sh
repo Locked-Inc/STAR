@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # STAR start -- auto-detect hardware and boot all components in order.
-# Usage: ./start.sh [--no-lidar] [--no-ui] [--rviz] [--help]
+# Usage: ./start.sh [--no-lidar] [--no-ui] [--no-compliance] [--rviz] [--help]
 
 set -euo pipefail
 
@@ -58,6 +58,7 @@ require_host_setup() {
 # -- argument parsing ----------------------------------------------------------
 OPT_NO_LIDAR=false
 OPT_NO_UI=false
+OPT_NO_COMPLIANCE=false
 OPT_RVIZ=false
 OPT_NO_AP=false
 
@@ -76,9 +77,10 @@ usage() {
 Usage: ./start.sh [OPTIONS]
 
   (no flags)   Auto-detect hardware; start everything
-  --no-lidar   Skip LiDAR/SLAM/EKF even if /dev/rplidar is present
-  --no-ui      Skip npm dev server
-  --no-ap      Skip WiFi AP setup (use when connected via Ethernet)
+  --no-lidar       Skip LiDAR/SLAM/EKF even if /dev/rplidar is present
+  --no-ui          Skip npm dev server
+  --no-compliance  Skip the compliance-engine launch (ADA checks)
+  --no-ap          Skip WiFi AP setup (use when connected via Ethernet)
   --rviz       Launch RViz2 after startup
   --help       Print this help
 
@@ -96,6 +98,7 @@ for arg in "$@"; do
   case "$arg" in
   --no-lidar) OPT_NO_LIDAR=true ;;
   --no-ui) OPT_NO_UI=true ;;
+  --no-compliance) OPT_NO_COMPLIANCE=true ;;
   --no-ap) OPT_NO_AP=true ;;
   --rviz) OPT_RVIZ=true ;;
   --help | -h) usage ;;
@@ -549,6 +552,36 @@ else
   say "foxglove_bridge running (PID $PID_FOXGLOVE)"
 fi
 
+# -- Step 5c: Compliance engine (ADA checks) ---------------------------------
+# Brings up the seven compliance nodes (ramp slope, door clear width, door
+# threshold, path blockage, protruding objects, dynamic obstacles, CPU
+# safety-net monitor). Requires the compliance packages to have been built
+# by bootstrap_pi.sh. Gracefully skipped if not installed.
+COMPLIANCE_LAUNCH_AVAILABLE=false
+if ros2 pkg list 2>/dev/null | grep -q '^star_compliance$'; then
+  COMPLIANCE_LAUNCH_AVAILABLE=true
+fi
+PID_COMPLIANCE=""
+if [[ "$OPT_NO_COMPLIANCE" != "true" && "$COMPLIANCE_LAUNCH_AVAILABLE" == "true" ]]; then
+  say "Starting compliance engine (ros2 launch star_compliance compliance.launch.py)..."
+  ros2 launch star_compliance compliance.launch.py \
+    >"$LOG_DIR/compliance.log" 2>&1 &
+  PID_COMPLIANCE=$!
+  sleep 3
+  if ! kill -0 "$PID_COMPLIANCE" 2>/dev/null; then
+    warn "compliance engine may have exited -- check $LOG_DIR/compliance.log"
+    PID_COMPLIANCE=""
+  else
+    say "compliance engine running (PID $PID_COMPLIANCE)"
+  fi
+else
+  if [[ "$COMPLIANCE_LAUNCH_AVAILABLE" != "true" ]]; then
+    warn "star_compliance package not found -- run ./bootstrap_pi.sh to build it."
+  else
+    say "Skipping compliance engine (--no-compliance)."
+  fi
+fi
+
 # -- Step 6: star_gateway_bridge_main -----------------------------------------
 # When SLAM is running, slam.launch.py already includes gateway_bridge and foxglove.
 # Only launch standalone bridge when SLAM is NOT running.
@@ -643,6 +676,9 @@ if [[ "$BBB_MODE" != "true" ]]; then
 fi
 if [[ -n "$PID_SLAM" ]]; then
   printf "  %-18s PID %s   /scan @ 10 Hz + stereo (when connected)\n" "slam" "$PID_SLAM"
+fi
+if [[ -n "$PID_COMPLIANCE" ]]; then
+  printf "  %-18s PID %s   ADA checks on /compliance/*\n" "compliance" "$PID_COMPLIANCE"
 fi
 printf "  %-18s PID %s\n" "gw_bridge" "${PID_GWBRIDGE:-unknown}"
 if [[ -n "$PID_UI" ]]; then
