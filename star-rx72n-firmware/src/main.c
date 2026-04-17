@@ -195,6 +195,7 @@
 #include "shared_data.h"
 #include "telemetry_task.h"
 #include "temp_sensor_task.h"
+#include "usb_task.h"
 #include "watchdog_monitor_task.h"
 
 /* Watchdog driver */
@@ -1950,7 +1951,13 @@ static void internal_create_system_tasks(void)
   err = motor_control_task_create();
   RX_ASSERT(err == k_rx_ok, "motor_control_task_create must succeed");
 
-  /* Communication Task - Priority 5 (highest) */
+  /* USB Polling Task - Priority 4 (highest of all app tasks).
+   * Must be created before comm_task so rx_usb_init() runs BEFORE
+   * comm_task's internal_init_transports() starts bringing up SPI/I2C/UART. */
+  err = usb_task_create();
+  RX_ASSERT(err == k_rx_ok, "usb_task_create must succeed");
+
+  /* Communication Task - Priority 5 */
   err = comm_task_create();
   RX_ASSERT(err == k_rx_ok, "comm_task_create must succeed");
 
