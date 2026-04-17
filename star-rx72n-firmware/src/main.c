@@ -2423,14 +2423,19 @@ int main(void)
     *INTENB0_R  = (uint16_t)((1U << 15) | (1U << 12) | (1U << 11) | (1U << 10) | (1U << 8));
     *SYSCFG_R  |= (1U << 4);
 
-    /* Drive SETUP enumeration inline.  ThreadX startup takes ~100 ms and
-     * comm_task's transport-init adds more, which overruns the USB host's
-     * SETUP retry window if we wait to poll until after tx_kernel_enter.
-     * Loop here until we see DVSQ == Configured (3) for long enough that
-     * the host has completed enumeration, then fall through to ThreadX. */
+    /* Drive SETUP enumeration inline while the host completes bus reset,
+     * SET_ADDRESS and initial GET_DESCRIPTOR cycles.  ThreadX startup +
+     * comm_task transport-init together take ~100 ms which overruns the
+     * USB host's SETUP retry window if we hand off before the descriptors
+     * are read.  Run a bounded loop long enough to cover the host's
+     * enumeration sequence (~500 ms at 240 MHz) then fall through to
+     * tx_kernel_enter(); comm_task's 100 Hz polling takes over from
+     * there.  Intentionally *not* gating on DVSQ == Configured: our stub
+     * descriptors don't describe a fully-matched class so Linux may
+     * choose never to send SET_CONFIGURATION, which would leave us
+     * spinning forever. */
     {
-      uint32_t configured_streak = 0U;
-      for (;;) {
+      for (uint32_t spin = 0U; spin < 8000000U; spin++) {
         uint16_t st = *INTSTS0_R;
 
         if (st & (1U << 12)) {
@@ -2485,18 +2490,6 @@ int main(void)
 
         if (st & (1U << 8))  { *BRDYSTS_R = 0; *INTSTS0_R = (uint16_t)~(1U << 8);  }
         if (st & (1U << 10)) { *BEMPSTS_R = 0; *INTSTS0_R = (uint16_t)~(1U << 10); }
-
-        /* DVSQ = bits [6:4]. 3 = Configured. Require a sustained streak
-         * so we don't break out during a transient reset. */
-        uint16_t dvsq = (uint16_t)((*INTSTS0_R >> 4) & 0x7U);
-        if (dvsq >= 3U) {
-          configured_streak++;
-          if (configured_streak >= 500000U) {
-            break;
-          }
-        } else {
-          configured_streak = 0U;
-        }
       }
     }
   }
