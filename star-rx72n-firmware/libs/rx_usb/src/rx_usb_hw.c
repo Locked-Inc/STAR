@@ -501,18 +501,11 @@ typedef enum : uint16_t {
   k_usb_syscfg_disabled = 0x0000, /**< USB module disabled (all bits clear) */
 } usb_syscfg_value_t;
 
-/** @brief FIFO operation timeouts and masks */
+/** @brief FIFO operation timeouts */
 typedef enum : uint16_t {
   k_usb_fifo_timeout_iterations = 1000, /**< FIFO ready timeout (busy-wait iterations) */
   k_usb_fifo_timeout_expired    = 0,    /**< Timeout counter expired */
-  k_usb_fifo_byte_mask          = 0xFF, /**< Byte mask for 8-bit FIFO read */
 } usb_fifo_constants_t;
-
-/** @brief FIFO 16-bit access constants (RX72N Manual Ch40: CFIFO is 16-bit) */
-typedef enum : uint8_t {
-  k_usb_fifo_word_size_bytes = 2, /**< 16-bit word is 2 bytes (step per iteration) */
-  k_usb_fifo_high_byte_shift = 8, /**< Shift to extract high byte from 16-bit word */
-} usb_fifo_access_t;
 
 /** @brief USB address mask */
 typedef enum : uint8_t {
@@ -739,9 +732,16 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
     return k_min_transfer_size;
   }
 
-  /* Select pipe for CFIFO access -- 16-bit width to match the uint16_t
-   * accesses below.  ISEL=0 = read direction (device OUT). */
-  usb0()->cfifosel = (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_mbw_16;
+  /* Select pipe for CFIFO access.
+   *   ISEL = 0   read direction (device OUT, host->device data)
+   *   MBW  = 0   8-bit FIFO width.  Same rationale as the write path: each
+   *              read must dequeue exactly one byte from the hardware FIFO
+   *              so that the loop terminates with `data` holding exactly
+   *              DTLN bytes for any DTLN value, including odd ones.  The
+   *              old MBW=16 path lost the high-byte half-word at the end
+   *              of an odd-length OUT transfer (and silently advanced
+   *              DTLN by 2 anyway). */
+  usb0()->cfifosel = (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_mbw_8;
 
   /* Wait for FIFO ready (hardware polling) */
   /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
@@ -762,15 +762,14 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
     len = max_len;
   }
 
-  /* Read data from FIFO (16-bit access required by RX72N Manual Ch40 40.3.9) */
-  /* CRITICAL FIX: CFIFO is 16-bit register, must read 16 bits at a time */
-  for (uint32_t i = 0; i < len; i += k_usb_fifo_word_size_bytes) {
-    const uint16_t word = usb0()->cfifo;                          /* Read 16-bit word */
-    data[i]             = (uint8_t)(word & k_usb_fifo_byte_mask); /* Low byte */
-    if ((i + 1) < len) {
-      data[i + 1] =
-        (uint8_t)((word >> k_usb_fifo_high_byte_shift) & k_usb_fifo_byte_mask); /* High byte */
-    }
+  /* Read data from FIFO one byte at a time (matches MBW=8 above).
+   * CFIFO is declared `volatile uint16_t`; cast its address to `uint8_t *`
+   * so each access is byte-wide, matching what the hardware presents in
+   * 8-bit MBW mode.  See the write path for the wLength=9 / -75 EOVERFLOW
+   * incident that motivated dropping 16-bit access here. */
+  volatile const uint8_t* cfifo_byte = (volatile const uint8_t*)&usb0()->cfifo;
+  for (uint32_t i = 0; i < len; i++) {
+    data[i] = *cfifo_byte;
   }
 
   /* Clear buffer */
@@ -809,12 +808,21 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   /*
    * Select pipe for CFIFO access:
    *   ISEL = 1   write direction (device IN preparation)
-   *   MBW  = 16  16-bit FIFO width MUST match the uint16_t access we do
-   *              below; without MBW=16 the FIFO mis-counts byte writes
-   *              and the host receives garbage / nothing.
+   *   MBW  = 0   8-bit FIFO width.  Required so that DTLN (the hardware
+   *              byte counter that decides how many bytes get transmitted)
+   *              increments by exactly 1 per byte we write, regardless of
+   *              whether `len` is even or odd.
+   *
+   *              The earlier 16-bit MBW path looped i+=2 and synthesised a
+   *              padded final word for odd lengths, which made DTLN one
+   *              greater than `len`.  Linux's first GET_DESCRIPTOR(CONFIG)
+   *              uses wLength=9 and the resulting 10-byte transmission was
+   *              flagged by xHCI as babble (`-75 EOVERFLOW`) -- macOS asks
+   *              with even lengths so it never tripped the bug.  See
+   *              `usb_test/USB_BRINGUP_STATUS.md` "Bug 10".
    */
   usb0()->cfifosel =
-    (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_isel | k_usb_fifosel_mbw_16;
+    (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_isel | k_usb_fifosel_mbw_8;
 
   /* Wait for FIFO ready (hardware polling) */
   /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
@@ -843,14 +851,14 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     return k_min_transfer_size;
   }
 
-  /* Write data to FIFO (16-bit access required by RX72N Manual Ch40 40.3.9) */
-  /* CRITICAL FIX: CFIFO is 16-bit register, must write 16 bits at a time */
-  for (uint32_t i = 0; i < len; i += k_usb_fifo_word_size_bytes) {
-    uint16_t word = data[i]; /* Low byte */
-    if ((i + 1) < len) {
-      word |= ((uint16_t)data[i + 1] << k_usb_fifo_high_byte_shift); /* High byte */
-    }
-    usb0()->cfifo = word; /* Write 16-bit word */
+  /* Write data to FIFO one byte at a time (matches MBW=8 above).
+   * The CFIFO register is declared `volatile uint16_t`, so cast its
+   * address to `uint8_t *` for the byte-wide writes the hardware expects
+   * in 8-bit MBW mode.  The address is the same (USB0 + 0x14); the
+   * hardware decides the width from MBW. */
+  volatile uint8_t* cfifo_byte = (volatile uint8_t*)&usb0()->cfifo;
+  for (uint32_t i = 0; i < len; i++) {
+    *cfifo_byte = data[i];
   }
 
   /* Set buffer valid to signal data ready for transmission */
