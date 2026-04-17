@@ -103,7 +103,7 @@ export function averageDefined(values: Array<number | undefined>): number | unde
 }
 
 export function formatNumber(value: number | undefined, digits = 1): string {
-  if (value == null || Number.isNaN(value)) {
+  if (value == null || !Number.isFinite(value)) {
     return '--';
   }
 
