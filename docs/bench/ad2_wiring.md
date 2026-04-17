@@ -8,11 +8,23 @@ each breakout pin number to an RX72N port/pin name.
 
 ## Verification status
 
-**AD2 F wired 2026-04-17 -- full-board sweep with all six AD2s not yet
-re-run.** Added a sixth unit covering **Col 7 rows 2-15** (PD1-PD7,
-P60, P61-P64) plus **Col 2 rows 12-15** (P53, P52, P51, P50). All 16
-channels live. Total wired-and-verified pins expected at the next
-sweep: **92/92**.
+**AD2 G wired 2026-04-17 -- full-board sweep with all seven AD2s not
+yet re-run. This completes wiring coverage for every sweepable GPIO
+on the board: 98/98.** Added a seventh unit using **6 of 16 channels**
+to pick up the last unwired GPIOs: Col 2 rows 9-11 (P54, P55, P56)
+plus all of Col 4 rows 1-3 (P73, PC0, PC1). AD2 G DIOs 6-15 are
+unused slack capacity for future PCB revisions or signal-integrity
+probing; they are not mapped in CHANNEL_TO_PIN.
+
+The only two GPIOs that remain outside the sweep are **PJ3 and PJ5
+on AD2 E** - intentionally excluded from `main.c`'s `s_pins[]` because
+they double as JTAG TMS/TDO. 98 is the maximum achievable with the
+current firmware. Flashing a build that includes PJ-port drivers and
+physically disconnecting E2 Lite would push that to 100.
+
+**AD2 F wired 2026-04-17.** Covers **Col 7 rows 2-15** (PD1-PD7, P60,
+P61-P64) plus **Col 2 rows 12-15** (P53, P52, P51, P50). All 16
+channels live.
 
 **AD2 E wired 2026-04-17.** Covers **all of Col 1** plus **Col 7 Row 1**
 (PD0). 14 of AD2 E's 16 channels are usable GPIOs; **DIO 6 (PJ5) and
@@ -262,6 +274,14 @@ CHANNEL_TO_PIN = {
     ( 5, 13): "P51",
     ( 5, 14): "P52",
     ( 5, 15): "P53",
+    # AD2 G -- SN <pending, run --auto-map>
+    ( 6,  0): "P54",
+    ( 6,  1): "P55",
+    ( 6,  2): "P56",
+    ( 6,  3): "P73",
+    ( 6,  4): "PC0",
+    ( 6,  5): "PC1",
+    # ( 6, 6-15) -- unused slack channels
 }
 ```
 
@@ -510,6 +530,45 @@ to-top for DIO 12-15 (pins 56 down to 53). All 16 channels are live.
     ( 5, 13): "P51",
     ( 5, 14): "P52",
     ( 5, 15): "P53",
+```
+
+## AD2 G -- SN `<pending, run --auto-map>` (index 6)
+
+Wired Col 2 rows 9-11 for DIO 0-2 (pins 52 down to 50, picking up
+the last three unwired Col 2 GPIOs), then across to Col 4 rows 1-3
+for DIO 3-5 (pins 77, 75, 73). DIOs 6-15 left unpopulated because
+every remaining GPIO on the board is already covered by another
+AD2. All 6 used channels are live.
+
+| DIO | Breakout pin | GPIO | Col/Row (pin_map) | Notes |
+|-----|--------------|------|-------------------|-------|
+|  0  |         52   | P54  | Col 2, Row 11     | OK    |
+|  1  |         51   | P55  | Col 2, Row 10     | OK    |
+|  2  |         50   | P56  | Col 2, Row  9     | OK    |
+|  3  |         77   | P73  | Col 4, Row  1     | OK    |
+|  4  |         75   | PC0  | Col 4, Row  2     | OK    |
+|  5  |         73   | PC1  | Col 4, Row  3     | OK    |
+|  6-15 |      --   | --   | -- (unused)       | slack capacity |
+
+### Summary for AD2 G
+
+- 6 channels used, 10 channels unused
+- Zero overlap with any prior AD2
+- Completes Port 5 (P50-P56 - last three here, first four on AD2 F)
+- Completes Port C (PC0, PC1 here; PC2-PC6 already on AD2 B/C)
+- Picks up P73
+
+### Ready-to-paste CHANNEL_TO_PIN additions
+
+```python
+    # AD2 G -- SN <pending>
+    ( 6,  0): "P54",
+    ( 6,  1): "P55",
+    ( 6,  2): "P56",
+    ( 6,  3): "P73",
+    ( 6,  4): "PC0",
+    ( 6,  5): "PC1",
+    # ( 6, 6-15) -- unused slack channels
 ```
 
 ## Identification method used
