@@ -1,0 +1,8 @@
+
+J5: 
+
+not on silk:
+TEST POINTS: DNP under the top right J5 with labels like TCK, VSS, ...
+on sides (through hole): CPPPC151LFBN-R, CONN HEADER VERT FEMALE 15POS 2.54MM
+bottom left (through hole): PH1-03-UA, CONN HEADER VERT MALE 3POS 2.54MM 
+
