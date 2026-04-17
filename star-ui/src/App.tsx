@@ -4,14 +4,12 @@ import { MainDashboardView } from './views/MainDashboardView';
 import { RosDebugView } from './views/RosDebugView';
 
 const defaultWsPort = 8080;
-const rawWsPort = import.meta.env.VITE_WS_PORT;
-const parsedWsPort = rawWsPort === undefined ? defaultWsPort : Number(rawWsPort);
-if (!Number.isInteger(parsedWsPort) || parsedWsPort <= 0 || parsedWsPort > 65535) {
+const rawWsPort = import.meta.env.VITE_WS_PORT ?? '';
+const parsedWsPort = Number.parseInt(rawWsPort, 10);
+if (!Number.isFinite(parsedWsPort) || parsedWsPort <= 0 || parsedWsPort >= 65536) {
   console.warn(`Invalid VITE_WS_PORT="${rawWsPort}", falling back to ${defaultWsPort}`);
 }
-const wsPort = Number.isInteger(parsedWsPort) && parsedWsPort > 0 && parsedWsPort <= 65535
-  ? parsedWsPort
-  : defaultWsPort;
+const wsPort = Number.isFinite(parsedWsPort) && parsedWsPort > 0 && parsedWsPort < 65536 ? parsedWsPort : defaultWsPort;
 const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
 const wsUrl = `${wsProtocol}://${window.location.hostname}:${wsPort}/ws`;
 
