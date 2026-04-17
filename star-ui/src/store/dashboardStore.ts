@@ -4,7 +4,6 @@ import type { STAREnvelope, Alert, LidarScan, OdometryData } from '../proto/star
 import { AlertLevel } from '../proto/star/v1/ui';
 import type { TelemetryData, SystemStatus } from '../proto/star/v1/telemetry';
 import type { MotorStatus } from '../proto/star/v1/motor_control';
-import type { BatteryState } from '../proto/star/v1/battery_management';
 
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
 
@@ -20,9 +19,8 @@ interface DashboardState {
   // Robot data -- individual slices
   telemetry: TelemetryData | null;
   motors: MotorStatus[] | null;   // length 4: FL, FR, BL, BR
-  battery: BatteryState | null;
   odometry: OdometryData | null;
-  lidarScan: LidarScan | null;    // LidarPanel uses .subscribe() + useRef
+  lidarScan: LidarScan | null;
   systemStatus: SystemStatus | null;
   eStopActive: boolean;
 
@@ -46,7 +44,6 @@ export const useDashboardStore = create<DashboardState>()(
     dataIsStale: false,
     telemetry: null,
     motors: null,
-    battery: null,
     odometry: null,
     lidarScan: null,
     systemStatus: null,
@@ -89,9 +86,6 @@ export const useDashboardStore = create<DashboardState>()(
           break;
         case 'motors':
           set({ motors: p.motors.motors });
-          break;
-        case 'battery':
-          set({ battery: p.battery });
           break;
         case 'odometry':
           set({ odometry: p.odometry });

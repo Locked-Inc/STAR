@@ -12,7 +12,7 @@ interface WorldPoint {
 }
 
 const canvasWidth = 600;
-const canvasHeight = 400;
+const canvasHeight = 280;
 const pixelsPerMeter = 42;
 const maxPathPoints = 220;
 const maxObstaclePoints = 5000;
