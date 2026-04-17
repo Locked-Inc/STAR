@@ -1,3 +1,10 @@
+/**
+ * @file dashboard.ts
+ * @brief Type definitions for dashboard state, routes, and UI modes
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * @license MIT License
+ */
+
 export type AppRoute = '/' | '/ros';
 
 export type UiMode = 'autonomous' | 'manual';

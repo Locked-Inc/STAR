@@ -1,3 +1,10 @@
+/**
+ * @file useTraceHistory.ts
+ * @brief React hook for managing trace history buffers (CPU, lidar, temperature, velocity)
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * @license MIT License
+ */
+
 import { useEffect, useRef, useState } from 'react';
 import { pushTraceSample, traceHistoryLength, traceSampleIntervalMs } from '../lib/dashboard';
 import type { TraceHistory } from '../types/dashboard';

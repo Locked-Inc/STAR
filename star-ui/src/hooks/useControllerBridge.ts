@@ -1,3 +1,10 @@
+/**
+ * @file useControllerBridge.ts
+ * @brief React hook for bridging gamepad input to ControllerState ROS messages
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * @license MIT License
+ */
+
 import { useEffect, useRef } from 'react';
 import type { ControllerState } from '../proto/star/v1/controller';
 import { controllerSendIntervalMs } from '../lib/dashboard';
