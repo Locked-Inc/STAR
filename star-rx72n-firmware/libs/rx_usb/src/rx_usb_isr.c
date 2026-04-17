@@ -446,7 +446,7 @@ static void internal_handle_ctrt_interrupt(void)
        * Ch40, so a racing second SETUP cannot overwrite the registers
        * mid-read.
        */
-      usb0()->intsts0 = (uint16_t) ~k_usb_intsts0_valid;
+      usb0()->intsts0 = (uint16_t)~k_usb_intsts0_valid;
       rx_usb_cdc_handle_setup();
       break;
 
@@ -464,7 +464,7 @@ static void internal_handle_ctrt_interrupt(void)
       /* Sequence error - stall the pipe */
       rx_log_warn(s_tag, "CTRT: Sequence error");
       usb0()->dcpctr =
-        (uint16_t)((usb0()->dcpctr & (uint16_t) ~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall);
+        (uint16_t)((usb0()->dcpctr & (uint16_t)~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall);
       break;
 
     case k_usb_intsts0_ctsq_idle:
