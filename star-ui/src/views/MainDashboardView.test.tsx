@@ -20,6 +20,7 @@ describe('MainDashboardView', () => {
     mockedUseControllerBridge.mockReturnValue(gamepadState);
 
     useDashboardStore.setState({
+      ...useDashboardStore.getInitialState(),
       alerts: [],
       connectionState: 'connected',
       dataIsStale: false,
@@ -30,7 +31,7 @@ describe('MainDashboardView', () => {
       seqGapDetected: false,
       systemStatus: null,
       telemetry: null,
-    });
+    }, true);
   });
 
   it('renders the main dashboard shell', () => {
