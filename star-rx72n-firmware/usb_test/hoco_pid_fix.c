@@ -68,14 +68,15 @@ static void blink(uint8_t count)
 
 static void cfifo_write(const uint8_t *data, uint16_t len)
 {
-    REG16(CFIFOSEL) = (1U << 5) | (1U << 10);  /* ISEL=1, MBW=16 */
+    /* 8-bit MBW: each write adds exactly 1 byte to DTLN, so odd-length
+     * transfers (e.g. Linux's 9-byte GET_DESCRIPTOR(CONFIG)) don't pad
+     * to 10 bytes and trigger -75 EOVERFLOW on the host. */
+    REG16(CFIFOSEL) = (1U << 5);  /* ISEL=1, MBW=0 (8-bit), CURPIPE=DCP */
     while (!(REG16(CFIFOCTR) & (1U << 13))) {}
     REG16(CFIFOCTR) |= (1U << 14);
     while (REG16(CFIFOCTR) & (1U << 14)) {}
-    for (uint16_t i = 0; i < len; i += 2U) {
-        uint16_t w = data[i];
-        if (i + 1U < len) { w |= (uint16_t)data[i + 1U] << 8; }
-        REG16(CFIFO) = w;
+    for (uint16_t i = 0; i < len; i++) {
+        REG8(CFIFO) = data[i];
     }
     REG16(CFIFOCTR) |= (1U << 15);
 }
