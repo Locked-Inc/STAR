@@ -21,6 +21,7 @@ vi.mock('../hooks/useTraceHistory', () => ({
 }));
 
 const mockedUsePacketFeed = vi.mocked(usePacketFeed);
+const noopNavigate = () => undefined;
 
 describe('RosDebugView', () => {
   beforeEach(() => {
@@ -40,7 +41,7 @@ describe('RosDebugView', () => {
   });
 
   it('renders the debug console shell', () => {
-    render(<RosDebugView navigate={vi.fn()} />);
+    render(<RosDebugView navigate={noopNavigate} />);
 
     expect(screen.getByText('ROS2 Debug Console')).toBeInTheDocument();
     expect(screen.getByText('Telemetry Traces')).toBeInTheDocument();
@@ -64,13 +65,14 @@ describe('RosDebugView', () => {
           seq: 7,
           type: 'controller',
           direction: 'rx',
+          sizeBytes: 128,
           preview: 'cmd_vel linear=0.35 angular=0.10',
         },
       ],
       sampledAtMs: 1_700_000_000_500,
     });
 
-    render(<RosDebugView navigate={vi.fn()} />);
+    render(<RosDebugView navigate={noopNavigate} />);
 
     expect(screen.getByText('cmd_vel linear=0.35 angular=0.10')).toBeInTheDocument();
   });
