@@ -21,6 +21,7 @@ export const estopReasonUserUiButton = 'user_ui_button';
 
 const validAlertTimestampFloorMs = Date.parse('2020-01-01T00:00:00Z');
 export const microsecondsPerMillisecond = 1000;
+export const usToMs = 1 / microsecondsPerMillisecond;
 
 export function msToUs(milliseconds: number): number {
   return milliseconds * microsecondsPerMillisecond;
@@ -146,7 +147,7 @@ export function formatTimestamp(tsMs: number): string {
 
 export function parseTimestampUs(timestampUs: string | undefined): number | null {
   const raw = Number(timestampUs ?? 0);
-  const ms = raw / microsecondsPerMillisecond;
+  const ms = raw * usToMs;
   if (!Number.isFinite(ms) || ms < validAlertTimestampFloorMs) {
     return null;
   }
