@@ -13,11 +13,14 @@ export const traceSampleIntervalMs = 1000;
 export const wheelDiameterMeters = 0.2;
 export const wheelCircumferenceMeters = Math.PI * wheelDiameterMeters;
 export const secondsPerMinute = 60;
+export const secondsPerHour = secondsPerMinute * 60;
+export const scoreGoodThreshold = 85;
+export const scoreWarnThreshold = 60;
 
 export const estopReasonUserUiButton = 'user_ui_button';
 
 const validAlertTimestampFloorMs = Date.parse('2020-01-01T00:00:00Z');
-const microsecondsPerMillisecond = 1000;
+export const microsecondsPerMillisecond = 1000;
 
 export function msToUs(milliseconds: number): number {
   return milliseconds * microsecondsPerMillisecond;
@@ -121,9 +124,9 @@ export function formatUptime(seconds: string | undefined): string {
     return '--';
   }
 
-  const hours = Math.floor(total / 3600);
-  const minutes = Math.floor((total % 3600) / 60);
-  const secs = Math.floor(total % 60);
+  const hours = Math.floor(total / secondsPerHour);
+  const minutes = Math.floor((total % secondsPerHour) / secondsPerMinute);
+  const secs = Math.floor(total % secondsPerMinute);
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs
     .toString()
     .padStart(2, '0')}`;
@@ -169,10 +172,10 @@ export function toneFromScore(score: number | undefined): Tone {
   if (score == null || Number.isNaN(score)) {
     return 'neutral';
   }
-  if (score >= 85) {
+  if (score >= scoreGoodThreshold) {
     return 'good';
   }
-  if (score >= 60) {
+  if (score >= scoreWarnThreshold) {
     return 'warn';
   }
   return 'danger';
