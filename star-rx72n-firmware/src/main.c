@@ -2370,140 +2370,53 @@ int main(void)
   ret = hardware_init();
   RX_ERROR_CHECK(ret);
 
-  /* DIAG: USB0 manual attach + polled SETUP handler.  RX72N's USBI CPU
-   * interrupt vector isn't firing (tried 36, 62, 102, 185), so the
-   * production stack can't service SETUP.  Fall back to software
-   * polling via inline handler mirroring usb_test/hoco_pid_fix.c.
-   * This halts in the for(;;) so ThreadX doesn't start -- temporary
-   * until a production polling task is wired up. */
+  /* Inline USB0 attach that is known to bring up DPRPU successfully on
+   * this board.  The equivalent rx_usb_hw_init path with busy-wait
+   * delays has been observed to assert DPRPU without SETUP ever being
+   * serviced -- rootcause is open, but this sequence from
+   * usb_test/hoco_pid_fix.c works reliably.  After attach we drive the
+   * production rx_usb_isr_handler from a tight poll loop so SETUP is
+   * serviced via the real rx_usb_cdc descriptors (3-port CDC composite,
+   * 207-byte config) -- not the stub handler we previously embedded
+   * here. */
   {
-    volatile uint16_t* PRCR_R    = (volatile uint16_t*)0x000803FEU;
-    volatile uint32_t* MSTPCRB_R = (volatile uint32_t*)0x00080014U;
-    volatile uint16_t* SCKCR2_R  = (volatile uint16_t*)0x00080024U;
-    volatile uint16_t* PACKCR_R  = (volatile uint16_t*)0x00080044U;
-    volatile uint16_t* SYSCFG_R  = (volatile uint16_t*)0x000A0000U;
-    volatile uint16_t* INTENB0_R = (volatile uint16_t*)0x000A0030U;
-    volatile uint16_t* BRDYENB_R = (volatile uint16_t*)0x000A0036U;
-    volatile uint16_t* BEMPENB_R = (volatile uint16_t*)0x000A003AU;
-    volatile uint16_t* DCPCFG_R  = (volatile uint16_t*)0x000A005CU;
-    volatile uint16_t* DCPMAXP_R = (volatile uint16_t*)0x000A005EU;
-    volatile uint16_t* DCPCTR_R  = (volatile uint16_t*)0x000A0060U;
-    volatile uint16_t* INTSTS0_R = (volatile uint16_t*)0x000A0040U;
-    volatile uint16_t* CFIFOSEL_R= (volatile uint16_t*)0x000A0020U;
-    volatile uint16_t* CFIFOCTR_R= (volatile uint16_t*)0x000A0022U;
-    volatile uint8_t*  CFIFO_R8  = (volatile uint8_t*) 0x000A0014U;
-    volatile uint16_t* BRDYSTS_R = (volatile uint16_t*)0x000A0046U;
-    volatile uint16_t* BEMPSTS_R = (volatile uint16_t*)0x000A004AU;
-    volatile uint16_t* USBADDR_R = (volatile uint16_t*)0x000A0050U;
-    volatile uint16_t* USBREQ_R  = (volatile uint16_t*)0x000A0054U;
-    volatile uint16_t* USBVAL_R  = (volatile uint16_t*)0x000A0056U;
-    volatile uint16_t* USBLENG_R = (volatile uint16_t*)0x000A005AU;
+    volatile uint16_t* const PRCR_R    = (volatile uint16_t*)0x000803FEU;
+    volatile uint32_t* const MSTPCRB_R = (volatile uint32_t*)0x00080014U;
+    volatile uint16_t* const SYSCFG_R  = (volatile uint16_t*)0x000A0000U;
+    volatile uint16_t* const INTENB0_R = (volatile uint16_t*)0x000A0030U;
+    volatile uint16_t* const BRDYENB_R = (volatile uint16_t*)0x000A0036U;
+    volatile uint16_t* const BEMPENB_R = (volatile uint16_t*)0x000A003AU;
+    volatile uint16_t* const DCPCFG_R  = (volatile uint16_t*)0x000A005CU;
+    volatile uint16_t* const DCPMAXP_R = (volatile uint16_t*)0x000A005EU;
+    volatile uint16_t* const DCPCTR_R  = (volatile uint16_t*)0x000A0060U;
 
-    static const uint8_t s_dev[18] = {
-      /* bLength, bDescriptorType=Device, bcdUSB=2.00,
-       * bDeviceClass=0xFF (vendor), bSubClass=0, bProtocol=0, bMaxPacketSize0=64,
-       * idVendor=0x045B (Renesas), idProduct=0x0235 (STAR),
-       * bcdDevice=1.00, iManufacturer=0, iProduct=0, iSerialNumber=0,
-       * bNumConfigurations=1 */
-      0x12, 0x01, 0x00, 0x02, 0xFF, 0x00, 0x00, 0x40,
-      0x5B, 0x04, 0x35, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-    };
-    static const uint8_t s_cfg[18] = {
-      0x09, 0x02, 0x12, 0x00, 0x01, 0x01, 0x00, 0x80, 0x32,
-      0x09, 0x04, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00,
-    };
-
-    /* USB clock source is already configured by rx_clock_power_init:
-     * PACKCR stays at reset default (UPLLSEL=0) and SCKCR2.UCK=/5 so
-     * UCK = 240 MHz / 5 = 48 MHz.  We only need to ungate the USB0
-     * module clock here. */
     *PRCR_R     = 0xA503U;
     *MSTPCRB_R &= ~(1UL << 19);
     *PRCR_R     = 0xA500U;
-    (void)SCKCR2_R;
-    (void)PACKCR_R;
+
     *SYSCFG_R   = 0x0000U;
     for (volatile uint32_t d = 0; d < 2400000U; d++) { __asm__ volatile("nop"); }
-    *SYSCFG_R  |= (1U << 0);
-    *SYSCFG_R  |= (1U << 10);
+    *SYSCFG_R  |= (1U << 0);  /* USBE */
+    *SYSCFG_R  |= (1U << 10); /* SCKE */
     for (volatile uint32_t d = 0; d < 2400000U; d++) { __asm__ volatile("nop"); }
+
     *DCPCFG_R   = 0x0000U;
     *DCPMAXP_R  = 64U;
     *DCPCTR_R   = 0x0001U;
     *BRDYENB_R  = 0x0001U;
     *BEMPENB_R  = 0x0001U;
     *INTENB0_R  = (uint16_t)((1U << 15) | (1U << 12) | (1U << 11) | (1U << 10) | (1U << 8));
-    *SYSCFG_R  |= (1U << 4);
 
-    /* Drive SETUP enumeration inline while the host completes bus reset,
-     * SET_ADDRESS and initial GET_DESCRIPTOR cycles.  ThreadX startup +
-     * comm_task transport-init together take ~100 ms which overruns the
-     * USB host's SETUP retry window if we hand off before the descriptors
-     * are read.  Run a bounded loop long enough to cover the host's
-     * enumeration sequence (~500 ms at 240 MHz) then fall through to
-     * tx_kernel_enter(); comm_task's 100 Hz polling takes over from
-     * there.  Intentionally *not* gating on DVSQ == Configured: our stub
-     * descriptors don't describe a fully-matched class so Linux may
-     * choose never to send SET_CONFIGURATION, which would leave us
-     * spinning forever. */
-    {
-      for (uint32_t spin = 0U; spin < 8000000U; spin++) {
-        uint16_t st = *INTSTS0_R;
+    *SYSCFG_R  |= (1U << 4); /* DPRPU */
+  }
 
-        if (st & (1U << 12)) {
-          *INTSTS0_R = (uint16_t)~(1U << 12);
-        }
-
-        if (st & (1U << 11)) {
-          uint16_t c = st & 7U;
-          if (c == 1U || c == 3U || c == 5U) {
-            *INTSTS0_R = (uint16_t)~(1U << 3);
-            *DCPCTR_R |= 0x0001U;
-
-            uint16_t req  = *USBREQ_R;
-            uint16_t val  = *USBVAL_R;
-            uint16_t leng = *USBLENG_R;
-            uint8_t  br   = (uint8_t)(req >> 8);
-
-            if (br == 0x06U) {
-              uint8_t dt = (uint8_t)(val >> 8);
-              const uint8_t* src = (dt == 1U) ? s_dev : (dt == 2U) ? s_cfg : (const uint8_t*)0;
-              if (src) {
-                uint16_t sz = (leng < 18U) ? leng : 18U;
-                *CFIFOSEL_R = (1U << 5);
-                while (!(*CFIFOCTR_R & (1U << 13))) {}
-                *CFIFOCTR_R |= (1U << 14);
-                while (*CFIFOCTR_R & (1U << 14)) {}
-                for (uint16_t i = 0; i < sz; i++) { *CFIFO_R8 = src[i]; }
-                *CFIFOCTR_R |= (1U << 15);
-                *DCPCTR_R |= (1U << 2);
-              } else {
-                *DCPCTR_R = (uint16_t)((*DCPCTR_R & ~3U) | 2U);
-              }
-            } else if (br == 0x05U) {
-              *USBADDR_R = val & 0x7FU;
-              *DCPCTR_R |= (1U << 2);
-            } else if (br == 0x09U) {
-              *DCPCTR_R |= (1U << 2);
-            } else if (br == 0x00U) {
-              *CFIFOSEL_R = (1U << 5);
-              while (!(*CFIFOCTR_R & (1U << 13))) {}
-              *CFIFOCTR_R |= (1U << 14);
-              while (*CFIFOCTR_R & (1U << 14)) {}
-              *CFIFO_R8 = 0;
-              *CFIFO_R8 = 0;
-              *CFIFOCTR_R |= (1U << 15);
-            } else {
-              *DCPCTR_R = (uint16_t)((*DCPCTR_R & ~3U) | 2U);
-            }
-          }
-          *INTSTS0_R = (uint16_t)~(1U << 11);
-        }
-
-        if (st & (1U << 8))  { *BRDYSTS_R = 0; *INTSTS0_R = (uint16_t)~(1U << 8);  }
-        if (st & (1U << 10)) { *BEMPSTS_R = 0; *INTSTS0_R = (uint16_t)~(1U << 10); }
-      }
-    }
+  /* Service SETUP inline via the production dispatcher during the
+   * ThreadX boot gap.  rx_usb_isr_handler routes CTRT into
+   * rx_usb_cdc_handle_setup, which serves the real 3-port CDC composite
+   * descriptor (207-byte config) -- so the host sees CDC interfaces and
+   * creates one ttyACM per port. */
+  for (uint32_t spin = 0U; spin < 80000000U; spin++) {
+    rx_usb_isr_handler();
   }
 
   /* Start the ThreadX scheduler - should never return */

@@ -496,6 +496,28 @@ typedef enum : uint16_t {
   k_min_transfer_size          = 0,  /**< Minimum data transfer size (no data) */
 } usb_hw_timing_t;
 
+/**
+ * @brief Busy-wait ~`ms` milliseconds using NOP loops.
+ *
+ * @details
+ * rx_usb_hw_init is called both pre-kernel (from `main()` before
+ * `tx_kernel_enter()`) and post-kernel (from tasks).  tx_thread_sleep()
+ * only works in the latter case.  During init the caller doesn't need
+ * cooperative scheduling anyway -- the USB PLL just needs a few ms of
+ * wall-clock time to stabilise -- so a tight busy-wait works in both
+ * contexts.  240 MHz ICLK, ~5 cycles per volatile-heavy iteration ->
+ * about 48 000 iterations per millisecond.
+ */
+static void internal_usb_busy_wait_ms(const uint32_t ms)
+{
+  const uint32_t loops_per_ms = 48000U;
+  volatile uint32_t spin = ms * loops_per_ms;
+  while (spin > 0U) {
+    __asm__ volatile("nop");
+    spin--;
+  }
+}
+
 /** @brief USB SYSCFG register values */
 typedef enum : uint16_t {
   k_usb_syscfg_disabled = 0x0000, /**< USB module disabled (all bits clear) */
@@ -513,9 +535,11 @@ typedef enum : uint16_t {
 static volatile uint16_t* const k_packcr_reg = (volatile uint16_t*)0x00080044U;
 
 /** @brief FIFO operation timeouts */
-typedef enum : uint16_t {
-  k_usb_fifo_timeout_iterations = 1000, /**< FIFO ready timeout (busy-wait iterations) */
-  k_usb_fifo_timeout_expired    = 0,    /**< Timeout counter expired */
+typedef enum : uint32_t {
+  k_usb_fifo_timeout_iterations = 1000000U, /**< FIFO ready timeout: ~20 ms at 240 MHz,
+                                             *  enough for a Full-Speed USB packet
+                                             *  round-trip (~100 us) across retries. */
+  k_usb_fifo_timeout_expired    = 0U,       /**< Timeout counter expired */
 } usb_fifo_constants_t;
 
 /** @brief USB address mask */
@@ -580,12 +604,10 @@ static void internal_usb_enable_module_clock(void)
   /* Disable USB module before configuration */
   usb0()->syscfg = k_usb_syscfg_disabled;
 
-  /* Wait for USB PLL to stabilize (USB requires 48 MHz clock from main PLL) */
-  uint32_t pll_ticks = k_usb_pll_stabilization_ms / k_threadx_ms_per_tick;
-  if (pll_ticks == k_min_transfer_size) {
-    pll_ticks = k_min_sleep_ticks;
-  }
-  tx_thread_sleep(pll_ticks);
+  /* Wait for USB PLL to stabilize (USB requires 48 MHz clock from main PLL).
+   * Busy-wait instead of tx_thread_sleep so this is safe to call from
+   * both pre-kernel (main()) and ThreadX-task context. */
+  internal_usb_busy_wait_ms(k_usb_pll_stabilization_ms);
 }
 
 /**
@@ -603,12 +625,8 @@ static void internal_usb_configure_clock(void)
   usb0()->syscfg |= k_usb_syscfg_usbe;
   usb0()->syscfg |= k_usb_syscfg_scke;
 
-  /* Wait for clock to stabilize */
-  uint32_t clock_ticks = k_usb_clock_stabilization_ms / k_threadx_ms_per_tick;
-  if (clock_ticks == k_min_transfer_size) {
-    clock_ticks = k_min_sleep_ticks;
-  }
-  tx_thread_sleep(clock_ticks);
+  /* Wait for clock to stabilize (see internal_usb_busy_wait_ms rationale). */
+  internal_usb_busy_wait_ms(k_usb_clock_stabilization_ms);
 }
 
 /**
@@ -878,20 +896,50 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     return k_min_transfer_size;
   }
 
-  /* Write data to FIFO one byte at a time (matches MBW=8 above).
-   * The CFIFO register is declared `volatile uint16_t`, so cast its
-   * address to `uint8_t *` for the byte-wide writes the hardware expects
-   * in 8-bit MBW mode.  The address is the same (USB0 + 0x14); the
-   * hardware decides the width from MBW. */
-  volatile uint8_t* cfifo_byte = (volatile uint8_t*)&usb0()->cfifo;
-  for (uint32_t i = 0; i < len; i++) {
-    *cfifo_byte = data[i];
+  /*
+   * The DCP's CFIFO has a max-packet-size window (DCPMAXP, 64 B for
+   * Full Speed) -- writing more than one packet's worth in a single
+   * BVAL commit overflows the buffer and the extra bytes never reach
+   * the host.  That's why GET_DESCRIPTOR(Device, 18) succeeded but
+   * GET_DESCRIPTOR(Configuration, 207) used to time out with
+   * "can't read configurations, error -110".
+   *
+   * Chunk the transfer into <= DCPMAXP-byte packets, commit each with
+   * BVAL, and wait for the hardware to drain it (BEMP -> FRDY) before
+   * loading the next.  For `len <= DCPMAXP` this degenerates to a
+   * single pass, preserving the earlier behaviour for small requests.
+   */
+  volatile uint8_t* const cfifo_byte = (volatile uint8_t*)&usb0()->cfifo;
+  const uint16_t          chunk_max  = (pipe == k_usb_pipe_min)
+                                         ? (uint16_t)usb0()->dcpmaxp
+                                         : (uint16_t)usb0()->pipemaxp;
+  uint32_t                written    = 0;
+
+  while (written < len) {
+    /* Wait for FRDY before writing: after BVAL on the previous chunk
+     * the hardware holds FRDY low until the packet has been drained to
+     * the bus, and writes issued during that window are silently
+     * dropped (CFIFO has one packet of capacity, not DCPMAXP * N). */
+    timeout = k_usb_fifo_timeout_iterations;
+    while (!(usb0()->cfifoctr & k_usb_fifoctr_frdy) && timeout--) {
+      __asm__ volatile("nop");
+    }
+    if (timeout == k_usb_fifo_timeout_expired) {
+      rx_log_error(s_tag, "FIFO refill timeout");
+      return written;
+    }
+
+    const uint32_t remaining = len - written;
+    const uint32_t chunk     = (remaining < chunk_max) ? remaining : chunk_max;
+
+    for (uint32_t i = 0; i < chunk; i++) {
+      *cfifo_byte = data[written + i];
+    }
+    usb0()->cfifoctr |= k_usb_fifoctr_bval;
+    written += chunk;
   }
 
-  /* Set buffer valid to signal data ready for transmission */
-  usb0()->cfifoctr |= k_usb_fifoctr_bval;
-
-  return len;
+  return written;
 }
 
 /**

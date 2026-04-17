@@ -1505,6 +1505,14 @@ static void internal_send_descriptor(const uint8_t* desc, uint16_t desc_len, uin
   if (written != len) {
     rx_log_error(s_tag, "Descriptor write incomplete");
   }
+
+  /* Set CCPL to complete the control-read status stage.  The RX72N HW
+   * manual requires firmware to write CCPL = 1 in DCPCTR after the data
+   * stage so the hardware can ACK the host's OUT ZLP; without this the
+   * control transfer never terminates and the host's GET_DESCRIPTOR
+   * times out with -110 even though the descriptor bytes made it out
+   * on the bus.  Mirrors usb_test/hoco_pid_fix.c. */
+  usb0()->dcpctr |= k_usb_dcpctr_ccpl;
 }
 
 /**

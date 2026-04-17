@@ -453,6 +453,15 @@ static void internal_handle_ctrt_interrupt(void)
        * mid-read.
        */
       usb0()->intsts0 = (uint16_t) ~k_usb_intsts0_valid;
+      /*
+       * CRITICAL: the RX72N hardware sets DCPCTR.PID = NAK automatically
+       * on SETUP reception (manual section 40, DCPCTR field description).
+       * Firmware MUST restore PID = BUF here, BEFORE preparing the data
+       * stage, or the peripheral will NAK every IN token from the host
+       * and enumeration stalls with GET_DESCRIPTOR(Device) timeouts.
+       * Mirrors usb_test/hoco_pid_fix.c.
+       */
+      usb0()->dcpctr |= k_usb_dcpctr_pid_buf;
       rx_usb_cdc_handle_setup();
       break;
 
