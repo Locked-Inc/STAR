@@ -17,6 +17,10 @@
  * ring are counted and dropped -- preferable to blocking real-time motor
  * control code on serial line drain.
  *
+ * @author Locked, Inc.
+ * @date 2026-04-17
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 
