@@ -49,11 +49,12 @@ AD2_SERIAL_NUMBERS = [
     "210321A36AA3",  # AD2 #0 (A)
     "210321A36AAE",  # AD2 #1 (B)
     "210321A2AE49",  # AD2 #2 (C)
-    # AD2 #3 (D) and AD2 #4 (E): serials pending. Run `--auto-map`
-    # with all five units plugged in, note the two newly-enumerated
+    # AD2 #3 (D), #4 (E), #5 (F): serials pending. Run `--auto-map`
+    # with all six units plugged in, note the three newly-enumerated
     # SNs, and paste them here.
     "",              # AD2 #3 (D) -- PLACEHOLDER, replace with SN
     "",              # AD2 #4 (E) -- PLACEHOLDER, replace with SN
+    "",              # AD2 #5 (F) -- PLACEHOLDER, replace with SN
 ]
 
 CHANNELS_PER_AD2 = 16  # DIO 0..15 on each AD2
@@ -121,6 +122,15 @@ CHANNEL_TO_PIN: dict[tuple[int, int], str] = {
     (4, 10): "P25", (4, 11): "P24",
     (4, 12): "P23", (4, 13): "P22", (4, 14): "P21",
     (4, 15): "PD0",
+    # AD2 F -- SN pending (Col 7 rows 2-15 + Col 2 rows 12-15)
+    (5,  0): "PD1", (5,  1): "PD2", (5,  2): "PD3",
+    (5,  3): "PD4", (5,  4): "PD5", (5,  5): "PD6",
+    (5,  6): "PD7",
+    (5,  7): "P60",
+    (5,  8): "P61", (5,  9): "P62",
+    (5, 10): "P63", (5, 11): "P64",
+    (5, 12): "P50", (5, 13): "P51",
+    (5, 14): "P52", (5, 15): "P53",
 }
 
 # ============================================================================

@@ -8,21 +8,25 @@ each breakout pin number to an RX72N port/pin name.
 
 ## Verification status
 
-**AD2 E wired 2026-04-17 -- full-board sweep with all five AD2s not yet
-re-run.** Added a fifth unit covering **all of Col 1** plus
-**Col 7 Row 1** (PD0). 14 of AD2 E's 16 channels are usable GPIOs;
-**DIO 6 (PJ5) and DIO 7 (PJ3) are JTAG TMS/TDO** and are excluded
-from the firmware sweep in `main.c` (driving them while E2 Lite has
-the debug interface latched hangs the MCU). Total wired-and-verified
-pins expected at the next sweep: **76/76**.
+**AD2 F wired 2026-04-17 -- full-board sweep with all six AD2s not yet
+re-run.** Added a sixth unit covering **Col 7 rows 2-15** (PD1-PD7,
+P60, P61-P64) plus **Col 2 rows 12-15** (P53, P52, P51, P50). All 16
+channels live. Total wired-and-verified pins expected at the next
+sweep: **92/92**.
+
+**AD2 E wired 2026-04-17.** Covers **all of Col 1** plus **Col 7 Row 1**
+(PD0). 14 of AD2 E's 16 channels are usable GPIOs; **DIO 6 (PJ5) and
+DIO 7 (PJ3) are JTAG TMS/TDO** and are excluded from the firmware
+sweep in `main.c` (driving them while E2 Lite has the debug interface
+latched hangs the MCU).
 
 **AD2 D wired 2026-04-17.** Covers **Col 9 rows 1-3** (PE2, PE1, PE0)
 plus **all of Col 8** (P07, P40-P47, P90-P93).
 
 Re-run `./venv/bin/python3 gpio_verify.py --verbose` to validate all
-78 pins end-to-end. AD2 D and AD2 E serials are pending - run
-`./venv/bin/python3 gpio_verify.py --auto-map` once with all five
-units plugged in, note the two newly-enumerated SNs, and paste them
+92 pins end-to-end. AD2 D, AD2 E, and AD2 F serials are pending - run
+`./venv/bin/python3 gpio_verify.py --auto-map` once with all six
+units plugged in, note the three newly-enumerated SNs, and paste them
 into `AD2_SERIAL_NUMBERS` in `gpio_verify.py` alongside A/B/C.
 
 **Last full-board sweep: 2026-04-16 -- PASS (46/46 wired pins).** Captured
@@ -241,6 +245,23 @@ CHANNEL_TO_PIN = {
     ( 4, 13): "P22",
     ( 4, 14): "P21",
     ( 4, 15): "PD0",
+    # AD2 F -- SN <pending, run --auto-map>
+    ( 5,  0): "PD1",
+    ( 5,  1): "PD2",
+    ( 5,  2): "PD3",
+    ( 5,  3): "PD4",
+    ( 5,  4): "PD5",
+    ( 5,  5): "PD6",
+    ( 5,  6): "PD7",
+    ( 5,  7): "P60",
+    ( 5,  8): "P61",
+    ( 5,  9): "P62",
+    ( 5, 10): "P63",
+    ( 5, 11): "P64",
+    ( 5, 12): "P50",
+    ( 5, 13): "P51",
+    ( 5, 14): "P52",
+    ( 5, 15): "P53",
 }
 ```
 
@@ -436,11 +457,66 @@ faster iteration.
     ( 4, 15): "PD0",
 ```
 
+## AD2 F -- SN `<pending, run --auto-map>` (index 5)
+
+Wired Col 7 top-to-bottom for DIO 0-11 (pins 125 down to 112, jumping
+over VCC at pin 118 and VSS at pin 116), then across to Col 2 bottom-
+to-top for DIO 12-15 (pins 56 down to 53). All 16 channels are live.
+
+| DIO | Breakout pin | GPIO | Col/Row (pin_map) | Notes |
+|-----|--------------|------|-------------------|-------|
+|  0  |        125   | PD1  | Col 7, Row 2      | OK    |
+|  1  |        124   | PD2  | Col 7, Row 3      | OK    |
+|  2  |        123   | PD3  | Col 7, Row 4      | OK    |
+|  3  |        122   | PD4  | Col 7, Row 5      | OK    |
+|  4  |        121   | PD5  | Col 7, Row 6      | OK    |
+|  5  |        120   | PD6  | Col 7, Row 7      | OK    |
+|  6  |        119   | PD7  | Col 7, Row 8      | OK    |
+|  7  |        117   | P60  | Col 7, Row 10     | OK (jumped over VCC at pin 118) |
+|  8  |        115   | P61  | Col 7, Row 12     | OK (jumped over VSS at pin 116) |
+|  9  |        114   | P62  | Col 7, Row 13     | OK    |
+| 10  |        113   | P63  | Col 7, Row 14     | OK    |
+| 11  |        112   | P64  | Col 7, Row 15     | OK    |
+| 12  |         56   | P50  | Col 2, Row 15     | OK    |
+| 13  |         55   | P51  | Col 2, Row 14     | OK    |
+| 14  |         54   | P52  | Col 2, Row 13     | OK    |
+| 15  |         53   | P53  | Col 2, Row 12     | OK    |
+
+### Summary for AD2 F
+
+- 16/16 channels live (no VCC/VSS hits, no JTAG dead channels)
+- Zero overlap with AD2 A, B, C, D, or E
+- Completes Port D (PD1-PD7 here, PD0 already on AD2 E)
+- Completes the P6x block (P60-P64)
+- Picks up P50-P53 on Port 5
+
+### Ready-to-paste CHANNEL_TO_PIN additions
+
+```python
+    # AD2 F -- SN <pending>
+    ( 5,  0): "PD1",
+    ( 5,  1): "PD2",
+    ( 5,  2): "PD3",
+    ( 5,  3): "PD4",
+    ( 5,  4): "PD5",
+    ( 5,  5): "PD6",
+    ( 5,  6): "PD7",
+    ( 5,  7): "P60",
+    ( 5,  8): "P61",
+    ( 5,  9): "P62",
+    ( 5, 10): "P63",
+    ( 5, 11): "P64",
+    ( 5, 12): "P50",
+    ( 5, 13): "P51",
+    ( 5, 14): "P52",
+    ( 5, 15): "P53",
+```
+
 ## Identification method used
 
 Unplugged the second AD2, re-enumerated with `pydwf`. Whichever SN
 stayed enumerated is AD2 A. `210321A36AA3` was the one that remained,
 so the unplugged unit is `210321A36AAE` (AD2 B). AD2 C
 (`210321A2AE49`) was added after both A and B were already identified.
-AD2 D and AD2 E's serials are pending the next `gpio_verify.py
---auto-map` run with all five units plugged in simultaneously.
+AD2 D, AD2 E, and AD2 F serials are pending the next `gpio_verify.py
+--auto-map` run with all six units plugged in simultaneously.
