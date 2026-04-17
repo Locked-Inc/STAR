@@ -2401,11 +2401,15 @@ int main(void)
       0x09, 0x04, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00,
     };
 
+    /* USB clock source is already configured by rx_clock_power_init:
+     * PACKCR stays at reset default (UPLLSEL=0) and SCKCR2.UCK=/5 so
+     * UCK = 240 MHz / 5 = 48 MHz.  We only need to ungate the USB0
+     * module clock here. */
     *PRCR_R     = 0xA503U;
-    *SCKCR2_R   = 0x0041U;
-    *PACKCR_R   = 0x0001U;
     *MSTPCRB_R &= ~(1UL << 19);
     *PRCR_R     = 0xA500U;
+    (void)SCKCR2_R;
+    (void)PACKCR_R;
     *SYSCFG_R   = 0x0000U;
     for (volatile uint32_t d = 0; d < 2400000U; d++) { __asm__ volatile("nop"); }
     *SYSCFG_R  |= (1U << 0);
@@ -2419,63 +2423,80 @@ int main(void)
     *INTENB0_R  = (uint16_t)((1U << 15) | (1U << 12) | (1U << 11) | (1U << 10) | (1U << 8));
     *SYSCFG_R  |= (1U << 4);
 
-    for (;;) {
-      const uint16_t st = *INTSTS0_R;
-      if ((st & (1U << 12)) != 0U) {
-        *INTSTS0_R = (uint16_t)~(1U << 12);
-      }
-      if ((st & (1U << 11)) != 0U) {
-        const uint16_t c = st & 0x7U;
-        if (c == 1U || c == 3U || c == 5U) {
-          *INTSTS0_R = (uint16_t)~(1U << 3);
-          *DCPCTR_R  |= 0x0001U;
-          const uint16_t req = *USBREQ_R;
-          const uint16_t val = *USBVAL_R;
-          const uint16_t len = *USBLENG_R;
-          const uint8_t  br  = (uint8_t)(req >> 8);
-          if (br == 0x06U) {
-            const uint8_t  dt  = (uint8_t)(val >> 8);
-            const uint8_t* src = (dt == 1U) ? s_dev
-                               : (dt == 2U) ? s_cfg
-                                            : (const uint8_t*)0;
-            if (src != (const uint8_t*)0) {
-              const uint16_t s = (len < 18U) ? len : 18U;
+    /* Drive SETUP enumeration inline.  ThreadX startup takes ~100 ms and
+     * comm_task's transport-init adds more, which overruns the USB host's
+     * SETUP retry window if we wait to poll until after tx_kernel_enter.
+     * Loop here until we see DVSQ == Configured (3) for long enough that
+     * the host has completed enumeration, then fall through to ThreadX. */
+    {
+      uint32_t configured_streak = 0U;
+      for (;;) {
+        uint16_t st = *INTSTS0_R;
+
+        if (st & (1U << 12)) {
+          *INTSTS0_R = (uint16_t)~(1U << 12);
+        }
+
+        if (st & (1U << 11)) {
+          uint16_t c = st & 7U;
+          if (c == 1U || c == 3U || c == 5U) {
+            *INTSTS0_R = (uint16_t)~(1U << 3);
+            *DCPCTR_R |= 0x0001U;
+
+            uint16_t req  = *USBREQ_R;
+            uint16_t val  = *USBVAL_R;
+            uint16_t leng = *USBLENG_R;
+            uint8_t  br   = (uint8_t)(req >> 8);
+
+            if (br == 0x06U) {
+              uint8_t dt = (uint8_t)(val >> 8);
+              const uint8_t* src = (dt == 1U) ? s_dev : (dt == 2U) ? s_cfg : (const uint8_t*)0;
+              if (src) {
+                uint16_t sz = (leng < 18U) ? leng : 18U;
+                *CFIFOSEL_R = (1U << 5);
+                while (!(*CFIFOCTR_R & (1U << 13))) {}
+                *CFIFOCTR_R |= (1U << 14);
+                while (*CFIFOCTR_R & (1U << 14)) {}
+                for (uint16_t i = 0; i < sz; i++) { *CFIFO_R8 = src[i]; }
+                *CFIFOCTR_R |= (1U << 15);
+                *DCPCTR_R |= (1U << 2);
+              } else {
+                *DCPCTR_R = (uint16_t)((*DCPCTR_R & ~3U) | 2U);
+              }
+            } else if (br == 0x05U) {
+              *USBADDR_R = val & 0x7FU;
+              *DCPCTR_R |= (1U << 2);
+            } else if (br == 0x09U) {
+              *DCPCTR_R |= (1U << 2);
+            } else if (br == 0x00U) {
               *CFIFOSEL_R = (1U << 5);
-              while ((*CFIFOCTR_R & (1U << 13)) == 0U) { __asm__ volatile("nop"); }
+              while (!(*CFIFOCTR_R & (1U << 13))) {}
               *CFIFOCTR_R |= (1U << 14);
-              while ((*CFIFOCTR_R & (1U << 14)) != 0U) { __asm__ volatile("nop"); }
-              for (uint16_t i = 0; i < s; i++) { *CFIFO_R8 = src[i]; }
+              while (*CFIFOCTR_R & (1U << 14)) {}
+              *CFIFO_R8 = 0;
+              *CFIFO_R8 = 0;
               *CFIFOCTR_R |= (1U << 15);
-              *DCPCTR_R   |= (1U << 2);
             } else {
               *DCPCTR_R = (uint16_t)((*DCPCTR_R & ~3U) | 2U);
             }
-          } else if (br == 0x05U) {
-            *USBADDR_R = val & 0x7FU;
-            *DCPCTR_R |= (1U << 2);
-          } else if (br == 0x09U) {
-            *DCPCTR_R |= (1U << 2);
-          } else if (br == 0x00U) {
-            *CFIFOSEL_R = (1U << 5);
-            while ((*CFIFOCTR_R & (1U << 13)) == 0U) { __asm__ volatile("nop"); }
-            *CFIFOCTR_R |= (1U << 14);
-            while ((*CFIFOCTR_R & (1U << 14)) != 0U) { __asm__ volatile("nop"); }
-            *CFIFO_R8 = 0U;
-            *CFIFO_R8 = 0U;
-            *CFIFOCTR_R |= (1U << 15);
-          } else {
-            *DCPCTR_R = (uint16_t)((*DCPCTR_R & ~3U) | 2U);
           }
+          *INTSTS0_R = (uint16_t)~(1U << 11);
         }
-        *INTSTS0_R = (uint16_t)~(1U << 11);
-      }
-      if ((st & (1U << 8)) != 0U) {
-        *BRDYSTS_R = 0;
-        *INTSTS0_R = (uint16_t)~(1U << 8);
-      }
-      if ((st & (1U << 10)) != 0U) {
-        *BEMPSTS_R = 0;
-        *INTSTS0_R = (uint16_t)~(1U << 10);
+
+        if (st & (1U << 8))  { *BRDYSTS_R = 0; *INTSTS0_R = (uint16_t)~(1U << 8);  }
+        if (st & (1U << 10)) { *BEMPSTS_R = 0; *INTSTS0_R = (uint16_t)~(1U << 10); }
+
+        /* DVSQ = bits [6:4]. 3 = Configured. Require a sustained streak
+         * so we don't break out during a transient reset. */
+        uint16_t dvsq = (uint16_t)((*INTSTS0_R >> 4) & 0x7U);
+        if (dvsq >= 3U) {
+          configured_streak++;
+          if (configured_streak >= 500000U) {
+            break;
+          }
+        } else {
+          configured_streak = 0U;
+        }
       }
     }
   }
