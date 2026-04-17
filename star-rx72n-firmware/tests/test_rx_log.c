@@ -168,12 +168,17 @@ void test_rx_log_val_u32(void)
 
 void test_rx_log_val_err(void)
 {
-  /* rx_err_t is int32_t so _Generic dispatches to the _err (hex) handler. */
-  rx_log_error_val(k_tag, "err", k_rx_err_invalid_arg);
-  rx_log_warn_val(k_tag, "err", k_rx_err_invalid_arg);
-  rx_log_info_val(k_tag, "err", k_rx_err_invalid_arg);
-  rx_log_debug_val(k_tag, "err", k_rx_err_invalid_arg);
-  rx_log_verbose_val(k_tag, "err", k_rx_err_invalid_arg);
+  /* rx_err_t is int32_t so _Generic dispatches to the _err (hex) handler.
+   * The k_rx_err_* constants are uint16_t-backed (rx_err_codes_t), so they
+   * need widening to rx_err_t (int32_t) before the _Generic picks the
+   * right override -- passing the raw enum value would route to the _u16
+   * overload and miss the _err path the test is meant to cover. */
+  const rx_err_t err_val = k_rx_err_invalid_arg;
+  rx_log_error_val(k_tag, "err", err_val);
+  rx_log_warn_val(k_tag, "err", err_val);
+  rx_log_info_val(k_tag, "err", err_val);
+  rx_log_debug_val(k_tag, "err", err_val);
+  rx_log_verbose_val(k_tag, "err", err_val);
   TEST_PASS();
 }
 
