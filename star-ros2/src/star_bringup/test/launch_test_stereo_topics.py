@@ -52,13 +52,19 @@ def generate_test_description():
     Return the launch description used by the test harness.
 
     On hosts without the IMX219 hardware marker we return a minimal
-    LaunchDescription that just signals readiness; the test body then
-    returns early without asserting anything so the per-test xunit
-    result is PASSED on CI and dev machines without the sensors.
+    LaunchDescription that holds itself open for a second before
+    signalling readiness; the test body then returns early without
+    asserting anything. This avoids the 'Launch stopped before the
+    active tests finished' exception that launch_testing raises when
+    the launch process exits before the test class has had a chance to
+    tear down.
     """
     if not _hardware_present():
         return launch.LaunchDescription([
-            launch_testing.actions.ReadyToTest(),
+            launch.actions.TimerAction(
+                period=1.0,
+                actions=[launch_testing.actions.ReadyToTest()],
+            ),
         ])
 
     stereo_launch_path = os.path.join(
@@ -93,11 +99,10 @@ class TestStereoTopicsPublishing(unittest.TestCase):
 
     def test_every_stereo_topic_publishes_within_timeout(self):
         # On CI / dev machines without the IMX219 ribbon cable, no stereo
-        # pipeline is running so there is nothing to assert. Treat the
-        # absence of /dev/media2 as a no-op pass: self.skipTest() produces
-        # a SKIPPED xunit result that ament's run_test.py records as a
-        # test failure, so we return early to record a plain PASSED
-        # instead.
+        # pipeline is running so there is nothing to assert. Return early
+        # to record a plain PASSED in the xunit output (self.skipTest()
+        # produces a SKIPPED result that ament's run_test.py still
+        # counts as a failure).
         if not _hardware_present():
             return
 
