@@ -86,6 +86,10 @@ describe('useOperatorControls', () => {
     expect(sendEStopRelease).toHaveBeenCalledTimes(1);
     expect(useDashboardStore.getState().eStopActive).toBe(false);
     expect(result.current.coveragePercent).toBeCloseTo(coverageBeforeEStop);
+    expect(result.current.autonomyRunning).toBe(false);
+
+    rerender({ eStopActive: false });
+
     expect(result.current.autonomyRunning).toBe(true);
 
     const fallbackAlert = useDashboardStore

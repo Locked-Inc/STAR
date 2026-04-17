@@ -176,11 +176,11 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
           rateLabel: formatObservedRate(observedRateHz),
         };
       }),
-    [lidarPointCount, observedRatesByPacketType, odometry, packetTopics, sampledAtMs, telemetry?.imu],
+    [lidarPointCount, observedRatesByPacketType, odometry, packetTopics, sampledAtMs, telemetry],
   );
 
   const logLines = useMemo<LogLine[]>(() => {
-    const fallbackAlertTimestampMs = Date.now();
+    const fallbackAlertTimestampMs = sampledAtMs > 0 ? sampledAtMs : 0;
 
     const packetLogs: LogLine[] = packets
       .filter((packet) => packet.type !== 'battery')
@@ -207,7 +207,7 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
     });
 
     return [...packetLogs, ...alertLogs].sort((left, right) => right.tsMs - left.tsMs).slice(0, maxTerminalLogLines);
-  }, [alerts, packets]);
+  }, [alerts, packets, sampledAtMs]);
 
   return (
     <main className="app-shell app-shell--ros-view">

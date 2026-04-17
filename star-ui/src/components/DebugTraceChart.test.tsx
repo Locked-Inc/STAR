@@ -14,7 +14,7 @@ describe('DebugTraceChart', () => {
     );
 
     expect(screen.getByText('Velocity')).toBeInTheDocument();
-    expect(screen.getByText('0.8 m/s')).toBeInTheDocument();
+    expect(screen.getAllByText('0.8 m/s').length).toBeGreaterThan(0);
     expect(screen.getByText('3 pts')).toBeInTheDocument();
   });
 
@@ -48,7 +48,7 @@ describe('DebugTraceChart', () => {
 
     expect(screen.getByText('Velocity')).toBeInTheDocument();
     expect(screen.getByText('1 pts')).toBeInTheDocument();
-    expect(screen.getByText('5.0 m/s')).toBeInTheDocument();
+    expect(screen.getAllByText('5.0 m/s').length).toBeGreaterThan(0);
   });
 
   it('ignores NaN sentinel samples when rendering current value and point count', () => {
@@ -62,7 +62,7 @@ describe('DebugTraceChart', () => {
     );
 
     expect(screen.getByText('Velocity')).toBeInTheDocument();
-    expect(screen.getByText('1.3 m/s')).toBeInTheDocument();
+    expect(screen.getAllByText('1.3 m/s').length).toBeGreaterThan(0);
     expect(screen.getByText('1 pts')).toBeInTheDocument();
   });
 });

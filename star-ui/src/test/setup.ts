@@ -4,12 +4,19 @@ import { vi } from 'vitest';
 // Minimal stub so components that call ctx.<method> don't crash under jsdom.
 HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
   canvas: document.createElement('canvas'),
+  createLinearGradient: vi.fn(() => ({
+    addColorStop: vi.fn(),
+  })),
   clearRect: vi.fn(),
   fillRect: vi.fn(),
   beginPath: vi.fn(),
   moveTo: vi.fn(),
   lineTo: vi.fn(),
   arc: vi.fn(),
+  closePath: vi.fn(),
+  translate: vi.fn(),
+  rotate: vi.fn(),
+  strokeRect: vi.fn(),
   stroke: vi.fn(),
   fill: vi.fn(),
   save: vi.fn(),
