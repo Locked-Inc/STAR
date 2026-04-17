@@ -1,4 +1,4 @@
-import { AlertLevel } from '../proto/star/v1/ui';
+import { AlertLevel, type Alert } from '../proto/star/v1/ui';
 import { RobotMode } from '../proto/star/v1/telemetry';
 import type { ConnectionState } from '../store/dashboardStore';
 import type { RosTopicDefinition, Tone, UiMode } from '../types/dashboard';
@@ -14,11 +14,32 @@ export const wheelDiameterMeters = 0.2;
 export const wheelCircumferenceMeters = Math.PI * wheelDiameterMeters;
 export const secondsPerMinute = 60;
 
+export const estopReasonUserUiButton = 'user_ui_button';
+
 const validAlertTimestampFloorMs = Date.parse('2020-01-01T00:00:00Z');
 const microsecondsPerMillisecond = 1000;
 
 export function msToUs(milliseconds: number): number {
   return milliseconds * microsecondsPerMillisecond;
+}
+
+/**
+ * Build a UI-sourced alert with automatic timestamp handling.
+ * Centralizes alert construction to ensure consistent source and timestamp.
+ *
+ * @param code Machine-readable alert code
+ * @param level Alert severity level
+ * @param message Human-readable alert description
+ * @returns Alert object with source='ui' and current timestamp
+ */
+export function buildUiAlert(code: string, level: AlertLevel, message: string): Alert {
+  return {
+    code,
+    level,
+    message,
+    source: 'ui',
+    timestampUs: String(msToUs(Date.now())),
+  };
 }
 
 export const demoModeEnabled = import.meta.env.VITE_DEMO_MODE === 'true';
@@ -160,9 +181,6 @@ export function toneFromScore(score: number | undefined): Tone {
 export function toneFromBoolean(active: boolean | undefined, warning = false): Tone {
   if (active == null) {
     return 'neutral';
-  }
-  if (active && !warning) {
-    return 'good';
   }
   if (warning) {
     return 'warn';

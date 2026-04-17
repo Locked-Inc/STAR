@@ -1,5 +1,17 @@
+/**
+ * `@file` useOperatorControls.ts
+ * `@brief` Operator UI controls hook: autonomy mode, mission progress, and E-stop toggle.
+ *
+ * Centralizes local operator state (selected mode, coverage, task completion,
+ * autonomy request) and the handlers that bridge it to the dashboard store
+ * and the STAR WebSocket/REST control surface.
+ *
+ * `@copyright` Copyright (c) 2026 Locked Inc.
+ * `@license` <project-standard-license-identifier>
+*/
+
 import { useEffect, useRef, useState } from 'react';
-import { coverageStepPercent, coverageTickIntervalMs, msToUs } from '../lib/dashboard';
+import { buildUiAlert, coverageStepPercent, coverageTickIntervalMs, estopReasonUserUiButton } from '../lib/dashboard';
 import { AlertLevel } from '../proto/star/v1/ui';
 import { useDashboardStore } from '../store/dashboardStore';
 import type { Tone, UiMode } from '../types/dashboard';
@@ -7,7 +19,6 @@ import type { Tone, UiMode } from '../types/dashboard';
 interface EStopResumeSnapshot {
   coveragePercent: number;
   selectedMode: UiMode;
-  taskCompleted: boolean;
   wasAutonomyRequested: boolean;
 }
 
@@ -41,16 +52,16 @@ export function useOperatorControls({
   sendEStop,
   sendEStopRelease,
 }: UseOperatorControlsArgs): OperatorControls {
-  const mountedRef = useRef<boolean>(false);
+  const mountedRef = useRef<boolean>(false); // Flipped true on mount, false on unmount; gates post-await state writes.
   const [selectedMode, setSelectedMode] = useState<UiMode>('autonomous');
   const [autonomyRequested, setAutonomyRequested] = useState(false);
   const [coveragePercent, setCoveragePercent] = useState(0);
-  const [taskCompleted, setTaskCompleted] = useState(false);
   const estopResumeRef = useRef<EStopResumeSnapshot | null>(null);
 
   const uiMode = reportedMode ?? selectedMode;
   const modeChangeDisabled = eStopActive || reportedMode !== null;
   const missionProgressAvailable = demoMode;
+  const taskCompleted = coveragePercent >= 100;
   const autonomyRunning = demoMode && autonomyRequested && uiMode === 'autonomous' && !eStopActive && !taskCompleted;
 
   useEffect(() => {
@@ -67,18 +78,23 @@ export function useOperatorControls({
     }
 
     const interval = window.setInterval(() => {
-      setCoveragePercent((currentCoverage) => {
-        const nextCoverage = Math.min(100, currentCoverage + coverageStepPercent);
-        if (nextCoverage >= 100) {
-          setTaskCompleted(true);
-          setAutonomyRequested(false);
-        }
-        return nextCoverage;
-      });
+      setCoveragePercent((currentCoverage) => Math.min(100, currentCoverage + coverageStepPercent));
     }, coverageTickIntervalMs);
 
     return () => window.clearInterval(interval);
   }, [autonomyRunning]);
+
+  useEffect(() => {
+    if (coveragePercent < 100 || !autonomyRequested) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setAutonomyRequested(false);
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, [coveragePercent, autonomyRequested]);
 
   async function handleEStopToggle(): Promise<void> {
     const store = useDashboardStore.getState();
@@ -96,18 +112,17 @@ export function useOperatorControls({
       if (snapshot) {
         setSelectedMode(snapshot.selectedMode);
         setCoveragePercent(snapshot.coveragePercent);
-        setTaskCompleted(snapshot.taskCompleted);
         setAutonomyRequested(snapshot.wasAutonomyRequested);
       }
 
       if (!released) {
-        store.addAlert({
-          code: 'ESTOP_RESUME_LOCAL',
-          level: AlertLevel.WARN,
-          message: 'Resume applied locally; backend release confirmation was not received.',
-          source: 'ui',
-          timestampUs: String(msToUs(Date.now())),
-        });
+        store.addAlert(
+          buildUiAlert(
+            'ESTOP_RESUME_LOCAL',
+            AlertLevel.WARN,
+            'Resume applied locally; backend release confirmation was not received.',
+          ),
+        );
       }
       return;
     }
@@ -115,11 +130,10 @@ export function useOperatorControls({
     estopResumeRef.current = {
       coveragePercent,
       selectedMode,
-      taskCompleted,
       wasAutonomyRequested: autonomyRequested,
     };
     setAutonomyRequested(false);
-    sendEStop('user_ui_button');
+    sendEStop(estopReasonUserUiButton);
     store.triggerEStop();
   }
 
@@ -133,7 +147,6 @@ export function useOperatorControls({
       if (nextMode === 'manual') {
         setAutonomyRequested(false);
       } else {
-        setTaskCompleted(false);
         setCoveragePercent(0);
       }
       return nextMode;
@@ -142,17 +155,16 @@ export function useOperatorControls({
 
   function handleAutonomyStart(): void {
     if (!demoMode) {
-      useDashboardStore.getState().addAlert({
-        code: 'MISSION_PROGRESS_UNAVAILABLE',
-        level: AlertLevel.INFO,
-        message: 'Live mission progress is unavailable without an operator demo feed.',
-        source: 'ui',
-        timestampUs: String(msToUs(Date.now())),
-      });
+      useDashboardStore.getState().addAlert(
+        buildUiAlert(
+          'MISSION_PROGRESS_UNAVAILABLE',
+          AlertLevel.INFO,
+          'Live mission progress is unavailable without an operator demo feed.',
+        ),
+      );
       return;
     }
 
-    setTaskCompleted(false);
     setCoveragePercent(0);
     setAutonomyRequested(true);
   }
