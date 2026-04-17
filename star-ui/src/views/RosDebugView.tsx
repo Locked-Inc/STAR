@@ -37,6 +37,8 @@ const demoParameterCards = [
   { label: 'controller_frequency', value: '50 Hz' },
 ];
 
+const maxTerminalLogLines = 20;
+
 interface RosDebugViewProps {
   navigate: (route: AppRoute) => void;
 }
@@ -102,9 +104,10 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
   );
 
   const logLines = useMemo<LogLine[]>(() => {
+    const fallbackAlertTimestampMs = Date.now();
+
     const packetLogs: LogLine[] = packets
       .filter((packet) => packet.type !== 'battery')
-      .slice(0, 14)
       .map((packet): LogLine => ({
         key: `packet-${packet.tsMs}-${packet.seq}-${packet.type}`,
         tsMs: packet.tsMs,
@@ -114,16 +117,20 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
         emphasis: packet.type,
       }));
 
-    const alertLogs: LogLine[] = alerts.slice(0, 10).map((alert, index): LogLine => ({
-      key: `alert-${alert.code}-${alert.timestampUs}-${index}`,
-      tsMs: parseTimestampUs(alert.timestampUs) ?? 0,
-      tone: toneFromLevel(alert.level),
-      source: levelLabel(alert.level),
-      message: `${alert.source || 'system'}: ${alert.message}`,
-      emphasis: alert.code || 'alert',
-    }));
+    const alertLogs: LogLine[] = alerts.map((alert, index): LogLine => {
+      const parsedTimestampMs = parseTimestampUs(alert.timestampUs);
 
-    return [...packetLogs, ...alertLogs].sort((left, right) => right.tsMs - left.tsMs).slice(0, 20);
+      return {
+        key: `alert-${alert.code}-${alert.timestampUs}-${index}`,
+        tsMs: parsedTimestampMs ?? fallbackAlertTimestampMs,
+        tone: toneFromLevel(alert.level),
+        source: levelLabel(alert.level),
+        message: `${alert.source || 'system'}: ${alert.message}`,
+        emphasis: alert.code || 'alert',
+      };
+    });
+
+    return [...packetLogs, ...alertLogs].sort((left, right) => right.tsMs - left.tsMs).slice(0, maxTerminalLogLines);
   }, [alerts, packets]);
 
   return (
