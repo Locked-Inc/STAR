@@ -60,7 +60,7 @@ MHz, giving ICLK 96 MHz and PCKB 48 MHz.
 
 ## Files
 
-```
+```text
 gpio_test/
   README.md           -- this file
   pin_map.md          -- breakout pin-to-GPIO silkscreen map

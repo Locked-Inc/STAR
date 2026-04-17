@@ -583,7 +583,7 @@ def main() -> None:
     if args.auto_map and args.cycles < 2:
         args.cycles = 2
 
-    print(f"GPIO Breakout Board Verification")
+    print("GPIO Breakout Board Verification")
     print(f"  Pins:        {NUM_PINS}")
     print(f"  Sample rate: {args.sample_rate} Hz")
     print(f"  Cycle time:  {CYCLE_DURATION_MS} ms")

@@ -25,7 +25,7 @@ Everything host-side is native arm64 -- no Rosetta, no emulation.
 | `pydwf` 1.1.19 + Python venv  | `star-rx72n-firmware/gpio_test/host/venv/`      | AD2 capture + verify                |
 | GNURX 14.2.0.202511           | inside dev container at `/opt/gnurx/bin/`       | `rx-elf-gcc` cross-compiler         |
 
-The dev container (`.devcontainer/devcontainer.json` → root `Dockerfile`)
+The dev container (`.devcontainer/devcontainer.json` -> root `Dockerfile`)
 forces `linux/amd64` under QEMU so the GNURX installer runs. That's slow
 on arm64 hosts but the cached image is pre-built (`vsc-star-...`) so
 `devcontainer up` is a fast container start, not a full build.
@@ -72,7 +72,7 @@ combined paste-ready `CHANNEL_TO_PIN` dict).
 
 ## Artifacts in this directory
 
-```
+```text
 docs/bench/
   README.md          -- this file (bench overview + workflow)
   ad2_wiring.md      -- AD2 probe-to-breakout-pin map + CHANNEL_TO_PIN

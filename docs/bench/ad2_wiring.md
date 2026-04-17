@@ -1,7 +1,7 @@
 # AD2 Breakout Board Wiring
 
 Physical flywire map from each Analog Discovery 2 DIO channel to TOM's RX72N
-breakout PCB pin numbers (silk-screen labels on the back of the board).
+breakout PCB pin numbers (silkscreen labels on the back of the board).
 
 Cross-referenced against `star-rx72n-firmware/gpio_test/pin_map.md` to resolve
 each breakout pin number to an RX72N port/pin name.
