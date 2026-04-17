@@ -29,34 +29,24 @@ const obstacleCullMarginPx = 8;
 const canvasCenterXPx = canvasWidth / 2;
 const canvasCenterYPx = canvasHeight / 2;
 
-const robotWidthMeters = 20 / pixelsPerMeter;
-const robotHeightMeters = 16 / pixelsPerMeter;
-const robotBodyWidthPx = robotWidthMeters * pixelsPerMeter;
-const robotBodyHeightPx = robotHeightMeters * pixelsPerMeter;
+const robotBodyWidthPx = 20;
+const robotBodyHeightPx = 16;
 const robotHalfWidthPx = robotBodyWidthPx / 2;
 const robotHalfHeightPx = robotBodyHeightPx / 2;
 
 const robotBodyLineWidthPx = 1.2;
 const robotAxisLineWidthPx = 2.2;
 
-const headingLengthMeters = 24 / pixelsPerMeter;
-const headingLengthPx = headingLengthMeters * pixelsPerMeter;
-const headingArrowTipOffsetMeters = 2 / pixelsPerMeter;
-const headingArrowTipOffsetPx = headingArrowTipOffsetMeters * pixelsPerMeter;
-const headingArrowHalfWidthMeters = 4 / pixelsPerMeter;
-const headingArrowHalfWidthPx = headingArrowHalfWidthMeters * pixelsPerMeter;
+const headingLengthPx = 24;
+const headingArrowTipOffsetPx = 2;
+const headingArrowHalfWidthPx = 4;
 
-const referenceTickLengthMeters = 22 / pixelsPerMeter;
-const referenceTickLengthPx = referenceTickLengthMeters * pixelsPerMeter;
-const referenceArrowTipOffsetMeters = 2 / pixelsPerMeter;
-const referenceArrowTipOffsetPx = referenceArrowTipOffsetMeters * pixelsPerMeter;
-const referenceArrowBaseOffsetMeters = 4 / pixelsPerMeter;
-const referenceArrowBaseOffsetPx = referenceArrowBaseOffsetMeters * pixelsPerMeter;
-const referenceArrowHalfWidthMeters = 4 / pixelsPerMeter;
-const referenceArrowHalfWidthPx = referenceArrowHalfWidthMeters * pixelsPerMeter;
+const referenceTickLengthPx = 22;
+const referenceArrowTipOffsetPx = 2;
+const referenceArrowBaseOffsetPx = 4;
+const referenceArrowHalfWidthPx = 4;
 
-const markerRadiusMeters = 2.2 / pixelsPerMeter;
-const markerRadiusPx = markerRadiusMeters * pixelsPerMeter;
+const markerRadiusPx = 2.2;
 
 function project(point: WorldPoint, origin: WorldPoint): { x: number; y: number } {
   return {
@@ -133,18 +123,23 @@ export function StarMapCanvas({ lidarScan, odometry }: StarMapCanvasProps) {
 
     const halfWidthMeters = canvasWidth / 2 / pixelsPerMeter;
     const halfHeightMeters = canvasHeight / 2 / pixelsPerMeter;
-    const gridHalfExtentMeters = Math.ceil(Math.max(halfWidthMeters, halfHeightMeters) + gridSpacingMeters);
+    const gridHalfExtentMetersX = Math.ceil(halfWidthMeters + gridSpacingMeters);
+    const gridHalfExtentMetersY = Math.ceil(halfHeightMeters + gridSpacingMeters);
+    const gridPx = gridSpacingMeters * pixelsPerMeter;
 
-    for (let offset = -gridHalfExtentMeters; offset <= gridHalfExtentMeters; offset += gridSpacingMeters) {
-      const gridPx = gridSpacingMeters * pixelsPerMeter;
-      const xMod = (((origin.x * pixelsPerMeter) % gridPx) + gridPx) % gridPx;
+    // Draw vertical lines (X direction)
+    const xMod = (((origin.x * pixelsPerMeter) % gridPx) + gridPx) % gridPx;
+    for (let offset = -gridHalfExtentMetersX; offset <= gridHalfExtentMetersX; offset += gridSpacingMeters) {
       const x = canvasWidth / 2 + offset * pixelsPerMeter - xMod;
       context.beginPath();
       context.moveTo(x, 0);
       context.lineTo(x, canvasHeight);
       context.stroke();
+    }
 
-      const yMod = (((origin.y * pixelsPerMeter) % gridPx) + gridPx) % gridPx;
+    // Draw horizontal lines (Y direction)
+    const yMod = (((origin.y * pixelsPerMeter) % gridPx) + gridPx) % gridPx;
+    for (let offset = -gridHalfExtentMetersY; offset <= gridHalfExtentMetersY; offset += gridSpacingMeters) {
       const y = canvasHeight / 2 + offset * pixelsPerMeter - yMod;
       context.beginPath();
       context.moveTo(0, y);

@@ -1,6 +1,6 @@
 import type { Tone } from '../types/dashboard';
 
-export type TraceAccent = Tone;
+export type TraceAccent = Exclude<Tone, 'neutral'>;
 interface DebugTraceChartProps {
   accent: TraceAccent;
   formatValue: (value: number) => string;
@@ -47,12 +47,11 @@ export function DebugTraceChart({
   const sampleMin = Math.min(...safeSamples);
   const sampleMax = Math.max(...safeSamples);
 
-  if (min !== undefined && max !== undefined && min >= max) {
-    throw new Error('DebugTraceChart expects min < max when both bounds are provided.');
-  }
-
   const computedMin = min !== undefined ? Math.min(min, sampleMin) : sampleMin;
-  let computedMax = max !== undefined ? Math.max(max, sampleMax) : sampleMax;
+  let computedMax =
+    max !== undefined && (min === undefined || max > min)
+      ? Math.max(max, sampleMax)
+      : sampleMax;
   if (computedMax <= computedMin) {
     computedMax = computedMin + 1;
   }
