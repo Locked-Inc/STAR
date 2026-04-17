@@ -183,6 +183,7 @@
 #include "rx_err.h"
 #include "rx_infrastructure.h"
 #include "rx_port_utils.h"
+#include "rx_usb.h"
 #include "tx_api.h"
 
 /* Multi-task architecture includes */
@@ -2361,6 +2362,123 @@ int main(void)
   /* Initialize application-specific hardware (GPIO, GPTW, timers, UART, SPI, I2C, ADC) */
   ret = hardware_init();
   RX_ERROR_CHECK(ret);
+
+  /* DIAG: USB0 manual attach + polled SETUP handler.  RX72N's USBI CPU
+   * interrupt vector isn't firing (tried 36, 62, 102, 185), so the
+   * production stack can't service SETUP.  Fall back to software
+   * polling via inline handler mirroring usb_test/hoco_pid_fix.c.
+   * This halts in the for(;;) so ThreadX doesn't start -- temporary
+   * until a production polling task is wired up. */
+  {
+    volatile uint16_t* PRCR_R    = (volatile uint16_t*)0x000803FEU;
+    volatile uint32_t* MSTPCRB_R = (volatile uint32_t*)0x00080014U;
+    volatile uint16_t* SCKCR2_R  = (volatile uint16_t*)0x00080024U;
+    volatile uint16_t* PACKCR_R  = (volatile uint16_t*)0x00080044U;
+    volatile uint16_t* SYSCFG_R  = (volatile uint16_t*)0x000A0000U;
+    volatile uint16_t* INTENB0_R = (volatile uint16_t*)0x000A0030U;
+    volatile uint16_t* BRDYENB_R = (volatile uint16_t*)0x000A0036U;
+    volatile uint16_t* BEMPENB_R = (volatile uint16_t*)0x000A003AU;
+    volatile uint16_t* DCPCFG_R  = (volatile uint16_t*)0x000A005CU;
+    volatile uint16_t* DCPMAXP_R = (volatile uint16_t*)0x000A005EU;
+    volatile uint16_t* DCPCTR_R  = (volatile uint16_t*)0x000A0060U;
+    volatile uint16_t* INTSTS0_R = (volatile uint16_t*)0x000A0040U;
+    volatile uint16_t* CFIFOSEL_R= (volatile uint16_t*)0x000A0020U;
+    volatile uint16_t* CFIFOCTR_R= (volatile uint16_t*)0x000A0022U;
+    volatile uint8_t*  CFIFO_R8  = (volatile uint8_t*) 0x000A0014U;
+    volatile uint16_t* BRDYSTS_R = (volatile uint16_t*)0x000A0046U;
+    volatile uint16_t* BEMPSTS_R = (volatile uint16_t*)0x000A004AU;
+    volatile uint16_t* USBADDR_R = (volatile uint16_t*)0x000A0050U;
+    volatile uint16_t* USBREQ_R  = (volatile uint16_t*)0x000A0054U;
+    volatile uint16_t* USBVAL_R  = (volatile uint16_t*)0x000A0056U;
+    volatile uint16_t* USBLENG_R = (volatile uint16_t*)0x000A005AU;
+
+    static const uint8_t s_dev[18] = {
+      0x12, 0x01, 0x00, 0x02, 0xFF, 0x00, 0x00, 0x40,
+      0x09, 0x12, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+    };
+    static const uint8_t s_cfg[18] = {
+      0x09, 0x02, 0x12, 0x00, 0x01, 0x01, 0x00, 0x80, 0x32,
+      0x09, 0x04, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00,
+    };
+
+    *PRCR_R     = 0xA503U;
+    *SCKCR2_R   = 0x0041U;
+    *PACKCR_R   = 0x0001U;
+    *MSTPCRB_R &= ~(1UL << 19);
+    *PRCR_R     = 0xA500U;
+    *SYSCFG_R   = 0x0000U;
+    for (volatile uint32_t d = 0; d < 2400000U; d++) { __asm__ volatile("nop"); }
+    *SYSCFG_R  |= (1U << 0);
+    *SYSCFG_R  |= (1U << 10);
+    for (volatile uint32_t d = 0; d < 2400000U; d++) { __asm__ volatile("nop"); }
+    *DCPCFG_R   = 0x0000U;
+    *DCPMAXP_R  = 64U;
+    *DCPCTR_R   = 0x0001U;
+    *BRDYENB_R  = 0x0001U;
+    *BEMPENB_R  = 0x0001U;
+    *INTENB0_R  = (uint16_t)((1U << 15) | (1U << 12) | (1U << 11) | (1U << 10) | (1U << 8));
+    *SYSCFG_R  |= (1U << 4);
+
+    for (;;) {
+      const uint16_t st = *INTSTS0_R;
+      if ((st & (1U << 12)) != 0U) {
+        *INTSTS0_R = (uint16_t)~(1U << 12);
+      }
+      if ((st & (1U << 11)) != 0U) {
+        const uint16_t c = st & 0x7U;
+        if (c == 1U || c == 3U || c == 5U) {
+          *INTSTS0_R = (uint16_t)~(1U << 3);
+          *DCPCTR_R  |= 0x0001U;
+          const uint16_t req = *USBREQ_R;
+          const uint16_t val = *USBVAL_R;
+          const uint16_t len = *USBLENG_R;
+          const uint8_t  br  = (uint8_t)(req >> 8);
+          if (br == 0x06U) {
+            const uint8_t  dt  = (uint8_t)(val >> 8);
+            const uint8_t* src = (dt == 1U) ? s_dev
+                               : (dt == 2U) ? s_cfg
+                                            : (const uint8_t*)0;
+            if (src != (const uint8_t*)0) {
+              const uint16_t s = (len < 18U) ? len : 18U;
+              *CFIFOSEL_R = (1U << 5);
+              while ((*CFIFOCTR_R & (1U << 13)) == 0U) { __asm__ volatile("nop"); }
+              *CFIFOCTR_R |= (1U << 14);
+              while ((*CFIFOCTR_R & (1U << 14)) != 0U) { __asm__ volatile("nop"); }
+              for (uint16_t i = 0; i < s; i++) { *CFIFO_R8 = src[i]; }
+              *CFIFOCTR_R |= (1U << 15);
+              *DCPCTR_R   |= (1U << 2);
+            } else {
+              *DCPCTR_R = (uint16_t)((*DCPCTR_R & ~3U) | 2U);
+            }
+          } else if (br == 0x05U) {
+            *USBADDR_R = val & 0x7FU;
+            *DCPCTR_R |= (1U << 2);
+          } else if (br == 0x09U) {
+            *DCPCTR_R |= (1U << 2);
+          } else if (br == 0x00U) {
+            *CFIFOSEL_R = (1U << 5);
+            while ((*CFIFOCTR_R & (1U << 13)) == 0U) { __asm__ volatile("nop"); }
+            *CFIFOCTR_R |= (1U << 14);
+            while ((*CFIFOCTR_R & (1U << 14)) != 0U) { __asm__ volatile("nop"); }
+            *CFIFO_R8 = 0U;
+            *CFIFO_R8 = 0U;
+            *CFIFOCTR_R |= (1U << 15);
+          } else {
+            *DCPCTR_R = (uint16_t)((*DCPCTR_R & ~3U) | 2U);
+          }
+        }
+        *INTSTS0_R = (uint16_t)~(1U << 11);
+      }
+      if ((st & (1U << 8)) != 0U) {
+        *BRDYSTS_R = 0;
+        *INTSTS0_R = (uint16_t)~(1U << 8);
+      }
+      if ((st & (1U << 10)) != 0U) {
+        *BEMPSTS_R = 0;
+        *INTSTS0_R = (uint16_t)~(1U << 10);
+      }
+    }
+  }
 
   /* Start the ThreadX scheduler - should never return */
   tx_kernel_enter();
