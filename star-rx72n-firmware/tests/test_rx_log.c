@@ -22,6 +22,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 
 #include "rx_err.h"
 #include "rx_log.h"
@@ -235,6 +236,25 @@ void test_rx_log_str_null_value_all_levels(void)
   TEST_PASS();
 }
 
+/* Hit the for-loop `i >= k_log_str_max_len` exit branch in every _str variant.
+ * Requires a buffer with no null terminator in the first 256 bytes so neither
+ * the `i >= len` nor the `str_value[i] == '\0'` break conditions fire and the
+ * loop hits its static upper bound instead. */
+void test_rx_log_str_hits_max_len_bound_all_levels(void)
+{
+  enum : uint32_t { k_no_null_buf_size = 300U, k_no_null_len = 300U };
+  static char no_null_buf[k_no_null_buf_size];
+  /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
+  (void)memset(no_null_buf, (int)'Q', sizeof(no_null_buf));
+
+  rx_log_error_str(k_tag, "long", no_null_buf, k_no_null_len);
+  rx_log_warn_str(k_tag, "long", no_null_buf, k_no_null_len);
+  rx_log_info_str(k_tag, "long", no_null_buf, k_no_null_len);
+  rx_log_debug_str(k_tag, "long", no_null_buf, k_no_null_len);
+  rx_log_verbose_str(k_tag, "long", no_null_buf, k_no_null_len);
+  TEST_PASS();
+}
+
 void test_rx_log_null_tag_hits_header_guard(void)
 {
   /* internal_log_header has its own NULL guard on tag (level_str is always a
@@ -262,6 +282,7 @@ int main(void)
   RUN_TEST(test_rx_log_str_happy_path_all_levels);
   RUN_TEST(test_rx_log_str_null_message_all_levels);
   RUN_TEST(test_rx_log_str_null_value_all_levels);
+  RUN_TEST(test_rx_log_str_hits_max_len_bound_all_levels);
   RUN_TEST(test_rx_log_null_tag_hits_header_guard);
   return UNITY_END();
 }
