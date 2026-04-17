@@ -1,0 +1,44 @@
+%%{ init: { "theme": "dark", "themeVariables": {
+    "primaryColor": "#16213e",
+    "primaryTextColor": "#e8e8f0",
+    "primaryBorderColor": "#4cc9f0",
+    "lineColor": "#9090a8",
+    "secondaryColor": "#500000",
+    "tertiaryColor": "#1a1a2e",
+    "background": "#1a1a2e"
+} } }%%
+
+flowchart TB
+    START([Scan tick<br/>LiDAR frame + IMU window available]) --> A{Robot body<br/>moving forward?}
+    A -- no --> IDLE([skip frame])
+    A -- yes --> B[Subscribe /scan<br/>take points within 2 m ahead]
+    B --> C[Transform to base_link<br/>via tf2]
+    C --> D[Accumulate over 500 ms window]
+    D --> E[Open3D RANSAC<br/>plane segmentation]
+    E --> F{Plane fit<br/>residual OK?}
+    F -- no --> G[Discard, log]
+    G --> IDLE
+    F -- yes --> H[Compute surface normal]
+    H --> I[Angle between normal and gravity<br/>= slope_lidar]
+
+    D --> J[Subscribe /imu/data<br/>BNO055 pitch over 500 ms]
+    J --> K[Mean pitch<br/>= slope_bno]
+
+    I --> L{|slope_lidar - slope_bno|<br/>&lt;= 0.5 deg?}
+    K --> L
+    L -- no --> M[Log disagreement<br/>trigger re-scan]
+    L -- yes --> N[slope_final = mean]
+    N --> O{slope_final &gt; 4.76 deg?}
+    O -- yes --> P[[Flag violation<br/>ADA 405.2]]
+    O -- no --> Q[[Log passing]]
+
+    P --> R[Write CSV row + PNG + /odom pose]
+    Q --> R
+    M --> R
+    R --> END([append to PDF audit queue])
+
+    classDef violation fill:#e63946,stroke:#e63946,color:#ffffff;
+    classDef passing fill:#2a9d8f,stroke:#2a9d8f,color:#ffffff;
+
+    class P violation
+    class Q passing
