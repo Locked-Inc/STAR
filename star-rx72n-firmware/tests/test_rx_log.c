@@ -88,25 +88,26 @@ void test_uart_debug_putc_basic(void)
 
 void test_uart_debug_putint_negative_and_positive(void)
 {
-  uart_debug_putint((int32_t)k_log_test_i32_negative);
-  uart_debug_putint((int32_t)k_log_test_i32_positive);
+  uart_debug_putint(k_log_test_i32_negative);
+  uart_debug_putint(k_log_test_i32_positive);
   TEST_PASS();
 }
 
 void test_uart_debug_putuint_large(void)
 {
-  uart_debug_putuint((uint32_t)k_log_test_u32_large);
+  uart_debug_putuint(k_log_test_u32_large);
   TEST_PASS();
 }
 
 void test_uart_debug_puthex_clamps_digits(void)
 {
-  /* 0 clamps to 1 (the digits < k_min_hex_digits branch). */
+  /* 0 clamps to 1 (the digits < k_min_hex_digits branch). The first argument
+   * is a uint8_t-backed enum, so the (uint32_t) widening cast is real. */
   uart_debug_puthex((uint32_t)k_log_test_u8_hex, (uint8_t)k_log_test_hex_digits_min);
   /* 9 clamps to 8 (the digits > k_max_hex_digits branch). */
-  uart_debug_puthex((uint32_t)k_log_test_u32_large, (uint8_t)k_log_test_hex_digits_over);
+  uart_debug_puthex(k_log_test_u32_large, (uint8_t)k_log_test_hex_digits_over);
   /* A value in-range for the lookup-table path. */
-  uart_debug_puthex((uint32_t)k_log_test_u32_typical, (uint8_t)k_log_test_hex_digits_mid);
+  uart_debug_puthex(k_log_test_u32_typical, (uint8_t)k_log_test_hex_digits_mid);
   TEST_PASS();
 }
 
@@ -157,22 +158,22 @@ void test_rx_log_val_u16(void)
 
 void test_rx_log_val_u32(void)
 {
-  rx_log_error_val(k_tag, "u32", (uint32_t)k_log_test_u32_typical);
-  rx_log_warn_val(k_tag, "u32", (uint32_t)k_log_test_u32_typical);
-  rx_log_info_val(k_tag, "u32", (uint32_t)k_log_test_u32_typical);
-  rx_log_debug_val(k_tag, "u32", (uint32_t)k_log_test_u32_typical);
-  rx_log_verbose_val(k_tag, "u32", (uint32_t)k_log_test_u32_typical);
+  rx_log_error_val(k_tag, "u32", k_log_test_u32_typical);
+  rx_log_warn_val(k_tag, "u32", k_log_test_u32_typical);
+  rx_log_info_val(k_tag, "u32", k_log_test_u32_typical);
+  rx_log_debug_val(k_tag, "u32", k_log_test_u32_typical);
+  rx_log_verbose_val(k_tag, "u32", k_log_test_u32_typical);
   TEST_PASS();
 }
 
 void test_rx_log_val_err(void)
 {
   /* rx_err_t is int32_t so _Generic dispatches to the _err (hex) handler. */
-  rx_log_error_val(k_tag, "err", (rx_err_t)k_rx_err_invalid_arg);
-  rx_log_warn_val(k_tag, "err", (rx_err_t)k_rx_err_invalid_arg);
-  rx_log_info_val(k_tag, "err", (rx_err_t)k_rx_err_invalid_arg);
-  rx_log_debug_val(k_tag, "err", (rx_err_t)k_rx_err_invalid_arg);
-  rx_log_verbose_val(k_tag, "err", (rx_err_t)k_rx_err_invalid_arg);
+  rx_log_error_val(k_tag, "err", k_rx_err_invalid_arg);
+  rx_log_warn_val(k_tag, "err", k_rx_err_invalid_arg);
+  rx_log_info_val(k_tag, "err", k_rx_err_invalid_arg);
+  rx_log_debug_val(k_tag, "err", k_rx_err_invalid_arg);
+  rx_log_verbose_val(k_tag, "err", k_rx_err_invalid_arg);
   TEST_PASS();
 }
 
@@ -181,32 +182,60 @@ void test_rx_log_val_err(void)
 void test_rx_log_hex_all_levels(void)
 {
   const uint8_t d = (uint8_t)k_log_test_hex_digits_max;
-  rx_log_error_hex(k_tag, "hex", (uint32_t)k_log_test_u32_large, d);
-  rx_log_warn_hex(k_tag, "hex", (uint32_t)k_log_test_u32_large, d);
-  rx_log_info_hex(k_tag, "hex", (uint32_t)k_log_test_u32_large, d);
-  rx_log_debug_hex(k_tag, "hex", (uint32_t)k_log_test_u32_large, d);
-  rx_log_verbose_hex(k_tag, "hex", (uint32_t)k_log_test_u32_large, d);
+  rx_log_error_hex(k_tag, "hex", k_log_test_u32_large, d);
+  rx_log_warn_hex(k_tag, "hex", k_log_test_u32_large, d);
+  rx_log_info_hex(k_tag, "hex", k_log_test_u32_large, d);
+  rx_log_debug_hex(k_tag, "hex", k_log_test_u32_large, d);
+  rx_log_verbose_hex(k_tag, "hex", k_log_test_u32_large, d);
   TEST_PASS();
 }
 
-/* _str variants (bounded string) */
+/* _str variants (bounded string) -- hit both NULL-guard branches (message,
+ * str_value) on every level to pick up the 5 lines and 8 branches that were
+ * still uncovered after the first cut of this test file. */
 
-void test_rx_log_str_all_levels(void)
+void test_rx_log_str_happy_path_all_levels(void)
 {
   const char* short_str = "hello";
-  rx_log_error_str(k_tag, "str", short_str, (uint32_t)k_log_test_str_len_small);
-  rx_log_warn_str(k_tag, "str", short_str, (uint32_t)k_log_test_str_len_small);
-  rx_log_info_str(k_tag, "str", short_str, (uint32_t)k_log_test_str_len_small);
-  rx_log_debug_str(k_tag, "str", short_str, (uint32_t)k_log_test_str_len_small);
-  rx_log_verbose_str(k_tag, "str", short_str, (uint32_t)k_log_test_str_len_small);
+  rx_log_error_str(k_tag, "str", short_str, k_log_test_str_len_small);
+  rx_log_warn_str(k_tag, "str", short_str, k_log_test_str_len_small);
+  rx_log_info_str(k_tag, "str", short_str, k_log_test_str_len_small);
+  rx_log_debug_str(k_tag, "str", short_str, k_log_test_str_len_small);
+  rx_log_verbose_str(k_tag, "str", short_str, k_log_test_str_len_small);
 
   /* Hit the null-terminator early-break branch in the bounded loop by passing
    * a len > strlen(short_str). */
-  rx_log_error_str(k_tag, "str", short_str, (uint32_t)k_log_test_str_len_over);
+  rx_log_error_str(k_tag, "str", short_str, k_log_test_str_len_over);
+  TEST_PASS();
+}
 
-  /* NULL-guard branches (message NULL; str_value NULL). */
-  rx_log_error_str(k_tag, NULL, short_str, (uint32_t)k_log_test_str_len_small);
-  rx_log_error_str(k_tag, "str", NULL, (uint32_t)k_log_test_str_len_small);
+void test_rx_log_str_null_message_all_levels(void)
+{
+  const char* short_str = "hello";
+  rx_log_error_str(k_tag, NULL, short_str, k_log_test_str_len_small);
+  rx_log_warn_str(k_tag, NULL, short_str, k_log_test_str_len_small);
+  rx_log_info_str(k_tag, NULL, short_str, k_log_test_str_len_small);
+  rx_log_debug_str(k_tag, NULL, short_str, k_log_test_str_len_small);
+  rx_log_verbose_str(k_tag, NULL, short_str, k_log_test_str_len_small);
+  TEST_PASS();
+}
+
+void test_rx_log_str_null_value_all_levels(void)
+{
+  rx_log_error_str(k_tag, "str", NULL, k_log_test_str_len_small);
+  rx_log_warn_str(k_tag, "str", NULL, k_log_test_str_len_small);
+  rx_log_info_str(k_tag, "str", NULL, k_log_test_str_len_small);
+  rx_log_debug_str(k_tag, "str", NULL, k_log_test_str_len_small);
+  rx_log_verbose_str(k_tag, "str", NULL, k_log_test_str_len_small);
+  TEST_PASS();
+}
+
+void test_rx_log_null_tag_hits_header_guard(void)
+{
+  /* internal_log_header has its own NULL guard on tag (level_str is always a
+   * literal from the macro, so only the tag-NULL side is reachable from
+   * public APIs). Fire it once to cover the early-return branch. */
+  rx_log_error(NULL, "msg");
   TEST_PASS();
 }
 
@@ -225,6 +254,9 @@ int main(void)
   RUN_TEST(test_rx_log_val_u32);
   RUN_TEST(test_rx_log_val_err);
   RUN_TEST(test_rx_log_hex_all_levels);
-  RUN_TEST(test_rx_log_str_all_levels);
+  RUN_TEST(test_rx_log_str_happy_path_all_levels);
+  RUN_TEST(test_rx_log_str_null_message_all_levels);
+  RUN_TEST(test_rx_log_str_null_value_all_levels);
+  RUN_TEST(test_rx_log_null_tag_hits_header_guard);
   return UNITY_END();
 }
