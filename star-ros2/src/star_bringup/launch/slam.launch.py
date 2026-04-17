@@ -82,6 +82,13 @@ def generate_launch_description():
         description='Launch Foxglove Studio WebSocket bridge for browser-based visualization'
     )
 
+    use_stereo_arg = DeclareLaunchArgument(
+        'use_stereo', default_value='true',
+        description='Launch the IMX219-83 stereo camera pipeline (gscam + '
+                    'stereo_image_proc + RTAB-Map). Disable for LiDAR-only '
+                    'operation or on systems without the camera connected.'
+    )
+
     # RPLiDAR C1 requires sllidar_ros2 (Slamtec's newer driver with SDK 2.x).
     # rplidar_ros 2.1.0 uses SDK 1.12.0 which returns 0x80008000/0x80008002 for the C1's
     # DTOF scan protocol. sllidar_ros2 uses the updated SDK that supports C1 natively.
@@ -178,6 +185,16 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('use_nav2')),
     )
 
+    # Stereo camera pipeline: gscam cam0/cam1 + stereo_image_proc rectify /
+    # disparity / point cloud + RTAB-Map 3D mapping. Gated by use_stereo so
+    # the stack still runs LiDAR-only when the camera is disconnected.
+    stereo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_star_bringup, 'launch', 'stereo_camera.launch.py')
+        ),
+        condition=IfCondition(LaunchConfiguration('use_stereo')),
+    )
+
     # Foxglove Studio WebSocket bridge -- enables browser-based visualization
     # at app.foxglove.dev without X11. Bound to 0.0.0.0 for remote browser access.
     # Connect from laptop: ws://<PI5_IP>:8765
@@ -225,6 +242,7 @@ def generate_launch_description():
         use_ekf_arg,
         use_bbb_arg,
         use_foxglove_arg,
+        use_stereo_arg,
         static_tf,
         ekf,
         static_odom_tf,
@@ -233,4 +251,5 @@ def generate_launch_description():
         gateway_bridge,
         slam,
         nav2,
+        stereo,
     ])
