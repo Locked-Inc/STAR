@@ -13,11 +13,11 @@ each breakout pin number to an RX72N port/pin name.
 > silkscreen). Do not cross-check against the KiCad schematic -- it can be
 > slightly different.
 
-## AD2 A (unit identity TBD)
+## AD2 A -- SN `210321A36AA3` (index 0)
 
-Wired first. Serial number not yet confirmed -- run `gpio_verify.py --auto-map`
-after the firmware is flashed to match this bundle to either SN
-`210321A36AA3` (AD2 #0) or `210321A36AAE` (AD2 #1).
+Identified by unplugging the second unit and re-running `pydwf`
+enumeration: only `210321A36AA3` remained. Maps to index `0` in
+`AD2_SERIAL_NUMBERS` in `gpio_verify.py`.
 
 | DIO | Breakout pin | GPIO   | Col/Row (pin_map) | Notes                    |
 |-----|--------------|--------|-------------------|--------------------------|
@@ -49,10 +49,7 @@ after the firmware is flashed to match this bundle to either SN
   - Pin  110 = PE1 (Col 9 row 2)
   - Pin  111 = PE0 (Col 9 row 3)
 
-### Ready-to-paste CHANNEL_TO_PIN (once AD2 identity is known)
-
-Assuming this is AD2 index 0 (first in `AD2_SERIAL_NUMBERS`). If auto-map
-reports index 1 instead, change the first tuple element from `0` to `1`.
+### Ready-to-paste CHANNEL_TO_PIN
 
 ```python
 CHANNEL_TO_PIN = {
@@ -75,19 +72,13 @@ CHANNEL_TO_PIN = {
 }
 ```
 
-## AD2 B (not yet wired)
+## AD2 B -- SN `210321A36AAE` (index 1)
 
-TBD.
+Not yet wired. Fill in once the flywires are connected. Plug AD2 B
+back in before running `gpio_verify.py` so both devices enumerate.
 
-## How to identify which physical AD2 is which
+## Identification method used
 
-Three options:
-
-1. **Read the label** on the back of the AD2 -- the serial number matches
-   one of `210321A36AA3` or `210321A36AAE`.
-2. **Run auto-map** after flashing the firmware:
-   `./venv/bin/python3 gpio_verify.py --auto-map`. Whichever AD2 index
-   shows rising edges on DIO 0-2, 4, 6-15 (not 3 or 5) is AD2 A.
-3. **Blink test**: in WaveForms desktop, open Logic Analyser for one AD2
-   at a time; when the firmware is running you'll see toggles only on
-   the AD2 that's physically wired.
+Unplugged the second AD2, re-enumerated with `pydwf`. Whichever SN
+stayed enumerated is AD2 A. `210321A36AA3` was the one that remained,
+so the unplugged unit is `210321A36AAE` (AD2 B).
