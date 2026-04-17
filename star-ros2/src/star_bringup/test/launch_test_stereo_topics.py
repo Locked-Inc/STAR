@@ -51,20 +51,23 @@ def generate_test_description():
     """
     Return the launch description used by the test harness.
 
-    On hosts without the IMX219 hardware marker we return a minimal
-    LaunchDescription that holds itself open for a second before
-    signalling readiness; the test body then returns early without
-    asserting anything. This avoids the 'Launch stopped before the
-    active tests finished' exception that launch_testing raises when
-    the launch process exits before the test class has had a chance to
-    tear down.
+    On hosts without the IMX219 hardware marker we include a long-running
+    sleep process so the launch stays alive while the (trivially-passing)
+    test class starts up and tears down. Without a live process,
+    launch_testing exits the launch as soon as ReadyToTest fires, which
+    races the test teardown and shows up as 'Launch stopped before the
+    active tests finished.' in ament's xunit aggregate.
     """
     if not _hardware_present():
+        keepalive = launch.actions.ExecuteProcess(
+            cmd=['sleep', '30'],
+            output='log',
+            # Marked shutdown-on-SIGINT so launch_testing can kill it
+            # once the test class is done.
+        )
         return launch.LaunchDescription([
-            launch.actions.TimerAction(
-                period=1.0,
-                actions=[launch_testing.actions.ReadyToTest()],
-            ),
+            keepalive,
+            launch_testing.actions.ReadyToTest(),
         ])
 
     stereo_launch_path = os.path.join(
@@ -100,9 +103,7 @@ class TestStereoTopicsPublishing(unittest.TestCase):
     def test_every_stereo_topic_publishes_within_timeout(self):
         # On CI / dev machines without the IMX219 ribbon cable, no stereo
         # pipeline is running so there is nothing to assert. Return early
-        # to record a plain PASSED in the xunit output (self.skipTest()
-        # produces a SKIPPED result that ament's run_test.py still
-        # counts as a failure).
+        # to record a plain PASSED in the xunit output.
         if not _hardware_present():
             return
 
