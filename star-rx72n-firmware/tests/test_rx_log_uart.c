@@ -155,7 +155,7 @@ void test_putuint_zero(void)
 
 void test_putuint_max(void)
 {
-  rx_log_uart_putuint((uint32_t)k_test_uint32_max);
+  rx_log_uart_putuint(k_test_uint32_max);
   uint8_t  out[k_test_small_buf] = {0};
   uint32_t out_len               = 0U;
   (void)rx_log_uart_drain(out, sizeof(out), &out_len);
@@ -165,7 +165,7 @@ void test_putuint_max(void)
 
 void test_puthex_clamps_zero_digits_to_one(void)
 {
-  rx_log_uart_puthex((uint32_t)k_test_puthex_small, 0U);
+  rx_log_uart_puthex(k_test_puthex_small, 0U);
   uint8_t  out[k_test_small_buf] = {0};
   uint32_t out_len               = 0U;
   (void)rx_log_uart_drain(out, sizeof(out), &out_len);
@@ -175,7 +175,7 @@ void test_puthex_clamps_zero_digits_to_one(void)
 
 void test_puthex_clamps_nine_digits_to_eight(void)
 {
-  rx_log_uart_puthex((uint32_t)k_test_puthex_large, (uint8_t)k_test_digits_nine_clamped);
+  rx_log_uart_puthex(k_test_puthex_large, (uint8_t)k_test_digits_nine_clamped);
   uint8_t  out[k_test_small_buf] = {0};
   uint32_t out_len               = 0U;
   (void)rx_log_uart_drain(out, sizeof(out), &out_len);
@@ -185,7 +185,7 @@ void test_puthex_clamps_nine_digits_to_eight(void)
 
 void test_puthex_pads_with_zeros(void)
 {
-  rx_log_uart_puthex((uint32_t)k_test_puthex_padded_value, (uint8_t)k_test_digits_four);
+  rx_log_uart_puthex(k_test_puthex_padded_value, (uint8_t)k_test_digits_four);
   uint8_t  out[k_test_small_buf] = {0};
   uint32_t out_len               = 0U;
   (void)rx_log_uart_drain(out, sizeof(out), &out_len);
@@ -220,7 +220,7 @@ void test_ring_overflow_drops_and_counts(void)
 void test_drain_returns_only_pre_wrap_portion_when_split(void)
 {
   /* Advance the tail far enough into the ring that a subsequent write wraps. */
-  const uint32_t advance = (uint32_t)k_rx_log_uart_ring_size - (uint32_t)k_test_prefill_trailing;
+  const uint32_t advance = (uint32_t)k_rx_log_uart_ring_size - k_test_prefill_trailing;
   for (uint32_t i = 0U; i < advance; ++i) {
     rx_log_uart_putc('a');
   }
@@ -235,17 +235,17 @@ void test_drain_returns_only_pre_wrap_portion_when_split(void)
    * return up to the end-of-ring only (k_test_wrap_first_chunk_len bytes of
    * 'X'); a second drain picks up the remaining 'X' plus all 'Y' from the
    * start of the ring. */
-  for (uint32_t i = 0U; i < (uint32_t)k_test_wrap_x_count; ++i) {
+  for (uint32_t i = 0U; i < k_test_wrap_x_count; ++i) {
     rx_log_uart_putc('X');
   }
-  for (uint32_t i = 0U; i < (uint32_t)k_test_wrap_y_count; ++i) {
+  for (uint32_t i = 0U; i < k_test_wrap_y_count; ++i) {
     rx_log_uart_putc('Y');
   }
 
   uint8_t  chunk1[k_test_drain_chunk] = {0};
   uint32_t len1                       = 0U;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_log_uart_drain(chunk1, sizeof(chunk1), &len1));
-  TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_wrap_first_chunk_len, len1);
+  TEST_ASSERT_EQUAL_UINT32(k_test_wrap_first_chunk_len, len1);
   for (uint32_t i = 0U; i < len1; ++i) {
     TEST_ASSERT_EQUAL_UINT8((uint8_t)'X', chunk1[i]);
   }
@@ -253,12 +253,12 @@ void test_drain_returns_only_pre_wrap_portion_when_split(void)
   uint8_t  chunk2[k_test_drain_chunk] = {0};
   uint32_t len2                       = 0U;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_log_uart_drain(chunk2, sizeof(chunk2), &len2));
-  TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_wrap_second_chunk_len, len2);
-  for (uint32_t i = 0U; i < (uint32_t)k_test_wrap_first_chunk_len; ++i) {
+  TEST_ASSERT_EQUAL_UINT32(k_test_wrap_second_chunk_len, len2);
+  for (uint32_t i = 0U; i < k_test_wrap_first_chunk_len; ++i) {
     TEST_ASSERT_EQUAL_UINT8((uint8_t)'X', chunk2[i]);
   }
-  for (uint32_t i = (uint32_t)k_test_wrap_first_chunk_len;
-       i < (uint32_t)k_test_wrap_second_chunk_len;
+  for (uint32_t i = k_test_wrap_first_chunk_len;
+       i < k_test_wrap_second_chunk_len;
        ++i) {
     TEST_ASSERT_EQUAL_UINT8((uint8_t)'Y', chunk2[i]);
   }
@@ -273,14 +273,14 @@ void test_drain_null_buf_is_invalid_arg(void)
 {
   uint32_t out_len = 0U;
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_log_uart_drain(NULL, (uint32_t)k_test_drain_max, &out_len));
+                    rx_log_uart_drain(NULL, k_test_drain_max, &out_len));
 }
 
 void test_drain_null_out_len_is_invalid_arg(void)
 {
   uint8_t buf[k_test_small_buf] = {0};
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_log_uart_drain(buf, (uint32_t)k_test_drain_max, NULL));
+                    rx_log_uart_drain(buf, k_test_drain_max, NULL));
 }
 
 void test_drain_zero_max_len_is_invalid_arg(void)
@@ -303,7 +303,7 @@ void test_get_stats_null_is_noop(void)
 void test_drain_on_empty_ring_returns_zero(void)
 {
   uint8_t  buf[k_test_small_buf] = {0};
-  uint32_t out_len               = (uint32_t)k_test_sentinel_out_len;
+  uint32_t out_len               = k_test_sentinel_out_len;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_log_uart_drain(buf, sizeof(buf), &out_len));
   TEST_ASSERT_EQUAL_UINT32(0U, out_len);
 }

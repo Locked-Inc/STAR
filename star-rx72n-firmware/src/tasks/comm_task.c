@@ -661,6 +661,7 @@ static uint8_t s_response_buffer[k_comm_response_buffer_size];
 static void internal_comm_task_entry(ULONG input);
 static void internal_init_transports(rx_comm_manager_config_t* config);
 static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t* frame, void* ctx);
+static void internal_ship_log_frames(void);
 static void internal_send_command_response(rx_comm_channel_t channel,
                                            const uint8_t*    payload,
                                            uint32_t          payload_len);
@@ -1633,26 +1634,8 @@ static void internal_comm_task_entry(ULONG input)
       rx_log_debug_val(s_tag, "Poll error", (uint32_t)err);
     }
 
-    /* Drain pending log bytes from the rx_log_uart ring and ship them to the
-     * gateway as a k_frame_type_log_message (0x20) frame. This multiplexes
-     * runtime logs onto the same UART byte stream as protobuf command /
-     * response / telemetry frames without risking sync-word collisions. */
-    if (g_comm_manager.uart_handle != nullptr) {
-      static uint8_t s_log_tx_buf[k_frame_max_payload];
-      uint32_t       log_len = 0U;
-      rx_err_t       drn_err =
-        rx_log_uart_drain(s_log_tx_buf, (uint32_t)sizeof(s_log_tx_buf), &log_len);
-      if (drn_err == k_rx_ok && log_len > 0U) {
-        const rx_comm_send_params_t log_params = {
-          .channel     = k_comm_channel_uart,
-          .type        = k_frame_type_log_message,
-          .flags       = k_frame_flag_none,
-          .payload     = s_log_tx_buf,
-          .payload_len = log_len,
-        };
-        (void)rx_comm_manager_stream_send(&g_comm_manager, &log_params);
-      }
-    }
+    /* Ship any pending log bytes as LOG_MESSAGE frames (see helper) */
+    internal_ship_log_frames();
 
     /* Process pending SPI retransmissions (no-op when disabled) */
     (void)rx_comm_manager_process_retransmits(&g_comm_manager,
@@ -1668,6 +1651,49 @@ static void internal_comm_task_entry(ULONG input)
     /* Sleep until next poll cycle */
     (void)tx_thread_sleep(k_comm_task_sleep_ticks);
   }
+}
+
+/**
+ * @brief Drain pending log bytes and ship them as a k_frame_type_log_message
+ *
+ * @details
+ * Extracted from internal_comm_task_entry() to stay under the
+ * readability-function-size clang-tidy threshold. Runs from the comm-task
+ * poll loop on every tick; reads up to one frame-max-payload bytes out of the
+ * rx_log_uart ring and forwards them to the gateway as a TYPE=0x20 frame
+ * over UART. Logs are multiplexed onto the same UART byte stream as protobuf
+ * command / response / telemetry traffic without risking sync-word
+ * collisions, because every log chunk is a complete CRC-checked frame.
+ *
+ * @pre g_comm_manager has been (attempted to be) initialized
+ * @post On every call: rx_log_uart ring drained by up to k_frame_max_payload
+ *       bytes when uart_handle is present; no-op when uart_handle is NULL
+ *
+ * @note Not thread-safe; called only from comm_task context.
+ * @since Version 1.0.0
+ */
+static void internal_ship_log_frames(void)
+{
+  if (g_comm_manager.uart_handle == nullptr) {
+    return;
+  }
+
+  static uint8_t s_log_tx_buf[k_frame_max_payload];
+  uint32_t       log_len = 0U;
+  const rx_err_t drn_err =
+    rx_log_uart_drain(s_log_tx_buf, (uint32_t)sizeof(s_log_tx_buf), &log_len);
+  if (drn_err != k_rx_ok || log_len == 0U) {
+    return;
+  }
+
+  const rx_comm_send_params_t log_params = {
+    .channel     = k_comm_channel_uart,
+    .type        = k_frame_type_log_message,
+    .flags       = k_frame_flag_none,
+    .payload     = s_log_tx_buf,
+    .payload_len = log_len,
+  };
+  (void)rx_comm_manager_stream_send(&g_comm_manager, &log_params);
 }
 
 /**
