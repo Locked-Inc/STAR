@@ -11,6 +11,7 @@ export const coverageStepPercent = 1.5;
 export const traceHistoryLength = 28;
 export const traceSampleIntervalMs = 1000;
 export const wheelDiameterMeters = 0.2;
+export const wheelCircumferenceMeters = Math.PI * wheelDiameterMeters;
 export const secondsPerMinute = 60;
 
 const validAlertTimestampFloorMs = Date.parse('2020-01-01T00:00:00Z');

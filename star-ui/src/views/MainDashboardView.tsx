@@ -21,7 +21,7 @@ import {
   toneFromScore,
   toneLabel,
   uiModeFromRobotMode,
-  wheelDiameterMeters,
+  wheelCircumferenceMeters,
   secondsPerMinute
 } from '../lib/dashboard';
 import { useControllerBridge } from '../hooks/useControllerBridge';
@@ -347,7 +347,7 @@ export function MainDashboardView({
                           {['FL', 'FR', 'RL', 'RR'].map((label, index) => {
                             const motor = motorValues[index];
                             const rpm = motor
-                              ? (motor.velocityMps / (Math.PI * wheelDiameterMeters)) * secondsPerMinute
+                              ? (motor.velocityMps / wheelCircumferenceMeters) * secondsPerMinute
                               : undefined;
                             return (
                               <MetricTile
