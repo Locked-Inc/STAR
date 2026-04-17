@@ -166,14 +166,78 @@ CHANNEL_TO_PIN = {
     ( 1, 13): "PC2",
     ( 1, 14): "P76",
     ( 1, 15): "P77",
+    # AD2 C -- SN 210321A2AE49
+    ( 2,  0): "PC3",
+    ( 2,  1): "PC4",
+    ( 2,  2): "P80",
+    ( 2,  3): "P81",
+    ( 2,  4): "P82",
+    ( 2,  5): "PC5",
+    ( 2,  6): "PC6",
+    ( 2,  7): "P83",
+    ( 2,  8): "P20",
+    ( 2,  9): "P17",
+    ( 2, 10): "P87",
+    ( 2, 11): "P86",
+    ( 2, 12): "P15",
+    ( 2, 13): "P14",
+    ( 2, 14): "P13",
+    ( 2, 15): "P12",
 }
 ```
 
 ## AD2 C -- SN `210321A2AE49` (index 2)
 
-Third unit, located after AD2 A and AD2 B were mapped. Not yet wired.
-Gives us 48 total DIO channels, enough to cover ~half of the firmware's
-100 pins per capture pass.
+Wired up Col 3 bottom-to-top for DIO 0-7, then across to Col 2
+top-to-bottom for DIO 8-15.
+
+| DIO | Breakout pin | GPIO | Col/Row (pin_map) | Notes |
+|-----|--------------|------|-------------------|-------|
+|  0  |         67   | PC3  | Col 3, Row 8      | OK    |
+|  1  |         66   | PC4  | Col 3, Row 7      | OK    |
+|  2  |         65   | P80  | Col 3, Row 6      | OK    |
+|  3  |         64   | P81  | Col 3, Row 5      | OK    |
+|  4  |         63   | P82  | Col 3, Row 4      | OK    |
+|  5  |         62   | PC5  | Col 3, Row 3      | OK    |
+|  6  |         61   | PC6  | Col 3, Row 2      | OK    |
+|  7  |         58   | P83  | Col 3, Row 1      | OK    |
+|  8  |         37   | P20  | Col 2, Row 1      | OK    |
+|  9  |         38   | P17  | Col 2, Row 2      | OK    |
+| 10  |         39   | P87  | Col 2, Row 3      | OK    |
+| 11  |         41   | P86  | Col 2, Row 4      | OK    |
+| 12  |         42   | P15  | Col 2, Row 5      | OK    |
+| 13  |         43   | P14  | Col 2, Row 6      | OK    |
+| 14  |         44   | P13  | Col 2, Row 7      | OK    |
+| 15  |         45   | P12  | Col 2, Row 8      | OK    |
+
+### Summary for AD2 C
+
+- 16/16 channels live (no VCC/VSS hits)
+- Zero overlap with AD2 A or AD2 B
+- Adds Port 8 completion (P80-P83, P86, P87), most of Port C
+  (PC3-PC6), plus Port 1 (P12-P17) and P20
+
+### Ready-to-paste CHANNEL_TO_PIN additions
+
+```python
+    # AD2 C -- SN 210321A2AE49
+    ( 2,  0): "PC3",
+    ( 2,  1): "PC4",
+    ( 2,  2): "P80",
+    ( 2,  3): "P81",
+    ( 2,  4): "P82",
+    ( 2,  5): "PC5",
+    ( 2,  6): "PC6",
+    ( 2,  7): "P83",
+    ( 2,  8): "P20",
+    ( 2,  9): "P17",
+    ( 2, 10): "P87",
+    ( 2, 11): "P86",
+    ( 2, 12): "P15",
+    ( 2, 13): "P14",
+    ( 2, 14): "P13",
+    ( 2, 15): "P12",
+```
 
 ## Identification method used
 
