@@ -8,6 +8,23 @@ each breakout pin number to an RX72N port/pin name.
 
 ## Verification status
 
+**AD2 E wired 2026-04-17 -- full-board sweep with all five AD2s not yet
+re-run.** Added a fifth unit covering **all of Col 1** plus
+**Col 7 Row 1** (PD0). 14 of AD2 E's 16 channels are usable GPIOs;
+**DIO 6 (PJ5) and DIO 7 (PJ3) are JTAG TMS/TDO** and are excluded
+from the firmware sweep in `main.c` (driving them while E2 Lite has
+the debug interface latched hangs the MCU). Total wired-and-verified
+pins expected at the next sweep: **76/76**.
+
+**AD2 D wired 2026-04-17.** Covers **Col 9 rows 1-3** (PE2, PE1, PE0)
+plus **all of Col 8** (P07, P40-P47, P90-P93).
+
+Re-run `./venv/bin/python3 gpio_verify.py --verbose` to validate all
+78 pins end-to-end. AD2 D and AD2 E serials are pending - run
+`./venv/bin/python3 gpio_verify.py --auto-map` once with all five
+units plugged in, note the two newly-enumerated SNs, and paste them
+into `AD2_SERIAL_NUMBERS` in `gpio_verify.py` alongside A/B/C.
+
 **Last full-board sweep: 2026-04-16 -- PASS (46/46 wired pins).** Captured
 over 13 s with `gpio_verify.py` against the ThreadX build of gpio_test;
 sweep order matched `FIRMWARE_PIN_ORDER`, no noise on the two VCC-rail
@@ -190,6 +207,40 @@ CHANNEL_TO_PIN = {
     ( 2, 13): "P14",
     ( 2, 14): "P13",
     ( 2, 15): "P12",
+    # AD2 D -- SN <pending, run --auto-map>
+    ( 3,  0): "PE2",
+    ( 3,  1): "PE1",
+    ( 3,  2): "PE0",
+    ( 3,  3): "P07",
+    ( 3,  4): "P40",
+    ( 3,  5): "P41",
+    ( 3,  6): "P42",
+    ( 3,  7): "P43",
+    ( 3,  8): "P44",
+    ( 3,  9): "P45",
+    ( 3, 10): "P46",
+    ( 3, 11): "P47",
+    ( 3, 12): "P90",
+    ( 3, 13): "P91",
+    ( 3, 14): "P92",
+    ( 3, 15): "P93",
+    # AD2 E -- SN <pending, run --auto-map>
+    ( 4,  0): "P05",
+    ( 4,  1): "P03",
+    ( 4,  2): "P02",
+    ( 4,  3): "P01",
+    ( 4,  4): "P00",
+    ( 4,  5): "PF5",
+    # ( 4, 6): PJ5 -- JTAG TDO, excluded from firmware sweep
+    # ( 4, 7): PJ3 -- JTAG TMS, excluded from firmware sweep
+    ( 4,  8): "P33",
+    ( 4,  9): "P32",
+    ( 4, 10): "P25",
+    ( 4, 11): "P24",
+    ( 4, 12): "P23",
+    ( 4, 13): "P22",
+    ( 4, 14): "P21",
+    ( 4, 15): "PD0",
 }
 ```
 
@@ -246,9 +297,150 @@ top-to-bottom for DIO 8-15.
     ( 2, 15): "P12",
 ```
 
+## AD2 D -- SN `<pending, run --auto-map>` (index 3)
+
+Wired Col 9 top-to-bottom for DIO 0-2 (pins 109/110/111), then across
+to Col 8 top-to-bottom for DIO 3-15 (pins 144 down to 127, skipping
+the VCC row at 132 and the VSS row at 130 since AD2 D's DIO 12 and
+DIO 13 jump over them onto the next GPIO). All 16 channels are live.
+
+| DIO | Breakout pin | GPIO | Col/Row (pin_map) | Notes |
+|-----|--------------|------|-------------------|-------|
+|  0  |        109   | PE2  | Col 9, Row 1      | OK    |
+|  1  |        110   | PE1  | Col 9, Row 2      | OK    |
+|  2  |        111   | PE0  | Col 9, Row 3      | OK    |
+|  3  |        144   | P07  | Col 8, Row 1      | OK    |
+|  4  |        141   | P40  | Col 8, Row 2      | OK    |
+|  5  |        139   | P41  | Col 8, Row 3      | OK    |
+|  6  |        138   | P42  | Col 8, Row 4      | OK    |
+|  7  |        137   | P43  | Col 8, Row 5      | OK    |
+|  8  |        136   | P44  | Col 8, Row 6      | OK    |
+|  9  |        135   | P45  | Col 8, Row 7      | OK    |
+| 10  |        134   | P46  | Col 8, Row 8      | OK    |
+| 11  |        133   | P47  | Col 8, Row 9      | OK    |
+| 12  |        131   | P90  | Col 8, Row 11     | OK (jumped over VCC pin 132 at Row 10) |
+| 13  |        129   | P91  | Col 8, Row 13     | OK (jumped over VSS pin 130 at Row 12) |
+| 14  |        128   | P92  | Col 8, Row 14     | OK    |
+| 15  |        127   | P93  | Col 8, Row 15     | OK    |
+
+### Summary for AD2 D
+
+- 16/16 channels live (no VCC/VSS hits)
+- Zero overlap with AD2 A, B, or C
+- Completes Port E (PE0-PE7: PE0/PE1/PE2 here, PE3-PE7 already on AD2 A)
+- Completes Port 4 (P40-P47) and the P9x block (P90, P91, P92, P93)
+- Adds P07 to round out Port 0 coverage started by Col 1 (still unwired)
+
+### Ready-to-paste CHANNEL_TO_PIN additions
+
+```python
+    # AD2 D -- SN <pending>
+    ( 3,  0): "PE2",
+    ( 3,  1): "PE1",
+    ( 3,  2): "PE0",
+    ( 3,  3): "P07",
+    ( 3,  4): "P40",
+    ( 3,  5): "P41",
+    ( 3,  6): "P42",
+    ( 3,  7): "P43",
+    ( 3,  8): "P44",
+    ( 3,  9): "P45",
+    ( 3, 10): "P46",
+    ( 3, 11): "P47",
+    ( 3, 12): "P90",
+    ( 3, 13): "P91",
+    ( 3, 14): "P92",
+    ( 3, 15): "P93",
+```
+
+## AD2 E -- SN `<pending, run --auto-map>` (index 4)
+
+Wired down Col 1 top-to-bottom for DIO 0-14 (pins 2, 4, 6, 7, 8, 9,
+11, 13, 26, 27, 32, 33, 34, 35, 36), then across to Col 7 Row 1 for
+DIO 15 (pin 126). All 16 channels are live.
+
+Breakout pins 14-25 are dead rows on Col 1 (VCC/VSS interposed on the
+silkscreen between rows 8 and 9) so the DIO 7 -> DIO 8 jump crosses
+the physical gap without a separate flywire.
+
+| DIO | Breakout pin | GPIO | Col/Row (pin_map) | Notes |
+|-----|--------------|------|-------------------|-------|
+|  0  |          2   | P05  | Col 1, Row 1      | OK    |
+|  1  |          4   | P03  | Col 1, Row 2      | OK    |
+|  2  |          6   | P02  | Col 1, Row 3      | OK    |
+|  3  |          7   | P01  | Col 1, Row 4      | OK    |
+|  4  |          8   | P00  | Col 1, Row 5      | OK    |
+|  5  |          9   | PF5  | Col 1, Row 6      | OK    |
+|  6  |         11   | PJ5  | Col 1, Row 7      | **DEAD (JTAG TDO, excluded from firmware sweep)** |
+|  7  |         13   | PJ3  | Col 1, Row 8      | **DEAD (JTAG TMS, excluded from firmware sweep)** |
+|  8  |         26   | P33  | Col 1, Row 9      | OK (jumped physical gap after Row 8) |
+|  9  |         27   | P32  | Col 1, Row 10     | OK    |
+| 10  |         32   | P25  | Col 1, Row 11     | OK    |
+| 11  |         33   | P24  | Col 1, Row 12     | OK    |
+| 12  |         34   | P23  | Col 1, Row 13     | OK    |
+| 13  |         35   | P22  | Col 1, Row 14     | OK    |
+| 14  |         36   | P21  | Col 1, Row 15     | OK    |
+| 15  |        126   | PD0  | Col 7, Row 1      | OK (anchors the Col 7 block) |
+
+### Summary for AD2 E
+
+- 14 of 16 channels carry real GPIO signals during the sweep
+- 2 dead channels: **DIO 6 (PJ5)** and **DIO 7 (PJ3)** are JTAG
+  TMS/TDO and `main.c` intentionally skips them to avoid hanging the
+  MCU while E2 Lite is connected. Verification script logs them as
+  "not in FIRMWARE_PIN_ORDER" and they should be left out of
+  CHANNEL_TO_PIN. Flywires stay connected so the slot is accounted
+  for physically.
+- Zero overlap with AD2 A, B, C, or D
+- Completes Port 0 lower half (P00-P05; P07 already on AD2 D)
+- Completes Port 2 upper half (P21-P25; P20 already on AD2 C)
+- Adds Port 3 (P32, P33), PF5
+- First pin on Port D (PD0); PD1-PD7 still unwired
+
+### Option: enabling PJ3/PJ5 in the firmware (future work)
+
+If the team wants to reclaim DIO 6 and DIO 7 as real capture channels,
+it is possible IF the E2 Lite is physically disconnected before the
+sweep starts:
+
+1. Add PJ3 and PJ5 entries to `s_pins[]` in `star-rx72n-firmware/gpio_test/main.c`.
+2. Add `"PJ3"` and `"PJ5"` to `FIRMWARE_PIN_ORDER` in
+   `gpio_verify.py`.
+3. Un-skip `(4, 6)` and `(4, 7)` in `CHANNEL_TO_PIN`.
+4. Unplug E2 Lite before running `gpio_verify.py --verbose`.
+
+Not doing that by default because the existing comment in `main.c`
+(lines 24-25 and 129-132) is explicit about the hang risk, and the
+team's current workflow keeps E2 Lite connected during sweeps for
+faster iteration.
+
+### Ready-to-paste CHANNEL_TO_PIN additions
+
+```python
+    # AD2 E -- SN <pending>
+    ( 4,  0): "P05",
+    ( 4,  1): "P03",
+    ( 4,  2): "P02",
+    ( 4,  3): "P01",
+    ( 4,  4): "P00",
+    ( 4,  5): "PF5",
+    # ( 4, 6): PJ5 -- JTAG TDO, excluded from firmware sweep
+    # ( 4, 7): PJ3 -- JTAG TMS, excluded from firmware sweep
+    ( 4,  8): "P33",
+    ( 4,  9): "P32",
+    ( 4, 10): "P25",
+    ( 4, 11): "P24",
+    ( 4, 12): "P23",
+    ( 4, 13): "P22",
+    ( 4, 14): "P21",
+    ( 4, 15): "PD0",
+```
+
 ## Identification method used
 
 Unplugged the second AD2, re-enumerated with `pydwf`. Whichever SN
 stayed enumerated is AD2 A. `210321A36AA3` was the one that remained,
 so the unplugged unit is `210321A36AAE` (AD2 B). AD2 C
 (`210321A2AE49`) was added after both A and B were already identified.
+AD2 D and AD2 E's serials are pending the next `gpio_verify.py
+--auto-map` run with all five units plugged in simultaneously.

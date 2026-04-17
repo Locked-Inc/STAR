@@ -49,6 +49,11 @@ AD2_SERIAL_NUMBERS = [
     "210321A36AA3",  # AD2 #0 (A)
     "210321A36AAE",  # AD2 #1 (B)
     "210321A2AE49",  # AD2 #2 (C)
+    # AD2 #3 (D) and AD2 #4 (E): serials pending. Run `--auto-map`
+    # with all five units plugged in, note the two newly-enumerated
+    # SNs, and paste them here.
+    "",              # AD2 #3 (D) -- PLACEHOLDER, replace with SN
+    "",              # AD2 #4 (E) -- PLACEHOLDER, replace with SN
 ]
 
 CHANNELS_PER_AD2 = 16  # DIO 0..15 on each AD2
@@ -92,6 +97,30 @@ CHANNEL_TO_PIN: dict[tuple[int, int], str] = {
     (2,  8): "P20",
     (2,  9): "P17", (2, 10): "P87", (2, 11): "P86",
     (2, 12): "P15", (2, 13): "P14", (2, 14): "P13", (2, 15): "P12",
+    # AD2 D -- SN pending (Col 9 rows 1-3 + all of Col 8)
+    (3,  0): "PE2", (3,  1): "PE1", (3,  2): "PE0",
+    (3,  3): "P07",
+    (3,  4): "P40", (3,  5): "P41",
+    (3,  6): "P42", (3,  7): "P43",
+    (3,  8): "P44", (3,  9): "P45",
+    (3, 10): "P46", (3, 11): "P47",
+    (3, 12): "P90",
+    (3, 13): "P91", (3, 14): "P92", (3, 15): "P93",
+    # AD2 E -- SN pending (all of Col 1 + Col 7 row 1)
+    (4,  0): "P05", (4,  1): "P03",
+    (4,  2): "P02", (4,  3): "P01", (4,  4): "P00",
+    (4,  5): "PF5",
+    # (4, 6) -- pin 11 is PJ5 (JTAG TDO). Intentionally excluded from
+    # the firmware sweep in main.c because driving PJ-port pins while
+    # the E2 Lite has the debug interface latched hangs the MCU.
+    # Flywire stays connected so the channel slot is accounted for;
+    # verification skips it. Un-skip by adding PJ5 to s_pins[] AND
+    # ensuring E2 Lite is physically disconnected during the sweep.
+    # (4, 7) -- pin 13 is PJ3 (JTAG TMS). Same caveat as PJ5.
+    (4,  8): "P33", (4,  9): "P32",
+    (4, 10): "P25", (4, 11): "P24",
+    (4, 12): "P23", (4, 13): "P22", (4, 14): "P21",
+    (4, 15): "PD0",
 }
 
 # ============================================================================
