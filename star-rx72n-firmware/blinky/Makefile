@@ -22,7 +22,7 @@ LDFLAGS := $(CPU) -nostartfiles -Wl,-e_PowerON_Reset_PC -T linker.ld
 SRCS    := startup.S main.c
 TARGET  := blinky
 
-RFP_CLI := rfp-cli
+RFP_CLI := /opt/rfp/linux-x64/rfp-cli
 
 .PHONY: all flash clean
 

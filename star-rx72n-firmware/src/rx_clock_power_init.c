@@ -279,7 +279,13 @@ typedef enum : uint16_t {
 typedef enum : uint32_t {
   k_system_clock_dividers   = 0x21C21211, /**< SCKCR: ICLK=240MHz, PCLKA=120MHz, others=60MHz */
   k_system_clock_source_pll = 0x0400,     /**< SCKCR3: Select PLL as system clock source */
+  k_packcr_addr             = 0x00080044, /**< PACKCR absolute address (USB clock source select) */
 } system_clock_config_t;
+
+/** @brief PACKCR (peripheral clock) values -- routes UCLK from PPLL for USB */
+typedef enum : uint16_t {
+  k_packcr_upllsel_ppll = (1U << 12) | 1U, /**< UPLLSEL=1 (b12) PPLL path; b0 reserved=1 */
+} packcr_config_t;
 
 /** @brief Module stop bit positions in MSTPCRA */
 typedef enum : uint8_t {
@@ -449,7 +455,26 @@ static rx_err_t internal_start_oscillators_and_plls(void)
   *ppllcr_reg()  = k_ppll_config_48mhz;
   *ppllcr2_reg() = k_ppll_enabled;
 
-  return internal_wait_ppll_lock();
+  const rx_err_t ppll_err = internal_wait_ppll_lock();
+  if (ppll_err != k_rx_ok) {
+    return ppll_err;
+  }
+
+  /* Route USB0 UCLK from the PPLL path by setting PACKCR.UPLLSEL=1.
+   * Without this, the USB module gets its 48 MHz clock from SCKCR2.UCK
+   * (main-PLL divider), which is not configured here and defaults to a
+   * divider that produces the wrong frequency -- USB0 then never
+   * enumerates even though rx_usb_hw_init() and D+ pull-up run cleanly.
+   *
+   * PACKCR layout (RX72N HW manual p365):
+   *   b12 UPLLSEL : 0 = main PLL (default), 1 = PPLL
+   *   b0          : reserved, must be written as 1
+   *
+   * The HAL struct at rx72n_system_regs.h doesn't expose packcr; write
+   * it via the absolute address the register reference table uses. */
+  *((volatile uint16_t*)k_packcr_addr) = k_packcr_upllsel_ppll;
+
+  return k_rx_ok;
 }
 
 /**
