@@ -1,10 +1,11 @@
-# RX72N USB0 Bring-up -- SUCCESS
+# RX72N USB0 Bring-up -- SUCCESS (macOS *and* Linux)
 
-**Status**: RX72N USB0 enumerates successfully on macOS as VID `0x1209` / PID `0x0001`, Full-Speed USB 2.0, `kUSBAddress = 6`.
+**Status**: RX72N USB0 enumerates as VID `0x1209` / PID `0x0001`, Full-Speed USB 2.0,
+on both macOS and Linux (Raspberry Pi 5, Ubuntu 24.04, kernel 6.8.0-1051-raspi).
 
 **Working firmware**: `star-rx72n-firmware/usb_test/hoco_pid_fix.c`
 
-**Host proof (`ioreg -p IOUSB`)**:
+**macOS proof (`ioreg -p IOUSB`)**:
 ```
 "Device Speed" = 1       (Full-Speed USB 2.0)
 "idVendor"     = 4617    (0x1209, pid.codes test VID)
@@ -12,11 +13,28 @@
 "kUSBAddress"  = 6       (SET_ADDRESS completed by host)
 ```
 
+**Linux proof (`lsusb`)**:
+```
+Bus 001 Device 035: ID 1209:0001 Generic pid.codes Test PID
+```
+
+`lsusb -v -d 1209:0001` returns the full device + config + interface descriptors with
+no errors (`bcdUSB 2.00`, `bMaxPacketSize0 64`, `wTotalLength 0x0012`,
+`bNumInterfaces 1`, `bMaxPower 100mA`).
+
 ---
 
-## The 9 Bugs
+## The 10 Bugs
 
-They are numbered in the order they were found; 1-7 were clock/register issues blocking *any* USB activity, 8-9 were the final blockers preventing enumeration from completing. All register/bit references cite the RX72N Hardware User Manual (`docs/rx72n-manual/r01uh0824ej0111_rx72n-2931480.pdf`).
+Bugs 1-9 were found and fixed during the macOS bring-up (2026-04 and earlier).
+Bug 10 was found and fixed during the Pi5/Linux bring-up (2026-04-16) -- macOS
+silently tolerated the malformed USB transfer that Linux's host stack rejects
+with `-75 EOVERFLOW`.
+
+Bugs 1-7 were clock/register issues blocking *any* USB activity. Bugs 8-9 were
+the final blockers preventing enumeration from completing on macOS. Bug 10
+prevented enumeration on Linux only. All register/bit references cite the
+RX72N Hardware User Manual (`docs/rx72n-manual/r01uh0824ej0111_rx72n-2931480.pdf`).
 
 ### 1. PLLCR at wrong address
 
@@ -129,6 +147,61 @@ cfifo_write(src, s);           /* write descriptor to CFIFO, sets BVAL */
 REG16(DCPCTR) |= (1U << 2);    /* CCPL -- accept zero-length status OUT */
 ```
 
+### 10. CFIFO 16-bit MBW pads odd-length transfers (Linux-only blocker)
+
+**Manual page 1947, section 40.2.16 (CFIFOSEL.MBW)**:
+> "MBW = 0: Byte access (8-bit width); MBW = 1: Word access (16-bit width).
+> When word access is selected, two-byte data is transferred per access of CFIFO."
+
+**Manual page 1949, section 40.2.18 (CFIFOCTR.DTLN)**:
+> "Receive Data Length: indicates the length of the receive data... For CPU-write
+> direction, DTLN is automatically incremented by the access width per write."
+
+The original `cfifo_write()` ran in 16-bit MBW mode and looped `i += 2`,
+synthesizing a final padded word for odd-length transfers:
+
+```c
+/* WRONG: 16-bit MBW with byte-pair loop */
+REG16(CFIFOSEL) = (1U << 5) | (1U << 10);   /* ISEL=1, MBW=16 */
+for (uint16_t i = 0; i < len; i += 2U) {
+    uint16_t w = data[i];
+    if (i + 1U < len) { w |= (uint16_t)data[i + 1U] << 8; }
+    REG16(CFIFO) = w;                       /* DTLN += 2 each write */
+}
+REG16(CFIFOCTR) |= (1U << 15);              /* BVAL: send DTLN bytes */
+```
+
+For an odd `len = 9` (Linux's first `GET_DESCRIPTOR(CONFIGURATION)`), this
+issues 5 word writes -> hardware DTLN = 10. When the host requested 9 bytes,
+the device returned 10. The xHCI host controller flags this as **babble**
+(more bytes than the SETUP `wLength`) and the kernel reports
+`-75 EOVERFLOW`:
+
+```
+usb 1-1.2.1: new full-speed USB device number 29 using xhci_hcd
+usb 1-1.2.1: unable to read config index 0 descriptor/start: -75
+usb 1-1.2.1: can't read configurations, error -75
+```
+
+**Why macOS never hit this**: the macOS USB stack's first `GET_DESCRIPTOR`
+on a CONFIGURATION descriptor uses `wLength = 8` (or 18), both even.
+Linux uses `wLength = 9` -- exactly the descriptor header length per the USB
+spec. The 16-bit MBW path is correct for even transfers and works for the
+18-byte device descriptor, so macOS sailed through.
+
+**Fix:** use 8-bit MBW so each write contributes exactly one byte to DTLN
+regardless of total length. The DCP can stream individual bytes; only the
+non-DCP pipes need 16-bit mode for throughput.
+
+```c
+/* RIGHT: 8-bit MBW, one byte per write */
+REG16(CFIFOSEL) = (1U << 5);                /* ISEL=1, MBW=0 (8-bit) */
+for (uint16_t i = 0; i < len; i++) {
+    REG8(CFIFO) = data[i];                  /* DTLN += 1 each write */
+}
+REG16(CFIFOCTR) |= (1U << 15);
+```
+
 ---
 
 ## How We Found the Final Two (the fun part)
@@ -193,6 +266,78 @@ while time.time() - start < 6.0:
    was *sending* data, but the Control Read status stage never completed.
 3. After fix 9 (added CCPL): device appeared in `ioreg` with the correct
    VID/PID, kUSBAddress=6. Done.
+
+---
+
+## How We Found Bug 10 (Linux bring-up, 2026-04-16)
+
+After moving firmware development to a Pi5 (Ubuntu 24.04), the macOS-validated
+`hoco_pid_fix.c` would not enumerate. PB3 read `avg = 1.000` -- the *device*
+believed it was Configured -- yet `lsusb | grep 1209` returned nothing and
+`dmesg` showed:
+
+```
+usb 1-1.2.1: new full-speed USB device number 29 using xhci_hcd
+usb 1-1.2.1: unable to read config index 0 descriptor/start: -75
+usb 1-1.2.1: can't read configurations, error -75
+usb 1-1.2-port1: attempt power cycle
+usb 1-1.2-port1: unable to enumerate USB device
+```
+
+PB3 said the firmware reached DVSQ=3 because the previous enumeration *attempt*
+had transiently succeeded through SET_CONFIGURATION on the device's hardware
+state machine -- but the host then rejected the next descriptor read and gave up.
+
+The smoking gun came from `usbmon` (kernel USB sniffer):
+
+```bash
+sudo modprobe usbmon
+sudo cat /sys/kernel/debug/usb/usbmon/1u > /tmp/usbmon.log &
+# trigger re-enumeration via re-flash
+rfp-cli -d RX72N -t e2l -if fine -run \
+  -auth id FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF -a hoco_pid_fix.mot
+```
+
+Decoded transactions for one of the failed attempts (device address 29):
+
+```
+S Ci:1:029:0 s 80 06 0100 0000 0012 18 <          GET_DESCRIPTOR(DEVICE, 18)
+C Ci:1:029:0 0 18 = 12010002 ff000040 09120100 00010000 0001
+                                                   ^^^^^^^^ device descriptor OK
+
+S Ci:1:029:0 s 80 06 0600 0000 000a 10 <          GET_DESCRIPTOR(DEV_QUALIFIER, 10)
+C Ci:1:029:0 -32 0                                 -32 = STALL (firmware correctly STALLs)
+
+S Ci:1:029:0 s 80 06 0200 0000 0009 9 <           GET_DESCRIPTOR(CONFIG, 9)  <-- ODD!
+C Ci:1:029:0 -75 0                                 -75 EOVERFLOW: device sent more than 9
+```
+
+`wLength = 9` is the killer. The 16-bit MBW write loop turns 9 bytes into 5
+word writes (10 bytes in the FIFO), so DTLN = 10 when the host wanted 9. The
+xHCI controller flags this as babble and surfaces it as `-75 EOVERFLOW`.
+
+macOS's xHCI stack (different driver, different first-read length) never asks
+with `wLength = 9`, so the same firmware enumerated cleanly there.
+
+After applying bug-10's 8-bit MBW fix and reflashing, the same usbmon capture
+shows the 9-byte CONFIG read completing with exactly 9 bytes, then Linux
+asks again with `wLength = 18` and the full descriptor returns:
+
+```
+S Ci:1:035:0 s 80 06 0200 0000 0009 9 <
+C Ci:1:035:0 0 9 = 09021200 01010080 32       <-- exactly 9 bytes
+                   ^^ ^^ ^^^^^         ^^
+                   |  |  |             bMaxPower (0x32 = 100mA)
+                   |  |  wTotalLength = 0x0012 = 18
+                   |  bDescriptorType = 2 (CONFIGURATION)
+                   bLength = 9
+```
+
+The host reads `wTotalLength = 0x0012 = 18`, then issues a second
+`GET_DESCRIPTOR(CONFIG, 18)` to fetch the full 18-byte configuration
+(9-byte config header + 9-byte interface descriptor).
+
+`lsusb | grep 1209` -> `Bus 001 Device 035: ID 1209:0001 Generic pid.codes Test PID`.
 
 ---
 
