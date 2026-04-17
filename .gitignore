@@ -1,6 +1,9 @@
 # Claude Code local overrides (machine-specific, not shared)
 CLAUDE.local.md
 
+# Git worktrees (project-local, isolated workspaces)
+.worktrees/
+
 # macOS system files
 .DS_Store
 .DS_Store?
