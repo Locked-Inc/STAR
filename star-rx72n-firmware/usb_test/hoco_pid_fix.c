@@ -51,6 +51,11 @@ static const uint8_t s_cfg[18] = {
 #define LED_OFF()   do { REG8(0x8C02A) &= ~0x80U; } while (0)
 #define LED_TGL()   do { REG8(0x8C02A) ^= 0x80U; } while (0)
 
+/* PB3 = pin 82 = AD2 IO7 for diagnostic output */
+#define PB3_INIT()  do { REG8(0x8C00B) |= 0x08U; REG8(0x8C02B) &= ~0x08U; } while (0)
+#define PB3_HIGH()  do { REG8(0x8C02B) |=  0x08U; } while (0)
+#define PB3_LOW()   do { REG8(0x8C02B) &= ~0x08U; } while (0)
+
 /* Blink N times slowly -- user can see which phase firmware reached */
 static void blink(uint8_t count)
 {
@@ -85,6 +90,7 @@ int main(void)
     delay(10000U);
 
     LED_INIT();
+    PB3_INIT();
     blink(1);  /* PHASE 1: firmware started */
 
     /* ================================================================
@@ -153,9 +159,25 @@ int main(void)
      * POLL LOOP -- with PID=BUF fix after SETUP reception
      * ================================================================ */
     volatile uint32_t pc = 0;
+    volatile uint32_t ctrt_count = 0;  /* Count SETUP receptions */
+    volatile uint32_t get_desc_count = 0;
     for (;;) {
         pc++;
-        if ((pc & 0x7FFFFU) == 0) { LED_TGL(); }  /* fast heartbeat */
+        if ((pc & 0x7FFFFU) == 0) {
+            LED_TGL();  /* fast heartbeat */
+            /* PB3 pulses: count of GET_DESCRIPTOR handlers entered.
+             * - Long HIGH (50% duty) = DVSQ 3 (Configured)
+             * - Short pulses = count of CTRTs processed (mod 16)
+             * Encode get_desc_count as PB3 state. */
+            uint8_t dvsq = (uint8_t)((REG16(INTSTS0) >> 4) & 0x7U);
+            if (dvsq >= 3U) {
+                PB3_HIGH();  /* Configured! */
+            } else {
+                /* Toggle PB3 based on ctrt_count low bit
+                 * (so rate of toggle = CTRT frequency) */
+                if ((ctrt_count & 1U) == 0) { PB3_LOW(); } else { PB3_HIGH(); }
+            }
+        }
 
         uint16_t st = REG16(INTSTS0);
 
@@ -164,6 +186,7 @@ int main(void)
         }
 
         if (st & (1U << 11)) {
+            ctrt_count++;
             uint16_t c = st & 7U;
             if (c == 1U || c == 3U || c == 5U) {
                 REG16(INTSTS0) = (uint16_t)~(1U << 3);
@@ -177,6 +200,7 @@ int main(void)
                 uint8_t  br  = (uint8_t)(req >> 8);
 
                 if (br == 0x06U) {
+                    get_desc_count++;
                     uint8_t dt = (uint8_t)(val >> 8);
                     const uint8_t *src = (dt == 1U) ? s_dev
                                        : (dt == 2U) ? s_cfg
@@ -184,6 +208,8 @@ int main(void)
                     if (src) {
                         uint16_t s = (len < 18U) ? len : 18U;
                         cfifo_write(src, s);
+                        /* Control Read: set CCPL to accept status stage OUT */
+                        REG16(DCPCTR) |= (1U << 2);
                     } else {
                         REG16(DCPCTR) = (REG16(DCPCTR) & ~3U) | 2U;
                     }
