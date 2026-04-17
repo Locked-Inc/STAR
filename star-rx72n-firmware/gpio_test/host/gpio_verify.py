@@ -66,19 +66,32 @@ CHANNELS_PER_AD2 = 16  # DIO 0..15 on each AD2
 # ============================================================================
 
 CHANNEL_TO_PIN: dict[tuple[int, int], str] = {
-    # AD2 #0 (SN: 210321A2AE49)
-    # (0, 0): "P05",
-    # (0, 1): "P03",
-    # (0, 2): "P02",
-    # ... fill in when wired ...
-
-    # AD2 #1 (SN: 210321A36AA3)
-    # (1, 0): "P20",
-    # ... fill in when wired ...
-
-    # AD2 #2 (SN: 210321A36AAE)
-    # (2, 0): "PE3",
-    # ... fill in when wired ...
+    # AD2 A -- SN 210321A36AA3 (Col 6 + pin 92)
+    (0,  0): "PE3", (0,  1): "PE4", (0,  2): "PE5",
+    # (0, 3) -- pin 105 is VCC, not a GPIO
+    (0,  4): "P70",
+    # (0, 5) -- pin 103 is VCC, not a GPIO
+    (0,  6): "PE6", (0,  7): "PE7",
+    (0,  8): "P65", (0,  9): "P66", (0, 10): "P67",
+    (0, 11): "PA0", (0, 12): "PA1", (0, 13): "PA2",
+    (0, 14): "PA3", (0, 15): "PA4",
+    # AD2 B -- SN 210321A36AAE (Col 5 + Col 3)
+    (1,  0): "PA5", (1,  1): "PA6", (1,  2): "PA7",
+    (1,  3): "PB0",
+    (1,  4): "P71", (1,  5): "P72",
+    (1,  6): "PB1", (1,  7): "PB2", (1,  8): "PB3",
+    (1,  9): "PB4", (1, 10): "PB5",
+    (1, 11): "P74", (1, 12): "P75",
+    (1, 13): "PC2",
+    (1, 14): "P76", (1, 15): "P77",
+    # AD2 C -- SN 210321A2AE49 (Col 3 + Col 2)
+    (2,  0): "PC3", (2,  1): "PC4",
+    (2,  2): "P80", (2,  3): "P81", (2,  4): "P82",
+    (2,  5): "PC5", (2,  6): "PC6",
+    (2,  7): "P83",
+    (2,  8): "P20",
+    (2,  9): "P17", (2, 10): "P87", (2, 11): "P86",
+    (2, 12): "P15", (2, 13): "P14", (2, 14): "P13", (2, 15): "P12",
 }
 
 # ============================================================================
@@ -119,17 +132,22 @@ FIRMWARE_PIN_ORDER = [
     "PE0", "PE1", "PE2", "PE3", "PE4", "PE5", "PE6", "PE7",
     # Port F
     "PF5",
-    # Port J
-    "PJ3", "PJ5",
+    # PJ3 and PJ5 are intentionally omitted from the firmware sweep
+    # because they double as JTAG TMS/TDO and hang the MCU when driven
+    # while the E2 Lite is attached (see main.c).
 ]
 
 NUM_PINS = len(FIRMWARE_PIN_ORDER)
 
-# Firmware timing (seconds)
-PIN_HIGH_MS = 50
-PIN_LOW_MS = 50
+# Firmware timing. The firmware pulses each pin HIGH for ~5 ms then LOW
+# for ~5 ms using a nop busy-wait at ICLK = 96 MHz, then inserts a long
+# quiet gap between cycles. Exact timing drifts a little between runs,
+# so verify_edges accepts a wide tolerance and auto_discover_mapping
+# measures the cycle length empirically from the capture.
+PIN_HIGH_MS = 5
+PIN_LOW_MS = 5
 PIN_PERIOD_MS = PIN_HIGH_MS + PIN_LOW_MS
-CYCLE_GAP_MS = 1000
+CYCLE_GAP_MS = 2500
 CYCLE_DURATION_MS = NUM_PINS * PIN_PERIOD_MS + CYCLE_GAP_MS
 
 
@@ -288,7 +306,11 @@ def verify_edges(results: list[PinResult], all_edges: list[EdgeEvent],
         key = (e.ad2_index, e.channel)
         edge_map.setdefault(key, []).append(e)
 
-    tolerance_ms = 20.0  # +/- 20 ms timing tolerance
+    # Timing slop allowed when matching observed edges to expected windows.
+    # nop-based firmware delays drift a bit between boot and steady state,
+    # and the AD2 capture loop polls roughly every 1 ms, so ~half a pin
+    # period is the right tolerance for a ~5 ms pulse.
+    tolerance_ms = max(3.0, PIN_PERIOD_MS * 0.5)
 
     for result in results:
         if result.pin_name not in pin_to_channel:
@@ -425,39 +447,79 @@ def auto_discover_mapping(all_edges: list[EdgeEvent],
               "or all probes are floating")
         return {}
 
-    # Pool rising edges from signal channels only to find the cycle gap.
-    rising_times: list[float] = []
+    # Pool ALL edges (rising + falling) on signal channels, sort by time,
+    # and find the longest interval with zero activity. That interval IS
+    # the cycle gap -- during it, no pin is toggling anywhere. Using only
+    # rising edges misses the fact that within a cycle, the largest gap
+    # between two *wired* rising edges can exceed the cycle gap when the
+    # wiring is sparse.
+    all_times: list[float] = []
     for key, entry in stats.items():
         if cls[key]["verdict"] == "signal":
-            rising_times.extend(entry["rising"])
-    rising_times.sort()
+            all_times.extend(entry["rising"])
+            all_times.extend(entry["falling"])
+    all_times.sort()
 
-    if len(rising_times) < 2:
+    if len(all_times) < 2:
         print("  auto-map: not enough signal-channel edges to anchor")
         return {}
 
-    gaps = [(rising_times[i + 1] - rising_times[i], rising_times[i + 1])
-            for i in range(len(rising_times) - 1)]
-    gap_duration, t_anchor = max(gaps, key=lambda x: x[0])
+    gaps = [(all_times[i + 1] - all_times[i], all_times[i + 1])
+            for i in range(len(all_times) - 1)]
+    gap_duration, t_after_gap = max(gaps, key=lambda x: x[0])
 
-    if gap_duration < 500.0:
-        print(f"  auto-map: longest signal-channel gap is only "
-              f"{gap_duration:.0f} ms (expected ~1000 ms)")
+    # t_after_gap is the first edge after the quiet window. Back it up to
+    # the start of pin 0's HIGH pulse: subtract at most one tolerance
+    # because pin 0 may or may not be a wired signal channel.
+    min_gap = max(CYCLE_GAP_MS * 0.5, PIN_PERIOD_MS * 3.0)
+    if gap_duration < min_gap:
+        print(f"  auto-map: longest quiet window is only "
+              f"{gap_duration:.0f} ms (expected >= {min_gap:.0f} ms)")
         return {}
 
+    # Measure the true pin_period from the capture. The firmware's nop
+    # delay drifts a little so PIN_PERIOD_MS is only a starting estimate.
+    # Every gap wider than min_gap is a cycle boundary; the distance
+    # between consecutive boundaries is one full cycle, and
+    # (cycle_len - gap) / NUM_PINS gives the real pin period.
+    cycle_boundaries = sorted(
+        [t for dur, t in gaps if dur >= min_gap])
+    pin_period_ms = float(PIN_PERIOD_MS)
+    if len(cycle_boundaries) >= 2:
+        cycle_lens = [cycle_boundaries[i + 1] - cycle_boundaries[i]
+                      for i in range(len(cycle_boundaries) - 1)]
+        cycle_len = sum(cycle_lens) / len(cycle_lens)
+        sweep_len = cycle_len - gap_duration
+        if sweep_len > 0.0:
+            pin_period_ms = sweep_len / float(NUM_PINS)
+
+    # t_after_gap is the first wired pin's rising edge after the quiet
+    # window, NOT the theoretical start of pin 0. If the user has
+    # pre-populated CHANNEL_TO_PIN we can back the anchor up by the
+    # index of the earliest wired pin so the computed mapping lines up
+    # with FIRMWARE_PIN_ORDER[0] at t_anchor.
+    t_anchor = t_after_gap
+    if CHANNEL_TO_PIN:
+        wired_names = set(CHANNEL_TO_PIN.values())
+        first_idx = next(
+            (i for i, n in enumerate(FIRMWARE_PIN_ORDER) if n in wired_names),
+            0)
+        t_anchor = t_after_gap - first_idx * pin_period_ms
+
     print(f"  auto-map: cycle boundary at t = {t_anchor:.0f} ms "
-          f"(gap = {gap_duration:.0f} ms)")
+          f"(gap = {gap_duration:.0f} ms, pin_period = {pin_period_ms:.2f} ms)")
 
     mapping: dict[tuple[int, int], str] = {}
-    cycle_end = t_anchor + NUM_PINS * PIN_PERIOD_MS
+    cycle_end = t_anchor + NUM_PINS * pin_period_ms
     for key, entry in stats.items():
         if cls[key]["verdict"] != "signal":
             continue
-        after = [t for t in entry["rising"] if t_anchor - 20.0 <= t < cycle_end]
+        after = [t for t in entry["rising"]
+                 if t_anchor - pin_period_ms < t < cycle_end]
         if not after:
             continue
         t_edge = min(after)
-        pin_idx = round((t_edge - t_anchor) / PIN_PERIOD_MS)
+        pin_idx = round((t_edge - t_anchor) / pin_period_ms)
         if 0 <= pin_idx < NUM_PINS:
             mapping[key] = FIRMWARE_PIN_ORDER[pin_idx]
     return mapping

@@ -140,7 +140,13 @@ static const pin_desc_t s_pins[] = {
 typedef enum : uint32_t {
     k_num_pins   = (uint32_t)(sizeof(s_pins) / sizeof(s_pins[0])),
     k_delay_iter = 50000U,
-    k_gap_iters  = 40U,
+    /* Gap must be longer than the longest intra-cycle interval between
+     * two WIRED channels' edges, otherwise gpio_verify.py --auto-map can
+     * anchor to the wrong gap. With sparse wiring (up to ~30 consecutive
+     * unwired pins between wired ones) intra-cycle gaps can approach
+     * 300 ms, so 500 delay iterations gives a ~2.5 s cycle gap that is
+     * unambiguous regardless of how the probes are placed. */
+    k_gap_iters  = 500U,
 } timing_t;
 
 /* ==========================================================================
