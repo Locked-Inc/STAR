@@ -164,7 +164,10 @@ check_formatting() {
             echo "  Checking: $file" >&2
         fi
         
-        # Check if file would be changed by clang-format
+        # Check if file would be changed by clang-format. On failure,
+        # print the actual unified diff so CI / reviewers can see WHY
+        # the file is considered unformatted -- the old "filename only"
+        # output made it nearly impossible to debug CI-only discrepancies.
         if ! "$CLANG_FORMAT_BIN" --dry-run --Werror "$file" >/dev/null 2>&1; then
             if [ "$issues_found" = false ]; then
                 echo "" >&2
@@ -172,6 +175,9 @@ check_formatting() {
                 issues_found=true
             fi
             echo "  $file" >&2
+            echo "    ---- proposed diff ($CLANG_FORMAT_BIN) ----" >&2
+            diff -u "$file" <("$CLANG_FORMAT_BIN" "$file") >&2 || true
+            echo "    ---- end diff ----" >&2
         fi
     done
     
