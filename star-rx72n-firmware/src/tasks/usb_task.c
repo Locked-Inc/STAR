@@ -67,25 +67,30 @@ static void internal_usb_task_entry(ULONG input)
   volatile uint8_t* const portc_podr = (volatile uint8_t*)0x0008C02CU;
   volatile uint8_t* const portc_pmr  = (volatile uint8_t*)0x0008C06CU;
 
+  /* SIMPLE STATIC TEST: force PB3 and PC0 HIGH forever.  If AD2 reads
+   * high on DIO7 now, the GPIO write path works and we can refine.
+   * If AD2 still reads 0, either the probe is on a net that doesn't
+   * reach PB3/PC0, or some hardware is actively pulling the pin low. */
+  *portb_pmr &= (uint8_t)~(1U << 3);
+  *portb_pdr |= (uint8_t)(1U << 3);
+  *portb_podr |= (uint8_t)(1U << 3);
+  *portc_pmr &= (uint8_t)~(1U << 0);
+  *portc_pdr |= (uint8_t)(1U << 0);
+  *portc_podr |= (uint8_t)(1U << 0);
+
   uint32_t tick = 0U;
   for (;;) {
     rx_usb_isr_handler();
 
-    /* Force GPIO output mode every tick (motor task may stomp). */
+    /* Re-force HIGH every tick in case any other task clobbers it. */
     *portb_pmr &= (uint8_t)~(1U << 3);
     *portb_pdr |= (uint8_t)(1U << 3);
+    *portb_podr |= (uint8_t)(1U << 3);
     *portc_pmr &= (uint8_t)~(1U << 0);
     *portc_pdr |= (uint8_t)(1U << 0);
-
-    *portb_podr ^= (uint8_t)(1U << 3);
-    *portc_podr ^= (uint8_t)(1U << 0);
+    *portc_podr |= (uint8_t)(1U << 0);
 
     if ((tick % k_heartbeat_tick_period) == 0U) {
-      for (int i = 0; i < 4; i++) {
-        *portb_podr ^= (uint8_t)(1U << 3);
-        *portc_podr ^= (uint8_t)(1U << 0);
-      }
-
       static const char beat0[] = "p0\r\n";
       static const char beat1[] = "p1\r\n";
       static const char beat2[] = "p2\r\n";
