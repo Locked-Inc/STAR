@@ -2418,14 +2418,6 @@ int main(void)
 
     *PRCR_R     = 0xA503U;
     *MSTPCRB_R &= ~(1UL << 19);
-    /* PACKCR = 0x0001: UPLLSEL=0 (main PLL path, 240 MHz/5 = 48 MHz UCLK),
-     * reserved bit 0 = 1 (hardware manual requires it).  Leaving PACKCR
-     * at the reset default 0x0000 violates the "bit 0 must be 1" rule
-     * and on RX72N that appears to leave the USB0 pipe scheduler in a
-     * broken state where bulk IN NAKs every IN token even though PHY
-     * output is clean.  bulk_in_fix.c writes this explicitly. */
-    volatile uint16_t* const PACKCR_R = (volatile uint16_t*)0x00080044U;
-    *PACKCR_R = 0x0001U;
     *PRCR_R     = 0xA500U;
 
     *SYSCFG_R   = 0x0000U;
