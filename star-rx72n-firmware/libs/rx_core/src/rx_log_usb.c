@@ -463,8 +463,19 @@ void rx_log_usb_putc(char c)
 {
   internal_init_mutex_once();
 
-  /* s_mutex_initialized is always true after internal_init_mutex_once(); use unconditionally. */
-  (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
+  /* TX_NO_WAIT (not TX_WAIT_FOREVER): this function is reachable from
+   * ISR context (the USB SETUP handler chain calls rx_log_debug for
+   * SET_LINE_CODING / SET_CONTROL_LINE_STATE).  ThreadX prohibits
+   * blocking mutex acquires from an ISR -- TX_WAIT_FOREVER there
+   * either returns TX_WAIT_ERROR or hangs forever.  When the latter
+   * happens, the SETUP handler can't send its CCPL ZLP and the host's
+   * SET_CONTROL_LINE_STATE never completes, which prevents cdc_acm
+   * from finishing port open and IN URBs sit at -EINPROGRESS forever.
+   * Drop the log line if the mutex is contended -- a missed debug
+   * char is far cheaper than a hung USB stack. */
+  if (tx_mutex_get(&s_log_mutex, TX_NO_WAIT) != TX_SUCCESS) {
+    return;
+  }
 
   internal_write_usb(&c, 1);
 
@@ -537,8 +548,12 @@ void rx_log_usb_puts(const char* str)
 
   internal_init_mutex_once();
 
-  /* s_mutex_initialized is always true after internal_init_mutex_once(); use unconditionally. */
-  (void)tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
+  /* See comment in rx_log_usb_putc: TX_NO_WAIT to stay safe in ISR
+   * context.  Drop the line silently if another caller holds the
+   * mutex. */
+  if (tx_mutex_get(&s_log_mutex, TX_NO_WAIT) != TX_SUCCESS) {
+    return;
+  }
 
   internal_write_usb(str, len);
 
