@@ -379,16 +379,23 @@ typedef enum : uint16_t {
 
 /* PIPEnCTR bits */
 typedef enum : uint16_t {
-  k_usb_pipectr_pid_mask  = 0x0003,
+  /* PIPEnCTR (n=1..9) bit layout per RX72N HW manual is DIFFERENT from
+   * DCPCTR.  SQSET/SQCLR/ACLRM are one bit higher on data pipes than
+   * on the DCP.  The original values here matched DCPCTR and were
+   * silently miswiring pipe configuration -- in particular,
+   * rx_usb_hw_configure_pipe's "ACLRM" toggle was actually writing
+   * SQCLR, so pipe buffers were never auto-cleared.  Corrected
+   * positions below. */
+  k_usb_pipectr_pid_mask  = 0x0007,           /**< PID[2:0] on data pipes */
   k_usb_pipectr_pid_nak   = 0x0000,
   k_usb_pipectr_pid_buf   = 0x0001,
   k_usb_pipectr_pid_stall = 0x0002,
   k_usb_pipectr_pbusy     = (1U << 5),
   k_usb_pipectr_sqmon     = (1U << 6),
-  k_usb_pipectr_sqset     = (1U << 7),
-  k_usb_pipectr_sqclr     = (1U << 8),
-  k_usb_pipectr_aclrm     = (1U << 9),
-  k_usb_pipectr_atrepm    = (1U << 10),
+  k_usb_pipectr_sqset     = (1U << 8),        /**< DCPCTR has this at 7 */
+  k_usb_pipectr_sqclr     = (1U << 9),        /**< DCPCTR has this at 8 */
+  k_usb_pipectr_aclrm     = (1U << 10),       /**< DCPCTR has no ACLRM */
+  k_usb_pipectr_atrepm    = (1U << 11),
   k_usb_pipectr_inbufm    = (1U << 14),
   k_usb_pipectr_bsts      = (1U << 15),
 } usb_pipectr_bits_t;
