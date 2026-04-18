@@ -909,53 +909,66 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   }
 
   /* Mask USB0 USBI IRQ delivery (ICU IER[4] bit 4 = vector 36) for
-   * the duration of the CFIFO sequence.  Without this, a BRDY/BEMP/
+   * the duration of the FIFO sequence.  Without this, a BRDY/BEMP/
    * CTRT interrupt firing mid-write can preempt us, run the ISR,
-   * which will switch CFIFOSEL.CURPIPE to whichever pipe it is
-   * servicing (typically pipe 0 for a CDC class request that came in
-   * concurrently with our write).  Subsequent CFIFO byte writes from
-   * our preempted code then land in the WRONG pipe's buffer and the
-   * intended pipe's BVAL commits an empty packet (or stale data),
-   * which the host sees as a NAK forever. */
+   * which will re-enter the FIFO logic for a different pipe.  The
+   * preempted CFIFOSEL.CURPIPE and FRDY snapshot are now stale and
+   * subsequent byte writes land in the wrong pipe's buffer. */
   volatile uint8_t* const ier4_r           = (volatile uint8_t*)0x00087204U;
   const uint8_t           usbi_mask        = (uint8_t)(1U << 4); /* vec 36 = IER[4] bit 4 */
   const uint8_t           ier4_was_enabled = (uint8_t)(*ier4_r & usbi_mask);
   *ier4_r &= (uint8_t)~usbi_mask;
 
-  /* CFIFOSEL programming -- mirror the working raw-register repro
-   * in `usb_test/bulk_in_fix.c`:
+  /* Pick FIFO bank: DCP uses CFIFO; data pipes use D0FIFO so they
+   * don't contend with cdc_acm class-request traffic on DCP.  Three
+   * disjoint banks (CFIFO, D0FIFO, D1FIFO) exist precisely so DCP
+   * and bulk can run concurrently without stepping on each other's
+   * CURPIPE / FRDY state.  Per RX72N HW manual sec 40.6, all three
+   * banks have identical FIFOSEL / FIFOCTR / FIFO register layouts. */
+  volatile uint16_t* fifosel_r;
+  volatile uint16_t* fifoctr_r;
+  volatile uint16_t* fifo_r;
+  if (pipe == k_usb_pipe_min) {
+    fifosel_r = &usb0()->cfifosel;
+    fifoctr_r = &usb0()->cfifoctr;
+    fifo_r    = &usb0()->cfifo;
+  } else {
+    fifosel_r = &usb0()->d0fifosel;
+    fifoctr_r = &usb0()->d0fifoctr;
+    fifo_r    = &usb0()->d0fifo;
+  }
+
+  /* FIFOSEL programming -- mirror the working raw-register repro in
+   * `usb_test/bulk_in_fix.c`:
    *   1. Clear CURPIPE + ISEL bits.
    *   2. Spin until CURPIPE reads back as 0 (hardware needs a few
-   *      cycles to release the previous pipe -- if you skip this
-   *      and the previous CURPIPE was non-zero, the next CFIFO write
-   *      lands in the OLD pipe's buffer).
+   *      cycles to release the previous pipe).
    *   3. Set CURPIPE = pipe, MBW = 0 (8-bit), and ISEL = 1 for
-   *      device-to-host (IN) transfers (DCP and IN data pipes alike).
-   *      ISEL=0 is documented for data pipes in FIT but silently
-   *      drops BVAL commits on RX72N USB0 (IP0) -- only ISEL=1
-   *      reliably routes 8-bit writes through to the FIFO. */
+   *      device-to-host (IN) transfers.  D0FIFOSEL has no ISEL bit
+   *      (direction is determined by PIPECFG.DIR), so the ISEL set
+   *      is a no-op there -- harmless. */
   {
     const bool     pipe_is_in = (pipe == k_usb_pipe_min) || rx_usb_hw_pipe_is_in(pipe);
     const uint16_t want_isel  = pipe_is_in ? k_usb_fifosel_isel : 0U;
 
-    uint16_t sel = usb0()->cfifosel;
+    uint16_t sel = *fifosel_r;
     sel &= (uint16_t)~(k_usb_fifosel_curpipe_mask | k_usb_fifosel_isel);
-    usb0()->cfifosel = sel;
+    *fifosel_r = sel;
     for (volatile uint32_t n = 0; n < k_usb_fifo_timeout_iterations; ++n) {
-      if ((usb0()->cfifosel & k_usb_fifosel_curpipe_mask) == 0U) {
+      if ((*fifosel_r & k_usb_fifosel_curpipe_mask) == 0U) {
         break;
       }
     }
 
     sel |= (uint16_t)(want_isel | (pipe & k_usb_fifosel_curpipe_mask));
     sel &= (uint16_t)~k_usb_fifosel_mbw_mask; /* MBW = 0 -> 8-bit */
-    usb0()->cfifosel = sel;
+    *fifosel_r = sel;
   }
 
   /* Wait for FIFO ready (hardware polling) */
   /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
   volatile uint32_t timeout = k_usb_fifo_timeout_iterations;
-  while (!(usb0()->cfifoctr & k_usb_fifoctr_frdy) && timeout--) {
+  while (!(*fifoctr_r & k_usb_fifoctr_frdy) && timeout--) {
     __asm__ volatile("nop");
   }
 
@@ -965,15 +978,14 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     return k_min_transfer_size;
   }
 
-  /* Skip BCLR for data pipes: with single-buffered IN, BCLR is a
-   * no-op between transfers anyway (FIFO is already empty after the
-   * previous BVAL -> bus drain), and skipping it removes one source
-   * of state churn.  DCP keeps BCLR for the GET_DESCRIPTOR(Config)
-   * staging case (the original 207-byte fix). */
+  /* DCP gets BCLR before each write (the original 207-byte
+   * GET_DESCRIPTOR fix needs it).  Data pipes are single-buffered
+   * with FIFO empty after each BVAL -> bus drain, so BCLR is a
+   * no-op there. */
   if (pipe == k_usb_pipe_min) {
-    usb0()->cfifoctr |= k_usb_fifoctr_bclr;
+    *fifoctr_r |= k_usb_fifoctr_bclr;
     timeout = k_usb_fifo_timeout_iterations;
-    while ((usb0()->cfifoctr & k_usb_fifoctr_bclr) && timeout--) {
+    while ((*fifoctr_r & k_usb_fifoctr_bclr) && timeout--) {
       __asm__ volatile("nop");
     }
     if (timeout == k_usb_fifo_timeout_expired) {
@@ -996,12 +1008,12 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
    * loading the next.  For `len <= DCPMAXP` this degenerates to a
    * single pass, preserving the earlier behaviour for small requests.
    */
-  volatile uint8_t* const cfifo_byte = (volatile uint8_t*)&usb0()->cfifo;
-  /* Use the cached MAXP from configure_pipe -- writing to PIPESEL
-   * mid-write to read PIPEMAXP corrupts CFIFO routing on RX72N USB0
-   * (CURPIPE silently rebinds to whatever PIPESEL points at), so the
-   * subsequent CFIFO writes land in the wrong pipe and the packet is
-   * never transmitted on the intended endpoint. */
+  volatile uint8_t* const fifo_byte = (volatile uint8_t*)fifo_r;
+  /* Use the cached MAXP from configure_pipe to avoid touching
+   * PIPESEL mid-write (PIPESEL rebinds CURPIPE on RX72N USB0,
+   * which would corrupt CFIFO routing if we shared a bank with
+   * DCP -- now that data pipes use D0FIFO, this is moot, but the
+   * cache is still cheaper than a register read). */
   uint16_t chunk_max;
   if (pipe == k_usb_pipe_min) {
     chunk_max = (uint16_t)usb0()->dcpmaxp;
@@ -1011,15 +1023,15 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
       chunk_max = 64U; /* defensive fallback = Full-Speed bulk MPS */
     }
   }
-  uint32_t                written    = 0;
+  uint32_t written = 0;
 
   while (written < len) {
     /* Wait for FRDY before writing: after BVAL on the previous chunk
-     * the hardware holds FRDY low until the packet has been drained to
-     * the bus, and writes issued during that window are silently
-     * dropped (CFIFO has one packet of capacity, not DCPMAXP * N). */
+     * the hardware holds FRDY low until the packet has been drained
+     * to the bus, and writes issued during that window are silently
+     * dropped (FIFO has one packet of capacity, not MAXP * N). */
     timeout = k_usb_fifo_timeout_iterations;
-    while (!(usb0()->cfifoctr & k_usb_fifoctr_frdy) && timeout--) {
+    while (!(*fifoctr_r & k_usb_fifoctr_frdy) && timeout--) {
       __asm__ volatile("nop");
     }
     if (timeout == k_usb_fifo_timeout_expired) {
@@ -1032,9 +1044,9 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     const uint32_t chunk     = (remaining < chunk_max) ? remaining : chunk_max;
 
     for (uint32_t i = 0; i < chunk; i++) {
-      *cfifo_byte = data[written + i];
+      *fifo_byte = data[written + i];
     }
-    usb0()->cfifoctr |= k_usb_fifoctr_bval;
+    *fifoctr_r |= k_usb_fifoctr_bval;
     written += chunk;
   }
 

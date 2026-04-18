@@ -382,26 +382,41 @@ typedef enum : uint16_t {
   /* PIPEnCTR bit layout per Renesas RX FIT library (r_usb_bitdefine.h):
    *   bit 15 BSTS   (RO)
    *   bit 14 INBUFM (data pipes only; RO on DCPCTR)
-   *   bit 13 CSCLR
-   *   bit 10 ATREPM
-   *   bit  9 ACLRM  (not present on DCPCTR)
-   *   bit  8 SQCLR
-   *   bit  7 SQSET
-   *   bit  6 SQMON  (RO)
-   *   bit  5 PBUSY  (RO)
-   *   bits [1:0] PID (NAK=0, BUF=1, STALL=2)  */
-  k_usb_pipectr_pid_mask  = 0x0003,
+   *   bit 15 BSTS  (RO)
+   *   bit 13 INBUFM (PIPE1..5 IN only)
+   *   bit 11 ATREPM (host mode only)
+   *   bit 10 ACLRM
+   *   bit  9 SQCLR
+   *   bit  8 SQSET
+   *   bit  7 SQMON (RO)
+   *   bit  6 PBUSY (RO)
+   *   bit  4 CSCLR (PIPE1..5 only)
+   *   bit  3 CSSTS (RO, PIPE1..5 only)
+   *   bits [2:0] PID (NAK=0, BUF=1, STALL=2/3)
+   *
+   * NOTE: this layout is DIFFERENT from DCPCTR!  DCPCTR has SQCLR
+   * at bit 8 / SQSET at bit 7 / PBUSY at bit 5 / PID in [1:0].
+   * Earlier revisions of this file used the DCPCTR layout for
+   * PIPEnCTR -- which silently set ACLRM where SQCLR was intended,
+   * SQCLR where ACLRM was intended, and INBUFM where CSCLR was
+   * intended.  That left bulk-IN pipes with INBUFM=1 (RDY interrupt
+   * only after IN xfer completes) instead of INBUFM=0 (RDY when
+   * buffer ready for next write), so BVAL commits fired but the
+   * BRDY interrupt the host stack waited on never came -- bulk IN
+   * silently NAKed forever even with PIPECFG / PIPEBUF / FIFO
+   * sequence matching `usb_test/bulk_in_fix.c` exactly.  */
+  k_usb_pipectr_pid_mask  = 0x0007,
   k_usb_pipectr_pid_nak   = 0x0000,
   k_usb_pipectr_pid_buf   = 0x0001,
   k_usb_pipectr_pid_stall = 0x0002,
-  k_usb_pipectr_pbusy     = (1U << 5),
-  k_usb_pipectr_sqmon     = (1U << 6),
-  k_usb_pipectr_sqset     = (1U << 7),
-  k_usb_pipectr_sqclr     = (1U << 8),
-  k_usb_pipectr_aclrm     = (1U << 9),
-  k_usb_pipectr_atrepm    = (1U << 10),
-  k_usb_pipectr_csclr     = (1U << 13),
-  k_usb_pipectr_inbufm    = (1U << 14),
+  k_usb_pipectr_csclr     = (1U << 4),
+  k_usb_pipectr_pbusy     = (1U << 6),
+  k_usb_pipectr_sqmon     = (1U << 7),
+  k_usb_pipectr_sqset     = (1U << 8),
+  k_usb_pipectr_sqclr     = (1U << 9),
+  k_usb_pipectr_aclrm     = (1U << 10),
+  k_usb_pipectr_atrepm    = (1U << 11),
+  k_usb_pipectr_inbufm    = (1U << 13),
   k_usb_pipectr_bsts      = (1U << 15),
 } usb_pipectr_bits_t;
 
