@@ -113,6 +113,47 @@ static void internal_usb_task_entry(ULONG input)
     }
     (void)rx_usb_write(k_usb_port_decoded, (const uint8_t*)beat, 1U);
     (void)rx_usb_write(k_usb_port_log,     (const uint8_t*)beat, 1U);
+
+    /* RAW register write test: bypass all abstractions and write
+     * directly to pipe 1 (port 0 bulk IN, EP 0x81).  This proves
+     * whether the hardware itself can transmit -- if the host starts
+     * seeing 'Z' bytes on /dev/ttyACM1, fifo_write in rx_usb_hw.c is
+     * broken; if not, the issue is even lower. */
+    {
+      volatile uint16_t* const cfifosel = (volatile uint16_t*)0x000A0020U;
+      volatile uint16_t* const cfifoctr = (volatile uint16_t*)0x000A0022U;
+      volatile uint8_t*  const cfifob   = (volatile uint8_t*) 0x000A0014U;
+      volatile uint16_t* const pipe1ctr = (volatile uint16_t*)0x000A0070U;
+
+      /* PID=NAK (clear PID bit 0) */
+      *pipe1ctr &= (uint16_t)~0x0001U;
+      /* Spin briefly for PBUSY */
+      for (int w = 0; w < 100; ++w) {
+        if ((*pipe1ctr & 0x20U) == 0U) break;
+      }
+      /* Clear BEMPSTS[1] + BRDYSTS[1] */
+      *((volatile uint16_t*)0x000A004AU) = (uint16_t)(~(1U << 1) & 0x03FFU);
+      *((volatile uint16_t*)0x000A0046U) = (uint16_t)(~(1U << 1) & 0x03FFU);
+      /* CFIFOSEL: clear CURPIPE, ISEL; wait; set CURPIPE=1, ISEL=1, MBW=0 */
+      uint16_t sel = *cfifosel;
+      sel &= (uint16_t)~0x003FU; /* clear CURPIPE[3:0] and ISEL bit5 */
+      *cfifosel = sel;
+      for (int w = 0; w < 100; ++w) {
+        if ((*cfifosel & 0x000FU) == 0U) break;
+      }
+      sel |= (uint16_t)0x0021U;  /* CURPIPE=1 | ISEL=1 */
+      sel &= (uint16_t)~0x0400U; /* MBW=0 (8-bit) */
+      *cfifosel = sel;
+      /* Wait FRDY */
+      for (int w = 0; w < 1000; ++w) {
+        if ((*cfifoctr & 0x2000U) != 0U) break;
+      }
+      /* Write 'Z' and set BVAL */
+      *cfifob = (uint8_t)'Z';
+      *cfifoctr |= 0x8000U; /* BVAL */
+      /* PID=BUF */
+      *pipe1ctr = (uint16_t)((*pipe1ctr & (uint16_t)~0x0003U) | 0x0001U);
+    }
     tick++;
     (void)tx_thread_sleep(1U);
   }
