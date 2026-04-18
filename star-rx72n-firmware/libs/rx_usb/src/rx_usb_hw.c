@@ -557,6 +557,9 @@ typedef enum : uint8_t {
 typedef enum : uint16_t {
   k_usb_pipe_min            = 0,   /**< Minimum pipe number (DCP) */
   k_usb_pipe_max            = 9,   /**< Maximum pipe number */
+  k_usb_pipebuf_bufnmb_base = 8,   /**< First DPRAM 64-byte buffer slot
+                                    *  available to data pipes (DCP uses
+                                    *  buffers 0-7 for its 64-byte MPS). */
   k_usb_endpoint_max        = 15,  /**< Maximum endpoint number (0-15) */
   k_usb_max_packet_size_max = 512, /**< Maximum packet size (512 bytes for FS) */
 } usb_validation_limits_t;
@@ -1021,7 +1024,31 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
     cfg |= k_usb_pipecfg_dir; /* DIR=1 for IN (device to host) */
   }
 
-  usb0()->pipecfg  = cfg;
+  usb0()->pipecfg = cfg;
+
+  /* Assign a DPRAM buffer for this pipe via PIPEBUF.
+   *
+   *   BUFSIZE [15:10]: (value+1) * 64 bytes.  Data pipes on RX72N USB0
+   *                    typically want BUFSIZE=1 (2*64 = 128 bytes) so
+   *                    the peripheral can double-buffer back-to-back
+   *                    packets; BUFSIZE=0 (single 64-byte buffer) is
+   *                    accepted by PIPECFG but can leave bulk IN
+   *                    transactions stuck with FIFO NAKs.
+   *   BUFNMB  [7:0]:   starting 64-byte slot in the DPRAM.  DCP owns
+   *                    slots 0-7, data pipes start at 8 and each take
+   *                    BUFSIZE+1 slots -> pipes 1..9 use slots 8,10,
+   *                    12,...,24 (inclusive).
+   *
+   * Without this register being programmed the pipe shares slot 0 with
+   * the DCP and every bulk write silently drops -- which is why
+   * enumeration works (DCP auto-allocated) but CDC data transfer
+   * doesn't. */
+  {
+    const uint16_t bufsize = 1U;
+    const uint16_t bufnmb  = (uint16_t)(k_usb_pipebuf_bufnmb_base + (pipe - 1U) * 2U);
+    usb0()->pipebuf        = (uint16_t)((bufsize << 10) | bufnmb);
+  }
+
   usb0()->pipemaxp = max_packet;
 
   /* Map pipe control registers to avoid undefined pointer arithmetic on struct members.
