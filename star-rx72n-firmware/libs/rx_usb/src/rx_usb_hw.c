@@ -952,10 +952,42 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     const uint32_t remaining = len - written;
     const uint32_t chunk     = (remaining < chunk_max) ? remaining : chunk_max;
 
+    /* Mirror FIT's usb_pstd_write_data sequence around each chunk:
+     * save current PID, drop to NAK so the hardware can't transmit a
+     * half-written buffer mid-staging, do the FIFO writes, set BVAL,
+     * clear any pending BEMP status, then restore PID=BUF. */
+    volatile uint16_t* pid_reg;
+    if (pipe == k_usb_pipe_min) {
+      pid_reg = &usb0()->dcpctr;
+    } else {
+      volatile uint16_t* const s_data_pipe_ctr[] = {
+        &usb0()->pipe1ctr, &usb0()->pipe2ctr, &usb0()->pipe3ctr,
+        &usb0()->pipe4ctr, &usb0()->pipe5ctr, &usb0()->pipe6ctr,
+        &usb0()->pipe7ctr, &usb0()->pipe8ctr, &usb0()->pipe9ctr,
+      };
+      pid_reg = s_data_pipe_ctr[pipe - 1U];
+    }
+    const uint16_t prev_pid = (uint16_t)(*pid_reg & k_usb_pipectr_pid_mask);
+    *pid_reg = (uint16_t)((*pid_reg & (uint16_t)~k_usb_pipectr_pid_mask)
+                          | k_usb_pipectr_pid_nak);
+
     for (uint32_t i = 0; i < chunk; i++) {
       *cfifo_byte = data[written + i];
     }
     usb0()->cfifoctr |= k_usb_fifoctr_bval;
+
+    /* Clear pending BEMP for this pipe. */
+    if (pipe != k_usb_pipe_min) {
+      usb0()->bempsts = (uint16_t)~(1U << pipe);
+    }
+
+    /* Restore PID=BUF if it was BUF before -- arms the pipe to
+     * transmit on the next host IN token. */
+    if (prev_pid == k_usb_pipectr_pid_buf) {
+      *pid_reg = (uint16_t)((*pid_reg & (uint16_t)~k_usb_pipectr_pid_mask)
+                            | k_usb_pipectr_pid_buf);
+    }
+
     written += chunk;
   }
 
