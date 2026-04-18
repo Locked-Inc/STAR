@@ -2435,13 +2435,16 @@ int main(void)
 
     *SYSCFG_R  |= (1U << 4); /* DPRPU */
 
-    /* NOTE: previously enabled CPU ICU delivery for vector 36 here,
-     * but with the usb0_usbi_isr symbol not reliably landing in the
-     * .rvectors section that caused the CPU to jump to garbage on
-     * the first USB event and hang tx_kernel_enter().  Leave ICU
-     * disabled for USB0 USBI; usb_task polls rx_usb_isr_handler
-     * instead.  Once we confirm the vector is valid, re-enable. */
-    (void)0;
+    /* Enable CPU ICU delivery for vector 36 (USB0 USBI) so BRDY/BEMP
+     * interrupts fire directly -- now safe because cmt0_isr is in
+     * .rvectors (real ThreadX tick works) and usb0_usbi_isr is also
+     * in .rvectors via its own interrupt(".rvectors", 36) attribute. */
+    volatile uint8_t*  const IPR36_R = (volatile uint8_t*)(0x00087300U + 36U);
+    volatile uint8_t*  const IR36_R  = (volatile uint8_t*)(0x00087000U + 36U);
+    volatile uint8_t*  const IER4_R  = (volatile uint8_t*)(0x00087204U);
+    *IR36_R  = 0U;
+    *IPR36_R = 12U;
+    *IER4_R |= (uint8_t)(1U << 4); /* vector 36 = IER[4] bit 4 */
 
     /* Diagnostic: drive PB3 (P4 pad 2, MCU pin 82, silkscreen EN3D)
      * HIGH here in main BEFORE tx_kernel_enter.  usb_task later drives
@@ -2471,9 +2474,36 @@ int main(void)
    * ThreadX boot gap.  rx_usb_isr_handler routes CTRT into
    * rx_usb_cdc_handle_setup, which serves the real 3-port CDC composite
    * descriptor (207-byte config) -- so the host sees CDC interfaces and
-   * creates one ttyACM per port. */
+   * creates one ttyACM per port.  ALSO: once SET_CONFIGURATION has set
+   * the device state to configured, repeatedly write 'Z' to pipe 1
+   * (port 0 bulk IN, EP 0x81) via raw registers.  If the host sees
+   * "ZZZZ..." on /dev/ttyACM1 during this pre-kernel window, the
+   * hardware itself transmits fine and the bug is RTOS-side. */
   for (uint32_t spin = 0U; spin < 80000000U; spin++) {
     rx_usb_isr_handler();
+
+    if ((spin & 0xFFFFU) == 0U) {
+      volatile uint16_t* const cfifosel_r = (volatile uint16_t*)0x000A0020U;
+      volatile uint16_t* const cfifoctr_r = (volatile uint16_t*)0x000A0022U;
+      volatile uint8_t*  const cfifob_r   = (volatile uint8_t*) 0x000A0014U;
+      volatile uint16_t* const pipe1ctr_r = (volatile uint16_t*)0x000A0070U;
+      /* PID=NAK */
+      *pipe1ctr_r &= (uint16_t)~0x0001U;
+      for (int w = 0; w < 100; ++w) { if ((*pipe1ctr_r & 0x20U) == 0U) break; }
+      *((volatile uint16_t*)0x000A004AU) = (uint16_t)(~(1U << 1) & 0x03FFU);
+      *((volatile uint16_t*)0x000A0046U) = (uint16_t)(~(1U << 1) & 0x03FFU);
+      uint16_t sel = *cfifosel_r;
+      sel &= (uint16_t)~0x003FU;
+      *cfifosel_r = sel;
+      for (int w = 0; w < 100; ++w) { if ((*cfifosel_r & 0x000FU) == 0U) break; }
+      sel |= (uint16_t)0x0021U;
+      sel &= (uint16_t)~0x0400U;
+      *cfifosel_r = sel;
+      for (int w = 0; w < 1000; ++w) { if ((*cfifoctr_r & 0x2000U) != 0U) break; }
+      *cfifob_r = (uint8_t)'Z';
+      *cfifoctr_r |= 0x8000U;
+      *pipe1ctr_r = (uint16_t)((*pipe1ctr_r & (uint16_t)~0x0003U) | 0x0001U);
+    }
   }
 
   /* Start the ThreadX scheduler - should never return */
