@@ -886,12 +886,9 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     return k_min_transfer_size;
   }
 
-  /* For data pipes: bail if pipe is busy (mid-transmission) -- this
-   * matches `usb_test/bulk_in_fix.c` which only writes when
-   * PIPE1CTR.PBUSY=0.  configure_pipe already armed PID=BUF so the
-   * pipe stays armed across writes; no need to toggle PID=NAK each
-   * time (FIT does it for safety with double-buffered pipes; we use
-   * single-buffered IN where it would just churn state). */
+  /* For data pipes: bail if pipe is busy (mid-transmission).
+   * configure_pipe already armed PID=BUF so the pipe stays armed
+   * across writes -- no PID toggle needed (matches bulk_in_fix.c). */
   volatile uint16_t* pipe_ctr = nullptr;
   if (pipe != k_usb_pipe_min) {
     volatile uint16_t* const pipe_ctr_map[] = {
@@ -901,9 +898,6 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     };
     pipe_ctr = pipe_ctr_map[pipe - 1U];
     if ((*pipe_ctr & k_usb_pipectr_pbusy) != 0U) {
-      /* Drop write -- pipe still draining the previous packet.  The
-       * caller's TX ring buffer keeps the data; next call will retry
-       * once PBUSY clears. */
       return k_min_transfer_size;
     }
   }
@@ -919,24 +913,14 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   const uint8_t           ier4_was_enabled = (uint8_t)(*ier4_r & usbi_mask);
   *ier4_r &= (uint8_t)~usbi_mask;
 
-  /* Pick FIFO bank: DCP uses CFIFO; data pipes use D0FIFO so they
-   * don't contend with cdc_acm class-request traffic on DCP.  Three
-   * disjoint banks (CFIFO, D0FIFO, D1FIFO) exist precisely so DCP
-   * and bulk can run concurrently without stepping on each other's
-   * CURPIPE / FRDY state.  Per RX72N HW manual sec 40.6, all three
-   * banks have identical FIFOSEL / FIFOCTR / FIFO register layouts. */
-  volatile uint16_t* fifosel_r;
-  volatile uint16_t* fifoctr_r;
-  volatile uint16_t* fifo_r;
-  if (pipe == k_usb_pipe_min) {
-    fifosel_r = &usb0()->cfifosel;
-    fifoctr_r = &usb0()->cfifoctr;
-    fifo_r    = &usb0()->cfifo;
-  } else {
-    fifosel_r = &usb0()->d0fifosel;
-    fifoctr_r = &usb0()->d0fifoctr;
-    fifo_r    = &usb0()->d0fifo;
-  }
+  /* Use CFIFO for everything (DCP + data pipes).  D0FIFO would give
+   * independence from DCP traffic but requires additional setup
+   * (DCLRM, DREQE) that we haven't verified.  CFIFO works for both
+   * bulk_in_fix.c and FIT's default single-FIFO path; DCP / bulk
+   * contention is mitigated by the IER mask wrapping this sequence. */
+  volatile uint16_t* const fifosel_r = &usb0()->cfifosel;
+  volatile uint16_t* const fifoctr_r = &usb0()->cfifoctr;
+  volatile uint16_t* const fifo_r    = &usb0()->cfifo;
 
   /* FIFOSEL programming -- mirror the working raw-register repro in
    * `usb_test/bulk_in_fix.c`:
@@ -948,21 +932,17 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
    *      (direction is determined by PIPECFG.DIR), so the ISEL set
    *      is a no-op there -- harmless. */
   {
-    const bool     pipe_is_in = (pipe == k_usb_pipe_min) || rx_usb_hw_pipe_is_in(pipe);
-    const uint16_t want_isel  = pipe_is_in ? k_usb_fifosel_isel : 0U;
-
-    uint16_t sel = *fifosel_r;
-    sel &= (uint16_t)~(k_usb_fifosel_curpipe_mask | k_usb_fifosel_isel);
-    *fifosel_r = sel;
+    /* CFIFOSEL write: CURPIPE = pipe, ISEL = 1, MBW = 0 (8-bit).
+     * Exactly matches bulk_in_fix.c cfifo_write_current which is
+     * proven-working on this silicon.  Overwrite the whole register
+     * (not RMW) so leftover RCNT/REW bits from enumeration-side DCP
+     * access don't bleed in. */
+    *fifosel_r = (uint16_t)((1U << 5) | (pipe & k_usb_fifosel_curpipe_mask));
     for (volatile uint32_t n = 0; n < k_usb_fifo_timeout_iterations; ++n) {
-      if ((*fifosel_r & k_usb_fifosel_curpipe_mask) == 0U) {
+      if ((*fifosel_r & k_usb_fifosel_curpipe_mask) == (pipe & k_usb_fifosel_curpipe_mask)) {
         break;
       }
     }
-
-    sel |= (uint16_t)(want_isel | (pipe & k_usb_fifosel_curpipe_mask));
-    sel &= (uint16_t)~k_usb_fifosel_mbw_mask; /* MBW = 0 -> 8-bit */
-    *fifosel_r = sel;
   }
 
   /* Wait for FIFO ready (hardware polling) */
@@ -1050,9 +1030,16 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     written += chunk;
   }
 
-  /* No PID re-arm needed -- configure_pipe set PID=BUF and we don't
-   * toggle it during writes (matches bulk_in_fix.c). */
-  (void)pipe_ctr;
+  /* Clear BEMPSTS for the pipe AFTER BVAL (FIT order).  Clearing it
+   * before write was a spurious ack of the "buffer empty" interrupt
+   * the hardware sets on entry; after BVAL the buffer has data so
+   * this is the matching hardware state. */
+  if (pipe_ctr != nullptr) {
+    const uint16_t pipe_bit = (uint16_t)(1U << pipe);
+    const uint16_t sts_mask = 0x03FFU;
+    usb0()->bempsts = (uint16_t)((~pipe_bit) & sts_mask);
+    usb0()->brdysts = (uint16_t)((~pipe_bit) & sts_mask);
+  }
 
   /* Restore USB IRQ delivery if we previously disabled it. */
   if (ier4_was_enabled != 0U) {
@@ -1213,7 +1200,18 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
   s_pipe_max_packet[pipe] = max_packet;
   s_pipe_is_in[pipe]      = is_in;
 
-  /* 4. Deselect pipe register window. */
+  /* NOTE: bulk_in_fix.c does NOT deselect PIPESEL=0 after configuring
+   * the pipe -- leaves it selected.  FIT does PIPESEL=0 explicitly
+   * because FIT programs multiple pipes in sequence and needs the
+   * register window deselected between configures.  We configure
+   * 9 pipes in sequence too, so we DO need PIPESEL=0 at the end of
+   * each configure to leave a clean slate for the next one.
+   * HOWEVER -- after all 9 configures finish, the last PIPESEL
+   * value is 0, which means subsequent PIPECFG/PIPEMAXP/PIPEBUF
+   * reads see pipe 0's DCP registers (aliased).  That's fine unless
+   * the bulk IN path reads PIPEMAXP to determine chunk size; we
+   * cache chunk_max in s_pipe_max_packet so we never do that read
+   * during writes. */
   usb0()->pipesel = 0U;
 
   /* 5. Reset sequence toggle + auto-clear buffer + clear CS. */
