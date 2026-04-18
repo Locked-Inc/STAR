@@ -864,18 +864,6 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     return k_min_transfer_size;
   }
 
-  /* Diagnostic: toggle LED0 (PA7) on every data-pipe entry to prove
-   * this code path is being hit.  LED0 at ~1 Hz => heartbeat is
-   * reaching the HAL; no blink => upstream (rx_usb_write /
-   * handle_bulk_in) is failing.  led_status_task also drives PA7 but
-   * at 1 Hz; if both blinkers run you'll see ~2-3 Hz flicker. */
-  if (pipe != k_usb_pipe_min) {
-    volatile uint8_t* const porta_pdr  = (volatile uint8_t*)0x0008C00AU;
-    volatile uint8_t* const porta_podr = (volatile uint8_t*)0x0008C02AU;
-    *porta_pdr |= (uint8_t)(1U << 7);
-    *porta_podr ^= (uint8_t)(1U << 7);
-  }
-
   /* For data pipes (1-9), FIT's usb_pstd_send_start wraps the FIFO
    * write with PID=NAK (so the hardware can't transmit a half-written
    * buffer mid-staging), clears BEMPSTS/BRDYSTS for the pipe, writes
