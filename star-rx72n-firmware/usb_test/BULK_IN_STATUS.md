@@ -1,10 +1,32 @@
 # RX72N USB0 Bulk IN Bring-up -- IN PROGRESS
 
-**Status**: 3 CDC-ACM ports enumerate cleanly as `045b:0235` but **bulk IN
-never transmits bytes**. Host submits 16 IN URBs per port on opening
-`/dev/ttyACM{1,2,3}`; all 16 stay at `-115 EINPROGRESS` indefinitely and
-eventually cancel with `-2 ENOENT` when the port closes. Zero bytes ever
-reach the host.
+**Status (2026-04-18)**: 3 CDC-ACM ports enumerate cleanly as `045b:0235`
+on every fresh power-cycle, but **bulk IN never transmits bytes**. Host
+submits 16 IN URBs per port on opening `/dev/ttyACM{0,1,2}`; all 16 stay
+at `-115 EINPROGRESS` indefinitely and eventually cancel with `-2 ENOENT`
+when the port closes. Zero bytes ever reach the host.
+
+**Latest (2026-04-18, commits `d465ecd07..2b78e9175`):**
+* Cleanup landed: removed pre-`tx_kernel_enter` raw-register pokes from
+  `usb_task`, removed AD2 trace-beacon GPIO toggling from
+  `internal_handle_set_configuration`, replaced 64-byte 'Z' spam with a
+  1 Hz `"p0\r\n"` / `"p1\r\n"` / `"p2\r\n"` heartbeat per port.
+* `rx_usb_hw_fifo_write` simplified to mirror `bulk_in_fix.c`:
+  single-buffer bulk IN (DBLB removed for IN), BCLR before each write,
+  no PID=NAK toggle (configure_pipe arms PID=BUF and we leave it),
+  CFIFOSEL ISEL=1 for IN data pipes (matches the working raw repro).
+* PIPEMAXP cached at configure-time so the write hot-path doesn't touch
+  `PIPESEL` (writes to PIPESEL silently rebound CURPIPE on this chip).
+* Port 2 (log) keeps both bulk IN and bulk OUT advertised so cdc_acm
+  doesn't reject the data interface with `-EINVAL`; host writes are
+  silently consumed at the device side.
+
+Even with all of the above, IN URBs sit at `-EINPROGRESS` forever -- the
+silent-NAK behaviour is unchanged from the previous milestone.  The
+1-byte raw-register repro that previously emitted `0x5A` bytes also no
+longer transmits, even with `rx_usb_hw.c` reverted to the prior
+checkpoint -- strongly suggesting that what we observed earlier was a
+transient state, not a fix that the cleanup regressed.
 
 Companion to `USB_BRINGUP_STATUS.md` (which documented the earlier 10-bug
 enumeration bring-up).
@@ -217,15 +239,18 @@ than "step through the ISR and watch registers".
    round-trip. Close task #21 (`Verify bulk IN data transmits`).
 5. If still silent: deeper investigation needed. Candidates in decreasing
    plausibility:
+   - **CFIFO contention with DCP class requests.**  `bulk_in_fix.c` is
+     a vendor-class device with no DCP traffic past SET_CONFIGURATION,
+     so the bulk pipes own CFIFO uncontested.  We have ongoing
+     SET_LINE_CODING / SET_CONTROL_LINE_STATE / GET_LINE_CODING from
+     cdc_acm using DCP via the same CFIFO.  Try routing bulk IN
+     through `D0FIFO` and bulk OUT through `D1FIFO` so DCP and bulk
+     don't share a FIFO port.  FIT supports this via the `pipemode`
+     argument to `usb_pstd_write_data`.
    - `INBUFM` bit in `PIPEnCTR` may need explicit handling for IN pipes.
    - `BFRE` bit in PIPECFG (receive-mode buffer) -- we leave it at 0;
      verify FIT does the same for IN pipes (it does, but reconfirm for
      RX72N USB0 specifically).
-   - Double-buffer transition race: maybe BVAL on the *second* buffer
-     while the first is still in flight behaves differently than a
-     single-buffered IN on RX72N.
-   - Switch bulk IN to `D0FIFO` instead of `CFIFO` -- FIT supports both;
-     maybe CFIFO has shared-port contention we're hitting.
    - Silicon errata RX72N USB0 data pipes -- check `r01us0263ej0170_rx72n`
      errata sheet if accessible.
 
