@@ -49,15 +49,43 @@ static void internal_usb_task_entry(ULONG input)
 
   rx_log_info(s_tag, "USB polling loop entering");
 
-  /* Heartbeat: every ThreadX tick (~10 ms), once the host has sent
-   * SET_CONFIGURATION and the device is configured, push a short
-   * burst on every CDC port so `cat /dev/ttyACM{1,2,3}` yields
-   * visible bytes if the bulk IN data path is wired up. */
+  /* Diagnostic: drive BOTH pins of P4 (silkscreen "EN3D") as GPIO so
+   * an AD2 logic probe on either P4 pad sees a heartbeat.
+   *
+   *   P4 pad 1 = net /ENC3_TCLKC = MCU pin 75 = PC0
+   *   P4 pad 2 = net /ENC3_TCLKD = MCU pin 82 = PB3
+   *
+   * Force PMR=0 (GPIO mode) and PDR=1 (output) every loop iteration
+   * in case another task (e.g. motor_control_task) reclaims these
+   * pins for their encoder function -- we stomp it back to GPIO.
+   * Both pins toggle every tick (~50 Hz square wave visible on AD2)
+   * with a 4-edge burst when the heartbeat block enters rx_usb_write. */
+  volatile uint8_t* const portb_pdr  = (volatile uint8_t*)0x0008C00BU;
+  volatile uint8_t* const portb_podr = (volatile uint8_t*)0x0008C02BU;
+  volatile uint8_t* const portb_pmr  = (volatile uint8_t*)0x0008C06BU;
+  volatile uint8_t* const portc_pdr  = (volatile uint8_t*)0x0008C00CU;
+  volatile uint8_t* const portc_podr = (volatile uint8_t*)0x0008C02CU;
+  volatile uint8_t* const portc_pmr  = (volatile uint8_t*)0x0008C06CU;
+
   uint32_t tick = 0U;
   for (;;) {
     rx_usb_isr_handler();
 
+    /* Force GPIO output mode every tick (motor task may stomp). */
+    *portb_pmr &= (uint8_t)~(1U << 3);
+    *portb_pdr |= (uint8_t)(1U << 3);
+    *portc_pmr &= (uint8_t)~(1U << 0);
+    *portc_pdr |= (uint8_t)(1U << 0);
+
+    *portb_podr ^= (uint8_t)(1U << 3);
+    *portc_podr ^= (uint8_t)(1U << 0);
+
     if ((tick % k_heartbeat_tick_period) == 0U) {
+      for (int i = 0; i < 4; i++) {
+        *portb_podr ^= (uint8_t)(1U << 3);
+        *portc_podr ^= (uint8_t)(1U << 0);
+      }
+
       static const char beat0[] = "p0\r\n";
       static const char beat1[] = "p1\r\n";
       static const char beat2[] = "p2\r\n";
