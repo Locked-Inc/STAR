@@ -2408,6 +2408,18 @@ int main(void)
     *INTENB0_R  = (uint16_t)((1U << 15) | (1U << 12) | (1U << 11) | (1U << 10) | (1U << 8));
 
     *SYSCFG_R  |= (1U << 4); /* DPRPU */
+
+    /* Enable CPU ICU delivery for vector 36 (USB0 USBI) so BRDY/BEMP
+     * interrupts fire without needing a tight poll loop.  Without
+     * this, `usb_task` polls every ~10 ms (ThreadX tick), which was
+     * too slow for DCP SET_CONTROL_LINE_STATE / bulk IN refills
+     * once the scheduler took over from main's spin loop. */
+    volatile uint8_t*  const IPR36_R = (volatile uint8_t*)(0x00087300U + 36U);
+    volatile uint8_t*  const IR36_R  = (volatile uint8_t*)(0x00087000U + 36U);
+    volatile uint8_t*  const IER4_R  = (volatile uint8_t*)(0x00087204U);
+    *IR36_R  = 0U;
+    *IPR36_R = 12U;              /* priority 12 (high for USB) */
+    *IER4_R |= (uint8_t)(1U << 4); /* vector 36 = IER[4] bit 4 */
   }
 
   /* Hardware is now fully attached by the inline sequence above.  Tell
