@@ -5,11 +5,12 @@
 #                   the on-board USB-UART in SCI Boot Mode.
 #
 # Usage:
-#   scripts/flash-rx72n.sh <file> [e2lite|sci]
+#   scripts/flash-rx72n.sh <file> [e2lite|sci] [port]
 #
 #   <file>  : path to a .elf or .mot image (required). ELF is auto-converted
 #             to Motorola S-record via rx-elf-objcopy.
 #   method  : flashing method (default: e2lite)
+#   port    : override serial port for sci method (e.g. /dev/tty.usbserial-B0046G3K)
 #
 # Prerequisites:
 #   /opt/gnurx/bin/rx-elf-objcopy   (GNURX 14.2 toolchain)
@@ -31,11 +32,17 @@
 
 set -euo pipefail
 
-RFP=/opt/rfp/linux-x64/rfp-cli
-OBJCOPY=/opt/gnurx/bin/rx-elf-objcopy
+if [[ "$(uname)" == "Darwin" ]]; then
+    RFP=/Users/bsikar/opt/rfp/rfp-cli
+    OBJCOPY=/opt/gnurx/bin/rx-elf-objcopy
+else
+    RFP=/opt/rfp/linux-x64/rfp-cli
+    OBJCOPY=/opt/gnurx/bin/rx-elf-objcopy
+fi
 
 FILE="${1:-}"
 METHOD="${2:-e2lite}"
+PORT_OVERRIDE="${3:-}"
 
 if [ -z "$FILE" ]; then
     echo "Usage: $0 <elf-or-mot-file> [e2lite|sci]" >&2
@@ -91,10 +98,16 @@ case "$METHOD" in
     ;;
 
   sci|uart)
-    PORT=/dev/ttyACM0
-    if [ ! -c "$PORT" ]; then
-        echo "Error: serial port $PORT not found." >&2
-        echo "Plug in the USB-UART cable and confirm it enumerates as /dev/ttyACM0." >&2
+    if [ -n "$PORT_OVERRIDE" ]; then
+        PORT="$PORT_OVERRIDE"
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        PORT=$(ls /dev/tty.usbmodem* /dev/tty.usbserial-* 2>/dev/null | head -1)
+    else
+        PORT=/dev/ttyACM0
+    fi
+    if [ -z "$PORT" ] || [ ! -c "$PORT" ]; then
+        echo "Error: serial port not found." >&2
+        echo "Pass the port as the 3rd argument: $0 <file> sci <port>" >&2
         exit 1
     fi
     echo ">> Flashing $FILE via SCI Boot Mode on $PORT"
