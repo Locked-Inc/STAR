@@ -864,24 +864,30 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     return k_min_transfer_size;
   }
 
-  /*
-   * Select pipe for CFIFO access:
-   *   ISEL = 1   write direction (device IN preparation)
-   *   MBW  = 0   8-bit FIFO width.  Required so that DTLN (the hardware
-   *              byte counter that decides how many bytes get transmitted)
-   *              increments by exactly 1 per byte we write, regardless of
-   *              whether `len` is even or odd.
+  /* hw_usb_set_curpipe (FIT library) sequence:
+   *   1. Read CFIFOSEL, clear CURPIPE (and ISEL), write back.
+   *   2. Spin until CFIFOSEL.CURPIPE reads as 0.  The hardware needs a
+   *      few cycles to drop the previous pipe cleanly; without this
+   *      wait, subsequent reads/writes to CFIFO still go to the OLD
+   *      pipe's buffer, so our BVAL commit lands in the wrong place
+   *      and the target bulk IN pipe silently stays empty.  THIS was
+   *      the root cause of bulk IN never transmitting.
+   *   3. OR in the new CURPIPE | ISEL | MBW=8, write back.
    *
-   *              The earlier 16-bit MBW path looped i+=2 and synthesised a
-   *              padded final word for odd lengths, which made DTLN one
-   *              greater than `len`.  Linux's first GET_DESCRIPTOR(CONFIG)
-   *              uses wLength=9 and the resulting 10-byte transmission was
-   *              flagged by xHCI as babble (`-75 EOVERFLOW`) -- macOS asks
-   *              with even lengths so it never tripped the bug.  See
-   *              `usb_test/USB_BRINGUP_STATUS.md` "Bug 10".
-   */
-  usb0()->cfifosel =
-    (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_isel | k_usb_fifosel_mbw_8;
+   * MBW=8 so DTLN increments per byte (even for odd lengths -- avoids
+   * the old 16-bit MBW babble bug on odd-length control transfers). */
+  {
+    uint16_t sel = usb0()->cfifosel;
+    sel &= (uint16_t)~(k_usb_fifosel_curpipe_mask | k_usb_fifosel_isel);
+    usb0()->cfifosel = sel;
+    while ((usb0()->cfifosel & k_usb_fifosel_curpipe_mask) != 0U) {
+      /* spin */
+    }
+    sel |= (uint16_t)(pipe & k_usb_fifosel_curpipe_mask);
+    sel |= k_usb_fifosel_isel;
+    sel &= (uint16_t)~k_usb_fifosel_mbw_mask;
+    usb0()->cfifosel = sel;
+  }
 
   /* Wait for FIFO ready (hardware polling) */
   /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
@@ -1014,64 +1020,72 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
     return k_rx_err_invalid_arg;
   }
 
-  /* Select pipe for configuration */
-  usb0()->pipesel = pipe;
-
-  /* Configure pipe */
-  uint16_t cfg = (endpoint & k_usb_pipecfg_epnum_mask) | type;
-
-  if (is_in) {
-    cfg |= k_usb_pipecfg_dir; /* DIR=1 for IN (device to host) */
-  }
-
-  usb0()->pipecfg = cfg;
-
-  /* Assign a DPRAM buffer for this pipe via PIPEBUF.
+  /* Mirror Renesas FIT library usb_cstd_pipe_init() for USB0 peripheral
+   * mode.  Sequence (from r_usb_basic v1.44 r_usb_creg_abs.c):
+   *   1. Clear BRDYENB/NRDYENB/BEMPENB for this pipe
+   *   2. Force PID=NAK
+   *   3. PIPESEL = pipe ; write PIPECFG / PIPEMAXP / PIPEPERI
+   *   4. PIPESEL = 0 (deselect)
+   *   5. Pulse SQCLR, ACLRM; assert CSCLR on pipe CTR register
+   *   6. Clear BRDYSTS / NRDYSTS / BEMPSTS for this pipe
+   *   7. Set PID = BUF so the pipe responds to transfers
    *
-   *   BUFSIZE [15:10]: (value+1) * 64 bytes.  Data pipes on RX72N USB0
-   *                    typically want BUFSIZE=1 (2*64 = 128 bytes) so
-   *                    the peripheral can double-buffer back-to-back
-   *                    packets; BUFSIZE=0 (single 64-byte buffer) is
-   *                    accepted by PIPECFG but can leave bulk IN
-   *                    transactions stuck with FIFO NAKs.
-   *   BUFNMB  [7:0]:   starting 64-byte slot in the DPRAM.  DCP owns
-   *                    slots 0-7, data pipes start at 8 and each take
-   *                    BUFSIZE+1 slots -> pipes 1..9 use slots 8,10,
-   *                    12,...,24 (inclusive).
-   *
-   * Without this register being programmed the pipe shares slot 0 with
-   * the DCP and every bulk write silently drops -- which is why
-   * enumeration works (DCP auto-allocated) but CDC data transfer
-   * doesn't. */
-  {
-    const uint16_t bufsize = 1U;
-    const uint16_t bufnmb  = (uint16_t)(k_usb_pipebuf_bufnmb_base + (pipe - 1U) * 2U);
-    usb0()->pipebuf        = (uint16_t)((bufsize << 10) | bufnmb);
-  }
-
-  usb0()->pipemaxp = max_packet;
-
-  /* Map pipe control registers to avoid undefined pointer arithmetic on struct members.
-   * Array contains pointers to contiguous pipe control registers (pipe1ctr through pipe9ctr). */
+   * Critically: for USB0 the FIT library does NOT write PIPEBUF at all
+   * -- USB0 has a fixed internal buffer-to-pipe mapping.  The earlier
+   * explicit PIPEBUF writes were corrupting that mapping and caused
+   * bulk IN BVAL commits to silently drop.  PIPEBUF writes in the FIT
+   * library are guarded by `#if RX64M||RX71M` AND `USB_IP1==ip_no`. */
   volatile uint16_t* pipe_ctr_map[] = {
-    &usb0()->pipe1ctr,
-    &usb0()->pipe2ctr,
-    &usb0()->pipe3ctr,
-    &usb0()->pipe4ctr,
-    &usb0()->pipe5ctr,
-    &usb0()->pipe6ctr,
-    &usb0()->pipe7ctr,
-    &usb0()->pipe8ctr,
-    &usb0()->pipe9ctr,
+    &usb0()->pipe1ctr, &usb0()->pipe2ctr, &usb0()->pipe3ctr,
+    &usb0()->pipe4ctr, &usb0()->pipe5ctr, &usb0()->pipe6ctr,
+    &usb0()->pipe7ctr, &usb0()->pipe8ctr, &usb0()->pipe9ctr,
   };
+  volatile uint16_t* const pipe_ctr = pipe_ctr_map[pipe - 1U];
+  const uint16_t           pipe_bit = (uint16_t)(1U << pipe);
 
-  /* Clear pipe (pipe numbers start at 1, so index is pipe - 1) */
-  volatile uint16_t* pipe_ctr = pipe_ctr_map[pipe - 1];
+  /* 1. Disable pipe interrupts while we reconfigure. */
+  usb0()->brdyenb &= (uint16_t)~pipe_bit;
+  usb0()->nrdyenb &= (uint16_t)~pipe_bit;
+  usb0()->bempenb &= (uint16_t)~pipe_bit;
+
+  /* 2. Force pipe to NAK so mid-configuration transfers don't race. */
+  *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask)
+                         | k_usb_pipectr_pid_nak);
+
+  /* 3. Select and configure.  FIT's usb_pstd_set_pipe_table() always sets
+   * DBLB (double-buffer) on bulk pipes -- single-buffered bulk on
+   * RX72N USB0 has been observed to silently drop transmissions. */
+  usb0()->pipesel  = pipe;
+  uint16_t cfg     = (endpoint & k_usb_pipecfg_epnum_mask) | type;
+  if (is_in) {
+    cfg |= k_usb_pipecfg_dir;
+  }
+  if (type == k_usb_pipecfg_type_bulk) {
+    cfg |= k_usb_pipecfg_dblb;
+    if (!is_in) {
+      cfg |= k_usb_pipecfg_shtnak; /* OUT side asserts SHTNAK per FIT default */
+    }
+  }
+  usb0()->pipecfg  = cfg;
+  usb0()->pipemaxp = max_packet;
+  usb0()->pipeperi = 0U;
+
+  /* 4. Deselect pipe register window. */
+  usb0()->pipesel = 0U;
+
+  /* 5. Reset sequence toggle + auto-clear buffer + clear CS. */
+  *pipe_ctr |= k_usb_pipectr_sqclr;
   *pipe_ctr |= k_usb_pipectr_aclrm;
   *pipe_ctr &= (uint16_t)~k_usb_pipectr_aclrm;
+  *pipe_ctr |= k_usb_pipectr_csclr;
 
-  /* Enable pipe */
-  *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask) | k_usb_pipectr_pid_buf);
+  /* 6. Clear pending interrupt status bits. */
+  usb0()->brdysts = (uint16_t)~pipe_bit;
+  usb0()->bempsts = (uint16_t)~pipe_bit;
+
+  /* 7. Enable pipe: PID = BUF. */
+  *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask)
+                         | k_usb_pipectr_pid_buf);
 
   return k_rx_ok;
 }
