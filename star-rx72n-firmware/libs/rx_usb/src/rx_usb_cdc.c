@@ -1853,34 +1853,28 @@ static void internal_handle_set_configuration(const uint16_t usb_value)
 
 /**
  * @brief Handle CDC SET_LINE_CODING request for specific port
+ *
+ * @details
+ * Acknowledges the SETUP without consuming the data stage in this
+ * call.  cdc_acm sends a 7-byte data payload right after SETUP, but
+ * that data isn't in the DCP FIFO at SETUP time -- it arrives in a
+ * separate OUT transaction that triggers BRDY for pipe 0.  Reading
+ * via rx_usb_hw_fifo_read here was leaving DCP in a non-idle FRDY
+ * wait that then jammed the subsequent CCPL and prevented cdc_acm
+ * from finishing port open (-> bulk IN URBs hang at -EINPROGRESS).
+ *
+ * The line-coding payload is discarded; the device doesn't enforce
+ * a particular baud rate / parity for USB CDC anyway -- those
+ * fields are advisory for hardware-bridge devices, not us.
  */
 static void internal_handle_set_line_coding(const rx_usb_port_id_t port)
 {
   if (port >= k_usb_port_count) {
-    rx_log_warn_val(s_tag, "SET_LINE_CODING for invalid port", port);
     usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
     return;
   }
 
-  uint8_t data[k_line_coding_size];
-
-  /* Read line coding data from FIFO */
-  const uint32_t len = rx_usb_hw_fifo_read(k_usb_pipe_dcp, data, k_line_coding_size);
-
-  if (len == k_line_coding_size) {
-    s_line_coding[port].baud_rate =
-      (uint32_t)data[k_line_coding_baud_rate_byte_0] |
-      ((uint32_t)data[k_line_coding_baud_rate_byte_1] << k_bit_shift_byte_1) |
-      ((uint32_t)data[k_line_coding_baud_rate_byte_2] << k_bit_shift_byte_2) |
-      ((uint32_t)data[k_line_coding_baud_rate_byte_3] << k_bit_shift_byte_3);
-    s_line_coding[port].stop_bits = data[k_line_coding_stop_bits_index];
-    s_line_coding[port].parity    = data[k_line_coding_parity_index];
-    s_line_coding[port].data_bits = data[k_line_coding_data_bits_index];
-
-    rx_usb_set_line_coding(port, &s_line_coding[port]);
-  }
-
-  /* Send zero-length status packet */
+  /* Send zero-length status packet -- payload discarded. */
   usb0()->dcpctr |= k_usb_dcpctr_ccpl;
 }
 
@@ -1926,12 +1920,6 @@ static void internal_handle_set_control_line_state(const rx_usb_port_id_t port,
   }
 
   s_control_line_state[port] = usb_value;
-
-  /* No rx_log_debug here -- this runs in USB ISR context where log
-   * helpers can re-enter rx_usb_write -> rx_usb_hw_fifo_write and
-   * stall the SETUP completion (the host's SET_CONTROL_LINE_STATE
-   * URB never sees CCPL, cdc_acm port-open hangs, bulk IN URBs
-   * never complete). */
 
   /* Send zero-length status packet */
   usb0()->dcpctr |= k_usb_dcpctr_ccpl;
