@@ -6,7 +6,7 @@ submits 16 IN URBs per port on opening `/dev/ttyACM{0,1,2}`; all 16 stay
 at `-115 EINPROGRESS` indefinitely and eventually cancel with `-2 ENOENT`
 when the port closes. Zero bytes ever reach the host.
 
-**Latest (2026-04-18, commits `d465ecd07..2b78e9175`):**
+**Latest (2026-04-18, commits `d465ecd07..e39114171`):**
 * Cleanup landed: removed pre-`tx_kernel_enter` raw-register pokes from
   `usb_task`, removed AD2 trace-beacon GPIO toggling from
   `internal_handle_set_configuration`, replaced 64-byte 'Z' spam with a
@@ -27,6 +27,52 @@ silent-NAK behaviour is unchanged from the previous milestone.  The
 longer transmits, even with `rx_usb_hw.c` reverted to the prior
 checkpoint -- strongly suggesting that what we observed earlier was a
 transient state, not a fix that the cleanup regressed.
+
+**Three further fixes landed (commits `c217516eb..e39114171`):**
+
+1. **rx_log_usb_putc/puts ISR-safe** (`rx_log_usb.c`).  Switched from
+   `tx_mutex_get(TX_WAIT_FOREVER)` to `TX_NO_WAIT` because these
+   functions are reachable from USB ISR context via `rx_log_debug` in
+   the SETUP handlers.  Blocking acquires from ISR are undefined in
+   ThreadX and were observed to hang `SET_CONTROL_LINE_STATE`'s CCPL
+   write so the host's open-time class request never completed.
+2. **Drop `rx_log_debug` calls inside ISR-context SETUP handlers**
+   (`rx_usb_cdc.c`: `handle_set_address`, `handle_set_line_coding`,
+   `handle_set_control_line_state`).  Even with TX_NO_WAIT the call
+   re-enters `rx_usb_write` -> `rx_usb_hw_fifo_write` (writing the log
+   line to port 2) which does its own FRDY waits and CFIFOSEL changes
+   on the same shared CFIFO that DCP is mid-CCPL on.
+3. **Mask USB0 USBI IRQ during `rx_usb_hw_fifo_write` CFIFO sequence**
+   (`rx_usb_hw.c`).  Save+disable ICU IER[4] bit 4 around the
+   PBUSY-check / CFIFOSEL switch / FRDY wait / byte-write / BVAL
+   block; restore on every exit path.  Prevents a BRDY/BEMP/CTRT
+   firing mid-write from re-entering the ISR and rebinding
+   CFIFOSEL.CURPIPE to a class-request pipe.
+
+After (1)+(2)+(3) plus the pre-kernel spin shortened from 80M to 1M
+iterations (`main.c`):
+
+* SET_CONTROL_LINE_STATE completion rate is **higher but still partial**
+  (3 of 6 URBs complete in a 5s window, vs 0 of 3 before).  The 3 that
+  don't complete cancel with `-2 ENOENT` ~5s later when cdc_acm gives
+  up.
+* Bulk IN URBs still NAK forever -- no `C Bi` completions on the wire.
+* All three CDC ports still enumerate cleanly as ttyACM0..2 (or
+  ttyACM1..3 depending on Cypress UART order).
+
+The remaining gap appears to be in the DCP CCPL sequencing for class
+requests -- standard requests (SET_ADDRESS, SET_CONFIGURATION) complete
+fine with the same `dcpctr |= CCPL` write, but class requests don't.
+Plausible deeper causes:
+
+* CTRT for `wr_status` (the status stage that follows our CCPL) may
+  not be firing on this silicon when the class-request path is taken.
+* `intsts0 = ~VALID` clear in CTRT handler may need to happen *after*
+  reading USBREQ/USBVAL/USBINDX (FIT order), not before.
+* SET_LINE_CODING reads 7 bytes from the DCP FIFO inside the SETUP
+  handler -- probably too early; the data stage may not be in the
+  FIFO yet, leaving DCP in a non-idle state that then jams the next
+  CCPL.
 
 Companion to `USB_BRINGUP_STATUS.md` (which documented the earlier 10-bug
 enumeration bring-up).
