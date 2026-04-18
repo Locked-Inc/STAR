@@ -116,7 +116,18 @@ Still untried (next-iteration candidates):
   this -- usb_pstd_request_event_set queues; the application
   processes from a peripheral driver task.
 
-## 2026-04-18 bus-level capture proves HW-level NAK (AD2 on D+/D-)
+## Correction (2026-04-18): earlier "HW defect" conclusion was wrong
+
+An earlier AD2 scope capture suggested D- was stuck at 10+ V (impossible)
+and concluded the silicon was defective.  **That reading was a bad
+solder joint on the AD2 Ch2 probe, not a board defect.**  After the
+probe was resoldered, D- showed clean 0 ↔ 3.3 V USB FS signaling,
+matching D+.  Retain the firmware-side conclusions below but ignore
+any claim that the silicon cannot drive USB FS -- it drives it fine
+(NAK responses are clean, eye is open ±3.1 V differential, edges
+10-30 ns rise/fall).
+
+## 2026-04-18 bus-level capture proves device NAKs every IN (AD2 on D+/D-)
 
 Hooked a Digilent Analog Discovery 2 to D+ (DIO1) and D- (DIO0) with
 common ground, sampled at 100 MS/s, and decoded the bus traffic
@@ -160,13 +171,24 @@ PIPECFG=0x4011, PIPEBUF=0x0008 (slot 8, 64B).  These are the
 identical values bulk_in_fix.c previously used when it reportedly
 transmitted "BULK1 %04d\r\n" payloads.
 
-Conclusion: the bulk IN failure is at the SILICON / BOARD level on
-this specific unit, not in firmware.  Our 207-byte composite CDC
-descriptor, class-request handlers, pipe-shuffle logic, D0FIFO
-routing, IRQ masking, CTRT ordering, and rx_log ISR-safety fixes
-are all irrelevant to the observed symptom -- the same chip can't
-even transmit a 1-byte bulk IN packet under the simplest possible
-vendor-class setup.
+Earlier I concluded this was a silicon defect, but that was based
+on the bad-solder Ch2 reading.  With the probe repaired and clean
+D+/D- waveforms confirmed, the actual conclusion is:
+
+**The device generates clean USB FS output for NAK handshakes but
+never produces DATA packets.  This is a firmware issue -- pipe 1's
+buffer isn't getting filled/armed in a way the transceiver picks up
+on the next IN poll.**
+
+Firmware-side suspects still in play:
+* D0FIFOSEL misprogramming -- ISEL bit 5 exists only on CFIFOSEL;
+  on D0FIFOSEL bit 5 is reserved/DMA-related.  Writing 1 there may
+  have been misconfiguring the D0FIFO bank so our BVAL commits
+  never reached the transceiver.  Fixed in rx_usb_hw.c: only set
+  ISEL when CURPIPE=DCP (CFIFO).
+* PIPECFG / PIPEBUF transaction ordering inside configure_pipe.
+* BEMPSTS clear timing (FIT clears AFTER BVAL; we were clearing
+  before).
 
 Hypotheses now in play (unverifiable without scope/JTAG):
 1. **RX72N USB0 silicon errata** that affects bulk IN BVAL commits
