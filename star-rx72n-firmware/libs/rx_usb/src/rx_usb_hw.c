@@ -961,22 +961,23 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     return k_min_transfer_size;
   }
 
-  /* For DCP only, clear the FIFO buffer before the control-transfer
-   * response so the stale chunk from the previous SETUP doesn't
-   * linger.  FIT's usb_pstd_write_data does NOT BCLR per write for
-   * data pipes -- issuing BCLR between bulk IN packets kills the
-   * double-buffered in-flight packet and the hardware never
-   * transmits. */
-  if (pipe == k_usb_pipe_min) {
-    usb0()->cfifoctr |= k_usb_fifoctr_bclr;
-    timeout = k_usb_fifo_timeout_iterations;
-    while ((usb0()->cfifoctr & k_usb_fifoctr_bclr) && timeout--) {
-      __asm__ volatile("nop");
-    }
-    if (timeout == k_usb_fifo_timeout_expired) {
-      rx_log_error(s_tag, "FIFO clear timeout");
-      return k_min_transfer_size;
-    }
+  /* BCLR the FIFO before writing the new packet.  This matches the
+   * working `usb_test/bulk_in_fix.c` repro, which BCLRs even on
+   * single-bulk-IN data pipes (the BCLR completes within a few
+   * cycles when the buffer was already empty -- which is the steady
+   * state for IN pipes between transfers).  FIT documentation says
+   * BCLR can clobber double-buffered in-flight packets, but with
+   * single-buffered bulk IN (DBLB=0 -- see configure_pipe) this is
+   * a no-op when no transfer is queued and a clean reset when one
+   * is half-staged. */
+  usb0()->cfifoctr |= k_usb_fifoctr_bclr;
+  timeout = k_usb_fifo_timeout_iterations;
+  while ((usb0()->cfifoctr & k_usb_fifoctr_bclr) && timeout--) {
+    __asm__ volatile("nop");
+  }
+  if (timeout == k_usb_fifo_timeout_expired) {
+    rx_log_error(s_tag, "FIFO clear timeout");
+    return k_min_transfer_size;
   }
 
   /*
@@ -1134,46 +1135,58 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
   *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask)
                          | k_usb_pipectr_pid_nak);
 
-  /* 3. Select and configure.  FIT's usb_pstd_set_pipe_table() always sets
-   * DBLB (double-buffer) on bulk pipes -- single-buffered bulk on
-   * RX72N USB0 has been observed to silently drop transmissions. */
+  /* 3. Select and configure.  Use SINGLE-BUFFER (no DBLB) for bulk
+   * IN pipes -- the working raw-register repro
+   * `usb_test/bulk_in_fix.c` configures pipe 1 as single-buffer
+   * bulk IN (PIPECFG = 0x4011) and successfully transmits.  DBLB on
+   * RX72N USB0 has been observed to silently drop bulk-IN BVAL
+   * commits.  Bulk OUT can keep DBLB + SHTNAK as before -- only the
+   * IN side appears affected. */
   usb0()->pipesel  = pipe;
 
   uint16_t cfg     = (endpoint & k_usb_pipecfg_epnum_mask) | type;
   if (is_in) {
     cfg |= k_usb_pipecfg_dir;
   }
-  if (type == k_usb_pipecfg_type_bulk) {
+  if (type == k_usb_pipecfg_type_bulk && !is_in) {
+    /* OUT side: double-buffer + SHTNAK per FIT default. */
     cfg |= k_usb_pipecfg_dblb;
-    if (!is_in) {
-      cfg |= k_usb_pipecfg_shtnak; /* OUT side asserts SHTNAK per FIT default */
-    }
+    cfg |= k_usb_pipecfg_shtnak;
   }
   usb0()->pipecfg  = cfg;
 
   /* DPRAM buffer allocation (PIPEBUF) for pipes 1-9.
    *
-   * Try BUFSIZE=1 (128 bytes per single buffer) with DBLB so the
-   * pipe gets 2*128=256 bytes total -- overkill for MPS=64 bulk but
-   * eliminates BUFSIZE being mis-set as a suspect.  Each pipe needs
-   * 4 slots (2 x (1+1) x 64B).  Layout slots: pipe 1@8-11, pipe
-   * 2@12-15, pipe 3@16-19, pipe 4@20-23, pipe 5@24-27, total 20
-   * slots for 5 bulk pipes, plus interrupt pipes on 6-9 (single
-   * buffer) at slots 28-31. */
+   * Layout matches `usb_test/bulk_in_fix.c` for pipe 1 (the working
+   * single-bulk-IN repro).  Bulk IN = single buffer (BUFSIZE=0,
+   * 64B).  Bulk OUT = double buffer via DBLB in PIPECFG, so reserve
+   * 2 contiguous slots.  Interrupt IN = 1 slot.  DCP owns slots 0-7.
+   *
+   *   pipe 1 (port0 bulk IN  single)  slot 8
+   *   pipe 2 (port0 bulk OUT double)  slots 9-10
+   *   pipe 3 (port1 bulk IN  single)  slot 11
+   *   pipe 4 (port1 bulk OUT double)  slots 12-13
+   *   pipe 5 (port2 bulk IN  single)  slot 14
+   *   pipe 6 (port0 int  IN  single)  slot 15
+   *   pipe 7 (port1 int  IN  single)  slot 16
+   *   pipe 8 (port2 int  IN  single)  slot 17
+   *   pipe 9 (port2 bulk OUT double)  slots 18-19
+   * Total used: slots 0-19 (DPRAM has 32 slots; plenty of headroom). */
   {
-    static const uint16_t k_pb_bulk     = (1U << 10); /* BUFSIZE=1 = 128B */
-    static const uint16_t k_pb_int_slot = (0U << 10); /* BUFSIZE=0 =  64B */
+    static const uint16_t k_pb_size_64  = (0U << 10); /* BUFSIZE=0 = 64B */
+    static const uint16_t k_pb_size_128 = (1U << 10); /* BUFSIZE=1 = 128B (per buf, double-buffered) */
     static const uint16_t s_pipebuf[k_usb_pipe_max] = {
-      /* pipe 1 (bulk IN,  slots 8-11)   */ k_pb_bulk     | 8U,
-      /* pipe 2 (bulk OUT, slots 12-15)  */ k_pb_bulk     | 12U,
-      /* pipe 3 (bulk IN,  slots 16-19)  */ k_pb_bulk     | 16U,
-      /* pipe 4 (bulk OUT, slots 20-23)  */ k_pb_bulk     | 20U,
-      /* pipe 5 (bulk IN,  slots 24-27)  */ k_pb_bulk     | 24U,
-      /* pipe 6 (int IN,   slot 28)      */ k_pb_int_slot | 28U,
-      /* pipe 7 (int IN,   slot 29)      */ k_pb_int_slot | 29U,
-      /* pipe 8 (int IN,   slot 30)      */ k_pb_int_slot | 30U,
-      /* pipe 9 (bulk OUT on interrupt slot 31) */ k_pb_int_slot | 31U,
+      /* pipe 1 (bulk IN  single)  slot 8     */ k_pb_size_64  | 8U,
+      /* pipe 2 (bulk OUT double)  slots 9-10 */ k_pb_size_64  | 9U,
+      /* pipe 3 (bulk IN  single)  slot 11    */ k_pb_size_64  | 11U,
+      /* pipe 4 (bulk OUT double)  slots 12-13*/ k_pb_size_64  | 12U,
+      /* pipe 5 (bulk IN  single)  slot 14    */ k_pb_size_64  | 14U,
+      /* pipe 6 (int  IN  single)  slot 15    */ k_pb_size_64  | 15U,
+      /* pipe 7 (int  IN  single)  slot 16    */ k_pb_size_64  | 16U,
+      /* pipe 8 (int  IN  single)  slot 17    */ k_pb_size_64  | 17U,
+      /* pipe 9 (bulk OUT double)  slots 18-19*/ k_pb_size_64  | 18U,
     };
+    (void)k_pb_size_128;
     usb0()->pipebuf = s_pipebuf[pipe - 1U];
   }
 
