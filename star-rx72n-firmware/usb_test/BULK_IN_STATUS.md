@@ -115,11 +115,42 @@ Still untried (next-iteration candidates):
   CCPL write happens outside the ISR critical section.  FIT does
   this -- usb_pstd_request_event_set queues; the application
   processes from a peripheral driver task.
-* Compile and flash the standalone `usb_test/bulk_in_fix.c` to
-  confirm the silicon itself can transmit bulk IN -- if YES,
-  the difference is either (a) cdc_acm class-request side
-  effects, or (b) something in our 207-byte composite descriptor
-  layout vs bulk_in_fix.c's 25-byte vendor-class descriptor.
+
+## 2026-04-18 board-level finding: bulk IN broken in `bulk_in_fix.c` too
+
+Flashed the standalone `bulk_in_fix.mot` (vendor-class single-bulk-IN
+test, 1209:0002) and tried to read EP 0x81 via libusb-python.  Read
+timed out after 2s with `-EIO -110` -- the device enumerates as
+1209:0002 cleanly, but bulk IN never transmits a byte.
+
+This rules out our 207-byte CDC composite descriptor layout, our
+class-request handler chain, and our pipe-shuffle logic as the
+culprit -- the same silicon refuses to bulk IN even with a 25-byte
+vendor-class descriptor and zero ongoing class-request traffic.
+
+Hypotheses now in play (unverifiable without scope/JTAG):
+1. **RX72N USB0 silicon errata** that affects bulk IN BVAL commits
+   on this specific chip lot or revision.  `r01us0263ej0170_rx72n`
+   errata sheet would confirm.
+2. **HOCO PLL / 48 MHz UCK clock instability** -- `bulk_in_fix.c`
+   includes the HOCO+PLL bring-up sequence from `hoco_pid_fix.c`,
+   so if that path produced a marginal 48 MHz clock, bulk IN PHY
+   timing might be off enough to NAK every IN token even though
+   enumeration (which uses the same clock) works.  Cypress
+   USB-UART `BUSDETECT` OTP issue documented in the board schematic
+   suggests USB clock/PHY area is fragile on this hardware.
+3. **Board-level VBUS / D+/D- signal integrity issue** intermittent
+   enough that DCP control transfers (short frames, NAK-tolerant)
+   work most of the time but bulk transfers (longer frames,
+   sequence-number sensitive) silently fail.
+
+Recommend: scope D+/D- on the RX72N USB0 connector while the host
+issues IN tokens, confirm the device is actually NAKing (DATA0/1
+PID never appears), then walk the RX72N schematic for VBUS bypass
+caps / pull-up resistor / decoupling around the USB0 PHY.
+
+For now: 3-port enumeration is solid; bulk IN bring-up is blocked
+on hardware investigation, not firmware.
 
 Companion to `USB_BRINGUP_STATUS.md` (which documented the earlier 10-bug
 enumeration bring-up).
