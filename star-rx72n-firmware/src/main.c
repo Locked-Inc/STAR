@@ -1927,6 +1927,15 @@ static void internal_register_iwdt_tasks(void)
  */
 static void internal_create_system_tasks(void)
 {
+  /* Beacon: drive PB3 LOW at the VERY START so AD2 on P4 pad 2 can
+   * tell whether we reached task creation at all.  If AD2 still reads
+   * HIGH after flash, internal_create_system_tasks never ran
+   * (something earlier in tx_application_define asserted). */
+  {
+    volatile uint8_t* const pb_podr_beacon = (volatile uint8_t*)0x0008C02BU;
+    *pb_podr_beacon &= (uint8_t)~(1U << 3);
+  }
+
   /* Telemetry Task - Priority 18 (lowest) */
   rx_err_t err = telemetry_task_create();
   RX_ASSERT(err == k_rx_ok, "telemetry_task_create must succeed");
@@ -1954,6 +1963,15 @@ static void internal_create_system_tasks(void)
   /* USB Polling Task - Priority 4 (highest of all app tasks).
    * Must be created before comm_task so rx_usb_init() runs BEFORE
    * comm_task's internal_init_transports() starts bringing up SPI/I2C/UART. */
+
+  /* Beacon: drive PB3 LOW right before usb_task_create. AD2 read:
+   *   HIGH -> we never even got here (earlier task create halted)
+   *   LOW  -> reached this point; if still LOW later, usb_task itself isn't running */
+  {
+    volatile uint8_t* const pb_podr = (volatile uint8_t*)0x0008C02BU;
+    *pb_podr &= (uint8_t)~(1U << 3);
+  }
+
   err = usb_task_create();
   RX_ASSERT(err == k_rx_ok, "usb_task_create must succeed");
 
@@ -2108,6 +2126,14 @@ static void internal_init_stack_monitor(void)
  */
 void tx_application_define(void* first_unused_memory)
 {
+  /* Beacon: drive PB3 LOW at the VERY START of tx_application_define.
+   * main.c's inline USB block left PB3 HIGH; if tx_application_define
+   * runs this at all, AD2 on P4 pad 2 will see LOW. */
+  {
+    volatile uint8_t* const pb_podr_beacon = (volatile uint8_t*)0x0008C02BU;
+    *pb_podr_beacon &= (uint8_t)~(1U << 3);
+  }
+
   /* Precondition: first_unused_memory parameter is provided by ThreadX */
   RX_ASSERT(first_unused_memory != nullptr, "Precondition: first_unused_memory must be valid");
 
@@ -2409,17 +2435,26 @@ int main(void)
 
     *SYSCFG_R  |= (1U << 4); /* DPRPU */
 
-    /* Enable CPU ICU delivery for vector 36 (USB0 USBI) so BRDY/BEMP
-     * interrupts fire without needing a tight poll loop.  Without
-     * this, `usb_task` polls every ~10 ms (ThreadX tick), which was
-     * too slow for DCP SET_CONTROL_LINE_STATE / bulk IN refills
-     * once the scheduler took over from main's spin loop. */
-    volatile uint8_t*  const IPR36_R = (volatile uint8_t*)(0x00087300U + 36U);
-    volatile uint8_t*  const IR36_R  = (volatile uint8_t*)(0x00087000U + 36U);
-    volatile uint8_t*  const IER4_R  = (volatile uint8_t*)(0x00087204U);
-    *IR36_R  = 0U;
-    *IPR36_R = 12U;              /* priority 12 (high for USB) */
-    *IER4_R |= (uint8_t)(1U << 4); /* vector 36 = IER[4] bit 4 */
+    /* NOTE: previously enabled CPU ICU delivery for vector 36 here,
+     * but with the usb0_usbi_isr symbol not reliably landing in the
+     * .rvectors section that caused the CPU to jump to garbage on
+     * the first USB event and hang tx_kernel_enter().  Leave ICU
+     * disabled for USB0 USBI; usb_task polls rx_usb_isr_handler
+     * instead.  Once we confirm the vector is valid, re-enable. */
+    (void)0;
+
+    /* Diagnostic: drive PB3 (P4 pad 2, MCU pin 82, silkscreen EN3D)
+     * HIGH here in main BEFORE tx_kernel_enter.  usb_task later drives
+     * it LOW.  AD2 DIO7 probe on P4 pad 2 thus shows:
+     *   HIGH = firmware reached main init but usb_task hasn't run
+     *   LOW  = usb_task ran and set PB3 low
+     *   0x0  = neither wrote (probe/wiring issue) */
+    volatile uint8_t* const pb_pdr  = (volatile uint8_t*)0x0008C00BU;
+    volatile uint8_t* const pb_podr = (volatile uint8_t*)0x0008C02BU;
+    volatile uint8_t* const pb_pmr  = (volatile uint8_t*)0x0008C06BU;
+    *pb_pmr  &= (uint8_t)~(1U << 3);
+    *pb_pdr  |= (uint8_t)(1U << 3);
+    *pb_podr |= (uint8_t)(1U << 3); /* HIGH */
   }
 
   /* Hardware is now fully attached by the inline sequence above.  Tell

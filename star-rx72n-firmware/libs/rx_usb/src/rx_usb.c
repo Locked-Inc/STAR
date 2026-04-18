@@ -517,18 +517,29 @@ typedef enum : uint8_t {
  * @brief Port pipe assignments
  */
 typedef enum : uint8_t {
-  /* Port 0 (Protocol) pipes */
-  k_port0_pipe_bulk_in  = 1, /**< Pipe 1 */
-  k_port0_pipe_bulk_out = 2, /**< Pipe 2 */
-  k_port0_pipe_int_in   = 3, /**< Pipe 3 */
-  /* Port 1 (Decoded) pipes */
-  k_port1_pipe_bulk_in  = 4, /**< Pipe 4 */
-  k_port1_pipe_bulk_out = 5, /**< Pipe 5 */
-  k_port1_pipe_int_in   = 6, /**< Pipe 6 */
-  /* Port 2 (Log) pipes */
-  k_port2_pipe_bulk_in  = 7, /**< Pipe 7 */
-  k_port2_pipe_bulk_out = 8, /**< Pipe 8 */
-  k_port2_pipe_int_in   = 9, /**< Pipe 9 */
+  /* RX72N USB0 pipe capability (HW manual Ch. 40):
+   *   Pipes 1..5:  bulk/isochronous, variable buffer, supports DBLB
+   *   Pipes 6..9:  interrupt only, fixed 64-byte single buffer
+   *
+   * Previous assignment put port 2 bulk IN/OUT on pipes 7/8 which are
+   * interrupt-only and silently NAK every bulk IN token.  Re-shuffled
+   * to keep all bulk IN/OUT on pipes 1..5 and all interrupt IN on
+   * pipes 6..9.  3 CDC ports still need 6 bulk pipes though, so
+   * port 2 bulk OUT reuses pipe 9 (interrupt slot, TYPE=bulk in
+   * PIPECFG is accepted by hardware but buffer is single-64B, so
+   * port 2 bulk OUT will be slower than 0/1). */
+  /* Port 0 (Protocol) */
+  k_port0_pipe_bulk_in  = 1, /**< Pipe 1  (bulk-capable) */
+  k_port0_pipe_bulk_out = 2, /**< Pipe 2  (bulk-capable) */
+  k_port0_pipe_int_in   = 6, /**< Pipe 6  (interrupt)    */
+  /* Port 1 (Decoded) */
+  k_port1_pipe_bulk_in  = 3, /**< Pipe 3  (bulk-capable) */
+  k_port1_pipe_bulk_out = 4, /**< Pipe 4  (bulk-capable) */
+  k_port1_pipe_int_in   = 7, /**< Pipe 7  (interrupt)    */
+  /* Port 2 (Log) */
+  k_port2_pipe_bulk_in  = 5, /**< Pipe 5  (last bulk-capable pipe)      */
+  k_port2_pipe_bulk_out = 9, /**< Pipe 9  (interrupt slot as bulk OUT)  */
+  k_port2_pipe_int_in   = 8, /**< Pipe 8  (interrupt)                   */
   /* Pipe range constants for validation (not tied to specific ports) */
   k_data_pipe_min = 1, /**< Minimum data pipe number (first port pipe) */
   k_data_pipe_max = 9, /**< Maximum data pipe number (last port pipe) */

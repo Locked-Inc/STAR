@@ -320,17 +320,19 @@ typedef enum : uint8_t {
   k_usb_pipe_max = 9, /**< Maximum pipe number (pipes 0-9) */
 } usb_pipe_numbers_t;
 
-/** @brief Pipe assignments for multi-port CDC */
+/** @brief Pipe assignments for multi-port CDC.
+ *  MUST match port_pipe_assignments_t in rx_usb.c -- all bulk pipes
+ *  on pipes 1-5 (bulk-capable), interrupts + port2-bulk-OUT on 6-9. */
 typedef enum : uint8_t {
-  k_port0_pipe_bulk_in  = 1, /**< Port 0: Bulk IN pipe */
-  k_port0_pipe_bulk_out = 2, /**< Port 0: Bulk OUT pipe */
-  k_port0_pipe_int_in   = 3, /**< Port 0: Interrupt IN pipe */
-  k_port1_pipe_bulk_in  = 4, /**< Port 1: Bulk IN pipe */
-  k_port1_pipe_bulk_out = 5, /**< Port 1: Bulk OUT pipe */
-  k_port1_pipe_int_in   = 6, /**< Port 1: Interrupt IN pipe */
-  k_port2_pipe_bulk_in  = 7, /**< Port 2: Bulk IN pipe */
-  k_port2_pipe_bulk_out = 8, /**< Port 2: Bulk OUT pipe */
-  k_port2_pipe_int_in   = 9, /**< Port 2: Interrupt IN pipe */
+  k_port0_pipe_bulk_in  = 1,
+  k_port0_pipe_bulk_out = 2,
+  k_port0_pipe_int_in   = 6,
+  k_port1_pipe_bulk_in  = 3,
+  k_port1_pipe_bulk_out = 4,
+  k_port1_pipe_int_in   = 7,
+  k_port2_pipe_bulk_in  = 5,
+  k_port2_pipe_bulk_out = 9,
+  k_port2_pipe_int_in   = 8,
 } usb_pipe_assignment_t;
 
 /* Redundant extern declarations removed - now provided by rx_usb_internal.h */
