@@ -864,18 +864,46 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     return k_min_transfer_size;
   }
 
-  /* hw_usb_set_curpipe (FIT library) sequence:
-   *   1. Read CFIFOSEL, clear CURPIPE (and ISEL), write back.
-   *   2. Spin until CFIFOSEL.CURPIPE reads as 0.  The hardware needs a
-   *      few cycles to drop the previous pipe cleanly; without this
-   *      wait, subsequent reads/writes to CFIFO still go to the OLD
-   *      pipe's buffer, so our BVAL commit lands in the wrong place
-   *      and the target bulk IN pipe silently stays empty.  THIS was
-   *      the root cause of bulk IN never transmitting.
-   *   3. OR in the new CURPIPE | ISEL | MBW=8, write back.
+  /* For data pipes (1-9), FIT's usb_pstd_send_start wraps the FIFO
+   * write with PID=NAK (so the hardware can't transmit a half-written
+   * buffer mid-staging), clears BEMPSTS/BRDYSTS for the pipe, writes
+   * the data, then sets PID=BUF to arm the pipe for the next IN token.
+   * Without this wrapper the bulk IN pipe stays at whatever PID it
+   * had before (often NAK) and host reads time out. */
+  volatile uint16_t* pipe_ctr = nullptr;
+  if (pipe != k_usb_pipe_min) {
+    volatile uint16_t* const pipe_ctr_map[] = {
+      &usb0()->pipe1ctr, &usb0()->pipe2ctr, &usb0()->pipe3ctr,
+      &usb0()->pipe4ctr, &usb0()->pipe5ctr, &usb0()->pipe6ctr,
+      &usb0()->pipe7ctr, &usb0()->pipe8ctr, &usb0()->pipe9ctr,
+    };
+    pipe_ctr                 = pipe_ctr_map[pipe - 1U];
+    const uint16_t pipe_bit  = (uint16_t)(1U << pipe);
+
+    /* Set PID=NAK (clear BUF bit); spin until PBUSY=0 so in-flight
+     * packet (if any) is drained before we touch the FIFO. */
+    *pipe_ctr &= (uint16_t)~k_usb_pipectr_pid_buf;
+    for (uint32_t n = 0; n < k_usb_fifo_timeout_iterations; ++n) {
+      if ((*pipe_ctr & k_usb_pipectr_pbusy) == 0U) {
+        break;
+      }
+    }
+    /* Clear BEMP + BRDY status for this pipe (FIT: interrupt-pending
+     * clear, so the BEMP that will fire after we BVAL is fresh). */
+    usb0()->bempsts = (uint16_t)~pipe_bit;
+    usb0()->brdysts = (uint16_t)~pipe_bit;
+  }
+
+  /* hw_usb_set_curpipe (FIT library) sequence, clear-wait-set:
+   *   1. Read CFIFOSEL, clear CURPIPE and ISEL, write back.
+   *   2. Spin until CFIFOSEL.CURPIPE reads as 0 (hardware needs a few
+   *      cycles to drop the previous pipe -- without the wait, later
+   *      CFIFO writes land in the old pipe's buffer).
+   *   3. OR in CURPIPE | MBW=8 (and ISEL=1 only for DCP), write back.
    *
-   * MBW=8 so DTLN increments per byte (even for odd lengths -- avoids
-   * the old 16-bit MBW babble bug on odd-length control transfers). */
+   * FIT's usb_pstd_write_data passes isel=USB_ISEL only for pipe 0
+   * (DCP).  For data pipes it passes isel=0 -- direction is
+   * determined by PIPECFG.DIR, CFIFOSEL.ISEL is ignored. */
   {
     uint16_t sel = usb0()->cfifosel;
     sel &= (uint16_t)~(k_usb_fifosel_curpipe_mask | k_usb_fifosel_isel);
@@ -884,7 +912,9 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
       /* spin */
     }
     sel |= (uint16_t)(pipe & k_usb_fifosel_curpipe_mask);
-    sel |= k_usb_fifosel_isel;
+    if (pipe == k_usb_pipe_min) {
+      sel |= k_usb_fifosel_isel; /* DCP writes need ISEL=1 */
+    }
     sel &= (uint16_t)~k_usb_fifosel_mbw_mask;
     usb0()->cfifosel = sel;
   }
@@ -901,19 +931,22 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     return k_min_transfer_size;
   }
 
-  /* Clear FIFO buffer before write (RX72N Manual Ch40 40.3.9 requirement) */
-  /* HIGH PRIORITY FIX: Prevents stale data from previous transfer */
-  usb0()->cfifoctr |= k_usb_fifoctr_bclr;
-
-  /* Wait for BCLR to complete (hardware clears bit when done) */
-  timeout = k_usb_fifo_timeout_iterations;
-  while ((usb0()->cfifoctr & k_usb_fifoctr_bclr) && timeout--) {
-    __asm__ volatile("nop");
-  }
-
-  if (timeout == k_usb_fifo_timeout_expired) {
-    rx_log_error(s_tag, "FIFO clear timeout");
-    return k_min_transfer_size;
+  /* For DCP only, clear the FIFO buffer before the control-transfer
+   * response so the stale chunk from the previous SETUP doesn't
+   * linger.  FIT's usb_pstd_write_data does NOT BCLR per write for
+   * data pipes -- issuing BCLR between bulk IN packets kills the
+   * double-buffered in-flight packet and the hardware never
+   * transmits. */
+  if (pipe == k_usb_pipe_min) {
+    usb0()->cfifoctr |= k_usb_fifoctr_bclr;
+    timeout = k_usb_fifo_timeout_iterations;
+    while ((usb0()->cfifoctr & k_usb_fifoctr_bclr) && timeout--) {
+      __asm__ volatile("nop");
+    }
+    if (timeout == k_usb_fifo_timeout_expired) {
+      rx_log_error(s_tag, "FIFO clear timeout");
+      return k_min_transfer_size;
+    }
   }
 
   /*
@@ -952,43 +985,19 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     const uint32_t remaining = len - written;
     const uint32_t chunk     = (remaining < chunk_max) ? remaining : chunk_max;
 
-    /* Mirror FIT's usb_pstd_write_data sequence around each chunk:
-     * save current PID, drop to NAK so the hardware can't transmit a
-     * half-written buffer mid-staging, do the FIFO writes, set BVAL,
-     * clear any pending BEMP status, then restore PID=BUF. */
-    volatile uint16_t* pid_reg;
-    if (pipe == k_usb_pipe_min) {
-      pid_reg = &usb0()->dcpctr;
-    } else {
-      volatile uint16_t* const s_data_pipe_ctr[] = {
-        &usb0()->pipe1ctr, &usb0()->pipe2ctr, &usb0()->pipe3ctr,
-        &usb0()->pipe4ctr, &usb0()->pipe5ctr, &usb0()->pipe6ctr,
-        &usb0()->pipe7ctr, &usb0()->pipe8ctr, &usb0()->pipe9ctr,
-      };
-      pid_reg = s_data_pipe_ctr[pipe - 1U];
-    }
-    const uint16_t prev_pid = (uint16_t)(*pid_reg & k_usb_pipectr_pid_mask);
-    *pid_reg = (uint16_t)((*pid_reg & (uint16_t)~k_usb_pipectr_pid_mask)
-                          | k_usb_pipectr_pid_nak);
-
     for (uint32_t i = 0; i < chunk; i++) {
       *cfifo_byte = data[written + i];
     }
     usb0()->cfifoctr |= k_usb_fifoctr_bval;
-
-    /* Clear pending BEMP for this pipe. */
-    if (pipe != k_usb_pipe_min) {
-      usb0()->bempsts = (uint16_t)~(1U << pipe);
-    }
-
-    /* Restore PID=BUF if it was BUF before -- arms the pipe to
-     * transmit on the next host IN token. */
-    if (prev_pid == k_usb_pipectr_pid_buf) {
-      *pid_reg = (uint16_t)((*pid_reg & (uint16_t)~k_usb_pipectr_pid_mask)
-                            | k_usb_pipectr_pid_buf);
-    }
-
     written += chunk;
+  }
+
+  /* For data pipes: re-arm PID=BUF so hardware responds to next IN
+   * token.  FIT's usb_cstd_set_buf = hw_usb_set_pid(pipe, PID_BUF) =
+   * "*pipe_ctr &= ~PID_MASK; *pipe_ctr |= PID_BUF". */
+  if (pipe_ctr != nullptr) {
+    *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask)
+                           | k_usb_pipectr_pid_buf);
   }
 
   return written;
