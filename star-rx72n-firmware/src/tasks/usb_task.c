@@ -15,9 +15,10 @@
 #include "tx_api.h"
 
 typedef enum : uint16_t {
-  k_usb_task_stack_size = 1024, /**< ThreadX task stack in bytes. */
-  k_usb_task_priority   = 4,    /**< One higher than comm_task (5) so we run first. */
-  k_usb_task_input      = 0,    /**< Thread entry input (unused). */
+  k_usb_task_stack_size    = 1024, /**< ThreadX task stack in bytes. */
+  k_usb_task_priority      = 4,    /**< One higher than comm_task (5) so we run first. */
+  k_usb_task_input         = 0,    /**< Thread entry input (unused). */
+  k_heartbeat_tick_period  = 100U, /**< 100 ticks @ 100 Hz tick = 1 s heartbeat cadence. */
 } usb_task_constants_t;
 
 static TX_THREAD s_usb_thread;
@@ -48,8 +49,23 @@ static void internal_usb_task_entry(ULONG input)
 
   rx_log_info(s_tag, "USB polling loop entering");
 
+  /* Heartbeat: every ThreadX tick (~10 ms), once the host has sent
+   * SET_CONFIGURATION and the device is configured, push a short
+   * burst on every CDC port so `cat /dev/ttyACM{1,2,3}` yields
+   * visible bytes if the bulk IN data path is wired up. */
+  uint32_t tick = 0U;
   for (;;) {
     rx_usb_isr_handler();
+
+    if ((tick % k_heartbeat_tick_period) == 0U) {
+      static const char beat0[] = "p0\r\n";
+      static const char beat1[] = "p1\r\n";
+      static const char beat2[] = "p2\r\n";
+      (void)rx_usb_write(k_usb_port_proto,   (const uint8_t*)beat0, sizeof(beat0) - 1U);
+      (void)rx_usb_write(k_usb_port_decoded, (const uint8_t*)beat1, sizeof(beat1) - 1U);
+      (void)rx_usb_write(k_usb_port_log,     (const uint8_t*)beat2, sizeof(beat2) - 1U);
+    }
+    tick++;
     (void)tx_thread_sleep(1U);
   }
 }
