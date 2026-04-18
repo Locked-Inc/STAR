@@ -28,7 +28,7 @@ longer transmits, even with `rx_usb_hw.c` reverted to the prior
 checkpoint -- strongly suggesting that what we observed earlier was a
 transient state, not a fix that the cleanup regressed.
 
-**Three further fixes landed (commits `c217516eb..e39114171`):**
+**Five further fixes landed (commits `c217516eb..f73e0dd1d`):**
 
 1. **rx_log_usb_putc/puts ISR-safe** (`rx_log_usb.c`).  Switched from
    `tx_mutex_get(TX_WAIT_FOREVER)` to `TX_NO_WAIT` because these
@@ -49,30 +49,77 @@ transient state, not a fix that the cleanup regressed.
    firing mid-write from re-entering the ISR and rebinding
    CFIFOSEL.CURPIPE to a class-request pipe.
 
-After (1)+(2)+(3) plus the pre-kernel spin shortened from 80M to 1M
-iterations (`main.c`):
+4. **Fix PIPEnCTR bit positions in rx72n_usb_regs.h**.  The header
+   was using DCPCTR layout (PID at bits [1:0], PBUSY at bit 5,
+   SQCLR at 8, ACLRM at 9, CSCLR at 13).  PIPEnCTR for n=1..9 has
+   different field positions: PID at [2:0] (3 bits), PBUSY at 6,
+   SQMON at 7, SQSET at 8, SQCLR at 9, ACLRM at 10, CSCLR at 4,
+   INBUFM at 13.  Old configure_pipe was setting INBUFM=1 where it
+   intended CSCLR -- left bulk-IN pipes in IN-direction-completion
+   BRDY mode instead of buffer-ready BRDY mode, blocking any host
+   stack that waits for BRDY.
 
-* SET_CONTROL_LINE_STATE completion rate is **higher but still partial**
-  (3 of 6 URBs complete in a 5s window, vs 0 of 3 before).  The 3 that
-  don't complete cancel with `-2 ENOENT` ~5s later when cdc_acm gives
-  up.
-* Bulk IN URBs still NAK forever -- no `C Bi` completions on the wire.
-* All three CDC ports still enumerate cleanly as ttyACM0..2 (or
-  ttyACM1..3 depending on Cypress UART order).
+5. **Route bulk pipe FIFO writes through D0FIFO** (`rx_usb_hw.c`)
+   instead of CFIFO so they don't contend with DCP class-request
+   traffic.  CFIFO is shared between DCP and data pipes;
+   bulk_in_fix.c works because once it reaches SET_CONFIGURATION
+   the DCP goes silent and bulk owns CFIFO uncontested.  Our
+   firmware keeps cdc_acm class requests flowing forever
+   (SET_LINE_CODING / SET_CONTROL_LINE_STATE / GET_LINE_CODING)
+   which previously interleaved with bulk IN BVAL commits on the
+   same FIFOSEL/FIFOCTR pair.
+
+After all five fixes plus the pre-kernel spin retuned from 80M to 1M
+to 10M iterations (`main.c`):
+
+* All three CDC interfaces enumerate cleanly as ttyACM0..2 (or
+  ttyACM1..3 depending on Cypress UART order) on every fresh
+  power cycle (when the Pi 5 USB hub state isn't in its
+  intermittent-dead recovery window).
+* SET_LINE_CODING completes (1-2ms) -- handler reduced to just CCPL,
+  no longer reads from DCP FIFO inside the SETUP context.
+* SET_CONTROL_LINE_STATE still **never completes**.  Each URB hangs
+  for 5s then cancels with -2 ENOENT.  cdc_acm tolerates the
+  failure (binds the port anyway) so port-open takes ~5s per port
+  ~= 15s total for all three.
+* Bulk IN URBs still **never complete**.  All 48 IN URBs (16 per
+  port × 3 ports) sit at -EINPROGRESS for the lifetime of the open
+  and cancel on close.
 
 The remaining gap appears to be in the DCP CCPL sequencing for class
 requests -- standard requests (SET_ADDRESS, SET_CONFIGURATION) complete
 fine with the same `dcpctr |= CCPL` write, but class requests don't.
-Plausible deeper causes:
 
-* CTRT for `wr_status` (the status stage that follows our CCPL) may
-  not be firing on this silicon when the class-request path is taken.
-* `intsts0 = ~VALID` clear in CTRT handler may need to happen *after*
-  reading USBREQ/USBVAL/USBINDX (FIT order), not before.
-* SET_LINE_CODING reads 7 bytes from the DCP FIFO inside the SETUP
-  handler -- probably too early; the data stage may not be in the
-  FIFO yet, leaving DCP in a non-idle state that then jams the next
-  CCPL.
+Things tried and ruled out as the culprit (each tested independently):
+* Atomic `(dcpctr & ~PID_MASK) | PID_BUF | CCPL` write instead of
+  `dcpctr |= CCPL`.
+* CCPL set BEFORE state mutation in handler vs after.
+* Replace CCPL with `dcpctr |= PID_STALL` to force a STALL response
+  the host should observe -- still no completion (so the issue
+  isn't "wrong PID value", it's "DCP doesn't respond at all").
+* BCLR the CFIFO with CURPIPE=0 before CCPL.
+* Clear CTRT at the START of `internal_handle_ctrt_interrupt`
+  rather than the end, so a wr_nd -> wr_status transition during
+  the handler can re-arm CTRT.  This BROKE enumeration entirely.
+* Disable USBI ICU vector and rely on usb_task polling.  This
+  also broke enumeration -- pre-kernel spin services initial
+  enumeration but post-kernel SETUP responsiveness suffers
+  without the IRQ.
+
+Still untried (next-iteration candidates):
+* `INBUFM` bit in PIPECFG for IN data pipes -- now that the header
+  has it at the right position (bit 13), explicitly clear it in
+  configure_pipe; the previous reset value behaviour wasn't checked.
+* Switch DCP class-request handling to a deferred-event model
+  (set a flag in the ISR, process from a thread) so the actual
+  CCPL write happens outside the ISR critical section.  FIT does
+  this -- usb_pstd_request_event_set queues; the application
+  processes from a peripheral driver task.
+* Compile and flash the standalone `usb_test/bulk_in_fix.c` to
+  confirm the silicon itself can transmit bulk IN -- if YES,
+  the difference is either (a) cdc_acm class-request side
+  effects, or (b) something in our 207-byte composite descriptor
+  layout vs bulk_in_fix.c's 25-byte vendor-class descriptor.
 
 Companion to `USB_BRINGUP_STATUS.md` (which documented the earlier 10-bug
 enumeration bring-up).
