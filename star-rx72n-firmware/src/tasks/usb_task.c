@@ -107,12 +107,19 @@ static void internal_usb_task_entry(ULONG input)
     *portc_pdr |= (uint8_t)(1U << 0);
     *portc_podr |= (uint8_t)(1U << 0);
 
-    static const char beat[] = "X";
-    if (rx_usb_write(k_usb_port_proto, (const uint8_t*)beat, 1U) == k_rx_ok) {
-      *portb_podr &= (uint8_t)~(1U << 3); /* LOW = write succeeded */
+    /* Full 64-byte MPS packet of 'Z' bytes every tick.  Hardware
+     * auto-commits at 64B so no BVAL edge-case with short packets. */
+    static const uint8_t beat64[64] = {
+      'Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z',
+      'Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z',
+      'Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z',
+      'Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','Z','\n'
+    };
+    if (rx_usb_write(k_usb_port_proto, beat64, sizeof(beat64)) == k_rx_ok) {
+      *portb_podr &= (uint8_t)~(1U << 3);
     }
-    (void)rx_usb_write(k_usb_port_decoded, (const uint8_t*)beat, 1U);
-    (void)rx_usb_write(k_usb_port_log,     (const uint8_t*)beat, 1U);
+    (void)rx_usb_write(k_usb_port_decoded, beat64, sizeof(beat64));
+    (void)rx_usb_write(k_usb_port_log,     beat64, sizeof(beat64));
 
     /* RAW register write test: bypass all abstractions and write
      * directly to pipe 1 (port 0 bulk IN, EP 0x81).  This proves
