@@ -793,19 +793,41 @@ typedef enum : uint8_t {
   k_line_coding_size             = 7, /**< Total line coding structure size */
 } cdc_line_coding_index_t;
 
-/** @brief USB Pipe Numbers for multi-port configuration */
+/** @brief USB Pipe Numbers for multi-port configuration.
+ *
+ * MUST match port_pipe_assignments_t in rx_usb.c + usb_pipe_assignment_t
+ * in rx_usb_isr.c.  Re-shuffled to keep all bulk pipes on 1-5 (bulk-
+ * capable) since RX72N USB0 pipes 6-9 are interrupt-only.  Pipe 9 is
+ * borrowed as port 2 bulk OUT -- with PIPECFG.TYPE=bulk the hardware
+ * accepts bulk semantics on an interrupt pipe slot, just without DBLB
+ * (64B single buffer). */
 typedef enum : uint8_t {
   k_usb_pipe_dcp            = 0, /**< Default Control Pipe */
-  k_usb_port0_pipe_bulk_in  = 1, /**< Port 0: Bulk IN pipe */
-  k_usb_port0_pipe_bulk_out = 2, /**< Port 0: Bulk OUT pipe */
-  k_usb_port0_pipe_int_in   = 3, /**< Port 0: Interrupt IN pipe */
-  k_usb_port1_pipe_bulk_in  = 4, /**< Port 1: Bulk IN pipe */
-  k_usb_port1_pipe_bulk_out = 5, /**< Port 1: Bulk OUT pipe */
-  k_usb_port1_pipe_int_in   = 6, /**< Port 1: Interrupt IN pipe */
-  k_usb_port2_pipe_bulk_in  = 7, /**< Port 2: Bulk IN pipe */
-  k_usb_port2_pipe_bulk_out = 8, /**< Port 2: Bulk OUT pipe */
-  k_usb_port2_pipe_int_in   = 9, /**< Port 2: Interrupt IN pipe */
+  k_usb_port0_pipe_bulk_in  = 1, /**< Port 0: Bulk IN  (bulk-capable) */
+  k_usb_port0_pipe_bulk_out = 2, /**< Port 0: Bulk OUT (bulk-capable) */
+  k_usb_port0_pipe_int_in   = 6, /**< Port 0: Interrupt IN */
+  k_usb_port1_pipe_bulk_in  = 3, /**< Port 1: Bulk IN  (bulk-capable) */
+  k_usb_port1_pipe_bulk_out = 4, /**< Port 1: Bulk OUT (bulk-capable) */
+  k_usb_port1_pipe_int_in   = 7, /**< Port 1: Interrupt IN */
+  k_usb_port2_pipe_bulk_in  = 5, /**< Port 2: Bulk IN  (last bulk-capable) */
+  k_usb_port2_pipe_bulk_out = 9, /**< Port 2: Bulk OUT (interrupt slot, 64B single) */
+  k_usb_port2_pipe_int_in   = 8, /**< Port 2: Interrupt IN */
 } usb_pipe_number_t;
+
+/** @brief EP numbers (lower nibble of endpoint address) for each
+ * pipe.  These must match the descriptor endpoint addresses
+ * advertised in s_config_desc.  Routed by PIPECFG.EPNUM. */
+typedef enum : uint8_t {
+  k_usb_port0_ep_num_bulk_in  = 1,
+  k_usb_port0_ep_num_bulk_out = 2,
+  k_usb_port0_ep_num_int_in   = 3,
+  k_usb_port1_ep_num_bulk_in  = 4,
+  k_usb_port1_ep_num_bulk_out = 5,
+  k_usb_port1_ep_num_int_in   = 6,
+  k_usb_port2_ep_num_bulk_in  = 7,
+  k_usb_port2_ep_num_bulk_out = 8,
+  k_usb_port2_ep_num_int_in   = 9,
+} usb_ep_number_t;
 
 /** @brief USB Configuration Values */
 typedef enum : uint8_t {
@@ -1640,7 +1662,7 @@ static void internal_rollback_pipes(uint8_t failed_pipe)
 static bool internal_configure_port0_pipes(void)
 {
   rx_err_t err = rx_usb_hw_configure_pipe(k_usb_port0_pipe_bulk_in,
-                                          k_usb_port0_pipe_bulk_in,
+                                          k_usb_port0_ep_num_bulk_in,
                                           true,
                                           k_usb_pipecfg_type_bulk,
                                           k_usb_bulk_packet_size);
@@ -1650,7 +1672,7 @@ static bool internal_configure_port0_pipes(void)
     return false;
   }
   err = rx_usb_hw_configure_pipe(k_usb_port0_pipe_bulk_out,
-                                 k_usb_port0_pipe_bulk_out,
+                                 k_usb_port0_ep_num_bulk_out,
                                  false,
                                  k_usb_pipecfg_type_bulk,
                                  k_usb_bulk_packet_size);
@@ -1661,7 +1683,7 @@ static bool internal_configure_port0_pipes(void)
     return false;
   }
   err = rx_usb_hw_configure_pipe(k_usb_port0_pipe_int_in,
-                                 k_usb_port0_pipe_int_in,
+                                 k_usb_port0_ep_num_int_in,
                                  true,
                                  k_usb_pipecfg_type_int,
                                  k_usb_interrupt_packet_size);
@@ -1682,7 +1704,7 @@ static bool internal_configure_port0_pipes(void)
 static bool internal_configure_port1_pipes(void)
 {
   rx_err_t err = rx_usb_hw_configure_pipe(k_usb_port1_pipe_bulk_in,
-                                          k_usb_port1_pipe_bulk_in,
+                                          k_usb_port1_ep_num_bulk_in,
                                           true,
                                           k_usb_pipecfg_type_bulk,
                                           k_usb_bulk_packet_size);
@@ -1693,7 +1715,7 @@ static bool internal_configure_port1_pipes(void)
     return false;
   }
   err = rx_usb_hw_configure_pipe(k_usb_port1_pipe_bulk_out,
-                                 k_usb_port1_pipe_bulk_out,
+                                 k_usb_port1_ep_num_bulk_out,
                                  false,
                                  k_usb_pipecfg_type_bulk,
                                  k_usb_bulk_packet_size);
@@ -1704,7 +1726,7 @@ static bool internal_configure_port1_pipes(void)
     return false;
   }
   err = rx_usb_hw_configure_pipe(k_usb_port1_pipe_int_in,
-                                 k_usb_port1_pipe_int_in,
+                                 k_usb_port1_ep_num_int_in,
                                  true,
                                  k_usb_pipecfg_type_int,
                                  k_usb_interrupt_packet_size);
@@ -1725,7 +1747,7 @@ static bool internal_configure_port1_pipes(void)
 static bool internal_configure_port2_pipes(void)
 {
   rx_err_t err = rx_usb_hw_configure_pipe(k_usb_port2_pipe_bulk_in,
-                                          k_usb_port2_pipe_bulk_in,
+                                          k_usb_port2_ep_num_bulk_in,
                                           true,
                                           k_usb_pipecfg_type_bulk,
                                           k_usb_bulk_packet_size);
@@ -1736,7 +1758,7 @@ static bool internal_configure_port2_pipes(void)
     return false;
   }
   err = rx_usb_hw_configure_pipe(k_usb_port2_pipe_bulk_out,
-                                 k_usb_port2_pipe_bulk_out,
+                                 k_usb_port2_ep_num_bulk_out,
                                  false,
                                  k_usb_pipecfg_type_bulk,
                                  k_usb_bulk_packet_size);
@@ -1747,7 +1769,7 @@ static bool internal_configure_port2_pipes(void)
     return false;
   }
   err = rx_usb_hw_configure_pipe(k_usb_port2_pipe_int_in,
-                                 k_usb_port2_pipe_int_in,
+                                 k_usb_port2_ep_num_int_in,
                                  true,
                                  k_usb_pipecfg_type_int,
                                  k_usb_interrupt_packet_size);
@@ -1765,15 +1787,17 @@ static bool internal_configure_port2_pipes(void)
  */
 static void internal_enable_interrupts_and_notify(void)
 {
-  /* Enable BRDY interrupt for Bulk OUT pipes (receive from host) */
+  /* Enable BRDY interrupt for Bulk OUT pipes (receive from host).
+   * Pipe numbers MUST match the new shuffle (bulk on 1-5, pipe 9 as
+   * port 2's bulk OUT via interrupt slot). */
   usb0()->brdyenb |= k_usb_pipe_bit_2 | /* Port 0: Bulk OUT pipe 2 */
-                     k_usb_pipe_bit_5 | /* Port 1: Bulk OUT pipe 5 */
-                     k_usb_pipe_bit_8;  /* Port 2: Bulk OUT pipe 8 */
+                     k_usb_pipe_bit_4 | /* Port 1: Bulk OUT pipe 4 */
+                     k_usb_pipe_bit_9;  /* Port 2: Bulk OUT pipe 9 */
 
   /* Enable BEMP interrupt for Bulk IN pipes (transmit complete) */
   usb0()->bempenb |= k_usb_pipe_bit_1 | /* Port 0: Bulk IN pipe 1 */
-                     k_usb_pipe_bit_4 | /* Port 1: Bulk IN pipe 4 */
-                     k_usb_pipe_bit_7;  /* Port 2: Bulk IN pipe 7 */
+                     k_usb_pipe_bit_3 | /* Port 1: Bulk IN pipe 3 */
+                     k_usb_pipe_bit_5;  /* Port 2: Bulk IN pipe 5 */
 
   rx_usb_set_state(k_usb_state_configured);
   rx_usb_invoke_callback(k_usb_port_proto, k_usb_event_configured);

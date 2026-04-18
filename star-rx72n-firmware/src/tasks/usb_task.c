@@ -47,6 +47,19 @@ static void internal_usb_task_entry(ULONG input)
 {
   (void)input;
 
+  /* Drive PB3 LOW AT THE VERY FIRST INSTRUCTION of the task, BEFORE
+   * anything that could block (rx_log_info, mutex acquire, etc.).
+   * If AD2 DIO7 stays HIGH, the task entry was never reached.  If it
+   * goes LOW, the task DID start but gets stuck later. */
+  {
+    volatile uint8_t* const pb_pdr  = (volatile uint8_t*)0x0008C00BU;
+    volatile uint8_t* const pb_podr = (volatile uint8_t*)0x0008C02BU;
+    volatile uint8_t* const pb_pmr  = (volatile uint8_t*)0x0008C06BU;
+    *pb_pmr  &= (uint8_t)~(1U << 3);
+    *pb_pdr  |= (uint8_t)(1U << 3);
+    *pb_podr &= (uint8_t)~(1U << 3); /* LOW -- task was entered */
+  }
+
   rx_log_info(s_tag, "USB polling loop entering");
 
   /* Diagnostic: drive BOTH pins of P4 (silkscreen "EN3D") as GPIO so
@@ -67,37 +80,39 @@ static void internal_usb_task_entry(ULONG input)
   volatile uint8_t* const portc_podr = (volatile uint8_t*)0x0008C02CU;
   volatile uint8_t* const portc_pmr  = (volatile uint8_t*)0x0008C06CU;
 
-  /* SIMPLE STATIC TEST: force PB3 and PC0 HIGH forever.  If AD2 reads
-   * high on DIO7 now, the GPIO write path works and we can refine.
-   * If AD2 still reads 0, either the probe is on a net that doesn't
-   * reach PB3/PC0, or some hardware is actively pulling the pin low. */
+  /* main.c drove PB3 HIGH before tx_kernel_enter as a "reached init"
+   * beacon.  Drive PB3 LOW here to prove usb_task is actually
+   * running: AD2 DIO7 on P4 pad 2 should show LOW if so.  PC0 held
+   * HIGH as a secondary signal for the other P4 pad. */
   *portb_pmr &= (uint8_t)~(1U << 3);
   *portb_pdr |= (uint8_t)(1U << 3);
-  *portb_podr |= (uint8_t)(1U << 3);
+  *portb_podr &= (uint8_t)~(1U << 3); /* LOW */
   *portc_pmr &= (uint8_t)~(1U << 0);
   *portc_pdr |= (uint8_t)(1U << 0);
-  *portc_podr |= (uint8_t)(1U << 0);
+  *portc_podr |= (uint8_t)(1U << 0); /* HIGH */
 
   uint32_t tick = 0U;
   for (;;) {
     rx_usb_isr_handler();
 
-    /* Re-force HIGH every tick in case any other task clobbers it. */
+    /* Re-assert PB3 as output.  Default state = HIGH every tick.
+     * Then try rx_usb_write; on success flip PB3 LOW so AD2 sees:
+     *   steady HIGH -> rx_usb_write keeps failing every tick
+     *   toggling    -> rx_usb_write succeeds intermittently
+     *   steady LOW  -> rx_usb_write succeeds every tick */
     *portb_pmr &= (uint8_t)~(1U << 3);
     *portb_pdr |= (uint8_t)(1U << 3);
-    *portb_podr |= (uint8_t)(1U << 3);
+    *portb_podr |= (uint8_t)(1U << 3);  /* default HIGH = write failed */
     *portc_pmr &= (uint8_t)~(1U << 0);
     *portc_pdr |= (uint8_t)(1U << 0);
     *portc_podr |= (uint8_t)(1U << 0);
 
-    if ((tick % k_heartbeat_tick_period) == 0U) {
-      static const char beat0[] = "p0\r\n";
-      static const char beat1[] = "p1\r\n";
-      static const char beat2[] = "p2\r\n";
-      (void)rx_usb_write(k_usb_port_proto,   (const uint8_t*)beat0, sizeof(beat0) - 1U);
-      (void)rx_usb_write(k_usb_port_decoded, (const uint8_t*)beat1, sizeof(beat1) - 1U);
-      (void)rx_usb_write(k_usb_port_log,     (const uint8_t*)beat2, sizeof(beat2) - 1U);
+    static const char beat[] = "X";
+    if (rx_usb_write(k_usb_port_proto, (const uint8_t*)beat, 1U) == k_rx_ok) {
+      *portb_podr &= (uint8_t)~(1U << 3); /* LOW = write succeeded */
     }
+    (void)rx_usb_write(k_usb_port_decoded, (const uint8_t*)beat, 1U);
+    (void)rx_usb_write(k_usb_port_log,     (const uint8_t*)beat, 1U);
     tick++;
     (void)tx_thread_sleep(1U);
   }
