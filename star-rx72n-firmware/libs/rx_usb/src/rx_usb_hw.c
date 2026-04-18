@@ -654,6 +654,17 @@ static void internal_usb_configure_interrupts(void)
  * 3. Sets up the USB clock (48 MHz from PLL)
  * 4. Configures interrupts
  */
+void rx_usb_hw_mark_initialized(void)
+{
+  /* Used when main() brought the peripheral up with an inline register
+   * sequence (SYSCFG / DCPCFG / DCPCTR / INTENB0 / DPRPU) before the
+   * production stack got a chance to call rx_usb_hw_init() itself.
+   * Flipping this flag short-circuits the re-init in rx_usb_hw_init()
+   * so rx_usb_init() can set up driver + CDC state without clobbering
+   * the already-working hardware. */
+  s_hw_initialized = true;
+}
+
 rx_err_t rx_usb_hw_init(void)
 {
   if (s_hw_initialized) {

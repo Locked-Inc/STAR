@@ -2410,6 +2410,16 @@ int main(void)
     *SYSCFG_R  |= (1U << 4); /* DPRPU */
   }
 
+  /* Hardware is now fully attached by the inline sequence above.  Tell
+   * the production rx_usb_hw layer that s_hw_initialized = true so
+   * rx_usb_init below skips the redundant register sequence, then call
+   * rx_usb_init() to set up ring buffers, CDC class state, and flip
+   * s_usb.initialized = true.  Without this, rx_usb_write() early-exits
+   * with k_rx_err_invalid_state and telemetry never reaches the host. */
+  rx_usb_hw_mark_initialized();
+  ret = rx_usb_init(nullptr);
+  RX_ERROR_CHECK(ret);
+
   /* Service SETUP inline via the production dispatcher during the
    * ThreadX boot gap.  rx_usb_isr_handler routes CTRT into
    * rx_usb_cdc_handle_setup, which serves the real 3-port CDC composite

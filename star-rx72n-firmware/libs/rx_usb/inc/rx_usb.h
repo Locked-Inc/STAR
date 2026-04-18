@@ -1224,6 +1224,20 @@ void rx_usb_reset_stats(rx_usb_port_id_t port);
  */
 void rx_usb_isr_handler(void);
 
+/**
+ * @brief Mark USB hardware as already initialised externally.
+ *
+ * @details
+ * Flip the internal `s_hw_initialized` flag to true so the next call to
+ * rx_usb_hw_init() (via rx_usb_init) returns immediately without
+ * re-running the clock / SYSCFG / DCP / INTENB0 / DPRPU sequence.
+ * Intended for call sites that brought the peripheral up with an
+ * equivalent inline register sequence (e.g. main()'s pre-kernel attach)
+ * and now want the production driver state (ring buffers, CDC state,
+ * s_usb.initialized) without disturbing live hardware.
+ */
+void rx_usb_hw_mark_initialized(void);
+
 #ifdef __cplusplus
 }
 #endif
