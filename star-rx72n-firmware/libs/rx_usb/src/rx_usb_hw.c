@@ -488,6 +488,28 @@
 
 static const char* s_tag = "USB_HW";
 
+/* Per-pipe configure-time cache.  configure_pipe writes both arrays;
+ * rx_usb_hw_fifo_write reads them.  Sized for pipes 0..9 (DCP at
+ * index 0 left zero -- DCP uses DCPMAXP and ISEL=1 unconditionally). */
+static uint16_t s_pipe_max_packet[10] = {0};
+static bool     s_pipe_is_in[10]      = {false};
+
+uint16_t rx_usb_hw_pipe_max_packet(const uint8_t pipe)
+{
+  if (pipe == 0U || pipe >= 10U) {
+    return 0U;
+  }
+  return s_pipe_max_packet[pipe];
+}
+
+bool rx_usb_hw_pipe_is_in(const uint8_t pipe)
+{
+  if (pipe >= 10U) {
+    return false;
+  }
+  return s_pipe_is_in[pipe];
+}
+
 /** @brief USB timing constants for initialization delays */
 typedef enum : uint16_t {
   k_usb_pll_stabilization_ms   = 10, /**< USB PLL stabilization time (10ms) */
@@ -897,28 +919,33 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     usb0()->brdysts = (uint16_t)((~pipe_bit) & k_sts_mask);
   }
 
-  /* hw_usb_set_curpipe (FIT library) sequence, clear-wait-set:
-   *   1. Read CFIFOSEL, clear CURPIPE and ISEL, write back.
-   *   2. Spin until CFIFOSEL.CURPIPE reads as 0 (hardware needs a few
-   *      cycles to drop the previous pipe -- without the wait, later
-   *      CFIFO writes land in the old pipe's buffer).
-   *   3. OR in CURPIPE | MBW=8 (and ISEL=1 only for DCP), write back.
-   *
-   * FIT's usb_pstd_write_data passes isel=USB_ISEL only for pipe 0
-   * (DCP).  For data pipes it passes isel=0 -- direction is
-   * determined by PIPECFG.DIR, CFIFOSEL.ISEL is ignored. */
+  /* CFIFOSEL programming -- mirror the working raw-register repro
+   * in `usb_test/bulk_in_fix.c`:
+   *   1. Clear CURPIPE + ISEL bits.
+   *   2. Spin until CURPIPE reads back as 0 (hardware needs a few
+   *      cycles to release the previous pipe -- if you skip this
+   *      and the previous CURPIPE was non-zero, the next CFIFO write
+   *      lands in the OLD pipe's buffer).
+   *   3. Set CURPIPE = pipe, MBW = 0 (8-bit), and ISEL = 1 for
+   *      device-to-host (IN) transfers (DCP and IN data pipes alike).
+   *      ISEL=0 is documented for data pipes in FIT but silently
+   *      drops BVAL commits on RX72N USB0 (IP0) -- only ISEL=1
+   *      reliably routes 8-bit writes through to the FIFO. */
   {
+    const bool     pipe_is_in = (pipe == k_usb_pipe_min) || rx_usb_hw_pipe_is_in(pipe);
+    const uint16_t want_isel  = pipe_is_in ? k_usb_fifosel_isel : 0U;
+
     uint16_t sel = usb0()->cfifosel;
     sel &= (uint16_t)~(k_usb_fifosel_curpipe_mask | k_usb_fifosel_isel);
     usb0()->cfifosel = sel;
-    while ((usb0()->cfifosel & k_usb_fifosel_curpipe_mask) != 0U) {
-      /* spin */
+    for (volatile uint32_t n = 0; n < k_usb_fifo_timeout_iterations; ++n) {
+      if ((usb0()->cfifosel & k_usb_fifosel_curpipe_mask) == 0U) {
+        break;
+      }
     }
-    sel |= (uint16_t)(pipe & k_usb_fifosel_curpipe_mask);
-    if (pipe == k_usb_pipe_min) {
-      sel |= k_usb_fifosel_isel; /* DCP writes need ISEL=1 */
-    }
-    sel &= (uint16_t)~k_usb_fifosel_mbw_mask;
+
+    sel |= (uint16_t)(want_isel | (pipe & k_usb_fifosel_curpipe_mask));
+    sel &= (uint16_t)~k_usb_fifosel_mbw_mask; /* MBW = 0 -> 8-bit */
     usb0()->cfifosel = sel;
   }
 
@@ -966,17 +993,16 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
    * single pass, preserving the earlier behaviour for small requests.
    */
   volatile uint8_t* const cfifo_byte = (volatile uint8_t*)&usb0()->cfifo;
-  uint16_t                chunk_max;
+  /* Use the cached MAXP from configure_pipe -- writing to PIPESEL
+   * mid-write to read PIPEMAXP corrupts CFIFO routing on RX72N USB0
+   * (CURPIPE silently rebinds to whatever PIPESEL points at), so the
+   * subsequent CFIFO writes land in the wrong pipe and the packet is
+   * never transmitted on the intended endpoint. */
+  uint16_t chunk_max;
   if (pipe == k_usb_pipe_min) {
     chunk_max = (uint16_t)usb0()->dcpmaxp;
   } else {
-    /* PIPEMAXP aliases whatever PIPESEL points at; configure_pipe
-     * deselects (PIPESEL=0) after write so reading PIPEMAXP here
-     * yields pipe 0's MAXP (= DCPMAXP) instead of pipe N's.  Re-
-     * select the target pipe for the read, then deselect. */
-    usb0()->pipesel = pipe;
-    chunk_max       = (uint16_t)usb0()->pipemaxp;
-    usb0()->pipesel = 0U;
+    chunk_max = rx_usb_hw_pipe_max_packet(pipe);
     if (chunk_max == 0U) {
       chunk_max = 64U; /* defensive fallback = Full-Speed bulk MPS */
     }
@@ -1112,6 +1138,7 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
    * DBLB (double-buffer) on bulk pipes -- single-buffered bulk on
    * RX72N USB0 has been observed to silently drop transmissions. */
   usb0()->pipesel  = pipe;
+
   uint16_t cfg     = (endpoint & k_usb_pipecfg_epnum_mask) | type;
   if (is_in) {
     cfg |= k_usb_pipecfg_dir;
@@ -1152,6 +1179,9 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
 
   usb0()->pipemaxp = max_packet;
   usb0()->pipeperi = 0U;
+
+  s_pipe_max_packet[pipe] = max_packet;
+  s_pipe_is_in[pipe]      = is_in;
 
   /* 4. Deselect pipe register window. */
   usb0()->pipesel = 0U;

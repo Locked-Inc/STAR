@@ -1108,7 +1108,17 @@ typedef struct __attribute__((packed)) {
   usb_endpoint_descriptor_t        port1_ep_bulk_in;
   usb_endpoint_descriptor_t        port1_ep_bulk_out;
 
-  /* Port 2 CDC Function */
+  /* Port 2 CDC Function (LOG -- /dev/ttyACM3).
+   *
+   * Semantic: this port is OUTPUT-ONLY from the device's perspective
+   * (firmware streams logs to host; firmware never consumes input).
+   * However, Linux cdc_acm probes fail (-EINVAL) on a CDC data
+   * interface that advertises only one endpoint -- it requires both
+   * bulk IN and bulk OUT.  So we still advertise a bulk OUT endpoint
+   * and configure its hardware pipe (so host writes don't NAK
+   * forever), but the firmware silently discards anything received
+   * on it.  Net effect matches the spec: userspace can write to
+   * /dev/ttyACM3 but those bytes go nowhere. */
   usb_iad_descriptor_t             port2_iad;
   usb_interface_descriptor_t       port2_cdc_interface;
   cdc_header_descriptor_t          port2_cdc_header;
@@ -1788,8 +1798,10 @@ static bool internal_configure_port2_pipes(void)
 static void internal_enable_interrupts_and_notify(void)
 {
   /* Enable BRDY interrupt for Bulk OUT pipes (receive from host).
-   * Pipe numbers MUST match the new shuffle (bulk on 1-5, pipe 9 as
-   * port 2's bulk OUT via interrupt slot). */
+   * Port 2 is log-only at the application layer, but its bulk OUT
+   * pipe is still configured + BRDY-enabled so cdc_acm accepts the
+   * interface and host writes don't NAK (data is silently consumed
+   * by rx_usb_cdc_handle_bulk_out without being dispatched). */
   usb0()->brdyenb |= k_usb_pipe_bit_2 | /* Port 0: Bulk OUT pipe 2 */
                      k_usb_pipe_bit_4 | /* Port 1: Bulk OUT pipe 4 */
                      k_usb_pipe_bit_9;  /* Port 2: Bulk OUT pipe 9 */
