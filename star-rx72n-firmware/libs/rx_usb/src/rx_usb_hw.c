@@ -1108,6 +1108,34 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
     }
   }
   usb0()->pipecfg  = cfg;
+
+  /* DPRAM buffer allocation (PIPEBUF) for pipes 1-9.
+   *
+   * RX72N USB0 has 2 KB of DPRAM in 32 x 64-byte slots.  DCP owns
+   * slots 0-7 for its 64-byte MPS so data pipes start at slot 8.
+   * Layout: BUFSIZE=0 + DBLB=1 yields two 64-byte halves per pipe
+   * (2 slots total, matches MPS=64 exactly so hardware commits a
+   * full packet on BVAL).  Layout puts each pipe two slots apart,
+   * so pipes 1-9 occupy slots 8..25 cleanly without overlap.
+   * Without PIPEBUF programming the pipe defaults to BUFNMB=0 which
+   * shadows DCP -- BVAL writes silently disappear and the host sees
+   * only NAKs on bulk IN. */
+  {
+    static const uint16_t k_pipebuf_bufsize_64 = (0U << 10);
+    static const uint16_t s_pipebuf[k_usb_pipe_max] = {
+      /* pipe 1 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 0U),
+      /* pipe 2 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 2U),
+      /* pipe 3 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 4U),
+      /* pipe 4 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 6U),
+      /* pipe 5 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 8U),
+      /* pipe 6 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 10U),
+      /* pipe 7 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 12U),
+      /* pipe 8 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 14U),
+      /* pipe 9 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 16U),
+    };
+    usb0()->pipebuf = s_pipebuf[pipe - 1U];
+  }
+
   usb0()->pipemaxp = max_packet;
   usb0()->pipeperi = 0U;
 
