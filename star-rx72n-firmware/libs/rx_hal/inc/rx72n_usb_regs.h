@@ -70,6 +70,7 @@ typedef enum : uint16_t {
   k_usb_offset_dcpctr    = 0x60,
   k_usb_offset_pipesel   = 0x64,
   k_usb_offset_pipecfg   = 0x68,
+  k_usb_offset_pipebuf   = 0x6A,
   k_usb_offset_pipemaxp  = 0x6C,
   k_usb_offset_pipeperi  = 0x6E,
   k_usb_offset_pipe1ctr  = 0x70,
@@ -162,7 +163,7 @@ typedef struct {
   volatile uint16_t pipesel;
   uint8_t           reserved9[k_usb_reserved_66_68_bytes];
   volatile uint16_t pipecfg;
-  uint8_t           reserved10[k_usb_reserved_6a_6c_bytes];
+  volatile uint16_t pipebuf;
   volatile uint16_t pipemaxp;
   volatile uint16_t pipeperi;
   volatile uint16_t pipe1ctr;
