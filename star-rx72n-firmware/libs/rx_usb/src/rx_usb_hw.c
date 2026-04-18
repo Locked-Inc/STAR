@@ -908,6 +908,20 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     }
   }
 
+  /* Mask USB0 USBI IRQ delivery (ICU IER[4] bit 4 = vector 36) for
+   * the duration of the CFIFO sequence.  Without this, a BRDY/BEMP/
+   * CTRT interrupt firing mid-write can preempt us, run the ISR,
+   * which will switch CFIFOSEL.CURPIPE to whichever pipe it is
+   * servicing (typically pipe 0 for a CDC class request that came in
+   * concurrently with our write).  Subsequent CFIFO byte writes from
+   * our preempted code then land in the WRONG pipe's buffer and the
+   * intended pipe's BVAL commits an empty packet (or stale data),
+   * which the host sees as a NAK forever. */
+  volatile uint8_t* const ier4_r           = (volatile uint8_t*)0x00087204U;
+  const uint8_t           usbi_mask        = (uint8_t)(1U << 4); /* vec 36 = IER[4] bit 4 */
+  const uint8_t           ier4_was_enabled = (uint8_t)(*ier4_r & usbi_mask);
+  *ier4_r &= (uint8_t)~usbi_mask;
+
   /* CFIFOSEL programming -- mirror the working raw-register repro
    * in `usb_test/bulk_in_fix.c`:
    *   1. Clear CURPIPE + ISEL bits.
@@ -947,26 +961,26 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
 
   if (timeout == k_usb_fifo_timeout_expired) {
     rx_log_error(s_tag, "FIFO write timeout");
+    if (ier4_was_enabled != 0U) { *ier4_r |= usbi_mask; }
     return k_min_transfer_size;
   }
 
-  /* BCLR the FIFO before writing the new packet.  This matches the
-   * working `usb_test/bulk_in_fix.c` repro, which BCLRs even on
-   * single-bulk-IN data pipes (the BCLR completes within a few
-   * cycles when the buffer was already empty -- which is the steady
-   * state for IN pipes between transfers).  FIT documentation says
-   * BCLR can clobber double-buffered in-flight packets, but with
-   * single-buffered bulk IN (DBLB=0 -- see configure_pipe) this is
-   * a no-op when no transfer is queued and a clean reset when one
-   * is half-staged. */
-  usb0()->cfifoctr |= k_usb_fifoctr_bclr;
-  timeout = k_usb_fifo_timeout_iterations;
-  while ((usb0()->cfifoctr & k_usb_fifoctr_bclr) && timeout--) {
-    __asm__ volatile("nop");
-  }
-  if (timeout == k_usb_fifo_timeout_expired) {
-    rx_log_error(s_tag, "FIFO clear timeout");
-    return k_min_transfer_size;
+  /* Skip BCLR for data pipes: with single-buffered IN, BCLR is a
+   * no-op between transfers anyway (FIFO is already empty after the
+   * previous BVAL -> bus drain), and skipping it removes one source
+   * of state churn.  DCP keeps BCLR for the GET_DESCRIPTOR(Config)
+   * staging case (the original 207-byte fix). */
+  if (pipe == k_usb_pipe_min) {
+    usb0()->cfifoctr |= k_usb_fifoctr_bclr;
+    timeout = k_usb_fifo_timeout_iterations;
+    while ((usb0()->cfifoctr & k_usb_fifoctr_bclr) && timeout--) {
+      __asm__ volatile("nop");
+    }
+    if (timeout == k_usb_fifo_timeout_expired) {
+      rx_log_error(s_tag, "FIFO clear timeout");
+      if (ier4_was_enabled != 0U) { *ier4_r |= usbi_mask; }
+      return k_min_transfer_size;
+    }
   }
 
   /*
@@ -1010,6 +1024,7 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     }
     if (timeout == k_usb_fifo_timeout_expired) {
       rx_log_error(s_tag, "FIFO refill timeout");
+      if (ier4_was_enabled != 0U) { *ier4_r |= usbi_mask; }
       return written;
     }
 
@@ -1026,6 +1041,11 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   /* No PID re-arm needed -- configure_pipe set PID=BUF and we don't
    * toggle it during writes (matches bulk_in_fix.c). */
   (void)pipe_ctr;
+
+  /* Restore USB IRQ delivery if we previously disabled it. */
+  if (ier4_was_enabled != 0U) {
+    *ier4_r |= usbi_mask;
+  }
 
   return written;
 }

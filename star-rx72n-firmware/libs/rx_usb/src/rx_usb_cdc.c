@@ -1614,7 +1614,7 @@ static void internal_handle_set_address(const uint16_t usb_value)
     rx_usb_set_state(k_usb_state_addressed);
   }
 
-  rx_log_debug(s_tag, "Address set");
+  /* No rx_log_debug -- ISR context, see SET_CONTROL_LINE_STATE comment. */
 }
 
 /**
@@ -1878,8 +1878,6 @@ static void internal_handle_set_line_coding(const rx_usb_port_id_t port)
     s_line_coding[port].data_bits = data[k_line_coding_data_bits_index];
 
     rx_usb_set_line_coding(port, &s_line_coding[port]);
-
-    rx_log_debug(s_tag, "Line coding set for port");
   }
 
   /* Send zero-length status packet */
@@ -1929,8 +1927,11 @@ static void internal_handle_set_control_line_state(const rx_usb_port_id_t port,
 
   s_control_line_state[port] = usb_value;
 
-  /* DTR (bit 0) and RTS (bit 1) */
-  rx_log_debug(s_tag, "Control line state set for port");
+  /* No rx_log_debug here -- this runs in USB ISR context where log
+   * helpers can re-enter rx_usb_write -> rx_usb_hw_fifo_write and
+   * stall the SETUP completion (the host's SET_CONTROL_LINE_STATE
+   * URB never sees CCPL, cdc_acm port-open hangs, bulk IN URBs
+   * never complete). */
 
   /* Send zero-length status packet */
   usb0()->dcpctr |= k_usb_dcpctr_ccpl;

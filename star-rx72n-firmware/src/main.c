@@ -2479,31 +2479,14 @@ int main(void)
    * (port 0 bulk IN, EP 0x81) via raw registers.  If the host sees
    * "ZZZZ..." on /dev/ttyACM1 during this pre-kernel window, the
    * hardware itself transmits fine and the bug is RTOS-side. */
-  for (uint32_t spin = 0U; spin < 80000000U; spin++) {
+  /* Pre-kernel SETUP-servicing window.  Spin polling rx_usb_isr_handler
+   * so the host's enumeration (GET_DESCRIPTOR / SET_ADDRESS /
+   * SET_CONFIGURATION) completes inside Linux's retry deadline.
+   * 1M iterations is enough for full FS enumeration (~10ms wall clock
+   * on this Pi 5) without burning ~80s of dead time before
+   * tx_kernel_enter takes over. */
+  for (uint32_t spin = 0U; spin < 1000000U; spin++) {
     rx_usb_isr_handler();
-
-    if ((spin & 0xFFFFU) == 0U) {
-      volatile uint16_t* const cfifosel_r = (volatile uint16_t*)0x000A0020U;
-      volatile uint16_t* const cfifoctr_r = (volatile uint16_t*)0x000A0022U;
-      volatile uint8_t*  const cfifob_r   = (volatile uint8_t*) 0x000A0014U;
-      volatile uint16_t* const pipe1ctr_r = (volatile uint16_t*)0x000A0070U;
-      /* PID=NAK */
-      *pipe1ctr_r &= (uint16_t)~0x0001U;
-      for (int w = 0; w < 100; ++w) { if ((*pipe1ctr_r & 0x20U) == 0U) break; }
-      *((volatile uint16_t*)0x000A004AU) = (uint16_t)(~(1U << 1) & 0x03FFU);
-      *((volatile uint16_t*)0x000A0046U) = (uint16_t)(~(1U << 1) & 0x03FFU);
-      uint16_t sel = *cfifosel_r;
-      sel &= (uint16_t)~0x003FU;
-      *cfifosel_r = sel;
-      for (int w = 0; w < 100; ++w) { if ((*cfifosel_r & 0x000FU) == 0U) break; }
-      sel |= (uint16_t)0x0021U;
-      sel &= (uint16_t)~0x0400U;
-      *cfifosel_r = sel;
-      for (int w = 0; w < 1000; ++w) { if ((*cfifoctr_r & 0x2000U) != 0U) break; }
-      *cfifob_r = (uint8_t)'Z';
-      *cfifoctr_r |= 0x8000U;
-      *pipe1ctr_r = (uint16_t)((*pipe1ctr_r & (uint16_t)~0x0003U) | 0x0001U);
-    }
   }
 
   /* Start the ThreadX scheduler - should never return */
