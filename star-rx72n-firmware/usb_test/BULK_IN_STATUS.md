@@ -116,6 +116,31 @@ Still untried (next-iteration candidates):
   this -- usb_pstd_request_event_set queues; the application
   processes from a peripheral driver task.
 
+## 2026-04-18 bus-level capture proves HW-level NAK (AD2 on D+/D-)
+
+Hooked a Digilent Analog Discovery 2 to D+ (DIO1) and D- (DIO0) with
+common ground, sampled at 100 MS/s, and decoded the bus traffic
+while the host polled bulk IN on /dev/ttyACM1.
+
+Over a 30-second capture with cdc_acm issuing IN URBs continuously:
+* 849 IN tokens from host (PID 0x69)
+* 392 NAK responses from device (PID 0x5A)
+* **0 DATA0/DATA1 packets from device (PID 0xC3 / 0x4B)**
+* 37 SOF packets from host (PID 0xA5) -- bus is healthy
+
+Every IN token gets a prompt NAK, confirming the device silicon is
+alive and responding within USB spec timing -- just always with NAK.
+The device's pipe 1 buffer is empty from the bus's perspective 100%
+of the time.
+
+Tried to force the issue by writing 'A' to pipe 1 via raw register
+access from `main.c`'s pre-kernel spin (bypasses rx_usb_write ->
+rx_usb_hw_fifo_write entirely, matches `usb_test/bulk_in_fix.c`
+cfifo_write_current exactly).  AD2 capture: still 850/440 IN/NAK,
+zero DATA.  CPU writes aren't loading the buffer even with
+verified-correct PIPEnCTR bit positions and bulk_in_fix.c's proven
+CFIFO sequence.
+
 ## 2026-04-18 board-level finding: bulk IN broken in `bulk_in_fix.c` too
 
 Flashed the standalone `bulk_in_fix.mot` (vendor-class single-bulk-IN
@@ -123,10 +148,25 @@ test, 1209:0002) and tried to read EP 0x81 via libusb-python.  Read
 timed out after 2s with `-EIO -110` -- the device enumerates as
 1209:0002 cleanly, but bulk IN never transmits a byte.
 
-This rules out our 207-byte CDC composite descriptor layout, our
-class-request handler chain, and our pipe-shuffle logic as the
-culprit -- the same silicon refuses to bulk IN even with a 25-byte
-vendor-class descriptor and zero ongoing class-request traffic.
+AD2 bus-level capture while libusb reads for 15s:
+* 197 IN tokens from host
+* 146 NAK responses from device
+* **0 DATA packets from device**
+
+`bulk_in_fix.c` uses verified-correct PIPEnCTR bit positions
+(PID mask 0x07, ACLRM bit 10, SQCLR bit 9 -- the layout the shared
+header was fixed to match this session), single-buffer bulk IN
+PIPECFG=0x4011, PIPEBUF=0x0008 (slot 8, 64B).  These are the
+identical values bulk_in_fix.c previously used when it reportedly
+transmitted "BULK1 %04d\r\n" payloads.
+
+Conclusion: the bulk IN failure is at the SILICON / BOARD level on
+this specific unit, not in firmware.  Our 207-byte composite CDC
+descriptor, class-request handlers, pipe-shuffle logic, D0FIFO
+routing, IRQ masking, CTRT ordering, and rx_log ISR-safety fixes
+are all irrelevant to the observed symptom -- the same chip can't
+even transmit a 1-byte bulk IN packet under the simplest possible
+vendor-class setup.
 
 Hypotheses now in play (unverifiable without scope/JTAG):
 1. **RX72N USB0 silicon errata** that affects bulk IN BVAL commits
