@@ -963,9 +963,21 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
    * single pass, preserving the earlier behaviour for small requests.
    */
   volatile uint8_t* const cfifo_byte = (volatile uint8_t*)&usb0()->cfifo;
-  const uint16_t          chunk_max  = (pipe == k_usb_pipe_min)
-                                         ? (uint16_t)usb0()->dcpmaxp
-                                         : (uint16_t)usb0()->pipemaxp;
+  uint16_t                chunk_max;
+  if (pipe == k_usb_pipe_min) {
+    chunk_max = (uint16_t)usb0()->dcpmaxp;
+  } else {
+    /* PIPEMAXP aliases whatever PIPESEL points at; configure_pipe
+     * deselects (PIPESEL=0) after write so reading PIPEMAXP here
+     * yields pipe 0's MAXP (= DCPMAXP) instead of pipe N's.  Re-
+     * select the target pipe for the read, then deselect. */
+    usb0()->pipesel = pipe;
+    chunk_max       = (uint16_t)usb0()->pipemaxp;
+    usb0()->pipesel = 0U;
+    if (chunk_max == 0U) {
+      chunk_max = 64U; /* defensive fallback = Full-Speed bulk MPS */
+    }
+  }
   uint32_t                written    = 0;
 
   while (written < len) {

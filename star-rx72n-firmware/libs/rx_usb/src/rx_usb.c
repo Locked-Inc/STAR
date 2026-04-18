@@ -830,8 +830,6 @@ static void internal_trigger_tx_if_idle(const rx_usb_port_id_t port)
    * data before calling this function; pipe is a compile-time constant).
    * No RX_ASSERT needed here -- callers enforce these invariants. */
 
-  const uint8_t pipe = s_port_configs[port].pipe_bulk_in;
-
   /* Map pipe control registers to avoid undefined pointer arithmetic on struct members.
    * Array contains pointers to contiguous pipe control registers (pipe1ctr through pipe9ctr).
    * Cannot be const-initialized because usb0() is not a compile-time constant expression. */
@@ -851,12 +849,16 @@ static void internal_trigger_tx_if_idle(const rx_usb_port_id_t port)
     s_pipe_ctr_map_init                                     = true;
   }
 
-  /* Check if pipe is not busy (PBUSY bit = 0 means idle) */
-  volatile uint16_t* pipe_ctr = s_pipe_ctr_map[pipe - k_data_pipe_min];
-  if ((*pipe_ctr & k_usb_pipectr_pbusy) == k_ring_buffer_empty) {
-    /* Pipe is idle, trigger transmission */
-    rx_usb_cdc_handle_bulk_in(port);
-  }
+  /* PBUSY check removed: immediately after configure_pipe the pipe's
+   * PBUSY bit can be set because of stale bus state even though the
+   * pipe's buffer is empty and it's waiting for a host IN token.
+   * Gating the first handle_bulk_in on PBUSY=0 prevents the initial
+   * packet from ever being loaded, so the host never sees anything on
+   * bulk IN.  handle_bulk_in itself sets PID=NAK and spins on PBUSY
+   * before touching the FIFO, so it's safe to call unconditionally
+   * here as long as the TX ring has data queued. */
+  (void)s_pipe_ctr_map;
+  rx_usb_cdc_handle_bulk_in(port);
 }
 
 /**
