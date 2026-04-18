@@ -478,8 +478,9 @@ static void internal_handle_ctrt_interrupt(void)
       break;
 
     case k_usb_intsts0_ctsq_seq_err:
-      /* Sequence error - stall the pipe */
-      rx_log_warn(s_tag, "CTRT: Sequence error");
+      /* Sequence error - stall the pipe.  No log call here -- this
+       * path is ISR context and rx_log_* funnels through a mutex
+       * that we can't safely acquire from ISR. */
       usb0()->dcpctr =
         (uint16_t)((usb0()->dcpctr & (uint16_t) ~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall);
       break;

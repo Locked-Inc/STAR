@@ -2436,7 +2436,7 @@ int main(void)
     *SYSCFG_R  |= (1U << 4); /* DPRPU */
 
     /* Enable CPU ICU delivery for vector 36 (USB0 USBI) so BRDY/BEMP
-     * interrupts fire directly -- now safe because cmt0_isr is in
+     * interrupts fire directly -- safe because cmt0_isr is in
      * .rvectors (real ThreadX tick works) and usb0_usbi_isr is also
      * in .rvectors via its own interrupt(".rvectors", 36) attribute. */
     volatile uint8_t*  const IPR36_R = (volatile uint8_t*)(0x00087300U + 36U);
@@ -2481,11 +2481,13 @@ int main(void)
    * hardware itself transmits fine and the bug is RTOS-side. */
   /* Pre-kernel SETUP-servicing window.  Spin polling rx_usb_isr_handler
    * so the host's enumeration (GET_DESCRIPTOR / SET_ADDRESS /
-   * SET_CONFIGURATION) completes inside Linux's retry deadline.
-   * 1M iterations is enough for full FS enumeration (~10ms wall clock
-   * on this Pi 5) without burning ~80s of dead time before
-   * tx_kernel_enter takes over. */
-  for (uint32_t spin = 0U; spin < 1000000U; spin++) {
+   * SET_CONFIGURATION) AND the cdc_acm port-open class requests
+   * (SET_LINE_CODING / SET_CONTROL_LINE_STATE) complete inside
+   * Linux's retry deadline -- which can be 10s+ for class requests
+   * since cdc_acm's per-port open is serialized.  10M iterations is
+   * roughly 5-10s of polling, plenty of time before tx_kernel_enter
+   * takes over and usb_task continues servicing at 100Hz. */
+  for (uint32_t spin = 0U; spin < 10000000U; spin++) {
     rx_usb_isr_handler();
   }
 
