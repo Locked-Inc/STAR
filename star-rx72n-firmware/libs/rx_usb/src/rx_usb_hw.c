@@ -1126,27 +1126,26 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
 
   /* DPRAM buffer allocation (PIPEBUF) for pipes 1-9.
    *
-   * RX72N USB0 has 2 KB of DPRAM in 32 x 64-byte slots.  DCP owns
-   * slots 0-7 for its 64-byte MPS so data pipes start at slot 8.
-   * Layout: BUFSIZE=0 + DBLB=1 yields two 64-byte halves per pipe
-   * (2 slots total, matches MPS=64 exactly so hardware commits a
-   * full packet on BVAL).  Layout puts each pipe two slots apart,
-   * so pipes 1-9 occupy slots 8..25 cleanly without overlap.
-   * Without PIPEBUF programming the pipe defaults to BUFNMB=0 which
-   * shadows DCP -- BVAL writes silently disappear and the host sees
-   * only NAKs on bulk IN. */
+   * Try BUFSIZE=1 (128 bytes per single buffer) with DBLB so the
+   * pipe gets 2*128=256 bytes total -- overkill for MPS=64 bulk but
+   * eliminates BUFSIZE being mis-set as a suspect.  Each pipe needs
+   * 4 slots (2 x (1+1) x 64B).  Layout slots: pipe 1@8-11, pipe
+   * 2@12-15, pipe 3@16-19, pipe 4@20-23, pipe 5@24-27, total 20
+   * slots for 5 bulk pipes, plus interrupt pipes on 6-9 (single
+   * buffer) at slots 28-31. */
   {
-    static const uint16_t k_pipebuf_bufsize_64 = (0U << 10);
+    static const uint16_t k_pb_bulk     = (1U << 10); /* BUFSIZE=1 = 128B */
+    static const uint16_t k_pb_int_slot = (0U << 10); /* BUFSIZE=0 =  64B */
     static const uint16_t s_pipebuf[k_usb_pipe_max] = {
-      /* pipe 1 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 0U),
-      /* pipe 2 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 2U),
-      /* pipe 3 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 4U),
-      /* pipe 4 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 6U),
-      /* pipe 5 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 8U),
-      /* pipe 6 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 10U),
-      /* pipe 7 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 12U),
-      /* pipe 8 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 14U),
-      /* pipe 9 */ k_pipebuf_bufsize_64 | (uint16_t)(k_usb_pipebuf_bufnmb_base + 16U),
+      /* pipe 1 (bulk IN,  slots 8-11)   */ k_pb_bulk     | 8U,
+      /* pipe 2 (bulk OUT, slots 12-15)  */ k_pb_bulk     | 12U,
+      /* pipe 3 (bulk IN,  slots 16-19)  */ k_pb_bulk     | 16U,
+      /* pipe 4 (bulk OUT, slots 20-23)  */ k_pb_bulk     | 20U,
+      /* pipe 5 (bulk IN,  slots 24-27)  */ k_pb_bulk     | 24U,
+      /* pipe 6 (int IN,   slot 28)      */ k_pb_int_slot | 28U,
+      /* pipe 7 (int IN,   slot 29)      */ k_pb_int_slot | 29U,
+      /* pipe 8 (int IN,   slot 30)      */ k_pb_int_slot | 30U,
+      /* pipe 9 (bulk OUT on interrupt slot 31) */ k_pb_int_slot | 31U,
     };
     usb0()->pipebuf = s_pipebuf[pipe - 1U];
   }
