@@ -190,6 +190,62 @@ Firmware-side suspects still in play:
 * BEMPSTS clear timing (FIT clears AFTER BVAL; we were clearing
   before).
 
+## 2026-04-18 session end: exhausted firmware-side variations
+
+Every reasonable firmware-side variation has now been tried and
+proven not to be the root cause:
+
+| Variation                          | Result         |
+|------------------------------------|----------------|
+| PIPEnCTR bit positions fixed per manual | 0 DATA |
+| ISEL=0 for data IN pipes           | 0 DATA         |
+| ISEL=1 for data IN pipes           | 0 DATA         |
+| CFIFO for all pipes                | 0 DATA         |
+| D0FIFO for data pipes, CFIFO for DCP| 0 DATA        |
+| BCLR before every write            | 0 DATA         |
+| BCLR only for DCP                  | 0 DATA         |
+| Single-buffer bulk IN (no DBLB)    | 0 DATA         |
+| Double-buffer bulk IN (DBLB)       | 0 DATA         |
+| PID toggle NAK -> BUF per write    | 0 DATA         |
+| PID left at BUF (no toggle)        | 0 DATA         |
+| BEMPSTS clear after BVAL           | 0 DATA         |
+| BEMPSTS clear before BVAL          | 0 DATA         |
+| PIPEBUF allocation explicit        | 0 DATA         |
+| PIPEBUF not written (IP0 "default")| 0 DATA         |
+| ACLRM-before-SQCLR order           | breaks enum    |
+| CTRT cleared first                 | breaks enum    |
+| USBI ICU disabled (polling only)   | breaks enum    |
+| PACKCR = 0x0001                    | 0 DATA         |
+| SET_CONTROL_LINE_STATE as CCPL     | 3/6 complete   |
+| SET_CONTROL_LINE_STATE as STALL    | 3/6 complete   |
+| SET_LINE_CODING without data read  | completes      |
+| Raw register write from main.c     | 0 DATA         |
+
+Also proved:
+* PHY outputs clean USB FS signals (AD2 scope: 0-3.3V swing, ±3.1V
+  differential, 20ns edges) -- silicon transceiver works.
+* Device responds to every IN token within USB timing -- always
+  with NAK.  Silicon's packet scheduler IS running.
+* `usb_test/bulk_in_fix.c` (the minimal vendor-class single-bulk-IN
+  reference) also NAKs the same way on this board.  Its commit
+  message (`ce5eea120`) explicitly says "enumerates, does not yet
+  transmit" -- meaning this has NEVER worked on this project, not
+  just since our cleanup.
+
+Next firmware-side steps would require JTAG-step or runtime SRAM
+readback to observe:
+* Does our CFIFO byte write actually reach pipe 1's DPRAM?  (Read
+  PIPEnCTR.BSTS / DCPCTR after BVAL -- should see buffer state.)
+* Does BVAL actually toggle the buffer-valid flag?
+* Is there a pending pipe STALL we're not seeing?
+
+Without JTAG, I've recommended the user:
+* Try the official Renesas RX72N Envision Kit PCDC sample firmware
+  on this specific board -- if IT transmits, the issue is specific
+  to our library.  If IT also NAKs, the issue is board-level.
+* Scope VBUS for sags during IN polling.
+* Check DPRPU resistor value with a multimeter.
+
 Hypotheses now in play (unverifiable without scope/JTAG):
 1. **RX72N USB0 silicon errata** that affects bulk IN BVAL commits
    on this specific chip lot or revision.  `r01us0263ej0170_rx72n`
