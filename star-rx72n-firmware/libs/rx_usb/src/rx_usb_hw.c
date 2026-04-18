@@ -958,21 +958,22 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     return k_min_transfer_size;
   }
 
-  /* DCP gets BCLR before each write (the original 207-byte
-   * GET_DESCRIPTOR fix needs it).  Data pipes are single-buffered
-   * with FIFO empty after each BVAL -> bus drain, so BCLR is a
-   * no-op there. */
-  if (pipe == k_usb_pipe_min) {
-    *fifoctr_r |= k_usb_fifoctr_bclr;
-    timeout = k_usb_fifo_timeout_iterations;
-    while ((*fifoctr_r & k_usb_fifoctr_bclr) && timeout--) {
-      __asm__ volatile("nop");
-    }
-    if (timeout == k_usb_fifo_timeout_expired) {
-      rx_log_error(s_tag, "FIFO clear timeout");
-      if (ier4_was_enabled != 0U) { *ier4_r |= usbi_mask; }
-      return k_min_transfer_size;
-    }
+  /* BCLR the FIFO buffer for ALL pipes (DCP + data).  This matches
+   * bulk_in_fix.c's cfifo_write_current which does BCLR on pipe 1
+   * between every write.  Skipping it on data pipes was a bug -- it
+   * left potentially-stale bytes in the buffer from aborted
+   * host transfers, and the hardware never transmitted the fresh
+   * data because the buffer was already marked valid with old
+   * contents. */
+  *fifoctr_r |= k_usb_fifoctr_bclr;
+  timeout = k_usb_fifo_timeout_iterations;
+  while ((*fifoctr_r & k_usb_fifoctr_bclr) && timeout--) {
+    __asm__ volatile("nop");
+  }
+  if (timeout == k_usb_fifo_timeout_expired) {
+    rx_log_error(s_tag, "FIFO clear timeout");
+    if (ier4_was_enabled != 0U) { *ier4_r |= usbi_mask; }
+    return k_min_transfer_size;
   }
 
   /*
@@ -1153,44 +1154,32 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
     cfg |= k_usb_pipecfg_dir;
   }
   if (type == k_usb_pipecfg_type_bulk && !is_in) {
-    /* OUT side: double-buffer + SHTNAK per FIT default. */
+    /* Only OUT side gets DBLB + SHTNAK.  Bulk IN pipes stay
+     * SINGLE-buffered to exactly match bulk_in_fix.c (PIPECFG=0x4011)
+     * which is the proven-working reference on this silicon. */
     cfg |= k_usb_pipecfg_dblb;
     cfg |= k_usb_pipecfg_shtnak;
   }
   usb0()->pipecfg  = cfg;
 
-  /* DPRAM buffer allocation (PIPEBUF) for pipes 1-9.
-   *
-   * Layout matches `usb_test/bulk_in_fix.c` for pipe 1 (the working
-   * single-bulk-IN repro).  Bulk IN = single buffer (BUFSIZE=0,
-   * 64B).  Bulk OUT = double buffer via DBLB in PIPECFG, so reserve
-   * 2 contiguous slots.  Interrupt IN = 1 slot.  DCP owns slots 0-7.
-   *
-   *   pipe 1 (port0 bulk IN  single)  slot 8
-   *   pipe 2 (port0 bulk OUT double)  slots 9-10
-   *   pipe 3 (port1 bulk IN  single)  slot 11
-   *   pipe 4 (port1 bulk OUT double)  slots 12-13
-   *   pipe 5 (port2 bulk IN  single)  slot 14
-   *   pipe 6 (port0 int  IN  single)  slot 15
-   *   pipe 7 (port1 int  IN  single)  slot 16
-   *   pipe 8 (port2 int  IN  single)  slot 17
-   *   pipe 9 (port2 bulk OUT double)  slots 18-19
-   * Total used: slots 0-19 (DPRAM has 32 slots; plenty of headroom). */
+  /* PIPEBUF allocation -- bulk_in_fix.c WRITES PIPEBUF (BUFNMB=8,
+   * BUFSIZE=0) on RX72N USB0 and it works, so despite the FIT
+   * v120 reference guarding PIPEBUF writes behind IP1, RX72N USB0
+   * (which is a newer iteration of IP0/USBb) needs explicit
+   * allocation.  Layout: bulk IN single-buffer 64B, bulk OUT
+   * double-buffer 2x64B, int IN 64B. */
   {
-    static const uint16_t k_pb_size_64  = (0U << 10); /* BUFSIZE=0 = 64B */
-    static const uint16_t k_pb_size_128 = (1U << 10); /* BUFSIZE=1 = 128B (per buf, double-buffered) */
     static const uint16_t s_pipebuf[k_usb_pipe_max] = {
-      /* pipe 1 (bulk IN  single)  slot 8     */ k_pb_size_64  | 8U,
-      /* pipe 2 (bulk OUT double)  slots 9-10 */ k_pb_size_64  | 9U,
-      /* pipe 3 (bulk IN  single)  slot 11    */ k_pb_size_64  | 11U,
-      /* pipe 4 (bulk OUT double)  slots 12-13*/ k_pb_size_64  | 12U,
-      /* pipe 5 (bulk IN  single)  slot 14    */ k_pb_size_64  | 14U,
-      /* pipe 6 (int  IN  single)  slot 15    */ k_pb_size_64  | 15U,
-      /* pipe 7 (int  IN  single)  slot 16    */ k_pb_size_64  | 16U,
-      /* pipe 8 (int  IN  single)  slot 17    */ k_pb_size_64  | 17U,
-      /* pipe 9 (bulk OUT double)  slots 18-19*/ k_pb_size_64  | 18U,
+      /* pipe 1 port0 bulk IN  (64B @ slot 8)  */ 8U,
+      /* pipe 2 port0 bulk OUT (128B @ 9-10)   */ 9U,
+      /* pipe 3 port1 bulk IN  (64B @ slot 11) */ 11U,
+      /* pipe 4 port1 bulk OUT (128B @ 12-13)  */ 12U,
+      /* pipe 5 port2 bulk IN  (64B @ slot 14) */ 14U,
+      /* pipe 6 port0 int  IN  (64B @ slot 15) */ 15U,
+      /* pipe 7 port1 int  IN  (64B @ slot 16) */ 16U,
+      /* pipe 8 port2 int  IN  (64B @ slot 17) */ 17U,
+      /* pipe 9 port2 bulk OUT (128B @ 18-19)  */ 18U,
     };
-    (void)k_pb_size_128;
     usb0()->pipebuf = s_pipebuf[pipe - 1U];
   }
 
@@ -1200,18 +1189,7 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
   s_pipe_max_packet[pipe] = max_packet;
   s_pipe_is_in[pipe]      = is_in;
 
-  /* NOTE: bulk_in_fix.c does NOT deselect PIPESEL=0 after configuring
-   * the pipe -- leaves it selected.  FIT does PIPESEL=0 explicitly
-   * because FIT programs multiple pipes in sequence and needs the
-   * register window deselected between configures.  We configure
-   * 9 pipes in sequence too, so we DO need PIPESEL=0 at the end of
-   * each configure to leave a clean slate for the next one.
-   * HOWEVER -- after all 9 configures finish, the last PIPESEL
-   * value is 0, which means subsequent PIPECFG/PIPEMAXP/PIPEBUF
-   * reads see pipe 0's DCP registers (aliased).  That's fine unless
-   * the bulk IN path reads PIPEMAXP to determine chunk size; we
-   * cache chunk_max in s_pipe_max_packet so we never do that read
-   * during writes. */
+  /* Deselect PIPESEL so the next configure_pipe call starts clean. */
   usb0()->pipesel = 0U;
 
   /* 5. Reset sequence toggle + auto-clear buffer + clear CS. */
