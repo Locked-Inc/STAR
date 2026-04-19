@@ -532,8 +532,8 @@ typedef enum : uint16_t {
  */
 static void internal_usb_busy_wait_ms(const uint32_t ms)
 {
-  const uint32_t loops_per_ms = 48000U;
-  volatile uint32_t spin = ms * loops_per_ms;
+  const uint32_t    loops_per_ms = 48000U;
+  volatile uint32_t spin         = ms * loops_per_ms;
   while (spin > 0U) {
     __asm__ volatile("nop");
     spin--;
@@ -618,8 +618,8 @@ static void internal_usb_enable_module_clock(void)
    * hoco_pid_fix.c path: 240 MHz / 5 = 48 MHz.  rx_clock_power_init.c leaves
    * both registers at their reset defaults, which is why USB0 never gets a
    * valid clock without this write. */
-  *k_packcr_reg              = k_packcr_upllsel_main_pll;
-  system_regs()->sckcr2      = k_sckcr2_uck_div5_value;
+  *k_packcr_reg         = k_packcr_upllsel_main_pll;
+  system_regs()->sckcr2 = k_sckcr2_uck_div5_value;
 
   /* Clear module stop bit for USB0 (bit 19 in MSTPCRB) */
   system_regs()->mstpcrb &= ~(1UL << k_mstpb_usb0);
@@ -892,9 +892,15 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   volatile uint16_t* pipe_ctr = nullptr;
   if (pipe != k_usb_pipe_min) {
     volatile uint16_t* const pipe_ctr_map[] = {
-      &usb0()->pipe1ctr, &usb0()->pipe2ctr, &usb0()->pipe3ctr,
-      &usb0()->pipe4ctr, &usb0()->pipe5ctr, &usb0()->pipe6ctr,
-      &usb0()->pipe7ctr, &usb0()->pipe8ctr, &usb0()->pipe9ctr,
+      &usb0()->pipe1ctr,
+      &usb0()->pipe2ctr,
+      &usb0()->pipe3ctr,
+      &usb0()->pipe4ctr,
+      &usb0()->pipe5ctr,
+      &usb0()->pipe6ctr,
+      &usb0()->pipe7ctr,
+      &usb0()->pipe8ctr,
+      &usb0()->pipe9ctr,
     };
     pipe_ctr = pipe_ctr_map[pipe - 1U];
     if ((*pipe_ctr & k_usb_pipectr_pbusy) != 0U) {
@@ -954,7 +960,9 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
 
   if (timeout == k_usb_fifo_timeout_expired) {
     rx_log_error(s_tag, "FIFO write timeout");
-    if (ier4_was_enabled != 0U) { *ier4_r |= usbi_mask; }
+    if (ier4_was_enabled != 0U) {
+      *ier4_r |= usbi_mask;
+    }
     return k_min_transfer_size;
   }
 
@@ -972,7 +980,9 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   }
   if (timeout == k_usb_fifo_timeout_expired) {
     rx_log_error(s_tag, "FIFO clear timeout");
-    if (ier4_was_enabled != 0U) { *ier4_r |= usbi_mask; }
+    if (ier4_was_enabled != 0U) {
+      *ier4_r |= usbi_mask;
+    }
     return k_min_transfer_size;
   }
 
@@ -1017,7 +1027,9 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     }
     if (timeout == k_usb_fifo_timeout_expired) {
       rx_log_error(s_tag, "FIFO refill timeout");
-      if (ier4_was_enabled != 0U) { *ier4_r |= usbi_mask; }
+      if (ier4_was_enabled != 0U) {
+        *ier4_r |= usbi_mask;
+      }
       return written;
     }
 
@@ -1038,8 +1050,8 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   if (pipe_ctr != nullptr) {
     const uint16_t pipe_bit = (uint16_t)(1U << pipe);
     const uint16_t sts_mask = 0x03FFU;
-    usb0()->bempsts = (uint16_t)((~pipe_bit) & sts_mask);
-    usb0()->brdysts = (uint16_t)((~pipe_bit) & sts_mask);
+    usb0()->bempsts         = (uint16_t)((~pipe_bit) & sts_mask);
+    usb0()->brdysts         = (uint16_t)((~pipe_bit) & sts_mask);
   }
 
   /* Restore USB IRQ delivery if we previously disabled it. */
@@ -1124,9 +1136,15 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
    * bulk IN BVAL commits to silently drop.  PIPEBUF writes in the FIT
    * library are guarded by `#if RX64M||RX71M` AND `USB_IP1==ip_no`. */
   volatile uint16_t* pipe_ctr_map[] = {
-    &usb0()->pipe1ctr, &usb0()->pipe2ctr, &usb0()->pipe3ctr,
-    &usb0()->pipe4ctr, &usb0()->pipe5ctr, &usb0()->pipe6ctr,
-    &usb0()->pipe7ctr, &usb0()->pipe8ctr, &usb0()->pipe9ctr,
+    &usb0()->pipe1ctr,
+    &usb0()->pipe2ctr,
+    &usb0()->pipe3ctr,
+    &usb0()->pipe4ctr,
+    &usb0()->pipe5ctr,
+    &usb0()->pipe6ctr,
+    &usb0()->pipe7ctr,
+    &usb0()->pipe8ctr,
+    &usb0()->pipe9ctr,
   };
   volatile uint16_t* const pipe_ctr = pipe_ctr_map[pipe - 1U];
   const uint16_t           pipe_bit = (uint16_t)(1U << pipe);
@@ -1137,8 +1155,7 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
   usb0()->bempenb &= (uint16_t)~pipe_bit;
 
   /* 2. Force pipe to NAK so mid-configuration transfers don't race. */
-  *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask)
-                         | k_usb_pipectr_pid_nak);
+  *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask) | k_usb_pipectr_pid_nak);
 
   /* 3. Select and configure.  Use SINGLE-BUFFER (no DBLB) for bulk
    * IN pipes -- the working raw-register repro
@@ -1147,9 +1164,9 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
    * RX72N USB0 has been observed to silently drop bulk-IN BVAL
    * commits.  Bulk OUT can keep DBLB + SHTNAK as before -- only the
    * IN side appears affected. */
-  usb0()->pipesel  = pipe;
+  usb0()->pipesel = pipe;
 
-  uint16_t cfg     = (endpoint & k_usb_pipecfg_epnum_mask) | type;
+  uint16_t cfg = (endpoint & k_usb_pipecfg_epnum_mask) | type;
   if (is_in) {
     cfg |= k_usb_pipecfg_dir;
   }
@@ -1160,7 +1177,7 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
     cfg |= k_usb_pipecfg_dblb;
     cfg |= k_usb_pipecfg_shtnak;
   }
-  usb0()->pipecfg  = cfg;
+  usb0()->pipecfg = cfg;
 
   /* PIPEBUF allocation -- bulk_in_fix.c WRITES PIPEBUF (BUFNMB=8,
    * BUFSIZE=0) on RX72N USB0 and it works, so despite the FIT
@@ -1203,8 +1220,7 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
   usb0()->bempsts = (uint16_t)~pipe_bit;
 
   /* 7. Enable pipe: PID = BUF. */
-  *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask)
-                         | k_usb_pipectr_pid_buf);
+  *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask) | k_usb_pipectr_pid_buf);
 
   return k_rx_ok;
 }
