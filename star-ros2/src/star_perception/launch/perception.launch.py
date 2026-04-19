@@ -21,7 +21,7 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
@@ -87,12 +87,20 @@ def generate_launch_description() -> LaunchDescription:
         }],
     )
 
+    # Skip the per-user site-packages so cv_bridge (built against the
+    # system numpy 1.x) isn't shadowed by a user-installed numpy 2.x.
+    # A full numpy-2 migration across every ROS2 Python node on Ubuntu
+    # 24.04 is out of scope for this package; this keeps the perception
+    # nodes insulated regardless of what's in ~/.local/.
+    no_user_site = SetEnvironmentVariable(name="PYTHONNOUSERSITE", value="1")
+
     return LaunchDescription([
         score_arg,
         target_fps_arg,
         overlay_arg,
         hef_arg,
         sync_slop_arg,
+        no_user_site,
         yolo_node,
         fusion_node,
     ])

@@ -20,6 +20,11 @@ letterboxed input. This wrapper:
 from __future__ import annotations
 
 import argparse
+import json
+import os
+import struct
+import subprocess
+import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -30,6 +35,7 @@ import numpy as np
 
 YOLOV8_INPUT_SIZE = 640
 LETTERBOX_PAD_VALUE = 114  # YOLOv8 convention (mid-grey).
+DEFAULT_WORKER_PYTHON = "/home/star/hailo-venv/bin/python"
 COCO_CLASSES = (
     "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train",
     "truck", "boat", "traffic light", "fire hydrant", "stop sign",
@@ -263,49 +269,142 @@ class HailoYoloRunner:
     def _build_default_backend(hef_path: Path,
                                input_size: int) -> InferenceBackend:
         """
-        Lazily construct the HailoRT backend.
+        Construct the HailoRT backend.
 
-        Imports are inside the function so that test environments
-        without hailort installed can still import this module.
+        On Raspberry Pi OS Bookworm (Python 3.11) `hailo_platform`
+        imports in-process and we use the direct call path. On Ubuntu
+        24.04 Noble (Python 3.12) HailoRT 4.20 ships only a cp311 wheel
+        — the direct import fails, so we fall back to a subprocess
+        bridge running under the Python 3.11 venv at
+        `/home/star/hailo-venv/bin/python`.
         """
-        try:
-            import hailo_platform as hp
-        except ImportError as exc:  # pragma: no cover - hardware path
-            raise RuntimeError(
-                "hailo_platform is not installed. On the Pi 5, run "
-                "`sudo apt install hailo-all` and reboot.") from exc
-
         if not hef_path.exists():
             raise FileNotFoundError(
                 f"HEF not found at {hef_path}. Run "
                 "scripts/download_yolov8s_hef.sh on the Pi 5.")
 
-        hef = hp.HEF(str(hef_path))
-        target = hp.VDevice()
-        configure_params = hp.ConfigureParams.create_from_hef(
-            hef=hef, interface=hp.HailoStreamInterface.PCIe,
-        )
-        network_group = target.configure(hef, configure_params)[0]
-        ng_params = network_group.create_params()
-        input_vstreams_params = hp.InputVStreamParams.make(
-            network_group, format_type=hp.FormatType.UINT8,
-        )
-        output_vstreams_params = hp.OutputVStreamParams.make(
-            network_group, format_type=hp.FormatType.FLOAT32,
-        )
-        input_info = hef.get_input_vstream_infos()[0]
+        try:
+            return _build_inprocess_backend(hef_path, input_size)
+        except ImportError:
+            return _build_subprocess_backend(hef_path, input_size)
 
-        def backend(canvas: np.ndarray) -> list[tuple[int, float, float,
-                                                      float, float, float]]:
-            with network_group.activate(ng_params):
-                with hp.InferVStreams(network_group,
-                                      input_vstreams_params,
-                                      output_vstreams_params) as pipeline:
-                    feed = {input_info.name: np.expand_dims(canvas, axis=0)}
-                    outputs = pipeline.infer(feed)
-            return _decode_hailo_yolov8_output(outputs, input_size)
 
-        return backend
+def _build_inprocess_backend(hef_path: Path, input_size: int
+                             ) -> InferenceBackend:
+    """Direct in-process HailoRT backend. Requires hailo_platform to be
+    importable under the current interpreter."""
+    import hailo_platform as hp  # noqa: raises ImportError -> caller catches
+
+    hef = hp.HEF(str(hef_path))
+    target = hp.VDevice()
+    configure_params = hp.ConfigureParams.create_from_hef(
+        hef=hef, interface=hp.HailoStreamInterface.PCIe,
+    )
+    network_group = target.configure(hef, configure_params)[0]
+    ng_params = network_group.create_params()
+    input_vstreams_params = hp.InputVStreamParams.make(
+        network_group, format_type=hp.FormatType.UINT8,
+    )
+    output_vstreams_params = hp.OutputVStreamParams.make(
+        network_group, format_type=hp.FormatType.FLOAT32,
+    )
+    input_info = hef.get_input_vstream_infos()[0]
+
+    def backend(canvas: np.ndarray) -> list[tuple[int, float, float,
+                                                  float, float, float]]:
+        with network_group.activate(ng_params):
+            with hp.InferVStreams(network_group,
+                                  input_vstreams_params,
+                                  output_vstreams_params) as pipeline:
+                feed = {input_info.name: np.expand_dims(canvas, axis=0)}
+                outputs = pipeline.infer(feed)
+        return _decode_hailo_yolov8_output(outputs, input_size)
+
+    return backend
+
+
+def _build_subprocess_backend(hef_path: Path, input_size: int,
+                              python_bin: str = DEFAULT_WORKER_PYTHON
+                              ) -> InferenceBackend:
+    """Subprocess-bridge backend for Python 3.12 hosts where
+    `hailo_platform` is only available under a Python 3.11 venv.
+
+    Spawns a long-lived worker (`_hailo_worker.py`) under `python_bin`
+    and talks to it via length-prefixed binary frames + JSON responses
+    over stdin/stdout. Dead worker restarts lazily on the next call.
+    """
+    worker_script = Path(__file__).parent / "_hailo_worker.py"
+    if not worker_script.exists():
+        raise RuntimeError(
+            f"hailo worker script missing at {worker_script}. "
+            "Rebuild the star_perception package.")
+    if not Path(python_bin).exists():
+        raise RuntimeError(
+            f"Hailo worker python {python_bin} not found. On Ubuntu 24.04 "
+            "create the venv per scripts/install_hailo_stack.sh.")
+
+    state = {"proc": None, "lock": threading.Lock()}
+
+    def _spawn() -> subprocess.Popen:
+        env = os.environ.copy()
+        env.pop("PYTHONPATH", None)  # don't leak ROS2's 3.12 paths into 3.11
+        proc = subprocess.Popen(
+            [python_bin, str(worker_script),
+             "--hef", str(hef_path),
+             "--input-size", str(input_size)],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, bufsize=0, env=env,
+        )
+        hello_len_raw = proc.stdout.read(4)
+        if len(hello_len_raw) != 4:
+            err = proc.stderr.read().decode("utf-8", errors="replace")
+            raise RuntimeError(f"hailo worker handshake failed: {err}")
+        hello_len = struct.unpack(">I", hello_len_raw)[0]
+        hello = json.loads(proc.stdout.read(hello_len))
+        if hello.get("status") != "ready":
+            raise RuntimeError(f"hailo worker refused: {hello}")
+        return proc
+
+    def _ensure_alive() -> subprocess.Popen:
+        proc = state["proc"]
+        if proc is None or proc.poll() is not None:
+            proc = _spawn()
+            state["proc"] = proc
+        return proc
+
+    def backend(canvas: np.ndarray) -> list[tuple[int, float, float,
+                                                  float, float, float]]:
+        arr = np.ascontiguousarray(canvas, dtype=np.uint8)
+        expected = (input_size, input_size, 3)
+        if arr.shape != expected:
+            raise ValueError(
+                f"expected canvas shape {expected}, got {arr.shape}")
+        payload = arr.tobytes()
+        header = struct.pack(">I", len(payload))
+        with state["lock"]:
+            proc = _ensure_alive()
+            try:
+                proc.stdin.write(header + payload)
+                proc.stdin.flush()
+                resp_len_raw = proc.stdout.read(4)
+                if len(resp_len_raw) != 4:
+                    raise BrokenPipeError("worker closed stdout")
+                resp_len = struct.unpack(">I", resp_len_raw)[0]
+                resp_raw = proc.stdout.read(resp_len)
+            except (BrokenPipeError, OSError) as exc:
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
+                state["proc"] = None
+                raise RuntimeError(f"hailo worker IO failed: {exc}")
+        resp = json.loads(resp_raw)
+        if "error" in resp:
+            err_msg = resp['error']
+            raise RuntimeError(f"hailo worker inference failed: {err_msg}")
+        return [tuple(d) for d in resp.get("detections", [])]
+
+    return backend
 
 
 def _decode_hailo_yolov8_output(outputs: dict, input_size: int

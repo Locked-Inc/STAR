@@ -40,7 +40,16 @@ fi
 
 echo "OK. File size:"
 ls -lh "${TARGET}"
-echo
-echo "If your Pi 5 already has the package installed, also copy the"
-echo "file into the install share so launch can find it:"
-echo "  cp ${TARGET} install/star_perception/share/star_perception/models/"
+
+# Auto-copy into the colcon install share if we can find it, so
+# `ros2 launch star_perception ...` picks it up without a rebuild.
+for candidate in \
+    "${PKG_ROOT}/../../../install/star_perception/share/star_perception/models" \
+    "/workspaces/STAR/star-ros2/install/star_perception/share/star_perception/models"
+do
+  if [[ -d "${candidate}" ]]; then
+    cp -f "${TARGET}" "${candidate}/"
+    echo "Also copied to: ${candidate}"
+    break
+  fi
+done
