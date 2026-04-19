@@ -298,7 +298,7 @@ class HailoYoloRunner:
         On Raspberry Pi OS Bookworm (Python 3.11) `hailo_platform`
         imports in-process and we use the direct call path. On Ubuntu
         24.04 Noble (Python 3.12) HailoRT 4.20 ships only a cp311 wheel
-        — the direct import fails, so we fall back to a subprocess
+        -- the direct import fails, so we fall back to a subprocess
         bridge running under the Python 3.11 venv at
         `/home/star/hailo-venv/bin/python`.
         """

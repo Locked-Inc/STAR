@@ -15,7 +15,7 @@ STAR is accurate enough to be worth a CASp's time.
 ### Instruments (own / borrow before running a validation pass)
 
 | Instrument | Purpose | Accuracy |
-|---|---|---|
+| --- | --- | --- |
 | Stanley FatMax 25 ft tape | Frame widths, path widths | +/- 1/32 in |
 | Bosch GLM50 laser distance meter | Door clearances, threshold heights | +/- 1/16 in over 50 ft |
 | Wixey WR300 digital angle gauge | Ramp slopes | +/- 0.1 deg |
@@ -68,6 +68,7 @@ and the door stop, door open 90 degrees. **Also** measure frame-to-
 frame for comparison with STAR's mid-layer number.
 
 **Trials:** n >= 20 doors across 3 buildings. Mix:
+
 - 5 compliant doors (ADA clear width >= 32 in)
 - 5 borderline doors (ADA clear width 30-33 in)
 - 5 clearly non-compliant doors (ADA clear width < 30 in)
@@ -75,6 +76,7 @@ frame for comparison with STAR's mid-layer number.
 
 **STAR reading:** drive up to each door and pause. Observe
 `/compliance/door_clear_width`:
+
 - `frame_width_m` - raw measurement at handle height
 - `ada_clear_width_m` - after offset subtraction
 - `confidence` - HIGH / MEDIUM / LOW
@@ -98,6 +100,7 @@ equivalent) on the threshold. Any threshold >= 0.25 in is a
 
 **Trials:** n >= 10 thresholds across mixed flooring (vinyl, carpet
 transition, tile, wooden):
+
 - 5 compliant (< 0.25 in)
 - 5 non-compliant (>= 0.5 in)
 
@@ -120,6 +123,7 @@ protruding object's extremity, measured parallel to the floor. Also
 note the object's center height above the floor.
 
 **Trials:** n >= 10 protrusions:
+
 - 3 clearly non-compliant (> 5 in stand-off, in the 27-80 in band)
 - 3 borderline (~4 in stand-off, in the band)
 - 2 compliant (< 3 in stand-off)
@@ -143,6 +147,7 @@ width (cart present, sign in place, etc.) and the pre-blockage baseline.
 
 **Trials:** n >= 5 controlled setups with planted obstacles in a
 corridor that's >= 40 in wide empty:
+
 - 3 obvious blockages (30 in remaining)
 - 2 borderline (35 in remaining)
 
@@ -187,7 +192,7 @@ deliverable that isn't in the CSV.** Traceable claims only.
 ## Validation scheduling
 
 | Session | Checks | When |
-|---|---|---|
+| --- | --- | --- |
 | V1 - bench | ramp slope, door threshold presence | dress rehearsal #1 (T-6) |
 | V2 - campus (ETID hall) | ramp slope, door clear width, path blockage | T-5 |
 | V3 - campus (multi-building) | door clear width, protruding objects | T-4 |

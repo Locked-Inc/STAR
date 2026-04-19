@@ -3,7 +3,7 @@
 
 Subprocess run by `HailoYoloRunner` under the Python 3.11 interpreter
 in /home/star/hailo-venv when the ROS2 Jazzy system interpreter
-(Python 3.12) cannot import `hailo_platform` directly — HailoRT 4.20
+(Python 3.12) cannot import `hailo_platform` directly -- HailoRT 4.20
 only ships a cp311 aarch64 wheel, and there is no cp312 wheel. On
 Raspberry Pi OS Bookworm (Python 3.11) the runner imports
 `hailo_platform` in-process and this worker is not spawned.

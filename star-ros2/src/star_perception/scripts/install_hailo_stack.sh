@@ -116,7 +116,7 @@ if [[ "${OS_KIND}" == "ubuntu-noble" ]]; then
     chown -R star:star "${DST}"
     echo "  hailo_platform installed into ${DST}"
   else
-    echo "  hailo_platform not found in deb layout — check package version" >&2
+    echo "  hailo_platform not found in deb layout -- check package version" >&2
     exit 1
   fi
   rm -rf "${WORK}"

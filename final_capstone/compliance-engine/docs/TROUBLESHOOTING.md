@@ -13,6 +13,7 @@ to least-common in each section.
   `colcon build` failed silently.
 - **Diagnose:** `ros2 pkg list | grep star_compliance`
 - **Fix:**
+
   ```bash
   ./bootstrap_pi.sh
   source star-ros2/install/setup.bash
@@ -38,6 +39,7 @@ to least-common in each section.
 - **Diagnose:** `ls star-ros2/install/star_compliance_msgs/` - should
   contain `share/` and `lib/`.
 - **Fix:**
+
   ```bash
   cd star-ros2
   colcon build --packages-select star_compliance_msgs
@@ -53,11 +55,13 @@ to least-common in each section.
 - **Cause (likely):** LiDAR corridor-width minima aren't firing. Robot
   hasn't encountered a doorway narrow enough.
 - **Diagnose:**
+
   ```bash
   ros2 topic echo /scan --qos-reliability best_effort --once
   ros2 node info /star_door_clear_width_node
   ros2 param get /star_door_clear_width_node enabled
   ```
+
 - **Fix:** drive the robot into a hallway narrower than 1.1 m, or
   lower the `DOORWAY_CANDIDATE_MAX_M` constant in
   `detectors/doorway_lidar_detector.py`.
@@ -88,9 +92,11 @@ to least-common in each section.
 
 - **Cause:** jolt threshold too high for the actual event magnitude.
 - **Diagnose:**
+
   ```bash
   ros2 topic echo /imu/data | grep linear_acceleration -A 3
   ```
+
   Watch the `z` value while crossing a threshold. It should briefly
   exceed `threshold_ms2 + 9.8`.
 - **Fix:** lower `threshold_ms2` incrementally from 2.0 -> 1.5 -> 1.0,
@@ -102,15 +108,19 @@ to least-common in each section.
 - **Cause:** the input cloud topic is empty or the BNO055 hasn't
   published yet.
 - **Diagnose:**
+
   ```bash
   ros2 topic hz /cloud_map
   ros2 topic hz /imu/data
   ```
+
 - **Fix:** switch input topic to `/stereo/points2` if `/cloud_map`
   is stale:
+
   ```bash
   ros2 param set /star_protruding_objects_node input_cloud_topic /stereo/points2
   ```
+
   Note: 3-4x CPU cost. Monitor via `/compliance/monitor/status`.
 
 - **Cause:** CPU safety monitor has auto-disabled the node.
@@ -151,9 +161,11 @@ to least-common in each section.
 - **Diagnose:** follow the "How to tune door_offset_m" recipe in
   TUNING.md.
 - **Fix:**
+
   ```bash
   ros2 param set /star_door_clear_width_node door_offset_m 0.075
   ```
+
   or update the default in `compliance.launch.py` and rebuild.
 
 ---
@@ -210,7 +222,7 @@ If you can't resolve a symptom via this guide:
 
 1. Capture the logs: `tar czf star-logs.tgz /tmp/star-logs/`
 2. Run `ros2 doctor --report > ros2_report.txt`
-3. Open an issue at https://github.com/Locked-Inc/STAR with:
+3. Open an issue at <https://github.com/Locked-Inc/STAR> with:
    - Pi 5 model and RAM size
    - ROS 2 distro + date of `bootstrap_pi.sh` run
    - Which compliance node is misbehaving

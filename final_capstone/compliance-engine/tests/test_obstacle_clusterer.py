@@ -49,7 +49,7 @@ def test_subtract_empty_points_returns_empty():
 def test_cluster_points_finds_two_distinct_clusters():
     rng = np.random.default_rng(3)
     cluster_a = rng.normal([0.0, 0.0], 0.05, size=(40, 2))
-    cluster_b = rng.normal([2.0, 2.0], 0.05, size=40).reshape(-1, 2)
+    cluster_b = rng.normal([2.0, 2.0], 0.05, size=(40, 2))
     points = np.vstack([cluster_a, cluster_b])
     clusters = cluster_points(points, eps_m=0.2, min_samples=5)
     assert len(clusters) == 2
