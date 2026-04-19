@@ -1,0 +1,29 @@
+# Default parameters for the Hailo YOLOv8s COCO pipeline on Pi 5.
+#
+# Override on the command line, e.g.:
+#   ros2 launch star_perception perception.launch.py \
+#       score_threshold:=0.50 target_fps:=10.0
+#
+# These are tuned for indoor accessibility-audit scenarios:
+#  - 0.35 confidence keeps useful low-score chair / backpack hits;
+#  - 15 FPS matches the cam0 capture rate at 640x480 (faster wastes
+#    NPU power and creates stale results vs the 5-10 Hz disparity);
+#  - 6.0 m max depth matches the IMX219-83 stereo limit.
+
+star_hailo_yolo_node:
+  ros__parameters:
+    enabled: true
+    score_threshold: 0.35
+    target_fps: 15.0
+    publish_overlay: false
+    class_filter: []  # Empty list = all 80 COCO classes.
+
+star_detection_3d_fusion_node:
+  ros__parameters:
+    enabled: true
+    min_valid_samples: 30
+    min_depth_m: 0.20
+    max_depth_m: 6.0
+    disparity_border_pct: 0.15
+    sync_slop_sec: 0.10
+    marker_lifetime_sec: 0.50

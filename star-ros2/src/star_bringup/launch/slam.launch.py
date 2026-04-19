@@ -89,6 +89,14 @@ def generate_launch_description():
                     'operation or on systems without the camera connected.'
     )
 
+    use_perception_arg = DeclareLaunchArgument(
+        'use_perception', default_value='true',
+        description='Launch the Hailo-8L YOLO + 3D fusion pipeline. '
+                    'Requires the AI HAT+ 13 TOPS and the apt-installed '
+                    'hailo-all stack. Implicitly requires use_stereo:=true '
+                    'because the 3D fusion node consumes /stereo/disparity.'
+    )
+
     # RPLiDAR C1 requires sllidar_ros2 (Slamtec's newer driver with SDK 2.x).
     # rplidar_ros 2.1.0 uses SDK 1.12.0 which returns 0x80008000/0x80008002 for the C1's
     # DTOF scan protocol. sllidar_ros2 uses the updated SDK that supports C1 natively.
@@ -195,6 +203,21 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('use_stereo')),
     )
 
+    # Hailo-8L YOLO + 3D detection fusion. Subscribes to
+    # /cam0/camera/image_rect_color and /stereo/disparity (both produced
+    # by the stereo pipeline above) and publishes
+    # /perception/detections_3d in cam0_optical_frame for the compliance
+    # engine and Nav2 to consume.
+    perception = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution([
+                FindPackageShare('star_perception'),
+                'launch', 'perception.launch.py',
+            ])
+        ),
+        condition=IfCondition(LaunchConfiguration('use_perception')),
+    )
+
     # Foxglove Studio WebSocket bridge -- enables browser-based visualization
     # at app.foxglove.dev without X11. Bound to 0.0.0.0 for remote browser access.
     # Connect from laptop: ws://<PI5_IP>:8765
@@ -243,6 +266,7 @@ def generate_launch_description():
         use_bbb_arg,
         use_foxglove_arg,
         use_stereo_arg,
+        use_perception_arg,
         static_tf,
         ekf,
         static_odom_tf,
@@ -252,4 +276,5 @@ def generate_launch_description():
         slam,
         nav2,
         stereo,
+        perception,
     ])

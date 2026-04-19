@@ -74,12 +74,15 @@ def test_protruding_objects_node_wires_topics():
     # input_cloud_topic default is /cloud_map
     assert "/cloud_map" in topics
     assert "/imu/data" in topics
+    # New: YOLO 3D detection feed (Hailo-8L pipeline).
+    assert "/perception/detections_3d" in topics
 
     pubs = {p.topic for p in node.publishers}
     assert "/compliance/protruding_objects" in pubs
 
     assert "enabled" in node.parameters
     assert "input_cloud_topic" in node.parameters
+    assert "class_match_radius_m" in node.parameters
     assert node.parameters["input_cloud_topic"] == "/cloud_map"
 
 
@@ -106,9 +109,13 @@ def test_dynamic_obstacle_node_wires_topics():
     assert "/scan" in topics
     assert "/map" in topics
     assert "/odom" in topics
+    # New: YOLO 3D detection feed (Hailo-8L pipeline).
+    assert "/perception/detections_3d" in topics
 
     pubs = {p.topic for p in node.publishers}
     assert "/perception/dynamic_obstacles" in pubs
+
+    assert "class_match_radius_m" in node.parameters
 
 
 def test_compliance_monitor_node_wires_topics():

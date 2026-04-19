@@ -2,11 +2,21 @@
 ADA 307 Protruding Objects compliance node.
 
 Subscribes to:
-  /cloud_map    sensor_msgs/PointCloud2 (RTAB-Map consolidated, 1 Hz)
-                 - configurable via the `input_cloud_topic` parameter;
-                   /stereo/points2 also works at higher rate with more
-                   CPU cost.
-  /imu/data     sensor_msgs/Imu (BNO055, for floor-plane anchor)
+  /cloud_map               sensor_msgs/PointCloud2 (RTAB-Map consolidated,
+                           1 Hz). Configurable via `input_cloud_topic`;
+                           /stereo/points2 also works at higher rate with
+                           more CPU cost.
+  /imu/data                sensor_msgs/Imu (BNO055, for floor-plane anchor)
+  /perception/detections_3d  vision_msgs/Detection3DArray (Hailo YOLO 3D
+                           detections in cam0_optical_frame, fused via
+                           star_perception.detection_3d_fusion_node).
+                           When present, each emitted ProtrudingObject is
+                           tagged with the nearest YOLO class label, and
+                           transient classes (person, chair, backpack,
+                           ...) are reported with flagged_violation=false.
+                           The node still works without YOLO -- all
+                           protrusions are then treated as unclassified
+                           and presumed-fixed.
 
 Publishes:
   /compliance/protruding_objects   star_compliance_msgs/ProtrudingObjectArray
@@ -43,12 +53,31 @@ except ImportError:  # pragma: no cover
     ProtrudingObjectArray = None
     HAS_MSGS = False
 
+try:
+    from vision_msgs.msg import Detection3DArray
+    HAS_VISION_MSGS = True
+except ImportError:  # pragma: no cover
+    Detection3DArray = None
+    HAS_VISION_MSGS = False
+
+try:
+    import tf2_ros
+    from tf2_ros import Buffer, TransformListener
+    HAS_TF2 = True
+except ImportError:  # pragma: no cover
+    tf2_ros = None
+    Buffer = None
+    TransformListener = None
+    HAS_TF2 = False
+
 from star_compliance.detectors.cane_zone_filter import (
     ADA_307_PROTRUSION_LIMIT_M,
     CANE_ZONE_MAX_M,
     CANE_ZONE_MIN_M,
+    DEFAULT_CLASS_MATCH_RADIUS_M,
     filter_to_cane_zone,
     is_protrusion,
+    is_transient_class,
 )
 from star_compliance.detectors.wall_plane_fitter import (
     fit_walls,
@@ -60,6 +89,8 @@ from star_compliance.engines.floor_frame import floor_from_bno055_quaternion
 ADA_SECTION = "307"
 DEFAULT_SENSOR_HEIGHT_M = 0.25
 DEFAULT_MIN_CLUSTER_POINTS = 5
+DEFAULT_YOLO_CACHE_SECONDS = 1.0
+MAP_FRAME = "map"
 
 
 VALIDATION_CSV = Path(
@@ -79,10 +110,15 @@ class ProtrudingObjectsNode(Node):
         self.declare_parameter("input_cloud_topic", "/cloud_map")
         self.declare_parameter("sensor_height_m", DEFAULT_SENSOR_HEIGHT_M)
         self.declare_parameter("min_cluster_points", DEFAULT_MIN_CLUSTER_POINTS)
+        self.declare_parameter(
+            "class_match_radius_m", DEFAULT_CLASS_MATCH_RADIUS_M)
+        self.declare_parameter("yolo_cache_seconds", DEFAULT_YOLO_CACHE_SECONDS)
 
         self._latest_imu: Imu | None = None
         self._latest_cloud: PointCloud2 | None = None
         self._last_process_sec: float = 0.0
+        # Each entry: (received_sec, x_map, y_map, z_map, class_label, score).
+        self._yolo_cache: list[tuple[float, float, float, float, str, float]] = []
 
         qos_sensor = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -99,6 +135,23 @@ class ProtrudingObjectsNode(Node):
         self._sub_imu = self.create_subscription(
             Imu, "/imu/data", self._on_imu, qos_sensor,
         )
+
+        # Optional YOLO 3D detection feed. Subscribed when both
+        # vision_msgs and tf2 are available; otherwise the node falls
+        # back to unclassified protrusions.
+        if HAS_VISION_MSGS and HAS_TF2:
+            self._tf_buffer: Buffer | None = Buffer()
+            self._tf_listener = TransformListener(self._tf_buffer, self)
+            self._sub_yolo = self.create_subscription(
+                Detection3DArray,
+                "/perception/detections_3d",
+                self._on_yolo,
+                qos_sensor,
+            )
+        else:  # pragma: no cover - integration test path
+            self._tf_buffer = None
+            self._tf_listener = None
+            self._sub_yolo = None
 
         if HAS_MSGS:
             self._pub = self.create_publisher(
@@ -127,6 +180,81 @@ class ProtrudingObjectsNode(Node):
 
     def _on_imu(self, msg: Imu) -> None:
         self._latest_imu = msg
+
+    def _on_yolo(self, msg) -> None:
+        """Cache YOLO 3D detections in map-frame for later matching."""
+        if self._tf_buffer is None:
+            return
+        try:
+            tf = self._tf_buffer.lookup_transform(
+                MAP_FRAME, msg.header.frame_id,
+                rclpy.time.Time(),
+                timeout=rclpy.duration.Duration(seconds=0.05),
+            )
+        except Exception as exc:  # pragma: no cover - depends on TF tree
+            self.get_logger().warn(
+                f"YOLO TF lookup failed ({msg.header.frame_id} -> "
+                f"{MAP_FRAME}): {exc}",
+                throttle_duration_sec=10.0,
+            )
+            return
+
+        now = self.get_clock().now().nanoseconds * 1e-9
+        for d in msg.detections:
+            if not d.results:
+                continue
+            class_label = d.results[0].hypothesis.class_id
+            score = float(d.results[0].hypothesis.score)
+            x_map, y_map, z_map = self._transform_point(
+                d.bbox.center.position.x,
+                d.bbox.center.position.y,
+                d.bbox.center.position.z,
+                tf,
+            )
+            self._yolo_cache.append(
+                (now, x_map, y_map, z_map, class_label, score)
+            )
+        self._evict_stale_yolo(now)
+
+    def _evict_stale_yolo(self, now_sec: float) -> None:
+        cache_window = float(self.get_parameter("yolo_cache_seconds").value)
+        cutoff = now_sec - cache_window
+        self._yolo_cache = [
+            entry for entry in self._yolo_cache if entry[0] >= cutoff
+        ]
+
+    @staticmethod
+    def _transform_point(x: float, y: float, z: float, tf
+                         ) -> tuple[float, float, float]:
+        """Apply a TransformStamped to a point. Pure linear algebra."""
+        t = tf.transform.translation
+        q = tf.transform.rotation
+        # Rotation matrix from quaternion (q.x, q.y, q.z, q.w).
+        xx, yy, zz = q.x * q.x, q.y * q.y, q.z * q.z
+        xy, xz, yz = q.x * q.y, q.x * q.z, q.y * q.z
+        wx, wy, wz = q.w * q.x, q.w * q.y, q.w * q.z
+        rx = (1 - 2 * (yy + zz)) * x + 2 * (xy - wz) * y + 2 * (xz + wy) * z
+        ry = 2 * (xy + wz) * x + (1 - 2 * (xx + zz)) * y + 2 * (yz - wx) * z
+        rz = 2 * (xz - wy) * x + 2 * (yz + wx) * y + (1 - 2 * (xx + yy)) * z
+        return rx + t.x, ry + t.y, rz + t.z
+
+    def _match_yolo(self, x: float, y: float, z: float
+                    ) -> tuple[str, float]:
+        """Return (class_label, score) of the nearest YOLO detection."""
+        if not self._yolo_cache:
+            return "", 0.0
+        radius = float(self.get_parameter("class_match_radius_m").value)
+        radius_sq = radius * radius
+        best_d2 = float("inf")
+        best_label = ""
+        best_score = 0.0
+        for _, xm, ym, zm, label, score in self._yolo_cache:
+            d2 = (xm - x) ** 2 + (ym - y) ** 2 + (zm - z) ** 2
+            if d2 < best_d2 and d2 <= radius_sq:
+                best_d2 = d2
+                best_label = label
+                best_score = score
+        return best_label, best_score
 
     def _process_if_ready(self) -> None:
         if not self.get_parameter("enabled").value:
@@ -174,13 +302,17 @@ class ProtrudingObjectsNode(Node):
                                  point_count=1,
                                  min_points=1):
                 continue
+            x, y, z = float(row[0]), float(row[1]), float(row[2])
+            class_label, class_score = self._match_yolo(x, y, z)
             objects.append({
-                "x": float(row[0]),
-                "y": float(row[1]),
-                "z": float(row[2]),
+                "x": x,
+                "y": y,
+                "z": z,
                 "distance": float(distance),
-                "height_above_floor": float(row[2] - floor_height_m),
+                "height_above_floor": float(z - floor_height_m),
                 "wall_d": float(wall.d),
+                "class_label": class_label,
+                "class_confidence": class_score,
             })
 
         if not objects:
@@ -207,7 +339,14 @@ class ProtrudingObjectsNode(Node):
                 p.cluster_extent_m = 0.0
                 p.cluster_point_count = 1
                 p.wall_plane_distance_m = o["wall_d"]
-                p.flagged_violation = True
+                p.class_label = o["class_label"]
+                p.class_confidence = float(o["class_confidence"])
+                # Transient YOLO classes (person, chair, ...) are not
+                # ADA 307 violations -- the standard targets *fixed*
+                # protrusions. Empty class_label keeps the legacy
+                # presumed-fixed behaviour.
+                p.flagged_violation = not is_transient_class(
+                    o["class_label"])
                 p.ada_section = ADA_SECTION
                 p.cloud_snippet_path = ""
                 arr.objects.append(p)

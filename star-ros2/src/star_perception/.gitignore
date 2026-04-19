@@ -1,0 +1,10 @@
+# Pre-compiled Hailo Executable Format models are downloaded at install
+# time from the Hailo Model Zoo. They are large binaries and per the
+# project policy we do not commit them.
+models/*.hef
+
+# Standard Python noise.
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/

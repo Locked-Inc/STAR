@@ -22,6 +22,38 @@ CANE_ZONE_MIN_M = 27.0 * INCH_TO_M    # 0.6858
 CANE_ZONE_MAX_M = 80.0 * INCH_TO_M    # 2.032
 ADA_307_PROTRUSION_LIMIT_M = 4.0 * INCH_TO_M   # 0.1016
 
+# COCO classes the YOLO node may report that we treat as transient
+# (movable) for ADA 307 purposes. The standard targets *fixed*
+# protrusions; a person, a chair, or a backpack appearing in the
+# cane zone during a scan is a transient occupancy hit, not a building
+# accessibility violation. The compliance node reports them with
+# flagged_violation=false so the audit reviewer still sees them but
+# the building is not penalised.
+TRANSIENT_CLASSES = frozenset({
+    "person",
+    "chair",
+    "backpack",
+    "handbag",
+    "suitcase",
+    "umbrella",
+    "dog",
+    "cat",
+    "sports ball",
+    "frisbee",
+    "skateboard",
+})
+
+# Maximum distance between a LiDAR cluster centroid and the centroid
+# of a YOLO 3D detection to consider them the same object. Tuned to
+# the IMX219-83 stereo depth standard error (~10 cm at 2 m range)
+# plus map-frame TF jitter.
+DEFAULT_CLASS_MATCH_RADIUS_M = 0.30
+
+
+def is_transient_class(class_label: str) -> bool:
+    """Return True when the YOLO label identifies a transient object."""
+    return bool(class_label) and class_label in TRANSIENT_CLASSES
+
 
 def filter_to_cane_zone(points: np.ndarray,
                         floor_height_m: float,
