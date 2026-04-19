@@ -2,7 +2,7 @@
 
 ## Quick Reference
 
-**STAR (Simultaneous Tracking and Robotics)** is a distributed robotics platform with custom PCB hardware, Renesas RX72N motor control firmware (ThreadX RTOS), Raspberry Pi 5 control system (ROS2 Jazzy), and Protocol Buffers communication over SPI.
+**STAR (Spatial Topography Accessibility Robot)** is a distributed robotics platform for autonomous indoor ADA-compliance auditing, with custom PCB hardware, Renesas RX72N motor control firmware (ThreadX RTOS), a Raspberry Pi 5 control system (ROS2 Jazzy), and Protocol Buffers communication over SPI.
 
 **System Architecture:**
 ```

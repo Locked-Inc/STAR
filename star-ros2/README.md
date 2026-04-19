@@ -1,6 +1,6 @@
 # STAR ROS2 Integration
 
-ROS2 Jazzy integration for the STAR (Simultaneous Tracking and Robotics) platform, providing high-level orchestration for autonomous navigation, sensor fusion, and robot control.
+ROS2 Jazzy integration for the STAR (Spatial Topography Accessibility Robot) platform, providing high-level orchestration for autonomous navigation, sensor fusion, and robot control.
 
 ## Overview
 

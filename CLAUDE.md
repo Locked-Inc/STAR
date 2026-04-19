@@ -104,7 +104,7 @@ python3 scripts/utils/fix-encoding.py --check path/to/dir
 
 ## Project Overview
 
-**STAR (Simultaneous Tracking and Robotics)** - A distributed robotics platform with custom PCB hardware, Renesas RX72N motor control firmware, Raspberry Pi 5 control system, and Protocol Buffers communication.
+**STAR (Spatial Topography Accessibility Robot)** - A distributed robotics platform for autonomous indoor ADA-compliance auditing, with custom PCB hardware, Renesas RX72N motor control firmware, a Raspberry Pi 5 control system, and Protocol Buffers communication.
 
 ### Architecture
 
