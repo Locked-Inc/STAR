@@ -36,6 +36,30 @@ import numpy as np
 YOLOV8_INPUT_SIZE = 640
 LETTERBOX_PAD_VALUE = 114  # YOLOv8 convention (mid-grey).
 DEFAULT_WORKER_PYTHON = "/home/star/hailo-venv/bin/python"
+
+
+def load_class_names(path: str | Path) -> tuple[str, ...]:
+    """Load an ordered class list from a YAML file with a top-level
+    `names:` field. Matches the Ultralytics dataset-yaml convention
+    used by the zoo's coco_classes.yaml / oiv7_classes.yaml."""
+    try:
+        import yaml
+    except ImportError as exc:
+        raise RuntimeError(
+            "PyYAML is required to load class lists. "
+            "apt install python3-yaml, or pip install pyyaml.") from exc
+    p = Path(path)
+    with p.open("r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    if not isinstance(data, dict) or "names" not in data:
+        raise ValueError(f"{p} must contain a top-level 'names:' list")
+    names = data["names"]
+    if isinstance(names, dict):
+        names = [names[k] for k in sorted(names.keys())]
+    if not isinstance(names, list) or not all(
+            isinstance(n, str) for n in names):
+        raise ValueError(f"{p} names must be a list of strings")
+    return tuple(names)
 COCO_CLASSES = (
     "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train",
     "truck", "boat", "traffic light", "fire hydrant", "stop sign",

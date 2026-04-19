@@ -21,7 +21,8 @@ setup(
         (f"share/{PACKAGE_NAME}/config", glob("config/*.yaml")),
         (f"share/{PACKAGE_NAME}/scripts", glob("scripts/*.sh")),
         (f"share/{PACKAGE_NAME}/models",
-         glob("models/*.hef") + glob("models/README.md")),
+         glob("models/*.hef") + glob("models/*.yaml")
+         + glob("models/README.md")),
     ],
     install_requires=[
         "setuptools",

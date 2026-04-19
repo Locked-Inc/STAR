@@ -44,6 +44,7 @@ from rclpy.qos import (
     QoSProfile,
     ReliabilityPolicy,
 )
+from rcl_interfaces.msg import ParameterDescriptor
 
 from sensor_msgs.msg import Image
 from vision_msgs.msg import (
@@ -54,8 +55,10 @@ from vision_msgs.msg import (
 )
 
 from star_perception.hailo_runner import (
+    COCO_CLASSES,
     Detection,
     HailoYoloRunner,
+    load_class_names,
 )
 
 
@@ -92,6 +95,17 @@ class HailoYoloNode(Node):
         self.declare_parameter("target_fps", DEFAULT_TARGET_FPS)
         self.declare_parameter("publish_overlay", False)
         self.declare_parameter("class_filter", [])
+        self.declare_parameter(
+            "classes_yaml", "",
+            descriptor=ParameterDescriptor(
+                description=(
+                    "Absolute path to a YAML file with a top-level "
+                    "`names:` list giving class names in HEF index "
+                    "order. Empty string -> use the built-in COCO 80 "
+                    "list. Point this at "
+                    "share/star_perception/models/oiv7_classes.yaml "
+                    "when running a yolov8n-oiv7.hef."
+                )))
 
         self._min_period_sec = 1.0 / max(
             float(self.get_parameter("target_fps").value), 0.1)
@@ -145,9 +159,23 @@ class HailoYoloNode(Node):
             return self._runner
         hef = str(self.get_parameter("hef_path").value)
         threshold = float(self.get_parameter("score_threshold").value)
+        classes_yaml = str(self.get_parameter("classes_yaml").value).strip()
+        class_names = COCO_CLASSES
+        if classes_yaml:
+            try:
+                class_names = load_class_names(classes_yaml)
+                self.get_logger().info(
+                    f"Loaded {len(class_names)} class names from "
+                    f"{classes_yaml}")
+            except Exception as exc:
+                self.get_logger().warn(
+                    f"Could not load classes_yaml={classes_yaml}: {exc}. "
+                    "Falling back to COCO 80.")
         try:
             self._runner = HailoYoloRunner(
-                hef_path=hef, score_threshold=threshold,
+                hef_path=hef,
+                score_threshold=threshold,
+                class_names=class_names,
             )
         except Exception as exc:
             self.get_logger().error(

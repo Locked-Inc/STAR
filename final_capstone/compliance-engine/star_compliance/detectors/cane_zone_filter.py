@@ -22,14 +22,19 @@ CANE_ZONE_MIN_M = 27.0 * INCH_TO_M    # 0.6858
 CANE_ZONE_MAX_M = 80.0 * INCH_TO_M    # 2.032
 ADA_307_PROTRUSION_LIMIT_M = 4.0 * INCH_TO_M   # 0.1016
 
-# COCO classes the YOLO node may report that we treat as transient
+# Classes the YOLO node may report that we treat as transient
 # (movable) for ADA 307 purposes. The standard targets *fixed*
 # protrusions; a person, a chair, or a backpack appearing in the
 # cane zone during a scan is a transient occupancy hit, not a building
 # accessibility violation. The compliance node reports them with
 # flagged_violation=false so the audit reviewer still sees them but
 # the building is not penalised.
+#
+# Covers both COCO 80 labels (lowercase) and Open Images V7 labels
+# (Title Case, sometimes more granular — "Man" / "Woman" / "Boy" /
+# "Girl" are separate in OIV7 but all collapse to Person here).
 TRANSIENT_CLASSES = frozenset({
+    # COCO
     "person",
     "chair",
     "backpack",
@@ -41,6 +46,41 @@ TRANSIENT_CLASSES = frozenset({
     "sports ball",
     "frisbee",
     "skateboard",
+    # Open Images V7 equivalents and extras
+    "Person",
+    "Man",
+    "Woman",
+    "Boy",
+    "Girl",
+    "Human body",
+    "Human head",
+    "Chair",
+    "Stool",
+    "Backpack",
+    "Handbag",
+    "Briefcase",
+    "Luggage and bags",
+    "Suitcase",
+    "Umbrella",
+    "Dog",
+    "Cat",
+    "Rabbit",
+    "Skateboard",
+    "Scooter",
+    "Roller skates",
+    "Bicycle",
+    "Cart",
+    "Ball",
+    "Football",
+    "Basketball",
+    "Tennis ball",
+    "Frisbee",
+    "Flying disc",
+    # Mobility aids on the move
+    "Wheelchair",
+    "Walking stick",
+    "Crutch",
+    "Cane",
 })
 
 # Maximum distance between a LiDAR cluster centroid and the centroid
