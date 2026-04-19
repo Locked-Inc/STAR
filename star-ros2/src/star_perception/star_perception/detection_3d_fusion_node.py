@@ -97,9 +97,13 @@ class Detection3dFusionNode(Node):
             durability=DurabilityPolicy.VOLATILE,
             depth=5,
         )
+        # gscam publishes CameraInfo with VOLATILE durability (normal
+        # streaming, not latched). A TRANSIENT_LOCAL subscriber cannot
+        # match a VOLATILE publisher, so use VOLATILE here and cache the
+        # first message in the callback instead of relying on latching.
         qos_camera_info = QoSProfile(
             reliability=ReliabilityPolicy.RELIABLE,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            durability=DurabilityPolicy.VOLATILE,
             depth=1,
         )
 
