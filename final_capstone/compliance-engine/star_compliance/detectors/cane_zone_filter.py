@@ -31,7 +31,7 @@ ADA_307_PROTRUSION_LIMIT_M = 4.0 * INCH_TO_M   # 0.1016
 # the building is not penalised.
 #
 # Covers both COCO 80 labels (lowercase) and Open Images V7 labels
-# (Title Case, sometimes more granular — "Man" / "Woman" / "Boy" /
+# (Title Case, sometimes more granular -- "Man" / "Woman" / "Boy" /
 # "Girl" are separate in OIV7 but all collapse to Person here).
 TRANSIENT_CLASSES = frozenset({
     # COCO
