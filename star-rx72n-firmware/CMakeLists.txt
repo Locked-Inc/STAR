@@ -113,8 +113,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_pid/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_sync/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_spi_comm/inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_usb/inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_usb_comm/inc
 )
 
 # Combine app sources (custom boot + intrinsic functions)
@@ -160,8 +158,6 @@ file(GLOB_RECURSE LIB_RX_SPI_COMM_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/
 file(GLOB_RECURSE LIB_RX_SPI_LINK_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_spi_link/src/*.c)
 file(GLOB_RECURSE LIB_RX_UART_COMM_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_uart_comm/src/*.c)
 file(GLOB_RECURSE LIB_RX_COMM_MANAGER_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_comm_manager/src/*.c)
-file(GLOB_RECURSE LIB_RX_USB_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_usb/src/*.c)
-file(GLOB_RECURSE LIB_RX_USB_COMM_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_usb_comm/src/*.c)
 
 # nanopb (only core files, not tests/examples)
 set(NANOPB_SOURCES
@@ -216,8 +212,6 @@ set(ALL_SOURCES
     ${LIB_RX_SPI_LINK_SOURCES}
     ${LIB_RX_UART_COMM_SOURCES}
     ${LIB_RX_COMM_MANAGER_SOURCES}
-    ${LIB_RX_USB_SOURCES}
-    ${LIB_RX_USB_COMM_SOURCES}
     ${NANOPB_SOURCES}
     ${LIB_RX_NANOPB_SOURCES}
     ${PROTOBUF_SOURCES}
@@ -303,8 +297,6 @@ target_include_directories(${PROJECT_NAME}.elf PRIVATE
     ${CMAKE_SOURCE_DIR}/libs/rx_spi_link/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_uart_comm/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_comm_manager/inc
-    ${CMAKE_SOURCE_DIR}/libs/rx_usb/inc
-    ${CMAKE_SOURCE_DIR}/libs/rx_usb_comm/inc
 )
 
 # Set linker script

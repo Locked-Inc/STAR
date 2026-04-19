@@ -114,8 +114,6 @@ function(apply_test_includes target)
         ${CMAKE_SOURCE_DIR}/../libs/rx_uart_comm/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_frame_ascii/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_comm_manager/inc
-        ${CMAKE_SOURCE_DIR}/../libs/rx_usb/inc
-        ${CMAKE_SOURCE_DIR}/../libs/rx_usb_comm/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_hcsr04/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_hcsr04/src
         ${CMAKE_SOURCE_DIR}/../libs/rx_obstacle_detect/inc

@@ -288,12 +288,6 @@ typedef enum : uint32_t {
   k_system_clock_dividers   = 0x21C21211, /**< SCKCR: ICLK=240MHz, PCLKA=120MHz, others=60MHz */
   k_system_clock_source_pll = 0x0400,     /**< SCKCR3: Select PLL as system clock source */
   k_packcr_addr             = 0x00080044, /**< PACKCR absolute address (USB clock source select) */
-  /* SCKCR2.UCK = b7..b4 selects the USB clock divider off the main PLL
-   * (PACKCR.UPLLSEL=0 path).  Value 0b0100 = /5 yields 240 MHz / 5 = 48 MHz
-   * which is the exact UCLK the USB0 peripheral requires.  The alternative
-   * PPLL route (PACKCR.UPLLSEL=1) is unusable here because k_ppll_config_48mhz
-   * actually produces 192 MHz and PACKCR feeds that straight through as UCK. */
-  k_sckcr2_uck_div5 = 0x0041, /**< SCKCR2: UCK=/5 (b7..b4=0100) + reserved b0=1 */
 } system_clock_config_t;
 
 /** @brief PACKCR (peripheral clock) values -- routes UCLK from PPLL for USB */
@@ -522,10 +516,6 @@ static rx_err_t internal_switch_to_pll_clock(void)
 
   /* Configure system clock dividers */
   system_regs()->sckcr = k_system_clock_dividers;
-
-  /* Configure USB clock divider (SCKCR2.UCK = /5) so UCK = 240/5 = 48 MHz.
-   * Must be written before the USB peripheral module clock is ungated. */
-  system_regs()->sckcr2 = k_sckcr2_uck_div5;
 
   /* Verify MEMWAIT still set after clock divider change */
   RX_ASSERT(*memwait_reg() == k_memwait_one_wait,

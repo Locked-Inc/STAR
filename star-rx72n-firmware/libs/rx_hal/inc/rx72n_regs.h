@@ -334,16 +334,13 @@ extern "C" {
 #include "rx72n_crc_regs.h"
 
 /* =============================================================================
- * USB 2.0 Full-Speed Host/Function Module (USB0)
+ * USB 2.0 Full-Speed Host/Function Module (USB0) -- REMOVED
  * =============================================================================
- * Re-enabled 2026-04-19: libs/rx_usb/ and its register header were restored
- * by the feat/multi-led-breathe merge; the rx_usb_hw/isr/cdc translation
- * units rely on rx72n_regs.h transitively exposing rx72n_usb_regs.h (that
- * was the pre-purge contract).  If USB0 is ever disabled again, delete the
- * include here together with libs/rx_usb/ to keep the two in sync.
+ * The rx72n_usb_regs.h header was deleted alongside libs/rx_usb/ when USB0
+ * was purged. The peripheral exists in silicon but is no longer used; if it
+ * is ever re-enabled, restore the register header from git history.  USB0
+ * bring-up work continues on the feat/usb0 branch.
  */
-
-#include "rx72n_usb_regs.h"
 
 /* =============================================================================
  * Multi-Function Timer Unit (MTU) - Encoder Quadrature Counting
