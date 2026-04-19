@@ -35,15 +35,25 @@ Setup:
 
 ### Not detected (7 of 22)
 
-| GPIO | Header pin | Notes                                          |
-|------|------------|------------------------------------------------|
-|  14  | 8          | UART0 TXD (serial console would hold this)     |
-|  15  | 10         | UART0 RXD (serial console would hold this)     |
-|  18  | 12         |                                                |
-|  23  | 16         |                                                |
-|  24  | 18         |                                                |
-|  25  | 22         |                                                |
-|  27  | 13         |                                                |
+| GPIO | Header pin | Notes                                           |
+|------|------------|-------------------------------------------------|
+|  14  | 8          | UART0 TXD (free -- see "Serial console" below)  |
+|  15  | 10         | UART0 RXD (free -- see "Serial console" below)  |
+|  18  | 12         |                                                 |
+|  23  | 16         |                                                 |
+|  24  | 18         |                                                 |
+|  25  | 22         |                                                 |
+|  27  | 13         |                                                 |
+
+### Serial console state (verified on this Pi5)
+
+- `/boot/firmware/cmdline.txt`: `console=tty1` only (no `serial0`/`ttyAMA0`)
+- `/boot/firmware/config.txt`: no `enable_uart=1`, no UART overlay
+- `systemctl`: no `serial-getty@` unit active
+- `gpioinfo gpiochip4`: lines 14 and 15 report `unused`
+
+So UART0 is not claiming GPIO 14/15. The missing edges on those pins
+are a wiring issue, not a kernel one.
 
 ### Crosstalk artifact
 
@@ -93,6 +103,6 @@ star-rx72n-firmware/gpio_test/host/venv/bin/python3 \
     scripts/pi5_gpio_test/ad2_verify.py --verbose
 ```
 
-If GPIO 14 or 15 still miss after re-wiring, check whether the serial
-console is enabled (`sudo raspi-config` -> Interface Options -> Serial
-Port -> disable login shell, keep hardware enabled, reboot).
+Serial console is already off (see "Serial console state" above), so
+GPIO 14/15 should come up with wiring alone. If they still miss after
+re-wiring, re-check the probe, not the kernel config.
