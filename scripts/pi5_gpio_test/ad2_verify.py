@@ -207,9 +207,9 @@ def auto_map(edges: list[EdgeEvent],
         if sweep_len > 0:
             pin_period_ms = sweep_len / NUM_SWEEP
 
-    # t_after_gap is the first edge after the quiet window. Assume the
-    # Pi5 starts the sweep at GPIO 0, so t_after_gap is approximately
-    # GPIO 0's rising edge (or whichever wired GPIO is earliest).
+    # t_after_gap is the first edge after the quiet window, i.e. the
+    # rising edge of SWEEP_ORDER[0] (or whichever wired GPIO in the
+    # sweep is earliest).
     t_anchor = t_after_gap
     print(f"  anchor t = {t_anchor:.1f} ms, pin_period = "
           f"{pin_period_ms:.2f} ms, gap = {gap_dur:.0f} ms")
