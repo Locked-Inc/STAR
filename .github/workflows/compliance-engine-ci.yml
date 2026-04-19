@@ -18,6 +18,11 @@ on:
       - '.github/workflows/compliance-engine-ci.yml'
       - 'bootstrap_pi.sh'
 
+# Cancel in-progress runs for the same PR/branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   # -------------------------------------------------------------------
@@ -58,12 +63,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: 'pip'
 
+      # Supplementary cache key since we pip install unpinned packages (no
+      # requirements.txt).  Keyed on the workflow file so upgrades land explicitly.
       - name: Cache pip downloads
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-compliance-${{ hashFiles('.github/workflows/compliance-engine-ci.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-compliance-
+            ${{ runner.os }}-pip-
 
       - name: Install Python deps
         working-directory: final_capstone/compliance-engine
@@ -111,8 +122,11 @@ jobs:
       - name: Install build tooling
         shell: bash
         run: |
-          apt-get update -q
-          apt-get install -y \
+          # Skip apt-get update if the osrf base image's apt lists are fresh (<24h old).
+          if [ -z "$(find /var/lib/apt/lists -maxdepth 1 -mmin -1440 2>/dev/null | head -n1)" ]; then
+            apt-get update -q
+          fi
+          apt-get install -y --no-install-recommends \
               python3-colcon-common-extensions \
               ros-jazzy-launch-testing-ament-cmake \
               ros-jazzy-nav2-costmap-2d
@@ -157,6 +171,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: Cache markdownlint-cli2
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: markdownlint-cli2-${{ runner.os }}-node20
 
       - name: Install markdownlint-cli2
         run: npm install -g markdownlint-cli2

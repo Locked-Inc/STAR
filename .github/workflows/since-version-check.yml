@@ -12,8 +12,20 @@ name: Since Version Check
 on:
   push:
     branches: [main, develop]
+    paths:
+      - 'star-rx72n-firmware/**'
+      - 'scripts/utils/check-since-version.py'
+      - '.github/workflows/since-version-check.yml'
   pull_request:
     branches: [main, develop]
+    paths:
+      - 'star-rx72n-firmware/**'
+      - 'scripts/utils/check-since-version.py'
+      - '.github/workflows/since-version-check.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   since-version-check:

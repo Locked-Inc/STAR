@@ -29,10 +29,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
-      - name: Install build dependencies
+      - name: Install build dependencies (+ LLVM apt repo for 18.1.8)
+        # Add LLVM apt repo ONCE up front so clang-18 / clang-format-18 /
+        # clang-tidy-18 all resolve to 18.1.8 (matches devcontainer).  Previously
+        # the clang-format step below re-added the repo + ran apt-get update a
+        # second time -- ~15-30s of duplicate work per run.
         run: |
-          sudo apt-get update && sudo apt-get install -y cmake gcc g++ git ninja-build protobuf-compiler lcov bc \
-            clang-18 llvm-18 libclang-rt-18-dev
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null
+          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-18 main" | sudo tee /etc/apt/sources.list.d/llvm-18.list >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake gcc g++ git ninja-build protobuf-compiler lcov bc \
+            clang-18 clang-format-18 llvm-18 libclang-rt-18-dev
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-18 100
           pip3 install --quiet gcovr
 
       - name: Cache CMake FetchContent (Unity + nanopb)
@@ -195,7 +204,7 @@ jobs:
 
       - name: cppcheck static analysis (MISRA C 2012)
         run: |
-          sudo apt-get install -y cppcheck
+          sudo apt-get install -y --no-install-recommends cppcheck
           # Exclude vendor/generated paths to avoid noise from threadx, nanopb, etc.
           # --addon=misra enforces MISRA C 2012 rules.
           # --std=c23 matches the firmware C standard.
@@ -220,18 +229,12 @@ jobs:
           # Note: exit 1 on any violation (blocking)
 
       - name: clang-format check (blocking)
+        # clang-format-18 is installed in the top-level "Install build
+        # dependencies" step above (LLVM apt repo added once).  Avoid adding the
+        # repo + apt-get update + install again here.
+        # pipefail: propagate format_code.sh exit code through tee so check failures block the build.
         run: |
-          # Add LLVM apt repo to get clang-format-18 version 18.1.8 -- the exact
-          # same version the devcontainer ships (via osrf/ros:jazzy-desktop base).
-          # Ubuntu 24.04 stock repos only provide 18.1.3, which disagrees on macro
-          # initializer brace formatting (single-line vs multi-line).
-          # pipefail: propagate format_code.sh exit code through tee so check failures block the build.
           set -o pipefail
-          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null
-          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-18 main" | sudo tee /etc/apt/sources.list.d/llvm-18.list >/dev/null
-          sudo apt-get update -qq
-          sudo apt-get install -y clang-format-18
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-18 100
           clang-format-18 --version
           bash star-rx72n-firmware/scripts/format_code.sh --check 2>&1 | tee clang-format-results.txt
 
