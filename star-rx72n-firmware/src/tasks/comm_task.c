@@ -1630,14 +1630,16 @@ static void internal_usb_cfifo_write(const uint8_t* data, uint16_t len)
 {
   volatile uint16_t* CFIFOSEL_R = (volatile uint16_t*)0x000A0020U;
   volatile uint16_t* CFIFOCTR_R = (volatile uint16_t*)0x000A0022U;
-  volatile uint8_t*  CFIFO_R8   = (volatile uint8_t*) 0x000A0014U;
+  volatile uint8_t*  CFIFO_R8   = (volatile uint8_t*)0x000A0014U;
 
   /* ISEL=1, MBW=0 (8-bit), CURPIPE=DCP (0).
    * 8-bit MBW prevents odd-length descriptor padding -> no -75 EOVERFLOW. */
   *CFIFOSEL_R = (1U << 5);
-  while ((*CFIFOCTR_R & (1U << 13)) == 0U) { /* wait FRDY */ }
-  *CFIFOCTR_R |= (1U << 14); /* BCLR */
-  while ((*CFIFOCTR_R & (1U << 14)) != 0U) { /* wait BCLR complete */ }
+  while ((*CFIFOCTR_R & (1U << 13)) == 0U) { /* wait FRDY */
+  }
+  *CFIFOCTR_R |= (1U << 14);                 /* BCLR */
+  while ((*CFIFOCTR_R & (1U << 14)) != 0U) { /* wait BCLR complete */
+  }
   for (uint16_t i = 0U; i < len; i++) {
     *CFIFO_R8 = data[i];
   }
@@ -1661,22 +1663,54 @@ static void internal_usb_setup_poll(void)
   static const uint8_t s_dev[18] = {
     /* Device descriptor: USB 2.0, vendor-specific class, 64-byte EP0,
      * VID=0x045B (Renesas), PID=0x0235 (STAR), device 1.00, 1 config. */
-    0x12, 0x01, 0x00, 0x02, 0xFF, 0x00, 0x00, 0x40,
-    0x5B, 0x04, 0x35, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+    0x12,
+    0x01,
+    0x00,
+    0x02,
+    0xFF,
+    0x00,
+    0x00,
+    0x40,
+    0x5B,
+    0x04,
+    0x35,
+    0x02,
+    0x00,
+    0x01,
+    0x00,
+    0x00,
+    0x00,
+    0x01,
   };
   static const uint8_t s_cfg[18] = {
-    0x09, 0x02, 0x12, 0x00, 0x01, 0x01, 0x00, 0x80, 0x32,
-    0x09, 0x04, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00,
+    0x09,
+    0x02,
+    0x12,
+    0x00,
+    0x01,
+    0x01,
+    0x00,
+    0x80,
+    0x32,
+    0x09,
+    0x04,
+    0x00,
+    0x00,
+    0x00,
+    0xFF,
+    0xFF,
+    0xFF,
+    0x00,
   };
 
   for (uint8_t guard = 0; guard < 8U; guard++) {
-    uint16_t st = *INTSTS0_R;
+    uint16_t st       = *INTSTS0_R;
     bool     did_work = false;
 
     /* DVST (device state transition): clear ack */
     if ((st & (1U << 12)) != 0U) {
-      *INTSTS0_R = (uint16_t)~(1U << 12);
-      did_work = true;
+      *INTSTS0_R = (uint16_t) ~(1U << 12);
+      did_work   = true;
     }
 
     /* CTRT (control-transfer stage transition): handle SETUP */
@@ -1684,7 +1718,7 @@ static void internal_usb_setup_poll(void)
       uint16_t ctsq = (uint16_t)(st & 0x0007U);
       if (ctsq == 1U || ctsq == 3U || ctsq == 5U) {
         /* Clear VALID (bit 3) to acknowledge SETUP was consumed */
-        *INTSTS0_R = (uint16_t)~(1U << 3);
+        *INTSTS0_R = (uint16_t) ~(1U << 3);
         /* CRITICAL: restore PID=BUF (hw sets PID=NAK on SETUP receipt) */
         *DCPCTR_R |= 0x0001U;
 
@@ -1695,10 +1729,13 @@ static void internal_usb_setup_poll(void)
 
         if (brq == 0x06U) {
           /* GET_DESCRIPTOR */
-          uint8_t type = (uint8_t)(val >> 8);
-          const uint8_t* src = NULL;
-          if (type == 0x01U) { src = s_dev; }
-          else if (type == 0x02U) { src = s_cfg; }
+          uint8_t        type = (uint8_t)(val >> 8);
+          const uint8_t* src  = NULL;
+          if (type == 0x01U) {
+            src = s_dev;
+          } else if (type == 0x02U) {
+            src = s_cfg;
+          }
           if (src != NULL) {
             uint16_t sz = (leng < 18U) ? leng : 18U;
             internal_usb_cfifo_write(src, sz);
@@ -1716,7 +1753,7 @@ static void internal_usb_setup_poll(void)
           *DCPCTR_R |= (1U << 2);
         } else if (brq == 0x00U) {
           /* GET_STATUS */
-          static const uint8_t zeros[2] = { 0x00U, 0x00U };
+          static const uint8_t zeros[2] = {0x00U, 0x00U};
           internal_usb_cfifo_write(zeros, 2U);
           *DCPCTR_R |= (1U << 2);
         } else {
@@ -1724,22 +1761,22 @@ static void internal_usb_setup_poll(void)
           *DCPCTR_R = (uint16_t)((*DCPCTR_R & ~3U) | 2U);
         }
       }
-      *INTSTS0_R = (uint16_t)~(1U << 11);
-      did_work = true;
+      *INTSTS0_R = (uint16_t) ~(1U << 11);
+      did_work   = true;
     }
 
     /* BRDY (buffer-ready): clear pipe-0 flag */
     if ((st & (1U << 8)) != 0U) {
       *BRDYSTS_R = 0U;
-      *INTSTS0_R = (uint16_t)~(1U << 8);
-      did_work = true;
+      *INTSTS0_R = (uint16_t) ~(1U << 8);
+      did_work   = true;
     }
 
     /* BEMP (buffer-empty): clear pipe-0 flag */
     if ((st & (1U << 10)) != 0U) {
       *BEMPSTS_R = 0U;
-      *INTSTS0_R = (uint16_t)~(1U << 10);
-      did_work = true;
+      *INTSTS0_R = (uint16_t) ~(1U << 10);
+      did_work   = true;
     }
 
     if (!did_work) {

@@ -293,7 +293,7 @@ typedef enum : uint32_t {
    * which is the exact UCLK the USB0 peripheral requires.  The alternative
    * PPLL route (PACKCR.UPLLSEL=1) is unusable here because k_ppll_config_48mhz
    * actually produces 192 MHz and PACKCR feeds that straight through as UCK. */
-  k_sckcr2_uck_div5         = 0x0041,     /**< SCKCR2: UCK=/5 (b7..b4=0100) + reserved b0=1 */
+  k_sckcr2_uck_div5 = 0x0041, /**< SCKCR2: UCK=/5 (b7..b4=0100) + reserved b0=1 */
 } system_clock_config_t;
 
 /** @brief PACKCR (peripheral clock) values -- routes UCLK from PPLL for USB */

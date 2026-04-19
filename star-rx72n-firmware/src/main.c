@@ -1933,7 +1933,7 @@ static void internal_create_system_tasks(void)
    * (something earlier in tx_application_define asserted). */
   {
     volatile uint8_t* const pb_podr_beacon = (volatile uint8_t*)0x0008C02BU;
-    *pb_podr_beacon &= (uint8_t)~(1U << 3);
+    *pb_podr_beacon &= (uint8_t) ~(1U << 3);
   }
 
   /* Telemetry Task - Priority 18 (lowest) */
@@ -1969,7 +1969,7 @@ static void internal_create_system_tasks(void)
    *   LOW  -> reached this point; if still LOW later, usb_task itself isn't running */
   {
     volatile uint8_t* const pb_podr = (volatile uint8_t*)0x0008C02BU;
-    *pb_podr &= (uint8_t)~(1U << 3);
+    *pb_podr &= (uint8_t) ~(1U << 3);
   }
 
   err = usb_task_create();
@@ -2131,7 +2131,7 @@ void tx_application_define(void* first_unused_memory)
    * runs this at all, AD2 on P4 pad 2 will see LOW. */
   {
     volatile uint8_t* const pb_podr_beacon = (volatile uint8_t*)0x0008C02BU;
-    *pb_podr_beacon &= (uint8_t)~(1U << 3);
+    *pb_podr_beacon &= (uint8_t) ~(1U << 3);
   }
 
   /* Precondition: first_unused_memory parameter is provided by ThreadX */
@@ -2416,34 +2416,38 @@ int main(void)
     volatile uint16_t* const DCPMAXP_R = (volatile uint16_t*)0x000A005EU;
     volatile uint16_t* const DCPCTR_R  = (volatile uint16_t*)0x000A0060U;
 
-    *PRCR_R     = 0xA503U;
+    *PRCR_R = 0xA503U;
     *MSTPCRB_R &= ~(1UL << 19);
-    *PRCR_R     = 0xA500U;
+    *PRCR_R = 0xA500U;
 
-    *SYSCFG_R   = 0x0000U;
-    for (volatile uint32_t d = 0; d < 2400000U; d++) { __asm__ volatile("nop"); }
-    *SYSCFG_R  |= (1U << 0);  /* USBE */
-    *SYSCFG_R  |= (1U << 10); /* SCKE */
-    for (volatile uint32_t d = 0; d < 2400000U; d++) { __asm__ volatile("nop"); }
+    *SYSCFG_R = 0x0000U;
+    for (volatile uint32_t d = 0; d < 2400000U; d++) {
+      __asm__ volatile("nop");
+    }
+    *SYSCFG_R |= (1U << 0);  /* USBE */
+    *SYSCFG_R |= (1U << 10); /* SCKE */
+    for (volatile uint32_t d = 0; d < 2400000U; d++) {
+      __asm__ volatile("nop");
+    }
 
-    *DCPCFG_R   = 0x0000U;
-    *DCPMAXP_R  = 64U;
-    *DCPCTR_R   = 0x0001U;
-    *BRDYENB_R  = 0x0001U;
-    *BEMPENB_R  = 0x0001U;
-    *INTENB0_R  = (uint16_t)((1U << 15) | (1U << 12) | (1U << 11) | (1U << 10) | (1U << 8));
+    *DCPCFG_R  = 0x0000U;
+    *DCPMAXP_R = 64U;
+    *DCPCTR_R  = 0x0001U;
+    *BRDYENB_R = 0x0001U;
+    *BEMPENB_R = 0x0001U;
+    *INTENB0_R = (uint16_t)((1U << 15) | (1U << 12) | (1U << 11) | (1U << 10) | (1U << 8));
 
-    *SYSCFG_R  |= (1U << 4); /* DPRPU */
+    *SYSCFG_R |= (1U << 4); /* DPRPU */
 
     /* Enable CPU ICU delivery for vector 36 (USB0 USBI) so BRDY/BEMP
      * interrupts fire directly -- safe because cmt0_isr is in
      * .rvectors (real ThreadX tick works) and usb0_usbi_isr is also
      * in .rvectors via its own interrupt(".rvectors", 36) attribute. */
-    volatile uint8_t*  const IPR36_R = (volatile uint8_t*)(0x00087300U + 36U);
-    volatile uint8_t*  const IR36_R  = (volatile uint8_t*)(0x00087000U + 36U);
-    volatile uint8_t*  const IER4_R  = (volatile uint8_t*)(0x00087204U);
-    *IR36_R  = 0U;
-    *IPR36_R = 12U;
+    volatile uint8_t* const IPR36_R = (volatile uint8_t*)(0x00087300U + 36U);
+    volatile uint8_t* const IR36_R  = (volatile uint8_t*)(0x00087000U + 36U);
+    volatile uint8_t* const IER4_R  = (volatile uint8_t*)(0x00087204U);
+    *IR36_R                         = 0U;
+    *IPR36_R                        = 12U;
     *IER4_R |= (uint8_t)(1U << 4); /* vector 36 = IER[4] bit 4 */
 
     /* Diagnostic: drive PB3 (P4 pad 2, MCU pin 82, silkscreen EN3D)
@@ -2455,8 +2459,8 @@ int main(void)
     volatile uint8_t* const pb_pdr  = (volatile uint8_t*)0x0008C00BU;
     volatile uint8_t* const pb_podr = (volatile uint8_t*)0x0008C02BU;
     volatile uint8_t* const pb_pmr  = (volatile uint8_t*)0x0008C06BU;
-    *pb_pmr  &= (uint8_t)~(1U << 3);
-    *pb_pdr  |= (uint8_t)(1U << 3);
+    *pb_pmr &= (uint8_t) ~(1U << 3);
+    *pb_pdr |= (uint8_t)(1U << 3);
     *pb_podr |= (uint8_t)(1U << 3); /* HIGH */
   }
 
