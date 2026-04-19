@@ -409,20 +409,20 @@ typedef enum : uint16_t {
    * PIPE1-9 control registers use a different layout than DCPCTR.
    * Verified 2026-04-18 against Renesas FIT v1.20 and proven by
    * usb_test/bulk_debug.c transmitting 'HELLO WORLD' on EP 0x82 via CFIFO. */
-  k_usb_pipectr_pid_mask  = 0x0003,   /* [1:0] -- only 2 bits, not 3 */
+  k_usb_pipectr_pid_mask  = 0x0003, /* [1:0] -- only 2 bits, not 3 */
   k_usb_pipectr_pid_nak   = 0x0000,
   k_usb_pipectr_pid_buf   = 0x0001,
   k_usb_pipectr_pid_stall = 0x0002,
-  k_usb_pipectr_pbusy     = (1U << 5),   /* b5 */
-  k_usb_pipectr_sqmon     = (1U << 6),   /* b6 */
-  k_usb_pipectr_sqset     = (1U << 7),   /* b7 */
-  k_usb_pipectr_sqclr     = (1U << 8),   /* b8 */
-  k_usb_pipectr_aclrm     = (1U << 9),   /* b9 */
-  k_usb_pipectr_atrepm    = (1U << 10),  /* b10 */
-  k_usb_pipectr_cssts     = (1U << 12),  /* b12 */
-  k_usb_pipectr_csclr     = (1U << 13),  /* b13 */
-  k_usb_pipectr_inbufm    = (1U << 14),  /* b14 -- IN buffer monitor */
-  k_usb_pipectr_bsts      = (1U << 15),  /* b15 */
+  k_usb_pipectr_pbusy     = (1U << 5),  /* b5 */
+  k_usb_pipectr_sqmon     = (1U << 6),  /* b6 */
+  k_usb_pipectr_sqset     = (1U << 7),  /* b7 */
+  k_usb_pipectr_sqclr     = (1U << 8),  /* b8 */
+  k_usb_pipectr_aclrm     = (1U << 9),  /* b9 */
+  k_usb_pipectr_atrepm    = (1U << 10), /* b10 */
+  k_usb_pipectr_cssts     = (1U << 12), /* b12 */
+  k_usb_pipectr_csclr     = (1U << 13), /* b13 */
+  k_usb_pipectr_inbufm    = (1U << 14), /* b14 -- IN buffer monitor */
+  k_usb_pipectr_bsts      = (1U << 15), /* b15 */
 } usb_pipectr_bits_t;
 
 /* FIFOSEL bits */
