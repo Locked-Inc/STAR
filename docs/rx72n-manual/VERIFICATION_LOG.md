@@ -235,6 +235,89 @@ what was fixed. Update this file as you work.
 
 ---
 
+## 2026-04-19 -- Ch 26 GPTW runtime bug sweep (HAL vs. hardware)
+
+**Pages read:** 1240-1285 (Ch 26, re-read for runtime semantics), Ch 11 (MSTPCR)
+**Code file(s):** star-rx72n-firmware/libs/rx_hal/src/rx_gptw.c,
+                  star-rx72n-firmware/libs/rx_hal/inc/rx72n_gptw_regs.h,
+                  star-rx72n-firmware/libs/rx_hal/inc/rx72n_clock.h,
+                  star-rx72n-firmware/pwm_test_hal/main.c
+
+### Context
+`pwm_test` (raw-register) proved real 20 kHz PWM works on RX72N + Tom's PCB via
+HOCO x12 PLL (PCKA=96 MHz). The HAL variant `pwm_test_hal` initially failed
+(output stuck at 0%/stuck HIGH). Diffing the HAL's post-init register state
+against the verified raw sequence in `/tmp/pwm_clean.c` exposed four bit-level
+bugs in the HAL plus one unlock oversight in `rx_gptw_set_duty_raw`.
+
+### Findings
+
+- [FIXED] **Wrong module-stop bit**: `rx72n_gptw_regs.h` defined
+  `k_mstpc_gptw = 6` (MSTPCRC bit 6) and `internal_enable_gptw_module_clock()`
+  cleared that bit. Per RX72N Hardware Manual Ch.11 (MSTPCRA @ 0x00080010) and
+  Renesas iodefine.h, GPTW is **MSTPCRA bit 7 (MSTPA7)**. Replaced the enum
+  with `k_mstpa_gptw = 7`, switched the clear to `system_regs()->mstpcra`, and
+  changed the PRCR key from `k_rx_prcr_unlock_prc1_prc3` (0xA50B) to
+  `k_rx_prcr_unlock_prc1` (0xA502) since only PRC1 is needed for MSTPCR writes.
+  Comment block / @see tags updated accordingly.
+- [FIXED] **GTUDDTYC never written** (counter defaulted to down-count):
+  `internal_configure_gptw_hardware()` did not touch GTUDDTYC, so the reset
+  value 0 persisted (UD=0 = down-count). With GTIOR=0x09 (compare-match-up
+  drives the pin LOW), a down-counter never fires compare-match-up and the
+  output latches HIGH at end-of-cycle. Added
+  `gptw->gtuddtyc = k_gptw_gtuddtyc_ud | k_gptw_gtuddtyc_udf;` after the GTCR
+  write to force up-count immediately.
+- [FIXED] **GTBER single-buffer swallowed duty writes**:
+  `internal_configure_gptw_hardware()` wrote
+  `k_gptw_gtber_ccra_single | k_gptw_gtber_ccrb_single` (0x00050000), which
+  enables copy-from-GTCCRC->GTCCRA and GTCCRE->GTCCRB at each period boundary.
+  GTCCRC/E are 0 at reset, so any duty written to GTCCRA/B was overwritten
+  with 0 on the next overflow. Changed to `gptw->gtber = 0U;` so direct
+  GTCCRA/B writes take effect immediately. If double-buffered updates are
+  ever needed, a separate opt-in API should enable buffering deliberately.
+- [FIXED] **Hardcoded PCKA = 120 MHz**: `rx72n_clock.h` defined
+  `k_pclka_hz = 120000000UL` from an older 240 MHz ICLK assumption, but the
+  STAR firmware clock_init actually runs HOCO 16 MHz x12 PLL = 192 MHz,
+  PCKA = 192/2 = **96 MHz**. A 20 kHz request therefore wrote GTPR =
+  120M/20k - 1 = 5999 and the real output was 96M/6000 = 16 kHz.
+  Changed `k_pclka_hz` to `96000000UL`; updated doc-block for the constant and
+  the two "PCLKA = 120 MHz" comments in `rx_gptw.c` (period calc and deadtime
+  example). This also silently fixes rx_mtu.c / rx_cmt.c timing math.
+- [FIXED] **`rx_gptw_set_duty_raw` left GTWP locked**: GTCCRA/GTCCRB are
+  protected by GTWP.WP on RX72N (Ch.26 Table 26.3). After
+  `internal_configure_gptw_hardware` re-locks GTWP at the end of init, the
+  subsequent `rx_gptw_set_duty_raw` write silently failed. Wrapped the
+  GTCCRA/B write in `gtwp = unlock` / `gtwp = lock`; also locks on the
+  invalid-output error path.
+
+### Verification
+
+Rebuilt pwm_test_hal with the three HAL files fixed and the four workarounds
+removed from `pwm_test_hal/main.c` (`enable_gptw_module_mstpa7`,
+`fix_gtpr_for_96mhz_pcka`, `fix_gptw_runtime_state`, plus the related local
+MSTPCRA/GPTW register macros). Main now calls only `clock_init` ->
+`rx_gptw_init_pwm` -> `repin_gtioc0_to_p23_p17` (board-specific) ->
+`rx_gptw_set_duty_raw(..., 2400)` on A and B.
+
+Flashed with rfp-cli, captured with `python3 /tmp/pwm20k_capture.py`:
+
+```
+Record: 0.5s @ 2.00MS/s, target 1000000
+captured 213568 in 2.52s
+DIO0 (P23): rises=2188 falls=2188 duty=50.0% freq=20.49 kHz
+   first high-widths (us): ['24.5', '25.0', '24.5', '25.0', '25.0']
+DIO1 (P17): rises=2188 falls=2188 duty=50.0% freq=20.49 kHz
+   first high-widths (us): ['24.5', '25.0', '24.5', '25.0', '25.0']
+```
+
+Both channels: ~20.49 kHz (<= +/-3% of 20 kHz), 50.0% duty, >=2188 rises in
+~0.1 s (well above the 1500 threshold). Pass.
+
+### Commits
+- (pending) -- fix(rx_gptw): MSTPA7, GTUDDTYC up-count, GTBER=0, PCKA=96MHz, GTWP unlock in set_duty_raw
+
+---
+
 ## 2026-04-13 -- Ch 26 GPTW (General PWM Timer) Registers
 
 **Pages read:** 1240-1285 (Ch 26 register descriptions)

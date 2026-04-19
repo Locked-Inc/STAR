@@ -60,9 +60,16 @@
  * | GPTW3 | 0x000C2280 | 0x80 | Channel 3 registers |
  *
  * @par Module Clock:
- * - MSTPCRC.MSTPC10 controls GPTW module clock
+ * - MSTPCRA.MSTPA7 controls GPTW module clock on RX72N
  * - Must be cleared (= 0) before register access
- * - Protected by PRCR register lock
+ * - Protected by PRCR register lock (PRC1, key 0xA502)
+ *
+ * @par Clock Assumption:
+ * This driver assumes PCKA = 96 MHz, which matches the STAR firmware
+ * clock_init: HOCO 16 MHz x12 PLL = 192 MHz, SCKCR=0x21C21211 giving
+ * PCKA = PLL/2 = 96 MHz. At 20 kHz PWM this yields GTPR = 96M/20k - 1 = 4799.
+ * If the board ever moves to a different clock plan the HAL must be
+ * updated (k_pclka_hz in rx72n_clock.h).
  *
  * ## Static Variables
  *
@@ -493,7 +500,7 @@ static rx_err_t internal_calculate_period(const uint32_t            frequency_hz
   /* Period calculation depends on waveform mode:
    * - Sawtooth: Period = PCLKA / frequency
    * - Triangle: Period = PCLKA / (2 * frequency), because counter goes up then down
-   * PCLKA = 120 MHz
+   * PCLKA = 96 MHz on STAR (HOCO x12 PLL / 2); see rx72n_clock.h k_pclka_hz.
    */
   const uint32_t pclka = k_pclka_hz;
   const uint32_t divisor =
@@ -710,22 +717,23 @@ static void internal_configure_port_pins(const rx_gptw_channel_t channel)
  * @brief Enable GPTW module clock
  *
  * @details
- * Enables the GPTW peripheral by clearing its module stop bit in MSTPCRC.
- * The GPTW module is controlled by MSTPCRC.MSTPC10 (bit 10). When set, the
+ * Enables the GPTW peripheral by clearing its module stop bit in MSTPCRA.
+ * On RX72N, GPTW is controlled by MSTPCRA bit 7 (MSTPA7), per the
+ * RX72N Hardware Manual Chapter 11 and Renesas iodefine.h. When set, the
  * module clock is stopped and registers are inaccessible.
  *
  * ## Register Access Sequence
  *
- * 1. **Unlock PRCR**: Write 0xA503 to enable writing to protected registers
- * 2. **Clear MSTPC10**: AND-mask to clear bit 10 in MSTPCRC
+ * 1. **Unlock PRCR**: Write 0xA502 (PRC1) to enable writing to MSTPCR group
+ * 2. **Clear MSTPA7**: AND-mask to clear bit 7 in MSTPCRA (0x00080010)
  * 3. **Lock PRCR**: Write 0xA500 to re-enable protection
  *
  * ## Module Stop Control
  *
  * | Bit | Value | Effect |
  * |-----|-------|--------|
- * | MSTPCRC.MSTPC10 = 1 | Module stopped | Registers inaccessible, low power |
- * | MSTPCRC.MSTPC10 = 0 | Module running | Registers accessible, clock active |
+ * | MSTPCRA.MSTPA7 = 1 | Module stopped | Registers inaccessible, low power |
+ * | MSTPCRA.MSTPA7 = 0 | Module running | Registers accessible, clock active |
  *
  * @pre System clock configured
  *
@@ -745,16 +753,18 @@ static void internal_configure_port_pins(const rx_gptw_channel_t channel)
  * - Execution time: ~15 cycles (3 register writes)
  * - Memory: 0 bytes heap, 0 bytes stack
  *
- * @see k_mstpc_gptw GPTW module stop bit position
- * @see k_rx_prcr_unlock_prc1_prc3 PRCR unlock value
+ * @see k_mstpa_gptw GPTW module stop bit position (MSTPA7)
+ * @see k_rx_prcr_unlock_prc1 PRCR unlock value for MSTPCR group
  * @see RX72N Hardware Manual Chapter 11 - Low Power Consumption
  *
  * @since Version 1.0.0
  */
 static void internal_enable_gptw_module_clock(void)
 {
-  *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
-  system_regs()->mstpcrc &= ~((uint32_t)k_gptw_bit_set << k_mstpc_gptw);
+  /* RX72N: GPTW = MSTPCRA bit 7 (MSTPA7), NOT MSTPCRC bit 6 as earlier HAL
+   * code claimed. Use PRC1 unlock (0xA502) which covers MSTPCR group. */
+  *prcr_reg() = k_rx_prcr_unlock_prc1;
+  system_regs()->mstpcra &= ~((uint32_t)k_gptw_bit_set << k_mstpa_gptw);
   *prcr_reg() = k_rx_prcr_lock;
 }
 
@@ -788,7 +798,7 @@ static void internal_enable_gptw_module_clock(void)
  *   \text{deadtime\_counts} = \frac{\text{deadtime\_ns} \times f_{PCLKA}}{10^9}
  * @f]
  *
- * For 1000 ns at 120 MHz: deadtime_counts = 120
+ * For 1000 ns at 96 MHz: deadtime_counts = 96
  *
  * @param[in] gptw Pointer to GPTW channel register structure
  *   - Must be non-NULL
@@ -854,14 +864,21 @@ static rx_err_t internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t
   gptw->gtwp = k_gptw_gtwp_unlock;
 
   /* Configure control register
-   * - PCLKA/1 (120 MHz)
+   * - PCLKA/1 (96 MHz on STAR)
    * - Waveform mode from config (sawtooth or triangle)
+   * NOTE: CST (bit 0) left clear; caller (rx_gptw_start) sets it.
    */
   const uint32_t gtcr_mode = internal_get_gtcr_mode(config->wave_mode);
   gptw->gtcr               = k_gptw_gtcr_tpcs_1 | gtcr_mode;
 
+  /* Force UP-count direction. Reset value of GTUDDTYC is 0 (UD=0 = DOWN).
+   * With GTIOR = 0x09 (compare-match-up event drives output LOW), a
+   * down-counter never raises the compare-match-up event and the output
+   * latches HIGH at end-of-cycle. UD=1 + UDF=1 forces up-count immediately. */
+  gptw->gtuddtyc = k_gptw_gtuddtyc_ud | k_gptw_gtuddtyc_udf;
+
   /* Configure I/O control register
-   * - Initial low, toggle on compare match for both outputs
+   * - Initial low, high at end-of-cycle, low at compare match (sawtooth up)
    * - Enable both outputs
    */
   gptw->gtior =
@@ -877,8 +894,16 @@ static rx_err_t internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t
   /* Clear counter */
   gptw->gtcnt = k_gptw_period_zero;
 
-  /* Enable single-buffer mode for glitch-free duty cycle updates */
-  gptw->gtber = k_gptw_gtber_ccra_single | k_gptw_gtber_ccrb_single;
+  /* Disable all buffer operation on GTCCRA/GTCCRB/GTPR.
+   * Rationale: with single-buffer enabled (CCRA=0x01<<16, CCRB=0x01<<18)
+   * the hardware copies GTCCRC->GTCCRA / GTCCRE->GTCCRB on each period
+   * boundary. GTCCRC/E default to 0, so any duty written via
+   * rx_gptw_set_duty_raw() gets clobbered to 0 on the next overflow --
+   * outputs stick at initial state. With GTBER=0, direct writes to
+   * GTCCRA/GTCCRB take effect immediately.
+   * If double-buffered duty updates are ever needed, a separate opt-in
+   * API should enable buffering deliberately. */
+  gptw->gtber = 0U;
 
   /* Configure dead time if requested */
   if (config->deadtime_ns > k_gptw_deadtime_disabled) {
@@ -1230,7 +1255,10 @@ rx_gptw_set_duty_raw(const rx_gptw_channel_t channel, rx_gptw_output_t output, u
     duty_count = period;
   }
 
-  /* Update duty cycle (buffered, takes effect on next period) */
+  /* GTCCRA/GTCCRB are protected by GTWP.WP on RX72N. Unlock, write, re-lock.
+   * With GTBER=0 (default after our fixed init), the written value takes
+   * effect immediately rather than being double-buffered to the next period. */
+  gptw->gtwp = k_gptw_gtwp_unlock;
   switch (output) {
     case k_gptw_output_a:
       gptw->gtccra = duty_count;
@@ -1239,8 +1267,10 @@ rx_gptw_set_duty_raw(const rx_gptw_channel_t channel, rx_gptw_output_t output, u
       gptw->gtccrb = duty_count;
       break;
     default:
+      gptw->gtwp = k_gptw_gtwp_lock;
       return k_rx_err_invalid_arg;
   }
+  gptw->gtwp = k_gptw_gtwp_lock;
 
   return k_rx_ok;
 }
