@@ -3,7 +3,7 @@
  * @brief Minimal 20 kHz PWM output on GPTW0 for AD2 scope verification.
  *
  * @details
- * No motor, no H-bridge — just drives the Motor 0 PWM pins with a
+ * No motor, no H-bridge -- just drives the Motor 0 PWM pins with a
  * sawtooth-PWM duty sweep so the AD2 scope sees a clean 0-100% triangle
  * envelope on the logic-level outputs.
  *

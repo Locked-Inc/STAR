@@ -16,8 +16,8 @@ GOLD=$(c256 220); CYAN=$(c256 51); GREEN=$(c256 46); MAG=$(c256 201)
 BLUE=$(c256 39); GREY=$(c256 244); WHITE=$(c256 255); LIME=$(c256 118)
 
 hdr() {
-    printf "\n${B}${GOLD}▸ %s${R}\n" "$1"
-    printf "${D}  %s${R}\n" "$(printf '─%.0s' $(seq 1 56))"
+    printf "\n${B}${GOLD}> %s${R}\n" "$1"
+    printf "${D}  %s${R}\n" "$(printf '-%.0s' $(seq 1 56))"
 }
 cmd() {
     local c="$1" desc="$2"
@@ -35,13 +35,13 @@ hdr "MODE SWITCHING"
 cmd "star-ap up"         "broadcast STAR-Robot AP (disconnects wlan0!)"
 cmd "star-ap down"       "AP off, rejoin home Wi-Fi"
 cmd "star-ap status"     "show current Wi-Fi mode"
-note "SSID: STAR-Robot · gateway IP: 192.168.50.1"
+note "SSID: STAR-Robot * gateway IP: 192.168.50.1"
 printf "\n"
 cmd "star-eth up"        "force activate direct-ethernet shared mode"
 cmd "star-eth down"      "deactivate eth0 shared mode"
 cmd "star-eth status"    "show eth carrier, IP, peer lease"
 cmd "star-eth auto on|off" "toggle NM autoconnect on carrier-detect"
-note "plug cable in → Pi auto-serves DHCP; ssh star@10.42.0.1 (or star-desktop.local)"
+note "plug cable in -> Pi auto-serves DHCP; ssh star@10.42.0.1 (or star-desktop.local)"
 printf "\n"
 cmd "give-head"          "start GNOME desktop on top of headless runtime"
 cmd "take-head"          "stop GNOME, return to pure console (~1 GB RAM back)"

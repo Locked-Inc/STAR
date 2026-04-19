@@ -1656,7 +1656,7 @@ static void internal_usb_cfifo_write(const uint8_t* data, uint16_t len)
   volatile uint8_t*  CFIFO_R8   = (volatile uint8_t*) 0x000A0014U;
 
   /* ISEL=1, MBW=0 (8-bit), CURPIPE=DCP (0).
-   * 8-bit MBW prevents odd-length descriptor padding → no -75 EOVERFLOW. */
+   * 8-bit MBW prevents odd-length descriptor padding -> no -75 EOVERFLOW. */
   *CFIFOSEL_R = (1U << 5);
   while ((*CFIFOCTR_R & (1U << 13)) == 0U) { /* wait FRDY */ }
   *CFIFOCTR_R |= (1U << 14); /* BCLR */
