@@ -326,16 +326,22 @@ typedef enum : uint32_t {
   k_iclk_hz = 240000000UL,
 
   /**
-   * @brief Peripheral Clock A (PCLKA) - 120 MHz
+   * @brief Peripheral Clock A (PCLKA) - 96 MHz (STAR clock_init)
    *
    * @details
    * High-speed peripheral clock for time-critical functions: timers for PWM
    * generation (GPT), encoder capture (MTU), and high-resolution timing (CMT).
    *
-   * **Value**: 120,000,000 Hz (120 MHz)
-   * **Source**: ICLK (240 MHz) divided by 2
-   * **Cycle time**: 8.33 nanoseconds per cycle
-   * **Register**: SYSTEM.SCKCR.PCKA (divider = b'0001' = /2 from ICLK)
+   * **Value**: 96,000,000 Hz (96 MHz)
+   * **Source**: STAR firmware clock_init configures HOCO 16 MHz x 12 = 192 MHz
+   * PLL, ICLK = PLL/2 = 96 MHz, PCKA = PLL/2 = 96 MHz.
+   * **Cycle time**: ~10.42 nanoseconds per cycle
+   * **Register**: SYSTEM.SCKCR = 0x21C21211 (PCKA divider /2 from PLL 192 MHz)
+   *
+   * **Note**: Earlier documentation referred to a 120 MHz PCKA from a
+   * 240 MHz ICLK path; the STAR RX72N firmware actually runs with
+   * ICLK = PCKA = 96 MHz via HOCO x12 PLL. All timer/baud-rate math in the
+   * HAL uses this constant.
    *
    * **Connected Peripherals**:
    * - **MTU (Multi-Function Timer)**: Encoder quadrature capture (4 motors)
@@ -376,7 +382,7 @@ typedef enum : uint32_t {
    * @warning GPT, MTU, CMT baud rate calculations assume 120 MHz. Changing PCLKA
    *          requires recalculating all timer prescalers and compare values.
    */
-  k_pclka_hz = 120000000UL,
+  k_pclka_hz = 96000000UL,
 
   /**
    * @brief Peripheral Clock B (PCLKB) - 60 MHz

@@ -17,16 +17,13 @@
  *   - HOCO 16 MHz x 12 = 192 MHz PLL
  *   - ICLK 96 MHz, PCKA 96 MHz
  *
- * IMPORTANT: the STAR HAL is hard-coded for PCKA = 120 MHz. With our actual
- * PCKA = 96 MHz, the HAL writes GTPR = 120M/20k = 6000 which gives real
- * PWM frequency 96M/6000 = 16 kHz. After init we overwrite GTPR/GTPBR to
- * 4799 (96M/20k) so the measured output is a true 20 kHz.
- *
- * Module-stop bit quirk: STAR's rx72n_gptw_regs.h declares GPTW at
- * MSTPCRC bit 6 (k_mstpc_gptw = 6) but per the Renesas RX72N iodefine.h,
- * GPTW is controlled by MSTPCRA bit 7 on RX72N. We clear MSTPA7 ourselves
- * BEFORE calling rx_gptw_init_pwm() so the module is already running; the
- * HAL's bogus MSTPC6 write becomes a harmless no-op on some unrelated bit.
+ * The STAR HAL previously contained four bugs that this test first
+ * exposed: (1) wrong module-stop bit (MSTPCRC.MSTPC6 instead of
+ * MSTPCRA.MSTPA7), (2) missing GTUDDTYC write (counter defaulted to
+ * down-count), (3) default single-buffer GTBER (duty writes swallowed),
+ * (4) hard-coded 120 MHz PCKA (real PCKA = 96 MHz). Those bugs are now
+ * fixed in rx_gptw.c / rx72n_gptw_regs.h / rx72n_clock.h, so the only
+ * board-specific adjustment left here is the PE5/PE2 -> P23/P17 re-pin.
  *
  * SPDX-License-Identifier: MIT
  * @copyright Copyright (c) 2026 Locked Inc.
@@ -40,14 +37,6 @@
 extern void clock_init(void);
 
 #define REG8(a)  (*(volatile uint8_t  *)(a))
-#define REG16(a) (*(volatile uint16_t *)(a))
-#define REG32(a) (*(volatile uint32_t *)(a))
-
-/* System / module stop */
-#define PRCR       0x000803FEU
-#define MSTPCRA    0x00080010U /* bit 7 = GPTW on RX72N (per Renesas iodefine) */
-#define PRCR_UNLOCK_PRC1 0xA502U
-#define PRCR_LOCK        0xA500U
 
 /* MPC pin function select */
 #define PWPR       0x0008C11FU
@@ -60,20 +49,17 @@ extern void clock_init(void);
 #define PWPR_UNLOCK_STAGE2 0x40U /* set PFSWE */
 #define PWPR_LOCK          0x80U /* set B0WI */
 
-#define PFS_GPTW     0x14U
-#define PFS_DISABLED 0x00U
+/* P17/P23 use PSEL = 0b011110 = 0x1E for GTIOC0A/B per RX72N HW manual
+ * Ch.23 Table 23.4 (P17) and Table 23.6 (P23). 0x14 is the correct PSEL
+ * for GTIOC on the Port E family (PE5/PE2), but Ports 1/2 use a
+ * different encoding. */
+#define PFS_GPTW_P17_P23  0x1EU
+#define PFS_DISABLED      0x00U
 
 /* PORT peripheral mode / direction */
 #define PORT1_PMR  0x0008C061U
 #define PORT2_PMR  0x0008C062U
 #define PORTE_PMR  0x0008C06EU
-
-/* GPTW0 base for post-init GTPR override (channel 0 is at 0x000C2000) */
-#define GPTW0_GTPR   0x000C2064U /* Cycle Setting Register */
-#define GPTW0_GTPBR  0x000C2068U /* Cycle Setting Buffer Register */
-#define GPTW0_GTWP   0x000C2000U /* Write Protection Register */
-#define GPTW_GTWP_UNLOCK 0x0000A500U
-#define GPTW_GTWP_LOCK   0x0000A501U
 
 /* Heartbeat LED on PA7 */
 #define PORTA_PDR  0x0008C00AU
@@ -98,17 +84,6 @@ static inline void delay_loops(uint32_t n)
     }
 }
 
-/* Release GPTW module stop via the real RX72N bit (MSTPCRA.MSTPA7). The HAL's
- * internal_enable_gptw_module_clock writes to MSTPCRC.MSTPC6, which appears to
- * be a transcription error for this chip. We do this before calling the HAL so
- * the HAL's bogus write is a no-op on some unrelated bit. */
-static void enable_gptw_module_mstpa7(void)
-{
-    REG16(PRCR)     = PRCR_UNLOCK_PRC1;
-    REG32(MSTPCRA) &= ~(1UL << 7);
-    REG16(PRCR)     = PRCR_LOCK;
-}
-
 /* The HAL's rx_gptw_init_pwm configures MPC for PE5/PE2 (HAL's default
  * Motor 0 pins). We need GTIOC0A/B on P23/P17 instead. This function:
  *   1. Disables PE5/PE2 peripheral output (clear PMR + clear PFS).
@@ -126,8 +101,8 @@ static void repin_gtioc0_to_p23_p17(void)
     /* Disable PE5/PE2 routing and enable P23/P17 routing. */
     REG8(PE5PFS) = PFS_DISABLED;
     REG8(PE2PFS) = PFS_DISABLED;
-    REG8(P23PFS) = PFS_GPTW;
-    REG8(P17PFS) = PFS_GPTW;
+    REG8(P23PFS) = PFS_GPTW_P17_P23;
+    REG8(P17PFS) = PFS_GPTW_P17_P23;
 
     /* Re-protect PFS. */
     REG8(PWPR) = PWPR_UNLOCK_STAGE1;
@@ -136,17 +111,6 @@ static void repin_gtioc0_to_p23_p17(void)
     /* Switch P23/P17 to peripheral mode. */
     REG8(PORT2_PMR) |= (uint8_t)(1U << 3); /* P23 */
     REG8(PORT1_PMR) |= (uint8_t)(1U << 7); /* P17 */
-}
-
-/* Override GTPR/GTPBR post-init to compensate for the HAL's hard-coded
- * 120 MHz PCLKA assumption. Our actual PCKA is 96 MHz, so we need
- * GTPR = 96M/20k - 1 = 4799 for a true 20 kHz waveform. */
-static void fix_gtpr_for_96mhz_pcka(void)
-{
-    REG32(GPTW0_GTWP) = GPTW_GTWP_UNLOCK;
-    REG32(GPTW0_GTPR)  = k_pwm_gtpr;
-    REG32(GPTW0_GTPBR) = k_pwm_gtpr;
-    REG32(GPTW0_GTWP) = GPTW_GTWP_LOCK;
 }
 
 /* Drive the PA7 heartbeat LED and sweep the PWM duty cycle 0..100..0 forever.
@@ -192,15 +156,15 @@ int main(void)
     /* Step 1: HOCO x12 -> 192 MHz PLL, PCKA = 96 MHz. */
     clock_init();
 
-    /* Step 2: Pre-enable the GPTW module using the correct MSTPCRA.MSTPA7 bit.
-     * The HAL will also try to enable it via MSTPCRC.MSTPC6 (bogus for RX72N)
-     * but that write is harmless on whatever unrelated bit it touches. */
-    enable_gptw_module_mstpa7();
-
-    /* Step 3: Call the HAL to configure GPTW0 as 20 kHz sawtooth PWM with
-     * 0% initial duty. The HAL will compute GTPR = 120M/20k = 6000 based on
-     * its assumed PCKA; we fix that in step 5. The HAL also configures MPC
-     * for PE5/PE2 and starts the timer. */
+    /* Step 2: Call the HAL to configure GPTW0 as 20 kHz sawtooth PWM with
+     * 0% initial duty. The HAL:
+     *   - releases the module-stop bit (MSTPCRA.MSTPA7, fixed from MSTPCRC.MSTPC6)
+     *   - computes GTPR = 96M/20k - 1 = 4799 (fixed from 120 MHz assumption)
+     *   - writes GTUDDTYC = UD|UDF for up-count (fixed: was defaulting to 0)
+     *   - writes GTBER = 0 for immediate GTCCRA/B updates (fixed: was single-buf)
+     *   - configures MPC for PE5/PE2 and starts the timer.
+     * After this call we only need to re-pin outputs to our board (step 3)
+     * and set the desired duty (step 4). */
     const rx_gptw_config_t config = {
         .frequency_hz         = k_pwm_freq_hz,
         .deadtime_ns          = 0U,
@@ -218,24 +182,23 @@ int main(void)
         }
     }
 
-    /* Step 4: Re-route the GPTW0 outputs from PE5/PE2 to P23/P17. */
+    /* Step 3: Re-route the GPTW0 outputs from PE5/PE2 (HAL default) to the
+     * P23/P17 pins Tom's breakout board exposes. This is legitimate
+     * board-specific routing, not a bug workaround. */
     repin_gtioc0_to_p23_p17();
 
-    /* Step 5: Fix GTPR/GTPBR for our real 96 MHz PCKA so we actually run at
-     * 20 kHz instead of the HAL-assumed 16 kHz (120->96 MHz difference). */
-    fix_gtpr_for_96mhz_pcka();
-
-    /* Step 6: Set initial 50% duty on both outputs. Use raw counts because
-     * the HAL's cached period (s_gptw_period) still reflects 6000, which
-     * would make rx_gptw_set_duty percentages miscalculate. */
+    /* Step 4: Set 50% duty on both outputs. With GTBER=0 these writes take
+     * effect immediately. */
     (void)rx_gptw_set_duty_raw(k_gptw_channel_0, k_gptw_output_a, k_pwm_duty_50pct);
     (void)rx_gptw_set_duty_raw(k_gptw_channel_0, k_gptw_output_b, k_pwm_duty_50pct);
 
-    /* Step 7: Ensure timer is running (HAL already started it, but idempotent). */
-    (void)rx_gptw_start(k_gptw_channel_0);
-
-    /* Step 8: Sweep duty forever so a scope sees a visible triangle envelope. */
-    run_forever();
+    /* Step 5: Static 50% duty forever (diagnostic).  PA7 heartbeat. */
+    REG8(PORTA_PDR) |= PA7_MASK;
+    for (;;) {
+        REG8(PORTA_PODR) ^= PA7_MASK;
+        delay_loops(200000U);
+    }
+    (void)run_forever;
 
     return 0;
 }

@@ -64,7 +64,7 @@
  * - CPU: Renesas RX72N @ 240 MHz (ICLK)
  * - Peripheral clock: PCLKA = 120 MHz (GPTW clock source)
  * - GPIO: Port E pins configured for GPTW alternate function
- * - Module stop: MSTPCRC.MSTPC6 = 0 to enable GPTW
+ * - Module stop: MSTPCRA.MSTPA7 = 0 to enable GPTW (RX72N)
  *
  * @par Memory Usage:
  * - Channel register structure: 216 bytes (0xD8) per channel
@@ -686,17 +686,24 @@ typedef enum : uint32_t {
 } gptw_gtsecr_bits_t;
 
 /* =============================================================================
- * Module Stop Control (MSTPCRC)
+ * Module Stop Control (MSTPCRA)
  * =============================================================================
  */
 
 typedef enum : uint8_t {
   /**
-   * @brief GPTW module stop bit in MSTPCRC
-   * @warning Verify this bit position against RX72N Hardware Manual.
-   * Different RX series may use different bit positions.
+   * @brief GPTW module stop bit in MSTPCRA
+   *
+   * @details
+   * Per RX72N Hardware Manual Ch.11 (Low Power Consumption) and Renesas
+   * iodefine.h for RX72N, the GPTW peripheral is controlled by MSTPCRA
+   * bit 7 (MSTPA7). Previous HAL code erroneously targeted MSTPCRC.MSTPC6
+   * which is a different, unrelated peripheral on this chip.
+   *
+   * MSTPCRA lives at 0x00080010 and requires PRC1 unlock (0xA502) before
+   * write, lock (0xA500) after.
    */
-  k_mstpc_gptw = 6, /**< GPTW module stop bit in MSTPCRC */
+  k_mstpa_gptw = 7, /**< GPTW module stop bit in MSTPCRA (MSTPA7) */
 } gptw_module_stop_bits_t;
 
 /* =============================================================================
