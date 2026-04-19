@@ -608,3 +608,33 @@ Worth checking next session:
 * Is `usb_task_create()` actually running the task?  (priority 4 = high)
 * Does `rx_usb_write` return k_rx_err_busy / k_rx_err_invalid_state?
 * Is `internal_trigger_tx_if_idle()` finding the pipe always PBUSY?
+
+---
+
+## 2026-04-18 LATE: Board hung; header fix commits stand as the primary result
+
+After the `c96865cbe` bit-position fix landed and was verified on 3
+separate builds (bulk_in_fix.mot, bulk_debug.mot, production), the board
+entered a persistent "device descriptor read/64, error -110" state.
+Neither erase-chip + fresh flash, nor repeated `uhubctl` cycles of ports
+`1-1.2-p4` (E2 Lite) and `p2` (RX72N) restore it.  Known-working
+`bulk_in_fix.mot` also fails to enumerate.
+
+The RX72N USB peripheral likely needs a physical reset (button on board
+or VBUS unplug/replug) -- the Pi5 cannot reach it from software.  The
+committed fix is the load-bearing result; subsequent iterations got
+hardware-blocked.
+
+### Summary of wins this session
+* `c96865cbe` USB bulk IN FIX: correct PIPEnCTR bit positions
+* `2630e2996` usb_test runtime debugger via vendor 0xFE
+* `5efc26fcd` status doc update
+
+### Still open for future session once HW recovers
+1. Confirm heartbeat "p0\r\n" / "p1\r\n" / "p2\r\n" flows through to
+   /dev/ttyACM{1,2,3} on fresh production flash.
+2. If not, narrow the rx_usb_write -> ring -> handle_bulk_in -> fifo_write
+   path with rx_log_debug at each branch point (goes to SCI9 AND port 2
+   bulk IN via rx_log_usb_puts).
+3. Once port 2 (log) is verified receiving log traffic, use it as the
+   debug channel.
