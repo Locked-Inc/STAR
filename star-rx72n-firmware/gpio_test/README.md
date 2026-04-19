@@ -1,151 +1,122 @@
 # GPIO Pin Test (gpio_test)
 
-Automated GPIO verification for TOM's RX72N breakout PCB. The firmware
-sweeps every GPIO pin in a known order while 3x Digilent Analog Discovery 2
-units (48 digital channels total) capture the resulting transitions. The
-host script matches captured edges against the known firmware sequence and
-reports pass/fail per wired pin.
+Automated GPIO verification for the STAR RX72N board using 3x Digilent
+Analog Discovery 2 (48 channels total: IO 0-15 on each AD2).
 
-## Hardware setup
+## Hardware Setup
 
-- **MCU**: R5F572NNHDFB (RX72N, 144/145-pin LFBGA or LFQFP)
-- **Breakout PCB**: TOM's custom board, 98 GPIO pins exposed on labelled
-  header pins (silkscreen on the back). See [pin_map.md](pin_map.md).
-- **Test instruments**: 3x Digilent Analog Discovery 2 at
-  `/Library/Frameworks/dwf.framework` 3.25.1 (macOS arm64 native) via
-  `pydwf` 1.1.19.
-- **Programmer**: Renesas E2 Lite connected to the FINE debug header,
-  driven by `rfp-cli` v3.22 (macOS arm64 native at
-  `~/tools/rfp-cli/bin/rfp-cli`).
+- **MCU**: R5F572NNHDFB (RX72N, 145-pin LFBGA, lot code 502AZ00)
+- **Breakout board**: TOM's custom PCB that exposes 100 GPIO pins from
+  the 144-pin BGA package to header pins for AD2 probing
+- **Test instruments**: 3x Analog Discovery 2 (Digilent), each with
+  IO 0-15 digital channels
 
-### Analog Discovery 2 inventory
+### Analog Discovery 2 Devices
 
-| Role  | Serial number  | Index in `AD2_SERIAL_NUMBERS` |
-|-------|----------------|-------------------------------|
-| AD2 A | `210321A36AA3` | 0                             |
-| AD2 B | `210321A36AAE` | 1                             |
-| AD2 C | `210321A2AE49` | 2                             |
+Verified 2026-04-15 via `pydwf` 1.1.19 + `libdwf.so` 3.24.3.
 
-Current wiring and the resolved CHANNEL_TO_PIN dict live in
-[`../../docs/bench/ad2_wiring.md`](../../docs/bench/ad2_wiring.md).
+These show up in `lsusb` as FT232H (FTDI VID `0403:6014`).
 
-## Firmware architecture
+| Device | Serial Number  | Status |
+|--------|----------------|--------|
+| AD2 #0 | 210321A2AE49   | OK     |
+| AD2 #1 | 210321A36AA3   | OK     |
+| AD2 #2 | 210321A36AAE   | OK     |
 
-Single ThreadX thread (`gpio_sweep`) that walks `s_pins[]` in order:
+Open by serial number:
+```python
+from pydwf import DwfLibrary
+from pydwf.utilities import openDwfDevice
 
-1. For each pin:
-   * Set PMR=0 (GPIO mode), PDR=1 (output) during `gpio_init_all()`.
-   * Drive HIGH, busy-wait ~5 ms, drive LOW, busy-wait ~5 ms.
-2. After every pin has pulsed once, busy-wait ~2.3 s so the host script
-   can anchor its capture on the quiet gap.
+dwf = DwfLibrary()
+dev = openDwfDevice(dwf, serial_number_filter="210321A2AE49")
+dev.digitalIO.status()
+val = dev.digitalIO.inputStatus()  # 16-bit DIO read
+dev.close()
+```
 
-Key structural choices (inherited from
-`../blinky_rtos/` which was the known-working reference):
+## Pin Map
 
-- **Busy-wait, not `tx_thread_sleep`.** The 100 Hz ThreadX tick is too
-  coarse for ~5 ms pulses, and the earlier `tx_thread_sleep` version
-  stalled the sweep thread indefinitely. `delay()` is a plain
-  `volatile` nop loop.
-- **`cmt0_init()` runs before `tx_kernel_enter()`**, producing a 100 Hz
-  tick on vector 28 at PCKB=48 MHz (CMCOR=14999, CKS=01).
-- **SWINT handler wired in `vectors.S`** with the manual R1/R2 push
-  sequence `_tx_thread_context_save` on the RXv3 GNURX port requires.
-- **PJ3 and PJ5 excluded** from `s_pins[]`. On RX72N they double as
-  JTAG TMS/TDO; driving them while the E2 Lite holds the debug
-  interface hangs the MCU (empirically observed, every pin after the
-  first PJ write went silent).
+See [pin_map.md](pin_map.md) for the full breakout board pin-to-GPIO
+mapping (extracted from `schematic/TOM/TOM_MCU_144Pin.kicad_sch`).
 
-Clock path: `clock_init()` switches the CPU from HOCO 16 MHz to PLL 192
-MHz, giving ICLK 96 MHz and PCKB 48 MHz.
+100 GPIO pins broken out across 9 header columns. Pin numbers match the
+back silkscreen labels on TOM's PCB.
+
+## AD2 Channel Assignments
+
+Physical BGA pins exposed on the breakout board and their AD2 channel
+assignments will be documented here once wiring is confirmed.
+
+Edit `host/gpio_verify.py` `CHANNEL_TO_PIN` dict to map each AD2
+DIO channel to its connected GPIO pin name.
+
+```
+AD2 #0 (SN: 210321A2AE49)    AD2 #1 (SN: 210321A36AA3)    AD2 #2 (SN: 210321A36AAE)
+IO 0  = pin ???               IO 0  = pin ???               IO 0  = pin ???
+IO 1  = pin ???               IO 1  = pin ???               IO 1  = pin ???
+...                           ...                           ...
+IO 15 = pin ???               IO 15 = pin ???               IO 15 = pin ???
+```
+
+## Test Strategy
+
+1. **Firmware** (`gpio_test/`): sequentially drives each GPIO pin
+   HIGH for 50 ms then LOW for 50 ms, advancing through all 100 pins.
+   1 s gap between full cycles. Uses ThreadX + CMT0 for accurate timing.
+
+2. **Host script** (`host/gpio_verify.py`): captures the AD2 digital
+   inputs at 1 kHz, detects rising/falling edges, and matches them to
+   the known firmware pin sequence.
+
+3. **Report**: pass/fail per pin, identifies dead/shorted/wrong-pin
+   connections.
 
 ## Files
 
-```text
+```
 gpio_test/
-  README.md           -- this file
-  pin_map.md          -- breakout pin-to-GPIO silkscreen map
-  main.c              -- gpio_init_all + sweep_task + tx_application_define
-  clock.c             -- HOCO 16 MHz -> PLL 192 MHz -> ICLK 96 MHz
-  cmt0.c              -- 100 Hz CMT0 tick for ThreadX
-  startup.S           -- stack setup, .data copy, BSS clear, INTB load
-  vectors.S           -- rvector table with SWINT (27) + CMT0 (28) hooks
-  linker.ld           -- RX72N memory map: ROM 0xFFE00000+, RAM 0x00000004+
-  Makefile            -- build + flash
+  README.md       -- this file
+  pin_map.md      -- breakout board pin-to-GPIO mapping table
+  main.c          -- firmware: sequential GPIO toggle (100 pins)
+  Makefile        -- build + flash
+  startup.S       -- RX72N startup (reused from usb_test)
+  linker.ld       -- linker script (reused from usb_test)
+  vectors.S       -- minimal vector table (CMT0 + SWINT only)
+  clock.c         -- HOCO 16 MHz -> PLL 192 MHz clock init
+  cmt0.c          -- 100 Hz ThreadX tick source
   host/
-    gpio_verify.py    -- AD2 capture + verify (--auto-map, --verbose)
-    .gitignore        -- venv/
+    gpio_verify.py -- AD2 capture + verify script
 ```
 
-## Build, flash, verify
+## Build
 
 ```bash
-# 1. Build inside the dev container (GNURX toolchain lives there)
-devcontainer exec --workspace-folder <repo-root> bash -lc \
-    'cd star-rx72n-firmware/gpio_test && make'
-
-# 2. Flash from the host (native-arm64 rfp-cli talks to the E2 Lite
-#    over USB; Docker Desktop does not pass USB through)
 cd star-rx72n-firmware/gpio_test
+make            # builds gpio_test.elf/.mot/.hex
+make flash      # flash via E2 Lite + rfp-cli
+make clean      # remove build artifacts
+```
+
+## Usage
+
+```bash
+# 1. Flash firmware to the RX72N
 make flash
 
-# 3. Verify with the three AD2s
+# 2. Wire AD2 probes to breakout board headers
+#    Update CHANNEL_TO_PIN in host/gpio_verify.py
+
+# 3. Run verification
 cd host
-./venv/bin/python3 gpio_verify.py --verbose
+python3 gpio_verify.py --verbose
+
+# Dry run (print config, no capture)
+python3 gpio_verify.py --dry-run
 ```
 
-First-time host setup (once only):
+## Dependencies
 
-```bash
-cd star-rx72n-firmware/gpio_test/host
-python3 -m venv venv
-./venv/bin/pip install pydwf
-```
-
-## `gpio_verify.py` modes
-
-- **Verify (default)**: uses the committed `CHANNEL_TO_PIN` dict. Each
-  wired pin's expected rising/falling edges are matched against the
-  capture with a timing tolerance; prints PASS/FAIL per pin.
-- **`--auto-map`**: captures two firmware cycles, identifies the cycle
-  gap, measures the true pin period from two cycle boundaries, and
-  prints a paste-ready `CHANNEL_TO_PIN` dict. Useful when you rewire
-  the probes and want the script to figure out what landed where.
-- **`--dry-run`**: prints config without opening the AD2s.
-- **`--cycles N`**: capture N firmware cycles (default 1).
-
-## Verified on hardware (2026-04-16)
-
-13 s capture, all three AD2s, current wiring in
-`docs/bench/ad2_wiring.md`:
-
-| Check                                        | Result              |
-|----------------------------------------------|---------------------|
-| Wired channels toggling                      | 46 / 46             |
-| Rising edges per pin (over ~4 cycles)        | 4-5 (consistent)    |
-| Pin sweep order matches `FIRMWARE_PIN_ORDER` | MATCH               |
-| Unwired or VCC-rail channels showing noise   | 0                   |
-
-The two "dead" AD2 A channels (DIO 3 and DIO 5 = breakout pins 105 and
-103) are intentionally unmapped: pins 105 and 103 on the breakout are
-VCC rails, not GPIOs, so the corresponding AD2 inputs simply read a
-constant HIGH. See `docs/bench/ad2_wiring.md` for the alternative
-pins to rewire if you want 16 live channels on AD2 A.
-
-## Gotchas
-
-- **Host-side flash.** `rfp-cli` inside the dev container would need
-  USB passthrough, which macOS Docker Desktop does not support. Flash
-  lives on the host; the container is used only for the cross-compile.
-- **First `make flash` after powering up the board can fail once** with
-  `E4000004: framing error`. Re-run -- subsequent attempts succeed.
-- **WaveForms framework.** The `dwf.framework` *must* live under
-  `/Library/Frameworks/` (system) or `~/Library/Frameworks/` (user) --
-  `pydwf` auto-locates it, but if both exist and one is stale the
-  loader picks the wrong one.
-- **Do NOT add PJ3 or PJ5 to `s_pins[]`.** Those are JTAG TMS/TDO. The
-  E2 Lite keeps the JTAG interface latched, and the first PODR write
-  to one of those pins hardfaults the MCU.
-- **Pin period drifts.** The nop-based delay is nominally ~5 ms but
-  the compiler/optimisation level can shift it. `gpio_verify.py`
-  measures the true period from the capture (cycle length minus gap
-  divided by NUM_PINS) so the verify step works without hand-tuning.
+- **Firmware**: GNURX toolchain (rx-elf-gcc), same as blinky/usb_test
+- **Host script**: Python 3.8+, pydwf >= 1.1.19, libdwf >= 3.24.3
+  - `dwfcmd` CLI also available at `/usr/bin/dwfcmd`
