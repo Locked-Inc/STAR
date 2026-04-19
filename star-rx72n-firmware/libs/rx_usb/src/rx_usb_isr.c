@@ -522,7 +522,7 @@ static void internal_handle_brdy_interrupt(void)
       }
       /* Note: Other pipes (Bulk IN, Interrupt IN) don't trigger BRDY */
       /* Clear pipe buffer ready flag */
-      usb0()->brdysts = (uint16_t)~(1U << pipe);
+      usb0()->brdysts = (uint16_t) ~(1U << pipe);
     }
   }
 }
@@ -554,7 +554,7 @@ static void internal_handle_bemp_interrupt(void)
       }
       /* Note: Interrupt IN pipes don't typically need BEMP handling for CDC */
       /* Clear pipe buffer empty flag */
-      usb0()->bempsts = (uint16_t)~(1U << pipe);
+      usb0()->bempsts = (uint16_t) ~(1U << pipe);
     }
   }
 }
