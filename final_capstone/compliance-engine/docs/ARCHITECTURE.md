@@ -68,7 +68,7 @@ graph.
 ## Topic / message table
 
 | Topic | Type | Direction | Rate | Consumer |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `/scan` | `sensor_msgs/LaserScan` | in | 10 Hz | ramp slope, door clear width, path blockage, dynamic obstacle |
 | `/imu/data` | `sensor_msgs/Imu` | in | 200 Hz | ramp slope, door clear width, door threshold, protruding objects |
 | `/odom` | `nav_msgs/Odometry` | in | 100 Hz | every compliance node |
@@ -92,7 +92,7 @@ graph.
 ## TF frame requirements
 
 | Frame | Parent | Source |
-|---|---|---|
+| --- | --- | --- |
 | `map` | - | slam_toolbox async |
 | `odom` | `map` | slam_toolbox |
 | `base_link` | `odom` | robot_localization EKF |
@@ -132,7 +132,7 @@ transformed into `base_link` or any other frame.
 ## CPU budget on Pi 5 (measured targets)
 
 | Node | Expected load | Disable flag |
-|---|---|---|
+| --- | --- | --- |
 | ramp_slope_node | 5-8% | - |
 | door_clear_width_node (idle) | 3% | `use_stereo:=false` |
 | door_clear_width_node (burst, doorway measurement) | 35% for 200 ms | |

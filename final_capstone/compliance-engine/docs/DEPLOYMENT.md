@@ -193,7 +193,7 @@ Every flagged measurement appends a row to a CSV file under
 `final_capstone/extras/`:
 
 | File | Rows written by |
-|---|---|
+| --- | --- |
 | `validation_log.csv` | `ramp_slope_node` + `door_clear_width_node` |
 | `threshold_log.csv` | `door_threshold_node` |
 | `protrusion_log.csv` | `protruding_objects_node` |

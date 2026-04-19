@@ -2,15 +2,26 @@
 DBSCAN dynamic-obstacle clusterer node.
 
 Subscribes to:
-  /scan    sensor_msgs/LaserScan
-  /map     nav_msgs/OccupancyGrid (for background subtraction)
-  /odom    nav_msgs/Odometry (to transform scan into map frame)
+  /scan                     sensor_msgs/LaserScan
+  /map                      nav_msgs/OccupancyGrid (background subtraction)
+  /odom                     nav_msgs/Odometry (transform scan into map frame)
+  /perception/detections_3d  vision_msgs/Detection3DArray (Hailo YOLO 3D
+                            detections in cam0_optical_frame, optional)
 
 Publishes:
   /perception/dynamic_obstacles   star_compliance_msgs/DynamicObstacleArray
 
 Not ADA-specific; feeds the path-blockage node and future Nav2
 behavior-tree "pause for pedestrian" actions.
+
+Fusion behaviour
+----------------
+When YOLO 3D detections are available, the node fuses them with the
+LiDAR DBSCAN clusters:
+  * Cluster + matching YOLO  -> source = "yolo+lidar", confidence = 1.0
+  * Cluster only             -> source = "lidar"
+  * YOLO `person` only       -> source = "yolo", confidence = 0.6
+                                (e.g. behind glass, beyond LiDAR)
 """
 
 from __future__ import annotations
@@ -36,11 +47,37 @@ except ImportError:  # pragma: no cover
     DynamicObstacleArray = None
     HAS_MSGS = False
 
+try:
+    from vision_msgs.msg import Detection3DArray
+    HAS_VISION_MSGS = True
+except ImportError:  # pragma: no cover
+    Detection3DArray = None
+    HAS_VISION_MSGS = False
+
+try:
+    from tf2_ros import Buffer, TransformListener
+    HAS_TF2 = True
+except ImportError:  # pragma: no cover
+    Buffer = None
+    TransformListener = None
+    HAS_TF2 = False
+
+from star_compliance.detectors.cane_zone_filter import (
+    DEFAULT_CLASS_MATCH_RADIUS_M,
+)
 from star_compliance.detectors.obstacle_clusterer import (
     cluster_points,
     subtract_known_map,
 )
 from star_compliance.detectors.doorway_lidar_detector import polar_to_xy
+
+
+MAP_FRAME = "map"
+PERSON_CLASS = "person"
+LIDAR_ONLY_CONFIDENCE = None  # Use whatever DBSCAN reports.
+YOLO_ONLY_PERSON_CONFIDENCE = 0.6
+YOLO_PLUS_LIDAR_CONFIDENCE = 1.0
+DEFAULT_YOLO_CACHE_SECONDS = 1.0
 
 
 class DynamicObstacleNode(Node):
@@ -51,9 +88,14 @@ class DynamicObstacleNode(Node):
         self.declare_parameter("enabled", True)
         self.declare_parameter("eps_m", 0.15)
         self.declare_parameter("min_samples", 5)
+        self.declare_parameter(
+            "class_match_radius_m", DEFAULT_CLASS_MATCH_RADIUS_M)
+        self.declare_parameter("yolo_cache_seconds", DEFAULT_YOLO_CACHE_SECONDS)
 
         self._latest_map: OccupancyGrid | None = None
         self._latest_odom: Odometry | None = None
+        # Each entry: (received_sec, x_map, y_map, class_label, score).
+        self._yolo_cache: list[tuple[float, float, float, str, float]] = []
 
         qos_sensor = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -76,6 +118,20 @@ class DynamicObstacleNode(Node):
             )
         else:
             self._pub = None
+
+        if HAS_VISION_MSGS and HAS_TF2:
+            self._tf_buffer: Buffer | None = Buffer()
+            self._tf_listener = TransformListener(self._tf_buffer, self)
+            self._sub_yolo = self.create_subscription(
+                Detection3DArray,
+                "/perception/detections_3d",
+                self._on_yolo,
+                qos_sensor,
+            )
+        else:  # pragma: no cover
+            self._tf_buffer = None
+            self._tf_listener = None
+            self._sub_yolo = None
 
         self.get_logger().info("star_dynamic_obstacle_node ready.")
 
@@ -122,19 +178,125 @@ class DynamicObstacleNode(Node):
             return
         arr = DynamicObstacleArray()
         arr.header.stamp = self.get_clock().now().to_msg()
-        arr.header.frame_id = "map"
+        arr.header.frame_id = MAP_FRAME
+
+        radius_m = float(self.get_parameter("class_match_radius_m").value)
+        matched_yolo_idx: set[int] = set()
+
         for c in clusters:
+            cx, cy = float(c.centroid_xy[0]), float(c.centroid_xy[1])
+            yolo_idx, label, score = self._match_yolo(cx, cy, radius_m)
             obs = DynamicObstacle()
             obs.header = arr.header
             obs.cluster_pose_map_frame.header = arr.header
-            obs.cluster_pose_map_frame.pose.position.x = c.centroid_xy[0]
-            obs.cluster_pose_map_frame.pose.position.y = c.centroid_xy[1]
+            obs.cluster_pose_map_frame.pose.position.x = cx
+            obs.cluster_pose_map_frame.pose.position.y = cy
             obs.cluster_pose_map_frame.pose.orientation.w = 1.0
             obs.cluster_radius_m = float(c.radius_m)
             obs.point_count = int(c.point_count)
-            obs.confidence = float(c.confidence)
+            if yolo_idx is not None:
+                obs.confidence = YOLO_PLUS_LIDAR_CONFIDENCE
+                obs.source = "yolo+lidar"
+                obs.class_label = label
+                matched_yolo_idx.add(yolo_idx)
+            else:
+                obs.confidence = float(c.confidence)
+                obs.source = "lidar"
+                obs.class_label = ""
             arr.obstacles.append(obs)
+
+        # YOLO-only persons (e.g. behind a glass door, beyond LiDAR
+        # range) get their own entries.
+        for idx, entry in enumerate(self._yolo_cache):
+            if idx in matched_yolo_idx:
+                continue
+            _, x_map, y_map, label, score = entry
+            if label != PERSON_CLASS:
+                continue
+            obs = DynamicObstacle()
+            obs.header = arr.header
+            obs.cluster_pose_map_frame.header = arr.header
+            obs.cluster_pose_map_frame.pose.position.x = x_map
+            obs.cluster_pose_map_frame.pose.position.y = y_map
+            obs.cluster_pose_map_frame.pose.orientation.w = 1.0
+            obs.cluster_radius_m = 0.30  # Nominal person radius.
+            obs.point_count = 0
+            obs.confidence = YOLO_ONLY_PERSON_CONFIDENCE
+            obs.source = "yolo"
+            obs.class_label = label
+            arr.obstacles.append(obs)
+
         self._pub.publish(arr)
+
+    # ------------------------------------------------------------------
+
+    def _on_yolo(self, msg) -> None:
+        """Cache YOLO 3D detections in map-frame coordinates."""
+        if self._tf_buffer is None:
+            return
+        try:
+            tf = self._tf_buffer.lookup_transform(
+                MAP_FRAME, msg.header.frame_id,
+                rclpy.time.Time(),
+                timeout=rclpy.duration.Duration(seconds=0.05),
+            )
+        except Exception as exc:  # pragma: no cover - TF state dependent
+            self.get_logger().warn(
+                f"YOLO TF lookup failed: {exc}",
+                throttle_duration_sec=10.0,
+            )
+            return
+
+        now = self.get_clock().now().nanoseconds * 1e-9
+        for d in msg.detections:
+            if not d.results:
+                continue
+            label = d.results[0].hypothesis.class_id
+            score = float(d.results[0].hypothesis.score)
+            x_map, y_map, _ = self._transform_point(
+                d.bbox.center.position.x,
+                d.bbox.center.position.y,
+                d.bbox.center.position.z,
+                tf,
+            )
+            self._yolo_cache.append((now, x_map, y_map, label, score))
+        cache_window = float(
+            self.get_parameter("yolo_cache_seconds").value)
+        cutoff = now - cache_window
+        self._yolo_cache = [e for e in self._yolo_cache if e[0] >= cutoff]
+
+    def _match_yolo(self, x: float, y: float, radius_m: float
+                    ) -> tuple[int | None, str, float]:
+        """Find the nearest YOLO entry within radius_m. 2D match (XY)."""
+        if not self._yolo_cache:
+            return None, "", 0.0
+        radius_sq = radius_m * radius_m
+        best_d2 = float("inf")
+        best_idx: int | None = None
+        best_label = ""
+        best_score = 0.0
+        for idx, (_, xm, ym, label, score) in enumerate(self._yolo_cache):
+            d2 = (xm - x) ** 2 + (ym - y) ** 2
+            if d2 < best_d2 and d2 <= radius_sq:
+                best_d2 = d2
+                best_idx = idx
+                best_label = label
+                best_score = score
+        return best_idx, best_label, best_score
+
+    @staticmethod
+    def _transform_point(x: float, y: float, z: float, tf
+                         ) -> tuple[float, float, float]:
+        """Apply a TransformStamped to a point. Pure linear algebra."""
+        t = tf.transform.translation
+        q = tf.transform.rotation
+        xx, yy, zz = q.x * q.x, q.y * q.y, q.z * q.z
+        xy, xz, yz = q.x * q.y, q.x * q.z, q.y * q.z
+        wx, wy, wz = q.w * q.x, q.w * q.y, q.w * q.z
+        rx = (1 - 2 * (yy + zz)) * x + 2 * (xy - wz) * y + 2 * (xz + wy) * z
+        ry = 2 * (xy + wz) * x + (1 - 2 * (xx + zz)) * y + 2 * (yz - wx) * z
+        rz = 2 * (xz - wy) * x + 2 * (yz + wx) * y + (1 - 2 * (xx + yy)) * z
+        return rx + t.x, ry + t.y, rz + t.z
 
     # ------------------------------------------------------------------
 

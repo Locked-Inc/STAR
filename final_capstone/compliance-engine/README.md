@@ -11,7 +11,7 @@ Part of the Locked Inc. senior capstone (Texas A&M ESET, Spring 2026).
 ## At a glance
 
 | Check | ADA section | Status | Node |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Ramp slope | 405.2 | IMPLEMENTED | `ramp_slope_node` |
 | Door clear width | 404.2.3 | IMPLEMENTED | `door_clear_width_node` |
 | Door threshold presence | 404.2.5 | IMPLEMENTED (presence-only) | `door_threshold_node` |
@@ -22,6 +22,7 @@ Part of the Locked Inc. senior capstone (Texas A&M ESET, Spring 2026).
 | Ramp landing | 405.7 | ARCHITECTED | - |
 
 Plus:
+
 - Dynamic obstacle clustering (`dynamic_obstacle_node`, DBSCAN)
 - Compliance CPU safety-net monitor (`compliance_monitor_node`)
 - Nav2 costmap fusion of 4 x HC-SR04 ultrasonic (via the
