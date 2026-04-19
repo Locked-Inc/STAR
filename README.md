@@ -1,6 +1,6 @@
 # STAR
 
-**Simultaneous Tracking and Robotics** - A distributed robotics platform for autonomous mobile robots.
+**Spatial Topography Accessibility Robot** - A distributed robotics platform for autonomous indoor ADA-compliance auditing.
 
 ## Overview
 
