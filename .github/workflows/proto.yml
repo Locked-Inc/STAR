@@ -18,6 +18,11 @@ on:
       - 'star-proto/**'
       - '.github/workflows/proto.yml'
 
+# Cancel in-progress runs for the same PR/branch; rapid pushes shouldn't double-book runners.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   BUF_VERSION: '1.28.1'
   NODE_VERSION: '20'
@@ -106,6 +111,8 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: star-proto/tests/go/go.sum
 
       - name: Setup Buf
         uses: bufbuild/buf-setup-action@v1
@@ -149,6 +156,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: star-proto/tests/typescript/package-lock.json
 
       - name: Setup Buf
         uses: bufbuild/buf-setup-action@v1
@@ -186,11 +195,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
       - name: Install nanopb
-        run: |
-          pip install nanopb
-          pip install protobuf grpcio-tools
+        run: pip install nanopb protobuf grpcio-tools
 
       - name: Generate nanopb Code
         run: |
@@ -229,6 +237,8 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: star-proto/tests/go/go.sum
 
       - name: Download Go Artifacts
         uses: actions/download-artifact@v4
@@ -267,6 +277,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: star-proto/tests/typescript/package-lock.json
 
       - name: Download TypeScript Artifacts
         uses: actions/download-artifact@v4
@@ -307,10 +319,12 @@ jobs:
           name: nanopb-generated
           path: star-proto/gen/nanopb/
 
-      - name: Install Build Dependencies
+      # ubuntu-latest runners ship with cmake and gcc already; skip the
+      # 30-60s apt-get update + install.  Re-add only if the base image drops them.
+      - name: Verify Build Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake gcc
+          command -v cmake >/dev/null && command -v gcc >/dev/null \
+            || { echo "cmake/gcc missing; restore apt-get install"; exit 1; }
 
       - name: Build and Run Tests
         run: |

@@ -7,6 +7,7 @@ on:
       - 'feature/**'
     paths:
       - 'star-ros2/**'
+      - 'star-proto/**'
       - '.github/workflows/ros2.yml'
       - 'Dockerfile'
       - '.devcontainer/**'
@@ -14,10 +15,16 @@ on:
   pull_request:
     paths:
       - 'star-ros2/**'
+      - 'star-proto/**'
       - '.github/workflows/ros2.yml'
       - 'Dockerfile'
       - '.devcontainer/**'
       - 'scripts/ros2/**'
+
+# Cancel in-progress runs for the same PR/branch to avoid double-booking runners.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-test:
@@ -31,8 +38,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install system dependencies
+        # osrf/ros:jazzy-desktop already has apt lists populated on image build;
+        # only run apt-get update if lists are older than 1 day to avoid waste.
         run: |
-          apt-get update
+          if [ -z "$(find /var/lib/apt/lists -maxdepth 1 -mmin -1440 2>/dev/null | head -n1)" ]; then
+            apt-get update
+          fi
           apt-get install -y --no-install-recommends \
             python3-pip \
             python3-colcon-common-extensions \
@@ -40,7 +51,18 @@ jobs:
             protobuf-compiler \
             protobuf-compiler-grpc \
             libgrpc++-dev \
-            libgrpc-dev
+            libgrpc-dev \
+            ccache
+
+      - name: Cache rosdep + colcon ccache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /root/.ccache
+            /root/.ros/rosdep
+          key: ros2-${{ runner.os }}-${{ hashFiles('star-ros2/**/package.xml') }}
+          restore-keys: |
+            ros2-${{ runner.os }}-
 
       - name: Initialize rosdep
         run: |
@@ -51,13 +73,21 @@ jobs:
           cd star-ros2
           rosdep install --from-paths src --ignore-src -r -y --rosdistro jazzy
 
+      - name: Cache buf binary
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/bin/buf
+          key: buf-1.28.1-${{ runner.os }}
+
       - name: Install buf
         run: |
-          BUF_VERSION=1.28.1
-          curl -sSL \
-            "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-$(uname -s)-$(uname -m)" \
-            -o "/usr/local/bin/buf"
-          chmod +x /usr/local/bin/buf
+          if [ ! -x /usr/local/bin/buf ]; then
+            BUF_VERSION=1.28.1
+            curl -sSL \
+              "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-$(uname -s)-$(uname -m)" \
+              -o "/usr/local/bin/buf"
+            chmod +x /usr/local/bin/buf
+          fi
 
       - name: Generate Protobuf C++ code
         run: |
@@ -88,17 +118,28 @@ jobs:
           # Generate C++ code from temp directory (no BSR pollution)
           buf generate /tmp/star-proto --template /tmp/buf.gen.ros2.yaml
 
-      - name: Build packages
+      - name: Build packages (with ccache + warnings as errors)
+        # Combines the previous "Build packages" and "Check for compiler warnings"
+        # steps.  Running two full colcon builds ~doubled ROS2 CI time; a single
+        # build with -Wall -Wextra -Werror enforces the same contract.  ccache
+        # caches object files across runs for ~30-50% faster recompiles on hits.
         shell: bash
         run: |
           cd star-ros2
           source /opt/ros/jazzy/setup.bash
+          export PATH="/usr/lib/ccache:$PATH"
+          export CCACHE_DIR=/root/.ccache
+          ccache --max-size=2G
           colcon build \
             --symlink-install \
             --cmake-args \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+              -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror" \
+              -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+              -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
               -DBUILD_TESTING=ON
+          ccache --show-stats || true
 
       - name: Run tests
         shell: bash
@@ -115,17 +156,6 @@ jobs:
         run: |
           cd star-ros2
           colcon test-result --verbose
-
-      - name: Check for compiler warnings
-        shell: bash
-        run: |
-          cd star-ros2
-          source /opt/ros/jazzy/setup.bash
-          colcon build --cmake-clean-cache \
-            --cmake-args \
-              -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror" \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DBUILD_TESTING=ON
 
       - name: Upload build artifacts
         if: failure()
@@ -175,8 +205,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install linting tools
+        # Avoid apt-get update if image's apt lists are <24h old (container reuse).
         run: |
-          apt-get update
+          if [ -z "$(find /var/lib/apt/lists -maxdepth 1 -mmin -1440 2>/dev/null | head -n1)" ]; then
+            apt-get update
+          fi
           apt-get install -y --no-install-recommends \
             ros-jazzy-ament-copyright \
             ros-jazzy-ament-cppcheck \

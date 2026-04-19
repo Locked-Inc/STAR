@@ -63,17 +63,20 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - name: Install CA certificates
-        run: apt-get update -y && apt-get install -y --no-install-recommends ca-certificates && update-ca-certificates
+      - name: Install CA certificates + quality-gate tooling (one apt run)
+        # Previously two separate apt-get calls (ca-certificates pre-checkout,
+        # clang-format/libnewlib post-checkout).  A single apt-get saves one
+        # index refresh + install cycle (~20-30s).
+        run: |
+          apt-get update -y
+          apt-get install -y --no-install-recommends \
+            ca-certificates clang-format libnewlib-arm-none-eabi
+          update-ca-certificates
 
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
         with:
           submodules: recursive
-
-      - name: Install quality-gate tooling
-        run: |
-          apt-get install -y --no-install-recommends clang-format libnewlib-arm-none-eabi
 
       - name: Configure firmware (${{ matrix.chip }}, Release)
         working-directory: star-stm32-firmware
