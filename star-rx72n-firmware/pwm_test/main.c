@@ -272,32 +272,38 @@ static void dbg_pulse(uint32_t n)
     for (volatile uint32_t d = 0; d < 100000U; d++) { __asm__ volatile("nop"); }
 }
 
-int main(void)
+/* ==========================================================================
+ * Clock setup verified working on Tom's PCB (no external crystal).
+ * HOCO 16 MHz internal -> PLL x12 = 192 MHz, PCKA /2 = 96 MHz.
+ * Copied from usb_test/hoco_pid_fix.c which enumerated 1209:0002 on this
+ * hardware, so these exact register writes are known-good. */
+static void inline_clock_init(void)
 {
-    /* No clock_init -- stay at LOCO.  After PWM init, read GTCNT twice with
-     * a delay; if counter advanced the GPTW clock is running.  Then force
-     * pins back to GPIO and encode the result as pulses on P17/P23 so
-     * scope can see: 5 pulses = counter running, 3 = frozen. */
-    gptw0_pin_and_module_setup();
-    gptw0_init_pwm();
+    REG16(0x000803FEU) = 0xA503U;            /* PRC0+PRC1 unlock */
 
-    /* Read GTCNT twice to see if counter ticks. */
-    volatile uint32_t a = REG32(GTCNT);
-    for (volatile uint32_t d = 0; d < 10000U; d++) { __asm__ volatile("nop"); }
-    volatile uint32_t b = REG32(GTCNT);
-    uint32_t running = (b != a) ? 1U : 0U;
+    REG8(0x00080036U)  = 0x00U;              /* HOCOCR: start HOCO */
+    while ((REG8(0x0008003CU) & 0x08U) == 0U) { __asm__ volatile("nop"); } /* HCOVF */
 
-    /* Pull pins back to GPIO to emit a diag pulse pattern. */
+    REG16(0x00080028U) = 0x1710U;            /* PLLCR: HOCO*12, PLIDIV=/1 */
+    REG8(0x0008002AU)  = 0x00U;              /* PLLCR2: enable */
+    while ((REG8(0x0008003CU) & 0x04U) == 0U) { __asm__ volatile("nop"); } /* PLOVF */
+
+    REG8(0x0008101CU)  = 0x01U;              /* MEMWAIT = 1 */
+    REG32(0x00080020U) = 0x21C21211U;        /* SCKCR: ICLK/2 PCKA/2 PCKB/4 */
+    REG16(0x00080044U) = 0x0001U;            /* PACKCR: bit 0 reserved must be 1 */
+    REG16(0x00080024U) = 0x0031U;            /* SCKCR2: UCK /4 */
+    REG16(0x00080026U) = 0x0400U;            /* SCKCR3: CKSEL=PLL */
+
+    REG16(0x000803FEU) = 0xA500U;            /* PRCR lock */
+}
+
+/* Helper: emit N pulses on P17 AND P23 as GPIO (PMR=0). */
+static void pulse_n(uint32_t n)
+{
     REG8(PORT1_PMR) &= (uint8_t)~(1U << 7);
     REG8(PORT2_PMR) &= (uint8_t)~(1U << 3);
     REG8(PORT1_PDR) |= (1U << 7);
     REG8(PORT2_PDR) |= (1U << 3);
-
-    /* First N pulses encode the answer:
-     *   5 pulses  -> GTCNT advanced (counter ticking)
-     *   3 pulses  -> GTCNT frozen (counter stopped)
-     * Then a long gap, then 2 pulses signalling "end of diag". */
-    uint32_t n = running ? 5U : 3U;
     for (uint32_t i = 0; i < n; i++) {
         REG8(PORT1_PODR) |= (1U << 7);
         REG8(PORT2_PODR) |= (1U << 3);
@@ -306,9 +312,26 @@ int main(void)
         REG8(PORT2_PODR) &= (uint8_t)~(1U << 3);
         for (volatile uint32_t d = 0; d < 50000U; d++) { __asm__ volatile("nop"); }
     }
-    for (;;) {
-        /* Idle with pins LOW. */
-    }
+    for (volatile uint32_t d = 0; d < 200000U; d++) { __asm__ volatile("nop"); }
+}
+
+int main(void)
+{
+    pulse_n(1);                              /* 1: main entered */
+    inline_clock_init();
+    pulse_n(2);                              /* 2: clock_init returned */
+    gptw0_pin_and_module_setup();
+    pulse_n(3);                              /* 3: pin/module setup done */
+    gptw0_init_pwm();
+    pulse_n(4);                              /* 4: GPTW init done */
+
+    /* Read GTCNT twice to see if counter ticks. */
+    volatile uint32_t a = REG32(GTCNT);
+    for (volatile uint32_t d = 0; d < 10000U; d++) { __asm__ volatile("nop"); }
+    volatile uint32_t b = REG32(GTCNT);
+    pulse_n((b != a) ? 7U : 5U);             /* 7: counter running / 5: frozen */
+
+    for (;;) {}
     return 0;
 }
 
