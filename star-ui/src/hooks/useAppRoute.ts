@@ -26,7 +26,7 @@ export function useAppRoute(): { route: AppRoute; navigate: (route: AppRoute) =>
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-   const navigate = useCallback((nextRoute: AppRoute): void => {
+  const navigate = useCallback((nextRoute: AppRoute): void => {
     if (window.location.pathname !== nextRoute) {
       window.history.pushState({}, '', nextRoute);
     }

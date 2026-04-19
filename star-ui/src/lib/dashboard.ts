@@ -1,3 +1,10 @@
+/**
+ * @file dashboard.ts
+ * @brief Dashboard primitives: constants and derived values for dashboard state
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * @license MIT License
+ */
+
 import { AlertLevel, type Alert } from '../proto/star/v1/ui';
 import { RobotMode } from '../proto/star/v1/telemetry';
 import type { ConnectionState } from '../store/dashboardStore';
@@ -111,7 +118,7 @@ export function formatNumber(value: number | undefined, digits = 1): string {
 }
 
 export function formatHeading(radians: number | undefined): string {
-  if (radians == null || Number.isNaN(radians)) {
+  if (radians == null || !Number.isFinite(radians)) {
     return '--';
   }
 
@@ -170,7 +177,7 @@ export function toneFromLevel(level: AlertLevel): Tone {
 }
 
 export function toneFromScore(score: number | undefined): Tone {
-  if (score == null || Number.isNaN(score)) {
+  if (score == null || !Number.isFinite(score)) {
     return 'neutral';
   }
   if (score >= scoreGoodThreshold) {

@@ -308,6 +308,7 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
                   accent="accent"
                   formatValue={(value) => `${value.toFixed(2)} m/s`}
                   max={3}
+                  min={0}
                   samples={traceHistory.velocity}
                   title="Velocity"
                 />
@@ -321,6 +322,7 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
                   accent="warn"
                   formatValue={(value) => `${Math.round(value)}%`}
                   max={100}
+                  min={0}
                   samples={traceHistory.cpu}
                   title="CPU Load"
                 />
@@ -328,6 +330,7 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
                   accent="danger"
                   formatValue={(value) => `${value.toFixed(1)} C`}
                   max={100}
+                  min={0}
                   samples={traceHistory.temperature}
                   title="Temperature"
                 />

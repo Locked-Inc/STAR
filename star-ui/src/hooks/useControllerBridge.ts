@@ -28,12 +28,7 @@ export function useControllerBridge(
 
   useEffect(() => {
     if (!enabled) {
-      sendRef.current({
-        linearVel: 0,
-        angularVel: 0,
-        timestamp: String(Date.now()),
-        debug: false,
-      });
+      sendRef.current({ linearVel: 0, angularVel: 0, timestamp: String(Date.now()), debug: false });
       return;
     }
 

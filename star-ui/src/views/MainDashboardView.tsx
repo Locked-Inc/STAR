@@ -82,9 +82,9 @@ function deriveControllerTone({
   return 'warn';
 }
 
-function radiansToCompassDegrees(radians: number | undefined): number {
+function radiansToCompassDegrees(radians: number | null | undefined): number | null {
   if (radians == null || !Number.isFinite(radians)) {
-    return 0;
+    return null;
   }
 
   return (((radians * 180) / Math.PI) + 360) % 360;
@@ -206,6 +206,8 @@ export function MainDashboardView({
   const lidarPointCount = lidarScan?.rangeM.filter((value) => value > 0).length ?? 0;
   const imu = telemetry?.imu;
   const headingRadians = imu?.yawRad ?? odometry?.thetaRad;
+  const compassHeadingDegrees = radiansToCompassDegrees(headingRadians);
+  const compassHeadingLabel = compassHeadingDegrees != null ? formatHeading(headingRadians) : '--';
   const wifiSignal = telemetry?.wifiSignalDbm;
   const cpuUsage = telemetry?.cpuUsagePercent;
   const temperature = telemetry?.temperatureCelsius;
@@ -597,13 +599,18 @@ export function MainDashboardView({
                     <span className="compass-label compass-label--west">W</span>
                     <div
                       className="compass-needle"
-                      style={{ transform: `translate(-50%, -100%) rotate(${radiansToCompassDegrees(headingRadians)}deg)` }}
+                      style={{
+                        opacity: compassHeadingDegrees != null ? 1 : 0.2,
+                        transform: compassHeadingDegrees != null
+                          ? `translate(-50%, -100%) rotate(${compassHeadingDegrees}deg)`
+                          : 'translate(-50%, -100%)',
+                      }}
                     />
                     <div className="compass-center" />
                   </div>
                   <div className="compass-readout">
                     <span>Heading</span>
-                    <strong>{formatHeading(headingRadians)}</strong>
+                    <strong>{compassHeadingLabel}</strong>
                   </div>
                 </div>
               </div>

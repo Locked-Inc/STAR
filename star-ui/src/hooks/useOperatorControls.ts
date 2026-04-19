@@ -1,13 +1,13 @@
 /**
- * `@file` useOperatorControls.ts
- * `@brief` Operator UI controls hook: autonomy mode, mission progress, and E-stop toggle.
+ * @file useOperatorControls.ts
+ * @brief Manage operator UI control state and action handlers.
  *
  * Centralizes local operator state (selected mode, coverage, task completion,
  * autonomy request) and the handlers that bridge it to the dashboard store
  * and the STAR WebSocket/REST control surface.
  *
- * `@copyright` Copyright (c) 2026 Locked Inc.
- * `@license` <project-standard-license-identifier>
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * @license MIT
 */
 
 import { useEffect, useRef, useState } from 'react';

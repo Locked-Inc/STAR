@@ -69,5 +69,6 @@
   },
   "protobuf.buf.path": "/usr/local/bin/buf",
   "protobuf.protoc.path": "/usr/bin/protoc",
-  "cmake.ignoreCMakeListsMissing": true
+  "cmake.ignoreCMakeListsMissing": true,
+  "remote.localPortHost": "allInterfaces"
 }

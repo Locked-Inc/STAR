@@ -249,6 +249,14 @@ a {
   background: rgba(16, 27, 42, 0.92);
 }
 
+.header-link:focus-visible,
+.alerts-button:focus-visible,
+.control-button:focus-visible,
+.subtle-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
 .alerts-anchor {
   position: relative;
 }
