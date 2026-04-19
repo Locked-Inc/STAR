@@ -83,7 +83,7 @@ to 10M iterations (`main.c`):
   failure (binds the port anyway) so port-open takes ~5s per port
   ~= 15s total for all three.
 * Bulk IN URBs still **never complete**.  All 48 IN URBs (16 per
-  port × 3 ports) sit at -EINPROGRESS for the lifetime of the open
+  port x 3 ports) sit at -EINPROGRESS for the lifetime of the open
   and cancel on close.
 
 The remaining gap appears to be in the DCP CCPL sequencing for class
@@ -121,10 +121,10 @@ Still untried (next-iteration candidates):
 An earlier AD2 scope capture suggested D- was stuck at 10+ V (impossible)
 and concluded the silicon was defective.  **That reading was a bad
 solder joint on the AD2 Ch2 probe, not a board defect.**  After the
-probe was resoldered, D- showed clean 0 ↔ 3.3 V USB FS signaling,
+probe was resoldered, D- showed clean 0 <-> 3.3 V USB FS signaling,
 matching D+.  Retain the firmware-side conclusions below but ignore
 any claim that the silicon cannot drive USB FS -- it drives it fine
-(NAK responses are clean, eye is open ±3.1 V differential, edges
+(NAK responses are clean, eye is open +/-3.1 V differential, edges
 10-30 ns rise/fall).
 
 ## 2026-04-18 bus-level capture proves device NAKs every IN (AD2 on D+/D-)
@@ -222,7 +222,7 @@ proven not to be the root cause:
 | Raw register write from main.c     | 0 DATA         |
 
 Also proved:
-* PHY outputs clean USB FS signals (AD2 scope: 0-3.3V swing, ±3.1V
+* PHY outputs clean USB FS signals (AD2 scope: 0-3.3V swing, +/-3.1V
   differential, 20ns edges) -- silicon transceiver works.
 * Device responds to every IN token within USB timing -- always
   with NAK.  Silicon's packet scheduler IS running.
@@ -545,13 +545,13 @@ NRDYSTS  = 0x0002  (pipe 1 NRDY fired once: device NAK'd an IN token)
 ```
 
 Translation: the device reports **"pipe armed (PID=BUF), buffer has valid
-data to send (BSTS=1)"** but the bus observes only IN → NAK. Hardware state
+data to send (BSTS=1)"** but the bus observes only IN -> NAK. Hardware state
 claims ready but emits nothing. NRDYSTS pipe-1 bit 1 *does* get set, proving
 the USB IP is routing the IN token to pipe 1 -- it's just replying NAK
 instead of DATA0.
 
 ### Ruled out by runtime debug
-* PIPEBUF value (always reads 0x0000 — RX72N USB0 reserves it; FIT v120 skips
+* PIPEBUF value (always reads 0x0000 -- RX72N USB0 reserves it; FIT v120 skips
   writing it for IP0, matching this observation).
 * Clock source: tested both **HOCO*12 = 192 MHz + UCK /4** and **MOSC*10 =
   240 MHz + UCK /5**; same NAK-forever result.
@@ -563,18 +563,18 @@ instead of DATA0.
 * Pre-configure pipe before DPRPU attach vs during SET_CONFIGURATION.
 
 ### Tools landed
-* `usb_test/bulk_debug.c` — standalone 400-line USB test with 0xFE state dump
-* `usb_test/isr_stubs.c` — empty ISR stubs for the vectors.S ref symbols
-* `usb_test/tools/build_bulk_debug.sh` — compile + objcopy helper
-* `usb_test/tools/query_pipe_state.py` — host-side register reader
-* `usb_test/tools/read_bulk.py` — pyusb EP 0x82 read loop
+* `usb_test/bulk_debug.c` -- standalone 400-line USB test with 0xFE state dump
+* `usb_test/isr_stubs.c` -- empty ISR stubs for the vectors.S ref symbols
+* `usb_test/tools/build_bulk_debug.sh` -- compile + objcopy helper
+* `usb_test/tools/query_pipe_state.py` -- host-side register reader
+* `usb_test/tools/read_bulk.py` -- pyusb EP 0x82 read loop
 
 ### Open question
 What additional register write on RX72N USB0 (not in FIT v120) arms the pipe
 to actually emit DATA on the wire? Next steps to investigate:
-1. PIPE1TRE / PIPE1TRN (transaction counter) — maybe TRENB/TRCLR needed.
-2. SOFCFG — USB SOF config that gates scheduling.
-3. DVSTCTR0.UACT in function mode — might need explicit set.
+1. PIPE1TRE / PIPE1TRN (transaction counter) -- maybe TRENB/TRCLR needed.
+2. SOFCFG -- USB SOF config that gates scheduling.
+3. DVSTCTR0.UACT in function mode -- might need explicit set.
 4. Check RX72N HW manual Ch. 31.2 "Pipe Setup" sequence for any IP0-specific
    step missing from FIT (which targets IP1 on RX64M/71M and treats IP0 as a
    subset).
@@ -594,10 +594,10 @@ field-by-field table.  Fix: header constants now match Renesas FIT
 `r_usb_bitdefine.h` verbatim.
 
 ### Verified
-* `usb_test/bulk_debug.c` → "HELLO WORLD\n" received on EP 0x82.
-* `usb_test/bulk_in_fix.c` → "BULK1 NNNN\r\n" streaming on EP 0x81.
-* Production (`star-rx72n-firmware.mot`) → 3 CDC ports enumerate as
-  `045b:0235`, bulk OUT → echo loop round-trips host-sent bytes.
+* `usb_test/bulk_debug.c` -> "HELLO WORLD\n" received on EP 0x82.
+* `usb_test/bulk_in_fix.c` -> "BULK1 NNNN\r\n" streaming on EP 0x81.
+* Production (`star-rx72n-firmware.mot`) -> 3 CDC ports enumerate as
+  `045b:0235`, bulk OUT -> echo loop round-trips host-sent bytes.
 
 ### Still broken (separate issue, higher up the stack)
 `usb_task.c` heartbeat writes ("p0\r\n" / "p1\r\n" / "p2\r\n") don't

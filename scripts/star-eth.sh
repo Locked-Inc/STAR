@@ -7,10 +7,10 @@
 # laptop auto-configures and you can:
 #
 #     ssh star@10.42.0.1            # fixed Pi IP (recommended)
-#     ssh star@star-desktop.local   # mDNS (avahi) — also works
+#     ssh star@star-desktop.local   # mDNS (avahi) -- also works
 #
 # Because connection.autoconnect=yes, this just happens automatically
-# when you plug the cable in — at boot or at any time. This helper is
+# when you plug the cable in -- at boot or at any time. This helper is
 # for forcing the state, checking it, or toggling autoconnect off if you
 # want eth0 to only come up when you ask.
 #
@@ -69,7 +69,7 @@ status() {
     else
         echo "star-eth: DOWN  (carrier=$carrier, autoconnect=$auto)"
         if [ "$carrier" = yes ] && [ "$auto" = yes ]; then
-            echo "          carrier detected but profile not active — try 'star-eth up'"
+            echo "          carrier detected but profile not active -- try 'star-eth up'"
         elif [ "$carrier" = no ]; then
             echo "          plug in an ethernet cable (will auto-activate if autoconnect=yes)"
         fi
@@ -102,11 +102,11 @@ auto() {
     case "${1:-}" in
         on)
             sudo nmcli connection modify "$CON" connection.autoconnect yes
-            echo "star-eth: autoconnect ON — eth0 will activate on carrier-detect"
+            echo "star-eth: autoconnect ON -- eth0 will activate on carrier-detect"
             ;;
         off)
             sudo nmcli connection modify "$CON" connection.autoconnect no
-            echo "star-eth: autoconnect OFF — run 'star-eth up' to activate"
+            echo "star-eth: autoconnect OFF -- run 'star-eth up' to activate"
             ;;
         *)
             echo "star-eth: usage: star-eth auto on|off" >&2

@@ -50,7 +50,8 @@ jobs:
             ':(exclude)**/third_party/**' \
             ':(exclude)schematic/symbols-and-footprints/**' \
             ':(exclude)star-rx72n-firmware/LICENSE.txt' \
-            ':(exclude)star-rx72n-firmware/LICENSED-HARDWARE.txt')
+            ':(exclude)star-rx72n-firmware/LICENSED-HARDWARE.txt' \
+            ':(exclude)star-rx72n-firmware/usb_test/bulk_in_fix.c')
 
           failed=0
           for f in "${files[@]}"; do

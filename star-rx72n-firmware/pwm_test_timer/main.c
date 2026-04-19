@@ -3,7 +3,7 @@
  * @brief 20 kHz PWM on GPTW0 with CMT0-driven duty sweep (no busy-wait).
  *
  * @details
- * Same GPTW0 setup as pwm_test/ — raw-register config of P23/GTIOC0A and
+ * Same GPTW0 setup as pwm_test/ -- raw-register config of P23/GTIOC0A and
  * P17/GTIOC0B as a saw-wave 20 kHz PWM with complementary A/B duty.
  *
  * The difference: the duty-cycle sweep cadence is driven by the CMT0 100 Hz

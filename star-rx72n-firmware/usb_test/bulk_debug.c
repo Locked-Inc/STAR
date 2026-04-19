@@ -95,7 +95,7 @@ static void sci9_init(void)
      * BRR = PCLK / (2 * 2^(2*CKS-1) * baud * 16) - 1 for async
      * With CKS=3: clock divisor 64. BRR = 48000000/(64*16*2^5*9600)... hmm
      * Easier: just use 9600 @ CKS=0 with BRR=155 (48M/(32*9600)-1). */
-    REG8(SCI9_BRR) = 155U;  /* 9600 @ 48 MHz, CKS=0 → 48M/(32*156)=9615 */
+    REG8(SCI9_BRR) = 155U;  /* 9600 @ 48 MHz, CKS=0 -> 48M/(32*156)=9615 */
     REG8(SCI9_SMR) = 0x00U;  /* CKS=00, 8N1 */
     for (volatile uint32_t i = 0; i < 10000U; i++) { __asm__ volatile("nop"); }
     REG8(SCI9_SCR) = 0x20U;  /* TE=1 */
@@ -279,14 +279,14 @@ int main(void)
     /* MOSCCR = 0 enable main OSC */
     REG8(0x00080032U) = 0x00U;
     while ((REG8(0x8003C) & 0x01U) == 0) { __asm__ volatile("nop"); }  /* MOOVF wait */
-    /* PLLCR: STC=(10*2-1)=19=0x13, PLLSRCSEL=0 (MOSC), PLIDIV=/1 → 24*10=240 MHz */
+    /* PLLCR: STC=(10*2-1)=19=0x13, PLLSRCSEL=0 (MOSC), PLIDIV=/1 -> 24*10=240 MHz */
     REG16(0x80028) = 0x1300U;
     REG8(0x8002A) = 0x00U;  /* PLLCR2 PLLEN=0 */
     while ((REG8(0x8003C) & 0x04U) == 0) { __asm__ volatile("nop"); }  /* PLOVF wait */
     /* MEMWAIT=1 for ICLK>120 MHz */
     REG8(0x0008601CU) = 0x01U;
     REG32(0x80020) = 0x21C21211U;
-    REG16(0x80044) = 0x0000U;   /* PACKCR UPLLSEL=0 → main PLL */
+    REG16(0x80044) = 0x0000U;   /* PACKCR UPLLSEL=0 -> main PLL */
     REG16(0x80024) = 0x0041U;   /* SCKCR2 UCK=4 (/5) */
     REG16(0x80026) = 0x0400U;   /* SCKCR3 CKSEL=PLL */
     REG16(0x803FE) = 0xA500U;
