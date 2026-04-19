@@ -43,12 +43,18 @@ AD2_SERIAL_NUMBERS = [
 ]
 CHANNELS_PER_AD2 = 16
 
-NUM_GPIO = 28
+# Must match pi5_toggle.py: pins claimed by HAT EEPROM, I2C-1 (Hailo),
+# SPI0 CS0/CS1. These are never driven by the toggler so the verifier
+# must not expect edges on them.
+SKIP_PINS = frozenset({0, 1, 2, 3, 7, 8})
+SWEEP_ORDER = [g for g in range(28) if g not in SKIP_PINS]
+NUM_SWEEP = len(SWEEP_ORDER)
+
 PIN_HIGH_MS = 10
 PIN_LOW_MS = 10
 PIN_PERIOD_MS = PIN_HIGH_MS + PIN_LOW_MS
 CYCLE_GAP_MS = 2000
-CYCLE_DURATION_MS = NUM_GPIO * PIN_PERIOD_MS + CYCLE_GAP_MS
+CYCLE_DURATION_MS = NUM_SWEEP * PIN_PERIOD_MS + CYCLE_GAP_MS
 
 
 @dataclass
@@ -199,7 +205,7 @@ def auto_map(edges: list[EdgeEvent],
         cycle_len = sum(lens) / len(lens)
         sweep_len = cycle_len - gap_dur
         if sweep_len > 0:
-            pin_period_ms = sweep_len / NUM_GPIO
+            pin_period_ms = sweep_len / NUM_SWEEP
 
     # t_after_gap is the first edge after the quiet window. Assume the
     # Pi5 starts the sweep at GPIO 0, so t_after_gap is approximately
@@ -209,7 +215,7 @@ def auto_map(edges: list[EdgeEvent],
           f"{pin_period_ms:.2f} ms, gap = {gap_dur:.0f} ms")
 
     mapping: dict[tuple[int, int], int] = {}
-    cycle_end = t_anchor + NUM_GPIO * pin_period_ms
+    cycle_end = t_anchor + NUM_SWEEP * pin_period_ms
     for key, s in stats.items():
         if cls[key]["verdict"] != "signal":
             continue
@@ -218,9 +224,9 @@ def auto_map(edges: list[EdgeEvent],
         if not after:
             continue
         t_first = min(after)
-        gpio = round((t_first - t_anchor) / pin_period_ms)
-        if 0 <= gpio < NUM_GPIO:
-            mapping[key] = gpio
+        sweep_idx = round((t_first - t_anchor) / pin_period_ms)
+        if 0 <= sweep_idx < NUM_SWEEP:
+            mapping[key] = SWEEP_ORDER[sweep_idx]
     return mapping, cls
 
 
@@ -236,7 +242,7 @@ def print_report(mapping: dict[tuple[int, int], int],
         print(f"  unit {unit} DIO{ch:2d}  ->  GPIO{mapping[key]:2d}")
 
     detected_gpios = set(mapping.values())
-    missing = [g for g in range(NUM_GPIO) if g not in detected_gpios]
+    missing = [g for g in SWEEP_ORDER if g not in detected_gpios]
 
     if missing:
         print(f"\n--- NOT DETECTED ({len(missing)}) ---")
@@ -244,7 +250,10 @@ def print_report(mapping: dict[tuple[int, int], int],
             print(f"  GPIO{g:2d}  (no DIO channel saw a valid edge)")
     else:
         print("\n--- NOT DETECTED (0) ---")
-        print("  all 28 GPIOs showed valid rising edges")
+        print(f"  all {NUM_SWEEP} swept GPIOs showed valid rising edges")
+    if SKIP_PINS:
+        print(f"  (skipped by toggler: "
+              f"{sorted(SKIP_PINS)} -- HAT/I2C/SPI claimed)")
 
     if verbose:
         print("\n--- per-channel detail ---")
@@ -257,7 +266,7 @@ def print_report(mapping: dict[tuple[int, int], int],
                   f"[{v['verdict']:6s}]  {gpio_str}")
 
     print("\n" + "=" * 72)
-    print(f"GPIO detected: {len(detected_gpios)}/{NUM_GPIO}   "
+    print(f"GPIO detected: {len(detected_gpios)}/{NUM_SWEEP}   "
           f"missing: {len(missing)}")
     print("=" * 72)
 
@@ -300,7 +309,7 @@ def main() -> None:
         mapping, cls = auto_map(edges, args.cycles)
         print_report(mapping, cls, args.verbose)
 
-        if set(mapping.values()) != set(range(NUM_GPIO)):
+        if set(mapping.values()) != set(SWEEP_ORDER):
             sys.exit(1)
     finally:
         for d in devs:
