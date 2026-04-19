@@ -2286,7 +2286,7 @@ a {
   }
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1023px) {
   .dashboard-layout,
   .ros-grid,
   .subpanel-grid {

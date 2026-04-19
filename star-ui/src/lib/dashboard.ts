@@ -141,7 +141,7 @@ export function formatUptime(seconds: string | undefined): string {
 }
 
 export function formatTimestamp(tsMs: number): string {
-  if (!Number.isFinite(tsMs) || tsMs <= 0) {
+  if (!Number.isFinite(tsMs) || tsMs < 0) {
     return '--:--:--';
   }
 

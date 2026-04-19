@@ -78,13 +78,9 @@ export function useOperatorControls({
     }
 
     const interval = window.setInterval(() => {
-      setCoveragePercent((currentCoverage) => {
-        const nextCoverage = Math.min(100, currentCoverage + coverageStepPercent);
-        if (nextCoverage >= 100) {
-          setAutonomyRequested(false);
-        }
-        return nextCoverage;
-      });
+      setCoveragePercent((currentCoverage) =>
+        Math.min(100, currentCoverage + coverageStepPercent),
+      );
     }, coverageTickIntervalMs);
 
     return () => window.clearInterval(interval);
@@ -94,7 +90,25 @@ export function useOperatorControls({
     const store = useDashboardStore.getState();
 
     if (eStopActive) {
-      const released = await sendEStopRelease();
+      let released: boolean;
+      try {
+        released = await sendEStopRelease();
+      } catch (error: unknown) {
+        console.error('E-stop release failed:', error);
+        if (mountedRef.current) {
+          const message =
+            error instanceof Error ? error.message : 'Unknown error';
+          store.addAlert(
+            buildUiAlert(
+              'ESTOP_RELEASE_FAILED',
+              AlertLevel.WARN,
+              `E-stop release request failed: ${message}`,
+            ),
+          );
+        }
+        return;
+      }
+
       if (!mountedRef.current) {
         return;
       }

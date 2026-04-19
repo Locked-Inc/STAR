@@ -136,6 +136,16 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
         value: formatObservedRate(observedRatesByPacketType.get('lidar')),
       },
       {
+        label: 'controller_frequency',
+        value: formatObservedRate(observedRatesByPacketType.get('controller')),
+      },
+    ],
+    [observedRatesByPacketType],
+  );
+
+  const referenceParameters = useMemo(
+    () => [
+      {
         label: 'map_resolution',
         value: '0.05 m/cell',
       },
@@ -143,12 +153,8 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
         label: 'wheel_diameter',
         value: '0.20 m',
       },
-      {
-        label: 'controller_frequency',
-        value: formatObservedRate(observedRatesByPacketType.get('controller')),
-      },
     ],
-    [observedRatesByPacketType],
+    [],
   );
 
   const activeTopics = useMemo(
@@ -315,6 +321,7 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
                 <DebugTraceChart
                   accent="good"
                   formatValue={(value) => `${Math.round(value)} pts`}
+                  min={0}
                   samples={traceHistory.lidar}
                   title="LIDAR Density"
                 />
@@ -351,11 +358,20 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
 
             <div className="panel-card__body">
               {demoModeEnabled ? (
-                <div className="metrics-grid metrics-grid--three">
-                  {parameterCards.map((parameter) => (
-                    <MetricTile key={parameter.label} label={parameter.label} tone="warn" value={parameter.value} />
-                  ))}
-                </div>
+                <>
+                  <h3>Live Parameters</h3>
+                  <div className="metrics-grid metrics-grid--three">
+                    {parameterCards.map((parameter) => (
+                      <MetricTile key={parameter.label} label={parameter.label} tone="accent" value={parameter.value} />
+                    ))}
+                  </div>
+                  <h3>Reference / Demo Parameters</h3>
+                  <div className="metrics-grid metrics-grid--three">
+                    {referenceParameters.map((parameter) => (
+                      <MetricTile key={parameter.label} label={parameter.label} tone="warn" value={parameter.value} />
+                    ))}
+                  </div>
+                </>
               ) : (
                 <div className="empty-state">
                   Live parameter values are unavailable from the current gateway. Firmware {systemStatus?.firmwareVersion || '--'} | Uptime{' '}
