@@ -134,30 +134,32 @@ static void handle_setup(void)
         REG16(DCPCTR) |= (1U << 2);
     } else if (br == 0x09U) {   /* SET_CONFIGURATION */
         if ((val & 0xFFU) == 1U) {
-            /* PIPEnCTR (n=1..9) bit layout per RX72N HW manual:
+            /* CORRECT PIPEnCTR (n=1..9) bit layout per Renesas FIT
+             * r_usb_bitdefine.h (proven 2026-04-18 via bulk_debug.c):
              *   bit 15 BSTS (RO)
-             *   bit 10 ACLRM  (auto-clear mode trigger)
-             *   bit  9 SQCLR  (sequence bit clear)
-             *   bit  8 SQSET  (sequence bit set)
-             *   bit  6 PBUSY  (RO)
-             *   bits [2:0] PID (NAK=0, BUF=1, STALL=2/3)
-             *
-             * This differs from DCPCTR which has SQCLR at bit 8, SQSET
-             * at bit 7.  rx72n_usb_regs.h mistakenly uses the DCPCTR
-             * layout for k_usb_pipectr_*; we hardcode the correct
-             * positions here. */
+             *   bit 14 INBUFM (IN buffer monitor)
+             *   bit 13 CSCLR (control transfer split status clear)
+             *   bit 12 CSSTS (c-split status)
+             *   bit 10 ATREPM (auto repeat mode)
+             *   bit  9 ACLRM  (auto-clear mode trigger)
+             *   bit  8 SQCLR  (sequence bit clear)
+             *   bit  7 SQSET  (sequence bit set)
+             *   bit  6 SQMON  (sequence bit monitor)
+             *   bit  5 PBUSY  (pipe busy)
+             *   bits [1:0] PID (NAK=0, BUF=1, STALL=2) -- 2 bits not 3
+             */
             REG16(PIPESEL)  = 1U;
             REG16(PIPECFG)  = 0x4011U;   /* TYPE=bulk, DIR=IN, EPNUM=1 */
-            REG16(PIPEBUF)  = 0x0008U;   /* BUFNMB=8, BUFSIZE=0 */
+            REG16(PIPEBUF)  = 0x0008U;   /* BUFNMB=8, BUFSIZE=0 (no-op on RX72N IP0) */
             REG16(PIPEMAXP) = 64U;
+            REG16(PIPESEL)  = 0U;        /* deselect per FIT pipe_init */
 
-            /* Put pipe to NAK, clear buffer, clear sequence -> DATA0. */
-            REG16(PIPE1CTR) = (REG16(PIPE1CTR) & ~0x7U) | 0x0U;     /* PID=NAK */
-            REG16(PIPE1CTR) |= (1U << 10);                           /* ACLRM */
-            REG16(PIPE1CTR) &= (uint16_t)~(1U << 10);
-            REG16(PIPE1CTR) |= (1U << 9);                            /* SQCLR */
-            /* Enable: PID=BUF */
-            REG16(PIPE1CTR) = (REG16(PIPE1CTR) & ~0x7U) | 0x1U;
+            REG16(PIPE1CTR) = (REG16(PIPE1CTR) & ~0x3U) | 0x0U;     /* PID=NAK */
+            REG16(PIPE1CTR) |= (1U << 8);                            /* SQCLR b8 */
+            REG16(PIPE1CTR) |= (1U << 9);                            /* ACLRM b9 set */
+            REG16(PIPE1CTR) &= (uint16_t)~(1U << 9);                 /* ACLRM clear */
+            REG16(PIPE1CTR) |= (1U << 13);                           /* CSCLR b13 */
+            REG16(PIPE1CTR) = (REG16(PIPE1CTR) & ~0x3U) | 0x1U;     /* PID=BUF */
             g_configured = 1;
         }
         REG16(DCPCTR) |= (1U << 2);
@@ -243,8 +245,8 @@ int main(void)
         if (st & (1U << 10)) { REG16(BEMPSTS) = 0; REG16(INTSTS0) = (uint16_t) ~(1U << 10); }
 
         /* Once host has configured us, send a test pattern on pipe 1
-         * whenever the pipe isn't busy.  PIPE1CTR.PBUSY bit 5. */
-        if (g_configured && (REG16(PIPE1CTR) & (1U << 5)) == 0U) {
+         * whenever the buffer is empty (INBUFM bit 14 = 0). */
+        if (g_configured && (REG16(PIPE1CTR) & (1U << 14)) == 0U) {
             /* Select CFIFO for pipe 1 IN, 8-bit MBW. */
             REG16(CFIFOSEL) = (1U) | (1U << 5);
             /* Wait for CURPIPE latch. */

@@ -199,11 +199,17 @@ static void handle_setup(void)
             REG16(USB0 + 0x6EU) = 0U;
             REG16(PIPESEL) = 0U;
 
-            REG16(PIPE1CTR) = (REG16(PIPE1CTR) & ~0x7U) | 0x0U;
-            REG16(PIPE1CTR) |= (1U << 10);
-            REG16(PIPE1CTR) &= (uint16_t)~(1U << 10);
-            REG16(PIPE1CTR) |= (1U << 9);
-            REG16(PIPE1CTR) = (REG16(PIPE1CTR) & ~0x7U) | 0x1U;
+            /* CORRECT PIPEnCTR bit positions per Renesas FIT r_usb_bitdefine.h:
+             *   BSTS=b15, INBUFM=b14, CSCLR=b13, CSSTS=b12, ATREPM=b10,
+             *   ACLRM=b9, SQCLR=b8, SQSET=b7, SQMON=b6, PBUSY=b5,
+             *   PID=[1:0] only (2 bits, mask=0x0003)
+             * Prior session's "fix" used DCPCTR bit layout (wrong for PIPE1-9). */
+            REG16(PIPE1CTR) = (REG16(PIPE1CTR) & ~0x3U) | 0x0U;  /* PID=NAK */
+            REG16(PIPE1CTR) |= (1U << 8);   /* SQCLR (bit 8) */
+            REG16(PIPE1CTR) |= (1U << 9);   /* ACLRM set */
+            REG16(PIPE1CTR) &= (uint16_t)~(1U << 9);   /* ACLRM clear */
+            REG16(PIPE1CTR) |= (1U << 13);  /* CSCLR (bit 13) */
+            REG16(PIPE1CTR) = (REG16(PIPE1CTR) & ~0x3U) | 0x1U;  /* PID=BUF */
 
             REG16(BRDYENB) |= (1U << 1);
             REG16(BEMPENB) |= (1U << 1);
@@ -382,21 +388,13 @@ int main(void)
             REG16(INTSTS0) = (uint16_t) ~(1U << 10);
         }
 
-        /* FIT-style send_start:
-         *  (1) PID=NAK (before any FIFO touch)
-         *  (2) clear BEMP + BRDY status for pipe 1
-         *  (3) chg_curpipe (CFIFOSEL with RCNT|pipe)
-         *  (4) FRDY wait
-         *  (5) write data
-         *  (6) set BVAL if short packet
-         *  (7) PID=BUF
-         */
+        /* Gate tx on INBUFM (bit 14 per FIT).  1 = data pending, 0 = empty. */
         if (g_configured) {
             const uint16_t p1ctr = REG16(PIPE1CTR);
-            const uint16_t bsts_bit15 = p1ctr & (1U << 15);
-            if (bsts_bit15 == 0U) {
-                /* (1) PID=NAK */
-                REG16(PIPE1CTR) = (uint16_t)((REG16(PIPE1CTR) & ~0x0007U) | 0x0000U);
+            const uint16_t inbufm = p1ctr & (1U << 14);
+            if (inbufm == 0U) {
+                /* (1) PID=NAK (mask 0x03) */
+                REG16(PIPE1CTR) = (uint16_t)((REG16(PIPE1CTR) & ~0x0003U) | 0x0000U);
                 /* (2) clear BEMP + BRDY + NRDY status bit 1 (pipe 1) */
                 REG16(BEMPSTS) = (uint16_t)~(1U << 1);
                 REG16(BRDYSTS) = (uint16_t)~(1U << 1);
@@ -416,26 +414,11 @@ int main(void)
                     for (uint16_t i = 0; i < 12; i++) {
                         REG8(CFIFO) = buf[i];
                     }
-                    REG16(CFIFOCTR) |= (1U << 15);
-                    REG16(PIPE1CTR) = (uint16_t)((REG16(PIPE1CTR) & ~0x0007U) | 0x0001U);
+                    REG16(CFIFOCTR) |= (1U << 15);  /* BVAL */
+                    /* PID mask is 2 bits [1:0] per FIT. */
+                    REG16(PIPE1CTR) = (uint16_t)((REG16(PIPE1CTR) & ~0x0003U) | 0x0001U);
                 }
-                /* Also try D0FIFO route — if CFIFO isn't working for pipe 1,
-                 * maybe D0FIFO is the right FIFO for data pipes on RX72N USB0. */
-                REG16(USB0 + 0x28U) = 0x0001U;  /* D0FIFOSEL: CURPIPE=1 */
-                uint32_t d0to = 10000U;
-                while (((REG16(USB0 + 0x28U) & 0xFU) != 1U) && (d0to-- != 0U)) { /* spin */ }
-                if (d0to != 0U) {
-                    uint32_t fto = 10000U;
-                    while (((REG16(USB0 + 0x2AU) & (1U << 13)) == 0U) && (fto-- != 0U)) { /* spin */ }
-                    if (fto != 0U) {
-                        static uint8_t buf2[12] = "D0FIFO TEST\n";
-                        for (uint16_t i = 0; i < 12; i++) {
-                            *(volatile uint8_t*)(USB0 + 0x18U) = buf2[i];
-                        }
-                        REG16(USB0 + 0x2AU) |= (1U << 15);
-                        REG16(PIPE1CTR) = (uint16_t)((REG16(PIPE1CTR) & ~0x0007U) | 0x0001U);
-                    }
-                }
+                /* CFIFO path only. */
                 delay(5000U);
             }
         }
