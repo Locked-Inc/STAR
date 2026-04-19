@@ -41,10 +41,8 @@ EXEMPT_PREFIXES = (
     "star-rx72n-firmware/build/",
     # Reference-only / experimental firmware variants not part of the
     # production build. pwm_test_fit/ is a Renesas-FIT-derived reference
-    # variant retained for comparison against the HAL path. usb_test/
-    # holds standalone bring-up test programs used during USB0 debug.
+    # variant retained for comparison against the HAL path.
     "star-rx72n-firmware/pwm_test_fit/",
-    "star-rx72n-firmware/usb_test/",
 )
 
 # Identifies a Renesas-derived file by the presence of their copyright line.
