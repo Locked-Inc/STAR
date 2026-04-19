@@ -115,9 +115,12 @@ static void gptw0_pin_and_module_setup(void)
     REG8(PWPR) = 0x00U;   /* clear B0WI */
     REG8(PWPR) = 0x40U;   /* set PFSWE */
 
-    /* P23 -> GTIOC0A, P17 -> GTIOC0B.  PSEL = 0x14 for GPTW per rx_mpc.h. */
-    REG8(P23PFS) = 0x14U;
-    REG8(P17PFS) = 0x14U;
+    /* P23 -> GTIOC0A, P17 -> GTIOC0B.  PSEL = 0b011110 = 0x1E per
+     * RX72N Hardware Manual Ch.23 Table 23.4 (P17) and Table 23.6 (P23).
+     * The HAL's 0x14 is wrong for these specific pins -- 0x14 is reserved
+     * on P17/P23 and leaves them Hi-Z. */
+    REG8(P23PFS) = 0x1EU;
+    REG8(P17PFS) = 0x1EU;
 
     /* Re-protect PFS. */
     REG8(PWPR) = 0x00U;
@@ -157,17 +160,16 @@ static void gptw0_init_pwm(void)
      *   OBE bit 24 = 1     -> output enable on GTIOCB
      * (Complementary waveform is produced by setting GTCCRB = period-duty.)
      */
-    /* 0x06 = initial low, toggle on compare match.  Per Renesas iodefine
-     * reference this is the canonical simple-PWM encoding; matches the
-     * FIT/FSP docs (our rx72n_gptw_regs.h uses 0x09 which is a different
-     * saw-wave variant; we try 0x06 first). */
+    /* GTIOA/GTIOB = 0x09: initial LOW, HIGH at cycle end (overflow), LOW
+     * at compare match -> active-high sawtooth PWM, confirmed by HAL
+     * k_gptw_gtior_oa_init_low and RX72N hw manual Ch.26 Table 26.22. */
     const uint32_t gtior =
-        (0x06U << 0)  | (1U << 8)  |   /* GTIOCA: init low, toggle@CMP, OAE */
-        (0x06U << 16) | (1U << 24);    /* GTIOCB: init low, toggle@CMP, OBE */
+        (0x09U << 0)  | (1U << 8)  |   /* GTIOCA */
+        (0x09U << 16) | (1U << 24);    /* GTIOCB */
     REG32(GTIOR)   = gtior;
 
-    /* Enable single-buffer mode for GTCCRA/GTCCRB (HAL requirement). */
-    REG32(GTBER)   = 0x00050005U;
+    /* No buffering.  GTCCRA/GTCCRB writes take effect immediately. */
+    REG32(GTBER)   = 0x00000000U;
 
     /* Start counter: MD=0 saw-wave, TPCS=0 (PCLKA/1), CST=1. */
     REG32(GTCR)    = (0U << 16) | (0U << 24) | (1U << 0);
@@ -297,19 +299,16 @@ static void inline_clock_init(void)
     REG16(0x000803FEU) = 0xA500U;            /* PRCR lock */
 }
 
-/* Helper: emit N pulses on P17 AND P23 as GPIO (PMR=0). */
-static void pulse_n(uint32_t n)
+/* Heartbeat/diagnostic pulses on PA7 only -- do NOT touch P17/P23 after
+ * GPTW takes them in peripheral mode, or we clobber PMR and the PWM
+ * output stops reaching the pad. */
+static void heartbeat_n(uint32_t n)
 {
-    REG8(PORT1_PMR) &= (uint8_t)~(1U << 7);
-    REG8(PORT2_PMR) &= (uint8_t)~(1U << 3);
-    REG8(PORT1_PDR) |= (1U << 7);
-    REG8(PORT2_PDR) |= (1U << 3);
+    REG8(PORTA_PDR) |= PA7_MASK;
     for (uint32_t i = 0; i < n; i++) {
-        REG8(PORT1_PODR) |= (1U << 7);
-        REG8(PORT2_PODR) |= (1U << 3);
+        REG8(PORTA_PODR) |= PA7_MASK;
         for (volatile uint32_t d = 0; d < 50000U; d++) { __asm__ volatile("nop"); }
-        REG8(PORT1_PODR) &= (uint8_t)~(1U << 7);
-        REG8(PORT2_PODR) &= (uint8_t)~(1U << 3);
+        REG8(PORTA_PODR) &= (uint8_t)~PA7_MASK;
         for (volatile uint32_t d = 0; d < 50000U; d++) { __asm__ volatile("nop"); }
     }
     for (volatile uint32_t d = 0; d < 200000U; d++) { __asm__ volatile("nop"); }
@@ -317,18 +316,35 @@ static void pulse_n(uint32_t n)
 
 int main(void)
 {
-    pulse_n(1);                              /* 1: main entered */
+    /* PA7 as diagnostic output; do not touch P17/P23 as GPIO after this. */
+    REG8(PORTA_PDR)  |= PA7_MASK;
+    REG8(PORTA_PODR) &= (uint8_t)~PA7_MASK;
+
+    heartbeat_n(1);                          /* 1: main() entered */
     inline_clock_init();
-    pulse_n(2);                              /* 2: clock_init returned */
-    gptw0_pin_and_module_setup();
-    pulse_n(3);                              /* 3: pin/module setup done */
-    gptw0_init_pwm();
-    pulse_n(4);                              /* 4: GPTW init done */
+    heartbeat_n(2);                          /* 2: clock_init returned */
+
+    gptw0_pin_and_module_setup();            /* sets PMR=1 on P17+P23 */
+    heartbeat_n(3);                          /* 3: pin/module setup done */
+
+    gptw0_init_pwm();                        /* configure + start counter */
+    heartbeat_n(4);                          /* 4: GPTW init done */
+
     volatile uint32_t a = REG32(GTCNT);
     for (volatile uint32_t d = 0; d < 10000U; d++) { __asm__ volatile("nop"); }
     volatile uint32_t b = REG32(GTCNT);
-    pulse_n((b != a) ? 7U : 5U);             /* 7: counter running / 5: frozen */
-    for (;;) {}
+    heartbeat_n((b != a) ? 7U : 5U);         /* 7: counter running, 5: frozen */
+
+    /* Lock in 50% duty for clean scope capture.  No sweep. */
+    REG32(GTCCRA) = (uint32_t)(k_pwm_period_cnt / 2U);
+    REG32(GTCCRB) = (uint32_t)(k_pwm_period_cnt - (k_pwm_period_cnt / 2U));
+
+    /* PA7 heartbeat @ slow rate so we can see firmware is alive. */
+    REG8(PORTA_PDR) |= PA7_MASK;
+    for (;;) {
+        REG8(PORTA_PODR) ^= PA7_MASK;
+        for (volatile uint32_t d = 0; d < 500000U; d++) { __asm__ volatile("nop"); }
+    }
     return 0;
 }
 
