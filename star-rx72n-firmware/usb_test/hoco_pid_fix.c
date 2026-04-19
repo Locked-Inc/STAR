@@ -8,9 +8,6 @@
  *
  * If this enumerates on macOS, the cable is connected and the fix works.
  * If not, the RX72N USB0 port cable is likely not plugged into the Mac.
- *
- * SPDX-License-Identifier: MIT
- * @copyright Copyright (c) 2026 Locked Inc.
  */
 #include <stdint.h>
 

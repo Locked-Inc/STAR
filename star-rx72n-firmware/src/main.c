@@ -183,6 +183,7 @@
 #include "rx_err.h"
 #include "rx_infrastructure.h"
 #include "rx_port_utils.h"
+#include "rx_usb.h"
 #include "tx_api.h"
 
 /* Multi-task architecture includes */
@@ -194,6 +195,7 @@
 #include "shared_data.h"
 #include "telemetry_task.h"
 #include "temp_sensor_task.h"
+#include "usb_task.h"
 #include "watchdog_monitor_task.h"
 
 /* Watchdog driver */
@@ -1925,6 +1927,15 @@ static void internal_register_iwdt_tasks(void)
  */
 static void internal_create_system_tasks(void)
 {
+  /* Beacon: drive PB3 LOW at the VERY START so AD2 on P4 pad 2 can
+   * tell whether we reached task creation at all.  If AD2 still reads
+   * HIGH after flash, internal_create_system_tasks never ran
+   * (something earlier in tx_application_define asserted). */
+  {
+    volatile uint8_t* const pb_podr_beacon = (volatile uint8_t*)0x0008C02BU;
+    *pb_podr_beacon &= (uint8_t)~(1U << 3);
+  }
+
   /* Telemetry Task - Priority 18 (lowest) */
   rx_err_t err = telemetry_task_create();
   RX_ASSERT(err == k_rx_ok, "telemetry_task_create must succeed");
@@ -1949,7 +1960,22 @@ static void internal_create_system_tasks(void)
   err = motor_control_task_create();
   RX_ASSERT(err == k_rx_ok, "motor_control_task_create must succeed");
 
-  /* Communication Task - Priority 5 (highest) */
+  /* USB Polling Task - Priority 4 (highest of all app tasks).
+   * Must be created before comm_task so rx_usb_init() runs BEFORE
+   * comm_task's internal_init_transports() starts bringing up SPI/I2C/UART. */
+
+  /* Beacon: drive PB3 LOW right before usb_task_create. AD2 read:
+   *   HIGH -> we never even got here (earlier task create halted)
+   *   LOW  -> reached this point; if still LOW later, usb_task itself isn't running */
+  {
+    volatile uint8_t* const pb_podr = (volatile uint8_t*)0x0008C02BU;
+    *pb_podr &= (uint8_t)~(1U << 3);
+  }
+
+  err = usb_task_create();
+  RX_ASSERT(err == k_rx_ok, "usb_task_create must succeed");
+
+  /* Communication Task - Priority 5 */
   err = comm_task_create();
   RX_ASSERT(err == k_rx_ok, "comm_task_create must succeed");
 
@@ -2100,6 +2126,14 @@ static void internal_init_stack_monitor(void)
  */
 void tx_application_define(void* first_unused_memory)
 {
+  /* Beacon: drive PB3 LOW at the VERY START of tx_application_define.
+   * main.c's inline USB block left PB3 HIGH; if tx_application_define
+   * runs this at all, AD2 on P4 pad 2 will see LOW. */
+  {
+    volatile uint8_t* const pb_podr_beacon = (volatile uint8_t*)0x0008C02BU;
+    *pb_podr_beacon &= (uint8_t)~(1U << 3);
+  }
+
   /* Precondition: first_unused_memory parameter is provided by ThreadX */
   RX_ASSERT(first_unused_memory != nullptr, "Precondition: first_unused_memory must be valid");
 
@@ -2361,6 +2395,101 @@ int main(void)
   /* Initialize application-specific hardware (GPIO, GPTW, timers, UART, SPI, I2C, ADC) */
   ret = hardware_init();
   RX_ERROR_CHECK(ret);
+
+  /* Inline USB0 attach that is known to bring up DPRPU successfully on
+   * this board.  The equivalent rx_usb_hw_init path with busy-wait
+   * delays has been observed to assert DPRPU without SETUP ever being
+   * serviced -- rootcause is open, but this sequence from
+   * usb_test/hoco_pid_fix.c works reliably.  After attach we drive the
+   * production rx_usb_isr_handler from a tight poll loop so SETUP is
+   * serviced via the real rx_usb_cdc descriptors (3-port CDC composite,
+   * 207-byte config) -- not the stub handler we previously embedded
+   * here. */
+  {
+    volatile uint16_t* const PRCR_R    = (volatile uint16_t*)0x000803FEU;
+    volatile uint32_t* const MSTPCRB_R = (volatile uint32_t*)0x00080014U;
+    volatile uint16_t* const SYSCFG_R  = (volatile uint16_t*)0x000A0000U;
+    volatile uint16_t* const INTENB0_R = (volatile uint16_t*)0x000A0030U;
+    volatile uint16_t* const BRDYENB_R = (volatile uint16_t*)0x000A0036U;
+    volatile uint16_t* const BEMPENB_R = (volatile uint16_t*)0x000A003AU;
+    volatile uint16_t* const DCPCFG_R  = (volatile uint16_t*)0x000A005CU;
+    volatile uint16_t* const DCPMAXP_R = (volatile uint16_t*)0x000A005EU;
+    volatile uint16_t* const DCPCTR_R  = (volatile uint16_t*)0x000A0060U;
+
+    *PRCR_R     = 0xA503U;
+    *MSTPCRB_R &= ~(1UL << 19);
+    *PRCR_R     = 0xA500U;
+
+    *SYSCFG_R   = 0x0000U;
+    for (volatile uint32_t d = 0; d < 2400000U; d++) { __asm__ volatile("nop"); }
+    *SYSCFG_R  |= (1U << 0);  /* USBE */
+    *SYSCFG_R  |= (1U << 10); /* SCKE */
+    for (volatile uint32_t d = 0; d < 2400000U; d++) { __asm__ volatile("nop"); }
+
+    *DCPCFG_R   = 0x0000U;
+    *DCPMAXP_R  = 64U;
+    *DCPCTR_R   = 0x0001U;
+    *BRDYENB_R  = 0x0001U;
+    *BEMPENB_R  = 0x0001U;
+    *INTENB0_R  = (uint16_t)((1U << 15) | (1U << 12) | (1U << 11) | (1U << 10) | (1U << 8));
+
+    *SYSCFG_R  |= (1U << 4); /* DPRPU */
+
+    /* Enable CPU ICU delivery for vector 36 (USB0 USBI) so BRDY/BEMP
+     * interrupts fire directly -- safe because cmt0_isr is in
+     * .rvectors (real ThreadX tick works) and usb0_usbi_isr is also
+     * in .rvectors via its own interrupt(".rvectors", 36) attribute. */
+    volatile uint8_t*  const IPR36_R = (volatile uint8_t*)(0x00087300U + 36U);
+    volatile uint8_t*  const IR36_R  = (volatile uint8_t*)(0x00087000U + 36U);
+    volatile uint8_t*  const IER4_R  = (volatile uint8_t*)(0x00087204U);
+    *IR36_R  = 0U;
+    *IPR36_R = 12U;
+    *IER4_R |= (uint8_t)(1U << 4); /* vector 36 = IER[4] bit 4 */
+
+    /* Diagnostic: drive PB3 (P4 pad 2, MCU pin 82, silkscreen EN3D)
+     * HIGH here in main BEFORE tx_kernel_enter.  usb_task later drives
+     * it LOW.  AD2 DIO7 probe on P4 pad 2 thus shows:
+     *   HIGH = firmware reached main init but usb_task hasn't run
+     *   LOW  = usb_task ran and set PB3 low
+     *   0x0  = neither wrote (probe/wiring issue) */
+    volatile uint8_t* const pb_pdr  = (volatile uint8_t*)0x0008C00BU;
+    volatile uint8_t* const pb_podr = (volatile uint8_t*)0x0008C02BU;
+    volatile uint8_t* const pb_pmr  = (volatile uint8_t*)0x0008C06BU;
+    *pb_pmr  &= (uint8_t)~(1U << 3);
+    *pb_pdr  |= (uint8_t)(1U << 3);
+    *pb_podr |= (uint8_t)(1U << 3); /* HIGH */
+  }
+
+  /* Hardware is now fully attached by the inline sequence above.  Tell
+   * the production rx_usb_hw layer that s_hw_initialized = true so
+   * rx_usb_init below skips the redundant register sequence, then call
+   * rx_usb_init() to set up ring buffers, CDC class state, and flip
+   * s_usb.initialized = true.  Without this, rx_usb_write() early-exits
+   * with k_rx_err_invalid_state and telemetry never reaches the host. */
+  rx_usb_hw_mark_initialized();
+  ret = rx_usb_init(nullptr);
+  RX_ERROR_CHECK(ret);
+
+  /* Service SETUP inline via the production dispatcher during the
+   * ThreadX boot gap.  rx_usb_isr_handler routes CTRT into
+   * rx_usb_cdc_handle_setup, which serves the real 3-port CDC composite
+   * descriptor (207-byte config) -- so the host sees CDC interfaces and
+   * creates one ttyACM per port.  ALSO: once SET_CONFIGURATION has set
+   * the device state to configured, repeatedly write 'Z' to pipe 1
+   * (port 0 bulk IN, EP 0x81) via raw registers.  If the host sees
+   * "ZZZZ..." on /dev/ttyACM1 during this pre-kernel window, the
+   * hardware itself transmits fine and the bug is RTOS-side. */
+  /* Pre-kernel SETUP-servicing window.  Spin polling rx_usb_isr_handler
+   * so the host's enumeration (GET_DESCRIPTOR / SET_ADDRESS /
+   * SET_CONFIGURATION) AND the cdc_acm port-open class requests
+   * (SET_LINE_CODING / SET_CONTROL_LINE_STATE) complete inside
+   * Linux's retry deadline -- which can be 10s+ for class requests
+   * since cdc_acm's per-port open is serialized.  10M iterations is
+   * roughly 5-10s of polling, plenty of time before tx_kernel_enter
+   * takes over and usb_task continues servicing at 100Hz. */
+  for (uint32_t spin = 0U; spin < 10000000U; spin++) {
+    rx_usb_isr_handler();
+  }
 
   /* Start the ThreadX scheduler - should never return */
   tx_kernel_enter();

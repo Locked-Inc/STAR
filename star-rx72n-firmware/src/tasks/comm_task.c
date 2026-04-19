@@ -399,6 +399,8 @@
 #include "rx_spi_link.h"
 #include "rx_time_constants.h"
 #include "rx_uart_comm.h"
+#include "rx_usb.h"
+#include "rx_usb_comm.h"
 #include "shared_data.h"
 #include "tx_api.h"
 
@@ -1043,6 +1045,31 @@ rx_err_t comm_task_create(void)
  * @since Version 1.0.0
  * @see rx_usb_comm_init() USB transport layer initialization
  */
+static bool internal_init_usb_transport(void)
+{
+  if ((s_enabled_channels & k_comm_channel_mask_usb) == k_comm_channel_mask_none) {
+    rx_log_info(s_tag, "USB comm disabled by config");
+    return false;
+  }
+
+  /* USB0 hardware was already brought up by the inline attach block in
+   * main() -- it configures SYSCFG/DCPCFG/DCPCTR/INTENB0 and asserts
+   * DPRPU before tx_kernel_enter() so the host sees the device
+   * immediately.  Calling rx_usb_init() here would reset those registers
+   * and wire in the ISR-driven handler whose USBI vector does not fire
+   * on this chip, so we skip it and rely on the polling loop in
+   * internal_usb_setup_poll() to service SETUP.  The handle below only
+   * wires up the frame codec + session state and does not touch
+   * hardware. */
+
+  rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr};
+  bool                 usb_ok  = (bool)(rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
+  if (!usb_ok) {
+    rx_log_error(s_tag, "USB comm init failed");
+  }
+  return usb_ok;
+}
+
 /**
  * @brief Initialize SPI transport layer and HARQ link
  *
@@ -1601,9 +1628,162 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
  * @callgraph
  * @callergraph
  */
+
+/**
+ * @brief Poll USB0 SETUP engine and service control-endpoint transfers.
+ *
+ * @details
+ * RX72N USB0's USBI CPU interrupt vector does not fire on this chip (verified
+ * against usb_test/hoco_pid_fix.c reference), so enumeration must be driven
+ * by polling.  This function mirrors the inline SETUP handler used in main()
+ * during early attach: it drains CTRT (control-transfer) / BRDY / BEMP
+ * interrupt-status bits on INTSTS0, decodes standard device requests
+ * (GET_DESCRIPTOR device/config, SET_ADDRESS, SET_CONFIGURATION, GET_STATUS)
+ * and pushes stub descriptors from the local s_dev / s_cfg tables.
+ *
+ * The loop is guard-bounded to 8 iterations so it never blocks the 100 Hz
+ * comm task.  All register accesses are direct-mapped 16-bit reads/writes
+ * on the USB0 block at 0xA0000.
+ *
+ * @note This is a transitional implementation; once the production USB CDC
+ *       handler is wired through rx_usb_cdc_handle_setup() we can switch
+ *       to enumerating as 045b:0235 instead of hoco's 1209:0001.
+ */
+static void internal_usb_cfifo_write(const uint8_t* data, uint16_t len)
+{
+  volatile uint16_t* CFIFOSEL_R = (volatile uint16_t*)0x000A0020U;
+  volatile uint16_t* CFIFOCTR_R = (volatile uint16_t*)0x000A0022U;
+  volatile uint8_t*  CFIFO_R8   = (volatile uint8_t*) 0x000A0014U;
+
+  /* ISEL=1, MBW=0 (8-bit), CURPIPE=DCP (0).
+   * 8-bit MBW prevents odd-length descriptor padding → no -75 EOVERFLOW. */
+  *CFIFOSEL_R = (1U << 5);
+  while ((*CFIFOCTR_R & (1U << 13)) == 0U) { /* wait FRDY */ }
+  *CFIFOCTR_R |= (1U << 14); /* BCLR */
+  while ((*CFIFOCTR_R & (1U << 14)) != 0U) { /* wait BCLR complete */ }
+  for (uint16_t i = 0U; i < len; i++) {
+    *CFIFO_R8 = data[i];
+  }
+  *CFIFOCTR_R |= (1U << 15); /* BVAL: commit */
+}
+
+static void internal_usb_setup_poll(void)
+{
+  volatile uint16_t* INTSTS0_R = (volatile uint16_t*)0x000A0040U;
+  volatile uint16_t* DCPCTR_R  = (volatile uint16_t*)0x000A0060U;
+  volatile uint16_t* BRDYSTS_R = (volatile uint16_t*)0x000A0046U;
+  volatile uint16_t* BEMPSTS_R = (volatile uint16_t*)0x000A004AU;
+  volatile uint16_t* USBADDR_R = (volatile uint16_t*)0x000A0050U;
+  volatile uint16_t* USBREQ_R  = (volatile uint16_t*)0x000A0054U;
+  volatile uint16_t* USBVAL_R  = (volatile uint16_t*)0x000A0056U;
+  volatile uint16_t* USBLENG_R = (volatile uint16_t*)0x000A005AU;
+
+  /* Hardcoded descriptors mirror usb_test/hoco_pid_fix.c so we enumerate
+   * as 1209:0001 (generic test VID/PID).  Production CDC descriptors will
+   * replace these once rx_usb_cdc_handle_setup() is wired in. */
+  static const uint8_t s_dev[18] = {
+    /* Device descriptor: USB 2.0, vendor-specific class, 64-byte EP0,
+     * VID=0x045B (Renesas), PID=0x0235 (STAR), device 1.00, 1 config. */
+    0x12, 0x01, 0x00, 0x02, 0xFF, 0x00, 0x00, 0x40,
+    0x5B, 0x04, 0x35, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+  };
+  static const uint8_t s_cfg[18] = {
+    0x09, 0x02, 0x12, 0x00, 0x01, 0x01, 0x00, 0x80, 0x32,
+    0x09, 0x04, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00,
+  };
+
+  for (uint8_t guard = 0; guard < 8U; guard++) {
+    uint16_t st = *INTSTS0_R;
+    bool     did_work = false;
+
+    /* DVST (device state transition): clear ack */
+    if ((st & (1U << 12)) != 0U) {
+      *INTSTS0_R = (uint16_t)~(1U << 12);
+      did_work = true;
+    }
+
+    /* CTRT (control-transfer stage transition): handle SETUP */
+    if ((st & (1U << 11)) != 0U) {
+      uint16_t ctsq = (uint16_t)(st & 0x0007U);
+      if (ctsq == 1U || ctsq == 3U || ctsq == 5U) {
+        /* Clear VALID (bit 3) to acknowledge SETUP was consumed */
+        *INTSTS0_R = (uint16_t)~(1U << 3);
+        /* CRITICAL: restore PID=BUF (hw sets PID=NAK on SETUP receipt) */
+        *DCPCTR_R |= 0x0001U;
+
+        uint16_t req  = *USBREQ_R;
+        uint16_t val  = *USBVAL_R;
+        uint16_t leng = *USBLENG_R;
+        uint8_t  brq  = (uint8_t)(req >> 8);
+
+        if (brq == 0x06U) {
+          /* GET_DESCRIPTOR */
+          uint8_t type = (uint8_t)(val >> 8);
+          const uint8_t* src = NULL;
+          if (type == 0x01U) { src = s_dev; }
+          else if (type == 0x02U) { src = s_cfg; }
+          if (src != NULL) {
+            uint16_t sz = (leng < 18U) ? leng : 18U;
+            internal_usb_cfifo_write(src, sz);
+            *DCPCTR_R |= (1U << 2); /* CCPL: accept status-stage */
+          } else {
+            /* Unknown descriptor: STALL */
+            *DCPCTR_R = (uint16_t)((*DCPCTR_R & ~3U) | 2U);
+          }
+        } else if (brq == 0x05U) {
+          /* SET_ADDRESS */
+          *USBADDR_R = (uint16_t)(val & 0x7FU);
+          *DCPCTR_R |= (1U << 2);
+        } else if (brq == 0x09U) {
+          /* SET_CONFIGURATION */
+          *DCPCTR_R |= (1U << 2);
+        } else if (brq == 0x00U) {
+          /* GET_STATUS */
+          static const uint8_t zeros[2] = { 0x00U, 0x00U };
+          internal_usb_cfifo_write(zeros, 2U);
+          *DCPCTR_R |= (1U << 2);
+        } else {
+          /* Unsupported: STALL */
+          *DCPCTR_R = (uint16_t)((*DCPCTR_R & ~3U) | 2U);
+        }
+      }
+      *INTSTS0_R = (uint16_t)~(1U << 11);
+      did_work = true;
+    }
+
+    /* BRDY (buffer-ready): clear pipe-0 flag */
+    if ((st & (1U << 8)) != 0U) {
+      *BRDYSTS_R = 0U;
+      *INTSTS0_R = (uint16_t)~(1U << 8);
+      did_work = true;
+    }
+
+    /* BEMP (buffer-empty): clear pipe-0 flag */
+    if ((st & (1U << 10)) != 0U) {
+      *BEMPSTS_R = 0U;
+      *INTSTS0_R = (uint16_t)~(1U << 10);
+      did_work = true;
+    }
+
+    if (!did_work) {
+      break;
+    }
+  }
+}
+
 static void internal_comm_task_entry(ULONG input)
 {
   (void)input;
+
+  /* Service any SETUP requests that arrived while ThreadX was booting
+   * AND while the transport stack is about to initialize.  Without this
+   * burst, the ~100 ms of transport init would push the USB host past
+   * its SETUP retry window and enumeration would fail with -110.  Each
+   * internal_usb_setup_poll() invocation is bounded to 8 passes so this
+   * cannot spin forever. */
+  for (uint16_t burst = 0U; burst < 512U; burst++) {
+    internal_usb_setup_poll();
+  }
 
   rx_log_info(s_tag, "Communication task starting");
 
@@ -1626,6 +1806,12 @@ static void internal_comm_task_entry(ULONG input)
 
   /* Main communication loop */
   while (true) {
+    /* Service USB0 SETUP engine before each poll cycle.
+     * RX72N USB0's USBI CPU vector does not fire on this chip; enumeration
+     * must be driven by software polling.  See internal_usb_setup_poll()
+     * for rationale. */
+    internal_usb_setup_poll();
+
     /* Poll for incoming frames (non-blocking) */
     err = rx_comm_manager_poll(&g_comm_manager);
 

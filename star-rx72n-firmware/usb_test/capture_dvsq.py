@@ -13,7 +13,7 @@ from pydwf import DwfLibrary
 from pydwf.utilities import openDwfDevice
 
 dwf = DwfLibrary()
-dev = openDwfDevice(dwf, serial_number_filter="210321A2AE49")
+dev = openDwfDevice(dwf, serial_number_filter="210321A36AA3")
 dio = dev.digitalIO
 dio.outputEnableSet(0x0000)  # All inputs.
 

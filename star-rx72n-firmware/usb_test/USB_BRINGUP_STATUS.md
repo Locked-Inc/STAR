@@ -79,8 +79,8 @@ REG16(0x80044) = (1U << 12) | 1U;   /* UPLLSEL=1 (b12), reserved b0=1 */
 
 ### 5. PPLLCR3 default wrong for 48 MHz
 
-Default after reset is `0x01` (div-by-2 = 96 MHz from 192 MHz PPLL). For USB we
-need 48 MHz, so write `0x03` (div-by-4):
+Default after reset is `0x01` (÷2 = 96 MHz from 192 MHz PPLL). For USB we need
+48 MHz, so write `0x03` (÷4):
 
 ```c
 REG8(0x8004B) = 0x03U;   /* PPLLCR3: div-by-4 for USB 48 MHz */
@@ -103,10 +103,10 @@ Header comments said `multiply = STC + 1`. Manual page 345 says
 
 | STC (dec) | Formula `(STC+1)/2` | Manual table |
 |-----------|---------------------|--------------|
-| 19 (0x13) | x 10.0              | x 10.0 OK    |
-| 23 (0x17) | x 12.0              | x 12.0 OK    |
+| 19 (0x13) | × 10.0              | × 10.0 ✓    |
+| 23 (0x17) | × 12.0              | × 12.0 ✓    |
 
-Using `STC+1` would give x20 and x24, double the correct value.
+Using `STC+1` would give ×20 and ×24, double the correct value.
 
 ### 8. PID = NAK after SETUP reception (THE first enumeration blocker)
 

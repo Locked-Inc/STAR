@@ -27,7 +27,7 @@ can be the active interpreter at a time. We toggle.
 |-----------------------|----------------|-----------------------------------------------------------------|
 | Renesas E2 Lite       | `045b:82a0`    | The only path to flash the RX72N (FINE protocol over USB)       |
 | Digilent Analog Discovery 2 (FT232H) | `0403:6014` (SN `210321A2AE49`) | Diagnostic GPIO sniffer. AD2 IO7 is wired to RX72N pin 82 (PB3). |
-| Cypress USB-UART (CY7C65213) | `04b4:0003`    | Appears as `/dev/ttyACM0` *only when the RX72N is out of reset* -- confirms the chip booted after `make flash`. |
+| Cypress USB-UART (CY7C65213) | `04b4:0003`    | Appears as `/dev/ttyACM0` *only when the RX72N is out of reset* — confirms the chip booted after `make flash`. |
 | RX72N USB0 USB-C port | `1209:0001` (after bring-up) | The device under test. Empty until enumeration succeeds. |
 
 The Pi5 has its own internal RP1 hub. `lsusb -t` shows everything hanging off

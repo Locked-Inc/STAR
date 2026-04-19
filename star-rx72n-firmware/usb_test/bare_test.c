@@ -11,9 +11,6 @@
  *   3 blinks = PLL LOCKED, USB0 D+ pull-up active
  *   fast continuous = PLL FAILED, running on HOCO (no USB)
  *   slow continuous = heartbeat (USB active, waiting for host)
- *
- * SPDX-License-Identifier: MIT
- * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include <stdint.h>
