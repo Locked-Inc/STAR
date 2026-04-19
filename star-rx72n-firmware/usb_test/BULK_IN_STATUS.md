@@ -578,3 +578,33 @@ to actually emit DATA on the wire? Next steps to investigate:
 4. Check RX72N HW manual Ch. 31.2 "Pipe Setup" sequence for any IP0-specific
    step missing from FIT (which targets IP1 on RX64M/71M and treats IP0 as a
    subset).
+
+---
+
+## 2026-04-18 LATER: Root cause FOUND AND FIXED
+
+**Status**: Bulk IN hardware path works.  Commits `2630e2996` and `c96865cbe`.
+
+### The bug
+`rx72n_usb_regs.h` `k_usb_pipectr_*` constants used the DCPCTR bit layout
+for pipes 1-9, which use a different layout.  Every pipe init sequence
+(SQCLR / ACLRM / CSCLR / PID mask) wrote to the wrong bits, and the
+bulk-IN PBUSY check hit SQMON instead.  See commit `c96865cbe` for the
+field-by-field table.  Fix: header constants now match Renesas FIT
+`r_usb_bitdefine.h` verbatim.
+
+### Verified
+* `usb_test/bulk_debug.c` → "HELLO WORLD\n" received on EP 0x82.
+* `usb_test/bulk_in_fix.c` → "BULK1 NNNN\r\n" streaming on EP 0x81.
+* Production (`star-rx72n-firmware.mot`) → 3 CDC ports enumerate as
+  `045b:0235`, bulk OUT → echo loop round-trips host-sent bytes.
+
+### Still broken (separate issue, higher up the stack)
+`usb_task.c` heartbeat writes ("p0\r\n" / "p1\r\n" / "p2\r\n") don't
+appear on `/dev/ttyACM{1,2,3}`.  12-second cat of port 1 (never written
+to) returns 0 bytes.  The hardware pipe is fine -- rx_usb_write must be
+short-circuiting or usb_task isn't reaching the rx_usb_write path.
+Worth checking next session:
+* Is `usb_task_create()` actually running the task?  (priority 4 = high)
+* Does `rx_usb_write` return k_rx_err_busy / k_rx_err_invalid_state?
+* Is `internal_trigger_tx_if_idle()` finding the pipe always PBUSY?
