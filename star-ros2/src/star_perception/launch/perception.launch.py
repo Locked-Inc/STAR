@@ -27,6 +27,14 @@ from launch_ros.actions import Node
 
 
 def _default_hef_path() -> str:
+    # Prefer the smaller yolov8n (104 FPS idle ceiling on Hailo-8L, vs 52
+    # FPS for yolov8s) when it is present locally -- both models use the
+    # same 640x640 input and NMS-on-chip output shape so the runner code
+    # does not change. Fall back to the packaged yolov8s_h8l.hef on hosts
+    # that haven't downloaded yolov8n.hef yet (CI, fresh Pis).
+    local_n = "/home/star/hailo-hefs/yolov8n.hef"
+    if os.path.exists(local_n):
+        return local_n
     share = get_package_share_directory("star_perception")
     return os.path.join(share, "models", "yolov8s_h8l.hef")
 
@@ -39,10 +47,11 @@ def generate_launch_description() -> LaunchDescription:
     )
     target_fps_arg = DeclareLaunchArgument(
         "target_fps",
-        default_value="15.0",
+        default_value="30.0",
         description=(
             "Soft FPS cap on the YOLO node. Frames arriving faster are "
-            "dropped at the subscriber. 15 matches the cam0 capture rate."
+            "dropped at the subscriber. 30 leaves headroom above the "
+            "15-FPS camera target; raise to 60 for yolov8n benchmarks."
         ),
     )
     overlay_arg = DeclareLaunchArgument(

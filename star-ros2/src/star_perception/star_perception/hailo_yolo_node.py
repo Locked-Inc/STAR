@@ -2,7 +2,7 @@
 Hailo-8L YOLOv8 inference node.
 
 Subscribes to:
-  /cam0/camera/image_rect_color   sensor_msgs/Image (RGB8, rectified)
+  /cam0/camera/image_raw   sensor_msgs/Image (RGB8, unrectified)
 
 Publishes:
   /perception/detections_2d   vision_msgs/Detection2DArray
@@ -62,9 +62,12 @@ from star_perception.hailo_runner import (
 )
 
 
-DEFAULT_TARGET_FPS = 15.0
+DEFAULT_TARGET_FPS = 30.0
 DEFAULT_SCORE_THRESHOLD = 0.35
-INPUT_TOPIC = "/cam0/camera/image_rect_color"
+# Subscribe to the unrectified stream so inference does not wait on the
+# CPU rectify stage. YOLOv8 tolerates IMX219 wide-angle distortion; 3D
+# fusion downstream still uses the rectified pair for geometry.
+INPUT_TOPIC = "/cam0/camera/image_raw"
 DETECTIONS_TOPIC = "/perception/detections_2d"
 OVERLAY_TOPIC = "/perception/image_overlay"
 
@@ -120,10 +123,16 @@ class HailoYoloNode(Node):
             self.get_parameter("class_filter").value or []
         )
 
+        # Match gscam's RELIABLE publisher. Depth 1 drops stale frames
+        # at the queue. Tried BestEffort on the 30 fps path and the
+        # kernel UDP recv buffer overflowed on 900 kB RGB frames so
+        # inference never fired; RELIABLE is the honest choice until
+        # we can move to an intra-process / shared-memory transport
+        # (camera_ros + ComposableNode Hailo, or TAPPAS bypass).
         qos_image = QoSProfile(
             reliability=ReliabilityPolicy.RELIABLE,
             durability=DurabilityPolicy.VOLATILE,
-            depth=2,
+            depth=1,
         )
         self._sub = self.create_subscription(
             Image, INPUT_TOPIC, self._on_image, qos_image,
