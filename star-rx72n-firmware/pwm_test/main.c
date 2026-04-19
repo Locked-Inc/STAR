@@ -324,13 +324,10 @@ int main(void)
     pulse_n(3);                              /* 3: pin/module setup done */
     gptw0_init_pwm();
     pulse_n(4);                              /* 4: GPTW init done */
-
-    /* Read GTCNT twice to see if counter ticks. */
     volatile uint32_t a = REG32(GTCNT);
     for (volatile uint32_t d = 0; d < 10000U; d++) { __asm__ volatile("nop"); }
     volatile uint32_t b = REG32(GTCNT);
     pulse_n((b != a) ? 7U : 5U);             /* 7: counter running / 5: frozen */
-
     for (;;) {}
     return 0;
 }
