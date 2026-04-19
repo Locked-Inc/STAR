@@ -25,6 +25,12 @@ NUM_GPIO = 28
 GPIO_FIRST = 0
 GPIO_LAST = NUM_GPIO - 1
 
+# Pins to leave alone on Pi5 + Hailo AI Hat+ pass-through:
+#   0, 1  -> Pi HAT ID EEPROM (ID_SD / ID_SC, per Pi HAT spec)
+#   2, 3  -> I2C-1 to Hailo AI Hat+ EEPROM at 0x50 (per Hailo docs)
+#   7, 8  -> spi0 CS1 / CS0 (kernel-claimed)
+SKIP_PINS = frozenset({0, 1, 2, 3, 7, 8})
+
 PIN_HIGH_MS = 10
 PIN_LOW_MS = 10
 PIN_PERIOD_MS = PIN_HIGH_MS + PIN_LOW_MS
@@ -36,9 +42,12 @@ def sleep_ms(ms: float) -> None:
 
 
 def run_sweep(handle: int, cycle_idx: int) -> None:
-    print(f"cycle {cycle_idx}: driving GPIO {GPIO_FIRST}..{GPIO_LAST}",
+    pins = [g for g in range(GPIO_FIRST, GPIO_LAST + 1)
+            if g not in SKIP_PINS]
+    print(f"cycle {cycle_idx}: driving GPIO "
+          f"{pins[0]}..{pins[-1]} (skipping {sorted(SKIP_PINS)})",
           flush=True)
-    for gpio in range(GPIO_FIRST, GPIO_LAST + 1):
+    for gpio in pins:
         lgpio.gpio_claim_output(handle, gpio, 0)
         lgpio.gpio_write(handle, gpio, 1)
         sleep_ms(PIN_HIGH_MS)
