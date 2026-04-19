@@ -126,9 +126,7 @@ typedef struct {
  * @brief Zero-initializer for TelemetryData
  */
 #define star_v1_TelemetryData_init_zero                                                            \
-  {                                                                                                \
-    0, 0, false, 0, false, {0}, false, {0}, false, {0}, false, {0}, 0.0                            \
-  }
+  {0, 0, false, 0, false, {0}, false, {0}, false, {0}, false, {0}, 0.0}
 
 /* =============================================================================
  * Mock Control Functions
