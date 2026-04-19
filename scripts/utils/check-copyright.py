@@ -28,15 +28,23 @@ from pathlib import Path
 
 SOURCE_EXTENSIONS = {".c", ".h", ".cpp", ".hpp"}
 
-# Path prefixes (relative to repo root) that are third-party -- never checked.
+# Path prefixes (relative to repo root) that are third-party or generated
+# code -- never checked.
 EXEMPT_PREFIXES = (
     "schematic/",
+    "gen/",  # top-level protobuf/nanopb generated code (buf output)
     "star-rx72n-firmware/libs/rx_nanopb/nanopb/",
     "star-rx72n-firmware/libs/rx_nanopb/inc/gen/",
     "star-rx72n-firmware/libs/threadx/",
     "star-ros2/src/sllidar_ros2/",
     "star-ros2/install/",
     "star-rx72n-firmware/build/",
+    # Reference-only / experimental firmware variants not part of the
+    # production build. pwm_test_fit/ is a Renesas-FIT-derived reference
+    # variant retained for comparison against the HAL path. usb_test/
+    # holds standalone bring-up test programs used during USB0 debug.
+    "star-rx72n-firmware/pwm_test_fit/",
+    "star-rx72n-firmware/usb_test/",
 )
 
 # Identifies a Renesas-derived file by the presence of their copyright line.
