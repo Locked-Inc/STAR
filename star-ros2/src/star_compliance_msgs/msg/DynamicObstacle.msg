@@ -20,3 +20,13 @@ uint32 point_count
 # DBSCAN core-point density / cluster_radius_m. Higher is more
 # confident. 0-1 normalized.
 float32 confidence
+
+# Provenance of this obstacle - one of:
+#   "lidar"      - from the LiDAR DBSCAN cluster only
+#   "yolo"       - from a YOLO 3D detection only (e.g. behind glass)
+#   "yolo+lidar" - both modalities agree, raises confidence to 1.0
+string source
+
+# COCO class name from the matched YOLO 3D detection. Empty string for
+# pure-LiDAR sources.
+string class_label

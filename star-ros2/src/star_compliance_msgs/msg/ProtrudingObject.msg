@@ -45,3 +45,15 @@ string ada_section
 
 # Absolute path to a colored-point-cloud PNG embedded in the audit PDF.
 string cloud_snippet_path
+
+# --- YOLO semantic label (filled by the perception fusion node) ------
+
+# COCO class name from the nearest YOLO 3D detection within
+# class_match_radius_m (default 0.30 m). Empty string when no YOLO
+# detection matches; the cluster is then treated as an unclassified
+# (and therefore presumed-fixed) protrusion.
+string class_label
+
+# Detection confidence (0-1) from the matched YOLO detection. Zero when
+# class_label is empty.
+float32 class_confidence

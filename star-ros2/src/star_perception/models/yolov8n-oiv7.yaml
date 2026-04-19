@@ -1,0 +1,44 @@
+# Hailo Model Zoo network config for YOLOv8n fine-tuned on Open
+# Images V7 (601 classes). Based on hailo_model_zoo/cfg/networks/yolov8n.yaml
+# with only the class count, dataset references, and output shape
+# adjusted. Drop this file next to the ONNX on the x86 compile host
+# and point `hailomz compile` at it via `--yaml`.
+base:
+  - base/yolov8.yaml
+
+postprocessing:
+  device_pre_post_layers:
+    nms: true
+    hpp: true
+  meta_arch: yolov8
+  anchors:
+    regression_length: 16
+    strides: [8, 16, 32]
+
+network:
+  network_name: yolov8n-oiv7
+  paths:
+    # The ML teammate fills this in after `yolo export ... format=onnx`.
+    # Placeholder path -- override on the compile-host filesystem.
+    network_path:
+      - yolov8n-oiv7.onnx
+    alls_script: yolov8n-oiv7.alls
+
+info:
+  task: object detection
+  input_shape: 640x640x3
+  # 601-class NMS output: max 100 detections per class, 5 floats per row.
+  output_shape: 601x5x100
+  operations: 8.74G
+  parameters: 3.2M
+  framework: pytorch
+  training_data: Open Images V7 train (Ultralytics split)
+  validation_data: Open Images V7 val
+  eval_metric: mAP
+  source: https://github.com/ultralytics/ultralytics
+  license_url: https://github.com/ultralytics/ultralytics/blob/main/LICENSE
+  license_name: AGPL-3.0
+
+supported_hw_arch:
+  - hailo8
+  - hailo8l

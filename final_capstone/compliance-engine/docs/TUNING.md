@@ -26,7 +26,7 @@ ros2 param set /star_protruding_objects_node enabled false
 Defined in `star_compliance/bringup/compliance.launch.py`.
 
 | Argument | Default | Effect |
-|---|---|---|
+| --- | --- | --- |
 | `use_stereo` | `true` | Door clear-width uses stereo. Set `false` for LiDAR-only operation when the IMX219-83 is disconnected. |
 | `use_ada_307` | `true` | ADA 307 node starts. Set `false` to save ~25% CPU. |
 | `use_path_blockage` | `true` | ADA 403.5 node starts. |
@@ -41,7 +41,7 @@ Defined in `star_compliance/bringup/compliance.launch.py`.
 ### ramp_slope_node
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | (none user-configurable today) | - | - | - |
 
 Known-good constants defined in `detectors/plane_segmentation.py`:
@@ -51,7 +51,7 @@ RANSAC `distance_threshold=0.03`, `num_iterations=500`,
 ### door_clear_width_node
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `door_offset_m` | `0.0635` | 0.04 - 0.08 | Total door+stop+hinge offset subtracted from frame width. Defaults to 2.5 in (1.75 in door + 0.5 in stop + 0.25 in hinge). Calibrate per deployment by measuring a few known doors and fitting the mean. |
 | `sensor_height_m` | `0.25` | 0.15 - 0.35 | LiDAR scan-plane height above the floor. Used to derive the handle-height band. Measure once with a ruler; static per robot build. |
 | `enabled` | `true` | bool | Toggle the whole node without killing its subscriptions. Useful for mid-run throttling. |
@@ -69,7 +69,7 @@ RANSAC `distance_threshold=0.03`, `num_iterations=500`,
 ### door_threshold_node
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `threshold_ms2` | `2.0` | 1.0 - 5.0 | z-accel deviation (above baseline) that fires the jolt detector. Lower = more sensitive (more false positives on carpet transitions); higher = fewer reads but misses compliant thresholds. |
 | `watch_duration_sec` | `2.0` | 1.0 - 4.0 | How long after a DoorwayMeasurement the jolt detector stays armed. Match to robot traversal speed: time to cross a 1.2 m doorway at 0.5 m/s is 2.4 s. |
 | `enabled` | `true` | bool | Toggle at runtime. |
@@ -87,7 +87,7 @@ RANSAC `distance_threshold=0.03`, `num_iterations=500`,
 ### protruding_objects_node
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `enabled` | `true` | bool | Auto-toggled by `compliance_monitor_node` under CPU stress. |
 | `input_cloud_topic` | `/cloud_map` | topic | `/cloud_map` is 1 Hz (cheap). `/stereo/points2` is 5-10 Hz (3-4x CPU). |
 | `sensor_height_m` | `0.25` | 0.15 - 0.35 | Same as above; used to anchor the floor plane. |
@@ -105,7 +105,7 @@ RANSAC `distance_threshold=0.03`, `num_iterations=500`,
 ### path_blockage_node
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `enabled` | `true` | bool | Toggle at runtime. |
 
 Constants in `detectors/corridor_medial_axis.py`:
@@ -117,7 +117,7 @@ editing the module if persistent false positives appear.
 ### dynamic_obstacle_node
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `enabled` | `true` | bool | Toggle at runtime. |
 | `eps_m` | `0.15` | 0.08 - 0.30 | DBSCAN neighborhood radius. Smaller = more, smaller clusters; larger = fewer, larger clusters. |
 | `min_samples` | `5` | 3 - 15 | DBSCAN core-point threshold. Lower = more FP from LiDAR noise; higher = misses small dynamic objects. |
@@ -134,7 +134,7 @@ editing the module if persistent false positives appear.
 ### compliance_monitor_node
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `cpu_count` | auto-detect | 1-16 | Divisor for normalizing the 1-minute load average. Override only if `os.cpu_count()` misreports. |
 
 Thresholds `HIGH_LOAD_THRESHOLD=0.80` and `LOW_LOAD_THRESHOLD=0.50`
@@ -148,7 +148,7 @@ budget.
 `star-ros2/src/star_bringup/config/nav2_params.yaml`:
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `local_costmap.sonar_layer.phi` | 1.2 | 0.5 - 2.5 | Full cone angle (radians) for HC-SR04 inflation. 1.2 rad ~ 70 deg. The HC-SR04's datasheet is 15 deg effective, but inflating wider accounts for near-range spread. |
 | `sonar_layer.clear_threshold` | 0.2 | 0.1 - 0.5 | Cells with cost probability below this are cleared. |
 | `sonar_layer.mark_threshold` | 0.8 | 0.5 - 0.95 | Cells with cost above this are marked as obstacle. |

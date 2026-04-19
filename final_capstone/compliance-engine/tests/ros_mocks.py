@@ -98,19 +98,19 @@ class FakeLogger:
     def __init__(self):
         self.records: list[tuple[str, str]] = []
 
-    def info(self, msg: str) -> None:
+    def info(self, msg: str, **_kwargs) -> None:
         self.records.append(("info", msg))
 
-    def warn(self, msg: str) -> None:
+    def warn(self, msg: str, **_kwargs) -> None:
         self.records.append(("warn", msg))
 
-    def warning(self, msg: str) -> None:
+    def warning(self, msg: str, **_kwargs) -> None:
         self.warn(msg)
 
-    def error(self, msg: str) -> None:
+    def error(self, msg: str, **_kwargs) -> None:
         self.records.append(("error", msg))
 
-    def debug(self, msg: str) -> None:
+    def debug(self, msg: str, **_kwargs) -> None:
         self.records.append(("debug", msg))
 
 
@@ -253,6 +253,9 @@ def install_ros_mocks() -> None:
         "cv_bridge",
         "sensor_msgs_py", "sensor_msgs_py.point_cloud2",
         "star_compliance_msgs", "star_compliance_msgs.msg",
+        "vision_msgs", "vision_msgs.msg",
+        "tf2_ros",
+        "rclpy.duration", "rclpy.time",
     ):
         if pkg not in sys.modules:
             _make_module(pkg)
@@ -284,3 +287,38 @@ def install_ros_mocks() -> None:
         "PathBlockage",
     ):
         setattr(sys.modules["star_compliance_msgs.msg"], msg_cls, MagicMock)
+
+    # vision_msgs Detection3DArray is consumed by the YOLO-aware
+    # branches in protruding_objects_node and dynamic_obstacle_node.
+    setattr(sys.modules["vision_msgs.msg"], "Detection3DArray", MagicMock)
+
+    # tf2_ros: a Buffer with a configurable lookup_transform return,
+    # plus a stub TransformListener. Tests poke node._tf_buffer
+    # directly to inject a TransformStamped.
+    class _FakeTfBuffer:
+        def __init__(self) -> None:
+            self.transform_to_return = None  # tests assign a stub.
+
+        def lookup_transform(self, target, source, time, timeout=None):
+            if self.transform_to_return is None:
+                raise RuntimeError("test did not set transform_to_return")
+            return self.transform_to_return
+
+    class _FakeTransformListener:
+        def __init__(self, buffer, node):
+            self.buffer = buffer
+            self.node = node
+
+    setattr(sys.modules["tf2_ros"], "Buffer", _FakeTfBuffer)
+    setattr(sys.modules["tf2_ros"],
+            "TransformListener", _FakeTransformListener)
+
+    # rclpy.time.Time and rclpy.duration.Duration are referenced by
+    # the YOLO callbacks. Stubs satisfy the constructor and the
+    # lookup_transform timeout argument. Both submodules must also be
+    # exposed as attributes of `rclpy` so `rclpy.time.Time()` works
+    # after a plain `import rclpy`.
+    sys.modules["rclpy.time"].Time = MagicMock
+    sys.modules["rclpy.duration"].Duration = MagicMock
+    rclpy.time = sys.modules["rclpy.time"]
+    rclpy.duration = sys.modules["rclpy.duration"]

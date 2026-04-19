@@ -8,8 +8,11 @@ from star_compliance.detectors.cane_zone_filter import (
     ADA_307_PROTRUSION_LIMIT_M,
     CANE_ZONE_MAX_M,
     CANE_ZONE_MIN_M,
+    DEFAULT_CLASS_MATCH_RADIUS_M,
+    TRANSIENT_CLASSES,
     filter_to_cane_zone,
     is_protrusion,
+    is_transient_class,
 )
 
 
@@ -76,3 +79,42 @@ def test_is_protrusion_insufficient_points_returns_false():
     assert not is_protrusion(distance_from_wall_m=0.15,
                              height_above_floor_m=1.0,
                              point_count=2)
+
+
+# ---------------------------------------------------------------------------
+# YOLO transient-class helpers (added with Hailo-8L perception fusion).
+# ---------------------------------------------------------------------------
+
+
+def test_transient_classes_includes_known_movables():
+    # Sanity: things that should not flag an ADA 307 violation when
+    # they happen to be in the cane zone during a scan.
+    for label in ("person", "chair", "backpack", "dog"):
+        assert label in TRANSIENT_CLASSES
+
+
+def test_transient_classes_excludes_fixed_obstacles():
+    # Fire extinguishers, signage, and the like must NOT be in the
+    # transient set or we would miss real ADA 307 violations.
+    for label in ("fire hydrant", "tv", "clock", ""):
+        assert label not in TRANSIENT_CLASSES
+
+
+def test_is_transient_class_truthy_for_listed():
+    assert is_transient_class("person") is True
+    assert is_transient_class("chair") is True
+
+
+def test_is_transient_class_false_for_empty_string():
+    # Unclassified protrusions (no YOLO match) are presumed-fixed.
+    assert is_transient_class("") is False
+
+
+def test_is_transient_class_false_for_unknown_label():
+    assert is_transient_class("not_a_class") is False
+
+
+def test_default_class_match_radius_is_reasonable():
+    # 30 cm covers the IMX219-83 stereo depth standard error at 2 m
+    # (~10 cm) plus map-frame TF jitter.
+    assert 0.10 <= DEFAULT_CLASS_MATCH_RADIUS_M <= 1.0
