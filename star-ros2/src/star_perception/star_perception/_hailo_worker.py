@@ -108,6 +108,16 @@ class _Runner:
         self._out_name = None
         self._ip = None
         self._op = None
+        # `activate()` returns a context manager holding the HW context
+        # on the Hailo-8L. Previously we entered it per-frame, which
+        # costs ~30-80 ms of PCIe programming and drops sustained
+        # throughput from ~100 FPS to ~10 FPS. Keep it alive for the
+        # lifetime of the worker (single-model server).
+        self._activation = None
+        # `InferVStreams` allocates DMA input/output buffers and sets
+        # up the vstream pipeline; same story - hold it open.
+        self._pipe_ctx = None
+        self._pipe = None
 
     def setup(self) -> None:
         hef = HEF(str(self.hef_path))
@@ -118,17 +128,37 @@ class _Runner:
         self._ng = self.vdevice.configure(hef, cp)[0]
         self._in_name = hef.get_input_vstream_infos()[0].name
         self._out_name = hef.get_output_vstream_infos()[0].name
-        self._ip = InputVStreamParams.make(self._ng, format_type=FormatType.UINT8)
-        self._op = OutputVStreamParams.make(self._ng, format_type=FormatType.FLOAT32)
+        self._ip = InputVStreamParams.make(
+            self._ng, format_type=FormatType.UINT8)
+        self._op = OutputVStreamParams.make(
+            self._ng, format_type=FormatType.FLOAT32)
+
+        # Enter both contexts once and remember them so infer() is a
+        # hot-path that only does the PCIe DMA + inference.
+        self._activation = self._ng.activate(self._ng.create_params())
+        self._activation.__enter__()
+        self._pipe_ctx = InferVStreams(self._ng, self._ip, self._op)
+        self._pipe = self._pipe_ctx.__enter__()
 
     def infer(self, canvas_hwc: np.ndarray):
         batched = np.expand_dims(canvas_hwc, axis=0)
-        with InferVStreams(self._ng, self._ip, self._op) as pipe:
-            with self._ng.activate(self._ng.create_params()):
-                raw = pipe.infer({self._in_name: batched})
+        raw = self._pipe.infer({self._in_name: batched})
         return _decode_hailo_yolov8_output(raw[self._out_name])
 
     def shutdown(self) -> None:
+        if self._pipe_ctx is not None:
+            try:
+                self._pipe_ctx.__exit__(None, None, None)
+            except Exception:
+                pass
+            self._pipe_ctx = None
+            self._pipe = None
+        if self._activation is not None:
+            try:
+                self._activation.__exit__(None, None, None)
+            except Exception:
+                pass
+            self._activation = None
         if self.vdevice is not None:
             try:
                 self.vdevice.release()
