@@ -454,7 +454,7 @@ static void internal_handle_ctrt_interrupt(void)
        * Ch40, so a racing second SETUP cannot overwrite the registers
        * mid-read.
        */
-      usb0()->intsts0 = (uint16_t) ~k_usb_intsts0_valid;
+      usb0()->intsts0 = (uint16_t)~k_usb_intsts0_valid;
       /*
        * CRITICAL: the RX72N hardware sets DCPCTR.PID = NAK automatically
        * on SETUP reception (manual section 40, DCPCTR field description).
@@ -482,7 +482,7 @@ static void internal_handle_ctrt_interrupt(void)
        * path is ISR context and rx_log_* funnels through a mutex
        * that we can't safely acquire from ISR. */
       usb0()->dcpctr =
-        (uint16_t)((usb0()->dcpctr & (uint16_t) ~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall);
+        (uint16_t)((usb0()->dcpctr & (uint16_t)~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall);
       break;
 
     case k_usb_intsts0_ctsq_idle:
@@ -522,7 +522,7 @@ static void internal_handle_brdy_interrupt(void)
       }
       /* Note: Other pipes (Bulk IN, Interrupt IN) don't trigger BRDY */
       /* Clear pipe buffer ready flag */
-      usb0()->brdysts = (uint16_t) ~(1U << pipe);
+      usb0()->brdysts = (uint16_t)~(1U << pipe);
     }
   }
 }
@@ -554,7 +554,7 @@ static void internal_handle_bemp_interrupt(void)
       }
       /* Note: Interrupt IN pipes don't typically need BEMP handling for CDC */
       /* Clear pipe buffer empty flag */
-      usb0()->bempsts = (uint16_t) ~(1U << pipe);
+      usb0()->bempsts = (uint16_t)~(1U << pipe);
     }
   }
 }
