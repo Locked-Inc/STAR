@@ -290,13 +290,23 @@ rx_err_t rx_poeg_init(void)
 {
   rx_log_info(s_tag, "Initializing POEG fault protection");
 
-  /* DIAG: skip POEG init entirely -- verified that the POEGGn register
-   * write somehow clobbers the USB0 peripheral state on RX72N, breaking
-   * enumeration.  Root cause TBD. */
-  (void)s_poeg_groups;
-  (void)s_poeg_vectors;
-  (void)&internal_configure_gtintad;
-  (void)&internal_enable_poeg_irq;
+  for (uint8_t i = 0; i < k_poeg_motor_count; i++) {
+    /* Configure POEG group: enable pin detection, invert, noise filter */
+    volatile rx_poegg_regs_t* poeg = s_poeg_groups[i];
+    poeg->poeggn                   = k_poeg_init_value;
+
+    /* Verify write-once enable bits were accepted */
+    if ((poeg->poeggn & k_poeg_pide_enable) == 0) {
+      rx_log_error_val(s_tag, "POEG PIDE write failed motor", (uint32_t)i);
+      return k_rx_err_hw_init_failed;
+    }
+
+    /* Link GPTW channel to POEG group via GTINTAD */
+    internal_configure_gtintad(i);
+
+    /* Enable ICU interrupt for this POEG group */
+    internal_enable_poeg_irq(s_poeg_vectors[i], k_poeg_isr_priority);
+  }
 
   rx_log_info(s_tag, "POEG fault protection active (4 groups, priority 14)");
   return k_rx_ok;
