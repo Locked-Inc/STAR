@@ -4,6 +4,9 @@
  *
  * Board WITH external 24 MHz crystal.
  * Polls INTSTS0 for CTRT to handle SETUP packets.
+ *
+ * SPDX-License-Identifier: MIT
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 #include <stdint.h>
 #define REG8(a)  (*(volatile uint8_t*)(a))

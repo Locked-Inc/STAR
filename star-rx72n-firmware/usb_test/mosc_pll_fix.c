@@ -8,6 +8,9 @@
  * - DVST: just clear flag, don't reinit DCP
  * - INTENB0: add VBSE (bit 15)
  * - Clock: MOSC PLL x8=192MHz, SCKCR2 UCK/4=48MHz, CPU on HOCO
+ *
+ * SPDX-License-Identifier: MIT
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 #include <stdint.h>
 

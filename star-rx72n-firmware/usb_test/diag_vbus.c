@@ -9,6 +9,9 @@
  *     the pattern: longer HIGH = higher VBUS / DVSQ progression
  *
  * For reliable capture: 2 Hz toggle = 125 samples per half-cycle at 500 Hz
+ *
+ * SPDX-License-Identifier: MIT
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 #include <stdint.h>
 
