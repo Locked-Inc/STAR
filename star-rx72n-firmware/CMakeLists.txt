@@ -279,10 +279,33 @@ target_compile_options(${PROJECT_NAME}.elf PRIVATE
     $<$<COMPILE_LANGUAGE:ASM>:-DCPPAPP>
 )
 
+#############################################################################
+# Board variant selection
+#
+# PROD = STAR production PCB (24 MHz external crystal, MOSC -> PLL)
+# TOM  = Tom's bench PCB (no crystal, HOCO -> PLL)
+#
+# Configure the build:
+#   cmake -DSTAR_BOARD=PROD ..    # default
+#   cmake -DSTAR_BOARD=TOM  ..    # for Tom's bench board
+#
+# The board variant is forwarded as a -DSTAR_BOARD_PROD or -DSTAR_BOARD_TOM
+# preprocessor macro which r_bsp_config.h consumes to override clock
+# sources.  Default is PROD so existing bench workflows keep building
+# unchanged.
+#############################################################################
+set(STAR_BOARD "PROD" CACHE STRING "Target board variant: PROD (24 MHz crystal) or TOM (HOCO-only)")
+set_property(CACHE STAR_BOARD PROPERTY STRINGS "PROD" "TOM")
+if(NOT STAR_BOARD STREQUAL "PROD" AND NOT STAR_BOARD STREQUAL "TOM")
+    message(FATAL_ERROR "STAR_BOARD must be PROD or TOM, got: ${STAR_BOARD}")
+endif()
+message(STATUS "Board variant: ${STAR_BOARD}")
+
 # Target-specific compile definitions (previously global add_compile_definitions)
 target_compile_definitions(${PROJECT_NAME}.elf PRIVATE
     TX_INCLUDE_USER_DEFINE_FILE
     CPPAPP  # Enables C++ support in reset_program.S
+    STAR_BOARD_${STAR_BOARD}=1   # STAR_BOARD_PROD=1 or STAR_BOARD_TOM=1
 )
 
 # Target-specific include directories (previously global include_directories)

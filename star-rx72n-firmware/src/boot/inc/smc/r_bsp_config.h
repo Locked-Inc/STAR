@@ -903,3 +903,80 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    1 = Sections of the expansion RAM area is enabled.
 */
 #define BSP_CFG_EXPANSION_RAM_ENABLE (0)
+
+/*****************************************************************************
+ * STAR board-variant overrides (STAR_BOARD_TOM)
+ *
+ * The generated BSP defaults above assume the STAR production PCB, which has
+ * a 24 MHz external crystal driving the Main Clock Oscillator (MOSC) path.
+ * Tom's bench PCB has no crystal, so when STAR_BOARD_TOM is defined we
+ * re-point the PLL at the on-chip HOCO (16 MHz -> PLL x12 = 192 MHz) and
+ * recompute all the dividers that depend on the input frequency.
+ *
+ * See src/boot/inc/star_board.h for the acronym glossary
+ * (HOCO / MOSC / PLL / ICLK / PCKA / UCLK).
+ *
+ * Net result for TOM: ICLK = 96 MHz, PCKA = 96 MHz, PCKB = 48 MHz,
+ * UCLK = 48 MHz (same end frequencies as PROD, just sourced from HOCO).
+ ****************************************************************************/
+#ifdef STAR_BOARD_TOM
+
+/* Stop trying to oscillate MOSC: there is no crystal to oscillate. */
+#undef  BSP_CFG_MAIN_CLOCK_OSCILLATE_ENABLE
+#define BSP_CFG_MAIN_CLOCK_OSCILLATE_ENABLE (0)
+
+/* Enable HOCO -- on PROD this is off because MOSC is preferred. */
+#undef  BSP_CFG_HOCO_OSCILLATE_ENABLE
+#define BSP_CFG_HOCO_OSCILLATE_ENABLE (1)
+
+/* Route PLL input from HOCO instead of MOSC (PLLCR.PLLSRCSEL = 1). */
+#undef  BSP_CFG_PLL_SRC
+#define BSP_CFG_PLL_SRC (1)
+
+/* HOCO frequency 16 MHz (BSP_CFG_HOCO_FREQUENCY = 0 maps to 16 MHz on RX72N). */
+#undef  BSP_CFG_HOCO_FREQUENCY
+#define BSP_CFG_HOCO_FREQUENCY (0)
+
+/* PLL multiplier: 16 MHz * 12 = 192 MHz (was 24 MHz * 10 = 240 MHz on PROD).
+ * Keeps the USB path happy (192 / 4 = 48 MHz UCLK) and gives us a tidy
+ * 96 MHz ICLK with ICK_DIV=2. */
+#undef  BSP_CFG_PLL_MUL
+#define BSP_CFG_PLL_MUL (12.0)
+
+/* Re-derive the dividers so post-PLL peripheral frequencies land where the
+ * rest of the firmware expects them.  All of these were tuned for the
+ * 240 MHz PROD tree and must be recomputed for the 192 MHz TOM tree. */
+#undef  BSP_CFG_ICK_DIV
+#define BSP_CFG_ICK_DIV (2)      /* 192 / 2 = 96 MHz ICLK (CPU) */
+
+#undef  BSP_CFG_PCKA_DIV
+#define BSP_CFG_PCKA_DIV (2)     /* 192 / 2 = 96 MHz PCKA (GPTW/MTU/etc.) */
+
+#undef  BSP_CFG_PCKB_DIV
+#define BSP_CFG_PCKB_DIV (4)     /* 192 / 4 = 48 MHz PCKB (slower peripherals) */
+
+#undef  BSP_CFG_PCKC_DIV
+#define BSP_CFG_PCKC_DIV (4)     /* 192 / 4 = 48 MHz PCKC */
+
+#undef  BSP_CFG_PCKD_DIV
+#define BSP_CFG_PCKD_DIV (4)     /* 192 / 4 = 48 MHz PCKD */
+
+#undef  BSP_CFG_FCK_DIV
+#define BSP_CFG_FCK_DIV (4)      /* 192 / 4 = 48 MHz FCLK (flash IF) */
+
+/* External bus clock: PROD uses /3 for 80 MHz; TOM retains /4 which gives
+ * 48 MHz (safer for the bench setup which doesn't drive any external bus). */
+#undef  BSP_CFG_BCK_DIV
+#define BSP_CFG_BCK_DIV (4)
+
+#undef  BSP_CFG_UCK_DIV
+#define BSP_CFG_UCK_DIV (4)      /* 192 / 4 = 48 MHz UCLK (USB) */
+
+/* Report XTAL as the HOCO frequency since most of the BSP arithmetic uses
+ * BSP_CFG_XTAL_HZ to compute derived frequencies.  After PLL switch, the
+ * "XTAL" designation is notional -- the HOCO is the real PLL input. */
+#undef  BSP_CFG_XTAL_HZ
+#define BSP_CFG_XTAL_HZ (16000000)
+
+#endif /* STAR_BOARD_TOM */
+
