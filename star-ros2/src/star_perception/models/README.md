@@ -43,7 +43,7 @@ bash scripts/download_yolov8s_hef.sh
 ## Getting `yolov8n-oiv7.hef`
 
 **There is no prebuilt OIV7 HEF in the Hailo Model Zoo** as of
-v2.18 — all public Hailo-8L YOLOs are COCO-trained. You compile it
+v2.18 -- all public Hailo-8L YOLOs are COCO-trained. You compile it
 once on an x86 dev box and copy the resulting `.hef` to the Pi 5.
 
 ### Prerequisites on the x86 host
@@ -68,10 +68,10 @@ cd star-ros2/src/star_perception
 The script:
 
 1. `yolo export model=yolov8n-oiv7.pt format=onnx imgsz=640 opset=11 simplify=True`
-   — Ultralytics auto-downloads `yolov8n-oiv7.pt` (AGPL-3.0, 3.2M
+   -- Ultralytics auto-downloads `yolov8n-oiv7.pt` (AGPL-3.0, 3.2M
    parameters) on first use.
 2. `hailomz compile --ckpt yolov8n-oiv7.onnx --calib-path ... --yaml models/yolov8n-oiv7.yaml --classes 601 --hw-arch hailo8l`
-   — produces `yolov8n-oiv7.hef`. ~15-30 minutes on current hardware.
+   -- produces `yolov8n-oiv7.hef`. ~15-30 minutes on current hardware.
 3. Tells you where to copy the HEF on the Pi 5.
 
 ### On the Pi 5
@@ -83,7 +83,7 @@ ros2 launch star_perception perception.launch.py \
   classes_yaml:=/workspaces/STAR/star-ros2/install/star_perception/share/star_perception/models/oiv7_classes.yaml
 ```
 
-No rebuild needed — the HEF and YAML are pure data files in the
+No rebuild needed -- the HEF and YAML are pure data files in the
 install share directory. Restart the perception launch to pick
 them up.
 
@@ -91,7 +91,7 @@ them up.
 
 - mAP: ~18 across 600 classes (vs COCO YOLOv8s's 44.9 across 80).
   Per-class accuracy on doors, stairs, handrails, wheelchairs is
-  "good enough to tag the detection" — **not** the measurement
+  "good enough to tag the detection" -- **not** the measurement
   source.
 - Latency / FPS: similar to YOLOv8n / COCO (same backbone); a rough
   benchmark comparable to COCO's ~30 FPS on Hailo-8L is expected.
@@ -103,7 +103,7 @@ The geometric pipeline (LiDAR doorway width, RANSAC wall/jamb plane
 fitter, StereoSGBM disparity, IMU floor frame) measures **how large
 / how steep / how tall** the object is. ADA numbers (32-inch door
 clearance, 4.76-deg ramp slope, 0.5-inch threshold height, etc.)
-come from geometry — not from the bounding box extent of a YOLO
+come from geometry -- not from the bounding box extent of a YOLO
 detection. Adding new class labels (via OIV7 or a custom HEF) only
 improves the gating + semantic tagging, not the measurement
 accuracy.

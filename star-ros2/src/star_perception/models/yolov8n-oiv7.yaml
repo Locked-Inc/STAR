@@ -19,7 +19,7 @@ network:
   network_name: yolov8n-oiv7
   paths:
     # The ML teammate fills this in after `yolo export ... format=onnx`.
-    # Placeholder path — override on the compile-host filesystem.
+    # Placeholder path -- override on the compile-host filesystem.
     network_path:
       - yolov8n-oiv7.onnx
     alls_script: yolov8n-oiv7.alls
