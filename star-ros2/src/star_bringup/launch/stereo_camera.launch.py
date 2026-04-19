@@ -30,7 +30,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import ComposableNodeContainer, Node
+from launch_ros.actions import ComposableNodeContainer, LoadComposableNodes, Node
 from launch_ros.descriptions import ComposableNode
 
 # ---------------------------------------------------------------------------
@@ -51,7 +51,21 @@ CAM1_ID = '/base/axi/pcie@120000/rp1/i2c@88000/imx219@10'
 # ---------------------------------------------------------------------------
 DEFAULT_WIDTH = '640'
 DEFAULT_HEIGHT = '480'
+# Pi5 + 2x gscam + rectify + disparity + Hailo all running on ROS2
+# DDS is bounded by how fast a single DDS subscriber can drain 900 kB
+# RGB frames. Measured:
+#   15 fps cams: cam0 raw 14 Hz, Hailo detections 13.8 Hz, 82 C, stable
+#   30 fps cams: cam0 raw 24-29 Hz, Hailo detections 9 Hz (RELIABLE
+#                back-pressure) or 0 Hz (BestEffort UDP buffer loss)
+# Until the Hailo node is moved to an intra-process / DMABUF path
+# (composed into the camera container, or replaced by TAPPAS
+# libcamerasrc->hailonet), 15 fps is the sweet spot.
 DEFAULT_FPS = '15'
+# Rate the stereo proc chain runs at. Decoupled from camera capture
+# via topic_tools::ThrottleNode. Nav2 costmaps need 5-10 Hz; RTAB-Map
+# loop closure runs at 1 Hz internally. At 15 fps cameras this mostly
+# limits max load spikes; at 30+ fps it becomes a real CPU saving.
+STEREO_CHAIN_HZ = '10.0'
 
 # ---------------------------------------------------------------------------
 # libpisp ABI fix: system libpisp 1.2.1 must precede ROS libpisp 1.3.0.
@@ -126,13 +140,21 @@ def generate_launch_description() -> LaunchDescription:
 
     env = _cam_env()
 
-    cam0_node = Node(
+    # Keep Reliable on the rectify outputs so stereo_image_proc's
+    # ApproximateTimeSynchronizer sees matched pairs; relax the camera
+    # publishers to BestEffort so the rectify node doesn't backpressure
+    # the gscam source when the ISP is briefly jittery.
+    ipc_args = [{'use_intra_process_comms': True}]
+
+    # All camera + stereo nodes share one multi-threaded container so
+    # image buffers pass by shared pointer (no serialization) at
+    # 640x480 RGB. Previously cam0/cam1 ran as separate processes and
+    # every frame was DDS-copied twice on the hot path, pegging one core.
+    cam0_composable = ComposableNode(
         package='gscam',
-        executable='gscam_node',
+        plugin='gscam::GSCam',
         name='cam0',
         namespace='cam0',
-        output='screen',
-        env=env,
         parameters=[
             {
                 'gscam_config': _gst_pipeline(
@@ -144,15 +166,14 @@ def generate_launch_description() -> LaunchDescription:
                 'camera_info_url': 'package://star_bringup/config/camera_info/cam0.yaml',
             }
         ],
+        extra_arguments=ipc_args,
     )
 
-    cam1_node = Node(
+    cam1_composable = ComposableNode(
         package='gscam',
-        executable='gscam_node',
+        plugin='gscam::GSCam',
         name='cam1',
         namespace='cam1',
-        output='screen',
-        env=env,
         parameters=[
             {
                 'gscam_config': _gst_pipeline(
@@ -164,35 +185,75 @@ def generate_launch_description() -> LaunchDescription:
                 'camera_info_url': 'package://star_bringup/config/camera_info/cam1.yaml',
             }
         ],
+        extra_arguments=ipc_args,
     )
 
-    # -----------------------------------------------------------------------
-    # Stereo processing pipeline: rectify + disparity + point cloud.
-    #
-    # Runs in a multi-threaded component container for better throughput on
-    # Pi5 (4 cores).  At 640x480 with block matching this produces ~5-10 Hz
-    # disparity and point cloud.
-    #
-    # approximate_sync is required because the two IMX219 sensors are NOT
-    # hardware-synced.  The namespace 'stereo' puts disparity and points2
-    # under /stereo/*.
-    # -----------------------------------------------------------------------
-    stereo_proc = ComposableNodeContainer(
-        condition=IfCondition(LaunchConfiguration('use_stereo_proc')),
+    # Always-on container hosting the two cameras. LD_LIBRARY_PATH is
+    # set on the container process so libcamera picks up the system
+    # libpisp before any ROS2 fork of it.
+    stereo_container = ComposableNodeContainer(
         name='stereo_pipeline',
         namespace='',
         package='rclcpp_components',
         executable='component_container_mt',
+        env=env,
         composable_node_descriptions=[
+            cam0_composable,
+            cam1_composable,
+        ],
+        output='screen',
+    )
+
+    # rectify + disparity + point_cloud load into the same container
+    # when use_stereo_proc is true. intra-process comms means the full
+    # chain cam -> throttle -> rectify -> disparity -> point_cloud
+    # passes buffers without a serialization step.
+    #
+    # The throttle nodes decimate the 30 fps camera streams down to
+    # STEREO_CHAIN_HZ (default 10) before rectify runs, which is the
+    # single biggest CPU saving on this Pi5. Cameras still publish at
+    # 30 fps for the Hailo path. See STEREO_CHAIN_HZ up top for the
+    # rationale.
+    stereo_proc_load = LoadComposableNodes(
+        condition=IfCondition(LaunchConfiguration('use_stereo_proc')),
+        target_container='/stereo_pipeline',
+        composable_node_descriptions=[
+            ComposableNode(
+                package='topic_tools',
+                plugin='topic_tools::ThrottleNode',
+                name='cam0_image_throttle',
+                namespace='cam0/camera',
+                parameters=[{
+                    'input_topic': '/cam0/camera/image_raw',
+                    'output_topic': '/cam0/camera/image_raw_slow',
+                    'throttle_type': 'messages',
+                    'msgs_per_sec': float(STEREO_CHAIN_HZ),
+                }],
+                extra_arguments=ipc_args,
+            ),
+            ComposableNode(
+                package='topic_tools',
+                plugin='topic_tools::ThrottleNode',
+                name='cam1_image_throttle',
+                namespace='cam1/camera',
+                parameters=[{
+                    'input_topic': '/cam1/camera/image_raw',
+                    'output_topic': '/cam1/camera/image_raw_slow',
+                    'throttle_type': 'messages',
+                    'msgs_per_sec': float(STEREO_CHAIN_HZ),
+                }],
+                extra_arguments=ipc_args,
+            ),
             ComposableNode(
                 package='image_proc',
                 plugin='image_proc::RectifyNode',
                 name='rectify_left',
                 namespace='cam0/camera',
                 remappings=[
-                    ('image', 'image_raw'),
+                    ('image', 'image_raw_slow'),
                     ('image_rect', 'image_rect_color'),
                 ],
+                extra_arguments=ipc_args,
             ),
             ComposableNode(
                 package='image_proc',
@@ -200,9 +261,10 @@ def generate_launch_description() -> LaunchDescription:
                 name='rectify_right',
                 namespace='cam1/camera',
                 remappings=[
-                    ('image', 'image_raw'),
+                    ('image', 'image_raw_slow'),
                     ('image_rect', 'image_rect_color'),
                 ],
+                extra_arguments=ipc_args,
             ),
             ComposableNode(
                 package='stereo_image_proc',
@@ -223,6 +285,7 @@ def generate_launch_description() -> LaunchDescription:
                     ('right/image_rect', '/cam1/camera/image_rect_color'),
                     ('right/camera_info', '/cam1/camera/camera_info'),
                 ],
+                extra_arguments=ipc_args,
             ),
             ComposableNode(
                 package='stereo_image_proc',
@@ -237,9 +300,9 @@ def generate_launch_description() -> LaunchDescription:
                     ('left/camera_info', '/cam0/camera/camera_info'),
                     ('right/camera_info', '/cam1/camera/camera_info'),
                 ],
+                extra_arguments=ipc_args,
             ),
         ],
-        output='screen',
     )
 
     # -----------------------------------------------------------------------
@@ -342,9 +405,8 @@ def generate_launch_description() -> LaunchDescription:
             fps_arg,
             use_stereo_proc_arg,
             use_rtabmap_arg,
-            cam0_node,
-            cam1_node,
-            stereo_proc,
+            stereo_container,
+            stereo_proc_load,
             rtabmap_node,
             cam0_tf,
             cam0_optical_tf,
