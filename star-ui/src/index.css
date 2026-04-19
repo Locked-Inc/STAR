@@ -2362,7 +2362,7 @@ a {
   }
 }
 
-
+/* Intentional compact-laptop override for 1024px-1060px; keep in sync with the 1024px-1180px block above. */
 @media (min-width: 1024px) and (max-width: 1060px) {
   .dashboard-layout--main {
     grid-template-rows: auto;

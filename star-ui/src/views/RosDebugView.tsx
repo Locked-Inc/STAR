@@ -284,7 +284,7 @@ export function RosDebugView({ navigate }: RosDebugViewProps) {
                   {demoRosNodes.map((node) => (
                     <div className="list-card" key={node.name}>
                       <div className="list-card__header">
-                        <span className="mono accent-text accent-text--warn">{node.name}</span>
+                        <span className={`mono accent-text accent-text--${node.tone}`}>{node.name}</span>
                         <StatusDot tone={node.tone} />
                       </div>
                       <div className="list-card__footer">{node.description}</div>

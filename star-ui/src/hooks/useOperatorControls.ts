@@ -72,6 +72,15 @@ export function useOperatorControls({
     };
   }, []);
 
+  // Keep selectedMode in sync with reportedMode so that when reportedMode
+  // clears (returns to null), uiMode falls back to the last confirmed mode
+  // rather than a stale local value.  Calling setSelectedMode during render
+  // (not inside an effect) follows the React-recommended pattern for
+  // deriving state from changing props without causing cascading effects.
+  if (reportedMode !== null && reportedMode !== selectedMode) {
+    setSelectedMode(reportedMode);
+  }
+
   useEffect(() => {
     if (!autonomyRunning) {
       return;
