@@ -173,7 +173,7 @@
  *
  *     partition "Transmission Phase" {
  *       :Prepare rx_comm_send_params_t;
- *       :Set channel = k_comm_channel_usb;
+ *       :Set channel = k_comm_channel_uart;
  *       :Set type = k_frame_type_response;
  *       :Set payload = s_telem_buffer;
  *       :Call rx_comm_manager_send();
@@ -293,7 +293,7 @@
  * @startuml
  * state "USB CDC Available" as usb_active {
  *   state "Telemetry -> USB" as usb_send
- *   usb_send : channel = k_comm_channel_usb
+ *   usb_send : channel = k_comm_channel_uart
  *   usb_send : Host receives via USB CDC
  * }
  *
@@ -515,7 +515,7 @@
  *   Nanopb >> TelemetryTask [label="k_rx_ok, encoded_len=~250 bytes"];
  *
  *   --- [label="Transmission via Communication Manager"];
- *   TelemetryTask box TelemetryTask [label="Prepare send parameters:\n- channel = k_comm_channel_usb\n- type = k_frame_type_response\n- payload = s_telem_buffer\n- payload_len = encoded_len"];
+ *   TelemetryTask box TelemetryTask [label="Prepare send parameters:\n- channel = k_comm_channel_uart\n- type = k_frame_type_response\n- payload = s_telem_buffer\n- payload_len = encoded_len"];
  *   TelemetryTask => CommManager [label="rx_comm_manager_send(&g_comm_manager, &params)"];
  *   CommManager box CommManager [label="Wrap protobuf in frame:\n[SYNC][LEN][TYPE][PAYLOAD][CRC32]"];
  *   CommManager => USB [label="USB CDC transmit"];
@@ -1228,23 +1228,20 @@ typedef enum : uint8_t {
  * the most recent command was received.
  *
  * @par Channel Selection Priority:
- * 1. k_telemetry_transport_usb  - USB CDC was the last command channel (or no command yet)
+ * 1. k_telemetry_transport_uart - UART was the last command channel (also the default)
  * 2. k_telemetry_transport_spi  - SPI was the last command channel
  * 3. k_telemetry_transport_i2c  - I2C was the last command channel
- * 4. k_telemetry_transport_uart - UART was the last command channel
- * 5. k_telemetry_transport_none - Out-of-range channel value (programming error)
+ * 4. k_telemetry_transport_none - Out-of-range channel value (programming error)
  *
  * @startuml
  * [*] --> SELECT
- * SELECT --> USB  : active_channel == k_comm_channel_usb\n(or no command received yet)
+ * SELECT --> UART : active_channel == k_comm_channel_uart\n(or no command received yet)
  * SELECT --> SPI  : active_channel == k_comm_channel_spi
  * SELECT --> I2C  : active_channel == k_comm_channel_i2c
- * SELECT --> UART : active_channel == k_comm_channel_uart
- * SELECT --> NONE : active_channel out-of-range (fail-safe maps to USB)
- * USB  --> SELECT : Next cycle
+ * SELECT --> NONE : active_channel out-of-range (fail-safe maps to UART)
+ * UART --> SELECT : Next cycle
  * SPI  --> SELECT : Next cycle
  * I2C  --> SELECT : Next cycle
- * UART --> SELECT : Next cycle
  * NONE --> SELECT : Next cycle
  * @enduml
  *
@@ -1256,49 +1253,32 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   /**
-   * @brief USB CDC channel (primary, preferred for development)
-   * @details
-   * Selected when USB CDC is enumerated and ready for bulk transfers.
-   * Maps to k_comm_channel_usb in the comm manager.
+   * @brief UART channel (SCI9 via CY7C65213 bridge, primary gateway link)
+   * @details Maps to k_comm_channel_uart in the comm manager.
    * @par Value: 0
    */
-  k_telemetry_transport_usb = 0,
+  k_telemetry_transport_uart = 0,
 
   /**
-   * @brief SPI channel (fallback for production with RPi5)
-   * @details
-   * Selected when USB CDC is not ready. SPI is the production interface
-   * to Raspberry Pi 5. Maps to k_comm_channel_spi in the comm manager.
+   * @brief SPI channel (ROS2 spi_driver_node link)
+   * @details Maps to k_comm_channel_spi in the comm manager.
    * @par Value: 1
    */
   k_telemetry_transport_spi = 1,
 
   /**
    * @brief I2C channel (RIIC0 peripheral mode)
-   * @details
-   * Selected when the last command arrived via I2C channel.
-   * Maps to k_comm_channel_i2c in the comm manager.
+   * @details Maps to k_comm_channel_i2c in the comm manager.
    * @par Value: 2
    */
   k_telemetry_transport_i2c = 2,
 
   /**
-   * @brief UART channel (SCI9)
-   * @details
-   * Selected when the last command arrived via UART channel.
-   * Maps to k_comm_channel_uart in the comm manager.
+   * @brief No transport available (all channels unavailable)
+   * @details Telemetry message is dropped for this cycle; task retries next cycle.
    * @par Value: 3
    */
-  k_telemetry_transport_uart = 3,
-
-  /**
-   * @brief No transport available (all channels unavailable)
-   * @details
-   * Selected when no channel is ready. Telemetry message is dropped
-   * for this cycle. The task continues running and will retry next cycle.
-   * @par Value: 4
-   */
-  k_telemetry_transport_none = 4,
+  k_telemetry_transport_none = 3,
 } telemetry_transport_t;
 
 /* =============================================================================
@@ -1671,32 +1651,30 @@ static void internal_telem_task_entry(ULONG input)
  *
  * 1. Call shared_data_get_active_channel() to read the last command channel
  * 2. If the raw value is >= k_comm_channel_count (out-of-range), return
- *    k_telemetry_transport_usb as a fail-safe
+ *    k_telemetry_transport_uart as a fail-safe
  * 3. Map the channel value to the corresponding telemetry_transport_t:
- *    - k_comm_channel_usb  -> k_telemetry_transport_usb
+ *    - k_comm_channel_uart -> k_telemetry_transport_uart
  *    - k_comm_channel_spi  -> k_telemetry_transport_spi
  *    - k_comm_channel_i2c  -> k_telemetry_transport_i2c
- *    - k_comm_channel_uart -> k_telemetry_transport_uart
  *
  * Before any command has been received, shared_data_get_active_channel()
- * returns k_comm_channel_usb (the USB default), preserving the existing
- * USB-preferred startup behaviour.
+ * returns k_comm_channel_uart (the UART default) so telemetry flows over
+ * the gateway's UART link until a command arrives on a different channel.
  *
  * @return telemetry_transport_t Selected transport
- * @retval k_telemetry_transport_usb  USB was the last command channel, no
+ * @retval k_telemetry_transport_uart UART was the last command channel, no
  *                                    command has been received yet, or
  *                                    shared_data_get_active_channel() returned
  *                                    an out-of-range/unknown rx_comm_channel_t
  *                                    (fail-safe)
  * @retval k_telemetry_transport_spi  SPI was the last command channel
  * @retval k_telemetry_transport_i2c  I2C was the last command channel
- * @retval k_telemetry_transport_uart UART was the last command channel
  *
  * @pre shared_data_init() has been called
  * @pre shared_data_get_active_channel() may return any uint8_t value,
  *      including an invalid or unknown rx_comm_channel_t; this function
  *      handles all cases safely
- * @post Return value is a valid telemetry_transport_t (USB/SPI/I2C/UART)
+ * @post Return value is a valid telemetry_transport_t (UART/SPI/I2C)
  *       for all possible inputs including out-of-range channel values
  * @post Shared data is not modified (read-only access)
  *
@@ -1707,17 +1685,16 @@ static void internal_telem_task_entry(ULONG input)
  * @note Thread-safe: shared_data_get_active_channel() is motor_mutex-protected
  * @note Symmetric routing: telemetry replies are sent on the same physical
  *       link as the most recently received command; out-of-range channel
- *       values are intentionally mapped to k_telemetry_transport_usb as the
+ *       values are intentionally mapped to k_telemetry_transport_uart as the
  *       safe default
  *
  * @see internal_build_and_send_telemetry() Caller - maps transport to channel
  * @see shared_data_get_active_channel() Active channel reader (returns uint8_t)
  * @see shared_data_update_active_channel() Written by comm task on each frame
- * @see rx_comm_channel_t Channel enum (USB, SPI, I2C, UART)
- * @see k_telemetry_transport_usb USB transport constant
+ * @see rx_comm_channel_t Channel enum (UART, SPI, I2C)
+ * @see k_telemetry_transport_uart UART transport constant
  * @see k_telemetry_transport_spi SPI transport constant
  * @see k_telemetry_transport_i2c I2C transport constant
- * @see k_telemetry_transport_uart UART transport constant
  *
  * @since Version 1.0.0
  *
@@ -1726,7 +1703,7 @@ static void internal_telem_task_entry(ULONG input)
  * - Precondition 2: shared_data_get_active_channel() may return any uint8_t,
  *                   including invalid rx_comm_channel_t values
  * - Postcondition 1: Returns a valid telemetry_transport_t value
- * - Postcondition 2: Out-of-range input always maps to k_telemetry_transport_usb
+ * - Postcondition 2: Out-of-range input always maps to k_telemetry_transport_uart
  */
 
 /**
@@ -1745,8 +1722,7 @@ static void internal_telem_task_entry(ULONG input)
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_telem_supported_channel_count =
-    4U, /**< USB + SPI + I2C + UART; must match k_comm_channel_count */
+  k_telem_supported_channel_count = 3U, /**< UART + SPI + I2C; must match k_comm_channel_count */
 } telem_channel_contract_t;
 
 static telemetry_transport_t internal_select_transport(void)
@@ -1761,20 +1737,18 @@ static telemetry_transport_t internal_select_transport(void)
 
   const uint8_t raw_ch = shared_data_get_active_channel();
   if (raw_ch >= k_comm_channel_count) {
-    return k_telemetry_transport_usb; /* fail-safe: unexpected value defaults to USB */
+    return k_telemetry_transport_uart; /* fail-safe: unexpected value defaults to UART */
   }
 
   switch ((rx_comm_channel_t)raw_ch) {
-    case k_comm_channel_spi:
-      return k_telemetry_transport_spi;
-    case k_comm_channel_usb:
-      return k_telemetry_transport_usb;
-    case k_comm_channel_i2c:
-      return k_telemetry_transport_i2c;
     case k_comm_channel_uart:
       return k_telemetry_transport_uart;
+    case k_comm_channel_spi:
+      return k_telemetry_transport_spi;
+    case k_comm_channel_i2c:
+      return k_telemetry_transport_i2c;
     default:
-      return k_telemetry_transport_usb; /* fail-safe for unhandled future values */
+      return k_telemetry_transport_uart; /* fail-safe for unhandled future values */
   }
 }
 
@@ -2250,7 +2224,7 @@ static rx_err_t internal_encode_telemetry(const star_v1_TelemetryData* telemetry
  * argument is the caller-selected transport (USB or SPI) returned by
  * `internal_select_transport()`.
  *
- * @param[in] channel     Comm manager channel to send on (k_comm_channel_usb or k_comm_channel_spi)
+ * @param[in] channel     Comm manager channel to send on (k_comm_channel_uart or k_comm_channel_spi)
  * @param[in] encoded_len Number of bytes in s_telem_buffer to transmit
  *
  * @return rx_err_t Send result from rx_comm_manager_send()
@@ -2259,7 +2233,7 @@ static rx_err_t internal_encode_telemetry(const star_v1_TelemetryData* telemetry
  * @retval k_rx_err_spi_tx_fail SPI transmission failed (RPi5 not responding)
  * @retval k_rx_err_timeout Communication manager send queue full
  *
- * @pre channel must be k_comm_channel_usb or k_comm_channel_spi
+ * @pre channel must be k_comm_channel_uart or k_comm_channel_spi
  * @pre encoded_len must be > 0 and <= k_telem_buffer_size
  * @pre s_telem_buffer must contain valid encoded protobuf (internal_encode_telemetry() called)
  * @pre g_comm_manager must be initialized (rx_comm_manager_init() called)
@@ -2328,17 +2302,14 @@ static rx_err_t internal_transport_to_channel(telemetry_transport_t transport,
 {
   RX_CHECK_NULL_PTR(out_channel, s_tag, "out_channel pointer is nullptr");
   switch (transport) {
-    case k_telemetry_transport_usb:
-      *out_channel = k_comm_channel_usb;
+    case k_telemetry_transport_uart:
+      *out_channel = k_comm_channel_uart;
       return k_rx_ok;
     case k_telemetry_transport_spi:
       *out_channel = k_comm_channel_spi;
       return k_rx_ok;
     case k_telemetry_transport_i2c:
       *out_channel = k_comm_channel_i2c;
-      return k_rx_ok;
-    case k_telemetry_transport_uart:
-      *out_channel = k_comm_channel_uart;
       return k_rx_ok;
     case k_telemetry_transport_none:
     default:
@@ -2386,7 +2357,7 @@ static rx_err_t internal_transport_to_channel(telemetry_transport_t transport,
  * @pre Task created and running (telemetry_task_create() called)
  *
  * @post Telemetry message sent on the same physical link as the last received command
- *       (k_comm_channel_usb, k_comm_channel_spi, k_comm_channel_i2c, or k_comm_channel_uart)
+ *       (k_comm_channel_uart, k_comm_channel_spi, k_comm_channel_i2c, or k_comm_channel_uart)
  * @post HOST_IRQ (P67) is HIGH (deasserted) on return; toggled only for SPI sends
  * @post s_sequence incremented exactly once per call
  * @post s_telem_buffer overwritten with latest encoded protobuf
@@ -2396,7 +2367,7 @@ static rx_err_t internal_transport_to_channel(telemetry_transport_t transport,
  * @note Data collection is non-blocking (graceful degradation if mutex locked)
  * @note Transport channel is selected symmetrically: telemetry replies travel
  *       on the same physical link as the last incoming command frame;
- *       only k_comm_channel_usb and k_comm_channel_spi are expected
+ *       only k_comm_channel_uart and k_comm_channel_spi are expected
  *
  * @warning If encoding fails, message is NOT sent (retry next cycle)
  * @warning If transmission fails, message is lost (host detects via sequence gap)

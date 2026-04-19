@@ -38,6 +38,9 @@
   <!-- Foxglove Studio WebSocket bridge (optional, gated by use_foxglove arg) -->
   <exec_depend>foxglove_bridge</exec_depend>
 
+  <!-- Stereo camera: Waveshare IMX219-83 via GStreamer + libcamerasrc -->
+  <exec_depend>gscam</exec_depend>
+
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 

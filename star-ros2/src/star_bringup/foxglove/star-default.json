@@ -3,9 +3,9 @@
     "3D!star3d1": {
       "cameraState": {
         "perspective": true,
-        "distance": 5,
-        "phi": 60,
-        "thetaOffset": 45,
+        "distance": 3,
+        "phi": 45,
+        "thetaOffset": 0,
         "targetOffset": [0, 0, 0],
         "target": [0, 0, 0],
         "targetOrientation": [0, 0, 0, 1],
@@ -35,12 +35,29 @@
       "topics": {
         "/scan": {
           "visible": true,
-          "pointSize": 3,
+          "pointSize": 5,
           "colorMode": "flat",
           "flatColor": "#00ff88"
         },
         "/map": {
           "visible": true
+        },
+        "/cloud_map": {
+          "visible": true,
+          "pointSize": 6,
+          "colorMode": "colormap",
+          "colorField": "z",
+          "colorMap": "turbo"
+        },
+        "/octomap_occupied_space": {
+          "visible": false
+        },
+        "/stereo/points2": {
+          "visible": true,
+          "pointSize": 4,
+          "colorMode": "colormap",
+          "colorField": "z",
+          "colorMap": "rainbow"
         },
         "/tf": {
           "visible": true
@@ -99,6 +116,32 @@
     "RosOut!starlog": {
       "searchTerms": [],
       "minLogLevel": 1
+    },
+    "Image!cam0img": {
+      "topic": "/cam0/camera/image_raw",
+      "calibrationTopic": "/cam0/camera/camera_info",
+      "flipHorizontal": false,
+      "flipVertical": false,
+      "rotation": 0,
+      "minValue": 0,
+      "maxValue": 10000,
+      "smooth": false,
+      "transformMarkers": false,
+      "synchronize": false,
+      "zoomMode": "fit"
+    },
+    "Image!cam1img": {
+      "topic": "/cam1/camera/image_raw",
+      "calibrationTopic": "/cam1/camera/camera_info",
+      "flipHorizontal": false,
+      "flipVertical": false,
+      "rotation": 0,
+      "minValue": 0,
+      "maxValue": 10000,
+      "smooth": false,
+      "transformMarkers": false,
+      "synchronize": false,
+      "zoomMode": "fit"
     }
   },
   "globalVariables": {},
@@ -122,10 +165,20 @@
     },
     "second": {
       "direction": "column",
-      "first": "DiagnosticSummary!stardg",
-      "second": "RosOut!starlog",
+      "first": {
+        "direction": "row",
+        "first": "Image!cam0img",
+        "second": "Image!cam1img",
+        "splitPercentage": 50
+      },
+      "second": {
+        "direction": "column",
+        "first": "DiagnosticSummary!stardg",
+        "second": "RosOut!starlog",
+        "splitPercentage": 50
+      },
       "splitPercentage": 50
     },
-    "splitPercentage": 75
+    "splitPercentage": 72
   }
 }

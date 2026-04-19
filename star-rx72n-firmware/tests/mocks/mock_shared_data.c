@@ -101,7 +101,7 @@ static bool           s_initialized                 = false;
 static bool           s_estop_active                = false;
 static estop_reason_t s_estop_reason                = k_estop_reason_none;
 static bool           s_comm_timeout                = false;
-static uint8_t        s_active_channel              = k_mock_channel_usb;
+static uint8_t        s_active_channel              = k_mock_channel_uart;
 static uint32_t       s_active_channel_update_count = k_mock_count_reset;
 
 static motor_command_t s_motor_command      = {};
@@ -175,7 +175,7 @@ void mock_shared_data_reset(void)
   s_last_triggered_reason       = k_estop_reason_none;
   s_set_event_count             = k_mock_count_reset;
   s_last_event_flags            = k_event_none;
-  s_active_channel              = k_mock_channel_usb;
+  s_active_channel              = k_mock_channel_uart;
   s_active_channel_update_count = k_mock_count_reset;
 }
 
@@ -510,7 +510,7 @@ void shared_data_update_last_comm_tick(void)
  * shared_data_update_active_channel() call -- use that function to simulate
  * runtime channel updates.
  *
- * @param[in] channel Channel to store (use k_mock_channel_usb or k_mock_channel_spi;
+ * @param[in] channel Channel to store (use k_mock_channel_uart or k_mock_channel_spi;
  *                    values must match rx_comm_channel_t)
  *
  * @pre mock_shared_data_reset() has been called at least once
@@ -523,7 +523,7 @@ void shared_data_update_last_comm_tick(void)
  *
  * @see shared_data_update_active_channel() Runtime writer (increments update count)
  * @see shared_data_get_active_channel() Reader
- * @see mock_shared_data_reset() Resets channel to k_mock_channel_usb
+ * @see mock_shared_data_reset() Resets channel to k_mock_channel_uart
  *
  * @since Version 1.0.0
  */
@@ -578,7 +578,7 @@ uint32_t mock_shared_data_get_active_channel_update_count(void)
  * single-threaded testing of channel-recording behavior in comm_task.
  *
  * @param[in] channel Channel that delivered the most recent command frame
- *                    (rx_comm_channel_t cast to uint8_t; use k_mock_channel_usb
+ *                    (rx_comm_channel_t cast to uint8_t; use k_mock_channel_uart
  *                    or k_mock_channel_spi)
  *
  * @pre mock_shared_data_reset() has been called at least once (setUp)
@@ -611,21 +611,21 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
  * @details
  * Returns s_active_channel, which reflects the last channel passed to
  * shared_data_update_active_channel() or set via
- * mock_shared_data_set_active_channel(). Defaults to k_mock_channel_usb (0)
+ * mock_shared_data_set_active_channel(). Defaults to k_mock_channel_uart (0)
  * after mock_shared_data_reset(), matching the production fail-safe default.
  *
  * @return uint8_t Active communication channel (rx_comm_channel_t cast to uint8_t)
- * @retval k_mock_channel_usb (0) Default before any update, or after reset
+ * @retval k_mock_channel_uart (0) Default before any update, or after reset
  * @retval k_mock_channel_spi (1) SPI was the last channel stored
  *
  * @pre mock_shared_data_reset() has been called at least once
  * @pre s_active_channel was set via shared_data_update_active_channel() or
  *      mock_shared_data_set_active_channel()
  * @post s_active_channel is unchanged (read-only accessor)
- * @post Return value is k_mock_channel_usb or k_mock_channel_spi
+ * @post Return value is k_mock_channel_uart or k_mock_channel_spi
  *
  * @note Thread safety: read-only; safe in single-threaded test context only
- * @note Mirrors production: returns k_mock_channel_usb fallback before shared_data_init()
+ * @note Mirrors production: returns k_mock_channel_uart fallback before shared_data_init()
  *
  * @code
  * (void)shared_data_init();
@@ -635,14 +635,14 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
  *
  * @see shared_data_update_active_channel() Writer
  * @see mock_shared_data_set_active_channel() Test setup writer
- * @see mock_shared_data_reset() Resets channel to k_mock_channel_usb
+ * @see mock_shared_data_reset() Resets channel to k_mock_channel_uart
  *
  * @since Version 1.0.0
  */
 uint8_t shared_data_get_active_channel(void)
 {
   if (!s_initialized) {
-    return k_mock_channel_usb;
+    return k_mock_channel_uart;
   }
   return s_active_channel;
 }

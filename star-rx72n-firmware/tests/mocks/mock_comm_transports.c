@@ -49,67 +49,11 @@
 #include "rx_spi_comm.h"
 #include "rx_spi_link.h"
 #include "rx_uart_comm.h"
-#include "rx_usb.h"
-#include "rx_usb_comm.h"
 
 /* =============================================================================
  * Transport Init Stubs
  * =============================================================================
  */
-
-/**
- * @brief Stub for rx_usb_comm_init() -- always succeeds
- *
- * @details
- * No-op test stub that immediately returns k_rx_ok without touching hardware
- * or initializing any transport state. Satisfies the linker for test targets
- * that link comm_task.c but do not exercise USB transport initialization.
- *
- * @param[out] handle Ignored (may be NULL)
- * @param[in]  config Ignored (may be NULL)
- *
- * @retval k_rx_ok Always; stub never fails
- *
- * @pre  None -- stub accepts any pointer including NULL
- * @pre  Caller context is single-threaded test execution
- * @post No USB hardware or handle state modified
- * @post Returns k_rx_ok unconditionally
- */
-rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config_t* config)
-{
-  (void)handle;
-  (void)config;
-  return k_rx_ok;
-}
-
-/**
- * @brief Stub for rx_usb_init() -- always succeeds
- *
- * @details
- * No-op test stub for the low-level USB peripheral init. comm_task.c calls
- * rx_usb_comm_init (stubbed above) which in turn documents a prerequisite
- * of rx_usb_init. On the GitHub Ubuntu 24.04 runner with clang-18 + full
- * --coverage instrumentation, the compiler occasionally emits an indirect
- * reference to rx_usb_init from inside the internal_init_usb_transport
- * coverage probe bookkeeping, even though comm_task.c never names the
- * symbol directly. Linking this stub unconditionally avoids a CI-only
- * `undefined reference to rx_usb_init` link error while keeping local
- * builds unaffected (the stub is simply unused there).
- *
- * @param[in] config Ignored (may be NULL)
- *
- * @retval k_rx_ok Always; stub never fails
- *
- * @pre  None -- stub accepts any pointer including NULL
- * @pre  Caller context is single-threaded test execution
- * @post No USB hardware or peripheral state modified
- * @post Returns k_rx_ok unconditionally
- */
-rx_err_t rx_usb_init(const rx_usb_config_t* config)
-{
-  (void)config;
-  return k_rx_ok;
-}
 
 /**
  * @brief Stub for rx_spi_comm_init() -- always succeeds

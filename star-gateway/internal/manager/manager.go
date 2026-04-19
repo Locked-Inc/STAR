@@ -111,7 +111,7 @@ func NewTransportManager(config *Config) *TransportManager {
 	tm.operationsCond = sync.NewCond(&tm.operationsMu)
 
 	// Health monitor is always created
-	tm.healthMonitor = NewHealthMonitor(config.HealthCheckInterval)
+	tm.healthMonitor = NewHealthMonitor(config.HealthCheckInterval, config.USBVID, config.USBPID)
 
 	// Hot-plug detector only if enabled and not in force-spi mode
 	if config.EnableHotPlug && config.Mode != ModeForceSPI {
@@ -577,6 +577,9 @@ func (tm *TransportManager) validateFramePayload(frameType frame.Type, payload [
 }
 
 func isAllowedFrameType(frameType frame.Type) bool {
+	// NOTE: FrameTypeLogMessage is intentionally NOT in this allow list -- it is
+	// a RECEIVE-ONLY frame type (firmware -> gateway). The gateway never sends
+	// log frames. Keeping it out of the send allow list prevents misuse.
 	switch frameType {
 	case frame.FrameTypePing,
 		frame.FrameTypePong,
@@ -739,6 +742,17 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 		// Data frames: update implicit heartbeat and return to caller
 		tm.heartbeat.OnFrameReceived()
 		return result
+
+	case frame.FrameTypeLogMessage:
+		// Firmware runtime log payload. Write bytes verbatim to the gateway's
+		// log stream so developers get RX72N logs alongside gateway logs. The
+		// payload is already a trimmed ASCII chunk (no null terminator) and
+		// typically ends on a newline.
+		tm.heartbeat.OnFrameReceived()
+		if len(result.Payload) > 0 {
+			log.Printf("[RX72N] %s", string(result.Payload))
+		}
+		return nil
 
 	default:
 		log.Printf("Received unknown frame type 0x%02X (seq=%d) - consumed",

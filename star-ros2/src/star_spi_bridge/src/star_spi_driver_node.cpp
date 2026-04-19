@@ -30,16 +30,28 @@ static constexpr double kImuOrientationVar = 0.01;      // rad^2
 static constexpr double kImuAngularVelocityVar = 0.001; // (rad/s)^2
 static constexpr double kImuLinearAccelVar = 0.01;      // (m/s^2)^2
 
+// SPI link defaults
+static constexpr int kDefaultSpiSpeedHz = 10000000;     // 10 MHz
+static constexpr int kDefaultCmdVelTimeoutMs = 500;     // command watchdog (ms)
+
+// Drivetrain kinematics for the goBILDA Wasteland chassis. Source: CAD
+// measurement (2026-04) and goBILDA motor datasheet. Must match the
+// values in star_bringup/launch/slam.launch.py and the BBB
+// hardware_config.h to keep producers and consumers in sync.
+static constexpr double kDefaultTrackWidthM = 0.356;    // left-right wheel center-to-center
+static constexpr double kDefaultWheelRadiusM = 0.072;   // 144 mm wheel / 2
+static constexpr int kDefaultEncoderTicksPerRev = 11599; // 341 PPR x 34.02:1 gearbox
+
 StarSpiDriverNode::StarSpiDriverNode(const rclcpp::NodeOptions & options)
 : rclcpp_lifecycle::LifecycleNode("star_spi_driver", options)
 {
   // Declare parameters
   declare_parameter("spi_device_path", "/dev/spidev0.0");
-  declare_parameter("spi_speed_hz", 10000000);  // 10 MHz
-  declare_parameter("cmd_vel_timeout_ms", 500);
-  declare_parameter("wheel_base", 0.150);
-  declare_parameter("wheel_radius", 0.0325);
-  declare_parameter("ticks_per_rev", 11599);
+  declare_parameter("spi_speed_hz", kDefaultSpiSpeedHz);
+  declare_parameter("cmd_vel_timeout_ms", kDefaultCmdVelTimeoutMs);
+  declare_parameter("wheel_base", kDefaultTrackWidthM);
+  declare_parameter("wheel_radius", kDefaultWheelRadiusM);
+  declare_parameter("ticks_per_rev", kDefaultEncoderTicksPerRev);
 }
 
 StarSpiDriverNode::~StarSpiDriverNode()

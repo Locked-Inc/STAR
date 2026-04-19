@@ -777,7 +777,7 @@ func TestTransportManager_FailbackAfterRecovery(t *testing.T) {
 	tm.SetTransportHealthForTest("primary", false, false)
 
 	// Step 4: Manually trigger health check (simulates health monitor probe)
-	hm := NewHealthMonitor(TestHealthCheckInterval)
+	hm := NewHealthMonitor(TestHealthCheckInterval, 0, 0)
 	hm.checkTransports(tm)
 
 	// Poll for failback to primary (failover is now async, no need for extra sleep)
@@ -862,7 +862,7 @@ func TestTransportManager_FailbackRespectsDamping(t *testing.T) {
 	tm.SetTransportHealthForTest("primary", false, false)
 
 	// Trigger health check (simulates health monitor probe)
-	hm := NewHealthMonitor(TestHealthCheckInterval)
+	hm := NewHealthMonitor(TestHealthCheckInterval, 0, 0)
 	hm.checkTransports(tm)
 
 	// Give failback goroutine time to evaluate (should skip due to damping)

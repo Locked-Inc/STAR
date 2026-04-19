@@ -7,9 +7,12 @@
  * decoder, and dispatches decoded WireMessage commands to shared_data.
  *
  * Supported commands:
- * - VelocityCommand: maps 4 motor velocities to duty_percent (scaled by max velocity)
- * - EmergencyStopCommand: asserts estop flag
- * - MotorPowerCommand: maps motor_id + duty_cycle_percent to duty_percent
+ * - VelocityCommand: stores 4 wheel m/s setpoints into bb_motor_cmd_t and
+ *   tags the frame with k_bb_ctrl_mode_velocity so motor_control_task
+ *   runs the closed-loop PID on it.
+ * - EmergencyStopCommand: asserts estop flag.
+ * - MotorPowerCommand: stores raw duty cycle and tags the frame with
+ *   k_bb_ctrl_mode_direct_duty so motor_control_task bypasses the PID.
  *
  * Sends ACK frames when REQUIRES_ACK flag is set.
  * Responds to PING with PONG.
@@ -28,9 +31,29 @@
 #include <pb_decode.h>
 #include <star/v1/wire.pb.h>
 
+#include <assert.h>
+#include <math.h>
 #include <robotcontrol.h>
 #include <string.h>
 #include <time.h>
+
+/* ---------------------------------------------------------------------------
+ * Velocity setpoint sanity bound
+ * ---------------------------------------------------------------------------*/
+
+/**
+ * @brief Maximum sane wheel surface velocity in m/s.
+ *
+ * @details
+ * Used to clamp incoming VelocityCommand setpoints from the gateway so a
+ * malformed or malicious frame cannot inject unreasonable values into the
+ * PID. The physical ground-speed ceiling for the goBILDA Wasteland +
+ * 6V 210 RPM gearmotor stack is about 1.58 m/s; 5.0 m/s gives a generous
+ * margin for future motor swaps without rejecting legitimate commands.
+ *
+ * @since Version 1.2.0
+ */
+static const float s_bb_max_wheel_velocity_mps = 5.0F;
 
 /* ---------------------------------------------------------------------------
  * Private constants
@@ -50,12 +73,36 @@ typedef enum : uint32_t {
 /* Motor indices from hardware_config.h: k_bb_motor_idx_fl/fr/rl/rr */
 
 /**
- * @var s_max_velocity_mps
- * @brief Maximum velocity for duty cycle scaling (m/s to [-1, 1]).
+ * @brief Sanitize a wheel velocity setpoint received from the gateway.
  *
- * @since Version 1.0.0
+ * @details
+ * Rejects NaN/Infinity (returns 0) and clamps the magnitude to the
+ * physical bound s_bb_max_wheel_velocity_mps so the closed-loop PID
+ * never sees an out-of-range setpoint. Mirrors the defensive pattern
+ * used by internal_clamp_duty() for the direct-duty path.
+ *
+ * @param[in] val Raw velocity from the protobuf wire format.
+ *
+ * @return float Sanitized value in [-s_bb_max_wheel_velocity_mps,
+ *               +s_bb_max_wheel_velocity_mps], or 0 if val is non-finite.
+ *
+ * @pre None
+ * @post Return value is finite
+ * @post |return value| <= s_bb_max_wheel_velocity_mps
+ *
+ * @note Pure function; thread-safe.
+ *
+ * @since Version 1.2.0
  */
-static const float s_max_velocity_mps = 2.0F;
+static inline float internal_sanitize_velocity(const float val)
+{
+    if (!isfinite(val)) {
+        return 0.0F;
+    }
+    if (val >  s_bb_max_wheel_velocity_mps) { return  s_bb_max_wheel_velocity_mps; }
+    if (val < -s_bb_max_wheel_velocity_mps) { return -s_bb_max_wheel_velocity_mps; }
+    return val;
+}
 
 /* ---------------------------------------------------------------------------
  * Internal helpers
@@ -186,6 +233,10 @@ static inline float internal_clamp_duty(const float val)
 static void internal_process_command(bb_shared_data_t* sd,
                                      const bb_frame_t* frame)
 {
+    /* Pre-conditions: non-null inputs (Doxygen contract enforcement) */
+    assert(sd != NULL);
+    assert(frame != NULL);
+
     star_v1_WireMessage msg = star_v1_WireMessage_init_zero;
 
     pb_istream_t stream = pb_istream_from_buffer(frame->payload,
@@ -201,15 +252,21 @@ static void internal_process_command(bb_shared_data_t* sd,
         bb_motor_cmd_t cmd = {0};
         const star_v1_VelocityCommand* vc = &msg.payload.velocity_command;
 
-        /* Scale m/s to [-1.0, 1.0] duty range */
-        cmd.duty_percent[k_bb_motor_idx_fl] = internal_clamp_duty(
-            (float)vc->front_left_velocity_mps / s_max_velocity_mps);
-        cmd.duty_percent[k_bb_motor_idx_fr] = internal_clamp_duty(
-            (float)vc->front_right_velocity_mps / s_max_velocity_mps);
-        cmd.duty_percent[k_bb_motor_idx_rl] = internal_clamp_duty(
-            (float)vc->back_left_velocity_mps / s_max_velocity_mps);
-        cmd.duty_percent[k_bb_motor_idx_rr] = internal_clamp_duty(
-            (float)vc->back_right_velocity_mps / s_max_velocity_mps);
+        /* Closed-loop velocity path: store raw m/s setpoints and let
+         * motor_control_task drive bb_pid_compute() with the new wheel
+         * geometry. The destructive divide-by-s_max_velocity_mps that
+         * used to live here has been removed -- it threw away the
+         * setpoint and replaced it with a duty fraction, making real
+         * closed-loop control impossible. */
+        cmd.control_mode = k_bb_ctrl_mode_velocity;
+        cmd.velocity_setpoint_mps[k_bb_motor_idx_fl] =
+            internal_sanitize_velocity((float)vc->front_left_velocity_mps);
+        cmd.velocity_setpoint_mps[k_bb_motor_idx_fr] =
+            internal_sanitize_velocity((float)vc->front_right_velocity_mps);
+        cmd.velocity_setpoint_mps[k_bb_motor_idx_rl] =
+            internal_sanitize_velocity((float)vc->back_left_velocity_mps);
+        cmd.velocity_setpoint_mps[k_bb_motor_idx_rr] =
+            internal_sanitize_velocity((float)vc->back_right_velocity_mps);
 
         (void)bb_shared_data_set_motor_cmd(sd, &cmd);
         break;
@@ -222,9 +279,13 @@ static void internal_process_command(bb_shared_data_t* sd,
     case star_v1_WireMessage_motor_power_command_tag: {
         const star_v1_MotorPowerCommand* mp = &msg.payload.motor_power_command;
 
-        /* Read current command, update single motor */
+        /* Direct-duty debug path: read the current command, flip control
+         * mode to direct_duty, and update the single targeted motor's
+         * duty entry. motor_control_task will bypass the PID for this
+         * frame and route duty straight to rc_motor_set(). */
         bb_motor_cmd_t cmd = {0};
         (void)bb_shared_data_get_motor_cmd(sd, &cmd);
+        cmd.control_mode = k_bb_ctrl_mode_direct_duty;
 
         if (mp->motor_id >= 0 && mp->motor_id < (int32_t)k_bb_motor_count) {
             cmd.duty_percent[mp->motor_id] = internal_clamp_duty(

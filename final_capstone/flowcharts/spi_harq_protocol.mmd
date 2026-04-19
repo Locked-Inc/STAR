@@ -1,0 +1,40 @@
+%%{ init: { "theme": "dark", "themeVariables": {
+    "primaryColor": "#16213e",
+    "primaryTextColor": "#e8e8f0",
+    "primaryBorderColor": "#4cc9f0",
+    "lineColor": "#9090a8",
+    "secondaryColor": "#500000",
+    "tertiaryColor": "#1a1a2e",
+    "background": "#1a1a2e"
+} } }%%
+
+sequenceDiagram
+    autonumber
+    participant UI as React UI
+    participant GW as Go Gateway
+    participant ROS as ROS2 star_spi_bridge
+    participant LINK as HARQ + FEC + CRC32 link
+    participant RX as RX72N firmware (ThreadX)
+    participant MOTOR as GPTW PWM + DRV8263H
+
+    UI->>GW: gRPC-Web SetVelocityRequest(4 motors, m/s)
+    GW->>ROS: gRPC SetVelocityRequest
+    ROS->>LINK: serialize nanopb VelocityCommand
+    LINK->>LINK: SYNC 0x55AA + seq + CRC-32 framing
+    LINK->>LINK: convolutional FEC K=7, rate-1/2 encode
+    LINK->>RX: SPI frame (100 Hz command rate)
+    RX->>LINK: ACK with next-expected seq
+    LINK->>LINK: Chase Combining if retx needed
+    LINK->>ROS: decoded OK
+
+    RX->>MOTOR: 250 Hz PID -> GPTW duty cycle
+    MOTOR->>RX: MTU/TPU quadrature tick updates
+
+    loop 100 Hz telemetry
+        RX->>LINK: EncoderData + MotorStatus + IMU + sonar
+        LINK->>ROS: decoded frame
+        ROS->>GW: /odom/unfiltered, /imu/data, /joint_states
+        GW->>UI: WebSocket telemetry push
+    end
+
+    Note over LINK: Peak utilization 1.6% at 10 Mbps -<br/>FEC overhead headroom available for<br/>future camera-derived sensor streams

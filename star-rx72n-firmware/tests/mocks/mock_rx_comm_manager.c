@@ -91,7 +91,7 @@ static uint32_t s_queue_count = 0;
  */
 
 /** @brief Last channel sent to */
-static rx_comm_channel_t s_last_send_channel = k_comm_channel_usb;
+static rx_comm_channel_t s_last_send_channel = k_comm_channel_uart;
 
 /** @brief Last frame type sent */
 static rx_frame_type_t s_last_send_type = k_frame_type_ping;
@@ -108,7 +108,7 @@ static uint32_t s_last_send_payload_len = 0;
  */
 
 /** @brief Channel ready status */
-static bool s_channel_ready[k_comm_channel_count] = {true, true};
+static bool s_channel_ready[k_comm_channel_count] = {true, true, true};
 
 /* =============================================================================
  * Static Variables - Manager Pointer (for callback invocation)
@@ -148,7 +148,7 @@ void mock_comm_manager_reset(void)
   s_queue_count     = 0;
 
   /* Reset send tracking */
-  s_last_send_channel     = k_comm_channel_usb;
+  s_last_send_channel     = k_comm_channel_uart;
   s_last_send_type        = k_frame_type_ping;
   s_last_send_payload_len = 0;
   /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
@@ -306,13 +306,13 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
 
   if (s_init_return == k_rx_ok) {
     if (cfg != nullptr) {
-      mgr->usb_handle            = cfg->usb_handle;
+      mgr->uart_handle           = cfg->uart_handle;
       mgr->spi_handle            = cfg->spi_handle;
       mgr->callback              = cfg->callback;
       mgr->callback_ctx          = cfg->callback_ctx;
       mgr->enable_decoded_output = cfg->enable_decoded_output;
     } else {
-      mgr->usb_handle            = nullptr;
+      mgr->uart_handle           = nullptr;
       mgr->spi_handle            = nullptr;
       mgr->callback              = nullptr;
       mgr->callback_ctx          = nullptr;
@@ -430,6 +430,16 @@ rx_err_t rx_comm_manager_respond(rx_comm_manager_t* mgr,
   return rx_comm_manager_send(mgr, &params);
 }
 
+rx_err_t rx_comm_manager_stream_send(rx_comm_manager_t* mgr, const rx_comm_send_params_t* params)
+{
+  return rx_comm_manager_send(mgr, params);
+}
+
+rx_err_t rx_comm_manager_event_send(rx_comm_manager_t* mgr, const rx_comm_send_params_t* params)
+{
+  return rx_comm_manager_send(mgr, params);
+}
+
 rx_err_t
 rx_comm_manager_channel_ready(rx_comm_manager_t* mgr, rx_comm_channel_t channel, bool* ready)
 {
@@ -449,7 +459,7 @@ rx_comm_manager_channel_ready(rx_comm_manager_t* mgr, rx_comm_channel_t channel,
 const char* rx_comm_manager_channel_name(rx_comm_channel_t channel)
 {
   switch (channel) {
-    case k_comm_channel_usb:
+    case k_comm_channel_uart:
       return "USB";
     case k_comm_channel_spi:
       return "SPI";

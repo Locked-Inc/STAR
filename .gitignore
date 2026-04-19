@@ -68,6 +68,7 @@ Testing/
 !**/tests/test_*.c
 !**/tests/test_*.cpp
 !**/tests/test_*.h
+!**/tests/test_*.py
 !**/tests/*.cmake
 
 *.zip
@@ -210,3 +211,9 @@ Thumbs.db
 .claude.json
 # Exception: Allow .claude/skills/build/ (skill directory, not build artifacts)
 !.claude/skills/build/
+
+# Top-level gen/ -- stray buf output that belongs in star-proto/gen/ instead
+/gen/
+
+# CMake user-local presets (machine-specific, not shared)
+CMakeUserPresets.json

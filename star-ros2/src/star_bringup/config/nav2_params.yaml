@@ -109,11 +109,11 @@ local_costmap:
       height: 3
       resolution: 0.05
       robot_radius: 0.15        # meters -- set to actual robot radius
-      plugins: ['obstacle_layer', 'inflation_layer']
+      plugins: ['obstacle_layer', 'sonar_layer', 'inflation_layer']
       obstacle_layer:
         plugin: 'nav2_costmap_2d/ObstacleLayer'
         enabled: true
-        observation_sources: scan
+        observation_sources: scan stereo_cloud
         scan:
           topic: /scan
           max_obstacle_height: 2.0
@@ -124,6 +124,34 @@ local_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 2.5
           obstacle_min_range: 0.0
+        stereo_cloud:
+          topic: /stereo/points2
+          max_obstacle_height: 1.5
+          min_obstacle_height: 0.05
+          clearing: true
+          marking: true
+          data_type: 'PointCloud2'
+          raytrace_max_range: 3.0
+          raytrace_min_range: 0.3
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.3
+      # HC-SR04 ultrasonic layer (2 front + 2 back). RangeSensorLayer
+      # uses the sensor_msgs/Range topics from star_spi_bridge. Back
+      # sensors cover the reverse-motion blind spot below the LiDAR
+      # scan plane.
+      sonar_layer:
+        plugin: 'nav2_costmap_2d/RangeSensorLayer'
+        enabled: true
+        topics: ['/star/obstacle/front_left',
+                 '/star/obstacle/front_right',
+                 '/star/obstacle/back_left',
+                 '/star/obstacle/back_right']
+        phi: 1.2
+        inflate_cone: 1.0
+        no_readings_timeout: 1.0
+        clear_threshold: 0.2
+        mark_threshold: 0.8
+        clear_on_max_reading: true
       inflation_layer:
         plugin: 'nav2_costmap_2d/InflationLayer'
         cost_scaling_factor: 3.0
@@ -148,7 +176,7 @@ global_costmap:
       obstacle_layer:
         plugin: 'nav2_costmap_2d/ObstacleLayer'
         enabled: true
-        observation_sources: scan
+        observation_sources: scan stereo_cloud
         scan:
           topic: /scan
           max_obstacle_height: 2.0
@@ -159,6 +187,17 @@ global_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 2.5
           obstacle_min_range: 0.0
+        stereo_cloud:
+          topic: /stereo/points2
+          max_obstacle_height: 1.5
+          min_obstacle_height: 0.05
+          clearing: true
+          marking: true
+          data_type: 'PointCloud2'
+          raytrace_max_range: 3.0
+          raytrace_min_range: 0.3
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.3
       inflation_layer:
         plugin: 'nav2_costmap_2d/InflationLayer'
         cost_scaling_factor: 3.0

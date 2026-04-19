@@ -27,15 +27,22 @@ const (
 // This allows the TransportManager to detect when a previously failed transport has recovered.
 type HealthMonitor struct {
 	interval time.Duration
+	usbVID   uint16
+	usbPID   uint16
 }
 
-// NewHealthMonitor creates a new HealthMonitor with the given check interval.
-func NewHealthMonitor(interval time.Duration) *HealthMonitor {
+// NewHealthMonitor creates a new HealthMonitor with the given check interval and USB VID:PID.
+//
+// vid and pid are used by probeUSB to locate the current CDC ACM device via sysfs rather than
+// assuming a fixed /dev/ttyUSB0 path. Pass zeros to fall back to the default device path.
+func NewHealthMonitor(interval time.Duration, vid, pid uint16) *HealthMonitor {
 	if interval <= 0 {
 		panic("HealthMonitor: interval must be positive")
 	}
 	return &HealthMonitor{
 		interval: interval,
+		usbVID:   vid,
+		usbPID:   pid,
 	}
 }
 
@@ -123,28 +130,33 @@ func (hm *HealthMonitor) probeTransport(wrapper *TransportWrapper) bool {
 	}
 }
 
-// probeUSB checks if USB CDC device exists and is accessible.
+// probeUSB checks if the USB CDC device exists and is accessible.
 //
 // This is a non-intrusive check that:
-//  1. Attempts to open the USB CDC device (/dev/ttyACM0)
-//  2. Immediately closes it if successful
+//  1. Locates the current ttyUSBN device via sysfs VID:PID scan (when configured)
+//  2. Attempts to open the device and immediately closes it
+//
+// Using sysfs discovery (FindCDCDevice) means the probe succeeds even when the
+// kernel assigned a different minor number after a disconnect/reconnect cycle
+// (e.g., the device moved from /dev/ttyUSB0 to /dev/ttyUSB1).
 //
 // Returns true if device is accessible, false otherwise.
 // Does NOT interfere with active connections (only probes inactive transports).
 func (hm *HealthMonitor) probeUSB() bool {
-	// Use default USB CDC device path
-	devicePath := transport.DefaultCDCDevice
+	devicePath := transport.DefaultCDCDevice // fallback
+	if hm.usbVID != 0 || hm.usbPID != 0 {
+		if found, err := transport.FindCDCDevice(hm.usbVID, hm.usbPID); err == nil {
+			devicePath = found
+		}
+	}
 
-	// Try to open the device (non-blocking)
 	port, err := serial.Open(devicePath, &serial.Mode{
 		BaudRate: transport.DefaultBaudRate,
 	})
 	if err != nil {
-		// Device not available (unplugged, in use, permissions issue)
 		return false
 	}
 
-	// Close immediately (we just wanted to check accessibility)
 	if err := port.Close(); err != nil {
 		log.Printf("WARNING: Failed to close USB probe port: %v", err)
 		return false

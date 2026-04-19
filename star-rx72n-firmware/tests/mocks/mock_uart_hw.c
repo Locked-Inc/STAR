@@ -577,7 +577,7 @@ rx_err_t uart_rx_available(uart_channel_t channel, bool* available)
 /** @brief Debug UART configuration constants */
 typedef enum : uint32_t {
   k_debug_uart_channel  = 9,      /**< SCI9 channel for debug UART */
-  k_debug_uart_baudrate = 115200, /**< 115200 baud for debug console */
+  k_debug_uart_baudrate = 921600, /**< 921600 baud for debug + comm console (CY7C65213 bridge) */
 } debug_uart_config_t;
 
 /** @brief Constants for uart_debug_putint / uart_debug_puthex */

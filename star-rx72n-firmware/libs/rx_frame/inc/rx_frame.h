@@ -465,11 +465,25 @@ typedef enum : uint8_t {
      * @details
      * Indicates a problem with received frame (CRC error, decode failure).
      * Empty payload; flags indicate error type. Sender should retransmit.
-     * Used only on SPI transport (USB CDC relies on hardware reliability).
+     * Used only on SPI transport (UART relies on CRC-32 + bounded resync).
      * @par Payload: None (length = 0)
      * @par Flags: May include k_frame_flag_soft_nack
      */
   k_frame_type_nack = 0x13,
+
+  /**
+     * @brief Firmware log message (0x20)
+     * @details
+     * Carries ASCII log text emitted by the RX72N runtime (rx_log_* macros).
+     * Payload is a raw UTF-8 / 7-bit ASCII byte sequence -- NOT null-terminated
+     * and may span multiple lines. The gateway extracts the payload and writes
+     * it to its own log stream (stderr / log file). Multiplexing logs as framed
+     * messages prevents log bytes from colliding with the frame sync word on the
+     * shared UART-to-USB bridge byte stream.
+     * @par Payload: 1..1024 bytes of log text (no null terminator)
+     * @par Flags: Usually k_frame_flag_none
+     */
+  k_frame_type_log_message = 0x20,
 
   /**
      * @brief Reset acknowledgment (0xFE)
@@ -1243,6 +1257,7 @@ static inline bool rx_frame_type_valid(uint8_t type)
     case k_frame_type_response:
     case k_frame_type_ack:
     case k_frame_type_nack:
+    case k_frame_type_log_message:
     case k_frame_type_reset_ack:
     case k_frame_type_reset:
       return true;

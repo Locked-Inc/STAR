@@ -78,7 +78,7 @@ func TestHealthMonitor_Recovery(t *testing.T) {
 	tm.mu.Unlock()
 
 	// Create HealthMonitor
-	hm := NewHealthMonitor(testProbeCheckInterval)
+	hm := NewHealthMonitor(testProbeCheckInterval, 0, 0)
 
 	// Run checkTransports directly (no need to wait for ticker in Run)
 	// This function probes inactive transports. Since probeTransport returns true (stub),
@@ -99,7 +99,7 @@ func TestHealthMonitor_Recovery(t *testing.T) {
 
 // TestProbeTransport_SPI_Success tests successful SPI PING/PONG exchange
 func TestProbeTransport_SPI_Success(t *testing.T) {
-	hm := NewHealthMonitor(testProbeCheckInterval)
+	hm := NewHealthMonitor(testProbeCheckInterval, 0, 0)
 
 	// Create mock transport that returns valid PONG
 	pongPayload := make([]byte, SPIProbePayloadSize)
@@ -123,7 +123,7 @@ func TestProbeTransport_SPI_Success(t *testing.T) {
 
 // TestProbeTransport_SPI_SendFails tests SPI probe when Send fails
 func TestProbeTransport_SPI_SendFails(t *testing.T) {
-	hm := NewHealthMonitor(testProbeCheckInterval)
+	hm := NewHealthMonitor(testProbeCheckInterval, 0, 0)
 
 	mockTransport := &MockTransportProbe{
 		sendErr: errors.New("send failed"),
@@ -143,7 +143,7 @@ func TestProbeTransport_SPI_SendFails(t *testing.T) {
 
 // TestProbeTransport_SPI_ReceiveTimeout tests SPI probe when Receive times out
 func TestProbeTransport_SPI_ReceiveTimeout(t *testing.T) {
-	hm := NewHealthMonitor(testProbeCheckInterval)
+	hm := NewHealthMonitor(testProbeCheckInterval, 0, 0)
 
 	mockTransport := &MockTransportProbe{
 		receiveErr: context.DeadlineExceeded,
@@ -163,7 +163,7 @@ func TestProbeTransport_SPI_ReceiveTimeout(t *testing.T) {
 
 // TestProbeTransport_SPI_InvalidPayloadLength tests SPI probe with wrong payload size
 func TestProbeTransport_SPI_InvalidPayloadLength(t *testing.T) {
-	hm := NewHealthMonitor(testProbeCheckInterval)
+	hm := NewHealthMonitor(testProbeCheckInterval, 0, 0)
 
 	// Return payload with wrong length (not SPIProbePayloadSize)
 	mockTransport := &MockTransportProbe{
@@ -184,7 +184,7 @@ func TestProbeTransport_SPI_InvalidPayloadLength(t *testing.T) {
 
 // TestProbeTransport_SPI_WrongPayloadValue tests SPI probe with incorrect counter
 func TestProbeTransport_SPI_WrongPayloadValue(t *testing.T) {
-	hm := NewHealthMonitor(testProbeCheckInterval)
+	hm := NewHealthMonitor(testProbeCheckInterval, 0, 0)
 
 	// Return payload with wrong value (not SPIProbeTestMarker)
 	wrongPayload := make([]byte, SPIProbePayloadSize)
@@ -214,7 +214,7 @@ func TestProbeTransport_SPI_WrongPayloadValue(t *testing.T) {
 //
 // Current test verifies that probeTransport correctly dispatches to probeUSB.
 func TestProbeTransport_USB(t *testing.T) {
-	hm := NewHealthMonitor(testProbeCheckInterval)
+	hm := NewHealthMonitor(testProbeCheckInterval, 0, 0)
 
 	wrapper := &TransportWrapper{
 		Name:      TransportNameUSB,
@@ -223,14 +223,14 @@ func TestProbeTransport_USB(t *testing.T) {
 	}
 
 	// This will call probeUSB() which attempts serial.Open()
-	// Result depends on whether /dev/ttyACM0 exists on test system
+	// Result depends on whether /dev/ttyUSB0 exists on test system
 	// We just verify it doesn't panic
 	_ = hm.probeTransport(wrapper)
 }
 
 // TestProbeTransport_UnknownTransport tests default case for unknown transport types
 func TestProbeTransport_UnknownTransport(t *testing.T) {
-	hm := NewHealthMonitor(testProbeCheckInterval)
+	hm := NewHealthMonitor(testProbeCheckInterval, 0, 0)
 
 	wrapper := &TransportWrapper{
 		Name:      "unknown-transport",
@@ -287,7 +287,7 @@ func TestHealthMonitor_RecoveryTriggersFailback(t *testing.T) {
 	activeBefore := tm.GetActiveTransport()
 
 	// Create health monitor
-	hm := NewHealthMonitor(TestHealthCheckInterval)
+	hm := NewHealthMonitor(TestHealthCheckInterval, 0, 0)
 
 	// Run checkTransports which should detect recovery
 	// Since probeTransport returns true for unknown transports,

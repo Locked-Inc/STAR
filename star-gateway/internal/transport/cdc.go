@@ -1,14 +1,21 @@
-// Package transport provides the USB CDC transport layer for RPi5 <-> RX72N communication.
+// Package transport provides the UART-over-USB transport layer for RPi5 <-> RX72N communication.
 //
-// The Raspberry Pi 5 communicates with the RX72N over USB CDC (Communications Device Class),
-// which appears as a virtual serial port (e.g., /dev/ttyACM0). This provides a simpler
-// interface than SPI and includes built-in flow control and reliability.
-// This file helps us manage the raw serial communication over CDC. Doesnt check for any errors.
+// The RX72N's SCI9 UART (PB6/PB7, 921600 baud) is routed through a Cypress CY7C65213
+// USB-UART bridge chip that presents itself on the Pi5 as a Cypress_M8 serial device
+// at /dev/ttyUSB0. This single byte stream multiplexes:
+//   - protobuf command / response / telemetry frames
+//   - k_frame_type_log_message (0x20) frames carrying firmware runtime logs
+//
+// all wrapped in the same SYNC+SEQ+LEN+TYPE+FLAGS+PAYLOAD+CRC32 framing.
+//
+// The type name "CDC" is retained across this package for historical reasons: the
+// CY7C65213 does present a USB CDC-class interface to the host. Earlier versions of
+// the system talked to the RX72N's native USB peripheral (USB0); that path was removed
+// because its firmware stack proved unreliable.
 //
 // Reference: docs/sections/01_nanopb_protocol.tex
 //
 // STAR Project - Texas A&M University
-// January 2026
 package transport
 
 import (
@@ -24,14 +31,13 @@ import (
 
 // CDC configuration constants.
 const (
-	// DefaultCDCDevice is the default CDC device path on Linux.
-	// RX72N typically appears as /dev/ttyACM0.
-	DefaultCDCDevice = "/dev/ttyACM0"
+	// DefaultCDCDevice is the default tty path where the CY7C65213 bridge enumerates.
+	// The Cypress cypress_m8 kernel driver registers as ttyUSB* (not ttyACM*).
+	DefaultCDCDevice = "/dev/ttyUSB0"
 
-	// DefaultBaudRate is the baud rate for CDC communication.
-	// Note: For USB CDC, baud rate is often ignored by the hardware but
-	// required by the serial library.
-	DefaultBaudRate = 115200
+	// DefaultBaudRate is the baud rate that the CY7C65213 bridge is configured for
+	// on its UART side. The RX72N SCI9 driver is programmed to match.
+	DefaultBaudRate = 921600
 
 	// DefaultCDCTimeout is the default read/write timeout for CDC operations.
 	DefaultCDCTimeout = 100 * time.Millisecond
@@ -39,17 +45,16 @@ const (
 	// CDCDataBits is the number of data bits for CDC serial communication.
 	CDCDataBits = 8
 
-	// RenesasVID is the Renesas USB Vendor ID.
-	RenesasVID = 0x045B
+	// CypressVID is the Cypress (now Infineon) USB Vendor ID for the CY7C65213 bridge.
+	CypressVID = 0x04B4
 
-	// RX72NPID is the RX72N USB Product ID.
-	// TODO: Verify this value once RX72N firmware team confirms.
-	RX72NPID = 0x0235
+	// CY7C65213PID is the default USB Product ID reported by the CY7C65213.
+	CY7C65213PID = 0x0003
 )
 
 // CDCConfig holds USB CDC configuration parameters.
 type CDCConfig struct {
-	// Device is the CDC device path (e.g., "/dev/ttyACM0").
+	// Device is the CDC device path (e.g., "/dev/ttyUSB0").
 	// If empty, auto-detection will be attempted using VID/PID.
 	Device string
 
@@ -77,8 +82,8 @@ func DefaultCDCConfig() *CDCConfig {
 		Device:   DefaultCDCDevice,
 		BaudRate: DefaultBaudRate,
 		Timeout:  DefaultCDCTimeout,
-		VID:      RenesasVID,
-		PID:      RX72NPID,
+		VID:      CypressVID,
+		PID:      CY7C65213PID,
 	}
 }
 
@@ -175,17 +180,25 @@ func (c *CDCTransport) Open() error {
 	return nil
 }
 
-// autoDetect finds the first available CDC device.
+// autoDetect finds the first available CDC device matching the configured VID:PID.
 //
-// Note: VID/PID filtering is not implemented in the current version because
-// go.bug.st/serial does not provide USB device enumeration. For production use,
-// either specify the device path explicitly in config, or implement platform-specific
-// VID/PID filtering using sysfs on Linux (/sys/class/tty/*/device/../../idVendor).
+// When VID or PID is non-zero, sysfs-based discovery (FindCDCDevice) is used to
+// locate the correct ttyUSBN device regardless of which minor number the kernel
+// assigned. This is robust to disconnect/reconnect cycles where the minor number
+// may change (e.g., ttyUSB0 -> ttyUSB1).
 //
-// This function returns the first available serial port and the full ports list
-// for logging purposes. Returns typically /dev/ttyACM0 on Linux when only one
-// RX72N is connected.
+// When VID and PID are both zero, falls back to returning the first available
+// serial port from the OS port list.
 func (c *CDCTransport) autoDetect() (string, []string, error) {
+	// Prefer VID:PID-based sysfs discovery when credentials are configured.
+	if c.config.VID != 0 || c.config.PID != 0 {
+		device, err := FindCDCDevice(c.config.VID, c.config.PID)
+		if err == nil {
+			return device, []string{device}, nil
+		}
+		// Fall through to port-list enumeration if sysfs lookup fails.
+	}
+
 	ports, err := serial.GetPortsList()
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to enumerate ports: %w", err)
@@ -195,8 +208,7 @@ func (c *CDCTransport) autoDetect() (string, []string, error) {
 		return "", nil, ErrDeviceNotFound
 	}
 
-	// Return first port (typically /dev/ttyACM0 on Linux)
-	// TODO: Implement VID/PID filtering using platform-specific APIs if needed
+	// Return first port when VID:PID filtering is unavailable.
 	return ports[0], ports, nil
 }
 

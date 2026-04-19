@@ -1,0 +1,190 @@
+name: compliance-engine-ci
+
+on:
+  push:
+    branches:
+      - main
+      - 'docs/**'
+      - 'feat/**'
+    paths:
+      - 'final_capstone/compliance-engine/**'
+      - 'star-ros2/src/star_compliance_msgs/**'
+      - '.github/workflows/compliance-engine-ci.yml'
+      - 'bootstrap_pi.sh'
+  pull_request:
+    paths:
+      - 'final_capstone/compliance-engine/**'
+      - 'star-ros2/src/star_compliance_msgs/**'
+      - '.github/workflows/compliance-engine-ci.yml'
+      - 'bootstrap_pi.sh'
+
+jobs:
+
+  # -------------------------------------------------------------------
+  # Phase 1 - lint + ASCII check (fast, fail fast)
+  # -------------------------------------------------------------------
+  lint:
+    name: lint - shellcheck + ASCII
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ASCII encoding guard
+        run: |
+          python3 scripts/utils/fix-encoding.py --check \
+            final_capstone/compliance-engine/ \
+            star-ros2/src/star_compliance_msgs/ \
+            bootstrap_pi.sh
+
+      - name: shellcheck bootstrap + start + stop
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y shellcheck
+          # start.sh and stop.sh have pre-existing warnings outside our
+          # scope; lint only the new artifacts for blocker-class errors.
+          shellcheck -e SC2034,SC2086,SC1091 bootstrap_pi.sh
+
+  # -------------------------------------------------------------------
+  # Phase 2 - pure-Python pytest (detectors, engines, node smoke + behavior)
+  # -------------------------------------------------------------------
+  unit-tests:
+    name: unit + behavior tests (Python)
+    runs-on: ubuntu-24.04
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache pip downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+
+      - name: Install Python deps
+        working-directory: final_capstone/compliance-engine
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy scikit-image scikit-learn opencv-python \
+              pytest pytest-cov reportlab
+
+      - name: Run pytest with coverage
+        working-directory: final_capstone/compliance-engine
+        run: |
+          PYTHONPATH=. pytest \
+              --maxfail=1 \
+              --cov=star_compliance \
+              --cov-report=xml:coverage.xml \
+              --cov-report=term \
+              --junitxml=pytest-report.xml \
+              tests/
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: final_capstone/compliance-engine/coverage.xml
+
+      - name: Upload junit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-junit
+          path: final_capstone/compliance-engine/pytest-report.xml
+
+  # -------------------------------------------------------------------
+  # Phase 3 - ROS 2 Jazzy colcon build + interface check
+  # -------------------------------------------------------------------
+  ros2-build:
+    name: colcon build - star_compliance_msgs
+    runs-on: ubuntu-24.04
+    container: osrf/ros:jazzy-desktop
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build tooling
+        shell: bash
+        run: |
+          apt-get update -q
+          apt-get install -y \
+              python3-colcon-common-extensions \
+              ros-jazzy-launch-testing-ament-cmake \
+              ros-jazzy-nav2-costmap-2d
+
+      - name: Build star_compliance_msgs
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          cd star-ros2
+          colcon build \
+              --packages-select star_compliance_msgs \
+              --event-handlers console_direct+
+
+      - name: Verify message generation
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          source star-ros2/install/setup.bash
+          ros2 interface list | grep -E 'star_compliance_msgs' \
+              || { echo "no star_compliance_msgs interfaces installed"; exit 1; }
+          for msg in DoorwayMeasurement ThresholdMeasurement \
+                     ProtrudingObject ProtrudingObjectArray \
+                     DynamicObstacle DynamicObstacleArray \
+                     PathBlockage; do
+              ros2 interface show "star_compliance_msgs/msg/$msg" \
+                  > /dev/null \
+                  || { echo "interface show failed for $msg"; exit 1; }
+          done
+          echo "All 7 star_compliance_msgs interfaces resolve."
+
+  # -------------------------------------------------------------------
+  # Phase 4 - markdown lint on the docs tree (docs quality gate)
+  # -------------------------------------------------------------------
+  docs-lint:
+    name: markdown lint - docs tree
+    runs-on: ubuntu-24.04
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install markdownlint-cli2
+        run: npm install -g markdownlint-cli2
+
+      - name: Lint compliance-engine docs
+        run: |
+          cat > .markdownlint.jsonc <<'JSON'
+          {
+            "default": true,
+            "MD013": false,
+            "MD024": { "siblings_only": true },
+            "MD033": false,
+            "MD041": false,
+            "MD036": false,
+            "MD040": false
+          }
+          JSON
+          markdownlint-cli2 \
+              "final_capstone/compliance-engine/README.md" \
+              "final_capstone/compliance-engine/docs/*.md" \
+              "final_capstone/compliance-engine/star_compliance/models/README.md"
+
+  # -------------------------------------------------------------------
+  # Phase 5 - summary gate (all three must pass)
+  # -------------------------------------------------------------------
+  gate:
+    name: all-green
+    runs-on: ubuntu-24.04
+    needs: [unit-tests, ros2-build, docs-lint]
+    steps:
+      - run: echo "compliance-engine CI passed."

@@ -319,7 +319,7 @@ void test_telemetry_task_broadcasts_to_usb(void)
   mgr.initialized = true;
 
   /* Set up send parameters as task does */
-  params.channel     = k_comm_channel_usb;
+  params.channel     = k_comm_channel_uart;
   params.type        = k_frame_type_response;
   params.flags       = 0;
   params.payload     = payload;
@@ -385,15 +385,15 @@ void test_telemetry_transport_selects_usb_when_ready(void)
   mgr.initialized = true;
 
   /* USB ready, SPI also ready - transport selection must prefer USB */
-  mock_comm_manager_set_channel_ready(k_comm_channel_usb, true);
+  mock_comm_manager_set_channel_ready(k_comm_channel_uart, true);
   mock_comm_manager_set_channel_ready(k_comm_channel_spi, true);
   mock_comm_manager_set_send_return(k_rx_ok);
 
   /* Exercise transport selection: query USB first (preferred), then SPI fallback */
-  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &usb_ready);
+  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_uart, &usb_ready);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   if (usb_ready) {
-    selected_channel = k_comm_channel_usb;
+    selected_channel = k_comm_channel_uart;
   } else {
     err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_spi, &spi_ready);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -401,7 +401,7 @@ void test_telemetry_transport_selects_usb_when_ready(void)
   }
 
   /* Verify USB was selected (USB ready -> USB preferred) */
-  TEST_ASSERT_EQUAL(k_comm_channel_usb, selected_channel);
+  TEST_ASSERT_EQUAL(k_comm_channel_uart, selected_channel);
 
   /* Send via the selected channel and verify the mock records it correctly */
   params.channel     = selected_channel;
@@ -412,7 +412,7 @@ void test_telemetry_transport_selects_usb_when_ready(void)
   err = rx_comm_manager_send(&mgr, &params);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(k_comm_channel_usb, mock_comm_manager_get_last_send_channel());
+  TEST_ASSERT_EQUAL(k_comm_channel_uart, mock_comm_manager_get_last_send_channel());
 }
 
 /**
@@ -439,12 +439,12 @@ void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
   mgr.initialized = true;
 
   /* USB not ready, SPI ready - transport selection must fall back to SPI */
-  mock_comm_manager_set_channel_ready(k_comm_channel_usb, false);
+  mock_comm_manager_set_channel_ready(k_comm_channel_uart, false);
   mock_comm_manager_set_channel_ready(k_comm_channel_spi, true);
   mock_comm_manager_set_send_return(k_rx_ok);
 
   /* Exercise transport selection: USB first (not ready) -> SPI fallback */
-  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &usb_ready);
+  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_uart, &usb_ready);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(usb_ready);
 
@@ -485,14 +485,14 @@ void test_telemetry_channel_ready_usb_reports_correctly(void)
   mgr.initialized = true;
 
   /* Set USB as ready */
-  mock_comm_manager_set_channel_ready(k_comm_channel_usb, true);
-  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &ready);
+  mock_comm_manager_set_channel_ready(k_comm_channel_uart, true);
+  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_uart, &ready);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(ready);
 
   /* Set USB as not ready */
-  mock_comm_manager_set_channel_ready(k_comm_channel_usb, false);
-  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &ready);
+  mock_comm_manager_set_channel_ready(k_comm_channel_uart, false);
+  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_uart, &ready);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(ready);
 }
@@ -550,15 +550,15 @@ void test_telemetry_spi_fallback_send_succeeds(void)
   mgr.initialized = true;
 
   /* USB not ready, SPI ready - transport selection must fall back to SPI */
-  mock_comm_manager_set_channel_ready(k_comm_channel_usb, false);
+  mock_comm_manager_set_channel_ready(k_comm_channel_uart, false);
   mock_comm_manager_set_channel_ready(k_comm_channel_spi, true);
   mock_comm_manager_set_send_return(k_rx_ok);
 
   /* Exercise transport selection: USB first (not ready) -> SPI fallback */
-  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &usb_ready);
+  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_uart, &usb_ready);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   if (usb_ready) {
-    selected_channel = k_comm_channel_usb;
+    selected_channel = k_comm_channel_uart;
   } else {
     err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_spi, &spi_ready);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -587,13 +587,13 @@ void test_telemetry_spi_fallback_send_succeeds(void)
  *
  * @details
  * Before any command frame arrives, shared_data_get_active_channel() returns
- * k_comm_channel_usb (the USB default). Verifies that the mock preserves this
+ * k_comm_channel_uart (the USB default). Verifies that the mock preserves this
  * default AND that sending on that channel routes to USB -- mirroring what
  * internal_select_transport() + internal_build_and_send_telemetry() would do.
  *
  * @pre mock_shared_data_reset() + shared_data_init() called (setUp)
- * @pre Default active channel is k_comm_channel_usb
- * @post mock_comm_manager_get_last_send_channel() returns k_comm_channel_usb
+ * @pre Default active channel is k_comm_channel_uart
+ * @post mock_comm_manager_get_last_send_channel() returns k_comm_channel_uart
  * @post send count is 1
  *
  * @note Not thread-safe; must be run from the single-threaded Unity test harness
@@ -610,7 +610,7 @@ void test_telemetry_defaults_to_usb_before_any_command(void)
 
   /* With no command received, active channel must default to USB */
   const uint8_t raw_ch = shared_data_get_active_channel();
-  TEST_ASSERT_EQUAL_UINT8((uint8_t)k_comm_channel_usb, raw_ch);
+  TEST_ASSERT_EQUAL_UINT8((uint8_t)k_comm_channel_uart, raw_ch);
   TEST_ASSERT_EQUAL_UINT32(0U, mock_shared_data_get_active_channel_update_count());
 
   /* Simulate telemetry routing: read channel, send via comm manager */
@@ -622,7 +622,7 @@ void test_telemetry_defaults_to_usb_before_any_command(void)
   err = rx_comm_manager_send(&mgr, &params);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(k_comm_channel_usb, mock_comm_manager_get_last_send_channel());
+  TEST_ASSERT_EQUAL(k_comm_channel_uart, mock_comm_manager_get_last_send_channel());
   TEST_ASSERT_EQUAL_UINT32(1U, mock_comm_manager_get_send_count());
 }
 

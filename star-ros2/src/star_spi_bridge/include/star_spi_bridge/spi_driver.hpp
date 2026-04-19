@@ -42,14 +42,15 @@ namespace star_spi_bridge
  */
 enum class FrameType : uint8_t
 {
-  Ping = 0x00,     /**< Keepalive request (RPi5 -> RX72N or RX72N -> RPi5) */
-  Pong = 0x01,     /**< Keepalive response echoing the PING payload */
-  Command = 0x10,  /**< Protobuf-encoded command (RPi5 -> RX72N) */
-  Response = 0x11, /**< Protobuf-encoded response (RX72N -> RPi5) */
-  Ack = 0x12,      /**< Positive acknowledgment, empty payload (SPI only) */
-  Nack = 0x13,     /**< Negative acknowledgment, empty payload (SPI only) */
-  ResetAck = 0xFE, /**< Confirms reset completed; seq matches reset request */
-  Reset = 0xFF,    /**< Request to reset communication state */
+  Ping = 0x00,        /**< Keepalive request (RPi5 <-> RX72N) */
+  Pong = 0x01,        /**< Keepalive response echoing the PING payload */
+  Command = 0x10,     /**< Protobuf-encoded command (RPi5 -> RX72N) */
+  Response = 0x11,    /**< Protobuf-encoded response (RX72N -> RPi5) */
+  Ack = 0x12,         /**< Positive acknowledgment, empty payload (SPI only) */
+  Nack = 0x13,        /**< Negative acknowledgment, empty payload (SPI only) */
+  LogMessage = 0x20,  /**< Firmware ASCII log payload (RX72N -> gateway; not expected on SPI) */
+  ResetAck = 0xFE,    /**< Confirms reset completed; seq matches reset request */
+  Reset = 0xFF,       /**< Request to reset communication state */
 };
 
 /**

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  CycloneDDS configuration for the STAR robot stack.
+
+  Problems this fixes:
+    - "Failed to find a free participant index for domain 0"
+      Default MaxAutoParticipantIndex is 9 (10 slots). Stale entries from
+      crashed nodes fill the pool and block new nodes from joining domain 0.
+    - Intra-host discovery failure when AllowMulticast=false is set without
+      explicit peers. CycloneDDS without multicast AND without peers cannot
+      discover any participants, even on the same machine. Fixed by pinning
+      to the loopback interface and adding 127.0.0.1 as an explicit peer.
+
+  Apply with:
+    export CYCLONEDDS_URI="file:///workspaces/STAR/config/cyclonedds.xml"
+  (already set in ~/.bashrc and by start.sh)
+-->
+<CycloneDDS
+  xmlns="https://cdds.io/config"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="https://cdds.io/config
+    https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/master/etc/cyclonedds.xsd">
+
+  <Domain id="any">
+
+    <General>
+      <!--
+        Disable multicast discovery on external interfaces.
+        Rationale:
+          - Pi5 WiFi AP (wlan0 in AP mode) does not forward multicast reliably.
+          - BBB USB-ethernet (enxf45eab3527c1) and wlan0 cause "no route to
+            host" DDS errors when multicast is attempted on them.
+          - All ROS2 nodes run on the same Pi5 host; intra-host discovery via
+            loopback is sufficient. Foxglove and gRPC use TCP directly.
+      -->
+      <AllowMulticast>false</AllowMulticast>
+
+      <!--
+        Restrict DDS to the loopback interface for reliable intra-host
+        participant discovery. This is required when AllowMulticast=false:
+        without an explicit interface AND without a Peers list, CycloneDDS
+        has no mechanism to find other participants and all ros2 node list /
+        topic list queries return empty even though the nodes are running.
+
+        Foxglove WebSocket (:8765), gRPC (:50051), and HTTP (:8080) all
+        use TCP and are unaffected by this DDS interface restriction.
+      -->
+      <Interfaces>
+        <NetworkInterface name="lo"/>
+      </Interfaces>
+    </General>
+
+    <Discovery>
+      <!--
+        Explicit unicast peer: contact self on loopback so SPDP
+        (Simple Participant Discovery Protocol) packets reach all
+        participants on this host even without multicast.
+      -->
+      <Peers>
+        <Peer address="127.0.0.1"/>
+      </Peers>
+
+      <!--
+        Raise the auto-assigned participant index ceiling.
+        Default is 9 (indices 0-9 = 10 slots). After repeated crashes or
+        restarts without a clean shutdown, stale SPDP records occupy slots
+        until their lease expires (~10 s by default). Setting this to 120
+        provides 121 slots so normal operation never exhausts the pool.
+      -->
+      <MaxAutoParticipantIndex>120</MaxAutoParticipantIndex>
+
+      <!--
+        Shorten the participant lease duration so stale entries from
+        crashed nodes are reclaimed quickly (default is 10 s).
+      -->
+      <LeaseDuration>5000ms</LeaseDuration>
+    </Discovery>
+
+  </Domain>
+
+</CycloneDDS>

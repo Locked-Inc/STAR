@@ -13,10 +13,19 @@
 
 using star_spi_bridge::SpiMessageConverter;
 
+// Test robot geometry. Mirrors the production defaults in
+// star_spi_driver_node.cpp and the BBB hardware_config.h so test
+// expected values (e.g. 2*pi*r per revolution) remain in sync with
+// what the production node would compute.
+constexpr double kTestTrackWidthM = 0.356;          // left-right wheel center-to-center [m]
+constexpr double kTestWheelRadiusM = 0.072;         // rolling radius [m]
+constexpr int kTestEncoderTicksPerRev = 11599;      // 341 PPR x 34.02:1 gearbox
+
 class SpiMessageConverterTest : public ::testing::Test
 {
 protected:
-  SpiMessageConverter::Parameters params{0.150, 0.0325, 11599};
+  SpiMessageConverter::Parameters params{
+    kTestTrackWidthM, kTestWheelRadiusM, kTestEncoderTicksPerRev};
   SpiMessageConverter converter{params};
 };
 
@@ -42,10 +51,14 @@ TEST_F(SpiMessageConverterTest, TwistToVelocity_RotateLeft)
   star::v1::VelocityCommand cmd;
   EXPECT_TRUE(converter.twist_to_velocity_command(twist, cmd));
 
-  // v_right = 0 + 2 * (0.15/2) = 0.15
-  // v_left = 0 - 2 * (0.15/2) = -0.15
-  EXPECT_NEAR(cmd.front_right_velocity_mps(), 0.15, 0.001);
-  EXPECT_NEAR(cmd.front_left_velocity_mps(), -0.15, 0.001);
+  // Differential drive kinematics:
+  //   v_right = linear + angular * (track_width / 2)
+  //   v_left  = linear - angular * (track_width / 2)
+  // For linear=0, angular=2: |v| = track_width.
+  const double expected_right = twist.angular.z * (kTestTrackWidthM / 2.0);
+  const double expected_left = -expected_right;
+  EXPECT_NEAR(cmd.front_right_velocity_mps(), expected_right, 0.001);
+  EXPECT_NEAR(cmd.front_left_velocity_mps(), expected_left, 0.001);
 }
 
 TEST_F(SpiMessageConverterTest, TwistToVelocity_NaN)
@@ -100,8 +113,8 @@ TEST_F(SpiMessageConverterTest, TelemetryToOdometry_ForwardMovement)
   nav_msgs::msg::Odometry odom2;
   converter.telemetry_to_odometry(telemetry2, odom2);
 
-  // One revolution = 2 * pi * radius = 2 * pi * 0.0325 ~ 0.204 m
-  double expected_dist = 2.0 * M_PI * 0.0325;
+  // One revolution = 2 * pi * radius (about 0.452 m for the 144 mm wheel)
+  double expected_dist = 2.0 * M_PI * kTestWheelRadiusM;
   EXPECT_NEAR(odom2.pose.pose.position.x, expected_dist, 0.01);
   EXPECT_NEAR(odom2.pose.pose.position.y, 0.0, 0.001);
 }
@@ -192,8 +205,8 @@ TEST_F(SpiMessageConverterTest, TelemetryToJointState_Velocity)
   sensor_msgs::msg::JointState joint_state;
   converter.telemetry_to_joint_state(telemetry, joint_state);
 
-  // angular_velocity = linear_velocity / radius = 1.0 / 0.0325 ~ 30.77 rad/s
-  double expected_angular = velocity_mps / 0.0325;
+  // angular_velocity = linear_velocity / radius (about 13.89 rad/s for v=1, r=0.072)
+  double expected_angular = velocity_mps / kTestWheelRadiusM;
   ASSERT_EQ(joint_state.velocity.size(), 4u);
   EXPECT_NEAR(joint_state.velocity[0], expected_angular, 0.1);
   EXPECT_NEAR(joint_state.velocity[1], expected_angular, 0.1);
@@ -216,13 +229,17 @@ TEST_F(SpiMessageConverterTest, RoundTrip_TwistToVelocityToJointState)
   star::v1::VelocityCommand cmd;
   ASSERT_TRUE(converter.twist_to_velocity_command(twist, cmd));
 
-  // Verify the velocity command was set correctly
-  // v_right = 0.5 + 0.2 * (0.15/2) = 0.5 + 0.015 = 0.515
-  // v_left  = 0.5 - 0.2 * (0.15/2) = 0.5 - 0.015 = 0.485
-  EXPECT_NEAR(cmd.front_right_velocity_mps(), 0.515, 0.001);
-  EXPECT_NEAR(cmd.front_left_velocity_mps(), 0.485, 0.001);
-  EXPECT_NEAR(cmd.back_right_velocity_mps(), 0.515, 0.001);
-  EXPECT_NEAR(cmd.back_left_velocity_mps(), 0.485, 0.001);
+  // Verify the velocity command was set correctly.
+  // Differential drive kinematics with kTestTrackWidthM as the track:
+  //   v_right = linear + angular * (track_width / 2)
+  //   v_left  = linear - angular * (track_width / 2)
+  const double half_track = kTestTrackWidthM / 2.0;
+  const double expected_right = twist.linear.x + twist.angular.z * half_track;
+  const double expected_left = twist.linear.x - twist.angular.z * half_track;
+  EXPECT_NEAR(cmd.front_right_velocity_mps(), expected_right, 0.001);
+  EXPECT_NEAR(cmd.front_left_velocity_mps(), expected_left, 0.001);
+  EXPECT_NEAR(cmd.back_right_velocity_mps(), expected_right, 0.001);
+  EXPECT_NEAR(cmd.back_left_velocity_mps(), expected_left, 0.001);
 
   // Create telemetry with matching velocities (simulating firmware response)
   star::v1::TelemetryData telemetry;
@@ -236,7 +253,7 @@ TEST_F(SpiMessageConverterTest, RoundTrip_TwistToVelocityToJointState)
   converter.telemetry_to_joint_state(telemetry, joint_state);
 
   // Verify velocities converted to rad/s
-  double inv_radius = 1.0 / 0.0325;
+  double inv_radius = 1.0 / kTestWheelRadiusM;
   EXPECT_NEAR(joint_state.velocity[0], cmd.front_left_velocity_mps() * inv_radius, 0.1);
   EXPECT_NEAR(joint_state.velocity[1], cmd.front_right_velocity_mps() * inv_radius, 0.1);
 }

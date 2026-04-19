@@ -393,7 +393,6 @@
 #include "rx_spi_comm.h"
 #include "rx_spi_link.h"
 #include "rx_uart_comm.h"
-#include "rx_usb_comm.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -529,42 +528,26 @@ typedef enum : uint16_t {
  */
 typedef enum : uint8_t {
   /**
-   * @brief USB CDC channel (Port 0 - protocol)
+   * @brief UART channel (SCI9 via CY7C65213 USB-UART bridge)
    * @details
-   * Primary USB serial port used for frame protocol communication.
-   * Maps to `/dev/ttyACM0` on Raspberry Pi 5.
+   * Primary link to the Raspberry Pi 5 gateway. Carries protobuf command /
+   * response / telemetry frames AND k_frame_type_log_message frames with the
+   * RX72N runtime log stream, all multiplexed on the same byte stream.
    *
-   * **Characteristics:**
-   * - Bandwidth: ~1 MB/s practical (12 Mbps full-speed USB theoretical)
-   * - Latency: 1-5 ms (depends on USB polling interval)
-   * - Setup: Plug-and-play, automatic driver loading
-   * - Reliability: Good (USB protocol has error detection)
+   * On the Pi5 the bridge enumerates as /dev/ttyUSB* at 921600 baud.
    *
-   * @par Hardware: USB full-speed peripheral (RX72N USB module)
+   * @par Hardware: SCI9 (PB7 / TXD9, PB6 / RXD9) + CY7C65213 bridge IC
    * @par Value: 0
    */
-  k_comm_channel_usb = 0,
+  k_comm_channel_uart = 0,
 
   /**
    * @brief SPI peripheral channel
    * @details
-   * Dedicated SPI connection for high-speed, low-latency communication.
-   * Requires explicit wiring between RX72N RSPI and RPi5 SPI peripheral.
+   * Dedicated SPI connection to the ROS2 spi_driver_node for low-latency,
+   * high-bandwidth motor control. 10 MHz clock, full-duplex.
    *
-   * **Characteristics:**
-   * - Bandwidth: ~2 MB/s @ 20 MHz clock
-   * - Latency: 0.1-1 ms (depends on polling frequency)
-   * - Setup: Requires 4-6 wire connections + configuration
-   * - Reliability: Good (frame protocol includes CRC-32)
-   *
-   * **Pin Connections:**
-   * - COPI: RX72N -> RPi5 (data out from RX72N)
-   * - CIPO: RPi5 -> RX72N (data in to RX72N)
-   * - SCK: Clock (either device can be controller)
-   * - CS: Chip select (active low)
-   * - Optional: Handshake/IRQ pins for flow control
-   *
-   * @par Hardware: RSPI peripheral (Renesas Serial Peripheral Interface)
+   * @par Hardware: RSPI peripheral (COPI / CIPO / SCK / CS)
    * @par Value: 1
    */
   k_comm_channel_spi = 1,
@@ -572,42 +555,21 @@ typedef enum : uint8_t {
   /**
    * @brief I2C peripheral channel (RIIC0)
    * @details
-   * I2C connection where RX72N acts as I2C peripheral device and RPi5 is
-   * the I2C controller. Useful when SPI and USB CDC are unavailable.
+   * I2C connection where RX72N acts as I2C peripheral device and RPi5 is the
+   * I2C controller. Optional auxiliary channel.
    *
-   * @par Hardware: RIIC0 peripheral (P16/SCL0, P17/SDA0)
+   * @par Hardware: RIIC0 peripheral (P16 / SCL0, P17 / SDA0)
    * @par Value: 2
    */
   k_comm_channel_i2c = 2,
 
   /**
-   * @brief UART channel (SCI9)
-   * @details
-   * Serial UART connection over SCI9 (TXD9/RXD9) at configurable baud rate.
-   * Provides an alternative communication channel for development and debugging.
+   * @brief Total number of supported channels (3)
    *
-   * @par Hardware: SCI9 peripheral (TXD9/RXD9)
-   * @par Value: 3
-   */
-  k_comm_channel_uart = 3,
-
-  /**
-   * @brief Total number of supported channels
-   * @details
-   * Compile-time constant indicating channel count. Used for array sizing
-   * and loop bounds checking (NASA Rule 2 compliance).
-   *
-   * **Usage in loops:**
-   * @code{.c}
-   * for (uint8_t i = 0; i < k_comm_channel_count; i++) {
-   *     // Process each channel
-   * }
-   * @endcode
-   *
-   * @par Value: 4 (USB + SPI + I2C + UART)
+   * @par Value: 3 (UART + SPI + I2C)
    * @par Invariant: Must equal number of enum values (excluding this one)
    */
-  k_comm_channel_count = 4,
+  k_comm_channel_count = 3,
 } rx_comm_channel_t;
 
 /**
@@ -806,13 +768,11 @@ typedef void (*rx_comm_link_status_callback_t)(rx_comm_channel_t     channel,
  */
 typedef enum : uint8_t {
   k_comm_channel_mask_none = 0x00U, /**< No channels enabled */
-  k_comm_channel_mask_usb  = 0x01U, /**< USB CDC (k_comm_channel_usb = 0) */
-  k_comm_channel_mask_spi  = 0x02U, /**< SPI     (k_comm_channel_spi = 1) */
-  k_comm_channel_mask_i2c  = 0x04U, /**< I2C     (k_comm_channel_i2c = 2) */
-  k_comm_channel_mask_uart = 0x08U, /**< UART    (k_comm_channel_uart = 3) */
-  k_comm_channel_mask_all =
-    (k_comm_channel_mask_usb | k_comm_channel_mask_spi | k_comm_channel_mask_i2c |
-     k_comm_channel_mask_uart), /**< All four channels */
+  k_comm_channel_mask_uart = 0x01U, /**< UART (k_comm_channel_uart = 0) */
+  k_comm_channel_mask_spi  = 0x02U, /**< SPI  (k_comm_channel_spi  = 1) */
+  k_comm_channel_mask_i2c  = 0x04U, /**< I2C  (k_comm_channel_i2c  = 2) */
+  k_comm_channel_mask_all  =        /**< All three channels */
+  (k_comm_channel_mask_uart | k_comm_channel_mask_spi | k_comm_channel_mask_i2c),
 } rx_comm_channel_mask_t;
 
 /**
@@ -849,29 +809,6 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  /**
-   * @brief USB communication handle (NULL to disable USB channel)
-   * @details
-   * Pointer to initialized USB CDC transport handle. If NULL, USB channel
-   * is disabled and all USB operations are skipped.
-   *
-   * **Requirements:**
-   * - Must be initialized via `rx_usb_comm_init()` before passing to manager
-   * - Must remain valid for lifetime of manager
-   * - Handle must be configured with:
-   *   - Port 0: Protocol channel (frame communication)
-   *   - Port 1: Debug channel (ASCII output, if decoded output enabled)
-   *
-   * **Null handling:**
-   * - NULL = USB channel disabled (valid configuration)
-   * - Non-NULL = USB channel enabled
-   *
-   * @par Type: rx_usb_comm_handle_t* (pointer to USB transport handle)
-   * @par Valid values: Non-NULL initialized handle, or nullptr to disable
-   * @par Lifetime: Must outlive manager instance
-   */
-  rx_usb_comm_handle_t* usb_handle;
-
   /**
    * @brief SPI communication handle (NULL to disable SPI channel)
    * @details
@@ -1066,10 +1003,10 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  rx_usb_comm_handle_t*  usb_handle;  /**< USB CDC comm handle (NULL disables USB channel) */
-  rx_spi_comm_handle_t*  spi_handle;  /**< SPI comm handle (NULL disables SPI channel) */
-  rx_i2c_comm_handle_t*  i2c_handle;  /**< I2C peripheral comm handle (NULL disables I2C channel) */
-  rx_uart_comm_handle_t* uart_handle; /**< UART (SCI9) comm handle (NULL disables UART channel) */
+  rx_uart_comm_handle_t*
+                        uart_handle; /**< UART (SCI9 via CY7C65213 bridge) comm handle -- primary */
+  rx_spi_comm_handle_t* spi_handle;  /**< SPI comm handle (NULL disables SPI channel) */
+  rx_i2c_comm_handle_t* i2c_handle;  /**< I2C peripheral comm handle (NULL disables I2C channel) */
 
   /**< @brief Optional SPI link layer with HARQ (NULL if disabled)
    * @details

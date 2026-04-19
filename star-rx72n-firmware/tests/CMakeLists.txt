@@ -108,8 +108,6 @@ function(apply_test_includes target)
         ${CMAKE_SOURCE_DIR}/../libs/rx_fec/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_harq/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_core/inc
-        ${CMAKE_SOURCE_DIR}/../libs/rx_usb/inc
-        ${CMAKE_SOURCE_DIR}/../libs/rx_usb_comm/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_i2c_comm/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_spi_comm/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_spi_link/inc
@@ -194,20 +192,15 @@ set(RX_HARQ_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_fec/src/rx_fec.c
 )
 
-# USB mock sources
-set(MOCK_USB_SRC
-    ${CMAKE_SOURCE_DIR}/mocks/mock_usb_hw.c
-    ${CMAKE_SOURCE_DIR}/mocks/mock_usb0_regs.c
-)
-
-# rx_log backend implementation (runtime backend selection)
+# rx_log backend: the real UART ring-buffer log backend compiles on the host.
+# (A mock is provided for tests that need to inspect buffered bytes.)
 set(RX_LOG_SRC
-    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_uart.c
 )
 
-# Log mock source (UART/USB stub functions + runtime backend implementation)
+# Log mock source: alias to the real UART log backend; no separate UART/USB
+# stub is needed because only one backend exists now.
 set(MOCK_LOG_SRC
-    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_log.c
     ${RX_LOG_SRC}
 )
 
@@ -220,16 +213,6 @@ set(MOCK_UART_SRC
 # Time mock source
 set(MOCK_TIME_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_time.c
-)
-
-# rx_usb source (only rx_usb.c, hardware mocked)
-set(RX_USB_SRC
-    ${CMAKE_SOURCE_DIR}/../libs/rx_usb/src/rx_usb.c
-)
-
-# rx_usb_comm source
-set(RX_USB_COMM_SRC
-    ${CMAKE_SOURCE_DIR}/../libs/rx_usb_comm/src/rx_usb_comm.c
 )
 
 # rx_hcsr04 source
@@ -432,42 +415,6 @@ add_executable(test_rx_harq
 apply_strict_warnings(test_rx_harq)
 apply_test_includes(test_rx_harq)
 target_link_libraries(test_rx_harq unity)
-
-# Test: USB CDC Driver
-add_executable(test_rx_usb
-    test_rx_usb.c
-    ${RX_USB_SRC}
-    ${MOCK_USB_SRC}
-)
-apply_strict_warnings(test_rx_usb)
-apply_test_includes(test_rx_usb)
-target_include_directories(test_rx_usb PRIVATE ${CMAKE_SOURCE_DIR}/../libs/rx_usb/src)
-target_link_libraries(test_rx_usb unity)
-
-# Test: USB CDC Multi-Port (Composite Device)
-add_executable(test_rx_usb_multiport
-    test_rx_usb_multiport.c
-    ${RX_USB_SRC}
-    ${MOCK_USB_SRC}
-)
-apply_strict_warnings(test_rx_usb_multiport)
-apply_test_includes(test_rx_usb_multiport)
-target_link_libraries(test_rx_usb_multiport unity)
-
-# Test: USB Communication Layer
-add_executable(test_rx_usb_comm
-    test_rx_usb_comm.c
-    ${RX_USB_COMM_SRC}
-    ${RX_USB_SRC}
-    ${RX_FRAME_SRC}
-    ${RX_SESSION_SRC}
-    ${MOCK_USB_SRC}
-    ${MOCK_LOG_SRC}
-    ${MOCK_TIME_SRC}
-)
-apply_strict_warnings(test_rx_usb_comm)
-apply_test_includes(test_rx_usb_comm)
-target_link_libraries(test_rx_usb_comm unity)
 
 # Test: Time Interface
 add_executable(test_rx_time
@@ -813,38 +760,10 @@ target_include_directories(test_rx_frame_ascii PRIVATE
 )
 target_link_libraries(test_rx_frame_ascii unity)
 
-# Test: Communication Manager
-add_executable(test_rx_comm_manager
-    test_rx_comm_manager.c
-    ${RX_COMM_MANAGER_SRC}
-    ${RX_FRAME_ASCII_SRC}
-    ${RX_FRAME_SRC}
-    ${RX_SESSION_SRC}
-    ${RX_USB_COMM_SRC}
-    ${RX_USB_SRC}
-    ${RX_SPI_COMM_SRC}
-    ${RX_SPI_LINK_SRC}
-    ${RX_FEC_SRC}
-    ${RX_HARQ_SRC}
-    ${RX_I2C_COMM_SRC}
-    ${RX_UART_COMM_SRC}
-    ${MOCK_USB_SRC}
-    ${MOCK_RSPI_SRC}
-    ${MOCK_UART_SRC}
-    ${MOCK_RIIC_HAL_SRC}
-    ${MOCK_LOG_SRC}
-)
-apply_strict_warnings(test_rx_comm_manager)
-apply_test_includes(test_rx_comm_manager)
-# Force RX_STATIC_TESTABLE=static to prevent symbol collisions when both
-# rx_i2c_comm.c and rx_uart_comm.c (which share internal function names)
-# are compiled into the same binary under UNIT_TEST mode.
-target_compile_definitions(test_rx_comm_manager PRIVATE RX_STATIC_TESTABLE=static)
-target_include_directories(test_rx_comm_manager PRIVATE
-    ${CMAKE_SOURCE_DIR}/../libs/rx_frame_ascii/inc
-    ${CMAKE_SOURCE_DIR}/../libs/rx_comm_manager/inc
-)
-target_link_libraries(test_rx_comm_manager unity)
+# test_rx_comm_manager was removed along with the USB0 libraries it tested.
+# Individual transport correctness is covered by test_rx_spi_comm,
+# test_rx_i2c_comm, and test_rx_uart_comm. If integration-level tests are
+# needed again, re-add a dedicated suite targeting UART + SPI + I2C routing.
 
 # Test: I2C Comm Layer (RIIC0 peripheral frame protocol)
 add_executable(test_rx_i2c_comm
@@ -877,22 +796,6 @@ target_include_directories(test_rx_uart_comm PRIVATE
     ${CMAKE_SOURCE_DIR}/../libs/rx_uart_comm/inc
 )
 target_link_libraries(test_rx_uart_comm unity)
-
-# Test: USB Log Backend (rx_log_usb.c)
-add_executable(test_rx_log_usb
-    test_rx_log_usb.c
-    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_usb.c
-    ${RX_USB_SRC}
-    ${RX_LOG_SRC}
-    ${MOCK_USB_SRC}
-)
-apply_strict_warnings(test_rx_log_usb)
-apply_test_includes(test_rx_log_usb)
-target_include_directories(test_rx_log_usb PRIVATE
-    ${CMAKE_SOURCE_DIR}/../libs/rx_usb/inc
-    ${CMAKE_SOURCE_DIR}/../libs/rx_core/inc
-)
-target_link_libraries(test_rx_log_usb unity)
 
 # Test: Independent Watchdog Timer (IWDT) Driver
 add_executable(test_rx_iwdt
@@ -1147,17 +1050,37 @@ target_include_directories(test_imu_task PRIVATE
 target_link_libraries(test_imu_task unity)
 set_target_properties(test_imu_task PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
 
-# Test: rx_log.c runtime backend selection
-add_executable(test_rx_log_backend
-    test_rx_log_backend.c
-    ${MOCK_LOG_SRC}
+# Test: rx_log_uart ring buffer backend
+add_executable(test_rx_log_uart
+    test_rx_log_uart.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_uart.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tx_api.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tasks.c
 )
-apply_strict_warnings(test_rx_log_backend)
-apply_test_includes(test_rx_log_backend)
-set_target_properties(test_rx_log_backend PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
-target_link_libraries(test_rx_log_backend unity)
+apply_strict_warnings(test_rx_log_uart)
+apply_test_includes(test_rx_log_uart)
+target_include_directories(test_rx_log_uart PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/inc
+)
+target_link_libraries(test_rx_log_uart unity)
 
-# Test: comm_task_apply_system_config() unified config + conflict detection
+# Test: rx_log.h inline coverage (every rx_log_* macro variant + simulator uart_debug_*)
+add_executable(test_rx_log
+    test_rx_log.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_uart.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tx_api.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tasks.c
+)
+apply_strict_warnings(test_rx_log)
+apply_test_includes(test_rx_log)
+target_include_directories(test_rx_log PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/inc
+)
+# Force LOG_LEVEL=verbose so every level-gated macro expands to a real call.
+target_compile_definitions(test_rx_log PRIVATE LOG_LEVEL=k_log_verbose)
+target_link_libraries(test_rx_log unity)
+
+# Test: comm_task_apply_system_config() unified config
 add_executable(test_rx_system_config
     test_rx_system_config.c
     ${TASK_COMM_SRC}
@@ -1269,9 +1192,6 @@ set(ALL_TEST_TARGETS
     test_frame_go_compat
     test_rx_fec
     test_rx_harq
-    test_rx_usb
-    test_rx_usb_multiport
-    test_rx_usb_comm
     test_rx_time
     test_rx_hcsr04
     test_rx_obstacle_detect
@@ -1296,10 +1216,8 @@ set(ALL_TEST_TARGETS
     test_rx_drv8263
     test_rx_frame_ascii
     test_rx_session
-    test_rx_comm_manager
     test_rx_i2c_comm
     test_rx_uart_comm
-    test_rx_log_usb
     test_rx_iwdt
     test_rx_gpio
     test_rx_mpc
@@ -1312,8 +1230,9 @@ set(ALL_TEST_TARGETS
     test_rx_stack_monitor
     test_rx_bno055
     test_rx_bmp280
-    # Runtime backend and system config tests
-    test_rx_log_backend
+    test_rx_log_uart
+    test_rx_log
+    # System config test
     test_rx_system_config
     # Multi-task firmware tests
     test_motor_control_task
@@ -1331,9 +1250,6 @@ add_test(NAME test_rx_frame COMMAND test_rx_frame)
 add_test(NAME test_frame_go_compat COMMAND test_frame_go_compat)
 add_test(NAME test_rx_fec COMMAND test_rx_fec)
 add_test(NAME test_rx_harq COMMAND test_rx_harq)
-add_test(NAME test_rx_usb COMMAND test_rx_usb)
-add_test(NAME test_rx_usb_multiport COMMAND test_rx_usb_multiport)
-add_test(NAME test_rx_usb_comm COMMAND test_rx_usb_comm)
 add_test(NAME test_rx_time COMMAND test_rx_time)
 add_test(NAME test_rx_hcsr04 COMMAND test_rx_hcsr04)
 add_test(NAME test_rx_obstacle_detect COMMAND test_rx_obstacle_detect)
@@ -1358,10 +1274,8 @@ add_test(NAME test_rx_gptw_staggered COMMAND test_rx_gptw_staggered)
 add_test(NAME test_rx_drv8263 COMMAND test_rx_drv8263)
 add_test(NAME test_rx_frame_ascii COMMAND test_rx_frame_ascii)
 add_test(NAME test_rx_session COMMAND test_rx_session)
-add_test(NAME test_rx_comm_manager COMMAND test_rx_comm_manager)
 add_test(NAME test_rx_i2c_comm COMMAND test_rx_i2c_comm)
 add_test(NAME test_rx_uart_comm COMMAND test_rx_uart_comm)
-add_test(NAME test_rx_log_usb COMMAND test_rx_log_usb)
 add_test(NAME test_rx_iwdt COMMAND test_rx_iwdt)
 add_test(NAME test_rx_gpio COMMAND test_rx_gpio)
 add_test(NAME test_rx_mpc COMMAND test_rx_mpc)
@@ -1374,7 +1288,8 @@ add_test(NAME test_rx_host_irq COMMAND test_rx_host_irq)
 add_test(NAME test_rx_stack_monitor COMMAND test_rx_stack_monitor)
 add_test(NAME test_rx_bno055 COMMAND test_rx_bno055)
 add_test(NAME test_rx_bmp280 COMMAND test_rx_bmp280)
-add_test(NAME test_rx_log_backend COMMAND test_rx_log_backend)
+add_test(NAME test_rx_log_uart COMMAND test_rx_log_uart)
+add_test(NAME test_rx_log COMMAND test_rx_log)
 add_test(NAME test_rx_system_config COMMAND test_rx_system_config)
 
 # Multi-task firmware tests
@@ -1418,9 +1333,10 @@ set(COVERAGE_EXTRA_TASK_SRCS
 # rx_wdt.c, rx_time_threadx.c, rx_exception.c, rx_infrastructure.c are
 # hardware/RTOS-specific (depend on __RX__ registers or ThreadX internals)
 # and cannot be compiled on the host test build; they are tested by the
-# cross-compile CI job.  Only rx_log_usb.c is host-compilable.
+# cross-compile CI job.  The UART log backend (rx_log_uart.c) is the only
+# host-compilable log source now.
 set(COVERAGE_EXTRA_CORE_SRCS
-    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_usb.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_uart.c
 )
 
 # HAL and USB ISR source files are replaced by mocks in all other tests and
@@ -1487,10 +1403,8 @@ add_executable(test_coverage_compile_all
     test_coverage_compile_all.c
     $<TARGET_OBJECTS:firmware_coverage_obj>
     ${MOCK_TX_API_SRC}
-    ${RX_LOG_SRC}
     ${MOCK_COMM_MANAGER_SRC_TASK}
     ${MOCK_NANOPB_SRC}
-    ${MOCK_USB_SRC}
     ${MOCK_UART_SRC}
     ${MOCK_HAL_SRC}
     ${MOCK_MOTOR_SRC}

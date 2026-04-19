@@ -48,12 +48,12 @@ func TestDefaultCDCConfig(t *testing.T) {
 		t.Errorf("expected timeout %v, got %v", DefaultCDCTimeout, cfg.Timeout)
 	}
 
-	if cfg.VID != RenesasVID {
-		t.Errorf("expected VID 0x%04X, got 0x%04X", RenesasVID, cfg.VID)
+	if cfg.VID != CypressVID {
+		t.Errorf("expected VID 0x%04X, got 0x%04X", CypressVID, cfg.VID)
 	}
 
-	if cfg.PID != RX72NPID {
-		t.Errorf("expected PID 0x%04X, got 0x%04X", RX72NPID, cfg.PID)
+	if cfg.PID != CY7C65213PID {
+		t.Errorf("expected PID 0x%04X, got 0x%04X", CY7C65213PID, cfg.PID)
 	}
 }
 
@@ -61,7 +61,7 @@ func TestDefaultCDCConfig(t *testing.T) {
 func TestNewCDCTransport(t *testing.T) {
 	t.Run("WithConfig", func(t *testing.T) {
 		cfg := &CDCConfig{
-			Device:   "/dev/ttyACM1",
+			Device:   "/dev/ttyUSB1",
 			BaudRate: testBaudRate,
 			Timeout:  testTimeout,
 			VID:      testVID,
@@ -106,7 +106,7 @@ func TestNewCDCTransport(t *testing.T) {
 }
 
 // TestCDCTransportOpenClose tests opening and closing the CDC device.
-// Note: This test will skip if /dev/ttyACM0 is not available.
+// Note: This test will skip if /dev/ttyUSB0 is not available.
 func TestCDCTransportOpenClose(t *testing.T) {
 	cfg := DefaultCDCConfig()
 	cdc := NewCDCTransport(cfg)
@@ -247,8 +247,8 @@ func TestCDCTransportAutoDetect(t *testing.T) {
 		Device:   "", // Empty device triggers auto-detection
 		BaudRate: DefaultBaudRate,
 		Timeout:  DefaultCDCTimeout,
-		VID:      RenesasVID,
-		PID:      RX72NPID,
+		VID:      CypressVID,
+		PID:      CY7C65213PID,
 	}
 
 	cdc := NewCDCTransport(cfg)

@@ -1,0 +1,65 @@
+# RTAB-Map stereo 3D mapping for STAR robot.
+# Runs alongside slam_toolbox (publish_tf=false).
+# Fed by stereo rectified images from stereo_image_proc.
+#
+# Stereo depth usable range: 0.47-3.0 m (61 mm baseline, 640x480).
+# Detection rate capped at 2 Hz to stay within Pi5 CPU budget.
+
+/**:
+  ros__parameters:
+    # TF: do NOT publish map->odom (slam_toolbox owns that)
+    publish_tf: false
+    frame_id: base_link
+    odom_frame_id: odom
+    map_frame_id: map
+
+    # Stereo + lidar input (fused: stereo gives 3D height up to ~3m,
+    # lidar gives 2D range out to 12m -- together they build a bigger map)
+    subscribe_stereo: true
+    subscribe_depth: false
+    subscribe_scan: true
+    subscribe_scan_cloud: false
+    approx_sync: true
+    queue_size: 10
+
+    # Convert stereo pair to depth image internally (required for 3D grid)
+    stereo_to_depth: true
+
+    # Database: in-memory only (no disk writes during operation)
+    database_path: ''
+
+    # Feature detection tuned for Pi5 (reduce CPU load)
+    Vis/MaxFeatures: '300'
+    Vis/MinInliers: '15'
+    GFTT/MinDistance: '7'
+
+    # Stereo matching: use block matching (SSD) instead of optical flow.
+    # Optical flow fails with our unsynchronized cameras because left/right
+    # exposure can differ significantly. SSD is more robust.
+    Stereo/OpticalFlow: 'false'
+    Stereo/MinDisparity: '1'
+    Stereo/MaxDisparity: '128'
+    Stereo/SSD: 'true'
+    Stereo/Eps: '0.0'
+
+    # Memory management for Pi5 8GB
+    Mem/STMSize: '30'
+    Mem/IncrementalMemory: 'true'
+    Rtabmap/DetectionRate: '1.0'
+
+    # Point cloud density (balance detail vs browser performance)
+    # decimation=2: use every other pixel (2x denser than default 4)
+    # voxel_size=0.02: 2cm output voxels prevent duplicate points
+    # from overlapping viewpoints, keeping the total cloud manageable
+    cloud_decimation: 2
+    cloud_voxel_size: 0.02
+    cloud_output_voxelized: true
+
+    # 3D grid (built-in OctoMap)
+    Grid/FromDepth: 'true'
+    Grid/3D: 'true'
+    Grid/RangeMax: '12.0'
+    Grid/CellSize: '0.05'
+    Grid/MinClusterSize: '0'
+    GridGlobal/MinSize: '0.0'
+    GridGlobal/OccupancyThr: '0.5'

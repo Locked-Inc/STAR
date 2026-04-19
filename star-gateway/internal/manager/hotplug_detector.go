@@ -20,9 +20,10 @@ import (
 // device creation/removal. This provides instant detection (<50ms) compared to
 // polling-based approaches.
 //
-// Phase 3: Full inotify implementation for instant hot-plug failover.
+// Device matching is VID:PID-based, not name-based. After a disconnect/reconnect
+// cycle the kernel may assign a different ttyUSBN minor number; matching by
+// VID:PID ensures the correct device is always identified.
 type HotPlugDetector struct {
-	targetDevice      string // Target device name pattern (e.g., "ttyACM0")
 	vendorID          uint16
 	productID         uint16
 	usbDevicesPath    string
@@ -31,7 +32,6 @@ type HotPlugDetector struct {
 }
 
 const (
-	DefaultTargetDevice   = "ttyACM0"
 	defaultUSBDevicesPath = "/sys/bus/usb/devices"
 	defaultSysfsClassTTY  = "/sys/class/tty"
 	defaultDevRoot        = "/dev"
@@ -42,7 +42,6 @@ const (
 // for API compatibility.
 func NewHotPlugDetector(pollInterval time.Duration, vid, pid uint16) *HotPlugDetector {
 	return &HotPlugDetector{
-		targetDevice:      DefaultTargetDevice, // Default USB CDC device
 		vendorID:          vid,
 		productID:         pid,
 		usbDevicesPath:    defaultUSBDevicesPath,
@@ -57,8 +56,8 @@ func NewHotPlugDetector(pollInterval time.Duration, vid, pid uint16) *HotPlugDet
 //
 // On non-Linux platforms or if fsnotify fails, it falls back to a no-op (graceful degradation).
 func (hpd *HotPlugDetector) Run(ctx context.Context, eventHandler func(HotPlugEvent)) {
-	log.Printf("HotPlugDetector started (target=%s, VID=0x%04X PID=0x%04X)",
-		hpd.targetDevice, hpd.vendorID, hpd.productID)
+	log.Printf("HotPlugDetector started (VID=0x%04X PID=0x%04X)",
+		hpd.vendorID, hpd.productID)
 
 	// Try inotify-based detection
 	if err := hpd.runInotify(ctx, eventHandler); err != nil {
@@ -138,13 +137,29 @@ func (hpd *HotPlugDetector) runInotify(ctx context.Context, eventHandler func(Ho
 }
 
 // matchesTargetDevice checks if the sysfs path corresponds to the target USB device.
+//
+// Matching is done in two steps:
+//  1. The sysfs entry must expose at least one ttyUSB* interface (CDC ACM class).
+//  2. When VID:PID are non-zero, the device's USB identifiers must match.
+//
+// This approach is device-name-agnostic: it correctly handles ttyUSB0, ttyUSB1,
+// etc. that appear after disconnect/reconnect cycles.
 func (hpd *HotPlugDetector) matchesTargetDevice(sysfsPath string) bool {
-	if sysfsPath == "" || hpd.targetDevice == "" {
+	if sysfsPath == "" {
 		return false
 	}
 
 	ttyNames := hpd.findTTYNames(sysfsPath)
-	if !containsName(ttyNames, hpd.targetDevice) {
+
+	// Require at least one CDC ACM interface (any ttyUSB* suffix).
+	hasCDCACM := false
+	for _, name := range ttyNames {
+		if strings.HasPrefix(name, "ttyUSB") {
+			hasCDCACM = true
+			break
+		}
+	}
+	if !hasCDCACM {
 		return false
 	}
 
@@ -161,19 +176,26 @@ func (hpd *HotPlugDetector) matchesTargetDevice(sysfsPath string) bool {
 }
 
 // getDevicePath converts a sysfs path to a /dev device path.
-// For USB CDC devices, this is typically /dev/ttyACM0.
+//
+// Returns the first ttyUSB* device found in the sysfs entry, allowing correct
+// identification of ttyUSB0, ttyUSB1, etc. after disconnect/reconnect cycles.
+// Falls back to the first available tty device if no ttyUSB* is found.
 func (hpd *HotPlugDetector) getDevicePath(sysfsPath string) string {
 	devRoot := hpd.devRootDir()
 	ttyNames := hpd.findTTYNames(sysfsPath)
-	if len(ttyNames) == 0 {
-		return filepath.Join(devRoot, hpd.targetDevice)
+
+	// Prefer any ttyUSB* (CDC ACM) device.
+	for _, name := range ttyNames {
+		if strings.HasPrefix(name, "ttyUSB") {
+			return filepath.Join(devRoot, name)
+		}
 	}
 
-	if containsName(ttyNames, hpd.targetDevice) {
-		return filepath.Join(devRoot, hpd.targetDevice)
+	if len(ttyNames) > 0 {
+		return filepath.Join(devRoot, ttyNames[0])
 	}
 
-	return filepath.Join(devRoot, ttyNames[0])
+	return ""
 }
 
 func (hpd *HotPlugDetector) usbDevicesDir() string {
@@ -299,13 +321,4 @@ func readHexFile(path string) (uint16, error) {
 	}
 
 	return uint16(parsed), nil
-}
-
-func containsName(names []string, target string) bool {
-	for _, name := range names {
-		if name == target {
-			return true
-		}
-	}
-	return false
 }

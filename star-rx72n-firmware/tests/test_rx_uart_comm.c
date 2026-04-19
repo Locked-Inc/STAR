@@ -340,7 +340,7 @@ void setUp(void)
    * false (which it is after mock_uart_hw_init() zeros all state). */
   const uart_channel_config_t ch_cfg = {
     .channel  = k_uart_channel_9,
-    .baudrate = 115200U,
+    .baudrate = 921600U,
     .tx_gpio  = k_rx_p3_0, /* Ignored by mock */
     .rx_gpio  = k_rx_p3_1, /* Ignored by mock */
   };

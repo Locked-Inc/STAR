@@ -393,9 +393,9 @@
 #include "rx_check.h"
 #include "rx_frame_ascii.h"
 #include "rx_log.h"
+#include "rx_log_uart.h"
 #include "rx_simulator_config.h"
 #include "rx_time_constants.h"
-#include "rx_usb.h"
 
 #if !RX_IS_SIMULATOR
 #include "tx_api.h"
@@ -575,7 +575,10 @@ internal_output_decoded(rx_comm_manager_t* mgr, const rx_frame_t* frame, bool is
   /* rx_frame_ascii_format always succeeds and produces output for any valid frame
    * and adequately-sized buffer (guaranteed by ascii_buffer sizing in the manager). */
   (void)rx_frame_ascii_format(frame, is_tx, mgr->ascii_buffer, sizeof(mgr->ascii_buffer), &len);
-  (void)rx_usb_puts(k_usb_port_decoded, mgr->ascii_buffer);
+  /* The old decoded-debug path wrote to USB CDC port 1; with USB0 gone, we
+   * route the ASCII dump through the UART log ring so it still shows up on
+   * the gateway prefixed with [RX72N]. */
+  rx_log_uart_puts(mgr->ascii_buffer);
 }
 
 /**
@@ -751,23 +754,6 @@ internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const r
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_poll_usb(rx_comm_manager_t* mgr)
-{
-  if (mgr->usb_handle == nullptr) {
-    return k_rx_err_timeout;
-  }
-
-  rx_frame_t frame;
-  rx_err_t   err = rx_usb_comm_receive(mgr->usb_handle, &frame, k_receive_timeout_ms);
-
-  if (err == k_rx_ok) {
-    internal_handle_frame(mgr, k_comm_channel_usb, &frame);
-    return k_rx_ok;
-  }
-
-  return err;
-}
-
 /**
  * @brief Poll SPI channel for incoming frames (non-blocking)
  *
@@ -1026,13 +1012,15 @@ static void internal_process_event_queue(rx_comm_manager_t* mgr)
 
   rx_err_t err = rx_comm_manager_send(mgr, &params);
 
-  if (err == k_rx_ok || entry->channel == k_comm_channel_usb) {
-    /* Success, or USB fire-and-forget: dequeue */
+  if (err == k_rx_ok || entry->channel == k_comm_channel_uart) {
+    /* Success, or UART fire-and-forget: dequeue.
+     * UART has no link-layer retry (the CY7C65213 bridge + USB CDC transport
+     * on the host provides enough reliability for the command/response path). */
     internal_dequeue_event(mgr, entry);
     if (err == k_rx_ok) {
       rx_log_debug_val(s_tag, "Event sent, queue depth", mgr->event_queue_count);
     } else {
-      rx_log_warn_val(s_tag, "USB event dropped, queue depth", mgr->event_queue_count);
+      rx_log_warn_val(s_tag, "UART event dropped, queue depth", mgr->event_queue_count);
     }
     return;
   }
@@ -1275,10 +1263,9 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
 
   /* Apply configuration */
   if (cfg != nullptr) {
-    mgr->usb_handle            = cfg->usb_handle;
+    mgr->uart_handle           = cfg->uart_handle;
     mgr->spi_handle            = cfg->spi_handle;
     mgr->i2c_handle            = cfg->i2c_handle;
-    mgr->uart_handle           = cfg->uart_handle;
     mgr->spi_link              = cfg->spi_link;
     mgr->callback              = cfg->callback;
     mgr->callback_ctx          = cfg->callback_ctx;
@@ -1499,13 +1486,13 @@ rx_err_t rx_comm_manager_deinit(rx_comm_manager_t* mgr)
  */
 static rx_err_t internal_poll_all_channels(rx_comm_manager_t* mgr, bool* received)
 {
-  /* Poll USB channel */
-  rx_err_t usb_err = internal_poll_usb(mgr);
-  if (usb_err == k_rx_ok) {
+  /* Poll UART channel (primary path to the Pi5 gateway) */
+  rx_err_t uart_err = internal_poll_uart(mgr);
+  if (uart_err == k_rx_ok) {
     *received = true;
-  } else if (usb_err != k_rx_err_timeout) {
-    rx_log_error_val(s_tag, "USB poll error", usb_err);
-    return usb_err;
+  } else if (uart_err != k_rx_err_timeout && uart_err != k_rx_err_no_data) {
+    rx_log_error_val(s_tag, "UART poll error", uart_err);
+    return uart_err;
   }
 
   /* Poll SPI channel */
@@ -1524,15 +1511,6 @@ static rx_err_t internal_poll_all_channels(rx_comm_manager_t* mgr, bool* receive
   } else if (i2c_err != k_rx_err_timeout && i2c_err != k_rx_err_no_data) {
     rx_log_error_val(s_tag, "I2C poll error", i2c_err);
     return i2c_err;
-  }
-
-  /* Poll UART channel */
-  rx_err_t uart_err = internal_poll_uart(mgr);
-  if (uart_err == k_rx_ok) {
-    *received = true;
-  } else if (uart_err != k_rx_err_timeout && uart_err != k_rx_err_no_data) {
-    rx_log_error_val(s_tag, "UART poll error", uart_err);
-    return uart_err;
   }
 
   return k_rx_ok;
@@ -1694,17 +1672,6 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
 static rx_err_t internal_route_send(rx_comm_manager_t* mgr, const rx_comm_send_params_t* params)
 {
   switch (params->channel) {
-    case k_comm_channel_usb:
-      if (mgr->usb_handle == nullptr) {
-        rx_log_error(s_tag, "Send failed: USB handle NULL");
-        return k_rx_err_invalid_state;
-      }
-      return rx_usb_comm_send(mgr->usb_handle,
-                              params->type,
-                              params->flags,
-                              params->payload,
-                              params->payload_len);
-
     case k_comm_channel_spi:
       if (mgr->spi_handle == nullptr) {
         rx_log_error(s_tag, "Send failed: SPI handle NULL");
@@ -2095,26 +2062,16 @@ rx_comm_manager_channel_ready(rx_comm_manager_t* mgr, rx_comm_channel_t channel,
   }
 
   switch (channel) {
-    case k_comm_channel_usb: {
-      const bool usb_handle_set = (bool)(mgr->usb_handle != nullptr);
-      const bool usb_configured = rx_usb_is_configured(k_usb_port_proto);
-      *ready                    = (bool)((int)usb_handle_set & (int)usb_configured);
+    case k_comm_channel_uart:
+      *ready = (bool)(mgr->uart_handle != nullptr);
       break;
-    }
 
     case k_comm_channel_spi:
-      /* SPI is always "ready" if handle is set */
       *ready = (bool)(mgr->spi_handle != nullptr);
       break;
 
     case k_comm_channel_i2c:
-      /* I2C is always "ready" if handle is set (peripheral mode) */
       *ready = (bool)(mgr->i2c_handle != nullptr);
-      break;
-
-    case k_comm_channel_uart:
-      /* UART is always "ready" if handle is set */
-      *ready = (bool)(mgr->uart_handle != nullptr);
       break;
 
     default:
@@ -2189,14 +2146,12 @@ rx_comm_manager_channel_ready(rx_comm_manager_t* mgr, rx_comm_channel_t channel,
 const char* rx_comm_manager_channel_name(rx_comm_channel_t channel)
 {
   switch (channel) {
-    case k_comm_channel_usb:
-      return "USB";
+    case k_comm_channel_uart:
+      return "UART";
     case k_comm_channel_spi:
       return "SPI";
     case k_comm_channel_i2c:
       return "I2C";
-    case k_comm_channel_uart:
-      return "UART";
     default:
       return "UNKNOWN";
   }

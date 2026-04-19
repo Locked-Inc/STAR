@@ -300,13 +300,15 @@ void SafetyMonitor::check_heartbeat_health()
       estop_trigger_time_ = now;
     }
   } else {
-    // Reset timeout if heartbeat recovered
+    // Reset timeout if heartbeat recovered. Do not touch
+    // emergency_stop_active_ directly: update_overall_state() derives it
+    // from all latched sources, so other causes (obstacle, stall) remain
+    // honored when only the heartbeat path clears.
     if (heartbeat_timeout_triggered_) {
       auto estop_duration = now - estop_trigger_time_;
       if (estop_duration > std::chrono::duration<double>(estop_recovery_delay_)) {
         RCLCPP_INFO(get_logger(), "Heartbeat recovered");
         heartbeat_timeout_triggered_ = false;
-        emergency_stop_active_ = false;
       }
     }
   }

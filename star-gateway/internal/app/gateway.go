@@ -85,6 +85,19 @@ type Config struct {
 	SocketPath     string
 	// "auto", "force-usb", "force-spi"
 	TransportMode manager.TransportMode
+
+	// CDCDevice is the /dev path for the USB CDC serial port (e.g., /dev/ttyUSB1).
+	// Leave empty to auto-detect via USBVID:USBPID sysfs scan.
+	CDCDevice string
+
+	// USBVID is the USB Vendor ID of the connected motor controller.
+	// Used for VID:PID-based device discovery and health monitoring.
+	// Set to 0 to disable (falls back to default /dev/ttyUSB0).
+	USBVID uint16
+
+	// USBPID is the USB Product ID of the connected motor controller.
+	// Used for VID:PID-based device discovery and health monitoring.
+	USBPID uint16
 }
 
 type Servers struct {
@@ -241,11 +254,20 @@ func Run(ctx context.Context, config Config) error {
 func initTransportManager(ctx context.Context, appConfig Config, logger *slog.Logger) (*manager.TransportManager, error) {
 	// Create manager config from app config
 	mgrConfig := &manager.Config{
-		Mode: appConfig.TransportMode,
+		Mode:   appConfig.TransportMode,
+		USBVID: appConfig.USBVID,
+		USBPID: appConfig.USBPID,
 	}
 
-	// Validate config or fallback to default
+	// Validate config or fallback to default.
+	// Re-apply VID:PID after validation because validateOrUseDefault may replace
+	// the entire config with defaults (which carry Renesas VID:PID), losing the
+	// device-specific VID:PID we set for BBB or future motor controllers.
 	mgrConfig = validateOrUseDefault(logger, mgrConfig)
+	if appConfig.USBVID != 0 || appConfig.USBPID != 0 {
+		mgrConfig.USBVID = appConfig.USBVID
+		mgrConfig.USBPID = appConfig.USBPID
+	}
 
 	// Create transport manager (internally creates SessionState)
 	tm := manager.NewTransportManager(mgrConfig)
@@ -369,7 +391,7 @@ func initializeTransports(appConfig Config, tm *manager.TransportManager, logger
 	}
 
 	// USB CDC initialization (non-fatal unless force-usb mode)
-	usbLink, err := createUSBLink(session)
+	usbLink, err := createUSBLink(appConfig.CDCDevice, session)
 	if err != nil {
 		logger.Error("usb cdc initialization failed", slog.Any("error", err))
 		// If force-usb or simple-usb mode, USB is required
@@ -467,11 +489,18 @@ func createSPILink(spiTransport transport.Device, session *manager.SessionState)
 // createUSBLink creates a USB CDC link using the provided session state.
 // Returns the USB link (harq.HARQ) or an error if initialization fails.
 //
+// device is the /dev path for the CDC serial port (e.g., /dev/ttyUSB1). When
+// empty, the CDCTransport auto-detects via VID:PID sysfs scan using the VID:PID
+// in DefaultCDCConfig (Renesas). For BBB, always pass the detected device path.
+//
 // The CDC transport is opened and wrapped in a CDCLink with the shared session state.
 // This ensures sequence continuity during transport switching (prevents Handoff Problem).
-func createUSBLink(session *manager.SessionState) (harq.HARQ, error) {
-	// Create CDC transport with default config
-	cdcTransport := transport.NewCDCTransport(transport.DefaultCDCConfig())
+func createUSBLink(device string, session *manager.SessionState) (harq.HARQ, error) {
+	cdcConfig := transport.DefaultCDCConfig()
+	if device != "" {
+		cdcConfig.Device = device
+	}
+	cdcTransport := transport.NewCDCTransport(cdcConfig)
 
 	// Open the CDC device
 	if err := cdcTransport.Open(); err != nil {

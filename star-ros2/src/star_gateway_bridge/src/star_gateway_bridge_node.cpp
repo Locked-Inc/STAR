@@ -76,9 +76,9 @@ StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions & options
   this->declare_parameter("watchdog_timeout_sec", 5.0);
   this->declare_parameter("teleop_timeout_ms", 500);
   this->declare_parameter("grpc_deadline_ms", 100);
-  this->declare_parameter("wheel_base", 0.150); // 150mm track width
+  this->declare_parameter("wheel_base", 0.356); // 356mm track width (304mm inner + 52mm wheel)
   this->declare_parameter("use_bbb_telemetry", false);
-  this->declare_parameter("wheel_radius", 0.0325); // 32.5mm wheel radius
+  this->declare_parameter("wheel_radius", 0.072);  // 72mm wheel radius (goBILDA Wasteland 144mm)
   this->declare_parameter("ticks_per_rev", 11599);  // 341 PPR * 34.02:1 gear
 
   // Cache parameters

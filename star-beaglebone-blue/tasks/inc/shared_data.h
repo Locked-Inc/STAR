@@ -34,17 +34,51 @@ extern "C" {
  * ---------------------------------------------------------------------------*/
 
 /**
+ * @enum bb_ctrl_mode_t
+ * @brief Per-frame motor control dispatch mode.
+ *
+ * @details
+ * Selects which field of bb_motor_cmd_t the motor_control_task will act
+ * on for the most recent command. Default value (zero-initialized state
+ * after bb_shared_data_init) is k_bb_ctrl_mode_velocity so a freshly
+ * initialized robot with no command yet behaves as a stopped velocity
+ * setpoint, not a stale duty.
+ *
+ * @since Version 1.2.0
+ */
+typedef enum : uint8_t {
+    k_bb_ctrl_mode_velocity    = 0U, /**< Closed-loop PID on velocity_setpoint_mps */
+    k_bb_ctrl_mode_direct_duty = 1U, /**< Bypass PID, drive duty_percent directly */
+} bb_ctrl_mode_t;
+
+/**
  * @struct bb_motor_cmd_t
  * @brief Motor command written by comm_task, read by motor_control_task.
  *
  * @details
- * duty_percent is in the range [-1.0, 1.0] where -1.0 is full reverse,
- * 0.0 is stopped, and 1.0 is full forward.
+ * Carries both a velocity setpoint (consumed by the PID closed loop) and
+ * a raw duty cycle (consumed by the open-loop debug path used by
+ * motor_power_command frames). The control_mode field selects which one
+ * the motor task acts on; the unused field is ignored for that frame.
  *
- * @since Version 1.0.0
+ * Field semantics:
+ * - velocity_setpoint_mps: signed wheel surface velocity in meters per
+ *   second. Range is bounded only by the motor's no-load speed times the
+ *   wheel radius (about +/-1.58 m/s for the goBILDA Wasteland 144mm
+ *   wheel on a 6V 210 RPM motor). Setpoints beyond that will saturate
+ *   the duty output but will not error.
+ * - duty_percent: signed unit-fraction duty cycle in [-1.0, 1.0] where
+ *   -1.0 is full reverse, 0.0 is stopped, and 1.0 is full forward. Used
+ *   only when control_mode == k_bb_ctrl_mode_direct_duty.
+ *
+ * @invariant control_mode is one of the bb_ctrl_mode_t enum values
+ *
+ * @since Version 1.2.0
  */
 typedef struct {
-    float duty_percent[k_bb_motor_count]; /**< Duty cycle per motor [-1.0, 1.0] */
+    bb_ctrl_mode_t control_mode;                       /**< Dispatch mode for this command */
+    float velocity_setpoint_mps[k_bb_motor_count];     /**< Wheel velocity setpoint per motor (m/s) */
+    float duty_percent[k_bb_motor_count];              /**< Direct duty cycle per motor [-1.0, 1.0] */
 } bb_motor_cmd_t;
 
 /**

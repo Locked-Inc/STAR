@@ -14,5 +14,6 @@
 # Track large binary files with Git LFS
 *.run filter=lfs diff=lfs merge=lfs -text
 gcc-14.2.0.202511-GNURX-ELF.run filter=lfs diff=lfs merge=lfs -text
+star-beaglebone-blue/*.stl filter=lfs diff=lfs merge=lfs -text
 *.tgz filter=lfs diff=lfs merge=lfs -text
 RFP_CLI_Linux_V32200_x64.tgz filter=lfs diff=lfs merge=lfs -text
