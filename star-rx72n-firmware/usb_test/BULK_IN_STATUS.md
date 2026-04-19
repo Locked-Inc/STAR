@@ -519,3 +519,62 @@ than "step through the ISR and watch registers".
 - Renesas FIT reference: `/tmp/r_usb_basic/src/driver/r_usb_plibusbip.c`
   (`usb_pstd_send_start`, `usb_pstd_write_data`,
   `usb_pstd_set_pipe_table`, `usb_pstd_get_pipe_buf_value`).
+
+---
+
+## 2026-04-18 Session: Runtime Register Debugging Landed
+
+**Major unblocker**: `usb_test/bulk_debug.c` implements runtime USB register
+visibility via custom vendor-class control request `0xFE`. Returns 16 bytes of
+pipe/bus state through the DCP IN path (which works reliably). Build via
+`tools/build_bulk_debug.sh`, query via `tools/query_pipe_state.py`.
+
+### What the registers actually show
+With bulk_debug flashed and enumerated as `1209:0002`:
+
+```
+PIPE1CTR = 0x8201   PID=BUF  BSTS=1  INBUFM=0  SQMON=0
+PIPECFG  = 0x4012   TYPE=bulk  DIR=IN  EPNUM=2
+PIPEBUF  = 0x0000   (write ignored; on RX72N USB0 this register is reserved)
+PIPEMAXP = 0x0040
+SYSCFG   = 0x0411   USBE=1 DCFM=0 DPRPU=1 SCKE=1
+DVSTCTR0 = 0x0002   RHST=FS
+BEMPSTS  = 0x0000  (pipe 1 never fires buffer-empty -- never transmitted)
+BRDYSTS  = 0x0000
+NRDYSTS  = 0x0002  (pipe 1 NRDY fired once: device NAK'd an IN token)
+```
+
+Translation: the device reports **"pipe armed (PID=BUF), buffer has valid
+data to send (BSTS=1)"** but the bus observes only IN → NAK. Hardware state
+claims ready but emits nothing. NRDYSTS pipe-1 bit 1 *does* get set, proving
+the USB IP is routing the IN token to pipe 1 -- it's just replying NAK
+instead of DATA0.
+
+### Ruled out by runtime debug
+* PIPEBUF value (always reads 0x0000 — RX72N USB0 reserves it; FIT v120 skips
+  writing it for IP0, matching this observation).
+* Clock source: tested both **HOCO*12 = 192 MHz + UCK /4** and **MOSC*10 =
+  240 MHz + UCK /5**; same NAK-forever result.
+* EP number: EP 0x81 and EP 0x82 both NAK.
+* DBLB on/off, BFRE on/off.
+* CFIFO vs D0FIFO for the data write.
+* PID=NAK/BUF toggle order around BVAL (FIT `send_start` pattern).
+* Clearing NRDYSTS bit 1 before each tx.
+* Pre-configure pipe before DPRPU attach vs during SET_CONFIGURATION.
+
+### Tools landed
+* `usb_test/bulk_debug.c` — standalone 400-line USB test with 0xFE state dump
+* `usb_test/isr_stubs.c` — empty ISR stubs for the vectors.S ref symbols
+* `usb_test/tools/build_bulk_debug.sh` — compile + objcopy helper
+* `usb_test/tools/query_pipe_state.py` — host-side register reader
+* `usb_test/tools/read_bulk.py` — pyusb EP 0x82 read loop
+
+### Open question
+What additional register write on RX72N USB0 (not in FIT v120) arms the pipe
+to actually emit DATA on the wire? Next steps to investigate:
+1. PIPE1TRE / PIPE1TRN (transaction counter) — maybe TRENB/TRCLR needed.
+2. SOFCFG — USB SOF config that gates scheduling.
+3. DVSTCTR0.UACT in function mode — might need explicit set.
+4. Check RX72N HW manual Ch. 31.2 "Pipe Setup" sequence for any IP0-specific
+   step missing from FIT (which targets IP1 on RX64M/71M and treats IP0 as a
+   subset).
