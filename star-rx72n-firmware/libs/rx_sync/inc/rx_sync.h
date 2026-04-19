@@ -46,7 +46,7 @@
 
 /** @brief Number of motors managed by the sync layer. */
 typedef enum : uint8_t {
-    k_sync_num_motors = 4U,
+  k_sync_num_motors = 4U,
 } sync_motor_count_t;
 
 /**
@@ -58,7 +58,7 @@ typedef enum : uint8_t {
  * simulations.
  */
 typedef enum : uint32_t {
-    /**
+  /**
      * @brief EMA filter coefficient scaled to Q16.16 fixed-point.
      *
      * @details
@@ -66,9 +66,9 @@ typedef enum : uint32_t {
      * Cutoff frequency at 250 Hz: f_c = alpha / (2*pi*Ts) ~= 12 Hz
      * (approximation for small alpha).
      */
-    k_sync_ema_alpha_q16 = 19661U,
+  k_sync_ema_alpha_q16 = 19661U,
 
-    /**
+  /**
      * @brief Fault detection threshold, fraction of commanded speed (Q16.16).
      *
      * @details
@@ -76,15 +76,15 @@ typedef enum : uint32_t {
      * motor i is declared faulted and excluded from v_sync.
      * Value: 0.05 * 65536 = 3277.
      */
-    k_sync_fault_thresh_q16 = 3277U,
+  k_sync_fault_thresh_q16 = 3277U,
 
-    /**
+  /**
      * @brief Number of consecutive ticks below threshold before fault declared.
      *
      * @details
      * At 250 Hz: 125 ticks = 500 ms.
      */
-    k_sync_fault_ticks = 125U,
+  k_sync_fault_ticks = 125U,
 } sync_params_t;
 
 /**
@@ -100,9 +100,9 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef struct {
-    float ema_alpha;          /**< EMA filter coefficient [0, 1). Default: 0.30f */
-    float fault_thresh_frac;  /**< Fault threshold as fraction of commanded vel. Default: 0.05f */
-    uint32_t fault_ticks;     /**< Ticks below threshold before fault declared. Default: 125 */
+  float    ema_alpha;         /**< EMA filter coefficient [0, 1). Default: 0.30f */
+  float    fault_thresh_frac; /**< Fault threshold as fraction of commanded vel. Default: 0.05f */
+  uint32_t fault_ticks;       /**< Ticks below threshold before fault declared. Default: 125 */
 } rx_sync_config_t;
 
 /**
@@ -113,12 +113,12 @@ typedef struct {
  * rx_sync_init(&h, &cfg);
  * @endcode
  */
-#define RX_SYNC_CONFIG_DEFAULT() \
-    ((rx_sync_config_t){ \
-        .ema_alpha         = 0.30f, \
-        .fault_thresh_frac = 0.05f, \
-        .fault_ticks       = 125U,  \
-    })
+#define RX_SYNC_CONFIG_DEFAULT()                                                                   \
+  ((rx_sync_config_t){                                                                             \
+    .ema_alpha         = 0.30f,                                                                    \
+    .fault_thresh_frac = 0.05f,                                                                    \
+    .fault_ticks       = 125U,                                                                     \
+  })
 
 /**
  * @struct rx_sync_handle_t
@@ -134,12 +134,12 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-    rx_sync_config_t config;                    /**< Tuning parameters */
-    float            v_ema[k_sync_num_motors];  /**< EMA-filtered velocities [rad/s] */
-    float            v_sync;                    /**< Current sync reference [rad/s] */
-    uint32_t         fault_timer[k_sync_num_motors]; /**< Consecutive ticks below threshold */
-    bool             faulted[k_sync_num_motors]; /**< True if motor is excluded from sync */
-    bool             initialized;               /**< Initialized flag */
+  rx_sync_config_t config;                         /**< Tuning parameters */
+  float            v_ema[k_sync_num_motors];       /**< EMA-filtered velocities [rad/s] */
+  float            v_sync;                         /**< Current sync reference [rad/s] */
+  uint32_t         fault_timer[k_sync_num_motors]; /**< Consecutive ticks below threshold */
+  bool             faulted[k_sync_num_motors];     /**< True if motor is excluded from sync */
+  bool             initialized;                    /**< Initialized flag */
 } rx_sync_handle_t;
 
 /**
@@ -170,7 +170,7 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_sync_init(rx_sync_handle_t *h, const rx_sync_config_t *cfg);
+[[nodiscard]] rx_err_t rx_sync_init(rx_sync_handle_t* h, const rx_sync_config_t* cfg);
 
 /**
  * @brief Update sync state with new velocity measurements.
@@ -201,7 +201,7 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_sync_update(rx_sync_handle_t *h,
+[[nodiscard]] rx_err_t rx_sync_update(rx_sync_handle_t* h,
                                       const float       v_measured[k_sync_num_motors],
                                       float             v_commanded,
                                       float             dt_s);
@@ -231,9 +231,8 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] float rx_sync_get_setpoint(const rx_sync_handle_t *h,
-                                         uint8_t                 motor_id,
-                                         float                   v_commanded);
+[[nodiscard]] float
+rx_sync_get_setpoint(const rx_sync_handle_t* h, uint8_t motor_id, float v_commanded);
 
 /**
  * @brief Reset sync state (clear EMA, faults, v_sync).
@@ -254,4 +253,4 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_sync_reset(rx_sync_handle_t *h);
+[[nodiscard]] rx_err_t rx_sync_reset(rx_sync_handle_t* h);
