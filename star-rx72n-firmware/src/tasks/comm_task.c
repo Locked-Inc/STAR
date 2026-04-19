@@ -1026,49 +1026,18 @@ rx_err_t comm_task_create(void)
  * =============================================================================
  */
 
-/**
- * @brief Initialize USB transport layer
- *
- * @details
- * Attempts to initialize the USB CDC communication transport if USB is enabled
- * in the channel mask. On failure, logs an error but allows graceful degradation.
- *
- * @return true if USB transport initialized successfully, false otherwise
- *
- * @pre s_session_state must be zero-initialized (static storage)
- * @pre s_enabled_channels must be configured before calling
- * @post s_usb_comm_handle initialized on success
- * @post Failure logged via rx_log_error
- *
- * @note Called once during single-threaded task initialization; not thread-safe
- *
- * @since Version 1.0.0
- * @see rx_usb_comm_init() USB transport layer initialization
+/*
+ * NOTE: internal_init_usb_transport() was removed during the dc6f3201b
+ * "Purge USB0" refactor but its skeleton was reintroduced by the
+ * feat/multi-led-breathe merge (8e414f416) as a future-extension stub.
+ * It referenced several identifiers that no longer exist on main
+ * (k_comm_channel_mask_usb, s_usb_comm_handle) and was not called from
+ * internal_init_transports(), so gcc -Werror=unused-function rejected
+ * the whole TU.  The stub is deleted until the CDC transport is ready
+ * to be wired back into the comm manager; rx_usb_comm_init() is still
+ * callable directly from main()'s pre-kernel attach block in the
+ * meantime.
  */
-static bool internal_init_usb_transport(void)
-{
-  if ((s_enabled_channels & k_comm_channel_mask_usb) == k_comm_channel_mask_none) {
-    rx_log_info(s_tag, "USB comm disabled by config");
-    return false;
-  }
-
-  /* USB0 hardware was already brought up by the inline attach block in
-   * main() -- it configures SYSCFG/DCPCFG/DCPCTR/INTENB0 and asserts
-   * DPRPU before tx_kernel_enter() so the host sees the device
-   * immediately.  Calling rx_usb_init() here would reset those registers
-   * and wire in the ISR-driven handler whose USBI vector does not fire
-   * on this chip, so we skip it and rely on the polling loop in
-   * internal_usb_setup_poll() to service SETUP.  The handle below only
-   * wires up the frame codec + session state and does not touch
-   * hardware. */
-
-  rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr};
-  bool                 usb_ok  = (bool)(rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
-  if (!usb_ok) {
-    rx_log_error(s_tag, "USB comm init failed");
-  }
-  return usb_ok;
-}
 
 /**
  * @brief Initialize SPI transport layer and HARQ link
