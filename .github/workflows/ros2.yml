@@ -54,13 +54,27 @@ jobs:
             libgrpc-dev \
             ccache
 
+      # Precompute the package.xml hash so that the Post cache step (which re-evaluates
+      # hashFiles() after the container has been torn down) does not fail with
+      # "Fail to hash files under directory ...".  The value is captured into the job
+      # outputs once and reused on both the save and restore paths.
+      - name: Compute package.xml hash
+        id: pkgxml-hash
+        shell: bash
+        run: |
+          HASH=$(find star-ros2 -name 'package.xml' -type f -print0 \
+                   | sort -z \
+                   | xargs -0 sha256sum \
+                   | sha256sum | awk '{print $1}')
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+
       - name: Cache rosdep + colcon ccache
         uses: actions/cache@v4
         with:
           path: |
             /root/.ccache
             /root/.ros/rosdep
-          key: ros2-${{ runner.os }}-${{ hashFiles('star-ros2/**/package.xml') }}
+          key: ros2-${{ runner.os }}-${{ steps.pkgxml-hash.outputs.hash }}
           restore-keys: |
             ros2-${{ runner.os }}-
 
