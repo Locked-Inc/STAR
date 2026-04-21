@@ -1902,8 +1902,8 @@ static rx_err_t internal_init_motor_stack(void)
   const rx_gptw_channel_t gptw_channels[k_motor_count] = {
     k_gptw_channel_0, /* Motor 0: Front-left */
     k_gptw_channel_1, /* Motor 1: Front-right */
-    k_gptw_channel_2, /* Motor 2: Rear-left */
-    k_gptw_channel_3  /* Motor 3: Rear-right */
+    k_gptw_channel_2, /* Motor 2: Back-right */
+    k_gptw_channel_3  /* Motor 3: Back-left */
   };
 
   /* Per-motor pin map -- pulled from src/inc/hardware_config.h so the lib
@@ -2114,7 +2114,7 @@ static rx_err_t internal_init_pid_controllers(void)
  *
  * @details
  * Initializes front-left (MTU1) and front-right (MTU2) encoders via the
- * MTU encoder driver, and rear-left (TPU1) and rear-right (TPU2) encoders
+ * MTU encoder driver, and back-right (TPU1) and back-left (TPU2) encoders
  * via the TPU encoder driver. All four encoders use 4x quadrature decoding
  * with 1364 counts per revolution (341 PPR * 4).
  *
@@ -2153,13 +2153,13 @@ static rx_err_t internal_init_encoders(void)
 
   /* Rear encoders: TPU1 (motor 2) and TPU2 (motor 3) */
   const rx_tpu_channel_t rear_tpu_channels[k_rear_encoder_count] = {
-    k_tpu_channel_1, /* Motor 2: Rear-left */
-    k_tpu_channel_2  /* Motor 3: Rear-right */
+    k_tpu_channel_1, /* Motor 2: Back-right */
+    k_tpu_channel_2  /* Motor 3: Back-left */
   };
 
   const bool rear_invert[k_rear_encoder_count] = {
-    false, /* Motor 2 (RL): normal direction */
-    true   /* Motor 3 (RR): inverted (mirrored mounting) */
+    false, /* Motor 2 (BR): normal direction */
+    true   /* Motor 3 (BL): inverted (mirrored mounting) */
   };
 
   for (uint8_t i = 0; i < k_rear_encoder_count; i++) {

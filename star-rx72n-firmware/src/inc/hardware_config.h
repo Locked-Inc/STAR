@@ -748,14 +748,14 @@ typedef enum : uint8_t {
  *
  * | Encoder | Unit | Phase A | Pkg Pin | Phase B | Pkg Pin |
  * |---------|------|---------|---------|---------|---------|
- * | 2 (RL) | TPU1 | PC2/TCLKA | 70 | PA3/TCLKB | 94 |
- * | 3 (RR) | TPU2 | PC0/TCLKC | 75 | PB3/TCLKD | 82 |
+ * | 2 (BR) | TPU1 | PC2/TCLKA | 70 | PA3/TCLKB | 94 |
+ * | 3 (BL) | TPU2 | PC0/TCLKC | 75 | PB3/TCLKD | 82 |
  * @{
  */
 
 /**
  * @enum encoder_2_ports_t
- * @brief Port numbers for encoder 2 (rear-left) TPU1 phase counting inputs
+ * @brief Port numbers for encoder 2 (back-right) TPU1 phase counting inputs
  * @invariant Values must match PCB schematic and pinout.txt
  * @see encoder_2_pins_t Corresponding bit positions
  * @since Version 1.0.0
@@ -767,7 +767,7 @@ typedef enum : uint8_t {
 
 /**
  * @enum encoder_2_pins_t
- * @brief Pin numbers for encoder 2 (rear-left) TPU1 phase counting inputs
+ * @brief Pin numbers for encoder 2 (back-right) TPU1 phase counting inputs
  * @invariant Values must match PCB schematic and pinout.txt
  * @see encoder_2_ports_t Corresponding port register indices
  * @since Version 1.0.0
@@ -779,7 +779,7 @@ typedef enum : uint8_t {
 
 /**
  * @enum encoder_3_ports_t
- * @brief Port numbers for encoder 3 (rear-right) TPU2 phase counting inputs
+ * @brief Port numbers for encoder 3 (back-left) TPU2 phase counting inputs
  * @invariant Values must match PCB schematic and pinout.txt
  * @see encoder_3_pins_t Corresponding bit positions
  * @since Version 1.0.0
@@ -791,7 +791,7 @@ typedef enum : uint8_t {
 
 /**
  * @enum encoder_3_pins_t
- * @brief Pin numbers for encoder 3 (rear-right) TPU2 phase counting inputs
+ * @brief Pin numbers for encoder 3 (back-left) TPU2 phase counting inputs
  * @invariant Values must match PCB schematic and pinout.txt
  * @see encoder_3_ports_t Corresponding port register indices
  * @since Version 1.0.0
