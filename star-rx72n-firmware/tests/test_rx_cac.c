@@ -39,7 +39,16 @@
  * =============================================================================
  */
 
-extern volatile uint16_t g_mock_prcr;
+/* g_mock_prcr is declared by mock_rx72n_system_regs.h (included transitively
+ * via the mocks). Re-declaring extern here would trip clang-tidy
+ * readability-redundant-declaration. */
+
+typedef enum : uint16_t {
+  k_test_cac_count_first  = 1234U, /**< arbitrary non-zero CACNTBR value for
+                                        the "check returns FERRF count" test */
+  k_test_cac_count_second = 999U,  /**< second arbitrary count for the
+                                        null-out-count tolerance test */
+} test_cac_constants_t;
 
 /* =============================================================================
  * Test Constants
@@ -139,7 +148,7 @@ static void test_init_leaves_cfme_cleared(void)
 {
   rx_cac_config_t cfg = make_valid_config();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_cac_init(&cfg));
-  TEST_ASSERT_EQUAL(0U, cac()->cacr0 & (uint8_t)k_cac_cacr0_cfme_mask);
+  TEST_ASSERT_EQUAL(0U, cac()->cacr0 & k_cac_cacr0_cfme_mask);
 }
 
 static void test_init_programs_limits_and_ferrie(void)
@@ -148,20 +157,20 @@ static void test_init_programs_limits_and_ferrie(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_cac_init(&cfg));
   TEST_ASSERT_EQUAL(k_cac_test_caulvr_nominal, cac()->caulvr);
   TEST_ASSERT_EQUAL(k_cac_test_callvr_nominal, cac()->callvr);
-  TEST_ASSERT_TRUE((cac()->caicr & (uint8_t)k_cac_caicr_ferrie_mask) != 0U);
-  TEST_ASSERT_EQUAL(0U, cac()->caicr & (uint8_t)k_cac_caicr_mendie_mask);
+  TEST_ASSERT_TRUE((cac()->caicr & k_cac_caicr_ferrie_mask) != 0U);
+  TEST_ASSERT_EQUAL(0U, cac()->caicr & k_cac_caicr_mendie_mask);
 }
 
 static void test_init_programs_cacr1_cacr2(void)
 {
   rx_cac_config_t cfg = make_valid_config();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_cac_init(&cfg));
-  TEST_ASSERT_EQUAL((uint8_t)k_cac_cacr1_fmcs_main, cac()->cacr1 & (uint8_t)k_cac_cacr1_fmcs_mask);
-  TEST_ASSERT_EQUAL((uint8_t)k_cac_cacr2_rscs_hoco, cac()->cacr2 & (uint8_t)k_cac_cacr2_rscs_mask);
-  TEST_ASSERT_EQUAL((uint8_t)k_cac_cacr2_rcds_div_1024,
-                    cac()->cacr2 & (uint8_t)k_cac_cacr2_rcds_mask);
-  TEST_ASSERT_EQUAL((uint8_t)k_cac_cacr2_rps_internal,
-                    cac()->cacr2 & (uint8_t)k_cac_cacr2_rps_mask);
+  TEST_ASSERT_EQUAL(k_cac_cacr1_fmcs_main, cac()->cacr1 & k_cac_cacr1_fmcs_mask);
+  TEST_ASSERT_EQUAL(k_cac_cacr2_rscs_hoco, cac()->cacr2 & k_cac_cacr2_rscs_mask);
+  TEST_ASSERT_EQUAL(k_cac_cacr2_rcds_div_1024,
+                    cac()->cacr2 & k_cac_cacr2_rcds_mask);
+  TEST_ASSERT_EQUAL(k_cac_cacr2_rps_internal,
+                    cac()->cacr2 & k_cac_cacr2_rps_mask);
 }
 
 static void test_init_twice_returns_invalid_state(void)
@@ -198,7 +207,7 @@ static void test_start_sets_cfme(void)
   rx_cac_config_t cfg = make_valid_config();
   (void)rx_cac_init(&cfg);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_cac_start());
-  TEST_ASSERT_EQUAL((uint8_t)k_cac_cacr0_cfme_start, cac()->cacr0 & (uint8_t)k_cac_cacr0_cfme_mask);
+  TEST_ASSERT_EQUAL(k_cac_cacr0_cfme_start, cac()->cacr0 & k_cac_cacr0_cfme_mask);
 }
 
 static void test_stop_clears_cfme(void)
@@ -207,7 +216,7 @@ static void test_stop_clears_cfme(void)
   (void)rx_cac_init(&cfg);
   (void)rx_cac_start();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_cac_stop());
-  TEST_ASSERT_EQUAL(0U, cac()->cacr0 & (uint8_t)k_cac_cacr0_cfme_mask);
+  TEST_ASSERT_EQUAL(0U, cac()->cacr0 & k_cac_cacr0_cfme_mask);
 }
 
 /* =============================================================================
@@ -225,18 +234,18 @@ static void test_check_returns_true_when_ferrf_set(void)
   rx_cac_config_t cfg = make_valid_config();
   (void)rx_cac_init(&cfg);
   /* Simulate hardware setting FERRF and loading a counter snapshot. */
-  cac()->castr   = (uint8_t)k_cac_castr_ferrf_mask;
-  cac()->cacntbr = (uint16_t)1234;
+  cac()->castr   = k_cac_castr_ferrf_mask;
+  cac()->cacntbr = k_test_cac_count_first;
   uint32_t count = 0;
   TEST_ASSERT_TRUE(rx_cac_check(&count));
-  TEST_ASSERT_EQUAL(1234U, count);
+  TEST_ASSERT_EQUAL(k_test_cac_count_first, count);
 }
 
 static void test_check_returns_false_when_ferrf_clear(void)
 {
   rx_cac_config_t cfg = make_valid_config();
   (void)rx_cac_init(&cfg);
-  cac()->castr = (uint8_t)k_cac_castr_mendf_mask; /* MENDF only, no FERRF */
+  cac()->castr = k_cac_castr_mendf_mask; /* MENDF only, no FERRF */
   TEST_ASSERT_FALSE(rx_cac_check(NULL));
 }
 
@@ -244,21 +253,21 @@ static void test_check_writes_clear_bits_and_keeps_ferrie(void)
 {
   rx_cac_config_t cfg = make_valid_config();
   (void)rx_cac_init(&cfg);
-  cac()->castr = (uint8_t)k_cac_castr_ferrf_mask;
+  cac()->castr = k_cac_castr_ferrf_mask;
   (void)rx_cac_check(NULL);
   /* FERRIE must remain enabled; clear bits must have been asserted. */
-  TEST_ASSERT_TRUE((cac()->caicr & (uint8_t)k_cac_caicr_ferrie_mask) != 0U);
-  TEST_ASSERT_TRUE((cac()->caicr & (uint8_t)k_cac_caicr_ferrfcl_mask) != 0U);
-  TEST_ASSERT_TRUE((cac()->caicr & (uint8_t)k_cac_caicr_mendfcl_mask) != 0U);
-  TEST_ASSERT_TRUE((cac()->caicr & (uint8_t)k_cac_caicr_ovffcl_mask) != 0U);
+  TEST_ASSERT_TRUE((cac()->caicr & k_cac_caicr_ferrie_mask) != 0U);
+  TEST_ASSERT_TRUE((cac()->caicr & k_cac_caicr_ferrfcl_mask) != 0U);
+  TEST_ASSERT_TRUE((cac()->caicr & k_cac_caicr_mendfcl_mask) != 0U);
+  TEST_ASSERT_TRUE((cac()->caicr & k_cac_caicr_ovffcl_mask) != 0U);
 }
 
 static void test_check_tolerates_null_out_count(void)
 {
   rx_cac_config_t cfg = make_valid_config();
   (void)rx_cac_init(&cfg);
-  cac()->castr   = (uint8_t)k_cac_castr_ferrf_mask;
-  cac()->cacntbr = (uint16_t)999;
+  cac()->castr   = k_cac_castr_ferrf_mask;
+  cac()->cacntbr = k_test_cac_count_second;
   TEST_ASSERT_TRUE(rx_cac_check(NULL));
 }
 
@@ -294,7 +303,7 @@ static void test_deinit_clears_cfme_and_enables(void)
   (void)rx_cac_init(&cfg);
   (void)rx_cac_start();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_cac_deinit());
-  TEST_ASSERT_EQUAL(0U, cac()->cacr0 & (uint8_t)k_cac_cacr0_cfme_mask);
+  TEST_ASSERT_EQUAL(0U, cac()->cacr0 & k_cac_cacr0_cfme_mask);
   TEST_ASSERT_EQUAL(0U, cac()->cacr1);
   TEST_ASSERT_EQUAL(0U, cac()->cacr2);
 }

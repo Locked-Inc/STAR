@@ -38,23 +38,23 @@ void rx_tmr_isr_dispatch(rx_tmr_channel_t channel);
 
 /** @brief Named constants for TMR test values */
 typedef enum : uint8_t {
-  k_tmr_test_mstpa5_bit = 5, /**< Unit 0 module stop bit */
-  k_tmr_test_mstpa4_bit = 4, /**< Unit 1 module stop bit */
+  k_tmr_test_mstpa5_bit      = 5, /**< Unit 0 module stop bit */
+  k_tmr_test_mstpa4_bit      = 4, /**< Unit 1 module stop bit */
   k_tmr_test_invalid_channel = 4, /**< Out-of-range channel for error tests */
 } tmr_test_bit_constants_t;
 
 /** @brief Counter sample values used in read tests */
 typedef enum : uint16_t {
-  k_tmr_test_count_0x42 = 0x42U,
+  k_tmr_test_count_0x42   = 0x42U,
   k_tmr_test_count_0xABCD = 0xABCDU,
-  k_tmr_test_count_0xFF = 0xFFU,
+  k_tmr_test_count_0xFF   = 0xFFU,
 } tmr_test_count_constants_t;
 
 /** @brief Period constants for set_period_us tests (us) */
 typedef enum : uint32_t {
-  k_tmr_test_period_1us  = 1U,        /**< 1 microsecond */
-  k_tmr_test_period_1ms  = 1000U,     /**< 1 millisecond */
-  k_tmr_test_period_1s   = 1000000U,  /**< 1 second      */
+  k_tmr_test_period_1us = 1U,       /**< 1 microsecond */
+  k_tmr_test_period_1ms = 1000U,    /**< 1 millisecond */
+  k_tmr_test_period_1s  = 1000000U, /**< 1 second      */
 } tmr_test_period_constants_t;
 
 /* =============================================================================
@@ -158,8 +158,7 @@ void test_init_tmr0_independent(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_init(&cfg));
 
   /* MSTPA5 must be cleared (unit 0 clock enabled) */
-  TEST_ASSERT_EQUAL_UINT32(
-    0U, g_mock_onewire_system_regs.mstpcra & (1U << k_tmr_test_mstpa5_bit));
+  TEST_ASSERT_EQUAL_UINT32(0U, g_mock_onewire_system_regs.mstpcra & (1U << k_tmr_test_mstpa5_bit));
 
   /* Counter halted after init (TCCR clock bits = 0) */
   TEST_ASSERT_EQUAL_UINT8(0U, tmr0()->tccr);
@@ -176,8 +175,7 @@ void test_init_tmr1_independent(void)
 {
   rx_tmr_config_t cfg = make_default_config(k_tmr_channel_1);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_init(&cfg));
-  TEST_ASSERT_EQUAL_UINT32(
-    0U, g_mock_onewire_system_regs.mstpcra & (1U << k_tmr_test_mstpa5_bit));
+  TEST_ASSERT_EQUAL_UINT32(0U, g_mock_onewire_system_regs.mstpcra & (1U << k_tmr_test_mstpa5_bit));
   TEST_ASSERT_EQUAL_UINT8(0U, tmr1()->tccr);
 }
 
@@ -186,8 +184,7 @@ void test_init_tmr2_independent(void)
   rx_tmr_config_t cfg = make_default_config(k_tmr_channel_2);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_init(&cfg));
   /* MSTPA4 must be cleared for unit 1 */
-  TEST_ASSERT_EQUAL_UINT32(
-    0U, g_mock_onewire_system_regs.mstpcra & (1U << k_tmr_test_mstpa4_bit));
+  TEST_ASSERT_EQUAL_UINT32(0U, g_mock_onewire_system_regs.mstpcra & (1U << k_tmr_test_mstpa4_bit));
   TEST_ASSERT_EQUAL_UINT8(0U, tmr2()->tccr);
 }
 
@@ -195,8 +192,7 @@ void test_init_tmr3_independent(void)
 {
   rx_tmr_config_t cfg = make_default_config(k_tmr_channel_3);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_init(&cfg));
-  TEST_ASSERT_EQUAL_UINT32(
-    0U, g_mock_onewire_system_regs.mstpcra & (1U << k_tmr_test_mstpa4_bit));
+  TEST_ASSERT_EQUAL_UINT32(0U, g_mock_onewire_system_regs.mstpcra & (1U << k_tmr_test_mstpa4_bit));
 }
 
 void test_init_cascade_tmr01(void)
@@ -265,8 +261,7 @@ void test_start_programs_tccr_clock_bits(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_start(k_tmr_channel_0));
 
-  const uint8_t expected_bits =
-    (uint8_t)(k_tmr_tccr_css_internal | k_tmr_tccr_cks_pclk_div32);
+  const uint8_t expected_bits = (uint8_t)(k_tmr_tccr_css_internal | k_tmr_tccr_cks_pclk_div32);
   TEST_ASSERT_EQUAL_UINT8(expected_bits,
                           tmr0()->tccr & (uint8_t)(k_tmr_tccr_css_mask | k_tmr_tccr_cks_mask));
 }
@@ -394,7 +389,8 @@ void test_set_period_too_large_rejected(void)
   cfg.clock_source    = k_tmr_clock_pclk_div_1;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_init(&cfg));
 
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_tmr_set_period_us(k_tmr_channel_0, k_tmr_test_period_1ms));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_tmr_set_period_us(k_tmr_channel_0, k_tmr_test_period_1ms));
 }
 
 void test_set_period_external_clock_rejected(void)
@@ -447,8 +443,8 @@ void test_isr_register_invalid_channel(void)
 {
   /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_tmr_register_compare_match_isr(
-                      (rx_tmr_channel_t)k_tmr_test_invalid_channel, test_isr_callback));
+                    rx_tmr_register_compare_match_isr((rx_tmr_channel_t)k_tmr_test_invalid_channel,
+                                                      test_isr_callback));
 }
 
 /* =============================================================================
