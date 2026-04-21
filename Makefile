@@ -6,7 +6,7 @@ IMAGE_NAME := star-ros2-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell build-blinky clean-blinky flash-blinky flash-blinky-sci motor0 motor0-forward motor0-reverse motor1 motor1-forward motor1-reverse motor2 motor2-forward motor2-reverse motor3 motor3-forward motor3-reverse motor-all motor-stop motor-clean
+.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell build-blinky clean-blinky flash-blinky flash-blinky-sci motor0 motor0-forward motor0-reverse motor1 motor1-forward motor1-reverse motor2 motor2-forward motor2-reverse motor3 motor3-forward motor3-reverse motor-all motor-stop motor-clean none
 
 help:
 	@echo "STAR Project Development Helper"
@@ -35,6 +35,7 @@ help:
 	@echo "  make motor3-reverse      - Motor 3 reverse only"
 	@echo "  make motor-all           - Build + flash motor_spin_test driving all 4 motors"
 	@echo "  make motor-stop          - Build + flash with all motors disabled (DRVOFF held HIGH)"
+	@echo "  make none                - Flash standalone software-standby firmware (~0.5 uA, wake on reset)"
 	@echo "  make motor-clean         - Remove motor_spin_test build artifacts"
 	@echo "  make build-rx72n         - Build RX72N firmware (Debug, requires GNURX toolchain)"
 	@echo "  make build-rx72n-release - Build RX72N firmware (Release, requires GNURX toolchain)"
@@ -258,6 +259,19 @@ motor3-reverse:
 # All motors disabled (DRVOFF stays HIGH; safe stop)
 motor-stop:
 	$(call build_and_flash_motor,0x0,-100,100,all motors disabled)
+
+# Park the chip in software standby -- lowest power "do nothing" state
+# achievable without a hard reset. Uses a dedicated tiny firmware
+# (none/main.c, ~74 bytes) that sets SBYCR.SSBY = 1 then issues WAIT.
+# The MCU stops the CPU clock and most peripheral clocks; typical IDD
+# is ~0.5 uA per the RX72N datasheet table 51.x. Wake requires the
+# external reset button or a re-flash via E2 Lite.
+none:
+	@echo "==> Building 'none' firmware (software standby, no motors, no LEDs)..."
+	@PATH="$(GNURX_BIN):$$PATH" $(MAKE) --no-print-directory -C star-rx72n-firmware/none clean
+	@PATH="$(GNURX_BIN):$$PATH" $(MAKE) --no-print-directory -C star-rx72n-firmware/none
+	@echo "==> Flashing 'none' firmware via E2 Lite..."
+	@PATH="$(GNURX_BIN):$$PATH" bash scripts/flash-rx72n.sh star-rx72n-firmware/none/none.mot e2lite
 
 motor-clean:
 	@$(MAKE) --no-print-directory -C $(MOTOR_TEST_DIR) clean
