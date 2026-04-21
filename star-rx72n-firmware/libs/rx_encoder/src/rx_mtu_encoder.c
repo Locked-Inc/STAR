@@ -470,6 +470,10 @@ RX_STATIC_TESTABLE bool internal_is_valid_channel(rx_mtu_channel_t channel);
 RX_STATIC_TESTABLE volatile rx_mtu_channel_regs_t*
 internal_get_mtu_base(const rx_mtu_channel_t channel)
 {
+  /* MTU3/4 use the sparse rx_mtu3_channel_regs_t (callers must use mtu3()/
+   * mtu4() directly), and MTU6/7 use an interleaved layout with no phase-
+   * counting support. All four collapse to the same nullptr response, so
+   * they share the default branch. */
   switch (channel) {
     case k_mtu_channel_0:
       return mtu0();
@@ -477,12 +481,10 @@ internal_get_mtu_base(const rx_mtu_channel_t channel)
       return mtu1();
     case k_mtu_channel_2:
       return mtu2();
-    case k_mtu_channel_3: /* fall through -- sparse layout, incompatible with standard API */
-    case k_mtu_channel_4: /* MTU3/4 use rx_mtu3_channel_regs_t; call mtu3()/mtu4() directly */
-      return nullptr;
-    case k_mtu_channel_6: /* fall through -- interleaved layout, use mtu6() with rx_mtu3_channel_regs_t */
-    case k_mtu_channel_7: /* interleaved layout, MTU6/7 do not support phase counting */
-      return nullptr;
+    case k_mtu_channel_3:
+    case k_mtu_channel_4:
+    case k_mtu_channel_6:
+    case k_mtu_channel_7:
     default:
       return nullptr;
   }
@@ -1287,7 +1289,8 @@ RX_STATIC_TESTABLE rx_err_t internal_enable_mtu_module(const rx_mtu_channel_t ch
   /* Enable MTU module (clear module stop bit) */
   *prcr_reg() = k_rx_prcr_unlock_all; /* Enable writes to MSTPCR (0xA50F) */
 
-  system_regs()->mstpcra &= (uint32_t) ~(1UL << k_mtu_mstpcra_mtu0_4_bit); /* single bit covers all MTU channels */
+  system_regs()->mstpcra &=
+    (uint32_t) ~(1UL << k_mtu_mstpcra_mtu0_4_bit); /* single bit covers all MTU channels */
 
   *prcr_reg() = k_rx_prcr_lock; /* Lock MSTPCR (0xA500) */
 
