@@ -142,7 +142,7 @@ $(CDC_TARGET).elf: $(CDC_APP_COBJS) $(CDC_APP_AOBJS) $(CDC_TX_COBJS) $(CDC_TX_AO
 	$(CC) $(ASFLAGS) -c $< -o $@
 
 %.cdc.o: $(USB_ROOT)/src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CDC_CFLAGS) -c $< -o $@
 
 # ----------------------------------------------------------------------------
 # Output formats

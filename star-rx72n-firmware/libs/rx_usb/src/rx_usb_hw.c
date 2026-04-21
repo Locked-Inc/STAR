@@ -622,15 +622,54 @@ static void internal_usb_configure_clock(void)
   /* Function mode: DCFM=0, DRPD=0, DPRPU=0, USBE=0 */
   usb0()->syscfg = k_usb_syscfg_disabled;
 
-  /* Enable USB module FIRST (USBE=1), THEN clock (SCKE=1).
-   * This matches the Renesas FSP r_usb_basic init sequence for RX
-   * function mode -- the opposite order leaves the controller in a
-   * state where SETUP packets are received but not propagated. */
+  /* Enable USB module (USBE=1), then clock (SCKE=1).
+   *
+   * Manual Ch40 and tinyusb's renesas/usba DCD recommend the opposite
+   * order (SCKE first, wait for it to latch, then USBE).  Both orders
+   * are empirically verified to enumerate on this silicon -- the
+   * USBE-first sequence here matches our proven-working polling repro
+   * (usb_test/hoco_pid_fix.c) which successfully enumerates on macOS
+   * + Linux xHCI hosts.  Keeping that order so the library matches
+   * the known-good reference; re-examine only if a future bring-up
+   * hits a "SETUP received but not propagated" symptom. */
   usb0()->syscfg |= k_usb_syscfg_usbe;
   usb0()->syscfg |= k_usb_syscfg_scke;
 
   /* Wait for clock to stabilize (see internal_usb_busy_wait_ms rationale). */
   internal_usb_busy_wait_ms(k_usb_clock_stabilization_ms);
+}
+
+/**
+ * @brief Configure USB0 PHY after USBE/SCKE are on.
+ *
+ * Two RX72N-specific PHY housekeeping writes that Renesas' own USB
+ * DCD (tinyusb renesas/usba dcd_usba.c:626-628 + FSP r_usb_basic)
+ * always performs and that we were previously skipping:
+ *
+ *  1. DPUSR0R.FIXPHY0 = 0 -- release the PHY from "output fixed"
+ *     state.  Hardware enters this state after deep-standby wakeup
+ *     and after a cold reset on some silicon revisions; while it
+ *     is set the D+/D- drivers are clamped and no bus activity is
+ *     produced regardless of SYSCFG.USBE.  Clearing it is a no-op
+ *     in the normal power-on path but mandatory after deep standby.
+ *
+ *  2. PHYSLEW = 0x5 (SLEWR00 | SLEWF00) -- RX72N-specific PHY slew
+ *     rate trim that Renesas calls out as required for reliable
+ *     USB2.0-FS compliance on the RX72N package variants.  Other
+ *     RX parts use the reset-default; only RX72N needs 0x5.
+ *
+ * Must be called AFTER SYSCFG.USBE=1 and BEFORE INTENB0 is programmed
+ * (matches tinyusb dcd_init ordering).
+ */
+static void internal_usb_configure_phy(void)
+{
+  /* FIXPHY0 is a sticky bit across deep-standby; force-clear it rather
+   * than RMW so we don't depend on reset state of the other fields
+   * (SRPC0 / RPUE0 default 0 at power-on). */
+  *usb_dpusr0r() &= ~(uint32_t)k_usb_dpusr0r_fixphy0;
+
+  /* RX72N-specific slew-rate programming. */
+  usb0()->physlew = (uint32_t)k_usb_physlew_rx72n;
 }
 
 /**
@@ -642,11 +681,19 @@ static void internal_usb_configure_interrupts(void)
   usb0()->intenb0 = k_usb_intenb0_vbse | k_usb_intenb0_dvse | k_usb_intenb0_ctre |
                     k_usb_intenb0_brdye | k_usb_intenb0_bempe;
 
-  /* Configure ICU: clear pending, set priority, enable */
-  icu()->ir[k_vect_usb0_usbi]  = 0;
-  icu()->ipr[k_vect_usb0_usbi] = k_usb_interrupt_priority;
+  /* Configure ICU: route USBI0 onto its SELECTB vector slot, clear
+   * pending, set priority, enable.
+   *
+   * USBI0 is a Group-B software-configurable interrupt on RX72N: the
+   * vector slot (k_vect_usb0_usbi = 144) is inert until SLIBR[144] is
+   * set to the USBI0 source code (62).  Without this write, IR[144]
+   * never latches, IER[18] bit 0 stays unused, and the ISR never fires
+   * no matter how well INTENB0 is programmed. */
+  *icu_slibr(k_vect_usb0_usbi)  = (uint8_t)k_usb0_usbi_sli_src;
+  icu()->ir[k_vect_usb0_usbi]   = 0;
+  icu()->ipr[k_vect_usb0_usbi]  = k_usb_interrupt_priority;
   icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register] |=
-    (1 << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
+    (uint8_t)(1U << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
 }
 
 /**
@@ -679,6 +726,7 @@ rx_err_t rx_usb_hw_init(void)
 
   internal_usb_enable_module_clock();
   internal_usb_configure_clock();
+  internal_usb_configure_phy();
   internal_usb_configure_interrupts();
 
   /* Set default control pipe max packet size (64 bytes for FS) */
@@ -801,7 +849,7 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
    *              old MBW=16 path lost the high-byte half-word at the end
    *              of an odd-length OUT transfer (and silently advanced
    *              DTLN by 2 anyway). */
-  usb0()->cfifosel = (pipe & k_usb_cfifosel_curpipe_mask) | k_usb_cfifosel_mbw_8;
+  usb0()->cfifosel = (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_mbw_8;
 
   /* Wait for FIFO ready (hardware polling) */
   /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
@@ -887,16 +935,19 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     }
   }
 
-  /* Mask USB0 USBI IRQ delivery (ICU IER[4] bit 4 = vector 36) for
-   * the duration of the FIFO sequence.  Without this, a BRDY/BEMP/
-   * CTRT interrupt firing mid-write can preempt us, run the ISR,
-   * which will re-enter the FIFO logic for a different pipe.  The
-   * preempted CFIFOSEL.CURPIPE and FRDY snapshot are now stale and
-   * subsequent byte writes land in the wrong pipe's buffer. */
-  volatile uint8_t* const ier4_r           = (volatile uint8_t*)0x00087204U;
-  const uint8_t           usbi_mask        = (uint8_t)(1U << 4); /* vec 36 = IER[4] bit 4 */
-  const uint8_t           ier4_was_enabled = (uint8_t)(*ier4_r & usbi_mask);
-  *ier4_r &= (uint8_t)~usbi_mask;
+  /* Mask USB0 USBI IRQ delivery for the duration of the FIFO sequence.
+   * Without this, a BRDY/BEMP/CTRT interrupt firing mid-write can
+   * preempt us, run the ISR, which will re-enter the FIFO logic for a
+   * different pipe.  The preempted CFIFOSEL.CURPIPE and FRDY snapshot
+   * are now stale and subsequent byte writes land in the wrong pipe's
+   * buffer.
+   *
+   * Vector 144 (SELECTB) => IER[18] bit 0.  IER[18] byte address is
+   * 0x00087200 + 18 = 0x00087212. */
+  volatile uint8_t* const ier_r        = &icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register];
+  const uint8_t           usbi_mask    = (uint8_t)(1U << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
+  const uint8_t           was_enabled  = (uint8_t)(*ier_r & usbi_mask);
+  *ier_r &= (uint8_t)~usbi_mask;
 
   /* Use CFIFO for everything (DCP + data pipes).  D0FIFO would give
    * independence from DCP traffic but requires additional setup
@@ -924,9 +975,9 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     const uint16_t isel_bit = (pipe == k_usb_pipe_min) ? (uint16_t)(1U << 5) : 0U;
     /* Overwrite the whole register (not RMW) so leftover RCNT/REW bits
      * from enumeration-side DCP access don't bleed in. */
-    *fifosel_r = (uint16_t)(isel_bit | (pipe & k_usb_cfifosel_curpipe_mask));
+    *fifosel_r = (uint16_t)(isel_bit | (pipe & k_usb_fifosel_curpipe_mask));
     for (volatile uint32_t n = 0; n < k_usb_fifo_timeout_iterations; ++n) {
-      if ((*fifosel_r & k_usb_cfifosel_curpipe_mask) == (pipe & k_usb_cfifosel_curpipe_mask)) {
+      if ((*fifosel_r & k_usb_fifosel_curpipe_mask) == (pipe & k_usb_fifosel_curpipe_mask)) {
         break;
       }
     }
@@ -941,8 +992,8 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
 
   if (timeout == k_usb_fifo_timeout_expired) {
     rx_log_error(s_tag, "FIFO write timeout");
-    if (ier4_was_enabled != 0U) {
-      *ier4_r |= usbi_mask;
+    if (was_enabled != 0U) {
+      *ier_r |= usbi_mask;
     }
     return k_min_transfer_size;
   }
@@ -961,8 +1012,8 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   }
   if (timeout == k_usb_fifo_timeout_expired) {
     rx_log_error(s_tag, "FIFO clear timeout");
-    if (ier4_was_enabled != 0U) {
-      *ier4_r |= usbi_mask;
+    if (was_enabled != 0U) {
+      *ier_r |= usbi_mask;
     }
     return k_min_transfer_size;
   }
@@ -1008,8 +1059,8 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     }
     if (timeout == k_usb_fifo_timeout_expired) {
       rx_log_error(s_tag, "FIFO refill timeout");
-      if (ier4_was_enabled != 0U) {
-        *ier4_r |= usbi_mask;
+      if (was_enabled != 0U) {
+        *ier_r |= usbi_mask;
       }
       return written;
     }
@@ -1036,8 +1087,8 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   }
 
   /* Restore USB IRQ delivery if we previously disabled it. */
-  if (ier4_was_enabled != 0U) {
-    *ier4_r |= usbi_mask;
+  if (was_enabled != 0U) {
+    *ier_r |= usbi_mask;
   }
 
   return written;
@@ -1094,19 +1145,21 @@ rx_err_t rx_usb_hw_fifo_write_zlp(const uint8_t pipe)
     return k_rx_err_busy;
   }
 
-  volatile uint8_t* const ier4_r           = (volatile uint8_t*)0x00087204U;
-  const uint8_t           usbi_mask        = (uint8_t)(1U << 4);
-  const uint8_t           ier4_was_enabled = (uint8_t)(*ier4_r & usbi_mask);
-  *ier4_r &= (uint8_t)~usbi_mask;
+  /* Vector 144 (SELECTB) => IER[18] bit 0.  See equivalent block in
+   * internal_fifo_write_pipe() for full rationale. */
+  volatile uint8_t* const ier_r       = &icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register];
+  const uint8_t           usbi_mask   = (uint8_t)(1U << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
+  const uint8_t           was_enabled = (uint8_t)(*ier_r & usbi_mask);
+  *ier_r &= (uint8_t)~usbi_mask;
 
   volatile uint16_t* const fifosel_r = &usb0()->cfifosel;
   volatile uint16_t* const fifoctr_r = &usb0()->cfifoctr;
 
   /* Select target pipe on CFIFO.  ISEL is meaningful only for DCP, so
    * we leave it at 0 for data pipes -- matches the write path. */
-  *fifosel_r = (uint16_t)(pipe & k_usb_cfifosel_curpipe_mask);
+  *fifosel_r = (uint16_t)(pipe & k_usb_fifosel_curpipe_mask);
   for (volatile uint32_t n = 0; n < k_usb_fifo_timeout_iterations; ++n) {
-    if ((*fifosel_r & k_usb_cfifosel_curpipe_mask) == (pipe & k_usb_cfifosel_curpipe_mask)) {
+    if ((*fifosel_r & k_usb_fifosel_curpipe_mask) == (pipe & k_usb_fifosel_curpipe_mask)) {
       break;
     }
   }
@@ -1119,8 +1172,8 @@ rx_err_t rx_usb_hw_fifo_write_zlp(const uint8_t pipe)
     __asm__ volatile("nop");
   }
   if (timeout == k_usb_fifo_timeout_expired) {
-    if (ier4_was_enabled != 0U) {
-      *ier4_r |= usbi_mask;
+    if (was_enabled != 0U) {
+      *ier_r |= usbi_mask;
     }
     return k_rx_err_timeout;
   }
@@ -1140,8 +1193,8 @@ rx_err_t rx_usb_hw_fifo_write_zlp(const uint8_t pipe)
   usb0()->bempsts         = (uint16_t)((~pipe_bit) & sts_mask);
   usb0()->brdysts         = (uint16_t)((~pipe_bit) & sts_mask);
 
-  if (ier4_was_enabled != 0U) {
-    *ier4_r |= usbi_mask;
+  if (was_enabled != 0U) {
+    *ier_r |= usbi_mask;
   }
   return k_rx_ok;
 }

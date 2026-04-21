@@ -188,7 +188,9 @@ extern "C" {
  * @invariant Base address is fixed and cannot be relocated
  */
 typedef enum : uintptr_t {
-  k_icu_base_addr = 0x00087000, /**< ICU register base address (fixed) */
+  k_icu_base_addr       = 0x00087000, /**< ICU register base address (fixed) */
+  k_icu_slibr_base_addr = 0x00087700, /**< SELECTB source-select table (n=144..207) */
+  k_icu_sliar_base_addr = 0x00087900, /**< SELECTA source-select table (n=208..255) */
 } rx_icu_addresses_t;
 
 /**
@@ -489,6 +491,24 @@ typedef struct {
 static inline volatile rx_icu_regs_t* icu(void)
 {
   return (volatile rx_icu_regs_t*)k_icu_base_addr;
+}
+
+/**
+ * @brief Get pointer to ICU SLIBR source-select register for a SELECTB vector.
+ *
+ * SLIBR is a byte-wide table at 0x00087700 indexed by absolute vector
+ * number, covering SELECTB slots 144..207 (RX72N HW manual Ch15 Section
+ * 15.2 and hirakuni45/RX RX72N/icu.hpp line 824).  Writing a SELECTB
+ * source code (e.g. k_usb0_usbi_sli_src = 62) into SLIBR[vec] routes
+ * that peripheral interrupt onto vec.  Vectors outside 144..207 have
+ * no backing register -- writes are ignored and reads return 0.
+ *
+ * @param[in] vec  Absolute vector number in the SELECTB range (144..207)
+ * @return volatile uint8_t* Pointer to SLIBR[vec]
+ */
+static inline volatile uint8_t* icu_slibr(uint8_t vec)
+{
+  return (volatile uint8_t*)(k_icu_slibr_base_addr + (uintptr_t)vec);
 }
 
 /**

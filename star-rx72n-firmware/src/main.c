@@ -184,6 +184,7 @@
 #include "rx_infrastructure.h"
 #include "rx_nanopb.h"
 #include "rx_port_utils.h"
+#include "rx_usb.h"
 #include "tx_api.h"
 
 /* Multi-task architecture includes */
@@ -2559,6 +2560,97 @@ int main(void)
    * module with no hardware deps, so initialize it during the
    * pre-kernel single-threaded window next to the other module inits. */
   ret = rx_nanopb_init();
+  RX_ERROR_CHECK(ret);
+
+  {
+    /* Inline USB0 bring-up sequence -- raw register pokes that mirror
+     * libs/rx_usb/src/rx_usb_hw.c.  Kept inline (rather than inside
+     * rx_usb_hw_init()) so the very first PRCR/MSTPCR/SYSCFG writes run
+     * in the single-threaded pre-kernel window and the call to
+     * rx_usb_hw_mark_initialized() below can safely tell rx_usb_init()
+     * to skip its own redundant init pass.  See cherry-pick 0abb79c54. */
+    volatile uint16_t* const PRCR_R    = (volatile uint16_t*)0x000803FEU;
+    volatile uint32_t* const MSTPCRB_R = (volatile uint32_t*)0x00080014U;
+    volatile uint16_t* const SYSCFG_R  = (volatile uint16_t*)0x000A0000U;
+    volatile uint16_t* const INTENB0_R = (volatile uint16_t*)0x000A0030U;
+    volatile uint16_t* const BRDYENB_R = (volatile uint16_t*)0x000A0036U;
+    volatile uint16_t* const BEMPENB_R = (volatile uint16_t*)0x000A003AU;
+    volatile uint16_t* const DCPCFG_R  = (volatile uint16_t*)0x000A005CU;
+    volatile uint16_t* const DCPMAXP_R = (volatile uint16_t*)0x000A005EU;
+    volatile uint16_t* const DCPCTR_R  = (volatile uint16_t*)0x000A0060U;
+
+    *PRCR_R = 0xA503U;
+    *MSTPCRB_R &= ~(1UL << 19);
+    *PRCR_R = 0xA500U;
+
+    *SYSCFG_R = 0x0000U;
+    for (volatile uint32_t d = 0; d < 2400000U; d++) {
+      __asm__ volatile("nop");
+    }
+    *SYSCFG_R |= (1U << 0);  /* USBE */
+    *SYSCFG_R |= (1U << 10); /* SCKE */
+    for (volatile uint32_t d = 0; d < 2400000U; d++) {
+      __asm__ volatile("nop");
+    }
+
+    /* RX72N PHY housekeeping that mirrors rx_usb_hw.c's
+     * internal_usb_configure_phy() -- must run between USBE=1 and
+     * INTENB0 programming.  See tinyusb renesas/usba dcd_usba.c:626-628.
+     *   - USB.DPUSR0R.FIXPHY0 cleared: release PHY from output-fixed state
+     *   - USB0.PHYSLEW = 0x5     : RX72N-specific slew-rate trim */
+    volatile uint32_t* const DPUSR0R_R = (volatile uint32_t*)0x000A0400U;
+    volatile uint32_t* const PHYSLEW_R = (volatile uint32_t*)0x000A00F0U;
+    *DPUSR0R_R &= ~(uint32_t)(1U << 4); /* FIXPHY0 */
+    *PHYSLEW_R = 0x00000005U;           /* SLEWR00 | SLEWF00 */
+
+    *DCPCFG_R  = 0x0000U;
+    *DCPMAXP_R = 64U;
+    *DCPCTR_R  = 0x0001U;
+    *BRDYENB_R = 0x0001U;
+    *BEMPENB_R = 0x0001U;
+    *INTENB0_R = (uint16_t)((1U << 15) | (1U << 12) | (1U << 11) | (1U << 10) | (1U << 8));
+
+    *SYSCFG_R |= (1U << 4); /* DPRPU */
+
+    /* Enable CPU ICU delivery for USB0 USBI so BRDY/BEMP/CTRT interrupts
+     * fire directly.  USBI0 is a Group-B software-configurable interrupt
+     * on RX72N (HW manual Ch15 Table 15.3; hirakuni45/RX RX72N/icu.hpp
+     * SELECTB::USBI0 = 62), so we must program SLIBR[144] = 62 before
+     * IER/IPR/IR for vector 144 do anything.  See rx72n_usb_regs.h for
+     * the full narrative -- earlier revisions used vector 36 (a
+     * reserved gap), which silently consumed IER/IPR writes and left
+     * the ISR dormant. */
+    volatile uint8_t* const SLIBR144_R = (volatile uint8_t*)(0x00087700U + 144U);
+    volatile uint8_t* const IPR144_R   = (volatile uint8_t*)(0x00087300U + 144U);
+    volatile uint8_t* const IR144_R    = (volatile uint8_t*)(0x00087000U + 144U);
+    volatile uint8_t* const IER18_R    = (volatile uint8_t*)(0x00087200U + 18U); /* 144 / 8 */
+    *SLIBR144_R                        = 62U;                                    /* USBI0 source code */
+    *IR144_R                           = 0U;
+    *IPR144_R                          = 12U;
+    *IER18_R |= (uint8_t)(1U << 0); /* 144 % 8 == 0 */
+
+    /* Diagnostic: drive PB3 (P4 pad 2, MCU pin 82, silkscreen EN3D)
+     * HIGH here in main BEFORE tx_kernel_enter.  usb_task later drives
+     * it LOW.  AD2 DIO7 probe on P4 pad 2 thus shows:
+     *   HIGH = firmware reached main init but usb_task hasn't run
+     *   LOW  = usb_task ran and set PB3 low
+     *   0x0  = neither wrote (probe/wiring issue) */
+    volatile uint8_t* const pb_pdr  = (volatile uint8_t*)0x0008C00BU;
+    volatile uint8_t* const pb_podr = (volatile uint8_t*)0x0008C02BU;
+    volatile uint8_t* const pb_pmr  = (volatile uint8_t*)0x0008C06BU;
+    *pb_pmr &= (uint8_t) ~(1U << 3);
+    *pb_pdr |= (uint8_t)(1U << 3);
+    *pb_podr |= (uint8_t)(1U << 3); /* HIGH */
+  }
+
+  /* Hardware is now fully attached by the inline sequence above.  Tell
+   * the production rx_usb_hw layer that s_hw_initialized = true so
+   * rx_usb_init below skips the redundant register sequence, then call
+   * rx_usb_init() to set up ring buffers, CDC class state, and flip
+   * s_usb.initialized = true.  Without this, rx_usb_write() early-exits
+   * with k_rx_err_invalid_state and telemetry never reaches the host. */
+  rx_usb_hw_mark_initialized();
+  ret = rx_usb_init(nullptr);
   RX_ERROR_CHECK(ret);
 
   /* Start the ThreadX scheduler - should never return */

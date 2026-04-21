@@ -675,11 +675,26 @@ static usb_driver_t s_usb = {};
  */
 
 /**
- * @brief Check if port ID is valid
+ * @brief Check if port ID is valid AND compile-time enabled.
+ *
+ * A port is "valid" if (a) it's inside the rx_usb_port_id_t enum range
+ * and (b) it is enabled in rx_usb_config.h.  Disabled ports return
+ * false here so every public API that calls this gate -- read, write,
+ * puts, rx_available, flush, set_callback, etc. -- rejects them
+ * uniformly with k_rx_err_invalid_arg.  This is the only choke point
+ * needed to make the whole API respect the compile-time flags.
  */
 static inline bool internal_port_is_valid(const rx_usb_port_id_t port)
 {
-  return (bool)(port < k_usb_port_count);
+  if (port >= k_usb_port_count) {
+    return false;
+  }
+  switch (port) {
+    case k_usb_port_proto:   return (bool)STAR_USB_ENABLE_PORT_PROTO;
+    case k_usb_port_decoded: return (bool)STAR_USB_ENABLE_PORT_DECODED;
+    case k_usb_port_log:     return (bool)STAR_USB_ENABLE_PORT_LOG;
+    default:                 return false;
+  }
 }
 
 /**
