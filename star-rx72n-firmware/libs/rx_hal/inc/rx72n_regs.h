@@ -406,11 +406,18 @@ extern "C" {
 #include "rx72n_flash_regs.h"
 
 /* =============================================================================
- * RAM Control (RAM/EXRAM/ECCRAM) - Memory Configuration and Error Checking
+ * RAM Control (RAM/EXRAM) - Parity-checked Memory Configuration
  * =============================================================================
  */
 
 #include "rx72n_ram_regs.h"
+
+/* =============================================================================
+ * ECCRAM Control - ECC-protected RAM (SEC-DED)
+ * =============================================================================
+ */
+
+#include "rx72n_eccram_regs.h"
 
 /* =============================================================================
  * DMA Controller (DMAC) - High-throughput DMA Transfers
