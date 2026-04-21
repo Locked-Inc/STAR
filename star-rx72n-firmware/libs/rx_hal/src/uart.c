@@ -59,7 +59,7 @@
  * |-----------|-------------|-------|
  * | MCU | Renesas RX72N | SCI peripheral required |
  * | Channels | SCI0-SCI12 | 13 channels total |
- * | Clock | PCLKB (60 MHz) | Used for baud rate generation |
+ * | Clock | PCLKB (SCI0-6,12) / PCLKA (SCI7-11) | Per-channel BRR clock |
  * | TX Pin | Port pin configured as output | Requires MPC configuration |
  * | RX Pin | Port pin configured as input | Requires MPC configuration |
  * | USB Bridge | CY7C65213 (default) | For SCI9 debug channel |
@@ -78,18 +78,20 @@
  *
  * ## Baud Rate Calculation
  *
- * The SCI baud rate is derived from PCLKB using:
+ * The SCI baud rate formula for n=0 (CKS=00, PCLK/1):
  *
  * @f[
- *   \text{BRR} = \frac{\text{PCLKB}}{64 \times 2^{2n-1} \times B} - 1
+ *   \text{BRR} = \frac{\text{PCLK}}{32 \times B} - 1
  * @f]
  *
- * For n=0 (CKS=00, PCLK/1):
- * @f[
- *   \text{BRR} = \frac{\text{PCLKB}}{32 \times B} - 1
- * @f]
+ * f_PCLK depends on the channel group (manual section 5 I/O register table):
+ * - SCI0-SCI6, SCI12 (SCIj/SCIh): PCLKB
+ * - SCI7-SCI11 (SCIi, extended 0x000D0xxx): PCLKA
  *
- * @par Supported Baud Rates (at PCLKB = 60 MHz):
+ * Note: the 01-system-clock audit is authoritative on actual PCLK frequencies;
+ * empirical evidence suggests PCLKB = 120 MHz (not 60 MHz as in rx72n_clock.h).
+ *
+ * @par Supported Baud Rates (at PCLKB = 60 MHz, for SCI0-SCI6/SCI12):
  *
  * | Baud Rate | BRR | Actual Rate | Error |
  * |-----------|-----|-------------|-------|
@@ -284,7 +286,11 @@ typedef enum : uint32_t {
 typedef enum : uint8_t {
   k_uart_channel_min       = 0,  /**< Minimum UART channel (SCI0) */
   k_uart_array_size        = 13, /**< Array size for s_channel_initialized */
-  k_uart_max_mstpb_channel = 11, /**< Maximum channel in MSTPCRB (SCI12 uses MSTPCRC) */
+  k_uart_max_mstpb_channel = 7,  /**< Last contiguous MSTPCRB channel (SCI0-SCI7, bits 31-24) */
+  k_uart_mstpc_channel_min = 8,  /**< First MSTPCRC channel (SCI8 at MSTPCRC bit 27) */
+  k_uart_mstpc_channel_max = 11, /**< Last MSTPCRC channel (SCI11 at MSTPCRC bit 24) */
+  k_uart_pclka_channel_min = 7,  /**< First channel using PCLKA for BRR (SCIi: SCI7-SCI11) */
+  k_uart_pclka_channel_max = 11, /**< Last channel using PCLKA for BRR (SCIi: SCI7-SCI11) */
   k_uart_max_channels      = 13, /**< Maximum valid channel value (SCI channels 0-12) */
 } uart_internal_constants_t;
 
@@ -354,21 +360,42 @@ typedef enum : uint32_t {
   k_uart_max_str_len = 256, /**< Maximum string length for uart_puts_channel */
 } uart_buffer_constants_t;
 
-/** @brief SCI module stop bit positions in MSTPCRB */
+/**
+ * @brief SCI module stop bit positions in MSTPCRB
+ *
+ * SCI0-SCI7 occupy contiguous bits 31-24 (MSTPB31 down to MSTPB24).
+ * SCI12 (SCIh module) is a non-contiguous outlier at MSTPB4.
+ * SCI8-SCI11 live in MSTPCRC, not here -- see sci_mstpc_bits_t.
+ *
+ * Manual: section 11.2.3 MSTPCRB, page 408.
+ */
 typedef enum : uint8_t {
-  k_sci_mstpb_sci0  = 31, /**< SCI0 module stop bit */
-  k_sci_mstpb_sci1  = 30, /**< SCI1 module stop bit */
-  k_sci_mstpb_sci2  = 29, /**< SCI2 module stop bit */
-  k_sci_mstpb_sci3  = 28, /**< SCI3 module stop bit */
-  k_sci_mstpb_sci4  = 27, /**< SCI4 module stop bit */
-  k_sci_mstpb_sci5  = 26, /**< SCI5 module stop bit */
-  k_sci_mstpb_sci6  = 25, /**< SCI6 module stop bit */
-  k_sci_mstpb_sci7  = 24, /**< SCI7 module stop bit */
-  k_sci_mstpb_sci8  = 23, /**< SCI8 module stop bit */
-  k_sci_mstpb_sci9  = 22, /**< SCI9 module stop bit */
-  k_sci_mstpb_sci10 = 21, /**< SCI10 module stop bit */
-  k_sci_mstpb_sci11 = 20, /**< SCI11 module stop bit */
+  k_sci_mstpb_sci0  = 31, /**< SCI0 module stop bit in MSTPCRB (MSTPB31) */
+  k_sci_mstpb_sci1  = 30, /**< SCI1 module stop bit in MSTPCRB (MSTPB30) */
+  k_sci_mstpb_sci2  = 29, /**< SCI2 module stop bit in MSTPCRB (MSTPB29) */
+  k_sci_mstpb_sci3  = 28, /**< SCI3 module stop bit in MSTPCRB (MSTPB28) */
+  k_sci_mstpb_sci4  = 27, /**< SCI4 module stop bit in MSTPCRB (MSTPB27) */
+  k_sci_mstpb_sci5  = 26, /**< SCI5 module stop bit in MSTPCRB (MSTPB26) */
+  k_sci_mstpb_sci6  = 25, /**< SCI6 module stop bit in MSTPCRB (MSTPB25) */
+  k_sci_mstpb_sci7  = 24, /**< SCI7 module stop bit in MSTPCRB (MSTPB24) */
+  k_sci_mstpb_sci12 =  4, /**< SCI12 (SCIh) module stop bit in MSTPCRB (MSTPB4) */
 } sci_mstpb_bits_t;
+
+/**
+ * @brief SCI module stop bit positions in MSTPCRC
+ *
+ * SCI8-SCI11 (SCIi module, extended peripheral region 0x000D0000) are
+ * controlled by MSTPCRC, NOT MSTPCRB.  Clearing the corresponding bit
+ * releases the channel from the module-stop state.
+ *
+ * Manual: section 11.2.4 MSTPCRC, page 410.
+ */
+typedef enum : uint8_t {
+  k_sci_mstpc_sci8  = 27, /**< SCI8 module stop bit in MSTPCRC (MSTPC27) */
+  k_sci_mstpc_sci9  = 26, /**< SCI9 module stop bit in MSTPCRC (MSTPC26) */
+  k_sci_mstpc_sci10 = 25, /**< SCI10 module stop bit in MSTPCRC (MSTPC25) */
+  k_sci_mstpc_sci11 = 24, /**< SCI11 module stop bit in MSTPCRC (MSTPC24) */
+} sci_mstpc_bits_t;
 
 /** @brief Debug UART pins (SCI9 on RX72N) */
 typedef enum : uint16_t {
@@ -436,81 +463,74 @@ static bool s_channel_initialized[k_uart_array_size] = {false};
  * simplifies to:
  *
  * @f[
- *   \text{BRR} = \frac{\text{PCLKB}}{32 \times B} - 1
+ *   \text{BRR} = \frac{\text{PCLK}}{32 \times B} - 1
  * @f]
+ *
+ * The caller supplies the correct PCLK frequency for the target channel:
+ * - SCI0-SCI6, SCI12 (SCIj/SCIh, standard region): use k_pclkb_hz
+ * - SCI7-SCI11 (SCIi, extended region 0x000D0xxx):  use k_pclka_hz
+ *
+ * This distinction matters when PCLKA != PCLKB.  The 01-system-clock audit
+ * is authoritative on actual PCLK frequencies; empirical evidence suggests
+ * PCLKB = 120 MHz, not 60 MHz as documented in rx72n_clock.h.
  *
  * **Algorithm steps:**
  * 1. Guard against baudrate == 0 (return k_brr_max_value as a safe sentinel).
- * 2. Guard against baudrate > k_uart_baudrate_max (return k_brr_min_value).
- * 3. Compute divisor_result = PCLKB / (32 * B) using integer arithmetic.
+ * 2. Guard against baudrate > pclk_hz/32 (return k_brr_min_value).
+ * 3. Compute divisor_result = pclk_hz / (32 * B) using integer arithmetic.
  * 4. Guard against divisor_result <= 1 to prevent underflow from the -1 offset.
  * 5. Compute BRR = divisor_result - 1.
  * 6. Clamp the result to k_brr_max_value (255) if the integer exceeds the
  *    8-bit range (indicates a baud rate too slow for this clock).
- * 7. Assert post-condition and return the clamped 8-bit result.
- *
- * **Baud rate error:**
- * Integer truncation introduces a small positive frequency error.  At PCLKB =
- * 60 MHz the worst-case error is +1.73 % (at 115 200 bps, BRR = 15), which is
- * within the +/-2 % tolerance of the RS-232/UART standard.
+ * 7. Return the clamped 8-bit result.
  *
  * @param[in] baudrate Target baud rate in bps
- *   - **Valid range**: 1 to k_uart_baudrate_max (k_pclkb_hz / k_brr_divisor_n0)
+ *   - **Valid range**: 1 to pclk_hz/k_brr_divisor_n0
  *   - **Special case**: 0 returns k_brr_max_value (255) as a safe sentinel
  *   - **Units**: bits per second
+ * @param[in] pclk_hz Peripheral clock driving this SCI channel (Hz)
+ *   - **SCI0-SCI6, SCI12**: k_pclkb_hz
+ *   - **SCI7-SCI11**:       k_pclka_hz
  *
  * @return uint8_t BRR register value to program into sci->brr
  * @retval 0..254 Computed BRR for the requested baud rate
- * @retval 0 (k_brr_min_value) Returned when baudrate > k_uart_baudrate_max or
- *         divisor_result underflows the formula offset
- * @retval 255 (k_brr_max_value) Returned when baudrate == 0 or the computed
- *         value exceeds 255 (baud rate too low for n=0 divisor)
+ * @retval 0 (k_brr_min_value) Returned when baudrate > pclk_hz/32 or underflow
+ * @retval 255 (k_brr_max_value) Returned when baudrate == 0 or BRR > 255
  *
- * @pre baudrate should be validated against [k_uart_baudrate_min,
- *      k_uart_baudrate_max] by the caller before invoking this function
- * @pre k_pclkb_hz and k_brr_divisor_n0 must be non-zero compile-time constants
+ * @pre baudrate validated by caller; pclk_hz must be non-zero
+ * @pre k_brr_divisor_n0 must be non-zero compile-time constant
  *
- * @post Return value is always in [0, 255]; no register overflow is possible
+ * @post Return value is always in [0, 255]
  * @post Caller must write the returned value to sci->brr before enabling TX/RX
  *
- * @note This function performs only integer arithmetic; no floating-point is
- *       used, making it suitable for the RX72N toolchain with FPU disabled
+ * @note Stateless pure function; safe to call from any context including ISR
  * @note Always uses n=0 (CKS=00); support for n=1..3 is not implemented
- *
- * @par Thread Safety:
- * Stateless pure function; safe to call from any context including ISR.
- *
- * @par Performance:
- * - Execution time: ~5 cycles (two integer multiplications and a comparison)
- * - Stack usage: 8 bytes (one local uint32_t)
  *
  * @par Example:
  * @code{.c}
- * // Program BRR for 115200 bps on an already-disabled SCI channel
- * sci->brr = internal_calculate_brr(115200U);
- * // At PCLKB = 60 MHz: brr = (60000000 / (32 * 115200)) - 1 = 15
+ * // SCI9 uses PCLKA (SCIi extended region)
+ * sci->brr = internal_calculate_brr(921600U, k_pclka_hz);
  * @endcode
  *
- * @see uart_init_channel() Caller that validates baudrate and writes sci->brr
+ * @see uart_init_channel() Caller that selects pclk_hz and writes sci->brr
  * @see brr_constants_t Constants used in the BRR formula
- * @see uart_validation_limits_t Baud rate bounds checked before this call
  *
  * @since Version 1.0.0
  */
-static uint8_t internal_calculate_brr(const uint32_t baudrate)
+static uint8_t internal_calculate_brr(const uint32_t baudrate, const uint32_t pclk_hz)
 {
   /* Pre-condition: reject zero baudrate (division by zero) */
   if (baudrate == 0) {
     return k_brr_max_value;
   }
 
-  /* Pre-condition: reject baudrate above maximum (would underflow BRR formula) */
-  if (baudrate > k_uart_baudrate_max) {
+  /* Pre-condition: reject baudrate above maximum for this clock */
+  if (baudrate > (pclk_hz / k_brr_divisor_n0)) {
     return k_brr_min_value;
   }
 
-  /* For n=0 (CKS=00): BRR = (PCLKB / (32 * B)) - 1 */
-  const uint32_t divisor_result = k_pclkb_hz / (k_brr_divisor_n0 * baudrate);
+  /* For n=0 (CKS=00): BRR = (PCLK / (32 * B)) - 1 */
+  const uint32_t divisor_result = pclk_hz / (k_brr_divisor_n0 * baudrate);
 
   /* Guard against underflow: if divisor_result is 0, subtraction would wrap */
   if (divisor_result <= k_brr_formula_offset) {
@@ -614,166 +634,84 @@ static void internal_clear_errors(volatile rx_sci_regs_t* sci)
 }
 
 /**
- * @brief Return the MSTPCRB bit position that controls the module-stop clock
- *        gate for a given SCI channel
+ * @brief Return the MSTPCRB bit position for a channel, or -1 for MSTPCRC channels
  *
  * @details
- * The RX72N Module Stop Control Register B (MSTPCRB) contains one bit per SCI
- * channel (SCI0-SCI11).  Clearing a bit removes the module from the stopped
- * state, allowing its clock to run.  The bit layout is contiguous and
- * descending: SCI0 occupies bit 31, SCI1 occupies bit 30, and so on down to
- * SCI11 at bit 20.
+ * Per manual section 11.2.3/11.2.4:
+ * - SCI0-SCI7: MSTPCRB bits 31-24 (contiguous, descending)
+ * - SCI8-SCI11: MSTPCRC bits 27-24 -- returns -1, caller uses MSTPCRC
+ * - SCI12 (SCIh): MSTPCRB bit 4 (non-contiguous outlier)
  *
- * SCI12 is controlled by a different register (MSTPCRC bit 4) and is therefore
- * outside the scope of this function; channel 12 returns -1 to signal the
- * caller that a different mechanism is needed.
+ * **Bit position table:**
+ * | Channel | Register | Bit | Enum constant      |
+ * |---------|----------|-----|--------------------|
+ * | SCI0    | MSTPCRB  | 31  | k_sci_mstpb_sci0   |
+ * | SCI1    | MSTPCRB  | 30  | k_sci_mstpb_sci1   |
+ * | ...     | MSTPCRB  | ... | ...                |
+ * | SCI7    | MSTPCRB  | 24  | k_sci_mstpb_sci7   |
+ * | SCI8    | MSTPCRC  | 27  | (returns -1)       |
+ * | SCI9    | MSTPCRC  | 26  | (returns -1)       |
+ * | SCI10   | MSTPCRC  | 25  | (returns -1)       |
+ * | SCI11   | MSTPCRC  | 24  | (returns -1)       |
+ * | SCI12   | MSTPCRB  |  4  | k_sci_mstpb_sci12  |
  *
- * **Algorithm steps:**
- * 1. Check whether channel > k_uart_max_mstpb_channel (11); return -1 if so.
- * 2. Compute bit position as k_sci_mstpb_sci0 (31) minus channel index.
- * 3. Cast to int8_t and return.
+ * @param[in] channel SCI channel index (0-12, validated by caller)
  *
- * **Bit position table (MSTPCRB):**
- * | Channel | Bit | Enum constant       |
- * |---------|-----|---------------------|
- * | SCI0    | 31  | k_sci_mstpb_sci0    |
- * | SCI1    | 30  | k_sci_mstpb_sci1    |
- * | SCI2    | 29  | k_sci_mstpb_sci2    |
- * | ...     | ... | ...                 |
- * | SCI11   | 20  | k_sci_mstpb_sci11   |
- * | SCI12   | N/A | handled in MSTPCRC  |
+ * @return int8_t MSTPCRB bit index, or -1 for MSTPCRC channels (8-11)
+ * @retval 4        Channel 12 (SCI12, MSTPCRB bit 4)
+ * @retval 24..31   Channels 0-7 (MSTPCRB bits 31-24)
+ * @retval -1       Channels 8-11 (caller must use MSTPCRC)
  *
- * @param[in] channel SCI channel index
- *   - **Valid range**: 0 to k_uart_max_mstpb_channel (11)
- *   - **Out-of-range**: 12 or above returns -1 (SCI12 is in MSTPCRC)
- *   - **Units**: dimensionless channel index
+ * @pre k_sci_mstpb_sci0 == 31 for the descending formula to be correct
+ * @post If return >= 0, it is a valid MSTPCRB bit index
  *
- * @return int8_t MSTPCRB bit position for the given channel
- * @retval 20..31 Valid bit position (MSTPCRB bit index)
- * @retval -1 Channel is not in MSTPCRB (channel >= 12); caller must use an
- *         alternative register (MSTPCRC) or treat as an error
- *
- * @pre channel is obtained from a validated uart_channel_t value
- * @pre k_sci_mstpb_sci0 must equal 31 so that the descending formula is correct
- *
- * @post Return value, if >= 0, is a valid bit index in [20, 31]
- * @post Caller is responsible for performing the register unlock/lock sequence
- *       around the MSTPCRB write
- *
- * @note Returns int8_t (signed) so that -1 can be used as an unambiguous
- *       sentinel without consuming any valid bit position in [0, 31]
- * @note SCI12 support requires a separate call path using MSTPCRC; this
- *       function deliberately does not handle it
- *
- * @par Thread Safety:
- * Stateless pure function; safe to call from any context including ISR.
- *
- * @par Performance:
- * - Execution time: ~2 cycles (one comparison, one subtraction)
- * - Stack usage: 0 bytes (no locals beyond return register)
- *
- * @par Example:
- * @code{.c}
- * const int8_t bit = internal_get_mstpb_bit(9U);
- * // bit == 22  (k_sci_mstpb_sci9)
- * if (bit >= 0) {
- *   system_regs()->mstpcrb &= ~(1UL << (uint8_t)bit);
- * }
- * @endcode
- *
- * @see internal_enable_sci_clock() Only caller; uses the returned bit to
- *      clear the module-stop gate in MSTPCRB
- * @see sci_mstpb_bits_t Enum defining all SCI MSTPCRB bit positions
- * @see uart_internal_constants_t k_uart_max_mstpb_channel boundary constant
+ * @note int8_t so -1 fits without consuming a valid bit position
  *
  * @since Version 1.0.0
  */
 static int8_t internal_get_mstpb_bit(const uint8_t channel)
 {
-  /* SCI12 is in MSTPCRC, not supported here */
-  if (channel > k_uart_max_mstpb_channel) {
-    return -1;
+  if (channel <= k_uart_max_mstpb_channel) {
+    /* SCI0-SCI7: MSTPCRB bits 31-24, descending */
+    return (int8_t)(k_sci_mstpb_sci0 - channel);
   }
-
-  /* MSTPCRB bits: SCI0=31, SCI1=30, ..., SCI11=20 */
-  return (int8_t)(k_sci_mstpb_sci0 - channel);
+  if (channel > k_uart_mstpc_channel_max) {
+    /* SCI12 (SCIh): MSTPCRB bit 4 -- only remaining valid channel above 11 */
+    return (int8_t)k_sci_mstpb_sci12;
+  }
+  /* SCI8-SCI11: live in MSTPCRC, not MSTPCRB */
+  return -1;
 }
 
 /**
- * @brief Enable the peripheral clock for an SCI channel by clearing its
- *        Module Stop Control Register B (MSTPCRB) bit
+ * @brief Enable the peripheral clock for an SCI channel
  *
  * @details
- * On reset, all SCI modules are held in the module-stop state (their clock
- * gates are closed) to minimize power consumption.  Before any SCI register
- * can be accessed, the corresponding MSTPCRB bit must be cleared.  Clearing
- * the bit opens the clock gate and allows the SCI peripheral to operate.
+ * Clears the module-stop bit for the given SCI channel so its clock runs.
+ * Different channel groups use different control registers (manual 11.2.3/11.2.4):
  *
- * The MSTPCRB register is write-protected by the Protect Register (PRCR).
- * This function performs the required unlock/modify/lock sequence:
+ * | Channels  | Register | Bits    |
+ * |-----------|----------|---------|
+ * | SCI0-SCI7 | MSTPCRB  | 31-24   |
+ * | SCI8-SCI11| MSTPCRC  | 27-24   |
+ * | SCI12     | MSTPCRB  | 4       |
  *
- * **Algorithm steps:**
- * 1. Call internal_get_mstpb_bit(channel) to obtain the MSTPCRB bit index.
- *    Return k_rx_err_invalid_arg immediately if the result is negative (channel
- *    12 or out of range).
- * 2. Write k_rx_prcr_unlock_all to *prcr_reg() to remove write protection.
- * 3. Clear the target bit in system_regs()->mstpcrb using a read-modify-write
- *    with the single-bit mask k_uart_mstpcrb_bit_set shifted left by mstpb_bit.
- * 4. Write k_rx_prcr_lock to *prcr_reg() to restore write protection.
- * 5. Return k_rx_ok.
+ * Both MSTPCRB and MSTPCRC are PRCR-protected; this function performs the
+ * required unlock/modify/lock sequence for whichever register applies.
  *
- * **Register sequence:**
- * @code{.c}
- * PRCR  = 0xA50B;   // Unlock
- * MSTPCRB &= ~(1UL << bit);  // Clear module-stop bit
- * PRCR  = 0xA500;   // Lock
- * @endcode
+ * @param[in] channel SCI channel index (0-12, validated by caller)
  *
- * @param[in] channel SCI channel index to enable
- *   - **Valid range**: 0 to k_uart_max_mstpb_channel (11)
- *   - **Invalid**: 12 or above -- SCI12 uses MSTPCRC (not supported here)
- *   - **Units**: dimensionless channel index
+ * @return rx_err_t
+ * @retval k_rx_ok         Clock enabled successfully
+ * @retval k_rx_err_invalid_arg  channel out of [0, k_uart_max_channels)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success -- MSTPCRB bit cleared, SCI clock enabled
- * @retval k_rx_err_invalid_arg channel >= 12 (not in MSTPCRB); MSTPCRB
- *         is not modified and the channel clock remains gated
+ * @pre channel validated by uart_init_channel() to be in [0, 12]
+ * @pre PRCR not already unlocked by another context
  *
- * @pre channel must be in range [0, k_uart_max_mstpb_channel] (i.e., 0-11)
- * @pre PRCR register must be accessible; this function does not check for
- *      nested unlock attempts
+ * @post Module-stop bit cleared; SCI clock gate open
+ * @post PRCR returned to locked state
  *
- * @post On success, the MSTPCRB bit for the specified channel is cleared and
- *       the SCI module clock is running
- * @post On success, the PRCR register is returned to its locked state
- *
- * @note This function does not re-assert module stop on error or deinit; the
- *       clock is left enabled for the lifetime of the MCU session
- * @warning Do not call while another thread or ISR is modifying MSTPCRB or
- *          any other PRCR-protected register; the unlock/lock window is not
- *          atomic
- *
- * @par Thread Safety:
- * Not thread-safe. The PRCR unlock-MSTPCRB write-PRCR lock sequence must
- * execute atomically.  Call only during single-threaded initialization before
- * ThreadX starts.
- *
- * @par Performance:
- * - Execution time: ~5 cycles (two PRCR writes + one RMW on MSTPCRB)
- * - Stack usage: 8 bytes (one int8_t local for mstpb_bit)
- *
- * @par Example:
- * @code{.c}
- * rx_err_t err = internal_enable_sci_clock(9U);  // Enable SCI9 clock
- * if (err != k_rx_ok) {
- *   return err;  // Channel 12 or invalid -- caller must handle
- * }
- * // SCI9 registers are now accessible
- * @endcode
- *
- * @see internal_get_mstpb_bit() Helper that maps channel -> MSTPCRB bit index
- * @see uart_init_channel() Caller that invokes this as part of channel setup
- * @see uart_mstpcrb_constants_t k_uart_mstpcrb_bit_set single-bit mask seed
+ * @warning Not thread-safe; unlock/modify/lock must be atomic
  *
  * @since Version 1.0.0
  */
@@ -781,19 +719,22 @@ static rx_err_t internal_enable_sci_clock(const uint8_t channel)
 {
   const int8_t mstpb_bit = internal_get_mstpb_bit(channel);
 
-  if (mstpb_bit < 0) {
+  *prcr_reg() = k_rx_prcr_unlock_all;
+
+  if (mstpb_bit >= 0) {
+    /* SCI0-SCI7 and SCI12: clear bit in MSTPCRB */
+    system_regs()->mstpcrb &= ~(k_uart_mstpcrb_bit_set << (uint8_t)mstpb_bit);
+  } else if (channel >= k_uart_mstpc_channel_min && channel <= k_uart_mstpc_channel_max) {
+    /* SCI8-SCI11: clear bit in MSTPCRC (bits 27-24) */
+    const uint8_t mstpc_bit =
+      (uint8_t)(k_sci_mstpc_sci8 - (channel - k_uart_mstpc_channel_min));
+    system_regs()->mstpcrc &= ~(k_uart_mstpcrb_bit_set << mstpc_bit);
+  } else {
+    *prcr_reg() = k_rx_prcr_lock;
     return k_rx_err_invalid_arg;
   }
 
-  /* Unlock protection */
-  *prcr_reg() = k_rx_prcr_unlock_all;
-
-  /* Clear module stop bit to enable clock */
-  system_regs()->mstpcrb &= ~(k_uart_mstpcrb_bit_set << (uint8_t)mstpb_bit);
-
-  /* Lock protection */
   *prcr_reg() = k_rx_prcr_lock;
-
   return k_rx_ok;
 }
 
@@ -1103,8 +1044,17 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
   /* Configure serial mode: Async, 8-bit, no parity, 1 stop, PCLK/1 */
   sci->smr = k_sci_smr_async_8n1;
 
+  /* Select the correct peripheral clock for this channel.
+   * SCIj (SCI0-SCI6) and SCIh (SCI12) are clocked by PCLKB.
+   * SCIi (SCI7-SCI11, extended region 0x000D0xxx) are clocked by PCLKA.
+   * Using the wrong clock produces a wrong BRR and a wrong baud rate. */
+  const uint32_t pclk_hz =
+    (((uint8_t)config->channel >= k_uart_pclka_channel_min) &&
+     ((uint8_t)config->channel <= k_uart_pclka_channel_max))
+    ? k_pclka_hz : k_pclkb_hz;
+
   /* Set baud rate */
-  sci->brr = internal_calculate_brr(config->baudrate);
+  sci->brr = internal_calculate_brr(config->baudrate, pclk_hz);
 
   /* Wait for at least 1 bit time */
   /* NOTE: Busy-wait required - may run before ThreadX initialization */

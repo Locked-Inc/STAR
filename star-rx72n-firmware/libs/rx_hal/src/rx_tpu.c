@@ -42,8 +42,8 @@
  * Phase counting channels (1, 2, 4, 5) are mapped to array indices 0-3:
  * | Channel | Index | Use in STAR         | Clock Pins      |
  * |---------|-------|---------------------|-----------------|
- * | TPU1    | 0     | Rear-left encoder   | TCLKA + TCLKB   |
- * | TPU2    | 1     | Rear-right encoder  | TCLKC + TCLKD   |
+ * | TPU1    | 0     | Back-right encoder  | TCLKA + TCLKB   |
+ * | TPU2    | 1     | Back-left encoder   | TCLKC + TCLKD   |
  * | TPU4    | 2     | Available           | TCLKC + TCLKD   |
  * | TPU5    | 3     | Available           | TCLKA + TCLKB   |
  *
@@ -155,8 +155,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_tpu_idx_ch1 = 0, /**< TPU1 -> index 0 (rear-left encoder) */
-  k_tpu_idx_ch2 = 1, /**< TPU2 -> index 1 (rear-right encoder) */
+  k_tpu_idx_ch1 = 0, /**< TPU1 -> index 0 (back-right encoder) */
+  k_tpu_idx_ch2 = 1, /**< TPU2 -> index 1 (back-left encoder) */
   k_tpu_idx_ch4 = 2, /**< TPU4 -> index 2 (available) */
   k_tpu_idx_ch5 = 3, /**< TPU5 -> index 3 (available) */
 } tpu_channel_index_t;

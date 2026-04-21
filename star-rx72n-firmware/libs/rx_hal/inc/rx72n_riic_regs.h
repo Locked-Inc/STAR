@@ -264,12 +264,17 @@ typedef enum : uintptr_t {
 typedef struct {
   /**
    * @brief I2C Bus Control Register 1
-   * @details Enables RIIC module and controls internal reset.
+   * @details Enables RIIC module and controls internal reset and pin state.
    * | Bit | Name   | Description |
    * |-----|--------|-------------|
    * | 7   | ICE    | RIIC Enable (1=enabled) |
    * | 6   | IICRST | Internal Reset (1=reset state) |
-   * | 3-0 | CLO    | Extra SCL clock output count |
+   * | 5   | CLO    | Additional SCL Output (bus recovery clock) |
+   * | 4   | SOWP   | SCLO and SDAO Write Protect |
+   * | 3   | SCLO   | SCL Output Control/Monitor |
+   * | 2   | SDAO   | SDA Output Control/Monitor |
+   * | 1   | SCLI   | SCL Line Input Monitor |
+   * | 0   | SDAI   | SDA Line Input Monitor |
    */
   volatile uint8_t iccr1;
 
@@ -336,24 +341,31 @@ typedef struct {
 
   /**
    * @brief I2C Bus Status Register 1
-   * @details Contains ACK reception status.
+   * @details Contains slave address detection and host/device-ID detection flags.
    * | Bit | Name  | Description |
    * |-----|-------|-------------|
-   * | 0   | ACKBR | ACK Bit Received (0=ACK, 1=NACK) |
+   * | 7   | HOA   | Host Address Detection Flag |
+   * | 5   | DID   | Device-ID Address Detection Flag |
+   * | 3   | GCA   | General Call Address Detection Flag |
+   * | 2   | AAS2  | Slave Address 2 Detection Flag |
+   * | 1   | AAS1  | Slave Address 1 Detection Flag |
+   * | 0   | AAS0  | Slave Address 0 Detection Flag |
    */
   volatile uint8_t icsr1;
 
   /**
    * @brief I2C Bus Status Register 2
-   * @details Contains transmit/receive status flags.
+   * @details Contains transmit/receive status flags and condition detection.
    * | Bit | Name  | Description |
    * |-----|-------|-------------|
    * | 7   | TDRE  | Transmit Data Empty |
-   * | 5   | TEND  | Transmit End |
+   * | 6   | TEND  | Transmit End |
+   * | 5   | RDRF  | Receive Data Full |
    * | 4   | NACKF | NACK Detection Flag |
    * | 3   | STOP  | Stop Condition Detection |
    * | 2   | START | Start Condition Detection |
-   * | 1   | RDRF  | Receive Data Full |
+   * | 1   | AL    | Arbitration-Lost Flag |
+   * | 0   | TMOF  | Timeout Detection Flag |
    */
   volatile uint8_t icsr2;
 
@@ -463,7 +475,8 @@ static inline volatile rx_riic_regs_t* riic2(void)
  * @brief ICCR1 (I2C Control Register 1) bit definitions
  *
  * @details
- * Controls RIIC module enable/disable and internal reset.
+ * Controls RIIC module enable/disable, internal reset, bus recovery clock,
+ * and provides pin output control and input monitoring.
  *
  * @par Register Layout
  * @verbatim
@@ -471,14 +484,23 @@ static inline volatile rx_riic_regs_t* riic2(void)
  *   ----+--------+----------------------------------------
  *    7  | ICE    | RIIC Enable (1=enabled, 0=disabled)
  *    6  | IICRST | Internal Reset (1=reset state)
- *   5-4 |  -     | Reserved
- *   3-0 | CLO    | Extra Clock Output (SCL cycles to recover bus)
+ *    5  | CLO    | Additional SCL Output (bus recovery clock)
+ *    4  | SOWP   | SCLO and SDAO Write Protect
+ *    3  | SCLO   | SCL Output Control/Monitor
+ *    2  | SDAO   | SDA Output Control/Monitor
+ *    1  | SCLI   | SCL Line Input Monitor (read-only)
+ *    0  | SDAI   | SDA Line Input Monitor (read-only)
  * @endverbatim
  */
 typedef enum : uint8_t {
-  k_riic_iccr1_ice      = (1 << 7), /**< Bit 7: I2C Bus Interface Enable */
-  k_riic_iccr1_iicrst   = (1 << 6), /**< Bit 6: Internal Reset (hold in reset) */
-  k_riic_iccr1_clk_mask = 0x0F,     /**< Bits 0-3: Extra clock output mask */
+  k_riic_iccr1_ice    = (1 << 7), /**< Bit 7: I2C Bus Interface Enable */
+  k_riic_iccr1_iicrst = (1 << 6), /**< Bit 6: Internal Reset (hold in reset) */
+  k_riic_iccr1_clo    = (1 << 5), /**< Bit 5: Additional SCL Output (bus recovery) */
+  k_riic_iccr1_sowp   = (1 << 4), /**< Bit 4: SCLO and SDAO Write Protect */
+  k_riic_iccr1_sclo   = (1 << 3), /**< Bit 3: SCL Output Control/Monitor */
+  k_riic_iccr1_sdao   = (1 << 2), /**< Bit 2: SDA Output Control/Monitor */
+  k_riic_iccr1_scli   = (1 << 1), /**< Bit 1: SCL Line Input Monitor (read-only) */
+  k_riic_iccr1_sdai   = (1 << 0), /**< Bit 0: SDA Line Input Monitor (read-only) */
 } riic_iccr1_bits_t;
 
 /**
@@ -507,7 +529,7 @@ typedef enum : uint8_t {
 typedef enum : uint8_t {
   k_riic_iccr2_bbsy = (1 << 7), /**< Bit 7: Bus Busy (read-only) */
   k_riic_iccr2_mst  = (1 << 6), /**< Bit 6: Controller Mode (read-only) */
-  k_riic_iccr2_trx  = (1 << 5), /**< Bit 5: Transmit Mode (read-only) */
+  k_riic_iccr2_trs  = (1 << 5), /**< Bit 5: Transmit/Receive Select (1=transmit, read-only) */
   k_riic_iccr2_sp   = (1 << 3), /**< Bit 3: Stop Condition Request */
   k_riic_iccr2_rs   = (1 << 2), /**< Bit 2: Restart Condition Request */
   k_riic_iccr2_st   = (1 << 1), /**< Bit 1: Start Condition Request */
@@ -518,20 +540,37 @@ typedef enum : uint8_t {
  * @brief ICSR1 (I2C Status Register 1) bit definitions
  *
  * @details
- * Contains ACK/NACK reception status.
+ * Contains slave address detection flags, general call detection,
+ * device-ID detection, and host address detection (peripheral mode).
+ *
+ * @par Register Layout
+ * @verbatim
+ *   Bit | Name | Description
+ *   ----+------+----------------------------------------
+ *    7  | HOA  | Host Address Detection Flag
+ *    6  |  -   | Reserved
+ *    5  | DID  | Device-ID Address Detection Flag
+ *    4  |  -   | Reserved
+ *    3  | GCA  | General Call Address Detection Flag
+ *    2  | AAS2 | Slave Address 2 Detection Flag
+ *    1  | AAS1 | Slave Address 1 Detection Flag
+ *    0  | AAS0 | Slave Address 0 Detection Flag
+ * @endverbatim
  *
  * @par Usage
- * Check ACKBR after transmitting address or data to verify peripheral responded.
  * @code
- * if (riic0()->icsr1 & k_riic_icsr1_ackbr) {
- *     // NACK received - peripheral not responding
- * } else {
- *     // ACK received - proceed with transaction
+ * if (riic0()->icsr1 & k_riic_icsr1_aas0) {
+ *     // Slave address 0 detected - we are being addressed
  * }
  * @endcode
  */
 typedef enum : uint8_t {
-  k_riic_icsr1_ackbr = (1 << 0), /**< Bit 0: ACK Bit Received (0=ACK, 1=NACK) */
+  k_riic_icsr1_hoa  = (1 << 7), /**< Bit 7: Host Address Detection Flag */
+  k_riic_icsr1_did  = (1 << 5), /**< Bit 5: Device-ID Address Detection Flag */
+  k_riic_icsr1_gca  = (1 << 3), /**< Bit 3: General Call Address Detection Flag */
+  k_riic_icsr1_aas2 = (1 << 2), /**< Bit 2: Slave Address 2 Detection Flag */
+  k_riic_icsr1_aas1 = (1 << 1), /**< Bit 1: Slave Address 1 Detection Flag */
+  k_riic_icsr1_aas0 = (1 << 0), /**< Bit 0: Slave Address 0 Detection Flag */
 } riic_icsr1_bits_t;
 
 /**
@@ -546,13 +585,13 @@ typedef enum : uint8_t {
  *   Bit | Name  | Description
  *   ----+-------+----------------------------------------
  *    7  | TDRE  | Transmit Data Empty (1=can write ICDRT)
- *    6  |  -    | Reserved
- *    5  | TEND  | Transmit End (1=all data transmitted)
+ *    6  | TEND  | Transmit End (1=all data transmitted)
+ *    5  | RDRF  | Receive Data Full (1=data in ICDRR)
  *    4  | NACKF | NACK Detection Flag
  *    3  | STOP  | Stop Condition Detected
  *    2  | START | Start Condition Detected
- *    1  | RDRF  | Receive Data Full (1=data in ICDRR)
- *    0  |  -    | Reserved
+ *    1  | AL    | Arbitration-Lost Flag
+ *    0  | TMOF  | Timeout Detection Flag
  * @endverbatim
  *
  * @par Typical Polling Sequence
@@ -566,10 +605,13 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_riic_icsr2_tdre  = (1 << 7), /**< Bit 7: Transmit Data Empty */
+  k_riic_icsr2_tend  = (1 << 6), /**< Bit 6: Transmit End */
+  k_riic_icsr2_rdrf  = (1 << 5), /**< Bit 5: Receive Data Full */
   k_riic_icsr2_nackf = (1 << 4), /**< Bit 4: NACK Detection Flag */
   k_riic_icsr2_stop  = (1 << 3), /**< Bit 3: Stop Condition Detection */
   k_riic_icsr2_start = (1 << 2), /**< Bit 2: Start Condition Detection */
-  k_riic_icsr2_rdrf  = (1 << 1), /**< Bit 1: Receive Data Full */
+  k_riic_icsr2_al    = (1 << 1), /**< Bit 1: Arbitration-Lost Flag */
+  k_riic_icsr2_tmof  = (1 << 0), /**< Bit 0: Timeout Detection Flag */
 } riic_icsr2_bits_t;
 
 /* =============================================================================

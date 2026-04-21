@@ -206,12 +206,16 @@ typedef enum : uint8_t {
 
 /* RSPI channel constants (k_rspi_channel_0/1/2) provided by hardware.h via rspi_channel_t */
 
-/** @brief RSPI module stop bit positions in MSTPCRB */
+/** @brief RSPI0/RSPI1 module stop bit positions in MSTPCRB (HW Manual p.408) */
 typedef enum : uint8_t {
-  k_rspi_mstpb_rspi0 = 17, /**< RSPI0 module stop bit */
-  k_rspi_mstpb_rspi1 = 16, /**< RSPI1 module stop bit */
-  k_rspi_mstpb_rspi2 = 15, /**< RSPI2 module stop bit */
-} rspi_module_stop_bits_t;
+  k_rspi_mstpb_rspi0 = 17, /**< RSPI0 module stop bit in MSTPCRB */
+  k_rspi_mstpb_rspi1 = 16, /**< RSPI1 module stop bit in MSTPCRB */
+} rspi_mstpcrb_bits_t;
+
+/** @brief RSPI2 module stop bit position in MSTPCRC (HW Manual p.410) */
+typedef enum : uint8_t {
+  k_rspi_mstpc_rspi2 = 22, /**< RSPI2 module stop bit in MSTPCRC */
+} rspi_mstpcrc_bits_t;
 
 /** @brief RSPI controller mode constants */
 typedef enum : uint32_t {
@@ -411,21 +415,21 @@ static volatile rx_rspi_regs_t* internal_get_rspi_base(const rspi_channel_t chan
 }
 
 /**
- * @brief Set MSTPCRB module stop bit for an RSPI channel
+ * @brief Set module stop bit for an RSPI channel
  *
  * @details
- * Controls the Module Stop Control Register B (MSTPCRB) bits that gate the
- * clock to each RSPI channel. Clearing a bit enables the module (starts the
- * clock); setting it stops the module (reduces power consumption). The bit
- * positions are defined by k_rspi_mstpb_rspi0/1/2 constants.
+ * Controls the Module Stop Control Register bits that gate the clock to each
+ * RSPI channel. RSPI0 and RSPI1 are in MSTPCRB (bits 17 and 16); RSPI2 is in
+ * MSTPCRC (bit 22). Clearing a bit enables the module (starts the clock);
+ * setting it stops the module (reduces power consumption).
  *
  * @param[in] channel RSPI channel number (valid: 0, 1, or 2)
- * @param[in] enable true to enable module clock (clear MSTPB bit),
- *                   false to stop module clock (set MSTPB bit)
+ * @param[in] enable true to enable module clock (clear stop bit),
+ *                   false to stop module clock (set stop bit)
  *
  * @pre system_regs() must return a valid pointer
  * @pre channel must be one of k_rspi_channel_0, k_rspi_channel_1, k_rspi_channel_2
- * @post MSTPCRB register updated with the appropriate bit set/cleared
+ * @post MSTPCRB (channels 0/1) or MSTPCRC (channel 2) updated appropriately
  * @post Module clock enabled or disabled for the specified channel
  *
  * @note Not thread-safe. Caller must hold MSTPCR protection if applicable.
@@ -438,20 +442,28 @@ static volatile rx_rspi_regs_t* internal_get_rspi_base(const rspi_channel_t chan
  */
 static void internal_set_mstpcrb_for_channel(const rspi_channel_t channel, const bool enable)
 {
-  uint32_t mask = k_rspi_zero_u32;
-
   RX_ASSERT(system_regs() != nullptr, "system_regs is nullptr");
   static_assert(k_rspi_bit_set != 0, "RSPI bit constant must be non-zero");
   RX_ASSERT((channel == k_rspi_channel_0) || (channel == k_rspi_channel_1) ||
               (channel == k_rspi_channel_2),
             "Invalid RSPI channel");
 
+  /* RSPI2 stop bit is in MSTPCRC (bit 22), not MSTPCRB (HW Manual p.410) */
+  if (channel == k_rspi_channel_2) {
+    const uint32_t mask = (k_rspi_bit_set << k_rspi_mstpc_rspi2);
+    if (enable) {
+      system_regs()->mstpcrc &= ~mask;
+    } else {
+      system_regs()->mstpcrc |= mask;
+    }
+    return;
+  }
+
+  uint32_t mask = k_rspi_zero_u32;
   if (channel == k_rspi_channel_0) {
     mask = (k_rspi_bit_set << k_rspi_mstpb_rspi0);
   } else if (channel == k_rspi_channel_1) {
     mask = (k_rspi_bit_set << k_rspi_mstpb_rspi1);
-  } else if (channel == k_rspi_channel_2) {
-    mask = (k_rspi_bit_set << k_rspi_mstpb_rspi2);
   }
   if (enable) {
     system_regs()->mstpcrb &= ~mask;

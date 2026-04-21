@@ -394,8 +394,7 @@ typedef enum : uint32_t {
   k_encoder_16bit_mask   = 0xFFFF, /**< Bitmask for 16-bit values */
 
   /* Module stop control bits */
-  k_mtu_mstpcra_mtu0_4_bit = 9, /**< MSTPCRA bit for MTU0-MTU4 */
-  k_mtu_mstpcra_mtu6_7_bit = 8, /**< MSTPCRA bit for MTU6-MTU7 */
+  k_mtu_mstpcra_mtu0_4_bit = 9, /**< MSTPCRA bit for all MTU channels (MSTPA9) */
 
   /* Timer control defaults */
   k_tcr_external_clock_no_prescaler = 0x00, /**< External clock, no prescaler */
@@ -481,10 +480,9 @@ internal_get_mtu_base(const rx_mtu_channel_t channel)
     case k_mtu_channel_3: /* fall through -- sparse layout, incompatible with standard API */
     case k_mtu_channel_4: /* MTU3/4 use rx_mtu3_channel_regs_t; call mtu3()/mtu4() directly */
       return nullptr;
-    case k_mtu_channel_6:
-      return mtu6();
-    case k_mtu_channel_7:
-      return mtu7();
+    case k_mtu_channel_6: /* fall through -- interleaved layout, use mtu6() with rx_mtu3_channel_regs_t */
+    case k_mtu_channel_7: /* interleaved layout, MTU6/7 do not support phase counting */
+      return nullptr;
     default:
       return nullptr;
   }
@@ -1289,11 +1287,7 @@ RX_STATIC_TESTABLE rx_err_t internal_enable_mtu_module(const rx_mtu_channel_t ch
   /* Enable MTU module (clear module stop bit) */
   *prcr_reg() = k_rx_prcr_unlock_all; /* Enable writes to MSTPCR (0xA50F) */
 
-  if (channel <= k_mtu_channel_4) {
-    system_regs()->mstpcra &= (uint32_t) ~(1UL << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
-  } else {
-    system_regs()->mstpcra &= (uint32_t) ~(1UL << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
-  }
+  system_regs()->mstpcra &= (uint32_t) ~(1UL << k_mtu_mstpcra_mtu0_4_bit); /* single bit covers all MTU channels */
 
   *prcr_reg() = k_rx_prcr_lock; /* Lock MSTPCR (0xA500) */
 

@@ -55,8 +55,8 @@
  * |-------|------------------|---------------------|------------------------------|
  * | A     | GPTW0 (Motor 0)  | GTETRGA + Software  | Front-left motor E-stop      |
  * | B     | GPTW1 (Motor 1)  | GTETRGB + Software  | Front-right motor E-stop     |
- * | C     | GPTW2 (Motor 2)  | GTETRGC + Software  | Rear-left motor E-stop       |
- * | D     | GPTW3 (Motor 3)  | GTETRGD + Software  | Rear-right motor E-stop      |
+ * | C     | GPTW2 (Motor 2)  | GTETRGC + Software  | Back-right motor E-stop      |
+ * | D     | GPTW3 (Motor 3)  | GTETRGD + Software  | Back-left motor E-stop       |
  *
  * @par Key Features
  * - Emergency PWM output disable (immediate Hi-Z on fault)
@@ -70,7 +70,7 @@
  * |----------------|------------------|------------------------------|
  * | Base Address   | 0x0009E000       | Group A base                 |
  * | Group Spacing  | 0x100 bytes      | A=0x0000, B=0x0100, C=0x0200, D=0x0300 |
- * | Module Stop    | MSTPCRB.MSTPB22  | Same as GPTW (shared)        |
+ * | Module Stop    | MSTPCRA.MSTPA7   | Same as GPTW (shared)        |
  * | Clock          | PCLKB (60 MHz)   | For noise filter sampling    |
  *
  * @par NASA Power of 10 Compliance
@@ -217,7 +217,7 @@ typedef enum : uintptr_t {
  *
  * @note All triggers are OR'd together - any trigger stops output
  * @warning Enable bits (PIDE, IOCE, OSTPE) can only be written once after reset
- * @attention Module stop bit shared with GPTW (MSTPCRB.MSTPB22)
+ * @attention Module stop bit shared with GPTW (MSTPCRA.MSTPA7)
  *
  * @see poegga(), poeggb(), poeggc(), poeggd() Accessor functions
  * @see rx_poegg_bits_t Register bit definitions
@@ -265,7 +265,7 @@ typedef struct {
  * @return Volatile pointer to POEG Group A register structure
  * @retval Non-NULL Always returns valid pointer (hardware address)
  *
- * @pre GPTW/POEG module enabled (MSTPCRB.MSTPB22 = 0)
+ * @pre GPTW/POEG module enabled (MSTPCRA.MSTPA7 = 0)
  * @post Pointer valid for lifetime of program execution
  *
  * @note Thread Safety: Safe - returns constant hardware address
@@ -294,7 +294,7 @@ static inline volatile rx_poegg_regs_t* poegga(void)
  * @return Volatile pointer to POEG Group B register structure
  * @retval Non-NULL Always returns valid pointer (hardware address)
  *
- * @pre GPTW/POEG module enabled (MSTPCRB.MSTPB22 = 0)
+ * @pre GPTW/POEG module enabled (MSTPCRA.MSTPA7 = 0)
  * @post Pointer valid for lifetime of program execution
  *
  * @see k_poeggb_base_addr Base address constant
@@ -315,7 +315,7 @@ static inline volatile rx_poegg_regs_t* poeggb(void)
  * @return Volatile pointer to POEG Group C register structure
  * @retval Non-NULL Always returns valid pointer (hardware address)
  *
- * @pre GPTW/POEG module enabled (MSTPCRB.MSTPB22 = 0)
+ * @pre GPTW/POEG module enabled (MSTPCRA.MSTPA7 = 0)
  * @post Pointer valid for lifetime of program execution
  *
  * @see k_poeggc_base_addr Base address constant
@@ -336,7 +336,7 @@ static inline volatile rx_poegg_regs_t* poeggc(void)
  * @return Volatile pointer to POEG Group D register structure
  * @retval Non-NULL Always returns valid pointer (hardware address)
  *
- * @pre GPTW/POEG module enabled (MSTPCRB.MSTPB22 = 0)
+ * @pre GPTW/POEG module enabled (MSTPCRA.MSTPA7 = 0)
  * @post Pointer valid for lifetime of program execution
  *
  * @see k_poeggd_base_addr Base address constant

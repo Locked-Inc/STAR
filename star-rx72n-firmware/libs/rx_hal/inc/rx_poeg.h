@@ -106,8 +106,8 @@ typedef enum : uint8_t {
  * @retval k_rx_ok All 4 POEG groups initialized successfully
  * @retval k_rx_err_hw_init_failed POEG register write verification failed
  *
- * @pre GPTW module enabled (MSTPCRB.MSTPB22 = 0)
- * @pre GTETRG pins configured via MPC (Pin.c)
+ * @pre GPTW module enabled (MSTPCRA.MSTPA7 = 0)
+ * @pre GTETRG pins set as GPIO inputs (PDR=0); no MPC PSEL needed (dedicated POEG inputs)
  * @pre shared_data initialized
  *
  * @post POEG Groups A-D enabled with pin detection + noise filter

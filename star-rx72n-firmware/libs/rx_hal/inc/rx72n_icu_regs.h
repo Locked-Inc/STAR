@@ -40,13 +40,18 @@
  *
  * @par STAR Project Interrupt Usage:
  *
- * | Vector | Source       | Priority | Description              |
- * |--------|--------------|----------|--------------------------|
- * | 28     | CMT0_CMI0    | 10       | System tick (1 ms)       |
- * | 29     | CMT1_CMI1    | 8        | Motor control (10 kHz)   |
- * | 102    | USB0_USBINT  | 12       | USB CDC communication    |
- * | 174    | SCI1_RXI     | 6        | Debug UART receive       |
- * | 175    | SCI1_TXI     | 5        | Debug UART transmit      |
+ * | Vector  | Source        | Priority | Description                          |
+ * |---------|---------------|----------|--------------------------------------|
+ * | 28      | CMT0_CMI0     | 10       | System tick (1 ms, ThreadX)          |
+ * | 29      | CMT1_CMI1     | 8        | Motor control timer                  |
+ * | 72-75   | IRQ8-IRQ11    | varies   | HC-SR04 echo (4 sensors, both edges) |
+ * | 188-191 | INTB188-INTB191 | 14     | POEG fault protection (4 motors)     |
+ *
+ * @par Note on vectors 188-191 (POEG): these are SLIBR software-configurable
+ * interrupt B vectors. The SLIBXR/SLIBR registers (offsets 0x780-0x7CF) must
+ * be programmed to route POEGGAI/BI/CI/DI to INTB188-191 respectively.
+ * SCI9 (debug UART) is polled, not interrupt-driven; its fixed vectors are
+ * 102 (RXI9) and 103 (TXI9). SCI1 fixed vectors are 60 (RXI1) and 61 (TXI1).
  *
  * @par Hardware Requirements:
  * - CPU: Renesas RX72N with 256-vector interrupt controller
@@ -54,7 +59,7 @@
  * - Register access: 8-bit for IR/IER/IPR, 16-bit for FIR
  *
  * @par Memory Usage:
- * - Register structure size: 0x595 bytes (1429 bytes)
+ * - Register structure size: 0xA02 bytes (2562 bytes)
  * - No dynamic allocation required
  * - Direct memory-mapped register access
  *
@@ -162,18 +167,23 @@ extern "C" {
  * All ICU registers are accessed relative to this base address.
  *
  * @par Address Space:
- * | Offset Range | Registers           | Description               |
- * |--------------|---------------------|---------------------------|
- * | 0x000-0x0FF  | IR[256]             | Interrupt Request Flags   |
- * | 0x100-0x1FF  | DTCER[256]          | DTC Enable Registers      |
- * | 0x200-0x21F  | IER[32]             | Interrupt Enable Regs     |
- * | 0x2E0-0x2E1  | SWINTR, SWINT2R     | Software Interrupt        |
- * | 0x2F0        | FIR                 | Fast Interrupt Register   |
- * | 0x300-0x3FF  | IPR[256]            | Interrupt Priority Regs   |
- * | 0x400-0x41F  | DMRSR[8]            | DMAC Module Start Regs    |
- * | 0x500-0x50F  | IRQCR[16]           | External IRQ Control      |
- * | 0x520-0x52D  | IRQFLTE, IRQFLTC    | IRQ Digital Filter        |
- * | 0x580-0x594  | NMI Registers       | Non-Maskable Interrupt    |
+ * | Offset Range | Registers           | Description                         |
+ * |--------------|---------------------|-------------------------------------|
+ * | 0x000-0x0FF  | IR[256]             | Interrupt Request Flags             |
+ * | 0x100-0x1FF  | DTCER[256]          | DTC Enable Registers                |
+ * | 0x200-0x21F  | IER[32]             | Interrupt Enable Regs               |
+ * | 0x2E0-0x2E1  | SWINTR, SWINT2R     | Software Interrupt                  |
+ * | 0x2F0        | FIR                 | Fast Interrupt Register             |
+ * | 0x300-0x3FF  | IPR[256]            | Interrupt Priority Regs             |
+ * | 0x400-0x41F  | DMRSR[8]            | DMAC Module Start Regs              |
+ * | 0x500-0x50F  | IRQCR[16]           | External IRQ Control                |
+ * | 0x520-0x52D  | IRQFLTE, IRQFLTC    | IRQ Digital Filter                  |
+ * | 0x580-0x594  | NMI Registers       | Non-Maskable Interrupt              |
+ * | 0x780-0x78F  | SLIBXRn[16]         | Selectable Int B source (vect 128-143) |
+ * | 0x790-0x7CF  | SLIBRn[64]          | Selectable Int B source (vect 144-207) |
+ * | 0x9D0-0x9FF  | SLIARn[48]          | Selectable Int A source (vect 208-255) |
+ * | 0xA00        | SLIPRCR             | SLIBXR/SLIBR/SLIAR write-protect    |
+ * | 0xA01        | SELEXDR             | Selectable ext int direction        |
  *
  * @invariant Base address is fixed and cannot be relocated
  */
@@ -203,6 +213,8 @@ typedef enum : uint16_t {
   k_icu_reserved_after_irqfltc_bytes  = 84,  /**< 0x52C-0x57F: Gap to NMISR */
   k_icu_reserved_after_exnmiclr_bytes = 9,   /**< 0x587-0x58F: Gap to NMIFLTE */
   k_icu_reserved_after_nmiflte_bytes  = 3,   /**< 0x591-0x593: Gap to NMIFLTC */
+  k_icu_reserved_after_nmifltc_bytes  = 491, /**< 0x595-0x77F: Gap to SLIBXRn */
+  k_icu_reserved_after_slibr_bytes    = 512, /**< 0x7D0-0x9CF: Gap to SLIARn */
   k_icu_dmrsr_entry_padding           = 3,   /**< DMRSR 8-bit regs at 4-byte boundaries */
 } icu_reserved_sizes_t;
 
@@ -232,6 +244,9 @@ typedef enum : uint16_t {
   k_icu_irqcr_count      = 16,  /**< 16 external IRQ pins (IRQ0-15) */
   k_icu_irqflte_count    = 2,   /**< 2 filter enable registers (16 bits total) */
   k_icu_irqfltc_count    = 2,   /**< 2 filter clock registers */
+  k_icu_slibxr_count     = 16,  /**< SLIBXRn entries: vectors 128-143 (INTB128-143) */
+  k_icu_slibr_count      = 64,  /**< SLIBRn entries: vectors 144-207 (INTB144-207) */
+  k_icu_sliar_count      = 48,  /**< SLIARn entries: vectors 208-255 (INTA208-255) */
 } icu_array_sizes_t;
 
 /**
@@ -316,26 +331,33 @@ typedef struct {
  * // Re-enable global interrupts (PSW.I = 1)
  * @endcode
  *
- * @par Memory Layout (Total: ~1429 bytes):
+ * @par Memory Layout (Total: ~2562 bytes):
  *
- * | Offset | Size | Field          | Description                    |
- * |--------|------|----------------|--------------------------------|
- * | 0x000  | 256  | ir[256]        | Interrupt Request flags        |
- * | 0x100  | 256  | dtcer[256]     | DTC Enable registers           |
- * | 0x200  | 32   | ier[32]        | Interrupt Enable registers     |
- * | 0x220  | 192  | reserved       | Reserved gap                   |
- * | 0x2E0  | 1    | swintr         | Software Interrupt register    |
- * | 0x2E1  | 1    | swint2r        | Software Interrupt 2 register  |
- * | 0x2F0  | 2    | fir            | Fast Interrupt register        |
- * | 0x300  | 256  | ipr[256]       | Interrupt Priority registers   |
- * | 0x400  | 32   | dmrsr[8]       | DMAC Module Start registers    |
- * | 0x500  | 16   | irqcr[16]      | External IRQ Control           |
- * | 0x520  | 2    | irqflte[2]     | IRQ Filter Enable              |
- * | 0x528  | 4    | irqfltc[2]     | IRQ Filter Clock Select        |
- * | 0x580  | 4    | nmisr..nmicr   | NMI Status/Enable/Clear/Ctrl   |
- * | 0x584  | 3    | exnmisr..clr   | Extended NMI registers         |
- * | 0x590  | 1    | nmiflte        | NMI Filter Enable              |
- * | 0x594  | 1    | nmifltc        | NMI Filter Clock               |
+ * | Offset | Size | Field          | Description                          |
+ * |--------|------|----------------|--------------------------------------|
+ * | 0x000  | 256  | ir[256]        | Interrupt Request flags              |
+ * | 0x100  | 256  | dtcer[256]     | DTC Enable registers                 |
+ * | 0x200  | 32   | ier[32]        | Interrupt Enable registers           |
+ * | 0x220  | 192  | reserved       | Reserved gap                         |
+ * | 0x2E0  | 1    | swintr         | Software Interrupt register          |
+ * | 0x2E1  | 1    | swint2r        | Software Interrupt 2 register        |
+ * | 0x2F0  | 2    | fir            | Fast Interrupt register              |
+ * | 0x300  | 256  | ipr[256]       | Interrupt Priority registers         |
+ * | 0x400  | 32   | dmrsr[8]       | DMAC Module Start registers          |
+ * | 0x500  | 16   | irqcr[16]      | External IRQ Control                 |
+ * | 0x520  | 2    | irqflte[2]     | IRQ Filter Enable                    |
+ * | 0x528  | 4    | irqfltc[2]     | IRQ Filter Clock Select              |
+ * | 0x580  | 4    | nmisr..nmicr   | NMI Status/Enable/Clear/Ctrl         |
+ * | 0x584  | 3    | exnmisr..clr   | Extended NMI registers               |
+ * | 0x590  | 1    | nmiflte        | NMI Filter Enable                    |
+ * | 0x594  | 1    | nmifltc        | NMI Filter Clock                     |
+ * | 0x595  | 491  | reserved       | Reserved gap                         |
+ * | 0x780  | 16   | slibxr[16]     | Sel. Int B source sel. (vect 128-143)|
+ * | 0x790  | 64   | slibr[64]      | Sel. Int B source sel. (vect 144-207)|
+ * | 0x7D0  | 512  | reserved       | Reserved gap                         |
+ * | 0x9D0  | 48   | sliar[48]      | Sel. Int A source sel. (vect 208-255)|
+ * | 0xA00  | 1    | sliprcr        | SLIBXR/SLIBR/SLIAR write-protect     |
+ * | 0xA01  | 1    | selexdr        | Selectable ext int direction         |
  *
  * @note Register layout verified against RX72N Manual Ch15, Rev.1.20
  *
@@ -403,6 +425,21 @@ typedef struct {
   volatile uint8_t nmiflte; /**< @0x590 NMI Filter Enable Register (ADDED - was missing) */
   uint8_t          reserved8[k_icu_reserved_after_nmiflte_bytes]; /**< @0x591 Reserved */
   volatile uint8_t nmifltc; /**< @0x594 NMI Filter Clock Select Register (RENAMED from nmiflt) */
+  uint8_t          reserved9[k_icu_reserved_after_nmifltc_bytes]; /**< @0x595 Reserved */
+
+  /* Offset 0x780-0x78F: Selectable Interrupt B Source Registers (vectors 128-143) */
+  volatile uint8_t slibxr[k_icu_slibxr_count]; /**< @0x780 SLIBXRn: source select for INTB128-143 */
+
+  /* Offset 0x790-0x7CF: Selectable Interrupt B Source Registers (vectors 144-207) */
+  volatile uint8_t slibr[k_icu_slibr_count]; /**< @0x790 SLIBRn: source select for INTB144-207 */
+  uint8_t          reserved10[k_icu_reserved_after_slibr_bytes]; /**< @0x7D0 Reserved */
+
+  /* Offset 0x9D0-0x9FF: Selectable Interrupt A Source Registers (vectors 208-255) */
+  volatile uint8_t sliar[k_icu_sliar_count]; /**< @0x9D0 SLIARn: source select for INTA208-255 */
+
+  /* Offset 0xA00-0xA01: Selectable Interrupt Write-Protect / Direction */
+  volatile uint8_t sliprcr; /**< @0xA00 SLIPRCR: write-protect for SLIBXR/SLIBR/SLIAR/SELEXDR */
+  volatile uint8_t selexdr; /**< @0xA01 SELEXDR: selectable external interrupt direction */
 } rx_icu_regs_t;
 
 /**
@@ -551,6 +588,18 @@ static_assert(offsetof(rx_icu_regs_t, nmifltc) == 0x594,
 
 /* Verify register sizes */
 static_assert(sizeof(((rx_icu_regs_t*)0)->nmicr) == 1, "NMICR must be 8-bit (1 byte), not 32-bit");
+
+/* Verify selectable interrupt source register offsets (Ch15 Section 15.2.17-15.2.21) */
+static_assert(offsetof(rx_icu_regs_t, slibxr) == 0x780,
+              "SLIBXRn offset must be 0x780 (@ 0x00087780)");
+static_assert(offsetof(rx_icu_regs_t, slibr) == 0x790,
+              "SLIBRn offset must be 0x790 (@ 0x00087790)");
+static_assert(offsetof(rx_icu_regs_t, sliar) == 0x9D0,
+              "SLIARn offset must be 0x9D0 (@ 0x000879D0)");
+static_assert(offsetof(rx_icu_regs_t, sliprcr) == 0xA00,
+              "SLIPRCR offset must be 0xA00 (@ 0x00087A00)");
+static_assert(offsetof(rx_icu_regs_t, selexdr) == 0xA01,
+              "SELEXDR offset must be 0xA01 (@ 0x00087A01)");
 
 /* Verify DMRSR entry structure - CRITICAL FIX for 4-byte aligned 8-bit registers */
 static_assert(sizeof(rx_dmrsr_entry_t) == 4, "DMRSR entry must be 4 bytes (1 reg + 3 pad)");

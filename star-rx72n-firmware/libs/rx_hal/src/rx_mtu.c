@@ -11,7 +11,7 @@
  *
  * The MTU peripheral is organized as:
  * - **MTU0-MTU4**: First group, controlled by MSTPCRA.MSTPA9 and TSTRA
- * - **MTU6-MTU7**: Second group, controlled by MSTPCRA.MSTPA8 and TSTRB
+ * - **MTU6-MTU7**: Second group, controlled by MSTPCRA.MSTPA9 and TSTRB
  * - **Note**: MTU5 exists but is excluded from general PWM use
  *
  * ## PWM Mode 1 (Triangle Wave - Center-Aligned)
@@ -62,7 +62,7 @@
  * | MTU3 | 0x000C1200 | TSTRA (bit 6) |
  * | MTU4 | 0x000C1200 | TSTRA (bit 7) |
  * | MTU6 | 0x000C1A00 | TSTRB (bit 6) |
- * | MTU7 | 0x000C1A00 | TSTRB (bit 7) |
+ * | MTU7 | 0x000C1A01 | TSTRB (bit 7) |
  *
  * ## Static Variables
  *
@@ -126,10 +126,9 @@ typedef enum : uint8_t {
   k_mtu_max_channels = 8, /**< MTU0-MTU4, MTU6-MTU7 (sparse indexing, max index is 7) */
 } mtu_constants_t;
 
-/** @brief MTU module stop bit positions in MSTPCRA */
+/** @brief MTU module stop bit position in MSTPCRA */
 typedef enum : uint8_t {
-  k_mtu_mstpa_mtu0_4 = 9, /**< MTU0-MTU4 module stop bit */
-  k_mtu_mstpa_mtu6_7 = 8, /**< MTU6-MTU7 module stop bit */
+  k_mtu_mstpa_mtu0_4 = 9, /**< MTU module stop bit (all channels) -- MSTPCRA.MSTPA9 */
 } mtu_module_stop_bits_t;
 
 /** @brief Bit manipulation constants */
@@ -226,21 +225,21 @@ static uint16_t s_mtu_period[k_mtu_max_channels] = {};
  * | MTU2 | 0x000C1292 | 16-bit timer with 2 outputs |
  * | MTU3 | (nullptr)  | sparse layout, cannot use standard struct API |
  * | MTU4 | (nullptr)  | sparse layout, cannot use standard struct API |
- * | MTU6 | 0x000C1A00 | 16-bit timer with 4 outputs |
- * | MTU7 | 0x000C1A00 | 16-bit timer with 4 outputs |
+ * | MTU6 | (nullptr)  | interleaved layout, use mtu6() with rx_mtu3_channel_regs_t |
+ * | MTU7 | (nullptr)  | interleaved layout, use mtu7() with direct register offsets |
  *
- * MTU3 and MTU4 have a sparse/interleaved register layout that is incompatible
- * with rx_mtu_channel_regs_t.  Use mtu3() / mtu4() with rx_mtu3_channel_regs_t
- * directly; this function returns nullptr for those channels to prevent callers
- * from applying the wrong struct offset mapping.
+ * MTU3, MTU4, MTU6, and MTU7 all have an interleaved register layout that is
+ * incompatible with rx_mtu_channel_regs_t. Use mtu3()/mtu6() with
+ * rx_mtu3_channel_regs_t directly; this function returns nullptr for all four
+ * channels to prevent callers from applying the wrong struct offset mapping.
  *
  * @param[in] channel MTU channel identifier
- *   - Valid: k_mtu_channel_0 through k_mtu_channel_7 (excluding 3, 4, 5)
+ *   - Valid: k_mtu_channel_0 through k_mtu_channel_7 (excluding 3, 4, 5, 6, 7)
  *   - Invalid values return nullptr
  *
  * @return Pointer to MTU register base
- * @retval Non-NULL Pointer to register structure for valid channels (0,1,2,6,7)
- * @retval NULL Invalid channel, k_mtu_channel_5, k_mtu_channel_3, or k_mtu_channel_4
+ * @retval Non-NULL Pointer to register structure for consecutive-layout channels (0,1,2)
+ * @retval NULL Invalid channel, or interleaved-layout channel (3, 4, 6, 7)
  *
  * @pre Module clock must be enabled before accessing returned pointer
  *
@@ -267,10 +266,9 @@ static volatile void* internal_get_mtu_base(const rx_mtu_channel_t channel)
     case k_mtu_channel_3: /* fall through -- sparse layout, incompatible with standard API */
     case k_mtu_channel_4: /* MTU3/4 use rx_mtu3_channel_regs_t; call mtu3()/mtu4() directly */
       return nullptr;
-    case k_mtu_channel_6:
-      return (volatile void*)mtu6();
-    case k_mtu_channel_7:
-      return (volatile void*)mtu7();
+    case k_mtu_channel_6: /* fall through -- interleaved layout, use mtu6() with rx_mtu3_channel_regs_t */
+    case k_mtu_channel_7: /* interleaved layout, use mtu7() with direct address offsets */
+      return nullptr;
     default:
       return nullptr;
   }
@@ -616,11 +614,7 @@ rx_err_t rx_mtu_init_pwm(const rx_mtu_channel_t channel, const rx_mtu_config_t* 
   /* Enable MTU module (clear module stop bit) */
   *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
 
-  if (channel <= k_mtu_channel_4) {
-    system_regs()->mstpcra &= ~(k_mtu_bit_one << k_mtu_mstpa_mtu0_4);
-  } else {
-    system_regs()->mstpcra &= ~(k_mtu_bit_one << k_mtu_mstpa_mtu6_7);
-  }
+  system_regs()->mstpcra &= ~(k_mtu_bit_one << k_mtu_mstpa_mtu0_4);
 
   *prcr_reg() = k_rx_prcr_lock;
 

@@ -282,23 +282,25 @@ typedef enum : uint16_t {
  * Bit field values for CMT0.CMCR register configuration. CMCR controls
  * clock source, divider, and interrupt enable.
  *
- * **Bit breakdown for 0x0042**:
- * - Bit 7 (CMIE) = 1: Compare match interrupt enabled
+ * **Bit breakdown for 0x00C2**:
+ * - Bit 7: Reserved; write value should be 1 (RX72N Manual Ch31, p.1583)
+ * - Bit 6 (CMIE) = 1: Compare match interrupt enabled
  * - Bits 1-0 (CKS) = 10: Clock source = PCLKB/128
- * - All other bits = 0: Default/reserved
+ * - All other bits = 0: Reserved/default
  *
- * @see RX72N User's Manual Section 23.2.1 - CMCR register description
+ * @see RX72N User's Manual Chapter 31, Section 31.2.3 - CMCR register description
  */
 typedef enum : uint16_t {
   /**
    * @brief CMCR register configuration for 100 Hz tick with interrupts
    * @details
    * Configures CMT0 for PCLKB/128 clock source with compare match interrupts.
-   * @par Value: 0x0042 (binary: 0000_0000_0100_0010)
-   * @par Bit 7 (CMIE): 1 = Interrupt enabled
+   * @par Value: 0x00C2 (binary: 0000_0000_1100_0010)
+   * @par Bit 7: Reserved, write value should be 1 (per RX72N manual p.1583)
+   * @par Bit 6 (CMIE): 1 = Interrupt enabled
    * @par Bits 1-0 (CKS): 10 = PCLKB/128 divider
    */
-  k_cmt0_cmcr_config = 0x0042,
+  k_cmt0_cmcr_config = 0x00C2,
 } cmt0_cmcr_values_t;
 
 /**
@@ -708,7 +710,7 @@ rx_err_t timer_init(void)
   cmt_ctrl()->cmstr0 &= (uint16_t) ~(uint16_t)k_cmt0_cmstr_start_bit;
 
   /* Configure CMT0 */
-  /* CMCR: Clock = PCLK/128, interrupt enabled */
+  /* CMCR = 0x00C2: bit7=1 (reserved, write-1 per manual), bit6=1 (CMIE), bits1-0=10 (PCLKB/128) */
   cmt0()->cmcr = k_cmt0_cmcr_config;
 
   /* Set compare match value for 100 Hz tick

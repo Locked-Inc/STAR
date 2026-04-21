@@ -16,8 +16,8 @@
  * |---------|------------|---------|---------------------|---------------------|
  * | 0 (FL)  | MTU1       | MTU1    | P24/MTCLKA (pin 33) | P25/MTCLKB (pin 32) |
  * | 1 (FR)  | MTU2       | MTU2    | PA1/MTCLKC (pin 96) | PC5/MTCLKD (pin 62) |
- * | 2 (RL)  | TPU1       | TPU1    | PC2/TCLKA (pin 70)  | PA3/TCLKB (pin 94)  |
- * | 3 (RR)  | TPU2       | TPU2    | PC0/TCLKC (pin 75)  | PB3/TCLKD (pin 82)  |
+ * | 2 (BR)  | TPU1       | TPU1    | PC2/TCLKA (pin 70)  | PA3/TCLKB (pin 94)  |
+ * | 3 (BL)  | TPU2       | TPU2    | PC0/TCLKC (pin 75)  | PB3/TCLKD (pin 82)  |
  *
  * ## Architecture
  *
@@ -102,16 +102,16 @@ extern "C" {
  * @par STAR Channel Assignments
  * | Value | Channel | Use               | Clock Pins      |
  * |-------|---------|-------------------|-----------------|
- * | 1     | TPU1    | Rear-left encoder | TCLKA + TCLKB   |
- * | 2     | TPU2    | Rear-right encoder| TCLKC + TCLKD   |
+ * | 1     | TPU1    | Back-right encoder| TCLKA + TCLKB   |
+ * | 2     | TPU2    | Back-left encoder | TCLKC + TCLKD   |
  * | 4     | TPU4    | Available         | TCLKC + TCLKD   |
  * | 5     | TPU5    | Available         | TCLKA + TCLKB   |
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_tpu_channel_1 = 1, /**< TPU1: rear-left encoder (TCLKA/TCLKB) */
-  k_tpu_channel_2 = 2, /**< TPU2: rear-right encoder (TCLKC/TCLKD) */
+  k_tpu_channel_1 = 1, /**< TPU1: back-right encoder (TCLKA/TCLKB) */
+  k_tpu_channel_2 = 2, /**< TPU2: back-left encoder (TCLKC/TCLKD) */
   k_tpu_channel_4 = 4, /**< TPU4: available (TCLKC/TCLKD, paired with TPU2) */
   k_tpu_channel_5 = 5, /**< TPU5: available (TCLKA/TCLKB, paired with TPU1) */
 } rx_tpu_channel_t;

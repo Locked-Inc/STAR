@@ -124,7 +124,7 @@
  *     // Configure motor PWM pins (GPTW channel 0)
  *     const rx_mpc_peripheral_config_t pwm_config = {
  *         .pin  = k_port_e_pin_5,  // PE5 = GPTW0A
- *         .psel = k_psel_gptw      // GPTW function (0x14)
+ *         .psel = k_psel_gptw      // GPTW function (0x1E)
  *     };
  *     err = rx_mpc_set_peripheral(&pwm_config);
  *     if (err != k_rx_ok) {
@@ -272,7 +272,7 @@ extern "C" {
  * // Configure PE5 for GPTW0A (motor PWM output)
  * rx_mpc_peripheral_config_t pwm_config = {
  *     .pin  = k_port_e_pin_5,  // PE5
- *     .psel = k_psel_gptw      // GPTW function select (0x14)
+ *     .psel = k_psel_gptw      // GPTW function select (0x1E)
  * };
  * rx_err_t err = rx_mpc_set_peripheral(&pwm_config);
  * @endcode
@@ -337,7 +337,7 @@ typedef struct {
    * | 0x01 | MTU I/O compare (MTIOC) | P14-P17, P24-P27 |
    * | 0x02 | MTU clock input (MTCLK) | P24, P25, PC0, PC1 |
    * | 0x03 | MTU phase counter | P24, P25 |
-   * | 0x14 | GPTW output (GTIOC) | PE3, PE7, P23, P22, etc. |
+   * | 0x1E | GPTW output (GTIOC) | PE3, PE7, P23, P22, etc. |
    * | 0x0A | SCI (TXD/RXD) | PB6, PB7 |
    * | 0x0D | RSPI (CLK/COPI/CIPO/SSL) | PA0-PA4 |
    * | 0x0F | RIIC (SCL/SDA) | P12, P13 |
@@ -426,7 +426,7 @@ typedef enum : uint8_t {
  * | MTU3a MTIOC | 0x01 | P14-P17, P24-P27 | PWM output |
  * | MTU3a MTCLK | 0x02 | P24, P25, PC0, PC1 | Clock/encoder input |
  * | MTU3a Phase | 0x03 | P24, P25 | Phase counting mode |
- * | GPTW GTIOC | 0x14 | PE3, PE7, P23, P22, etc. | PWM output |
+ * | GPTW GTIOC | 0x1E | PE3, PE7, P23, P22, etc. | PWM output |
  * | SCI TXD/RXD | 0x0A | PB6, PB7 | UART data |
  * | RSPI signals | 0x0D | PA0-PA4 | SPI bus |
  * | RIIC SDA/SCL | 0x0F | P12, P13 | I2C bus |
@@ -801,7 +801,7 @@ typedef enum : uint8_t {
  * // Configure PE5 for GPTW0A (Motor 0 PWM Phase+)
  * rx_mpc_peripheral_config_t pwm_config = {
  *     .pin  = k_port_e_pin_5,  // PE5
- *     .psel = k_psel_gptw      // GPTW function (0x14)
+ *     .psel = k_psel_gptw      // GPTW function (0x1E)
  * };
  *
  * rx_err_t err = rx_mpc_set_peripheral(&pwm_config);
@@ -817,8 +817,8 @@ typedef enum : uint8_t {
  * @code{.c}
  * // Configure multiple pins in a loop
  * const rx_mpc_peripheral_config_t pins[] = {
- *     { k_port_e_pin_5, k_psel_gptw },  // GPTW0A (0x14)
- *     { k_port_e_pin_4, k_psel_gptw },  // GPTW0B (0x14)
+ *     { k_port_e_pin_5, k_psel_gptw },  // GPTW0A (0x1E)
+ *     { k_port_e_pin_4, k_psel_gptw },  // GPTW0B (0x1E)
  *     { k_port_2_pin_4, 0x02 },  // MTCLKA
  *     { k_port_2_pin_5, 0x02 },  // MTCLKB
  * };
@@ -1266,7 +1266,7 @@ typedef enum : uint8_t {
  * @brief Configure pin for GPTW (General PWM Timer) complementary output
  *
  * @details
- * Configures a pin for GPTW operation by setting PSEL = 0x14.
+ * Configures a pin for GPTW operation by setting PSEL = 0x1E.
  * GPTW provides complementary PWM output with dead-time insertion
  * for motor control applications.
  *
@@ -1282,11 +1282,11 @@ typedef enum : uint8_t {
  * | P2.3 | GPTW0   | GTIOC0A | 0    | Motor 0 Direction (IN2) |
  * | P1.7 | GPTW0   | GTIOC0B | 0    | Motor 0 PWM (IN1)      |
  * | P2.2 | GPTW1   | GTIOC1A | 1    | Motor 1 Direction (IN2) |
- * | PC.3 | GPTW1   | GTIOC1B | 1    | Motor 1 PWM (IN1)      |
+ * | PC.3 | GPTW1   | GTETRGC | 1    | Motor 1 PWM (IN1) - GTETRGC at 0x1E on PC3 per Table 23.19 |
  * | PE.3 | GPTW2   | GTIOC2A | 2    | Motor 2 Direction (IN2) |
  * | P8.6 | GPTW2   | GTIOC2B | 2    | Motor 2 PWM (IN1)      |
  * | PE.7 | GPTW3   | GTIOC3A | 3    | Motor 3 Direction (IN2) |
- * | PC.6 | GPTW3   | GTIOC3B | 3    | Motor 3 PWM (IN1)      |
+ * | PC.6 | GPTW3   | GTIOC3A | 3    | Motor 3 PWM (IN1) - GTIOC3A at 0x1E on PC6 per Table 23.19 |
  *
  * @param[in] pin GPIO pin identifier for GPTW function
  *                Must be a pin that supports GPTW output (see manual)
@@ -1301,7 +1301,7 @@ typedef enum : uint8_t {
  * @pre PCLKB clock must be running (MPC registers require clock)
  * @pre Must be called during single-threaded initialization
  *
- * @post PFS register configured with PSEL = 0x14
+ * @post PFS register configured with PSEL = 0x1E
  * @post PMR bit set (peripheral mode, not GPIO)
  * @post PWPR register locked (write protection re-enabled)
  * @post Pin ready for GPTW complementary PWM output

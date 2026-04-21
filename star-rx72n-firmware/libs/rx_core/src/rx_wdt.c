@@ -37,8 +37,8 @@
  *     label="Hardware Registers";
  *     style=filled;
  *     fillcolor=lightgray;
- *     wdtcr [label="WDTCR\n0x00088020\n(Control Register)"];
- *     wdtrr [label="WDTRR\n0x00088022\n(Refresh Register)"];
+ *     wdtcr [label="WDTCR\n0x00088022\n(Control Register)"];
+ *     wdtrr [label="WDTRR\n0x00088020\n(Refresh Register)"];
  *     wdtsr [label="WDTSR\n0x00088024\n(Status Register)"];
  *   }
  *
@@ -85,8 +85,8 @@
  *
  * | Register | Address | Access | Usage |
  * |----------|---------|--------|-------|
- * | WDTCR | 0x00088020 | R/W | Control: CKS bits, RPES bit |
- * | WDTRR | 0x00088022 | W | Refresh: Write 0x00 then 0xFF |
+ * | WDTCR | 0x00088022 | R/W | Control: CKS bits, RPES bit |
+ * | WDTRR | 0x00088020 | W | Refresh: Write 0x00 then 0xFF |
  * | WDTSR | 0x00088024 | R/W1C | Status: Underflow flag |
  *
  * ## Memory Layout (s_wdt_state)

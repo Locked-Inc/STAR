@@ -27,7 +27,7 @@
  * | TSCDR    | 0xFE7F7D7C   | 32   | Calibration Data (read-only, ROM)    |
  *
  * @par Usage Sequence (from Ch58 manual)
- * 1. Clear module stop bit (MSTPCRB.MSTPC22 = 0)
+ * 1. Clear module stop bit (MSTPCRB.MSTPC8 = 0)
  * 2. Configure ADC unit 1 for temperature sensor input
  * 3. Set TSCR.TSEN = 1 (start temperature sensor)
  * 4. Wait 30 us for reference voltage stabilization (tTSTBL)
@@ -253,7 +253,7 @@ typedef enum : uint16_t {
  * @brief Temperature sensor module stop control bits
  *
  * @details
- * The temperature sensor is controlled by MSTPCRB.MSTPC22.
+ * The temperature sensor is controlled by MSTPCRB.MSTPC8.
  * Must be cleared (0) before accessing TEMPS registers.
  *
  * @note Manual ref: Ch11 (Low Power Consumption) module stop tables
@@ -261,12 +261,13 @@ typedef enum : uint16_t {
  */
 typedef enum : uint32_t {
   /**
-   * @brief MSTPCRB bit for temperature sensor (bit 22)
+   * @brief MSTPCRB bit for temperature sensor (bit 8)
    * @details
    * - 0: Temperature sensor module is running
    * - 1: Temperature sensor module is stopped (default)
+   * Manual ref: Ch11 section 11.2.3 MSTPCRB, bit b8 = MSTPB8 (Temperature Sensor)
    */
-  k_temps_mstpcrb_bit = (1U << 22U),
+  k_temps_mstpcrb_bit = (1U << 8U),
 } temps_mstpcr_t;
 
 /* =============================================================================
@@ -283,7 +284,7 @@ typedef enum : uint32_t {
  * @return Volatile pointer to TSCR register (8-bit)
  * @retval Non-NULL Always returns valid pointer (hardware address)
  *
- * @pre Temperature sensor module stop (MSTPCRB.MSTPC22) must be cleared
+ * @pre Temperature sensor module stop (MSTPCRB.MSTPC8) must be cleared
  * @post Pointer is valid for the lifetime of program execution
  *
  * @note Thread Safety: Safe - returns constant hardware address
@@ -366,28 +367,28 @@ static inline volatile const uint32_t* temps_tscdr_reg(void)
  */
 
 /* Verify TSCR address (critical for temperature sensor control) */
-static_assert(k_temps_tscr_addr == 0x0008C500U, "TSCR address must be 0x0008C500 per Ch58 manual");
+static_assert(k_temps_tscr_addr == 0x0008C500U, "TSCR address must be 0x0008C500 per Ch58 manual"); /* NOLINT(readability-magic-numbers) */
 
 /* Verify TSCDR address (factory calibration data) */
-static_assert(k_temps_tscdr_addr == 0xFE7F7D7CU,
+static_assert(k_temps_tscdr_addr == 0xFE7F7D7CU, /* NOLINT(readability-magic-numbers) */
               "TSCDR address must be 0xFE7F7D7C per Ch58 manual");
 
 /* Verify TSEN bit position */
-static_assert(k_tscr_tsen_bit == 0x80U, "TSEN must be bit 7 per Ch58 manual");
+static_assert(k_tscr_tsen_bit == 0x80U, "TSEN must be bit 7 per Ch58 manual"); /* NOLINT(readability-magic-numbers) */
 
 /* Verify TSOE bit position */
-static_assert(k_tscr_tsoe_bit == 0x10U, "TSOE must be bit 4 per Ch58 manual");
+static_assert(k_tscr_tsoe_bit == 0x10U, "TSOE must be bit 4 per Ch58 manual"); /* NOLINT(readability-magic-numbers) */
 
 /* Verify combined sensor+output value */
 static_assert(k_tscr_sensor_with_output == (k_tscr_tsen_bit | k_tscr_tsoe_bit),
               "Sensor with output must be TSEN|TSOE");
 
 /* Verify calibration temperature */
-static_assert(k_temps_cal_temp_celsius == 125U,
+static_assert(k_temps_cal_temp_celsius == 125U, /* NOLINT(readability-magic-numbers) */
               "Calibration temperature must be 125C per Ch58 manual");
 
 /* Verify ADC reference */
-static_assert(k_temps_adc_full_scale == 4096U, "ADC full scale must be 4096 (12-bit)");
+static_assert(k_temps_adc_full_scale == 4096U, "ADC full scale must be 4096 (12-bit)"); /* NOLINT(readability-magic-numbers) */
 
 /** @} */
 

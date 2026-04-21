@@ -127,7 +127,7 @@
  *
  * @see rx_hal_iwdt.h Public API documentation and usage examples
  * @see rx72n_iwdt_regs.h IWDT register definitions
- * @see RX72N Hardware Manual Chapter 25 - Independent Watchdog Timer
+ * @see RX72N Hardware Manual Chapter 35 - Independent Watchdog Timer
  *
  * @author Locked, Inc.
  * @date 2026-01-29
@@ -844,7 +844,7 @@ void rx_hal_iwdt_feed(void)
 {
 #ifdef __RX__
   /*
-   * IWDT Refresh Sequence (Section 25.3.1)
+   * IWDT Refresh Sequence (Section 35.3.3)
    *
    * Write 0x00 followed by 0xFF to IWDTRR.
    * This sequence resets the down-counter to its initial value.

@@ -49,8 +49,8 @@
  *
  * **RX72N Independent Watchdog Timer (IWDT)**:
  * - **Register Base Address**: 0x00088030
- * - **Clock Source**: IWDTCLK (independent oscillator, typically 125 kHz)
- * - **Clock Frequency**: 125 kHz (8 us period)
+ * - **Clock Source**: IWDTCLK (independent oscillator, 120 kHz)
+ * - **Clock Frequency**: 120 kHz (8.33 us period)
  * - **Counter Width**: 14-bit down-counter
  * - **Timeout Range**: ~128ms to ~16.4 seconds
  * - **Reset Output**: Connected to internal reset controller
@@ -159,7 +159,7 @@
  * | Component | Requirement | Notes |
  * |-----------|-------------|-------|
  * | MCU | Renesas RX72N | IWDT peripheral required |
- * | Clock | IWDTCLK | Independent oscillator, typically 125 kHz |
+ * | Clock | IWDTCLK | Independent oscillator, 120 kHz |
  * | Registers | 0x00088030 base | IWDT control registers |
  * | Reset | Internal reset controller | Connected to IWDT output |
  * | Backup registers | Optional | For reset counter persistence |

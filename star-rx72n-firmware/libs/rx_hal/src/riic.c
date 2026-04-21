@@ -1235,7 +1235,7 @@ static rx_err_t internal_riic_write_phase(volatile rx_riic_regs_t* riic,
                                           const uint16_t           write_length)
 {
   /* Set controller transmit mode */
-  riic->iccr2 = k_riic_iccr2_mst | k_riic_iccr2_trx;
+  riic->iccr2 = k_riic_iccr2_mst | k_riic_iccr2_trs;
 
   /* Send start condition */
   rx_err_t err = internal_send_start(riic);
@@ -1643,7 +1643,7 @@ rx_err_t riic_write(const riic_channel_t    channel,
   RX_RETURN_ON_ERROR(err, s_tag, "Bus not ready");
 
   /* Set controller transmit mode */
-  riic->iccr2 = k_riic_iccr2_mst | k_riic_iccr2_trx;
+  riic->iccr2 = k_riic_iccr2_mst | k_riic_iccr2_trs;
 
   /* Send start condition */
   err = internal_send_start(riic);
