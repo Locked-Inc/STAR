@@ -31,8 +31,7 @@ Verify:
    60 MHz as currently documented.
 
 Edit and fix mismatches. After edits:
-  cd star-rx72n-firmware
-  PATH=/opt/gnurx/bin:$PATH bash build.sh
+  bash scripts/hal-audit/devcontainer-exec.sh "cd star-rx72n-firmware && bash build.sh"
 
 If build passes:
   git add -A

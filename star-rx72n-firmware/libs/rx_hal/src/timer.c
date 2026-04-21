@@ -194,12 +194,8 @@
 #include "rx_check.h"
 #include "tx_api.h"
 
-/* Interrupt handler forward declaration (required for -Wmissing-declarations).
- * MUST use the `interrupt(".rvectors", N)` form to place the address in
- * the vector table at offset N; without the section/offset the plain
- * `interrupt` attribute only affects the prologue/epilogue and vector 28
- * defaults to 0xFFFFFFFF, hanging tx_kernel_enter() on the first tick. */
-void __attribute__((interrupt(".rvectors", 28))) cmt0_isr(void);
+/* Interrupt handler forward declaration (required for -Wmissing-declarations) */
+void __attribute__((interrupt)) cmt0_isr(void);
 
 /* =============================================================================
  * Module State
@@ -510,7 +506,7 @@ typedef enum : uint8_t {
  * - **Rule 8** [OK] Uses C23 typed enum (k_icu_ir_clear)
  * - **Rule 9** [OK] Single level of dereferencing
  */
-void __attribute__((interrupt(".rvectors", 28))) cmt0_isr(void)
+void __attribute__((interrupt)) cmt0_isr(void)
 {
   /* Clear ICU interrupt request flag */
   icu()->ir[k_vect_cmt0_cmi0] = k_icu_ir_clear;

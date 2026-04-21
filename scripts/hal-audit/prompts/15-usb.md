@@ -28,8 +28,7 @@ files unless a fix in the .h cascades and a quick .c update is needed; in
 that case keep the .c change minimal and obvious.
 
 After edits:
-  cd star-rx72n-firmware
-  PATH=/opt/gnurx/bin:$PATH bash build.sh
+  bash scripts/hal-audit/devcontainer-exec.sh "cd star-rx72n-firmware && bash build.sh"
 
 If build passes:
   git add -A

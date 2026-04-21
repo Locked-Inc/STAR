@@ -24,8 +24,7 @@ correct mapping is POEGC -> Motor 2 = back-RIGHT, POEGD -> Motor 3 =
 back-LEFT (recently corrected). Fix any stale rear-* labels to back-*.
 
 Edit + fix mismatches. After edits:
-  cd star-rx72n-firmware
-  PATH=/opt/gnurx/bin:$PATH bash build.sh
+  bash scripts/hal-audit/devcontainer-exec.sh "cd star-rx72n-firmware && bash build.sh"
 
 If build passes:
   git add -A

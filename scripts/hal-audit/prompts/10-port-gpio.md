@@ -32,8 +32,7 @@ verify it against the manual; if a value is wrong, FIX in the .h or .c
 that reads it (not the public enum which has many call sites).
 
 After edits:
-  cd star-rx72n-firmware
-  PATH=/opt/gnurx/bin:$PATH bash build.sh
+  bash scripts/hal-audit/devcontainer-exec.sh "cd star-rx72n-firmware && bash build.sh"
 
 If build passes:
   git add -A

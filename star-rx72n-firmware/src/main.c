@@ -267,12 +267,15 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_i2c_addr_bno055 = 0x28U, /**< BNO055 I2C address when COM3/ADR pin = LOW */
-  k_i2c_addr_bmp280 = 0x76U, /**< BMP280 I2C address when SDO pin = LOW */
+  k_i2c_addr_bno055  = 0x28U, /**< BNO055 I2C address when COM3/ADR pin = LOW */
+  k_i2c_addr_bmp280  = 0x76U, /**< BMP280 I2C address when SDO pin = LOW */
+  k_i2c_addr_mpu6050 = 0x68U, /**< GY-521 / MPU-6050 default address (AD0=LOW) — bench-test probe */
 } imu_i2c_addr_t;
 static_assert(sizeof(imu_i2c_addr_t) == sizeof(uint8_t), "imu_i2c_addr_t must be uint8_t sized");
 static_assert(k_i2c_addr_bno055 != k_i2c_addr_bmp280,
               "k_i2c_addr_bno055 and k_i2c_addr_bmp280 must be distinct");
+static_assert(k_i2c_addr_mpu6050 != k_i2c_addr_bno055 && k_i2c_addr_mpu6050 != k_i2c_addr_bmp280,
+              "k_i2c_addr_mpu6050 must be distinct from other RIIC1 addresses");
 
 /* =============================================================================
  * Static Bus Configurations
@@ -465,6 +468,63 @@ static rx_bus_config_t s_i2c1_imu_config;
  * @since Version 1.0.0
  */
 static rx_bus_config_t s_i2c1_baro_config;
+
+/** @brief Bench-test I2C bus config for a GY-521 / MPU-6050 at 0x68 on RIIC1. */
+static rx_bus_config_t s_i2c1_mpu_config;
+
+/* =============================================================================
+ * Bench probe: write {magic, who_am_i, err} to data flash @ 0x00100000 so that
+ * rfp-cli -rv 0x00100000 16 can read the result without a UART. No dependency
+ * on rx_hal flash driver -- hand-rolled FCU sequence per RX72N HW manual Ch 62.
+ * ========================================================================= */
+static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
+{
+  volatile uint32_t* const FSTATR  = (volatile uint32_t*)0x007FE080U;
+  volatile uint16_t* const FENTRYR = (volatile uint16_t*)0x007FE084U;
+  volatile uint32_t* const FSADDR  = (volatile uint32_t*)0x007FE030U;
+  volatile uint16_t* const FPCKAR  = (volatile uint16_t*)0x007FE0E4U;
+  volatile uint8_t*  const FWEPROR = (volatile uint8_t* )0x0008C296U;
+  volatile uint8_t*  const FACI_B  = (volatile uint8_t* )0x007E0000U;
+  volatile uint16_t* const FACI_W  = (volatile uint16_t*)0x007E0000U;
+  const uint32_t           DF_ADDR = 0x00100000U;
+
+  /* Enable P/E operations. */
+  *FWEPROR = 0x01U;
+
+  /* Notify FCU of FCLK = 60 MHz (key 0x1E00 | freq_in_MHz). Must be done
+   * BEFORE entering P/E mode or FCU silently rejects every command. */
+  *FPCKAR = (uint16_t)(0x1E00U | 60U);
+
+  /* Enter data flash P/E mode. */
+  *FENTRYR = 0xAA80U;
+  /* Spin until data-flash P/E mode is active (FENTRYR low byte = 0x80). */
+  for (uint32_t i = 0; i < 100000U && (*FENTRYR & 0x00FFU) != 0x80U; i++) { }
+  /* Wait for FRDY. */
+  for (uint32_t i = 0; i < 100000U && ((*FSTATR) & (1UL << 15)) == 0U; i++) { }
+
+  /* Erase the 64-byte block containing DF_ADDR. */
+  *FSADDR    = DF_ADDR;
+  *FACI_B    = 0x20U; /* block erase */
+  *FACI_B    = 0xD0U; /* terminator */
+  for (uint32_t i = 0; i < 1000000U && ((*FSTATR) & (1UL << 15)) == 0U; i++) { }
+
+  /* Program 4 bytes: [0xA5, 0x5A, who_am_i, err_byte_low]. */
+  const uint8_t err_byte = (err == 0) ? 0x00U : (uint8_t)(err & 0xFFU);
+  const uint16_t word0 = (uint16_t)((0x5AU << 8) | 0xA5U);                 /* LE: bytes 0=A5, 1=5A */
+  const uint16_t word1 = (uint16_t)(((uint16_t)err_byte << 8) | who_am_i); /* LE: 2=who, 3=err    */
+
+  *FSADDR = DF_ADDR;
+  *FACI_B = 0xE8U;        /* program */
+  *FACI_B = 0x02U;        /* N = 2 x 16-bit words (= 4 bytes) */
+  *FACI_W = word0;
+  *FACI_W = word1;
+  *FACI_B = 0xD0U;        /* terminator */
+  for (uint32_t i = 0; i < 1000000U && ((*FSTATR) & (1UL << 15)) == 0U; i++) { }
+
+  /* Exit P/E mode. */
+  *FENTRYR = 0xAA00U;
+  for (uint32_t i = 0; i < 100000U && (*FENTRYR & 0x00FFU) != 0x00U; i++) { }
+}
 
 /* =============================================================================
  * Startup Flag Check Helpers
@@ -1792,6 +1852,45 @@ static void internal_register_system_buses(void)
   RX_ASSERT(err == k_rx_ok, "i2c1_baro (BMP280) registration must succeed");
   err = rx_bus_i2c_init(&g_bus_manager, "i2c1_baro");
   RX_ASSERT(err == k_rx_ok, "i2c1_baro (BMP280) I2C init must succeed");
+
+  /* =========================================================================
+   * BENCH PROBE: GY-521 / MPU-6050 WHO_AM_I at 0x68 on RIIC1
+   * Purpose: confirm a fresh GY-521 wired to SDA1/SCL1 ACKs and returns 0x68
+   *          (or 0x70 on MPU-6500 clones) from register 0x75.
+   * No RX_ASSERT here -- if the module is absent, log and keep booting.
+   * ========================================================================= */
+  err = rx_bus_config_init_i2c(&s_i2c1_mpu_config,
+                               "i2c1_mpu",              /* bench-test bus name */
+                               k_riic_channel_1,        /* channel: RIIC1 */
+                               k_i2c_addr_mpu6050,      /* device_addr: 0x68 */
+                               k_rx_p2_0,               /* sda_pin: P2.0 = SDA1 */
+                               k_rx_p2_1,               /* scl_pin: P2.1 = SCL1 */
+                               k_i2c_frequency_400khz); /* frequency_hz: 400 kHz */
+  if (err == k_rx_ok) {
+    err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c1_mpu_config);
+  }
+  if (err == k_rx_ok) {
+    err = rx_bus_i2c_init(&g_bus_manager, "i2c1_mpu");
+  }
+  uint8_t  who_am_i   = 0x00U;
+  int32_t  probe_err  = err; /* preserve setup err if any */
+  if (err == k_rx_ok) {
+    const uint8_t who_am_i_reg = 0x75U; /* MPU-6050 WHO_AM_I register */
+    err = rx_bus_i2c_write_read(&g_bus_manager, "i2c1_mpu", &who_am_i_reg, 1U,
+                                &who_am_i, 1U);
+    probe_err = err;
+    if (err == k_rx_ok) {
+      rx_log_info_val("MPU6050", "WHO_AM_I=0x", who_am_i);
+    } else {
+      rx_log_error_val("MPU6050", "WHO_AM_I read failed err=", (uint32_t)err);
+    }
+  } else {
+    rx_log_error_val("MPU6050", "bus setup failed err=", (uint32_t)err);
+  }
+
+  /* Persist the result to data flash @ 0x00100000 so it's readable via
+   * rfp-cli -rv 0x00100000 16 without needing the UART bridge. */
+  internal_bench_dflash_write(who_am_i, probe_err);
 }
 
 /**
