@@ -238,10 +238,10 @@ extern "C" {
  *
  * | Channel | Output A | Output B | MPC Setting |
  * |---------|----------|----------|-------------|
- * | k_gptw_channel_0 | PE5/GTIOC0A | PE2/GTIOC0B | PSEL = 0x14 |
- * | k_gptw_channel_1 | PE4/GTIOC1A | PE1/GTIOC1B | PSEL = 0x14 |
- * | k_gptw_channel_2 | PE3/GTIOC2A | PE0/GTIOC2B | PSEL = 0x14 |
- * | k_gptw_channel_3 | PE7/GTIOC3A | PE6/GTIOC3B | PSEL = 0x14 |
+ * | k_gptw_channel_0 | PE5/GTIOC0A | PE2/GTIOC0B | PSEL = 0x1E |
+ * | k_gptw_channel_1 | PE4/GTIOC1A | PE1/GTIOC1B | PSEL = 0x1E |
+ * | k_gptw_channel_2 | PE3/GTIOC2A | PE0/GTIOC2B | PSEL = 0x1E |
+ * | k_gptw_channel_3 | PE7/GTIOC3A | PE6/GTIOC3B | PSEL = 0x1E |
  *
  * @par Usage Example:
  * @code{.c}
@@ -452,11 +452,11 @@ typedef enum : uint8_t {
   k_gptw_wave_saw_pwm =
     0, /**< Sawtooth-wave PWM (edge-aligned). Counter: 0->Period->reset. Single update point at trough. Best for simple PWM applications. GTCR.MD = 0b000 */
   k_gptw_wave_tri_pwm1 =
-    1, /**< Triangle-wave PWM mode 1 (center-aligned). Counter: 0->Period->0. Update at trough only. Best for motor control with standard update rate. GTCR.MD = 0b001 */
+    1, /**< Triangle-wave PWM mode 1 (center-aligned). Counter: 0->Period->0. Update at trough only. Best for motor control with standard update rate. GTCR.MD = 0b100 */
   k_gptw_wave_tri_pwm2 =
-    2, /**< Triangle-wave PWM mode 2 (center-aligned). Counter: 0->Period->0. Update at both crest and trough. Best for motor control requiring fast duty updates. GTCR.MD = 0b010 */
+    2, /**< Triangle-wave PWM mode 2 (center-aligned). Counter: 0->Period->0. Update at both crest and trough. Best for motor control requiring fast duty updates. GTCR.MD = 0b101 */
   k_gptw_wave_tri_pwm3 =
-    3, /**< Triangle-wave PWM mode 3 (center-aligned). Counter: 0->Period->0. 64-bit buffer transfer at trough. Best for high-precision motor control. GTCR.MD = 0b011 */
+    3, /**< Triangle-wave PWM mode 3 (center-aligned). Counter: 0->Period->0. 64-bit buffer transfer at trough. Best for high-precision motor control. GTCR.MD = 0b110 */
 } rx_gptw_wave_mode_t;
 
 /**

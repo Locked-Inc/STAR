@@ -538,7 +538,7 @@ typedef struct {
  * 6. Mark driver as initialized
  *
  * **Hardware Configuration**:
- * - Writes to WDTCR (Watchdog Timer Control Register) at 0x00088020
+ * - Writes to WDTCR (Watchdog Timer Control Register) at 0x00088022
  * - Sets CKS bits: timeout_cycles value (0-3)
  * - Sets RPES bit: reset_on_timeout (1=reset, 0=interrupt)
  * - If enable_on_init=true, sets WDT counter start bit
@@ -729,7 +729,7 @@ typedef struct {
  * 4. Return success
  *
  * **Hardware Operation**:
- * - Writes to WDTCR register (0x00088020)
+ * - Writes to WDTCR register (0x00088022)
  * - Sets TME (Timer Enable) bit to 1
  * - Counter begins decrementing from timeout period value
  *
@@ -831,7 +831,7 @@ typedef struct {
  * 4. Return success
  *
  * **Hardware Operation**:
- * - Writes to WDTCR register (0x00088020)
+ * - Writes to WDTCR register (0x00088022)
  * - Clears TME (Timer Enable) bit to 0
  * - Counter stops, timeout cannot occur
  *

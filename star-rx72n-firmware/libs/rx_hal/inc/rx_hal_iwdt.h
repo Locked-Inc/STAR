@@ -138,7 +138,7 @@
  *
  * @see rx_core/inc/rx_iwdt.h Higher-level watchdog with state management
  * @see rx72n_iwdt_regs.h Register definitions
- * @see RX72N Hardware Manual Section 25 - Independent Watchdog Timer
+ * @see RX72N Hardware Manual Chapter 35 - Independent Watchdog Timer
  *
  * @author Locked, Inc.
  * @date 2026-01-27

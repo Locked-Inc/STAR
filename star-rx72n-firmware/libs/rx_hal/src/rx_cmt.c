@@ -202,9 +202,16 @@ typedef enum : uint16_t {
   k_cmt_divider_val_512 = 512, /**< Divide by 512 */
 } cmt_divider_values_t;
 
-/** @brief CMT module stop bit positions in MSTPCRB */
+/**
+ * @brief CMT module stop bit positions in MSTPCRA (RX72N Manual Section 11.2.2, p.406)
+ * @details
+ * CMT is controlled by MSTPCRA, NOT MSTPCRB.
+ * - MSTPA15: CMT unit 0 (CMT0, CMT1) module stop
+ * - MSTPA14: CMT unit 1 (CMT2, CMT3) module stop
+ */
 typedef enum : uint8_t {
-  k_cmt_mstpb_cmt = 15, /**< CMT0-CMT3 module stop bit */
+  k_cmt_mstpa_unit0 = 15, /**< MSTPCRA bit 15: CMT unit 0 (CMT0, CMT1) module stop */
+  k_cmt_mstpa_unit1 = 14, /**< MSTPCRA bit 14: CMT unit 1 (CMT2, CMT3) module stop */
 } cmt_module_stop_bits_t;
 
 /**
@@ -242,10 +249,11 @@ typedef struct {
   uint8_t priority; /**< ICU interrupt priority level (k_ipr_level_min ... k_ipr_level_max) */
 } rx_cmt_interrupt_config_t;
 
-/** @brief CMCR register bit positions */
+/** @brief CMCR register bit positions (RX72N Manual Ch31, p.1583) */
 typedef enum : uint8_t {
-  k_cmt_cmcr_cks_shift = 0, /**< CKS (clock select) bit shift */
-  k_cmt_cmcr_cmie_pos  = 6, /**< CMIE (interrupt enable) bit position */
+  k_cmt_cmcr_cks_shift  = 0, /**< CKS (clock select) bit shift */
+  k_cmt_cmcr_cmie_pos   = 6, /**< CMIE (interrupt enable) bit position */
+  k_cmt_cmcr_rsvd7_pos  = 7, /**< Reserved bit 7: write value should be 1 */
 } cmt_cmcr_bits_t;
 
 /** @brief Period calculation constants */
@@ -514,8 +522,9 @@ internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uin
  * clock is supplied and its registers become accessible. The sequence is:
  *
  * 1. Unlock the write-protect register (PRCR) for PRC1 and PRC3 bits
- * 2. Clear bit k_cmt_mstpb_cmt (bit 15) in the MSTPCRB register
- * 3. Re-lock the PRCR to prevent accidental modification
+ * 2. Clear bit k_cmt_mstpa_unit0 (bit 15) in MSTPCRA to enable CMT unit 0 (CMT0/CMT1)
+ * 3. Clear bit k_cmt_mstpa_unit1 (bit 14) in MSTPCRA to enable CMT unit 1 (CMT2/CMT3)
+ * 4. Re-lock the PRCR to prevent accidental modification
  *
  * This function must be called before any CMT register access; reading or
  * writing CMT registers while the module clock is stopped produces undefined
@@ -531,7 +540,7 @@ internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uin
  * @pre The system clock (PCLKB) must be running before calling this function
  * @pre No other task or ISR must be concurrently modifying MSTPCRB
  *
- * @post MSTPCRB bit 15 is cleared; CMT module clock is active
+ * @post MSTPCRA bits 15 and 14 are cleared; CMT module clocks for all 4 channels are active
  * @post PRCR is locked upon return (prevents accidental MSTPCRB changes)
  *
  * @note Not thread-safe; PRCR unlock/lock is a non-atomic read-modify-write
@@ -559,7 +568,9 @@ internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uin
 static void internal_enable_cmt_module_clock(void)
 {
   *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
-  system_regs()->mstpcrb &= ~((uint32_t)k_cmt_bit_mask_lsb << k_cmt_mstpb_cmt);
+  /* CMT is in MSTPCRA (not MSTPCRB): bit 15 = unit 0 (CMT0/1), bit 14 = unit 1 (CMT2/3) */
+  system_regs()->mstpcra &= ~((uint32_t)k_cmt_bit_mask_lsb << k_cmt_mstpa_unit0);
+  system_regs()->mstpcra &= ~((uint32_t)k_cmt_bit_mask_lsb << k_cmt_mstpa_unit1);
   *prcr_reg() = k_rx_prcr_lock;
 }
 
@@ -595,7 +606,7 @@ static void internal_enable_cmt_module_clock(void)
  * @pre cmt must not be nullptr (enforced by RX_ASSERT)
  * @pre The CMT timer must be stopped before calling this function
  *
- * @post cmt->cmcr  = (divider << CKS_SHIFT) | CMIE_BIT
+ * @post cmt->cmcr  = (divider << CKS_SHIFT) | CMIE_BIT | RSVD7_BIT (bit7 must be written 1)
  * @post cmt->cmcor = cmcor - k_cmt_period_adj
  * @post cmt->cmcnt = 0
  *
@@ -631,12 +642,14 @@ static void internal_configure_cmt_timer_registers(volatile rx_cmt_channel_regs_
   RX_ASSERT(cmt != nullptr, "CMT registers are NULL");
 
   /* Configure timer control register
-   * - Set clock divider
-   * - Enable compare match interrupt
+   * - Set clock divider (bits 1-0)
+   * - Enable compare match interrupt (bit 6)
+   * - Set reserved bit 7 to 1 (write value should be 1 per RX72N manual p.1583)
    */
   cmt->cmcr =
-    (divider << k_cmt_cmcr_cks_shift) |          /* CKS: Clock Select */
-    (k_cmt_bit_mask_lsb << k_cmt_cmcr_cmie_pos); /* CMIE: Compare Match Interrupt Enable */
+    (divider << k_cmt_cmcr_cks_shift) |           /* CKS: Clock Select */
+    (k_cmt_bit_mask_lsb << k_cmt_cmcr_cmie_pos) | /* CMIE: Compare Match Interrupt Enable */
+    (k_cmt_bit_mask_lsb << k_cmt_cmcr_rsvd7_pos); /* Reserved bit 7: write value should be 1 */
 
   /* Set compare match value (period - 1) */
   cmt->cmcor = cmcor - k_cmt_period_adj;
@@ -1235,8 +1248,8 @@ rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
     }
     case k_cmt_channel_2: {
       const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
-      cmt_ctrl()->cmstr1 |= bit_mask;
-      const uint16_t cmstr_value = cmt_ctrl()->cmstr1;
+      cmt_ctrl1()->cmstr0 |= bit_mask;
+      const uint16_t cmstr_value = cmt_ctrl1()->cmstr0;
       if ((cmstr_value & bit_mask) == k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
@@ -1244,8 +1257,8 @@ rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
     }
     case k_cmt_channel_3: {
       const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
-      cmt_ctrl()->cmstr1 |= bit_mask;
-      const uint16_t cmstr_value = cmt_ctrl()->cmstr1;
+      cmt_ctrl1()->cmstr0 |= bit_mask;
+      const uint16_t cmstr_value = cmt_ctrl1()->cmstr0;
       if ((cmstr_value & bit_mask) == k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
@@ -1332,8 +1345,8 @@ rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
     }
     case k_cmt_channel_2: {
       const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
-      cmt_ctrl()->cmstr1 &= (uint16_t)~bit_mask;
-      const uint16_t cmstr_value = cmt_ctrl()->cmstr1;
+      cmt_ctrl1()->cmstr0 &= (uint16_t)~bit_mask;
+      const uint16_t cmstr_value = cmt_ctrl1()->cmstr0;
       if ((cmstr_value & bit_mask) != k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
@@ -1341,8 +1354,8 @@ rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
     }
     case k_cmt_channel_3: {
       const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
-      cmt_ctrl()->cmstr1 &= (uint16_t)~bit_mask;
-      const uint16_t cmstr_value = cmt_ctrl()->cmstr1;
+      cmt_ctrl1()->cmstr0 &= (uint16_t)~bit_mask;
+      const uint16_t cmstr_value = cmt_ctrl1()->cmstr0;
       if ((cmstr_value & bit_mask) != k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }

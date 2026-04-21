@@ -277,7 +277,7 @@ typedef enum : uint16_t {
 
 /** @brief System clock configuration */
 typedef enum : uint32_t {
-  k_system_clock_dividers   = 0x21C21211, /**< SCKCR: ICLK=240MHz, PCLKA=120MHz, others=60MHz */
+  k_system_clock_dividers   = 0x20011222, /**< SCKCR: ICK=0(/1)->ICLK=240MHz, BCK=1(/2)->BCLK=120MHz, PCKA=1(/2)->120MHz, PCKB/C/D=2(/4)->60MHz, FCK=2(/4)->60MHz (manual p339) */
   k_system_clock_source_pll = 0x0400,     /**< SCKCR3: Select PLL as system clock source */
   k_packcr_addr             = 0x00080044, /**< PACKCR absolute address (USB clock source select) */
 } system_clock_config_t;
@@ -289,21 +289,17 @@ typedef enum : uint16_t {
 
 /** @brief Module stop bit positions in MSTPCRA */
 typedef enum : uint8_t {
-  k_mstpcra_cmt = 15, /**< CMT0, CMT1 module stop bit */
-  k_mstpcra_mtu = 9,  /**< MTU module stop bit */
+  k_mstpcra_cmt   = 15, /**< CMT0, CMT1 module stop bit (manual p406: MSTPA15) */
+  k_mstpcra_mtu   = 9,  /**< MTU module stop bit (manual p406: MSTPA9) */
+  k_mstpcra_s12ad = 17, /**< S12AD unit 0 module stop bit (manual p407: MSTPA17; NOT in MSTPCRC) */
 } mstpcra_bits_t;
 
 /** @brief Module stop bit positions in MSTPCRB */
 typedef enum : uint8_t {
-  k_mstpcrb_rspi0 = 17, /**< RSPI0 module stop bit */
-  k_mstpcrb_rspi1 = 16, /**< RSPI1 module stop bit */
+  k_mstpcrb_rspi0 = 17, /**< RSPI0 module stop bit (manual p409: MSTPB17) */
+  k_mstpcrb_rspi1 = 16, /**< RSPI1 module stop bit (manual p408: MSTPB16) */
   /* Note: SCI modules are enabled per-channel in uart_init_channel() */
 } mstpcrb_bits_t;
-
-/** @brief Module stop bit positions in MSTPCRC */
-typedef enum : uint8_t {
-  k_mstpcrc_s12ad = 17, /**< S12AD module stop bit */
-} mstpcrc_bits_t;
 
 /** @brief Module initialization retry configuration */
 typedef enum : uint8_t {
@@ -662,9 +658,10 @@ static bool internal_module_stop_attempt(uint32_t mstpcra_clear_mask,
 
 static rx_err_t internal_module_stop_init(void)
 {
-  const uint32_t mstpcra_clear_mask = (1UL << k_mstpcra_cmt) | (1UL << k_mstpcra_mtu);
+  const uint32_t mstpcra_clear_mask =
+    (1UL << k_mstpcra_cmt) | (1UL << k_mstpcra_mtu) | (1UL << k_mstpcra_s12ad);
   const uint32_t mstpcrb_clear_mask = (1UL << k_mstpcrb_rspi0) | (1UL << k_mstpcrb_rspi1);
-  const uint32_t mstpcrc_clear_mask = (1UL << k_mstpcrc_s12ad);
+  const uint32_t mstpcrc_clear_mask = 0UL; /* nothing to enable in MSTPCRC */
 
   for (uint8_t attempt = 0; attempt < k_retry_count_module_stop; attempt++) {
     const bool ok =

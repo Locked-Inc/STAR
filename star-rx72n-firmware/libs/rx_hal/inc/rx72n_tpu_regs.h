@@ -18,8 +18,8 @@
  *     style=filled;
  *     color=lightblue;
  *
- *     enc2 [label="Encoder 2\n(Rear Left)\n341 PPR"];
- *     enc3 [label="Encoder 3\n(Rear Right)\n341 PPR"];
+ *     enc2 [label="Encoder 2\n(Back Right)\n341 PPR"];
+ *     enc3 [label="Encoder 3\n(Back Left)\n341 PPR"];
  *   }
  *
  *   subgraph cluster_pins {
@@ -67,8 +67,8 @@
  * | Channel | Type     | Use in STAR         | Phase Count | Clock Pins        |
  * |---------|----------|---------------------|-------------|-------------------|
  * | TPU0    | Extended | Not used            | No          | -                 |
- * | TPU1    | Basic    | Rear-left encoder   | Yes (mode 4)| TCLKA + TCLKB    |
- * | TPU2    | Basic    | Rear-right encoder  | Yes (mode 4)| TCLKC + TCLKD    |
+ * | TPU1    | Basic    | Back-right encoder  | Yes (mode 4)| TCLKA + TCLKB    |
+ * | TPU2    | Basic    | Back-left encoder   | Yes (mode 4)| TCLKC + TCLKD    |
  * | TPU3    | Extended | Not used            | No          | -                 |
  * | TPU4    | Basic    | Not used (paired 2) | Yes         | TCLKC + TCLKD    |
  * | TPU5    | Basic    | Not used (paired 1) | Yes         | TCLKA + TCLKB    |
@@ -206,13 +206,13 @@ typedef enum : uintptr_t {
 
   /**
    * @brief TPU1 channel base address (0x00088120) - Basic channel
-   * @details Rear-left encoder, phase counting capable (TCLKA/TCLKB)
+   * @details Back-right encoder, phase counting capable (TCLKA/TCLKB)
    */
   k_tpu1_base_addr = 0x00088120,
 
   /**
    * @brief TPU2 channel base address (0x00088130) - Basic channel
-   * @details Rear-right encoder, phase counting capable (TCLKC/TCLKD)
+   * @details Back-left encoder, phase counting capable (TCLKC/TCLKD)
    */
   k_tpu2_base_addr = 0x00088130,
 
@@ -451,8 +451,8 @@ typedef struct {
  * bool counting_up = (ch->tsr & k_tpu_tsr_tcfd) != 0;
  * @endcode
  *
- * @see tpu1() Accessor for rear-left encoder
- * @see tpu2() Accessor for rear-right encoder
+ * @see tpu1() Accessor for back-right encoder
+ * @see tpu2() Accessor for back-left encoder
  * @since Version 1.0.0
  */
 typedef struct {
@@ -533,7 +533,7 @@ static inline volatile rx_tpu_ext_regs_t* tpu0(void)
  * @details
  * Returns a volatile pointer to TPU1 basic channel registers at address
  * 0x00088120. TPU1 supports phase counting mode using TCLKA (A-phase)
- * and TCLKB (B-phase) external clock pins. Used for rear-left encoder.
+ * and TCLKB (B-phase) external clock pins. Used for back-right encoder.
  *
  * @return Volatile pointer to TPU1 register structure
  * @retval Non-NULL Always returns valid pointer (hardware address)
@@ -545,7 +545,7 @@ static inline volatile rx_tpu_ext_regs_t* tpu0(void)
  *
  * @par Example:
  * @code{.c}
- * // Read rear-left encoder count and direction
+ * // Read back-right encoder count and direction
  * uint16_t count = tpu1()->tcnt;
  * bool forward = (tpu1()->tsr & k_tpu_tsr_tcfd) != 0;
  * @endcode
@@ -564,7 +564,7 @@ static inline volatile rx_tpu_regs_t* tpu1(void)
  * @details
  * Returns a volatile pointer to TPU2 basic channel registers at address
  * 0x00088130. TPU2 supports phase counting mode using TCLKC (A-phase)
- * and TCLKD (B-phase) external clock pins. Used for rear-right encoder.
+ * and TCLKD (B-phase) external clock pins. Used for back-left encoder.
  *
  * @return Volatile pointer to TPU2 register structure
  * @retval Non-NULL Always returns valid pointer (hardware address)
@@ -674,8 +674,8 @@ static inline volatile rx_tpu_regs_t* tpu5(void)
  */
 typedef enum : uint8_t {
   k_tpu_tstr_cst0 = (1U << 0), /**< TPU0 counter start (1=run, 0=stop) */
-  k_tpu_tstr_cst1 = (1U << 1), /**< TPU1 counter start (rear-left encoder) */
-  k_tpu_tstr_cst2 = (1U << 2), /**< TPU2 counter start (rear-right encoder) */
+  k_tpu_tstr_cst1 = (1U << 1), /**< TPU1 counter start (back-right encoder) */
+  k_tpu_tstr_cst2 = (1U << 2), /**< TPU2 counter start (back-left encoder) */
   k_tpu_tstr_cst3 = (1U << 3), /**< TPU3 counter start */
   k_tpu_tstr_cst4 = (1U << 4), /**< TPU4 counter start */
   k_tpu_tstr_cst5 = (1U << 5), /**< TPU5 counter start */
@@ -1026,13 +1026,13 @@ typedef enum : uint8_t {
   k_tpu_intb_tgi0d = 18, /**< TPU0 TGRD compare match/input capture */
   k_tpu_intb_tci0v = 19, /**< TPU0 overflow */
 
-  /* TPU1 interrupt sources (rear-left encoder) */
+  /* TPU1 interrupt sources (back-right encoder) */
   k_tpu_intb_tgi1a = 20, /**< TPU1 TGRA compare match/input capture */
   k_tpu_intb_tgi1b = 21, /**< TPU1 TGRB compare match/input capture */
   k_tpu_intb_tci1v = 22, /**< TPU1 overflow (phase counting up wrap) */
   k_tpu_intb_tci1u = 23, /**< TPU1 underflow (phase counting down wrap) */
 
-  /* TPU2 interrupt sources (rear-right encoder) */
+  /* TPU2 interrupt sources (back-left encoder) */
   k_tpu_intb_tgi2a = 24, /**< TPU2 TGRA compare match/input capture */
   k_tpu_intb_tgi2b = 25, /**< TPU2 TGRB compare match/input capture */
   k_tpu_intb_tci2v = 26, /**< TPU2 overflow (phase counting up wrap) */

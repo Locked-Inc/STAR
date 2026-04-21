@@ -4,7 +4,7 @@
  *
  * @details
  * Implements the hardware-independent watchdog timer driver with enhanced
- * task monitoring capabilities. The IWDT uses a dedicated 125 kHz clock
+ * task monitoring capabilities. The IWDT uses a dedicated 120 kHz clock
  * source, providing reliable watchdog functionality even during main clock
  * failures - a critical safety feature for robotics applications.
  *
@@ -82,7 +82,7 @@
  *
  * | Feature | IWDT (This Module) | WDT (rx_wdt.c) |
  * |---------|-------------------|----------------|
- * | Clock Source | IWDTCLK (125 kHz independent) | PCLKB (system clock) |
+ * | Clock Source | IWDTCLK (120 kHz independent) | PCLKB (system clock) |
  * | Can be Stopped | [X] No (hardware safety) | [OK] Yes |
  * | Clock Fault Detection | [OK] Yes (independent clock) | [X] No |
  * | Timeout Range | ~8 ms to ~17 seconds | ~4 us to ~273 us |

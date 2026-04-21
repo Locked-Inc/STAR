@@ -335,9 +335,9 @@ static inline bool internal_is_triangle_mode(const rx_gptw_wave_mode_t mode)
  * | Input Mode | GTCR.MD Value | Binary | Description |
  * |------------|---------------|--------|-------------|
  * | k_gptw_wave_saw_pwm | k_gptw_gtcr_md_saw_pwm | 0b000 | Sawtooth PWM |
- * | k_gptw_wave_tri_pwm1 | k_gptw_gtcr_md_tri_pwm1 | 0b001 | Triangle PWM 1 |
- * | k_gptw_wave_tri_pwm2 | k_gptw_gtcr_md_tri_pwm2 | 0b010 | Triangle PWM 2 |
- * | k_gptw_wave_tri_pwm3 | k_gptw_gtcr_md_tri_pwm3 | 0b011 | Triangle PWM 3 |
+ * | k_gptw_wave_tri_pwm1 | k_gptw_gtcr_md_tri_pwm1 | 0b100 | Triangle PWM 1 |
+ * | k_gptw_wave_tri_pwm2 | k_gptw_gtcr_md_tri_pwm2 | 0b101 | Triangle PWM 2 |
+ * | k_gptw_wave_tri_pwm3 | k_gptw_gtcr_md_tri_pwm3 | 0b110 | Triangle PWM 3 |
  *
  * @param[in] mode Waveform mode to convert
  *   - Valid range: Any rx_gptw_wave_mode_t enum value
@@ -543,17 +543,17 @@ static rx_err_t internal_calculate_period(const uint32_t            frequency_hz
  *
  * 1. Clear PWPR.B0WI to enable PFSWE bit access
  * 2. Set PWPR.PFSWE to enable PFS register writes
- * 3. Write PSEL value (0x14) to select GPTW function for each pin
+ * 3. Write PSEL value (0x1E) to select GPTW function for each pin
  * 4. Set PWPR.B0WI to lock PFS registers
  *
  * ## Pin Assignments
  *
  * | Channel | Output A (GTIOCnA) | Output B (GTIOCnB) | PSEL |
  * |---------|--------------------|--------------------|------|
- * | GPTW0 | PE5 | PE2 | 0x14 |
- * | GPTW1 | PE4 | PE1 | 0x14 |
- * | GPTW2 | PE3 | PE0 | 0x14 |
- * | GPTW3 | PE7 | PE6 | 0x14 |
+ * | GPTW0 | PE5 | PE2 | 0x1E |
+ * | GPTW1 | PE4 | PE1 | 0x1E |
+ * | GPTW2 | PE3 | PE0 | 0x1E |
+ * | GPTW3 | PE7 | PE6 | 0x1E |
  *
  * @param[in] channel GPTW channel to configure MPC for
  *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3

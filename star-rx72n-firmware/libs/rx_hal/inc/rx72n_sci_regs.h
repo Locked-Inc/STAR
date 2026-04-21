@@ -69,19 +69,18 @@
  * | SCI12   | 0x0008B300   | Standard | Available  |
  *
  * @par Baud Rate Calculation
- * For asynchronous mode with N=0 (basic divider):
+ * For asynchronous mode with n=0 (CKS=00, PCLK/1):
  * @f[
- * \text{BRR} = \frac{f_{PCLKA}}{64 \times 2^{2n-1} \times B} - 1
+ * \text{BRR} = \frac{f_{PCLK}}{32 \times B} - 1
  * @f]
  *
- * Where:
- * - f_PCLKA = Peripheral clock A (120 MHz for STAR)
- * - n = SMR.CKS clock select (0, 1, 2, 3)
- * - B = Desired baud rate
+ * Where f_PCLK depends on the channel module (manual section 5):
+ * - SCIj (SCI0-SCI6) and SCIh (SCI12): f_PCLK = f_PCLKB
+ * - SCIi (SCI7-SCI11, extended region): f_PCLK = f_PCLKA
  *
- * Example: 115200 baud at 120 MHz PCLKA, n=0:
+ * Example: 115200 baud with f_PCLKB = 60 MHz, n=0:
  * @f[
- * \text{BRR} = \frac{120\text{ MHz}}{64 \times 0.5 \times 115200} - 1 = 32.55 \approx 32
+ * \text{BRR} = \frac{60\text{ MHz}}{32 \times 115200} - 1 = 16.28 - 1 = 15.28 \approx 15
  * @f]
  *
  * @par UART Configuration Example

@@ -232,10 +232,12 @@ typedef enum : uintptr_t {
   k_mtu6_base_addr = 0x000C1A00,
 
   /**
-   * @brief MTU7 base address (0x000C1A00) - shares base with MTU6
-   * @details MTU7 registers are interleaved with MTU6 registers at this address.
+   * @brief MTU7 base address (MTU6 + 1) - interleaved with MTU6
+   * @details MTU7 registers are at odd offsets relative to MTU6 at even offsets.
+   * This interleaving enables synchronized complementary PWM operation.
+   * (Manual: MTU7.TCR = 0x000C1A01 = MTU6 base + 1)
    */
-  k_mtu7_base_addr = 0x000C1A00,
+  k_mtu7_base_addr = (k_mtu6_base_addr + 1U),
 
   /** @brief MTU8 base address (0x000C1600) - native 32-bit counter */
   k_mtu8_base_addr = 0x000C1600,
@@ -258,12 +260,13 @@ typedef enum : uint8_t {
 
 /**
  * @struct rx_mtu_channel_regs_t
- * @brief Standard MTU channel register map (MTU0-MTU2, MTU6-MTU7)
+ * @brief Standard MTU channel register map (MTU0-MTU2)
  *
  * @details
- * Memory-mapped register structure for standard 16-bit MTU timer channels.
- * This structure applies to MTU0, MTU1, MTU2, MTU6, and MTU7 when operating
- * in standard (non-extended) modes.
+ * Memory-mapped register structure for consecutive-layout 16-bit MTU channels.
+ * This structure applies to MTU0, MTU1, and MTU2 only.
+ * MTU6 and MTU7 have an interleaved register layout identical to MTU3/MTU4
+ * and must be accessed via mtu6() which returns rx_mtu3_channel_regs_t*.
  *
  * @par Register Memory Layout (18 bytes total)
  * @verbatim
@@ -534,7 +537,8 @@ typedef enum : uint8_t {
  * @invariant Only valid when cast from mtu3() base address (0x000C1200)
  * @invariant MTU4 registers CANNOT use this struct (different relative offsets)
  *
- * @see rx_mtu_channel_regs_t for MTU0/1/2/6/7/8 standard channel struct
+ * @see rx_mtu_channel_regs_t for MTU0/1/2 standard (consecutive) channel struct
+ * @see mtu6() for MTU6 access using this interleaved struct
  * @see RX72N Hardware Manual Ch 5 I/O Register Address Table (MTU3a registers)
  * @see RX72N Hardware Manual Section 24.2 (MTU3/MTU4 Register Descriptions)
  */
@@ -1043,21 +1047,45 @@ static inline volatile void* mtu4(void)
 }
 
 /**
- * @brief Get pointer to MTU6 registers
- * @return Volatile pointer to MTU6 register structure
+ * @brief Get pointer to MTU6 registers (interleaved layout, identical to MTU3)
+ *
+ * @details
+ * MTU6/MTU7 registers are interleaved at 0x000C1A00 in the same pattern as
+ * MTU3/MTU4 at 0x000C1200. MTU6 registers are at even offsets; MTU7 registers
+ * are at odd offsets. Use rx_mtu3_channel_regs_t to access MTU6 fields at
+ * their correct byte offsets (TCR=+0x00, TMDR1=+0x02, TIORH=+0x04, etc.).
+ *
+ * @warning Do NOT cast this pointer to rx_mtu_channel_regs_t -- that struct
+ *          assumes consecutive layout (TMDR at +0x01) which is wrong for MTU6.
+ *
+ * @return Volatile pointer to MTU6 register structure (interleaved layout)
+ *
+ * @see rx_mtu3_channel_regs_t for register layout and field offsets
+ * @see mtu7() for raw MTU7 base pointer (void*)
  */
-static inline volatile rx_mtu_channel_regs_t* mtu6(void)
+static inline volatile rx_mtu3_channel_regs_t* mtu6(void)
 {
-  return (volatile rx_mtu_channel_regs_t*)k_mtu6_base_addr;
+  return (volatile rx_mtu3_channel_regs_t*)k_mtu6_base_addr;
 }
 
 /**
- * @brief Get pointer to MTU7 registers
- * @return Volatile pointer to MTU7 register structure
+ * @brief Get raw base address pointer for MTU7 register access
+ *
+ * @details
+ * Returns the MTU7 base address (k_mtu6_base_addr + 1 = 0x000C1A01) as a
+ * void pointer. MTU7 registers are at DIFFERENT relative offsets than MTU6
+ * registers (same situation as MTU4 relative to MTU3), so no struct type
+ * can be directly applied. Access MTU7 registers by computing addresses
+ * manually from k_mtu7_base_addr using the Ch 5 I/O Address Table.
+ *
+ * @return Volatile void pointer to MTU7 base address (0x000C1A01)
+ *
+ * @see mtu6() for MTU6 access via rx_mtu3_channel_regs_t
+ * @see RX72N Hardware Manual Ch 5 I/O Register Address Table (MTU3a)
  */
-static inline volatile rx_mtu_channel_regs_t* mtu7(void)
+static inline volatile void* mtu7(void)
 {
-  return (volatile rx_mtu_channel_regs_t*)k_mtu7_base_addr;
+  return (volatile void*)k_mtu7_base_addr;
 }
 
 /**
@@ -1602,9 +1630,9 @@ static_assert((k_mtu6_base_addr & k_mtu_periph_space_mask) == k_mtu_periph_space
 static_assert(k_mtu4_base_addr == (k_mtu3_base_addr + 1U),
               "MTU3 and MTU4 must be interleaved (MTU4 = MTU3 + 1 byte)");
 
-/* Verify MTU6 and MTU7 share the same base address */
-static_assert(k_mtu6_base_addr == k_mtu7_base_addr,
-              "MTU6 and MTU7 must share base address (adjacent registers)");
+/* Verify MTU6 and MTU7 are interleaved (MTU7 = MTU6 + 1 byte) */
+static_assert(k_mtu7_base_addr == (k_mtu6_base_addr + 1U),
+              "MTU6 and MTU7 must be interleaved (MTU7 = MTU6 + 1 byte)");
 /** @} */ /* End of static assertion group */
 
 /** @} */ /* End of mtu_regs defgroup */

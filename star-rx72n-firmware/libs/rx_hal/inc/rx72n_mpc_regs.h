@@ -62,8 +62,8 @@
  *   | Pin 33   | PA1     | 0x0D |  RSPI0-MISOA (SPI CIPO)        |
  *   | Pin 35   | PA3     | 0x0D |  RSPI0-RSPCKA (SPI CLK)        |
  *   | Pin 34   | PA4     | 0x0D |  RSPI0-SSLA0-B (SPI CS)        |
- *   | Pin 97   | PE5     | 0x07 |  GTIOC0A (Motor 0 PWM+)        |
- *   | Pin 96   | PE4     | 0x07 |  GTIOC0B (Motor 0 PWM-)        |
+ *   | Pin 97   | PE5     | 0x1E |  GTIOC0A (Motor 0 PWM+)        |
+ *   | Pin 96   | PE4     | 0x1E |  GTIOC0B (Motor 0 PWM-)        |
  *   | Pin 60   | P24     | 0x02 |  MTCLKA (Encoder 0 Phase A)    |
  *   | Pin 61   | P25     | 0x02 |  MTCLKB (Encoder 0 Phase B)    |
  *   +----------+---------+------+--------------------------------+
@@ -83,7 +83,7 @@
  * |------|-------------------|
  * | 0x00 | Hi-Z / General Purpose I/O |
  * | 0x02 | MTU3a clock inputs (MTCLKA-D) |
- * | 0x07 | GPTW outputs (GTIOCnA/B) |
+ * | 0x1E | GPTW outputs (GTIOCnA/B) |
  * | 0x0A | SCI (TXD, RXD, SCK, CTS) |
  * | 0x0D | RSPI (COPI, CIPO, RSPCK, SSL) |
  * | 0x0F | RIIC (SDA, SCL) |

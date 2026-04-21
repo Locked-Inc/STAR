@@ -71,18 +71,38 @@ need git
 need "$CLAUDE_BIN"
 
 # --- Clean ----------------------------------------------------------------
+# Tear down: kill the tmux session, remove all worktrees, AND delete every
+# bsikar/verifying-* branch both locally and on origin so a re-run gets a
+# fresh slate. Without this a re-launch trips over "branch already exists"
+# and stale worktrees from the previous run.
 clean_session() {
     tmux kill-session -t "$TMUX_SESSION" 2>/dev/null || true
+
     if [ -d "$WORKTREE_BASE" ]; then
         for wt in "$WORKTREE_BASE"/*; do
             [ -d "$wt" ] || continue
-            git worktree remove --force "$wt" 2>/dev/null || rm -rf "$wt"
+            git -C "$REPO_DIR" worktree remove --force "$wt" 2>/dev/null || rm -rf "$wt"
         done
     fi
+    git -C "$REPO_DIR" worktree prune 2>/dev/null || true
+
+    # Local branches
+    for b in $(git -C "$REPO_DIR" for-each-ref --format='%(refname:short)' \
+               "refs/heads/${BRANCH_PREFIX}*" 2>/dev/null); do
+        git -C "$REPO_DIR" branch -D "$b" 2>/dev/null || true
+    done
+
+    # Remote branches (only delete the ones we own)
+    REMOTE_BRANCHES=$(git -C "$REPO_DIR" ls-remote --heads origin "${BRANCH_PREFIX}*" 2>/dev/null \
+                      | awk '{print $2}' | sed 's|refs/heads/||')
+    for b in $REMOTE_BRANCHES; do
+        echo "  deleting remote $b"
+        git -C "$REPO_DIR" push origin --delete "$b" 2>/dev/null || true
+    done
 }
 if [ "$CLEAN_ONLY" -eq 1 ]; then
     clean_session
-    echo "cleaned"
+    echo "cleaned (worktrees + local branches + remote branches)"
     exit 0
 fi
 clean_session

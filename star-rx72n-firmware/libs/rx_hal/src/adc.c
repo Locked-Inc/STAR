@@ -607,14 +607,14 @@ static rx_err_t internal_validate_unit_channel(const uint8_t unit, uint8_t chann
  *
  * | Channel | Register | Offset |
  * |---------|----------|--------|
- * | 0 | ADDR0 | 0x022 |
- * | 1 | ADDR1 | 0x024 |
- * | 2 | ADDR2 | 0x026 |
- * | 3 | ADDR3 | 0x028 |
- * | 4 | ADDR4 | 0x02A |
- * | 5 | ADDR5 | 0x02C |
- * | 6 | ADDR6 | 0x02E |
- * | 7 | ADDR7 | 0x030 |
+ * | 0 | ADDR0 | 0x020 |
+ * | 1 | ADDR1 | 0x022 |
+ * | 2 | ADDR2 | 0x024 |
+ * | 3 | ADDR3 | 0x026 |
+ * | 4 | ADDR4 | 0x028 |
+ * | 5 | ADDR5 | 0x02A |
+ * | 6 | ADDR6 | 0x02C |
+ * | 7 | ADDR7 | 0x02E |
  *
  * @param[in] adc Pointer to ADC register base (must not be NULL)
  * @param[in] channel ADC channel to read from (0-7)

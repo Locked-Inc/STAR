@@ -229,7 +229,7 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_mpc_pfs_base_offset = 33, /**< Byte offset from mpc() to P00PFS register */
+  k_mpc_pfs_base_offset = 64, /**< Byte offset from mpc() to P00PFS register (0x40: P00PFS=0x0008C140, base=0x0008C100) */
 } mpc_pfs_offset_t;
 
 /**
@@ -398,12 +398,9 @@ typedef enum : uint8_t {
  *   PFS_addr = (mpc() + k_mpc_pfs_base_offset) + port_offset + pin
  *
  *   Example: PB7 (Port B, Pin 7)
- *   = (0x0008C100 + 33) + 88 + 7
- *   = 0x0008C121 + 88 + 7
- *   = 0x0008C1D0 (incorrect - see note)
- *
- *   Note: The actual calculation uses struct-based addressing which
- *   handles the non-contiguous reserved regions correctly.
+ *   = (0x0008C100 + 64) + 88 + 7
+ *   = 0x0008C140 + 88 + 7
+ *   = 0x0008C19F (PB7PFS)
  * @endverbatim
  *
  * @param[in] port Port number (0-9, A-G, J encoded as uint8_t)
@@ -446,7 +443,7 @@ static volatile uint8_t* internal_get_pfs_register(const uint8_t port, uint8_t p
   }
 
   /* Calculate PFS register offset
-   * PFS registers start at MPC base + 0x21 (offset for P00PFS)
+   * PFS registers start at MPC base + 0x40 (offset for P00PFS)
    * Each port has 8 pins, layout: P00-P07, P10-P17, P20-P27, etc.
    */
   volatile uint8_t* pfs_base = (volatile uint8_t*)mpc() + k_mpc_pfs_base_offset;
@@ -501,6 +498,8 @@ static volatile uint8_t* internal_get_pfs_register(const uint8_t port, uint8_t p
       port_offset = k_mpc_porte_offset;
       break;
     case k_mpc_port_f:
+      port_offset = k_mpc_portf_offset;
+      break;
     case k_mpc_port_g:
       /* Ports G, H not available on 144-pin LFQFP package */
       rx_log_error(s_tag, "Port not available on this package");
@@ -1192,7 +1191,7 @@ rx_err_t rx_mpc_set_rspi(const rx_port_pin_t pin)
  * @pre PCLKB clock must be running, MPC not in module stop
  * @pre pin must encode a valid port/pin combination with GPTW multiplexing
  *
- * @post PFS register contains k_psel_gptw (0x14) for the specified pin
+ * @post PFS register contains k_psel_gptw (0x1E) for the specified pin
  * @post PWPR locked after operation
  *
  * @note Thread safety: Not thread-safe
@@ -1214,11 +1213,11 @@ rx_err_t rx_mpc_set_rspi(const rx_port_pin_t pin)
  */
 rx_err_t rx_mpc_set_gptw(const rx_port_pin_t pin)
 {
-  /* GPTW pins use PSEL = 0x14
+  /* GPTW pins use PSEL = 0x1E
    * Supports 4 GPTW channels (0-3) for motor IN2/IN1 control */
   const rx_mpc_peripheral_config_t config = {
     .pin  = pin,
-    .psel = k_psel_gptw /* 0x14 - defined in rx_pin_psel_t enum */
+    .psel = k_psel_gptw /* 0x1E - defined in rx_pin_psel_t enum */
   };
 
   return rx_mpc_set_peripheral(&config);

@@ -160,7 +160,7 @@ extern "C" {
 
 /**
  * @enum rx_cmt_addresses_t
- * @brief CMT base addresses (verified against RX72N Hardware Manual Ch21)
+ * @brief CMT base addresses (verified against RX72N Hardware Manual Ch31)
  *
  * @details
  * The RX72N has 4 CMT channels organized into 2 units:
@@ -182,12 +182,36 @@ extern "C" {
  * @note CMSTR registers are at base, channel registers follow at +2 offset.
  */
 typedef enum : uintptr_t {
-  k_cmt_ctrl_base_addr = 0x00088000, /**< CMT control register base (CMSTR0/1) */
-  k_cmt0_base_addr     = 0x00088002, /**< CMT0 registers (CMCR, CMCNT, CMCOR) */
-  k_cmt1_base_addr     = 0x00088008, /**< CMT1 registers (CMCR, CMCNT, CMCOR) */
-  k_cmt2_base_addr     = 0x00088012, /**< CMT2 registers (CMCR, CMCNT, CMCOR) */
-  k_cmt3_base_addr     = 0x00088018, /**< CMT3 registers (CMCR, CMCNT, CMCOR) */
+  k_cmt_ctrl_base_addr  = 0x00088000, /**< CMSTR0 base: Unit 0 start register (CMT0/CMT1) */
+  k_cmt1_ctrl_base_addr = 0x00088010, /**< CMSTR1 base: Unit 1 start register (CMT2/CMT3) */
+  k_cmt0_base_addr      = 0x00088002, /**< CMT0 registers (CMCR, CMCNT, CMCOR) */
+  k_cmt1_base_addr      = 0x00088008, /**< CMT1 registers (CMCR, CMCNT, CMCOR) */
+  k_cmt2_base_addr      = 0x00088012, /**< CMT2 registers (CMCR, CMCNT, CMCOR) */
+  k_cmt3_base_addr      = 0x00088018, /**< CMT3 registers (CMCR, CMCNT, CMCOR) */
 } rx_cmt_addresses_t;
+
+/**
+ * @enum rx_cmt_layout_t
+ * @brief CMT register layout constants used for compile-time verification
+ *
+ * @details
+ * Physical byte sizes and register offsets for CMT structures.
+ * Used exclusively in static_assert expressions so no magic numbers
+ * appear in code.
+ *
+ * @see rx_cmt_channel_regs_t
+ * @see rx_cmt_control_regs_t
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_cmt_channel_regs_size_bytes = 6,    /**< Channel struct: 3 x 16-bit registers */
+  k_cmt_control_regs_size_bytes = 4,    /**< Control struct: 2 x 16-bit registers */
+  k_cmt_cmcr_offset             = 0x00, /**< CMCR  byte offset from channel base */
+  k_cmt_cmcnt_offset            = 0x02, /**< CMCNT byte offset from channel base */
+  k_cmt_cmcor_offset            = 0x04, /**< CMCOR byte offset from channel base */
+  k_cmt_cmstr_reg_size_bytes    = 2,    /**< CMSTR register width (one 16-bit word) */
+} rx_cmt_layout_t;
 
 /**
  * @struct rx_cmt_channel_regs_t
@@ -207,12 +231,13 @@ typedef enum : uintptr_t {
  *   0x04   |  2   | CMCOR    | Compare: match value (period)
  * @endverbatim
  *
- * @par CMCR Register Bit Layout
+ * @par CMCR Register Bit Layout (RX72N Manual Ch31, p.1583)
  * @verbatim
  *   Bit | Name | Description
  *   ----+------+------------------------------------
- *    15 |  -   | Reserved
- *   7-6 | CMIE | Compare Match Interrupt Enable
+ *   15-8|  -   | Reserved
+ *    7  |  -   | Reserved (write value should be 1)
+ *    6  | CMIE | Compare Match Interrupt Enable
  *   5-2 |  -   | Reserved
  *   1-0 | CKS  | Clock Select (00=PCLK/8, 01=/32, 10=/128, 11=/512)
  * @endverbatim
@@ -238,7 +263,8 @@ typedef struct {
    *
    * | Bits | Name | R/W | Description |
    * |------|------|-----|-------------|
-   * | 7-6  | CMIE | R/W | 1 = Enable compare match interrupt |
+   * | 7    |  -   | R/W | Reserved; write value should be 1 (manual p.1583) |
+   * | 6    | CMIE | R/W | 1 = Enable compare match interrupt |
    * | 1-0  | CKS  | R/W | Clock select: 00=/8, 01=/32, 10=/128, 11=/512 |
    */
   volatile uint16_t cmcr;
@@ -471,6 +497,36 @@ static inline volatile rx_cmt_control_regs_t* cmt_ctrl(void)
   return (volatile rx_cmt_control_regs_t*)k_cmt_ctrl_base_addr;
 }
 
+/**
+ * @brief Get pointer to CMT Unit 1 control register (CMSTR1)
+ *
+ * @details
+ * Returns a volatile pointer to CMSTR1 at address 0x00088010. CMSTR1 is NOT
+ * contiguous with CMSTR0 -- it is 0x10 bytes after CMSTR0. This accessor
+ * provides correct access to CMSTR1 for starting/stopping CMT2 and CMT3.
+ *
+ * @warning Do NOT use cmt_ctrl()->cmstr1 to access CMSTR1 -- the struct field
+ *          cmstr1 sits at offset +2 from CMSTR0 (address 0x00088002), which is
+ *          CMT0.CMCR, not CMSTR1.
+ *
+ * @return Volatile pointer to CMT Unit 1 control register structure
+ *
+ * @par Example
+ * @code
+ * // Start CMT2
+ * cmt_ctrl1()->cmstr0 |= k_rx72n_cmstr1_cmt2_enable;
+ *
+ * // Stop CMT3
+ * cmt_ctrl1()->cmstr0 &= ~k_rx72n_cmstr1_cmt3_enable;
+ * @endcode
+ *
+ * @see cmt_ctrl() For CMSTR0 (CMT0/CMT1 control)
+ */
+static inline volatile rx_cmt_control_regs_t* cmt_ctrl1(void)
+{
+  return (volatile rx_cmt_control_regs_t*)k_cmt1_ctrl_base_addr;
+}
+
 /* =============================================================================
  * Static Assertions - Compile-time verification of register layout
  * =============================================================================
@@ -493,28 +549,30 @@ static inline volatile rx_cmt_control_regs_t* cmt_ctrl(void)
  */
 
 /* Verify CMT channel register structure size (3 x 16-bit = 6 bytes) */
-static_assert(sizeof(rx_cmt_channel_regs_t) == 6, "CMT channel register structure size mismatch");
+static_assert(sizeof(rx_cmt_channel_regs_t) == k_cmt_channel_regs_size_bytes,
+              "CMT channel register structure size mismatch");
 
 /* Verify CMT channel register offsets */
-static_assert(offsetof(rx_cmt_channel_regs_t, cmcr) == 0x00, "CMT CMCR register offset incorrect");
-static_assert(offsetof(rx_cmt_channel_regs_t, cmcnt) == 0x02,
+static_assert(offsetof(rx_cmt_channel_regs_t, cmcr)  == k_cmt_cmcr_offset,
+              "CMT CMCR register offset incorrect");
+static_assert(offsetof(rx_cmt_channel_regs_t, cmcnt) == k_cmt_cmcnt_offset,
               "CMT CMCNT register offset incorrect");
-static_assert(offsetof(rx_cmt_channel_regs_t, cmcor) == 0x04,
+static_assert(offsetof(rx_cmt_channel_regs_t, cmcor) == k_cmt_cmcor_offset,
               "CMT CMCOR register offset incorrect");
 
 /* Verify CMT control register structure size (2 x 16-bit = 4 bytes) */
-static_assert(sizeof(rx_cmt_control_regs_t) == 4, "CMT control register structure size mismatch");
+static_assert(sizeof(rx_cmt_control_regs_t) == k_cmt_control_regs_size_bytes,
+              "CMT control register structure size mismatch");
 
-/* Verify base addresses match RX72N Hardware Manual Chapter 31 */
-static_assert(k_cmt_ctrl_base_addr == 0x00088000, "CMT control base address incorrect");
-static_assert(k_cmt0_base_addr == 0x00088002, "CMT0 base address incorrect");
-static_assert(k_cmt1_base_addr == 0x00088008, "CMT1 base address incorrect");
-static_assert(k_cmt2_base_addr == 0x00088012, "CMT2 base address incorrect");
-static_assert(k_cmt3_base_addr == 0x00088018, "CMT3 base address incorrect");
-
-/* Verify channel spacing (6 bytes between adjacent channels in same unit) */
-static_assert((k_cmt1_base_addr - k_cmt0_base_addr) == 6, "CMT0 to CMT1 spacing incorrect");
-static_assert((k_cmt3_base_addr - k_cmt2_base_addr) == 6, "CMT2 to CMT3 spacing incorrect");
+/* Verify address relationships: each channel immediately follows prior struct */
+static_assert(k_cmt0_base_addr - k_cmt_ctrl_base_addr == k_cmt_cmstr_reg_size_bytes,
+              "CMT0 must start one 16-bit CMSTR0 word after unit 0 base");
+static_assert(k_cmt1_base_addr - k_cmt0_base_addr == k_cmt_channel_regs_size_bytes,
+              "CMT0 to CMT1 spacing must equal one channel struct");
+static_assert(k_cmt2_base_addr - k_cmt1_ctrl_base_addr == k_cmt_cmstr_reg_size_bytes,
+              "CMT2 must start one 16-bit CMSTR1 word after unit 1 base");
+static_assert(k_cmt3_base_addr - k_cmt2_base_addr == k_cmt_channel_regs_size_bytes,
+              "CMT2 to CMT3 spacing must equal one channel struct");
 
 /** @} */ /* End of cmt_static_assert group */
 
