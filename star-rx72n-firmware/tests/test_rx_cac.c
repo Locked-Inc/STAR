@@ -226,7 +226,7 @@ static void test_init_reference_clkout25_returns_invalid_arg(void)
 static void test_init_measured_clock_out_of_range_returns_invalid_arg(void)
 {
   rx_cac_config_t cfg = make_valid_config();
-  cfg.measured_clock  = (rx_cac_clock_t)k_cac_test_clock_out_of_range;
+  cfg.measured_clock  = (rx_cac_clock_t)k_cac_test_clock_out_of_range; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_cac_init(&cfg));
   TEST_ASSERT_EQUAL(0U, cac()->cacr1);
 }
@@ -239,7 +239,7 @@ static void test_init_measured_clock_out_of_range_returns_invalid_arg(void)
 static void test_init_target_div_out_of_range_returns_invalid_arg(void)
 {
   rx_cac_config_t cfg = make_valid_config();
-  cfg.target_div      = (rx_cac_target_div_t)k_cac_test_div_out_of_range;
+  cfg.target_div      = (rx_cac_target_div_t)k_cac_test_div_out_of_range; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_cac_init(&cfg));
   TEST_ASSERT_EQUAL(0U, cac()->cacr1);
 }
@@ -252,7 +252,7 @@ static void test_init_target_div_out_of_range_returns_invalid_arg(void)
 static void test_init_reference_div_out_of_range_returns_invalid_arg(void)
 {
   rx_cac_config_t cfg = make_valid_config();
-  cfg.reference_div   = (rx_cac_ref_div_t)k_cac_test_div_out_of_range;
+  cfg.reference_div   = (rx_cac_ref_div_t)k_cac_test_div_out_of_range; // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_cac_init(&cfg));
   TEST_ASSERT_EQUAL(0U, cac()->cacr2);
 }
