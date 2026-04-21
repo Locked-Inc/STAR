@@ -349,11 +349,151 @@ stop_fail:
   return false;
 }
 
+/* Per-write gate trace, populated by i2c_write_byte before goto wstop_fail. */
+static volatile uint8_t s_last_write_gate = 0U;
+
+/* Single-byte register write: START -> addr|W -> reg -> val -> STOP. */
+static bool i2c_write_byte(uint8_t dev_addr, uint8_t reg_addr, uint8_t val)
+{
+  volatile uint8_t *iccr2 = r1(k_riic_off_iccr2);
+  volatile uint8_t *icsr2 = r1(k_riic_off_icsr2);
+  volatile uint8_t *icdrt = r1(k_riic_off_icdrt);
+
+  if (!wait_bit(iccr2, k_iccr2_bbsy, false)) {
+    riic1_recover();
+    if (!wait_bit(iccr2, k_iccr2_bbsy, false)) { s_last_write_gate = 1U; return false; }
+  }
+  *icsr2 = 0x00U;
+
+  *iccr2 = (uint8_t)(k_iccr2_mst | k_iccr2_trs);
+  *iccr2 |= k_iccr2_st;
+  if (!wait_bit(icsr2, k_icsr2_start, true)) { s_last_write_gate = 2U; goto wstop_fail; }
+  *icsr2 &= (uint8_t)~k_icsr2_start;
+
+  if (!wait_bit(icsr2, k_icsr2_tdre, true)) { s_last_write_gate = 3U; goto wstop_fail; }
+  *icdrt = (uint8_t)((dev_addr << 1) | 0U);
+  if (!wait_bit(icsr2, k_icsr2_tend, true)) { s_last_write_gate = 4U; goto wstop_fail; }
+  if ((*icsr2) & k_icsr2_nackf)               { s_last_write_gate = 5U; goto wstop_fail; }
+
+  if (!wait_bit(icsr2, k_icsr2_tdre, true)) { s_last_write_gate = 6U; goto wstop_fail; }
+  *icdrt = reg_addr;
+  if (!wait_bit(icsr2, k_icsr2_tend, true)) { s_last_write_gate = 7U; goto wstop_fail; }
+  if ((*icsr2) & k_icsr2_nackf)               { s_last_write_gate = 8U; goto wstop_fail; }
+
+  if (!wait_bit(icsr2, k_icsr2_tdre, true)) { s_last_write_gate = 9U; goto wstop_fail; }
+  *icdrt = val;
+  if (!wait_bit(icsr2, k_icsr2_tend, true)) { s_last_write_gate = 10U; goto wstop_fail; }
+  if ((*icsr2) & k_icsr2_nackf)               { s_last_write_gate = 11U; goto wstop_fail; }
+
+  *icsr2 &= (uint8_t)~k_icsr2_stop;
+  *iccr2 |= k_iccr2_sp;
+  (void)wait_bit(icsr2, k_icsr2_stop, true);
+  *icsr2 &= (uint8_t)~(k_icsr2_stop | k_icsr2_nackf);
+  return true;
+
+wstop_fail:
+  *iccr2 |= k_iccr2_sp;
+  (void)wait_bit(icsr2, k_icsr2_stop, true);
+  *icsr2 &= (uint8_t)~(k_icsr2_stop | k_icsr2_nackf);
+  return false;
+}
+
+/* Multi-byte sequential read: START -> addr|W -> reg -> RS -> addr|R ->
+ * read N bytes (ACK first N-1, NACK last) -> STOP. Used for BNO055 sensor
+ * burst reads (gravity vector = 6 bytes). */
+static bool i2c_read_bytes(uint8_t dev_addr, uint8_t reg_addr, uint8_t *buf, uint8_t count)
+{
+  if (count == 0U) { return false; }
+
+  volatile uint8_t *iccr2 = r1(k_riic_off_iccr2);
+  volatile uint8_t *icsr2 = r1(k_riic_off_icsr2);
+  volatile uint8_t *icdrt = r1(k_riic_off_icdrt);
+  volatile uint8_t *icdrr = r1(k_riic_off_icdrr);
+  volatile uint8_t *icmr3 = r1(k_riic_off_icmr3);
+
+  if (!wait_bit(iccr2, k_iccr2_bbsy, false)) {
+    riic1_recover();
+    if (!wait_bit(iccr2, k_iccr2_bbsy, false)) { return false; }
+  }
+  *icsr2 = 0x00U;
+
+  *iccr2 = (uint8_t)(k_iccr2_mst | k_iccr2_trs);
+  *iccr2 |= k_iccr2_st;
+  if (!wait_bit(icsr2, k_icsr2_start, true)) { goto rstop_fail; }
+  *icsr2 &= (uint8_t)~k_icsr2_start;
+
+  if (!wait_bit(icsr2, k_icsr2_tdre, true)) { goto rstop_fail; }
+  *icdrt = (uint8_t)((dev_addr << 1) | 0U);
+  if (!wait_bit(icsr2, k_icsr2_tend, true)) { goto rstop_fail; }
+  if ((*icsr2) & k_icsr2_nackf)               { goto rstop_fail; }
+
+  if (!wait_bit(icsr2, k_icsr2_tdre, true)) { goto rstop_fail; }
+  *icdrt = reg_addr;
+  if (!wait_bit(icsr2, k_icsr2_tend, true)) { goto rstop_fail; }
+  if ((*icsr2) & k_icsr2_nackf)               { goto rstop_fail; }
+
+  *iccr2 |= k_iccr2_rs;
+  if (!wait_bit(icsr2, k_icsr2_start, true)) { goto rstop_fail; }
+  *icsr2 &= (uint8_t)~k_icsr2_start;
+  *iccr2 = k_iccr2_mst;
+
+  if (!wait_bit(icsr2, k_icsr2_tdre, true)) { goto rstop_fail; }
+  *icdrt = (uint8_t)((dev_addr << 1) | 1U);
+  if (!wait_bit(icsr2, (uint8_t)(k_icsr2_rdrf | k_icsr2_nackf), true)) { goto rstop_fail; }
+  if ((*icsr2) & k_icsr2_nackf)               { goto rstop_fail; }
+
+  /* Dummy read ICDRR to release SCL and start clocking byte 0 into the
+   * shift register. RX72N HW manual section 38.2.5.3 (master-receive). */
+  if (count == 1U) {
+    /* For a single-byte read, pre-set ACKBT=1 BEFORE the dummy read so the
+     * byte's ACK slot sends NACK, signalling the slave to stop. */
+    *icmr3 |= k_icmr3_ackbt;
+  }
+  (void)*icdrr;
+
+  for (uint8_t i = 0; i < count; i++) {
+    if (!wait_bit(icsr2, k_icsr2_rdrf, true)) { goto rstop_fail; }
+    if (i == (uint8_t)(count - 2U)) {
+      /* Next byte is the final one -- set ACKBT=1 so the byte we're about
+       * to read carries NACK in its 9th-bit slot. */
+      *icmr3 |= k_icmr3_ackbt;
+    }
+    if (i == (uint8_t)(count - 1U)) {
+      *icsr2 &= (uint8_t)~k_icsr2_stop;
+      *iccr2 |= k_iccr2_sp;
+    }
+    buf[i] = *icdrr;
+  }
+
+  (void)wait_bit(icsr2, k_icsr2_stop, true);
+  *icsr2 &= (uint8_t)~(k_icsr2_stop | k_icsr2_nackf);
+  *icmr3 &= (uint8_t)~k_icmr3_ackbt;
+  return true;
+
+rstop_fail:
+  *iccr2 |= k_iccr2_sp;
+  (void)wait_bit(icsr2, k_icsr2_stop, true);
+  *icsr2 &= (uint8_t)~(k_icsr2_stop | k_icsr2_nackf);
+  *icmr3 &= (uint8_t)~k_icmr3_ackbt;
+  return false;
+}
+
 /* ------------------------------------------------------------------------ */
 typedef enum : uint8_t {
   k_bno055_addr        = 0x28U,
   k_bno055_chip_id_reg = 0x00U,
   k_bno055_acc_x_lsb   = 0x08U,
+  k_bno055_grv_x_lsb   = 0x2EU,  /* Gravity vector base, 6 bytes int16 LE, 1 LSB = 1/100 m/s^2 */
+  k_bno055_lia_x_lsb   = 0x28U,  /* Linear acceleration base (gravity removed by fusion) */
+  k_bno055_opr_mode    = 0x3DU,  /* Operation mode register */
+  k_bno055_pwr_mode    = 0x3EU,  /* Power mode register */
+  k_bno055_sys_trigger = 0x3FU,  /* System trigger (incl. self-test, soft reset) */
+  k_bno055_unit_sel    = 0x3BU,  /* Output units selection */
+  k_bno055_page_id     = 0x07U,  /* Register page selector */
+  k_bno055_calib_stat  = 0x35U,  /* Calibration status (SYS|GYR|ACC|MAG, 2 bits each) */
+  k_bno055_mode_config = 0x00U,  /* OPR_MODE: CONFIGMODE */
+  k_bno055_mode_ndof   = 0x0CU,  /* OPR_MODE: NDOF (full sensor fusion) */
+  k_bno055_pwr_normal  = 0x00U,  /* PWR_MODE: normal */
   k_bmp280_addr        = 0x76U,
   k_bmp280_chip_id_reg = 0xD0U,
 } sensor_t;
@@ -395,20 +535,68 @@ int main(void)
   sci9_debug_puthex16((uint16_t)bmp_id);
   sci9_debug_puts(bmp_id == 0x58U ? " (BMP280 ok)\n" : " (expected 0x58)\n");
 
-  sci9_debug_puts("step 5: BNO055 probe loop with gate-fail tracing\n");
+  sci9_debug_puts("step 5: BNO055 -> NDOF mode (re-init each xact)\n");
+  riic1_init();
+  s_last_write_gate = 0U;
+  bool ok_cfg = i2c_write_byte(k_bno055_addr, k_bno055_opr_mode, k_bno055_mode_config);
+  uint8_t cfg_gate = s_last_write_gate;
+  busy_wait_ms(25);
+  riic1_init();
+  s_last_write_gate = 0U;
+  bool ok_ndof = i2c_write_byte(k_bno055_addr, k_bno055_opr_mode, k_bno055_mode_ndof);
+  uint8_t ndof_gate = s_last_write_gate;
+  busy_wait_ms(25);
+  sci9_debug_puts("  cfg="); sci9_debug_puts(ok_cfg ? "ok" : "FAIL");
+  sci9_debug_puts("@gate=0x"); sci9_debug_puthex16((uint16_t)cfg_gate);
+  sci9_debug_puts("  ndof="); sci9_debug_puts(ok_ndof ? "ok" : "FAIL");
+  sci9_debug_puts("@gate=0x"); sci9_debug_puthex16((uint16_t)ndof_gate);
+  sci9_debug_puts("\n");
+
+  sci9_debug_puts("step 6: gravity loop @ 5 Hz (expect |g| ~= 981)\n");
+  /* Sanity check: read CHIP_ID via i2c_read_bytes to verify the multi-byte
+   * reader itself isn't broken. One byte in, should be 0xA0. */
+  riic1_init();
+  uint8_t id_buf[1] = {0};
+  bool id_burst_ok = i2c_read_bytes(k_bno055_addr, k_bno055_chip_id_reg, id_buf, 1U);
+  sci9_debug_puts("  burst_chip_id="); sci9_debug_puts(id_burst_ok ? "ok 0x" : "FAIL 0x");
+  sci9_debug_puthex16((uint16_t)id_buf[0]);
+  sci9_debug_puts("\n");
+
   uint16_t iter = 0;
   for (;;) {
+    uint8_t acc_raw[6] = {0};     /* Raw accelerometer at 0x08..0x0D (always updates, 1 LSB = 1/100 m/s^2) */
+    uint8_t grv[6]     = {0};
+    uint8_t calib      = 0;
     riic1_init();
-    uint8_t v  = 0xFFU;
-    s_last_fail_gate = 0U;
-    bool ok = i2c_read_byte(k_bno055_addr, k_bno055_chip_id_reg, &v);
+    bool a_ok = i2c_read_bytes(k_bno055_addr, k_bno055_acc_x_lsb, acc_raw, 6U);
+    riic1_init();
+    bool g_ok = i2c_read_bytes(k_bno055_addr, k_bno055_grv_x_lsb, grv, 6U);
+    riic1_init();
+    bool c_ok = i2c_read_byte(k_bno055_addr, k_bno055_calib_stat, &calib);
+
+    int16_t ax = (int16_t)((uint16_t)acc_raw[0] | ((uint16_t)acc_raw[1] << 8));
+    int16_t ay = (int16_t)((uint16_t)acc_raw[2] | ((uint16_t)acc_raw[3] << 8));
+    int16_t az = (int16_t)((uint16_t)acc_raw[4] | ((uint16_t)acc_raw[5] << 8));
+    int16_t gx = (int16_t)((uint16_t)grv[0] | ((uint16_t)grv[1] << 8));
+    int16_t gy = (int16_t)((uint16_t)grv[2] | ((uint16_t)grv[3] << 8));
+    int16_t gz = (int16_t)((uint16_t)grv[4] | ((uint16_t)grv[5] << 8));
+
     sci9_debug_puts("iter=");
     sci9_debug_puthex16(iter);
-    sci9_debug_puts(ok ? "  chip_id=0x" : "  FAIL@gate=0x");
-    sci9_debug_puthex16((uint16_t)(ok ? v : s_last_fail_gate));
-    sci9_debug_puts("  ICCR1=0x"); sci9_debug_puthex16((uint16_t)*r1(k_riic_off_iccr1));
-    sci9_debug_puts(" ICSR2=0x"); sci9_debug_puthex16((uint16_t)*r1(k_riic_off_icsr2));
-    sci9_debug_puts("\n");
+    if (!a_ok || !g_ok || !c_ok) {
+      sci9_debug_puts(" READ_FAIL a="); sci9_debug_puts(a_ok ? "ok " : "FAIL ");
+      sci9_debug_puts("g="); sci9_debug_puts(g_ok ? "ok " : "FAIL ");
+      sci9_debug_puts("c="); sci9_debug_puts(c_ok ? "ok\n" : "FAIL\n");
+    } else {
+      sci9_debug_puts(" ACC "); sci9_debug_puthex16((uint16_t)ax);
+      sci9_debug_puts(" ");     sci9_debug_puthex16((uint16_t)ay);
+      sci9_debug_puts(" ");     sci9_debug_puthex16((uint16_t)az);
+      sci9_debug_puts("  GRV "); sci9_debug_puthex16((uint16_t)gx);
+      sci9_debug_puts(" ");     sci9_debug_puthex16((uint16_t)gy);
+      sci9_debug_puts(" ");     sci9_debug_puthex16((uint16_t)gz);
+      sci9_debug_puts("  cal=0x"); sci9_debug_puthex16((uint16_t)calib);
+      sci9_debug_puts("\n");
+    }
     busy_wait_ms(500);
     iter++;
   }
