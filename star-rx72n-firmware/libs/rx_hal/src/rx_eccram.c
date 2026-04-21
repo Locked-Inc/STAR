@@ -423,8 +423,8 @@ rx_err_t rx_eccram_get_error_status(rx_eccram_status_t* out)
   const uint8_t s1 = regs->eccram1sts;
   const uint8_t s2 = regs->eccram2sts;
 
-  out->one_bit_error = ((s1 & k_rx_eccram1sts_ecc1err_mask) != 0U);
-  out->two_bit_error = ((s2 & k_rx_eccram2sts_ecc2err_mask) != 0U);
+  out->one_bit_error = (bool)((s1 & k_rx_eccram1sts_ecc1err_mask) != 0U);
+  out->two_bit_error = (bool)((s2 & k_rx_eccram2sts_ecc2err_mask) != 0U);
   out->one_bit_addr  = (uintptr_t)regs->eccram1ecad;
   out->two_bit_addr  = (uintptr_t)regs->eccram2ecad;
 
@@ -460,10 +460,10 @@ rx_err_t rx_eccram_register_error_isr(rx_eccram_on_1bit_fn_t on_1bit,
 
 uintptr_t rx_eccram_region_start(void)
 {
-  return (uintptr_t)k_rx_eccram_region_base_addr;
+  return k_rx_eccram_region_base_addr;
 }
 
 uintptr_t rx_eccram_region_end(void)
 {
-  return (uintptr_t)k_rx_eccram_region_end_addr;
+  return k_rx_eccram_region_end_addr;
 }

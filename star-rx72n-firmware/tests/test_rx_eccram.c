@@ -153,7 +153,8 @@ static void test_setup(void)
    * test can detect whether rx_eccram_init() actually zeros it. NOLINT
    * the memset call below: cert-msc24-c wants memset_s, glibc has none. */
   // NOLINTNEXTLINE(cert-msc24-c)
-  memset(g_mock_eccram_region, k_test_eccram_dirty_sentinel,
+  memset(g_mock_eccram_region,
+         k_test_eccram_dirty_sentinel,
          sizeof(uint32_t) * (size_t)k_test_region_words);
   g_mock_prcr = 0;
 
@@ -339,7 +340,7 @@ static void test_get_error_status_reports_1bit(void)
   g_mock_eccram_regs.eccram1ecad = k_test_failing_addr_1bit;
 
   rx_eccram_status_t status;
-  memset(&status, 0, sizeof(status));
+  status             = (rx_eccram_status_t){0};
   const rx_err_t err = rx_eccram_get_error_status(&status);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(status.one_bit_error);
@@ -356,7 +357,7 @@ static void test_get_error_status_reports_2bit(void)
   g_mock_eccram_regs.eccram2ecad = k_test_failing_addr_2bit;
 
   rx_eccram_status_t status;
-  memset(&status, 0, sizeof(status));
+  status             = (rx_eccram_status_t){0};
   const rx_err_t err = rx_eccram_get_error_status(&status);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(status.one_bit_error);
