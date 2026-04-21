@@ -31,8 +31,7 @@ For each constant verified:
   FIX <file>:<line> <constant>: <old> -> <new>  (manual page <N>)
 
 For each FIX, edit the file. After all edits build to confirm:
-  cd star-rx72n-firmware
-  PATH=/opt/gnurx/bin:$PATH bash build.sh
+  bash scripts/hal-audit/devcontainer-exec.sh "cd star-rx72n-firmware && bash build.sh"
 
 If build passes, commit + push:
   git add -A

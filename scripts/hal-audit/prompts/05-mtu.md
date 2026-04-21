@@ -21,8 +21,7 @@ Verify:
 7. TSTR / TSTRA bit positions (which bit starts which channel).
 
 Edit + fix mismatches. After edits:
-  cd star-rx72n-firmware
-  PATH=/opt/gnurx/bin:$PATH bash build.sh
+  bash scripts/hal-audit/devcontainer-exec.sh "cd star-rx72n-firmware && bash build.sh"
 
 If build passes:
   git add -A

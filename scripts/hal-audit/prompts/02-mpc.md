@@ -28,8 +28,7 @@ Verify:
    section 23.2.1.
 
 Edit and fix any mismatches. After all edits:
-  cd star-rx72n-firmware
-  PATH=/opt/gnurx/bin:$PATH bash build.sh
+  bash scripts/hal-audit/devcontainer-exec.sh "cd star-rx72n-firmware && bash build.sh"
 
 If build passes:
   git add -A

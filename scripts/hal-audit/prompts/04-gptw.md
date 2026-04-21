@@ -26,8 +26,7 @@ Verify:
    formulas to manual section 26.3 or equivalent).
 
 Edit + fix mismatches. After edits:
-  cd star-rx72n-firmware
-  PATH=/opt/gnurx/bin:$PATH bash build.sh
+  bash scripts/hal-audit/devcontainer-exec.sh "cd star-rx72n-firmware && bash build.sh"
 
 If build passes:
   git add -A

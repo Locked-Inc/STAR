@@ -48,6 +48,9 @@ file(GLOB_RECURSE APP_BOOT_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_SOURCE_DIR}/src/boot/*.S
 )
 file(GLOB_RECURSE APP_TASKS_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/tasks/*.c)
+# usb_task.c is orphaned after dc6f3201b purged rx_usb_comm; no longer registered
+# in main.c's internal_create_system_tasks().
+list(REMOVE_ITEM APP_TASKS_SOURCES ${CMAKE_SOURCE_DIR}/src/tasks/usb_task.c)
 file(GLOB_RECURSE APP_SHARED_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/shared/*.c)
 file(GLOB_RECURSE APP_RTOS_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/rtos_config/*.c)
 
@@ -133,6 +136,9 @@ file(GLOB THREADX_LOWPOWER_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/th
 
 # Custom libraries (using GLOB_RECURSE for src subdirectories)
 file(GLOB_RECURSE LIB_RX_CORE_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_core/src/*.c)
+# rx_log_usb.c is orphaned after dc6f3201b (includes rx_usb.h which was purged).
+# rx_log_uart.c is the active log backend.
+list(REMOVE_ITEM LIB_RX_CORE_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_core/src/rx_log_usb.c)
 file(GLOB_RECURSE LIB_RX_HAL_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_hal/src/*.c)
 file(GLOB_RECURSE LIB_RX_BUS_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_bus/src/*.c)
 file(GLOB_RECURSE LIB_RX_PID_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_pid/src/*.c)

@@ -255,15 +255,7 @@ static const char* s_tag = "CLOCK_INIT";
 
 /** @brief Oscillator stabilization timing constants */
 typedef enum : uint32_t {
-  /* Main oscillator stabilization: RX72N manual says ~10 ms for the 24 MHz
-   * crystal to stabilise.  The firmware runs at LOCO (~240 kHz) at this
-   * point -- BEFORE the PLL is configured.  2400 NOPs at 240 kHz = ~10 ms.
-   *
-   * (Earlier value was 2,400,000, a miscalculation assuming 240 MHz CPU.
-   * At actual LOCO speed that loop ran for ~10 seconds; combined with the
-   * OFS0=0xFFFFFFFF watchdog-disabled default everything looked dead on
-   * the bus but the chip was just stuck counting NOPs.) */
-  k_main_osc_stabilization_cycles     = 2400,
+  k_main_osc_stabilization_cycles     = 2400000, /**< Main oscillator delay (~10ms at 240MHz) */
   k_pll_stabilization_timeout         = 1000000, /**< PLL stabilization max wait iterations */
   k_pll_stabilization_timeout_expired = 0,       /**< PLL timeout expiration value */
 } oscillator_timing_t;

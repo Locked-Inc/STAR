@@ -25,8 +25,7 @@ Note: motor current sensing uses AN004..AN007 on S12AD0. Verify those
 specifically.
 
 Edit + fix mismatches. After edits:
-  cd star-rx72n-firmware
-  PATH=/opt/gnurx/bin:$PATH bash build.sh
+  bash scripts/hal-audit/devcontainer-exec.sh "cd star-rx72n-firmware && bash build.sh"
 
 If build passes:
   git add -A
