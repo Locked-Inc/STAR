@@ -1421,7 +1421,8 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
    * internal_write_byte: TEND/TDRE-reassertion don't fire after addr|R in
    * master-receive mode; RDRF does. */
   rx_err_t err = internal_write_address_for_read(
-    riic, (uint8_t)((device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit));
+    riic,
+    (uint8_t)((device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit));
   if (err != k_rx_ok) {
     rx_err_t stop_err = internal_send_stop(riic);
     (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
@@ -1896,7 +1897,8 @@ rx_err_t riic_read(const riic_channel_t    channel,
    * internal_write_byte: TEND/TDRE-reassertion don't fire after addr|R in
    * master-receive mode; RDRF does. */
   err = internal_write_address_for_read(
-    riic, (uint8_t)((device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit));
+    riic,
+    (uint8_t)((device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit));
   if (err != k_rx_ok) {
     rx_err_t stop_err = internal_send_stop(riic);
     (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
