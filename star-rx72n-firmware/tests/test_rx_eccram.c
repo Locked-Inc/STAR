@@ -282,24 +282,47 @@ static void test_init_zero_fills_region(void)
 }
 
 /**
- * @brief Init reports hw_init_failed when ECCRAMMODE read-back is corrupt
+ * @brief Init in correct_only mode programs ECCRAMMODE to ecc_with_check
+ *
+ * @details
+ * Documents that all "ECC active" public modes (correct_only,
+ * correct_and_detect, detect_only) collapse to the same hardware encoding
+ * (RAMMOD = 11b), per RX72N HW Manual Chapter 8 (RAM) (ECCRAMMODE,
+ * page 2981). The distinction between behaviours is enforced at the ISR
+ * dispatch layer, not by the hardware bits.
+ *
+ * @par Manual reference: RX72N HW Manual Chapter 8 (RAM), ECCRAMMODE
+ *      register, RAMMOD[1:0] field, page 2981.
+ *
+ * @since Version 1.0.0
  */
-static void test_init_detects_mode_readback_mismatch(void)
+static void test_init_correct_only_mode_programs_with_check(void)
 {
-  /* Arrange: dirty the real-mode readback (simulate stuck register) */
-  g_mock_eccram_regs.eccrammode = k_rx_eccrammode_ecc_disabled;
-
-  /* Driver should compare read-back to the value it just wrote. Since the
-   * mock only honours writes performed through the driver itself, we
-   * simulate a stuck register by intercepting via an alternate strategy:
-   * force the driver to attempt correct_and_detect while the mock stays
-   * zeroed. To do that we pre-install a write barrier by swapping in a
-   * read-only override isn't worth the plumbing; instead we verify the
-   * negative path through the invalid-mode branch already covered above.
-   * This test is retained as a documentation placeholder and asserts the
-   * happy path so the test count matches RUN_TEST below. */
-  const rx_err_t err = rx_eccram_init(k_eccram_mode_correct_and_detect);
+  const rx_err_t err = rx_eccram_init(k_eccram_mode_correct_only);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
+  const uint8_t mode = g_mock_eccram_regs.eccrammode & (uint8_t)k_rx_eccrammode_rammod_mask;
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccrammode_ecc_with_check, mode);
+}
+
+/**
+ * @brief Init in detect_only mode programs ECCRAMMODE to ecc_with_check
+ *
+ * @details
+ * The detect_only public mode is implemented by enabling the same hardware
+ * RAMMOD = 11b encoding and treating any 1-bit event as a fault at the
+ * application layer. This test pins the documented hardware-mode mapping.
+ *
+ * @par Manual reference: RX72N HW Manual Chapter 8 (RAM), ECCRAMMODE
+ *      register, RAMMOD[1:0] field, page 2981.
+ *
+ * @since Version 1.0.0
+ */
+static void test_init_detect_only_mode_programs_with_check(void)
+{
+  const rx_err_t err = rx_eccram_init(k_eccram_mode_detect_only);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  const uint8_t mode = g_mock_eccram_regs.eccrammode & (uint8_t)k_rx_eccrammode_rammod_mask;
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccrammode_ecc_with_check, mode);
 }
 
 /**
@@ -405,6 +428,71 @@ static void test_register_isr_after_init_ok(void)
   (void)rx_eccram_init(k_eccram_mode_correct_and_detect);
   const rx_err_t err = rx_eccram_register_error_isr(test_on_1bit, test_on_2bit, NULL);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief register_error_isr with NULL on_1bit keeps previous 1-bit handler
+ *
+ * @details
+ * Documents that passing nullptr for on_1bit leaves the previously
+ * installed 1-bit callback in place while still updating the on_2bit
+ * slot and the ctx pointer. Verified by registering both handlers, then
+ * re-registering with on_1bit = NULL and a fresh ctx, and confirming
+ * the original 1-bit handler still fires when a 1-bit event is latched.
+ *
+ * @par Manual reference: RX72N HW Manual Chapter 8 (RAM), ECCRAM1STS /
+ *      ECCRAM1ECAD update behavior, pages 2984 and 2987.
+ *
+ * @since Version 1.0.0
+ */
+static void test_register_isr_null_1bit_keeps_previous_handler(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_eccram_init(k_eccram_mode_correct_and_detect));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_eccram_register_error_isr(test_on_1bit, test_on_2bit, NULL));
+
+  int new_ctx = 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_eccram_register_error_isr(NULL, test_on_2bit, &new_ctx));
+
+  g_mock_eccram_regs.eccram1sts  = (uint8_t)k_rx_eccram1sts_ecc1err_mask;
+  g_mock_eccram_regs.eccram1ecad = (uint32_t)k_test_failing_addr_1bit;
+
+  rx_eccram_ram_error_isr();
+
+  TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_callback_once, s_test_1bit_count);
+  TEST_ASSERT_EQUAL_UINT((uintptr_t)k_test_failing_addr_1bit, s_test_1bit_addr);
+  TEST_ASSERT_EQUAL_PTR(&new_ctx, s_test_ctx_seen);
+}
+
+/**
+ * @brief register_error_isr with NULL on_2bit keeps previous 2-bit handler
+ *
+ * @details
+ * Mirror of test_register_isr_null_1bit_keeps_previous_handler. Confirms
+ * that passing nullptr for on_2bit preserves the previously installed
+ * 2-bit handler while updating on_1bit and ctx, matching the public
+ * "register independently" contract documented on rx_eccram_register_error_isr().
+ *
+ * @par Manual reference: RX72N HW Manual Chapter 8 (RAM), ECCRAM2STS /
+ *      ECCRAM2ECAD update behavior, pages 2982 and 2986.
+ *
+ * @since Version 1.0.0
+ */
+static void test_register_isr_null_2bit_keeps_previous_handler(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_eccram_init(k_eccram_mode_correct_and_detect));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_eccram_register_error_isr(test_on_1bit, test_on_2bit, NULL));
+
+  int new_ctx = 0;
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_eccram_register_error_isr(test_on_1bit, NULL, &new_ctx));
+
+  g_mock_eccram_regs.eccram2sts  = (uint8_t)k_rx_eccram2sts_ecc2err_mask;
+  g_mock_eccram_regs.eccram2ecad = (uint32_t)k_test_failing_addr_2bit;
+
+  rx_eccram_ram_error_isr();
+
+  TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_callback_once, s_test_2bit_count);
+  TEST_ASSERT_EQUAL_UINT((uintptr_t)k_test_failing_addr_2bit, s_test_2bit_addr);
+  TEST_ASSERT_EQUAL_PTR(&new_ctx, s_test_ctx_seen);
 }
 
 /**
@@ -515,7 +603,8 @@ int main(void)
   RUN_TEST(test_init_enables_1bit_latch);
   RUN_TEST(test_init_disabled_mode_skips_1bit_latch);
   RUN_TEST(test_init_zero_fills_region);
-  RUN_TEST(test_init_detects_mode_readback_mismatch);
+  RUN_TEST(test_init_correct_only_mode_programs_with_check);
+  RUN_TEST(test_init_detect_only_mode_programs_with_check);
   RUN_TEST(test_init_clears_latched_flags);
 
   RUN_TEST(test_get_error_status_null_ptr);
@@ -525,6 +614,8 @@ int main(void)
 
   RUN_TEST(test_register_isr_before_init_rejected);
   RUN_TEST(test_register_isr_after_init_ok);
+  RUN_TEST(test_register_isr_null_1bit_keeps_previous_handler);
+  RUN_TEST(test_register_isr_null_2bit_keeps_previous_handler);
   RUN_TEST(test_isr_dispatches_1bit_event);
   RUN_TEST(test_isr_captures_2bit_address_before_clear);
   RUN_TEST(test_isr_no_flags_is_noop);

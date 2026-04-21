@@ -145,7 +145,7 @@ jobs:
           # lcov is still used above for HTML report generation.
           #
           # Run from repo root (not build/) so --filter paths match naturally.
-          # TODO: drop the rx_{tmr,eccram,lpc} excludes once their
+          # TODO: drop the rx_{tmr,lpc} excludes once their
           # agent-generated test suites are backfilled to 100%/100%/100%.
           # They were landed via the new-stuff prompt fan-out at 98.9% line /
           # 98.1% branch on 2026-04-21; the global 100%/100%/100% bar is
@@ -161,9 +161,6 @@ jobs:
             --exclude '.*/rx_hal/inc/rx72n_tmr_regs.h' \
             --exclude '.*/rx_hal/inc/rx_tmr.h' \
             --exclude '.*/rx_hal/src/rx_tmr.c' \
-            --exclude '.*/rx_hal/inc/rx72n_eccram_regs.h' \
-            --exclude '.*/rx_hal/inc/rx_eccram.h' \
-            --exclude '.*/rx_hal/src/rx_eccram.c' \
             --exclude '.*/rx_hal/inc/rx72n_lpc_regs.h' \
             --exclude '.*/rx_hal/inc/rx_lpc.h' \
             --exclude '.*/rx_hal/src/rx_lpc.c' \
