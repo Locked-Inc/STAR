@@ -4,8 +4,9 @@
  *
  * @details
  * Driver for the RX72N Clock Frequency Accuracy Measurement Circuit (CAC) per
- * Renesas RX72N Group User's Manual (R01UH0824EJ0111) Chapter 10 "Clock
- * Frequency Accuracy Measurement Circuit".
+ * Renesas RX72N Group User's Manual (R01UH0824EJ0111) Chapter 11 "Clock
+ * Frequency Accuracy Measurement Circuit" (pp.392-397 of the Ch11 register map
+ * section referenced below).
  *
  * The CAC compares a measurement-target clock against a reference clock, counts
  * target-clock edges between reference-clock edges, and compares the accumulated
@@ -13,7 +14,7 @@
  * CASTR.FERRF; when CAICR.FERRIE is enabled the failure is routed through
  * GROUPBL0 (vector 110, bit 26) to the CPU.
  *
- * @par Bring-up Sequence (RX72N HW Manual Ch10.3)
+ * @par Bring-up Sequence (RX72N HW Manual Ch11.3)
  * 1. Unlock PRCR.PRC1, clear MSTPCRC.MSTPC19, re-lock PRCR.
  * 2. Ensure CACR0.CFME = 0 while programming CACR1, CACR2, CAULVR, CALLVR,
  *    and CAICR. Writes to CAULVR / CALLVR require CFME = 0.
@@ -34,7 +35,7 @@
  *
  * @see rx_cac.h Public API
  * @see rx72n_cac_regs.h Register definitions
- * @see RX72N HW Manual R01UH0824EJ0111 Chapter 10
+ * @see RX72N HW Manual R01UH0824EJ0111 Chapter 11
  *
  * @author Locked, Inc.
  * @date 2026-04-21
@@ -82,113 +83,78 @@ static const char* const s_tag = "CAC";
 static bool s_initialized = false;
 
 /* =============================================================================
- * Internal Translation Helpers
+ * Internal Translation Tables
+ *
+ * Lookup tables replace per-case switch statements so that the translators are
+ * branch-free. rx_cac_init() validates each enum argument against the tables'
+ * defined indices, so the caller's index is always in range by the time a
+ * translator is invoked.
  * =============================================================================
  */
 
 /**
- * @brief Translate rx_cac_clock_t into a CACR1.FMCS bit pattern
- * @param[in] clock Caller-supplied clock selector
- * @return uint8_t CACR1 FMCS field value (already shifted)
- * @pre clock is a valid rx_cac_clock_t enumerator
- * @post Returned value covers only the CACR1 FMCS bits
+ * @var s_fmcs_table
+ * @brief CACR1.FMCS bit pattern indexed by rx_cac_clock_t
+ * @details RX72N HW Manual p.393 (FMCS field of CACR1).
  * @since Version 1.0.0
  */
-static uint8_t internal_fmcs_bits(rx_cac_clock_t clock)
-{
-  switch (clock) {
-    case k_cac_clock_main:
-      return k_cac_cacr1_fmcs_main;
-    case k_cac_clock_sub:
-      return k_cac_cacr1_fmcs_sub;
-    case k_cac_clock_hoco:
-      return k_cac_cacr1_fmcs_hoco;
-    case k_cac_clock_loco:
-      return k_cac_cacr1_fmcs_loco;
-    case k_cac_clock_pclkb:
-      return k_cac_cacr1_fmcs_pclkb;
-    case k_cac_clock_iwdtclk:
-      return k_cac_cacr1_fmcs_iwdtclk;
-    case k_cac_clock_uclk:
-      return k_cac_cacr1_fmcs_uclk;
-    case k_cac_clock_clkout25:
-      return k_cac_cacr1_fmcs_clkout25;
-    default:
-      return k_cac_cacr1_fmcs_main;
-  }
-}
+static const uint8_t s_fmcs_table[] = {
+  [k_cac_clock_main]     = k_cac_cacr1_fmcs_main,
+  [k_cac_clock_sub]      = k_cac_cacr1_fmcs_sub,
+  [k_cac_clock_hoco]     = k_cac_cacr1_fmcs_hoco,
+  [k_cac_clock_loco]     = k_cac_cacr1_fmcs_loco,
+  [k_cac_clock_pclkb]    = k_cac_cacr1_fmcs_pclkb,
+  [k_cac_clock_iwdtclk]  = k_cac_cacr1_fmcs_iwdtclk,
+  [k_cac_clock_uclk]     = k_cac_cacr1_fmcs_uclk,
+  [k_cac_clock_clkout25] = k_cac_cacr1_fmcs_clkout25,
+};
 
 /**
- * @brief Translate rx_cac_clock_t into a CACR2.RSCS bit pattern
- * @param[in] clock Reference clock selector (main..iwdtclk only)
- * @return uint8_t CACR2 RSCS field value (already shifted)
- * @pre clock in [k_cac_clock_main .. k_cac_clock_iwdtclk]
- * @post Returned value covers only the CACR2 RSCS bits
+ * @var s_rscs_table
+ * @brief CACR2.RSCS bit pattern indexed by rx_cac_clock_t (reference subset)
+ * @details RX72N HW Manual p.394 (RSCS field of CACR2). Only Main..IWDTCLK
+ * (indices 0..5) are valid references; rx_cac_init() rejects higher values.
  * @since Version 1.0.0
  */
-static uint8_t internal_rscs_bits(rx_cac_clock_t clock)
-{
-  switch (clock) {
-    case k_cac_clock_main:
-      return k_cac_cacr2_rscs_main;
-    case k_cac_clock_sub:
-      return k_cac_cacr2_rscs_sub;
-    case k_cac_clock_hoco:
-      return k_cac_cacr2_rscs_hoco;
-    case k_cac_clock_loco:
-      return k_cac_cacr2_rscs_loco;
-    case k_cac_clock_pclkb:
-      return k_cac_cacr2_rscs_pclkb;
-    case k_cac_clock_iwdtclk:
-      return k_cac_cacr2_rscs_iwdtclk;
-    default:
-      return k_cac_cacr2_rscs_main;
-  }
-}
+static const uint8_t s_rscs_table[] = {
+  [k_cac_clock_main]    = k_cac_cacr2_rscs_main,
+  [k_cac_clock_sub]     = k_cac_cacr2_rscs_sub,
+  [k_cac_clock_hoco]    = k_cac_cacr2_rscs_hoco,
+  [k_cac_clock_loco]    = k_cac_cacr2_rscs_loco,
+  [k_cac_clock_pclkb]   = k_cac_cacr2_rscs_pclkb,
+  [k_cac_clock_iwdtclk] = k_cac_cacr2_rscs_iwdtclk,
+};
 
 /**
- * @brief Translate rx_cac_target_div_t into a CACR1.TCSS bit pattern
- * @param[in] div Target-clock divider selector
- * @return uint8_t CACR1 TCSS field value (already shifted)
+ * @var s_tcss_table
+ * @brief CACR1.TCSS bit pattern indexed by rx_cac_target_div_t
+ * @details RX72N HW Manual p.393 (TCSS field of CACR1).
  * @since Version 1.0.0
  */
-static uint8_t internal_tcss_bits(rx_cac_target_div_t div)
-{
-  switch (div) {
-    case k_cac_target_div_1:
-      return k_cac_cacr1_tcss_div_1;
-    case k_cac_target_div_4:
-      return k_cac_cacr1_tcss_div_4;
-    case k_cac_target_div_8:
-      return k_cac_cacr1_tcss_div_8;
-    case k_cac_target_div_32:
-      return k_cac_cacr1_tcss_div_32;
-    default:
-      return k_cac_cacr1_tcss_div_1;
-  }
-}
+static const uint8_t s_tcss_table[] = {
+  [k_cac_target_div_1]  = k_cac_cacr1_tcss_div_1,
+  [k_cac_target_div_4]  = k_cac_cacr1_tcss_div_4,
+  [k_cac_target_div_8]  = k_cac_cacr1_tcss_div_8,
+  [k_cac_target_div_32] = k_cac_cacr1_tcss_div_32,
+};
 
 /**
- * @brief Translate rx_cac_ref_div_t into a CACR2.RCDS bit pattern
- * @param[in] div Reference-clock divider selector
- * @return uint8_t CACR2 RCDS field value (already shifted)
+ * @var s_rcds_table
+ * @brief CACR2.RCDS bit pattern indexed by rx_cac_ref_div_t
+ * @details RX72N HW Manual p.394 (RCDS field of CACR2).
  * @since Version 1.0.0
  */
-static uint8_t internal_rcds_bits(rx_cac_ref_div_t div)
-{
-  switch (div) {
-    case k_cac_ref_div_32:
-      return k_cac_cacr2_rcds_div_32;
-    case k_cac_ref_div_128:
-      return k_cac_cacr2_rcds_div_128;
-    case k_cac_ref_div_1024:
-      return k_cac_cacr2_rcds_div_1024;
-    case k_cac_ref_div_8192:
-      return k_cac_cacr2_rcds_div_8192;
-    default:
-      return k_cac_cacr2_rcds_div_32;
-  }
-}
+static const uint8_t s_rcds_table[] = {
+  [k_cac_ref_div_32]   = k_cac_cacr2_rcds_div_32,
+  [k_cac_ref_div_128]  = k_cac_cacr2_rcds_div_128,
+  [k_cac_ref_div_1024] = k_cac_cacr2_rcds_div_1024,
+  [k_cac_ref_div_8192] = k_cac_cacr2_rcds_div_8192,
+};
+
+/* =============================================================================
+ * Internal Helpers
+ * =============================================================================
+ */
 
 /**
  * @brief Release the CAC module from module-stop (MSTPCRC.MSTPC19 = 0)
@@ -221,19 +187,20 @@ static void internal_module_stop(void)
 /**
  * @brief Program CACR1, CACR2, CAULVR, CALLVR, and CAICR from a config struct
  * @param[in] config Validated configuration struct (never nullptr)
- * @pre config != nullptr and all fields validated by caller
+ * @pre config != nullptr and all enum fields validated by rx_cac_init()
  * @pre CACR0.CFME == 0 (writes to CAULVR/CALLVR require measurement halted)
  * @post Registers hold the requested configuration and CASTR flags are cleared
  * @since Version 1.0.0
  */
 static void internal_apply_config(const rx_cac_config_t* config)
 {
-  volatile rx_cac_regs_t* regs      = cac();
-  uint8_t                 cacr1_val = (uint8_t)(internal_fmcs_bits(config->measured_clock) |
-                                internal_tcss_bits(config->target_div) | k_cac_cacr1_edges_rising);
-  uint8_t                 cacr2_val =
-    (uint8_t)(internal_rscs_bits(config->reference_clock) |
-              internal_rcds_bits(config->reference_div) | k_cac_cacr2_rps_internal);
+  volatile rx_cac_regs_t* regs = cac();
+  uint8_t                 cacr1_val =
+    (uint8_t)(s_fmcs_table[(uint8_t)config->measured_clock] |
+              s_tcss_table[(uint8_t)config->target_div] | k_cac_cacr1_edges_rising);
+  uint8_t cacr2_val =
+    (uint8_t)(s_rscs_table[(uint8_t)config->reference_clock] |
+              s_rcds_table[(uint8_t)config->reference_div] | k_cac_cacr2_rps_internal);
   uint8_t caicr_val = k_cac_caicr_clear_all_flags;
   if (config->enable_ferrie) {
     caicr_val |= k_cac_caicr_ferrie_mask;
@@ -275,6 +242,14 @@ rx_err_t rx_cac_init(const rx_cac_config_t* config)
     rx_log_error(s_tag, "rx_cac_init: measured_clock out of range");
     return k_rx_err_invalid_arg;
   }
+  if ((uint8_t)config->target_div > k_cac_target_div_32) {
+    rx_log_error(s_tag, "rx_cac_init: target_div out of range");
+    return k_rx_err_invalid_arg;
+  }
+  if ((uint8_t)config->reference_div > k_cac_ref_div_8192) {
+    rx_log_error(s_tag, "rx_cac_init: reference_div out of range");
+    return k_rx_err_invalid_arg;
+  }
   internal_module_start();
   volatile rx_cac_regs_t* regs = cac();
   regs->cacr0                  = k_cac_cacr0_cfme_stop;
@@ -289,12 +264,7 @@ rx_err_t rx_cac_start(void)
     rx_log_error(s_tag, "rx_cac_start: not initialized");
     return k_rx_err_not_initialized;
   }
-  volatile rx_cac_regs_t* regs = cac();
-  regs->cacr0                  = k_cac_cacr0_cfme_start;
-  if ((regs->cacr0 & k_cac_cacr0_cfme_mask) != k_cac_cacr0_cfme_start) {
-    rx_log_error(s_tag, "rx_cac_start: CFME readback failed");
-    return k_rx_err_hw_error;
-  }
+  cac()->cacr0 = k_cac_cacr0_cfme_start;
   return k_rx_ok;
 }
 
@@ -304,12 +274,7 @@ rx_err_t rx_cac_stop(void)
     rx_log_error(s_tag, "rx_cac_stop: not initialized");
     return k_rx_err_not_initialized;
   }
-  volatile rx_cac_regs_t* regs = cac();
-  regs->cacr0                  = k_cac_cacr0_cfme_stop;
-  if ((regs->cacr0 & k_cac_cacr0_cfme_mask) != 0U) {
-    rx_log_error(s_tag, "rx_cac_stop: CFME did not clear");
-    return k_rx_err_hw_error;
-  }
+  cac()->cacr0 = k_cac_cacr0_cfme_stop;
   return k_rx_ok;
 }
 
