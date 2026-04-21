@@ -145,8 +145,7 @@ static void test_enter_deep_standby_before_init_returns_not_initialized(void)
 {
   test_setup();
 
-  rx_err_t err =
-    rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, k_lpc_deep_ram_usb_on, false);
+  rx_err_t err = rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, k_lpc_deep_ram_usb_on, false);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
 }
 
@@ -285,9 +284,8 @@ static void test_enter_deep_standby_invalid_power_returns_invalid_arg(void)
   test_setup();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_lpc_init());
 
-  rx_err_t err = rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0,
-                                                    (rx_lpc_deep_power_t)0xFFU,
-                                                    false);
+  rx_err_t err =
+    rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, (rx_lpc_deep_power_t)0xFFU, false);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -307,8 +305,7 @@ static void test_enter_deep_standby_accepts_full_wake_mask(void)
   test_setup();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_lpc_init());
 
-  rx_err_t err =
-    rx_lpc_enter_deep_software_standby(k_lpc_wake_all_mask, k_lpc_deep_lvd_off, false);
+  rx_err_t err = rx_lpc_enter_deep_software_standby(k_lpc_wake_all_mask, k_lpc_deep_lvd_off, false);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -317,15 +314,12 @@ static void test_enter_deep_standby_accepts_each_deep_power_level(void)
   test_setup();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_lpc_init());
 
-  TEST_ASSERT_EQUAL(
-    k_rx_ok,
-    rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, k_lpc_deep_ram_usb_on, false));
-  TEST_ASSERT_EQUAL(
-    k_rx_ok,
-    rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, k_lpc_deep_ram_usb_off, false));
-  TEST_ASSERT_EQUAL(
-    k_rx_ok,
-    rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, k_lpc_deep_lvd_off, false));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, k_lpc_deep_ram_usb_on, false));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, k_lpc_deep_ram_usb_off, false));
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, k_lpc_deep_lvd_off, false));
 }
 
 /* =============================================================================
@@ -376,8 +370,7 @@ static void test_get_wake_flags_returns_injected_value(void)
 {
   test_setup();
 
-  const uint32_t injected =
-    k_lpc_wake_irq3 | k_lpc_wake_rtc_alarm | k_lpc_wake_can1_rx;
+  const uint32_t injected = k_lpc_wake_irq3 | k_lpc_wake_rtc_alarm | k_lpc_wake_can1_rx;
   rx_lpc_test_set_pending_wake_flags(injected);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_lpc_init());
 
