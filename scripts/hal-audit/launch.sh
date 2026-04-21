@@ -36,7 +36,20 @@ TMUX_SESSION="${HAL_AUDIT_SESSION:-hal-audit}"
 BRANCH_PREFIX="${HAL_AUDIT_BRANCH_PREFIX:-bsikar/verifying-}"
 BASE_REF="${HAL_AUDIT_BASE_REF:-main}"
 CLAUDE_BIN="${CLAUDE_BIN:-claude}"
-CLAUDE_FLAGS="${CLAUDE_FLAGS:---model claude-sonnet-4-6 --dangerously-skip-permissions}"
+
+# Default: Sonnet 4.6, extended thinking enabled, max effort,
+# bypassed permission prompts (so each instance can edit/commit/push
+# without user interaction).
+#
+# Verified flag names (claude CLI):
+#   --model claude-sonnet-4-6
+#   --thinking enabled               (choices: enabled / adaptive / disabled)
+#   --effort max                     (choices: low / medium / high / xhigh / max)
+#   --dangerously-skip-permissions
+#
+# Override via env if needed:
+#   CLAUDE_FLAGS='...' bash scripts/hal-audit/launch.sh
+CLAUDE_FLAGS="${CLAUDE_FLAGS:---model claude-sonnet-4-6 --thinking enabled --effort max --dangerously-skip-permissions}"
 
 DRY_RUN=0
 CLEAN_ONLY=0
