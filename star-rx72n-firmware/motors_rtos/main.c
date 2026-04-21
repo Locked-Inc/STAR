@@ -334,11 +334,22 @@ static bool encoders_init(void)
 
 static uint16_t encoder_read_raw(uint8_t motor_idx)
 {
+    /* IMPORTANT -- indices 2 and 3 are INTENTIONALLY SWAPPED relative to the
+     * k_motors[] table's `.timer_channel` field and the previous "M2->TPU1,
+     * M3->TPU2" comment.  Cross-check against motor_spin_test IPROPI on
+     * 2026-04-21 showed M2 (BR) drawing ~0 current at every duty (dead
+     * motor, hardware issue) while the encoder at TPU1 was counting fast
+     * and the encoder at TPU2 was pinned at 0.  The only consistent reading
+     * is that the physical encoder harness wires BR's encoder to TPU2
+     * (TCLKC/TCLKD on PC0/PB3) and BL's encoder to TPU1 (TCLKA/TCLKB on
+     * PC2/PA3) -- the opposite of what the k_motors[] comment claims.
+     * Swapping the indices here makes m2 track BR and m3 track BL so the
+     * CSV column matches the motor driver index in motor_spin_test. */
     static const uintptr_t k_tcnt_addr[k_motor_count] = {
-        0x000C1386U,       /* MTU1 */
-        0x000C1406U,       /* MTU2 */
-        0x00088120U + 6U,  /* TPU1 */
-        0x00088130U + 6U,  /* TPU2 */
+        0x000C1386U,       /* MTU1 -- M0 (FL) */
+        0x000C1406U,       /* MTU2 -- M1 (FR) */
+        0x00088130U + 6U,  /* TPU2 -- M2 (BR): harness wires BR -> TPU2 */
+        0x00088120U + 6U,  /* TPU1 -- M3 (BL): harness wires BL -> TPU1 */
     };
     return REG16_AT(k_tcnt_addr[motor_idx]);
 }
