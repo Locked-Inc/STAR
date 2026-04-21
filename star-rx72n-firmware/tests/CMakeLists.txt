@@ -902,6 +902,18 @@ apply_strict_warnings(test_rx_tpu)
 apply_test_includes(test_rx_tpu)
 target_link_libraries(test_rx_tpu unity)
 
+# Test: TMR HAL Driver (8-bit + 16-bit cascade)
+add_executable(test_rx_tmr
+    test_rx_tmr.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_hal/src/rx_tmr.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_onewire_hw.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_system_regs.c
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_tmr)
+apply_test_includes(test_rx_tmr)
+target_link_libraries(test_rx_tmr unity)
+
 # Test: TPU Encoder Backend (Overflow Detection + Velocity)
 add_executable(test_rx_encoder_tpu
     test_rx_encoder_tpu.c
@@ -1254,6 +1266,7 @@ set(ALL_TEST_TARGETS
     test_rx_led_status
     test_rx_dmaca
     test_rx_tpu
+    test_rx_tmr
     test_rx_encoder_tpu
     test_rx_host_irq
     test_rx_stack_monitor
@@ -1317,6 +1330,7 @@ add_test(NAME test_rx_poeg COMMAND test_rx_poeg)
 add_test(NAME test_rx_led_status COMMAND test_rx_led_status)
 add_test(NAME test_rx_dmaca COMMAND test_rx_dmaca)
 add_test(NAME test_rx_tpu COMMAND test_rx_tpu)
+add_test(NAME test_rx_tmr COMMAND test_rx_tmr)
 add_test(NAME test_rx_encoder_tpu COMMAND test_rx_encoder_tpu)
 add_test(NAME test_rx_host_irq COMMAND test_rx_host_irq)
 add_test(NAME test_rx_stack_monitor COMMAND test_rx_stack_monitor)
