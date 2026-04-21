@@ -939,14 +939,15 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_verify_port_0     = 0x0000U, /**< Expected value of k_rx_port_0 (0x00) */
-  k_verify_port_1     = 0x0001U, /**< Expected value of k_rx_port_1 (0x01) */
-  k_verify_port_5     = 0x0005U, /**< Expected value of k_rx_port_5 (0x05) */
-  k_verify_port_a     = 0x000AU, /**< Expected value of k_rx_port_a (0x0A) */
-  k_verify_port_b     = 0x000BU, /**< Expected value of k_rx_port_b (0x0B) */
-  k_verify_port_c     = 0x000CU, /**< Expected value of k_rx_port_c (0x0C) */
-  k_verify_port_e     = 0x000EU, /**< Expected value of k_rx_port_e (0x0E) */
-  k_verify_port_j     = 0x0012U, /**< Expected value of k_rx_port_j (0x12) - follows Port H; Port I does not exist */
+  k_verify_port_0 = 0x0000U, /**< Expected value of k_rx_port_0 (0x00) */
+  k_verify_port_1 = 0x0001U, /**< Expected value of k_rx_port_1 (0x01) */
+  k_verify_port_5 = 0x0005U, /**< Expected value of k_rx_port_5 (0x05) */
+  k_verify_port_a = 0x000AU, /**< Expected value of k_rx_port_a (0x0A) */
+  k_verify_port_b = 0x000BU, /**< Expected value of k_rx_port_b (0x0B) */
+  k_verify_port_c = 0x000CU, /**< Expected value of k_rx_port_c (0x0C) */
+  k_verify_port_e = 0x000EU, /**< Expected value of k_rx_port_e (0x0E) */
+  k_verify_port_j =
+    0x0012U, /**< Expected value of k_rx_port_j (0x12) - follows Port H; Port I does not exist */
   k_verify_pin_2      = 0x0002U, /**< Expected value of k_rx_pin_2 (2) */
   k_verify_pin_7      = 0x0007U, /**< Expected value of k_rx_pin_7 (7) */
   k_verify_port_shift = 0x0008U, /**< Expected value of k_port_shift (8) */

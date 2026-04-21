@@ -371,12 +371,10 @@ typedef struct {
     invert_pwm; /**< Invert PWM polarity. false = active-high (default for DRV8263H), true = active-low. Use if H-bridge has inverted logic. */
   uint8_t
     port_a_idx; /**< Port index of the GTIOC*A pad (DRV8263H IN2). e.g. 2 for PORT2, 14 for PORTE. Pass from a board pin map. */
-  uint8_t
-    bit_a; /**< Bit (0..7) within port_a_idx for the GTIOC*A pad. */
+  uint8_t bit_a; /**< Bit (0..7) within port_a_idx for the GTIOC*A pad. */
   uint8_t
     port_b_idx; /**< Port index of the GTIOC*B pad (DRV8263H IN1). e.g. 1 for PORT1, 12 for PORTC. */
-  uint8_t
-    bit_b; /**< Bit (0..7) within port_b_idx for the GTIOC*B pad. */
+  uint8_t bit_b; /**< Bit (0..7) within port_b_idx for the GTIOC*B pad. */
 } rx_motor_config_t;
 
 /**

@@ -126,11 +126,11 @@ typedef struct {
   uint8_t           reserved1[k_usb_reserved_06_08_bytes];
   volatile uint16_t dvstctr0;
   uint8_t           reserved2[k_usb_reserved_0a_14_bytes];
-  volatile uint16_t cfifo;          /**< Common FIFO port @ 0x14 (16-bit WORD, manual p.1941) */
-  uint16_t          reserved_cfifo; /**< Padding @ 0x16 to maintain D0FIFO offset */
-  volatile uint16_t d0fifo;         /**< D0 FIFO port @ 0x18 (16-bit WORD, manual p.1941) */
+  volatile uint16_t cfifo;           /**< Common FIFO port @ 0x14 (16-bit WORD, manual p.1941) */
+  uint16_t          reserved_cfifo;  /**< Padding @ 0x16 to maintain D0FIFO offset */
+  volatile uint16_t d0fifo;          /**< D0 FIFO port @ 0x18 (16-bit WORD, manual p.1941) */
   uint16_t          reserved_d0fifo; /**< Padding @ 0x1A */
-  volatile uint16_t d1fifo;         /**< D1 FIFO port @ 0x1C (16-bit WORD, manual p.1941) */
+  volatile uint16_t d1fifo;          /**< D1 FIFO port @ 0x1C (16-bit WORD, manual p.1941) */
   uint16_t          reserved_d1fifo; /**< Padding @ 0x1E */
   volatile uint16_t cfifosel;
   volatile uint16_t cfifoctr;
@@ -246,7 +246,7 @@ typedef enum : uint16_t {
 
 /* SYSSTS0 bits (manual p.1934) */
 typedef enum : uint16_t {
-  k_usb_syssts0_lnst_mask   = 0x0003,   /**< b1:b0: USB data line status */
+  k_usb_syssts0_lnst_mask   = 0x0003, /**< b1:b0: USB data line status */
   k_usb_syssts0_lnst_se0    = 0x0000,
   k_usb_syssts0_lnst_fs_j   = 0x0001,
   k_usb_syssts0_lnst_fs_k   = 0x0002,
@@ -296,8 +296,8 @@ typedef enum : uint16_t {
   k_usb_intsts0_ctsq_wr_status  = 0x0004,
   k_usb_intsts0_ctsq_wr_nd      = 0x0005,
   k_usb_intsts0_ctsq_seq_err    = 0x0006,
-  k_usb_intsts0_valid           = (1U << 3),  /**< b3: Setup packet received */
-  k_usb_intsts0_dvsq_mask       = (7U << 4),  /**< b6:b4: Device state */
+  k_usb_intsts0_valid           = (1U << 3), /**< b3: Setup packet received */
+  k_usb_intsts0_dvsq_mask       = (7U << 4), /**< b6:b4: Device state */
   k_usb_intsts0_dvsq_powered    = (0U << 4),
   k_usb_intsts0_dvsq_default    = (1U << 4),
   k_usb_intsts0_dvsq_address    = (2U << 4),
@@ -360,10 +360,10 @@ typedef enum : uint16_t {
 
 /* PIPECFG bits (manual p.1972) */
 typedef enum : uint16_t {
-  k_usb_pipecfg_epnum_mask = 0x000F,   /**< b3:b0: Endpoint number */
-  k_usb_pipecfg_dir        = (1U << 4), /**< b4: Transfer direction (0=receive,1=transmit) */
-  k_usb_pipecfg_shtnak     = (1U << 7), /**< b7: Pipe disabled at end of transfer */
-  k_usb_pipecfg_dblb       = (1U << 9), /**< b9: Double buffer mode (pipes 1-5 only) */
+  k_usb_pipecfg_epnum_mask = 0x000F,     /**< b3:b0: Endpoint number */
+  k_usb_pipecfg_dir        = (1U << 4),  /**< b4: Transfer direction (0=receive,1=transmit) */
+  k_usb_pipecfg_shtnak     = (1U << 7),  /**< b7: Pipe disabled at end of transfer */
+  k_usb_pipecfg_dblb       = (1U << 9),  /**< b9: Double buffer mode (pipes 1-5 only) */
   k_usb_pipecfg_bfre       = (1U << 10), /**< b10: BRDY interrupt operation specification */
   k_usb_pipecfg_type_mask  = (3U << 14), /**< b15:b14: Transfer type */
   k_usb_pipecfg_type_bulk  = (1U << 14),
@@ -426,10 +426,10 @@ typedef enum : uint16_t {
  * @note CFIFOSEL does NOT have DREQE or DCLRM (those are D0/D1 only).
  */
 typedef enum : uint16_t {
-  k_usb_cfifosel_curpipe_mask = 0x000F,   /**< b3:b0: Port access pipe */
+  k_usb_cfifosel_curpipe_mask = 0x000F, /**< b3:b0: Port access pipe */
   k_usb_cfifosel_curpipe_dcp  = 0x0000,
-  k_usb_cfifosel_isel         = (1U << 5), /**< b5: Access direction (0=read,1=write) */
-  k_usb_cfifosel_bigend       = (1U << 8), /**< b8: Endian select */
+  k_usb_cfifosel_isel         = (1U << 5),  /**< b5: Access direction (0=read,1=write) */
+  k_usb_cfifosel_bigend       = (1U << 8),  /**< b8: Endian select */
   k_usb_cfifosel_mbw_mask     = (1U << 10), /**< b10: MBW bit */
   k_usb_cfifosel_mbw_8        = (0U << 10), /**< 8-bit access */
   k_usb_cfifosel_mbw_16       = (1U << 10), /**< 16-bit access */
@@ -444,7 +444,7 @@ typedef enum : uint16_t {
  * @note D0/D1FIFOSEL do NOT have ISEL (direction select is always host RX).
  */
 typedef enum : uint16_t {
-  k_usb_dnfifosel_curpipe_mask = 0x000F,    /**< b3:b0: Port access pipe */
+  k_usb_dnfifosel_curpipe_mask = 0x000F, /**< b3:b0: Port access pipe */
   k_usb_dnfifosel_curpipe_dcp  = 0x0000,
   k_usb_dnfifosel_bigend       = (1U << 8),  /**< b8: Endian select */
   k_usb_dnfifosel_mbw_mask     = (1U << 10), /**< b10: MBW bit */
@@ -458,7 +458,7 @@ typedef enum : uint16_t {
 
 /* FIFOCTR bits (manual p.1945 CFIFOCTR, p.1946 D0/D1FIFOCTR) */
 typedef enum : uint16_t {
-  k_usb_fifoctr_dtln_mask = 0x01FF,   /**< b8:b0: Data length */
+  k_usb_fifoctr_dtln_mask = 0x01FF,     /**< b8:b0: Data length */
   k_usb_fifoctr_frdy      = (1U << 13), /**< b13: FIFO ready */
   k_usb_fifoctr_bclr      = (1U << 14), /**< b14: CPU buffer clear */
   k_usb_fifoctr_bval      = (1U << 15), /**< b15: Buffer valid flag */

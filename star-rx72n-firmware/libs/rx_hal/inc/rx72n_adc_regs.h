@@ -247,16 +247,17 @@ typedef enum : uint8_t {
   k_s12ad_offset_adcer   = 0x0E, /**< Control Extended: data alignment, self-diag mode */
   k_s12ad_offset_adstrgr = 0x10, /**< Trigger Select: software, MTU, GPT, external */
   k_s12ad_offset_adansb0 = 0x14, /**< Channel Select B0: channels for group B scan */
-  k_s12ad_offset_addbldr = 0x84, /**< Double Trigger Data: double-trigger mode result (not in struct) */
-  k_s12ad_offset_adrd    = 0x1E, /**< Self-Diagnosis Data: internal reference result */
-  k_s12ad_offset_addr0   = 0x20, /**< Data Register 0: AN000/AN100 conversion result */
-  k_s12ad_offset_addr1   = 0x22, /**< Data Register 1: AN001/AN101 conversion result */
-  k_s12ad_offset_addr2   = 0x24, /**< Data Register 2: AN002/AN102 conversion result */
-  k_s12ad_offset_addr3   = 0x26, /**< Data Register 3: AN003/AN103 conversion result */
-  k_s12ad_offset_addr4   = 0x28, /**< Data Register 4: AN004/AN104 conversion result */
-  k_s12ad_offset_addr5   = 0x2A, /**< Data Register 5: AN005/AN105 conversion result */
-  k_s12ad_offset_addr6   = 0x2C, /**< Data Register 6: AN006/AN106 conversion result */
-  k_s12ad_offset_addr7   = 0x2E, /**< Data Register 7: AN007/AN107 conversion result */
+  k_s12ad_offset_addbldr =
+    0x84, /**< Double Trigger Data: double-trigger mode result (not in struct) */
+  k_s12ad_offset_adrd  = 0x1E, /**< Self-Diagnosis Data: internal reference result */
+  k_s12ad_offset_addr0 = 0x20, /**< Data Register 0: AN000/AN100 conversion result */
+  k_s12ad_offset_addr1 = 0x22, /**< Data Register 1: AN001/AN101 conversion result */
+  k_s12ad_offset_addr2 = 0x24, /**< Data Register 2: AN002/AN102 conversion result */
+  k_s12ad_offset_addr3 = 0x26, /**< Data Register 3: AN003/AN103 conversion result */
+  k_s12ad_offset_addr4 = 0x28, /**< Data Register 4: AN004/AN104 conversion result */
+  k_s12ad_offset_addr5 = 0x2A, /**< Data Register 5: AN005/AN105 conversion result */
+  k_s12ad_offset_addr6 = 0x2C, /**< Data Register 6: AN006/AN106 conversion result */
+  k_s12ad_offset_addr7 = 0x2E, /**< Data Register 7: AN007/AN107 conversion result */
 } s12ad_offsets_t;
 
 /**
@@ -539,7 +540,8 @@ typedef struct {
    */
   volatile uint16_t adansb0;
 
-  uint8_t reserved3[k_s12ad_reserved_16_1d]; /**< Reserved @ 0x16-0x1D (ADDBLDR at 0x84, not in struct) */
+  uint8_t
+    reserved3[k_s12ad_reserved_16_1d]; /**< Reserved @ 0x16-0x1D (ADDBLDR at 0x84, not in struct) */
 
   /**
    * @brief A/D Self-Diagnosis Data Register (ADRD) @ offset 0x1E

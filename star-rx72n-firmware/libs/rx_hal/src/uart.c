@@ -378,7 +378,7 @@ typedef enum : uint8_t {
   k_sci_mstpb_sci5  = 26, /**< SCI5 module stop bit in MSTPCRB (MSTPB26) */
   k_sci_mstpb_sci6  = 25, /**< SCI6 module stop bit in MSTPCRB (MSTPB25) */
   k_sci_mstpb_sci7  = 24, /**< SCI7 module stop bit in MSTPCRB (MSTPB24) */
-  k_sci_mstpb_sci12 =  4, /**< SCI12 (SCIh) module stop bit in MSTPCRB (MSTPB4) */
+  k_sci_mstpb_sci12 = 4,  /**< SCI12 (SCIh) module stop bit in MSTPCRB (MSTPB4) */
 } sci_mstpb_bits_t;
 
 /**
@@ -726,8 +726,7 @@ static rx_err_t internal_enable_sci_clock(const uint8_t channel)
     system_regs()->mstpcrb &= ~(k_uart_mstpcrb_bit_set << (uint8_t)mstpb_bit);
   } else if (channel >= k_uart_mstpc_channel_min && channel <= k_uart_mstpc_channel_max) {
     /* SCI8-SCI11: clear bit in MSTPCRC (bits 27-24) */
-    const uint8_t mstpc_bit =
-      (uint8_t)(k_sci_mstpc_sci8 - (channel - k_uart_mstpc_channel_min));
+    const uint8_t mstpc_bit = (uint8_t)(k_sci_mstpc_sci8 - (channel - k_uart_mstpc_channel_min));
     system_regs()->mstpcrc &= ~(k_uart_mstpcrb_bit_set << mstpc_bit);
   } else {
     *prcr_reg() = k_rx_prcr_lock;
@@ -1048,10 +1047,10 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
    * SCIj (SCI0-SCI6) and SCIh (SCI12) are clocked by PCLKB.
    * SCIi (SCI7-SCI11, extended region 0x000D0xxx) are clocked by PCLKA.
    * Using the wrong clock produces a wrong BRR and a wrong baud rate. */
-  const uint32_t pclk_hz =
-    (((uint8_t)config->channel >= k_uart_pclka_channel_min) &&
-     ((uint8_t)config->channel <= k_uart_pclka_channel_max))
-    ? k_pclka_hz : k_pclkb_hz;
+  const uint32_t pclk_hz = (((uint8_t)config->channel >= k_uart_pclka_channel_min) &&
+                            ((uint8_t)config->channel <= k_uart_pclka_channel_max))
+                             ? k_pclka_hz
+                             : k_pclkb_hz;
 
   /* Set baud rate */
   sci->brr = internal_calculate_brr(config->baudrate, pclk_hz);

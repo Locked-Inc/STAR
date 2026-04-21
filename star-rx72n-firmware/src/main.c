@@ -267,9 +267,10 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_i2c_addr_bno055  = 0x28U, /**< BNO055 I2C address when COM3/ADR pin = LOW */
-  k_i2c_addr_bmp280  = 0x76U, /**< BMP280 I2C address when SDO pin = LOW */
-  k_i2c_addr_mpu6050 = 0x68U, /**< GY-521 / MPU-6050 default address (AD0=LOW) -- bench-test probe */
+  k_i2c_addr_bno055 = 0x28U, /**< BNO055 I2C address when COM3/ADR pin = LOW */
+  k_i2c_addr_bmp280 = 0x76U, /**< BMP280 I2C address when SDO pin = LOW */
+  k_i2c_addr_mpu6050 =
+    0x68U, /**< GY-521 / MPU-6050 default address (AD0=LOW) -- bench-test probe */
 } imu_i2c_addr_t;
 static_assert(sizeof(imu_i2c_addr_t) == sizeof(uint8_t), "imu_i2c_addr_t must be uint8_t sized");
 static_assert(k_i2c_addr_bno055 != k_i2c_addr_bmp280,
@@ -483,8 +484,8 @@ static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
   volatile uint16_t* const FENTRYR = (volatile uint16_t*)0x007FE084U;
   volatile uint32_t* const FSADDR  = (volatile uint32_t*)0x007FE030U;
   volatile uint16_t* const FPCKAR  = (volatile uint16_t*)0x007FE0E4U;
-  volatile uint8_t*  const FWEPROR = (volatile uint8_t* )0x0008C296U;
-  volatile uint8_t*  const FACI_B  = (volatile uint8_t* )0x007E0000U;
+  volatile uint8_t* const  FWEPROR = (volatile uint8_t*)0x0008C296U;
+  volatile uint8_t* const  FACI_B  = (volatile uint8_t*)0x007E0000U;
   volatile uint16_t* const FACI_W  = (volatile uint16_t*)0x007E0000U;
   const uint32_t           DF_ADDR = 0x00100000U;
 
@@ -498,32 +499,37 @@ static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
   /* Enter data flash P/E mode. */
   *FENTRYR = 0xAA80U;
   /* Spin until data-flash P/E mode is active (FENTRYR low byte = 0x80). */
-  for (uint32_t i = 0; i < 100000U && (*FENTRYR & 0x00FFU) != 0x80U; i++) { }
+  for (uint32_t i = 0; i < 100000U && (*FENTRYR & 0x00FFU) != 0x80U; i++) {
+  }
   /* Wait for FRDY. */
-  for (uint32_t i = 0; i < 100000U && ((*FSTATR) & (1UL << 15)) == 0U; i++) { }
+  for (uint32_t i = 0; i < 100000U && ((*FSTATR) & (1UL << 15)) == 0U; i++) {
+  }
 
   /* Erase the 64-byte block containing DF_ADDR. */
-  *FSADDR    = DF_ADDR;
-  *FACI_B    = 0x20U; /* block erase */
-  *FACI_B    = 0xD0U; /* terminator */
-  for (uint32_t i = 0; i < 1000000U && ((*FSTATR) & (1UL << 15)) == 0U; i++) { }
+  *FSADDR = DF_ADDR;
+  *FACI_B = 0x20U; /* block erase */
+  *FACI_B = 0xD0U; /* terminator */
+  for (uint32_t i = 0; i < 1000000U && ((*FSTATR) & (1UL << 15)) == 0U; i++) {
+  }
 
   /* Program 4 bytes: [0xA5, 0x5A, who_am_i, err_byte_low]. */
-  const uint8_t err_byte = (err == 0) ? 0x00U : (uint8_t)(err & 0xFFU);
-  const uint16_t word0 = (uint16_t)((0x5AU << 8) | 0xA5U);                 /* LE: bytes 0=A5, 1=5A */
+  const uint8_t  err_byte = (err == 0) ? 0x00U : (uint8_t)(err & 0xFFU);
+  const uint16_t word0    = (uint16_t)((0x5AU << 8) | 0xA5U); /* LE: bytes 0=A5, 1=5A */
   const uint16_t word1 = (uint16_t)(((uint16_t)err_byte << 8) | who_am_i); /* LE: 2=who, 3=err    */
 
   *FSADDR = DF_ADDR;
-  *FACI_B = 0xE8U;        /* program */
-  *FACI_B = 0x02U;        /* N = 2 x 16-bit words (= 4 bytes) */
+  *FACI_B = 0xE8U; /* program */
+  *FACI_B = 0x02U; /* N = 2 x 16-bit words (= 4 bytes) */
   *FACI_W = word0;
   *FACI_W = word1;
-  *FACI_B = 0xD0U;        /* terminator */
-  for (uint32_t i = 0; i < 1000000U && ((*FSTATR) & (1UL << 15)) == 0U; i++) { }
+  *FACI_B = 0xD0U; /* terminator */
+  for (uint32_t i = 0; i < 1000000U && ((*FSTATR) & (1UL << 15)) == 0U; i++) {
+  }
 
   /* Exit P/E mode. */
   *FENTRYR = 0xAA00U;
-  for (uint32_t i = 0; i < 100000U && (*FENTRYR & 0x00FFU) != 0x00U; i++) { }
+  for (uint32_t i = 0; i < 100000U && (*FENTRYR & 0x00FFU) != 0x00U; i++) {
+  }
 }
 
 /* =============================================================================
@@ -1872,12 +1878,11 @@ static void internal_register_system_buses(void)
   if (err == k_rx_ok) {
     err = rx_bus_i2c_init(&g_bus_manager, "i2c1_mpu");
   }
-  uint8_t  who_am_i   = 0x00U;
-  int32_t  probe_err  = err; /* preserve setup err if any */
+  uint8_t who_am_i  = 0x00U;
+  int32_t probe_err = err; /* preserve setup err if any */
   if (err == k_rx_ok) {
     const uint8_t who_am_i_reg = 0x75U; /* MPU-6050 WHO_AM_I register */
-    err = rx_bus_i2c_write_read(&g_bus_manager, "i2c1_mpu", &who_am_i_reg, 1U,
-                                &who_am_i, 1U);
+    err       = rx_bus_i2c_write_read(&g_bus_manager, "i2c1_mpu", &who_am_i_reg, 1U, &who_am_i, 1U);
     probe_err = err;
     if (err == k_rx_ok) {
       rx_log_info_val("MPU6050", "WHO_AM_I=0x", who_am_i);

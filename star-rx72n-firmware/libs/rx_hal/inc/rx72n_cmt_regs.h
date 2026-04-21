@@ -558,7 +558,7 @@ static_assert(sizeof(rx_cmt_channel_regs_t) == k_cmt_channel_regs_size_bytes,
               "CMT channel register structure size mismatch");
 
 /* Verify CMT channel register offsets */
-static_assert(offsetof(rx_cmt_channel_regs_t, cmcr)  == k_cmt_cmcr_offset,
+static_assert(offsetof(rx_cmt_channel_regs_t, cmcr) == k_cmt_cmcr_offset,
               "CMT CMCR register offset incorrect");
 static_assert(offsetof(rx_cmt_channel_regs_t, cmcnt) == k_cmt_cmcnt_offset,
               "CMT CMCNT register offset incorrect");

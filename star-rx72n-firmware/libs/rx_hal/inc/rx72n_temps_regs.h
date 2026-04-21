@@ -367,17 +367,21 @@ static inline volatile const uint32_t* temps_tscdr_reg(void)
  */
 
 /* Verify TSCR address (critical for temperature sensor control) */
-static_assert(k_temps_tscr_addr == 0x0008C500U, "TSCR address must be 0x0008C500 per Ch58 manual"); /* NOLINT(readability-magic-numbers) */
+static_assert(
+  k_temps_tscr_addr == 0x0008C500U,
+  "TSCR address must be 0x0008C500 per Ch58 manual"); /* NOLINT(readability-magic-numbers) */
 
 /* Verify TSCDR address (factory calibration data) */
 static_assert(k_temps_tscdr_addr == 0xFE7F7D7CU, /* NOLINT(readability-magic-numbers) */
               "TSCDR address must be 0xFE7F7D7C per Ch58 manual");
 
 /* Verify TSEN bit position */
-static_assert(k_tscr_tsen_bit == 0x80U, "TSEN must be bit 7 per Ch58 manual"); /* NOLINT(readability-magic-numbers) */
+static_assert(k_tscr_tsen_bit == 0x80U,
+              "TSEN must be bit 7 per Ch58 manual"); /* NOLINT(readability-magic-numbers) */
 
 /* Verify TSOE bit position */
-static_assert(k_tscr_tsoe_bit == 0x10U, "TSOE must be bit 4 per Ch58 manual"); /* NOLINT(readability-magic-numbers) */
+static_assert(k_tscr_tsoe_bit == 0x10U,
+              "TSOE must be bit 4 per Ch58 manual"); /* NOLINT(readability-magic-numbers) */
 
 /* Verify combined sensor+output value */
 static_assert(k_tscr_sensor_with_output == (k_tscr_tsen_bit | k_tscr_tsoe_bit),
@@ -388,7 +392,8 @@ static_assert(k_temps_cal_temp_celsius == 125U, /* NOLINT(readability-magic-numb
               "Calibration temperature must be 125C per Ch58 manual");
 
 /* Verify ADC reference */
-static_assert(k_temps_adc_full_scale == 4096U, "ADC full scale must be 4096 (12-bit)"); /* NOLINT(readability-magic-numbers) */
+static_assert(k_temps_adc_full_scale == 4096U,
+              "ADC full scale must be 4096 (12-bit)"); /* NOLINT(readability-magic-numbers) */
 
 /** @} */
 

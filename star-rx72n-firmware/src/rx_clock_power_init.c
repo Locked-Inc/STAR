@@ -277,7 +277,8 @@ typedef enum : uint16_t {
 
 /** @brief System clock configuration */
 typedef enum : uint32_t {
-  k_system_clock_dividers   = 0x20011222, /**< SCKCR: ICK=0(/1)->ICLK=240MHz, BCK=1(/2)->BCLK=120MHz, PCKA=1(/2)->120MHz, PCKB/C/D=2(/4)->60MHz, FCK=2(/4)->60MHz (manual p339) */
+  k_system_clock_dividers =
+    0x20011222, /**< SCKCR: ICK=0(/1)->ICLK=240MHz, BCK=1(/2)->BCLK=120MHz, PCKA=1(/2)->120MHz, PCKB/C/D=2(/4)->60MHz, FCK=2(/4)->60MHz (manual p339) */
   k_system_clock_source_pll = 0x0400,     /**< SCKCR3: Select PLL as system clock source */
   k_packcr_addr             = 0x00080044, /**< PACKCR absolute address (USB clock source select) */
 } system_clock_config_t;

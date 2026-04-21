@@ -229,7 +229,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_mpc_pfs_base_offset = 64, /**< Byte offset from mpc() to P00PFS register (0x40: P00PFS=0x0008C140, base=0x0008C100) */
+  k_mpc_pfs_base_offset =
+    64, /**< Byte offset from mpc() to P00PFS register (0x40: P00PFS=0x0008C140, base=0x0008C100) */
 } mpc_pfs_offset_t;
 
 /**
