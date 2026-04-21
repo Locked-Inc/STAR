@@ -45,7 +45,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-
 #include <string.h>
 
 #include "mock_rx_lpc.h"
@@ -312,7 +311,7 @@ static void test_enter_deep_standby_invalid_power_returns_invalid_arg(void)
 
   rx_lpc_deep_power_t bad_pwr;
   ((uint8_t*)&bad_pwr)[0] = k_lpc_test_bad_enum_byte;
-  rx_err_t err = rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, bad_pwr, false);
+  rx_err_t err            = rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, bad_pwr, false);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
