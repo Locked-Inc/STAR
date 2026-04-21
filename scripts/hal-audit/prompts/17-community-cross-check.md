@@ -7,8 +7,9 @@ Launch via:
 The launcher's default flags (Opus 4.7, thinking enabled, effort high,
 permission prompts skipped) apply -- no per-prompt override needed.
 
-Cap wall time: 90 minutes. This is bigger than the per-peripheral
-audits because it spans EVERY scalar constant in the HAL.
+No wall-time cap. Take the time you need to be exhaustive. This is
+bigger than the per-peripheral audits because it spans EVERY scalar
+constant in the HAL.
 
 ================================================================
 ## TASK
@@ -24,10 +25,25 @@ TCNT=0x0000 for an entire bringup cycle because of it.
 Your job: for every single scalar value in our HAL -- PSEL, PFS, PMR,
 PDR, port, pin, peripheral base address, register offset, bit shift,
 bit mask, MSTPCR bit, IRQ vector, clock divider, prescaler, mode bit,
-status bit, enum value -- find the canonical entry in the hirakuni45/RX
-RX72N headers (or the Renesas iodefine.h shipped with the chip support
-packs) and confirm the values match. Where they disagree, FIX OUR HAL
-to match the community library, then build, test, and push.
+status bit, enum value -- look it up in the hirakuni45/RX RX72N
+headers (which are easy to navigate), THEN find the same value in the
+RX72N HW manual PDF, and confirm both agree with our HAL. Where they
+disagree, FIX OUR HAL to match THE MANUAL (not hirakuni45 -- the
+manual is the spec; hirakuni45 is just an easier index into it).
+
+Source-of-truth policy:
+- The Renesas RX72N HW manual is THE authoritative source. Every
+  constant we keep or change must cite a manual page or section number
+  in its doc-comment.
+- The hirakuni45 repo is a CROSS-REFERENCE / NAVIGATION TOOL ONLY.
+  Use it to find what to look up in the manual. Do NOT cite it in
+  source comments, file headers, or commit messages. Do NOT add a
+  "verified against hirakuni45" line in any .h or .c file.
+- If hirakuni45 and the manual disagree, the manual wins, and flag
+  the disagreement in the commit body so a human can adjudicate.
+- It IS fine to mention hirakuni45 in the audit OUTPUT TABLE (the
+  Phase 1 stdout report) so a reviewer can see how each value was
+  cross-checked. Just keep it out of committed source.
 
 We are a robotics team and we already wasted bringup time on bad PSELs.
 Be exhaustive. Skipping a value because it "looks fine" is what got us
@@ -413,4 +429,4 @@ working tree dirty so a human can review.
   package-unavailable on 144-pin -- that's a separate hardware bug
   to flag in the commit body, not "fix" by removing the pin.
 - Do NOT use --no-verify on commits. If a hook fails, fix it.
-- Cap wall time: 90 minutes.
+- No wall-time cap; take what you need to be exhaustive.

@@ -20,20 +20,32 @@
 # ----------------------------------------------------------------------
 # Usage (from repo root):
 #
-#   bash scripts/hal-audit/launch.sh --only <pattern>
-#       Run a single prompt (or a few) whose filename matches <pattern>.
-#       Pattern is a substring of the prompt filename. e.g.
+#   bash scripts/hal-audit/launch.sh --only <pattern>[,<pattern>...]
+#       Run prompts whose filename matches any of the comma-separated
+#       substring patterns. Examples:
 #           --only 17                        -> 17-community-cross-check.md
 #           --only community                 -> 17-community-cross-check.md
 #           --only mtu                       -> 05-mtu.md
 #           --only sci-uart                  -> 03-sci-uart.md
-#       If the pattern matches more than one prompt, you'll see them all
+#           --only 18,19,20,21,22            -> all 5 new-peripheral prompts
+#           --only cac,doc,tmr,eccram,usb0   -> same five, by name
+#       --only may also be passed multiple times; results are unioned.
+#       If the result matches more than one prompt, you'll see them all
 #       in the dry-run preview and be asked to confirm before launch.
+#
+#   bash scripts/hal-audit/launch.sh --preset <name>
+#       Run a named preset. Defined presets:
+#           new-stuff      -> 18-cac, 19-doc, 20-tmr, 21-eccram, 22-usb0
+#                             (the new-peripheral implementation prompts
+#                             added after the round-2 audit)
+#           per-peripheral -> 01-system-clock through 16-misc-regs
+#                             (the original audit pass)
+#           cross-check    -> 17-community-cross-check
+#       --preset and --only may be combined; results are unioned.
 #
 #   bash scripts/hal-audit/launch.sh --all
 #       Run every prompt in prompts/*.md in parallel. Re-burns budget on
-#       all 16 per-peripheral audits even if main already has their fixes.
-#       Use this only when you actually want a clean-slate sweep.
+#       audit work that's already in main. Asks for confirmation.
 #
 #   bash scripts/hal-audit/launch.sh --only <pattern> --dry-run
 #   bash scripts/hal-audit/launch.sh --all              --dry-run
@@ -96,33 +108,52 @@ DEFAULT_CLAUDE_FLAGS="${CLAUDE_FLAGS:---model claude-opus-4-7 --thinking enabled
 DRY_RUN=0
 CLEAN=0
 RUN_ALL=0
-ONLY_PATTERN=""
+ONLY_PATTERNS=()       # accumulated from one or more --only invocations,
+                       # each may be a comma-separated list of patterns.
+PRESETS=()             # accumulated from one or more --preset invocations.
 
-usage() { sed -n '3,60p' "$0"; }
+usage() { sed -n '3,70p' "$0"; }
+
+# Resolve a preset name to a comma-separated list of patterns.
+resolve_preset() {
+    case "$1" in
+        new-stuff)      echo "18,19,20,21,22" ;;
+        per-peripheral) echo "01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16" ;;
+        cross-check)    echo "17" ;;
+        *) echo "ERROR: unknown preset '$1' (known: new-stuff, per-peripheral, cross-check)" >&2; exit 2 ;;
+    esac
+}
 
 while [ $# -gt 0 ]; do
     case "$1" in
-        --dry-run)  DRY_RUN=1 ;;
-        --clean)    CLEAN=1 ;;
-        --all)      RUN_ALL=1 ;;
-        --only)     shift; ONLY_PATTERN="${1:-}";;
-        --only=*)   ONLY_PATTERN="${1#--only=}";;
-        --help|-h)  usage; exit 0 ;;
+        --dry-run)   DRY_RUN=1 ;;
+        --clean)     CLEAN=1 ;;
+        --all)       RUN_ALL=1 ;;
+        --only)      shift; ONLY_PATTERNS+=("${1:-}");;
+        --only=*)    ONLY_PATTERNS+=("${1#--only=}");;
+        --preset)    shift; PRESETS+=("${1:-}");;
+        --preset=*)  PRESETS+=("${1#--preset=}");;
+        --help|-h)   usage; exit 0 ;;
         *) echo "Unknown arg: $1 (use --help)"; exit 1 ;;
     esac
     shift
 done
 
+# Expand presets into the same pattern bag as --only.
+for preset in "${PRESETS[@]}"; do
+    ONLY_PATTERNS+=("$(resolve_preset "$preset")")
+done
+
 # Require an explicit selection. No more "bare invocation runs all 17."
-if [ "$RUN_ALL" -eq 0 ] && [ -z "$ONLY_PATTERN" ]; then
-    echo "ERROR: must specify --all or --only <pattern>." >&2
+if [ "$RUN_ALL" -eq 0 ] && [ "${#ONLY_PATTERNS[@]}" -eq 0 ]; then
+    echo "ERROR: must specify --all, --only <pattern>, or --preset <name>." >&2
     echo "       Bare 'launch.sh' no longer fans out to every prompt." >&2
     echo "       Run 'launch.sh --help' for usage." >&2
     exit 2
 fi
 
-if [ "$RUN_ALL" -eq 1 ] && [ -n "$ONLY_PATTERN" ]; then
-    echo "ERROR: --all and --only are mutually exclusive." >&2
+if [ "$RUN_ALL" -eq 1 ] && [ "${#ONLY_PATTERNS[@]}" -gt 0 ]; then
+    echo "ERROR: --all is mutually exclusive with --only / --preset." >&2
     exit 2
 fi
 
@@ -143,15 +174,33 @@ PROMPTS=()
 if [ "$RUN_ALL" -eq 1 ]; then
     PROMPTS=("${ALL_PROMPTS[@]}")
 else
+    # Flatten ONLY_PATTERNS (which may have comma-separated entries)
+    # into a single de-duplicated list of patterns.
+    declare -A WANT_PATTERNS=()
+    for entry in "${ONLY_PATTERNS[@]}"; do
+        IFS=',' read -ra parts <<< "$entry"
+        for part in "${parts[@]}"; do
+            part="${part## }"; part="${part%% }"          # trim spaces
+            [ -n "$part" ] && WANT_PATTERNS["$part"]=1
+        done
+    done
+    # For each prompt, accept it if any pattern is a substring of its name.
+    declare -A SEEN=()
     for p in "${ALL_PROMPTS[@]}"; do
-        if [[ "$(basename "$p")" == *"$ONLY_PATTERN"* ]]; then
-            PROMPTS+=("$p")
-        fi
+        bn=$(basename "$p")
+        for pat in "${!WANT_PATTERNS[@]}"; do
+            if [[ "$bn" == *"$pat"* ]] && [ -z "${SEEN[$p]:-}" ]; then
+                PROMPTS+=("$p")
+                SEEN["$p"]=1
+                break
+            fi
+        done
     done
 fi
 
 if [ "${#PROMPTS[@]}" -eq 0 ]; then
-    echo "ERROR: no prompts matched --only '$ONLY_PATTERN'" >&2
+    echo "ERROR: no prompts matched the supplied --only / --preset patterns:" >&2
+    for entry in "${ONLY_PATTERNS[@]}"; do echo "  '$entry'" >&2; done
     echo "Available prompts:" >&2
     for p in "${ALL_PROMPTS[@]}"; do echo "  $(basename "$p")" >&2; done
     exit 1
@@ -326,5 +375,11 @@ echo "to tear down what you just launched:"
 if [ "$RUN_ALL" -eq 1 ]; then
     echo "    bash scripts/hal-audit/launch.sh --clean --all"
 else
-    echo "    bash scripts/hal-audit/launch.sh --clean --only $ONLY_PATTERN"
+    # Print a clean --clean line that matches what was launched.
+    teardown_args=""
+    for p in "${PROMPTS[@]}"; do
+        task_id=$(prompt_meta "$p")
+        teardown_args+=" --only $task_id"
+    done
+    echo "    bash scripts/hal-audit/launch.sh --clean$teardown_args"
 fi
