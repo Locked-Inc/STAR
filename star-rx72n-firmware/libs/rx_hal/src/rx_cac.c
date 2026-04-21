@@ -200,7 +200,7 @@ static uint8_t internal_rcds_bits(rx_cac_ref_div_t div)
 static void internal_module_start(void)
 {
   *prcr_reg() = k_rx_prcr_unlock_prc1;
-  system_regs()->mstpcrc &= ~((uint32_t)1U << (uint32_t)k_cac_mstpc_bit);
+  system_regs()->mstpcrc &= ~((uint32_t)1U << k_cac_mstpc_bit);
   *prcr_reg() = k_rx_prcr_lock;
 }
 
@@ -214,7 +214,7 @@ static void internal_module_start(void)
 static void internal_module_stop(void)
 {
   *prcr_reg() = k_rx_prcr_unlock_prc1;
-  system_regs()->mstpcrc |= ((uint32_t)1U << (uint32_t)k_cac_mstpc_bit);
+  system_regs()->mstpcrc |= ((uint32_t)1U << k_cac_mstpc_bit);
   *prcr_reg() = k_rx_prcr_lock;
 }
 
@@ -329,7 +329,7 @@ bool rx_cac_check(uint32_t* out_count)
                                       k_cac_caicr_ovfie_mask));
   ack |= k_cac_caicr_clear_all_flags;
   regs->caicr = ack;
-  return (status & k_cac_castr_ferrf_mask) != 0U;
+  return (bool)((status & k_cac_castr_ferrf_mask) != 0U);
 }
 
 rx_err_t rx_cac_deinit(void)

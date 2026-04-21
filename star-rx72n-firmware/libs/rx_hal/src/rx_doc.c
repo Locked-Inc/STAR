@@ -167,8 +167,8 @@ static uint8_t internal_docr_for_mode(rx_doc_mode_t mode)
  */
 static bool internal_mode_is_valid(rx_doc_mode_t mode)
 {
-  return (mode == k_rx_doc_mode_compare) || (mode == k_rx_doc_mode_compare_neq) ||
-         (mode == k_rx_doc_mode_add) || (mode == k_rx_doc_mode_subtract);
+  return (bool)((mode == k_rx_doc_mode_compare) || (mode == k_rx_doc_mode_compare_neq) ||
+                (mode == k_rx_doc_mode_add) || (mode == k_rx_doc_mode_subtract));
 }
 
 /**
@@ -197,7 +197,7 @@ static rx_err_t internal_enable_doc_clock(void)
   RX_CHECK_NULL_PTR(system_regs(), s_tag, "System registers not accessible");
 
   *prcr_reg() = k_rx_prcr_unlock_prc1;
-  system_regs()->mstpcrb &= ~((uint32_t)k_doc_mstpb_bit_one << k_doc_mstpb_bit);
+  system_regs()->mstpcrb &= ~(k_doc_mstpb_bit_one << k_doc_mstpb_bit);
   *prcr_reg() = k_rx_prcr_lock;
   return k_rx_ok;
 }
@@ -221,7 +221,7 @@ static rx_err_t internal_disable_doc_clock(void)
   RX_CHECK_NULL_PTR(system_regs(), s_tag, "System registers not accessible");
 
   *prcr_reg() = k_rx_prcr_unlock_prc1;
-  system_regs()->mstpcrb |= ((uint32_t)k_doc_mstpb_bit_one << k_doc_mstpb_bit);
+  system_regs()->mstpcrb |= (k_doc_mstpb_bit_one << k_doc_mstpb_bit);
   *prcr_reg() = k_rx_prcr_lock;
   return k_rx_ok;
 }
@@ -251,7 +251,7 @@ static void internal_clear_dopcf(void)
  */
 static bool internal_read_dopcf(void)
 {
-  return (doc()->docr & k_doc_docr_dopcf_mask) != 0U;
+  return (bool)((doc()->docr & k_doc_docr_dopcf_mask) != 0U);
 }
 
 /* =============================================================================
