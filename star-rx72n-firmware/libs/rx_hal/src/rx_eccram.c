@@ -153,9 +153,9 @@ static volatile uintptr_t s_last_1bit_addr = 0;
 static uint8_t internal_mode_to_reg(rx_eccram_mode_t mode)
 {
   if (mode == k_eccram_mode_disabled) {
-    return (uint8_t)k_rx_eccrammode_ecc_disabled;
+    return k_rx_eccrammode_ecc_disabled;
   }
-  return (uint8_t)k_rx_eccrammode_ecc_with_check;
+  return k_rx_eccrammode_ecc_with_check;
 }
 
 /**
@@ -175,7 +175,7 @@ static uint8_t internal_mode_to_reg(rx_eccram_mode_t mode)
 static void internal_enable_eccram_module_clock(void)
 {
   *prcr_reg() = k_rx_prcr_unlock_prc1;
-  system_regs()->mstpcrc &= ~((uint32_t)k_rx_eccram_mstpcrc_bit_mask);
+  system_regs()->mstpcrc &= ~(k_rx_eccram_mstpcrc_bit_mask);
   *prcr_reg() = k_rx_prcr_lock;
 }
 
@@ -195,9 +195,9 @@ static void internal_enable_eccram_module_clock(void)
 static void internal_write_eccram_mode(uint8_t mode_reg_value)
 {
   volatile rx_eccram_regs_t* regs = eccram_regs();
-  regs->eccramprcr                = (uint8_t)k_rx_eccramprcr_unlock;
+  regs->eccramprcr                = k_rx_eccramprcr_unlock;
   regs->eccrammode                = mode_reg_value;
-  regs->eccramprcr                = (uint8_t)k_rx_eccramprcr_lock;
+  regs->eccramprcr                = k_rx_eccramprcr_lock;
 }
 
 /**
@@ -217,9 +217,9 @@ static void internal_write_eccram_mode(uint8_t mode_reg_value)
 static void internal_enable_1bit_latch(void)
 {
   volatile rx_eccram_regs_t* regs = eccram_regs();
-  regs->eccramprcr                = (uint8_t)k_rx_eccramprcr_unlock;
-  regs->eccram1stsen              = (uint8_t)k_rx_eccram1stsen_enable;
-  regs->eccramprcr                = (uint8_t)k_rx_eccramprcr_lock;
+  regs->eccramprcr                = k_rx_eccramprcr_unlock;
+  regs->eccram1stsen              = k_rx_eccram1stsen_enable;
+  regs->eccramprcr                = k_rx_eccramprcr_lock;
 }
 
 /**
@@ -279,13 +279,13 @@ void rx_eccram_test_reset_state(void)
 static void internal_zero_fill_region(void)
 {
 #ifdef UNIT_TEST
-  for (uint32_t i = 0; i < (uint32_t)k_rx_eccram_word_count; i++) {
-    g_mock_eccram_region[i] = (uint32_t)k_rx_eccram_fill_pattern;
+  for (uint32_t i = 0; i < k_rx_eccram_word_count; i++) {
+    g_mock_eccram_region[i] = k_rx_eccram_fill_pattern;
   }
 #else
   volatile uint32_t* dst = (volatile uint32_t*)k_rx_eccram_region_base_addr;
-  for (uint32_t i = 0; i < (uint32_t)k_rx_eccram_word_count; i++) {
-    dst[i] = (uint32_t)k_rx_eccram_fill_pattern;
+  for (uint32_t i = 0; i < k_rx_eccram_word_count; i++) {
+    dst[i] = k_rx_eccram_fill_pattern;
   }
 #endif
 }
@@ -319,20 +319,20 @@ static void internal_ram_error_isr_body(void)
   volatile rx_eccram_regs_t* regs = eccram_regs();
 
   const uint8_t status2 = regs->eccram2sts;
-  if ((status2 & (uint8_t)k_rx_eccram2sts_ecc2err_mask) != 0U) {
+  if ((status2 & k_rx_eccram2sts_ecc2err_mask) != 0U) {
     const uintptr_t addr2 = (uintptr_t)regs->eccram2ecad;
     s_last_2bit_addr      = addr2;
-    regs->eccram2sts      = (uint8_t)k_rx_eccram2sts_clear;
+    regs->eccram2sts      = k_rx_eccram2sts_clear;
     if (s_on_2bit != NULL) {
       s_on_2bit(addr2, s_isr_ctx);
     }
   }
 
   const uint8_t status1 = regs->eccram1sts;
-  if ((status1 & (uint8_t)k_rx_eccram1sts_ecc1err_mask) != 0U) {
+  if ((status1 & k_rx_eccram1sts_ecc1err_mask) != 0U) {
     const uintptr_t addr1 = (uintptr_t)regs->eccram1ecad;
     s_last_1bit_addr      = addr1;
-    regs->eccram1sts      = (uint8_t)k_rx_eccram1sts_clear;
+    regs->eccram1sts      = k_rx_eccram1sts_clear;
     if (s_on_1bit != NULL) {
       s_on_1bit(addr1, s_isr_ctx);
     }
@@ -388,7 +388,7 @@ rx_err_t rx_eccram_init(rx_eccram_mode_t mode)
 
   internal_enable_eccram_module_clock();
 
-  internal_write_eccram_mode((uint8_t)k_rx_eccrammode_ecc_no_check);
+  internal_write_eccram_mode(k_rx_eccrammode_ecc_no_check);
 
   internal_zero_fill_region();
 
@@ -396,14 +396,14 @@ rx_err_t rx_eccram_init(rx_eccram_mode_t mode)
   internal_write_eccram_mode(final_mode_reg);
 
   volatile rx_eccram_regs_t* regs   = eccram_regs();
-  const uint8_t              actual = regs->eccrammode & (uint8_t)k_rx_eccrammode_rammod_mask;
-  if (actual != (final_mode_reg & (uint8_t)k_rx_eccrammode_rammod_mask)) {
+  const uint8_t              actual = regs->eccrammode & k_rx_eccrammode_rammod_mask;
+  if (actual != (final_mode_reg & k_rx_eccrammode_rammod_mask)) {
     rx_log_error(s_tag, "ECCRAMMODE read-back mismatch");
     return k_rx_err_hw_init_failed;
   }
 
-  regs->eccram1sts = (uint8_t)k_rx_eccram1sts_clear;
-  regs->eccram2sts = (uint8_t)k_rx_eccram2sts_clear;
+  regs->eccram1sts = k_rx_eccram1sts_clear;
+  regs->eccram2sts = k_rx_eccram2sts_clear;
 
   if (mode != k_eccram_mode_disabled) {
     internal_enable_1bit_latch();
@@ -423,8 +423,8 @@ rx_err_t rx_eccram_get_error_status(rx_eccram_status_t* out)
   const uint8_t s1 = regs->eccram1sts;
   const uint8_t s2 = regs->eccram2sts;
 
-  out->one_bit_error = ((s1 & (uint8_t)k_rx_eccram1sts_ecc1err_mask) != 0U);
-  out->two_bit_error = ((s2 & (uint8_t)k_rx_eccram2sts_ecc2err_mask) != 0U);
+  out->one_bit_error = ((s1 & k_rx_eccram1sts_ecc1err_mask) != 0U);
+  out->two_bit_error = ((s2 & k_rx_eccram2sts_ecc2err_mask) != 0U);
   out->one_bit_addr  = (uintptr_t)regs->eccram1ecad;
   out->two_bit_addr  = (uintptr_t)regs->eccram2ecad;
 
@@ -434,8 +434,8 @@ rx_err_t rx_eccram_get_error_status(rx_eccram_status_t* out)
 rx_err_t rx_eccram_clear_errors(void)
 {
   volatile rx_eccram_regs_t* regs = eccram_regs();
-  regs->eccram1sts                = (uint8_t)k_rx_eccram1sts_clear;
-  regs->eccram2sts                = (uint8_t)k_rx_eccram2sts_clear;
+  regs->eccram1sts                = k_rx_eccram1sts_clear;
+  regs->eccram2sts                = k_rx_eccram2sts_clear;
   return k_rx_ok;
 }
 

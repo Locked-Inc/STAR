@@ -156,13 +156,13 @@ static rx_err_t internal_translate_opcc_mode(rx_lpc_opcc_mode_t mode, uint8_t* o
 
   switch (mode) {
     case k_lpc_opcc_high_speed:
-      *opcm_bits = (uint8_t)k_opccr_opcm_highspeed;
+      *opcm_bits = k_opccr_opcm_highspeed;
       return k_rx_ok;
     case k_lpc_opcc_low_speed_1:
-      *opcm_bits = (uint8_t)k_opccr_opcm_lowspeed1;
+      *opcm_bits = k_opccr_opcm_lowspeed1;
       return k_rx_ok;
     case k_lpc_opcc_low_speed_2:
-      *opcm_bits = (uint8_t)k_opccr_opcm_lowspeed2;
+      *opcm_bits = k_opccr_opcm_lowspeed2;
       return k_rx_ok;
     default:
       return k_rx_err_invalid_arg;
@@ -216,25 +216,25 @@ internal_assemble_dpsbycr(rx_lpc_deep_power_t deep_power, bool keep_io, bool set
 
   switch (deep_power) {
     case k_lpc_deep_ram_usb_on:
-      value |= (uint8_t)k_dpsbycr_deepcut_ram_usb_on;
+      value |= k_dpsbycr_deepcut_ram_usb_on;
       break;
     case k_lpc_deep_ram_usb_off:
-      value |= (uint8_t)k_dpsbycr_deepcut_ram_usb_off;
+      value |= k_dpsbycr_deepcut_ram_usb_off;
       break;
     case k_lpc_deep_lvd_off:
-      value |= (uint8_t)k_dpsbycr_deepcut_lvd_off;
+      value |= k_dpsbycr_deepcut_lvd_off;
       break;
     default:
       /* Caller is responsible for validation; default to least-aggressive cut */
-      value |= (uint8_t)k_dpsbycr_deepcut_ram_usb_on;
+      value |= k_dpsbycr_deepcut_ram_usb_on;
       break;
   }
 
   if (keep_io) {
-    value |= (uint8_t)k_dpsbycr_iokeep;
+    value |= k_dpsbycr_iokeep;
   }
   if (set_dpsby) {
-    value |= (uint8_t)k_dpsbycr_dpsby;
+    value |= k_dpsbycr_dpsby;
   }
   return value;
 }
@@ -269,12 +269,12 @@ rx_err_t rx_lpc_init(void)
 
   /* Write 0 to each flag register to clear any pending wake bits */
   volatile uint16_t* prcr = prcr_reg();
-  *prcr                   = (uint16_t)k_rx_prcr_unlock_prc1;
+  *prcr                   = k_rx_prcr_unlock_prc1;
   dps->dpsifr0            = 0U;
   dps->dpsifr1            = 0U;
   dps->dpsifr2            = 0U;
   dps->dpsifr3            = 0U;
-  *prcr                   = (uint16_t)k_rx_prcr_lock;
+  *prcr                   = k_rx_prcr_lock;
 #endif
 
   s_last_mode   = k_lpc_mode_none;
@@ -298,13 +298,13 @@ rx_err_t rx_lpc_set_operating_power(rx_lpc_opcc_mode_t mode)
   volatile uint16_t* prcr = prcr_reg();
   volatile uint8_t*  ocr  = opccr_reg();
 
-  *prcr = (uint16_t)k_rx_prcr_unlock_prc1;
+  *prcr = k_rx_prcr_unlock_prc1;
   *ocr  = opcm_bits;
-  *prcr = (uint16_t)k_rx_prcr_lock;
+  *prcr = k_rx_prcr_lock;
 
   /* Bounded poll for OPCMTSF=0 (Manual 11.2.6, page 414) */
   for (uint16_t i = 0U; i < k_opcmtsf_poll_max; i++) {
-    if ((*ocr & (uint8_t)k_opccr_opcmtsf) == 0U) {
+    if ((*ocr & k_opccr_opcmtsf) == 0U) {
       return k_rx_ok;
     }
   }
@@ -325,9 +325,9 @@ rx_err_t rx_lpc_enter_sleep(void)
   volatile uint16_t*         prcr = prcr_reg();
   volatile rx_system_regs_t* sys  = system_regs();
 
-  *prcr      = (uint16_t)k_rx_prcr_unlock_prc1;
+  *prcr      = k_rx_prcr_unlock_prc1;
   sys->sbycr = (uint16_t)(sys->sbycr & (uint16_t)~k_sbycr_ssby);
-  *prcr      = (uint16_t)k_rx_prcr_lock;
+  *prcr      = k_rx_prcr_lock;
 #endif
 
   s_last_mode = k_lpc_mode_sleep;
@@ -350,12 +350,12 @@ rx_err_t rx_lpc_enter_software_standby(void)
   volatile rx_system_regs_t* sys  = system_regs();
   volatile rx_dps_regs_t*    dps  = dps_regs();
 
-  *prcr = (uint16_t)k_rx_prcr_unlock_prc1;
+  *prcr = k_rx_prcr_unlock_prc1;
   /* Clear DPSBY so WAIT enters software standby, not deep standby */
   dps->dpsbycr = (uint8_t)(dps->dpsbycr & (uint8_t)~k_dpsbycr_dpsby);
   /* Set SSBY so WAIT enters standby, not sleep */
-  sys->sbycr = (uint16_t)(sys->sbycr | (uint16_t)k_sbycr_ssby);
-  *prcr      = (uint16_t)k_rx_prcr_lock;
+  sys->sbycr = (uint16_t)(sys->sbycr | k_sbycr_ssby);
+  *prcr      = k_rx_prcr_lock;
 #endif
 
   s_last_mode = k_lpc_mode_software_standby;
@@ -376,7 +376,7 @@ rx_lpc_enter_deep_software_standby(uint32_t wake_mask, rx_lpc_deep_power_t deep_
   if (wake_mask == 0U) {
     return k_rx_err_invalid_arg;
   }
-  if ((wake_mask & ~(uint32_t)k_lpc_wake_all_mask) != 0U) {
+  if ((wake_mask & ~k_lpc_wake_all_mask) != 0U) {
     return k_rx_err_invalid_arg;
   }
   if ((deep_power != k_lpc_deep_ram_usb_on) && (deep_power != k_lpc_deep_ram_usb_off) &&
@@ -391,7 +391,7 @@ rx_lpc_enter_deep_software_standby(uint32_t wake_mask, rx_lpc_deep_power_t deep_
   volatile rx_system_regs_t* sys  = system_regs();
   volatile rx_dps_regs_t*    dps  = dps_regs();
 
-  *prcr = (uint16_t)k_rx_prcr_unlock_prc1;
+  *prcr = k_rx_prcr_unlock_prc1;
 
   /* 1. Enable wake sources */
   dps->dpsier0 = (uint8_t)((wake_mask >> 0U) & 0xFFU);
@@ -409,9 +409,9 @@ rx_lpc_enter_deep_software_standby(uint32_t wake_mask, rx_lpc_deep_power_t deep_
   dps->dpsbycr = dpsbycr_value;
 
   /* 4. Set SBYCR.SSBY so WAIT enters standby-family */
-  sys->sbycr = (uint16_t)(sys->sbycr | (uint16_t)k_sbycr_ssby);
+  sys->sbycr = (uint16_t)(sys->sbycr | k_sbycr_ssby);
 
-  *prcr = (uint16_t)k_rx_prcr_lock;
+  *prcr = k_rx_prcr_lock;
 #else
   (void)dpsbycr_value;
   internal_program_wake_enables(wake_mask);
