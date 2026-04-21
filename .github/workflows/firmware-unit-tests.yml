@@ -145,10 +145,9 @@ jobs:
           # lcov is still used above for HTML report generation.
           #
           # Run from repo root (not build/) so --filter paths match naturally.
-          # TODO: drop the rx_tmr exclude once its agent-generated test
-          # suite is backfilled to 100%/100%/100%. All other new drivers
-          # (rx_cac, rx_doc, rx_eccram, rx_lpc) were backfilled to
-          # 100/100/100 on 2026-04-21 and are now in the gate.
+          # All five new drivers (rx_cac, rx_doc, rx_eccram, rx_lpc, rx_tmr)
+          # were backfilled to 100/100/100 on 2026-04-21 and are now in the
+          # 100%/100%/100% gate alongside every other file in libs/.
           gcovr \
             --object-directory star-rx72n-firmware/tests/build \
             --filter 'star-rx72n-firmware/libs/' \
@@ -156,9 +155,6 @@ jobs:
             --exclude '.*/rx_nanopb/inc/gen/.*' \
             --exclude '.*/rx_hal/inc/rx72n_port_regs.h' \
             --exclude '.*/rx_hal/inc/rx_port_utils.h' \
-            --exclude '.*/rx_hal/inc/rx72n_tmr_regs.h' \
-            --exclude '.*/rx_hal/inc/rx_tmr.h' \
-            --exclude '.*/rx_hal/src/rx_tmr.c' \
             --exclude '.*/CMakeFiles/.*' \
             --gcov-executable 'llvm-cov-18 gcov' \
             --gcov-ignore-errors=source_not_found \
