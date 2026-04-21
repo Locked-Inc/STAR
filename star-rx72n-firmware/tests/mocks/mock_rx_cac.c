@@ -38,8 +38,5 @@ rx_cac_regs_t g_mock_cac_regs;
 
 void mock_rx_cac_reset(void)
 {
-  /* memset is the right tool for zeroing a fixed-size struct. cert-msc24-c
-   * recommends memset_s but glibc doesn't ship C11 Annex K, so suppress. */
-  // NOLINTNEXTLINE(cert-msc24-c) -- glibc has no C11 Annex K memset_s
   memset(&g_mock_cac_regs, 0, sizeof(g_mock_cac_regs));
 }

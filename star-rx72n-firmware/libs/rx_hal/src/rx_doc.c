@@ -251,7 +251,7 @@ static void internal_clear_dopcf(void)
  */
 static bool internal_read_dopcf(void)
 {
-  return (bool)((doc()->docr & k_doc_docr_dopcf_mask) != 0U);
+  return (doc()->docr & k_doc_docr_dopcf_mask) != 0U;
 }
 
 /* =============================================================================

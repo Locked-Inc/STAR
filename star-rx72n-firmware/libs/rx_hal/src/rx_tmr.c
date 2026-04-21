@@ -581,9 +581,8 @@ rx_err_t rx_tmr_set_period_us(rx_tmr_channel_t channel, uint32_t period_us)
   }
   const uint64_t compare = ticks - 1U;
 
-  const uint32_t max_compare = (s_tmr_mode[idx] == k_tmr_mode_16bit_cascade)
-                                 ? k_tmr_max_tcora_16bit
-                                 : k_tmr_max_tcora;
+  const uint32_t max_compare =
+    (s_tmr_mode[idx] == k_tmr_mode_16bit_cascade) ? k_tmr_max_tcora_16bit : k_tmr_max_tcora;
   if (compare > (uint64_t)max_compare) {
     rx_log_error_val(s_tag, "Period too large for divider", period_us);
     return k_rx_err_invalid_arg;
