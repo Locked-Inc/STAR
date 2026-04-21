@@ -822,7 +822,7 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
    *              old MBW=16 path lost the high-byte half-word at the end
    *              of an odd-length OUT transfer (and silently advanced
    *              DTLN by 2 anyway). */
-  usb0()->cfifosel = (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_mbw_8;
+  usb0()->cfifosel = (pipe & k_usb_cfifosel_curpipe_mask) | k_usb_cfifosel_mbw_8;
 
   /* Wait for FIFO ready (hardware polling) */
   /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
@@ -945,9 +945,9 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     const uint16_t isel_bit = (pipe == k_usb_pipe_min) ? (uint16_t)(1U << 5) : 0U;
     /* Overwrite the whole register (not RMW) so leftover RCNT/REW bits
      * from enumeration-side DCP access don't bleed in. */
-    *fifosel_r = (uint16_t)(isel_bit | (pipe & k_usb_fifosel_curpipe_mask));
+    *fifosel_r = (uint16_t)(isel_bit | (pipe & k_usb_cfifosel_curpipe_mask));
     for (volatile uint32_t n = 0; n < k_usb_fifo_timeout_iterations; ++n) {
-      if ((*fifosel_r & k_usb_fifosel_curpipe_mask) == (pipe & k_usb_fifosel_curpipe_mask)) {
+      if ((*fifosel_r & k_usb_cfifosel_curpipe_mask) == (pipe & k_usb_cfifosel_curpipe_mask)) {
         break;
       }
     }
@@ -1062,6 +1062,109 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   }
 
   return written;
+}
+
+/**
+ * @brief Emit a zero-length packet (ZLP) on a bulk IN pipe
+ *
+ * @details
+ * Commits an empty packet to the given pipe so the host observes an
+ * explicit end-of-transfer marker.  USB 2.0 hosts treat a max-packet-size
+ * bulk IN packet as "there may be more" and only conclude the transfer
+ * once they see a packet smaller than wMaxPacketSize (including length
+ * zero).  When the application emits a message that happens to be an
+ * exact multiple of 64 bytes, the driver must follow it with a ZLP to
+ * terminate the host-side read -- otherwise the host blocks until a
+ * timeout or until the next message's first packet arrives.
+ *
+ * This function is the ZLP counterpart of rx_usb_hw_fifo_write().  It
+ * performs the same interrupt-masked CFIFO sequence (CURPIPE, BCLR,
+ * BVAL) but writes zero data bytes before BVAL, producing a 0-length
+ * packet on the bus.
+ *
+ * @param[in] pipe  Bulk IN data pipe number (1..9; ignored for DCP).
+ * @return k_rx_ok on success; k_rx_err_busy if the pipe is busy;
+ *         k_rx_err_invalid_arg on invalid pipe.
+ *
+ * @pre Pipe must be configured as an IN pipe via rx_usb_hw_configure_pipe()
+ * @pre Must be called from ISR context or with USB interrupts masked
+ * @post A zero-length packet is queued for transmission on the pipe
+ *
+ * @note Not thread-safe; serialize at the pipe level (enforced by the
+ *       BEMP-driven state machine in rx_usb_cdc_handle_bulk_in).
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 3 preconditions, 1 postcondition, all validated or invariants
+ * - Rule 7: all register reads explicitly consumed
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t rx_usb_hw_fifo_write_zlp(const uint8_t pipe)
+{
+  if (pipe == k_usb_pipe_min || pipe > k_usb_pipe_max) {
+    return k_rx_err_invalid_arg;
+  }
+
+  volatile uint16_t* const pipe_ctr_map[] = {
+    &usb0()->pipe1ctr, &usb0()->pipe2ctr, &usb0()->pipe3ctr,
+    &usb0()->pipe4ctr, &usb0()->pipe5ctr, &usb0()->pipe6ctr,
+    &usb0()->pipe7ctr, &usb0()->pipe8ctr, &usb0()->pipe9ctr,
+  };
+  volatile uint16_t* const pipe_ctr = pipe_ctr_map[pipe - 1U];
+  if ((*pipe_ctr & k_usb_pipectr_pbusy) != 0U) {
+    return k_rx_err_busy;
+  }
+
+  volatile uint8_t* const ier4_r           = (volatile uint8_t*)0x00087204U;
+  const uint8_t           usbi_mask        = (uint8_t)(1U << 4);
+  const uint8_t           ier4_was_enabled = (uint8_t)(*ier4_r & usbi_mask);
+  *ier4_r &= (uint8_t)~usbi_mask;
+
+  volatile uint16_t* const fifosel_r = &usb0()->cfifosel;
+  volatile uint16_t* const fifoctr_r = &usb0()->cfifoctr;
+
+  /* Select target pipe on CFIFO.  ISEL is meaningful only for DCP, so
+   * we leave it at 0 for data pipes -- matches the write path. */
+  *fifosel_r = (uint16_t)(pipe & k_usb_cfifosel_curpipe_mask);
+  for (volatile uint32_t n = 0; n < k_usb_fifo_timeout_iterations; ++n) {
+    if ((*fifosel_r & k_usb_cfifosel_curpipe_mask) == (pipe & k_usb_cfifosel_curpipe_mask)) {
+      break;
+    }
+  }
+
+  /* Wait for FRDY, BCLR the buffer (ensures 0 bytes present), commit
+   * via BVAL.  The hardware emits an empty IN packet on the bus at
+   * the next IN token. */
+  volatile uint32_t timeout = k_usb_fifo_timeout_iterations;
+  while (!(*fifoctr_r & k_usb_fifoctr_frdy) && timeout--) {
+    __asm__ volatile("nop");
+  }
+  if (timeout == k_usb_fifo_timeout_expired) {
+    if (ier4_was_enabled != 0U) {
+      *ier4_r |= usbi_mask;
+    }
+    return k_rx_err_timeout;
+  }
+
+  *fifoctr_r |= k_usb_fifoctr_bclr;
+  timeout = k_usb_fifo_timeout_iterations;
+  while ((*fifoctr_r & k_usb_fifoctr_bclr) && timeout--) {
+    __asm__ volatile("nop");
+  }
+
+  *fifoctr_r |= k_usb_fifoctr_bval;
+
+  /* Acknowledge BEMP/BRDY for this pipe so the next BEMP IRQ arrives
+   * only when the ZLP has actually been transmitted. */
+  const uint16_t pipe_bit = (uint16_t)(1U << pipe);
+  const uint16_t sts_mask = 0x03FFU;
+  usb0()->bempsts         = (uint16_t)((~pipe_bit) & sts_mask);
+  usb0()->brdysts         = (uint16_t)((~pipe_bit) & sts_mask);
+
+  if (ier4_was_enabled != 0U) {
+    *ier4_r |= usbi_mask;
+  }
+  return k_rx_ok;
 }
 
 /**
@@ -1181,26 +1284,11 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
   }
   usb0()->pipecfg = cfg;
 
-  /* PIPEBUF allocation -- bulk_in_fix.c WRITES PIPEBUF (BUFNMB=8,
-   * BUFSIZE=0) on RX72N USB0 and it works, so despite the FIT
-   * v120 reference guarding PIPEBUF writes behind IP1, RX72N USB0
-   * (which is a newer iteration of IP0/USBb) needs explicit
-   * allocation.  Layout: bulk IN single-buffer 64B, bulk OUT
-   * double-buffer 2x64B, int IN 64B. */
-  {
-    static const uint16_t s_pipebuf[k_usb_pipe_max] = {
-      /* pipe 1 port0 bulk IN  (64B @ slot 8)  */ 8U,
-      /* pipe 2 port0 bulk OUT (128B @ 9-10)   */ 9U,
-      /* pipe 3 port1 bulk IN  (64B @ slot 11) */ 11U,
-      /* pipe 4 port1 bulk OUT (128B @ 12-13)  */ 12U,
-      /* pipe 5 port2 bulk IN  (64B @ slot 14) */ 14U,
-      /* pipe 6 port0 int  IN  (64B @ slot 15) */ 15U,
-      /* pipe 7 port1 int  IN  (64B @ slot 16) */ 16U,
-      /* pipe 8 port2 int  IN  (64B @ slot 17) */ 17U,
-      /* pipe 9 port2 bulk OUT (128B @ 18-19)  */ 18U,
-    };
-    usb0()->pipebuf = s_pipebuf[pipe - 1U];
-  }
+  /* PIPEBUF (offset 0x6A) does not exist on RX72N USB0 per manual Ch40 --
+   * the DPRAM buffer allocation is automatic/fixed for USB0.  On other
+   * RX USBb IP revisions (e.g. RX65N USBHS) PIPEBUF is valid, but for
+   * this target the slot allocation must be skipped.  bulk_in_fix.c
+   * verified that writes to offset 0x6A are no-ops on RX72N. */
 
   usb0()->pipemaxp = max_packet;
   usb0()->pipeperi = 0U;
@@ -1211,11 +1299,12 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
   /* Deselect PIPESEL so the next configure_pipe call starts clean. */
   usb0()->pipesel = 0U;
 
-  /* 5. Reset sequence toggle + auto-clear buffer + clear CS. */
+  /* 5. Reset sequence toggle + pulse auto-clear buffer.  RX72N PIPEnCTR
+   * does not expose a CSCLR bit (manual Ch40 p.1976 -- valid bits are
+   * PID, PBUSY, SQMON, SQSET, SQCLR, ACLRM, ATREPM, INBUFM, BSTS). */
   *pipe_ctr |= k_usb_pipectr_sqclr;
   *pipe_ctr |= k_usb_pipectr_aclrm;
   *pipe_ctr &= (uint16_t)~k_usb_pipectr_aclrm;
-  *pipe_ctr |= k_usb_pipectr_csclr;
 
   /* 6. Clear pending interrupt status bits. */
   usb0()->brdysts = (uint16_t)~pipe_bit;

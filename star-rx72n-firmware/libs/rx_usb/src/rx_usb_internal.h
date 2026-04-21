@@ -112,6 +112,21 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len);
 uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len);
 
 /**
+ * @brief Emit a zero-length packet (ZLP) on a bulk IN pipe
+ *
+ * Commits an empty packet so hosts observe an explicit end-of-transfer
+ * marker.  Required when the previous transmission was exactly one full
+ * wMaxPacketSize (64 bytes for FS bulk); without a short packet or ZLP
+ * the host read blocks waiting for more data.
+ *
+ * @param[in] pipe Bulk IN pipe number (1-9; DCP not supported)
+ * @return k_rx_ok on success, k_rx_err_busy if pipe still transmitting,
+ *         k_rx_err_invalid_arg for invalid pipe, k_rx_err_timeout on FIFO
+ *         hang.
+ */
+rx_err_t rx_usb_hw_fifo_write_zlp(uint8_t pipe);
+
+/**
  * @brief Set USB device address during enumeration
  *
  * @param[in] address USB address assigned by host (0-127)
@@ -165,6 +180,26 @@ uint32_t rx_usb_rx_push(rx_usb_port_id_t port, const uint8_t* data, uint32_t len
 
 /** @brief Pop data from a port's TX ring buffer */
 uint32_t rx_usb_tx_pop(rx_usb_port_id_t port, uint8_t* data, uint32_t max_len);
+
+/**
+ * @brief Query whether a port needs a terminating ZLP on its next BEMP
+ *
+ * Returns true when the last bulk IN packet emitted on the port was a
+ * full wMaxPacketSize packet and the TX ring became empty as a result.
+ * The ISR-driven bulk-IN handler uses this to drop a zero-length packet
+ * so the host's read(2) returns instead of blocking for additional data.
+ */
+bool rx_usb_tx_zlp_pending(rx_usb_port_id_t port);
+
+/**
+ * @brief Update the per-port "last packet was full MPS" marker
+ *
+ * Called from rx_usb_cdc_handle_bulk_in() so the next BEMP can decide
+ * whether to emit a ZLP.  Set true after queueing a max-packet bulk IN
+ * with no more data in the ring, false after a short packet or after
+ * the terminating ZLP has been emitted.
+ */
+void rx_usb_tx_set_zlp_pending(rx_usb_port_id_t port, bool full);
 
 /** @brief Increment bus reset counter */
 void rx_usb_count_bus_reset(void);
