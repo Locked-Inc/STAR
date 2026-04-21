@@ -44,6 +44,9 @@ extern void sci9_debug_init(void);
 extern void sci9_debug_puts(const char* s);
 extern void sci9_debug_puthex32(uint32_t v);
 
+/** @brief Bumped on every USB0 USBI ISR entry.  Defined in rx_usb_isr.c. */
+extern volatile uint32_t g_usb_isr_entry_count;
+
 /* ==========================================================================
  * GPIO diagnostics (bit-banged, no dependency on rx_gpio)
  * ========================================================================== */
@@ -117,6 +120,37 @@ static void pb5_mark_phase(uint8_t count) {
     }
     count--;
   }
+}
+
+/**
+ * @brief Slow variant of pb5_mark_phase with ~20 ms between pulses
+ *
+ * @details
+ * Separates individual pulses widely enough that a 205 Hz AD2 capture
+ * resolves each one as a distinct edge.  Pulse width itself stays narrow
+ * (one sample) but the inter-pulse gap is ~20 ms so the logic analyser
+ * can count them even in Single-mode with a 4096-sample buffer.
+ *
+ * Use for diagnostic readouts where the exact count matters (register
+ * dumps, ISR entry counters).  Do NOT use inside time-critical paths.
+ *
+ * @param[in] count Number of pulses (0..15); 0 = silent marker
+ */
+static void pb5_mark_phase_slow(uint8_t count) {
+  *portb_pdr() |= k_pb5_mask;
+  *portb_podr() &= (uint8_t)~k_pb5_mask;
+  /* Large leading/trailing silence so phase boundaries are unambiguous even
+   * when the count is 0 (two back-to-back zero phases will still produce >1 s
+   * of silence which survives the AD2 gap-grouping threshold). */
+  tx_thread_sleep(200U);
+  while (count != 0U) {
+    *portb_podr() |= k_pb5_mask;
+    tx_thread_sleep(15U);
+    *portb_podr() &= (uint8_t)~k_pb5_mask;
+    tx_thread_sleep(15U);
+    count--;
+  }
+  tx_thread_sleep(200U);
 }
 
 /* ==========================================================================
@@ -235,11 +269,101 @@ static void cdc_test_task(ULONG arg) {
   /* Encode init_err on PB5: after phase 5, burst 10 pulses if error, 11 if ok. */
   pb5_mark_phase((init_err == k_rx_ok) ? 11U : 10U);
 
+  /* Post-init diagnostic bursts -- PB5 pulses encode HW register state so we
+   * can verify on the AD2 logic analyser that the ISR-enable path actually
+   * wrote the expected bits.  Format: each value gets a 15-pulse marker
+   * separator, then a burst whose pulse count equals the value we care about.
+   */
+  {
+    /* Absolute register addresses (avoid depending on rx_hal headers for
+     * this debug-only block).  Offsets verified against rx72n_usb_regs.h. */
+    volatile uint16_t* const usb0_syscfg  = (volatile uint16_t*)0x000A0000U; /* off 0x00 */
+    volatile uint16_t* const usb0_intenb0 = (volatile uint16_t*)0x000A0030U; /* off 0x30 */
+    volatile uint8_t* const  icu_ier4     = (volatile uint8_t*)0x00087204U;  /* IER[4]  */
+    volatile uint8_t* const  icu_ipr36    = (volatile uint8_t*)0x00087324U;  /* IPR[36] */
+
+    const uint16_t intenb0 = *usb0_intenb0;
+    const uint16_t syscfg  = *usb0_syscfg;
+    const uint8_t  ier4    = *icu_ier4;
+    const uint8_t  ipr36   = *icu_ipr36;
+
+    /* popcount of the five enable bits we set (VBSE|DVSE|CTRE|BRDYE|BEMPE).
+     * Expected = 5 if internal_usb_configure_interrupts() ran correctly. */
+    uint8_t intenb_pop = 0U;
+    if ((intenb0 & (uint16_t)(1U << 15U)) != 0U) intenb_pop++; /* VBSE */
+    if ((intenb0 & (uint16_t)(1U << 12U)) != 0U) intenb_pop++; /* DVSE */
+    if ((intenb0 & (uint16_t)(1U << 11U)) != 0U) intenb_pop++; /* CTRE */
+    if ((intenb0 & (uint16_t)(1U << 10U)) != 0U) intenb_pop++; /* BEMPE */
+    if ((intenb0 & (uint16_t)(1U <<  8U)) != 0U) intenb_pop++; /* BRDYE */
+
+    /* USBE|SCKE|DPRPU -- expected 3 after attach */
+    uint8_t syscfg_pop = 0U;
+    if ((syscfg & (uint16_t)(1U <<  0U)) != 0U) syscfg_pop++; /* USBE */
+    if ((syscfg & (uint16_t)(1U <<  4U)) != 0U) syscfg_pop++; /* DPRPU */
+    if ((syscfg & (uint16_t)(1U << 10U)) != 0U) syscfg_pop++; /* SCKE */
+
+    /* Every value is emitted as (value + 1) so no phase collapses into
+     * silence when the register reads as 0.  Decode: observed - 1. */
+    pb5_mark_phase_slow(15U);                  /* marker: init diag start */
+    pb5_mark_phase_slow(intenb_pop + 1U);      /* expect 6 pulses (5 bits set) */
+    pb5_mark_phase_slow(13U);                  /* divider */
+    pb5_mark_phase_slow((uint8_t)(((ier4 & 0x10U) != 0U ? 1U : 0U) + 1U));
+    pb5_mark_phase_slow(13U);                  /* divider */
+    pb5_mark_phase_slow((uint8_t)((ipr36 & 0x0FU) + 1U)); /* expect 7 pulses (IPR=6) */
+    pb5_mark_phase_slow(13U);                  /* divider */
+    pb5_mark_phase_slow((uint8_t)(syscfg_pop + 1U)); /* expect 4 pulses (USBE+DPRPU+SCKE) */
+    pb5_mark_phase_slow(15U);                  /* marker: init diag end */
+  }
+
   uint32_t tick  = 0U;
   uint32_t loops = 0U;
+  uint32_t isr_report_loops = 0U;
+  bool     isr_report_emitted = false;
   for (;;) {
     *porta_podr() ^= k_pa7_mask;
-    *portb_podr() ^= k_pb5_mask;
+    /* PB5 reserved for diagnostic bursts -- do NOT toggle from task loop. */
+
+    isr_report_loops++;
+    if (!isr_report_emitted && isr_report_loops >= 500U) {  /* emit ONE report after ~settle */
+      isr_report_emitted = true;
+
+      /* Sample IR[36] and INTSTS0 without disturbing them */
+      volatile uint8_t* const  icu_ir36      = (volatile uint8_t*)0x00087024U;
+      volatile uint16_t* const usb0_intsts0  = (volatile uint16_t*)0x000A0040U;
+      const uint8_t  ir36    = *icu_ir36;
+      const uint16_t intsts0 = *usb0_intsts0;
+
+      uint8_t intsts_pop = 0U;
+      if ((intsts0 & (uint16_t)(1U << 15U)) != 0U) intsts_pop++; /* VBINT */
+      if ((intsts0 & (uint16_t)(1U << 14U)) != 0U) intsts_pop++; /* RESM */
+      if ((intsts0 & (uint16_t)(1U << 13U)) != 0U) intsts_pop++; /* SOFR */
+      if ((intsts0 & (uint16_t)(1U << 12U)) != 0U) intsts_pop++; /* DVST */
+      if ((intsts0 & (uint16_t)(1U << 11U)) != 0U) intsts_pop++; /* CTRT */
+      if ((intsts0 & (uint16_t)(1U << 10U)) != 0U) intsts_pop++; /* BEMP */
+      if ((intsts0 & (uint16_t)(1U <<  9U)) != 0U) intsts_pop++; /* NRDY */
+      if ((intsts0 & (uint16_t)(1U <<  8U)) != 0U) intsts_pop++; /* BRDY */
+      if ((intsts0 & (uint16_t)(1U <<  7U)) != 0U) intsts_pop++; /* VBSTS */
+      if ((intsts0 & (uint16_t)(1U <<  3U)) != 0U) intsts_pop++; /* VALID */
+
+      /* Encoded as (value + 1) so every phase emits >= 1 pulse.  This
+       * prevents a 0 value from collapsing silently into neighboring silence
+       * (which happened at the tick rates we are seeing).  Decode: observed_pulses - 1. */
+      pb5_mark_phase_slow(14U);  /* marker: ISR report start */
+      uint32_t cnt = g_usb_isr_entry_count;
+      if (cnt > 9U) {
+        cnt = 9U;
+      }
+      pb5_mark_phase_slow((uint8_t)(cnt + 1U));              /* ISR count + 1 */
+      pb5_mark_phase_slow(13U);                              /* divider */
+      pb5_mark_phase_slow((uint8_t)((ir36 & 0x01U) + 1U));   /* IR[36] + 1 */
+      pb5_mark_phase_slow(13U);                              /* divider */
+      pb5_mark_phase_slow((uint8_t)(intsts_pop + 1U));       /* INTSTS0 popcount + 1 */
+      pb5_mark_phase_slow(14U);  /* marker: ISR report end */
+      /* Big inter-report silence: absolutely nothing should appear on PB5
+       * between reports, unless the ISR fires (nanosecond pulse, invisible
+       * at current AD2 sample rate, but g_usb_isr_entry_count will catch it). */
+      tx_thread_sleep(800U);
+    }
 
     if (rx_usb_is_configured(k_usb_port_proto)) {
       *portb_podr() |= k_pb0_mask;
