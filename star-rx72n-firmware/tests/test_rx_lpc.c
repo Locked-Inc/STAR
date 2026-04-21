@@ -314,10 +314,12 @@ static void test_enter_deep_standby_accepts_each_deep_power_level(void)
   test_setup();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_lpc_init());
 
-  TEST_ASSERT_EQUAL(k_rx_ok,
-                    rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, k_lpc_deep_ram_usb_on, false));
-  TEST_ASSERT_EQUAL(k_rx_ok,
-                    rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, k_lpc_deep_ram_usb_off, false));
+  TEST_ASSERT_EQUAL(
+    k_rx_ok,
+    rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, k_lpc_deep_ram_usb_on, false));
+  TEST_ASSERT_EQUAL(
+    k_rx_ok,
+    rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, k_lpc_deep_ram_usb_off, false));
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, k_lpc_deep_lvd_off, false));
 }
