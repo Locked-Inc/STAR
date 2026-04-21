@@ -404,8 +404,8 @@ rx_err_t rx_eccram_init(rx_eccram_mode_t mode)
    * header (@retval k_rx_err_hw_init_failed) and validated on hardware via
    * post-bringup smoke tests. */
   if (actual != (final_mode_reg & k_rx_eccrammode_rammod_mask)) { /* GCOVR_EXCL_BR_LINE */
-    rx_log_error(s_tag, "ECCRAMMODE read-back mismatch");                  /* GCOVR_EXCL_LINE */
-    return k_rx_err_hw_init_failed;                                        /* GCOVR_EXCL_LINE */
+    rx_log_error(s_tag, "ECCRAMMODE read-back mismatch");         /* GCOVR_EXCL_LINE */
+    return k_rx_err_hw_init_failed;                               /* GCOVR_EXCL_LINE */
   }
 
   regs->eccram1sts = k_rx_eccram1sts_clear;
