@@ -396,10 +396,16 @@ rx_err_t rx_eccram_init(rx_eccram_mode_t mode)
   internal_write_eccram_mode(final_mode_reg);
 
   volatile rx_eccram_regs_t* regs   = eccram_regs();
-  const uint8_t              actual = regs->eccrammode & k_rx_eccrammode_rammod_mask;
-  if (actual != (final_mode_reg & k_rx_eccrammode_rammod_mask)) {
-    rx_log_error(s_tag, "ECCRAMMODE read-back mismatch");
-    return k_rx_err_hw_init_failed;
+  const uint8_t              actual = regs->eccrammode & (uint8_t)k_rx_eccrammode_rammod_mask;
+  /* HW-only failure: a stuck ECCRAMMODE bit can only happen on real silicon
+   * (e.g. ECCRAMPRCR did not unlock, or the control block lost clock). The
+   * host-side mock memory always reflects writes verbatim, so the true branch
+   * is unreachable in unit tests. The behavior is still documented in the
+   * header (@retval k_rx_err_hw_init_failed) and validated on hardware via
+   * post-bringup smoke tests. */
+  if (actual != (final_mode_reg & (uint8_t)k_rx_eccrammode_rammod_mask)) { /* GCOVR_EXCL_BR_LINE */
+    rx_log_error(s_tag, "ECCRAMMODE read-back mismatch");                  /* GCOVR_EXCL_LINE */
+    return k_rx_err_hw_init_failed;                                        /* GCOVR_EXCL_LINE */
   }
 
   regs->eccram1sts = k_rx_eccram1sts_clear;
