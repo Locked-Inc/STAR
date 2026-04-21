@@ -28,6 +28,38 @@ extern void sci9_debug_init(void);
 extern void sci9_debug_puts(const char *s);
 extern void sci9_debug_puthex16(uint16_t v);
 
+/* Signed-decimal printer for int16 values, right-aligned in 7-char column.
+ * Builds the string in a local buffer first so sign, digits, and padding
+ * are emitted in one correct order. */
+static void sci9_debug_putint16_col(int16_t v)
+{
+  char     tmp[8] = {0};
+  uint16_t mag    = (v < 0) ? (uint16_t)(-((int32_t)v)) : (uint16_t)v;
+  uint8_t  n      = 0;
+  if (mag == 0U) {
+    tmp[n++] = '0';
+  } else {
+    while (mag > 0U && n < (uint8_t)(sizeof(tmp) - 1U)) {
+      tmp[n++] = (char)('0' + (mag % 10U));
+      mag /= 10U;
+    }
+  }
+  char out[9] = {0};
+  uint8_t idx = 0;
+  const uint8_t total = (uint8_t)(n + (v < 0 ? 1U : 0U));
+  for (uint8_t p = total; p < 7U; p++) {
+    out[idx++] = ' ';
+  }
+  if (v < 0) {
+    out[idx++] = '-';
+  }
+  while (n > 0U) {
+    out[idx++] = tmp[--n];
+  }
+  out[idx] = '\0';
+  sci9_debug_puts(out);
+}
+
 #define REG8(a)  (*(volatile uint8_t  *)(uintptr_t)(a))
 #define REG16(a) (*(volatile uint16_t *)(uintptr_t)(a))
 #define REG32(a) (*(volatile uint32_t *)(uintptr_t)(a))
@@ -553,50 +585,109 @@ int main(void)
   sci9_debug_puts("\n");
 
   sci9_debug_puts("step 6: gravity loop @ 5 Hz (expect |g| ~= 981)\n");
-  /* Sanity check: read CHIP_ID via i2c_read_bytes to verify the multi-byte
-   * reader itself isn't broken. One byte in, should be 0xA0. */
-  riic1_init();
-  uint8_t id_buf[1] = {0};
-  bool id_burst_ok = i2c_read_bytes(k_bno055_addr, k_bno055_chip_id_reg, id_buf, 1U);
-  sci9_debug_puts("  burst_chip_id="); sci9_debug_puts(id_burst_ok ? "ok 0x" : "FAIL 0x");
-  sci9_debug_puthex16((uint16_t)id_buf[0]);
-  sci9_debug_puts("\n");
+  sci9_debug_puts("\n------------------------------------------------------------\n");
+  sci9_debug_puts("Watching BNO055 @ 2 Hz. All values are raw int16 from the chip.\n");
+  sci9_debug_puts("Scale factors (per BNO055 datasheet, units = m/s^2, deg/s, deg, uT):\n");
+  sci9_debug_puts("  ACC / LIA / GRV: divide by 100  (1 LSB = 0.01 m/s^2)\n");
+  sci9_debug_puts("  GYR            : divide by 16   (1 LSB = 0.0625 deg/s)\n");
+  sci9_debug_puts("  EUL (hdg/r/p)  : divide by 16   (1 LSB = 0.0625 deg)\n");
+  sci9_debug_puts("  QUA            : divide by 16384 (1 LSB = 1 / 2^14)\n");
+  sci9_debug_puts("  MAG            : divide by 16   (1 LSB = 0.0625 uT)\n");
+  sci9_debug_puts("  temp           : deg C (int8 as-is)\n");
+  sci9_debug_puts("  cal = SYS<<6 | GYR<<4 | ACC<<2 | MAG (each 0..3)\n");
+  sci9_debug_puts("------------------------------------------------------------\n");
 
   uint16_t iter = 0;
   for (;;) {
-    uint8_t acc_raw[6] = {0};     /* Raw accelerometer at 0x08..0x0D (always updates, 1 LSB = 1/100 m/s^2) */
-    uint8_t grv[6]     = {0};
-    uint8_t calib      = 0;
+    /* One burst covers ACC..CALIB_STAT = 46 bytes starting at 0x08. */
+    uint8_t block[46] = {0};
     riic1_init();
-    bool a_ok = i2c_read_bytes(k_bno055_addr, k_bno055_acc_x_lsb, acc_raw, 6U);
-    riic1_init();
-    bool g_ok = i2c_read_bytes(k_bno055_addr, k_bno055_grv_x_lsb, grv, 6U);
-    riic1_init();
-    bool c_ok = i2c_read_byte(k_bno055_addr, k_bno055_calib_stat, &calib);
+    bool ok = i2c_read_bytes(k_bno055_addr, k_bno055_acc_x_lsb, block, sizeof(block));
 
-    int16_t ax = (int16_t)((uint16_t)acc_raw[0] | ((uint16_t)acc_raw[1] << 8));
-    int16_t ay = (int16_t)((uint16_t)acc_raw[2] | ((uint16_t)acc_raw[3] << 8));
-    int16_t az = (int16_t)((uint16_t)acc_raw[4] | ((uint16_t)acc_raw[5] << 8));
-    int16_t gx = (int16_t)((uint16_t)grv[0] | ((uint16_t)grv[1] << 8));
-    int16_t gy = (int16_t)((uint16_t)grv[2] | ((uint16_t)grv[3] << 8));
-    int16_t gz = (int16_t)((uint16_t)grv[4] | ((uint16_t)grv[5] << 8));
+    if (!ok) {
+      sci9_debug_puts("iter=");
+      sci9_debug_puthex16(iter);
+      sci9_debug_puts("  READ_FAIL\n");
+      busy_wait_ms(500);
+      iter++;
+      continue;
+    }
+
+    /* Indexing relative to start-register 0x08:
+     *   ACC  : 0x08..0x0D -> block[ 0.. 5]
+     *   MAG  : 0x0E..0x13 -> block[ 6..11]
+     *   GYR  : 0x14..0x19 -> block[12..17]
+     *   EUL  : 0x1A..0x1F -> block[18..23]  (heading, roll, pitch)
+     *   QUA  : 0x20..0x27 -> block[24..31]  (w, x, y, z)
+     *   LIA  : 0x28..0x2D -> block[32..37]
+     *   GRV  : 0x2E..0x33 -> block[38..43]
+     *   TEMP : 0x34       -> block[44]       (int8)
+     *   CAL  : 0x35       -> block[45]       (status byte)
+     */
+#define I16_LE(p, i) \
+  ((int16_t)((uint16_t)(p)[(i)] | ((uint16_t)(p)[(i) + 1U] << 8)))
+
+    int16_t acc_x = I16_LE(block, 0);  int16_t acc_y = I16_LE(block, 2);  int16_t acc_z = I16_LE(block, 4);
+    int16_t mag_x = I16_LE(block, 6);  int16_t mag_y = I16_LE(block, 8);  int16_t mag_z = I16_LE(block, 10);
+    int16_t gyr_x = I16_LE(block, 12); int16_t gyr_y = I16_LE(block, 14); int16_t gyr_z = I16_LE(block, 16);
+    int16_t eul_h = I16_LE(block, 18); int16_t eul_r = I16_LE(block, 20); int16_t eul_p = I16_LE(block, 22);
+    int16_t qua_w = I16_LE(block, 24); int16_t qua_x = I16_LE(block, 26);
+    int16_t qua_y = I16_LE(block, 28); int16_t qua_z = I16_LE(block, 30);
+    int16_t lia_x = I16_LE(block, 32); int16_t lia_y = I16_LE(block, 34); int16_t lia_z = I16_LE(block, 36);
+    int16_t grv_x = I16_LE(block, 38); int16_t grv_y = I16_LE(block, 40); int16_t grv_z = I16_LE(block, 42);
+    int8_t  temp  = (int8_t)block[44];
+    uint8_t calib = block[45];
+
+#undef I16_LE
 
     sci9_debug_puts("iter=");
     sci9_debug_puthex16(iter);
-    if (!a_ok || !g_ok || !c_ok) {
-      sci9_debug_puts(" READ_FAIL a="); sci9_debug_puts(a_ok ? "ok " : "FAIL ");
-      sci9_debug_puts("g="); sci9_debug_puts(g_ok ? "ok " : "FAIL ");
-      sci9_debug_puts("c="); sci9_debug_puts(c_ok ? "ok\n" : "FAIL\n");
-    } else {
-      sci9_debug_puts(" ACC "); sci9_debug_puthex16((uint16_t)ax);
-      sci9_debug_puts(" ");     sci9_debug_puthex16((uint16_t)ay);
-      sci9_debug_puts(" ");     sci9_debug_puthex16((uint16_t)az);
-      sci9_debug_puts("  GRV "); sci9_debug_puthex16((uint16_t)gx);
-      sci9_debug_puts(" ");     sci9_debug_puthex16((uint16_t)gy);
-      sci9_debug_puts(" ");     sci9_debug_puthex16((uint16_t)gz);
-      sci9_debug_puts("  cal=0x"); sci9_debug_puthex16((uint16_t)calib);
-      sci9_debug_puts("\n");
-    }
+    sci9_debug_puts("\n");
+
+    sci9_debug_puts("  ACC  x=");  sci9_debug_putint16_col(acc_x);
+    sci9_debug_puts("  y=");       sci9_debug_putint16_col(acc_y);
+    sci9_debug_puts("  z=");       sci9_debug_putint16_col(acc_z);
+    sci9_debug_puts("   (raw accel, /100 -> m/s^2)\n");
+
+    sci9_debug_puts("  MAG  x=");  sci9_debug_putint16_col(mag_x);
+    sci9_debug_puts("  y=");       sci9_debug_putint16_col(mag_y);
+    sci9_debug_puts("  z=");       sci9_debug_putint16_col(mag_z);
+    sci9_debug_puts("   (magnetometer, /16 -> uT)\n");
+
+    sci9_debug_puts("  GYR  x=");  sci9_debug_putint16_col(gyr_x);
+    sci9_debug_puts("  y=");       sci9_debug_putint16_col(gyr_y);
+    sci9_debug_puts("  z=");       sci9_debug_putint16_col(gyr_z);
+    sci9_debug_puts("   (gyroscope, /16 -> deg/s)\n");
+
+    sci9_debug_puts("  EUL  h=");  sci9_debug_putint16_col(eul_h);
+    sci9_debug_puts("  r=");       sci9_debug_putint16_col(eul_r);
+    sci9_debug_puts("  p=");       sci9_debug_putint16_col(eul_p);
+    sci9_debug_puts("   (euler heading/roll/pitch, /16 -> deg)\n");
+
+    sci9_debug_puts("  QUA  w=");  sci9_debug_putint16_col(qua_w);
+    sci9_debug_puts("  x=");       sci9_debug_putint16_col(qua_x);
+    sci9_debug_puts("  y=");       sci9_debug_putint16_col(qua_y);
+    sci9_debug_puts("  z=");       sci9_debug_putint16_col(qua_z);
+    sci9_debug_puts("  (quaternion, /16384)\n");
+
+    sci9_debug_puts("  LIA  x=");  sci9_debug_putint16_col(lia_x);
+    sci9_debug_puts("  y=");       sci9_debug_putint16_col(lia_y);
+    sci9_debug_puts("  z=");       sci9_debug_putint16_col(lia_z);
+    sci9_debug_puts("   (linear accel, gravity removed, /100)\n");
+
+    sci9_debug_puts("  GRV  x=");  sci9_debug_putint16_col(grv_x);
+    sci9_debug_puts("  y=");       sci9_debug_putint16_col(grv_y);
+    sci9_debug_puts("  z=");       sci9_debug_putint16_col(grv_z);
+    sci9_debug_puts("   (gravity vector, /100)\n");
+
+    sci9_debug_puts("  temp=");    sci9_debug_putint16_col((int16_t)temp);
+    sci9_debug_puts(" degC     cal=0x"); sci9_debug_puthex16((uint16_t)calib);
+    sci9_debug_puts(" (SYS=");  sci9_debug_putint16_col((int16_t)((calib >> 6) & 0x3U));
+    sci9_debug_puts(" GYR=");   sci9_debug_putint16_col((int16_t)((calib >> 4) & 0x3U));
+    sci9_debug_puts(" ACC=");   sci9_debug_putint16_col((int16_t)((calib >> 2) & 0x3U));
+    sci9_debug_puts(" MAG=");   sci9_debug_putint16_col((int16_t)(calib & 0x3U));
+    sci9_debug_puts(")\n\n");
+
     busy_wait_ms(500);
     iter++;
   }
