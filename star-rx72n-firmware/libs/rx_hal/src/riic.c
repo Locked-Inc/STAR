@@ -1080,6 +1080,70 @@ static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, const uint8_t
 }
 
 /**
+ * @brief Send the address|R byte that opens a master-receive transaction
+ *
+ * @details
+ * After the controller switches to receive mode (ICCR2 = MST, TRS=0) and
+ * has issued START or repeated-START, the address byte with R bit must be
+ * sent. internal_write_byte() cannot be used here: in master-receive mode
+ * the peripheral immediately starts clocking the first data byte after the
+ * address ACK, so RDRF (receive data full) fires instead of TEND or
+ * TDRE-reassertion. Waiting for transmit-side flags hangs forever.
+ *
+ * Verified on the production STAR PCB against a live BNO055 -- see
+ * star-rx72n-firmware/imu_test/main.c gate-10 fix (commit b41c7fbb4).
+ *
+ * @param[in,out] riic Pointer to RIIC register structure
+ * @param[in] addr_byte Pre-shifted (addr << 1) | k_riic_addr_read_bit
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok   Address ACKed; first data byte is in ICDRR (RDRF set)
+ * @retval k_rx_err_nack    Slave NACKed the address
+ * @retval k_rx_err_timeout Neither RDRF nor NACKF asserted within timeout
+ *
+ * @pre Bus is active; ICCR2 = MST (TRS=0); start condition already issued
+ * @post On success: RDRF=1 in ICSR2, ICDRR holds the first data byte
+ *
+ * @see internal_write_byte() Standard transmit-mode byte writer
+ * @see internal_read_byte()  Reads byte after RDRF asserts
+ */
+static rx_err_t internal_write_address_for_read(volatile rx_riic_regs_t* riic,
+                                                const uint8_t            addr_byte)
+{
+  uint32_t timeout = k_riic_timeout_us;
+  while (!(riic->icsr2 & k_riic_icsr2_tdre) && timeout > k_riic_timeout_zero) {
+    timeout--;
+  }
+  if (timeout == k_riic_timeout_zero) {
+    rx_log_error(s_tag, "TDRE timeout before addr|R");
+    return k_rx_err_timeout;
+  }
+
+  riic->icdrt = addr_byte;
+
+  /* In master-receive mode, RDRF fires once the first data byte has been
+   * clocked in after the address ACK. NACKF fires if the slave didn't
+   * ACK the address. Wait for either. */
+  const uint8_t wait_mask = (uint8_t)(k_riic_icsr2_rdrf | k_riic_icsr2_nackf);
+  timeout                 = k_riic_timeout_us;
+  while (!(riic->icsr2 & wait_mask) && timeout > k_riic_timeout_zero) {
+    timeout--;
+  }
+  if (timeout == k_riic_timeout_zero) {
+    rx_log_error(s_tag, "addr|R: neither RDRF nor NACKF asserted");
+    return k_rx_err_timeout;
+  }
+
+  if (riic->icsr2 & k_riic_icsr2_nackf) {
+    riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_nackf;
+    rx_log_error(s_tag, "Slave NACKed address|R");
+    return k_rx_err_nack;
+  }
+
+  return k_rx_ok;
+}
+
+/**
  * @brief Receive single byte from I2C bus
  *
  * @details
@@ -1353,9 +1417,11 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
   /* Set controller receive mode */
   riic->iccr2 = k_riic_iccr2_mst;
 
-  /* Send device address (read) */
-  rx_err_t err =
-    internal_write_byte(riic, (device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit);
+  /* Send device address (read) -- use the receive-mode helper, NOT
+   * internal_write_byte: TEND/TDRE-reassertion don't fire after addr|R in
+   * master-receive mode; RDRF does. */
+  rx_err_t err = internal_write_address_for_read(
+    riic, (uint8_t)((device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit));
   if (err != k_rx_ok) {
     rx_err_t stop_err = internal_send_stop(riic);
     (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
@@ -1513,6 +1579,21 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
 
   /* Enable I2C bus interface */
   riic->iccr1 = k_riic_iccr1_ice;
+
+  /* Post-enable bus release: after ICE=1 the peripheral leaves SCLO/SDAO=0
+   * (driving both lines LOW) until it sees its first STOP on the wire.
+   * Force a release by clearing SOWP, writing SCLO=SDAO=1 (open-drain
+   * release -> external pull-ups bring lines to 3.3V), then re-locking
+   * SOWP. Without this, the very first transaction sees BBSY=1 with both
+   * lines stuck low and never gets to ACK detection. Verified on the
+   * production STAR PCB against BNO055 -- see star-rx72n-firmware/imu_test/
+   * (commit b41c7fbb4) for the bench reproduction. */
+  uint8_t iccr1 = riic->iccr1;
+  iccr1 &= (uint8_t) ~(uint8_t)k_riic_iccr1_sowp;
+  iccr1 |= (uint8_t)(k_riic_iccr1_sclo | k_riic_iccr1_sdao);
+  riic->iccr1 = iccr1;
+  iccr1 |= (uint8_t)k_riic_iccr1_sowp;
+  riic->iccr1 = iccr1;
 
   /* Mark channel as initialized in controller mode */
   s_riic_channel_mode[channel.value] = k_riic_mode_controller;
@@ -1811,8 +1892,11 @@ rx_err_t riic_read(const riic_channel_t    channel,
   err = internal_send_start(riic);
   RX_RETURN_ON_ERROR(err, s_tag, "Start condition failed");
 
-  /* Send device address (read) */
-  err = internal_write_byte(riic, (device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit);
+  /* Send device address (read) -- use the receive-mode helper, NOT
+   * internal_write_byte: TEND/TDRE-reassertion don't fire after addr|R in
+   * master-receive mode; RDRF does. */
+  err = internal_write_address_for_read(
+    riic, (uint8_t)((device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit));
   if (err != k_rx_ok) {
     rx_err_t stop_err = internal_send_stop(riic);
     (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
