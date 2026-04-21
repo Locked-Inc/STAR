@@ -232,16 +232,16 @@ static uint8_t internal_assemble_dpsbycr(rx_lpc_deep_power_t deep_power, bool ke
    * no public API path can execute. The LUT has exactly one branch-free
    * path per input and keeps the function trivially verifiable. */
   static const uint8_t s_deepcut_bits[] = {
-    [k_lpc_deep_ram_usb_on]  = (uint8_t)k_dpsbycr_deepcut_ram_usb_on,
-    [k_lpc_deep_ram_usb_off] = (uint8_t)k_dpsbycr_deepcut_ram_usb_off,
-    [k_lpc_deep_lvd_off]     = (uint8_t)k_dpsbycr_deepcut_lvd_off,
+    [k_lpc_deep_ram_usb_on]  = k_dpsbycr_deepcut_ram_usb_on,
+    [k_lpc_deep_ram_usb_off] = k_dpsbycr_deepcut_ram_usb_off,
+    [k_lpc_deep_lvd_off]     = k_dpsbycr_deepcut_lvd_off,
   };
 
   uint8_t value = s_deepcut_bits[deep_power];
   if (keep_io) {
     value |= k_dpsbycr_iokeep;
   }
-  value |= (uint8_t)k_dpsbycr_dpsby;
+  value |= k_dpsbycr_dpsby;
   return value;
 }
 
