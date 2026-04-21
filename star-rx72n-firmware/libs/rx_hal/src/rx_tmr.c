@@ -195,6 +195,7 @@ static rx_tmr_isr_callback_t s_tmr_callback[k_tmr_channel_count_internal] = {
  */
 RX_STATIC_TESTABLE volatile rx_tmr_channel_regs_t* internal_tmr_get_regs(rx_tmr_channel_t channel)
 {
+  /* GCOVR_EXCL_BR_START(validate_config restricts channel to 0..3) */
   switch (channel) {
     case k_tmr_channel_0:
       return tmr0();
@@ -204,10 +205,11 @@ RX_STATIC_TESTABLE volatile rx_tmr_channel_regs_t* internal_tmr_get_regs(rx_tmr_
       return tmr2();
     case k_tmr_channel_3:
       return tmr3();
-    default:
-      RX_ASSERT(false, "TMR channel out of range");
-      return NULL;
+    default:                                        /* GCOVR_EXCL_LINE */
+      RX_ASSERT(false, "TMR channel out of range"); /* GCOVR_EXCL_LINE */
+      return NULL;                                  /* GCOVR_EXCL_LINE */
   }
+  /* GCOVR_EXCL_BR_STOP */
 }
 
 /**
@@ -218,13 +220,12 @@ RX_STATIC_TESTABLE volatile rx_tmr_channel_regs_t* internal_tmr_get_regs(rx_tmr_
  */
 static uint32_t internal_tmr_unit_mstp_bit(rx_tmr_channel_t channel)
 {
+  /* Public callers pre-validate channel in 0..3 via internal_tmr_validate_config, so
+   * anything not in unit 0 (TMR0/1) must belong to unit 1 (TMR2/3). */
   if ((channel == k_tmr_channel_0) || (channel == k_tmr_channel_1)) {
     return k_tmr_mstpcra_mstpa5;
   }
-  if ((channel == k_tmr_channel_2) || (channel == k_tmr_channel_3)) {
-    return k_tmr_mstpcra_mstpa4;
-  }
-  return 0U;
+  return (uint32_t)k_tmr_mstpcra_mstpa4;
 }
 
 /**
@@ -252,6 +253,7 @@ static void internal_tmr_enable_module_clock(rx_tmr_channel_t channel)
  */
 static rx_err_t internal_tmr_clock_bits(rx_tmr_clock_source_t source, uint8_t* bits)
 {
+  /* GCOVR_EXCL_BR_START(validate_config blocks out-of-range clock_source) */
   switch (source) {
     case k_tmr_clock_pclk_div_1:
       *bits = (uint8_t)(k_tmr_tccr_css_internal | k_tmr_tccr_cks_pclk_div1);
@@ -283,9 +285,10 @@ static rx_err_t internal_tmr_clock_bits(rx_tmr_clock_source_t source, uint8_t* b
     case k_tmr_clock_external_both:
       *bits = (uint8_t)(k_tmr_tccr_css_external | k_tmr_tccr_cks_ext_both);
       return k_rx_ok;
-    default:
-      return k_rx_err_invalid_arg;
+    default: /* GCOVR_EXCL_LINE -- validate_config blocks out-of-range clock_source */
+      return k_rx_err_invalid_arg; /* GCOVR_EXCL_LINE */
   }
+  /* GCOVR_EXCL_BR_STOP */
 }
 
 /**
@@ -336,6 +339,7 @@ static uint8_t internal_tmr_compose_tcr(const rx_tmr_config_t* config)
     tcr |= k_tmr_tcr_ovie;
   }
 
+  /* GCOVR_EXCL_BR_START(validate_config blocks out-of-range counter_clear) */
   switch (config->counter_clear) {
     case k_tmr_clear_disabled:
       tcr |= k_tmr_tcr_cclr_disabled;
@@ -349,10 +353,10 @@ static uint8_t internal_tmr_compose_tcr(const rx_tmr_config_t* config)
     case k_tmr_clear_external_reset:
       tcr |= k_tmr_tcr_cclr_external_sig;
       break;
-    default:
-      /* Caller validates */
-      break;
+    default: /* GCOVR_EXCL_LINE -- validate_config blocks out-of-range counter_clear */
+      break; /* GCOVR_EXCL_LINE */
   }
+  /* GCOVR_EXCL_BR_STOP */
   return tcr;
 }
 
@@ -450,9 +454,9 @@ rx_err_t rx_tmr_init(const rx_tmr_config_t* config)
   /* Compose clock bits (validated via enum range above) */
   uint8_t clock_bits = 0U;
   err                = internal_tmr_clock_bits(config->clock_source, &clock_bits);
-  if (err != k_rx_ok) {
-    return err;
-  }
+  if (err != k_rx_ok) { /* GCOVR_EXCL_LINE -- validate_config blocks out-of-range clock_source */
+    return err;         /* GCOVR_EXCL_LINE */
+  } /* GCOVR_EXCL_BR_LINE */
 
   /* 1. Enable unit module clock */
   internal_tmr_enable_module_clock(config->channel);
@@ -502,13 +506,11 @@ rx_err_t rx_tmr_start(rx_tmr_channel_t channel)
   regs->tccr                           = s_tmr_clock_bits[idx];
 
   /* In cascade mode the paired odd channel also needs its cascade bits
-   * kept after a stop/start cycle. */
+   * kept after a stop/start cycle. Cascade is only valid on even channels
+   * (enforced by validate_config), so the ternary below is exhaustive. */
   if (s_tmr_mode[idx] == k_tmr_mode_16bit_cascade) {
-    if (channel == k_tmr_channel_0) {
-      tmr1()->tccr = k_tmr_tccr_css_cascade;
-    } else if (channel == k_tmr_channel_2) {
-      tmr3()->tccr = k_tmr_tccr_css_cascade;
-    }
+    volatile rx_tmr_channel_regs_t* odd_regs = (channel == k_tmr_channel_0) ? tmr1() : tmr3();
+    odd_regs->tccr                           = (uint8_t)k_tmr_tccr_css_cascade;
   }
   return k_rx_ok;
 }
@@ -525,11 +527,8 @@ rx_err_t rx_tmr_stop(rx_tmr_channel_t channel)
   regs->tccr                           = 0U;
 
   if (s_tmr_mode[idx] == k_tmr_mode_16bit_cascade) {
-    if (channel == k_tmr_channel_0) {
-      tmr1()->tccr = 0U;
-    } else if (channel == k_tmr_channel_2) {
-      tmr3()->tccr = 0U;
-    }
+    volatile rx_tmr_channel_regs_t* odd_regs = (channel == k_tmr_channel_0) ? tmr1() : tmr3();
+    odd_regs->tccr                           = 0U;
   }
   return k_rx_ok;
 }
