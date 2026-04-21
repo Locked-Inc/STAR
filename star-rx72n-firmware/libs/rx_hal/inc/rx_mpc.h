@@ -596,7 +596,10 @@ typedef enum : uint8_t {
    *
    * @since Version 1.0.0
    */
-  k_psel_gptw = 0x14,
+  k_psel_gptw = 0x1E, /* 0b011110: per RX72N HW manual Tables 23.4, 23.6,
+                       * 23.10, 23.14, 23.16 -- the GTIOC* function on every
+                       * port (1, 2, 8, A, C, D, E) uses PSEL=0x1E. The old
+                       * value 0x14 selected an unrelated function. */
 
 } rx_pin_psel_t;
 

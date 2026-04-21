@@ -953,6 +953,10 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
                                     * because phase staggering (if used) is configured separately
                                     * after all channels are initialized. */
     .invert_polarity      = config->invert_pwm,
+    .port_a_idx           = config->port_a_idx,
+    .bit_a                = config->bit_a,
+    .port_b_idx           = config->port_b_idx,
+    .bit_b                = config->bit_b,
   };
 
   const rx_gptw_output_pair_t outputs = {.a = config->output_a, .b = config->output_b};

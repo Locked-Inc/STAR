@@ -772,6 +772,23 @@ typedef struct {
    * @note Use for active-low driver inputs or inverted LED connections
    */
   bool invert_polarity;
+
+  /**
+   * @brief Pin coordinates for GTIOC*A and GTIOC*B outputs.
+   *
+   * @details
+   * The lib does not know the board's pin map. Caller MUST set these to
+   * the actual pads where GTIOC_A and GTIOC_B should appear. Source the
+   * values from a board-level pin map header (e.g. src/inc/hardware_config.h).
+   *
+   * `port_*_idx` is the standard RX72N port index: 1, 2, 8, etc., with
+   *   PORTA=10, PORTB=11, PORTC=12, PORTD=13, PORTE=14, PORTF=15.
+   * `bit_*` is the bit position within that port (0..7).
+   */
+  uint8_t port_a_idx;
+  uint8_t bit_a;
+  uint8_t port_b_idx;
+  uint8_t bit_b;
 } rx_gptw_config_t;
 
 /* =============================================================================
@@ -942,7 +959,12 @@ typedef struct {
  * @callgraph
  * @callergraph
  */
-[[nodiscard]] rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config);
+/* Public count constant matching the private k_gptw_max_channels in rx_gptw.c. */
+typedef enum : uint8_t {
+  k_rx_gptw_channel_count = 4,
+} rx_gptw_count_t;
+
+[[nodiscard]] rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* configs[k_rx_gptw_channel_count]);
 
 /**
  * @brief Initialize a single GPTW channel for PWM output

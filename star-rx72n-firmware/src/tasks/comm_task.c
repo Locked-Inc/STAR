@@ -425,8 +425,8 @@ typedef enum : uint16_t {
 typedef enum : uint8_t {
   k_motor_idx_front_left  = 0, /**< Front left motor index */
   k_motor_idx_front_right = 1, /**< Front right motor index */
-  k_motor_idx_back_left   = 2, /**< Back left motor index */
-  k_motor_idx_back_right  = 3, /**< Back right motor index */
+  k_motor_idx_back_right  = 2, /**< Back right motor index (GPTW2 wires to PE3/P86, the back-right wheel) */
+  k_motor_idx_back_left   = 3, /**< Back left motor index (GPTW3 wires to PE7/PC6, the back-left wheel) */
 } comm_motor_constants_t;
 
 /**

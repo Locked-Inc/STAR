@@ -501,12 +501,8 @@ static volatile uint8_t* internal_get_pfs_register(const uint8_t port, uint8_t p
       port_offset = k_mpc_porte_offset;
       break;
     case k_mpc_port_f:
-      /* Port F is partially populated on the 144-pin LFQFP package
-       * (PF0-PF5 exist; sonar trig0 lives on PF5). */
-      port_offset = k_mpc_portf_offset;
-      break;
     case k_mpc_port_g:
-      /* Port G not available on 144-pin LFQFP package */
+      /* Ports G, H not available on 144-pin LFQFP package */
       rx_log_error(s_tag, "Port not available on this package");
       return nullptr;
     case k_mpc_port_j:
@@ -842,7 +838,13 @@ rx_err_t rx_mpc_set_peripheral(const rx_mpc_peripheral_config_t* config)
     return k_rx_err_invalid_arg;
   }
 
-  /* Peripheral mode: PSEL = specified, ISEL = 0, ASEL = 0 */
+  /* Peripheral mode: PSEL = specified, ISEL = 0, ASEL = 0.
+   *
+   * NOTE: PORT.PMR bit is intentionally NOT set here. Setting PMR=1 before
+   * the peripheral itself (e.g. GPTW timer) is fully configured exposes
+   * the pin to undefined/glitchy output that can latch a fault in
+   * downstream silicon (e.g. DRV8263H motor driver). Caller is responsible
+   * for setting PMR=1 AFTER the peripheral is fully initialized. */
   return internal_write_pfs(port, pin_num, config->psel);
 }
 

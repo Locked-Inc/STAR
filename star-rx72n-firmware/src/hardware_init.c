@@ -1518,13 +1518,38 @@ static rx_err_t gptw_pwm_init(void)
 {
   static const char* s_tag = "GPTW";
 
-  rx_gptw_config_t config = {.frequency_hz         = k_gptw_pwm_freq_hz,
-                             .deadtime_ns          = k_gptw_deadtime_ns,
-                             .wave_mode            = k_gptw_wave_saw_pwm,
-                             .enable_complementary = true,
-                             .invert_polarity      = false};
+  /* Per-channel configs: shared frequency / wave mode, distinct pins
+   * per motor. Pin map decoded from hardware.h's packed k_pin_motor*
+   * constants via rx_port_from_pin / rx_pin_from_pin so the HAL itself
+   * never embeds a board-specific pin assumption. */
+  const rx_port_pin_t in2_pins[k_rx_gptw_channel_count] = {
+    (rx_port_pin_t)k_pin_motor0_in2, (rx_port_pin_t)k_pin_motor1_in2,
+    (rx_port_pin_t)k_pin_motor2_in2, (rx_port_pin_t)k_pin_motor3_in2,
+  };
+  const rx_port_pin_t in1_pins[k_rx_gptw_channel_count] = {
+    (rx_port_pin_t)k_pin_motor0_in1, (rx_port_pin_t)k_pin_motor1_in1,
+    (rx_port_pin_t)k_pin_motor2_in1, (rx_port_pin_t)k_pin_motor3_in1,
+  };
 
-  rx_err_t err = rx_gptw_init_all_staggered(&config);
+  rx_gptw_config_t configs[k_rx_gptw_channel_count];
+  for (uint8_t i = 0; i < k_rx_gptw_channel_count; i++) {
+    configs[i] = (rx_gptw_config_t){
+      .frequency_hz         = k_gptw_pwm_freq_hz,
+      .deadtime_ns          = k_gptw_deadtime_ns,
+      .wave_mode            = k_gptw_wave_saw_pwm,
+      .enable_complementary = true,
+      .invert_polarity      = false,
+      .port_a_idx           = rx_port_from_pin(in2_pins[i]),
+      .bit_a                = rx_pin_from_pin(in2_pins[i]),
+      .port_b_idx           = rx_port_from_pin(in1_pins[i]),
+      .bit_b                = rx_pin_from_pin(in1_pins[i]),
+    };
+  }
+  const rx_gptw_config_t* config_ptrs[k_rx_gptw_channel_count] = {
+    &configs[0], &configs[1], &configs[2], &configs[3]
+  };
+
+  rx_err_t err = rx_gptw_init_all_staggered(config_ptrs);
   RX_RETURN_ON_ERROR(err, s_tag, "GPTW staggered init failed");
 
   rx_log_info(s_tag, "4 channels @ 20kHz, 90-deg stagger");

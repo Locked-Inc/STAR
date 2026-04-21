@@ -6,7 +6,7 @@ IMAGE_NAME := star-ros2-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell build-blinky clean-blinky flash-blinky flash-blinky-sci
+.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell build-blinky clean-blinky flash-blinky flash-blinky-sci motor0 motor0-forward motor0-reverse motor1 motor1-forward motor1-reverse motor2 motor2-forward motor2-reverse motor3 motor3-forward motor3-reverse motor-all motor-stop motor-clean
 
 help:
 	@echo "STAR Project Development Helper"
@@ -21,6 +21,21 @@ help:
 	@echo "  make flash-blinky        - Flash blinky.elf via E2 Lite (builds first, FINE @ 250kbps)"
 	@echo "  make flash-blinky-sci    - Flash blinky.elf via USB-UART SCI Boot Mode (SW4 Pin1=ON)"
 	@echo "  make clean-blinky        - Remove blinky build artifacts"
+	@echo "  make motor0              - Build + flash motor_spin_test, Motor 0 only, both directions"
+	@echo "  make motor0-forward      - Build + flash, Motor 0 only, forward sweep (0..+100..0)"
+	@echo "  make motor0-reverse      - Build + flash, Motor 0 only, reverse sweep (0..-100..0)"
+	@echo "  make motor1              - Same for Motor 1 (both directions)"
+	@echo "  make motor1-forward      - Motor 1 forward only"
+	@echo "  make motor1-reverse      - Motor 1 reverse only"
+	@echo "  make motor2              - Same for Motor 2 (both directions)"
+	@echo "  make motor2-forward      - Motor 2 forward only"
+	@echo "  make motor2-reverse      - Motor 2 reverse only"
+	@echo "  make motor3              - Same for Motor 3 (both directions)"
+	@echo "  make motor3-forward      - Motor 3 forward only"
+	@echo "  make motor3-reverse      - Motor 3 reverse only"
+	@echo "  make motor-all           - Build + flash motor_spin_test driving all 4 motors"
+	@echo "  make motor-stop          - Build + flash with all motors disabled (DRVOFF held HIGH)"
+	@echo "  make motor-clean         - Remove motor_spin_test build artifacts"
 	@echo "  make build-rx72n         - Build RX72N firmware (Debug, requires GNURX toolchain)"
 	@echo "  make build-rx72n-release - Build RX72N firmware (Release, requires GNURX toolchain)"
 	@echo "  make format-rx72n        - Auto-format firmware C/H files with clang-format"
@@ -182,6 +197,70 @@ flash-blinky: build-blinky
 # and a power-cycle AFTER setting the switch so the MCU enters boot mode.
 flash-blinky-sci: build-blinky
 	@bash scripts/flash-rx72n.sh star-rx72n-firmware/blinky/blinky.elf sci
+
+# ------------------------------------------------------------
+# motor_spin_test -- open-loop 4-motor sweep on the production STAR PCB.
+#   - 'make motorN' builds + flashes with only Motor N enabled (safe).
+#   - 'make motor-all' builds + flashes all 4 motors at once.
+# Each target does a clean build so the MOTOR_MASK macro reliably
+# regenerates the ELF. Requires GNURX toolchain (rx-elf-gcc) and an
+# E2 Lite probe attached for the flash step.
+# ------------------------------------------------------------
+
+MOTOR_TEST_DIR := star-rx72n-firmware/motor_spin_test
+MOTOR_TEST_ELF := $(MOTOR_TEST_DIR)/motor_spin_test.elf
+GNURX_BIN      := /opt/gnurx/bin
+
+# Internal helper -- usage: $(call build_and_flash_motor,<MASK>,<DUTY_MIN>,<DUTY_MAX>,<label>)
+# Prepends the GNURX toolchain to PATH so rx-elf-gcc / rx-elf-objcopy
+# resolve without the user having to export PATH first.
+define build_and_flash_motor
+	@echo "==> Building motor_spin_test ($(4)) with MOTOR_MASK=$(1), duty=[$(2)..$(3)]..."
+	@PATH="$(GNURX_BIN):$$PATH" $(MAKE) --no-print-directory -C $(MOTOR_TEST_DIR) clean
+	@PATH="$(GNURX_BIN):$$PATH" $(MAKE) --no-print-directory -C $(MOTOR_TEST_DIR) \
+	    MOTOR_MASK=$(1) MOTOR_DUTY_MIN=$(2) MOTOR_DUTY_MAX=$(3)
+	@echo "==> Flashing $(4) via E2 Lite..."
+	@PATH="$(GNURX_BIN):$$PATH" bash scripts/flash-rx72n.sh $(MOTOR_TEST_ELF) e2lite
+endef
+
+# Bidirectional sweep (-100 .. +100 .. -100)
+motor0:
+	$(call build_and_flash_motor,0x1,-100,100,Motor 0 bidirectional)
+motor1:
+	$(call build_and_flash_motor,0x2,-100,100,Motor 1 bidirectional)
+motor2:
+	$(call build_and_flash_motor,0x4,-100,100,Motor 2 bidirectional)
+motor3:
+	$(call build_and_flash_motor,0x8,-100,100,Motor 3 bidirectional)
+motor-all:
+	$(call build_and_flash_motor,0xF,-100,100,all 4 motors bidirectional)
+
+# Forward-only sweep (0 .. +100 .. 0)
+motor0-forward:
+	$(call build_and_flash_motor,0x1,0,100,Motor 0 forward only)
+motor1-forward:
+	$(call build_and_flash_motor,0x2,0,100,Motor 1 forward only)
+motor2-forward:
+	$(call build_and_flash_motor,0x4,0,100,Motor 2 forward only)
+motor3-forward:
+	$(call build_and_flash_motor,0x8,0,100,Motor 3 forward only)
+
+# Reverse-only sweep (0 .. -100 .. 0)
+motor0-reverse:
+	$(call build_and_flash_motor,0x1,-100,0,Motor 0 reverse only)
+motor1-reverse:
+	$(call build_and_flash_motor,0x2,-100,0,Motor 1 reverse only)
+motor2-reverse:
+	$(call build_and_flash_motor,0x4,-100,0,Motor 2 reverse only)
+motor3-reverse:
+	$(call build_and_flash_motor,0x8,-100,0,Motor 3 reverse only)
+
+# All motors disabled (DRVOFF stays HIGH; safe stop)
+motor-stop:
+	$(call build_and_flash_motor,0x0,-100,100,all motors disabled)
+
+motor-clean:
+	@$(MAKE) --no-print-directory -C $(MOTOR_TEST_DIR) clean
 
 build-rx72n:
 	@echo "Building RX72N firmware (Debug)..."
