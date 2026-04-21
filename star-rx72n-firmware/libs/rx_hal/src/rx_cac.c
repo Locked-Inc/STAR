@@ -329,7 +329,7 @@ bool rx_cac_check(uint32_t* out_count)
                                       k_cac_caicr_ovfie_mask));
   ack |= k_cac_caicr_clear_all_flags;
   regs->caicr = ack;
-  return (status & k_cac_castr_ferrf_mask) != 0U;
+  return (bool)((status & k_cac_castr_ferrf_mask) != 0U);
 }
 
 rx_err_t rx_cac_deinit(void)
