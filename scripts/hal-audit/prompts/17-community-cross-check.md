@@ -1,11 +1,11 @@
 ## RUNTIME CONFIG
 
-This prompt is intentionally larger and more thorough than the per-
-peripheral audits. It MUST be launched with Opus, not Sonnet, and only
-medium effort -- not max:
+Launch via:
 
-  CLAUDE_FLAGS="--model claude-opus-4-7 --thinking enabled --effort medium --dangerously-skip-permissions" \
-      bash scripts/hal-audit/launch.sh   # or invoke directly
+  bash scripts/hal-audit/launch.sh --only 17
+
+The launcher's default flags (Opus 4.7, thinking enabled, effort high,
+permission prompts skipped) apply -- no per-prompt override needed.
 
 Cap wall time: 90 minutes. This is bigger than the per-peripheral
 audits because it spans EVERY scalar constant in the HAL.
