@@ -269,7 +269,7 @@ typedef enum : uint32_t {
 typedef enum : uint8_t {
   k_i2c_addr_bno055  = 0x28U, /**< BNO055 I2C address when COM3/ADR pin = LOW */
   k_i2c_addr_bmp280  = 0x76U, /**< BMP280 I2C address when SDO pin = LOW */
-  k_i2c_addr_mpu6050 = 0x68U, /**< GY-521 / MPU-6050 default address (AD0=LOW) — bench-test probe */
+  k_i2c_addr_mpu6050 = 0x68U, /**< GY-521 / MPU-6050 default address (AD0=LOW) -- bench-test probe */
 } imu_i2c_addr_t;
 static_assert(sizeof(imu_i2c_addr_t) == sizeof(uint8_t), "imu_i2c_addr_t must be uint8_t sized");
 static_assert(k_i2c_addr_bno055 != k_i2c_addr_bmp280,

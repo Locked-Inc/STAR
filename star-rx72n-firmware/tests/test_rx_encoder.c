@@ -413,22 +413,26 @@ void test_encoder_init_channel_2_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
-void test_encoder_init_channel_6_success(void)
+void test_encoder_init_channel_6_rejected(void)
 {
+  /* MTU6 has an interleaved register layout and does not support phase
+   * counting per the RX72N hardware manual, so rx_encoder_init must
+   * reject this channel. */
   s_config.channel = k_mtu_channel_6;
 
   rx_err_t err = rx_encoder_init(&s_config);
 
-  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
-void test_encoder_init_channel_7_success(void)
+void test_encoder_init_channel_7_rejected(void)
 {
+  /* MTU7 (paired with MTU6) likewise does not support phase counting. */
   s_config.channel = k_mtu_channel_7;
 
   rx_err_t err = rx_encoder_init(&s_config);
 
-  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /* =============================================================================
@@ -1486,8 +1490,8 @@ static void internal_run_core_tests(void)
   RUN_TEST(test_encoder_init_zero_counts_per_rev_fails);
   RUN_TEST(test_encoder_init_channel_0_success);
   RUN_TEST(test_encoder_init_channel_2_success);
-  RUN_TEST(test_encoder_init_channel_6_success);
-  RUN_TEST(test_encoder_init_channel_7_success);
+  RUN_TEST(test_encoder_init_channel_6_rejected);
+  RUN_TEST(test_encoder_init_channel_7_rejected);
 
   /* Deinitialization tests */
   RUN_TEST(test_encoder_deinit_success);

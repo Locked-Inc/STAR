@@ -219,26 +219,33 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
   return k_rx_ok;
 }
 
-rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
+rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* configs[k_rx_gptw_channel_count])
 {
   rx_err_t          err;
   const uint32_t    max_channels = k_mock_gptw_max_channels;
   rx_gptw_channel_t channel;
 
-  /* Pre-condition: validate config pointer (NASA Power of 10 Rule 5) */
-  if (config == nullptr) {
+  /* Pre-condition: validate array pointer (NASA Power of 10 Rule 5) */
+  if (configs == nullptr) {
     return k_rx_err_null_ptr;
   }
 
-  /* Pre-condition: validate frequency is non-zero */
-  if (config->frequency_hz == 0) {
+  /* Pre-condition: validate every per-channel pointer */
+  for (uint32_t i = 0; i < max_channels; i++) {
+    if (configs[i] == nullptr) {
+      return k_rx_err_null_ptr;
+    }
+  }
+
+  /* Pre-condition: validate frequency is non-zero (shared across channels) */
+  if (configs[0]->frequency_hz == 0) {
     return k_rx_err_invalid_arg;
   }
 
-  /* Simulate initializing all channels */
+  /* Simulate initializing all channels with per-channel configs */
   for (uint32_t i = 0; i < max_channels; i++) {
     channel = (rx_gptw_channel_t)i;
-    err     = rx_gptw_init_pwm(channel, config);
+    err     = rx_gptw_init_pwm(channel, configs[i]);
     if (err != k_rx_ok) {
       return err;
     }
