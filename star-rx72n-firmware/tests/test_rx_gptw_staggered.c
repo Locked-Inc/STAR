@@ -617,8 +617,13 @@ void test_staggered_init_success(void)
   config.deadtime_ns          = 0;
   config.enable_complementary = false;
 
+  /* All 4 channels share the same config in this test. */
+  const rx_gptw_config_t* configs[k_rx_gptw_channel_count] = {
+    &config, &config, &config, &config,
+  };
+
   /* Call the API under test */
-  err = rx_gptw_init_all_staggered(&config);
+  err = rx_gptw_init_all_staggered(configs);
 
   /* Verify it returns OK */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -841,8 +846,13 @@ void test_staggered_init_zero_frequency_fails(void)
   config.deadtime_ns          = 0;
   config.enable_complementary = false;
 
+  /* All 4 channels share the same config in this test. */
+  const rx_gptw_config_t* configs[k_rx_gptw_channel_count] = {
+    &config, &config, &config, &config,
+  };
+
   /* Call the API under test */
-  err = rx_gptw_init_all_staggered(&config);
+  err = rx_gptw_init_all_staggered(configs);
 
   /* Verify it returns invalid argument error */
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);

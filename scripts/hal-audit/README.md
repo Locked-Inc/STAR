@@ -16,25 +16,25 @@ the production firmware lands.
 
 ```
 scripts/hal-audit/
-├── launch.sh                # tmux orchestrator (run this)
-├── README.md                # you are here
-└── prompts/
-    ├── 01-system-clock.md   # one tight prompt per peripheral group
-    ├── 02-mpc.md
-    ├── 03-sci-uart.md
-    ├── 04-gptw.md
-    ├── 05-mtu.md
-    ├── 06-tpu.md
-    ├── 07-riic.md
-    ├── 08-rspi.md
-    ├── 09-adc.md
-    ├── 10-port-gpio.md
-    ├── 11-cmt.md
-    ├── 12-poeg.md
-    ├── 13-iwdt-wdt.md
-    ├── 14-icu.md
-    ├── 15-usb.md
-    └── 16-misc-regs.md
+|-- launch.sh                # tmux orchestrator (run this)
+|-- README.md                # you are here
+`-- prompts/
+    |-- 01-system-clock.md   # one tight prompt per peripheral group
+    |-- 02-mpc.md
+    |-- 03-sci-uart.md
+    |-- 04-gptw.md
+    |-- 05-mtu.md
+    |-- 06-tpu.md
+    |-- 07-riic.md
+    |-- 08-rspi.md
+    |-- 09-adc.md
+    |-- 10-port-gpio.md
+    |-- 11-cmt.md
+    |-- 12-poeg.md
+    |-- 13-iwdt-wdt.md
+    |-- 14-icu.md
+    |-- 15-usb.md
+    `-- 16-misc-regs.md
 ```
 
 Each prompt:

@@ -277,16 +277,18 @@ void mock_gptw_set_enable_output_error_after_n(uint32_t n, rx_err_t err);
  * channels (0-3) with the provided configuration. In the mock, each channel
  * is initialized via rx_gptw_init_pwm().
  *
- * @param[in] config Pointer to configuration structure containing frequency,
- *                   wave mode, and other PWM settings for all 4 channels.
+ * @param[in] configs Array of per-channel configuration pointers, one entry
+ *                    per GPTW channel (k_rx_gptw_channel_count). All entries
+ *                    must share frequency_hz and wave_mode; pin map and other
+ *                    fields may vary per channel.
  *
  * @retval k_rx_ok Success, all 4 channels initialized
- * @retval k_rx_err_null_ptr config is NULL
- * @retval k_rx_err_invalid_arg config->frequency_hz is zero
+ * @retval k_rx_err_null_ptr configs (or any configs[i]) is NULL
+ * @retval k_rx_err_invalid_arg configs[0]->frequency_hz is zero
  *
  * @see rx_gptw_init_all_staggered() Real driver implementation in rx_gptw.h
  */
-rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config);
+rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* configs[k_rx_gptw_channel_count]);
 
 #ifdef __cplusplus
 }
