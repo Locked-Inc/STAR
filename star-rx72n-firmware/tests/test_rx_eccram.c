@@ -154,7 +154,8 @@ static void test_setup(void)
    * use a compound literal here because the source is a non-constant
    * byte fill. The trailing NOLINT silences cert-msc24-c (recommends
    * memset_s) -- glibc never shipped C11 Annex K. */
-  memset(g_mock_eccram_region, k_test_eccram_dirty_sentinel,
+  memset(g_mock_eccram_region,
+         k_test_eccram_dirty_sentinel,
          sizeof(uint32_t) * (size_t)k_test_region_words); // NOLINT(cert-msc24-c)
   g_mock_prcr = 0;
 
@@ -366,7 +367,7 @@ static void test_get_error_status_reports_1bit(void)
                                .two_bit_error = false,
                                .one_bit_addr  = 0U,
                                .two_bit_addr  = 0U};
-  const rx_err_t err = rx_eccram_get_error_status(&status);
+  const rx_err_t     err    = rx_eccram_get_error_status(&status);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(status.one_bit_error);
   TEST_ASSERT_FALSE(status.two_bit_error);
@@ -385,7 +386,7 @@ static void test_get_error_status_reports_2bit(void)
                                .two_bit_error = false,
                                .one_bit_addr  = 0U,
                                .two_bit_addr  = 0U};
-  const rx_err_t err = rx_eccram_get_error_status(&status);
+  const rx_err_t     err    = rx_eccram_get_error_status(&status);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(status.one_bit_error);
   TEST_ASSERT_TRUE(status.two_bit_error);
