@@ -619,7 +619,10 @@ void test_staggered_init_success(void)
 
   /* All 4 channels share the same config in this test. */
   const rx_gptw_config_t* configs[k_rx_gptw_channel_count] = {
-    &config, &config, &config, &config,
+    &config,
+    &config,
+    &config,
+    &config,
   };
 
   /* Call the API under test */
@@ -848,7 +851,10 @@ void test_staggered_init_zero_frequency_fails(void)
 
   /* All 4 channels share the same config in this test. */
   const rx_gptw_config_t* configs[k_rx_gptw_channel_count] = {
-    &config, &config, &config, &config,
+    &config,
+    &config,
+    &config,
+    &config,
   };
 
   /* Call the API under test */

@@ -364,10 +364,11 @@
  * @brief 8-bit integer test constants
  */
 typedef enum : uint8_t {
-  k_test_auto_advance_step       = 10, /**< Default auto-advance step (us per call) */
-  k_test_port_shift_bits         = 8,  /**< Port shift width in port_pin_t encoding */
-  k_test_irq_below_range         = 7,  /**< IRQ number below valid range minimum (8) */
-  k_test_port_gap_value          = 17, /**< Port in gap between k_rx_port_g and k_rx_port_j (Port H = 0x11, not on 144-pin) */
+  k_test_auto_advance_step = 10, /**< Default auto-advance step (us per call) */
+  k_test_port_shift_bits   = 8,  /**< Port shift width in port_pin_t encoding */
+  k_test_irq_below_range   = 7,  /**< IRQ number below valid range minimum (8) */
+  k_test_port_gap_value =
+    17, /**< Port in gap between k_rx_port_g and k_rx_port_j (Port H = 0x11, not on 144-pin) */
   k_test_port_j_boundary         = 18, /**< Port boundary value (== k_rx_port_j = 0x12) */
   k_test_pin_above_max           = 8,  /**< Pin number one above k_rx_pin_max (7) */
   k_test_irq_above_range         = 16, /**< IRQ number above valid range maximum (15) */
