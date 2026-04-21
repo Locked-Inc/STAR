@@ -964,7 +964,8 @@ typedef enum : uint8_t {
   k_rx_gptw_channel_count = 4,
 } rx_gptw_count_t;
 
-[[nodiscard]] rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* configs[k_rx_gptw_channel_count]);
+[[nodiscard]] rx_err_t
+rx_gptw_init_all_staggered(const rx_gptw_config_t* configs[k_rx_gptw_channel_count]);
 
 /**
  * @brief Initialize a single GPTW channel for PWM output

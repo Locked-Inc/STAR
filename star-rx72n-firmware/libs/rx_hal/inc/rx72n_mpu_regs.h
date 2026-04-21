@@ -926,11 +926,14 @@ static_assert(offsetof(rx_mpu_region_regs_t, repage) == 4, "REPAGE offset in str
 /* Verify bit definitions */
 static_assert(k_repage_v == 0x01U, "REPAGE V bit must be bit 0");
 
-static_assert(k_repage_uac_r == 0x02U, "REPAGE UAC.R bit must be bit 1"); /* NOLINT(readability-magic-numbers) */
+static_assert(k_repage_uac_r == 0x02U,
+              "REPAGE UAC.R bit must be bit 1"); /* NOLINT(readability-magic-numbers) */
 
-static_assert(k_repage_uac_w == 0x04U, "REPAGE UAC.W bit must be bit 2"); /* NOLINT(readability-magic-numbers) */
+static_assert(k_repage_uac_w == 0x04U,
+              "REPAGE UAC.W bit must be bit 2"); /* NOLINT(readability-magic-numbers) */
 
-static_assert(k_repage_uac_x == 0x08U, "REPAGE UAC.X bit must be bit 3"); /* NOLINT(readability-magic-numbers) */
+static_assert(k_repage_uac_x == 0x08U,
+              "REPAGE UAC.X bit must be bit 3"); /* NOLINT(readability-magic-numbers) */
 
 static_assert(k_mpen_mpen == 0x01U, "MPEN.MPEN bit must be bit 0");
 

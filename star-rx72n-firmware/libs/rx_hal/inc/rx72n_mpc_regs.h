@@ -183,7 +183,8 @@ typedef enum : uint8_t {
   k_mpc_offset_porta_pfs = 0x50, /**< Port A PFS block offset from P00PFS */
   k_mpc_offset_porte_pfs = 0x70, /**< Port E PFS block offset from P00PFS */
   k_mpc_offset_portj_pfs = 0x90, /**< Port J PFS block offset from P00PFS */
-  k_mpc_pfs_total_bytes  = 152,  /**< Total size in bytes of the PFS register block (P00PFS through PJ5PFS with reserved padding) */
+  k_mpc_pfs_total_bytes =
+    152, /**< Total size in bytes of the PFS register block (P00PFS through PJ5PFS with reserved padding) */
 } mpc_register_offsets_t;
 
 /** @brief MPC register reserved field sizes */

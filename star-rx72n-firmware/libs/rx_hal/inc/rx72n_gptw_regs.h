@@ -341,12 +341,13 @@ typedef struct {
 
 /** @brief GPTW hardware addresses (verified against RX72N Hardware Manual) */
 typedef enum : uintptr_t {
-  k_gptw_channel_offset   = 0x100,      /**< Channel spacing between GPTW registers */
-  k_gptw0_base_addr       = 0x000C2000, /**< GPTW channel 0 base address */
-  k_gptw1_base_addr       = 0x000C2100, /**< GPTW channel 1 base address */
-  k_gptw2_base_addr       = 0x000C2200, /**< GPTW channel 2 base address */
-  k_gptw3_base_addr       = 0x000C2300, /**< GPTW channel 3 base address */
-  k_gptw_common_base_addr = 0x000C2004, /**< GPTW0.GTSTR -- used as multi-channel start/stop/clear base.
+  k_gptw_channel_offset = 0x100,      /**< Channel spacing between GPTW registers */
+  k_gptw0_base_addr     = 0x000C2000, /**< GPTW channel 0 base address */
+  k_gptw1_base_addr     = 0x000C2100, /**< GPTW channel 1 base address */
+  k_gptw2_base_addr     = 0x000C2200, /**< GPTW channel 2 base address */
+  k_gptw3_base_addr     = 0x000C2300, /**< GPTW channel 3 base address */
+  k_gptw_common_base_addr =
+    0x000C2004, /**< GPTW0.GTSTR -- used as multi-channel start/stop/clear base.
                                           * RX72N has NO separate "common" GPTW block (Chapter 5 Table 5.1
                                           * shows GPTW space ending at 0x000C23D4; nothing at 0x000C2B00).
                                           * GTSTR/GTSTP/GTCLR in any channel affect all channels whose

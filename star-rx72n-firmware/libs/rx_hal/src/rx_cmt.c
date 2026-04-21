@@ -251,9 +251,9 @@ typedef struct {
 
 /** @brief CMCR register bit positions (RX72N Manual Ch31, p.1583) */
 typedef enum : uint8_t {
-  k_cmt_cmcr_cks_shift  = 0, /**< CKS (clock select) bit shift */
-  k_cmt_cmcr_cmie_pos   = 6, /**< CMIE (interrupt enable) bit position */
-  k_cmt_cmcr_rsvd7_pos  = 7, /**< Reserved bit 7: write value should be 1 */
+  k_cmt_cmcr_cks_shift = 0, /**< CKS (clock select) bit shift */
+  k_cmt_cmcr_cmie_pos  = 6, /**< CMIE (interrupt enable) bit position */
+  k_cmt_cmcr_rsvd7_pos = 7, /**< Reserved bit 7: write value should be 1 */
 } cmt_cmcr_bits_t;
 
 /** @brief Period calculation constants */

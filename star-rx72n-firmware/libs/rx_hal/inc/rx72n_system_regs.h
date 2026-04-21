@@ -588,15 +588,17 @@ typedef enum : uint16_t {
   k_pllcr_stc_mask  = 0x3F00,
 
   /* Convenience values for common configurations */
-  k_pllcr_star_24mhz_to_240mhz = (k_pllcr_plidiv_1 |          /* 24 MHz input (no division) */
-                                  k_pllcr_src_main |          /* Main oscillator source */
-                                  (19U << k_pllcr_stc_shift)  /* STC=19 -> x10.0 (manual p345: 0b010011) */
-                                  ),                          /**< STAR: 24 MHz x 10 = 240 MHz */
+  k_pllcr_star_24mhz_to_240mhz =
+    (k_pllcr_plidiv_1 |         /* 24 MHz input (no division) */
+     k_pllcr_src_main |         /* Main oscillator source */
+     (19U << k_pllcr_stc_shift) /* STC=19 -> x10.0 (manual p345: 0b010011) */
+     ),                         /**< STAR: 24 MHz x 10 = 240 MHz */
 
-  k_pllcr_12mhz_to_240mhz = (k_pllcr_plidiv_1 |          /* 12 MHz input (no division) */
-                             k_pllcr_src_main |          /* Main oscillator source */
-                             (19U << k_pllcr_stc_shift)  /* STC=19 -> x10.0 (manual p345); = 0x1300 */
-                             ),                          /**< Alternative: 12 MHz x 10 = 120 MHz (NOT 240 MHz!) */
+  k_pllcr_12mhz_to_240mhz =
+    (k_pllcr_plidiv_1 |         /* 12 MHz input (no division) */
+     k_pllcr_src_main |         /* Main oscillator source */
+     (19U << k_pllcr_stc_shift) /* STC=19 -> x10.0 (manual p345); = 0x1300 */
+     ),                         /**< Alternative: 12 MHz x 10 = 120 MHz (NOT 240 MHz!) */
 } pllcr_bits_t;
 
 /**
@@ -1292,8 +1294,9 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_nibble_all_ones   = 0x0F, /**< All bits set in 4-bit field (verifies 4-bit mask width) */
-  k_pllcr_stc_for_x10 = 19,   /**< PLLCR STC field value for x10.0 (manual p345: 0b010011=19; formula (STC+1)/2=mult) */
+  k_nibble_all_ones = 0x0F, /**< All bits set in 4-bit field (verifies 4-bit mask width) */
+  k_pllcr_stc_for_x10 =
+    19, /**< PLLCR STC field value for x10.0 (manual p345: 0b010011=19; formula (STC+1)/2=mult) */
 } rx_clock_verify_t;
 
 /* =============================================================================

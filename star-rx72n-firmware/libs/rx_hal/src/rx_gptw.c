@@ -124,8 +124,8 @@
 
 #include "rx72n_regs.h"
 #include "rx_check.h"
-#include "rx_port_utils.h"
 #include "rx_log.h"
+#include "rx_port_utils.h"
 #include "rx_register_protection.h"
 
 static const char* s_tag = "GPTW";
@@ -595,8 +595,8 @@ typedef enum : uintptr_t {
 
 static inline volatile uint8_t* internal_pfs_addr(uint8_t port_idx, uint8_t bit)
 {
-  return (volatile uint8_t*)(k_pfs_block_base_addr +
-                             ((uint32_t)port_idx * k_pfs_port_stride) + bit);
+  return (volatile uint8_t*)(k_pfs_block_base_addr + ((uint32_t)port_idx * k_pfs_port_stride) +
+                             bit);
 }
 
 static rx_err_t internal_configure_mpc(const rx_gptw_config_t* config)
@@ -1938,7 +1938,8 @@ rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* configs[k_rx_gptw_ch
   }
 
   uint32_t period;
-  rx_err_t err = internal_calculate_period(configs[0]->frequency_hz, configs[0]->wave_mode, &period);
+  rx_err_t err =
+    internal_calculate_period(configs[0]->frequency_hz, configs[0]->wave_mode, &period);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1946,7 +1947,8 @@ rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* configs[k_rx_gptw_ch
   const bool is_triangle = internal_is_triangle_mode(configs[0]->wave_mode);
 
   for (uint8_t i = 0; i < k_gptw_max_channels; i++) {
-    err = internal_configure_channel_staggered((rx_gptw_channel_t)i, configs[i], period, is_triangle);
+    err =
+      internal_configure_channel_staggered((rx_gptw_channel_t)i, configs[i], period, is_triangle);
     if (err != k_rx_ok) {
       return err;
     }
