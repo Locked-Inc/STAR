@@ -118,8 +118,8 @@ void mock_rx_doc_reset(void)
 {
   /* C99 compound-literal zero-init -- avoids cert-msc24-c (memset insecure)
    * and gives the compiler freedom to pick the optimal zero-fill. */
-  g_mock_doc_regs        = (rx_doc_regs_t){0};
-  g_mock_doc_system_regs = (rx_system_regs_t){0};
+  g_mock_doc_regs                = (rx_doc_regs_t){0};
+  g_mock_doc_system_regs         = (rx_system_regs_t){0};
   g_mock_doc_system_regs.mstpcrb = k_mock_doc_mstpcrb_all_stopped;
   g_mock_prcr                    = k_mock_doc_prcr_locked;
   s_access_count                 = 0U;
@@ -141,7 +141,7 @@ void mock_rx_doc_set_dopcf(bool set)
   if (set) {
     g_mock_doc_regs.docr |= k_doc_docr_dopcf_mask;
   } else {
-    g_mock_doc_regs.docr &= (uint8_t) ~k_doc_docr_dopcf_mask;
+    g_mock_doc_regs.docr &= (uint8_t)~k_doc_docr_dopcf_mask;
   }
 }
 
