@@ -334,6 +334,13 @@ extern "C" {
 #include "rx72n_crc_regs.h"
 
 /* =============================================================================
+ * Clock Frequency Accuracy Measurement Circuit (CAC)
+ * =============================================================================
+ */
+
+#include "rx72n_cac_regs.h"
+
+/* =============================================================================
  * USB 2.0 Full-Speed Host/Function Module (USB0) -- REMOVED
  * =============================================================================
  * The rx72n_usb_regs.h header was deleted alongside libs/rx_usb/ when USB0
