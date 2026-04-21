@@ -263,10 +263,10 @@ static bool encoders_init(void)
   system_regs()->mstpcra &= ~(uint32_t)((1UL << 9) | (uint32_t)k_tpu_mstpcra_mstpa13);
   *prcr_reg() = k_rx_prcr_lock;
 
-  /* Step 2 + 3: per hirakuni45 RX72N port_map_mtu.hpp the correct sequence
-   * is PMR=0, write PFS, PMR=1. And MTCLKA/MTCLKB on P24/P25 take PSEL=0x02
-   * (the production header's k_psel_mtu_phase=0x03 is WRONG -- 0x02 is the
-   * MTCLK PSEL on RX72N). For TPU TCLK keep our verified per-pin values. */
+  /* Step 2 + 3: RX72N MPC pin setup requires the sequence PMR=0, write PFS,
+   * PMR=1. MTCLKA/MTCLKB on P24/P25 take PSEL=0x02 (the production header's
+   * old k_psel_mtu_phase=0x03 was WRONG -- 0x02 is the MTCLK PSEL on RX72N).
+   * For TPU TCLK keep our verified per-pin values. */
   volatile uint8_t *pwpr  = (volatile uint8_t *)0x0008C11FU;
   volatile uint8_t *p2pmr = (volatile uint8_t *)0x0008C062U;
   volatile uint8_t *papmr = (volatile uint8_t *)0x0008C06AU;
@@ -281,7 +281,7 @@ static bool encoders_init(void)
 
   /* PFS writes */
   *pwpr = 0x00U; *pwpr = 0x40U;
-  REG8_AT(0x0008C140U + 2U * 8U + 4U)  = 0x02U; /* P24 MTCLKA -- enc0 A (MTU PSEL=0x02 per hirakuni45) */
+  REG8_AT(0x0008C140U + 2U * 8U + 4U)  = 0x02U; /* P24 MTCLKA -- enc0 A (MTU PSEL=0x02, RX72N HW manual R01UH0824EJ0111 Table 23.6) */
   REG8_AT(0x0008C140U + 2U * 8U + 5U)  = 0x02U; /* P25 MTCLKB -- enc0 B */
   REG8_AT(0x0008C140U + 10U * 8U + 1U) = 0x02U; /* PA1 MTCLKC -- enc1 A */
   REG8_AT(0x0008C140U + 12U * 8U + 5U) = 0x02U; /* PC5 MTCLKD -- enc1 B */

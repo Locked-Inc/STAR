@@ -1743,10 +1743,10 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason)
  *
  * @par Example - POEG Motor Fault ISR:
  * @code{.c}
- * void __attribute__((interrupt)) poeg_group_a_isr(void)
+ * void __attribute__((interrupt)) poeg_groupbl2_isr(void)
  * {
- *     icu()->ir[k_poeg_irq_group_a] = 0; // Clear IR flag
- *     rx_log_error("POEG", "nFAULT motor 0");
+ *     icu()->ir[k_poeg_irq_groupbl2_vector] = 0; // Clear GROUPBL2 IR flag
+ *     rx_log_error("POEG", "nFAULT (dispatch via GRPBL2)");
  *
  *     // ISR-safe e-stop trigger (no mutex)
  *     shared_data_trigger_estop_isr_safe(k_estop_reason_driver_fault);

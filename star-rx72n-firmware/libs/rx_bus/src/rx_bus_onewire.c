@@ -155,7 +155,7 @@ static onewire_state_entry_t s_state_pool[k_onewire_max_instances];
  * ticks to ensure consistent timing independent of compiler optimizations.
  */
 typedef enum : uint32_t {
-  k_onewire_mstpb_cmt_bit       = 15, /**< CMT module stop bit in MSTPCRB */
+  k_onewire_mstpa_cmt_unit1_bit = 14, /**< MSTPA14 in MSTPCRA: CMT unit 1 (CMT2/CMT3) module stop */
   k_onewire_cmt3_start_bit      = 1,  /**< CMSTR1 bit controlling CMT3 */
   k_onewire_cmt_divider_setting = 0,  /**< CKS = 0 -> PCLKB/8 */
   k_onewire_cmt_divider_value   = 8,  /**< Actual divider value */
@@ -215,7 +215,7 @@ RX_STATIC_TESTABLE void internal_delay_timer_init(void)
 
   /* Enable CMT module clock */
   *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
-  system_regs()->mstpcrb &= ~(k_onewire_bit_set << k_onewire_mstpb_cmt_bit);
+  system_regs()->mstpcra &= ~(k_onewire_bit_set << k_onewire_mstpa_cmt_unit1_bit);
   *prcr_reg() = k_rx_prcr_lock;
 
   /* Stop CMT3 before reconfiguration */

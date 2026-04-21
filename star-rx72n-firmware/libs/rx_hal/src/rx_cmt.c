@@ -732,6 +732,16 @@ static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_interrupt_config_t
     return k_rx_err_invalid_arg;
   }
 
+  /* CMI0/CMI1 have fixed ICU vectors (28, 29). CMI2/CMI3 are SELECTB
+   * sources on RX72N and need SLIBRn programming, which is not yet
+   * implemented in this driver. Reject interrupt-mode init on ch2/ch3
+   * rather than enabling the wrong vectors (30/31 are CMWI0/CMWI1 for
+   * CMTW timers). Per RX72N HW manual R01UH0824EJ0111 Section 15.3
+   * (Interrupt Vector Table) and Section 15.4 (SELECTB sources). */
+  if (config.channel == k_cmt_channel_2 || config.channel == k_cmt_channel_3) {
+    return k_rx_err_not_supported;
+  }
+
   const uint8_t vector    = k_vect_cmt0_cmi0 + config.channel;
   const uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
   const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
@@ -1499,12 +1509,16 @@ rx_err_t rx_cmt_deinit(const rx_cmt_channel_t channel)
     return err;
   }
 
-  /* Disable interrupt */
-  const uint8_t vector    = k_vect_cmt0_cmi0 + channel;
-  const uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
-  const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
-  const uint8_t ier_mask  = (uint8_t)(k_cmt_bit_mask_lsb << ier_bit);
-  icu()->ier[ier_index] &= (uint8_t)~ier_mask;
+  /* Disable interrupt only for channels with fixed ICU vectors (CMI0/CMI1).
+   * CMI2/CMI3 are SELECTB sources; interrupt wiring for those is not
+   * implemented (see internal_configure_cmt_interrupt() for details). */
+  if (channel == k_cmt_channel_0 || channel == k_cmt_channel_1) {
+    const uint8_t vector    = k_vect_cmt0_cmi0 + channel;
+    const uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
+    const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
+    const uint8_t ier_mask  = (uint8_t)(k_cmt_bit_mask_lsb << ier_bit);
+    icu()->ier[ier_index] &= (uint8_t)~ier_mask;
+  }
 
   /* Clear callback */
   s_cmt_callback[channel]    = nullptr;

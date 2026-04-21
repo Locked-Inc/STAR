@@ -212,12 +212,13 @@ enum {
   k_gptw_gtwp_lock   = 0xA501,
 };
 
-/* POEG interrupt vectors */
+/* POEG interrupt routing: shared GROUPBL2 vector + per-source bits in GRPBL2/GENBL2 */
 enum {
-  k_poeg_irq_group_a = 188,
-  k_poeg_irq_group_b = 189,
-  k_poeg_irq_group_c = 190,
-  k_poeg_irq_group_d = 191,
+  k_poeg_irq_groupbl2_vector = 107,
+  k_poeg_grpbl2_bit_poeggai  = 7,
+  k_poeg_grpbl2_bit_poeggbi  = 8,
+  k_poeg_grpbl2_bit_poeggci  = 9,
+  k_poeg_grpbl2_bit_poeggdi  = 10,
 };
 
 /* =============================================================================
@@ -242,14 +243,22 @@ enum {
   k_poeg_isr_priority_t   = 14,
 };
 
-/* ICU IER test verification constants */
+/* ICU IER test verification constants for GROUPBL2 (vector 107) */
 typedef enum : uint8_t {
-  k_icu_ier_reg_23    = 23,   /**< IER register index for vectors 184-191 */
-  k_icu_ier_bit4_mask = 0x10, /**< Bit 4 mask for vector 188 */
-  k_icu_ier_bit5_mask = 0x20, /**< Bit 5 mask for vector 189 */
-  k_icu_ier_bit6_mask = 0x40, /**< Bit 6 mask for vector 190 */
-  k_icu_ier_bit7_mask = 0x80, /**< Bit 7 mask for vector 191 */
+  k_icu_ier_reg_13    = 13,   /**< IER register index for vector 107 (107/8) */
+  k_icu_ier_bit3_mask = 0x08, /**< Bit 3 mask for vector 107 (107%8) */
 } icu_ier_test_constants_t;
+
+/* GENBL2 per-source masks (too wide for uint8_t enum, use uint32_t) */
+typedef enum : uint32_t {
+  k_genbl2_poeggai_mask_test = (1U << 7),
+  k_genbl2_poeggbi_mask_test = (1U << 8),
+  k_genbl2_poeggci_mask_test = (1U << 9),
+  k_genbl2_poeggdi_mask_test = (1U << 10),
+} genbl2_masks_test_t;
+
+/** Mock GENBL2 register storage (real hw is at 0x00087670) */
+static uint32_t s_mock_genbl2_test = 0U;
 
 /* Test assertion magic number constants */
 typedef enum : uint8_t {
@@ -274,11 +283,11 @@ static const uint32_t s_gtintad_values_test[k_poeg_group_count] = {
   (k_gptw_gtintad_grp_d | k_gptw_gtintad_grpdte | k_gptw_gtintad_grpabl),
 };
 
-static const uint16_t s_poeg_vectors_test[k_poeg_group_count] = {
-  k_poeg_irq_group_a,
-  k_poeg_irq_group_b,
-  k_poeg_irq_group_c,
-  k_poeg_irq_group_d,
+static const uint8_t s_poeg_grpbl2_bits_test[k_poeg_group_count] = {
+  k_poeg_grpbl2_bit_poeggai,
+  k_poeg_grpbl2_bit_poeggbi,
+  k_poeg_grpbl2_bit_poeggci,
+  k_poeg_grpbl2_bit_poeggdi,
 };
 
 /* --- test_rx_poeg_init --- */
@@ -297,14 +306,17 @@ static rx_err_t test_poeg_init(void)
     s_mock_gptw[i].gtintad = s_gtintad_values_test[i];
     s_mock_gptw[i].gtwp    = k_gptw_gtwp_lock;
 
-    /* Configure ICU */
-    uint16_t vector        = s_poeg_vectors_test[i];
-    s_mock_icu.ir[vector]  = k_icu_ir_clear_test;
-    s_mock_icu.ipr[vector] = k_poeg_isr_priority_t;
-    uint8_t ier_idx        = (uint8_t)(vector / k_ier_bits_per_reg_t);
-    uint8_t ier_bit        = (uint8_t)(vector % k_ier_bits_per_reg_t);
-    s_mock_icu.ier[ier_idx] |= (uint8_t)(k_ier_bit_enable_base_t << ier_bit);
+    /* Enable this POEG source in GENBL2 */
+    s_mock_genbl2_test |= (1U << s_poeg_grpbl2_bits_test[i]);
   }
+
+  /* Configure the shared GROUPBL2 ICU vector (107) */
+  const uint16_t vector  = k_poeg_irq_groupbl2_vector;
+  s_mock_icu.ir[vector]  = k_icu_ir_clear_test;
+  s_mock_icu.ipr[vector] = k_poeg_isr_priority_t;
+  const uint8_t ier_idx  = (uint8_t)(vector / k_ier_bits_per_reg_t);
+  const uint8_t ier_bit  = (uint8_t)(vector % k_ier_bits_per_reg_t);
+  s_mock_icu.ier[ier_idx] |= (uint8_t)(k_ier_bit_enable_base_t << ier_bit);
 
   return k_rx_ok;
 }
@@ -369,20 +381,34 @@ static rx_err_t test_poeg_clear_software_stop(uint8_t motor_index)
   return k_rx_ok;
 }
 
-/* --- test ISR handler --- */
-static void test_poeg_isr_handler(uint8_t motor_index, uint16_t vector)
+/* --- test ISR handler (GROUPBL2 dispatcher) --- */
+static void test_poeg_isr_handler(uint8_t motor_index, uint16_t unused_vector)
 {
-  s_mock_icu.ir[vector] = 0;
+  (void)unused_vector;
 
-  uint32_t status = s_mock_poeg[motor_index].poeggn;
-  if (status & k_poeg_pidf_detected) {
-    s_error_log_count++;
-  }
-  if (status & k_poeg_iocf_detected) {
-    s_error_log_count++;
+  /* Simulate the GROUPBL2 sub-source bit being set for this motor, then dispatch */
+  const uint32_t grpbl2 = (1UL << s_poeg_grpbl2_bits_test[motor_index]);
+
+  bool faulted = false;
+  for (uint8_t i = 0; i < k_poeg_motor_count; i++) {
+    if ((grpbl2 & (1UL << s_poeg_grpbl2_bits_test[i])) == 0U) {
+      continue;
+    }
+    const uint32_t status = s_mock_poeg[i].poeggn;
+    if (status & k_poeg_pidf_detected) {
+      s_error_log_count++;
+    }
+    if (status & k_poeg_iocf_detected) {
+      s_error_log_count++;
+    }
+    faulted = true;
   }
 
-  (void)shared_data_trigger_estop(k_estop_reason_driver_fault);
+  s_mock_icu.ir[k_poeg_irq_groupbl2_vector] = 0;
+
+  if (faulted) {
+    (void)shared_data_trigger_estop(k_estop_reason_driver_fault);
+  }
 }
 
 /* =============================================================================
@@ -505,21 +531,15 @@ void test_poeg_init_enables_icu_interrupts(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  /* Vector 188: IER[23] bit 4 (188/8=23, 188%8=4) */
-  TEST_ASSERT_BITS_HIGH(k_icu_ier_bit4_mask, s_mock_icu.ier[k_icu_ier_reg_23]);
-  TEST_ASSERT_EQUAL(k_poeg_isr_priority_t, s_mock_icu.ipr[k_poeg_irq_group_a]);
+  /* GROUPBL2 vector 107: IER[13] bit 3, priority set at ipr[107] */
+  TEST_ASSERT_BITS_HIGH(k_icu_ier_bit3_mask, s_mock_icu.ier[k_icu_ier_reg_13]);
+  TEST_ASSERT_EQUAL(k_poeg_isr_priority_t, s_mock_icu.ipr[k_poeg_irq_groupbl2_vector]);
 
-  /* Vector 189: IER[23] bit 5 */
-  TEST_ASSERT_BITS_HIGH(k_icu_ier_bit5_mask, s_mock_icu.ier[k_icu_ier_reg_23]);
-  TEST_ASSERT_EQUAL(k_poeg_isr_priority_t, s_mock_icu.ipr[k_poeg_irq_group_b]);
-
-  /* Vector 190: IER[23] bit 6 */
-  TEST_ASSERT_BITS_HIGH(k_icu_ier_bit6_mask, s_mock_icu.ier[k_icu_ier_reg_23]);
-  TEST_ASSERT_EQUAL(k_poeg_isr_priority_t, s_mock_icu.ipr[k_poeg_irq_group_c]);
-
-  /* Vector 191: IER[23] bit 7 */
-  TEST_ASSERT_BITS_HIGH(k_icu_ier_bit7_mask, s_mock_icu.ier[k_icu_ier_reg_23]);
-  TEST_ASSERT_EQUAL(k_poeg_isr_priority_t, s_mock_icu.ipr[k_poeg_irq_group_d]);
+  /* All four POEG sub-sources unmasked in GENBL2 */
+  TEST_ASSERT_BITS_HIGH(k_genbl2_poeggai_mask_test, s_mock_genbl2_test);
+  TEST_ASSERT_BITS_HIGH(k_genbl2_poeggbi_mask_test, s_mock_genbl2_test);
+  TEST_ASSERT_BITS_HIGH(k_genbl2_poeggci_mask_test, s_mock_genbl2_test);
+  TEST_ASSERT_BITS_HIGH(k_genbl2_poeggdi_mask_test, s_mock_genbl2_test);
 }
 
 void test_poeg_init_fails_if_pide_not_accepted(void)
@@ -739,19 +759,19 @@ void test_poeg_clear_software_stop_invalid_motor(void)
 
 void test_poeg_isr_clears_ir_flag(void)
 {
-  s_mock_icu.ir[k_poeg_irq_group_a]      = 1; /* Pending interrupt */
-  s_mock_poeg[k_test_motor_idx_0].poeggn = k_poeg_pidf_detected;
+  s_mock_icu.ir[k_poeg_irq_groupbl2_vector] = 1; /* Pending interrupt */
+  s_mock_poeg[k_test_motor_idx_0].poeggn    = k_poeg_pidf_detected;
 
-  test_poeg_isr_handler(k_test_motor_idx_0, k_poeg_irq_group_a);
+  test_poeg_isr_handler(k_test_motor_idx_0, 0);
 
-  TEST_ASSERT_EQUAL(0, s_mock_icu.ir[k_poeg_irq_group_a]);
+  TEST_ASSERT_EQUAL(0, s_mock_icu.ir[k_poeg_irq_groupbl2_vector]);
 }
 
 void test_poeg_isr_triggers_estop(void)
 {
   s_mock_poeg[k_test_motor_idx_1].poeggn = k_poeg_pidf_detected;
 
-  test_poeg_isr_handler(k_test_motor_idx_1, k_poeg_irq_group_b);
+  test_poeg_isr_handler(k_test_motor_idx_1, 0);
 
   TEST_ASSERT_TRUE(s_estop_active);
   TEST_ASSERT_EQUAL(k_estop_reason_driver_fault, s_estop_reason);
@@ -761,7 +781,7 @@ void test_poeg_isr_logs_pidf_fault(void)
 {
   s_mock_poeg[k_test_motor_idx_0].poeggn = k_poeg_pidf_detected;
 
-  test_poeg_isr_handler(k_test_motor_idx_0, k_poeg_irq_group_a);
+  test_poeg_isr_handler(k_test_motor_idx_0, 0);
 
   TEST_ASSERT_GREATER_THAN(0, s_error_log_count);
 }
@@ -770,7 +790,7 @@ void test_poeg_isr_logs_iocf_fault(void)
 {
   s_mock_poeg[k_test_motor_idx_0].poeggn = k_poeg_iocf_detected;
 
-  test_poeg_isr_handler(k_test_motor_idx_0, k_poeg_irq_group_a);
+  test_poeg_isr_handler(k_test_motor_idx_0, 0);
 
   TEST_ASSERT_GREATER_THAN(0, s_error_log_count);
 }
@@ -779,7 +799,7 @@ void test_poeg_isr_logs_both_pidf_and_iocf(void)
 {
   s_mock_poeg[k_test_motor_idx_2].poeggn = k_poeg_pidf_detected | k_poeg_iocf_detected;
 
-  test_poeg_isr_handler(k_test_motor_idx_2, k_poeg_irq_group_c);
+  test_poeg_isr_handler(k_test_motor_idx_2, 0);
 
   /* Both fault types logged */
   TEST_ASSERT_EQUAL(k_test_expected_count_2, s_error_log_count);
@@ -790,7 +810,7 @@ void test_poeg_isr_all_groups(void)
   /* Trigger ISR on all 4 groups */
   for (uint32_t i = 0; i < k_poeg_group_count; i++) {
     s_mock_poeg[i].poeggn = k_poeg_pidf_detected;
-    test_poeg_isr_handler((uint8_t)i, s_poeg_vectors_test[i]);
+    test_poeg_isr_handler((uint8_t)i, 0);
   }
 
   TEST_ASSERT_EQUAL(k_test_expected_count_4, s_estop_trigger_count);
@@ -814,7 +834,7 @@ void test_poeg_full_fault_lifecycle(void)
   /* ST=0 because nFAULT is still active */
 
   /* 3. ISR fires */
-  test_poeg_isr_handler(k_test_motor_idx_0, k_poeg_irq_group_a);
+  test_poeg_isr_handler(k_test_motor_idx_0, 0);
   TEST_ASSERT_TRUE(s_estop_active);
 
   /* 4. Try to clear while fault still active -> busy */

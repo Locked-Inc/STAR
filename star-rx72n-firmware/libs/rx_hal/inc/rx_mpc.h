@@ -461,23 +461,100 @@ typedef enum : uint8_t {
   k_psel_mtu_ioc = 0x01,
 
   /**
-   * @brief MTU clock input (MTCLK)
+   * @brief MTU clock input (MTCLKA/B/C/D)
    * @details
-   * Connects pin to MTU3a external clock input for counting external pulses.
-   * @par Typical Pins: P24 (MTCLKA), P25 (MTCLKB), PC0 (MTCLKC), PC1 (MTCLKD)
-   * @par Application: Encoder pulse counting (count mode)
+   * Connects pin to MTU3a external clock input. On RX72N, PSEL = 0x02
+   * (0b000010) is the generic "MTCLK" function and is the same value whether
+   * the MTU is configured for normal external-clock counting or for phase
+   * counting (quadrature encoder) mode. The counting mode is selected by
+   * MTU.TMDR, not by PSEL -- callers must not pick a different PSEL just
+   * because they want phase counting.
+   *
+   * Reference: RX72N Group Hardware Manual (R01UH0824EJ0111), chapter 23
+   * "Multi-Function Pin Controller (MPC)". For the 144-pin LFQFP package:
+   *   - Table 23.5 (P1x pins): row PSEL = 000010b -> MTCLKA on P14,
+   *     MTCLKB on P15
+   *   - Table 23.6 (P2x pins): row PSEL = 000010b -> MTCLKC on P22,
+   *     MTCLKD on P23, MTCLKA on P24, MTCLKB on P25
+   *   - Table 23.17 (PAx pins): row PSEL = 000010b -> MTCLKC on PA1,
+   *     MTCLKD on PA3, MTCLKA on PA4, MTCLKB on PA6
+   *   - Table 23.19 (PCx pins): row PSEL = 000010b -> MTCLKC on PC4,
+   *     MTCLKD on PC5, MTCLKA on PC6, MTCLKB on PC7
+   * Every MTCLK pin on this package resolves to PSEL = 0b00'0010 = 0x02.
+   *
+   * @par Typical Pins: P24/P25 (MTCLKA/B), PA1/PC5 (MTCLKC/D)
+   * @par Application: Encoder pulse counting, quadrature phase counting
    */
   k_psel_mtu_clk = 0x02,
 
   /**
-   * @brief MTU encoder phase counting input
+   * @brief MTU encoder phase counting input (alias for k_psel_mtu_clk)
    * @details
-   * Connects pin to MTU3a phase counting mode inputs for quadrature encoders.
-   * Uses pairs of pins (A/B) for direction-aware counting.
-   * @par Typical Pins: P24/P25 pair, PC0/PC1 pair
+   * Same PSEL value on RX72N as k_psel_mtu_clk -- both MTU external clock
+   * counting and MTU phase counting route through PSEL=0x02, and the
+   * distinction is selected later via MTU.TMDR (phase counting mode bits).
+   * The split constants exist only so calling code reads clearly; do not
+   * assume they are different values.
+   *
+   * @par Typical Pins: P24/P25 pair, PA1/PC5 pair (same as k_psel_mtu_clk)
    * @par Application: Quadrature encoder interface with direction detection
+   *
+   * @note Previously 0x03 -- that was wrong and caused MTU encoders to stay
+   *       at TCNT=0x0000 because PSEL=0x03 on MTU-candidate pins selects an
+   *       unrelated function (TPU on Port C pins, or nothing elsewhere).
+   *       See chapter 23 of the RX72N Group Hardware Manual
+   *       (R01UH0824EJ0111), Tables 23.5, 23.6, 23.17, 23.19.
    */
-  k_psel_mtu_phase = 0x03,
+  k_psel_mtu_phase = 0x02,
+
+  /**
+   * @brief TPU external clock input on Port C pins (TCLKA/B/C/D on PC0-PC3)
+   * @details
+   * RX72N assigns TPU external clock to alternate function PSEL=0x03 on
+   * Port C pins only. Non-Port-C candidates for the same TCLK signal use a
+   * different PSEL (see k_psel_tpu_clk_alt).
+   *
+   * Reference: RX72N Group Hardware Manual (R01UH0824EJ0111), chapter 23
+   * "Multi-Function Pin Controller (MPC)", Table 23.19 (PCx pins). For the
+   * 144-pin LFQFP package the row PSEL = 000011b maps to:
+   *   PC0 -> TCLKC,  PC1 -> TCLKD,  PC2 -> TCLKA,  PC3 -> TCLKB
+   * All four TPU TCLK inputs on Port C resolve to PSEL = 0b00'0011 = 0x03.
+   *
+   * @par Typical Pins: PC2 (TCLKA), PC3 (TCLKB), PC0 (TCLKC), PC1 (TCLKD)
+   * @par Application: Rear-wheel quadrature encoder Phase A inputs on Port C
+   *
+   * @note rx_mpc_set_tpu_encoder() picks between this and k_psel_tpu_clk_alt
+   *       automatically based on the port number of the pin argument.
+   */
+  k_psel_tpu_clk_portc = 0x03,
+
+  /**
+   * @brief TPU external clock input on non-Port-C pins (TCLKA/B/C/D)
+   * @details
+   * RX72N assigns TPU external clock to alternate function PSEL=0x04 on
+   * Port 1, Port A, and Port B candidates for the TCLK signals. This differs
+   * from the Port C candidates (k_psel_tpu_clk_portc = 0x03) and the
+   * difference is silicon-level -- the same TCLK signal is routed through
+   * different PFS alternate-function slots on different ports.
+   *
+   * Reference: RX72N Group Hardware Manual (R01UH0824EJ0111), chapter 23
+   * "Multi-Function Pin Controller (MPC)". For the 144-pin LFQFP package
+   * the row PSEL = 000100b maps to:
+   *   - Table 23.5 (P1x pins): P14 -> TCLKA, P15 -> TCLKB,
+   *                             P16 -> TCLKC, P17 -> TCLKD
+   *   - Table 23.17 (PAx pins): PA3 -> TCLKB
+   *   - Table 23.18 (PBx pins): PB2 -> TCLKC, PB3 -> TCLKD
+   * All non-Port-C TPU TCLK inputs resolve to PSEL = 0b00'0100 = 0x04.
+   *
+   * @par Typical Pins: PA3 (TCLKB), PB3 (TCLKD) -- STAR rear-wheel Phase B
+   * @par Application: Rear-wheel quadrature encoder Phase B inputs
+   *
+   * @note Before this split, rx_mpc_set_tpu_encoder() used PSEL=0x03 for
+   *       every TPU pin, which silently misconfigured PA3/PB3 (the two
+   *       non-Port-C pins on rear wheels) so one half of each rear-wheel
+   *       encoder never incremented.
+   */
+  k_psel_tpu_clk_alt = 0x04,
 
   /**
    * @brief SCI transmit data output (TXD)
@@ -524,7 +601,7 @@ typedef enum : uint8_t {
    * @details
    * Connects pin to RSPI serial clock output (controller mode) or
    * input (peripheral mode).
-   * @par Typical Pins: PA3 (RSPI0-RSPCK)
+   * @par Typical Pins: PA5 (RSPI0-RSPCKA); see RX72N HW manual R01UH0824EJ0111 Ch 23 Table 23.17 (MPC PAn pin function select)
    * @par Application: SPI bus clock for RPi5 communication
    */
   k_psel_rspi_clk = 0x0D,
@@ -533,7 +610,7 @@ typedef enum : uint8_t {
    * @brief RSPI Controller Out Peripheral In (COPI, formerly MOSI)
    * @details
    * Connects pin to RSPI data output line in controller mode.
-   * @par Typical Pins: PA0 (RSPI0-MOSIA - RX72N hardware name / COPI - project name)
+   * @par Typical Pins: PA6 (RSPI0-MOSIA / COPI); see RX72N HW manual R01UH0824EJ0111 Ch 23 Table 23.17 (MPC PAn pin function select)
    * @par Application: SPI transmit data to peripherals
    * @note Uses OSHWA-approved inclusive terminology
    */
@@ -543,7 +620,7 @@ typedef enum : uint8_t {
    * @brief RSPI Controller In Peripheral Out (CIPO, formerly MISO)
    * @details
    * Connects pin to RSPI data input line in controller mode.
-   * @par Typical Pins: PA1 (RSPI0-MISOA - RX72N hardware name / CIPO - project name)
+   * @par Typical Pins: PA7 (RSPI0-MISOA / CIPO); see RX72N HW manual R01UH0824EJ0111 Ch 23 Table 23.17 (MPC PAn pin function select)
    * @par Application: SPI receive data from peripherals
    * @note Uses OSHWA-approved inclusive terminology
    */
@@ -1302,9 +1379,10 @@ typedef enum : uint8_t {
  * @pre Must be called during single-threaded initialization
  *
  * @post PFS register configured with PSEL = 0x1E
- * @post PMR bit set (peripheral mode, not GPIO)
  * @post PWPR register locked (write protection re-enabled)
- * @post Pin ready for GPTW complementary PWM output
+ * @post Pin configured for GPTW PSEL; caller MUST subsequently set the
+ *       corresponding PORTn.PMR bit (this function does NOT touch PMR)
+ *       before GPTW can drive the pin.
  *
  * @note Thread Safety: Not thread-safe. Call during initialization only.
  * @note Configure both direction (A/IN2) and PWM (B/IN1) pins for each motor
@@ -1381,9 +1459,10 @@ typedef enum : uint8_t {
  * @pre Must be called during single-threaded initialization
  *
  * @post PFS register configured with PSEL = 0x11
- * @post PMR bit set (peripheral mode)
  * @post PWPR register locked
- * @post Pin ready for USB VBUS detection
+ * @post Pin configured for USB VBUS PSEL; caller MUST subsequently set
+ *       the corresponding PORTn.PMR bit (this function does NOT touch
+ *       PMR) before the USB peripheral sees the VBUS signal.
  *
  * @note Thread Safety: Not thread-safe. Call during initialization only.
  * @note Active-high detection (pin = 1 when 5V present)
