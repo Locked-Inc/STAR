@@ -843,6 +843,16 @@ apply_strict_warnings(test_rx_eccram)
 apply_test_includes(test_rx_eccram)
 target_link_libraries(test_rx_eccram unity)
 
+# Test: Low Power Consumption (LPC) Driver
+add_executable(test_rx_lpc
+    test_rx_lpc.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_hal/src/rx_lpc.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_lpc.c
+)
+apply_strict_warnings(test_rx_lpc)
+apply_test_includes(test_rx_lpc)
+target_link_libraries(test_rx_lpc unity)
+
 # Test: GPIO (PORT) Register Definitions
 add_executable(test_rx_gpio
     test_rx_gpio.c
@@ -1268,6 +1278,7 @@ set(ALL_TEST_TARGETS
     test_rx_cac
     test_rx_doc
     test_rx_eccram
+    test_rx_lpc
     test_rx_gpio
     test_rx_mpc
     test_rx_poeg
@@ -1330,6 +1341,7 @@ add_test(NAME test_rx_iwdt COMMAND test_rx_iwdt)
 add_test(NAME test_rx_cac COMMAND test_rx_cac)
 add_test(NAME test_rx_doc COMMAND test_rx_doc)
 add_test(NAME test_rx_eccram COMMAND test_rx_eccram)
+add_test(NAME test_rx_lpc COMMAND test_rx_lpc)
 add_test(NAME test_rx_gpio COMMAND test_rx_gpio)
 add_test(NAME test_rx_mpc COMMAND test_rx_mpc)
 add_test(NAME test_rx_poeg COMMAND test_rx_poeg)
