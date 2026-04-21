@@ -225,11 +225,11 @@ static void test_init_reference_clkout25_returns_invalid_arg(void)
  */
 static void test_init_measured_clock_out_of_range_returns_invalid_arg(void)
 {
-  rx_cac_config_t cfg     = make_valid_config();
+  rx_cac_config_t cfg = make_valid_config();
   /* memcpy a raw byte rather than (rx_cac_clock_t)N -- the typed-enum cast
    * trips clang-analyzer-optin.core.EnumCastOutOfRange, but the test's whole
    * point is to feed an out-of-range value past the language-level check. */
-  const uint8_t   bad_val = (uint8_t)k_cac_test_clock_out_of_range;
+  const uint8_t bad_val = (uint8_t)k_cac_test_clock_out_of_range;
   memcpy(&cfg.measured_clock, &bad_val, sizeof(cfg.measured_clock));
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_cac_init(&cfg));
   TEST_ASSERT_EQUAL(0U, cac()->cacr1);
@@ -242,8 +242,8 @@ static void test_init_measured_clock_out_of_range_returns_invalid_arg(void)
  */
 static void test_init_target_div_out_of_range_returns_invalid_arg(void)
 {
-  rx_cac_config_t cfg     = make_valid_config();
-  const uint8_t   bad_val = (uint8_t)k_cac_test_div_out_of_range;
+  rx_cac_config_t cfg = make_valid_config();
+  const uint8_t bad_val = (uint8_t)k_cac_test_div_out_of_range;
   memcpy(&cfg.target_div, &bad_val, sizeof(cfg.target_div));
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_cac_init(&cfg));
   TEST_ASSERT_EQUAL(0U, cac()->cacr1);
@@ -256,8 +256,8 @@ static void test_init_target_div_out_of_range_returns_invalid_arg(void)
  */
 static void test_init_reference_div_out_of_range_returns_invalid_arg(void)
 {
-  rx_cac_config_t cfg     = make_valid_config();
-  const uint8_t   bad_val = (uint8_t)k_cac_test_div_out_of_range;
+  rx_cac_config_t cfg = make_valid_config();
+  const uint8_t bad_val = (uint8_t)k_cac_test_div_out_of_range;
   memcpy(&cfg.reference_div, &bad_val, sizeof(cfg.reference_div));
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_cac_init(&cfg));
   TEST_ASSERT_EQUAL(0U, cac()->cacr2);
