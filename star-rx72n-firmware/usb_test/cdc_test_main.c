@@ -276,16 +276,23 @@ static void cdc_test_task(ULONG arg) {
    */
   {
     /* Absolute register addresses (avoid depending on rx_hal headers for
-     * this debug-only block).  Offsets verified against rx72n_usb_regs.h. */
-    volatile uint16_t* const usb0_syscfg  = (volatile uint16_t*)0x000A0000U; /* off 0x00 */
-    volatile uint16_t* const usb0_intenb0 = (volatile uint16_t*)0x000A0030U; /* off 0x30 */
-    volatile uint8_t* const  icu_ier4     = (volatile uint8_t*)0x00087204U;  /* IER[4]  */
-    volatile uint8_t* const  icu_ipr36    = (volatile uint8_t*)0x00087324U;  /* IPR[36] */
+     * this debug-only block).  Verified against Renesas FSP iodefine.h
+     * via compile-time probe.  USBI0 lives on SELECTB slot 144 (not
+     * fixed vec 36).
+     *   IER[18]   = 0x00087200 + 18       = 0x00087212, bit 0 (144 % 8 == 0)
+     *   IPR[144]  = 0x00087300 + 144      = 0x00087390  (144 dec = 0x90)
+     *   SLIBR[144]= 0x00087700 + 144      = 0x00087790  (must read 62 = USBI0) */
+    volatile uint16_t* const usb0_syscfg   = (volatile uint16_t*)0x000A0000U;
+    volatile uint16_t* const usb0_intenb0  = (volatile uint16_t*)0x000A0030U;
+    volatile uint8_t* const  icu_ier18     = (volatile uint8_t*)0x00087212U;
+    volatile uint8_t* const  icu_ipr144    = (volatile uint8_t*)0x00087390U;
+    volatile uint8_t* const  icu_slibr144  = (volatile uint8_t*)0x00087790U;
 
-    const uint16_t intenb0 = *usb0_intenb0;
-    const uint16_t syscfg  = *usb0_syscfg;
-    const uint8_t  ier4    = *icu_ier4;
-    const uint8_t  ipr36   = *icu_ipr36;
+    const uint16_t intenb0    = *usb0_intenb0;
+    const uint16_t syscfg     = *usb0_syscfg;
+    const uint8_t  ier18      = *icu_ier18;
+    const uint8_t  ipr144     = *icu_ipr144;
+    const uint8_t  slibr144   = *icu_slibr144;
 
     /* popcount of the five enable bits we set (VBSE|DVSE|CTRE|BRDYE|BEMPE).
      * Expected = 5 if internal_usb_configure_interrupts() ran correctly. */
@@ -307,9 +314,11 @@ static void cdc_test_task(ULONG arg) {
     pb5_mark_phase_slow(15U);                  /* marker: init diag start */
     pb5_mark_phase_slow(intenb_pop + 1U);      /* expect 6 pulses (5 bits set) */
     pb5_mark_phase_slow(13U);                  /* divider */
-    pb5_mark_phase_slow((uint8_t)(((ier4 & 0x10U) != 0U ? 1U : 0U) + 1U));
+    pb5_mark_phase_slow((uint8_t)(((ier18 & 0x01U) != 0U ? 1U : 0U) + 1U));
     pb5_mark_phase_slow(13U);                  /* divider */
-    pb5_mark_phase_slow((uint8_t)((ipr36 & 0x0FU) + 1U)); /* expect 7 pulses (IPR=6) */
+    pb5_mark_phase_slow((uint8_t)((ipr144 & 0x0FU) + 1U)); /* expect 7 pulses (IPR=6) */
+    pb5_mark_phase_slow(13U);                  /* divider */
+    pb5_mark_phase_slow((uint8_t)((slibr144 == 62U ? 1U : 0U) + 1U)); /* 2 pulses iff SLIBR=62 */
     pb5_mark_phase_slow(13U);                  /* divider */
     pb5_mark_phase_slow((uint8_t)(syscfg_pop + 1U)); /* expect 4 pulses (USBE+DPRPU+SCKE) */
     pb5_mark_phase_slow(15U);                  /* marker: init diag end */
@@ -327,10 +336,11 @@ static void cdc_test_task(ULONG arg) {
     if (!isr_report_emitted && isr_report_loops >= 500U) {  /* emit ONE report after ~settle */
       isr_report_emitted = true;
 
-      /* Sample IR[36] and INTSTS0 without disturbing them */
-      volatile uint8_t* const  icu_ir36      = (volatile uint8_t*)0x00087024U;
+      /* Sample IR[144] and INTSTS0 without disturbing them.  IR[144]
+       * = ICU base (0x00087000) + IR offset (0x000) + 144 = 0x00087090. */
+      volatile uint8_t* const  icu_ir144     = (volatile uint8_t*)0x00087090U;
       volatile uint16_t* const usb0_intsts0  = (volatile uint16_t*)0x000A0040U;
-      const uint8_t  ir36    = *icu_ir36;
+      const uint8_t  ir144   = *icu_ir144;
       const uint16_t intsts0 = *usb0_intsts0;
 
       uint8_t intsts_pop = 0U;
@@ -355,7 +365,7 @@ static void cdc_test_task(ULONG arg) {
       }
       pb5_mark_phase_slow((uint8_t)(cnt + 1U));              /* ISR count + 1 */
       pb5_mark_phase_slow(13U);                              /* divider */
-      pb5_mark_phase_slow((uint8_t)((ir36 & 0x01U) + 1U));   /* IR[36] + 1 */
+      pb5_mark_phase_slow((uint8_t)((ir144 & 0x01U) + 1U));  /* IR[144] + 1 */
       pb5_mark_phase_slow(13U);                              /* divider */
       pb5_mark_phase_slow((uint8_t)(intsts_pop + 1U));       /* INTSTS0 popcount + 1 */
       pb5_mark_phase_slow(14U);  /* marker: ISR report end */

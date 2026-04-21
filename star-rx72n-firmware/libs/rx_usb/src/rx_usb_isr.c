@@ -347,8 +347,12 @@ typedef enum : uint8_t {
  * GNURX generates the prologue/epilogue but leaves $tableentry$N$.rvectors
  * undefined, so the linker_script_rvectors.inc substitution falls through
  * to 0xFFFFFFFF and the first USB interrupt jumps into unmapped memory.
- * Numbers come from rx_hal/inc/rx72n_usb_regs.h and the RX72N ICU table. */
-void __attribute__((interrupt(".rvectors", 36))) usb0_usbi_isr(void);
+ * Numbers come from rx_hal/inc/rx72n_usb_regs.h and the RX72N ICU table.
+ *
+ * Vector 144 for USBI0 is a SELECTB slot (not a fixed vector); rx_usb_hw
+ * programs ICU.SLIBR[144] = 62 (USBI0 source code) to route the USB0
+ * status interrupt onto this slot. */
+void __attribute__((interrupt(".rvectors", 144))) usb0_usbi_isr(void);
 void __attribute__((interrupt(".rvectors", 34))) usb0_d0fifo_isr(void);
 void __attribute__((interrupt(".rvectors", 35))) usb0_d1fifo_isr(void);
 void __attribute__((interrupt(".rvectors", 90))) usb0_usbr_isr(void);
@@ -647,7 +651,7 @@ void rx_usb_isr_handler(void)
  */
 volatile uint32_t g_usb_isr_entry_count = 0U;
 
-void __attribute__((interrupt(".rvectors", 36))) usb0_usbi_isr(void)
+void __attribute__((interrupt(".rvectors", 144))) usb0_usbi_isr(void)
 {
   /* Direct pin toggle on PB5 so the logic analyser sees a fast edge pair
    * on every ISR entry, independent of whether rx_usb_isr_handler() runs

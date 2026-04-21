@@ -199,7 +199,7 @@ typedef struct {
   volatile uint16_t devadd4;
   volatile uint16_t devadd5;
   uint8_t           reserved13[k_usb_reserved_dc_f0_bytes];
-  volatile uint16_t physlew;
+  volatile uint32_t physlew; /**< PHY Cross-Point Adjustment @0xF0 (32-bit R/W per hirakuni45 rw32_t) */
 } rx_usb_regs_t;
 
 /**
@@ -227,12 +227,27 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef enum : uintptr_t {
-  k_usb0_base_addr = 0x000A0000, /**< USB0 register block base address (manual p.1928) */
+  k_usb0_base_addr   = 0x000A0000, /**< USB0 register block base address (manual p.1928, Ch40) */
+  /* Deep-standby USB transceiver control / pin monitor register.  Shared
+   * with USB-common (outside the USB0 rx_usb_regs_t block).  32-bit R/W
+   * at absolute 0x000A0400 per hirakuni45 RX600/usb.hpp and Renesas FSP
+   * iodefine.h.  Used to release the PHY from "output fixed" state after
+   * deep-standby wakeup or first boot. */
+  k_usb_dpusr0r_addr = 0x000A0400,
 } rx_usb_addresses_t;
 
 static inline volatile rx_usb_regs_t* usb0(void)
 {
   return (volatile rx_usb_regs_t*)k_usb0_base_addr;
+}
+
+/**
+ * @brief Get pointer to USB deep-standby transceiver control register
+ *        (DPUSR0R), 32-bit, at absolute 0x000A0400.
+ */
+static inline volatile uint32_t* usb_dpusr0r(void)
+{
+  return (volatile uint32_t*)k_usb_dpusr0r_addr;
 }
 
 /* SYSCFG bits (manual p.1931) */
@@ -464,13 +479,60 @@ typedef enum : uint16_t {
   k_usb_fifoctr_bval      = (1U << 15), /**< b15: Buffer valid flag */
 } usb_fifoctr_bits_t;
 
-/* Interrupt vectors */
+/* DPUSR0R bits (Deep-Standby USB Transceiver Control / Pin Monitor,
+ * 32-bit, absolute 0x000A0400; fields from hirakuni45 RX600/usb.hpp
+ * and RX72N HW manual Ch40). */
+typedef enum : uint32_t {
+  k_usb_dpusr0r_srpc0   = (1UL << 0),  /**< USB0 single-ended receiver power control */
+  k_usb_dpusr0r_rpue0   = (1UL << 1),  /**< USB0 DP pull-up resistor enable (deep-standby) */
+  k_usb_dpusr0r_fixphy0 = (1UL << 4),  /**< USB0 PHY output fixed (1=fixed, 0=normal) */
+  k_usb_dpusr0r_dp0     = (1UL << 16), /**< USB0 D+ line monitor */
+  k_usb_dpusr0r_dm0     = (1UL << 17), /**< USB0 D- line monitor */
+  k_usb_dpusr0r_dovca0  = (1UL << 20), /**< USB0 overcurrent flag A */
+  k_usb_dpusr0r_dovcb0  = (1UL << 21), /**< USB0 overcurrent flag B */
+  k_usb_dpusr0r_dvbsts0 = (1UL << 23), /**< USB0 VBUS status */
+} usb_dpusr0r_bits_t;
+
+/* PHYSLEW bits (PHY Cross-Point Adjustment, 32-bit, USB0 offset 0xF0).
+ * RX72N manual Ch40 + tinyusb renesas/usba DCD: for RX72N USB0 the
+ * recommended slew-rate setting is SLEWR00=1, SLEWF00=1 => value 0x5.
+ * Other RX parts leave this register at its reset default. */
+typedef enum : uint32_t {
+  k_usb_physlew_slewr00  = (1UL << 0), /**< Rising-edge slew rate, lane 0 */
+  k_usb_physlew_slewr01  = (1UL << 1), /**< Rising-edge slew rate, lane 1 */
+  k_usb_physlew_slewf00  = (1UL << 2), /**< Falling-edge slew rate, lane 0 */
+  k_usb_physlew_slewf01  = (1UL << 3), /**< Falling-edge slew rate, lane 1 */
+  k_usb_physlew_rx72n    = 0x00000005, /**< Recommended RX72N USB0 value (tinyusb + FSP) */
+} usb_physlew_bits_t;
+
+/* Interrupt vectors.
+ *
+ * D0FIFO0 / D1FIFO0 / USBR0 are FIXED ICU vectors on RX72N (Renesas FSP
+ * iodefine.h: VECT_USB0_D0FIFO0=34, D1FIFO0=35, USBR0=90).
+ *
+ * USBI0 is NOT a fixed vector on RX72N.  It is a Group-B software
+ * configurable interrupt (SELECTB) with source code 62 (RX72N HW manual
+ * Ch15 Table 15.3, cross-checked against hirakuni45/RX RX72N/icu.hpp
+ * SELECTB::USBI0 = 62).  To use it, firmware must pick any vector slot
+ * in the SELECTB range (144..207, per SLIBRn register range in the HW
+ * manual) and program ICU.SLIBRn = k_usb0_usbi_sli_src.  We pick 144 as
+ * the first free SELECTB slot.
+ *
+ * Earlier revisions of this enum hard-coded k_vect_usb0_usbi = 36, which
+ * is a reserved gap in the RX72N fixed vector table -- IER/IPR/IR writes
+ * landed on an inert slot and the USBI ISR never fired. */
 typedef enum : uint8_t {
   k_vect_usb0_d0fifo = 34,
   k_vect_usb0_d1fifo = 35,
-  k_vect_usb0_usbi   = 36,
+  k_vect_usb0_usbi   = 144,
   k_vect_usb0_usbr   = 90,
 } rx_usb_interrupt_vector_t;
+
+/* SELECTB source codes (written to ICU.SLIBRn to map a peripheral source
+ * onto a SELECTB vector slot).  Manual Ch15 Table 15.3. */
+typedef enum : uint8_t {
+  k_usb0_usbi_sli_src = 62, /**< USBI0 source code for ICU.SLIBR[144..207] */
+} rx_usb_sli_source_t;
 
 /* CDC endpoints */
 typedef enum : uint8_t {

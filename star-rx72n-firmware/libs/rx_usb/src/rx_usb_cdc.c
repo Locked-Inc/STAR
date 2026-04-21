@@ -1797,25 +1797,45 @@ static bool internal_configure_port2_pipes(void)
  */
 static void internal_enable_interrupts_and_notify(void)
 {
-  /* Enable BRDY interrupt for Bulk OUT pipes (receive from host).
-   * Port 2 is log-only at the application layer, but its bulk OUT
-   * pipe is still configured + BRDY-enabled so cdc_acm accepts the
-   * interface and host writes don't NAK (data is silently consumed
-   * by rx_usb_cdc_handle_bulk_out without being dispatched). */
-  usb0()->brdyenb |= k_usb_pipe_bit_2 | /* Port 0: Bulk OUT pipe 2 */
-                     k_usb_pipe_bit_4 | /* Port 1: Bulk OUT pipe 4 */
-                     k_usb_pipe_bit_9;  /* Port 2: Bulk OUT pipe 9 */
-
-  /* Enable BEMP interrupt for Bulk IN pipes (transmit complete) */
-  usb0()->bempenb |= k_usb_pipe_bit_1 | /* Port 0: Bulk IN pipe 1 */
-                     k_usb_pipe_bit_3 | /* Port 1: Bulk IN pipe 3 */
-                     k_usb_pipe_bit_5;  /* Port 2: Bulk IN pipe 5 */
+  /* Enable BRDY for Bulk OUT pipes (host->device) and BEMP for Bulk IN
+   * pipes (device->host transmit complete).  Each bit is gated by the
+   * matching STAR_USB_ENABLE_PORT_* macro: a disabled port's pipes are
+   * never configured so we must not enable their interrupts either,
+   * otherwise we'd dispatch BRDY/BEMP for an unconfigured pipe and
+   * touch uninitialised per-port state.
+   *
+   * The composite descriptor still advertises all three CDC functions
+   * -- a disabled port's endpoints simply NAK at hardware level (no
+   * pipe is bound to them).  See rx_usb_config.h for the full
+   * rationale. */
+  uint16_t brdy_mask = 0U;
+  uint16_t bemp_mask = 0U;
+#if STAR_USB_ENABLE_PORT_PROTO
+  brdy_mask |= k_usb_pipe_bit_2; /* Port 0: Bulk OUT pipe 2 */
+  bemp_mask |= k_usb_pipe_bit_1; /* Port 0: Bulk IN  pipe 1 */
+#endif
+#if STAR_USB_ENABLE_PORT_DECODED
+  brdy_mask |= k_usb_pipe_bit_4; /* Port 1: Bulk OUT pipe 4 */
+  bemp_mask |= k_usb_pipe_bit_3; /* Port 1: Bulk IN  pipe 3 */
+#endif
+#if STAR_USB_ENABLE_PORT_LOG
+  brdy_mask |= k_usb_pipe_bit_9; /* Port 2: Bulk OUT pipe 9 */
+  bemp_mask |= k_usb_pipe_bit_5; /* Port 2: Bulk IN  pipe 5 */
+#endif
+  usb0()->brdyenb |= brdy_mask;
+  usb0()->bempenb |= bemp_mask;
 
   rx_usb_set_state(k_usb_state_configured);
+#if STAR_USB_ENABLE_PORT_PROTO
   rx_usb_invoke_callback(k_usb_port_proto, k_usb_event_configured);
+#endif
+#if STAR_USB_ENABLE_PORT_DECODED
   rx_usb_invoke_callback(k_usb_port_decoded, k_usb_event_configured);
+#endif
+#if STAR_USB_ENABLE_PORT_LOG
   rx_usb_invoke_callback(k_usb_port_log, k_usb_event_configured);
-  rx_log_info(s_tag, "Composite device configured (3 CDC ports)");
+#endif
+  rx_log_info(s_tag, "Composite device configured");
 }
 
 /**
@@ -1833,15 +1853,21 @@ static void internal_handle_set_configuration(const uint16_t usb_value)
             "USB configuration out of range");
 
   if (config == k_usb_config_value_1) {
+#if STAR_USB_ENABLE_PORT_PROTO
     if (!internal_configure_port0_pipes()) {
       return;
     }
+#endif
+#if STAR_USB_ENABLE_PORT_DECODED
     if (!internal_configure_port1_pipes()) {
       return;
     }
+#endif
+#if STAR_USB_ENABLE_PORT_LOG
     if (!internal_configure_port2_pipes()) {
       return;
     }
+#endif
     internal_enable_interrupts_and_notify();
   } else if (config == k_usb_config_unconfigured) {
     rx_usb_set_state(k_usb_state_addressed);
