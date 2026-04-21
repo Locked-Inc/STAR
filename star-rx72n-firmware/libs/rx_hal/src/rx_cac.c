@@ -228,11 +228,10 @@ static void internal_module_stop(void)
  */
 static void internal_apply_config(const rx_cac_config_t* config)
 {
-  volatile rx_cac_regs_t* regs = cac();
-  uint8_t                 cacr1_val =
-    (uint8_t)(internal_fmcs_bits(config->measured_clock) | internal_tcss_bits(config->target_div) |
-              k_cac_cacr1_edges_rising);
-  uint8_t cacr2_val =
+  volatile rx_cac_regs_t* regs      = cac();
+  uint8_t                 cacr1_val = (uint8_t)(internal_fmcs_bits(config->measured_clock) |
+                                internal_tcss_bits(config->target_div) | k_cac_cacr1_edges_rising);
+  uint8_t                 cacr2_val =
     (uint8_t)(internal_rscs_bits(config->reference_clock) |
               internal_rcds_bits(config->reference_div) | k_cac_cacr2_rps_internal);
   uint8_t caicr_val = k_cac_caicr_clear_all_flags;
