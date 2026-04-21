@@ -184,21 +184,21 @@ coverage-rx72n:
 # Build RX72N firmware binary (Debug) - requires GNURX toolchain (rx-elf-gcc)
 build-blinky:
 	@echo "Building bare-metal blinky (P54 LED test, requires rx-elf-gcc)..."
-	@$(MAKE) -C star-rx72n-firmware/blinky
+	@PATH="$(GNURX_BIN):$$PATH" $(MAKE) -C star-rx72n-firmware/blinky
 
 clean-blinky:
-	@$(MAKE) -C star-rx72n-firmware/blinky clean
+	@PATH="$(GNURX_BIN):$$PATH" $(MAKE) -C star-rx72n-firmware/blinky clean
 
 # Flash blinky.elf to RX72N via E2 Lite (FINE interface, 250 kbps).
 # Requires: E2 Lite plugged in, board externally powered, SW4 Pin1=OFF Pin2=OFF.
 flash-blinky: build-blinky
-	@bash scripts/flash-rx72n.sh star-rx72n-firmware/blinky/blinky.elf e2lite
+	@PATH="$(GNURX_BIN):$$PATH" bash scripts/flash-rx72n.sh star-rx72n-firmware/blinky/blinky.elf e2lite
 
 # Flash blinky.elf to RX72N via USB-UART SCI Boot Mode.
 # Requires: USB-UART cable providing /dev/ttyACM0, SW4 Pin1=ON Pin2=OFF,
 # and a power-cycle AFTER setting the switch so the MCU enters boot mode.
 flash-blinky-sci: build-blinky
-	@bash scripts/flash-rx72n.sh star-rx72n-firmware/blinky/blinky.elf sci
+	@PATH="$(GNURX_BIN):$$PATH" bash scripts/flash-rx72n.sh star-rx72n-firmware/blinky/blinky.elf sci
 
 # All-in-one alias matching the 'make motorN' / 'make none' pattern:
 # clean build + flash via E2 Lite. Same end-state as
