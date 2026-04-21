@@ -1890,62 +1890,70 @@ static void internal_motor_task_entry(ULONG input)
  * @callgraph
  * @callergraph
  */
-static rx_err_t internal_init_motor_stack(void)
+/* Initialize all 4 GPTW motor PWM channels with their per-motor pin map
+ * (decoded from hardware_config.h enums so the HAL stays board-agnostic).
+ * output_a maps to IN2 (direction), output_b to IN1 (PWM). */
+static rx_err_t internal_init_motor_pwm_channels(void)
 {
-  /* Step 1: Initialize PID controllers */
-  rx_err_t err = internal_init_pid_controllers();
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  /* Step 2: Initialize GPTW motor PWM outputs and front encoders */
   const rx_gptw_channel_t gptw_channels[k_motor_count] = {
-    k_gptw_channel_0, /* Motor 0: Front-left */
-    k_gptw_channel_1, /* Motor 1: Front-right */
-    k_gptw_channel_2, /* Motor 2: Back-right */
-    k_gptw_channel_3  /* Motor 3: Back-left */
+    k_gptw_channel_0,
+    k_gptw_channel_1,
+    k_gptw_channel_2,
+    k_gptw_channel_3,
   };
-
-  /* Per-motor pin map -- pulled from src/inc/hardware_config.h so the lib
-   * never has to know about board-specific pin assignments. output_a maps
-   * to IN2 (direction), output_b to IN1 (PWM). */
-  const uint8_t in2_ports[k_motor_count] = {(uint8_t)k_motor_0_in2_port, (uint8_t)k_motor_1_in2_port,
-                                             (uint8_t)k_motor_2_in2_port, (uint8_t)k_motor_3_in2_port};
-  const uint8_t in2_pins[k_motor_count]  = {(uint8_t)k_motor_0_in2_pin,  (uint8_t)k_motor_1_in2_pin,
-                                             (uint8_t)k_motor_2_in2_pin, (uint8_t)k_motor_3_in2_pin};
-  const uint8_t in1_ports[k_motor_count] = {(uint8_t)k_motor_0_in1_port, (uint8_t)k_motor_1_in1_port,
-                                             (uint8_t)k_motor_2_in1_port, (uint8_t)k_motor_3_in1_port};
-  const uint8_t in1_pins[k_motor_count]  = {(uint8_t)k_motor_0_in1_pin,  (uint8_t)k_motor_1_in1_pin,
-                                             (uint8_t)k_motor_2_in1_pin, (uint8_t)k_motor_3_in1_pin};
+  const uint8_t in2_ports[k_motor_count] = {k_motor_0_in2_port,
+                                            k_motor_1_in2_port,
+                                            k_motor_2_in2_port,
+                                            k_motor_3_in2_port};
+  const uint8_t in2_pins[k_motor_count]  = {k_motor_0_in2_pin,
+                                            k_motor_1_in2_pin,
+                                            k_motor_2_in2_pin,
+                                            k_motor_3_in2_pin};
+  const uint8_t in1_ports[k_motor_count] = {k_motor_0_in1_port,
+                                            k_motor_1_in1_port,
+                                            k_motor_2_in1_port,
+                                            k_motor_3_in1_port};
+  const uint8_t in1_pins[k_motor_count]  = {k_motor_0_in1_pin,
+                                            k_motor_1_in1_pin,
+                                            k_motor_2_in1_pin,
+                                            k_motor_3_in1_pin};
 
   for (uint8_t i = 0; i < k_motor_count; i++) {
     rx_motor_config_t motor_config = {
       .channel      = gptw_channels[i],
-      .output_a     = k_gptw_output_a,      /* IN2 (half-bridge A) */
-      .output_b     = k_gptw_output_b,      /* IN1 (half-bridge B) */
-      .pwm_freq_hz  = k_motor_pwm_freq_hz,  /* 20 kHz PWM */
-      .dead_time_ns = k_motor_dead_time_ns, /* 1 us dead-time */
-      .invert_pwm   = false,                /* Active-high logic */
+      .output_a     = k_gptw_output_a,
+      .output_b     = k_gptw_output_b,
+      .pwm_freq_hz  = k_motor_pwm_freq_hz,
+      .dead_time_ns = k_motor_dead_time_ns,
+      .invert_pwm   = false,
       .port_a_idx   = in2_ports[i],
       .bit_a        = in2_pins[i],
       .port_b_idx   = in1_ports[i],
       .bit_b        = in1_pins[i],
     };
-
-    err = rx_motor_init(&s_motors[i], &motor_config);
+    rx_err_t err = rx_motor_init(&s_motors[i], &motor_config);
     if (err != k_rx_ok) {
-      rx_log_error_val(s_tag, "Motor init failed for motor", (uint8_t)i);
+      rx_log_error_val(s_tag, "Motor init failed for motor", i);
       return err;
     }
   }
+  return k_rx_ok;
+}
 
-  /* Step 2b: Initialize DRV8263H-Q1 chip-level driver for each motor */
+static rx_err_t internal_init_motor_stack(void)
+{
+  rx_err_t err = internal_init_pid_controllers();
+  if (err != k_rx_ok) {
+    return err;
+  }
+  err = internal_init_motor_pwm_channels();
+  if (err != k_rx_ok) {
+    return err;
+  }
   err = internal_init_drv8263_drivers();
   if (err != k_rx_ok) {
     return err;
   }
-
-  /* Step 3: Initialize front encoders (rear need TPU - not yet implemented) */
   err = internal_init_encoders();
   if (err != k_rx_ok) {
     return err;
@@ -2461,7 +2469,10 @@ static void internal_control_loop_iteration(void)
 
     /* 3. Compute PID output (robot-frame duty) */
     float pwm_duty_robot = 0.0F;
-    err = rx_pid_compute(&s_pids[i], target_velocity_mps, current_velocity_mps, s_dt_sec,
+    err                  = rx_pid_compute(&s_pids[i],
+                         target_velocity_mps,
+                         current_velocity_mps,
+                         s_dt_sec,
                          &pwm_duty_robot);
     if (err != k_rx_ok) {
       pwm_duty_robot = 0.0F;
