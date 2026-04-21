@@ -100,6 +100,18 @@ Report budget: aim for under 3000 words. If the report would exceed
 that, prioritize the peripherals already used by motor_control_task
 and comm_task (the production hot path):
 GPTW, MTU, TPU, MPC, SCI (especially SCI9), RIIC, RSPI.
+
+Build verification (CRITICAL on macOS hosts):
+The GNURX cross-compiler `rx-elf-gcc` is blocked by macOS Gatekeeper. Do
+NOT call `rx-elf-gcc`, `make`, or `bash build.sh` directly. For ALL build /
+cross-compile commands, wrap them with the dev-container helper:
+
+  bash scripts/hal-audit/devcontainer-exec.sh "cd star-rx72n-firmware && bash build.sh"
+
+The helper auto-spins the dev container the first time and runs the
+command inside it. If you propose any HAL fix, validate the build through
+the helper before reporting the patch -- a fix that doesn't compile is
+not a fix.
 ```
 
 ## How to run
