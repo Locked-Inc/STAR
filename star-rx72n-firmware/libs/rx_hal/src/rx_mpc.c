@@ -998,8 +998,8 @@ rx_err_t rx_mpc_set_tpu_encoder(const rx_port_pin_t pin)
 {
   /* Pick the right PSEL for the TCLK function on this pin's port. */
   const uint8_t port = rx_port_from_pin(pin);
-  const uint8_t psel = (port == k_mpc_port_c) ? (uint8_t)k_psel_tpu_clk_portc
-                                              : (uint8_t)k_psel_tpu_clk_alt;
+  const uint8_t psel =
+    (port == k_mpc_port_c) ? (uint8_t)k_psel_tpu_clk_portc : (uint8_t)k_psel_tpu_clk_alt;
 
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = psel};
   return rx_mpc_set_peripheral(&config);

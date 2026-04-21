@@ -250,7 +250,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_adc_adcer_adprc_mask  = 3U, /**< ADPRC field mask (2-bit, unshifted) per RX72N HW manual R01UH0824EJ0111 Section 56.2.13 */
+  k_adc_adcer_adprc_mask =
+    3U, /**< ADPRC field mask (2-bit, unshifted) per RX72N HW manual R01UH0824EJ0111 Section 56.2.13 */
   k_adc_adcer_adprc_shift = 1U, /**< ADPRC field bit position: bits 2:1 of ADCER */
   k_adc_adcer_adprc_12bit = 0U, /**< ADPRC = 00: 12-bit resolution (default) */
   k_adc_adcer_adprc_10bit = 1U, /**< ADPRC = 01: 10-bit resolution */
