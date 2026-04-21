@@ -8,11 +8,12 @@
  * output connected to a GTETRG pin, which feeds a POEG group. When a
  * fault is detected, POEG immediately disables GPTW PWM output (Hi-Z).
  *
- * The ISR handlers (vectors 188-191) run at priority 14 and:
- * 1. Clear the ICU interrupt request flag
- * 2. Set fault flags in the shared_data motor state
- * 3. Trigger e-stop via shared_data
- * 4. Log the fault for diagnostics
+ * POEGGA/B/C/D are sub-sources of the shared GROUPBL2 vector (107) on
+ * RX72N (HW manual R01UH0824EJ0111 Section 15.3, Table 15.4). A single
+ * GROUPBL2 ISR reads GRPBL2, dispatches to each faulted group, and:
+ * 1. Clears the ICU GROUPBL2 IR flag
+ * 2. Logs which POEG groups asserted
+ * 3. Triggers e-stop via shared_data
  *
  * @par Implementation Notes
  * - POEG PIDE (pin detection enable) is write-once after reset
@@ -122,13 +123,24 @@ static const uint32_t s_gtintad_values[k_poeg_motor_count] = {
   k_gtintad_motor_3,
 };
 
-/** @brief POEG interrupt vector numbers (indexed by motor) */
-static const uint16_t s_poeg_vectors[k_poeg_motor_count] = {
-  k_poeg_irq_group_a,
-  k_poeg_irq_group_b,
-  k_poeg_irq_group_c,
-  k_poeg_irq_group_d,
+/** @brief GRPBL2 sub-source bit for each POEG group (indexed by motor) */
+static const uint8_t s_poeg_grpbl2_bits[k_poeg_motor_count] = {
+  k_poeg_grpbl2_bit_poeggai,
+  k_poeg_grpbl2_bit_poeggbi,
+  k_poeg_grpbl2_bit_poeggci,
+  k_poeg_grpbl2_bit_poeggdi,
 };
+
+/** @brief Accessors for the GROUPBL2 status/enable registers */
+static inline volatile uint32_t* poeg_grpbl2_reg(void)
+{
+  return (volatile uint32_t*)k_poeg_grpbl2_addr;
+}
+
+static inline volatile uint32_t* poeg_genbl2_reg(void)
+{
+  return (volatile uint32_t*)k_poeg_genbl2_addr;
+}
 
 /* =============================================================================
  * Internal Helper Functions
@@ -136,19 +148,26 @@ static const uint16_t s_poeg_vectors[k_poeg_motor_count] = {
  */
 
 /**
- * @brief Configure ICU for a single POEG interrupt vector
+ * @brief Configure ICU for the shared POEG GROUPBL2 vector
  *
- * @param[in] vector ICU vector number (188-191)
  * @param[in] priority IPR priority level (1-15)
  *
  * @pre ICU registers accessible
- * @post Vector enabled at specified priority
+ * @post GROUPBL2 vector (107) enabled at specified priority with all four
+ *       POEGG sub-sources unmasked in GENBL2.
  *
  * @since Version 1.0.0
  */
-static void internal_enable_poeg_irq(uint16_t vector, uint8_t priority)
+static void internal_enable_poeg_groupbl2_irq(uint8_t priority)
 {
   volatile rx_icu_regs_t* icu_regs = icu();
+  const uint16_t          vector   = k_poeg_irq_groupbl2_vector;
+
+  /* Enable all four POEGG sub-sources in GENBL2 */
+  *poeg_genbl2_reg() |= (uint32_t)((1UL << k_poeg_grpbl2_bit_poeggai) |
+                                   (1UL << k_poeg_grpbl2_bit_poeggbi) |
+                                   (1UL << k_poeg_grpbl2_bit_poeggci) |
+                                   (1UL << k_poeg_grpbl2_bit_poeggdi));
 
   /* Clear any pending interrupt */
   icu_regs->ir[vector] = k_icu_ir_clear;
@@ -187,98 +206,53 @@ static void internal_configure_gtintad(uint8_t motor_index)
   gptw->gtwp = k_gptw_gtwp_lock;
 }
 
-/**
- * @brief Common POEG ISR handler for all groups
- *
- * @details
- * Called from each group-specific ISR. Reads the fault register,
- * identifies the fault source, and updates shared_data.
- *
- * @param[in] motor_index Motor index (0-3) identifying which group faulted
- * @param[in] vector ICU vector number for clearing IR flag
- *
- * @pre Called from ISR context only
- * @post shared_data motor fault flags updated
- * @post IR flag cleared
- *
- * @since Version 1.0.0
- */
-static void internal_poeg_isr_handler(uint8_t motor_index, uint16_t vector)
-{
-  /* Clear ICU interrupt request flag */
-  icu()->ir[vector] = k_icu_ir_clear;
-
-  /* Read POEG status to identify fault source */
-  volatile rx_poegg_regs_t* poeg   = s_poeg_groups[motor_index];
-  const uint32_t            status = poeg->poeggn;
-
-  /* Log fault source (brief - ISR context) */
-  if (status & k_poeg_pidf_detected) {
-    rx_log_error_val(s_tag, "nFAULT motor", (uint32_t)motor_index);
-  }
-  if (status & k_poeg_iocf_detected) {
-    rx_log_error_val(s_tag, "GPTW output err motor", (uint32_t)motor_index);
-  }
-
-  /* Trigger system e-stop with driver fault reason (ISR-safe, no mutex) */
-  shared_data_trigger_estop_isr_safe(k_estop_reason_driver_fault);
-}
-
 /* =============================================================================
- * ISR Handlers - One per POEG group (vectors 188-191)
+ * ISR Handler - Single GROUPBL2 dispatcher for POEGGA/B/C/D
  * =============================================================================
  */
 
 /**
- * @brief POEG Group A ISR (Motor 0, vector 188)
+ * @brief GROUPBL2 ISR - dispatches POEGGA/B/C/D fault interrupts
  *
  * @details
- * Handles fault interrupt from GTETRGA (P15 / DRV8263H Motor 0 nFAULT).
- * GPTW0 PWM output has already been disabled by hardware before this ISR runs.
+ * Handles the shared GROUPBL2 vector (107). Reads GRPBL2 to identify which
+ * POEG sub-sources asserted, logs each, and triggers a single e-stop.
  *
- * @pre POEG Group A initialized via rx_poeg_init()
- * @post Motor 0 fault logged and e-stop triggered
+ * @pre POEG groups initialized via rx_poeg_init()
+ * @post For every POEGG bit set in GRPBL2, the fault is logged
+ * @post Global e-stop triggered once if any POEG source fired
  *
  * @note Thread Safety: ISR context, runs at priority 14
  * @since Version 1.0.0
  */
-void __attribute__((interrupt)) poeg_group_a_isr(void);
-void __attribute__((interrupt)) poeg_group_a_isr(void)
+void __attribute__((interrupt)) poeg_groupbl2_isr(void);
+void __attribute__((interrupt)) poeg_groupbl2_isr(void)
 {
-  internal_poeg_isr_handler(0, k_poeg_irq_group_a);
-}
+  const uint32_t grpbl2 = *poeg_grpbl2_reg();
+  bool           faulted = false;
 
-/**
- * @brief POEG Group B ISR (Motor 1, vector 189)
- * @see poeg_group_a_isr() for full documentation
- * @since Version 1.0.0
- */
-void __attribute__((interrupt)) poeg_group_b_isr(void);
-void __attribute__((interrupt)) poeg_group_b_isr(void)
-{
-  internal_poeg_isr_handler(1, k_poeg_irq_group_b);
-}
+  for (uint8_t i = 0; i < k_poeg_motor_count; i++) {
+    if ((grpbl2 & (1UL << s_poeg_grpbl2_bits[i])) == 0U) {
+      continue;
+    }
 
-/**
- * @brief POEG Group C ISR (Motor 2, vector 190)
- * @see poeg_group_a_isr() for full documentation
- * @since Version 1.0.0
- */
-void __attribute__((interrupt)) poeg_group_c_isr(void);
-void __attribute__((interrupt)) poeg_group_c_isr(void)
-{
-  internal_poeg_isr_handler(2, k_poeg_irq_group_c);
-}
+    volatile rx_poegg_regs_t* poeg   = s_poeg_groups[i];
+    const uint32_t            status = poeg->poeggn;
+    if ((status & k_poeg_pidf_detected) != 0U) {
+      rx_log_error_val(s_tag, "nFAULT motor", (uint32_t)i);
+    }
+    if ((status & k_poeg_iocf_detected) != 0U) {
+      rx_log_error_val(s_tag, "GPTW output err motor", (uint32_t)i);
+    }
+    faulted = true;
+  }
 
-/**
- * @brief POEG Group D ISR (Motor 3, vector 191)
- * @see poeg_group_a_isr() for full documentation
- * @since Version 1.0.0
- */
-void __attribute__((interrupt)) poeg_group_d_isr(void);
-void __attribute__((interrupt)) poeg_group_d_isr(void)
-{
-  internal_poeg_isr_handler(3, k_poeg_irq_group_d);
+  /* Clear the shared GROUPBL2 request flag */
+  icu()->ir[k_poeg_irq_groupbl2_vector] = k_icu_ir_clear;
+
+  if (faulted) {
+    shared_data_trigger_estop_isr_safe(k_estop_reason_driver_fault);
+  }
 }
 
 /* =============================================================================
@@ -303,12 +277,12 @@ rx_err_t rx_poeg_init(void)
 
     /* Link GPTW channel to POEG group via GTINTAD */
     internal_configure_gtintad(i);
-
-    /* Enable ICU interrupt for this POEG group */
-    internal_enable_poeg_irq(s_poeg_vectors[i], k_poeg_isr_priority);
   }
 
-  rx_log_info(s_tag, "POEG fault protection active (4 groups, priority 14)");
+  /* Enable shared GROUPBL2 ICU vector (one dispatch for all POEG groups) */
+  internal_enable_poeg_groupbl2_irq(k_poeg_isr_priority);
+
+  rx_log_info(s_tag, "POEG fault protection active (4 groups on GROUPBL2, priority 14)");
   return k_rx_ok;
 }
 

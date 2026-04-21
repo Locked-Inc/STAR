@@ -898,8 +898,9 @@ rx_err_t rx_mpc_set_mtu_pwm(const rx_port_pin_t pin)
  * @brief Configure pin for MTU3a encoder/phase counter input (MTCLK)
  *
  * @details
- * Convenience wrapper that configures a pin for MTU phase counting mode
- * using PSEL = k_psel_mtu_phase (0x03). Used for quadrature encoders.
+ * Convenience wrapper that configures a pin for MTU external clock / phase
+ * counting mode using PSEL = k_psel_mtu_phase (0x02). Used for quadrature
+ * encoders on pins that expose MTCLKA/B/C/D.
  *
  * @param[in] pin GPIO pin identifier for encoder input (e.g., P24/P25)
  *
@@ -910,17 +911,17 @@ rx_err_t rx_mpc_set_mtu_pwm(const rx_port_pin_t pin)
  * @pre PCLKB clock must be running, MPC not in module stop
  * @pre pin must encode a valid port/pin combination supported by MTCLK input
  *
- * @post PFS register contains k_psel_mtu_phase (0x03) for the specified pin
+ * @post PFS register contains k_psel_mtu_phase (0x02) for the specified pin
  * @post PWPR locked after operation
  *
  * @note Thread safety: Not thread-safe
  * @note Configure both Phase A and Phase B pins for proper operation
  *
  * @code
- * // Configure PC0 and PC1 for MTU phase counting (MTCLKA/B)
- * rx_err_t err = rx_mpc_set_mtu_encoder(RX_PORT_PIN(0xC, 0));
+ * // Configure P24 and P25 for MTU phase counting (MTCLKA/B)
+ * rx_err_t err = rx_mpc_set_mtu_encoder(RX_PORT_PIN(2, 4));
  * if (err == k_rx_ok) {
- *     err = rx_mpc_set_mtu_encoder(RX_PORT_PIN(0xC, 1));
+ *     err = rx_mpc_set_mtu_encoder(RX_PORT_PIN(2, 5));
  * }
  * @endcode
  *
@@ -930,12 +931,17 @@ rx_err_t rx_mpc_set_mtu_pwm(const rx_port_pin_t pin)
  */
 rx_err_t rx_mpc_set_mtu_encoder(const rx_port_pin_t pin)
 {
-  /* MTU encoder (MTCLK) pins typically use PSEL = 0x02 or 0x03
-   * Common pins:
-   * - PC0/PC1: MTCLKA/B
-   * - PD0/PD1: MTCLKC/D
+  /* MTU external clock / phase counting pins use PSEL = 0x02 on every
+   * RX72N MTCLK candidate pin. See RX72N Group Hardware Manual
+   * (R01UH0824EJ0111), chapter 23 "Multi-Function Pin Controller (MPC)",
+   * Tables 23.5 / 23.6 / 23.17 / 23.19 -- every row that selects MTCLKA,
+   * MTCLKB, MTCLKC, or MTCLKD on a 144-pin LFQFP pin is PSEL = 000010b.
+   * The old value 0x03 was wrong -- it caused MTU TCNT to stay at 0x0000
+   * because no MTCLK source was actually connected through the PFS mux.
    *
-   * For phase counting mode, use PSEL = 0x03
+   * Common STAR pins:
+   *   P24/P25 (Motor 0 front-right MTCLKA/B)
+   *   PA1/PC5 (Motor 1 front-left  MTCLKC/D)
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_mtu_phase};
 
@@ -946,10 +952,20 @@ rx_err_t rx_mpc_set_mtu_encoder(const rx_port_pin_t pin)
  * @brief Configure pin for TPU encoder/phase counter input (TCLK)
  *
  * @details
- * Convenience wrapper that configures a pin for TPU phase counting mode
- * using PSEL = k_psel_mtu_phase (0x03). On the RX72N, PSEL 0x03 is the
- * generic "timer phase counting input" function; routing to TPU (vs MTU)
- * depends on which timer module has phase counting mode enabled.
+ * Convenience wrapper that configures a pin for TPU external clock input
+ * (TCLKA/B/C/D). Picks the correct PSEL value based on which port the
+ * pin is on, because RX72N uses two different alternate-function slots
+ * for the SAME TCLK signal depending on candidate:
+ *   - Port C pins (PC0/PC1/PC2/PC3) use PSEL = 0x03 (k_psel_tpu_clk_portc)
+ *   - Port 1 / Port A / Port B pins use PSEL = 0x04 (k_psel_tpu_clk_alt)
+ *
+ * Reference: RX72N Group Hardware Manual (R01UH0824EJ0111), chapter 23
+ * "Multi-Function Pin Controller (MPC)". TCLK rows in Table 23.19 (Port C)
+ * use PSEL = 000011b, while TCLK rows in Tables 23.5 (P1x), 23.17 (PAx),
+ * and 23.18 (PBx) use PSEL = 000100b. Before this split, every TPU pin was
+ * configured with PSEL=0x03, which silently misconfigured the non-Port-C
+ * halves of STAR's rear-wheel encoders (PA3 for Motor 2 Phase B, PB3 for
+ * Motor 3 Phase B) so those edges were never counted.
  *
  * @param[in] pin GPIO pin identifier for TPU encoder input (e.g., PC2/PA3)
  *
@@ -960,17 +976,17 @@ rx_err_t rx_mpc_set_mtu_encoder(const rx_port_pin_t pin)
  * @pre PCLKB clock must be running, MPC not in module stop
  * @pre pin must encode a valid port/pin combination supported by TCLK input
  *
- * @post PFS register contains k_psel_mtu_phase (0x03) for the specified pin
+ * @post PFS register contains the correct TPU-TCLK PSEL for that pin's port
  * @post PWPR locked after operation
  *
  * @note Thread safety: Not thread-safe
  * @note Configure both Phase A and Phase B pins for proper operation
  *
  * @code
- * // Configure PC2 and PA3 for TPU phase counting (TCLKA/B)
- * rx_err_t err = rx_mpc_set_tpu_encoder(RX_PORT_PIN(0xC, 2));
+ * // Configure PC2 (TCLKA) and PA3 (TCLKB) for Motor 2 rear-left encoder
+ * rx_err_t err = rx_mpc_set_tpu_encoder(RX_PORT_PIN(0xC, 2));  // -> 0x03
  * if (err == k_rx_ok) {
- *     err = rx_mpc_set_tpu_encoder(RX_PORT_PIN(0xA, 3));
+ *     err = rx_mpc_set_tpu_encoder(RX_PORT_PIN(0xA, 3));       // -> 0x04
  * }
  * @endcode
  *
@@ -980,13 +996,12 @@ rx_err_t rx_mpc_set_mtu_encoder(const rx_port_pin_t pin)
  */
 rx_err_t rx_mpc_set_tpu_encoder(const rx_port_pin_t pin)
 {
-  /* TPU encoder (TCLK) pins use PSEL = 0x03 (same as MTU phase counting)
-   * Rear wheel encoder pins:
-   * - PC2/PA3: TCLKA/TCLKB (Motor 2, Rear Left)
-   * - PC0/PB3: TCLKC/TCLKD (Motor 3, Rear Right)
-   */
-  const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_mtu_phase};
+  /* Pick the right PSEL for the TCLK function on this pin's port. */
+  const uint8_t port = rx_port_from_pin(pin);
+  const uint8_t psel = (port == k_mpc_port_c) ? (uint8_t)k_psel_tpu_clk_portc
+                                              : (uint8_t)k_psel_tpu_clk_alt;
 
+  const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = psel};
   return rx_mpc_set_peripheral(&config);
 }
 

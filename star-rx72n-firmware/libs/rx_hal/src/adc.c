@@ -238,7 +238,7 @@ typedef enum : uint8_t {
  *
  * ## ADCER Register Layout (bits 1:0 - ADPRC)
  *
- * | ADPRC[1:0] | Resolution | Max Value | Conversion Time |
+ * | ADPRC[2:1] | Resolution | Max Value | Conversion Time |
  * |------------|------------|-----------|-----------------|
  * | 00 | 12-bit | 4095 | ~1.0 us |
  * | 01 | 10-bit | 1023 | ~0.9 us |
@@ -250,8 +250,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_adc_adcer_adprc_mask  = 3U, /**< ADPRC field mask (bits 1:0) */
-  k_adc_adcer_adprc_shift = 0U, /**< ADPRC field bit position (0) */
+  k_adc_adcer_adprc_mask  = 3U, /**< ADPRC field mask (2-bit, unshifted) per RX72N HW manual R01UH0824EJ0111 Section 56.2.13 */
+  k_adc_adcer_adprc_shift = 1U, /**< ADPRC field bit position: bits 2:1 of ADCER */
   k_adc_adcer_adprc_12bit = 0U, /**< ADPRC = 00: 12-bit resolution (default) */
   k_adc_adcer_adprc_10bit = 1U, /**< ADPRC = 01: 10-bit resolution */
   k_adc_adcer_adprc_8bit  = 2U, /**< ADPRC = 10: 8-bit resolution */
@@ -530,11 +530,11 @@ internal_configure_adc_unit(const uint8_t unit, volatile rx_s12ad_regs_t* adc, c
   uint16_t adcer = adc->adcer;
   adcer &= (uint16_t) ~(uint16_t)(k_adc_adcer_adprc_mask << k_adc_adcer_adprc_shift);
   if (bits == k_adc_resolution_8bit) {
-    adcer |= k_adc_adcer_adprc_8bit;
+    adcer |= (uint16_t)(k_adc_adcer_adprc_8bit << k_adc_adcer_adprc_shift);
   } else if (bits == k_adc_resolution_10bit) {
-    adcer |= k_adc_adcer_adprc_10bit;
+    adcer |= (uint16_t)(k_adc_adcer_adprc_10bit << k_adc_adcer_adprc_shift);
   } else {
-    adcer |= k_adc_adcer_adprc_12bit;
+    adcer |= (uint16_t)(k_adc_adcer_adprc_12bit << k_adc_adcer_adprc_shift);
   }
   adc->adcer = adcer;
 

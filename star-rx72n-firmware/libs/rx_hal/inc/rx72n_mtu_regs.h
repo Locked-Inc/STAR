@@ -363,6 +363,13 @@ typedef struct {
   /**
    * @brief Timer Status Register (TSR) - interrupt flags
    * @details Contains interrupt flags; read to check, write 0 to clear.
+   *
+   * @warning Per RX72N HW manual R01UH0824EJ0111 Section 21.2 (MTU register
+   *          tables), MTU0 has NO TSR at this offset -- accessing this field
+   *          via the MTU0 base (0x000C1300) targets a reserved byte and the
+   *          result is undefined. This field is only valid on MTU channels
+   *          that define a TSR (e.g., MTU1, MTU2, MTU3/4 TSR copies); callers
+   *          must gate access by channel before reading/writing tsr.
    */
   volatile uint8_t tsr;
 

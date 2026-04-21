@@ -480,11 +480,16 @@ typedef enum : uint16_t {
    * module stop control, and low-voltage detection. This is the broadest unlock
    * and should be **AVOIDED** in production code.
    *
-   * **Value**: 0xA50F
+   * **Value**: 0xA50B
    * - Key code: 0xA5 (required)
-   * - PRC3: 1 (LVD registers unlocked)
-   * - PRC1: 1 (MSTPCR registers unlocked)
-   * - PRC0: 1 (Clock registers unlocked)
+   * - PRC3: 1 (LVD registers unlocked) [bit 3]
+   * - PRC1: 1 (MSTPCR registers unlocked) [bit 1]
+   * - PRC0: 1 (Clock registers unlocked) [bit 0]
+   * - Bit 2 is reserved and must be written as 0
+   *
+   * @note Prior revision set this to 0xA50F, which also asserts reserved bit 2
+   *       (PRCR[2] must be written 0 per RX72N HW manual R01UH0824EJ0111
+   *       Section 13.2.1). Corrected to 0xA50B.
    *
    * **Protected Registers** (when unlocked):
    * - All PRC0 registers (clock generation)
@@ -508,7 +513,7 @@ typedef enum : uint16_t {
    * @attention Code review flag: If you see this constant used, investigate why
    *            the more specific unlocks (prc1, prc0_prc1) cannot be used instead.
    */
-  k_rx_prcr_unlock_all = 0xA50F,
+  k_rx_prcr_unlock_all = 0xA50B,
 
   /**
    * @brief Lock all protection groups (re-enable write protection)

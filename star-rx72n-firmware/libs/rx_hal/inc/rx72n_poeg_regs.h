@@ -438,21 +438,47 @@ typedef enum : uint32_t {
 
 /**
  * @enum rx_poeg_interrupts_t
- * @brief POEG interrupt vector numbers
+ * @brief POEG interrupt routing via GROUPBL2
  *
  * @details
- * ICU interrupt vector numbers for POEG groups. These interrupts are
- * triggered when PIDF or IOCF flags are set.
+ * On RX72N, POEGGA/B/C/D interrupts are not dedicated vectors; they are
+ * sub-sources of the shared GROUPBL2 vector (IPR/IR/IER index 107). The
+ * individual source status and enables live in the GRPBL2 / GENBL2
+ * registers at bits 7-10 respectively. Per RX72N HW manual
+ * R01UH0824EJ0111 Section 15.3 (Table 15.4) "Interrupt Vector Table".
  *
- * @note Manual: Ch27.4 - Interrupt Sources
+ * Values previously encoded here (188-191) pointed at unassigned INTB
+ * slots and could never fire; corrected below.
+ *
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_poeg_irq_group_a = 188, /**< POEGGAI - Group A interrupt */
-  k_poeg_irq_group_b = 189, /**< POEGGBI - Group B interrupt */
-  k_poeg_irq_group_c = 190, /**< POEGGCI - Group C interrupt */
-  k_poeg_irq_group_d = 191, /**< POEGGDI - Group D interrupt */
+  k_poeg_irq_groupbl2_vector = 107, /**< GROUPBL2 shared ICU vector */
+  k_poeg_grpbl2_bit_poeggai  = 7,   /**< GRPBL2/GENBL2 bit for POEGGAI */
+  k_poeg_grpbl2_bit_poeggbi  = 8,   /**< GRPBL2/GENBL2 bit for POEGGBI */
+  k_poeg_grpbl2_bit_poeggci  = 9,   /**< GRPBL2/GENBL2 bit for POEGGCI */
+  k_poeg_grpbl2_bit_poeggdi  = 10,  /**< GRPBL2/GENBL2 bit for POEGGDI */
 } rx_poeg_interrupts_t;
+
+/**
+ * @enum rx_poeg_group_regs_t
+ * @brief Memory-mapped addresses of the GROUPBL2 status/enable registers
+ *
+ * @details
+ * Per RX72N HW manual R01UH0824EJ0111 Section 15.2 ("ICU Registers")
+ * the group interrupt registers are located in the ICU register block:
+ *
+ * | Register | Address    | Purpose                                      |
+ * |----------|------------|----------------------------------------------|
+ * | GRPBL2   | 0x00087630 | Group BL2 interrupt source status (R-only)   |
+ * | GENBL2   | 0x00087670 | Group BL2 per-source enable (R/W)            |
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uintptr_t {
+  k_poeg_grpbl2_addr = 0x00087630, /**< GRPBL2: sub-source status */
+  k_poeg_genbl2_addr = 0x00087670, /**< GENBL2: sub-source enable */
+} rx_poeg_group_regs_t;
 
 /* =============================================================================
  * Static Assertions - Verify Register Layout at Compile Time
