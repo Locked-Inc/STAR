@@ -185,18 +185,16 @@ static rx_err_t internal_translate_opcc_mode(rx_lpc_opcc_mode_t mode, uint8_t* o
  *
  * @since Version 1.0.0
  */
+/* Only used by the host-build (#else) branch of rx_lpc_enter_deep_software_standby;
+ * on RX target the same writes are inlined directly under #ifdef __RX__. Guard
+ * the helper definition so the cross-compile build doesn't trip
+ * -Werror=unused-function. */
+#ifndef __RX__
 static void internal_program_wake_enables(uint32_t wake_mask)
 {
-#ifdef __RX__
-  volatile rx_dps_regs_t* dps = dps_regs();
-  dps->dpsier0                = (uint8_t)((wake_mask >> 0U) & 0xFFU);
-  dps->dpsier1                = (uint8_t)((wake_mask >> 8U) & 0xFFU);
-  dps->dpsier2                = (uint8_t)((wake_mask >> 16U) & 0xFFU);
-  dps->dpsier3                = (uint8_t)((wake_mask >> 24U) & 0xFFU);
-#else
   (void)wake_mask;
-#endif
 }
+#endif
 
 /**
  * @brief Assemble DPSBYCR value from application-level arguments
