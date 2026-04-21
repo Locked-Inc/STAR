@@ -107,8 +107,7 @@ void tearDown(void) {}
 static void test_init_compare_mode_clears_mstpb6(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_doc_init(k_rx_doc_mode_compare));
-  TEST_ASSERT_EQUAL_UINT32(0U,
-                           g_mock_doc_system_regs.mstpcrb & (uint32_t)k_doc_test_mstpb6_mask);
+  TEST_ASSERT_EQUAL_UINT32(0U, g_mock_doc_system_regs.mstpcrb & (uint32_t)k_doc_test_mstpb6_mask);
 }
 
 static void test_init_compare_mode_writes_docr(void)
@@ -122,16 +121,15 @@ static void test_init_compare_mode_writes_docr(void)
 static void test_init_compare_neq_mode_writes_docr(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_doc_init(k_rx_doc_mode_compare_neq));
-  const uint8_t expected = (uint8_t)(k_doc_oms_compare | k_doc_dcsel_mismatch
-                                     | k_doc_dopcie_disabled | k_doc_dopcfcl_clear);
+  const uint8_t expected = (uint8_t)(k_doc_oms_compare | k_doc_dcsel_mismatch |
+                                     k_doc_dopcie_disabled | k_doc_dopcfcl_clear);
   TEST_ASSERT_EQUAL_UINT8(expected, g_mock_doc_regs.docr);
 }
 
 static void test_init_add_mode_writes_docr(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_doc_init(k_rx_doc_mode_add));
-  const uint8_t expected =
-    (uint8_t)(k_doc_oms_add | k_doc_dopcie_disabled | k_doc_dopcfcl_clear);
+  const uint8_t expected = (uint8_t)(k_doc_oms_add | k_doc_dopcie_disabled | k_doc_dopcfcl_clear);
   TEST_ASSERT_EQUAL_UINT8(expected, g_mock_doc_regs.docr);
 }
 
@@ -165,8 +163,7 @@ static void test_reinit_switches_mode(void)
 
 static void test_set_reference_before_init_rejected(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_state,
-                    rx_doc_set_reference((uint16_t)k_doc_test_ref_cafe));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, rx_doc_set_reference((uint16_t)k_doc_test_ref_cafe));
 }
 
 static void test_set_reference_writes_dodir(void)
@@ -271,8 +268,7 @@ static void test_add_null_overflow_rejected(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_doc_init(k_rx_doc_mode_add));
   uint16_t sum = 0;
-  TEST_ASSERT_EQUAL(k_rx_err_null_ptr,
-                    rx_doc_add((uint16_t)k_doc_test_addend_0042, &sum, NULL));
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, rx_doc_add((uint16_t)k_doc_test_addend_0042, &sum, NULL));
 }
 
 static void test_add_before_init_rejected(void)
@@ -310,8 +306,7 @@ static void test_add_without_carry(void)
   /* Leave DOPCF clear: simulates the "no carry past 0xFFFF" hardware outcome. */
   uint16_t sum      = 0;
   bool     overflow = true;
-  TEST_ASSERT_EQUAL(k_rx_ok,
-                    rx_doc_add((uint16_t)k_doc_test_addend_0042, &sum, &overflow));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_doc_add((uint16_t)k_doc_test_addend_0042, &sum, &overflow));
   TEST_ASSERT_EQUAL_UINT16((uint16_t)k_doc_test_addend_0042, sum);
   TEST_ASSERT_FALSE(overflow);
   /* Driver must have written DOPCFCL to clear the flag (it was 0 anyway, but
@@ -331,8 +326,7 @@ static void test_add_with_carry(void)
 
   uint16_t sum      = 0xDEADU;
   bool     overflow = false;
-  TEST_ASSERT_EQUAL(k_rx_ok,
-                    rx_doc_add((uint16_t)k_doc_test_addend_0001, &sum, &overflow));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_doc_add((uint16_t)k_doc_test_addend_0001, &sum, &overflow));
   TEST_ASSERT_EQUAL_UINT16((uint16_t)k_doc_test_addend_0001, sum);
   TEST_ASSERT_TRUE(overflow);
   /* After the call, driver must have cleared DOPCF via DOPCFCL write. */
@@ -356,8 +350,7 @@ static void test_subtract_null_borrow_rejected(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_doc_init(k_rx_doc_mode_subtract));
   uint16_t diff = 0;
-  TEST_ASSERT_EQUAL(k_rx_err_null_ptr,
-                    rx_doc_subtract((uint16_t)k_doc_test_sub_0010, &diff, NULL));
+  TEST_ASSERT_EQUAL(k_rx_err_null_ptr, rx_doc_subtract((uint16_t)k_doc_test_sub_0010, &diff, NULL));
 }
 
 static void test_subtract_before_init_rejected(void)
@@ -388,8 +381,7 @@ static void test_subtract_without_borrow(void)
 
   uint16_t diff   = 0;
   bool     borrow = true;
-  TEST_ASSERT_EQUAL(k_rx_ok,
-                    rx_doc_subtract((uint16_t)k_doc_test_sub_0010, &diff, &borrow));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_doc_subtract((uint16_t)k_doc_test_sub_0010, &diff, &borrow));
   TEST_ASSERT_EQUAL_UINT16((uint16_t)k_doc_test_sub_0010, diff);
   TEST_ASSERT_FALSE(borrow);
   TEST_ASSERT_EQUAL_UINT8(0U, g_mock_doc_regs.docr & (uint8_t)k_doc_docr_dopcf_mask);
@@ -405,8 +397,7 @@ static void test_subtract_with_borrow(void)
 
   uint16_t diff   = 0;
   bool     borrow = false;
-  TEST_ASSERT_EQUAL(k_rx_ok,
-                    rx_doc_subtract((uint16_t)k_doc_test_sub_0100, &diff, &borrow));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_doc_subtract((uint16_t)k_doc_test_sub_0100, &diff, &borrow));
   TEST_ASSERT_EQUAL_UINT16((uint16_t)k_doc_test_sub_0100, diff);
   TEST_ASSERT_TRUE(borrow);
   TEST_ASSERT_EQUAL_UINT8(0U, g_mock_doc_regs.docr & (uint8_t)k_doc_docr_dopcf_mask);
@@ -432,8 +423,7 @@ static void test_deinit_clears_docr_and_stops_module(void)
 
   TEST_ASSERT_EQUAL_UINT8(0U, g_mock_doc_regs.docr);
   /* MSTPB6 back to "stopped" (bit set). */
-  TEST_ASSERT_NOT_EQUAL(0U,
-                        g_mock_doc_system_regs.mstpcrb & (uint32_t)k_doc_test_mstpb6_mask);
+  TEST_ASSERT_NOT_EQUAL(0U, g_mock_doc_system_regs.mstpcrb & (uint32_t)k_doc_test_mstpb6_mask);
 }
 
 static void test_deinit_allows_reinit(void)

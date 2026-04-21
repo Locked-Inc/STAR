@@ -151,20 +151,20 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  volatile uint8_t tcr;         /**< Timer Control Register (TCR) @ +0x00 */
-  volatile uint8_t tcr_pair;    /**< Paired channel TCR             @ +0x01 */
-  volatile uint8_t tcsr;        /**< Timer Control/Status (TCSR)    @ +0x02 */
-  volatile uint8_t tcsr_pair;   /**< Paired channel TCSR            @ +0x03 */
-  volatile uint8_t tcora;       /**< Time Constant A (TCORA)        @ +0x04 */
-  volatile uint8_t tcora_pair;  /**< Paired channel TCORA           @ +0x05 */
-  volatile uint8_t tcorb;       /**< Time Constant B (TCORB)        @ +0x06 */
-  volatile uint8_t tcorb_pair;  /**< Paired channel TCORB           @ +0x07 */
-  volatile uint8_t tcnt;        /**< Timer Counter (TCNT)           @ +0x08 */
-  volatile uint8_t tcnt_pair;   /**< Paired channel TCNT            @ +0x09 */
-  volatile uint8_t tccr;        /**< Timer Counter Control (TCCR)   @ +0x0A */
-  volatile uint8_t tccr_pair;   /**< Paired channel TCCR            @ +0x0B */
-  volatile uint8_t tcstr;       /**< Timer Counter Start (TCSTR)    @ +0x0C */
-  volatile uint8_t tcstr_pair;  /**< Paired channel TCSTR           @ +0x0D */
+  volatile uint8_t tcr;        /**< Timer Control Register (TCR) @ +0x00 */
+  volatile uint8_t tcr_pair;   /**< Paired channel TCR             @ +0x01 */
+  volatile uint8_t tcsr;       /**< Timer Control/Status (TCSR)    @ +0x02 */
+  volatile uint8_t tcsr_pair;  /**< Paired channel TCSR            @ +0x03 */
+  volatile uint8_t tcora;      /**< Time Constant A (TCORA)        @ +0x04 */
+  volatile uint8_t tcora_pair; /**< Paired channel TCORA           @ +0x05 */
+  volatile uint8_t tcorb;      /**< Time Constant B (TCORB)        @ +0x06 */
+  volatile uint8_t tcorb_pair; /**< Paired channel TCORB           @ +0x07 */
+  volatile uint8_t tcnt;       /**< Timer Counter (TCNT)           @ +0x08 */
+  volatile uint8_t tcnt_pair;  /**< Paired channel TCNT            @ +0x09 */
+  volatile uint8_t tccr;       /**< Timer Counter Control (TCCR)   @ +0x0A */
+  volatile uint8_t tccr_pair;  /**< Paired channel TCCR            @ +0x0B */
+  volatile uint8_t tcstr;      /**< Timer Counter Start (TCSTR)    @ +0x0C */
+  volatile uint8_t tcstr_pair; /**< Paired channel TCSTR           @ +0x0D */
 } rx_tmr_channel_regs_t;
 
 /**
@@ -186,12 +186,12 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  volatile uint8_t  reserved_tcr[2];   /**< TCR bytes   (per-channel only)    @ +0x00..0x01 */
-  volatile uint8_t  reserved_tcsr[2];  /**< TCSR bytes  (per-channel only)    @ +0x02..0x03 */
-  volatile uint16_t tcora;             /**< 16-bit cascaded TCORA             @ +0x04 */
-  volatile uint16_t tcorb;             /**< 16-bit cascaded TCORB             @ +0x06 */
-  volatile uint16_t tcnt;              /**< 16-bit cascaded TCNT              @ +0x08 */
-  volatile uint16_t tccr;              /**< 16-bit cascaded TCCR              @ +0x0A */
+  volatile uint8_t  reserved_tcr[2];  /**< TCR bytes   (per-channel only)    @ +0x00..0x01 */
+  volatile uint8_t  reserved_tcsr[2]; /**< TCSR bytes  (per-channel only)    @ +0x02..0x03 */
+  volatile uint16_t tcora;            /**< 16-bit cascaded TCORA             @ +0x04 */
+  volatile uint16_t tcorb;            /**< 16-bit cascaded TCORB             @ +0x06 */
+  volatile uint16_t tcnt;             /**< 16-bit cascaded TCNT              @ +0x08 */
+  volatile uint16_t tccr;             /**< 16-bit cascaded TCCR              @ +0x0A */
 } rx_tmr_cascade_regs_t;
 
 /* =============================================================================
@@ -317,10 +317,10 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_tmr_tcr_cclr_disabled      = (0U << 3), /**< 00b: Counter clear disabled   */
-  k_tmr_tcr_cclr_cmp_match_a   = (1U << 3), /**< 01b: Clear on TCORA match     */
-  k_tmr_tcr_cclr_cmp_match_b   = (2U << 3), /**< 10b: Clear on TCORB match     */
-  k_tmr_tcr_cclr_external_sig  = (3U << 3), /**< 11b: Clear on external reset  */
+  k_tmr_tcr_cclr_disabled     = (0U << 3), /**< 00b: Counter clear disabled   */
+  k_tmr_tcr_cclr_cmp_match_a  = (1U << 3), /**< 01b: Clear on TCORA match     */
+  k_tmr_tcr_cclr_cmp_match_b  = (2U << 3), /**< 10b: Clear on TCORB match     */
+  k_tmr_tcr_cclr_external_sig = (3U << 3), /**< 11b: Clear on external reset  */
 } rx_tmr_tcr_cclr_t;
 
 /**
@@ -455,9 +455,9 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_tmr_tccr_css_external    = (0U << 3), /**< External count clock on TMCI pin */
-  k_tmr_tccr_css_internal    = (1U << 3), /**< Internal PCLK source (use CKS)   */
-  k_tmr_tccr_css_cascade     = (3U << 3), /**< Cascade from paired channel     */
+  k_tmr_tccr_css_external = (0U << 3), /**< External count clock on TMCI pin */
+  k_tmr_tccr_css_internal = (1U << 3), /**< Internal PCLK source (use CKS)   */
+  k_tmr_tccr_css_cascade  = (3U << 3), /**< Cascade from paired channel     */
 } rx_tmr_tccr_css_t;
 
 /**
@@ -481,12 +481,12 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_tmr_tccr_cks_prohibited = 0x0, /**< 000b: clock input prohibited */
-  k_tmr_tccr_cks_pclk_div1  = 0x1, /**< 001b: PCLK / 1               */
-  k_tmr_tccr_cks_pclk_div2  = 0x2, /**< 010b: PCLK / 2               */
-  k_tmr_tccr_cks_pclk_div8  = 0x3, /**< 011b: PCLK / 8               */
-  k_tmr_tccr_cks_pclk_div32 = 0x4, /**< 100b: PCLK / 32              */
-  k_tmr_tccr_cks_pclk_div64 = 0x5, /**< 101b: PCLK / 64              */
+  k_tmr_tccr_cks_prohibited   = 0x0, /**< 000b: clock input prohibited */
+  k_tmr_tccr_cks_pclk_div1    = 0x1, /**< 001b: PCLK / 1               */
+  k_tmr_tccr_cks_pclk_div2    = 0x2, /**< 010b: PCLK / 2               */
+  k_tmr_tccr_cks_pclk_div8    = 0x3, /**< 011b: PCLK / 8               */
+  k_tmr_tccr_cks_pclk_div32   = 0x4, /**< 100b: PCLK / 32              */
+  k_tmr_tccr_cks_pclk_div64   = 0x5, /**< 101b: PCLK / 64              */
   k_tmr_tccr_cks_pclk_div1024 = 0x6, /**< 110b: PCLK / 1024          */
   k_tmr_tccr_cks_pclk_div8192 = 0x7, /**< 111b: PCLK / 8192          */
 } rx_tmr_tccr_cks_internal_t;
@@ -601,31 +601,31 @@ static_assert((k_tmr2_base_addr - k_tmr0_base_addr) == k_tmr_unit_spacing,
               "TMR unit spacing incorrect");
 
 static_assert(sizeof(rx_tmr_channel_regs_t) == 14, "TMR channel register block size incorrect");
-static_assert(offsetof(rx_tmr_channel_regs_t, tcr)   == 0x00, "TCR offset incorrect");
-static_assert(offsetof(rx_tmr_channel_regs_t, tcsr)  == 0x02, "TCSR offset incorrect");
+static_assert(offsetof(rx_tmr_channel_regs_t, tcr) == 0x00, "TCR offset incorrect");
+static_assert(offsetof(rx_tmr_channel_regs_t, tcsr) == 0x02, "TCSR offset incorrect");
 static_assert(offsetof(rx_tmr_channel_regs_t, tcora) == 0x04, "TCORA offset incorrect");
 static_assert(offsetof(rx_tmr_channel_regs_t, tcorb) == 0x06, "TCORB offset incorrect");
-static_assert(offsetof(rx_tmr_channel_regs_t, tcnt)  == 0x08, "TCNT offset incorrect");
-static_assert(offsetof(rx_tmr_channel_regs_t, tccr)  == 0x0A, "TCCR offset incorrect");
+static_assert(offsetof(rx_tmr_channel_regs_t, tcnt) == 0x08, "TCNT offset incorrect");
+static_assert(offsetof(rx_tmr_channel_regs_t, tccr) == 0x0A, "TCCR offset incorrect");
 static_assert(offsetof(rx_tmr_channel_regs_t, tcstr) == 0x0C, "TCSTR offset incorrect");
 
 static_assert(sizeof(rx_tmr_cascade_regs_t) == 12, "TMR cascade register block size incorrect");
 static_assert(offsetof(rx_tmr_cascade_regs_t, tcora) == 0x04, "Cascade TCORA offset incorrect");
 static_assert(offsetof(rx_tmr_cascade_regs_t, tcorb) == 0x06, "Cascade TCORB offset incorrect");
-static_assert(offsetof(rx_tmr_cascade_regs_t, tcnt)  == 0x08, "Cascade TCNT offset incorrect");
-static_assert(offsetof(rx_tmr_cascade_regs_t, tccr)  == 0x0A, "Cascade TCCR offset incorrect");
+static_assert(offsetof(rx_tmr_cascade_regs_t, tcnt) == 0x08, "Cascade TCNT offset incorrect");
+static_assert(offsetof(rx_tmr_cascade_regs_t, tccr) == 0x0A, "Cascade TCCR offset incorrect");
 
 static_assert(k_tmr_tcr_cmieb == 0x80, "TCR CMIEB bit value incorrect");
 static_assert(k_tmr_tcr_cmiea == 0x40, "TCR CMIEA bit value incorrect");
-static_assert(k_tmr_tcr_ovie  == 0x20, "TCR OVIE bit value incorrect");
-static_assert(k_tmr_tcr_cclr_cmp_match_a  == 0x08, "TCR CCLR match A incorrect");
-static_assert(k_tmr_tcr_cclr_cmp_match_b  == 0x10, "TCR CCLR match B incorrect");
+static_assert(k_tmr_tcr_ovie == 0x20, "TCR OVIE bit value incorrect");
+static_assert(k_tmr_tcr_cclr_cmp_match_a == 0x08, "TCR CCLR match A incorrect");
+static_assert(k_tmr_tcr_cclr_cmp_match_b == 0x10, "TCR CCLR match B incorrect");
 
 static_assert(k_tmr_tccr_tmris == 0x80, "TCCR TMRIS bit value incorrect");
 static_assert(k_tmr_tccr_css_internal == 0x08, "TCCR CSS internal value incorrect");
-static_assert(k_tmr_tccr_css_cascade  == 0x18, "TCCR CSS cascade value incorrect");
+static_assert(k_tmr_tccr_css_cascade == 0x18, "TCCR CSS cascade value incorrect");
 
-static_assert(k_tmr_tcstr_tcs  == 0x01, "TCSTR TCS bit value incorrect");
+static_assert(k_tmr_tcstr_tcs == 0x01, "TCSTR TCS bit value incorrect");
 static_assert(k_tmr_mstpcra_mstpa5 == 0x20, "MSTPCRA.MSTPA5 bit value incorrect");
 static_assert(k_tmr_mstpcra_mstpa4 == 0x10, "MSTPCRA.MSTPA4 bit value incorrect");
 

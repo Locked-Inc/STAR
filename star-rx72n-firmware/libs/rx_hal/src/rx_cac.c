@@ -98,23 +98,23 @@ static uint8_t internal_fmcs_bits(rx_cac_clock_t clock)
 {
   switch (clock) {
     case k_cac_clock_main:
-      return (uint8_t)k_cac_cacr1_fmcs_main;
+      return k_cac_cacr1_fmcs_main;
     case k_cac_clock_sub:
-      return (uint8_t)k_cac_cacr1_fmcs_sub;
+      return k_cac_cacr1_fmcs_sub;
     case k_cac_clock_hoco:
-      return (uint8_t)k_cac_cacr1_fmcs_hoco;
+      return k_cac_cacr1_fmcs_hoco;
     case k_cac_clock_loco:
-      return (uint8_t)k_cac_cacr1_fmcs_loco;
+      return k_cac_cacr1_fmcs_loco;
     case k_cac_clock_pclkb:
-      return (uint8_t)k_cac_cacr1_fmcs_pclkb;
+      return k_cac_cacr1_fmcs_pclkb;
     case k_cac_clock_iwdtclk:
-      return (uint8_t)k_cac_cacr1_fmcs_iwdtclk;
+      return k_cac_cacr1_fmcs_iwdtclk;
     case k_cac_clock_uclk:
-      return (uint8_t)k_cac_cacr1_fmcs_uclk;
+      return k_cac_cacr1_fmcs_uclk;
     case k_cac_clock_clkout25:
-      return (uint8_t)k_cac_cacr1_fmcs_clkout25;
+      return k_cac_cacr1_fmcs_clkout25;
     default:
-      return (uint8_t)k_cac_cacr1_fmcs_main;
+      return k_cac_cacr1_fmcs_main;
   }
 }
 
@@ -130,19 +130,19 @@ static uint8_t internal_rscs_bits(rx_cac_clock_t clock)
 {
   switch (clock) {
     case k_cac_clock_main:
-      return (uint8_t)k_cac_cacr2_rscs_main;
+      return k_cac_cacr2_rscs_main;
     case k_cac_clock_sub:
-      return (uint8_t)k_cac_cacr2_rscs_sub;
+      return k_cac_cacr2_rscs_sub;
     case k_cac_clock_hoco:
-      return (uint8_t)k_cac_cacr2_rscs_hoco;
+      return k_cac_cacr2_rscs_hoco;
     case k_cac_clock_loco:
-      return (uint8_t)k_cac_cacr2_rscs_loco;
+      return k_cac_cacr2_rscs_loco;
     case k_cac_clock_pclkb:
-      return (uint8_t)k_cac_cacr2_rscs_pclkb;
+      return k_cac_cacr2_rscs_pclkb;
     case k_cac_clock_iwdtclk:
-      return (uint8_t)k_cac_cacr2_rscs_iwdtclk;
+      return k_cac_cacr2_rscs_iwdtclk;
     default:
-      return (uint8_t)k_cac_cacr2_rscs_main;
+      return k_cac_cacr2_rscs_main;
   }
 }
 
@@ -156,15 +156,15 @@ static uint8_t internal_tcss_bits(rx_cac_target_div_t div)
 {
   switch (div) {
     case k_cac_target_div_1:
-      return (uint8_t)k_cac_cacr1_tcss_div_1;
+      return k_cac_cacr1_tcss_div_1;
     case k_cac_target_div_4:
-      return (uint8_t)k_cac_cacr1_tcss_div_4;
+      return k_cac_cacr1_tcss_div_4;
     case k_cac_target_div_8:
-      return (uint8_t)k_cac_cacr1_tcss_div_8;
+      return k_cac_cacr1_tcss_div_8;
     case k_cac_target_div_32:
-      return (uint8_t)k_cac_cacr1_tcss_div_32;
+      return k_cac_cacr1_tcss_div_32;
     default:
-      return (uint8_t)k_cac_cacr1_tcss_div_1;
+      return k_cac_cacr1_tcss_div_1;
   }
 }
 
@@ -178,15 +178,15 @@ static uint8_t internal_rcds_bits(rx_cac_ref_div_t div)
 {
   switch (div) {
     case k_cac_ref_div_32:
-      return (uint8_t)k_cac_cacr2_rcds_div_32;
+      return k_cac_cacr2_rcds_div_32;
     case k_cac_ref_div_128:
-      return (uint8_t)k_cac_cacr2_rcds_div_128;
+      return k_cac_cacr2_rcds_div_128;
     case k_cac_ref_div_1024:
-      return (uint8_t)k_cac_cacr2_rcds_div_1024;
+      return k_cac_cacr2_rcds_div_1024;
     case k_cac_ref_div_8192:
-      return (uint8_t)k_cac_cacr2_rcds_div_8192;
+      return k_cac_cacr2_rcds_div_8192;
     default:
-      return (uint8_t)k_cac_cacr2_rcds_div_32;
+      return k_cac_cacr2_rcds_div_32;
   }
 }
 
@@ -231,19 +231,19 @@ static void internal_apply_config(const rx_cac_config_t* config)
   volatile rx_cac_regs_t* regs = cac();
   uint8_t                 cacr1_val =
     (uint8_t)(internal_fmcs_bits(config->measured_clock) | internal_tcss_bits(config->target_div) |
-              (uint8_t)k_cac_cacr1_edges_rising);
+              k_cac_cacr1_edges_rising);
   uint8_t cacr2_val =
     (uint8_t)(internal_rscs_bits(config->reference_clock) |
-              internal_rcds_bits(config->reference_div) | (uint8_t)k_cac_cacr2_rps_internal);
-  uint8_t caicr_val = (uint8_t)k_cac_caicr_clear_all_flags;
+              internal_rcds_bits(config->reference_div) | k_cac_cacr2_rps_internal);
+  uint8_t caicr_val = k_cac_caicr_clear_all_flags;
   if (config->enable_ferrie) {
-    caicr_val |= (uint8_t)k_cac_caicr_ferrie_mask;
+    caicr_val |= k_cac_caicr_ferrie_mask;
   }
   if (config->enable_mendie) {
-    caicr_val |= (uint8_t)k_cac_caicr_mendie_mask;
+    caicr_val |= k_cac_caicr_mendie_mask;
   }
   if (config->enable_ovfie) {
-    caicr_val |= (uint8_t)k_cac_caicr_ovfie_mask;
+    caicr_val |= k_cac_caicr_ovfie_mask;
   }
   regs->cacr1  = cacr1_val;
   regs->cacr2  = cacr2_val;
@@ -268,17 +268,17 @@ rx_err_t rx_cac_init(const rx_cac_config_t* config)
     rx_log_error(s_tag, "rx_cac_init: callvr must be < caulvr");
     return k_rx_err_invalid_arg;
   }
-  if ((uint8_t)config->reference_clock > (uint8_t)k_cac_clock_iwdtclk) {
+  if ((uint8_t)config->reference_clock > k_cac_clock_iwdtclk) {
     rx_log_error(s_tag, "rx_cac_init: reference_clock out of range");
     return k_rx_err_invalid_arg;
   }
-  if ((uint8_t)config->measured_clock > (uint8_t)k_cac_clock_clkout25) {
+  if ((uint8_t)config->measured_clock > k_cac_clock_clkout25) {
     rx_log_error(s_tag, "rx_cac_init: measured_clock out of range");
     return k_rx_err_invalid_arg;
   }
   internal_module_start();
   volatile rx_cac_regs_t* regs = cac();
-  regs->cacr0                  = (uint8_t)k_cac_cacr0_cfme_stop;
+  regs->cacr0                  = k_cac_cacr0_cfme_stop;
   internal_apply_config(config);
   s_initialized = true;
   return k_rx_ok;
@@ -291,8 +291,8 @@ rx_err_t rx_cac_start(void)
     return k_rx_err_not_initialized;
   }
   volatile rx_cac_regs_t* regs = cac();
-  regs->cacr0                  = (uint8_t)k_cac_cacr0_cfme_start;
-  if ((regs->cacr0 & (uint8_t)k_cac_cacr0_cfme_mask) != (uint8_t)k_cac_cacr0_cfme_start) {
+  regs->cacr0                  = k_cac_cacr0_cfme_start;
+  if ((regs->cacr0 & k_cac_cacr0_cfme_mask) != k_cac_cacr0_cfme_start) {
     rx_log_error(s_tag, "rx_cac_start: CFME readback failed");
     return k_rx_err_hw_error;
   }
@@ -306,8 +306,8 @@ rx_err_t rx_cac_stop(void)
     return k_rx_err_not_initialized;
   }
   volatile rx_cac_regs_t* regs = cac();
-  regs->cacr0                  = (uint8_t)k_cac_cacr0_cfme_stop;
-  if ((regs->cacr0 & (uint8_t)k_cac_cacr0_cfme_mask) != 0U) {
+  regs->cacr0                  = k_cac_cacr0_cfme_stop;
+  if ((regs->cacr0 & k_cac_cacr0_cfme_mask) != 0U) {
     rx_log_error(s_tag, "rx_cac_stop: CFME did not clear");
     return k_rx_err_hw_error;
   }
@@ -328,9 +328,9 @@ bool rx_cac_check(uint32_t* out_count)
   uint8_t ack =
     (uint8_t)(regs->caicr & (uint8_t)(k_cac_caicr_ferrie_mask | k_cac_caicr_mendie_mask |
                                       k_cac_caicr_ovfie_mask));
-  ack |= (uint8_t)k_cac_caicr_clear_all_flags;
+  ack |= k_cac_caicr_clear_all_flags;
   regs->caicr = ack;
-  return (status & (uint8_t)k_cac_castr_ferrf_mask) != 0U;
+  return (status & k_cac_castr_ferrf_mask) != 0U;
 }
 
 rx_err_t rx_cac_deinit(void)
@@ -340,10 +340,10 @@ rx_err_t rx_cac_deinit(void)
     return k_rx_err_not_initialized;
   }
   volatile rx_cac_regs_t* regs = cac();
-  regs->cacr0                  = (uint8_t)k_cac_cacr0_cfme_stop;
+  regs->cacr0                  = k_cac_cacr0_cfme_stop;
   regs->cacr1                  = 0U;
   regs->cacr2                  = 0U;
-  regs->caicr                  = (uint8_t)k_cac_caicr_clear_all_flags;
+  regs->caicr                  = k_cac_caicr_clear_all_flags;
   internal_module_stop();
   s_initialized = false;
   return k_rx_ok;

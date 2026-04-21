@@ -138,12 +138,13 @@ void mock_rx_doc_set_dopcf(bool set)
   if (set) {
     g_mock_doc_regs.docr |= (uint8_t)k_doc_docr_dopcf_mask;
   } else {
-    g_mock_doc_regs.docr &= (uint8_t)~(uint8_t)k_doc_docr_dopcf_mask;
+    g_mock_doc_regs.docr &= (uint8_t) ~(uint8_t)k_doc_docr_dopcf_mask;
   }
 }
 
-void mock_rx_doc_trigger_operation(rx_doc_mode_t mode, uint16_t dodsr_before,
-                                   uint16_t dodsr_written)
+void mock_rx_doc_trigger_operation(rx_doc_mode_t mode,
+                                   uint16_t      dodsr_before,
+                                   uint16_t      dodsr_written)
 {
   if (!s_auto_flag_enabled) {
     return;
@@ -158,16 +159,16 @@ void mock_rx_doc_trigger_operation(rx_doc_mode_t mode, uint16_t dodsr_before,
       flag = (g_mock_doc_regs.dodir != dodsr_written);
       break;
     case k_rx_doc_mode_add: {
-      const uint32_t sum       = (uint32_t)dodsr_before + (uint32_t)g_mock_doc_regs.dodir;
-      flag                     = (sum & (uint32_t)k_mock_doc_carry_bit) != 0U;
-      g_mock_doc_regs.dodsr    = (uint16_t)(sum & (uint32_t)k_mock_doc_u16_mask);
+      const uint32_t sum    = (uint32_t)dodsr_before + (uint32_t)g_mock_doc_regs.dodir;
+      flag                  = (sum & (uint32_t)k_mock_doc_carry_bit) != 0U;
+      g_mock_doc_regs.dodsr = (uint16_t)(sum & (uint32_t)k_mock_doc_u16_mask);
       (void)dodsr_written;
       break;
     }
     case k_rx_doc_mode_subtract: {
-      const int32_t diff       = (int32_t)dodsr_before - (int32_t)g_mock_doc_regs.dodir;
-      flag                     = (diff < 0);
-      g_mock_doc_regs.dodsr    = (uint16_t)((uint32_t)diff & (uint32_t)k_mock_doc_u16_mask);
+      const int32_t diff    = (int32_t)dodsr_before - (int32_t)g_mock_doc_regs.dodir;
+      flag                  = (diff < 0);
+      g_mock_doc_regs.dodsr = (uint16_t)((uint32_t)diff & (uint32_t)k_mock_doc_u16_mask);
       (void)dodsr_written;
       break;
     }

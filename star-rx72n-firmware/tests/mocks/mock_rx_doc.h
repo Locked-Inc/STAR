@@ -172,8 +172,9 @@ void mock_rx_doc_set_dopcf(bool set);
  *
  * @since Version 1.0.0
  */
-void mock_rx_doc_trigger_operation(rx_doc_mode_t mode, uint16_t dodsr_before,
-                                   uint16_t dodsr_written);
+void mock_rx_doc_trigger_operation(rx_doc_mode_t mode,
+                                   uint16_t      dodsr_before,
+                                   uint16_t      dodsr_written);
 
 /**
  * @brief Get number of times the mock doc() accessor has been invoked
