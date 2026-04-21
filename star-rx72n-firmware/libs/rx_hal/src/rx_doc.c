@@ -60,8 +60,8 @@
 #include "rx_doc.h"
 
 #ifdef UNIT_TEST
-#include "mock_rx_doc.h"
 #include "mock_rx72n_system_regs.h"
+#include "mock_rx_doc.h"
 #else
 #include "rx72n_doc_regs.h"
 #include "rx72n_system_regs.h"
@@ -167,8 +167,8 @@ static uint8_t internal_docr_for_mode(rx_doc_mode_t mode)
  */
 static bool internal_mode_is_valid(rx_doc_mode_t mode)
 {
-  return (mode == k_rx_doc_mode_compare) || (mode == k_rx_doc_mode_compare_neq)
-         || (mode == k_rx_doc_mode_add) || (mode == k_rx_doc_mode_subtract);
+  return (mode == k_rx_doc_mode_compare) || (mode == k_rx_doc_mode_compare_neq) ||
+         (mode == k_rx_doc_mode_add) || (mode == k_rx_doc_mode_subtract);
 }
 
 /**
@@ -279,7 +279,8 @@ rx_err_t rx_doc_init(rx_doc_mode_t mode)
 
 rx_err_t rx_doc_set_reference(uint16_t reference)
 {
-  RX_VALIDATE_INIT(s_doc_init_state == k_doc_initialized, s_tag,
+  RX_VALIDATE_INIT(s_doc_init_state == k_doc_initialized,
+                   s_tag,
                    "rx_doc_set_reference: driver not initialized");
 
   doc()->dodir = reference;

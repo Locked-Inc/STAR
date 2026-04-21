@@ -105,9 +105,9 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_tmr_us_per_sec     = 1000000U, /**< Microseconds per second */
-  k_tmr_max_tcora      = 0xFFU,    /**< 8-bit TCORA maximum value */
-  k_tmr_max_tcora_16bit = 0xFFFFU, /**< 16-bit cascade TCORA maximum value */
+  k_tmr_us_per_sec      = 1000000U, /**< Microseconds per second */
+  k_tmr_max_tcora       = 0xFFU,    /**< 8-bit TCORA maximum value */
+  k_tmr_max_tcora_16bit = 0xFFFFU,  /**< 16-bit cascade TCORA maximum value */
 } tmr_period_limits_t;
 
 /**
@@ -176,7 +176,10 @@ static rx_tmr_clock_source_t s_tmr_clock_source[k_tmr_channel_count_internal] = 
  * @since Version 1.0.0
  */
 static rx_tmr_isr_callback_t s_tmr_callback[k_tmr_channel_count_internal] = {
-  NULL, NULL, NULL, NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
 };
 
 /* =============================================================================
@@ -377,8 +380,7 @@ static rx_err_t internal_tmr_validate_config(const rx_tmr_config_t* config)
   if ((uint8_t)config->channel >= (uint8_t)k_tmr_channel_count_internal) {
     return k_rx_err_invalid_arg;
   }
-  if ((config->mode != k_tmr_mode_8bit_independent) &&
-      (config->mode != k_tmr_mode_16bit_cascade)) {
+  if ((config->mode != k_tmr_mode_8bit_independent) && (config->mode != k_tmr_mode_16bit_cascade)) {
     return k_rx_err_invalid_arg;
   }
   if ((uint8_t)config->counter_clear > (uint8_t)k_tmr_clear_external_reset) {
@@ -408,8 +410,7 @@ static rx_err_t internal_tmr_validate_config(const rx_tmr_config_t* config)
  * @param[in] config  Source configuration
  * @since Version 1.0.0
  */
-static void internal_tmr_program_channel(rx_tmr_channel_t       channel,
-                                         const rx_tmr_config_t* config)
+static void internal_tmr_program_channel(rx_tmr_channel_t channel, const rx_tmr_config_t* config)
 {
   volatile rx_tmr_channel_regs_t* regs = internal_tmr_get_regs(channel);
 
@@ -471,7 +472,7 @@ rx_err_t rx_tmr_init(const rx_tmr_config_t* config)
     internal_tmr_program_channel(odd, &odd_cfg);
 
     volatile rx_tmr_channel_regs_t* odd_regs = internal_tmr_get_regs(odd);
-    odd_regs->tccr = (uint8_t)k_tmr_tccr_css_cascade;
+    odd_regs->tccr                           = (uint8_t)k_tmr_tccr_css_cascade;
 
     s_tmr_mode[(uint8_t)odd]         = k_tmr_mode_16bit_cascade;
     s_tmr_initialized[(uint8_t)odd]  = true;
@@ -498,7 +499,7 @@ rx_err_t rx_tmr_start(rx_tmr_channel_t channel)
   RX_VALIDATE_INIT(s_tmr_initialized[idx], s_tag, "Channel not initialised");
 
   volatile rx_tmr_channel_regs_t* regs = internal_tmr_get_regs(channel);
-  regs->tccr = s_tmr_clock_bits[idx];
+  regs->tccr                           = s_tmr_clock_bits[idx];
 
   /* In cascade mode the paired odd channel also needs its cascade bits
    * kept after a stop/start cycle. */
@@ -521,7 +522,7 @@ rx_err_t rx_tmr_stop(rx_tmr_channel_t channel)
   RX_VALIDATE_INIT(s_tmr_initialized[idx], s_tag, "Channel not initialised");
 
   volatile rx_tmr_channel_regs_t* regs = internal_tmr_get_regs(channel);
-  regs->tccr = 0U;
+  regs->tccr                           = 0U;
 
   if (s_tmr_mode[idx] == k_tmr_mode_16bit_cascade) {
     if (channel == k_tmr_channel_0) {
@@ -543,11 +544,10 @@ rx_err_t rx_tmr_read(rx_tmr_channel_t channel, uint16_t* value)
   RX_VALIDATE_INIT(s_tmr_initialized[idx], s_tag, "Channel not initialised");
 
   if (s_tmr_mode[idx] == k_tmr_mode_16bit_cascade) {
-    const uint8_t upper = internal_tmr_get_regs(channel)->tcnt;
-    const rx_tmr_channel_t odd =
-      (channel == k_tmr_channel_0) ? k_tmr_channel_1 : k_tmr_channel_3;
-    const uint8_t lower = internal_tmr_get_regs(odd)->tcnt;
-    *value              = (uint16_t)(((uint16_t)upper << 8U) | (uint16_t)lower);
+    const uint8_t          upper = internal_tmr_get_regs(channel)->tcnt;
+    const rx_tmr_channel_t odd   = (channel == k_tmr_channel_0) ? k_tmr_channel_1 : k_tmr_channel_3;
+    const uint8_t          lower = internal_tmr_get_regs(odd)->tcnt;
+    *value                       = (uint16_t)(((uint16_t)upper << 8U) | (uint16_t)lower);
   } else {
     *value = (uint16_t)internal_tmr_get_regs(channel)->tcnt;
   }
@@ -574,24 +574,23 @@ rx_err_t rx_tmr_set_period_us(rx_tmr_channel_t channel, uint32_t period_us)
 
   /* tick_hz = PCLKB / divider; ticks = period_us * tick_hz / 1e6
    * compare = ticks - 1 (TCORA fires when TCNT reaches compare value) */
-  const uint64_t ticks =
-    ((uint64_t)period_us * (uint64_t)k_tmr_pclkb_hz) / ((uint64_t)divider * (uint64_t)k_tmr_us_per_sec);
+  const uint64_t ticks = ((uint64_t)period_us * (uint64_t)k_tmr_pclkb_hz) /
+                         ((uint64_t)divider * (uint64_t)k_tmr_us_per_sec);
   if (ticks == 0U) {
     return k_rx_err_invalid_arg;
   }
   const uint64_t compare = ticks - 1U;
 
-  const uint32_t max_compare =
-    (s_tmr_mode[idx] == k_tmr_mode_16bit_cascade) ?
-      (uint32_t)k_tmr_max_tcora_16bit : (uint32_t)k_tmr_max_tcora;
+  const uint32_t max_compare = (s_tmr_mode[idx] == k_tmr_mode_16bit_cascade)
+                                 ? (uint32_t)k_tmr_max_tcora_16bit
+                                 : (uint32_t)k_tmr_max_tcora;
   if (compare > (uint64_t)max_compare) {
     rx_log_error_val(s_tag, "Period too large for divider", period_us);
     return k_rx_err_invalid_arg;
   }
 
   if (s_tmr_mode[idx] == k_tmr_mode_16bit_cascade) {
-    const rx_tmr_channel_t odd =
-      (channel == k_tmr_channel_0) ? k_tmr_channel_1 : k_tmr_channel_3;
+    const rx_tmr_channel_t odd = (channel == k_tmr_channel_0) ? k_tmr_channel_1 : k_tmr_channel_3;
     internal_tmr_get_regs(channel)->tcora = (uint8_t)((compare >> 8U) & 0xFFU);
     internal_tmr_get_regs(odd)->tcora     = (uint8_t)(compare & 0xFFU);
   } else {
@@ -600,8 +599,7 @@ rx_err_t rx_tmr_set_period_us(rx_tmr_channel_t channel, uint32_t period_us)
   return k_rx_ok;
 }
 
-rx_err_t rx_tmr_register_compare_match_isr(rx_tmr_channel_t      channel,
-                                           rx_tmr_isr_callback_t callback)
+rx_err_t rx_tmr_register_compare_match_isr(rx_tmr_channel_t channel, rx_tmr_isr_callback_t callback)
 {
   if ((uint8_t)channel >= (uint8_t)k_tmr_channel_count_internal) {
     return k_rx_err_invalid_arg;
@@ -617,28 +615,27 @@ rx_err_t rx_tmr_deinit(rx_tmr_channel_t channel)
   }
 
   volatile rx_tmr_channel_regs_t* regs = internal_tmr_get_regs(channel);
-  regs->tccr  = 0U;
-  regs->tcr   = 0U;
-  regs->tcsr  = 0U;
-  regs->tcora = 0U;
-  regs->tcorb = 0U;
-  regs->tcnt  = 0U;
+  regs->tccr                           = 0U;
+  regs->tcr                            = 0U;
+  regs->tcsr                           = 0U;
+  regs->tcora                          = 0U;
+  regs->tcorb                          = 0U;
+  regs->tcnt                           = 0U;
 
   const uint8_t idx = (uint8_t)channel;
   if (s_tmr_mode[idx] == k_tmr_mode_16bit_cascade) {
-    const rx_tmr_channel_t odd =
-      (channel == k_tmr_channel_0) ? k_tmr_channel_1 : k_tmr_channel_3;
+    const rx_tmr_channel_t odd = (channel == k_tmr_channel_0) ? k_tmr_channel_1 : k_tmr_channel_3;
     volatile rx_tmr_channel_regs_t* odd_regs = internal_tmr_get_regs(odd);
-    odd_regs->tccr  = 0U;
-    odd_regs->tcr   = 0U;
-    odd_regs->tcsr  = 0U;
-    odd_regs->tcora = 0U;
-    odd_regs->tcorb = 0U;
-    odd_regs->tcnt  = 0U;
-    s_tmr_initialized[(uint8_t)odd] = false;
-    s_tmr_mode[(uint8_t)odd]        = k_tmr_mode_8bit_independent;
-    s_tmr_clock_bits[(uint8_t)odd]  = 0U;
-    s_tmr_callback[(uint8_t)odd]    = NULL;
+    odd_regs->tccr                           = 0U;
+    odd_regs->tcr                            = 0U;
+    odd_regs->tcsr                           = 0U;
+    odd_regs->tcora                          = 0U;
+    odd_regs->tcorb                          = 0U;
+    odd_regs->tcnt                           = 0U;
+    s_tmr_initialized[(uint8_t)odd]          = false;
+    s_tmr_mode[(uint8_t)odd]                 = k_tmr_mode_8bit_independent;
+    s_tmr_clock_bits[(uint8_t)odd]           = 0U;
+    s_tmr_callback[(uint8_t)odd]             = NULL;
   }
 
   s_tmr_initialized[idx] = false;

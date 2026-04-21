@@ -224,8 +224,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_mock_tmr_unit_bytes  = 32, /**< Per-unit shared buffer size (safe upper bound) */
-  k_mock_tmr_unit_count  = 2,  /**< Number of TMR units (unit 0 = TMR0/1, unit 1 = TMR2/3) */
+  k_mock_tmr_unit_bytes = 32, /**< Per-unit shared buffer size (safe upper bound) */
+  k_mock_tmr_unit_count = 2,  /**< Number of TMR units (unit 0 = TMR0/1, unit 1 = TMR2/3) */
 } rx_tmr_mock_sizes_t;
 
 /**

@@ -192,14 +192,14 @@ typedef enum : uint8_t {
  */
 typedef enum : uint32_t {
   /* DPSIER0 - IRQ0-DS .. IRQ7-DS */
-  k_lpc_wake_irq0  = 0x00000001U, /**< IRQ0-DS  pin */
-  k_lpc_wake_irq1  = 0x00000002U, /**< IRQ1-DS  pin */
-  k_lpc_wake_irq2  = 0x00000004U, /**< IRQ2-DS  pin */
-  k_lpc_wake_irq3  = 0x00000008U, /**< IRQ3-DS  pin */
-  k_lpc_wake_irq4  = 0x00000010U, /**< IRQ4-DS  pin */
-  k_lpc_wake_irq5  = 0x00000020U, /**< IRQ5-DS  pin */
-  k_lpc_wake_irq6  = 0x00000040U, /**< IRQ6-DS  pin */
-  k_lpc_wake_irq7  = 0x00000080U, /**< IRQ7-DS  pin */
+  k_lpc_wake_irq0 = 0x00000001U, /**< IRQ0-DS  pin */
+  k_lpc_wake_irq1 = 0x00000002U, /**< IRQ1-DS  pin */
+  k_lpc_wake_irq2 = 0x00000004U, /**< IRQ2-DS  pin */
+  k_lpc_wake_irq3 = 0x00000008U, /**< IRQ3-DS  pin */
+  k_lpc_wake_irq4 = 0x00000010U, /**< IRQ4-DS  pin */
+  k_lpc_wake_irq5 = 0x00000020U, /**< IRQ5-DS  pin */
+  k_lpc_wake_irq6 = 0x00000040U, /**< IRQ6-DS  pin */
+  k_lpc_wake_irq7 = 0x00000080U, /**< IRQ7-DS  pin */
 
   /* DPSIER1 - IRQ8-DS .. IRQ15-DS */
   k_lpc_wake_irq8  = 0x00000100U, /**< IRQ8-DS  pin */

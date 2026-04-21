@@ -147,13 +147,13 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_tmr_clock_pclk_div_1    = 0, /**< Internal PCLK / 1    */
-  k_tmr_clock_pclk_div_2    = 1, /**< Internal PCLK / 2    */
-  k_tmr_clock_pclk_div_8    = 2, /**< Internal PCLK / 8    */
-  k_tmr_clock_pclk_div_32   = 3, /**< Internal PCLK / 32   */
-  k_tmr_clock_pclk_div_64   = 4, /**< Internal PCLK / 64   */
-  k_tmr_clock_pclk_div_1024 = 5, /**< Internal PCLK / 1024 */
-  k_tmr_clock_pclk_div_8192 = 6, /**< Internal PCLK / 8192 */
+  k_tmr_clock_pclk_div_1       = 0, /**< Internal PCLK / 1    */
+  k_tmr_clock_pclk_div_2       = 1, /**< Internal PCLK / 2    */
+  k_tmr_clock_pclk_div_8       = 2, /**< Internal PCLK / 8    */
+  k_tmr_clock_pclk_div_32      = 3, /**< Internal PCLK / 32   */
+  k_tmr_clock_pclk_div_64      = 4, /**< Internal PCLK / 64   */
+  k_tmr_clock_pclk_div_1024    = 5, /**< Internal PCLK / 1024 */
+  k_tmr_clock_pclk_div_8192    = 6, /**< Internal PCLK / 8192 */
   k_tmr_clock_external_rising  = 7, /**< External TMCI rising-edge count  */
   k_tmr_clock_external_falling = 8, /**< External TMCI falling-edge count */
   k_tmr_clock_external_both    = 9, /**< External TMCI both-edge count    */
@@ -192,10 +192,10 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_tmr_irq_none         = 0x00, /**< No interrupts enabled               */
-  k_tmr_irq_cmp_match_a  = 0x01, /**< Enable CMIA (TCORA compare match)   */
-  k_tmr_irq_cmp_match_b  = 0x02, /**< Enable CMIB (TCORB compare match)   */
-  k_tmr_irq_overflow     = 0x04, /**< Enable OVI (TCNT overflow)          */
+  k_tmr_irq_none        = 0x00, /**< No interrupts enabled               */
+  k_tmr_irq_cmp_match_a = 0x01, /**< Enable CMIA (TCORA compare match)   */
+  k_tmr_irq_cmp_match_b = 0x02, /**< Enable CMIB (TCORB compare match)   */
+  k_tmr_irq_overflow    = 0x04, /**< Enable OVI (TCNT overflow)          */
 } rx_tmr_irq_source_t;
 
 /* =============================================================================

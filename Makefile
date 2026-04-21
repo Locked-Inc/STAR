@@ -6,7 +6,7 @@ IMAGE_NAME := star-ros2-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell build-blinky clean-blinky flash-blinky flash-blinky-sci motor0 motor0-forward motor0-reverse motor1 motor1-forward motor1-reverse motor2 motor2-forward motor2-reverse motor3 motor3-forward motor3-reverse motor-all motor-stop motor-clean none
+.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell blinky build-blinky clean-blinky flash-blinky flash-blinky-sci motor0 motor0-forward motor0-reverse motor1 motor1-forward motor1-reverse motor2 motor2-forward motor2-reverse motor3 motor3-forward motor3-reverse motor-all motor-stop motor-clean none
 
 help:
 	@echo "STAR Project Development Helper"
@@ -17,6 +17,7 @@ help:
 	@echo "  make shell        - Start an interactive shell in a new ephemeral container"
 	@echo ""
 	@echo "RX72N Firmware:"
+	@echo "  make blinky              - Clean build + flash bare-metal LED test via E2 Lite (one-shot)"
 	@echo "  make build-blinky        - Build bare-metal P54 LED test (requires GNURX toolchain)"
 	@echo "  make flash-blinky        - Flash blinky.elf via E2 Lite (builds first, FINE @ 250kbps)"
 	@echo "  make flash-blinky-sci    - Flash blinky.elf via USB-UART SCI Boot Mode (SW4 Pin1=ON)"
@@ -198,6 +199,12 @@ flash-blinky: build-blinky
 # and a power-cycle AFTER setting the switch so the MCU enters boot mode.
 flash-blinky-sci: build-blinky
 	@bash scripts/flash-rx72n.sh star-rx72n-firmware/blinky/blinky.elf sci
+
+# All-in-one alias matching the 'make motorN' / 'make none' pattern:
+# clean build + flash via E2 Lite. Same end-state as
+# 'make build-blinky flash-blinky'.
+blinky: clean-blinky build-blinky flash-blinky
+	@true
 
 # ------------------------------------------------------------
 # motor_spin_test -- open-loop 4-motor sweep on the production STAR PCB.

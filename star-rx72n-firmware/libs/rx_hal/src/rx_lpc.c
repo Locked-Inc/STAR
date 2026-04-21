@@ -209,9 +209,8 @@ static void internal_program_wake_enables(uint32_t wake_mask)
  *
  * @since Version 1.0.0
  */
-static uint8_t internal_assemble_dpsbycr(rx_lpc_deep_power_t deep_power,
-                                         bool                keep_io,
-                                         bool                set_dpsby)
+static uint8_t
+internal_assemble_dpsbycr(rx_lpc_deep_power_t deep_power, bool keep_io, bool set_dpsby)
 {
   uint8_t value = 0U;
 
@@ -260,7 +259,7 @@ rx_err_t rx_lpc_init(void)
 
 #ifdef __RX__
   /* Read DPSIFR0..DPSIFR3, OR them into the latched flags, then clear them */
-  volatile rx_dps_regs_t* dps = dps_regs();
+  volatile rx_dps_regs_t* dps   = dps_regs();
   uint32_t                flags = 0U;
   flags |= ((uint32_t)dps->dpsifr0) << 0U;
   flags |= ((uint32_t)dps->dpsifr1) << 8U;
@@ -323,8 +322,8 @@ rx_err_t rx_lpc_enter_sleep(void)
   }
 
 #ifdef __RX__
-  volatile uint16_t*        prcr = prcr_reg();
-  volatile rx_system_regs_t* sys = system_regs();
+  volatile uint16_t*         prcr = prcr_reg();
+  volatile rx_system_regs_t* sys  = system_regs();
 
   *prcr      = (uint16_t)k_rx_prcr_unlock_prc1;
   sys->sbycr = (uint16_t)(sys->sbycr & (uint16_t)~k_sbycr_ssby);
@@ -368,9 +367,8 @@ rx_err_t rx_lpc_enter_software_standby(void)
   return k_rx_ok;
 }
 
-rx_err_t rx_lpc_enter_deep_software_standby(uint32_t            wake_mask,
-                                            rx_lpc_deep_power_t deep_power,
-                                            bool                keep_io)
+rx_err_t
+rx_lpc_enter_deep_software_standby(uint32_t wake_mask, rx_lpc_deep_power_t deep_power, bool keep_io)
 {
   if (s_initialized != k_lpc_initialized) {
     return k_rx_err_not_initialized;
@@ -381,8 +379,8 @@ rx_err_t rx_lpc_enter_deep_software_standby(uint32_t            wake_mask,
   if ((wake_mask & ~(uint32_t)k_lpc_wake_all_mask) != 0U) {
     return k_rx_err_invalid_arg;
   }
-  if ((deep_power != k_lpc_deep_ram_usb_on) && (deep_power != k_lpc_deep_ram_usb_off)
-      && (deep_power != k_lpc_deep_lvd_off)) {
+  if ((deep_power != k_lpc_deep_ram_usb_on) && (deep_power != k_lpc_deep_ram_usb_off) &&
+      (deep_power != k_lpc_deep_lvd_off)) {
     return k_rx_err_invalid_arg;
   }
 
