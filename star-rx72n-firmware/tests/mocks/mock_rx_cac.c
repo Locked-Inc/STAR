@@ -38,5 +38,8 @@ rx_cac_regs_t g_mock_cac_regs;
 
 void mock_rx_cac_reset(void)
 {
-  memset(&g_mock_cac_regs, 0, sizeof(g_mock_cac_regs));
+  /* C99 compound-literal zero-init -- avoids cert-msc24-c (memset insecure)
+   * and lets the compiler emit whatever zero-fill it likes (memset, vector
+   * stores, etc.). */
+  g_mock_cac_regs = (rx_cac_regs_t){0};
 }

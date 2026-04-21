@@ -35,8 +35,6 @@
 
 #include "mock_rx_doc.h"
 
-#include <string.h>
-
 /* =============================================================================
  * Mock Storage
  * =============================================================================
@@ -58,7 +56,10 @@ rx_system_regs_t g_mock_doc_system_regs;
  * keeps the DOC test fully self-contained (no link-time dependency on the
  * IWDT mock suite's mock_rx_system_regs.c).
  */
-volatile uint16_t g_mock_prcr = 0xA500U; /* locked-state default */
+/* NOLINTNEXTLINE(readability-magic-numbers) -- 0xA500 is the PRCR
+ * locked-state default, defined as k_mock_doc_prcr_locked below; we
+ * can't forward-reference the enum here. */
+volatile uint16_t g_mock_prcr = 0xA500U;
 
 /* =============================================================================
  * Internal Constants
@@ -115,8 +116,10 @@ static bool s_auto_flag_enabled = false;
 
 void mock_rx_doc_reset(void)
 {
-  memset((void*)&g_mock_doc_regs, 0, sizeof(g_mock_doc_regs));
-  memset((void*)&g_mock_doc_system_regs, 0, sizeof(g_mock_doc_system_regs));
+  /* C99 compound-literal zero-init -- avoids cert-msc24-c (memset insecure)
+   * and gives the compiler freedom to pick the optimal zero-fill. */
+  g_mock_doc_regs        = (rx_doc_regs_t){0};
+  g_mock_doc_system_regs = (rx_system_regs_t){0};
   g_mock_doc_system_regs.mstpcrb = k_mock_doc_mstpcrb_all_stopped;
   g_mock_prcr                    = k_mock_doc_prcr_locked;
   s_access_count                 = 0U;
@@ -153,21 +156,21 @@ void mock_rx_doc_trigger_operation(rx_doc_mode_t mode,
   bool flag = false;
   switch (mode) {
     case k_rx_doc_mode_compare:
-      flag = (g_mock_doc_regs.dodir == dodsr_written);
+      flag = (bool)(g_mock_doc_regs.dodir == dodsr_written);
       break;
     case k_rx_doc_mode_compare_neq:
-      flag = (g_mock_doc_regs.dodir != dodsr_written);
+      flag = (bool)(g_mock_doc_regs.dodir != dodsr_written);
       break;
     case k_rx_doc_mode_add: {
       const uint32_t sum    = (uint32_t)dodsr_before + (uint32_t)g_mock_doc_regs.dodir;
-      flag                  = (sum & k_mock_doc_carry_bit) != 0U;
+      flag                  = (bool)((sum & k_mock_doc_carry_bit) != 0U);
       g_mock_doc_regs.dodsr = (uint16_t)(sum & k_mock_doc_u16_mask);
       (void)dodsr_written;
       break;
     }
     case k_rx_doc_mode_subtract: {
       const int32_t diff    = (int32_t)dodsr_before - (int32_t)g_mock_doc_regs.dodir;
-      flag                  = (diff < 0);
+      flag                  = (bool)(diff < 0);
       g_mock_doc_regs.dodsr = (uint16_t)((uint32_t)diff & k_mock_doc_u16_mask);
       (void)dodsr_written;
       break;
