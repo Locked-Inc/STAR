@@ -124,6 +124,7 @@
 
 #include "rx72n_regs.h"
 #include "rx_check.h"
+#include "rx_port_utils.h"
 #include "rx_log.h"
 #include "rx_register_protection.h"
 
@@ -585,58 +586,32 @@ static rx_err_t internal_calculate_period(const uint32_t            frequency_hz
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_configure_mpc(const rx_gptw_channel_t channel)
+/* PFS register block starts at 0x0008C140; each port uses 8 bytes
+ * (one PFS per pin, pins 0..7). */
+typedef enum : uintptr_t {
+  k_pfs_block_base_addr = 0x0008C140U,
+  k_pfs_port_stride     = 8U,
+} pfs_block_layout_t;
+
+static inline volatile uint8_t* internal_pfs_addr(uint8_t port_idx, uint8_t bit)
 {
-  /* MPC Pin Function Select values for GPTW on Port E
-   * Each channel uses 2 pins (GTIOCA and GTIOCB)
-   *
-   * Pin mapping (from hardware_pinout.h):
-   * - GPTW0: PE5/GTIOC0A, PE2/GTIOC0B
-   * - GPTW1: PE4/GTIOC1A, PE1/GTIOC1B
-   * - GPTW2: PE3/GTIOC2A, PE0/GTIOC2B
-   * - GPTW3: PE7/GTIOC3A, PE6/GTIOC3B
-   */
+  return (volatile uint8_t*)(k_pfs_block_base_addr +
+                             ((uint32_t)port_idx * k_pfs_port_stride) + bit);
+}
 
-  /* Unlock MPC write protection */
-  mpc()->pwpr = k_mpc_pwpr_b0wi_clear; /* Clear B0WI */
-  mpc()->pwpr = k_mpc_pwpr_pfswe_set;  /* Set PFSWE to enable PFS write */
+static rx_err_t internal_configure_mpc(const rx_gptw_config_t* config)
+{
+  /* Unlock MPC: clear B0WI then set PFSWE so PFS becomes writable. */
+  mpc()->pwpr = k_mpc_pwpr_b0wi_clear;
+  mpc()->pwpr = k_mpc_pwpr_pfswe_set;
 
-  /* Configure PFS for the appropriate pins
-   * PSEL value for GPTW is 0x14 (verify against HW manual)
-   * Note: Port E PFS registers not in rx_mpc_regs_t structure,
-   * so we use base + offset calculation */
-  volatile uint8_t* pe_pfs = (volatile uint8_t*)((uintptr_t)mpc() + k_mpc_pfs_base_offset +
-                                                 k_mpc_port_e_index * k_mpc_pfs_port_stride);
+  /* Caller supplies pin coordinates -- the lib does not assume a port.
+   * PSEL value for GTIOC is k_pfs_psel_gptw on every port that has GTIOC
+   * available (per RX72N HW manual Tables 23.4, 23.6, 23.10, 23.14, 23.16). */
+  *internal_pfs_addr(config->port_a_idx, config->bit_a) = k_pfs_psel_gptw;
+  *internal_pfs_addr(config->port_b_idx, config->bit_b) = k_pfs_psel_gptw;
 
-  switch (channel) {
-    case k_gptw_channel_0:
-      /* PE5/GTIOC0A and PE2/GTIOC0B */
-      pe_pfs[k_porte_gptw0_a] = k_pfs_psel_gptw;
-      pe_pfs[k_porte_gptw0_b] = k_pfs_psel_gptw;
-      break;
-    case k_gptw_channel_1:
-      /* PE4/GTIOC1A and PE1/GTIOC1B */
-      pe_pfs[k_porte_gptw1_a] = k_pfs_psel_gptw;
-      pe_pfs[k_porte_gptw1_b] = k_pfs_psel_gptw;
-      break;
-    case k_gptw_channel_2:
-      /* PE3/GTIOC2A and PE0/GTIOC2B */
-      pe_pfs[k_porte_gptw2_a] = k_pfs_psel_gptw;
-      pe_pfs[k_porte_gptw2_b] = k_pfs_psel_gptw;
-      break;
-    case k_gptw_channel_3:
-      /* PE7/GTIOC3A and PE6/GTIOC3B */
-      pe_pfs[k_porte_gptw3_a] = k_pfs_psel_gptw;
-      pe_pfs[k_porte_gptw3_b] = k_pfs_psel_gptw;
-      break;
-    default:
-      mpc()->pwpr = k_mpc_pwpr_lock; /* Lock before returning error */
-      return k_rx_err_invalid_arg;
-  }
-
-  /* Lock MPC write protection */
   mpc()->pwpr = k_mpc_pwpr_lock;
-
   return k_rx_ok;
 }
 
@@ -686,31 +661,20 @@ static rx_err_t internal_configure_mpc(const rx_gptw_channel_t channel)
  *
  * @since Version 1.0.0
  */
-static void internal_configure_port_pins(const rx_gptw_channel_t channel)
+static void internal_configure_port_pins(const rx_gptw_config_t* config)
 {
-  /* Set pins as output and enable peripheral function
-   * PMR = 1 (peripheral mode), PDR = 1 (output)
-   */
-  switch (channel) {
-    case k_gptw_channel_0:
-      porte()->pmr |= (k_gptw_bit_set << k_porte_gptw0_a) | (k_gptw_bit_set << k_porte_gptw0_b);
-      porte()->pdr |= (k_gptw_bit_set << k_porte_gptw0_a) | (k_gptw_bit_set << k_porte_gptw0_b);
-      break;
-    case k_gptw_channel_1:
-      porte()->pmr |= (k_gptw_bit_set << k_porte_gptw1_a) | (k_gptw_bit_set << k_porte_gptw1_b);
-      porte()->pdr |= (k_gptw_bit_set << k_porte_gptw1_a) | (k_gptw_bit_set << k_porte_gptw1_b);
-      break;
-    case k_gptw_channel_2:
-      porte()->pmr |= (k_gptw_bit_set << k_porte_gptw2_a) | (k_gptw_bit_set << k_porte_gptw2_b);
-      porte()->pdr |= (k_gptw_bit_set << k_porte_gptw2_a) | (k_gptw_bit_set << k_porte_gptw2_b);
-      break;
-    case k_gptw_channel_3:
-      porte()->pmr |= (k_gptw_bit_set << k_porte_gptw3_a) | (k_gptw_bit_set << k_porte_gptw3_b);
-      porte()->pdr |= (k_gptw_bit_set << k_porte_gptw3_a) | (k_gptw_bit_set << k_porte_gptw3_b);
-      break;
-    default:
-      break;
+  /* Caller supplies pin coordinates. Use rx_port_get_base() so this works
+   * for any port the board happens to route GTIOC outputs to. */
+  volatile rx_port_regs_t* port_a = rx_port_get_base(config->port_a_idx);
+  volatile rx_port_regs_t* port_b = rx_port_get_base(config->port_b_idx);
+  if ((port_a == nullptr) || (port_b == nullptr)) {
+    return;
   }
+
+  port_a->pdr |= (uint8_t)(1U << config->bit_a);
+  port_b->pdr |= (uint8_t)(1U << config->bit_b);
+  port_a->pmr |= (uint8_t)(1U << config->bit_a);
+  port_b->pmr |= (uint8_t)(1U << config->bit_b);
 }
 
 /**
@@ -1101,26 +1065,33 @@ rx_err_t rx_gptw_init_pwm(const rx_gptw_channel_t channel, const rx_gptw_config_
     return err;
   }
 
-  /* Configure MPC for Port E alternate functions */
-  err = internal_configure_mpc(channel);
+  /* Write the PFS (peripheral function select) for the GTIOC pads. Pin
+   * is still in GPIO mode at this point -- PMR is set later. */
+  err = internal_configure_mpc(config);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to configure MPC");
     return err;
   }
 
-  /* Configure port pins */
-  internal_configure_port_pins(channel);
-
   /* Save period for duty cycle calculations */
   s_gptw_period[channel]      = period;
   s_gptw_initialized[channel] = true;
 
-  /* Start timer */
+  /* Start timer FIRST -- the GTIOC output must be producing valid PWM
+   * before we route it to the pad. Otherwise the brief window between
+   * PMR=1 and counter start exposes downstream hardware (e.g. DRV8263H
+   * H-bridge inputs) to whatever GTIOR's reset/initial state happens to
+   * be, which has been observed to latch driver faults. */
   err = rx_gptw_start(channel);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to start GPTW");
     return err;
   }
+
+  /* Now route the running PWM to the pad: PDR=1 (output) and PMR=1
+   * (peripheral mode). The pin transitions from GPIO straight to a
+   * fully-running, valid PWM signal -- no glitch window. */
+  internal_configure_port_pins(config);
 
   rx_log_info(s_tag, "GPTW initialized successfully");
 
@@ -1855,12 +1826,12 @@ static rx_err_t internal_configure_channel_staggered(const rx_gptw_channel_t cha
     return err;
   }
 
-  /* Configure MPC and Pins */
-  err = internal_configure_mpc(channel);
+  /* Configure MPC PFS for the GTIOC pads. PMR (peripheral-mode enable)
+   * is set after the channels are atomically started in the caller. */
+  err = internal_configure_mpc(config);
   if (err != k_rx_ok) {
     return err;
   }
-  internal_configure_port_pins(channel);
 
   /* Apply Phase Staggering */
   uint32_t init_count = 0;
@@ -1934,19 +1905,20 @@ static rx_err_t internal_configure_channel_staggered(const rx_gptw_channel_t cha
  *
  * @callgraph
  */
-rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
+rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* configs[k_rx_gptw_channel_count])
 {
-  /* Pre-condition: validate config pointer (NASA Power of 10 Rule 5) */
-  RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
+  RX_CHECK_NULL_PTR(configs, s_tag, "configs array pointer is nullptr");
+  for (uint8_t i = 0; i < k_gptw_max_channels; i++) {
+    RX_CHECK_NULL_PTR(configs[i], s_tag, "configs[i] pointer is nullptr");
+  }
 
-  /* Pre-condition: validate frequency is non-zero */
-  if (config->frequency_hz == 0) {
+  /* All channels must share frequency / wave_mode (otherwise the staggered
+   * phasing math doesn't work). Validate once on configs[0]. */
+  if (configs[0]->frequency_hz == 0) {
     rx_log_error(s_tag, "frequency_hz is zero");
     return k_rx_err_invalid_arg;
   }
-
-  /* Pre-condition: validate wave_mode is within allowed values */
-  switch (config->wave_mode) {
+  switch (configs[0]->wave_mode) {
     case k_gptw_wave_saw_pwm:
     case k_gptw_wave_tri_pwm1:
     case k_gptw_wave_tri_pwm2:
@@ -1959,39 +1931,40 @@ rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
 
   rx_log_info(s_tag, "Initializing all GPTW channels (staggered)");
 
-  /* Enable module clock (enables all channels) */
   internal_enable_gptw_module_clock();
 
-  /* Stop all channels atomically to ensure clean config */
   if (gptw_common() != nullptr) {
     gptw_common()->gtstpa = k_gptw_all_channels_mask; /* Stop Ch0-3 */
   }
 
-  /* Calculate period once (assumes same frequency for all) */
   uint32_t period;
-  rx_err_t err = internal_calculate_period(config->frequency_hz, config->wave_mode, &period);
+  rx_err_t err = internal_calculate_period(configs[0]->frequency_hz, configs[0]->wave_mode, &period);
   if (err != k_rx_ok) {
     return err;
   }
 
-  const bool is_triangle = internal_is_triangle_mode(config->wave_mode);
+  const bool is_triangle = internal_is_triangle_mode(configs[0]->wave_mode);
 
-  /* Configure each channel using helper function */
   for (uint8_t i = 0; i < k_gptw_max_channels; i++) {
-    rx_gptw_channel_t channel = (rx_gptw_channel_t)i;
-
-    err = internal_configure_channel_staggered(channel, config, period, is_triangle);
+    err = internal_configure_channel_staggered((rx_gptw_channel_t)i, configs[i], period, is_triangle);
     if (err != k_rx_ok) {
       return err;
     }
   }
 
-  /* Start all channels atomically */
-  if (gptw_common() != nullptr) {
-    rx_log_info(s_tag, "Global start of GPTW channels");
-    gptw_common()->gtstra = k_gptw_all_channels_mask; /* Start Ch0-3 */
-  } else {
+  /* Atomic start of all 4 channels. */
+  if (gptw_common() == nullptr) {
     return k_rx_err_hw_error;
+  }
+  rx_log_info(s_tag, "Global start of GPTW channels");
+  gptw_common()->gtstra = k_gptw_all_channels_mask;
+
+  /* Now that valid PWM is running on every channel, route the outputs
+   * to their pads (PMR=1). Doing this after start avoids exposing the
+   * downstream H-bridges to the GTIOR reset/initial state during the
+   * brief window between mux and counter start. */
+  for (uint8_t i = 0; i < k_gptw_max_channels; i++) {
+    internal_configure_port_pins(configs[i]);
   }
 
   return k_rx_ok;

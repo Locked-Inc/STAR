@@ -40,6 +40,17 @@ else
     OBJCOPY=/opt/gnurx/bin/rx-elf-objcopy
 fi
 
+# rfp-cli is shipped only as an x86_64 binary. On aarch64 the kernel binfmt
+# typically dispatches it through qemu-user, but the QEMU x86_64 emulator
+# crashes inside rfp-cli (SIGSEGV at addr=0x20 during startup). box64 is a
+# faster, more compatible aarch64 emulator and runs rfp-cli cleanly. Detect
+# the host arch and prepend box64 explicitly when present so we bypass the
+# unreliable binfmt path.
+RFP_LAUNCHER=()
+if [ "$(uname -m)" = "aarch64" ] && command -v box64 >/dev/null 2>&1; then
+    RFP_LAUNCHER=(box64)
+fi
+
 FILE="${1:-}"
 METHOD="${2:-e2lite}"
 PORT_OVERRIDE="${3:-}"
@@ -86,7 +97,7 @@ case "$METHOD" in
     fi
 
     echo ">> Flashing $FILE via E2 Lite (FINE @ 250 kbps)"
-    exec "$RFP" \
+    exec "${RFP_LAUNCHER[@]}" "$RFP" \
         -device RX72x \
         -tool e2l \
         -if fine \
@@ -112,7 +123,7 @@ case "$METHOD" in
     fi
     echo ">> Flashing $FILE via SCI Boot Mode on $PORT"
     echo "   (requires SW4 Pin1=ON, Pin2=OFF, and a power-cycle AFTER setting it)"
-    exec "$RFP" \
+    exec "${RFP_LAUNCHER[@]}" "$RFP" \
         -device RX72x \
         -port "$PORT" \
         -if uart \

@@ -503,7 +503,7 @@ typedef enum : uint16_t {
  *
  * @invariant Values must be contiguous starting at 0 so they can be used
  *            as array indices into k_motor_count-sized arrays
- * @invariant k_motor_back_right must equal k_motor_count - 1
+ * @invariant k_motor_back_left must equal k_motor_count - 1 (highest index)
  *
  * @code
  * // Iterating over all motors:
@@ -518,10 +518,10 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_motor_front_left  = 0, /**< Front-left motor: array index 0 */
-  k_motor_front_right = 1, /**< Front-right motor: array index 1 */
-  k_motor_back_left   = 2, /**< Back-left motor: array index 2 */
-  k_motor_back_right  = 3, /**< Back-right motor: array index 3 */
+  k_motor_front_left  = 0, /**< Front-left motor (GPTW0 -> P23/P17) */
+  k_motor_front_right = 1, /**< Front-right motor (GPTW1 -> P22/PC3) */
+  k_motor_back_right  = 2, /**< Back-right motor (GPTW2 -> PE3/P86) */
+  k_motor_back_left   = 3, /**< Back-left motor (GPTW3 -> PE7/PC6) */
 } motor_index_t;
 
 /**
@@ -1906,6 +1906,18 @@ static rx_err_t internal_init_motor_stack(void)
     k_gptw_channel_3  /* Motor 3: Rear-right */
   };
 
+  /* Per-motor pin map -- pulled from src/inc/hardware_config.h so the lib
+   * never has to know about board-specific pin assignments. output_a maps
+   * to IN2 (direction), output_b to IN1 (PWM). */
+  const uint8_t in2_ports[k_motor_count] = {(uint8_t)k_motor_0_in2_port, (uint8_t)k_motor_1_in2_port,
+                                             (uint8_t)k_motor_2_in2_port, (uint8_t)k_motor_3_in2_port};
+  const uint8_t in2_pins[k_motor_count]  = {(uint8_t)k_motor_0_in2_pin,  (uint8_t)k_motor_1_in2_pin,
+                                             (uint8_t)k_motor_2_in2_pin, (uint8_t)k_motor_3_in2_pin};
+  const uint8_t in1_ports[k_motor_count] = {(uint8_t)k_motor_0_in1_port, (uint8_t)k_motor_1_in1_port,
+                                             (uint8_t)k_motor_2_in1_port, (uint8_t)k_motor_3_in1_port};
+  const uint8_t in1_pins[k_motor_count]  = {(uint8_t)k_motor_0_in1_pin,  (uint8_t)k_motor_1_in1_pin,
+                                             (uint8_t)k_motor_2_in1_pin, (uint8_t)k_motor_3_in1_pin};
+
   for (uint8_t i = 0; i < k_motor_count; i++) {
     rx_motor_config_t motor_config = {
       .channel      = gptw_channels[i],
@@ -1913,7 +1925,11 @@ static rx_err_t internal_init_motor_stack(void)
       .output_b     = k_gptw_output_b,      /* IN1 (half-bridge B) */
       .pwm_freq_hz  = k_motor_pwm_freq_hz,  /* 20 kHz PWM */
       .dead_time_ns = k_motor_dead_time_ns, /* 1 us dead-time */
-      .invert_pwm   = false                 /* Active-high logic */
+      .invert_pwm   = false,                /* Active-high logic */
+      .port_a_idx   = in2_ports[i],
+      .bit_a        = in2_pins[i],
+      .port_b_idx   = in1_ports[i],
+      .bit_b        = in1_pins[i],
     };
 
     err = rx_motor_init(&s_motors[i], &motor_config);
@@ -2410,28 +2426,49 @@ static void internal_control_loop_iteration(void)
     return;
   }
 
+  /* Per-motor direction sign. Indexed by motor array index.
+   * +1 = motor wired so a positive duty drives the wheel in the robot's
+   *      forward direction.
+   * -1 = motor wired backwards (positive duty rolls the wheel backward).
+   *
+   * Both LEFT-side wheels (FL = idx 0, BL = idx 3) are wired mirrored
+   * relative to the right side. The sign is applied to BOTH the
+   * encoder reading (so PID always sees robot-frame velocity) AND the
+   * PID output (so the duty written to the H-bridge produces the
+   * commanded direction). Without inverting both, the closed loop runs
+   * away on the left wheels. */
+  static const int8_t k_motor_direction_signs[k_motor_count] = {
+    [k_motor_front_left]  = -1,
+    [k_motor_front_right] = +1,
+    [k_motor_back_right]  = +1,
+    [k_motor_back_left]   = -1,
+  };
+
   /* Process each motor */
   for (uint8_t i = 0; i < k_motor_count; i++) {
-    /* 1. Read encoder velocity */
-    float current_velocity_mps = 0.0F;
-    err                        = internal_read_encoder_velocity(&current_velocity_mps, s_dt_sec, i);
-    if (err != k_rx_ok) {
-      current_velocity_mps = 0.0F;
-    }
+    const float sign = (float)k_motor_direction_signs[i];
 
-    /* 2. Get target velocity */
+    /* 1. Read encoder velocity (motor-frame), convert to robot-frame */
+    float current_velocity_motor = 0.0F;
+    err = internal_read_encoder_velocity(&current_velocity_motor, s_dt_sec, i);
+    if (err != k_rx_ok) {
+      current_velocity_motor = 0.0F;
+    }
+    const float current_velocity_mps = sign * current_velocity_motor;
+
+    /* 2. Get target velocity (already in robot-frame from comm_task) */
     const float target_velocity_mps = internal_get_target_velocity(&cmd, i);
 
-    /* 3. Compute PID output */
-    float pwm_duty = 0.0F;
-    err =
-      rx_pid_compute(&s_pids[i], target_velocity_mps, current_velocity_mps, s_dt_sec, &pwm_duty);
+    /* 3. Compute PID output (robot-frame duty) */
+    float pwm_duty_robot = 0.0F;
+    err = rx_pid_compute(&s_pids[i], target_velocity_mps, current_velocity_mps, s_dt_sec,
+                         &pwm_duty_robot);
     if (err != k_rx_ok) {
-      pwm_duty = 0.0F;
+      pwm_duty_robot = 0.0F;
     }
 
-    /* 4. Apply PWM duty */
-    (void)rx_motor_set_duty(&s_motors[i], pwm_duty);
+    /* 4. Convert duty to motor-frame and apply */
+    (void)rx_motor_set_duty(&s_motors[i], sign * pwm_duty_robot);
   }
 }
 

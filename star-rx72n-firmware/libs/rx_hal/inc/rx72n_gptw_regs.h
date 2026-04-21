@@ -717,7 +717,11 @@ typedef enum : uint8_t {
    * @warning Verify this value against RX72N Hardware Manual.
    * PSEL values are chip-specific.
    */
-  k_pfs_psel_gptw = 0x14, /**< PSEL value for GPTW alternate function */
+  k_pfs_psel_gptw = 0x1E, /**< PSEL value for GPTW (GTIOC*) alternate function.
+                            * Per RX72N HW manual Tables 23.4, 23.6, 23.10, 23.14,
+                            * 23.16: 0b011110 selects GTIOC on every port that
+                            * exposes it. Old 0x14 selected an unrelated
+                            * function and silently left the pin un-muxed. */
 } gptw_mpc_psel_t;
 
 /* =============================================================================
