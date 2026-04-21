@@ -246,8 +246,7 @@ void test_init_tmr0_independent(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_init(&cfg));
   TEST_ASSERT_EQUAL_UINT32(0U, g_mock_onewire_system_regs.mstpcra & (1U << k_tmr_test_mstpa5_bit));
   TEST_ASSERT_EQUAL_UINT8(0U, tmr0()->tccr);
-  TEST_ASSERT_EQUAL_UINT8(k_tmr_tcr_cclr_cmp_match_a,
-                          tmr0()->tcr & k_tmr_tcr_cclr_mask);
+  TEST_ASSERT_EQUAL_UINT8(k_tmr_tcr_cclr_cmp_match_a, tmr0()->tcr & k_tmr_tcr_cclr_mask);
   TEST_ASSERT_EQUAL_UINT8(0U, tmr0()->tcnt);
 }
 
@@ -306,8 +305,7 @@ void test_init_cascade_tmr01(void)
   cfg.mode            = k_tmr_mode_16bit_cascade;
   cfg.clock_source    = k_tmr_clock_pclk_div_1024;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_init(&cfg));
-  TEST_ASSERT_EQUAL_UINT8(k_tmr_tccr_css_cascade,
-                          tmr1()->tccr & k_tmr_tccr_css_mask);
+  TEST_ASSERT_EQUAL_UINT8(k_tmr_tccr_css_cascade, tmr1()->tccr & k_tmr_tccr_css_mask);
 }
 
 /**
@@ -322,8 +320,7 @@ void test_init_cascade_tmr23(void)
   cfg.mode            = k_tmr_mode_16bit_cascade;
   cfg.clock_source    = k_tmr_clock_pclk_div_1024;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_init(&cfg));
-  TEST_ASSERT_EQUAL_UINT8(k_tmr_tccr_css_cascade,
-                          tmr3()->tccr & k_tmr_tccr_css_mask);
+  TEST_ASSERT_EQUAL_UINT8(k_tmr_tccr_css_cascade, tmr3()->tccr & k_tmr_tccr_css_mask);
 }
 
 /* =============================================================================
@@ -342,8 +339,7 @@ void test_init_counter_clear_disabled(void)
   rx_tmr_config_t cfg = make_default_config(k_tmr_channel_0);
   cfg.counter_clear   = k_tmr_clear_disabled;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_init(&cfg));
-  TEST_ASSERT_EQUAL_UINT8(k_tmr_tcr_cclr_disabled,
-                          tmr0()->tcr & k_tmr_tcr_cclr_mask);
+  TEST_ASSERT_EQUAL_UINT8(k_tmr_tcr_cclr_disabled, tmr0()->tcr & k_tmr_tcr_cclr_mask);
   TEST_ASSERT_EQUAL_UINT8(0U, tmr0()->tcnt);
 }
 
@@ -358,8 +354,7 @@ void test_init_counter_clear_cmp_match_b(void)
   rx_tmr_config_t cfg = make_default_config(k_tmr_channel_0);
   cfg.counter_clear   = k_tmr_clear_cmp_match_b;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_init(&cfg));
-  TEST_ASSERT_EQUAL_UINT8(k_tmr_tcr_cclr_cmp_match_b,
-                          tmr0()->tcr & k_tmr_tcr_cclr_mask);
+  TEST_ASSERT_EQUAL_UINT8(k_tmr_tcr_cclr_cmp_match_b, tmr0()->tcr & k_tmr_tcr_cclr_mask);
   TEST_ASSERT_EQUAL_UINT8(0U, tmr0()->tcnt);
 }
 
@@ -374,8 +369,7 @@ void test_init_counter_clear_external_reset(void)
   rx_tmr_config_t cfg = make_default_config(k_tmr_channel_0);
   cfg.counter_clear   = k_tmr_clear_external_reset;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_init(&cfg));
-  TEST_ASSERT_EQUAL_UINT8(k_tmr_tcr_cclr_external_sig,
-                          tmr0()->tcr & k_tmr_tcr_cclr_mask);
+  TEST_ASSERT_EQUAL_UINT8(k_tmr_tcr_cclr_external_sig, tmr0()->tcr & k_tmr_tcr_cclr_mask);
   TEST_ASSERT_EQUAL_UINT8(0U, tmr0()->tcnt);
 }
 
@@ -395,8 +389,7 @@ void test_init_irq_mask_cmp_match_b(void)
   rx_tmr_config_t cfg = make_default_config(k_tmr_channel_0);
   cfg.irq_mask        = k_tmr_irq_cmp_match_b;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_init(&cfg));
-  TEST_ASSERT_EQUAL_UINT8(k_tmr_test_tcr_cmieb_mask,
-                          tmr0()->tcr & k_tmr_test_tcr_cmieb_mask);
+  TEST_ASSERT_EQUAL_UINT8(k_tmr_test_tcr_cmieb_mask, tmr0()->tcr & k_tmr_test_tcr_cmieb_mask);
   TEST_ASSERT_EQUAL_UINT8(0U, tmr0()->tcr & k_tmr_test_tcr_ovie_mask);
 }
 
@@ -411,8 +404,7 @@ void test_init_irq_mask_overflow(void)
   rx_tmr_config_t cfg = make_default_config(k_tmr_channel_0);
   cfg.irq_mask        = k_tmr_irq_overflow;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_init(&cfg));
-  TEST_ASSERT_EQUAL_UINT8(k_tmr_test_tcr_ovie_mask,
-                          tmr0()->tcr & k_tmr_test_tcr_ovie_mask);
+  TEST_ASSERT_EQUAL_UINT8(k_tmr_test_tcr_ovie_mask, tmr0()->tcr & k_tmr_test_tcr_ovie_mask);
   TEST_ASSERT_EQUAL_UINT8(0U, tmr0()->tcr & k_tmr_test_tcr_cmieb_mask);
 }
 
@@ -434,8 +426,7 @@ void test_init_irq_mask_all(void)
     expected,
     tmr0()->tcr &
       (uint8_t)(k_tmr_test_tcr_cmieb_mask | k_tmr_test_tcr_cmiea_mask | k_tmr_test_tcr_ovie_mask));
-  TEST_ASSERT_EQUAL_UINT8(k_tmr_tcr_cclr_cmp_match_a,
-                          tmr0()->tcr & k_tmr_tcr_cclr_mask);
+  TEST_ASSERT_EQUAL_UINT8(k_tmr_tcr_cclr_cmp_match_a, tmr0()->tcr & k_tmr_tcr_cclr_mask);
 }
 
 /* =============================================================================
@@ -780,8 +771,7 @@ void test_start_cascade_tmr01_reprograms_paired(void)
   tmr1()->tccr = 0U; /* Simulate post-stop register state */
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_start(k_tmr_channel_0));
-  TEST_ASSERT_EQUAL_UINT8(k_tmr_tccr_css_cascade,
-                          tmr1()->tccr & k_tmr_tccr_css_mask);
+  TEST_ASSERT_EQUAL_UINT8(k_tmr_tccr_css_cascade, tmr1()->tccr & k_tmr_tccr_css_mask);
 }
 
 /**
@@ -801,8 +791,7 @@ void test_start_cascade_tmr23_reprograms_paired(void)
   tmr3()->tccr = 0U;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_start(k_tmr_channel_2));
-  TEST_ASSERT_EQUAL_UINT8(k_tmr_tccr_css_cascade,
-                          tmr3()->tccr & k_tmr_tccr_css_mask);
+  TEST_ASSERT_EQUAL_UINT8(k_tmr_tccr_css_cascade, tmr3()->tccr & k_tmr_tccr_css_mask);
 }
 
 /**
@@ -1372,8 +1361,7 @@ void test_deinit_cascade_clears_paired_odd_channel(void)
   cfg.mode            = k_tmr_mode_16bit_cascade;
   cfg.clock_source    = k_tmr_clock_pclk_div_1024;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_init(&cfg));
-  TEST_ASSERT_EQUAL_UINT8(k_tmr_tccr_css_cascade,
-                          tmr1()->tccr & k_tmr_tccr_css_mask);
+  TEST_ASSERT_EQUAL_UINT8(k_tmr_tccr_css_cascade, tmr1()->tccr & k_tmr_tccr_css_mask);
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_tmr_deinit(k_tmr_channel_0));
   TEST_ASSERT_EQUAL_UINT8(0U, tmr1()->tccr);
