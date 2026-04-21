@@ -15,7 +15,7 @@
  *
  * - **CMT0 peripheral**: Simplest timer on RX72N, dedicated to system tick
  * - **100 Hz tick rate**: ThreadX standard (TX_TIMER_TICKS_PER_SECOND = 100)
- * - **PCLKB/128 divider**: Achieves exact 100.00 Hz with 60 MHz PCLKB
+ * - **PCLKB/32 divider**: Achieves exact 100.00 Hz with 60 MHz PCLKB
  * - **Priority 3/15**: Higher than app tasks, lower than critical motor control
  * - **Zero drift**: Hardware compare match ensures no timing accumulation error
  *
@@ -25,9 +25,9 @@
  * Hardware:
  *   PCLKB (60 MHz)
  *      v
- *   CMT0 (/128) -> 468.75 kHz
+ *   CMT0 (/32) -> 1.875 MHz
  *      v
- *   Compare: 4687 -> 100.00 Hz interrupt
+ *   Compare: 18749 -> 100.00 Hz interrupt
  *      v
  * Software:
  *   cmt0_isr() (this file)
@@ -72,17 +72,17 @@
  *
  * **Clock tree**:
  * @f[
- *   f_{CMT} = \frac{f_{PCLKB}}{Divider} = \frac{60\text{ MHz}}{128} = 468.75\text{ kHz}
+ *   f_{CMT} = \frac{f_{PCLKB}}{Divider} = \frac{60\text{ MHz}}{32} = 1.875\text{ MHz}
  * @f]
  *
  * **Compare match value**:
  * @f[
- *   CMCOR = \frac{f_{CMT}}{f_{tick}} - 1 = \frac{468750\text{ Hz}}{100\text{ Hz}} - 1 = 4687
+ *   CMCOR = \frac{f_{CMT}}{f_{tick}} - 1 = \frac{1875000\text{ Hz}}{100\text{ Hz}} - 1 = 18749
  * @f]
  *
  * **Actual tick frequency**:
  * @f[
- *   f_{actual} = \frac{468750}{4687 + 1} = 100.0000\text{ Hz}
+ *   f_{actual} = \frac{1875000}{18749 + 1} = 100.0000\text{ Hz}
  * @f]
  *
  * **Timing accuracy**: Exact 10.000 ms (zero error due to integer division)
@@ -222,8 +222,8 @@ static const char* const s_tag = "TIMER";
  * **Clock calculation derivation**:
  * @f[
  *   CMCOR = \frac{f_{PCLKB}}{Divider \times f_{target}} - 1
- *         = \frac{60{,}000{,}000}{128 \times 100} - 1
- *         = 4687
+ *         = \frac{60{,}000{,}000}{32 \times 100} - 1
+ *         = 18749
  * @f]
  *
  * **Priority allocation rationale**:
@@ -256,11 +256,11 @@ typedef enum : uint16_t {
    * @details
    * CMT0 CMCOR register value. When CMCNT reaches this value, interrupt fires
    * and counter resets to 0. Calculated for exact 100 Hz with zero drift.
-   * @par Value: 4687 counts
-   * @par Derivation: (60 MHz / 128 / 100 Hz) - 1 = 4687
+   * @par Value: 18749 counts
+   * @par Derivation: (60 MHz / 32 / 100 Hz) - 1 = 18749
    * @par Accuracy: 100.0000 Hz (integer division, zero error)
    */
-  k_cmt0_compare_match = 4687,
+  k_cmt0_compare_match = 18749,
 
   /**
    * @brief CMT0 interrupt priority level in ICU
@@ -282,10 +282,10 @@ typedef enum : uint16_t {
  * Bit field values for CMT0.CMCR register configuration. CMCR controls
  * clock source, divider, and interrupt enable.
  *
- * **Bit breakdown for 0x00C2**:
+ * **Bit breakdown for 0x00C1**:
  * - Bit 7: Reserved; write value should be 1 (RX72N Manual Ch31, p.1583)
  * - Bit 6 (CMIE) = 1: Compare match interrupt enabled
- * - Bits 1-0 (CKS) = 10: Clock source = PCLKB/128
+ * - Bits 1-0 (CKS) = 01: Clock source = PCLKB/32
  * - All other bits = 0: Reserved/default
  *
  * @see RX72N User's Manual Chapter 31, Section 31.2.3 - CMCR register description
@@ -294,13 +294,13 @@ typedef enum : uint16_t {
   /**
    * @brief CMCR register configuration for 100 Hz tick with interrupts
    * @details
-   * Configures CMT0 for PCLKB/128 clock source with compare match interrupts.
-   * @par Value: 0x00C2 (binary: 0000_0000_1100_0010)
+   * Configures CMT0 for PCLKB/32 clock source with compare match interrupts.
+   * @par Value: 0x00C1 (binary: 0000_0000_1100_0001)
    * @par Bit 7: Reserved, write value should be 1 (per RX72N manual p.1583)
    * @par Bit 6 (CMIE): 1 = Interrupt enabled
-   * @par Bits 1-0 (CKS): 10 = PCLKB/128 divider
+   * @par Bits 1-0 (CKS): 01 = PCLKB/32 divider
    */
-  k_cmt0_cmcr_config = 0x00C2,
+  k_cmt0_cmcr_config = 0x00C1,
 } cmt0_cmcr_values_t;
 
 /**
@@ -544,8 +544,8 @@ void __attribute__((interrupt)) cmt0_isr(void)
  *
  * **Configuration summary**:
  * - **Clock source**: PCLKB = 60 MHz
- * - **Divider**: /128 -> 468.75 kHz
- * - **Compare value**: 4687 -> 100.00 Hz
+ * - **Divider**: /32 -> 1.875 MHz
+ * - **Compare value**: 18749 -> 100.00 Hz
  * - **Interrupt priority**: 3/15 (higher than app tasks, lower than motor control)
  * - **Tick period**: 10.000 ms (exact, zero drift)
  *
@@ -555,7 +555,7 @@ void __attribute__((interrupt)) cmt0_isr(void)
  *
  * Func box Func [label="Validate registers"];
  * Func => CMT_CTRL [label="Stop: CMSTR0 &= ~0x01"];
- * Func => CMT0 [label="Configure: CMCR = 0x0042"];
+ * Func => CMT0 [label="Configure: CMCR = 0x00C1"];
  * Func => CMT0 [label="Set compare: CMCOR = 4687"];
  * Func => CMT0 [label="Reset count: CMCNT = 0"];
  * Func => ICU [label="Clear: IR = 0"];
@@ -710,11 +710,11 @@ rx_err_t timer_init(void)
   cmt_ctrl()->cmstr0 &= (uint16_t) ~(uint16_t)k_cmt0_cmstr_start_bit;
 
   /* Configure CMT0 */
-  /* CMCR = 0x00C2: bit7=1 (reserved, write-1 per manual), bit6=1 (CMIE), bits1-0=10 (PCLKB/128) */
+  /* CMCR = 0x00C1: bit7=1 (reserved, write-1 per manual), bit6=1 (CMIE), bits1-0=01 (PCLKB/32) */
   cmt0()->cmcr = k_cmt0_cmcr_config;
 
   /* Set compare match value for 100 Hz tick
-     * CMCOR = (60,000,000 / 128 / 100) - 1 = 4687 */
+     * CMCOR = (60,000,000 / 32 / 100) - 1 = 18749 */
   cmt0()->cmcor = k_cmt0_compare_match;
 
   /* Reset counter */
@@ -850,26 +850,26 @@ rx_err_t timer_stop(void)
  * 5. Store count value to output parameter
  *
  * **Counter behavior**:
- * - Increments every 1/(468.75 kHz) = 2.133 us
- * - Resets to 0 when reaching CMCOR (4687)
+ * - Increments every 1/(1.875 MHz) = 0.533 us
+ * - Resets to 0 when reaching CMCOR (18749)
  * - Wraps every 10 ms (one system tick)
  * - Can be read at any time without affecting timer operation
  *
  * **Timing resolution**:
  * @f[
- *   \text{Resolution} = \frac{1}{f_{CMT}} = \frac{1}{468750\text{ Hz}} = 2.133\text{ us}
+ *   \text{Resolution} = \frac{1}{f_{CMT}} = \frac{1}{1875000\text{ Hz}} = 0.533\text{ us}
  * @f]
  *
  * **Maximum readable value**:
  * @f[
- *   \text{Max count} = CMCOR = 4687 \approx 10\text{ ms}
+ *   \text{Max count} = CMCOR = 18749 \approx 10\text{ ms}
  * @f]
  *
  * @param[out] count Pointer to uint16_t to store current counter value
  *                   - **Type**: uint16_t*
  *                   - **Valid range**: Must be non-NULL
- *                   - **Output range**: 0 to k_cmt0_compare_match (4687)
- *                   - **Units**: Timer counts (1 count = 2.133 us)
+ *                   - **Output range**: 0 to k_cmt0_compare_match (18749)
+ *                   - **Units**: Timer counts (1 count = 0.533 us)
  *                   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
  *                   - **Lifetime**: Caller must ensure pointer valid until return
  *
@@ -883,7 +883,7 @@ rx_err_t timer_stop(void)
  *
  * | Return Value          | Condition                    | *count Value  |
  * |-----------------------|------------------------------|---------------|
- * | k_rx_ok               | Normal operation             | 0 to 4687     |
+ * | k_rx_ok               | Normal operation             | 0 to 18749    |
  * | k_rx_err_null_ptr     | count == nullptr                | Unchanged     |
  * | k_rx_err_hw_unmapped  | cmt0() returned NULL         | Unchanged     |
  * | k_rx_err_hw_error     | *count > 4687                | Invalid value |
@@ -895,7 +895,7 @@ rx_err_t timer_stop(void)
  * @post If error: *count unchanged (nullptr) or contains invalid value (hw_error)
  * @post Timer operation not affected (read-only access)
  *
- * @invariant Return value k_rx_ok guarantees *count in [0, 4687]
+ * @invariant Return value k_rx_ok guarantees *count in [0, 18749]
  *
  * @note **Thread Safety**: Thread-safe for reading. Multiple threads can call
  *       simultaneously. CMCNT is atomic 16-bit register on RX72N. No need for
@@ -922,8 +922,8 @@ rx_err_t timer_stop(void)
  * uint16_t count;
  * rx_err_t err = timer_get_count(&count);
  * if (err == k_rx_ok) {
- *     // Convert to microseconds: count * 2.133 us
- *     float us = count * 2.133f;
+ *     // Convert to microseconds: count * 0.533 us
+ *     float us = count * 0.533f;
  *     rx_log_info("TIMER", "Current time in tick: %.1f us", us);
  * }
  * @endcode
@@ -944,10 +944,10 @@ rx_err_t timer_stop(void)
  * if (end >= start) {
  *     elapsed = end - start;
  * } else {
- *     elapsed = (4687 - start) + end;  // Wrapped
+ *     elapsed = (18749 - start) + end;  // Wrapped
  * }
  *
- * float us = elapsed * 2.133f;
+ * float us = elapsed * 0.533f;
  * rx_log_info("PERF", "motor_update took %.1f us", us);
  * @endcode
  *

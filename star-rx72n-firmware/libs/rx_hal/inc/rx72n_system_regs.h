@@ -1115,25 +1115,39 @@ static inline volatile uint8_t* memwait_reg(void)
 typedef enum : uintptr_t {
   k_ppllcr_addr  = 0x00080048, /**< PPLL Control Register @ 0x00080048 */
   k_ppllcr2_addr = 0x0008004A, /**< PPLL Control Register 2 @ 0x0008004A */
+  k_ppllcr3_addr = 0x0008004B, /**< PPLL Control Register 3 @ 0x0008004B (PPLCK divider) */
 } rx_ppll_addresses_t;
 
 /**
  * @brief PPLL configuration values
  * @details
- * PPLL generates 192 MHz internal clock from 24 MHz main oscillator.
- * PPLLCR3 then divides by 4 to produce 48 MHz USB clock (UCLK).
- * Calculation: 24 MHz * 8 = 192 MHz (PPLL output); 192 / 4 = 48 MHz (UCLK)
+ * PPLL generates 240 MHz internal clock from 24 MHz main oscillator.
+ * PPLLCR3 then divides by 5 to produce 48 MHz USB clock (UCLK).
+ * Calculation: 24 MHz * 10 = 240 MHz (PPLL output); 240 / 5 = 48 MHz (UCLK)
  * - PPLIDIV[1:0] = 00 (divide input by 1, binary 00)
- * - PPLSTC[5:0] = 07h (multiply by 8, STC at bits 13:8)
+ * - PPLSTC[5:0] = 13h (multiply by x10.0, STC=19=0b010011 at bits 13:8; formula (STC+1)/2=mult)
  * - PPLSRCSEL = 0 (main clock source, shared with PLL via PLLCR.PLLSRCSEL)
- * - PPLLCR = 0x0700
+ * - PPLLCR = 0x1300
  *
- * PPLIDIV encoding (bits 1:0): 00=/1, 01=/2, 10=/3, 11=PROHIBITED
- * The value 0x0703 is WRONG: lower byte 0x03 = binary 11 = PROHIBITED.
+ * Per manual Ch09 section 9.2.23 (p366): PPLSTC minimum valid value is 0b010011 (x10.0).
+ * Settings below x10.0 are prohibited -- PPLL output must be 120-240 MHz.
  */
 typedef enum : uint16_t {
-  k_ppll_config_48mhz = 0x0700, /**< PPLLCR: PPLSTC=7 (x8), PPLIDIV=00 (/1): 24MHz*8=192MHz */
+  k_ppll_config_48mhz = 0x1300, /**< PPLLCR: PPLSTC=19 (x10.0), PPLIDIV=00 (/1): 24MHz*10=240MHz */
 } rx_ppll_config_t;
+
+/**
+ * @brief PPLLCR3 frequency divider values
+ * @details
+ * PPLLCR3 PPLCK[3:0] selects the division ratio applied to the PPLL output
+ * before it reaches the USB clock (UCLK) pin via PACKCR.UPLLSEL=1.
+ * Per manual Ch09 section 9.2.25 (p368):
+ * 0001=/2, 0010=/3, 0011=/4, 0100=/5 (settings other than these are prohibited)
+ * Set AFTER PPLL is operating and stable (PPLOVF=1), while USB is stopped.
+ */
+typedef enum : uint8_t {
+  k_ppllcr3_div5 = 0x04, /**< PPLLCR3: PPLCK=0100=/5, 240MHz/5=48MHz USB (manual p368) */
+} rx_ppllcr3_config_t;
 
 /**
  * @brief PPLL control values
@@ -1176,6 +1190,16 @@ static inline volatile uint8_t* ppllcr2_reg(void)
   return (volatile uint8_t*)k_ppllcr2_addr;
 }
 
+/**
+ * @brief Get pointer to PPLLCR3 register
+ * @return Volatile pointer to PPLLCR3 register
+ * @note Set PPLCK[3:0] while PPLL is running and USB module is stopped.
+ */
+static inline volatile uint8_t* ppllcr3_reg(void)
+{
+  return (volatile uint8_t*)k_ppllcr3_addr;
+}
+
 /* =============================================================================
  * Reference Constants for Static Assertions
  * Named constants eliminate magic-number literals in the static_assert checks
@@ -1202,6 +1226,7 @@ typedef enum : uintptr_t {
   k_ref_memwait     = 0x0008101C, /**< MEMWAIT address (Ch09) */
   k_ref_ppllcr      = 0x00080048, /**< PPLLCR address (Ch09) */
   k_ref_ppllcr2     = 0x0008004A, /**< PPLLCR2 address (Ch09) */
+  k_ref_ppllcr3     = 0x0008004B, /**< PPLLCR3 address (Ch09 section 9.2.25, p368) */
 } rx_system_addr_refs_t;
 
 /**
@@ -1355,6 +1380,7 @@ static_assert((uintptr_t)k_memwait_addr == (uintptr_t)k_ref_memwait, "MEMWAIT ad
 /* Verify PPLL addresses match Hardware Manual Ch09 */
 static_assert((uintptr_t)k_ppllcr_addr == (uintptr_t)k_ref_ppllcr, "PPLLCR address incorrect");
 static_assert((uintptr_t)k_ppllcr2_addr == (uintptr_t)k_ref_ppllcr2, "PPLLCR2 address incorrect");
+static_assert((uintptr_t)k_ppllcr3_addr == (uintptr_t)k_ref_ppllcr3, "PPLLCR3 address incorrect");
 
 /* Verify PRCR is NOT embedded in system struct (critical check) */
 static_assert((uintptr_t)(k_prcr_addr - k_system_base_addr) == (uintptr_t)k_prcr_from_sys_base,

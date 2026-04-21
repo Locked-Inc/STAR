@@ -326,22 +326,23 @@ typedef struct {
    * - Bits 4: PM - Parity mode (0=even, 1=odd)
    * - Bits 3: STOP - Stop bits (0=1 bit, 1=2 bits)
    * - Bits 2: MP - Multi-processor mode
-   * - Bits 1-0: CKS - Clock select (00=PCLKA/1, 01=/4, 10=/16, 11=/64)
+   * - Bits 1-0: CKS - Clock select (00=PCLK/1, 01=PCLK/4, 10=PCLK/16, 11=PCLK/64)
    */
   volatile uint8_t smr;
 
   /**
    * @brief Bit Rate Register (BRR) - baud rate divisor
    * @details
-   * Async mode: Baud rate = PCLKA / (64 * 2^(2n-1) * (BRR + 1))
-   * Sync mode:  Bit rate  = PCLKB / (4 * (BRR + 1)) for CKS=0
+   * Async mode: Baud rate = PCLK / (64 * 2^(2n-1) * (BRR + 1))
+   * Sync mode:  Bit rate  = PCLK / (4 * (BRR + 1)) for CKS=0
+   * PCLK = PCLKB (60 MHz) for SCI0-6/12; PCLKA (120 MHz) for SCI7-11.
    *
-   * Common async values at 120 MHz PCLKA, CKS=0:
+   * Common async values at 60 MHz PCLKB (SCI0-6/12), CKS=0:
    * - 9600 baud: BRR = 194
-   * - 38400 baud: BRR = 48
-   * - 115200 baud: BRR = 32
+   * - 38400 baud: BRR = 47
+   * - 115200 baud: BRR = 15
    *
-   * Common sync values at 60 MHz PCLKB, CKS=0:
+   * Common sync values at 60 MHz PCLKB (SCI0-6/12), CKS=0:
    * - BRR=1: 7.5 MHz SPI clock
    * - BRR=3: 3.75 MHz SPI clock
    */

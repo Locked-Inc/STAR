@@ -393,6 +393,33 @@ typedef enum : uint16_t {
 } usb_pipectr_bits_t;
 
 /**
+ * @brief PIPEnCTR bits for pipes 6-9 (manual p.1981)
+ *
+ * @details
+ * Pipes 6-9 are interrupt-only pipes with a reduced control register layout.
+ * Bits ATREPM(b10) and INBUFM(b14) are reserved (not present) compared to
+ * the pipes 1-5 layout in usb_pipectr_bits_t.
+ */
+typedef enum : uint16_t {
+  k_usb_pipe69ctr_pid_mask  = 0x0003, /**< b1:b0: Response PID */
+  k_usb_pipe69ctr_pid_nak   = 0x0000,
+  k_usb_pipe69ctr_pid_buf   = 0x0001,
+  k_usb_pipe69ctr_pid_stall = 0x0002,
+  k_usb_pipe69ctr_pbusy     = (1U << 5),  /**< b5: Pipe busy flag */
+  k_usb_pipe69ctr_sqmon     = (1U << 6),  /**< b6: Sequence toggle bit monitor */
+  k_usb_pipe69ctr_sqset     = (1U << 7),  /**< b7: Sequence toggle bit set */
+  k_usb_pipe69ctr_sqclr     = (1U << 8),  /**< b8: Sequence toggle bit clear */
+  k_usb_pipe69ctr_aclrm     = (1U << 9),  /**< b9: Auto buffer clear mode */
+  k_usb_pipe69ctr_bsts      = (1U << 15), /**< b15: Buffer status flag */
+} usb_pipe69ctr_bits_t;
+
+/* PIPEnTRE bits for pipes 1-5 (manual p.1984) */
+typedef enum : uint16_t {
+  k_usb_pipetre_trclr = (1U << 8), /**< b8: Transaction counter clear */
+  k_usb_pipetre_trenb = (1U << 9), /**< b9: Transaction counter enable */
+} usb_pipetre_bits_t;
+
+/**
  * @brief CFIFOSEL bits (manual p.1942)
  *
  * @note CFIFOSEL has ISEL(b5) for direction select.

@@ -227,9 +227,9 @@ typedef enum : uint32_t {
  * | Bits  | Field     | Description                       |
  * |-------|-----------|-----------------------------------|
  * | 0     | V         | Valid (0=invalid, 1=valid)        |
- * | 1     | UAC.X     | Execute permission (0=no, 1=yes)  |
+ * | 1     | UAC.R     | Read permission (0=no, 1=yes)     |
  * | 2     | UAC.W     | Write permission (0=no, 1=yes)    |
- * | 3     | UAC.R     | Read permission (0=no, 1=yes)     |
+ * | 3     | UAC.X     | Execute permission (0=no, 1=yes)  |
  * | 31:4  | REPN[27:0]| Region End Page Number            |
  *
  * @note Manual ref: Ch17 section 17.2.2
@@ -239,14 +239,14 @@ typedef enum : uint32_t {
   /** @brief Valid bit (bit 0) - Region enabled when set */
   k_repage_v = 0x00000001U,
 
-  /** @brief Execute permission (bit 1) - Allow instruction fetch */
-  k_repage_uac_x = 0x00000002U,
+  /** @brief Read permission (bit 1) - Allow data read */
+  k_repage_uac_r = 0x00000002U,
 
   /** @brief Write permission (bit 2) - Allow data write */
   k_repage_uac_w = 0x00000004U,
 
-  /** @brief Read permission (bit 3) - Allow data read */
-  k_repage_uac_r = 0x00000008U,
+  /** @brief Execute permission (bit 3) - Allow instruction fetch */
+  k_repage_uac_x = 0x00000008U,
 
   /** @brief Access control bits mask (UAC[2:0] = bits 3:1) */
   k_repage_uac_mask = 0x0000000EU,
@@ -322,23 +322,23 @@ typedef enum : uint32_t {
  * | Bits  | Field     | Description                       |
  * |-------|-----------|-----------------------------------|
  * | 0     | -         | Reserved (read as 0, write 0)     |
- * | 1     | UBAC.X    | Execute permission (0=no, 1=yes)  |
+ * | 1     | UBAC.R    | Read permission (0=no, 1=yes)     |
  * | 2     | UBAC.W    | Write permission (0=no, 1=yes)    |
- * | 3     | UBAC.R    | Read permission (0=no, 1=yes)     |
+ * | 3     | UBAC.X    | Execute permission (0=no, 1=yes)  |
  * | 31:4  | -         | Reserved (read as 0, write 0)     |
  *
  * @note Manual ref: Ch17 section 17.2.4
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  /** @brief Execute permission (bit 1) - Allow instruction fetch */
-  k_mpbac_ubac_x = 0x00000002U,
+  /** @brief Read permission (bit 1) - Allow data read */
+  k_mpbac_ubac_r = 0x00000002U,
 
   /** @brief Write permission (bit 2) - Allow data write */
   k_mpbac_ubac_w = 0x00000004U,
 
-  /** @brief Read permission (bit 3) - Allow data read */
-  k_mpbac_ubac_r = 0x00000008U,
+  /** @brief Execute permission (bit 3) - Allow instruction fetch */
+  k_mpbac_ubac_x = 0x00000008U,
 
   /** @brief Access control bits mask (UBAC[2:0] = bits 3:1) */
   k_mpbac_ubac_mask = 0x0000000EU,
@@ -491,14 +491,14 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  /** @brief Execute permission in hit region (bit 1) */
-  k_mhiti_uhaci_x = 0x00000002U,
+  /** @brief Read permission in hit region (bit 1) */
+  k_mhiti_uhaci_r = 0x00000002U,
 
   /** @brief Write permission in hit region (bit 2) */
   k_mhiti_uhaci_w = 0x00000004U,
 
-  /** @brief Read permission in hit region (bit 3) */
-  k_mhiti_uhaci_r = 0x00000008U,
+  /** @brief Execute permission in hit region (bit 3) */
+  k_mhiti_uhaci_x = 0x00000008U,
 
   /** @brief Access control bits mask (bits 3:1) */
   k_mhiti_uhaci_mask = 0x0000000EU,
@@ -561,14 +561,14 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  /** @brief Execute permission in hit region (bit 1) */
-  k_mhitd_uhacd_x = 0x00000002U,
+  /** @brief Read permission in hit region (bit 1) */
+  k_mhitd_uhacd_r = 0x00000002U,
 
   /** @brief Write permission in hit region (bit 2) */
   k_mhitd_uhacd_w = 0x00000004U,
 
-  /** @brief Read permission in hit region (bit 3) */
-  k_mhitd_uhacd_r = 0x00000008U,
+  /** @brief Execute permission in hit region (bit 3) */
+  k_mhitd_uhacd_x = 0x00000008U,
 
   /** @brief Access control bits mask (bits 3:1) */
   k_mhitd_uhacd_mask = 0x0000000EU,
@@ -633,9 +633,9 @@ typedef struct __attribute__((packed)) {
    * @brief Region End Page Number Register (REPAGEn)
    * @details
    * Bits [31:4] = End page number (inclusive)
-   * Bit [3] = Read permission (UAC.R)
+   * Bit [3] = Execute permission (UAC.X)
    * Bit [2] = Write permission (UAC.W)
-   * Bit [1] = Execute permission (UAC.X)
+   * Bit [1] = Read permission (UAC.R)
    * Bit [0] = Valid bit (V)
    */
   volatile uint32_t repage;
@@ -926,11 +926,11 @@ static_assert(offsetof(rx_mpu_region_regs_t, repage) == 4, "REPAGE offset in str
 /* Verify bit definitions */
 static_assert(k_repage_v == 0x01U, "REPAGE V bit must be bit 0");
 
-static_assert(k_repage_uac_x == 0x02U, "REPAGE UAC.X bit must be bit 1");
+static_assert(k_repage_uac_r == 0x02U, "REPAGE UAC.R bit must be bit 1"); /* NOLINT(readability-magic-numbers) */
 
-static_assert(k_repage_uac_w == 0x04U, "REPAGE UAC.W bit must be bit 2");
+static_assert(k_repage_uac_w == 0x04U, "REPAGE UAC.W bit must be bit 2"); /* NOLINT(readability-magic-numbers) */
 
-static_assert(k_repage_uac_r == 0x08U, "REPAGE UAC.R bit must be bit 3");
+static_assert(k_repage_uac_x == 0x08U, "REPAGE UAC.X bit must be bit 3"); /* NOLINT(readability-magic-numbers) */
 
 static_assert(k_mpen_mpen == 0x01U, "MPEN.MPEN bit must be bit 0");
 

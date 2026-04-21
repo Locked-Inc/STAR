@@ -367,8 +367,8 @@ typedef enum : uint8_t {
   k_test_auto_advance_step       = 10, /**< Default auto-advance step (us per call) */
   k_test_port_shift_bits         = 8,  /**< Port shift width in port_pin_t encoding */
   k_test_irq_below_range         = 7,  /**< IRQ number below valid range minimum (8) */
-  k_test_port_gap_value          = 17, /**< Port in gap between k_rx_port_g and k_rx_port_j */
-  k_test_port_j_boundary         = 19, /**< Port boundary value (== k_rx_port_j) */
+  k_test_port_gap_value          = 17, /**< Port in gap between k_rx_port_g and k_rx_port_j (Port H = 0x11, not on 144-pin) */
+  k_test_port_j_boundary         = 18, /**< Port boundary value (== k_rx_port_j = 0x12) */
   k_test_pin_above_max           = 8,  /**< Pin number one above k_rx_pin_max (7) */
   k_test_irq_above_range         = 16, /**< IRQ number above valid range maximum (15) */
   k_test_irq_outside_mock        = 12, /**< IRQ in firmware range but outside mock [8..11] */
@@ -2436,7 +2436,7 @@ void test_hcsr04_trigger_pulse_port_in_gap_returns_error(void)
   rx_hcsr04_t handle;
   /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&handle, 0, sizeof(handle));
-  /* port=17 (0x11): > k_rx_port_g(0x10=16) AND != k_rx_port_j(0x13=19) */
+  /* port=17 (0x11): > k_rx_port_g(0x10=16) AND != k_rx_port_j(0x12=18) */
   handle.trigger_pin =
     /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
     (rx_port_pin_t)(((uint32_t)k_test_port_gap_value << k_test_port_shift_bits) | 0U);
@@ -2453,8 +2453,8 @@ void test_hcsr04_trigger_pulse_port_in_gap_returns_error(void)
  *
  *   (port > k_rx_port_g) && (port != k_rx_port_j)
  *
- * Port 19 (= k_rx_port_j = 0x13): port > k_rx_port_g(16) = TRUE, but
- * port != k_rx_port_j(19) = FALSE.  Short-circuit AND stops here -- the
+ * Port 18 (= k_rx_port_j = 0x12): port > k_rx_port_g(16) = TRUE, but
+ * port != k_rx_port_j(18) = FALSE.  Short-circuit AND stops here -- the
  * if body is not entered.  Pin=0 is also valid, so the function proceeds.
  *
  * @pre Handle not necessarily initialized
@@ -2465,7 +2465,7 @@ void test_hcsr04_trigger_pulse_port_j_boundary_valid(void)
   rx_hcsr04_t handle;
   /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&handle, 0, sizeof(handle));
-  /* port=19 (= k_rx_port_j=0x13): B1=TRUE, B2(port!=j)=FALSE -> port-range if FALSE */
+  /* port=18 (= k_rx_port_j=0x12): B1=TRUE, B2(port!=j)=FALSE -> port-range if FALSE */
   handle.trigger_pin =
     (rx_port_pin_t)(((uint32_t)k_test_port_j_boundary << k_test_port_shift_bits) | 0U);
 
@@ -2479,7 +2479,7 @@ void test_hcsr04_trigger_pulse_port_j_boundary_valid(void)
  *
  * @details
  * Covers the pin-range if TRUE path with valid port (port J, pin=8).
- * port = k_rx_port_j (19): port > k_rx_port_g(16) = TRUE, port != k_rx_port_j = FALSE
+ * port = k_rx_port_j (18): port > k_rx_port_g(16) = TRUE, port != k_rx_port_j = FALSE
  * -> port-range if is FALSE (port J is valid).
  * pin_num = k_test_pin_above_max (8): 8 > k_rx_pin_max(7) = TRUE -> pin-range if taken.
  *
@@ -2491,7 +2491,7 @@ void test_hcsr04_trigger_pulse_port_j_invalid_pin_returns_error(void)
   rx_hcsr04_t handle;
   /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(&handle, 0, sizeof(handle));
-  /* port=19 (k_rx_port_j): port-range check FALSE; pin_num=8 > k_rx_pin_max=7: error */
+  /* port=18 (k_rx_port_j): port-range check FALSE; pin_num=8 > k_rx_pin_max=7: error */
   handle.trigger_pin =
     /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) */
     (rx_port_pin_t)(((uint32_t)k_test_port_j_boundary << k_test_port_shift_bits) |

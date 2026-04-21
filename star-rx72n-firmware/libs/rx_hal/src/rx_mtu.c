@@ -56,11 +56,11 @@
  *
  * | Channel | Base Address | TSTR Register |
  * |---------|--------------|---------------|
- * | MTU0 | 0x000C1290 | TSTRA (bit 0) |
- * | MTU1 | 0x000C1290 | TSTRA (bit 1) |
- * | MTU2 | 0x000C1292 | TSTRA (bit 2) |
+ * | MTU0 | 0x000C1300 | TSTRA (bit 0) |
+ * | MTU1 | 0x000C1380 | TSTRA (bit 1) |
+ * | MTU2 | 0x000C1400 | TSTRA (bit 2) |
  * | MTU3 | 0x000C1200 | TSTRA (bit 6) |
- * | MTU4 | 0x000C1200 | TSTRA (bit 7) |
+ * | MTU4 | 0x000C1201 | TSTRA (bit 7) |
  * | MTU6 | 0x000C1A00 | TSTRB (bit 6) |
  * | MTU7 | 0x000C1A01 | TSTRB (bit 7) |
  *

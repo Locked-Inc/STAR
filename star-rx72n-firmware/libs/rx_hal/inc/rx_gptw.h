@@ -843,7 +843,7 @@ typedef struct {
  *
  * 1. Validate configuration parameters (NULL check, frequency range, wave mode)
  * 2. Calculate period count from frequency and PCLKA
- * 3. Enable GPTW module clock (MSTPCRC.MSTPC10 = 0)
+ * 3. Enable GPTW module clock (MSTPCRA.MSTPA7 = 0)
  * 4. Configure MPC for Port E pins (GTIOC function select)
  * 5. For each channel (0-3):
  *    a. Configure timer mode register (GTCR)

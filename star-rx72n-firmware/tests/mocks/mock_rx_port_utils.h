@@ -45,9 +45,9 @@ extern "C" {
  * rx_port_get_base() to operate on mock registers during host-side testing
  * without any source changes.
  *
- * @param[in] port Port number using k_rx_port_* constants (valid range 0-19;
- *                 ports 0-16 map to ports 0-9/A-F/G; indices 17 and 18 are
- *                 reserved and return nullptr; index 19 (0x13, k_rx_port_j)
+ * @param[in] port Port number using k_rx_port_* constants (valid range 0-18;
+ *                 ports 0-16 map to ports 0-9/A-F/G; index 17 (Port H) is
+ *                 reserved and returns nullptr; index 18 (0x12, k_rx_port_j)
  *                 maps to port J)
  *
  * @return Volatile pointer to the mock port register struct for the given port
@@ -101,8 +101,8 @@ typedef volatile rx_port_regs_t* (*port_accessor_fn_t)(void);
 
 static inline volatile rx_port_regs_t* rx_port_get_base(uint8_t port)
 {
-  /** @brief Covers port constants 0-19 (k_rx_port_j = 0x13 = 19) */
-  enum : uint8_t { k_port_table_size = 20 };
+  /** @brief Covers port constants 0-18 (k_rx_port_j = 0x12 = 18) */
+  enum : uint8_t { k_port_table_size = 19 };
 
   /**
    * @brief Table mapping k_rx_port_* constants to mock port accessor functions

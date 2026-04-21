@@ -447,7 +447,9 @@ static rx_err_t internal_start_oscillators_and_plls(void)
     return pll_err;
   }
 
-  /* Configure PPLL for 48 MHz USB clock: 48 MHz = (24 MHz x 8) / 4 */
+  /* Configure PPLL for 48 MHz USB clock: 48 MHz = (24 MHz x 10) / 5
+   * PPLLCR = 0x1300: PPLSTC=19 (x10.0 per manual p366 table), PPLIDIV=00 (/1)
+   * PPLL output = 240 MHz; PPLLCR3 /5 = 48 MHz */
   *ppllcr_reg()  = k_ppll_config_48mhz;
   *ppllcr2_reg() = k_ppll_enabled;
 
@@ -455,6 +457,12 @@ static rx_err_t internal_start_oscillators_and_plls(void)
   if (ppll_err != k_rx_ok) {
     return ppll_err;
   }
+
+  /* Set PPLLCR3: divide 240 MHz PPLL output by 5 to produce 48 MHz USB clock.
+   * Must be set after PPLL is operating and stable (PPLOVF=1), while USB module
+   * clock supply is stopped (MSTPB19=1 -- still true here, before module_stop_init).
+   * Per manual Ch09 section 9.2.25 (p368): PPLCK=0100 = /5. */
+  *ppllcr3_reg() = k_ppllcr3_div5;
 
   /* Route USB0 UCLK from the PPLL path by setting PACKCR.UPLLSEL=1.
    * Without this, the USB module gets its 48 MHz clock from SCKCR2.UCK

@@ -188,7 +188,7 @@ extern "C" {
  *
  * @note Manual: Ch28.2 - Register Descriptions
  * @see tpu_control() Accessor for control block
- * @see tpu1() Accessor for TPU1 channel (rear-left encoder)
+ * @see tpu1() Accessor for TPU1 channel (back-right encoder)
  * @since Version 1.0.0
  */
 typedef enum : uintptr_t {

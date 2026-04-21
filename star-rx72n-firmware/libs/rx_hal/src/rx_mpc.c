@@ -321,7 +321,6 @@ typedef enum : uint16_t {
   k_mpc_porte_offset = 112, /**< Port E offset: 0x70 (PE0-PE7, PWM) */
   k_mpc_portf_offset = 120, /**< Port F offset: 0x78 (partial on 144-pin) */
   k_mpc_portg_offset = 128, /**< Port G offset: 0x80 (not on 144-pin) */
-  k_mpc_porth_offset = 136, /**< Port H offset: 0x88 (not on 144-pin) */
   k_mpc_portj_offset = 144, /**< Port J offset: 0x90 (PJ3, PJ5 on 144-pin) */
 } mpc_port_offset_t;
 
@@ -405,7 +404,8 @@ typedef enum : uint8_t {
  *
  * @param[in] port Port number (0-9, A-G, J encoded as uint8_t)
  *                 - Valid range: [k_mpc_port_0, k_mpc_port_j]
- *                 - Ports G, H return NULL on 144-pin package
+ *                 - Port G is handled explicitly and returns NULL (not on 144-pin package)
+ *                 - Port H has no k_rx_port_h constant; any raw value in that range falls to default and returns NULL
  * @param[in] pin Pin number within the port
  *                - Valid range: [0, 7]
  *                - Some ports have fewer than 8 pins; caller must verify
@@ -421,7 +421,8 @@ typedef enum : uint8_t {
  * @post No registers modified (read-only address calculation)
  *
  * @note Internal function - not exported in header
- * @note Port G, H availability depends on package (not on 144-pin LFQFP)
+ * @note Port G is explicitly rejected (returns NULL) since it is absent on the 144-pin LFQFP package
+ * @note Port H has no named constant in rx_port_constants.h; a raw value in that range falls to the default case and returns NULL
  *
  * @warning Returned pointer is volatile - must dereference with care
  * @warning Caller must still unlock PWPR before writing to the register
@@ -867,7 +868,7 @@ rx_err_t rx_mpc_set_peripheral(const rx_mpc_peripheral_config_t* config)
  * @post PWPR locked after operation
  *
  * @note Thread safety: Not thread-safe
- * @note STAR project uses GPTW (PSEL=0x07) for motor PWM, not MTU
+ * @note STAR project uses GPTW for motor PWM (see rx_mpc_set_gptw(), PSEL = k_psel_gptw (0x1E)), not MTU
  *
  * @code
  * // Configure P14 for MTU3 PWM output (MTIOCA)
@@ -1178,7 +1179,7 @@ rx_err_t rx_mpc_set_rspi(const rx_port_pin_t pin)
  *
  * @details
  * Convenience wrapper that configures a pin for GPTW operation using
- * PSEL = 0x14. GPTW provides complementary PWM output with dead-time
+ * PSEL = k_psel_gptw (0x1E). GPTW provides complementary PWM output with dead-time
  * insertion for motor control.
  *
  * @param[in] pin GPIO pin identifier for GPTW function
