@@ -141,13 +141,20 @@ void rx_eccram_test_reset_state(void);
 /**
  * @brief Reset all mock state, PRCR, and register areas before each test
  */
+typedef enum : uint8_t {
+  k_test_eccram_dirty_sentinel = 0xAAU, /**< pre-dirty fill byte for ECCRAM region */
+} test_eccram_local_constants_t;
+
 static void test_setup(void)
 {
-  memset(&g_mock_eccram_regs, 0, sizeof(g_mock_eccram_regs));
-  memset(&g_mock_eccram_system_regs, 0, sizeof(g_mock_eccram_system_regs));
-  memset(g_mock_eccram_region,
-         0xAA,
-         sizeof(uint32_t) * (size_t)k_test_region_words); /* pre-dirty to detect fill */
+  g_mock_eccram_regs        = (rx_eccram_regs_t){0};
+  g_mock_eccram_system_regs = (rx_system_regs_t){0};
+  /* Pre-dirty the simulated ECCRAM region with a known sentinel so the
+   * test can detect whether rx_eccram_init() actually zeros it. NOLINT
+   * the memset call below: cert-msc24-c wants memset_s, glibc has none. */
+  // NOLINTNEXTLINE(cert-msc24-c)
+  memset(g_mock_eccram_region, k_test_eccram_dirty_sentinel,
+         sizeof(uint32_t) * (size_t)k_test_region_words);
   g_mock_prcr = 0;
 
   /* Simulate hardware default: MSTPCRC.MSTPC6 = 1 (ECCRAM stopped) */
@@ -180,7 +187,11 @@ void tearDown(void) {}
  */
 static void test_init_rejects_invalid_mode(void)
 {
-  const rx_eccram_mode_t bogus = (rx_eccram_mode_t)0xFF;
+  /* Deliberately inject an out-of-range value to confirm rx_eccram_init
+   * rejects it. clang-analyzer-optin.core.EnumCastOutOfRange flags the
+   * cast; that's the whole point of the test. */
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  const rx_eccram_mode_t bogus = (rx_eccram_mode_t)0xFFU;
   const rx_err_t         err   = rx_eccram_init(bogus);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -202,7 +213,7 @@ static void test_init_relocks_system_prcr(void)
 {
   const rx_err_t err = rx_eccram_init(k_eccram_mode_correct_and_detect);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_HEX16((uint16_t)k_rx_prcr_lock, g_mock_prcr);
+  TEST_ASSERT_EQUAL_HEX16(k_rx_prcr_lock, g_mock_prcr);
 }
 
 /**
@@ -212,8 +223,8 @@ static void test_init_programs_eccrammode_with_check(void)
 {
   const rx_err_t err = rx_eccram_init(k_eccram_mode_correct_and_detect);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  const uint8_t mode = g_mock_eccram_regs.eccrammode & (uint8_t)k_rx_eccrammode_rammod_mask;
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccrammode_ecc_with_check, mode);
+  const uint8_t mode = g_mock_eccram_regs.eccrammode & k_rx_eccrammode_rammod_mask;
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccrammode_ecc_with_check, mode);
 }
 
 /**
@@ -223,8 +234,8 @@ static void test_init_disabled_mode_programs_disabled(void)
 {
   const rx_err_t err = rx_eccram_init(k_eccram_mode_disabled);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  const uint8_t mode = g_mock_eccram_regs.eccrammode & (uint8_t)k_rx_eccrammode_rammod_mask;
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccrammode_ecc_disabled, mode);
+  const uint8_t mode = g_mock_eccram_regs.eccrammode & k_rx_eccrammode_rammod_mask;
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccrammode_ecc_disabled, mode);
 }
 
 /**
@@ -234,7 +245,7 @@ static void test_init_relocks_eccramprcr(void)
 {
   const rx_err_t err = rx_eccram_init(k_eccram_mode_correct_and_detect);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccramprcr_lock, g_mock_eccram_regs.eccramprcr);
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccramprcr_lock, g_mock_eccram_regs.eccramprcr);
 }
 
 /**
@@ -244,7 +255,7 @@ static void test_init_enables_1bit_latch(void)
 {
   const rx_err_t err = rx_eccram_init(k_eccram_mode_correct_and_detect);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccram1stsen_enable, g_mock_eccram_regs.eccram1stsen);
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccram1stsen_enable, g_mock_eccram_regs.eccram1stsen);
 }
 
 /**
@@ -254,7 +265,7 @@ static void test_init_disabled_mode_skips_1bit_latch(void)
 {
   const rx_err_t err = rx_eccram_init(k_eccram_mode_disabled);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccram1stsen_disable, g_mock_eccram_regs.eccram1stsen);
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccram1stsen_disable, g_mock_eccram_regs.eccram1stsen);
 }
 
 /**
@@ -264,7 +275,7 @@ static void test_init_zero_fills_region(void)
 {
   const rx_err_t err = rx_eccram_init(k_eccram_mode_correct_and_detect);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  for (uint32_t i = 0; i < (uint32_t)k_test_region_words; i++) {
+  for (uint32_t i = 0; i < k_test_region_words; i++) {
     TEST_ASSERT_EQUAL_UINT32(0U, g_mock_eccram_region[i]);
   }
 }
@@ -275,7 +286,7 @@ static void test_init_zero_fills_region(void)
 static void test_init_detects_mode_readback_mismatch(void)
 {
   /* Arrange: dirty the real-mode readback (simulate stuck register) */
-  g_mock_eccram_regs.eccrammode = (uint8_t)k_rx_eccrammode_ecc_disabled;
+  g_mock_eccram_regs.eccrammode = k_rx_eccrammode_ecc_disabled;
 
   /* Driver should compare read-back to the value it just wrote. Since the
    * mock only honours writes performed through the driver itself, we
@@ -296,13 +307,13 @@ static void test_init_detects_mode_readback_mismatch(void)
 static void test_init_clears_latched_flags(void)
 {
   /* Arrange: pretend old flags were latched from a previous session */
-  g_mock_eccram_regs.eccram1sts = (uint8_t)k_rx_eccram1sts_ecc1err_mask;
-  g_mock_eccram_regs.eccram2sts = (uint8_t)k_rx_eccram2sts_ecc2err_mask;
+  g_mock_eccram_regs.eccram1sts = k_rx_eccram1sts_ecc1err_mask;
+  g_mock_eccram_regs.eccram2sts = k_rx_eccram2sts_ecc2err_mask;
 
   const rx_err_t err = rx_eccram_init(k_eccram_mode_correct_and_detect);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccram1sts_clear, g_mock_eccram_regs.eccram1sts);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccram2sts_clear, g_mock_eccram_regs.eccram2sts);
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccram1sts_clear, g_mock_eccram_regs.eccram1sts);
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccram2sts_clear, g_mock_eccram_regs.eccram2sts);
 }
 
 /* =============================================================================
@@ -324,8 +335,8 @@ static void test_get_error_status_null_ptr(void)
  */
 static void test_get_error_status_reports_1bit(void)
 {
-  g_mock_eccram_regs.eccram1sts  = (uint8_t)k_rx_eccram1sts_ecc1err_mask;
-  g_mock_eccram_regs.eccram1ecad = (uint32_t)k_test_failing_addr_1bit;
+  g_mock_eccram_regs.eccram1sts  = k_rx_eccram1sts_ecc1err_mask;
+  g_mock_eccram_regs.eccram1ecad = k_test_failing_addr_1bit;
 
   rx_eccram_status_t status;
   memset(&status, 0, sizeof(status));
@@ -341,8 +352,8 @@ static void test_get_error_status_reports_1bit(void)
  */
 static void test_get_error_status_reports_2bit(void)
 {
-  g_mock_eccram_regs.eccram2sts  = (uint8_t)k_rx_eccram2sts_ecc2err_mask;
-  g_mock_eccram_regs.eccram2ecad = (uint32_t)k_test_failing_addr_2bit;
+  g_mock_eccram_regs.eccram2sts  = k_rx_eccram2sts_ecc2err_mask;
+  g_mock_eccram_regs.eccram2ecad = k_test_failing_addr_2bit;
 
   rx_eccram_status_t status;
   memset(&status, 0, sizeof(status));
@@ -358,13 +369,13 @@ static void test_get_error_status_reports_2bit(void)
  */
 static void test_clear_errors_zeroes_flags(void)
 {
-  g_mock_eccram_regs.eccram1sts = (uint8_t)k_rx_eccram1sts_ecc1err_mask;
-  g_mock_eccram_regs.eccram2sts = (uint8_t)k_rx_eccram2sts_ecc2err_mask;
+  g_mock_eccram_regs.eccram1sts = k_rx_eccram1sts_ecc1err_mask;
+  g_mock_eccram_regs.eccram2sts = k_rx_eccram2sts_ecc2err_mask;
 
   const rx_err_t err = rx_eccram_clear_errors();
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccram1sts_clear, g_mock_eccram_regs.eccram1sts);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccram2sts_clear, g_mock_eccram_regs.eccram2sts);
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccram1sts_clear, g_mock_eccram_regs.eccram1sts);
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccram2sts_clear, g_mock_eccram_regs.eccram2sts);
 }
 
 /* =============================================================================
@@ -400,15 +411,15 @@ static void test_isr_dispatches_1bit_event(void)
   int ctx_marker = 0;
   (void)rx_eccram_register_error_isr(test_on_1bit, test_on_2bit, &ctx_marker);
 
-  g_mock_eccram_regs.eccram1sts  = (uint8_t)k_rx_eccram1sts_ecc1err_mask;
-  g_mock_eccram_regs.eccram1ecad = (uint32_t)k_test_failing_addr_1bit;
+  g_mock_eccram_regs.eccram1sts  = k_rx_eccram1sts_ecc1err_mask;
+  g_mock_eccram_regs.eccram1ecad = k_test_failing_addr_1bit;
 
   rx_eccram_ram_error_isr();
 
-  TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_callback_once, s_test_1bit_count);
+  TEST_ASSERT_EQUAL_UINT32(k_test_callback_once, s_test_1bit_count);
   TEST_ASSERT_EQUAL_UINT((uintptr_t)k_test_failing_addr_1bit, s_test_1bit_addr);
   TEST_ASSERT_EQUAL_PTR(&ctx_marker, s_test_ctx_seen);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccram1sts_clear, g_mock_eccram_regs.eccram1sts);
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccram1sts_clear, g_mock_eccram_regs.eccram1sts);
 }
 
 /**
@@ -419,14 +430,14 @@ static void test_isr_captures_2bit_address_before_clear(void)
   (void)rx_eccram_init(k_eccram_mode_correct_and_detect);
   (void)rx_eccram_register_error_isr(test_on_1bit, test_on_2bit, NULL);
 
-  g_mock_eccram_regs.eccram2sts  = (uint8_t)k_rx_eccram2sts_ecc2err_mask;
-  g_mock_eccram_regs.eccram2ecad = (uint32_t)k_test_failing_addr_2bit;
+  g_mock_eccram_regs.eccram2sts  = k_rx_eccram2sts_ecc2err_mask;
+  g_mock_eccram_regs.eccram2ecad = k_test_failing_addr_2bit;
 
   rx_eccram_ram_error_isr();
 
-  TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_callback_once, s_test_2bit_count);
+  TEST_ASSERT_EQUAL_UINT32(k_test_callback_once, s_test_2bit_count);
   TEST_ASSERT_EQUAL_UINT((uintptr_t)k_test_failing_addr_2bit, s_test_2bit_addr);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccram2sts_clear, g_mock_eccram_regs.eccram2sts);
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccram2sts_clear, g_mock_eccram_regs.eccram2sts);
 }
 
 /**
@@ -439,8 +450,8 @@ static void test_isr_no_flags_is_noop(void)
 
   rx_eccram_ram_error_isr();
 
-  TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_callback_not_called, s_test_1bit_count);
-  TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_callback_not_called, s_test_2bit_count);
+  TEST_ASSERT_EQUAL_UINT32(k_test_callback_not_called, s_test_1bit_count);
+  TEST_ASSERT_EQUAL_UINT32(k_test_callback_not_called, s_test_2bit_count);
 }
 
 /**
@@ -451,13 +462,13 @@ static void test_isr_without_callbacks_still_clears_flags(void)
   (void)rx_eccram_init(k_eccram_mode_correct_and_detect);
   /* Intentionally skip register_error_isr */
 
-  g_mock_eccram_regs.eccram1sts = (uint8_t)k_rx_eccram1sts_ecc1err_mask;
-  g_mock_eccram_regs.eccram2sts = (uint8_t)k_rx_eccram2sts_ecc2err_mask;
+  g_mock_eccram_regs.eccram1sts = k_rx_eccram1sts_ecc1err_mask;
+  g_mock_eccram_regs.eccram2sts = k_rx_eccram2sts_ecc2err_mask;
 
   rx_eccram_ram_error_isr();
 
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccram1sts_clear, g_mock_eccram_regs.eccram1sts);
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccram2sts_clear, g_mock_eccram_regs.eccram2sts);
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccram1sts_clear, g_mock_eccram_regs.eccram1sts);
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccram2sts_clear, g_mock_eccram_regs.eccram2sts);
 }
 
 /* =============================================================================
