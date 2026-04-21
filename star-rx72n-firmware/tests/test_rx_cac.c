@@ -226,12 +226,13 @@ static void test_init_reference_clkout25_returns_invalid_arg(void)
 static void test_init_measured_clock_out_of_range_returns_invalid_arg(void)
 {
   rx_cac_config_t cfg = make_valid_config();
-  /* Write the raw byte through unsigned-char-pointer aliasing -- the standard
-   * permits this (C17 6.5p7 unsigned-char exception) and it avoids both the
-   * typed-enum cast (EnumCastOutOfRange) and memcpy (cert-msc24-c) that would
-   * otherwise be flagged. The whole point of the test is to feed an
+  /* Write the raw byte through a uint8_t-pointer alias -- uint8_t is
+   * typedef'd to unsigned char on every platform we target, so this hits the
+   * C17 6.5p7 unsigned-char aliasing exception and avoids both the
+   * typed-enum cast (EnumCastOutOfRange) and memcpy (cert-msc24-c) that
+   * would otherwise be flagged. The whole point of the test is to feed an
    * out-of-range value past the language-level check. */
-  ((unsigned char*)&cfg.measured_clock)[0] = k_cac_test_clock_out_of_range;
+  ((uint8_t*)&cfg.measured_clock)[0] = k_cac_test_clock_out_of_range;
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_cac_init(&cfg));
   TEST_ASSERT_EQUAL(0U, cac()->cacr1);
 }
@@ -244,7 +245,7 @@ static void test_init_measured_clock_out_of_range_returns_invalid_arg(void)
 static void test_init_target_div_out_of_range_returns_invalid_arg(void)
 {
   rx_cac_config_t cfg                  = make_valid_config();
-  ((unsigned char*)&cfg.target_div)[0] = k_cac_test_div_out_of_range;
+  ((uint8_t*)&cfg.target_div)[0] = k_cac_test_div_out_of_range;
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_cac_init(&cfg));
   TEST_ASSERT_EQUAL(0U, cac()->cacr1);
 }
@@ -257,7 +258,7 @@ static void test_init_target_div_out_of_range_returns_invalid_arg(void)
 static void test_init_reference_div_out_of_range_returns_invalid_arg(void)
 {
   rx_cac_config_t cfg                     = make_valid_config();
-  ((unsigned char*)&cfg.reference_div)[0] = k_cac_test_div_out_of_range;
+  ((uint8_t*)&cfg.reference_div)[0] = k_cac_test_div_out_of_range;
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_cac_init(&cfg));
   TEST_ASSERT_EQUAL(0U, cac()->cacr2);
 }
