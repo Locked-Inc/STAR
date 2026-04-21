@@ -164,10 +164,9 @@ static void internal_enable_poeg_groupbl2_irq(uint8_t priority)
   const uint16_t          vector   = k_poeg_irq_groupbl2_vector;
 
   /* Enable all four POEGG sub-sources in GENBL2 */
-  *poeg_genbl2_reg() |= (uint32_t)((1UL << k_poeg_grpbl2_bit_poeggai) |
-                                   (1UL << k_poeg_grpbl2_bit_poeggbi) |
-                                   (1UL << k_poeg_grpbl2_bit_poeggci) |
-                                   (1UL << k_poeg_grpbl2_bit_poeggdi));
+  *poeg_genbl2_reg() |=
+    (uint32_t)((1UL << k_poeg_grpbl2_bit_poeggai) | (1UL << k_poeg_grpbl2_bit_poeggbi) |
+               (1UL << k_poeg_grpbl2_bit_poeggci) | (1UL << k_poeg_grpbl2_bit_poeggdi));
 
   /* Clear any pending interrupt */
   icu_regs->ir[vector] = k_icu_ir_clear;
@@ -228,7 +227,7 @@ static void internal_configure_gtintad(uint8_t motor_index)
 void __attribute__((interrupt)) poeg_groupbl2_isr(void);
 void __attribute__((interrupt)) poeg_groupbl2_isr(void)
 {
-  const uint32_t grpbl2 = *poeg_grpbl2_reg();
+  const uint32_t grpbl2  = *poeg_grpbl2_reg();
   bool           faulted = false;
 
   for (uint8_t i = 0; i < k_poeg_motor_count; i++) {

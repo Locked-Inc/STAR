@@ -982,20 +982,20 @@ rx_mtu_enable_output(const rx_mtu_channel_t channel, rx_mtu_output_t output, con
 
   switch (output) {
     case k_mtu_output_a:
-      mtu->tiorh =
-        (uint8_t)((mtu->tiorh & k_mtu_tior_keep_high_clear_low) | (tior_value << k_mtu_tior_low_shift));
+      mtu->tiorh = (uint8_t)((mtu->tiorh & k_mtu_tior_keep_high_clear_low) |
+                             (tior_value << k_mtu_tior_low_shift));
       break;
     case k_mtu_output_b:
-      mtu->tiorh =
-        (uint8_t)((mtu->tiorh & k_mtu_tior_keep_low_clear_high) | (tior_value << k_mtu_tior_high_shift));
+      mtu->tiorh = (uint8_t)((mtu->tiorh & k_mtu_tior_keep_low_clear_high) |
+                             (tior_value << k_mtu_tior_high_shift));
       break;
     case k_mtu_output_c:
-      mtu->tiorl =
-        (uint8_t)((mtu->tiorl & k_mtu_tior_keep_high_clear_low) | (tior_value << k_mtu_tior_low_shift));
+      mtu->tiorl = (uint8_t)((mtu->tiorl & k_mtu_tior_keep_high_clear_low) |
+                             (tior_value << k_mtu_tior_low_shift));
       break;
     case k_mtu_output_d:
-      mtu->tiorl =
-        (uint8_t)((mtu->tiorl & k_mtu_tior_keep_low_clear_high) | (tior_value << k_mtu_tior_high_shift));
+      mtu->tiorl = (uint8_t)((mtu->tiorl & k_mtu_tior_keep_low_clear_high) |
+                             (tior_value << k_mtu_tior_high_shift));
       break;
     default:
       return k_rx_err_invalid_arg;

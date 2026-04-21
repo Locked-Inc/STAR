@@ -390,7 +390,7 @@ static void test_poeg_isr_handler(uint8_t motor_index, uint16_t unused_vector)
   const uint32_t grpbl2 = (1UL << s_poeg_grpbl2_bits_test[motor_index]);
 
   bool faulted = false;
-  for (uint8_t i = 0; i < k_poeg_motor_count; i++) {
+  for (uint32_t i = 0; i < k_poeg_motor_count; i++) {
     if ((grpbl2 & (1UL << s_poeg_grpbl2_bits_test[i])) == 0U) {
       continue;
     }
