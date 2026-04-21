@@ -237,12 +237,15 @@ typedef struct {
  * @return rx_err_t Error code
  * @retval k_rx_ok                 Initialization succeeded, CAC ready
  * @retval k_rx_err_null_ptr       config is nullptr
- * @retval k_rx_err_invalid_arg    Invalid clock selection, or callvr >= caulvr
+ * @retval k_rx_err_invalid_arg    Invalid clock/divider, or callvr >= caulvr
  * @retval k_rx_err_invalid_state  CAC already initialized (call deinit first)
  *
  * @pre config != nullptr
  * @pre config->callvr < config->caulvr
  * @pre config->reference_clock is in [k_cac_clock_main .. k_cac_clock_iwdtclk]
+ * @pre config->measured_clock is in [k_cac_clock_main .. k_cac_clock_clkout25]
+ * @pre config->target_div is in [k_cac_target_div_1 .. k_cac_target_div_32]
+ * @pre config->reference_div is in [k_cac_ref_div_32 .. k_cac_ref_div_8192]
  *
  * @post CAC module is powered on (MSTPCRC.MSTPC19 = 0)
  * @post CACR0.CFME = 0 (measurement not yet running)
@@ -259,7 +262,6 @@ typedef struct {
  * @return rx_err_t Error code
  * @retval k_rx_ok                 Measurement started
  * @retval k_rx_err_not_initialized rx_cac_init() not called
- * @retval k_rx_err_hw_error       Readback of CFME did not reflect the write
  *
  * @pre rx_cac_init() returned k_rx_ok
  * @post CACR0.CFME = 1
@@ -274,7 +276,6 @@ typedef struct {
  * @return rx_err_t Error code
  * @retval k_rx_ok                 Measurement stopped
  * @retval k_rx_err_not_initialized rx_cac_init() not called
- * @retval k_rx_err_hw_error       Readback of CFME did not clear
  *
  * @pre rx_cac_init() returned k_rx_ok
  * @post CACR0.CFME = 0
