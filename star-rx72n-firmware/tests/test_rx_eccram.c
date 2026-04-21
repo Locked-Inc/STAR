@@ -150,13 +150,15 @@ static void test_setup(void)
   g_mock_eccram_regs        = (rx_eccram_regs_t){0};
   g_mock_eccram_system_regs = (rx_system_regs_t){0};
   /* Pre-dirty the simulated ECCRAM region with a known sentinel so the
-   * test can detect whether rx_eccram_init() actually zeros it. Cannot
-   * use a compound literal here because the source is a non-constant
-   * byte fill. The trailing NOLINT silences cert-msc24-c (recommends
-   * memset_s) -- glibc never shipped C11 Annex K. */
-  memset(g_mock_eccram_region,
-         k_test_eccram_dirty_sentinel,
-         sizeof(uint32_t) * (size_t)k_test_region_words); // NOLINT(cert-msc24-c)
+   * test can detect whether rx_eccram_init() actually zeros it. A manual
+   * byte-fill loop sidesteps the cert-msc24-c / DeprecatedOrUnsafeBufferHandling
+   * analyzers (which would have us reach for memset_s -- a function glibc
+   * never shipped). */
+  uint8_t* const region_bytes = (uint8_t*)g_mock_eccram_region;
+  const size_t   region_size  = sizeof(uint32_t) * (size_t)k_test_region_words;
+  for (size_t b = 0; b < region_size; b++) {
+    region_bytes[b] = (uint8_t)k_test_eccram_dirty_sentinel;
+  }
   g_mock_prcr = 0;
 
   /* Simulate hardware default: MSTPCRC.MSTPC6 = 1 (ECCRAM stopped) */
@@ -301,8 +303,8 @@ static void test_init_correct_only_mode_programs_with_check(void)
 {
   const rx_err_t err = rx_eccram_init(k_eccram_mode_correct_only);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  const uint8_t mode = g_mock_eccram_regs.eccrammode & (uint8_t)k_rx_eccrammode_rammod_mask;
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccrammode_ecc_with_check, mode);
+  const uint8_t mode = g_mock_eccram_regs.eccrammode & k_rx_eccrammode_rammod_mask;
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccrammode_ecc_with_check, mode);
 }
 
 /**
@@ -322,8 +324,8 @@ static void test_init_detect_only_mode_programs_with_check(void)
 {
   const rx_err_t err = rx_eccram_init(k_eccram_mode_detect_only);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  const uint8_t mode = g_mock_eccram_regs.eccrammode & (uint8_t)k_rx_eccrammode_rammod_mask;
-  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_rx_eccrammode_ecc_with_check, mode);
+  const uint8_t mode = g_mock_eccram_regs.eccrammode & k_rx_eccrammode_rammod_mask;
+  TEST_ASSERT_EQUAL_HEX8(k_rx_eccrammode_ecc_with_check, mode);
 }
 
 /**
@@ -454,7 +456,7 @@ static void test_register_isr_null_1bit_keeps_previous_handler(void)
   int new_ctx = 0;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_eccram_register_error_isr(NULL, test_on_2bit, &new_ctx));
 
-  g_mock_eccram_regs.eccram1sts  = (uint8_t)k_rx_eccram1sts_ecc1err_mask;
+  g_mock_eccram_regs.eccram1sts  = k_rx_eccram1sts_ecc1err_mask;
   g_mock_eccram_regs.eccram1ecad = (uint32_t)k_test_failing_addr_1bit;
 
   rx_eccram_ram_error_isr();
@@ -486,7 +488,7 @@ static void test_register_isr_null_2bit_keeps_previous_handler(void)
   int new_ctx = 0;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_eccram_register_error_isr(test_on_1bit, NULL, &new_ctx));
 
-  g_mock_eccram_regs.eccram2sts  = (uint8_t)k_rx_eccram2sts_ecc2err_mask;
+  g_mock_eccram_regs.eccram2sts  = k_rx_eccram2sts_ecc2err_mask;
   g_mock_eccram_regs.eccram2ecad = (uint32_t)k_test_failing_addr_2bit;
 
   rx_eccram_ram_error_isr();
