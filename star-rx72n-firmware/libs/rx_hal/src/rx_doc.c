@@ -129,46 +129,48 @@ static rx_doc_mode_t s_doc_mode = k_rx_doc_mode_compare;
  * @brief Translate an rx_doc_mode_t into the corresponding DOCR bit pattern
  *
  * @details
- * Builds the DOCR value for the requested mode with DOPCIE disabled (polled,
- * not interrupt-driven) and without setting DOPCFCL (caller OR's it in when a
- * flag clear is needed).
+ * Validates @p mode and, on success, writes the DOCR bit pattern (OMS + DCSEL
+ * + DOPCIE disabled) for the requested mode into @p docr_out. DOPCFCL is left
+ * clear; the caller OR's it in when a flag clear is needed.
  *
- * @param[in] mode Operating mode to encode
+ * Combining the validation and the encoding in a single step eliminates the
+ * dead "unknown mode" branch that would otherwise exist in a pure encoder.
  *
- * @return DOCR value (OMS + DCSEL + DOPCIE bits); 0 if mode invalid
+ * @param[in]  mode      Operating mode to encode
+ * @param[out] docr_out  Receives the encoded DOCR value on success (untouched on error)
  *
- * @pre mode is one of the defined rx_doc_mode_t values
- * @post Returned value has DOPCFCL == 0
+ * @return rx_err_t Error code
+ * @retval k_rx_ok              Mode valid; @p docr_out written
+ * @retval k_rx_err_invalid_arg @p mode is not a valid rx_doc_mode_t value
+ *
+ * @pre  docr_out != NULL
+ * @post On success, @p *docr_out has DOPCFCL == 0
+ *
+ * @par Manual Reference
+ * RX72N HW Manual Section 59.2 "DOCR" (page 2970): OMS[1:0], DCSEL, DOPCIE
+ * layout.
  *
  * @note Pure function -- no side effects, safe to call anywhere.
  * @since Version 1.0.0
  */
-static uint8_t internal_docr_for_mode(rx_doc_mode_t mode)
+static rx_err_t internal_docr_for_mode(rx_doc_mode_t mode, uint8_t* docr_out)
 {
   switch (mode) {
     case k_rx_doc_mode_compare:
-      return (uint8_t)(k_doc_oms_compare | k_doc_dcsel_match | k_doc_dopcie_disabled);
+      *docr_out = (uint8_t)(k_doc_oms_compare | k_doc_dcsel_match | k_doc_dopcie_disabled);
+      return k_rx_ok;
     case k_rx_doc_mode_compare_neq:
-      return (uint8_t)(k_doc_oms_compare | k_doc_dcsel_mismatch | k_doc_dopcie_disabled);
+      *docr_out = (uint8_t)(k_doc_oms_compare | k_doc_dcsel_mismatch | k_doc_dopcie_disabled);
+      return k_rx_ok;
     case k_rx_doc_mode_add:
-      return (uint8_t)(k_doc_oms_add | k_doc_dopcie_disabled);
+      *docr_out = (uint8_t)(k_doc_oms_add | k_doc_dopcie_disabled);
+      return k_rx_ok;
     case k_rx_doc_mode_subtract:
-      return (uint8_t)(k_doc_oms_subtract | k_doc_dopcie_disabled);
+      *docr_out = (uint8_t)(k_doc_oms_subtract | k_doc_dopcie_disabled);
+      return k_rx_ok;
     default:
-      return 0U;
+      return k_rx_err_invalid_arg;
   }
-}
-
-/**
- * @brief Test whether @p mode is a valid rx_doc_mode_t enumerator
- * @param[in] mode Candidate mode value
- * @return true if mode is one of the defined enumerators, false otherwise
- * @since Version 1.0.0
- */
-static bool internal_mode_is_valid(rx_doc_mode_t mode)
-{
-  return (bool)((mode == k_rx_doc_mode_compare) || (mode == k_rx_doc_mode_compare_neq) ||
-                (mode == k_rx_doc_mode_add) || (mode == k_rx_doc_mode_subtract));
 }
 
 /**
@@ -180,50 +182,39 @@ static bool internal_mode_is_valid(rx_doc_mode_t mode)
  *   2. Clear bit k_doc_mstpb_bit (bit 6) in MSTPCRB.
  *   3. Re-lock PRCR via k_rx_prcr_lock.
  *
- * @return rx_err_t
- * @retval k_rx_ok           Module clock enabled
- * @retval k_rx_err_null_ptr System registers not accessible
- *
- * @pre system_regs() returns non-NULL
  * @pre prcr_reg() is writable
  * @post MSTPCRB.MSTPB6 == 0 (DOC module clock running)
  * @post PRCR is re-locked (k_rx_prcr_lock)
  *
+ * @note system_regs() is an inline accessor for a fixed memory-mapped address
+ *       (k_rx_system_regs_base), so it is guaranteed non-NULL and no runtime
+ *       check is performed (would be dead code per NASA Power of 10).
  * @note Not thread-safe; call during single-threaded init.
  * @since Version 1.0.0
  */
-static rx_err_t internal_enable_doc_clock(void)
+static void internal_enable_doc_clock(void)
 {
-  RX_CHECK_NULL_PTR(system_regs(), s_tag, "System registers not accessible");
-
   *prcr_reg() = k_rx_prcr_unlock_prc1;
   system_regs()->mstpcrb &= ~(k_doc_mstpb_bit_one << k_doc_mstpb_bit);
   *prcr_reg() = k_rx_prcr_lock;
-  return k_rx_ok;
 }
 
 /**
  * @brief Disable the DOC module clock by setting MSTPCRB.MSTPB6 under PRCR.PRC1
  *
- * @return rx_err_t
- * @retval k_rx_ok           Module clock disabled
- * @retval k_rx_err_null_ptr System registers not accessible
- *
- * @pre system_regs() returns non-NULL
  * @pre prcr_reg() is writable
  * @post MSTPCRB.MSTPB6 == 1 (DOC module clock stopped)
  * @post PRCR is re-locked
  *
+ * @note See internal_enable_doc_clock() for the rationale on the absence of a
+ *       system_regs() null check.
  * @since Version 1.0.0
  */
-static rx_err_t internal_disable_doc_clock(void)
+static void internal_disable_doc_clock(void)
 {
-  RX_CHECK_NULL_PTR(system_regs(), s_tag, "System registers not accessible");
-
   *prcr_reg() = k_rx_prcr_unlock_prc1;
   system_regs()->mstpcrb |= (k_doc_mstpb_bit_one << k_doc_mstpb_bit);
   *prcr_reg() = k_rx_prcr_lock;
-  return k_rx_ok;
 }
 
 /**
@@ -231,17 +222,20 @@ static rx_err_t internal_disable_doc_clock(void)
  *
  * @details
  * Writes DOCR = (mode bits) | DOPCFCL. DOPCFCL is write-1-to-clear and leaves
- * the mode fields (OMS, DCSEL) unchanged.
+ * the mode fields (OMS, DCSEL) unchanged. s_doc_mode is guaranteed to be a
+ * valid enumerator whenever s_doc_init_state == k_doc_initialized, so the
+ * internal_docr_for_mode() call cannot fail here.
  *
- * @pre Driver must be initialized
+ * @pre Driver must be initialized (s_doc_init_state == k_doc_initialized)
  * @post DOPCF is cleared
  * @post OMS / DCSEL / DOPCIE unchanged from their configured values
  * @since Version 1.0.0
  */
 static void internal_clear_dopcf(void)
 {
-  const uint8_t mode_bits = internal_docr_for_mode(s_doc_mode);
-  doc()->docr             = (uint8_t)(mode_bits | k_doc_dopcfcl_clear);
+  uint8_t mode_bits = 0U;
+  (void)internal_docr_for_mode(s_doc_mode, &mode_bits);
+  doc()->docr = (uint8_t)(mode_bits | k_doc_dopcfcl_clear);
 }
 
 /**
@@ -261,16 +255,15 @@ static bool internal_read_dopcf(void)
 
 rx_err_t rx_doc_init(rx_doc_mode_t mode)
 {
-  if (!internal_mode_is_valid(mode)) {
+  uint8_t        mode_bits = 0U;
+  const rx_err_t err       = internal_docr_for_mode(mode, &mode_bits);
+  if (err != k_rx_ok) {
     rx_log_error(s_tag, "rx_doc_init: invalid mode");
-    return k_rx_err_invalid_arg;
+    return err;
   }
 
-  rx_err_t err = internal_enable_doc_clock();
-  RX_RETURN_ON_ERROR(err, s_tag, "rx_doc_init: failed to enable module clock");
-
-  const uint8_t mode_bits = internal_docr_for_mode(mode);
-  doc()->docr             = (uint8_t)(mode_bits | k_doc_dopcfcl_clear);
+  internal_enable_doc_clock();
+  doc()->docr = (uint8_t)(mode_bits | k_doc_dopcfcl_clear);
 
   s_doc_mode       = mode;
   s_doc_init_state = k_doc_initialized;
@@ -355,9 +348,7 @@ rx_err_t rx_doc_deinit(void)
   }
 
   doc()->docr = 0U;
-
-  rx_err_t err = internal_disable_doc_clock();
-  RX_RETURN_ON_ERROR(err, s_tag, "rx_doc_deinit: failed to disable module clock");
+  internal_disable_doc_clock();
 
   s_doc_init_state = k_doc_not_initialized;
   return k_rx_ok;
