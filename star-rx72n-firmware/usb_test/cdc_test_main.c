@@ -70,6 +70,7 @@ typedef enum : uint8_t {
   k_pb0_mask = (uint8_t)(1U << 0U), /**< PB0 proto port configured */
   k_p71_mask = (uint8_t)(1U << 1U), /**< P71 any RX byte observed */
   k_p72_mask = (uint8_t)(1U << 2U), /**< P72 any USB event observed */
+  k_pb5_mask = (uint8_t)(1U << 5U), /**< PB5 (pin 80) -- AD2 IO7 phase trace */
 } cdc_test_gpio_bits_t;
 
 static inline volatile uint8_t* porta_pdr(void) {
@@ -89,6 +90,33 @@ static inline volatile uint8_t* port7_pdr(void) {
 }
 static inline volatile uint8_t* port7_podr(void) {
   return (volatile uint8_t*)k_port7_podr_addr;
+}
+
+/**
+ * @brief Pulse PB5 (AD2 IO7) N times to mark a firmware phase
+ *
+ * @details
+ * Each pulse is ~5 ms high, 5 ms low using busy loops sized for the LOCO
+ * reset clock.  Safe to call at any clock speed because we just want a
+ * sequence of edges the AD2 logic analyzer can count; exact width is not
+ * important.
+ *
+ * @param[in] count Number of pulses to emit (1..15)
+ */
+static void pb5_mark_phase(uint8_t count) {
+  *portb_pdr() |= k_pb5_mask;
+  *portb_podr() &= (uint8_t)~k_pb5_mask;
+  while (count != 0U) {
+    *portb_podr() |= k_pb5_mask;
+    for (volatile uint32_t d = 0U; d < 500U; d++) {
+      __asm__ volatile("nop");
+    }
+    *portb_podr() &= (uint8_t)~k_pb5_mask;
+    for (volatile uint32_t d = 0U; d < 500U; d++) {
+      __asm__ volatile("nop");
+    }
+    count--;
+  }
 }
 
 /* ==========================================================================
@@ -195,21 +223,23 @@ static void cdc_test_task(ULONG arg) {
   *portb_podr() &= (uint8_t)~k_pb0_mask;
   *port7_podr() &= (uint8_t)~(k_p71_mask | k_p72_mask);
 
-  sci9_debug_puts("\n=== cdc_test task started ===\n");
+  pb5_mark_phase(3U); /* Phase 3: ThreadX task entered */
+  pb5_mark_phase(4U); /* Phase 4: before rx_usb_init (sci9_puts skipped) */
 
   const rx_usb_config_t cfg = {
       .callback = cdc_test_event_cb,
       .ctx      = nullptr,
   };
   const rx_err_t init_err = rx_usb_init(&cfg);
-  sci9_debug_puts("rx_usb_init=");
-  sci9_debug_puthex32((uint32_t)init_err);
-  sci9_debug_puts("\n");
+  pb5_mark_phase(5U); /* Phase 5: rx_usb_init returned */
+  /* Encode init_err on PB5: after phase 5, burst 10 pulses if error, 11 if ok. */
+  pb5_mark_phase((init_err == k_rx_ok) ? 11U : 10U);
 
   uint32_t tick  = 0U;
   uint32_t loops = 0U;
   for (;;) {
     *porta_podr() ^= k_pa7_mask;
+    *portb_podr() ^= k_pb5_mask;
 
     if (rx_usb_is_configured(k_usb_port_proto)) {
       *portb_podr() |= k_pb0_mask;
@@ -310,16 +340,14 @@ static void early_blink(uint8_t count) {
 }
 
 int main(void) {
-  early_blink(1U);
+  pb5_mark_phase(7U);
   clock_init();
-  early_blink(2U);
-
-  sci9_debug_init();
-  sci9_debug_puts("\n\n>>> cdc_test main() alive, clock_init done <<<\n");
+  pb5_mark_phase(1U);
   cmt0_init();
-  sci9_debug_puts(">>> cmt0_init done, entering ThreadX <<<\n");
-
-  early_blink(3U);
+  pb5_mark_phase(2U);
+  sci9_debug_init();
   tx_kernel_enter();
-  return 0;
+  /* never returns */
+  for (;;) {
+  }
 }

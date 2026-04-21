@@ -545,17 +545,6 @@ typedef enum : uint16_t {
   k_usb_syscfg_disabled = 0x0000, /**< USB module disabled (all bits clear) */
 } usb_syscfg_value_t;
 
-/** @brief USB clock-source config written from rx_usb during module enable.
- *  UPLLSEL=0 (PACKCR bit 12) routes UCLK from main PLL via SCKCR2; bit 0 is
- *  reserved and must be 1.  SCKCR2.UCK = /5 gives 240 MHz / 5 = 48 MHz. */
-typedef enum : uint16_t {
-  k_packcr_upllsel_main_pll = 0x0001U, /**< UPLLSEL=0, reserved b0=1 */
-  k_sckcr2_uck_div5_value   = 0x0041U, /**< UCK=/5 for 240 MHz -> 48 MHz */
-} usb_clock_source_value_t;
-
-/** @brief PACKCR register pointer (not part of rx_system_regs_t). */
-static volatile uint16_t* const k_packcr_reg = (volatile uint16_t*)0x00080044U;
-
 /** @brief FIFO operation timeouts */
 typedef enum : uint32_t {
   k_usb_fifo_timeout_iterations = 1000000U, /**< FIFO ready timeout: ~20 ms at 240 MHz,
@@ -601,25 +590,15 @@ static bool s_hw_initialized = false;
 /**
  * @brief Enable USB0 module clock and wait for PLL stabilization
  *
- * Also routes UCLK from the main PLL: PACKCR.UPLLSEL=0 and SCKCR2.UCK=/5
- * (240 MHz / 5 = 48 MHz).  rx_clock_power_init.c leaves both registers at
- * their reset defaults, which gives USB0 no valid clock source even though
- * the PPLL itself is running.  This matches the known-working sequence in
- * usb_test/hoco_pid_fix.c.
+ * UCLK source routing (PACKCR.UPLLSEL and SCKCR2.UCK) is the clock driver's
+ * responsibility -- this module PLL is expected to be running and UCLK must
+ * be 48 MHz before rx_usb_init() is called.  We only release the module-stop
+ * bit for USB0 here.
  */
 static void internal_usb_enable_module_clock(void)
 {
-  /* PACKCR and SCKCR2 sit in the PRC0 (CGC) protection group; MSTPCRB sits
-   * in PRC1.  k_rx_prcr_unlock_prc1_prc3 (0xA50B) actually sets bits 0+1+3,
-   * so it unlocks PRC0+PRC1+PRC3 -- covering everything we need here. */
+  /* MSTPCRB sits in PRC1; k_rx_prcr_unlock_prc1_prc3 unlocks PRC0+PRC1+PRC3. */
   *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
-
-  /* UCLK source: main PLL via SCKCR2 (UPLLSEL=0).  Matches the known-working
-   * hoco_pid_fix.c path: 240 MHz / 5 = 48 MHz.  rx_clock_power_init.c leaves
-   * both registers at their reset defaults, which is why USB0 never gets a
-   * valid clock without this write. */
-  *k_packcr_reg         = k_packcr_upllsel_main_pll;
-  system_regs()->sckcr2 = k_sckcr2_uck_div5_value;
 
   /* Clear module stop bit for USB0 (bit 19 in MSTPCRB) */
   system_regs()->mstpcrb &= ~(1UL << k_mstpb_usb0);
