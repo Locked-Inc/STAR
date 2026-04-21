@@ -35,9 +35,10 @@
 #
 #   bash scripts/hal-audit/launch.sh --preset <name>
 #       Run a named preset. Defined presets:
-#           new-stuff      -> 18-cac, 19-doc, 20-tmr, 21-eccram, 22-usb0
-#                             (the new-peripheral implementation prompts
-#                             added after the round-2 audit)
+#           new-stuff      -> 18-cac, 19-doc, 20-tmr, 21-eccram, 22-usb0,
+#                             23-low-power (the new-peripheral
+#                             implementation prompts added after the
+#                             round-2 audit)
 #           per-peripheral -> 01-system-clock through 16-misc-regs
 #                             (the original audit pass)
 #           cross-check    -> 17-community-cross-check
@@ -117,7 +118,7 @@ usage() { sed -n '3,70p' "$0"; }
 # Resolve a preset name to a comma-separated list of patterns.
 resolve_preset() {
     case "$1" in
-        new-stuff)      echo "18,19,20,21,22" ;;
+        new-stuff)      echo "18,19,20,21,22,23" ;;
         per-peripheral) echo "01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16" ;;
         cross-check)    echo "17" ;;
         *) echo "ERROR: unknown preset '$1' (known: new-stuff, per-peripheral, cross-check)" >&2; exit 2 ;;
