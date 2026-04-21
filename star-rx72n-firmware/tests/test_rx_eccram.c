@@ -157,7 +157,7 @@ static void test_setup(void)
   uint8_t* const region_bytes = (uint8_t*)g_mock_eccram_region;
   const size_t   region_size  = sizeof(uint32_t) * (size_t)k_test_region_words;
   for (size_t b = 0; b < region_size; b++) {
-    region_bytes[b] = (uint8_t)k_test_eccram_dirty_sentinel;
+    region_bytes[b] = k_test_eccram_dirty_sentinel;
   }
   g_mock_prcr = 0;
 
