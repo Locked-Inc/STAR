@@ -46,10 +46,33 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <string.h>
+
 #include "mock_rx_lpc.h"
 #include "rx_err.h"
 #include "rx_lpc.h"
 #include "unity.h"
+
+/**
+ * @enum rx_lpc_test_sentinel_t
+ * @brief Pre-test sentinel values stored in output parameters so the test
+ *        can distinguish "driver did not write" from "driver wrote 0".
+ */
+typedef enum : uint32_t {
+  k_lpc_test_sentinel_pattern_a = 0xDEADBEEFU, /**< Distinct non-zero pattern */
+  k_lpc_test_sentinel_all_ones  = 0xFFFFFFFFU, /**< All bits set sentinel */
+} rx_lpc_test_sentinel_t;
+
+/**
+ * @enum rx_lpc_test_bad_enum_t
+ * @brief Out-of-range bytes injected into typed-enum fields via uint8_t
+ *        aliasing to exercise the driver's bounds checks. Aliasing
+ *        through unsigned char is permitted by C17 6.5p7 and avoids
+ *        clang-analyzer-optin.core.EnumCastOutOfRange.
+ */
+typedef enum : uint8_t {
+  k_lpc_test_bad_enum_byte = 0xFFU, /**< > any defined enumerator */
+} rx_lpc_test_bad_enum_t;
 
 /* =============================================================================
  * Test fixture helpers
@@ -107,7 +130,7 @@ static void test_init_consumes_injected_state(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(rx_lpc_was_deep_standby_wake());
 
-  uint32_t flags = 0xDEADBEEFU;
+  uint32_t flags = k_lpc_test_sentinel_pattern_a;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_lpc_get_wake_flags(&flags));
   TEST_ASSERT_EQUAL_UINT32(0U, flags);
 }
@@ -205,8 +228,11 @@ static void test_set_operating_power_invalid_enum_returns_invalid_arg(void)
   test_setup();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_lpc_init());
 
-  /* A value that is not any of the three defined enumerators */
-  rx_err_t err = rx_lpc_set_operating_power((rx_lpc_opcc_mode_t)0xFFU);
+  /* Inject an out-of-range byte via uint8_t aliasing (C17 6.5p7) so the
+   * typed-enum cast does not trip clang-analyzer EnumCastOutOfRange. */
+  rx_lpc_opcc_mode_t bad_mode;
+  ((uint8_t*)&bad_mode)[0] = k_lpc_test_bad_enum_byte;
+  rx_err_t err             = rx_lpc_set_operating_power(bad_mode);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -284,8 +310,9 @@ static void test_enter_deep_standby_invalid_power_returns_invalid_arg(void)
   test_setup();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_lpc_init());
 
-  rx_err_t err =
-    rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, (rx_lpc_deep_power_t)0xFFU, false);
+  rx_lpc_deep_power_t bad_pwr;
+  ((uint8_t*)&bad_pwr)[0] = k_lpc_test_bad_enum_byte;
+  rx_err_t err = rx_lpc_enter_deep_software_standby(k_lpc_wake_irq0, bad_pwr, false);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -363,7 +390,7 @@ static void test_get_wake_flags_default_is_zero(void)
   test_setup();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_lpc_init());
 
-  uint32_t flags = 0xFFFFFFFFU;
+  uint32_t flags = k_lpc_test_sentinel_all_ones;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_lpc_get_wake_flags(&flags));
   TEST_ASSERT_EQUAL_UINT32(0U, flags);
 }
