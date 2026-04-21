@@ -167,10 +167,8 @@ static void test_init_programs_cacr1_cacr2(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_cac_init(&cfg));
   TEST_ASSERT_EQUAL(k_cac_cacr1_fmcs_main, cac()->cacr1 & k_cac_cacr1_fmcs_mask);
   TEST_ASSERT_EQUAL(k_cac_cacr2_rscs_hoco, cac()->cacr2 & k_cac_cacr2_rscs_mask);
-  TEST_ASSERT_EQUAL(k_cac_cacr2_rcds_div_1024,
-                    cac()->cacr2 & k_cac_cacr2_rcds_mask);
-  TEST_ASSERT_EQUAL(k_cac_cacr2_rps_internal,
-                    cac()->cacr2 & k_cac_cacr2_rps_mask);
+  TEST_ASSERT_EQUAL(k_cac_cacr2_rcds_div_1024, cac()->cacr2 & k_cac_cacr2_rcds_mask);
+  TEST_ASSERT_EQUAL(k_cac_cacr2_rps_internal, cac()->cacr2 & k_cac_cacr2_rps_mask);
 }
 
 static void test_init_twice_returns_invalid_state(void)
