@@ -809,6 +809,19 @@ apply_strict_warnings(test_rx_iwdt)
 apply_test_includes(test_rx_iwdt)
 target_link_libraries(test_rx_iwdt unity)
 
+# Test: Clock Frequency Accuracy Measurement Circuit (CAC) Driver
+add_executable(test_rx_cac
+    test_rx_cac.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_hal/src/rx_cac.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_cac.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_onewire_hw.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_system_regs.c
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_cac)
+apply_test_includes(test_rx_cac)
+target_link_libraries(test_rx_cac unity)
+
 # Test: GPIO (PORT) Register Definitions
 add_executable(test_rx_gpio
     test_rx_gpio.c
@@ -1219,6 +1232,7 @@ set(ALL_TEST_TARGETS
     test_rx_i2c_comm
     test_rx_uart_comm
     test_rx_iwdt
+    test_rx_cac
     test_rx_gpio
     test_rx_mpc
     test_rx_poeg
@@ -1277,6 +1291,7 @@ add_test(NAME test_rx_session COMMAND test_rx_session)
 add_test(NAME test_rx_i2c_comm COMMAND test_rx_i2c_comm)
 add_test(NAME test_rx_uart_comm COMMAND test_rx_uart_comm)
 add_test(NAME test_rx_iwdt COMMAND test_rx_iwdt)
+add_test(NAME test_rx_cac COMMAND test_rx_cac)
 add_test(NAME test_rx_gpio COMMAND test_rx_gpio)
 add_test(NAME test_rx_mpc COMMAND test_rx_mpc)
 add_test(NAME test_rx_poeg COMMAND test_rx_poeg)
