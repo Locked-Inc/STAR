@@ -199,9 +199,9 @@ static uint8_t internal_rcds_bits(rx_cac_ref_div_t div)
  */
 static void internal_module_start(void)
 {
-  *prcr_reg() = (uint16_t)k_rx_prcr_unlock_prc1;
+  *prcr_reg() = k_rx_prcr_unlock_prc1;
   system_regs()->mstpcrc &= ~((uint32_t)1U << (uint32_t)k_cac_mstpc_bit);
-  *prcr_reg() = (uint16_t)k_rx_prcr_lock;
+  *prcr_reg() = k_rx_prcr_lock;
 }
 
 /**
@@ -213,9 +213,9 @@ static void internal_module_start(void)
  */
 static void internal_module_stop(void)
 {
-  *prcr_reg() = (uint16_t)k_rx_prcr_unlock_prc1;
+  *prcr_reg() = k_rx_prcr_unlock_prc1;
   system_regs()->mstpcrc |= ((uint32_t)1U << (uint32_t)k_cac_mstpc_bit);
-  *prcr_reg() = (uint16_t)k_rx_prcr_lock;
+  *prcr_reg() = k_rx_prcr_lock;
 }
 
 /**

@@ -143,6 +143,11 @@ static void test_init_subtract_mode_writes_docr(void)
 
 static void test_init_rejects_invalid_mode(void)
 {
+  /* The whole point of this test is to inject an out-of-range value into
+   * a typed enum and verify the driver rejects it. clang-tidy
+   * (clang-analyzer-optin.core.EnumCastOutOfRange) flags the cast; that's
+   * a false positive in this context -- suppress for this line only. */
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
   const rx_doc_mode_t invalid = (rx_doc_mode_t)k_doc_test_invalid_mode;
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_doc_init(invalid));
 }
@@ -324,8 +329,10 @@ static void test_add_with_carry(void)
   /* Pre-arm DOPCF: simulates hardware flagging carry after the add. */
   mock_rx_doc_set_dopcf(true);
 
-  uint16_t sum      = 0xDEADU;
-  bool     overflow = false;
+  /* arbitrary garbage initialiser proving rx_doc_add overwrites the slot */
+  static const uint16_t k_test_doc_garbage = 0xDEADU;
+  uint16_t              sum                = k_test_doc_garbage;
+  bool                  overflow           = false;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_doc_add((uint16_t)k_doc_test_addend_0001, &sum, &overflow));
   TEST_ASSERT_EQUAL_UINT16((uint16_t)k_doc_test_addend_0001, sum);
   TEST_ASSERT_TRUE(overflow);

@@ -42,6 +42,10 @@
 #           per-peripheral -> 01-system-clock through 16-misc-regs
 #                             (the original audit pass)
 #           cross-check    -> 17-community-cross-check
+#           coverage-backfill
+#                          -> 24..28: backfill rx_{cac,doc,tmr,eccram,lpc}
+#                             unit-test coverage to 100/100/100 and drop
+#                             their excludes from the CI coverage gate
 #       --preset and --only may be combined; results are unioned.
 #
 #   bash scripts/hal-audit/launch.sh --all
@@ -118,10 +122,11 @@ usage() { sed -n '3,70p' "$0"; }
 # Resolve a preset name to a comma-separated list of patterns.
 resolve_preset() {
     case "$1" in
-        new-stuff)      echo "18,19,20,21,22,23" ;;
-        per-peripheral) echo "01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16" ;;
-        cross-check)    echo "17" ;;
-        *) echo "ERROR: unknown preset '$1' (known: new-stuff, per-peripheral, cross-check)" >&2; exit 2 ;;
+        new-stuff)         echo "18,19,20,21,22,23" ;;
+        per-peripheral)    echo "01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16" ;;
+        cross-check)       echo "17" ;;
+        coverage-backfill) echo "24,25,26,27,28" ;;
+        *) echo "ERROR: unknown preset '$1' (known: new-stuff, per-peripheral, cross-check, coverage-backfill)" >&2; exit 2 ;;
     esac
 }
 
