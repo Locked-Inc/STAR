@@ -114,11 +114,11 @@
  *
  * ## Memory Map (Chapter 42 - RIIC)
  *
- * | Channel | Base Address | Pin SCL | Pin SDA | MSTPCRB Bit |
- * |---------|--------------|---------|---------|-------------|
- * | RIIC0   | 0x00088300   | P16     | P17     | MSTPB21     |
- * | RIIC1   | 0x00088320   | P21     | P20     | MSTPB20     |
- * | RIIC2   | 0x00088340   | P66     | P67     | MSTPB19     |
+ * | Channel | Base Address | Pin SCL | Pin SDA | Module Stop Bit |
+ * |---------|--------------|---------|---------|-----------------|
+ * | RIIC0   | 0x00088300   | P16     | P17     | MSTPB21 (MSTPCRB b21) |
+ * | RIIC1   | 0x00088320   | P21     | P20     | MSTPB20 (MSTPCRB b20) |
+ * | RIIC2   | 0x00088340   | P66     | P67     | MSTPC17 (MSTPCRC b17) |
  *
  * ## Register Offsets (per channel)
  *
@@ -283,25 +283,27 @@ typedef enum : uint8_t {
 
 /**
  * @enum riic_module_stop_bits_t
- * @brief RIIC module stop bit positions in MSTPCRB register
+ * @brief RIIC module stop bit positions in MSTPCRB (RIIC0/1) and MSTPCRC (RIIC2)
  *
  * @details
  * The RX72N uses a module stop mechanism to reduce power consumption.
- * Each peripheral can be stopped/started by setting/clearing its
- * corresponding bit in MSTPCRB. RIIC channels must be enabled (bit cleared)
- * before use.
+ * RIIC0 and RIIC1 module stop bits reside in MSTPCRB; RIIC2 resides in
+ * MSTPCRC (manual Ch11, p408-410). RIIC channels must be enabled (bit
+ * cleared) before use.
  *
  * @par Module Enable Procedure
  * 1. Unlock register protection: PRCR = k_rx_prcr_unlock_prc1_prc3
- * 2. Clear module stop bit: MSTPCRB &= ~(1 << k_riic_mstpb_riicX)
+ * 2. RIIC0: MSTPCRB &= ~(1 << k_riic_mstpb_riic0)
+ *    RIIC1: MSTPCRB &= ~(1 << k_riic_mstpb_riic1)
+ *    RIIC2: MSTPCRC &= ~(1 << k_riic_mstpc_riic2)
  * 3. Lock register protection: PRCR = k_rx_prcr_lock
  *
  * @see rx_register_protection.h for PRCR register access
  */
 typedef enum : uint8_t {
-  k_riic_mstpb_riic0     = 21, /**< MSTPCRB bit 21: RIIC0 module stop control */
-  k_riic_mstpb_riic1     = 20, /**< MSTPCRB bit 20: RIIC1 module stop control */
-  k_riic_mstpb_riic2     = 19, /**< MSTPCRB bit 19: RIIC2 module stop control */
+  k_riic_mstpb_riic0     = 21, /**< MSTPCRB bit 21: RIIC0 module stop control (manual p408) */
+  k_riic_mstpb_riic1     = 20, /**< MSTPCRB bit 20: RIIC1 module stop control (manual p408) */
+  k_riic_mstpc_riic2     = 17, /**< MSTPCRC bit 17: RIIC2 module stop control (manual p410) */
   k_riic_mstpb_bit_value = 1,  /**< Single bit value for bit manipulation */
 } riic_module_stop_bits_t;
 
@@ -1485,7 +1487,7 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
   } else if (channel.value == k_riic_channel_1) {
     system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic1);
   } else {
-    system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic2);
+    system_regs()->mstpcrc &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpc_riic2);
   }
 
   *prcr_reg() = k_rx_prcr_lock;
@@ -2122,7 +2124,7 @@ rx_err_t riic_init_peripheral(const riic_channel_t channel, const i2c_device_add
   } else if (channel.value == k_riic_channel_1) {
     system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic1);
   } else {
-    system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic2);
+    system_regs()->mstpcrc &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpc_riic2);
   }
 
   *prcr_reg() = k_rx_prcr_lock;

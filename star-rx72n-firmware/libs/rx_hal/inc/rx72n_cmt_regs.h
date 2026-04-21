@@ -86,8 +86,11 @@
  * @par STAR Project ThreadX Configuration (100 Hz tick)
  * @f[
  * CMCOR = \frac{f_{PCLKB}}{DIV \times f_{tick}} - 1
- *       = \frac{60,000,000}{8 \times 100} - 1 = 74,999
+ *       = \frac{60,000,000}{32 \times 100} - 1 = 18,749
  * @f]
+ *
+ * Note: PCLKB/8 cannot reach 100 Hz -- it requires CMCOR=74999 which exceeds the
+ * 16-bit register maximum of 65535. Use PCLKB/32 (CKS=01) for exact 100 Hz.
  *
  * @par Example: CMT0 Initialization for 100 Hz ThreadX Tick
  * @code
@@ -96,11 +99,11 @@
  * // Stop CMT0 before configuration
  * cmt_ctrl()->cmstr0 &= ~k_rx72n_cmstr0_cmt0_enable;
  *
- * // Configure CMT0: PCLKB/8 = 7.5 MHz, interrupt enable
- * cmt0()->cmcr = 0x0040;  // CKS=00 (PCLKB/8), CMIE=1
+ * // Configure CMT0: PCLKB/32 = 1.875 MHz, interrupt enable, reserved bit7=1
+ * cmt0()->cmcr = 0x00C1;  // CKS=01 (PCLKB/32), CMIE=1, bit7=1(rsvd)
  *
- * // Set compare match value for 100 Hz: 7.5 MHz / 100 - 1 = 74999
- * cmt0()->cmcor = 74999;
+ * // Set compare match value for 100 Hz: 1.875 MHz / 100 - 1 = 18749
+ * cmt0()->cmcor = 18749;
  *
  * // Clear counter
  * cmt0()->cmcnt = 0;
@@ -290,11 +293,13 @@ typedef struct {
    *
    * Period calculation: @f$ T = \frac{(CMCOR + 1) \times DIV}{f_{PCLKB}} @f$
    *
-   * | CMCOR Value | Period @ PCLK/8 (60MHz) |
-   * |-------------|-------------------------|
-   * | 74999       | 10 ms (100 Hz)          |
-   * | 7499        | 1 ms (1000 Hz)          |
-   * | 749         | 100 us (10 kHz)         |
+   * | CMCOR Value | Divider | Period @ 60MHz PCLKB |
+   * |-------------|---------|----------------------|
+   * | 18749       | /32     | 10 ms (100 Hz)       |
+   * | 1874        | /32     | 1 ms (1000 Hz)       |
+   * | 7499        | /8      | 1 ms (1000 Hz)       |
+   *
+   * Note: PCLKB/8 cannot reach 100 Hz (requires CMCOR=74999 > uint16_t max 65535).
    */
   volatile uint16_t cmcor;
 } rx_cmt_channel_regs_t;
@@ -415,9 +420,9 @@ typedef enum : uint8_t {
  *
  * @par Example
  * @code
- * // Configure CMT0 for 100 Hz interrupt with PCLK/8 divider
- * cmt0()->cmcr = 0x0040;   // CKS=00 (PCLKB/8), CMIE=1
- * cmt0()->cmcor = 74999;   // 60MHz/8/100Hz - 1
+ * // Configure CMT0 for 100 Hz interrupt with PCLKB/32 divider
+ * cmt0()->cmcr = 0x00C1;   // CKS=01 (PCLKB/32), CMIE=1, bit7=1(rsvd)
+ * cmt0()->cmcor = 18749;   // 60MHz/32/100Hz - 1
  * cmt0()->cmcnt = 0;       // Clear counter
  * @endcode
  *

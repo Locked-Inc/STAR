@@ -965,7 +965,7 @@ static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t          
  * 2. Validate channel range [0-3]
  * 3. Get channel register base address
  * 4. Calculate period from frequency and wave mode
- * 5. Enable GPTW module clock (MSTPCRC.MSTPC10)
+ * 5. Enable GPTW module clock (MSTPCRA.MSTPA7)
  * 6. Stop timer if already running
  * 7. Configure GPTW hardware registers (GTCR, GTIOR, GTPR, etc.)
  * 8. Configure MPC for Port E alternate function
@@ -1881,7 +1881,7 @@ static rx_err_t internal_configure_channel_staggered(const rx_gptw_channel_t cha
  * ## Implementation Overview
  *
  * 1. **Validate inputs**: NULL check, frequency > 0, valid wave_mode
- * 2. **Enable module clock**: Clear MSTPCRC.MSTPC10
+ * 2. **Enable module clock**: Clear MSTPCRA.MSTPA7
  * 3. **Stop all channels**: Atomic stop via GTSTPA register
  * 4. **Calculate period**: Common period for all channels
  * 5. **Configure each channel**: Loop calls internal_configure_channel_staggered()

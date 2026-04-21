@@ -1008,9 +1008,10 @@ RX_STATIC_TESTABLE bool s_worker_initialized = false;
  * @brief Validate that a trigger pin encodes a legal RX72N port/pin combination
  *
  * @details
- * The RX72N GPIO matrix exposes ports 0..G (0x00..0x10) and port J (0x13).
- * Ports H (0x11) and I (0x12) do not exist on this device, so any encoded port
- * in the range (k_rx_port_g, k_rx_port_j) exclusive must be rejected.
+ * The RX72N GPIO matrix exposes ports 0..G (0x00..0x10) and port J (0x12).
+ * Port H (0x11) exists in the register map but has no pins on the 144-pin package;
+ * Port I does not exist. Any encoded port in the range (k_rx_port_g, k_rx_port_j)
+ * exclusive must be rejected.
  * Pin numbers above k_rx_pin_max (7) are also illegal.
  *
  * Validation rules:
@@ -1029,7 +1030,7 @@ RX_STATIC_TESTABLE bool s_worker_initialized = false;
  *
  * @see internal_send_trigger_pulse Sole caller; calls before HAL access
  * @see k_rx_port_g   Highest valid contiguous port (port G = 0x10)
- * @see k_rx_port_j   Only valid non-contiguous port (port J = 0x13)
+ * @see k_rx_port_j   Only valid non-contiguous port (port J = 0x12)
  * @see k_rx_pin_max  Maximum valid pin index (7)
  *
  * @since Version 1.0.0
@@ -1038,7 +1039,7 @@ static bool internal_is_trigger_pin_valid(rx_port_pin_t trigger_pin)
 {
   const uint8_t port    = (uint8_t)(trigger_pin >> k_port_shift);
   const uint8_t pin_num = (uint8_t)(trigger_pin & k_port_mask);
-  /* Valid ports: 0..k_rx_port_g (0x10) and k_rx_port_j (0x13); reject all others. */
+  /* Valid ports: 0..k_rx_port_g (0x10) and k_rx_port_j (0x12); reject all others. */
   if ((port > k_rx_port_g) && (port != k_rx_port_j)) {
     return false;
   }

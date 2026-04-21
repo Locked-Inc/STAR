@@ -52,7 +52,7 @@
  * The Renesas RX72N uses non-contiguous port numbering:
  * - **Decimal ports**: 0-9 (0x00-0x09)
  * - **Alphabetic ports**: A-G (0x0A-0x10)
- * - **Port J**: 0x13 (note gap--no ports H or I)
+ * - **Port J**: 0x12 (note: Port I does not exist; Port H exists at 0x11 but has no pins on 144-pin)
  *
  * Total: 18 ports x 8 pins = 144 theoretical GPIO combinations
  * (Not all combinations physically available on 144-pin LFQFP package)
@@ -199,7 +199,7 @@ extern "C" {
  * hexadecimal naming:
  * - **Decimal ports**: 0-9 (values 0x00-0x09)
  * - **Hexadecimal ports**: A-G (values 0x0A-0x10)
- * - **Port J**: 0x13 (gap exists--no ports H or I)
+ * - **Port J**: 0x12 (follows Port H at 0x11; Port I does not exist)
  *
  * This numbering matches the Renesas RX72N hardware manual and the encoding
  * scheme used throughout the firmware.
@@ -284,7 +284,7 @@ extern "C" {
  *
  * @note This is a C23 **typed enum** with explicit underlying type uint8_t,
  *       ensuring 1-byte size and consistent ABI across compiler versions
- * @note Port J (0x13) breaks contiguity--ports H (0x11) and I (0x12) do not exist
+ * @note Port J (0x12) follows Port H (0x11); Port I does not exist in RX72N port map
  *
  * @warning Do not assume contiguous port numbering when iterating ports
  * @warning Not all ports available on 144-pin package--check datasheet
@@ -319,7 +319,7 @@ typedef enum : uint8_t {
   k_rx_port_f = 0x0F, /**< Port F - Partially available on 144-pin (PF5) */
   k_rx_port_g = 0x10, /**< Port G - Not available on 144-pin package */
   k_rx_port_j =
-    0x13, /**< Port J - Partial availability on 144-pin (PJ3, PJ5) - **NON-CONTIGUOUS** (0x11, 0x12 unused) */
+    0x12, /**< Port J - Partial availability on 144-pin (PJ3, PJ5) - follows Port H (0x11); Port I does not exist */
 } rx_port_number_t;
 
 /* =============================================================================
@@ -912,7 +912,7 @@ typedef enum : uint16_t {
   k_rx_pg_6 = (k_rx_port_g << k_port_shift) | k_rx_pin_6, /**< PG6 - N/A on 144-pin */
   k_rx_pg_7 = (k_rx_port_g << k_port_shift) | k_rx_pin_7, /**< PG7 - N/A on 144-pin */
 
-  /* Port J (0x13) - Pins 0-7 */
+  /* Port J (0x12) - Pins 0-7 */
   k_rx_pj_0 = (k_rx_port_j << k_port_shift) | k_rx_pin_0, /**< PJ0 - N/A on 144-pin */
   k_rx_pj_1 = (k_rx_port_j << k_port_shift) | k_rx_pin_1, /**< PJ1 - N/A on 144-pin */
   k_rx_pj_2 = (k_rx_port_j << k_port_shift) | k_rx_pin_2, /**< PJ2 - N/A on 144-pin */
@@ -946,7 +946,7 @@ typedef enum : uint16_t {
   k_verify_port_b     = 0x000BU, /**< Expected value of k_rx_port_b (0x0B) */
   k_verify_port_c     = 0x000CU, /**< Expected value of k_rx_port_c (0x0C) */
   k_verify_port_e     = 0x000EU, /**< Expected value of k_rx_port_e (0x0E) */
-  k_verify_port_j     = 0x0013U, /**< Expected value of k_rx_port_j (0x13) - non-contiguous */
+  k_verify_port_j     = 0x0012U, /**< Expected value of k_rx_port_j (0x12) - follows Port H; Port I does not exist */
   k_verify_pin_2      = 0x0002U, /**< Expected value of k_rx_pin_2 (2) */
   k_verify_pin_7      = 0x0007U, /**< Expected value of k_rx_pin_7 (7) */
   k_verify_port_shift = 0x0008U, /**< Expected value of k_port_shift (8) */
@@ -958,7 +958,7 @@ typedef enum : uint16_t {
   k_verify_pa_2       = 0x0A02U, /**< Expected value of k_rx_pa_2 */
   k_verify_pb_2       = 0x0B02U, /**< Expected value of k_rx_pb_2 */
   k_verify_pe_5       = 0x0E05U, /**< Expected value of k_rx_pe_5 */
-  k_verify_pj_3       = 0x1303U, /**< Expected value of k_rx_pj_3 */
+  k_verify_pj_3       = 0x1203U, /**< Expected value of k_rx_pj_3 */
 } rx_port_verify_t;
 
 /*
@@ -974,7 +974,7 @@ static_assert((bool)((uint16_t)k_rx_port_b == k_verify_port_b), "Port B must be 
 static_assert((bool)((uint16_t)k_rx_port_c == k_verify_port_c), "Port C must be 0x0C");
 static_assert((bool)((uint16_t)k_rx_port_e == k_verify_port_e), "Port E must be 0x0E");
 static_assert((bool)((uint16_t)k_rx_port_j == k_verify_port_j),
-              "Port J must be 0x13 (not contiguous)");
+              "Port J must be 0x12 (PORTJ.PDR=0x0008C012; Port I does not exist)");
 
 /*
  * Verify pin number constants match expected values.
@@ -1009,7 +1009,7 @@ static_assert((bool)((unsigned int)k_rx_p2_5 == (unsigned int)k_verify_p2_5), "P
 static_assert((bool)((unsigned int)k_rx_pa_2 == (unsigned int)k_verify_pa_2), "PA2 must be 0x0A02");
 static_assert((bool)((unsigned int)k_rx_pb_2 == (unsigned int)k_verify_pb_2), "PB2 must be 0x0B02");
 static_assert((bool)((unsigned int)k_rx_pe_5 == (unsigned int)k_verify_pe_5), "PE5 must be 0x0E05");
-static_assert((bool)((unsigned int)k_rx_pj_3 == (unsigned int)k_verify_pj_3), "PJ3 must be 0x1303");
+static_assert((bool)((unsigned int)k_rx_pj_3 == (unsigned int)k_verify_pj_3), "PJ3 must be 0x1203");
 
 /* =============================================================================
  * Pin Extraction Inline Functions
@@ -1056,7 +1056,7 @@ static_assert((bool)((unsigned int)k_rx_pj_3 == (unsigned int)k_verify_pj_3), "P
  *                Must have valid port in upper byte and valid pin (0-7) in lower byte.
  *
  * @return Port number extracted from upper byte (rx_port_number_t).
- *         Valid range: 0x00-0x10, or 0x13 (k_rx_port_j).
+ *         Valid range: 0x00-0x10, or 0x12 (k_rx_port_j).
  *         Returned value is one of: k_rx_port_0..k_rx_port_9, k_rx_port_a..k_rx_port_g, k_rx_port_j.
  *
  * @pre pin lower byte (bits 7-0) must be valid pin number (0-7)

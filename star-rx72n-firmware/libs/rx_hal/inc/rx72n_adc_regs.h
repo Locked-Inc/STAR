@@ -228,7 +228,7 @@ typedef enum : uintptr_t {
  * | 0x0E   | ADCER    | 16   | Control extended (alignment)  |
  * | 0x10   | ADSTRGR  | 16   | Trigger source select         |
  * | 0x14   | ADANSB0  | 16   | Channel select Group B        |
- * | 0x18   | ADDBLDR  | 16   | Double trigger mode data      |
+ * | 0x84   | ADDBLDR  | 16   | Double trigger data (not in struct; accessed directly) |
  * | 0x1E   | ADRD     | 16   | Self-diagnosis data           |
  * | 0x20   | ADDR0    | 16   | Conversion result channel 0   |
  * | ...    | ...      | ...  | (2-byte spacing per channel)  |
@@ -247,7 +247,7 @@ typedef enum : uint8_t {
   k_s12ad_offset_adcer   = 0x0E, /**< Control Extended: data alignment, self-diag mode */
   k_s12ad_offset_adstrgr = 0x10, /**< Trigger Select: software, MTU, GPT, external */
   k_s12ad_offset_adansb0 = 0x14, /**< Channel Select B0: channels for group B scan */
-  k_s12ad_offset_addbldr = 0x18, /**< Double Trigger Data: double-trigger mode result */
+  k_s12ad_offset_addbldr = 0x84, /**< Double Trigger Data: double-trigger mode result (not in struct) */
   k_s12ad_offset_adrd    = 0x1E, /**< Self-Diagnosis Data: internal reference result */
   k_s12ad_offset_addr0   = 0x20, /**< Data Register 0: AN000/AN100 conversion result */
   k_s12ad_offset_addr1   = 0x22, /**< Data Register 1: AN001/AN101 conversion result */
@@ -277,8 +277,7 @@ typedef enum : uint8_t {
   k_s12ad_reserved_02_03 = 2, /**< Padding after ADCSR (16-bit) to ADANSA0 (32-bit aligned) */
   k_s12ad_reserved_0d    = 1, /**< Padding after ADADC (8-bit) to ADCER (16-bit aligned) */
   k_s12ad_reserved_12_13 = 2, /**< Padding after ADSTRGR to ADANSB0 */
-  k_s12ad_reserved_16_17 = 2, /**< Padding after ADANSB0 to ADDBLDR */
-  k_s12ad_reserved_1a_1d = 4, /**< Padding after ADDBLDR to ADRD (ADTSDR/ADOCDR S12AD1 only) */
+  k_s12ad_reserved_16_1d = 8, /**< Padding after ADANSB0 to ADRD (ADDBLDR at 0x84, not in struct) */
 } s12ad_reserved_sizes_t;
 
 /**
@@ -306,9 +305,7 @@ typedef enum : uint8_t {
  * | 0x10   | 2    | adstrgr   | Trigger source select              |
  * | 0x12   | 2    | reserved  | Reserved padding                   |
  * | 0x14   | 2    | adansb0   | Channel select B (group B scan)    |
- * | 0x16   | 2    | reserved  | Reserved padding                   |
- * | 0x18   | 2    | addbldr   | Double trigger data                |
- * | 0x1A   | 4    | reserved  | Reserved padding                   |
+ * | 0x16   | 8    | reserved  | Reserved (ADDBLDR at 0x84, not in struct) |
  * | 0x1E   | 2    | adrd      | Self-diagnosis data                |
  * | 0x20   | 2    | addr0     | Result register AN0/AN100          |
  * | 0x22   | 2    | addr1     | Result register AN1/AN101          |
@@ -405,13 +402,15 @@ typedef struct {
    * Controls conversion mode, trigger source, and interrupt enable.
    *
    * @par Bit Field Description:
-   * | Bits    | Name  | R/W | Description                          |
-   * |---------|-------|-----|--------------------------------------|
-   * | [15]    | ADST  | R/W | Conversion start (1=start/running)   |
-   * | [14:13] | ADCS  | R/W | Scan mode (00=single, 01=group, 10=continuous) |
-   * | [12]    | ADIE  | R/W | Scan end interrupt enable            |
-   * | [6]     | TRGE  | R/W | Trigger enable (0=software only)     |
-   * | [5]     | EXTRG | R/W | External trigger select              |
+   * | Bits    | Name   | R/W | Description                          |
+   * |---------|--------|-----|--------------------------------------|
+   * | [15]    | ADST   | R/W | Conversion start (1=start/running)   |
+   * | [14:13] | ADCS   | R/W | Scan mode (00=single, 01=group, 10=continuous) |
+   * | [12]    | ADIE   | R/W | Scan end interrupt enable            |
+   * | [9]     | TRGE   | R/W | Trigger start enable (0=software only, 1=sync/async trigger) |
+   * | [8]     | EXTRG  | R/W | Trigger select (0=synchronous, 1=asynchronous) |
+   * | [7]     | DBLE   | R/W | Double trigger mode select           |
+   * | [6]     | GBADIE | R/W | Group B scan end interrupt enable    |
    *
    * @par Common Configurations:
    * - 0x0000: Single scan, software trigger, no interrupt
@@ -540,18 +539,7 @@ typedef struct {
    */
   volatile uint16_t adansb0;
 
-  uint8_t reserved3[k_s12ad_reserved_16_17]; /**< Reserved @ 0x16-0x17 - do not access */
-
-  /**
-   * @brief A/D Data Duplication Register (ADDBLDR) @ offset 0x18
-   *
-   * @details
-   * Holds conversion result for double-trigger mode. Used when two
-   * different trigger sources are configured to interleave conversions.
-   */
-  volatile uint16_t addbldr;
-
-  uint8_t reserved4[k_s12ad_reserved_1a_1d]; /**< Reserved @ 0x1A-0x1D - do not access */
+  uint8_t reserved3[k_s12ad_reserved_16_1d]; /**< Reserved @ 0x16-0x1D (ADDBLDR at 0x84, not in struct) */
 
   /**
    * @brief A/D Self-Diagnosis Data Register (ADRD) @ offset 0x1E
@@ -579,13 +567,13 @@ typedef struct {
    */
   volatile uint16_t addr0;
 
-  volatile uint16_t addr1; /**< A/D Data Register 1 @ 0x24: AN001/AN101 */
-  volatile uint16_t addr2; /**< A/D Data Register 2 @ 0x26: AN002/AN102 */
-  volatile uint16_t addr3; /**< A/D Data Register 3 @ 0x28: AN003/AN103 */
-  volatile uint16_t addr4; /**< A/D Data Register 4 @ 0x2A: AN004/AN104 (Motor 3 current) */
-  volatile uint16_t addr5; /**< A/D Data Register 5 @ 0x2C: AN005/AN105 (Motor 2 current) */
-  volatile uint16_t addr6; /**< A/D Data Register 6 @ 0x2E: AN006/AN106 (Motor 1 current) */
-  volatile uint16_t addr7; /**< A/D Data Register 7 @ 0x30: AN007/AN107 (Motor 0 current) */
+  volatile uint16_t addr1; /**< A/D Data Register 1 @ 0x22: AN001/AN101 */
+  volatile uint16_t addr2; /**< A/D Data Register 2 @ 0x24: AN002/AN102 */
+  volatile uint16_t addr3; /**< A/D Data Register 3 @ 0x26: AN003/AN103 */
+  volatile uint16_t addr4; /**< A/D Data Register 4 @ 0x28: AN004/AN104 (Motor 3 current) */
+  volatile uint16_t addr5; /**< A/D Data Register 5 @ 0x2A: AN005/AN105 (Motor 2 current) */
+  volatile uint16_t addr6; /**< A/D Data Register 6 @ 0x2C: AN006/AN106 (Motor 1 current) */
+  volatile uint16_t addr7; /**< A/D Data Register 7 @ 0x2E: AN007/AN107 (Motor 0 current) */
 } rx_s12ad_regs_t;
 
 /**
@@ -704,8 +692,6 @@ static_assert(offsetof(rx_s12ad_regs_t, adstrgr) == 0x10,
               "ADSTRGR offset incorrect (expected 0x10)");
 static_assert(offsetof(rx_s12ad_regs_t, adansb0) == 0x14,
               "ADANSB0 offset incorrect (expected 0x14)");
-static_assert(offsetof(rx_s12ad_regs_t, addbldr) == 0x18,
-              "ADDBLDR offset incorrect (expected 0x18)");
 static_assert(offsetof(rx_s12ad_regs_t, adrd) == 0x1E, "ADRD offset incorrect (expected 0x1E)");
 static_assert(offsetof(rx_s12ad_regs_t, addr0) == k_s12ad_offset_addr0, "ADDR0 offset incorrect");
 static_assert(offsetof(rx_s12ad_regs_t, addr1) == k_s12ad_offset_addr1, "ADDR1 offset incorrect");

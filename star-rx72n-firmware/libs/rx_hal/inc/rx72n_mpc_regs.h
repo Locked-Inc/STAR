@@ -164,6 +164,28 @@ typedef enum : uintptr_t {
   k_mpc_base_addr = 0x0008C100, /**< MPC register base address */
 } rx_mpc_addresses_t;
 
+/**
+ * @enum mpc_register_offsets_t
+ * @brief Byte offsets of key MPC registers from the MPC base address (0x0008C100)
+ *
+ * @details
+ * These constants are used in static_assert calls to verify the struct layout
+ * matches the hardware register map. Each constant encodes the exact byte offset
+ * from either the MPC base or the PFS block base (P00PFS), as noted.
+ *
+ * @note All values verified against RX72N Manual Chapter 23, Section 23.2
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_mpc_offset_pwpr      = 0x1F, /**< PWPR offset from MPC base (0x0008C11F) */
+  k_mpc_offset_pfs       = 0x40, /**< PFS block start offset from MPC base (P00PFS = 0x0008C140) */
+  k_mpc_offset_port5_pfs = 0x28, /**< Port 5 PFS block offset from P00PFS */
+  k_mpc_offset_porta_pfs = 0x50, /**< Port A PFS block offset from P00PFS */
+  k_mpc_offset_porte_pfs = 0x70, /**< Port E PFS block offset from P00PFS */
+  k_mpc_offset_portj_pfs = 0x90, /**< Port J PFS block offset from P00PFS */
+  k_mpc_pfs_total_bytes  = 152,  /**< Total size in bytes of the PFS register block (P00PFS through PJ5PFS with reserved padding) */
+} mpc_register_offsets_t;
+
 /** @brief MPC register reserved field sizes */
 typedef enum : uint8_t {
   k_mpc_reserved1_bytes = 1,  /**< Reserved after PFCSE (0x0008C101) */
@@ -523,25 +545,25 @@ typedef enum : uint8_t {
  */
 
 /* Verify critical register offsets from base (0x0008C100) */
-static_assert(offsetof(rx_mpc_regs_t, pfcse) == 0x00,
+static_assert(offsetof(rx_mpc_regs_t, pfcse) == 0,
               "PFCSE must be at offset 0x00 (address 0x0008C100)");
-static_assert(offsetof(rx_mpc_regs_t, pwpr) == 0x1F,
+static_assert(offsetof(rx_mpc_regs_t, pwpr) == k_mpc_offset_pwpr,
               "PWPR must be at offset 0x1F (address 0x0008C11F)");
-static_assert(offsetof(rx_mpc_regs_t, p00pfs) == 0x40,
+static_assert(offsetof(rx_mpc_regs_t, p00pfs) == k_mpc_offset_pfs,
               "P00PFS must be at offset 0x40 (address 0x0008C140)");
 
 /* Verify specific port offsets from P00PFS base */
-static_assert(offsetof(rx_mpc_regs_t, p50pfs) == 0x40 + 0x28,
+static_assert(offsetof(rx_mpc_regs_t, p50pfs) == k_mpc_offset_pfs + k_mpc_offset_port5_pfs,
               "P50PFS must be at offset 0x68 (Port 5 base)");
-static_assert(offsetof(rx_mpc_regs_t, pa0pfs) == 0x40 + 0x50,
+static_assert(offsetof(rx_mpc_regs_t, pa0pfs) == k_mpc_offset_pfs + k_mpc_offset_porta_pfs,
               "PA0PFS must be at offset 0x90 (Port A base)");
-static_assert(offsetof(rx_mpc_regs_t, pe0pfs) == 0x40 + 0x70,
+static_assert(offsetof(rx_mpc_regs_t, pe0pfs) == k_mpc_offset_pfs + k_mpc_offset_porte_pfs,
               "PE0PFS must be at offset 0xB0 (Port E base)");
-static_assert(offsetof(rx_mpc_regs_t, pj0pfs) == 0x40 + 0x90,
+static_assert(offsetof(rx_mpc_regs_t, pj0pfs) == k_mpc_offset_pfs + k_mpc_offset_portj_pfs,
               "PJ0PFS must be at offset 0xD0 (Port J base)");
 
 /* Verify struct total size (64 bytes control + 152 bytes PFS = 216 bytes) */
-static_assert(sizeof(rx_mpc_regs_t) == 0x40 + 152,
+static_assert(sizeof(rx_mpc_regs_t) == k_mpc_offset_pfs + k_mpc_pfs_total_bytes,
               "MPC struct size must be 64 + 152 = 216 bytes total");
 
 /** @} */ /* End of mpc_static_assert group */
@@ -564,7 +586,7 @@ static_assert(sizeof(rx_mpc_regs_t) == 0x40 + 152,
  * 2. Configure PE5 as GTIOC0A (Motor 0 PWM Phase):
  *    mpc()->pwpr = 0x00;
  *    mpc()->pwpr = k_mpc_pwpr_pfswe;
- *    mpc()->pe5pfs = 0x07;            // PSEL = 0x07 for GPTW
+ *    mpc()->pe5pfs = 0x1E;            // PSEL = 0x1E for GPTW (k_psel_gptw)
  *    mpc()->pwpr = 0x00;
  *    mpc()->pwpr = k_mpc_pwpr_b0wi;
  *

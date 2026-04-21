@@ -50,15 +50,15 @@
  *
  * | Channel | Base Address | Outputs | Notes |
  * |---------|--------------|---------|-------|
- * | MTU0 | 0x000C1200 | A,B,C,D | 4 outputs |
- * | MTU1 | 0x000C1280 | A,B | Encoder input |
- * | MTU2 | 0x000C1300 | A,B | Encoder input |
- * | MTU3 | 0x000C1100 | A,B,C,D | 4 outputs, pairs with MTU4 |
- * | MTU4 | 0x000C1100 | A,B,C,D | 4 outputs, pairs with MTU3 |
+ * | MTU0 | 0x000C1300 | A,B,C,D | 4 outputs |
+ * | MTU1 | 0x000C1380 | A,B | Encoder input |
+ * | MTU2 | 0x000C1400 | A,B | Encoder input |
+ * | MTU3 | 0x000C1200 | A,B,C,D | 4 outputs, pairs with MTU4 |
+ * | MTU4 | 0x000C1201 | A,B,C,D | 4 outputs, pairs with MTU3 |
  * | MTU6 | 0x000C1A00 | A,B,C,D | 4 outputs, pairs with MTU7 |
- * | MTU7 | 0x000C1A00 | A,B,C,D | 4 outputs, pairs with MTU6 |
+ * | MTU7 | 0x000C1A01 | A,B,C,D | 4 outputs, pairs with MTU6 |
  *
- * Note: MTU5 does not exist in RX72N.
+ * Note: MTU5 (U/V/W sub-channels at 0x000C1C80/90/A0) is not supported by this HAL.
  *
  * @par Clock Configuration:
  *
@@ -215,13 +215,13 @@ extern "C" {
  *
  * | Channel | Base Address | Outputs | Phase Count | Paired With |
  * |---------|--------------|---------|-------------|-------------|
- * | MTU0 | 0x000C1200 | A,B,C,D | No | - |
- * | MTU1 | 0x000C1280 | A,B | Yes | MTU2 |
- * | MTU2 | 0x000C1300 | A,B | Yes | MTU1 |
- * | MTU3 | 0x000C1100 | A,B,C,D | No | MTU4 |
- * | MTU4 | 0x000C1100 | A,B,C,D | No | MTU3 |
+ * | MTU0 | 0x000C1300 | A,B,C,D | No | - |
+ * | MTU1 | 0x000C1380 | A,B | Yes | MTU2 |
+ * | MTU2 | 0x000C1400 | A,B | Yes | MTU1 |
+ * | MTU3 | 0x000C1200 | A,B,C,D | No | MTU4 |
+ * | MTU4 | 0x000C1201 | A,B,C,D | No | MTU3 |
  * | MTU6 | 0x000C1A00 | A,B,C,D | No | MTU7 |
- * | MTU7 | 0x000C1A00 | A,B,C,D | No | MTU6 |
+ * | MTU7 | 0x000C1A01 | A,B,C,D | No | MTU6 |
  *
  * @par STAR Project Usage:
  *
@@ -247,11 +247,11 @@ extern "C" {
  * }
  * @endcode
  *
- * @invariant Channel 5 is not defined (does not exist in RX72N)
+ * @invariant Channel 5 is not defined (MTU5 hardware exists but is not supported by this HAL)
  * @invariant Channel values match hardware register offsets
  *
  * @note C23 typed enum with uint8_t underlying type
- * @note Value 5 is intentionally skipped (no MTU5 in RX72N)
+ * @note Value 5 is intentionally skipped (MTU5 U/V/W sub-channels not supported by this HAL)
  *
  * @see rx_mtu_encoder.h Encoder functions using MTU1/MTU2
  * @see RX72N Hardware Manual Section 24 - MTU3 channels
@@ -260,19 +260,19 @@ extern "C" {
  */
 typedef enum : uint8_t {
   k_mtu_channel_0 =
-    0, /**< MTU0: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1200. Standalone operation */
+    0, /**< MTU0: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1300. Standalone operation */
   k_mtu_channel_1 =
-    1, /**< MTU1: Encoder input channel. 2 outputs (A,B). Base: 0x000C1280. Phase counting with MTU2 */
+    1, /**< MTU1: Encoder input channel. 2 outputs (A,B). Base: 0x000C1380. Phase counting with MTU2 */
   k_mtu_channel_2 =
-    2, /**< MTU2: Encoder input channel. 2 outputs (A,B). Base: 0x000C1300. Phase counting with MTU1 */
+    2, /**< MTU2: Encoder input channel. 2 outputs (A,B). Base: 0x000C1400. Phase counting with MTU1 */
   k_mtu_channel_3 =
-    3, /**< MTU3: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1100. Pairs with MTU4 */
+    3, /**< MTU3: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1200. Pairs with MTU4 */
   k_mtu_channel_4 =
-    4, /**< MTU4: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1100. Pairs with MTU3 */
+    4, /**< MTU4: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1201. Pairs with MTU3 */
   k_mtu_channel_6 =
     6, /**< MTU6: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1A00. Pairs with MTU7 */
   k_mtu_channel_7 =
-    7, /**< MTU7: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1A00. Pairs with MTU6 */
+    7, /**< MTU7: General purpose timer. 4 outputs (A,B,C,D). Base: 0x000C1A01. Pairs with MTU6 */
 } rx_mtu_channel_t;
 
 /**

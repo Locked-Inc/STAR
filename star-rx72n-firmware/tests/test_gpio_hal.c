@@ -245,7 +245,7 @@
  *
  * ## Valid Ranges (RX72N)
  *
- * - **Ports**: 0-9 (0x0-0x9), A-J (0xA-0x13) -> k_rx_port_j = 0x13
+ * - **Ports**: 0-9 (0x0-0x9), A-J (0xA-0x12) -> k_rx_port_j = 0x12
  * - **Pins**: 0-7 (0x0-0x7) -> k_rx_pin_max = 7
  *
  * ## Invalid Values
@@ -260,10 +260,10 @@
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_invalid_port_1 = k_rx_port_j + 1,  /**< Invalid port (0x14) - beyond Port J */
-  k_invalid_port_2 = k_rx_port_j + 2,  /**< Invalid port (0x15) - further beyond */
-  k_invalid_port_3 = k_rx_port_j + 3,  /**< Invalid port (0x16) - even further */
-  k_invalid_port_4 = k_rx_port_j + 4,  /**< Invalid port (0x17) - maximum tested */
+  k_invalid_port_1 = k_rx_port_j + 1,  /**< Invalid port (0x13) - beyond Port J */
+  k_invalid_port_2 = k_rx_port_j + 2,  /**< Invalid port (0x14) - further beyond */
+  k_invalid_port_3 = k_rx_port_j + 3,  /**< Invalid port (0x15) - even further */
+  k_invalid_port_4 = k_rx_port_j + 4,  /**< Invalid port (0x16) - maximum tested */
   k_invalid_pin_1  = k_rx_pin_max + 1, /**< Invalid pin (8) - beyond pin 7 */
   k_invalid_pin_2  = k_rx_pin_max + 2, /**< Invalid pin (9) - further beyond */
   k_invalid_pin_3  = k_rx_pin_max + 3, /**< Invalid pin (10) - even further */
@@ -465,8 +465,8 @@ void test_gpio_set_output_multiple_pins(void)
  *
  * ## Test Strategy
  *
- * Constructs a port/pin value with port number 0x14 (k_rx_port_j + 1),
- * which is beyond the maximum valid port on RX72N (Port J = 0x13).
+ * Constructs a port/pin value with port number 0x13 (k_rx_port_j + 1),
+ * which is beyond the maximum valid port on RX72N (Port J = 0x12).
  *
  * ## Validation Point
  *
@@ -491,7 +491,7 @@ void test_gpio_set_output_multiple_pins(void)
  */
 void test_gpio_set_output_invalid_port(void)
 {
-  /* Port 0x15 is not valid - beyond Port J (0x13) */
+  /* Port 0x14 is not valid - beyond Port J (0x12) */
   enum : uint8_t {
     k_invalid_port = k_rx_port_j + 1,
     k_invalid_pin  = k_rx_pin_0,
@@ -1119,7 +1119,7 @@ void test_gpio_read_invalid_pin(void)
  * | Port C | 0x0C | 8 | 0x0008C00C | UART debug |
  * | Port D | 0x0D | 8 | 0x0008C00D | I2C communication |
  * | Port E | 0x0E | 8 | 0x0008C00E | IMU interrupt |
- * | Port J | 0x13 | 8 | 0x0008C013 | USB VBUS detection |
+ * | Port J | 0x12 | 8 | 0x0008C012 | USB VBUS detection |
  *
  * ## Test Strategy
  *

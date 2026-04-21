@@ -204,8 +204,7 @@ extern "C" {
  */
 
 typedef enum : uint8_t {
-  k_gptw_ch_reserved_count      = 6U, /**< Reserved uint32_t count in channel struct (0xB8-0xCC) */
-  k_gptw_common_reserved0_count = 5U, /**< Reserved uint32_t count in common struct (0x0C-0x1C) */
+  k_gptw_ch_reserved_count = 6U, /**< Reserved uint32_t count in channel struct (0xB8-0xCC) */
 } gptw_padding_sizes_t;
 
 /**
@@ -320,17 +319,17 @@ typedef struct {
 /**
  * @brief GPTW Common Register Map
  * @details
- * Shared registers for all GPTW channels (start/stop control).
- * Base address: k_gptw_common_base_addr (0x000C2B00) in gptw_addresses_t.
+ * Overlays GPTW0.GTSTR/GTSTP/GTCLR to provide a named handle for multi-channel
+ * atomic start/stop/clear. Writing bits [3:0] in any of these registers affects
+ * channels 0-3 simultaneously (per RX72N HW manual section 26.2.2-26.2.4).
+ * Base address: k_gptw_common_base_addr (0x000C2004) == GPTW0.GTSTR.
+ * The RX72N address map has no separate "common" GPTW block; the per-channel
+ * GTSTR/GTSTP/GTCLR registers are cross-channel by design.
  */
 typedef struct {
-  volatile uint32_t gtstra; /**< 0x00: General Timer Start Register A */
-  volatile uint32_t gtstpa; /**< 0x04: General Timer Stop Register A */
-  volatile uint32_t gtclra; /**< 0x08: General Timer Clear Register A */
-  uint32_t          reserved0[k_gptw_common_reserved0_count]; /**< Reserved */
-  volatile uint32_t gtstra2; /**< 0x20: General Timer Start Register A2 */
-  volatile uint32_t gtstpa2; /**< 0x24: General Timer Stop Register A2 */
-  volatile uint32_t gtclra2; /**< 0x28: General Timer Clear Register A2 */
+  volatile uint32_t gtstra; /**< 0x00: Software Start  (GPTW0.GTSTR, bits [3:0] = Ch3..Ch0) */
+  volatile uint32_t gtstpa; /**< 0x04: Software Stop   (GPTW0.GTSTP, bits [3:0] = Ch3..Ch0) */
+  volatile uint32_t gtclra; /**< 0x08: Software Clear  (GPTW0.GTCLR, bits [3:0] = Ch3..Ch0) */
 } rx_gptw_common_regs_t;
 
 /* =============================================================================
@@ -347,7 +346,11 @@ typedef enum : uintptr_t {
   k_gptw1_base_addr       = 0x000C2100, /**< GPTW channel 1 base address */
   k_gptw2_base_addr       = 0x000C2200, /**< GPTW channel 2 base address */
   k_gptw3_base_addr       = 0x000C2300, /**< GPTW channel 3 base address */
-  k_gptw_common_base_addr = 0x000C2B00, /**< GPTW common control register base (GTSTRA etc.) */
+  k_gptw_common_base_addr = 0x000C2004, /**< GPTW0.GTSTR -- used as multi-channel start/stop/clear base.
+                                          * RX72N has NO separate "common" GPTW block (Chapter 5 Table 5.1
+                                          * shows GPTW space ending at 0x000C23D4; nothing at 0x000C2B00).
+                                          * GTSTR/GTSTP/GTCLR in any channel affect all channels whose
+                                          * corresponding bit [3:0] is set (manual section 26.2.2-26.2.4). */
 } gptw_addresses_t;
 
 /** @brief GPTW register inline accessor functions */
@@ -785,12 +788,9 @@ typedef enum : uint8_t {
 } gptw_ch_reg_offsets_t;
 
 typedef enum : uint8_t {
-  k_gptw_common_off_gtstpa  = 0x04U, /**< General Timer Stop Register A */
-  k_gptw_common_off_gtclra  = 0x08U, /**< General Timer Clear Register A */
-  k_gptw_common_off_gtstra2 = 0x20U, /**< General Timer Start Register A2 */
-  k_gptw_common_off_gtstpa2 = 0x24U, /**< General Timer Stop Register A2 */
-  k_gptw_common_off_gtclra2 = 0x28U, /**< General Timer Clear Register A2 */
-  k_gptw_common_struct_size = 0x2CU, /**< Total common structure size in bytes */
+  k_gptw_common_off_gtstpa  = 0x04U, /**< Software Stop Register  (GPTW0.GTSTP) */
+  k_gptw_common_off_gtclra  = 0x08U, /**< Software Clear Register (GPTW0.GTCLR) */
+  k_gptw_common_struct_size = 0x0CU, /**< Total common structure size in bytes (3 x uint32_t) */
 } gptw_common_reg_offsets_t;
 
 typedef enum : uintptr_t {
@@ -918,12 +918,6 @@ static_assert(offsetof(rx_gptw_common_regs_t, gtstpa) == k_gptw_common_off_gtstp
               "GPTW common GTSTPA register offset incorrect");
 static_assert(offsetof(rx_gptw_common_regs_t, gtclra) == k_gptw_common_off_gtclra,
               "GPTW common GTCLRA register offset incorrect");
-static_assert(offsetof(rx_gptw_common_regs_t, gtstra2) == k_gptw_common_off_gtstra2,
-              "GPTW common GTSTRA2 register offset incorrect");
-static_assert(offsetof(rx_gptw_common_regs_t, gtstpa2) == k_gptw_common_off_gtstpa2,
-              "GPTW common GTSTPA2 register offset incorrect");
-static_assert(offsetof(rx_gptw_common_regs_t, gtclra2) == k_gptw_common_off_gtclra2,
-              "GPTW common GTCLRA2 register offset incorrect");
 
 /* Verify base addresses are in correct peripheral space (0x000C2xxx) */
 static_assert((k_gptw0_base_addr & k_gptw_periph_space_mask) == k_gptw_periph_space_base,

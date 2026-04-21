@@ -930,7 +930,7 @@ void test_bus_gpio_toggle_state_unchanged_logs_warning(void)
  * @brief Invalid port in rx_bus_config_init_gpio returns error
  *
  * @details
- * Passes a rx_port_pin_t with port > k_rx_port_j (0x13) to trigger the
+ * Passes a rx_port_pin_t with port > k_rx_port_j (0x12) to trigger the
  * invalid-port branch inside internal_validate_port_pin (lines 291-292)
  * and the propagation in rx_bus_config_init_gpio (line 442).
  *
@@ -942,7 +942,7 @@ void test_bus_gpio_toggle_state_unchanged_logs_warning(void)
 void test_bus_config_gpio_invalid_port_returns_error(void)
 {
   rx_bus_config_t config;
-  /* Construct a port_pin with port 0xFF (> k_rx_port_j = 0x13) */
+  /* Construct a port_pin with port 0xFF (> k_rx_port_j = 0x12) */
   static const rx_port_pin_t k_invalid_port_pin =
     (rx_port_pin_t)0xFF00U; /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
   rx_err_t err = rx_bus_config_init_gpio(&config, "test", k_invalid_port_pin);

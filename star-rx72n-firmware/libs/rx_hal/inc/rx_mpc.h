@@ -882,7 +882,7 @@ typedef enum : uint8_t {
  * @post Pin ready for MTU3a compare match output
  *
  * @note Also requires MTU3a timer configuration and PORT PMR=1
- * @note STAR project typically uses GPTW for PWM (rx_mpc_set_gptw with PSEL 0x14)
+ * @note STAR project uses GPTW for motor PWM; see rx_mpc_set_gptw() which uses PSEL = k_psel_gptw (0x1E)
  *
  * @par Example
  * @code{.c}
