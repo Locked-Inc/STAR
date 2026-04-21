@@ -56,9 +56,9 @@ rx_system_regs_t g_mock_doc_system_regs;
  * keeps the DOC test fully self-contained (no link-time dependency on the
  * IWDT mock suite's mock_rx_system_regs.c).
  */
-/* NOLINTNEXTLINE(readability-magic-numbers) -- 0xA500 is the PRCR
- * locked-state default, defined as k_mock_doc_prcr_locked below; we
- * can't forward-reference the enum here. */
+/* 0xA500 = PRCR locked-state default, also defined as k_mock_doc_prcr_locked
+ * below; can't forward-reference the enum here. */
+// NOLINTNEXTLINE(readability-magic-numbers)
 volatile uint16_t g_mock_prcr = 0xA500U;
 
 /* =============================================================================
