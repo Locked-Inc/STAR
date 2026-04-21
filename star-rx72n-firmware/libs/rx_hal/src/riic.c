@@ -1140,6 +1140,17 @@ static rx_err_t internal_write_address_for_read(volatile rx_riic_regs_t* riic,
     return k_rx_err_nack;
   }
 
+  /* Dummy read of ICDRR -- the RDRF that fired above is the address-ACK
+   * signal, not a data byte. ICDRR currently holds stale contents. The
+   * dummy read clears RDRF, releases SCL clock-stretch, and starts the
+   * peripheral clocking byte 0 of the actual data into the shift register.
+   * Without this, the next internal_read_byte() call sees RDRF still set
+   * (from the address ACK) and returns the stale ICDRR contents -- caught
+   * empirically with imu_test where burst_chip_id returned 0x00 instead of
+   * the expected 0xA0. RX72N HW manual section 38.2.5.3 documents the
+   * requirement. */
+  (void)riic->icdrr;
+
   return k_rx_ok;
 }
 
