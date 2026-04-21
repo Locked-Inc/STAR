@@ -244,7 +244,7 @@ static void test_init_measured_clock_out_of_range_returns_invalid_arg(void)
  */
 static void test_init_target_div_out_of_range_returns_invalid_arg(void)
 {
-  rx_cac_config_t cfg                  = make_valid_config();
+  rx_cac_config_t cfg            = make_valid_config();
   ((uint8_t*)&cfg.target_div)[0] = k_cac_test_div_out_of_range;
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_cac_init(&cfg));
   TEST_ASSERT_EQUAL(0U, cac()->cacr1);
@@ -257,7 +257,7 @@ static void test_init_target_div_out_of_range_returns_invalid_arg(void)
  */
 static void test_init_reference_div_out_of_range_returns_invalid_arg(void)
 {
-  rx_cac_config_t cfg                     = make_valid_config();
+  rx_cac_config_t cfg               = make_valid_config();
   ((uint8_t*)&cfg.reference_div)[0] = k_cac_test_div_out_of_range;
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_cac_init(&cfg));
   TEST_ASSERT_EQUAL(0U, cac()->cacr2);
