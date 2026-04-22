@@ -240,9 +240,12 @@
 
 #include <stdint.h>
 
+#include "hardware.h" /* gpio_write_low / gpio_write_high for bring-up LEDs */
+#include "rx72n_flash_regs.h" /* romce_reg / romciv_reg for ROM cache bring-up */
 #include "rx72n_regs.h"
 #include "rx72n_rtc_regs.h"
 #include "rx_check.h"
+#include "rx_port_constants.h" /* k_rx_pb_0, k_rx_p7_1, k_rx_p7_2, k_rx_pb_1 */
 #include "rx_register_protection.h"
 #include "rx_simulator_config.h" /* For simulator mode detection */
 
@@ -255,7 +258,7 @@ static const char* s_tag = "CLOCK_INIT";
 
 /** @brief Oscillator stabilization timing constants */
 typedef enum : uint32_t {
-  k_main_osc_stabilization_cycles     = 2400000, /**< Main oscillator delay (~10ms at 240MHz) */
+  k_main_osc_poll_max                 = 500000,  /**< Upper bound on MOOVF flag poll iterations (bounded, NASA Rule 2). Physical wait is hardware-determined (~10 ms). */
   k_pll_stabilization_timeout         = 1000000, /**< PLL stabilization max wait iterations */
   k_pll_stabilization_timeout_expired = 0,       /**< PLL timeout expiration value */
 } oscillator_timing_t;
@@ -270,6 +273,7 @@ typedef enum : uint8_t {
 /** @brief PLL configuration values */
 typedef enum : uint16_t {
   k_pll_multiplier_10_div_1 = 0x1300, /**< PLLCR: 10x multiplier, divide by 1 (240MHz from 24MHz) */
+  k_mosc_stable_flag        = 0x01,   /**< OSCOVFSR.MOOVF: main oscillator stable (bit 0) */
   k_pll_stable_flag         = 0x04,   /**< OSCOVFSR: PLL stabilization flag bit */
   k_pll_stable_flag_unset   = 0,      /**< PLL stable flag not yet asserted */
   k_ppll_stable_flag_unset  = 0,      /**< PPLL stable flag not yet asserted */
@@ -277,6 +281,13 @@ typedef enum : uint16_t {
 
 /** @brief System clock configuration */
 typedef enum : uint32_t {
+  /* Restored to authoritative 240 MHz config per k_sckcr_star_240mhz in
+   * libs/rx_hal/inc/rx72n_system_regs.h:483.  The earlier "120 MHz
+   * fallback" was a misdiagnosis -- the real blocker was
+   * internal_verify_system_state() failing its PPLL-enabled check
+   * (we intentionally skip PPLL init since USB is dropped), not a
+   * problem with the SCKCR3 switch itself.  Now that the PPLL check
+   * is removed from verify_system_state, 240 MHz should work. */
   k_system_clock_dividers =
     0x20011222, /**< SCKCR: ICK=0(/1)->ICLK=240MHz, BCK=1(/2)->BCLK=120MHz, PCKA=1(/2)->120MHz, PCKB/C/D=2(/4)->60MHz, FCK=2(/4)->60MHz (manual p339) */
   k_system_clock_source_pll = 0x0400,     /**< SCKCR3: Select PLL as system clock source */
@@ -373,7 +384,7 @@ static rx_err_t internal_wait_pll_lock(void)
  * @note Not thread-safe; call only during single-threaded boot
  * @since Version 1.0.0
  */
-static rx_err_t internal_wait_ppll_lock(void)
+[[maybe_unused]] static rx_err_t internal_wait_ppll_lock(void)
 {
 #if RX_IS_SIMULATOR
   /* Simulator: PPLL stable immediately (no hardware PPLL circuit to lock) */
@@ -424,18 +435,25 @@ static rx_err_t internal_start_oscillators_and_plls(void)
   /* Stop sub-clock oscillator (not used) */
   system_regs()->sosccr = k_sub_clock_stopped;
 
-  /* Disable RTC to fully disable sub-clock (RCR3.RTCEN = 0)
-   * Required for complete sub-clock shutdown as per hardware manual */
-  *rtc_rcr3_reg() = k_rcr3_rtcen_disable;
+  /* RTC RCR3 write removed: motors_rtos/clock.c does NOT touch RTC here
+   * and locks the 120 MHz PLL cleanly on this PCB.  Writing RCR3 before
+   * the RTC module-stop has been released may have been perturbing the
+   * sub-clock path.  Keep disabled for bring-up. */
 
   /* Start main oscillator (24 MHz external crystal) */
   system_regs()->mosccr = k_main_osc_enabled;
 
-  /* Wait for main oscillator stabilization (typically 10ms)
-   * NOTE: Busy-wait required - runs before ThreadX initialization */
+  /* Wait for main oscillator stabilization by polling the hardware
+   * OSCOVFSR.MOOVF flag -- exits as soon as the crystal has settled
+   * (~10 ms physical time regardless of CPU clock).  Replaces the old
+   * fixed 2.4M-NOP loop which at LOCO 240 kHz boot clock took ~10
+   * seconds and made the board appear dead.  Same pattern as
+   * motors_rtos/clock.c. */
 #if !RX_IS_SIMULATOR
-  for (volatile uint32_t i = 0; i < k_main_osc_stabilization_cycles; i++) {
-    __asm__ volatile("nop");
+  for (volatile uint32_t i = 0; i < k_main_osc_poll_max; i++) {
+    if ((system_regs()->oscovfsr & k_mosc_stable_flag) != 0U) {
+      break;
+    }
   }
 #endif
 
@@ -448,36 +466,20 @@ static rx_err_t internal_start_oscillators_and_plls(void)
     return pll_err;
   }
 
-  /* Configure PPLL for 48 MHz USB clock: 48 MHz = (24 MHz x 10) / 5
-   * PPLLCR = 0x1300: PPLSTC=19 (x10.0 per manual p366 table), PPLIDIV=00 (/1)
-   * PPLL output = 240 MHz; PPLLCR3 /5 = 48 MHz */
-  *ppllcr_reg()  = k_ppll_config_48mhz;
-  *ppllcr2_reg() = k_ppll_enabled;
-
-  const rx_err_t ppll_err = internal_wait_ppll_lock();
-  if (ppll_err != k_rx_ok) {
-    return ppll_err;
-  }
-
-  /* Set PPLLCR3: divide 240 MHz PPLL output by 5 to produce 48 MHz USB clock.
-   * Must be set after PPLL is operating and stable (PPLOVF=1), while USB module
-   * clock supply is stopped (MSTPB19=1 -- still true here, before module_stop_init).
-   * Per manual Ch09 section 9.2.25 (p368): PPLCK=0100 = /5. */
-  *ppllcr3_reg() = k_ppllcr3_div5;
-
-  /* Route USB0 UCLK from the PPLL path by setting PACKCR.UPLLSEL=1.
-   * Without this, the USB module gets its 48 MHz clock from SCKCR2.UCK
-   * (main-PLL divider), which is not configured here and defaults to a
-   * divider that produces the wrong frequency -- USB0 then never
-   * enumerates even though rx_usb_hw_init() and D+ pull-up run cleanly.
+  /* PPLL (USB 48 MHz clock) init is INTENTIONALLY SKIPPED.
    *
-   * PACKCR layout (RX72N HW manual p365):
-   *   b12 UPLLSEL : 0 = main PLL (default), 1 = PPLL
-   *   b0          : reserved, must be written as 1
+   * Rationale: USB0 device-mode is dropped on this project -- the Pi5
+   * link uses the SCI9-over-Cypress USB-UART bridge path (see memory
+   * feedback_usb_cdc_vs_uart.md and project_rx72n_uart_via_cypress_acm0.md).
+   * motors_rtos's clock.c skips PPLL entirely and runs at 240 MHz
+   * cleanly on this hardware; production's PPLL init had been silently
+   * failing (internal_wait_ppll_lock timeout) and taking main() down
+   * with it before uart_debug_init could run, which is why the board
+   * appeared dead after every production flash.
    *
-   * The HAL struct at rx72n_system_regs.h doesn't expose packcr; write
-   * it via the absolute address the register reference table uses. */
-  *((volatile uint16_t*)k_packcr_addr) = k_packcr_upllsel_ppll;
+   * If/when USB0 is revived, restore the PPLLCR/PPLLCR2/PPLLCR3 +
+   * PACKCR writes and the internal_wait_ppll_lock call.  Until then,
+   * leave PPLL at its reset-default (disabled) state. */
 
   return k_rx_ok;
 }
@@ -506,19 +508,23 @@ static rx_err_t internal_start_oscillators_and_plls(void)
  */
 static rx_err_t internal_switch_to_pll_clock(void)
 {
-  /* CRITICAL: Must set MEMWAIT BEFORE switching to 240 MHz (per RX72N manual Ch09 sec 9.2.2)
-   * "Set MEMWAIT to 1 before increasing ICLK above 120 MHz" */
+  /* PERSISTENT ONE-HOT BISECT LEDs.  On entry, outer bisect has D12
+   * lit ("osc+PLL locked").  We snuff D12 and light D9 to prove we
+   * entered the function.  Each subsequent step snuffs the previous
+   * marker and lights the next; the LED still lit when the board
+   * halts pinpoints the failing line.  On successful return, D9..D11
+   * are snuffed and D12 is re-lit so the caller's state is clean. */
+
   *memwait_reg() = k_memwait_one_wait;
   RX_ASSERT(*memwait_reg() == k_memwait_one_wait, "Precondition: MEMWAIT configuration failed");
 
-  /* Configure system clock dividers */
   system_regs()->sckcr = k_system_clock_dividers;
-
-  /* Verify MEMWAIT still set after clock divider change */
   RX_ASSERT(*memwait_reg() == k_memwait_one_wait,
             "Postcondition: MEMWAIT corrupted after clock switch");
 
-  /* Switch clock source to PLL */
+  /* Route USB UCLK from main PLL (UPLLSEL=0) -- matches motors_rtos/clock.c */
+  *((volatile uint16_t*)k_packcr_addr) = 0x0000U;
+
   system_regs()->sckcr3 = k_system_clock_source_pll;
 
 #if !RX_IS_SIMULATOR
@@ -577,11 +583,22 @@ static rx_err_t internal_clock_init(void)
   /* Unlock protection for clock registers */
   *prcr_reg() = k_rx_prcr_unlock_all;
 
+  /* BRING-UP BISECT inside internal_clock_init.  D10 is still lit at
+   * entry (snuffed only if we advance); these use the same one-hot
+   * scheme as main() but relative to this function:
+   *   D11 = PRCR unlock verified (RX_ASSERT passed)
+   *   D12 = internal_start_oscillators_and_plls returned OK
+   *   D13 = internal_switch_to_pll_clock returned OK (clock switched)
+   * Snuff all on the way out so main() inherits a clean one-hot state. */
+
   /* Precondition: Verify PRCR unlock took effect
    * Note: PRCR key byte (upper 8 bits) reads back as 0x00, so we must mask it */
   RX_ASSERT((*prcr_reg() & k_rx_prcr_readback_mask) ==
               (k_rx_prcr_unlock_all & k_rx_prcr_readback_mask),
             "Precondition: PRCR unlock failed");
+
+  (void)gpio_write_low(k_rx_pb_0);
+  (void)gpio_write_high(k_rx_p7_1); /* D11: PRCR unlock verified */
 
   /* Start oscillators and PLLs (main osc, PLL at 240 MHz, PPLL at 48 MHz USB) */
   const rx_err_t osc_err = internal_start_oscillators_and_plls();
@@ -590,6 +607,9 @@ static rx_err_t internal_clock_init(void)
     return osc_err;
   }
 
+  (void)gpio_write_low(k_rx_p7_1);
+  (void)gpio_write_high(k_rx_p7_2); /* D12: oscillators+PLL locked */
+
   /* Set MEMWAIT and switch system clock to 240 MHz PLL */
   const rx_err_t clk_err = internal_switch_to_pll_clock();
   if (clk_err != k_rx_ok) {
@@ -597,8 +617,14 @@ static rx_err_t internal_clock_init(void)
     return clk_err;
   }
 
+  (void)gpio_write_low(k_rx_p7_2);
+  (void)gpio_write_high(k_rx_pb_1); /* D13: clock switched to PLL */
+
   /* Lock protection */
   *prcr_reg() = k_rx_prcr_lock;
+
+  /* Snuff internal checkpoint so caller sees clean one-hot state. */
+  (void)gpio_write_low(k_rx_pb_1);
 
   return k_rx_ok;
 }
@@ -754,19 +780,10 @@ static rx_err_t internal_verify_system_state(void)
     return k_rx_err_hw_init_failed;
   }
 
-  /* Verify PPLL is enabled for USB clock */
-  const uint8_t ppllcr2 = *ppllcr2_reg();
-  if (ppllcr2 != k_ppll_enabled) {
-    return k_rx_err_hw_init_failed;
-  }
-
-#if !RX_IS_SIMULATOR
-  /* Verify PPLL is stable (hardware only - simulator doesn't model OSCOVFSR flags) */
-  const uint8_t oscovfsr = sys->oscovfsr;
-  if ((oscovfsr & k_ppll_stable_flag) == 0) {
-    return k_rx_err_hw_init_failed;
-  }
-#endif
+  /* PPLL verification removed: production now intentionally skips PPLL
+   * (USB 48 MHz) initialization since USB0 device-mode is dropped.
+   * See matching rationale in internal_start_oscillators_and_plls().
+   * motors_rtos/clock.c skips PPLL entirely and runs cleanly on this PCB. */
 
   /* Verify MEMWAIT is configured for 240 MHz operation */
   const uint8_t memwait = *memwait_reg();
@@ -776,15 +793,15 @@ static rx_err_t internal_verify_system_state(void)
 
   /* Postcondition: All clock configuration verified (NASA Rule 5) */
 #if !RX_IS_SIMULATOR
-  /* Hardware: Verify all clock configuration including PPLL stability */
+  /* Hardware: Verify all clock configuration (PPLL checks removed since we
+   * intentionally skip PPLL init -- see internal_start_oscillators_and_plls). */
   RX_ASSERT((pllcr2 == k_pll_enabled) && (sckcr == k_system_clock_dividers) &&
-              (sckcr3 == k_system_clock_source_pll) && (ppllcr2 == k_ppll_enabled) &&
-              ((oscovfsr & k_ppll_stable_flag) != 0) && (memwait == k_memwait_one_wait),
+              (sckcr3 == k_system_clock_source_pll) && (memwait == k_memwait_one_wait),
             "Postcondition: clock configuration verified");
 #else
-  /* Simulator: Verify clock configuration (skip PPLL stability - not modeled in simulator) */
+  /* Simulator: Verify clock configuration (same, minus PPLL) */
   RX_ASSERT((pllcr2 == k_pll_enabled) && (sckcr == k_system_clock_dividers) &&
-              (sckcr3 == k_system_clock_source_pll) && (ppllcr2 == k_ppll_enabled) &&
+              (sckcr3 == k_system_clock_source_pll) &&
               (memwait == k_memwait_one_wait),
             "Postcondition: clock configuration verified (simulator mode)");
 #endif
@@ -1024,12 +1041,22 @@ static rx_err_t internal_verify_system_state(void)
  */
 rx_err_t rx_clock_power_init(void)
 {
+  /* BRING-UP BISECT LEDs inside clock init (one-hot, dim-friendly).
+   * main() leaves D10 (PB0) lit on entry; we snuff it and light:
+   *   D11 (P71) = internal_clock_init returned OK
+   *   D12 (P72) = internal_module_stop_init returned OK
+   *   D13 (PB1) = internal_verify_system_state returned OK (= full success)
+   * Last lit LED on a halt tells us which sub-step failed.  Delete
+   * once production clock init is known-good. */
+
   /* Initialize clock to 240 MHz */
   rx_err_t err = internal_clock_init();
   if (err != k_rx_ok) {
     /* Can't log - UART not initialized yet */
     return err;
   }
+  (void)gpio_write_low(k_rx_pb_0);
+  (void)gpio_write_high(k_rx_p7_1); /* D11: internal_clock_init OK */
 
   /* Enable peripheral modules */
   err = internal_module_stop_init();
@@ -1037,6 +1064,8 @@ rx_err_t rx_clock_power_init(void)
     /* Can't log - UART not initialized yet */
     return err;
   }
+  (void)gpio_write_low(k_rx_p7_1);
+  (void)gpio_write_high(k_rx_p7_2); /* D12: internal_module_stop_init OK */
 
   /* Postcondition: Verify system state is correctly configured */
   err = internal_verify_system_state();
@@ -1044,8 +1073,13 @@ rx_err_t rx_clock_power_init(void)
     /* Clock or module configuration failed validation */
     return err;
   }
+  (void)gpio_write_low(k_rx_p7_2);
+  (void)gpio_write_high(k_rx_pb_1); /* D13: verify_system_state OK */
 
-  /* System init complete - but still can't log until UART is initialized */
+  /* System init complete - but still can't log until UART is initialized.
+   * Snuff the internal-checkpoint LEDs so main() resumes from a clean
+   * one-hot state and can re-use them for post-clock-init stages. */
+  (void)gpio_write_low(k_rx_pb_1);
 
   return k_rx_ok;
 }

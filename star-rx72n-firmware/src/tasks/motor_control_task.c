@@ -2159,10 +2159,15 @@ static rx_err_t internal_init_encoders(void)
     }
   }
 
-  /* Rear encoders: TPU1 (motor 2) and TPU2 (motor 3) */
+  /* Rear encoders -- physical harness wires BR motor's encoder to TPU2
+   * and BL motor's encoder to TPU1, opposite of the natural motor-index
+   * order.  Verified 2026-04-21 by cross-check with motor_spin_test
+   * IPROPI (M2 draws ~0 current, motor is dead) -- the encoder that
+   * still counted under M2 duty had to be the OTHER back wheel.  See
+   * memory project_encoder_harness_tpu_swap.md. */
   const rx_tpu_channel_t rear_tpu_channels[k_rear_encoder_count] = {
-    k_tpu_channel_1, /* Motor 2: Back-right */
-    k_tpu_channel_2  /* Motor 3: Back-left */
+    k_tpu_channel_2, /* Motor 2 (BR) -> TPU2 per harness */
+    k_tpu_channel_1  /* Motor 3 (BL) -> TPU1 per harness */
   };
 
   const bool rear_invert[k_rear_encoder_count] = {
@@ -2215,7 +2220,7 @@ internal_read_encoder_velocity(float* velocity_rps, const float dt_sec, const ui
     return rx_encoder_read_velocity(velocity_rps, dt_sec, (rx_mtu_channel_t)motor_idx);
   }
 
-  /* Map motor 2 -> TPU1, motor 3 -> TPU2 */
+  /* Per harness: motor 2 (BR) -> TPU2, motor 3 (BL) -> TPU1. */
   const rx_tpu_channel_t tpu_ch =
     (motor_idx == k_motor_back_left) ? k_tpu_channel_1 : k_tpu_channel_2;
   return rx_tpu_encoder_read_velocity(velocity_rps, dt_sec, tpu_ch);
@@ -2246,7 +2251,7 @@ static rx_err_t internal_read_encoder_count(const uint8_t motor_idx, rx_encoder_
     return rx_encoder_read_count((rx_mtu_channel_t)motor_idx, state);
   }
 
-  /* Map motor 2 -> TPU1, motor 3 -> TPU2 */
+  /* Per harness: motor 2 (BR) -> TPU2, motor 3 (BL) -> TPU1. */
   const rx_tpu_channel_t tpu_ch =
     (motor_idx == k_motor_back_left) ? k_tpu_channel_1 : k_tpu_channel_2;
   return rx_tpu_encoder_read_count(tpu_ch, state);

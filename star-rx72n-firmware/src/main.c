@@ -1485,24 +1485,25 @@ static void internal_report_startup_flags(void)
  */
 static rx_err_t internal_check_startup_flags(void)
 {
+  /* Bring-up mode: NEVER halt on reset-cause flags.  All of PORF, IWDTRF,
+   * WDTRF, SWRF, LVD0RF, CWSF are just read-and-ignored here; the full
+   * diagnostic is still printed later via internal_report_startup_flags()
+   * once uart_debug_init() has run.
+   *
+   * Rationale: the prior halt-on-abnormal-reset behaviour killed the
+   * firmware silently on every rfp-cli flash (SWRF set) and on every
+   * post-IWDT reboot (IWDTRF set), because the fatal-error handler
+   * writes to UART which hasn't been initialised at this point in boot.
+   * Result: board appears dead, Cypress CY7C65213 never sees any
+   * telemetry bytes and may even de-enumerate from USB as the board
+   * cycles through a reset loop.  Bench bring-up needs to see the
+   * flags, not halt on them. */
   (void)internal_check_porf();
-  const bool iwdtrf_ok = internal_check_iwdtrf();
-  const bool wdtrf_ok  = internal_check_wdtrf();
-  const bool swrf_ok   = internal_check_swrf();
-  const bool lvd0rf_ok = internal_check_lvd0rf();
-
+  (void)internal_check_iwdtrf();
+  (void)internal_check_wdtrf();
+  (void)internal_check_swrf();
+  (void)internal_check_lvd0rf();
   (void)internal_check_cwsf();
-
-  /* Assert critical startup conditions (fail-fast, system halts on failure):
-   * - IWDTRF should be clear (watchdog reset indicates prior firmware issue) */
-  RX_ASSERT(iwdtrf_ok, "Independent Watchdog Timer reset detected - prior execution fault");
-
-  /* Return error if any non-critical startup flag indicates abnormal condition.
-   * Note: porf_ok and iwdtrf_ok are not checked here as RX_ASSERT above
-   * halts execution if they fail (fail-fast behavior for critical flags). */
-  if (!wdtrf_ok || !swrf_ok || !lvd0rf_ok) {
-    return k_rx_err_hw_init_failed;
-  }
 
   return k_rx_ok;
 }
@@ -2046,6 +2047,14 @@ static void internal_create_system_tasks(void)
   RX_ASSERT(err == k_rx_ok, "imu_task_create must succeed");
 
   /* Obstacle Detection Task - Priority 12 */
+  /* TODO(sonar-bringup): HC-SR04 hardware bring-up unverified as of 2026-04-21.
+   * sonar_test/ (bare-metal polled) flashed and ran cleanly on all 4 channels
+   * but every sonar returned NO_RESPONSE -- ECHO pin never rose after TRIG.
+   * Software stack (rx_hcsr04, rx_obstacle_detect, task, proto, gateway) is
+   * complete; the blocker is on the hardware side. Investigate before trusting
+   * obstacle data: verify VCC is reaching each module, that TRIG pulses are
+   * actually appearing on PF5/PJ5/PJ3/P33 (scope), and that ECHO level is
+   * getting back to P00-P03. Keep the task wired in so the stack stays built. */
   err = obstacle_detect_task_create();
   RX_ASSERT(err == k_rx_ok, "obstacle_detect_task_create must succeed");
 
@@ -2429,20 +2438,42 @@ void tx_application_define(void* first_unused_memory)
  */
 int main(void)
 {
-  /* Check startup flags (via internal_check_startup_flags):
-   *  PORF (Power-On Reset Detect Flag) - asserted, halts on failure
-   *  IWDTRF (Independent Watchdog Timer Reset Detect Flag) - asserted, halts on failure
-   *  WDTRF (Watchdog Timer Reset Detect Flag)
-   *  SWRF (Software Reset Detect Flag)
-   *  LVD0RF (Voltage-Monitoring 0 Reset Detect Flag)
-   *  CWSF (Cold/Warm Start Determination Flag)
-   */
+  /* BRING-UP CHECKPOINTS -- "one hot" LED indicator of how far boot got
+   * without any UART.  Only ONE of the five LEDs is lit at any time --
+   * each stage extinguishes every prior checkpoint LED before lighting
+   * its own, so the single glowing LED tells us exactly where we are.
+   * Keeps total LED brightness down (important -- these are bright).
+   *   D9  (PA7) = main() entered
+   *   D10 (PB0) = startup flags checked
+   *   D11 (P71) = rx_clock_power_init done
+   *   D12 (P72) = uart_debug_init done (UART should be live)
+   *   D13 (PB1) = hardware_init done, about to tx_kernel_enter
+   * GPIO works on the default LOCO 240 kHz clock, no MSTP release needed. */
+  (void)gpio_set_output(k_rx_pa_7);
+  (void)gpio_set_output(k_rx_pb_0);
+  (void)gpio_set_output(k_rx_p7_1);
+  (void)gpio_set_output(k_rx_p7_2);
+  (void)gpio_set_output(k_rx_pb_1);
+  (void)gpio_write_low(k_rx_pa_7);
+  (void)gpio_write_low(k_rx_pb_0);
+  (void)gpio_write_low(k_rx_p7_1);
+  (void)gpio_write_low(k_rx_p7_2);
+  (void)gpio_write_low(k_rx_pb_1);
+  (void)gpio_write_high(k_rx_pa_7); /* D9 on: main() entered */
+
+  /* Check startup flags (bring-up: never halt; diagnostic printed later). */
   rx_err_t ret = internal_check_startup_flags();
-  RX_ERROR_CHECK(ret); /* If this fails, errors cant be logged */
+  RX_ERROR_CHECK(ret);
+
+  (void)gpio_write_low(k_rx_pa_7);
+  (void)gpio_write_high(k_rx_pb_0); /* D10: startup flags checked */
 
   /* Initialize system clocks and power management */
   ret = rx_clock_power_init();
   RX_ERROR_CHECK(ret); /* If this fails, errors cant be logged */
+
+  (void)gpio_write_low(k_rx_pb_0);
+  (void)gpio_write_high(k_rx_p7_1); /* D11: clock init done */
 
   /* ========================================================================
    * EARLY UART INITIALIZATION - Enable error logging ASAP
@@ -2452,6 +2483,8 @@ int main(void)
   /* Report startup flags to console (only if UART initialized successfully) */
   if (ret == k_rx_ok) {
     internal_report_startup_flags();
+    (void)gpio_write_low(k_rx_p7_1);
+    (void)gpio_write_high(k_rx_p7_2); /* D12: UART init OK */
   }
 
   /* Now check UART init status - will halt if failed, but at least tried to report flags */
@@ -2465,6 +2498,9 @@ int main(void)
   /* Initialize application-specific hardware (GPIO, GPTW, timers, UART, SPI, I2C, ADC) */
   ret = hardware_init();
   RX_ERROR_CHECK(ret);
+
+  (void)gpio_write_low(k_rx_p7_2);
+  (void)gpio_write_high(k_rx_pb_1); /* D13: hardware_init done */
 
   /* Start the ThreadX scheduler - should never return */
   tx_kernel_enter();
