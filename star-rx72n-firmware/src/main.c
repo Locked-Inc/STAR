@@ -2089,8 +2089,8 @@ static void internal_create_system_tasks(void)
   RX_ASSERT(err == k_rx_ok, "comm_task_create must succeed");
 
   /* Motor Control Task - Priority 8 */
-  // err = motor_control_task_create();
-  // RX_ASSERT(err == k_rx_ok, "motor_control_task_create must succeed");
+  err = motor_control_task_create();
+  RX_ASSERT(err == k_rx_ok, "motor_control_task_create must succeed");
 
   /* Watchdog Monitor Task - Priority 6 */
   err = watchdog_monitor_task_create();
