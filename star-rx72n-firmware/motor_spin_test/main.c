@@ -41,6 +41,13 @@
 
 extern void clock_init(void);
 
+/* SCI9 polled debug UART (PB7=TXD, PB6=RXD) -> CY7C65213 -> /dev/ttyACM0.
+ * Baud 115200 8N1, matches encoder_test/sci9.c verbatim. */
+extern void sci9_debug_init(void);
+extern void sci9_debug_putc(char c);
+extern void sci9_debug_puts(const char *s);
+extern void sci9_debug_puthex16(uint16_t v);
+
 /* ==========================================================================
  * Direct port register access -- PDR / PODR / PMR for one port n live at
  * 0x0008C000+n, 0x0008C020+n, 0x0008C060+n respectively (RX72N HW manual
@@ -171,6 +178,8 @@ typedef enum : uint32_t {
   k_step_delay_iters = 1000000U,
   /* ~10 ms tWAKE margin after nSLEEP rises (DRV8263H spec: 1.2 ms min). */
   k_twake_iters = 250000U,
+  /* Split each duty-step dwell around the ADC scan (half before, half after). */
+  k_step_delay_halves = 2U,
 } delay_iters_t;
 
 /*
@@ -283,6 +292,153 @@ static bool motor_pwm_init(rx_motor_handle_t handles[k_motor_count])
 }
 
 /* ==========================================================================
+ * S12AD0 (12-bit ADC) bare-metal driver -- reads AN004-AN007 on P44-P47
+ * (DRV8263H IPROPI for motors 3,2,1,0 respectively).
+ *
+ *   S12AD0 base = 0x00089000
+ *   ADCSR    @ +0x00 (16b)  - start/mode control
+ *   ADANSA0  @ +0x04 (16b)  - channel enable mask AN000..AN015
+ *   ADCER    @ +0x0E (16b)  - resolution/data format
+ *   ADSSTR4..7 @ +0xE4..0xE7 (8b each) - sampling state count
+ *   ADDR4..7 @ +0x28..0x2E (16b each) - conversion results
+ *
+ *   MSTPCRA.MSTPA17 releases S12AD0 from module-stop.
+ *   PFS.ASEL=1 turns P44-P47 into analog inputs.
+ * ========================================================================== */
+#define REG16(a) (*(volatile uint16_t *)(uintptr_t)(a))
+
+typedef enum : uintptr_t {
+  k_s12ad0_adcsr_addr   = 0x00089000U,
+  k_s12ad0_adansa0_addr = 0x00089004U,
+  k_s12ad0_adcer_addr   = 0x0008900EU,
+  k_s12ad0_adsstr4_addr = 0x000890E4U,
+  k_s12ad0_addr4_addr   = 0x00089028U, /* AN004 result */
+  k_s12ad0_addr5_addr   = 0x0008902AU,
+  k_s12ad0_addr6_addr   = 0x0008902CU,
+  k_s12ad0_addr7_addr   = 0x0008902EU,
+  k_mstpcra_addr        = 0x00080010U,
+  k_prcr_addr           = 0x000803FEU,
+  k_mpc_pwpr_addr       = 0x0008C11FU,
+  k_mpc_p44pfs_addr     = 0x0008C124U,
+  k_mpc_p45pfs_addr     = 0x0008C125U,
+  k_mpc_p46pfs_addr     = 0x0008C126U,
+  k_mpc_p47pfs_addr     = 0x0008C127U,
+} adc_addrs_t;
+
+typedef enum : uint16_t {
+  k_adcsr_adst        = (uint16_t)(1U << 15),
+  k_adansa_ch4567     = (uint16_t)0x00F0U, /* enable AN004..AN007 */
+  k_adcer_12bit_right = (uint16_t)0x0000U, /* ADPRC=00, ADRFMT=0 */
+  k_prcr_unlock       = (uint16_t)0xA50BU, /* unlock PRC0+PRC1+PRC3 */
+  k_prcr_lock         = (uint16_t)0xA500U,
+} adc_cfg16_t;
+
+typedef enum : uint32_t {
+  k_mstpa17 = (uint32_t)(1UL << 17), /* S12AD0 stop bit */
+} adc_mstp_t;
+
+typedef enum : uint8_t {
+  k_pfs_asel     = 0x80U,
+  k_pwpr_unlock  = 0x00U,
+  k_pwpr_pfswe   = 0x40U,
+  k_pwpr_b0wi    = 0x80U,
+  k_adsstr_def   = 0x14U, /* 20 states sampling, conservative */
+  /* ADSSTR channel offsets in bytes from ADSSTR4 base (one per channel). */
+  k_adsstr_off_ch4 = 0U,
+  k_adsstr_off_ch5 = 1U,
+  k_adsstr_off_ch6 = 2U,
+  k_adsstr_off_ch7 = 3U,
+  /* Decimal print helpers. */
+  k_u16_dec_max_digits = 5U,  /* 65535 is 5 digits */
+  k_dec_radix          = 10U,
+} adc_cfg8_t;
+
+typedef enum : uint32_t {
+  /* Bound on polling loop waiting for ADCSR.ADST to self-clear; the actual
+   * conversion completes in <5 us even at 60 MHz PCLKB, so 100k iters is
+   * pure safety against a hung peripheral (~400 us wall-clock @ 240 MHz). */
+  k_adc_adst_poll_max = 100000U,
+} adc_poll_t;
+
+static void adc0_init(void)
+{
+  /* 1. Release S12AD0 from module-stop (MSTPA17 in MSTPCRA). */
+  REG16(k_prcr_addr) = k_prcr_unlock;
+  *(volatile uint32_t *)k_mstpcra_addr &= ~(uint32_t)k_mstpa17;
+  REG16(k_prcr_addr) = k_prcr_lock;
+
+  /* 2. Set PFS.ASEL=1 for P44-P47 (analog input, digital buffer off). */
+  *(volatile uint8_t *)k_mpc_pwpr_addr    = k_pwpr_unlock;
+  *(volatile uint8_t *)k_mpc_pwpr_addr    = k_pwpr_pfswe;
+  *(volatile uint8_t *)k_mpc_p44pfs_addr  = k_pfs_asel;
+  *(volatile uint8_t *)k_mpc_p45pfs_addr  = k_pfs_asel;
+  *(volatile uint8_t *)k_mpc_p46pfs_addr  = k_pfs_asel;
+  *(volatile uint8_t *)k_mpc_p47pfs_addr  = k_pfs_asel;
+  *(volatile uint8_t *)k_mpc_pwpr_addr    = k_pwpr_unlock;
+  *(volatile uint8_t *)k_mpc_pwpr_addr    = k_pwpr_b0wi;
+
+  /* 3. Configure S12AD0: 12-bit right-justified, single-scan, software trigger. */
+  REG16(k_s12ad0_adcer_addr)   = k_adcer_12bit_right;
+  REG16(k_s12ad0_adansa0_addr) = k_adansa_ch4567;
+
+  /* 4. Sampling state count = 20 for each of the 4 channels. */
+  *(volatile uint8_t *)(k_s12ad0_adsstr4_addr + k_adsstr_off_ch4) = k_adsstr_def;
+  *(volatile uint8_t *)(k_s12ad0_adsstr4_addr + k_adsstr_off_ch5) = k_adsstr_def;
+  *(volatile uint8_t *)(k_s12ad0_adsstr4_addr + k_adsstr_off_ch6) = k_adsstr_def;
+  *(volatile uint8_t *)(k_s12ad0_adsstr4_addr + k_adsstr_off_ch7) = k_adsstr_def;
+
+  /* 5. ADCSR = 0: single-scan, software trigger, no interrupt. */
+  REG16(k_s12ad0_adcsr_addr) = 0U;
+}
+
+/* Single-shot scan of all 4 channels. Blocks until conversion completes. */
+static void adc0_read_all(uint16_t *m0, uint16_t *m1, uint16_t *m2, uint16_t *m3)
+{
+  REG16(k_s12ad0_adcsr_addr) |= k_adcsr_adst;
+  for (volatile uint32_t i = 0U; i < (uint32_t)k_adc_adst_poll_max; i++) {
+    if ((REG16(k_s12ad0_adcsr_addr) & k_adcsr_adst) == 0U) { break; }
+  }
+  /* Per motor_spin_test k_motors[] ordering: M0 uses IN on P1/P2 ports, but
+   * ISENSE pins are the DRV8263H IPROPI outputs wired per docs/03_hardware_pinout:
+   *   AN007 (ADDR7) = Motor 0, AN006 (ADDR6) = Motor 1,
+   *   AN005 (ADDR5) = Motor 2, AN004 (ADDR4) = Motor 3. */
+  if (m0 != (uint16_t *)0) { *m0 = REG16(k_s12ad0_addr7_addr); }
+  if (m1 != (uint16_t *)0) { *m1 = REG16(k_s12ad0_addr6_addr); }
+  if (m2 != (uint16_t *)0) { *m2 = REG16(k_s12ad0_addr5_addr); }
+  if (m3 != (uint16_t *)0) { *m3 = REG16(k_s12ad0_addr4_addr); }
+}
+
+/* Print a uint16_t as up-to-5-digit decimal (no padding). */
+static void print_u16_dec(uint16_t v)
+{
+  char    buf[k_u16_dec_max_digits];
+  uint8_t n = 0;
+  if (v == 0U) {
+    sci9_debug_putc('0');
+    return;
+  }
+  while (v > 0U && n < (uint8_t)sizeof(buf)) {
+    buf[n++] = (char)('0' + (v % k_dec_radix));
+    v = (uint16_t)(v / k_dec_radix);
+  }
+  while (n > 0U) {
+    sci9_debug_putc(buf[--n]);
+  }
+}
+
+/* Print a signed int8 as decimal with leading sign. */
+static void print_i8_dec(int8_t v)
+{
+  if (v < 0) {
+    sci9_debug_putc('-');
+    print_u16_dec((uint16_t)(-(int16_t)v));
+  } else {
+    sci9_debug_putc('+');
+    print_u16_dec((uint16_t)v);
+  }
+}
+
+/* ==========================================================================
  * Status LED helpers (production board)
  * ==========================================================================
  *
@@ -334,7 +490,35 @@ static void run_sweep_step(rx_motor_handle_t handles[k_motor_count], int8_t duty
     (void)rx_motor_set_duty(&handles[i], (float)duty_signed);
   }
   heartbeat_toggle();
-  busy_wait(k_step_delay_iters);
+
+  /* Let PWM settle, then sample IPROPI on all 4 motors and report.
+   * Delay is split in half before/after the ADC scan so the duty step
+   * is visible on the UART roughly mid-dwell, not at its edges. */
+  busy_wait(k_step_delay_iters / k_step_delay_halves);
+
+  uint16_t adc_m0 = 0;
+  uint16_t adc_m1 = 0;
+  uint16_t adc_m2 = 0;
+  uint16_t adc_m3 = 0;
+  adc0_read_all(&adc_m0, &adc_m1, &adc_m2, &adc_m3);
+
+  /* Format: "D=<duty> M0=<raw> M1=<raw> M2=<raw> M3=<raw>\r\n"
+   * Raw is 12-bit ADC count 0..4095. Convert on host:
+   *   V_mV  = raw * 3300 / 4095
+   *   I_mA  = V_mV * 10000 / 10302   (DRV8263H: 5.1k sense, 202 uA/A mirror) */
+  sci9_debug_puts("D=");
+  print_i8_dec(duty_pc);
+  sci9_debug_puts(" M0=");
+  print_u16_dec(adc_m0);
+  sci9_debug_puts(" M1=");
+  print_u16_dec(adc_m1);
+  sci9_debug_puts(" M2=");
+  print_u16_dec(adc_m2);
+  sci9_debug_puts(" M3=");
+  print_u16_dec(adc_m3);
+  sci9_debug_puts("\r\n");
+
+  busy_wait(k_step_delay_iters / k_step_delay_halves);
 }
 
 int main(void)
@@ -351,6 +535,14 @@ int main(void)
    * is the culprit (likely PLL not locking). */
   clock_init();
   led_set(k_port_7, k_bit_led2, true); /* LED2 = clock_init returned */
+
+  /* Step 1a: bring up debug UART so every subsequent init stage reports. */
+  sci9_debug_init();
+  sci9_debug_puts("\r\n[motor_spin_test] boot, clocks up\r\n");
+
+  /* Step 1b: init S12AD0 for AN004..AN007 (motor IPROPI sense). */
+  adc0_init();
+  sci9_debug_puts("[motor_spin_test] S12AD0 AN004-AN007 ready\r\n");
 
   /* Step 2: DRV8263H control GPIOs in the safe order
    * (DRVOFF HIGH -> nSLEEP HIGH -> tWAKE -> DRVOFF LOW). */
