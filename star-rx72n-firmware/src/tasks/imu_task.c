@@ -824,8 +824,13 @@ static imu_wait_result_t internal_wait_for_imu_int(void)
                                             &actual_flags,
                                             (ULONG)k_imu_int_timeout_ticks);
   if (ef_status == TX_NO_EVENTS) {
-    /* Benign watchdog timeout: BNO055 INT did not fire within 200 ms */
-    rx_log_warn(s_tag, "IMU INT timeout (200 ms) - reading without INT");
+    /* Benign timeout: BNO055 INT did not fire within 200 ms. On STAR PCB
+     * revisions where the BNO055 INT line is not observed to toggle, this
+     * path is the normal operating mode and produces a ~5 Hz polled-read
+     * loop via the main-loop's unconditional internal_read_and_publish_imu
+     * call. Demoted from WARN to DEBUG so the log is not spammed at every
+     * iteration when the INT never fires. */
+    rx_log_debug(s_tag, "IMU INT timeout (200 ms) - reading without INT");
     return k_imu_wait_timeout;
   }
   if (ef_status != TX_SUCCESS) {
