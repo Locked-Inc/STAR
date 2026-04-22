@@ -140,7 +140,7 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bmp280_chip_id_expected = 0x58, /**< BMP280 chip ID: register 0xD0 must read 0x58 (BMP280 datasheet section 5.2.1) */
+  k_bmp280_chip_id_expected = 0x58, /**< BMP280 chip ID at reg 0xD0 (DS 5.2.1) */
 } bmp280_chip_id_t;
 
 /**
