@@ -522,9 +522,19 @@ static const char* const s_tag = "COMM";
  *       comm_task_apply_system_config().
  * @since Version 1.0.0
  */
+/* TODO(2026-04-22, comm-channel-bringup): default to UART only.  On
+ * this bench UART-over-USB (SCI9 -> CY7C65213 -> /dev/ttyACM0) is the
+ * sole host link (see CLAUDE.local.md + feedback_usb_cdc_vs_uart.md);
+ * SPI and I2C comm transports aren't physically wired, and bringing
+ * them up currently hangs inside internal_init_transports() /
+ * internal_poll_all_channels(), starving lower-priority tasks (led
+ * heartbeat + telemetry).  Re-enable SPI / I2C here once each
+ * transport init + poll path is verified non-blocking with its host
+ * missing.  Gateway picks channel via runtime config, so making this
+ * the default is safe.
+ */
 static rx_comm_channel_mask_t s_enabled_channels =
-  (rx_comm_channel_mask_t)(k_comm_channel_mask_uart | k_comm_channel_mask_spi |
-                           k_comm_channel_mask_i2c);
+  (rx_comm_channel_mask_t)(k_comm_channel_mask_uart);
 
 /* =============================================================================
  * Public Constants

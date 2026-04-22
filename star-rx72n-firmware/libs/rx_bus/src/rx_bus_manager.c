@@ -159,8 +159,53 @@
 #include "rx_log.h"
 #include "rx_threadx_config.h"
 #include "rx_time_constants.h"
+#include "tx_api.h"
 
 static const char* s_tag = "BUS_MANAGER";
+
+/* ThreadX exposes the current-thread pointer; it is TX_NULL until the
+ * scheduler dispatches its first thread.  `tx_application_define` runs
+ * BEFORE the first dispatch, so every mutex operation from inside it
+ * must be bypassed (this port hangs in tx_mutex_get pre-scheduler).
+ * Once the scheduler is live, real mutex protection kicks in for all
+ * runtime callers (`with_bus`, `find_bus`, `remove_bus`).
+ */
+extern TX_THREAD* _tx_thread_current_ptr;
+
+/**
+ * @brief True once the ThreadX scheduler has dispatched a thread.
+ *
+ * Used to gate mutex operations that are unsafe before the scheduler
+ * is running.  Pre-kernel calls are single-threaded by construction,
+ * so bypassing mutex protection in that phase is correct.
+ */
+static inline bool internal_scheduler_is_running(void)
+{
+  return _tx_thread_current_ptr != TX_NULL;
+}
+
+/**
+ * @brief Scheduler-aware mutex acquire.
+ *
+ * Pre-kernel: returns TX_SUCCESS immediately (no contention possible).
+ * Post-kernel: delegates to tx_mutex_get with the given timeout.
+ */
+static UINT internal_mutex_get_if_running(TX_MUTEX* mtx, ULONG timeout)
+{
+  if (!internal_scheduler_is_running()) {
+    return TX_SUCCESS;
+  }
+  return tx_mutex_get(mtx, timeout);
+}
+
+/** @brief Scheduler-aware mutex release (matches internal_mutex_get_if_running). */
+static UINT internal_mutex_put_if_running(TX_MUTEX* mtx)
+{
+  if (!internal_scheduler_is_running()) {
+    return TX_SUCCESS;
+  }
+  return tx_mutex_put(mtx);
+}
 
 /* =============================================================================
  * Private Helper Functions
@@ -901,7 +946,7 @@ static rx_err_t internal_add_bus_locked(rx_bus_manager_t* manager, rx_bus_config
   const rx_bus_config_t* current = manager->buses;
   while (current != nullptr) {
     if (strncmp(current->name, bus_config->name, k_max_bus_name_len) == 0) {
-      (void)tx_mutex_put(&manager->mutex);
+      (void)internal_mutex_put_if_running(&manager->mutex);
       rx_log_error(s_tag, "Bus with same name already exists");
       return k_rx_err_exists;
     }
@@ -909,7 +954,7 @@ static rx_err_t internal_add_bus_locked(rx_bus_manager_t* manager, rx_bus_config
   }
 
   if (manager->bus_count >= k_max_buses) {
-    (void)tx_mutex_put(&manager->mutex);
+    (void)internal_mutex_put_if_running(&manager->mutex);
     rx_log_error(s_tag, "Maximum buses limit reached");
     return k_rx_err_no_mem;
   }
@@ -917,7 +962,7 @@ static rx_err_t internal_add_bus_locked(rx_bus_manager_t* manager, rx_bus_config
   bus_config->next = manager->buses;
   manager->buses   = bus_config;
   manager->bus_count++;
-  (void)tx_mutex_put(&manager->mutex);
+  (void)internal_mutex_put_if_running(&manager->mutex);
   rx_log_info(s_tag, "Bus added successfully");
   return k_rx_ok;
 }
@@ -935,7 +980,7 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
 
   const ULONG timeout_ticks =
     (k_bus_manager_mutex_timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
-  const UINT status = tx_mutex_get(&manager->mutex, timeout_ticks);
+  const UINT status = internal_mutex_get_if_running(&manager->mutex, timeout_ticks);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "Mutex timeout in add_bus");
     return k_rx_err_timeout;
@@ -1158,7 +1203,7 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
   timeout_ticks = (k_bus_manager_mutex_timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
 
   /* Lock mutex for thread-safe access */
-  status = tx_mutex_get(&manager->mutex, timeout_ticks);
+  status = internal_mutex_get_if_running(&manager->mutex, timeout_ticks);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "Mutex timeout in remove_bus");
     return k_rx_err_timeout;
@@ -1173,7 +1218,7 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
       *indirect = to_remove->next;
       manager->bus_count--;
 
-      (void)tx_mutex_put(&manager->mutex);
+      (void)internal_mutex_put_if_running(&manager->mutex);
 
       /* Note: bus_config memory is owned by caller, we don't free it */
       rx_log_info(s_tag, "Bus removed successfully");
@@ -1183,7 +1228,7 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
   }
 
   /* Not found */
-  (void)tx_mutex_put(&manager->mutex);
+  (void)internal_mutex_put_if_running(&manager->mutex);
   rx_log_error(s_tag, "Bus not found");
   return k_rx_err_not_found;
 }
@@ -1209,7 +1254,7 @@ rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_conf
   timeout_ticks = (k_bus_manager_mutex_timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
 
   /* Lock mutex for thread-safe access */
-  status = tx_mutex_get(&manager->mutex, timeout_ticks);
+  status = internal_mutex_get_if_running(&manager->mutex, timeout_ticks);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "Mutex timeout in find_bus");
     return k_rx_err_timeout;
@@ -1220,14 +1265,14 @@ rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_conf
   while (current != nullptr) {
     if (strncmp(current->name, name, k_max_bus_name_len) == 0) {
       *bus_config = current;
-      (void)tx_mutex_put(&manager->mutex);
+      (void)internal_mutex_put_if_running(&manager->mutex);
       return k_rx_ok;
     }
     current = current->next;
   }
 
   /* Not found */
-  (void)tx_mutex_put(&manager->mutex);
+  (void)internal_mutex_put_if_running(&manager->mutex);
   rx_log_error(s_tag, "Bus not found");
   return k_rx_err_not_found;
 }
@@ -1251,7 +1296,7 @@ rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t*       manager,
   timeout_ticks = (k_bus_manager_mutex_timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
 
   /* Lock mutex for thread-safe access */
-  status = tx_mutex_get(&manager->mutex, timeout_ticks);
+  status = internal_mutex_get_if_running(&manager->mutex, timeout_ticks);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "Mutex timeout in with_bus");
     return k_rx_err_timeout;
@@ -1265,7 +1310,7 @@ rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t*       manager,
       err = callback(current, user_ctx);
 
       /* Unlock mutex */
-      (void)tx_mutex_put(&manager->mutex);
+      (void)internal_mutex_put_if_running(&manager->mutex);
 
       return err;
     }
@@ -1273,7 +1318,7 @@ rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t*       manager,
   }
 
   /* Not found */
-  (void)tx_mutex_put(&manager->mutex);
+  (void)internal_mutex_put_if_running(&manager->mutex);
   rx_log_error(s_tag, "Bus not found");
   return k_rx_err_not_found;
 }

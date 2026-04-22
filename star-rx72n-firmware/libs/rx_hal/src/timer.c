@@ -205,6 +205,16 @@ void __attribute__((interrupt)) cmt0_isr(void);
 /** @brief Log tag for this module */
 static const char* const s_tag = "TIMER";
 
+/* Force-keep src/boot/cmt0_vector.S: the linker script references
+ * `$tableentry$28$.rvectors` via a DEFINED() expression, which does
+ * NOT count as a GC-sections root.  Without this pointer-in-rodata
+ * holding the ISR section's address, --gc-sections drops the entire
+ * cmt0_vector.S .text sub-section and vector 28 ends up as 0 instead
+ * of the ThreadX tick ISR.  See src/boot/cmt0_vector.S for context. */
+extern const uint32_t rx_cmt0_vector_anchor; /* GNURX prepends _ -> _rx_cmt0_vector_anchor in asm */
+__attribute__((used)) const void* const g_cmt0_vector_keep =
+  (const void*)&rx_cmt0_vector_anchor;
+
 /* =============================================================================
  * CMT0 Configuration Constants
  * =============================================================================
@@ -272,6 +282,27 @@ typedef enum : uint16_t {
    * @par Context: App tasks = 0, System tick = 3, Motor = 5, Faults = 7
    */
   k_cmt0_irq_priority = 3,
+
+  /**
+   * @brief ICU IPR register index for CMT0_CMI0 interrupt on RX72N
+   * @details
+   * RX72N's ICU IPR registers are SPARSELY mapped -- IPR[] array index
+   * is NOT the vector number.  Per the RX72N HW manual section 14
+   * (ICU), vector 28 (CMT0_CMI0) shares IPR[4] (0x00087304) with other
+   * group-4 peripherals.  Writing to ipr[28] (0x0008731C) is silently
+   * dropped, so the interrupt priority would remain at 0 (= disabled)
+   * and the CMT0 compare-match ISR would never be accepted by the CPU
+   * even though CMT0 itself was counting.
+   *
+   * This was the root cause of ThreadX ticks never firing in the
+   * production firmware's original timer_init(); tasks' tx_thread_sleep
+   * calls hung forever because _tx_timer_system_clock was frozen.
+   *
+   * Verified on hardware 2026-04-21: writing to IPR[4] made the ISR
+   * counter advance (0 -> 604+ in ~6 s).  Writing to IPR[28] produced
+   * zero ISR entries.  Same workaround applied in motors_rtos/cmt0.c.
+   */
+  k_cmt0_ipr_index = 4,
 } cmt0_config_t;
 
 /**
@@ -724,8 +755,10 @@ rx_err_t timer_init(void)
   /* Clear any pending interrupt */
   icu()->ir[k_vect_cmt0_cmi0] = k_icu_ir_clear;
 
-  /* Set interrupt priority (3 out of 15) */
-  icu()->ipr[k_vect_cmt0_cmi0] = k_cmt0_irq_priority;
+  /* Set interrupt priority (3 out of 15).  RX72N IPR array is SPARSE --
+   * ipr[vector] is wrong; CMT0_CMI0 actually lives at ipr[4]. See
+   * k_cmt0_ipr_index declaration above for the full rationale. */
+  icu()->ipr[k_cmt0_ipr_index] = k_cmt0_irq_priority;
 
   /* Enable CMT0 interrupt in ICU */
   const uint8_t ier_bit  = (uint8_t)(k_vect_cmt0_cmi0 % k_icu_ier_bits_per_reg);
