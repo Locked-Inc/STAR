@@ -162,6 +162,7 @@
 #include <pb_encode.h>
 #include <string.h>
 
+#include "gen/star/v1/wire.pb.h"
 #include "rx_check.h"
 
 /* nanopb's pb_ostream_from_buffer() and pb_istream_from_buffer() return structs
@@ -1384,10 +1385,29 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
     return k_rx_err_invalid_size;
   }
 
+  /* Wrap TelemetryData inside a WireMessage so the payload on the wire
+   * matches the envelope the gateway dispatcher unmarshals: the Go
+   * dispatcher (star_gateway/internal/dispatcher/dispatcher.go) calls
+   * proto.Unmarshal into a &starv1.WireMessage{} and routes on the
+   * oneof. Without the wrap the dispatcher drops every frame silently
+   * at debug level with "failed to unmarshal wire message" and nothing
+   * reaches ROS2.
+   *
+   * s_wire is file-scope (static) rather than a stack local: the union
+   * in star_v1_WireMessage spans every oneof variant (TelemetryData,
+   * TransportDiagnostics, PidConfig, ...) so sizeof(star_v1_WireMessage)
+   * can be hundreds of bytes. Putting it on the telemetry_task 2 KB
+   * stack alongside s_telem_buffer exhausts headroom. Single-writer
+   * (telemetry_task is the only producer), so the static has no
+   * reentrancy concern. */
+  static star_v1_WireMessage s_wire;
+  s_wire.which_payload          = star_v1_WireMessage_telemetry_data_tag;
+  s_wire.payload.telemetry_data = *msg;
+
   pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
 
   /* pb_encode always succeeds for valid msg with sufficient buffer (pre-validated above) */
-  (void)pb_encode(&stream, star_v1_TelemetryData_fields, msg);
+  (void)pb_encode(&stream, star_v1_WireMessage_fields, &s_wire);
   *len = stream.bytes_written;
 
   return k_rx_ok;
