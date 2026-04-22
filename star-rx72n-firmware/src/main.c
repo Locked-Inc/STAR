@@ -316,6 +316,11 @@ static_assert(k_i2c_addr_mpu6050 != k_i2c_addr_bno055 && k_i2c_addr_mpu6050 != k
  *
  * @since Version 1.0.0
  */
+/** @brief Log tags for this translation unit (project convention: variables, not string literals) */
+[[maybe_unused]] static const char* const s_tag         = "MAIN";
+static const char* const                  s_boot_tag    = "BOOT";
+static const char* const                  s_mpu6050_tag = "MPU6050";
+
 static rx_bus_config_t s_onewire0_config;
 
 /**
@@ -611,9 +616,9 @@ static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
  * // Check boot type
  * bool cold_start = internal_check_porf();
  * if (cold_start) {
- *   rx_log_info("MAIN", "Cold start detected (power-on reset)");
+ *   rx_log_info(s_tag, "Cold start detected (power-on reset)");
  * } else {
- *   rx_log_info("MAIN", "Warm start detected (software/watchdog reset)");
+ *   rx_log_info(s_tag, "Warm start detected (software/watchdog reset)");
  * }
  * @endcode
  *
@@ -839,8 +844,8 @@ static bool internal_check_rstsr2_flag_clear(const uint8_t flag_mask)
  * // Startup validation in main():
  * bool iwdtrf_ok = internal_check_iwdtrf();
  * if (!iwdtrf_ok) {
- *   rx_log_error("MAIN", "CRITICAL: Independent Watchdog Timer reset detected");
- *   rx_log_error("MAIN", "Prior execution hung or failed to refresh watchdog");
+ *   rx_log_error(s_tag, "CRITICAL: Independent Watchdog Timer reset detected");
+ *   rx_log_error(s_tag, "Prior execution hung or failed to refresh watchdog");
  *   // Halt execution (fail-fast)
  *   RX_ASSERT(false, "IWDT timeout - firmware bug detected");
  * }
@@ -1076,8 +1081,8 @@ static bool internal_check_swrf(void)
  * // Startup check:
  * bool lvd0rf_ok = internal_check_lvd0rf();
  * if (!lvd0rf_ok) {
- *   rx_log_warn("MAIN", "Brownout reset detected (VCC dropped below threshold)");
- *   rx_log_warn("MAIN", "Check power supply capacity and motor inrush current");
+ *   rx_log_warn(s_tag, "Brownout reset detected (VCC dropped below threshold)");
+ *   rx_log_warn(s_tag, "Check power supply capacity and motor inrush current");
  *
  * }
  * @endcode
@@ -1179,15 +1184,15 @@ static bool internal_check_lvd0rf(void)
  * // Log boot type for diagnostics:
  * bool warm_start = internal_check_cwsf();
  * if (warm_start) {
- *   rx_log_info("MAIN", "Warm start detected (processor-initiated reset)");
+ *   rx_log_info(s_tag, "Warm start detected (processor-initiated reset)");
  *   // Optional: Check other flags to determine specific warm start cause
  *   if (internal_check_swrf()) {
- *     rx_log_info("MAIN", "  -> Software reset (SWRF set)");
+ *     rx_log_info(s_tag, "  -> Software reset (SWRF set)");
  *   } else if (internal_check_wdtrf()) {
- *     rx_log_info("MAIN", "  -> Watchdog reset (WDTRF set)");
+ *     rx_log_info(s_tag, "  -> Watchdog reset (WDTRF set)");
  *   }
  * } else {
- *   rx_log_info("MAIN", "Cold start detected (power-on or voltage recovery)");
+ *   rx_log_info(s_tag, "Cold start detected (power-on or voltage recovery)");
  * }
  * @endcode
  *
@@ -1315,32 +1320,32 @@ static void internal_report_startup_flags(void)
 
   /* Report power-on reset flag (PORF) */
   if (rstsr0_val & k_rstsr0_porf) {
-    rx_log_info("BOOT", "Cold boot - Power-on reset detected (PORF=1)");
+    rx_log_info(s_boot_tag, "Cold boot - Power-on reset detected (PORF=1)");
   } else {
-    rx_log_info("BOOT", "Warm boot - No power-on reset (PORF=0)");
+    rx_log_info(s_boot_tag, "Warm boot - No power-on reset (PORF=0)");
   }
 
   /* Report cold/warm start flag (CWSF) */
   if (rstsr1_val & k_rstsr1_cwsf) {
-    rx_log_info("BOOT", "Warm start - Processor-initiated reset (CWSF=1)");
+    rx_log_info(s_boot_tag, "Warm start - Processor-initiated reset (CWSF=1)");
   } else {
-    rx_log_info("BOOT", "Cold start - Power/voltage related (CWSF=0)");
+    rx_log_info(s_boot_tag, "Cold start - Power/voltage related (CWSF=0)");
   }
 
   /* Report abnormal conditions */
   if (rstsr2_val & k_rstsr2_wdtrf) {
-    rx_log_warn("BOOT", "Watchdog Timer timeout reset detected (WDTRF=1)");
-    rx_log_warn("BOOT", "  -> Check for firmware hang or intentional WDT reset");
+    rx_log_warn(s_boot_tag, "Watchdog Timer timeout reset detected (WDTRF=1)");
+    rx_log_warn(s_boot_tag, "  -> Check for firmware hang or intentional WDT reset");
   }
 
   if (rstsr2_val & k_rstsr2_swrf) {
-    rx_log_info("BOOT", "Software reset detected (SWRF=1)");
-    rx_log_info("BOOT", "  -> May be intentional (bootloader, firmware update, debug)");
+    rx_log_info(s_boot_tag, "Software reset detected (SWRF=1)");
+    rx_log_info(s_boot_tag, "  -> May be intentional (bootloader, firmware update, debug)");
   }
 
   if (rstsr0_val & k_rstsr0_lvd0rf) {
-    rx_log_warn("BOOT", "Brownout reset detected (LVD0RF=1)");
-    rx_log_warn("BOOT", "  -> VCC dropped below threshold - Check power supply!");
+    rx_log_warn(s_boot_tag, "Brownout reset detected (LVD0RF=1)");
+    rx_log_warn(s_boot_tag, "  -> VCC dropped below threshold - Check power supply!");
   }
 
   /* Note: IWDTRF not reported here - if set, system halts in internal_check_startup_flags() */
@@ -1464,7 +1469,7 @@ static void internal_report_startup_flags(void)
  *
  *   if (ret == k_rx_err_hw_init_failed) {
  *     // Non-critical error: log and continue (or halt if desired)
- *     rx_log_warn("MAIN", "Abnormal reset detected, continuing boot");
+ *     rx_log_warn(s_tag, "Abnormal reset detected, continuing boot");
  *   }
  *
  *   // Continue with clock and hardware initialization
@@ -1887,12 +1892,12 @@ static void internal_register_system_buses(void)
     err       = rx_bus_i2c_write_read(&g_bus_manager, "i2c1_mpu", &who_am_i_reg, 1U, &who_am_i, 1U);
     probe_err = err;
     if (err == k_rx_ok) {
-      rx_log_info_val("MPU6050", "WHO_AM_I=0x", who_am_i);
+      rx_log_info_val(s_mpu6050_tag, "WHO_AM_I=0x", who_am_i);
     } else {
-      rx_log_error_val("MPU6050", "WHO_AM_I read failed err=", (uint32_t)err);
+      rx_log_error_val(s_mpu6050_tag, "WHO_AM_I read failed err=", (uint32_t)err);
     }
   } else {
-    rx_log_error_val("MPU6050", "bus setup failed err=", (uint32_t)err);
+    rx_log_error_val(s_mpu6050_tag, "bus setup failed err=", (uint32_t)err);
   }
 
   /* Persist the result to data flash @ 0x00100000 so it's readable via
@@ -2079,13 +2084,13 @@ static void internal_create_system_tasks(void)
   // err = obstacle_detect_task_create();
   // RX_ASSERT(err == k_rx_ok, "obstacle_detect_task_create must succeed");
 
-  /* Motor Control Task - Priority 8 */
-  // err = motor_control_task_create();
-  // RX_ASSERT(err == k_rx_ok, "motor_control_task_create must succeed");
-
   /* Communication Task - Priority 5 (highest) */
   err = comm_task_create();
   RX_ASSERT(err == k_rx_ok, "comm_task_create must succeed");
+
+  /* Motor Control Task - Priority 8 */
+  // err = motor_control_task_create();
+  // RX_ASSERT(err == k_rx_ok, "motor_control_task_create must succeed");
 
   /* Watchdog Monitor Task - Priority 6 */
   err = watchdog_monitor_task_create();
