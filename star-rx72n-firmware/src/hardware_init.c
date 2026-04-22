@@ -1002,6 +1002,8 @@ static rx_err_t internal_gpio_init_imu(void)
 typedef enum : uint8_t {
   k_imu_irq_num        = 12U,   /**< IRQ number for P3.2 (BNO055 INT pin) */
   k_irqcr_falling_edge = 0x04U, /**< IRQCR[n] bits[3:2]=01: falling-edge trigger */
+  k_irqcr_rising_edge  = 0x08U, /**< IRQCR[n] bits[3:2]=10: rising-edge trigger */
+  k_irqcr_both_edges   = 0x0CU, /**< IRQCR[n] bits[3:2]=11: both-edges trigger (HUM 15.2.5) */
   k_icu_ir_clear_imu   = 0U,    /**< Write 0 to IR register to clear pending flag */
   k_imu_irq_priority   = 7U,    /**< IPR priority (between comm=6 and motor=8) */
   k_imu_ier_bits       = 8U,    /**< Bits per IER register (vector/8 = IER index) */
@@ -1079,8 +1081,18 @@ static rx_err_t internal_gpio_init_imu_irq(void)
 
   volatile rx_icu_regs_t* const icu_regs = icu();
 
-  /* Step 4: Falling-edge trigger: IRQCR[12] bits[3:2] = 01 = 0x04 */
-  icu_regs->irqcr[k_imu_irq_num] = k_irqcr_falling_edge;
+  /* Step 4: Both-edges detection. docs/sections/03_hardware_pinout.tex
+   * describes IMU INT as active-low; BNO055 datasheet section 3.6 says
+   * the INT pin is active-high push-pull. Both-edges catches either
+   * polarity so ACC_BSX_DRDY pulses at ~100 Hz fire the ISR regardless
+   * of which document is correct. The ISR is edge-triggered and clears
+   * IR[76] unconditionally, so extra edges cost only a few cycles and
+   * do not misfire. Empirically, even with both-edges configured, the
+   * INT pin on this PCB revision is not observed to toggle -- the IMU
+   * task falls back to 200 ms polling (k_imu_wait_timeout path), which
+   * reads sensor data successfully at ~5 Hz via the polling branch of
+   * internal_wait_for_imu_int. */
+  icu_regs->irqcr[k_imu_irq_num] = k_irqcr_both_edges;
 
   /* Step 5: Set priority (7 = between comm ISR priority 6 and motor 8) */
   icu_regs->ipr[k_imu_irq_vector] = k_imu_irq_priority;
