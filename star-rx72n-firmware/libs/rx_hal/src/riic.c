@@ -377,16 +377,16 @@ typedef enum : uint32_t {
  * reads do not (the addr|R ACK succeeds but the first SCL of data
  * reception glitches the RIIC FSM and MST drops mid-read). */
 typedef enum : uint8_t {
-  k_riic_cks_100khz  = 4U,  /**< ICMR1.CKS[2:0] = 100b for 100 kbps @ 60 MHz PCLK */
-  k_riic_icbrh_100k  = 14U, /**< ICBRH count, HUM Table 42.5 */
-  k_riic_icbrl_100k  = 17U, /**< ICBRL count, HUM Table 42.5 */
-  k_riic_cks_400khz  = 2U,  /**< ICMR1.CKS[2:0] = 010b for 400 kbps @ 60 MHz PCLK */
-  k_riic_icbrh_400k  = 8U,  /**< ICBRH count, HUM Table 42.5 */
-  k_riic_icbrl_400k  = 19U, /**< ICBRL count, HUM Table 42.5 */
-  k_riic_cks_1mhz    = 0U,  /**< ICMR1.CKS[2:0] = 000b for 1 Mbps @ 60 MHz PCLK */
-  k_riic_icbrh_1m    = 15U, /**< ICBRH count, HUM Table 42.5 */
-  k_riic_icbrl_1m    = 29U, /**< ICBRL count, HUM Table 42.5 */
-  k_riic_cks_shift   = 4U,  /**< ICMR1 bit position of CKS[0] (CKS is bits [6:4]) */
+  k_riic_cks_100khz = 4U,  /**< ICMR1.CKS[2:0] = 100b for 100 kbps @ 60 MHz PCLK */
+  k_riic_icbrh_100k = 14U, /**< ICBRH count, HUM Table 42.5 */
+  k_riic_icbrl_100k = 17U, /**< ICBRL count, HUM Table 42.5 */
+  k_riic_cks_400khz = 2U,  /**< ICMR1.CKS[2:0] = 010b for 400 kbps @ 60 MHz PCLK */
+  k_riic_icbrh_400k = 8U,  /**< ICBRH count, HUM Table 42.5 */
+  k_riic_icbrl_400k = 19U, /**< ICBRL count, HUM Table 42.5 */
+  k_riic_cks_1mhz   = 0U,  /**< ICMR1.CKS[2:0] = 000b for 1 Mbps @ 60 MHz PCLK */
+  k_riic_icbrh_1m   = 15U, /**< ICBRH count, HUM Table 42.5 */
+  k_riic_icbrl_1m   = 29U, /**< ICBRL count, HUM Table 42.5 */
+  k_riic_cks_shift  = 4U,  /**< ICMR1 bit position of CKS[0] (CKS is bits [6:4]) */
 } riic_bit_rate_t;
 
 /**
@@ -405,7 +405,8 @@ typedef enum : uint8_t {
  * | 2-0 | BC   | Bit counter |
  */
 typedef enum : uint8_t {
-  k_riic_icmr1_controller_7bit = 0x08, /**< CKS=0, BCWP=1, 7-bit addressing; MTWP=0 keeps MST/TRS read-only so the hardware START/STOP FSM drives them, per HUM section 42.2.3. MTWP=1 was tried and caused "Start condition failed" on every transaction because iccr2=MST|TRS pre-writes the mode bits before START fires and the FSM gets desynced. */
+  k_riic_icmr1_controller_7bit =
+    0x08, /**< CKS=0, BCWP=1, 7-bit addressing; MTWP=0 keeps MST/TRS read-only so the hardware START/STOP FSM drives them, per HUM section 42.2.3. MTWP=1 was tried and caused "Start condition failed" on every transaction because iccr2=MST|TRS pre-writes the mode bits before START fires and the FSM gets desynced. */
 } riic_icmr1_values_t;
 
 /**
@@ -583,11 +584,11 @@ static const char* s_tag = "RIIC";
  *   Port 2 ODR0 @ 0x0008C084 -- pin pair bits (P20 -> bit1, P21 -> bit3)
  */
 typedef enum : uint32_t {
-  k_riic_recov_cycles      = 9U,     /**< 9 SCL edges: flush one byte + ACK */
-  k_riic_recov_half_us     = 5U,     /**< 5 us half-period -> ~100 kHz SCL */
-  k_riic_recov_cpu_mhz     = 240U,   /**< ICLK frequency for busy-wait math */
-  k_riic_recov_stop_us     = 5U,     /**< STOP condition SDA-low-then-high delay */
-  k_riic_port2_odr0_addr   = 0x0008C084U, /**< Port 2 ODR0 (P20/P21 N-ch open-drain) */
+  k_riic_recov_cycles    = 9U,          /**< 9 SCL edges: flush one byte + ACK */
+  k_riic_recov_half_us   = 5U,          /**< 5 us half-period -> ~100 kHz SCL */
+  k_riic_recov_cpu_mhz   = 240U,        /**< ICLK frequency for busy-wait math */
+  k_riic_recov_stop_us   = 5U,          /**< STOP condition SDA-low-then-high delay */
+  k_riic_port2_odr0_addr = 0x0008C084U, /**< Port 2 ODR0 (P20/P21 N-ch open-drain) */
 } riic_recovery_constants_t;
 
 /**
@@ -617,10 +618,10 @@ typedef struct {
  * docs/sections/03_hardware_pinout.tex for the canonical pin assignment.
  */
 static const riic_recovery_pins_t k_riic_recovery_pins[k_riic_max_channels] = {
-    [k_riic_channel_0] = {0U, 0U, 0U, 0U, 0U},
-    [k_riic_channel_1] = {0x0008C002U, k_riic_port2_odr0_addr, 1U, 0U,
-                          (uint8_t)((1U << 1) | (1U << 3))},
-    [k_riic_channel_2] = {0U, 0U, 0U, 0U, 0U},
+  [k_riic_channel_0] = {0U, 0U, 0U, 0U, 0U},
+  [k_riic_channel_1] =
+    {0x0008C002U, k_riic_port2_odr0_addr, 1U, 0U, (uint8_t)((1U << 1) | (1U << 3))},
+  [k_riic_channel_2] = {0U, 0U, 0U, 0U, 0U},
 };
 
 /**
@@ -749,20 +750,16 @@ static void internal_riic_bit_bang_recover(uint8_t channel)
 
   for (uint16_t i = 0; i < (uint16_t)k_riic_recov_cycles; i++) {
     port->podr &= (uint8_t)~scl_mask;
-    internal_riic_busy_wait_us((uint16_t)k_riic_recov_half_us,
-                               (uint16_t)k_riic_recov_cpu_mhz);
+    internal_riic_busy_wait_us((uint16_t)k_riic_recov_half_us, (uint16_t)k_riic_recov_cpu_mhz);
     port->podr |= scl_mask;
-    internal_riic_busy_wait_us((uint16_t)k_riic_recov_half_us,
-                               (uint16_t)k_riic_recov_cpu_mhz);
+    internal_riic_busy_wait_us((uint16_t)k_riic_recov_half_us, (uint16_t)k_riic_recov_cpu_mhz);
   }
 
   /* Manual STOP: SDA low (SCL already high), then SDA high. */
   port->podr &= (uint8_t)~sda_mask;
-  internal_riic_busy_wait_us((uint16_t)k_riic_recov_stop_us,
-                             (uint16_t)k_riic_recov_cpu_mhz);
+  internal_riic_busy_wait_us((uint16_t)k_riic_recov_stop_us, (uint16_t)k_riic_recov_cpu_mhz);
   port->podr |= sda_mask;
-  internal_riic_busy_wait_us((uint16_t)k_riic_recov_stop_us,
-                             (uint16_t)k_riic_recov_cpu_mhz);
+  internal_riic_busy_wait_us((uint16_t)k_riic_recov_stop_us, (uint16_t)k_riic_recov_cpu_mhz);
 
   /* Tristate pads + clear open-drain. DO NOT raise PMR here -- see
    * internal_riic_bit_bang_handback() for the reason. */
@@ -1175,8 +1172,7 @@ static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
    * the RIIC state machine latched stuck (pad bit=1). RIIC1 = port 2
    * (0x0008C002). Struct access lets rx72n_port_regs.h static_asserts catch
    * layout drift at compile time. */
-  rx_log_debug_val(s_tag, "  PIDR =0x",
-                   ((volatile const rx_port_regs_t*)0x0008C002U)->pidr);
+  rx_log_debug_val(s_tag, "  PIDR =0x", ((volatile const rx_port_regs_t*)0x0008C002U)->pidr);
   rx_log_debug_val(s_tag, "  ICCR2=0x", riic->iccr2);
   rx_log_debug_val(s_tag, "  ICSR2=0x", riic->icsr2);
   const uint8_t saved_icbrh = riic->icbrh;
@@ -1249,7 +1245,7 @@ static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
   riic->icbrl = saved_icbrl;
   riic->icmr1 = saved_icmr1;
   riic->icmr2 = saved_icmr2;
-  riic->icmr3 = k_riic_icmr3_init; /* Restore ACKWP=1 (IICRST wiped it). */
+  riic->icmr3 = k_riic_icmr3_init;     /* Restore ACKWP=1 (IICRST wiped it). */
   riic->icsr1 = k_riic_register_clear; /* Drop any stale flag that survived. */
   riic->icsr2 = k_riic_register_clear;
   riic->iccr1 = k_riic_iccr1_ice;
@@ -1269,7 +1265,8 @@ static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
    * a peripheral is still physically holding the line low and no amount
    * of software will fix it. */
   if (channel == (uint8_t)k_riic_channel_1) {
-    rx_log_debug_val(s_tag, "  post-recover PIDR=0x",
+    rx_log_debug_val(s_tag,
+                     "  post-recover PIDR=0x",
                      ((volatile const rx_port_regs_t*)0x0008C002U)->pidr);
   }
 
@@ -1682,8 +1679,10 @@ static rx_err_t internal_write_address_for_read(volatile rx_riic_regs_t* riic,
  * @see internal_write_byte() Companion function for transmitting bytes
  */
 [[maybe_unused]]
-static rx_err_t internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data,
-                                   const bool send_ack, const bool last_byte)
+static rx_err_t internal_read_byte(volatile rx_riic_regs_t* riic,
+                                   uint8_t*                 data,
+                                   const bool               send_ack,
+                                   const bool               last_byte)
 {
   /* Wait for receive data full */
   uint32_t timeout = k_riic_timeout_us;
@@ -1748,8 +1747,7 @@ static rx_err_t internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data,
     /* Clear STOP + NACKF so the next transaction starts from a clean
      * status register. ICMR3.ACKBT left at 1 is harmless -- it gets
      * re-written by the next internal_read_byte. */
-    riic->icsr2 &=
-      (uint8_t) ~(uint8_t)(k_riic_icsr2_stop | k_riic_icsr2_nackf);
+    riic->icsr2 &= (uint8_t) ~(uint8_t)(k_riic_icsr2_stop | k_riic_icsr2_nackf);
   }
 
   return k_rx_ok;
@@ -2173,7 +2171,7 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
   uint8_t        icbrl     = 0;
   uint8_t        icbrh     = 0;
   uint8_t        cks_field = 0;
-  const rx_err_t err = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh, &cks_field);
+  const rx_err_t err       = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh, &cks_field);
   RX_RETURN_ON_ERROR(err, s_tag, "Bit rate calculation failed");
 
   /* Configure bit rate */
@@ -2181,9 +2179,8 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
   riic->icbrh = icbrh;
 
   /* Configure RIIC for controller mode + CKS per HUM Table 42.5 */
-  riic->icmr1 = (uint8_t)(k_riic_icmr1_controller_7bit
-                          | (uint8_t)(cks_field << k_riic_cks_shift));
-  riic->icmr2 = k_riic_icmr2_default;         /* No timeout, no clock sync */
+  riic->icmr1 = (uint8_t)(k_riic_icmr1_controller_7bit | (uint8_t)(cks_field << k_riic_cks_shift));
+  riic->icmr2 = k_riic_icmr2_default; /* No timeout, no clock sync */
   /* ICMR3 = ACKWP | 0 -- ACKWP=1 is mandatory so internal_read_byte() can
    * toggle ACKBT to NACK the final received byte. Leaving ACKWP=0 here was
    * the silent root cause of "Stop condition timeout" after every read: the

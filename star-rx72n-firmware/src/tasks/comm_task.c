@@ -387,7 +387,6 @@
 
 #include "comm_task.h"
 
-#include "rx72n_sci_regs.h"
 #include "rx_check.h"
 #include "rx_comm_manager.h"
 #include "rx_frame.h"
@@ -414,11 +413,10 @@
  * @brief Communication task configuration constants
  */
 typedef enum : uint16_t {
-  k_comm_task_stack_size       = 2048, /**< Stack size in bytes */
-  k_comm_task_priority         = 5,    /**< ThreadX priority (highest app priority) */
-  k_comm_task_sleep_ticks      = 1,    /**< Sleep period (10ms = 100 Hz) */
-  k_comm_task_input            = 0,    /**< Thread entry input parameter */
-  k_comm_task_sci9_diag_period = 500,  /**< SCI9 RX diagnostic dump period (~5s @ 10ms tick) */
+  k_comm_task_stack_size  = 2048, /**< Stack size in bytes */
+  k_comm_task_priority    = 5,    /**< ThreadX priority (highest app priority) */
+  k_comm_task_sleep_ticks = 1,    /**< Sleep period (10ms = 100 Hz) */
+  k_comm_task_input       = 0,    /**< Thread entry input parameter */
 } comm_task_constants_t;
 
 /**
@@ -1661,22 +1659,6 @@ static void internal_comm_task_entry(ULONG input)
 
     /* Ship any pending log bytes as LOG_MESSAGE frames (see helper) */
     internal_ship_log_frames();
-
-    /* Once per ~5s, unstick any latched SSR.FER/ORER/PER on SCI9. The
-     * RXI9 ISR already clears these when it fires, but FER can also be
-     * set by line noise or a host-side glitch *before* RDRF asserts --
-     * in that case the ISR never runs, the bit stays latched, and the
-     * receiver blocks further RDRF events. This periodic clear is the
-     * receiver's fallback path; it's cheap (one read, one masked write)
-     * and only acts when a sticky error is actually present. */
-    static uint32_t s_sci9_stat_counter = 0U;
-    s_sci9_stat_counter += 1U;
-    if ((s_sci9_stat_counter % k_comm_task_sci9_diag_period) == 1U) {
-      const uint8_t sci9_ssr = sci9()->ssr;
-      if ((sci9_ssr & k_sci_ssr_error_mask) != 0U) {
-        sci9()->ssr = (uint8_t)(sci9_ssr & ~k_sci_ssr_error_mask);
-      }
-    }
 
     /* Process pending SPI retransmissions (no-op when disabled) */
     (void)rx_comm_manager_process_retransmits(&g_comm_manager,
