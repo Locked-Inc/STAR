@@ -1896,6 +1896,22 @@ rx_err_t uart_rx_available(const uart_channel_t channel, bool* available)
   return k_rx_ok;
 }
 
+rx_err_t uart_clear_rx_errors(uart_channel_t channel)
+{
+  if ((uint8_t)channel >= k_uart_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+  volatile rx_sci_regs_t* sci = sci_get_channel(channel);
+  if (sci == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+  const uint8_t ssr = sci->ssr;
+  if ((ssr & k_sci_ssr_error_mask) != k_uart_flag_clear) {
+    sci->ssr = (uint8_t)(ssr & ~k_sci_ssr_error_mask);
+  }
+  return k_rx_ok;
+}
+
 /**
  * @brief SCI9 receive-data-full interrupt (vector 102)
  *

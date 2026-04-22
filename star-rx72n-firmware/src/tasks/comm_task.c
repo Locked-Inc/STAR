@@ -413,10 +413,11 @@
  * @brief Communication task configuration constants
  */
 typedef enum : uint16_t {
-  k_comm_task_stack_size  = 2048, /**< Stack size in bytes */
-  k_comm_task_priority    = 5,    /**< ThreadX priority (highest app priority) */
-  k_comm_task_sleep_ticks = 1,    /**< Sleep period (10ms = 100 Hz) */
-  k_comm_task_input       = 0,    /**< Thread entry input parameter */
+  k_comm_task_stack_size            = 2048, /**< Stack size in bytes */
+  k_comm_task_priority              = 5,    /**< ThreadX priority (highest app priority) */
+  k_comm_task_sleep_ticks           = 1,    /**< Sleep period (10ms = 100 Hz) */
+  k_comm_task_input                 = 0,    /**< Thread entry input parameter */
+  k_comm_task_sci9_err_clear_period = 500,  /**< SCI9 error-flag fallback unstick period */
 } comm_task_constants_t;
 
 /**
@@ -1659,6 +1660,17 @@ static void internal_comm_task_entry(ULONG input)
 
     /* Ship any pending log bytes as LOG_MESSAGE frames (see helper) */
     internal_ship_log_frames();
+
+    /* Once per ~5s, unstick any latched SSR.FER/ORER/PER on SCI9. The
+     * RXI9 ISR already clears these when it fires, but FER can latch
+     * from a line glitch *before* RDRF asserts -- in that case the ISR
+     * never runs and the receiver blocks further RDRF events. This
+     * fallback unsticks the receiver. */
+    static uint32_t s_sci9_err_clear_counter = 0U;
+    s_sci9_err_clear_counter += 1U;
+    if ((s_sci9_err_clear_counter % k_comm_task_sci9_err_clear_period) == 1U) {
+      (void)uart_clear_rx_errors(k_uart_channel_9);
+    }
 
     /* Process pending SPI retransmissions (no-op when disabled) */
     (void)rx_comm_manager_process_retransmits(&g_comm_manager,

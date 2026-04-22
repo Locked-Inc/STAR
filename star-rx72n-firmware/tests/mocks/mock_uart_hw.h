@@ -72,6 +72,7 @@ typedef enum : uint8_t {
   k_mock_uart_call_getc,
   k_mock_uart_call_read,
   k_mock_uart_call_rx_available,
+  k_mock_uart_call_clear_rx_errors,
 } mock_uart_call_type_t;
 
 /** @brief UART HAL function call record */
