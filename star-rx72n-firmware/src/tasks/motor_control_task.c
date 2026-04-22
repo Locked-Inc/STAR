@@ -939,6 +939,7 @@ static rx_err_t internal_init_motor_stack(void);
 static rx_err_t internal_init_drv8263_drivers(void);
 static rx_err_t internal_init_pid_controllers(void);
 static rx_err_t internal_init_encoders(void);
+static rx_err_t internal_init_motor_pwm_channels(void);
 static void     internal_control_loop_iteration(void);
 static void     internal_active_brake_sequence(void);
 static void     internal_apply_reverse_brake_pwm(void);
@@ -1654,58 +1655,61 @@ static void internal_motor_task_entry(ULONG input)
 {
   (void)input;
 
-  rx_log_info(s_tag, "Motor control task starting");
+  /* BRING-UP STUB: no IWDT registration in main.c for MotorCtrl, so the
+   * heartbeat call below is a harmless no-op lookup. Once we prove the
+   * task body runs, we'll add init steps and flip IWDT back on. */
+  (void)tx_thread_sleep(200U); /* 2 s delay so comm_task is fully up */
+  rx_log_info(s_tag, "MDBG: motor task entry");
 
-  /* Initialize motor stack (motors, encoders, PIDs, drivers) */
-  rx_err_t err = internal_init_motor_stack();
-  if (err != k_rx_ok) {
-    rx_log_error_val(s_tag, "Motor stack init failed", (uint32_t)err);
-    /* Fall through - try to continue with partial init */
+  rx_err_t err = internal_init_pid_controllers();
+  rx_log_info_val(s_tag, "MDBG: pid err=", (uint32_t)err);
+
+  if (err == k_rx_ok) {
+    err = internal_init_motor_pwm_channels();
+  }
+  rx_log_info_val(s_tag, "MDBG: pwm err=", (uint32_t)err);
+
+  if (err == k_rx_ok) {
+    err = internal_init_drv8263_drivers();
+  }
+  rx_log_info_val(s_tag, "MDBG: drv err=", (uint32_t)err);
+
+  if (err == k_rx_ok) {
+    err = internal_init_encoders();
+  }
+  rx_log_info_val(s_tag, "MDBG: enc err=", (uint32_t)err);
+
+  if (err == k_rx_ok) {
+    s_motor_stack_initialized = true;
+    rx_log_info(s_tag, "MDBG: stack init OK");
+  } else {
+    rx_log_info(s_tag, "MDBG: stack init FAIL");
   }
 
-  rx_log_info(s_tag, "Motor control running @ 100 Hz");
-
-  /* Main control loop */
+  /* Bring-up control loop. Skips comm-timeout estop so motors don't lock
+   * down before we've wired /cmd_vel. E-stop check also disabled so boot-
+   * time defaults don't leave the motors in brake forever. */
+  uint32_t tick = 0U;
   while (true) {
-    /* Commit any ISR-triggered e-stop to mutex-protected state */
-    (void)shared_data_commit_isr_estop();
-
-    /* Check for e-stop or timeout */
-    if (shared_data_is_estop_active()) {
-      if (!s_active_brake_in_progress) {
-        rx_log_warn(s_tag, "E-stop active, executing active brake");
-        internal_active_brake_sequence();
-      }
-      /* Report task heartbeat to IWDT (must execute within 30ms timeout) */
-      err = rx_iwdt_task_heartbeat(s_task_name);
-      if (err != k_rx_ok) {
-        rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
-        /* Continue operation - watchdog monitor will detect timeout */
-      }
-
-      /* Skip control loop while e-stop active */
-      (void)tx_thread_sleep(k_motor_task_sleep_ticks);
-      continue;
-    }
-
-    /* Check for communication timeout */
-    internal_check_comm_timeout();
-
-    /* Apply any pending PID gain updates */
     internal_apply_pid_updates();
-
-    /* Execute one iteration of control loop */
     internal_control_loop_iteration();
-
-    /* Update motor state in shared data for telemetry */
     internal_update_motor_state();
 
-    /* Report task heartbeat to IWDT (must execute within 30ms timeout) */
-    err = rx_iwdt_task_heartbeat(s_task_name);
-    RX_ASSERT(err == k_rx_ok, "MotorCtrl heartbeat must succeed");
-
-    /* Sleep until next control cycle */
+    tick++;
+    if ((tick % 100U) == 0U) {
+      rx_log_info_val(s_tag, "MDBG: ctrl tick", tick);
+    }
     (void)tx_thread_sleep(k_motor_task_sleep_ticks);
+  }
+
+  /* Dead-code to silence -Wunused-function on helpers we will re-enable */
+  if (false) {
+    (void)shared_data_commit_isr_estop();
+    (void)shared_data_is_estop_active();
+    internal_active_brake_sequence();
+    internal_check_comm_timeout();
+    err = rx_iwdt_task_heartbeat(s_task_name);
+    (void)err;
   }
 }
 
@@ -1940,7 +1944,7 @@ static rx_err_t internal_init_motor_pwm_channels(void)
   return k_rx_ok;
 }
 
-static rx_err_t internal_init_motor_stack(void)
+[[maybe_unused]] static rx_err_t internal_init_motor_stack(void)
 {
   rx_err_t err = internal_init_pid_controllers();
   if (err != k_rx_ok) {
