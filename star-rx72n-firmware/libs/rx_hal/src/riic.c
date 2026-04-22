@@ -241,7 +241,14 @@
  */
 typedef enum : uint32_t {
   k_riic_max_channels        = 3,     /**< Total RIIC channels: RIIC0, RIIC1, RIIC2 */
-  k_riic_timeout_us          = 10000, /**< 10ms timeout for I2C operations (microseconds) */
+  k_riic_timeout_us          = 25000, /**< Busy-loop iteration budget for I2C flag waits.
+                                       * Each iteration reads ICSR2/ICCR2 + decrements a
+                                       * volatile counter (~10 cycles @ 240 MHz ~= 40 ns),
+                                       * so 25k iters ~= 1 ms wall time -- enough to
+                                       * cover a byte at 100 kHz (90 us) with 10x slack
+                                       * for clock stretching. Kept below the 900 ms IWDT
+                                       * window even if a 256-byte transfer stacks up
+                                       * 256 per-byte timeouts back-to-back. */
   k_riic_timeout_zero        = 0,     /**< Timeout counter expired sentinel value */
   k_riic_length_zero         = 0,     /**< Zero-length transfer (invalid) sentinel */
   k_riic_register_clear      = 0,     /**< Zero value used to clear hardware registers */
@@ -360,10 +367,26 @@ typedef enum : uint32_t {
  * - SCL low period (ICBRL + 1) cycles
  * - Internal synchronization overhead
  */
+/* ICMR1 CKS field and ICBRH/ICBRL values for the three supported transfer
+ * rates at PCLKB = 60 MHz. Values straight out of RX72N HW manual Table
+ * 42.5 "Examples of ICBRH/ICBRL Settings for Transfer Rate", PCLK=60 MHz
+ * column. Low 5 bits of ICBRH/ICBRL are the actual counts; high 3 bits are
+ * reserved (read-as-1, write-ignored). Using CKS=0 with a computed divisor
+ * silently truncated >31 divisors to 5 bits and produced MHz-scale SCL on
+ * a 100 kHz bus, which most peripherals mostly tolerate but which BNO055
+ * reads do not (the addr|R ACK succeeds but the first SCL of data
+ * reception glitches the RIIC FSM and MST drops mid-read). */
 typedef enum : uint8_t {
-  k_riic_brr_divisor = 3,   /**< Divisor constant for 50% duty cycle formula */
-  k_riic_brr_min     = 1,   /**< Minimum valid divisor (fastest clock) */
-  k_riic_brr_max     = 255, /**< Maximum valid divisor (8-bit register limit) */
+  k_riic_cks_100khz  = 4U,  /**< ICMR1.CKS[2:0] = 100b for 100 kbps @ 60 MHz PCLK */
+  k_riic_icbrh_100k  = 14U, /**< ICBRH count, HUM Table 42.5 */
+  k_riic_icbrl_100k  = 17U, /**< ICBRL count, HUM Table 42.5 */
+  k_riic_cks_400khz  = 2U,  /**< ICMR1.CKS[2:0] = 010b for 400 kbps @ 60 MHz PCLK */
+  k_riic_icbrh_400k  = 8U,  /**< ICBRH count, HUM Table 42.5 */
+  k_riic_icbrl_400k  = 19U, /**< ICBRL count, HUM Table 42.5 */
+  k_riic_cks_1mhz    = 0U,  /**< ICMR1.CKS[2:0] = 000b for 1 Mbps @ 60 MHz PCLK */
+  k_riic_icbrh_1m    = 15U, /**< ICBRH count, HUM Table 42.5 */
+  k_riic_icbrl_1m    = 29U, /**< ICBRL count, HUM Table 42.5 */
+  k_riic_cks_shift   = 4U,  /**< ICMR1 bit position of CKS[0] (CKS is bits [6:4]) */
 } riic_bit_rate_t;
 
 /**
@@ -382,7 +405,7 @@ typedef enum : uint8_t {
  * | 2-0 | BC   | Bit counter |
  */
 typedef enum : uint8_t {
-  k_riic_icmr1_controller_7bit = 8, /**< CKS=0, controller mode, 7-bit addressing */
+  k_riic_icmr1_controller_7bit = 0x08, /**< CKS=0, BCWP=1, 7-bit addressing; MTWP=0 keeps MST/TRS read-only so the hardware START/STOP FSM drives them, per HUM section 42.2.3. MTWP=1 was tried and caused "Start condition failed" on every transaction because iccr2=MST|TRS pre-writes the mode bits before START fires and the FSM gets desynced. */
 } riic_icmr1_values_t;
 
 /**
@@ -443,20 +466,28 @@ typedef enum : uint8_t {
  *
  * ## ICMR3 Register Bit Layout (relevant bits)
  *
- * | Bit | Name  | Function                  |
- * |-----|-------|---------------------------|
- * |  3  | ACKBT | ACK/NACK bit to transmit  |
- * |  2  | ACKWP | ACKBT write protect       |
+ * | Bit | Name  | Function                         |
+ * |-----|-------|----------------------------------|
+ * |  4  | ACKWP | ACKBT write protect (1=writable) |
+ * |  3  | ACKBT | ACK/NACK bit to transmit         |
  *
  * @invariant k_riic_icmr3_ackbt_pos == 3 matches the RX72N hardware bit
  *            position for ACKBT in ICMR3; changing this breaks ACK/NACK control
  * @invariant k_riic_icmr3_ackbt_mask == (1U << 3) == 0x08; derived from pos
+ * @invariant k_riic_icmr3_ackwp_pos == 4 matches the RX72N hardware bit
+ *            position for ACKWP; changing this silently breaks ACKBT writes
+ * @invariant k_riic_icmr3_ackwp_mask == (1U << 4) == 0x10; derived from pos
  *
  * @note NACK must be sent before reading the last byte to signal to the
  *       peripheral that the transfer is complete per I2C specification.
  *
+ * @note ACKWP=1 is REQUIRED before any ACKBT write. Without it, writes to
+ *       ACKBT are silently ignored -- the controller keeps ACKing every byte,
+ *       the peripheral never sees NACK, and STOP times out with the bus
+ *       locked. ACKWP=1 is set in riic_init() as part of k_riic_icmr3_init.
+ *
  * @code
- * // Prepare to NACK the last byte in a read transfer
+ * // Prepare to NACK the last byte in a read transfer (ACKWP must already be 1)
  * volatile rx_riic_regs_t* riic = internal_get_riic_base(k_riic_channel_0);
  * riic->icmr3 |= k_riic_icmr3_ackbt_mask;   // Set ACKBT=1 -> send NACK
  *
@@ -472,6 +503,11 @@ typedef enum : uint8_t {
 typedef enum : uint8_t {
   k_riic_icmr3_ackbt_pos  = 3,                              /**< ACKBT bit position (bit 3) */
   k_riic_icmr3_ackbt_mask = (1U << k_riic_icmr3_ackbt_pos), /**< ACKBT bit mask (0x08) */
+  k_riic_icmr3_ackwp_pos  = 4,                              /**< ACKWP bit position (bit 4) */
+  k_riic_icmr3_ackwp_mask = (1U << k_riic_icmr3_ackwp_pos), /**< ACKWP bit mask (0x10) */
+  k_riic_icmr3_wait_pos   = 6,                              /**< WAIT bit position (bit 6) */
+  k_riic_icmr3_wait_mask  = (1U << k_riic_icmr3_wait_pos),  /**< WAIT bit mask (0x40) */
+  k_riic_icmr3_init       = k_riic_icmr3_ackwp_mask,        /**< ICMR3 init: ACKWP=1, ACKBT=0 */
 } riic_icmr3_bits_t;
 
 /**
@@ -750,6 +786,68 @@ static void internal_riic_bit_bang_recover(uint8_t channel)
  * @pre  The RIIC peripheral has been reset (IICRST cycle + SOWP release).
  * @post PMR bits for SCL/SDA are set, pads routed to RIIC peripheral.
  */
+/**
+ * @brief Pulse IICRST on a controller-initialized RIIC channel and restore config.
+ *
+ * @details
+ * Per RX72N HW manual section 42.2.1, writing 1 to ICCR1.IICRST while
+ * ICCR1.ICE=0 performs an internal reset of the RIIC peripheral's FSM
+ * without touching the pin mux. That drops any half-completed transaction
+ * state -- BBSY, MST, TRS, pending SP/RS/ST request bits, NACKF, latched
+ * AL, the "dummy read kicked reception" flag -- back to idle, which is
+ * what we need before a new transaction when an earlier transaction on
+ * the same peripheral may have left the FSM partially advanced. The
+ * config registers (ICBRH/L, ICMR1..3) are wiped by IICRST, so we
+ * restore them from the live values (which were set in riic_init() and
+ * must already be valid since ICE was on before the pulse).
+ *
+ * Do NOT substitute this for riic_init(): this helper assumes MSTPCR and
+ * MPC/PFS are already set up and that ICE=1 was previously toggled to
+ * latch the peripheral out of module-stop. It is a fast pre-transaction
+ * FSM scrub, not a cold boot.
+ *
+ * Currently unused in the main transaction path -- kept as a [[maybe_unused]]
+ * helper because it is the right escape hatch when the FSM has been
+ * observed to get stuck mid-transaction and the bit-bang recovery in
+ * internal_wait_bus_ready() is too heavyweight (it tears down and rebuilds
+ * pad direction via PMR, which adds ~100 us versus ~2 us here).
+ *
+ * @param[in,out] riic  Pointer to the RIIC register block. Must be non-NULL.
+ *
+ * @pre  ICE was set to 1 earlier (channel previously passed riic_init).
+ * @post ICCR1.ICE = 1, ICCR1.IICRST = 0, ICMR1..3 / ICBRH/L restored,
+ *       ICSR1 / ICSR2 cleared.
+ */
+[[maybe_unused]]
+static void internal_riic_force_fsm_reset(volatile rx_riic_regs_t* riic)
+{
+  const uint8_t saved_icbrh = riic->icbrh;
+  const uint8_t saved_icbrl = riic->icbrl;
+  const uint8_t saved_icmr1 = riic->icmr1;
+  const uint8_t saved_icmr2 = riic->icmr2;
+
+  riic->iccr1 = k_riic_iccr1_iicrst;
+  riic->iccr1 = k_riic_register_clear;
+
+  riic->icbrh = saved_icbrh;
+  riic->icbrl = saved_icbrl;
+  riic->icmr1 = saved_icmr1;
+  riic->icmr2 = saved_icmr2;
+  riic->icmr3 = k_riic_icmr3_init;
+
+  riic->icsr1 = k_riic_register_clear;
+  riic->icsr2 = k_riic_register_clear;
+
+  riic->iccr1 = k_riic_iccr1_ice;
+
+  uint8_t iccr1 = riic->iccr1;
+  iccr1 &= (uint8_t) ~(uint8_t)k_riic_iccr1_sowp;
+  iccr1 |= (uint8_t)(k_riic_iccr1_sclo | k_riic_iccr1_sdao);
+  riic->iccr1 = iccr1;
+  iccr1 |= (uint8_t)k_riic_iccr1_sowp;
+  riic->iccr1 = iccr1;
+}
+
 static void internal_riic_bit_bang_handback(uint8_t channel)
 {
   if (channel >= (uint8_t)k_riic_max_channels) {
@@ -965,31 +1063,41 @@ static volatile rx_riic_regs_t* internal_get_riic_base(const uint8_t channel)
  * @see riic_init() Uses this function during channel initialization
  * @see k_pclkb_hz PCLKB frequency constant from hardware.h
  */
-static rx_err_t
-internal_calculate_bit_rate(const uint32_t frequency_hz, uint8_t* icbrl, uint8_t* icbrh)
+static rx_err_t internal_calculate_bit_rate(const uint32_t frequency_hz,
+                                            uint8_t*       icbrl,
+                                            uint8_t*       icbrh,
+                                            uint8_t*       cks_field)
 {
-  /* PCLKB is used for RIIC (60 MHz on RX72N) */
-  const uint32_t pclk = k_pclkb_hz;
-
-  if (icbrl == nullptr || icbrh == nullptr) {
+  if (icbrl == nullptr || icbrh == nullptr || cks_field == nullptr) {
     return k_rx_err_null_ptr;
   }
 
-  /* Calculate bit rate for standard formula:
-   * I2C_CLK = PCLK / (2 * (ICBRL + 1) + (ICBRH + 1))
-   * Simplified: ICBRL = ICBRH for 50% duty cycle
-   */
-  const uint32_t divisor = (pclk / frequency_hz) / k_riic_brr_divisor;
-
-  if (divisor < k_riic_brr_min || divisor > k_riic_brr_max) {
-    rx_log_error(s_tag, "Invalid frequency for PCLKB");
-    return k_rx_err_invalid_arg;
+  /* Look up the HUM Table 42.5 row for the requested rate. Only the three
+   * discrete rates the riic_channel_freq_t enum accepts are supported; we
+   * do not compute CKS/ICBRH/ICBRL from a formula because the formula in
+   * the HUM depends on SCL rise/fall times and the table values already
+   * bake in the standard-mode / fast-mode / fast-mode-plus tr/tf budgets. */
+  if (frequency_hz == (uint32_t)k_riic_freq_100khz) {
+    *cks_field = (uint8_t)k_riic_cks_100khz;
+    *icbrh     = (uint8_t)k_riic_icbrh_100k;
+    *icbrl     = (uint8_t)k_riic_icbrl_100k;
+    return k_rx_ok;
+  }
+  if (frequency_hz == (uint32_t)k_riic_freq_400khz) {
+    *cks_field = (uint8_t)k_riic_cks_400khz;
+    *icbrh     = (uint8_t)k_riic_icbrh_400k;
+    *icbrl     = (uint8_t)k_riic_icbrl_400k;
+    return k_rx_ok;
+  }
+  if (frequency_hz == (uint32_t)k_riic_freq_1mhz) {
+    *cks_field = (uint8_t)k_riic_cks_1mhz;
+    *icbrh     = (uint8_t)k_riic_icbrh_1m;
+    *icbrl     = (uint8_t)k_riic_icbrl_1m;
+    return k_rx_ok;
   }
 
-  *icbrl = (uint8_t)divisor;
-  *icbrh = (uint8_t)divisor;
-
-  return k_rx_ok;
+  rx_log_error(s_tag, "Invalid frequency (expected 100 kHz, 400 kHz, or 1 MHz)");
+  return k_rx_err_invalid_arg;
 }
 
 /**
@@ -1056,10 +1164,9 @@ static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
 
   /* BBSY can latch stuck when the peripheral comes up observing lines that
    * are mid-transition (e.g. a peripheral holding SDA low from a prior aborted
-   * byte). Per RX72N HW manual section 38.4.3 the only software-side clear
+   * byte). Per RX72N HW manual section 42.2.1 the only software-side clear
    * is an IICRST pulse -- which wipes the config registers back to reset,
-   * so we must restore them after. Mirrors imu_test/main.c::riic1_recover
-   * which handles the same stuck-bus case on the bench. */
+   * so we must restore them after. */
   rx_log_warn(s_tag, "BBSY stuck - pulsing IICRST to recover");
 
   /* Debug-level detail (compiled out when LOG_LEVEL < k_log_debug): SDA/SCL
@@ -1075,6 +1182,7 @@ static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
   const uint8_t saved_icbrh = riic->icbrh;
   const uint8_t saved_icbrl = riic->icbrl;
   const uint8_t saved_icmr1 = riic->icmr1;
+  const uint8_t saved_icmr2 = riic->icmr2;
 
   riic->iccr1 = k_riic_iccr1_iicrst;   /* assert reset (ICEEN=0, IICRST=1) */
   riic->iccr1 = k_riic_register_clear; /* deassert -> configuration state */
@@ -1082,6 +1190,17 @@ static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
   riic->icbrh = saved_icbrh;
   riic->icbrl = saved_icbrl;
   riic->icmr1 = saved_icmr1;
+  riic->icmr2 = saved_icmr2;
+  /* IICRST wipes ICMR3 too. Restore ACKWP=1 so subsequent read transactions
+   * can still NACK the final byte; without this, the first read after a
+   * recovery would lock the bus all over again. */
+  riic->icmr3 = k_riic_icmr3_init;
+
+  /* Clear any stale status flags left by the aborted transaction. IICRST
+   * resets most of ICSR1/ICSR2, but writing explicit zeros closes any
+   * silicon window where a flag might survive the reset window. */
+  riic->icsr1 = k_riic_register_clear;
+  riic->icsr2 = k_riic_register_clear;
 
   riic->iccr1 = k_riic_iccr1_ice; /* re-enable */
 
@@ -1129,6 +1248,10 @@ static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
   riic->icbrh = saved_icbrh;
   riic->icbrl = saved_icbrl;
   riic->icmr1 = saved_icmr1;
+  riic->icmr2 = saved_icmr2;
+  riic->icmr3 = k_riic_icmr3_init; /* Restore ACKWP=1 (IICRST wiped it). */
+  riic->icsr1 = k_riic_register_clear; /* Drop any stale flag that survived. */
+  riic->icsr2 = k_riic_register_clear;
   riic->iccr1 = k_riic_iccr1_ice;
 
   iccr1 = riic->iccr1;
@@ -1396,18 +1519,23 @@ static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, const uint8_t
   /* Write data */
   riic->icdrt = data;
 
-  /* Wait for ACK/NACK */
+  /* Wait for transmit END (byte + ACK clock complete). Per RX72N HW manual
+   * section 42.2.7, TEND asserts on the rising edge of the 9th clock after
+   * the ACK/NACK response has been sampled, so NACKF is valid only once
+   * TEND=1. Waiting for TDRE to clear is wrong: TDRE clears the instant
+   * ICDRT is written, so the wait would exit in zero iterations and NACKF
+   * would be checked before the byte has actually been transmitted. */
   timeout = k_riic_timeout_us;
-  while ((riic->icsr2 & k_riic_icsr2_tdre) && timeout > k_riic_timeout_zero) {
+  while (!(riic->icsr2 & k_riic_icsr2_tend) && timeout > k_riic_timeout_zero) {
     timeout--;
   }
 
   if (timeout == k_riic_timeout_zero) {
-    rx_log_error(s_tag, "ACK/NACK timeout");
+    rx_log_error(s_tag, "TEND timeout (byte never finished transmitting)");
     return k_rx_err_timeout;
   }
 
-  /* Check for NACK */
+  /* Check for NACK -- valid only now that TEND=1. */
   if (riic->icsr2 & k_riic_icsr2_nackf) {
     riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_nackf;
     rx_log_error(s_tag, "NACK received");
@@ -1423,13 +1551,12 @@ static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, const uint8_t
  * @details
  * After the controller switches to receive mode (ICCR2 = MST, TRS=0) and
  * has issued START or repeated-START, the address byte with R bit must be
- * sent. internal_write_byte() cannot be used here: in controller-receive mode
- * the peripheral immediately starts clocking the first data byte after the
- * address ACK, so RDRF (receive data full) fires instead of TEND or
- * TDRE-reassertion. Waiting for transmit-side flags hangs forever.
- *
- * Verified on the production STAR PCB against a live BNO055 -- see
- * star-rx72n-firmware/imu_test/main.c gate-10 fix (commit b41c7fbb4).
+ * sent. internal_write_byte() cannot be used here: per RX72N HW manual
+ * section 42.2.1 the TRS bit auto-clears to 0 on the rising edge of the
+ * 9th SCL of an addr|R byte, which moves the peripheral into receive mode
+ * and sets RDRF automatically -- TEND and TDRE-reassertion no longer fire.
+ * Waiting for transmit-side flags in that state hangs forever; this helper
+ * waits for RDRF | NACKF instead.
  *
  * @param[in,out] riic Pointer to RIIC register structure
  * @param[in] addr_byte Pre-shifted (addr << 1) | k_riic_addr_read_bit
@@ -1478,17 +1605,11 @@ static rx_err_t internal_write_address_for_read(volatile rx_riic_regs_t* riic,
     return k_rx_err_nack;
   }
 
-  /* Dummy read of ICDRR -- the RDRF that fired above is the address-ACK
-   * signal, not a data byte. ICDRR currently holds stale contents. The
-   * dummy read clears RDRF, releases SCL clock-stretch, and starts the
-   * peripheral clocking byte 0 of the actual data into the shift register.
-   * Without this, the next internal_read_byte() call sees RDRF still set
-   * (from the address ACK) and returns the stale ICDRR contents -- caught
-   * empirically with imu_test where burst_chip_id returned 0x00 instead of
-   * the expected 0xA0. RX72N HW manual section 38.2.5.3 documents the
-   * requirement. */
-  (void)riic->icdrr;
-
+  /* Caller is responsible for the dummy ICDRR read that kicks off actual
+   * data reception. Doing it here unconditionally would be wrong for the
+   * single-byte read case where ACKBT=1 must be set BEFORE the dummy read
+   * so byte 0 is NACKed (RX72N HW manual Figure 42.10, 1-byte path). The
+   * caller sets ACKBT per the transfer length, then does the dummy read. */
   return k_rx_ok;
 }
 
@@ -1560,8 +1681,9 @@ static rx_err_t internal_write_address_for_read(volatile rx_riic_regs_t* riic,
  *
  * @see internal_write_byte() Companion function for transmitting bytes
  */
-static rx_err_t
-internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data, const bool send_ack)
+[[maybe_unused]]
+static rx_err_t internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data,
+                                   const bool send_ack, const bool last_byte)
 {
   /* Wait for receive data full */
   uint32_t timeout = k_riic_timeout_us;
@@ -1578,15 +1700,57 @@ internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data, const bool send
     return k_rx_err_timeout;
   }
 
-  /* Configure ACK/NACK for next byte */
+  /* Configure ACK/NACK for the byte we are about to release from ICDRR.
+   * The peripheral clock-stretches SCL between the 8th clock and the ACK
+   * clock while RDRF is set, so setting ACKBT now takes effect on the
+   * upcoming ACK/NACK bit. */
   if (!send_ack) {
     riic->icmr3 |= k_riic_icmr3_ackbt_mask; /* ACKBT = 1 (NACK) */
   } else {
     riic->icmr3 &= (uint8_t) ~(uint8_t)k_riic_icmr3_ackbt_mask; /* ACKBT = 0 (ACK) */
   }
 
-  /* Read data */
+  /* For the final byte of a receive, queue SP before reading ICDRR so the
+   * RIIC generates NACK + STOP atomically after the 9th clock. Per RX72N
+   * HW manual Figure 42.10 the SP request must be set between RDRF and
+   * the final ICDRR read so the STOP is chained to the 9th clock's NACK.
+   *
+   * Do NOT queue SP after the final ICDRR read: the 9th clock will have
+   * already fired, SCL is released, and a fresh SP produces no STOP edge.
+   * That was the bug behind "Stop condition timeout" on 1-byte reads. */
+  if (last_byte) {
+    riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_stop;
+    riic->iccr2 |= k_riic_iccr2_sp;
+  }
+
+  /* Read data -- releases SCL for the ACK/NACK clock. For the last byte,
+   * SP was queued above so hardware generates STOP immediately after the
+   * NACK on the 9th clock.
+   *
+   * Do NOT instead issue SP AFTER this ICDRR read. Per RX72N HW manual
+   * Figure 42.10, once the 9th clock has fired the peripheral drops the
+   * auto clock-stretch and releases SCL; the STOP condition must be
+   * chained into that release, not requested after the bus has already
+   * returned to idle. Calling internal_send_stop() after the read will
+   * time out waiting for ICSR2.STOP to assert because no STOP edge is
+   * ever produced. */
   *data = riic->icdrr;
+
+  if (last_byte) {
+    timeout = k_riic_timeout_us;
+    while (!(riic->icsr2 & k_riic_icsr2_stop) && timeout > k_riic_timeout_zero) {
+      timeout--;
+    }
+    if (timeout == k_riic_timeout_zero) {
+      rx_log_error(s_tag, "STOP after final ICDRR timeout");
+      return k_rx_err_timeout;
+    }
+    /* Clear STOP + NACKF so the next transaction starts from a clean
+     * status register. ICMR3.ACKBT left at 1 is harmless -- it gets
+     * re-written by the next internal_read_byte. */
+    riic->icsr2 &=
+      (uint8_t) ~(uint8_t)(k_riic_icsr2_stop | k_riic_icsr2_nackf);
+  }
 
   return k_rx_ok;
 }
@@ -1763,12 +1927,17 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
 
   riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_start;
 
-  /* Set controller receive mode */
+  /* Explicit ICCR2 write to clear any pending SP/RS/ST request bits ahead of
+   * the addr|R write. MST and TRS are read-only when ICMR1.MTWP=0, so this
+   * is a no-op for them; TRS will auto-clear to 0 on the 9th clock of the
+   * addr|R byte per HUM 42.2.1. */
   riic->iccr2 = k_riic_iccr2_mst;
 
   /* Send device address (read) -- use the receive-mode helper, NOT
    * internal_write_byte: TEND/TDRE-reassertion don't fire after addr|R in
-   * controller-receive mode; RDRF does. */
+   * controller-receive mode; RDRF does. This leaves the address-ACK RDRF
+   * asserted but does NOT do the dummy read (that responsibility is the
+   * caller's so it can pre-set ACKBT for 1-byte transfers). */
   rx_err_t err = internal_write_address_for_read(
     riic,
     (uint8_t)((device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit));
@@ -1778,16 +1947,84 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
     return err;
   }
 
-  /* Receive data bytes */
-  for (uint16_t i = 0; i < read_length; i++) {
-    const bool send_ack = (i < read_length - k_riic_last_index_offset); /* NACK on last byte */
-    err                 = internal_read_byte(riic, &read_data[i], send_ack);
-    if (err != k_rx_ok) {
-      rx_err_t stop_err = internal_send_stop(riic);
-      (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
-      return err;
-    }
+  /* For a 1-byte read, set ACKBT=1 BEFORE the dummy read so the sole data
+   * byte's 9th-clock ACK slot carries NACK (HUM Fig 42.10 "1- or 2-byte
+   * receive" path). The dummy read below releases SCL and starts clocking
+   * byte 0; the 9th clock of byte 0 samples ACKBT at that moment. For
+   * multi-byte reads we leave ACKBT=0 here and flip it to 1 inside the
+   * loop on iteration N-2 (HUM Fig 42.11 "3 bytes or more" path) -- the
+   * read of byte N-2 is what releases SCL for byte N-1 to clock in, and
+   * byte N-1's 9th clock then picks up ACKBT=1. Setting ACKBT=1 on
+   * iteration N-1 is ALWAYS TOO LATE: by the time we enter that iteration
+   * RDRF has already asserted, meaning byte N-1's 9th clock has already
+   * fired and its ACK slot has already been transmitted with whatever
+   * ACKBT was in the prior iteration (typically 0 = ACK). That leaves
+   * the slave thinking "keep streaming" and holding SDA for another byte,
+   * which is why the subsequent SP never chains a STOP edge and we see
+   * "Stop condition timeout" at the end of every multi-byte read. */
+  if (read_length == 1U) {
+    riic->icmr3 |= k_riic_icmr3_ackbt_mask;
   }
+
+  (void)riic->icdrr; /* dummy read kicks reception */
+
+  /* Receive loop. For each iteration:
+   *   - Wait for RDRF (byte i now in ICDRR, byte i's 9th clock fired).
+   *   - If we are on the penultimate byte (i == N-2), flip ACKBT=1 so
+   *     byte N-1's 9th clock carries NACK. Nothing to do on iteration
+   *     N-1 except clear STOP / queue SP ahead of the final ICDRR read.
+   *   - Issue the final STOP request between reading byte N-2 and the
+   *     final ICDRR read.
+   *   - Read ICDRR: copies byte i data and (on non-last iterations)
+   *     releases SCL for byte i+1 to clock in. On the last iteration
+   *     there is no byte i+1; with SP queued the 9th-clock NACK is
+   *     followed by a STOP edge.
+   *
+   * Do NOT call internal_send_stop() after this loop on success: SP was
+   * already queued in the final iteration and the hardware generates the
+   * STOP edge chained to byte N-1's 9th clock. A second SP on an idle
+   * bus either times out or spuriously re-raises BBSY. */
+  for (uint16_t i = 0; i < read_length; i++) {
+    uint32_t timeout = k_riic_timeout_us;
+    while (!(riic->icsr2 & k_riic_icsr2_rdrf) && timeout > k_riic_timeout_zero) {
+      timeout--;
+    }
+    if (timeout == k_riic_timeout_zero) {
+      rx_log_error_val(s_tag, "Read byte RDRF timeout i=", (uint8_t)i);
+      rx_err_t stop_err = internal_send_stop(riic);
+      (void)stop_err;
+      return k_rx_err_timeout;
+    }
+
+    if (read_length >= 2U && i == (uint16_t)(read_length - 2U)) {
+      /* Penultimate byte: NACK will fall on byte N-1's 9th clock. */
+      riic->icmr3 |= k_riic_icmr3_ackbt_mask;
+    }
+
+    if (i == (uint16_t)(read_length - k_riic_last_index_offset)) {
+      /* Last iteration: queue STOP before the final read so the NACK on
+       * byte N-1's 9th clock is chained to a STOP edge by hardware. */
+      riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_stop;
+      riic->iccr2 |= k_riic_iccr2_sp;
+    }
+
+    read_data[i] = riic->icdrr;
+  }
+
+  /* Wait for the hardware-generated STOP to complete. */
+  uint32_t stop_timeout = k_riic_timeout_us;
+  while (!(riic->icsr2 & k_riic_icsr2_stop) && stop_timeout > k_riic_timeout_zero) {
+    stop_timeout--;
+  }
+  if (stop_timeout == k_riic_timeout_zero) {
+    rx_log_error(s_tag, "STOP after final ICDRR timeout");
+    return k_rx_err_timeout;
+  }
+
+  /* Clear STOP / NACKF for the next transaction. ACKBT stays latched at 1
+   * from the penultimate-iteration write; riic_init / recovery / the
+   * pre-transaction ICSR2 clear all restore ICMR3 as needed. */
+  riic->icsr2 &= (uint8_t) ~(uint8_t)(k_riic_icsr2_stop | k_riic_icsr2_nackf);
 
   return k_rx_ok;
 }
@@ -1908,42 +2145,75 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
 
   *prcr_reg() = k_rx_prcr_lock;
 
+  /* Unconditional bit-bang bus recovery BEFORE the peripheral observes the
+   * bus. Per RX72N HW manual section 42.2.1, the RIIC comes out of
+   * module-stop + IICRST with SCLO=SDAO=0 internally -- it *drives the bus
+   * low* until the SOWP dance below writes SCLO=SDAO=1. hardware_init has
+   * already raised PMR for SCL/SDA by the time riic_init runs, so without
+   * this step the low-drive glitches the external bus and can latch
+   * BBSY=1 as soon as ICE=1. The bit-bang helper drops PMR (pads back to
+   * GPIO, tristated via pull-ups), wiggles SCL 9x, issues a manual STOP,
+   * and leaves PMR=0. We hand the pads back AFTER the SOWP dance below.
+   *
+   * Do NOT skip this on the assumption that hardware_init's bus recovery is
+   * enough: that one runs before PMR is raised, so it only cleans the pull-
+   * ups, not the freshly-enabled RIIC's internal start-detect state. Do
+   * NOT run bit-bang AFTER the SOWP dance either -- PMR would already be 1
+   * and the RIIC would drive against our GPIO writes. Channels without an
+   * entry in k_riic_recovery_pins[] (RIIC0, RIIC2) are no-ops. */
+  internal_riic_bit_bang_recover(channel.value); /* leaves PMR=0 */
+
   /* Reset RIIC */
   riic->iccr1 = k_riic_iccr1_iicrst;
   riic->iccr1 = k_riic_register_clear;
 
-  /* Calculate bit rate */
-  uint8_t        icbrl = 0;
-  uint8_t        icbrh = 0;
-  const rx_err_t err   = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh);
+  /* Bit-rate lookup. CKS is in ICMR1[6:4] and must be written alongside
+   * MTWP / BCWP / BC in a single ICMR1 write. ICBRH/ICBRL hold the 5-bit
+   * counts (upper 3 bits are reserved, read-as-1, write-ignored). */
+  uint8_t        icbrl     = 0;
+  uint8_t        icbrh     = 0;
+  uint8_t        cks_field = 0;
+  const rx_err_t err = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh, &cks_field);
   RX_RETURN_ON_ERROR(err, s_tag, "Bit rate calculation failed");
 
   /* Configure bit rate */
   riic->icbrl = icbrl;
   riic->icbrh = icbrh;
 
-  /* Configure RIIC for controller mode */
-  riic->icmr1 = k_riic_icmr1_controller_7bit; /* Controller mode, 7-bit addressing */
+  /* Configure RIIC for controller mode + CKS per HUM Table 42.5 */
+  riic->icmr1 = (uint8_t)(k_riic_icmr1_controller_7bit
+                          | (uint8_t)(cks_field << k_riic_cks_shift));
   riic->icmr2 = k_riic_icmr2_default;         /* No timeout, no clock sync */
-  riic->icmr3 = k_riic_icmr2_default;         /* ACKBT = 0 (ACK) */
+  /* ICMR3 = ACKWP | 0 -- ACKWP=1 is mandatory so internal_read_byte() can
+   * toggle ACKBT to NACK the final received byte. Leaving ACKWP=0 here was
+   * the silent root cause of "Stop condition timeout" after every read: the
+   * peripheral never saw a NACK, kept driving SDA to ACK the imaginary next
+   * byte, and the controller's STOP request could not complete. */
+  riic->icmr3 = k_riic_icmr3_init;
 
   /* Enable I2C bus interface */
   riic->iccr1 = k_riic_iccr1_ice;
 
-  /* Post-enable bus release: after ICE=1 the peripheral leaves SCLO/SDAO=0
-   * (driving both lines LOW) until it sees its first STOP on the wire.
-   * Force a release by clearing SOWP, writing SCLO=SDAO=1 (open-drain
-   * release -> external pull-ups bring lines to 3.3V), then re-locking
-   * SOWP. Without this, the very first transaction sees BBSY=1 with both
-   * lines stuck low and never gets to ACK detection. Verified on the
-   * production STAR PCB against BNO055 -- see star-rx72n-firmware/imu_test/
-   * (commit b41c7fbb4) for the bench reproduction. */
+  /* Post-enable bus release: per RX72N HW manual section 42.2.1 (ICCR1.SCLO
+   * and ICCR1.SDAO reset to 0), the RIIC leaves SCLO/SDAO=0 after ICE=1 --
+   * which drives both lines LOW -- until it detects its first STOP on the
+   * wire. Force an early release by clearing SOWP, writing SCLO=SDAO=1
+   * (open-drain release -> external pull-ups bring lines to 3.3V), then
+   * re-locking SOWP. Without this the very first transaction sees BBSY=1
+   * with both lines stuck low and never reaches ACK detection. The SOWP
+   * write-protect must be cleared in its own ICCR1 write before the SCLO/
+   * SDAO change; combining them into one write leaves SCLO/SDAO locked. */
   uint8_t iccr1 = riic->iccr1;
   iccr1 &= (uint8_t) ~(uint8_t)k_riic_iccr1_sowp;
   iccr1 |= (uint8_t)(k_riic_iccr1_sclo | k_riic_iccr1_sdao);
   riic->iccr1 = iccr1;
   iccr1 |= (uint8_t)k_riic_iccr1_sowp;
   riic->iccr1 = iccr1;
+
+  /* Pair to the unconditional bit-bang above: now that SCLO=SDAO=1 in the
+   * peripheral (set by the SOWP dance), it is safe to route the pads back
+   * to RIIC. Raising PMR before the dance would glitch the bus low. */
+  internal_riic_bit_bang_handback(channel.value);
 
   /* Mark channel as initialized in controller mode */
   s_riic_channel_mode[channel.value] = k_riic_mode_controller;
@@ -2074,6 +2344,15 @@ rx_err_t riic_write(const riic_channel_t    channel,
   /* Wait for bus ready */
   rx_err_t err = internal_wait_bus_ready(riic);
   RX_RETURN_ON_ERROR(err, s_tag, "Bus not ready");
+
+  /* Pre-clear any status flags left over from a previous transaction (e.g.
+   * NACKF, STOP, AL) that normal bus activity does not clear. Per RX72N
+   * HW manual section 42.2.7, these are sticky software-clear flags that
+   * IICRST wipes but normal transactions do not. Without this pre-clear a
+   * stale NACKF survives into the next write and internal_write_byte
+   * returns k_rx_err_nack on a byte that was actually ACKed; a stale AL
+   * silently clears MST on the next START. */
+  riic->icsr2 = k_riic_register_clear;
 
   /* Set controller transmit mode */
   riic->iccr2 = k_riic_iccr2_mst | k_riic_iccr2_trs;
@@ -2235,6 +2514,9 @@ rx_err_t riic_read(const riic_channel_t    channel,
   rx_err_t err = internal_wait_bus_ready(riic);
   RX_RETURN_ON_ERROR(err, s_tag, "Bus not ready");
 
+  /* Pre-clear stale flags from any previous cleanup. See riic_write(). */
+  riic->icsr2 = k_riic_register_clear;
+
   /* Set controller receive mode */
   riic->iccr2 = k_riic_iccr2_mst;
 
@@ -2254,20 +2536,49 @@ rx_err_t riic_read(const riic_channel_t    channel,
     return err;
   }
 
-  /* Receive data bytes */
-  for (uint16_t i = 0; i < length; i++) {
-    const bool send_ack = (i < length - k_riic_last_index_offset); /* NACK on last byte */
-    err                 = internal_read_byte(riic, &data[i], send_ack);
-    if (err != k_rx_ok) {
-      rx_err_t stop_err = internal_send_stop(riic);
-      (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
-      return err;
-    }
+  /* 1-byte read: pre-set ACKBT=1 before the dummy read so the sole byte's
+   * 9th-clock ACK slot carries NACK (HUM Fig 42.10). */
+  if (length == 1U) {
+    riic->icmr3 |= k_riic_icmr3_ackbt_mask;
   }
 
-  /* Send stop condition */
-  err = internal_send_stop(riic);
-  RX_RETURN_ON_ERROR(err, s_tag, "Stop condition failed");
+  (void)riic->icdrr; /* dummy read kicks reception */
+
+  /* Mirror of the read loop in internal_riic_read_phase -- see that
+   * function for the why-ACKBT-on-N-2 rationale. */
+  for (uint16_t i = 0; i < length; i++) {
+    uint32_t timeout = k_riic_timeout_us;
+    while (!(riic->icsr2 & k_riic_icsr2_rdrf) && timeout > k_riic_timeout_zero) {
+      timeout--;
+    }
+    if (timeout == k_riic_timeout_zero) {
+      rx_log_error_val(s_tag, "Read byte RDRF timeout i=", (uint8_t)i);
+      rx_err_t stop_err = internal_send_stop(riic);
+      (void)stop_err;
+      return k_rx_err_timeout;
+    }
+
+    if (length >= 2U && i == (uint16_t)(length - 2U)) {
+      riic->icmr3 |= k_riic_icmr3_ackbt_mask;
+    }
+
+    if (i == (uint16_t)(length - k_riic_last_index_offset)) {
+      riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_stop;
+      riic->iccr2 |= k_riic_iccr2_sp;
+    }
+
+    data[i] = riic->icdrr;
+  }
+
+  uint32_t stop_timeout = k_riic_timeout_us;
+  while (!(riic->icsr2 & k_riic_icsr2_stop) && stop_timeout > k_riic_timeout_zero) {
+    stop_timeout--;
+  }
+  if (stop_timeout == k_riic_timeout_zero) {
+    rx_log_error(s_tag, "STOP after final ICDRR timeout");
+    return k_rx_err_timeout;
+  }
+  riic->icsr2 &= (uint8_t) ~(uint8_t)(k_riic_icsr2_stop | k_riic_icsr2_nackf);
 
   return k_rx_ok;
 }
@@ -2433,21 +2744,22 @@ rx_err_t riic_write_read(const riic_channel_t    channel,
   rx_err_t err = internal_wait_bus_ready(riic);
   RX_RETURN_ON_ERROR(err, s_tag, "Bus not ready");
 
+  /* Pre-clear stale flags from any previous cleanup. See riic_write(). */
+  riic->icsr2 = k_riic_register_clear;
+
   /* Perform write phase */
   err = internal_riic_write_phase(riic, device_addr, write_data, write_length);
   if (err != k_rx_ok) {
     return err;
   }
 
-  /* Perform read phase */
+  /* Perform read phase. On success the final byte's NACK + STOP is
+   * issued atomically inside internal_read_byte(), so no separate
+   * internal_send_stop() call is needed here. */
   err = internal_riic_read_phase(riic, device_addr, read_data, read_length);
   if (err != k_rx_ok) {
     return err;
   }
-
-  /* Send stop condition */
-  err = internal_send_stop(riic);
-  RX_RETURN_ON_ERROR(err, s_tag, "Stop condition failed");
 
   return k_rx_ok;
 }
