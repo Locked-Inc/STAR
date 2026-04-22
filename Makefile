@@ -6,7 +6,7 @@ IMAGE_NAME := star-ros2-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell blinky build-blinky clean-blinky flash-blinky flash-blinky-sci motor0 motor0-forward motor0-reverse motor1 motor1-forward motor1-reverse motor2 motor2-forward motor2-reverse motor3 motor3-forward motor3-reverse motor-all motor-stop motor-clean none
+.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell blinky build-blinky clean-blinky flash-blinky flash-blinky-sci motor0 motor0-forward motor0-reverse motor1 motor1-forward motor1-reverse motor2 motor2-forward motor2-reverse motor3 motor3-forward motor3-reverse motor-all motor-all-forward motor-stop motor-clean none
 
 help:
 	@echo "STAR Project Development Helper"
@@ -252,6 +252,8 @@ motor2-forward:
 	$(call build_and_flash_motor,0x4,0,100,Motor 2 forward only)
 motor3-forward:
 	$(call build_and_flash_motor,0x8,0,100,Motor 3 forward only)
+motor-all-forward:
+	$(call build_and_flash_motor,0xF,0,100,all 4 motors forward only)
 
 # Reverse-only sweep (0 .. -100 .. 0)
 motor0-reverse:

@@ -102,6 +102,100 @@ To check a directory without modifying files:
 python3 scripts/utils/fix-encoding.py --check path/to/dir
 ```
 
+## Engineering Discipline: No Guessing on Embedded Bring-Up
+
+**MANDATORY** for all RX72N / BeagleBone Blue / STAR PCB work. This section
+overrides any instinct to "try a value and re-flash".
+
+### P0 Rules (never violate)
+
+1. **Read before you write.** Before touching any peripheral register,
+   clock divisor, pin-mux, baud rate, DMA channel, or ISR priority, open
+   the authoritative source and read it. Editing first is not allowed.
+2. **Cite the source of every hardware-facing change.** In your response
+   to the user, name the file and line (or datasheet section) that
+   justified the value. "I set BRR=31 because `libs/rx_hal/inc/rx72n_clock.h:42`
+   defines `PCLKB = 60 MHz` and the RX72N HW manual section 36.2.9 gives
+   `N = PCLKB/(64 * 2^(2n-1) * baud) - 1`." No uncited hardware values.
+3. **Cap empirical tries at ONE.** If a first guided attempt (grounded in
+   the docs) fails, stop editing. Return to the authoritative source,
+   enumerate candidate causes (firmware / host tty / wiring / clock tree
+   / module-stop / pin-mux), and rule them out by *reading*, not by
+   reflashing. No "try X, reflash, try Y, reflash" loops.
+4. **Root cause before symptoms.** When output is wrong, identify the
+   mechanism (FPU context save, clock tree, MSTPCR, PFS/PWPR, MPC PSEL,
+   ISR priority) -- not the surface value. Fix once at the right layer.
+5. **Trust headers over comments.** When a stripped-down test file's
+   comment and the `libs/rx_hal/inc/*.h` header disagree (e.g. encoder_test
+   claims "PCLKB=120 MHz" but `rx72n_clock.h` says 60 MHz), the header wins.
+6. **Trust known-good bench tests over fresh code.** If `motor_spin_test/`,
+   `encoder_test/`, or `imu_test/` already init the peripheral successfully
+   on the bench, diff your new code against theirs. Do not freelance an
+   init sequence when a proven one exists.
+
+### Authoritative Sources (in precedence order)
+
+| Rank | Source | When to open |
+|------|--------|--------------|
+| 1 | `star-rx72n-firmware/libs/rx_hal/inc/rx72n_*.h` | Register field layouts, clock constants, bit shifts -- ground truth for this codebase |
+| 2 | Renesas RX72N HW manual `R01UH0824` | Peripheral init sequences, timing, module-stop tables, MPC PSEL values |
+| 3 | DRV8263H datasheet | Motor-driver PWM mode, tDEAD, IPROPI gain, nSLEEP/DRVOFF power-up ordering |
+| 4 | STAR PCB schematic + `docs/sections/03_hardware_pinout.tex` | Pin assignments, pull-ups, current-sense wiring, LED polarity |
+| 5 | Known-good test dir init code (`motor_spin_test/`, `encoder_test/`, `imu_test/`, `pwm_test_hal/`, `uart_test/`) | Authoritative bench-proven init sequences |
+| 6 | Existing lib module (`libs/rx_motor/`, `libs/rx_encoder/`, `libs/rx_drv8263/`, `libs/rx_hal/`) | Production init paths already under review |
+
+Comments in stripped-down bring-up code (`motor_spin_test/sci9.c` etc.)
+are **not** authoritative. They have been wrong before. Trust the header
+or the manual.
+
+### Embedded Gotchas to Pattern-Match Instantly
+
+Before proposing any RX72N peripheral fix, check each of these:
+
+- **Module-stop not released** -- MSTPCRA/B/C/D bit for that peripheral
+  still set. Silent "peripheral ignores all writes" failure mode.
+- **PFS locked** -- writes to PmnPFS require `PWPR.B0WI=0` then `PWPR.PFSWE=1`.
+  Missing unlock = pin-mux never changes = no signal at pad.
+- **MPC PSEL wrong** -- PSEL value differs per pin (e.g. 0x02 vs 0x03 for
+  MTCLK vs TCLK). Check the MPC chapter's pin-function table, not a sibling pin.
+- **Clock tree** -- PCLKA vs PCLKB vs PCLKD vs ICLK vs FCLK. SCI uses PCLKB.
+  GPTW uses PCLKA. ADC12 uses PCLKD. Mixing these silently miscomputes dividers.
+- **FPU context save** -- ThreadX RXv3 port needs `TX_THREAD_EXTENSION_2` and
+  `TX_ENABLE_FPU_SUPPORT` for any task that uses floats. Silent task death /
+  corruption otherwise.
+- **GPTW vs MTU vs TPU** -- different register maps, different PWM capabilities.
+  Don't copy MTU init into GPTW.
+- **PSW.I / ISR re-entrancy** -- interrupts disabled across peripheral init?
+  CMT0 tick won't fire until PSW.I=1 again.
+- **DRV8263H power-up** -- nSLEEP -> tWAKE -> DRVOFF low -> PWM. Skipping
+  tWAKE produces OUT1/OUT2 stuck at Vm/2.
+- **Encoder quadrature mode** -- MTU `TMDR=0x04` for phase-counting. TMDR=0
+  gives free-running timer, not encoder.
+- **Volatile on MMIO + cache coherency** -- register accessors in `libs/rx_hal/`
+  use `volatile`; new accessor code must too.
+- **Host-side stty state** -- before blaming BRR, `stty -F /dev/ttyACM0 -a`
+  to rule out stale host baud from a previous session.
+
+### Workflow Discipline
+
+- **Always read before you write.** This is both a rule and a forcing
+  function -- the `Edit` tool will refuse to edit a file you haven't read,
+  but that is the floor, not the ceiling. Read the *authoritative* source
+  (header/manual/schematic/known-good test), not only the file being edited.
+- **Cite file:line in every hardware-facing change** in your response
+  to the user. "Justified by `libs/rx_hal/inc/rx72n_gptw_regs.h:118`" is
+  acceptable. "Looks right" is not.
+- **Compact before context drift.** At ~50% context use `/compact` rather
+  than letting context grow past 60-70%, where instruction-following
+  degrades and basic register errors resurface.
+- **One empirical test max.** If re-reading the relevant header/manual
+  section doesn't resolve the failure mode within one guided bench attempt,
+  escalate by reading a wider-scope source (MSTPCR table, clock-tree
+  diagram, pin-function table) rather than trying another value.
+- **Diff against known-good tests.** When writing new peripheral init, open
+  the corresponding `*_test/` directory's `main.c` and diff line-by-line.
+  Absent or changed init ordering is almost always the root cause.
+
 ## Project Overview
 
 **STAR (Spatial Topography Accessibility Robot)** - A distributed robotics platform for autonomous indoor ADA-compliance auditing, with custom PCB hardware, Renesas RX72N motor control firmware, a Raspberry Pi 5 control system, and Protocol Buffers communication.
