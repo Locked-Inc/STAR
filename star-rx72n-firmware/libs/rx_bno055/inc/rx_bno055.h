@@ -448,6 +448,32 @@ typedef struct {
  */
 [[nodiscard]] rx_err_t rx_bno055_is_calibrated(bool* out_calibrated);
 
+/**
+ * @brief Clear the BNO055 INT pin by reading the INT_STA register (Page 0, 0x37)
+ *
+ * @details
+ * Per BNO055 datasheet section 3.6, the INT output pin is asserted when an
+ * enabled-and-unmasked interrupt source fires and stays asserted until
+ * firmware reads the INT_STA register. Without this read, the pin latches
+ * high after the first interrupt and never produces another edge, so
+ * edge-triggered external IRQs on the host MCU fire exactly once.
+ *
+ * Call this after every sensor read (or at any other convenient cadence)
+ * so the pin re-triggers on the next ACC_BSX_DRDY event.
+ *
+ * @return rx_err_t Operation result
+ * @retval k_rx_ok INT_STA read successfully (pin cleared)
+ * @retval k_rx_err_invalid_state Driver not yet initialized
+ * @retval k_rx_err_timeout / k_rx_err_nack I2C failure
+ *
+ * @pre rx_bno055_init() completed with k_rx_ok
+ * @post BNO055 INT pin is low; pending-interrupt bits in INT_STA are cleared
+ *
+ * @note Safe to call with no pending interrupts -- the read is idempotent.
+ * @note Not thread-safe.
+ */
+[[nodiscard]] rx_err_t rx_bno055_clear_int(void);
+
 #ifdef UNIT_TEST
 /**
  * @brief Reset all driver static state to uninitialized (test-only)
