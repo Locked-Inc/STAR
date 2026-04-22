@@ -160,16 +160,16 @@ typedef enum : uint8_t {
  * [3], [4], [5] which correspond to buf[3..5] in the 7-byte rx_buffer.
  * With buf[3]=0x7F, buf[4]=0x00, buf[5]=0x00:
  *   adc_T = (0x7F<<12)|(0x00<<4)|(0x00>>4) = 0x7F000 = 520192
- * With T1=27488, T2=24790, T3=50: T ~= 2400 centi-degC (24.00 degC)
+ * With T1=27480, T2=24790, T3=50: T ~= 2400 centi-degC (24.00 degC)
  *
- * Note: k_calib_t1_lsb = 0x60 = k_bmp280_chip_id_expected so that the chip ID
+ * Note: k_calib_t1_lsb = 0x58 = k_bmp280_chip_id_expected so that the chip ID
  * check (reading byte[0] of the mock RX buffer) also passes. The mock always
  * returns data from rx_buffer[0] for all reads within a function call, so
- * this value must satisfy both the chip ID check (1 byte = 0x60) and the
+ * this value must satisfy both the chip ID check (1 byte = 0x58) and the
  * calibration read (24 bytes starting at offset 0).
  *
  * Calibration summary:
- *   dig_T1 = 0x6B60 = 27488 (non-zero, passes postcondition; T1_LSB=0x60=chip_id)
+ *   dig_T1 = 0x6B58 = 27480 (non-zero, passes postcondition; T1_LSB=0x58=chip_id)
  *   dig_T2 = 0x60D6 = 24790 (signed)
  *   dig_T3 = 0x0032 = 50
  *   dig_P1 = 0xFF82 = 65410 (non-zero; chosen for valid pressure at adc_P~9)
@@ -180,9 +180,9 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_calib_t1_lsb =
-    0x60, /**< dig_T1 LSB = 0x60 (matches k_bmp280_chip_id_expected so chip ID read also passes) */
+    0x58, /**< dig_T1 LSB = 0x58 (matches k_bmp280_chip_id_expected so chip ID read also passes) */
   k_calib_t1_msb =
-    0x6B, /**< dig_T1 MSB = 0x6B -> T1 = 0x6B60 = 27488 (non-zero; chip ID = T1_LSB = 0x60) */
+    0x6B, /**< dig_T1 MSB = 0x6B -> T1 = 0x6B58 = 27480 (non-zero; chip ID = T1_LSB = 0x58) */
   k_calib_t2_lsb = 0xD6, /**< dig_T2 LSB */
   k_calib_t2_msb = 0x60, /**< dig_T2 MSB -> T2 = 0x60D6 (signed = 24790) */
   k_calib_t3_lsb = 0x32, /**< dig_T3 LSB */
@@ -222,7 +222,7 @@ typedef enum : uint8_t {
  *   adc_T = (k_adc_press_xlsb<<12)|(k_adc_temp_msb<<4)|(k_adc_temp_lsb>>4)
  *         = (0x7F<<12)|(0x00<<4)|(0x00>>4) = 0x7F000 = 520192
  *
- * With T1=27488, T2=24790, T3=50: T = 2400 centi-degC (24.00 degC) - within range
+ * With T1=27480, T2=24790, T3=50: T = 2400 centi-degC (24.00 degC) - within range
  * With P1=65410, P2=0 and adc_P=9: P = ~100192 Pa (1001.9 hPa) - within range
  *
  * See test_bmp280_calib_bytes_t for the derivation of P1=65410 that ensures
@@ -472,7 +472,7 @@ static rx_bus_config_t s_i2c_config;
  * @brief Pre-load RIIC channel 1 with a valid 24-byte calibration block
  *
  * @details
- * Sets up the mock RX buffer with dig_T1=27488 (non-zero), dig_P1=65410
+ * Sets up the mock RX buffer with dig_T1=27480 (non-zero), dig_P1=65410
  * (non-zero), and remaining coefficients zero (P2=0, P3-P9=0). This
  * satisfies the postcondition check in rx_bmp280_init() (dig_T1 != 0 &&
  * dig_P1 != 0) and is engineered to produce output within the BMP280
@@ -781,7 +781,7 @@ void test_bmp280_init_invalid_calib_returns_error(void)
  * @brief rx_bmp280_init succeeds with valid calibration data
  *
  * @details
- * Pre-loads valid 24-byte calibration (dig_T1 = 27488, dig_P1 = 65410).
+ * Pre-loads valid 24-byte calibration (dig_T1 = 27480, dig_P1 = 65410).
  * After init succeeds, a subsequent rx_bmp280_read() call confirms
  * s_initialized == true.
  *
@@ -1301,7 +1301,7 @@ void test_bmp280_pressure_comp_zero_p1_returns_error(void)
  *   buf[3]=0xFF, buf[4]=0xFF, buf[5]=0xF0
  *   adc_T = (0xFF<<12)|(0xFF<<4)|(0xF0>>4) = 0xFFFFF = 1048575
  *
- * With the normal test calibration (T1=27488, T2=24790, T3=50), this produces
+ * With the normal test calibration (T1=27480, T2=24790, T3=50), this produces
  * temp ~17983 centi-degC which exceeds the 8500 limit.
  *
  * @pre mock_riic_init() has been called
@@ -1324,7 +1324,7 @@ static void internal_load_extreme_temp_adc(void)
  * @brief internal_read_and_compensate_adc returns error when temperature is out of range
  *
  * @details
- * Uses normal calibration (T1=27488, T2=24790, T3=50, P1=65410) with maximum
+ * Uses normal calibration (T1=27480, T2=24790, T3=50, P1=65410) with maximum
  * adc_T (0xFFFFF = 1048575) so that compensated temperature exceeds 8500
  * centi-degC. The out-of-range check returns k_rx_err_invalid_state.
  *
@@ -1360,8 +1360,8 @@ void test_bmp280_read_temp_out_of_range_returns_error(void)
 void test_bmp280_read_pressure_out_of_range_returns_error(void)
 {
   /* Reset state then init with extreme pressure calibration:
-   * T1=27488 (0x6B60), T2=0, T3=0, P1=1
-   * chip_id = first byte of calib = T1_LSB = 0x60 [PASS]
+   * T1=27480 (0x6B58), T2=0, T3=0, P1=1
+   * chip_id = first byte of calib = T1_LSB = 0x58 [PASS]
    * T2=0, T3=0 -> t_fine ~ 0 -> temp ~ 0 centi-degC (in range [-4000, 8500])
    * P1=1 -> pressure formula produces near-zero output (below 7680000 Pa*256 min) */
   rx_bmp280_test_reset_state();
@@ -1732,7 +1732,7 @@ static void test_bmp280_init_invalid_calib_t1_zero_returns_error(void)
    * a buffer where chip_id = T1_LSB = 0x00 (wrong chip_id), which will fail
    * at the chip_id step instead.
    *
-   * Alternative: Load valid chip_id, let init parse calib with T1_LSB=0x60
+   * Alternative: Load valid chip_id, let init parse calib with T1_LSB=0x58
    * (which makes T1=0x0060, non-zero), then use test_reset_state + set_state
    * to directly corrupt the calib. But the branch is in init itself.
    *
@@ -1760,9 +1760,9 @@ static void test_bmp280_init_invalid_calib_t1_zero_returns_error(void)
    * branch in init to fire. The branch at line 787 checks s_calib after
    * internal_parse_calibration returns.
    *
-   * Let's try: Load a 24-byte buffer with T1_LSB=0x60=chip_id, T1_MSB=0x00
-   * -> T1=0x0060=96 (non-zero). That's the constraint.
-   * Can we use T1_MSB=0x00 and T1_LSB=0x00? Only if chip_id read gets 0x60
+   * Let's try: Load a 24-byte buffer with T1_LSB=0x58=chip_id, T1_MSB=0x00
+   * -> T1=0x0058=88 (non-zero). That's the constraint.
+   * Can we use T1_MSB=0x00 and T1_LSB=0x00? Only if chip_id read gets 0x58
    * from a separate source. The mock does not support per-call data.
    *
    * Real solution: just load calib with T1 = 0 and accept the chip_id will
@@ -1821,7 +1821,7 @@ static void test_bmp280_init_invalid_calib_t1_zero_returns_error(void)
    * I'll use GCOVR_EXCL_BR_LINE for this specific branch component, like
    * the BNO055 driver does for unreachable branches. */
 
-  /* Use calibration where T1_LSB = 0x60 (chip_id), T1_MSB = 0x00
+  /* Use calibration where T1_LSB = 0x58 (chip_id), T1_MSB = 0x00
    * -> T1 = 0x0060 = 96 (non-zero, NOT what we want for T1==0)
    * -> Falls through to P1 check instead.
    * This test cannot produce T1==0 with the current mock architecture. */
@@ -1832,7 +1832,7 @@ static void test_bmp280_init_invalid_calib_t1_zero_returns_error(void)
  * @brief rx_bmp280_read returns error when temperature < min (line 916, first || operand TRUE)
  *
  * @details
- * Uses the standard calibration (T1=27488, T2=24790, T3=50) with adc_T=0
+ * Uses the standard calibration (T1=27480, T2=24790, T3=50) with adc_T=0
  * to produce a compensated temperature far below -4000 centi-degC. The
  * condition (temp < min) is TRUE, short-circuiting the || before (temp > max)
  * is evaluated. This exercises the missing branch on line 916.
@@ -1846,7 +1846,7 @@ static void test_bmp280_read_temp_below_range_returns_error(void)
 
   /* Load status=done(0x00) + ADC bytes with adc_T = 0 (temp bytes all zero)
    * and adc_P = 0 (press bytes all zero). With standard calibration
-   * (T1=27488, T2=24790, T3=50), adc_T=0 produces temp << -4000 centi-degC. */
+   * (T1=27480, T2=24790, T3=50), adc_T=0 produces temp << -4000 centi-degC. */
   uint8_t adc_buf[k_extreme_adc_buf_size];
   /* NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling) */
   memset(adc_buf, 0, sizeof(adc_buf));
@@ -1882,7 +1882,7 @@ typedef enum : uint8_t {
  * @brief rx_bmp280_read returns error when pressure > max (line 922, second || operand)
  *
  * @details
- * Uses calibration with T1=27488, T2=0, T3=0 (temp in range at ~0 centi-degC)
+ * Uses calibration with T1=27480, T2=0, T3=0 (temp in range at ~0 centi-degC)
  * and P1=1 with maximum adc_P (0xFFFFF). The small P1 with large adc_P produces
  * a pressure value that overflows the uint32_t range, resulting in a value
  * > 28160000 (k_bmp280_press_max_pa_256). The condition (press < min) is FALSE,
@@ -1894,7 +1894,7 @@ typedef enum : uint8_t {
 static void test_bmp280_read_pressure_above_range_returns_error(void)
 {
 #ifdef UNIT_TEST
-  /* Reset and init with extreme calibration: T1=27488, T2=0, T3=0, P1=1
+  /* Reset and init with extreme calibration: T1=27480, T2=0, T3=0, P1=1
    * Temperature with adc_T=0 and T2=T3=0 gives t_fine=0, temp=0 (in range).
    * Pressure with P1=1 and max adc_P gives overflow -> press > max. */
   rx_bmp280_test_reset_state();
@@ -1972,7 +1972,7 @@ typedef enum : uint8_t {
  * @brief rx_bmp280_read returns error when pressure < min (line 961, first || operand)
  *
  * @details
- * Uses calibration with T1=27488, T2=0, T3=0 (temp in range at 0 centi-degC)
+ * Uses calibration with T1=27480, T2=0, T3=0 (temp in range at 0 centi-degC)
  * and P1=65535 with all other P coefficients zero. A near-maximum adc_P
  * (1015807) makes (1048576 - adc_P) tiny, so the pressure computation
  * produces ~800036 Pa*256, well below k_bmp280_press_min_pa_256 (7680000).
@@ -1986,7 +1986,7 @@ typedef enum : uint8_t {
 static void test_bmp280_read_pressure_below_range_returns_error(void)
 {
 #ifdef UNIT_TEST
-  /* Reset and init with extreme calibration: T1=27488, T2=0, T3=0, P1=65535 */
+  /* Reset and init with extreme calibration: T1=27480, T2=0, T3=0, P1=65535 */
   rx_bmp280_test_reset_state();
   rx_bmp280_test_set_state(&s_test_manager, false);
 

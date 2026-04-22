@@ -177,3 +177,20 @@ rx_err_t rx_bno055_read(bno055_data_t* out)
   }
   return ret;
 }
+
+/**
+ * @brief Mock implementation of rx_bno055_clear_int()
+ *
+ * @details
+ * No-op stub for tests -- always returns k_rx_ok. The real driver reads
+ * BNO055 INT_STA (0x37) over I2C to deassert the INT pin; under unit
+ * tests there is no real I2C traffic to simulate, so the mock just
+ * succeeds. Tests that care about the INT-clear path should inject
+ * behavior via the bus-manager mock, not here.
+ *
+ * @return Always k_rx_ok.
+ */
+rx_err_t rx_bno055_clear_int(void)
+{
+  return k_rx_ok;
+}
