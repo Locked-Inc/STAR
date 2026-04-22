@@ -99,11 +99,18 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_imu_task_period_ms =
-    50U, /**< Reference period in milliseconds (20 Hz); actual rate driven by BNO055 INT */
-  k_imu_task_period_ticks = 5U, /**< Reference ticks (5 x 10 ms at 100 Hz) */
+    20U, /**< Reference period in milliseconds (50 Hz); actual rate driven by BNO055 INT */
+  k_imu_task_period_ticks = 2U, /**< Reference ticks (2 x 10 ms at 100 Hz) */
   k_imu_task_period_margin_ms =
-    150U, /**< Task period safety margin (3x 50ms period = 150ms); NOT the IWDT registration timeout (see k_iwdt_task_timeout_imu_ms in main.c) */
-  k_imu_int_timeout_ms = 200U, /**< Max wait for BNO055 INT assertion before fault recovery read */
+    60U, /**< Task period safety margin (3x 20ms period = 60ms); NOT the IWDT registration timeout (see k_iwdt_task_timeout_imu_ms in main.c) */
+  /* INT timeout dropped from 200 ms (5 Hz) to 20 ms (50 Hz). The BNO055
+   * fusion runs at 100 Hz in NDOF mode; with the BNO055 INT pin not
+   * actually pulsing on this PCB rev (ACC_BSX_DRDY = INT_EN bit 0 is
+   * reserved on multiple firmware revisions, so we never get edges),
+   * this timeout *is* the effective IMU sample rate. 20 ms catches
+   * every other fusion frame, which is plenty for telemetry / gateway
+   * forwarding and matches the comm tick. */
+  k_imu_int_timeout_ms = 20U, /**< Max wait for BNO055 INT assertion before fault recovery read */
 } imu_task_timing_t;
 
 /**

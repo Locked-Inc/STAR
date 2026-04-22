@@ -9,8 +9,8 @@
  * Test coverage:
  * - Task creation success
  * - Task creation failure when ThreadX fails
- * - Timeout constant correctness (k_imu_int_timeout_ms >= 200 ms)
- * - Reference period constant (k_imu_task_period_ms == 50 ms)
+ * - Timeout constant correctness (k_imu_int_timeout_ms == 20 ms)
+ * - Reference period constant (k_imu_task_period_ms == 20 ms)
  *
  * @author STAR Team
  * @date 2026-03-08
@@ -101,49 +101,44 @@ void test_imu_task_create_event_flags_fail(void)
  */
 
 /**
- * @brief Test that k_imu_int_timeout_ms is 200 ms
+ * @brief Test that k_imu_int_timeout_ms is 20 ms (50 Hz polling fallback)
  *
  * @details
- * Verifies the BNO055 INT watchdog timeout constant is correctly set to
- * 200 ms, which is the fault recovery window.
+ * Verifies the BNO055 INT watchdog timeout. With the BNO055 INT pin not
+ * pulsing on this PCB rev (see imu_task.h comment), this value is the
+ * effective IMU sample period.
  */
 void test_imu_int_timeout_ms_value(void)
 {
-  TEST_ASSERT_EQUAL(200U, (uint32_t)k_imu_int_timeout_ms);
+  TEST_ASSERT_EQUAL(20U, (uint32_t)k_imu_int_timeout_ms);
 }
 
 /**
- * @brief Test that k_imu_task_period_ms is the 20 Hz reference period
- *
- * @details
- * Verifies the reference period constant is still 50 ms (20 Hz reference),
- * matching the BNO055 output data rate in NDOF mode.
+ * @brief Test that k_imu_task_period_ms is the 50 Hz reference period
  */
 void test_imu_task_period_ms_value(void)
 {
-  TEST_ASSERT_EQUAL(50U, (uint32_t)k_imu_task_period_ms);
+  TEST_ASSERT_EQUAL(20U, (uint32_t)k_imu_task_period_ms);
 }
 
 /**
- * @brief Test that k_imu_int_timeout_ms exceeds the reference period
+ * @brief Test that k_imu_int_timeout_ms is at least the reference period
  *
  * @details
- * Verifies the timeout (200 ms) is at least 3x the reference period (50 ms),
- * satisfying the IWDT safety margin invariant.
+ * With the polling-fallback rate matching the reference period, the
+ * timeout must be >= the period to avoid double-reads inside one period.
  */
 void test_imu_int_timeout_exceeds_period(void)
 {
-  /* k_imu_int_timeout_ms must be >= 3 * k_imu_task_period_ms */
-  TEST_ASSERT_GREATER_OR_EQUAL((uint32_t)(3U * (uint32_t)k_imu_task_period_ms),
-                               (uint32_t)k_imu_int_timeout_ms);
+  TEST_ASSERT_GREATER_OR_EQUAL((uint32_t)k_imu_task_period_ms, (uint32_t)k_imu_int_timeout_ms);
 }
 
 /**
  * @brief Test that k_imu_task_period_margin_ms is 3x the reference period
  *
  * @details
- * Verifies the safety margin constant (150 ms) equals exactly 3x the
- * reference period (50 ms).
+ * Verifies the safety margin constant equals exactly 3x the reference
+ * period.
  */
 void test_imu_task_period_margin_is_3x(void)
 {

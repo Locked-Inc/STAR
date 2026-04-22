@@ -9,7 +9,7 @@
  * 9-DOF absolute orientation sensor and the BMP280 barometric pressure
  * sensor, then reads both sensors on each BNO055 INT falling edge (P3.2
  * / IRQ12), publishing results to shared data for the telemetry task.
- * A 200 ms watchdog timeout triggers a read when INT does not fire.
+ * A 20 ms watchdog timeout triggers a read when INT does not fire.
  *
  * # Hardware
  *
@@ -24,7 +24,7 @@
  * Init --> Running : both sensors initialized
  * Init --> Running : one or both sensors failed (logs error, continues)
  * Running --> Running : BNO055 INT (IRQ12) fires -> ISR sets event flag -> read BNO055 + BMP280
- * Running --> Running : 200 ms watchdog timeout -> read without INT (fault recovery)
+ * Running --> Running : 20 ms watchdog timeout -> read without INT (fault recovery)
  * @enduml
  *
  * # Data Flow
@@ -221,7 +221,7 @@ typedef enum : uint8_t {
  *
  * @details
  * Three-state result distinguishes a genuine data-ready INT, a benign
- * 200 ms watchdog timeout, and a fatal ThreadX RTOS error.  Callers
+ * 20 ms watchdog timeout, and a fatal ThreadX RTOS error.  Callers
  * must handle each case separately so corrupted/deleted event-flags
  * groups surface as faults rather than silently degrading into the
  * watchdog recovery path.
@@ -233,7 +233,7 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_imu_wait_data_ready = 0U, /**< BNO055 INT fired (TX_SUCCESS): read fresh data */
-  k_imu_wait_timeout    = 1U, /**< 200 ms watchdog (TX_NO_EVENTS): fault-recovery read */
+  k_imu_wait_timeout    = 1U, /**< 20 ms watchdog (TX_NO_EVENTS): fault-recovery read */
   k_imu_wait_rtos_error = 2U, /**< Fatal ThreadX error: event-flags group corrupted */
 } imu_wait_result_t;
 
@@ -249,9 +249,9 @@ typedef enum : uint8_t {
  *
  * Timeout formula (with +1 slack for tick boundary):
  *   ticks = (ms * TX_TIMER_TICKS_PER_SECOND + 999) / 1000 + 1
- * At 100 Hz: (200 * 100 + 999) / 1000 + 1 = 20999/1000 + 1 = 21 ticks.
+ * At 100 Hz: (20 * 100 + 999) / 1000 + 1 = 3 ticks.
  *
- * @invariant k_imu_int_timeout_ticks >= 21 at 100 Hz tick rate
+ * @invariant k_imu_int_timeout_ticks >= 3 at 100 Hz tick rate
  * @see s_imu_event_flags ThreadX event flags group
  * @see k_imu_event_data_ready Event bit set by ISR
  * @since Version 1.0.0
@@ -259,7 +259,7 @@ typedef enum : uint8_t {
 typedef enum : uint8_t {
   k_imu_int_timeout_ticks =
     ((uint32_t)k_imu_int_timeout_ms * TX_TIMER_TICKS_PER_SECOND + 999U) / 1000U +
-    1U, /**< Timeout in ticks with +1 slack: (200*100+999)/1000+1 = 21 ticks */
+    1U, /**< Timeout in ticks with +1 slack: (20*100+999)/1000+1 = 3 ticks */
   k_imu_event_data_ready = 0x01U, /**< Event flag bit set by ISR on BNO055 INT assertion */
 } imu_task_int_cfg_t;
 
@@ -638,7 +638,7 @@ static void internal_read_and_publish_imu(void)
    * section 3.6 the INT pin stays asserted until INT_STA (Page 0, 0x37)
    * is read, so without this call the pin latches high after the first
    * ACC_BSX_DRDY and never generates another edge -- IRQ12 fires once
-   * per boot and the task permanently falls back to 200 ms polling.
+   * per boot and the task permanently falls back to 20 ms polling.
    * Best-effort: if this read fails we still use the sensor data we
    * already collected and rely on the polling fallback next iteration. */
   (void)rx_bno055_clear_int();
@@ -796,19 +796,19 @@ static rx_err_t internal_imu_hardware_reset(void)
 }
 
 /**
- * @brief Block on BNO055 INT event flag with 200 ms watchdog timeout
+ * @brief Block on BNO055 INT event flag with 20 ms watchdog timeout
  *
  * @details
  * Waits for k_imu_event_data_ready to be set in s_imu_event_flags by the
  * INT_IRQ12() ISR. Returns k_imu_wait_data_ready immediately if the flag is
  * already set. Returns k_imu_wait_timeout after k_imu_int_timeout_ticks
- * (200 ms) with no INT -- the caller performs a fault-recovery read.
+ * (20 ms) with no INT -- the caller performs a fault-recovery read.
  * Returns k_imu_wait_rtos_error on any other ThreadX status, indicating that
  * the event-flags group may be corrupted or deleted.
  *
  * @return imu_wait_result_t Three-state result distinguishing INT, timeout, and RTOS fault
  * @retval k_imu_wait_data_ready BNO055 INT fired; event flag consumed
- * @retval k_imu_wait_timeout 200 ms watchdog expired; fault-recovery read
+ * @retval k_imu_wait_timeout 20 ms watchdog expired; fault-recovery read
  * @retval k_imu_wait_rtos_error Fatal ThreadX error; caller must escalate
  *
  * @pre s_imu_event_flags created by imu_task_create()
@@ -833,13 +833,13 @@ static imu_wait_result_t internal_wait_for_imu_int(void)
                                             &actual_flags,
                                             (ULONG)k_imu_int_timeout_ticks);
   if (ef_status == TX_NO_EVENTS) {
-    /* Benign timeout: BNO055 INT did not fire within 200 ms. On STAR PCB
+    /* Benign timeout: BNO055 INT did not fire within 20 ms. On STAR PCB
      * revisions where the BNO055 INT line is not observed to toggle, this
      * path is the normal operating mode and produces a ~5 Hz polled-read
      * loop via the main-loop's unconditional internal_read_and_publish_imu
      * call. Demoted from WARN to DEBUG so the log is not spammed at every
      * iteration when the INT never fires. */
-    rx_log_debug(s_tag, "IMU INT timeout (200 ms) - reading without INT");
+    rx_log_debug(s_tag, "IMU INT timeout (20 ms) - reading without INT");
     return k_imu_wait_timeout;
   }
   if (ef_status != TX_SUCCESS) {
@@ -985,7 +985,7 @@ static void internal_init_sensors(bool* bno_ready, bool* bmp_ready)
  * 6. Initialize BMP280 via rx_bmp280_init() (~2 ms for calib read)
  * 7. Enter interrupt-driven loop:
  *    a. Feed IWDT heartbeat FIRST (must precede any blocking sensor re-init)
- *    b. Block on BNO055 INT event flag (200 ms watchdog timeout)
+ *    b. Block on BNO055 INT event flag (20 ms watchdog timeout)
  *    c. Retry init for any sensor that failed startup (until success)
  *    d. internal_read_and_publish_imu() if bno_ready - BNO055 -> shared_data_update_imu()
  *    e. internal_read_and_publish_baro() if bmp_ready - BMP280 -> shared_data_update_baro()
@@ -1008,7 +1008,7 @@ static void internal_init_sensors(bool* bno_ready, bool* bmp_ready)
  * @post imu_state_t updated via shared_data_update_imu() on each BNO055 INT
  * @post baro_state_t updated via shared_data_update_baro() on each BNO055 INT
  * @post State valid flags remain false until first successful sensor read
- * @post IWDT heartbeat fed on each loop iteration (< 200 ms period)
+ * @post IWDT heartbeat fed on each loop iteration (< 20 ms period)
  *
  * @note Not thread-safe; runs as single dedicated ThreadX task
  * @note Sensor init failures do not halt the task; valid flag stays false
@@ -1046,7 +1046,7 @@ static void internal_imu_task_entry(ULONG input)
     /* Feed IWDT heartbeat first -- must arrive within 900 ms window */
     internal_send_iwdt_heartbeat();
 
-    /* Block until BNO055 asserts INT (falling edge) or 200 ms timeout */
+    /* Block until BNO055 asserts INT (falling edge) or 20 ms timeout */
     const imu_wait_result_t wait_result = internal_wait_for_imu_int();
     if (wait_result == k_imu_wait_rtos_error) {
       /* Fatal ThreadX fault: event-flags group corrupted or deleted.
