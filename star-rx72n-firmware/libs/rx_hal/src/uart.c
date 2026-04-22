@@ -233,7 +233,7 @@ typedef enum : uint32_t {
    *
    * Well within the CY7C65213 USB-UART bridge's 3 Mbps ceiling.
    */
-  k_uart_default_baudrate      = 921600,
+  k_uart_default_baudrate      = 115200, /* matches motors_rtos/HIL-tests; 921600 at PCLKB=60 MHz has 1.7% BRR rounding error */
   k_uart_bit_time_delay_cycles = 125, /**< ~1.09us at 921600 bps, ~260 cycles @240 MHz */
 } uart_config_constants_t;
 

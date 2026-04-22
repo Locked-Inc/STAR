@@ -131,7 +131,34 @@ set(APP_SOURCES
 # ThreadX RTOS
 file(GLOB THREADX_COMMON_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/threadx/common/src/*.c)
 file(GLOB THREADX_PORT_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/threadx/ports/rxv3/gnu/src/*.c)
-file(GLOB THREADX_PORT_ASM CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/threadx/ports/rxv3/gnu/src/*.S)
+file(GLOB THREADX_PORT_ASM_RAW CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/threadx/ports/rxv3/gnu/src/*.S)
+
+# Strip C-style /* ... */ block comments from upstream ThreadX port .S
+# files before they reach rx-elf-gcc.  The upstream Eclipse ThreadX
+# source (byte-identical to our vendored copy) uses CC-RX / GNU hybrid
+# syntax: /* ... */ blocks are embedded INSIDE ;-prefixed assembler
+# comment lines AND span multiple real executable instructions.  Under
+# CC-RX the ; makes each line a comment; under GCC's cpp, ; is just a
+# character and cpp eats everything from /* to */ -- deleting the
+# system_state load + CMP + BEQ + ADD + MOV that implements the
+# increment in __tx_thread_context_save.  Result: every CMT0 ISR
+# unbalanced, tx_thread_sleep returns TX_CALLER_ERROR forever, tasks
+# never run.  See memory project_threadx_rxv3_cpp_block_comment_bug.md
+# and the matching pattern rule in motors_rtos/Makefile.
+set(THREADX_PORT_ASM "")
+foreach(RAW_ASM IN LISTS THREADX_PORT_ASM_RAW)
+    get_filename_component(ASM_NAME ${RAW_ASM} NAME_WE)
+    set(SED_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/threadx_asm/${ASM_NAME}.sed.S)
+    add_custom_command(
+        OUTPUT ${SED_OUTPUT}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/threadx_asm
+        COMMAND sed -e "s|/\\*||g" -e "s|\\*/||g" ${RAW_ASM} > ${SED_OUTPUT}
+        DEPENDS ${RAW_ASM}
+        COMMENT "Stripping /* */ from ThreadX ${ASM_NAME}.S for GCC cpp compatibility"
+        VERBATIM
+    )
+    list(APPEND THREADX_PORT_ASM ${SED_OUTPUT})
+endforeach()
 file(GLOB THREADX_LOWPOWER_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/threadx/utility/low_power/*.c)
 
 # Custom libraries (using GLOB_RECURSE for src subdirectories)
