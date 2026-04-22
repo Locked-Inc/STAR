@@ -332,10 +332,16 @@ target_include_directories(${PROJECT_NAME}.elf PRIVATE
     ${CMAKE_SOURCE_DIR}/libs/rx_comm_manager/inc
 )
 
-# Set linker script
+# Set linker script.  `--undefined` forces the linker to treat the
+# named symbols as unresolved references, which pulls their containing
+# .text sub-sections in past --gc-sections.  Without this, the ThreadX
+# CMT0 tick ISR in src/boot/cmt0_vector.S is dropped (the linker
+# script's `DEFINED($tableentry$28$.rvectors)` check does not count as
+# a GC root) and vector 28 ends up as 0 instead of the ISR address.
 target_link_options(${PROJECT_NAME}.elf PRIVATE
     -T${LINKER_SCRIPT}
     -Wl,--Map=${PROJECT_NAME}.map
+    "-Wl,--undefined=$tableentry$28$.rvectors"
 )
 
 #############################################################################

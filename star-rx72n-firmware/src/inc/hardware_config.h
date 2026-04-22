@@ -44,6 +44,10 @@
 
 #include <stdint.h>
 
+#include "hardware.h"
+#include "rx_err.h"
+#include "rx_port_constants.h"
+
 /* =========================================================================
  * Motor PWM (GPTW channels 0-3)
  * ========================================================================= */
@@ -1110,6 +1114,69 @@ typedef enum : uint8_t {
 typedef enum : uint8_t {
   k_led_count = 6, /**< Total number of LEDs */
 } led_count_t;
+
+/**
+ * @brief STAR PCB status LEDs by silkscreen reference designator
+ *
+ * @details
+ * Semantic aliases of the six status LEDs' rx_port_pin_t values, keyed
+ * by silkscreen label (D9-D14).  Use these with gpio_write_high() /
+ * gpio_write_low() / gpio_set_output() for all code that drives LEDs
+ * directly (boot bisects, ad-hoc diagnostics, task-entry markers).
+ * Code that drives LEDs by semantic role (heartbeat, error, motor,
+ * comm, obstacle, estop) should use led_pins_t / led_ports_t via the
+ * led_status_task LED table instead; this enum is the silk-to-pin map.
+ *
+ * Declared as C23 `static constexpr` so the values retain their
+ * rx_port_pin_t type (no enum-to-enum conversion warnings at the
+ * gpio_write_high() call sites) and carry no runtime storage cost.
+ *
+ * Mapping (must match PCB schematic):
+ *
+ * | Silk | Port/Pin | Role            |
+ * |------|----------|------------------|
+ * | D9   | PA7      | LED0 heartbeat   |
+ * | D10  | PB0      | LED1 error       |
+ * | D11  | P71      | LED2 motor       |
+ * | D12  | P72      | LED3 comm        |
+ * | D13  | PB1      | LED4 obstacle    |
+ * | D14  | PB2      | LED5 estop       |
+ *
+ * @invariant Values must match PCB schematic and led_ports_t/led_pins_t.
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_led_d9_heartbeat = k_rx_pa_7, /**< Silk D9  -> PA7 (LED0, system heartbeat) */
+  k_led_d10_error    = k_rx_pb_0, /**< Silk D10 -> PB0 (LED1, error)            */
+  k_led_d11_motor    = k_rx_p7_1, /**< Silk D11 -> P71 (LED2, motor active)     */
+  k_led_d12_comm     = k_rx_p7_2, /**< Silk D12 -> P72 (LED3, comm activity)    */
+  k_led_d13_obstacle = k_rx_pb_1, /**< Silk D13 -> PB1 (LED4, obstacle)         */
+  k_led_d14_estop    = k_rx_pb_2, /**< Silk D14 -> PB2 (LED5, estop)            */
+} rx_led_pin_t;
+
+/**
+ * @brief Configure a STAR PCB status LED as GPIO output.
+ * @details Thin wrapper around gpio_set_output() that accepts a
+ *          rx_led_pin_t silk-label instead of a raw rx_port_pin_t.
+ *          Keeps call sites free of (rx_port_pin_t) casts while still
+ *          using a distinct enum type for the semantic name.
+ */
+static inline rx_err_t led_set_output(rx_led_pin_t led)
+{
+  return gpio_set_output((rx_port_pin_t)led);
+}
+
+/** @brief Drive a STAR PCB status LED HIGH (active-high LEDs light up). */
+static inline rx_err_t led_write_high(rx_led_pin_t led)
+{
+  return gpio_write_high((rx_port_pin_t)led);
+}
+
+/** @brief Drive a STAR PCB status LED LOW (active-high LEDs turn off). */
+static inline rx_err_t led_write_low(rx_led_pin_t led)
+{
+  return gpio_write_low((rx_port_pin_t)led);
+}
 
 /** @} */ /* end of led_pins */
 

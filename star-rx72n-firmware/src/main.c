@@ -1672,13 +1672,13 @@ typedef enum : uint32_t {
   k_iwdt_task_timeout_tempsensor_ms =
     3000, /**< Temperature Sensor task timeout (3000ms). Task period: 1000ms @ 1 Hz. Timeout = 3x period. Heartbeat called every 1s. Valid range: 2000-5000ms. If exceeded: temp compensation stops, system reset after 2s. */
   k_iwdt_task_timeout_obstdetect_ms =
-    60, /**< Obstacle Detection task timeout (60ms). Task heartbeat: 20ms @ 50 Hz. Timeout = 3x 20ms period. Heartbeat called every 20ms. Valid range: 50-150ms. If exceeded: collision avoidance stops, system reset after 2s. */
+    128, /**< Obstacle Detection task timeout (128ms, clamped to k_iwdt_min_timeout_ms).  Task heartbeat: 20ms @ 50 Hz.  ~6x headroom before hang detection fires. If exceeded: collision avoidance stops, system reset after 2s. */
   k_iwdt_task_timeout_motorctrl_ms =
-    30, /**< Motor Control task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3x period. Heartbeat called every 10ms. Valid range: 20-50ms. If exceeded: motor control stops, system reset after 2s. CRITICAL TASK. */
+    128, /**< Motor Control task timeout (128ms, clamped to k_iwdt_min_timeout_ms).  Task period: 10ms @ 100 Hz.  ~12x headroom before hang detection. If exceeded: motor control stops, system reset after 2s. CRITICAL TASK. */
   k_iwdt_task_timeout_commtask_ms =
-    30, /**< Communication task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3x period. Heartbeat called every 10ms. Valid range: 20-50ms. If exceeded: SPI comm stops, system reset after 2s. CRITICAL TASK. */
+    128, /**< Communication task timeout (128ms, clamped to k_iwdt_min_timeout_ms).  Task period: 10ms @ 100 Hz.  ~12x headroom before hang detection. If exceeded: SPI comm stops, system reset after 2s. CRITICAL TASK. */
   k_iwdt_task_timeout_watchdog_ms =
-    30, /**< Watchdog Monitor task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3x period. Self-monitoring via own heartbeat. Valid range: 20-50ms. If exceeded: watchdog stops feeding IWDT, system reset after 2s. CRITICAL TASK. */
+    128, /**< Watchdog Monitor task timeout (128ms, clamped to k_iwdt_min_timeout_ms).  Task period: 10ms @ 100 Hz.  Self-monitoring via own heartbeat. If exceeded: watchdog stops feeding IWDT, system reset after 2s. CRITICAL TASK. */
   k_iwdt_task_timeout_imu_ms =
     900, /**< IMU Task IWDT registration timeout (900ms). Intentionally exceeds k_imu_task_period_margin_ms (150ms): BNO055 POR alone takes ~700ms, so the IWDT window must span the full cold-start duration plus margin. Heartbeat is sent before each retry, so the gap between heartbeats is bounded by one retry attempt. */
 } iwdt_task_timeout_ms_t;
@@ -1971,14 +1971,24 @@ static void internal_register_iwdt_tasks(void)
   err = rx_iwdt_register_task("LEDStatus", k_iwdt_task_timeout_ledstatus_ms);
   RX_ASSERT(err == k_rx_ok, "LEDStatus IWDT registration must succeed");
 
-  err = rx_iwdt_register_task("TempSensor", k_iwdt_task_timeout_tempsensor_ms);
-  RX_ASSERT(err == k_rx_ok, "TempSensor IWDT registration must succeed");
+  /* TempSensor / ObstDetect / ImuTask / MotorCtrl IWDT registrations
+   * are disabled in lockstep with their task_create calls below.  If
+   * we register them here but the task is never created to send
+   * heartbeats, IWDT fires a reset ~5 s after k_system_state_running
+   * transitions, and the board loops so fast through boot that only
+   * main.c's final D13 LED marker is visible.  Re-enable each line
+   * ONCE its matching task_create is re-enabled (see comment block
+   * inside internal_create_system_tasks).
+   */
 
-  err = rx_iwdt_register_task("ObstDetect", k_iwdt_task_timeout_obstdetect_ms);
-  RX_ASSERT(err == k_rx_ok, "ObstDetect IWDT registration must succeed");
+  // err = rx_iwdt_register_task("TempSensor", k_iwdt_task_timeout_tempsensor_ms);
+  // RX_ASSERT(err == k_rx_ok, "TempSensor IWDT registration must succeed");
 
-  err = rx_iwdt_register_task("MotorCtrl", k_iwdt_task_timeout_motorctrl_ms);
-  RX_ASSERT(err == k_rx_ok, "MotorCtrl IWDT registration must succeed");
+  // err = rx_iwdt_register_task("ObstDetect", k_iwdt_task_timeout_obstdetect_ms);
+  // RX_ASSERT(err == k_rx_ok, "ObstDetect IWDT registration must succeed");
+
+  // err = rx_iwdt_register_task("MotorCtrl", k_iwdt_task_timeout_motorctrl_ms);
+  // RX_ASSERT(err == k_rx_ok, "MotorCtrl IWDT registration must succeed");
 
   err = rx_iwdt_register_task("CommTask", k_iwdt_task_timeout_commtask_ms);
   RX_ASSERT(err == k_rx_ok, "CommTask IWDT registration must succeed");
@@ -1986,8 +1996,8 @@ static void internal_register_iwdt_tasks(void)
   err = rx_iwdt_register_task("WatchdogMon", k_iwdt_task_timeout_watchdog_ms);
   RX_ASSERT(err == k_rx_ok, "WatchdogMon IWDT registration must succeed");
 
-  err = rx_iwdt_register_task("ImuTask", k_iwdt_task_timeout_imu_ms);
-  RX_ASSERT(err == k_rx_ok, "ImuTask IWDT registration must succeed");
+  // err = rx_iwdt_register_task("ImuTask", k_iwdt_task_timeout_imu_ms);
+  // RX_ASSERT(err == k_rx_ok, "ImuTask IWDT registration must succeed");
 
   /* Set initial IWDT state (init phase - 5s timeout) */
   err = rx_iwdt_set_state(k_system_state_init);
@@ -2038,29 +2048,39 @@ static void internal_create_system_tasks(void)
   err = led_status_task_create();
   RX_ASSERT(err == k_rx_ok, "led_status_task_create must succeed");
 
+  /* TODO(2026-04-22, scheduler-bring-up): temp / imu / obstacle / motor
+   * tasks are DISABLED here because each hangs its own init path when the
+   * scheduler is alive, starving every lower-priority task (led_status
+   * and telemetry both sit below these four in priority).  The scheduler
+   * itself is now verified working end-to-end -- D9 heartbeat blinks at
+   * 1 Hz in this build once these four are commented out.  Re-enable
+   * each ONE AT A TIME after its specific init hang is diagnosed and
+   * fixed; they are orthogonal problems from the scheduler fix chain
+   * committed with this change.
+   *
+   *   temp_sensor_task   : 1-Wire / DS18B20 bring-up (pri 15)
+   *   imu_task           : BNO055 / BMP280 on RIIC1 (pri 13)
+   *   obstacle_detect_task: HC-SR04 hardware bring-up blocked per
+   *                        project_sonar_bringup_blocked.md (pri 12)
+   *   motor_control_task : internal_init_motor_stack() hangs on real
+   *                        hardware (pri 8)
+   */
+
   /* Temperature Sensor Task - Priority 15 */
-  err = temp_sensor_task_create();
-  RX_ASSERT(err == k_rx_ok, "temp_sensor_task_create must succeed");
+  // err = temp_sensor_task_create();
+  // RX_ASSERT(err == k_rx_ok, "temp_sensor_task_create must succeed");
 
   /* IMU Task - Priority 13 (BNO055 + BMP280 at 20 Hz) */
-  err = imu_task_create();
-  RX_ASSERT(err == k_rx_ok, "imu_task_create must succeed");
+  // err = imu_task_create();
+  // RX_ASSERT(err == k_rx_ok, "imu_task_create must succeed");
 
   /* Obstacle Detection Task - Priority 12 */
-  /* TODO(sonar-bringup): HC-SR04 hardware bring-up unverified as of 2026-04-21.
-   * sonar_test/ (bare-metal polled) flashed and ran cleanly on all 4 channels
-   * but every sonar returned NO_RESPONSE -- ECHO pin never rose after TRIG.
-   * Software stack (rx_hcsr04, rx_obstacle_detect, task, proto, gateway) is
-   * complete; the blocker is on the hardware side. Investigate before trusting
-   * obstacle data: verify VCC is reaching each module, that TRIG pulses are
-   * actually appearing on PF5/PJ5/PJ3/P33 (scope), and that ECHO level is
-   * getting back to P00-P03. Keep the task wired in so the stack stays built. */
-  err = obstacle_detect_task_create();
-  RX_ASSERT(err == k_rx_ok, "obstacle_detect_task_create must succeed");
+  // err = obstacle_detect_task_create();
+  // RX_ASSERT(err == k_rx_ok, "obstacle_detect_task_create must succeed");
 
   /* Motor Control Task - Priority 8 */
-  err = motor_control_task_create();
-  RX_ASSERT(err == k_rx_ok, "motor_control_task_create must succeed");
+  // err = motor_control_task_create();
+  // RX_ASSERT(err == k_rx_ok, "motor_control_task_create must succeed");
 
   /* Communication Task - Priority 5 (highest) */
   err = comm_task_create();
