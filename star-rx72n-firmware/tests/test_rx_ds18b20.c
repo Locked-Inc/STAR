@@ -764,7 +764,7 @@ rx_err_t rx_bus_onewire_init(rx_bus_manager_t* manager, const char* bus_name)
  *         +--------+
  *         ^        ^
  *         480us    Device pulls low 60-240us (presence pulse)
- *         Master
+ *         Controller
  *         reset
  * ```
  *
@@ -825,8 +825,8 @@ rx_err_t rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, b
  *
  * **Real 1-Wire Write Timing (Not Implemented):**
  * ```
- * Write 0:  Master holds low 60-120us
- * Write 1:  Master holds low 1-15us, release to high
+ * Write 0:  Controller holds low 60-120us
+ * Write 1:  Controller holds low 1-15us, release to high
  * Recovery: 1us minimum between bits
  * ```
  *
@@ -879,7 +879,7 @@ rx_err_t rx_bus_onewire_write_byte(rx_bus_manager_t* manager, const char* bus_na
  *
  * **Real 1-Wire Read Timing (Not Implemented):**
  * ```
- * Master initiates: Pull low 1-15us, release
+ * Controller initiates: Pull low 1-15us, release
  * Device responds: Holds low (0) or releases high (1)
  * Sample time: 15us after initiation
  * ```

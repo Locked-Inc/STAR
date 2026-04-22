@@ -203,9 +203,9 @@ static void i2c_bus_recover(void)
 
 static void riic1_init(void)
 {
-  /* Step 0: 9-clock SCL bit-bang to flush a stuck slave that may be holding
-   * SDA low from an aborted previous transaction. Runs while pins are still
-   * GPIO (PMR=0) so we can drive them directly. */
+  /* Step 0: 9-clock SCL bit-bang to flush a stuck peripheral that may be
+   * holding SDA low from an aborted previous transaction. Runs while pins
+   * are still GPIO (PMR=0) so we can drive them directly. */
   i2c_bus_recover();
 
   /* Step 1: clear MSTPCRB.MSTPB20 (RIIC1) under PRCR unlock 0xA50B
@@ -350,8 +350,8 @@ static bool i2c_read_byte(uint8_t dev_addr, uint8_t reg_addr, uint8_t *out)
   *icdrt = (uint8_t)((dev_addr << 1) | 1U);
   /* Receive-mode address: skip TEND. After ACK, RIIC immediately clocks the
    * first data byte and sets RDRF -- TEND never asserts for the addr|R byte
-   * in master-receive mode. NACK still surfaces via NACKF if slave didn't
-   * answer, so we check that before waiting for RDRF. */
+   * in controller-receive mode. NACK still surfaces via NACKF if the
+   * peripheral didn't answer, so we check that before waiting for RDRF. */
   if (!wait_bit(icsr2, (uint8_t)(k_icsr2_rdrf | k_icsr2_nackf), true)) {
     s_last_fail_gate = 10U;
     goto stop_fail;
@@ -475,10 +475,10 @@ static bool i2c_read_bytes(uint8_t dev_addr, uint8_t reg_addr, uint8_t *buf, uin
   if ((*icsr2) & k_icsr2_nackf)               { goto rstop_fail; }
 
   /* Dummy read ICDRR to release SCL and start clocking byte 0 into the
-   * shift register. RX72N HW manual section 38.2.5.3 (master-receive). */
+   * shift register. RX72N HW manual section 38.2.5.3 (controller-receive). */
   if (count == 1U) {
     /* For a single-byte read, pre-set ACKBT=1 BEFORE the dummy read so the
-     * byte's ACK slot sends NACK, signalling the slave to stop. */
+     * byte's ACK slot sends NACK, signalling the peripheral to stop. */
     *icmr3 |= k_icmr3_ackbt;
   }
   (void)*icdrr;

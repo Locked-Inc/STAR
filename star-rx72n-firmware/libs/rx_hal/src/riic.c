@@ -1959,9 +1959,9 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
    * RDRF has already asserted, meaning byte N-1's 9th clock has already
    * fired and its ACK slot has already been transmitted with whatever
    * ACKBT was in the prior iteration (typically 0 = ACK). That leaves
-   * the slave thinking "keep streaming" and holding SDA for another byte,
-   * which is why the subsequent SP never chains a STOP edge and we see
-   * "Stop condition timeout" at the end of every multi-byte read. */
+   * the peripheral thinking "keep streaming" and holding SDA for another
+   * byte, which is why the subsequent SP never chains a STOP edge and we
+   * see "Stop condition timeout" at the end of every multi-byte read. */
   if (read_length == 1U) {
     riic->icmr3 |= k_riic_icmr3_ackbt_mask;
   }

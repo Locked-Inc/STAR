@@ -157,7 +157,7 @@ static inline void delay_us(uint32_t us)
      * ~10 cycles per iter at 96 MHz (volatile store/load dominate), so
      * ~9.6 iters per microsecond.  Original 24x overshoots by 2.5x and
      * pushes onewire_read_init (6 us) up to 15 us where the DS18B20
-     * interprets the master-low as a write-0 slot instead of a read
+     * interprets the controller-low as a write-0 slot instead of a read
      * slot, causing every read to return 0xFFFF.  Using 9x. */
     uint32_t loops = us * 9U;
     if (loops == 0U) { loops = 1U; }
