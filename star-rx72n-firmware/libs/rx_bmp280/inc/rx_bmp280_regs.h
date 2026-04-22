@@ -133,12 +133,14 @@ typedef enum : uint8_t {
  * This constant is used during initialization to verify that the correct
  * device is present on the I2C bus before reading calibration data.
  *
- * @invariant The BMP280 chip ID register always reads 0x60 on authentic devices
+ * @invariant The BMP280 chip ID register always reads 0x58 on authentic BMP280
+ *            devices; 0x60 is the BME280 (pressure + humidity) ID and must not
+ *            be accepted here.
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bmp280_chip_id_expected = 0x60, /**< BMP280 chip ID: register 0xD0 must read 0x60 */
+  k_bmp280_chip_id_expected = 0x58, /**< BMP280 chip ID: register 0xD0 must read 0x58 (BMP280 datasheet section 5.2.1) */
 } bmp280_chip_id_t;
 
 /**
