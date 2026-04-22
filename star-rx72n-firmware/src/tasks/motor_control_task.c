@@ -377,6 +377,7 @@
 
 #include <math.h>
 
+#include "hardware.h"
 #include "hardware_config.h"
 #include "rx_bus_adc.h"
 #include "rx_bus_manager.h"
@@ -1654,6 +1655,12 @@ static void internal_motor_task_entry(ULONG input)
 {
   (void)input;
 
+  /* BISECT(motor_task-alive): D10 on at entry, D11 on after motor_stack
+   * init returns.  If motor_task hangs inside internal_init_motor_stack(),
+   * D10 lights but D11 does not, and lower-priority tasks (led) never run
+   * because motor_task never yields.  TEMPORARY diagnostic. */
+  (void)led_write_high(k_led_d10_error);
+
   rx_log_info(s_tag, "Motor control task starting");
 
   /* Initialize motor stack (motors, encoders, PIDs, drivers) */
@@ -1663,10 +1670,19 @@ static void internal_motor_task_entry(ULONG input)
     /* Fall through - try to continue with partial init */
   }
 
+  (void)led_write_high(k_led_d11_motor); /* motor stack init returned */
+
   rx_log_info(s_tag, "Motor control running @ 100 Hz");
 
   /* Main control loop */
   while (true) {
+    /* DIAGNOSTIC: yield at TOP of loop so lower-priority tasks
+     * (telemetry, led_status) actually get CPU time.  Without this,
+     * if anything in the loop body hangs, the task never reaches the
+     * sleep at the bottom and starves every task below priority 8.
+     * Remove once motor-loop hang is properly diagnosed. */
+    (void)tx_thread_sleep(k_motor_task_sleep_ticks);
+
     /* Commit any ISR-triggered e-stop to mutex-protected state */
     (void)shared_data_commit_isr_estop();
 
