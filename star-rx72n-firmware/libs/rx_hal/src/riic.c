@@ -806,7 +806,7 @@ internal_calculate_bit_rate(const uint32_t frequency_hz, uint8_t* icbrl, uint8_t
  * - Rule 2: [OK] Bounded loop with k_riic_timeout_us maximum iterations
  * - Rule 5: [OK] nullptr check via RX_CHECK_NULL_PTR
  */
-static rx_err_t internal_wait_bus_ready(const volatile rx_riic_regs_t* riic)
+static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
 {
   uint32_t timeout = k_riic_timeout_us;
 
@@ -816,8 +816,47 @@ static rx_err_t internal_wait_bus_ready(const volatile rx_riic_regs_t* riic)
     timeout--;
   }
 
+  if (timeout > k_riic_timeout_zero) {
+    return k_rx_ok;
+  }
+
+  /* BBSY can latch stuck when the peripheral comes up observing lines that
+   * are mid-transition (e.g. a slave holding SDA low from a prior aborted
+   * byte). Per RX72N HW manual section 38.4.3 the only software-side clear
+   * is an IICRST pulse -- which wipes the config registers back to reset,
+   * so we must restore them after. Mirrors imu_test/main.c::riic1_recover
+   * which handles the same stuck-bus case on the bench. */
+  rx_log_warn(s_tag, "BBSY stuck - pulsing IICRST to recover");
+  const uint8_t saved_icbrh = riic->icbrh;
+  const uint8_t saved_icbrl = riic->icbrl;
+  const uint8_t saved_icmr1 = riic->icmr1;
+
+  riic->iccr1 = k_riic_iccr1_iicrst;   /* assert reset (ICEEN=0, IICRST=1) */
+  riic->iccr1 = k_riic_register_clear; /* deassert -> configuration state */
+
+  riic->icbrh = saved_icbrh;
+  riic->icbrl = saved_icbrl;
+  riic->icmr1 = saved_icmr1;
+
+  riic->iccr1 = k_riic_iccr1_ice; /* re-enable */
+
+  /* SOWP / SCLO / SDAO release dance (same as the post-init path). */
+  uint8_t iccr1 = riic->iccr1;
+  iccr1 &= (uint8_t) ~(uint8_t)k_riic_iccr1_sowp;
+  iccr1 |= (uint8_t)(k_riic_iccr1_sclo | k_riic_iccr1_sdao);
+  riic->iccr1 = iccr1;
+  iccr1 |= (uint8_t)k_riic_iccr1_sowp;
+  riic->iccr1 = iccr1;
+
+  /* Second wait. If BBSY still set after a full IICRST cycle, the bus is
+   * genuinely stuck -- probably a slave short or missing pull-up -- and
+   * no amount of software will fix it. */
+  timeout = k_riic_timeout_us;
+  while ((riic->iccr2 & k_riic_iccr2_bbsy) && timeout > k_riic_timeout_zero) {
+    timeout--;
+  }
   if (timeout == k_riic_timeout_zero) {
-    rx_log_error(s_tag, "I2C bus busy timeout");
+    rx_log_error(s_tag, "I2C bus busy timeout (after IICRST recovery)");
     return k_rx_err_timeout;
   }
 
