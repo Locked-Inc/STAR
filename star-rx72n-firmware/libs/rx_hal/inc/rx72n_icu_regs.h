@@ -515,6 +515,28 @@ typedef enum : uint8_t {
 } rx_cmt_interrupt_vector_t;
 
 /**
+ * @enum rx_sci_interrupt_vector_t
+ * @brief SCI (Serial Communications Interface) interrupt vector numbers
+ *
+ * @details
+ * Vector numbers for SCI peripheral receive/transmit interrupts. Used to
+ * index into IR[], IER[], and IPR[] arrays per RX72N HUM Table 14.3.
+ *
+ * @par IER/Bit Calculation:
+ * - IER index = vector / 8
+ * - IER bit = vector % 8
+ *
+ * @par Example: SCI9 RXI9 (vector 102)
+ * - IER[12] (102/8=12), bit 6 (102%8=6)
+ * - IPR[102] for priority
+ *
+ * @see RX72N HUM Ch14 Table 14.3 for complete vector list
+ */
+typedef enum : uint8_t {
+  k_vect_sci9_rxi9 = 102, /**< SCI9 receive data full: IER[12] bit 6, STAR debug UART RX */
+} rx_sci_interrupt_vector_t;
+
+/**
  * @enum rx_interrupt_priority_t
  * @brief Interrupt priority levels for IPR registers
  *

@@ -246,7 +246,9 @@ typedef enum : uint8_t {
   k_sci_scr_rx_enabled   = 0x10, /**< SCR: Receive enabled (RE=1) */
   k_sci_scr_txrx_enabled = 0x30, /**< SCR: TX + RX enabled (TE=1, RE=1) */
   k_sci_smr_async_8n1    = 0x00, /**< SMR: Async mode, 8 data bits, no parity, 1 stop bit, PCLK/1 */
-  k_sci_semr_default     = 0x00, /**< SEMR: Default extended mode */
+  k_sci_semr_default     = 0x00, /**< SEMR: Default extended mode (ABCS=0, 16-cycle base) */
+  k_sci_semr_abcs_bit    = 0x10, /**< SEMR.ABCS: 1=8-cycle base clock (halves BRR divisor, HUM 34.2.12) */
+  k_sci_scr_rie_bit      = 0x40, /**< SCR.RIE: receive interrupt enable (HUM 34.2.5) */
   k_sci_ssr_tdre_flag    = 0x80, /**< SSR: Transmit data register empty flag */
   k_sci_ssr_rdrf_flag    = 0x40, /**< SSR: Receive data register full flag */
   k_sci_ssr_orer_flag    = 0x20, /**< SSR: Overrun error flag */
@@ -272,11 +274,12 @@ typedef enum : uint8_t {
 
 /** @brief BRR calculation constants */
 typedef enum : uint16_t {
-  k_brr_divisor_n0     = 32,  /**< Divisor for n=0 (CKS=00): 64 * 2^(2n-1) = 32 */
-  k_brr_multiplier     = 4,   /**< Multiplier per CKS increment (2^2) */
-  k_brr_max_value      = 255, /**< Maximum BRR register value */
-  k_brr_min_value      = 0,   /**< Minimum BRR register value */
-  k_brr_formula_offset = 1,   /**< BRR formula subtract-1 offset: BRR = (PCLKB/(32*B)) - 1 */
+  k_brr_divisor_n0      = 32,  /**< Divisor for n=0, ABCS=0 (default 16-cycle base): 64 * 2^(2n-1) = 32 */
+  k_brr_divisor_n0_abcs = 16,  /**< Divisor for n=0, ABCS=1 (8-cycle base): halves the divisor, HUM 34.2.12 */
+  k_brr_multiplier      = 4,   /**< Multiplier per CKS increment (2^2) */
+  k_brr_max_value       = 255, /**< Maximum BRR register value */
+  k_brr_min_value       = 0,   /**< Minimum BRR register value */
+  k_brr_formula_offset  = 1,   /**< BRR formula subtract-1 offset: BRR = (PCLK/(div*B)) - 1 */
 } brr_constants_t;
 
 /** @brief MSTPCRB register bit manipulation constants */
@@ -461,15 +464,16 @@ static bool s_channel_initialized[k_uart_array_size] = {false};
  * describes the RXI request behavior.
  */
 typedef enum : uint16_t {
-  k_sci9_rx_ring_size = 512U, /**< Power-of-2 mask-friendly size; covers 4.4 ms of 115200-baud traffic */
-  k_sci9_rx_ring_mask = k_sci9_rx_ring_size - 1U,
-  k_sci_scr_rie_bit   = 0x40U, /**< SCR.RIE: receive interrupt enable, HUM 34.2.5 */
+  k_sci9_rx_ring_size   = 512U, /**< Power-of-2 mask-friendly size; covers 4.4 ms of 115200-baud traffic */
+  k_sci9_rx_ring_mask   = k_sci9_rx_ring_size - 1U,
+  k_sci9_rxi9_priority  = 3U,   /**< IPR[102]: lower than motor ctrl, higher than CMT tick */
 } sci9_rx_ring_consts_t;
 
 static volatile uint8_t  s_sci9_rx_ring[k_sci9_rx_ring_size];
 static volatile uint16_t s_sci9_rx_head = 0U; /**< ISR writes here, task reads */
 static volatile uint16_t s_sci9_rx_tail = 0U; /**< Task reads here, ISR never touches */
 static volatile uint32_t s_sci9_rx_drops = 0U; /**< Ring-full byte drops (diagnostic) */
+static volatile uint32_t s_sci9_rxi_fires = 0U; /**< # times INT_SCI9_RXI9 has entered */
 
 /* =============================================================================
  * Private Functions
@@ -537,8 +541,8 @@ static volatile uint32_t s_sci9_rx_drops = 0U; /**< Ring-full byte drops (diagno
  *
  * @par Example:
  * @code{.c}
- * // SCI9 uses PCLKA (SCIi extended region)
- * sci->brr = internal_calculate_brr(921600U, k_pclka_hz);
+ * // SCI9 uses PCLKA (SCIi extended region), ABCS=1 for baud accuracy
+ * sci->brr = internal_calculate_brr(115200U, k_pclka_hz, true);
  * @endcode
  *
  * @see uart_init_channel() Caller that selects pclk_hz and writes sci->brr
@@ -546,20 +550,28 @@ static volatile uint32_t s_sci9_rx_drops = 0U; /**< Ring-full byte drops (diagno
  *
  * @since Version 1.0.0
  */
-static uint8_t internal_calculate_brr(const uint32_t baudrate, const uint32_t pclk_hz)
+static uint8_t internal_calculate_brr(const uint32_t baudrate, const uint32_t pclk_hz,
+                                      const bool abcs)
 {
   /* Pre-condition: reject zero baudrate (division by zero) */
   if (baudrate == 0) {
     return k_brr_max_value;
   }
 
+  /* CKS=0, so the divisor is either 32 (ABCS=0, default 16-cycle base clock)
+   * or 16 (ABCS=1, 8-cycle base clock). HUM 34.2.12 -- the 8-cycle base
+   * doubles BRR resolution, which cuts 115200/120MHz baud error from
+   * +1.72% (unusable, causes FER on every byte) to +0.16%. */
+  const uint32_t divisor = abcs ? (uint32_t)k_brr_divisor_n0_abcs
+                                : (uint32_t)k_brr_divisor_n0;
+
   /* Pre-condition: reject baudrate above maximum for this clock */
-  if (baudrate > (pclk_hz / k_brr_divisor_n0)) {
+  if (baudrate > (pclk_hz / divisor)) {
     return k_brr_min_value;
   }
 
-  /* For n=0 (CKS=00): BRR = (PCLK / (32 * B)) - 1 */
-  const uint32_t divisor_result = pclk_hz / (k_brr_divisor_n0 * baudrate);
+  /* For n=0 (CKS=00): BRR = (PCLK / (divisor * B)) - 1 */
+  const uint32_t divisor_result = pclk_hz / (divisor * baudrate);
 
   /* Guard against underflow: if divisor_result is 0, subtraction would wrap */
   if (divisor_result <= k_brr_formula_offset) {
@@ -1081,8 +1093,20 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
                              ? k_pclka_hz
                              : k_pclkb_hz;
 
-  /* Set baud rate */
-  sci->brr = internal_calculate_brr(config->baudrate, pclk_hz);
+  /* SEMR.ABCS selects the base clock used by the bit-rate generator:
+   * ABCS=0 -> 16 cycles/bit (default), ABCS=1 -> 8 cycles/bit (HUM 34.2.12).
+   * For SCI9 @ 115200 baud the 16-cycle path only produces +1.72% baud
+   * error on PCLKA=120 MHz, which causes a framing error (SSR.FER) on
+   * every byte and prevents SSR.RDRF from ever latching -- so the RXI9
+   * interrupt never fires and bytes never land in the ring. Switching
+   * SCI9 to ABCS=1 halves the divisor, cuts the error to +0.16%, and
+   * lets the receiver latch clean bytes. SEMR MUST be written before BRR
+   * because BRR is interpreted against whatever base clock SEMR selects. */
+  const bool use_abcs = (config->channel == k_uart_channel_9);
+  sci->semr = use_abcs ? (uint8_t)k_sci_semr_abcs_bit : (uint8_t)k_sci_semr_default;
+
+  /* Set baud rate (uses the divisor selected by SEMR above) */
+  sci->brr = internal_calculate_brr(config->baudrate, pclk_hz, use_abcs);
 
   /* Wait for at least 1 bit time */
   /* NOTE: Busy-wait required - may run before ThreadX initialization */
@@ -1093,9 +1117,6 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
   /* Configure serial control: Enable TX and RX */
   sci->scr = k_sci_scr_txrx_enabled;
 
-  /* Configure serial extended mode */
-  sci->semr = k_sci_semr_default;
-
   /* For SCI9, switch RX to interrupt-driven mode: reset the ring buffer,
    * set the RXI9 priority + IER bit + clear pending IR, then arm SCR.RIE.
    * HUM vector 102 = SCI9_RXI9, IER index 12 ((102>>3)=12), IER bit 6
@@ -1105,12 +1126,31 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
     s_sci9_rx_tail = 0U;
     s_sci9_rx_drops = 0U;
 
-    const uint16_t vec_rxi9  = 102U;
-    icu()->ipr[vec_rxi9]     = 3U; /* Priority 3: lower than motor ctrl, higher than CMT tick */
-    icu()->ir[vec_rxi9]      = 0U;
-    icu()->ier[vec_rxi9 / 8U] |= (uint8_t)(1U << (vec_rxi9 % 8U));
+    /* Drain any pending RDR byte and clear error flags BEFORE enabling the
+     * RXI interrupt, so the first real byte doesn't find an ORER set from
+     * boot-time noise (which would gate further interrupts). */
+    if ((sci->ssr & k_sci_ssr_error_mask) != k_uart_flag_clear) {
+      internal_clear_errors(sci);
+    }
+    if ((sci->ssr & k_sci_ssr_rdrf_flag) != k_uart_flag_clear) {
+      (void)sci->rdr;
+      const uint8_t ssr = sci->ssr;
+      sci->ssr = (uint8_t)(ssr & ~k_sci_ssr_rdrf_flag);
+    }
+
+    const uint16_t vec_rxi9 = (uint16_t)k_vect_sci9_rxi9;
+    icu()->ipr[vec_rxi9]    = k_sci9_rxi9_priority;
+    icu()->ir[vec_rxi9]     = 0U;
+    icu()->ier[vec_rxi9 / k_icu_ier_bits_per_reg] |=
+        (uint8_t)(1U << (vec_rxi9 % k_icu_ier_bits_per_reg));
 
     sci->scr = (uint8_t)(k_sci_scr_txrx_enabled | k_sci_scr_rie_bit);
+
+    /* Diagnostic: one-shot trace of register state so we can confirm
+     * everything landed. Safe to leave (fires once per channel init). */
+    rx_log_warn_val("UART", "sci9 init IER=0x", icu()->ier[vec_rxi9 / k_icu_ier_bits_per_reg]);
+    rx_log_warn_val("UART", "sci9 init IPR=0x", icu()->ipr[vec_rxi9]);
+    rx_log_warn_val("UART", "sci9 init SCR=0x", sci->scr);
   }
 
   /* Mark channel as initialized */
@@ -1191,8 +1231,9 @@ rx_err_t uart_deinit_channel(const uart_channel_t channel)
   /* For SCI9, mask the RXI9 interrupt in the ICU and flush the ring so a
    * subsequent re-init starts clean. */
   if (channel == k_uart_channel_9) {
-    const uint16_t vec_rxi9 = 102U;
-    icu()->ier[vec_rxi9 / 8U] &= (uint8_t) ~(1U << (vec_rxi9 % 8U));
+    const uint16_t vec_rxi9 = (uint16_t)k_vect_sci9_rxi9;
+    icu()->ier[vec_rxi9 / k_icu_ier_bits_per_reg] &=
+        (uint8_t) ~(1U << (vec_rxi9 % k_icu_ier_bits_per_reg));
     icu()->ir[vec_rxi9] = 0U;
     s_sci9_rx_head      = 0U;
     s_sci9_rx_tail      = 0U;
@@ -1868,6 +1909,25 @@ rx_err_t uart_rx_available(const uart_channel_t channel, bool* available)
   return k_rx_ok;
 }
 
+rx_err_t uart_sci9_rx_stats(uint16_t* head, uint16_t* tail, uint32_t* drops)
+{
+  if (head != nullptr) {
+    *head = s_sci9_rx_head;
+  }
+  if (tail != nullptr) {
+    *tail = s_sci9_rx_tail;
+  }
+  if (drops != nullptr) {
+    *drops = s_sci9_rx_drops;
+  }
+  return k_rx_ok;
+}
+
+uint32_t uart_sci9_rxi_fires(void)
+{
+  return s_sci9_rxi_fires;
+}
+
 /**
  * @brief SCI9 receive-data-full interrupt (vector 102)
  *
@@ -1896,6 +1956,7 @@ __attribute__((interrupt, used))
 void INT_SCI9_RXI9(void)
 {
 #ifdef __RX__
+  s_sci9_rxi_fires += 1U;
   volatile rx_sci_regs_t* sci = sci_get_channel(k_uart_channel_9);
   if (sci == nullptr) {
     return;
