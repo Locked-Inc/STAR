@@ -332,21 +332,21 @@ static uint32_t internal_tmr_clock_divider(rx_tmr_clock_source_t source)
 {
   switch (source) {
     case k_tmr_clock_pclk_div_1:
-      return (uint32_t)k_tmr_pclk_div_1;
+      return k_tmr_pclk_div_1;
     case k_tmr_clock_pclk_div_2:
-      return (uint32_t)k_tmr_pclk_div_2;
+      return k_tmr_pclk_div_2;
     case k_tmr_clock_pclk_div_8:
-      return (uint32_t)k_tmr_pclk_div_8;
+      return k_tmr_pclk_div_8;
     case k_tmr_clock_pclk_div_32:
-      return (uint32_t)k_tmr_pclk_div_32;
+      return k_tmr_pclk_div_32;
     case k_tmr_clock_pclk_div_64:
-      return (uint32_t)k_tmr_pclk_div_64;
+      return k_tmr_pclk_div_64;
     case k_tmr_clock_pclk_div_1024:
-      return (uint32_t)k_tmr_pclk_div_1024;
+      return k_tmr_pclk_div_1024;
     case k_tmr_clock_pclk_div_8192:
-      return (uint32_t)k_tmr_pclk_div_8192;
+      return k_tmr_pclk_div_8192;
     default:
-      return (uint32_t)k_tmr_pclk_div_none; /* External or invalid */
+      return k_tmr_pclk_div_none; /* External or invalid */
   }
 }
 
@@ -554,7 +554,7 @@ rx_err_t rx_tmr_start(rx_tmr_channel_t channel)
    * (enforced by validate_config), so the ternary below is exhaustive. */
   if (s_tmr_mode[idx] == k_tmr_mode_16bit_cascade) {
     volatile rx_tmr_channel_regs_t* odd_regs = (channel == k_tmr_channel_0) ? tmr1() : tmr3();
-    odd_regs->tccr                           = (uint8_t)k_tmr_tccr_css_cascade;
+    odd_regs->tccr                           = k_tmr_tccr_css_cascade;
   }
   return k_rx_ok;
 }
