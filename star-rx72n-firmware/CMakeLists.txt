@@ -166,7 +166,10 @@ file(GLOB_RECURSE LIB_RX_CORE_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs
 # rx_log_usb.c is orphaned after dc6f3201b (includes rx_usb.h which was purged).
 # rx_log_uart.c is the active log backend.
 list(REMOVE_ITEM LIB_RX_CORE_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_core/src/rx_log_usb.c)
-file(GLOB_RECURSE LIB_RX_HAL_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_hal/src/*.c)
+file(GLOB_RECURSE LIB_RX_HAL_SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_SOURCE_DIR}/libs/rx_hal/src/*.c
+    ${CMAKE_SOURCE_DIR}/libs/rx_hal/src/*.S
+)
 file(GLOB_RECURSE LIB_RX_BUS_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_bus/src/*.c)
 file(GLOB_RECURSE LIB_RX_PID_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_pid/src/*.c)
 file(GLOB_RECURSE LIB_RX_SYNC_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_sync/src/*.c)
@@ -344,6 +347,12 @@ target_link_options(${PROJECT_NAME}.elf PRIVATE
     -T${LINKER_SCRIPT}
     -Wl,--Map=${PROJECT_NAME}.map
     "-Wl,--undefined=$tableentry$28$.rvectors"
+    # Force-keep the SCI9_RXI9 interrupt vector. libs/rx_hal/src/sci9_rxi9_vector.S
+    # defines $tableentry$102$.rvectors as an alias for _INT_SCI9_RXI9, but the
+    # DEFINED() check in linker_script_rvectors.inc:108 isn't a GC root, so the
+    # --gc-sections pass drops the alias and vector 102 falls through to
+    # $tableentry$default$.rvectors (0xFFFFFFFF). Mirrors the CMT0 pattern above.
+    "-Wl,--undefined=$tableentry$102$.rvectors"
 )
 
 #############################################################################
