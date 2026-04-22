@@ -387,7 +387,6 @@
 
 #include "comm_task.h"
 
-#include "rx72n_icu_regs.h"
 #include "rx72n_sci_regs.h"
 #include "rx_check.h"
 #include "rx_comm_manager.h"
@@ -1663,33 +1662,20 @@ static void internal_comm_task_entry(ULONG input)
     /* Ship any pending log bytes as LOG_MESSAGE frames (see helper) */
     internal_ship_log_frames();
 
-    /* Once per ~5s, dump the SCI9 RXI ring-buffer counters so we can
-     * tell whether the gateway's bytes are actually landing in the ring
-     * (ISR firing correctly) or being silently lost. Diagnostic only --
-     * safe to leave on; the three register reads + three log writes are
-     * trivial compared to the rest of the comm tick. */
+    /* Once per ~5s, unstick any latched SSR.FER/ORER/PER on SCI9. The
+     * RXI9 ISR already clears these when it fires, but FER can also be
+     * set by line noise or a host-side glitch *before* RDRF asserts --
+     * in that case the ISR never runs, the bit stays latched, and the
+     * receiver blocks further RDRF events. This periodic clear is the
+     * receiver's fallback path; it's cheap (one read, one masked write)
+     * and only acts when a sticky error is actually present. */
     static uint32_t s_sci9_stat_counter = 0U;
     s_sci9_stat_counter += 1U;
     if ((s_sci9_stat_counter % k_comm_task_sci9_diag_period) == 1U) {
-      uint16_t sci9_head  = 0U;
-      uint16_t sci9_tail  = 0U;
-      uint32_t sci9_drops = 0U;
-      (void)uart_sci9_rx_stats(&sci9_head, &sci9_tail, &sci9_drops);
-      rx_log_warn_val(s_tag, "sci9 rx head=", (uint32_t)sci9_head);
-      rx_log_warn_val(s_tag, "sci9 rx tail=", (uint32_t)sci9_tail);
-      rx_log_warn_val(s_tag, "sci9 rx drops=", sci9_drops);
-      rx_log_warn_val(s_tag, "sci9 rxi fires=", uart_sci9_rxi_fires());
-      /* Live register dump so we can see what actually got programmed.
-       * Uses the project's HAL accessors (sci9() / icu()) so there are no
-       * raw hex addresses here -- all peripheral addresses and vector
-       * numbers are defined once in libs/rx_hal/inc/rx72n_*_regs.h and
-       * this diagnostic just reads through them. */
-      const uint16_t vec_rxi9 = (uint16_t)k_vect_sci9_rxi9;
-      rx_log_warn_val(s_tag, "sci9 SCR=0x", sci9()->scr);
-      rx_log_warn_val(s_tag, "sci9 SSR=0x", sci9()->ssr);
-      rx_log_warn_val(s_tag, "icu IER=0x",
-                      icu()->ier[vec_rxi9 / k_icu_ier_bits_per_reg]);
-      rx_log_warn_val(s_tag, "icu IPR=0x", icu()->ipr[vec_rxi9]);
+      const uint8_t sci9_ssr = sci9()->ssr;
+      if ((sci9_ssr & k_sci_ssr_error_mask) != 0U) {
+        sci9()->ssr = (uint8_t)(sci9_ssr & ~k_sci_ssr_error_mask);
+      }
     }
 
     /* Process pending SPI retransmissions (no-op when disabled) */

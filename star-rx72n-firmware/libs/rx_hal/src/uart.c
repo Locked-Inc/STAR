@@ -239,7 +239,7 @@ typedef enum : uint32_t {
   k_uart_bit_time_delay_cycles = 125, /**< ~1.09us at 921600 bps, ~260 cycles @240 MHz */
 } uart_config_constants_t;
 
-/** @brief SCI register values */
+/** @brief SCI register control-bit values (SSR flag masks live in rx72n_sci_regs.h) */
 typedef enum : uint8_t {
   k_sci_scr_disabled     = 0x00, /**< SCR: All functions disabled */
   k_sci_scr_tx_enabled   = 0x20, /**< SCR: Transmit enabled (TE=1) */
@@ -249,12 +249,6 @@ typedef enum : uint8_t {
   k_sci_semr_default     = 0x00, /**< SEMR: Default extended mode (ABCS=0, 16-cycle base) */
   k_sci_semr_abcs_bit    = 0x10, /**< SEMR.ABCS: 1=8-cycle base clock (halves BRR divisor, HUM 34.2.12) */
   k_sci_scr_rie_bit      = 0x40, /**< SCR.RIE: receive interrupt enable (HUM 34.2.5) */
-  k_sci_ssr_tdre_flag    = 0x80, /**< SSR: Transmit data register empty flag */
-  k_sci_ssr_rdrf_flag    = 0x40, /**< SSR: Receive data register full flag */
-  k_sci_ssr_orer_flag    = 0x20, /**< SSR: Overrun error flag */
-  k_sci_ssr_fer_flag     = 0x10, /**< SSR: Framing error flag */
-  k_sci_ssr_per_flag     = 0x08, /**< SSR: Parity error flag */
-  k_sci_ssr_error_mask   = 0x38, /**< SSR: All error flags mask */
 } sci_register_values_t;
 
 /** @brief Integer to string buffer constants */
@@ -472,8 +466,6 @@ typedef enum : uint16_t {
 static volatile uint8_t  s_sci9_rx_ring[k_sci9_rx_ring_size];
 static volatile uint16_t s_sci9_rx_head = 0U; /**< ISR writes here, task reads */
 static volatile uint16_t s_sci9_rx_tail = 0U; /**< Task reads here, ISR never touches */
-static volatile uint32_t s_sci9_rx_drops = 0U; /**< Ring-full byte drops (diagnostic) */
-static volatile uint32_t s_sci9_rxi_fires = 0U; /**< # times INT_SCI9_RXI9 has entered */
 
 /* =============================================================================
  * Private Functions
@@ -1124,7 +1116,6 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
   if (config->channel == k_uart_channel_9) {
     s_sci9_rx_head = 0U;
     s_sci9_rx_tail = 0U;
-    s_sci9_rx_drops = 0U;
 
     /* Drain any pending RDR byte and clear error flags BEFORE enabling the
      * RXI interrupt, so the first real byte doesn't find an ORER set from
@@ -1145,12 +1136,6 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
         (uint8_t)(1U << (vec_rxi9 % k_icu_ier_bits_per_reg));
 
     sci->scr = (uint8_t)(k_sci_scr_txrx_enabled | k_sci_scr_rie_bit);
-
-    /* Diagnostic: one-shot trace of register state so we can confirm
-     * everything landed. Safe to leave (fires once per channel init). */
-    rx_log_warn_val("UART", "sci9 init IER=0x", icu()->ier[vec_rxi9 / k_icu_ier_bits_per_reg]);
-    rx_log_warn_val("UART", "sci9 init IPR=0x", icu()->ipr[vec_rxi9]);
-    rx_log_warn_val("UART", "sci9 init SCR=0x", sci->scr);
   }
 
   /* Mark channel as initialized */
@@ -1909,25 +1894,6 @@ rx_err_t uart_rx_available(const uart_channel_t channel, bool* available)
   return k_rx_ok;
 }
 
-rx_err_t uart_sci9_rx_stats(uint16_t* head, uint16_t* tail, uint32_t* drops)
-{
-  if (head != nullptr) {
-    *head = s_sci9_rx_head;
-  }
-  if (tail != nullptr) {
-    *tail = s_sci9_rx_tail;
-  }
-  if (drops != nullptr) {
-    *drops = s_sci9_rx_drops;
-  }
-  return k_rx_ok;
-}
-
-uint32_t uart_sci9_rxi_fires(void)
-{
-  return s_sci9_rxi_fires;
-}
-
 /**
  * @brief SCI9 receive-data-full interrupt (vector 102)
  *
@@ -1956,7 +1922,6 @@ __attribute__((interrupt, used))
 void INT_SCI9_RXI9(void)
 {
 #ifdef __RX__
-  s_sci9_rxi_fires += 1U;
   volatile rx_sci_regs_t* sci = sci_get_channel(k_uart_channel_9);
   if (sci == nullptr) {
     return;
@@ -1977,13 +1942,15 @@ void INT_SCI9_RXI9(void)
   sci->ssr          = (uint8_t)(ssr & ~k_sci_ssr_rdrf_flag);
 
   const uint16_t next_head = (uint16_t)((s_sci9_rx_head + 1U) & k_sci9_rx_ring_mask);
-  if (next_head == s_sci9_rx_tail) {
-    /* Ring full: drop byte rather than overwriting unread data. */
-    s_sci9_rx_drops += 1U;
-  } else {
+  if (next_head != s_sci9_rx_tail) {
     s_sci9_rx_ring[s_sci9_rx_head] = byte;
     s_sci9_rx_head                 = next_head;
   }
+  /* Ring full: byte is dropped. comm_task polls every 10 ms and can
+   * drain ~1150 bytes in that window, vs 115 bytes arriving at 115200
+   * baud -- so the 512-byte ring has >4x headroom. If comm_task stalls,
+   * the next well-formed frame the gateway sends will fail CRC and
+   * trigger a retransmit, so no silent data loss. */
 #endif
 }
 

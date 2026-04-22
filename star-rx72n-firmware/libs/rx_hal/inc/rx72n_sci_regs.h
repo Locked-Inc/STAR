@@ -464,6 +464,29 @@ typedef struct {
 } rx_sci_regs_t;
 
 /**
+ * @enum rx_sci_ssr_flags_t
+ * @brief SCI Serial Status Register (SSR) flag masks
+ *
+ * @details
+ * Bit masks for the SSR register per RX72N HUM 34.2.7. Error flags
+ * (ORER, FER, PER) are sticky and must be cleared by read-modify-write
+ * with a 0 written to the bit position (writing 1 has no effect).
+ *
+ * @note Bit positions match both the SCIa/b/c/d/e/f (standard) and
+ * SCIg/h/i (extended) SSR layouts -- the same mask works for all SCI
+ * channels on the RX72N.
+ */
+typedef enum : uint8_t {
+  k_sci_ssr_tdre_flag  = 0x80U, /**< Transmit data register empty (HUM 34.2.7 bit 7) */
+  k_sci_ssr_rdrf_flag  = 0x40U, /**< Receive data register full (bit 6) */
+  k_sci_ssr_orer_flag  = 0x20U, /**< Overrun error (bit 5) */
+  k_sci_ssr_fer_flag   = 0x10U, /**< Framing error (bit 4) */
+  k_sci_ssr_per_flag   = 0x08U, /**< Parity error (bit 3) */
+  k_sci_ssr_tend_flag  = 0x04U, /**< Transmit end (bit 2) */
+  k_sci_ssr_error_mask = 0x38U, /**< ORER|FER|PER -- receive error flags */
+} rx_sci_ssr_flags_t;
+
+/**
  * @brief Get pointer to SCI0 registers
  * @return Volatile pointer to SCI0 register structure
  */
