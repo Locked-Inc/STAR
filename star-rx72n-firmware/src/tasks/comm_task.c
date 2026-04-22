@@ -1603,10 +1603,8 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
  * @callergraph
  */
 
-static void internal_comm_task_entry(ULONG input)
+static void internal_comm_task_bringup(void)
 {
-  (void)input;
-
   /* Initialize the wire-protocol session state shared across all comm
    * transports (SPI, I2C, UART). Must be called BEFORE any transport
    * init since each transport holds a pointer to this session and
@@ -1634,19 +1632,25 @@ static void internal_comm_task_entry(ULONG input)
    * sink -- disable it. */
   config.enable_decoded_output = false;
 
-  /* Initialize communication manager */
-  rx_err_t err = rx_comm_manager_init(&g_comm_manager, &config);
+  const rx_err_t err = rx_comm_manager_init(&g_comm_manager, &config);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Comm manager init failed", (uint32_t)err);
     /* Continue - task will poll but won't receive frames */
   }
 
   rx_log_info(s_tag, "Communication running @ 100 Hz");
+}
+
+static void internal_comm_task_entry(ULONG input)
+{
+  (void)input;
+
+  internal_comm_task_bringup();
 
   /* Main communication loop */
   while (true) {
     /* Poll for incoming frames (non-blocking) */
-    err = rx_comm_manager_poll(&g_comm_manager);
+    rx_err_t err = rx_comm_manager_poll(&g_comm_manager);
 
     /* k_rx_ok = frame received, k_rx_err_timeout = no frame (normal) */
     if (err != k_rx_ok && err != k_rx_err_timeout) {
