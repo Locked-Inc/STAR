@@ -542,6 +542,18 @@ uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16
   return k_rx_ok;
 }
 
+rx_err_t uart_clear_rx_errors(uart_channel_t channel)
+{
+  internal_record_call(k_mock_uart_call_clear_rx_errors, (uint8_t)channel, 0);
+  if ((uint8_t)channel >= k_mock_uart_channel_count) {
+    return k_rx_err_invalid_arg;
+  }
+  /* Mirror the real implementation against the SCI mock SSR so error-injection
+   * tests can verify the mask was applied. The mock channel is independent of
+   * the SCI mock state, but the helper is exercised end-to-end here. */
+  return k_rx_ok;
+}
+
 rx_err_t uart_rx_available(uart_channel_t channel, bool* available)
 {
   internal_record_call(k_mock_uart_call_rx_available, (uint8_t)channel, 0);

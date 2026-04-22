@@ -2452,6 +2452,21 @@ uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16
  */
 [[nodiscard]] rx_err_t uart_rx_available(uart_channel_t channel, bool* available);
 
+/**
+ * @brief Clear sticky receive error flags (ORER/FER/PER) on a UART channel
+ *
+ * @details
+ * Reads SSR and writes back with the receive error bits masked to 0.
+ * Per HUM 34.2.7, those flags must be cleared before the receiver will
+ * latch further bytes. The RXI ISR clears them on every byte; this
+ * helper is the periodic-fallback path when an error latches without
+ * RDRF firing (e.g. line glitch on an idle bus).
+ *
+ * @param[in] channel SCI channel (0-12).
+ * @return k_rx_ok on success, k_rx_err_invalid_arg if channel is invalid.
+ */
+[[nodiscard]] rx_err_t uart_clear_rx_errors(uart_channel_t channel);
+
 /* =============================================================================
  * UART Debug Functions - Convenience Wrappers for SCI9
  * =============================================================================

@@ -1445,6 +1445,22 @@ void test_uart_rx_available_null(void)
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
+/**
+ * @brief uart_clear_rx_errors returns k_rx_ok for valid channels
+ */
+void test_uart_clear_rx_errors_valid_channel(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, uart_clear_rx_errors(k_test_channel_sci9));
+}
+
+/**
+ * @brief uart_clear_rx_errors rejects out-of-range channel
+ */
+void test_uart_clear_rx_errors_invalid_channel(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, uart_clear_rx_errors((uart_channel_t)99));
+}
+
 /** @} */ // end of uart_rx_tests
 
 /* =============================================================================
@@ -1942,6 +1958,8 @@ static void internal_run_rx_tests(void)
   RUN_TEST(test_uart_read_channel_null_bytes_read);
   RUN_TEST(test_uart_rx_available_success);
   RUN_TEST(test_uart_rx_available_null);
+  RUN_TEST(test_uart_clear_rx_errors_valid_channel);
+  RUN_TEST(test_uart_clear_rx_errors_invalid_channel);
 }
 
 /**
