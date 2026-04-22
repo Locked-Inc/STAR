@@ -1686,14 +1686,32 @@ static void internal_motor_task_entry(ULONG input)
     rx_log_info(s_tag, "MDBG: stack init FAIL");
   }
 
-  /* Bring-up control loop. Skips comm-timeout estop so motors don't lock
-   * down before we've wired /cmd_vel. E-stop check also disabled so boot-
-   * time defaults don't leave the motors in brake forever. */
-  uint32_t tick = 0U;
+  /* Bring-up control loop. Runs open-loop (no encoder feedback yet -- the
+   * rx_mtu_encoder / rx_tpu_encoder libs don't actually start the counters
+   * on this target; separate fix tracked in project memory). Drives PWM
+   * duty directly as a proportional gain on target velocity: 0.5 m/s ->
+   * ~20 % duty. Motors will spin once a VelocityCommand flows from
+   * comm_task into shared_data motor_command. */
+  static const float k_bringup_duty_per_mps = 40.0F; /* 0.5 m/s -> 20% duty */
+  uint32_t           tick                   = 0U;
   while (true) {
-    internal_apply_pid_updates();
-    internal_control_loop_iteration();
-    internal_update_motor_state();
+    motor_command_t cmd;
+    const rx_err_t  cmd_err = shared_data_get_motor_command(&cmd);
+    const bool      have    = (cmd_err == k_rx_ok) && cmd.valid;
+
+    for (uint8_t i = 0; i < k_motor_count; i++) {
+      float duty = 0.0F;
+      if (have) {
+        const float target_mps = internal_get_target_velocity(&cmd, i);
+        duty                   = target_mps * k_bringup_duty_per_mps;
+        if (duty > 50.0F) {
+          duty = 50.0F;
+        } else if (duty < -50.0F) {
+          duty = -50.0F;
+        }
+      }
+      (void)rx_motor_set_duty(&s_motors[i], duty);
+    }
 
     tick++;
     if ((tick % 100U) == 0U) {
@@ -1708,6 +1726,9 @@ static void internal_motor_task_entry(ULONG input)
     (void)shared_data_is_estop_active();
     internal_active_brake_sequence();
     internal_check_comm_timeout();
+    internal_apply_pid_updates();
+    internal_control_loop_iteration();
+    internal_update_motor_state();
     err = rx_iwdt_task_heartbeat(s_task_name);
     (void)err;
   }
