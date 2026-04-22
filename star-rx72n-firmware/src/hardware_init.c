@@ -866,6 +866,96 @@ static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
  *
  * @since Version 1.0.0
  */
+/**
+ * @brief 9-clock SCL bit-bang recovery to flush a stuck RIIC1 peripheral
+ *
+ * Any I2C peripheral on the bus (BNO055 or BMP280 in our case) that was
+ * interrupted mid-transaction -- e.g., by a JTAG reset that cut the
+ * controller off mid-byte -- can end up holding SDA low, waiting for
+ * more SCL clocks to finish the byte it thought it was sending. When
+ * RIIC1 then comes up with PMR=1 and tries a Start, it sees SDA+SCL
+ * already low, flags the bus as busy, and every subsequent transaction
+ * errors out with k_rx_err_timeout (0x108) "I2C bus busy timeout".
+ *
+ * The fix is to bit-bang 9 SCL edges while the pins are still GPIO
+ * (before rx_mpc_set_riic() raises PMR), long enough to clock out any
+ * pending byte from the stuck peripheral, then generate a manual STOP.
+ * Same sequence as the bench-verified imu_test/main.c::i2c_bus_recover
+ * (RX72N HW manual Chapter 38 "Bus Recovery" informative note).
+ *
+ * @pre SCL/SDA pins must still be in GPIO mode (PMR=0)
+ * @post SCL/SDA left tristated (PDR=0), ready for rx_mpc_set_riic() to
+ *       raise PMR and hand the pads to RIIC1
+ */
+static void internal_riic1_bus_recover(void)
+{
+  const uint8_t scl_bit = rx_pin_from_pin((rx_port_pin_t)k_pin_imu_scl);
+  const uint8_t sda_bit = rx_pin_from_pin((rx_port_pin_t)k_pin_imu_sda);
+  /* k_pin_imu_scl and k_pin_imu_sda are on the same port (P2). */
+  volatile rx_port_regs_t* const port =
+    rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_imu_scl));
+  RX_ASSERT(port != nullptr, "IMU I2C port base invalid during bus recovery");
+
+  const uint8_t scl_mask = (uint8_t)(1U << scl_bit);
+  const uint8_t sda_mask = (uint8_t)(1U << sda_bit);
+  const uint8_t both     = (uint8_t)(scl_mask | sda_mask);
+
+  enum : uint16_t {
+    k_i2c_recover_cycles  = 9U,
+    k_i2c_recover_half_us = 5U, /* 5 us half-period -> 100 kHz SCL */
+    k_i2c_recover_cpu_mhz = 240U,
+    k_bno055_rst_low_us   = 20000U, /* datasheet: >= 20 us */
+    k_bno055_por_us       = 650U,   /* POR settle budget (ms-scale); caller
+                                       adds kernel-side waits during imu_task */
+  };
+
+  /* Step 1: hardware-reset BNO055 via P83 (active-low). Putting the chip
+   * through POR before bit-banging SCL guarantees it's not driving SDA
+   * low as the left-over of a half-finished transaction from a prior
+   * firmware load. BMP280 has no RST pin; the bit-bang alone has to
+   * clear it. */
+  const uint8_t                  rst_bit = rx_pin_from_pin((rx_port_pin_t)k_pin_imu_rst);
+  volatile rx_port_regs_t* const rst_port =
+    rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_imu_rst));
+  RX_ASSERT(rst_port != nullptr, "IMU RST port base invalid during bus recovery");
+  const uint8_t rst_mask = (uint8_t)(1U << rst_bit);
+  rst_port->pmr &= (uint8_t)~rst_mask;  /* GPIO mode */
+  rst_port->pdr |= rst_mask;            /* Output */
+  rst_port->podr &= (uint8_t)~rst_mask; /* Drive LOW -> chip in reset */
+  internal_busy_wait_us((uint16_t)k_bno055_rst_low_us, (uint16_t)k_i2c_recover_cpu_mhz);
+  rst_port->podr |= rst_mask; /* Release -> chip POR */
+
+  /* Idle both I2C lines high (push-pull high is fine here: we're the only
+   * bus driver before RIIC1 claims the pins, and the external pull-ups
+   * will take over once we tristate at the end). */
+  port->pmr &= (uint8_t)~both; /* GPIO mode */
+  port->podr |= both;          /* Drive high */
+  port->pdr |= both;           /* Output direction */
+
+  /* Step 2: 9 SCL edges @ ~100 kHz -- enough to clock out any held byte
+   * from a peripheral stuck mid-transaction (BMP280 in particular, which
+   * has no reset line). */
+  for (uint16_t i = 0; i < k_i2c_recover_cycles; i++) {
+    port->podr &= (uint8_t)~scl_mask;
+    internal_busy_wait_us((uint16_t)k_i2c_recover_half_us, (uint16_t)k_i2c_recover_cpu_mhz);
+    port->podr |= scl_mask;
+    internal_busy_wait_us((uint16_t)k_i2c_recover_half_us, (uint16_t)k_i2c_recover_cpu_mhz);
+  }
+
+  /* Step 3: manual STOP: SDA low while SCL high, then SDA back high.
+   * Tells any peripheral that was waiting for the end of a transaction
+   * to release the bus. */
+  port->podr &= (uint8_t)~sda_mask;
+  internal_busy_wait_us((uint16_t)k_i2c_recover_half_us, (uint16_t)k_i2c_recover_cpu_mhz);
+  port->podr |= sda_mask;
+  internal_busy_wait_us((uint16_t)k_i2c_recover_half_us, (uint16_t)k_i2c_recover_cpu_mhz);
+
+  /* Tristate the pins so RIIC1 takes over cleanly once rx_mpc_set_riic()
+   * raises PMR. Leaving PDR=1 through the handoff is harmless per the HW
+   * manual, but tristating first avoids any glitch. */
+  port->pdr &= (uint8_t)~both;
+}
+
 static rx_err_t internal_gpio_init_imu(void)
 {
   static const char* s_tag = "GPIO_IMU";
@@ -875,6 +965,10 @@ static rx_err_t internal_gpio_init_imu(void)
             "IMU SCL port base invalid");
   RX_ASSERT(rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_imu_rst)) != nullptr,
             "IMU RST port base invalid");
+
+  /* Bit-bang recovery BEFORE handing the pads to RIIC1 via PMR=1. See
+   * internal_riic1_bus_recover() for the why. */
+  internal_riic1_bus_recover();
 
   /* IMU I2C (RIIC1): SCL1 + SDA1 */
   rx_err_t err = rx_mpc_set_riic((rx_port_pin_t)k_pin_imu_scl);
