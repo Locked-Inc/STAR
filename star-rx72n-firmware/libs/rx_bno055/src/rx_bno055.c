@@ -1280,6 +1280,15 @@ rx_err_t rx_bno055_is_calibrated(bool* out_calibrated)
   return k_rx_ok;
 }
 
+rx_err_t rx_bno055_clear_int(void)
+{
+  if (!s_initialized) {
+    return k_rx_err_not_initialized;
+  }
+  uint8_t int_sta = 0U;
+  return internal_read_regs(k_bno055_reg_int_sta, &int_sta, k_bno055_single_byte);
+}
+
 #ifdef UNIT_TEST
 /**
  * @brief Reset all driver static state to uninitialized (unit test only)

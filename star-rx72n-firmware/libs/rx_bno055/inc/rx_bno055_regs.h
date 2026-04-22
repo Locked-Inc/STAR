@@ -146,6 +146,7 @@ typedef enum : uint8_t {
   k_bno055_reg_grv_z_msb    = 0x33, /**< Gravity vector Z high byte */
   k_bno055_reg_temp         = 0x34, /**< Temperature in deg C (1 degC/LSB) */
   k_bno055_reg_calib_stat   = 0x35, /**< Calibration status: SYS[7:6] GYR[5:4] ACC[3:2] MAG[1:0] */
+  k_bno055_reg_int_sta      = 0x37, /**< Interrupt Status (Page 0). Reading this register clears the INT pin per BNO055 datasheet section 3.6 -- required after every interrupt for the pin to re-trigger on the next event. */
   k_bno055_reg_unit_sel     = 0x3B, /**< Unit selection register */
   k_bno055_reg_opr_mode     = 0x3D, /**< Operating mode register */
   k_bno055_reg_pwr_mode     = 0x3E, /**< Power mode register */

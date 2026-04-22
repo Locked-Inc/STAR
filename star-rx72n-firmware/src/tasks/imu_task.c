@@ -634,6 +634,15 @@ static void internal_read_and_publish_imu(void)
   bno055_data_t  bno_data = {};
   const rx_err_t err      = rx_bno055_read(&bno_data);
 
+  /* Clear the BNO055 INT pin after every read. Per BNO055 datasheet
+   * section 3.6 the INT pin stays asserted until INT_STA (Page 0, 0x37)
+   * is read, so without this call the pin latches high after the first
+   * ACC_BSX_DRDY and never generates another edge -- IRQ12 fires once
+   * per boot and the task permanently falls back to 200 ms polling.
+   * Best-effort: if this read fails we still use the sensor data we
+   * already collected and rely on the polling fallback next iteration. */
+  (void)rx_bno055_clear_int();
+
   imu_state_t imu  = {};
   imu.timestamp_ms = internal_ticks_to_ms();
 
