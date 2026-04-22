@@ -341,15 +341,15 @@ typedef struct {
 
   /**
    * @brief I2C Bus Status Register 1
-   * @details Contains slave address detection and host/device-ID detection flags.
+   * @details Contains peripheral address detection and host/device-ID detection flags.
    * | Bit | Name  | Description |
    * |-----|-------|-------------|
    * | 7   | HOA   | Host Address Detection Flag |
    * | 5   | DID   | Device-ID Address Detection Flag |
    * | 3   | GCA   | General Call Address Detection Flag |
-   * | 2   | AAS2  | Slave Address 2 Detection Flag |
-   * | 1   | AAS1  | Slave Address 1 Detection Flag |
-   * | 0   | AAS0  | Slave Address 0 Detection Flag |
+   * | 2   | AAS2  | Peripheral Address 2 Detection Flag |
+   * | 1   | AAS1  | Peripheral Address 1 Detection Flag |
+   * | 0   | AAS0  | Peripheral Address 0 Detection Flag |
    */
   volatile uint8_t icsr1;
 
@@ -540,7 +540,7 @@ typedef enum : uint8_t {
  * @brief ICSR1 (I2C Status Register 1) bit definitions
  *
  * @details
- * Contains slave address detection flags, general call detection,
+ * Contains peripheral address detection flags, general call detection,
  * device-ID detection, and host address detection (peripheral mode).
  *
  * @par Register Layout
@@ -552,15 +552,15 @@ typedef enum : uint8_t {
  *    5  | DID  | Device-ID Address Detection Flag
  *    4  |  -   | Reserved
  *    3  | GCA  | General Call Address Detection Flag
- *    2  | AAS2 | Slave Address 2 Detection Flag
- *    1  | AAS1 | Slave Address 1 Detection Flag
- *    0  | AAS0 | Slave Address 0 Detection Flag
+ *    2  | AAS2 | Peripheral Address 2 Detection Flag
+ *    1  | AAS1 | Peripheral Address 1 Detection Flag
+ *    0  | AAS0 | Peripheral Address 0 Detection Flag
  * @endverbatim
  *
  * @par Usage
  * @code
  * if (riic0()->icsr1 & k_riic_icsr1_aas0) {
- *     // Slave address 0 detected - we are being addressed
+ *     // Peripheral address 0 detected - we are being addressed
  * }
  * @endcode
  */
@@ -568,9 +568,9 @@ typedef enum : uint8_t {
   k_riic_icsr1_hoa  = (1 << 7), /**< Bit 7: Host Address Detection Flag */
   k_riic_icsr1_did  = (1 << 5), /**< Bit 5: Device-ID Address Detection Flag */
   k_riic_icsr1_gca  = (1 << 3), /**< Bit 3: General Call Address Detection Flag */
-  k_riic_icsr1_aas2 = (1 << 2), /**< Bit 2: Slave Address 2 Detection Flag */
-  k_riic_icsr1_aas1 = (1 << 1), /**< Bit 1: Slave Address 1 Detection Flag */
-  k_riic_icsr1_aas0 = (1 << 0), /**< Bit 0: Slave Address 0 Detection Flag */
+  k_riic_icsr1_aas2 = (1 << 2), /**< Bit 2: Peripheral Address 2 Detection Flag */
+  k_riic_icsr1_aas1 = (1 << 1), /**< Bit 1: Peripheral Address 1 Detection Flag */
+  k_riic_icsr1_aas0 = (1 << 0), /**< Bit 0: Peripheral Address 0 Detection Flag */
 } riic_icsr1_bits_t;
 
 /**

@@ -2104,7 +2104,7 @@ typedef struct {
  * @brief Initialize RSPI channel in controller mode for external device communication
  *
  * @details
- * Configures the specified RSPI channel as an SPI controller (bus master) for
+ * Configures the specified RSPI channel as an SPI controller for
  * communicating with external SPI peripheral devices such as sensors. Performs
  * argument validation, SPBR bit rate calculation, CS GPIO pin configuration,
  * and full hardware register setup following the RX72N Hardware Manual Section

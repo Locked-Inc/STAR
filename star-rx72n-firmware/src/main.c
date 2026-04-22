@@ -2072,8 +2072,8 @@ static void internal_create_system_tasks(void)
   // RX_ASSERT(err == k_rx_ok, "temp_sensor_task_create must succeed");
 
   /* IMU Task - Priority 13 (BNO055 + BMP280 at 20 Hz) */
-  // err = imu_task_create();
-  // RX_ASSERT(err == k_rx_ok, "imu_task_create must succeed");
+  err = imu_task_create();
+  RX_ASSERT(err == k_rx_ok, "imu_task_create must succeed");
 
   /* Obstacle Detection Task - Priority 12 */
   // err = obstacle_detect_task_create();
