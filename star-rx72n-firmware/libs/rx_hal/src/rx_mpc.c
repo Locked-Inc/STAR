@@ -171,6 +171,7 @@
 #include "rx_check.h"
 #include "rx_log.h"
 #include "rx_port_constants.h"
+#include "rx_port_utils.h"
 
 /**
  * @var s_tag
@@ -1108,16 +1109,45 @@ rx_err_t rx_mpc_set_sci(const rx_port_pin_t pin)
  * Convenience wrapper that configures a pin for RIIC operation using
  * PSEL = k_psel_riic_scl (0x0F). Works for both SCL and SDA pins.
  *
+ * Unlike rx_mpc_set_gptw(), this function also sets PORT.PMR=1 for the
+ * pin before returning -- RIIC cannot drive SDA/SCL while PMR=0 and the
+ * immediate-vs-deferred PMR trade-off differs from the motor-PWM case:
+ *
+ *   | Peripheral | When to raise PMR           | Reason                  |
+ *   |------------|-----------------------------|-------------------------|
+ *   | GPTW/PWM   | AFTER timer is running      | Push-pull drive: an un-
+ *   |            | (rx_gptw_init_pwm handles   | initialized output could
+ *   |            | this after rx_gptw_start)   | momentarily glitch
+ *   |            |                             | DRV8263H H-bridge inputs
+ *   |            |                             | to Vm/2 during the
+ *   |            |                             | GTIOR reset state window.
+ *   | RIIC/I2C   | IMMEDIATELY after PFS       | Open-drain + external
+ *   |            | (here, inside this wrapper) | pull-ups: idle bus is
+ *   |            |                             | both lines high (3.3V);
+ *   |            |                             | routing an un-initialized
+ *   |            |                             | RIIC just leaves the
+ *   |            |                             | pull-ups floating the
+ *   |            |                             | lines high. No hazard.
+ *
+ * Without PMR=1 on the RIIC pins, rx72n peripheral bits still toggle
+ * internally but the pad stays disconnected from RIIC; every Start
+ * condition times out with k_rx_err_timeout (0x108) at the first
+ * riic_write()/riic_read() call. Discovered 2026-04-22: production
+ * imu_task saw tight "[ERROR] [RIIC] Start condition timeout" loops while
+ * imu_test/main.c (which sets PMR=1 at line 227 before calling its own
+ * riic_init()) talked to BNO055 + BMP280 cleanly on the same board.
+ *
  * @param[in] pin GPIO pin identifier for RIIC (e.g., P12 for SCL)
  *
  * @return Error code indicating success or failure
- * @retval k_rx_ok Pin configured for RIIC I2C
+ * @retval k_rx_ok Pin configured for RIIC I2C (PFS + PMR set)
  * @retval k_rx_err_invalid_arg Invalid port or pin
  *
  * @pre PCLKB clock must be running, MPC not in module stop
  * @pre pin must encode a valid port/pin combination with RIIC multiplexing
  *
  * @post PFS register contains k_psel_riic_scl (0x0F) for the specified pin
+ * @post PORT.PMR bit for the pin is set (pin routed to RIIC peripheral)
  * @post PWPR locked after operation
  *
  * @note Thread safety: Not thread-safe
@@ -1132,6 +1162,8 @@ rx_err_t rx_mpc_set_sci(const rx_port_pin_t pin)
  * @endcode
  *
  * @see rx_mpc.h Full API documentation
+ * @see rx_mpc_set_gptw Contrast: deferred-PMR case
+ * @see star-rx72n-firmware/imu_test/main.c::riic1_init Bench reference
  * @since Version 1.0.0
  */
 rx_err_t rx_mpc_set_riic(const rx_port_pin_t pin)
@@ -1141,7 +1173,30 @@ rx_err_t rx_mpc_set_riic(const rx_port_pin_t pin)
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_riic_scl};
 
-  return rx_mpc_set_peripheral(&config);
+  const rx_err_t err = rx_mpc_set_peripheral(&config);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Set PORT.PMR=1 so SCL/SDA actually route to the RIIC peripheral.
+   *
+   * Unlike GPTW (where PMR must be deferred until after the timer is
+   * running to avoid exposing DRV8263H inputs to GTIOR reset state),
+   * I2C pins are open-drain with external pull-ups: driving them high
+   * through the peripheral mux is the idle-bus state and perfectly safe.
+   *
+   * Without this bit set, P20/P21 remain GPIO (PMR=0) and RIIC1 can
+   * never toggle the lines -- every Start condition times out with
+   * k_rx_err_timeout (0x108). The bench-proven imu_test/main.c sets
+   * PMR identically at rx72n-firmware/imu_test/main.c:227. */
+  const uint8_t                  port_idx = rx_port_from_pin(pin);
+  const uint8_t                  bit      = rx_pin_from_pin(pin);
+  volatile rx_port_regs_t* const port     = rx_port_get_base(port_idx);
+  if (port == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+  port->pmr |= (uint8_t)(1U << bit);
+  return k_rx_ok;
 }
 
 /**
