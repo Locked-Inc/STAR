@@ -896,6 +896,25 @@ void test_type_name_reset_ack(void)
 }
 
 /**
+ * @brief Test type name for LOG_MESSAGE frame type
+ *
+ * @details
+ * Verifies that k_frame_type_log_message returns "LOG_MESSAGE".
+ *
+ * @pre None
+ * @post Return value is non-nullptr pointer to "LOG_MESSAGE"
+ *
+ * @note Thread-safe (pure function, no mutable state)
+ *
+ * @since Version 1.0.0
+ */
+void test_type_name_log_message(void)
+{
+  const char* name = rx_frame_ascii_type_name(k_frame_type_log_message);
+  TEST_ASSERT_EQUAL_STRING("LOG_MESSAGE", name);
+}
+
+/**
  * @brief Test type name for invalid (out-of-range) type value
  *
  * @details
@@ -2298,6 +2317,7 @@ static void internal_run_type_name_tests(void)
   RUN_TEST(test_type_name_nack);
   RUN_TEST(test_type_name_reset);
   RUN_TEST(test_type_name_reset_ack);
+  RUN_TEST(test_type_name_log_message);
   RUN_TEST(test_type_name_invalid);
 }
 
