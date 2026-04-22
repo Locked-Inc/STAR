@@ -376,8 +376,12 @@
 #include "motor_control_task.h"
 
 #include <math.h>
+#include <stdio.h>
 
+#include "hardware.h" /* uart_debug_puts for bring-up diagnostics */
 #include "hardware_config.h"
+#include "rx72n_mtu_regs.h" /* mtu1/mtu2/mtu_tstra */
+#include "rx72n_tpu_regs.h" /* tpu1/tpu2/tpu_control */
 #include "rx_bus_adc.h"
 #include "rx_bus_manager.h"
 #include "rx_check.h"
@@ -1686,18 +1690,27 @@ static void internal_motor_task_entry(ULONG input)
     rx_log_info(s_tag, "MDBG: stack init FAIL");
   }
 
-  /* Bring-up control loop. Runs open-loop (no encoder feedback yet -- the
-   * rx_mtu_encoder / rx_tpu_encoder libs don't actually start the counters
-   * on this target; separate fix tracked in project memory). Drives PWM
-   * duty directly as a proportional gain on target velocity: 0.5 m/s ->
-   * ~20 % duty. Motors will spin once a VelocityCommand flows from
-   * comm_task into shared_data motor_command. */
-  static const float k_bringup_duty_per_mps = 40.0F; /* 0.5 m/s -> 20% duty */
+  /* Bring-up control loop. Open-loop duty = target_mps * 40, clamped to +/-50%.
+   * 1.0 m/s -> 40% duty. No hardcoded command -- motors stay at 0 duty until
+   * a SetVelocityRequest arrives via comm_task / shared_data_set_motor_command. */
+  static const float k_bringup_duty_per_mps = 40.0F;
   uint32_t           tick                   = 0U;
+  bool               last_valid             = false;
   while (true) {
     motor_command_t cmd;
     const rx_err_t  cmd_err = shared_data_get_motor_command(&cmd);
     const bool      have    = (cmd_err == k_rx_ok) && cmd.valid;
+    if (have != last_valid) {
+      char evtbuf[128];
+      (void)snprintf(evtbuf,
+                     sizeof(evtbuf),
+                     "[MOTOR] cmd.valid transitioned to %d (fl=%d fr=%d)\r\n",
+                     (int)have,
+                     (int)(cmd.target_velocity_mps[0] * 100.0F),
+                     (int)(cmd.target_velocity_mps[1] * 100.0F));
+      uart_debug_puts(evtbuf);
+      last_valid = have;
+    }
 
     for (uint8_t i = 0; i < k_motor_count; i++) {
       float duty = 0.0F;
@@ -1715,7 +1728,43 @@ static void internal_motor_task_entry(ULONG input)
 
     tick++;
     if ((tick % 100U) == 0U) {
-      rx_log_info_val(s_tag, "MDBG: ctrl tick", tick);
+      char dbgbuf[128];
+      (void)snprintf(dbgbuf,
+                     sizeof(dbgbuf),
+                     "[MOTOR] CMD: err=%d valid=%d fl=%d fr=%d bl=%d br=%d\r\n",
+                     (int)cmd_err,
+                     (int)cmd.valid,
+                     (int)(cmd.target_velocity_mps[0] * 100.0F),
+                     (int)(cmd.target_velocity_mps[1] * 100.0F),
+                     (int)(cmd.target_velocity_mps[2] * 100.0F),
+                     (int)(cmd.target_velocity_mps[3] * 100.0F));
+      uart_debug_puts(dbgbuf);
+
+      const uint16_t m1      = mtu1()->tcnt;
+      const uint16_t m2      = mtu2()->tcnt;
+      const uint16_t t1      = tpu1()->tcnt;
+      const uint16_t t2      = tpu2()->tcnt;
+      float          duty_fl = 0.0F;
+      float          duty_fr = 0.0F;
+      float          duty_bl = 0.0F;
+      float          duty_br = 0.0F;
+      (void)rx_motor_get_duty(&s_motors[k_motor_front_left], &duty_fl);
+      (void)rx_motor_get_duty(&s_motors[k_motor_front_right], &duty_fr);
+      (void)rx_motor_get_duty(&s_motors[k_motor_back_left], &duty_bl);
+      (void)rx_motor_get_duty(&s_motors[k_motor_back_right], &duty_br);
+      char buf[128];
+      (void)snprintf(buf,
+                     sizeof(buf),
+                     "[MOTOR] DUTY FL=%d FR=%d BL=%d BR=%d  ENC m1=%u m2=%u t1=%u t2=%u\r\n",
+                     (int)duty_fl,
+                     (int)duty_fr,
+                     (int)duty_bl,
+                     (int)duty_br,
+                     (unsigned)m1,
+                     (unsigned)m2,
+                     (unsigned)t1,
+                     (unsigned)t2);
+      uart_debug_puts(buf);
     }
     (void)tx_thread_sleep(k_motor_task_sleep_ticks);
   }
@@ -2214,7 +2263,81 @@ static rx_err_t internal_init_encoders(void)
     }
   }
 
-  rx_log_info(s_tag, "All 4 encoders initialized (2 MTU + 2 TPU)");
+  /* BRING-UP: the rx_mtu_encoder / rx_tpu_encoder libs set s_encoder_initialized
+   * but DON'T actually (a) write MPC PFS for the MTCLK / TCLK input pins,
+   * (b) flip PMR to route the pad to the peripheral, or (c) set TSTRA/TSTR
+   * to start the counter. encoder_test/main.c documents this and works around
+   * it with direct-register writes. Do the same here so TCNT actually
+   * increments on encoder edges. */
+  {
+    volatile uint8_t* pwpr  = (volatile uint8_t*)0x0008C11FU;
+    volatile uint8_t* p2pmr = (volatile uint8_t*)0x0008C062U;
+    volatile uint8_t* papmr = (volatile uint8_t*)0x0008C06AU;
+    volatile uint8_t* pbpmr = (volatile uint8_t*)0x0008C06BU;
+    volatile uint8_t* pcpmr = (volatile uint8_t*)0x0008C06CU;
+
+    /* Clear PMR for all encoder input pins so PFS writes take effect */
+    *p2pmr &= (uint8_t) ~(uint8_t)((1U << 4) | (1U << 5));             /* P24, P25 */
+    *papmr &= (uint8_t) ~(uint8_t)((1U << 1) | (1U << 3));             /* PA1, PA3 */
+    *pcpmr &= (uint8_t) ~(uint8_t)((1U << 0) | (1U << 2) | (1U << 5)); /* PC0, PC2, PC5 */
+    *pbpmr &= (uint8_t) ~(uint8_t)(1U << 3);                           /* PB3 */
+
+    /* Unlock PFS (PWPR: B0WI=0, PFSWE=1) */
+    *pwpr = 0x00U;
+    *pwpr = 0x40U;
+/* PSEL values per RX72N HW manual R01UH0824EJ0111 Table 23.6 */
+#define PFS_AT(port, bit)                                                                          \
+  (*(volatile uint8_t*)(0x0008C140U + (uint32_t)(port) * 8U + (uint32_t)(bit)))
+    PFS_AT(2, 4)  = 0x02U; /* P24 MTCLKA -- enc0 A */
+    PFS_AT(2, 5)  = 0x02U; /* P25 MTCLKB -- enc0 B */
+    PFS_AT(10, 1) = 0x02U; /* PA1 MTCLKC -- enc1 A */
+    PFS_AT(12, 5) = 0x02U; /* PC5 MTCLKD -- enc1 B */
+    PFS_AT(12, 2) = 0x03U; /* PC2 TCLKA  -- TPU1 enc (BL per harness) */
+    PFS_AT(10, 3) = 0x04U; /* PA3 TCLKB  -- TPU1 enc */
+    PFS_AT(12, 0) = 0x03U; /* PC0 TCLKC  -- TPU2 enc (BR per harness) */
+    PFS_AT(11, 3) = 0x04U; /* PB3 TCLKD  -- TPU2 enc */
+#undef PFS_AT
+    /* Lock PFS (PWPR: PFSWE=0, B0WI=1) */
+    *pwpr = 0x00U;
+    *pwpr = 0x80U;
+
+    /* Route pads to peripherals */
+    *p2pmr |= (uint8_t)((1U << 4) | (1U << 5));
+    *papmr |= (uint8_t)((1U << 1) | (1U << 3));
+    *pcpmr |= (uint8_t)((1U << 0) | (1U << 2) | (1U << 5));
+    *pbpmr |= (uint8_t)(1U << 3);
+
+    /* Reconfirm MTU channel 1/2 in phase-counting mode and zero the counter
+     * (the lib tends to leave TMDR=0 via its stop-before-config path). */
+    volatile rx_mtu_channel_regs_t* m1 = mtu1();
+    m1->tcr                            = 0;
+    m1->tmdr                           = 0x04U;
+    m1->tcnt                           = 0;
+    volatile rx_mtu_channel_regs_t* m2 = mtu2();
+    m2->tcr                            = 0;
+    m2->tmdr                           = 0x04U;
+    m2->tcnt                           = 0;
+
+    /* Same for TPU channel 1/2 */
+    volatile rx_tpu_regs_t* t1 = tpu1();
+    t1->tcr                    = 0;
+    t1->tmdr                   = 0x04U;
+    t1->tcnt                   = 0;
+    volatile rx_tpu_regs_t* t2 = tpu2();
+    t2->tcr                    = 0;
+    t2->tmdr                   = 0x04U;
+    t2->tcnt                   = 0;
+
+    /* TPU noise filter OFF (reset state, but be explicit) */
+    tpu_control()->nfcr[1] = 0;
+    tpu_control()->nfcr[2] = 0;
+
+    /* Start counters (MTU TSTRA + TPU TSTR) -- this is what the libs skip */
+    mtu_tstra()->tstr |= (uint8_t)(k_mtu_tstr_cst1 | k_mtu_tstr_cst2);
+    tpu_control()->tstr |= (uint8_t)(k_tpu_tstr_cst1 | k_tpu_tstr_cst2);
+  }
+
+  rx_log_info(s_tag, "All 4 encoders initialized (2 MTU + 2 TPU, TSTRA forced)");
   return k_rx_ok;
 }
 

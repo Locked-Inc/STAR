@@ -2319,7 +2319,9 @@ static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx
   if (set_err != k_rx_ok) {
     rx_log_error_val(s_tag, "Failed to set motor cmd", (uint32_t)set_err);
   } else {
-    rx_log_debug(s_tag, "Velocity command received");
+    rx_log_info_val(s_tag,
+                    "SETCMD valid=1 fl*100=",
+                    (int32_t)(cmd.target_velocity_mps[0] * 100.0F));
   }
 
   /* Send response back to host (best-effort; command already applied) */
