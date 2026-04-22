@@ -36,7 +36,6 @@
 
 #include "led_status_task.h"
 
-#include "hardware.h"
 #include "hardware_config.h"
 #include "rx_check.h"
 #include "rx_iwdt.h"
@@ -540,44 +539,13 @@ static void internal_led_task_entry(ULONG input)
 
   /* Main loop */
   while (true) {
-    /* BISECT: re-assert D14 at top of loop so it lights if we enter the
-     * loop AT ALL, even if one of the update functions blocks.  If the
-     * update_* calls run, D14 keeps flipping on; if the task is stuck
-     * in a mutex wait, D14 stays off (nothing to re-assert it). */
-    (void)led_write_high(k_led_d14_estop);
-
     internal_update_heartbeat_led();
     internal_update_error_and_motor_leds();
     internal_update_comm_led();
     internal_update_obstacle_and_estop_leds();
 
-    /* BISECT: re-assert D14 again AFTER updates.  If D14 is visibly on,
-     * ALL update functions returned and the loop is cycling cleanly. */
-    (void)led_write_high(k_led_d14_estop);
-
-    /* BISECT(loop-rate): toggle D11 AFTER updates (so update_error_motor
-     * doesn't clobber it).  At 20 Hz task period this produces a 10 Hz
-     * flicker (visible as dim-bright to the eye).  If D11 stays fully dark
-     * the loop only ran once before hanging.  If bright-ish flicker, loop
-     * runs at expected rate. */
-    static bool s_d11_toggle = false;
-    s_d11_toggle             = !s_d11_toggle;
-    if (s_d11_toggle) {
-      (void)led_write_high(k_led_d11_motor);
-    } else {
-      (void)led_write_low(k_led_d11_motor);
-    }
-
-    /* BISECT: D10 HIGH right before iwdt_heartbeat, LOW right after.
-     * If D10 ends up solid ON, iwdt_heartbeat is hanging.
-     * If D10 ends up solid OFF, hang is in tx_thread_sleep. */
-    (void)led_write_high(k_led_d10_error);
-
     /* Report task heartbeat to IWDT (must execute within 150ms timeout) */
-    rx_err_t err = rx_iwdt_task_heartbeat("LEDStatus");
-
-    (void)led_write_low(k_led_d10_error);
-
+    const rx_err_t err = rx_iwdt_task_heartbeat("LEDStatus");
     if (err != k_rx_ok) {
       rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
       /* Continue operation - watchdog monitor will detect timeout */
