@@ -49,7 +49,7 @@ LDFLAGS := $(CPU) -nostartfiles -Wl,-e_PowerON_Reset_PC -T linker.ld \
            -Wl,--gc-sections -lm
 
 # Application sources (local to this directory).
-APP_CSRC := main.c clock.c stubs.c
+APP_CSRC := main.c clock.c sci9.c stubs.c
 APP_ASRC := startup.S vectors.S
 
 # Production library sources -- compile from their lib paths into flat .o
