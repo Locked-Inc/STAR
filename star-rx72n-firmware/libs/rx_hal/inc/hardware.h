@@ -2452,6 +2452,23 @@ uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16
  */
 [[nodiscard]] rx_err_t uart_rx_available(uart_channel_t channel, bool* available);
 
+/**
+ * @brief SCI9 RXI ring-buffer diagnostic snapshot
+ *
+ * @details
+ * Returns the current head/tail/dropped-byte counters for the SCI9
+ * interrupt-driven RX ring. Useful for confirming that INT_SCI9_RXI9
+ * is actually firing and that the byte stream is flowing end-to-end
+ * from the gateway into comm_task.
+ *
+ * @param[out] head    Current write index (ISR-advanced).
+ * @param[out] tail    Current read index (task-advanced).
+ * @param[out] drops   Total bytes dropped due to ring-full since boot.
+ * @return Always k_rx_ok.
+ */
+rx_err_t uart_sci9_rx_stats(uint16_t* head, uint16_t* tail, uint32_t* drops);
+uint32_t uart_sci9_rxi_fires(void);
+
 /* =============================================================================
  * UART Debug Functions - Convenience Wrappers for SCI9
  * =============================================================================
