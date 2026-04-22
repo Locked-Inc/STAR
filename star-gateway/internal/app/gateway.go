@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -499,6 +500,23 @@ func createUSBLink(device string, session *manager.SessionState) (harq.HARQ, err
 	cdcConfig := transport.DefaultCDCConfig()
 	if device != "" {
 		cdcConfig.Device = device
+	}
+	// The RX72N + CY7C65213 bridge runs SCI9 at 115200 by default. The gateway's
+	// 921600 default targets BBB's USB CDC (which has no UART in the datapath).
+	// When the link is /dev/ttyACM0 on a Cypress, opening at 921600 reprograms
+	// the bridge and breaks RX on the firmware side. Allow an override without
+	// special-casing vendors in code.
+	if baud := os.Getenv("STAR_CDC_BAUD"); baud != "" {
+		if v, err := strconv.Atoi(baud); err == nil && v > 0 {
+			cdcConfig.BaudRate = v
+		}
+	}
+	// On this Pi5 the Cypress CY7C65213 enumerates via the cdc_acm driver, so
+	// the device node is /dev/ttyACM0 (not the /dev/ttyUSB0 default baked into
+	// DefaultCDCConfig). STAR_CDC_DEVICE lets the caller point at whichever
+	// node the kernel actually assigned.
+	if envDev := os.Getenv("STAR_CDC_DEVICE"); envDev != "" {
+		cdcConfig.Device = envDev
 	}
 	cdcTransport := transport.NewCDCTransport(cdcConfig)
 
