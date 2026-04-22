@@ -2048,6 +2048,21 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
       (void)internal_handle_command_frame(channel, frame);
       break;
 
+    case k_frame_type_ping: {
+      /* Gateway heartbeat: echo the 4-byte counter payload back as PONG on the
+       * same channel. Without this reply the gateway flags the link unhealthy
+       * after ~2 s in simple-usb mode and triggers failover. */
+      const rx_comm_send_params_t pong_params = {
+        .channel     = channel,
+        .type        = k_frame_type_pong,
+        .flags       = k_frame_flag_none,
+        .payload     = frame->payload,
+        .payload_len = frame->header.length,
+      };
+      (void)rx_comm_manager_send(&g_comm_manager, &pong_params);
+      break;
+    }
+
     case k_frame_type_ack:
       /* ACK received - nothing to do */
       rx_log_debug(s_tag, "ACK received");
