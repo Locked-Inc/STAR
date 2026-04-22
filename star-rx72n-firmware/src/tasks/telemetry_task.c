@@ -2206,9 +2206,8 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
 static rx_err_t internal_encode_telemetry(const star_v1_TelemetryData* telemetry,
                                           uint32_t*                    out_encoded_len)
 {
-  rx_err_t err;
-
-  err = rx_nanopb_encode_telemetry(telemetry, s_telem_buffer, k_telem_buffer_size, out_encoded_len);
+  const rx_err_t err =
+    rx_nanopb_encode_telemetry(telemetry, s_telem_buffer, k_telem_buffer_size, out_encoded_len);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Telemetry encode failed", (uint32_t)err);
   }
