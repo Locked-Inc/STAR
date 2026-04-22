@@ -182,6 +182,7 @@
 #include "rx_clock_power_init.h"
 #include "rx_err.h"
 #include "rx_infrastructure.h"
+#include "rx_nanopb.h"
 #include "rx_port_utils.h"
 #include "tx_api.h"
 
@@ -2502,6 +2503,7 @@ int main(void)
 
   /* Report startup flags to console (only if UART initialized successfully) */
   if (ret == k_rx_ok) {
+    uart_debug_puts("\r\n=== STAR RX72N BOOT ===\r\n");
     internal_report_startup_flags();
     (void)gpio_write_low(k_rx_p7_1);
     (void)gpio_write_high(k_rx_p7_2); /* D12: UART init OK */
@@ -2521,6 +2523,14 @@ int main(void)
 
   (void)gpio_write_low(k_rx_p7_2);
   (void)gpio_write_high(k_rx_pb_1); /* D13: hardware_init done */
+
+  /* Enable the nanopb wrapper so telemetry_task's rx_nanopb_encode_*()
+   * and comm_task's rx_nanopb_decode_*() stop returning
+   * k_rx_err_not_initialized (0x10F). The wrapper is a pure software
+   * module with no hardware deps, so initialize it during the
+   * pre-kernel single-threaded window next to the other module inits. */
+  ret = rx_nanopb_init();
+  RX_ERROR_CHECK(ret);
 
   /* Start the ThreadX scheduler - should never return */
   tx_kernel_enter();

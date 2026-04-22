@@ -395,6 +395,7 @@
 #include "rx_log.h"
 #include "rx_log_uart.h"
 #include "rx_nanopb.h"
+#include "rx_session.h"
 #include "rx_spi_comm.h"
 #include "rx_spi_link.h"
 #include "rx_time_constants.h"
@@ -1606,6 +1607,16 @@ static void internal_comm_task_entry(ULONG input)
 {
   (void)input;
 
+  /* Initialize the wire-protocol session state shared across all comm
+   * transports (SPI, I2C, UART). Must be called BEFORE any transport
+   * init since each transport holds a pointer to this session and
+   * rx_session_next_tx returns k_rx_err_not_initialized if called
+   * before this, which silently breaks every framed send. */
+  const rx_err_t sess_err = rx_session_init(&s_session_state);
+  if (sess_err != k_rx_ok) {
+    rx_log_error_val(s_tag, "Session init failed", (uint32_t)sess_err);
+  }
+
   rx_log_info(s_tag, "Communication task starting");
 
   /* Initialize transport layers and wire into comm manager config */
@@ -1614,7 +1625,14 @@ static void internal_comm_task_entry(ULONG input)
   internal_init_transports(&config);
   config.callback              = internal_frame_callback;
   config.callback_ctx          = &g_comm_manager;
-  config.enable_decoded_output = true;
+  /* enable_decoded_output routed to the same rx_log_uart ring that
+   * internal_ship_log_frames drains and retransmits as type=0x20
+   * log_message frames. Leaving it true produces an infinite feedback
+   * loop: every send is ASCII-dumped into the ring, drained as a new
+   * log frame, that new frame gets ASCII-dumped into the ring, ...
+   * Dedicated USB debug port is gone, so decoded output has no benign
+   * sink -- disable it. */
+  config.enable_decoded_output = false;
 
   /* Initialize communication manager */
   rx_err_t err = rx_comm_manager_init(&g_comm_manager, &config);

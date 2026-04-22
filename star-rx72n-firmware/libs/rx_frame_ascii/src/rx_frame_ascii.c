@@ -835,6 +835,8 @@ const char* rx_frame_ascii_type_name(rx_frame_type_t type)
       return "ACK";
     case k_frame_type_nack:
       return "NACK";
+    case k_frame_type_log_message:
+      return "LOG_MESSAGE";
     case k_frame_type_reset_ack:
       return "RESET_ACK";
     case k_frame_type_reset:
