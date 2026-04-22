@@ -119,6 +119,37 @@ typedef enum : uint8_t {
   k_tmr_channel_count_internal = 4, /**< TMR0..TMR3 */
 } tmr_channel_count_t;
 
+/**
+ * @enum tmr_pclk_divisor_t
+ * @brief Integer prescaler ratios for internal clock sources
+ * @details
+ * The RX72N TMR peripheral divides PCLKB by one of these ratios before
+ * feeding the counter. Each value mirrors a `k_tmr_clock_pclk_div_*`
+ * enum value and is used by internal_tmr_clock_divider() to compute the
+ * effective tick rate. Named constants avoid magic-number literals.
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_tmr_pclk_div_1    = 1U,    /**< Prescaler /1 */
+  k_tmr_pclk_div_2    = 2U,    /**< Prescaler /2 */
+  k_tmr_pclk_div_8    = 8U,    /**< Prescaler /8 */
+  k_tmr_pclk_div_32   = 32U,   /**< Prescaler /32 */
+  k_tmr_pclk_div_64   = 64U,   /**< Prescaler /64 */
+  k_tmr_pclk_div_1024 = 1024U, /**< Prescaler /1024 */
+  k_tmr_pclk_div_8192 = 8192U, /**< Prescaler /8192 */
+  k_tmr_pclk_div_none = 0U,    /**< Sentinel: external clock (no PCLK divider) */
+} tmr_pclk_divisor_t;
+
+/**
+ * @enum tmr_byte_shift_t
+ * @brief Shift / mask constants for packing cascaded 16-bit counts
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_tmr_byte_shift = 8U,    /**< Shift to move high byte to bits [15:8] */
+  k_tmr_byte_mask  = 0xFFU, /**< Mask for isolating one byte */
+} tmr_byte_shift_t;
+
 /* =============================================================================
  * Module-private State
  * =============================================================================
@@ -225,7 +256,7 @@ static uint32_t internal_tmr_unit_mstp_bit(rx_tmr_channel_t channel)
   if ((channel == k_tmr_channel_0) || (channel == k_tmr_channel_1)) {
     return k_tmr_mstpcra_mstpa5;
   }
-  return (uint32_t)k_tmr_mstpcra_mstpa4;
+  return k_tmr_mstpcra_mstpa4;
 }
 
 /**
@@ -301,21 +332,21 @@ static uint32_t internal_tmr_clock_divider(rx_tmr_clock_source_t source)
 {
   switch (source) {
     case k_tmr_clock_pclk_div_1:
-      return 1U;
+      return (uint32_t)k_tmr_pclk_div_1;
     case k_tmr_clock_pclk_div_2:
-      return 2U;
+      return (uint32_t)k_tmr_pclk_div_2;
     case k_tmr_clock_pclk_div_8:
-      return 8U;
+      return (uint32_t)k_tmr_pclk_div_8;
     case k_tmr_clock_pclk_div_32:
-      return 32U;
+      return (uint32_t)k_tmr_pclk_div_32;
     case k_tmr_clock_pclk_div_64:
-      return 64U;
+      return (uint32_t)k_tmr_pclk_div_64;
     case k_tmr_clock_pclk_div_1024:
-      return 1024U;
+      return (uint32_t)k_tmr_pclk_div_1024;
     case k_tmr_clock_pclk_div_8192:
-      return 8192U;
+      return (uint32_t)k_tmr_pclk_div_8192;
     default:
-      return 0U; /* External or invalid */
+      return (uint32_t)k_tmr_pclk_div_none; /* External or invalid */
   }
 }
 
@@ -431,6 +462,34 @@ static void internal_tmr_program_channel(rx_tmr_channel_t channel, const rx_tmr_
  * =============================================================================
  */
 
+/**
+ * @brief Program the paired odd channel in a 16-bit cascade configuration
+ * @details
+ * Extracted from rx_tmr_init() to keep the caller under the function-size
+ * threshold. The even channel counts on its selected clock source; the
+ * odd channel counts on the even channel's TCORA compare match via
+ * CSS = cascade.
+ * @param[in] config Validated primary (even) channel config
+ * @since Version 1.0.0
+ */
+static void internal_tmr_init_cascade_pair(const rx_tmr_config_t* config)
+{
+  const rx_tmr_channel_t odd =
+    (config->channel == k_tmr_channel_0) ? k_tmr_channel_1 : k_tmr_channel_3;
+
+  rx_tmr_config_t odd_cfg = *config;
+  odd_cfg.channel         = odd;
+  internal_tmr_program_channel(odd, &odd_cfg);
+
+  volatile rx_tmr_channel_regs_t* odd_regs = internal_tmr_get_regs(odd);
+  odd_regs->tccr                           = k_tmr_tccr_css_cascade;
+
+  s_tmr_mode[(uint8_t)odd]         = k_tmr_mode_16bit_cascade;
+  s_tmr_initialized[(uint8_t)odd]  = true;
+  s_tmr_clock_bits[(uint8_t)odd]   = k_tmr_tccr_css_cascade;
+  s_tmr_clock_source[(uint8_t)odd] = config->clock_source;
+}
+
 rx_err_t rx_tmr_init(const rx_tmr_config_t* config)
 {
   /* Pre-condition 1: non-null config */
@@ -466,22 +525,7 @@ rx_err_t rx_tmr_init(const rx_tmr_config_t* config)
 
   /* 3. For cascade mode, program the paired odd channel */
   if (config->mode == k_tmr_mode_16bit_cascade) {
-    const rx_tmr_channel_t odd =
-      (config->channel == k_tmr_channel_0) ? k_tmr_channel_1 : k_tmr_channel_3;
-
-    /* Even channel counts on its own selected clock source; odd channel
-     * counts on the even channel's TCORA compare match via CSS = cascade. */
-    rx_tmr_config_t odd_cfg = *config;
-    odd_cfg.channel         = odd;
-    internal_tmr_program_channel(odd, &odd_cfg);
-
-    volatile rx_tmr_channel_regs_t* odd_regs = internal_tmr_get_regs(odd);
-    odd_regs->tccr                           = k_tmr_tccr_css_cascade;
-
-    s_tmr_mode[(uint8_t)odd]         = k_tmr_mode_16bit_cascade;
-    s_tmr_initialized[(uint8_t)odd]  = true;
-    s_tmr_clock_bits[(uint8_t)odd]   = k_tmr_tccr_css_cascade;
-    s_tmr_clock_source[(uint8_t)odd] = config->clock_source;
+    internal_tmr_init_cascade_pair(config);
   }
 
   /* 4. Cache state for the primary channel */
@@ -546,7 +590,7 @@ rx_err_t rx_tmr_read(rx_tmr_channel_t channel, uint16_t* value)
     const uint8_t          upper = internal_tmr_get_regs(channel)->tcnt;
     const rx_tmr_channel_t odd   = (channel == k_tmr_channel_0) ? k_tmr_channel_1 : k_tmr_channel_3;
     const uint8_t          lower = internal_tmr_get_regs(odd)->tcnt;
-    *value                       = (uint16_t)(((uint16_t)upper << 8U) | (uint16_t)lower);
+    *value = (uint16_t)(((uint16_t)upper << (uint16_t)k_tmr_byte_shift) | (uint16_t)lower);
   } else {
     *value = (uint16_t)internal_tmr_get_regs(channel)->tcnt;
   }
@@ -589,10 +633,11 @@ rx_err_t rx_tmr_set_period_us(rx_tmr_channel_t channel, uint32_t period_us)
 
   if (s_tmr_mode[idx] == k_tmr_mode_16bit_cascade) {
     const rx_tmr_channel_t odd = (channel == k_tmr_channel_0) ? k_tmr_channel_1 : k_tmr_channel_3;
-    internal_tmr_get_regs(channel)->tcora = (uint8_t)((compare >> 8U) & 0xFFU);
-    internal_tmr_get_regs(odd)->tcora     = (uint8_t)(compare & 0xFFU);
+    internal_tmr_get_regs(channel)->tcora =
+      (uint8_t)((compare >> (uint64_t)k_tmr_byte_shift) & (uint64_t)k_tmr_byte_mask);
+    internal_tmr_get_regs(odd)->tcora = (uint8_t)(compare & (uint64_t)k_tmr_byte_mask);
   } else {
-    internal_tmr_get_regs(channel)->tcora = (uint8_t)(compare & 0xFFU);
+    internal_tmr_get_regs(channel)->tcora = (uint8_t)(compare & (uint64_t)k_tmr_byte_mask);
   }
   return k_rx_ok;
 }
