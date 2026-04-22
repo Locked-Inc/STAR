@@ -1997,8 +1997,8 @@ static void internal_register_iwdt_tasks(void)
   err = rx_iwdt_register_task("WatchdogMon", k_iwdt_task_timeout_watchdog_ms);
   RX_ASSERT(err == k_rx_ok, "WatchdogMon IWDT registration must succeed");
 
-  // err = rx_iwdt_register_task("ImuTask", k_iwdt_task_timeout_imu_ms);
-  // RX_ASSERT(err == k_rx_ok, "ImuTask IWDT registration must succeed");
+  err = rx_iwdt_register_task("ImuTask", k_iwdt_task_timeout_imu_ms);
+  RX_ASSERT(err == k_rx_ok, "ImuTask IWDT registration must succeed");
 
   /* Set initial IWDT state (init phase - 5s timeout) */
   err = rx_iwdt_set_state(k_system_state_init);
