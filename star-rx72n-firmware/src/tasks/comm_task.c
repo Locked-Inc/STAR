@@ -1623,8 +1623,8 @@ static void internal_comm_task_entry(ULONG input)
   rx_comm_manager_config_t config = {};
   config.enabled_channels         = s_enabled_channels;
   internal_init_transports(&config);
-  config.callback              = internal_frame_callback;
-  config.callback_ctx          = &g_comm_manager;
+  config.callback     = internal_frame_callback;
+  config.callback_ctx = &g_comm_manager;
   /* enable_decoded_output routed to the same rx_log_uart ring that
    * internal_ship_log_frames drains and retransmits as type=0x20
    * log_message frames. Leaving it true produces an infinite feedback

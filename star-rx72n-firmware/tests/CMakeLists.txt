@@ -1041,6 +1041,7 @@ add_executable(test_communication_task
     ${MOCK_COMM_MANAGER_SRC_TASK}
     ${MOCK_NANOPB_SRC}
     ${MOCK_LOG_SRC}
+    ${RX_SESSION_SRC}
 )
 apply_strict_warnings(test_communication_task)
 apply_test_includes(test_communication_task)
@@ -1147,6 +1148,7 @@ add_executable(test_rx_system_config
     ${MOCK_NANOPB_SRC}
     ${MOCK_LOG_SRC}
     ${MOCK_COMM_TRANSPORTS_SRC}
+    ${RX_SESSION_SRC}
 )
 apply_strict_warnings(test_rx_system_config)
 apply_test_includes(test_rx_system_config)

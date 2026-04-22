@@ -212,8 +212,7 @@ static const char* const s_tag = "TIMER";
  * cmt0_vector.S .text sub-section and vector 28 ends up as 0 instead
  * of the ThreadX tick ISR.  See src/boot/cmt0_vector.S for context. */
 extern const uint32_t rx_cmt0_vector_anchor; /* GNURX prepends _ -> _rx_cmt0_vector_anchor in asm */
-__attribute__((used)) const void* const g_cmt0_vector_keep =
-  (const void*)&rx_cmt0_vector_anchor;
+__attribute__((used)) const void* const g_cmt0_vector_keep = (const void*)&rx_cmt0_vector_anchor;
 
 /* =============================================================================
  * CMT0 Configuration Constants

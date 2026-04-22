@@ -240,7 +240,7 @@
 
 #include <stdint.h>
 
-#include "hardware.h" /* gpio_write_low / gpio_write_high for bring-up LEDs */
+#include "hardware.h"         /* gpio_write_low / gpio_write_high for bring-up LEDs */
 #include "rx72n_flash_regs.h" /* romce_reg / romciv_reg for ROM cache bring-up */
 #include "rx72n_regs.h"
 #include "rx72n_rtc_regs.h"
@@ -258,7 +258,8 @@ static const char* s_tag = "CLOCK_INIT";
 
 /** @brief Oscillator stabilization timing constants */
 typedef enum : uint32_t {
-  k_main_osc_poll_max                 = 500000,  /**< Upper bound on MOOVF flag poll iterations (bounded, NASA Rule 2). Physical wait is hardware-determined (~10 ms). */
+  k_main_osc_poll_max =
+    500000, /**< Upper bound on MOOVF flag poll iterations (bounded, NASA Rule 2). Physical wait is hardware-determined (~10 ms). */
   k_pll_stabilization_timeout         = 1000000, /**< PLL stabilization max wait iterations */
   k_pll_stabilization_timeout_expired = 0,       /**< PLL timeout expiration value */
 } oscillator_timing_t;
@@ -801,8 +802,7 @@ static rx_err_t internal_verify_system_state(void)
 #else
   /* Simulator: Verify clock configuration (same, minus PPLL) */
   RX_ASSERT((pllcr2 == k_pll_enabled) && (sckcr == k_system_clock_dividers) &&
-              (sckcr3 == k_system_clock_source_pll) &&
-              (memwait == k_memwait_one_wait),
+              (sckcr3 == k_system_clock_source_pll) && (memwait == k_memwait_one_wait),
             "Postcondition: clock configuration verified (simulator mode)");
 #endif
 

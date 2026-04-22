@@ -75,10 +75,10 @@ typedef enum : uint16_t {
 
 /** @brief 8-bit counter sample values used when writing TCNT directly. */
 typedef enum : uint8_t {
-  k_tmr_test_count_upper_cd  = 0xCDU,
-  k_tmr_test_count_lower_ef  = 0xEFU,
-  k_tmr_test_count_ab        = 0xABU,
-  k_tmr_test_count_cd        = 0xCDU,
+  k_tmr_test_count_upper_cd = 0xCDU,
+  k_tmr_test_count_lower_ef = 0xEFU,
+  k_tmr_test_count_ab       = 0xABU,
+  k_tmr_test_count_cd       = 0xCDU,
 } tmr_test_count8_constants_t;
 
 /** @brief Period constants for set_period_us tests (microseconds) */
