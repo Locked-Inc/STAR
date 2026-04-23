@@ -1,0 +1,13 @@
+# STAR robot: stable device symlinks that survive USB re-enumeration.
+# Install to /etc/udev/rules.d/71-star-symlinks.rules.
+#
+# /dev/star-lidar -> whichever /dev/ttyUSB* the RPLiDAR C1 is on
+# /dev/star-mcu   -> whichever /dev/ttyACM* the RX72N Cypress bridge is on
+#
+# After install:
+#   sudo cp scripts/71-star-symlinks.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload-rules
+#   sudo udevadm trigger --action=add --subsystem-match=tty
+
+SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", SYMLINK+="star-lidar"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="04b4", ATTRS{idProduct}=="0003", SYMLINK+="star-mcu"
