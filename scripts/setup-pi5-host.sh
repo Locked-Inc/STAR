@@ -33,8 +33,8 @@ cat > /etc/udev/rules.d/70-star-usb-no-autosuspend.rules <<'RULE'
 # attributes of the current node and ATTR{} works without parent walk.
 # Reference: kernel.org/doc/Documentation/usb/power-management.txt
 #
-# BeagleBone Blue (Linux Foundation Multifunction Composite Gadget)
-ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="1d6b", ATTR{idProduct}=="0104", ATTR{power/control}="on"
+# RX72N Cypress CY7C65213 USB-UART bridge (on STAR PCB)
+ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="04b4", ATTR{idProduct}=="0003", ATTR{power/control}="on"
 # RPLiDAR C1 (Silicon Labs CP2102N USB-UART bridge)
 ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="10c4", ATTR{idProduct}=="ea60", ATTR{power/control}="on"
 RULE
