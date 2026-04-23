@@ -26,7 +26,7 @@ const (
 	DefaultFailureTimeout = 200 * time.Millisecond
 
 	// SimpleUSBFailureTimeout is the heartbeat timeout for ModeSimpleUSB.
-	// BBB telemetry arrives at 10 Hz (100ms). 2s gives a generous margin
+	// RX72N telemetry arrives at 10 Hz (100ms). 2s gives a generous margin
 	// for USB CDC where the only real failure mode is physical disconnect.
 	SimpleUSBFailureTimeout = 2 * time.Second
 

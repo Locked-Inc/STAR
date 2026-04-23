@@ -304,7 +304,7 @@
  *       tx_thread_sleep(100);  // 1 second backoff
  *     }
  *
- *     // Sleep 10 ticks (10 ms @ 1 kHz tick rate)
+ *     // Sleep 10 ticks (100 ms @ 100 Hz tick rate)
  *     tx_thread_sleep(10);
  *   }
  * }
@@ -1453,7 +1453,7 @@ rx_err_t rx_comm_manager_deinit(rx_comm_manager_t* mgr)
  *
  *     // Timeout is normal - just means no data available
  *
- *     // Sleep 10 ticks (10 ms @ 1 kHz tick rate = 100 Hz polling)
+ *     // Sleep 10 ticks (100 ms @ 100 Hz tick rate = 10 Hz polling)
  *     tx_thread_sleep(10);
  *   }
  * }

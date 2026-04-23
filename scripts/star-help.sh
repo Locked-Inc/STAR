@@ -54,7 +54,7 @@ cmd "ros2 run star_spi_bridge star_spi_bridge_main"       "IMU publisher @ 100 H
 cmd "ros2 run star_gateway_bridge star_gateway_bridge_main" "telemetry bridge @ 10 Hz"
 
 hdr "SUPPORT PROCESSES"
-cmd "virtual_rx72n"                             "motor-controller sim (when BBB not plugged)"
+cmd "virtual_rx72n"                             "motor-controller sim (when RX72N not plugged)"
 cmd "WS_STRICT_ORIGIN=false star-gateway"       "gateway on :8080 (CORS open for Vite)"
 cmd "cd star-ui && npm run dev"                 "UI dev server on :5173"
 cmd "rviz2 -d .../slam_lidar.rviz"              "visualization"
@@ -69,7 +69,6 @@ hdr "LOCATIONS"
 note "repo:        /workspaces/STAR"
 note "ROS2 ws:     /workspaces/STAR/star-ros2"
 note "scripts:     /workspaces/STAR/scripts"
-note "BBB ssh:     ssh debian@192.168.7.2   (pw: StarBBB2026!)"
 
 printf "\n${D}  banner:    ~/.star-banner.sh${R}\n"
 printf "${D}  this help: %s${R}\n\n" "$0"

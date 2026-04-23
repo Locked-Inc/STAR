@@ -14,9 +14,8 @@
 using star_spi_bridge::SpiMessageConverter;
 
 // Test robot geometry. Mirrors the production defaults in
-// star_spi_driver_node.cpp and the BBB hardware_config.h so test
-// expected values (e.g. 2*pi*r per revolution) remain in sync with
-// what the production node would compute.
+// star_spi_driver_node.cpp so test expected values (e.g. 2*pi*r per
+// revolution) remain in sync with what the production node computes.
 constexpr double kTestTrackWidthM = 0.356;          // left-right wheel center-to-center [m]
 constexpr double kTestWheelRadiusM = 0.072;         // rolling radius [m]
 constexpr int kTestEncoderTicksPerRev = 11599;      // 341 PPR x 34.02:1 gearbox

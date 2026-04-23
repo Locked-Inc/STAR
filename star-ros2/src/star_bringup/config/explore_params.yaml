@@ -17,8 +17,16 @@ explore:
     # Publish frontier markers to /explore/frontiers (visualise in RViz)
     visualize: true
 
-    # How often to re-evaluate frontiers and send new Nav2 goal (Hz)
-    planner_frequency: 0.5
+    # How often to re-evaluate frontiers and send new Nav2 goal (Hz).
+    # At 0.5 Hz (every 2 s) we were canceling + re-sending goals faster than
+    # the CPU-bound Pi5 controller could compute a path and start driving
+    # (controller control loop measures at ~5-7 Hz vs desired 10 Hz).
+    # Result: /cmd_vel_out stayed at zero for the entire explore session --
+    # every goal got canceled before a single velocity command was emitted.
+    # At 0.1 Hz (every 10 s) the controller has a full drive cycle between
+    # frontier re-evaluations. Once we replace the damaged motors (BR dead,
+    # BL half-speed) the CPU load should drop and this can come back up.
+    planner_frequency: 0.1
 
     # Give up on a frontier after this many seconds of no progress
     progress_timeout: 30.0
@@ -32,4 +40,4 @@ explore:
     transform_tolerance: 0.3
 
     # Minimum frontier edge length in meters -- ignore tiny gaps
-    min_frontier_size: 0.75
+    min_frontier_size: 0.20  # lowered from 0.75 — pick up small unexplored pockets

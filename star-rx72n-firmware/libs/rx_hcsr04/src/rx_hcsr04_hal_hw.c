@@ -430,7 +430,6 @@
 #include "rx72n_clock.h"
 #include "rx72n_cmt_regs.h"
 #include "rx72n_system_regs.h"
-#include "rx_check.h"
 #include "rx_hcsr04_hal.h"
 #include "rx_log.h"
 #include "tx_api.h"
@@ -826,8 +825,8 @@ rx_err_t hcsr04_hal_gpio_deinit(const rx_port_pin_t pin)
  *
  * **Clock Tree:**
  * ```
- * EXTAL (16 MHz crystal)
- *   -> PLL (x15) = 240 MHz (ICLK)
+ * EXTAL (24 MHz crystal)
+ *   -> PLL (x10) = 240 MHz (ICLK)
  *   -> Divider (/4) = 60 MHz (PCLKB)
  *   -> CMT2 divider (/8) = 7.5 MHz (CMT2 clock)
  * ```

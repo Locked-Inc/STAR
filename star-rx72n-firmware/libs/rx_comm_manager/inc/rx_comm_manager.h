@@ -534,7 +534,7 @@ typedef enum : uint8_t {
    * response / telemetry frames AND k_frame_type_log_message frames with the
    * RX72N runtime log stream, all multiplexed on the same byte stream.
    *
-   * On the Pi5 the bridge enumerates as /dev/ttyUSB* at 921600 baud.
+   * On the Pi5 the bridge enumerates as /dev/ttyACM0 at 115200 baud (CY7C65213 is a CDC-ACM class device; see k_uart_default_baudrate in libs/rx_hal/src/uart.c).
    *
    * @par Hardware: SCI9 (PB7 / TXD9, PB6 / RXD9) + CY7C65213 bridge IC
    * @par Value: 0

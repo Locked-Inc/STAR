@@ -32,8 +32,6 @@ require_host_setup() {
   local rule_file=/etc/udev/rules.d/70-star-usb-no-autosuspend.rules
   if [[ ! -f "$rule_file" ]]; then
     issues+=("USB autosuspend udev rule missing ($rule_file)")
-  elif ! grep -q '1d6b.*0104.*power/control' "$rule_file" 2>/dev/null; then
-    issues+=("USB autosuspend udev rule present but BBB entry looks wrong ($rule_file)")
   fi
   # Pi5 has a single cpufreq policy (policy0) covering all 4 cores, but loop
   # over every policy so this also works on multi-policy hosts.
@@ -233,46 +231,11 @@ ros2 daemon start 2>/dev/null || true
 
 # -- Phase 2: hardware auto-detection -----------------------------------------
 DEV_MODE=false  # default; overridden below
-BBB_MODE=false  # BeagleBone Blue over USB CDC
-BBB_DEV=""      # /dev/ttyACMN path discovered by VID:PID scan
 HAS_LIDAR=false
 PROBE_PID=""
 SPI_BRIDGE_PID="" # set if probe succeeds and we keep the process
 
-# BBB connection parameters (override with env vars if needed)
-BBB_HOST="${BBB_HOST:-192.168.7.2}"
-BBB_USER="${BBB_USER:-debian}"
-BBB_PASS="${BBB_PASS:-StarBBB2026!}"
-BBB_FW_PATH="${BBB_FW_PATH:-/home/debian/star-beaglebone-blue}"
-
-# ------------------------------------------------------------------
-# Detect BeagleBone Blue by USB VID:PID (1d6b:0104) across all
-# ttyACM* devices.  After a disconnect/reconnect the kernel may
-# assign a different minor number (ttyACM0 -> ttyACM1), so we scan
-# every ttyACM* entry in sysfs rather than assuming a fixed name.
-#
-# sysfs layout:
-#   /sys/class/tty/ttyACMN/device  -> symlink to USB interface dir
-#   readlink -f resolves it to: .../2-1:1.0  (USB interface)
-#   dirname gives:               .../2-1      (USB device, has idVendor)
-# ------------------------------------------------------------------
-for _tty_link in /sys/class/tty/ttyACM*/device; do
-  [[ -e "$_tty_link" ]] || continue
-  _iface_dir=$(readlink -f "$_tty_link" 2>/dev/null) || continue
-  _usb_dir=$(dirname "$_iface_dir")
-  _vid=$(cat "$_usb_dir/idVendor" 2>/dev/null | tr -d '[:space:]')
-  _pid=$(cat "$_usb_dir/idProduct" 2>/dev/null | tr -d '[:space:]')
-  if [[ "$_vid" == "1d6b" && "$_pid" == "0104" ]]; then
-    BBB_DEV="/dev/$(basename "$(dirname "$_tty_link")")"
-    BBB_MODE=true
-    say "BeagleBone Blue detected at $BBB_DEV (VID:PID 1d6b:0104)"
-    break
-  fi
-done
-
-if [[ "$BBB_MODE" == "true" ]]; then
-  say "BBB mode: USB CDC motor controller (skipping RX72N/SPI)"
-elif [[ "${STAR_SIMULATION_MODE:-}" == "true" ]]; then
+if [[ "${STAR_SIMULATION_MODE:-}" == "true" ]]; then
   say "STAR_SIMULATION_MODE=true -> forcing DEV mode"
   DEV_MODE=true
 elif [[ "${STAR_SIMULATION_MODE:-}" == "false" ]]; then
@@ -322,10 +285,7 @@ else
 fi
 
 # -- Detection banner ----------------------------------------------------------
-if [[ "$BBB_MODE" == "true" ]]; then
-  MODE_LABEL="BBB MODE  (BeagleBone Blue USB)"
-  MC_LABEL="BeagleBone Blue ($BBB_DEV -- USB CDC only, no SPI)"
-elif [[ "$DEV_MODE" == "true" ]]; then
+if [[ "$DEV_MODE" == "true" ]]; then
   MODE_LABEL="DEV MODE  (virtual RX72N)"
   MC_LABEL="virtual (no hardware detected)"
 else
@@ -371,48 +331,6 @@ PID_GWBRIDGE=""
 PID_UI=""
 PID_RVIZ=""
 PID_FOXGLOVE=""
-
-# -- Step 0: BBB firmware (BBB mode only) --------------------------------------
-PID_BBB_FW=""
-if [[ "$BBB_MODE" == "true" ]]; then
-  say "Starting BBB firmware via SSH ($BBB_USER@$BBB_HOST)..."
-  # Kill any existing firmware, then start fresh
-  sshpass -p "$BBB_PASS" ssh -o StrictHostKeyChecking=no "$BBB_USER@$BBB_HOST" \
-    "echo '$BBB_PASS' | sudo -S killall -9 star-beaglebone-blue 2>/dev/null; \
-         sleep 1; \
-         echo '$BBB_PASS' | sudo -S nohup $BBB_FW_PATH > /tmp/firmware.log 2>&1 &" \
-    >"$LOG_DIR/bbb_ssh.log" 2>&1
-  sleep 3
-  # Verify firmware is running
-  if sshpass -p "$BBB_PASS" ssh -o StrictHostKeyChecking=no "$BBB_USER@$BBB_HOST" \
-    "pgrep -f star-beaglebone-blue >/dev/null 2>&1"; then
-    say "BBB firmware running on $BBB_HOST"
-    # Wait for the USB CDC port to settle after firmware opens /dev/ttyGS0.
-    # Re-scan for the BBB device in case the minor number changed after
-    # firmware init (the kernel may re-enumerate the CDC ACM interface).
-    say "Waiting for USB CDC to stabilize..."
-    for _i in $(seq 1 10); do
-      # Re-detect BBB_DEV in case minor changed
-      for _tl in /sys/class/tty/ttyACM*/device; do
-        [[ -e "$_tl" ]] || continue
-        _id=$(readlink -f "$_tl" 2>/dev/null) || continue
-        _v=$(cat "$(dirname "$_id")/idVendor" 2>/dev/null | tr -d '[:space:]')
-        _p=$(cat "$(dirname "$_id")/idProduct" 2>/dev/null | tr -d '[:space:]')
-        if [[ "$_v" == "1d6b" && "$_p" == "0104" ]]; then
-          BBB_DEV="/dev/$(basename "$(dirname "$_tl")")"
-          break
-        fi
-      done
-      if python3 -c "import serial; s=serial.Serial('${BBB_DEV}',timeout=0.1); s.close()" 2>/dev/null; then
-        say "USB CDC ready at $BBB_DEV"
-        break
-      fi
-      sleep 1
-    done
-  else
-    warn "BBB firmware may have failed -- check $BBB_HOST:/tmp/firmware.log"
-  fi
-fi
 
 # -- Step 1: virtual_rx72n (DEV mode only) ------------------------------------
 if [[ "$DEV_MODE" == "true" ]]; then
@@ -465,12 +383,10 @@ if [[ "$HAS_LIDAR" == "true" ]]; then
   sudo chmod a+rw "$LIDAR_DEV" 2>/dev/null || true
 fi
 
-# -- Step 4: star_spi_bridge (skip in BBB mode) --------------------------------
+# -- Step 4: star_spi_bridge --------------------------------------------------
 SPI_BRIDGE_LAUNCH="$STAR_DIR/star-ros2/src/star_spi_bridge/launch/star_spi_bridge.launch.py"
 
-if [[ "$BBB_MODE" == "true" ]]; then
-  say "Skipping spi_bridge (BBB uses USB CDC via gateway)"
-elif [[ "$DEV_MODE" == "false" && -n "$SPI_BRIDGE_PID" ]]; then
+if [[ "$DEV_MODE" == "false" && -n "$SPI_BRIDGE_PID" ]]; then
   say "spi_bridge already running from probe (PID $SPI_BRIDGE_PID)"
   SPI_BRIDGE_PID="$SPI_BRIDGE_PID"
 else
@@ -509,12 +425,6 @@ SLAM_LAUNCH="$STAR_DIR/star-ros2/src/star_bringup/launch/slam.launch.py"
 if [[ "$HAS_LIDAR" == "true" ]]; then
   say "Starting SLAM stack (slam.launch.py + foxglove + gateway_bridge + stereo)..."
   SLAM_ARGS="use_nav2:=false use_foxglove:=true"
-  if [[ "$BBB_MODE" == "true" ]]; then
-    SLAM_ARGS="$SLAM_ARGS use_bbb:=true"
-    # EKF enabled: BBB publishes /odom/unfiltered (wheel encoders) and
-    # /imu/data (gyro rate). robot_localization fuses both and publishes
-    # the real odom->base_link TF. No fake static TF needed.
-  fi
   if [[ "$DEV_MODE" == "true" ]]; then
     SLAM_ARGS="$SLAM_ARGS use_ekf:=false"
   fi
@@ -590,14 +500,8 @@ if [[ "$HAS_LIDAR" == "true" ]]; then
   PID_GWBRIDGE=""
 else
   say "Starting star_gateway_bridge_main (standalone)..."
-  if [[ "$BBB_MODE" == "true" ]]; then
-    ros2 run star_gateway_bridge star_gateway_bridge_main \
-      --ros-args -p use_bbb_telemetry:=true \
-      >"$LOG_DIR/gw_bridge.log" 2>&1 &
-  else
-    ros2 run star_gateway_bridge star_gateway_bridge_main \
-      >"$LOG_DIR/gw_bridge.log" 2>&1 &
-  fi
+  ros2 run star_gateway_bridge star_gateway_bridge_main \
+    >"$LOG_DIR/gw_bridge.log" 2>&1 &
   PID_GWBRIDGE=$!
   sleep 3
   say "gateway_bridge running (PID $PID_GWBRIDGE)"
@@ -661,9 +565,6 @@ echo -e "${BOLD}${CYAN}======================================================${N
 printf "${BOLD}${CYAN}  STAR Robot -- %s   [%s]${NC}\n" "$TIMESTAMP" "$MODE_LABEL"
 echo -e "${BOLD}${CYAN}======================================================${NC}"
 
-if [[ "$BBB_MODE" == "true" ]]; then
-  printf "  %-18s %s  CDC: %s\n" "bbb_firmware" "$BBB_HOST" "$BBB_DEV"
-fi
 if [[ "$DEV_MODE" == "true" && -n "$PID_VRXN" ]]; then
   printf "  %-18s PID %s\n" "virtual_rx72n" "$PID_VRXN"
 fi
@@ -671,9 +572,7 @@ printf "  %-18s PID %s   gRPC :50051   WS :8080\n" "star-gateway" "$PID_GW"
 if [[ "$DEV_MODE" == "true" && -n "$PID_FAKEODOM" ]]; then
   printf "  %-18s PID %s   odom->base_link (static)\n" "fake_odom" "$PID_FAKEODOM"
 fi
-if [[ "$BBB_MODE" != "true" ]]; then
-  printf "  %-18s PID %s\n" "spi_bridge" "${SPI_BRIDGE_PID:-unknown}"
-fi
+printf "  %-18s PID %s\n" "spi_bridge" "${SPI_BRIDGE_PID:-unknown}"
 if [[ -n "$PID_SLAM" ]]; then
   printf "  %-18s PID %s   /scan @ 10 Hz + stereo (when connected)\n" "slam" "$PID_SLAM"
 fi

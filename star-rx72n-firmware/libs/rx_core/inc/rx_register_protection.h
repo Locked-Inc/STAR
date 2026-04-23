@@ -158,7 +158,7 @@
  *     SYSTEM.PRCR.WORD = k_rx_prcr_unlock_prc0_prc1;
  *
  *     // Configure PLL (protected by PRC0)
- *     SYSTEM.PLLCR.WORD = 0x2700;      // PLL multiplier x40
+ *     SYSTEM.PLLCR.WORD = 0x1300;      // PLL multiplier x10 (STAR: 24 MHz * 10 = 240 MHz)
  *     SYSTEM.PLLCR2.BYTE = 0x00;       // Enable PLL
  *
  *     // Wait for PLL stabilization
@@ -409,7 +409,7 @@ typedef enum : uint16_t {
    *     SYSTEM.PRCR.WORD = k_rx_prcr_unlock_prc0_prc1;
    *
    *     // Configure PLL (PRC0 protected)
-   *     SYSTEM.PLLCR.WORD = 0x2700;     // x40 multiplier
+   *     SYSTEM.PLLCR.WORD = 0x1300;     // x10 multiplier (STAR: 24 MHz * 10 = 240 MHz)
    *     SYSTEM.PLLCR2.BYTE = 0x00;      // Enable PLL
    *
    *     // Wait for PLL lock (~2ms)
@@ -417,7 +417,7 @@ typedef enum : uint16_t {
    *
    *     // Switch to PLL (PRC0 protected)
    *     SYSTEM.SCKCR3.WORD = 0x0400;    // Select PLL as system clock
-   *     SYSTEM.SCKCR.LONG = 0x21C21211; // Set clock dividers
+   *     SYSTEM.SCKCR.LONG = 0x20011222; // STAR production dividers: ICK=/1 (240), PCKA=/2 (120), PCKB/C/D/FCK=/4 (60), BCK=/2 (120)
    *
    *     // Enable all peripherals (PRC1 protected)
    *     SYSTEM.MSTPCRA.LONG = 0x00000000;

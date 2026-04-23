@@ -42,11 +42,10 @@ FRAME_BASE_LINK = 'base_link'
 # Default respawn delay (seconds) for nodes configured with respawn=True.
 RESPAWN_DELAY_SEC = 2.0
 
-# Drivetrain kinematics for the BBB skid-steer platform. Source: CAD
-# measurement of the goBILDA Wasteland chassis (2026-04 build) and goBILDA
-# motor datasheet. Mirrored in star_spi_bridge.launch.py and the BBB
-# hardware_config.h to keep producers and consumers in sync; bump all
-# three together if the chassis or motor changes.
+# Drivetrain kinematics for the RX72N-driven skid-steer platform. Source:
+# CAD measurement of the goBILDA Wasteland chassis (2026-04 build) and the
+# goBILDA motor datasheet. Mirrored in star_spi_bridge.launch.py and the
+# RX72N firmware; bump all three together if the chassis or motor changes.
 WHEEL_BASE_M = 0.356            # track width: left-right wheel center-to-center
 WHEEL_RADIUS_M = 0.072          # rolling radius: 144 mm wheel / 2
 ENCODER_TICKS_PER_REV = 11599   # 341 PPR Hall encoder x 34.02:1 gearbox
@@ -69,12 +68,6 @@ def generate_launch_description():
     use_ekf_arg = DeclareLaunchArgument(
         'use_ekf', default_value='true',
         description='Run EKF odometry fusion (disable in dev mode - use static odom TF instead)'
-    )
-
-    use_bbb_arg = DeclareLaunchArgument(
-        'use_bbb', default_value='true',
-        description='Enable BeagleBone Blue telemetry bridging (publishes /odom/unfiltered, '
-                    '/imu/data, /joint_states from BBB via gateway and forwards /cmd_vel to BBB)'
     )
 
     use_foxglove_arg = DeclareLaunchArgument(
@@ -238,30 +231,6 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('use_foxglove')),
     )
 
-    # MVP BYPASS (2026-04-22): the C++ star_gateway_bridge is disabled
-    # while the RX72N ASCII line protocol is stabilized. The replacement
-    # below (star_simple_bridge) talks directly to /dev/ttyACM0 and
-    # publishes /odom/unfiltered for the EKF. Restore this Node to
-    # re-enable the full gRPC gateway path.
-    #
-    # gateway_bridge = Node(
-    #     package='star_gateway_bridge',
-    #     executable='star_gateway_bridge_main',
-    #     name='star_gateway_bridge',
-    #     output='screen',
-    #     parameters=[{
-    #         'gateway_address': 'localhost:50051',
-    #         'telemetry_rate_hz': 10.0,
-    #         'teleop_rate_hz': 50.0,
-    #         'use_bbb_telemetry': LaunchConfiguration('use_bbb'),
-    #         'wheel_base': WHEEL_BASE_M,
-    #         'wheel_radius': WHEEL_RADIUS_M,
-    #         'ticks_per_rev': ENCODER_TICKS_PER_REV,
-    #     }],
-    #     respawn=True,
-    #     respawn_delay=RESPAWN_DELAY_SEC,
-    # )
-
     # SLAM MVP ASCII bridge: subscribes /cmd_vel, publishes
     # /odom/unfiltered, talks the "V ..." / "E ..." line protocol to
     # the RX72N over /dev/ttyACM0.
@@ -278,7 +247,6 @@ def generate_launch_description():
         serial_port_arg,
         use_nav2_arg,
         use_ekf_arg,
-        use_bbb_arg,
         use_foxglove_arg,
         use_stereo_arg,
         use_perception_arg,

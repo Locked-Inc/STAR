@@ -249,34 +249,6 @@ reviews:
         - Breaking changes are ENCOURAGED if they improve code quality
         - FORBIDDEN: Function aliases, deprecation macros, compatibility shims
 
-    - path: "star-beaglebone-blue/**/*.{c,h}"
-      instructions: |
-        Review BeagleBone Blue firmware code with STRICT C23 compliance checking.
-        Same rules as star-rx72n-firmware apply (C23 typed enums, NASA Power of 10,
-        SOLID, inclusive terminology, zero magic numbers, comprehensive Doxygen).
-
-        BeagleBone Blue-Specific Requirements:
-        - Uses POSIX pthreads (NOT RTOS) with clock_nanosleep for deterministic timing
-        - All librobotcontrol return values must be checked or cast to (void)
-        - Signal handlers must only call async-signal-safe functions (no mutex)
-        - Shared data accessed ONLY through mutex-protected bb_shared_data_*() API
-        - bb_ prefix on all public symbols (mirrors rx_ and stm32_ conventions)
-        - Zero dynamic allocation in task code (static buffers only)
-        - Frame protocol must be bit-compatible with rx_frame (same SYNC, CRC, types)
-
-        C23 Language Standard (MANDATORY):
-        - REQUIRED: Typed enums with explicit underlying types: `typedef enum : uint8_t { ... } name_t;`
-        - REQUIRED: `#pragma once` for ALL header files
-        - FORBIDDEN: Traditional include guards, untyped enums, magic numbers
-
-        NASA Power of 10 Rules (CRITICAL - REJECT violations):
-        - Rule 1: No goto, setjmp/longjmp, or recursion
-        - Rule 2: All loops must have statically provable bounds
-        - Rule 3: Zero malloc/free
-        - Rule 5: Minimum 2 assertions per function (pre/post conditions)
-        - Rule 7: All return values checked or (void) cast
-        - Rule 8: Enums for ALL integer constants
-
     - path: "lib/**/*.{c,h}"
       instructions: |
         Review C firmware code with STRICT C23 compliance checking:
@@ -863,7 +835,6 @@ reviews:
     - "star-gateway/**"
     - "star-rx72n-firmware/**"
     - "star-stm32-firmware/**"
-    - "star-beaglebone-blue/**"
     - "lib/**"
     - "src/**"
     - "tests/**"

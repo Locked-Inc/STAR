@@ -174,7 +174,7 @@
  *   start [label="internal_handle_command_frame()", fillcolor=lightgreen, style=filled];
  *   try_velocity [label="rx_nanopb_decode_velocity_request()", shape=diamond];
  *   velocity_ok [label="SetVelocityRequest decoded", fillcolor=lightblue, style=filled];
- *   build_cmd [label="Build motor_command_t\nFL, FR, BL, BR velocities"];
+ *   build_cmd [label="Build motor_command_t\nFL, FR, BR, BL velocities"];
  *   set_cmd [label="shared_data_set_motor_command()"];
  *   return_velocity [label="return (success)", fillcolor=lightgreen, style=filled];
  *

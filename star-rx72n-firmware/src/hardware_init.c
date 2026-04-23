@@ -29,7 +29,7 @@
  *    - Sensor chip selects (SPI CS pins)
  *
  * 3. **Timers** (~10 us) **IMPLEMENTED**
- *    - CMT0 for ThreadX tick (1 kHz)
+ *    - CMT0 for ThreadX tick (100 Hz)
  *    - GPTW for PWM generation (motor control)
  *
  * 4. **UART debug** - MOVED TO MAIN()
@@ -56,7 +56,7 @@
  *   Entry [label="hardware_init()", shape=ellipse];
  *   Precond [label="Precondition Check\nSCKCR3 != reset state"];
  *   GPIO [label="GPIO Init\n(Planned)", style=dashed];
- *   Timers [label="Timer Init\nCMT0 @ 1 kHz", style=filled, fillcolor=lightgreen];
+ *   Timers [label="Timer Init\nCMT0 @ 100 Hz", style=filled, fillcolor=lightgreen];
  *   UART [label="UART Debug Init\nSCI9 @ 115200", style=filled, fillcolor=lightgreen];
  *   SPI [label="SPI Init\n(Planned)", style=dashed];
  *   I2C [label="I2C Init\n(Planned)", style=dashed];
@@ -1855,7 +1855,7 @@ const rx_port_pin_t g_pin_host_irq = (rx_port_pin_t)k_pin_host_irq;
  * Configures **seven categories** of peripherals required by the STAR robot application:
  *
  * 1. **GPIO** ([PASS] implemented) - Motor control pins, LEDs, sensor chip selects
- * 2. **Timers** ([PASS] implemented) - CMT0 for ThreadX tick at 1 kHz
+ * 2. **Timers** ([PASS] implemented) - CMT0 for ThreadX tick at 100 Hz
  * 3. **UART** ([PASS] implemented) - SCI9 for debug console at 115200 baud
  * 4. **SPI** ([PASS] implemented) - Host SPI peripheral (RSPI2), sensor bus
  * 5. **I2C** (planned) - IMU, temperature, pressure sensors
@@ -1874,7 +1874,7 @@ const rx_port_pin_t g_pin_host_irq = (rx_port_pin_t)k_pin_host_irq;
  *   HwInit note HwInit [label="Precondition: Check SCKCR3 != reset_state", textcolor="blue"];
  *   HwInit => HwInit [label="RX_ASSERT(clocks initialized)"];
  *   HwInit => Timers [label="timer_init()"];
- *   Timers => Timers [label="Configure CMT0\n1 kHz tick"];
+ *   Timers => Timers [label="Configure CMT0\n100 Hz tick"];
  *   Timers => HwInit [label="k_rx_ok"];
  *   HwInit => UART [label="uart_debug_init()"];
  *   UART => UART [label="Configure SCI9\n115200 baud"];
@@ -1949,7 +1949,7 @@ const rx_port_pin_t g_pin_host_irq = (rx_port_pin_t)k_pin_host_irq;
  * @pre Stack pointer valid (at least 4 KB available in main stack)
  * @pre Memory protection unlocked if required (PRCR register)
  *
- * @post CMT0 configured for ThreadX tick at 1 kHz (timer interrupt enabled)
+ * @post CMT0 configured for ThreadX tick at 100 Hz (timer interrupt enabled)
  * @post SCI9 configured for debug console at 115200 baud (UART TX/RX operational)
  * @post System clocks still operational (SCKCR3 unchanged from precondition)
  * @post Peripherals ready for application use (motor control, sensors, communication)
@@ -2060,7 +2060,7 @@ static rx_err_t internal_init_all_peripherals(void)
   err = rx_poeg_init();
   RX_RETURN_ON_ERROR(err, s_tag, "POEG fault protection init failed");
 
-  /* 3. Timer: CMT0 for ThreadX tick (1 kHz) */
+  /* 3. Timer: CMT0 for ThreadX tick (100 Hz) */
   err = timer_init();
   if (rx_err_is_error(err)) {
     return err;

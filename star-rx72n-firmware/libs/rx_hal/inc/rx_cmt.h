@@ -53,7 +53,7 @@
  *
  * | Channel | Usage | Frequency | Description |
  * |---------|-------|-----------|-------------|
- * | **CMT0** | ThreadX | 1 kHz | System tick (RESERVED) |
+ * | **CMT0** | ThreadX | 100 Hz | System tick (RESERVED) |
  * | **CMT1** | Motor | 100-1000 Hz | Motor control loop |
  * | **CMT2** | Available | User-defined | General purpose |
  * | **CMT3** | Available | User-defined | General purpose |
@@ -196,7 +196,7 @@ extern "C" {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_cmt_channel_0 = 0, /**< CMT0 - Reserved for ThreadX system tick (1 kHz) */
+  k_cmt_channel_0 = 0, /**< CMT0 - Reserved for ThreadX system tick (100 Hz) */
   k_cmt_channel_1 = 1, /**< CMT1 - Motor control loop (user configurable) */
   k_cmt_channel_2 = 2, /**< CMT2 - Available for general use */
   k_cmt_channel_3 = 3, /**< CMT3 - Available for general use */

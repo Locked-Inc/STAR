@@ -107,7 +107,7 @@ typedef enum : uint8_t {
   k_serial_telemetry_period_ticks = 5, /**< 50 Hz emit inside a 100 Hz outer loop */
   k_serial_outer_loop_sleep_ticks = 1, /**< 1 tick = 10 ms -> 100 Hz outer */
   k_serial_boot_delay_ticks = 20,      /**< Match motor_control_task 200 ms start-up delay */
-  k_serial_num_motors = 4,             /**< FL, FR, BL, BR */
+  k_serial_num_motors = 4,             /**< FL, FR, BR, BL */
 } serial_small_constants_t;
 
 /**

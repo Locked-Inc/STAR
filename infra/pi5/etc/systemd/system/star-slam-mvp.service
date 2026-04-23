@@ -1,0 +1,23 @@
+[Unit]
+Description=STAR SLAM MVP stack (supervisor + simple_bridge + LiDAR + SLAM + foxglove)
+Documentation=file:///workspaces/STAR/docs/ARCHITECTURE.md
+After=network-online.target tailscaled.service dev-star\x2dmcu.device
+Wants=network-online.target tailscaled.service
+
+[Service]
+Type=forking
+User=star
+Group=star
+Environment=HOME=/home/star
+Environment=USER=star
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Give USB devices time to enumerate after boot
+ExecStartPre=/bin/sleep 8
+ExecStart=/bin/bash /workspaces/STAR/scripts/slam-mvp.sh start
+ExecStop=/bin/bash /workspaces/STAR/scripts/slam-mvp.sh stop
+# The script backgrounds each node and returns; forking type matches
+RemainAfterExit=yes
+Restart=no
+
+[Install]
+WantedBy=multi-user.target

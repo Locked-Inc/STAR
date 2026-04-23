@@ -4,7 +4,7 @@
  *
  * @details
  * Defines all system clock frequencies for the RX72N microcontroller configured
- * with external 12 MHz crystal and PLL for maximum 240 MHz CPU operation.
+ * with external 24 MHz crystal and PLL x10 for maximum 240 MHz CPU operation.
  * These constants are used throughout the firmware for timing calculations,
  * baud rate generation, PWM frequency configuration, and peripheral initialization.
  *
@@ -18,8 +18,8 @@
  *   rankdir=LR;
  *   node [shape=box, style=rounded];
  *
- *   EXTAL [label="External Crystal\n12 MHz", shape=ellipse, fillcolor=lightyellow, style=filled];
- *   PLL [label="PLL\nx40", fillcolor=lightblue, style=filled];
+ *   EXTAL [label="External Crystal\n24 MHz", shape=ellipse, fillcolor=lightyellow, style=filled];
+ *   PLL [label="PLL\nx10", fillcolor=lightblue, style=filled];
  *   ICLK [label="ICLK\n240 MHz\nCPU", fillcolor=lightgreen, style=filled];
  *   PCLKA [label="PCLKA\n120 MHz\nTimers", fillcolor=lightpink, style=filled];
  *   PCLKB [label="PCLKB\n60 MHz\nUART/SPI", fillcolor=lightpink, style=filled];
@@ -28,14 +28,14 @@
  *   FCLK [label="FCLK\n60 MHz\nFlash", fillcolor=lightcyan, style=filled];
  *   BCLK [label="BCLK\n120 MHz\nExt Bus", fillcolor=lightgray, style=filled];
  *
- *   EXTAL -> PLL [label="12 MHz"];
- *   PLL -> ICLK [label="480 MHz\n/2"];
- *   ICLK -> PCLKA [label="/2"];
- *   ICLK -> PCLKB [label="/4"];
- *   ICLK -> PCLKC [label="/4"];
- *   ICLK -> PCLKD [label="/4"];
- *   ICLK -> FCLK [label="/4"];
- *   ICLK -> BCLK [label="/2"];
+ *   EXTAL -> PLL [label="24 MHz"];
+ *   PLL -> ICLK [label="240 MHz\n/1"];
+ *   PLL -> PCLKA [label="/2"];
+ *   PLL -> PCLKB [label="/4"];
+ *   PLL -> PCLKC [label="/4"];
+ *   PLL -> PCLKD [label="/4"];
+ *   PLL -> FCLK [label="/4"];
+ *   PLL -> BCLK [label="/2"];
  * }
  * @enddot
  *
@@ -56,7 +56,7 @@
  * Clock frequencies are set during boot by `rx_clock_power_init()`:
  *
  * 1. **Main Clock Enable**: MOSCWTCR, MOSCCR, MOFCR registers
- * 2. **PLL Configuration**: PLLCR (x40 multiplier), PLLCR2 (enable)
+ * 2. **PLL Configuration**: PLLCR (x10 multiplier, STC=0x13), PLLCR2 (enable)
  * 3. **Clock Dividers**: SCKCR register sets ICK, PCKA, PCKB, PCKC, PCKD, FCK, BCK dividers
  * 4. **Clock Source Selection**: SCKCR3 selects PLL as system clock
  *
@@ -80,9 +80,9 @@
  *
  * | Requirement | Value | Notes |
  * |-------------|-------|-------|
- * | External Crystal | 12 MHz | +/-50 ppm accuracy required |
- * | PLL Input Range | 8-24 MHz | 12 MHz nominal for STAR project |
- * | PLL Output Range | 200-520 MHz | 480 MHz output (/2 for CPU) |
+ * | External Crystal | 24 MHz | +/-50 ppm accuracy required |
+ * | PLL Input Range | 8-24 MHz | 24 MHz nominal for STAR project |
+ * | PLL Output Range | 200-520 MHz | 240 MHz output (/1 for CPU) |
  * | CPU Max Frequency | 240 MHz | Absolute max per datasheet |
  * | Flash Max Frequency | 60 MHz | Must not exceed! (hardware limit) |
  * | Operating Voltage | 3.3V +/-10% | Required for 240 MHz operation |
@@ -238,11 +238,11 @@ extern "C" {
  * These values are determined by the PLL and clock divider settings in
  * rx_clock_power_init() and are guaranteed to be accurate for timing calculations.
  *
- * **Clock Source**: 12 MHz external crystal -> PLL (x40) -> 480 MHz -> divided per domain
+ * **Clock Source**: 24 MHz external crystal -> PLL (x10) -> 240 MHz -> divided per domain
  *
  * **Frequency Derivation**:
- * - PLL output: 12 MHz x 40 = 480 MHz
- * - ICLK: 480 MHz / 2 = 240 MHz (CPU)
+ * - PLL output: 24 MHz x 10 = 240 MHz
+ * - ICLK: 240 MHz / 1 = 240 MHz (CPU)
  * - PCLKA: 240 MHz / 2 = 120 MHz (high-speed peripherals)
  * - PCLKB/C/D: 240 MHz / 4 = 60 MHz (standard peripherals)
  * - FCLK: 240 MHz / 4 = 60 MHz (flash - max allowed)
@@ -293,9 +293,9 @@ typedef enum : uint32_t {
    * throughput and interrupt latency.
    *
    * **Value**: 240,000,000 Hz (240 MHz)
-   * **Source**: PLL output (480 MHz) divided by 2
+   * **Source**: PLL output (240 MHz) divided by 1
    * **Cycle time**: 4.17 nanoseconds per cycle
-   * **Register**: SYSTEM.SCKCR.ICK (divider = b'0001' = /2 from PLL)
+   * **Register**: SYSTEM.SCKCR.ICK (divider = b'0000' = /1 from PLL)
    *
    * **Performance Metrics** @ 240 MHz:
    * - Single-cycle instructions: 4.17 ns (e.g., MOV, ADD)

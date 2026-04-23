@@ -1,0 +1,28 @@
+# robot_localization EKF stub for v0.
+#
+# Wired only against /imu/data because v0 has no wheel-encoder odometry. Once
+# encoders land in v1, add an odom0 source here and turn on the relevant axes.
+#
+# Reference: docs.ros.org/en/jazzy/p/robot_localization/configuration.html
+
+ekf_filter_node:
+  ros__parameters:
+    frequency: 50.0
+    sensor_timeout: 0.1
+    two_d_mode: true
+    publish_tf: true
+
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_link
+    world_frame: odom
+
+    imu0: /imu/data
+    imu0_config: [false, false, false,    # x, y, z position
+                  false, false, false,    # roll, pitch, yaw
+                  false, false, false,    # vx, vy, vz
+                  false, false, true,     # vroll, vpitch, vyaw  <- gyro Z
+                  true,  true,  false]    # ax, ay, az           <- accel xy
+    imu0_differential: false
+    imu0_relative: false
+    imu0_remove_gravitational_acceleration: true

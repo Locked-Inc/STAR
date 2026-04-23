@@ -1,6 +1,10 @@
 ekf_filter_node:
   ros__parameters:
-    frequency: 30.0
+    # 20 Hz matches the 20 Hz IMU + wheel-odom input rates from simple_bridge.
+    # 30 Hz was a target we couldn't always meet on Pi5 under Nav2 load
+    # ("Failed to meet update rate" warnings) -- dropping to the input rate
+    # gives EKF one step per input batch, no aliasing gain from going faster.
+    frequency: 20.0
     two_d_mode: true
     publish_tf: true
     publish_acceleration: false
@@ -12,10 +16,17 @@ ekf_filter_node:
     world_frame: odom        # pure odometry, no global correction
 
     odom0: /odom/unfiltered
-    odom0_config: [true,  true,  false,   # x, y, z
-                   false, false, true,    # roll, pitch, yaw
-                   true,  false, false,   # vx, vy, vz
-                   false, false, true,    # vroll, vpitch, vyaw
+    # Hardware state (2026-04-23): BR motor+encoder dead (always 0.0 m/s),
+    # BL runs at ~half speed. Skid-steer yaw inferred from the four wheels
+    # is therefore junk -- a pure forward command produces wz ~= -0.23 rad/s
+    # of phantom rotation in wheel-integrated odom (verified on bench).
+    # We fuse ONLY vx: the FL/FR/BL trio gives a usable forward-speed
+    # estimate, and EKF integrates position from velocity internally.
+    # Yaw + yaw rate come entirely from the BNO055 via imu0.
+    odom0_config: [false, false, false,   # x, y, z       -- DO NOT fuse wheel position (asymmetric dead-reckoning)
+                   false, false, false,   # roll, pitch, yaw -- DO NOT fuse wheel yaw (IMU owns it)
+                   true,  false, false,   # vx, vy, vz    -- fuse linear velocity only
+                   false, false, false,   # vroll, vpitch, vyaw -- DO NOT fuse wheel yaw rate (IMU gyro owns it)
                    false, false, false]   # ax, ay, az
     odom0_differential: false
     odom0_relative: false
@@ -23,28 +34,36 @@ ekf_filter_node:
     odom0_pose_rejection_threshold: 5.0
     odom0_twist_rejection_threshold: 5.0
 
-    # TODO(wheels): When wheel encoders provide real odom velocity, consider:
-    #   1. Re-enable yaw orientation (set row 2 col 3 to true) IF DMP mode is
-    #      fixed and the bridge provides a valid quaternion (w != 0)
-    #   2. Keep ax/ay disabled -- raw accel double-integration drifts to infinity
-    #   3. The odom0_config already fuses x, y, yaw, vx from encoder odom
+    # IMU on /imu/data is a BNO055 in NDOF mode wired to the RX72N, published
+    # by star_simple_bridge after ASCII-decoding the "I ..." telemetry frame
+    # (simple_bridge_node.py:1055-1121). NDOF runs a 9-axis on-chip EKF, so
+    # orientation is a true unit quaternion (|q|=1.0000 verified on bench),
+    # and linear_acceleration is already gravity-compensated.
     #
-    # IMU from BBB (MPU-9250 polling mode): fuse gyro yaw rate ONLY.
-    # BBB polling mode provides raw accel + gyro but no fused orientation.
-    # The bridge sets orientation_covariance[0]=-1 (REP-145) when no quaternion
-    # is available, so robot_localization ignores orientation automatically.
+    # What we fuse:
+    #   - Yaw orientation (absolute, mag-referenced) from the BNO055 quaternion.
+    #     Roll/pitch are disabled because two_d_mode=true already pins them.
+    #   - Yaw rate from the gyro for high-frequency motion during scan gaps.
+    # What we do NOT fuse:
+    #   - Accel: NDOF linear accel is already grav-comped, and double-
+    #     integrating any accel into position drifts to infinity in 2D. The
+    #     encoder odom on odom0 carries position; IMU only contributes heading.
     imu0: /imu/data
-    imu0_config: [false, false, false,   # x, y, z (position -- not from IMU)
-                  false, false, false,   # roll, pitch, yaw -- no orientation from BBB
-                  false, false, false,   # vx, vy, vz
-                  false, false, true,    # vroll, vpitch, vyaw -- yaw rate from gyro
-                  false, false, false]   # ax, ay, az -- DO NOT fuse (causes drift)
+    imu0_config: [false, false, false,   # x, y, z       -- not from IMU
+                  false, false, true,    # roll, pitch, yaw -- fuse YAW from BNO055 quaternion
+                  false, false, false,   # vx, vy, vz    -- not from IMU
+                  false, false, true,    # vroll, vpitch, vyaw -- fuse yaw rate from gyro
+                  false, false, false]   # ax, ay, az    -- NDOF linear accel, do not fuse
     imu0_differential: false
     imu0_relative: false
-    imu0_remove_gravitational_acceleration: true
+    # BNO055 NDOF output is already gravity-compensated; leaving this false
+    # prevents robot_localization from subtracting gravity a second time.
+    imu0_remove_gravitational_acceleration: false
     imu0_queue_size: 10
-    imu0_pose_rejection_threshold: 0.8
-    imu0_twist_rejection_threshold: 0.8
+    # Loosened from 0.8 to 3.0: BNO055 magnetic-heading can step ~20 deg
+    # near metal/motors, and rejection at 0.8 rad throws out valid updates.
+    imu0_pose_rejection_threshold: 3.0
+    imu0_twist_rejection_threshold: 3.0
 
     # 15x15 diagonal; state order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
     # Observed states: x=0.1, y=0.1, yaw=0.1 (+/-0.3 m / +/-17deg); vx=0.01, vyaw=0.01

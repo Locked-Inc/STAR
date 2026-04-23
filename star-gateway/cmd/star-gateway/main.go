@@ -12,36 +12,13 @@ import (
 )
 
 // BeagleBone Blue USB gadget VID:PID (Linux Foundation Multifunction Composite Gadget).
-const (
-	bbbUSBVID uint16 = 0x1d6b
-	bbbUSBPID uint16 = 0x0104
-)
-
 // Cypress CY7C65213 USB-UART bridge VID:PID -- the chip on the STAR PCB
-// that connects the RX72N's SCI9 to the Pi5 via USB CDC-ACM. Same wire
-// protocol as the BBB path (CRC-32 framed nanopb), just a different
-// physical transport.
+// that connects the RX72N's SCI9 to the Pi5 via USB CDC-ACM. CRC-32
+// framed nanopb wire protocol.
 const (
 	rx72nCypressVID uint16 = 0x04B4
 	rx72nCypressPID uint16 = 0x0003
 )
-
-// findBBBDevice scans all ttyACM* devices in Linux sysfs for a BeagleBone Blue
-// USB gadget (VID:PID 1d6b:0104) and returns its /dev path (e.g., /dev/ttyACM1).
-//
-// Using VID:PID-based discovery means the correct device is found regardless of
-// which ttyACMN minor number the kernel assigned. After a disconnect/reconnect
-// cycle the minor may change (e.g., ttyACM0 -> ttyACM1); this function handles
-// that transparently.
-//
-// Returns empty string if the BBB is not connected.
-func findBBBDevice() string {
-	device, err := transport.FindCDCDevice(bbbUSBVID, bbbUSBPID)
-	if err != nil {
-		return ""
-	}
-	return device
-}
 
 // findRX72NDevice scans for the STAR PCB's Cypress USB-UART bridge that fronts
 // the RX72N over SCI9. Returns the /dev path or empty string if not present.
@@ -78,22 +55,14 @@ func main() {
 		config.TransportMode = mode
 	}
 
-	// Auto-detect motor controller transport: prefer BBB (USB CDC composite),
-	// fall back to RX72N's Cypress USB-UART bridge. Both speak the same
-	// CRC-32 framed nanopb protocol over a CDC-ACM serial node.
+	// Auto-detect motor controller transport: scan for RX72N's Cypress USB-UART
+	// bridge. CRC-32 framed nanopb protocol over a CDC-ACM serial node.
 	// STAR_CDC_DEVICE env var overrides everything: explicit /dev/ttyXXX path.
 	if config.TransportMode == manager.ModeAuto || simpleFlag {
 		if dev := os.Getenv("STAR_CDC_DEVICE"); dev != "" {
 			config.TransportMode = manager.ModeSimpleUSB
 			config.CDCDevice = dev
 			log.Printf("STAR_CDC_DEVICE override: using %s in simple-usb mode", dev)
-		} else if device := findBBBDevice(); device != "" {
-			config.TransportMode = manager.ModeSimpleUSB
-			config.CDCDevice = device
-			config.USBVID = bbbUSBVID
-			config.USBPID = bbbUSBPID
-			log.Printf("BeagleBone Blue detected at %s (VID:PID %04x:%04x), using simple-usb mode",
-				device, bbbUSBVID, bbbUSBPID)
 		} else if device := findRX72NDevice(); device != "" {
 			config.TransportMode = manager.ModeSimpleUSB
 			config.CDCDevice = device
@@ -102,7 +71,7 @@ func main() {
 			log.Printf("RX72N (Cypress USB-UART) detected at %s (VID:PID %04x:%04x), using simple-usb mode",
 				device, rx72nCypressVID, rx72nCypressPID)
 		} else if simpleFlag {
-			log.Printf("WARNING: --simple flag set but no BBB or RX72N CDC detected")
+			log.Printf("WARNING: --simple flag set but no RX72N CDC detected")
 		}
 	}
 

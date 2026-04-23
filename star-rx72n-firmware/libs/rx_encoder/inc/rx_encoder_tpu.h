@@ -105,11 +105,13 @@ extern "C" {
  * Configuration parameters for initializing a quadrature encoder on a TPU
  * channel. Mirrors rx_encoder_config_t but uses TPU channel identifiers.
  *
- * @par STAR Project Configuration:
+ * @par STAR Project Configuration (back-wheel Hall harness is cross-wired, so
+ *      motor 2 = BR reads TPU2 and motor 3 = BL reads TPU1; see
+ *      src/tasks/motor_control_task.c:2214-2216):
  * | Motor   | Channel          | counts_per_rev | invert |
  * |---------|------------------|----------------|--------|
- * | 2 (RL)  | k_tpu_channel_1  | 1364           | false  |
- * | 3 (RR)  | k_tpu_channel_2  | 1364           | true   |
+ * | 2 (BR)  | k_tpu_channel_2  | 1364           | false  |
+ * | 3 (BL)  | k_tpu_channel_1  | 1364           | true   |
  *
  * @invariant counts_per_rev > 0
  * @invariant channel must be 1, 2, 4, or 5
