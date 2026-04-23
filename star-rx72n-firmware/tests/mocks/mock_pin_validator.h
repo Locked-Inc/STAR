@@ -56,10 +56,10 @@
  *rx_pin_interface_t iface;
  *mock_pin_validator_get_interface(&iface, &mock);
  **                                                        // 2. Pass to code under test
-  *spi_driver_init(&spi_drv, &iface);                      // Will reserve MOSI, MISO, SCK pins
+  *spi_driver_init(&spi_drv, &iface);                      // Will reserve COPI, CIPO, SCK pins
  **                                                        // 3. Verify pins were reserved
-  *assert(mock_pin_validator_was_reserved(&mock, 0xA, 5)); // MOSI
- *assert(mock_pin_validator_was_reserved(&mock, 0xA, 6));  // MISO
+  *assert(mock_pin_validator_was_reserved(&mock, 0xA, 5)); // COPI
+ *assert(mock_pin_validator_was_reserved(&mock, 0xA, 6));  // CIPO
  *assert(mock_pin_validator_was_reserved(&mock, 0xA, 7));  // SCK
  **                                                        // 4. Check reservation count
   *uint32_t count = mock_pin_validator_get_reserve_call_count(&mock);

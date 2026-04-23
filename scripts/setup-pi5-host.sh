@@ -21,7 +21,7 @@ STAR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 say() { echo "[setup-pi5-host] $*"; }
 
 # -----------------------------------------------------------------------------
-# 1. USB autosuspend: force ON (power_save OFF) for BBB and RPLiDAR.
+# 1. USB autosuspend: force ON (power_save OFF) for RX72N USB-UART + RPLiDAR.
 # -----------------------------------------------------------------------------
 say "Installing /etc/udev/rules.d/70-star-usb-no-autosuspend.rules"
 cat > /etc/udev/rules.d/70-star-usb-no-autosuspend.rules <<'RULE'

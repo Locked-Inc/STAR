@@ -49,7 +49,7 @@
  * motor_control_task_get_motors().
  *
  * @invariant k_motor_count_none == 0 (sentinel value, never a valid motor count)
- * @invariant k_motor_count == 4 (one entry per wheel: FL, FR, BL, BR)
+ * @invariant k_motor_count == 4 (one entry per wheel: FL, FR, BR, BL)
  *
  * @code
  * uint8_t motor_count = k_motor_count_none;
@@ -67,7 +67,7 @@
 typedef enum : uint8_t {
   k_motor_count_none =
     0, /**< Zero motors available -- motor_control_task_create() has not yet been called */
-  k_motor_count = 4U, /**< Number of motors: FL, FR, BL, BR */
+  k_motor_count = 4U, /**< Number of motors: FL, FR, BR, BL */
 } motor_count_t;
 
 /**

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>star_serial_bridge</name>
+  <version>0.0.0</version>
+  <description>
+    STAR sandbox: RX72N (fit-module-untested firmware) <-> ROS2 Jazzy serial bridge.
+    Publishes /imu/data, subscribes /cmd_vel, talks the binary protocol from
+    fit-module-untested/src/serial_proto.h over /dev/ttyACM0.
+  </description>
+  <maintainer email="cesarmagana23@gmail.com">STAR maintainers</maintainer>
+  <license>MIT</license>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>python3-serial</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

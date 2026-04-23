@@ -1,0 +1,14 @@
+vendor/
+build/
+build-*/
+__pycache__/
+*.pyc
+*.elf
+*.mot
+*.hex
+*.map
+*.o
+*.d
+install/
+log/
+.pytest_cache/

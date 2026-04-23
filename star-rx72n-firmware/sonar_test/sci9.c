@@ -1,6 +1,6 @@
 /**
  * @file sci9_debug.c
- * @brief Minimal polled-mode SCI9 (TXD9 = PB7, RXD9 = PB6) debug UART for usb_test.
+ * @brief Minimal polled-mode SCI9 (TXD9 = PB7, RXD9 = PB6) debug UART for sonar_test.
  *
  * @details
  * The STAR board routes SCI9 to the on-board CY7C65213 USB-to-UART bridge
@@ -12,8 +12,10 @@
  * Uses the rx_hal struct accessors (mpc(), portb(), system_regs(), prcr_reg())
  * so the addresses are all compiler-verified via static_assert.
  *
- * Baud = 115200 at PCLKB = 60 MHz:
- *   BRR = (PCLKB / (32 * baud)) - 1 = 60000000 / 3686400 - 1 = ~15
+ * Baud = 115200. SCI9 is in the SCI7-11 group that uses PCLKA (120 MHz),
+ * not PCLKB. At CKS=0, ABCS=0:
+ *   BRR = (PCLKA / (32 * baud)) - 1 = 120000000 / 3686400 - 1 = 31.55 -> 31
+ *   Actual baud = PCLKA / (32 * (BRR+1)) = 117187 Hz (+1.7% vs 115200, in tolerance).
  *
  * SPDX-License-Identifier: MIT
  * @copyright Copyright (c) 2026 Locked Inc.
@@ -42,7 +44,7 @@ typedef enum : uint8_t {
     k_pwpr_unlock_b0   = 0x00U,
     k_pwpr_pfswe       = 0x40U,
     k_pwpr_b0wi        = 0x80U,
-    k_brr_115200_60mhz = 31U, /* PCKB is actually 120 MHz on STAR config; BRR=31 gives correct 115200 */
+    k_brr_115200       = 31U, /* SCI9 uses PCLKA=120 MHz (SCI7-11 group); BRR=31 @ CKS=0 ABCS=0 -> ~117 kbaud (1.7% over 115200) */
     k_smr_8n1_async    = 0x00U,
     k_scr_te_only      = 0x20U, /**< CKE=00, MPIE=0, RIE=0, TE=1, RE=0 */
     k_scr_txrx_enabled = 0x30U, /**< CKE=00, MPIE=0, RIE=0, TE=1, RE=1 */
@@ -128,7 +130,7 @@ void sci9_debug_init(void)
      * Don't touch SCMR (reset default 0xF2 is correct). */
     *sci9_scr() = k_scr_disabled;
     *sci9_smr() = k_smr_8n1_async;
-    *sci9_brr() = k_brr_115200_60mhz;
+    *sci9_brr() = k_brr_115200;
 
     /* Wait roughly one bit time before enabling TX/RX. */
     for (volatile uint32_t i = 0U; i < (uint32_t)k_brr_settle_loops; i++) {

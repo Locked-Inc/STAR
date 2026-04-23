@@ -77,9 +77,6 @@ StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions & options
   this->declare_parameter("teleop_timeout_ms", 500);
   this->declare_parameter("grpc_deadline_ms", 100);
   this->declare_parameter("wheel_base", 0.356); // 356mm track width (304mm inner + 52mm wheel)
-  this->declare_parameter("use_bbb_telemetry", false);
-  this->declare_parameter("wheel_radius", 0.072);  // 72mm wheel radius (goBILDA Wasteland 144mm)
-  this->declare_parameter("ticks_per_rev", 11599);  // 341 PPR * 34.02:1 gear
 
   // Cache parameters
   gateway_address_ = this->get_parameter("gateway_address").as_string();
@@ -90,9 +87,6 @@ StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions & options
   teleop_timeout_ms_ = this->get_parameter("teleop_timeout_ms").as_int();
   grpc_deadline_ms_ = this->get_parameter("grpc_deadline_ms").as_int();
   wheel_base_ = this->get_parameter("wheel_base").as_double();
-  use_bbb_telemetry_ = this->get_parameter("use_bbb_telemetry").as_bool();
-  wheel_radius_ = this->get_parameter("wheel_radius").as_double();
-  ticks_per_rev_ = this->get_parameter("ticks_per_rev").as_int();
 
   RCLCPP_INFO(
     this->get_logger(),
@@ -137,15 +131,6 @@ StarGatewayBridgeNode::~StarGatewayBridgeNode()
   obstacle_bl_pub_.reset();
   obstacle_br_pub_.reset();
   obstacle_detected_pub_.reset();
-
-  // Cancel BBB telemetry timer and send zero velocity to BBB
-  if (bbb_telemetry_timer_) {
-    bbb_telemetry_timer_->cancel();
-    bbb_telemetry_timer_.reset();
-  }
-  if (use_bbb_telemetry_) {
-    send_zero_velocity_to_bbb();
-  }
 
   // Send stop command on teleop topic before shutdown
   auto zero_twist = geometry_msgs::msg::Twist();
@@ -198,7 +183,6 @@ bool StarGatewayBridgeNode::initialize_grpc_client()
   // Create gRPC stubs (all services share the same channel)
   grpc_stub_ = star::v1::GatewayService::NewStub(grpc_channel_);
   telemetry_svc_stub_ = star::v1::TelemetryService::NewStub(grpc_channel_);
-  motor_control_stub_ = star::v1::MotorControlService::NewStub(grpc_channel_);
 
   RCLCPP_INFO(this->get_logger(),
               "Successfully connected to Gateway gRPC server");
@@ -368,40 +352,6 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
   diagnostics_timer_ = this->create_wall_timer(
       std::chrono::seconds(1),
       std::bind(&StarGatewayBridgeNode::publish_diagnostics, this));
-
-  // BBB telemetry bridging (when use_bbb_telemetry is true)
-  if (use_bbb_telemetry_) {
-    RCLCPP_INFO(this->get_logger(),
-      "BBB telemetry mode ENABLED - publishing /odom/unfiltered, /imu/data, "
-      "/joint_states and forwarding /cmd_vel to gateway");
-
-    // Initialize converter with platform parameters
-    MessageConverter::BbbParams bbb_params;
-    bbb_params.wheel_base = wheel_base_;
-    bbb_params.wheel_radius = wheel_radius_;
-    bbb_params.ticks_per_rev = ticks_per_rev_;
-    converter_.init_bbb_params(bbb_params);
-
-    // Publishers for BBB sensor data -> ROS2
-    bbb_odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>(
-        "/odom/unfiltered", 10);
-    bbb_imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>(
-        "/imu/data", 10);
-    bbb_joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>(
-        "/joint_states", 10);
-
-    // Subscriber for ROS2 /cmd_vel -> gateway -> BBB
-    cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
-        "/cmd_vel", 10,
-        std::bind(&StarGatewayBridgeNode::cmd_vel_callback, this,
-                  std::placeholders::_1));
-
-    // BBB telemetry polling timer (same rate as obstacle timer)
-    bbb_telemetry_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(telemetry_period_ms),
-        std::bind(&StarGatewayBridgeNode::bbb_telemetry_poll_timer_callback,
-                  this));
-  }
 
   RCLCPP_INFO(
       this->get_logger(),
@@ -740,176 +690,6 @@ void StarGatewayBridgeNode::obstacle_poll_timer_callback()
   } catch (...) {
     RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
                           "Unknown exception in obstacle_poll_timer_callback");
-  }
-}
-
-// ===========================================================================
-// BBB Telemetry Bridging
-// ===========================================================================
-
-void StarGatewayBridgeNode::cmd_vel_callback(
-  const geometry_msgs::msg::Twist::SharedPtr msg)
-{
-  if (!grpc_connected_ || !motor_control_stub_) {
-    return;
-  }
-
-  try {
-    grpc::ClientContext context;
-    context.set_deadline(std::chrono::system_clock::now() +
-                         std::chrono::milliseconds(grpc_deadline_ms_));
-
-    star::v1::SetVelocityRequest request;
-    auto * header = request.mutable_header();
-    header->set_request_id(
-        "cmdvel_" +
-        std::to_string(
-            std::chrono::system_clock::now().time_since_epoch().count()));
-
-    auto * command = request.mutable_command();
-    if (!converter_.twist_to_velocity_command(*msg, *command, wheel_base_,
-                                              cmd_vel_sequence_++))
-    {
-      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
-                           "Failed to convert cmd_vel Twist to VelocityCommand");
-      return;
-    }
-
-    star::v1::SetVelocityResponse response;
-    grpc::Status status =
-      motor_control_stub_->SetVelocity(&context, request, &response);
-
-    if (!status.ok()) {
-      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
-                           "SetVelocity gRPC failed: %s",
-                           status.error_message().c_str());
-      const grpc::StatusCode code = status.error_code();
-      if (code == grpc::StatusCode::UNAVAILABLE ||
-        code == grpc::StatusCode::DEADLINE_EXCEEDED ||
-        code == grpc::StatusCode::INTERNAL)
-      {
-        send_zero_velocity_to_bbb();
-        grpc_connected_ = false;
-      }
-    }
-  } catch (const std::exception & e) {
-    RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
-                          "Exception in cmd_vel_callback: %s", e.what());
-  }
-}
-
-void StarGatewayBridgeNode::bbb_telemetry_poll_timer_callback()
-{
-  try {
-    if (!grpc_connected_ || !telemetry_svc_stub_) {
-      return;
-    }
-
-    grpc::ClientContext context;
-    context.set_deadline(std::chrono::system_clock::now() +
-                         std::chrono::milliseconds(grpc_deadline_ms_));
-
-    star::v1::GetTelemetryRequest request;
-    request.mutable_header()->set_request_id(
-        "bbb_telem_" +
-        std::to_string(
-            std::chrono::system_clock::now().time_since_epoch().count()));
-
-    star::v1::GetTelemetryResponse response;
-    grpc::Status status =
-      telemetry_svc_stub_->GetTelemetry(&context, request, &response);
-
-    if (!status.ok()) {
-      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
-                           "GetTelemetry (BBB) gRPC failed: %s",
-                           status.error_message().c_str());
-      const grpc::StatusCode code = status.error_code();
-      if (code == grpc::StatusCode::UNAVAILABLE ||
-        code == grpc::StatusCode::DEADLINE_EXCEEDED ||
-        code == grpc::StatusCode::INTERNAL)
-      {
-        grpc_connected_ = false;
-      }
-      return;
-    }
-
-    if (!response.has_telemetry()) {
-      return;
-    }
-
-    const auto & telemetry = response.telemetry();
-    const rclcpp::Time stamp = this->now();
-
-    // Publish odometry from encoder dead-reckoning (skip if data incomplete)
-    nav_msgs::msg::Odometry odom;
-    if (converter_.telemetry_to_odometry(telemetry, odom)) {
-      odom.header.stamp = stamp;
-      bbb_odom_pub_->publish(odom);
-    }
-
-    // Publish IMU data (skip if IMU sub-message absent)
-    sensor_msgs::msg::Imu imu_msg;
-    if (MessageConverter::telemetry_to_imu(telemetry, imu_msg)) {
-      imu_msg.header.stamp = stamp;
-      bbb_imu_pub_->publish(imu_msg);
-    }
-
-    // Publish joint states (skip if encoder data incomplete)
-    sensor_msgs::msg::JointState joint_state;
-    if (converter_.telemetry_to_joint_state(telemetry, joint_state)) {
-      joint_state.header.stamp = stamp;
-      bbb_joint_state_pub_->publish(joint_state);
-    }
-
-  } catch (const std::exception & e) {
-    RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
-                          "Exception in bbb_telemetry_poll_timer_callback: %s",
-                          e.what());
-  } catch (...) {
-    RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
-                          "Unknown exception in bbb_telemetry_poll_timer_callback");
-  }
-}
-
-void StarGatewayBridgeNode::send_zero_velocity_to_bbb()
-{
-  if (!motor_control_stub_ || !grpc_channel_) {
-    return;
-  }
-
-  try {
-    grpc::ClientContext context;
-    context.set_deadline(std::chrono::system_clock::now() +
-                         std::chrono::milliseconds(grpc_deadline_ms_));
-
-    star::v1::SetVelocityRequest request;
-    auto * header = request.mutable_header();
-    header->set_request_id("estop_zero");
-
-    auto * command = request.mutable_command();
-    command->set_front_left_velocity_mps(0.0F);
-    command->set_front_right_velocity_mps(0.0F);
-    command->set_back_left_velocity_mps(0.0F);
-    command->set_back_right_velocity_mps(0.0F);
-    command->set_timestamp_us(
-        std::chrono::duration_cast<std::chrono::microseconds>(
-            std::chrono::system_clock::now().time_since_epoch())
-      .count());
-
-    star::v1::SetVelocityResponse response;
-    grpc::Status status =
-      motor_control_stub_->SetVelocity(&context, request, &response);
-
-    if (status.ok()) {
-      RCLCPP_INFO(this->get_logger(), "Sent zero velocity to BBB (safety stop)");
-    } else {
-      RCLCPP_WARN(this->get_logger(),
-                  "Failed to send zero velocity to BBB: %s",
-                  status.error_message().c_str());
-    }
-  } catch (...) {
-    RCLCPP_WARN(this->get_logger(),
-                "Exception sending zero velocity to BBB (best-effort)");
   }
 }
 

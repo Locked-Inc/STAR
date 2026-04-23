@@ -3,8 +3,10 @@
  * @brief RX72N clock initialisation: HOCO 16 MHz -> PLL 192 -> ICLK 96 / PCKB 48.
  *
  * @details
- * This board has NO external crystal.  We use the internal HOCO (16 MHz)
- * as the PLL source instead of MOSC/EXTAL.
+ * This test sources the PLL from the internal HOCO (16 MHz) instead of
+ * the STAR PCB's 24 MHz external crystal on MOSC/EXTAL. The choice is
+ * deliberate (isolate the PLL bring-up from crystal startup), not because
+ * the board lacks a crystal -- it has one.
  *
  * Target clocks:
  *   - PLL   = HOCO 16 MHz x 12 = 192 MHz

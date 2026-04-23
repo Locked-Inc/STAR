@@ -25,7 +25,7 @@
  *     style=filled;
  *     color=lightblue;
  *
- *     motors [label="4x DC Gearmotors\n6V, 210 RPM, 341 PPR Hall Encoders\nFL, FR, BL, BR",
+ *     motors [label="4x DC Gearmotors\n6V, 210 RPM, 341 PPR Hall Encoders\nFL, FR, BR, BL",
  *             fillcolor=lightyellow, style=filled];
  *     drivers [label="4x H-Bridge Drivers\nPWM @ 20 kHz",
  *              fillcolor=lightcoral, style=filled];
@@ -177,10 +177,10 @@
  *
  *   --- [label="Step 1: Read Current Velocities"];
  *   MotorTask => Encoders [label="rx_encoder_read_velocity() x 4"];
- *   Encoders >> MotorTask [label="Motor velocities:\nFL: +1.2 m/s\nFR: +1.1 m/s\nBL: +1.3 m/s\nBR: +1.0 m/s"];
+ *   Encoders >> MotorTask [label="Motor velocities:\nFL: +1.2 m/s\nFR: +1.1 m/s\nBR: +1.0 m/s\nBL: +1.3 m/s"];
  *
  *   --- [label="Step 2: Apply Reverse PWM (50ms @ 30%)"];
- *   MotorTask box MotorTask [label="Calculate reverse duties:\nFL: -30% (moving forward)\nFR: -30%\nBL: -30%\nBR: -30%"];
+ *   MotorTask box MotorTask [label="Calculate reverse duties:\nFL: -30% (moving forward)\nFR: -30%\nBR: -30%\nBL: -30%"];
  *   MotorTask => Drivers [label="rx_motor_set_duty(-30%) x 4"];
  *   Drivers => Motors [label="Apply reverse PWM"];
  *   Motors box Motors [label="Motors decelerate\n(electromagnetic braking)"];
@@ -491,15 +491,15 @@ typedef enum : uint16_t {
  * @details
  * Maps logical motor positions to array indices used throughout the motor
  * control subsystem. The index order (front-left=0, front-right=1,
- * back-left=2, back-right=3) is consistent across all motor arrays:
+ * back-right=2, back-left=3) is consistent across all motor arrays:
  * motor handles, encoder handles, PID controllers, and shared_data
  * motor state arrays.
  *
- * The physical motor layout viewed from above:
+ * The physical motor layout viewed from above (forward = top):
  * @code
  * Front
- *  [0] [1]
- *  [2] [3]
+ *  [0] [1]   (FL, FR)
+ *  [3] [2]   (BL, BR)
  * Rear
  * @endcode
  *
@@ -537,20 +537,21 @@ typedef enum : uint8_t {
  * defines the count of channels for each peripheral so initialization loops
  * can be bounded at compile time.
  *
- * Channel assignment:
- * - MTU channels 0-1: front-left, front-right encoders
- * - TPU channels 0-1: back-left, back-right encoders
+ * Channel assignment (matches motor_index_t, i.e. front-left=0, front-right=1,
+ * back-right=2, back-left=3):
+ * - MTU1/MTU2: front-left, front-right encoders (indices 0, 1)
+ * - TPU1/TPU2: back-right, back-left encoders (indices 2, 3)
  *
  * @invariant k_front_encoder_count + k_rear_encoder_count must equal k_motor_count
  *
  * @code
- * // Initialize front encoders via MTU
+ * // Initialize front encoders via MTU (indices 0, 1)
  * for (uint8_t i = 0; i < k_front_encoder_count; i++) {
  *     rx_encoder_mtu_init(&s_encoders[k_motor_front_left + i], mtu_ch[i]);
  * }
- * // Initialize rear encoders via TPU
+ * // Initialize rear encoders via TPU (indices 2, 3; k_motor_back_right == 2)
  * for (uint8_t i = 0; i < k_rear_encoder_count; i++) {
- *     rx_encoder_tpu_init(&s_encoders[k_motor_back_left + i], tpu_ch[i]);
+ *     rx_encoder_tpu_init(&s_encoders[k_motor_back_right + i], tpu_ch[i]);
  * }
  * @endcode
  *
@@ -814,8 +815,8 @@ static const uint8_t s_drv8263_in2_pins[k_motor_count] = {k_motor_0_in2_pin,
 static rx_motor_handle_t* s_motor_ptrs[k_motor_count] = {
   &s_motors[k_motor_front_left],
   &s_motors[k_motor_front_right],
-  &s_motors[k_motor_back_left],
   &s_motors[k_motor_back_right],
+  &s_motors[k_motor_back_left],
 };
 
 /** @brief Encoder state for each motor */
@@ -889,8 +890,8 @@ static const char* const s_tag = "MOTOR";
  * |-------|-------|----------------|--------|-----|
  * | FL    | 0     | motor0_current | AN007  | P47 |
  * | FR    | 1     | motor1_current | AN006  | P46 |
- * | BL    | 2     | motor2_current | AN005  | P45 |
- * | BR    | 3     | motor3_current | AN004  | P44 |
+ * | BR    | 2     | motor2_current | AN005  | P45 |
+ * | BL    | 3     | motor3_current | AN004  | P44 |
  *
  * @note String literals reside in .rodata (no dynamic allocation).
  * @note Declared extern in motor_control_task.h; main.c uses it for
@@ -903,8 +904,8 @@ static const char* const s_tag = "MOTOR";
 const char* const g_motor_current_bus_names[k_motor_count] = {
   "motor0_current", /* Motor 0 (FL): AN007, ch 7, P47 */
   "motor1_current", /* Motor 1 (FR): AN006, ch 6, P46 */
-  "motor2_current", /* Motor 2 (BL): AN005, ch 5, P45 */
-  "motor3_current", /* Motor 3 (BR): AN004, ch 4, P44 */
+  "motor2_current", /* Motor 2 (BR): AN005, ch 5, P45 */
+  "motor3_current", /* Motor 3 (BL): AN004, ch 4, P44 */
 };
 
 /**
@@ -1397,7 +1398,7 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
  *
  * ### Control Loop Iteration Details (Step 9 expanded)
  *
- * For each of 4 motors (FL, FR, BL, BR):
+ * For each of 4 motors (FL, FR, BR, BL):
  *
  * 13. **Read Encoder Velocity:** rx_encoder_read_velocity()
  *     - Quadrature decode via MTU peripheral
@@ -1406,7 +1407,7 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
  *
  * 14. **Get Target Velocity:** internal_get_target_velocity()
  *     - Extract target from motor_command_t
- *     - Motor index mapping: 0=FL, 1=FR, 2=BL, 3=BR
+ *     - Motor index mapping: 0=FL, 1=FR, 2=BR, 3=BL
  *
  * 15. **Compute PID Output:** rx_pid_compute()
  *     - Error = target - measured
@@ -1718,10 +1719,10 @@ static void internal_motor_task_entry(ULONG input)
       if (have) {
         const float target_mps = internal_get_target_velocity(&cmd, i);
         duty                   = target_mps * k_bringup_duty_per_mps * k_motor_direction_sign[i];
-        if (duty > 75.0F) {
-          duty = 75.0F;
-        } else if (duty < -75.0F) {
-          duty = -75.0F;
+        if (duty > 100.0F) {
+          duty = 100.0F;
+        } else if (duty < -100.0F) {
+          duty = -100.0F;
         }
       }
       (void)rx_motor_set_duty(&s_motors[i], duty);
@@ -2399,7 +2400,7 @@ static rx_err_t internal_read_encoder_count(const uint8_t motor_idx, rx_encoder_
  * ### Main Loop (Steps 3-10, For Each of 4 Motors)
  *
  * 3. **Read Encoder Velocity:** Call rx_encoder_read_velocity()
- *    - Channel: rx_mtu_channel_t (0-3 for FL, FR, BL, BR)
+ *    - Channel: rx_mtu_channel_t (0-3 for FL, FR, BR, BL)
  *    - dt: 0.004 seconds (10ms control period)
  *    - Output: current_velocity_mps (meters per second)
  *    - If error: Use 0.0 m/s as fallback (prevents runaway)

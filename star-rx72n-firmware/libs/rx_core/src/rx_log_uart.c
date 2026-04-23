@@ -10,7 +10,8 @@
  * The single consumer (the communication task) calls rx_log_uart_drain() on
  * every poll tick. Drained bytes are wrapped in a k_frame_type_log_message
  * (0x20) frame and transmitted via rx_uart_comm over SCI9 -> CY7C65213 ->
- * /dev/ttyUSB0 on the Pi5, where the gateway routes them to its own log sink.
+ * /dev/ttyACM0 on the Pi5 (CDC-ACM class device), where the gateway routes
+ * them to its own log sink.
  *
  * No I/O happens on the producer path: even a burst of 1000 log lines can only
  * cost a mutex, a memcpy, and a ring index update. Bytes that overflow the

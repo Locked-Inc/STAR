@@ -28,8 +28,8 @@
         Disable multicast discovery on external interfaces.
         Rationale:
           - Pi5 WiFi AP (wlan0 in AP mode) does not forward multicast reliably.
-          - BBB USB-ethernet (enxf45eab3527c1) and wlan0 cause "no route to
-            host" DDS errors when multicast is attempted on them.
+          - wlan0 in AP mode causes "no route to host" DDS errors when
+            multicast is attempted on it.
           - All ROS2 nodes run on the same Pi5 host; intra-host discovery via
             loopback is sufficient. Foxglove and gRPC use TCP directly.
       -->

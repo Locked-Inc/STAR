@@ -6,8 +6,8 @@ from launch_ros.actions import LifecycleNode
 
 # Drivetrain kinematics for the goBILDA Wasteland chassis. Source: CAD
 # measurement (2026-04) and goBILDA motor datasheet. Must match the
-# values in star_bringup/launch/slam.launch.py and the BBB
-# hardware_config.h to keep producers and consumers in sync.
+# values in star_bringup/launch/slam.launch.py to keep producers and
+# consumers in sync.
 WHEEL_BASE_M = 0.356            # track width: left-right wheel center-to-center
 WHEEL_RADIUS_M = 0.072          # rolling radius: 144 mm wheel / 2
 ENCODER_TICKS_PER_REV = 11599   # 341 PPR Hall encoder x 34.02:1 gearbox

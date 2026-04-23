@@ -1,0 +1,445 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "type": "row",
+      "title": "SLAM map",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 700,
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "text",
+      "title": "/map -- live top-down view (served by star_simple_bridge @ :9101)",
+      "id": 29,
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 1 },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;justify-content:center;align-items:center;height:100%;background:#111;\"><img src=\"http://100.64.0.6:9101/map.png?t=${__from}\" style=\"max-width:100%;max-height:100%;image-rendering:pixelated;\" alt=\"no /map yet -- is slam_toolbox active?\"></div>"
+      }
+    },
+    {
+      "type": "row",
+      "title": "Motors",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 },
+      "id": 100,
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "gauge",
+      "title": "FL velocity",
+      "id": 1,
+      "gridPos": { "h": 7, "w": 6, "x": 0, "y": 1 },
+      "targets": [{ "expr": "star_motor_velocity_mps{wheel=\"fl\"}", "refId": "A", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "velocityms",
+          "min": -0.3,
+          "max": 0.3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": -0.25 },
+              { "color": "yellow", "value": 0.2 },
+              { "color": "red", "value": 0.25 }
+            ]
+          }
+        }
+      },
+      "options": { "orientation": "auto", "showThresholdLabels": false, "showThresholdMarkers": true }
+    },
+    {
+      "type": "gauge",
+      "title": "FR velocity",
+      "id": 2,
+      "gridPos": { "h": 7, "w": 6, "x": 6, "y": 1 },
+      "targets": [{ "expr": "star_motor_velocity_mps{wheel=\"fr\"}", "refId": "A", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "velocityms",
+          "min": -0.3,
+          "max": 0.3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": -0.25 },
+              { "color": "yellow", "value": 0.2 },
+              { "color": "red", "value": 0.25 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "gauge",
+      "title": "BL velocity",
+      "id": 3,
+      "gridPos": { "h": 7, "w": 6, "x": 12, "y": 1 },
+      "targets": [{ "expr": "star_motor_velocity_mps{wheel=\"bl\"}", "refId": "A", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "velocityms",
+          "min": -0.3,
+          "max": 0.3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": -0.25 },
+              { "color": "yellow", "value": 0.2 },
+              { "color": "red", "value": 0.25 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "gauge",
+      "title": "BR velocity",
+      "id": 4,
+      "gridPos": { "h": 7, "w": 6, "x": 18, "y": 1 },
+      "targets": [{ "expr": "star_motor_velocity_mps{wheel=\"br\"}", "refId": "A", "legendFormat": "" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "velocityms",
+          "min": -0.3,
+          "max": 0.3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": -0.25 },
+              { "color": "yellow", "value": 0.2 },
+              { "color": "red", "value": 0.25 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "gauge",
+      "title": "FL duty",
+      "id": 5,
+      "gridPos": { "h": 7, "w": 6, "x": 0, "y": 8 },
+      "targets": [{ "expr": "star_motor_duty_percent{wheel=\"fl\"}", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": -100,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 60 },
+              { "color": "red", "value": 85 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "gauge",
+      "title": "FR duty",
+      "id": 6,
+      "gridPos": { "h": 7, "w": 6, "x": 6, "y": 8 },
+      "targets": [{ "expr": "star_motor_duty_percent{wheel=\"fr\"}", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "min": -100, "max": 100,
+          "thresholds": { "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 60 },
+              { "color": "red", "value": 85 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "gauge",
+      "title": "BL duty",
+      "id": 7,
+      "gridPos": { "h": 7, "w": 6, "x": 12, "y": 8 },
+      "targets": [{ "expr": "star_motor_duty_percent{wheel=\"bl\"}", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "min": -100, "max": 100,
+          "thresholds": { "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 60 },
+              { "color": "red", "value": 85 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "gauge",
+      "title": "BR duty",
+      "id": 8,
+      "gridPos": { "h": 7, "w": 6, "x": 18, "y": 8 },
+      "targets": [{ "expr": "star_motor_duty_percent{wheel=\"br\"}", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "min": -100, "max": 100,
+          "thresholds": { "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 60 },
+              { "color": "red", "value": 85 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Wheel velocities over time",
+      "id": 9,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+      "targets": [{ "expr": "star_motor_velocity_mps", "refId": "A", "legendFormat": "{{wheel}}" }],
+      "fieldConfig": { "defaults": { "unit": "velocityms" } },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } }
+    },
+    {
+      "type": "timeseries",
+      "title": "Wheel duty over time",
+      "id": 10,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+      "targets": [{ "expr": "star_motor_duty_percent", "refId": "A", "legendFormat": "{{wheel}}" }],
+      "fieldConfig": { "defaults": { "unit": "percent" } }
+    },
+    {
+      "type": "stat",
+      "title": "Motor faults (any != 0 is bad)",
+      "id": 11,
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 23 },
+      "targets": [{ "expr": "star_motor_fault_byte", "refId": "A", "legendFormat": "{{wheel}}" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value_and_name" }
+    },
+
+    {
+      "type": "row",
+      "title": "IMU",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 27 },
+      "id": 200,
+      "collapsed": false
+    },
+    {
+      "type": "gauge",
+      "title": "Roll",
+      "id": 12,
+      "gridPos": { "h": 7, "w": 8, "x": 0, "y": 28 },
+      "targets": [{ "expr": "star_imu_orientation_deg{axis=\"roll\"}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "degree", "min": -180, "max": 180 } }
+    },
+    {
+      "type": "gauge",
+      "title": "Pitch",
+      "id": 13,
+      "gridPos": { "h": 7, "w": 8, "x": 8, "y": 28 },
+      "targets": [{ "expr": "star_imu_orientation_deg{axis=\"pitch\"}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "degree", "min": -180, "max": 180 } }
+    },
+    {
+      "type": "gauge",
+      "title": "Heading",
+      "id": 14,
+      "gridPos": { "h": 7, "w": 8, "x": 16, "y": 28 },
+      "targets": [{ "expr": "star_imu_orientation_deg{axis=\"heading\"}", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "degree", "min": 0, "max": 360 } }
+    },
+    {
+      "type": "timeseries",
+      "title": "Gyro (deg/s)",
+      "id": 15,
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 35 },
+      "targets": [{ "expr": "star_imu_gyro_dps", "refId": "A", "legendFormat": "{{axis}}" }],
+      "fieldConfig": { "defaults": { "unit": "rotdegs" } }
+    },
+    {
+      "type": "timeseries",
+      "title": "Linear acceleration (m/s²)",
+      "id": 16,
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 35 },
+      "targets": [{ "expr": "star_imu_accel_mps2", "refId": "A", "legendFormat": "{{axis}}" }],
+      "fieldConfig": { "defaults": { "unit": "accMS2" } }
+    },
+
+    {
+      "type": "row",
+      "title": "Odometry",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 42 },
+      "id": 300,
+      "collapsed": false
+    },
+    {
+      "type": "gauge",
+      "title": "Linear velocity",
+      "id": 17,
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 43 },
+      "targets": [{ "expr": "star_odom_linear_mps", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "velocityms", "min": -0.3, "max": 0.3 } }
+    },
+    {
+      "type": "gauge",
+      "title": "Angular velocity",
+      "id": 18,
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 43 },
+      "targets": [{ "expr": "star_odom_angular_radps", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "rads", "min": -2, "max": 2 } }
+    },
+    {
+      "type": "stat",
+      "title": "Odom pose (x, y, θ)",
+      "id": 19,
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 43 },
+      "targets": [
+        { "expr": "star_odom_pose_x_m", "refId": "A", "legendFormat": "x (m)" },
+        { "expr": "star_odom_pose_y_m", "refId": "B", "legendFormat": "y (m)" },
+        { "expr": "star_odom_pose_theta_rad", "refId": "C", "legendFormat": "θ (rad)" }
+      ],
+      "options": { "colorMode": "value", "graphMode": "area", "textMode": "value_and_name" }
+    },
+
+    {
+      "type": "row",
+      "title": "LiDAR",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 49 },
+      "id": 500,
+      "collapsed": false
+    },
+    {
+      "type": "gauge",
+      "title": "Closest obstacle",
+      "id": 24,
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 50 },
+      "targets": [{ "expr": "star_scan_closest_range_m", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "lengthm",
+          "min": 0,
+          "max": 3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 1.0 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "gauge",
+      "title": "Closest bearing (0°=forward)",
+      "id": 25,
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 50 },
+      "targets": [{ "expr": "star_scan_closest_bearing_deg", "refId": "A" }],
+      "fieldConfig": { "defaults": { "unit": "degree", "min": -180, "max": 180 } }
+    },
+    {
+      "type": "stat",
+      "title": "Obstacles < 1 m",
+      "id": 26,
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 50 },
+      "targets": [{ "expr": "star_scan_obstacles_under_1m", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 10 }
+            ]
+          }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "area" }
+    },
+    {
+      "type": "stat",
+      "title": "Scan range min / mean / max",
+      "id": 27,
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 50 },
+      "targets": [{ "expr": "star_scan_range_m", "refId": "A", "legendFormat": "{{stat}}" }],
+      "fieldConfig": { "defaults": { "unit": "lengthm" } },
+      "options": { "textMode": "value_and_name", "colorMode": "value" }
+    },
+    {
+      "type": "row",
+      "title": "Bridge health",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 64 },
+      "id": 400,
+      "collapsed": true,
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "Line rate by kind (msg/s)",
+          "id": 20,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 50 },
+          "targets": [{ "expr": "rate(star_bridge_rx_lines_total[1m])", "refId": "A", "legendFormat": "{{kind}}" }]
+        },
+        {
+          "type": "timeseries",
+          "title": "Parse errors (/s)",
+          "id": 21,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 50 },
+          "targets": [{ "expr": "rate(star_bridge_parse_errors_total[1m])", "refId": "A", "legendFormat": "{{kind}}" }],
+          "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "red" } } }
+        },
+        {
+          "type": "stat",
+          "title": "Serial reopens (cumulative)",
+          "id": 22,
+          "gridPos": { "h": 4, "w": 12, "x": 0, "y": 58 },
+          "targets": [{ "expr": "star_bridge_serial_reopens_total", "refId": "A" }]
+        },
+        {
+          "type": "stat",
+          "title": "RX bytes total",
+          "id": 23,
+          "gridPos": { "h": 4, "w": 12, "x": 12, "y": 58 },
+          "targets": [{ "expr": "star_bridge_rx_bytes_total", "refId": "A" }],
+          "fieldConfig": { "defaults": { "unit": "bytes" } }
+        }
+      ]
+    }
+  ],
+  "refresh": "1s",
+  "schemaVersion": 39,
+  "tags": ["star", "robot"],
+  "templating": { "list": [] },
+  "time": { "from": "now-2m", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "STAR robot telemetry",
+  "uid": "star-robot-telemetry",
+  "version": 1,
+  "weekStart": ""
+}

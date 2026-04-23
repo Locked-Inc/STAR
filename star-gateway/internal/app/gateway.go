@@ -262,8 +262,8 @@ func initTransportManager(ctx context.Context, appConfig Config, logger *slog.Lo
 
 	// Validate config or fallback to default.
 	// Re-apply VID:PID after validation because validateOrUseDefault may replace
-	// the entire config with defaults (which carry Renesas VID:PID), losing the
-	// device-specific VID:PID we set for BBB or future motor controllers.
+	// the entire config with defaults (which carry Renesas VID:PID), losing any
+	// device-specific VID:PID we set for alternative motor controllers.
 	mgrConfig = validateOrUseDefault(logger, mgrConfig)
 	if appConfig.USBVID != 0 || appConfig.USBPID != 0 {
 		mgrConfig.USBVID = appConfig.USBVID
@@ -492,7 +492,7 @@ func createSPILink(spiTransport transport.Device, session *manager.SessionState)
 //
 // device is the /dev path for the CDC serial port (e.g., /dev/ttyUSB1). When
 // empty, the CDCTransport auto-detects via VID:PID sysfs scan using the VID:PID
-// in DefaultCDCConfig (Renesas). For BBB, always pass the detected device path.
+// in DefaultCDCConfig (Renesas).
 //
 // The CDC transport is opened and wrapped in a CDCLink with the shared session state.
 // This ensures sequence continuity during transport switching (prevents Handoff Problem).
@@ -501,11 +501,10 @@ func createUSBLink(device string, session *manager.SessionState) (harq.HARQ, err
 	if device != "" {
 		cdcConfig.Device = device
 	}
-	// The RX72N + CY7C65213 bridge runs SCI9 at 115200 by default. The gateway's
-	// 921600 default targets BBB's USB CDC (which has no UART in the datapath).
-	// When the link is /dev/ttyACM0 on a Cypress, opening at 921600 reprograms
-	// the bridge and breaks RX on the firmware side. Allow an override without
-	// special-casing vendors in code.
+	// The RX72N + CY7C65213 bridge runs SCI9 at 115200 by default. When the
+	// gateway default baud (921600) is applied to a Cypress bridge, opening at
+	// 921600 reprograms the bridge and breaks RX on the firmware side. Allow
+	// an override without special-casing vendors in code.
 	if baud := os.Getenv("STAR_CDC_BAUD"); baud != "" {
 		if v, err := strconv.Atoi(baud); err == nil && v > 0 {
 			cdcConfig.BaudRate = v

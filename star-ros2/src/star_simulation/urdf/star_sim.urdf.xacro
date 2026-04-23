@@ -27,7 +27,7 @@
             - Milwaukee M18 XC 5.0Ah battery (48-11-1850)
                                            = 0.699 kg  (1.54 lb
               per Home Depot listing; envelope 114x79x73 mm)
-            - Electronics (BBB + battery mount + sensors +
+            - Electronics (MCU + battery mount + sensors +
               cabling)                   ~= 0.400 kg  (estimate)
           Refine the 0.9 and 0.4 estimates as hardware is weighed.
 -->

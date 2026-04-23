@@ -90,19 +90,6 @@ stop_proc() {
 }
 
 # ---------------------------------------------------------------------------
-# BBB firmware (remote, best-effort)
-# ---------------------------------------------------------------------------
-BBB_HOST="${BBB_HOST:-192.168.7.2}"
-BBB_USER="${BBB_USER:-debian}"
-BBB_PASS="${BBB_PASS:-StarBBB2026!}"
-if ping -c 1 -W 1 "$BBB_HOST" >/dev/null 2>&1; then
-    sshpass -p "$BBB_PASS" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=3 \
-        "$BBB_USER@$BBB_HOST" \
-        "echo '$BBB_PASS' | sudo -S killall -9 star-beaglebone-blue 2>/dev/null" \
-        2>/dev/null && say "BBB firmware stopped" || true
-fi
-
-# ---------------------------------------------------------------------------
 # ROS2 bridge first (gRPC client -- shut before the server)
 # ---------------------------------------------------------------------------
 stop_proc "gateway_bridge" "star_gateway_bridge_main" 3

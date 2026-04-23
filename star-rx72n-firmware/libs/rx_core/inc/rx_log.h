@@ -105,7 +105,7 @@
  * ## USB Log Mirroring
  *
  * Enable with `-DUSB_LOG_MIRROR=1` to send logs to both:
- * - **UART**: `/dev/ttyUSB0` via CY7C65213 (115200 baud)
+ * - **UART**: `/dev/ttyACM0` via CY7C65213 (115200 baud, CDC-ACM class)
  * - **USB CDC Port 2**: `/dev/ttyACM2` (log port)
  *
  * Port assignments:
@@ -479,7 +479,7 @@ void uart_debug_puthex(uint32_t value, uint8_t digits);
  * In simulator builds these go to stdout via uart_debug_* (defined above).
  * In hardware builds they go to the rx_log_uart ring buffer, which the
  * communication task drains and wraps in k_frame_type_log_message frames for
- * transmission over SCI9 -> CY7C65213 -> /dev/ttyUSB0.
+ * transmission over SCI9 -> CY7C65213 -> /dev/ttyACM0.
  *
  * There is no longer a runtime backend selector. Logs always flow through
  * the framed-UART path on hardware.

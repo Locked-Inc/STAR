@@ -36,8 +36,8 @@ static constexpr int kDefaultCmdVelTimeoutMs = 500;     // command watchdog (ms)
 
 // Drivetrain kinematics for the goBILDA Wasteland chassis. Source: CAD
 // measurement (2026-04) and goBILDA motor datasheet. Must match the
-// values in star_bringup/launch/slam.launch.py and the BBB
-// hardware_config.h to keep producers and consumers in sync.
+// values in star_bringup/launch/slam.launch.py to keep producers and
+// consumers in sync.
 static constexpr double kDefaultTrackWidthM = 0.356;    // left-right wheel center-to-center
 static constexpr double kDefaultWheelRadiusM = 0.072;   // 144 mm wheel / 2
 static constexpr int kDefaultEncoderTicksPerRev = 11599; // 341 PPR x 34.02:1 gearbox

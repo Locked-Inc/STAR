@@ -1,11 +1,16 @@
 # Nav2 parameters for STAR differential-drive robot (indoor autonomous navigation)
-# Robot: ~0.3 m diameter, max 0.5 m/s, RPLiDAR C1 scan source
+# Robot: 0.400 m long x 0.406 m wide (with wheels), 0.140 m tall, max 0.4 m/s.
+# RPLiDAR C1 scan source at 0.142 m above the floor.
 # Used with slam_toolbox (navigation_launch.py -- no separate map server)
 
 bt_navigator:
   ros__parameters:
     global_frame: map
     robot_base_frame: base_link
+    # Use EKF-fused odom (/odometry/filtered) so BT progress/velocity checks
+    # reject the phantom yaw from BR-dead + BL-half wheel kinematics. EKF
+    # yaw is pegged to BNO055 on this hardware; raw wheel yaw drifts ~14°/s
+    # during pure-linear commands and would trip progress_checker spuriously.
     odom_topic: /odometry/filtered
     bt_loop_duration: 10
     default_server_timeout: 20
@@ -13,9 +18,11 @@ bt_navigator:
     action_server_result_timeout: 900.0
     navigators: ['navigate_to_pose', 'navigate_through_poses']
     navigate_to_pose:
-      plugin: "nav2_bt_navigator/NavigateToPoseNavigator"
+      plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
+      default_nav_to_pose_bt_xml: "/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
     navigate_through_poses:
-      plugin: "nav2_bt_navigator/NavigateThroughPosesNavigator"
+      plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
+      default_nav_through_poses_bt_xml: "/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/navigate_through_poses_w_replanning_and_recovery.xml"
     error_code_names:
       - compute_path_error_code
       - follow_path_error_code
@@ -24,75 +31,76 @@ planner_server:
   ros__parameters:
     planner_plugins: ['GridBased']
     GridBased:
-      plugin: 'nav2_navfn_planner/NavfnPlanner'
-      tolerance: 0.5
+      plugin: 'nav2_navfn_planner::NavfnPlanner'
+      # tolerance 0.25 (2026-04-23): was 2.0 for frontier goals (which land
+      # right on the edge of unknown space), but with explicit waypoint goals
+      # a 2.0 m tolerance makes the planner return a trivial path ending far
+      # from the goal, and Nav2 declares SUCCEEDED while the robot barely
+      # moved. 0.25 matches goal_checker.xy_goal_tolerance so the planner
+      # commits to a path that actually reaches the target. Frontier goals
+      # still land in free cells adjacent to unknown so 0.25 is enough there.
+      tolerance: 0.25
       use_astar: true
       allow_unknown: true
 
 controller_server:
   ros__parameters:
-    controller_frequency: 20.0
+    controller_frequency: 10.0  # tolerates /odom sags from Cypress USB drops
     controller_plugins: ['FollowPath']
     min_x_velocity_threshold: 0.001
-    min_y_velocity_threshold: 0.5
+    # Skid-steer robot has no physical Y-axis motion; threshold matches X.
+    min_y_velocity_threshold: 0.001
     min_theta_velocity_threshold: 0.001
     failure_tolerance: 0.3
     progress_checker_plugins: ['progress_checker']
     goal_checker_plugins: ['general_goal_checker']
-    # DWB local planner tuned for differential drive
+    # Switched 2026-04-23 from DWB -> RegulatedPurePursuit. DWB's path-
+    # alignment critics kept picking ~0.075 m/s as best sample (trajectory
+    # scoring over 1.7 s sim horizon penalised faster samples for drifting
+    # off the planner's exact path). RPP is a geometric pursuit controller:
+    # it picks a lookahead point and drives toward it at a configured
+    # desired speed, no scoring. Much friendlier to the CPU-bound 5-7 Hz
+    # control loop and to the damaged-motor drivetrain.
     FollowPath:
-      plugin: 'dwb_core/DWBLocalPlanner'
-      debug_trajectory_details: false
-      min_vel_x: 0.0
-      min_vel_y: 0.0
-      max_vel_x: 0.5          # m/s -- conservative for indoor
-      max_vel_y: 0.0          # differential drive: no lateral motion
-      max_vel_theta: 1.5      # rad/s
-      min_speed_xy: 0.0
-      max_speed_xy: 0.5
-      min_speed_theta: 0.0
-      acc_lim_x: 1.0
-      acc_lim_y: 0.0
-      acc_lim_theta: 2.5
-      decel_lim_x: -1.0
-      decel_lim_y: 0.0
-      decel_lim_theta: -2.5
-      vx_samples: 20
-      vy_samples: 1           # diff drive: max_vel_y=0.0, lateral samples are all equivalent
-      vtheta_samples: 20
-      sim_time: 1.7
-      linear_granularity: 0.05
-      angular_granularity: 0.025
+      plugin: 'nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController'
+      desired_linear_vel: 0.35
+      lookahead_dist: 0.5
+      min_lookahead_dist: 0.3
+      max_lookahead_dist: 0.9
+      lookahead_time: 1.5
+      rotate_to_heading_angular_vel: 1.0
       transform_tolerance: 0.2
-      xy_goal_tolerance: 0.25
-      trans_stopped_velocity: 0.25
-      short_circuit_trajectory_evaluation: true
-      stateful: true
-      critics:
-        - "RotateToGoal"
-        - "Oscillation"
-        - "BaseObstacle"
-        - "GoalAlign"
-        - "PathAlign"
-        - "PathDist"
-        - "GoalDist"
-      BaseObstacle.scale: 0.02
-      PathAlign.scale: 32.0
-      PathAlign.forward_point_distance: 0.1
-      GoalAlign.scale: 24.0
-      GoalAlign.forward_point_distance: 0.1
-      PathDist.scale: 32.0
-      GoalDist.scale: 24.0
-      RotateToGoal.scale: 32.0
-      RotateToGoal.slowing_factor: 5.0
-      RotateToGoal.lookahead_time: -1.0
+      use_velocity_scaled_lookahead_dist: true
+      min_approach_linear_velocity: 0.2
+      approach_velocity_scaling_dist: 0.4
+      # Disable speed regulation on curvature so the robot doesn't slow
+      # below the stiction threshold on bends (damaged motors).
+      use_regulated_linear_velocity_scaling: false
+      use_cost_regulated_linear_velocity_scaling: false
+      regulated_linear_scaling_min_radius: 0.5
+      regulated_linear_scaling_min_speed: 0.25
+      allow_reversing: false
+      # rotate_to_heading disabled 2026-04-23: on this Pi5 + damaged
+      # motors it never finishes the rotation phase within the explore
+      # preemption window (~10s). Always drive forward+arc instead -- the
+      # robot may take a wide turn out of tight spaces but progress is
+      # monotonic instead of stuck-in-rotate.
+      use_rotate_to_heading: false
+      rotate_to_heading_min_angle: 0.5
+      max_angular_accel: 3.0
+      max_robot_pose_search_dist: 10.0
     progress_checker:
-      plugin: 'nav2_controller/SimpleProgressChecker'
+      plugin: 'nav2_controller::SimpleProgressChecker'
       required_movement_radius: 0.5
       movement_time_allowance: 10.0
     general_goal_checker:
-      stateful: true
-      plugin: 'nav2_controller/SimpleGoalChecker'
+      # stateful: false (2026-04-23). With stateful:true the checker reported
+      # "succeeded" and latched that verdict until the next goal arrived, even
+      # if the robot then drifted back out of tolerance. On-box tests had
+      # goals 0.3-1.0 m away completing in ~100 ms. Re-checking each cycle
+      # gives honest success/failure semantics.
+      stateful: false
+      plugin: 'nav2_controller::SimpleGoalChecker'
       xy_goal_tolerance: 0.25
       yaw_goal_tolerance: 0.25
 
@@ -108,12 +116,28 @@ local_costmap:
       width: 3
       height: 3
       resolution: 0.05
-      robot_radius: 0.15        # meters -- set to actual robot radius
-      plugins: ['obstacle_layer', 'sonar_layer', 'inflation_layer']
+      # Footprint (in base_link frame; +X=forward, +Y=left):
+      # User measurement 2026-04-23 (tape measure, including wheels):
+      #   Length = 15.75 in = 400 mm  (front-to-back including wheel caps)
+      #   Width  = 16 in    = 406 mm  (side-to-side including wheels)
+      # Half-extents + 5 cm safety pad ->
+      #   X (forward) = +/-0.250 m, Y (left) = +/-0.253 m.
+      # Total planning footprint 500 x 506 mm (near-square).
+      # CAD STL was body-only (292 x 343 mm, no wheels) and axes-swapped
+      # relative to ROS convention -- tape measurements are authoritative.
+      footprint: "[[0.250, 0.253], [0.250, -0.253], [-0.250, -0.253], [-0.250, 0.253]]"
+      # sonar_layer disabled: missing /star/obstacle/* publishers
+      # inflation_layer re-enabled 2026-04-23 at 0.38 m (= max(Lx, Wy)/2 + 0.13
+      # with real tape-measured footprint 0.500 x 0.506 m).
+      # Prior concern that inflation inscribed the robot's own cell (cost=99,
+      # blocking NavfnPlanner) is addressed by using the CAD-sized footprint:
+      # the robot's actual cell is now on the correct side of the inscribed
+      # boundary for the planner. cost_scaling_factor: 3.0 (sharp decay).
+      plugins: ['obstacle_layer', 'inflation_layer']
       obstacle_layer:
-        plugin: 'nav2_costmap_2d/ObstacleLayer'
+        plugin: 'nav2_costmap_2d::ObstacleLayer'
         enabled: true
-        observation_sources: scan stereo_cloud
+        observation_sources: scan
         scan:
           topic: /scan
           max_obstacle_height: 2.0
@@ -124,38 +148,22 @@ local_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 2.5
           obstacle_min_range: 0.0
-        stereo_cloud:
-          topic: /stereo/points2
-          max_obstacle_height: 1.5
-          min_obstacle_height: 0.05
-          clearing: true
-          marking: true
-          data_type: 'PointCloud2'
-          raytrace_max_range: 3.0
-          raytrace_min_range: 0.3
-          obstacle_max_range: 2.5
-          obstacle_min_range: 0.3
-      # HC-SR04 ultrasonic layer (2 front + 2 back). RangeSensorLayer
-      # uses the sensor_msgs/Range topics from star_spi_bridge. Back
-      # sensors cover the reverse-motion blind spot below the LiDAR
-      # scan plane.
-      sonar_layer:
-        plugin: 'nav2_costmap_2d/RangeSensorLayer'
-        enabled: true
-        topics: ['/star/obstacle/front_left',
-                 '/star/obstacle/front_right',
-                 '/star/obstacle/back_left',
-                 '/star/obstacle/back_right']
-        phi: 1.2
-        inflate_cone: 1.0
-        no_readings_timeout: 1.0
-        clear_threshold: 0.2
-        mark_threshold: 0.8
-        clear_on_max_reading: true
+      # stereo_cloud source removed 2026-04-23 -- orphan (not in
+      # observation_sources) and /stereo/points2 has zero publishers.
+      # sonar_layer config removed 2026-04-23. Re-introduce when
+      # star_spi_bridge actually publishes /star/obstacle/{front,back}_*.
+      # Keeping the config with `enabled: false` is NOT safe -- lifecycle
+      # still instantiates the layer and its isCurrent() remains false
+      # without input, which blocks Costmap2DROS::isCurrent() and every
+      # controller goal aborts with "Costmap timed out waiting for update".
       inflation_layer:
-        plugin: 'nav2_costmap_2d/InflationLayer'
+        plugin: 'nav2_costmap_2d::InflationLayer'
         cost_scaling_factor: 3.0
-        inflation_radius: 0.40
+        # 0.38 m = max(Lx, Wy)/2 + 0.13 with tape-measured footprint.
+        # Halo extends ~13 cm beyond the tightest footprint edge so the
+        # planner keeps the robot away from walls with slack for wheel slip
+        # on damaged motors.
+        inflation_radius: 0.38
       always_send_full_costmap: true
 
 global_costmap:
@@ -166,17 +174,19 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_link
       use_sim_time: false
-      robot_radius: 0.15
+      # Footprint matches local_costmap (CAD AABB + 5 cm pad).
+      footprint: "[[0.250, 0.253], [0.250, -0.253], [-0.250, -0.253], [-0.250, 0.253]]"
       resolution: 0.05
       track_unknown_space: true
+      # inflation_layer re-enabled 2026-04-23 with CAD-sized footprint.
       plugins: ['static_layer', 'obstacle_layer', 'inflation_layer']
       static_layer:
-        plugin: 'nav2_costmap_2d/StaticLayer'
+        plugin: 'nav2_costmap_2d::StaticLayer'
         map_subscribe_transient_local: true
       obstacle_layer:
-        plugin: 'nav2_costmap_2d/ObstacleLayer'
+        plugin: 'nav2_costmap_2d::ObstacleLayer'
         enabled: true
-        observation_sources: scan stereo_cloud
+        observation_sources: scan
         scan:
           topic: /scan
           max_obstacle_height: 2.0
@@ -187,21 +197,16 @@ global_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 2.5
           obstacle_min_range: 0.0
-        stereo_cloud:
-          topic: /stereo/points2
-          max_obstacle_height: 1.5
-          min_obstacle_height: 0.05
-          clearing: true
-          marking: true
-          data_type: 'PointCloud2'
-          raytrace_max_range: 3.0
-          raytrace_min_range: 0.3
-          obstacle_max_range: 2.5
-          obstacle_min_range: 0.3
+      # stereo_cloud source removed 2026-04-23 (orphan + /stereo/points2 dead)
       inflation_layer:
-        plugin: 'nav2_costmap_2d/InflationLayer'
+        plugin: 'nav2_costmap_2d::InflationLayer'
         cost_scaling_factor: 3.0
-        inflation_radius: 0.55
+        # 0.38 m = max(Lx, Wy)/2 + 0.13 buffer (tape-measured footprint).
+        # History: 0.55 blocked all explore_lite BFS (robot's own cell inscribed);
+        # 0.15 was a panic-fix at old undersized robot_radius. With the CAD-sized
+        # footprint (0.196 x 0.224), 0.30 gives a clean halo without swallowing
+        # free cells around the robot.
+        inflation_radius: 0.38
       always_send_full_costmap: true
 
 map_server:
@@ -224,17 +229,28 @@ behavior_server:
     local_footprint_topic: local_costmap/published_footprint
     global_footprint_topic: global_costmap/published_footprint
     cycle_frequency: 10.0
-    behavior_plugins: ['spin', 'back_up', 'drive_on_heading', 'wait', 'assisted_teleop']
+    # Plugin instance names become the action server names. The default
+    # Nav2 BT XML (navigate_to_pose_w_replanning_and_recovery.xml) calls
+    # the action `backup` (no underscore), so the plugin must be named
+    # `backup` here -- otherwise bt_navigator activation aborts after a
+    # 1s wait on a missing action server, and lifecycle_manager bails out
+    # on the whole stack.
+    # 'spin' kept because the default BT XML hard-references the spin action
+    # server; bt_navigator activation aborts without it. On BR-dead + BL-half
+    # hardware spin recovery will corkscrew if triggered, but we'd rather
+    # have a working planner than a clean recovery set. Swap to a custom BT
+    # XML (omitting spin) once motors are reliable enough to matter.
+    behavior_plugins: ['spin', 'backup', 'drive_on_heading', 'wait', 'assisted_teleop']
     spin:
-      plugin: 'nav2_behaviors/Spin'
-    back_up:
-      plugin: 'nav2_behaviors/BackUp'
+      plugin: 'nav2_behaviors::Spin'
+    backup:
+      plugin: 'nav2_behaviors::BackUp'
     drive_on_heading:
-      plugin: 'nav2_behaviors/DriveOnHeading'
+      plugin: 'nav2_behaviors::DriveOnHeading'
     wait:
-      plugin: 'nav2_behaviors/Wait'
+      plugin: 'nav2_behaviors::Wait'
     assisted_teleop:
-      plugin: 'nav2_behaviors/AssistedTeleop'
+      plugin: 'nav2_behaviors::AssistedTeleop'
     local_frame: odom
     global_frame: map
     robot_base_frame: base_link
@@ -252,7 +268,7 @@ waypoint_follower:
     action_server_result_timeout: 900.0
     waypoint_task_executor_plugin: 'wait_at_waypoint'
     wait_at_waypoint:
-      plugin: 'nav2_waypoint_follower/WaitAtWaypoint'
+      plugin: 'nav2_waypoint_follower::WaitAtWaypoint'
       enabled: true
       waypoint_pause_duration: 200
 
@@ -261,11 +277,81 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: false
     feedback: 'OPEN_LOOP'
-    max_velocity: [0.5, 0.0, 1.5]
-    min_velocity: [-0.5, 0.0, -1.5]
-    max_accel: [1.0, 0.0, 2.5]
-    max_decel: [-1.0, 0.0, -2.5]
+    # Matched to FollowPath max_vel_x/max_vel_theta 2026-04-23 so the
+    # smoother doesn't clamp what the controller is trying to send.
+    max_velocity: [0.4, 0.0, 1.5]
+    min_velocity: [-0.4, 0.0, -1.5]
+    max_accel: [2.5, 0.0, 3.5]
+    max_decel: [-2.5, 0.0, -3.5]
+    # /odometry/filtered matches bt_navigator. velocity_smoother is OPEN_LOOP
+    # right now so this topic is effectively unread, but switching to
+    # CLOSED_LOOP later would otherwise read the unfiltered wheel odom.
     odom_topic: '/odometry/filtered'
     odom_duration: 0.1
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0
+
+# Minimal collision_monitor config. Nav2's navigation_launch.py auto-launches
+# this node even though we don't strictly need it for MVP; without a declared
+# `observation_sources` list the lifecycle_manager fails to configure it and
+# the whole Nav2 bringup aborts.
+# Minimal docking_server config. Nav2's navigation_launch.py auto-launches
+# this node even though we don't have a physical charging dock. An empty
+# `docks: []` is rejected by rclcpp in Jazzy (PARAMETER_STRING_ARRAY
+# declared without default -> "No parameter value set" on get()). Work
+# around by declaring a single phantom dock at the map origin that we
+# never actually invoke -- configure() succeeds and no docking actions
+# are ever issued by our BT/goal pipeline.
+docking_server:
+  ros__parameters:
+    controller_frequency: 10.0
+    base_frame: "base_link"
+    fixed_frame: "odom"
+    dock_plugins: ["simple_charging_dock"]
+    simple_charging_dock:
+      plugin: "opennav_docking::SimpleChargingDock"
+    docks: ["phantom_dock"]
+    phantom_dock:
+      type: "simple_charging_dock"
+      frame: "map"
+      pose: [0.0, 0.0, 0.0]
+
+collision_monitor:
+  ros__parameters:
+    base_frame_id: "base_link"
+    odom_frame_id: "odom"
+    cmd_vel_in_topic: "cmd_vel_smoothed"
+    # Redirect Nav2's final cmd_vel into the supervisor mux instead of
+    # driving the motors directly. star_supervisor forwards
+    # /nav2/cmd_vel -> /cmd_vel_out only when /star/autonomy_enable is
+    # true AND /star/estop is false.
+    cmd_vel_out_topic: "/nav2/cmd_vel"
+    state_topic: "collision_monitor_state"
+    transform_tolerance: 0.2
+    source_timeout: 1.0
+    base_shift_correction: true
+    stop_pub_timeout: 2.0
+    # Single small "slowdown" polygon at 20 cm around the robot.
+    # Nav2's collision_monitor rejects an empty polygons list; a
+    # no-op config isn't possible in Jazzy. This keeps the node happy
+    # without triggering unwanted stops during normal operation because
+    # inflation_radius (0.40 m) will already have Nav2 plan a wider
+    # berth around obstacles.
+    polygons: ["FootprintApproach"]
+    FootprintApproach:
+      type: "polygon"
+      # Jazzy collision_monitor pre-declares `points` as STRING; flat
+      # double-array YAML is rejected. The accepted wire format is
+      # an S-expression-like string of [[x,y],[x,y],...] literals.
+      points: "[[0.20, 0.20], [0.20, -0.20], [-0.20, -0.20], [-0.20, 0.20]]"
+      action_type: "slowdown"
+      slowdown_ratio: 0.5
+      min_points: 4
+      visualize: true
+      polygon_pub_topic: "polygon_slowdown"
+      enabled: true
+    observation_sources: ["scan"]
+    scan:
+      type: "scan"
+      topic: "/scan"
+      enabled: true

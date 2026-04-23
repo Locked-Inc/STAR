@@ -193,7 +193,6 @@
 #include "rx72n_iwdt_regs.h"
 #include "rx72n_system_regs.h"
 #endif
-#include "rx_check.h"
 #include "tx_api.h" /* ThreadX API for tx_time_get() and TX_TIMER_TICKS_PER_SECOND */
 
 /* =============================================================================
@@ -343,7 +342,7 @@ static void internal_safe_strcpy(char* dst, const char* src, size_t max_len)
  * @return uint32_t Current tick count from ThreadX timer
  *
  * @note ThreadX tick rate defined by TX_TIMER_TICKS_PER_SECOND
- * @note Tick count wraps at UINT32_MAX (~49.7 days at 1 kHz tick rate)
+ * @note Tick count wraps at UINT32_MAX (~497 days at 100 Hz tick rate)
  * @note Thread-safe - tx_time_get() is reentrant
  *
  * @see tx_time_get() ThreadX API

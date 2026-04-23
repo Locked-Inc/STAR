@@ -5,12 +5,8 @@
  *
  * @details
  * Provides converter functions for translating between ROS2 message types and
- * the STAR protobuf schema used by the gateway service. Static methods are
- * stateless and thread-safe. BBB telemetry methods (telemetry_to_odometry,
- * telemetry_to_joint_state) hold dead-reckoning state and are NOT thread-safe.
- *
- * @note Static conversion functions are thread-safe. Instance BBB methods
- * must be called from a single thread (the ROS2 timer executor).
+ * the STAR protobuf schema used by the gateway service. All methods are
+ * static, stateless, and thread-safe.
  *
  * @since Version 1.0.0
 
@@ -27,11 +23,8 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
-#include <sensor_msgs/msg/imu.hpp>
-#include <sensor_msgs/msg/joint_state.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <sensor_msgs/msg/range.hpp>
-#include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/string.hpp>
 
 #include "star/v1/motor_control.pb.h"
@@ -46,14 +39,7 @@ namespace star::star_gateway_bridge
  *
  * @details
  * Provides conversion functions with input validation and unit conversions.
- * Static methods (twist_to_velocity_command, odometry_to_proto, etc.) are
- * stateless and thread-safe. BBB telemetry methods (telemetry_to_odometry,
- * telemetry_to_joint_state) are stateful -- they hold dead-reckoning pose
- * and previous encoder tick baselines -- and are NOT thread-safe. Call
- * init_bbb_params() before using any BBB conversion method.
- *
- * @note BBB conversion methods mutate internal state and must be called from
- * a single thread (the ROS2 timer executor).
+ * All methods are static, stateless, and thread-safe.
  *
  * @see StarGatewayBridgeNode  Owner of the converter instance.
  * @since Version 1.0.0
@@ -320,189 +306,6 @@ public:
     const rclcpp::Time & stamp, sensor_msgs::msg::Range & out);
 
   // ===========================================================================
-  // BBB Telemetry -> ROS2 Conversions (Protobuf -> ROS2)
-  // ===========================================================================
-
-  /**
-   * @struct BbbParams
-   * @brief Platform geometry and encoder configuration for BBB telemetry
-   *        conversions.
-   *
-   * @details
-   * Defines the physical parameters of the STAR differential-drive robot
-   * needed to convert raw encoder ticks into metric odometry and joint states.
-   * All values must be strictly positive.
-   *
-   * @code
-   * MessageConverter::BbbParams params{0.356, 0.072, 11599};
-   * converter.init_bbb_params(params);
-   * @endcode
-   *
-   * @see init_bbb_params()          Applies these parameters to the converter.
-   * @see telemetry_to_odometry()    Consumes wheel_base and ticks_per_rev.
-   * @see telemetry_to_joint_state() Consumes wheel_radius and ticks_per_rev.
-   *
-   * @since Version 1.1.0
-   */
-  struct BbbParams
-  {
-    double wheel_base;     /**< Track width in metres (centre-to-centre between
-                                left and right wheels). Must be > 0. */
-    double wheel_radius;   /**< Wheel radius in metres. Must be > 0. */
-    int32_t ticks_per_rev; /**< Encoder ticks per full wheel revolution.
-                                Must be > 0. STAR default: 11599 (341 PPR *
-                                34.02:1 gear ratio). */
-  };
-
-  /**
-   * @brief Initialize BBB telemetry converter with platform parameters.
-   *
-   * @details
-   * Must be called before telemetry_to_odometry() or telemetry_to_joint_state().
-   * Resets all dead-reckoning state (pose, encoder tick baselines) so the
-   * converter starts fresh.
-   *
-   * @param[in] params Platform geometry and encoder configuration.
-   *
-   * @pre params.wheel_base > 0, params.wheel_radius > 0, params.ticks_per_rev > 0.
-   * @post Dead-reckoning state reset to origin (0, 0, 0).
-   * @post BBB conversion methods are ready for use.
-   *
-   * @throw std::invalid_argument If any parameter is non-positive.
-   *
-   * @note Not thread-safe; call from a single thread before starting timers.
-   *
-   * @code
-   * MessageConverter::BbbParams p{0.356, 0.072, 11599};
-   * converter.init_bbb_params(p);
-   * @endcode
-   *
-   * @see telemetry_to_odometry()    Uses these params for dead-reckoning.
-   * @see telemetry_to_joint_state() Uses these params for tick-to-rad conversion.
-   *
-   * @since Version 1.1.0
-   */
-  void init_bbb_params(const BbbParams & params);
-
-  /**
-   * @brief Convert TelemetryData encoder readings to nav_msgs/Odometry via
-   *        dead-reckoning integration.
-   *
-   * @details
-   * Computes pose (x, y, theta) from cumulative encoder tick deltas using
-   * differential drive kinematics. Velocity is taken from encoder velocity_mps
-   * fields. Covariance matrices are set to realistic values for
-   * robot_localization EKF fusion. Returns false if any encoder sub-message
-   * is missing, leaving odom and internal state unmodified.
-   *
-   * @param[in]  telemetry  TelemetryData from BBB via gateway gRPC.
-   * @param[out] odom       Populated Odometry message (odom frame, base_link child).
-   *
-   * @return true if conversion succeeded, false if encoder data incomplete.
-   * @retval true  All four encoder sub-messages present; odom populated.
-   * @retval false Incomplete telemetry; odom and DR state unchanged.
-   *
-   * @pre init_bbb_params() must have been called.
-   * @pre telemetry contains encoder_front_left/right/back_left/right sub-messages.
-   * @post odom.header.frame_id == "odom", odom.child_frame_id == "base_link".
-   * @post Internal dead-reckoning state (dr_x_, dr_y_, dr_theta_) is updated.
-   *
-   * @throw None.
-   * @note NOT thread-safe; mutates dead-reckoning state.
-   *
-   * @code
-   * nav_msgs::msg::Odometry odom;
-   * if (converter.telemetry_to_odometry(telemetry, odom)) {
-   *   odom.header.stamp = node->now();
-   *   odom_pub->publish(odom);
-   * }
-   * @endcode
-   *
-   * @see init_bbb_params()          Must be called first.
-   * @see telemetry_to_joint_state() Companion encoder conversion.
-   *
-   * @since Version 1.1.0
-   */
-  bool telemetry_to_odometry(
-    const ::star::v1::TelemetryData & telemetry,
-    nav_msgs::msg::Odometry & odom);
-
-  /**
-   * @brief Convert TelemetryData IMU readings to sensor_msgs/Imu.
-   *
-   * @details
-   * Maps BNO055/MPU-9250 IMU data (quaternion, gyro, accel) from protobuf to
-   * ROS2 Imu message. Orientation covariance is set for yaw-only fusion (2D
-   * mode). Returns false if the IMU sub-message is absent.
-   *
-   * @param[in]  telemetry  TelemetryData from BBB via gateway gRPC.
-   * @param[out] imu_msg    Populated Imu message (imu_link frame).
-   *
-   * @return true if IMU data present, false if telemetry.has_imu() is false.
-   * @retval true  IMU sub-message present; imu_msg populated.
-   * @retval false No IMU data; imu_msg unchanged.
-   *
-   * @pre telemetry.imu() sub-message is populated.
-   * @post imu_msg.header.frame_id == "imu_link".
-   *
-   * @throw None.
-   * @note Thread-safe; stateless conversion.
-   *
-   * @code
-   * sensor_msgs::msg::Imu imu;
-   * if (MessageConverter::telemetry_to_imu(telemetry, imu)) {
-   *   imu.header.stamp = node->now();
-   *   imu_pub->publish(imu);
-   * }
-   * @endcode
-   *
-   * @see telemetry_to_odometry() Companion encoder conversion.
-   *
-   * @since Version 1.1.0
-   */
-  static bool telemetry_to_imu(
-    const ::star::v1::TelemetryData & telemetry,
-    sensor_msgs::msg::Imu & imu_msg);
-
-  /**
-   * @brief Convert TelemetryData encoder readings to sensor_msgs/JointState.
-   *
-   * @details
-   * Reports position (radians) and velocity (rad/s) for all four wheel joints.
-   * Returns false if any encoder sub-message is missing.
-   *
-   * @param[in]  telemetry    TelemetryData from BBB via gateway gRPC.
-   * @param[out] joint_state  Populated JointState message.
-   *
-   * @return true if all encoder data present, false if incomplete.
-   * @retval true  All four encoder sub-messages present; joint_state populated.
-   * @retval false Incomplete data; joint_state unchanged.
-   *
-   * @pre init_bbb_params() must have been called.
-   * @post joint_state.name has 4 entries matching wheel joint names.
-   *
-   * @throw None.
-   * @note Uses bbb_params_ but does not mutate state; safe to call concurrently
-   *       if bbb_params_ is not being written.
-   *
-   * @code
-   * sensor_msgs::msg::JointState js;
-   * if (converter.telemetry_to_joint_state(telemetry, js)) {
-   *   js.header.stamp = node->now();
-   *   joint_state_pub->publish(js);
-   * }
-   * @endcode
-   *
-   * @see init_bbb_params()       Must be called first.
-   * @see telemetry_to_odometry() Companion encoder conversion.
-   *
-   * @since Version 1.1.0
-   */
-  bool telemetry_to_joint_state(
-    const ::star::v1::TelemetryData & telemetry,
-    sensor_msgs::msg::JointState & joint_state);
-
-  // ===========================================================================
   // Validation Helpers
   // ===========================================================================
 
@@ -539,20 +342,6 @@ public:
   static int64_t ros_time_to_us(const rclcpp::Time & time);
 
 private:
-  // BBB dead-reckoning state (for telemetry_to_odometry)
-  BbbParams bbb_params_{0.356, 0.072, 11599};
-  bool bbb_params_initialized_{false};
-  double dr_x_{0.0};      /**< Dead-reckoning X position (m). */
-  double dr_y_{0.0};      /**< Dead-reckoning Y position (m). */
-  double dr_theta_{0.0};  /**< Dead-reckoning heading (rad). */
-  int64_t prev_ticks_fl_{0};
-  int64_t prev_ticks_fr_{0};
-  int64_t prev_ticks_bl_{0};
-  int64_t prev_ticks_br_{0};
-  bool first_odom_msg_{true};
-
-  static double normalize_angle(double angle);
-
   // Differential drive kinematics constants
   static constexpr double MAX_VELOCITY_MPS =
     2.0;   /**< VelocityCommand valid range (m/s); wheel and output velocities

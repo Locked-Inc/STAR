@@ -1,0 +1,16 @@
+{
+  local_certs
+  skip_install_trust
+  admin off
+}
+
+star.local {
+  bind 100.64.0.6
+  tls internal
+  handle /api/* {
+    reverse_proxy 100.64.0.6:9102
+  }
+  handle {
+    reverse_proxy localhost:9101
+  }
+}

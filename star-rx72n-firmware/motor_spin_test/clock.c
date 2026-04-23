@@ -1,16 +1,18 @@
 /**
  * @file clock.c
- * @brief RX72N clock init for the production STAR PCB: MOSC 24 MHz crystal
- *        -> PLL 240 MHz -> ICLK=240 / PCKA=120 / PCKB=60 / FCLK=60 MHz.
+ * @brief RX72N clock init for the STAR PCB bench test: MOSC 24 MHz crystal
+ *        -> PLL 240 MHz -> ICLK=120 / PCKA=120 / PCKB=60 / FCLK=60 MHz.
  *
  * @details
- * Self-contained equivalent of src/rx_clock_power_init.c, stripped of the
- * logging, asserts, simulator branches, and PPLL/USB clock paths the motor
- * spin test does not need. Configures only the main PLL.
+ * Self-contained reduced version of src/rx_clock_power_init.c, stripped of
+ * the logging, asserts, simulator branches, and PPLL/USB clock paths the
+ * motor spin test does not need. Configures only the main PLL.
  *
  * Path: EXTAL 24 MHz -> MOSC -> PLL (x10 / 1) = 240 MHz -> SCKCR=0x21C21211.
- * After this routine returns, ICLK is 240 MHz and PCLKA (the GPTW source)
- * is 120 MHz, matching k_pclka_hz in libs/rx_hal/inc/rx72n_clock.h.
+ * After this routine returns, ICLK is 120 MHz (half of production's 240 MHz
+ * -- the bench test runs the CPU at reduced speed to cut power dissipation)
+ * and PCLKA (the GPTW source) is 120 MHz, matching k_pclka_hz in
+ * libs/rx_hal/inc/rx72n_clock.h.
  *
  * SPDX-License-Identifier: MIT
  * @copyright Copyright (c) 2026 Locked Inc.
@@ -48,9 +50,9 @@ typedef enum : uint16_t {
 
 typedef enum : uint32_t {
   /*
-   * SCKCR dividers (matches production k_system_clock_dividers):
-   *   FCK=/4 (60), ICK=/1 (240), PSTOP1=1, PSTOP0=1, BCK=/4 (60),
-   *   PCKA=/2 (120), PCKB=/4 (60), PCKC=/4 (60), PCKD=/4 (60).
+   * SCKCR dividers (bench-test config, ICLK half-speed vs production):
+   *   FCK=/4 (60), ICK=/2 (120), PSTOP0=1, PSTOP1=1, BCK=/4 (60),
+   *   PCKA=/2 (120), PCKB=/4 (60), PCKC=/2 (120), PCKD=/2 (120).
    */
   k_sckcr_value = 0x21C21211U,
 } clock_sckcr_t;

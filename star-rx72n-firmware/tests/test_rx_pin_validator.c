@@ -76,7 +76,7 @@
  * pin_reserve(validator, 5, 3, "I2C_SCL");  // [OK] OK
  *
  * // Second reservation fails - conflict!
- * pin_reserve(validator, 5, 3, "SPI_MISO"); // [X] k_rx_err_resource_busy
+ * pin_reserve(validator, 5, 3, "SPI_CIPO"); // [X] k_rx_err_resource_busy
  * ```
  *
  * ## Test Coverage

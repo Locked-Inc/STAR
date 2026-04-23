@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a Python-based integration test suite that launches the Gazebo simulation headless and exercises 7 critical failure scenarios, catching bugs before the physical BBB robot hits the floor.
+**Goal:** Build a Python-based integration test suite that launches the Gazebo simulation headless and exercises 7 critical failure scenarios, catching bugs before the physical robot hits the floor.
 
 **Architecture:** Each test is a standalone Python script in `star-ros2/src/star_simulation/test/` that launches the sim, publishes/subscribes to ROS2 topics, measures timing, and asserts correctness. Tests run via `colcon test` or individually via `ros2 run`. All tests use `use_sim_time: true` and the headless Gazebo server.
 

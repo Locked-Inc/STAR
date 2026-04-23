@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd"
+            schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>star_supervisor</name>
+  <version>0.1.0</version>
+  <description>
+    Command gate + autonomy / e-stop arbiter for the STAR robot.
+
+    Arbitrates between manual teleop (/cmd_vel), Nav2 autonomous
+    (/nav2/cmd_vel), and an e-stop (/star/estop), emitting a single
+    /cmd_vel_out that the motor bridge consumes. Also forwards
+    /goal_pose clicks into /nav2/goal_pose only while autonomy is
+    enabled, so a Foxglove/Lichtblick "Goal" click does nothing when
+    the operator has not armed autonomy.
+
+    The motor bridge independently subscribes to /star/estop as a
+    second layer of safety -- do not rely on this node alone.
+  </description>
+  <maintainer email="cesarmagana23@gmail.com">STAR Team</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

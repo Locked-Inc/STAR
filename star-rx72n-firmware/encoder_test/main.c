@@ -105,12 +105,18 @@ static void leds_init(void)
  * without depending on the application include tree.
  * ==========================================================================
  *
+ * NOTE: The back-wheel Hall encoder harness is cross-wired vs silk. BR's
+ * encoder cable physically lands on TPU2 pins (PC0/PB3) and BL's lands on
+ * TPU1 pins (PC2/PA3). The Encoder-unit column below reflects the actual
+ * hardware wiring, so spinning wheel BR increments enc2 (reading TPU2).
+ * Matches production (src/tasks/motor_control_task.c:2214-2216).
+ *
  * | Idx | Wheel | GPTW | IN1 (PWM) | IN2 (dir) | DRVOFF | nSLEEP | Encoder unit |
  * |-----|-------|------|-----------|-----------|--------|--------|--------------|
  * |  0  | FL    | 0    | P17       | P23       | P61    | P60    | MTU1         |
  * |  1  | FR    | 1    | PC3       | P22       | P63    | P62    | MTU2         |
- * |  2  | BR    | 2    | P86       | PE3       | PE0    | P64    | TPU1         |
- * |  3  | BL    | 3    | PC6       | PE7       | PE2    | PE1    | TPU2         |
+ * |  2  | BR    | 2    | P86       | PE3       | PE0    | P64    | TPU2         |
+ * |  3  | BL    | 3    | PC6       | PE7       | PE2    | PE1    | TPU1         |
  */
 typedef struct {
   rx_gptw_channel_t gptw_channel;
@@ -141,14 +147,15 @@ static const motor_wiring_t k_motors[k_motor_count] = {
   {.gptw_channel = k_gptw_channel_1, .in2_pin = k_rx_p2_2, .in1_pin = k_rx_pc_3,
    .drvoff_port = k_port_6, .drvoff_pin = 3, .nsleep_port = k_port_6, .nsleep_pin = 2,
    .is_tpu = false, .timer_channel = 2, .direction_sign = +1},
-  /* M2 = BR. */
+  /* M2 = BR. Harness: Hall cable lands on TPU2 pins (PC0/PB3). */
   {.gptw_channel = k_gptw_channel_2, .in2_pin = k_rx_pe_3, .in1_pin = k_rx_p8_6,
    .drvoff_port = k_port_e, .drvoff_pin = 0, .nsleep_port = k_port_6, .nsleep_pin = 4,
-   .is_tpu = true,  .timer_channel = 1, .direction_sign = +1},
-  /* M3 = BL. Wired backwards (matches FL on left side). */
+   .is_tpu = true,  .timer_channel = 2, .direction_sign = +1},
+  /* M3 = BL. Wired backwards (matches FL on left side). Harness: Hall cable
+   * lands on TPU1 pins (PC2/PA3). */
   {.gptw_channel = k_gptw_channel_3, .in2_pin = k_rx_pe_7, .in1_pin = k_rx_pc_6,
    .drvoff_port = k_port_e, .drvoff_pin = 2, .nsleep_port = k_port_e, .nsleep_pin = 1,
-   .is_tpu = true,  .timer_channel = 2, .direction_sign = -1},
+   .is_tpu = true,  .timer_channel = 1, .direction_sign = -1},
 };
 
 /* ==========================================================================
@@ -219,18 +226,20 @@ typedef enum : uint16_t {
   k_counts_per_rev = 1364, /* 341 PPR x 4 (matches production) */
 } enc_const_t;
 
-/* Encoder phase A/B input pins (mirrors src/inc/hardware_config.h):
+/* Encoder phase A/B input pins. Reflects the cross-wired back-wheel harness:
+ * BR's Hall cable is on TPU2 pins (PC0/PB3) and BL's is on TPU1 pins
+ * (PC2/PA3). Matches production (motor_control_task.c:2214-2216).
  *   Encoder 0 (FL,  MTU1): P24 / P25
  *   Encoder 1 (FR,  MTU2): PA1 / PC5
- *   Encoder 2 (BR,  TPU1): PC2 / PA3
- *   Encoder 3 (BL,  TPU2): PC0 / PB3
+ *   Encoder 2 (BR,  TPU2): PC0 / PB3
+ *   Encoder 3 (BL,  TPU1): PC2 / PA3
  */
 typedef struct { uint8_t port; uint8_t bit; bool is_tpu; } enc_pin_t;
 static const enc_pin_t k_enc_pins[] = {
-  {2,  4, false}, {2,  5, false}, /* enc0: P24 / P25 (MTU1 MTCLKA/B) */
-  {10, 1, false}, {12, 5, false}, /* enc1: PA1 / PC5 (MTU2 MTCLKC/D) */
-  {12, 2, true},  {10, 3, true},  /* enc2: PC2 / PA3 (TPU1 TCLKA/B)  */
-  {12, 0, true},  {11, 3, true},  /* enc3: PC0 / PB3 (TPU2 TCLKC/D)  */
+  {2,  4, false}, {2,  5, false}, /* enc0: P24 / P25 (MTU1 MTCLKA/B)       -- FL */
+  {10, 1, false}, {12, 5, false}, /* enc1: PA1 / PC5 (MTU2 MTCLKC/D)       -- FR */
+  {12, 0, true},  {11, 3, true},  /* enc2: PC0 / PB3 (TPU2 TCLKC/D, harness) -- BR */
+  {12, 2, true},  {10, 3, true},  /* enc3: PC2 / PA3 (TPU1 TCLKA/B, harness) -- BL */
 };
 
 /* Direct-register encoder init -- the lib's rx_mpc_set_*_encoder doesn't
@@ -240,8 +249,8 @@ static const enc_pin_t k_enc_pins[] = {
  *
  * MTU1 (enc0 FL): base 0x000C1380, TCR/TMDR/TCNT at +0/+1/+6, TSTRA bit 1
  * MTU2 (enc1 FR): base 0x000C1400, same offsets,                TSTRA bit 2
- * TPU1 (enc2 BR): base 0x00088120, TCR/TMDR/TCNT at +0/+1/+6, TSTR  bit 1
- * TPU2 (enc3 BL): base 0x00088130, same offsets,                TSTR  bit 2
+ * TPU2 (enc2 BR): base 0x00088130, TCR/TMDR/TCNT at +0/+1/+6, TSTR  bit 2 (harness)
+ * TPU1 (enc3 BL): base 0x00088120, same offsets,                TSTR  bit 1 (harness)
  *
  * Phase counting mode 1 = TMDR=0x04. TCR=0x00 (external clock). PSEL=0x02
  * for MTCLK[A-D] on port 2/A/C; TCLK[A-D] on port C/A/C/B.
@@ -285,10 +294,10 @@ static bool encoders_init(void)
   REG8_AT(0x0008C140U + 2U * 8U + 5U)  = 0x02U; /* P25 MTCLKB -- enc0 B */
   REG8_AT(0x0008C140U + 10U * 8U + 1U) = 0x02U; /* PA1 MTCLKC -- enc1 A */
   REG8_AT(0x0008C140U + 12U * 8U + 5U) = 0x02U; /* PC5 MTCLKD -- enc1 B */
-  REG8_AT(0x0008C140U + 12U * 8U + 2U) = 0x03U; /* PC2 TCLKA  -- enc2 A (TPU port C) */
-  REG8_AT(0x0008C140U + 10U * 8U + 3U) = 0x04U; /* PA3 TCLKB  -- enc2 B (TPU port A) */
-  REG8_AT(0x0008C140U + 12U * 8U + 0U) = 0x03U; /* PC0 TCLKC  -- enc3 A (TPU port C) */
-  REG8_AT(0x0008C140U + 11U * 8U + 3U) = 0x04U; /* PB3 TCLKD  -- enc3 B (TPU port B) */
+  REG8_AT(0x0008C140U + 12U * 8U + 2U) = 0x03U; /* PC2 TCLKA  -- enc3 A (TPU1, reads BL per harness) */
+  REG8_AT(0x0008C140U + 10U * 8U + 3U) = 0x04U; /* PA3 TCLKB  -- enc3 B (TPU1, reads BL per harness) */
+  REG8_AT(0x0008C140U + 12U * 8U + 0U) = 0x03U; /* PC0 TCLKC  -- enc2 A (TPU2, reads BR per harness) */
+  REG8_AT(0x0008C140U + 11U * 8U + 3U) = 0x04U; /* PB3 TCLKD  -- enc2 B (TPU2, reads BR per harness) */
   *pwpr = 0x00U; *pwpr = 0x80U;
 
   /* set PMR=1 to route the pad to the peripheral */
