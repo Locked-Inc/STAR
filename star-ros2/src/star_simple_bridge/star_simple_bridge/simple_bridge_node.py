@@ -163,22 +163,58 @@ class SimpleBridgeNode(Node):
         ).encode("ascii")
 
         with self._serial_lock:
+            if self._port is None:
+                return  # drain tick will reopen; drop this command
             try:
                 self._port.write(line)
-            except (serial.SerialException, serial.SerialTimeoutException) as exc:
-                self.get_logger().warn(f"Serial write failed: {exc}")
+            except (serial.SerialException,
+                    serial.SerialTimeoutException,
+                    OSError,
+                    TypeError,
+                    AttributeError) as exc:
+                self.get_logger().warn(
+                    f"Serial write failed: {exc}. Closing for reopen.")
+                try:
+                    self._port.close()
+                except Exception:
+                    pass
+                self._port = None
 
     # -- firmware -> /odom/unfiltered --------------------------------
 
     def _serial_drain_cb(self) -> None:
-        """Read any pending bytes and dispatch one line at a time."""
+        """Read any pending bytes and dispatch one line at a time.
+
+        Resilient to the Cypress USB-UART bridge dropping off the bus
+        (an intermittent hardware issue on this board). On any serial
+        error (OSError, SerialException, TypeError) we null the port
+        and retry open(). While self._port is None every subsequent
+        drain tick simply attempts reopen.
+        """
         with self._serial_lock:
+            if self._port is None or not self._port.is_open:
+                try:
+                    self._port = serial.Serial(
+                        SERIAL_DEVICE, SERIAL_BAUD, timeout=0.05,
+                        write_timeout=0.05,
+                    )
+                    self.get_logger().info(f"Reopened {SERIAL_DEVICE}")
+                except Exception as reopen_exc:
+                    # Device still gone -- try again next tick.
+                    self._port = None
+                    return
             try:
                 waiting = self._port.in_waiting
                 if waiting:
                     self._rx_buffer.extend(self._port.read(waiting))
-            except serial.SerialException as exc:
-                self.get_logger().warn(f"Serial read failed: {exc}")
+            except (serial.SerialException, OSError, TypeError, AttributeError) as exc:
+                self.get_logger().warn(
+                    f"Serial read failed: {exc}. Will reopen on next tick.")
+                try:
+                    self._port.close()
+                except Exception:
+                    pass
+                self._port = None
                 return
 
         while True:
