@@ -386,7 +386,6 @@
  */
 
 #include "comm_task.h"
-
 #include "rx_check.h"
 #include "rx_comm_manager.h"
 #include "rx_frame.h"
@@ -2044,8 +2043,7 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
     return;
   }
 
-  rx_log_debug_val(s_tag, "Frame received, type", (uint8_t)frame->header.type);
-  rx_log_debug_val(s_tag, "Frame length", (uint32_t)frame->header.length);
+  rx_log_info_val(s_tag, "FRAME callback type=", (uint32_t)frame->header.type);
 
   /* Update communication timestamp on any valid frame */
   shared_data_update_last_comm_tick();
@@ -2053,6 +2051,7 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
   /* Dispatch based on frame type */
   switch (frame->header.type) {
     case k_frame_type_command:
+      rx_log_info_val(s_tag, "CB COMMAND seq", frame->header.sequence);
       /* Record channel only for COMMAND frames so telemetry replies are routed
        * back on the same transport that carries host commands. ACK/NACK frames
        * are host responses to our telemetry and must not overwrite the channel. */
@@ -2294,10 +2293,12 @@ static void internal_send_command_response(rx_comm_channel_t channel,
  */
 static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
+  rx_log_info_val(s_tag, "VEL entry, frame.len=", (uint32_t)frame->header.length);
   star_v1_SetVelocityRequest velocity_req = star_v1_SetVelocityRequest_init_zero;
   const rx_err_t             err =
     rx_nanopb_decode_velocity_request(frame->payload, frame->header.length, &velocity_req);
   if (err != k_rx_ok || !velocity_req.has_command) {
+    rx_log_warn_val(s_tag, "VEL decode/has_command FAIL err=", (uint32_t)err);
     return false;
   }
 
@@ -2319,9 +2320,14 @@ static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx
   if (set_err != k_rx_ok) {
     rx_log_error_val(s_tag, "Failed to set motor cmd", (uint32_t)set_err);
   } else {
-    rx_log_info_val(s_tag,
-                    "SETCMD valid=1 fl*100=",
-                    (int32_t)(cmd.target_velocity_mps[0] * 100.0F));
+    motor_command_t verify_cmd = {};
+    const rx_err_t  get_err    = shared_data_get_motor_command(&verify_cmd);
+    if (get_err == k_rx_ok) {
+      rx_log_info_val(s_tag, "VEL set valid=", (uint32_t)verify_cmd.valid);
+      rx_log_info_val(s_tag, "VEL set seq=", verify_cmd.sequence);
+    } else {
+      rx_log_warn_val(s_tag, "VEL verify get failed", (uint32_t)get_err);
+    }
   }
 
   /* Send response back to host (best-effort; command already applied) */

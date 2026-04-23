@@ -694,6 +694,11 @@ internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const r
 
   rx_log_debug_val(s_tag, "Frame received, type", (uint8_t)frame->header.type);
 
+  if (frame->header.type == k_frame_type_command) {
+    rx_log_info_val(s_tag, "CMD frame seq", frame->header.sequence);
+    rx_log_info_val(s_tag, "CMD frame channel", (uint8_t)channel);
+  }
+
   /* Output decoded ASCII to Port 1 */
   internal_output_decoded(mgr, frame, false);
 
@@ -937,6 +942,9 @@ static rx_err_t internal_poll_uart(rx_comm_manager_t* mgr)
   rx_err_t   err = rx_uart_comm_receive(mgr->uart_handle, &frame, k_receive_timeout_ms);
 
   if (err == k_rx_ok) {
+    if (frame.header.type == k_frame_type_command) {
+      rx_log_info_val(s_tag, "UART RX CMD seq", frame.header.sequence);
+    }
     internal_handle_frame(mgr, k_comm_channel_uart, &frame);
     return k_rx_ok;
   }

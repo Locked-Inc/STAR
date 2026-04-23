@@ -946,7 +946,7 @@ rx_err_t shared_data_init(void)
  *
  * @note Thread Safety: Protected by motor_mutex (blocking wait, no timeout)
  * @note Performance: ~6.5 us total (1.2 us lock + 3.5 us memcpy + 0.8 us unlock + 1.0 us event)
- * @note Memory: sizeof(motor_command_t) = 24 bytes copied
+ * @note Memory: sizeof(motor_command_t) bytes copied (compiler/layout dependent)
  * @note Frequency: Called at ~100 Hz by Communication Task (10ms period)
  *
  * @warning Do not call from ISR context! Use TX_WAIT_FOREVER blocking wait.
@@ -1053,7 +1053,7 @@ rx_err_t shared_data_set_motor_command(const motor_command_t* cmd)
  *
  * @note Thread Safety: Protected by motor_mutex (blocking wait)
  * @note Performance: ~5.5 us total (1.2 us lock + 3.5 us memcpy + 0.8 us unlock)
- * @note Memory: sizeof(motor_command_t) = 24 bytes copied
+ * @note Memory: sizeof(motor_command_t) bytes copied (compiler/layout dependent)
  * @note Frequency: Called at 250 Hz by Motor Task (4ms period)
  *
  * @warning Do not call from ISR context!
