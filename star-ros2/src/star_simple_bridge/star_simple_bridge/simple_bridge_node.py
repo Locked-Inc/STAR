@@ -198,7 +198,11 @@ class SimpleBridgeNode(Node):
                         SERIAL_DEVICE, SERIAL_BAUD, timeout=0.05,
                         write_timeout=0.05,
                     )
-                    self.get_logger().info(f"Reopened {SERIAL_DEVICE}")
+                    # Drop any stale half-line that accumulated before the
+                    # disconnect -- mixing it with fresh bytes from the new
+                    # connection produces concatenated / unparseable lines.
+                    self._rx_buffer.clear()
+                    self.get_logger().debug(f"Reopened {SERIAL_DEVICE}")
                 except Exception as reopen_exc:
                     # Device still gone -- try again next tick.
                     self._port = None
@@ -208,7 +212,7 @@ class SimpleBridgeNode(Node):
                 if waiting:
                     self._rx_buffer.extend(self._port.read(waiting))
             except (serial.SerialException, OSError, TypeError, AttributeError) as exc:
-                self.get_logger().warn(
+                self.get_logger().debug(
                     f"Serial read failed: {exc}. Will reopen on next tick.")
                 try:
                     self._port.close()
@@ -217,12 +221,22 @@ class SimpleBridgeNode(Node):
                 self._port = None
                 return
 
+        # Split the accumulated buffer on either '\n' or '\r' so we
+        # never get a mid-line split when the firmware emits '\r\n'.
         while True:
-            idx = self._rx_buffer.find(b"\n")
+            # Find first of b'\n' or b'\r'
+            nl = self._rx_buffer.find(b"\n")
+            cr = self._rx_buffer.find(b"\r")
+            idx = min(x for x in (nl, cr) if x >= 0) if (nl >= 0 or cr >= 0) else -1
             if idx < 0:
                 break
             raw_line = bytes(self._rx_buffer[:idx])
-            del self._rx_buffer[: idx + 1]
+            # Drop the terminator plus any adjacent \n or \r (handles \r\n).
+            consumed = idx + 1
+            while (consumed < len(self._rx_buffer) and
+                   self._rx_buffer[consumed:consumed+1] in (b"\n", b"\r")):
+                consumed += 1
+            del self._rx_buffer[:consumed]
             try:
                 line = raw_line.decode("ascii").strip()
             except UnicodeDecodeError:
@@ -233,22 +247,34 @@ class SimpleBridgeNode(Node):
             self._dispatch_line(line)
 
     def _dispatch_line(self, line: str) -> None:
-        """Route a single decoded ASCII line to the right handler."""
+        """Route a single decoded ASCII line to the right handler.
+
+        Silent tolerance of mid-line fragments at startup: if the host
+        opens /dev/star-mcu mid-stream, the first 'line' may be a tail
+        fragment that does not start with 'E ' or '#'. Flood-logging
+        these as warns spams Foxglove, so we downgrade unknowns to
+        throttled-debug.
+        """
+        # Internal '\r' left over from a \\r\\n boundary split.
+        line = line.lstrip("\r")
         if line.startswith("E "):
             self._handle_encoder_line(line)
         elif line.startswith("#"):
             self.get_logger().debug(f"fw: {line}")
         else:
-            self.get_logger().warn(f"Unknown firmware line: {line!r}")
+            self.get_logger().debug(f"Unknown/fragment: {line!r}")
 
     def _handle_encoder_line(self, line: str) -> None:
         """Parse an "E fl fr bl br ms" frame and publish odometry."""
         tokens = line.split()
         expected_token_count = 6
         if len(tokens) != expected_token_count:
-            self.get_logger().warn(
-                f"Malformed encoder line (want {expected_token_count} "
-                f"tokens, got {len(tokens)}): {line!r}"
+            # Silent drop: USB hiccups cause concatenated / truncated
+            # lines. Spamming Foxglove as warns is unhelpful; SLAM
+            # toolbox recovers via scan-matching when some odom frames
+            # are missing.
+            self.get_logger().debug(
+                f"drop malformed: tokens={len(tokens)} {line!r}"
             )
             return
         try:
@@ -258,7 +284,7 @@ class SimpleBridgeNode(Node):
             ticks_br = int(tokens[4])
             ts_ms = int(tokens[5])
         except ValueError:
-            self.get_logger().warn(f"Non-integer encoder tokens: {line!r}")
+            self.get_logger().debug(f"drop non-integer: {line!r}")
             return
 
         # First frame: seed state and skip publication.

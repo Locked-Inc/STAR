@@ -1691,7 +1691,7 @@ static void internal_motor_task_entry(ULONG input)
   /* Bring-up control loop. Open-loop duty = target_mps * 40, clamped to +/-50%.
    * 1.0 m/s -> 40% duty. Pulls every iteration from shared_data; relies on
    * comm_task setting cmd.valid=true via SetVelocityRequest. */
-  static const float k_bringup_duty_per_mps = 40.0F;
+  static const float k_bringup_duty_per_mps = 80.0F;
   /* Per-motor direction signs: FL (M0) and BL (M3) are wired such that
    * positive duty drives those wheels in reverse (see motor_spin_test/main.c
    * k_motors[].direction_sign). Applying the sign here means a uniform
@@ -1718,10 +1718,10 @@ static void internal_motor_task_entry(ULONG input)
       if (have) {
         const float target_mps = internal_get_target_velocity(&cmd, i);
         duty                   = target_mps * k_bringup_duty_per_mps * k_motor_direction_sign[i];
-        if (duty > 50.0F) {
-          duty = 50.0F;
-        } else if (duty < -50.0F) {
-          duty = -50.0F;
+        if (duty > 75.0F) {
+          duty = 75.0F;
+        } else if (duty < -75.0F) {
+          duty = -75.0F;
         }
       }
       (void)rx_motor_set_duty(&s_motors[i], duty);

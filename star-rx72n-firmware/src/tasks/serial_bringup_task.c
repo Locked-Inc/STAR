@@ -59,6 +59,7 @@
 #include "rx72n_tpu_regs.h"    /* tpu1(), tpu2() */
 #include "rx_check.h"          /* RX_ASSERT */
 #include "rx_err.h"            /* rx_err_t, k_rx_err_* */
+#include "rx_iwdt.h"           /* rx_iwdt_task_heartbeat */
 #include "rx_log.h"            /* rx_log_info / warn / error */
 #include "shared_data.h"       /* motor_command_t, shared_data_set_motor_command */
 #include "tx_api.h"            /* TX_THREAD, tx_thread_create, tx_time_get */
@@ -285,6 +286,10 @@ static void internal_task_entry(ULONG input)
     if ((tick % (uint32_t)k_serial_telemetry_period_ticks) == 0U) {
       internal_emit_telemetry();
     }
+    /* Feed the SerialBU IWDT slot every 10 ms. Registered from main.c
+     * (replaces CommTask now that comm_task is dormant). Timeout is
+     * 128 ms; 10 ms feed cadence leaves 12x margin. */
+    (void)rx_iwdt_task_heartbeat("SerialBU");
     tick++;
     (void)tx_thread_sleep((ULONG)k_serial_outer_loop_sleep_ticks);
   }
@@ -439,25 +444,8 @@ static void internal_handle_line(const char* line, uint8_t len)
 
   const rx_err_t err = shared_data_set_motor_command(&cmd);
   if (err != k_rx_ok) {
-    char ebuf[40];
-    (void)snprintf(ebuf, sizeof(ebuf), "# set_err=%u\r\n", (unsigned)err);
-    uart_debug_puts(ebuf);
+    rx_log_error_val(s_tag, "set_motor_command failed", (uint32_t)err);
     return;
-  }
-
-  /* Diagnostic echo: hardcoded float test + parsed value as raw bits +
-   * cast. Distinguishes strtof bug from cast bug. */
-  {
-    char vbuf[k_serial_max_line_len + 64];
-    const float test_const = 0.40F;
-    union { float f; uint32_t u; } parsed0;
-    parsed0.f = parsed[k_wire_slot_fl];
-    (void)snprintf(vbuf, sizeof(vbuf),
-                   "# v cast(0.40)=%d cast(parsed0)=%d bits=0x%08lX\r\n",
-                   (int)(test_const * 100.0F),
-                   (int)(parsed0.f * 100.0F),
-                   (unsigned long)parsed0.u);
-    uart_debug_puts(vbuf);
   }
 
   s_last_cmd_tick = tx_time_get();
@@ -509,23 +497,6 @@ static void internal_emit_telemetry(void)
     return;
   }
   uart_debug_puts(buf);
-
-  /* DIAG: every 20 emits (1 sec) emit stats line so we can see RX byte
-   * count, total complete lines, V-parse count, and live SCI9 register
-   * state -- if SCR.RIE bit is missing or SSR has sticky errors, RX is dead. */
-  static uint16_t s_emit_count = 0;
-  s_emit_count++;
-  if ((s_emit_count % 20U) == 0U) {
-    char sbuf[k_serial_tx_buf_size];
-    (void)snprintf(sbuf, sizeof(sbuf),
-                   "# stats rx=%lu lines=%lu v=%lu scr=%02X ssr=%02X\r\n",
-                   (unsigned long)s_total_rx_bytes,
-                   (unsigned long)s_total_lines,
-                   (unsigned long)s_total_v_parsed,
-                   (unsigned)sci9()->scr,
-                   (unsigned)sci9()->ssr);
-    uart_debug_puts(sbuf);
-  }
 }
 
 /* =============================================================================
