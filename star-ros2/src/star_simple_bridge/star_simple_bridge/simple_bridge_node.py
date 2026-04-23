@@ -9,6 +9,15 @@ RX72N firmware over /dev/ttyACM0:
                   (signed int16 encoder deltas at MTU1 / MTU2 / TPU1 /
                   TPU2 channels, followed by a uint32 millisecond
                   timestamp)
+  RX72N -> ROS2:  "M <d_fl> <d_fr> <d_bl> <d_br>
+                     <f_fl> <f_fr> <f_bl> <f_br> <ms>\\n"
+                  (int16 per-motor duty in tenths of a percent, then
+                  uint8 DRV8263 fault byte per motor, then uint32 ms)
+  RX72N -> ROS2:  "I <qw> <qx> <qy> <qz> <roll> <pitch> <heading>
+                     <gx> <gy> <gz> <ax> <ay> <az> <ms>\\n"
+                  (int16 raw BNO055-scaled quaternion, Euler angles
+                  (deg*16), gyro rates (dps*16), linear accel
+                  (m/s^2 * 100), then uint32 ms)
 
 The robot is a 4-wheel skid-steer. Per-side velocities are derived
 from geometry_msgs/Twist using the standard differential-drive
@@ -31,6 +40,8 @@ import serial
 from geometry_msgs.msg import Quaternion, Twist
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
+from sensor_msgs.msg import Imu
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension, UInt8MultiArray
 
 # Serial transport
 SERIAL_DEVICE = "/dev/ttyACM0"
@@ -61,13 +72,31 @@ ENCODER_WRAP_RANGE = 65536
 SERIAL_DRAIN_HZ = 100.0
 CMD_VEL_QOS_DEPTH = 10
 ODOM_QOS_DEPTH = 10
+IMU_QOS_DEPTH = 10
+MOTOR_DIAG_QOS_DEPTH = 10
 
 # Frame IDs (must match ekf.yaml and the URDF).
 FRAME_ODOM = "odom"
 FRAME_BASE_LINK = "base_link"
+FRAME_IMU = "imu_link"
 
 # Safety bounds
 MIN_DT_S = 0.001  # clamp reported timestamp delta to avoid div-by-zero
+
+# BNO055 integer-scale divisors. Must match k_imu_scale_* in
+# star-rx72n-firmware/src/shared/shared_data.h.
+IMU_SCALE_QUAT = 16384.0
+IMU_SCALE_EULER_DEG = 16.0   # raw / 16 -> degrees
+IMU_SCALE_GYRO_DPS = 16.0    # raw / 16 -> deg/s
+IMU_SCALE_ACC_MPS2 = 100.0   # raw / 100 -> m/s^2
+
+# DRV8263-side (firmware) duty_cycle_percent is sent in tenths of a
+# percent. Must match k_serial_duty_scale in serial_bringup_task.c.
+DUTY_TENTHS_PER_PERCENT = 10.0
+
+# Per-axis wheel labels used for the Float32MultiArray dimension label.
+# Order must match the firmware wire order [FL FR BL BR].
+MOTOR_LABELS = ("fl", "fr", "bl", "br")
 
 
 def _yaw_to_quaternion(yaw: float) -> Quaternion:
@@ -141,6 +170,15 @@ class SimpleBridgeNode(Node):
         )
         self._odom_pub = self.create_publisher(
             Odometry, "/odom/unfiltered", ODOM_QOS_DEPTH
+        )
+        self._imu_pub = self.create_publisher(
+            Imu, "/imu/data", IMU_QOS_DEPTH
+        )
+        self._motor_duty_pub = self.create_publisher(
+            Float32MultiArray, "/motor/duty", MOTOR_DIAG_QOS_DEPTH
+        )
+        self._motor_faults_pub = self.create_publisher(
+            UInt8MultiArray, "/motor/faults", MOTOR_DIAG_QOS_DEPTH
         )
 
         self._drain_timer = self.create_timer(
@@ -259,6 +297,10 @@ class SimpleBridgeNode(Node):
         line = line.lstrip("\r")
         if line.startswith("E "):
             self._handle_encoder_line(line)
+        elif line.startswith("M "):
+            self._handle_motor_line(line)
+        elif line.startswith("I "):
+            self._handle_imu_line(line)
         elif line.startswith("#"):
             self.get_logger().debug(f"fw: {line}")
         else:
@@ -353,6 +395,115 @@ class SimpleBridgeNode(Node):
         odom.twist.twist.angular.y = 0.0
         odom.twist.twist.angular.z = angular_vel
         self._odom_pub.publish(odom)
+
+    def _handle_motor_line(self, line: str) -> None:
+        """Parse "M d_fl d_fr d_bl d_br f_fl f_fr f_bl f_br ms" and publish.
+
+        Emits two topics:
+          /motor/duty   - Float32MultiArray of per-motor duty in percent
+                           (recovered by dividing the int16 tenths-of-a-
+                           percent wire value by DUTY_TENTHS_PER_PERCENT)
+          /motor/faults - UInt8MultiArray of per-motor DRV8263 fault bytes
+        Array slot order for both messages is [FL FR BL BR] to match the
+        firmware wire order (same convention as the E line).
+        """
+        tokens = line.split()
+        expected_token_count = 10  # "M" + 4 duty + 4 fault + 1 ms
+        if len(tokens) != expected_token_count:
+            self.get_logger().debug(
+                f"drop malformed M: tokens={len(tokens)} {line!r}"
+            )
+            return
+        try:
+            duty_tenths = [int(tokens[1 + i]) for i in range(4)]
+            faults = [int(tokens[5 + i]) for i in range(4)]
+            # ts_ms is read but not currently attached to the outgoing
+            # messages: Float32MultiArray / UInt8MultiArray have no
+            # header. Diagnostics consumers stamp on receipt.
+            int(tokens[9])
+        except ValueError:
+            self.get_logger().debug(f"drop non-integer M: {line!r}")
+            return
+
+        duty_msg = Float32MultiArray()
+        duty_dim = MultiArrayDimension()
+        duty_dim.label = "wheel_fl_fr_bl_br_percent"
+        duty_dim.size = len(MOTOR_LABELS)
+        duty_dim.stride = len(MOTOR_LABELS)
+        duty_msg.layout.dim.append(duty_dim)
+        duty_msg.data = [
+            tenths / DUTY_TENTHS_PER_PERCENT for tenths in duty_tenths
+        ]
+        self._motor_duty_pub.publish(duty_msg)
+
+        fault_msg = UInt8MultiArray()
+        fault_dim = MultiArrayDimension()
+        fault_dim.label = "wheel_fl_fr_bl_br_drv8263_fault_byte"
+        fault_dim.size = len(MOTOR_LABELS)
+        fault_dim.stride = len(MOTOR_LABELS)
+        fault_msg.layout.dim.append(fault_dim)
+        fault_msg.data = faults
+        self._motor_faults_pub.publish(fault_msg)
+
+    def _handle_imu_line(self, line: str) -> None:
+        """Parse an "I qw qx qy qz roll pitch heading gx gy gz ax ay az ms"
+        frame and publish a sensor_msgs/Imu on /imu/data.
+
+        All thirteen numeric fields are raw int16 values scaled by
+        BNO055 register-native divisors. We convert here so the
+        published Imu message is already in SI units (rad, rad/s,
+        m/s^2) as required by REP-145. Euler angles are not published
+        on the Imu topic (the orientation quaternion already carries
+        attitude) but could be added as a separate diagnostic topic.
+
+        Covariances are left at zero; downstream consumers (ekf_node,
+        slam_toolbox) treat "cov[0] == 0" as "unknown -> use
+        defaults", which is the right behavior until we bench a real
+        noise estimate for this BNO055 unit.
+        """
+        tokens = line.split()
+        expected_token_count = 15  # "I" + 13 int16 + 1 ms
+        if len(tokens) != expected_token_count:
+            self.get_logger().debug(
+                f"drop malformed I: tokens={len(tokens)} {line!r}"
+            )
+            return
+        try:
+            raw = [int(tokens[1 + i]) for i in range(13)]
+            int(tokens[14])  # ts_ms currently unused; Imu stamps on receipt
+        except ValueError:
+            self.get_logger().debug(f"drop non-integer I: {line!r}")
+            return
+
+        quat_w = raw[0] / IMU_SCALE_QUAT
+        quat_x = raw[1] / IMU_SCALE_QUAT
+        quat_y = raw[2] / IMU_SCALE_QUAT
+        quat_z = raw[3] / IMU_SCALE_QUAT
+        # Euler fields (roll, pitch, heading) at raw[4..6] are
+        # redundant with the quaternion for Imu publication and are
+        # intentionally skipped here.
+        gyro_x_rad = math.radians(raw[7] / IMU_SCALE_GYRO_DPS)
+        gyro_y_rad = math.radians(raw[8] / IMU_SCALE_GYRO_DPS)
+        gyro_z_rad = math.radians(raw[9] / IMU_SCALE_GYRO_DPS)
+        acc_x = raw[10] / IMU_SCALE_ACC_MPS2
+        acc_y = raw[11] / IMU_SCALE_ACC_MPS2
+        acc_z = raw[12] / IMU_SCALE_ACC_MPS2
+
+        imu_msg = Imu()
+        imu_msg.header.stamp = self.get_clock().now().to_msg()
+        imu_msg.header.frame_id = FRAME_IMU
+        imu_msg.orientation.w = quat_w
+        imu_msg.orientation.x = quat_x
+        imu_msg.orientation.y = quat_y
+        imu_msg.orientation.z = quat_z
+        imu_msg.angular_velocity.x = gyro_x_rad
+        imu_msg.angular_velocity.y = gyro_y_rad
+        imu_msg.angular_velocity.z = gyro_z_rad
+        imu_msg.linear_acceleration.x = acc_x
+        imu_msg.linear_acceleration.y = acc_y
+        imu_msg.linear_acceleration.z = acc_z
+        # Covariances left at default-zero (REP-145: "unknown").
+        self._imu_pub.publish(imu_msg)
 
     # -- shutdown ----------------------------------------------------
 

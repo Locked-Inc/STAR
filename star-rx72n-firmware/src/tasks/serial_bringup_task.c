@@ -20,6 +20,21 @@
  *   wire order) followed by the unsigned ms ThreadX tick. The Pi5 side
  *   knows about any harness quirks -- this firmware just reports raw
  *   tcnt in the fixed MTU1/MTU2/TPU1/TPU2 slot order.
+ * - TX (MCU -> Pi5): "M <d_fl> <d_fr> <d_bl> <d_br>
+ *                        <f_fl> <f_fr> <f_bl> <f_br> <ms>\n"
+ *   Per-motor duty cycle in tenths of a percent (int16, divide by 10
+ *   on host; signed so reverse duty is negative), then per-motor
+ *   DRV8263 fault byte (uint8). Wire slot order [FL FR BL BR] matches
+ *   the E and V lines. Source: shared_data_get_motor_state(). 20 Hz.
+ * - TX (MCU -> Pi5): "I <qw> <qx> <qy> <qz> <roll> <pitch> <heading>
+ *                       <gx> <gy> <gz> <ax> <ay> <az> <ms>\n"
+ *   Raw int16 scaled values straight from imu_state_t. Host divides:
+ *     quat  / k_imu_scale_quat  (= 16384) to get unit quaternion
+ *     euler / k_imu_scale_euler (=    16) to get degrees
+ *     gyro  / k_imu_scale_gyro  (=    16) to get deg/s
+ *     accel / k_imu_scale_acc   (=   100) to get m/s^2
+ *   Emitted at 20 Hz regardless of imu_state.valid; if the BNO055 has
+ *   not been read successfully yet the fields are zero.
  *
  * # Control-path safety
  *
@@ -47,6 +62,7 @@
 
 #include "serial_bringup_task.h"
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -61,7 +77,7 @@
 #include "rx_err.h"            /* rx_err_t, k_rx_err_* */
 #include "rx_iwdt.h"           /* rx_iwdt_task_heartbeat */
 #include "rx_log.h"            /* rx_log_info / warn / error */
-#include "shared_data.h"       /* motor_command_t, shared_data_set_motor_command */
+#include "shared_data.h"       /* motor_command_t, motor_state_t, imu_state_t, setters + getters */
 #include "tx_api.h"            /* TX_THREAD, tx_thread_create, tx_time_get */
 
 /* =============================================================================
@@ -100,8 +116,22 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_serial_tx_buf_size = 80, /**< "E %d %d %d %d %lu\n" worst-case + null */
+  /* Worst-case line is "I ..." with 13 int16 fields + 1 uint32 ms.
+   * Each int16 prints up to 7 chars ("-32768 "), uint32 ms up to 11,
+   * plus 2-char prefix and CRLF: ~110 chars. Round to 160 for slack. */
+  k_serial_tx_buf_size = 160,
 } serial_tx_buf_constants_t;
+
+/**
+ * @enum serial_duty_scale_t
+ * @brief Scale applied to duty_cycle_percent (float) before wire emission.
+ * @details Host divides by this to recover percent with 1-decimal precision.
+ * Kept as a typed enum to stay inside the NASA-10 / STAR no-magic-number rule.
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_serial_duty_scale = 10, /**< Wire value = (int)(duty_percent * 10) */
+} serial_duty_scale_t;
 
 /** @brief Multiply tx_time_get() ticks by this to get milliseconds (10ms tick). */
 typedef enum : uint8_t {
@@ -212,6 +242,8 @@ static void internal_task_entry(ULONG input);
 static void internal_drain_rx(void);
 static void internal_handle_line(const char* line, uint8_t len);
 static void internal_emit_telemetry(void);
+static void internal_emit_motor_telemetry(void);
+static void internal_emit_imu_telemetry(void);
 static void internal_check_watchdog(void);
 
 /* =============================================================================
@@ -285,6 +317,8 @@ static void internal_task_entry(ULONG input)
     internal_check_watchdog();
     if ((tick % (uint32_t)k_serial_telemetry_period_ticks) == 0U) {
       internal_emit_telemetry();
+      internal_emit_motor_telemetry();
+      internal_emit_imu_telemetry();
     }
     /* Feed the SerialBU IWDT slot every 10 ms. Registered from main.c
      * (replaces CommTask now that comm_task is dormant). Timeout is
@@ -487,12 +521,134 @@ static void internal_emit_telemetry(void)
   const int written =
     snprintf(buf,
              (size_t)k_serial_tx_buf_size,
-             "E %d %d %d %d %lu\n",
-             (int)enc_fl,
-             (int)enc_fr,
-             (int)enc_tpu1,
-             (int)enc_tpu2,
-             (unsigned long)now_ms);
+             "E %" PRId16 " %" PRId16 " %" PRId16 " %" PRId16 " %" PRIu32 "\n",
+             enc_fl,
+             enc_fr,
+             enc_tpu1,
+             enc_tpu2,
+             now_ms);
+  if (written <= 0) {
+    return;
+  }
+  uart_debug_puts(buf);
+}
+
+/**
+ * @brief Build and send one "M ..." motor-telemetry line over SCI9
+ *
+ * @details
+ * Reads motor_state_t from shared_data and emits per-motor duty cycle
+ * (tenths of a percent, signed int) and DRV8263 fault flags (uint8).
+ * Motor index order on the wire is the firmware's motor_index_t order
+ * (FL=0, FR=1, BR=2, BL=3) -- same as the E line.
+ *
+ * If shared_data_get_motor_state() fails (non-blocking try returned
+ * busy before motor_control_task ran its first iteration), the line is
+ * skipped silently so we don't flood the host with stale zeros.
+ *
+ * @return void
+ * @pre motor_control_task has been created and populates motor_state_t
+ * @post One ASCII "M ..." line written to SCI9 on success; nothing on busy
+ * @since Version 1.0.0
+ */
+static void internal_emit_motor_telemetry(void)
+{
+  motor_state_t state;
+  const rx_err_t err = shared_data_get_motor_state(&state);
+  if (err != k_rx_ok) {
+    return;
+  }
+
+  /* Wire slot order [FL FR BL BR] matches E and V -- NOT the firmware
+   * motor_index_t order [FL FR BR BL]. We index shared_data by
+   * k_fw_idx_* and fill the wire slots in the correct permutation. */
+  const int16_t duty_fl =
+    (int16_t)(state.duty_cycle_percent[k_fw_idx_front_left] * (float)k_serial_duty_scale);
+  const int16_t duty_fr =
+    (int16_t)(state.duty_cycle_percent[k_fw_idx_front_right] * (float)k_serial_duty_scale);
+  const int16_t duty_bl =
+    (int16_t)(state.duty_cycle_percent[k_fw_idx_back_left] * (float)k_serial_duty_scale);
+  const int16_t duty_br =
+    (int16_t)(state.duty_cycle_percent[k_fw_idx_back_right] * (float)k_serial_duty_scale);
+  const uint8_t fault_fl = state.fault_flags[k_fw_idx_front_left];
+  const uint8_t fault_fr = state.fault_flags[k_fw_idx_front_right];
+  const uint8_t fault_bl = state.fault_flags[k_fw_idx_back_left];
+  const uint8_t fault_br = state.fault_flags[k_fw_idx_back_right];
+  const uint32_t now_ms = (uint32_t)tx_time_get() * (uint32_t)k_serial_ms_per_tick;
+
+  char buf[k_serial_tx_buf_size];
+  const int written =
+    snprintf(buf,
+             (size_t)k_serial_tx_buf_size,
+             "M %" PRId16 " %" PRId16 " %" PRId16 " %" PRId16
+             " %" PRIu8 " %" PRIu8 " %" PRIu8 " %" PRIu8
+             " %" PRIu32 "\n",
+             duty_fl,
+             duty_fr,
+             duty_bl,
+             duty_br,
+             fault_fl,
+             fault_fr,
+             fault_bl,
+             fault_br,
+             now_ms);
+  if (written <= 0) {
+    return;
+  }
+  uart_debug_puts(buf);
+}
+
+/**
+ * @brief Build and send one "I ..." IMU-telemetry line over SCI9
+ *
+ * @details
+ * Reads imu_state_t from shared_data and emits quaternion, Euler angles,
+ * gyroscope, and linear-acceleration fields as raw int16 scaled values
+ * (same scaling as the BNO055 register map). Host applies the divisors
+ * in k_imu_scale_* to recover SI/degree units.
+ *
+ * Emission is unconditional on imu_state.valid; if imu_task has never
+ * completed a read the fields will all be zero. This keeps the host-side
+ * parser's cadence predictable at 20 Hz during BNO055 calibration drift.
+ *
+ * @return void
+ * @pre imu_task has been created
+ * @post One ASCII "I ..." line written to SCI9 on success
+ * @since Version 1.0.0
+ */
+static void internal_emit_imu_telemetry(void)
+{
+  imu_state_t imu;
+  const rx_err_t err = shared_data_get_imu(&imu);
+  if (err != k_rx_ok) {
+    return;
+  }
+
+  const uint32_t now_ms = (uint32_t)tx_time_get() * (uint32_t)k_serial_ms_per_tick;
+
+  char buf[k_serial_tx_buf_size];
+  const int written =
+    snprintf(buf,
+             (size_t)k_serial_tx_buf_size,
+             "I %" PRId16 " %" PRId16 " %" PRId16 " %" PRId16
+             " %" PRId16 " %" PRId16 " %" PRId16
+             " %" PRId16 " %" PRId16 " %" PRId16
+             " %" PRId16 " %" PRId16 " %" PRId16
+             " %" PRIu32 "\n",
+             imu.quat_w,
+             imu.quat_x,
+             imu.quat_y,
+             imu.quat_z,
+             imu.roll_deg16,
+             imu.pitch_deg16,
+             imu.heading_deg16,
+             imu.gyro_x_dps16,
+             imu.gyro_y_dps16,
+             imu.gyro_z_dps16,
+             imu.lin_acc_x,
+             imu.lin_acc_y,
+             imu.lin_acc_z,
+             now_ms);
   if (written <= 0) {
     return;
   }
