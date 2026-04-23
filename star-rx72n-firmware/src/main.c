@@ -1972,10 +1972,16 @@ static void internal_init_shared_data_and_watchdog(void)
  */
 static void internal_register_iwdt_tasks(void)
 {
-  rx_err_t err = rx_iwdt_register_task("Telemetry", k_iwdt_task_timeout_telemetry_ms);
-  RX_ASSERT(err == k_rx_ok, "Telemetry IWDT registration must succeed");
+  /* MVP BYPASS (2026-04-22): telemetry_task is dormant (replaced by
+   * serial_bringup_task ASCII telemetry). Registering its slot without
+   * its heartbeater would cause watchdog_monitor_task to stop feeding
+   * the hardware IWDT, triggering a 2 s reset loop that also drops the
+   * Cypress USB-UART because /RES# is shared (verified via PCB
+   * netlist: U4-pin1 and U11-pin1 on same net 74). */
+  // rx_err_t err = rx_iwdt_register_task("Telemetry", k_iwdt_task_timeout_telemetry_ms);
+  // RX_ASSERT(err == k_rx_ok, "Telemetry IWDT registration must succeed");
 
-  err = rx_iwdt_register_task("LEDStatus", k_iwdt_task_timeout_ledstatus_ms);
+  rx_err_t err = rx_iwdt_register_task("LEDStatus", k_iwdt_task_timeout_ledstatus_ms);
   RX_ASSERT(err == k_rx_ok, "LEDStatus IWDT registration must succeed");
 
   /* TempSensor / ObstDetect / ImuTask / MotorCtrl IWDT registrations
@@ -1997,8 +2003,16 @@ static void internal_register_iwdt_tasks(void)
   // err = rx_iwdt_register_task("MotorCtrl", k_iwdt_task_timeout_motorctrl_ms);
   // RX_ASSERT(err == k_rx_ok, "MotorCtrl IWDT registration must succeed");
 
-  err = rx_iwdt_register_task("CommTask", k_iwdt_task_timeout_commtask_ms);
-  RX_ASSERT(err == k_rx_ok, "CommTask IWDT registration must succeed");
+  /* MVP BYPASS (2026-04-22): CommTask was replaced by serial_bringup_task
+   * for SLAM bring-up. Registering CommTask here while its creator is
+   * commented out causes IWDT to fire after 2 s -- resetting the RX72N,
+   * which drops the Cypress USB-UART (04b4:0003) off USB and makes
+   * /dev/ttyACM0 vanish every ~2 s. Re-enable with comm_task_create(). */
+  // err = rx_iwdt_register_task("CommTask", k_iwdt_task_timeout_commtask_ms);
+  // RX_ASSERT(err == k_rx_ok, "CommTask IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("SerialBU", k_iwdt_task_timeout_commtask_ms);
+  RX_ASSERT(err == k_rx_ok, "SerialBU IWDT registration must succeed");
 
   err = rx_iwdt_register_task("WatchdogMon", k_iwdt_task_timeout_watchdog_ms);
   RX_ASSERT(err == k_rx_ok, "WatchdogMon IWDT registration must succeed");
