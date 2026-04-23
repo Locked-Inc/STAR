@@ -10,6 +10,15 @@
  * Pi5 -> MCU: "V <fl> <fr> <bl> <br>\n"  (four float m/s values)
  * MCU -> Pi5: "E <fl> <fr> <bl> <br> <ms>\n"
  *             (four int16 encoder ticks, then uint32 ThreadX ms tick)
+ * MCU -> Pi5: "M <d0> <d1> <d2> <d3> <f0> <f1> <f2> <f3> <ms>\n"
+ *             (per-motor duty in tenths of a percent (int16), then
+ *              per-motor DRV8263 fault byte (uint8), firmware order
+ *              FL FR BR BL, then uint32 ThreadX ms tick)
+ * MCU -> Pi5: "I <qw> <qx> <qy> <qz> <roll> <pitch> <heading>
+ *                <gx> <gy> <gz> <ax> <ay> <az> <ms>\n"
+ *             (raw int16 BNO055-scaled quaternion, Euler angles,
+ *              gyro rates, and linear accel -- host applies the
+ *              k_imu_scale_* divisors -- then uint32 ThreadX ms tick)
  *
  * This task is a temporary substitute for the framed nanopb/CRC-32/HARQ
  * stack implemented in comm_task / telemetry_task. Those remain in the
