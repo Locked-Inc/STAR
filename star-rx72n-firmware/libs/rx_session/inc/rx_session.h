@@ -118,9 +118,14 @@ typedef enum : uint16_t {
    * the frame is accepted and the RX sequence catches up. Gaps larger than
    * this are rejected as transport failures.
    *
-   * Matches Go gateway constant: `MaxGapTolerance = 10`
+   * Set to half the 16-bit wrap window so any "ahead" sequence is accepted
+   * (only true past-window duplicates are rejected). This relaxed bound
+   * lets ad-hoc bring-up tools (cmd_debug, vel_test, grpcurl one-shots)
+   * drive the link without re-implementing the full session library.
+   * The production gateway tracks sequences precisely via rx_session and
+   * stays well under this limit, so the relaxation is invisible to it.
    */
-  k_session_max_gap_tolerance = 10,
+  k_session_max_gap_tolerance = 32768,
 
   /**
    * @brief Sequence number wraparound mask (16-bit unsigned)

@@ -105,7 +105,7 @@ func main() {
 		if f.Type == frame.FrameTypeLogMessage {
 			s := string(f.Payload)
 			// Only print non-routine logs
-			if s != "" && !contains(s, "IMU INT timeout") && !contains(s, "MDBG: ctrl tick") {
+			if s != "" && !contains(s, "IMU INT timeout") && !contains(s, "MDBG: ctrl tick") && !contains(s, "[MOTOR] CMD:") && !contains(s, "[MOTOR] DUTY") {
 				fmt.Printf("LOG: %s", s)
 			}
 		} else if f.Type != frame.FrameTypeResponse {

@@ -238,23 +238,38 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('use_foxglove')),
     )
 
-    # Gateway bridge node -- bridges ROS2 to Go gateway via gRPC.
-    # When use_bbb is true, also bridges BBB telemetry to ROS2 topics and
-    # forwards /cmd_vel to BBB motors via gateway.
-    gateway_bridge = Node(
-        package='star_gateway_bridge',
-        executable='star_gateway_bridge_main',
-        name='star_gateway_bridge',
+    # MVP BYPASS (2026-04-22): the C++ star_gateway_bridge is disabled
+    # while the RX72N ASCII line protocol is stabilized. The replacement
+    # below (star_simple_bridge) talks directly to /dev/ttyACM0 and
+    # publishes /odom/unfiltered for the EKF. Restore this Node to
+    # re-enable the full gRPC gateway path.
+    #
+    # gateway_bridge = Node(
+    #     package='star_gateway_bridge',
+    #     executable='star_gateway_bridge_main',
+    #     name='star_gateway_bridge',
+    #     output='screen',
+    #     parameters=[{
+    #         'gateway_address': 'localhost:50051',
+    #         'telemetry_rate_hz': 10.0,
+    #         'teleop_rate_hz': 50.0,
+    #         'use_bbb_telemetry': LaunchConfiguration('use_bbb'),
+    #         'wheel_base': WHEEL_BASE_M,
+    #         'wheel_radius': WHEEL_RADIUS_M,
+    #         'ticks_per_rev': ENCODER_TICKS_PER_REV,
+    #     }],
+    #     respawn=True,
+    #     respawn_delay=RESPAWN_DELAY_SEC,
+    # )
+
+    # SLAM MVP ASCII bridge: subscribes /cmd_vel, publishes
+    # /odom/unfiltered, talks the "V ..." / "E ..." line protocol to
+    # the RX72N over /dev/ttyACM0.
+    simple_bridge_node = Node(
+        package='star_simple_bridge',
+        executable='simple_bridge_node',
+        name='star_simple_bridge',
         output='screen',
-        parameters=[{
-            'gateway_address': 'localhost:50051',
-            'telemetry_rate_hz': 10.0,
-            'teleop_rate_hz': 50.0,
-            'use_bbb_telemetry': LaunchConfiguration('use_bbb'),
-            'wheel_base': WHEEL_BASE_M,
-            'wheel_radius': WHEEL_RADIUS_M,
-            'ticks_per_rev': ENCODER_TICKS_PER_REV,
-        }],
         respawn=True,
         respawn_delay=RESPAWN_DELAY_SEC,
     )
@@ -272,7 +287,7 @@ def generate_launch_description():
         static_odom_tf,
         rplidar,
         foxglove_bridge,
-        gateway_bridge,
+        simple_bridge_node,
         slam,
         nav2,
         stereo,

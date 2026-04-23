@@ -376,9 +376,7 @@
 #include "motor_control_task.h"
 
 #include <math.h>
-#include <stdio.h>
 
-#include "hardware.h" /* uart_debug_puts for bring-up diagnostics */
 #include "hardware_config.h"
 #include "rx72n_mtu_regs.h" /* mtu1/mtu2/mtu_tstra */
 #include "rx72n_tpu_regs.h" /* tpu1/tpu2/tpu_control */
@@ -1691,24 +1689,27 @@ static void internal_motor_task_entry(ULONG input)
   }
 
   /* Bring-up control loop. Open-loop duty = target_mps * 40, clamped to +/-50%.
-   * 1.0 m/s -> 40% duty. No hardcoded command -- motors stay at 0 duty until
-   * a SetVelocityRequest arrives via comm_task / shared_data_set_motor_command. */
+   * 1.0 m/s -> 40% duty. Pulls every iteration from shared_data; relies on
+   * comm_task setting cmd.valid=true via SetVelocityRequest. */
   static const float k_bringup_duty_per_mps = 40.0F;
+  /* Per-motor direction signs: FL (M0) and BL (M3) are wired such that
+   * positive duty drives those wheels in reverse (see motor_spin_test/main.c
+   * k_motors[].direction_sign). Applying the sign here means a uniform
+   * positive command from the host drives the chassis forward. */
+  static const float k_motor_direction_sign[k_motor_count] = {
+    -1.0F, /* FL (index 0): wired backwards */
+    +1.0F, /* FR (index 1) */
+    +1.0F, /* BR (index 2) */
+    -1.0F, /* BL (index 3): wired backwards */
+  };
   uint32_t           tick                   = 0U;
   bool               last_valid             = false;
   while (true) {
-    motor_command_t cmd;
+    motor_command_t cmd     = {0};
     const rx_err_t  cmd_err = shared_data_get_motor_command(&cmd);
     const bool      have    = (cmd_err == k_rx_ok) && cmd.valid;
     if (have != last_valid) {
-      char evtbuf[128];
-      (void)snprintf(evtbuf,
-                     sizeof(evtbuf),
-                     "[MOTOR] cmd.valid transitioned to %d (fl=%d fr=%d)\r\n",
-                     (int)have,
-                     (int)(cmd.target_velocity_mps[0] * 100.0F),
-                     (int)(cmd.target_velocity_mps[1] * 100.0F));
-      uart_debug_puts(evtbuf);
+      rx_log_info_val(s_tag, "MOTOR cmd.valid->", (uint32_t)have);
       last_valid = have;
     }
 
@@ -1716,7 +1717,7 @@ static void internal_motor_task_entry(ULONG input)
       float duty = 0.0F;
       if (have) {
         const float target_mps = internal_get_target_velocity(&cmd, i);
-        duty                   = target_mps * k_bringup_duty_per_mps;
+        duty                   = target_mps * k_bringup_duty_per_mps * k_motor_direction_sign[i];
         if (duty > 50.0F) {
           duty = 50.0F;
         } else if (duty < -50.0F) {
@@ -1728,43 +1729,13 @@ static void internal_motor_task_entry(ULONG input)
 
     tick++;
     if ((tick % 100U) == 0U) {
-      char dbgbuf[128];
-      (void)snprintf(dbgbuf,
-                     sizeof(dbgbuf),
-                     "[MOTOR] CMD: err=%d valid=%d fl=%d fr=%d bl=%d br=%d\r\n",
-                     (int)cmd_err,
-                     (int)cmd.valid,
-                     (int)(cmd.target_velocity_mps[0] * 100.0F),
-                     (int)(cmd.target_velocity_mps[1] * 100.0F),
-                     (int)(cmd.target_velocity_mps[2] * 100.0F),
-                     (int)(cmd.target_velocity_mps[3] * 100.0F));
-      uart_debug_puts(dbgbuf);
-
-      const uint16_t m1      = mtu1()->tcnt;
-      const uint16_t m2      = mtu2()->tcnt;
-      const uint16_t t1      = tpu1()->tcnt;
-      const uint16_t t2      = tpu2()->tcnt;
-      float          duty_fl = 0.0F;
-      float          duty_fr = 0.0F;
-      float          duty_bl = 0.0F;
-      float          duty_br = 0.0F;
-      (void)rx_motor_get_duty(&s_motors[k_motor_front_left], &duty_fl);
-      (void)rx_motor_get_duty(&s_motors[k_motor_front_right], &duty_fr);
-      (void)rx_motor_get_duty(&s_motors[k_motor_back_left], &duty_bl);
-      (void)rx_motor_get_duty(&s_motors[k_motor_back_right], &duty_br);
-      char buf[128];
-      (void)snprintf(buf,
-                     sizeof(buf),
-                     "[MOTOR] DUTY FL=%d FR=%d BL=%d BR=%d  ENC m1=%u m2=%u t1=%u t2=%u\r\n",
-                     (int)duty_fl,
-                     (int)duty_fr,
-                     (int)duty_bl,
-                     (int)duty_br,
-                     (unsigned)m1,
-                     (unsigned)m2,
-                     (unsigned)t1,
-                     (unsigned)t2);
-      uart_debug_puts(buf);
+      /* Once-per-second framed log: use typed command fields from the
+       * mutex-protected shared_data_get_motor_command() snapshot above.
+       * This avoids brittle raw-byte offset diagnostics. */
+      rx_log_debug_val(s_tag, "MOTOR cmd.valid=", (uint32_t)cmd.valid);
+      rx_log_debug_val(s_tag, "MOTOR cmd_err=", (uint32_t)cmd_err);
+      rx_log_debug_val(s_tag, "MOTOR enc_mtu1=", (uint32_t)mtu1()->tcnt);
+      rx_log_debug_val(s_tag, "MOTOR enc_tpu1=", (uint32_t)tpu1()->tcnt);
     }
     (void)tx_thread_sleep(k_motor_task_sleep_ticks);
   }

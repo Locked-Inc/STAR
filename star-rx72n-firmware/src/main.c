@@ -192,6 +192,7 @@
 #include "led_status_task.h"
 #include "motor_control_task.h"
 #include "obstacle_detect_task.h"
+#include "serial_bringup_task.h"
 #include "shared_data.h"
 #include "telemetry_task.h"
 #include "temp_sensor_task.h"
@@ -2046,9 +2047,16 @@ static void internal_register_iwdt_tasks(void)
  */
 static void internal_create_system_tasks(void)
 {
+  /* MVP BYPASS (2026-04-22): framed nanopb/HARQ/session stack disabled.
+   * serial_bringup_task owns SCI9 with a simple ASCII line protocol for
+   * SLAM bring-up. Re-enable the telemetry_task_create() + comm_task_create()
+   * lines below and comment out serial_bringup_task_create() to restore
+   * framed comms. */
   /* Telemetry Task - Priority 18 (lowest) */
-  rx_err_t err = telemetry_task_create();
-  RX_ASSERT(err == k_rx_ok, "telemetry_task_create must succeed");
+  // rx_err_t err = telemetry_task_create();
+  // RX_ASSERT(err == k_rx_ok, "telemetry_task_create must succeed");
+  rx_err_t err = serial_bringup_task_create();
+  RX_ASSERT(err == k_rx_ok, "serial_bringup_task_create must succeed");
 
   /* LED Status Task - Priority 17 (visual feedback) */
   err = led_status_task_create();
@@ -2084,9 +2092,11 @@ static void internal_create_system_tasks(void)
   // err = obstacle_detect_task_create();
   // RX_ASSERT(err == k_rx_ok, "obstacle_detect_task_create must succeed");
 
-  /* Communication Task - Priority 5 (highest) */
-  err = comm_task_create();
-  RX_ASSERT(err == k_rx_ok, "comm_task_create must succeed");
+  /* Communication Task - Priority 5 (highest)
+   * MVP BYPASS (2026-04-22): disabled -- serial_bringup_task owns SCI9.
+   * See the comment block above telemetry_task_create() for details. */
+  // err = comm_task_create();
+  // RX_ASSERT(err == k_rx_ok, "comm_task_create must succeed");
 
   /* Motor Control Task - Priority 8 */
   err = motor_control_task_create();
