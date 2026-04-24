@@ -1,6 +1,6 @@
 /**
  * @file usb_task.c
- * @brief Dedicated USB polling task (priority 4, one above comm_task)
+ * @brief Dedicated USB polling task -- 3-port CDC throughput + echo harness
  *
  * @see usb_task.h for rationale.
  *
@@ -15,10 +15,11 @@
 #include "tx_api.h"
 
 typedef enum : uint16_t {
-  k_usb_task_stack_size   = 1024, /**< ThreadX task stack in bytes. */
-  k_usb_task_priority     = 4,    /**< One higher than comm_task (5) so we run first. */
-  k_usb_task_input        = 0,    /**< Thread entry input (unused). */
-  k_heartbeat_tick_period = 100U, /**< 100 ticks @ 100 Hz tick = 1 s heartbeat cadence. */
+  k_usb_task_stack_size = 1024, /**< ThreadX task stack in bytes. */
+  k_usb_task_priority   = 4,    /**< One higher than comm_task (5) so we run first. */
+  k_usb_task_input      = 0,    /**< Thread entry input (unused). */
+  k_tx_packet_bytes     = 64U,  /**< Per-port TX burst size (USB FS bulk MPS). */
+  k_rx_drain_bytes      = 128U, /**< Per-tick H->D drain buffer. */
 } usb_task_constants_t;
 
 static TX_THREAD s_usb_thread;
@@ -27,55 +28,74 @@ static bool      s_usb_created = false;
 
 static const char* s_tag = "USB_TASK";
 
+/* 64 B canned payload per port, terminated with '\n' so host tools
+ * can `cat` the port and see one line per packet. */
+static const uint8_t s_tx_proto[k_tx_packet_bytes] =
+  "p0:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n";
+static const uint8_t s_tx_decoded[k_tx_packet_bytes] =
+  "p1:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n";
+static const uint8_t s_tx_log[k_tx_packet_bytes] =
+  "p2:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n";
+
+/* Echo scratch, static so we don't bloat the task stack. */
+static uint8_t s_echo_buf[k_rx_drain_bytes];
+
 /**
- * @brief USB task entry: poll the production ISR dispatcher forever.
+ * @brief Drain up to k_rx_drain_bytes from `port` and echo them back.
  *
- * @details
- * The USB0 peripheral is attached pre-kernel by main()'s inline attach
- * block (SYSCFG / DCPCFG / DCPCTR / INTENB0 / DPRPU), which also services
- * the initial enumeration via an inline SETUP handler so Linux completes
- * GET_DESCRIPTOR + SET_ADDRESS inside its retry window.  Once
- * tx_kernel_enter() runs, main's loop exits and this task takes over:
- * it calls rx_usb_isr_handler every tick so any later SETUPs and pipe
- * events get routed through the full rx_usb_cdc stack.  USB0 USBI is
- * also wired to the ICU vector (priority 12, SLIBR[144] = 62, IER[18]
- * bit 0 set in main.c) so BRDY/BEMP/CTRT fire directly between polls.
+ * Skips cleanly if nothing is queued so stress-blast pace isn't
+ * disrupted.  Any error from rx_usb_rx_available / rx_usb_read causes
+ * an early return without writing.
+ */
+static void internal_echo_port(rx_usb_port_id_t port)
+{
+  uint32_t avail = 0U;
+  if (rx_usb_rx_available(port, &avail) != k_rx_ok || avail == 0U) {
+    return;
+  }
+
+  const uint32_t max = (avail < k_rx_drain_bytes) ? avail : k_rx_drain_bytes;
+  uint32_t       got = 0U;
+  if (rx_usb_read(port, s_echo_buf, max, &got) != k_rx_ok || got == 0U) {
+    return;
+  }
+
+  (void)rx_usb_write(port, s_echo_buf, got);
+}
+
+/**
+ * @brief USB task entry.
  *
- * A 1 Hz heartbeat writes "p0\r\n" / "p1\r\n" / "p2\r\n" to each port so
- * `cat /dev/ttyACM{1,2,3}` shows the pipe is alive end-to-end.  Real
- * applications layer their writes on top of this loop -- the heartbeat
- * is harmless filler when nothing else is queued.
- *
- * Priority 4 is the highest app-task priority so comm_task (5) and
- * everything below can't starve USB servicing.
+ * Every ThreadX tick (~10 ms at 100 Hz tick):
+ *   1. rx_usb_isr_handler() backstop call so any USBI the ICU missed
+ *      still gets serviced from task context.
+ *   2. 64 B D->H blast on all three ports (rx_usb_write returns
+ *      immediately with k_rx_err_busy if the ring is full).
+ *   3. internal_echo_port() on all three ports -- drains any pending
+ *      bulk-OUT data and writes it straight back on the same port so
+ *      host->device->host round-trip testing works end-to-end.  Even
+ *      LOG (port 2, nominally RO in the user's narrative) has bulk OUT
+ *      per descriptors, and draining it prevents the kernel's write()
+ *      from blocking indefinitely if anyone ever writes to
+ *      /dev/ttyACMn.
  */
 static void internal_usb_task_entry(ULONG input)
 {
   (void)input;
 
-  rx_log_info(s_tag, "USB polling loop entering");
-
-  uint32_t          tick                  = 0U;
-  static const char s_heartbeat_proto[]   = "p0\r\n";
-  static const char s_heartbeat_decoded[] = "p1\r\n";
-  static const char s_heartbeat_log[]     = "p2\r\n";
+  rx_log_info(s_tag, "USB stress task entering");
 
   for (;;) {
     rx_usb_isr_handler();
 
-    if ((tick % k_heartbeat_tick_period) == 0U) {
-      (void)rx_usb_write(k_usb_port_proto,
-                         (const uint8_t*)s_heartbeat_proto,
-                         sizeof(s_heartbeat_proto) - 1U);
-      (void)rx_usb_write(k_usb_port_decoded,
-                         (const uint8_t*)s_heartbeat_decoded,
-                         sizeof(s_heartbeat_decoded) - 1U);
-      (void)rx_usb_write(k_usb_port_log,
-                         (const uint8_t*)s_heartbeat_log,
-                         sizeof(s_heartbeat_log) - 1U);
-    }
+    (void)rx_usb_write(k_usb_port_proto, s_tx_proto, k_tx_packet_bytes);
+    (void)rx_usb_write(k_usb_port_decoded, s_tx_decoded, k_tx_packet_bytes);
+    (void)rx_usb_write(k_usb_port_log, s_tx_log, k_tx_packet_bytes);
 
-    tick++;
+    internal_echo_port(k_usb_port_proto);
+    internal_echo_port(k_usb_port_decoded);
+    internal_echo_port(k_usb_port_log);
+
     (void)tx_thread_sleep(1U);
   }
 }
