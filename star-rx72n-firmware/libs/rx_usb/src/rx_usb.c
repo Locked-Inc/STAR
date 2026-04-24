@@ -630,8 +630,9 @@ typedef struct {
   void*                callback_context; /**< Callback context */
   uint16_t             control_line;     /**< DTR/RTS state */
   bool                 configured;       /**< Port is configured by host */
-  bool                 last_tx_full_packet; /**< Last bulk IN packet was wMaxPacketSize; next BEMP with empty ring emits a ZLP */
-  rx_usb_state_t       state;            /**< Per-port USB state */
+  bool
+    last_tx_full_packet; /**< Last bulk IN packet was wMaxPacketSize; next BEMP with empty ring emits a ZLP */
+  rx_usb_state_t state; /**< Per-port USB state */
 } rx_usb_port_state_t;
 
 /**
@@ -690,10 +691,14 @@ static inline bool internal_port_is_valid(const rx_usb_port_id_t port)
     return false;
   }
   switch (port) {
-    case k_usb_port_proto:   return (bool)STAR_USB_ENABLE_PORT_PROTO;
-    case k_usb_port_decoded: return (bool)STAR_USB_ENABLE_PORT_DECODED;
-    case k_usb_port_log:     return (bool)STAR_USB_ENABLE_PORT_LOG;
-    default:                 return false;
+    case k_usb_port_proto:
+      return (bool)STAR_USB_ENABLE_PORT_PROTO;
+    case k_usb_port_decoded:
+      return (bool)STAR_USB_ENABLE_PORT_DECODED;
+    case k_usb_port_log:
+      return (bool)STAR_USB_ENABLE_PORT_LOG;
+    default:
+      return false;
   }
 }
 

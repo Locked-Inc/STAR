@@ -988,9 +988,9 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
    *
    * Vector 144 (SELECTB) => IER[18] bit 0.  IER[18] byte address is
    * 0x00087200 + 18 = 0x00087212. */
-  volatile uint8_t* const ier_r        = &icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register];
-  const uint8_t           usbi_mask    = (uint8_t)(1U << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
-  const uint8_t           was_enabled  = (uint8_t)(*ier_r & usbi_mask);
+  volatile uint8_t* const ier_r = &icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register];
+  const uint8_t usbi_mask       = (uint8_t)(1U << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
+  const uint8_t was_enabled     = (uint8_t)(*ier_r & usbi_mask);
   *ier_r &= (uint8_t)~usbi_mask;
 
   /* Use CFIFO for everything (DCP + data pipes).  D0FIFO would give
@@ -1180,9 +1180,15 @@ rx_err_t rx_usb_hw_fifo_write_zlp(const uint8_t pipe)
   }
 
   volatile uint16_t* const pipe_ctr_map[] = {
-    &usb0()->pipe1ctr, &usb0()->pipe2ctr, &usb0()->pipe3ctr,
-    &usb0()->pipe4ctr, &usb0()->pipe5ctr, &usb0()->pipe6ctr,
-    &usb0()->pipe7ctr, &usb0()->pipe8ctr, &usb0()->pipe9ctr,
+    &usb0()->pipe1ctr,
+    &usb0()->pipe2ctr,
+    &usb0()->pipe3ctr,
+    &usb0()->pipe4ctr,
+    &usb0()->pipe5ctr,
+    &usb0()->pipe6ctr,
+    &usb0()->pipe7ctr,
+    &usb0()->pipe8ctr,
+    &usb0()->pipe9ctr,
   };
   volatile uint16_t* const pipe_ctr = pipe_ctr_map[pipe - 1U];
   if ((*pipe_ctr & k_usb_pipectr_pbusy) != 0U) {
@@ -1191,9 +1197,9 @@ rx_err_t rx_usb_hw_fifo_write_zlp(const uint8_t pipe)
 
   /* Vector 144 (SELECTB) => IER[18] bit 0.  See equivalent block in
    * internal_fifo_write_pipe() for full rationale. */
-  volatile uint8_t* const ier_r       = &icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register];
-  const uint8_t           usbi_mask   = (uint8_t)(1U << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
-  const uint8_t           was_enabled = (uint8_t)(*ier_r & usbi_mask);
+  volatile uint8_t* const ier_r = &icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register];
+  const uint8_t usbi_mask       = (uint8_t)(1U << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
+  const uint8_t was_enabled     = (uint8_t)(*ier_r & usbi_mask);
   *ier_r &= (uint8_t)~usbi_mask;
 
   volatile uint16_t* const fifosel_r = &usb0()->cfifosel;

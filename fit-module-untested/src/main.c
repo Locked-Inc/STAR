@@ -1,3 +1,10 @@
+/**
+ * @file main.c
+ *
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
 /* main.c -- MINIMAL SCI9 TX TEST (DIAGNOSTIC; real main saved as main.c.real).
  *
  * Strips everything except:

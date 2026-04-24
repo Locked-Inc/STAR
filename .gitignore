@@ -217,3 +217,7 @@ Thumbs.db
 
 # CMake user-local presets (machine-specific, not shared)
 CMakeUserPresets.json
+
+# Local scratch (not for commit)
+jtag-extract/
+STAR_Final_Presentation.pdf

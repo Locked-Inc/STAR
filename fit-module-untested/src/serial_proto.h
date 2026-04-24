@@ -1,3 +1,10 @@
+/**
+ * @file serial_proto.h
+ *
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
 /* serial_proto.h -- STAR sandbox wire protocol.
  *
  * Frame layout (little-endian throughout):

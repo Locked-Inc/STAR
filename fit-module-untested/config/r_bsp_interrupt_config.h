@@ -1,3 +1,9 @@
+/**
+ * @file r_bsp_interrupt_config.h
+ *
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
+ */
+
 /*
 * Copyright (c) 2011 Renesas Electronics Corporation and/or its affiliates
 *

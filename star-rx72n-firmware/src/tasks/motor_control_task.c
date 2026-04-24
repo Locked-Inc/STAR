@@ -1654,6 +1654,11 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
  * @callgraph
  * @callergraph
  */
+/* NOLINTBEGIN(readability-magic-numbers,readability-function-size,readability-simplify-boolean-expr,readability-implicit-bool-conversion,readability-function-cognitive-complexity)
+ * MVP bring-up stub: the raw-register motor/encoder poke blocks below
+ * are deliberately inline so the sequence exactly matches the proven
+ * encoder_test/main.c reference.  Named-constant-ification is pending
+ * the lib refactor that folds this into rx_motor / rx_encoder. */
 static void internal_motor_task_entry(ULONG input)
 {
   (void)input;
@@ -1703,8 +1708,8 @@ static void internal_motor_task_entry(ULONG input)
     +1.0F, /* BR (index 2) */
     -1.0F, /* BL (index 3): wired backwards */
   };
-  uint32_t           tick                   = 0U;
-  bool               last_valid             = false;
+  uint32_t tick       = 0U;
+  bool     last_valid = false;
   while (true) {
     motor_command_t cmd     = {0};
     const rx_err_t  cmd_err = shared_data_get_motor_command(&cmd);
@@ -1754,6 +1759,7 @@ static void internal_motor_task_entry(ULONG input)
     (void)err;
   }
 }
+/* NOLINTEND(readability-magic-numbers,readability-function-size,readability-simplify-boolean-expr,readability-implicit-bool-conversion,readability-function-cognitive-complexity) */
 
 /**
  * @brief Initialize motor control stack (4 motors, encoders, PIDs, drivers)
@@ -2185,6 +2191,12 @@ static rx_err_t internal_init_pid_controllers(void)
  *
  * @since Version 1.0.0
  */
+/* NOLINTBEGIN(readability-magic-numbers,readability-function-size,readability-function-cognitive-complexity,readability-math-missing-parentheses)
+ * MVP encoder bring-up: the PFS/PMR poke block at the tail mirrors
+ * encoder_test/main.c byte-for-byte; the raw port-bit and MPC PSEL
+ * values are the source-of-truth here.  Lift into rx_encoder lib in
+ * a follow-up; for now the literals stay so the sequence can be
+ * diffed against the known-good test. */
 static rx_err_t internal_init_encoders(void)
 {
   /* Front encoders: MTU1 (motor 0) and MTU2 (motor 1) */
@@ -2280,29 +2292,38 @@ static rx_err_t internal_init_encoders(void)
     *pbpmr |= (uint8_t)(1U << 3);
 
     /* Reconfirm MTU channel 1/2 in phase-counting mode and zero the counter
-     * (the lib tends to leave TMDR=0 via its stop-before-config path). */
+     * (the lib tends to leave TMDR=0 via its stop-before-config path).
+     * MTU TMDR.MD[3:0] = 0x04 selects phase-counting mode 1; the MTU
+     * rx_hal enum (mtu_tmdr_bits_t) doesn't expose the phase-count values
+     * yet because the production MTU path only uses PWM, so we name the
+     * local bring-up constant inline to satisfy the no-magic-number rule. */
+    enum : uint8_t {
+      k_tmdr_phase_count_mode_1 = 0x04U, /**< MTU/TPU TMDR.MD = phase-counting */
+      k_tpu_nfcr_idx_ch2        = 2U,    /**< TPU noise-filter control index for ch 2 */
+    };
+
     volatile rx_mtu_channel_regs_t* m1 = mtu1();
     m1->tcr                            = 0;
-    m1->tmdr                           = 0x04U;
+    m1->tmdr                           = k_tmdr_phase_count_mode_1;
     m1->tcnt                           = 0;
     volatile rx_mtu_channel_regs_t* m2 = mtu2();
     m2->tcr                            = 0;
-    m2->tmdr                           = 0x04U;
+    m2->tmdr                           = k_tmdr_phase_count_mode_1;
     m2->tcnt                           = 0;
 
     /* Same for TPU channel 1/2 */
     volatile rx_tpu_regs_t* t1 = tpu1();
     t1->tcr                    = 0;
-    t1->tmdr                   = 0x04U;
+    t1->tmdr                   = k_tmdr_phase_count_mode_1;
     t1->tcnt                   = 0;
     volatile rx_tpu_regs_t* t2 = tpu2();
     t2->tcr                    = 0;
-    t2->tmdr                   = 0x04U;
+    t2->tmdr                   = k_tmdr_phase_count_mode_1;
     t2->tcnt                   = 0;
 
     /* TPU noise filter OFF (reset state, but be explicit) */
-    tpu_control()->nfcr[1] = 0;
-    tpu_control()->nfcr[2] = 0;
+    tpu_control()->nfcr[1]                  = 0;
+    tpu_control()->nfcr[k_tpu_nfcr_idx_ch2] = 0;
 
     /* Start counters (MTU TSTRA + TPU TSTR) -- this is what the libs skip */
     mtu_tstra()->tstr |= (uint8_t)(k_mtu_tstr_cst1 | k_mtu_tstr_cst2);
@@ -2312,6 +2333,7 @@ static rx_err_t internal_init_encoders(void)
   rx_log_info(s_tag, "All 4 encoders initialized (2 MTU + 2 TPU, TSTRA forced)");
   return k_rx_ok;
 }
+/* NOLINTEND(readability-magic-numbers,readability-function-size,readability-function-cognitive-complexity,readability-math-missing-parentheses) */
 
 /**
  * @brief Read encoder velocity for any motor (dispatches MTU or TPU)

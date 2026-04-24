@@ -1,3 +1,10 @@
+/**
+ * @file sci9_polled.c
+ *
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
 /* sci9_polled.c -- polled-mode SCI9 (115200 8N1) on PB6/PB7 -> Cypress -> ttyACM0.
  *
  * Self-contained port of star-rx72n-firmware/motors_rtos/sci9.c, with the

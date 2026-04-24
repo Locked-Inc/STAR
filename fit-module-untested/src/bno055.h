@@ -1,3 +1,10 @@
+/**
+ * @file bno055.h
+ *
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
 /* bno055.h -- minimal BNO055 driver layered on top of r_riic_rx (RIIC1).
  *
  * IMU mode (OPR_MODE = 0x08) gives raw accel + gyro fused at 100 Hz with no

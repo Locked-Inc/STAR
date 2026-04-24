@@ -147,7 +147,7 @@ typedef enum : uint16_t {
   k_test_tx_buf_size       = 256,  /**< Readback buffer size */
   k_test_payload_large     = 249,  /**< Payload that makes wire_len exceed 256-byte I2C limit */
   k_test_rx_buf_max        = 2048, /**< k_i2c_comm_rx_buffer_size */
-  k_test_seq_gap_large     = 200,  /**< Sequence number far from expected, triggers validate_fail */
+  k_test_seq_gap_large     = 33000, /**< Gap >= k_session_max_gap_tolerance (32768); triggers validate_fail */
   k_test_expected_tx_seq   = 2,    /**< Expected TX sequence after two sends */
   k_test_oversized_payload = 1025, /**< Payload exceeding k_frame_max_payload (1024) */
 } test_i2c_comm_constants_t;

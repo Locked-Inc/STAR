@@ -1,3 +1,9 @@
+/**
+ * @file r_sci_rx_config.h
+ *
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
+ */
+
 /***********************************************************************************************************************
 * Copyright (c) 2013 - 2025 Renesas Electronics Corporation and/or its affiliates
 *

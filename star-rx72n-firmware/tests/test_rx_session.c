@@ -49,9 +49,9 @@ typedef enum : uint16_t {
   k_test_wraparound_max    = 0xFFFF, /**< Maximum sequence number before wrap */
   k_test_gap_one_skip      = 2,      /**< RX seq with 1 frame skipped (gap=1) */
   k_test_gap_one_next      = 3,      /**< Expected next seq after gap-1 accept */
-  k_test_gap_max_skip      = 10,     /**< RX seq with max accepted gap (diff=9) */
-  k_test_gap_boundary_skip = 11,     /**< RX seq at gap tolerance boundary (diff=10) */
-  k_test_gap_large_skip    = 100,    /**< RX seq with large gap (diff=99) */
+  k_test_gap_max_skip      = 10,     /**< RX seq with accepted gap (diff=9) */
+  k_test_gap_boundary_skip = 32769,  /**< RX seq at gap tolerance boundary (diff=32768 = k_session_max_gap_tolerance) */
+  k_test_gap_large_skip    = 33000,  /**< RX seq with large gap (diff=32999) -- rejected */
   k_test_dup_upper         = 5,      /**< Upper bound for duplicate test accept loop */
   k_test_dup_replay        = 3,      /**< Duplicated seq to test rejection */
 } test_session_constants_t;

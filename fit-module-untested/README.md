@@ -3,7 +3,7 @@
 A self-contained sandbox where the RX72N is brought up using **Renesas FIT
 modules** (`r_bsp`, `r_sci_rx`, `r_riic_rx`, `r_gpt_rx`) instead of the
 custom HAL in `star-rx72n-firmware/`. Speaks ROS2 via a tiny Python bridge
-on the Pi5 — no micro-ROS, no SPI, no nanopb. Just `/dev/ttyACM0` carrying
+on the Pi5 -- no micro-ROS, no SPI, no nanopb. Just `/dev/ttyACM0` carrying
 a CRC-8 framed binary protocol.
 
 > The folder name is a contract. **Nothing here ships to the robot until it

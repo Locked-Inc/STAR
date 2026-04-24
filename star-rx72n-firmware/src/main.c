@@ -2657,7 +2657,7 @@ int main(void)
      *  confirm that the WPRC bit is 1 BEFORE the corresponding interrupt
      *  request is generated."  This matches the
      *  usb0_isr_not_firing_blocker symptom exactly. */
-    *SLIBR144_R = 62U; /* USBI0 source code (HUM Table 15.3 row 62) */
+    *SLIBR144_R = 62U;   /* USBI0 source code (HUM Table 15.3 row 62) */
     *SLIPRCR_R  = 0x01U; /* WPRC=1, latches SLIBR routing (write-once) */
     while ((*SLIPRCR_R & 0x01U) == 0U) {
       /* spin until WPRC reads back 1 -- HUM step (6) verification */

@@ -1,3 +1,9 @@
+/**
+ * @file r_bsp_pin_config.h
+ *
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
+ */
+
 /* r_bsp_pin_config.h -- intentionally empty.
  *
  * The Renesas FIT BSP supports an auto-generated pin-init table here, normally

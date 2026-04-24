@@ -40,4 +40,4 @@ explore:
     transform_tolerance: 0.3
 
     # Minimum frontier edge length in meters -- ignore tiny gaps
-    min_frontier_size: 0.20  # lowered from 0.75 — pick up small unexplored pockets
+    min_frontier_size: 0.20  # lowered from 0.75 -- pick up small unexplored pockets

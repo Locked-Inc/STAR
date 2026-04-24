@@ -199,7 +199,8 @@ typedef struct {
   volatile uint16_t devadd4;
   volatile uint16_t devadd5;
   uint8_t           reserved13[k_usb_reserved_dc_f0_bytes];
-  volatile uint32_t physlew; /**< PHY Cross-Point Adjustment @0xF0 (32-bit R/W per hirakuni45 rw32_t) */
+  volatile uint32_t
+    physlew; /**< PHY Cross-Point Adjustment @0xF0 (32-bit R/W per hirakuni45 rw32_t) */
 } rx_usb_regs_t;
 
 /**
@@ -227,7 +228,7 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef enum : uintptr_t {
-  k_usb0_base_addr   = 0x000A0000, /**< USB0 register block base address (manual p.1928, Ch40) */
+  k_usb0_base_addr = 0x000A0000, /**< USB0 register block base address (manual p.1928, Ch40) */
   /* Deep-standby USB transceiver control / pin monitor register.  Shared
    * with USB-common (outside the USB0 rx_usb_regs_t block).  32-bit R/W
    * at absolute 0x000A0400 per hirakuni45 RX600/usb.hpp and Renesas FSP
@@ -498,11 +499,11 @@ typedef enum : uint32_t {
  * recommended slew-rate setting is SLEWR00=1, SLEWF00=1 => value 0x5.
  * Other RX parts leave this register at its reset default. */
 typedef enum : uint32_t {
-  k_usb_physlew_slewr00  = (1UL << 0), /**< Rising-edge slew rate, lane 0 */
-  k_usb_physlew_slewr01  = (1UL << 1), /**< Rising-edge slew rate, lane 1 */
-  k_usb_physlew_slewf00  = (1UL << 2), /**< Falling-edge slew rate, lane 0 */
-  k_usb_physlew_slewf01  = (1UL << 3), /**< Falling-edge slew rate, lane 1 */
-  k_usb_physlew_rx72n    = 0x00000005, /**< Recommended RX72N USB0 value (tinyusb + FSP) */
+  k_usb_physlew_slewr00 = (1UL << 0), /**< Rising-edge slew rate, lane 0 */
+  k_usb_physlew_slewr01 = (1UL << 1), /**< Rising-edge slew rate, lane 1 */
+  k_usb_physlew_slewf00 = (1UL << 2), /**< Falling-edge slew rate, lane 0 */
+  k_usb_physlew_slewf01 = (1UL << 3), /**< Falling-edge slew rate, lane 1 */
+  k_usb_physlew_rx72n   = 0x00000005, /**< Recommended RX72N USB0 value (tinyusb + FSP) */
 } usb_physlew_bits_t;
 
 /* Interrupt vectors.
