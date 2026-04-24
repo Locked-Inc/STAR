@@ -197,6 +197,7 @@
 #include "shared_data.h"
 #include "telemetry_task.h"
 #include "temp_sensor_task.h"
+#include "usb_task.h"
 #include "watchdog_monitor_task.h"
 
 /* Watchdog driver */
@@ -2117,6 +2118,15 @@ static void internal_create_system_tasks(void)
   err = motor_control_task_create();
   RX_ASSERT(err == k_rx_ok, "motor_control_task_create must succeed");
 
+  /* USB Task - Priority 4 (above comm_task) -- drives the 3-port CDC
+   * stack: ttyACM0 PROTO (R/W), ttyACM1 DECODED (R/W), ttyACM2 LOG (RO).
+   * The 9 non-control USB pipes split 3 per CDC; HUM Ch.40 allows 10
+   * pipes total (DCP + 9), so all three CDCs fit cleanly.  Polls the
+   * production rx_usb_isr_handler() once per tick as a backstop in
+   * case the SLIBR/IER edge case ever drops a USBI0. */
+  err = usb_task_create();
+  RX_ASSERT(err == k_rx_ok, "usb_task_create must succeed");
+
   /* Watchdog Monitor Task - Priority 6 */
   err = watchdog_monitor_task_create();
   RX_ASSERT(err == k_rx_ok, "watchdog_monitor_task_create must succeed");
@@ -2583,15 +2593,23 @@ int main(void)
     *MSTPCRB_R &= ~(1UL << 19);
     *PRCR_R = 0xA500U;
 
+    /* HUM 40.3.1.1 ("Setting Data to the USB Related Register"):
+     *   "Setting the SYSCFG.USBE bit to 1 AFTER starting the clock supply
+     *    to the USB (SYSCFG.SCKE bit = 1) enables and starts USB operation."
+     * The previous order (USBE then SCKE) silently no-ops half the SYSCFG
+     * follow-on writes because the USB module clock is gated until SCKE=1
+     * is acknowledged.  Required order: clear SYSCFG -> SCKE=1 -> wait ->
+     * USBE=1.  DPRPU stays 0 here; it is asserted last (after pipe + ICU
+     * config) to announce attach to the host. */
     *SYSCFG_R = 0x0000U;
     for (volatile uint32_t d = 0; d < 2400000U; d++) {
       __asm__ volatile("nop");
     }
-    *SYSCFG_R |= (1U << 0);  /* USBE */
-    *SYSCFG_R |= (1U << 10); /* SCKE */
+    *SYSCFG_R |= (1U << 10); /* SCKE first per HUM 40.3.1.1 */
     for (volatile uint32_t d = 0; d < 2400000U; d++) {
       __asm__ volatile("nop");
     }
+    *SYSCFG_R |= (1U << 0); /* USBE only after the clock is up */
 
     /* RX72N PHY housekeeping that mirrors rx_usb_hw.c's
      * internal_usb_configure_phy() -- must run between USBE=1 and
@@ -2621,12 +2639,31 @@ int main(void)
      * reserved gap), which silently consumed IER/IPR writes and left
      * the ISR dormant. */
     volatile uint8_t* const SLIBR144_R = (volatile uint8_t*)(0x00087700U + 144U);
+    volatile uint8_t* const SLIPRCR_R  = (volatile uint8_t*)0x00087A00U;
     volatile uint8_t* const IPR144_R   = (volatile uint8_t*)(0x00087300U + 144U);
     volatile uint8_t* const IR144_R    = (volatile uint8_t*)(0x00087000U + 144U);
     volatile uint8_t* const IER18_R    = (volatile uint8_t*)(0x00087200U + 18U); /* 144 / 8 */
-    *SLIBR144_R                        = 62U;                                    /* USBI0 source code */
-    *IR144_R                           = 0U;
-    *IPR144_R                          = 12U;
+
+    /* HUM 15.7.7 "Setting Software Configurable Interrupts" -- mandatory
+     * 9-step procedure.  Steps:
+     *   (1) IER bit clear (POR default; we set later in step 9)
+     *   (2) SLIBR144 = 62 (USBI0 source code)
+     *   (5) SLIPRCR.WPRC = 1   <-- previously missing -> ISR never fired
+     *   (6) confirm WPRC == 1
+     *   (8) IR144 = 0          (edge-detected vector, clear stale request)
+     *   (9) IER18.IEN0 = 1     (enable vector 144 delivery)
+     *
+     * Page 153: "After assigning software configurable interrupts,
+     *  confirm that the WPRC bit is 1 BEFORE the corresponding interrupt
+     *  request is generated."  This matches the
+     *  usb0_isr_not_firing_blocker symptom exactly. */
+    *SLIBR144_R = 62U; /* USBI0 source code (HUM Table 15.3 row 62) */
+    *SLIPRCR_R  = 0x01U; /* WPRC=1, latches SLIBR routing (write-once) */
+    while ((*SLIPRCR_R & 0x01U) == 0U) {
+      /* spin until WPRC reads back 1 -- HUM step (6) verification */
+    }
+    *IPR144_R = 12U;
+    *IR144_R  = 0U;
     *IER18_R |= (uint8_t)(1U << 0); /* 144 % 8 == 0 */
 
     /* Diagnostic: drive PB3 (P4 pad 2, MCU pin 82, silkscreen EN3D)

@@ -622,18 +622,17 @@ static void internal_usb_configure_clock(void)
   /* Function mode: DCFM=0, DRPD=0, DPRPU=0, USBE=0 */
   usb0()->syscfg = k_usb_syscfg_disabled;
 
-  /* Enable USB module (USBE=1), then clock (SCKE=1).
-   *
-   * Manual Ch40 and tinyusb's renesas/usba DCD recommend the opposite
-   * order (SCKE first, wait for it to latch, then USBE).  Both orders
-   * are empirically verified to enumerate on this silicon -- the
-   * USBE-first sequence here matches our proven-working polling repro
-   * (usb_test/hoco_pid_fix.c) which successfully enumerates on macOS
-   * + Linux xHCI hosts.  Keeping that order so the library matches
-   * the known-good reference; re-examine only if a future bring-up
-   * hits a "SETUP received but not propagated" symptom. */
-  usb0()->syscfg |= k_usb_syscfg_usbe;
+  /* HUM 40.3.1.1: "Setting the SYSCFG.USBE bit to 1 AFTER starting the
+   * clock supply to the USB (SYSCFG.SCKE bit = 1) enables and starts USB
+   * operation."  This matches tinyusb renesas/usba dcd_usba.c order and
+   * hirakuni45/RX dcd_usb0.cpp.  Earlier "USBE-first" anecdote was
+   * masking another failure (likely the missing SLIPRCR.WPRC latch);
+   * with WPRC fixed in internal_usb_configure_interrupts() we follow
+   * the documented order so SETUP propagation is reliable. */
   usb0()->syscfg |= k_usb_syscfg_scke;
+  /* Brief settle so the clock is up before the USBE write latches. */
+  internal_usb_busy_wait_ms(k_usb_clock_stabilization_ms);
+  usb0()->syscfg |= k_usb_syscfg_usbe;
 
   /* Wait for clock to stabilize (see internal_usb_busy_wait_ms rationale). */
   internal_usb_busy_wait_ms(k_usb_clock_stabilization_ms);
@@ -688,10 +687,22 @@ static void internal_usb_configure_interrupts(void)
    * vector slot (k_vect_usb0_usbi = 144) is inert until SLIBR[144] is
    * set to the USBI0 source code (62).  Without this write, IR[144]
    * never latches, IER[18] bit 0 stays unused, and the ISR never fires
-   * no matter how well INTENB0 is programmed. */
-  *icu_slibr(k_vect_usb0_usbi)  = (uint8_t)k_usb0_usbi_sli_src;
-  icu()->ir[k_vect_usb0_usbi]   = 0;
-  icu()->ipr[k_vect_usb0_usbi]  = k_usb_interrupt_priority;
+   * no matter how well INTENB0 is programmed.
+   *
+   * HUM 15.7.7 normative procedure (page 538): after SLIBR144 = source
+   * code, set SLIPRCR.WPRC = 1 and confirm WPRC reads back 1 BEFORE
+   * "the corresponding interrupt request is generated" (page 153-154).
+   * Without this latch step, the ICU silently drops USBI0 even though
+   * INTSTS0/BRDY/BEMP set correctly inside the USB peripheral.  This
+   * is the exact symptom recorded in MEMORY.md as
+   * usb0_isr_not_firing_blocker. */
+  *icu_slibr(k_vect_usb0_usbi) = (uint8_t)k_usb0_usbi_sli_src;
+  icu()->sliprcr               = 0x01U; /* WPRC=1 latches routing (write-once) */
+  while ((icu()->sliprcr & 0x01U) == 0U) {
+    /* HUM 15.7.7 step (6): confirm WPRC == 1 before enabling IER. */
+  }
+  icu()->ir[k_vect_usb0_usbi]  = 0;
+  icu()->ipr[k_vect_usb0_usbi] = k_usb_interrupt_priority;
   icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register] |=
     (uint8_t)(1U << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
 }
