@@ -35,15 +35,15 @@ static const char* s_tag = "USB_TASK";
 #define STAR_USB_STRESS_LINE_PROTO   "p0:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
 #define STAR_USB_STRESS_LINE_DECODED "p1:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
 #define STAR_USB_STRESS_LINE_LOG     "p2:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
-static const uint8_t s_tx_proto[k_tx_packet_bytes] = STAR_USB_STRESS_LINE_PROTO
+__attribute__((unused)) static const uint8_t s_tx_proto[k_tx_packet_bytes] = STAR_USB_STRESS_LINE_PROTO
     STAR_USB_STRESS_LINE_PROTO STAR_USB_STRESS_LINE_PROTO STAR_USB_STRESS_LINE_PROTO
     STAR_USB_STRESS_LINE_PROTO STAR_USB_STRESS_LINE_PROTO STAR_USB_STRESS_LINE_PROTO
     STAR_USB_STRESS_LINE_PROTO;
-static const uint8_t s_tx_decoded[k_tx_packet_bytes] = STAR_USB_STRESS_LINE_DECODED
+__attribute__((unused)) static const uint8_t s_tx_decoded[k_tx_packet_bytes] = STAR_USB_STRESS_LINE_DECODED
     STAR_USB_STRESS_LINE_DECODED STAR_USB_STRESS_LINE_DECODED STAR_USB_STRESS_LINE_DECODED
     STAR_USB_STRESS_LINE_DECODED STAR_USB_STRESS_LINE_DECODED STAR_USB_STRESS_LINE_DECODED
     STAR_USB_STRESS_LINE_DECODED;
-static const uint8_t s_tx_log[k_tx_packet_bytes] = STAR_USB_STRESS_LINE_LOG
+__attribute__((unused)) static const uint8_t s_tx_log[k_tx_packet_bytes] = STAR_USB_STRESS_LINE_LOG
     STAR_USB_STRESS_LINE_LOG STAR_USB_STRESS_LINE_LOG STAR_USB_STRESS_LINE_LOG
     STAR_USB_STRESS_LINE_LOG STAR_USB_STRESS_LINE_LOG STAR_USB_STRESS_LINE_LOG
     STAR_USB_STRESS_LINE_LOG;
@@ -96,16 +96,29 @@ static void internal_usb_task_entry(ULONG input)
 
   rx_log_info(s_tag, "USB stress task entering");
 
+  /* STAR_STRESS_PORTS bitfield: bit 0 = PROTO, 1 = DECODED, 2 = LOG.
+   * Default is 0b111 (all three active).  Override at build time with
+   * e.g. -DSTAR_STRESS_PORTS=1 for single-pipe throughput ceiling
+   * measurement (no bus-contention from the other two pipes). */
+#ifndef STAR_STRESS_PORTS
+#define STAR_STRESS_PORTS 0x07U
+#endif
+
   for (;;) {
     rx_usb_isr_handler();
 
+#if (STAR_STRESS_PORTS) & 0x01U
     (void)rx_usb_write(k_usb_port_proto, s_tx_proto, k_tx_packet_bytes);
-    (void)rx_usb_write(k_usb_port_decoded, s_tx_decoded, k_tx_packet_bytes);
-    (void)rx_usb_write(k_usb_port_log, s_tx_log, k_tx_packet_bytes);
-
     internal_echo_port(k_usb_port_proto);
+#endif
+#if (STAR_STRESS_PORTS) & 0x02U
+    (void)rx_usb_write(k_usb_port_decoded, s_tx_decoded, k_tx_packet_bytes);
     internal_echo_port(k_usb_port_decoded);
+#endif
+#if (STAR_STRESS_PORTS) & 0x04U
+    (void)rx_usb_write(k_usb_port_log, s_tx_log, k_tx_packet_bytes);
     internal_echo_port(k_usb_port_log);
+#endif
 
     (void)tx_thread_sleep(1U);
   }
