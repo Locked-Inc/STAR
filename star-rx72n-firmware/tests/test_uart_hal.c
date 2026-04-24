@@ -1458,6 +1458,8 @@ void test_uart_clear_rx_errors_valid_channel(void)
  */
 void test_uart_clear_rx_errors_invalid_channel(void)
 {
+  /* NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) -- the
+   * out-of-range cast is exactly what this test is exercising. */
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, uart_clear_rx_errors((uart_channel_t)99));
 }
 
