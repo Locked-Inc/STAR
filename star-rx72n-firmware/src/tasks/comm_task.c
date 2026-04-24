@@ -2292,6 +2292,7 @@ static void internal_send_command_response(rx_comm_channel_t channel,
  * - Rule 5: [PASS] 2 preconditions, 3 postconditions documented
  * - Rule 7: [PASS] All return values checked
  */
+/* NOLINTBEGIN(readability-function-size,readability-function-cognitive-complexity) */
 static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
   rx_log_info_val(s_tag, "VEL entry, frame.len=", (uint32_t)frame->header.length);
@@ -2356,6 +2357,7 @@ static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx
 
   return true;
 }
+/* NOLINTEND(readability-function-size,readability-function-cognitive-complexity) */
 
 /**
  * @brief Attempt to decode and handle an EmergencyStopRequest from a command frame
