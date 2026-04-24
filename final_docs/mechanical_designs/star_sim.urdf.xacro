@@ -1,0 +1,233 @@
+<?xml version="1.0"?>
+<!--
+  STAR robot simulation URDF with full geometry for Gazebo Harmonic.
+
+  Standalone URDF that replicates the TF tree from star_bringup/urdf/star.urdf.xacro
+  (base_link -> laser_frame at z=+0.05, base_link -> imu_link at z=0.0) and adds:
+    - Chassis box visual/collision/inertial on base_link
+    - 4 wheel links with continuous joints
+    - LiDAR and IMU visual geometry
+    - Gazebo plugin declarations (via star_gazebo.xacro include)
+
+  Robot specs (goBILDA Wasteland chassis, 312mm U-channels, miter-gear drive):
+    - Wheel radius: 0.072 m (goBILDA Wasteland 144mm, part 3616-0014-0144)
+    - Wheel width: 0.052 m
+    - Track width (wheel center-to-center, left-right): 0.356 m (304 mm inner + 52 mm wheel)
+    - Wheelbase (front-to-back, axle-to-axle): 0.264 m (per CAD)
+    - Chassis bounding (from STAR.stl): 0.346 x 0.292 x 0.118 m (L x W x H)
+    - Masses (Gazebo sim only, not used on real hardware):
+        * wheel_mass:   0.348 kg each (goBILDA Wasteland, measured)
+        * chassis_mass: 4.2 kg lumped, breakdown:
+            - 2x 312mm U-channel  @ 206 g =  0.412 kg  (measured)
+            - 18" x 18" x 1/8" aluminum sheet, 80% used = 1.430 kg
+              (0.209 m^2 * 0.80 * 0.003175 m * 2700 kg/m^3)
+            - 4x DC gearmotor     @  96 g =  0.384 kg  (datasheet)
+            - Drivetrain (4 miter gear pairs, shafts, hubs,
+              bearings, collars)         ~= 0.900 kg  (estimate)
+            - Milwaukee M18 XC 5.0Ah battery (48-11-1850)
+                                           = 0.699 kg  (1.54 lb
+              per Home Depot listing; envelope 114x79x73 mm)
+            - Electronics (MCU + battery mount + sensors +
+              cabling)                   ~= 0.400 kg  (estimate)
+          Refine the 0.9 and 0.4 estimates as hardware is weighed.
+-->
+<robot name="star" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ================================================================== -->
+  <!-- Properties                                                          -->
+  <!-- ================================================================== -->
+  <xacro:property name="chassis_length" value="0.346"/>
+  <xacro:property name="chassis_width" value="0.292"/>
+  <xacro:property name="chassis_height" value="0.118"/>
+  <xacro:property name="chassis_mass" value="4.2"/>
+
+  <xacro:property name="wheel_radius" value="0.072"/>
+  <xacro:property name="wheel_width" value="0.052"/>
+  <xacro:property name="wheel_mass" value="0.348"/>
+
+  <!-- Half track width: center of left wheel to center of right wheel -->
+  <xacro:property name="track_half" value="0.178"/>
+  <!-- Wheel Y offset: half track + half wheel width (wheel outside chassis) -->
+  <xacro:property name="wheel_y_offset" value="0.204"/>
+  <!-- Front/back wheel X offset from base_link center (half of 264mm wheelbase) -->
+  <xacro:property name="wheel_x_offset" value="0.132"/>
+
+  <!-- base_link sits at wheel axle height. Chassis center is above axle. -->
+  <xacro:property name="chassis_z_offset" value="${chassis_height / 2}"/>
+
+  <!-- ================================================================== -->
+  <!-- Inertia macros                                                      -->
+  <!-- ================================================================== -->
+  <xacro:macro name="box_inertia" params="m x y z">
+    <inertial>
+      <mass value="${m}"/>
+      <inertia ixx="${m * (y*y + z*z) / 12}" ixy="0" ixz="0"
+               iyy="${m * (x*x + z*z) / 12}" iyz="0"
+               izz="${m * (x*x + y*y) / 12}"/>
+    </inertial>
+  </xacro:macro>
+
+  <xacro:macro name="cylinder_inertia" params="m r h">
+    <inertial>
+      <mass value="${m}"/>
+      <inertia ixx="${m * (3*r*r + h*h) / 12}" ixy="0" ixz="0"
+               iyy="${m * (3*r*r + h*h) / 12}" iyz="0"
+               izz="${m * r*r / 2}"/>
+    </inertial>
+  </xacro:macro>
+
+  <!-- ================================================================== -->
+  <!-- Wheel macro                                                         -->
+  <!-- ================================================================== -->
+  <xacro:macro name="wheel" params="prefix x_offset y_offset">
+    <joint name="${prefix}_wheel_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="${prefix}_wheel_link"/>
+      <origin xyz="${x_offset} ${y_offset} 0" rpy="${-pi/2} 0 0"/>
+      <axis xyz="0 0 1"/>
+      <dynamics damping="0.1" friction="0.1"/>
+    </joint>
+
+    <link name="${prefix}_wheel_link">
+      <xacro:cylinder_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_width}"/>
+      <visual>
+        <geometry>
+          <!-- STL exports are in millimeters; URDF distances are in meters. -->
+          <mesh filename="package://star_simulation/meshes/wheel_visual.stl"
+                scale="0.001 0.001 0.001"/>
+        </geometry>
+        <material name="wheel_black">
+          <color rgba="0.1 0.1 0.1 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://star_simulation/meshes/wheel_collision.stl"
+                scale="0.001 0.001 0.001"/>
+        </geometry>
+      </collision>
+    </link>
+  </xacro:macro>
+
+  <!-- ================================================================== -->
+  <!-- Base link: chassis body                                             -->
+  <!-- ================================================================== -->
+  <link name="base_link">
+    <xacro:box_inertia m="${chassis_mass}"
+                       x="${chassis_length}"
+                       y="${chassis_width}"
+                       z="${chassis_height}"/>
+    <visual>
+      <geometry>
+        <!-- STL exports are in millimeters; URDF distances are in meters. -->
+        <mesh filename="package://star_simulation/meshes/chassis_visual.stl"
+              scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="chassis_blue">
+        <color rgba="0.2 0.3 0.7 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://star_simulation/meshes/chassis_collision.stl"
+              scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- ================================================================== -->
+  <!-- Four wheels                                                         -->
+  <!-- ================================================================== -->
+  <xacro:wheel prefix="front_left"  x_offset="${wheel_x_offset}"  y_offset="${wheel_y_offset}"/>
+  <xacro:wheel prefix="front_right" x_offset="${wheel_x_offset}"  y_offset="${-wheel_y_offset}"/>
+  <xacro:wheel prefix="back_left"   x_offset="${-wheel_x_offset}" y_offset="${wheel_y_offset}"/>
+  <xacro:wheel prefix="back_right"  x_offset="${-wheel_x_offset}" y_offset="${-wheel_y_offset}"/>
+
+  <!-- ================================================================== -->
+  <!-- RPLiDAR C1: mounted 5 cm above base_link center                     -->
+  <!-- (same transform as star_bringup/urdf/star.urdf.xacro)               -->
+  <!-- ================================================================== -->
+  <joint name="base_to_laser" type="fixed">
+    <parent link="base_link"/>
+    <child link="laser_frame"/>
+    <origin xyz="0.0 0.0 0.05" rpy="0 0 0"/>
+  </joint>
+
+  <link name="laser_frame">
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0"
+               iyy="0.00001" iyz="0"
+               izz="0.00001"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 ${chassis_height / 2 + 0.01}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.035" length="0.025"/>
+      </geometry>
+      <material name="lidar_red">
+        <color rgba="0.8 0.2 0.2 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <!-- ================================================================== -->
+  <!-- IMU: co-located with base_link (on-board, at robot center)          -->
+  <!-- (same transform as star_bringup/urdf/star.urdf.xacro)               -->
+  <!-- ================================================================== -->
+  <joint name="base_to_imu" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="imu_link">
+    <inertial>
+      <mass value="0.01"/>
+      <inertia ixx="0.000001" ixy="0" ixz="0"
+               iyy="0.000001" iyz="0"
+               izz="0.000001"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 ${chassis_z_offset}" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.02 0.01"/>
+      </geometry>
+      <material name="imu_green">
+        <color rgba="0.2 0.8 0.2 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <!-- ================================================================== -->
+  <!-- HC-SR04 ultrasonic sonar mounts (4x, at chassis corners)            -->
+  <!-- Facing outward: front_left/right forward, back_left/right backward  -->
+  <!-- ================================================================== -->
+  <xacro:macro name="sonar_mount" params="name x y yaw">
+    <joint name="base_to_${name}_sonar" type="fixed">
+      <parent link="base_link"/>
+      <child link="${name}_sonar_link"/>
+      <origin xyz="${x} ${y} ${chassis_z_offset}" rpy="0 0 ${yaw}"/>
+    </joint>
+    <link name="${name}_sonar_link">
+      <inertial>
+        <mass value="0.005"/>
+        <inertia ixx="0.000001" ixy="0" ixz="0"
+                 iyy="0.000001" iyz="0"
+                 izz="0.000001"/>
+      </inertial>
+    </link>
+  </xacro:macro>
+
+  <!-- Front sonars face forward (yaw=0), back sonars face backward (yaw=pi) -->
+  <xacro:sonar_mount name="front_left"  x="${chassis_length/2}"  y="${chassis_width/2}"  yaw="0"/>
+  <xacro:sonar_mount name="front_right" x="${chassis_length/2}"  y="${-chassis_width/2}" yaw="0"/>
+  <xacro:sonar_mount name="back_left"   x="${-chassis_length/2}" y="${chassis_width/2}"  yaw="${pi}"/>
+  <xacro:sonar_mount name="back_right"  x="${-chassis_length/2}" y="${-chassis_width/2}" yaw="${pi}"/>
+
+  <!-- ================================================================== -->
+  <!-- Gazebo Harmonic plugins (DiffDrive, sensors, friction)              -->
+  <!-- ================================================================== -->
+  <xacro:include filename="$(find star_simulation)/urdf/star_gazebo.xacro"/>
+
+</robot>
