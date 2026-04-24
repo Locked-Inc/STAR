@@ -1456,16 +1456,15 @@ void test_uart_clear_rx_errors_valid_channel(void)
 /**
  * @brief uart_clear_rx_errors rejects out-of-range channel
  */
+/* NOLINTBEGIN(clang-analyzer-optin.core.EnumCastOutOfRange,readability-magic-numbers) */
 void test_uart_clear_rx_errors_invalid_channel(void)
 {
-  /* clang-analyzer's EnumCastOutOfRange check isn't silenced by
-   * NOLINTNEXTLINE on a literal cast, so route the obviously-invalid
-   * value through a volatile uint so the analyzer loses the literal
-   * and the runtime check inside uart_clear_rx_errors() still fires. */
-  volatile uint8_t     raw     = 99U;
-  const uart_channel_t invalid = (uart_channel_t)raw;
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, uart_clear_rx_errors(invalid));
+  /* Deliberately-invalid channel cast is the subject of this test --
+   * verify that uart_clear_rx_errors() rejects out-of-range values
+   * at runtime with k_rx_err_invalid_arg. */
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, uart_clear_rx_errors((uart_channel_t)99));
 }
+/* NOLINTEND(clang-analyzer-optin.core.EnumCastOutOfRange,readability-magic-numbers) */
 
 /** @} */ // end of uart_rx_tests
 
