@@ -510,6 +510,39 @@ bool rx_usb_hw_pipe_is_in(const uint8_t pipe)
   return s_pipe_is_in[pipe];
 }
 
+/**
+ * @brief True if pipe's buffer is ready to accept a fresh packet.
+ *
+ * Reads PIPEnCTR.PBUSY (bit 5).  PBUSY=0 means the buffer is drained
+ * and the hardware will accept a new fifo_write; PBUSY=1 means a
+ * packet is still being transmitted to (or received from) the host.
+ *
+ * Critically used by rx_usb_cdc_handle_bulk_in() to avoid calling
+ * rx_usb_tx_pop() when the pipe can't yet accept another packet --
+ * the pop would otherwise remove bytes from the TX ring, fifo_write
+ * would return 0 because of the internal PBUSY check, and those
+ * bytes would be silently dropped.  That was the ~100 B/s rate cap
+ * symptom on bench: most ticks lost 64 bytes to this race.
+ */
+bool rx_usb_hw_pipe_ready_for_write(const uint8_t pipe)
+{
+  if (pipe == 0U || pipe >= 10U) {
+    return false;
+  }
+  volatile uint16_t* const pipe_ctr_map[] = {
+    &usb0()->pipe1ctr,
+    &usb0()->pipe2ctr,
+    &usb0()->pipe3ctr,
+    &usb0()->pipe4ctr,
+    &usb0()->pipe5ctr,
+    &usb0()->pipe6ctr,
+    &usb0()->pipe7ctr,
+    &usb0()->pipe8ctr,
+    &usb0()->pipe9ctr,
+  };
+  return (*pipe_ctr_map[pipe - 1U] & k_usb_pipectr_pbusy) == 0U;
+}
+
 /** @brief USB timing constants for initialization delays */
 typedef enum : uint16_t {
   k_usb_pll_stabilization_ms   = 10, /**< USB PLL stabilization time (10ms) */
@@ -1355,6 +1388,27 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
 
   /* 7. Enable pipe: PID = BUF. */
   *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask) | k_usb_pipectr_pid_buf);
+
+  /* 8. Enable the per-pipe interrupt the ISR routes off of.  Step (1)
+   * zeroed BRDYENB/NRDYENB/BEMPENB for this pipe while reconfiguring;
+   * without re-enabling, the ISR's brdysts/bempsts scan sees clean
+   * bits forever, handle_bulk_in/handle_bulk_out never fires, and the
+   * only drain path is the synchronous trigger_tx_if_idle() inside
+   * rx_usb_write().  That explains bench-observed ~100 B/s cap on
+   * D->H and host `write()` blocking forever on H->D (bulk OUT).
+   *
+   * Routing rule (matches internal_handle_brdy_interrupt /
+   * internal_handle_bemp_interrupt in rx_usb_isr.c):
+   *   - OUT pipes (host -> device): BRDY fires when a bulk-OUT packet
+   *     lands in the pipe FIFO.  Handler drains it to the RX ring.
+   *   - IN pipes  (device -> host): BEMP fires when the pipe has
+   *     finished transmitting and its buffer is empty, i.e. the HW
+   *     is ready for the next packet.  Handler refills from TX ring. */
+  if (is_in) {
+    usb0()->bempenb |= pipe_bit;
+  } else {
+    usb0()->brdyenb |= pipe_bit;
+  }
 
   return k_rx_ok;
 }

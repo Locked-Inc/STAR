@@ -14,11 +14,12 @@
 #include "rx_usb.h"
 #include "tx_api.h"
 
+
 typedef enum : uint16_t {
-  k_usb_task_stack_size = 1024, /**< ThreadX task stack in bytes. */
+  k_usb_task_stack_size = 2048, /**< ThreadX task stack in bytes. */
   k_usb_task_priority   = 4,    /**< One higher than comm_task (5) so we run first. */
   k_usb_task_input      = 0,    /**< Thread entry input (unused). */
-  k_tx_packet_bytes     = 64U,  /**< Per-port TX burst size (USB FS bulk MPS). */
+  k_tx_packet_bytes     = 512U, /**< Per-port TX burst -- 8 USB FS bulk MPS packets. */
   k_rx_drain_bytes      = 128U, /**< Per-tick H->D drain buffer. */
 } usb_task_constants_t;
 
@@ -28,14 +29,24 @@ static bool      s_usb_created = false;
 
 static const char* s_tag = "USB_TASK";
 
-/* 64 B canned payload per port, terminated with '\n' so host tools
- * can `cat` the port and see one line per packet. */
-static const uint8_t s_tx_proto[k_tx_packet_bytes] =
-  "p0:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n";
-static const uint8_t s_tx_decoded[k_tx_packet_bytes] =
-  "p1:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n";
-static const uint8_t s_tx_log[k_tx_packet_bytes] =
-  "p2:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n";
+/* 512 B canned payload per port (8 back-to-back 64 B lines).  Each
+ * line is self-identifying ("p0:ABCD..." / "p1:..." / "p2:...") so a
+ * host `cat /dev/ttyACMn` shows which port it is tapping. */
+#define STAR_USB_STRESS_LINE_PROTO   "p0:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
+#define STAR_USB_STRESS_LINE_DECODED "p1:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
+#define STAR_USB_STRESS_LINE_LOG     "p2:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
+static const uint8_t s_tx_proto[k_tx_packet_bytes] = STAR_USB_STRESS_LINE_PROTO
+    STAR_USB_STRESS_LINE_PROTO STAR_USB_STRESS_LINE_PROTO STAR_USB_STRESS_LINE_PROTO
+    STAR_USB_STRESS_LINE_PROTO STAR_USB_STRESS_LINE_PROTO STAR_USB_STRESS_LINE_PROTO
+    STAR_USB_STRESS_LINE_PROTO;
+static const uint8_t s_tx_decoded[k_tx_packet_bytes] = STAR_USB_STRESS_LINE_DECODED
+    STAR_USB_STRESS_LINE_DECODED STAR_USB_STRESS_LINE_DECODED STAR_USB_STRESS_LINE_DECODED
+    STAR_USB_STRESS_LINE_DECODED STAR_USB_STRESS_LINE_DECODED STAR_USB_STRESS_LINE_DECODED
+    STAR_USB_STRESS_LINE_DECODED;
+static const uint8_t s_tx_log[k_tx_packet_bytes] = STAR_USB_STRESS_LINE_LOG
+    STAR_USB_STRESS_LINE_LOG STAR_USB_STRESS_LINE_LOG STAR_USB_STRESS_LINE_LOG
+    STAR_USB_STRESS_LINE_LOG STAR_USB_STRESS_LINE_LOG STAR_USB_STRESS_LINE_LOG
+    STAR_USB_STRESS_LINE_LOG;
 
 /* Echo scratch, static so we don't bloat the task stack. */
 static uint8_t s_echo_buf[k_rx_drain_bytes];
