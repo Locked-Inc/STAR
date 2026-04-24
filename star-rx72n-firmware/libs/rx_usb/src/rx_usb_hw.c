@@ -849,7 +849,7 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
    *              old MBW=16 path lost the high-byte half-word at the end
    *              of an odd-length OUT transfer (and silently advanced
    *              DTLN by 2 anyway). */
-  usb0()->cfifosel = (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_mbw_8;
+  usb0()->cfifosel = (pipe & k_usb_cfifosel_curpipe_mask) | k_usb_cfifosel_mbw_8;
 
   /* Wait for FIFO ready (hardware polling) */
   /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
@@ -975,9 +975,9 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     const uint16_t isel_bit = (pipe == k_usb_pipe_min) ? (uint16_t)(1U << 5) : 0U;
     /* Overwrite the whole register (not RMW) so leftover RCNT/REW bits
      * from enumeration-side DCP access don't bleed in. */
-    *fifosel_r = (uint16_t)(isel_bit | (pipe & k_usb_fifosel_curpipe_mask));
+    *fifosel_r = (uint16_t)(isel_bit | (pipe & k_usb_cfifosel_curpipe_mask));
     for (volatile uint32_t n = 0; n < k_usb_fifo_timeout_iterations; ++n) {
-      if ((*fifosel_r & k_usb_fifosel_curpipe_mask) == (pipe & k_usb_fifosel_curpipe_mask)) {
+      if ((*fifosel_r & k_usb_cfifosel_curpipe_mask) == (pipe & k_usb_cfifosel_curpipe_mask)) {
         break;
       }
     }
@@ -1157,9 +1157,9 @@ rx_err_t rx_usb_hw_fifo_write_zlp(const uint8_t pipe)
 
   /* Select target pipe on CFIFO.  ISEL is meaningful only for DCP, so
    * we leave it at 0 for data pipes -- matches the write path. */
-  *fifosel_r = (uint16_t)(pipe & k_usb_fifosel_curpipe_mask);
+  *fifosel_r = (uint16_t)(pipe & k_usb_cfifosel_curpipe_mask);
   for (volatile uint32_t n = 0; n < k_usb_fifo_timeout_iterations; ++n) {
-    if ((*fifosel_r & k_usb_fifosel_curpipe_mask) == (pipe & k_usb_fifosel_curpipe_mask)) {
+    if ((*fifosel_r & k_usb_cfifosel_curpipe_mask) == (pipe & k_usb_cfifosel_curpipe_mask)) {
       break;
     }
   }
