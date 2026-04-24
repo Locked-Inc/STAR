@@ -136,18 +136,19 @@ extern rx_err_t internal_handle_reset(rx_i2c_comm_handle_t* handle);
  * @brief Test payload sizes and other numeric constants
  */
 typedef enum : uint16_t {
-  k_test_payload_small     = 4,    /**< Small payload: "TEST" */
-  k_test_payload_medium    = 16,   /**< Medium payload: 16 bytes */
-  k_test_seq_a             = 0,    /**< First expected TX sequence */
-  k_test_seq_b             = 1,    /**< Second expected TX sequence */
-  k_test_timeout_zero      = 0,    /**< Non-blocking receive timeout */
-  k_test_addr_default      = 0x42, /**< Default I2C device address */
-  k_test_channel_default   = 0,    /**< RIIC0 channel */
-  k_test_frame_buf_size    = 2048, /**< Buffer for encoded frames */
-  k_test_tx_buf_size       = 256,  /**< Readback buffer size */
-  k_test_payload_large     = 249,  /**< Payload that makes wire_len exceed 256-byte I2C limit */
-  k_test_rx_buf_max        = 2048, /**< k_i2c_comm_rx_buffer_size */
-  k_test_seq_gap_large     = 33000, /**< Gap >= k_session_max_gap_tolerance (32768); triggers validate_fail */
+  k_test_payload_small   = 4,    /**< Small payload: "TEST" */
+  k_test_payload_medium  = 16,   /**< Medium payload: 16 bytes */
+  k_test_seq_a           = 0,    /**< First expected TX sequence */
+  k_test_seq_b           = 1,    /**< Second expected TX sequence */
+  k_test_timeout_zero    = 0,    /**< Non-blocking receive timeout */
+  k_test_addr_default    = 0x42, /**< Default I2C device address */
+  k_test_channel_default = 0,    /**< RIIC0 channel */
+  k_test_frame_buf_size  = 2048, /**< Buffer for encoded frames */
+  k_test_tx_buf_size     = 256,  /**< Readback buffer size */
+  k_test_payload_large   = 249,  /**< Payload that makes wire_len exceed 256-byte I2C limit */
+  k_test_rx_buf_max      = 2048, /**< k_i2c_comm_rx_buffer_size */
+  k_test_seq_gap_large =
+    33000, /**< Gap >= k_session_max_gap_tolerance (32768); triggers validate_fail */
   k_test_expected_tx_seq   = 2,    /**< Expected TX sequence after two sends */
   k_test_oversized_payload = 1025, /**< Payload exceeding k_frame_max_payload (1024) */
 } test_i2c_comm_constants_t;
