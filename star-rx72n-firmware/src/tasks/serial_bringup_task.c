@@ -69,16 +69,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "hardware.h"          /* uart_getc_channel, k_uart_channel_9, k_uart_debug_channel */
-#include "rx72n_mtu_regs.h"    /* mtu1(), mtu2() */
-#include "rx72n_sci_regs.h"    /* sci9() for diag SCR/SSR readback */
-#include "rx72n_tpu_regs.h"    /* tpu1(), tpu2() */
-#include "rx_check.h"          /* RX_ASSERT */
-#include "rx_err.h"            /* rx_err_t, k_rx_err_* */
-#include "rx_iwdt.h"           /* rx_iwdt_task_heartbeat */
-#include "rx_log.h"            /* rx_log_info / warn / error */
-#include "shared_data.h"       /* motor_command_t, motor_state_t, imu_state_t, setters + getters */
-#include "tx_api.h"            /* TX_THREAD, tx_thread_create, tx_time_get */
+#include "hardware.h"       /* uart_getc_channel, k_uart_channel_9, k_uart_debug_channel */
+#include "rx72n_mtu_regs.h" /* mtu1(), mtu2() */
+#include "rx72n_sci_regs.h" /* sci9() for diag SCR/SSR readback */
+#include "rx72n_tpu_regs.h" /* tpu1(), tpu2() */
+#include "rx_check.h"       /* RX_ASSERT */
+#include "rx_err.h"         /* rx_err_t, k_rx_err_* */
+#include "rx_iwdt.h"        /* rx_iwdt_task_heartbeat */
+#include "rx_log.h"         /* rx_log_info / warn / error */
+#include "shared_data.h"    /* motor_command_t, motor_state_t, imu_state_t, setters + getters */
+#include "tx_api.h"         /* TX_THREAD, tx_thread_create, tx_time_get */
 
 /* =============================================================================
  * Task configuration constants (C23 typed enums, NO magic numbers)
@@ -101,13 +101,13 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_serial_priority = 5,               /**< Match old comm_task priority 5 (highest app prio) */
-  k_serial_max_line_len = 80,          /**< Drop lines longer than this (inc. terminator) */
-  k_serial_watchdog_ticks = 20,        /**< 200 ms at 10 ms/tick = 20 ticks */
-  k_serial_telemetry_period_ticks = 5, /**< 50 Hz emit inside a 100 Hz outer loop */
-  k_serial_outer_loop_sleep_ticks = 1, /**< 1 tick = 10 ms -> 100 Hz outer */
-  k_serial_boot_delay_ticks = 20,      /**< Match motor_control_task 200 ms start-up delay */
-  k_serial_num_motors = 4,             /**< FL, FR, BR, BL */
+  k_serial_priority               = 5,  /**< Match old comm_task priority 5 (highest app prio) */
+  k_serial_max_line_len           = 80, /**< Drop lines longer than this (inc. terminator) */
+  k_serial_watchdog_ticks         = 20, /**< 200 ms at 10 ms/tick = 20 ticks */
+  k_serial_telemetry_period_ticks = 5,  /**< 50 Hz emit inside a 100 Hz outer loop */
+  k_serial_outer_loop_sleep_ticks = 1,  /**< 1 tick = 10 ms -> 100 Hz outer */
+  k_serial_boot_delay_ticks       = 20, /**< Match motor_control_task 200 ms start-up delay */
+  k_serial_num_motors             = 4,  /**< FL, FR, BR, BL */
 } serial_small_constants_t;
 
 /**
@@ -144,11 +144,11 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_ascii_cr = 0x0D,        /**< Carriage return */
-  k_ascii_lf = 0x0A,        /**< Line feed */
-  k_ascii_space = 0x20,     /**< Space (lowest printable) */
-  k_ascii_tilde = 0x7E,     /**< Tilde (highest printable) */
-  k_ascii_hash = 0x23,      /**< '#' -- line treated as comment and ignored */
+  k_ascii_cr           = 0x0D, /**< Carriage return */
+  k_ascii_lf           = 0x0A, /**< Line feed */
+  k_ascii_space        = 0x20, /**< Space (lowest printable) */
+  k_ascii_tilde        = 0x7E, /**< Tilde (highest printable) */
+  k_ascii_hash         = 0x23, /**< '#' -- line treated as comment and ignored */
   k_ascii_cmd_velocity = 0x56, /**< 'V' -- velocity command prefix */
 } serial_ascii_t;
 
@@ -186,10 +186,10 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_fw_idx_front_left = 0, /**< target_velocity_mps[0] */
+  k_fw_idx_front_left  = 0, /**< target_velocity_mps[0] */
   k_fw_idx_front_right = 1, /**< target_velocity_mps[1] */
-  k_fw_idx_back_right = 2, /**< target_velocity_mps[2] */
-  k_fw_idx_back_left = 3, /**< target_velocity_mps[3] */
+  k_fw_idx_back_right  = 2, /**< target_velocity_mps[2] */
+  k_fw_idx_back_left   = 3, /**< target_velocity_mps[3] */
 } serial_motor_fw_idx_t;
 
 /* =============================================================================
@@ -368,9 +368,8 @@ static void internal_drain_rx(void)
   }
 
   while (true) {
-    char byte_c = 0;
-    const rx_err_t err =
-      uart_getc_channel((uart_channel_t)k_uart_debug_channel, &byte_c);
+    char           byte_c = 0;
+    const rx_err_t err    = uart_getc_channel((uart_channel_t)k_uart_debug_channel, &byte_c);
     if (err == k_rx_err_empty) {
       break;
     }
@@ -449,8 +448,8 @@ static void internal_handle_line(const char* line, uint8_t len)
   scratch[len] = '\0';
 
   /* Advance past the 'V'. */
-  const char* cursor = &scratch[1];
-  float parsed[k_serial_num_motors] = {0.0F, 0.0F, 0.0F, 0.0F};
+  const char* cursor                      = &scratch[1];
+  float       parsed[k_serial_num_motors] = {0.0F, 0.0F, 0.0F, 0.0F};
 
   for (uint8_t i = 0; i < (uint8_t)k_serial_num_motors; i++) {
     char* endptr = NULL;
@@ -461,20 +460,20 @@ static void internal_handle_line(const char* line, uint8_t len)
       return;
     }
     parsed[i] = (float)v;
-    cursor = endptr;
+    cursor    = endptr;
   }
 
   motor_command_t cmd = {0};
   /* Map wire slots -> firmware command indices. Wire = FL FR BL BR,
    * firmware = FL FR BR BL (motor_index_t). */
-  cmd.target_velocity_mps[k_fw_idx_front_left] = parsed[k_wire_slot_fl];
+  cmd.target_velocity_mps[k_fw_idx_front_left]  = parsed[k_wire_slot_fl];
   cmd.target_velocity_mps[k_fw_idx_front_right] = parsed[k_wire_slot_fr];
-  cmd.target_velocity_mps[k_fw_idx_back_left] = parsed[k_wire_slot_bl];
-  cmd.target_velocity_mps[k_fw_idx_back_right] = parsed[k_wire_slot_br];
+  cmd.target_velocity_mps[k_fw_idx_back_left]   = parsed[k_wire_slot_bl];
+  cmd.target_velocity_mps[k_fw_idx_back_right]  = parsed[k_wire_slot_br];
   s_seq++;
-  cmd.sequence = s_seq;
+  cmd.sequence     = s_seq;
   cmd.timestamp_ms = (uint32_t)tx_time_get();
-  cmd.valid = true;
+  cmd.valid        = true;
 
   const rx_err_t err = shared_data_set_motor_command(&cmd);
   if (err != k_rx_ok) {
@@ -483,7 +482,7 @@ static void internal_handle_line(const char* line, uint8_t len)
   }
 
   s_last_cmd_tick = tx_time_get();
-  s_last_valid = true;
+  s_last_valid    = true;
   s_total_v_parsed++;
 }
 
@@ -511,22 +510,21 @@ static void internal_handle_line(const char* line, uint8_t len)
  */
 static void internal_emit_telemetry(void)
 {
-  const int16_t enc_fl = (int16_t)mtu1()->tcnt;
-  const int16_t enc_fr = (int16_t)mtu2()->tcnt;
-  const int16_t enc_tpu1 = (int16_t)tpu1()->tcnt;
-  const int16_t enc_tpu2 = (int16_t)tpu2()->tcnt;
-  const uint32_t now_ms = (uint32_t)tx_time_get() * (uint32_t)k_serial_ms_per_tick;
+  const int16_t  enc_fl   = (int16_t)mtu1()->tcnt;
+  const int16_t  enc_fr   = (int16_t)mtu2()->tcnt;
+  const int16_t  enc_tpu1 = (int16_t)tpu1()->tcnt;
+  const int16_t  enc_tpu2 = (int16_t)tpu2()->tcnt;
+  const uint32_t now_ms   = (uint32_t)tx_time_get() * (uint32_t)k_serial_ms_per_tick;
 
-  char buf[k_serial_tx_buf_size];
-  const int written =
-    snprintf(buf,
-             (size_t)k_serial_tx_buf_size,
-             "E %" PRId16 " %" PRId16 " %" PRId16 " %" PRId16 " %" PRIu32 "\n",
-             enc_fl,
-             enc_fr,
-             enc_tpu1,
-             enc_tpu2,
-             now_ms);
+  char      buf[k_serial_tx_buf_size];
+  const int written = snprintf(buf,
+                               (size_t)k_serial_tx_buf_size,
+                               "E %" PRId16 " %" PRId16 " %" PRId16 " %" PRId16 " %" PRIu32 "\n",
+                               enc_fl,
+                               enc_fr,
+                               enc_tpu1,
+                               enc_tpu2,
+                               now_ms);
   if (written <= 0) {
     return;
   }
@@ -553,7 +551,7 @@ static void internal_emit_telemetry(void)
  */
 static void internal_emit_motor_telemetry(void)
 {
-  motor_state_t state;
+  motor_state_t  state;
   const rx_err_t err = shared_data_get_motor_state(&state);
   if (err != k_rx_ok) {
     return;
@@ -570,28 +568,26 @@ static void internal_emit_motor_telemetry(void)
     (int16_t)(state.duty_cycle_percent[k_fw_idx_back_left] * (float)k_serial_duty_scale);
   const int16_t duty_br =
     (int16_t)(state.duty_cycle_percent[k_fw_idx_back_right] * (float)k_serial_duty_scale);
-  const uint8_t fault_fl = state.fault_flags[k_fw_idx_front_left];
-  const uint8_t fault_fr = state.fault_flags[k_fw_idx_front_right];
-  const uint8_t fault_bl = state.fault_flags[k_fw_idx_back_left];
-  const uint8_t fault_br = state.fault_flags[k_fw_idx_back_right];
-  const uint32_t now_ms = (uint32_t)tx_time_get() * (uint32_t)k_serial_ms_per_tick;
+  const uint8_t  fault_fl = state.fault_flags[k_fw_idx_front_left];
+  const uint8_t  fault_fr = state.fault_flags[k_fw_idx_front_right];
+  const uint8_t  fault_bl = state.fault_flags[k_fw_idx_back_left];
+  const uint8_t  fault_br = state.fault_flags[k_fw_idx_back_right];
+  const uint32_t now_ms   = (uint32_t)tx_time_get() * (uint32_t)k_serial_ms_per_tick;
 
-  char buf[k_serial_tx_buf_size];
-  const int written =
-    snprintf(buf,
-             (size_t)k_serial_tx_buf_size,
-             "M %" PRId16 " %" PRId16 " %" PRId16 " %" PRId16
-             " %" PRIu8 " %" PRIu8 " %" PRIu8 " %" PRIu8
-             " %" PRIu32 "\n",
-             duty_fl,
-             duty_fr,
-             duty_bl,
-             duty_br,
-             fault_fl,
-             fault_fr,
-             fault_bl,
-             fault_br,
-             now_ms);
+  char      buf[k_serial_tx_buf_size];
+  const int written = snprintf(buf,
+                               (size_t)k_serial_tx_buf_size,
+                               "M %" PRId16 " %" PRId16 " %" PRId16 " %" PRId16 " %" PRIu8
+                               " %" PRIu8 " %" PRIu8 " %" PRIu8 " %" PRIu32 "\n",
+                               duty_fl,
+                               duty_fr,
+                               duty_bl,
+                               duty_br,
+                               fault_fl,
+                               fault_fr,
+                               fault_bl,
+                               fault_br,
+                               now_ms);
   if (written <= 0) {
     return;
   }
@@ -618,7 +614,7 @@ static void internal_emit_motor_telemetry(void)
  */
 static void internal_emit_imu_telemetry(void)
 {
-  imu_state_t imu;
+  imu_state_t    imu;
   const rx_err_t err = shared_data_get_imu(&imu);
   if (err != k_rx_ok) {
     return;
@@ -626,29 +622,26 @@ static void internal_emit_imu_telemetry(void)
 
   const uint32_t now_ms = (uint32_t)tx_time_get() * (uint32_t)k_serial_ms_per_tick;
 
-  char buf[k_serial_tx_buf_size];
-  const int written =
-    snprintf(buf,
-             (size_t)k_serial_tx_buf_size,
-             "I %" PRId16 " %" PRId16 " %" PRId16 " %" PRId16
-             " %" PRId16 " %" PRId16 " %" PRId16
-             " %" PRId16 " %" PRId16 " %" PRId16
-             " %" PRId16 " %" PRId16 " %" PRId16
-             " %" PRIu32 "\n",
-             imu.quat_w,
-             imu.quat_x,
-             imu.quat_y,
-             imu.quat_z,
-             imu.roll_deg16,
-             imu.pitch_deg16,
-             imu.heading_deg16,
-             imu.gyro_x_dps16,
-             imu.gyro_y_dps16,
-             imu.gyro_z_dps16,
-             imu.lin_acc_x,
-             imu.lin_acc_y,
-             imu.lin_acc_z,
-             now_ms);
+  char      buf[k_serial_tx_buf_size];
+  const int written = snprintf(buf,
+                               (size_t)k_serial_tx_buf_size,
+                               "I %" PRId16 " %" PRId16 " %" PRId16 " %" PRId16 " %" PRId16
+                               " %" PRId16 " %" PRId16 " %" PRId16 " %" PRId16 " %" PRId16
+                               " %" PRId16 " %" PRId16 " %" PRId16 " %" PRIu32 "\n",
+                               imu.quat_w,
+                               imu.quat_x,
+                               imu.quat_y,
+                               imu.quat_z,
+                               imu.roll_deg16,
+                               imu.pitch_deg16,
+                               imu.heading_deg16,
+                               imu.gyro_x_dps16,
+                               imu.gyro_y_dps16,
+                               imu.gyro_z_dps16,
+                               imu.lin_acc_x,
+                               imu.lin_acc_y,
+                               imu.lin_acc_z,
+                               now_ms);
   if (written <= 0) {
     return;
   }
@@ -679,7 +672,7 @@ static void internal_emit_imu_telemetry(void)
  */
 static void internal_check_watchdog(void)
 {
-  const ULONG now = tx_time_get();
+  const ULONG now     = tx_time_get();
   const ULONG elapsed = now - s_last_cmd_tick;
   if (elapsed < (ULONG)k_serial_watchdog_ticks) {
     return;

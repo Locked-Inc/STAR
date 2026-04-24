@@ -1,3 +1,9 @@
+/**
+ * @file r_riic_rx_pin_config.h
+ *
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
+ */
+
 /***********************************************************************************************************************
 * Copyright (c) 2016 - 2025 Renesas Electronics Corporation and/or its affiliates
 *

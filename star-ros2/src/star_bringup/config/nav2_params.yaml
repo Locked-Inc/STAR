@@ -9,7 +9,7 @@ bt_navigator:
     robot_base_frame: base_link
     # Use EKF-fused odom (/odometry/filtered) so BT progress/velocity checks
     # reject the phantom yaw from BR-dead + BL-half wheel kinematics. EKF
-    # yaw is pegged to BNO055 on this hardware; raw wheel yaw drifts ~14°/s
+    # yaw is pegged to BNO055 on this hardware; raw wheel yaw drifts ~14deg/s
     # during pure-linear commands and would trip progress_checker spuriously.
     odom_topic: /odometry/filtered
     bt_loop_duration: 10

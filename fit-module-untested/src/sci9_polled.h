@@ -1,3 +1,10 @@
+/**
+ * @file sci9_polled.h
+ *
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
 /* sci9_polled.h -- self-contained polled-mode SCI9 (115200 8N1) for STAR PCB.
  *
  * Bypasses Renesas FIT r_sci_rx entirely. Direct register I/O like the proven

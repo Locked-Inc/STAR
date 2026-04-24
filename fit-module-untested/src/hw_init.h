@@ -1,3 +1,10 @@
+/**
+ * @file hw_init.h
+ *
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
 /* hw_init.h -- board-specific pin-mux + GPIO setup for the STAR PCB.
  *
  * The Renesas r_bsp FIT module brings up clocks and module-stop, but it does

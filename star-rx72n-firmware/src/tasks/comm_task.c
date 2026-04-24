@@ -386,6 +386,7 @@
  */
 
 #include "comm_task.h"
+
 #include "rx_check.h"
 #include "rx_comm_manager.h"
 #include "rx_frame.h"

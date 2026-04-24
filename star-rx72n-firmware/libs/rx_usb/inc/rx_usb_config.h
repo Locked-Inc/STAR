@@ -40,12 +40,18 @@
  *   rx-elf-gcc ... -DSTAR_USB_ENABLE_PORT_PROTO=0   \
  *                  -DSTAR_USB_ENABLE_PORT_DECODED=0 ...
  * @endcode
+ *
+
+ * @copyright Copyright (c) 2026 Locked Inc.
+
+ * SPDX-License-Identifier: MIT
+
  */
 
 #pragma once
 
 #ifndef STAR_USB_ENABLE_PORT_PROTO
-#define STAR_USB_ENABLE_PORT_PROTO   1
+#define STAR_USB_ENABLE_PORT_PROTO 1
 #endif
 
 #ifndef STAR_USB_ENABLE_PORT_DECODED
@@ -53,12 +59,11 @@
 #endif
 
 #ifndef STAR_USB_ENABLE_PORT_LOG
-#define STAR_USB_ENABLE_PORT_LOG     1
+#define STAR_USB_ENABLE_PORT_LOG 1
 #endif
 
 #if (STAR_USB_ENABLE_PORT_PROTO + STAR_USB_ENABLE_PORT_DECODED + STAR_USB_ENABLE_PORT_LOG) == 0
-#error \
-    "rx_usb_config.h: at least one of STAR_USB_ENABLE_PORT_{PROTO,DECODED,LOG} must be non-zero"
+#error "rx_usb_config.h: at least one of STAR_USB_ENABLE_PORT_{PROTO,DECODED,LOG} must be non-zero"
 #endif
 
 /**
@@ -68,5 +73,5 @@
  * Does NOT change rx_usb_port_id_t's enum range -- that stays 0..2 so
  * that port IDs remain stable across build variants.
  */
-#define STAR_USB_ENABLED_PORT_COUNT \
+#define STAR_USB_ENABLED_PORT_COUNT                                                                \
   (STAR_USB_ENABLE_PORT_PROTO + STAR_USB_ENABLE_PORT_DECODED + STAR_USB_ENABLE_PORT_LOG)

@@ -1,3 +1,10 @@
+/**
+ * @file serial_proto.c
+ *
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
 /* serial_proto.c -- STAR sandbox wire-protocol encoder + RX state machine. */
 
 #include "serial_proto.h"

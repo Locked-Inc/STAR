@@ -1,3 +1,10 @@
+/**
+ * @file crc8.h
+ *
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
 /* crc8.h -- Dallas/Maxim CRC-8 (poly 0x07, init 0x00, no reflection, no xor-out).
  *
  * Single function, lookup-table based. Same poly used by ATM HEC and many

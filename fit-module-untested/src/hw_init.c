@@ -1,3 +1,10 @@
+/**
+ * @file hw_init.c
+ *
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
 /* hw_init.c -- STAR PCB pin-mux + GPIO setup.
  *
  * All values cited from either the RX72N HW manual (R01UH0824) or a

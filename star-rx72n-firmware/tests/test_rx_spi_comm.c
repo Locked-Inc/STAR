@@ -382,7 +382,7 @@ typedef enum : uint16_t {
   k_test_ctx_value_a       = 42,  /**< Context value for callback tests */
   k_test_ctx_value_b       = 99,  /**< Context value for reset callback test */
   k_test_ctx_value_c       = 77,  /**< Context value for NACK callback test */
-  k_test_seq_gap           = 10,  /**< Sequence gap for validation fail test */
+  k_test_seq_gap           = 33000, /**< Sequence gap >= k_session_max_gap_tolerance (32768) for validation-fail test */
   k_test_nack_wrong_seq    = 99,  /**< Non-matching NACK sequence */
 } test_session_constants_t;
 

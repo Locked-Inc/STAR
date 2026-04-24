@@ -44,7 +44,7 @@ typedef enum : uint16_t {
   k_usb_task_input      = 0,    /**< Thread entry input (unused). */
   k_tx_packet_bytes     = STAR_USB_TX_PACKET_BYTES, /**< Per-port TX burst. */
   k_tx_every_n_tick     = STAR_USB_TX_EVERY_N_TICK, /**< Tick divisor for cadence. */
-  k_rx_drain_bytes      = 128U, /**< Per-tick H->D drain buffer. */
+  k_rx_drain_bytes      = 128U,                     /**< Per-tick H->D drain buffer. */
 } usb_task_constants_t;
 
 static TX_THREAD s_usb_thread;
@@ -58,9 +58,11 @@ static const char* s_tag = "USB_TASK";
  * which port it is tapping.  One line is exactly 64 B (bulk MPS) so
  * on TOM (k_tx_packet_bytes=64) each burst is one packet; on PROD
  * (k_tx_packet_bytes=512) each burst is 8 back-to-back packets. */
-#define STAR_USB_STRESS_LINE_PROTO   "p0:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
-#define STAR_USB_STRESS_LINE_DECODED "p1:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
-#define STAR_USB_STRESS_LINE_LOG     "p2:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
+#define STAR_USB_STRESS_LINE_PROTO                                                                 \
+  "p0:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
+#define STAR_USB_STRESS_LINE_DECODED                                                               \
+  "p1:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
+#define STAR_USB_STRESS_LINE_LOG "p2:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
 #if STAR_USB_TX_PACKET_BYTES == 512U
 #define STAR_USB_STRESS_REPEAT(line) line line line line line line line line
 #elif STAR_USB_TX_PACKET_BYTES == 64U

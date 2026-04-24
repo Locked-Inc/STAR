@@ -1,3 +1,10 @@
+/**
+ * @file bno055.c
+ *
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
 /* bno055.c -- BNO055 IMU driver via Renesas r_riic_rx FIT module.
  *
  * Verified against vendor/FITModules/r_riic_rx/r_riic_rx/r_riic_rx_if.h

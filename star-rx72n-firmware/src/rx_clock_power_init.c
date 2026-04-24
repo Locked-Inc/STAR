@@ -278,18 +278,19 @@ typedef enum : uint8_t {
 
 /** @brief PLL configuration values */
 typedef enum : uint16_t {
-  k_pll_multiplier_10_div_1 = 0x1300, /**< PLLCR: 10x multiplier, divide by 1 (240MHz from 24MHz MOSC) */
+  k_pll_multiplier_10_div_1 =
+    0x1300, /**< PLLCR: 10x multiplier, divide by 1 (240MHz from 24MHz MOSC) */
   /* TOM variant: HOCO * 12 into PLL.
    *   bit 4    PLLSRCSEL = 1  -> HOCO input
    *   bits [13:8] STC      = 23 (=2*12-1) -> x12 multiplier
    *   bits [1:0]  PLIDIV   = 0 -> no division
    * -> 0x1710.  Computes 16 MHz HOCO * 12 = 192 MHz PLL output. */
-  k_pll_multiplier_12_hoco  = 0x1710, /**< PLLCR: HOCO x12 / 1 (192 MHz from 16 MHz HOCO) */
-  k_hoco_stable_flag        = 0x08,   /**< OSCOVFSR: HOCO stabilization flag bit */
-  k_pll_stable_flag         = 0x04,   /**< OSCOVFSR: PLL stabilization flag bit */
-  k_pll_stable_flag_unset   = 0,      /**< PLL stable flag not yet asserted */
-  k_ppll_stable_flag_unset  = 0,      /**< PPLL stable flag not yet asserted */
-  k_hococr_enabled          = 0x00,   /**< HOCOCR: start HOCO (0 = running) */
+  k_pll_multiplier_12_hoco = 0x1710, /**< PLLCR: HOCO x12 / 1 (192 MHz from 16 MHz HOCO) */
+  k_hoco_stable_flag       = 0x08,   /**< OSCOVFSR: HOCO stabilization flag bit */
+  k_pll_stable_flag        = 0x04,   /**< OSCOVFSR: PLL stabilization flag bit */
+  k_pll_stable_flag_unset  = 0,      /**< PLL stable flag not yet asserted */
+  k_ppll_stable_flag_unset = 0,      /**< PPLL stable flag not yet asserted */
+  k_hococr_enabled         = 0x00,   /**< HOCOCR: start HOCO (0 = running) */
 } pll_config_t;
 
 /** @brief System clock configuration */

@@ -353,9 +353,9 @@ typedef enum : uint8_t {
  * programs ICU.SLIBR[144] = 62 (USBI0 source code) to route the USB0
  * status interrupt onto this slot. */
 void __attribute__((interrupt(".rvectors", 144))) usb0_usbi_isr(void);
-void __attribute__((interrupt(".rvectors", 34))) usb0_d0fifo_isr(void);
-void __attribute__((interrupt(".rvectors", 35))) usb0_d1fifo_isr(void);
-void __attribute__((interrupt(".rvectors", 90))) usb0_usbr_isr(void);
+void __attribute__((interrupt(".rvectors", 34)))  usb0_d0fifo_isr(void);
+void __attribute__((interrupt(".rvectors", 35)))  usb0_d1fifo_isr(void);
+void __attribute__((interrupt(".rvectors", 90)))  usb0_usbr_isr(void);
 
 /* =============================================================================
  * Private Functions
@@ -658,7 +658,7 @@ void __attribute__((interrupt(".rvectors", 144))) usb0_usbi_isr(void)
    * or hangs. */
   *((volatile uint8_t*)0x0008C02BU) |= (uint8_t)(1U << 5U);
   g_usb_isr_entry_count++;
-  *((volatile uint8_t*)0x0008C02BU) &= (uint8_t)~(1U << 5U);
+  *((volatile uint8_t*)0x0008C02BU) &= (uint8_t) ~(1U << 5U);
 
   /* Clear interrupt request flag in ICU */
   icu()->ir[k_vect_usb0_usbi] = 0;

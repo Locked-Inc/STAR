@@ -282,7 +282,7 @@
     },
     {
       "type": "timeseries",
-      "title": "Linear acceleration (m/s²)",
+      "title": "Linear acceleration (m/s^2)",
       "id": 16,
       "gridPos": { "h": 7, "w": 12, "x": 12, "y": 35 },
       "targets": [{ "expr": "star_imu_accel_mps2", "refId": "A", "legendFormat": "{{axis}}" }],
@@ -314,13 +314,13 @@
     },
     {
       "type": "stat",
-      "title": "Odom pose (x, y, θ)",
+      "title": "Odom pose (x, y, theta)",
       "id": 19,
       "gridPos": { "h": 6, "w": 8, "x": 16, "y": 43 },
       "targets": [
         { "expr": "star_odom_pose_x_m", "refId": "A", "legendFormat": "x (m)" },
         { "expr": "star_odom_pose_y_m", "refId": "B", "legendFormat": "y (m)" },
-        { "expr": "star_odom_pose_theta_rad", "refId": "C", "legendFormat": "θ (rad)" }
+        { "expr": "star_odom_pose_theta_rad", "refId": "C", "legendFormat": "theta (rad)" }
       ],
       "options": { "colorMode": "value", "graphMode": "area", "textMode": "value_and_name" }
     },
@@ -356,7 +356,7 @@
     },
     {
       "type": "gauge",
-      "title": "Closest bearing (0°=forward)",
+      "title": "Closest bearing (0deg=forward)",
       "id": 25,
       "gridPos": { "h": 6, "w": 6, "x": 6, "y": 50 },
       "targets": [{ "expr": "star_scan_closest_bearing_deg", "refId": "A" }],
