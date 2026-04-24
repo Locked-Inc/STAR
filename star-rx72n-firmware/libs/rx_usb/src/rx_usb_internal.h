@@ -149,6 +149,17 @@ rx_err_t rx_usb_hw_configure_pipe(uint8_t  pipe,
                                   uint16_t type,
                                   uint16_t max_packet);
 
+/**
+ * @brief True if the pipe's buffer is drained and ready for a new packet.
+ *
+ * Reads PIPEnCTR.PBUSY.  Handlers call this BEFORE popping from the
+ * TX ring so bytes aren't lost when the hardware is still mid-transmit.
+ *
+ * @param[in] pipe Pipe number (1..9; pipe 0 / DCP is handled separately).
+ * @return true if pipe accepts a packet, false if busy or invalid.
+ */
+bool rx_usb_hw_pipe_ready_for_write(uint8_t pipe);
+
 /** @brief Initialize USB0 hardware peripheral */
 rx_err_t rx_usb_hw_init(void);
 

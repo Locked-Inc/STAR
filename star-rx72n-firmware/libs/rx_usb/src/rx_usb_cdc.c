@@ -2793,6 +2793,17 @@ void rx_usb_cdc_handle_bulk_in(const rx_usb_port_id_t port)
   }
   const uint8_t pipe = config->pipe_bulk_in;
 
+  /* PBUSY gate -- see rx_usb_hw_pipe_ready_for_write() docblock.
+   * Without this, when BEMP/trigger_tx_if_idle fires while the pipe
+   * is still transmitting the previous packet, rx_usb_tx_pop() would
+   * remove bytes from the TX ring that rx_usb_hw_fifo_write() then
+   * drops on the floor (its own PBUSY guard returns 0).  That race
+   * was losing ~64 bytes every tick and capping bench throughput at
+   * ~100 B/s per port. */
+  if (!rx_usb_hw_pipe_ready_for_write(pipe)) {
+    return;
+  }
+
   uint8_t        data[k_usb_bulk_packet_size];
   const uint32_t len = rx_usb_tx_pop(port, data, k_usb_bulk_packet_size);
 
