@@ -308,9 +308,20 @@ typedef enum : uint32_t {
   k_sckcr2_uck_div4_tom = 0x0031, /**< SCKCR2 for TOM: UCK=/4 (192/4=48 MHz) + b0=1 */
 } system_clock_config_t;
 
-/** @brief PACKCR (peripheral clock) values -- routes UCLK from PPLL for USB */
+/** @brief PACKCR (peripheral clock) values -- routes UCLK for USB */
 typedef enum : uint16_t {
-  k_packcr_upllsel_ppll = (1U << 12) | 1U, /**< UPLLSEL=1 (b12) PPLL path; b0 reserved=1 */
+  /* PACKCR layout (RX72N HW manual p365):
+   *   b12 UPLLSEL : 0 = UCLK from main PLL / SCKCR2.UCK divider
+   *                 1 = UCLK from PPLL     / PPLLCR3 divider
+   *   b0          : reserved, must be written as 1
+   *
+   * We use the main-PLL path (UPLLSEL=0) because PPLL path requires
+   * writing PPLLCR3 = /5 to get 48 MHz from the 240 MHz PPLL output --
+   * that register is never written in this tree, so PPLL->UCLK stays at
+   * 240 MHz (USB0 then sees 240 MHz instead of 48 MHz, enumeration fails
+   * with host EPIPE/EPROTO on every SETUP).  Main-PLL path + SCKCR2.UCK=/5
+   * gives 240/5 = 48 MHz exactly with a single register write. */
+  k_packcr_main_pll = 0x0001U, /**< UPLLSEL=0 (main PLL path); b0 reserved=1 */
 } packcr_config_t;
 
 /** @brief Module stop bit positions in MSTPCRA */
@@ -531,19 +542,14 @@ static rx_err_t internal_start_oscillators_and_plls(void)
     return ppll_err;
   }
 
-  /* Route USB0 UCLK from the PPLL path by setting PACKCR.UPLLSEL=1.
-   * Without this, the USB module gets its 48 MHz clock from SCKCR2.UCK
-   * (main-PLL divider), which is not configured here and defaults to a
-   * divider that produces the wrong frequency -- USB0 then never
-   * enumerates even though rx_usb_hw_init() and D+ pull-up run cleanly.
-   *
-   * PACKCR layout (RX72N HW manual p365):
-   *   b12 UPLLSEL : 0 = main PLL (default), 1 = PPLL
-   *   b0          : reserved, must be written as 1
-   *
-   * The HAL struct at rx72n_system_regs.h doesn't expose packcr; write
-   * it via the absolute address the register reference table uses. */
-  *((volatile uint16_t*)k_packcr_addr) = k_packcr_upllsel_ppll;
+  /* Route USB0 UCLK from the main-PLL path (UPLLSEL=0) so
+   * SCKCR2.UCK=/5 (set in internal_switch_to_pll_clock) yields
+   * 240 MHz / 5 = 48 MHz.  The PPLL path would require PPLLCR3 to also
+   * be programmed to /5 and we don't do that -- see k_packcr_main_pll
+   * rationale at the typedef.  Bench-observed failure when UPLLSEL=1
+   * was exactly host dmesg "device descriptor read/64, error -32"
+   * (EPIPE) on first SETUP because UCLK was 240 MHz, not 48 MHz. */
+  *((volatile uint16_t*)k_packcr_addr) = k_packcr_main_pll;
 
   return k_rx_ok;
 #endif /* STAR_BOARD_TOM */
