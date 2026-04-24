@@ -341,13 +341,13 @@ extern "C" {
 #include "rx72n_cac_regs.h"
 
 /* =============================================================================
- * USB 2.0 Full-Speed Host/Function Module (USB0) -- REMOVED
+ * USB 2.0 Full-Speed Host/Function Module (USB0)
  * =============================================================================
- * The rx72n_usb_regs.h header was deleted alongside libs/rx_usb/ when USB0
- * was purged. The peripheral exists in silicon but is no longer used; if it
- * is ever re-enabled, restore the register header from git history.  USB0
- * bring-up work continues on the feat/usb0 branch.
+ * Restored on feat/usb0.  rx72n_usb_regs.h carries the audited register map
+ * for the 0x000A0000 USBb block (HUM Ch.40, manual p.1928).
  */
+
+#include "rx72n_usb_regs.h"
 
 /* =============================================================================
  * Multi-Function Timer Unit (MTU) - Encoder Quadrature Counting

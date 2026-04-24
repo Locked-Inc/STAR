@@ -48,9 +48,8 @@ file(GLOB_RECURSE APP_BOOT_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_SOURCE_DIR}/src/boot/*.S
 )
 file(GLOB_RECURSE APP_TASKS_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/tasks/*.c)
-# usb_task.c is orphaned after dc6f3201b purged rx_usb_comm; no longer registered
-# in main.c's internal_create_system_tasks().
-list(REMOVE_ITEM APP_TASKS_SOURCES ${CMAKE_SOURCE_DIR}/src/tasks/usb_task.c)
+# usb_task.c re-registered for feat/usb0 -- main.c instantiates it after
+# the inline USB0 bring-up sequence and rx_usb_init() call.
 file(GLOB_RECURSE APP_SHARED_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/shared/*.c)
 file(GLOB_RECURSE APP_RTOS_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/rtos_config/*.c)
 
@@ -116,6 +115,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_pid/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_sync/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_spi_comm/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_usb/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_usb/src
 )
 
 # Combine app sources (custom boot + intrinsic functions)
@@ -194,6 +195,7 @@ file(GLOB_RECURSE LIB_RX_SPI_COMM_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/
 file(GLOB_RECURSE LIB_RX_SPI_LINK_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_spi_link/src/*.c)
 file(GLOB_RECURSE LIB_RX_UART_COMM_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_uart_comm/src/*.c)
 file(GLOB_RECURSE LIB_RX_COMM_MANAGER_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_comm_manager/src/*.c)
+file(GLOB_RECURSE LIB_RX_USB_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_usb/src/*.c)
 
 # nanopb (only core files, not tests/examples)
 set(NANOPB_SOURCES
@@ -250,6 +252,7 @@ set(ALL_SOURCES
     ${LIB_RX_SPI_LINK_SOURCES}
     ${LIB_RX_UART_COMM_SOURCES}
     ${LIB_RX_COMM_MANAGER_SOURCES}
+    ${LIB_RX_USB_SOURCES}
     ${NANOPB_SOURCES}
     ${LIB_RX_NANOPB_SOURCES}
     ${PROTOBUF_SOURCES}
