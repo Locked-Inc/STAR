@@ -12,14 +12,38 @@
 
 #include "rx_log.h"
 #include "rx_usb.h"
+#include "star_board.h"
 #include "tx_api.h"
 
+/* Board-specific stress pacing.
+ *
+ * PROD has a 24 MHz crystal -> 48 MHz UCLK within USB FS spec (+/- 0.25%),
+ * so it can blast 8 bulk MPS packets (512 B) every single ThreadX tick
+ * without accumulating enough clock drift to break host-side DPLL.
+ *
+ * TOM has no crystal: HOCO +/- 2.44% is ~10x outside USB FS tolerance.
+ * Back-to-back max-packet transfers accumulate drift faster than the
+ * host can resync across EOP gaps, so we deliberately rate-limit:
+ *   - 64 B burst (one bulk MPS packet) instead of 512 B
+ *   - send once every 10 ticks (~10 Hz) so each burst is followed by
+ *     ~100 ms of bus idle for the host to re-lock
+ *
+ * That caps TOM at ~640 B/s/port but keeps it reliable instead of
+ * dropping out under sustained load. */
+#if defined(STAR_BOARD_TOM)
+#define STAR_USB_TX_PACKET_BYTES 64U
+#define STAR_USB_TX_EVERY_N_TICK 10U
+#else
+#define STAR_USB_TX_PACKET_BYTES 512U
+#define STAR_USB_TX_EVERY_N_TICK 1U
+#endif
 
 typedef enum : uint16_t {
   k_usb_task_stack_size = 2048, /**< ThreadX task stack in bytes. */
   k_usb_task_priority   = 4,    /**< One higher than comm_task (5) so we run first. */
   k_usb_task_input      = 0,    /**< Thread entry input (unused). */
-  k_tx_packet_bytes     = 512U, /**< Per-port TX burst -- 8 USB FS bulk MPS packets. */
+  k_tx_packet_bytes     = STAR_USB_TX_PACKET_BYTES, /**< Per-port TX burst. */
+  k_tx_every_n_tick     = STAR_USB_TX_EVERY_N_TICK, /**< Tick divisor for cadence. */
   k_rx_drain_bytes      = 128U, /**< Per-tick H->D drain buffer. */
 } usb_task_constants_t;
 
@@ -29,24 +53,27 @@ static bool      s_usb_created = false;
 
 static const char* s_tag = "USB_TASK";
 
-/* 512 B canned payload per port (8 back-to-back 64 B lines).  Each
- * line is self-identifying ("p0:ABCD..." / "p1:..." / "p2:...") so a
- * host `cat /dev/ttyACMn` shows which port it is tapping. */
+/* Canned payload per port -- self-identifying ("p0:..." / "p1:..." /
+ * "p2:...") and newline-terminated so a host `cat /dev/ttyACMn` shows
+ * which port it is tapping.  One line is exactly 64 B (bulk MPS) so
+ * on TOM (k_tx_packet_bytes=64) each burst is one packet; on PROD
+ * (k_tx_packet_bytes=512) each burst is 8 back-to-back packets. */
 #define STAR_USB_STRESS_LINE_PROTO   "p0:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
 #define STAR_USB_STRESS_LINE_DECODED "p1:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
 #define STAR_USB_STRESS_LINE_LOG     "p2:ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVW\n"
-__attribute__((unused)) static const uint8_t s_tx_proto[k_tx_packet_bytes] = STAR_USB_STRESS_LINE_PROTO
-    STAR_USB_STRESS_LINE_PROTO STAR_USB_STRESS_LINE_PROTO STAR_USB_STRESS_LINE_PROTO
-    STAR_USB_STRESS_LINE_PROTO STAR_USB_STRESS_LINE_PROTO STAR_USB_STRESS_LINE_PROTO
-    STAR_USB_STRESS_LINE_PROTO;
-__attribute__((unused)) static const uint8_t s_tx_decoded[k_tx_packet_bytes] = STAR_USB_STRESS_LINE_DECODED
-    STAR_USB_STRESS_LINE_DECODED STAR_USB_STRESS_LINE_DECODED STAR_USB_STRESS_LINE_DECODED
-    STAR_USB_STRESS_LINE_DECODED STAR_USB_STRESS_LINE_DECODED STAR_USB_STRESS_LINE_DECODED
-    STAR_USB_STRESS_LINE_DECODED;
-__attribute__((unused)) static const uint8_t s_tx_log[k_tx_packet_bytes] = STAR_USB_STRESS_LINE_LOG
-    STAR_USB_STRESS_LINE_LOG STAR_USB_STRESS_LINE_LOG STAR_USB_STRESS_LINE_LOG
-    STAR_USB_STRESS_LINE_LOG STAR_USB_STRESS_LINE_LOG STAR_USB_STRESS_LINE_LOG
-    STAR_USB_STRESS_LINE_LOG;
+#if STAR_USB_TX_PACKET_BYTES == 512U
+#define STAR_USB_STRESS_REPEAT(line) line line line line line line line line
+#elif STAR_USB_TX_PACKET_BYTES == 64U
+#define STAR_USB_STRESS_REPEAT(line) line
+#else
+#error "STAR_USB_TX_PACKET_BYTES must be 64 or 512"
+#endif
+__attribute__((unused)) static const uint8_t s_tx_proto[k_tx_packet_bytes] =
+  STAR_USB_STRESS_REPEAT(STAR_USB_STRESS_LINE_PROTO);
+__attribute__((unused)) static const uint8_t s_tx_decoded[k_tx_packet_bytes] =
+  STAR_USB_STRESS_REPEAT(STAR_USB_STRESS_LINE_DECODED);
+__attribute__((unused)) static const uint8_t s_tx_log[k_tx_packet_bytes] =
+  STAR_USB_STRESS_REPEAT(STAR_USB_STRESS_LINE_LOG);
 
 /* Echo scratch, static so we don't bloat the task stack. */
 static uint8_t s_echo_buf[k_rx_drain_bytes];
@@ -104,22 +131,32 @@ static void internal_usb_task_entry(ULONG input)
 #define STAR_STRESS_PORTS 0x07U
 #endif
 
+  uint32_t tick = 0U;
   for (;;) {
     rx_usb_isr_handler();
 
+    const bool do_tx = (tick % k_tx_every_n_tick) == 0U;
+
 #if (STAR_STRESS_PORTS) & 0x01U
-    (void)rx_usb_write(k_usb_port_proto, s_tx_proto, k_tx_packet_bytes);
+    if (do_tx) {
+      (void)rx_usb_write(k_usb_port_proto, s_tx_proto, k_tx_packet_bytes);
+    }
     internal_echo_port(k_usb_port_proto);
 #endif
 #if (STAR_STRESS_PORTS) & 0x02U
-    (void)rx_usb_write(k_usb_port_decoded, s_tx_decoded, k_tx_packet_bytes);
+    if (do_tx) {
+      (void)rx_usb_write(k_usb_port_decoded, s_tx_decoded, k_tx_packet_bytes);
+    }
     internal_echo_port(k_usb_port_decoded);
 #endif
 #if (STAR_STRESS_PORTS) & 0x04U
-    (void)rx_usb_write(k_usb_port_log, s_tx_log, k_tx_packet_bytes);
+    if (do_tx) {
+      (void)rx_usb_write(k_usb_port_log, s_tx_log, k_tx_packet_bytes);
+    }
     internal_echo_port(k_usb_port_log);
 #endif
 
+    tick++;
     (void)tx_thread_sleep(1U);
   }
 }
