@@ -139,8 +139,9 @@ typedef enum : uint16_t {
   k_test_frame_buf_size = 2048, /**< Buffer for encoded frames */
   k_test_tx_buf_size    = 256,  /**< Readback buffer size */
   k_test_rx_buf_max     = 2048, /**< k_uart_comm_rx_buffer_size */
-  k_test_seq_gap_large  = 33000, /**< Gap >= k_session_max_gap_tolerance (32768); triggers validate_fail */
-  k_test_tx_seq_after_2 = 2,    /**< Expected TX seq after two sends */
+  k_test_seq_gap_large =
+    33000, /**< Gap >= k_session_max_gap_tolerance (32768); triggers validate_fail */
+  k_test_tx_seq_after_2 = 2, /**< Expected TX seq after two sends */
 } test_uart_comm_constants_t;
 
 /**

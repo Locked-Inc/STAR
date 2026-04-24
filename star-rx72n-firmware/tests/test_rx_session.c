@@ -38,22 +38,23 @@
  * to improve readability and maintainability per NASA Power of 10 Rule 8.
  */
 typedef enum : uint16_t {
-  k_test_sentinel_seq      = 0xFFFF, /**< Sentinel value to detect unwritten output */
-  k_test_expected_seq_0    = 0,      /**< Expected initial sequence after init/reset */
-  k_test_advance_count     = 100,    /**< Iterations for TX advance loop test */
-  k_test_validate_count    = 50,     /**< Iterations for RX validate loop test */
-  k_test_reset_advance     = 10,     /**< Iterations to advance before reset test */
-  k_test_transport_switch  = 5,      /**< Iterations per transport in switch test */
-  k_test_gap_accept_count  = 6,      /**< Accept count for gap boundary test (0-5) */
-  k_test_wraparound_start  = 0xFFFE, /**< TX/RX sequence near max for wraparound */
-  k_test_wraparound_max    = 0xFFFF, /**< Maximum sequence number before wrap */
-  k_test_gap_one_skip      = 2,      /**< RX seq with 1 frame skipped (gap=1) */
-  k_test_gap_one_next      = 3,      /**< Expected next seq after gap-1 accept */
-  k_test_gap_max_skip      = 10,     /**< RX seq with accepted gap (diff=9) */
-  k_test_gap_boundary_skip = 32769,  /**< RX seq at gap tolerance boundary (diff=32768 = k_session_max_gap_tolerance) */
-  k_test_gap_large_skip    = 33000,  /**< RX seq with large gap (diff=32999) -- rejected */
-  k_test_dup_upper         = 5,      /**< Upper bound for duplicate test accept loop */
-  k_test_dup_replay        = 3,      /**< Duplicated seq to test rejection */
+  k_test_sentinel_seq     = 0xFFFF, /**< Sentinel value to detect unwritten output */
+  k_test_expected_seq_0   = 0,      /**< Expected initial sequence after init/reset */
+  k_test_advance_count    = 100,    /**< Iterations for TX advance loop test */
+  k_test_validate_count   = 50,     /**< Iterations for RX validate loop test */
+  k_test_reset_advance    = 10,     /**< Iterations to advance before reset test */
+  k_test_transport_switch = 5,      /**< Iterations per transport in switch test */
+  k_test_gap_accept_count = 6,      /**< Accept count for gap boundary test (0-5) */
+  k_test_wraparound_start = 0xFFFE, /**< TX/RX sequence near max for wraparound */
+  k_test_wraparound_max   = 0xFFFF, /**< Maximum sequence number before wrap */
+  k_test_gap_one_skip     = 2,      /**< RX seq with 1 frame skipped (gap=1) */
+  k_test_gap_one_next     = 3,      /**< Expected next seq after gap-1 accept */
+  k_test_gap_max_skip     = 10,     /**< RX seq with accepted gap (diff=9) */
+  k_test_gap_boundary_skip =
+    32769, /**< RX seq at gap tolerance boundary (diff=32768 = k_session_max_gap_tolerance) */
+  k_test_gap_large_skip = 33000, /**< RX seq with large gap (diff=32999) -- rejected */
+  k_test_dup_upper      = 5,     /**< Upper bound for duplicate test accept loop */
+  k_test_dup_replay     = 3,     /**< Duplicated seq to test rejection */
 } test_session_constants_t;
 
 /* ============================================================================
