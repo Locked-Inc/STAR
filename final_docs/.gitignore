@@ -1,0 +1,27 @@
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.idx
+*.ind
+*.ilg
+*.nav
+*.snm
+*.vrb
+*.run.xml
+*.bcf
+*.dvi
+*.ps
+
+# Editor/OS junk
+.DS_Store
+*.swp
+*~
