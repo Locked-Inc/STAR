@@ -254,8 +254,8 @@
 
 #pragma once
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 /* Core infrastructure */
 #include "rx_check.h"

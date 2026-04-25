@@ -203,8 +203,8 @@
 
 #pragma once
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "rx_err.h"
 #include "rx_mtu.h"
