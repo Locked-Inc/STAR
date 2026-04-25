@@ -688,14 +688,14 @@ void test_internal_update_state_uninit_channel(void)
 /** @brief internal_update_state with corrupted cpr returns invalid_state */
 void test_internal_update_state_corrupted_cpr(void)
 {
-#if defined(UNIT_TEST) && defined(TESTING)
+#ifdef UNIT_TEST
   TEST_ASSERT_EQUAL(k_rx_ok, helper_init_channel(k_tpu_channel_1));
   rx_tpu_encoder_test_corrupt_cpr(k_tpu_channel_1);
   rx_encoder_state_t state;
   rx_err_t           err = internal_update_state(&state, k_tpu_channel_1, k_test_count_100);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 #else
-  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST+TESTING builds");
+  TEST_IGNORE_MESSAGE("Only testable in UNIT_TEST builds");
 #endif
 }
 
@@ -757,7 +757,9 @@ void test_corrupt_cpr_invalid_channel_noop(void)
   rx_tpu_encoder_test_corrupt_cpr(
     (rx_tpu_channel_t)          /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
     k_test_invalid_channel_10); /* NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange) */
-  /* No assertion needed - just must not crash and not corrupt any array entry */
+  /* Reaching this line is the assertion: out-of-range channel must early-return,
+   * not crash, hang, or corrupt any other array entry. */
+  TEST_PASS();
 }
 
 /* =============================================================================

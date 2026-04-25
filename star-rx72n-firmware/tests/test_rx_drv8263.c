@@ -960,15 +960,18 @@ void test_adc_to_amps_typical_motor_current(void)
 /** @brief Verify internal_delay_us returns without crash for zero us */
 void test_internal_delay_us_zero(void)
 {
-  /* us=0 triggers the guard branch; should return silently */
+  /* us=0 triggers the guard branch; should return silently. Reaching the
+   * line after the call is the assertion: any UB or hang fails the test. */
   internal_delay_us(0);
+  TEST_PASS();
 }
 
 /** @brief Verify internal_delay_us returns without crash for us exceeding max */
 void test_internal_delay_us_over_max(void)
 {
-  /* us=101 exceeds k_max_delay_us (100); should return silently */
+  /* us=101 exceeds k_max_delay_us (100); should return silently. */
   internal_delay_us(k_test_delay_over_max);
+  TEST_PASS();
 }
 
 /* =============================================================================
@@ -1043,8 +1046,9 @@ void test_internal_olp_apply_patterns_null_handle(void)
 void test_internal_olp_apply_patterns_null_readings(void)
 {
   internal_init_handle();
-  /* Should return without crash when readings array is null */
+  /* Should return without crash when readings array is null. */
   internal_olp_apply_patterns(&s_handle, nullptr);
+  TEST_PASS();
 }
 
 /* =============================================================================

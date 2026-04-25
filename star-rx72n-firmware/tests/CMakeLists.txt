@@ -11,6 +11,11 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.21")
     set(CMAKE_C_STANDARD_REQUIRED ON)
 endif()
 
+# Always emit compile_commands.json so clangd / IDE language servers work
+# out of the box. Previously gated behind ENABLE_CLANG_TIDY; that left the
+# default unit-test build with no compile_commands.json.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # =============================================================================
 # clang-tidy integration (optional, default OFF)
 #
@@ -22,7 +27,6 @@ endif()
 option(ENABLE_CLANG_TIDY "Run clang-tidy on all compiled sources" OFF)
 
 if(ENABLE_CLANG_TIDY)
-    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
     # Prefer versioned clang-tidy binaries (require >= 16 for C23 typed enums)
     find_program(CLANG_TIDY_EXE
