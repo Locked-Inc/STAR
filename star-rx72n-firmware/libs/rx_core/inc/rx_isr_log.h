@@ -185,6 +185,55 @@ void rx_isr_log_test_reset_state(void);
  * @return Number of records currently queued in the ring (0..k_rx_isr_log_capacity)
  */
 uint32_t rx_isr_log_test_pending_count(void);
+
+/**
+ * @brief Inject a raw record into the ring bypassing push() validation
+ *
+ * @details
+ * Unit-test only. Writes the supplied raw event_id (which can be any uint8_t,
+ * including reserved sentinel 0 or out-of-range values >= k_isr_log_event_count)
+ * into the next free slot and advances head. This exists exclusively to drive
+ * the torn-record defensive guards in the drain hook (event_id == none and
+ * event_id >= count returns) which cannot be reached via the normal producer
+ * path because rx_isr_log_push() rejects those ids before they hit the ring.
+ *
+ * @param[in] raw_event_id Arbitrary 8-bit event id (intentionally untyped)
+ * @param[in] value        Auxiliary value
+ *
+ * @return true if injected, false if the ring was full
+ *
+ * @note Unit-test only -- do not call from firmware.
+ */
+bool rx_isr_log_test_inject_raw_record(uint8_t raw_event_id, uint32_t value);
+
+/**
+ * @brief Override the metadata for one event id at runtime (unit tests only)
+ *
+ * @details
+ * Replaces the static event-table entry's level and has_value flag for the
+ * given event id. The production table marks every event has_value=false, so
+ * the drain hook's has_value=true switch arms (one per level) are unreachable
+ * without flipping the flag. Resetting the table to the original state is
+ * the caller's responsibility (call rx_isr_log_test_restore_event_table()).
+ *
+ * @param[in] event_id  Event id to override (must be in valid range)
+ * @param[in] level     New level (0=debug, 1=info, 2=warn, 3=error)
+ * @param[in] has_value Whether the auxiliary value should be logged
+ *
+ * @note Unit-test only -- do not call from firmware.
+ */
+void rx_isr_log_test_set_event_meta(rx_isr_log_event_id_t event_id, uint8_t level, bool has_value);
+
+/**
+ * @brief Restore all event-table entries to their compile-time defaults
+ *
+ * @details
+ * Pairs with rx_isr_log_test_set_event_meta(). Call from tearDown() so other
+ * tests see the canonical metadata.
+ *
+ * @note Unit-test only -- do not call from firmware.
+ */
+void rx_isr_log_test_restore_event_table(void);
 #endif
 
 #ifdef __cplusplus

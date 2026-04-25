@@ -64,7 +64,7 @@ const (
 // - Uses WireMessage wrapper for protocol multiplexing
 // - Uses Dispatcher for centralized message routing
 // - Validates all configuration parameters before applying
-// - TODO: Integrate HARQ for actual firmware communication
+// - Uses HARQ for reliable firmware communication
 type ConfigurationService struct {
 	starv1.UnimplementedConfigurationServiceServer
 	harqHandler harq.HARQ
@@ -130,8 +130,7 @@ func (s *ConfigurationService) sendAndReceive(
 }
 
 // GetConfiguration retrieves the current system configuration from the RX72N firmware.
-// TODO: Implement proper request via HARQ once firmware integration is complete.
-// For now, returns mock configuration until firmware integration is ready.
+// Sends the request via HARQ and receives the firmware response through the dispatcher.
 func (s *ConfigurationService) GetConfiguration(ctx context.Context, req *starv1.GetConfigurationRequest) (*starv1.GetConfigurationResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")

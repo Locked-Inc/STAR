@@ -281,6 +281,135 @@ void test_drain_handles_all_event_ids(void)
 }
 
 /* =============================================================================
+ * Drain has_value=true coverage
+ *
+ * Every production event-table entry sets has_value=false, so the drain hook's
+ * has_value=true switch arms (debug / info / warn / error variants of
+ * rx_log_*_val) are unreachable through normal use. We use the test hook
+ * rx_isr_log_test_set_event_meta() to flip the flag and the level on one event
+ * id, then push and drain to exercise the corresponding _val emit branch.
+ *
+ * Each test asserts the round-trip succeeds (1 push, 1 drain) -- the rx_log_*
+ * macros write to stdout in RX_SIMULATOR_MODE, so semantic verification is
+ * limited to bookkeeping, but the line/branch counters in gcov see all four
+ * arms of the switch get hit.
+ * ============================================================================= */
+
+/* Drain emit-level values mirroring the static rx_isr_log_level_t enum
+ * (file-private to rx_isr_log.c). Keep these in sync with the source. */
+typedef enum : uint8_t {
+  k_test_drain_level_debug = 0U,
+  k_test_drain_level_info  = 1U,
+  k_test_drain_level_warn  = 2U,
+  k_test_drain_level_error = 3U,
+} test_drain_level_t;
+
+static void run_has_value_drain_for_level(test_drain_level_t level)
+{
+  /* Pick any valid event id; metadata override drives the switch arm. */
+  rx_isr_log_test_set_event_meta(k_isr_log_event_usb_resume, (uint8_t)level, true);
+
+  TEST_ASSERT_TRUE(rx_isr_log_push(k_isr_log_event_usb_resume, k_test_first_value));
+  TEST_ASSERT_EQUAL_UINT32(1U, rx_isr_log_drain());
+  TEST_ASSERT_EQUAL_UINT32(0U, rx_isr_log_test_pending_count());
+}
+
+void test_drain_has_value_debug_branch(void)
+{
+  run_has_value_drain_for_level(k_test_drain_level_debug);
+}
+
+void test_drain_has_value_info_branch(void)
+{
+  run_has_value_drain_for_level(k_test_drain_level_info);
+}
+
+void test_drain_has_value_warn_branch(void)
+{
+  run_has_value_drain_for_level(k_test_drain_level_warn);
+}
+
+void test_drain_has_value_error_branch(void)
+{
+  run_has_value_drain_for_level(k_test_drain_level_error);
+}
+
+void test_drain_has_value_default_branch_falls_through_to_debug(void)
+{
+  /* Out-of-range level value flows through the switch's default arm,
+   * which mirrors the debug emit. The cast suppresses the (intentionally)
+   * out-of-range enum value -- this is the whole point of the test. */
+  enum : uint8_t {
+    k_test_drain_level_invalid = 7U, /* Any value not in 0..3 */
+  };
+  rx_isr_log_test_set_event_meta(
+    k_isr_log_event_usb_resume, (uint8_t)k_test_drain_level_invalid, true);
+
+  TEST_ASSERT_TRUE(rx_isr_log_push(k_isr_log_event_usb_resume, k_test_first_value));
+  TEST_ASSERT_EQUAL_UINT32(1U, rx_isr_log_drain());
+}
+
+/* =============================================================================
+ * Drain torn-record defensive guards
+ *
+ * rx_isr_log_push() rejects event_id == k_isr_log_event_none and event_id >=
+ * k_isr_log_event_count, so internal_emit_record()'s defensive early returns
+ * for those values are unreachable from normal producer paths. The
+ * rx_isr_log_test_inject_raw_record() hook bypasses push() validation so the
+ * drain hook actually processes a record with an invalid id and we cover the
+ * out-of-range / sentinel guard branches.
+ * ============================================================================= */
+
+void test_drain_skips_torn_record_with_event_id_none(void)
+{
+  /* Inject raw 0 (== k_isr_log_event_none) directly into the ring */
+  TEST_ASSERT_TRUE(rx_isr_log_test_inject_raw_record(0U, k_test_first_value));
+  TEST_ASSERT_EQUAL_UINT32(1U, rx_isr_log_test_pending_count());
+
+  /* Drain consumes the record but skips emission via the early return */
+  const uint32_t drained = rx_isr_log_drain();
+  TEST_ASSERT_EQUAL_UINT32(1U, drained);
+  TEST_ASSERT_EQUAL_UINT32(0U, rx_isr_log_test_pending_count());
+}
+
+void test_drain_skips_torn_record_with_out_of_range_event_id(void)
+{
+  /* Inject an id well past k_isr_log_event_count (UINT8_MAX) */
+  TEST_ASSERT_TRUE(rx_isr_log_test_inject_raw_record(UINT8_MAX, k_test_first_value));
+  TEST_ASSERT_EQUAL_UINT32(1U, rx_isr_log_test_pending_count());
+
+  const uint32_t drained = rx_isr_log_drain();
+  TEST_ASSERT_EQUAL_UINT32(1U, drained);
+  TEST_ASSERT_EQUAL_UINT32(0U, rx_isr_log_test_pending_count());
+}
+
+/* =============================================================================
+ * Test hook self-tests
+ *
+ * Defend against the test hooks regressing silently and masking coverage gaps.
+ * ============================================================================= */
+
+void test_inject_raw_record_returns_false_when_full(void)
+{
+  /* Fill the ring exactly to capacity using the public push */
+  for (uint32_t i = 0U; i < k_test_capacity; i++) {
+    TEST_ASSERT_TRUE(rx_isr_log_push(k_isr_log_event_usb_resume, i));
+  }
+  /* Inject must now refuse */
+  TEST_ASSERT_FALSE(rx_isr_log_test_inject_raw_record(0U, 0U));
+}
+
+void test_set_event_meta_ignores_out_of_range_id(void)
+{
+  /* Should not crash; verify idempotency by drain on a real id afterwards */
+  rx_isr_log_test_set_event_meta(
+    (rx_isr_log_event_id_t)k_isr_log_event_count, k_test_drain_level_warn, true);
+
+  TEST_ASSERT_TRUE(rx_isr_log_push(k_isr_log_event_usb_resume, 0U));
+  TEST_ASSERT_EQUAL_UINT32(1U, rx_isr_log_drain());
+}
+
+/* =============================================================================
  * Test runner
  * ============================================================================= */
 
@@ -301,6 +430,15 @@ int main(void)
   RUN_TEST(test_get_stats_with_null_is_silent);
   RUN_TEST(test_high_water_tracks_peak_occupancy);
   RUN_TEST(test_drain_handles_all_event_ids);
+  RUN_TEST(test_drain_has_value_debug_branch);
+  RUN_TEST(test_drain_has_value_info_branch);
+  RUN_TEST(test_drain_has_value_warn_branch);
+  RUN_TEST(test_drain_has_value_error_branch);
+  RUN_TEST(test_drain_has_value_default_branch_falls_through_to_debug);
+  RUN_TEST(test_drain_skips_torn_record_with_event_id_none);
+  RUN_TEST(test_drain_skips_torn_record_with_out_of_range_event_id);
+  RUN_TEST(test_inject_raw_record_returns_false_when_full);
+  RUN_TEST(test_set_event_meta_ignores_out_of_range_id);
 
   return UNITY_END();
 }

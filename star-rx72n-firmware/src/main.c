@@ -596,6 +596,174 @@ typedef enum : uint32_t {
   k_usb_syscfg_settle_nops = 2400000U, /**< ~10 ms spin between SYSCFG / SCKE / USBE writes */
 } usb_init_delay_iters_t;
 
+/**
+ * @enum usb_inline_addr_t
+ * @brief Absolute addresses of USB0 / system / ICU / PORTB registers touched
+ *        directly by the pre-kernel inline USB0 bring-up
+ *
+ * @details
+ * These mirror constants already named in
+ * `libs/rx_hal/inc/rx72n_{usb,system,icu,port}_regs.h`. Repeating them here
+ * keeps `main.c` self-contained for the early bring-up code without losing
+ * the "no magic numbers" rule. Values cross-checked against:
+ *   - PRCR     -> rx72n_system_regs.h:161   (`k_prcr_addr`)
+ *   - MSTPCRB  -> rx72n_system_regs.h:1249  (offset 0x14 from system base 0x00080000)
+ *   - SYSCFG   -> rx72n_usb_regs.h:231      (`k_usb0_base_addr` + 0x00)
+ *   - DPUSR0R  -> rx72n_usb_regs.h:237      (`k_usb_dpusr0r_addr`)
+ *   - PHYSLEW  -> rx72n_usb_regs.h:87       (USB0 base + 0xF0)
+ *   - INTENB0  -> rx72n_usb_regs.h:56       (USB0 base + 0x30)
+ *   - BRDYENB  -> rx72n_usb_regs.h:58       (USB0 base + 0x36)
+ *   - BEMPENB  -> rx72n_usb_regs.h:60       (USB0 base + 0x3A)
+ *   - DCPCFG/DCPMAXP/DCPCTR -> rx72n_usb_regs.h:74-76 (USB0 base + 0x5C..0x60)
+ *   - ICU IR/IER/IPR/SLIBR/SLIPRCR -> rx72n_icu_regs.h:191,358-443
+ *
+ * @note `uintptr_t` underlying type is mandatory for register addresses
+ *       (CLAUDE.md "Constants and Macros" rule -- ensures correct width on
+ *       both 32-bit RX72N target and 64-bit unit-test host).
+ */
+typedef enum : uintptr_t {
+  k_inline_addr_prcr     = 0x000803FEU, /**< PRCR (Protect Register), 16-bit */
+  k_inline_addr_mstpcrb  = 0x00080014U, /**< MSTPCRB Module Stop Ctrl Reg B, 32-bit */
+  k_inline_addr_syscfg   = 0x000A0000U, /**< USB0.SYSCFG, 16-bit */
+  k_inline_addr_intenb0  = 0x000A0030U, /**< USB0.INTENB0, 16-bit */
+  k_inline_addr_brdyenb  = 0x000A0036U, /**< USB0.BRDYENB, 16-bit */
+  k_inline_addr_bempenb  = 0x000A003AU, /**< USB0.BEMPENB, 16-bit */
+  k_inline_addr_dcpcfg   = 0x000A005CU, /**< USB0.DCPCFG, 16-bit */
+  k_inline_addr_dcpmaxp  = 0x000A005EU, /**< USB0.DCPMAXP, 16-bit */
+  k_inline_addr_dcpctr   = 0x000A0060U, /**< USB0.DCPCTR, 16-bit */
+  k_inline_addr_physlew  = 0x000A00F0U, /**< USB0.PHYSLEW, 32-bit */
+  k_inline_addr_dpusr0r  = 0x000A0400U, /**< USB.DPUSR0R (absolute), 32-bit */
+  k_inline_addr_icu_ir   = 0x00087000U, /**< ICU IR000-IR255 base */
+  k_inline_addr_icu_ier  = 0x00087200U, /**< ICU IER02-IER1F base */
+  k_inline_addr_icu_ipr  = 0x00087300U, /**< ICU IPR000-IPR255 base */
+  k_inline_addr_icu_slibr = 0x00087700U, /**< ICU SLIBR table base (vec 144 entry @ +0x90) */
+  k_inline_addr_sliprcr  = 0x00087A00U, /**< ICU SLIPRCR write-protect register */
+  k_inline_addr_pb_pdr   = 0x0008C00BU, /**< PORTB.PDR  (Port Direction)         */
+  k_inline_addr_pb_podr  = 0x0008C02BU, /**< PORTB.PODR (Port Output Data)       */
+  k_inline_addr_pb_pmr   = 0x0008C06BU, /**< PORTB.PMR  (Port Mode: 0=GPIO)      */
+} usb_inline_addr_t;
+
+/**
+ * @enum usb_inline_bit_t
+ * @brief Bit-mask values used by the pre-kernel inline USB0 bring-up
+ *
+ * @details
+ * Single-bit selectors written into 16-/32-bit USB or ICU registers. Mirrors
+ * `k_usb_syscfg_*` (rx72n_usb_regs.h) and `k_mstpb_usb0` (rx72n_system_regs.h)
+ * but groups the bits actually touched by the inline bring-up. Grouping by
+ * "register family" (SYSCFG, MSTPCRB, INTENB0, DPUSR0R, DCPCTR, BEMPENB,
+ * BRDYENB, PORTB-PB3) avoids `bugprone-suspicious-enum-usage` violations
+ * because we never OR these masks across families.
+ *
+ * `uint32_t` underlying type chosen to match the widest target register
+ * (MSTPCRB / DPUSR0R / PHYSLEW are 32-bit) and so a single `(1U << n)`
+ * literal stays representable.
+ *
+ * @note CLAUDE.md "Constants and Macros" mandates explicit underlying type
+ *       for every enum.
+ */
+typedef enum : uint32_t {
+  /* MSTPCRB bits */
+  k_inline_bit_mstpb_usb0 = (1UL << 19), /**< MSTPB19: USB0 module stop */
+
+  /* SYSCFG (USB0) bits */
+  k_inline_bit_syscfg_usbe  = (1U << 0),  /**< SYSCFG.USBE   bit 0  */
+  k_inline_bit_syscfg_dprpu = (1U << 4),  /**< SYSCFG.DPRPU  bit 4  */
+  k_inline_bit_syscfg_scke  = (1U << 10), /**< SYSCFG.SCKE   bit 10 */
+
+  /* DPUSR0R bits */
+  k_inline_bit_dpusr0r_fixphy0 = (1U << 4), /**< DPUSR0R.FIXPHY0 bit 4 */
+
+  /* INTENB0 bits (HUM 40.4.5: VBSE | RSME | SOFE | DVSE | CTRE) */
+  k_inline_bit_intenb0_vbse = (1U << 15), /**< VBSE: VBUS detection enable */
+  k_inline_bit_intenb0_rsme = (1U << 12), /**< RSME: resume signal enable  */
+  k_inline_bit_intenb0_sofe = (1U << 11), /**< SOFE: SOF received enable   */
+  k_inline_bit_intenb0_dvse = (1U << 10), /**< DVSE: device-state-change   */
+  k_inline_bit_intenb0_ctre = (1U << 8),  /**< CTRE: control transfer end  */
+
+  /* PORTB.{PDR,PODR,PMR} -- PB3 mask */
+  k_inline_bit_pb3 = (1U << 3), /**< PORTB pin 3 (LED EN3D probe)        */
+} usb_inline_bit_t;
+
+/**
+ * @enum usb_inline_value_t
+ * @brief Whole-register values written by the pre-kernel inline USB0 bring-up
+ *
+ * @details
+ * Used for register fields that are programmed with a multi-bit pattern
+ * rather than a single mask. Kept as `uint16_t` because every consumer is a
+ * 16-bit USB register write (DCPCFG, DCPMAXP, DCPCTR, BRDYENB, BEMPENB,
+ * SYSCFG-clear). PHYSLEW is 32-bit and gets its own constant.
+ */
+typedef enum : uint16_t {
+  k_inline_val_syscfg_clear  = 0x0000U, /**< Clear all SYSCFG bits before SCKE */
+  k_inline_val_dcpcfg        = 0x0000U, /**< DCPCFG = 0 (default ctrl pipe)    */
+  k_inline_val_dcpmaxp_64    = 64U,     /**< 64-byte EP0 max packet size       */
+  k_inline_val_dcpctr_pid_buf = 0x0001U, /**< DCPCTR PID = BUF (ack outstanding) */
+  k_inline_val_brdyenb_pipe0 = 0x0001U, /**< BRDYENB: enable pipe 0 (DCP)      */
+  k_inline_val_bempenb_pipe0 = 0x0001U, /**< BEMPENB: enable pipe 0 (DCP)      */
+} usb_inline_value_t;
+
+/**
+ * @enum usb_inline_physlew_t
+ * @brief PHYSLEW (32-bit) trim value used during pre-kernel USB0 bring-up
+ *
+ * @details
+ * Mirrors `internal_usb_configure_phy()` in rx_usb_hw.c -- bits 0/2 set
+ * (SLEWR00 | SLEWF00) configure the RX72N PHY slew rate per Renesas FSP
+ * defaults / hirakuni45 RX600 driver.
+ */
+typedef enum : uint32_t {
+  k_inline_val_physlew = 0x00000005U, /**< SLEWR00 | SLEWF00 default trim */
+} usb_inline_physlew_t;
+
+/**
+ * @enum usb_inline_icu_t
+ * @brief ICU vector / source / priority constants for inline USB0 bring-up
+ *
+ * @details
+ * USBI0 is a Group-B software-configurable interrupt -- vector 144 must be
+ * routed via SLIBR[144]=62 (HUM Table 15.3 source code) before IPR/IER do
+ * anything. IER index = vector / 8, IER bit = vector % 8.
+ *
+ * Grouped under `uint8_t` because all values fit in a byte register (IPR is
+ * 8-bit, IER is 8-bit, SLIBR is 8-bit, source codes are 0-255).
+ */
+typedef enum : uint8_t {
+  k_inline_icu_usbi0_vector = 144U, /**< Vector 144 = USBI0 (HUM 15.7.7) */
+  k_inline_icu_usbi0_src    = 62U,  /**< SLIBR source code for USBI0     */
+  k_inline_icu_usbi_priority = 12U, /**< IPR144 priority (IPL=12)        */
+  k_inline_icu_ier_idx_usbi  = 18U, /**< IER18  = vector 144 / 8         */
+  k_inline_icu_ier_bit_usbi  = 0U,  /**< IER18 bit 0 = vector 144 % 8    */
+  k_inline_icu_sliprcr_wprc  = 0x01U, /**< SLIPRCR.WPRC: write-once latch */
+} usb_inline_icu_t;
+
+/**
+ * @enum usb_inline_poll_t
+ * @brief Bounded-poll iteration counts used in the inline USB0 bring-up
+ *
+ * @details
+ * Caps loop iterations per NASA P10 Rule 2 ("fixed loop upper bounds").
+ * `uint16_t` is sufficient -- WPRC latches in 1-2 ICLK cycles so 1024
+ * iterations is far above worst-case.
+ */
+typedef enum : uint16_t {
+  k_inline_sliprcr_poll_max = 1024U, /**< Max poll iters for HUM 15.7.7 step (6) */
+} usb_inline_poll_t;
+
+/**
+ * @enum dflash_fstatr_bit_t
+ * @brief FSTATR bit masks used by `internal_bench_dflash_write()`
+ *
+ * @details
+ * Mirrors `k_fstatr_frdy` from `libs/rx_hal/inc/rx72n_flash_regs.h:455`.
+ * Repeated here so the bench dflash probe is self-contained and the FCU
+ * busy-poll loops do not embed a `(1UL << 15)` literal.
+ */
+typedef enum : uint32_t {
+  k_dflash_fstatr_frdy = (1UL << 15), /**< FSTATR.FRDY bit 15: Flash Ready */
+} dflash_fstatr_bit_t;
+
 /* =============================================================================
  * Bench probe: write {magic, who_am_i, err} to data flash @ 0x00100000 so that
  * rfp-cli -rv 0x00100000 16 can read the result without a UART. No dependency
@@ -627,14 +795,14 @@ static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
        i++) {
   }
   /* Wait for FRDY. */
-  for (uint32_t i = 0; i < k_fcu_poll_short && ((*FSTATR) & (1UL << 15)) == 0U; i++) {
+  for (uint32_t i = 0; i < k_fcu_poll_short && ((*FSTATR) & k_dflash_fstatr_frdy) == 0U; i++) {
   }
 
   /* Erase the 64-byte block containing DF_ADDR. */
   *FSADDR = DF_ADDR;
   *FACI_B = k_dflash_fcu_cmd_block_erase;
   *FACI_B = k_dflash_fcu_cmd_terminator;
-  for (uint32_t i = 0; i < k_fcu_poll_long && ((*FSTATR) & (1UL << 15)) == 0U; i++) {
+  for (uint32_t i = 0; i < k_fcu_poll_long && ((*FSTATR) & k_dflash_fstatr_frdy) == 0U; i++) {
   }
 
   /* Program 4 bytes: [0xA5, 0x5A, who_am_i, err_byte_low]. */
@@ -649,7 +817,7 @@ static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
   *FACI_W = word0;
   *FACI_W = word1;
   *FACI_B = k_dflash_fcu_cmd_terminator;
-  for (uint32_t i = 0; i < k_fcu_poll_long && ((*FSTATR) & (1UL << 15)) == 0U; i++) {
+  for (uint32_t i = 0; i < k_fcu_poll_long && ((*FSTATR) & k_dflash_fstatr_frdy) == 0U; i++) {
   }
 
   /* Exit P/E mode. */
@@ -2914,12 +3082,12 @@ static void internal_init_boot_checkpoint_leds(void)
  */
 static void internal_inline_usb0_clock_and_phy(void)
 {
-  volatile uint16_t* const PRCR_R    = (volatile uint16_t*)0x000803FEU;
-  volatile uint32_t* const MSTPCRB_R = (volatile uint32_t*)0x00080014U;
-  volatile uint16_t* const SYSCFG_R  = (volatile uint16_t*)0x000A0000U;
+  volatile uint16_t* const PRCR_R    = (volatile uint16_t*)k_inline_addr_prcr;
+  volatile uint32_t* const MSTPCRB_R = (volatile uint32_t*)k_inline_addr_mstpcrb;
+  volatile uint16_t* const SYSCFG_R  = (volatile uint16_t*)k_inline_addr_syscfg;
 
   *PRCR_R = k_main_prcr_unlock_clock_lpm;
-  *MSTPCRB_R &= ~(1UL << 19);
+  *MSTPCRB_R &= ~(uint32_t)k_inline_bit_mstpb_usb0;
   *PRCR_R = k_main_prcr_lock_all;
 
   /* HUM 40.3.1.1 ("Setting Data to the USB Related Register"):
@@ -2930,25 +3098,25 @@ static void internal_inline_usb0_clock_and_phy(void)
    * is acknowledged.  Required order: clear SYSCFG -> SCKE=1 -> wait ->
    * USBE=1.  DPRPU stays 0 here; it is asserted last (after pipe + ICU
    * config) to announce attach to the host. */
-  *SYSCFG_R = 0x0000U;
+  *SYSCFG_R = k_inline_val_syscfg_clear;
   for (volatile uint32_t d = 0; d < k_usb_syscfg_settle_nops; d++) {
     __asm__ volatile("nop");
   }
-  *SYSCFG_R |= (1U << 10); /* SCKE first per HUM 40.3.1.1 */
+  *SYSCFG_R |= (uint16_t)k_inline_bit_syscfg_scke; /* SCKE first per HUM 40.3.1.1 */
   for (volatile uint32_t d = 0; d < k_usb_syscfg_settle_nops; d++) {
     __asm__ volatile("nop");
   }
-  *SYSCFG_R |= (1U << 0); /* USBE only after the clock is up */
+  *SYSCFG_R |= (uint16_t)k_inline_bit_syscfg_usbe; /* USBE only after the clock is up */
 
   /* RX72N PHY housekeeping that mirrors rx_usb_hw.c's
    * internal_usb_configure_phy() -- must run between USBE=1 and
    * INTENB0 programming.  See tinyusb renesas/usba dcd_usba.c:626-628.
    *   - USB.DPUSR0R.FIXPHY0 cleared: release PHY from output-fixed state
    *   - USB0.PHYSLEW = 0x5     : RX72N-specific slew-rate trim */
-  volatile uint32_t* const DPUSR0R_R = (volatile uint32_t*)0x000A0400U;
-  volatile uint32_t* const PHYSLEW_R = (volatile uint32_t*)0x000A00F0U;
-  *DPUSR0R_R &= ~(uint32_t)(1U << 4); /* FIXPHY0 */
-  *PHYSLEW_R = 0x00000005U;           /* SLEWR00 | SLEWF00 */
+  volatile uint32_t* const DPUSR0R_R = (volatile uint32_t*)k_inline_addr_dpusr0r;
+  volatile uint32_t* const PHYSLEW_R = (volatile uint32_t*)k_inline_addr_physlew;
+  *DPUSR0R_R &= ~(uint32_t)k_inline_bit_dpusr0r_fixphy0;
+  *PHYSLEW_R = (uint32_t)k_inline_val_physlew;
 }
 
 /**
@@ -2974,22 +3142,24 @@ static void internal_inline_usb0_clock_and_phy(void)
  */
 static void internal_inline_usb0_endpoint_setup(void)
 {
-  volatile uint16_t* const SYSCFG_R  = (volatile uint16_t*)0x000A0000U;
-  volatile uint16_t* const INTENB0_R = (volatile uint16_t*)0x000A0030U;
-  volatile uint16_t* const BRDYENB_R = (volatile uint16_t*)0x000A0036U;
-  volatile uint16_t* const BEMPENB_R = (volatile uint16_t*)0x000A003AU;
-  volatile uint16_t* const DCPCFG_R  = (volatile uint16_t*)0x000A005CU;
-  volatile uint16_t* const DCPMAXP_R = (volatile uint16_t*)0x000A005EU;
-  volatile uint16_t* const DCPCTR_R  = (volatile uint16_t*)0x000A0060U;
+  volatile uint16_t* const SYSCFG_R  = (volatile uint16_t*)k_inline_addr_syscfg;
+  volatile uint16_t* const INTENB0_R = (volatile uint16_t*)k_inline_addr_intenb0;
+  volatile uint16_t* const BRDYENB_R = (volatile uint16_t*)k_inline_addr_brdyenb;
+  volatile uint16_t* const BEMPENB_R = (volatile uint16_t*)k_inline_addr_bempenb;
+  volatile uint16_t* const DCPCFG_R  = (volatile uint16_t*)k_inline_addr_dcpcfg;
+  volatile uint16_t* const DCPMAXP_R = (volatile uint16_t*)k_inline_addr_dcpmaxp;
+  volatile uint16_t* const DCPCTR_R  = (volatile uint16_t*)k_inline_addr_dcpctr;
 
-  *DCPCFG_R  = 0x0000U;
-  *DCPMAXP_R = 64U;
-  *DCPCTR_R  = 0x0001U;
-  *BRDYENB_R = 0x0001U;
-  *BEMPENB_R = 0x0001U;
-  *INTENB0_R = (uint16_t)((1U << 15) | (1U << 12) | (1U << 11) | (1U << 10) | (1U << 8));
+  *DCPCFG_R  = (uint16_t)k_inline_val_dcpcfg;
+  *DCPMAXP_R = (uint16_t)k_inline_val_dcpmaxp_64;
+  *DCPCTR_R  = (uint16_t)k_inline_val_dcpctr_pid_buf;
+  *BRDYENB_R = (uint16_t)k_inline_val_brdyenb_pipe0;
+  *BEMPENB_R = (uint16_t)k_inline_val_bempenb_pipe0;
+  *INTENB0_R = (uint16_t)((uint32_t)k_inline_bit_intenb0_vbse | (uint32_t)k_inline_bit_intenb0_rsme |
+                          (uint32_t)k_inline_bit_intenb0_sofe | (uint32_t)k_inline_bit_intenb0_dvse |
+                          (uint32_t)k_inline_bit_intenb0_ctre);
 
-  *SYSCFG_R |= (1U << 4); /* DPRPU */
+  *SYSCFG_R |= (uint16_t)k_inline_bit_syscfg_dprpu;
 }
 
 /**
@@ -3025,36 +3195,30 @@ static void internal_inline_usb0_endpoint_setup(void)
  */
 static void internal_inline_usb0_icu_setup(void)
 {
-  volatile uint8_t* const SLIBR144_R = (volatile uint8_t*)(0x00087700U + 144U);
-  volatile uint8_t* const SLIPRCR_R  = (volatile uint8_t*)0x00087A00U;
-  volatile uint8_t* const IPR144_R   = (volatile uint8_t*)(0x00087300U + 144U);
-  volatile uint8_t* const IR144_R    = (volatile uint8_t*)(0x00087000U + 144U);
-  volatile uint8_t* const IER18_R    = (volatile uint8_t*)(0x00087200U + 18U); /* 144 / 8 */
+  volatile uint8_t* const SLIBR144_R =
+    (volatile uint8_t*)(k_inline_addr_icu_slibr + (uintptr_t)k_inline_icu_usbi0_vector);
+  volatile uint8_t* const SLIPRCR_R = (volatile uint8_t*)k_inline_addr_sliprcr;
+  volatile uint8_t* const IPR144_R =
+    (volatile uint8_t*)(k_inline_addr_icu_ipr + (uintptr_t)k_inline_icu_usbi0_vector);
+  volatile uint8_t* const IR144_R =
+    (volatile uint8_t*)(k_inline_addr_icu_ir + (uintptr_t)k_inline_icu_usbi0_vector);
+  volatile uint8_t* const IER18_R =
+    (volatile uint8_t*)(k_inline_addr_icu_ier + (uintptr_t)k_inline_icu_ier_idx_usbi);
 
-  enum : uint8_t {
-    k_inline_usbi0_sli_src  = 62U,   /* USBI0 source number per HUM Table 15.3 */
-    k_inline_sliprcr_wprc   = 0x01U, /* SLIPRCR.WPRC: write-once latch */
-    k_inline_usbi_priority  = 12U,   /* IPR144 priority for USBI0 */
-    k_inline_ier18_usbi_bit = 0U,    /* IER18 bit 0 == vector 144 (144 % 8) */
-  };
-  enum : uint16_t {
-    k_inline_sliprcr_poll_max = 1024U, /* Bounded poll for HUM 15.7.7 step (6) */
-  };
-
-  *SLIBR144_R = k_inline_usbi0_sli_src;
-  *SLIPRCR_R  = k_inline_sliprcr_wprc;
+  *SLIBR144_R = (uint8_t)k_inline_icu_usbi0_src;
+  *SLIPRCR_R  = (uint8_t)k_inline_icu_sliprcr_wprc;
   /* HUM 15.7.7 step (6) bounded confirmation: WPRC latches in 1-2 ICLK
    * cycles; cap the poll so the boot path never spins forever (NASA
    * P10 Rule 2).  If WPRC fails to latch the IER enable below is a
    * no-op -- the ISR-entry counter diagnostic catches that case. */
-  for (uint16_t i = 0; i < k_inline_sliprcr_poll_max; i++) {
-    if ((*SLIPRCR_R & k_inline_sliprcr_wprc) != 0U) {
+  for (uint16_t i = 0; i < (uint16_t)k_inline_sliprcr_poll_max; i++) {
+    if ((*SLIPRCR_R & (uint8_t)k_inline_icu_sliprcr_wprc) != 0U) {
       break;
     }
   }
-  *IPR144_R = k_inline_usbi_priority;
+  *IPR144_R = (uint8_t)k_inline_icu_usbi_priority;
   *IR144_R  = 0U;
-  *IER18_R |= (uint8_t)(1U << k_inline_ier18_usbi_bit);
+  *IER18_R |= (uint8_t)(1U << (uint8_t)k_inline_icu_ier_bit_usbi);
 }
 
 /**
@@ -3080,12 +3244,12 @@ static void internal_inline_usb0_icu_setup(void)
  */
 static void internal_set_pb3_pre_kernel_probe(void)
 {
-  volatile uint8_t* const pb_pdr  = (volatile uint8_t*)0x0008C00BU;
-  volatile uint8_t* const pb_podr = (volatile uint8_t*)0x0008C02BU;
-  volatile uint8_t* const pb_pmr  = (volatile uint8_t*)0x0008C06BU;
-  *pb_pmr &= (uint8_t) ~(1U << 3);
-  *pb_pdr |= (uint8_t)(1U << 3);
-  *pb_podr |= (uint8_t)(1U << 3); /* HIGH */
+  volatile uint8_t* const pb_pdr  = (volatile uint8_t*)k_inline_addr_pb_pdr;
+  volatile uint8_t* const pb_podr = (volatile uint8_t*)k_inline_addr_pb_podr;
+  volatile uint8_t* const pb_pmr  = (volatile uint8_t*)k_inline_addr_pb_pmr;
+  *pb_pmr &= (uint8_t) ~(uint8_t)k_inline_bit_pb3;
+  *pb_pdr |= (uint8_t)k_inline_bit_pb3;
+  *pb_podr |= (uint8_t)k_inline_bit_pb3; /* HIGH */
 }
 
 /**

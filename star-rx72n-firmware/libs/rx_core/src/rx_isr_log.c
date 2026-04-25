@@ -79,8 +79,19 @@ typedef struct {
 } rx_isr_log_event_meta_t;
 
 /* Event metadata table. Indexed by event_id. The k_isr_log_event_none entry
- * is unused (drained records are validated against the count sentinel). */
+ * is unused (drained records are validated against the count sentinel).
+ *
+ * Under UNIT_TEST the table is non-const so individual tests can flip the
+ * has_value flag and level for one entry to exercise the drain hook's
+ * has_value=true switch (which is otherwise unreachable because every
+ * production entry sets has_value=false). The runtime drain code reads
+ * through the same identifier either way. */
+#ifdef UNIT_TEST
+static rx_isr_log_event_meta_t       s_isr_log_event_table[k_isr_log_event_count];
+static const rx_isr_log_event_meta_t s_isr_log_event_table_defaults[k_isr_log_event_count] = {
+#else
 static const rx_isr_log_event_meta_t s_isr_log_event_table[k_isr_log_event_count] = {
+#endif
   [k_isr_log_event_none] = {.tag       = "ISR_LOG",
                             .message   = "(reserved)",
                             .level     = k_isr_log_level_debug,
@@ -350,6 +361,13 @@ void rx_isr_log_get_stats(rx_isr_log_stats_t* stats)
 }
 
 #ifdef UNIT_TEST
+void rx_isr_log_test_restore_event_table(void)
+{
+  for (uint32_t i = 0U; i < (uint32_t)k_isr_log_event_count; i++) {
+    s_isr_log_event_table[i] = s_isr_log_event_table_defaults[i];
+  }
+}
+
 void rx_isr_log_test_reset_state(void)
 {
   s_head                 = 0U;
@@ -365,10 +383,37 @@ void rx_isr_log_test_reset_state(void)
     s_ring[i].reserved1 = 0U;
     s_ring[i].value     = 0U;
   }
+  rx_isr_log_test_restore_event_table();
 }
 
 uint32_t rx_isr_log_test_pending_count(void)
 {
   return s_head - s_tail;
+}
+
+bool rx_isr_log_test_inject_raw_record(uint8_t raw_event_id, uint32_t value)
+{
+  const uint32_t head = s_head;
+  const uint32_t tail = s_tail;
+  const uint32_t used = head - tail;
+  if (used >= (uint32_t)k_rx_isr_log_capacity) {
+    return false;
+  }
+  const uint32_t slot    = head & (uint32_t)k_rx_isr_log_capacity_mask;
+  s_ring[slot].event_id  = raw_event_id;
+  s_ring[slot].value     = value;
+  s_ring[slot].reserved0 = 0U;
+  s_ring[slot].reserved1 = 0U;
+  s_head                 = head + 1U;
+  return true;
+}
+
+void rx_isr_log_test_set_event_meta(rx_isr_log_event_id_t event_id, uint8_t level, bool has_value)
+{
+  if ((uint32_t)event_id >= (uint32_t)k_isr_log_event_count) {
+    return;
+  }
+  s_isr_log_event_table[event_id].level     = (rx_isr_log_level_t)level;
+  s_isr_log_event_table[event_id].has_value = has_value;
 }
 #endif
