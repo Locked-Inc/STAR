@@ -1,0 +1,349 @@
+% ============================================================================
+% REPOSITORY LAYOUT AND NEWCOMER GUIDE
+% ============================================================================
+
+\section{Repository Layout: A Newcomer's Map}
+\label{section:repository-layout}
+
+This section is a guided tour of the STAR repository. It is intended to
+be the first thing a new developer reads, before they need to find any
+specific file.
+
+\subsection{Project shape, in one paragraph}
+
+STAR is a four-language distributed system: a real-time motor-control
+firmware (C, Renesas RX72N + ThreadX), a Go gateway service (running
+on a Raspberry Pi 5), a ROS2 Jazzy autonomy workspace (C++, also on
+the Pi 5), and a TypeScript operator UI. They communicate via a
+shared Protocol Buffers schema (\texttt{star-proto/}) over USB CDC,
+SCI9 UART, or SPI. A separate Python ROS2 package
+(\texttt{star-compliance/}) consumes sensor data to generate ADA
+compliance audit reports. The repository also contains the KiCad PCB
+sources, the bench / Pi-deployment infrastructure scripts, the
+capstone deliverable PDFs, and the engineering documentation
+(including this document).
+
+\subsection{Top-level layout}
+
+\begin{center}
+\begin{tabular}{|p{3.2cm}|p{4.0cm}|p{7.5cm}|}
+\hline
+\textbf{Path}                 & \textbf{Role}                            & \textbf{What it contains}                                                            \\
+\hline
+\texttt{star-rx72n-firmware/} & Embedded firmware (C, RX72N, ThreadX)    & Production firmware tree: \texttt{src/}, \texttt{libs/} (~26 component libraries), \texttt{tests/} (Unity host tests), bench-test sandboxes, build scripts. Largest single subproject in the repo. \\
+\hline
+\texttt{star-gateway/}        & Pi 5-side Go service                     & gRPC + WebSocket bridge between the UI/ROS2 and the RX72N. Implements the wire protocol's framing, HARQ, FEC, and transport-mode selection (\texttt{auto} / \texttt{force-usb} / \texttt{simple-usb} / \texttt{force-spi}). \\
+\hline
+\texttt{star-ros2/}           & ROS2 Jazzy workspace (C++)               & Autonomy + safety stack on the Pi 5. Packages: \texttt{star\_bringup} (launch orchestration), \texttt{star\_supervisor} (e-stop/autonomy gating), \texttt{star\_safety\_monitor}, \texttt{star\_gateway\_bridge}, \texttt{star\_spi\_bridge}, \texttt{star\_simple\_bridge}, \texttt{star\_simulation}, \texttt{star\_perception}. \\
+\hline
+\texttt{star-proto/}          & Wire protocol contract                   & \texttt{.proto} schemas in \texttt{proto/star/v1/}, generated code under \texttt{gen/} (per language), nanopb config in \texttt{nanopb/}. The single source of truth for every message that crosses a process boundary. \\
+\hline
+\texttt{star-ui/}             & Operator UI (TypeScript / React + Vite)  & Browser-based cockpit. Talks to the gateway over WebSocket. Includes telemetry panels, joystick / gamepad input, PID tuning UI, transport diagnostics. \\
+\hline
+\texttt{star-compliance/}     & ADA compliance engine (Python ROS2 pkg)  & Detectors (door, ramp, jamb, obstacle), engines (plane segmentation, floor frame), nodes (compliance\_monitor, ramp\_slope, etc.), report PDF generator. Runs on the Pi 5 alongside ROS2. \\
+\hline
+\texttt{matlab/}              & Motor system identification              & First / second-order motor models, PID design scripts, discretization, robustness sweeps. Output is the gain set the firmware compiles in. \\
+\hline
+\texttt{schematic/}           & KiCad PCB sources                        & STAR\_MCU schematic + layout, gerbers, symbol / footprint libraries, TOM breakout. The hardware ground truth. \\
+\hline
+\texttt{final\_docs/}         & Capstone deliverables                    & SDD (Software Description Document), SSUM (System and Software User Manual), Test Report, BOM, schematic exports, mechanical designs, presentation deck and demo handout, all as compiled PDFs plus their LaTeX / pptx sources. \\
+\hline
+\texttt{docs/}                & Engineering documentation                & This file plus every other engineering reference: \texttt{ARCHITECTURE.md}, \texttt{PI\_DEPLOYMENT.md}, ADRs, bench wiring, the compiled \texttt{star\_documentation.pdf}, and the section sources you are reading right now. \\
+\hline
+\texttt{infra/}               & Pi 5 system files                        & Caddy reverse-proxy config, systemd units (\texttt{star-cockpit-api}, \texttt{caddy}, \texttt{star-slam-mvp}), the cockpit API server. Installed by \texttt{scripts/setup-pi5-host.sh}. \\
+\hline
+\texttt{monitoring/}          & Grafana dashboard                        & Single \texttt{grafana-star-dashboard.json} provisioned into the homelab k3s cluster. \\
+\hline
+\texttt{config/}              & Cyclone DDS config                       & Single \texttt{cyclonedds.xml} sourced by ROS2 launches that need a custom QoS XML profile. \\
+\hline
+\texttt{docker/}              & Build-environment container              & \texttt{gnurx/Dockerfile} -- the GNURX-only image (used by the \texttt{firmware-toolchain-image} CI workflow). The full devcontainer image lives in the root \texttt{Dockerfile}. \\
+\hline
+\texttt{scripts/}             & Operator + dev-loop scripts              & Pi 5 setup, ROS2 build / format / review, proto codegen, GPIO sweep, door-state ML training, slam launch, AP / Ethernet helpers. See \S\ref{section:scripts-tree} for the breakdown. \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Top-level files}
+
+\begin{center}
+\begin{tabular}{|p{4.0cm}|p{10.5cm}|}
+\hline
+\textbf{File}                          & \textbf{Purpose}                                                                                                                              \\
+\hline
+\texttt{README.md}                     & 60-second project overview. Points to this document for depth.                                                                                  \\
+\texttt{CLAUDE.md}                     & Project-wide coding policy: terminology, no-backward-compatibility rule, ASCII-only mandate, NASA Power of 10, Doxygen requirements, embedded-bring-up discipline rules. Loaded automatically by Claude Code. \\
+\texttt{LICENSE}                       & MIT.                                                                                                                                            \\
+\texttt{Makefile}                      & Top-level dev-loop targets: \texttt{build-rx72n}, \texttt{test-rx72n}, \texttt{coverage-rx72n}, \texttt{proto-gen}, \texttt{doxygen-html}, \texttt{ci-rx72n}, devcontainer wrappers, plus the bare-metal \texttt{blinky} flow and the \texttt{motorN-{forward,reverse}} flash targets. \\
+\texttt{Dockerfile}                    & Devcontainer base image (Debian + GNURX + ROS2 + Go + Node + buf + nanopb). Pulled by \texttt{.devcontainer/devcontainer.json}.                  \\
+\texttt{start.sh} / \texttt{stop.sh}   & One-command robot launch and shutdown on the Pi 5.                                                                                              \\
+\texttt{dev.sh}                        & Wraps \texttt{start.sh} with \texttt{STAR\_SIMULATION\_MODE=true --rviz} for desk-side dev with the virtual RX72N.                              \\
+\texttt{bootstrap\_pi.sh}              & First-time Pi 5 setup. Installs ROS2, Go, buf, golangci-lint, the compliance engine.                                                            \\
+\texttt{build-ros2.sh}                 & Regenerates protobuf + colcon-builds the ROS2 workspace.                                                                                        \\
+\texttt{test-ros2.sh}                  & Runs \texttt{colcon test} for the workspace.                                                                                                    \\
+\texttt{run-docker-build.sh}           & Host-side wrapper that builds the devcontainer image and runs \texttt{build-ros2.sh} inside it.                                                  \\
+\texttt{go.work}                       & Multi-module Go workspace: \texttt{star-gateway}, \texttt{star-proto/gen/go}, \texttt{star-proto/tests/go}.                                       \\
+\texttt{buf.gen.yaml}                  & Lives at \texttt{star-proto/buf.gen.yaml}. The repo-root copy was deleted; use the canonical one.                                                \\
+\texttt{STAR.code-workspace}           & VS Code multi-root workspace (firmware + ROS2 + proto + gateway + UI + compliance).                                                              \\
+\texttt{qodana.yaml} / \texttt{.coderabbit.yaml} / \texttt{.golangci.yml} / \texttt{.pre-commit-config.yaml} / \texttt{.clang-format} / \texttt{.dockerignore} / \texttt{.gitattributes} / \texttt{.gitignore} / \texttt{.gitmodules} & Linter and tool configuration. Most are unsurprising. Two non-obvious bits: \texttt{.gitattributes} declares the LFS-tracked installers and \texttt{.f3z} CAD files, and \texttt{.gitmodules} declares two submodules (nanopb and the Slamtec sllidar SDK). \\
+\hline
+\end{tabular}
+\end{center}
+
+A small number of large vendor-blob installers also live at repo root:
+\texttt{gcc-14.2.0.202511-GNURX-ELF.run} (215~MB, GNURX cross compiler)
+and \texttt{RFP\_CLI\_Linux\_V32200\_x64.tgz} (53~MB, Renesas Flash
+Programmer CLI). Both are tracked via Git LFS and are required by
+\texttt{Dockerfile} (which fetches them from the GitHub raw URL) and by
+the \texttt{firmware-toolchain-image} CI workflow.
+
+\subsection{Inside \texttt{star-rx72n-firmware/}}
+
+\begin{center}
+\begin{tabular}{|p{3.5cm}|p{10.5cm}|}
+\hline
+\textbf{Path}                & \textbf{What's there}                                                                                                                                                                                                          \\
+\hline
+\texttt{src/}                & Production firmware source. \texttt{src/main.c} owns startup; \texttt{src/tasks/} holds ThreadX tasks (motor\_control, comm, telemetry, imu, temp\_sensor, obstacle\_detect, led\_status, watchdog\_monitor, serial\_bringup, usb); \texttt{src/shared/} holds shared\_data; \texttt{src/boot/} the SMC-generated boot vectors and BSP. \\
+\texttt{libs/}               & Twenty-six in-house C libraries (see \S\ref{section:firmware-libs}) plus the vendored Azure ThreadX RTOS in \texttt{libs/threadx/}. Every \texttt{rx\_*} lib has \texttt{inc/} (public header), \texttt{src/} (impl), and is built as part of the .elf. \\
+\texttt{tests/}              & Host-compiled Unity test suite (60 binaries, 100\,\% line/function/branch coverage gate on the \texttt{libs/} subset). Built with the system Clang; uses the host CMakeLists in \texttt{tests/CMakeLists.txt}. \\
+\texttt{cmake/}              & Cross toolchain file (\texttt{toolchain-rx72n.cmake}) -- pulled in by the firmware\texttt{CMakeLists.txt} for the GNURX build.                                                                                                  \\
+\texttt{scripts/}            & Firmware-local scripts: linker-section dumpers, Doxygen helpers, the AD2 capture harness for \texttt{gpio\_test/}.                                                                                                              \\
+\texttt{docs/}, \texttt{Doxyfile.main}, \texttt{Doxyfile.pdf.base}, \texttt{latex-extras/}            & Doxygen sources for the firmware-only HTML and PDF reference. Runs from the top-level Makefile target \texttt{doxygen-html} / \texttt{doxygen-pdfs}.                                                                            \\
+\texttt{blinky/}, \texttt{blinky\_rtos/}, \texttt{encoder\_test/}, \texttt{encoder\_sim/}, \texttt{gpio\_test/}, \texttt{imu\_test/}, \texttt{motor\_spin\_test/}, \texttt{motors\_rtos/}, \texttt{pwm\_test/}, \texttt{pwm\_test\_fit/}, \texttt{pwm\_test\_hal/}, \texttt{uart\_test/}             & Bench-test sandboxes. Each is a self-contained bare-metal or RTOS firmware that drives one peripheral end-to-end. Useful both for bring-up and as known-good reference init code per CLAUDE.md "trust known-good bench tests over fresh code." \\
+\texttt{STAR Debug.launch} / \texttt{STAR HardwareDebug.launch} / \texttt{star-rx72n-firmware.elf.launch} / \texttt{STAR.scfg} / \texttt{BOARD\_CONFIG.md} & e2 studio Smart Configurator project + JTAG / FINE / E2 Lite debug-launch shims. Used by Renesas e2 studio if anyone needs to step through the firmware.                                                                       \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{The 26 firmware libraries}
+\label{section:firmware-libs}
+
+Every library follows the same layout: \texttt{libs/rx\_<name>/inc/}
+public header, \texttt{libs/rx\_<name>/src/} implementation. Mock
+versions live under \texttt{tests/mocks/}. Categorized:
+
+\begin{center}
+\begin{tabular}{|p{2.6cm}|p{12.0cm}|}
+\hline
+\textbf{Group}     & \textbf{Libraries}                                                                                                                                                                                                              \\
+\hline
+Core utilities     & \texttt{rx\_core} (logging, error codes, check macros), \texttt{rx\_crc} (CRC-32 with hw / sw backends), \texttt{rx\_dmaca} (DMAC channel allocator).                                                                            \\
+HAL                & \texttt{rx\_hal} (PORT / MPC / SCI / RIIC / RSPI / GPTW / MTU / TPU / CMT / TMR / IWDT / POEG / CAC / DOC / ECCRAM / LPC / MPC / DTC accessors and inline init code).                                                            \\
+Bus abstractions   & \texttt{rx\_bus} (bus-manager interface), \texttt{rx\_i2c\_comm}, \texttt{rx\_spi\_comm}, \texttt{rx\_uart\_comm}, \texttt{rx\_comm\_manager} (multi-transport multiplexer).                                                       \\
+Wire protocol      & \texttt{rx\_frame} (binary framer), \texttt{rx\_frame\_ascii} (fallback ASCII framer for debug), \texttt{rx\_session} (sequence numbers + reset handshake), \texttt{rx\_spi\_link} (HARQ link layer over SPI), \texttt{rx\_fec} (rate-1/2 K=7 convolutional FEC with Viterbi), \texttt{rx\_harq} (Chase-Combining HARQ state machine), \texttt{rx\_nanopb} (the vendored nanopb runtime + generated message code). \\
+USB CDC            & \texttt{rx\_usb} (USB0 USBb peripheral driver: enumeration, endpoints, 3-port CDC composite).                                                                                                                                  \\
+Motor / sensors    & \texttt{rx\_motor} (DRV8263 + GPTW PWM + current sense), \texttt{rx\_drv8263} (chip-level driver), \texttt{rx\_encoder} (MTU and TPU phase-counting backends), \texttt{rx\_pid} (pure PID algorithm), \texttt{rx\_obstacle\_detect}. \\
+External devices   & \texttt{rx\_bmp280} (I2C baro), \texttt{rx\_bno055} (I2C IMU), \texttt{rx\_ds18b20} (1-wire temp), \texttt{rx\_hcsr04} (sonar trig/echo via ICU).                                                                                  \\
+RTOS               & \texttt{libs/threadx/} -- vendored Azure ThreadX. Treat as read-only; updates come from upstream.                                                                                                                                \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{Where firmware tasks live}
+
+\begin{center}
+\begin{tabular}{|p{4.5cm}|p{10.0cm}|}
+\hline
+\textbf{Task}                                  & \textbf{Role}                                                                                                                          \\
+\hline
+\texttt{motor\_control\_task.c}                & 100\,Hz closed-loop PID on all four wheels. Reads encoder velocities, runs PID, writes duty cycles to DRV8263.                          \\
+\texttt{comm\_task.c}                          & RX path: parse incoming frames, dispatch to handlers (set\_velocity, ping, reset, etc.). Active over USB CDC + UART + SPI via comm-mgr.   \\
+\texttt{telemetry\_task.c}                     & TX path: aggregate motor / IMU / baro / temp / sonar data, serialize, send.                                                              \\
+\texttt{imu\_task.c}                           & Polls the BNO055 over RIIC0; publishes to shared\_data.                                                                                  \\
+\texttt{temp\_sensor\_task.c}                  & DS18B20 1-wire temperature poll.                                                                                                         \\
+\texttt{obstacle\_detect\_task.c}              & HC-SR04 trigger / echo state machine; publishes per-sonar range\_mm and obstacle bool.                                                  \\
+\texttt{led\_status\_task.c}                   & Heartbeat LED + comm-pulse LED on \texttt{rx\_log} traffic.                                                                              \\
+\texttt{watchdog\_monitor\_task.c}             & Kicks the IWDT, monitors stack high-watermarks, asserts on starvation.                                                                  \\
+\texttt{serial\_bringup\_task.c}               & ASCII bring-up CLI on SCI9 (only enabled in bring-up builds).                                                                            \\
+\texttt{usb\_task.c}                           & USB CDC enumeration + 3-port composite-device service loop.                                                                              \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Inside \texttt{star-gateway/}}
+
+Standard Go layout: \texttt{cmd/} for binaries, \texttt{internal/} for
+non-exported packages, \texttt{test/} for cross-package tests.
+
+\begin{itemize}
+  \item \texttt{cmd/star-gateway/} -- the main daemon. Other
+        \texttt{cmd/} entries (\texttt{cmd\_debug}, \texttt{ping\_test},
+        \texttt{vel\_test}, \texttt{ascii\_test}, \texttt{cmd\_listen},
+        \texttt{sensor\_dump}, \texttt{virtual\_rx72n}) are debug /
+        bring-up tools.
+  \item \texttt{internal/transport/} -- byte-stream layer (USB CDC + SPI).
+  \item \texttt{internal/frame/} -- framing layer (SYNC + CRC + decoder
+        with resync).
+  \item \texttt{internal/fec/} -- rate-1/2 K=7 convolutional encoder,
+        Viterbi decoder, soft-bit Chase combiner.
+  \item \texttt{internal/harq/} -- HARQ state machine (Chase Combining
+        Type I).
+  \item \texttt{internal/dispatcher/} -- routes typed frames to service
+        handlers.
+  \item \texttt{internal/manager/} -- transport-mode selection,
+        hot-plug, simple-USB vs full HARQ.
+  \item \texttt{internal/server/} -- gRPC + WebSocket + HTTP servers.
+  \item \texttt{internal/controller/} -- joystick / Twist conversion.
+  \item \texttt{internal/app/} -- top-level wiring of all of the above.
+  \item \texttt{test/e2e/} -- end-to-end HIL tests.
+\end{itemize}
+
+\subsection{Inside \texttt{star-ros2/}}
+
+Standard ROS2 / colcon workspace.
+
+\begin{center}
+\begin{tabular}{|p{4.0cm}|p{10.5cm}|}
+\hline
+\textbf{Package}                        & \textbf{Role}                                                                                                                                                                       \\
+\hline
+\texttt{star\_bringup}                  & Launch orchestration: \texttt{star.launch.py} top-level, sub-launches for SLAM, sensor fusion (\texttt{robot\_localization}), Nav2, frontier exploration, the stereo camera.            \\
+\texttt{star\_supervisor}               & E-stop / autonomy gating between \texttt{/cmd\_vel} (manual), \texttt{/nav2/cmd\_vel} (autonomous), and \texttt{/cmd\_vel\_out} (hardware bridge). Dual-enforced with the firmware-side e-stop. \\
+\texttt{star\_safety\_monitor}          & Lifecycle node consuming sonar topics; publishes \texttt{/star/estop} on threshold breach.                                                                                              \\
+\texttt{star\_gateway\_bridge}          & ROS2 -> Go-gateway shim. Wraps the gateway's gRPC API as ROS2 publishers/subscribers/services.                                                                                          \\
+\texttt{star\_spi\_bridge}              & Direct SPI-to-RX72N bridge (skips the gateway). Used when ROS2 needs the deterministic SPI link.                                                                                       \\
+\texttt{star\_simple\_bridge}           & Lightweight HTTP/static map server (\texttt{/map.\{png,pgm,yaml\}}, POST \texttt{/map/reset?confirm=yes}, custom metrics).                                                              \\
+\texttt{star\_compliance\_msgs}         & Message + service definitions used by \texttt{star-compliance/}.                                                                                                                       \\
+\texttt{star\_perception}               & Hailo-accelerated perception (door-state classifier, object detection). Models live under \texttt{src/star\_perception/models/}.                                                       \\
+\texttt{star\_simulation}               & Gazebo simulation launch + world files, used by \texttt{dev.sh}.                                                                                                                       \\
+\texttt{sllidar\_ros2/}                 & Vendored Slamtec RPLiDAR SDK / driver (third party, do not modify).                                                                                                                    \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Inside \texttt{star-proto/}}
+
+\begin{itemize}
+  \item \texttt{proto/star/v1/*.proto} -- canonical schemas. Field
+        numbers, enum zero values, units (\texttt{\_mps},
+        \texttt{\_rad}, etc.) are governed by the Boston-Dynamics-style
+        guide in \texttt{docs/sections/04\_style\_guide.tex}.
+  \item \texttt{nanopb/star/v1/*.options} -- nanopb size-budget config
+        for firmware codegen.
+  \item \texttt{gen/} -- generated code per language. \emph{Not}
+        committed by default (per \texttt{star-proto/gen/.gitignore});
+        regenerated by \texttt{make proto-gen} or \texttt{buf generate}.
+  \item \texttt{tests/go/}, \texttt{tests/typescript/},
+        \texttt{tests/nanopb/} -- per-language round-trip tests.
+  \item \texttt{scripts/} -- proto-gen drivers.
+  \item \texttt{buf.gen.yaml} / \texttt{buf.gen.web.yaml} -- buf
+        codegen configuration. The repo-root \texttt{buf.gen.yaml} that
+        used to also exist was redundant and has been removed.
+\end{itemize}
+
+\subsection{Inside \texttt{scripts/}}
+\label{section:scripts-tree}
+
+\begin{center}
+\begin{tabular}{|p{3.5cm}|p{11.0cm}|}
+\hline
+\textbf{Path}                  & \textbf{What's there}                                                                                                                                          \\
+\hline
+\texttt{git/}                  & Tracked Git hooks. Opt in with \texttt{git config core.hooksPath scripts/git}.                                                                                  \\
+\texttt{ros2/}                 & ROS2 build / format / review scripts: \texttt{format-ros2.sh} (uncrustify), \texttt{format-ros2-docker.sh}, \texttt{review-ros2.sh}, \texttt{fix-header-guards.sh}, \texttt{cpplint-on-save.sh}. \\
+\texttt{proto/}                & Proto-gen drivers and the \texttt{verify-nanopb.sh} sanity check.                                                                                                \\
+\texttt{utils/}                & Encoding fixer (\texttt{fix-encoding.py} -- the ASCII-only enforcer), copyright check, doxygen helpers.                                                          \\
+\texttt{devtools/}             & Misc dev-loop helpers (e.g. \texttt{run-docker-build.sh} wrapper helpers).                                                                                       \\
+\texttt{clion/}                & CLion / IDE integration helpers (compile-commands rewriter).                                                                                                     \\
+\texttt{door\_state\_training/} & YOLOv8 training pipeline for the door-state classifier consumed by \texttt{star-compliance}.                                                                    \\
+\texttt{pi5\_gpio\_test/}      & Pi 5-side GPIO sweep used during Pi-side bring-up.                                                                                                               \\
+\texttt{flash-rx72n.sh}        & Firmware flash via E2 Lite (\texttt{rfp-cli}).                                                                                                                   \\
+\texttt{slam-mvp.sh}           & SLAM minimum-viable-product launcher (\texttt{start} / \texttt{start-nav} / \texttt{stop}).                                                                       \\
+\texttt{setup-pi5-host.sh}     & One-time Pi 5 host setup: udev rules, CPU governor, log rotation, optional boot service.                                                                          \\
+\texttt{setup-lichtblick-web.sh} & Cockpit web bundle setup.                                                                                                                                       \\
+\texttt{star-ap.sh} / \texttt{star-eth.sh} & Wi-Fi AP and Ethernet helpers for field deployment.                                                                                                            \\
+\texttt{star-help.sh}          & Operator help screen (the "what can this robot do" cheat sheet).                                                                                                  \\
+\texttt{give-head.sh} / \texttt{take-head.sh} & Branch-state transfer helpers.                                                                                                                                 \\
+\texttt{merge-verification.sh}  & Pre-merge gate that runs the full firmware + gateway + ROS2 test matrix.                                                                                          \\
+\texttt{verify-parallel.sh}     & Multi-suite parallel test runner.                                                                                                                                \\
+\texttt{71-star-symlinks.rules} & udev rules for stable \texttt{/dev/star-rx72n-*} symlinks (installed by \texttt{setup-pi5-host.sh}).                                                              \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Inside \texttt{final\_docs/}}
+
+The capstone-deliverable tree, organized by submission category:
+
+\begin{itemize}
+  \item \texttt{software\_description\_document/} -- SDD (LaTeX +
+        compiled PDF).
+  \item \texttt{system\_software\_user\_manual/} -- SSUM.
+  \item \texttt{test\_report/} -- the IEEE-29119-3 test report.
+  \item \texttt{bill\_of\_materials/} -- BOM with cost totals.
+  \item \texttt{electrical\_schematics\_pcb/} -- PDF exports of the
+        schematic, electrical design, and the PCB stack-up.
+  \item \texttt{mechanical\_designs/} -- chassis CAD (\texttt{.f3z} via
+        LFS), Gazebo meshes (.stl), exported PDFs.
+  \item \texttt{final\_demo/} -- handout PDF + demo script + 5-minute
+        demo timing + contingency plan.
+  \item \texttt{final\_presentation/} -- slide deck (.pptx + PDF) and
+        the chart generators in \texttt{charts/} that feed into it.
+\end{itemize}
+
+\subsection{Where do I look if I want to...?}
+\label{section:lookup}
+
+\begin{center}
+\begin{tabular}{|p{6.5cm}|p{8.0cm}|}
+\hline
+\textbf{Goal}                                                       & \textbf{Start here}                                                                                                                            \\
+\hline
+Add a new ROS2 topic the gateway publishes                           & \texttt{star-gateway/internal/server/} + \texttt{star-ros2/src/star\_gateway\_bridge/}                                                          \\
+Add a new wire-protocol message                                      & \texttt{star-proto/proto/star/v1/} (.proto) + add nanopb config in \texttt{star-proto/nanopb/star/v1/} + run \texttt{make proto-gen}             \\
+Tune motor PIDs                                                      & \texttt{matlab/cascaded\_pid\_design.m}, then update \texttt{star-rx72n-firmware/libs/rx\_motor/inc/rx\_motor.h} config defaults                \\
+Add a new GPIO peripheral                                             & \texttt{star-rx72n-firmware/src/inc/hardware\_config.h} (pin map) + new lib under \texttt{star-rx72n-firmware/libs/rx\_<peripheral>/}            \\
+Trace a USB CDC bug                                                   & \texttt{star-rx72n-firmware/libs/rx\_usb/} + \S\ref{section:nanopb-protocol} + \S\ref{section:repository-layout}                                  \\
+Find the active firmware build                                        & \texttt{star-rx72n-firmware/build/} (cross) or \texttt{star-rx72n-firmware/build-tom/} (TOM variant). Both are git-ignored.                       \\
+Bench-test a new peripheral in isolation                              & Copy a sibling \texttt{star-rx72n-firmware/<peripheral>\_test/} dir, edit \texttt{main.c}                                                        \\
+Run host-side unit tests                                              & \texttt{cd star-rx72n-firmware/tests \&\& cmake -B build -S . \&\& cmake --build build \&\& ctest --test-dir build}                                \\
+Run ROS2 tests                                                        & \texttt{./test-ros2.sh}                                                                                                                          \\
+Run Go gateway tests                                                  & \texttt{cd star-gateway \&\& go test -race ./...}                                                                                                \\
+Re-flash firmware on the bench                                        & \texttt{scripts/flash-rx72n.sh} (E2 Lite + rfp-cli)                                                                                              \\
+Start the robot in simulation                                         & \texttt{./dev.sh}                                                                                                                                \\
+Start the robot on real hardware                                      & \texttt{./start.sh}                                                                                                                              \\
+Bring up a new Pi 5                                                   & \texttt{./bootstrap\_pi.sh}, then \texttt{sudo bash scripts/setup-pi5-host.sh}                                                                   \\
+Find the canonical pinout                                             & \S\ref{section:hardware-pinout} (this document)                                                                                                  \\
+Find the wire protocol                                                & \S\ref{section:nanopb-protocol}                                                                                                                  \\
+Find the e-stop / autonomy semantics                                  & \texttt{docs/ARCHITECTURE.md} "supervisor safety model"                                                                                          \\
+Find the bench-rig wiring                                             & \texttt{docs/bench/ad2\_wiring.md}                                                                                                              \\
+Read the operator runbook                                             & \texttt{docs/PI\_DEPLOYMENT.md}                                                                                                                  \\
+Read the official capstone deliverables                                & \texttt{final\_docs/} (each subdir has a \texttt{README.md} pointing at the primary PDF)                                                          \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Branch + commit conventions}
+
+The repository uses linear-history Git on \texttt{main}, with no
+backward-compatibility shims (see \texttt{CLAUDE.md} -- "ZERO
+backward compatibility requirements"). Breaking changes are
+encouraged when they improve quality. CI gates each PR with
+firmware unit tests, ROS2 build/test, gateway test, proto regen
+verification, copyright header check, ASCII-only check, and a
+clang-format / clang-tidy pass.
+
+\subsection{Things this repository does not contain}
+
+To make the boundary clear:
+
+\begin{itemize}
+  \item No vendor toolchains compiled in source -- they are pulled by
+        \texttt{Dockerfile} from LFS-tracked installers (GNURX +
+        rfp-cli).
+  \item No private secrets, credentials, or per-host configuration --
+        secrets live in environment variables on the Pi 5; see
+        \texttt{docs/PI\_DEPLOYMENT.md}.
+  \item No pre-built binaries committed to source control --
+        \texttt{star-gateway/cmd/virtual\_rx72n} is built locally via
+        \texttt{go build}; the firmware \texttt{.elf} / \texttt{.mot}
+        outputs land in \texttt{star-rx72n-firmware/build*/} which are
+        git-ignored.
+  \item No abandoned alternative implementations -- the previous
+        STM32 peripheral target and BeagleBone Blue secondary-compute
+        target were removed in commit \texttt{b34f27c98}.
+        Bring-up sandboxes that survived in
+        \texttt{star-rx72n-firmware/} are still referenced from
+        documentation or the Makefile; the rest were deleted in commit
+        \texttt{e51306747}.
+\end{itemize}
