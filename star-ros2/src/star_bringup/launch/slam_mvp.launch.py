@@ -1,3 +1,9 @@
+# Copyright 2026 Locked Inc.
+#
+# Use of this source code is governed by an MIT-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
+
 """SLAM MVP launch: minimal stack for bring-up demo on 2026-04-22.
 
 Brings up only what SLAM needs:

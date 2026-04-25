@@ -578,9 +578,9 @@ typedef enum : uint32_t {
  * touching MSTPCR* and clock-tree registers. Per RX72N HW manual Ch 13.2.1.
  */
 typedef enum : uint16_t {
-  k_prcr_unlock_clock_lpm = 0xA503U, /**< Key 0xA5 + PRC0 | PRC1: unlock clock + low-power-mode regs */
-  k_prcr_lock_all         = 0xA500U, /**< Key 0xA5 + all PRC bits cleared: re-lock everything */
-} prcr_key_t;
+  k_main_prcr_unlock_clock_lpm = 0xA503U, /**< Key 0xA5 + PRC0 | PRC1: unlock clock + low-power-mode regs */
+  k_main_prcr_lock_all         = 0xA500U, /**< Key 0xA5 + all PRC bits cleared: re-lock everything */
+} main_prcr_key_t;
 
 /**
  * @enum usb_init_delay_iters_t
@@ -2917,9 +2917,9 @@ static void internal_inline_usb0_clock_and_phy(void)
   volatile uint32_t* const MSTPCRB_R = (volatile uint32_t*)0x00080014U;
   volatile uint16_t* const SYSCFG_R  = (volatile uint16_t*)0x000A0000U;
 
-  *PRCR_R = k_prcr_unlock_clock_lpm;
+  *PRCR_R = k_main_prcr_unlock_clock_lpm;
   *MSTPCRB_R &= ~(1UL << 19);
-  *PRCR_R = k_prcr_lock_all;
+  *PRCR_R = k_main_prcr_lock_all;
 
   /* HUM 40.3.1.1 ("Setting Data to the USB Related Register"):
    *   "Setting the SYSCFG.USBE bit to 1 AFTER starting the clock supply
