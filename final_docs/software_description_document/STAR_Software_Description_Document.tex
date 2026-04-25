@@ -178,6 +178,21 @@ error-correction (FEC) layer with soft-decision Viterbi decoding, a
 Chase Combining hybrid automatic repeat request (HARQ) retransmission
 layer, and a gRPC service layer.
 
+\textbf{Transport status note.} The full SPI-plus-FEC-plus-HARQ-plus-gRPC
+stack described above is the \emph{designed} transport and is the
+status \emph{[ARCHITECTED]} target for production. The transport
+\emph{deployed} for the capstone defense, used by the Pi5 cockpit and
+the demonstrated SLAM/Nav2 stack, is a simpler ASCII line protocol
+over USB-CDC at 115200~baud via \texttt{star\_simple\_bridge}
+(see Section on the ROS2 autonomy workspace). The two transports
+share the same Protocol Buffers contract at the message level. Where
+this SDD describes SPI / FEC / HARQ / gRPC end-to-end, those layers
+should be read as \emph{[ARCHITECTED]} unless the surrounding text
+calls out a deployed implementation explicitly. The SSUM
+(operator-facing companion document) describes only the deployed
+USB-CDC bridge, which is why the two documents differ on the
+RX72N-side transport.
+
 The software decomposes into eight distinct subsystems: a
 language-neutral Protocol Buffers contract (\texttt{star-proto}), the
 RX72N motor-control firmware, the Go gateway service, the ROS2 autonomy
@@ -596,13 +611,20 @@ and safety monitoring.
 \textbf{Distribution:} ROS2 Jazzy on Ubuntu 24.04, C++20 with
 \texttt{rclcpp}, plus Python nodes where appropriate.
 
-\textbf{Packages:} \texttt{star\_bringup} (launch orchestration),
-\texttt{star\_spi\_bridge} (ROS2-side SPI wrapper),
+\textbf{Packages (10 total in \texttt{star-ros2/src/}):}
+\texttt{star\_bringup} (launch orchestration),
+\texttt{star\_simple\_bridge} (\emph{[IMPLEMENTED]} -- the deployed
+USB-CDC ASCII bridge to the RX72N at 115200~baud; serves
+OccupancyGrid PNG and Prometheus metrics on \texttt{:9101}),
+\texttt{star\_spi\_bridge} (\emph{[ARCHITECTED]} -- the production
+SPI bridge target; not used at defense),
 \texttt{star\_gateway\_bridge}, \texttt{star\_safety\_monitor}
 (lifecycle-managed emergency stop), \texttt{star\_perception}
 (point-cloud preprocessing), \texttt{star\_simulation} (SITL harness),
-\texttt{star\_supervisor} (top-level state coordinator), and
-\texttt{sllidar\_ros2} (vendor driver for the RPLiDAR C1).
+\texttt{star\_supervisor} (top-level state coordinator),
+\texttt{star\_compliance\_msgs} (custom message definitions for the
+ADA compliance engine), and \texttt{sllidar\_ros2} (vendor driver for
+the RPLiDAR C1).
 
 \textbf{Third-party stack:} \texttt{slam\_toolbox} (async SLAM with
 loop closure), \texttt{robot\_localization} (EKF fusing
@@ -709,7 +731,9 @@ compliance report.
 \texttt{setuptools} and \texttt{ament\_python}. Numerical work uses
 Open3D and NumPy.
 
-\textbf{Checks:}
+\textbf{Checks:} all eleven nodes below ship as files under
+\texttt{final\_capstone/compliance-engine/star\_compliance/nodes/};
+the status label tracks the algorithmic completeness of each.
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
 \item \textbf{Ramp slope} (\texttt{ramp\_slope\_node.py}) --
       [IMPLEMENTED]. RANSAC plane fit to LiDAR points in a ramp
@@ -720,10 +744,18 @@ Open3D and NumPy.
 \item \textbf{Path width} (\texttt{path\_width\_node.py}) --
       [STRETCH stub]. Occupancy-grid cross-section width along the
       planned path.
-\item \textbf{Ramp width, ramp landing, door clear width, door
-      threshold} -- [ARCHITECTED]. Message schemas, node skeletons,
-      and traceability-matrix rows are in place; the internal
-      algorithm bodies are not yet implemented.
+\item \textbf{Ramp width} (\texttt{ramp\_width\_node.py}),
+      \textbf{ramp landing} (\texttt{ramp\_landing\_node.py}),
+      \textbf{door clear width} (\texttt{door\_clear\_width\_node.py}),
+      \textbf{door threshold} (\texttt{door\_threshold\_node.py}),
+      \textbf{path blockage} (\texttt{path\_blockage\_node.py}),
+      \textbf{protruding objects} (\texttt{protruding\_objects\_node.py}),
+      \textbf{dynamic obstacle} (\texttt{dynamic\_obstacle\_node.py}),
+      and the supervising \textbf{compliance monitor}
+      (\texttt{compliance\_monitor\_node.py}) -- [ARCHITECTED stubs].
+      Node skeletons, message schemas, and traceability-matrix rows
+      are committed to the repo; the internal algorithm bodies are
+      placeholders pending post-capstone work.
 \end{itemize}
 
 \textbf{Core engines:} \texttt{engines/plane\_segmentation.py}
