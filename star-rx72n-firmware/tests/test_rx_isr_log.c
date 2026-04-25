@@ -343,7 +343,7 @@ void test_drain_has_value_default_branch_falls_through_to_debug(void)
     k_test_drain_level_invalid = 7U, /* Any value not in 0..3 */
   };
   rx_isr_log_test_set_event_meta(k_isr_log_event_usb_resume,
-                                 (uint8_t)k_test_drain_level_invalid,
+                                 k_test_drain_level_invalid,
                                  true);
 
   TEST_ASSERT_TRUE(rx_isr_log_push(k_isr_log_event_usb_resume, k_test_first_value));
@@ -359,7 +359,7 @@ void test_drain_no_value_default_branch_falls_through_to_debug(void)
     k_test_drain_level_invalid = 9U, /* Any value not in 0..3 */
   };
   rx_isr_log_test_set_event_meta(k_isr_log_event_usb_resume,
-                                 (uint8_t)k_test_drain_level_invalid,
+                                 k_test_drain_level_invalid,
                                  false);
 
   TEST_ASSERT_TRUE(rx_isr_log_push(k_isr_log_event_usb_resume, 0U));
