@@ -82,7 +82,7 @@
  * @details 4 bytes in .rodata.
  * @since Version 1.0.0
  */
-static const char* s_tag = "TMR";
+static const char* const s_tag = "TMR";
 
 /**
  * @enum tmr_pclk_hz_t

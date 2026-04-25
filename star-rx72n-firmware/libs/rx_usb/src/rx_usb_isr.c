@@ -312,7 +312,7 @@
  * =============================================================================
  */
 
-static const char* s_tag = "USB_ISR";
+static const char* const s_tag = "USB_ISR";
 
 /** @brief USB pipe number constants */
 typedef enum : uint8_t {

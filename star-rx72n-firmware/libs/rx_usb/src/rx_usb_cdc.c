@@ -603,7 +603,7 @@
  * =============================================================================
  */
 
-static const char* s_tag = "USB_CDC";
+static const char* const s_tag = "USB_CDC";
 
 /** @brief USB Descriptor Field Default Values */
 typedef enum : uint8_t {

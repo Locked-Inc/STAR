@@ -44,7 +44,7 @@
  */
 
 /** @brief Module log tag */
-static const char* s_tag = "POEG";
+static const char* const s_tag = "POEG";
 
 /**
  * @enum poeg_icu_constants_t

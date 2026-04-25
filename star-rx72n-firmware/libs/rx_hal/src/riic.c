@@ -567,7 +567,7 @@ typedef enum : uint8_t {
  *
  * @note Not thread-safe, but read-only after initialization.
  */
-static const char* s_tag = "RIIC";
+static const char* const s_tag = "RIIC";
 
 /**
  * @enum riic_recovery_constants_t

@@ -51,7 +51,7 @@ static TX_THREAD s_usb_thread;
 static uint8_t   s_usb_stack[k_usb_task_stack_size];
 static bool      s_usb_created = false;
 
-static const char* s_tag = "USB_TASK";
+static const char* const s_tag = "USB_TASK";
 
 /* Canned payload per port -- self-identifying ("p0:..." / "p1:..." /
  * "p2:...") and newline-terminated so a host `cat /dev/ttyACMn` shows

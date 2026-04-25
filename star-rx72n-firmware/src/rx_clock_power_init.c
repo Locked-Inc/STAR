@@ -247,7 +247,7 @@
 #include "rx_simulator_config.h" /* For simulator mode detection */
 #include "star_board.h"          /* Board variant: STAR_BOARD_PROD or STAR_BOARD_TOM */
 
-static const char* s_tag = "CLOCK_INIT";
+static const char* const s_tag = "CLOCK_INIT";
 
 /* =============================================================================
  * Private Definitions

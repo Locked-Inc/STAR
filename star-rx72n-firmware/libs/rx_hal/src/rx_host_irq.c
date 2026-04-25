@@ -46,7 +46,7 @@
 #include "rx72n_port_regs.h"
 #include "rx_log.h"
 
-static const char* s_tag = "HOST_IRQ";
+static const char* const s_tag = "HOST_IRQ";
 
 /* =============================================================================
  * Constants

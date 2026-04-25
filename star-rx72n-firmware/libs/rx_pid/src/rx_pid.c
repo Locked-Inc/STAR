@@ -169,7 +169,7 @@
 #include "rx_check.h"
 #include "rx_log.h"
 
-static const char* s_tag = "PID";
+static const char* const s_tag = "PID";
 
 /* =============================================================================
  * Internal Helper Functions

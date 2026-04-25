@@ -58,7 +58,7 @@
  * @var s_tag
  * @brief Module log tag for rx_log_* macros
  */
-static const char* s_tag = "ECCRAM";
+static const char* const s_tag = "ECCRAM";
 
 /**
  * @enum rx_eccram_fill_t

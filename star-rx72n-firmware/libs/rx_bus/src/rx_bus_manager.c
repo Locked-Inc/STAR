@@ -161,7 +161,7 @@
 #include "rx_time_constants.h"
 #include "tx_api.h"
 
-static const char* s_tag = "BUS_MANAGER";
+static const char* const s_tag = "BUS_MANAGER";
 
 /* ThreadX exposes the current-thread pointer; it is TX_NULL until the
  * scheduler dispatches its first thread.  `tx_application_define` runs

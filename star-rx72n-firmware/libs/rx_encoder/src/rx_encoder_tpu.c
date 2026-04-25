@@ -54,7 +54,7 @@
 #include "rx_log.h"
 #include "rx_tpu.h"
 
-static const char* s_tag = "TPU_ENCODER";
+static const char* const s_tag = "TPU_ENCODER";
 
 /* =============================================================================
  * Constants

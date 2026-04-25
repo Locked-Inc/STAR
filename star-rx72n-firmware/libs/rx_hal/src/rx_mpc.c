@@ -188,7 +188,7 @@
  * @note Statically allocated, never modified
  * @since Version 1.0.0
  */
-static const char* s_tag = "MPC";
+static const char* const s_tag = "MPC";
 
 /* =============================================================================
  * Constants

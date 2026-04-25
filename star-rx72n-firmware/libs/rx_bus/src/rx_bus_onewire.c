@@ -419,7 +419,7 @@ RX_STATIC_TESTABLE rx_err_t internal_set_drive_mode(const rx_bus_config_t*   bus
 /**
  * @brief Drive the OneWire line low (open-drain style).
  */
-RX_STATIC_TESTABLE rx_err_t internal_drive_low(rx_bus_config_t*         bus_config,
+RX_STATIC_TESTABLE rx_err_t internal_drive_low(const rx_bus_config_t*   bus_config,
                                                onewire_runtime_state_t* state)
 {
   const rx_err_t err = internal_set_drive_mode(bus_config, state, true);
@@ -432,7 +432,7 @@ RX_STATIC_TESTABLE rx_err_t internal_drive_low(rx_bus_config_t*         bus_conf
 /**
  * @brief Release the OneWire line (input/high-Z, external pull-up drives high).
  */
-RX_STATIC_TESTABLE rx_err_t internal_release_line(rx_bus_config_t*         bus_config,
+RX_STATIC_TESTABLE rx_err_t internal_release_line(const rx_bus_config_t*   bus_config,
                                                   onewire_runtime_state_t* state)
 {
   return internal_set_drive_mode(bus_config, state, false);
@@ -580,7 +580,7 @@ RX_STATIC_TESTABLE rx_err_t internal_reset_pulse(rx_bus_config_t*         bus_co
  *
  * @see internal_write_byte() Writes 8 bits LSB-first
  */
-RX_STATIC_TESTABLE rx_err_t internal_write_bit(rx_bus_config_t*         bus_config,
+RX_STATIC_TESTABLE rx_err_t internal_write_bit(const rx_bus_config_t*   bus_config,
                                                onewire_runtime_state_t* state,
                                                const bool               bit)
 {
@@ -645,7 +645,7 @@ RX_STATIC_TESTABLE rx_err_t internal_write_bit(rx_bus_config_t*         bus_conf
  *
  * @see internal_read_byte() Reads 8 bits LSB-first
  */
-RX_STATIC_TESTABLE rx_err_t internal_read_bit(rx_bus_config_t*         bus_config,
+RX_STATIC_TESTABLE rx_err_t internal_read_bit(const rx_bus_config_t*   bus_config,
                                               onewire_runtime_state_t* state,
                                               bool*                    bit)
 {

@@ -342,7 +342,7 @@ typedef enum : uint16_t {
  * =============================================================================
  */
 
-static const char* s_tag = "RSPI";
+static const char* const s_tag = "RSPI";
 
 /* Track initialized RSPI channels (peripheral mode) */
 static bool s_rspi_channel_initialized[k_rspi_max_channels] = {false, false, false};

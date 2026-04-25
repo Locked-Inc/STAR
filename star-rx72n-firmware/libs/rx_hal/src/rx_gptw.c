@@ -128,7 +128,7 @@
 #include "rx_port_utils.h"
 #include "rx_register_protection.h"
 
-static const char* s_tag = "GPTW";
+static const char* const s_tag = "GPTW";
 
 /* =============================================================================
  * Constants

@@ -114,7 +114,7 @@
 #include "rx_log.h"
 #include "rx_register_protection.h"
 
-static const char* s_tag = "MTU";
+static const char* const s_tag = "MTU";
 
 /* =============================================================================
  * Constants

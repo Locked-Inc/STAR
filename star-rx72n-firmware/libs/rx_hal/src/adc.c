@@ -362,7 +362,7 @@ typedef enum : uint16_t {
  * @brief Log tag for ADC module messages
  * @details Used with rx_log_* functions for consistent message tagging.
  */
-static const char* s_tag = "ADC";
+static const char* const s_tag = "ADC";
 
 /**
  * @var s_adc_unit_initialized

@@ -155,7 +155,7 @@ void cmt1_isr(void);
 void cmt2_isr(void);
 void cmt3_isr(void);
 
-static const char* s_tag = "CMT";
+static const char* const s_tag = "CMT";
 
 /* =============================================================================
  * Constants

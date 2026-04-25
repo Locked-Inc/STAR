@@ -128,7 +128,7 @@
  * @note Statically allocated, never modified
  * @since Version 1.0.0
  */
-static const char* s_tag = "TPU";
+static const char* const s_tag = "TPU";
 
 /**
  * @enum tpu_phase_channel_count_t

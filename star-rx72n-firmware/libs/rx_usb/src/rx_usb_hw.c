@@ -486,7 +486,7 @@
  * =============================================================================
  */
 
-static const char* s_tag = "USB_HW";
+static const char* const s_tag = "USB_HW";
 
 /* Per-pipe configure-time cache.  configure_pipe writes both arrays;
  * rx_usb_hw_fifo_write reads them.  Sized for pipes 0..9 (DCP at

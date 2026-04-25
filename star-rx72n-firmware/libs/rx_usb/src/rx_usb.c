@@ -471,7 +471,7 @@
  * =============================================================================
  */
 
-static const char* s_tag = "USB";
+static const char* const s_tag = "USB";
 
 /**
  * @brief USB flush timing and iteration constants

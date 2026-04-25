@@ -777,13 +777,15 @@ void     internal_delay_us(uint32_t microseconds);
 rx_err_t internal_set_drive_mode(const rx_bus_config_t*   bus_config,
                                  onewire_runtime_state_t* state,
                                  bool                     output);
-rx_err_t internal_drive_low(rx_bus_config_t* bus_config, onewire_runtime_state_t* state);
-rx_err_t internal_release_line(rx_bus_config_t* bus_config, onewire_runtime_state_t* state);
+rx_err_t internal_drive_low(const rx_bus_config_t* bus_config, onewire_runtime_state_t* state);
+rx_err_t internal_release_line(const rx_bus_config_t* bus_config, onewire_runtime_state_t* state);
 rx_err_t internal_read_line(const rx_bus_config_t* bus_config, bool* high);
 rx_err_t
 internal_reset_pulse(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool* presence);
-rx_err_t internal_write_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool bit);
-rx_err_t internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool* bit);
+rx_err_t
+internal_write_bit(const rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool bit);
+rx_err_t
+internal_read_bit(const rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool* bit);
 rx_err_t
 internal_write_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, uint8_t byte);
 rx_err_t

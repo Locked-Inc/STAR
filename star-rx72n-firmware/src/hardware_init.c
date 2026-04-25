@@ -518,7 +518,7 @@ static const uint8_t s_sckcr3_reset_state = 0U;
  */
 static rx_err_t internal_gpio_init_i2c(void)
 {
-  static const char* s_tag = "GPIO_I2C";
+  static const char* const s_tag = "GPIO_I2C";
 
   /* Host I2C (RIIC0): SCL0 + SDA0 */
   rx_err_t err = rx_mpc_set_riic((rx_port_pin_t)k_pin_host_scl0);
@@ -554,7 +554,7 @@ static rx_err_t internal_gpio_init_i2c(void)
  */
 static rx_err_t internal_gpio_init_host_spi(void)
 {
-  static const char* s_tag = "GPIO_SPI";
+  static const char* const s_tag = "GPIO_SPI";
 
   rx_err_t err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_copi);
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 COPI pin config failed");
@@ -595,7 +595,7 @@ static rx_err_t internal_gpio_init_host_spi(void)
  */
 static rx_err_t internal_gpio_init_mtu_encoders(void)
 {
-  static const char* s_tag = "GPIO_MTU_ENC";
+  static const char* const s_tag = "GPIO_MTU_ENC";
 
   rx_err_t err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc0_pha);
   RX_RETURN_ON_ERROR(err, s_tag, "MTCLKA pin config failed");
@@ -636,7 +636,7 @@ static rx_err_t internal_gpio_init_mtu_encoders(void)
  */
 static rx_err_t internal_gpio_init_tpu_encoders(void)
 {
-  static const char* s_tag = "GPIO_TPU_ENC";
+  static const char* const s_tag = "GPIO_TPU_ENC";
 
   rx_err_t err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc2_pha);
   RX_RETURN_ON_ERROR(err, s_tag, "TCLKA pin config failed");
@@ -677,7 +677,7 @@ static rx_err_t internal_gpio_init_tpu_encoders(void)
  */
 static rx_err_t internal_gpio_init_gptw_pwm(void)
 {
-  static const char* s_tag = "GPIO_GPTW";
+  static const char* const s_tag = "GPIO_GPTW";
 
   const rx_port_pin_t gptw_pins[] = {(rx_port_pin_t)k_pin_motor0_in2,
                                      (rx_port_pin_t)k_pin_motor0_in1,
@@ -958,7 +958,7 @@ static void internal_riic1_bus_recover(void)
 
 static rx_err_t internal_gpio_init_imu(void)
 {
-  static const char* s_tag = "GPIO_IMU";
+  static const char* const s_tag = "GPIO_IMU";
 
   /* NASA Rule 5: precondition validation */
   RX_ASSERT(rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_imu_scl)) != nullptr,
@@ -1062,7 +1062,7 @@ typedef enum : uint8_t {
  */
 static rx_err_t internal_gpio_init_imu_irq(void)
 {
-  static const char* s_tag = "GPIO_IMU_IRQ";
+  static const char* const s_tag = "GPIO_IMU_IRQ";
 
   /* NASA Rule 5: precondition validation */
   RX_ASSERT(rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_imu_int)) != nullptr,
@@ -1141,7 +1141,7 @@ static rx_err_t internal_gpio_init_imu_irq(void)
  */
 static rx_err_t internal_gpio_init_host_irq(void)
 {
-  static const char* s_tag = "GPIO_IRQ";
+  static const char* const s_tag = "GPIO_IRQ";
 
   rx_err_t err = rx_mpc_set_gpio((rx_port_pin_t)k_pin_host_irq);
   RX_RETURN_ON_ERROR(err, s_tag, "HOST_IRQ MPC config failed");
@@ -1200,7 +1200,7 @@ static rx_err_t internal_gpio_init_host_irq(void)
 /** @brief Configure all DRVOFF GPIO pins as outputs HIGH (outputs disabled). */
 static rx_err_t internal_gpio_init_drvoff_pins(const rx_port_pin_t pins[])
 {
-  static const char* s_tag = "GPIO_DRV_CTRL";
+  static const char* const s_tag = "GPIO_DRV_CTRL";
   for (uint8_t i = 0; i < k_motor_count; i++) {
     const rx_err_t err = rx_mpc_set_gpio(pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "DRVOFF MPC config failed");
@@ -1212,7 +1212,7 @@ static rx_err_t internal_gpio_init_drvoff_pins(const rx_port_pin_t pins[])
 /** @brief Configure all nSLEEP GPIO pins as outputs HIGH (driver awake). */
 static rx_err_t internal_gpio_init_nsleep_pins(const rx_port_pin_t pins[])
 {
-  static const char* s_tag = "GPIO_DRV_CTRL";
+  static const char* const s_tag = "GPIO_DRV_CTRL";
   for (uint8_t i = 0; i < k_motor_count; i++) {
     const rx_err_t err = rx_mpc_set_gpio(pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "nSLEEP MPC config failed");
@@ -1223,7 +1223,7 @@ static rx_err_t internal_gpio_init_nsleep_pins(const rx_port_pin_t pins[])
 
 static rx_err_t internal_gpio_init_motor_driver_ctrl(void)
 {
-  static const char* s_tag = "GPIO_DRV_CTRL";
+  static const char* const s_tag = "GPIO_DRV_CTRL";
 
   /* NASA Rule 5: precondition validation */
   RX_ASSERT(rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_motor0_drvoff)) != nullptr,
@@ -1279,7 +1279,7 @@ static rx_err_t internal_gpio_init_motor_driver_ctrl(void)
  */
 static rx_err_t internal_gpio_init_adc(void)
 {
-  static const char* s_tag = "GPIO_ADC";
+  static const char* const s_tag = "GPIO_ADC";
 
   rx_err_t err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an004);
   RX_RETURN_ON_ERROR(err, s_tag, "AN004 pin config failed");
@@ -1319,7 +1319,7 @@ static rx_err_t internal_gpio_init_adc(void)
  */
 static rx_err_t internal_gpio_init_usb(void)
 {
-  static const char* s_tag = "GPIO_USB";
+  static const char* const s_tag = "GPIO_USB";
 
   rx_err_t err = rx_mpc_set_usb_vbus((rx_port_pin_t)k_pin_usb_vbus);
   RX_RETURN_ON_ERROR(err, s_tag, "USB VBUS pin config failed");
@@ -1351,7 +1351,7 @@ static rx_err_t internal_gpio_init_usb(void)
  */
 static rx_err_t internal_gpio_init_sonar_triggers(void)
 {
-  static const char* s_tag = "GPIO_SONAR_TRIG";
+  static const char* const s_tag = "GPIO_SONAR_TRIG";
 
   const rx_port_pin_t sonar_trig_pins[k_sonar_count] = {(rx_port_pin_t)k_pin_sonar_trig0,
                                                         (rx_port_pin_t)k_pin_sonar_trig1,
@@ -1391,7 +1391,7 @@ static rx_err_t internal_gpio_init_sonar_triggers(void)
  */
 static rx_err_t internal_gpio_init_sonar_echoes(void)
 {
-  static const char* s_tag = "GPIO_SONAR_ECHO";
+  static const char* const s_tag = "GPIO_SONAR_ECHO";
 
   const rx_port_pin_t sonar_echo_pins[k_sonar_count] = {(rx_port_pin_t)k_pin_sonar_echo0,
                                                         (rx_port_pin_t)k_pin_sonar_echo1,
@@ -1528,7 +1528,7 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
 /** @brief Configure comm, IRQ, and encoder GPIO pins (first half of gpio_init). */
 static rx_err_t internal_gpio_init_comm_and_encoders(void)
 {
-  static const char* s_tag = "GPIO";
+  static const char* const s_tag = "GPIO";
 
   rx_err_t err = internal_gpio_init_i2c();
   RX_RETURN_ON_ERROR(err, s_tag, "I2C pin init failed");
@@ -1551,7 +1551,7 @@ static rx_err_t internal_gpio_init_comm_and_encoders(void)
 /** @brief Configure motor, IMU, ADC, USB, and sonar GPIO pins (second half of gpio_init). */
 static rx_err_t internal_gpio_init_motor_and_sensors(void)
 {
-  static const char* s_tag = "GPIO";
+  static const char* const s_tag = "GPIO";
 
   rx_err_t err = internal_gpio_init_gptw_pwm();
   RX_RETURN_ON_ERROR(err, s_tag, "GPTW PWM pin init failed");
@@ -1582,7 +1582,7 @@ static rx_err_t internal_gpio_init_motor_and_sensors(void)
 
 static rx_err_t gpio_init(void)
 {
-  static const char* s_tag = "GPIO";
+  static const char* const s_tag = "GPIO";
 
   rx_err_t err = internal_gpio_init_comm_and_encoders();
   RX_RETURN_ON_ERROR(err, s_tag, "Comm and encoder pin init failed");
@@ -1622,7 +1622,7 @@ static rx_err_t gpio_init(void)
  */
 static rx_err_t gptw_pwm_init(void)
 {
-  static const char* s_tag = "GPTW";
+  static const char* const s_tag = "GPTW";
 
   /* Per-channel configs: shared frequency / wave mode, distinct pins
    * per motor. Pin map decoded from hardware.h's packed k_pin_motor*
@@ -1693,7 +1693,7 @@ static rx_err_t gptw_pwm_init(void)
  */
 static rx_err_t spi_init(void)
 {
-  static const char* s_tag = "SPI";
+  static const char* const s_tag = "SPI";
 
   rspi_config_t host_config = {.spi_mode = k_rspi_mode_0, .use_16bit = false};
 
@@ -1734,7 +1734,7 @@ static rx_err_t spi_init(void)
  */
 static rx_err_t i2c_init(void)
 {
-  static const char* s_tag = "I2C";
+  static const char* const s_tag = "I2C";
 
   /* Precondition: channel and frequency values must be within valid range (NASA Rule 5) */
   static_assert((bool)((unsigned int)k_i2c_host_freq_hz <= (unsigned int)k_i2c_fast_mode_max_hz),
@@ -1782,7 +1782,7 @@ static rx_err_t i2c_init(void)
  */
 static rx_err_t adc_init_channels(void)
 {
-  static const char* s_tag = "ADC";
+  static const char* const s_tag = "ADC";
 
   const adc_channel_t channels[k_motor_adc_count] = {
     k_adc_channel_7, /* Motor 0: AN007 */
@@ -1819,7 +1819,7 @@ static rx_err_t adc_init_channels(void)
  */
 static void validate_peripherals(void)
 {
-  static const char* s_tag = "VALIDATE";
+  static const char* const s_tag = "VALIDATE";
 
   /* ADC test conversion on AN007 (motor 0 current) */
   uint16_t test_val = 0;
@@ -2046,7 +2046,7 @@ const rx_port_pin_t g_pin_host_irq = (rx_port_pin_t)k_pin_host_irq;
 /** @brief Initialize all hardware peripherals (GPIO through ADC). Hardware only. */
 static rx_err_t internal_init_all_peripherals(void)
 {
-  static const char* s_tag = "HW_INIT";
+  static const char* const s_tag = "HW_INIT";
 
   /* 1. GPIO: Configure MPC pin multiplexing for all peripherals */
   rx_err_t err = gpio_init();
