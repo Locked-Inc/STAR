@@ -1672,6 +1672,38 @@ void test_bno055_is_calibrated_i2c_error(void)
   mock_riic_simulate_nack(false);
 }
 
+/**
+ * @brief rx_bno055_clear_int returns k_rx_err_not_initialized before init.
+ */
+void test_bno055_clear_int_not_initialized(void)
+{
+  rx_bno055_test_reset_state();
+  rx_err_t err = rx_bno055_clear_int();
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
+}
+
+/**
+ * @brief rx_bno055_clear_int reads INT_STA after init succeeds.
+ */
+void test_bno055_clear_int_reads_int_sta(void)
+{
+  internal_setup_initialized_driver();
+  rx_err_t err = rx_bno055_clear_int();
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
+ * @brief rx_bno055_clear_int propagates I2C errors from internal_read_regs.
+ */
+void test_bno055_clear_int_i2c_error(void)
+{
+  internal_setup_initialized_driver();
+  mock_riic_simulate_nack(true);
+  rx_err_t err = rx_bno055_clear_int();
+  TEST_ASSERT_EQUAL(k_rx_err_nack, err);
+  mock_riic_simulate_nack(false);
+}
+
 /* =============================================================================
  * RX_ASSERT_PRE / RX_ASSERT_POST Branch Coverage Tests
  *
@@ -1996,6 +2028,9 @@ int main(void)
   RUN_TEST(test_bno055_is_calibrated_reads_status);
   RUN_TEST(test_bno055_is_calibrated_partial);
   RUN_TEST(test_bno055_is_calibrated_i2c_error);
+  RUN_TEST(test_bno055_clear_int_not_initialized);
+  RUN_TEST(test_bno055_clear_int_reads_int_sta);
+  RUN_TEST(test_bno055_clear_int_i2c_error);
 
   internal_run_assert_coverage_tests();
 

@@ -500,7 +500,10 @@ typedef struct {
  */
 static inline volatile rx_tpu_control_regs_t* tpu_control(void)
 {
+  /* GCOVR_EXCL_START: trivial hardware-address accessor; host-test
+   * builds use mock_rx72n_tpu_regs.h's override. */
   return (volatile rx_tpu_control_regs_t*)k_tpu_control_base_addr;
+  /* GCOVR_EXCL_STOP */
 }
 
 /**
@@ -555,7 +558,10 @@ static inline volatile rx_tpu_ext_regs_t* tpu0(void)
  */
 static inline volatile rx_tpu_regs_t* tpu1(void)
 {
+  /* GCOVR_EXCL_START: trivial hardware-address accessor; host-test
+   * builds use mock_rx72n_tpu_regs.h's override. */
   return (volatile rx_tpu_regs_t*)k_tpu1_base_addr;
+  /* GCOVR_EXCL_STOP */
 }
 
 /**
@@ -579,7 +585,10 @@ static inline volatile rx_tpu_regs_t* tpu1(void)
  */
 static inline volatile rx_tpu_regs_t* tpu2(void)
 {
+  /* GCOVR_EXCL_START: trivial hardware-address accessor; host-test
+   * builds use mock_rx72n_tpu_regs.h's override. */
   return (volatile rx_tpu_regs_t*)k_tpu2_base_addr;
+  /* GCOVR_EXCL_STOP */
 }
 
 /**

@@ -924,7 +924,11 @@ static inline volatile rx_mtu_channel_regs_t* mtu0(void)
  */
 static inline volatile rx_mtu_channel_regs_t* mtu1(void)
 {
+  /* GCOVR_EXCL_START: trivial hardware-address accessor exercised on
+   * the real target only.  Host-test builds use mock_rx_mtu_regs.h's
+   * mtu1() override, so the real body never executes under coverage. */
   return (volatile rx_mtu_channel_regs_t*)k_mtu1_base_addr;
+  /* GCOVR_EXCL_STOP */
 }
 
 /**
@@ -941,7 +945,10 @@ static inline volatile rx_mtu_channel_regs_t* mtu1(void)
  */
 static inline volatile rx_mtu_channel_regs_t* mtu2(void)
 {
+  /* GCOVR_EXCL_START: trivial hardware-address accessor; host-test
+   * builds use mock_rx_mtu_regs.h's override. */
   return (volatile rx_mtu_channel_regs_t*)k_mtu2_base_addr;
+  /* GCOVR_EXCL_STOP */
 }
 
 /**
@@ -1101,7 +1108,10 @@ static inline volatile void* mtu7(void)
  */
 static inline volatile rx_mtu_tstr_regs_t* mtu_tstra(void)
 {
+  /* GCOVR_EXCL_START: trivial hardware-address accessor; host-test
+   * builds use mock_rx_mtu_regs.h's override. */
   return (volatile rx_mtu_tstr_regs_t*)k_mtu_tstra_base_addr;
+  /* GCOVR_EXCL_STOP */
 }
 
 /**
