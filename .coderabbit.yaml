@@ -205,50 +205,6 @@ reviews:
         - Post-conditions: Output bounds, invariant validation
         - Use RX_CHECK_NULL_PTR, RX_RETURN_ON_ERROR macros
 
-    - path: "star-stm32-firmware/**/*.{c,h}"
-      instructions: |
-        Review STM32F7 firmware code with STRICT C23 compliance checking.
-        Same rules as star-rx72n-firmware apply (C23 typed enums, NASA Power of 10,
-        SOLID, inclusive terminology, zero magic numbers, comprehensive Doxygen).
-
-        STM32-Specific Requirements:
-        - FreeRTOS API calls from ISR context MUST use ISR-safe variants (xStreamBufferSendFromISR, etc.)
-        - Any ISR that calls FreeRTOS API must have NVIC priority >= configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY (5)
-        - TinyUSB callbacks (tud_*_cb) run in tud_task() context (NOT ISR) -- use non-ISR FreeRTOS API
-        - OTG_HS_IRQHandler must only call tud_int_handler(); no FreeRTOS API inside
-        - All HAL return values must be checked (HAL_OK) or explicitly cast to (void)
-        - SystemCoreClock must be updated after clock config (HAL_RCC_ClockConfig does this automatically)
-        - uintptr_t MANDATORY for all hardware address enums (CPACR, peripheral base addresses)
-        - configASSERT must be a real halt (cpsid i + infinite loop), NOT a no-op void cast
-
-        C23 Language Standard (MANDATORY):
-        - REQUIRED: Typed enums with explicit underlying types: `typedef enum : uint8_t { ... } name_t;`
-        - REQUIRED: `#pragma once` for ALL header files
-        - FORBIDDEN: Traditional include guards, untyped enums, magic numbers
-
-        Doxygen Documentation (CRITICAL - MAXIMUM COVERAGE REQUIRED):
-        - ZERO TOLERANCE for undocumented code
-        - @brief, @details, @param, @return, @retval, @pre, @post, @note, @since MANDATORY on all functions
-        - All enum values must have inline /**< comments
-
-        NASA Power of 10 Rules (CRITICAL - REJECT violations):
-        - Rule 1: No goto, setjmp/longjmp, or recursion
-        - Rule 2: All loops must have statically provable bounds
-        - Rule 3: Zero malloc/free (FreeRTOS heap_4 only; no direct malloc)
-        - Rule 4: Functions must be <=60 lines
-        - Rule 5: Minimum 2 assertions per function (pre/post conditions)
-        - Rule 8: Enums for ALL integer constants (zero tolerance for magic numbers)
-        - Rule 10: Must compile with -Wall -Wextra -Werror (zero warnings)
-
-        Inclusive Terminology (CRITICAL - REJECT violations):
-        - FORBIDDEN: master/slave, MOSI/MISO, blacklist/whitelist
-        - REQUIRED: Controller/Peripheral, COPI/CIPO, denylist/allowlist
-
-        Backward Compatibility (CRITICAL - REJECT violations):
-        - ZERO backward compatibility requirements
-        - Breaking changes are ENCOURAGED if they improve code quality
-        - FORBIDDEN: Function aliases, deprecation macros, compatibility shims
-
     - path: "lib/**/*.{c,h}"
       instructions: |
         Review C firmware code with STRICT C23 compliance checking:
@@ -834,7 +790,6 @@ reviews:
     # Include paths
     - "star-gateway/**"
     - "star-rx72n-firmware/**"
-    - "star-stm32-firmware/**"
     - "lib/**"
     - "src/**"
     - "tests/**"

@@ -104,7 +104,7 @@ python3 scripts/utils/fix-encoding.py --check path/to/dir
 
 ## Engineering Discipline: No Guessing on Embedded Bring-Up
 
-**MANDATORY** for all RX72N / BeagleBone Blue / STAR PCB work. This section
+**MANDATORY** for all RX72N / STAR PCB work. This section
 overrides any instinct to "try a value and re-flash".
 
 ### P0 Rules (never violate)

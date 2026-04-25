@@ -5,10 +5,6 @@
             "path": "star-rx72n-firmware"
         },
         {
-            "name": "star-stm32-firmware",
-            "path": "star-stm32-firmware"
-        },
-        {
             "name": "star-ros2",
             "path": "star-ros2"
         },

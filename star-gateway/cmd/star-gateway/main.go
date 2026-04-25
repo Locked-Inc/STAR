@@ -11,7 +11,6 @@ import (
 	"github.com/Locked-Inc/STAR/star-gateway/internal/transport"
 )
 
-// BeagleBone Blue USB gadget VID:PID (Linux Foundation Multifunction Composite Gadget).
 // Cypress CY7C65213 USB-UART bridge VID:PID -- the chip on the STAR PCB
 // that connects the RX72N's SCI9 to the Pi5 via USB CDC-ACM. CRC-32
 // framed nanopb wire protocol.

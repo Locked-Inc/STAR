@@ -4,18 +4,3 @@
 [submodule "star-ros2/src/sllidar_ros2"]
 	path = star-ros2/src/sllidar_ros2
 	url = https://github.com/Slamtec/sllidar_ros2.git
-[submodule "star-stm32-firmware/libs/tinyusb"]
-	path = star-stm32-firmware/libs/tinyusb
-	url = https://github.com/hathach/tinyusb.git
-[submodule "star-stm32-firmware/libs/freertos"]
-	path = star-stm32-firmware/libs/freertos
-	url = https://github.com/FreeRTOS/FreeRTOS-Kernel.git
-[submodule "star-stm32-firmware/libs/cmsis_device_f7"]
-	path = star-stm32-firmware/libs/cmsis_device_f7
-	url = https://github.com/STMicroelectronics/cmsis_device_f7.git
-[submodule "star-stm32-firmware/libs/stm32f7xx_hal_driver"]
-	path = star-stm32-firmware/libs/stm32f7xx_hal_driver
-	url = https://github.com/STMicroelectronics/stm32f7xx_hal_driver.git
-[submodule "star-stm32-firmware/libs/cmsis_5"]
-	path = star-stm32-firmware/libs/cmsis_5
-	url = https://github.com/ARM-software/CMSIS_5.git

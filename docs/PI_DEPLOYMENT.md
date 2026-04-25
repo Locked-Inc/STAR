@@ -220,7 +220,7 @@ That installs:
 
 | File | Purpose |
 |------|---------|
-| `/etc/udev/rules.d/70-star-usb-no-autosuspend.rules` | Disables USB autosuspend for BeagleBone Blue (`1d6b:0104`) and RPLiDAR C1 (`10c4:ea60`). Prevents `/dev/ttyACM0` and `/dev/ttyUSB0` from dropping under idle. |
+| `/etc/udev/rules.d/70-star-usb-no-autosuspend.rules` | Disables USB autosuspend for the RX72N USB CDC (`1d6b:0104`) and RPLiDAR C1 (`10c4:ea60`). Prevents `/dev/ttyACM0` and `/dev/ttyUSB0` from dropping under idle. |
 | `/etc/systemd/system/star-cpu-governor.service` | Pins CPU governor to `schedutil` very early in boot (`DefaultDependencies=no`, runs before `base.target`). Enabled automatically. |
 | `/etc/logrotate.d/star-robot` | Rotates `/tmp/star-logs/*.log` daily, 3 rotations, 20 MB cap. Prevents tmpfs OOM on long runs. |
 | `/etc/systemd/system/star-robot.service` | Optional boot-time robot launch unit (`Type=oneshot + RemainAfterExit=yes` so `systemctl status` correctly reflects running state). **Installed but NOT enabled.** |
