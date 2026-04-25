@@ -640,7 +640,7 @@ static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
   /* Program 4 bytes: [0xA5, 0x5A, who_am_i, err_byte_low]. */
   const uint8_t  err_byte = (err == 0) ? 0x00U : (uint8_t)(err & k_dflash_probe_byte_mask);
   const uint16_t word0    = (uint16_t)(((uint16_t)k_dflash_probe_magic_byte1 << 8) |
-                                       k_dflash_probe_magic_byte0); /* LE: bytes 0=A5, 1=5A */
+                                    k_dflash_probe_magic_byte0); /* LE: bytes 0=A5, 1=5A */
   const uint16_t word1 = (uint16_t)(((uint16_t)err_byte << 8) | who_am_i); /* LE: 2=who, 3=err    */
 
   *FSADDR = DF_ADDR;
@@ -1845,9 +1845,9 @@ static const rx_iwdt_config_t s_iwdt_config = {
   .enable_task_monitoring = true,                 /**< Enable task heartbeat tracking */
   .reset_on_timeout       = true,                 /**< Reset on timeout (not NMI) */
   .state_timeouts_ms      = {
-    [k_system_state_init]         = k_iwdt_timeout_init_ms,         /**< 5s - slow startup */
-    [k_system_state_idle]         = k_iwdt_timeout_idle_ms,         /**< 5s - no critical ops */
-    [k_system_state_running]      = k_iwdt_timeout_running_ms,      /**< 2s - default operation */
+    [k_system_state_init]         = k_iwdt_timeout_init_ms,    /**< 5s - slow startup */
+    [k_system_state_idle]         = k_iwdt_timeout_idle_ms,    /**< 5s - no critical ops */
+    [k_system_state_running]      = k_iwdt_timeout_running_ms, /**< 2s - default operation */
     [k_system_state_motor_active] = k_iwdt_timeout_motor_active_ms, /**< 2s - motor control */
     [k_system_state_comm_active]  = k_iwdt_timeout_comm_active_ms,  /**< 2s - communication */
     [k_system_state_error]        = k_iwdt_timeout_error_ms,        /**< 10s - recovery/diag */
@@ -3083,7 +3083,7 @@ static void internal_set_pb3_pre_kernel_probe(void)
   volatile uint8_t* const pb_pdr  = (volatile uint8_t*)0x0008C00BU;
   volatile uint8_t* const pb_podr = (volatile uint8_t*)0x0008C02BU;
   volatile uint8_t* const pb_pmr  = (volatile uint8_t*)0x0008C06BU;
-  *pb_pmr &= (uint8_t)~(1U << 3);
+  *pb_pmr &= (uint8_t) ~(1U << 3);
   *pb_pdr |= (uint8_t)(1U << 3);
   *pb_podr |= (uint8_t)(1U << 3); /* HIGH */
 }

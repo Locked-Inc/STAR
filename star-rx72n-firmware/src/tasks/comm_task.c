@@ -391,6 +391,7 @@
 #include "rx_comm_manager.h"
 #include "rx_frame.h"
 #include "rx_i2c_comm.h"
+#include "rx_isr_log.h"
 #include "rx_iwdt.h"
 #include "rx_log.h"
 #include "rx_log_uart.h"
@@ -1660,6 +1661,13 @@ static void internal_comm_task_entry(ULONG input)
       rx_log_debug_val(s_tag, "Poll error", (uint32_t)err);
     }
 
+    /* Drain any deferred ISR log events into the rx_log_uart ring. MUST run
+     * before internal_ship_log_frames() so the events emitted on this tick
+     * are flushed out within the same ~10 ms poll cycle as the surrounding
+     * task-context logs. ISR-side handlers (USB BRDY/BEMP/CTRT, etc.) push
+     * records via rx_isr_log_push(); this drain is the only consumer. */
+    (void)rx_isr_log_drain();
+
     /* Ship any pending log bytes as LOG_MESSAGE frames (see helper) */
     internal_ship_log_frames();
 
@@ -2457,7 +2465,7 @@ static void internal_velocity_send_response(rx_comm_channel_t                 ch
   }
 
   uint32_t       encoded_len = 0;
-  const rx_err_t enc_err = rx_nanopb_encode_velocity_response(&response,
+  const rx_err_t enc_err     = rx_nanopb_encode_velocity_response(&response,
                                                               s_response_buffer,
                                                               (uint32_t)k_comm_response_buffer_size,
                                                               &encoded_len);
@@ -2560,7 +2568,7 @@ static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_fr
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 
     uint32_t       encoded_len = 0;
-    const rx_err_t enc_err = rx_nanopb_encode_estop_response(&response,
+    const rx_err_t enc_err     = rx_nanopb_encode_estop_response(&response,
                                                              s_response_buffer,
                                                              (uint32_t)k_comm_response_buffer_size,
                                                              &encoded_len);

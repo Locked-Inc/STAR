@@ -254,10 +254,10 @@ static void internal_emit_record(const rx_isr_log_record_t* rec)
   /* Validate the event id -- a torn record (producer interrupted us
    * mid-read) would be caught here as a 0 / out-of-range id and we drop
    * it as a soft error rather than dereferencing the table OOB. */
-  if (rec->event_id >= (uint8_t)k_isr_log_event_count) {
+  if (rec->event_id >= k_isr_log_event_count) {
     return;
   }
-  if (rec->event_id == (uint8_t)k_isr_log_event_none) {
+  if (rec->event_id == k_isr_log_event_none) {
     return;
   }
 
@@ -311,10 +311,10 @@ uint32_t rx_isr_log_drain(void)
   while (s_tail != head_snapshot) {
     const uint32_t            slot = s_tail & (uint32_t)k_rx_isr_log_capacity_mask;
     const rx_isr_log_record_t rec  = {
-      .event_id  = s_ring[slot].event_id,
-      .reserved0 = s_ring[slot].reserved0,
-      .reserved1 = s_ring[slot].reserved1,
-      .value     = s_ring[slot].value,
+       .event_id  = s_ring[slot].event_id,
+       .reserved0 = s_ring[slot].reserved0,
+       .reserved1 = s_ring[slot].reserved1,
+       .value     = s_ring[slot].value,
     };
 
     internal_emit_record(&rec);

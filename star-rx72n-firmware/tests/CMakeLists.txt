@@ -198,8 +198,12 @@ set(RX_HARQ_SRC
 
 # rx_log backend: the real UART ring-buffer log backend compiles on the host.
 # (A mock is provided for tests that need to inspect buffered bytes.)
+# rx_isr_log.c is the deferred ISR log queue; it lives here because tests
+# linking comm_task.c (which now drains this queue every tick) need the real
+# implementation, not a mock.
 set(RX_LOG_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_uart.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_isr_log.c
 )
 
 # Log mock source: alias to the real UART log backend; no separate UART/USB

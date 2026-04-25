@@ -593,17 +593,42 @@
 
 #include "rx72n_regs.h"
 #include "rx_check.h"
-#include "rx_log.h"
+#include "rx_isr_log.h"
 #include "rx_usb.h"
 #include "rx_usb_endpoints.h"
 #include "rx_usb_internal.h"
+
+/* =============================================================================
+ * ISR LOGGING DISCIPLINE
+ * =============================================================================
+ *
+ * The control-transfer SETUP path (rx_usb_cdc_handle_setup() and every
+ * internal_handle_* it dispatches to: GET_DESCRIPTOR, SET_CONFIGURATION,
+ * SET/GET_LINE_CODING, SET_CONTROL_LINE_STATE) runs in ISR context -- it is
+ * invoked from internal_handle_ctrt_interrupt() in rx_usb_isr.c.
+ *
+ * The bulk handle_bulk_in / handle_bulk_out paths are likewise ISR-callable
+ * (and rx_usb_write() reaches handle_bulk_in from task context as well).
+ *
+ * Therefore rx_log_error/warn/info/debug are FORBIDDEN inside any function
+ * reachable from rx_usb_cdc_handle_setup / handle_bulk_in / handle_bulk_out.
+ * Use rx_isr_log_push(event_id, value) and add a matching event id in
+ * libs/rx_core/inc/rx_isr_log.h.
+ *
+ * The ONLY exception is rx_usb_cdc_init(), which runs from the main thread
+ * during startup before USB interrupts are unmasked -- it may use rx_log_*
+ * directly because it cannot race with the ISR.
+ * =============================================================================
+ */
 
 /* =============================================================================
  * Private Definitions
  * =============================================================================
  */
 
-static const char* const s_tag = "USB_CDC";
+/* No s_tag here -- ISR-side logs route through rx_isr_log_push() which
+ * resolves the tag from the static event-metadata table at drain time.
+ * See ISR LOGGING DISCIPLINE banner above. */
 
 /** @brief USB Descriptor Field Default Values */
 typedef enum : uint8_t {
@@ -1535,7 +1560,9 @@ static void internal_send_descriptor(const uint8_t* desc, uint16_t desc_len, uin
   const uint32_t written = rx_usb_hw_fifo_write(k_usb_pipe_dcp, desc, len);
 
   if (written != len) {
-    rx_log_error(s_tag, "Descriptor write incomplete");
+    /* ISR context (CTRT -> handle_setup -> internal_send_descriptor):
+     * defer log emission to the task-context drain hook. */
+    (void)rx_isr_log_push(k_isr_log_event_cdc_descriptor_short_write, 0U);
   }
 
   /* Set CCPL to complete the control-read status stage.  The RX72N HW
@@ -1614,7 +1641,10 @@ static void internal_handle_set_address(const uint16_t usb_value)
     rx_usb_set_state(k_usb_state_addressed);
   }
 
-  /* No rx_log_debug -- ISR context, see SET_CONTROL_LINE_STATE comment. */
+  /* SET_ADDRESS deliberately not logged: the address transition is a
+   * routine high-frequency enumeration step. To re-enable, add an event
+   * id to rx_isr_log.h and a rx_isr_log_push() here -- never call
+   * rx_log_* directly (this is ISR context). */
 }
 
 /**
@@ -1661,7 +1691,9 @@ static void internal_rollback_pipes(uint8_t failed_pipe)
     }
     internal_disable_pipe(pipe);
   }
-  rx_log_debug(s_tag, "Rolled back pipes on config failure");
+  /* ISR context (CTRT -> handle_setup -> handle_set_configuration ->
+   * configure_portN_pipes -> rollback_pipes). Defer to drain hook. */
+  (void)rx_isr_log_push(k_isr_log_event_cdc_pipe_rolled_back, 0U);
 }
 
 /**
@@ -1677,7 +1709,7 @@ static bool internal_configure_port0_pipes(void)
                                           k_usb_pipecfg_type_bulk,
                                           k_usb_bulk_packet_size);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to configure Port 0 Bulk IN pipe");
+    (void)rx_isr_log_push(k_isr_log_event_cdc_port0_bulk_in_failed, (uint32_t)err);
     usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
     return false;
   }
@@ -1687,7 +1719,7 @@ static bool internal_configure_port0_pipes(void)
                                  k_usb_pipecfg_type_bulk,
                                  k_usb_bulk_packet_size);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to configure Port 0 Bulk OUT pipe");
+    (void)rx_isr_log_push(k_isr_log_event_cdc_port0_bulk_out_failed, (uint32_t)err);
     internal_rollback_pipes(k_usb_port0_pipe_bulk_out);
     usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
     return false;
@@ -1698,7 +1730,7 @@ static bool internal_configure_port0_pipes(void)
                                  k_usb_pipecfg_type_int,
                                  k_usb_interrupt_packet_size);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to configure Port 0 Interrupt IN pipe");
+    (void)rx_isr_log_push(k_isr_log_event_cdc_port0_int_in_failed, (uint32_t)err);
     internal_rollback_pipes(k_usb_port0_pipe_int_in);
     usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
     return false;
@@ -1719,7 +1751,7 @@ static bool internal_configure_port1_pipes(void)
                                           k_usb_pipecfg_type_bulk,
                                           k_usb_bulk_packet_size);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to configure Port 1 Bulk IN pipe");
+    (void)rx_isr_log_push(k_isr_log_event_cdc_port1_bulk_in_failed, (uint32_t)err);
     internal_rollback_pipes(k_usb_port1_pipe_bulk_in);
     usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
     return false;
@@ -1730,7 +1762,7 @@ static bool internal_configure_port1_pipes(void)
                                  k_usb_pipecfg_type_bulk,
                                  k_usb_bulk_packet_size);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to configure Port 1 Bulk OUT pipe");
+    (void)rx_isr_log_push(k_isr_log_event_cdc_port1_bulk_out_failed, (uint32_t)err);
     internal_rollback_pipes(k_usb_port1_pipe_bulk_out);
     usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
     return false;
@@ -1741,7 +1773,7 @@ static bool internal_configure_port1_pipes(void)
                                  k_usb_pipecfg_type_int,
                                  k_usb_interrupt_packet_size);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to configure Port 1 Interrupt IN pipe");
+    (void)rx_isr_log_push(k_isr_log_event_cdc_port1_int_in_failed, (uint32_t)err);
     internal_rollback_pipes(k_usb_port1_pipe_int_in);
     usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
     return false;
@@ -1762,7 +1794,7 @@ static bool internal_configure_port2_pipes(void)
                                           k_usb_pipecfg_type_bulk,
                                           k_usb_bulk_packet_size);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to configure Port 2 Bulk IN pipe");
+    (void)rx_isr_log_push(k_isr_log_event_cdc_port2_bulk_in_failed, (uint32_t)err);
     internal_rollback_pipes(k_usb_port2_pipe_bulk_in);
     usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
     return false;
@@ -1773,7 +1805,7 @@ static bool internal_configure_port2_pipes(void)
                                  k_usb_pipecfg_type_bulk,
                                  k_usb_bulk_packet_size);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to configure Port 2 Bulk OUT pipe");
+    (void)rx_isr_log_push(k_isr_log_event_cdc_port2_bulk_out_failed, (uint32_t)err);
     internal_rollback_pipes(k_usb_port2_pipe_bulk_out);
     usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
     return false;
@@ -1784,7 +1816,7 @@ static bool internal_configure_port2_pipes(void)
                                  k_usb_pipecfg_type_int,
                                  k_usb_interrupt_packet_size);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to configure Port 2 Interrupt IN pipe");
+    (void)rx_isr_log_push(k_isr_log_event_cdc_port2_int_in_failed, (uint32_t)err);
     internal_rollback_pipes(k_usb_port2_pipe_int_in);
     usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
     return false;
@@ -1835,7 +1867,9 @@ static void internal_enable_interrupts_and_notify(void)
 #if STAR_USB_ENABLE_PORT_LOG
   rx_usb_invoke_callback(k_usb_port_log, k_usb_event_configured);
 #endif
-  rx_log_info(s_tag, "Composite device configured");
+  /* ISR context (CTRT -> handle_setup -> handle_set_configuration ->
+   * enable_interrupts_and_notify). Defer to drain hook. */
+  (void)rx_isr_log_push(k_isr_log_event_cdc_composite_configured, 0U);
 }
 
 /**
@@ -1930,7 +1964,9 @@ static void internal_handle_get_line_coding(const rx_usb_port_id_t port)
 
   const uint32_t written = rx_usb_hw_fifo_write(k_usb_pipe_dcp, data, k_line_coding_size);
   if (written != k_line_coding_size) {
-    rx_log_error(s_tag, "Line coding write incomplete");
+    /* ISR context (CTRT -> handle_setup -> handle_class_request ->
+     * handle_get_line_coding). Defer to drain hook. */
+    (void)rx_isr_log_push(k_isr_log_event_cdc_line_coding_short_write, 0U);
   }
 }
 
@@ -2064,7 +2100,13 @@ rx_err_t rx_usb_cdc_init(void)
     return k_rx_ok;
   }
 
-  rx_log_debug(s_tag, "Initializing USB CDC composite class");
+  /* No rx_log_* call here. Although this function is task-context (called
+   * once from rx_usb_init() before USB interrupts are unmasked), keeping
+   * the file's grep -n "rx_log_" output to comments-only matches the
+   * audit rule: any future caller that mistakenly wires this into an ISR
+   * path inherits a clean call graph rather than a stray log. The startup
+   * log line "Composite device configured" is emitted from
+   * internal_enable_interrupts_and_notify via rx_isr_log_push instead. */
 
   /* Reset line coding to defaults for all ports */
   for (uint8_t port = k_usb_port_proto; port < k_usb_port_count; port++) {

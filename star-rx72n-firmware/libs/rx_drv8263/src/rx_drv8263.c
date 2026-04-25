@@ -264,7 +264,7 @@ RX_STATIC_TESTABLE void internal_gpio_write(uint8_t port, uint8_t pin, bool high
   if (high) {
     base->podr |= (uint8_t)(k_bit_shift_one << pin);
   } else {
-    base->podr &= (uint8_t)~(k_bit_shift_one << pin);
+    base->podr &= (uint8_t) ~(k_bit_shift_one << pin);
   }
 }
 
