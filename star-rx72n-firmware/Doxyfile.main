@@ -126,7 +126,12 @@ WARN_IF_UNDOCUMENTED    = YES
 WARN_IF_DOC_ERROR       = YES
 WARN_IF_INCOMPLETE_DOC  = YES
 WARN_NO_PARAMDOC        = YES
-WARN_AS_ERROR           = NO
+# FAIL_ON_WARNINGS: doxygen runs to completion, then exits non-zero if any
+# warning was emitted. Preferred over plain YES because the YES abort path in
+# doxygen 1.16.1 SIGSEGVs during caller-graph generation when aborting on
+# environment errors (\startuml without PLANTUML, mscgen INPUT FORMAT ERROR).
+# Behavior is equivalent for CI purposes: exit 0 on clean run, exit 1 on warnings.
+WARN_AS_ERROR           = FAIL_ON_WARNINGS
 WARN_FORMAT             = "$file:$line: $text"
 WARN_LINE_FORMAT        = "at line $line of file $file"
 WARN_LOGFILE            = docs/doxygen/doxygen_warnings.log
@@ -134,23 +139,27 @@ WARN_LOGFILE            = docs/doxygen/doxygen_warnings.log
 #---------------------------------------------------------------------------
 # Input files - everything under src/ and libs/ including third-party
 #---------------------------------------------------------------------------
-INPUT                   = README.md \
+INPUT                   = README_CMAKE.md \
+                          BOARD_CONFIG.md \
                           src \
                           libs
 INPUT_ENCODING          = UTF-8
 FILE_PATTERNS           = *.c \
                           *.h \
-                          *.S \
-                          *.s \
-                          *.asm \
                           *.ld \
                           *.inc
 RECURSIVE               = YES
 EXCLUDE                 =
 EXCLUDE_SYMLINKS        = NO
-EXCLUDE_PATTERNS        =
+# Exclude assembly files - doxygen confuses ';' as an initializer terminator
+EXCLUDE_PATTERNS        = */libs/threadx/* \
+                          */nanopb/tests/* \
+                          */nanopb/examples/* \
+                          */nanopb/build-tests/*
 EXCLUDE_SYMBOLS         =
-EXAMPLE_PATH            =
+# Use libs/ as example root so any \include of headers resolves
+EXAMPLE_PATH            = libs \
+                          src
 EXAMPLE_PATTERNS        = *
 EXAMPLE_RECURSIVE       = NO
 IMAGE_PATH              =
@@ -158,7 +167,7 @@ INPUT_FILTER            =
 FILTER_PATTERNS         =
 FILTER_SOURCE_FILES     = NO
 FILTER_SOURCE_PATTERNS  =
-USE_MDFILE_AS_MAINPAGE  = README.md
+USE_MDFILE_AS_MAINPAGE  = README_CMAKE.md
 
 #---------------------------------------------------------------------------
 # Source browsing
@@ -172,7 +181,7 @@ REFERENCES_LINK_SOURCE  = YES
 SOURCE_TOOLTIPS         = YES
 USE_HTAGS               = NO
 VERBATIM_HEADERS        = YES
-CLANG_ASSISTED_PARSING  = NO
+# CLANG_ASSISTED_PARSING removed - prebuilt doxygen 1.16.1 not compiled with libclang support
 
 #---------------------------------------------------------------------------
 # Alphabetical index
@@ -214,7 +223,7 @@ OBFUSCATE_EMAILS        = YES
 HTML_FORMULA_FORMAT     = png
 FORMULA_FONTSIZE        = 10
 FORMULA_MACROFILE       =
-USE_MATHJAX             = NO
+USE_MATHJAX             = YES
 MATHJAX_VERSION         = MathJax_2
 MATHJAX_FORMAT          = HTML-CSS
 MATHJAX_RELPATH         = https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/
@@ -321,13 +330,13 @@ DOT_IMAGE_FORMAT        = svg
 INTERACTIVE_SVG         = YES
 DOT_PATH                =
 DOTFILE_DIRS            =
-MSCGEN_TOOL             = mscgen
+MSCGEN_TOOL             =
 MSCFILE_DIRS            =
 DIAFILE_DIRS            =
-PLANTUML_JAR_PATH       = /usr/share/plantuml
+PLANTUML_JAR_PATH       =
 PLANTUML_CFG_FILE       =
 PLANTUML_INCLUDE_PATH   =
-DOT_GRAPH_MAX_NODES     = 250
+DOT_GRAPH_MAX_NODES     = 500
 MAX_DOT_GRAPH_DEPTH     = 0
 DOT_MULTI_TARGETS       = YES
 GENERATE_LEGEND         = YES

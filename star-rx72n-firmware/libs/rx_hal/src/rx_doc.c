@@ -274,7 +274,12 @@ rx_err_t rx_doc_init(rx_doc_mode_t mode)
  * driver init state but does not validate or constrain the value range
  * (any 16-bit value is meaningful in compare/add/subtract modes).
  *
+ * @param[in] reference 16-bit value to load into DODIR for subsequent
+ *                      compare/add/subtract operations.
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                  Reference written.
+ * @retval k_rx_err_not_initialized rx_doc_init() has not been called.
  *
  * @pre rx_doc_init() previously returned k_rx_ok.
  * @pre Caller has ensured no other thread is racing with this DOC channel
@@ -313,7 +318,16 @@ rx_err_t rx_doc_set_reference(uint16_t reference)
  * comparator flag is cleared internally before return so successive
  * compares are independent.
  *
+ * @param[in]  value   16-bit input written into DODSR to trigger the
+ *                     comparison.
+ * @param[out] matched On k_rx_ok holds the latched DOPCF result for the
+ *                     configured compare mode (true if condition satisfied).
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                  Compare succeeded; *matched populated.
+ * @retval k_rx_err_null_ptr        matched is NULL.
+ * @retval k_rx_err_not_initialized rx_doc_init() has not been called.
+ * @retval k_rx_err_invalid_state   Driver not configured in a compare mode.
  *
  * @pre matched != NULL.
  * @pre rx_doc_init() was called with one of the compare modes.
@@ -358,7 +372,18 @@ rx_err_t rx_doc_compare(uint16_t value, bool* matched)
  * back through DODSR (post-operation register) and reports the overflow
  * flag, then clears DOPCF before return.
  *
+ * @param[in]  addend   16-bit value to add to the DODIR reference.
+ * @param[out] sum      Destination for the 16-bit DODIR + addend result
+ *                      (mod 2^16).
+ * @param[out] overflow Destination for the carry-out flag (true on overflow
+ *                      past 0xFFFF).
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                  Add succeeded; *sum and *overflow
+ *                                  populated.
+ * @retval k_rx_err_null_ptr        sum or overflow is NULL.
+ * @retval k_rx_err_not_initialized rx_doc_init() has not been called.
+ * @retval k_rx_err_invalid_state   Driver not configured for add mode.
  *
  * @pre sum != NULL and overflow != NULL.
  * @pre rx_doc_init() was called with k_rx_doc_mode_add.
@@ -404,7 +429,18 @@ rx_err_t rx_doc_add(uint16_t addend, uint16_t* sum, bool* overflow)
  * the result back through DODSR and reports the borrow flag, then clears
  * DOPCF before return.
  *
+ * @param[in]  subtrahend 16-bit value to subtract from the DODIR minuend.
+ * @param[out] difference Destination for the 16-bit DODIR - subtrahend
+ *                        result.
+ * @param[out] borrow     Destination for the borrow flag (true if result
+ *                        underflowed below 0).
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                  Subtract succeeded; *difference and
+ *                                  *borrow populated.
+ * @retval k_rx_err_null_ptr        difference or borrow is NULL.
+ * @retval k_rx_err_not_initialized rx_doc_init() has not been called.
+ * @retval k_rx_err_invalid_state   Driver not configured for subtract mode.
  *
  * @pre difference != NULL and borrow != NULL.
  * @pre rx_doc_init() was called with k_rx_doc_mode_subtract.
@@ -449,6 +485,8 @@ rx_err_t rx_doc_subtract(uint16_t subtrahend, uint16_t* difference, bool* borrow
  * DOC module clock through internal_disable_doc_clock(), and marks the
  * driver as uninitialized.
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok Always returned (idempotent: ok if uninitialized too).
  *
  * @pre None (function is safe to call without prior init).
  *

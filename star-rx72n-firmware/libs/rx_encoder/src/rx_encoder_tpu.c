@@ -267,7 +267,15 @@ rx_err_t rx_tpu_encoder_init(const rx_tpu_encoder_config_t* config)
  * low-level wraparound detection.  Validates the channel index and the
  * per-channel initialized flag before touching hardware.
  *
+ * @param[in]  channel TPU channel identifier (1, 2, 4, or 5).
+ * @param[out] count   Destination for the latched 16-bit counter value.
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                 Read succeeded.
+ * @retval k_rx_err_null_ptr       count is nullptr.
+ * @retval k_rx_err_invalid_arg    channel is not a valid TPU encoder channel.
+ * @retval k_rx_err_invalid_state  Channel not initialized via
+ *                                 rx_tpu_encoder_init().
  *
  * @pre count != nullptr.
  * @pre Channel was successfully initialized via rx_tpu_encoder_init().
@@ -309,7 +317,15 @@ rx_err_t rx_tpu_encoder_read_raw(const rx_tpu_channel_t channel, uint16_t* count
  * degrees and revolution count are derived from total_count and
  * counts_per_rev.
  *
+ * @param[in]  channel TPU channel identifier (1, 2, 4, or 5).
+ * @param[out] state   Destination for the cooked encoder state.
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                 Read succeeded; *state populated.
+ * @retval k_rx_err_null_ptr       state is nullptr.
+ * @retval k_rx_err_invalid_arg    channel is not a valid TPU encoder channel.
+ * @retval k_rx_err_invalid_state  Channel not initialized or counts_per_rev
+ *                                 corrupted.
  *
  * @pre state != nullptr.
  * @pre Channel was successfully initialized via rx_tpu_encoder_init().
@@ -357,7 +373,21 @@ rx_err_t rx_tpu_encoder_read_count(const rx_tpu_channel_t channel, rx_encoder_st
  * (but still returns k_rx_ok) when |velocity| exceeds
  * k_tpu_enc_max_velocity_rps, indicating a likely encoder fault.
  *
+ * @param[out] velocity_rps Destination for the computed velocity in
+ *                          revolutions per second.
+ * @param[in]  delta_time_s Time interval since the previous call, in seconds
+ *                          (must satisfy 0 < delta_time_s <=
+ *                          k_tpu_enc_max_delta_time_s).
+ * @param[in]  channel      TPU channel identifier (1, 2, 4, or 5).
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                 Velocity computed; *velocity_rps holds the
+ *                                 result.
+ * @retval k_rx_err_null_ptr       velocity_rps is nullptr.
+ * @retval k_rx_err_invalid_arg    channel invalid or delta_time_s out of
+ *                                 range.
+ * @retval k_rx_err_invalid_state  Channel not initialized or counts_per_rev
+ *                                 corrupted.
  *
  * @pre velocity_rps != nullptr.
  * @pre Channel was successfully initialized via rx_tpu_encoder_init().
@@ -435,7 +465,13 @@ rx_err_t rx_tpu_encoder_read_velocity(float*                 velocity_rps,
  * position_deg, s_last_count).  Used after carriage homing / index pulses
  * or when re-initializing a faulted encoder.
  *
+ * @param[in] channel TPU channel identifier (1, 2, 4, or 5).
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                 Reset succeeded.
+ * @retval k_rx_err_invalid_arg    channel is not a valid TPU encoder channel.
+ * @retval k_rx_err_invalid_state  Channel not initialized via
+ *                                 rx_tpu_encoder_init().
  *
  * @pre Channel was successfully initialized via rx_tpu_encoder_init().
  *
@@ -485,7 +521,14 @@ rx_err_t rx_tpu_encoder_reset(const rx_tpu_channel_t channel)
  * known offset.  Detects a corrupted counts_per_rev (< minimum) and
  * returns k_rx_err_invalid_state.
  *
+ * @param[in] count   New 32-bit total count to write into the cached state.
+ * @param[in] channel TPU channel identifier (1, 2, 4, or 5).
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                 Cached state updated successfully.
+ * @retval k_rx_err_invalid_arg    channel is not a valid TPU encoder channel.
+ * @retval k_rx_err_invalid_state  Channel not initialized or counts_per_rev
+ *                                 corrupted.
  *
  * @pre Channel was successfully initialized via rx_tpu_encoder_init().
  *
@@ -540,7 +583,12 @@ rx_err_t rx_tpu_encoder_set_count(const int32_t count, const rx_tpu_channel_t ch
  * Subsequent reads on this channel will return k_rx_err_invalid_state
  * until rx_tpu_encoder_init() is called again.
  *
+ * @param[in] channel TPU channel identifier (1, 2, 4, or 5).
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                 Channel deinitialized successfully.
+ * @retval k_rx_err_invalid_arg    channel is not a valid TPU encoder channel.
+ * @retval k_rx_err_invalid_state  Channel was not initialized.
  *
  * @pre Channel was previously initialized via rx_tpu_encoder_init().
  *

@@ -856,6 +856,130 @@ static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
  * @post SCL/SDA left tristated (PDR=0), ready for rx_mpc_set_riic() to
  *       raise PMR and hand the pads to RIIC1
  */
+/**
+ * @enum riic1_recover_t
+ * @brief Timing and cycle constants for the RIIC1 bit-bang bus recovery sequence
+ *
+ * @details
+ * Centralised constants used by internal_riic1_bus_recover() and its
+ * three sub-phase helpers (BNO055 reset, SCL bit-bang, manual STOP).
+ * Hoisted to file scope so each helper can reference the same values.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_i2c_recover_cycles  = 9U,     /**< 9 SCL edges flush a stuck peripheral byte. */
+  k_i2c_recover_half_us = 5U,     /**< 5 us half-period -> 100 kHz SCL. */
+  k_i2c_recover_cpu_mhz = 240U,   /**< CPU clock for busy-wait calibration. */
+  k_bno055_rst_low_us   = 20000U, /**< BNO055 datasheet: tRST_low >= 20 us. */
+  k_bno055_por_us       = 650U,   /**< POR settle budget (caller adds more). */
+} riic1_recover_t;
+
+/**
+ * @brief Pulse the BNO055 RST pin low for >= 20 us to force a power-on reset
+ *
+ * @details
+ * Active-low BNO055 reset on P8.3. Forcing the chip through POR before the
+ * SCL bit-bang guarantees the IMU is not driving SDA low as a residue of a
+ * half-finished transaction from a prior firmware load.
+ *
+ * @pre k_pin_imu_rst is a valid GPIO pin
+ * @pre Single-threaded boot context (pre-RTOS)
+ * @post P8.3 left HIGH (chip out of reset, executing POR)
+ * @post Pin direction set to OUTPUT, mode GPIO
+ *
+ * @note Not thread-safe: non-atomic RMW on port registers.
+ * @since Version 1.0.0
+ */
+static void internal_riic1_recover_reset_bno055(void)
+{
+  const uint8_t                  rst_bit = rx_pin_from_pin((rx_port_pin_t)k_pin_imu_rst);
+  volatile rx_port_regs_t* const rst_port =
+    rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_imu_rst));
+  RX_ASSERT(rst_port != nullptr, "IMU RST port base invalid during bus recovery");
+  const uint8_t rst_mask = (uint8_t)(1U << rst_bit);
+  rst_port->pmr &= (uint8_t)~rst_mask;  /* GPIO mode */
+  rst_port->pdr |= rst_mask;            /* Output */
+  rst_port->podr &= (uint8_t)~rst_mask; /* Drive LOW -> chip in reset */
+  internal_busy_wait_us((uint16_t)k_bno055_rst_low_us, (uint16_t)k_i2c_recover_cpu_mhz);
+  rst_port->podr |= rst_mask; /* Release -> chip POR */
+}
+
+/**
+ * @brief Drive 9 SCL edges at ~100 kHz to flush any stuck peripheral byte
+ *
+ * @details
+ * Step 2 of the I2C bus recovery dance: with both lines parked high, toggle
+ * SCL nine times at ~100 kHz. That is enough to clock out any byte from a
+ * peripheral (BMP280 in particular, which has no reset pin) that was stuck
+ * mid-transaction when JTAG cut the controller off.
+ *
+ * @param[in,out] port Pointer to the P2 port register block (SCL/SDA share P2)
+ * @param[in] scl_mask Bit mask selecting the SCL pin within @p port->podr
+ * @param[in] both Bit mask selecting both SCL and SDA together
+ *
+ * @pre @p port != nullptr (caller asserts before calling)
+ * @pre @p port->pmr cleared for both pins (GPIO mode already set)
+ * @post SCL toggled k_i2c_recover_cycles times, ending HIGH
+ * @post SDA undisturbed (caller still owns it via @p both)
+ *
+ * @note Not thread-safe: non-atomic RMW on port->podr.
+ * @since Version 1.0.0
+ */
+static void
+internal_riic1_recover_clock_scl(volatile rx_port_regs_t* port, uint8_t scl_mask, uint8_t both)
+{
+  /* Idle both I2C lines high (push-pull high is fine here: we're the only
+   * bus driver before RIIC1 claims the pins, and the external pull-ups
+   * will take over once we tristate at the end). */
+  port->pmr &= (uint8_t)~both; /* GPIO mode */
+  port->podr |= both;          /* Drive high */
+  port->pdr |= both;           /* Output direction */
+
+  for (uint16_t i = 0; i < k_i2c_recover_cycles; i++) {
+    port->podr &= (uint8_t)~scl_mask;
+    internal_busy_wait_us((uint16_t)k_i2c_recover_half_us, (uint16_t)k_i2c_recover_cpu_mhz);
+    port->podr |= scl_mask;
+    internal_busy_wait_us((uint16_t)k_i2c_recover_half_us, (uint16_t)k_i2c_recover_cpu_mhz);
+  }
+}
+
+/**
+ * @brief Generate a manual I2C STOP and tristate the lines for RIIC1 handoff
+ *
+ * @details
+ * Step 3 of the bus recovery dance: SDA low while SCL high, then SDA back
+ * high -- the I2C STOP signature. Any peripheral still waiting for the end
+ * of its transaction will release the bus on this edge. Pins are then
+ * tristated so rx_mpc_set_riic() can raise PMR cleanly without glitching.
+ *
+ * @param[in,out] port Pointer to the P2 port register block (SCL/SDA share P2)
+ * @param[in] sda_mask Bit mask selecting the SDA pin within @p port->podr
+ * @param[in] both Bit mask selecting both SCL and SDA together
+ *
+ * @pre @p port != nullptr (caller asserts before calling)
+ * @pre SCL has already been left HIGH by internal_riic1_recover_clock_scl()
+ * @post Manual STOP edge generated on the bus
+ * @post Both pins tristated (PDR=0), ready for rx_mpc_set_riic() to claim them
+ *
+ * @note Not thread-safe: non-atomic RMW on port->podr / port->pdr.
+ * @since Version 1.0.0
+ */
+static void internal_riic1_recover_stop_and_tristate(volatile rx_port_regs_t* port,
+                                                     uint8_t                  sda_mask,
+                                                     uint8_t                  both)
+{
+  port->podr &= (uint8_t)~sda_mask;
+  internal_busy_wait_us((uint16_t)k_i2c_recover_half_us, (uint16_t)k_i2c_recover_cpu_mhz);
+  port->podr |= sda_mask;
+  internal_busy_wait_us((uint16_t)k_i2c_recover_half_us, (uint16_t)k_i2c_recover_cpu_mhz);
+
+  /* Tristate the pins so RIIC1 takes over cleanly once rx_mpc_set_riic()
+   * raises PMR. Leaving PDR=1 through the handoff is harmless per the HW
+   * manual, but tristating first avoids any glitch. */
+  port->pdr &= (uint8_t)~both;
+}
+
 static void internal_riic1_bus_recover(void)
 {
   const uint8_t scl_bit = rx_pin_from_pin((rx_port_pin_t)k_pin_imu_scl);
@@ -869,60 +993,71 @@ static void internal_riic1_bus_recover(void)
   const uint8_t sda_mask = (uint8_t)(1U << sda_bit);
   const uint8_t both     = (uint8_t)(scl_mask | sda_mask);
 
-  enum : uint16_t {
-    k_i2c_recover_cycles  = 9U,
-    k_i2c_recover_half_us = 5U, /* 5 us half-period -> 100 kHz SCL */
-    k_i2c_recover_cpu_mhz = 240U,
-    k_bno055_rst_low_us   = 20000U, /* datasheet: >= 20 us */
-    k_bno055_por_us       = 650U,   /* POR settle budget (ms-scale); caller
-                                       adds kernel-side waits during imu_task */
-  };
+  /* Step 1: hardware-reset BNO055 via P83 (active-low). */
+  internal_riic1_recover_reset_bno055();
 
-  /* Step 1: hardware-reset BNO055 via P83 (active-low). Putting the chip
-   * through POR before bit-banging SCL guarantees it's not driving SDA
-   * low as the left-over of a half-finished transaction from a prior
-   * firmware load. BMP280 has no RST pin; the bit-bang alone has to
-   * clear it. */
-  const uint8_t                  rst_bit = rx_pin_from_pin((rx_port_pin_t)k_pin_imu_rst);
-  volatile rx_port_regs_t* const rst_port =
-    rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_imu_rst));
-  RX_ASSERT(rst_port != nullptr, "IMU RST port base invalid during bus recovery");
-  const uint8_t rst_mask = (uint8_t)(1U << rst_bit);
-  rst_port->pmr &= (uint8_t)~rst_mask;  /* GPIO mode */
-  rst_port->pdr |= rst_mask;            /* Output */
-  rst_port->podr &= (uint8_t)~rst_mask; /* Drive LOW -> chip in reset */
-  internal_busy_wait_us((uint16_t)k_bno055_rst_low_us, (uint16_t)k_i2c_recover_cpu_mhz);
-  rst_port->podr |= rst_mask; /* Release -> chip POR */
+  /* Step 2: 9 SCL edges @ ~100 kHz to flush any held peripheral byte. */
+  internal_riic1_recover_clock_scl(port, scl_mask, both);
 
-  /* Idle both I2C lines high (push-pull high is fine here: we're the only
-   * bus driver before RIIC1 claims the pins, and the external pull-ups
-   * will take over once we tristate at the end). */
-  port->pmr &= (uint8_t)~both; /* GPIO mode */
-  port->podr |= both;          /* Drive high */
-  port->pdr |= both;           /* Output direction */
+  /* Step 3: manual STOP and tristate for RIIC1 handoff. */
+  internal_riic1_recover_stop_and_tristate(port, sda_mask, both);
+}
 
-  /* Step 2: 9 SCL edges @ ~100 kHz -- enough to clock out any held byte
-   * from a peripheral stuck mid-transaction (BMP280 in particular, which
-   * has no reset line). */
-  for (uint16_t i = 0; i < k_i2c_recover_cycles; i++) {
-    port->podr &= (uint8_t)~scl_mask;
-    internal_busy_wait_us((uint16_t)k_i2c_recover_half_us, (uint16_t)k_i2c_recover_cpu_mhz);
-    port->podr |= scl_mask;
-    internal_busy_wait_us((uint16_t)k_i2c_recover_half_us, (uint16_t)k_i2c_recover_cpu_mhz);
-  }
+/**
+ * @brief Configure RIIC1 SCL1 + SDA1 pin mux for IMU I2C bus
+ *
+ * @details
+ * Routes P2.1 to SCL1 and P2.0 to SDA1 via the MPC (rx_mpc_set_riic).
+ * Caller must have already run internal_riic1_bus_recover() so the lines
+ * are quiescent before PMR=1 hands the pads to RIIC1.
+ *
+ * @return rx_err_t Error code from rx_mpc_set_riic()
+ * @retval k_rx_ok Both pins configured for RIIC1 peripheral mode
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins P2.0 and P2.1 not claimed by another peripheral
+ * @post P2.1 -> SCL1, P2.0 -> SDA1 (PMR=1, peripheral mode)
+ *
+ * @note Not thread-safe (single-threaded boot context).
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_gpio_init_imu_i2c_pins(void)
+{
+  static const char* const s_tag = "GPIO_IMU";
+  rx_err_t                 err   = rx_mpc_set_riic((rx_port_pin_t)k_pin_imu_scl);
+  RX_RETURN_ON_ERROR(err, s_tag, "SCL1 pin config failed");
 
-  /* Step 3: manual STOP: SDA low while SCL high, then SDA back high.
-   * Tells any peripheral that was waiting for the end of a transaction
-   * to release the bus. */
-  port->podr &= (uint8_t)~sda_mask;
-  internal_busy_wait_us((uint16_t)k_i2c_recover_half_us, (uint16_t)k_i2c_recover_cpu_mhz);
-  port->podr |= sda_mask;
-  internal_busy_wait_us((uint16_t)k_i2c_recover_half_us, (uint16_t)k_i2c_recover_cpu_mhz);
+  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_imu_sda);
+  RX_RETURN_ON_ERROR(err, s_tag, "SDA1 pin config failed");
+  return k_rx_ok;
+}
 
-  /* Tristate the pins so RIIC1 takes over cleanly once rx_mpc_set_riic()
-   * raises PMR. Leaving PDR=1 through the handoff is harmless per the HW
-   * manual, but tristating first avoids any glitch. */
-  port->pdr &= (uint8_t)~both;
+/**
+ * @brief Configure the IMU reset pin (P8.3) as a GPIO output driven HIGH
+ *
+ * @details
+ * Drives P8.3 HIGH (BNO055 not in reset). Active-low reset; HIGH = chip
+ * running. Called after internal_riic1_recover_reset_bno055() has already
+ * pulsed the line LOW for tRST_low and released it.
+ *
+ * @return rx_err_t Error code from rx_mpc_set_gpio()
+ * @retval k_rx_ok P8.3 configured as GPIO output, driven HIGH
+ *
+ * @pre MPC write protection disabled
+ * @pre P8.3 not claimed by another peripheral
+ * @post P8.3 = GPIO output, podr=1 (chip not in reset)
+ *
+ * @note Not thread-safe (single-threaded boot context).
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_gpio_init_imu_rst_pin(void)
+{
+  static const char* const s_tag = "GPIO_IMU";
+  rx_err_t                 err   = rx_mpc_set_gpio((rx_port_pin_t)k_pin_imu_rst);
+  RX_RETURN_ON_ERROR(err, s_tag, "IMU RST MPC config failed");
+
+  internal_gpio_set_output((rx_port_pin_t)k_pin_imu_rst, true); /* HIGH = not in reset */
+  return k_rx_ok;
 }
 
 static rx_err_t internal_gpio_init_imu(void)
@@ -939,18 +1074,11 @@ static rx_err_t internal_gpio_init_imu(void)
    * internal_riic1_bus_recover() for the why. */
   internal_riic1_bus_recover();
 
-  /* IMU I2C (RIIC1): SCL1 + SDA1 */
-  rx_err_t err = rx_mpc_set_riic((rx_port_pin_t)k_pin_imu_scl);
-  RX_RETURN_ON_ERROR(err, s_tag, "SCL1 pin config failed");
+  rx_err_t err = internal_gpio_init_imu_i2c_pins();
+  RX_RETURN_ON_ERROR(err, s_tag, "IMU I2C pin init failed");
 
-  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_imu_sda);
-  RX_RETURN_ON_ERROR(err, s_tag, "SDA1 pin config failed");
-
-  /* IMU RST: GPIO output, initial HIGH (not in reset) */
-  err = rx_mpc_set_gpio((rx_port_pin_t)k_pin_imu_rst);
-  RX_RETURN_ON_ERROR(err, s_tag, "IMU RST MPC config failed");
-
-  internal_gpio_set_output((rx_port_pin_t)k_pin_imu_rst, true); /* HIGH = not in reset */
+  err = internal_gpio_init_imu_rst_pin();
+  RX_RETURN_ON_ERROR(err, s_tag, "IMU RST pin init failed");
 
   return k_rx_ok;
 }
@@ -1469,12 +1597,28 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
  * - **Rule 10** [OK] Compiles with -Wall -Wextra -Werror
  *
  */
-/** @brief Configure comm, IRQ, and encoder GPIO pins (first half of gpio_init). */
-static rx_err_t internal_gpio_init_comm_and_encoders(void)
+/**
+ * @brief Configure host-side GPIO pins (I2C, host SPI, and HOST_IRQ output)
+ *
+ * @details
+ * First sub-block of internal_gpio_init_comm_and_encoders(). Routes the
+ * three pin groups that face the RPi5 host: RIIC0 SCL/SDA, RSPI2 host
+ * peripheral CIPO/COPI/CS/CLK, and the P6.7 HOST_IRQ output line.
+ *
+ * @return rx_err_t Error code from the first failing sub-helper, or k_rx_ok.
+ * @retval k_rx_ok All host-side GPIO pins configured.
+ *
+ * @pre MPC write protection disabled.
+ * @pre Pins not claimed by another peripheral.
+ * @post RIIC0, RSPI2, and HOST_IRQ pins configured for their roles.
+ *
+ * @note Not thread-safe (single-threaded boot context).
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_gpio_init_host_pins(void)
 {
   static const char* const s_tag = "GPIO";
-
-  rx_err_t err = internal_gpio_init_i2c();
+  rx_err_t                 err   = internal_gpio_init_i2c();
   RX_RETURN_ON_ERROR(err, s_tag, "I2C pin init failed");
 
   err = internal_gpio_init_host_spi();
@@ -1482,34 +1626,130 @@ static rx_err_t internal_gpio_init_comm_and_encoders(void)
 
   err = internal_gpio_init_host_irq();
   RX_RETURN_ON_ERROR(err, s_tag, "HOST_IRQ pin init failed");
+  return k_rx_ok;
+}
 
-  err = internal_gpio_init_mtu_encoders();
+/**
+ * @brief Configure all four motor encoder GPIO pin pairs (MTU + TPU channels)
+ *
+ * @details
+ * Second sub-block of internal_gpio_init_comm_and_encoders(). Routes the
+ * four motor encoder phase-counting input pin pairs to their peripherals:
+ * MTU0/MTU1 for motors 0-1 and TPU2/TPU3 for motors 2-3.
+ *
+ * @return rx_err_t Error code from the first failing sub-helper, or k_rx_ok.
+ * @retval k_rx_ok All eight encoder pins configured.
+ *
+ * @pre MPC write protection disabled.
+ * @pre Encoder pins not claimed by another peripheral.
+ * @post All four encoder channels' MTCLKx/TCLKx pins muxed to MTU/TPU.
+ *
+ * @note Not thread-safe (single-threaded boot context).
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_gpio_init_encoder_pins(void)
+{
+  static const char* const s_tag = "GPIO";
+  rx_err_t                 err   = internal_gpio_init_mtu_encoders();
   RX_RETURN_ON_ERROR(err, s_tag, "MTU encoder pin init failed");
 
   err = internal_gpio_init_tpu_encoders();
   RX_RETURN_ON_ERROR(err, s_tag, "TPU encoder pin init failed");
-
   return k_rx_ok;
 }
 
-/** @brief Configure motor, IMU, ADC, USB, and sonar GPIO pins (second half of gpio_init). */
-static rx_err_t internal_gpio_init_motor_and_sensors(void)
+/** @brief Configure comm, IRQ, and encoder GPIO pins (first half of gpio_init). */
+static rx_err_t internal_gpio_init_comm_and_encoders(void)
 {
   static const char* const s_tag = "GPIO";
+  rx_err_t                 err   = internal_gpio_init_host_pins();
+  RX_RETURN_ON_ERROR(err, s_tag, "Host pin init failed");
 
-  rx_err_t err = internal_gpio_init_gptw_pwm();
+  err = internal_gpio_init_encoder_pins();
+  RX_RETURN_ON_ERROR(err, s_tag, "Encoder pin init failed");
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure all motor PWM and DRV8263H control GPIO pins
+ *
+ * @details
+ * First sub-block of internal_gpio_init_motor_and_sensors(). Sets up the
+ * motor-side pin mux: GPTW PWM outputs (8 pins for 4 channels) and the
+ * DRVOFF/nSLEEP control pins for the four DRV8263H drivers.
+ *
+ * @return rx_err_t Error code from the first failing sub-helper, or k_rx_ok.
+ * @retval k_rx_ok All motor pins configured.
+ *
+ * @pre MPC write protection disabled.
+ * @pre GPTW and motor driver pins not claimed by another peripheral.
+ * @post 8 GPTW PWM pins muxed; 8 DRV8263H control pins driven HIGH (safe).
+ *
+ * @note Not thread-safe (single-threaded boot context).
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_gpio_init_motor_pins(void)
+{
+  static const char* const s_tag = "GPIO";
+  rx_err_t                 err   = internal_gpio_init_gptw_pwm();
   RX_RETURN_ON_ERROR(err, s_tag, "GPTW PWM pin init failed");
 
   err = internal_gpio_init_motor_driver_ctrl();
   RX_RETURN_ON_ERROR(err, s_tag, "Motor driver control pin init failed");
+  return k_rx_ok;
+}
 
-  err = internal_gpio_init_imu();
+/**
+ * @brief Configure all IMU-related GPIO pins (RIIC1 bus, RST, and IRQ12)
+ *
+ * @details
+ * Second sub-block of internal_gpio_init_motor_and_sensors(). Brings up
+ * the IMU side of the board: RIIC1 SCL/SDA, BNO055 RST output, and the
+ * IRQ12 falling-edge input on P3.2.
+ *
+ * @return rx_err_t Error code from the first failing sub-helper, or k_rx_ok.
+ * @retval k_rx_ok All IMU pins configured.
+ *
+ * @pre MPC write protection disabled.
+ * @pre IMU pins not claimed by another peripheral.
+ * @post RIIC1 pins live; BNO055 out of reset; IRQ12 enabled at priority 7.
+ *
+ * @note Not thread-safe (single-threaded boot context).
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_gpio_init_imu_pins(void)
+{
+  static const char* const s_tag = "GPIO";
+  rx_err_t                 err   = internal_gpio_init_imu();
   RX_RETURN_ON_ERROR(err, s_tag, "IMU pin init failed");
 
   err = internal_gpio_init_imu_irq();
   RX_RETURN_ON_ERROR(err, s_tag, "IMU IRQ pin init failed");
+  return k_rx_ok;
+}
 
-  err = internal_gpio_init_adc();
+/**
+ * @brief Configure ADC, USB, and HC-SR04 sonar GPIO pins
+ *
+ * @details
+ * Third sub-block of internal_gpio_init_motor_and_sensors(). Configures
+ * S12AD0 analog inputs (AN004-AN007), USB0_VBUS sense, and the four
+ * HC-SR04 trigger outputs and echo inputs.
+ *
+ * @return rx_err_t Error code from the first failing sub-helper, or k_rx_ok.
+ * @retval k_rx_ok All ADC/USB/sonar pins configured.
+ *
+ * @pre MPC write protection disabled.
+ * @pre Pins not claimed by another peripheral.
+ * @post 4 ADC analog pins live; USB VBUS detect live; 8 sonar pins muxed.
+ *
+ * @note Not thread-safe (single-threaded boot context).
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_gpio_init_adc_usb_sonar_pins(void)
+{
+  static const char* const s_tag = "GPIO";
+  rx_err_t                 err   = internal_gpio_init_adc();
   RX_RETURN_ON_ERROR(err, s_tag, "ADC pin init failed");
 
   err = internal_gpio_init_usb();
@@ -1520,7 +1760,21 @@ static rx_err_t internal_gpio_init_motor_and_sensors(void)
 
   err = internal_gpio_init_sonar_echoes();
   RX_RETURN_ON_ERROR(err, s_tag, "Sonar echo pin init failed");
+  return k_rx_ok;
+}
 
+/** @brief Configure motor, IMU, ADC, USB, and sonar GPIO pins (second half of gpio_init). */
+static rx_err_t internal_gpio_init_motor_and_sensors(void)
+{
+  static const char* const s_tag = "GPIO";
+  rx_err_t                 err   = internal_gpio_init_motor_pins();
+  RX_RETURN_ON_ERROR(err, s_tag, "Motor pin init failed");
+
+  err = internal_gpio_init_imu_pins();
+  RX_RETURN_ON_ERROR(err, s_tag, "IMU pin group init failed");
+
+  err = internal_gpio_init_adc_usb_sonar_pins();
+  RX_RETURN_ON_ERROR(err, s_tag, "ADC/USB/sonar pin init failed");
   return k_rx_ok;
 }
 
@@ -1596,10 +1850,10 @@ static rx_err_t gptw_pwm_init(void)
       .bit_b                = rx_pin_from_pin(in1_pins[i]),
     };
   }
-  const rx_gptw_config_t* config_ptrs[k_rx_gptw_channel_count] = {&configs[0],
-                                                                  &configs[1],
-                                                                  &configs[2],
-                                                                  &configs[3]};
+  const rx_gptw_config_t* config_ptrs[k_rx_gptw_channel_count];
+  for (uint8_t i = 0; i < k_rx_gptw_channel_count; ++i) {
+    config_ptrs[i] = &configs[i];
+  }
 
   rx_err_t err = rx_gptw_init_all_staggered(config_ptrs);
   RX_RETURN_ON_ERROR(err, s_tag, "GPTW staggered init failed");
@@ -1971,8 +2225,26 @@ const rx_port_pin_t g_pin_host_irq = (rx_port_pin_t)k_pin_host_irq;
  * @test test_hardware_init.c Verify error propagation (timer/UART init failure)
  */
 #if !RX_IS_SIMULATOR
-/** @brief Initialize all hardware peripherals (GPIO through ADC). Hardware only. */
-static rx_err_t internal_init_all_peripherals(void)
+/**
+ * @brief Initialize the motor-control peripheral chain (GPIO, GPTW PWM, POEG)
+ *
+ * @details
+ * First phase of internal_init_all_peripherals(). Brings up the pin mux,
+ * the 4-channel staggered GPTW PWM, and the POEG fault-protection block
+ * that links GTETRG nFAULT inputs to PWM hardware shutdown.
+ *
+ * @return rx_err_t Error code from the first failing sub-init, or k_rx_ok.
+ * @retval k_rx_ok GPIO, GPTW, and POEG all initialised successfully.
+ *
+ * @pre System clocks have been initialised (SCKCR3 != reset state).
+ * @pre Single-threaded boot context.
+ * @post All MPC pins configured; 4 GPTW channels staggered at 20 kHz; POEG
+ *       active and arming hardware nFAULT shutdown of the H-bridges.
+ *
+ * @note Not thread-safe.
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_init_motor_chain(void)
 {
   static const char* const s_tag = "HW_INIT";
 
@@ -1987,6 +2259,54 @@ static rx_err_t internal_init_all_peripherals(void)
   /* 2b. POEG: Motor fault protection (links GTETRG->POEG->GPTW) */
   err = rx_poeg_init();
   RX_RETURN_ON_ERROR(err, s_tag, "POEG fault protection init failed");
+  return k_rx_ok;
+}
+
+/**
+ * @brief Initialize host-communication peripherals (SPI, I2C, ADC)
+ *
+ * @details
+ * Second phase of internal_init_all_peripherals(). Brings up RSPI2 for
+ * RPi5 host communication, the two RIIC channels (RIIC0 host bus and
+ * RIIC1 IMU bus -- the latter is initialised lazily via rx_bus_i2c_init),
+ * and the S12AD0 ADC channels for motor current sensing.
+ *
+ * @return rx_err_t Error code from the first failing sub-init, or k_rx_ok.
+ * @retval k_rx_ok SPI, I2C, and ADC subsystems all initialised successfully.
+ *
+ * @pre internal_init_motor_chain() and timer_init() have completed.
+ * @pre Single-threaded boot context.
+ * @post RSPI2 ready for host packets; RIIC channels armed; ADC0 calibrated.
+ *
+ * @note Not thread-safe.
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_init_comm_chain(void)
+{
+  static const char* const s_tag = "HW_INIT";
+
+  /* 5a. SPI: RSPI2 host peripheral for RPi5 communication */
+  rx_err_t err = spi_init();
+  RX_RETURN_ON_ERROR(err, s_tag, "SPI initialization failed");
+
+  /* 6. I2C: RIIC0 host */
+  err = i2c_init();
+  RX_RETURN_ON_ERROR(err, s_tag, "I2C initialization failed");
+
+  /* 7. ADC: S12AD0 channels AN004-AN007 for motor current sensing */
+  err = adc_init_channels();
+  RX_RETURN_ON_ERROR(err, s_tag, "ADC initialization failed");
+  return k_rx_ok;
+}
+
+/** @brief Initialize all hardware peripherals (GPIO through ADC). Hardware only. */
+static rx_err_t internal_init_all_peripherals(void)
+{
+  /* 1-2. GPIO + GPTW PWM + POEG fault protection. */
+  rx_err_t err = internal_init_motor_chain();
+  if (rx_err_is_error(err)) {
+    return err;
+  }
 
   /* 3. Timer: CMT0 for ThreadX tick (100 Hz) */
   err = timer_init();
@@ -1998,17 +2318,11 @@ static rx_err_t internal_init_all_peripherals(void)
    *    UART initialized in main() before hardware_init() to enable early error logging.
    *    Error logging is now available for all peripheral initialization below. */
 
-  /* 5a. SPI: RSPI2 host peripheral for RPi5 communication */
-  err = spi_init();
-  RX_RETURN_ON_ERROR(err, s_tag, "SPI initialization failed");
-
-  /* 6. I2C: RIIC0 host */
-  err = i2c_init();
-  RX_RETURN_ON_ERROR(err, s_tag, "I2C initialization failed");
-
-  /* 7. ADC: S12AD0 channels AN004-AN007 for motor current sensing */
-  err = adc_init_channels();
-  RX_RETURN_ON_ERROR(err, s_tag, "ADC initialization failed");
+  /* 5-7. SPI host link, RIIC host bus, ADC current sensing. */
+  err = internal_init_comm_chain();
+  if (rx_err_is_error(err)) {
+    return err;
+  }
 
   /* 9. Validate: Non-fatal peripheral checks (log warnings, never halt) */
   validate_peripherals();
@@ -2045,6 +2359,12 @@ static rx_err_t internal_init_all_peripherals(void)
  * and returns success.  This lets the unit-test host run integration tests
  * that exercise hardware_init() without touching simulated MMIO.
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok All configured peripherals initialized successfully (or
+ *                 always returned under RX_IS_SIMULATOR).
+ * @retval other   Propagated from internal_init_all_peripherals() if any
+ *                 sub-initialization (GPIO, GPTW, POEG, timer, SPI, I2C,
+ *                 ADC) failed.
  *
  * @pre System clock subsystem initialized (SCKCR3 != reset value).
  * @pre Called from supervisor/boot context before the ThreadX scheduler

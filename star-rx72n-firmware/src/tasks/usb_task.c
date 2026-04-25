@@ -179,6 +179,11 @@ static void internal_usb_task_entry(ULONG input)
  * Called from rx_main() during system startup, after USB hardware
  * initialization (rx_usb_hw_init) and ThreadX kernel start.
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                      Task created and scheduled.
+ * @retval k_rx_err_invalid_state       Task was already created (second
+ *                                      call).
+ * @retval k_rx_err_rtos_thread_create  tx_thread_create() failed.
  *
  * @pre USB hardware initialized via rx_usb_hw_init().
  * @pre ThreadX kernel running (called from tx_application_define or later).

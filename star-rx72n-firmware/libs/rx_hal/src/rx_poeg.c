@@ -292,6 +292,15 @@ rx_err_t rx_poeg_init(void)
  * comparator fault), and OSTPF (over-stop signal fault).  Reports whether
  * any of them are currently latched.
  *
+ * @param[in]  motor_index  Motor index in [0, k_poeg_motor_count).
+ * @param[out] fault_active Destination for the fault status (true if any
+ *                          POEG fault bit is latched).
+ *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok               Status read; *fault_active populated.
+ * @retval k_rx_err_null_ptr     fault_active is NULL.
+ * @retval k_rx_err_invalid_arg  motor_index >= k_poeg_motor_count.
+ *
  * @pre rx_poeg_init() previously returned k_rx_ok.
  * @pre fault_active != NULL.
  * @pre motor_index < k_poeg_motor_count.
@@ -330,6 +339,14 @@ rx_err_t rx_poeg_get_fault_status(uint8_t motor_index, bool* fault_active)
  * clears any driver-fault E-Stop in shared_data when applicable, so the
  * system can resume motor control if the underlying physical fault has
  * been cleared.
+ *
+ * @param[in] motor_index Motor index in [0, k_poeg_motor_count).
+ *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok              Latched faults cleared and (if applicable)
+ *                              driver-fault E-Stop cleared.
+ * @retval k_rx_err_invalid_arg motor_index >= k_poeg_motor_count.
+ * @retval k_rx_err_busy        Underlying nFAULT pin is still asserted.
  *
  * @pre rx_poeg_init() previously returned k_rx_ok.
  * @pre motor_index < k_poeg_motor_count.
@@ -387,6 +404,12 @@ rx_err_t rx_poeg_clear_fault(uint8_t motor_index)
  * fault flags; once a Software Stop is set, the user must call
  * rx_poeg_clear_software_stop() to release.
  *
+ * @param[in] motor_index Motor index in [0, k_poeg_motor_count).
+ *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok              SSF set; outputs disabled.
+ * @retval k_rx_err_invalid_arg motor_index >= k_poeg_motor_count.
+ *
  * @pre rx_poeg_init() previously returned k_rx_ok.
  * @pre motor_index < k_poeg_motor_count.
  *
@@ -417,6 +440,12 @@ rx_err_t rx_poeg_software_stop(uint8_t motor_index)
  * Reads POEGGn, clears the SSF bit, and writes the result back.  This
  * re-enables the GPTW outputs of the targeted motor (subject to any
  * hardware-latched fault flags still being cleared first).
+ *
+ * @param[in] motor_index Motor index in [0, k_poeg_motor_count).
+ *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok              SSF cleared.
+ * @retval k_rx_err_invalid_arg motor_index >= k_poeg_motor_count.
  *
  * @pre rx_poeg_init() previously returned k_rx_ok.
  * @pre motor_index < k_poeg_motor_count.

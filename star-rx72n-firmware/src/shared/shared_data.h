@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "rx_bus_types.h"
 #include "rx_err.h"
 #include "tx_api.h"
 
@@ -354,6 +355,23 @@ typedef struct {
  * @brief Global shared data instance (do not access directly!)
  */
 extern shared_data_t g_shared_data;
+
+/**
+ * @var g_bus_manager
+ * @brief Single forward declaration of the global bus manager singleton.
+ *
+ * @details
+ * Defined in shared_data.c. Declared here so callers do not need to
+ * redeclare extern in each .c file (eliminates misc-use-internal-linkage
+ * false positives by making the external use visible to clang-tidy).
+ *
+ * @note Tasks should access via rx_bus_manager_get_bus(), not directly.
+ *
+ * @see rx_bus_manager_init() Lifecycle init in hardware_init.c
+ *
+ * @since Version 1.0.0
+ */
+extern rx_bus_manager_t g_bus_manager;
 
 /***********************************************************************************************************************
  * Public Function Declarations

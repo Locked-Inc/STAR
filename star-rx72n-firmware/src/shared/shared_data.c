@@ -855,6 +855,13 @@ static rx_err_t internal_create_shared_sync_objects(void)
  * Called exactly once from rx_main() before any task that touches
  * g_shared_data is started.
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                Module initialized; all sub-fields hold
+ *                                valid defaults.
+ * @retval k_rx_err_invalid_state Module is already initialized (called
+ *                                twice).
+ * @retval k_rx_err_rtos_mutex    A tx_mutex_create() call failed.
+ * @retval k_rx_err_rtos_error    tx_event_flags_create() failed.
  *
  * @pre ThreadX kernel is running (mutexes can be created).
  * @pre No other task is reading g_shared_data yet.

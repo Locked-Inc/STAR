@@ -393,9 +393,6 @@
 #include "shared_data.h"
 #include "tx_api.h"
 
-/** @brief Global bus manager instance (defined in shared_data.c) */
-extern rx_bus_manager_t g_bus_manager;
-
 /* =============================================================================
  * Constants
  * =============================================================================

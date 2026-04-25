@@ -288,6 +288,16 @@ rx_err_t rx_lpc_init(void)
  * k_opcmtsf_poll_max iterations).  On the unit-test target the register
  * write is skipped.
  *
+ * @param[in] mode Requested operating-power mode (high-speed, low-speed-1,
+ *                 or low-speed-2).
+ *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                  Mode applied; OPCMTSF cleared.
+ * @retval k_rx_err_not_initialized rx_lpc_init() has not been called.
+ * @retval k_rx_err_invalid_arg     mode is outside rx_lpc_opcc_mode_t.
+ * @retval k_rx_err_hw_timeout      OPCMTSF poll exceeded
+ *                                  k_opcmtsf_poll_max iterations.
+ *
  * @pre rx_lpc_init() previously returned k_rx_ok.
  * @pre mode is a valid value of rx_lpc_opcc_mode_t.
  *
@@ -347,6 +357,11 @@ rx_err_t rx_lpc_set_operating_power(rx_lpc_opcc_mode_t mode)
  * instruction following WAIT.  Records the last entered mode for
  * post-mortem diagnostics.  On the unit-test target the WAIT is skipped.
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                  Returned after wake interrupt resumed
+ *                                  execution.
+ * @retval k_rx_err_not_initialized rx_lpc_init() has not been called.
+ *
  * @pre rx_lpc_init() previously returned k_rx_ok.
  * @pre At least one wake source (peripheral interrupt) is configured.
  *
@@ -393,6 +408,11 @@ rx_err_t rx_lpc_enter_sleep(void)
  * Standby).  Most peripheral clocks are gated off; only configured wake
  * sources (level-sensitive IRQ pins, RTC, watchdog) can resume execution.
  * On the unit-test target the WAIT is skipped.
+ *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                  Returned after wake interrupt resumed
+ *                                  execution.
+ * @retval k_rx_err_not_initialized rx_lpc_init() has not been called.
  *
  * @pre rx_lpc_init() previously returned k_rx_ok.
  * @pre At least one wake source (level-sensitive interrupt or RTC) is
@@ -506,6 +526,9 @@ rx_lpc_enter_deep_software_standby(uint32_t wake_mask, rx_lpc_deep_power_t deep_
  * resume from Deep Software Standby and take different paths
  * (e.g., skip full re-initialization when waking).
  *
+ * @return true if the most recent reset was a Deep Software Standby wake;
+ *         false otherwise (or before rx_lpc_init() ran).
+ *
  * @pre None (function is safe to call at any time after init or before).
  *
  * @post No state mutated.
@@ -531,6 +554,13 @@ bool rx_lpc_was_deep_standby_wake(void)
  * destination.  The bitfield has one bit per wake source; the layout is
  * defined by rx_lpc_wake_t.  Useful after wake to determine which event
  * resumed execution.
+ *
+ * @param[out] flags Destination for the latched 32-bit wake-source bitfield.
+ *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                  *flags populated with the latched bits.
+ * @retval k_rx_err_invalid_arg     flags is NULL.
+ * @retval k_rx_err_not_initialized rx_lpc_init() has not been called.
  *
  * @pre rx_lpc_init() previously returned k_rx_ok.
  * @pre flags != NULL.

@@ -130,6 +130,7 @@ static void internal_init_mutex_once(void)
  * dropped (silent overflow); the dropped-bytes counter is updated through
  * internal_append_byte().
  *
+ * @param[in] c Character byte to append (any 8-bit value, including '\0').
  *
  * @pre ThreadX kernel is running (mutex create/get must succeed).
  * @pre The log ring buffer storage is statically allocated; no caller setup.
@@ -164,6 +165,7 @@ void rx_log_uart_putc(char c)
  * to the drain consumer.  A NULL input pointer is treated as a no-op for
  * caller convenience and does not require explicit guards in caller code.
  *
+ * @param[in] str NUL-terminated string to append, or NULL for no-op.
  *
  * @pre ThreadX kernel is running.
  * @pre str is either NULL or a valid NUL-terminated string.
@@ -202,6 +204,7 @@ void rx_log_uart_puts(const char* str)
  * Negative numbers are prefixed with '-'.  Conversion is unsigned after
  * sign extraction so INT32_MIN does not wrap.
  *
+ * @param[in] value Signed 32-bit integer to format and append.
  *
  * @pre ThreadX kernel is running.
  *
@@ -249,6 +252,7 @@ void rx_log_uart_putint(int32_t value)
  * division, then forwards to rx_log_uart_puts().  Output never includes a
  * leading sign.
  *
+ * @param[in] value Unsigned 32-bit integer to format and append.
  *
  * @pre ThreadX kernel is running.
  *
@@ -289,6 +293,9 @@ void rx_log_uart_putuint(uint32_t value)
  * If digits is 0 it is silently promoted to 1; if it exceeds
  * k_hex_max_digits it is clamped to that maximum to fit the local buffer.
  *
+ * @param[in] value  Unsigned 32-bit integer to format as hex.
+ * @param[in] digits Number of hex digits to emit (clamped to [1,
+ *                   k_hex_max_digits]).
  *
  * @pre ThreadX kernel is running.
  *
@@ -338,6 +345,8 @@ void rx_log_uart_puthex(uint32_t value, uint8_t digits)
  * suitable for deciding whether the consumer needs to drain on this tick.
  * The value can change between read and use; treat it as a hint.
  *
+ * @return Number of bytes currently queued in the ring buffer (0 to
+ *         k_rx_log_uart_ring_size).
  *
  * @pre ThreadX kernel is running.
  *
@@ -373,7 +382,14 @@ uint32_t rx_log_uart_pending_len(void)
  * Updates s_tail and s_count under the producer/consumer mutex, and
  * accumulates drained_bytes into the stats block.
  *
+ * @param[out] out_buf  Caller-provided destination buffer.
+ * @param[in]  max_len  Maximum number of bytes to copy into out_buf.
+ * @param[out] out_len  On k_rx_ok holds the actual number of bytes written
+ *                      to out_buf (0..max_len).
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok               Drain succeeded; *out_len bytes written.
+ * @retval k_rx_err_invalid_arg  out_buf or out_len is NULL, or max_len is 0.
  *
  * @pre ThreadX kernel is running.
  * @pre out_buf points to writable storage of at least max_len bytes.
@@ -433,6 +449,8 @@ rx_err_t rx_log_uart_drain(uint8_t* out_buf, uint32_t max_len, uint32_t* out_len
  * dropped_bytes, ring_high_water, etc.) under the producer/consumer mutex.
  * A NULL output pointer is treated as a no-op for caller convenience.
  *
+ * @param[out] stats Destination buffer for the stats snapshot, or NULL for
+ *                   no-op.
  *
  * @pre ThreadX kernel is running.
  * @pre stats is either NULL or points to writable rx_log_uart_stats_t.

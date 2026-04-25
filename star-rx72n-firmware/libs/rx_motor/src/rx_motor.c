@@ -1821,7 +1821,17 @@ static rx_err_t internal_estop_shutdown_hw(const rx_motor_handle_t* handle)
  * Called from comm_task on E-Stop frames, motor_control_task on overcurrent
  * or runaway detection, and from safety supervisors.
  *
+ * @param[in,out] handle Motor handle (initialized flag cleared and
+ *                       current_duty zeroed on return).
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                  Emergency stop succeeded; outputs
+ *                                  disabled and timer stopped.
+ * @retval k_rx_err_null_ptr        handle is nullptr.
+ * @retval k_rx_err_invalid_state   handle was not initialized.
+ * @retval other                    Propagated from rx_gptw_set_duty /
+ *                                  rx_gptw_enable_output / rx_gptw_stop on
+ *                                  the underlying register failure.
  *
  * @pre handle != nullptr.
  * @pre handle->initialized == true at entry.

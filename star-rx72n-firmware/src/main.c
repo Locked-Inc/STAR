@@ -483,23 +483,6 @@ static rx_bus_config_t s_i2c1_baro_config;
 static rx_bus_config_t s_i2c1_mpu_config;
 
 /**
- * @var g_bus_manager
- * @brief Single file-scope forward declaration of the global bus manager singleton
- *
- * @details
- * The bus manager itself is defined in rx_bus_manager.c. This translation unit
- * only needs a forward declaration so internal_init_bus_manager(),
- * internal_register_system_buses(), and their extracted helpers can share the
- * same symbol without each repeating an `extern` line (which clang-tidy flags
- * as redundant under readability-redundant-declaration).
- *
- * @note Single-threaded use only inside tx_application_define() (pre-scheduler).
- * @see rx_bus_manager_init() Definition / lifetime owner
- * @since Version 1.0.0
- */
-extern rx_bus_manager_t g_bus_manager;
-
-/**
  * @enum dflash_fcu_cmd_t
  * @brief RX72N Flash Control Unit (FCU) command opcodes for data-flash P/E
  *

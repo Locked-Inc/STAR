@@ -266,6 +266,10 @@ rx_err_t rx_cac_init(const rx_cac_config_t* config)
  * rx_cac_check() will report whether the measurement is within the
  * configured tolerance window and return the latched count.
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                  Measurement started.
+ * @retval k_rx_err_not_initialized rx_cac_init() has not been called.
+ *
  * @pre rx_cac_init() previously returned k_rx_ok.
  *
  * @post On k_rx_ok: CACR0.CFME == 1; measurement is running.
@@ -297,6 +301,10 @@ rx_err_t rx_cac_start(void)
  * so a subsequent rx_cac_start() resumes from a clean state.  Useful
  * when entering low-power modes or when switching reference clocks.
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                  Measurement halted.
+ * @retval k_rx_err_not_initialized rx_cac_init() has not been called.
+ *
  * @pre rx_cac_init() previously returned k_rx_ok.
  *
  * @post On k_rx_ok: CACR0.CFME == 0; measurement stopped.
@@ -327,6 +335,12 @@ rx_err_t rx_cac_stop(void)
  * value if out_count is non-NULL, then issues a write-1-clear to the IRQ
  * status flags in CAICR (preserving the IRQ enables).  Returns whether
  * the FERRF (frequency-error) flag was set since the last check.
+ *
+ * @param[out] out_count Optional destination for the CACNTBR snapshot
+ *                       (NULL skips the read).
+ *
+ * @return true if FERRF was latched since the last check, false otherwise
+ *         (also false if the driver is not initialized).
  *
  * @pre None (returns false silently if driver not initialized).
  *
@@ -369,6 +383,10 @@ bool rx_cac_check(uint32_t* out_count)
  * reference clock and tolerance), clears all IRQ flags via CAICR, then
  * gates the CAC module clock through internal_module_stop().  Marks the
  * driver as uninitialized.
+ *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                  Driver fully shut down.
+ * @retval k_rx_err_not_initialized rx_cac_init() has not been called.
  *
  * @pre rx_cac_init() previously returned k_rx_ok.
  *

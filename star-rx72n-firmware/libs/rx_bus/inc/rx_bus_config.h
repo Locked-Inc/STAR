@@ -167,7 +167,7 @@ extern "C" {
 #endif
 
 /**
- * @example Basic usage with static allocation:
+ * @par Example: Basic usage with static allocation
  * @code{.c}
  * // Declare static config
  * static rx_bus_config_t gpio_led_config;

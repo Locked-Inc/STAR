@@ -1907,6 +1907,54 @@ static rx_err_t internal_read_and_decode_frame(rx_spi_comm_handle_t* handle,
   return k_rx_ok;
 }
 
+/**
+ * @brief Validate received frame sequence and emit NACK on rejection
+ *
+ * @details
+ * Calls rx_session_validate_rx() to update and check the session's RX
+ * sequence counter. On rejection (Audit F-05), the function does NOT
+ * silently drop the offending frame: it emits a NACK carrying the
+ * rejected sequence so the remote can retransmit immediately instead
+ * of burning its ACK-timer budget. The NACK send is allowed to fail
+ * (transport not ready, etc.) and is logged as a warning; the
+ * original validate error remains the authoritative return value.
+ *
+ * @param[in,out] handle SPI comm handle (session and TX path used)
+ * @param[in]     frame  Decoded frame whose header.sequence is checked
+ *
+ * @return rx_err_t Result of the underlying session validation
+ * @retval k_rx_ok                       Sequence accepted
+ * @retval k_rx_err_protocol_error       Sequence rejected (gap/duplicate)
+ * @retval other                         Propagated from rx_session_validate_rx()
+ *
+ * @pre handle and frame must be non-nullptr and valid
+ * @pre handle->session must be initialized
+ * @post On success, session RX sequence advanced
+ * @post On failure, NACK send attempted and validate error returned verbatim
+ *
+ * @note Called only from rx_spi_comm_receive(); not part of the public API.
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_validate_rx_sequence(rx_spi_comm_handle_t* handle, const rx_frame_t* frame)
+{
+  rx_session_validate_result_t validate_result = k_session_validate_fail;
+  rx_err_t                     validate_err =
+    rx_session_validate_rx(handle->session, frame->header.sequence, &validate_result);
+  if (validate_err != k_rx_ok) {
+    /* Audit F-05: NACK the offending sequence so the remote can retransmit
+     * immediately. Send-NACK can fail (transport not ready); log and keep
+     * the original validate_err as the real cause. */
+    rx_log_error(s_tag, "Session validate_rx returned error");
+    const rx_err_t nack_err = rx_spi_comm_send_nack(handle, frame->header.sequence, 0);
+    if (nack_err != k_rx_ok) {
+      rx_log_warn(s_tag, "Failed to send NACK after sequence validation failure");
+    }
+    return validate_err;
+  }
+  (void)validate_result;
+  return k_rx_ok;
+}
+
 rx_err_t
 rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint32_t timeout_ms)
 {
@@ -1936,26 +1984,8 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint3
       continue; /* Control frame handled; loop for next frame */
     }
 
-    /* Validate and update RX sequence via shared session (data frames only) */
-    rx_session_validate_result_t validate_result = k_session_validate_fail;
-    rx_err_t                     validate_err =
-      rx_session_validate_rx(handle->session, frame->header.sequence, &validate_result);
-    if (validate_err != k_rx_ok) {
-      /* Audit F-05: do not silently drop the bad frame. NACK carrying the
-       * offending sequence so the remote can retransmit immediately
-       * instead of burning its ACK-timer budget waiting on a reply.
-       * The send-NACK call itself can fail (transport not ready, etc.);
-       * we log and keep the original validate_err as the real cause. */
-      rx_log_error(s_tag, "Session validate_rx returned error");
-      const rx_err_t nack_err = rx_spi_comm_send_nack(handle, frame->header.sequence, 0);
-      if (nack_err != k_rx_ok) {
-        rx_log_warn(s_tag, "Failed to send NACK after sequence validation failure");
-      }
-      return validate_err;
-    }
-    (void)validate_result;
-
-    return k_rx_ok;
+    /* Data frame: validate sequence (NACK on rejection per Audit F-05) */
+    return internal_validate_rx_sequence(handle, frame);
   }
 
   /* Exceeded max control frames without receiving a data frame */

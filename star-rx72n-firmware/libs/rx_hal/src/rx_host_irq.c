@@ -108,6 +108,9 @@ rx_err_t rx_host_irq_init(void)
  * effects.  Clears the s_initialized flag so subsequent assert/deassert
  * calls return k_rx_err_invalid_state.
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                Deinitialized successfully.
+ * @retval k_rx_err_invalid_state Driver was not initialized.
  *
  * @pre rx_host_irq_init() previously returned k_rx_ok.
  *
@@ -153,6 +156,9 @@ rx_err_t rx_host_irq_deinit(void)
  * rx_host_irq_deassert() drives it back HIGH.  The function is a single
  * register read-modify-write on PORT6.PODR; no interrupts are touched.
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                Line driven low.
+ * @retval k_rx_err_invalid_state Driver was not initialized.
  *
  * @pre rx_host_irq_init() previously returned k_rx_ok.
  *
@@ -187,6 +193,9 @@ rx_err_t rx_host_irq_assert(void)
  * to its idle state.  Single register read-modify-write on PORT6.PODR;
  * no interrupts touched.
  *
+ * @return rx_err_t Error code.
+ * @retval k_rx_ok                Line driven high.
+ * @retval k_rx_err_invalid_state Driver was not initialized.
  *
  * @pre rx_host_irq_init() previously returned k_rx_ok.
  *
