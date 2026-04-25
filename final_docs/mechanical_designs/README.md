@@ -3,6 +3,30 @@
 Mechanical design artifacts for the STAR robot chassis and its
 simulation model.
 
+## Canvas Submission Artifact
+
+`STAR_Mechanical_Drawings.pdf` -- the combined drawing package, 9
+pages, 1.6 MB. This is the single PDF that satisfies the Canvas
+"upload a PDF of all mechanical drawings, no SolidWorks files"
+requirement. It bundles the 9 individual part drawings exported
+from Fusion 360 in the order: Drivetrain Assembly, Battery Box,
+Lid L, Lid R, Motor mount, Sheet base, Sheet Lidar, Side panel,
+Split rail. Regenerable from the individual PDFs via:
+
+```
+cd final_docs/mechanical_designs
+pdfunite \
+  "Drivetrain Assembly.pdf" "Battery Box.pdf" \
+  "Lid L.pdf" "Lid R.pdf" "Motor mount.pdf" \
+  "Sheet base.pdf" "Sheet Lidar.pdf" \
+  "Side panel.pdf" "Split rail.pdf" \
+  STAR_Mechanical_Drawings.pdf
+```
+
+The 9 individual part drawing PDFs are kept alongside for
+convenience; reviewers who only want one file should open the
+combined PDF.
+
 ## Authoritative Source
 
 `STAR.f3z` (55 MB, Git LFS) -- Fusion 360 archive of the complete
@@ -53,12 +77,15 @@ by the ROS2 simulation and Nav2 stack.
 
 ## Reviewer Reading Order
 
-1. Open `STAR.f3z` in Fusion 360 (or any cloud viewer that reads
-   the format) for the full chassis assembly.
-2. Inspect `gazebo_meshes/chassis_visual.stl` in any STL viewer
+1. Open `STAR_Mechanical_Drawings.pdf` for the 9-page combined
+   drawing package -- this is the Canvas submission artifact.
+2. Open `STAR.f3z` in Fusion 360 (or any cloud viewer that reads
+   the format) for the full chassis assembly if a 3D editable
+   source is needed.
+3. Inspect `gazebo_meshes/chassis_visual.stl` in any STL viewer
    (MeshLab, Preview, Blender) for a quick outline of the
    physical footprint.
-3. Read `star.urdf.xacro` for the joint tree, mass properties, and
+4. Read `star.urdf.xacro` for the joint tree, mass properties, and
    sensor frame transforms that the ROS2 stack consumes.
 
 ## Team
