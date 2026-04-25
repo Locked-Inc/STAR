@@ -39,6 +39,7 @@
 
 #include "rx_drv8263.h"
 
+#include "rx72n_clock.h"
 #include "rx_check.h"
 #include "rx_log.h"
 #ifdef UNIT_TEST
@@ -166,13 +167,19 @@ typedef enum : uint8_t {
 RX_STATIC_TESTABLE void internal_delay_us(uint32_t us)
 {
   /** @brief Maximum allowed busy-wait delay in microseconds */
-  enum : uint32_t { k_max_delay_us = 100 };
+  enum : uint32_t {
+    k_max_delay_us = 100,
+    k_hz_per_mhz   = 1000000UL,
+  };
 
   if (us == 0 || us > k_max_delay_us) {
     return;
   }
 
-  volatile uint32_t cycles = us * (uint32_t)k_drv8263_cpu_mhz;
+  /* Cycles per microsecond derive from the authoritative ICLK constant in
+   * rx72n_clock.h so any future clock-tree change tracks automatically. */
+  const uint32_t   cycles_per_us = (uint32_t)k_iclk_hz / (uint32_t)k_hz_per_mhz;
+  volatile uint32_t cycles       = us * cycles_per_us;
   while (cycles > 0) {
     cycles--;
   }

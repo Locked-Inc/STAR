@@ -94,7 +94,7 @@
 #include "rx_log.h"
 #include "rx_register_protection.h"
 
-static const char*    s_tag                        = "BUS_ONEWIRE";
+static const char* const s_tag                     = "BUS_ONEWIRE";
 static const uint32_t s_onewire_max_search_devices = 64U;
 
 /* =============================================================================

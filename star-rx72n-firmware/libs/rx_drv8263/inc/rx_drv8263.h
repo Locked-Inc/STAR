@@ -131,27 +131,6 @@ typedef enum : uint16_t {
 } rx_drv8263_timing_us_t;
 
 /**
- * @enum rx_drv8263_cpu_freq_t
- * @brief CPU frequency for busy-wait delay calculation
- *
- * @details
- * RX72N runs at 240 MHz. Used to calculate busy-wait loop iterations
- * for microsecond-precision delays required by fault reset timing.
- *
- * @code
- * uint32_t cycles_per_us = (uint32_t)k_drv8263_cpu_mhz;
- * uint32_t total_cycles = cycles_per_us * k_drv8263_nsleep_pulse_us;
- * @endcode
- *
- * @invariant k_drv8263_cpu_mhz == 240 (CPU frequency fixed at 240 MHz for RX72N)
- *
- * @since Version 1.0.0
- */
-typedef enum : uint16_t {
-  k_drv8263_cpu_mhz = 240, /**< RX72N CPU clock frequency in MHz */
-} rx_drv8263_cpu_freq_t;
-
-/**
  * @enum rx_drv8263_olp_pattern_count_t
  * @brief Number of OLP test patterns
  *

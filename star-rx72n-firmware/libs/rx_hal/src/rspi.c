@@ -146,6 +146,7 @@
 #include <string.h>
 
 #include "hardware.h"
+#include "rx72n_clock.h"
 #include "rx72n_regs.h"
 #include "rx_gpio_constants.h"
 #include "rx_port_constants.h"
@@ -217,9 +218,12 @@ typedef enum : uint8_t {
   k_rspi_mstpc_rspi2 = 22, /**< RSPI2 module stop bit in MSTPCRC */
 } rspi_mstpcrc_bits_t;
 
-/** @brief RSPI controller mode constants */
+/** @brief RSPI controller mode constants
+ *
+ * PCLKB rate comes from rx72n_clock.h (k_pclkb_hz) — do not duplicate the
+ * literal here so the divisor math tracks any future clock-tree change.
+ */
 typedef enum : uint32_t {
-  k_rspi_pclkb_hz         = 60000000, /**< PCLKB clock frequency (60 MHz) */
   k_rspi_min_freq_hz      = 100000,   /**< Minimum SPI clock (100 kHz) */
   k_rspi_max_freq_hz      = 10000000, /**< Maximum SPI clock (10 MHz) */
   k_rspi_spbr_max         = 255,      /**< Maximum SPBR value */
@@ -1050,7 +1054,7 @@ static void internal_configure_spcmd(uint16_t* spcmd, const uint8_t spi_mode)
  * @note Not thread-safe. Caller must provide synchronization.
  *
  * @see rspi_init_controller() Calls this to configure clock frequency
- * @see k_rspi_pclkb_hz PCLKB clock frequency used in calculation
+ * @see k_pclkb_hz (rx72n_clock.h) PCLKB clock frequency used in calculation
  *
  * @since Version 1.0.0
  */
@@ -1067,7 +1071,7 @@ static rx_err_t internal_calculate_spbr(const uint32_t freq_hz, uint8_t* spbr)
    * With BRDV=0: freq = PCLKB / (2 * (SPBR + 1))
    * Solving for SPBR: SPBR = (PCLKB / (2 * freq)) - 1 */
   const uint32_t divisor  = k_rspi_spbr_divisor * freq_hz;
-  const uint32_t spbr_val = (k_rspi_pclkb_hz / divisor) - k_rspi_spbr_offset;
+  const uint32_t spbr_val = (k_pclkb_hz / divisor) - k_rspi_spbr_offset;
 
   /* Reject frequencies that are too low (would require SPBR > 255) */
   if (spbr_val > k_rspi_spbr_max) {

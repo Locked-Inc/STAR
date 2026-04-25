@@ -893,7 +893,7 @@ static bool internal_check_iwdtrf(void)
  *
  * | Feature | WDT (Watchdog Timer) | IWDT (Independent WDT) |
  * |---------|----------------------|------------------------|
- * | **Clock source** | PCLKB (120 MHz, shared) | IWDTCLK (15 kHz, independent) |
+ * | **Clock source** | PCLKB (60 MHz, shared) | IWDTCLK (15 kHz, independent) |
  * | **Disable capability** | Can be stopped in software | Cannot be stopped (always-on) |
  * | **Use case** | Intentional resets, bootloader timeout | Critical hang detection only |
  * | **Flag on reset** | WDTRF (RSTSR2.0) | IWDTRF (RSTSR2.1) |

@@ -732,8 +732,6 @@ rx_err_t rx_pid_compute(rx_pid_handle_t* handle,
     return k_rx_fail;
   }
 
-  rx_log_debug(s_tag, "PID computation");
-
   return k_rx_ok;
 }
 

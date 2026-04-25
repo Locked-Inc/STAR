@@ -85,11 +85,11 @@
  * @f]
  *
  * f_PCLK depends on the channel group (manual section 5 I/O register table):
- * - SCI0-SCI6, SCI12 (SCIj/SCIh): PCLKB
- * - SCI7-SCI11 (SCIi, extended 0x000D0xxx): PCLKA
+ * - SCI0-SCI6, SCI12 (SCIj/SCIh): PCLKB (k_pclkb_hz, 60 MHz)
+ * - SCI7-SCI11 (SCIi, extended 0x000D0xxx): PCLKA (k_pclka_hz, 120 MHz)
  *
- * Note: the 01-system-clock audit is authoritative on actual PCLK frequencies;
- * empirical evidence suggests PCLKB = 120 MHz (not 60 MHz as in rx72n_clock.h).
+ * Note: rx72n_clock.h is authoritative for PCLK frequencies; trust the header
+ * over any older bench note. PCLKB = 60 MHz on this platform.
  *
  * @par Supported Baud Rates (at PCLKB = 60 MHz, for SCI0-SCI6/SCI12):
  *
@@ -498,9 +498,9 @@ static volatile uint16_t s_sci9_rx_tail = 0U; /**< Task reads here, ISR never to
  * - SCI0-SCI6, SCI12 (SCIj/SCIh, standard region): use k_pclkb_hz
  * - SCI7-SCI11 (SCIi, extended region 0x000D0xxx):  use k_pclka_hz
  *
- * This distinction matters when PCLKA != PCLKB.  The 01-system-clock audit
- * is authoritative on actual PCLK frequencies; empirical evidence suggests
- * PCLKB = 120 MHz, not 60 MHz as documented in rx72n_clock.h.
+ * This distinction matters when PCLKA != PCLKB.  rx72n_clock.h is the
+ * authoritative source for PCLK frequencies (k_pclka_hz, k_pclkb_hz, etc.);
+ * trust the header over any older bench note.
  *
  * **Algorithm steps:**
  * 1. Guard against baudrate == 0 (return k_brr_max_value as a safe sentinel).

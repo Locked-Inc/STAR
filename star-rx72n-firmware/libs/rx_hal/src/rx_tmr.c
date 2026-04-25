@@ -67,6 +67,7 @@
 #else
 #include "rx72n_regs.h"
 #endif
+#include "rx72n_clock.h"
 #include "rx_check.h"
 #include "rx_log.h"
 #include "rx_register_protection.h"
@@ -84,20 +85,9 @@
  */
 static const char* const s_tag = "TMR";
 
-/**
- * @enum tmr_pclk_hz_t
- * @brief Peripheral clock rate for internal-clock period calculations
- *
- * @details
- * TMR counts on PCLKB, which is configured by the system clock init to
- * 60 MHz for the RX72N STAR platform. Period calculations use this
- * constant rather than a runtime clock query to keep the helper pure.
- *
- * @since Version 1.0.0
- */
-typedef enum : uint32_t {
-  k_tmr_pclkb_hz = 60000000U, /**< 60 MHz PCLKB on RX72N STAR */
-} tmr_pclk_hz_t;
+/* Peripheral clock rate for internal-clock period calculations comes from
+ * the authoritative rx72n_clock.h definition (k_pclkb_hz). Avoid duplicating
+ * the literal so the value tracks any future clock-tree change. */
 
 /**
  * @enum tmr_period_limits_t
@@ -617,7 +607,7 @@ rx_err_t rx_tmr_set_period_us(rx_tmr_channel_t channel, uint32_t period_us)
 
   /* tick_hz = PCLKB / divider; ticks = period_us * tick_hz / 1e6
    * compare = ticks - 1 (TCORA fires when TCNT reaches compare value) */
-  const uint64_t ticks = ((uint64_t)period_us * (uint64_t)k_tmr_pclkb_hz) /
+  const uint64_t ticks = ((uint64_t)period_us * (uint64_t)k_pclkb_hz) /
                          ((uint64_t)divider * (uint64_t)k_tmr_us_per_sec);
   if (ticks == 0U) {
     return k_rx_err_invalid_arg;

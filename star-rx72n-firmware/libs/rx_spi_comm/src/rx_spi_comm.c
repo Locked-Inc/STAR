@@ -146,12 +146,13 @@
  * ## Memory Usage
  *
  * **Stack Usage per Function Call**:
- * - `rx_spi_comm_send()`: ~1350 bytes (rx_frame_t + wire_buffer[1038])
+ * - `rx_spi_comm_send()`: ~310 bytes (rx_frame_t + locals; wire scratch is in handle)
  * - `rx_spi_comm_receive()`: ~350 bytes (rx_frame_t + header_buf[10])
  * - `internal_spi_transfer()`: ~20 bytes (local vars, no buffers)
  * - `internal_decode_frame()`: ~10 bytes (offset, err)
  *
- * **Total Handle Footprint**: 4120 bytes (see rx_spi_comm_handle_t in .h)
+ * **Total Handle Footprint**: ~5160 bytes (handle now owns tx_encode_buffer
+ * in addition to retry_buffer; see rx_spi_comm_handle_t in .h)
  *
  * ## Thread Safety
  *
@@ -1554,13 +1555,15 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
   rx_frame_t frame;
   (void)(internal_build_frame(handle, sequence, type, flags, payload, payload_len, &frame));
 
-  /* Encode frame to wire format. Cannot fail: encoder initialized, pointers valid. */
-  uint8_t  wire_buffer[k_frame_max_size];
+  /* Encode frame into handle-owned scratch buffer (not stack — see comment
+   * on tx_encode_buffer in rx_spi_comm.h). Cannot fail: encoder initialized,
+   * pointers valid. */
   uint32_t wire_len = 0;
-  (void)(rx_frame_encode(&handle->encoder, &frame, wire_buffer, &wire_len));
+  (void)(rx_frame_encode(&handle->encoder, &frame, handle->tx_encode_buffer, &wire_len));
 
   /* Transfer via SPI (waits for host ACK internally) */
-  rx_err_t xfer_err = internal_spi_transfer(handle, wire_buffer, wire_len, nullptr, 0);
+  rx_err_t xfer_err =
+    internal_spi_transfer(handle, handle->tx_encode_buffer, wire_len, nullptr, 0);
   if (xfer_err != k_rx_ok) {
     rx_log_error(s_tag, "SPI transfer failed");
     return xfer_err;
@@ -1568,7 +1571,7 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
 
   /* Buffer frame for retransmission if enabled and requires-ACK flag set */
   if ((int)handle->auto_retransmit && ((flags & k_frame_flag_requires_ack) != 0)) {
-    internal_buffer_for_retransmit(handle, wire_buffer, wire_len, sequence);
+    internal_buffer_for_retransmit(handle, handle->tx_encode_buffer, wire_len, sequence);
   }
 
   return k_rx_ok;
@@ -2303,14 +2306,14 @@ rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle, const uint8_t* payload, uint
   rx_frame_t pong_frame;
   (void)(rx_frame_create_pong(&pong_frame, sequence, payload, payload_len));
 
-  /* Encode: encoder initialized at rx_spi_comm_init; all pointers valid. */
-  uint8_t  wire_buffer[k_frame_max_size];
+  /* Encode into handle-owned scratch buffer (not stack — see comment on
+   * tx_encode_buffer in rx_spi_comm.h). encoder initialized at
+   * rx_spi_comm_init; all pointers valid. */
   uint32_t wire_len = 0;
-
-  (void)(rx_frame_encode(&handle->encoder, &pong_frame, wire_buffer, &wire_len));
+  (void)(rx_frame_encode(&handle->encoder, &pong_frame, handle->tx_encode_buffer, &wire_len));
 
   /* Transfer via SPI */
-  return internal_spi_transfer(handle, wire_buffer, wire_len, nullptr, 0);
+  return internal_spi_transfer(handle, handle->tx_encode_buffer, wire_len, nullptr, 0);
 }
 
 /**

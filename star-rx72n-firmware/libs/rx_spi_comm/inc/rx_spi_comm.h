@@ -689,6 +689,16 @@ typedef struct {
   uint8_t retry_buffer[k_frame_max_size];
 
   /**
+   * @brief TX encode scratch buffer (handle-owned, not on caller stack)
+   * @details Sized to k_frame_max_size (1036 bytes). Replaces a 1036-byte
+   * stack allocation in rx_spi_comm_send/_send_pong that previously consumed
+   * ~50% of a 2 KB ThreadX task stack. Single-producer per handle, so the
+   * caller-side mutex serializing SPI transfers also serializes use of this
+   * scratch buffer.
+   */
+  uint8_t tx_encode_buffer[k_frame_max_size];
+
+  /**
    * @brief Actual encoded wire length of buffered frame in retry_buffer
    */
   uint32_t retry_wire_len;
