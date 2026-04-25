@@ -4,10 +4,31 @@ All artifacts in this directory were generated directly from the
 KiCad 10.0.1 source project at `Schematic/STAR_MCU.*` via
 `kicad-cli`. No GUI-side manual export.
 
+## Canvas Submission Artifact
+
+`STAR_MCU_Electrical_Design.pdf` -- the combined electrical-design
+package, 14 pages, 4.0 MB. This is the single PDF that satisfies
+the Canvas "upload a PDF file only, no Gerber files" requirement.
+It bundles the schematic sheet (page 1) followed by the 13-page
+PCB layer stack (copper, silkscreen, mask, fab, edge cut) in one
+file. Regenerable from the individual PDFs via:
+
+```
+cd final_docs/electrical_schematics_pcb
+pdfunite STAR_MCU_schematic.pdf STAR_MCU_PCB.pdf \
+  STAR_MCU_Electrical_Design.pdf
+```
+
+The individual artifacts below are kept alongside for convenience
+(separate schematic vs. PCB review, fab handoff, mechanical
+integration). Reviewers who only want one file should open the
+combined PDF.
+
 ## Deliverables
 
 | File | Size | What it is | Open it to see |
 |---|---|---|---|
+| `STAR_MCU_Electrical_Design.pdf` | 4.0 MB | **Canvas submission PDF** | Schematic + all PCB layers in one file (14 pages) |
 | `STAR_MCU_schematic.pdf` | 699 KB | Schematic sheet | All signals, nets, and symbol values for the board |
 | `STAR_MCU_PCB.pdf` | 3.8 MB | Multi-page layer PDF | One PDF page per copper, silkscreen, soldermask, fab, and edge-cut layer; border and title block on each |
 | `STAR_MCU_PCB.step` | 7.2 MB | 3D STEP model | The populated board as a neutral-format solid model for mechanical integration |
@@ -28,15 +49,18 @@ KiCad 10.0.1 source project at `Schematic/STAR_MCU.*` via
 
 ## Reviewer Reading Order
 
-1. Open `STAR_MCU_schematic.pdf` for the signal-level walkthrough
-   of every subsystem.
-2. Open `STAR_MCU_PCB.pdf` to review each copper layer, silkscreen,
-   and the edge cut.
-3. Open `STAR_MCU_PCB.step` in FreeCAD, SolidWorks, or Fusion 360
+1. Open `STAR_MCU_Electrical_Design.pdf` for the 14-page combined
+   schematic + PCB package -- this is the Canvas submission
+   artifact and the single-file review path.
+2. Open `STAR_MCU_schematic.pdf` for the signal-level walkthrough
+   of every subsystem if you want only the schematic.
+3. Open `STAR_MCU_PCB.pdf` to review each copper layer, silkscreen,
+   and the edge cut on its own.
+4. Open `STAR_MCU_PCB.step` in FreeCAD, SolidWorks, or Fusion 360
    if you want the 3D model for mechanical integration.
-4. Extract `STAR_MCU_gerbers.zip` if you want to send the board
+5. Extract `STAR_MCU_gerbers.zip` if you want to send the board
    to a fab (JLCPCB, PCBWay, OSH Park).
-5. Read `STAR_MCU_erc.rpt` for the electrical-rule-check output.
+6. Read `STAR_MCU_erc.rpt` for the electrical-rule-check output.
 
 ## Regeneration
 
