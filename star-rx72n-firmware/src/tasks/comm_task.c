@@ -451,6 +451,23 @@ typedef enum : uint16_t {
 } comm_response_buffer_t;
 
 /**
+ * @enum velocity_response_motor_count_t
+ * @brief Number of motor-status entries in a VelocityCommandResponse
+ *
+ * @details
+ * The velocity-command response carries left and right motor status only;
+ * the front/rear distinction is collapsed for the host wire format. Sized
+ * by k_velocity_response_motor_count rather than a literal so the count
+ * is searchable and stays in sync if the wire format ever extends to all
+ * four motors.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_velocity_response_motor_count = 2, /**< left + right motor status entries */
+} velocity_response_motor_count_t;
+
+/**
  * @enum retransmit_retries_limits_t
  * @brief Valid range limits for max_retries in SetRetransmitConfigRequest
  *
@@ -2382,7 +2399,7 @@ static void internal_velocity_send_response(rx_comm_channel_t                 ch
       internal_motor_mode_to_proto_state(motor_state.mode,
                                          motor_state.fault_flags[k_motor_idx_front_right]);
 
-    response.motor_status_count = 2;
+    response.motor_status_count = k_velocity_response_motor_count;
   }
 
   uint32_t       encoded_len = 0;

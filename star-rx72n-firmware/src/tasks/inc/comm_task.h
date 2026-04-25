@@ -65,6 +65,22 @@ typedef struct {
  */
 extern const rx_system_config_t k_system_config_default;
 
+/**
+ * @var g_comm_manager
+ * @brief Single forward declaration of the global communication manager.
+ *
+ * @details
+ * Defined in comm_task.c. Declared here so callers (e.g. telemetry_task)
+ * do not need to redeclare extern in their own translation units --
+ * eliminates misc-use-internal-linkage false positives by making the
+ * external use visible to clang-tidy.
+ *
+ * @note Tasks should call rx_comm_manager_send/poll, not access fields.
+ *
+ * @since Version 1.0.0
+ */
+extern rx_comm_manager_t g_comm_manager;
+
 /* =============================================================================
  * Public Functions
  * =============================================================================

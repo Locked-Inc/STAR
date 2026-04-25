@@ -680,6 +680,7 @@
 
 #include "telemetry_task.h"
 
+#include "comm_task.h"
 #include "hardware.h"
 #include "hardware_init.h"
 #include "rx_check.h"
@@ -964,34 +965,6 @@ static bool s_telem_created = false;
  * @since Version 1.0.0
  */
 static uint8_t s_telem_buffer[k_telem_buffer_size];
-
-/**
- * @var g_comm_manager
- * @brief Communication manager handle (external global, defined in comm_task.c)
- *
- * @details
- * The communication manager abstracts over multiple physical channels (USB CDC, SPI)
- * and provides a unified send interface for telemetry. This enables automatic failover:
- * - **Primary:** USB CDC (12 Mbps, debugging interface)
- * - **Fallback:** SPI (10 Mbps, production interface to RPi5)
- *
- * The telemetry task does NOT own this handle - it is initialized by `comm_task.c`
- * and shared across multiple tasks (comm_task writes commands, telemetry_task writes data).
- *
- * Thread safety:
- * - `rx_comm_manager_send()` is thread-safe (uses internal queue + mutex)
- * - Multiple tasks can call `send()` concurrently without corruption
- *
- * @note Declared `extern` - definition is in `comm_task.c`
- * @note Shared across tasks (comm_task, telemetry_task, motor_control_task)
- * @warning Do NOT call `rx_comm_manager_send()` before `comm_task_create()` completes
- *
- * @see rx_comm_manager.h Communication manager API
- * @see comm_task.c Initializes and manages g_comm_manager
- *
- * @since Version 1.0.0
- */
-extern rx_comm_manager_t g_comm_manager;
 
 /**
  * @var s_tag
