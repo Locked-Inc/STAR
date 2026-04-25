@@ -51,7 +51,7 @@ extern void sci9_debug_puthex16(uint16_t v);
 /* ==========================================================================
  * Direct port register access -- PDR / PODR / PMR for one port n live at
  * 0x0008C000+n, 0x0008C020+n, 0x0008C060+n respectively (RX72N HW manual
- * Ch.22 I/O Ports). Same pattern pwm_test_motor used; keeps this test free
+ * Ch.22 I/O Ports). Same direct-register pattern as pwm_test_fit; keeps this test free
  * of a dependency on rx_port_utils / gpio.c.
  * ========================================================================== */
 #define REG8(a) (*(volatile uint8_t *)(uintptr_t)(a))

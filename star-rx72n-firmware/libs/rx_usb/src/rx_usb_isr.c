@@ -465,7 +465,7 @@ static void internal_handle_ctrt_interrupt(void)
        * Firmware MUST restore PID = BUF here, BEFORE preparing the data
        * stage, or the peripheral will NAK every IN token from the host
        * and enumeration stalls with GET_DESCRIPTOR(Device) timeouts.
-       * Mirrors usb_test/hoco_pid_fix.c.
+       * (originally validated in a standalone HOCO/PID bring-up test, since merged here).
        */
       usb0()->dcpctr |= k_usb_dcpctr_pid_buf;
       rx_usb_cdc_handle_setup();

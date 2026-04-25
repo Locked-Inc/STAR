@@ -5,7 +5,7 @@
  * @note **NOT NEEDED FOR PRODUCTION** (kept as an alternate-style reference).
  *       The STAR libs/rx_hal/src/rx_gptw.c HAL now produces clean 20 kHz PWM
  *       on P17/P23 after the 2026-04-19 HAL fixes (VERIFICATION_LOG.md).
- *       Use pwm_test_hal/ (HAL) or pwm_test_motor/ (motor lib) for the real
+ *       Use pwm_test_hal/ (HAL) or motor_spin_test/ (motor lib) for the real
  *       path; they go through our verified libs/ code.  This FIT-style
  *       variant is kept only as a reference to Renesas' iodefine.h layout
  *       for future diagnostic work.

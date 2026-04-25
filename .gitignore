@@ -217,7 +217,6 @@ Thumbs.db
 CMakeUserPresets.json
 
 # Local scratch (not for commit)
-jtag-extract/
 .claude/scheduled_tasks.lock
 
 

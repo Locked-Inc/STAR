@@ -1367,7 +1367,7 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
 
   /* 3. Select and configure.  Use SINGLE-BUFFER (no DBLB) for bulk
    * IN pipes -- the working raw-register repro
-   * `usb_test/bulk_in_fix.c` configures pipe 1 as single-buffer
+   * the original bring-up test configured pipe 1 as single-buffer
    * bulk IN (PIPECFG = 0x4011) and successfully transmits.  DBLB on
    * RX72N USB0 has been observed to silently drop bulk-IN BVAL
    * commits.  Bulk OUT can keep DBLB + SHTNAK as before -- only the

@@ -1,7 +1,7 @@
 ;;
 ;; gpio_test/startup.S -- RX72N startup for the GPIO breakout board test.
 ;;
-;; Same flow as usb_test/startup.S:
+;; Standard RXv3 bare-metal startup flow:
 ;;   1. Set USP and ISP from linker symbols.
 ;;   2. Copy .data from ROM (LMA) to RAM (VMA).
 ;;   3. Zero BSS.

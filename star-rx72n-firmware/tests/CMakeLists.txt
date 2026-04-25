@@ -1469,7 +1469,7 @@ target_compile_definitions(firmware_coverage_obj PRIVATE
 # NOTE: firmware_coverage_obj compiles the REAL implementations of:
 #   - All task source files (motor_control_task.c, etc.)
 #   - shared_data.c
-#   - rx_log_usb.c
+#   - rx_log_uart.c
 # Therefore we must NOT include their mock equivalents here (MOCK_TASKS_SRC,
 # MOCK_SHARED_DATA_SRC, mock_rx_log.c), which would produce duplicate symbols.
 # We use ${RX_LOG_SRC} (rx_log.c only) instead of the full MOCK_LOG_SRC set.

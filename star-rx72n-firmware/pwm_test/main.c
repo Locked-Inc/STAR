@@ -277,7 +277,7 @@ static void dbg_pulse(uint32_t n)
 /* ==========================================================================
  * Clock setup verified working on Tom's PCB (no external crystal).
  * HOCO 16 MHz internal -> PLL x12 = 192 MHz, PCKA /2 = 96 MHz.
- * Copied from usb_test/hoco_pid_fix.c which enumerated 1209:0002 on this
+ * Copied from an earlier HOCO PID bring-up test that enumerated 1209:0002 on this
  * hardware, so these exact register writes are known-good. */
 static void inline_clock_init(void)
 {

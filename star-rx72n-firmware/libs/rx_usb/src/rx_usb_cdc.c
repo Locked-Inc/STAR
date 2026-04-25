@@ -1543,7 +1543,7 @@ static void internal_send_descriptor(const uint8_t* desc, uint16_t desc_len, uin
    * stage so the hardware can ACK the host's OUT ZLP; without this the
    * control transfer never terminates and the host's GET_DESCRIPTOR
    * times out with -110 even though the descriptor bytes made it out
-   * on the bus.  Mirrors usb_test/hoco_pid_fix.c. */
+   * on the bus.  (originally validated in a standalone HOCO/PID bring-up test, since merged here). */
   usb0()->dcpctr |= k_usb_dcpctr_ccpl;
 }
 
