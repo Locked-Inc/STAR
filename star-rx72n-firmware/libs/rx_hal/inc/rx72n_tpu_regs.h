@@ -498,13 +498,13 @@ typedef struct {
  * @see k_tpu_control_base_addr Base address constant
  * @since Version 1.0.0
  */
+/* GCOVR_EXCL_START -- trivial hardware-address accessor; host-test
+ * builds use mock_rx72n_tpu_regs.h's override. */
 static inline volatile rx_tpu_control_regs_t* tpu_control(void)
 {
-  /* GCOVR_EXCL_START: trivial hardware-address accessor; host-test
-   * builds use mock_rx72n_tpu_regs.h's override. */
   return (volatile rx_tpu_control_regs_t*)k_tpu_control_base_addr;
-  /* GCOVR_EXCL_STOP */
 }
+/* GCOVR_EXCL_STOP */
 
 /**
  * @brief Get pointer to TPU0 channel registers (extended)
@@ -556,13 +556,13 @@ static inline volatile rx_tpu_ext_regs_t* tpu0(void)
  * @see k_tpu1_base_addr Base address constant
  * @since Version 1.0.0
  */
+/* GCOVR_EXCL_START -- trivial hardware-address accessor; host-test
+ * builds use mock_rx72n_tpu_regs.h's override. */
 static inline volatile rx_tpu_regs_t* tpu1(void)
 {
-  /* GCOVR_EXCL_START: trivial hardware-address accessor; host-test
-   * builds use mock_rx72n_tpu_regs.h's override. */
   return (volatile rx_tpu_regs_t*)k_tpu1_base_addr;
-  /* GCOVR_EXCL_STOP */
 }
+/* GCOVR_EXCL_STOP */
 
 /**
  * @brief Get pointer to TPU2 channel registers (basic, phase counting)
@@ -583,13 +583,13 @@ static inline volatile rx_tpu_regs_t* tpu1(void)
  * @see k_tpu2_base_addr Base address constant
  * @since Version 1.0.0
  */
+/* GCOVR_EXCL_START -- trivial hardware-address accessor; host-test
+ * builds use mock_rx72n_tpu_regs.h's override. */
 static inline volatile rx_tpu_regs_t* tpu2(void)
 {
-  /* GCOVR_EXCL_START: trivial hardware-address accessor; host-test
-   * builds use mock_rx72n_tpu_regs.h's override. */
   return (volatile rx_tpu_regs_t*)k_tpu2_base_addr;
-  /* GCOVR_EXCL_STOP */
 }
+/* GCOVR_EXCL_STOP */
 
 /**
  * @brief Get pointer to TPU3 channel registers (extended)
