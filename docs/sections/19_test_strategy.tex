@@ -1,0 +1,176 @@
+% ============================================================================
+% TEST STRATEGY
+% ============================================================================
+
+\section{Test Strategy}
+\label{section:test-strategy}
+
+This section enumerates every layer of automated testing in the
+project, what it verifies, where it runs, and how to invoke it
+locally.
+
+\subsection{Layer 1: Firmware host unit tests (Unity)}
+
+\textbf{Where:} \texttt{star-rx72n-firmware/tests/}.
+\textbf{Framework:} Unity (single-source vendored).
+\textbf{Compiler:} system Clang (\emph{not} GNURX).
+\textbf{Run:} \texttt{cmake -B build -S star-rx72n-firmware/tests \&\&
+cmake --build build -j 8 \&\& ctest --test-dir build -j 8}, or the
+shortcut \texttt{make test-rx72n}.
+
+Sixty test executables, each linking the production source for the
+library under test against mock substitutes. Mocks live under
+\texttt{tests/mocks/}.
+
+\textbf{Coverage gate:} \texttt{firmware-unit-tests.yml} enforces
+100\,\% line / function / branch coverage on the
+\texttt{libs/}-filtered subset. Hardware-only sources that cannot
+run on the host (\texttt{rx\_usb/*}, \texttt{rx\_crc\_hw.c},
+\texttt{rx\_hcsr04} hw/isr/icu, several \texttt{rx\_hal/src} files
+that drive registers directly) are explicitly excluded so the gate
+honestly reflects what is host-testable.
+
+The \texttt{test\_coverage\_compile\_all} target is a no-op test that
+links every host-compilable production file -- its job is to ensure
+\texttt{lcov --initial} sees every translation unit so the
+denominator of coverage is correct.
+
+\subsection{Layer 2: Cross-build verification}
+
+\textbf{Where:} \texttt{star-rx72n-firmware/CMakeLists.txt}.
+\textbf{Compiler:} GNURX 14.2.0 (cross).
+\textbf{Run:} \texttt{make build-rx72n} or \texttt{make ci-rx72n}.
+
+This proves the firmware tree compiles for the actual target with
+\texttt{-Wall -Wextra -Werror} and links cleanly. It does not run
+the firmware -- there is no on-target test harness in this layer.
+
+\textbf{Optional clang-tidy:} \texttt{cmake -DENABLE\_CLANG\_TIDY=ON}
+runs the project's curated clang-tidy ruleset. NOLINT suppressions
+for \texttt{readability-*} checks are forbidden; failing checks
+must be refactored.
+
+\subsection{Layer 3: Gateway Go tests (race + coverage)}
+
+\textbf{Where:} \texttt{star-gateway/internal/}.
+\textbf{Framework:} Go's built-in \texttt{testing} + testify.
+\textbf{Run:} \texttt{cd star-gateway \&\& go test -race -cover ./...}.
+
+Coverage requirement: $\ge$ 75\,\%. Most packages well above; some
+are at 100\,\% (\texttt{controller}, \texttt{fec}, \texttt{frame}).
+
+\textbf{Fuzz tests:} \texttt{frame/fuzz\_test.go},
+\texttt{dispatcher/fuzz\_test.go} run under \texttt{go test -fuzz=Fuzz}
+on demand and are part of the periodic HIL run.
+
+\subsection{Layer 4: Hardware-in-the-Loop (HIL)}
+
+\textbf{Where:} \texttt{star-gateway/test/e2e/hil\_test.go}.
+\textbf{Setup:} Pi 5 + RX72N over USB CDC + AD2 capture rig.
+\textbf{Run:} \texttt{go test -tags=hardware ./test/e2e/...}.
+\textbf{CI:} \texttt{firmware-hil-nightly.yml} on the self-hosted
+Pi 5 runner.
+
+Tests command / response round-trip latency, transport failover,
+USB hot-plug, the simple-USB vs full-HARQ mode selection, and
+end-to-end estop propagation.
+
+\subsection{Layer 5: ROS2 colcon tests}
+
+\textbf{Where:} \texttt{star-ros2/src/<package>/test/}.
+\textbf{Framework:} gtest for C++, pytest for Python.
+\textbf{Run:} \texttt{./test-ros2.sh}.
+
+Per-package focus:
+
+\begin{itemize}
+  \item \texttt{star\_safety\_monitor}: lifecycle transitions, sonar
+        threshold breach, bond failure handling.
+  \item \texttt{star\_supervisor}: estop / autonomy gating
+        truth-table coverage.
+  \item \texttt{star\_spi\_bridge}: frame round-trip with mock
+        spidev0.0.
+  \item \texttt{star\_gateway\_bridge}: gRPC stub server integration
+        tests.
+  \item \texttt{star\_compliance\_msgs}: serialization round-trip.
+\end{itemize}
+
+\subsection{Layer 6: Compliance engine tests}
+
+\textbf{Where:} \texttt{star-compliance/tests/}.
+\textbf{Framework:} pytest.
+\textbf{Run:} \texttt{cd star-compliance \&\& PYTHONPATH=. pytest tests/}
+or via \texttt{compliance-engine-ci.yml}.
+
+Detector unit tests (cane\_zone\_filter, corridor\_medial\_axis,
+doorway\_lidar\_detector, jamb\_plane\_fitter, imu\_jolt\_detector,
+obstacle\_clusterer), engine tests (door\_offset\_calibration,
+plane\_segmentation, floor\_frame), and node smoke / behavior tests.
+
+\subsection{Layer 7: Proto round-trip tests}
+
+\textbf{Where:} \texttt{star-proto/tests/\{go,typescript,nanopb\}/}.
+\textbf{Run:} per-language test commands; CI in \texttt{proto.yml}.
+
+Verifies that a message encoded by one language decodes byte-
+identically in every other. \texttt{proto-gen.yml} additionally
+fails if regenerating produces a non-empty diff (lockstep gate).
+
+\subsection{Layer 8: UI tests}
+
+\textbf{Where:} \texttt{star-ui/src/test/}.
+\textbf{Framework:} Vitest + React Testing Library.
+\textbf{Run:} \texttt{cd star-ui \&\& npm test}.
+
+\subsection{Layer 9: Static analysis}
+
+\begin{center}
+\begin{tabular}{|p{4.5cm}|p{10.0cm}|}
+\hline
+\textbf{Tool}                  & \textbf{Scope}                                                                                                                       \\
+\hline
+clang-format                   & Repo-wide on \texttt{.c/.h/.cpp/.hpp} except ROS2 packages.                                                                            \\
+ament\_uncrustify              & ROS2 packages only (\texttt{docs/ROS2\_FORMATTING.md}).                                                                              \\
+clang-tidy                     & Optional pass on firmware host build. NOLINT for \texttt{readability-*} is forbidden.                                                  \\
+golangci-lint                  & Run from \texttt{gateway.yml}; full suite per \texttt{.golangci.yml}.                                                                \\
+govulncheck                    & Go-side vulnerability scanner.                                                                                                        \\
+ament\_cppcheck, ament\_cpplint & ROS2 default analyzers.                                                                                                              \\
+buf lint                       & Proto schemas; enforced by \texttt{proto.yml}.                                                                                        \\
+buf breaking                   & Detects non-additive proto changes.                                                                                                   \\
+ASCII purity check             & \texttt{scripts/utils/fix-encoding.py --check .}; CI \texttt{ascii-check.yml}.                                                       \\
+Copyright header check         & \texttt{scripts/utils/check-copyright.py}; CI \texttt{copyright-check.yml}.                                                          \\
+\texttt{@since} version check  & CI \texttt{since-version-check.yml}.                                                                                                  \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{What you should run before every commit}
+
+\begin{enumerate}
+  \item Whatever subset of the above touches the code you changed.
+  \item For C firmware edits: \texttt{make test-rx72n} at minimum.
+  \item For proto edits: \texttt{make proto-gen} and verify the diff
+        includes the regenerated outputs.
+  \item For ROS2 edits: \texttt{./build-ros2.sh \&\& ./test-ros2.sh}.
+  \item For Go edits: \texttt{cd star-gateway \&\& go test -race ./...
+        \&\& golangci-lint run}.
+  \item Always: \texttt{python3 scripts/utils/fix-encoding.py --check .}.
+\end{enumerate}
+
+The repo includes a tracked pre-commit hook at
+\texttt{scripts/git/pre-commit} that enforces ASCII purity. Install it
+with \texttt{git config core.hooksPath scripts/git} (opt-in;
+\texttt{.git/hooks/} is not auto-populated).
+
+\subsection{Coverage gaps to be honest about}
+
+\begin{itemize}
+  \item There is no firmware on-target test harness. Cross-build is
+        verified, but the firmware itself runs only on hardware and
+        the only on-target tests are the bench-test sandboxes
+        (\texttt{star-rx72n-firmware/<peripheral>\_test/}) and the
+        HIL e2e suite.
+  \item There is no soak-test infrastructure that runs for hours.
+        The HIL run is a one-shot pass.
+  \item There is no automated PCB / electrical test.
+\end{itemize}

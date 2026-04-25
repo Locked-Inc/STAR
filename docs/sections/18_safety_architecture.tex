@@ -1,0 +1,202 @@
+% ============================================================================
+% SAFETY ARCHITECTURE
+% ============================================================================
+
+\section{Safety Architecture}
+\label{section:safety-architecture}
+
+The STAR robot has actuators that can move heavy chassis at meters
+per second; "fail safe" is not optional. This section describes the
+overlapping safety mechanisms so a future engineer can identify, at
+review time, which layer actually owns a given safety guarantee.
+
+\subsection{Defense in depth, in three layers}
+
+\begin{enumerate}
+  \item \textbf{ROS2 supervisor (Pi 5).} \texttt{star\_supervisor}
+        gates command flow between manual / autonomous sources and
+        the hardware bridge. It is the only thing that publishes on
+        \texttt{/cmd\_vel\_out}.
+  \item \textbf{Gateway and firmware comm layer (Pi 5 + RX72N).} The
+        gateway forwards \texttt{/star/estop} into the protobuf
+        \texttt{EmergencyStopRequest} message; the firmware
+        \texttt{comm\_task} immediately writes
+        \texttt{shared\_data.estop\_active = true}.
+  \item \textbf{Firmware motor / watchdog layer (RX72N).}
+        \texttt{motor\_control\_task} forces zero duty when
+        \texttt{estop\_active} is set; the IWDT independently resets
+        the chip if the watchdog task ever stops kicking; DRV8263
+        \texttt{nFAULT} / OLP detection triggers a per-motor disable.
+\end{enumerate}
+
+A single bug in any one layer cannot, by itself, cause the robot to
+move when the operator has called e-stop.
+
+\subsection{The supervisor model}
+
+The robot hardware bridge reads \texttt{/cmd\_vel\_out}, never
+\texttt{/cmd\_vel} directly. \texttt{star\_supervisor} arbitrates:
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Source topic}                      & \textbf{Forwarded to /cmd\_vel\_out when}                       \\
+\hline
+\texttt{/cmd\_vel} (manual)                & \texttt{autonomy\_enable=false} AND \texttt{estop=false}        \\
+\texttt{/nav2/cmd\_vel}                    & \texttt{autonomy\_enable=true}  AND \texttt{estop=false}        \\
+\texttt{/goal\_pose} -> \texttt{/nav2/goal\_pose} & \texttt{autonomy\_enable=true} AND \texttt{estop=false}    \\
+\hline
+\end{tabular}
+\end{center}
+
+\texttt{/star/autonomy\_enable} and \texttt{/star/estop} are both
+latched booleans (\texttt{TransientLocal} QoS) so a node that joins
+late still sees the current state.
+
+When \texttt{estop=true} the supervisor publishes a zero
+\texttt{Twist} on \texttt{/cmd\_vel\_out} continuously (not just
+once), so the hardware bridge cannot drift back to a stale non-zero
+command if a publisher misbehaves.
+
+\subsection{Estop signal flow}
+
+\begin{verbatim}
+operator clicks "STOP" in UI / safety_monitor trips a sonar threshold
+        |
+        v
+ROS2 publishes /star/estop = true (TransientLocal latched)
+        |
+        +---> star_supervisor: zeros /cmd_vel_out (Layer 1)
+        |
+        +---> star_gateway_bridge -> Go gateway:
+        |       sends EmergencyStopRequest over USB CDC / SPI
+        |
+        v
+RX72N comm_task receives, calls internal_handle_estop,
+        sets shared_data.estop_active = true (Layer 2)
+        |
+        v
+RX72N motor_control_task next tick:
+        if (shared_data.estop_active) duty = 0; state = ESTOP (Layer 3)
+        rx_motor_emergency_stop() drives DRVOFF high on every
+        DRV8263 channel as a hardware-level disable
+\end{verbatim}
+
+Recovery requires explicit operator action: clear the latched
+\texttt{/star/estop} (UI button, or \texttt{ros2 topic pub}). The
+firmware does not auto-clear.
+
+\subsection{Watchdog architecture}
+
+The RX72N has two watchdog peripherals:
+
+\begin{center}
+\begin{tabular}{|l|p{5.0cm}|p{5.5cm}|}
+\hline
+\textbf{Feature}        & \textbf{IWDT (Independent)}                & \textbf{WDT}                                \\
+\hline
+Clock source            & 15\,kHz dedicated low-speed oscillator     & PCLKB (60\,MHz)                              \\
+Stoppable in software   & No, always on                              & Yes                                          \\
+Use case in STAR        & Hard hang detection                        & Reserved for soft-debug timeouts             \\
+Reset flag              & RSTSR2.IWDTRF                              & RSTSR2.WDTRF                                 \\
+On-reset behavior       & \texttt{internal\_rx\_fatal\_error} halts  & Logs warning, returns boot status code        \\
+Period                  & ~1\,s with current divider                  & --                                            \\
+\hline
+\end{tabular}
+\end{center}
+
+\texttt{watchdog\_monitor\_task} runs at 200\,Hz and:
+
+\begin{enumerate}
+  \item Reads each task's last-tick timestamp from
+        \texttt{shared\_data.task\_heartbeats}.
+  \item If any task is more than 3 ticks late, logs an error and
+        asserts \texttt{shared\_data.estop\_active}.
+  \item Calls \texttt{rx\_iwdt\_kick()} only after every check has
+        passed.
+  \item Reads stack high-watermarks and asserts on starvation
+        (less than 256\,B remaining on any task).
+\end{enumerate}
+
+Because the IWDT can never be stopped, a permanently-stuck
+\texttt{watchdog\_monitor\_task} can only fail to kick, after which
+the IWDT will reset the chip. The firmware on next boot reads
+RSTSR2.IWDTRF, logs the failure, and halts so a debugger can read
+the post-mortem state.
+
+\subsection{Hardware-level safety: DRV8263 + DRVOFF}
+
+Each DRV8263H motor driver has three control pins:
+
+\begin{itemize}
+  \item \texttt{nSLEEP}: low forces the chip into sleep, all outputs
+        Hi-Z. Pulled high during normal operation.
+  \item \texttt{DRVOFF}: high forces all outputs Hi-Z without
+        sleeping the chip. Used as a fast disable on fault.
+  \item \texttt{nFAULT}: open-drain output asserted by the chip on
+        overcurrent / thermal / OLP / Vm undervoltage. RX72N reads it
+        as a GPIO input.
+\end{itemize}
+
+\texttt{rx\_motor\_emergency\_stop} drives DRVOFF high before
+attempting any PWM cleanup, so even if the GPTW PWM keeps running,
+the motor is electrically isolated within microseconds.
+
+The Open Load Protection (OLP) diagnostic in \texttt{rx\_drv8263}
+runs at startup and on operator request; it cycles a 3-pattern test
+across each motor with DRVOFF high to detect open / shorted loads
+before they become runtime faults.
+
+\subsection{ThreadX FPU and stack safety}
+
+ThreadX RXv3 port supports per-thread FPU context, but only for
+threads that opt in. Tasks that touch \texttt{float} / \texttt{double}
+must declare \texttt{TX\_THREAD\_EXTENSION\_2} and be created with
+\texttt{TX\_ENABLE\_FPU\_SUPPORT}. If a task uses floats without the
+extension, you get silent corruption when another FPU-using task
+preempts it.
+
+Every motor / PID / IMU / telemetry task in STAR enables FPU
+support; the LED status / serial bringup tasks do not. The
+\texttt{watchdog\_monitor\_task} verifies stack high-watermarks on
+every tick to catch overflow before it corrupts another task's stack.
+
+\subsection{Lifecycle nodes (ROS2 side)}
+
+\texttt{star\_safety\_monitor} is a \texttt{LifecycleNode}; it
+transitions:
+
+\begin{verbatim}
+UNCONFIGURED  --on_configure-->  INACTIVE
+INACTIVE      --on_activate-->   ACTIVE
+ACTIVE        --on_deactivate--> INACTIVE
+INACTIVE      --on_cleanup-->    UNCONFIGURED
+\end{verbatim}
+
+While \texttt{INACTIVE} the node listens for diagnostics but does
+not publish \texttt{/star/estop}. While \texttt{ACTIVE} it monitors
+sonar topics, IMU jolts, and the supervisor's bond, and trips the
+estop when any threshold breaches. The \texttt{on\_shutdown}
+callback gracefully publishes \texttt{/star/estop=true} as a final
+"safe stop" before exit.
+
+\subsection{Where to look in code}
+
+\begin{center}
+\begin{tabular}{|p{5.0cm}|p{9.0cm}|}
+\hline
+\textbf{Topic}                                  & \textbf{Source}                                                                                              \\
+\hline
+ROS2 supervisor / arbitration                    & \texttt{star-ros2/src/star\_supervisor/}                                                                     \\
+ROS2 lifecycle safety monitor                    & \texttt{star-ros2/src/star\_safety\_monitor/}                                                                \\
+Estop forwarding (gateway)                       & \texttt{star-gateway/internal/service/}                                                                       \\
+Firmware estop hot path                          & \texttt{star-rx72n-firmware/src/tasks/motor\_control\_task.c}                                                 \\
+Firmware estop receive path                      & \texttt{star-rx72n-firmware/src/tasks/comm\_task.c}                                                           \\
+Watchdog monitor                                  & \texttt{star-rx72n-firmware/src/tasks/watchdog\_monitor\_task.c}                                              \\
+IWDT driver                                       & \texttt{star-rx72n-firmware/libs/rx\_core/src/rx\_iwdt.c}                                                     \\
+DRV8263 hardware-level disable                   & \texttt{star-rx72n-firmware/libs/rx\_drv8263/} + DRVOFF GPIO in hardware\_config.h                            \\
+RSTSR2 reset-cause inspection                    & \texttt{star-rx72n-firmware/src/main.c}                                                                       \\
+ARQ -> HARQ migration                            & \texttt{docs/decisions/ADR-001-arq-to-harq.md}                                                                \\
+\hline
+\end{tabular}
+\end{center}

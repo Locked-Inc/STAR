@@ -1,0 +1,159 @@
+% ============================================================================
+% BUILD SYSTEM AND CONTINUOUS INTEGRATION
+% ============================================================================
+
+\section{Build System and CI}
+\label{section:build-and-ci}
+
+This section explains how every artifact in the repository is
+produced, what gates the CI pipeline enforces, and how to reproduce
+each step locally.
+
+\subsection{Toolchain inventory}
+
+\begin{center}
+\begin{tabular}{|p{4.0cm}|p{4.0cm}|p{6.5cm}|}
+\hline
+\textbf{Tool}                  & \textbf{Version}     & \textbf{Used to build}                                                              \\
+\hline
+GNURX (rx-elf-gcc)             & 14.2.0.202511        & Renesas RX72N firmware (\texttt{star-rx72n-firmware/}); LFS-tracked installer at \texttt{gcc-14.2.0.202511-GNURX-ELF.run} \\
+Clang / system C compiler      & 18+ (host)           & Host-side firmware unit tests                                                        \\
+clang-tidy                     & 16+                  & Optional firmware lint pass (\texttt{cmake -DENABLE\_CLANG\_TIDY=ON})                \\
+clang-format                   & 18                   & C / Go formatter for non-ROS2 code                                                   \\
+ament\_uncrustify              & jazzy                & ROS2 C++ formatter (see \texttt{docs/ROS2\_FORMATTING.md})                            \\
+Go                             & 1.26.2               & \texttt{star-gateway/} + \texttt{virtual\_rx72n} + proto Go output                    \\
+golangci-lint                  & latest pinned in CI  & Go static analysis                                                                   \\
+Buf                            & 1.50+                & Protobuf codegen (\texttt{star-proto/buf.gen.yaml})                                  \\
+nanopb generator               & 0.4.x                & Firmware protobuf codegen                                                            \\
+ROS2 / colcon                  & Jazzy                & Builds \texttt{star-ros2/}                                                           \\
+Cyclone DDS                    & jazzy                & DDS RMW middleware (\texttt{config/cyclonedds.xml})                                   \\
+Doxygen                        & 1.9+                 & Firmware reference HTML / PDF                                                        \\
+KiCad CLI                      & 10.0.1+              & Schematic / PCB / BOM generation                                                     \\
+Renesas Flash Programmer CLI   & 3.22                 & Firmware flash via E2 Lite (\texttt{RFP\_CLI\_Linux\_V32200\_x64.tgz})               \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Devcontainer (the canonical build environment)}
+
+The \texttt{Dockerfile} at the repo root produces a Debian image with
+every cross-language toolchain preinstalled (GNURX, ROS2 Jazzy, Go,
+Node, buf, nanopb, Cyclone DDS). VS Code's "Reopen in Container"
+opens it; \texttt{run-docker-build.sh} wraps it for headless host use.
+The \texttt{firmware-toolchain-image.yml} CI workflow keeps a baked
+image warm at \texttt{ghcr.io/locked-inc/star/gnurx}.
+
+GNURX is fetched at image-build time from the LFS-tracked installer
+via the \texttt{Dockerfile} \texttt{GNURX\_INSTALLER\_URL} ARG; rfp-cli
+the same way.
+
+\subsection{Top-level Makefile entry points}
+
+The repo-root \texttt{Makefile} is the documented dev loop. A
+selection:
+
+\begin{center}
+\begin{tabular}{|p{5.0cm}|p{9.5cm}|}
+\hline
+\textbf{Target}                         & \textbf{What it does}                                                                                              \\
+\hline
+\texttt{make help}                      & Print every target with a one-line description.                                                                    \\
+\texttt{make build-image}               & Build the devcontainer image.                                                                                       \\
+\texttt{make build-rx72n}               & Cross-compile the firmware in the devcontainer.                                                                     \\
+\texttt{make build-rx72n-release}       & Same with \texttt{-DCMAKE\_BUILD\_TYPE=Release} -- the canonical artifact for flashing.                              \\
+\texttt{make test-rx72n}                & Host-compile + run the Unity unit-test suite (60 binaries).                                                         \\
+\texttt{make coverage-rx72n}            & Same plus \texttt{--coverage}; runs gcovr against \texttt{libs/}.                                                    \\
+\texttt{make format-rx72n}              & Run clang-format against firmware sources.                                                                          \\
+\texttt{make check-rx72n}               & Pre-merge firmware gate: build, test, coverage, format, ASCII, copyright.                                            \\
+\texttt{make ci-rx72n}                  & Same with the strictness CI uses.                                                                                    \\
+\texttt{make proto-gen}                 & \texttt{buf generate} on \texttt{star-proto/proto/}.                                                                 \\
+\texttt{make proto-gen-firmware}        & Subset: nanopb only.                                                                                                 \\
+\texttt{make proto-check-nanopb-sync}   & Verify committed nanopb output matches \texttt{buf generate}.                                                       \\
+\texttt{make doxygen-html}              & Firmware HTML reference into \texttt{star-rx72n-firmware/docs/doxygen/html/}.                                        \\
+\texttt{make doxygen-pdfs}              & Firmware PDF reference (one PDF per major library).                                                                  \\
+\texttt{make blinky}                    & Cross-compile + flash the bare-metal LED test via E2 Lite.                                                          \\
+\texttt{make motorN-forward / -reverse} & Drive each individual motor open-loop via flashed bench firmware.                                                   \\
+\texttt{make motor-stop}                & Flash a do-nothing firmware to release all motors after a bench session.                                            \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Per-subproject build}
+
+\begin{center}
+\begin{tabular}{|p{4.5cm}|p{10.0cm}|}
+\hline
+\textbf{Subproject}                  & \textbf{How it builds}                                                                                                         \\
+\hline
+\texttt{star-rx72n-firmware/}        & CMake + GNURX inside the devcontainer (\texttt{cmake --toolchain cmake/toolchain-rx72n.cmake}). Host tests via system Clang from \texttt{tests/CMakeLists.txt}. \\
+\texttt{star-gateway/}               & \texttt{go build ./...}; \texttt{go.work} resolves the proto-gen module.                                                       \\
+\texttt{star-ros2/}                  & \texttt{./build-ros2.sh} -- wraps \texttt{buf generate} + \texttt{colcon build --symlink-install}.                              \\
+\texttt{star-proto/}                 & \texttt{buf generate}; output in \texttt{star-proto/gen/}.                                                                      \\
+\texttt{star-ui/}                    & Vite (\texttt{npm install \&\& npm run build}).                                                                                  \\
+\texttt{star-compliance/}            & Setuptools + colcon when used as a ROS2 package.                                                                                \\
+\texttt{schematic/}                  & KiCad CLI for BOM / PDF / Gerber regeneration.                                                                                  \\
+\texttt{docs/}                       & \texttt{cd docs \&\& make} drives \texttt{pdflatex star\_documentation.tex} (twice for TOC).                                     \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{CI workflows}
+
+The active workflows live under \texttt{.github/workflows/}.
+
+\begin{center}
+\begin{tabular}{|p{5.0cm}|p{9.5cm}|}
+\hline
+\textbf{Workflow}                          & \textbf{What it gates}                                                                                                          \\
+\hline
+\texttt{firmware-toolchain-image.yml}      & Rebuilds the GNURX devcontainer image (LFS pull, Docker build, push to GHCR).                                                   \\
+\texttt{firmware-build-verify.yml}         & Cross-compiles the Release build inside the toolchain image. Hard fail on \texttt{-Werror}.                                     \\
+\texttt{firmware-unit-tests.yml}           & Host Unity tests + gcovr 100\,\% line/function/branch gate on the included \texttt{libs/}.                                       \\
+\texttt{firmware-hil-nightly.yml}          & Hardware-in-the-loop nightly run on the bench (E2 Lite + AD2 + production board).                                              \\
+\texttt{firmware.yml}                      & Top-level firmware orchestration that pulls the above into one PR-status check.                                                  \\
+\texttt{gateway.yml}                       & Go gateway: build, race tests, golangci-lint, govulncheck, cross-compile linux/amd64 + linux/arm64.                              \\
+\texttt{ros2.yml}                          & ROS2 workspace: proto-gen, colcon build, colcon test on x86 plus a Pi 5 self-hosted ARM64 runner.                                \\
+\texttt{proto.yml}                         & buf format / lint / build / breaking, regen Go/TypeScript/nanopb, round-trip serialization tests.                                \\
+\texttt{proto-gen.yml}                     & Lockstep check: regenerate proto outputs and fail if the working tree changes.                                                  \\
+\texttt{compliance-engine-ci.yml}          & Python \texttt{star-compliance/}: lint, unit, integration, coverage XML.                                                        \\
+\texttt{ascii-check.yml}                   & 7-bit-ASCII enforcement (CLAUDE.md mandate).                                                                                     \\
+\texttt{copyright-check.yml}               & Header presence and consistency.                                                                                                  \\
+\texttt{since-version-check.yml}           & \texttt{@since} tags on public APIs.                                                                                              \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{What "green" means at PR time}
+
+A PR is mergeable to \texttt{main} when:
+
+\begin{itemize}
+  \item Every workflow above is green.
+  \item Firmware host coverage at 100\,\% line / function / branch.
+  \item Proto regen lockstep workflow has no diff.
+  \item No non-ASCII characters in any source file.
+  \item No \texttt{master/slave} or \texttt{MOSI/MISO} terminology.
+  \item Doxygen builds without warnings (when \texttt{WARN\_AS\_ERROR} is enabled).
+\end{itemize}
+
+The repo deliberately has no backward-compatibility shims, so a
+breaking change to a proto / API / library is fine \emph{provided}
+the same PR updates every consumer in lockstep.
+
+\subsection{Reproducing CI locally}
+
+\begin{center}
+\begin{tabular}{|p{4.5cm}|p{9.5cm}|}
+\hline
+\textbf{What CI runs}                  & \textbf{Local equivalent}                                                                                                       \\
+\hline
+firmware-build-verify.yml              & \texttt{make ci-rx72n}                                                                                                          \\
+firmware-unit-tests.yml                & \texttt{make test-rx72n} then \texttt{make coverage-rx72n}                                                                       \\
+gateway.yml                            & \texttt{cd star-gateway \&\& go test -race -cover ./... \&\& golangci-lint run}                                                   \\
+ros2.yml                               & \texttt{./build-ros2.sh \&\& ./test-ros2.sh}                                                                                       \\
+proto.yml + proto-gen.yml              & \texttt{make proto-gen \&\& git diff --exit-code}                                                                                \\
+ascii-check.yml                        & \texttt{python3 scripts/utils/fix-encoding.py --check .}                                                                          \\
+copyright-check.yml                    & \texttt{python3 scripts/utils/check-copyright.py}                                                                                 \\
+\hline
+\end{tabular}
+\end{center}

@@ -1,0 +1,195 @@
+% ============================================================================
+% MOTOR CONTROL LOOP -- END-TO-END WALKTHROUGH
+% ============================================================================
+
+\section{Motor Control Loop}
+\label{section:motor-control-loop}
+
+This section walks the motor control loop from the wheel rim to the
+gateway and back. It is the project's largest and most timing-sensitive
+subsystem, and the only place where every layer of the stack has to
+behave under hard real-time constraints.
+
+\subsection{Loop topology in one picture}
+
+\begin{center}
+\begin{verbatim}
+   Wheel (front-left, front-right, back-right, back-left -- 4x)
+     |
+     | 6 V brushed DC gearmotor + 341 PPR Hall encoder
+     v
+   DRV8263H H-bridge (per motor) ------ IPROPI sense (per motor)
+     ^                                          |
+     | PWM (GPTW0..3, 20 kHz)                   | analog
+     | DIR / SLEEP / DRVOFF GPIO                v
+     |                                       S12AD (12-bit ADC)
+     |                                          |
+     |  Encoder phase A/B  -> MTU1, MTU2, TPU1, TPU2 (phase counting)
+     |                                          |
+     +----- motor_control_task @ 100 Hz <-------+
+                |                |  reads encoders, runs PID,
+                |                |  writes PWM, samples current
+                |                |
+                v                v
+            shared_data (atomic, lockless)
+                |
+                | command in / telemetry out
+                v
+            comm_task / telemetry_task
+                |
+                | nanopb framed protocol over USB CDC / UART / SPI
+                v
+            star-gateway (Go on Pi5)
+                |
+                v
+            ROS2 / UI consumer
+\end{verbatim}
+\end{center}
+
+\subsection{The loop body, step by step}
+
+The motor-control task runs a single 10\,ms tick (100\,Hz). Each tick:
+
+\begin{enumerate}
+  \item \textbf{Read encoder counts.}
+        \texttt{rx\_encoder\_get\_count(channel, \&count)} reads each
+        of the four hardware phase counters (MTU1, MTU2, TPU1, TPU2).
+        Hall encoders are 341 PPR; with 4x quadrature decode that's
+        1364 counts/rev (about 13.64 counts per degree of wheel
+        rotation).
+  \item \textbf{Compute velocity.}
+        \texttt{rx\_encoder\_compute\_velocity\_mps} converts
+        \texttt{delta\_counts / dt\_sec} to meters per second using
+        the wheel circumference defined in \texttt{rx\_motor\_config\_t}.
+  \item \textbf{Update setpoint.} The current command is read from
+        \texttt{shared\_data} (set by \texttt{comm\_task} on receipt
+        of a \texttt{SetVelocityRequest}).
+  \item \textbf{Run PID.} \texttt{rx\_pid\_compute(handle, setpoint,
+        measured, dt\_sec, \&output)} runs the discrete PID with
+        backward-Euler integration, anti-windup clamping, and
+        derivative low-pass filtering. Gains come from
+        \texttt{rx\_pid\_set\_gains}.
+  \item \textbf{Apply duty.} The PID output is in $[-1.0, +1.0]$
+        (signed normalized PWM duty). Sign becomes the direction
+        signal (DIR + SLEEP), magnitude becomes the PWM duty fed to
+        the GPTW channel.
+  \item \textbf{Sample current (optional).} If the IPROPI ADC channel
+        for this motor is enabled, \texttt{rx\_drv8263\_adc\_to\_amps}
+        converts the latest sample to amps and stores it in
+        \texttt{shared\_data} for telemetry to read.
+  \item \textbf{Write back to shared\_data.} Per-wheel commanded /
+        measured velocity, duty, current, and motor-state are written
+        to \texttt{shared\_data}'s motor block via the lockless
+        accessor pattern.
+  \item \textbf{Sleep until the next tick.} \texttt{tx\_thread\_sleep}
+        waits for the next 10\,ms tick. The scheduler ensures other
+        tasks get to run during the wait window.
+\end{enumerate}
+
+\subsection{Where commands come from}
+
+\texttt{comm\_task} owns the receive path. Each tick (10\,ms or
+event-driven on USB CDC RX-ready) it pulls bytes from the active
+transport, runs them through \texttt{rx\_frame\_decode\_with\_resync},
+validates the sequence number against the per-channel session,
+decodes the protobuf payload via nanopb, and dispatches by
+\texttt{frame\_type\_t} to a handler. The handler updates the
+relevant fields in \texttt{shared\_data}; the next motor-control
+tick will see the new values.
+
+\subsection{Where telemetry goes}
+
+\texttt{telemetry\_task} runs at 50\,Hz. It reads each motor's state
+from \texttt{shared\_data}, builds a \texttt{star\_v1\_TelemetryReport}
+protobuf message, and pushes it via \texttt{rx\_comm\_manager\_send}.
+The gateway parses and republishes as gRPC or ROS2 topic.
+
+\subsection{Concurrency model}
+
+ThreadX priorities (lower number = higher priority):
+
+\begin{itemize}
+  \item \texttt{motor\_control\_task} -- highest (100\,Hz, hard real-time)
+  \item \texttt{watchdog\_monitor\_task} -- high (200\,Hz IWDT kick)
+  \item \texttt{comm\_task} -- medium (event-driven)
+  \item \texttt{imu\_task}, \texttt{telemetry\_task},
+        \texttt{temp\_sensor\_task},
+        \texttt{obstacle\_detect\_task} -- normal
+  \item \texttt{led\_status\_task},
+        \texttt{serial\_bringup\_task} -- low
+\end{itemize}
+
+Inter-task data flow goes exclusively through
+\texttt{src/shared/shared\_data.c}. Each producer-consumer pair has a
+dedicated block; reads and writes use lockless atomic sequencing
+(write a "begin" generation counter, write data, write an "end"
+generation counter; readers retry if begin and end disagree). This
+avoids ThreadX mutex calls in the hot path.
+
+\subsection{Safety interactions}
+
+The motor-control task does NOT have an autonomous estop check; it
+trusts \texttt{shared\_data.estop\_active}. The flag is set by:
+
+\begin{itemize}
+  \item The supervisor / safety\_monitor publishing
+        \texttt{/star/estop=true}, which the gateway forwards through
+        the comm path.
+  \item A watchdog event (the watchdog task asserts
+        \texttt{estop\_active} before reset).
+  \item A motor fault (DRV8263 \texttt{nFAULT} pin trips, the
+        \texttt{rx\_motor} layer raises a per-motor fault).
+\end{itemize}
+
+When \texttt{estop\_active} is true, the motor-control task forces
+zero duty on every channel and writes
+\texttt{k\_motor\_state\_estop} into the shared block. The gateway
+side dual-enforces by also publishing zero Twist on
+\texttt{/cmd\_vel\_out}, so a bug in either layer alone cannot move
+the robot.
+
+\subsection{Tuning workflow}
+
+Motor tuning is offline: fit a model in MATLAB and compile the gains
+in.
+
+\begin{enumerate}
+  \item Run a step-response capture with the bench firmware
+        (\texttt{star-rx72n-firmware/motor\_spin\_test/}) and dump
+        encoder velocity + commanded duty to UART or USB CDC.
+  \item Import the trace in \texttt{matlab/firmware\_match\_sim.m} /
+        \texttt{matlab/motor\_model\_1st\_order.m}.
+  \item Run \texttt{matlab/cascaded\_pid\_design.m} to design Kp /
+        Ki / Kd against the identified plant.
+  \item Run \texttt{matlab/pid\_discretize.m} to convert continuous
+        gains to discrete (forward-Euler) form at 100\,Hz.
+  \item Update PID config defaults in
+        \texttt{star-rx72n-firmware/libs/rx\_motor/inc/rx\_motor.h}.
+  \item Rebuild firmware, reflash, re-capture step response,
+        sanity-check rise time / overshoot.
+\end{enumerate}
+
+The motor model in use:
+$G(s) = \frac{3.665}{0.075 s + 1}$ -- a first-order DC motor with
+gain 3.665\,rad/s/V and time constant 75\,ms.
+
+\subsection{Where to look in code}
+
+\begin{center}
+\begin{tabular}{|p{5.5cm}|p{8.5cm}|}
+\hline
+\textbf{Topic}                              & \textbf{Source}                                                              \\
+\hline
+Loop body                                    & \texttt{star-rx72n-firmware/src/tasks/motor\_control\_task.c}               \\
+PID algorithm                                & \texttt{star-rx72n-firmware/libs/rx\_pid/src/rx\_pid.c}                     \\
+PWM / duty / direction primitives            & \texttt{star-rx72n-firmware/libs/rx\_motor/src/rx\_motor.c}                  \\
+DRV8263 chip driver                          & \texttt{star-rx72n-firmware/libs/rx\_drv8263/src/rx\_drv8263.c}              \\
+Encoder backends (MTU + TPU phase count)     & \texttt{star-rx72n-firmware/libs/rx\_encoder/}                                \\
+Shared data block                            & \texttt{star-rx72n-firmware/src/shared/shared\_data.c}                       \\
+Command receive path                         & \texttt{star-rx72n-firmware/src/tasks/comm\_task.c}                          \\
+Telemetry transmit path                      & \texttt{star-rx72n-firmware/src/tasks/telemetry\_task.c}                     \\
+Motor model + PID design                     & \texttt{matlab/cascaded\_pid\_design.m}, \texttt{motor\_model\_1st\_order.m}  \\
+Bench validation firmware                    & \texttt{star-rx72n-firmware/motor\_spin\_test/}, \texttt{pwm\_test\_hal/}     \\
+\hline
+\end{tabular}
+\end{center}

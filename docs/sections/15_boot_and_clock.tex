@@ -1,0 +1,147 @@
+% ============================================================================
+% BOOT SEQUENCE AND CLOCK TREE
+% ============================================================================
+
+\section{Boot Sequence and Clock Tree}
+\label{section:boot-clock}
+
+This section walks through the RX72N's power-on sequence and the
+clock tree it ends up in. Anyone touching peripheral init, reset
+handling, or low-power transitions should read this first.
+
+\subsection{Power-on reset path}
+
+\begin{enumerate}
+  \item \textbf{Reset vector and OFS1.} On power-on the RX72N reads the
+        OFS1 byte from option-setting memory (placed in the
+        \texttt{.ofs1} section by \texttt{src/boot/smc/vecttbl.c}).
+        OFS1 controls HOCO enable, IWDT autostart, and startup mode.
+        STAR's OFS1 is configured so HOCO comes up automatically and
+        IWDT is software-started (\emph{not} autostart) so the
+        firmware can program its timeout before the watchdog can fire.
+  \item \textbf{Custom boot.} \texttt{src/boot/} (alongside the
+        Renesas-vendored SMC boot tree under \texttt{src/boot/smc/}) is
+        responsible for setting up MSTPCR / register protection and
+        getting to \texttt{main()} cleanly.
+  \item \textbf{Clock initialization.}
+        \texttt{src/rx\_clock\_power\_init.c} runs early in
+        \texttt{main()}. It selects the clock source (crystal vs HOCO),
+        programs the PLL, sets the sub-clock dividers, and unlocks
+        \texttt{PRCR}-protected registers via the
+        \texttt{rx\_register\_protection} helpers.
+  \item \textbf{Pin multiplexer release.} Once clocks are stable,
+        \texttt{src/hardware\_init.c} unlocks PFS / PWPR (the
+        Renesas pin-protection register), routes every peripheral pin
+        through the MPC PSEL table, and locks PFS again.
+  \item \textbf{Peripheral init.} Each library's \texttt{*\_init()}
+        runs in dependency order: HAL accessors first, then sensors,
+        bus managers, actuators, and the wire-protocol stack.
+  \item \textbf{ThreadX scheduler.}
+        \texttt{tx\_application\_define} creates each task's stack +
+        thread, then \texttt{tx\_kernel\_enter} hands control to the
+        scheduler. Every task has its own priority and stack size;
+        nothing dynamic.
+  \item \textbf{IWDT armed.} The watchdog-monitor task arms the IWDT
+        only after every other task has crossed its first
+        deadline-monitored checkpoint, so a slow startup never trips
+        the watchdog.
+\end{enumerate}
+
+\subsection{Clock tree}
+
+The RX72N has multiple parallel clock domains. Constants live in
+\texttt{libs/rx\_hal/inc/rx72n\_clock.h} as enums (\texttt{k\_iclk\_hz},
+\texttt{k\_pclka\_hz}, \texttt{k\_pclkb\_hz}, \texttt{k\_pclkd\_hz}).
+
+\begin{center}
+\begin{tabular}{|l|r|p{4.5cm}|p{4.5cm}|}
+\hline
+\textbf{Clock} & \textbf{Rate}      & \textbf{Source on PROD board}     & \textbf{Source on TOM board}      \\
+\hline
+ICLK    & 240\,MHz                  & 24\,MHz xtal $\rightarrow$ PLL    & HOCO 16\,MHz $\rightarrow$ PLL    \\
+PCLKA   & 120\,MHz                  & ICLK / 2                          & ICLK / 2                          \\
+PCLKB   & 60\,MHz                   & ICLK / 4                          & ICLK / 4                          \\
+PCLKD   & 60\,MHz                   & ICLK / 4                          & ICLK / 4                          \\
+FCLK    & 60\,MHz                   & ICLK / 4                          & ICLK / 4                          \\
+USB clk & 48\,MHz                   & main PLL via PACKCR.UPLLSEL=0     & main PLL via PACKCR.UPLLSEL=0     \\
+IWDTCLK & 15\,kHz                   & dedicated low-speed oscillator    & dedicated low-speed oscillator    \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{Which peripheral runs on which clock}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Domain} & \textbf{Peripherals}                                              & \textbf{Notes}                                              \\
+\hline
+ICLK 240\,MHz   & CPU, Cache, ROM/RAM accessors                                     & Driving the 100\,Hz motor-control loop                       \\
+PCLKA 120\,MHz  & SCI7-SCI11 (extended SCIi), GPTW, CMT0/1, MTU3, TPU                & Encoder phase counters, motor PWM                            \\
+PCLKB 60\,MHz   & SCI0-SCI6 + SCI12, RIIC, RSPI, IWDT (rate-divider source)          & SCI9 UART bring-up, host I2C / SPI                           \\
+PCLKD 60\,MHz   & ADC12 (S12AD)                                                     & Motor current sense (IPROPI), baro analog                    \\
+USB 48\,MHz     & USB0 USBb peripheral                                              & Sourced from main PLL via PACKCR.UPLLSEL=0                   \\
+IWDTCLK 15\,kHz & IWDT                                                              & Independent of any other clock; cannot be stopped            \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Always trust the header.} \texttt{rx72n\_clock.h} is the single
+source of truth for these rates. Every BRR / divider / period math in
+the firmware derives from \texttt{k\_pclkX\_hz}. CLAUDE.md elevates
+this to a P0 rule: trust headers over comments. PCLKB is 60\,MHz, not
+120\,MHz.
+
+\subsection{TOM vs PROD clock-source notes}
+
+PROD has a 24\,MHz crystal as the main clock; TOM has no crystal and
+runs everything from HOCO\,$\rightarrow$\,PLL (PLLSRCSEL=1, multiplier 12).
+HOCO accuracy is $\pm$2.44\,\% at $T_a \ge -20^\circ$C; USB 2.0
+Full-Speed is specified at $\pm$0.25\,\%. The Pi 5 xHCI host accepts
+the HOCO-driven clock and TOM enumerates the 3-port CDC composite
+cleanly. See \S\ref{section:usb-modes} for the portability discussion.
+
+\subsection{Reset sources}
+
+The Reset Status Register 2 (\texttt{RSTSR2}) preserves the cause of
+the most recent reset across boot. STAR firmware reads it once during
+\texttt{main()} startup and logs the cause:
+
+\begin{center}
+\begin{tabular}{|l|l|p{6cm}|}
+\hline
+\textbf{Bit} & \textbf{Source} & \textbf{Meaning}                                                            \\
+\hline
+PORF         & Power-on        & Cold start                                                                  \\
+LVD0RF       & LVD0            & Voltage detection level 0 fired                                              \\
+LVD1RF       & LVD1            & Voltage detection level 1 fired                                              \\
+LVD2RF       & LVD2            & Voltage detection level 2 fired                                              \\
+SWRF         & Software        & Firmware called \texttt{SYSTEM.SWRR.WORD = 0xA501}                          \\
+WDTRF        & WDT             & Watchdog reset                                                              \\
+IWDTRF       & IWDT            & Independent watchdog reset                                                  \\
+DPSRSTF      & Deep Sleep      & Wake from Deep Sleep mode                                                   \\
+CWSF         & Cold/Warm flag  & Distinguishes cold vs warm boot                                              \\
+\hline
+\end{tabular}
+\end{center}
+
+When \texttt{IWDTRF=1}, the firmware halts via
+\texttt{internal\_rx\_fatal\_error} so an in-circuit debugger can
+inspect the stack from before the watchdog fired.
+
+\subsection{Where to look in code}
+
+\begin{center}
+\begin{tabular}{|p{5.5cm}|p{8.5cm}|}
+\hline
+\textbf{Topic}                                & \textbf{Source}                                                                                                       \\
+\hline
+Clock-rate constants (the truth)              & \texttt{star-rx72n-firmware/libs/rx\_hal/inc/rx72n\_clock.h}                                                          \\
+Clock + power init (after reset)              & \texttt{star-rx72n-firmware/src/rx\_clock\_power\_init.c}                                                              \\
+Pin-mux / PFS / PWPR unlock sequence          & \texttt{star-rx72n-firmware/src/hardware\_init.c}                                                                      \\
+OFS1 / boot vectors                            & \texttt{star-rx72n-firmware/src/boot/smc/vecttbl.c} (placed in \texttt{.ofs1} per linker script)                       \\
+Reset-cause inspection                         & \texttt{star-rx72n-firmware/src/main.c} (RSTSR2 read + logging)                                                       \\
+USB clock routing                              & \texttt{star-rx72n-firmware/libs/rx\_usb/src/rx\_usb\_hw.c} (PACKCR.UPLLSEL, SCKCR2.UCK)                                \\
+\hline
+\end{tabular}
+\end{center}

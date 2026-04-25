@@ -1,0 +1,241 @@
+% ============================================================================
+% TROUBLESHOOTING AND KNOWN GOTCHAS
+% ============================================================================
+
+\section{Troubleshooting and Known Gotchas}
+\label{section:troubleshooting}
+
+This section is the lessons-learned dump. Every entry below cost
+real bench-debug time; if you hit a similar symptom, read the
+corresponding entry first before reaching for an oscilloscope.
+
+\subsection{USB / CDC enumeration}
+
+\subsubsection{ttyACM* indices change after re-flash}
+
+\textbf{Symptom:} after \texttt{rfp-cli} reflash the gateway
+fails to open \texttt{/dev/ttyACM1} (or whichever index it had
+before).
+
+\textbf{Why:} the firmware re-init cycles the USBb peripheral, the
+host sees a disconnect + re-enumerate, and Linux assigns the next
+free index. Hot-plugging another CDC device between the cycles
+shifts the numbers further.
+
+\textbf{Fix:} install the udev symlinks:
+\texttt{sudo bash scripts/setup-pi5-host.sh} (which deploys
+\texttt{scripts/71-star-symlinks.rules}). The gateway can then
+open \texttt{/dev/star-rx72n-proto / -decoded / -log} and not
+care what \texttt{ttyACM*} number it ends up as.
+
+\subsubsection{No CY7C65213 UART bridge while E2 Lite is plugged in}
+
+\textbf{Symptom:} \texttt{ls /dev/cu.usbmodem* /dev/cu.usbserial-*}
+shows no Cypress-bridge serial device while the E2 Lite is connected.
+
+\textbf{Why:} bench harness shares USB power gating between the
+E2 Lite and the Cypress bridge. This is hardware wiring, not a
+fault.
+
+\textbf{Fix:} disconnect the E2 Lite physically after flashing
+before running anything that opens the SCI9 fallback path. The
+USB0 path on \texttt{/dev/ttyACM*} is independent and does \emph{not}
+suffer from this constraint.
+
+\subsubsection{TOM enumerates fine on Pi 5 despite HUM warnings}
+
+\textbf{Symptom:} The Renesas HW manual says PLLSRCSEL must be 0
+when using USB; TOM violates this (PLLSRCSEL=1, HOCO source) and
+HOCO accuracy is $\pm$2.44\,\% vs USB FS spec $\pm$0.25\,\%.
+
+\textbf{Reality:} The Pi 5 xHCI controller accepts the HOCO-driven
+clock without issue. Bench-verified 2026-04-24 on commit
+\texttt{341bd09ce}: TOM enumerates the 3-port CDC composite
+cleanly, idVendor=045b idProduct=0235, no EPIPE / EPROTO.
+
+\textbf{Caveat:} stricter xHCI variants (some macOS revisions,
+some Windows HCDs, embedded controller hubs) MAY reject this clock.
+For ship-to-Pi deployments, TOM USB is fine. For field deployments
+on unknown hosts, the 24\,MHz crystal-clocked PROD configuration
+is the safer choice.
+
+\subsubsection{USB ISR not firing despite ICU/IER configured}
+
+\textbf{Symptom:} \texttt{g\_usb\_isr\_entry\_count == 0} even
+though INTSTS0 / BRDY / BEMP latch correctly inside the USB peripheral.
+Vector 144 (USBI0) configured cleanly; nothing fires.
+
+\textbf{Why:} two HUM-mandated steps were missing.
+
+\begin{enumerate}
+  \item \textbf{SLIPRCR.WPRC was never written.} HUM 15.7.7 step (5)
+        makes \texttt{SLIPRCR.WPRC = 1} mandatory after assigning a
+        software-configurable interrupt. Without it the ICU silently
+        drops USBI0.
+  \item \textbf{SYSCFG.USBE was set BEFORE SYSCFG.SCKE.} HUM
+        40.3.1.1 requires SCKE first; reverse order silently no-ops
+        half the SYSCFG follow-on writes because the USB module
+        clock is gated until SCKE=1 latches.
+\end{enumerate}
+
+\textbf{Fix:} both fixes shipped on \texttt{feat/usb0} commit
+\texttt{f23b15eb5}; they are now in main. If you see this symptom
+again, check that those two specific writes are present and in
+the right order in your bring-up code.
+
+\subsection{Bench-rig pitfalls}
+
+\subsubsection{AD2 Single-mode buffer is 4096 samples, period}
+
+\textbf{Symptom:} an AD2 capture longer than ~4 ms appears to show
+the MUT going dead. You set
+\texttt{FDwfDigitalInBufferSizeSet(8192)} and run a 20-second
+sweep; only the first 4\,ms are useful.
+
+\textbf{Why:} \texttt{FDwfDigitalInBufferSizeSet(n)} silently
+clamps to 4096 samples no matter what you ask for. With
+\texttt{SampleFormat=8} (one byte per word), 4096 samples at
+1\,MHz = ~4\,ms (sometimes ~8\,ms with byte-format packing). The
+AD2 isn't recording past that point, and your firmware looks
+mute.
+
+\textbf{Fix:} pick the sample rate to match the desired window:
+\texttt{sample\_hz = buffer\_size / desired\_seconds}. For a 20\,s
+debug-trace, that's 200\,Hz. For high-frequency signals, switch to
+Record mode (\texttt{FDwfDigitalInAcquisitionModeSet mode=2}) which
+streams continuously to the host.
+
+\subsubsection{sci9\_debug\_puts hangs from a ThreadX task}
+
+\textbf{Symptom:} debug logging via \texttt{sci9\_debug\_puts}
+freezes the calling task; everything else continues but that task
+is wedged.
+
+\textbf{Why:} the helper busy-polls TDRE before writing. SCI9 runs
+on PCLKA (120\,MHz) but its BRR was being computed against PCLKB
+(60\,MHz) -- so the configured baud was halved and TDRE never
+came back true at the expected rate within the busy-poll budget.
+
+\textbf{Fix until BRR/PCLK is corrected:} skip \texttt{sci9}
+debug from any ThreadX task; use the rx\_log path or USB CDC log
+port 3 instead.
+
+\subsection{Build / toolchain}
+
+\subsubsection{Devcontainer rebuild loop}
+
+\textbf{Symptom:} VS Code rebuilds the devcontainer image every
+session; takes minutes.
+
+\textbf{Why:} the GHCR cache is missing or stale for the user.
+
+\textbf{Fix:} pull the cached image manually:
+\texttt{docker pull ghcr.io/locked-inc/star/gnurx:latest}. The
+\texttt{firmware-toolchain-image.yml} workflow keeps it warm.
+
+\subsubsection{Local rx-elf-gcc fails; should I use the devcontainer?}
+
+\textbf{Memory rule:} use the devcontainer only if the local
+\texttt{rx-elf-gcc} actually fails. If it works, build directly --
+it's faster. There is no \texttt{devcontainer-exec.sh} script and
+you should not create one.
+
+\subsection{Coding-policy reminders}
+
+\subsubsection{No NOLINT for readability-* clang-tidy checks}
+
+\textbf{Rule:} \texttt{readability-function-size},
+\texttt{readability-function-cognitive-complexity},
+\texttt{readability-magic-numbers}, etc. must be REFACTORED, never
+suppressed with \texttt{NOLINT}.
+
+\textbf{Why:} the user's standing rule. Suppressions accumulate
+silently and the codebase loses the structural feedback the lint
+gave for free.
+
+\textbf{Exception:} path-sensitive checks like
+\texttt{clang-analyzer-optin.core.EnumCastOutOfRange} where there
+is genuinely no source-level workaround -- a NOLINT is acceptable
+there. \texttt{readability-*} is not in that exception class.
+
+\subsubsection{Trust headers over comments}
+
+\textbf{Rule:} when a stripped-down test file's comment and the
+\texttt{libs/rx\_hal/inc/*.h} header disagree, the header wins. The
+clock tree comment in \texttt{encoder\_test/} (or anywhere)
+claiming PCLKB = 120\,MHz is wrong; \texttt{rx72n\_clock.h} says
+60\,MHz and that is the truth.
+
+\subsubsection{Trust known-good bench tests over fresh code}
+
+\textbf{Rule:} if \texttt{motor\_spin\_test/}, \texttt{encoder\_test/},
+or \texttt{imu\_test/} already initialize a peripheral successfully
+on the bench, diff your new code against theirs. Do not freelance
+an init sequence when a proven one exists. CLAUDE.md elevates this
+to a P0 rule because guessing-and-flashing has cost the project
+real days.
+
+\subsection{Common red herrings}
+
+\subsubsection{"It looks like the MCU halts 8\,ms after rfp-cli disconnect"}
+
+It does not. The AD2 buffer simply ran out (see 4096-sample issue
+above). Re-sample at \texttt{buffer\_size / desired\_seconds} and
+the trace will run for the full window.
+
+\subsubsection{"USB enumeration is broken because BRR is wrong"}
+
+Not necessarily. Before blaming firmware, verify the host side:
+
+\begin{verbatim}
+stty -F /dev/ttyACM1 -a
+\end{verbatim}
+
+Old stty state from a previous session can sit on a tty and look
+exactly like a baud-rate mismatch. CLAUDE.md's "Embedded Gotchas"
+list calls this out for the SCI9 path; the same lesson applies to
+USB CDC re-enumerations.
+
+\subsubsection{"The peripheral isn't responding to register writes"}
+
+Most likely it is in module-stop. The MSTPCRA / MSTPCRB / MSTPCRC /
+MSTPCRD bit for that peripheral has to be cleared (\texttt{0}) before
+any of its registers are addressable. Silent failure mode.
+
+Other common silent failures:
+
+\begin{itemize}
+  \item \textbf{PFS locked}: writes to \texttt{P\{n\}PFS} require
+        \texttt{PWPR.B0WI=0} then \texttt{PWPR.PFSWE=1}. Missing
+        unlock = pin-mux never changes = no signal at the pad.
+  \item \textbf{MPC PSEL wrong}: PSEL value differs per pin. Check
+        the MPC chapter's pin-function table, not a sibling pin.
+  \item \textbf{Wrong PCLK}: SCI uses PCLKB; GPTW uses PCLKA;
+        ADC12 uses PCLKD. Mixing silently miscomputes the divider.
+  \item \textbf{FPU context save not enabled}: a task using floats
+        without \texttt{TX\_THREAD\_EXTENSION\_2} silently corrupts
+        another task's FPU state on preemption.
+  \item \textbf{Encoder TMDR=0 instead of phase-counting mode}:
+        gives a free-running timer, not an encoder.
+\end{itemize}
+
+CLAUDE.md's "Embedded Gotchas to Pattern-Match Instantly" list is
+the expanded version; this section is the curated subset that has
+actually bitten this project.
+
+\subsection{Where to look in code}
+
+\begin{center}
+\begin{tabular}{|p{5.5cm}|p{8.5cm}|}
+\hline
+\textbf{Topic}                                & \textbf{Source}                                                                          \\
+\hline
+udev symlink rules                            & \texttt{scripts/71-star-symlinks.rules}                                                  \\
+USB autosuspend disable                       & \texttt{scripts/setup-pi5-host.sh} (installs \texttt{70-star-usb-no-autosuspend.rules}) \\
+USB ISR routing fix                           & \texttt{star-rx72n-firmware/libs/rx\_usb/src/rx\_usb\_hw.c}                              \\
+SCI9 debug helper                             & \texttt{star-rx72n-firmware/encoder\_test/sci9.c} (and similar in sibling bench tests)   \\
+AD2 capture harness                           & \texttt{star-rx72n-firmware/gpio\_test/host/}                                            \\
+Embedded gotchas (canonical)                  & \texttt{CLAUDE.md} "Engineering Discipline" section                                       \\
+\hline
+\end{tabular}
+\end{center}

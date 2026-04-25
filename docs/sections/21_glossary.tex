@@ -1,0 +1,165 @@
+% ============================================================================
+% GLOSSARY
+% ============================================================================
+
+\section{Glossary}
+\label{section:glossary}
+
+Acronyms and project-specific terms, alphabetical.
+
+\begin{description}
+  \item[ADA] Americans with Disabilities Act. The federal regulation
+        the compliance engine in \texttt{star-compliance/} audits
+        environments against.
+  \item[AD2] Digilent Analog Discovery 2. The 16-channel logic
+        analyzer used on the bench (7 of them = 112 channels). See
+        \texttt{docs/bench/ad2\_wiring.md}.
+  \item[Ament] The build tool ROS2 uses (\texttt{colcon} +
+        \texttt{ament\_cmake} + \texttt{ament\_python}).
+        \texttt{ament\_uncrustify} is the formatter ROS2 packages
+        use; \texttt{ament\_cppcheck}, \texttt{ament\_cpplint} are
+        the static analyzers.
+  \item[ARQ] Automatic Repeat Request. Original error-handling
+        scheme for the wire protocol. Replaced by HARQ;
+        see ADR-001.
+  \item[BNO055] Bosch 9-axis IMU on the I2C bus.
+  \item[BMP280] Bosch barometric pressure sensor.
+  \item[BSP] Board Support Package. The Renesas-vendored boot /
+        startup code under \texttt{src/boot/smc/}.
+  \item[Buf] The protobuf tooling we use; replaces \texttt{protoc}.
+        \texttt{buf generate}, \texttt{buf lint}, \texttt{buf breaking}.
+  \item[Caddy] Reverse proxy on the Pi 5; serves the cockpit web
+        bundle and the SLAM map endpoint over HTTPS with an internal
+        CA. See \texttt{infra/pi5/etc/caddy/Caddyfile}.
+  \item[CDC] Communications Device Class -- the USB class our 3-port
+        composite device exposes. Each port becomes a
+        \texttt{/dev/ttyACM*} on Linux.
+  \item[CIPO] Controller In, Peripheral Out (legacy: MISO). Project
+        terminology mandate.
+  \item[CMT] Compare-Match Timer. Used for ThreadX system tick on
+        CMT0.
+  \item[colcon] ROS2 multi-package build tool. We invoke it from
+        \texttt{build-ros2.sh}.
+  \item[Composite USB device] A single USB device exposing multiple
+        function classes (here: three CDC-ACM serial ports under one
+        idVendor / idProduct). See \S\ref{section:usb-modes}.
+  \item[COPI] Controller Out, Peripheral In (legacy: MOSI). Project
+        terminology mandate.
+  \item[Cyclone DDS] The DDS RMW middleware ROS2 Jazzy uses.
+        Configured by \texttt{config/cyclonedds.xml}.
+  \item[DRV8263H] Texas Instruments H-bridge motor driver. One per
+        wheel (4 total). See \texttt{star-rx72n-firmware/libs/rx\_drv8263/}.
+  \item[DRVOFF] Active-high pin on the DRV8263 that puts the bridge
+        into Hi-Z. The hardware-level e-stop lever.
+  \item[DS18B20] Dallas/Maxim 1-wire temperature sensor.
+  \item[E2 Lite] The Renesas E2 Lite debugger / flasher. Plugs into
+        the JTAG header. See bench docs.
+  \item[FEC] Forward Error Correction. Convolutional rate-1/2 K=7;
+        used by the SPI link layer.
+  \item[FINE] Renesas single-wire debug protocol; alternative to
+        full JTAG. The E2 Lite supports both.
+  \item[Foxglove] Web cockpit framework; embedded in the Lichtblick
+        bundle the Pi serves over Caddy.
+  \item[FPU] Floating-Point Unit. RX72N has a single-precision FPU.
+        ThreadX needs \texttt{TX\_THREAD\_EXTENSION\_2} to context-
+        switch FPU registers per task.
+  \item[Gateway] The Go service in \texttt{star-gateway/} that
+        bridges the UI / ROS2 and the RX72N.
+  \item[Generation counter] Lockless synchronization pattern in
+        \texttt{shared\_data} for atomic-ish data exchange between
+        producer and consumer tasks.
+  \item[gRPC] Google RPC framework, used by the gateway for ROS2 /
+        UI service interfaces.
+  \item[GNURX] Renesas's GCC port for the RX architecture. We use
+        14.2.0.202511.
+  \item[GPTW] General PWM Timer (whose initials happen to be GPT).
+        We use four channels for 20\,kHz motor PWM.
+  \item[HARQ] Hybrid Automatic Repeat Request. Combines ARQ retries
+        with FEC and Chase Combining. See ADR-001.
+  \item[HC-SR04] Ultrasonic range sensor. Trigger / echo timing via
+        the RX72N ICU peripheral.
+  \item[HOCO] High-speed On-Chip Oscillator. RX72N's 16\,MHz internal
+        clock; TOM uses HOCO\,$\rightarrow$\,PLL because it has no
+        external crystal.
+  \item[ICU] Interrupt Controller Unit. Sometimes also "Input Capture
+        Unit" -- context dependent.
+  \item[IMU] Inertial Measurement Unit. The BNO055 gives 9-axis +
+        fused orientation.
+  \item[IPROPI] DRV8263 current-mirror output (1\,A motor =
+        202\,$\mu$A IPROPI). Sensed by the RX72N S12AD ADC.
+  \item[IWDT] Independent Watchdog Timer. Cannot be stopped in
+        software; always-on safety net. See \S\ref{section:safety-architecture}.
+  \item[KiCad] Open-source EDA suite; the schematic and PCB are
+        KiCad sources under \texttt{schematic/}.
+  \item[Lichtblick] Web cockpit (Foxglove fork) served from the Pi.
+  \item[LFS] Git Large File Storage. Used for the GNURX /
+        rfp-cli installers and the Fusion 360 \texttt{.f3z} CAD.
+  \item[Linker script] \texttt{star-rx72n-firmware/src/linker\_script.ld}.
+        Defines memory regions, OFS1-OFS8 sections, the boot vectors.
+  \item[MTU3] Multi-Function Timer Pulse Unit 3. Used for two of the
+        four encoder phase-counting channels.
+  \item[Nav2] ROS2 Navigation 2 stack. Consumes the SLAM map and
+        publishes \texttt{/nav2/cmd\_vel}.
+  \item[nanopb] Embedded-C Protocol Buffers runtime; static-allocation
+        only. \texttt{star-rx72n-firmware/libs/rx\_nanopb/} hosts it.
+  \item[OFS1] Option-Setting Function 1 byte. Read by the RX72N at
+        reset; controls HOCO enable, IWDT autostart, etc.
+  \item[OLP] Open Load Protection. Diagnostic on the DRV8263 that
+        detects open-circuit / short-to-VM / short-to-GND conditions
+        per motor channel.
+  \item[PCLKA / PCLKB / PCLKD] Peripheral clock domains. PCLKA at
+        120\,MHz, PCLKB at 60\,MHz, PCLKD at 60\,MHz. See \S\ref{section:boot-clock}.
+  \item[PFS / PWPR] Pin-Function-Select Register / Pin-Write-Protection
+        Register. Required unlock dance before changing pin-mux.
+  \item[PID] Proportional-Integral-Derivative controller. The motor
+        loop's heart. \texttt{libs/rx\_pid/}.
+  \item[PLL] Phase-Locked Loop. Multiplies the main clock (crystal
+        on PROD, HOCO on TOM) up to 240\,MHz ICLK.
+  \item[POEG] Port Output Enable for GPTW. Hardware safety to disable
+        PWM outputs on fault.
+  \item[PROD] The production RX72N PCB variant. Has a 24\,MHz
+        crystal. Compile flag \texttt{STAR\_BOARD\_PROD}.
+  \item[Protobuf] Protocol Buffers, the wire-format / RPC schema
+        language. Schemas live in \texttt{star-proto/proto/star/v1/}.
+  \item[RFP-CLI] Renesas Flash Programmer CLI. Used to flash the
+        firmware via the E2 Lite. \texttt{scripts/flash-rx72n.sh}.
+  \item[RIIC] Renesas I-square-C peripheral. Two channels: RIIC0
+        (host I2C), RIIC1 (sensors).
+  \item[RMW] ROS Middleware. The DDS abstraction; we use
+        \texttt{rmw\_cyclonedds\_cpp}.
+  \item[ROS2] Robot Operating System 2; we run Jazzy.
+  \item[RSPI] Renesas SPI peripheral. RSPI2 talks to the Pi 5
+        \texttt{/dev/spidev0.0}.
+  \item[RTOS] Real-Time Operating System. We use Azure ThreadX.
+  \item[SCI] Serial Communications Interface. UART hardware on the
+        RX72N. We use SCI9 with the Cypress CY7C65213 USB-UART bridge.
+  \item[SLIPRCR] Software-configurable Interrupt PR-write-protection
+        Control Register. Has to be unlocked + WPRC=1 latched after
+        SLIBR writes; missing this latch was the USB-ISR-not-firing
+        root cause.
+  \item[Star] As a prefix: every top-level subproject begins with
+        \texttt{star-} (e.g. \texttt{star-rx72n-firmware/},
+        \texttt{star-gateway/}). Vendored third-party packages
+        keep their original names (\texttt{sllidar\_ros2},
+        \texttt{threadx}).
+  \item[STAR] Spatial Topography Accessibility Robot. The product.
+  \item[Supervisor] The ROS2 node that gates command flow through
+        \texttt{/cmd\_vel\_out}. See \S\ref{section:safety-architecture}.
+  \item[ThreadX] Azure RTOS / Microsoft's real-time OS for embedded
+        targets. Vendored under \texttt{libs/threadx/}.
+  \item[TOM] An RX72N PCB variant used for breakout-style bench
+        tests. Has no external crystal (HOCO-driven). Compile flag
+        \texttt{STAR\_BOARD\_TOM}.
+  \item[TPU] Timer Pulse Unit. Used for two encoder channels (the
+        other two are MTU3).
+  \item[Twist] ROS2 \texttt{geometry\_msgs/Twist} message; linear +
+        angular velocity command.
+  \item[USBb] The full-speed USB peripheral on the RX72N (USB0 module).
+  \item[USB CDC] See "CDC" above.
+  \item[Viterbi] Soft-decision decoder for the K=7 convolutional
+        code. \texttt{star-gateway/internal/fec/viterbi.go} and
+        \texttt{star-rx72n-firmware/libs/rx\_fec/}.
+  \item[xHCI] eXtensible Host Controller Interface. The Pi 5's USB
+        3 controller. The "permissive enough to accept TOM's HOCO
+        clock" host -- see \S\ref{section:usb-modes}.
+\end{description}
