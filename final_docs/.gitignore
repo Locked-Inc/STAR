@@ -5,9 +5,11 @@
 *.toc
 *.lof
 *.lot
+*.lol
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+*.synctex(busy)
 *.bbl
 *.blg
 *.idx
@@ -20,8 +22,39 @@
 *.bcf
 *.dvi
 *.ps
+*.xdv
+*.auxlock
+
+# LaTeX glossaries / acronyms
+*.glo
+*.gls
+*.glg
+*.glsdefs
+*.acn
+*.acr
+*.alg
+
+# minted / pygments
+*.pyg
+_minted-*/
+
+# TikZ external library
+*.figlist
+*.makefile
+*-figure*.pdf
+*-figure*.dpth
+*-figure*.md5
+*-figure*.log
+
+# latexmk
+*.fls
+*.fdb_latexmk
 
 # Editor/OS junk
 .DS_Store
+._*
+Thumbs.db
 *.swp
+*.swo
+*.bak
 *~
