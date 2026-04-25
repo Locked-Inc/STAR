@@ -50,6 +50,35 @@
 \newcommand{\statuslabel}[1]{\hyperref[sec:status-legend]{[#1]}}
 
 %----------------------------------------------------------------------
+% Screenshot slot with graceful fallback. If images/<file> exists, the
+% image is embedded; otherwise a gray "screenshot pending" placeholder
+% renders in its place so the PDF builds either way.
+%
+% Usage:
+%   \screenshot{file.png}{Caption text.}{fig:label}
+%----------------------------------------------------------------------
+\newcommand{\screenshotplaceholder}[2]{%
+  \begin{tikzpicture}
+    \node[draw=boxborder, fill=boxblue!20, minimum width=0.92\linewidth,
+          minimum height=4.5cm, align=center, font=\small\itshape,
+          rounded corners] (box) {Screenshot pending: #1\\[2pt]
+      \scriptsize Drop a PNG at \texttt{images/#2} and rebuild.};
+  \end{tikzpicture}%
+}
+\newcommand{\screenshot}[3]{%
+  \begin{figure}[H]
+    \centering
+    \IfFileExists{images/#1}{%
+      \includegraphics[width=0.92\linewidth]{images/#1}%
+    }{%
+      \screenshotplaceholder{#2}{#1}%
+    }
+    \caption{#2}
+    \label{#3}
+  \end{figure}%
+}
+
+%----------------------------------------------------------------------
 % Style
 %----------------------------------------------------------------------
 \pagestyle{fancy}
@@ -525,6 +554,12 @@ reachable:
       bridge on the robot.
 \end{itemize}
 
+\screenshot{lichtblick-connection.png}{Lichtblick "Open Connection"
+dialog with the foxglove-bridge WebSocket URL filled in. The
+foxglove bridge is started by \texttt{star-slam-mvp.service} on the
+Pi5 and is reachable across the tailnet at
+\texttt{ws://100.64.0.6:8765}.}{fig:lichtblick-connection}
+
 %======================================================================
 % 5. Daily Operation
 %======================================================================
@@ -640,6 +675,11 @@ over SCP.
 \label{sec:dashboards}
 
 \subsection{Grafana Cockpit}
+\screenshot{grafana-cockpit.png}{The STAR Grafana cockpit at default
+zoom. The map panel sits top-left; motor velocity gauges and IMU
+plots fill the middle rows; the autonomy / e-stop / SLAM controls
+and the speed slider live in the right rail.}{fig:grafana-cockpit}
+
 The committed dashboard is
 \texttt{monitoring/grafana-star-dashboard.json}. It contains row
 groups for SLAM map, motors, safety, sensors, and SLAM diagnostics.
@@ -665,7 +705,19 @@ Grafana's minimum refresh interval is configured to
 \qty{1}{\second} via the \texttt{GF\_DASHBOARDS\_MIN\_REFRESH\_INTERVAL}
 environment variable on the Grafana pod.
 
+\screenshot{grafana-controls-zoom.png}{Close-up of the cockpit
+control rail: AUTONOMY toggle, E-STOP button, speed slider, and
+SLAM start / stop. Each widget posts to a single endpoint on
+\texttt{star\_cockpit\_api}; see Table~\ref{tab:cockpit}.}{fig:grafana-controls}
+
 \subsection{Lichtblick Layout}
+\screenshot{lichtblick-3d.png}{Lichtblick 3D scene with the robot
+in a partially-mapped environment. The green rays are the live
+\texttt{/scan}; the grayscale tiles behind them are the
+\texttt{slam\_toolbox} occupancy grid; the colored 3D points are
+\texttt{/cloud\_map}. The arrow pointing forward from the chassis is
+\texttt{/odometry/filtered}.}{fig:lichtblick-3d}
+
 The default layout
 \texttt{star-ros2/src/star\_bringup/foxglove/star-default.json}
 wires the following topics into Lichtblick's 3D panel:
