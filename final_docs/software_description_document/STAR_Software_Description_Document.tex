@@ -40,6 +40,15 @@
             pdfkeywords={STAR, ADA, robotics, ROS2, RX72N, compliance}]{hyperref}
 
 %----------------------------------------------------------------------
+% Status-label hyperlink macro
+% Use as: \statuslabel{IMPLEMENTED} / \statuslabel{STRETCH} /
+%         \statuslabel{ARCHITECTED} / \statuslabel{STRETCH stub} /
+%         \statuslabel{ARCHITECTED stubs}
+% All occurrences hyperlink back to the legend at sec:status-legend.
+%----------------------------------------------------------------------
+\newcommand{\statuslabel}[1]{\hyperref[sec:status-legend]{[#1]}}
+
+%----------------------------------------------------------------------
 % Style: headers, section formatting, listings
 %----------------------------------------------------------------------
 \pagestyle{fancy}
@@ -180,14 +189,14 @@ layer, and a gRPC service layer.
 
 \textbf{Transport status note.} The full SPI-plus-FEC-plus-HARQ-plus-gRPC
 stack described above is the \emph{designed} transport and is the
-status \emph{[ARCHITECTED]} target for production. The transport
+status \statuslabel{ARCHITECTED} target for production. The transport
 \emph{deployed} for the capstone defense, used by the Pi5 cockpit and
 the demonstrated SLAM/Nav2 stack, is a simpler ASCII line protocol
 over USB-CDC at 115200~baud via \texttt{star\_simple\_bridge}
 (see Section on the ROS2 autonomy workspace). The two transports
 share the same Protocol Buffers contract at the message level. Where
 this SDD describes SPI / FEC / HARQ / gRPC end-to-end, those layers
-should be read as \emph{[ARCHITECTED]} unless the surrounding text
+should be read as \statuslabel{ARCHITECTED} unless the surrounding text
 calls out a deployed implementation explicitly. The SSUM
 (operator-facing companion document) describes only the deployed
 USB-CDC bridge, which is why the two documents differ on the
@@ -613,10 +622,10 @@ and safety monitoring.
 
 \textbf{Packages (10 total in \texttt{star-ros2/src/}):}
 \texttt{star\_bringup} (launch orchestration),
-\texttt{star\_simple\_bridge} (\emph{[IMPLEMENTED]} -- the deployed
+\texttt{star\_simple\_bridge} (\statuslabel{IMPLEMENTED} -- the deployed
 USB-CDC ASCII bridge to the RX72N at 115200~baud; serves
 OccupancyGrid PNG and Prometheus metrics on \texttt{:9101}),
-\texttt{star\_spi\_bridge} (\emph{[ARCHITECTED]} -- the production
+\texttt{star\_spi\_bridge} (\statuslabel{ARCHITECTED} -- the production
 SPI bridge target; not used at defense),
 \texttt{star\_gateway\_bridge}, \texttt{star\_safety\_monitor}
 (lifecycle-managed emergency stop), \texttt{star\_perception}
@@ -716,7 +725,11 @@ pre-commit-enforced 7-bit ASCII.
 \subsection{Compliance Engine (ADA Audit Core)}
 \label{sec:compliance-engine}
 
-\textbf{Status-label legend (applies throughout this subsection):}
+\phantomsection
+\label{sec:status-legend}
+\textbf{Status-label legend (applies throughout this document; every
+\texttt{[IMPLEMENTED]} / \texttt{[STRETCH]} / \texttt{[ARCHITECTED]}
+tag elsewhere in the SDD links back here):}
 \emph{[IMPLEMENTED]} means the feature is complete and has passing
 tests; \emph{[STRETCH]} means a working stub with scaffolding in place
 but without the full algorithm; \emph{[ARCHITECTED]} means specified
@@ -736,14 +749,14 @@ Open3D and NumPy.
 the status label tracks the algorithmic completeness of each.
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
 \item \textbf{Ramp slope} (\texttt{ramp\_slope\_node.py}) --
-      [IMPLEMENTED]. RANSAC plane fit to LiDAR points in a ramp
-      region of interest, cross-validated against RX72N IMU pitch.
+      \statuslabel{IMPLEMENTED}. RANSAC plane fit to LiDAR points in a
+      ramp region of interest, cross-validated against RX72N IMU pitch.
 \item \textbf{Trip hazard} (\texttt{trip\_hazard\_node.py}) --
-      [STRETCH stub]. Detects vertical discontinuities above the ADA
-      threshold (one quarter inch).
+      \statuslabel{STRETCH stub}. Detects vertical discontinuities above
+      the ADA threshold (one quarter inch).
 \item \textbf{Path width} (\texttt{path\_width\_node.py}) --
-      [STRETCH stub]. Occupancy-grid cross-section width along the
-      planned path.
+      \statuslabel{STRETCH stub}. Occupancy-grid cross-section width
+      along the planned path.
 \item \textbf{Ramp width} (\texttt{ramp\_width\_node.py}),
       \textbf{ramp landing} (\texttt{ramp\_landing\_node.py}),
       \textbf{door clear width} (\texttt{door\_clear\_width\_node.py}),
@@ -752,7 +765,7 @@ the status label tracks the algorithmic completeness of each.
       \textbf{protruding objects} (\texttt{protruding\_objects\_node.py}),
       \textbf{dynamic obstacle} (\texttt{dynamic\_obstacle\_node.py}),
       and the supervising \textbf{compliance monitor}
-      (\texttt{compliance\_monitor\_node.py}) -- [ARCHITECTED stubs].
+      (\texttt{compliance\_monitor\_node.py}) -- \statuslabel{ARCHITECTED stubs}.
       Node skeletons, message schemas, and traceability-matrix rows
       are committed to the repo; the internal algorithm bodies are
       placeholders pending post-capstone work.
@@ -1416,13 +1429,13 @@ implementing ROS2 node, the published topic, and the status label
 \toprule
 \textbf{ADA check} & \textbf{Sensor} & \textbf{Algorithm} & \textbf{Node} & \textbf{Status} \\
 \midrule
-405.2 Ramp slope          & LiDAR + IMU  & RANSAC plane + IMU cross-check & ramp\_slope\_node     & [IMPLEMENTED] \\
-303 Trip hazard           & LiDAR        & Vertical discontinuity detector & trip\_hazard\_node    & [STRETCH] \\
-403.5 Path width          & LiDAR map    & Cross-section width along path  & path\_width\_node     & [STRETCH] \\
-405.5 Ramp width          & LiDAR        & Lateral extent of ramp plane    & ramp\_width\_node     & [ARCHITECTED] \\
-405.7 Ramp landings       & LiDAR        & Adjacent plane detection        & ramp\_landing\_node   & [ARCHITECTED] \\
-404.2.3 Door clear width  & LiDAR        & Doorway passable-width scan     & door\_width\_node     & [ARCHITECTED] \\
-404.2.5 Door threshold    & LiDAR        & Threshold height measurement    & door\_threshold\_node & [ARCHITECTED] \\
+405.2 Ramp slope          & LiDAR + IMU  & RANSAC plane + IMU cross-check & ramp\_slope\_node     & \statuslabel{IMPLEMENTED} \\
+303 Trip hazard           & LiDAR        & Vertical discontinuity detector & trip\_hazard\_node    & \statuslabel{STRETCH} \\
+403.5 Path width          & LiDAR map    & Cross-section width along path  & path\_width\_node     & \statuslabel{STRETCH} \\
+405.5 Ramp width          & LiDAR        & Lateral extent of ramp plane    & ramp\_width\_node     & \statuslabel{ARCHITECTED} \\
+405.7 Ramp landings       & LiDAR        & Adjacent plane detection        & ramp\_landing\_node   & \statuslabel{ARCHITECTED} \\
+404.2.3 Door clear width  & LiDAR        & Doorway passable-width scan     & door\_width\_node     & \statuslabel{ARCHITECTED} \\
+404.2.5 Door threshold    & LiDAR        & Threshold height measurement    & door\_threshold\_node & \statuslabel{ARCHITECTED} \\
 \bottomrule
 \end{tabularx}
 \end{table}
