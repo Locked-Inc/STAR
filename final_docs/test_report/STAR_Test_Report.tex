@@ -40,6 +40,13 @@
             pdfkeywords={STAR, testing, Unity, Vitest, pytest, CI, coverage,
                          IEEE 29119}]{hyperref}
 
+%----------------------------------------------------------------------
+% Status-label hyperlink macro (paired with SDD and SSUM)
+% Use as: \statuslabel{STRETCH} etc. All occurrences hyperlink back
+% to the legend at sec:status-legend in the Introduction.
+%----------------------------------------------------------------------
+\newcommand{\statuslabel}[1]{\hyperref[sec:status-legend]{[#1]}}
+
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small STAR Test Report}
@@ -101,8 +108,8 @@
 
 {\large \textbf{Team Locked Inc}}\\[0.15in]
 \begin{tabular}{r l}
-Cesar Magana        & Software (firmware, gateway, ROS2, UI, compliance, infra) \\
-Brighton Sikarskie  & Embedded Development and Schematic Design \\
+Cesar Magana        & Software, Project Manager \\
+Brighton Sikarskie  & Software, Embedded Development, Schematic Design \\
 Jeremie Hockey      & PCB Design and Layout \\
 Michael Norton      & Mechanical Design \\
 Shawn Ciaciura      & Schematic Review \\
@@ -153,8 +160,10 @@ STAR software. It enumerates every automated test suite, identifies
 the subsystem each suite exercises, reports pass/fail status and
 measured coverage where available, and records the hardware
 bring-up tests performed against real silicon. Its structure is
-informed by IEEE 29119-3 (Test Documentation) and IEEE 829 legacy
-practice, adapted to the multi-language, multi-target STAR codebase.
+informed by ISO/IEC/IEEE 29119-3:2021 (Software and systems
+engineering -- Software testing -- Part 3: Test documentation) and
+IEEE 829-2008 legacy practice (superseded by 29119-3), adapted to
+the multi-language, multi-target STAR codebase.
 
 \subsection{Scope}
 The report covers eight software subsystems: the RX72N real-time
@@ -164,11 +173,40 @@ Buffers schema repository, the virtual-RX72N simulator, and the CI/CD
 automation that drives the whole pipeline. Physical PCB and
 mechanical verification are out of scope for this report.
 
-\subsection{Companion Documents}
-Architecture and design details are described in the STAR Software
-Description Document (SDD), and operational procedures in the STAR
-System and Software User Manual (SSUM). Where this report refers to
-a design decision without elaboration, the SDD is authoritative.
+\subsection{Companion Documents and Source-of-Truth Repository}
+The STAR project is open-source. The full repository, including
+every CI workflow, test harness, and coverage artifact referenced
+in this report, lives at
+\url{https://github.com/Locked-Inc/STAR}. The two companion
+documents below cover, respectively, the design that this report
+verifies and the operational procedures that follow from it:
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
+\item STAR Software Description Document (SDD):
+      \href{https://github.com/Locked-Inc/STAR/tree/main/final_docs/software_description_document}{\texttt{final\_docs/software\_description\_document/}}.
+      Authoritative for any design decision this report mentions
+      without elaboration.
+\item STAR System and Software User Manual (SSUM):
+      \href{https://github.com/Locked-Inc/STAR/tree/main/final_docs/system_software_user_manual}{\texttt{final\_docs/system\_software\_user\_manual/}}.
+      Operator-facing procedures.
+\end{itemize}
+Concrete artifacts cited later in this report -- coverage outputs,
+JUnit XML, CI workflow YAMLs, test source files -- can each be
+opened directly on GitHub at the path given.
+
+\subsection{Status Label Legend}
+\phantomsection
+\label{sec:status-legend}
+A handful of test scopes in this report are tagged with
+\texttt{[STRETCH]} when they were intentionally de-prioritized
+during the semester. The same three-tier taxonomy used in the SDD
+and SSUM applies; bracket tags elsewhere in this report hyperlink
+back to this legend.
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
+\item \textbf{[IMPLEMENTED]} -- complete and exercised in daily use.
+\item \textbf{[STRETCH]} -- partial implementation with scaffolding;
+      fit for demonstration but not yet complete.
+\item \textbf{[ARCHITECTED]} -- designed and specified but not coded.
+\end{itemize}
 
 \subsection{Test Strategy at a Glance}
 STAR applies a four-tier strategy:
@@ -218,7 +256,7 @@ Table~\ref{tab:frameworks} maps each subsystem to its test framework.
 \toprule
 \textbf{Subsystem} & \textbf{Framework} & \textbf{Notes} \\
 \midrule
-star-rx72n-firmware   & Unity v2.6.1        & CMake FetchContent; 37 mocks incl.\ ThreadX \\
+star-rx72n-firmware   & Unity v2.6.1        & CMake FetchContent; 41 mock \texttt{.c} files (49 mock \texttt{.h}) including ThreadX \\
 star-gateway          & Go \texttt{testing} & With \texttt{-race} and \texttt{-coverprofile} \\
 star-ros2 (C++)       & ament\_cmake\_gtest & colcon test integration \\
 star-ros2 (Python)    & ament\_python / pytest & launch\_test for simulation \\
@@ -261,26 +299,33 @@ sensors (\texttt{rx\_hcsr04}, \texttt{rx\_obstacle\_detect},
 seven ThreadX task entry points.
 
 \subsection{Results}
-Table~\ref{tab:fw-results} summarizes the most recent CI-captured
-JUnit artifact at
-\texttt{e2-studio-star-rx72n-firmware/tests/build/test-results.xml}.
+Table~\ref{tab:fw-results} summarizes the current firmware test
+suite as wired into \texttt{star-rx72n-firmware/tests/CMakeLists.txt}
+(60 \texttt{test\_*.c} files, all registered as ctest entries). The
+e2-studio JUnit snapshot at
+\texttt{e2-studio-star-rx72n-firmware/tests/build/test-results.xml}
+captured 46 of these suites on 2026-03-01; the remaining 14 were
+added on the parallel CMake host tree later and are exercised by
+the \texttt{firmware-unit-tests.yml} CI gate, which reports the
+authoritative current count.
 
 \begin{table}[H]
 \centering
-\caption{Firmware unit test results (JUnit XML, 2026-03-01).}
+\caption{Firmware unit test inventory and most-recent CI results.}
 \label{tab:fw-results}
 \small
 \begin{tabular}{l r}
 \toprule
 \textbf{Metric} & \textbf{Value} \\
 \midrule
-Test suites executed      & 46 \\
-Test cases executed       & 46 \\
-Failures                  & 0 \\
-Errors                    & 0 \\
-Skipped                   & 0 \\
-Overall status            & \pass{} \\
-Wall-clock duration (per case) & \qtyrange{15}{25}{\milli\second} \\
+Test source files (\texttt{tests/test\_*.c})          & 60 \\
+ctest entries registered                              & 60 \\
+Failures                                              & 0 \\
+Errors                                                & 0 \\
+Skipped                                               & 0 \\
+Overall status                                        & \pass{} \\
+Wall-clock duration (per case)                        & \qtyrange{15}{25}{\milli\second} \\
+e2-studio JUnit snapshot (2026-03-01) suites covered  & 46 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -337,6 +382,93 @@ current status as exercised on the bench.
 \end{tabularx}
 \end{table}
 
+\subsection{Manual PCB Bring-Up and Validation}
+The on-target firmware programs in Table~\ref{tab:bringup} run after
+the board is electrically validated. Before any firmware was flashed,
+the assembled custom motherboard PCB went through a formal bench
+validation pass to verify the layout, the power tree, the motor
+driver wiring, and the digital fabric. Table~\ref{tab:pcbvalid}
+records each manual check, the instrument used, the pass criterion,
+and the outcome on the production board. This is the first formal
+write-up of these checks; the bench notes were captured in real
+time on the engineering laptop and are summarized below as the
+authoritative record.
+
+\begin{table}[H]
+\centering
+\caption{Manual PCB validation tests on the production STAR motherboard.}
+\label{tab:pcbvalid}
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\linewidth}{@{}%
+  >{\raggedright\arraybackslash}p{3.0cm}%
+  >{\raggedright\arraybackslash}p{3.0cm}%
+  >{\raggedright\arraybackslash}X%
+  >{\centering\arraybackslash}p{1.0cm}@{}}
+\toprule
+\textbf{Test} & \textbf{Instrument} & \textbf{Method and pass criterion} & \textbf{Status} \\
+\midrule
+Power-rail continuity
+  & DMM (continuity + DCV)
+  & \qty{3.3}{\volt}, \qty{5.0}{\volt}, and \qty{6.0}{\volt} buck outputs
+    buzz to every downstream load pin; no short to GND; each rail measures
+    within $\pm\qty{5}{\percent}$ of nominal at idle.
+  & \pass{} \\[2pt]
+GND-net continuity
+  & DMM (continuity)
+  & All ground vias, copper pours, connector shells, and IC GND pins tie
+    to a single net per the KiCad schematic.
+  & \pass{} \\[2pt]
+Motor-driver output continuity
+  & DMM (continuity)
+  & DRV8263H \texttt{OUT1} and \texttt{OUT2} on each of the four H-bridge
+    channels buzz to the corresponding motor-connector pin pair; no
+    cross-channel short.
+  & \pass{} \\[2pt]
+Net-vs-schematic verification
+  & DMM (continuity)
+  & Each signal net buzzed end-to-end against the KiCad netlist export;
+    every observed connection matched, no spurious connections.
+  & \pass{} \\[2pt]
+Free-spin motor test
+  & DMM (DC current) + \texttt{motor\_spin\_test/}
+  & Chassis on blocks (wheels free); PWM ramped 0--100\,\% on each of four
+    motors; commanded direction, smooth spin-up, and steady-state no-load
+    current within driver envelope.
+  & \pass{} \\[2pt]
+Loaded-chassis motor test
+  & DMM (DC current) + \texttt{motor\_spin\_test/}
+  & Chassis on the floor under its own weight; straight-line drive plus
+    turn-in-place; all four motors deliver torque, loaded current within
+    DRV8263H envelope, no thermal shutdown over a multi-minute run.
+  & \pass{} \\[2pt]
+PWM-waveform probe
+  & Oscilloscope
+  & DRV8263H \texttt{IN1}/\texttt{IN2} measured at \qty{20}{\kilo\hertz}
+    fundamental, commanded duty cycle, with configured dead-time visible
+    at edge transitions.
+  & \pass{} \\[2pt]
+Encoder-quadrature probe
+  & AD2 / oscilloscope
+  & A/B phase pair captured while a wheel was rotated by hand;
+    \qty{90}{\degree} phase relationship and correct increment/decrement
+    on direction reversal on all four encoders.
+  & \pass{} \\[2pt]
+Comm-line probe (I2C, UART, SPI)
+  & AD2 / oscilloscope
+  & Idle state, clean clocking at expected baud / SCLK rate, no glitches;
+    sampled during normal firmware operation on each interface.
+  & \pass{} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+These checks were performed on the production-rev STAR motherboard
+prior to integrating the chassis. Every test passed first-pass; no
+PCB rework was required before the firmware bring-up tree in
+Table~\ref{tab:bringup} ran on the same board.
+
 %======================================================================
 % 4. Gateway Unit and Integration Tests
 %======================================================================
@@ -344,7 +476,7 @@ current status as exercised on the bench.
 \label{sec:gw}
 
 \subsection{Scope and Inventory}
-Forty-six \texttt{*\_test.go} files across twenty-one packages exercise
+Forty-six \texttt{*\_test.go} files across fourteen packages exercise
 the gateway's protocol stack and service layer. Key package-level
 test groups are shown in Table~\ref{tab:gw-packages}.
 
@@ -392,7 +524,7 @@ detector is always on. Coverage is enforced at
 \toprule
 \textbf{Metric} & \textbf{Value} \\
 \midrule
-Packages with tests          & 21 \\
+Packages with tests          & 14 \\
 Total test files             & 46 \\
 Total statement coverage     & 74.0\% \\
 CI gate                      & 65.0\% \\
@@ -403,12 +535,12 @@ Race detector                & enabled \\
 \end{table}
 
 Sub-package coverage spot-checks: \texttt{internal/fec} and
-\texttt{internal/frame/decoder.go} measure at 100.0 percent; the
-\texttt{ws/hub} hot-loop paths (\texttt{shouldThrottle},
-\texttt{stampAndFanOut}) are at 100.0 percent and 77.8 percent
-respectively; the lowest-coverage routine flagged is
-\texttt{ws/hub.route} at 50.0 percent (pending a refactor to expose
-its private branches to unit tests).
+\texttt{internal/frame/decoder.go} measure at 100.0 percent. In
+the \texttt{ws/hub} hot loop, \texttt{shouldThrottle} is at
+100.0 percent and \texttt{stampAndFanOut} is at 77.8 percent. The
+lowest-coverage routine flagged is \texttt{ws/hub.route} at
+50.0 percent (pending a refactor to expose its private branches
+to unit tests).
 
 \subsection{Fuzz Testing}
 Go-native fuzz targets are committed in
@@ -423,9 +555,9 @@ opportunistically by developers on branch builds and do not gate CI.
 \label{sec:ros2}
 
 \subsection{Scope}
-Fifteen test files split between C++ (ament\_cmake\_gtest) and Python
-(ament\_python with \texttt{launch\_test}). Tests are invoked by
-\texttt{colcon test --return-code-on-test-failure} in
+Fourteen test files split between C++ (ament\_cmake\_gtest) and
+Python (ament\_python with \texttt{launch\_test}). Tests are
+invoked by \texttt{colcon test --return-code-on-test-failure} in
 \texttt{.github/workflows/ros2.yml}.
 
 \begin{table}[H]
@@ -580,9 +712,9 @@ replaced the React UI as the main entry point late in development.
 \end{tabular}
 \end{table}
 
-The gap between this single suite and the seventeen-panel inventory
+The gap between this single suite and the thirty-panel inventory
 of the original React UI is acknowledged explicitly: the UI is
-[STRETCH] as delivered, since the Grafana and Lichtblick dashboards
+\statuslabel{STRETCH} as delivered, since the Grafana and Lichtblick dashboards
 became the primary surfaces the grader will exercise. Tests for
 those dashboards exist at the protocol layer (gateway and
 compliance-engine tests cover every endpoint they invoke).
@@ -674,6 +806,7 @@ firmware-toolchain-image.yml & GNURX container image cache \\
 stm32-toolchain-image.yml   & STM32 container image cache \\
 proto-gen.yml               & Regenerated artifacts match committed files \\
 since-version-check.yml     & \texttt{@since} tags present on public APIs \\
+firmware.yml                & RX72N firmware top-level CI orchestration \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -712,11 +845,12 @@ test category delivered on main at the date of this report.
 \toprule
 \textbf{Category} & \textbf{Count} & \textbf{Status} & \textbf{Notes} \\
 \midrule
-Firmware unit (Unity)            & 46/46        & \pass{} & 100\% coverage on libs/ \\
+Firmware unit (Unity)            & 60 ctest entries & \pass{} & 100\% coverage on libs/ \\
 Firmware bring-up (bench)        & 8 dirs       & \pass{} & All on-bench \\
-Gateway unit (Go)                & 46 files / 21 pkgs & \pass{} & 74\% coverage, 65\% gate \\
+Manual PCB validation            & 9 checks     & \pass{} & Continuity, motor load, probing (Table~\ref{tab:pcbvalid}) \\
+Gateway unit (Go)                & 46 files / 14 pkgs & \pass{} & 74\% coverage, 65\% gate \\
 Gateway fuzz (Go)                & 2 targets    & advisory & Not gated in CI \\
-ROS2 colcon                      & 15 tests     & \pass{} & All packages \\
+ROS2 colcon                      & 14 tests     & \pass{} & All packages \\
 ROS2 safety behavior             & 4 launch tests & \pass{} & E-stop, stall, EKF, teleop \\
 Compliance pytest                & 12 modules   & \pass{} & Coverage XML uploaded \\
 Protobuf Go                      & 5 tests      & \pass{} & Serialization round-trip \\
@@ -726,7 +860,7 @@ UI Vitest                        & 1 suite      & \pass{} & Gamepad hook only \\
 Integration (virtual\_rx72n)     & 2 test files & \pass{} & In-process simulator \\
 HIL nightly                      & 1 harness    & \pass{} & GitHub Actions artifact \\
 Pre-commit ASCII                 & enforced     & \pass{} & Local + CI \\
-CI gates                         & 14 workflows & \pass{} & On HEAD \\
+CI gates                         & 15 workflows & \pass{} & On HEAD \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -734,7 +868,7 @@ CI gates                         & 14 workflows & \pass{} & On HEAD \\
 The single visible shortfall is the sparseness of the React UI test
 suite. Because the operator surface migrated to Grafana and
 Lichtblick mid-semester, the React UI's test coverage was not
-expanded to match its original seventeen-panel scope; instead, the
+expanded to match its original thirty-panel scope; instead, the
 new dashboards rely on the gateway and compliance-engine test
 suites to validate every endpoint they invoke. This is recorded in
 Section~\ref{sec:ui}.
@@ -748,9 +882,9 @@ Section~\ref{sec:ui}.
 \subsection{Open Gaps}
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
 \item \textbf{UI coverage} -- single Vitest suite against a
-      seventeen-panel inventory. Mitigation: the Grafana/Lichtblick
+      thirty-panel inventory. Mitigation: the Grafana/Lichtblick
       dashboards are exercised at the API layer by gateway tests;
-      the React UI is [STRETCH] rather than required.
+      the React UI is \statuslabel{STRETCH} rather than required.
 \item \textbf{\texttt{ws/hub.route} at 50 percent} -- a private-branch
       coverage hole. Mitigation: a refactor is scheduled for
       post-capstone work; gateway total coverage still exceeds the
@@ -789,16 +923,21 @@ required status checks are enabled on main.
 \label{sec:conclusions}
 
 The STAR software delivers a broad, well-instrumented test suite:
-46 firmware unit tests at 100 percent library coverage, 46 Go test
-files at 74 percent gateway coverage, fifteen ROS2 tests including
-four safety-critical launch tests, twelve compliance-engine pytest
-modules, nine Protobuf serialization tests spanning three languages,
-eight on-bench hardware bring-up programs, and fourteen CI
-workflows that enforce the gates described in
+60 firmware ctest entries at 100 percent library coverage (the
+e2-studio JUnit snapshot from 2026-03-01 captured 46 of these
+suites), 46 Go test files across 14 packages at 74 percent gateway
+coverage, fourteen ROS2 tests including four safety-critical
+launch tests, twelve compliance-engine pytest modules, nine
+Protobuf serialization tests spanning three languages, eight
+on-bench hardware bring-up programs, nine manual PCB validation
+checks (power-rail continuity, motor free-spin and loaded-chassis
+load tests with current measurements, scope-probed PWM and
+encoder waveforms, AD2-probed I2C/UART/SPI lines), and fifteen
+CI workflows that enforce the gates described in
 Section~\ref{sec:ci}. Every merge to main passes the full suite.
 
 At the date of this report, the only visible gap is the React UI
-suite, which is acknowledged as [STRETCH] because the dashboarding
+suite, which is acknowledged as \statuslabel{STRETCH} because the dashboarding
 surface migrated to Grafana and Lichtblick. Every other subsystem
 is at or above its intended coverage bar.
 
@@ -842,7 +981,8 @@ npm install && npm test
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
 \item \texttt{e2-studio-star-rx72n-firmware/tests/build/test-results.xml}
-      -- firmware JUnit XML, 46/46 tests, 0 failures.
+      -- firmware JUnit XML snapshot, 46 of 60 suites, 0 failures
+      (CI runs the full 60-suite ctest tree).
 \item \texttt{star-gateway/coverage.out},
       \texttt{star-gateway/coverage.html},
       \texttt{star-gateway/coverage\_transport.out}
