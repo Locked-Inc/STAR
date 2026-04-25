@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package manager provides end-to-end scenario tests for Phase 6 validation.
 //
 // These tests simulate the manual test scenarios from the refactoring plan:

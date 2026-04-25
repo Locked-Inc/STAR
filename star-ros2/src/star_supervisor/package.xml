@@ -18,7 +18,7 @@
     second layer of safety -- do not rely on this node alone.
   </description>
   <maintainer email="cesarmagana23@gmail.com">STAR Team</maintainer>
-  <license>Apache-2.0</license>
+  <license>MIT</license>
 
   <buildtool_depend>ament_python</buildtool_depend>
 

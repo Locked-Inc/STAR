@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package frame defines the wire protocol frame structure for RPi5 <-> RX72N communication.
 //
 // Frame format:
@@ -25,10 +28,16 @@ const (
 	// SyncSize is the size of the sync word in bytes.
 	SyncSize = 2
 
-	// Header field sizes
-	SeqSize   = 2
-	LenSize   = 2
-	TypeSize  = 1
+	// SeqSize is the size of the sequence number field in bytes.
+	SeqSize = 2
+
+	// LenSize is the size of the length field in bytes.
+	LenSize = 2
+
+	// TypeSize is the size of the frame type field in bytes.
+	TypeSize = 1
+
+	// FlagsSize is the size of the flags field in bytes.
 	FlagsSize = 1
 
 	// HeaderSize is the total header size (SEQ + LEN + TYPE + FLAGS).
@@ -54,28 +63,40 @@ const (
 // Not serialized in Header struct, but part of the wire header.
 type Type uint8
 
+// Frame type constants identify the kind of frame being transmitted.
+// Heartbeat and session reset types (0x00, 0x01, 0xFE, 0xFF) are reserved
+// for protocol-level coordination; standard types (0x10-0x14) carry
+// application data; runtime log payload uses 0x20.
 const (
-	// Heartbeat and session reset frame types (Critical Fixes #4)
-	FrameTypePing     Type = 0x00 // Heartbeat request
-	FrameTypePong     Type = 0x01 // Heartbeat response
-	FrameTypeResetAck Type = 0xFE // Session reset acknowledgment
-	FrameTypeReset    Type = 0xFF // Session reset (synchronize sequences)
+	// FrameTypePing is a heartbeat request frame.
+	FrameTypePing Type = 0x00
+	// FrameTypePong is a heartbeat response frame.
+	FrameTypePong Type = 0x01
+	// FrameTypeResetAck is the session reset acknowledgment frame.
+	FrameTypeResetAck Type = 0xFE
+	// FrameTypeReset is the session reset frame (synchronize sequences).
+	FrameTypeReset Type = 0xFF
 
-	// Standard frame types
-	FrameTypeCommand  Type = 0x10 // Command frame
-	FrameTypeResponse Type = 0x11 // Response frame
-	FrameTypeAck      Type = 0x12 // Acknowledgment
-	FrameTypeNack     Type = 0x13 // Negative acknowledgment
+	// FrameTypeCommand carries an application command payload.
+	FrameTypeCommand Type = 0x10
+	// FrameTypeResponse carries an application response payload.
+	FrameTypeResponse Type = 0x11
+	// FrameTypeAck is a positive acknowledgment of a received frame.
+	FrameTypeAck Type = 0x12
+	// FrameTypeNack is a negative acknowledgment requesting retransmission.
+	FrameTypeNack Type = 0x13
 
-	// Firmware runtime log payload (ASCII bytes from rx_log_uart on the RX72N).
-	// Multiplexed onto the same UART byte stream as command/response frames so
-	// the frame sync word cannot collide with log text.
+	// FrameTypeLogMessage carries firmware runtime log payload (ASCII bytes
+	// from rx_log_uart on the RX72N). Multiplexed onto the same UART byte
+	// stream as command/response frames so the frame sync word cannot
+	// collide with log text.
 	FrameTypeLogMessage Type = 0x20
 
-	// Legacy/Unknown
-	FrameTypeUnknown Type = 0x14 // Unknown frame type
+	// FrameTypeUnknown is the placeholder for unrecognized frame types.
+	FrameTypeUnknown Type = 0x14
 )
 
+// String returns a human-readable name for the frame type.
 func (ft Type) String() string {
 	switch ft {
 	case FrameTypePing:
@@ -104,13 +125,21 @@ func (ft Type) String() string {
 // Flags contains frame-level control flags.
 type Flags uint8
 
+// Flag constants control optional per-frame behaviors. They are bit fields
+// and may be combined with bitwise OR.
 const (
-	FlagNone        Flags = 0x00
+	// FlagNone indicates no flags are set.
+	FlagNone Flags = 0x00
+	// FlagRequiresAck requests that the receiver send an ACK on success.
 	FlagRequiresAck Flags = 0x01
-	FlagRetransmit  Flags = 0x02
-	FlagPriority    Flags = 0x04
-	FlagFECEnabled  Flags = 0x08
-	FlagSoftNACK    Flags = 0x10
+	// FlagRetransmit marks the frame as a retransmission of an earlier sequence.
+	FlagRetransmit Flags = 0x02
+	// FlagPriority hints to the receiver that this frame should be prioritized.
+	FlagPriority Flags = 0x04
+	// FlagFECEnabled indicates the payload is FEC-encoded (Layer 3).
+	FlagFECEnabled Flags = 0x08
+	// FlagSoftNACK indicates a soft NACK with combiner state (Chase combining).
+	FlagSoftNACK Flags = 0x10
 )
 
 // Header contains the frame header fields.
@@ -152,6 +181,7 @@ type CRCError struct {
 	Sequence uint16
 }
 
+// Error implements the error interface and reports the failed sequence number.
 func (e *CRCError) Error() string {
 	return fmt.Sprintf("CRC validation failed for sequence %d", e.Sequence)
 }
@@ -160,13 +190,19 @@ func (e *CRCError) Error() string {
 // Go 1.13+ error unwrapping with errors.Is and errors.As.
 func (e *CRCError) Unwrap() error { return ErrInvalidCRC }
 
-// Predefined errors.
+// Predefined sentinel errors returned by frame encoding/decoding routines.
+// Callers should match against these with errors.Is to drive recovery logic.
 var (
-	ErrNotImplemented  = errors.New("not implemented")
-	ErrInvalidSync     = errors.New("invalid sync word")
-	ErrInvalidCRC      = errors.New("CRC validation failed")
+	// ErrNotImplemented signals that a code path is intentionally a stub.
+	ErrNotImplemented = errors.New("not implemented")
+	// ErrInvalidSync indicates the sync word in the byte stream did not match SyncWord.
+	ErrInvalidSync = errors.New("invalid sync word")
+	// ErrInvalidCRC indicates the trailing CRC-32 did not match the computed checksum.
+	ErrInvalidCRC = errors.New("CRC validation failed")
+	// ErrPayloadTooLarge indicates a payload exceeded MaxPayloadSize.
 	ErrPayloadTooLarge = errors.New("payload exceeds maximum size")
-	ErrFrameTooShort   = errors.New("frame data too short")
+	// ErrFrameTooShort indicates the supplied byte slice is shorter than MinFrameSize.
+	ErrFrameTooShort = errors.New("frame data too short")
 )
 
 // NewFrame creates a new Frame with the given type and payload.

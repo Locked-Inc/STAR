@@ -21,7 +21,13 @@ let writeIdx = 0;
 /** Position labels for the four drive motors: Front-Left, Front-Right, Back-Left, Back-Right. */
 const MOTOR_POSITION_LABELS = ['FL', 'FR', 'BL', 'BR'] as const;
 
-const MV_PER_V = 1000;
+/**
+ * Conversion factor: millivolts to volts.
+ *
+ * Centralised here so all UI components reading battery / pack-voltage fields
+ * use the same constant. Importers: BatteryPanel.tsx, GatewayService.ts.
+ */
+export const MV_PER_V = 1000;
 
 export function recordPacket(
   env: STAREnvelope | null,

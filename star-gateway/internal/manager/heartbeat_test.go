@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package manager tests for heartbeat management.
 //
 // STAR Project - Texas A&M University

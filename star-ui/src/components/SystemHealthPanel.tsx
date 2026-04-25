@@ -35,7 +35,7 @@ export function SystemHealthPanel() {
     );
 
     const subsystems = [
-        { name: 'RX72N', ...conn(systemStatus?.esp32Connected) },
+        { name: 'RX72N', ...conn(systemStatus?.rx72NConnected) },
         { name: 'LiDAR', ...conn(systemStatus?.lidarConnected) },
         { name: 'ROS2', ...conn(systemStatus?.rosConnected) },
     ];

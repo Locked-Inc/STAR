@@ -66,7 +66,7 @@ namespace star::star_gateway_bridge
  * Safety Features:
  * - Teleop command staleness check (500ms timeout -> zero velocity)
  * - Connection watchdog (5s interval, automatic reconnection)
- * - Non-blocking gRPC calls (100ms deadline)
+ * - Synchronous unary gRPC calls bounded by a per-call deadline (100ms)
  * - Input validation (NaN, infinity checks via MessageConverter)
  * - Graceful shutdown (stop command on node destruction)
  *
@@ -103,7 +103,18 @@ public:
     const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   /**
-   * @brief Destructor - sends stop command and shuts down gracefully.
+   * @brief Destructor - publishes a zero-velocity Twist on /teleop/cmd_vel
+   * and lets the gRPC channel/stubs tear down via shared_ptr destruction.
+   *
+   * @details
+   * Cancels the obstacle poll timer, resets the obstacle publishers and
+   * the odom/slam_pose/scan subscriptions, and publishes a single
+   * geometry_msgs::msg::Twist with all-zero linear/angular components on
+   * teleop_cmd_vel_pub_ (if it is still alive) so any downstream consumer
+   * stops moving before the node is destroyed. No explicit gRPC shutdown
+   * RPC is issued: grpc_channel_, grpc_stub_, and telemetry_svc_stub_ own
+   * their resources via shared_ptr and are released when the node is
+   * destroyed. The "Closing gRPC channel" log line records that release.
    */
   ~StarGatewayBridgeNode();
 
@@ -163,7 +174,8 @@ private:
    * @brief Timer callback for telemetry forwarding (10 Hz).
    *
    * Forwards cached robot status to Gateway via gRPC.
-   * Uses non-blocking gRPC call with deadline.
+   * Uses a synchronous unary gRPC call bounded by a per-call deadline; the
+   * call blocks the caller for up to grpc_deadline_ms_ before returning.
    */
   void telemetry_forward_timer_callback();
 

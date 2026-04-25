@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package manager provides intelligent transport selection and failover for the STAR Gateway.
 //
 // STAR Project - Texas A&M University

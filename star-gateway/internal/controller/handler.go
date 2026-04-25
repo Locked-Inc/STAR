@@ -1,3 +1,10 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
+// Package controller bridges WebSocket gamepad input from the UI to the
+// motor-control gRPC service. It receives ControllerState messages over a
+// WebSocket connection, converts joystick deflections into per-side velocity
+// commands via ArcadeDrive, and forwards them to the gateway service.
 package controller
 
 import (
@@ -26,6 +33,9 @@ func monoMicrosSinceStart() int64 {
 	return time.Since(processStart).Microseconds()
 }
 
+// Handler manages a single WebSocket controller-input connection. It debounces
+// inbound ControllerState messages and forwards drive commands to the
+// gateway service.
 type Handler struct {
 	mu sync.Mutex
 

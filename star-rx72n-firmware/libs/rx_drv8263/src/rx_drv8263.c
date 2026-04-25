@@ -178,8 +178,8 @@ RX_STATIC_TESTABLE void internal_delay_us(uint32_t us)
 
   /* Cycles per microsecond derive from the authoritative ICLK constant in
    * rx72n_clock.h so any future clock-tree change tracks automatically. */
-  const uint32_t   cycles_per_us = k_iclk_hz / k_hz_per_mhz;
-  volatile uint32_t cycles       = us * cycles_per_us;
+  const uint32_t    cycles_per_us = k_iclk_hz / k_hz_per_mhz;
+  volatile uint32_t cycles        = us * cycles_per_us;
   while (cycles > 0) {
     cycles--;
   }
@@ -264,7 +264,7 @@ RX_STATIC_TESTABLE void internal_gpio_write(uint8_t port, uint8_t pin, bool high
   if (high) {
     base->podr |= (uint8_t)(k_bit_shift_one << pin);
   } else {
-    base->podr &= (uint8_t) ~(k_bit_shift_one << pin);
+    base->podr &= (uint8_t)~(k_bit_shift_one << pin);
   }
 }
 

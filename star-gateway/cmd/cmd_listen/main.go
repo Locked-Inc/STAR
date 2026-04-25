@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Just listen, no commands sent. Confirms baseline firmware liveness.
 package main
 

@@ -63,13 +63,17 @@ export function DiagLogPanel() {
                         No diagnostic entries
                     </div>
                 )}
-                {alerts.map((alert, i) => {
+                {alerts.map((alert) => {
                     const cfg = levelConfig[alert.level] ?? { label: '???', color: COLORS.textMuted };
                     const ts = alert.timestampUs
                         ? new Date(Number(alert.timestampUs) / 1000).toLocaleTimeString('en-US', { hour12: false, fractionalSecondDigits: 3 })
                         : '??:??:??.???';
+                    // Stable composite key: timestamp + source + code uniquely identifies an
+                    // alert event without depending on array index, which shifts when the
+                    // ring-buffer wraps and would cause React to re-render unrelated rows.
+                    const stableKey = `${alert.timestampUs}-${alert.source}-${alert.code}`;
                     return (
-                        <div key={i} style={{
+                        <div key={stableKey} style={{
                             display: 'flex', gap: '8px', padding: '2px 4px',
                             borderBottom: '0.5px solid rgba(255,255,255,0.04)',
                         }}>

@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package transport provides the UART-over-USB transport layer for RPi5 <-> RX72N communication.
 //
 // The RX72N's SCI9 UART (PB6/PB7, 921600 baud) is routed through a Cypress CY7C65213

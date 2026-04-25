@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // vel_test: send a single VelocityCommand and dump all frames received in
 // a ~4 s window. Useful for diagnosing the command path without the estop /
 // telemetry parsing that sensor_dump does.

@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package ws provides WebSocket support for the STAR Gateway.
 //
 // STAR Project - Texas A&M University

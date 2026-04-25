@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package frame provides frame decoding for the wire protocol.
 //
 // STAR Project - Texas A&M University

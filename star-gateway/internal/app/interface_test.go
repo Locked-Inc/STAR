@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package app tests for interface compliance.
 //
 // This file verifies that the gateway application correctly uses the harq.HARQ

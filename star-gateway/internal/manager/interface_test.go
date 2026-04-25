@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package manager tests for interface compliance.
 //
 // This file verifies that the manager package correctly uses the harq.HARQ

@@ -217,8 +217,20 @@ SafetyMonitor::on_shutdown(const rclcpp_lifecycle::State & previous_state)
   (void)previous_state;
   RCLCPP_INFO(get_logger(), "Shutting down SafetyMonitor");
 
-  // Ensure emergency stop is triggered on shutdown if active
-  if (emergency_stop_active_) {
+  // Ensure emergency stop is triggered on shutdown if active.
+  //
+  // emergency_stop_pub_ is a LifecyclePublisher; a publish() call on it is a
+  // silent no-op if the publisher is not in the activated sub-state. We can
+  // arrive at on_shutdown() from any reachable lifecycle state -- including
+  // DEACTIVATED (after on_deactivate() called on_deactivate() on the
+  // publisher) or UNCONFIGURED (after on_cleanup() reset() the publisher to
+  // nullptr). Guard both: the pointer existence first, then the activation
+  // sub-state. If the publisher is currently deactivated, transition it back
+  // to activated so the e-stop actually goes out on the wire.
+  if (emergency_stop_active_ && emergency_stop_pub_) {
+    if (!emergency_stop_pub_->is_activated()) {
+      emergency_stop_pub_->on_activate();
+    }
     auto msg = std_msgs::msg::Bool();
     msg.data = true;
     emergency_stop_pub_->publish(msg);

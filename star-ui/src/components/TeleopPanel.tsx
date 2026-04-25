@@ -39,9 +39,9 @@ export function TeleopPanel({ sendControllerState }: TeleopPanelProps) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* 
-        The drag-handle class here makes the entire header the target 
-        for moving the react-rnd panel. 
+      {/*
+        The drag-handle class here makes the entire header the target
+        for moving the react-grid-layout panel.
       */}
       <div
         className="panel-header"

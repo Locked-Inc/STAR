@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package link provides link layer implementations for the STAR Gateway.
 //
 // CDCLink implements a lightweight link layer for USB CDC transport.

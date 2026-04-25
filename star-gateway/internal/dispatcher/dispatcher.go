@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package dispatcher implements a centralized message router for the star-gateway.
 //
 // The Dispatcher solves the concurrency race condition where multiple services
@@ -30,7 +33,9 @@ import (
 // DispatchedMessage bundles a WireMessage with frame metadata for diagnostics.
 // Exported so services can access the metadata.
 type DispatchedMessage struct {
-	WireMsg  *starv1.WireMessage
+	// WireMsg is the decoded protobuf WireMessage payload.
+	WireMsg *starv1.WireMessage
+	// Metadata is the HARQ-layer frame metadata (sequence, retransmits, FEC flag).
 	Metadata *harq.FrameMetadata
 }
 

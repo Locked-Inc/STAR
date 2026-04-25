@@ -303,16 +303,37 @@
  */
 
 #include "rx72n_regs.h"
-#include "rx_log.h"
+#include "rx_isr_log.h"
 #include "rx_usb.h"
 #include "rx_usb_internal.h"
+
+/* =============================================================================
+ * ISR LOGGING DISCIPLINE
+ * =============================================================================
+ *
+ * Every function in this file is reachable from usb0_usbi_isr() (vector 144)
+ * and therefore runs in interrupt context. The rx_log_error/warn/info/debug
+ * macros are FORBIDDEN here: they funnel through rx_log_uart.c which acquires
+ * a ThreadX mutex with TX_WAIT_FOREVER -- legal from a task, illegal from an
+ * ISR (deadlock + undefined behavior).
+ *
+ * Use rx_isr_log_push(event_id, value) instead. The deferred drain hook in
+ * comm_task (rx_isr_log_drain()) emits the message via the regular rx_log_*
+ * path from task context. See libs/rx_core/inc/rx_isr_log.h for the event id
+ * catalogue and add a new id there before referencing it from new ISR code.
+ *
+ * MUST stay zero rx_log_* call sites in this file (enforced by audit / CI).
+ * =============================================================================
+ */
 
 /* =============================================================================
  * Private Definitions
  * =============================================================================
  */
 
-static const char* const s_tag = "USB_ISR";
+/* No s_tag here -- ISR-side logs route through rx_isr_log_push() which
+ * resolves the tag from the static event-metadata table at drain time.
+ * See ISR LOGGING DISCIPLINE banner above. */
 
 /** @brief USB pipe number constants */
 typedef enum : uint8_t {
@@ -374,10 +395,10 @@ static void internal_handle_vbus_interrupt(void)
 
   if (lnst == k_usb_syssts0_lnst_se0) {
     /* SE0 = disconnected or reset in progress */
-    rx_log_debug(s_tag, "VBUS: SE0 detected");
+    (void)rx_isr_log_push(k_isr_log_event_usb_vbus_se0, 0U);
   } else if (lnst == k_usb_syssts0_lnst_fs_j) {
     /* Full-Speed J-state = idle, cable connected */
-    rx_log_debug(s_tag, "VBUS: FS J-state (connected)");
+    (void)rx_isr_log_push(k_isr_log_event_usb_vbus_fs_j, 0U);
     rx_usb_set_state(k_usb_state_attached);
     /* Notify all ports of attach */
     for (rx_usb_port_id_t port = k_usb_port_proto; port < k_usb_port_count; port++) {
@@ -482,11 +503,11 @@ static void internal_handle_ctrt_interrupt(void)
       break;
 
     case k_usb_intsts0_ctsq_seq_err:
-      /* Sequence error - stall the pipe.  No log call here -- this
-       * path is ISR context and rx_log_* funnels through a mutex
-       * that we can't safely acquire from ISR. */
+      /* Sequence error - stall the pipe and queue a deferred-log event so
+       * the warning surfaces from task context via rx_isr_log_drain(). */
       usb0()->dcpctr =
         (uint16_t)((usb0()->dcpctr & (uint16_t)~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall);
+      (void)rx_isr_log_push(k_isr_log_event_usb_ctrt_seq_err, 0U);
       break;
 
     case k_usb_intsts0_ctsq_idle:
@@ -526,7 +547,7 @@ static void internal_handle_brdy_interrupt(void)
       }
       /* Note: Other pipes (Bulk IN, Interrupt IN) don't trigger BRDY */
       /* Clear pipe buffer ready flag */
-      usb0()->brdysts = (uint16_t) ~(1U << pipe);
+      usb0()->brdysts = (uint16_t)~(1U << pipe);
     }
   }
 }
@@ -558,7 +579,7 @@ static void internal_handle_bemp_interrupt(void)
       }
       /* Note: Interrupt IN pipes don't typically need BEMP handling for CDC */
       /* Clear pipe buffer empty flag */
-      usb0()->bempsts = (uint16_t) ~(1U << pipe);
+      usb0()->bempsts = (uint16_t)~(1U << pipe);
     }
   }
 }
@@ -568,7 +589,7 @@ static void internal_handle_bemp_interrupt(void)
  */
 static void internal_handle_resume_interrupt(void)
 {
-  rx_log_debug(s_tag, "Resume detected");
+  (void)rx_isr_log_push(k_isr_log_event_usb_resume, 0U);
 
   /* Update state based on hardware */
   const rx_usb_state_t state = rx_usb_hw_get_bus_state();
@@ -658,7 +679,7 @@ void __attribute__((interrupt(".rvectors", 144))) usb0_usbi_isr(void)
    * or hangs. */
   *((volatile uint8_t*)0x0008C02BU) |= (uint8_t)(1U << 5U);
   g_usb_isr_entry_count++;
-  *((volatile uint8_t*)0x0008C02BU) &= (uint8_t) ~(1U << 5U);
+  *((volatile uint8_t*)0x0008C02BU) &= (uint8_t)~(1U << 5U);
 
   /* Clear interrupt request flag in ICU */
   icu()->ir[k_vect_usb0_usbi] = 0;

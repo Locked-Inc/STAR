@@ -1562,8 +1562,7 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
   (void)(rx_frame_encode(&handle->encoder, &frame, handle->tx_encode_buffer, &wire_len));
 
   /* Transfer via SPI (waits for host ACK internally) */
-  rx_err_t xfer_err =
-    internal_spi_transfer(handle, handle->tx_encode_buffer, wire_len, nullptr, 0);
+  rx_err_t xfer_err = internal_spi_transfer(handle, handle->tx_encode_buffer, wire_len, nullptr, 0);
   if (xfer_err != k_rx_ok) {
     rx_log_error(s_tag, "SPI transfer failed");
     return xfer_err;

@@ -1,52 +1,23 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { COLORS } from '../theme';
 
 /**
  * Nav2 Goal Panel - send navigation goals to the ROS2 Nav2 stack.
  * Displays current goal status and allows setting X/Y/theta targets.
+ *
+ * Status: PREVIEW / NOT IMPLEMENTED. The gateway does not yet expose a
+ * Nav2 goal RPC and STAREnvelope has no nav-goal payload. Inputs remain
+ * interactive for visual layout testing, but the Send button is disabled
+ * and a banner is shown so an operator does not believe a goal was sent.
  */
-
-const goalTimeoutMs = 5000;
 
 export function Nav2GoalPanel() {
     const [goalX, setGoalX] = useState('0.0');
     const [goalY, setGoalY] = useState('0.0');
     const [goalTheta, setGoalTheta] = useState('0.0');
-    const [status, setStatus] = useState<'idle' | 'navigating' | 'reached' | 'failed'>('idle');
-    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    useEffect(() => {
-        return () => {
-            if (timerRef.current !== null) clearTimeout(timerRef.current);
-        };
-    }, []);
-
-    const handleSendGoal = () => {
-        // TODO: Send nav goal via ROS2 bridge / WebSocket
-        setStatus('navigating');
-        if (timerRef.current !== null) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => {
-            timerRef.current = null;
-            setStatus('reached');
-        }, goalTimeoutMs);
-    };
-
-    const handleCancel = () => {
-        if (timerRef.current !== null) {
-            clearTimeout(timerRef.current);
-            timerRef.current = null;
-        }
-        setStatus('idle');
-    };
-
-    const statusConfig: Record<string, { label: string; color: string }> = {
-        idle: { label: 'IDLE', color: COLORS.textMuted },
-        navigating: { label: 'NAVIGATING', color: COLORS.primary },
-        reached: { label: 'REACHED', color: COLORS.success },
-        failed: { label: 'FAILED', color: COLORS.danger },
-    };
-
-    const cfg = statusConfig[status];
+    // Status is fixed to PREVIEW until the gateway exposes a Nav2 goal RPC.
+    const cfg = { label: 'PREVIEW', color: COLORS.warning };
 
     const fields = [
         { id: 'nav2-x', label: 'X (m)', value: goalX, set: setGoalX },
@@ -71,6 +42,23 @@ export function Nav2GoalPanel() {
             </div>
 
             <div className="panel-body" style={{ padding: '8px 20px 20px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {/* Not-implemented banner: warns operators that no goal will be sent. */}
+                <div
+                    role="status"
+                    style={{
+                        background: `${COLORS.warning}18`,
+                        border: `0.5px solid ${COLORS.warning}66`,
+                        borderRadius: '6px',
+                        padding: '8px 10px',
+                        fontSize: '11px',
+                        lineHeight: 1.4,
+                        color: COLORS.warning,
+                    }}
+                >
+                    Not implemented yet: gateway has no Nav2 goal RPC. Inputs are
+                    visual-only; Send is disabled until the bridge is wired.
+                </div>
+
                 {/* Status badge */}
                 <div style={{
                     display: 'flex', alignItems: 'center', gap: '6px',
@@ -80,12 +68,11 @@ export function Nav2GoalPanel() {
                 }}>
                     <div style={{
                         width: 6, height: 6, borderRadius: '50%', background: cfg.color,
-                        animation: status === 'navigating' ? 'pulse-opacity 1s infinite' : 'none',
                     }} />
                     {cfg.label}
                 </div>
 
-                {/* Goal inputs */}
+                {/* Goal inputs - interactive for visual testing; nothing leaves the browser. */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                     {fields.map(f => (
                         <div key={f.id}>
@@ -99,50 +86,33 @@ export function Nav2GoalPanel() {
                                 id={f.id}
                                 type="number" step="0.1" value={f.value}
                                 onChange={e => f.set(e.target.value)}
-                                disabled={status === 'navigating'}
                                 style={{
                                     width: '100%', padding: '6px 8px', borderRadius: '4px',
                                     border: '0.5px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)',
                                     color: '#fff', fontSize: '13px', fontFamily: 'monospace',
                                     outline: 'none', boxSizing: 'border-box',
-                                    opacity: status === 'navigating' ? 0.5 : 1,
                                 }}
                             />
                         </div>
                     ))}
                 </div>
 
-                {/* Action buttons */}
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                        type="button"
-                        onClick={handleSendGoal}
-                        disabled={status === 'navigating'}
-                        style={{
-                            flex: 1, padding: '8px', border: 'none', borderRadius: '6px',
-                            background: COLORS.success, color: '#fff',
-                            fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                            opacity: status === 'navigating' ? 0.5 : 1,
-                            letterSpacing: '0.06em', textTransform: 'uppercase',
-                        }}
-                    >
-                        Send Goal
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleCancel}
-                        disabled={status !== 'navigating'}
-                        style={{
-                            flex: 1, padding: '8px', border: '0.5px solid rgba(255,255,255,0.15)',
-                            borderRadius: '6px', background: status === 'navigating' ? 'rgba(255,69,58,0.15)' : 'rgba(255,255,255,0.04)',
-                            color: status === 'navigating' ? COLORS.danger : 'rgba(255,255,255,0.4)',
-                            fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                            letterSpacing: '0.06em', textTransform: 'uppercase',
-                        }}
-                    >
-                        Cancel
-                    </button>
-                </div>
+                {/* Send Goal is disabled until a real RPC exists. No mock-success path. */}
+                <button
+                    type="button"
+                    disabled
+                    aria-disabled="true"
+                    title="Not connected to gateway"
+                    style={{
+                        padding: '8px', border: '0.5px solid rgba(255,255,255,0.15)',
+                        borderRadius: '6px', background: 'rgba(255,255,255,0.04)',
+                        color: 'rgba(255,255,255,0.4)',
+                        fontSize: '11px', fontWeight: 600, cursor: 'not-allowed',
+                        letterSpacing: '0.06em', textTransform: 'uppercase',
+                    }}
+                >
+                    Send Goal (not connected)
+                </button>
             </div>
         </>
     );

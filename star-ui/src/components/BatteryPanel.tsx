@@ -1,8 +1,8 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useDashboardStore } from '../store/dashboardStore';
 import { COLORS } from '../theme';
+import { MV_PER_V } from '../services/GatewayService';
 
-const MV_TO_V = 1000;
 const DECI_C_TO_C = 10;
 
 const getBatteryColor = (soc: number) => {
@@ -39,7 +39,7 @@ export function BatteryPanel() {
   const battery = useDashboardStore(useShallow((s) => s.battery));
 
   const packV = battery?.cells?.packMv != null
-    ? (battery.cells.packMv / MV_TO_V).toFixed(2)
+    ? (battery.cells.packMv / MV_PER_V).toFixed(2)
     : '--';
 
   const socPercentRaw = battery?.soc?.relativeSocPercent;

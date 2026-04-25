@@ -28,7 +28,7 @@ setup(
     maintainer="STAR Team",
     maintainer_email="cesarmagana23@gmail.com",
     description="Minimal ASCII serial bridge between ROS2 and the RX72N.",
-    license="Apache-2.0",
+    license="MIT",
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [

@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package harq provides a mock transport for testing HARQ operations.
 //
 // STAR Project - Texas A&M University

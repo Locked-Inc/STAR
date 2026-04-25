@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Chase Combiner implementation for HARQ Type I.
 //
 // Chase Combining stores soft bits from failed transmission attempts and

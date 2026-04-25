@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package e2e_test implements End-to-End tests for the STAR Gateway.
 //
 // These tests verify the integration of the full Gateway stack:

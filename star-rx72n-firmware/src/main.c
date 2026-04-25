@@ -532,9 +532,9 @@ typedef enum : uint16_t {
   k_dflash_fentryr_enter_dataflash_pe = 0xAA80U, /**< Enter data-flash P/E mode (FENTRYD=1) */
   k_dflash_fentryr_exit_pe            = 0xAA00U, /**< Exit P/E mode (read mode) */
   k_dflash_fentryr_low_byte_mask      = 0x00FFU, /**< Mask to read FENTRYR status (low byte) */
-  k_dflash_fentryr_pe_active          = 0x0080U, /**< Low-byte value indicating data-flash P/E mode active */
-  k_dflash_fentryr_pe_inactive        = 0x0000U, /**< Low-byte value indicating P/E mode exited */
-  k_dflash_fpckar_key                 = 0x1E00U, /**< FPCKAR key (upper byte 0x1E); OR'd with FCLK MHz */
+  k_dflash_fentryr_pe_active = 0x0080U, /**< Low-byte value indicating data-flash P/E mode active */
+  k_dflash_fentryr_pe_inactive = 0x0000U, /**< Low-byte value indicating P/E mode exited */
+  k_dflash_fpckar_key          = 0x1E00U, /**< FPCKAR key (upper byte 0x1E); OR'd with FCLK MHz */
 } dflash_fentryr_t;
 
 /**
@@ -578,8 +578,9 @@ typedef enum : uint32_t {
  * touching MSTPCR* and clock-tree registers. Per RX72N HW manual Ch 13.2.1.
  */
 typedef enum : uint16_t {
-  k_main_prcr_unlock_clock_lpm = 0xA503U, /**< Key 0xA5 + PRC0 | PRC1: unlock clock + low-power-mode regs */
-  k_main_prcr_lock_all         = 0xA500U, /**< Key 0xA5 + all PRC bits cleared: re-lock everything */
+  k_main_prcr_unlock_clock_lpm =
+    0xA503U,                      /**< Key 0xA5 + PRC0 | PRC1: unlock clock + low-power-mode regs */
+  k_main_prcr_lock_all = 0xA500U, /**< Key 0xA5 + all PRC bits cleared: re-lock everything */
 } main_prcr_key_t;
 
 /**
@@ -621,9 +622,8 @@ static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
   /* Enter data flash P/E mode. */
   *FENTRYR = k_dflash_fentryr_enter_dataflash_pe;
   /* Spin until data-flash P/E mode is active (FENTRYR low byte = 0x80). */
-  for (uint32_t i = 0;
-       i < k_fcu_poll_short
-       && (*FENTRYR & k_dflash_fentryr_low_byte_mask) != k_dflash_fentryr_pe_active;
+  for (uint32_t i = 0; i < k_fcu_poll_short &&
+                       (*FENTRYR & k_dflash_fentryr_low_byte_mask) != k_dflash_fentryr_pe_active;
        i++) {
   }
   /* Wait for FRDY. */
@@ -639,8 +639,8 @@ static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
 
   /* Program 4 bytes: [0xA5, 0x5A, who_am_i, err_byte_low]. */
   const uint8_t  err_byte = (err == 0) ? 0x00U : (uint8_t)(err & k_dflash_probe_byte_mask);
-  const uint16_t word0    = (uint16_t)(((uint16_t)k_dflash_probe_magic_byte1 << 8)
-                                    | k_dflash_probe_magic_byte0); /* LE: bytes 0=A5, 1=5A */
+  const uint16_t word0    = (uint16_t)(((uint16_t)k_dflash_probe_magic_byte1 << 8) |
+                                       k_dflash_probe_magic_byte0); /* LE: bytes 0=A5, 1=5A */
   const uint16_t word1 = (uint16_t)(((uint16_t)err_byte << 8) | who_am_i); /* LE: 2=who, 3=err    */
 
   *FSADDR = DF_ADDR;
@@ -654,9 +654,8 @@ static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
 
   /* Exit P/E mode. */
   *FENTRYR = k_dflash_fentryr_exit_pe;
-  for (uint32_t i = 0;
-       i < k_fcu_poll_short
-       && (*FENTRYR & k_dflash_fentryr_low_byte_mask) != k_dflash_fentryr_pe_inactive;
+  for (uint32_t i = 0; i < k_fcu_poll_short &&
+                       (*FENTRYR & k_dflash_fentryr_low_byte_mask) != k_dflash_fentryr_pe_inactive;
        i++) {
   }
 }
@@ -1846,9 +1845,9 @@ static const rx_iwdt_config_t s_iwdt_config = {
   .enable_task_monitoring = true,                 /**< Enable task heartbeat tracking */
   .reset_on_timeout       = true,                 /**< Reset on timeout (not NMI) */
   .state_timeouts_ms      = {
-    [k_system_state_init]         = k_iwdt_timeout_init_ms,    /**< 5s - slow startup */
-    [k_system_state_idle]         = k_iwdt_timeout_idle_ms,    /**< 5s - no critical ops */
-    [k_system_state_running]      = k_iwdt_timeout_running_ms, /**< 2s - default operation */
+    [k_system_state_init]         = k_iwdt_timeout_init_ms,         /**< 5s - slow startup */
+    [k_system_state_idle]         = k_iwdt_timeout_idle_ms,         /**< 5s - no critical ops */
+    [k_system_state_running]      = k_iwdt_timeout_running_ms,      /**< 2s - default operation */
     [k_system_state_motor_active] = k_iwdt_timeout_motor_active_ms, /**< 2s - motor control */
     [k_system_state_comm_active]  = k_iwdt_timeout_comm_active_ms,  /**< 2s - communication */
     [k_system_state_error]        = k_iwdt_timeout_error_ms,        /**< 10s - recovery/diag */
@@ -2055,10 +2054,12 @@ static void internal_register_motor_current_adc_buses(void)
  *
  * @since Version 1.0.0
  */
-static void internal_register_riic1_device(rx_bus_config_t* config, const char* name,
-                                           uint8_t device_addr)
+static void
+internal_register_riic1_device(rx_bus_config_t* config, const char* name, uint8_t device_addr)
 {
-  rx_err_t err = rx_bus_config_init_i2c(config, name, k_riic_channel_1, /* channel: RIIC1 */
+  rx_err_t err = rx_bus_config_init_i2c(config,
+                                        name,
+                                        k_riic_channel_1,        /* channel: RIIC1 */
                                         device_addr,             /* device_addr: per-sensor */
                                         k_rx_p2_0,               /* sda_pin: P2.0 = SDA1 */
                                         k_rx_p2_1,               /* scl_pin: P2.1 = SCL1 */
@@ -3082,7 +3083,7 @@ static void internal_set_pb3_pre_kernel_probe(void)
   volatile uint8_t* const pb_pdr  = (volatile uint8_t*)0x0008C00BU;
   volatile uint8_t* const pb_podr = (volatile uint8_t*)0x0008C02BU;
   volatile uint8_t* const pb_pmr  = (volatile uint8_t*)0x0008C06BU;
-  *pb_pmr &= (uint8_t) ~(1U << 3);
+  *pb_pmr &= (uint8_t)~(1U << 3);
   *pb_pdr |= (uint8_t)(1U << 3);
   *pb_podr |= (uint8_t)(1U << 3); /* HIGH */
 }

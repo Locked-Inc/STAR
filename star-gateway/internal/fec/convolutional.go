@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Convolutional encoder implementation for rate-1/2, K=7 code.
 //
 // Generator polynomials (NASA standard):

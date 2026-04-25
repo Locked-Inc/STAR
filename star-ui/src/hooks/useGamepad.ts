@@ -46,14 +46,13 @@ export const useGamepad = () => {
     };
 
     const handleConnect = () => {
-      console.log('Gamepad connected');
       // Ensure we don't have multiple loops
       cancelAnimationFrame(requestRef.current);
       requestRef.current = requestAnimationFrame(updateGamepadState);
     };
 
     const handleDisconnect = () => {
-      console.log('Gamepad disconnected');
+      // No-op: state will fall back to disconnected on the next polling tick.
     };
 
     window.addEventListener('gamepadconnected', handleConnect);

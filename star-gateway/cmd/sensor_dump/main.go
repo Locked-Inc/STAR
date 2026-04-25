@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // sensor_dump captures TelemetryData frames from the RX72N and exercises the
 // motor command path. Sequence:
 //  1. Listen for 5 s, count + decode telemetry (BNO055/BMP280/DS18B20/encoders)

@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // FEC package tests for convolutional encoder, Viterbi decoder, and Chase Combiner.
 //
 // STAR Project - Texas A&M University

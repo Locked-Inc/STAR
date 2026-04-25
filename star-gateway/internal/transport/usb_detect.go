@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package transport - USB-UART-bridge device discovery via Linux sysfs.
 //
 // The CY7C65213 USB-UART bridge registers as cypress_m8 and shows up in sysfs

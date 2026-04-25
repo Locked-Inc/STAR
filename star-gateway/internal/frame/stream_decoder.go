@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package frame provides a streaming decoder for the STAR protocol.
 package frame
 

@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package transport provides the SPI transport layer for RPi5 <-> RX72N communication.
 //
 // The Raspberry Pi 5 acts as the SPI controller, communicating with the RX72N

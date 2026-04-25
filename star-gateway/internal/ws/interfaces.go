@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package ws provides the WebSocket transport layer for the STAR Gateway's L5
 // (application/session) service layer.
 //

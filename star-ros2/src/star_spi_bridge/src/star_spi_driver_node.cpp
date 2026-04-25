@@ -93,14 +93,18 @@ StarSpiDriverNode::on_configure(const rclcpp_lifecycle::State &)
   joint_state_pub_ =
     create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
   imu_pub_ = create_publisher<sensor_msgs::msg::Imu>("imu/data", 10);
+  // Obstacle distance topics: ABSOLUTE paths. The safety_monitor (and the
+  // gateway_bridge) subscribe to absolute `/star/obstacle/<corner>`. Using
+  // relative names here breaks the e-stop chain when this node is launched
+  // under any non-root namespace.
   obstacle_front_left_pub_ =
-    create_publisher<sensor_msgs::msg::Range>("star/obstacle/front_left", 10);
+    create_publisher<sensor_msgs::msg::Range>("/star/obstacle/front_left", 10);
   obstacle_front_right_pub_ =
-    create_publisher<sensor_msgs::msg::Range>("star/obstacle/front_right", 10);
+    create_publisher<sensor_msgs::msg::Range>("/star/obstacle/front_right", 10);
   obstacle_back_left_pub_ =
-    create_publisher<sensor_msgs::msg::Range>("star/obstacle/back_left", 10);
+    create_publisher<sensor_msgs::msg::Range>("/star/obstacle/back_left", 10);
   obstacle_back_right_pub_ =
-    create_publisher<sensor_msgs::msg::Range>("star/obstacle/back_right", 10);
+    create_publisher<sensor_msgs::msg::Range>("/star/obstacle/back_right", 10);
   obstacle_detected_pub_ =
     create_publisher<std_msgs::msg::Bool>("star/obstacle_detected", 10);
   estop_reason_pub_ =

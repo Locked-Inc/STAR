@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package manager provides intelligent transport selection and failover for the STAR Gateway.
 //
 // STAR Project - Texas A&M University
@@ -33,7 +36,10 @@ const (
 	// is unchanged.
 	ModeSimpleUSB TransportMode = "simple-usb"
 )
+// Error message format strings used by manager validation routines.
 const (
+	// InvalidTransportModeError is the format string returned by ParseTransportMode
+	// when given an unrecognized mode string. Use with fmt.Errorf and the offending input.
 	InvalidTransportModeError = "invalid transport mode: %q"
 )
 

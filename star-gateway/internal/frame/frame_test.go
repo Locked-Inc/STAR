@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package frame tests for wire protocol frame structures.
 //
 // STAR Project - Texas A&M University

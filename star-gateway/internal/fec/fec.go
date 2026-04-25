@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package fec implements Forward Error Correction for the HARQ protocol.
 //
 // This package provides a rate-1/2 convolutional encoder (K=7) with soft

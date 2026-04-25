@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Virtual RX72N - Hardware-in-the-Loop Simulator
 //
 // This program simulates the RX72N motor controller firmware for testing

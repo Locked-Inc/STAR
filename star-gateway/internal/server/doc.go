@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package server provides HTTP and gRPC server construction and lifecycle management.
 //
 // This package follows a two-phase construction pattern that separates server

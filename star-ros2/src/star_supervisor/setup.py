@@ -15,7 +15,7 @@ setup(
     maintainer="STAR Team",
     maintainer_email="cesarmagana23@gmail.com",
     description="Command gate + autonomy/e-stop arbiter for STAR",
-    license="Apache-2.0",
+    license="MIT",
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [

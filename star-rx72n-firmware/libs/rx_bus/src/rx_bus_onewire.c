@@ -94,8 +94,8 @@
 #include "rx_log.h"
 #include "rx_register_protection.h"
 
-static const char* const s_tag                     = "BUS_ONEWIRE";
-static const uint32_t s_onewire_max_search_devices = 64U;
+static const char* const s_tag                        = "BUS_ONEWIRE";
+static const uint32_t    s_onewire_max_search_devices = 64U;
 
 /* =============================================================================
  * Internal State Tracking
@@ -219,7 +219,7 @@ RX_STATIC_TESTABLE void internal_delay_timer_init(void)
   *prcr_reg() = k_rx_prcr_lock;
 
   /* Stop CMT3 before reconfiguration */
-  cmt_ctrl()->cmstr1 &= (uint16_t) ~((uint16_t)k_onewire_bit_set << k_onewire_cmt3_start_bit);
+  cmt_ctrl()->cmstr1 &= (uint16_t)~((uint16_t)k_onewire_bit_set << k_onewire_cmt3_start_bit);
 
   /* Configure free-running counter (no interrupts) */
   cmt3()->cmcr  = (uint16_t)(k_onewire_cmt_divider_setting << k_onewire_cmt_clk_shift);
@@ -305,7 +305,7 @@ RX_STATIC_TESTABLE void internal_delay_us(uint32_t microseconds)
 
   const uint32_t timer_hz = k_pclkb_hz / k_onewire_cmt_divider_value;
   uint64_t       ticks = ((uint64_t)microseconds * (uint64_t)timer_hz + k_onewire_timer_rounding) /
-                   k_onewire_us_per_second;
+                         k_onewire_us_per_second;
 
   while (ticks > k_onewire_ticks_zero) {
     uint32_t wait_ticks =
@@ -816,7 +816,7 @@ RX_STATIC_TESTABLE rx_err_t internal_search_step(rx_bus_config_t*         bus_co
   if (search_direction) {
     rom[*rom_byte_index] |= *rom_bit_mask;
   } else {
-    rom[*rom_byte_index] &= (uint8_t) ~(*rom_bit_mask);
+    rom[*rom_byte_index] &= (uint8_t)~(*rom_bit_mask);
   }
 
   err = internal_write_bit(bus_config, state, search_direction);

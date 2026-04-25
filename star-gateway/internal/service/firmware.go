@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package service implements the gRPC service handlers for the star-gateway.
 //
 // STAR Project - Texas A&M University

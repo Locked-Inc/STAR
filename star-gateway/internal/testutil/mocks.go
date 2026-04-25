@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package testutil provides testing utilities and mocks for star-gateway.
 //
 // STAR Project - Texas A&M University

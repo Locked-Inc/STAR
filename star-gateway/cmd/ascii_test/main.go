@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // ascii_test: send V lines at 10 Hz while reading E lines, single process.
 package main
 

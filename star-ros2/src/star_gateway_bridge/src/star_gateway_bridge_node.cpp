@@ -49,16 +49,20 @@ static constexpr std::string_view TOPIC_OBSTACLE_DETECTED = "/star/obstacle_dete
  * (non-empty, with a colon-separated port number).
  * @pre ROS2 node options must be compatible with rclcpp::Node construction
  * (no conflicting intra-process or remapping settings).
- * @post grpc_connected_ == false and reconnect_attempts_ == 0 on return.
+ * @post reconnect_attempts_ == 0 on return.
+ * @post On success (initialize_grpc_client() returns true): grpc_connected_
+ * == true and grpc_stub_/telemetry_svc_stub_ are populated.
+ * @post On failure (initialize_grpc_client() returns false): grpc_connected_
+ * == false; the constructor still completes and the connection watchdog
+ * timer will retry in the background.
  * @post All publishers, subscribers, and timer callbacks are initialised
  * and the connection watchdog is started before the constructor returns.
  *
  * @note Not thread-safe during construction; the node must be fully
  * constructed in a single thread before being added to an executor.
  * @note grpc_connected_ is initialised to false and reconnect_attempts_
- * to 0. The connection watchdog timer will attempt the first connection
- * on its first callback, so the node may briefly serve subscribers with
- * no gRPC connection on startup.
+ * to 0 in the member-initialiser list, then potentially flipped to true
+ * by initialize_grpc_client() before the constructor returns.
  *
  * @since Version 1.0.0
 

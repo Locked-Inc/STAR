@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Viterbi decoder implementation for rate-1/2, K=7 convolutional code.
 //
 // This decoder supports both soft and hard decision decoding.

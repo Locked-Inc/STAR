@@ -1142,6 +1142,23 @@ target_include_directories(test_rx_log PRIVATE
 target_compile_definitions(test_rx_log PRIVATE LOG_LEVEL=k_log_verbose)
 target_link_libraries(test_rx_log unity)
 
+# Test: rx_isr_log -- ISR-safe deferred log queue (SPSC ring + drain emitter)
+add_executable(test_rx_isr_log
+    test_rx_isr_log.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_isr_log.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_uart.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tx_api.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_tasks.c
+)
+apply_strict_warnings(test_rx_isr_log)
+apply_test_includes(test_rx_isr_log)
+target_include_directories(test_rx_isr_log PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/inc
+)
+# Force LOG_LEVEL=verbose so the drain hook actually exercises every level branch.
+target_compile_definitions(test_rx_isr_log PRIVATE LOG_LEVEL=k_log_verbose)
+target_link_libraries(test_rx_isr_log unity)
+
 # Test: comm_task_apply_system_config() unified config
 add_executable(test_rx_system_config
     test_rx_system_config.c
@@ -1301,6 +1318,7 @@ set(ALL_TEST_TARGETS
     test_rx_bmp280
     test_rx_log_uart
     test_rx_log
+    test_rx_isr_log
     # System config test
     test_rx_system_config
     # Multi-task firmware tests
@@ -1364,6 +1382,7 @@ add_test(NAME test_rx_bno055 COMMAND test_rx_bno055)
 add_test(NAME test_rx_bmp280 COMMAND test_rx_bmp280)
 add_test(NAME test_rx_log_uart COMMAND test_rx_log_uart)
 add_test(NAME test_rx_log COMMAND test_rx_log)
+add_test(NAME test_rx_isr_log COMMAND test_rx_isr_log)
 add_test(NAME test_rx_system_config COMMAND test_rx_system_config)
 
 # Multi-task firmware tests
@@ -1411,6 +1430,7 @@ set(COVERAGE_EXTRA_TASK_SRCS
 # host-compilable log source now.
 set(COVERAGE_EXTRA_CORE_SRCS
     ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_log_uart.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_isr_log.c
 )
 
 # HAL and USB ISR source files are replaced by mocks in all other tests and
@@ -1470,6 +1490,7 @@ target_compile_definitions(firmware_coverage_obj PRIVATE
 #   - All task source files (motor_control_task.c, etc.)
 #   - shared_data.c
 #   - rx_log_uart.c
+#   - rx_isr_log.c
 # Therefore we must NOT include their mock equivalents here (MOCK_TASKS_SRC,
 # MOCK_SHARED_DATA_SRC, mock_rx_log.c), which would produce duplicate symbols.
 # We use ${RX_LOG_SRC} (rx_log.c only) instead of the full MOCK_LOG_SRC set.

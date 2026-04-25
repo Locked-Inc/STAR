@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Combined send + raw dump tool.
 // Sends RESET, then a VelocityCommand SetVelocityRequest, then dumps the
 // raw stream for 4 s and prints any printable text fragments verbatim

@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 package server
 
 import (
@@ -8,11 +11,18 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Default server configuration values used by DefaultHTTPConfig and
+// DefaultGRPCConfig. Override per-deployment as needed.
 const (
-	DefaultListenAddr         = ":8080"
-	DefaultReadTimeout        = 10 * time.Second
-	DefaultWriteTimeout       = 10 * time.Second
-	DefaultGRPCListenAddr     = ":50051"
+	// DefaultListenAddr is the default HTTP listen address (":8080").
+	DefaultListenAddr = ":8080"
+	// DefaultReadTimeout is the default HTTP read timeout (10s).
+	DefaultReadTimeout = 10 * time.Second
+	// DefaultWriteTimeout is the default HTTP write timeout (10s).
+	DefaultWriteTimeout = 10 * time.Second
+	// DefaultGRPCListenAddr is the default gRPC listen address (":50051").
+	DefaultGRPCListenAddr = ":50051"
+	// DefaultGRPCMaxMessageSize is the default gRPC max message size (10 MiB).
 	DefaultGRPCMaxMessageSize = 10 * 1024 * 1024
 )
 

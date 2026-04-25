@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package transport provides mock serial port for CDC testing without hardware.
 //
 // STAR Project - Texas A&M University

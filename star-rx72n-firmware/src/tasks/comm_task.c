@@ -2259,8 +2259,7 @@ static star_v1_Status internal_rx_err_to_proto_status(rx_err_t err)
  * @param[in] fault_flags Per-motor fault flags from motor_state_t
  * @return Corresponding star_v1_MotorState
  */
-static star_v1_MotorState internal_motor_mode_to_proto_state(motor_mode_t mode,
-                                                             uint8_t      fault_flags)
+static star_v1_MotorState internal_motor_mode_to_proto_state(motor_mode_t mode, uint8_t fault_flags)
 {
   if (fault_flags != 0U) {
     return star_v1_MotorState_MOTOR_STATE_FAULT;
@@ -2441,22 +2440,24 @@ static void internal_velocity_send_response(rx_comm_channel_t                 ch
     left->duty_cycle_percent = (double)motor_state.duty_cycle_percent[k_motor_idx_front_left];
     left->current_ma         = (double)motor_state.current_ma[k_motor_idx_front_left];
     left->fault_flags        = (uint32_t)motor_state.fault_flags[k_motor_idx_front_left];
-    left->state              = internal_motor_mode_to_proto_state(
-      motor_state.mode, motor_state.fault_flags[k_motor_idx_front_left]);
+    left->state =
+      internal_motor_mode_to_proto_state(motor_state.mode,
+                                         motor_state.fault_flags[k_motor_idx_front_left]);
 
     right->motor_id           = (int32_t)k_motor_idx_front_right;
     right->velocity_mps       = (double)motor_state.current_velocity_mps[k_motor_idx_front_right];
     right->duty_cycle_percent = (double)motor_state.duty_cycle_percent[k_motor_idx_front_right];
     right->current_ma         = (double)motor_state.current_ma[k_motor_idx_front_right];
     right->fault_flags        = (uint32_t)motor_state.fault_flags[k_motor_idx_front_right];
-    right->state              = internal_motor_mode_to_proto_state(
-      motor_state.mode, motor_state.fault_flags[k_motor_idx_front_right]);
+    right->state =
+      internal_motor_mode_to_proto_state(motor_state.mode,
+                                         motor_state.fault_flags[k_motor_idx_front_right]);
 
     response.motor_status_count = 2;
   }
 
   uint32_t       encoded_len = 0;
-  const rx_err_t enc_err     = rx_nanopb_encode_velocity_response(&response,
+  const rx_err_t enc_err = rx_nanopb_encode_velocity_response(&response,
                                                               s_response_buffer,
                                                               (uint32_t)k_comm_response_buffer_size,
                                                               &encoded_len);
@@ -2555,12 +2556,11 @@ static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_fr
     response.has_header              = true;
     response.estop_engaged           = (bool)(trigger_err == k_rx_ok);
     const star_v1_Status resp_status = internal_rx_err_to_proto_status(trigger_err);
-    const char*          req_id =
-      (int)estop_req.has_header ? estop_req.header.request_id : nullptr;
+    const char*          req_id = (int)estop_req.has_header ? estop_req.header.request_id : nullptr;
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 
     uint32_t       encoded_len = 0;
-    const rx_err_t enc_err     = rx_nanopb_encode_estop_response(&response,
+    const rx_err_t enc_err = rx_nanopb_encode_estop_response(&response,
                                                              s_response_buffer,
                                                              (uint32_t)k_comm_response_buffer_size,
                                                              &encoded_len);
@@ -2655,11 +2655,11 @@ static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const r
   {
     star_v1_SetPidGainsResponse response =
       (star_v1_SetPidGainsResponse)star_v1_SetPidGainsResponse_init_zero;
-    response.has_header              = true;
-    response.success                 = (bool)(set_err == k_rx_ok);
+    response.has_header = true;
+    response.success    = (bool)(set_err == k_rx_ok);
     /* response.message left as init_zero: NULL callback skips optional string field */
     const star_v1_Status resp_status = internal_rx_err_to_proto_status(set_err);
-    const char* req_id = (int)pid_req.has_header ? pid_req.header.request_id : nullptr;
+    const char*          req_id = (int)pid_req.has_header ? pid_req.header.request_id : nullptr;
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 
     uint32_t       encoded_len = 0;

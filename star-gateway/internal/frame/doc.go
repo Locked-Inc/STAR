@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package frame defines the wire protocol frame structure and decoding logic.
 //
 // The protocol uses a custom framing format:

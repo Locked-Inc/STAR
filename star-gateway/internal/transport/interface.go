@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package transport provides the low-level communication interfaces for
 // the Gateway. This includes both real hardware (SPI) and simulation (Unix socket).
 //

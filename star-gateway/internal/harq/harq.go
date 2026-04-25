@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
+
 // Package harq implements Hybrid Automatic Repeat reQuest (HARQ) protocol
 // for reliable frame delivery over the SPI transport.
 //
