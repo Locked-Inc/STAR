@@ -873,7 +873,13 @@ rx_err_t shared_data_init(void)
   /* Initialize communication timestamp to current time */
   g_shared_data.last_comm_tick = tx_time_get();
 
-  /* Mark as initialized */
+  /* Compiler barrier: ensure all field writes above retire BEFORE the
+   * `initialized = true` flip is observable by other tasks.  Without
+   * this, a -O2 reorder could expose a task to `initialized == true`
+   * with a stale (zero) `last_comm_tick`, triggering a spurious
+   * comm-timeout e-stop on the very first iteration of the motor
+   * task.  Concurrency-audit:REQUIRED. */
+  __asm__ volatile("" ::: "memory");
   g_shared_data.initialized = true;
 
   return k_rx_ok;
