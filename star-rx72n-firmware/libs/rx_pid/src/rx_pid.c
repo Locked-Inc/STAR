@@ -217,20 +217,7 @@ static const char* const s_tag = "PID";
  * }
  * @enddot
  *
- * @param[in] value Value to be clamped
- *                  - Can be any finite floating-point value
- *                  - NaN/Inf handling: NaN propagates, Inf may saturate to min/max
- * @param[in] min Minimum allowed value (lower saturation limit)
- *                - Must be <= max for correct operation
- *                - Example: -100.0f for motor reverse limit
- * @param[in] max Maximum allowed value (upper saturation limit)
- *                - Must be >= min for correct operation
- *                - Example: +100.0f for motor forward limit
  *
- * @return float Clamped value in range [min, max]
- * @retval min if input value < min (lower saturation active)
- * @retval max if input value > max (upper saturation active)
- * @retval value if min <= value <= max (linear pass-through)
  *
  * @pre min <= max (caller responsibility - not validated for performance)
  * @pre value should be finite (NaN/Inf not explicitly handled)
@@ -352,24 +339,7 @@ static inline float internal_clamp(const float value, const float min, const flo
  * }
  * @enddot
  *
- * @param[out] handle Pointer to PID controller handle structure
- *                    - Must not be NULL (validated)
- *                    - Will be zeroed and initialized with config parameters
- *                    - Must remain valid for lifetime of controller use
- *                    - Typically statically allocated: `static rx_pid_handle_t motor_pid;`
- * @param[in] config Pointer to PID configuration structure
- *                   - Must not be NULL (validated)
- *                   - Can be stack-allocated (copied to handle, not retained)
- *                   - Fields validated: output_max > output_min, integral_max > integral_min
- *                   - See rx_pid_config_t documentation for field details
  *
- * @return rx_err_t Error code indicating initialization result
- * @retval k_rx_ok Initialization successful, controller ready for use
- * @retval k_rx_err_null_ptr handle or config pointer is nullptr
- * @retval k_rx_err_invalid_state Controller already initialized (call rx_pid_deinit first)
- * @retval k_rx_err_invalid_arg Configuration validation failed:
- *                              - output_max <= output_min, OR
- *                              - integral_max <= integral_min
  *
  * @pre handle must point to allocated rx_pid_handle_t structure
  * @pre config must point to valid rx_pid_config_t with properly set fields
@@ -564,16 +534,7 @@ rx_err_t rx_pid_init(rx_pid_handle_t* handle, const rx_pid_config_t* config)
  * - Clearing state before reconfiguration with different gains/limits
  * - Testing/debugging (force clean state)
  *
- * @param[in,out] handle Pointer to initialized PID controller handle
- *                       - Must not be NULL (validated)
- *                       - Must be currently initialized (validated)
- *                       - Will be zeroed on success (all fields set to 0)
- *                       - After deinitialization: handle->initialized == false
  *
- * @return rx_err_t Error code indicating deinitialization result
- * @retval k_rx_ok Deinitialization successful, handle cleared and ready for re-init
- * @retval k_rx_err_null_ptr handle pointer is nullptr
- * @retval k_rx_err_invalid_state Controller not initialized (already deinitialized or never initialized)
  *
  * @pre handle must not benullptr
  * @pre handle->initialized must be true (controller must be initialized first)
@@ -679,6 +640,46 @@ rx_err_t rx_pid_deinit(rx_pid_handle_t* handle)
   return k_rx_ok;
 }
 
+/**
+ * @brief Compute one PID control iteration and produce a clamped output
+ *
+ * @details
+ * Implements the discrete-time PID algorithm using forward Euler integration
+ * and a simple finite-difference derivative.  The function:
+ *
+ *  1. Computes the error (setpoint - measured).
+ *  2. Accumulates the integral, then clamps to [integral_min, integral_max]
+ *     for anti-windup.
+ *  3. Computes the derivative as (error - prev_error) / dt.
+ *  4. Sums P + I + D contributions and clamps the result to
+ *     [output_min, output_max].
+ *  5. Stores the current error in handle->prev_error for next iteration.
+ *  6. Performs a NASA Rule 5 post-condition check (isfinite) on the output;
+ *     non-finite results return k_rx_fail and the caller should reset the
+ *     controller.
+ *
+ * Typical call site: motor_control_task at 250 Hz with dt = 0.004 s.
+ * Touches mutable state: handle->integral and handle->prev_error.
+ *
+ *
+ *
+ * @pre handle and output are non-null.
+ * @pre handle was successfully initialized via rx_pid_init().
+ * @pre dt > 0.0F and matches the actual loop period.
+ *
+ * @post On k_rx_ok: *output is finite and clamped to configured limits.
+ * @post On k_rx_ok: handle->integral is clamped to [integral_min, integral_max].
+ * @post handle->prev_error == (setpoint - measured) after a successful return.
+ *
+ * @note Not thread-safe.  Each PID instance must be owned by a single task or
+ *       protected by a caller-provided mutex.
+ *
+ * @see rx_pid_init()      Initializes the controller before first compute.
+ * @see rx_pid_reset()     Clears integral and prev_error after instability.
+ * @see rx_pid_set_gains() Updates Kp/Ki/Kd at runtime.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_pid_compute(rx_pid_handle_t* handle,
                         const float      setpoint,
                         const float      measured,
@@ -763,16 +764,7 @@ rx_err_t rx_pid_compute(rx_pid_handle_t* handle,
  * - **Disturbance recovery**: Reset after external disturbances (collisions, stalls)
  * - **System startup**: Ensure clean initial state before control begins
  *
- * @param[in,out] handle Pointer to initialized PID controller handle
- *                       - Must not be NULL (validated)
- *                       - Must be initialized (validated)
- *                       - integral and prev_error fields will be zeroed
- *                       - Configuration (gains, limits) remains unchanged
  *
- * @return rx_err_t Error code indicating reset result
- * @retval k_rx_ok State reset successful, controller ready with clean state
- * @retval k_rx_err_null_ptr handle pointer is nullptr
- * @retval k_rx_err_invalid_state Controller not initialized (call rx_pid_init first)
  *
  * @pre handle must not benullptr
  * @pre handle->initialized must be true
@@ -937,36 +929,7 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
  * - Output limits (output_min, output_max)
  * - Integral limits (integral_min, integral_max)
  *
- * @param[in,out] handle Pointer to initialized PID controller handle
- *                       - Must not be NULL (validated)
- *                       - Must be initialized (validated)
- *                       - Gains will be updated on success
- *                       - State (integral, prev_error) preserved
- * @param[in] kp New proportional gain (K_p)
- *               - Must be >= 0.0 (validated - negative gains cause instability)
- *               - Must be finite (validated - NaN/Inf causes undefined behavior)
- *               - Units: output / error
- *               - Example: 0.286 for motor velocity control
- *               - Higher = faster response, risk of overshoot
- * @param[in] ki New integral gain (K_i)
- *               - Must be >= 0.0 (validated)
- *               - Must be finite (validated)
- *               - Units: output / (error * s)
- *               - Example: 8.01 for motor velocity control
- *               - Higher = faster steady-state error elimination, risk of windup
- * @param[in] kd New derivative gain (K_d)
- *               - Must be >= 0.0 (validated)
- *               - Must be finite (validated)
- *               - Units: output / (error/s)
- *               - Example: 0.0 (disabled for noisy encoder feedback)
- *               - Higher = more damping, risk of noise amplification
  *
- * @return rx_err_t Error code indicating gain update result
- * @retval k_rx_ok Gains updated successfully, controller ready with new gains
- * @retval k_rx_err_null_ptr handle pointer is nullptr
- * @retval k_rx_err_invalid_state Controller not initialized (call rx_pid_init first)
- * @retval k_rx_err_invalid_arg One or more gains are negative or non-finite (NaN/Inf)
- * @retval k_rx_fail Gain storage verification failed (should never happen)
  *
  * @pre handle must not benullptr
  * @pre handle->initialized must be true
@@ -1176,27 +1139,7 @@ rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float k
  * **Note:** This function does NOT clamp the current output or state. The new limits
  * take effect on the next call to rx_pid_compute().
  *
- * @param[in,out] handle Pointer to initialized PID controller handle
- *                       - Must not be NULL (validated)
- *                       - Must be initialized (validated)
- *                       - output_min and output_max fields will be updated
- *                       - State and gains preserved
- * @param[in] output_min New minimum output limit (lower saturation bound)
- *                       - Must be < output_max (validated - strict inequality)
- *                       - Units depend on application (% duty cycle, voltage, current, etc.)
- *                       - Example: -100.0f for full reverse motor duty cycle
- *                       - Can be negative, zero, or positive
- * @param[in] output_max New maximum output limit (upper saturation bound)
- *                       - Must be > output_min (validated - strict inequality)
- *                       - Units must match output_min
- *                       - Example: +100.0f for full forward motor duty cycle
- *                       - Must be strictly greater than output_min
  *
- * @return rx_err_t Error code indicating limit update result
- * @retval k_rx_ok Output limits updated successfully
- * @retval k_rx_err_null_ptr handle pointer is nullptr
- * @retval k_rx_err_invalid_state Controller not initialized (call rx_pid_init first)
- * @retval k_rx_err_invalid_arg output_max <= output_min (not strictly greater)
  *
  * @pre handle must not benullptr
  * @pre handle->initialized must be true
@@ -1373,27 +1316,7 @@ rx_pid_set_output_limits(rx_pid_handle_t* handle, const float output_min, const 
  * - **Symmetric**: integral_min = -integral_max (most common for bidirectional actuators)
  * - **Asymmetric**: Different limits for forward/reverse (e.g., heating vs. cooling)
  *
- * @param[in,out] handle Pointer to initialized PID controller handle
- *                       - Must not be NULL (validated)
- *                       - Must be initialized (validated)
- *                       - integral_min and integral_max fields will be updated
- *                       - **IMPORTANT**: Current integral value will be clamped to new limits
- * @param[in] integral_min New minimum integral accumulator limit (anti-windup lower bound)
- *                         - Must be < integral_max (validated - strict inequality)
- *                         - Units same as output (since I_term = Ki x integral)
- *                         - Example: -50.0f for motor control (50% of output range)
- *                         - Prevents excessive negative integral buildup
- * @param[in] integral_max New maximum integral accumulator limit (anti-windup upper bound)
- *                         - Must be > integral_min (validated - strict inequality)
- *                         - Units same as output
- *                         - Example: +50.0f for motor control (50% of output range)
- *                         - Prevents excessive positive integral buildup
  *
- * @return rx_err_t Error code indicating limit update result
- * @retval k_rx_ok Integral limits updated successfully, current integral clamped
- * @retval k_rx_err_null_ptr handle pointer is nullptr
- * @retval k_rx_err_invalid_state Controller not initialized (call rx_pid_init first)
- * @retval k_rx_err_invalid_arg integral_max <= integral_min (not strictly greater)
  *
  * @pre handle must not benullptr
  * @pre handle->initialized must be true

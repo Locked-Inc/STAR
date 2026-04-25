@@ -119,9 +119,7 @@ static int32_t s_last_count[k_tpu_enc_max_channels] = {};
 /**
  * @brief Check if a TPU channel index is valid for encoder use
  *
- * @param[in] channel TPU channel
  *
- * @return true if channel is 1, 2, 4, or 5
  *
  * @since Version 1.0.0
  */
@@ -140,15 +138,7 @@ static bool internal_is_valid_channel(const rx_tpu_channel_t channel)
  * half-range threshold, applies direction inversion, and accumulates
  * into the 32-bit total count. Also derives revolutions and degrees.
  *
- * @param[out] state Output state structure
- * @param[in] channel TPU channel
- * @param[in] current_count Current 16-bit TCNT reading
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success
- * @retval k_rx_err_invalid_arg Invalid channel or null state
- * @retval k_rx_err_invalid_state Encoder not initialized or corrupted
- * @retval k_rx_err_out_of_range Position exceeds +-720 degrees
  *
  * @pre s_initialized[channel] == true
  * @post state filled with updated values
@@ -268,6 +258,31 @@ rx_err_t rx_tpu_encoder_init(const rx_tpu_encoder_config_t* config)
   return k_rx_ok;
 }
 
+/**
+ * @brief Read the raw 16-bit hardware counter for a TPU encoder channel
+ *
+ * @details
+ * Bypasses overflow accumulation and returns the current TPU TCNT register
+ * directly via rx_tpu_read_count().  Useful for diagnostic dumps and
+ * low-level wraparound detection.  Validates the channel index and the
+ * per-channel initialized flag before touching hardware.
+ *
+ *
+ *
+ * @pre count != nullptr.
+ * @pre Channel was successfully initialized via rx_tpu_encoder_init().
+ *
+ * @post On k_rx_ok: *count holds the latched TPU counter value.
+ * @post No TPU register write side effects.
+ *
+ * @note Not thread-safe with rx_tpu_encoder_reset() / _set_count() on the
+ *       same channel.  Concurrent reads on different channels are safe.
+ *
+ * @see rx_tpu_encoder_read_count()    Cooked count with overflow tracking.
+ * @see rx_tpu_encoder_read_velocity() Velocity computation from delta.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_tpu_encoder_read_raw(const rx_tpu_channel_t channel, uint16_t* count)
 {
   RX_VALIDATE_PTR(count, s_tag, "count pointer is nullptr");
@@ -284,6 +299,33 @@ rx_err_t rx_tpu_encoder_read_raw(const rx_tpu_channel_t channel, uint16_t* count
   return rx_tpu_read_count(channel, count);
 }
 
+/**
+ * @brief Read the cooked encoder state with overflow tracking
+ *
+ * @details
+ * Reads the raw TPU counter, then folds it through internal_update_state(),
+ * which extends the 16-bit hardware counter into a 32-bit signed total
+ * count by detecting wraparound between successive reads.  Position in
+ * degrees and revolution count are derived from total_count and
+ * counts_per_rev.
+ *
+ *
+ *
+ * @pre state != nullptr.
+ * @pre Channel was successfully initialized via rx_tpu_encoder_init().
+ *
+ * @post On k_rx_ok: *state reflects the latest TPU position; internal
+ *       last_raw_count cache is updated for next overflow detection.
+ * @post On error paths: *state is unspecified.
+ *
+ * @note Not thread-safe with rx_tpu_encoder_reset() / _set_count() on the
+ *       same channel because both update internal cached state.
+ *
+ * @see rx_tpu_encoder_read_raw()      Raw TCNT (no overflow tracking).
+ * @see rx_tpu_encoder_read_velocity() Velocity computation.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_tpu_encoder_read_count(const rx_tpu_channel_t channel, rx_encoder_state_t* state)
 {
   RX_VALIDATE_PTR(state, s_tag, "state pointer is nullptr");
@@ -304,6 +346,35 @@ rx_err_t rx_tpu_encoder_read_count(const rx_tpu_channel_t channel, rx_encoder_st
   return internal_update_state(state, channel, current_count);
 }
 
+/**
+ * @brief Compute encoder angular velocity in revolutions/second
+ *
+ * @details
+ * Reads the latest cooked count, computes the delta against the cached
+ * s_last_count[channel] from the previous call, divides by counts_per_rev,
+ * and divides by delta_time_s to get rev/s.  Updates the cached previous
+ * count so successive calls produce successive deltas.  Logs a warning
+ * (but still returns k_rx_ok) when |velocity| exceeds
+ * k_tpu_enc_max_velocity_rps, indicating a likely encoder fault.
+ *
+ *
+ *
+ * @pre velocity_rps != nullptr.
+ * @pre Channel was successfully initialized via rx_tpu_encoder_init().
+ * @pre delta_time_s matches the period since the previous call to keep
+ *      the velocity self-consistent.
+ *
+ * @post On k_rx_ok: *velocity_rps holds the computed value;
+ *       s_last_count[channel] advanced to the current total_count.
+ * @post On error: *velocity_rps and cached state are unspecified.
+ *
+ * @note Not thread-safe with itself or other encoder mutators on the same
+ *       channel because of the shared s_last_count[] cache.
+ *
+ * @see rx_tpu_encoder_read_count() Underlying cooked-count reader.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_tpu_encoder_read_velocity(float*                 velocity_rps,
                                       const float            delta_time_s,
                                       const rx_tpu_channel_t channel)
@@ -355,6 +426,30 @@ rx_err_t rx_tpu_encoder_read_velocity(float*                 velocity_rps,
   return k_rx_ok;
 }
 
+/**
+ * @brief Reset both hardware and software encoder state to zero
+ *
+ * @details
+ * Calls rx_tpu_reset_count() to clear the TPU TCNT register, then zeros
+ * the cached software state (total_count, last_raw_count, revolutions,
+ * position_deg, s_last_count).  Used after carriage homing / index pulses
+ * or when re-initializing a faulted encoder.
+ *
+ *
+ *
+ * @pre Channel was successfully initialized via rx_tpu_encoder_init().
+ *
+ * @post On k_rx_ok: TPU TCNT register == 0; cached software state == 0.
+ *       Subsequent reads will report position_deg == 0 with revolutions
+ *       == 0.
+ * @post On error: state unchanged.
+ *
+ * @note Not thread-safe with concurrent reads on the same channel.
+ *
+ * @see rx_tpu_encoder_set_count() Reset to a non-zero starting count.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_tpu_encoder_reset(const rx_tpu_channel_t channel)
 {
   if (!internal_is_valid_channel(channel)) {
@@ -379,6 +474,31 @@ rx_err_t rx_tpu_encoder_reset(const rx_tpu_channel_t channel)
   return k_rx_ok;
 }
 
+/**
+ * @brief Force the cached encoder count to a specific 32-bit value
+ *
+ * @details
+ * Software-only counterpart to rx_tpu_encoder_reset(): does NOT touch the
+ * TPU TCNT register.  Sets the cached total_count, last_raw_count,
+ * revolutions, and position_deg from the supplied count and the channel's
+ * counts_per_rev.  Useful for tests, calibration, and resuming from a
+ * known offset.  Detects a corrupted counts_per_rev (< minimum) and
+ * returns k_rx_err_invalid_state.
+ *
+ *
+ *
+ * @pre Channel was successfully initialized via rx_tpu_encoder_init().
+ *
+ * @post On k_rx_ok: cached state reflects count; revolutions =
+ *       count / counts_per_rev; position_deg derived accordingly.
+ * @post Hardware TCNT register is NOT updated.
+ *
+ * @note Not thread-safe with concurrent reads on the same channel.
+ *
+ * @see rx_tpu_encoder_reset() Hardware-and-software reset to zero.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_tpu_encoder_set_count(const int32_t count, const rx_tpu_channel_t channel)
 {
   if (!internal_is_valid_channel(channel)) {
@@ -411,6 +531,30 @@ rx_err_t rx_tpu_encoder_set_count(const int32_t count, const rx_tpu_channel_t ch
   return k_rx_ok;
 }
 
+/**
+ * @brief Deinitialize a TPU encoder channel and release its resources
+ *
+ * @details
+ * Calls rx_tpu_deinit() to stop the TPU counter and reset its mode, then
+ * clears the per-channel s_initialized flag and counts_per_rev.
+ * Subsequent reads on this channel will return k_rx_err_invalid_state
+ * until rx_tpu_encoder_init() is called again.
+ *
+ *
+ *
+ * @pre Channel was previously initialized via rx_tpu_encoder_init().
+ *
+ * @post On k_rx_ok: TPU counter stopped, s_initialized[channel] == false,
+ *       s_counts_per_rev[channel] == 0.
+ * @post On error: state unchanged.
+ *
+ * @note Not thread-safe with concurrent reads on the same channel.
+ *       Typically called only at shutdown or before re-initialization.
+ *
+ * @see rx_tpu_encoder_init() Required to re-arm after deinit.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_tpu_encoder_deinit(const rx_tpu_channel_t channel)
 {
   if (!internal_is_valid_channel(channel)) {
@@ -443,7 +587,6 @@ rx_err_t rx_tpu_encoder_deinit(const rx_tpu_channel_t channel)
  * internal_update_state(), rx_tpu_encoder_read_velocity(), and
  * rx_tpu_encoder_set_count(). Available only in UNIT_TEST builds.
  *
- * @param[in] channel TPU channel whose cpr to corrupt
  *
  * @pre channel must be a valid index (1, 2, 4, or 5)
  * @post s_counts_per_rev[channel] == 0

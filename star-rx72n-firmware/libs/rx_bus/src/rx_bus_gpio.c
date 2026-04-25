@@ -317,18 +317,7 @@ typedef struct {
  * 5. Mark bus as initialized
  * 6. Set ctx->result and return
  *
- * @param[in,out] bus_config Bus configuration structure
- *   - Must have type = k_bus_type_gpio
- *   - proto.gpio.pin must be valid PORT/pin combination
- *   - initialized flag set to true on success
- * @param[in,out] user_ctx User context (gpio_init_ctx_t*)
- *   - input: ctx->output specifies direction
- *   - output: ctx->result contains operation result
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, GPIO initialized
- * @retval k_rx_err_invalid_arg Bus type is not GPIO
- * @retval k_rx_err_hw_error GPIO HAL initialization failed
  *
  * @pre bus_config pointer is valid (validated by bus manager)
  * @pre user_ctx pointer is valid and points to gpio_init_ctx_t
@@ -405,18 +394,7 @@ static rx_err_t internal_gpio_init_callback(rx_bus_config_t* bus_config, void* u
  * 4. Verify written value via readback (PIDR)
  * 5. Set ctx->result and return
  *
- * @param[in] bus_config Bus configuration structure
- *   - Must be initialized (initialized flag = true)
- *   - Must be configured as output (PDR = 1)
- *   - proto.gpio.pin specifies PORT/pin to write
- * @param[in,out] user_ctx User context (gpio_write_ctx_t*)
- *   - input: ctx->value specifies output state
- *   - output: ctx->result contains operation result
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, output state changed
- * @retval k_rx_err_invalid_state Bus not initialized
- * @retval k_rx_err_hw_error GPIO write failed (hardware fault)
  *
  * @pre bus_config->initialized must be true
  * @pre Pin must be configured as output (not validated - caller responsibility)
@@ -493,20 +471,7 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
  * 5. Set *ctx->value = pin state
  * 6. Set ctx->result and return
  *
- * @param[in] bus_config Bus configuration structure
- *   - Must be initialized (initialized flag = true)
- *   - Can be input or output (read works for both)
- *   - proto.gpio.pin specifies PORT/pin to read
- * @param[in,out] user_ctx User context (gpio_read_ctx_t*)
- *   - input: ctx->value points to output bool
- *   - output: *ctx->value set to pin state
- *   - output: ctx->result contains operation result
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, value read and stored
- * @retval k_rx_err_null_ptr nullptr in bus_config, user_ctx, or ctx->value
- * @retval k_rx_err_invalid_state Bus not initialized
- * @retval k_rx_err_hw_error GPIO read failed (hardware fault)
  *
  * @pre bus_config must be non-NULL
  * @pre bus_config->initialized must be true
@@ -585,17 +550,7 @@ static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* u
  * assert(verify != current); // State must have changed
  * ```
  *
- * @param[in] bus_config Bus configuration structure
- *   - Must be initialized (initialized flag = true)
- *   - Must be configured as output (PDR = 1)
- *   - proto.gpio.pin specifies PORT/pin to toggle
- * @param[in,out] user_ctx User context (gpio_toggle_ctx_t*)
- *   - output: ctx->result contains operation result
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, pin state inverted
- * @retval k_rx_err_invalid_state Bus not initialized or pin is input
- * @retval k_rx_err_hw_error GPIO toggle failed (hardware fault)
  *
  * @pre bus_config->initialized must be true
  * @pre Pin must be configured as output (not validated - caller responsibility)
@@ -692,23 +647,7 @@ static rx_err_t internal_gpio_toggle_callback(rx_bus_config_t* bus_config, void*
  * - Callback executes with mutex held
  * - Results extracted after mutex released
  *
- * @param[in] manager Bus manager instance
- *   - Must be initialized via rx_bus_manager_init()
- *   - Must have GPIO bus registered
- * @param[in] bus_name Name of the GPIO bus
- *   - Must match registered bus name
- *   - Null-terminated string
- * @param[in] output Pin direction
- *   - true: Output mode (PDR = 1)
- *   - false: Input mode (PDR = 0)
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, GPIO initialized
- * @retval k_rx_err_null_ptr nullptr in manager or bus_name
- * @retval k_rx_err_not_found Bus name not found
- * @retval k_rx_err_invalid_arg Bus is not GPIO type
- * @retval k_rx_err_timeout Mutex timeout
- * @retval k_rx_err_conflict Pin already reserved
  *
  * @pre manager must be initialized
  * @pre Bus must be registered with type k_rx_bus_type_gpio
@@ -769,21 +708,7 @@ rx_err_t rx_bus_gpio_init(rx_bus_manager_t* manager, const char* bus_name, bool 
  *
  * Output propagates to physical pin within 10-20 ns of function return.
  *
- * @param[in] manager Bus manager instance
- *   - Must be initialized
- *   - Must have GPIO bus registered and initialized
- * @param[in] bus_name Name of the GPIO bus
- *   - Must match registered and initialized bus
- * @param[in] value Output state
- *   - true: High (VDD ~ 3.3V)
- *   - false: Low (GND ~ 0V)
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, output changed
- * @retval k_rx_err_null_ptr nullptr in manager or bus_name
- * @retval k_rx_err_not_found Bus name not found
- * @retval k_rx_err_invalid_state Bus not initialized
- * @retval k_rx_err_timeout Mutex timeout
  *
  * @pre Bus must be initialized via rx_bus_gpio_init() with output=true
  * @pre manager and bus_name must be non-NULL
@@ -838,22 +763,7 @@ rx_err_t rx_bus_gpio_write(rx_bus_manager_t* manager, const char* bus_name, bool
  * 4. Extract result from context (value already updated by callback)
  * 5. Return result to caller
  *
- * @param[in] manager Bus manager instance
- *   - Must be initialized
- *   - Must have GPIO bus registered and initialized
- * @param[in] bus_name Name of the GPIO bus
- *   - Must match registered and initialized bus
- * @param[out] value Pointer to store pin state
- *   - true: Pin is high (> 0.7*VDD)
- *   - false: Pin is low (< 0.3*VDD)
- *   - Valid only if k_rx_ok returned
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, value contains pin state
- * @retval k_rx_err_null_ptr nullptr in any parameter
- * @retval k_rx_err_not_found Bus name not found
- * @retval k_rx_err_invalid_state Bus not initialized
- * @retval k_rx_err_timeout Mutex timeout
  *
  * @pre Bus must be initialized via rx_bus_gpio_init()
  * @pre All pointers must be non-NULL
@@ -920,19 +830,7 @@ rx_err_t rx_bus_gpio_read(rx_bus_manager_t* manager, const char* bus_name, bool*
  * Atomic operation: mutex ensures no other thread can modify pin
  * between read and write operations.
  *
- * @param[in] manager Bus manager instance
- *   - Must be initialized
- *   - Must have GPIO bus registered and initialized
- * @param[in] bus_name Name of the GPIO bus
- *   - Must match registered and initialized bus
- *   - Must be configured as output
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, pin state inverted
- * @retval k_rx_err_null_ptr nullptr in manager or bus_name
- * @retval k_rx_err_not_found Bus name not found
- * @retval k_rx_err_invalid_state Bus not initialized or pin is input
- * @retval k_rx_err_timeout Mutex timeout
  *
  * @pre Bus must be initialized via rx_bus_gpio_init() with output=true
  * @pre manager and bus_name must be non-NULL

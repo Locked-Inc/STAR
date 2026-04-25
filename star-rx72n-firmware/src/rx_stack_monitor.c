@@ -133,11 +133,7 @@ typedef enum : uint8_t {
  * 2. Call internal_rx_fatal_error() which disables interrupts and halts; the
  *    hardware IWDT resets the system within 2 seconds.
  *
- * @param[in] thread_ptr Pointer to the TX_THREAD control block of the thread
- *                       whose stack has been corrupted.  Provided by ThreadX;
- *                       may be NULL in degenerate cases (handled defensively).
  *
- * @return void (function does not return in production builds)
  *
  * @pre ThreadX stack checking is enabled (TX_ENABLE_STACK_CHECKING defined)
  * @pre This handler was registered via tx_thread_stack_error_notify()
@@ -207,10 +203,6 @@ static void internal_stack_overflow_handler(TX_THREAD* thread_ptr)
  * invokes this callback at every context switch when a corrupted stack
  * sentinel is detected.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Handler registered successfully
- * @retval k_rx_err_not_supported ThreadX returned TX_FEATURE_NOT_ENABLED,
- *         meaning TX_ENABLE_STACK_CHECKING was not defined at build time
  *
  * @pre TX_ENABLE_STACK_CHECKING is defined via USE_TX_ENABLE_STACK_CHECKING=1
  * @pre Called from tx_application_define() (single-threaded context)
@@ -258,14 +250,7 @@ rx_err_t rx_stack_monitor_init(void)
  * 0xEF bytes.  The result is the number of bytes that have never been written
  * by the thread (i.e., the high-water mark complement).
  *
- * @param[in]  thread_ptr  Non-NULL pointer to an initialised TX_THREAD.
- * @param[out] free_bytes  Receives the free-byte count on k_rx_ok.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok  Scan succeeded, *free_bytes is valid
- * @retval k_rx_err_null_ptr  thread_ptr or free_bytes is NULL
- * @retval k_rx_err_invalid_state  Fill pattern absent (stack checking disabled
- *         or stack completely overrun)
  *
  * @pre thread_ptr is a valid, initialised TX_THREAD (not NULL)
  * @pre free_bytes points to a writable uint32_t (not NULL)

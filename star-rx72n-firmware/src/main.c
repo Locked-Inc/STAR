@@ -534,12 +534,32 @@ typedef enum : uint16_t {
   k_dflash_fentryr_low_byte_mask      = 0x00FFU, /**< Mask to read FENTRYR status (low byte) */
   k_dflash_fentryr_pe_active = 0x0080U, /**< Low-byte value indicating data-flash P/E mode active */
   k_dflash_fentryr_pe_inactive = 0x0000U, /**< Low-byte value indicating P/E mode exited */
-  k_dflash_fpckar_key          = 0x1E00U, /**< FPCKAR key (upper byte 0x1E); OR'd with FCLK MHz */
 } dflash_fentryr_t;
 
 /**
+ * @enum dflash_fpckar_t
+ * @brief RX72N FPCKAR (Flash Peripheral Clock Notification) construction values
+ *
+ * @details
+ * 16-bit writes to FPCKAR notify the FCU of the FCLK frequency in MHz so the
+ * internal P/E timing converges. The register format is:
+ *   bits[15:8] = key 0x1E (upper byte)
+ *   bits[7:0]  = FCLK frequency in MHz (lower byte)
+ *
+ * Values from this single enum must be OR'd together to form the final 16-bit
+ * register write. Keeping the key and the MHz constant in one enum (rather
+ * than two) avoids `bugprone-suspicious-enum-usage` because both operands of
+ * the OR are now from the same enum type. Per RX72N HW manual Ch 62 (Flash
+ * Memory), Section 62.4.4 (FPCKAR register).
+ */
+typedef enum : uint16_t {
+  k_dflash_fpckar_key      = 0x1E00U, /**< FPCKAR key (upper byte 0x1E); OR'd with FCLK MHz */
+  k_dflash_fpckar_fclk_mhz = 60U,     /**< FCLK frequency in MHz (OR'd with FPCKAR key) */
+} dflash_fpckar_t;
+
+/**
  * @enum dflash_probe_layout_t
- * @brief Magic header bytes and frequency constants for the bench dflash probe
+ * @brief Magic header bytes for the bench dflash probe
  *
  * @details
  * The bench probe writes a 4-byte payload to data flash so rfp-cli can
@@ -550,7 +570,6 @@ typedef enum : uint8_t {
   k_dflash_probe_magic_byte0 = 0xA5U, /**< Sentinel byte 0 (LE: at addr+0) */
   k_dflash_probe_magic_byte1 = 0x5AU, /**< Sentinel byte 1 (LE: at addr+1) */
   k_dflash_probe_byte_mask   = 0xFFU, /**< Mask to extract low byte of 32-bit error code */
-  k_dflash_fclk_mhz          = 60U,   /**< FCLK frequency in MHz (OR'd with FPCKAR key) */
 } dflash_probe_layout_t;
 
 /**
@@ -569,7 +588,7 @@ typedef enum : uint32_t {
 } fcu_poll_iters_t;
 
 /**
- * @enum prcr_key_t
+ * @enum main_prcr_key_t
  * @brief RX72N PRCR (Protect Register) key/unlock values
  *
  * @details
@@ -764,68 +783,251 @@ typedef enum : uint32_t {
   k_dflash_fstatr_frdy = (1UL << 15), /**< FSTATR.FRDY bit 15: Flash Ready */
 } dflash_fstatr_bit_t;
 
-/* =============================================================================
- * Bench probe: write {magic, who_am_i, err} to data flash @ 0x00100000 so that
- * rfp-cli -rv 0x00100000 16 can read the result without a UART. No dependency
- * on rx_hal flash driver -- hand-rolled FCU sequence per RX72N HW manual Ch 62.
- * ========================================================================= */
-static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
-{
-  volatile uint32_t* const FSTATR  = (volatile uint32_t*)0x007FE080U;
-  volatile uint16_t* const FENTRYR = (volatile uint16_t*)0x007FE084U;
-  volatile uint32_t* const FSADDR  = (volatile uint32_t*)0x007FE030U;
-  volatile uint16_t* const FPCKAR  = (volatile uint16_t*)0x007FE0E4U;
-  volatile uint8_t* const  FWEPROR = (volatile uint8_t*)0x0008C296U;
-  volatile uint8_t* const  FACI_B  = (volatile uint8_t*)0x007E0000U;
-  volatile uint16_t* const FACI_W  = (volatile uint16_t*)0x007E0000U;
-  const uint32_t           DF_ADDR = 0x00100000U;
+/**
+ * @enum dflash_addr_t
+ * @brief Absolute MMIO addresses of FCU registers and the data-flash probe slot
+ *
+ * @details
+ * Sourced from RX72N HW manual R01UH0824EJ0111 Ch 62 (Flash Memory). The
+ * bench probe writes the {magic, who_am_i, err} payload to the dedicated
+ * data-flash slot at `k_dflash_probe_addr` so `rfp-cli -rv 0x00100000 16`
+ * can recover the result without requiring a UART. Note that FACI_B and
+ * FACI_W share the same base (the FCU command port is byte-or-word
+ * addressable).
+ *
+ * @note `uintptr_t` underlying type is mandatory for register addresses
+ *       (CLAUDE.md "Constants and Macros" rule -- ensures correct width on
+ *       both 32-bit RX72N target and 64-bit unit-test host).
+ */
+typedef enum : uintptr_t {
+  k_dflash_addr_fstatr     = 0x007FE080U, /**< Flash Status Register, 32-bit */
+  k_dflash_addr_fentryr    = 0x007FE084U, /**< Flash P/E Mode Entry, 16-bit */
+  k_dflash_addr_fsaddr     = 0x007FE030U, /**< Flash Start Address, 32-bit */
+  k_dflash_addr_fpckar     = 0x007FE0E4U, /**< Flash Peripheral Clock Notify, 16-bit */
+  k_dflash_addr_fwepror    = 0x0008C296U, /**< Flash P/E Erase/Write Protect, 8-bit */
+  k_dflash_addr_faci       = 0x007E0000U, /**< FACI command port, byte/word access */
+  k_dflash_probe_addr      = 0x00100000U, /**< Bench probe payload slot in data-flash */
+} dflash_addr_t;
 
+/* =============================================================================
+ * Bench probe: write {magic, who_am_i, err} to data flash @ k_dflash_probe_addr
+ * so that rfp-cli -rv 0x00100000 16 can read the result without a UART. No
+ * dependency on rx_hal flash driver -- hand-rolled FCU sequence per RX72N HW
+ * manual Ch 62. The end-to-end sequence is broken into the helpers below
+ * (clock setup -> P/E enter -> erase -> program -> P/E exit) so each phase
+ * stays under the clang-tidy function-size threshold and can be reasoned
+ * about in isolation.
+ * ========================================================================= */
+
+/**
+ * @brief Busy-poll FSTATR.FRDY = 1 with a fixed loop bound (NASA P10 Rule 2)
+ *
+ * @details
+ * Spins on the FCU's FSTATR.FRDY bit waiting for "ready". Used after every
+ * FCU command (erase, program) to wait for completion. The caller passes a
+ * static iteration cap from `fcu_poll_iters_t` so erase/program operations
+ * (which take longer than mode entry) can use a larger bound. The body is
+ * intentionally empty -- progress is observable via the loop guard.
+ *
+ *
+ * @pre `fstatr` points to FSTATR (`k_dflash_addr_fstatr`)
+ * @pre `max_iters` matches the worst-case FCU operation duration
+ *
+ * @post FRDY observed = 1, OR loop exited at `max_iters` (best-effort).
+ *
+ * @note Single-threaded use only -- runs in the pre-scheduler bring-up window.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_dflash_wait_frdy(volatile const uint32_t* fstatr, uint32_t max_iters)
+{
+  for (uint32_t i = 0; i < max_iters && ((*fstatr) & k_dflash_fstatr_frdy) == 0U; i++) {
+  }
+}
+
+/**
+ * @brief Configure FCU clock notification (FWEPROR + FPCKAR) before P/E mode
+ *
+ * @details
+ * Runs the two writes that MUST happen before `*FENTRYR = ...`, otherwise the
+ * FCU silently rejects every subsequent command:
+ *   1. `FWEPROR = 0x01` -- enable P/E operations (FLWE)
+ *   2. `FPCKAR = 0x1E00 | 60` -- notify FCU that FCLK = 60 MHz
+ *
+ * Both `k_dflash_fpckar_key` and `k_dflash_fpckar_fclk_mhz` live in a single
+ * `dflash_fpckar_t` enum so the OR satisfies `bugprone-suspicious-enum-usage`.
+ *
+ *
+ * @pre Pointers refer to the canonical addresses in `dflash_addr_t`
+ * @pre PCLKB = 60 MHz (`k_dflash_fpckar_fclk_mhz` matches actual clock)
+ *
+ * @post FWEPROR.FLWE = 1 (P/E ops enabled)
+ * @post FPCKAR programmed to (key | MHz) so FCU timing is correct
+ *
+ * @note Single-threaded use only -- runs in the pre-scheduler bring-up window.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_dflash_setup_clock(volatile uint8_t* fwepror, volatile uint16_t* fpckar)
+{
   /* Enable P/E operations. */
-  *FWEPROR = k_dflash_fwepror_enable_pe;
+  *fwepror = k_dflash_fwepror_enable_pe;
 
   /* Notify FCU of FCLK = 60 MHz (key 0x1E00 | freq_in_MHz). Must be done
-   * BEFORE entering P/E mode or FCU silently rejects every command. */
-  *FPCKAR = (uint16_t)(k_dflash_fpckar_key | k_dflash_fclk_mhz);
+   * BEFORE entering P/E mode or FCU silently rejects every command. Both
+   * operands are members of `dflash_fpckar_t`, so the OR is enum-correct
+   * (no `bugprone-suspicious-enum-usage`). */
+  *fpckar = (uint16_t)(k_dflash_fpckar_key | k_dflash_fpckar_fclk_mhz);
+}
 
+/**
+ * @brief Enter data-flash program/erase mode and wait for FCU ready
+ *
+ * @details
+ * Writes the FENTRYR unlock key + dataflash-PE bit, then bounded-spins until
+ * the FENTRYR low byte reads back the "P/E active" pattern (0x80) AND
+ * FSTATR.FRDY latches high. Two separate polls are required because the FCU
+ * acknowledges mode entry slightly before it advertises ready.
+ *
+ *
+ * @pre `internal_dflash_setup_clock()` already ran (FCU knows PCLKB)
+ *
+ * @post FENTRYR low byte = 0x80 (data-flash P/E active), best-effort
+ * @post FSTATR.FRDY = 1, best-effort within `k_fcu_poll_short`
+ *
+ * @note Single-threaded use only -- runs in the pre-scheduler bring-up window.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_dflash_enter_pe(volatile uint16_t* fentryr, volatile const uint32_t* fstatr)
+{
   /* Enter data flash P/E mode. */
-  *FENTRYR = k_dflash_fentryr_enter_dataflash_pe;
+  *fentryr = k_dflash_fentryr_enter_dataflash_pe;
   /* Spin until data-flash P/E mode is active (FENTRYR low byte = 0x80). */
   for (uint32_t i = 0; i < k_fcu_poll_short &&
-                       (*FENTRYR & k_dflash_fentryr_low_byte_mask) != k_dflash_fentryr_pe_active;
+                       (*fentryr & k_dflash_fentryr_low_byte_mask) != k_dflash_fentryr_pe_active;
        i++) {
   }
   /* Wait for FRDY. */
-  for (uint32_t i = 0; i < k_fcu_poll_short && ((*FSTATR) & k_dflash_fstatr_frdy) == 0U; i++) {
-  }
+  internal_dflash_wait_frdy(fstatr, k_fcu_poll_short);
+}
 
-  /* Erase the 64-byte block containing DF_ADDR. */
-  *FSADDR = DF_ADDR;
-  *FACI_B = k_dflash_fcu_cmd_block_erase;
-  *FACI_B = k_dflash_fcu_cmd_terminator;
-  for (uint32_t i = 0; i < k_fcu_poll_long && ((*FSTATR) & k_dflash_fstatr_frdy) == 0U; i++) {
-  }
+/**
+ * @brief Erase the 64-byte data-flash block containing the probe slot
+ *
+ * @details
+ * Writes the block-erase opcode pair (0x20 then 0xD0 terminator) to FACI
+ * after seeding FSADDR with the probe address. The FCU operates on whole
+ * 64-byte blocks regardless of the requested length; `k_dflash_probe_addr`
+ * is block-aligned so the entire block is erased back to 0xFF.
+ *
+ *
+ * @pre `internal_dflash_enter_pe()` already ran (P/E mode active)
+ *
+ * @post Block at `k_dflash_probe_addr` is erased (cells = 0xFF), best-effort
+ * @post FSTATR.FRDY = 1, best-effort within `k_fcu_poll_long`
+ *
+ * @note Single-threaded use only -- runs in the pre-scheduler bring-up window.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_dflash_erase_block(volatile uint32_t* fsaddr, volatile uint8_t* faci_b,
+                                        volatile const uint32_t* fstatr)
+{
+  /* Erase the 64-byte block containing k_dflash_probe_addr. */
+  *fsaddr = (uint32_t)k_dflash_probe_addr;
+  *faci_b = k_dflash_fcu_cmd_block_erase;
+  *faci_b = k_dflash_fcu_cmd_terminator;
+  internal_dflash_wait_frdy(fstatr, k_fcu_poll_long);
+}
 
+/**
+ * @brief Program the 4-byte {magic, who_am_i, err} payload into data flash
+ *
+ * @details
+ * Writes 4 bytes (= 2 x 16-bit words) starting at `k_dflash_probe_addr`:
+ *   bytes 0..1 = sentinel pattern 0xA5 0x5A (little-endian: word0)
+ *   byte  2   = `who_am_i`
+ *   byte  3   = low byte of `err` (or 0x00 if `err` is 0)
+ *
+ * The FCU program command (0xE8) takes an N parameter giving the number of
+ * 16-bit words to program (here `k_dflash_fcu_program_words` = 2), followed
+ * by the word data, terminated by 0xD0.
+ *
+ *
+ * @pre `internal_dflash_erase_block()` already ran (slot is 0xFF / writable)
+ *
+ * @post 4 bytes at `k_dflash_probe_addr` programmed, best-effort
+ * @post FSTATR.FRDY = 1, best-effort within `k_fcu_poll_long`
+ *
+ * @note Single-threaded use only -- runs in the pre-scheduler bring-up window.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_dflash_program_payload(volatile uint32_t* fsaddr, volatile uint8_t* faci_b,
+                                            volatile uint16_t*       faci_w,
+                                            volatile const uint32_t* fstatr, uint8_t who_am_i,
+                                            int32_t err)
+{
   /* Program 4 bytes: [0xA5, 0x5A, who_am_i, err_byte_low]. */
   const uint8_t  err_byte = (err == 0) ? 0x00U : (uint8_t)(err & k_dflash_probe_byte_mask);
   const uint16_t word0    = (uint16_t)(((uint16_t)k_dflash_probe_magic_byte1 << 8) |
                                     k_dflash_probe_magic_byte0); /* LE: bytes 0=A5, 1=5A */
   const uint16_t word1 = (uint16_t)(((uint16_t)err_byte << 8) | who_am_i); /* LE: 2=who, 3=err    */
 
-  *FSADDR = DF_ADDR;
-  *FACI_B = k_dflash_fcu_cmd_program;
-  *FACI_B = k_dflash_fcu_program_words;
-  *FACI_W = word0;
-  *FACI_W = word1;
-  *FACI_B = k_dflash_fcu_cmd_terminator;
-  for (uint32_t i = 0; i < k_fcu_poll_long && ((*FSTATR) & k_dflash_fstatr_frdy) == 0U; i++) {
-  }
+  *fsaddr = (uint32_t)k_dflash_probe_addr;
+  *faci_b = k_dflash_fcu_cmd_program;
+  *faci_b = k_dflash_fcu_program_words;
+  *faci_w = word0;
+  *faci_w = word1;
+  *faci_b = k_dflash_fcu_cmd_terminator;
+  internal_dflash_wait_frdy(fstatr, k_fcu_poll_long);
+}
 
+/**
+ * @brief Exit data-flash program/erase mode and wait for FCU to confirm
+ *
+ * @details
+ * Writes the FENTRYR unlock-key-only pattern (0xAA00) to drop back to read
+ * mode, then bounded-spins until the FENTRYR low byte reads back the
+ * "P/E inactive" pattern (0x00). After this call, normal CPU reads of the
+ * data-flash region are permitted again.
+ *
+ *
+ * @pre All FCU commands (erase + program) have completed
+ *
+ * @post FENTRYR low byte = 0x00 (P/E mode inactive), best-effort
+ * @post Data-flash readable via normal CPU loads
+ *
+ * @note Single-threaded use only -- runs in the pre-scheduler bring-up window.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_dflash_exit_pe(volatile uint16_t* fentryr)
+{
   /* Exit P/E mode. */
-  *FENTRYR = k_dflash_fentryr_exit_pe;
+  *fentryr = k_dflash_fentryr_exit_pe;
   for (uint32_t i = 0; i < k_fcu_poll_short &&
-                       (*FENTRYR & k_dflash_fentryr_low_byte_mask) != k_dflash_fentryr_pe_inactive;
+                       (*fentryr & k_dflash_fentryr_low_byte_mask) != k_dflash_fentryr_pe_inactive;
        i++) {
   }
+}
+
+static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
+{
+  volatile uint32_t* const fstatr  = (volatile uint32_t*)k_dflash_addr_fstatr;
+  volatile uint16_t* const fentryr = (volatile uint16_t*)k_dflash_addr_fentryr;
+  volatile uint32_t* const fsaddr  = (volatile uint32_t*)k_dflash_addr_fsaddr;
+  volatile uint16_t* const fpckar  = (volatile uint16_t*)k_dflash_addr_fpckar;
+  volatile uint8_t* const  fwepror = (volatile uint8_t*)k_dflash_addr_fwepror;
+  volatile uint8_t* const  faci_b  = (volatile uint8_t*)k_dflash_addr_faci;
+  volatile uint16_t* const faci_w  = (volatile uint16_t*)k_dflash_addr_faci;
+
+  internal_dflash_setup_clock(fwepror, fpckar);
+  internal_dflash_enter_pe(fentryr, fstatr);
+  internal_dflash_erase_block(fsaddr, faci_b, fstatr);
+  internal_dflash_program_payload(fsaddr, faci_b, faci_w, fstatr, who_am_i, err);
+  internal_dflash_exit_pe(fentryr);
 }
 
 /* =============================================================================
@@ -882,9 +1084,6 @@ static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
  * | Conditional logging | ~5 us | If warm boot detected (UART output) |
  * | **Total** | **~0.5 us** | No logging (cold start) |
  *
- * @return bool Power-on reset detection status
- * @retval true PORF is set (cold start - power-on reset occurred)
- * @retval false PORF is clear (warm start - no power-on reset)
  *
  * @pre RSTSR0 register accessible (memory-mapped I/O at valid address)
  * @pre Register pointer (rstsr01()) returns non-NULL compile-time constant
@@ -983,12 +1182,7 @@ static bool internal_check_porf(void)
  * | Assertions (debug build) | ~0.2 us | Two RX_ASSERT checks |
  * | **Total** | **~0.7 us** | Negligible overhead |
  *
- * @param[in] flag_mask Bit mask for the flag to check (e.g., k_rstsr2_iwdtrf = 0x02)
- *                      Must be non-zero (validated by assertion).
  *
- * @return bool Flag state (clear vs set)
- * @retval true Flag is CLEAR (0) - normal condition, no reset detected
- * @retval false Flag is SET (1) - reset of this type occurred
  *
  * @pre flag_mask must be non-zero (at least one bit set)
  * @pre RSTSR2 register accessible (memory-mapped at 0x000C0080)
@@ -1107,9 +1301,6 @@ static bool internal_check_rstsr2_flag_clear(const uint8_t flag_mask)
  * | Call helper (internal_check_rstsr2_flag_clear) | ~0.7 us | Register read + mask |
  * | **Total** | **~0.7 us** | Single register check |
  *
- * @return bool IWDT reset detection status
- * @retval true IWDTRF is CLEAR (0) - **normal condition** (no watchdog timeout)
- * @retval false IWDTRF is SET (1) - **CRITICAL ERROR** (prior firmware hung)
  *
  * @pre RSTSR2 register accessible (memory-mapped at 0x000C0080)
  * @pre IWDT configured and enabled (option setting memory)
@@ -1194,9 +1385,6 @@ static bool internal_check_iwdtrf(void)
  * - Caller returns `k_rx_err_hw_init_failed` (non-fatal error)
  * - Boot may continue (user decides based on application requirements)
  *
- * @return bool WDT reset detection status
- * @retval true WDTRF is CLEAR (0) - normal condition (no WDT timeout)
- * @retval false WDTRF is SET (1) - WDT timeout reset (warning, may be intentional)
  *
  * @pre RSTSR2 register accessible (memory-mapped at 0x000C0080)
  *
@@ -1254,9 +1442,6 @@ static bool internal_check_wdtrf(void)
  * - Caller returns `k_rx_err_hw_init_failed` (allows boot to continue)
  * - Application logic decides if this is acceptable
  *
- * @return bool Software reset detection status
- * @retval true SWRF is CLEAR (0) - no software reset (normal hardware reset)
- * @retval false SWRF is SET (1) - software reset occurred (may be intentional)
  *
  * @pre RSTSR2 register accessible (memory-mapped at 0x000C0080)
  *
@@ -1346,9 +1531,6 @@ static bool internal_check_swrf(void)
  * RX_ASSERT(rstsr0_val == rstsr0_val2, "Inconsistent RSTSR01 read");
  * ```
  *
- * @return bool LVD reset detection status
- * @retval true LVD0RF is CLEAR (0) - no brownout reset (voltage stable)
- * @retval false LVD0RF is SET (1) - brownout reset occurred (power supply issue)
  *
  * @pre RSTSR0 register accessible (memory-mapped at 0x000C001C)
  * @pre LVD0 configured and enabled (option setting memory)
@@ -1451,9 +1633,6 @@ static bool internal_check_lvd0rf(void)
  *
  * **No error checking:** Caller does not act on return value (informational only).
  *
- * @return bool Boot type classification
- * @retval true Warm start (CWSF=1) - processor-initiated reset (software, watchdog, debugger)
- * @retval false Cold start (CWSF=0) - power-on or voltage recovery
  *
  * @pre RSTSR1 register accessible (memory-mapped at 0x000C001D)
  * @pre rstsr01() accessor returns valid pointer (compile-time constant)
@@ -1561,7 +1740,6 @@ static bool internal_check_cwsf(void)
  * | Logging (5-6 messages) | ~500 us | UART @ 115200 baud |
  * | **Total** | **~500 us** | Negligible boot overhead |
  *
- * @return void (No return value - informational logging only)
  *
  * @pre uart_debug_init() called successfully (UART functional)
  * @pre RSTSR0/RSTSR1/RSTSR2 registers accessible (memory-mapped)
@@ -1727,9 +1905,6 @@ static void internal_report_startup_flags(void)
  * - IWDTRF=1 (watchdog timeout) [STOP] **CRITICAL**
  * - Result: RX_ASSERT halts execution (firmware bug detected)
  *
- * @return rx_err_t Status code indicating boot condition
- * @retval k_rx_ok All checks passed (normal boot or acceptable warm boot)
- * @retval k_rx_err_hw_init_failed Non-critical flag set (WDTRF, SWRF, or LVD0RF)
  *
  * @pre Reset status registers accessible (RSTSR0, RSTSR1, RSTSR2)
  * @pre Register protection unlocked (if needed for flag clearing)
@@ -2205,9 +2380,6 @@ static void internal_register_motor_current_adc_buses(void)
  *   2. rx_bus_manager_add_bus(g_bus_manager, config)
  *   3. rx_bus_i2c_init(g_bus_manager, name)
  *
- * @param[out] config Pointer to caller-owned static rx_bus_config_t storage
- * @param[in] name Stable name string used to look the bus up later
- * @param[in] device_addr 7-bit I2C address of the peripheral
  *
  * @pre internal_init_bus_manager() completed successfully
  * @pre config != NULL and points to BSS-zeroed storage
@@ -2733,10 +2905,7 @@ static void internal_init_stack_monitor(void)
  *
  * **Recovery:** Assert-halt on failure (no recovery possible - critical error)
  *
- * @param[in] first_unused_memory Pointer to first unused SRAM byte after ThreadX kernel allocation
- *                                (Unused in STAR firmware - static allocation only)
  *
- * @return void (No return value - ThreadX callback convention)
  *
  * @pre ThreadX kernel initialized (tx_kernel_enter() called from main())
  * @pre SRAM available for thread stacks
@@ -2930,8 +3099,6 @@ void tx_application_define(void* first_unused_memory)
  *
  * **Likelihood:** <0.01% (requires hardware fault, incorrect clock config, or GPIO misconfiguration)
  *
- * @return k_main_ret_success Nominal return value (never reached)
- * @retval k_main_ret_success ThreadX scheduler started successfully (unreachable code path)
  *
  * @pre MCU hardware reset completed (power-on, watchdog, or software reset)
  * @pre C runtime initialized (BSS cleared, data section copied to RAM)
@@ -3082,13 +3249,13 @@ static void internal_init_boot_checkpoint_leds(void)
  */
 static void internal_inline_usb0_clock_and_phy(void)
 {
-  volatile uint16_t* const PRCR_R    = (volatile uint16_t*)k_inline_addr_prcr;
-  volatile uint32_t* const MSTPCRB_R = (volatile uint32_t*)k_inline_addr_mstpcrb;
-  volatile uint16_t* const SYSCFG_R  = (volatile uint16_t*)k_inline_addr_syscfg;
+  volatile uint16_t* const prcr    = (volatile uint16_t*)k_inline_addr_prcr;
+  volatile uint32_t* const mstpcrb = (volatile uint32_t*)k_inline_addr_mstpcrb;
+  volatile uint16_t* const syscfg  = (volatile uint16_t*)k_inline_addr_syscfg;
 
-  *PRCR_R = k_main_prcr_unlock_clock_lpm;
-  *MSTPCRB_R &= ~(uint32_t)k_inline_bit_mstpb_usb0;
-  *PRCR_R = k_main_prcr_lock_all;
+  *prcr = k_main_prcr_unlock_clock_lpm;
+  *mstpcrb &= ~(uint32_t)k_inline_bit_mstpb_usb0;
+  *prcr = k_main_prcr_lock_all;
 
   /* HUM 40.3.1.1 ("Setting Data to the USB Related Register"):
    *   "Setting the SYSCFG.USBE bit to 1 AFTER starting the clock supply
@@ -3098,25 +3265,25 @@ static void internal_inline_usb0_clock_and_phy(void)
    * is acknowledged.  Required order: clear SYSCFG -> SCKE=1 -> wait ->
    * USBE=1.  DPRPU stays 0 here; it is asserted last (after pipe + ICU
    * config) to announce attach to the host. */
-  *SYSCFG_R = k_inline_val_syscfg_clear;
+  *syscfg = k_inline_val_syscfg_clear;
   for (volatile uint32_t d = 0; d < k_usb_syscfg_settle_nops; d++) {
     __asm__ volatile("nop");
   }
-  *SYSCFG_R |= (uint16_t)k_inline_bit_syscfg_scke; /* SCKE first per HUM 40.3.1.1 */
+  *syscfg |= (uint16_t)k_inline_bit_syscfg_scke; /* SCKE first per HUM 40.3.1.1 */
   for (volatile uint32_t d = 0; d < k_usb_syscfg_settle_nops; d++) {
     __asm__ volatile("nop");
   }
-  *SYSCFG_R |= (uint16_t)k_inline_bit_syscfg_usbe; /* USBE only after the clock is up */
+  *syscfg |= (uint16_t)k_inline_bit_syscfg_usbe; /* USBE only after the clock is up */
 
   /* RX72N PHY housekeeping that mirrors rx_usb_hw.c's
    * internal_usb_configure_phy() -- must run between USBE=1 and
    * INTENB0 programming.  See tinyusb renesas/usba dcd_usba.c:626-628.
    *   - USB.DPUSR0R.FIXPHY0 cleared: release PHY from output-fixed state
    *   - USB0.PHYSLEW = 0x5     : RX72N-specific slew-rate trim */
-  volatile uint32_t* const DPUSR0R_R = (volatile uint32_t*)k_inline_addr_dpusr0r;
-  volatile uint32_t* const PHYSLEW_R = (volatile uint32_t*)k_inline_addr_physlew;
-  *DPUSR0R_R &= ~(uint32_t)k_inline_bit_dpusr0r_fixphy0;
-  *PHYSLEW_R = (uint32_t)k_inline_val_physlew;
+  volatile uint32_t* const dpusr0r = (volatile uint32_t*)k_inline_addr_dpusr0r;
+  volatile uint32_t* const physlew = (volatile uint32_t*)k_inline_addr_physlew;
+  *dpusr0r &= ~(uint32_t)k_inline_bit_dpusr0r_fixphy0;
+  *physlew = (uint32_t)k_inline_val_physlew;
 }
 
 /**
@@ -3142,25 +3309,25 @@ static void internal_inline_usb0_clock_and_phy(void)
  */
 static void internal_inline_usb0_endpoint_setup(void)
 {
-  volatile uint16_t* const SYSCFG_R  = (volatile uint16_t*)k_inline_addr_syscfg;
-  volatile uint16_t* const INTENB0_R = (volatile uint16_t*)k_inline_addr_intenb0;
-  volatile uint16_t* const BRDYENB_R = (volatile uint16_t*)k_inline_addr_brdyenb;
-  volatile uint16_t* const BEMPENB_R = (volatile uint16_t*)k_inline_addr_bempenb;
-  volatile uint16_t* const DCPCFG_R  = (volatile uint16_t*)k_inline_addr_dcpcfg;
-  volatile uint16_t* const DCPMAXP_R = (volatile uint16_t*)k_inline_addr_dcpmaxp;
-  volatile uint16_t* const DCPCTR_R  = (volatile uint16_t*)k_inline_addr_dcpctr;
+  volatile uint16_t* const syscfg  = (volatile uint16_t*)k_inline_addr_syscfg;
+  volatile uint16_t* const intenb0 = (volatile uint16_t*)k_inline_addr_intenb0;
+  volatile uint16_t* const brdyenb = (volatile uint16_t*)k_inline_addr_brdyenb;
+  volatile uint16_t* const bempenb = (volatile uint16_t*)k_inline_addr_bempenb;
+  volatile uint16_t* const dcpcfg  = (volatile uint16_t*)k_inline_addr_dcpcfg;
+  volatile uint16_t* const dcpmaxp = (volatile uint16_t*)k_inline_addr_dcpmaxp;
+  volatile uint16_t* const dcpctr  = (volatile uint16_t*)k_inline_addr_dcpctr;
 
-  *DCPCFG_R  = (uint16_t)k_inline_val_dcpcfg;
-  *DCPMAXP_R = (uint16_t)k_inline_val_dcpmaxp_64;
-  *DCPCTR_R  = (uint16_t)k_inline_val_dcpctr_pid_buf;
-  *BRDYENB_R = (uint16_t)k_inline_val_brdyenb_pipe0;
-  *BEMPENB_R = (uint16_t)k_inline_val_bempenb_pipe0;
-  *INTENB0_R =
+  *dcpcfg  = (uint16_t)k_inline_val_dcpcfg;
+  *dcpmaxp = (uint16_t)k_inline_val_dcpmaxp_64;
+  *dcpctr  = (uint16_t)k_inline_val_dcpctr_pid_buf;
+  *brdyenb = (uint16_t)k_inline_val_brdyenb_pipe0;
+  *bempenb = (uint16_t)k_inline_val_bempenb_pipe0;
+  *intenb0 =
     (uint16_t)((uint32_t)k_inline_bit_intenb0_vbse | (uint32_t)k_inline_bit_intenb0_rsme |
                (uint32_t)k_inline_bit_intenb0_sofe | (uint32_t)k_inline_bit_intenb0_dvse |
                (uint32_t)k_inline_bit_intenb0_ctre);
 
-  *SYSCFG_R |= (uint16_t)k_inline_bit_syscfg_dprpu;
+  *syscfg |= (uint16_t)k_inline_bit_syscfg_dprpu;
 }
 
 /**
@@ -3196,30 +3363,30 @@ static void internal_inline_usb0_endpoint_setup(void)
  */
 static void internal_inline_usb0_icu_setup(void)
 {
-  volatile uint8_t* const SLIBR144_R =
+  volatile uint8_t* const slibr144 =
     (volatile uint8_t*)(k_inline_addr_icu_slibr + (uintptr_t)k_inline_icu_usbi0_vector);
-  volatile uint8_t* const SLIPRCR_R = (volatile uint8_t*)k_inline_addr_sliprcr;
-  volatile uint8_t* const IPR144_R =
+  volatile uint8_t* const sliprcr = (volatile uint8_t*)k_inline_addr_sliprcr;
+  volatile uint8_t* const ipr144 =
     (volatile uint8_t*)(k_inline_addr_icu_ipr + (uintptr_t)k_inline_icu_usbi0_vector);
-  volatile uint8_t* const IR144_R =
+  volatile uint8_t* const ir144 =
     (volatile uint8_t*)(k_inline_addr_icu_ir + (uintptr_t)k_inline_icu_usbi0_vector);
-  volatile uint8_t* const IER18_R =
+  volatile uint8_t* const ier18 =
     (volatile uint8_t*)(k_inline_addr_icu_ier + (uintptr_t)k_inline_icu_ier_idx_usbi);
 
-  *SLIBR144_R = (uint8_t)k_inline_icu_usbi0_src;
-  *SLIPRCR_R  = (uint8_t)k_inline_icu_sliprcr_wprc;
+  *slibr144 = (uint8_t)k_inline_icu_usbi0_src;
+  *sliprcr  = (uint8_t)k_inline_icu_sliprcr_wprc;
   /* HUM 15.7.7 step (6) bounded confirmation: WPRC latches in 1-2 ICLK
    * cycles; cap the poll so the boot path never spins forever (NASA
    * P10 Rule 2).  If WPRC fails to latch the IER enable below is a
    * no-op -- the ISR-entry counter diagnostic catches that case. */
   for (uint16_t i = 0; i < (uint16_t)k_inline_sliprcr_poll_max; i++) {
-    if ((*SLIPRCR_R & (uint8_t)k_inline_icu_sliprcr_wprc) != 0U) {
+    if ((*sliprcr & (uint8_t)k_inline_icu_sliprcr_wprc) != 0U) {
       break;
     }
   }
-  *IPR144_R = (uint8_t)k_inline_icu_usbi_priority;
-  *IR144_R  = 0U;
-  *IER18_R |= (uint8_t)(1U << (uint8_t)k_inline_icu_ier_bit_usbi);
+  *ipr144 = (uint8_t)k_inline_icu_usbi_priority;
+  *ir144  = 0U;
+  *ier18 |= (uint8_t)(1U << (uint8_t)k_inline_icu_ier_bit_usbi);
 }
 
 /**
@@ -3299,7 +3466,29 @@ static void internal_inline_usb0_bringup(void)
   internal_set_pb3_pre_kernel_probe();
 }
 
-int main(void)
+/**
+ * @brief Light D9 + run startup-flag bookkeeping (boot phase 1)
+ *
+ * @details
+ * Drives `internal_init_boot_checkpoint_leds()` (which lights D9 = PA7 to
+ * announce that main() ran), inspects the post-reset RSTSR flags, and walks
+ * the D9 -> D10 LED transition that means "startup-flag check completed".
+ * RSTSR diagnostics are deliberately NOT printed here because UART is not
+ * up yet -- they are buffered for `internal_report_startup_flags()` to
+ * emit once the UART comes online.
+ *
+ *
+ * @pre System reset has just completed (single-threaded pre-scheduler context)
+ * @pre PA7/PB0 GPIO writes succeed (boot-checkpoint LEDs already configured)
+ *
+ * @post D9 (PA7) lit, D10 (PB0) lit on success (startup-flag check completed)
+ * @post Startup-flag state captured for later report
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_main_boot_checkpoint_init(void)
 {
   /* BRING-UP CHECKPOINTS -- "one hot" LED indicator of how far boot got
    * without any UART. See internal_init_boot_checkpoint_leds() for the
@@ -3307,15 +3496,44 @@ int main(void)
   internal_init_boot_checkpoint_leds();
 
   /* Check startup flags (bring-up: never halt; diagnostic printed later). */
-  rx_err_t ret = internal_check_startup_flags();
-  RX_ERROR_CHECK(ret);
+  const rx_err_t ret = internal_check_startup_flags();
+  if (ret != k_rx_ok) {
+    return ret;
+  }
 
   (void)gpio_write_low(k_rx_pa_7);
   (void)gpio_write_high(k_rx_pb_0); /* D10: startup flags checked */
+  return k_rx_ok;
+}
 
+/**
+ * @brief Bring up clocks, then early UART, then drain the buffered RSTSR report
+ *
+ * @details
+ * Phase 2 of boot. Calls `rx_clock_power_init()` to configure ICLK/PCLK
+ * (LED transitions D10 -> D11), then `uart_debug_init()` to bring up the
+ * debug UART. If UART came up, prints the boot banner and the buffered
+ * startup-flag diagnostic from phase 1, then walks D11 -> D12. If UART
+ * failed, the LED stays at D11 and the failure code propagates so the
+ * caller can `RX_ERROR_CHECK()` it.
+ *
+ *
+ * @pre `internal_main_boot_checkpoint_init()` ran (D10 already lit)
+ *
+ * @post Clocks programmed, debug UART up (success path)
+ * @post D12 (P7_2) lit on full success; D11 stays on UART failure
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_main_clocks_and_uart(void)
+{
   /* Initialize system clocks and power management */
-  ret = rx_clock_power_init();
-  RX_ERROR_CHECK(ret); /* If this fails, errors cant be logged */
+  rx_err_t ret = rx_clock_power_init();
+  if (ret != k_rx_ok) {
+    return ret; /* If this fails, errors cant be logged */
+  }
 
   (void)gpio_write_low(k_rx_pb_0);
   (void)gpio_write_high(k_rx_p7_1); /* D11: clock init done */
@@ -3333,17 +3551,47 @@ int main(void)
     (void)gpio_write_high(k_rx_p7_2); /* D12: UART init OK */
   }
 
-  /* Now check UART init status - will halt if failed, but at least tried to report flags */
-  RX_ERROR_CHECK(ret);
+  /* Return UART init status - caller will halt if failed, but at least
+   * tried to report flags first. */
+  return ret;
+}
 
+/**
+ * @brief Initialize infrastructure, peripheral hardware, and the nanopb wrapper
+ *
+ * @details
+ * Phase 3 of boot. Calls (in order):
+ *   1. `rx_infrastructure_init()` -- error handler + pin validator
+ *   2. `hardware_init()` -- GPIO, GPTW, timers, UART, SPI, I2C, ADC
+ *   3. `rx_nanopb_init()` -- pure-software wrapper used by telemetry_task
+ *      and comm_task (without it both return `k_rx_err_not_initialized`).
+ * Walks the D12 -> D13 LED transition between hardware_init() and
+ * rx_nanopb_init().
+ *
+ *
+ * @pre `internal_main_clocks_and_uart()` succeeded (clocks + UART online)
+ *
+ * @post All three subsystems initialized (success path)
+ * @post D13 (PB1) lit on full success
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_main_init_hw_modules(void)
+{
   /* Initialize infrastructure (error handler + pin validator) before peripherals.
    * Must run in single-threaded context before ThreadX starts. */
-  ret = rx_infrastructure_init();
-  RX_ERROR_CHECK(ret);
+  rx_err_t ret = rx_infrastructure_init();
+  if (ret != k_rx_ok) {
+    return ret;
+  }
 
   /* Initialize application-specific hardware (GPIO, GPTW, timers, UART, SPI, I2C, ADC) */
   ret = hardware_init();
-  RX_ERROR_CHECK(ret);
+  if (ret != k_rx_ok) {
+    return ret;
+  }
 
   (void)gpio_write_low(k_rx_p7_2);
   (void)gpio_write_high(k_rx_pb_1); /* D13: hardware_init done */
@@ -3353,9 +3601,38 @@ int main(void)
    * k_rx_err_not_initialized (0x10F). The wrapper is a pure software
    * module with no hardware deps, so initialize it during the
    * pre-kernel single-threaded window next to the other module inits. */
-  ret = rx_nanopb_init();
-  RX_ERROR_CHECK(ret);
+  return rx_nanopb_init();
+}
 
+/**
+ * @brief Run the inline USB0 bring-up and finalize the rx_usb subsystem
+ *
+ * @details
+ * Phase 4 of boot. Composes `internal_inline_usb0_bringup()` (HUM 40.3.1.1
+ * clock + PHY -> EP setup -> HUM 15.7.7 ICU wiring -> PB3 diagnostic) with
+ * the rx_usb finalization pair: `rx_usb_hw_mark_initialized()` followed by
+ * `rx_usb_init(nullptr)`. The mark step tells the production rx_usb_hw layer
+ * that the inline sequence already attached the hardware so rx_usb_init()
+ * skips its redundant register sequence and only sets up ring buffers, CDC
+ * class state, and flips `s_usb.initialized = true`. Without this finalize,
+ * rx_usb_write() early-exits with `k_rx_err_invalid_state` and telemetry
+ * never reaches the host.
+ *
+ *
+ * @pre `internal_main_init_hw_modules()` succeeded (peripheral clocks ready)
+ *
+ * @post USB0 attached, host enumeration in flight (DPRPU asserted)
+ * @post `s_usb.initialized = true` so rx_usb_write() is unblocked
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see internal_inline_usb0_bringup() Composed inline bring-up
+ * @see rx_usb_init() Software-side ring buffer + CDC state setup
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_main_init_usb_subsystem(void)
+{
   /* Pre-kernel inline USB0 bring-up: HUM 40.3.1.1 clock + PHY -> EP setup ->
    * HUM 15.7.7 ICU wiring -> PB3 diagnostic. See helper for the full narrative. */
   internal_inline_usb0_bringup();
@@ -3367,12 +3644,30 @@ int main(void)
    * s_usb.initialized = true.  Without this, rx_usb_write() early-exits
    * with k_rx_err_invalid_state and telemetry never reaches the host. */
   rx_usb_hw_mark_initialized();
-  ret = rx_usb_init(nullptr);
-  RX_ERROR_CHECK(ret);
+  return rx_usb_init(nullptr);
+}
 
-  /* Start the ThreadX scheduler - should never return */
-  tx_kernel_enter();
-
+/**
+ * @brief Park the CPU in a low-power wait if `tx_kernel_enter()` ever returns
+ *
+ * @details
+ * `tx_kernel_enter()` is documented as no-return; reaching code after it
+ * means the ThreadX scheduler failed to start, which is a fatal state with
+ * no safe recovery. Spin in `wait` (low-power idle) so a watchdog or
+ * debugger probe can observe the condition. The trailing
+ * `__builtin_unreachable()` lets the compiler omit the function epilogue.
+ *
+ * @pre `tx_kernel_enter()` has been called and (impossibly) returned
+ *
+ * @post CPU parked in `wait` loop indefinitely
+ *
+ * @note Marked NORETURN-equivalent via `__builtin_unreachable()` to silence
+ *       static-analysis warnings about a non-returning path through main.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_main_post_kernel_halt(void)
+{
   /* Should never reach here, ThreadX scheduler failed to start if it does */
   while (1) {
     __asm__ volatile("wait"); /* Wait for sleep/idle */
@@ -3381,6 +3676,26 @@ int main(void)
   /* Unreachable: ThreadX scheduler takes over before reaching this point.
    * If execution reaches here, the system is in an undefined state. */
   __builtin_unreachable();
+}
+
+int main(void)
+{
+  rx_err_t ret = internal_main_boot_checkpoint_init();
+  RX_ERROR_CHECK(ret);
+
+  ret = internal_main_clocks_and_uart();
+  RX_ERROR_CHECK(ret);
+
+  ret = internal_main_init_hw_modules();
+  RX_ERROR_CHECK(ret);
+
+  ret = internal_main_init_usb_subsystem();
+  RX_ERROR_CHECK(ret);
+
+  /* Start the ThreadX scheduler - should never return */
+  tx_kernel_enter();
+
+  internal_main_post_kernel_halt();
 
   return k_main_ret_success;
 }

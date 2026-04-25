@@ -487,7 +487,7 @@
  * | **Rule 5: Assertions** | [PASS] | Every function: 2+ checks (nullptr, created flag, init state). |
  * | **Rule 6: Smallest Scope** | [PASS] | Variables declared close to first use, file-scope static. |
  * | **Rule 7: Check Returns** | [PASS] | All rx_obstacle_detect_*() returns validated or cast (void). |
- * | **Rule 8: Preprocessor Limit** | [PASS] | C23 typed enums for all constants. No #define constants. |
+ * | **Rule 8: Preprocessor Limit** | [PASS] | C23 typed enums for all constants. No \#define constants. |
  * | **Rule 9: Pointer Restrictions** | [WARN] DEVIATION | Function pointers used (rx_obstacle callback - DIP). |
  * | **Rule 10: Compiler Warnings** | [PASS] | -Wall -Wextra -Werror clean. Zero warnings. |
  *
@@ -705,12 +705,12 @@
  * **Code Example:**
  * @code{.c}
  * // Dependency Inversion: Depend on abstract interface
- * #include "rx_obstacle_detect.h"  // Abstract sensor interface
- * #include "shared_data.h"         // Abstract storage interface
+ * \#include "rx_obstacle_detect.h"  // Abstract sensor interface
+ * \#include "shared_data.h"         // Abstract storage interface
  *
  * // NOT:
- * // #include "rx_gpt.h"           // Concrete GPIO timer (too low-level)
- * // #include "hc_sr04_timing.h"   // Concrete sensor protocol (coupling)
+ * // \#include "rx_gpt.h"           // Concrete GPIO timer (too low-level)
+ * // \#include "hc_sr04_timing.h"   // Concrete sensor protocol (coupling)
  *
  * // Usage: High-level policy code (no concrete details)
  * err = rx_obstacle_detect_init(&s_obstacle_handle, &config);  // Abstract init
@@ -1293,11 +1293,7 @@ static void internal_obstacle_callback(bool    obstacle_detected,
  * rx_iwdt_task_heartbeat(). The IWDT watchdog detects the missing heartbeat and
  * triggers a system reset within the configured 2-second hardware timeout.
  *
- * @return rx_err_t Task creation status
  *
- * @retval k_rx_ok Task created successfully, sensors initialized and polling
- * @retval k_rx_err_invalid_state Task already created (s_obstacle_created == true)
- * @retval k_rx_err_rtos_thread_create ThreadX tx_thread_create() returned error
  *
  * @pre ThreadX kernel entered via tx_kernel_enter() (scheduler running)
  * @pre tx_application_define() callback is executing (boot phase)
@@ -1518,9 +1514,6 @@ rx_err_t obstacle_detect_task_create(void)
  *
  * Each sensor configured with 30ms timeout (400cm max range).
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All sensors initialized successfully
- * @retval k_rx_err_* Sensor initialization failed (see rx_hcsr04_init)
  *
  * @pre GPIO ports F, J, 0, 3 accessible
  * @pre Pins not already allocated by pin validator
@@ -1576,8 +1569,6 @@ static rx_err_t internal_init_sensors(void)
  * On any failure this function triggers an emergency stop and spins indefinitely
  * so the IWDT watchdog resets the system.
  *
- * @param[in] motor_count Number of motor handles provided by motor_control_task.
- * @param[in] motors      Array of motor handle pointers (length motor_count).
  *
  * @pre internal_init_sensors() completed successfully.
  * @pre motor_count > 0 and motors is non-null.
@@ -1783,9 +1774,7 @@ static void internal_init_obstacle_detect(uint8_t motor_count, rx_motor_handle_t
  * | **Stack frame** | ~64 | Call duration | Return address, saved registers |
  * | **Total Stack** | ~112 bytes | Peak | During rx_obstacle_detect_init() |
  *
- * @param[in] input Thread input parameter (unused, required by ThreadX ABI)
  *
- * @return void This function never returns (infinite loop)
  *
  * @pre ThreadX kernel started (tx_kernel_enter() called)
  * @pre Task created via obstacle_detect_task_create()
@@ -2070,17 +2059,7 @@ static void internal_obstacle_task_entry(ULONG input)
  * | **Logging Overhead** | ~2 us | UART buffering (non-blocking) |
  * | **Frequency** | On event | Typically <1 Hz (depends on environment) |
  *
- * @param[in] obstacle_detected True if obstacle detected, false if cleared
- * @param[in] sensor_idx Sensor index (0-3) that triggered callback
- *                       - 0: Front-Left (TRIG PF5, ECHO P03/IRQ11)
- *                       - 1: Front-Right (TRIG PJ5, ECHO P02/IRQ10)
- *                       - 2: Back-Left (TRIG PJ3, ECHO P01/IRQ9)
- *                       - 3: Back-Right (TRIG P33, ECHO P00/IRQ8)
- * @param[in] distance_cm Measured distance in centimeters (0.0 - 400.0)
- *                        Temperature-compensated using DS18B20 data
- * @param[in] user_data User context pointer (unused, set to NULL in config)
  *
- * @return void Callback has no return value (fire-and-forget pattern)
  *
  * @pre rx_obstacle_detect library initialized and started
  * @pre shared_data_init() called (required for e-stop trigger)

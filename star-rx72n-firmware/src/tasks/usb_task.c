@@ -163,6 +163,37 @@ static void internal_usb_task_entry(ULONG input)
   }
 }
 
+/**
+ * @brief Create and start the dedicated USB CDC polling task
+ *
+ * @details
+ * Creates a single ThreadX thread (s_usb_thread) that runs the USB polling
+ * loop in internal_usb_task_entry().  The task uses a static stack
+ * (s_usb_stack), runs at priority k_usb_task_priority (4), and is started
+ * with TX_AUTO_START so it begins executing as soon as the kernel is free.
+ *
+ * This function is idempotent only by failure: a second call returns
+ * k_rx_err_invalid_state rather than re-creating the thread.  This protects
+ * against double-init from boot sequences that re-run hardware bring-up.
+ *
+ * Called from rx_main() during system startup, after USB hardware
+ * initialization (rx_usb_hw_init) and ThreadX kernel start.
+ *
+ *
+ * @pre USB hardware initialized via rx_usb_hw_init().
+ * @pre ThreadX kernel running (called from tx_application_define or later).
+ *
+ * @post On k_rx_ok: s_usb_created == true and s_usb_thread is scheduled.
+ * @post On k_rx_err_rtos_thread_create: s_usb_created remains false; the
+ *       caller may retry once the underlying RTOS condition is resolved.
+ *
+ * @note Not thread-safe with itself; intended to be called once from
+ *       single-threaded boot code.
+ *
+ * @see rx_usb_hw_init() USB peripheral bring-up that must run first.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t usb_task_create(void)
 {
   if (s_usb_created) {

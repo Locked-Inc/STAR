@@ -83,10 +83,7 @@ static const char* const s_tag = "I2C_COMM";
  * the limit is exceeded. Called before every riic_peripheral_write to prevent
  * an unchecked narrowing cast from uint32_t to uint16_t.
  *
- * @param[in] wire_len Encoded frame byte count to validate
  *
- * @retval k_rx_ok             Length is within the HAL transfer limit
- * @retval k_rx_err_invalid_size wire_len > k_riic_peripheral_transfer_limit
  *
  * @pre  wire_len reflects the output of rx_frame_encode()
  * @pre  k_riic_peripheral_transfer_limit is defined in rx_riic.h
@@ -145,16 +142,7 @@ typedef enum : uint32_t {
  * word, extracts sequence number, payload length, type, and flags fields. Checks
  * that the buffer is large enough for the declared payload before returning.
  *
- * @param[in] data Raw frame data buffer (must not be nullptr)
- * @param[in] data_len Length of data buffer in bytes
- * @param[out] frame Frame structure to populate (must not be nullptr)
- * @param[out] offset_out Byte offset past header (optional, can be nullptr)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success
- * @retval k_rx_err_invalid_arg nullptr in data or frame
- * @retval k_rx_err_invalid_size Data too short for header or declared payload
- * @retval k_rx_err_protocol_error Invalid sync word
  *
  * @pre data != nullptr
  * @pre frame != nullptr
@@ -214,14 +202,7 @@ RX_STATIC_TESTABLE rx_err_t internal_decode_header(const uint8_t* data,
  * computes CRC-32 IEEE 802.3 over data[0..offset-1], and compares the two
  * values to confirm frame integrity.
  *
- * @param[in] data Raw frame data buffer containing header + payload + CRC
- * @param[in] offset Byte offset to CRC field (= header_size + payload_len)
- * @param[out] crc_out Optional pointer to receive verified CRC value (can be nullptr)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok CRC valid, frame integrity confirmed
- * @retval k_rx_err_invalid_arg nullptr data or offset below minimum CRC position
- * @retval k_rx_err_crc_mismatch Calculated CRC does not match stored CRC
  *
  * @pre data != nullptr
  * @pre offset >= (k_frame_min_size - k_frame_crc_size)
@@ -330,12 +311,7 @@ typedef enum : uint8_t {
 /**
  * @brief Read available data from RIIC peripheral into staging buffer
  *
- * @param[in,out] handle I2C communication handle with rx_buffer
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success (0 or more bytes read)
- * @retval k_rx_err_invalid_arg nullptr handle
- * @retval k_rx_err_invalid_state Buffer length exceeds maximum
  *
  * @pre handle != nullptr
  * @pre handle->rx_buffer_len <= k_i2c_comm_rx_buffer_size
@@ -374,12 +350,7 @@ RX_STATIC_TESTABLE rx_err_t internal_read_i2c_data(rx_i2c_comm_handle_t* handle)
 /**
  * @brief Compact receive buffer by removing consumed data
  *
- * @param[in,out] handle I2C communication handle with rx_buffer
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success
- * @retval k_rx_err_invalid_arg nullptr handle
- * @retval k_rx_err_invalid_state Position exceeds length
  *
  * @pre handle != nullptr
  * @pre handle->rx_buffer_pos <= handle->rx_buffer_len
@@ -422,13 +393,7 @@ RX_STATIC_TESTABLE rx_err_t internal_compact_rx_buffer(rx_i2c_comm_handle_t* han
  * sync word (k_frame_sync_word) stored in little-endian byte order. Sets
  * *sync_pos to the index of the matching byte or k_sync_not_found (-1).
  *
- * @param[in] handle I2C communication handle with rx_buffer
- * @param[out] sync_pos Output position of sync word in buffer
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Sync word found, position written to *sync_pos
- * @retval k_rx_err_invalid_arg nullptr handle or sync_pos
- * @retval k_rx_err_not_found Sync word not present in buffer
  *
  * @pre handle != nullptr
  * @pre sync_pos != nullptr
@@ -474,12 +439,7 @@ RX_STATIC_TESTABLE rx_err_t internal_find_sync(const rx_i2c_comm_handle_t* handl
  * the buffer is full (to make room for new data), then compacts the buffer by
  * discarding consumed bytes from the front.
  *
- * @param[in,out] handle I2C communication handle
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Buffer handled successfully
- * @retval k_rx_err_invalid_arg handle is nullptr
- * @retval k_rx_err_invalid_state Buffer position exceeds length after compact
  *
  * @pre handle != nullptr
  * @pre handle->rx_buffer_pos <= handle->rx_buffer_len
@@ -509,14 +469,7 @@ RX_STATIC_TESTABLE rx_err_t internal_handle_no_sync(rx_i2c_comm_handle_t* handle
  * copies the payload, and verifies the CRC-32. Advances rx_buffer_pos by
  * total_size regardless of success or failure, then compacts the buffer.
  *
- * @param[in,out] handle I2C communication handle
- * @param[out] frame Decoded frame output (must not be nullptr)
- * @param[in] total_size Total frame size in bytes (header + payload + CRC)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Frame decoded successfully
- * @retval k_rx_err_protocol_error Invalid sync word or header
- * @retval k_rx_err_crc_mismatch CRC mismatch
  *
  * @pre handle != nullptr and initialized
  * @pre frame != nullptr
@@ -560,8 +513,6 @@ RX_STATIC_TESTABLE rx_err_t internal_decode_frame(rx_i2c_comm_handle_t* handle,
  * Advances rx_buffer_pos to sync_pos when sync_pos is ahead of the current
  * position, discarding any bytes before the sync word.
  *
- * @param[in,out] handle I2C communication handle
- * @param[in] sync_pos Buffer index of the located sync word (>= 0)
  *
  * @pre handle != nullptr
  * @pre sync_pos >= 0
@@ -584,14 +535,7 @@ RX_STATIC_TESTABLE void internal_align_to_sync(rx_i2c_comm_handle_t* handle, con
  * expected frame size if the length is valid, or advances the buffer position
  * past the sync word if invalid.
  *
- * @param[in,out] handle I2C communication handle
- * @param[out] payload_len Output payload length extracted from header
- * @param[out] total_size Output total expected frame size in bytes
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Header valid; *payload_len and *total_size are populated
- * @retval k_rx_err_invalid_size Payload length exceeds k_frame_max_payload;
- *                               buffer position advanced past sync word
  *
  * @pre handle != nullptr with at least k_frame_header_total bytes available
  * @pre payload_len != nullptr
@@ -624,14 +568,7 @@ RX_STATIC_TESTABLE rx_err_t internal_parse_header(rx_i2c_comm_handle_t* handle,
  * searches for a sync word, validates the header, and decodes a complete frame
  * when enough bytes are present.
  *
- * @param[in,out] handle I2C communication handle
- * @param[out] frame Decoded frame output (must not be nullptr)
- * @param[out] err Error code (valid only when return value is k_receive_error)
  *
- * @return rx_receive_result_t Result code
- * @retval k_receive_continue More data needed; call again
- * @retval k_receive_done Frame decoded successfully into *frame
- * @retval k_receive_error Error occurred; *err contains the error code
  *
  * @pre handle != nullptr and handle->initialized == true
  * @pre frame != nullptr
@@ -780,17 +717,7 @@ rx_err_t rx_i2c_comm_deinit(rx_i2c_comm_handle_t* handle)
  * frame->payload. Used by rx_i2c_comm_send() to construct outgoing frames
  * before encoding and transmission.
  *
- * @param[out] frame Output frame structure to populate (must not be nullptr)
- * @param[in] sequence Sequence number for the frame header (0-65535)
- * @param[in] type Frame type identifier (command, response, ping, etc.)
- * @param[in] flags Frame flags bitmap (use k_frame_flag_none if no flags needed)
- * @param[in] payload Payload data buffer (may be nullptr only if payload_len == 0)
- * @param[in] payload_len Payload length in bytes (0 to k_frame_max_payload)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Frame populated successfully
- * @retval k_rx_err_invalid_arg frame is nullptr, or payload is nullptr with len > 0
- * @retval k_rx_err_invalid_size payload_len > k_frame_max_payload
  *
  * @pre frame != nullptr
  * @pre payload != nullptr || payload_len == 0
@@ -910,12 +837,7 @@ rx_err_t rx_i2c_comm_send(rx_i2c_comm_handle_t* handle,
  * controller. Called automatically by rx_i2c_comm_receive() when a PING
  * frame is decoded.
  *
- * @param[in,out] handle Initialized I2C comm handle
- * @param[in]     frame  Decoded PING frame (must have type == k_frame_type_ping)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok PONG sent successfully
- * @retval Other   Error from rx_i2c_comm_send()
  *
  * @pre handle != nullptr and handle->initialized == true
  * @pre frame != nullptr and frame->header.type == k_frame_type_ping
@@ -946,11 +868,7 @@ RX_STATIC_TESTABLE rx_err_t internal_handle_ping(rx_i2c_comm_handle_t* handle,
  * channel, then resets the session state machine. Called automatically by
  * rx_i2c_comm_receive() when a RESET frame is decoded.
  *
- * @param[in,out] handle Initialized I2C comm handle
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok RESET_ACK sent and session reset successfully
- * @retval Other   Error from session, encode, or write operations
  *
  * @pre handle != nullptr and handle->initialized == true
  * @pre handle->session != nullptr and initialized
@@ -1007,14 +925,7 @@ typedef enum : uint8_t {
 /**
  * @brief Dispatch a decoded frame by type (PING/RESET/PONG/data)
  *
- * @param[in,out] handle I2C communication handle
- * @param[in]     frame  Decoded frame to dispatch
- * @param[out]    err    Error code (valid only when return is k_dispatch_error)
  *
- * @return i2c_dispatch_result_t Result code
- * @retval k_dispatch_continue Control frame handled; caller should continue loop
- * @retval k_dispatch_done     Data frame validated; caller should return k_rx_ok
- * @retval k_dispatch_error    Error occurred; *err contains the error code
  *
  * @pre handle != nullptr and initialized
  * @pre frame != nullptr with valid decoded header

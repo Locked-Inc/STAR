@@ -722,8 +722,6 @@ static inline void internal_log_puthex(uint32_t v, uint8_t d)
  *                - Recommended: 3-8 uppercase characters
  *                - nullptr silently ignored (safety)
  *
- * @return void (output-only, no error indication)
- *
  * @pre level_str and tag should be valid null-terminated strings
  * @post Log header written to configured output (UART and/or USB CDC)
  *
@@ -784,7 +782,7 @@ static inline void internal_log_header(const char* level_str, const char* tag)
  *
  * ## Output Format
  * ```
- * [ERROR] [TAG] message text\r\n
+ * [ERROR] [TAG] message text CRLF
  * ```
  *
  * ## Performance
@@ -792,7 +790,7 @@ static inline void internal_log_header(const char* level_str, const char* tag)
  * |--------|-------|
  * | Cycles | ~2400 @ 240 MHz (30-char message) |
  * | Time | ~10 us |
- * | UART bytes | ~45 bytes (header + message + \r\n) |
+ * | UART bytes | ~45 bytes (header + message + CRLF) |
  * | Stack | 0 bytes (inline) |
  *
  * @param[in] tag Component tag identifying error source (e.g., "MOTOR", "SPI")
@@ -803,8 +801,6 @@ static inline void internal_log_header(const char* level_str, const char* tag)
  *                    - Must be null-terminated string
  *                    - Should be concise and actionable
  *                    - nullptr causes silent return (safety)
- *
- * @return void (output-only function)
  *
  * @pre message must be valid null-terminated string or nullptr
  * @post Error message written to UART (and USB CDC if USB_LOG_MIRROR=1)
@@ -971,8 +967,6 @@ internal_rx_log_error_hex(const char* tag, const char* message, uint32_t value, 
  *                - Typically obtained via `strlen(str_value)`
  *                - Values > k_log_str_max_len will be clamped to k_log_str_max_len
  *                - Use exact buffer length for non-null-terminated buffers
- *
- * @return void (output-only function)
  *
  * @pre message and str_value must be valid pointers or nullptr
  * @pre len must not exceed actual buffer size of str_value

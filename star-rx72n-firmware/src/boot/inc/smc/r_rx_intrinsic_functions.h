@@ -1184,7 +1184,6 @@ unsigned long long R_BSP_UnsignedMultiplication(unsigned long data1, unsigned lo
 /**
  * @brief Set accumulator register (ACC)
  * @param[in] data 64-bit value to write to ACC
- * @return void
  * @note GNUC/ICCRX implementation using inline assembly
  * @since Version 1.0.0
  */
@@ -1204,7 +1203,6 @@ signed long long R_BSP_GetACC(void);
 
 /**
  * @brief Change processor mode from supervisor to user
- * @return void
  * @pre Processor in supervisor mode
  * @post Processor in user mode
  * @note Implemented with inline assembly
@@ -1216,7 +1214,6 @@ R_BSP_ATTRIB_INLINE_ASM void R_BSP_ChangeToUserMode(void);
 /**
  * @brief Set backup processor status word (BPSW)
  * @param[in] data BPSW value to set
- * @return void
  * @note Implemented with inline assembly
  * @since Version 1.0.0
  */
@@ -1233,7 +1230,6 @@ uint32_t R_BSP_GetBPSW(void);
 /**
  * @brief Set backup program counter (BPC)
  * @param[in] data BPC address to set
- * @return void
  * @note Implemented with inline assembly
  * @since Version 1.0.0
  */
@@ -1251,7 +1247,6 @@ void* R_BSP_GetBPC(void);
 /**
  * @brief Set exception table base register (EXTB)
  * @param[in] data Exception table base address
- * @return void
  * @pre Address must be aligned to exception table requirements
  * @note Only available if BSP_MCU_EXCEPTION_TABLE defined
  * @since Version 1.0.0
@@ -1271,7 +1266,6 @@ void* R_BSP_GetEXTB(void);
  * @brief Set bit in byte (atomic operation)
  * @param[in,out] data Pointer to byte
  * @param[in] bit Bit position (0-7)
- * @return void
  * @post Bit at position is set to 1
  * @note Implemented with inline assembly (BSET instruction)
  * @since Version 1.0.0
@@ -1282,7 +1276,6 @@ R_BSP_ATTRIB_INLINE_ASM void R_BSP_BitSet(uint8_t* data, uint32_t bit);
  * @brief Clear bit in byte (atomic operation)
  * @param[in,out] data Pointer to byte
  * @param[in] bit Bit position (0-7)
- * @return void
  * @post Bit at position is cleared to 0
  * @note Implemented with inline assembly (BCLR instruction)
  * @since Version 1.0.0
@@ -1293,7 +1286,6 @@ R_BSP_ATTRIB_INLINE_ASM void R_BSP_BitClear(uint8_t* data, uint32_t bit);
  * @brief Reverse (toggle) bit in byte (atomic operation)
  * @param[in,out] data Pointer to byte
  * @param[in] bit Bit position (0-7)
- * @return void
  * @post Bit at position is inverted
  * @note Implemented with inline assembly (BNOT instruction)
  * @since Version 1.0.0
@@ -1303,7 +1295,6 @@ R_BSP_ATTRIB_INLINE_ASM void R_BSP_BitReverse(uint8_t* data, uint32_t bit);
 /**
  * @brief Move value to accumulator high 32 bits
  * @param[in] data Value to write to ACC[63:32]
- * @return void
  * @note Implemented with inline assembly (MVTACHI instruction)
  * @since Version 1.0.0
  */
@@ -1312,7 +1303,6 @@ R_BSP_ATTRIB_INLINE_ASM void R_BSP_MoveToAccHiLong(int32_t data);
 /**
  * @brief Move value to accumulator low 32 bits
  * @param[in] data Value to write to ACC[31:0]
- * @return void
  * @note Implemented with inline assembly (MVTACLO instruction)
  * @since Version 1.0.0
  */
@@ -1341,7 +1331,6 @@ int32_t R_BSP_MoveFromAccMiLong(void);
 /**
  * @brief Set double-precision floating-point status word (DPSW)
  * @param[in] data DPSW value to set
- * @return void
  * @note Only available if DPFPU hardware present
  * @since Version 1.0.0
  */
@@ -1358,7 +1347,6 @@ uint32_t R_BSP_GetDPSW(void);
 /**
  * @brief Set double-precision exception control register (DECNT)
  * @param[in] data DECNT value to set
- * @return void
  * @note Only available if DPFPU hardware present
  * @since Version 1.0.0
  */
@@ -1390,7 +1378,6 @@ void* R_BSP_GetDEPC(void);
 #if BSP_MCU_TFU_VERSION == 1
 /**
  * @brief Initialize Trigonometric Function Unit (TFU)
- * @return void
  * @pre Called before using any TFU functions
  * @post TFU hardware initialized and ready for use
  * @note Only for TFU version 1 (RX64M, RX71M, RX65N, RX66N, RX72M, RX72N)
@@ -1406,7 +1393,6 @@ R_BSP_ATTRIB_INLINE_ASM void R_BSP_InitTFU(void);
  * @param[in] f Angle in radians (float)
  * @param[out] sin Pointer to store sine result
  * @param[out] cos Pointer to store cosine result
- * @return void
  * @pre TFU initialized (R_BSP_INIT_TFU called if TFU_VERSION == 1)
  * @post sin and cos contain computed values
  * @note Uses TFU hardware for fast computation
@@ -1420,7 +1406,6 @@ R_BSP_ATTRIB_INLINE_ASM void R_BSP_CalcSine_Cosine(float f, float* sin, float* c
  * @param[in] x X coordinate
  * @param[out] atan2 Pointer to store atan2(y,x) result (angle in radians)
  * @param[out] hypot Pointer to store sqrt(x^2+y^2) result (magnitude)
- * @return void
  * @pre TFU initialized (R_BSP_INIT_TFU called if TFU_VERSION == 1)
  * @post atan2 and hypot contain computed values
  * @note Uses TFU hardware for fast computation
@@ -1436,7 +1421,6 @@ R_BSP_CalcAtan_SquareRoot(float y, float x, float* atan2, float* hypot);
  * @param[in] f Angle in fixed-point format
  * @param[out] sin Pointer to store sine result
  * @param[out] cos Pointer to store cosine result
- * @return void
  * @note Only for TFU version 2 (newer MCUs)
  * @since Version 1.14
  */
@@ -1466,7 +1450,6 @@ int32_t R_BSP_CalcCosine_Fpn(int32_t fx);
  * @param[in] x X coordinate (fixed-point)
  * @param[out] atan2 Pointer to store atan2 result
  * @param[out] hypot Pointer to store hypot result
- * @return void
  * @note Only for TFU version 2
  * @since Version 1.14
  */

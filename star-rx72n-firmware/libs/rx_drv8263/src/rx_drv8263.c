@@ -149,7 +149,6 @@ typedef enum : uint8_t {
  * timing specifications (nSLEEP pulse, OLP settling). At 240 MHz,
  * each microsecond is approximately 240 CPU cycles.
  *
- * @param[in] us Delay duration in microseconds
  *
  * @pre us must be strictly positive (us > 0; zero is not a valid delay)
  * @pre us should be small (< 100 us) to avoid excessive blocking
@@ -193,10 +192,7 @@ RX_STATIC_TESTABLE void internal_delay_us(uint32_t us)
  * for the RX72N GPIO subsystem. Port must be 0-16 (PORT0 through PORTJ)
  * and pin must be 0-7 (8-bit port width).
  *
- * @param[in] port Port number
- * @param[in] pin  Pin number
  *
- * @return true if valid, false otherwise
  *
  * @pre port and pin are unsigned 8-bit values (always >= 0)
  * @pre Called only during initialization or reconfiguration
@@ -233,11 +229,7 @@ static inline bool internal_validate_gpio(uint8_t port, uint8_t pin)
  * If the port base address is invalid (nullptr), the function returns
  * silently with no effect.
  *
- * @param[in] port Port number (0-16)
- * @param[in] pin  Pin number within port (0-7)
- * @param[in] high true = set HIGH, false = set LOW
  *
- * @return void
  *
  * @pre Port must be configured as output (PDR bit set)
  * @pre port must be <= k_max_port_number and pin must be <= k_max_pin_number
@@ -276,10 +268,7 @@ RX_STATIC_TESTABLE void internal_gpio_write(uint8_t port, uint8_t pin, bool high
  * determine pin state. Returns true if the pin is HIGH, false if the pin
  * is LOW or the port base address is invalid (nullptr).
  *
- * @param[in] port Port number (0-16)
- * @param[in] pin  Pin number within port (0-7)
  *
- * @return true if pin is HIGH, false if LOW or port invalid
  *
  * @pre port must be <= k_max_port_number and pin must be <= k_max_pin_number
  * @pre GPIO subsystem must be initialized (clock gating enabled for target port)
@@ -315,9 +304,7 @@ RX_STATIC_TESTABLE bool internal_gpio_read(uint8_t port, uint8_t pin)
  * Logs a descriptive error message identifying which signal has an invalid
  * assignment on failure.
  *
- * @param[in] config Configuration to validate
  *
- * @return k_rx_ok if all valid, k_rx_err_invalid_arg otherwise
  *
  * @pre config must not be nullptr (caller validates)
  * @pre config must point to a fully populated rx_drv8263_config_t struct
@@ -376,9 +363,6 @@ RX_STATIC_TESTABLE rx_err_t internal_validate_config(const rx_drv8263_config_t* 
  *   - Pattern 1 (k_olp_pattern_in1_high): IN1=1, IN2=0
  *   - Pattern 2 (k_olp_pattern_in2_high): IN1=0, IN2=1
  *
- * @param[in]  handle           Initialized driver handle (provides GPIO config)
- * @param[out] nfault_readings  Array of k_drv8263_olp_pattern_count bools;
- *                               filled with nFAULT state for each pattern
  *
  * @pre handle must be initialized via rx_drv8263_init()
  * @pre DRVOFF must already be set HIGH by caller (standby mode)
@@ -439,11 +423,6 @@ RX_STATIC_TESTABLE void internal_olp_apply_patterns(const rx_drv8263_handle_t* h
  *   - {0,0,0} = Short to VM (or both shorted)
  *   - Other   = Unknown / ambiguous
  *
- * @param[in]  f0          nFAULT reading for pattern 0 (IN1=0, IN2=0)
- * @param[in]  f1          nFAULT reading for pattern 1 (IN1=1, IN2=0)
- * @param[in]  f2          nFAULT reading for pattern 2 (IN1=0, IN2=1)
- * @param[out] result_out1 OLP diagnostic result for OUT1. Must not be nullptr.
- * @param[out] result_out2 OLP diagnostic result for OUT2. Must not be nullptr.
  *
  * @pre result_out1 and result_out2 must point to valid memory
  * @pre f0, f1, f2 must be valid nFAULT readings from OLP test patterns
@@ -524,15 +503,7 @@ RX_STATIC_TESTABLE void internal_olp_decode_results(bool                     f0,
  * 4. Set handle->initialized = true
  * 5. (Optional) Run OLP diagnostic if olp_enable_boot is true
  *
- * @param[out] handle Pointer to caller-allocated handle structure to initialize.
- *                     Must not be nullptr. Typically declared as a static variable.
- * @param[in]  config Pointer to configuration containing GPIO assignments and
- *                     OLP flags. Must not be nullptr. Copied into handle.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok             Initialization succeeded (handle ready for use)
- * @retval k_rx_err_null_ptr   handle or config is nullptr
- * @retval k_rx_err_invalid_arg GPIO port/pin value out of valid range
  *
  * @pre handle must point to valid, writable memory of size >= sizeof(rx_drv8263_handle_t)
  * @pre config must contain valid GPIO port (0-16) and pin (0-7) assignments for all signals
@@ -609,14 +580,7 @@ rx_err_t rx_drv8263_init(rx_drv8263_handle_t* handle, const rx_drv8263_config_t*
  * DRVOFF must be asserted HIGH before running Open Load Protection (OLP)
  * diagnostics, and deasserted LOW to return to normal motor operation.
  *
- * @param[in] handle Pointer to initialized driver handle. Must not be nullptr.
- * @param[in] active true = DRVOFF HIGH (outputs disabled / standby),
- *                    false = DRVOFF LOW (outputs enabled / active)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok               DRVOFF pin set to requested level
- * @retval k_rx_err_null_ptr     handle is nullptr
- * @retval k_rx_err_invalid_state handle not initialized via rx_drv8263_init()
  *
  * @pre handle must be initialized via rx_drv8263_init()
  * @pre DRVOFF GPIO must be configured as an output pin (hardware_init responsibility)
@@ -671,12 +635,7 @@ rx_err_t rx_drv8263_set_drvoff(rx_drv8263_handle_t* handle, bool active)
  * as a POEG (Port Output Enable for GPT) input rather than a standard
  * GPIO input.
  *
- * @param[in] handle Pointer to initialized driver handle. Must not be nullptr.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok               Fault reset pulse completed successfully
- * @retval k_rx_err_null_ptr     handle is nullptr
- * @retval k_rx_err_invalid_state handle not initialized via rx_drv8263_init()
  *
  * @pre handle must be initialized via rx_drv8263_init()
  * @pre Motor outputs should be stopped (PWM disabled) before clearing a fault
@@ -762,16 +721,7 @@ rx_err_t rx_drv8263_clear_latched_fault(rx_drv8263_handle_t* handle)
  * | 0         | 0         | 0         | Short to VM     | Short to VM     |
  * | other     | other     | other     | Unknown         | Unknown         |
  *
- * @param[in]  handle      Pointer to initialized driver handle. Must not be nullptr.
- * @param[out] result_out1 OLP diagnostic result for OUT1 (IN1 side). Must not be nullptr.
- *                          Set to k_drv8263_olp_unknown on entry; updated with decoded result.
- * @param[out] result_out2 OLP diagnostic result for OUT2 (IN2 side). Must not be nullptr.
- *                          Set to k_drv8263_olp_unknown on entry; updated with decoded result.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok               OLP diagnostic completed, results written
- * @retval k_rx_err_null_ptr     handle, result_out1, or result_out2 is nullptr
- * @retval k_rx_err_invalid_state handle not initialized via rx_drv8263_init()
  *
  * @pre handle must be initialized via rx_drv8263_init()
  * @pre Motor PWM must be stopped (IN1/IN2 are driven as GPIO during OLP)
@@ -850,13 +800,7 @@ rx_err_t rx_drv8263_run_olp(rx_drv8263_handle_t*     handle,
  * effects. The flag takes effect the next time rx_drv8263_init() is
  * called with a configuration that has olp_enable_boot set.
  *
- * @param[in] handle Pointer to initialized driver handle. Must not be nullptr.
- * @param[in] enable true to enable OLP diagnostic at boot, false to disable
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok               Configuration flag updated successfully
- * @retval k_rx_err_null_ptr     handle is nullptr
- * @retval k_rx_err_invalid_state handle not initialized via rx_drv8263_init()
  *
  * @pre handle must be initialized via rx_drv8263_init()
  * @pre handle must point to valid, writable memory
@@ -900,14 +844,7 @@ rx_err_t rx_drv8263_set_olp_boot_enable(rx_drv8263_handle_t* handle, bool enable
  * effects. The flag is checked by the fault handling logic to decide
  * whether to run OLP after fault clearance.
  *
- * @param[in] handle Pointer to initialized driver handle. Must not be nullptr.
- * @param[in] enable true to enable OLP diagnostic after fault clearance,
- *                    false to disable
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok               Configuration flag updated successfully
- * @retval k_rx_err_null_ptr     handle is nullptr
- * @retval k_rx_err_invalid_state handle not initialized via rx_drv8263_init()
  *
  * @pre handle must be initialized via rx_drv8263_init()
  * @pre handle must point to valid, writable memory

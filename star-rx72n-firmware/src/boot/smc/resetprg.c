@@ -362,7 +362,7 @@ extern void R_BSP_MAIN_FUNCTION(void);
  *
  * @par STAR Modification History:
  * - 2026: Removed duplicate clock/hardware init calls
- * - 2026: Converted #defines to C23 typed enums
+ * - 2026: Converted \#defines to C23 typed enums
  * - 2026: Added comprehensive Doxygen documentation
  */
 R_BSP_POR_FUNCTION(R_BSP_STARTUP_FUNCTION)

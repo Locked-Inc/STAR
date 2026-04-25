@@ -381,11 +381,7 @@ static rspi_cs_config_t s_rspi_cs_config[k_rspi_max_channels] = {
  * nullptr for out-of-range channel numbers to allow callers to detect invalid
  * input without risking a wild pointer dereference.
  *
- * @param[in] channel RSPI channel number (valid: 0, 1, or 2)
  *
- * @return Pointer to RSPI register base for the given channel
- * @retval non-null Valid register base pointer
- * @retval nullptr Invalid channel number
  *
  * @pre channel must be in range [0, k_rspi_max_channels)
  * @pre RSPI hardware must be present (RX72N 144-pin package)
@@ -427,9 +423,6 @@ static volatile rx_rspi_regs_t* internal_get_rspi_base(const rspi_channel_t chan
  * MSTPCRC (bit 22). Clearing a bit enables the module (starts the clock);
  * setting it stops the module (reduces power consumption).
  *
- * @param[in] channel RSPI channel number (valid: 0, 1, or 2)
- * @param[in] enable true to enable module clock (clear stop bit),
- *                   false to stop module clock (set stop bit)
  *
  * @pre system_regs() must return a valid pointer
  * @pre channel must be one of k_rspi_channel_0, k_rspi_channel_1, k_rspi_channel_2
@@ -489,18 +482,7 @@ static void internal_set_mstpcrb_for_channel(const rspi_channel_t channel, const
  * in the configured SPI mode (0-3) with optional 8-bit or 16-bit data frames.
  * Uses register protection unlock/lock for module stop control.
  *
- * @param[in] channel RSPI channel number (0-2, corresponding to RSPI0/RSPI1/RSPI2)
- * @param[in] config Pointer to rspi_config_t configuration structure
- *                   @c config must contain:
- *                   - @c spi_mode: SPI mode (0-3) controlling CPOL and CPHA bits
- *                   - @c use_16bit: True for 16-bit data frames, false for 8-bit
  *
- * @return k_rx_ok if initialization successful and channel marked as initialized
- * @return k_rx_err_invalid_arg if:
- *         - @c config pointer is nullptr
- *         - @c channel is out of range (>= 3)
- *         - @c config->spi_mode exceeds maximum (> 3)
- *         - RSPI base address lookup fails for the channel
  *
  * @pre config pointer must be non-NULL
  * @pre channel must be in range [0, k_rspi_max_channels)
@@ -608,11 +590,7 @@ rx_err_t rspi_init_peripheral(const rspi_channel_t channel, const rspi_config_t*
  * and ready to accept new data via SPDR. The timeout prevents infinite loops
  * if the SPI peripheral is stuck.
  *
- * @param[in] rspi Pointer to RSPI register block (must be valid and non-null)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Transmit buffer became empty within timeout
- * @retval k_rx_err_timeout Timeout expired before SPTEF was set
  *
  * @pre rspi must be a valid non-null pointer to initialized RSPI registers
  * @pre RSPI module clock must be enabled (MSTPCRB bit cleared)
@@ -656,11 +634,7 @@ static rx_err_t internal_wait_tx_ready(volatile rx_rspi_regs_t* rspi)
  * in the SPDR register and can be read. The timeout prevents infinite loops
  * if the SPI peripheral is stuck or no clock is being generated.
  *
- * @param[in] rspi Pointer to RSPI register block (must be valid and non-null)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Receive buffer became full within timeout
- * @retval k_rx_err_timeout Timeout expired before SPRF was set
  *
  * @pre rspi must be a valid non-null pointer to initialized RSPI registers
  * @pre A transfer must be in progress or complete for SPRF to set
@@ -703,22 +677,7 @@ static rx_err_t internal_wait_rx_ready(volatile rx_rspi_regs_t* rspi)
  * Transfers data byte-by-byte with timeout protection on both transmit
  * buffer ready and receive buffer full operations.
  *
- * @param[in]  channel RSPI channel number (0-2)
- * @param[in]  tx_data Pointer to transmit data buffer (not nullptr)
- * @param[out] rx_data Pointer to receive data buffer (not nullptr)
- * @param[in]  length Number of bytes to transfer (1 to 65535)
  *
- * @return k_rx_ok if transfer completed successfully
- * @return k_rx_err_invalid_arg if:
- *         - @c tx_data or @c rx_data pointer is nullptr
- *         - @c length is zero or exceeds maximum (65535 bytes)
- *         - RSPI base address lookup fails for the channel
- * @return k_rx_err_invalid_state if:
- *         - @c channel is out of range (>= 3)
- *         - @c channel is not initialized via rspi_init_peripheral()
- * @return k_rx_err_timeout if:
- *         - Transmit buffer does not become ready within timeout
- *         - Receive buffer does not fill within timeout
  *
  * @pre channel must be initialized via rspi_init_peripheral() before calling
  * @pre tx_data pointer must be non-NULL
@@ -793,13 +752,7 @@ rx_err_t rspi_peripheral_transfer(const rspi_channel_t channel,
  * Polls the RSPI status register to determine if the receive buffer contains
  * data ready for reading. Returns the status without blocking.
  *
- * @param[in] channel RSPI channel number (0, 1, or 2)
- * @param[out] available Pointer to bool flag set to true if data is available, false otherwise
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if available pointer is nullptr
- * @return k_rx_err_invalid_state if channel is out of range or not initialized
- * @return k_rx_err_invalid_arg if RSPI base address retrieval fails
  *
  * @pre Channel must be initialized via rspi_init_peripheral() before calling this function
  * @pre available must be a valid non-nullptr
@@ -833,13 +786,7 @@ rx_err_t rspi_peripheral_read_available(const rspi_channel_t channel, bool* avai
  * Polls the RSPI status register to determine if the transmit buffer is empty
  * and ready to accept new data. Returns the status without blocking.
  *
- * @param[in] channel RSPI channel number (0-2)
- * @param[out] ready Set to true if ready to transmit, false otherwise
  *
- * @return k_rx_ok on success, error code otherwise
- * @return k_rx_err_null_ptr if ready pointer is nullptr
- * @return k_rx_err_invalid_state if channel is out of range or not initialized
- * @return k_rx_err_invalid_arg if RSPI base address retrieval fails
  *
  * @pre Channel must be initialized via rspi_init_peripheral()
  * @pre ready must be a valid non-nullptr
@@ -873,12 +820,7 @@ rx_err_t rspi_peripheral_write_ready(const rspi_channel_t channel, bool* ready)
  * Disables the specified RSPI channel, clears the initialization flag, and
  * optionally disables the module (via module stop bit) to reduce power consumption.
  *
- * @param[in] channel RSPI channel number (0, 1, or 2)
  *
- * @return k_rx_ok if deinitialization successful
- * @return k_rx_err_invalid_arg if:
- *         - @c channel is out of range (>= 3)
- *         - RSPI base address lookup fails for the channel
  *
  * @pre Channel should have been initialized via rspi_init_peripheral() previously
  *
@@ -942,8 +884,6 @@ rx_err_t rspi_deinit(const rspi_channel_t channel)
  * timing requirements (CS setup/hold times). Each NOP cycle is 4.17 ns
  * at 240 MHz core clock.
  *
- * @param[in] cycles Number of NOP cycles to execute (must be > 0,
- *                   <= k_rspi_max_delay_cycles)
  *
  * @pre cycles must be non-zero
  * @pre cycles must not exceed k_rspi_max_delay_cycles
@@ -994,10 +934,7 @@ static void internal_timing_delay(const uint16_t cycles)
  * | 2    | 1    | 0    | High       | Falling edge |
  * | 3    | 1    | 1    | High       | Rising edge  |
  *
- * @param[in,out] spcmd Pointer to SPCMD register value to modify
- * @param[in] spi_mode SPI mode (0-3)
  *
- * @return void
  *
  * @pre spcmd must be a valid non-null pointer
  * @pre spi_mode must be in range [0, 3] (only bits 0-1 used)
@@ -1037,14 +974,7 @@ static void internal_configure_spcmd(uint16_t* spcmd, const uint8_t spi_mode)
  * with BRDV=0 (no additional divisor). The result is validated against
  * the hardware-supported range [0, 255].
  *
- * @param[in] freq_hz Desired SPI clock frequency in Hz
- *                    (valid range: k_rspi_min_freq_hz to k_rspi_max_freq_hz)
- * @param[out] spbr Pointer to store calculated SPBR value (0-255)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok SPBR calculated and stored successfully
- * @retval k_rx_err_null_ptr spbr pointer is nullptr
- * @retval k_rx_err_invalid_arg freq_hz outside supported range or SPBR > 255
  *
  * @pre spbr must be a valid non-null pointer
  * @pre freq_hz must be in range [100000, 10000000] Hz
@@ -1093,11 +1023,7 @@ static rx_err_t internal_calculate_spbr(const uint32_t freq_hz, uint8_t* spbr)
  * rx_port_pin_t encoding, sets the pin direction to output via PDR, and
  * drives the pin high (CS inactive) via PODR.
  *
- * @param[in] pin_config GPIO pin (rx_port_pin_t encoding port and pin)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok GPIO configured as CS output and driven high (inactive)
- * @retval k_rx_err_invalid_arg Port base lookup failed or pin out of range
  *
  * @pre pin_config must encode a valid port (0-J) and pin (0-7)
  * @pre Port hardware must be available and not module-stopped
@@ -1149,14 +1075,7 @@ static rx_err_t internal_configure_cs_gpio(const rx_port_pin_t pin_config)
  * duplicate initialization, and SPI mode range. Centralizes validation
  * logic to keep the public API function concise.
  *
- * @param[in] channel RSPI channel number (valid: 0 to k_rspi_max_channels - 1)
- * @param[in] config  Pointer to controller configuration structure
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All validations passed
- * @retval k_rx_err_null_ptr config pointer is nullptr
- * @retval k_rx_err_invalid_arg Channel out of range or SPI mode > 3
- * @retval k_rx_err_invalid_state Channel already initialized in controller mode
  *
  * @pre config may be nullptr (will be detected and rejected)
  * @pre channel may be out of range (will be detected and rejected)
@@ -1207,15 +1126,7 @@ static rx_err_t internal_validate_controller_args(const rspi_channel_t          
  * configuration, and RSPI base validation occurs before GPIO setup to
  * avoid leaving GPIO configured if the channel is invalid.
  *
- * @param[in]  channel  RSPI channel number (0 to k_rspi_max_channels - 1)
- * @param[in]  config   Pointer to controller configuration (freq_hz, cs pin)
- * @param[out] out_rspi Pointer to receive RSPI register base address
- * @param[out] out_spbr Pointer to receive calculated SPBR value
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Hardware resources prepared successfully
- * @retval k_rx_err_null_ptr out_spbr is nullptr (via internal_calculate_spbr)
- * @retval k_rx_err_invalid_arg Frequency out of range, invalid channel, or bad CS pin
  *
  * @pre config must be validated by internal_validate_controller_args() first
  * @pre channel must be in range [0, k_rspi_max_channels)
@@ -1270,14 +1181,7 @@ static rx_err_t internal_prepare_controller(const rspi_channel_t            chan
  * order follows the RX72N Hardware Manual Section 38.3.6 initialization
  * procedure.
  *
- * @param[in] channel RSPI channel number (0 to k_rspi_max_channels - 1)
- * @param[in] rspi    Pointer to RSPI register base (must be valid, non-null)
- * @param[in] spbr    Calculated SPBR value for clock frequency (0-255)
- * @param[in] spcmd   Pre-configured SPCMD register value (CPOL/CPHA/data length)
- * @param[in] config  Pointer to controller configuration (used for CS pin info)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Registers configured and channel marked as initialized
  *
  * @pre rspi must be a valid non-null pointer from internal_get_rspi_base()
  * @pre spbr must be pre-calculated by internal_calculate_spbr()
@@ -1358,21 +1262,7 @@ static rx_err_t internal_configure_registers(const rspi_channel_t            cha
  * with SPI peripheral devices. Enables the module, configures clock frequency,
  * SPI mode, and chip select GPIO pin.
  *
- * @param[in] channel RSPI channel number (0-2)
- * @param[in] config Pointer to controller configuration structure containing:
- *                   - freq_hz: SPI clock frequency (100 kHz to 10 MHz)
- *                   - spi_mode: SPI mode (0-3) for CPOL/CPHA configuration
- *                   - cs: GPIO pin for chip select (type-safe rx_port_pin_t)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if:
- *         - config pointer is nullptr
- *         - (uint8_t)channel >= k_rspi_max_channels
- *         - config->spi_mode > 3
- *         - config->freq_hz out of range (< 100kHz or > 10MHz)
- *         - RSPI base address lookup fails
- *         - CS GPIO configuration fails (invalid port/pin)
- * @return k_rx_err_invalid_state if channel is already initialized
  *
  * @pre config must be non-NULL
  * @pre channel < k_rspi_max_channels
@@ -1427,12 +1317,7 @@ rx_err_t rspi_init_controller(const rspi_channel_t channel, const rspi_controlle
  * Controls the GPIO chip select pin for the specified RSPI channel operating
  * in controller mode. CS is active-low (asserted low, deasserted high).
  *
- * @param[in] channel RSPI channel number (0-2)
- * @param[in] active True to assert CS (drive low), false to deassert CS (drive high)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_state if channel is not initialized or out of range
- * @return k_rx_err_invalid_arg if GPIO port base lookup fails
  *
  * @pre Channel must be initialized via rspi_init_controller()
  * @pre channel < k_rspi_max_channels
@@ -1482,12 +1367,7 @@ rx_err_t rspi_controller_set_cs(const rspi_channel_t channel, const bool active)
  * CS assertion before clock transitions begin. Delay is calibrated for
  * ~300ns at 240 MHz core clock.
  *
- * @param[in] channel RSPI channel number (0 to k_rspi_max_channels - 1)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok CS asserted and setup delay completed
- * @retval k_rx_err_invalid_state Channel not initialized
- * @retval k_rx_err_invalid_arg GPIO port lookup failed
  *
  * @pre Channel must be initialized via rspi_init_controller()
  * @pre s_rspi_controller_initialized[channel] must be true
@@ -1538,12 +1418,7 @@ static rx_err_t internal_controller_assert_cs_with_setup(const rspi_channel_t ch
  * data bit before CS is released. Delay is calibrated for ~300ns at 240 MHz
  * core clock.
  *
- * @param[in] channel RSPI channel number (0 to k_rspi_max_channels - 1)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Hold delay completed and CS deasserted
- * @retval k_rx_err_invalid_state Channel not initialized
- * @retval k_rx_err_invalid_arg GPIO port lookup failed
  *
  * @pre Channel must be initialized via rspi_init_controller()
  * @pre s_rspi_controller_initialized[channel] must be true
@@ -1590,14 +1465,7 @@ static rx_err_t internal_controller_deassert_cs_with_hold(const rspi_channel_t c
  * inner transfer primitive used by rspi_controller_transfer_16bit() after
  * CS assertion and before CS deassertion.
  *
- * @param[in]  rspi    Pointer to RSPI register base (must be valid, non-null)
- * @param[in]  tx_data 16-bit data word to transmit via SPDR
- * @param[out] rx_data Pointer to store received 16-bit response from SPDR
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Transfer completed successfully, rx_data contains response
- * @retval k_rx_err_null_ptr rspi or rx_data pointer is nullptr
- * @retval k_rx_err_timeout TX buffer did not empty or RX buffer did not fill
  *
  * @pre rspi must be a valid non-null pointer to initialized RSPI registers
  * @pre SPI must be enabled (SPCR.SPE=1) before calling
@@ -1660,21 +1528,7 @@ static rx_err_t internal_controller_do_16bit_transfer(volatile rx_rspi_regs_t* r
  * 5. Deassert CS (inactive high)
  * 6. Clear status flags
  *
- * @param[in]  channel RSPI channel number (0-2)
- * @param[in]  tx_data 16-bit data to transmit
- * @param[out] rx_data Pointer to receive 16-bit response (must be non-NULL)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if:
- *         - rx_data pointer is nullptr
- *         - RSPI base address lookup fails
- * @return k_rx_err_invalid_state if:
- *         - (uint8_t)channel >= k_rspi_max_channels
- *         - channel is not initialized via rspi_init_controller()
- * @return k_rx_err_timeout if:
- *         - TX buffer does not become ready within timeout
- *         - RX buffer does not fill within timeout
- * @return Other errors from rspi_controller_set_cs() on CS control failure
  *
  * @pre Channel must be initialized via rspi_init_controller()
  * @pre rx_data must be a valid non-nullptr
@@ -1733,10 +1587,7 @@ rx_err_t rspi_controller_transfer_16bit(const rspi_channel_t channel,
  * Disables the RSPI controller, deasserts chip select, clears configuration,
  * and stops the module to reduce power consumption.
  *
- * @param[in] channel RSPI channel number (0-2)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if channel is out of range or base address lookup fails
  *
  * @pre Should be called after rspi_init_controller() to properly clean up
  *

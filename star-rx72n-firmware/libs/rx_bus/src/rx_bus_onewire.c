@@ -277,7 +277,6 @@ void internal_delay_timer_reset(void)
  *    c. Busy-wait until (current - start) >= wait_ticks
  *    d. Subtract wait_ticks from remaining
  *
- * @param[in] microseconds Delay duration in microseconds (0 = no delay)
  *
  * @pre System clocks initialized
  * @post Delay of approximately `microseconds` us elapsed
@@ -338,12 +337,7 @@ RX_STATIC_TESTABLE void internal_delay_us(uint32_t microseconds)
  * 4. Store pointer in bus_config->handle
  * 5. Return state pointer via output parameter
  *
- * @param[in,out] bus_config Bus configuration node (handle field updated)
- * @param[out] state Pointer to receive runtime state
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, state available
- * @retval k_rx_err_no_mem Static pool exhausted (k_onewire_max_instances)
  *
  * @pre bus_config != nullptr
  * @pre state != nullptr
@@ -377,9 +371,7 @@ static rx_err_t internal_acquire_state(rx_bus_config_t* bus_config, onewire_runt
 /**
  * @brief Retrieve runtime state for already-initialized bus.
  *
- * @param[in] bus_config Bus configuration node
  *
- * @return Pointer to state or nullptr if missing
  */
 static inline onewire_runtime_state_t* internal_get_state(const rx_bus_config_t* bus_config)
 {
@@ -389,11 +381,7 @@ static inline onewire_runtime_state_t* internal_get_state(const rx_bus_config_t*
 /**
  * @brief Configure GPIO drive mode (output low vs input/high-Z).
  *
- * @param[in] bus_config Bus configuration node
- * @param[in,out] state Runtime state tracking current mode
- * @param[in] output True to drive (output), false to release (input)
  *
- * @return k_rx_ok on success
  */
 RX_STATIC_TESTABLE rx_err_t internal_set_drive_mode(const rx_bus_config_t*   bus_config,
                                                     onewire_runtime_state_t* state,
@@ -441,7 +429,6 @@ RX_STATIC_TESTABLE rx_err_t internal_release_line(const rx_bus_config_t*   bus_c
 /**
  * @brief Read current level on the OneWire line.
  *
- * @param[out] high True if line is high
  */
 RX_STATIC_TESTABLE rx_err_t internal_read_line(const rx_bus_config_t* bus_config, bool* high)
 {
@@ -493,13 +480,7 @@ static void internal_reset_search_state(onewire_runtime_state_t* state)
  * 6. presence = !line_high (low = device present)
  * 7. Delay 410us (complete reset slot)
  *
- * @param[in] bus_config Bus configuration with GPIO pin
- * @param[in,out] state Runtime state for GPIO mode tracking
- * @param[out] presence Set to true if device responded (line went low)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, presence result valid
- * @retval k_rx_err_* GPIO operation failed
  *
  * @pre bus_config != nullptr
  * @pre state != nullptr
@@ -564,13 +545,7 @@ RX_STATIC_TESTABLE rx_err_t internal_reset_pulse(rx_bus_config_t*         bus_co
  *                              |______|
  * @endcode
  *
- * @param[in] bus_config Bus configuration with GPIO pin
- * @param[in,out] state Runtime state for GPIO mode tracking
- * @param[in] bit Value to write (true=1, false=0)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, bit written
- * @retval k_rx_err_* GPIO operation failed
  *
  * @pre bus_config != nullptr
  * @pre state != nullptr
@@ -626,13 +601,7 @@ RX_STATIC_TESTABLE rx_err_t internal_write_bit(const rx_bus_config_t*   bus_conf
  *        Release  Sample
  * @endcode
  *
- * @param[in] bus_config Bus configuration with GPIO pin
- * @param[in,out] state Runtime state for GPIO mode tracking
- * @param[out] bit Read value (true=1/high, false=0/low)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, bit read into output
- * @retval k_rx_err_* GPIO operation failed
  *
  * @pre bus_config != nullptr
  * @pre state != nullptr
@@ -721,15 +690,7 @@ RX_STATIC_TESTABLE rx_err_t internal_read_byte(rx_bus_config_t*         bus_conf
 /**
  * @brief Process one ROM search bit position.
  *
- * @param[in] bus_config Bus configuration node
- * @param[in] state Runtime OneWire state
- * @param[in,out] rom ROM buffer under construction
- * @param[in] bit_number Current bit index (1..64)
- * @param[in,out] rom_byte_index Current ROM byte index
- * @param[in,out] rom_bit_mask Current ROM bit mask
- * @param[in,out] last_zero Last discrepancy bit index
  *
- * @return k_rx_ok on success, error code on failure
  */
 
 /**
@@ -739,15 +700,7 @@ RX_STATIC_TESTABLE rx_err_t internal_read_byte(rx_bus_config_t*         bus_conf
  * Determines which branch of the ROM search tree to take based on the two
  * bits read (bit, complement) and the discrepancy tracking state.
  *
- * @param[in]  bit            True bit read from bus
- * @param[in]  comp_bit       Complement bit read from bus
- * @param[in]  bit_number     Current bit position (1-indexed)
- * @param[in]  state          Runtime search state with last_discrepancy
- * @param[in]  rom_byte_index Current byte index in ROM buffer
- * @param[in]  rom_bit_mask   Current bit mask within ROM byte
- * @param[out] last_zero      Updated with bit_number when direction is 0
  *
- * @return Resolved search direction (true = 1, false = 0)
  *
  * @pre All pointer parameters are non-null
  * @post *last_zero updated if direction is 0 at a discrepancy
@@ -835,12 +788,7 @@ RX_STATIC_TESTABLE rx_err_t internal_search_step(rx_bus_config_t*         bus_co
 /**
  * @brief Execute the ROM search bit loop.
  *
- * @param[in] bus_config Bus configuration node
- * @param[in] state Runtime OneWire state
- * @param[out] rom ROM buffer under construction
- * @param[out] last_zero Last discrepancy bit index
  *
- * @return k_rx_ok on success, error code on failure
  */
 RX_STATIC_TESTABLE rx_err_t internal_search_bits(rx_bus_config_t*         bus_config,
                                                  onewire_runtime_state_t* state,
@@ -894,16 +842,7 @@ RX_STATIC_TESTABLE rx_err_t internal_search_bits(rx_bus_config_t*         bus_co
  * 6. Verify ROM CRC-8
  * 7. Copy ROM to last_rom for next iteration
  *
- * @param[in] bus_config Bus configuration node
- * @param[in,out] state Runtime state with search tracking
- * @param[out] rom 8-byte buffer for discovered ROM
- * @param[out] device_found Set to true if valid ROM discovered
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success (check device_found for result)
- * @retval k_rx_err_crc_mismatch ROM CRC validation failed
- * @retval k_rx_err_hw_error Bus collision detected
- * @retval k_rx_err_* Other bus/GPIO errors
  *
  * @pre bus_config != nullptr
  * @pre state != nullptr
@@ -925,12 +864,7 @@ RX_STATIC_TESTABLE rx_err_t internal_search_bits(rx_bus_config_t*         bus_co
  * After a successful search-bits pass, copies the ROM into state->last_rom,
  * updates discrepancy tracking, and validates the CRC-8 byte.
  *
- * @param[in,out] state      Runtime search state to update
- * @param[in]     rom        ROM buffer with discovered address
- * @param[in]     last_zero  Last discrepancy bit from search
- * @param[out]    device_found Set to true if ROM CRC is valid
  *
- * @return k_rx_ok on success, k_rx_err_crc_mismatch on CRC failure
  *
  * @pre state, rom, and device_found are non-null
  * @post state->last_rom updated with rom contents
@@ -969,11 +903,7 @@ static rx_err_t internal_finalize_search_rom(onewire_runtime_state_t* state,
  * indicate search completion. If last_device_flag is already set, returns
  * immediately with skip_search = true.
  *
- * @param[in]     bus_config   Bus configuration node
- * @param[in,out] state        Runtime search state
- * @param[out]    skip_search  Set to true if search bits should be skipped
  *
- * @return k_rx_ok on success, error code on bus failure
  *
  * @pre bus_config, state, and skip_search are non-null
  * @post On presence failure: state flags updated, skip_search set true
@@ -1010,12 +940,7 @@ static rx_err_t internal_search_begin_reset(rx_bus_config_t*         bus_config,
 /**
  * @brief Validate all pointer arguments for internal_search_iteration
  *
- * @param[in] bus_config   Bus configuration node (must not be null)
- * @param[in] state        Runtime search state (must not be null)
- * @param[in] rom          ROM buffer (must not be null)
- * @param[in] device_found Device found flag (must not be null)
  *
- * @return k_rx_ok if all pointers valid, k_rx_err_null_ptr otherwise
  *
  * @pre None
  * @post No state modified
@@ -1139,9 +1064,6 @@ typedef struct {
  *
  * Reduces repetitive validation code across callback functions.
  *
- * @param[in] bus_config Bus configuration to validate
- * @param[in,out] ctx Context structure with result field
- * @param[in] check_initialized True to also check initialization status
  */
 #define CHECK_ONEWIRE_BUS(bus_config, ctx, check_initialized)                                      \
   do {                                                                                             \
@@ -1204,7 +1126,6 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_init_callback(rx_bus_config_t* bus_
  * pointer. Clears the in_use flag and nulls the handle so the slot can be
  * reused by a future rx_bus_onewire_init() call.
  *
- * @param[in,out] bus_config Bus configuration whose state to release
  *
  * @pre bus_config != nullptr
  * @post Matching pool entry marked !in_use
@@ -1233,10 +1154,7 @@ static void internal_release_state(rx_bus_config_t* bus_config)
 /**
  * @brief Callback for OneWire bus deinitialization.
  *
- * @param[in] bus_config Bus configuration node
- * @param[in,out] user_ctx Simple context with result field
  *
- * @return k_rx_ok on success, error code on failure
  */
 RX_STATIC_TESTABLE rx_err_t internal_onewire_deinit_callback(rx_bus_config_t* bus_config,
                                                              void*            user_ctx)
@@ -1254,10 +1172,7 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_deinit_callback(rx_bus_config_t* bu
 /**
  * @brief Callback to perform OneWire reset pulse and detect presence
  *
- * @param[in] bus_config Bus configuration node
- * @param[in,out] user_ctx Context containing presence output pointer
  *
- * @return k_rx_ok on success, error code on failure
  */
 RX_STATIC_TESTABLE rx_err_t internal_onewire_reset_callback(rx_bus_config_t* bus_config,
                                                             void*            user_ctx)
@@ -1291,10 +1206,7 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_reset_callback(rx_bus_config_t* bus
 /**
  * @brief Callback to write a single bit on the OneWire bus
  *
- * @param[in] bus_config Bus configuration node
- * @param[in,out] user_ctx Context containing bit value to write
  *
- * @return k_rx_ok on success, error code on failure
  */
 RX_STATIC_TESTABLE rx_err_t internal_onewire_write_bit_callback(rx_bus_config_t* bus_config,
                                                                 void*            user_ctx)
@@ -1327,10 +1239,7 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_write_bit_callback(rx_bus_config_t*
 /**
  * @brief Callback to read a single bit from the OneWire bus
  *
- * @param[in] bus_config Bus configuration node
- * @param[in,out] user_ctx Context containing bit output pointer
  *
- * @return k_rx_ok on success, error code on failure
  */
 RX_STATIC_TESTABLE rx_err_t internal_onewire_read_bit_callback(rx_bus_config_t* bus_config,
                                                                void*            user_ctx)
@@ -1369,10 +1278,7 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_read_bit_callback(rx_bus_config_t* 
 /**
  * @brief Callback to write a single byte on the OneWire bus
  *
- * @param[in] bus_config Bus configuration node
- * @param[in,out] user_ctx Context containing byte value to write
  *
- * @return k_rx_ok on success, error code on failure
  */
 RX_STATIC_TESTABLE rx_err_t internal_onewire_write_byte_callback(rx_bus_config_t* bus_config,
                                                                  void*            user_ctx)
@@ -1398,10 +1304,7 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_write_byte_callback(rx_bus_config_t
 /**
  * @brief Callback to read a single byte from the OneWire bus
  *
- * @param[in] bus_config Bus configuration node
- * @param[in,out] user_ctx Context containing byte output pointer
  *
- * @return k_rx_ok on success, error code on failure
  */
 RX_STATIC_TESTABLE rx_err_t internal_onewire_read_byte_callback(rx_bus_config_t* bus_config,
                                                                 void*            user_ctx)
@@ -1436,10 +1339,7 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_read_byte_callback(rx_bus_config_t*
 /**
  * @brief Callback to write a buffer of bytes on the OneWire bus
  *
- * @param[in] bus_config Bus configuration node
- * @param[in,out] user_ctx Context containing data pointer and length
  *
- * @return k_rx_ok on success, error code on failure
  */
 RX_STATIC_TESTABLE rx_err_t internal_onewire_write_buffer_callback(rx_bus_config_t* bus_config,
                                                                    void*            user_ctx)
@@ -1483,10 +1383,7 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_write_buffer_callback(rx_bus_config
 /**
  * @brief Callback to read a buffer of bytes from the OneWire bus
  *
- * @param[in] bus_config Bus configuration node
- * @param[in,out] user_ctx Context containing data pointer and length
  *
- * @return k_rx_ok on success, error code on failure
  */
 RX_STATIC_TESTABLE rx_err_t internal_onewire_read_buffer_callback(rx_bus_config_t* bus_config,
                                                                   void*            user_ctx)
@@ -1536,12 +1433,7 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_read_buffer_callback(rx_bus_config_
  *
  * Sends the Skip ROM command (0xCC) to address all devices on the bus.
  *
- * @param[in] bus_config Bus configuration node
- * @param[in] user_ctx User context (unused)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_state if bus not initialized
- * @return k_rx_err_not_found if no device presence detected
  */
 RX_STATIC_TESTABLE rx_err_t internal_onewire_skip_rom_callback(rx_bus_config_t* bus_config,
                                                                void*            user_ctx)
@@ -1577,12 +1469,7 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_skip_rom_callback(rx_bus_config_t* 
  * Sends the Match ROM command (0x55) followed by 64-bit ROM address to
  * select a specific device on a multi-device bus.
  *
- * @param[in] bus_config Bus configuration node
- * @param[in,out] user_ctx Context containing ROM address
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_state if bus not initialized
- * @return k_rx_err_not_found if no device presence detected
  */
 RX_STATIC_TESTABLE rx_err_t internal_onewire_match_rom_callback(rx_bus_config_t* bus_config,
                                                                 void*            user_ctx)
@@ -1633,24 +1520,12 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_match_rom_callback(rx_bus_config_t*
  * Sends the Read ROM command (0x33) and reads 64-bit ROM address with CRC.
  * Only works when exactly one device is on the bus.
  *
- * @param[in] bus_config Bus configuration node
- * @param[in,out] user_ctx Context containing ROM output buffer
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_state if bus not initialized
- * @return k_rx_err_not_found if no device presence detected
- * @return k_rx_err_crc_mismatch if ROM CRC validation fails
- * @return propagated error from rx_crc8_maxim() if CRC computation itself fails
- *         (ctx->result is also set to the propagated error in that case)
  */
 /**
  * @brief Read ROM bytes from bus and validate CRC
  *
- * @param[in]  bus_config Bus configuration node
- * @param[in]  state      Runtime OneWire state
- * @param[out] rom        Buffer to receive 8-byte ROM code
  *
- * @return k_rx_ok on success, k_rx_err_crc_mismatch on CRC failure
  */
 static rx_err_t internal_read_rom_bytes_and_validate(rx_bus_config_t*         bus_config,
                                                      onewire_runtime_state_t* state,
@@ -1725,20 +1600,12 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* 
  * Implements the OneWire ROM search algorithm to discover all devices on
  * a multi-device bus. Returns array of 64-bit ROM addresses with CRC.
  *
- * @param[in] bus_config Bus configuration node
- * @param[in,out] user_ctx Context containing ROM buffer, max count, and output count
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_state if bus not initialized
- * @return k_rx_err_invalid_arg if parameters invalid or max_devices exceeded
  */
 /**
  * @brief Validate search callback parameters and bus state
  *
- * @param[in]  bus_config Bus configuration node
- * @param[in]  ctx        Search context to validate
  *
- * @return k_rx_ok if valid, error code otherwise
  *
  * @pre bus_config and ctx are non-null
  * @post *ctx->num_devices initialized to 0 on success
@@ -1840,16 +1707,7 @@ RX_STATIC_TESTABLE rx_err_t internal_onewire_search_callback(rx_bus_config_t* bu
  * 5. Reset search state
  * 6. Mark bus as initialized
  *
- * @param[in] manager Bus manager handle
- * @param[in] bus_name Bus configuration name (must match registered bus)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, bus ready for use
- * @retval k_rx_err_null_ptr nullptr manager or bus_name
- * @retval k_rx_err_not_found Bus name not registered
- * @retval k_rx_err_invalid_arg Bus is not 1-Wire type
- * @retval k_rx_err_no_mem Static state pool exhausted
- * @retval k_rx_err_hw_error GPIO configuration failed
  *
  * @pre manager != nullptr and initialized
  * @pre bus_name registered via rx_bus_manager_register()
@@ -1889,14 +1747,7 @@ rx_err_t rx_bus_onewire_init(rx_bus_manager_t* manager, const char* bus_name)
  * Releases the runtime state allocated by rx_bus_onewire_init() back to the
  * static pool. Prevents state pool exhaustion in long-running test suites.
  *
- * @param[in] manager Bus manager handle
- * @param[in] bus_name Bus configuration name
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success
- * @retval k_rx_err_null_ptr manager or bus_name is nullptr
- * @retval k_rx_err_not_found Bus not registered
- * @retval k_rx_err_invalid_arg Bus is not OneWire type
  *
  * @pre Bus was initialized via rx_bus_onewire_init()
  * @post State pool entry released for reuse
@@ -1925,11 +1776,7 @@ rx_err_t rx_bus_onewire_deinit(rx_bus_manager_t* manager, const char* bus_name)
 /**
  * @brief Perform OneWire reset pulse and detect device presence
  *
- * @param[in] manager Bus manager handle
- * @param[in] bus_name Bus configuration name
- * @param[out] presence True if device responded, false otherwise
  *
- * @return k_rx_ok on success, error code on failure
  */
 rx_err_t rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, bool* presence)
 {
@@ -1949,11 +1796,7 @@ rx_err_t rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, b
 /**
  * @brief Write a single bit on the OneWire bus
  *
- * @param[in] manager Bus manager handle
- * @param[in] bus_name Bus configuration name
- * @param[in] bit Bit value to write (true=1, false=0)
  *
- * @return k_rx_ok on success, error code on failure
  */
 rx_err_t rx_bus_onewire_write_bit(rx_bus_manager_t* manager, const char* bus_name, bool bit)
 {
@@ -1972,11 +1815,7 @@ rx_err_t rx_bus_onewire_write_bit(rx_bus_manager_t* manager, const char* bus_nam
 /**
  * @brief Read a single bit from the OneWire bus
  *
- * @param[in] manager Bus manager handle
- * @param[in] bus_name Bus configuration name
- * @param[out] bit Bit value read (true=1, false=0)
  *
- * @return k_rx_ok on success, error code on failure
  */
 rx_err_t rx_bus_onewire_read_bit(rx_bus_manager_t* manager, const char* bus_name, bool* bit)
 {
@@ -1996,11 +1835,7 @@ rx_err_t rx_bus_onewire_read_bit(rx_bus_manager_t* manager, const char* bus_name
 /**
  * @brief Write a single byte on the OneWire bus (LSB first)
  *
- * @param[in] manager Bus manager handle
- * @param[in] bus_name Bus configuration name
- * @param[in] byte Byte value to write
  *
- * @return k_rx_ok on success, error code on failure
  */
 rx_err_t rx_bus_onewire_write_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t byte)
 {
@@ -2019,11 +1854,7 @@ rx_err_t rx_bus_onewire_write_byte(rx_bus_manager_t* manager, const char* bus_na
 /**
  * @brief Read a single byte from the OneWire bus (LSB first)
  *
- * @param[in] manager Bus manager handle
- * @param[in] bus_name Bus configuration name
- * @param[out] byte Byte value read
  *
- * @return k_rx_ok on success, error code on failure
  */
 rx_err_t rx_bus_onewire_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t* byte)
 {
@@ -2082,11 +1913,7 @@ rx_bus_onewire_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* da
  * Sends Skip ROM command (0xCC) to address all devices on the bus.
  * Use when only one device is connected or when broadcasting to all devices.
  *
- * @param[in] manager Bus manager handle
- * @param[in] bus_name Bus configuration name
  *
- * @return k_rx_ok on success
- * @return k_rx_err_not_found if no device presence detected
  */
 rx_err_t rx_bus_onewire_skip_rom(rx_bus_manager_t* manager, const char* bus_name)
 {
@@ -2101,12 +1928,7 @@ rx_err_t rx_bus_onewire_skip_rom(rx_bus_manager_t* manager, const char* bus_name
  * Sends Match ROM command (0x55) followed by 64-bit ROM address to select
  * a specific device on a multi-device bus.
  *
- * @param[in] manager Bus manager handle
- * @param[in] bus_name Bus configuration name
- * @param[in] rom 8-byte ROM address (family code + serial + CRC)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_not_found if no device presence detected
  */
 rx_err_t rx_bus_onewire_match_rom(rx_bus_manager_t* manager,
                                   const char*       bus_name,
@@ -2131,13 +1953,7 @@ rx_err_t rx_bus_onewire_match_rom(rx_bus_manager_t* manager,
  * Sends Read ROM command (0x33) and reads 64-bit ROM address with CRC.
  * Only works when exactly one device is present on the bus.
  *
- * @param[in] manager Bus manager handle
- * @param[in] bus_name Bus configuration name
- * @param[out] rom 8-byte buffer for ROM address (family code + serial + CRC)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_not_found if no device presence detected
- * @return k_rx_err_crc_mismatch if ROM CRC validation fails
  */
 rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager,
                                  const char*       bus_name,

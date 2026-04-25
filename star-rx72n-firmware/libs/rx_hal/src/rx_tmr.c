@@ -210,8 +210,6 @@ static rx_tmr_isr_callback_t s_tmr_callback[k_tmr_channel_count_internal] = {
 
 /**
  * @brief Get register pointer for a TMR channel
- * @param[in] channel Validated channel identifier (0..3)
- * @return Volatile pointer to the channel's register struct; NULL if invalid.
  * @since Version 1.0.0
  */
 RX_STATIC_TESTABLE volatile rx_tmr_channel_regs_t* internal_tmr_get_regs(rx_tmr_channel_t channel)
@@ -235,8 +233,6 @@ RX_STATIC_TESTABLE volatile rx_tmr_channel_regs_t* internal_tmr_get_regs(rx_tmr_
 
 /**
  * @brief Return the MSTPCRA bit mask for a TMR channel's unit
- * @param[in] channel Validated channel identifier
- * @return MSTPA5 for unit 0 (TMR0/1), MSTPA4 for unit 1 (TMR2/3), else 0.
  * @since Version 1.0.0
  */
 static uint32_t internal_tmr_unit_mstp_bit(rx_tmr_channel_t channel)
@@ -251,7 +247,6 @@ static uint32_t internal_tmr_unit_mstp_bit(rx_tmr_channel_t channel)
 
 /**
  * @brief Enable the module clock for the channel's TMR unit
- * @param[in] channel Validated channel identifier
  * @pre PRCR register accessible
  * @post MSTPCRA bit cleared for the unit
  * @since Version 1.0.0
@@ -267,9 +262,6 @@ static void internal_tmr_enable_module_clock(rx_tmr_channel_t channel)
 
 /**
  * @brief Map a clock source to TCCR CSS|CKS bits
- * @param[in]  source Validated clock-source enumeration value
- * @param[out] bits   Receives the composed TCCR[4:0] bits
- * @return k_rx_ok on success, k_rx_err_invalid_arg on unknown value.
  * @since Version 1.0.0
  */
 static rx_err_t internal_tmr_clock_bits(rx_tmr_clock_source_t source, uint8_t* bits)
@@ -314,8 +306,6 @@ static rx_err_t internal_tmr_clock_bits(rx_tmr_clock_source_t source, uint8_t* b
 
 /**
  * @brief Return the integer divider for an internal clock source
- * @param[in] source Internal clock-source enumeration value
- * @return PCLK divider (1, 2, 8, 32, 64, 1024, 8192) or 0 for external.
  * @since Version 1.0.0
  */
 static uint32_t internal_tmr_clock_divider(rx_tmr_clock_source_t source)
@@ -342,8 +332,6 @@ static uint32_t internal_tmr_clock_divider(rx_tmr_clock_source_t source)
 
 /**
  * @brief Compose TCR value from config
- * @param[in] config Validated configuration
- * @return TCR value with CCLR field + interrupt enables set per config.
  * @since Version 1.0.0
  */
 static uint8_t internal_tmr_compose_tcr(const rx_tmr_config_t* config)
@@ -383,8 +371,6 @@ static uint8_t internal_tmr_compose_tcr(const rx_tmr_config_t* config)
 
 /**
  * @brief Compose TCSR value from config (OSA/OSB fields)
- * @param[in] config Validated configuration
- * @return TCSR value with OSA/OSB populated; ADTE left at 0.
  * @since Version 1.0.0
  */
 static uint8_t internal_tmr_compose_tcsr(const rx_tmr_config_t* config)
@@ -396,8 +382,6 @@ static uint8_t internal_tmr_compose_tcsr(const rx_tmr_config_t* config)
 
 /**
  * @brief Validate enum fields of a configuration
- * @param[in] config Non-null configuration
- * @return k_rx_ok if all enum fields are in range.
  * @since Version 1.0.0
  */
 static rx_err_t internal_tmr_validate_config(const rx_tmr_config_t* config)
@@ -431,8 +415,6 @@ static rx_err_t internal_tmr_validate_config(const rx_tmr_config_t* config)
 
 /**
  * @brief Write register fields for a single channel during init
- * @param[in] channel Channel to program (even or odd)
- * @param[in] config  Source configuration
  * @since Version 1.0.0
  */
 static void internal_tmr_program_channel(rx_tmr_channel_t channel, const rx_tmr_config_t* config)
@@ -459,7 +441,6 @@ static void internal_tmr_program_channel(rx_tmr_channel_t channel, const rx_tmr_
  * threshold. The even channel counts on its selected clock source; the
  * odd channel counts on the even channel's TCORA compare match via
  * CSS = cascade.
- * @param[in] config Validated primary (even) channel config
  * @since Version 1.0.0
  */
 static void internal_tmr_init_cascade_pair(const rx_tmr_config_t* config)
@@ -693,7 +674,6 @@ rx_err_t rx_tmr_deinit(rx_tmr_channel_t channel)
  * function exists so the test harness can synthesise ISR invocations)
  * and invokes the registered user callback.
  *
- * @param[in] channel TMR channel whose interrupt fired (0..3)
  * @since Version 1.0.0
  */
 void rx_tmr_isr_dispatch(rx_tmr_channel_t channel)

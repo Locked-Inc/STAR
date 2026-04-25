@@ -365,6 +365,20 @@ bool SpiDriver::decode_frame(
   // Extract Length (Little Endian: LSB first)
   uint16_t len = frame[4] | (static_cast<uint16_t>(frame[5]) << 8);
 
+  // Audit F-03: reject frames that claim a payload longer than the
+  // protocol maximum BEFORE arithmetic on (HEADER_SIZE + len + CRC_SIZE).
+  // The firmware (rx_frame.c) and Go gateway (decoder.go) already do this;
+  // mirror it here so a malicious or corrupted SYNC+LEN cannot trick us
+  // into accepting a frame just because the wire-byte count happens to
+  // match HEADER_SIZE + len + CRC_SIZE for some absurd len.
+  if (len > MAX_PAYLOAD_SIZE) {
+    static rclcpp::Clock throttle_clock{RCL_STEADY_TIME};
+    RCLCPP_WARN_THROTTLE(logger(), throttle_clock, 1000,
+                         "decode_frame: payload length %u exceeds MAX_PAYLOAD_SIZE %zu",
+                         static_cast<unsigned>(len), MAX_PAYLOAD_SIZE);
+    return false;
+  }
+
   // Validate Frame Size
   // Header(8) + Payload(len) + CRC(4)
   if (frame.size() != HEADER_SIZE + len + CRC_SIZE) {

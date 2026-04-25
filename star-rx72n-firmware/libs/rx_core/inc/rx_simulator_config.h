@@ -48,7 +48,7 @@
  *
  * @par Example:
  * @code
- * #include "rx_simulator_config.h"
+ * \#include "rx_simulator_config.h"
  *
  * void init_hardware(void)
  * {
@@ -98,7 +98,7 @@
  * #endif
  * @endcode
  *
- * @note Prefer RX_IS_SIMULATOR over direct #ifdef RX_SIMULATOR_MODE
+ * @note Prefer RX_IS_SIMULATOR over direct \#ifdef RX_SIMULATOR_MODE
  *       for consistency and readability.
  */
 #ifdef RX_SIMULATOR_MODE

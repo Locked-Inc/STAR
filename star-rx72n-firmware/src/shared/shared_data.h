@@ -443,9 +443,6 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason);
  *
  * @param[in] reason E-stop reason code (driver_fault, overcurrent, etc.)
  *
- * @return void (no return value)
- * @retval N/A Always succeeds (void return, no error cases, side-effect only)
- *
  * @pre Called from ISR context only (POEG motor fault ISRs)
  * @pre shared_data_init() completed and g_shared_data.event_flags initialized
  * @post s_estop_pending_from_isr == true (volatile flag set)
@@ -492,8 +489,6 @@ void shared_data_trigger_estop_isr_safe(estop_reason_t reason);
  * **Algorithm:** Uses ThreadX critical section (tx_interrupt_control) to atomically
  * check-and-clear s_estop_pending_from_isr flag, preventing race with ISRs. If
  * pending, acquires estop_mutex and commits to shared state.
- *
- * @param None
  *
  * @return rx_err_t Operation status
  * @retval k_rx_ok E-stop committed successfully or no pending e-stop

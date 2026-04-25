@@ -108,16 +108,7 @@ typedef enum : uint32_t {
  * Parses the frame header fields from a raw byte buffer. Validates sync word,
  * extracts sequence number, payload length, type, and flags.
  *
- * @param[in] data Raw frame data buffer (must not be nullptr)
- * @param[in] data_len Length of data buffer in bytes
- * @param[out] frame Frame structure to populate (must not be nullptr)
- * @param[out] offset_out Offset past header (optional, can be nullptr)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, frame header decoded
- * @retval k_rx_err_invalid_arg nullptr pointer in data or frame
- * @retval k_rx_err_invalid_size Data too short for header
- * @retval k_rx_err_protocol_error Invalid sync word
  *
  * @pre data != nullptr
  * @pre frame != nullptr
@@ -182,14 +173,7 @@ RX_STATIC_TESTABLE rx_err_t internal_decode_header(const uint8_t* data,
  * Computes CRC-32 IEEE 802.3 checksum over the frame data (excluding CRC field)
  * and compares against the CRC stored in the frame.
  *
- * @param[in] data Raw frame data buffer containing header + payload + CRC
- * @param[in] offset Byte offset to CRC field (= header_size + payload_len)
- * @param[out] crc_out Optional pointer to receive verified CRC value (can be nullptr)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok CRC valid, frame integrity confirmed
- * @retval k_rx_err_invalid_arg nullptr data, or offset below minimum valid CRC position
- * @retval k_rx_err_crc_mismatch Calculated CRC doesn't match stored CRC
  *
  * @pre data != nullptr
  * @pre offset >= (k_frame_min_size - k_frame_crc_size)
@@ -305,13 +289,7 @@ typedef enum : uint8_t {
  * rx_buffer. Appends to existing data without overwriting. Returns immediately
  * if buffer is full or no data available.
  *
- * @param[in,out] handle UART communication handle with rx_buffer
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success (0 or more bytes read)
- * @retval k_rx_err_invalid_arg nullptr handle
- * @retval k_rx_err_invalid_state Buffer length exceeds maximum
- * @retval Other errors from uart_read_channel()
  *
  * @pre handle != nullptr
  * @pre handle->rx_buffer_len <= k_uart_comm_rx_buffer_size
@@ -372,12 +350,7 @@ RX_STATIC_TESTABLE rx_err_t internal_read_uart_data(rx_uart_comm_handle_t* handl
  * (bytes 0 to rx_buffer_pos-1). Remaining data is moved to the start of the
  * buffer using memmove() to handle overlapping regions safely.
  *
- * @param[in,out] handle UART communication handle with rx_buffer
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, buffer compacted
- * @retval k_rx_err_invalid_arg nullptr handle
- * @retval k_rx_err_invalid_state Position exceeds length
  *
  * @pre handle != nullptr
  * @pre handle->rx_buffer_pos <= handle->rx_buffer_len
@@ -426,14 +399,7 @@ RX_STATIC_TESTABLE rx_err_t internal_compact_rx_buffer(rx_uart_comm_handle_t* ha
  * Scans the receive buffer starting from rx_buffer_pos for the frame sync
  * word (0x55AA) stored in little-endian format.
  *
- * @param[in] handle UART communication handle with rx_buffer
- * @param[out] sync_pos Output position of sync word (k_sync_not_found if not found)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Sync word found, position in sync_pos
- * @retval k_rx_err_invalid_arg nullptr handle or sync_pos
- * @retval k_rx_err_invalid_state Buffer position exceeds length
- * @retval k_rx_err_not_found Sync word not in buffer
  *
  * @pre handle != nullptr
  * @pre sync_pos != nullptr
@@ -484,12 +450,7 @@ RX_STATIC_TESTABLE rx_err_t internal_find_sync(const rx_uart_comm_handle_t* hand
  * the buffer is full (to make room for new data), then compacts the buffer by
  * discarding consumed bytes from the front.
  *
- * @param[in,out] handle UART communication handle
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Buffer handled successfully
- * @retval k_rx_err_invalid_arg handle is nullptr
- * @retval k_rx_err_invalid_state Buffer position exceeds length after compact
  *
  * @pre handle != nullptr
  * @pre handle->rx_buffer_pos <= handle->rx_buffer_len
@@ -521,14 +482,7 @@ RX_STATIC_TESTABLE rx_err_t internal_handle_no_sync(rx_uart_comm_handle_t* handl
  * copies the payload, and verifies the CRC-32. Advances rx_buffer_pos by
  * total_size regardless of success or failure, then compacts the buffer.
  *
- * @param[in,out] handle UART communication handle
- * @param[out] frame Decoded frame output (must not be nullptr)
- * @param[in] total_size Total frame size in bytes (header + payload + CRC)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Frame decoded and CRC verified successfully
- * @retval k_rx_err_protocol_error Invalid sync word or header decode failure
- * @retval k_rx_err_crc_mismatch CRC mismatch
  *
  * @pre handle != nullptr and initialized
  * @pre frame != nullptr
@@ -579,8 +533,6 @@ RX_STATIC_TESTABLE rx_err_t internal_decode_frame(rx_uart_comm_handle_t* handle,
  * Advances rx_buffer_pos to sync_pos when sync_pos is ahead of the current
  * position, discarding any bytes before the sync word.
  *
- * @param[in,out] handle UART communication handle
- * @param[in] sync_pos Buffer index of the located sync word (>= 0)
  *
  * @pre handle != nullptr
  * @pre sync_pos >= 0
@@ -604,14 +556,7 @@ RX_STATIC_TESTABLE void internal_align_to_sync(rx_uart_comm_handle_t* handle,
  * expected frame size if the length is valid, or advances the buffer position
  * past the sync word if invalid.
  *
- * @param[in,out] handle UART communication handle
- * @param[out] payload_len Output payload length extracted from header
- * @param[out] total_size Output total expected frame size in bytes
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Header valid; *payload_len and *total_size are populated
- * @retval k_rx_err_invalid_size Payload length exceeds k_frame_max_payload;
- *                               buffer position advanced past sync word
  *
  * @pre handle != nullptr with at least k_frame_header_total bytes available
  * @pre payload_len != nullptr
@@ -644,14 +589,7 @@ RX_STATIC_TESTABLE rx_err_t internal_parse_header(rx_uart_comm_handle_t* handle,
  * data, find sync word, parse header, and decode complete frame. Returns
  * result code indicating whether to continue, success, or error.
  *
- * @param[in,out] handle UART communication handle
- * @param[out] frame Decoded frame output
- * @param[out] err Error code (valid only if k_receive_error)
  *
- * @return rx_receive_result_t Result code
- * @retval k_receive_continue Continue to next iteration
- * @retval k_receive_done Frame successfully received
- * @retval k_receive_error Error occurred, check err parameter
  *
  * @pre handle != nullptr and initialized
  * @pre frame != nullptr
@@ -803,17 +741,7 @@ rx_err_t rx_uart_comm_deinit(rx_uart_comm_handle_t* handle)
  * frame->payload. Used by rx_uart_comm_send() to construct outgoing frames
  * before encoding and transmission.
  *
- * @param[out] frame Output frame structure to populate (must not be nullptr)
- * @param[in] sequence Sequence number for frame (0-65535)
- * @param[in] type Frame type (command, response, ack, etc.)
- * @param[in] flags Frame flags bitmap (use k_frame_flag_none if no flags needed)
- * @param[in] payload Payload data (can be nullptr if payload_len is 0)
- * @param[in] payload_len Payload length in bytes (0 to k_frame_max_payload)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, frame populated
- * @retval k_rx_err_invalid_arg nullptr frame or (nullptr payload with len > 0)
- * @retval k_rx_err_invalid_size payload_len > k_frame_max_payload
  *
  * @pre frame != nullptr
  * @pre payload != nullptr || payload_len == 0
@@ -918,12 +846,7 @@ rx_err_t rx_uart_comm_send(rx_uart_comm_handle_t* handle,
  * channel. Called automatically by rx_uart_comm_receive() when a PING frame
  * is decoded.
  *
- * @param[in,out] handle Initialized UART comm handle
- * @param[in]     frame  Decoded PING frame (must have type == k_frame_type_ping)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok PONG sent successfully
- * @retval Other   Error from rx_uart_comm_send()
  *
  * @pre handle != nullptr and handle->initialized == true
  * @pre frame != nullptr and frame->header.type == k_frame_type_ping
@@ -958,11 +881,7 @@ RX_STATIC_TESTABLE rx_err_t internal_handle_ping(rx_uart_comm_handle_t* handle,
  * the session state machine. Called automatically by rx_uart_comm_receive() when
  * a RESET frame is decoded.
  *
- * @param[in,out] handle Initialized UART comm handle
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok RESET_ACK sent and session reset successfully
- * @retval Other   Error from session, encode, or UART write operations
  *
  * @pre handle != nullptr and handle->initialized == true
  * @pre handle->session != nullptr and initialized
@@ -1020,14 +939,7 @@ typedef enum : uint8_t {
 /**
  * @brief Dispatch a decoded frame by type (PING/RESET/PONG/data)
  *
- * @param[in,out] handle UART communication handle
- * @param[in]     frame  Decoded frame to dispatch
- * @param[out]    err    Error code (valid only when return is k_dispatch_error)
  *
- * @return uart_dispatch_result_t Result code
- * @retval k_dispatch_continue Control frame handled; caller should continue loop
- * @retval k_dispatch_done     Data frame validated; caller should return k_rx_ok
- * @retval k_dispatch_error    Error occurred; *err contains the error code
  *
  * @pre handle != nullptr and initialized
  * @pre frame != nullptr with valid decoded header

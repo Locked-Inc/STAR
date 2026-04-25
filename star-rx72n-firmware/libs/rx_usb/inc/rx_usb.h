@@ -309,7 +309,7 @@
  *     tx_thread_sleep(10);
  *   }
  *
- *   rx_usb_puts(k_usb_port_log, "=== STAR System Log ===\r\n");
+ *   rx_usb_puts(k_usb_port_log, "=== STAR System Log ===\\r\\n");
  *
  *   while (1) {
  *     // Send log messages (also mirrored to UART)
@@ -417,10 +417,10 @@ extern "C" {
  * rx_usb_write(k_usb_port_proto, cmd_frame, 64);
  *
  * // Send ASCII debug info on decoded port
- * rx_usb_puts(k_usb_port_decoded, "Frame: type=0x01 seq=123\r\n");
+ * rx_usb_puts(k_usb_port_decoded, "Frame: type=0x01 seq=123\\r\\n");
  *
  * // Send log message on log port
- * rx_usb_puts(k_usb_port_log, "[INFO] Motor initialized\r\n");
+ * rx_usb_puts(k_usb_port_log, "[INFO] Motor initialized\\r\\n");
  * @endcode
  *
  * @see rx_usb_write() Send data to a port
@@ -438,7 +438,7 @@ typedef enum : uint8_t {
    * **RX buffer**: 1024 bytes (largest, for incoming commands)
    * **TX buffer**: 1024 bytes (largest, for telemetry bursts)
    * **Typical data**: Motor commands, sensor telemetry, configuration
-   * **Frame format**: Custom protocol with sync, length, CRC-32
+   * **Frame format**: Custom protocol with sync, length, \\rC-32
    * @par Usage Example:
    * @code{.c}
    * uint8_t motor_cmd[32];
@@ -457,12 +457,12 @@ typedef enum : uint8_t {
    * **RX buffer**: 256 bytes (minimal, rarely used for input)
    * **TX buffer**: 512 bytes (medium, for ASCII text output)
    * **Typical data**: Frame dumps, hex dumps, debug strings
-   * **Format**: Plain ASCII text with \r\n line endings
+   * **Format**: Plain ASCII text with \\r\\n line endings
    * @par Usage Example:
    * @code{.c}
    * char debug_msg[128];
    * snprintf(debug_msg, sizeof(debug_msg),
-   *          "RX Frame: seq=%d len=%d type=0x%02X\r\n",
+   *          "RX Frame: seq=%d len=%d type=0x%02X\\r\\n",
    *          frame.seq, frame.len, frame.type);
    * rx_usb_puts(k_usb_port_decoded, debug_msg);
    * @endcode
@@ -478,14 +478,14 @@ typedef enum : uint8_t {
    * **RX buffer**: 256 bytes (minimal, not typically used for input)
    * **TX buffer**: 1024 bytes (largest, buffers log bursts)
    * **Typical data**: [INFO], [WARN], [ERROR] log messages
-   * **Format**: Timestamped ASCII log lines with \r\n
+   * **Format**: Timestamped ASCII log lines with \\r\\n
    * **Mirroring**: All data also sent to UART (SCI1) for debugging without USB
    * @par Usage Example:
    * @code{.c}
-   * rx_usb_puts(k_usb_port_log, "[INFO] System initialized\r\n");
+   * rx_usb_puts(k_usb_port_log, "[INFO] System initialized\\r\\n");
    * rx_usb_puts(k_usb_port_log, "[WARN] Motor current high: ");
    * rx_usb_putint(k_usb_port_log, current_ma);
-   * rx_usb_puts(k_usb_port_log, " mA\r\n");
+   * rx_usb_puts(k_usb_port_log, " mA\\r\\n");
    * @endcode
    * @see k_usb_port_log_rx_size, k_usb_port_log_tx_size
    */
@@ -842,7 +842,7 @@ typedef enum : uint8_t {
    * - Normal operation state
    * **Duration**: Indefinite (until suspend, reset, or detach)
    * **Exit**: Suspend -> Suspended, bus reset -> Default, VBUS lost -> Detached
-   * **CRITICAL**: This is the ONLY state where data transfer works
+   * **\\rITICAL**: This is the ONLY state where data transfer works
    * @par Example:
    * @code{.c}
    * if (rx_usb_get_state() == k_usb_state_configured) {

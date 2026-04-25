@@ -24,14 +24,14 @@
  *   |   +------------------------+  +--------------------------------+   |
  *   |   | internal_find_         |  | internal_configure_iwdt_       |   |
  *   |   |   timeout_config()     |  |   control_register()           |   |
- *   |   |   +-> Lookup table      |  |   +-> IWDTCR setup              |   |
+ *   |   |   +-> Lookup table      |  |   +-> IWDT\\r setup              |   |
  *   |   +------------------------+  +--------------------------------+   |
  *   +--------------------------------------------------------------------+
  *                                    |
  *   +--------------------------------v-----------------------------------+
  *   |                      IWDT Hardware Registers                       |
  *   |   +--------------+  +--------------+  +--------------+             |
- *   |   |   IWDTCR     |  |   IWDTRR     |  |   IWDTSR     |             |
+ *   |   |   IWDT\\r     |  |   IWDTRR     |  |   IWDTSR     |             |
  *   |   |   (Control)  |  |   (Refresh)  |  |   (Status)   |             |
  *   |   |   [16-bit]   |  |   [8-bit]    |  |   [16-bit]   |             |
  *   |   +--------------+  +--------------+  +--------------+             |
@@ -39,7 +39,7 @@
  *   +--------------------------------------------------------------------+
  * @endverbatim
  *
- * @par Register Layout (IWDTCR - 0x00088030)
+ * @par Register Layout (IWDT\\r - 0x00088030)
  * @verbatim
  *   Bits [15:14] RPSS - Window Start Position
  *   +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
@@ -286,7 +286,7 @@ typedef enum : uint8_t {
  * const iwdt_timeout_entry_t* cfg = nullptr;
  * rx_err_t err = internal_find_timeout_config(1000, &cfg);
  * if (err == k_rx_ok) {
- *     // cfg->tops and cfg->cks are ready to combine into IWDTCR
+ *     // cfg->tops and cfg->cks are ready to combine into IWDT\\r
  *     // cfg->timeout_ms reports the actual (>= requested) timeout
  * }
  * @endcode
@@ -378,7 +378,7 @@ static const uint32_t s_iwdt_timeout_table_size =
  *
  * @details
  * Identifies log messages from this module in system logs. Uses the tag "IWDT"
- * (uppercase) to match SCREAMING_SNAKE_CASE convention for log tags.
+ * (uppercase) to match S\\rEAMING_SNAKE_CASE convention for log tags.
  *
  * @par Log Message Format
  * @verbatim
@@ -443,13 +443,7 @@ static iwdt_init_state_t s_iwdt_initialized = k_iwdt_not_initialized;
  * - Time: O(n) where n = s_iwdt_timeout_table_size (typically 6)
  * - Space: O(1) - no additional memory allocated
  *
- * @param[in]  timeout_ms Requested timeout in milliseconds (1-16384)
- * @param[out] entry      Pointer to receive configuration entry pointer
- *                        (points into s_timeout_table, do not free)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Valid configuration found and stored in *entry
- * @retval k_rx_err_invalid_arg entry is nullptr, table empty, or timeout out of range
  *
  * @pre timeout_ms >= k_iwdt_timeout_min_ms
  * @pre entry != nullptr
@@ -466,7 +460,7 @@ static iwdt_init_state_t s_iwdt_initialized = k_iwdt_not_initialized;
  * const iwdt_timeout_entry_t* config = nullptr;
  * rx_err_t err = internal_find_timeout_config(1000, &config);
  * if (err == k_rx_ok) {
- *     // config->tops and config->cks ready for IWDTCR
+ *     // config->tops and config->cks ready for IWDT\\r
  *     // config->timeout_ms = actual timeout (>= 1000)
  * }
  * @endcode
@@ -506,15 +500,15 @@ static rx_err_t internal_find_timeout_config(const uint32_t               timeou
 
 #ifdef __RX__
 /**
- * @brief Configure IWDT control register (IWDTCR) from timeout table entry
+ * @brief Configure IWDT control register (IWDT\\r) from timeout table entry
  *
  * @details
- * Builds and writes the IWDTCR register value from a timeout configuration
+ * Builds and writes the IWDT\\r register value from a timeout configuration
  * entry. Combines TOPS, CKS, RPES, and RPSS fields into a single 16-bit value.
  *
  * @par Register Construction
  * @verbatim
- *   IWDTCR = TOPS | CKS | RPES | RPSS
+ *   IWDT\\r = TOPS | CKS | RPES | RPSS
  *
  *   Where:
  *   - TOPS[1:0]: Timeout Period Select (from config)
@@ -527,28 +521,23 @@ static rx_err_t internal_find_timeout_config(const uint32_t               timeou
  * @verbatim
  *   1. Validate config pointer (NULL check)
  *   2. Validate hardware pointer (iwdt() check)
- *   3. Build IWDTCR value from fields
- *   4. Write to IWDTCR register
+ *   3. Build IWDT\\r value from fields
+ *   4. Write to IWDT\\r register
  * @endverbatim
  *
- * @param[in] config Pointer to timeout configuration entry from lookup table
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Register written successfully
- * @retval k_rx_err_invalid_arg config is nullptr
- * @retval k_rx_err_hw_unmapped IWDT registers not accessible
  *
  * @pre config must point to valid iwdt_timeout_entry_t
  * @pre IWDT not yet started (first refresh not performed)
  * @pre iwdt() returns valid hardware register pointer
  *
- * @post IWDTCR configured with specified timeout and window settings
+ * @post IWDT\\r configured with specified timeout and window settings
  *
  * @note Not thread-safe: must be called from single-threaded initialization context
  * @note Window mode disabled (RPES=0%, RPSS=100%)
  * @note Register can only be configured before first refresh
  *
- * @warning IWDTCR becomes read-only after first refresh sequence
+ * @warning IWDT\\r becomes read-only after first refresh sequence
  *
  * @see internal_find_timeout_config() Source of config parameter
  *
@@ -578,14 +567,14 @@ static rx_err_t internal_configure_iwdt_control_register(const iwdt_timeout_entr
  * @brief Configure IWDT reset and sleep-count behavior registers
  *
  * @details
- * Configures IWDTRCR (Reset Control) and IWDTCSTPR (Count Stop Control)
+ * Configures IWDTR\\r (Reset Control) and IWDTCSTPR (Count Stop Control)
  * registers for safety-critical operation:
  * - Full chip reset on timeout (not NMI)
  * - Continue counting during sleep modes
  *
  * @par Register Configuration
  * @verbatim
- *   IWDTRCR (Reset Control Register):
+ *   IWDTR\\r (Reset Control Register):
  *   +---------------------------------------------------------+
  *   | Bit 7 (RSTIRQS) = 1: Reset on underflow/error          |
  *   |                   0: NMI on underflow/error (not used) |
@@ -600,16 +589,12 @@ static rx_err_t internal_configure_iwdt_control_register(const iwdt_timeout_entr
  *   Continue counting for safety - sleeping should not bypass watchdog
  * @endverbatim
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Registers configured successfully
- * @retval k_rx_err_hw_unmapped IWDT registers not accessible
- * @retval k_rx_err_invalid_state IWDT already initialized
  *
  * @pre IWDT not yet initialized (s_iwdt_initialized == k_iwdt_not_initialized)
  * @pre iwdt() returns valid hardware register pointer
  * @pre Called after internal_configure_iwdt_control_register()
  *
- * @post IWDTRCR configured for reset action
+ * @post IWDTR\\r configured for reset action
  * @post IWDTCSTPR configured to continue counting in sleep
  *
  * @note Not thread-safe: must be called from single-threaded initialization context
@@ -647,8 +632,8 @@ static rx_err_t internal_configure_iwdt_registers(void)
  *   1. Validate not already initialized
  *   2. Validate timeout_ms within range
  *   3. Look up timeout configuration in table
- *   4. Configure IWDTCR (timeout period, clock divisor, window)
- *   5. Configure IWDTRCR (reset action - not NMI)
+ *   4. Configure IWDT\\r (timeout period, clock divisor, window)
+ *   5. Configure IWDTR\\r (reset action - not NMI)
  *   6. Configure IWDTCSTPR (continue counting in sleep)
  *   7. Perform first refresh (starts the watchdog)
  *   8. Set initialized flag
@@ -660,14 +645,7 @@ static rx_err_t internal_configure_iwdt_registers(void)
  *   Any failure after this point leaves system in watchdog-protected state.
  * @endverbatim
  *
- * @param[in] timeout_ms Requested timeout period in milliseconds (1-16384)
- *                       Actual timeout may be slightly longer (next available)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok IWDT initialized and running
- * @retval k_rx_err_invalid_state Already initialized
- * @retval k_rx_err_invalid_arg timeout_ms out of valid range
- * @retval k_rx_err_hw_unmapped Hardware registers not accessible
  *
  * @pre IWDT must not be already initialized
  * @pre timeout_ms in range [k_iwdt_timeout_min_ms, k_iwdt_timeout_max_ms]
@@ -798,7 +776,7 @@ rx_err_t rx_hal_iwdt_init(const uint32_t timeout_ms)
  *   | 3. Write 0xFF to IWDTRR                                     |
  *   | 4. Restore interrupt state                                  |
  *   +--------------------------------------------------------------+
- *   CRITICAL: Steps 2 and 3 must not be interrupted!
+ *   \\rITICAL: Steps 2 and 3 must not be interrupted!
  * @endverbatim
  *
  * @par Timing Requirements
@@ -893,9 +871,6 @@ void rx_hal_iwdt_feed(void)
  *   - 0: No refresh error
  * @endverbatim
  *
- * @return bool Reset cause indication
- * @retval true  Last reset was caused by watchdog (underflow or refresh error)
- * @retval false Last reset was NOT caused by watchdog (power-on, external, etc.)
  *
  * @pre Can be called before rx_hal_iwdt_init()
  * @pre Status flags preserved across reset (hardware feature)
@@ -909,10 +884,10 @@ void rx_hal_iwdt_feed(void)
  * @code
  * // Check at startup
  * if (rx_hal_iwdt_was_reset()) {
- *     uart_debug_puts("[WARN] Recovered from watchdog reset!\r\n");
+ *     uart_debug_puts("[WARN] Recovered from watchdog reset!\\r\\n");
  *     const char* failed = rx_hal_iwdt_get_failed_task();
  *     if (failed != nullptr) {
- *         uart_debug_printf("Failed task: %s\r\n", failed);
+ *         uart_debug_printf("Failed task: %s\\r\\n", failed);
  *     }
  * }
  * @endcode
@@ -966,10 +941,6 @@ bool rx_hal_iwdt_was_reset(void)
  *      - Power-on reset, external reset, or other cause
  * @endverbatim
  *
- * @return rx_iwdt_reset_cause_t Specific reset cause
- * @retval k_iwdt_reset_refresh_error Invalid refresh sequence detected
- * @retval k_iwdt_reset_underflow     Counter timeout (feed not called in time)
- * @retval k_iwdt_reset_none          No watchdog reset (power-on, external, etc.)
  *
  * @pre Can be called before rx_hal_iwdt_init()
  * @pre Status flags preserved across reset
@@ -984,14 +955,14 @@ bool rx_hal_iwdt_was_reset(void)
  * rx_iwdt_reset_cause_t cause = rx_hal_iwdt_get_reset_cause();
  * switch (cause) {
  *     case k_iwdt_reset_refresh_error:
- *         uart_debug_puts("ERROR: Watchdog refresh sequence error!\r\n");
+ *         uart_debug_puts("ERROR: Watchdog refresh sequence error!\\r\\n");
  *         break;
  *     case k_iwdt_reset_underflow:
- *         uart_debug_puts("WARN: Watchdog timeout - software hang detected\r\n");
+ *         uart_debug_puts("WARN: Watchdog timeout - software hang detected\\r\\n");
  *         break;
  *     case k_iwdt_reset_none:
  *     default:
- *         uart_debug_puts("Normal startup\r\n");
+ *         uart_debug_puts("Normal startup\\r\\n");
  *         break;
  * }
  * rx_hal_iwdt_clear_status();  // Clear flags after reading
@@ -1279,11 +1250,7 @@ static task_monitor_state_t s_task_monitor = {};
  * - Time: O(n x m) where n = task_count, m = k_task_name_cmp_len
  * - Space: O(1) - no additional memory
  *
- * @param[in] task_name Task name to search for (null-terminated string)
  *
- * @return int32_t Task index or error sentinel
- * @retval 0..7 Index of matching task in s_task_monitor.tasks[]
- * @retval k_task_not_found (-1) Task not found, or task_name invalid
  *
  * @pre task_name != nullptr
  * @pre task_name[0] != '\0'
@@ -1338,16 +1305,7 @@ static int32_t internal_find_task(const char* task_name)
  *   8. Increment task_count
  * @endverbatim
  *
- * @param[in] task_name Unique task identifier string (max 15 chars + null)
- *                      Must be non-NULL and non-empty
- * @param[in] timeout_ms Heartbeat timeout in milliseconds
- *                       Range: [k_iwdt_timeout_min_ms, k_iwdt_timeout_max_ms]
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Task registered successfully
- * @retval k_rx_err_invalid_arg task_name is nullptr, empty, or timeout_ms out of range
- * @retval k_rx_err_no_mem Maximum tasks (k_iwdt_max_tasks) already registered
- * @retval k_rx_err_exists Task with same name already registered
  *
  * @pre IWDT module initialized (but not strictly required for registration)
  * @pre task_name points to valid null-terminated string
@@ -1450,8 +1408,6 @@ rx_err_t rx_hal_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
  *   - Example: 500ms timeout -> call at least every 400ms
  * @endverbatim
  *
- * @param[in] task_name Name of task sending heartbeat
- *                      Must match name used in rx_hal_iwdt_register_task()
  *
  * @pre task_name must be non-NULL
  * @pre Task must be registered via rx_hal_iwdt_register_task()
@@ -1540,10 +1496,6 @@ void rx_hal_iwdt_task_heartbeat(const char* task_name)
  *   +--------------------------------------------+
  * @endverbatim
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All tasks have sent heartbeats within timeout
- * @retval k_rx_err_timeout One or more tasks exceeded timeout (hung/deadlocked)
- * @retval k_rx_err_invalid_state IWDT not initialized or state corrupted
  *
  * @pre IWDT must be initialized via rx_hal_iwdt_init()
  * @pre Called periodically from monitoring task
@@ -1571,7 +1523,7 @@ void rx_hal_iwdt_task_heartbeat(const char* task_name)
  *             // Task deadlock detected!
  *             // DON'T feed - let hardware watchdog reset system
  *             const char* failed = rx_hal_iwdt_get_failed_task();
- *             uart_debug_printf("DEADLOCK: %s\r\n", failed);
+ *             uart_debug_printf("DEADLOCK: %s\\r\\n", failed);
  *         }
  *
  *         tx_thread_sleep(100);  // Check every 100ms
@@ -1655,9 +1607,6 @@ rx_err_t rx_hal_iwdt_check_tasks(void)
  *      - Get failed task name and log before reset occurs
  * @endverbatim
  *
- * @return const char* Pointer to failed task name or nullptr
- * @retval non-NULL Pointer to internal buffer containing task name
- * @retval NULL     No failure recorded, or IWDT not initialized
  *
  * @pre IWDT must be initialized via rx_hal_iwdt_init()
  * @pre rx_hal_iwdt_check_tasks() has been called and detected a timeout
@@ -1679,7 +1628,7 @@ rx_err_t rx_hal_iwdt_check_tasks(void)
  * if (result == k_rx_err_timeout) {
  *     const char* failed = rx_hal_iwdt_get_failed_task();
  *     if (failed != nullptr) {
- *         uart_debug_printf("FATAL: Task '%s' deadlocked\r\n", failed);
+ *         uart_debug_printf("FATAL: Task '%s' deadlocked\\r\\n", failed);
  *     }
  *     // Let watchdog reset the system...
  * }

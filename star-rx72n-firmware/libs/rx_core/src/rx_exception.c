@@ -117,7 +117,6 @@ static rx_exc_init_state_t s_initialized = k_rx_exc_not_initialized;
  * 2. Save frame for post-mortem analysis
  * 3. Log the exception
  *
- * @param[in] frame Captured exception context
  *
  * @pre frame is not nullptr
  * @pre frame->type is valid enum value
@@ -221,8 +220,6 @@ const char* rx_exception_get_name(rx_exception_type_t type)
  * Called from assembly stub after context is saved.
  * The faulting instruction PC is on the stack.
  *
- * @param[in] pc Program counter of undefined instruction
- * @param[in] psw Processor status word at exception
  *
  * @note Called with interrupts disabled (I=0)
  * @note Can return if instruction can be emulated/skipped
@@ -243,8 +240,6 @@ void rx_exc_undefined_instruction_c_handler(uint32_t pc, uint32_t psw)
 /**
  * @brief C-level privileged instruction exception handler
  *
- * @param[in] pc Program counter of privileged instruction
- * @param[in] psw Processor status word at exception
  */
 void rx_exc_privileged_instruction_c_handler(uint32_t pc, uint32_t psw)
 {
@@ -262,8 +257,6 @@ void rx_exc_privileged_instruction_c_handler(uint32_t pc, uint32_t psw)
 /**
  * @brief C-level access exception handler
  *
- * @param[in] pc Program counter of faulting access
- * @param[in] psw Processor status word at exception
  */
 void rx_exc_access_c_handler(uint32_t pc, uint32_t psw)
 {
@@ -281,8 +274,6 @@ void rx_exc_access_c_handler(uint32_t pc, uint32_t psw)
 /**
  * @brief C-level address exception handler
  *
- * @param[in] pc Program counter of misaligned access
- * @param[in] psw Processor status word at exception
  */
 void rx_exc_address_c_handler(uint32_t pc, uint32_t psw)
 {
@@ -300,8 +291,6 @@ void rx_exc_address_c_handler(uint32_t pc, uint32_t psw)
 /**
  * @brief C-level floating-point exception handler
  *
- * @param[in] pc Program counter of FPU instruction
- * @param[in] psw Processor status word at exception
  */
 void rx_exc_floating_point_c_handler(uint32_t pc, uint32_t psw)
 {
@@ -324,8 +313,6 @@ void rx_exc_floating_point_c_handler(uint32_t pc, uint32_t psw)
  * "Never use the non-maskable interrupt with an attempt to return to
  * the program that was being executed at the time of interrupt generation."
  *
- * @param[in] pc Program counter when NMI occurred
- * @param[in] psw Processor status word at NMI
  *
  * @warning This function NEVER returns
  */

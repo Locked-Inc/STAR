@@ -714,9 +714,6 @@ static inline bool internal_port_is_valid(const rx_usb_port_id_t port)
  * Validates USB state enum value. Assumes rx_usb_state_t enums are sequential
  * with k_usb_state_suspended as the highest valid value.
  *
- * @param[in] state USB state to validate
- * @return true if state is a valid USB state (within enum range)
- * @return false if state is invalid
  */
 static inline bool internal_state_is_valid(const rx_usb_state_t state)
 {
@@ -740,9 +737,6 @@ uint32_t priv_ring_buffer_read(ring_buffer_t* buf, uint8_t* data, uint32_t max_l
 /**
  * @brief Initialize a ring buffer with backing storage
  *
- * @param[in,out] buf  Ring buffer to initialize
- * @param[in]     data Backing storage buffer
- * @param[in]     size Backing buffer size in bytes
  */
 void priv_ring_buffer_init(ring_buffer_t* buf, uint8_t* data, const uint32_t size)
 {
@@ -761,8 +755,6 @@ void priv_ring_buffer_init(ring_buffer_t* buf, uint8_t* data, const uint32_t siz
 /**
  * @brief Get number of bytes available to read from ring buffer
  *
- * @param[in] buf Ring buffer to query
- * @return Number of bytes available, or 0 if buffer is nullptr
  */
 uint32_t priv_ring_buffer_available(const ring_buffer_t* buf)
 {
@@ -777,8 +769,6 @@ uint32_t priv_ring_buffer_available(const ring_buffer_t* buf)
 /**
  * @brief Get number of free bytes available for writing to ring buffer
  *
- * @param[in] buf Ring buffer to query
- * @return Number of free bytes, or 0 if buffer is nullptr
  */
 uint32_t priv_ring_buffer_free(const ring_buffer_t* buf)
 {
@@ -793,10 +783,6 @@ uint32_t priv_ring_buffer_free(const ring_buffer_t* buf)
 /**
  * @brief Write bytes into the ring buffer
  *
- * @param[in,out] buf  Ring buffer to write to
- * @param[in]     data Source data
- * @param[in]     len  Number of bytes to write
- * @return Number of bytes written
  */
 uint32_t priv_ring_buffer_write(ring_buffer_t* buf, const uint8_t* data, const uint32_t len)
 {
@@ -824,10 +810,6 @@ uint32_t priv_ring_buffer_write(ring_buffer_t* buf, const uint8_t* data, const u
 /**
  * @brief Read bytes from the ring buffer
  *
- * @param[in,out] buf     Ring buffer to read from
- * @param[out]    data    Destination buffer
- * @param[in]     max_len Max bytes to read
- * @return Number of bytes read
  */
 uint32_t priv_ring_buffer_read(ring_buffer_t* buf, uint8_t* data, const uint32_t max_len)
 {
@@ -860,7 +842,6 @@ uint32_t priv_ring_buffer_read(ring_buffer_t* buf, uint8_t* data, const uint32_t
 /**
  * @brief Trigger USB transmission for a port if pipe is not busy
  *
- * @param port Port to trigger transmission for
  */
 static void internal_trigger_tx_if_idle(const rx_usb_port_id_t port)
 {
@@ -996,15 +977,7 @@ static void internal_init_line_coding(void)
  * - **Per-port callback** (`rx_usb_set_callback()`): Port-specific events (data RX, TX complete)
  * - Both can be used simultaneously
  *
- * @param[in] config Optional configuration structure
- *   - **NULL allowed**: No global callback, default configuration used
- *   - **Non-NULL**: Global callback registered, invoked on device events
  *
- * @return rx_err_t Initialization result
- * @retval k_rx_ok Initialization successful, device attached to bus
- * @retval k_rx_err_invalid_state Already initialized (double-init prevented)
- * @retval k_rx_err_hardware Hardware initialization failed (USB0 peripheral fault)
- * @retval k_rx_err_timeout CDC initialization timeout
  *
  * @pre System clock (ICLK, PCLKB) must be configured and stable
  * @pre USB0 peripheral power domain must be enabled
@@ -1190,8 +1163,6 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
  *
  * Detaches from USB bus, deinitializes hardware, and clears driver state.
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_state if driver not initialized
  */
 rx_err_t rx_usb_deinit(void)
 {
@@ -1223,9 +1194,6 @@ rx_err_t rx_usb_deinit(void)
 /**
  * @brief Check if USB port is configured by host
  *
- * @param[in] port Port ID to check
- * @return true if port is configured and ready for communication
- * @return false if port is invalid or not configured
  */
 bool rx_usb_is_configured(const rx_usb_port_id_t port)
 {
@@ -1239,7 +1207,6 @@ bool rx_usb_is_configured(const rx_usb_port_id_t port)
 /**
  * @brief Get current USB device state
  *
- * @return Current USB device state (attached, configured, suspended, etc.)
  */
 rx_usb_state_t rx_usb_get_state(void)
 {
@@ -1292,29 +1259,9 @@ rx_usb_state_t rx_usb_get_state(void)
  * - **Not multi-writer safe**: Only one task should write to each port
  * - **ISR interaction**: ISR reads from TX buffer, no locking needed (producer/consumer)
  *
- * @param[in] port Port ID to write to
- *   - **Valid values**: k_usb_port_proto (0), k_usb_port_decoded (1), k_usb_port_log (2)
- *   - **Invalid values**: Returns k_rx_err_invalid_arg
  *
- * @param[in] data Data buffer to transmit
- *   - **Valid range**: Pointer to buffer of size len
- *   - **NULL handling**: Returns k_rx_err_null_ptr
- *   - **Alignment**: No alignment requirement (byte-addressable)
- *   - **Lifetime**: Data copied to ring buffer, source buffer can be freed immediately
  *
- * @param[in] len Number of bytes to write
- *   - **Valid range**: 0 - 4294967295
- *   - **Typical**: 1-1024 bytes per call
- *   - **Zero handling**: len=0 is valid (no-op, returns k_rx_ok)
- *   - **Large writes**: If len > buffer capacity, partial write + k_rx_err_busy
  *
- * @return rx_err_t Write result
- * @retval k_rx_ok Success, all data written to TX buffer
- * @retval k_rx_err_invalid_arg Port ID invalid (port >= k_usb_port_count)
- * @retval k_rx_err_null_ptr data pointer is nullptr (len > 0)
- * @retval k_rx_err_invalid_state Driver not initialized via rx_usb_init()
- * @retval k_rx_err_invalid_state Port not configured by host (call rx_usb_is_configured())
- * @retval k_rx_err_busy TX buffer full, partial write occurred (check tx_underruns stat)
  *
  * @pre Driver must be initialized via rx_usb_init()
  * @pre Port must be configured by host (rx_usb_is_configured() returns true)
@@ -1509,31 +1456,10 @@ rx_err_t rx_usb_write(const rx_usb_port_id_t port, const uint8_t* data, const ui
  * - **Not multi-reader safe**: Only one task should read from each port
  * - **ISR interaction**: ISR writes to RX buffer, no locking needed (producer/consumer)
  *
- * @param[in] port Port ID to read from
- *   - **Valid values**: k_usb_port_proto (0), k_usb_port_decoded (1), k_usb_port_log (2)
- *   - **Invalid values**: Returns k_rx_err_invalid_arg
  *
- * @param[out] data Destination buffer for received data
- *   - **Valid range**: Pointer to buffer of size max_len
- *   - **NULL handling**: Returns k_rx_err_null_ptr
- *   - **Alignment**: No alignment requirement (byte-addressable)
- *   - **Modification**: Filled with up to max_len bytes from RX buffer
  *
- * @param[in] max_len Maximum bytes to read (size of data buffer)
- *   - **Valid range**: 0 - 4294967295
- *   - **Typical**: Match buffer capacity (1024, 512, or 2048)
- *   - **Zero handling**: max_len=0 is valid (no data copied, actual_len=0)
  *
- * @param[out] actual_len Pointer to store number of bytes actually read
- *   - **Valid range**: NULL not allowed, returns k_rx_err_null_ptr
- *   - **Output range**: 0 - max_len
- *   - **Zero output**: actual_len=0 means RX buffer was empty
  *
- * @return rx_err_t Read result
- * @retval k_rx_ok Success, actual_len contains bytes read (may be 0)
- * @retval k_rx_err_invalid_arg Port ID invalid (port >= k_usb_port_count)
- * @retval k_rx_err_null_ptr data or actual_len pointer is nullptr
- * @retval k_rx_err_invalid_state Driver not initialized via rx_usb_init()
  *
  * @pre Driver must be initialized via rx_usb_init()
  * @pre data must point to valid buffer of size max_len
@@ -1710,11 +1636,6 @@ rx_err_t rx_usb_read(const rx_usb_port_id_t port,
 /**
  * @brief Get number of bytes available to read from RX buffer
  *
- * @param[in]  port      Port ID to query
- * @param[out] available Pointer to store number of available bytes
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if port is invalid
- * @return k_rx_err_null_ptr if available is nullptr
  */
 rx_err_t rx_usb_rx_available(const rx_usb_port_id_t port, uint32_t* available)
 {
@@ -1734,11 +1655,6 @@ rx_err_t rx_usb_rx_available(const rx_usb_port_id_t port, uint32_t* available)
 /**
  * @brief Get number of free bytes in TX buffer
  *
- * @param[in]  port      Port ID to query
- * @param[out] available Pointer to store number of free bytes
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if port is invalid
- * @return k_rx_err_null_ptr if available is nullptr
  */
 rx_err_t rx_usb_tx_available(const rx_usb_port_id_t port, uint32_t* available)
 {
@@ -1761,12 +1677,6 @@ rx_err_t rx_usb_tx_available(const rx_usb_port_id_t port, uint32_t* available)
  * Blocks until TX buffer is empty or timeout expires. If timeout_ms is 0,
  * checks once and returns immediately.
  *
- * @param[in] port       Port ID to flush
- * @param[in] timeout_ms Timeout in milliseconds (0 = non-blocking check)
- * @return k_rx_ok if TX buffer is empty
- * @return k_rx_err_invalid_arg if port is invalid
- * @return k_rx_err_invalid_state if driver not initialized
- * @return k_rx_err_timeout if buffer not empty after timeout
  */
 rx_err_t rx_usb_flush(const rx_usb_port_id_t port, const uint32_t timeout_ms)
 {
@@ -1825,12 +1735,7 @@ rx_err_t rx_usb_flush(const rx_usb_port_id_t port, const uint32_t timeout_ms)
 /**
  * @brief Register callback for USB events on specified port
  *
- * @param[in] port     USB port identifier (k_usb_port_proto or k_usb_port_decoded)
- * @param[in] callback Callback function to invoke on USB events (may be NULL to unregister)
- * @param[in] ctx      User context pointer passed to callback (may be NULL)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if port is invalid
  */
 rx_err_t rx_usb_set_callback(const rx_usb_port_id_t port, rx_usb_callback_t callback, void* ctx)
 {
@@ -1850,11 +1755,6 @@ rx_err_t rx_usb_set_callback(const rx_usb_port_id_t port, rx_usb_callback_t call
  * Returns the current line coding (baud rate, stop bits, parity, data bits)
  * as set by the host via CDC SET_LINE_CODING request.
  *
- * @param[in]  port        Port ID to query
- * @param[out] line_coding Pointer to store line coding
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if port is invalid
- * @return k_rx_err_null_ptr if line_coding is nullptr
  */
 rx_err_t rx_usb_get_line_coding(const rx_usb_port_id_t port, rx_usb_line_coding_t* line_coding)
 {
@@ -1877,11 +1777,6 @@ rx_err_t rx_usb_get_line_coding(const rx_usb_port_id_t port, rx_usb_line_coding_
  * Returns statistics including bytes TX/RX, buffer overruns/underruns,
  * bus resets, and suspend events.
  *
- * @param[in]  port  Port ID to query
- * @param[out] stats Pointer to store statistics
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if port is invalid
- * @return k_rx_err_null_ptr if stats is nullptr
  */
 rx_err_t rx_usb_get_stats(const rx_usb_port_id_t port, rx_usb_stats_t* stats)
 {
@@ -1903,7 +1798,6 @@ rx_err_t rx_usb_get_stats(const rx_usb_port_id_t port, rx_usb_stats_t* stats)
  *
  * Clears all statistics counters for the specified port.
  *
- * @param[in] port Port ID to reset statistics for
  */
 void rx_usb_reset_stats(const rx_usb_port_id_t port)
 {
@@ -1936,13 +1830,7 @@ typedef enum : uint8_t {
 /**
  * @brief Transmit single character to USB port
  *
- * @param[in] port USB port identifier (k_usb_port_proto or k_usb_port_decoded)
- * @param[in] c    Character to transmit
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if port is invalid
- * @return k_rx_err_invalid_state if driver not initialized or not configured
- * @return k_rx_err_busy if TX buffer is full
  */
 rx_err_t rx_usb_putc(const rx_usb_port_id_t port, const char c)
 {
@@ -1964,13 +1852,7 @@ rx_err_t rx_usb_putc(const rx_usb_port_id_t port, const char c)
 /**
  * @brief Transmit null-terminated string to USB port
  *
- * @param[in] port USB port identifier (k_usb_port_proto or k_usb_port_decoded)
- * @param[in] str  Null-terminated string to transmit (must not be NULL)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if port is invalid or str is nullptr
- * @return k_rx_err_invalid_state if driver not initialized or not configured
- * @return k_rx_err_busy if TX buffer is full
  */
 rx_err_t rx_usb_puts(const rx_usb_port_id_t port, const char* str)
 {
@@ -2014,12 +1896,6 @@ rx_err_t rx_usb_puts(const rx_usb_port_id_t port, const char* str)
  * Converts the integer to a decimal ASCII string and writes it to the USB port.
  * Handles negative numbers and INT32_MIN correctly.
  *
- * @param[in] port  Port ID to write to
- * @param[in] value Signed 32-bit integer to write
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if port is invalid
- * @return k_rx_err_invalid_state if driver not initialized or not configured
- * @return k_rx_err_busy if TX buffer is full
  */
 rx_err_t rx_usb_putint(const rx_usb_port_id_t port, int32_t value)
 {
@@ -2086,13 +1962,6 @@ rx_err_t rx_usb_putint(const rx_usb_port_id_t port, int32_t value)
  * Converts the value to a zero-padded hexadecimal ASCII string (uppercase A-F)
  * and writes it to the USB port. Digits are clamped to range [1, 8].
  *
- * @param[in] port   Port ID to write to
- * @param[in] value  Unsigned 32-bit integer to write
- * @param[in] digits Number of hex digits to output (1-8, zero-padded)
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if port is invalid
- * @return k_rx_err_invalid_state if driver not initialized or not configured
- * @return k_rx_err_busy if TX buffer is full
  */
 rx_err_t rx_usb_puthex(const rx_usb_port_id_t port, uint32_t value, uint8_t digits)
 {
@@ -2260,9 +2129,6 @@ uint32_t rx_usb_tx_pop(const rx_usb_port_id_t port, uint8_t* data, const uint32_
  * the driver must respond with a ZLP the next time the pipe goes idle
  * and the ring buffer is empty.
  *
- * @param[in] port Port identifier (validated)
- * @return true if the last emitted bulk IN packet filled the endpoint's
- *              wMaxPacketSize and no data has been queued since
  */
 bool rx_usb_tx_zlp_pending(const rx_usb_port_id_t port)
 {
@@ -2354,8 +2220,6 @@ rx_usb_port_id_t rx_usb_find_port_by_interface(const uint8_t interface)
  *
  * Called by ISR and CDC handlers to notify the application of USB events.
  *
- * @param[in] port  Port ID
- * @param[in] event Event type
  */
 void rx_usb_invoke_callback(const rx_usb_port_id_t port, const rx_usb_event_t event)
 {
@@ -2380,8 +2244,6 @@ void rx_usb_invoke_callback(const rx_usb_port_id_t port, const rx_usb_event_t ev
  * provided state and conditionally sets s_usb.initialized = true when
  * state != k_usb_state_detached.
  *
- * @param[in] port  Port ID to validate for pre-condition checking
- * @param[in] state State to set for the device
  */
 void rx_usb_priv_set_port_state(const rx_usb_port_id_t port, const rx_usb_state_t state)
 {

@@ -41,7 +41,7 @@
  * **Purpose:**
  * BSP code uses R_BSP_* macros which expand to compiler-specific equivalents.
  * This allows single BSP source tree to build with all three toolchains without
- * #ifdef clutter in application code.
+ * \#ifdef clutter in application code.
  *
  * **Macro Categories (200+ definitions):**
  * - **Architecture Detection:** __RX, __LIT/__BIG, __RXV1/__RXV2/__RXV3
@@ -54,9 +54,9 @@
  * - **Static Analysis:** R_BSP_ATTRIB_INLINE_ASM (force inline assembly functions)
  *
  * **Compiler-Specific Handling:**
- * - **CC-RX:** Native keywords (__evenaccess, __interrupt), #pragma usage
- * - **GNUC:** __attribute__ syntax, GCC-specific #pragma, inline asm
- * - **ICCRX:** IAR-specific __sfr, #pragma, inline asm syntax
+ * - **CC-RX:** Native keywords (__evenaccess, __interrupt), \#pragma usage
+ * - **GNUC:** __attribute__ syntax, GCC-specific \#pragma, inline asm
+ * - **ICCRX:** IAR-specific __sfr, \#pragma, inline asm syntax
  *
  * **Usage Pattern:**
  * BSP code writes:

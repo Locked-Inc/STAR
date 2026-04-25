@@ -703,12 +703,7 @@ static bool internal_handle_retransmit_config_command(const rx_frame_t* frame);
  * backend and comm-channel mask are updated atomically from the caller's
  * perspective (both writes succeed or neither happens).
  *
- * @param[in] config System configuration to validate and apply
  *
- * @return rx_err_t
- * @retval k_rx_ok              Configuration applied
- * @retval k_rx_err_null_ptr    config is NULL
- * @retval k_rx_err_invalid_arg Unknown bits or SCI9 conflict detected
  *
  * @pre config != NULL
  * @pre Must be called before comm_task_create()
@@ -827,12 +822,7 @@ rx_err_t comm_task_apply_system_config(const rx_system_config_t* config)
  * **Design decision:** Priority 5 ensures comm task **immediately preempts** motor task
  * when a new command arrives, minimizing latency to ~310 us.
  *
- * @return rx_err_t Task creation status
  *
- * @retval k_rx_ok Task created successfully, thread scheduled and running
- * @retval k_rx_err_invalid_state Task already created (s_comm_created == true). Second call blocked.
- * @retval k_rx_err_rtos_thread_create ThreadX tx_thread_create() returned error (!= TX_SUCCESS).
- *                                     Possible causes: invalid priority, stack too small, TCB corruption.
  *
  * @pre ThreadX kernel entered via tx_kernel_enter()
  * @pre tx_application_define() callback currently executing
@@ -1057,10 +1047,7 @@ rx_err_t comm_task_create(void)
  * is enabled in the channel mask. When SPI transport succeeds, also initializes the
  * HARQ link layer for reliable communication. Sets config->spi_link accordingly.
  *
- * @param[out] config Comm manager configuration; spi_link field populated
- * @param[out] link_ok_out Set to true if HARQ link initialized successfully
  *
- * @return true if SPI transport initialized successfully, false otherwise
  *
  * @pre config must be non-NULL
  * @pre s_session_state must be zero-initialized (static storage)
@@ -1122,7 +1109,6 @@ static bool internal_init_spi_transport(rx_comm_manager_config_t* config, bool* 
  * address 0x42) if I2C is enabled in the channel mask. On failure, logs an error
  * but allows graceful degradation.
  *
- * @return true if I2C transport initialized successfully, false otherwise
  *
  * @pre s_session_state must be zero-initialized (static storage)
  * @pre s_enabled_channels must be configured before calling
@@ -1161,7 +1147,6 @@ static bool internal_init_i2c_transport(void)
  * enabled in the channel mask. On failure, logs an error but allows graceful
  * degradation.
  *
- * @return true if UART transport initialized successfully, false otherwise
  *
  * @pre s_session_state must be zero-initialized (static storage)
  * @pre s_enabled_channels must be configured before calling
@@ -1199,10 +1184,6 @@ static bool internal_init_uart_transport(void)
  * when at least one channel was enabled but all enabled channels failed.
  * Disabled channels are excluded from failure detection.
  *
- * @param[in] spi_ok  true if SPI transport initialized successfully
- * @param[in] link_ok true if SPI HARQ link initialized successfully
- * @param[in] i2c_ok  true if I2C transport initialized successfully
- * @param[in] uart_ok true if UART transport initialized successfully
  *
  * @pre s_enabled_channels must be configured before calling
  * @pre All *_ok parameters must reflect actual init results
@@ -1255,13 +1236,7 @@ static void internal_log_transport_status(bool spi_ok, bool link_ok, bool i2c_ok
  * rx_comm_manager_config_t structure with either real transport handles (on
  * success) or nullptr (on failure) to enable graceful degradation.
  *
- * @param[out] config Comm manager configuration to populate
- *   - **Valid range**: Non-nullptr to rx_comm_manager_config_t
- *   - **Constraints**: Must be zeroed before calling this function
- *   - **Side effects**: usb_handle, spi_handle, i2c_handle, uart_handle,
- *     and spi_link fields populated
  *
- * @return void This function does not return a value
  *
  * @pre config must be non-NULL and zero-initialized (memset)
  * @pre s_session_state must be zero-initialized (static storage)
@@ -1465,13 +1440,7 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
  * and internal_handle_command_frame(), not in this function. Peak stack usage for entire
  * task is ~320 bytes (during rx_nanopb_decode_velocity_request).
  *
- * @param[in] input Thread input parameter from tx_thread_create()
- *                  - Type: ULONG (32-bit unsigned)
- *                  - Value: 0 (k_comm_task_input)
- *                  - Purpose: Unused (ThreadX convention requires parameter)
- *                  - Explicitly cast to (void) to suppress unused warning
  *
- * @return void This function never returns (infinite loop until power-down)
  *
  * @pre comm_task_create() called successfully
  * @pre ThreadX scheduler started (task is scheduled)
@@ -1873,26 +1842,9 @@ static void internal_ship_log_frames(void)
  * | **Call Frequency** | ~100 Hz | Average (matches command rate) |
  * | **CPU Utilization** | < 0.5% | (20 us x 100 Hz) / 10ms = 0.2% |
  *
- * @param[in] channel Channel the frame was received on
- *                    - Type: rx_comm_channel_t enum
- *                    - Values: k_comm_channel_usb_cdc, k_comm_channel_spi
- *                    - Purpose: Forwarded to internal_handle_command_frame() so that
- *                      command handlers can route responses back on the correct channel
  *
- * @param[in] frame Received frame structure (already validated by rx_comm_manager)
- *                  - Type: const rx_frame_t*
- *                  - Must NOT be NULL (defensive check performed)
- *                  - Contains: header (type, length, sequence), payload (protobuf), CRC-32
- *                  - CRC-32 already validated (rx_comm_manager guarantees valid frame)
- *                  - Lifetime: Valid only during callback (copied by handlers if needed)
  *
- * @param[in] ctx User context pointer (set in rx_comm_manager_config_t)
- *                - Type: void*
- *                - Value: &g_comm_manager (comm manager state pointer)
- *                - Purpose: Allow callback to access comm manager state
- *                - Currently unused (marked with (void)ctx to suppress warning)
  *
- * @return void No return value (callback function)
  *
  * @pre rx_comm_manager_init() called successfully
  * @pre frame != nullptr (checked defensively, should never be NULL from rx_comm_manager)
@@ -2153,21 +2105,7 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  * }
  * @enddot
  *
- * @param[in] channel Channel the command arrived on (rx_comm_channel_t)
- *                    - Values: k_comm_channel_usb_cdc, k_comm_channel_spi
- *                    - Passed through to velocity, e-stop, and PID gains handlers
- *                      so each can send its response on the originating channel
- * @param[in] frame Frame containing the command payload
- *                  - Type: const rx_frame_t*
- *                  - Must NOT be NULL
- *                  - frame->header.type must be k_frame_type_command
- *                  - frame->payload contains nanopb-encoded protobuf message
- *                  - frame->header.length is protobuf message size in bytes
  *
- * @return rx_err_t Processing status
- * @retval k_rx_ok Message decoded and handled by one of the helpers
- * @retval k_rx_err_null_ptr frame is nullptr
- * @retval k_rx_err_invalid_arg No helper recognised the payload (unknown message type)
  *
  * @pre frame must not be nullptr
  * @pre frame->header.type == k_frame_type_command (enforced by caller)
@@ -2222,8 +2160,6 @@ static rx_err_t internal_handle_command_frame(rx_comm_channel_t channel, const r
  * STATUS_INTERNAL_ERROR so the host can distinguish bad input, busy peripherals,
  * timeouts, and an active e-stop.
  *
- * @param[in] err Firmware error code returned by an internal API
- * @return star_v1_Status enum value suitable for ResponseHeader.status
  */
 static star_v1_Status internal_rx_err_to_proto_status(rx_err_t err)
 {
@@ -2263,9 +2199,6 @@ static star_v1_Status internal_rx_err_to_proto_status(rx_err_t err)
  * reported as MOTOR_STATE_FAULT regardless of mode, matching the proto's
  * "motor is in fault condition" semantics.
  *
- * @param[in] mode        Current firmware motor mode
- * @param[in] fault_flags Per-motor fault flags from motor_state_t
- * @return Corresponding star_v1_MotorState
  */
 static star_v1_MotorState internal_motor_mode_to_proto_state(motor_mode_t mode, uint8_t fault_flags)
 {
@@ -2294,9 +2227,6 @@ static star_v1_MotorState internal_motor_mode_to_proto_state(motor_mode_t mode, 
  * is logged as a warning but does NOT affect command processing (the command has already
  * been applied to shared_data before this function is called).
  *
- * @param[in] channel     Channel to send response on (must match incoming command channel)
- * @param[in] payload     Encoded protobuf bytes to transmit (must not be nullptr)
- * @param[in] payload_len Number of encoded bytes in payload
  *
  * @pre payload must not be nullptr
  * @pre payload_len must be > 0
@@ -2347,14 +2277,7 @@ static void internal_send_command_response(rx_comm_channel_t channel,
  * 5. Encode SetVelocityResponse and send back on originating channel
  * 6. Log result and return true
  *
- * @param[in] channel Channel the command arrived on; response sent on same channel
- * @param[in] frame COMMAND frame to decode
- *                  - Must NOT be nullptr (caller guarantees)
- *                  - frame->payload and frame->header.length are used for decode
  *
- * @return bool Whether this handler recognised and consumed the frame
- * @retval true  Frame decoded as SetVelocityRequest; motor command written to shared_data
- * @retval false Decode failed; frame is not a SetVelocityRequest (try next handler)
  *
  * @pre frame must not be nullptr
  * @pre shared_data_init() must have been called
@@ -2396,8 +2319,6 @@ static motor_command_t internal_velocity_request_to_command(const star_v1_SetVel
 /**
  * @brief Push a motor command to shared_data and read it back to verify.
  *
- * @return The error code from shared_data_set_motor_command() so the caller
- *         can include it in the SetVelocityResponse status field.
  */
 static rx_err_t internal_velocity_apply_command(const motor_command_t* cmd)
 {
@@ -2511,14 +2432,7 @@ static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx
  * 4. Encode EmergencyStopResponse and send back on originating channel
  * 5. Log any error and return true
  *
- * @param[in] channel Channel the command arrived on; response sent on same channel
- * @param[in] frame COMMAND frame to decode
- *                  - Must NOT be nullptr (caller guarantees)
- *                  - frame->payload and frame->header.length are used for decode
  *
- * @return bool Whether this handler recognised and consumed the frame
- * @retval true  Frame decoded as EmergencyStopRequest; emergency stop triggered
- * @retval false Decode failed; frame is not an EmergencyStopRequest (try next handler)
  *
  * @pre frame must not be nullptr
  * @pre shared_data_init() must have been called
@@ -2599,14 +2513,7 @@ static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_fr
  * 5. Encode SetPidGainsResponse and send back on originating channel
  * 6. Log result and return true
  *
- * @param[in] channel Channel the command arrived on; response sent on same channel
- * @param[in] frame COMMAND frame to decode
- *                  - Must NOT be nullptr (caller guarantees)
- *                  - frame->payload and frame->header.length are used for decode
  *
- * @return bool Whether this handler recognised and consumed the frame
- * @retval true  Frame decoded as SetPidGainsRequest; PID gains written to shared_data
- * @retval false Decode failed or has_pid_config not set (try next handler)
  *
  * @pre frame must not be nullptr
  * @pre shared_data_init() must have been called
@@ -2709,13 +2616,7 @@ static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const r
  * - ack_timeout_ms: [10, 1000]
  * - max_backoff_ms: [50, 5000]
  *
- * @param[in] frame COMMAND frame to decode
- *                  - Must NOT be nullptr (caller guarantees)
- *                  - frame->payload and frame->header.length are used for decode
  *
- * @return bool Whether this handler recognised and consumed the frame
- * @retval true  Frame decoded as SetRetransmitConfigRequest; retransmit config updated
- * @retval false Decode failed, has_retransmit_config not set, or fields out of range
  *
  * @pre frame must not be nullptr
  * @pre g_comm_manager must be initialised (comm manager init called)

@@ -424,13 +424,7 @@ static adc_resolution_t s_adc_unit_resolution[k_adc_max_units] = {k_adc_resoluti
  * | 0 | S12AD0 | 0x00089000 |
  * | 1 | S12AD1 | 0x00089100 |
  *
- * @param[in] unit ADC unit number
- *                 - k_adc_unit_0: S12AD0
- *                 - k_adc_unit_1: S12AD1
  *
- * @return volatile rx_s12ad_regs_t* Pointer to ADC registers
- * @retval Non-NULL Valid register pointer for unit 0 or 1
- * @retval NULL Invalid unit number (not 0 or 1)
  *
  * @pre None (pure lookup function)
  * @post No state changes
@@ -478,14 +472,7 @@ static volatile rx_s12ad_regs_t* internal_get_adc_base(const uint8_t unit)
  * ADCER = (ADCER & ~mask) | resolution_bits  // Set resolution
  * @endcode
  *
- * @param[in] unit ADC unit number (k_adc_unit_0 or k_adc_unit_1)
- * @param[in] adc Pointer to ADC register structure (must not be NULL)
- * @param[in] bits Resolution setting (8, 10, or 12)
  *
- * @return rx_err_t Configuration result
- * @retval k_rx_ok Configuration successful, unit ready for use
- * @retval k_rx_err_null_ptr adc pointer is nullptr
- * @retval k_rx_err_invalid_arg unit > 1 or invalid resolution
  *
  * @pre adc must be valid pointer from internal_get_adc_base()
  * @pre Unit must not already be initialized
@@ -560,12 +547,7 @@ internal_configure_adc_unit(const uint8_t unit, volatile rx_s12ad_regs_t* adc, c
  * | unit | 0-1 (k_adc_unit_0 to k_adc_unit_1) | k_rx_err_invalid_arg |
  * | channel | 0-7 (k_adc_channel_0 to k_adc_channel_7) | k_rx_err_invalid_arg |
  *
- * @param[in] unit ADC unit number (0 or 1)
- * @param[in] channel ADC channel number (0-7)
  *
- * @return rx_err_t Validation result
- * @retval k_rx_ok Unit and channel are valid
- * @retval k_rx_err_invalid_arg Unit > 1 or channel > 7
  *
  * @pre None (pure validation function)
  * @post No state changes
@@ -617,14 +599,7 @@ static rx_err_t internal_validate_unit_channel(const uint8_t unit, uint8_t chann
  * | 6 | ADDR6 | 0x02C |
  * | 7 | ADDR7 | 0x02E |
  *
- * @param[in] adc Pointer to ADC register base (must not be NULL)
- * @param[in] channel ADC channel to read from (0-7)
- * @param[out] value Pointer to store the raw ADC value (must not be NULL)
  *
- * @return rx_err_t Read result
- * @retval k_rx_ok Value read successfully
- * @retval k_rx_err_null_ptr adc or value is nullptr
- * @retval k_rx_err_invalid_arg channel > 7
  *
  * @pre adc must be valid pointer from internal_get_adc_base()
  * @pre ADC conversion must be complete (ADST bit cleared)
@@ -700,13 +675,7 @@ static rx_err_t internal_read_channel_value(volatile rx_s12ad_regs_t* adc,
  * | Subsequent init, same bits | Enable channel only | Unchanged | k_rx_ok |
  * | Subsequent init, different bits | Error | Unchanged | k_rx_err_invalid_arg |
  *
- * @param[in] unit ADC unit number (0 for S12AD0, 1 for S12AD1)
- * @param[in] channel ADC channel to enable (0-7)
- * @param[in] bits Resolution (k_adc_resolution_8bit/10bit/12bit)
  *
- * @return rx_err_t Initialization result
- * @retval k_rx_ok Initialization successful
- * @retval k_rx_err_invalid_arg Invalid unit, channel, or resolution
  *
  * @pre None (can be first call for unit)
  * @pre Resolution must match if unit already initialized
@@ -807,16 +776,7 @@ rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_
  * | 10-bit | 0-1023 | 3.3V |
  * | 8-bit | 0-255 | 3.3V |
  *
- * @param[in] unit ADC unit number (0 for S12AD0, 1 for S12AD1)
- * @param[in] channel ADC channel to read (0-7)
- * @param[out] value Pointer to store raw ADC value (must not be NULL)
  *
- * @return rx_err_t Conversion result
- * @retval k_rx_ok Conversion successful, value contains result
- * @retval k_rx_err_null_ptr value pointer is nullptr
- * @retval k_rx_err_invalid_arg Invalid unit or channel
- * @retval k_rx_err_invalid_state ADC unit not initialized
- * @retval k_rx_err_timeout Conversion did not complete in time
  *
  * @pre ADC unit must be initialized via adc_init()
  * @pre value must point to valid uint16_t storage
@@ -911,17 +871,7 @@ rx_err_t adc_read(const adc_unit_t unit, const adc_channel_t channel, uint16_t* 
  * | 10-bit | 512 | 1650 | 512 x 3300 / 1023 |
  * | 8-bit | 128 | 1655 | 128 x 3300 / 255 |
  *
- * @param[in] unit ADC unit number (0 for S12AD0, 1 for S12AD1)
- * @param[in] channel ADC channel to read (0-7)
- * @param[in] bits Resolution setting (must match adc_init)
- * @param[out] voltage_mv Pointer to store voltage in millivolts (0-3300)
  *
- * @return rx_err_t Conversion result
- * @retval k_rx_ok Conversion successful, voltage_mv contains result
- * @retval k_rx_err_null_ptr voltage_mv pointer is nullptr
- * @retval k_rx_err_invalid_arg Invalid unit, channel, or resolution mismatch
- * @retval k_rx_err_invalid_state ADC unit not initialized
- * @retval k_rx_err_timeout Conversion did not complete in time
  *
  * @pre ADC unit must be initialized via adc_init()
  * @pre bits must match the resolution used in adc_init()

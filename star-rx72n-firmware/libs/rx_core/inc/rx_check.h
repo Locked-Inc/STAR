@@ -323,7 +323,7 @@ typedef enum : uint8_t {
  *   - Displayed in hexadecimal (8 digits, zero-padded)
  *   - Used for post-mortem debugging via UART log capture
  *
- * @return **This function never returns** (except in UNIT_TEST builds)
+ * @note **This function never returns** (except in UNIT_TEST builds)
  *
  * @par Usage Example - From RX_ERROR_CHECK:
  * @code{.c}

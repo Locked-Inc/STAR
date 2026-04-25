@@ -518,12 +518,7 @@ static void internal_temp_task_entry(ULONG input);
  * }
  * @enddot
  *
- * @return rx_err_t Task creation status
  *
- * @retval k_rx_ok Task created successfully, thread scheduled and running
- * @retval k_rx_err_invalid_state Task already created (s_temp_created == true). Second call blocked.
- * @retval k_rx_err_rtos_thread_create ThreadX tx_thread_create() returned error (!= TX_SUCCESS).
- *                                     Possible causes: invalid priority, stack too small, TCB corruption.
  *
  * @pre ThreadX kernel entered via tx_kernel_enter()
  * @pre tx_application_define() callback currently executing
@@ -969,13 +964,7 @@ static void internal_send_iwdt_heartbeat(void)
  * | `temp_celsius` | float | 4 bytes | Local | Function lifetime |
  * | **Total Stack** | - | ~128 bytes | Stack | Peak during 1-Wire call |
  *
- * @param[in] input Thread input parameter from tx_thread_create()
- *                  - Type: ULONG (32-bit unsigned)
- *                  - Value: 0 (k_temp_task_input)
- *                  - Purpose: Unused (ThreadX convention requires parameter)
- *                  - Explicitly cast to (void) to suppress unused warning
  *
- * @return void This function never returns (infinite loop until power-down)
  *
  * @pre temp_sensor_task_create() called successfully
  * @pre ThreadX scheduler started (task is scheduled)

@@ -402,7 +402,7 @@ static volatile bool s_imu_event_flags_ready = false;
  *
  * @details
  * Declared extern here because main.h does not export g_bus_manager.
- * If a main.h public header is added, replace this with #include "main.h".
+ * If a main.h public header is added, replace this with \#include "main.h".
  * The IMU task uses this to pass the bus manager to rx_bno055_init() and
  * rx_bmp280_init() during task startup.
  *
@@ -441,7 +441,6 @@ static void              internal_init_sensors(bool* bno_ready, bool* bmp_ready)
  * Both imu_state_t.timestamp_ms and baro_state_t.timestamp_ms use this helper
  * to ensure consistent timestamp computation from a single expression.
  *
- * @return uint32_t Current time in milliseconds since boot
  *
  * @pre ThreadX scheduler running (tx_time_get() returns valid tick count)
  * @pre TX_TIMER_TICKS_PER_SECOND > 0 (ThreadX timer configured, verified by module static_assert)
@@ -468,10 +467,6 @@ static inline uint32_t internal_ticks_to_ms(void)
  * Creates the ImuTask ThreadX task with priority 13, 2048-byte stack,
  * and auto-start. Returns k_rx_err_invalid_state on double creation.
  *
- * @return rx_err_t Task creation result
- * @retval k_rx_ok Task created and scheduled
- * @retval k_rx_err_invalid_state Called a second time (task already created)
- * @retval k_rx_err_rtos_thread_create ThreadX thread creation failed
  *
  * @pre ThreadX kernel running (tx_application_define context)
  * @pre s_imu_created == false (first call)
@@ -568,8 +563,6 @@ static void internal_send_iwdt_heartbeat(void)
  * success and logs the result. Called each loop iteration until both sensors
  * are ready.
  *
- * @param[in,out] bno_ready Set to true when BNO055 init succeeds on retry
- * @param[in,out] bmp_ready Set to true when BMP280 init succeeds on retry
  *
  * @pre bno_ready non-NULL
  * @pre bmp_ready non-NULL
@@ -742,10 +735,6 @@ static void internal_read_and_publish_baro(void)
  * communication. The internal software reset inside rx_bno055_init() is kept as
  * belt-and-suspenders but the hardware reset here is the authoritative reset.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Reset sequence completed; BNO055 POR done, ready for I2C
- * @retval k_rx_err_hw_init_failed GPIO drive low failed (RST stuck HIGH)
- * @retval k_rx_err_timeout GPIO drive high failed (RST stuck LOW, BNO055 held in reset)
  *
  * @pre s_imu_created == true (imu_task_create() completed)
  * @pre P83 configured as GPIO output by hardware_init.c internal_gpio_init_imu()
@@ -806,10 +795,6 @@ static rx_err_t internal_imu_hardware_reset(void)
  * Returns k_imu_wait_rtos_error on any other ThreadX status, indicating that
  * the event-flags group may be corrupted or deleted.
  *
- * @return imu_wait_result_t Three-state result distinguishing INT, timeout, and RTOS fault
- * @retval k_imu_wait_data_ready BNO055 INT fired; event flag consumed
- * @retval k_imu_wait_timeout 20 ms watchdog expired; fault-recovery read
- * @retval k_imu_wait_rtos_error Fatal ThreadX error; caller must escalate
  *
  * @pre s_imu_event_flags created by imu_task_create()
  * @pre Called from task context only (tx_event_flags_get blocks the caller)
@@ -908,8 +893,6 @@ void INT_IRQ12(void)
  * Outputs the sensor-ready flags to the caller so the main loop knows which
  * sensors are available for reading.
  *
- * @param[out] bno_ready Set to true if BNO055 init succeeded, false otherwise
- * @param[out] bmp_ready Set to true if BMP280 init succeeded, false otherwise
  *
  * @pre internal_send_iwdt_heartbeat() callable (IWDT registered)
  * @pre internal_imu_hardware_reset() callable (P83 GPIO configured)
@@ -995,7 +978,6 @@ static void internal_init_sensors(bool* bno_ready, bool* bmp_ready)
  * performed once the corresponding sensor is ready. Shared state valid flags
  * remain false until sensor init and the first read both succeed.
  *
- * @param[in] input Unused thread entry parameter (ULONG, always 0)
  *
  * @pre ThreadX scheduler running
  * @pre s_imu_created == true (imu_task_create() completed)

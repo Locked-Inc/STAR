@@ -63,7 +63,7 @@
  * @par History
  * - 28.02.2019 v3.00 - Merged all devices, fixed coding style (Renesas)
  * - 25.11.2022 v3.01 - Modified comment (Renesas)
- * - 2026       vSTAR - Added comprehensive Doxygen, converted #defines to enums
+ * - 2026       vSTAR - Added comprehensive Doxygen, converted \#defines to enums
  */
 /***********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description
@@ -190,8 +190,6 @@ Private global variables and functions
  *
  * **User Override Mode (BSP_CFG_USER_CHARPUT_ENABLED=1):**
  * Calls user-provided function (e.g., UART-based charput).
- *
- * @param[in] output_char Character to output (8-bit ASCII)
  *
  * @pre BSP_CFG_IO_LIB_ENABLE=1 (stdio enabled)
  * @post Character written to E1 debug port or user handler

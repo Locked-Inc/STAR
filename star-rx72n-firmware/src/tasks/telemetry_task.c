@@ -1344,11 +1344,6 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  * | ThreadX create fails | `k_rx_err_rtos_thread_create` | Log error, return error code |
  * | Success | `k_rx_ok` | Task running, log success message |
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok Task created successfully, thread started
- * @retval k_rx_err_invalid_state Task already created (s_telem_created == true)
- * @retval k_rx_err_rtos_thread_create ThreadX thread creation failed (insufficient memory,
- *         invalid parameters, or ThreadX internal error)
  *
  * @pre ThreadX kernel must be initialized via `tx_kernel_enter()`
  * @pre Shared data module must be initialized via `shared_data_init()`
@@ -1541,9 +1536,7 @@ rx_err_t telemetry_task_create(void)
  * end note
  * @enduml
  *
- * @param[in] input Thread input parameter (unused, always 0)
  *
- * @return void This function never returns (infinite loop)
  *
  * @pre ThreadX kernel running (scheduler started)
  * @pre Shared data initialized (`shared_data_init()` called)
@@ -1661,14 +1654,6 @@ static void internal_telem_task_entry(ULONG input)
  * returns k_comm_channel_uart (the UART default) so telemetry flows over
  * the gateway's UART link until a command arrives on a different channel.
  *
- * @return telemetry_transport_t Selected transport
- * @retval k_telemetry_transport_uart UART was the last command channel, no
- *                                    command has been received yet, or
- *                                    shared_data_get_active_channel() returned
- *                                    an out-of-range/unknown rx_comm_channel_t
- *                                    (fail-safe)
- * @retval k_telemetry_transport_spi  SPI was the last command channel
- * @retval k_telemetry_transport_i2c  I2C was the last command channel
  *
  * @pre shared_data_init() has been called
  * @pre shared_data_get_active_channel() may return any uint8_t value,
@@ -1771,15 +1756,7 @@ static telemetry_transport_t internal_select_transport(void)
  * | k_estop_reason_sensor_failure | ESTOP_REASON_FAULT (closest proto value)   |
  * | (unrecognized)                | ESTOP_REASON_UNKNOWN (safe default)        |
  *
- * @param[in] reason Firmware estop reason code from shared_data
  *
- * @return star_v1_EstopReason Corresponding proto enum value
- * @retval star_v1_EstopReason_ESTOP_REASON_UNKNOWN Unknown or no estop active
- * @retval star_v1_EstopReason_ESTOP_REASON_MANUAL  Manual software command
- * @retval star_v1_EstopReason_ESTOP_REASON_FAULT   Motor driver or sensor failure
- * @retval star_v1_EstopReason_ESTOP_REASON_COMM_TIMEOUT Communication timeout
- * @retval star_v1_EstopReason_ESTOP_REASON_OBSTACLE Obstacle too close
- * @retval star_v1_EstopReason_ESTOP_REASON_OVERCURRENT Motor overcurrent
  *
  * @pre reason is a valid estop_reason_t value
  * @pre star_v1_EstopReason enum is generated from telemetry.proto
@@ -1837,12 +1814,7 @@ static star_v1_EstopReason internal_map_estop_reason(estop_reason_t reason)
  * - `has_encoder_*` / `encoder_*` - 4 encoder submessages (motor_id, ticks,
  *   velocity_mps, timestamp_us) for front_left, front_right, back_left, back_right
  *
- * @param[in,out] telemetry TelemetryData struct to populate (must not be NULL)
  *
- * @return rx_err_t Result from shared_data_get_motor_state()
- * @retval k_rx_ok Motor state read and fields populated
- * @retval k_rx_err_timeout Shared data mutex timed out (stale data, partial msg)
- * @retval k_rx_err_null_ptr NULL pointer passed (programming error)
  *
  * @pre telemetry must point to a valid star_v1_TelemetryData struct
  * @pre telemetry->timestamp_us must already be set (used for encoder timestamps)
@@ -1948,14 +1920,12 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * Side effects: has_imu set to true when valid data present. Not thread-safe;
  * relies on caller to call from single-threaded context.
  *
- * @param[in,out] telemetry TelemetryData message to populate
  *
  * @pre telemetry non-NULL
  * @pre Shared data module initialized via shared_data_init() and IMU task running
  * @post telemetry->has_imu set if shared_data_get_imu returns valid data
  * @post All imu.* fields populated on success
  *
- * @return void
  *
  * @note Not thread-safe; called from single-threaded internal_collect_state()
  *
@@ -2026,14 +1996,12 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
  * temperature from centi-degC to degC, pressure from Pa*256 to Pa.
  * Sets has_baro = true only on valid data.
  *
- * @param[in,out] telemetry TelemetryData message to populate
  *
  * @pre telemetry non-NULL
  * @pre Shared data module initialized via shared_data_init()
  * @post telemetry->has_baro set if shared_data_get_baro returns valid data
  * @post All baro.* fields populated on success
  *
- * @return void
  *
  * @note Not thread-safe; called from single-threaded internal_collect_state()
  *
@@ -2088,7 +2056,6 @@ static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
  *    accel x/y/z (mps2), calib_stat, temperature_celsius
  * 5. **Baro state** (BMP280 forced mode): temperature_celsius, pressure_pa
  *
- * @param[in,out] telemetry TelemetryData struct to populate (must not be NULL)
  *
  * @pre telemetry must point to a valid, zero-initialized star_v1_TelemetryData struct
  * @pre telemetry->timestamp_us must already be set before this call
@@ -2175,12 +2142,7 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
  * using nanopb and writes to the static `s_telem_buffer`. The encoded length is
  * returned via `out_encoded_len` for use by the transport layer.
  *
- * @param[in]  telemetry      Populated TelemetryData message to encode
- * @param[out] out_encoded_len Encoded byte count written to s_telem_buffer
  *
- * @return rx_err_t Encoding result
- * @retval k_rx_ok Encoding succeeded; s_telem_buffer contains *out_encoded_len valid bytes
- * @retval k_rx_err_encoding_failed nanopb encoding failed (buffer too small or invalid msg)
  *
  * @pre telemetry must point to a valid, populated star_v1_TelemetryData struct
  * @pre out_encoded_len must not be NULL
@@ -2223,14 +2185,7 @@ static rx_err_t internal_encode_telemetry(const star_v1_TelemetryData* telemetry
  * argument is the caller-selected transport (USB or SPI) returned by
  * `internal_select_transport()`.
  *
- * @param[in] channel     Comm manager channel to send on (k_comm_channel_uart or k_comm_channel_spi)
- * @param[in] encoded_len Number of bytes in s_telem_buffer to transmit
  *
- * @return rx_err_t Send result from rx_comm_manager_send()
- * @retval k_rx_ok Message queued for transmission
- * @retval k_rx_err_usb_tx_fail USB CDC transmission failed (host disconnected mid-cycle)
- * @retval k_rx_err_spi_tx_fail SPI transmission failed (RPi5 not responding)
- * @retval k_rx_err_timeout Communication manager send queue full
  *
  * @pre channel must be k_comm_channel_uart or k_comm_channel_spi
  * @pre encoded_len must be > 0 and <= k_telem_buffer_size
@@ -2277,13 +2232,7 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  * transport maps 1-to-1 to a channel; k_telemetry_transport_none and any
  * unknown value return k_rx_err_invalid_state (programming error).
  *
- * @param[in]  transport  Active transport returned by internal_select_transport()
- * @param[out] out_channel Corresponding comm channel; valid only on k_rx_ok
  *
- * @return rx_err_t
- * @retval k_rx_ok            Mapping succeeded; *out_channel is valid
- * @retval k_rx_err_null_ptr  out_channel is NULL
- * @retval k_rx_err_invalid_state Unexpected transport value (programming error)
  *
  * @pre transport is a valid telemetry_transport_t value
  * @pre out_channel is not NULL
@@ -2341,14 +2290,6 @@ static rx_err_t internal_transport_to_channel(telemetry_transport_t transport,
  * An unexpected transport value from internal_select_transport() is a
  * programming error and returns k_rx_err_invalid_state immediately.
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok Telemetry sent successfully
- * @retval k_rx_err_encoding_failed nanopb encoding failed (buffer too small, invalid message)
- * @retval k_rx_err_invalid_state internal_select_transport() returned an unexpected
- *                                transport (programming error; indicates enum mismatch)
- * @retval k_rx_err_usb_tx_fail USB CDC transmission failed (host disconnected)
- * @retval k_rx_err_spi_tx_fail SPI transmission failed (RPi5 not responding)
- * @retval k_rx_err_timeout Communication manager send timeout
  *
  * @pre shared_data_init() has been called
  * @pre rx_comm_manager_init() has been called

@@ -636,11 +636,6 @@ shared_data_t g_shared_data = {};
  * - Gain K = 3.665 (steady-state velocity / voltage)
  * - PI controller designed for 5% overshoot, 200ms settling
  *
- * @return rx_err_t Initialization status
- * @retval k_rx_ok All mutexes created, defaults set, ready for use
- * @retval k_rx_err_invalid_state Already initialized (called twice)
- * @retval k_rx_err_rtos_mutex Mutex creation failed (check ThreadX heap)
- * @retval k_rx_err_rtos_error Event flag creation failed (check ThreadX heap)
  *
  * @pre ThreadX kernel entered (tx_kernel_enter() called)
  * @pre Called from tx_application_define() context (not from task)
@@ -751,7 +746,6 @@ static rx_err_t internal_create_shared_sync_objects(void);
  * Mutexes are deleted in reverse creation order (baro first through motor last). Passing
  * k_mutex_idx_baro deletes all six mutexes.
  *
- * @param[in] count Number of mutexes to delete (0..k_mutex_idx_baro)
  *
  * @pre count <= k_mutex_idx_baro (bounded by enum max)
  * @pre All mutexes in positions 0..count-1 were successfully created
@@ -785,10 +779,6 @@ static void internal_cleanup_mutexes(uint8_t count)
  * estop, imu, baro) and one TX_EVENT_FLAGS_GROUP. On any failure, already-
  * created mutexes are deleted in reverse order before returning.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All RTOS objects created successfully
- * @retval k_rx_err_rtos_mutex A tx_mutex_create() call failed
- * @retval k_rx_err_rtos_error tx_event_flags_create() failed
  *
  * @pre ThreadX kernel is running (tx_application_define has been called)
  * @pre g_shared_data.initialized == false (called only from shared_data_init)
@@ -838,6 +828,54 @@ static rx_err_t internal_create_shared_sync_objects(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Initialize the global shared-data block and its synchronization
+ *
+ * @details
+ * One-shot initializer for the cross-task shared state held in
+ * g_shared_data.  Performs:
+ *
+ *  1. Idempotency check via g_shared_data.initialized; returns
+ *     k_rx_err_invalid_state if called twice.
+ *  2. Creates the per-domain mutexes and a single event-flags object via
+ *     internal_create_shared_sync_objects().  Errors from the underlying
+ *     ThreadX object create are propagated unchanged.
+ *  3. Loads default PID gains from MATLAB-tuned constants
+ *     (s_default_pid_*).
+ *  4. Marks the motor command as invalid and the motor state as idle.
+ *  5. Clears the E-Stop flag and reason.
+ *  6. Stamps the comm-watchdog timer with the current ThreadX tick to
+ *     prevent a spurious comm-timeout E-Stop on the first iteration.
+ *  7. Issues a compiler memory barrier and finally sets initialized=true.
+ *
+ * The barrier is load-bearing: without it, an -O2 reorder could expose
+ * other tasks to initialized=true with a stale (zero) last_comm_tick,
+ * causing a false comm-timeout E-Stop on the first cycle.
+ *
+ * Called exactly once from rx_main() before any task that touches
+ * g_shared_data is started.
+ *
+ *
+ * @pre ThreadX kernel is running (mutexes can be created).
+ * @pre No other task is reading g_shared_data yet.
+ *
+ * @post On k_rx_ok: g_shared_data.initialized == true and all sub-fields
+ *       hold valid defaults.
+ * @post On k_rx_ok: g_shared_data.last_comm_tick has been stamped with
+ *       tx_time_get() at init time.
+ * @post On error: any partially created sync objects have been cleaned up;
+ *       the caller may retry once the underlying RTOS condition is fixed.
+ *
+ * @note Not thread-safe with itself.  Intended to be called from
+ *       single-threaded boot context.  After return, individual fields
+ *       are accessed under their respective domain mutexes.
+ *
+ * @see shared_data_get_motor_command()  Reader API after init.
+ * @see shared_data_update_motor_state() Writer API after init.
+ * @see shared_data_get_pid_gains()      PID-gain reader after init.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t shared_data_init(void)
 {
   /* Check if already initialized */
@@ -927,17 +965,7 @@ rx_err_t shared_data_init(void)
  * MotorTask box MotorTask [label="Process new command"];
  * @endmsc
  *
- * @param[in] cmd Pointer to motor command structure with target velocities
- *            - Must not benullptr
- *            - Should have cmd->valid = true if velocities are meaningful
- *            - target_velocity_mps[] in meters/second (range: -2.5 to +2.5)
- *            - sequence number for command ordering
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok Command stored successfully, event signaled, motor task will respond
- * @retval k_rx_err_null_ptr cmd pointer is nullptr (no operation performed)
- * @retval k_rx_err_not_initialized Module not initialized (call shared_data_init first)
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed (ThreadX internal error)
  *
  * @pre Module initialized (shared_data_init() succeeded)
  * @pre cmd pointer valid (not nullptr)
@@ -1039,17 +1067,7 @@ rx_err_t shared_data_set_motor_command(const motor_command_t* cmd)
  * 4. **Copy command:** memcpy from g_shared_data to caller's buffer
  * 5. **Release motor_mutex:** Allow other tasks to access
  *
- * @param[out] out_cmd Pointer to buffer for command data
- *             - Must not benullptr
- *             - Receives copy of latest motor_command_t
- *             - Check out_cmd->valid before using velocities
- *             - Check timestamp_ms for staleness detection
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok Command retrieved successfully
- * @retval k_rx_err_null_ptr out_cmd pointer is nullptr
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre Module initialized (shared_data_init() succeeded)
  * @pre out_cmd pointer valid (not nullptr)
@@ -1134,19 +1152,7 @@ rx_err_t shared_data_get_motor_command(motor_command_t* out_cmd)
  * 4. **Copy state:** memcpy entire motor_state_t (128 bytes)
  * 5. **Release motor_mutex:** Allow readers to access
  *
- * @param[in] state Pointer to motor state structure
- *            - Must not benullptr
- *            - current_velocity_mps[] in m/s (measured from encoders)
- *            - duty_cycle_percent[] in range [-100, +100]
- *            - current_ma[] in milliamps (from ADC)
- *            - encoder_counts[] raw quadrature counts
- *            - fault_flags[] motor driver fault status bits
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok State updated successfully
- * @retval k_rx_err_null_ptr state pointer is nullptr
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre Module initialized
  * @pre state pointer valid
@@ -1219,16 +1225,7 @@ rx_err_t shared_data_update_motor_state(const motor_state_t* state)
  * 4. **Copy state:** memcpy from g_shared_data to caller's buffer
  * 5. **Release motor_mutex:** Allow writers to update
  *
- * @param[out] out_state Pointer to buffer for motor state
- *             - Must not benullptr
- *             - Receives snapshot of current motor_state_t
- *             - Data is consistent (atomic copy via mutex)
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok State retrieved successfully
- * @retval k_rx_err_null_ptr out_state is nullptr
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre Module initialized
  * @pre out_state pointer valid
@@ -1301,17 +1298,7 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
  * 6. **Release motor_mutex:** Allow motor task to read
  * 7. **Signal event:** Set k_event_pid_gains_updated flag
  *
- * @param[in] gains Pointer to new PID gains
- *            - Must not benullptr
- *            - kp, ki, kd in appropriate ranges (typically 0-10)
- *            - output_min/max define PWM duty limits
- *            - integral_min/max for anti-windup
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok Gains stored, motor task will apply within ~4ms
- * @retval k_rx_err_null_ptr gains is nullptr
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre Module initialized
  * @pre gains pointer valid
@@ -1396,16 +1383,7 @@ rx_err_t shared_data_set_pid_gains(const pid_gains_t* gains)
  * 4. **Copy gains:** memcpy from g_shared_data to caller's buffer
  * 5. **Release motor_mutex:** Allow updates
  *
- * @param[out] out_gains Pointer to buffer for PID gains
- *             - Must not benullptr
- *             - Receives copy of current pid_gains_t
- *             - Check out_gains->update_pending flag
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok Gains retrieved successfully
- * @retval k_rx_err_null_ptr out_gains is nullptr
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre Module initialized
  * @pre out_gains pointer valid
@@ -1478,9 +1456,6 @@ rx_err_t shared_data_get_pid_gains(pid_gains_t* out_gains)
  * 4. **Release motor_mutex:** Allow other access
  * 5. **Return flag:** True if pending, false otherwise
  *
- * @return bool True if new gains need to be applied
- * @retval true update_pending flag is set (new gains available)
- * @retval false No update needed, or not initialized, or mutex error
  *
  * @pre None (safe to call anytime)
  *
@@ -1631,17 +1606,7 @@ void shared_data_clear_pid_update_flag(void)
  * end note
  * @enduml
  *
- * @param[in] reason Reason code for emergency stop
- *            - k_estop_reason_comm_timeout: No commands for 500ms
- *            - k_estop_reason_obstacle: Collision detected
- *            - k_estop_reason_driver_fault: Motor driver hardware fault
- *            - k_estop_reason_overcurrent: Motor current >2A
- *            - k_estop_reason_manual: User request
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok E-stop triggered, motor task will respond within ~4ms
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre Module initialized
  *
@@ -1729,10 +1694,7 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason)
  * **Commit path:** Motor control task calls shared_data_commit_isr_estop() every
  * 4ms (250 Hz) to transfer ISR-triggered e-stop to mutex-protected shared state.
  *
- * @param[in] reason E-stop reason code (driver_fault, etc.)
  *
- * @return void (no return value)
- * @retval N/A Function always succeeds (void return, no error cases)
  *
  * @pre Called from ISR context only (POEG ISRs)
  * @pre shared_data_init() completed and g_shared_data.event_flags initialized
@@ -1806,10 +1768,6 @@ void shared_data_trigger_estop_isr_safe(estop_reason_t reason)
  *    - Set g_shared_data.estop_reason = reason (from critical section)
  *    - Release estop_mutex
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok E-stop committed successfully (or no pending e-stop)
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre Called from task context only (motor control task)
  * @pre Module initialized
@@ -1913,10 +1871,6 @@ rx_err_t shared_data_commit_isr_estop(void)
  * 5. **Release estop_mutex:** Allow reads
  * 6. **Signal event:** Set k_event_estop_cleared flag
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok E-stop cleared, system can resume
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre Module initialized
  * @pre Fault condition resolved (caller's responsibility)
@@ -1990,9 +1944,6 @@ rx_err_t shared_data_clear_estop(void)
  * 4. **Release estop_mutex:** Allow updates
  * 5. **Return status:** True if active, false otherwise
  *
- * @return bool Emergency stop status
- * @retval true E-stop is active (motors must be stopped)
- * @retval false Normal operation, or not initialized, or mutex error
  *
  * @pre None (safe to call anytime)
  *
@@ -2059,13 +2010,6 @@ bool shared_data_is_estop_active(void)
  * 4. **Release estop_mutex:** Allow updates
  * 5. **Return reason:** Enum value indicating cause
  *
- * @return estop_reason_t Reason code
- * @retval k_estop_reason_none No e-stop active, or not initialized, or error
- * @retval k_estop_reason_comm_timeout Communication loss detected
- * @retval k_estop_reason_obstacle Collision imminent
- * @retval k_estop_reason_driver_fault Motor driver hardware fault
- * @retval k_estop_reason_overcurrent Motor current exceeded limit
- * @retval k_estop_reason_manual Operator-initiated stop
  *
  * @pre None (safe to call anytime)
  *
@@ -2140,17 +2084,7 @@ estop_reason_t shared_data_get_estop_reason(void)
  * 4. **Copy state:** memcpy entire temp_sensor_state_t (32 bytes)
  * 5. **Release temp_mutex:** Allow readers
  *
- * @param[in] state Pointer to temperature state
- *            - Must not benullptr
- *            - temperature_cdegc[] in 0.01degC units (e.g., 2500 = 25.00degC)
- *            - sensor_valid[] indicates working sensors
- *            - sensor_count = number of active sensors [0, 4]
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok State updated successfully
- * @retval k_rx_err_null_ptr state is nullptr
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex failed
  *
  * @pre Module initialized
  * @pre state pointer valid
@@ -2216,15 +2150,7 @@ rx_err_t shared_data_update_temp(const temp_sensor_state_t* state)
  * 4. **Copy state:** memcpy from g_shared_data to caller's buffer
  * 5. **Release temp_mutex:** Allow writer to update
  *
- * @param[out] out_state Pointer to buffer for temperature state
- *             - Must not benullptr
- *             - Receives snapshot of temp_sensor_state_t
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok State retrieved successfully
- * @retval k_rx_err_null_ptr out_state is nullptr
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex failed
  *
  * @pre Module initialized
  * @pre out_state pointer valid
@@ -2298,17 +2224,7 @@ rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
  * 5. **Release obstacle_mutex:** Allow readers
  * 6. **Signal events:** Set k_event_obstacle_detected or k_event_obstacle_cleared
  *
- * @param[in] state Pointer to obstacle state
- *            - Must not benullptr
- *            - distance_cm[] in centimeters (HC-SR04 range: 2-400cm)
- *            - obstacle_detected[] true if distance < safe threshold
- *            - any_obstacle true if ANY sensor detected obstacle
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok State updated, events signaled
- * @retval k_rx_err_null_ptr state is nullptr
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex failed
  *
  * @pre Module initialized
  * @pre state pointer valid
@@ -2395,15 +2311,7 @@ rx_err_t shared_data_update_obstacle(const obstacle_state_t* state)
  * 4. **Copy state:** memcpy from g_shared_data to caller's buffer
  * 5. **Release obstacle_mutex:** Allow writer to update
  *
- * @param[out] out_state Pointer to buffer for obstacle state
- *             - Must not benullptr
- *             - Receives snapshot of obstacle_state_t
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok State retrieved successfully
- * @retval k_rx_err_null_ptr out_state is nullptr
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex failed
  *
  * @pre Module initialized
  * @pre out_state pointer valid
@@ -2493,9 +2401,6 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
  * - current_tick = 1060 (10.6 seconds)
  * - elapsed_ms = (1060 - 1000) * 10 = 600ms -> TIMEOUT!
  *
- * @return bool Timeout status
- * @retval true Communication timeout (>500ms since last command)
- * @retval false Commands are fresh, or not initialized, or mutex error
  *
  * @pre None (safe to call anytime)
  *
@@ -2650,14 +2555,7 @@ void shared_data_update_last_comm_tick(void)
  * Enables the telemetry task to route outgoing frames on the same transport
  * that the host is actively using.
  *
- * @param[in] channel Channel that delivered the frame (rx_comm_channel_t cast to uint8_t;
- *                    valid values: 0=USB, 1=SPI, 2=I2C, 3=UART; must be < k_comm_channel_count)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Channel stored successfully
- * @retval k_rx_err_not_initialized shared_data_init() not yet called
- * @retval k_rx_err_invalid_arg channel >= k_shared_channel_count (out of range)
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre shared_data_init() has been called successfully
  * @pre channel is a valid rx_comm_channel_t value cast to uint8_t (< k_comm_channel_count)
@@ -2703,11 +2601,6 @@ rx_err_t shared_data_update_active_channel(uint8_t channel)
  * releases the mutex. Returns the USB fail-safe default when no command has
  * been received yet or on any error.
  *
- * @return uint8_t Active communication channel (rx_comm_channel_t cast to uint8_t)
- * @retval 0 (k_comm_channel_uart)  Default before any command received, or on error
- * @retval 1 (k_comm_channel_spi)  SPI was the last channel to deliver a command
- * @retval 2 (k_comm_channel_i2c)  I2C was the last channel to deliver a command
- * @retval 3 (k_comm_channel_uart) UART was the last channel to deliver a command
  *
  * @pre shared_data_init() has been called (returns USB default if not)
  * @pre At least one valid frame has been received for a non-default result
@@ -2762,19 +2655,7 @@ uint8_t shared_data_get_active_channel(void)
  * 2. **Set flags:** Call tx_event_flags_set() with TX_OR option
  * 3. **Wake waiters:** ThreadX wakes tasks blocked on tx_event_flags_get()
  *
- * @param[in] flags Event flag(s) to set (can OR multiple flags)
- *            - k_event_motor_command_updated: New velocity command
- *            - k_event_estop_triggered: E-stop activated
- *            - k_event_estop_cleared: E-stop cleared
- *            - k_event_pid_gains_updated: PID gains changed
- *            - k_event_comm_timeout: Communication timeout
- *            - k_event_obstacle_detected: Obstacle detected
- *            - k_event_obstacle_cleared: Obstacle cleared
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok Flags set, waiting tasks woken
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_error ThreadX internal error
  *
  * @pre Module initialized
  *
@@ -2839,21 +2720,7 @@ rx_err_t shared_data_set_event(shared_event_flags_t flags)
  * 5. **Clear flags:** ThreadX automatically clears retrieved flags
  * 6. **Return flags:** Write actual flags to out_actual_flags if not nullptr
  *
- * @param[in] flags Event flag(s) to wait for (can OR multiple)
- *            - Any specified flag will wake the task (TX_OR logic)
- * @param[in] wait_option Timeout behavior
- *            - TX_WAIT_FOREVER: Block indefinitely until flag set
- *            - TX_NO_WAIT: Return immediately (poll mode)
- *            - Tick count: Block for specified ticks (timeout)
- * @param[out] out_actual_flags Pointer to store actual flags that were set
- *             - Can be NULL if not needed
- *             - Use to determine which flag(s) woke the task
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok Flags received successfully
- * @retval k_rx_err_timeout Wait timed out (if wait_option != TX_WAIT_FOREVER)
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_error ThreadX internal error
  *
  * @pre Module initialized
  *
@@ -2961,13 +2828,7 @@ shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_
  * 4. Release imu_mutex
  * 5. Return k_rx_ok
  *
- * @param[in] state Pointer to populated imu_state_t. Must not be NULL.
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok State stored successfully
- * @retval k_rx_err_null_ptr state is NULL
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre Module initialized (shared_data_init() succeeded)
  * @pre state non-NULL with valid BNO055 data
@@ -3034,13 +2895,7 @@ rx_err_t shared_data_update_imu(const imu_state_t* state)
  * 4. Release imu_mutex
  * 5. Return k_rx_ok
  *
- * @param[out] out_state Output buffer for IMU state. Must not be NULL.
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok State retrieved successfully
- * @retval k_rx_err_null_ptr out_state is NULL
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex unavailable; caller may retry next cycle
  *
  * @pre Module initialized (shared_data_init() succeeded)
  * @pre out_state non-NULL
@@ -3109,13 +2964,7 @@ rx_err_t shared_data_get_imu(imu_state_t* out_state)
  * 4. Release baro_mutex
  * 5. Return k_rx_ok
  *
- * @param[in] state Pointer to populated baro_state_t. Must not be NULL.
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok State stored successfully
- * @retval k_rx_err_null_ptr state is NULL
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre Module initialized (shared_data_init() succeeded)
  * @pre state non-NULL with valid BMP280 data
@@ -3183,13 +3032,7 @@ rx_err_t shared_data_update_baro(const baro_state_t* state)
  * 4. Release baro_mutex
  * 5. Return k_rx_ok
  *
- * @param[out] out_state Output buffer for barometric state. Must not be NULL.
  *
- * @return rx_err_t Operation status
- * @retval k_rx_ok State retrieved successfully
- * @retval k_rx_err_null_ptr out_state is NULL
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex unavailable; caller may retry next cycle
  *
  * @pre Module initialized (shared_data_init() succeeded)
  * @pre out_state non-NULL

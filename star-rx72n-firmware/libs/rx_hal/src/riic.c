@@ -632,8 +632,6 @@ static const riic_recovery_pins_t k_riic_recovery_pins[k_riic_max_channels] = {
  * k_riic_max_channels (sentinel) if the pointer does not match any channel,
  * which callers treat as "skip bit-bang recovery".
  *
- * @param[in] riic RIIC register pointer (must be one of riic0()/riic1()/riic2())
- * @return Channel index 0-2 on match, k_riic_max_channels on miss
  */
 static uint8_t internal_riic_channel_from_base(const volatile rx_riic_regs_t* riic)
 {
@@ -658,8 +656,6 @@ static uint8_t internal_riic_channel_from_base(const volatile rx_riic_regs_t* ri
  * hardware_init.c::internal_busy_wait_us -- duplicated here so riic.c has
  * no cross-module dependency on src/ helpers.
  *
- * @param[in] us       Duration in microseconds (must be > 0)
- * @param[in] cpu_mhz  ICLK frequency in MHz (must be > 0)
  */
 static inline void internal_riic_busy_wait_us(uint16_t us, uint16_t cpu_mhz)
 {
@@ -704,8 +700,6 @@ static inline void internal_riic_busy_wait_us(uint16_t us, uint16_t cpu_mhz)
  * Only RIIC channels with a populated entry in k_riic_recovery_pins[]
  * are handled; other channels return silently.
  *
- * @param[in] channel RIIC channel index (0-2). Bounds-checked against
- *                    k_riic_max_channels.
  *
  * @pre  MPC PFS values for SCL/SDA were set during channel init and have
  *       not been disturbed (we only toggle PMR, not PFS).
@@ -777,7 +771,6 @@ static void internal_riic_bit_bang_recover(uint8_t channel)
  * PMR while those latches are still 0 would glitch the bus low again
  * immediately and could re-confuse the peripheral we just unstuck.
  *
- * @param[in] channel RIIC channel index (0-2)
  *
  * @pre  internal_riic_bit_bang_recover() was just called on the same channel.
  * @pre  The RIIC peripheral has been reset (IICRST cycle + SOWP release).
@@ -809,7 +802,6 @@ static void internal_riic_bit_bang_recover(uint8_t channel)
  * internal_wait_bus_ready() is too heavyweight (it tears down and rebuilds
  * pad direction via PMR, which adds ~100 us versus ~2 us here).
  *
- * @param[in,out] riic  Pointer to the RIIC register block. Must be non-NULL.
  *
  * @pre  ICE was set to 1 earlier (channel previously passed riic_init).
  * @post ICCR1.ICE = 1, ICCR1.IICRST = 0, ICMR1..3 / ICBRH/L restored,
@@ -950,12 +942,7 @@ static riic_channel_mode_t s_riic_channel_mode[k_riic_max_channels] = {k_riic_mo
  * range validation logic. This pattern is consistent with rx_port_get_base()
  * in the GPIO driver.
  *
- * @param[in] channel RIIC channel number (valid range: 0 to k_riic_max_channels-1)
  *
- * @return Pointer to RIIC register structure
- * @retval Non-NULL Valid volatile register pointer aligned to the channel's
- *                  32-byte peripheral block for channels 0, 1, or 2
- * @retval NULL     Channel number is out of range (>= k_riic_max_channels)
  *
  * @pre channel must be less than k_riic_max_channels (3); values >= 3 yield nullptr
  * @pre caller must have verified that the corresponding RIIC module stop bit in
@@ -1035,15 +1022,7 @@ static volatile rx_riic_regs_t* internal_get_riic_base(const uint8_t channel)
  * | 400 kHz   | 60M / (400k x 3)    | 50      | 400.0 kHz   |
  * | 1 MHz     | 60M / (1M x 3)      | 20      | 1.00 MHz    |
  *
- * @param[in] frequency_hz Desired I2C clock frequency in Hz
- *                         (valid: 100000, 400000, or 1000000)
- * @param[out] icbrl Pointer to store ICBRL register value (SCL low period)
- * @param[out] icbrh Pointer to store ICBRH register value (SCL high period)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success - icbrl and icbrh contain valid values
- * @retval k_rx_err_null_ptr Either icbrl or icbrh is nullptr
- * @retval k_rx_err_invalid_arg Calculated divisor out of range [1, 255]
  *
  * @pre icbrl != nullptr
  * @pre icbrh != nullptr
@@ -1124,12 +1103,7 @@ static rx_err_t internal_calculate_bit_rate(const uint32_t frequency_hz,
  * The 10 ms timeout (k_riic_timeout_us) provides margin for typical
  * operations while catching true bus-stuck conditions.
  *
- * @param[in] riic Pointer to RIIC register structure (must not be NULL)
  *
- * @return rx_err_t Error code indicating success or timeout
- * @retval k_rx_ok Bus is ready (BBSY = 0), safe to start transaction
- * @retval k_rx_err_null_ptr riic pointer is nullptr
- * @retval k_rx_err_timeout Bus remained busy for entire timeout period
  *
  * @pre riic != nullptr
  * @pre RIIC channel must be initialized and enabled
@@ -1309,12 +1283,7 @@ static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
  * 3. Hardware sets START flag in ICSR2
  * 4. Software clears START flag to acknowledge
  *
- * @param[in,out] riic Pointer to RIIC register structure (must not be NULL)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok START condition successfully issued
- * @retval k_rx_err_null_ptr riic pointer is nullptr
- * @retval k_rx_err_timeout Hardware did not confirm START within timeout
  *
  * @pre riic != nullptr
  * @pre Bus must be idle (BBSY = 0) - use internal_wait_bus_ready() first
@@ -1387,12 +1356,7 @@ static rx_err_t internal_send_start(volatile rx_riic_regs_t* riic)
  * point, issuing STOP releases the bus and resets the peripheral state
  * machine.
  *
- * @param[in,out] riic Pointer to RIIC register structure (must not be NULL)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok STOP condition successfully issued, bus is now idle
- * @retval k_rx_err_null_ptr riic pointer is nullptr
- * @retval k_rx_err_timeout Hardware did not confirm STOP within timeout
  *
  * @pre riic != nullptr
  * @pre A transaction is in progress (bus is busy)
@@ -1474,13 +1438,7 @@ static rx_err_t internal_send_stop(volatile rx_riic_regs_t* riic)
  * - Data byte: Peripheral buffer full or error condition
  * - Last byte: Normal end-of-read signaling (expected)
  *
- * @param[in,out] riic Pointer to RIIC register structure
- * @param[in] data Byte to transmit (address or data)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Byte transmitted and ACK received
- * @retval k_rx_err_timeout TDRE flag not set within timeout
- * @retval k_rx_err_nack Peripheral sent NACK (not acknowledge)
  *
  * @pre riic != nullptr (not checked - caller must ensure)
  * @pre START condition has been issued
@@ -1555,13 +1513,7 @@ static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, const uint8_t
  * Waiting for transmit-side flags in that state hangs forever; this helper
  * waits for RDRF | NACKF instead.
  *
- * @param[in,out] riic Pointer to RIIC register structure
- * @param[in] addr_byte Pre-shifted (addr << 1) | k_riic_addr_read_bit
  *
- * @return rx_err_t
- * @retval k_rx_ok   Address ACKed; first data byte is in ICDRR (RDRF set)
- * @retval k_rx_err_nack    Peripheral NACKed the address
- * @retval k_rx_err_timeout Neither RDRF nor NACKF asserted within timeout
  *
  * @pre Bus is active; ICCR2 = MST (TRS=0); start condition already issued
  * @post On success: RDRF=1 in ICSR2, ICDRR holds the first data byte
@@ -1644,15 +1596,7 @@ static rx_err_t internal_write_address_for_read(volatile rx_riic_regs_t* riic,
  *          Peripheral drives      +- Controller drives ACK/NACK
  * ```
  *
- * @param[in,out] riic Pointer to RIIC register structure (must not be NULL)
- * @param[out] data Pointer to store received byte (must not be NULL)
- * @param[in] send_ack true = send ACK (more bytes expected),
- *                     false = send NACK (last byte)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Byte received successfully, stored in *data
- * @retval k_rx_err_null_ptr riic or data pointer is nullptr
- * @retval k_rx_err_timeout RDRF flag not set within timeout
  *
  * @pre riic != nullptr
  * @pre data != nullptr
@@ -1781,15 +1725,7 @@ static rx_err_t internal_read_byte(volatile rx_riic_regs_t* riic,
  * On any error (timeout or NACK), this function issues a STOP condition
  * to release the bus before returning the error code.
  *
- * @param[in,out] riic Pointer to RIIC register structure
- * @param[in] device_addr I2C peripheral address (7-bit, 0x00-0x7F)
- * @param[in] write_data Buffer containing data to write (e.g., register address)
- * @param[in] write_length Number of bytes to write (typically 1-2)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Write phase completed, ready for read phase
- * @retval k_rx_err_timeout START, address, or data byte timeout
- * @retval k_rx_err_nack Peripheral did not acknowledge
  *
  * @pre riic points to valid, initialized RIIC channel
  * @pre device_addr.value <= 127
@@ -1878,15 +1814,7 @@ static rx_err_t internal_riic_write_phase(volatile rx_riic_regs_t* riic,
  * end of read. This allows the peripheral to release SDA for the STOP
  * condition.
  *
- * @param[in,out] riic Pointer to RIIC register structure
- * @param[in] device_addr I2C peripheral address (7-bit, 0x00-0x7F)
- * @param[out] read_data Buffer to store received data
- * @param[in] read_length Number of bytes to read (1-256)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Read phase completed successfully
- * @retval k_rx_err_timeout Repeated START, address, or data byte timeout
- * @retval k_rx_err_nack Peripheral did not acknowledge address
  *
  * @pre riic points to valid, initialized RIIC channel
  * @pre Write phase has been completed (bus is active)
@@ -2073,12 +2001,7 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
  * | 400 kHz   | Fast         | Most I2C peripherals    |
  * | 1 MHz     | Fast Plus    | High-speed sensors      |
  *
- * @param[in] channel RIIC channel to initialize (0, 1, or 2)
- * @param[in] frequency_hz I2C bus clock frequency (100000, 400000, or 1000000)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Channel initialized successfully
- * @retval k_rx_err_invalid_arg Invalid channel (>= 3) or unsupported frequency
  *
  * @pre channel.value < 3
  * @pre frequency_hz is one of: 100000, 400000, 1000000
@@ -2257,18 +2180,7 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
  * On any error (timeout or NACK), the function issues a STOP condition
  * to release the bus before returning. The original error code is preserved.
  *
- * @param[in] channel RIIC channel (must be initialized via riic_init())
- * @param[in] device_addr I2C peripheral address (7-bit, 0x00-0x7F)
- * @param[in] data Buffer containing data to write
- * @param[in] length Number of bytes to write (1-256)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok All bytes written successfully
- * @retval k_rx_err_null_ptr data pointer is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel, address, or length
- * @retval k_rx_err_invalid_state Channel not initialized
- * @retval k_rx_err_timeout Bus busy, START, or byte transfer timeout
- * @retval k_rx_err_nack Peripheral did not acknowledge address or data
  *
  * @pre riic_init() called for this channel
  * @pre data != nullptr
@@ -2422,18 +2334,7 @@ rx_err_t riic_write(const riic_channel_t    channel,
  * - Continue reading after previous write set address pointer
  * - Read from devices with auto-increment address mode
  *
- * @param[in] channel RIIC channel (must be initialized via riic_init())
- * @param[in] device_addr I2C peripheral address (7-bit, 0x00-0x7F)
- * @param[out] data Buffer to store received data
- * @param[in] length Number of bytes to read (1-256)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok All bytes read successfully
- * @retval k_rx_err_null_ptr data pointer is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel, address, or length
- * @retval k_rx_err_invalid_state Channel not initialized
- * @retval k_rx_err_timeout Bus busy, START, or byte receive timeout
- * @retval k_rx_err_nack Peripheral did not acknowledge address
  *
  * @pre riic_init() called for this channel
  * @pre data != nullptr
@@ -2629,20 +2530,7 @@ rx_err_t riic_read(const riic_channel_t    channel,
  * | Accelerometer   | [reg_addr]        | 6           | Read XYZ axes |
  * | RTC             | [seconds_reg]     | 7           | Read time |
  *
- * @param[in] channel RIIC channel (must be initialized via riic_init())
- * @param[in] device_addr I2C peripheral address (7-bit, 0x00-0x7F)
- * @param[in] write_data Buffer containing data to write (typically register address)
- * @param[in] write_length Number of bytes to write (typically 1-2)
- * @param[out] read_data Buffer to store received data
- * @param[in] read_length Number of bytes to read (1-256)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Transaction completed successfully
- * @retval k_rx_err_null_ptr write_data or read_data is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel, address, or length
- * @retval k_rx_err_invalid_state Channel not initialized
- * @retval k_rx_err_timeout Bus busy or any phase timeout
- * @retval k_rx_err_nack Peripheral did not acknowledge address/data
  *
  * @pre riic_init() called for this channel
  * @pre write_data != nullptr
@@ -2822,14 +2710,7 @@ typedef enum : uint16_t {
  * 7. Enable I2C bus interface (ICE)
  * 8. Mark channel as initialized
  *
- * @param[in] channel RIIC channel wrapper (channel.value range: 0-2)
- * @param[in] device_addr 7-bit I2C address this peripheral responds to
- *                        (valid range: 0x00 to 0x7F, i.e., 0 to 127)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Channel initialized in peripheral mode
- * @retval k_rx_err_invalid_arg Channel value out of range (>= 3) or
- *                              device_addr.value > k_riic_addr_max_7bit
  *
  * @pre channel.value must be in range [0, k_riic_max_channels - 1]
  * @pre device_addr.value must be <= k_riic_addr_max_7bit (0x7F)
@@ -2919,20 +2800,7 @@ rx_err_t riic_init_peripheral(const riic_channel_t channel, const i2c_device_add
  * 4. Repeat until RDRF clear or max_length reached
  * 5. Return k_rx_ok with actual count in *bytes_read
  *
- * @param[in] channel RIIC channel wrapper (channel.value range: 0-2)
- * @param[out] data Buffer to store received bytes (must not be nullptr,
- *                  must have space for at least max_length bytes)
- * @param[in] max_length Maximum number of bytes to read
- *                       (valid range: 1 to k_riic_peripheral_transfer_limit)
- * @param[out] bytes_read Actual number of bytes read (may be 0 if no data available;
- *                        must not be nullptr)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Read completed successfully (check bytes_read for count)
- * @retval k_rx_err_null_ptr data or bytes_read is nullptr
- * @retval k_rx_err_invalid_arg Channel value out of range, max_length == 0,
- *                              or max_length > k_riic_peripheral_transfer_limit
- * @retval k_rx_err_invalid_state Channel not initialized via riic_init_peripheral()
  *
  * @pre channel must be initialized via riic_init_peripheral()
  * @pre data != nullptr with at least max_length bytes of capacity
@@ -3012,16 +2880,7 @@ rx_err_t riic_peripheral_read(const riic_channel_t channel,
  *    c. Write data[i] to ICDRT
  * 3. Return k_rx_ok
  *
- * @param[in] channel RIIC channel wrapper (channel.value range: 0-2)
- * @param[in] data Pointer to buffer containing bytes to write (must not be nullptr)
- * @param[in] length Number of bytes to write (valid range: 1..k_riic_peripheral_transfer_limit)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All bytes written successfully
- * @retval k_rx_err_null_ptr data is nullptr
- * @retval k_rx_err_invalid_arg Channel value out of range or length == 0
- * @retval k_rx_err_invalid_state Channel not initialized via riic_init_peripheral()
- * @retval k_rx_err_timeout TDRE not set within k_riic_periph_timeout_us iterations
  *
  * @pre channel must be initialized via riic_init_peripheral()
  * @pre data != nullptr with at least length valid bytes
@@ -3092,12 +2951,7 @@ riic_peripheral_write(const riic_channel_t channel, const uint8_t* data, const u
  * uninitialized. After this call, riic_init() or riic_init_peripheral() may
  * be called again on the same channel.
  *
- * @param[in] channel RIIC channel to deinitialize (channel.value range: 0-2)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok           Channel deinitialized successfully
- * @retval k_rx_err_invalid_arg   channel.value >= k_riic_max_channels
- * @retval k_rx_err_invalid_state Channel was not initialized in peripheral mode
  *
  * @pre channel.value must be in range [0, k_riic_max_channels - 1]
  * @pre Channel must have been initialized via riic_init_peripheral()

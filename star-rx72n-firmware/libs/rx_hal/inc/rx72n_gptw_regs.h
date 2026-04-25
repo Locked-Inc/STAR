@@ -133,7 +133,6 @@ extern "C" {
 /**
  * @defgroup rx_gptw_regs RX72N GPTW Register Definitions
  * @brief General PWM Timer hardware register interface
- * @ingroup rx_hal
  *
  * @details
  * Provides memory-mapped register access to the RX72N GPTW peripheral

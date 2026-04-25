@@ -502,9 +502,6 @@ static const uint8_t s_sckcr3_reset_state = 0U;
  * RIIC host I2C on P2.0/P2.1. Sets PSEL registers to enable I2C peripheral
  * function for SCL and SDA pins.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All pins configured successfully
- * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
@@ -538,9 +535,6 @@ static rx_err_t internal_gpio_init_i2c(void)
  * Sets PSEL registers to enable RSPI2 peripheral function for COPI, CIPO,
  * SCLK, and CS0 pins used for RPi5 communication.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All pins configured successfully
- * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
@@ -579,9 +573,6 @@ static rx_err_t internal_gpio_init_host_spi(void)
  * on P2.4/P2.5/PA.1/PC.5. Enables pulse counter mode for quadrature encoder
  * inputs from front wheel motors.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All pins configured successfully
- * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
@@ -620,9 +611,6 @@ static rx_err_t internal_gpio_init_mtu_encoders(void)
  * on PC.2/PA.3/PC.0/PB.3. Enables pulse counter mode for quadrature encoder
  * inputs from rear wheel motors.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All pins configured successfully
- * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
@@ -661,9 +649,6 @@ static rx_err_t internal_gpio_init_tpu_encoders(void)
  * across PORT2, PORT1, PORT8, PORTC, and PORTE. Sets PSEL for all 8 pins
  * (4 motors x IN2+IN1 per motor) for DRV8263H motor driver control.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All pins configured successfully
- * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
@@ -706,10 +691,6 @@ static rx_err_t internal_gpio_init_gptw_pwm(void)
  * than the nominal value due to loop overhead (~5-6 cycles per iteration
  * vs the ideal 1 cycle/MHz assumed by the calculation).
  *
- * @param[in] us       Delay duration in microseconds (units: us; must be > 0;
- *                     typically k_twake_busy_wait_us = 2000)
- * @param[in] cpu_mhz  CPU frequency in megahertz (units: MHz; valid range: 1..1000;
- *                     must match actual CPU clock; use k_twake_cpu_mhz = 240 for RX72N)
  *
  * @pre us > 0 and cpu_mhz > 0
  * @pre Called only during pre-kernel initialization
@@ -750,12 +731,7 @@ static inline void internal_busy_wait_us(uint16_t us, uint16_t cpu_mhz)
  * 2. Set PODR (drive the desired initial logic level)
  * 3. Set PDR (enable output driver last to avoid glitch)
  *
- * @param[in] port_pin Encoded port/pin value from rx_mpc_pin_t
- *                     (valid range: any value decodable by rx_port_from_pin()
- *                     and rx_pin_from_pin() yielding pin 0-7)
- * @param[in] initial_high true to drive HIGH on startup, false for LOW
  *
- * @return void (asserts on invalid input -- does not return on failure)
  *
  * @pre Pin must have MPC already configured via rx_mpc_set_gpio()
  * @pre Port base address must be valid (rx_port_get_base() != nullptr)
@@ -801,11 +777,7 @@ static inline void internal_gpio_set_output(rx_port_pin_t port_pin, bool initial
  * 1. Clear PMR (switch from peripheral to GPIO mode)
  * 2. Clear PDR (configure as input direction)
  *
- * @param[in] port_pin Encoded port/pin value from rx_mpc_pin_t
- *                     (valid range: any value decodable by rx_port_from_pin()
- *                     and rx_pin_from_pin() yielding pin 0-7)
  *
- * @return void (asserts on invalid input -- does not return on failure)
  *
  * @pre Pin must have MPC already configured via rx_mpc_set_gpio()
  * @pre Port base address must be valid (rx_port_get_base() != nullptr)
@@ -848,9 +820,6 @@ static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
  * 2. Interrupt input via GPIO MPC + input direction
  * 3. Reset output via GPIO MPC + output HIGH (de-asserted)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All 4 pins configured successfully
- * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
@@ -1039,9 +1008,6 @@ typedef enum : uint8_t {
  * 6. Clear IR[76] (remove any stale pending request)
  * 7. Enable in IER[9] bit 4 (vector 76 / 8 = 9, 76 % 8 = 4)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok IRQ12 configured successfully
- * @retval k_rx_err_hw_init_failed MPC or filter configuration failed
  *
  * @pre P3.2 not in use by another peripheral
  * @pre MPC write protection disabled (handled by rx_mpc_set_irq)
@@ -1122,9 +1088,6 @@ static rx_err_t internal_gpio_init_imu_irq(void)
  * |----------|-----|-----------|--------------|---------|
  * | HOST_IRQ | P67 | Output    | LOW          | HIGH    |
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Pin configured successfully
- * @retval k_rx_err_hw_init_failed MPC GPIO configuration failed
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre P6.7 not in use by another peripheral
@@ -1176,9 +1139,6 @@ static rx_err_t internal_gpio_init_host_irq(void)
  * explicitly drives DRVOFF LOW before commanding PWM.
  * @todo (#367) Motor control task must drive DRVOFF LOW before commanding PWM.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All 8 pins configured successfully
- * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
@@ -1263,9 +1223,6 @@ static rx_err_t internal_gpio_init_motor_driver_ctrl(void)
  * P4.4-P4.7. Disables digital input buffers and sets pins to analog mode for
  * motor current sensing.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All pins configured successfully
- * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
@@ -1303,9 +1260,6 @@ static rx_err_t internal_gpio_init_adc(void)
  * Configures MPC pin multiplexing for USB0_VBUS detection on P1.6.
  * Enables USB peripheral to detect host connection via VBUS voltage level.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All pins configured successfully
- * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
@@ -1335,9 +1289,6 @@ static rx_err_t internal_gpio_init_usb(void)
  * Pins: PF5, PJ5, PJ3, P33. Used to trigger ultrasonic pulse transmission
  * on HC-SR04 distance sensors.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All pins configured successfully
- * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
@@ -1375,9 +1326,6 @@ static rx_err_t internal_gpio_init_sonar_triggers(void)
  * Pins: P0.3, P0.2, P0.1, P0.0 (also IRQ11-IRQ8). Echo pulse duration
  * measured by IRQ timing to determine distance.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All pins configured successfully
- * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
@@ -1444,10 +1392,6 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
  * | P1.3 | PORT1.3 | SDA0 | 0x0F | I2C data line |
  * | P1.6 | PORT1.6 | USB0_VBUS | 0x11 | USB VBUS detect input |
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok All 8 pins configured successfully
- * @retval k_rx_err_invalid_arg Pin identifier out of range (programming error)
- * @retval k_rx_err_hw_error MPC write-protect unlock failed (hardware fault)
  *
  * @pre PCLKB clock must be running (MPC registers require active clock)
  * @pre Must be called during single-threaded initialization (before RTOS starts)
@@ -1604,9 +1548,6 @@ static rx_err_t gpio_init(void)
  * 1 us dead-time. Channels are phase-staggered by 90 degrees to reduce peak
  * current draw and EMI.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All 4 GPTW channels initialized successfully
- * @retval k_rx_err_hw_init_failed GPTW staggered init failed
  *
  * @pre GPIO pins for GPTW configured via gpio_init() (PSEL = 0x1E)
  * @pre PCLKA clock running at 120 MHz
@@ -1675,9 +1616,6 @@ static rx_err_t gptw_pwm_init(void)
  * Raspberry Pi 5 host controller. Uses SPI mode 0 (CPOL=0, CPHA=0) with
  * 8-bit transfers.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok RSPI2 peripheral initialized successfully
- * @retval k_rx_err_hw_init_failed RSPI2 init failed
  *
  * @pre GPIO pins for RSPI2 configured via gpio_init()
  * @pre PCLKA clock running
@@ -1715,8 +1653,6 @@ static rx_err_t spi_init(void)
  * GPIO pins for RIIC0 are configured in internal_gpio_init_i2c(); pins for
  * RIIC1 (IMU) are configured in internal_gpio_init_imu().
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Static assertions passed; RIIC init deferred to bus manager
  *
  * @pre GPIO pins for RIIC0 configured via internal_gpio_init_i2c()
  * @pre GPIO pins for RIIC1 (IMU) configured via internal_gpio_init_imu()
@@ -1764,9 +1700,6 @@ static rx_err_t i2c_init(void)
  * | AN005 | Motor 2 | P4.5 |
  * | AN004 | Motor 3 | P4.4 |
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All 4 ADC channels initialized
- * @retval k_rx_err_hw_init_failed ADC channel init failed
  *
  * @pre GPIO pins for ADC configured via gpio_init()
  * @pre PCLKB/PCLKD clock running
@@ -1938,11 +1871,6 @@ const rx_port_pin_t g_pin_host_irq = (rx_port_pin_t)k_pin_host_irq;
  * - On error return: main() halts boot (error logged via UART if possible)
  * - No partial initialization cleanup (fail-fast, no recovery)
  *
- * @return rx_err_t Initialization status
- * @retval k_rx_ok All peripherals initialized successfully
- * @retval k_rx_err_hw_init_failed Timer or UART initialization failed
- * @retval k_rx_err_timeout Peripheral configuration timeout (rare, indicates hardware fault)
- * @retval k_rx_err_invalid_state Peripheral already initialized or in unexpected state
  *
  * @pre System clocks configured via rx_clock_power_init() (SCKCR3 != reset_state)
  * @pre Interrupt vector table set up (reset vector, exception vectors)
@@ -2089,6 +2017,51 @@ static rx_err_t internal_init_all_peripherals(void)
 }
 #endif /* !RX_IS_SIMULATOR */
 
+/**
+ * @brief Initialize all on-board peripherals after the clock tree is up
+ *
+ * @details
+ * Top-level peripheral bring-up entry point.  Called once from rx_main()
+ * after the clock subsystem has been brought online (SCKCR3 != reset).
+ *
+ * On real hardware (RX_IS_SIMULATOR not defined) the function delegates to
+ * internal_init_all_peripherals(), which executes the canonical bring-up
+ * order:
+ *
+ *  1. GPIO / pin-mux for motors, encoders, sensors, and LEDs.
+ *  2. GPTW PWM channels for the four motor drivers.
+ *  3. POEG (port output enable group) for hardware fault propagation.
+ *  4. CMT timer for the millisecond tick.
+ *  5. SPI for the host-link bridge.
+ *  6. I2C for IMU, barometer, and other peripherals.
+ *  7. ADC channels AN004-AN007 for motor current sense.
+ *  8. Non-fatal validation pass (logs warnings, never halts).
+ *
+ * Any error from those sub-initializations short-circuits the bring-up and
+ * is returned to the caller; the caller will typically halt the system.
+ *
+ * Under RX_IS_SIMULATOR the body of internal_init_all_peripherals() is
+ * compiled out so the function only validates the clock pre/post-conditions
+ * and returns success.  This lets the unit-test host run integration tests
+ * that exercise hardware_init() without touching simulated MMIO.
+ *
+ *
+ * @pre System clock subsystem initialized (SCKCR3 != reset value).
+ * @pre Called from supervisor/boot context before the ThreadX scheduler
+ *      starts.
+ *
+ * @post On k_rx_ok: all configured peripherals are initialized and the
+ *       clock register state has not been corrupted (post-condition assert).
+ * @post On error: only a prefix of peripherals is initialized; the caller
+ *       must not assume any particular peripheral is usable.
+ *
+ * @note Not thread-safe.  Designed to be called exactly once from
+ *       single-threaded boot context before the ThreadX scheduler starts.
+ *
+ * @see rx_main() Calls hardware_init() during boot.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t hardware_init(void)
 {
   /* Precondition: Verify that system clocks have been initialized */

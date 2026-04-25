@@ -326,10 +326,6 @@ static const char* const s_tag = "INFRA";
  * | initial_backoff_ms | k_error_handler_default_initial_backoff_ms |
  * | max_backoff_ms     | k_error_handler_default_max_backoff_ms     |
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok              Success, infrastructure ready
- * @retval k_rx_err_invalid_arg Configuration validation failed
- * @retval k_rx_err_fail        Initialization error
  *
  * @pre None - can be called at any time
  *
@@ -438,8 +434,6 @@ rx_err_t rx_infrastructure_init(void)
  * - Pin validator (uses error handler for logging)
  * - Error handler (foundation service)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, infrastructure deinitialized
  *
  * @pre None - safe to call anytime
  *
@@ -509,9 +503,6 @@ rx_err_t rx_infrastructure_deinit(void)
  * | try_recover | Attempt recovery with retry and backoff       |
  * | reset       | Reset error handler state                     |
  *
- * @return Pointer to error interface, or nullptr if not initialized
- * @retval &s_global_error_interface Infrastructure is initialized
- * @retval NULL                      Infrastructure not initialized
  *
  * @pre rx_infrastructure_init() should have been called
  *
@@ -560,9 +551,6 @@ rx_error_interface_t* rx_infrastructure_get_error_interface(void)
  * | release    | Release a previously claimed GPIO pin          |
  * | is_claimed | Check if a pin is already claimed              |
  *
- * @return Pointer to pin interface, or nullptr if not initialized
- * @retval &s_global_pin_interface Infrastructure is initialized
- * @retval NULL                    Infrastructure not initialized
  *
  * @pre rx_infrastructure_init() should have been called
  *

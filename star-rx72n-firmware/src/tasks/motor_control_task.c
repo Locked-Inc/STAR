@@ -1123,12 +1123,7 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  * }
  * @enddot
  *
- * @return rx_err_t Task creation status
  *
- * @retval k_rx_ok Task created successfully, thread scheduled and running at 100 Hz
- * @retval k_rx_err_invalid_state Task already created (s_motor_created == true). Second call blocked.
- * @retval k_rx_err_rtos_thread_create ThreadX tx_thread_create() returned error (!= TX_SUCCESS).
- *                                     Possible causes: invalid priority, stack too small, TCB corruption.
  *
  * @pre ThreadX kernel entered via tx_kernel_enter()
  * @pre tx_application_define() callback currently executing
@@ -1365,17 +1360,7 @@ rx_err_t motor_control_task_create(void)
  * returns k_rx_ok inside the thread. This function checks s_motor_stack_initialized
  * to ensure handles are fully initialized before returning them.
  *
- * @param[out] out_count Pointer to receive motor count.
- *                       Set to k_motor_count (4) when motor stack is initialized;
- *                       set to k_motor_count_none (0) when not yet initialized.
- *                       Must be non-NULL (nullptr returns nullptr without writing).
  *
- * @return rx_motor_handle_t** Pointer to array of motor handle pointers
- * @retval s_motor_ptrs Valid pointer to static array of k_motor_count (4) rx_motor_handle_t*,
- *                      *out_count set to k_motor_count -- motor stack fully initialized
- * @retval nullptr with *out_count = k_motor_count_none -- internal_init_motor_stack()
- *                 has not yet completed successfully
- * @retval nullptr (out_count unchanged) -- out_count argument was nullptr
  *
  * @pre motor_control_task_create() called (otherwise s_motor_stack_initialized is never set)
  * @pre out_count != nullptr (nullptr out_count causes immediate nullptr return)
@@ -1568,13 +1553,7 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
  * | `cmd` | motor_command_t | ~64 bytes | Local | Per iteration |
  * | **Total Stack** | - | ~512 bytes | Stack | Peak during control loop |
  *
- * @param[in] input Thread input parameter from tx_thread_create()
- *                  - Type: ULONG (32-bit unsigned)
- *                  - Value: 0 (k_motor_task_input)
- *                  - Purpose: Unused (ThreadX convention requires parameter)
- *                  - Explicitly cast to (void) to suppress unused warning
  *
- * @return void This function never returns (infinite loop until power-down)
  *
  * @pre motor_control_task_create() called successfully
  * @pre ThreadX scheduler started (task is scheduled)
@@ -1765,7 +1744,6 @@ static const float s_motor_direction_sign[k_motor_count] = {
 
 /**
  * @brief Run the four-stage motor-stack init (PID/PWM/DRV8263/encoders).
- * @return k_rx_ok on full success, or the first failing stage's error code.
  */
 static rx_err_t internal_bringup_init_motor_stack(void)
 {
@@ -1809,8 +1787,6 @@ static float internal_bringup_clamp_duty(float duty)
 /**
  * @brief Apply a snapshot of the shared command to all four motors.
  *
- * @param[in] cmd  Motor command snapshot from shared_data_get_motor_command().
- * @param[in] have True iff the caller already validated cmd.valid && no err.
  */
 static void internal_bringup_apply_command(const motor_command_t* cmd, bool have)
 {
@@ -1990,12 +1966,7 @@ static void internal_motor_task_entry(ULONG input)
  * }
  * @enddot
  *
- * @return rx_err_t Initialization status
  *
- * @retval k_rx_ok All 4 PID controllers initialized successfully
- * @retval k_rx_err_null_ptr nullptr passed to rx_pid_init (internal error)
- * @retval k_rx_err_invalid_arg Invalid PID configuration (gains out of range)
- * @retval k_rx_err_* Other errors from rx_pid_init()
  *
  * @pre s_pids array allocated (static memory)
  * @pre shared_data_init() called (for shared_data_get_pid_gains)
@@ -2179,15 +2150,6 @@ static rx_err_t internal_init_motor_pwm_channels(void)
  *   -> internal_init_pid_controllers()
  * @endcode
  *
- * @return rx_err_t Initialization status
- * @retval k_rx_ok All 4 drivers initialized and DRVOFF cleared
- * @retval k_rx_err_invalid_arg Invalid GPIO pin assignment in config (propagated
- *         from rx_drv8263_init())
- * @retval k_rx_err_null_ptr Internal null pointer (propagated from
- *         rx_drv8263_init() or rx_drv8263_set_drvoff(); indicates a programming
- *         error in the GPIO config arrays)
- * @retval k_rx_err_invalid_state Driver handle not initialized before set_drvoff()
- *         (propagated from rx_drv8263_set_drvoff(); indicates internal logic error)
  *
  * @pre s_drv8263 array must be defined at file scope
  * @pre Hardware GPIO pins must be configured (nSLEEP HIGH, DRVOFF HIGH)
@@ -2261,10 +2223,6 @@ static rx_err_t internal_init_drv8263_drivers(void)
  * Loads PID gains from shared_data (set by comm task) or falls back to
  * MATLAB-tuned default gains. Initializes all 4 PID controller handles.
  *
- * @return rx_err_t Initialization status
- * @retval k_rx_ok All 4 PID controllers initialized
- * @retval k_rx_err_null_ptr nullptr in rx_pid_init (internal error)
- * @retval k_rx_err_invalid_arg Invalid PID configuration
  *
  * @pre s_pids array allocated (static memory)
  * @pre shared_data_init() called
@@ -2322,9 +2280,6 @@ static rx_err_t internal_init_pid_controllers(void)
  * via the TPU encoder driver. All four encoders use 4x quadrature decoding
  * with 1364 counts per revolution (341 PPR * 4).
  *
- * @return rx_err_t Initialization status
- * @retval k_rx_ok All 4 encoders initialized
- * @retval k_rx_err_* Error from rx_encoder_init() or rx_tpu_encoder_init()
  *
  * @pre MTU and TPU peripheral clocks enabled
  * @pre Encoder pins configured via MPC
@@ -2338,7 +2293,6 @@ static rx_err_t internal_init_pid_controllers(void)
 /**
  * @brief Initialize the two front-wheel MTU encoders (M0/M1).
  *
- * @return k_rx_ok on success, otherwise the failing encoder's error code.
  */
 static rx_err_t internal_init_front_mtu_encoders(void)
 {
@@ -2367,7 +2321,6 @@ static rx_err_t internal_init_front_mtu_encoders(void)
  * opposite the natural motor-index order.  See memory note
  * project_encoder_harness_tpu_swap.md.
  *
- * @return k_rx_ok on success, otherwise the failing encoder's error code.
  */
 static rx_err_t internal_init_rear_tpu_encoders(void)
 {
@@ -2551,13 +2504,7 @@ static rx_err_t internal_init_encoders(void)
  * Motors 0-1 (front) use MTU encoder, motors 2-3 (rear) use TPU encoder.
  * This function dispatches to the correct encoder API based on motor index.
  *
- * @param[out] velocity_rps Pointer to store velocity (rev/sec)
- * @param[in] dt_sec Time interval in seconds
- * @param[in] motor_idx Motor index (0-3)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success
- * @retval k_rx_err_invalid_arg Invalid motor index
  *
  * @pre Encoders initialized via internal_init_encoders()
  * @post velocity_rps updated with current velocity
@@ -2584,12 +2531,7 @@ internal_read_encoder_velocity(float* velocity_rps, const float dt_sec, const ui
  * Motors 0-1 (front) use MTU encoder, motors 2-3 (rear) use TPU encoder.
  * This function dispatches to the correct encoder API based on motor index.
  *
- * @param[in] motor_idx Motor index (0-3)
- * @param[out] state Pointer to encoder state structure
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success
- * @retval k_rx_err_invalid_arg Invalid motor index
  *
  * @pre Encoders initialized via internal_init_encoders()
  * @post state updated with current encoder count and position
@@ -2668,9 +2610,7 @@ static rx_err_t internal_read_encoder_count(const uint8_t motor_idx, rx_encoder_
  * | **PWM Apply** | 5 | 20 |
  * | **Loop Overhead** | 15 | 60 |
  * | **Total** | - | **~285 us** |
- * @endmsc
  *
- * @return void Function always completes (no error return)
  *
  * @pre shared_data_init() called (for shared_data_get_motor_command)
  * @pre s_motors[0-3] initialized (via internal_init_motor_stack)
@@ -2946,7 +2886,6 @@ static void internal_control_loop_iteration(void)
  * - Total stop time: ~60ms
  * - Peak deceleration: ~5 m/s^2 (0.5g)
  *
- * @return void Function always completes (no error return)
  *
  * @pre s_motors[0-3] initialized (via internal_init_motor_stack)
  * @pre Encoders functional (for rx_encoder_read_velocity)
@@ -3153,7 +3092,6 @@ static void internal_active_brake_sequence(void)
  *
  * 5. **Log Success:** Print "PID gains applied to all motors"
  *
- * @return void Function always completes (no error return)
  *
  * @pre shared_data_init() called
  * @pre s_pids[0-3] initialized
@@ -3248,7 +3186,6 @@ static void internal_apply_pid_updates(void)
  * - Short enough to prevent dangerous runaway (< 1.25m travel at 2.5 m/s)
  * - Long enough to tolerate transient communication glitches
  *
- * @return void Function always completes (no error return)
  *
  * @pre shared_data_init() called
  *
@@ -3323,7 +3260,6 @@ static void internal_check_comm_timeout(void)
  *
  * 11. **Write to Shared Data:** shared_data_update_motor_state(&state)
  *
- * @return void Function always completes (no error return)
  *
  * @pre s_motors[0-3], s_encoder_state[0-3] initialized
  * @pre shared_data_init() called
@@ -3427,18 +3363,7 @@ static void internal_update_motor_state(void)
  * | 2 | Back-Left (BL) | k_motor_back_left |
  * | 3 | Back-Right (BR) | k_motor_back_right |
  *
- * @param[in] cmd Motor command structure from shared_data
- *                - Type: const motor_command_t*
- *                - Must be non-NULL
- *                - Must have valid target_velocity_mps array
- * @param[in] motor_idx Motor index (0-3)
- *                      - Type: uint8_t
- *                      - Range: [0, k_motor_count)
- *                      - Out-of-range returns 0.0
  *
- * @return float Target velocity in meters per second (m/s)
- *               - Range: [-2.5, +2.5] m/s (physical motor limits)
- *               - Returns 0.0 on invalid inputs (NULL cmd or out-of-range index)
  *
  * @pre cmd != nullptr (validated internally)
  * @pre motor_idx < k_motor_count (validated internally)

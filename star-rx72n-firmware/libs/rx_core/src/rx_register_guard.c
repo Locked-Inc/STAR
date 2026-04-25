@@ -828,8 +828,6 @@ static void internal_refresh_mstpcr(void)
  * Guard >> App [label="k_rx_ok"];
  * @endmsc
  *
- * @return rx_err_t Error code indicating initialization status
- * @retval k_rx_ok Success, golden values captured and module initialized
  *
  * @pre Peripherals should be fully initialized before calling
  * @pre Clock and power configuration should be stable
@@ -932,7 +930,6 @@ rx_err_t rx_register_guard_init(void)
  * | All corrected | ~5.8 us | Worst case |
  * | CPU overhead @ 10 Hz | 0.006% | Negligible |
  *
- * @return void (no return value)
  *
  * @pre Module should be initialized via rx_register_guard_init()
  * @pre Should be called from main task context (not ISR)
@@ -1015,9 +1012,6 @@ void rx_register_guard_refresh(void)
  * 2. If not initialized, return 0 (defensive)
  * 3. Return current value of s_state.corrections
  *
- * @return uint32_t Number of register corrections since init/reset
- * @retval 0 No corrections (ideal) OR module not initialized
- * @retval >0 Number of ESD/EMI events detected and corrected
  *
  * @pre None - safe to call anytime
  *
@@ -1076,7 +1070,6 @@ uint32_t rx_register_guard_get_correction_count(void)
  * 3. Set s_state.corrections to k_corrections_default (0)
  * 4. Assert postcondition (debug builds only)
  *
- * @return void (no return value)
  *
  * @pre None - safe to call anytime
  *
@@ -1131,9 +1124,6 @@ void rx_register_guard_reset_count(void)
  * 1. Read s_state.initialized flag
  * 2. Return true if non-zero, false if zero
  *
- * @return bool Initialization status
- * @retval true Module initialized, refresh() is active
- * @retval false Module not initialized, refresh() is no-op
  *
  * @pre None - safe to call anytime
  *

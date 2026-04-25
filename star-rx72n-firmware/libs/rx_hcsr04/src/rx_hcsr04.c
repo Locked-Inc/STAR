@@ -1018,10 +1018,7 @@ RX_STATIC_TESTABLE bool s_worker_initialized = false;
  * 1. Port must be <= k_rx_port_g OR exactly == k_rx_port_j
  * 2. Pin number must be <= k_rx_pin_max
  *
- * @param[in] trigger_pin Encoded port/pin value (rx_port_pin_t)
  *
- * @return true  Trigger pin is a legal RX72N port/pin combination
- * @return false Trigger pin encodes an invalid port or out-of-range pin
  *
  * @pre trigger_pin is a value previously stored in rx_hcsr04_t.trigger_pin
  * @post No side effects; read-only validation
@@ -1096,11 +1093,7 @@ static bool internal_is_trigger_pin_valid(rx_port_pin_t trigger_pin)
  * }
  * @enddot
  *
- * @param[in] handle Sensor handle (must be initialized)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle is nullptr or pin invalid
- * @return k_rx_err_hw_operation_failed if GPIO write fails
  *
  * @pre handle != nullptr
  * @pre handle->initialized == true
@@ -1200,14 +1193,7 @@ RX_STATIC_TESTABLE rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handl
  * }
  * @enddot
  *
- * @param[in,out] handle Sensor handle (cancel_requested cleared on cancellation)
- * @param[in] target_state Desired pin state (true = HIGH, false = LOW)
- * @param[in] timeout_us Maximum wait time in microseconds
  *
- * @return k_rx_ok Target state reached successfully
- * @return k_rx_err_timeout Timeout expired before state reached
- * @return k_rx_err_cancelled User requested cancellation
- * @return k_rx_err_hw_operation_failed GPIO read failed
  *
  * @pre handle != nullptr
  * @pre handle->echo_pin configured as input
@@ -1306,13 +1292,7 @@ RX_STATIC_TESTABLE rx_err_t internal_wait_for_echo(rx_hcsr04_t* handle,
  * - Duration too short: Object inside dead zone (<2cm)
  * - Duration too long: Echo timeout (>30ms)
  *
- * @param[in,out] handle Sensor handle (supports cancellation)
- * @param[out] duration_us Measured pulse width in microseconds
  *
- * @return k_rx_ok Measurement successful
- * @return k_rx_err_timeout No rising or falling edge detected within timeout
- * @return k_rx_err_cancelled User cancelled measurement
- * @return k_rx_err_hw_operation_failed GPIO read failed
  *
  * @pre handle != nullptr
  * @pre duration_us != nullptr
@@ -1391,16 +1371,7 @@ RX_STATIC_TESTABLE rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uin
  * 4. Check cancellation and timeout each iteration
  * 5. Yield CPU via tx_thread_sleep(k_irq_yield_ticks)
  *
- * @param[in]  handle      Sensor handle configured for IRQ mode (must not be NULL)
- * @param[out] duration_us Pointer to store echo pulse duration in microseconds
- *                         (must not be NULL; valid range 150-8700 us for 2-150 cm in IRQ mode)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Measurement complete, duration written to *duration_us
- * @retval k_rx_err_null_ptr handle or duration_us is NULL
- * @retval k_rx_err_timeout No echo captured within handle->timeout_us
- * @retval k_rx_err_cancelled Measurement cancelled via handle->cancel_requested
- * @retval k_rx_err_invalid_arg Propagated from rx_hcsr04_isr_get_duration() (invalid IRQ)
  *
  * @pre handle must be initialized with echo_mode == k_hcsr04_echo_irq
  * @pre ICU must be configured (done during rx_hcsr04_init())
@@ -1551,9 +1522,7 @@ RX_STATIC_TESTABLE rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle,
  * - Active time: 1-30ms per measurement (same as blocking mode)
  * - Context switch overhead: ~10us (wake + dispatch)
  *
- * @param[in] input ThreadX thread input parameter (unused, reserved for future use)
  *
- * @return void (never returns normally, exits via break on shutdown)
  *
  * @pre Worker thread created by rx_hcsr04_worker_init()
  * @pre s_pending_mutex, s_measurement_request, s_worker_shutdown_sem initialized
@@ -1609,10 +1578,7 @@ RX_STATIC_TESTABLE rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle,
  * Extracted from hcsr04_worker_entry so the business logic can be exercised
  * directly in unit tests without requiring the ThreadX event-flag machinery.
  *
- * @param[in] actual_flags Event flags returned by tx_event_flags_get.
  *
- * @return true  if the worker should exit (shutdown flag was set).
- * @return false if the worker should continue (measurement was processed).
  *
  * @pre s_pending.handle != nullptr when measurement flag is set.
  * @pre s_pending.callback != nullptr when measurement flag is set.
@@ -1691,9 +1657,6 @@ RX_STATIC_TESTABLE void hcsr04_worker_entry(const ULONG input)
  * asynchronous measurement operations. Must be called before using
  * rx_hcsr04_measure_async().
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_state if already initialized
- * @return k_rx_err_rtos_error if ThreadX resource creation fails
  */
 rx_err_t rx_hcsr04_worker_init(void)
 {
@@ -1749,9 +1712,6 @@ rx_err_t rx_hcsr04_worker_init(void)
  * Waits for the worker thread to complete any in-progress measurement before
  * terminating.
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_state if not initialized
- * @return k_rx_err_rtos_error if ThreadX cleanup fails
  */
 rx_err_t rx_hcsr04_worker_deinit(void)
 {
@@ -1808,15 +1768,7 @@ rx_err_t rx_hcsr04_worker_deinit(void)
  * ICU disable) before returning. The caller (rx_hcsr04_init) is responsible
  * for releasing the trigger pin if this function returns an error.
  *
- * @param[in]  config           Sensor configuration (echo_pin, echo_irq, irq_priority)
- * @param[out] out_priority     Effective ICU priority used (caller stores in handle)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All IRQ configuration applied successfully
- * @retval k_rx_err_null_ptr config or out_priority is NULL
- * @retval k_rx_err_invalid_arg echo_irq out of range, echo_pin/irq mismatch,
- *                              or sensor_index >= k_hcsr04_sensor_count
- * @retval Error from rx_mpc_set_irq(), rx_hcsr04_icu_configure(), or rx_hcsr04_isr_register()
  *
  * @pre config->echo_mode == k_hcsr04_echo_irq
  * @pre Trigger pin already configured as output by caller
@@ -1901,9 +1853,6 @@ RX_STATIC_TESTABLE rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* con
 /**
  * @brief Populate handle fields from config after GPIO setup
  *
- * @param[out] handle Sensor handle to populate
- * @param[in] config Configuration parameters
- * @param[in] effective_priority ICU priority (non-zero only in IRQ mode)
  */
 static void internal_populate_handle(rx_hcsr04_t*              handle,
                                      const rx_hcsr04_config_t* config,
@@ -1937,13 +1886,7 @@ static void internal_populate_handle(rx_hcsr04_t*              handle,
  * Configures GPIO pins for trigger and echo, initializes the sensor handle
  * with default settings, and verifies GPIO configuration.
  *
- * @param[out] handle Sensor handle to initialize
- * @param[in] config Configuration parameters (pins, timeout)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if handle or config is nullptr
- * @return k_rx_err_invalid_state if already initialized
- * @return Error code from HAL GPIO operations
  */
 rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
 {
@@ -2002,11 +1945,7 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
  *
  * Releases GPIO pins and clears the sensor handle state.
  *
- * @param[in,out] handle Sensor handle to deinitialize
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if handle is nullptr
- * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
 {
@@ -2065,17 +2004,7 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
  * ISR before the trigger pulse and disarms on trigger failure. Dispatches to
  * the appropriate echo measurement function based on handle->echo_mode.
  *
- * @param[in,out] handle       Initialized sensor handle
- * @param[out]    out_echo_us  Measured echo pulse duration in microseconds
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Measurement complete, *out_echo_us written
- * @retval k_rx_err_null_ptr handle or out_echo_us is NULL
- * @retval k_rx_err_invalid_arg Propagated from rx_hcsr04_isr_start() (bad IRQ number)
- * @retval k_rx_err_invalid_state Propagated when ISR state is inconsistent (echo_mode/ISR mismatch)
- * @retval k_rx_err_timeout No echo within timeout
- * @retval k_rx_err_cancelled Measurement cancelled
- * @retval k_rx_err_hw_operation_failed Trigger pulse GPIO failure
  *
  * @pre handle->initialized == true
  * @pre handle->echo_mode set to polling or IRQ
@@ -2139,14 +2068,7 @@ RX_STATIC_TESTABLE rx_err_t internal_trigger_and_measure(rx_hcsr04_t* handle, ui
  * Triggers the sensor, waits for echo pulse, and converts to distance in
  * centimeters. Blocks until measurement completes or times out.
  *
- * @param[in] handle Sensor handle
- * @param[out] distance_cm Measured distance in centimeters
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if handle or distance_cm is nullptr
- * @return k_rx_err_invalid_state if not initialized
- * @return k_rx_err_timeout if no echo received within timeout
- * @return k_rx_err_out_of_range if distance outside sensor range (2-400 cm)
  */
 rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
 {
@@ -2195,14 +2117,7 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
  * Triggers the sensor, measures echo pulse, and populates result structure
  * with distance in both cm and inches, echo time, and status code.
  *
- * @param[in] handle Sensor handle
- * @param[out] result Measurement result structure
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if handle or result is nullptr
- * @return k_rx_err_invalid_state if not initialized
- * @return k_rx_err_timeout if no echo received within timeout
- * @return k_rx_err_out_of_range if distance outside sensor range (2-400 cm)
  */
 rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
 {
@@ -2316,9 +2231,7 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, const rx_hcsr04_callback_t callback
 /**
  * @brief Check if a measurement is currently in progress
  *
- * @param[in] handle Sensor handle
  *
- * @return true if measurement is active, false otherwise
  */
 bool rx_hcsr04_is_busy(const rx_hcsr04_t* handle)
 {
@@ -2335,11 +2248,7 @@ bool rx_hcsr04_is_busy(const rx_hcsr04_t* handle)
  * Sets a cancel flag that will be checked during echo pulse waiting,
  * causing the measurement to abort with k_rx_err_cancelled.
  *
- * @param[in,out] handle Sensor handle
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if handle is nullptr
- * @return k_rx_err_invalid_state if no measurement is active
  */
 rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle)
 {
@@ -2371,13 +2280,7 @@ rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle)
  * Enables temperature compensation and sets the ambient temperature used
  * for calculating the speed of sound in distance conversions.
  *
- * @param[in,out] handle Sensor handle
- * @param[in] temp_celsius Ambient temperature in degrees Celsius (-40 to +85degC)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if handle is nullptr
- * @return k_rx_err_invalid_state if not initialized
- * @return k_rx_err_invalid_arg if temperature outside valid range
  */
 rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, const float temp_celsius)
 {
@@ -2407,11 +2310,7 @@ rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, const float temp_celsius
  * Disables temperature compensation and uses default 20degC speed of sound
  * for distance calculations.
  *
- * @param[in,out] handle Sensor handle
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if handle is nullptr
- * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_hcsr04_disable_temp_compensation(rx_hcsr04_t* handle)
 {
@@ -2431,9 +2330,7 @@ rx_err_t rx_hcsr04_disable_temp_compensation(rx_hcsr04_t* handle)
 /**
  * @brief Check if temperature compensation is enabled
  *
- * @param[in] handle Sensor handle
  *
- * @return true if temperature compensation is enabled, false otherwise
  */
 bool rx_hcsr04_is_temp_compensation_enabled(const rx_hcsr04_t* handle)
 {
@@ -2449,12 +2346,7 @@ bool rx_hcsr04_is_temp_compensation_enabled(const rx_hcsr04_t* handle)
  *
  * Retrieves the temperature currently used for speed of sound compensation.
  *
- * @param[in] handle Sensor handle
- * @param[out] temp_celsius Current temperature in degrees Celsius
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if handle or temp_celsius is nullptr
- * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_hcsr04_get_temperature(const rx_hcsr04_t* handle, float* temp_celsius)
 {
@@ -2478,9 +2370,7 @@ rx_err_t rx_hcsr04_get_temperature(const rx_hcsr04_t* handle, float* temp_celsiu
 /**
  * @brief Convert distance from centimeters to inches
  *
- * @param[in] distance_cm Distance in centimeters
  *
- * @return Distance in inches
  */
 float rx_hcsr04_cm_to_inches(const float distance_cm)
 {
@@ -2524,10 +2414,7 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius)
  *
  * Calculates distance using temperature-compensated speed of sound.
  *
- * @param[in] echo_time_us Echo pulse duration in microseconds
- * @param[in] temp_celsius Ambient temperature in degrees Celsius (-40 to +85degC)
  *
- * @return Distance in centimeters, or 0.0 if input is invalid
  */
 float rx_hcsr04_echo_to_cm_with_temp(const uint32_t echo_time_us, float temp_celsius)
 {

@@ -919,17 +919,13 @@ typedef struct {
  *
  * @return Initialization result
  * @retval k_rx_ok System initialized successfully, ready to start
- * @retval k_rx_err_null_ptr handle or config is nullptr
- * @retval k_rx_err_null_ptr config->sensors or config->motors is nullptr
- * @retval k_rx_err_null_ptr Any sensor or motor handle in arrays is nullptr
- * @retval k_rx_err_invalid_arg sensor_count not in [1, 8]
- * @retval k_rx_err_invalid_arg motor_count not in [1, 4]
- * @retval k_rx_err_invalid_arg threshold_cm not in [2.0, 400.0]
- * @retval k_rx_err_invalid_arg debounce_samples not in [1, 10]
- * @retval k_rx_err_invalid_arg poll_interval_ms not in [10, 1000]
+ * @retval k_rx_err_null_ptr handle, config, config->sensors/motors, or any sensor/motor
+ *                           handle in arrays is nullptr
+ * @retval k_rx_err_invalid_arg sensor_count not in [1, 8]; motor_count not in [1, 4];
+ *                              threshold_cm not in [2.0, 400.0]; debounce_samples not in
+ *                              [1, 10]; poll_interval_ms not in [10, 1000]
  * @retval k_rx_err_invalid_state handle->initialized is already true
- * @retval k_rx_err_rtos_error ThreadX event flags creation failed
- * @retval k_rx_err_rtos_error ThreadX task creation failed
+ * @retval k_rx_err_rtos_error ThreadX event flags or task creation failed
  *
  * @pre handle must point to valid rx_obstacle_detect_t storage
  * @pre config must point to valid configuration

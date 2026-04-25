@@ -98,6 +98,30 @@ rx_err_t rx_host_irq_init(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Deinitialize the HOST_IRQ output and revert P67 to input
+ *
+ * @details
+ * Symmetric counterpart to rx_host_irq_init().  Drives P67 high one last
+ * time so the line is left in its idle (de-asserted) state, then changes
+ * the pin direction back to input, gating off any spurious downstream
+ * effects.  Clears the s_initialized flag so subsequent assert/deassert
+ * calls return k_rx_err_invalid_state.
+ *
+ *
+ * @pre rx_host_irq_init() previously returned k_rx_ok.
+ *
+ * @post On k_rx_ok: P67 is configured as an input and the s_initialized
+ *       flag is false.
+ * @post No effect on other PORT6 pins.
+ *
+ * @note Not thread-safe.  Serialize all rx_host_irq_* operations at the
+ *       application layer.
+ *
+ * @see rx_host_irq_init() Re-arm before next assertion cycle.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_host_irq_deinit(void)
 {
   if (!s_initialized) {
@@ -119,6 +143,30 @@ rx_err_t rx_host_irq_deinit(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Assert the HOST_IRQ line (drive P67 LOW, active-low semantics)
+ *
+ * @details
+ * Drives the P67 output LOW to signal the host SoC that the RX72N has
+ * data ready or wants attention.  HOST_IRQ is an active-low,
+ * level-triggered line; the host will continue to see "asserted" until
+ * rx_host_irq_deassert() drives it back HIGH.  The function is a single
+ * register read-modify-write on PORT6.PODR; no interrupts are touched.
+ *
+ *
+ * @pre rx_host_irq_init() previously returned k_rx_ok.
+ *
+ * @post On k_rx_ok: PORT6.PODR bit 7 == 0 (line driven low).
+ * @post No interrupt registers are touched.
+ *
+ * @note Safe to call from task context.  Not protected against concurrent
+ *       calls; serialize at the application layer.
+ *
+ * @see rx_host_irq_deassert()    Drive line high (de-assert).
+ * @see rx_host_irq_is_asserted() Read the current line state.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_host_irq_assert(void)
 {
   if (!s_initialized) {
@@ -131,6 +179,28 @@ rx_err_t rx_host_irq_assert(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief De-assert the HOST_IRQ line (drive P67 HIGH, idle state)
+ *
+ * @details
+ * Drives the P67 output HIGH to release the active-low HOST_IRQ line back
+ * to its idle state.  Single register read-modify-write on PORT6.PODR;
+ * no interrupts touched.
+ *
+ *
+ * @pre rx_host_irq_init() previously returned k_rx_ok.
+ *
+ * @post On k_rx_ok: PORT6.PODR bit 7 == 1 (line driven high).
+ * @post No interrupt registers are touched.
+ *
+ * @note Safe to call from task context.  Not protected against concurrent
+ *       calls; serialize at the application layer.
+ *
+ * @see rx_host_irq_assert()      Drive line low (assert).
+ * @see rx_host_irq_is_asserted() Read the current line state.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_host_irq_deassert(void)
 {
   if (!s_initialized) {

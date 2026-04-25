@@ -136,7 +136,7 @@
  * - **Rule 3**: [OK] Zero dynamic memory allocation (all static buffers)
  * - **Rule 4**: [OK] Functions < 60 lines (largest: internal_viterbi_process_symbol ~50 lines)
  * - **Rule 5**: [OK] All functions have >=2 preconditions and postconditions
- * - **Rule 8**: [OK] Uses C23 typed enums instead of #define for all constants
+ * - **Rule 8**: [OK] Uses C23 typed enums instead of \#define for all constants
  * - **Rule 10**: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
@@ -916,8 +916,8 @@ typedef struct {
  *
  * @par Example: Static Buffer Sizing
  * @code{.c}
- * #define MAX_INPUT_LEN 100
- * #define MAX_OUTPUT_LEN (2 * MAX_INPUT_LEN + 2)  // 202 bytes
+ * \#define MAX_INPUT_LEN 100
+ * \#define MAX_OUTPUT_LEN (2 * MAX_INPUT_LEN + 2)  // 202 bytes
  *
  * uint8_t output[MAX_OUTPUT_LEN];
  * uint32_t actual_len = rx_fec_encoded_len(input_len);

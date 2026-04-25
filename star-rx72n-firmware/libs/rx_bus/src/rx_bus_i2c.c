@@ -447,19 +447,7 @@ typedef struct {
  * 8. Set bus_config->initialized = true
  * 9. Store k_rx_ok in ctx->result and return
  *
- * @param[in,out] bus_config Bus configuration structure
- *   - type must be k_bus_type_i2c
- *   - proto.i2c.channel specifies the RIIC channel to initialize
- *   - proto.i2c.frequency_hz specifies the clock frequency
- *   - initialized flag set to true on success
- * @param[in,out] user_ctx User context (i2c_init_ctx_t*)
- *   - input: ctx->manager pointer used to check/update per-channel init status
- *   - output: ctx->result contains the operation result
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok RIIC peripheral initialized (or already was) and bus marked ready
- * @retval k_rx_err_invalid_arg Bus type is not k_bus_type_i2c
- * @retval k_rx_err_hw_error RIIC HAL initialization failed (check pins/clocks)
  *
  * @pre bus_config must be non-NULL (validated by bus manager before dispatch)
  * @pre user_ctx must be non-NULL and point to a valid i2c_init_ctx_t with non-NULL manager
@@ -505,11 +493,7 @@ typedef struct {
  * the bus as initialized without re-calling riic_init(). On mismatch,
  * returns an error.
  *
- * @param[in,out] bus_config Bus to mark initialized on success
- * @param[in]     ctx        Init context with manager and result storage
- * @param[in]     channel    RIIC channel index
  *
- * @return k_rx_ok on frequency match, k_rx_err_invalid_arg on mismatch
  *
  * @pre channel < k_riic_channel_count
  * @pre ctx->manager->riic_initialized[channel] == true
@@ -609,20 +593,7 @@ RX_STATIC_TESTABLE rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_conf
  * 5. Call riic_write() with channel, device address, data, and length
  * 6. Set ctx->result to operation outcome and return
  *
- * @param[in,out] bus_config Bus configuration structure
- *   - initialized must be true
- *   - proto.i2c.channel specifies the RIIC channel
- *   - proto.i2c.device_addr specifies the 7-bit target address
- * @param[in,out] user_ctx User context (i2c_write_ctx_t*)
- *   - input: ctx->data points to bytes to transmit (may be NULL when length=0)
- *   - input: ctx->length specifies number of bytes to write
- *   - output: ctx->result contains the operation result
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, all data bytes transmitted and ACKed by device
- * @retval k_rx_err_invalid_state Bus not initialized (call rx_bus_i2c_init() first)
- * @retval k_rx_err_invalid_arg ctx->data is nullptr and ctx->length > 0
- * @retval k_rx_err_hw_error RIIC write failed (NAK received, bus error, or timeout)
  *
  * @pre bus_config->initialized must be true
  * @pre ctx->data must be non-NULL when ctx->length > 0
@@ -717,21 +688,7 @@ RX_STATIC_TESTABLE rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_con
  * 5. Call riic_read() with channel, device address, data buffer, and length
  * 6. Set ctx->result to operation outcome and return
  *
- * @param[in,out] bus_config Bus configuration structure
- *   - initialized must be true
- *   - proto.i2c.channel specifies the RIIC channel
- *   - proto.i2c.device_addr specifies the 7-bit target address
- * @param[in,out] user_ctx User context (i2c_read_ctx_t*)
- *   - input: ctx->data points to receive buffer (may be NULL when length=0)
- *   - input: ctx->length specifies number of bytes to read
- *   - output: ctx->data buffer filled with received bytes on k_rx_ok
- *   - output: ctx->result contains the operation result
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, ctx->length bytes received into ctx->data buffer
- * @retval k_rx_err_invalid_state Bus not initialized (call rx_bus_i2c_init() first)
- * @retval k_rx_err_invalid_arg ctx->data is nullptr and ctx->length > 0
- * @retval k_rx_err_hw_error RIIC read failed (NAK received, bus error, or timeout)
  *
  * @pre bus_config->initialized must be true
  * @pre ctx->data must be non-NULL and point to a buffer of at least ctx->length bytes
@@ -825,24 +782,7 @@ RX_STATIC_TESTABLE rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_conf
  * 4. Call riic_write_read() with both write and read parameters
  * 5. Set ctx->result and return
  *
- * @param[in,out] bus_config Bus configuration structure
- *   - initialized must be true
- *   - proto.i2c.channel specifies the RIIC channel
- *   - proto.i2c.device_addr specifies the 7-bit target address
- * @param[in,out] user_ctx User context (i2c_write_read_ctx_t*)
- *   - input: ctx->write_data points to bytes to write (register address)
- *   - input: ctx->write_length specifies number of bytes to write
- *   - input: ctx->read_data points to receive buffer for response bytes
- *   - input: ctx->read_length specifies number of bytes to read
- *   - output: ctx->read_data buffer filled with received bytes on success
- *   - output: ctx->result contains the operation result
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, combined write-read completed
- * @retval k_rx_err_invalid_state Bus not initialized
- * @retval k_rx_err_invalid_arg write_data nullptr with write_length > 0, or
- *                              read_data nullptr with read_length > 0
- * @retval k_rx_err_hw_error RIIC write-read failed (NAK, bus error, or timeout)
  *
  * @pre bus_config->initialized must be true
  * @pre ctx->write_data non-NULL when ctx->write_length > 0
@@ -962,20 +902,8 @@ RX_STATIC_TESTABLE rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bu
  * - **Call frequency**: Once per bus at system startup
  * - **Thread safety**: Mutex-protected by bus manager
  *
- * @param[in] manager Pointer to bus manager instance.
- *                    Must be initialized via rx_bus_manager_init().
- *                    Provides mutex for thread-safe access.
- * @param[in] bus_name Name of I2C bus to initialize (e.g., "imu_i2c").
- *                     Must match name used in rx_bus_config_init_i2c().
- *                     Bus must be registered with manager before init.
  *
- * @return rx_err_t Initialization status
  *
- * @retval k_rx_ok I2C peripheral initialized successfully, bus ready
- * @retval k_rx_err_null_ptr manager or bus_name is nullptr
- * @retval k_rx_err_not_found bus_name not found in manager (forgot to register?)
- * @retval k_rx_err_invalid_arg Bus type is not k_bus_type_i2c
- * @retval k_rx_err_hw_error RIIC peripheral initialization failed (check pins/clocks)
  *
  * @pre manager initialized via rx_bus_manager_init()
  * @pre Bus registered via rx_bus_manager_add_bus()
@@ -1127,27 +1055,8 @@ rx_err_t rx_bus_i2c_init(rx_bus_manager_t* manager, const char* bus_name)
  * - **Multi-register write**: Configure device (register address + value bytes)
  * - **Bulk data transfer**: Send calibration data, firmware updates
  *
- * @param[in] manager Pointer to bus manager instance.
- *                    Must be initialized and contain registered I2C bus.
- * @param[in] bus_name Name of I2C bus (e.g., "imu_i2c").
- *                     Must be initialized via rx_bus_i2c_init() first.
- * @param[in] data Pointer to data buffer to transmit.
- *                 Must remain valid during transaction (not copied).
- *                 Typical: {register_address, value1, value2, ...}
- * @param[in] length Number of bytes to write from data buffer.
- *                   Range: 0-65535 (I2C spec allows up to 255, but uint16_t for flexibility).
- *                   Zero-length writes send only address (unusual but valid).
  *
- * @return rx_err_t Write operation status
  *
- * @retval k_rx_ok Data written successfully, device ACKed all bytes
- * @retval k_rx_err_null_ptr manager, bus_name, or data is nullptr
- * @retval k_rx_err_not_found bus_name not found in manager
- * @retval k_rx_err_invalid_state Bus not initialized (call rx_bus_i2c_init first)
- * @retval k_rx_err_invalid_arg length > 0 but data == nullptr (invalid params)
- * @retval k_rx_err_nack Device sent NACK (wrong address or device not ready)
- * @retval k_rx_err_timeout I2C transaction timed out (bus stuck, device hung)
- * @retval k_rx_err_hw_error Bus arbitration lost or hardware fault
  *
  * @pre manager initialized and bus registered
  * @pre rx_bus_i2c_init() called successfully for bus_name
@@ -1275,17 +1184,7 @@ rx_err_t rx_bus_i2c_write(rx_bus_manager_t* manager,
  *
  * **Timing @ 400 kHz:** 27.5 us + (N x 22.5 us)
  *
- * @param[in] manager Pointer to bus manager instance
- * @param[in] bus_name Name of I2C bus (must be initialized)
- * @param[out] data Pointer to buffer for received data (caller-allocated)
- * @param[in] length Number of bytes to read into buffer
  *
- * @return rx_err_t Read operation status
- * @retval k_rx_ok Data read successfully into buffer
- * @retval k_rx_err_null_ptr manager, bus_name, or data is nullptr
- * @retval k_rx_err_invalid_state Bus not initialized
- * @retval k_rx_err_nack Device sent NACK (wrong address)
- * @retval k_rx_err_timeout Transaction timed out
  *
  * @pre rx_bus_i2c_init() called for bus_name
  * @pre data points to buffer of size >= length
@@ -1372,25 +1271,8 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
  * - read_data = buffer, read_length = data_size
  * - Example: Read from 16-bit addressed EEPROM
  *
- * @param[in] manager Pointer to bus manager instance
- * @param[in] bus_name Name of I2C bus (must be initialized)
- * @param[in] write_data Pointer to data to write (typically register address).
- *                       Must remain valid during transaction.
- * @param[in] write_length Number of bytes to write (typically 1 or 2)
- * @param[out] read_data Pointer to buffer for received data (caller-allocated).
- *                       Filled with register contents on success.
- * @param[in] read_length Number of bytes to read into buffer
  *
- * @return rx_err_t Operation status
  *
- * @retval k_rx_ok Write-read completed successfully, read_data contains result
- * @retval k_rx_err_null_ptr manager, bus_name, write_data, or read_data is nullptr
- * @retval k_rx_err_not_found bus_name not in manager
- * @retval k_rx_err_invalid_state Bus not initialized
- * @retval k_rx_err_invalid_arg write_length > 0 but write_data == nullptr (or read variant)
- * @retval k_rx_err_nack Device NACK (wrong address or register)
- * @retval k_rx_err_timeout Transaction timed out
- * @retval k_rx_err_hw_error Bus arbitration lost or hardware fault
  *
  * @pre manager initialized, bus registered and initialized
  * @pre write_data points to valid buffer (if write_length > 0)

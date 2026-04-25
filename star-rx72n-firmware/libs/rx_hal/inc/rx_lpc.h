@@ -371,8 +371,7 @@ typedef enum : uint32_t {
  *
  * @return rx_err_t Error code (returned only on host builds / on error)
  * @retval k_rx_ok                 Configuration accepted (host build)
- * @retval k_rx_err_invalid_arg    wake_mask == 0 or contains undefined bits
- * @retval k_rx_err_invalid_arg    deep_power not one of rx_lpc_deep_power_t
+ * @retval k_rx_err_invalid_arg    wake_mask == 0 or contains undefined bits; deep_power not one of rx_lpc_deep_power_t
  * @retval k_rx_err_not_initialized rx_lpc_init() has not been called
  *
  * @pre rx_lpc_init() has been called

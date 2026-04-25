@@ -38,6 +38,18 @@ const (
 	// wsStrictOriginEnv controls WebSocket strict origin validation.
 	wsStrictOriginEnv = "WS_STRICT_ORIGIN"
 
+	// insecureDevModeEnv is the second key required to actually disable
+	// origin checking. Audit F-02: a single env var (WS_STRICT_ORIGIN=false)
+	// was insufficient -- a typo or stale environment leaked CSRF defenses
+	// off in production. Disabling now requires BOTH keys to be set.
+	insecureDevModeEnv = "INSECURE_DEV_MODE"
+
+	// insecureModeStartupDelay is the deliberate sleep applied before the
+	// HTTP server binds when running with origin checking disabled.
+	// Audit F-02: an inattentive operator should have time to read the
+	// banner and CTRL-C before the gateway accepts connections.
+	insecureModeStartupDelay = 10 * time.Second
+
 	// grpcListenPort is the TCP port for gRPC services.
 	grpcListenPort = ":50051"
 
@@ -102,6 +114,129 @@ type Config struct {
 	// USBPID is the USB Product ID of the connected motor controller.
 	// Used for VID:PID-based device discovery and health monitoring.
 	USBPID uint16
+
+	// RequireLocalhost, when true, rewrites every TCP listen address used
+	// by the gateway (HTTP, gRPC, and any extended listeners added later)
+	// to 127.0.0.1 and refuses non-loopback hosts. Audit F-01 mitigation
+	// for the no-TLS / no-auth posture: prevents accidental exposure on
+	// LAN/WAN interfaces when a loopback-only deployment is intended.
+	RequireLocalhost bool
+}
+
+// loopbackHost is the IPv4 loopback hostname used when RequireLocalhost is
+// enabled. We pin to 127.0.0.1 (not "localhost") so /etc/hosts shenanigans
+// cannot redirect us to a non-loopback address.
+const loopbackHost = "127.0.0.1"
+
+// isFalsey returns true when env-var value asks us to "turn off" something.
+func isFalsey(v string) bool {
+	switch strings.ToLower(strings.TrimSpace(v)) {
+	case "false", "0", "no", "off":
+		return true
+	default:
+		return false
+	}
+}
+
+// isTruthy returns true when env-var value asks us to "turn on" something.
+func isTruthy(v string) bool {
+	switch strings.ToLower(strings.TrimSpace(v)) {
+	case "true", "1", "yes", "on":
+		return true
+	default:
+		return false
+	}
+}
+
+// resolveStrictOriginChecking implements audit F-02's two-key gate.
+//
+// Returns true (strict origin checking enabled) by default. Returns false
+// only when BOTH WS_STRICT_ORIGIN is falsey AND INSECURE_DEV_MODE is
+// truthy. If only one of the two keys is set, logs a hard error and
+// keeps strict checking on -- preventing typo / stale-env CSRF holes.
+func resolveStrictOriginChecking(logger *slog.Logger) bool {
+	wsRaw, wsSet := os.LookupEnv(wsStrictOriginEnv)
+	devRaw, devSet := os.LookupEnv(insecureDevModeEnv)
+
+	wsAsksDisable := wsSet && isFalsey(wsRaw)
+	devAcknowledges := devSet && isTruthy(devRaw)
+
+	if wsAsksDisable && devAcknowledges {
+		logger.Warn(
+			fmt.Sprintf("WebSocket strict origin checking DISABLED via %s=false AND %s=true",
+				wsStrictOriginEnv, insecureDevModeEnv),
+			slog.String("compensating_controls_required",
+				"ensure network segmentation and application-layer auth"))
+		return false
+	}
+
+	// Single-key cases: refuse to disable. Log loud error.
+	if wsAsksDisable && !devAcknowledges {
+		logger.Error(
+			fmt.Sprintf("REFUSING to disable origin checking: %s=false but %s is not set to a truthy value",
+				wsStrictOriginEnv, insecureDevModeEnv),
+			slog.String("required_to_disable",
+				fmt.Sprintf("%s=false AND %s=true", wsStrictOriginEnv, insecureDevModeEnv)),
+			slog.Bool("strict_origin_checking", true))
+		return true
+	}
+	if devAcknowledges && !wsAsksDisable {
+		logger.Error(
+			fmt.Sprintf("REFUSING to disable origin checking: %s=true but %s is not set to a falsey value",
+				insecureDevModeEnv, wsStrictOriginEnv),
+			slog.String("required_to_disable",
+				fmt.Sprintf("%s=false AND %s=true", wsStrictOriginEnv, insecureDevModeEnv)),
+			slog.Bool("strict_origin_checking", true))
+		return true
+	}
+	return true
+}
+
+// printInsecureBanner is the giant warning shown at startup when origin
+// checking is disabled. Combined with insecureModeStartupDelay it gives an
+// inattentive operator time to CTRL-C before the gateway binds.
+func printInsecureBanner(logger *slog.Logger) {
+	const banner = "**********************************************************************"
+	logger.Warn(banner)
+	logger.Warn("**  INSECURE DEVELOPMENT MODE: CSRF DEFENSES DISABLED               **")
+	logger.Warn("**  WebSocket /ws will accept ANY Origin header.                    **")
+	logger.Warn("**  Sleeping 10s -- press CTRL-C now if this is not intentional.    **")
+	logger.Warn(banner)
+}
+
+// enforceLocalhostAddr returns listenAddr when RequireLocalhost is false.
+// When RequireLocalhost is true it validates that listenAddr binds only to
+// the loopback interface. Empty host or 0.0.0.0/:: are rewritten to
+// 127.0.0.1; any other explicit non-loopback host is refused with an
+// error so the operator notices instead of silently deploying exposed.
+func enforceLocalhostAddr(listenAddr string, requireLocalhost bool) (string, error) {
+	if !requireLocalhost {
+		return listenAddr, nil
+	}
+	// listenAddr forms accepted by net.Listen are "host:port" or ":port".
+	// We split, validate the host portion, and rewrite when needed.
+	// strings.LastIndex handles IPv6 literals in "[::]:port" form too,
+	// because we look for the final colon before the port digits.
+	colonIdx := strings.LastIndex(listenAddr, ":")
+	if colonIdx < 0 {
+		return "", fmt.Errorf("require-localhost: listen address %q has no port", listenAddr)
+	}
+	host := listenAddr[:colonIdx]
+	port := listenAddr[colonIdx:]
+	// Strip an enclosing [...] if present (IPv6 literal).
+	if len(host) >= 2 && host[0] == '[' && host[len(host)-1] == ']' {
+		host = host[1 : len(host)-1]
+	}
+	switch host {
+	case "", "0.0.0.0", "::", "[::]":
+		// Bind-all wildcards are dangerous in this mode -- rewrite to loopback.
+		return loopbackHost + port, nil
+	case loopbackHost, "::1", "localhost":
+		return listenAddr, nil
+	default:
+		return "", fmt.Errorf("require-localhost: refusing to bind to non-loopback host %q in %q",
+			host, listenAddr)
+	}
 }
 
 type Servers struct {
@@ -219,14 +354,27 @@ func Run(ctx context.Context, config Config) error {
 	// Initialize servers struct
 	servers := &Servers{}
 
+	// Resolve listen addresses, applying require-localhost enforcement
+	// (audit F-01) before binding. Errors here mean the operator asked
+	// for require-localhost but supplied a non-loopback host -- refuse
+	// to start so the misconfiguration is visible.
+	grpcAddr, err := enforceLocalhostAddr(grpcListenPort, config.RequireLocalhost)
+	if err != nil {
+		return fmt.Errorf("gRPC listen address rejected: %w", err)
+	}
+	httpAddr, err := enforceLocalhostAddr(httpListenPort, config.RequireLocalhost)
+	if err != nil {
+		return fmt.Errorf("HTTP listen address rejected: %w", err)
+	}
+
 	// Start gRPC server (non-blocking) -- use derived runCtx so server goroutines
 	// observe cancellation from the Run() signal handler.
-	if err := startGRPCServer(runCtx, servers, services, logger); err != nil {
+	if err := startGRPCServerWithAddr(runCtx, servers, services, grpcAddr, logger); err != nil {
 		return fmt.Errorf("gRPC server startup failed: %w", err)
 	}
 
 	// Start HTTP server (non-blocking)
-	if err := startHTTPServer(runCtx, servers, services, logger); err != nil {
+	if err := startHTTPServerWithAddr(runCtx, servers, services, httpAddr, logger); err != nil {
 		return fmt.Errorf("HTTP server startup failed: %w", err)
 	}
 
@@ -786,26 +934,23 @@ func startHTTPServerWithAddr(
 
 	services.gateway.SetHub(hub)
 
-	// WebSocket origin checking: defaults to true (secure) for production.
-	// Can be disabled via WS_STRICT_ORIGIN=false for development/testing only.
+	// WebSocket origin checking. Defaults to true (secure) in production.
 	//
-	// SECURITY WARNING: Disabling origin checking allows cross-origin WebSocket
-	// connections, which can enable CSRF attacks. Only disable if:
-	// - Running in a trusted development environment
-	// - Additional authentication/authorization is implemented at the application layer
-	// - Network segmentation prevents unauthorized access
-	strictOriginChecking := true
-	if envVal := os.Getenv(wsStrictOriginEnv); envVal != "" {
-		if envVal == "false" || envVal == "0" {
-			strictOriginChecking = false
-			logger.Warn(fmt.Sprintf("WebSocket strict origin checking DISABLED via %s environment variable", wsStrictOriginEnv),
-				slog.String("compensating_controls_required", "ensure network segmentation and application-layer auth"))
-		}
-	}
+	// Audit F-02: a single env var was insufficient to disable. We now
+	// require BOTH keys: WS_STRICT_ORIGIN=false AND INSECURE_DEV_MODE=true.
+	// If only one of the two is set, we log a hard error and KEEP origin
+	// checking enabled. When both are set we still apply a 10-second sleep
+	// before binding so an inattentive operator can react to the banner.
+	strictOriginChecking := resolveStrictOriginChecking(logger)
 	if !strictOriginChecking {
 		logger.Error("SECURITY: WebSocket origin validation is disabled - vulnerable to CSRF attacks",
 			slog.Bool("strict_origin_checking", false),
-			slog.String("mitigation", fmt.Sprintf("set %s=true or remove environment variable", wsStrictOriginEnv)))
+			slog.String("mitigation",
+				fmt.Sprintf("unset %s and %s, or set %s=true",
+					wsStrictOriginEnv, insecureDevModeEnv, wsStrictOriginEnv)))
+		printInsecureBanner(logger)
+		// Deliberate startup delay so an inattentive operator notices.
+		time.Sleep(insecureModeStartupDelay)
 	}
 	mux.Handle("/ws", ws.NewHandler(hub, adapter, logger, !strictOriginChecking))
 

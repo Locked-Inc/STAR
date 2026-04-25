@@ -180,12 +180,7 @@ R_BSP_ATTRIB_STATIC_INLINE_ASM void bsp_calc_squareroot_fsp(int32_t* ret, int32_
  * CC-RX and ICCRX use compiler intrinsics (max() and __MAX respectively).
  * This function provides equivalent functionality for GNUC.
  *
- * @param[in] data1 First value to compare
- * @param[in] data2 Second value to compare
  *
- * @return signed long Maximum value (data1 or data2)
- * @retval data1 If data1 > data2
- * @retval data2 If data2 >= data1
  *
  * @pre None
  * @post Return value is greater than or equal to both inputs
@@ -215,12 +210,7 @@ signed long R_BSP_Max(signed long data1, signed long data2)
  * CC-RX and ICCRX use compiler intrinsics (min() and __MIN respectively).
  * This function provides equivalent functionality for GNUC.
  *
- * @param[in] data1 First value to compare
- * @param[in] data2 Second value to compare
  *
- * @return signed long Minimum value (data1 or data2)
- * @retval data1 If data1 < data2
- * @retval data2 If data2 <= data1
  *
  * @pre None
  * @post Return value is less than or equal to both inputs
@@ -255,12 +245,7 @@ signed long R_BSP_Min(signed long data1, signed long data2)
  * 2. For each element: accumulator += addr1[i] * addr2[i]
  * 3. Return lower 64 bits of accumulated result
  *
- * @param[in] init Initial accumulator value (64-bit)
- * @param[in] count Number of elements to process (must be > 0)
- * @param[in] addr1 Pointer to first array (signed char, count elements)
- * @param[in] addr2 Pointer to second array (signed char, count elements)
  *
- * @return long long Lower 64 bits of: init + sum(addr1[n] * addr2[n])
  *
  * @pre addr1 points to valid array of at least count elements
  * @pre addr2 points to valid array of at least count elements
@@ -306,12 +291,7 @@ long long R_BSP_MulAndAccOperation_B(long long          init,
  * 2. For each element: accumulator += addr1[i] * addr2[i]
  * 3. Return lower 64 bits of accumulated result
  *
- * @param[in] init Initial accumulator value (64-bit)
- * @param[in] count Number of elements to process (must be > 0)
- * @param[in] addr1 Pointer to first array (short, count elements)
- * @param[in] addr2 Pointer to second array (short, count elements)
  *
- * @return long long Lower 64 bits of: init + sum(addr1[n] * addr2[n])
  *
  * @pre addr1 points to valid array of at least count elements
  * @pre addr2 points to valid array of at least count elements
@@ -562,11 +542,7 @@ signed long long R_BSP_GetACC(void)
  * The function processes 16-bit elements in pairs (as 32-bit longs) for efficiency,
  * then handles any remaining odd element separately.
  *
- * @param[in] data1 Pointer to first 16-bit array (count elements)
- * @param[in] data2 Pointer to second 16-bit array (count elements)
- * @param[in] count Number of 16-bit elements to process (must be > 0)
  *
- * @return long Middle 32 bits of 48-bit accumulator result
  *
  * @pre data1 points to valid array of at least count 16-bit elements
  * @pre data2 points to valid array of at least count 16-bit elements
@@ -623,11 +599,7 @@ long R_BSP_MulAndAccOperation_2byte(const short* data1, const short* data2, unsi
  *
  * RACW #1 performs: ACC = (ACC + 2^0) >> 1 (round and shift right 1 bit)
  *
- * @param[in] data1 Pointer to first 16-bit array (count elements)
- * @param[in] data2 Pointer to second 16-bit array (count elements)
- * @param[in] count Number of 16-bit elements to process (must be > 0)
  *
- * @return short High 16 bits of accumulator after RACW #1 rounding
  *
  * @pre data1 points to valid array of at least count 16-bit elements
  * @pre data2 points to valid array of at least count 16-bit elements
@@ -687,11 +659,7 @@ short R_BSP_MulAndAccOperation_FixedPoint1(const short*  data1,
  *
  * RACW #2 performs: ACC = (ACC + 2^1) >> 2 (round and shift right 2 bits)
  *
- * @param[in] data1 Pointer to first 16-bit array (count elements)
- * @param[in] data2 Pointer to second 16-bit array (count elements)
- * @param[in] count Number of 16-bit elements to process (must be > 0)
  *
- * @return short High 16 bits of accumulator after RACW #2 rounding
  *
  * @pre data1 points to valid array of at least count 16-bit elements
  * @pre data2 points to valid array of at least count 16-bit elements

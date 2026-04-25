@@ -245,15 +245,7 @@ static const char* const s_tag = "GPIO";
  * both be rejected. Either condition alone would result in incorrect hardware
  * register access, undefined behavior, or corrupted peripheral state.
  *
- * @param[in] port  Port number in the RX72N hardware port range (0-9, 0xA-0x10).
- *                  Values outside this range cause k_rx_err_gpio_invalid_port.
- * @param[in] pin   Pin number within the port (valid range: 0 to k_rx_pin_max).
- *                  Values above k_rx_pin_max cause k_rx_err_gpio_invalid_pin.
  *
- * @return rx_err_t Validation result
- * @retval k_rx_ok Both port and pin are within valid hardware ranges
- * @retval k_rx_err_gpio_invalid_port port does not map to a physical RX72N port
- * @retval k_rx_err_gpio_invalid_pin  pin exceeds k_rx_pin_max (7)
  *
  * @pre port must be within the RX72N valid port range (0-9, 0xA-0x10);
  *      values outside this range are rejected before any register access
@@ -337,15 +329,7 @@ static rx_err_t internal_validate_port_pin(const uint8_t port, const uint8_t pin
  * This function does NOT set the initial output level. After calling gpio_set_output(),
  * call gpio_write_high() or gpio_write_low() to set the desired level.
  *
- * @param[in] pin Pin identifier encoded as rx_port_pin_t
- *                Use RX_PORT_PIN() macro: RX_PORT_PIN(port, pin_num)
- *                Example: RX_PORT_PIN(0xA, 5) for Port A, Pin 5
  *
- * @return rx_err_t Configuration result
- * @retval k_rx_ok Pin successfully configured as output
- * @retval k_rx_err_gpio_invalid_port Port number in pin is invalid
- * @retval k_rx_err_gpio_invalid_pin Pin number exceeds k_rx_pin_max
- * @retval k_rx_err_rtos_mutex Pin validator mutex error (rare)
  *
  * @pre Pin must be a valid GPIO-capable pin on RX72N
  * @pre System infrastructure should be initialized (for pin validation)
@@ -451,15 +435,7 @@ rx_err_t gpio_set_output(const rx_port_pin_t pin)
  * After configuration, use gpio_read() to read the current pin state.
  * The PIDR register is read for input state, not PODR.
  *
- * @param[in] pin Pin identifier encoded as rx_port_pin_t
- *                Use RX_PORT_PIN() macro: RX_PORT_PIN(port, pin_num)
- *                Example: RX_PORT_PIN(2, 0) for Port 2, Pin 0
  *
- * @return rx_err_t Configuration result
- * @retval k_rx_ok Pin successfully configured as input
- * @retval k_rx_err_gpio_invalid_port Port number in pin is invalid
- * @retval k_rx_err_gpio_invalid_pin Pin number exceeds k_rx_pin_max
- * @retval k_rx_err_rtos_mutex Pin validator mutex error (rare)
  *
  * @pre Pin must be a valid GPIO-capable pin on RX72N
  * @pre System infrastructure should be initialized (for pin validation)
@@ -556,13 +532,7 @@ rx_err_t gpio_set_input(const rx_port_pin_t pin)
  * The output level changes on the next peripheral clock cycle after the
  * register write completes. GPIO toggle rate is limited by bus speed.
  *
- * @param[in] pin Pin identifier encoded as rx_port_pin_t
- *                Must be previously configured as output via gpio_set_output()
  *
- * @return rx_err_t Write result
- * @retval k_rx_ok Pin output set to high
- * @retval k_rx_err_gpio_invalid_port Port number in pin is invalid
- * @retval k_rx_err_gpio_invalid_pin Pin number exceeds k_rx_pin_max
  *
  * @pre Pin must be configured as output via gpio_set_output()
  * @pre Port and pin numbers must be valid
@@ -631,13 +601,7 @@ rx_err_t gpio_write_high(const rx_port_pin_t pin)
  * low actively pulls the pin to GND. Setting high makes the pin float
  * (high-impedance), requiring an external pull-up.
  *
- * @param[in] pin Pin identifier encoded as rx_port_pin_t
- *                Must be previously configured as output via gpio_set_output()
  *
- * @return rx_err_t Write result
- * @retval k_rx_ok Pin output set to low
- * @retval k_rx_err_gpio_invalid_port Port number in pin is invalid
- * @retval k_rx_err_gpio_invalid_pin Pin number exceeds k_rx_pin_max
  *
  * @pre Pin must be configured as output via gpio_set_output()
  * @pre Port and pin numbers must be valid
@@ -709,13 +673,7 @@ rx_err_t gpio_write_low(const rx_port_pin_t pin)
  * For thread-safe toggling, use explicit write_high/write_low with
  * external synchronization, or disable interrupts around the toggle.
  *
- * @param[in] pin Pin identifier encoded as rx_port_pin_t
- *                Must be previously configured as output via gpio_set_output()
  *
- * @return rx_err_t Toggle result
- * @retval k_rx_ok Pin output toggled successfully
- * @retval k_rx_err_gpio_invalid_port Port number in pin is invalid
- * @retval k_rx_err_gpio_invalid_pin Pin number exceeds k_rx_pin_max
  *
  * @pre Pin must be configured as output via gpio_set_output()
  * @pre Port and pin numbers must be valid
@@ -792,16 +750,7 @@ rx_err_t gpio_toggle(const rx_port_pin_t pin)
  * | High | ~2.0V to VCC | true |
  * | Undefined | 0.8V to 2.0V | Unpredictable |
  *
- * @param[in] pin Pin identifier encoded as rx_port_pin_t
- * @param[out] value Pointer to store pin state
- *                   - true: Pin is at logic high (>2.0V typically)
- *                   - false: Pin is at logic low (<0.8V typically)
  *
- * @return rx_err_t Read result
- * @retval k_rx_ok Pin state read successfully
- * @retval k_rx_err_null_ptr value pointer is nullptr
- * @retval k_rx_err_gpio_invalid_port Port number in pin is invalid
- * @retval k_rx_err_gpio_invalid_pin Pin number exceeds k_rx_pin_max
  *
  * @pre value must be non-nullptr
  * @pre Pin should be configured as input for external signals

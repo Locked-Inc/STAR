@@ -387,13 +387,7 @@ static rx_err_t             internal_init_run_sequence(void);
  * Sends a 2-byte I2C write transaction [reg, val] to the BNO055 at
  * device address 0x28 (embedded in the "i2c1_imu" bus configuration).
  *
- * @param[in] reg Register address (from bno055_reg_t)
- * @param[in] val Byte value to write to the register
  *
- * @return rx_err_t I2C transaction result
- * @retval k_rx_ok Write acknowledged by device
- * @retval k_rx_err_nack Device did not acknowledge
- * @retval k_rx_err_timeout Transaction timeout
  *
  * @pre s_manager must be non-NULL (set by rx_bno055_init)
  * @pre "i2c1_imu" bus must be initialized
@@ -430,14 +424,7 @@ RX_STATIC_TESTABLE rx_err_t internal_write_reg(uint8_t reg, uint8_t val)
  *
  * The BNO055 auto-increments the register address for consecutive reads.
  *
- * @param[in]  reg Register address to start reading from
- * @param[out] buf Buffer to store read bytes. Must have len bytes capacity.
- * @param[in]  len Number of bytes to read (1..255)
  *
- * @return rx_err_t I2C transaction result
- * @retval k_rx_ok len bytes read into buf
- * @retval k_rx_err_nack Device did not acknowledge
- * @retval k_rx_err_timeout Transaction timeout
  *
  * @pre s_manager must be non-NULL (set by rx_bno055_init)
  * @pre "i2c1_imu" bus must be initialized
@@ -468,10 +455,7 @@ RX_STATIC_TESTABLE rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_
  * This helper combines a low byte and a high byte into a signed int16_t value
  * using unsigned arithmetic to avoid implementation-defined behaviour.
  *
- * @param[in] low  Low byte (LSB, sent first by BNO055)
- * @param[in] high High byte (MSB, sent second by BNO055)
  *
- * @return int16_t Assembled 16-bit signed integer
  *
  * @pre low and high are valid bytes read from BNO055 registers
  * @pre uint16_t is exactly 16 bits (verified by static_assert below)
@@ -513,10 +497,6 @@ static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high)
  * complete. Then enters CONFIG mode and waits 20 ms for the transition.
  * Must be called first in the init sequence before any register writes.
  *
- * @return rx_err_t Operation result
- * @retval k_rx_ok Reset and CONFIG mode entered successfully
- * @retval k_rx_err_nack I2C NACK during reset or CONFIG mode write
- * @retval k_rx_err_timeout I2C timeout
  *
  * @pre s_manager non-NULL
  * @pre "i2c1_imu" bus initialized
@@ -570,10 +550,6 @@ RX_STATIC_TESTABLE rx_err_t internal_init_reset_and_wait(void)
  * axis remapping (standard orientation), and clears the system trigger register.
  * All writes are performed in CONFIG mode (entered by internal_init_reset_and_wait).
  *
- * @return rx_err_t Operation result
- * @retval k_rx_ok All configuration writes succeeded
- * @retval k_rx_err_nack I2C NACK during any configuration write
- * @retval k_rx_err_timeout I2C timeout
  *
  * @pre s_manager non-NULL
  * @pre BNO055 in CONFIG mode (internal_init_reset_and_wait succeeded)
@@ -643,10 +619,6 @@ RX_STATIC_TESTABLE rx_err_t internal_init_configure(void)
  * (accelerometer + gyroscope + magnetometer). Waits 10 ms (1 tick) for
  * the CONFIG -> NDOF transition to complete per BNO055 datasheet.
  *
- * @return rx_err_t Operation result
- * @retval k_rx_ok NDOF mode entered and transition delay completed
- * @retval k_rx_err_nack I2C NACK during NDOF mode write
- * @retval k_rx_err_timeout I2C timeout
  *
  * @pre s_manager non-NULL
  * @pre BNO055 configured (internal_init_configure succeeded)
@@ -690,11 +662,6 @@ RX_STATIC_TESTABLE rx_err_t internal_init_enter_ndof(void)
  * A mismatch indicates a wrong device, wiring fault, or I2C address collision.
  * Returns k_rx_err_invalid_state if the chip ID does not match.
  *
- * @return rx_err_t Verification result
- * @retval k_rx_ok CHIP_ID == 0xA0, sensor identity confirmed
- * @retval k_rx_err_nack I2C NACK during chip ID read
- * @retval k_rx_err_invalid_state CHIP_ID != 0xA0 (wrong device)
- * @retval k_rx_err_timeout I2C timeout
  *
  * @pre s_manager non-NULL
  * @pre BNO055 in NDOF mode (internal_init_enter_ndof succeeded)
@@ -754,10 +721,6 @@ RX_STATIC_TESTABLE rx_err_t internal_verify_chip_id(void)
  * sensor is left in a known page before returning the error. On error, the caller
  * (rx_bno055_init) will clear s_manager and return the error.
  *
- * @return rx_err_t Operation result
- * @retval k_rx_ok All four Page 1 register writes succeeded, INT configured
- * @retval k_rx_err_nack I2C NACK during any register write
- * @retval k_rx_err_timeout I2C timeout during any register write
  *
  * @pre s_manager non-NULL (set by rx_bno055_init before calling this helper)
  * @pre BNO055 in CONFIG mode -- call before internal_init_enter_ndof() per BNO055 datasheet
@@ -822,10 +785,6 @@ RX_STATIC_TESTABLE rx_err_t internal_init_enable_interrupt(void)
  * ID verification. Extracted from rx_bno055_init() to keep that function below
  * the readability-function-size statement threshold.
  *
- * @return rx_err_t Result of the first failing step, or k_rx_ok on success
- * @retval k_rx_ok All steps completed successfully
- * @retval k_rx_err_nack I2C NACK (device not found)
- * @retval k_rx_err_invalid_state CHIP_ID != 0xA0
  *
  * @pre s_manager non-NULL (set by caller before invoking)
  * @pre s_mode set to desired operating mode by caller
@@ -894,14 +853,7 @@ static rx_err_t internal_init_run_sequence(void)
  * - 19 ms config: 19/10 + 1 = 2 ticks (20 ms, rounded up for margin)
  * - 7 ms NDOF: 1 tick (10 ms, rounded up for margin)
  *
- * @param[in] manager Pointer to initialized bus manager with "i2c1_imu" registered
- * @param[in] config  Pointer to configuration struct selecting polling or interrupt mode
  *
- * @return rx_err_t Initialization result
- * @retval k_rx_ok Sensor initialized, NDOF mode active
- * @retval k_rx_err_null_ptr manager or config is NULL
- * @retval k_rx_err_nack I2C NACK (device not found)
- * @retval k_rx_err_invalid_state CHIP_ID != 0xA0
  *
  * @pre manager non-NULL with "i2c1_imu" bus registered and initialized
  * @pre config non-NULL with a valid bno055_mode_t value in config->mode
@@ -954,12 +906,7 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager, const bno055_config_t* config
  * Burst-reads 6 bytes from register 0x1A (EUL_H_LSB) and assembles
  * three 16-bit little-endian values into out->heading_deg16, roll_deg16, pitch_deg16.
  *
- * @param[out] out Data structure to populate (heading, roll, pitch fields)
  *
- * @return rx_err_t I2C transaction result
- * @retval k_rx_ok Euler angles populated
- * @retval k_rx_err_nack I2C communication failure
- * @retval k_rx_err_timeout I2C timeout
  *
  * @pre s_initialized == true
  * @pre out non-NULL
@@ -1002,12 +949,7 @@ RX_STATIC_TESTABLE rx_err_t internal_read_euler(bno055_data_t* out)
  * Burst-reads 8 bytes from register 0x20 (QUA_W_LSB) and assembles
  * four 16-bit little-endian values into the quat_w/x/y/z fields.
  *
- * @param[out] out Data structure to populate (quaternion fields)
  *
- * @return rx_err_t I2C transaction result
- * @retval k_rx_ok Quaternion fields populated
- * @retval k_rx_err_nack I2C communication failure
- * @retval k_rx_err_timeout I2C timeout
  *
  * @pre s_initialized == true
  * @pre out non-NULL
@@ -1048,12 +990,7 @@ RX_STATIC_TESTABLE rx_err_t internal_read_quat(bno055_data_t* out)
  * Burst-reads 6 bytes from register 0x28 (LIA_X_LSB) and assembles
  * three 16-bit little-endian values into the lin_acc_x/y/z fields.
  *
- * @param[out] out Data structure to populate (linear acceleration fields)
  *
- * @return rx_err_t I2C transaction result
- * @retval k_rx_ok Linear acceleration fields populated
- * @retval k_rx_err_nack I2C communication failure
- * @retval k_rx_err_timeout I2C timeout
  *
  * @pre s_initialized == true
  * @pre out non-NULL
@@ -1095,12 +1032,7 @@ RX_STATIC_TESTABLE rx_err_t internal_read_lia(bno055_data_t* out)
  * Scale: 1 LSB = 1/16 deg/s (k_bno055_scale_gyro_lsb_per_dps = 16)
  * when k_bno055_unit_sel_default is configured (dps mode, default).
  *
- * @param[out] out Output data structure; gyro_x/y/z_dps16 fields written
  *
- * @return rx_err_t Read result
- * @retval k_rx_ok Six bytes read and assembled successfully
- * @retval k_rx_err_not_initialized init not called
- * @retval k_rx_err_nack I2C communication failure
  *
  * @pre s_initialized must be true (call rx_bno055_init() first)
  * @pre out must not be NULL
@@ -1155,13 +1087,7 @@ RX_STATIC_TESTABLE rx_err_t internal_read_gyro(bno055_data_t* out)
  * 5. 0x34: 1 byte  -> Temperature
  * 6. 0x35: 1 byte  -> Calibration status
  *
- * @param[out] out Output data structure
  *
- * @return rx_err_t Read result
- * @retval k_rx_ok All six reads succeeded
- * @retval k_rx_err_null_ptr out is NULL
- * @retval k_rx_err_not_initialized init not called
- * @retval k_rx_err_nack I2C communication failure
  *
  * @pre rx_bno055_init() succeeded
  * @pre out non-NULL
@@ -1231,13 +1157,7 @@ rx_err_t rx_bno055_read(bno055_data_t* out)
  * Reads CALIB_STAT register and checks all four 2-bit fields are at
  * level 3 (fully calibrated).
  *
- * @param[out] out_calibrated True if SYS==3 && GYR==3 && ACC==3 && MAG==3
  *
- * @return rx_err_t Read result
- * @retval k_rx_ok out_calibrated set
- * @retval k_rx_err_null_ptr out_calibrated is NULL
- * @retval k_rx_err_not_initialized init not called
- * @retval k_rx_err_nack I2C failure
  *
  * @pre rx_bno055_init() succeeded
  * @pre out_calibrated non-NULL

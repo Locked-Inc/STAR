@@ -187,9 +187,6 @@ static const char* const s_tag = "PIN_VALIDATOR";
  * Copies up to max_len-1 characters from src to dst, then null-terminates.
  * Replaces strncpy to satisfy clang-analyzer-security checks.
  *
- * @param[out] dst Destination buffer
- * @param[in] src Source string (null-terminated)
- * @param[in] max_len Size of destination buffer
  *
  * @pre dst and src must be non-NULL
  * @pre max_len must be > 0
@@ -235,15 +232,7 @@ static void internal_safe_copy(char* dst, const char* src, const uint32_t max_le
  * | F | 0xF | 15 | (0xF - 0xA) + 10 = 15 |
  * | G | 0x10 | 16 | (0x10 - 0xA) + 10 = 16 |
  *
- * @param[in] port Port number to convert
- *                 - Valid decimal range: 0-9 (k_max_decimal_port)
- *                 - Valid hex range: 0xA-0x10 (k_hex_port_start to k_hex_port_end)
- *                 - Invalid: Any value outside these ranges
  *
- * @return uint8_t Array index for the port
- * @retval 0-9 For decimal ports 0-9
- * @retval 10-16 For hex ports A-G (0xA-0x10)
- * @retval k_invalid_port (0xFF) For invalid port numbers
  *
  * @pre None (pure function, no side effects)
  * @post Return value is either valid index (0-16) or k_invalid_port
@@ -285,13 +274,7 @@ static uint8_t internal_port_to_index(const uint8_t port)
  * 2. If conversion returns k_invalid_port, port is invalid
  * 3. Otherwise, port is valid
  *
- * @param[in] port Port number to validate
- *                 - Valid range: 0-9 (decimal), 0xA-0x10 (hex A-G)
- *                 - Invalid: Any other value
  *
- * @return rx_err_t Validation result
- * @retval k_rx_ok Port number is valid (0-9 or 0xA-0x10)
- * @retval k_rx_err_gpio_invalid_port Port number is outside valid range
  *
  * @pre None (pure validation function)
  * @post No state changes
@@ -328,13 +311,7 @@ static rx_err_t internal_validate_port(const uint8_t port)
  * - Full ports (0, 1, 2, A, B, C, D, E): Pins 0-7 available
  * - Partial ports (some 3-9, F, G): May have fewer pins
  *
- * @param[in] pin Pin number to validate
- *                - Valid range: 0-7 (k_pins_per_port - 1)
- *                - Invalid: 8 or higher
  *
- * @return rx_err_t Validation result
- * @retval k_rx_ok Pin number is valid (0-7)
- * @retval k_rx_err_gpio_invalid_pin Pin number is >= k_pins_per_port
  *
  * @pre None (pure validation function)
  * @post No state changes
@@ -378,15 +355,7 @@ static rx_err_t internal_validate_pin(const uint8_t pin)
  * 3. Validate pin number (0-7)
  * 4. Return success if all validations pass
  *
- * @param[in] ctx Context pointer (must be pin_validator_t*)
- * @param[in] port Port number (0-9 decimal, 0xA-0x10 hex for A-G)
- * @param[in] pin Pin number (0-7)
  *
- * @return rx_err_t Validation result
- * @retval k_rx_ok Port and pin are valid hardware addresses
- * @retval k_rx_err_null_ptr ctx is nullptr
- * @retval k_rx_err_gpio_invalid_port Port number outside valid range
- * @retval k_rx_err_gpio_invalid_pin Pin number >= 8
  *
  * @pre ctx must be initialized pin_validator_t (or nullptr check fails)
  * @pre Port must be in range 0-9 or 0xA-0x10
@@ -474,20 +443,7 @@ static rx_err_t impl_validate_pin(void* ctx, const uint8_t port, const uint8_t p
  * - Reservation set before mutex released
  * - No race condition possible between check and set
  *
- * @param[in] ctx Context pointer (must be pin_validator_t*)
- * @param[in] port Port number (0-9 decimal, 0xA-0x10 hex for A-G)
- * @param[in] pin Pin number (0-7)
- * @param[in] function Human-readable function name (e.g., "SPI_COPI", "UART_TX")
- *                     Must be null-terminated, max 31 chars (truncated if longer)
- *                     Should be string literal or static storage
  *
- * @return rx_err_t Reservation result
- * @retval k_rx_ok Pin successfully reserved for specified function
- * @retval k_rx_err_null_ptr ctx or function is nullptr
- * @retval k_rx_err_gpio_invalid_port Port number outside valid range
- * @retval k_rx_err_gpio_invalid_pin Pin number >= 8
- * @retval k_rx_err_rtos_mutex Failed to acquire ThreadX mutex
- * @retval k_rx_err_gpio_conflict Pin already reserved by another function
  *
  * @pre ctx must point to initialized pin_validator_t
  * @pre function must be non-NULL null-terminated string
@@ -589,17 +545,7 @@ impl_reserve_pin(void* ctx, const uint8_t port, const uint8_t pin, const char* f
  * Releasing an unreserved pin returns k_rx_err_invalid_state. This is typically
  * a programming error (double-release or release without reserve).
  *
- * @param[in] ctx Context pointer (must be pin_validator_t*)
- * @param[in] port Port number (0-9 decimal, 0xA-0x10 hex for A-G)
- * @param[in] pin Pin number (0-7)
  *
- * @return rx_err_t Release result
- * @retval k_rx_ok Pin successfully released and available
- * @retval k_rx_err_null_ptr ctx is nullptr
- * @retval k_rx_err_gpio_invalid_port Port number outside valid range
- * @retval k_rx_err_gpio_invalid_pin Pin number >= 8
- * @retval k_rx_err_rtos_mutex Failed to acquire ThreadX mutex
- * @retval k_rx_err_invalid_state Pin was not reserved (nothing to release)
  *
  * @pre ctx must point to initialized pin_validator_t
  * @pre Pin should be currently reserved
@@ -692,13 +638,7 @@ static rx_err_t impl_release_pin(void* ctx, const uint8_t port, const uint8_t pi
  *
  * Only returns `true` when pin is actually reserved.
  *
- * @param[in] ctx Context pointer (must be pin_validator_t*)
- * @param[in] port Port number (0-9 decimal, 0xA-0x10 hex for A-G)
- * @param[in] pin Pin number (0-7)
  *
- * @return bool Reservation status
- * @retval true Pin is currently reserved by some function
- * @retval false Pin is available OR any error occurred (nullptr, invalid, mutex)
  *
  * @pre ctx should point to initialized pin_validator_t
  * @pre Port/pin should be valid (errors return false, not error code)
@@ -776,21 +716,7 @@ static bool impl_is_pin_reserved(void* ctx, const uint8_t port, const uint8_t pi
  * ensure the full function name can be copied. Smaller buffers result in
  * k_rx_err_invalid_size error.
  *
- * @param[in] ctx Context pointer (must be pin_validator_t*)
- * @param[in] port Port number (0-9 decimal, 0xA-0x10 hex for A-G)
- * @param[in] pin Pin number (0-7)
- * @param[out] function_out Buffer to receive function name (caller-allocated)
- * @param[in] function_len Size of function_out buffer in bytes
- *                         Minimum: k_pin_function_name_max_len (32) bytes
  *
- * @return rx_err_t Query result
- * @retval k_rx_ok Function name copied to buffer
- * @retval k_rx_err_null_ptr ctx or function_out is nullptr
- * @retval k_rx_err_invalid_size function_len < k_pin_function_name_max_len
- * @retval k_rx_err_gpio_invalid_port Port number outside valid range
- * @retval k_rx_err_gpio_invalid_pin Pin number >= 8
- * @retval k_rx_err_rtos_mutex Failed to acquire ThreadX mutex
- * @retval k_rx_err_invalid_state Pin is not reserved (no function to return)
  *
  * @pre ctx must point to initialized pin_validator_t
  * @pre function_out must point to buffer of at least function_len bytes
@@ -891,12 +817,7 @@ static rx_err_t impl_get_pin_function(void*          ctx,
  * This function iterates all 136 slots (17 ports x 8 pins) and clears each one.
  * Typical execution time: 50-100 us @ 240 MHz.
  *
- * @param[in] ctx Context pointer (must be pin_validator_t*)
  *
- * @return rx_err_t Clear result
- * @retval k_rx_ok All reservations cleared successfully
- * @retval k_rx_err_null_ptr ctx is nullptr
- * @retval k_rx_err_rtos_mutex Failed to acquire ThreadX mutex
  *
  * @pre ctx must point to initialized pin_validator_t
  * @pre Should ensure no modules are actively using pins
@@ -1024,13 +945,7 @@ static const pin_validator_t s_zero_validator = {};
  * - Clears mutex bytes to neutral zero state before tx_mutex_create performs RTOS setup
  * - Sets initialized to false (then true after success)
  *
- * @param[in,out] validator Pointer to pin validator instance to initialize
- *                          Must be non-NULL and uninitialized
  *
- * @return rx_err_t Initialization result
- * @retval k_rx_ok Validator initialized successfully
- * @retval k_rx_err_null_ptr validator parameter is nullptr
- * @retval k_rx_err_rtos_mutex ThreadX mutex creation failed
  *
  * @pre validator must point to valid pin_validator_t memory
  * @pre validator must NOT be already initialized
@@ -1135,13 +1050,7 @@ rx_err_t pin_validator_init(pin_validator_t* validator)
  * - iface->get_pin_function = impl_get_pin_function
  * - iface->clear_all_reservations = impl_clear_all_reservations
  *
- * @param[out] iface Interface structure to populate (caller-allocated)
- * @param[in,out] validator Initialized pin validator instance
  *
- * @return rx_err_t Extraction result
- * @retval k_rx_ok Interface populated successfully
- * @retval k_rx_err_null_ptr iface or validator is nullptr
- * @retval k_rx_err_invalid_state validator not initialized
  *
  * @pre iface must point to valid rx_pin_interface_t memory
  * @pre validator must be initialized via pin_validator_init()
@@ -1247,11 +1156,7 @@ rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t*
  * If the validator is not initialized, this function returns k_rx_ok without
  * doing anything (safe no-op). This allows defensive cleanup patterns.
  *
- * @param[in,out] validator Pointer to pin validator instance to deinitialize
  *
- * @return rx_err_t Deinitialization result
- * @retval k_rx_ok Validator deinitialized successfully (or was already)
- * @retval k_rx_err_null_ptr validator parameter is nullptr
  *
  * @pre validator must point to valid pin_validator_t memory
  * @pre No modules should be actively using pins

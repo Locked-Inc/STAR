@@ -132,13 +132,7 @@ static volatile uintptr_t s_last_1bit_addr = 0;
 /**
  * @brief Translate public mode enum into ECCRAMMODE register value
  *
- * @param[in] mode Requested public mode.
  *
- * @return Matching k_rx_eccrammode_* value for ECCRAMMODE.
- * @retval k_rx_eccrammode_ecc_disabled   for k_eccram_mode_disabled
- * @retval k_rx_eccrammode_ecc_with_check for k_eccram_mode_correct_only,
- *                                        k_eccram_mode_correct_and_detect,
- *                                        k_eccram_mode_detect_only
  *
  * @pre  @p mode has been range-checked by the caller.
  * @post Return value is one of the k_rx_eccrammode_* constants.
@@ -182,7 +176,6 @@ static void internal_enable_eccram_module_clock(void)
 /**
  * @brief Write ECCRAMMODE under ECCRAMPRCR unlock
  *
- * @param[in] mode_reg_value Raw value for ECCRAMMODE register.
  *
  * @pre  ECCRAM module clocked (MSTPCRC.MSTPC6 == 0).
  * @pre  @p mode_reg_value is a valid k_rx_eccrammode_* constant.

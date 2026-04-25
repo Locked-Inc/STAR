@@ -301,13 +301,7 @@ typedef enum : uint32_t {
 /**
  * @brief Write uint32 in little-endian format (for CRC-32)
  *
- * @param[out] buf     Output buffer (at least 4 bytes)
- * @param[in]  buf_len Size of output buffer in bytes (must be >= 4)
- * @param[in]  val     Value to write
  *
- * @return k_rx_ok on success
- * @retval k_rx_err_invalid_arg if buf is nullptr
- * @retval k_rx_err_invalid_size if buf_len < 4
  */
 static rx_err_t internal_write_le32(uint8_t* buf, const uint32_t buf_len, const uint32_t val)
 {
@@ -325,13 +319,7 @@ static rx_err_t internal_write_le32(uint8_t* buf, const uint32_t buf_len, const 
 /**
  * @brief Read uint32 in little-endian format (for CRC-32)
  *
- * @param[in]  buf     Input buffer (at least 4 bytes)
- * @param[in]  buf_len Size of input buffer in bytes (must be >= 4)
- * @param[out] out_val Pointer to store decoded value
  *
- * @return k_rx_ok on success
- * @retval k_rx_err_invalid_arg if buf or out_val is nullptr
- * @retval k_rx_err_invalid_size if buf_len < 4
  */
 static rx_err_t internal_read_le32(const uint8_t* buf, const uint32_t buf_len, uint32_t* out_val)
 {
@@ -353,15 +341,7 @@ static rx_err_t internal_read_le32(const uint8_t* buf, const uint32_t buf_len, u
  * and validates payload length is within bounds. Outputs the offset where payload data
  * begins for subsequent processing.
  *
- * @param[in]  data       Input data buffer containing encoded frame
- * @param[in]  data_len   Length of input buffer in bytes
- * @param[out] frame      Frame structure to populate with decoded header fields
- * @param[out] offset_out Offset in buffer where payload begins (after header and sync)
  *
- * @return k_rx_ok on successful header decode
- * @retval k_rx_err_invalid_arg if data, frame, or offset_out is nullptr
- * @retval k_rx_err_invalid_size if data_len is too small or decoded payload length is out of bounds
- * @retval k_rx_err_protocol_error if sync word does not match expected value (k_frame_sync_word)
  */
 static rx_err_t internal_decode_header(const uint8_t* data,
                                        const uint32_t data_len,
@@ -417,18 +397,7 @@ static rx_err_t internal_decode_header(const uint8_t* data,
  * CRC-32 polynomial (0x04C11DB7), compatible with Go's crc32.ChecksumIEEE(). On success,
  * outputs the received CRC value for caller inspection.
  *
- * @param[in]  data    Input data buffer containing payload followed by CRC
- * @param[in]  data_len Total length of input buffer in bytes
- * @param[in]  offset  Byte offset in buffer where CRC value is stored
- * @param[out] crc_out Pointer to store received CRC value from buffer
  *
- * @return k_rx_ok on successful CRC verification (received matches calculated)
- * @retval k_rx_ok             CRC verified; received_crc written to *crc_out
- * @retval k_rx_err_invalid_arg if data or crc_out is nullptr
- * @retval k_rx_err_invalid_size if offset + CRC size exceeds buffer length or data_len too small
- * @retval k_rx_err_null_ptr   rx_crc32_ieee() backend received a null pointer (propagated)
- * @retval k_rx_err_invalid_arg rx_crc32_ieee() backend received invalid arguments (propagated)
- * @retval k_rx_err_crc_mismatch if calculated CRC does not match received CRC value
  */
 static rx_err_t
 internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uint32_t* crc_out)
@@ -474,15 +443,7 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
  *    b. If it matches k_frame_sync_word, write i to offset_out and return k_rx_ok.
  * 4. Return k_rx_err_protocol_error if no match found.
  *
- * @param[in]  data       Buffer to scan (at least 2 bytes)
- * @param[in]  data_len   Length of buffer in bytes (must be >= 2)
- * @param[out] offset_out Byte offset of the first sync word found (>= 1)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok               Sync word found; offset written to offset_out
- * @retval k_rx_err_invalid_arg  data or offset_out is nullptr
- * @retval k_rx_err_invalid_size data_len < 2 (cannot contain a sync word)
- * @retval k_rx_err_protocol_error No sync word found within k_frame_max_scan_bytes
  *
  * @pre data must point to a readable buffer of at least data_len bytes
  * @pre data_len must be >= k_frame_sync_size (2)
@@ -551,11 +512,7 @@ internal_find_sync_offset(const uint8_t* data, const uint32_t data_len, uint32_t
  * Prepares the encoder for use by setting the initialized flag and verifying
  * the initialization completed successfully (redundant validation per Rule 5).
  *
- * @param[out] enc Encoder instance to initialize
  *
- * @return k_rx_ok on successful initialization
- * @retval k_rx_err_invalid_arg if enc is nullptr
- * @retval k_rx_err_validation_failed if initialization verification fails
  */
 rx_err_t rx_frame_encoder_init(rx_frame_encoder_t* enc)
 {
@@ -575,11 +532,7 @@ rx_err_t rx_frame_encoder_init(rx_frame_encoder_t* enc)
  * Marks the encoder as uninitialized, preventing further use.
  * Verifies deinitialization completed successfully (redundant validation per Rule 5).
  *
- * @param[out] enc Encoder instance to deinitialize
  *
- * @return k_rx_ok on successful deinitialization
- * @retval k_rx_err_invalid_arg if enc is nullptr
- * @retval k_rx_err_validation_failed if deinitialization verification fails
  */
 rx_err_t rx_frame_encoder_deinit(rx_frame_encoder_t* enc)
 {
@@ -667,11 +620,7 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
  * Prepares the decoder for use by setting the initialized flag and verifying
  * the initialization completed successfully (redundant validation per Rule 5).
  *
- * @param[out] dec Decoder instance to initialize
  *
- * @return k_rx_ok on successful initialization
- * @retval k_rx_err_invalid_arg if dec is nullptr
- * @retval k_rx_err_validation_failed if initialization verification fails
  */
 rx_err_t rx_frame_decoder_init(rx_frame_decoder_t* dec)
 {
@@ -691,11 +640,7 @@ rx_err_t rx_frame_decoder_init(rx_frame_decoder_t* dec)
  * Marks the decoder as uninitialized, preventing further use.
  * Verifies deinitialization completed successfully (redundant validation per Rule 5).
  *
- * @param[out] dec Decoder instance to deinitialize
  *
- * @return k_rx_ok on successful deinitialization
- * @retval k_rx_err_invalid_arg if dec is nullptr
- * @retval k_rx_err_validation_failed if deinitialization verification fails
  */
 rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec)
 {
@@ -715,17 +660,7 @@ rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec)
  * Validates the decoder state, extracts the frame header, copies the payload,
  * and verifies the CRC-32 checksum.
  *
- * @param[in]  dec       Initialized frame decoder instance
- * @param[in]  data      Raw frame data buffer
- * @param[in]  data_len  Length of data buffer in bytes
- * @param[out] frame     Decoded frame (header, payload, CRC)
  *
- * @retval k_rx_ok                Frame decoded and CRC verified
- * @retval k_rx_err_invalid_arg   Any pointer parameter is nullptr or other invalid arguments
- * @retval k_rx_err_invalid_state Decoder not initialized
- * @retval k_rx_err_invalid_size  Payload exceeds maximum frame size or buffer too small
- * @retval k_rx_err_null_ptr      CRC backend received null pointer (propagated from rx_crc32_ieee)
- * @retval k_rx_err_crc_mismatch  CRC-32 verification failed (received != calculated)
  *
  * @note This function performs validation at multiple points:
  *       - Null pointer checks on all parameters
@@ -789,22 +724,7 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  * 5. Decode from data[sync_offset..data_len-1] using the trimmed sub-buffer.
  * 6. Write sync_offset to *bytes_discarded_out and return result.
  *
- * @param[in]  dec                 Initialized frame decoder handle
- * @param[in]  data                Raw byte buffer (may be stream-misaligned)
- * @param[in]  data_len            Length of data buffer in bytes
- * @param[out] frame               Decoded frame (header, payload, CRC)
- * @param[out] bytes_discarded_out Bytes skipped before sync word (0 = aligned)
  *
- * @return rx_err_t k_rx_ok on success, or k_rx_err_invalid_arg,
- *         k_rx_err_invalid_state, k_rx_err_invalid_size,
- *         k_rx_err_protocol_error, k_rx_err_null_ptr, or k_rx_err_crc_mismatch on failure
- * @retval k_rx_ok               Frame decoded and CRC verified
- * @retval k_rx_err_invalid_arg  Any pointer parameter is nullptr
- * @retval k_rx_err_invalid_state Decoder not initialized
- * @retval k_rx_err_invalid_size  Buffer too short to contain a valid frame
- * @retval k_rx_err_protocol_error No sync word found within scan window
- * @retval k_rx_err_null_ptr     CRC backend received null pointer (propagated from rx_crc32_ieee)
- * @retval k_rx_err_crc_mismatch  Sync found but CRC verification failed
  *
  * @pre dec must be initialized via rx_frame_decoder_init()
  * @pre data must point to a buffer of at least data_len bytes
@@ -895,12 +815,7 @@ rx_err_t rx_frame_decode_with_resync(const rx_frame_decoder_t* dec,
  * The ACK response frames are used by the receiver to confirm successful reception
  * of a command or data frame from the sender.
  *
- * @param[out] frame    Frame structure to populate with ACK
- * @param[in]  sequence Sequence number of the frame being acknowledged
  *
- * @return k_rx_ok on successful frame creation
- * @retval k_rx_err_invalid_arg if frame is nullptr
- * @retval k_rx_err_validation_failed if ACK type verification fails
  */
 rx_err_t rx_frame_create_ack(rx_frame_t* frame, const uint16_t sequence)
 {
@@ -925,13 +840,7 @@ rx_err_t rx_frame_create_ack(rx_frame_t* frame, const uint16_t sequence)
  * and error/status flags. NACK frames are sent by the receiver to indicate that a
  * frame was not processed successfully due to an error condition (specified in flags).
  *
- * @param[out] frame    Frame structure to populate with NACK
- * @param[in]  sequence Sequence number of the frame being negative-acknowledged
- * @param[in]  flags    Status/error flags indicating reason for NACK
  *
- * @return k_rx_ok on successful frame creation
- * @retval k_rx_err_invalid_arg if frame is nullptr
- * @retval k_rx_err_validation_failed if NACK type verification fails
  */
 rx_err_t rx_frame_create_nack(rx_frame_t* frame, const uint16_t sequence, uint8_t flags)
 {
@@ -957,15 +866,7 @@ rx_err_t rx_frame_create_nack(rx_frame_t* frame, const uint16_t sequence, uint8_
  * Receiver should respond with a PONG frame echoing the payload.
  * Payload is optional; a 4-byte LE counter is typical.
  *
- * @param[out] frame       Frame to populate (zeroed then filled)
- * @param[in]  sequence    Sequence number for this frame
- * @param[in]  payload     Optional payload (NULL when payload_len is 0)
- * @param[in]  payload_len Payload length in bytes [0, k_frame_max_payload]
  *
- * @retval k_rx_ok                  Frame created successfully
- * @retval k_rx_err_invalid_arg     frame is NULL, or payload NULL with len > 0
- * @retval k_rx_err_invalid_size    payload_len exceeds k_frame_max_payload
- * @retval k_rx_err_validation_failed Post-condition type check failed
  *
  * @pre frame !=nullptr
  * @pre payload != NULL when payload_len > 0
@@ -1016,15 +917,7 @@ rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
  * Initializes frame as a PONG response to a received PING.
  * Echoes the PING payload so the sender can validate round-trip data.
  *
- * @param[out] frame       Frame to populate (zeroed then filled)
- * @param[in]  sequence    Sequence number for this frame
- * @param[in]  payload     Payload to echo (NULL when payload_len is 0)
- * @param[in]  payload_len Payload length in bytes [0, k_frame_max_payload]
  *
- * @retval k_rx_ok                  Frame created successfully
- * @retval k_rx_err_invalid_arg     frame is NULL, or payload NULL with len > 0
- * @retval k_rx_err_invalid_size    payload_len exceeds k_frame_max_payload
- * @retval k_rx_err_validation_failed Post-condition type check failed
  *
  * @pre frame !=nullptr
  * @pre payload != NULL when payload_len > 0
@@ -1076,12 +969,7 @@ rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
  * communication state (sequence numbers, buffers). The receiver
  * should respond with a RESET_ACK frame. Payload is always empty.
  *
- * @param[out] frame    Frame to populate (zeroed then filled)
- * @param[in]  sequence Sequence number for this frame
  *
- * @retval k_rx_ok                  Frame created successfully
- * @retval k_rx_err_invalid_arg     frame isnullptr
- * @retval k_rx_err_validation_failed Post-condition type check failed
  *
  * @pre frame !=nullptr
  * @pre Caller has determined that a reset is necessary
@@ -1117,12 +1005,7 @@ rx_err_t rx_frame_create_reset(rx_frame_t* frame, const uint16_t sequence)
  * Confirms that the receiver has completed its reset procedure.
  * Payload is always empty; sequence matches the RESET request.
  *
- * @param[out] frame    Frame to populate (zeroed then filled)
- * @param[in]  sequence Sequence number (should match received RESET)
  *
- * @retval k_rx_ok                  Frame created successfully
- * @retval k_rx_err_invalid_arg     frame isnullptr
- * @retval k_rx_err_validation_failed Post-condition type check failed
  *
  * @pre frame !=nullptr
  * @pre A RESET frame was received and processed

@@ -143,12 +143,7 @@ static uint32_t s_inject_pending_flags = 0U;
  * therefore required (NASA Rule 5: validate at boundaries, not inside
  * private helpers).
  *
- * @param[in]  mode      Driver-level mode selector
- * @param[out] opcm_bits Receives the OPCM[2:0] field value (must be non-NULL)
  *
- * @return rx_err_t
- * @retval k_rx_ok              mode is valid and opcm_bits written
- * @retval k_rx_err_invalid_arg mode not one of rx_lpc_opcc_mode_t
  *
  * @pre opcm_bits != NULL (enforced by callers)
  * @post *opcm_bits contains one of k_opccr_opcm_* constants on success
@@ -181,7 +176,6 @@ static rx_err_t internal_translate_opcc_mode(rx_lpc_opcc_mode_t mode, uint8_t* o
  * the hardware; this driver re-asserts it on every call and the hardware
  * will ignore the redundant writes after the first.
  *
- * @param[in] wake_mask 32-bit OR of rx_lpc_wake_flags_t values
  *
  * @pre dps_regs() returns a valid (hardware or host-mocked) pointer
  * @post DPSIER0..DPSIER3 reflect the enabled wake sources
@@ -210,12 +204,7 @@ static void internal_program_wake_enables(uint32_t wake_mask)
  * helpers). The DPSBY bit is always set because this value is only used
  * on the deep-standby entry path.
  *
- * @param[in] deep_power Deep-cut power configuration (one of the three
- *                       valid rx_lpc_deep_power_t enumerators)
- * @param[in] keep_io    true to set DPSBYCR.IOKEEP
  *
- * @return uint8_t DPSBYCR value ready to write (DEEPCUT[1:0] | optional
- *                 IOKEEP | DPSBY=1)
  *
  * @pre deep_power is one of k_lpc_deep_ram_usb_on / k_lpc_deep_ram_usb_off
  *      / k_lpc_deep_lvd_off (enforced by caller)
@@ -288,6 +277,33 @@ rx_err_t rx_lpc_init(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Switch the MCU to a different operating-power-control mode
+ *
+ * @details
+ * Programs the OPCCR register with the OPCM bits derived from the
+ * requested mode (high-speed / middle-speed / low-power, etc.).  Performs
+ * the standard PRCR.PRC1 unlock-write-lock dance, then bounded-polls the
+ * OPCMTSF transition-status flag for completion (max
+ * k_opcmtsf_poll_max iterations).  On the unit-test target the register
+ * write is skipped.
+ *
+ * @pre rx_lpc_init() previously returned k_rx_ok.
+ * @pre mode is a valid value of rx_lpc_opcc_mode_t.
+ *
+ * @post On k_rx_ok: OPCCR.OPCM == requested mode bits and OPCMTSF == 0
+ *       (transition complete).
+ * @post On k_rx_err_hw_timeout: OPCMTSF poll exceeded
+ *       k_opcmtsf_poll_max iterations; the new mode may or may not be
+ *       active depending on hardware state.
+ *
+ * @note Not thread-safe.  Serialize all rx_lpc_* operations.
+ *
+ * @see rx_lpc_init()        Required to establish init state.
+ * @see rx_lpc_enter_sleep() Optional follow-on for low-power entry.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_lpc_set_operating_power(rx_lpc_opcc_mode_t mode)
 {
   if (s_initialized != k_lpc_initialized) {
@@ -321,6 +337,29 @@ rx_err_t rx_lpc_set_operating_power(rx_lpc_opcc_mode_t mode)
 #endif
 }
 
+/**
+ * @brief Enter Sleep low-power mode (CPU stopped, peripherals running)
+ *
+ * @details
+ * Configures SBYCR for Sleep mode (SSBY=0) under PRCR.PRC1 protection,
+ * then issues a WAIT instruction to halt the CPU.  Peripheral clocks
+ * continue running, so any enabled interrupt resumes execution at the
+ * instruction following WAIT.  Records the last entered mode for
+ * post-mortem diagnostics.  On the unit-test target the WAIT is skipped.
+ *
+ * @pre rx_lpc_init() previously returned k_rx_ok.
+ * @pre At least one wake source (peripheral interrupt) is configured.
+ *
+ * @post On wake: s_last_mode == k_lpc_mode_sleep; control returns to the
+ *       caller after the wake interrupt's ISR completes.
+ * @post On k_rx_err_not_initialized: no register writes performed.
+ *
+ * @note Not thread-safe.  Serialize all rx_lpc_* operations.
+ *
+ * @see rx_lpc_enter_software_standby() Deeper sleep with peripherals off.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_lpc_enter_sleep(void)
 {
   if (s_initialized != k_lpc_initialized) {
@@ -345,6 +384,31 @@ rx_err_t rx_lpc_enter_sleep(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Enter Software Standby mode (CPU and peripherals stopped)
+ *
+ * @details
+ * Configures SBYCR.SSBY=1 and DPSBYCR.DPSBY=0 under PRCR.PRC1 so that the
+ * upcoming WAIT instruction enters Software Standby (not Sleep, not Deep
+ * Standby).  Most peripheral clocks are gated off; only configured wake
+ * sources (level-sensitive IRQ pins, RTC, watchdog) can resume execution.
+ * On the unit-test target the WAIT is skipped.
+ *
+ * @pre rx_lpc_init() previously returned k_rx_ok.
+ * @pre At least one wake source (level-sensitive interrupt or RTC) is
+ *      configured before entry.
+ *
+ * @post On wake: s_last_mode == k_lpc_mode_software_standby; control
+ *       returns to the caller after the wake interrupt's ISR.
+ * @post On k_rx_err_not_initialized: no register writes performed.
+ *
+ * @note Not thread-safe.  Serialize all rx_lpc_* operations.
+ *
+ * @see rx_lpc_enter_sleep()                  Lighter sleep mode.
+ * @see rx_lpc_enter_deep_software_standby()  Deepest sleep mode.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_lpc_enter_software_standby(void)
 {
   if (s_initialized != k_lpc_initialized) {
@@ -433,11 +497,54 @@ rx_lpc_enter_deep_software_standby(uint32_t wake_mask, rx_lpc_deep_power_t deep_
   return k_rx_ok;
 }
 
+/**
+ * @brief Report whether the most recent reset was a Deep Standby wake
+ *
+ * @details
+ * Returns the cached s_was_deep_standby_wake flag latched at boot time.
+ * Allows application code to distinguish between a power-on reset and a
+ * resume from Deep Software Standby and take different paths
+ * (e.g., skip full re-initialization when waking).
+ *
+ * @pre None (function is safe to call at any time after init or before).
+ *
+ * @post No state mutated.
+ * @post Return value is stable across multiple calls in the same boot
+ *       session.
+ *
+ * @note Safe from any context including ISR; pure read of static storage.
+ *
+ * @see rx_lpc_get_wake_flags() Detailed wake-source bitfield.
+ *
+ * @since Version 1.0.0
+ */
 bool rx_lpc_was_deep_standby_wake(void)
 {
   return s_was_deep_standby_wake;
 }
 
+/**
+ * @brief Read the latched Deep Software Standby wake-source bitfield
+ *
+ * @details
+ * Copies the cached s_latched_wake_flags into the caller-supplied
+ * destination.  The bitfield has one bit per wake source; the layout is
+ * defined by rx_lpc_wake_t.  Useful after wake to determine which event
+ * resumed execution.
+ *
+ * @pre rx_lpc_init() previously returned k_rx_ok.
+ * @pre flags != NULL.
+ *
+ * @post On k_rx_ok: *flags holds the latched wake-source bitfield;
+ *       internal state unchanged.
+ *
+ * @note Not safe from ISR (acquires no lock but reads driver state that
+ *       could be torn during init).
+ *
+ * @see rx_lpc_was_deep_standby_wake() Cheap boolean wake-source query.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_lpc_get_wake_flags(uint32_t* flags)
 {
   if (flags == NULL) {

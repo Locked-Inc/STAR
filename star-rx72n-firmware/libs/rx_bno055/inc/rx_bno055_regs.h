@@ -96,7 +96,7 @@ extern "C" {
  * @invariant k_bno055_reg_chip_id reads back k_bno055_chip_id_expected on power-up
  *
  * @note Enum constants use the STAR project k_ prefix convention for typed enum
- *       constants (as opposed to SCREAMING_SNAKE_CASE which applies to #define macros).
+ *       constants (as opposed to SCREAMING_SNAKE_CASE which applies to \#define macros).
  *       This is intentional per STAR coding standards (CLAUDE.md).
  *
  * @see bno055_chip_id_t Expected chip ID value

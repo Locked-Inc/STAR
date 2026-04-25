@@ -473,12 +473,7 @@
  * }
  * @endcode
  *
- * @param[in]  pin     GPIO pin identifier (type-safe enum from rx_port_constants.h)
- * @param[out] port    Pointer to receive port number (0-10), or nullptr if not needed
- * @param[out] pin_num Pointer to receive pin number (0-7), or nullptr if not needed
  *
- * @return k_rx_ok Pin is valid, outputs populated (if non-NULL)
- * @return k_rx_err_invalid_arg Pin out of valid range
  *
  * @pre Pin must be from rx_port_constants.h (type-safe enum)
  * @post If k_rx_ok: *port and *pin_num contain valid values (if non-NULL pointers)
@@ -550,12 +545,7 @@ static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, uint8_t* por
  * 1. Validate the pin via internal_validate_port_pin() (checks port and pin indices)
  * 2. Call gpio_set_output(pin) to set the data direction register bit
  *
- * @param[in] pin GPIO port/pin descriptor specifying the trigger GPIO;
- *            must be a valid rx_port_pin_t with legal port and pin values
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Pin successfully configured as output
- * @retval k_rx_err_invalid_arg pin specifies an invalid port or pin number
  *
  * @pre pin must encode a valid port/pin combination supported by the RX72N
  * @pre GPIO peripheral clock must be enabled before calling
@@ -605,12 +595,7 @@ rx_err_t hcsr04_hal_gpio_set_output(const rx_port_pin_t pin)
  * 1. Validate the pin via internal_validate_port_pin() (checks port and pin indices)
  * 2. Call gpio_set_input(pin) to clear the data direction register bit
  *
- * @param[in] pin GPIO port/pin descriptor specifying the echo GPIO;
- *            must be a valid rx_port_pin_t with legal port and pin values
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Pin successfully configured as input
- * @retval k_rx_err_invalid_arg pin specifies an invalid port or pin number
  *
  * @pre pin must encode a valid port/pin combination supported by the RX72N
  * @pre GPIO peripheral clock must be enabled before calling
@@ -659,12 +644,7 @@ rx_err_t hcsr04_hal_gpio_set_input(const rx_port_pin_t pin)
  * 1. Validate the pin via internal_validate_port_pin()
  * 2. Call gpio_write_high(pin) to set the output data register bit
  *
- * @param[in] pin GPIO port/pin descriptor specifying the output pin to drive high;
- *            must be a valid rx_port_pin_t already configured as output
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Pin output register bit successfully set high
- * @retval k_rx_err_invalid_arg pin specifies an invalid port or pin number
  *
  * @pre pin must encode a valid port/pin combination supported by the RX72N
  * @pre Pin must have been configured as output via hcsr04_hal_gpio_set_output()
@@ -715,12 +695,7 @@ rx_err_t hcsr04_hal_gpio_write_high(const rx_port_pin_t pin)
  * 1. Validate the pin via internal_validate_port_pin()
  * 2. Call gpio_write_low(pin) to clear the output data register bit
  *
- * @param[in] pin GPIO port/pin descriptor specifying the output pin to drive low;
- *            must be a valid rx_port_pin_t already configured as output
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Pin output register bit successfully cleared low
- * @retval k_rx_err_invalid_arg pin specifies an invalid port or pin number
  *
  * @pre pin must encode a valid port/pin combination supported by the RX72N
  * @pre Pin must have been configured as output via hcsr04_hal_gpio_set_output()
@@ -761,12 +736,7 @@ rx_err_t hcsr04_hal_gpio_write_low(const rx_port_pin_t pin)
 /**
  * @brief Read current state of GPIO pin
  *
- * @param[in] pin GPIO pin to read
- * @param[out] value Pointer to receive pin state (true=high, false=low)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if value is nullptr
- * @return k_rx_err_invalid_arg if pin is invalid
  */
 rx_err_t hcsr04_hal_gpio_read(const rx_port_pin_t pin, bool* value)
 {
@@ -787,10 +757,7 @@ rx_err_t hcsr04_hal_gpio_read(const rx_port_pin_t pin, bool* value)
  *
  * This is intentionally a no-op as RX72N GPIO pins are static resources.
  *
- * @param[in] pin GPIO pin to deinitialize
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if pin is invalid
  */
 rx_err_t hcsr04_hal_gpio_deinit(const rx_port_pin_t pin)
 {
@@ -1047,8 +1014,6 @@ static const char* const s_tag = "HCSR04";
  * }
  * ```
  *
- * @return k_rx_ok Mutex created successfully or already initialized
- * @return k_rx_err_hw_init_failed tx_mutex_create() failed
  *
  * @pre ThreadX kernel initialized (tx_kernel_enter() called)
  * @post s_time_mutex ready for use (if k_rx_ok returned)
@@ -1155,7 +1120,6 @@ static rx_err_t internal_time_mutex_init(void)
  * | Tick period     | 133.33 ns | 1 / 7.5 MHz                |
  * | Overflow period | 8.738 ms  | 65536 / 7.5 MHz            |
  *
- * @return void (never fails, idempotent)
  *
  * @pre PCLKB = 60 MHz (system clock configured)
  * @post CMT2 running at 7.5 MHz
@@ -1238,10 +1202,7 @@ static void internal_cmt2_init(void)
  * 4. Loop: poll CMT2 counter until wait_ticks have elapsed; decrement remaining ticks
  * 5. Exit when ticks == 0 or iteration_count reaches k_max_delay_iterations
  *
- * @param[in] us Delay duration in microseconds (0 = return immediately;
- *            values exceeding k_max_delay_ticks converted to ticks are silently no-op)
  *
- * @return void
  *
  * @pre CMT2 hardware is accessible (initialized automatically on first call)
  * @pre Must NOT be called from a context requiring very long delays (> k_max_delay_ticks ticks)
@@ -1337,10 +1298,6 @@ void hcsr04_hal_delay_us(uint32_t us)
  * 8. Release s_time_mutex
  * 9. Return microsecond result
  *
- * @return uint32_t Monotonic timestamp in microseconds
- * @retval [0, UINT32_MAX] Microseconds since CMT2 was first initialized;
- *         wraps at UINT32_MAX (~71 minutes); value increases monotonically
- *         between calls (assuming no >~71 minute gap between calls)
  *
  * @pre CMT2 hardware is accessible (initialized automatically on first call)
  * @pre ThreadX kernel must be running for mutex-protected overflow tracking
@@ -1426,8 +1383,6 @@ uint32_t hcsr04_hal_get_time_us(void)
  * separated by more than ~8.7 ms produce invalid durations. HC-SR04 IRQ
  * mode is therefore limited to ~150 cm maximum range.
  *
- * @return CMT2 counter converted to microseconds (no overflow tracking)
- * @retval uint32_t Value in range [0, ~8700) us; wraps every ~8.7 ms with CMT2 period
  *
  * @pre CMT2 timer initialized (call hcsr04_hal_get_time_us() once at startup)
  * @pre Called from interrupt context (no ThreadX blocking calls permitted)

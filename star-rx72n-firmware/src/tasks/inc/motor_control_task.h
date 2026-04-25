@@ -156,9 +156,8 @@ rx_err_t motor_control_task_create(void);
  * @retval Non-null pointer to static array of k_motor_count (4) rx_motor_handle_t*,
  *         with out_count set to k_motor_count -- returned when motors are initialized
  *         and out_count is non-NULL
- * @retval nullptr with out_count set to k_motor_count_none (0) -- returned when
+ * @retval nullptr with out_count set to k_motor_count_none (0) -- returned when; (out_count unchanged) -- returned when out_count argument is nullptr
  *         motor_control_task_create() has not yet been called (motors not ready)
- * @retval nullptr (out_count unchanged) -- returned when out_count argument is nullptr
  *
  * @pre motor_control_task_create() has been called successfully
  * @pre out_count != nullptr (NULL pointer returns nullptr immediately)

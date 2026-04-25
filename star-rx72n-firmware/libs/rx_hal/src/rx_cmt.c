@@ -351,13 +351,7 @@ static void* s_cmt_user_data[k_cmt_max_channels] = {nullptr};
  * The default case returns nullptr, which every caller is expected to check
  * immediately after the call (NASA Rule 7 compliance).
  *
- * @param[in] channel CMT channel to resolve
- *   - **Valid range**: k_cmt_channel_0 through k_cmt_channel_3
- *   - Any other value results in a nullptr return
  *
- * @return Pointer to the volatile CMT channel register block
- * @retval Non-null Pointer to rx_cmt_channel_regs_t for the requested channel
- * @retval nullptr   channel is outside the valid range [0, 3]
  *
  * @pre channel is a member of rx_cmt_channel_t (0-3)
  * @pre Hardware register addresses must be accessible (clocks enabled before use)
@@ -432,22 +426,7 @@ static volatile rx_cmt_channel_regs_t* internal_get_cmt_base(const rx_cmt_channe
  * 5.   If 0 < period_calc <= 65535, store i and period_calc, return k_rx_ok
  * 6. If no divider fits, return k_rx_err_invalid_arg
  *
- * @param[in]  frequency_hz Target interrupt frequency in Hz
- *   - **Valid range**: 1 to PCLKB/8 (typically 1 to 7,500,000 Hz)
- *   - **Constraint**: Must produce a period that fits in 16 bits for at least
- *     one of the four clock dividers
- * @param[out] divider CKS field value to write into CMCR.CKS (0-3)
- *   - **On success**: Set to the index of the chosen divider
- *   - **On failure**: Undefined
- * @param[out] cmcor  Raw period count before the -1 adjustment
- *   - **On success**: Set to (PCLKB / divider_value) / frequency_hz
- *   - **On failure**: Undefined
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok           Divider and compare-match value computed successfully
- * @retval k_rx_err_null_ptr divider or cmcor is nullptr
- * @retval k_rx_err_invalid_arg frequency_hz is 0, exceeds PCLKB/8, or no
- *                               divider produces a period fitting in 16 bits
  *
  * @pre divider must point to a valid uint8_t storage location
  * @pre cmcor must point to a valid uint16_t storage location
@@ -533,9 +512,6 @@ internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uin
  * The function is idempotent: calling it when the module is already enabled
  * simply clears an already-clear bit, which is harmless.
  *
- * @return void This function does not return an error code. Hardware register
- *              access failures are not detectable at this level; the caller
- *              relies on subsequent register reads for verification.
  *
  * @pre The system clock (PCLKB) must be running before calling this function
  * @pre No other task or ISR must be concurrently modifying MSTPCRB
@@ -591,17 +567,7 @@ static void internal_enable_cmt_module_clock(void)
  * The timer must be stopped (CMSTR bit cleared) before calling this function
  * to avoid race conditions while writing to CMCOR and CMCNT.
  *
- * @param[in] cmt     Pointer to the volatile CMT channel register block
- *   - **Constraint**: Must not be nullptr (asserted)
- * @param[in] divider CKS clock-select field value (0-3) produced by
- *                    internal_calculate_cmt_params()
- *   - 0 = PCLKB/8, 1 = PCLKB/32, 2 = PCLKB/128, 3 = PCLKB/512
- * @param[in] cmcor   Period count (before adjustment) produced by
- *                    internal_calculate_cmt_params(); the -1 adjustment is
- *                    applied internally before writing to hardware
  *
- * @return void This function does not return an error code; the assert on cmt
- *              is the only validation gate.
  *
  * @pre cmt must not be nullptr (enforced by RX_ASSERT)
  * @pre The CMT timer must be stopped before calling this function
@@ -677,14 +643,7 @@ static void internal_configure_cmt_timer_registers(volatile rx_cmt_channel_regs_
  * The vector number is computed as k_vect_cmt0_cmi0 + config.channel, which
  * yields CMI0 for channel 0, CMI1 for channel 1, and so on.
  *
- * @param[in] config Interrupt routing and priority specification (passed by value)
- *   - **config.channel**: CMT channel (0-3); mapped to ICU vector
- *   - **config.priority**: ICU priority (k_ipr_level_min to k_ipr_level_max)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok             ICU programmed successfully
- * @retval k_rx_err_invalid_arg config.channel >= k_cmt_max_channels, or
- *                               config.priority outside [k_ipr_level_min, k_ipr_level_max]
  *
  * @pre config.channel must be in the range [0, k_cmt_max_channels)
  * @pre config.priority must be in [k_ipr_level_min, k_ipr_level_max]
@@ -883,19 +842,7 @@ void cmt3_isr(void)
  * Centralising these checks in a dedicated helper keeps the main rx_cmt_init()
  * function concise and ensures that every check is logged before returning.
  *
- * @param[in] channel CMT channel to validate
- *   - **Valid range**: k_cmt_channel_1 through k_cmt_channel_3
- *   - k_cmt_channel_0 is rejected (reserved for ThreadX)
- * @param[in] config Pointer to the channel configuration structure
- *   - **Null handling**: Returns k_rx_err_null_ptr immediately if nullptr
- *   - **priority field**: Must be in [k_ipr_level_min, k_ipr_level_max]
  *
- * @return rx_err_t Error code indicating success or the first validation failure
- * @retval k_rx_ok             All parameters are valid
- * @retval k_rx_err_null_ptr   config is nullptr
- * @retval k_rx_err_invalid_arg channel >= k_cmt_max_channels, or
- *                               config->priority out of [min, max]
- * @retval k_rx_err_conflict   channel == k_cmt_channel_0 (ThreadX reserved)
  *
  * @pre config must be a pointer to a caller-owned rx_cmt_config_t (may be nullptr)
  * @pre channel must be a member of rx_cmt_channel_t
@@ -971,16 +918,7 @@ static rx_err_t internal_validate_cmt_init_params(const rx_cmt_channel_t channel
  * has been configured in the ICU, so that the ISR never encounters a partially
  * initialised channel state.
  *
- * @param[in] channel CMT channel whose callback state is to be saved
- *   - **Valid range**: k_cmt_channel_1 through k_cmt_channel_3
- *   - Caller (rx_cmt_init) has already validated the channel
- * @param[in] config Pointer to the CMT configuration structure
- *   - **config->callback**: Function pointer (may be nullptr; ISR is a no-op if null)
- *   - **config->user_data**: Opaque pointer passed verbatim to callback (may be nullptr)
- *   - **Null handling**: Caller guarantees config is non-null
  *
- * @return void This function does not return an error code; all preconditions
- *              are enforced by the caller before this function is invoked.
  *
  * @pre channel must be valid and in range [1, k_cmt_max_channels) (validated by caller)
  * @pre config must be non-null (validated by internal_validate_cmt_init_params)
@@ -1058,23 +996,8 @@ static void internal_save_cmt_callback(const rx_cmt_channel_t channel,
  * if (0 < period <= 65535): use this divider
  * @endcode
  *
- * @param[in] channel CMT channel to initialize
- *   - **Valid range**: k_cmt_channel_1, k_cmt_channel_2, k_cmt_channel_3
- *   - **Reserved**: k_cmt_channel_0 is reserved for ThreadX system tick
  *
- * @param[in] config Pointer to channel configuration structure
- *   - **frequency_hz**: Desired interrupt frequency in Hz (> 0, <= PCLKB/8)
- *   - **priority**: ICU interrupt priority (k_ipr_level_min to k_ipr_level_max)
- *   - **callback**: Function called from interrupt context on each match
- *   - **user_data**: Opaque pointer passed to callback (may be nullptr)
- *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success; timer running and callback registered
- * @retval k_rx_err_null_ptr config is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel, frequency out of range, or invalid priority
- * @retval k_rx_err_conflict channel is k_cmt_channel_0 (reserved for ThreadX)
- * @retval k_rx_err_hw_error Timer start verification failed (CMSTR readback mismatch)
  *
  * @pre config must point to a valid rx_cmt_config_t structure
  * @pre config->frequency_hz must be > 0 and <= PCLKB / 8 (7.5 MHz at 60 MHz PCLKB)
@@ -1191,15 +1114,7 @@ rx_err_t rx_cmt_init(const rx_cmt_channel_t channel, const rx_cmt_config_t* conf
  * channels 2/3 share CMSTR1. Channels 0 and 1 use STR0/STR1 bits respectively,
  * as do channels 2 and 3.
  *
- * @param[in] channel CMT channel to start
- *   - **Valid range**: k_cmt_channel_0 through k_cmt_channel_3
- *   - **Note**: Usually called internally by rx_cmt_init()
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success; counter is running
- * @retval k_rx_err_invalid_arg Invalid channel number
- * @retval k_rx_err_invalid_state Channel not initialized
- * @retval k_rx_err_hw_error CMSTR readback did not show bit set
  *
  * @pre channel must be initialized via rx_cmt_init()
  * @pre channel must be in range [0, 3]
@@ -1294,13 +1209,7 @@ rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
  * (s_cmt_initialized check is omitted intentionally so that rx_cmt_init()
  * can call it safely before marking the channel as initialized).
  *
- * @param[in] channel CMT channel to stop
- *   - **Valid range**: k_cmt_channel_0 through k_cmt_channel_3
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success; counter halted
- * @retval k_rx_err_invalid_arg Invalid channel number
- * @retval k_rx_err_hw_error CMSTR readback showed bit still set
  *
  * @pre channel must be in range [0, 3]
  * @pre Interrupts may still fire if one is already pending when stop is called
@@ -1387,19 +1296,8 @@ rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
  * configured divider (/8, /32, /128, or /512) and resets to 0 on compare
  * match. Useful for measuring elapsed time within a period.
  *
- * @param[in] channel CMT channel to read (0-3)
- *   - **Valid range**: k_cmt_channel_0 through k_cmt_channel_3
  *
- * @param[out] count Pointer to store the 16-bit counter value
- *   - **Valid range**: Non-nullptr to uint16_t
- *   - **On success**: Contains CMCNT value (0 to CMCOR)
- *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success; *count contains current CMCNT value
- * @retval k_rx_err_null_ptr count is nullptr
- * @retval k_rx_err_invalid_state Channel not initialized or invalid channel
- * @retval k_rx_err_invalid_arg Could not obtain register base pointer
  *
  * @pre Channel must be initialized via rx_cmt_init()
  * @pre count must point to valid uint16_t storage
@@ -1462,13 +1360,7 @@ rx_err_t rx_cmt_get_count(const rx_cmt_channel_t channel, uint16_t* count)
  * 4. Clear the IER bit to disable the interrupt
  * 5. Clear callback, user_data, and initialized flag
  *
- * @param[in] channel CMT channel to deinitialize (0-3)
- *   - **Valid range**: k_cmt_channel_0 through k_cmt_channel_3
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success; channel fully deinitialized
- * @retval k_rx_err_invalid_arg Invalid channel number
- * @retval k_rx_err_hw_error Timer stop verification failed
  *
  * @pre channel must be in range [0, 3]
  * @pre Caller should ensure no other task is using the channel callback

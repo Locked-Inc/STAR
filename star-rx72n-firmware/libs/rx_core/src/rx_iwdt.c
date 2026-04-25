@@ -305,9 +305,6 @@ void rx_iwdt_test_reset(void)
  * Avoids clang-tidy insecureAPI.DeprecatedOrUnsafeBufferHandling warnings
  * that strncpy triggers.
  *
- * @param[out] dst Destination buffer
- * @param[in] src Source string
- * @param[in] max_len Size of destination buffer (including null terminator)
  *
  * @pre dst != nullptr
  * @pre src != nullptr
@@ -339,7 +336,6 @@ static void internal_safe_strcpy(char* dst, const char* src, size_t max_len)
  * 2. Cast ULONG to uint32_t for consistent type
  * 3. Return tick count
  *
- * @return uint32_t Current tick count from ThreadX timer
  *
  * @note ThreadX tick rate defined by TX_TIMER_TICKS_PER_SECOND
  * @note Tick count wraps at UINT32_MAX (~497 days at 100 Hz tick rate)
@@ -367,10 +363,7 @@ static uint32_t internal_get_tick_count(void)
  * 2. For each entry: check if active AND name matches
  * 3. Return pointer to matching entry, or nullptr if not found
  *
- * @param[in] task_name Task name to search for (null-terminated string)
  *
- * @return rx_iwdt_task_info_t* Pointer to task info if found
- * @retval NULL Task not found or not active
  *
  * @pre task_name must be non-NULL (caller validates)
  *
@@ -406,8 +399,6 @@ static rx_iwdt_task_info_t* internal_find_task(const char* task_name)
  * 2. For each entry: check if NOT active
  * 3. Return pointer to first inactive slot, or nullptr if all full
  *
- * @return rx_iwdt_task_info_t* Pointer to free slot if available
- * @retval NULL No free slots (all 8 tasks registered)
  *
  * @note Linear search O(n) where n = k_iwdt_max_tasks (8)
  * @note Returns first available slot (lowest index)
@@ -447,7 +438,6 @@ static rx_iwdt_task_info_t* internal_find_free_slot(void)
  * 3. Enable reset on timeout
  * 4. Initialize all state timeouts to default value
  *
- * @param[out] config Configuration structure to initialize
  *
  * @pre config must be non-NULL (caller validates)
  *
@@ -502,12 +492,7 @@ static void internal_init_default_config(rx_iwdt_config_t* config)
  * hardware IWDT will timeout based on OFS settings regardless of software
  * configuration.
  *
- * @param[in] config Configuration pointer, or nullptr for defaults
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success
- * @retval k_rx_err_invalid_state Already initialized
- * @retval k_rx_err_invalid_arg Timeout out of valid range
  *
  * @pre IWDT not already initialized
  *
@@ -603,9 +588,6 @@ rx_err_t rx_iwdt_init(const rx_iwdt_config_t* config)
  * 3. Write k_iwdt_refresh_end   (0xFF) to regs->iwdtrr
  * 4. Increment status.watchdog_feeds counter
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Watchdog counter successfully refreshed
- * @retval k_rx_err_not_initialized rx_iwdt_init() has not been called
  *
  * @pre rx_iwdt_init() must have been called successfully
  * @pre Must be called within the hardware IWDT refresh window (no gap > configured timeout)
@@ -681,18 +663,7 @@ rx_err_t rx_iwdt_feed(void)
  * 7. Initialize slot with task name, timeout, current tick, active=true, timed_out=false
  * 8. Increment status.active_tasks
  *
- * @param[in] task_name Unique task identifier string (non-empty, max k_iwdt_task_name_len-1 chars,
- *            null-terminated); must remain valid for the lifetime of registration
- * @param[in] timeout_ms Per-task heartbeat timeout in milliseconds;
- *            valid range [k_iwdt_min_timeout_ms(100), k_iwdt_max_timeout_ms(60000)]
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Task successfully registered
- * @retval k_rx_err_null_ptr task_name is nullptr
- * @retval k_rx_err_not_initialized rx_iwdt_init() has not been called
- * @retval k_rx_err_invalid_arg timeout_ms out of range, name empty, name too long,
- *         or task already registered
- * @retval k_rx_err_no_mem No free task slots (maximum k_iwdt_max_tasks tasks)
  *
  * @pre rx_iwdt_init() must have been called successfully
  * @pre task_name must be unique among registered tasks
@@ -782,14 +753,7 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
  * 4. Set task->last_heartbeat_tick = internal_get_tick_count()
  * 5. Clear task->timed_out
  *
- * @param[in] task_name Null-terminated name of the registered task sending heartbeat;
- *            must exactly match the name used in rx_iwdt_register_task()
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Heartbeat timestamp updated and timed_out flag cleared
- * @retval k_rx_err_null_ptr task_name is nullptr
- * @retval k_rx_err_not_initialized rx_iwdt_init() has not been called
- * @retval k_rx_err_not_found No task registered with the given name
  *
  * @pre rx_iwdt_init() must have been called successfully
  * @pre Task must have been registered via rx_iwdt_register_task()
@@ -864,14 +828,7 @@ rx_err_t rx_iwdt_task_heartbeat(const char* task_name)
  * 4. Set config.state_timeouts_ms[state] = timeout_ms
  * 5. If state == current_state, update status.current_timeout_ms
  *
- * @param[in] state System state identifier to configure (must be < k_system_state_count)
- * @param[in] timeout_ms Software task monitoring timeout in milliseconds;
- *            valid range [k_iwdt_min_timeout_ms(100), k_iwdt_max_timeout_ms(60000)]
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Timeout successfully updated
- * @retval k_rx_err_not_initialized rx_iwdt_init() has not been called
- * @retval k_rx_err_invalid_arg state >= k_system_state_count or timeout_ms out of range
  *
  * @pre rx_iwdt_init() must have been called successfully
  * @pre state must be a valid system_state_t value less than k_system_state_count
@@ -946,12 +903,7 @@ rx_err_t rx_iwdt_set_timeout_for_state(const system_state_t state, const uint32_
  * 3. Update current_state and status.current_state = state
  * 4. Update status.current_timeout_ms = config.state_timeouts_ms[state]
  *
- * @param[in] state New system state (must be < k_system_state_count)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok State successfully updated
- * @retval k_rx_err_not_initialized rx_iwdt_init() has not been called
- * @retval k_rx_err_invalid_arg state >= k_system_state_count
  *
  * @pre rx_iwdt_init() must have been called successfully
  * @pre state must be a valid system_state_t value less than k_system_state_count
@@ -1019,13 +971,7 @@ rx_err_t rx_iwdt_set_state(const system_state_t state)
  * 2. Verify s_iwdt_state.initialized
  * 3. memcpy(&s_iwdt_state.status, status, sizeof(rx_iwdt_status_t))
  *
- * @param[out] status Pointer to caller-allocated rx_iwdt_status_t structure
- *             to receive the status snapshot; must be non-null; undefined on error
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Status snapshot successfully copied
- * @retval k_rx_err_null_ptr status is nullptr
- * @retval k_rx_err_not_initialized rx_iwdt_init() has not been called
  *
  * @pre rx_iwdt_init() must have been called successfully
  * @pre status must be a valid non-null pointer to an rx_iwdt_status_t
@@ -1098,9 +1044,6 @@ rx_err_t rx_iwdt_get_status(rx_iwdt_status_t* status)
  * 2. Mask with k_rstsr2_iwdtrf to extract the IWDT reset flag bit
  * 3. Return true if the bit is set, false otherwise
  *
- * @return bool IWDT reset detection result
- * @retval true  RSTSR2.IWDTRF is set; last reset was caused by IWDT timeout
- * @retval false RSTSR2.IWDTRF is clear; last reset was not caused by IWDT
  *
  * @pre None -- safe to call before rx_iwdt_init() (reads hardware register directly)
  * @pre Must be called before the application clears the reset status register
@@ -1166,11 +1109,6 @@ bool rx_iwdt_was_reset(void)
  *    d. If elapsed_ticks > timeout_in_ticks: set timed_out=true, record task name, set any_timeout=true
  * 5. Return k_rx_err_timeout if any_timeout, else k_rx_ok
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All active tasks are within their heartbeat timeout windows
- * @retval k_rx_err_timeout One or more registered tasks have exceeded their timeout;
- *         name of first failing task is recorded in status.last_failed_task
- * @retval k_rx_err_not_initialized rx_iwdt_init() has not been called
  *
  * @pre rx_iwdt_init() must have been called successfully
  * @pre Registered tasks must be calling rx_iwdt_task_heartbeat() on schedule

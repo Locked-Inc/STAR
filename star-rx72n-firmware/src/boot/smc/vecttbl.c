@@ -120,7 +120,7 @@ Exported global functions (to be accessed by other files)
 R_BSP_POR_FUNCTION(R_BSP_POWER_ON_RESET_FUNCTION);
 
 /**
- * @enum mde_register_values_t
+ * @par MDE Register Values (mde_register_values_t)
  * @brief MDE Register - Endian Mode and Flash Bank Mode Configuration
  *
  * @details

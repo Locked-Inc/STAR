@@ -271,12 +271,7 @@ RX_STATIC_TESTABLE rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out)
  * Sends a 2-byte I2C write transaction [reg, val] to the BMP280 at
  * device address 0x76 (embedded in the "i2c1_baro" bus configuration).
  *
- * @param[in] reg Register address (from bmp280_reg_t)
- * @param[in] val Byte value to write to the register
  *
- * @return rx_err_t I2C transaction result
- * @retval k_rx_ok Register written successfully
- * @retval k_rx_err_nack Device did not acknowledge
  *
  * @pre s_manager non-NULL (set by rx_bmp280_init)
  * @pre "i2c1_baro" bus initialized
@@ -308,13 +303,7 @@ RX_STATIC_TESTABLE rx_err_t internal_write_reg(uint8_t reg, uint8_t val)
  * Issues a combined I2C write-read transaction: write starting register
  * address, then read len bytes. BMP280 auto-increments register address.
  *
- * @param[in]  reg Starting register address
- * @param[out] buf Buffer with capacity >= len bytes
- * @param[in]  len Number of bytes to read
  *
- * @return rx_err_t I2C transaction result
- * @retval k_rx_ok len bytes read into buf
- * @retval k_rx_err_nack Device not responding
  *
  * @pre s_manager non-NULL
  * @pre "i2c1_baro" bus initialized in s_manager
@@ -344,9 +333,7 @@ RX_STATIC_TESTABLE rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_
  * Reads buf[0] (LSB) and buf[1] (MSB) and combines them into a uint16_t value
  * using little-endian byte order (LSB first), matching BMP280 calibration register layout.
  *
- * @param[in] buf Pointer to at least 2 bytes; buf[0] is LSB, buf[1] is MSB
  *
- * @return uint16_t Assembled unsigned 16-bit value
  *
  * @pre buf non-NULL, capacity >= 2
  * @post Return value == (uint16_t)buf[0] | ((uint16_t)buf[1] << 8)
@@ -380,9 +367,7 @@ RX_STATIC_TESTABLE uint16_t internal_parse_u16_le(const uint8_t* buf)
  * Reads buf[0] (LSB) and buf[1] (MSB) and reinterprets the assembled uint16_t
  * as a two's complement int16_t value. Matches BMP280 signed calibration coefficient layout.
  *
- * @param[in] buf Pointer to at least 2 bytes; buf[0] is LSB, buf[1] is MSB
  *
- * @return int16_t Assembled signed 16-bit value
  *
  * @pre buf non-NULL, capacity >= 2
  * @post Return value correctly represents two's complement signed value
@@ -419,9 +404,7 @@ RX_STATIC_TESTABLE int16_t internal_parse_s16_le(const uint8_t* buf)
  *
  * Assembly formula: (MSB << 12) | (LSB << 4) | (XLSB >> 4)
  *
- * @param[in] buf Pointer to 3-byte buffer: buf[0]=MSB, buf[1]=LSB, buf[2]=XLSB
  *
- * @return int32_t Assembled 20-bit ADC value (range [0, 0xFFFFF])
  *
  * @pre buf non-NULL, capacity >= 3
  * @post Return value is a valid 20-bit non-negative integer
@@ -495,10 +478,7 @@ typedef enum : int32_t {
  * T = (t_fine * 5 + 128) >> 8    // Unit: centi-degrees (0.01 degC)
  * @endcode
  *
- * @param[in]  adc_temp   Raw 20-bit temperature ADC value
- * @param[out] t_fine_out Intermediate fine temperature value (for pressure comp)
  *
- * @return int32_t Compensated temperature in 0.01 degC units (divide by 100 for degC)
  *
  * @pre adc_T is valid 20-bit ADC output from BMP280
  * @pre t_fine_out non-NULL
@@ -576,11 +556,7 @@ typedef enum : int32_t {
  * Extracted from internal_compensate_pressure() to keep that function within
  * the 60-line NASA Power of 10 Rule 4 guideline.
  *
- * @param[in] p    Intermediate pressure before final scaling
- * @param[in] var1 Bosch P9 coefficient adjustment (already computed)
- * @param[in] var2 Bosch P8 coefficient adjustment (already computed)
  *
- * @return uint32_t Compensated pressure in Pa * 256 (Q8 fixed-point)
  *
  * @pre s_calib populated by internal_parse_calibration() (dig_P1 != 0)
  * @post Return value is pressure * 256 in Pascal units (Q8 format)
@@ -621,13 +597,7 @@ RX_STATIC_TESTABLE uint32_t internal_finalize_pressure_q8(int64_t p, int64_t var
  *
  * Output unit: Pa * 256 (fixed-point Q8.0 format). Divide by 256.0 for Pa.
  *
- * @param[in]  adc_pressure Raw 20-bit pressure ADC value
- * @param[in]  t_fine       Intermediate temperature from internal_compensate_temp()
- * @param[out] press_out Compensated pressure in Pa * 256 on success
  *
- * @return rx_err_t Operation result
- * @retval k_rx_ok Pressure computed, press_out written
- * @retval k_rx_err_invalid_state var1 == 0 (dig_P1 == 0, hardware fault)
  *
  * @pre adc_P is valid 20-bit ADC output from BMP280
  * @pre t_fine was computed by internal_compensate_temp() for same measurement
@@ -702,7 +672,6 @@ RX_STATIC_TESTABLE rx_err_t internal_compensate_pressure(int32_t   adc_pressure,
  * registers k_bmp280_reg_calib_start..k_bmp280_reg_calib_end (0x88-0x9F).
  * All coefficients are stored little-endian (LSB first) in the OTP block.
  *
- * @param[in] buf Pointer to k_bmp280_calib_byte_count bytes of OTP register data
  *
  * @pre buf non-NULL
  * @pre buf contains exactly k_bmp280_calib_byte_count bytes from OTP registers
@@ -753,10 +722,6 @@ RX_STATIC_TESTABLE void internal_parse_calibration(const uint8_t* buf)
  * Reads the chip ID register (0xD0) and compares it to k_bmp280_chip_id_expected.
  * Clears s_manager on failure so the driver remains in a safe state.
  *
- * @return rx_err_t Verification result
- * @retval k_rx_ok Chip ID matches expected value
- * @retval k_rx_err_nack I2C NACK (device not responding)
- * @retval k_rx_err_invalid_state Chip ID mismatch (wrong device on bus)
  *
  * @pre s_manager non-NULL
  * @pre "i2c1_baro" bus initialized
@@ -793,10 +758,6 @@ static rx_err_t internal_verify_chip_id(void)
  * 0x88-0x9F, parses them into s_calib, and validates that critical coefficients
  * (dig_T1 and dig_P1) are non-zero. Clears s_manager on failure.
  *
- * @return rx_err_t Calibration result
- * @retval k_rx_ok Calibration coefficients loaded and validated
- * @retval k_rx_err_nack I2C NACK during read
- * @retval k_rx_err_invalid_state dig_T1 or dig_P1 is zero (blank OTP)
  *
  * @pre s_manager non-NULL
  * @pre "i2c1_baro" bus initialized
@@ -839,12 +800,7 @@ static rx_err_t internal_read_and_validate_calibration(void)
  * parameters from OTP registers, and configures the IIR filter by writing to
  * the config register 0xF5.
  *
- * @param[in] manager Initialized bus manager with "i2c1_baro" registered
  *
- * @return rx_err_t Initialization result
- * @retval k_rx_ok Calibration coefficients loaded, filter configured
- * @retval k_rx_err_null_ptr manager is NULL
- * @retval k_rx_err_nack I2C NACK (device not found)
  *
  * @pre manager non-NULL, "i2c1_baro" registered and initialized
  * @pre BMP280 powered on RIIC1 bus
@@ -900,12 +856,7 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
  * 5. Validate temperature in [-40.00, +85.00] degC (centi-degC units)
  * 6. Validate pressure in [300, 1100] hPa (Pa*256 units)
  *
- * @param[out] out Output structure populated with temp_centi_degc and press_pa_256
  *
- * @return rx_err_t Operation result
- * @retval k_rx_ok ADC data read and compensation applied; out populated with valid values
- * @retval k_rx_err_nack I2C communication failure during ADC register read
- * @retval k_rx_err_invalid_state var1 == 0 in pressure compensation, or output out of range
  *
  * @pre s_manager non-NULL (rx_bmp280_init succeeded)
  * @pre s_initialized == true
@@ -981,15 +932,7 @@ RX_STATIC_TESTABLE rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out)
  * 2. Poll status register for completion (bounded loop)
  * 3. Read ADC data, apply compensation, validate range (internal_read_and_compensate_adc)
  *
- * @param[out] out Output structure for measurement results
  *
- * @return rx_err_t Measurement result
- * @retval k_rx_ok Measurement complete, out populated
- * @retval k_rx_err_null_ptr out is NULL
- * @retval k_rx_err_not_initialized init not called
- * @retval k_rx_err_timeout Status poll timeout
- * @retval k_rx_err_nack I2C communication failure
- * @retval k_rx_err_invalid_state Compensation or range check failed
  *
  * @pre rx_bmp280_init() succeeded
  * @pre out non-NULL
@@ -1079,8 +1022,6 @@ void rx_bmp280_test_reset_state(void)
  * directly so internal functions like internal_read_and_compensate_adc
  * can be called without going through rx_bmp280_init().
  *
- * @param[in] manager  Bus manager pointer to store in s_manager
- * @param[in] init_val Value to write to s_initialized
  *
  * @pre Called from test setup
  * @pre No concurrent access from other threads (test runs single-threaded)
@@ -1128,7 +1069,6 @@ void rx_bmp280_test_zero_calib_p1(void)
  * on s_bus_name can be tested with NULL. Caller must restore the original
  * value after the test.
  *
- * @param[in] name New bus name pointer (may be NULL)
  *
  * @pre UNIT_TEST defined (s_bus_name is non-const in test builds)
  * @post s_bus_name == name

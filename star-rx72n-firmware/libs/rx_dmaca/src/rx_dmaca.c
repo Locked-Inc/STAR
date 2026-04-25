@@ -88,7 +88,6 @@ static bool s_dmaca_initialized = false;
  * Sets DMSAR, DMDAR, DMCRA, DMTMD, DMAMD, and DMINT for one polling transfer.
  * Transfer size is always 8-bit (DMTMD.SZ=00b) for CRCDIR compatibility.
  *
- * @param[in] config Validated transfer configuration
  *
  * @pre config is not NULL and all fields are valid
  * @pre rx_dmaca_init() has been called
@@ -119,13 +118,7 @@ static void internal_configure_channel(const rx_dmaca_config_t* config)
  * (transfer in progress) is clear. Returns k_rx_ok on success,
  * k_rx_err_timeout if the loop exhausts without ACT clearing.
  *
- * @param[in] channel Channel number (0-7, pre-validated)
- * @param[in] timeout_cycles Maximum iterations (> 0 and <= k_dmaca_timeout_cycles_max,
- *                           pre-validated by caller, provides NASA Rule 2 loop bound)
  *
- * @return rx_err_t
- * @retval k_rx_ok ACT cleared (transfer complete)
- * @retval k_rx_err_timeout ACT still set after timeout_cycles iterations
  *
  * @pre channel < k_dmac_channel_count
  * @pre timeout_cycles > 0 and <= k_dmaca_timeout_cycles_max (enforced by caller)
@@ -181,9 +174,6 @@ static rx_err_t internal_poll_act(uint8_t channel, uint32_t timeout_cycles)
  * the DMAC module (sets DMAST.DMST = 1), and marks the driver as initialized.
  * Returns k_rx_err_invalid_state on double-init without touching hardware.
  *
- * @return rx_err_t
- * @retval k_rx_ok              DMAC initialized successfully
- * @retval k_rx_err_invalid_state Already initialized (call rx_dmaca_deinit() first)
  *
  * @pre DMAC must not already be initialized (s_dmaca_initialized == false)
  * @pre System clock (PCLKA) must be configured and running
@@ -222,16 +212,7 @@ rx_err_t rx_dmaca_init(void)
  * and polls the ACT bit until completion or timeout. Clears DTE on exit
  * regardless of outcome.
  *
- * @param[in] config Transfer configuration; must not be NULL
  *
- * @return rx_err_t
- * @retval k_rx_ok                  Transfer completed successfully
- * @retval k_rx_err_null_ptr        config or config->src is NULL
- * @retval k_rx_err_not_initialized rx_dmaca_init() has not been called
- * @retval k_rx_err_invalid_arg     channel out of range, len == 0 or > 65535,
- *                                  dst_addr == 0, timeout_cycles == 0 or
- *                                  timeout_cycles > k_dmaca_timeout_cycles_max
- * @retval k_rx_err_timeout         Transfer did not complete within timeout_cycles
  *
  * @pre rx_dmaca_init() must have been called successfully
  * @pre config->src must point to at least config->len bytes of readable memory
@@ -336,13 +317,7 @@ rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
  * until the active transfer drains or the internal abort timeout expires.
  * Returns k_rx_ok when the channel is confirmed idle.
  *
- * @param[in] channel Channel to abort (0 to k_dmac_channel_count - 1)
  *
- * @return rx_err_t
- * @retval k_rx_ok                  Channel is now idle
- * @retval k_rx_err_not_initialized rx_dmaca_init() has not been called
- * @retval k_rx_err_invalid_arg     channel >= k_dmac_channel_count
- * @retval k_rx_err_timeout         ACT bit did not clear within abort timeout
  *
  * @pre rx_dmaca_init() must have been called successfully
  * @pre channel must be in [0, k_dmac_channel_count - 1]
@@ -380,9 +355,6 @@ rx_err_t rx_dmaca_abort(uint8_t channel)
  * driver as uninitialized. Returns k_rx_err_not_initialized if called
  * without a prior rx_dmaca_init().
  *
- * @return rx_err_t
- * @retval k_rx_ok              DMAC deinitialized successfully
- * @retval k_rx_err_not_initialized rx_dmaca_init() was not called
  *
  * @pre rx_dmaca_init() must have been called successfully
  * @pre No DMA transfers should be in progress (all channels idle)

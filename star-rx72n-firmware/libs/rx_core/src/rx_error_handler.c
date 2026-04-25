@@ -259,12 +259,7 @@ typedef enum : uint32_t {
  * }
  * @enddot
  *
- * @param[in] handler Pointer to error handler instance (must not be NULL)
- * @param[in] component Component name to search for (must not be NULL)
  *
- * @return Pointer to matching component state slot
- * @retval non-NULL Pointer to found component entry
- * @retval NULL Component not found in tracking array
  *
  * @pre handler != nullptr (caller responsibility, not validated)
  * @pre component != nullptr (caller responsibility, not validated)
@@ -305,9 +300,6 @@ static error_component_state_t* internal_find_component(error_handler_t* handler
  * Copies up to max_len-1 characters from src to dst, then null-terminates.
  * Replaces strncpy to satisfy clang-analyzer-security checks.
  *
- * @param[out] dst Destination buffer
- * @param[in] src Source string (null-terminated)
- * @param[in] max_len Size of destination buffer
  *
  * @pre dst and src must be non-NULL
  * @pre max_len must be > 0
@@ -366,12 +358,7 @@ static void internal_copy_component_name(char* dst, const char* src, const uint3
  * }
  * @enddot
  *
- * @param[in] handler Pointer to error handler instance (must not be NULL)
- * @param[in] component Component name to find or create (must not be NULL)
  *
- * @return Pointer to component state slot (existing or newly created)
- * @retval non-NULL Pointer to component entry (may be new or existing)
- * @retval NULL All component slots are in use (array full)
  *
  * @pre handler != nullptr (caller responsibility, not validated)
  * @pre component != nullptr (caller responsibility, not validated)
@@ -478,18 +465,7 @@ static error_component_state_t* internal_find_or_create_component(error_handler_
  * }
  * @enddot
  *
- * @param[in] ctx Opaque context pointer (cast to error_handler_t*)
- * @param[in] err Error code being reported
- * @param[in] component Component name (e.g., "MOTOR", "USB", "SPI")
- *   - Max length: k_error_handler_component_name_max - 1 characters
- *   - Truncated if longer
- * @param[in] message Human-readable error message
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Error recorded successfully
- * @retval k_rx_err_null_ptr ctx, component, or message is nullptr
- * @retval k_rx_err_invalid_state Handler not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre ctx points to initialized error_handler_t
  * @pre component is a valid null-terminated string
@@ -563,11 +539,7 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
  * 4. Release mutex
  * 5. Return count (or 0 on any failure)
  *
- * @param[in] ctx Opaque context pointer (cast to error_handler_t*)
  *
- * @return Total error count across all components
- * @retval 0 If ctx is nullptr, not initialized, or mutex fails
- * @retval >0 Actual total error count
  *
  * @pre ctx points to initialized error_handler_t (for meaningful result)
  *
@@ -625,12 +597,7 @@ static uint32_t impl_get_error_count(void* ctx)
  * 6. Release mutex
  * 7. Return count
  *
- * @param[in] ctx Opaque context pointer (cast to error_handler_t*)
- * @param[in] component Component name to query
  *
- * @return Error count for the specified component
- * @retval 0 If ctx/component NULL, not initialized, component not found, or mutex fails
- * @retval >0 Actual error count for the component
  *
  * @pre ctx points to initialized error_handler_t (for meaningful result)
  * @pre component is a valid null-terminated string
@@ -693,13 +660,7 @@ static uint32_t impl_get_component_error_count(void* ctx, const char* component)
  * 5. For each component slot: set error_count = 0, retry_count = 0
  * 6. Release mutex
  *
- * @param[in] ctx Opaque context pointer (cast to error_handler_t*)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All counters cleared successfully
- * @retval k_rx_err_null_ptr ctx is nullptr
- * @retval k_rx_err_invalid_state Handler not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre ctx points to initialized error_handler_t
  *
@@ -767,12 +728,7 @@ static rx_err_t impl_clear_errors(void* ctx)
  * 6. Release mutex
  * 7. Return comparison result
  *
- * @param[in] ctx Opaque context pointer (cast to error_handler_t*)
- * @param[in] component Component name to check
  *
- * @return bool Retry limit status
- * @retval true Retry limit reached, or error condition (fail-safe)
- * @retval false Retries still available, or unlimited retries configured
  *
  * @pre ctx points to initialized error_handler_t
  * @pre component is a valid null-terminated string
@@ -843,14 +799,7 @@ static bool impl_is_retry_limit_reached(void* ctx, const char* component)
  * 5. If found, set retry_count = 0
  * 6. Release mutex
  *
- * @param[in] ctx Opaque context pointer (cast to error_handler_t*)
- * @param[in] component Component name to reset
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Retry counter reset (or component not found - no-op)
- * @retval k_rx_err_null_ptr ctx or component is nullptr
- * @retval k_rx_err_invalid_state Handler not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre ctx points to initialized error_handler_t
  * @pre component is a valid null-terminated string
@@ -967,13 +916,7 @@ static rx_err_t impl_reset_retry_counter(void* ctx, const char* component)
  * }
  * @enddot
  *
- * @param[in] ctx Opaque context pointer (cast to error_handler_t*)
- * @param[in] component Component name to calculate backoff for
  *
- * @return Backoff delay in milliseconds
- * @retval 0 If ctx/component NULL, not initialized, component not found,
- *           retry_count == 0, or mutex fails
- * @retval >0 Computed backoff delay (up to max_backoff_ms)
  *
  * @pre ctx points to initialized error_handler_t
  * @pre component is a valid null-terminated string
@@ -1108,21 +1051,7 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
  * }
  * @enddot
  *
- * @param[out] handler Pointer to error handler instance to initialize
- *   - Must be valid non-nullptr
- *   - Will be completely overwritten (memset)
- *   - Caller maintains ownership and lifetime
- * @param[in] config Configuration parameters
- *   - max_retries: Maximum retries before limit (0 = unlimited)
- *   - initial_backoff_ms: Starting backoff delay
- *   - max_backoff_ms: Maximum backoff delay cap
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Handler initialized successfully
- * @retval k_rx_err_null_ptr handler or config is nullptr
- * @retval k_rx_err_invalid_arg max_backoff_ms < initial_backoff_ms, or
- *                              initial_backoff_ms > 0 with max_backoff_ms == 0
- * @retval k_rx_err_rtos_mutex ThreadX mutex creation failed
  *
  * @pre handler points to allocated error_handler_t (not previously initialized)
  * @pre config points to valid configuration with consistent values
@@ -1222,17 +1151,7 @@ rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config
  * }
  * @enddot
  *
- * @param[out] iface Pointer to interface structure to populate
- *   - All fields will be overwritten
- *   - Caller maintains ownership of the structure
- * @param[in] handler Pointer to initialized error handler instance
- *   - Must be initialized via error_handler_init()
- *   - Must remain valid for lifetime of interface usage
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Interface populated successfully
- * @retval k_rx_err_null_ptr iface or handler is nullptr
- * @retval k_rx_err_invalid_state handler not initialized
  *
  * @pre iface points to allocated rx_error_interface_t
  * @pre handler initialized via error_handler_init()
@@ -1316,13 +1235,7 @@ rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_
  * 4. Set initialized = false
  * 5. Log deinitialization
  *
- * @param[in,out] handler Pointer to error handler instance
- *   - May be initialized or already deinitialized
- *   - Mutex will be deleted
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Handler deinitialized (or was already deinitialized)
- * @retval k_rx_err_null_ptr handler is nullptr
  *
  * @pre handler points to valid error_handler_t (initialized or not)
  *

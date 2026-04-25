@@ -186,7 +186,6 @@ static void internal_module_stop(void)
 
 /**
  * @brief Program CACR1, CACR2, CAULVR, CALLVR, and CAICR from a config struct
- * @param[in] config Validated configuration struct (never nullptr)
  * @pre config != nullptr and all enum fields validated by rx_cac_init()
  * @pre CACR0.CFME == 0 (writes to CAULVR/CALLVR require measurement halted)
  * @post Registers hold the requested configuration and CASTR flags are cleared
@@ -258,6 +257,27 @@ rx_err_t rx_cac_init(const rx_cac_config_t* config)
   return k_rx_ok;
 }
 
+/**
+ * @brief Start the Clock Frequency Accuracy (CAC) measurement
+ *
+ * @details
+ * Sets CACR0.CFME=1 to enable comparison of the measurement clock against
+ * the reference clock configured by rx_cac_init().  Subsequent calls to
+ * rx_cac_check() will report whether the measurement is within the
+ * configured tolerance window and return the latched count.
+ *
+ * @pre rx_cac_init() previously returned k_rx_ok.
+ *
+ * @post On k_rx_ok: CACR0.CFME == 1; measurement is running.
+ * @post On k_rx_err_not_initialized: register state unchanged.
+ *
+ * @note Not thread-safe.  Serialize all rx_cac_* operations.
+ *
+ * @see rx_cac_stop()  Pause measurement.
+ * @see rx_cac_check() Read measurement status and count.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_cac_start(void)
 {
   if (!s_initialized) {
@@ -268,6 +288,27 @@ rx_err_t rx_cac_start(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Pause the CAC measurement without deinitializing the driver
+ *
+ * @details
+ * Clears CACR0.CFME, halting the measurement counter.  The measurement
+ * configuration (reference clock, tolerance, IRQ enables) is preserved
+ * so a subsequent rx_cac_start() resumes from a clean state.  Useful
+ * when entering low-power modes or when switching reference clocks.
+ *
+ * @pre rx_cac_init() previously returned k_rx_ok.
+ *
+ * @post On k_rx_ok: CACR0.CFME == 0; measurement stopped.
+ * @post On k_rx_err_not_initialized: register state unchanged.
+ *
+ * @note Not thread-safe.  Serialize all rx_cac_* operations.
+ *
+ * @see rx_cac_start()  Resume measurement.
+ * @see rx_cac_deinit() Full driver shutdown.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_cac_stop(void)
 {
   if (!s_initialized) {
@@ -278,6 +319,29 @@ rx_err_t rx_cac_stop(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Check the CAC frequency-error flag and snapshot the latched count
+ *
+ * @details
+ * Reads CASTR (status), latches the current CACNTBR (counter buffer)
+ * value if out_count is non-NULL, then issues a write-1-clear to the IRQ
+ * status flags in CAICR (preserving the IRQ enables).  Returns whether
+ * the FERRF (frequency-error) flag was set since the last check.
+ *
+ * @pre None (returns false silently if driver not initialized).
+ *
+ * @post On any return: CAICR FERRF/MENDF/OVFF flags are cleared
+ *       (write-1-to-clear).
+ * @post If out_count != NULL: *out_count holds the value of CACNTBR at
+ *       call time.
+ *
+ * @note Safe from any context including ISR (single register read +
+ *       write, no blocking).
+ *
+ * @see rx_cac_start() Required to start measurement before checking.
+ *
+ * @since Version 1.0.0
+ */
 bool rx_cac_check(uint32_t* out_count)
 {
   if (!s_initialized) {
@@ -297,6 +361,27 @@ bool rx_cac_check(uint32_t* out_count)
   return (bool)((status & k_cac_castr_ferrf_mask) != 0U);
 }
 
+/**
+ * @brief Fully deinitialize the CAC peripheral and gate its module clock
+ *
+ * @details
+ * Stops the measurement (CFME=0), clears CACR1 / CACR2 (resetting the
+ * reference clock and tolerance), clears all IRQ flags via CAICR, then
+ * gates the CAC module clock through internal_module_stop().  Marks the
+ * driver as uninitialized.
+ *
+ * @pre rx_cac_init() previously returned k_rx_ok.
+ *
+ * @post On k_rx_ok: CACR0/1/2 == 0, CAICR flags cleared, MSTPCR bit set
+ *       (clock gated), s_initialized == false.
+ * @post On k_rx_err_not_initialized: register state unchanged.
+ *
+ * @note Not thread-safe.  Serialize all rx_cac_* operations.
+ *
+ * @see rx_cac_init() Re-arm before next measurement campaign.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_cac_deinit(void)
 {
   if (!s_initialized) {

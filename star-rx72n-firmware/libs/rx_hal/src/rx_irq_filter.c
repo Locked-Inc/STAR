@@ -160,10 +160,7 @@ typedef enum : uint8_t {
  * 1. IRQFLTC: Clear and set 2-bit clock field for this IRQ
  * 2. IRQFLTE: Set enable bit for this IRQ
  *
- * @param[in] irq_num IRQ number (0-15)
- * @param[in] filter_clk Clock divisor setting
  *
- * @return k_rx_ok on success, k_rx_err_invalid_arg if parameters invalid
  *
  * @note On host (non-RX) builds, validates parameters but skips register access
  *
@@ -229,9 +226,7 @@ rx_err_t rx_irq_filter_enable(uint8_t irq_num, rx_irq_filter_clk_t filter_clk)
  * Clears the filter enable bit in IRQFLTE for the specified IRQ.
  * After disabling, raw unfiltered input passes to interrupt detector.
  *
- * @param[in] irq_num IRQ number (0-15)
  *
- * @return k_rx_ok on success, k_rx_err_invalid_arg if irq_num > 15
  *
  * @note Clock divisor setting preserved for potential re-enable
  *
@@ -263,10 +258,7 @@ rx_err_t rx_irq_filter_disable(uint8_t irq_num)
  * Reads the IRQFLTE register bit for the specified IRQ to determine
  * current filter enable state.
  *
- * @param[in] irq_num IRQ number (0-15)
- * @param[out] enabled Pointer to store filter status (true=enabled)
  *
- * @return k_rx_ok on success, k_rx_err_invalid_arg if parameters invalid
  *
  * @note On host builds, always returns false (filter disabled)
  *
@@ -303,10 +295,7 @@ rx_err_t rx_irq_filter_is_enabled(uint8_t irq_num, bool* enabled)
  * Reads the 2-bit clock divisor field from IRQFLTC register for the
  * specified IRQ. Returns the divisor setting even if filter is disabled.
  *
- * @param[in] irq_num IRQ number (0-15)
- * @param[out] filter_clk Pointer to store clock divisor (rx_irq_filter_clk_t)
  *
- * @return k_rx_ok on success, k_rx_err_invalid_arg if parameters invalid
  *
  * @note On host builds, always returns k_irq_filter_pclk_1
  *

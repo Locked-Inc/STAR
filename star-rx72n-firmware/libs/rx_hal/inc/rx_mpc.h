@@ -710,9 +710,7 @@ typedef enum : uint8_t {
  *
  * @return Error code indicating success or failure
  * @retval k_rx_ok Pin successfully configured for GPIO mode
- * @retval k_rx_err_invalid_arg Port number exceeds valid range (> Port J)
- * @retval k_rx_err_invalid_arg Pin number exceeds 7
- * @retval k_rx_err_invalid_arg Port not available on package (G/H on 144-pin)
+ * @retval k_rx_err_invalid_arg Port number exceeds valid range (> Port J); Pin number exceeds 7; Port not available on package (G/H on 144-pin)
  *
  * @pre PCLKB clock must be running (MPC register access requires it)
  * @pre MPC module stop bit must be cleared (MSTPCRA.MSTPA9 = 0)
@@ -837,11 +835,7 @@ typedef enum : uint8_t {
  *
  * @return Error code indicating success or failure
  * @retval k_rx_ok Pin successfully configured for peripheral function
- * @retval k_rx_err_invalid_arg config pointer is nullptr
- * @retval k_rx_err_invalid_arg config->psel exceeds 31 (5-bit field max)
- * @retval k_rx_err_invalid_arg Port number exceeds valid range
- * @retval k_rx_err_invalid_arg Pin number exceeds 7
- * @retval k_rx_err_invalid_arg Port not available on package
+ * @retval k_rx_err_invalid_arg config pointer is nullptr; config->psel exceeds 31 (5-bit field max); Port number exceeds valid range; Pin number exceeds 7; Port not available on package
  *
  * @pre config pointer must be non-NULL
  * @pre config->psel must be in range [0, 31]

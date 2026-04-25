@@ -887,10 +887,6 @@ rx_err_t rx_usb_hw_detach(void)
 /**
  * @brief Read data from USB FIFO
  *
- * @param pipe Pipe number (0 = DCP, 1-9 = data pipes)
- * @param data Output buffer
- * @param max_len Maximum bytes to read
- * @return Number of bytes read
  */
 uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
 {
@@ -960,10 +956,6 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
 /**
  * @brief Write data to USB FIFO
  *
- * @param pipe Pipe number (0 = DCP, 1-9 = data pipes)
- * @param data Input buffer
- * @param len Number of bytes to write
- * @return Number of bytes written
  */
 uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
 {
@@ -1177,9 +1169,6 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
  * BVAL) but writes zero data bytes before BVAL, producing a 0-length
  * packet on the bus.
  *
- * @param[in] pipe  Bulk IN data pipe number (1..9; ignored for DCP).
- * @return k_rx_ok on success; k_rx_err_busy if the pipe is busy;
- *         k_rx_err_invalid_arg on invalid pipe.
  *
  * @pre Pipe must be configured as an IN pipe via rx_usb_hw_configure_pipe()
  * @pre Must be called from ISR context or with USB interrupts masked

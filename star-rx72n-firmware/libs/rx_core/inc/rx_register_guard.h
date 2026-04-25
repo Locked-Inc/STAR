@@ -448,8 +448,6 @@ typedef enum : uint8_t {
  * - Execution time: ~4.5 us @ 240 MHz
  * - CPU overhead at 10 Hz: 0.0045% (negligible)
  *
- * @return void (no return value)
- *
  * @pre Module must be initialized via rx_register_guard_init()
  * @pre Should be called from main task context (not ISR)
  *
@@ -737,8 +735,6 @@ uint32_t rx_register_guard_get_correction_count(void);
  * Algorithm:
  * 1. Set static correction counter to 0
  * 2. Return (no other side effects)
- *
- * @return void (no return value)
  *
  * @pre No preconditions - safe to call anytime
  * @pre Module does not need to be initialized (no-op if not initialized)

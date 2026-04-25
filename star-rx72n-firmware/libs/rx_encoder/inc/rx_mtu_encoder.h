@@ -641,9 +641,7 @@ typedef struct {
  * @return rx_err_t Error code indicating success or failure
  * @retval k_rx_ok Success, encoder initialized and counting
  * @retval k_rx_err_null_ptr config pointer is nullptr
- * @retval k_rx_err_invalid_arg Invalid MTU channel (not MTU1-MTU2)
- * @retval k_rx_err_invalid_arg counts_per_rev is 0 (division by zero)
- * @retval k_rx_err_invalid_arg counts_per_rev > 65536 (counter overflow)
+ * @retval k_rx_err_invalid_arg Invalid MTU channel (not MTU1-MTU2); counts_per_rev is 0 (division by zero); counts_per_rev > 65536 (counter overflow)
  * @retval k_rx_err_invalid_state MTU peripheral not clocked (MSTPCR disabled)
  * @retval k_rx_err_hardware MTU configuration failed (hardware fault)
  *

@@ -37,7 +37,7 @@
  *     label="Hardware Abstraction";
  *     style=filled;
  *     color=lightgreen;
- *     sci_regs [label="SCI Registers\nSCR, SMR, BRR, TDR, RDR, SSR"];
+ *     sci_regs [label="SCI Registers\nS\\r, SMR, BRR, TDR, RDR, SSR"];
  *     mpc [label="Pin Mux (MPC)\nrx_mpc_set_sci()"];
  *     gpio [label="GPIO Control\nPDR, PMR registers"];
  *   }
@@ -110,7 +110,7 @@
  * |-----------|---------------|-------------|-------|
  * | uart_init_channel | ~50 us | 48 bytes | Includes MPC configuration |
  * | uart_putc_channel | ~90 us @ 115200 | 16 bytes | Includes wait for TDRE |
- * | uart_puts_channel | ~90 us/char | 24 bytes | With \n->\r\n conversion |
+ * | uart_puts_channel | ~90 us/char | 24 bytes | With LF->\\r\\n conversion |
  * | uart_getc_channel | ~5 us | 16 bytes | Non-blocking if no data |
  * | uart_debug_init | ~50 us | 64 bytes | Wrapper for SCI9 |
  *
@@ -142,7 +142,7 @@
  * - `rx72n_regs.h` - SCI register definitions
  * - `rx_mpc.h` - Pin mux configuration
  * - `rx_port_utils.h` - GPIO port utilities
- * - `rx_register_protection.h` - PRCR register protection
+ * - `rx_register_protection.h` - PR\\r register protection
  *
  * **This module is used by:**
  * - `rx_log.c` - Logging subsystem output
@@ -362,13 +362,13 @@ typedef enum : uint32_t {
 } uart_buffer_constants_t;
 
 /**
- * @brief SCI module stop bit positions in MSTPCRB
+ * @brief SCI module stop bit positions in MSTP\\rB
  *
  * SCI0-SCI7 occupy contiguous bits 31-24 (MSTPB31 down to MSTPB24).
  * SCI12 (SCIh module) is a non-contiguous outlier at MSTPB4.
- * SCI8-SCI11 live in MSTPCRC, not here -- see sci_mstpc_bits_t.
+ * SCI8-SCI11 live in MSTP\\rC, not here -- see sci_mstpc_bits_t.
  *
- * Manual: section 11.2.3 MSTPCRB, page 408.
+ * Manual: section 11.2.3 MSTP\\rB, page 408.
  */
 typedef enum : uint8_t {
   k_sci_mstpb_sci0  = 31, /**< SCI0 module stop bit in MSTPCRB (MSTPB31) */
@@ -383,13 +383,13 @@ typedef enum : uint8_t {
 } sci_mstpb_bits_t;
 
 /**
- * @brief SCI module stop bit positions in MSTPCRC
+ * @brief SCI module stop bit positions in MSTP\\rC
  *
  * SCI8-SCI11 (SCIi module, extended peripheral region 0x000D0000) are
- * controlled by MSTPCRC, NOT MSTPCRB.  Clearing the corresponding bit
+ * controlled by MSTP\\rC, NOT MSTP\\rB.  Clearing the corresponding bit
  * releases the channel from the module-stop state.
  *
- * Manual: section 11.2.4 MSTPCRC, page 410.
+ * Manual: section 11.2.4 MSTP\\rC, page 410.
  */
 typedef enum : uint8_t {
   k_sci_mstpc_sci8  = 27, /**< SCI8 module stop bit in MSTPCRC (MSTPC27) */
@@ -512,18 +512,7 @@ static volatile uint16_t s_sci9_rx_tail = 0U; /**< Task reads here, ISR never to
  *    8-bit range (indicates a baud rate too slow for this clock).
  * 7. Return the clamped 8-bit result.
  *
- * @param[in] baudrate Target baud rate in bps
- *   - **Valid range**: 1 to pclk_hz/k_brr_divisor_n0
- *   - **Special case**: 0 returns k_brr_max_value (255) as a safe sentinel
- *   - **Units**: bits per second
- * @param[in] pclk_hz Peripheral clock driving this SCI channel (Hz)
- *   - **SCI0-SCI6, SCI12**: k_pclkb_hz
- *   - **SCI7-SCI11**:       k_pclka_hz
  *
- * @return uint8_t BRR register value to program into sci->brr
- * @retval 0..254 Computed BRR for the requested baud rate
- * @retval 0 (k_brr_min_value) Returned when baudrate > pclk_hz/32 or underflow
- * @retval 255 (k_brr_max_value) Returned when baudrate == 0 or BRR > 255
  *
  * @pre baudrate validated by caller; pclk_hz must be non-zero
  * @pre k_brr_divisor_n0 must be non-zero compile-time constant
@@ -612,12 +601,9 @@ internal_calculate_brr(const uint32_t baudrate, const uint32_t pclk_hz, const bo
  * |  4  | FER  | Framing Error - no valid stop bit detected |
  * |  3  | PER  | Parity Error  - parity mismatch (unused in 8N1 mode) |
  *
- * @param[in] sci Pointer to the SCI register block for the target channel
- *   - **Valid range**: Non-nullptr pointer obtained from sci_get_channel()
- *   - **Null handling**: Returns silently if nullptr (no-op; no error return)
  *
  * @pre sci must point to a valid, hardware-mapped rx_sci_regs_t register block
- * @pre The SCI module clock must be enabled (MSTPCRB bit cleared) before
+ * @pre The SCI module clock must be enabled (MSTP\\rB bit cleared) before
  *      any SSR access; undefined behaviour otherwise
  *
  * @post ORER, FER, and PER bits in sci->ssr are cleared (written to 0)
@@ -669,36 +655,31 @@ static void internal_clear_errors(volatile rx_sci_regs_t* sci)
 }
 
 /**
- * @brief Return the MSTPCRB bit position for a channel, or -1 for MSTPCRC channels
+ * @brief Return the MSTP\\rB bit position for a channel, or -1 for MSTP\\rC channels
  *
  * @details
  * Per manual section 11.2.3/11.2.4:
- * - SCI0-SCI7: MSTPCRB bits 31-24 (contiguous, descending)
- * - SCI8-SCI11: MSTPCRC bits 27-24 -- returns -1, caller uses MSTPCRC
- * - SCI12 (SCIh): MSTPCRB bit 4 (non-contiguous outlier)
+ * - SCI0-SCI7: MSTP\\rB bits 31-24 (contiguous, descending)
+ * - SCI8-SCI11: MSTP\\rC bits 27-24 -- returns -1, caller uses MSTP\\rC
+ * - SCI12 (SCIh): MSTP\\rB bit 4 (non-contiguous outlier)
  *
  * **Bit position table:**
  * | Channel | Register | Bit | Enum constant      |
  * |---------|----------|-----|--------------------|
- * | SCI0    | MSTPCRB  | 31  | k_sci_mstpb_sci0   |
- * | SCI1    | MSTPCRB  | 30  | k_sci_mstpb_sci1   |
- * | ...     | MSTPCRB  | ... | ...                |
- * | SCI7    | MSTPCRB  | 24  | k_sci_mstpb_sci7   |
- * | SCI8    | MSTPCRC  | 27  | (returns -1)       |
- * | SCI9    | MSTPCRC  | 26  | (returns -1)       |
- * | SCI10   | MSTPCRC  | 25  | (returns -1)       |
- * | SCI11   | MSTPCRC  | 24  | (returns -1)       |
- * | SCI12   | MSTPCRB  |  4  | k_sci_mstpb_sci12  |
+ * | SCI0    | MSTP\\rB  | 31  | k_sci_mstpb_sci0   |
+ * | SCI1    | MSTP\\rB  | 30  | k_sci_mstpb_sci1   |
+ * | ...     | MSTP\\rB  | ... | ...                |
+ * | SCI7    | MSTP\\rB  | 24  | k_sci_mstpb_sci7   |
+ * | SCI8    | MSTP\\rC  | 27  | (returns -1)       |
+ * | SCI9    | MSTP\\rC  | 26  | (returns -1)       |
+ * | SCI10   | MSTP\\rC  | 25  | (returns -1)       |
+ * | SCI11   | MSTP\\rC  | 24  | (returns -1)       |
+ * | SCI12   | MSTP\\rB  |  4  | k_sci_mstpb_sci12  |
  *
- * @param[in] channel SCI channel index (0-12, validated by caller)
  *
- * @return int8_t MSTPCRB bit index, or -1 for MSTPCRC channels (8-11)
- * @retval 4        Channel 12 (SCI12, MSTPCRB bit 4)
- * @retval 24..31   Channels 0-7 (MSTPCRB bits 31-24)
- * @retval -1       Channels 8-11 (caller must use MSTPCRC)
  *
  * @pre k_sci_mstpb_sci0 == 31 for the descending formula to be correct
- * @post If return >= 0, it is a valid MSTPCRB bit index
+ * @post If return >= 0, it is a valid MSTP\\rB bit index
  *
  * @note int8_t so -1 fits without consuming a valid bit position
  *
@@ -727,24 +708,20 @@ static int8_t internal_get_mstpb_bit(const uint8_t channel)
  *
  * | Channels  | Register | Bits    |
  * |-----------|----------|---------|
- * | SCI0-SCI7 | MSTPCRB  | 31-24   |
- * | SCI8-SCI11| MSTPCRC  | 27-24   |
- * | SCI12     | MSTPCRB  | 4       |
+ * | SCI0-SCI7 | MSTP\\rB  | 31-24   |
+ * | SCI8-SCI11| MSTP\\rC  | 27-24   |
+ * | SCI12     | MSTP\\rB  | 4       |
  *
- * Both MSTPCRB and MSTPCRC are PRCR-protected; this function performs the
+ * Both MSTP\\rB and MSTP\\rC are PR\\r-protected; this function performs the
  * required unlock/modify/lock sequence for whichever register applies.
  *
- * @param[in] channel SCI channel index (0-12, validated by caller)
  *
- * @return rx_err_t
- * @retval k_rx_ok         Clock enabled successfully
- * @retval k_rx_err_invalid_arg  channel out of [0, k_uart_max_channels)
  *
  * @pre channel validated by uart_init_channel() to be in [0, 12]
- * @pre PRCR not already unlocked by another context
+ * @pre PR\\r not already unlocked by another context
  *
  * @post Module-stop bit cleared; SCI clock gate open
- * @post PRCR returned to locked state
+ * @post PR\\r returned to locked state
  *
  * @warning Not thread-safe; unlock/modify/lock must be atomic
  *
@@ -813,25 +790,11 @@ static rx_err_t internal_enable_sci_clock(const uint8_t channel)
  * | TX  | 1 (output)      | 1 (peripheral) |
  * | RX  | 0 (input)       | 1 (peripheral) |
  *
- * @param[in] tx_gpio TX pin encoded as rx_port_pin_t
- *   - **Valid range**: Any rx_port_pin_t with port in [0, k_rx_port_max] and
- *     pin in [0, k_rx_pin_max]
- *   - **Typical value**: k_uart_debug_tx_gpio (k_rx_pb_7) for SCI9
- *   - **Encoding**: Use k_rx_p{port}_{pin} constants from rx_port_constants.h
  *
- * @param[in] rx_gpio RX pin encoded as rx_port_pin_t
- *   - **Valid range**: Same constraints as tx_gpio; must be distinct from tx_gpio
- *   - **Typical value**: k_uart_debug_rx_gpio (k_rx_pb_6) for SCI9
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success -- both pins configured for SCI UART operation
- * @retval k_rx_err_invalid_arg tx_pin > k_rx_pin_max, rx_pin > k_rx_pin_max,
- *         or rx_port_get_base() returned nullptr for either port number
- * @retval k_rx_err_invalid_arg Propagated from rx_mpc_set_sci() if the MPC
- *         mapping is not supported for the given pin
  *
  * @pre tx_gpio and rx_gpio must correspond to physically valid RX72N port pins
- * @pre The SCI module clock must already be enabled (MSTPCRB bit cleared) so
+ * @pre The SCI module clock must already be enabled (MSTP\\rB bit cleared) so
  *      that the SCI TXD/RXD MPC function codes are accepted
  *
  * @post TX pin: PDR bit set (output), PMR bit set (peripheral function)
@@ -935,11 +898,11 @@ static rx_err_t internal_configure_uart_pins(const rx_port_pin_t tx_gpio, rx_por
  * 3. Check if channel is already initialized (prevent double-init)
  * 4. Enable SCI module clock (clear MSTPB bit)
  * 5. Configure TX/RX pins via MPC and GPIO registers
- * 6. Disable TX/RX during configuration (SCR = 0)
+ * 6. Disable TX/RX during configuration (S\\r = 0)
  * 7. Set serial mode: async, 8N1, PCLK/1 (SMR)
  * 8. Calculate and set baud rate divisor (BRR)
  * 9. Wait for 1 bit time (synchronization)
- * 10. Enable TX and RX (SCR = 0x30)
+ * 10. Enable TX and RX (S\\r = 0x30)
  * 11. Mark channel as initialized
  *
  * @dot
@@ -978,18 +941,7 @@ static rx_err_t internal_configure_uart_pins(const rx_port_pin_t tx_gpio, rx_por
  * }
  * @enddot
  *
- * @param[in] config Pointer to channel configuration structure.
- *   - **channel**: SCI channel (0-12)
- *   - **baudrate**: Target baud rate (1 to PCLKB/32)
- *   - **tx_gpio**: TX pin (rx_port_pin_t)
- *   - **rx_gpio**: RX pin (rx_port_pin_t)
- *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, channel initialized and ready
- * @retval k_rx_err_null_ptr config parameter is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel (>=13) or invalid baud rate
- * @retval k_rx_err_invalid_state Channel already initialized
  *
  * @pre config must point to valid uart_channel_config_t structure
  * @pre config->channel must be in range [0, 12]
@@ -1158,21 +1110,15 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
  * **Algorithm steps:**
  * 1. Validate channel number (0-12)
  * 2. Get SCI register base address
- * 3. Write SCR = 0 to disable TX and RX
+ * 3. Write S\\r = 0 to disable TX and RX
  * 4. Clear s_channel_initialized[channel]
  *
- * @param[in] channel UART channel to deinitialize (0-12)
- *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
- *   - **Recommended**: Use k_uart_channel_X constants
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, channel TX/RX disabled
- * @retval k_rx_err_invalid_arg Invalid channel number (>=13) or invalid register pointer
  *
  * @pre channel must be in range [0, 12]
  * @pre Channel should be initialized before deinitializing (safe to call on uninit channel)
  *
- * @post TX and RX disabled (SCR = 0)
+ * @post TX and RX disabled (S\\r = 0)
  * @post s_channel_initialized[channel] set to false
  *
  * @note Not thread-safe - call during shutdown, not during normal operation
@@ -1254,19 +1200,8 @@ rx_err_t uart_deinit_channel(const uart_channel_t channel)
  * - Stop bit: 8.68 us
  * - **Total**: ~86.8 us per character
  *
- * @param[in] channel UART channel to use (0-12)
- *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
- *   - **Recommended**: Use k_uart_channel_X constants
  *
- * @param[in] data Character to transmit
- *   - **Valid range**: 0x00 to 0xFF (any byte value)
- *   - **Special handling**: '\n' not converted (use uart_puts_channel for conversion)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, character transmitted
- * @retval k_rx_err_invalid_arg Invalid channel number (>=13)
- * @retval k_rx_err_invalid_state Channel not initialized
- * @retval k_rx_err_timeout Transmit buffer did not become empty within timeout
  *
  * @pre Channel must be initialized via uart_init_channel()
  * @pre UART TX must be enabled (happens during init)
@@ -1294,7 +1229,7 @@ rx_err_t uart_deinit_channel(const uart_channel_t channel)
  * }
  *
  * // Send carriage return + line feed
- * uart_putc_channel(k_uart_channel_9, '\r');
+ * uart_putc_channel(k_uart_channel_9, '\\r');
  * uart_putc_channel(k_uart_channel_9, '\n');
  * @endcode
  *
@@ -1347,7 +1282,7 @@ rx_err_t uart_putc_channel(const uart_channel_t channel, const char data)
  * @brief Transmit null-terminated string on UART channel with newline conversion
  *
  * @details
- * Transmits a null-terminated string with automatic LF to CR+LF conversion for
+ * Transmits a null-terminated string with automatic LF to \\r+LF conversion for
  * terminal compatibility. Enforces maximum string length (k_uart_max_str_len = 256)
  * to comply with NASA Power of 10 Rule 2 (bounded loops).
  *
@@ -1356,32 +1291,18 @@ rx_err_t uart_putc_channel(const uart_channel_t channel, const char data)
  * 2. Validate channel number and initialization state
  * 3. For each character up to k_uart_max_str_len:
  *    a. Check for null terminator (success exit)
- *    b. If '\n', send '\r' first (CR+LF conversion)
+ *    b. If '\n', send '\\r' first (\\r+LF conversion)
  *    c. Transmit character via uart_putc_channel()
  *    d. Propagate any errors immediately
  * 4. If limit reached without terminator, return k_rx_err_invalid_size
  *
  * **Newline conversion:**
- * - Input '\n' (LF) -> Output '\r\n' (CR+LF)
+ * - Input '\n' (LF) -> Output '\\r\\n' (\\r+LF)
  * - Required for Windows terminals (e.g., PuTTY, TeraTerm)
  * - Ensures cursor returns to column 0 before line feed
  *
- * @param[in] channel UART channel to use (0-12)
- *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
  *
- * @param[in] str Pointer to null-terminated string
- *   - **Valid range**: Non-nullptr to valid memory
- *   - **Maximum length**: 256 characters (k_uart_max_str_len)
- *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
- *   - **Encoding**: ASCII (extended characters passed through)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, entire string transmitted
- * @retval k_rx_err_null_ptr str parameter is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel number
- * @retval k_rx_err_invalid_state Channel not initialized
- * @retval k_rx_err_invalid_size String exceeds 256 characters
- * @retval k_rx_err_timeout Hardware timeout during transmission
  *
  * @pre Channel must be initialized via uart_init_channel()
  * @pre str must point to null-terminated string in valid memory
@@ -1405,11 +1326,11 @@ rx_err_t uart_putc_channel(const uart_channel_t channel, const char data)
  * @code{.c}
  * // Simple string
  * uart_puts_channel(k_uart_channel_9, "Hello, World!\n");
- * // Output: "Hello, World!\r\n"
+ * // Output: "Hello, World!\\r\\n"
  *
  * // Multiple lines
  * uart_puts_channel(k_uart_channel_9, "Line 1\nLine 2\nLine 3\n");
- * // Output: "Line 1\r\nLine 2\r\nLine 3\r\n"
+ * // Output: "Line 1\\r\\nLine 2\\r\\nLine 3\\r\\n"
  *
  * // Error handling
  * rx_err_t err = uart_puts_channel(k_uart_channel_9, msg);
@@ -1465,7 +1386,7 @@ rx_err_t uart_puts_channel(const uart_channel_t channel, const char* str)
  *
  * @details
  * Transmits a block of raw bytes on the specified SCI channel using
- * uart_putc_channel() for each byte. No LF-to-CR+LF conversion is performed,
+ * uart_putc_channel() for each byte. No LF-to-\\r+LF conversion is performed,
  * making this function suitable for binary protocol data.
  *
  * **Algorithm steps:**
@@ -1473,22 +1394,9 @@ rx_err_t uart_puts_channel(const uart_channel_t channel, const char* str)
  * 2. Validate channel number and initialization state
  * 3. For each byte in [0, length): call uart_putc_channel() and propagate errors
  *
- * @param[in] channel UART channel to use (0-12)
- *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
  *
- * @param[in] data Pointer to buffer containing bytes to transmit
- *   - **Valid range**: Non-nullptr pointing to at least `length` bytes
- *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
  *
- * @param[in] length Number of bytes to write
- *   - **Valid range**: 0 to UINT16_MAX; 0 returns k_rx_ok immediately
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, all bytes transmitted
- * @retval k_rx_err_null_ptr data parameter is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel number
- * @retval k_rx_err_invalid_state Channel not initialized
- * @retval k_rx_err_timeout Hardware timeout during transmission
  *
  * @pre Channel must be initialized via uart_init_channel()
  * @pre data must point to at least `length` bytes of valid memory
@@ -1569,21 +1477,8 @@ rx_err_t uart_write_channel(const uart_channel_t channel, const uint8_t* data, u
  * - FER (Framing Error): Stop bit not detected
  * - PER (Parity Error): Parity mismatch (not used in 8N1 mode)
  *
- * @param[in] channel UART channel to use (0-12)
- *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
  *
- * @param[out] data Pointer to store received character
- *   - **Valid range**: Non-nullptr to char
- *   - **On success**: Contains received byte (0x00-0xFF)
- *   - **On error**: Content undefined
- *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, received character stored in *data
- * @retval k_rx_err_null_ptr data parameter is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel number
- * @retval k_rx_err_invalid_state Channel not initialized
- * @retval k_rx_err_empty No data available (RDRF not set)
  *
  * @pre Channel must be initialized via uart_init_channel()
  * @pre data must point to valid memory for single char
@@ -1715,26 +1610,10 @@ rx_err_t uart_getc_channel(const uart_channel_t channel, char* data)
  *    c. Store byte and increment *bytes_read
  * 5. Return k_rx_ok (even if zero bytes were read)
  *
- * @param[in]  channel    UART channel to read from (0-12)
- *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
  *
- * @param[out] data       Pointer to buffer to store received bytes
- *   - **Valid range**: Non-nullptr pointing to at least `length` bytes
- *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
  *
- * @param[in]  length     Maximum number of bytes to read
- *   - **Valid range**: 0 to UINT16_MAX
  *
- * @param[out] bytes_read Pointer to store actual number of bytes read
- *   - **Valid range**: Non-nullptr to uint16_t
- *   - **On success**: Set to number of bytes actually received (0..length)
- *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success; *bytes_read contains actual count (may be 0)
- * @retval k_rx_err_null_ptr data or bytes_read is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel number
- * @retval k_rx_err_invalid_state Channel not initialized
  *
  * @pre Channel must be initialized via uart_init_channel()
  * @pre data must point to at least `length` bytes of writable memory
@@ -1819,19 +1698,8 @@ rx_err_t uart_read_channel(const uart_channel_t channel,
  * 3. Get SCI register base address
  * 4. Read SSR and test RDRF bit; store boolean result in *available
  *
- * @param[in] channel UART channel to check (0-12)
- *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
  *
- * @param[out] available Pointer to store result
- *   - **On success**: true if RDRF flag set (data ready), false otherwise
- *   - **On error**: value undefined
- *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success; *available set to data availability status
- * @retval k_rx_err_null_ptr available is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel number or invalid register pointer
- * @retval k_rx_err_invalid_state Channel not initialized
  *
  * @pre Channel must be initialized via uart_init_channel()
  * @pre available must point to valid bool storage
@@ -1995,9 +1863,6 @@ __attribute__((interrupt, used)) void INT_SCI9_RXI9(void)
  * 2. Call uart_init_channel() with the configuration
  * 3. Return result
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, debug UART ready
- * @retval k_rx_err_invalid_state SCI9 already initialized
  *
  * @pre System clocks must be initialized (PCLKB = 60 MHz)
  * @pre SCI9 must not be already initialized
@@ -2075,8 +1940,6 @@ rx_err_t uart_debug_init(void)
  * 1. Call uart_putc_channel(k_uart_debug_channel, data)
  * 2. Cast return value to (void) - errors discarded
  *
- * @param[in] data Character to transmit (0x00-0xFF)
- *   - **Special handling**: '\n' is NOT converted; use uart_debug_puts() for text
  *
  * @pre uart_debug_init() must have been called successfully
  * @pre SCI9 must be initialized and TX enabled
@@ -2098,7 +1961,7 @@ rx_err_t uart_debug_init(void)
  * @par Example:
  * @code{.c}
  * uart_debug_putc('A');     // Send 'A'
- * uart_debug_putc('\r');    // Carriage return
+ * uart_debug_putc('\\r');    // Carriage return
  * uart_debug_putc('\n');    // Line feed
  * @endcode
  *
@@ -2117,7 +1980,7 @@ void uart_debug_putc(const char data)
  * @brief Transmit null-terminated string on debug UART with newline conversion
  *
  * @details
- * Transmits a null-terminated string to SCI9 with automatic LF-to-CR+LF
+ * Transmits a null-terminated string to SCI9 with automatic LF-to-\\r+LF
  * conversion for terminal compatibility. Enforces a maximum length of
  * k_uart_max_str_len (256) characters per NASA Power of 10 Rule 2.
  * Silently returns on NULL pointer to allow safe use in early init.
@@ -2126,19 +1989,15 @@ void uart_debug_putc(const char data)
  * 1. Return immediately if str is nullptr (defensive, no error return)
  * 2. For each character up to k_uart_max_str_len:
  *    a. Stop at null terminator
- *    b. If '\n', send '\r' first
+ *    b. If LF, send \\r first
  *    c. Send character via uart_debug_putc()
  *
- * @param[in] str Pointer to null-terminated ASCII string
- *   - **Maximum length**: 256 characters (k_uart_max_str_len)
- *   - **Null handling**: Returns silently if nullptr
- *   - **Encoding**: ASCII; '\n' converted to '\r\n'
  *
  * @pre uart_debug_init() must have been called successfully
  * @pre str should point to a null-terminated string in valid memory
  *
  * @post All characters up to null terminator transmitted to SCI9
- * @post Each '\n' replaced by '\r\n' in the transmitted output
+ * @post Each LF replaced by \\r\\n in the transmitted output
  *
  * @note No return value - errors from uart_debug_putc() are silently discarded
  * @note String truncated at k_uart_max_str_len (256) characters
@@ -2153,7 +2012,7 @@ void uart_debug_putc(const char data)
  *
  * @par Example:
  * @code{.c}
- * uart_debug_puts("Hello, World!\n");  // Sends "Hello, World!\r\n"
+ * uart_debug_puts("Hello, World!\n");  // Sends "Hello, World!\\r\\n"
  * uart_debug_puts("[INFO] Boot complete\n");
  * @endcode
  *
@@ -2190,9 +2049,6 @@ void uart_debug_puts(const char* str)
  * 4. Prepend '-' if negative
  * 5. Call uart_debug_puts() with the resulting substring pointer
  *
- * @param[in] value Signed 32-bit integer to print
- *   - **Valid range**: INT32_MIN (-2147483648) to INT32_MAX (2147483647)
- *   - **INT32_MIN handling**: Correctly handled via int64_t cast
  *
  * @pre uart_debug_init() must have been called successfully
  * @pre uart_debug_puts() must be functional
@@ -2272,12 +2128,7 @@ void uart_debug_putint(const int32_t value)
  * 3. Iterate nibbles from MSN to LSN (statically bounded by k_uart_hex_max_digits)
  * 4. For each nibble index < digits, extract nibble and print uppercase hex char
  *
- * @param[in] value  Unsigned 32-bit value to display in hexadecimal
- *   - **Valid range**: 0x00000000 to 0xFFFFFFFF
  *
- * @param[in] digits Number of hex digits to print (1-8)
- *   - **Valid range**: 1 to 8 (clamped; 0 -> 1, >8 -> 8)
- *   - **Common values**: 2 for byte, 4 for word, 8 for full 32-bit
  *
  * @pre uart_debug_init() must have been called successfully
  * @pre uart_debug_puts() and uart_debug_putc() must be functional

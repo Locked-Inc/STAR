@@ -165,8 +165,6 @@ typedef enum : uint8_t {
  * - Step 3 (x ^= x >> 1): Final XOR to get single parity bit
  *   Result bit [0] = XOR of all original bits
  *
- * @param[in] x Input byte
- * @return 0 if even parity (even number of 1s), 1 if odd parity
  */
 RX_STATIC_TESTABLE uint8_t internal_parity(uint8_t x)
 {
@@ -194,9 +192,6 @@ RX_STATIC_TESTABLE uint8_t internal_parity(uint8_t x)
  *   bit_idx=7 -> byte 0, bit 0 (LSB)
  *   bit_idx=8 -> byte 1, bit 7 (MSB)
  *
- * @param[out] output Output buffer
- * @param[in]  bit_idx Bit index (0 = MSB of first byte)
- * @param[in]  value Bit value (0 or 1)
  */
 RX_STATIC_TESTABLE void
 internal_set_output_bit(uint8_t* output, const uint32_t bit_idx, uint8_t value)
@@ -231,9 +226,6 @@ internal_set_output_bit(uint8_t* output, const uint32_t bit_idx, uint8_t value)
  *   bit_idx=7 -> byte 0, bit 0 (LSB)
  *   bit_idx=8 -> byte 1, bit 7 (MSB)
  *
- * @param[in] data Input buffer
- * @param[in] bit_idx Bit index (0 = MSB of first byte)
- * @return Bit value (0 or 1)
  */
 RX_STATIC_TESTABLE uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_idx)
 {
@@ -259,11 +251,6 @@ RX_STATIC_TESTABLE uint8_t internal_get_bit(const uint8_t* data, uint32_t bit_id
 /**
  * @brief Encode a single bit and update encoder state
  *
- * @param[in,out] state Current encoder state (6-bit shift register).
- *                      Modified: shifts right and incorporates input_bit.
- * @param[in]     input_bit Input bit (0 or 1)
- * @param[out]    out0 First output bit (G1)
- * @param[out]    out1 Second output bit (G2)
  */
 RX_STATIC_TESTABLE void
 internal_encode_bit(uint8_t* state, const uint8_t input_bit, uint8_t* out0, uint8_t* out1)
@@ -299,7 +286,6 @@ internal_encode_bit(uint8_t* state, const uint8_t input_bit, uint8_t* out0, uint
  *
  * Precomputes expected output bits for each state and input combination.
  *
- * @param[out] branch_table Table to populate [state][input][output]
  */
 static void internal_init_branch_table(
   uint8_t branch_table[k_fec_num_states][k_fec_num_input_values][k_fec_num_outputs])
@@ -322,11 +308,6 @@ static void internal_init_branch_table(
  * Uses correlation metric: higher correlation = lower metric (better).
  * Formula: 32768 - (soft0 * exp0_soft + soft1 * exp1_soft)
  *
- * @param[in] soft0 First received soft bit
- * @param[in] soft1 Second received soft bit
- * @param[in] exp0 Expected first bit (0 or 1)
- * @param[in] exp1 Expected second bit (0 or 1)
- * @return Branch metric (lower is better)
  */
 RX_STATIC_TESTABLE int32_t internal_branch_metric(const rx_soft_bit_t soft0,
                                                   const rx_soft_bit_t soft1,
@@ -361,12 +342,6 @@ RX_STATIC_TESTABLE int32_t internal_branch_metric(const rx_soft_bit_t soft0,
  * Computes the branch metric for the given state/input pair and updates the
  * next-state path metric and survivor bit if the new metric is better.
  *
- * @param[in,out] dec        Decoder handle. Modified: new_path_metrics and survivors updated.
- * @param[in]     soft0      First soft bit of symbol pair
- * @param[in]     soft1      Second soft bit of symbol pair
- * @param[in]     symbol_idx Time step index for survivor storage
- * @param[in]     state      Current trellis state
- * @param[in]     input      Input bit being tried (0 or 1)
  */
 static void internal_viterbi_process_transition(rx_fec_decoder_t*   dec,
                                                 const rx_soft_bit_t soft0,
@@ -400,10 +375,6 @@ static void internal_viterbi_process_transition(rx_fec_decoder_t*   dec,
  *
  * Updates path metrics and survivors for one time step.
  *
- * @param[in,out] dec Decoder handle. Modified: path_metrics and survivors updated.
- * @param[in]     soft0 First soft bit of symbol pair
- * @param[in]     soft1 Second soft bit of symbol pair
- * @param[in]     symbol_idx Time step index
  */
 RX_STATIC_TESTABLE void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
                                                         const rx_soft_bit_t soft0,
@@ -453,9 +424,6 @@ RX_STATIC_TESTABLE void internal_viterbi_process_symbol(rx_fec_decoder_t*   dec,
  *
  * Initializes path metrics and processes all symbols through the trellis.
  *
- * @param[in,out] dec Decoder handle. Modified: path_metrics updated.
- * @param[in]     soft_bits Received soft bits (pairs)
- * @param[in]     num_symbols Number of symbols to process
  */
 RX_STATIC_TESTABLE void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
                                                       const rx_soft_bit_t* soft_bits,
@@ -492,11 +460,6 @@ RX_STATIC_TESTABLE void internal_viterbi_forward_pass(rx_fec_decoder_t*    dec,
 /**
  * @brief Validate traceback preconditions
  *
- * @param[in] dec Decoder handle
- * @param[in] num_symbols Total number of symbols processed
- * @param[in] output Decoded output buffer
- * @param[in] output_bytes Number of output bytes
- * @return true if all preconditions met, false otherwise
  */
 RX_STATIC_TESTABLE bool internal_viterbi_traceback_validate(const rx_fec_decoder_t* dec,
                                                             const uint32_t          num_symbols,
@@ -529,11 +492,6 @@ RX_STATIC_TESTABLE bool internal_viterbi_traceback_validate(const rx_fec_decoder
  * Works backwards through the trellis from the terminal state to recover
  * the maximum likelihood input sequence.
  *
- * @param[in]  dec Decoder handle
- * @param[in]  num_symbols Total number of symbols processed
- * @param[in]  data_bits Number of data bits (excluding tail)
- * @param[out] output Decoded output buffer
- * @param[out] output_bytes Number of output bytes
  */
 RX_STATIC_TESTABLE void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
                                                    const uint32_t          num_symbols,
@@ -589,9 +547,7 @@ RX_STATIC_TESTABLE void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
 /**
  * @brief Initialize FEC encoder
  *
- * @param[in] enc Pointer to encoder structure
  *
- * @return k_rx_ok on success, k_rx_err_invalid_arg if enc is nullptr
  */
 rx_err_t rx_fec_encoder_init(rx_fec_encoder_t* enc)
 {
@@ -606,9 +562,7 @@ rx_err_t rx_fec_encoder_init(rx_fec_encoder_t* enc)
 /**
  * @brief Deinitialize FEC encoder
  *
- * @param[in] enc Pointer to encoder structure
  *
- * @return k_rx_ok on success, k_rx_err_invalid_arg if enc is nullptr
  */
 rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc)
 {
@@ -634,11 +588,7 @@ rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc)
  * so that unit tests can exercise the overflow paths with values larger than
  * k_fec_max_input_bytes (which the public rx_fec_encoded_len() rejects first).
  *
- * @param[in]  input_len   Unconstrained input length in bytes
- * @param[out] out_bytes   Encoded output size in bytes; valid only on true return
  *
- * @return true  on success (*out_bytes is valid)
- * @return false on overflow (any ckd_* operation overflowed); *out_bytes = 0
  *
  * @pre out_bytes must not be nullptr
  * @post *out_bytes == 0 if overflow detected; otherwise rounded-up byte count
@@ -698,9 +648,7 @@ RX_STATIC_TESTABLE bool internal_fec_compute_encoded_bytes(uint32_t input_len, u
  * Computes the number of bytes required for FEC-encoded output
  * based on input data length. Accounts for tail bits and rate-1/2 encoding.
  *
- * @param[in] input_len Length of input data in bytes
  *
- * @return Encoded output length in bytes, or 0 if input length invalid
  *
  * @pre input_len must be in range [1, k_fec_max_input_bytes]
  * @pre k_fec_max_input_bytes <= 1024 (guarantees no overflow in arithmetic)
@@ -732,11 +680,6 @@ uint32_t rx_fec_encoded_len(const uint32_t input_len)
  * Processes each byte of input MSB-first, producing two output bits per input bit
  * via the convolutional encoder.
  *
- * @param[in]     input      Input data buffer
- * @param[in]     byte_limit Number of bytes to encode
- * @param[out]    output     Output bit buffer
- * @param[in,out] state      Encoder shift-register state (modified per bit)
- * @param[in,out] out_bit_idx Next output bit index (incremented per output bit)
  */
 static void internal_encode_data_bytes(const uint8_t* input,
                                        const uint32_t byte_limit,
@@ -765,9 +708,6 @@ static void internal_encode_data_bytes(const uint8_t* input,
  * Appends k_fec_tail_bits zero-input bits to the output stream, ensuring
  * the decoder traceback terminates at state 0.
  *
- * @param[out]    output     Output bit buffer
- * @param[in,out] state      Encoder shift-register state (modified per bit)
- * @param[in,out] out_bit_idx Next output bit index (incremented per output bit)
  */
 static void internal_encode_tail_bits(uint8_t* output, uint8_t* state, uint32_t* out_bit_idx)
 {
@@ -786,16 +726,7 @@ static void internal_encode_tail_bits(uint8_t* output, uint8_t* state, uint32_t*
  * Applies rate-1/2, constraint-length-7 convolutional encoding
  * to input data. Output length is approximately 2x input length.
  *
- * @param[in]  enc Pointer to initialized encoder
- * @param[in]  input Pointer to input data buffer
- * @param[in]  input_len Length of input data (1 to k_fec_max_input_bytes)
- * @param[out] output Pointer to output buffer (must be >= rx_fec_encoded_len(input_len))
- * @param[out] output_len Pointer to store actual output length
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if any pointer is nullptr or input_len is 0
- * @return k_rx_err_invalid_state if encoder not initialized
- * @return k_rx_err_invalid_size if input_len exceeds maximum
  *
  * @pre enc must be initialized via rx_fec_encoder_init()
  * @pre All pointers must be non-nullptr
@@ -869,14 +800,7 @@ rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
  * - If successful, num_symbols_out contains the number of symbols to decode
  * - If parameters are invalid or inconsistent, returns appropriate error code
  *
- * @param[in]  dec Pointer to FEC decoder (must be initialized)
- * @param[in]  params Soft-bit decode parameters
- * @param[out] num_symbols_out Calculated number of symbols to decode
  *
- * @return k_rx_ok on successful validation
- * @return k_rx_err_invalid_arg if pointer checks or soft_len checks fail
- * @return k_rx_err_invalid_state if decoder not initialized
- * @return k_rx_err_invalid_size if calculated symbols out of range or insufficient soft bits
  */
 static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*                  dec,
                                                 const rx_fec_decode_soft_params_t* params,
@@ -943,13 +867,7 @@ static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*               
  * Initializes decoder state and associates it with provided survivors buffer.
  * The buffer is used for Viterbi algorithm path storage.
  *
- * @param[in,out] dec Pointer to decoder structure
- * @param[in]     survivors_buf Pointer to survivors buffer for Viterbi algorithm
- * @param[in]     survivors_len Length of survivors buffer in uint64_t entries
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if dec or survivors_buf is nullptr
- * @return k_rx_err_invalid_size if survivors_len is 0
  *
  * @pre dec and survivors_buf must be non-nullptr
  * @pre survivors_len must be > 0 (minimum 1 entry per symbol)
@@ -982,9 +900,7 @@ rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, const uint32
 /**
  * @brief Deinitialize FEC decoder
  *
- * @param[in] dec Pointer to decoder structure
  *
- * @return k_rx_ok on success, k_rx_err_invalid_arg if dec is nullptr
  */
 rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec)
 {
@@ -1013,24 +929,7 @@ rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec)
  * 4. Traceback: extract maximum-likelihood decoded bit sequence
  * 5. Pack decoded bits into output byte array
  *
- * @param[in] dec    Pointer to initialized FEC decoder (must be initialized via
- *                   rx_fec_decoder_init(); survivors buffer must be sized for input)
- * @param[in] params Decode parameters:
- *                   - soft_bits: signed soft values, G1/G2 interleaved pairs
- *                   - soft_len: must be non-zero and divisible by 2
- *                   - expected_output_len: expected decoded byte count (> 0)
- *                   - output: output buffer (must be >= expected_output_len bytes)
- *                   - output_len: written with actual decoded byte count on success
  *
- * @return rx_err_t Status code
- * @retval k_rx_ok             Decoding succeeded; output_len updated with byte count
- * @retval k_rx_err_invalid_arg dec or params (or required fields) are nullptr;
- *                              or soft_len is zero or not divisible by 2
- * @retval k_rx_err_invalid_state dec is not initialized
- * @retval k_rx_err_invalid_size  expected_output_len out of range; or derived
- *                                num_symbols falls outside [k_fec_tail_bits,
- *                                k_fec_max_symbols]; or data_bits == 0 after
- *                                subtracting tail bits
  *
  * @pre dec must be initialized via rx_fec_decoder_init()
  * @pre params->soft_len must be divisible by 2 (G1/G2 symbol pairs)
@@ -1108,27 +1007,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_para
  * 3. Build rx_fec_decode_soft_params_t from the converted soft bits
  * 4. Delegate to rx_fec_decode_soft() for full Viterbi decode
  *
- * @param[in] dec    Pointer to initialized FEC decoder (must be initialized via
- *                   rx_fec_decoder_init(); survivors buffer sized for decoded output)
- * @param[in] params Decode parameters:
- *                   - data: bit-packed hard-decision input (MSB-first per byte)
- *                   - data_len: byte count of hard data; must be > 0 and
- *                               <= k_fec_max_input_bytes
- *                   - soft_bits_buffer: caller-supplied scratch buffer for soft
- *                                       conversion; must be >= data_len*8 entries
- *                   - soft_buffer_len: element count of soft_bits_buffer
- *                   - expected_output_len: expected decoded byte count
- *                   - output: output buffer (must be >= expected_output_len bytes)
- *                   - output_len: written with actual decoded byte count on success
  *
- * @return rx_err_t Status code
- * @retval k_rx_ok             Decoding succeeded; output_len updated
- * @retval k_rx_err_invalid_arg dec or required params fields are nullptr;
- *                              or data_len == 0
- * @retval k_rx_err_invalid_state dec is not initialized
- * @retval k_rx_err_invalid_size  data_len > k_fec_max_input_bytes; or
- *                                soft_bits_buffer too small for converted bits;
- *                                or errors propagated from rx_fec_decode_soft()
  *
  * @pre dec must be initialized via rx_fec_decoder_init()
  * @pre params->soft_bits_buffer must be large enough: soft_buffer_len >= data_len * 8

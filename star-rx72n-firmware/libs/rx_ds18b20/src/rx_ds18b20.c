@@ -259,8 +259,6 @@ static const uint32_t s_ds18b20_conversion_time_invalid_u32 = 0U;
  * - `k_rx_err_null_ptr` if handle is nullptr
  * - `k_rx_err_invalid_state` if not initialized
  *
- * @param[in] handle Handle to validate (type: rx_ds18b20_handle_t*)
- * @param[in] tag Logging tag for error messages (type: const char*)
  *
  * @par Example:
  * @code
@@ -406,12 +404,7 @@ rx_err_t rx_ds18b20_init(rx_ds18b20_handle_t* handle, const rx_ds18b20_config_t*
  * 3. Clear the entire handle structure with memset (zeros all fields)
  * 4. Log deinitialization success
  *
- * @param[in,out] handle Sensor handle to deinitialize (must be initialized, non-null)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Handle successfully cleared
- * @retval k_rx_err_null_ptr handle pointer is nullptr
- * @retval k_rx_err_invalid_state handle was not previously initialized
  *
  * @pre handle must be a valid non-null pointer
  * @pre handle must have been successfully initialized via rx_ds18b20_init()
@@ -475,13 +468,7 @@ rx_err_t rx_ds18b20_deinit(rx_ds18b20_handle_t* handle)
  * - 11-bit: 375 ms
  * - 12-bit: 750 ms
  *
- * @param[in] handle Sensor handle (must be initialized, non-null)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Conversion command issued successfully
- * @retval k_rx_err_null_ptr handle is nullptr
- * @retval k_rx_err_invalid_state handle not initialized or device not present on bus
- * @retval k_rx_err_bus_error 1-Wire bus reset or write operation failed
  *
  * @pre handle must be initialized via rx_ds18b20_init()
  * @pre DS18B20 device must be physically connected and powered on the bus
@@ -554,17 +541,7 @@ rx_err_t rx_ds18b20_trigger_conversion(const rx_ds18b20_handle_t* handle)
  * 3. Convert raw signed 16-bit value to float: celsius = raw / 16.0f
  * 4. Write result to *temperature_celsius
  *
- * @param[in,out] handle Sensor handle (must be initialized)
- * @param[out] temperature_celsius Converted temperature in degrees Celsius,
- *             valid range [-55.0, +125.0]; undefined on error
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Temperature read and converted successfully
- * @retval k_rx_err_null_ptr handle or temperature_celsius is nullptr
- * @retval k_rx_err_invalid_state handle not initialized
- * @retval k_rx_err_out_of_range raw temperature outside [-55degC, +125degC]
- * @retval k_rx_err_crc_failure Scratchpad CRC mismatch
- * @retval k_rx_err_bus_error 1-Wire bus communication failure
  *
  * @pre handle must be initialized via rx_ds18b20_init()
  * @pre rx_ds18b20_trigger_conversion() must have been called and conversion time elapsed
@@ -638,18 +615,7 @@ rx_err_t rx_ds18b20_read_temperature(rx_ds18b20_handle_t* handle, float* tempera
  * 5. Cast to int16_t and validate range [k_ds18b20_temp_min_raw, k_ds18b20_temp_max_raw]
  * 6. Write validated result to *raw_temp
  *
- * @param[in,out] handle Sensor handle (must be initialized)
- * @param[out] raw_temp Signed 16-bit raw temperature in 1/16 degC units,
- *             valid range [k_ds18b20_temp_min_raw, k_ds18b20_temp_max_raw];
- *             undefined on error
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Raw temperature read, masked, and validated successfully
- * @retval k_rx_err_null_ptr handle or raw_temp is nullptr
- * @retval k_rx_err_invalid_state handle not initialized
- * @retval k_rx_err_out_of_range raw value outside physical sensor range
- * @retval k_rx_err_crc_failure Scratchpad CRC check failed
- * @retval k_rx_err_bus_error 1-Wire bus communication failure
  *
  * @pre handle must be initialized via rx_ds18b20_init()
  * @pre rx_ds18b20_trigger_conversion() must have been called and conversion time elapsed
@@ -731,17 +697,7 @@ rx_err_t rx_ds18b20_read_temperature_raw(rx_ds18b20_handle_t* handle, int16_t* r
  * 4. Write scratchpad with new config byte (TH/TL unchanged)
  * 5. Update handle->resolution to reflect new setting
  *
- * @param[in,out] handle Sensor handle (must be initialized); resolution field updated on success
- * @param[in] resolution New resolution setting (k_ds18b20_resolution_9bit through
- *            k_ds18b20_resolution_12bit); all other values are invalid
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Resolution updated in scratchpad and handle
- * @retval k_rx_err_null_ptr handle is nullptr
- * @retval k_rx_err_invalid_state handle not initialized
- * @retval k_rx_err_invalid_arg resolution is not a valid ds18b20_resolution_t value
- * @retval k_rx_err_crc_failure Scratchpad read CRC check failed
- * @retval k_rx_err_bus_error 1-Wire bus communication failure during read or write
  *
  * @pre handle must be initialized via rx_ds18b20_init()
  * @pre resolution must be one of k_ds18b20_resolution_9bit/10bit/11bit/12bit
@@ -820,14 +776,7 @@ rx_err_t rx_ds18b20_set_resolution(rx_ds18b20_handle_t*       handle,
  * 2. Verify handle is initialized
  * 3. Copy handle->resolution to *resolution
  *
- * @param[in] handle Sensor handle (must be initialized, non-null)
- * @param[out] resolution Receives the currently configured ds18b20_resolution_t value;
- *             undefined on error
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Resolution successfully returned
- * @retval k_rx_err_null_ptr handle or resolution pointer is nullptr
- * @retval k_rx_err_invalid_state handle not initialized (CHECK_DS18B20_HANDLE fails)
  *
  * @pre handle must be initialized via rx_ds18b20_init()
  * @pre resolution must be a valid non-null pointer
@@ -881,13 +830,7 @@ rx_err_t rx_ds18b20_get_resolution(const rx_ds18b20_handle_t* handle,
  * 3. Select the target device (Match ROM or Skip ROM depending on config)
  * 4. Write the Copy Scratchpad command byte (0x48)
  *
- * @param[in] handle Sensor handle (must be initialized, non-null)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Copy Scratchpad command successfully issued
- * @retval k_rx_err_null_ptr handle is nullptr
- * @retval k_rx_err_invalid_state handle not initialized or device not present on bus
- * @retval k_rx_err_bus_error 1-Wire bus reset or write operation failed
  *
  * @pre handle must be initialized via rx_ds18b20_init()
  * @pre DS18B20 device must be physically connected and externally powered
@@ -963,13 +906,7 @@ rx_err_t rx_ds18b20_save_config(const rx_ds18b20_handle_t* handle)
  * 3. Select the target device (Match ROM or Skip ROM depending on config)
  * 4. Write the Recall E2 command byte (0xB8)
  *
- * @param[in] handle Sensor handle (must be initialized, non-null)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Recall E2 command successfully issued
- * @retval k_rx_err_null_ptr handle is nullptr
- * @retval k_rx_err_invalid_state handle not initialized or device not present on bus
- * @retval k_rx_err_bus_error 1-Wire bus reset or write operation failed
  *
  * @pre handle must be initialized via rx_ds18b20_init()
  * @pre DS18B20 device must be physically connected to the bus
@@ -1045,15 +982,7 @@ rx_err_t rx_ds18b20_recall_config(const rx_ds18b20_handle_t* handle)
  * 5. Read one bit from the bus (0 = parasitic, 1 = external)
  * 6. Write result to *external_power
  *
- * @param[in] handle Sensor handle (must be initialized, non-null)
- * @param[out] external_power Set to true if device uses external power supply,
- *             false if device uses parasitic (bus-powered) mode; undefined on error
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Power mode successfully read
- * @retval k_rx_err_null_ptr handle or external_power pointer is nullptr
- * @retval k_rx_err_invalid_state handle not initialized or device not present on bus
- * @retval k_rx_err_bus_error 1-Wire bus reset, write, or read operation failed
  *
  * @pre handle must be initialized via rx_ds18b20_init()
  * @pre DS18B20 device must be physically connected to the bus
@@ -1145,16 +1074,7 @@ rx_err_t rx_ds18b20_read_power_mode(const rx_ds18b20_handle_t* handle, bool* ext
  *    1-Wire reset, Match/Skip ROM selection, Read Scratchpad (0xBE) command,
  *    reads 9 bytes, and verifies CRC-8
  *
- * @param[in,out] handle Sensor handle (must be initialized, non-null)
- * @param[out] scratchpad Buffer of exactly k_ds18b20_scratchpad_bytes (9) bytes
- *             to receive the raw scratchpad contents; undefined on error
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Scratchpad successfully read and CRC verified
- * @retval k_rx_err_null_ptr handle or scratchpad buffer is nullptr
- * @retval k_rx_err_invalid_state handle not initialized
- * @retval k_rx_err_crc_failure Scratchpad CRC-8 check failed (data corrupted)
- * @retval k_rx_err_bus_error 1-Wire bus communication failure
  *
  * @pre handle must be initialized via rx_ds18b20_init()
  * @pre scratchpad must point to a buffer of at least k_ds18b20_scratchpad_bytes bytes
@@ -1196,9 +1116,7 @@ rx_err_t rx_ds18b20_read_scratchpad(rx_ds18b20_handle_t* handle,
  * Returns the required wait time after triggering conversion based on
  * the configured resolution (9-bit: 94ms, 10-bit: 188ms, 11-bit: 375ms, 12-bit: 750ms).
  *
- * @param[in] handle Sensor handle
  *
- * @return Conversion time in milliseconds, or invalid value if handle is nullptr/uninitialized
  */
 uint32_t rx_ds18b20_get_conversion_time_ms(const rx_ds18b20_handle_t* handle)
 {
@@ -1255,13 +1173,7 @@ uint32_t rx_ds18b20_get_conversion_time_ms(const rx_ds18b20_handle_t* handle)
  * +-----------------+----------------+---------------------+
  * ```
  *
- * @param[in] config Configuration structure to validate
- * @param[in] handle Handle to check for existing initialization
  *
- * @return k_rx_ok Configuration is valid
- * @retval k_rx_err_null_ptr config, bus_manager, or bus_name is nullptr
- * @retval k_rx_err_invalid_state handle already initialized
- * @retval k_rx_err_invalid_arg Invalid resolution or wrong family code
  *
  * @pre config != nullptr
  * @pre handle != nullptr (checked by caller)
@@ -1341,11 +1253,7 @@ static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* conf
  * - Presence detect: 60-240 us after reset
  * - Scratchpad read: ~5ms (9 bytes + CRC)
  *
- * @param[in,out] handle DS18B20 handle with bus configuration
  *
- * @return k_rx_ok Device present and communicating
- * @retval k_rx_err_invalid_state No presence pulse detected
- * @retval k_rx_err_* Bus initialization or scratchpad read error
  *
  * @pre handle->bus_manager is valid
  * @pre handle->bus_name is valid
@@ -1440,10 +1348,7 @@ static rx_err_t internal_ds18b20_verify_device_presence(rx_ds18b20_handle_t* han
  * - Match ROM: ~3ms (1 byte command + 8 bytes ROM)
  * - Skip ROM: ~1ms (1 byte command)
  *
- * @param[in] handle DS18B20 handle with ROM configuration
  *
- * @return k_rx_ok Device selected successfully
- * @retval k_rx_err_* Bus communication error
  *
  * @pre handle->use_rom_matching is configured
  * @pre If ROM matching: handle->rom contains valid 64-bit ID
@@ -1549,15 +1454,7 @@ static rx_err_t internal_ds18b20_select_device(const rx_ds18b20_handle_t* handle
  * - CRC verified (data integrity guaranteed)
  * - Reserved byte checked (warning if unexpected)
  *
- * @param[in] handle DS18B20 sensor handle (must be initialized)
- * @param[out] scratchpad 9-byte buffer to receive scratchpad data
- *                        Array must be at least k_ds18b20_scratchpad_bytes (9) bytes
  *
- * @return k_rx_ok Scratchpad read successful, CRC valid
- * @retval k_rx_err_null_ptr handle or scratchpad is nullptr
- * @retval k_rx_err_invalid_state Device not present on bus
- * @retval k_rx_err_crc_mismatch CRC validation failed (corrupted data)
- * @retval k_rx_err_* Bus communication error
  *
  * @pre handle != nullptr
  * @pre handle->initialized == true
@@ -1706,13 +1603,7 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(const rx_ds18b20_handle_t* 
  * - Lost on power cycle or reset
  * - Use Copy Scratchpad (0x48) to save to EEPROM
  *
- * @param[in] handle DS18B20 sensor handle (must be initialized)
- * @param[in] scratchpad Write parameters (TH, TL, config)
  *
- * @return k_rx_ok Scratchpad written successfully
- * @retval k_rx_err_null_ptr handle or scratchpad is nullptr
- * @retval k_rx_err_invalid_state Device not present on bus
- * @retval k_rx_err_* Bus communication error
  *
  * @pre handle != nullptr
  * @pre handle->initialized == true
@@ -1794,9 +1685,7 @@ static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t*    
 /**
  * @brief Convert resolution enum to config register value
  *
- * @param[in] resolution Resolution mode
  *
- * @return Configuration register value
  */
 static uint8_t internal_ds18b20_resolution_to_config(const ds18b20_resolution_t resolution)
 {
@@ -1811,9 +1700,7 @@ static uint8_t internal_ds18b20_resolution_to_config(const ds18b20_resolution_t 
  *
  * Lower bits are undefined for resolutions < 12-bit and must be masked.
  *
- * @param[in] resolution Resolution mode
  *
- * @return Temperature mask
  */
 static uint16_t internal_ds18b20_get_temp_mask(const ds18b20_resolution_t resolution)
 {
@@ -1836,9 +1723,7 @@ static uint16_t internal_ds18b20_get_temp_mask(const ds18b20_resolution_t resolu
  * DS18B20 stores temperature as 16-bit signed value in 1/16degC units.
  * Divide by 16 to get Celsius.
  *
- * @param[in] raw_temp Raw 16-bit temperature value
  *
- * @return Temperature in degrees Celsius
  */
 static float internal_ds18b20_raw_to_celsius(const int16_t raw_temp)
 {

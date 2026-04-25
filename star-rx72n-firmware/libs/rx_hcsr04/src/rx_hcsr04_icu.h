@@ -117,9 +117,7 @@ extern "C" {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok ICU configured successfully
- * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
- * @retval k_rx_err_invalid_arg priority not in range [1, 15]
- * @retval k_rx_err_invalid_arg irq_num not valid for digital filter (propagated from rx_irq_filter_enable())
+ * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]; priority not in range [1, 15]; irq_num not valid for digital filter (propagated from rx_irq_filter_enable())
  *
  * @pre Pin already configured for IRQ function via rx_mpc_set_irq()
  * @pre ICU module not in module stop (MSTPCRA bit cleared)
@@ -189,9 +187,8 @@ extern "C" {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok IRQ and digital filter both disabled successfully
- * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
+ * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]; irq_num not valid for digital filter (propagated from rx_irq_filter_disable())
  * @retval k_rx_err_invalid_state IRQ was not enabled in IER (rx_hcsr04_icu_configure() not called first)
- * @retval k_rx_err_invalid_arg irq_num not valid for digital filter (propagated from rx_irq_filter_disable())
  *
  * @pre IRQ was previously enabled via rx_hcsr04_icu_configure() (IER bit must be set)
  * @pre No measurement in progress on this IRQ

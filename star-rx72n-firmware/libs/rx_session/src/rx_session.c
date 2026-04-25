@@ -102,9 +102,6 @@ static TX_MUTEX s_session_mutex;
  * Locks the internal mutex with TX_WAIT_FOREVER. In simulator mode, this
  * is a no-op since ThreadX is not running.
  *
- * @return rx_err_t
- * @retval k_rx_ok Mutex acquired
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre Mutex must have been created via rx_session_init()
  * @post Mutex is held by calling thread
@@ -158,12 +155,7 @@ static void internal_unlock(void)
  * In simulator builds (RX_SIMULATOR_MODE), mutex creation is skipped since
  * the ThreadX kernel is not running.
  *
- * @param[in,out] state Session state to initialize (must not be NULL)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, session ready for use
- * @retval k_rx_err_null_ptr state isnullptr
- * @retval k_rx_err_rtos_mutex ThreadX mutex creation failed
  *
  * @pre state must point to valid, allocated memory
  * @pre state must not already be initialized (call rx_session_deinit() first)
@@ -209,12 +201,7 @@ rx_err_t rx_session_init(rx_session_state_t* state)
  *
  * In simulator builds, mutex deletion is skipped since it was never created.
  *
- * @param[in,out] state Session state to deinitialize (must not be NULL)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, resources released
- * @retval k_rx_err_null_ptr state isnullptr
- * @retval k_rx_err_not_initialized state was not initialized
  *
  * @pre state !=nullptr
  * @pre state->initialized == true
@@ -257,14 +244,7 @@ rx_err_t rx_session_deinit(rx_session_state_t* state)
  *
  * Mirrors Go gateway's `SessionState.NextTxSequence()`.
  *
- * @param[in,out] state Session state (must be initialized)
- * @param[out] sequence Pointer to receive the sequence number
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, sequence written
- * @retval k_rx_err_null_ptr state or sequence isnullptr
- * @retval k_rx_err_not_initialized state not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre state must be initialized via rx_session_init()
  * @pre sequence must point to valid memory
@@ -316,16 +296,7 @@ rx_err_t rx_session_next_tx(rx_session_state_t* state, uint16_t* sequence)
  * | 0 < diff < k_session_max_gap_tolerance | k_session_validate_gap | rx_sequence = received + 1 |
  * | diff >= k_session_max_gap_tolerance | k_session_validate_fail | rx_sequence unchanged |
  *
- * @param[in,out] state Session state (must be initialized)
- * @param[in] received_seq The sequence number from the received frame
- * @param[out] result Validation result code (may be NULL if not needed)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Sequence accepted (exact match or small gap)
- * @retval k_rx_err_protocol_error Sequence rejected (large gap or duplicate)
- * @retval k_rx_err_null_ptr state isnullptr
- * @retval k_rx_err_not_initialized state not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre state must be initialized via rx_session_init()
  * @post On accept: state->rx_sequence updated to received_seq + 1
@@ -398,13 +369,7 @@ rx_err_t rx_session_validate_rx(rx_session_state_t*           state,
  *
  * Mirrors Go gateway's `SessionState.Reset()`.
  *
- * @param[in,out] state Session state (must be initialized)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, sequences reset
- * @retval k_rx_err_null_ptr state isnullptr
- * @retval k_rx_err_not_initialized state not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre state must be initialized via rx_session_init()
  * @post state->tx_sequence == k_session_initial_sequence
@@ -443,14 +408,7 @@ rx_err_t rx_session_reset(rx_session_state_t* state)
  * Returns the current TX sequence counter value for diagnostic purposes.
  * Does not modify the counter.
  *
- * @param[in] state Session state (must be initialized)
- * @param[out] sequence Pointer to receive the current TX sequence
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, sequence written
- * @retval k_rx_err_null_ptr state or sequence isnullptr
- * @retval k_rx_err_not_initialized state not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre state must be initialized via rx_session_init()
  * @pre sequence must point to valid memory
@@ -491,14 +449,7 @@ rx_err_t rx_session_get_tx(const rx_session_state_t* state, uint16_t* sequence)
  * Returns the next expected RX sequence counter value for diagnostic purposes.
  * Does not modify the counter.
  *
- * @param[in] state Session state (must be initialized)
- * @param[out] sequence Pointer to receive the current RX sequence
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, sequence written
- * @retval k_rx_err_null_ptr state or sequence isnullptr
- * @retval k_rx_err_not_initialized state not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
  * @pre state must be initialized via rx_session_init()
  * @pre sequence must point to valid memory

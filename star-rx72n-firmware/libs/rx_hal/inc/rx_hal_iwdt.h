@@ -51,9 +51,9 @@
  * | Register | Address | Description |
  * |----------|---------|-------------|
  * | IWDTRR | 0x00088030 | Refresh register |
- * | IWDTCR | 0x00088032 | Control register |
+ * | IWDT\\r | 0x00088032 | Control register |
  * | IWDTSR | 0x00088034 | Status register |
- * | IWDTRCR | 0x00088036 | Reset control register |
+ * | IWDTR\\r | 0x00088036 | Reset control register |
  * | IWDTCSTPR | 0x00088038 | Count stop register |
  *
  * @par Timeout Calculation:
@@ -71,7 +71,7 @@
  * - **XCIN**: Connect to VSS (ground) via pull-down resistor
  * - **XCOUT**: Leave open (unconnected)
  *
- * System initialization disables sub-clock via SOSCCR.SOSTP = 1.
+ * System initialization disables sub-clock via SOSC\\r.SOSTP = 1.
  *
  * ## Performance Characteristics
  *
@@ -241,14 +241,14 @@ typedef enum : uint16_t {
  *
  *     switch (cause) {
  *     case k_iwdt_reset_none:
- *         uart_debug_puts("Normal startup\r\n");
+ *         uart_debug_puts("Normal startup\\r\\n");
  *         break;
  *     case k_iwdt_reset_underflow:
- *         uart_debug_puts("[WARN] Watchdog timeout - task deadlock?\r\n");
+ *         uart_debug_puts("[WARN] Watchdog timeout - task deadlock?\\r\\n");
  *         log_failed_task(rx_hal_iwdt_get_failed_task());
  *         break;
  *     case k_iwdt_reset_refresh_error:
- *         uart_debug_puts("[ERROR] Watchdog refresh error - code bug\r\n");
+ *         uart_debug_puts("[ERROR] Watchdog refresh error - code bug\\r\\n");
  *         break;
  *     }
  *

@@ -238,14 +238,8 @@ static UINT internal_mutex_put_if_running(TX_MUTEX* mtx)
  * - **Testing**: Test with_bus once, commands inherit thread safety
  * - **Cost**: One extra function call (~0.5 us overhead) - negligible
  *
- * @param[in] bus_config Bus configuration pointer (guaranteed valid by with_bus)
- * @param[in] user_ctx User context (rx_bus_command_t* cast by this function)
  *
- * @return rx_err_t Execution status
  *
- * @retval k_rx_ok Command executed successfully
- * @retval k_rx_err_null_ptr bus_config, user_ctx, or command->execute is nullptr
- * @retval Other Command execution error (propagated from command->execute)
  *
  * @pre bus_config validated by rx_bus_manager_with_bus (non-NULL, mutex held)
  * @pre user_ctx points to valid rx_bus_command_t structure
@@ -379,25 +373,8 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
  * - Ensures valid context pointers
  * - Detects configuration errors early (fail-fast principle)
  *
- * @param[in,out] manager Bus manager instance to initialize. Must point to
- *                        allocated rx_bus_manager_t structure (stack or static).
- *                        On success, contains initialized mutex and empty bus list.
- * @param[in] tag Logging tag for debug messages (e.g., "MOTOR", "SENSOR").
- *                Must be non-NULL, typically <=8 characters. Pointer stored
- *                directly (NOT copied) - string must remain valid for manager lifetime.
- * @param[in] error_iface Error handler interface for operation failures.
- *                        Must be non-NULL and validated. Allows dependency
- *                        injection for testability (production vs mock implementations).
- * @param[in] pin_iface Pin validator interface for GPIO configuration.
- *                      Must be non-NULL and validated. Used to prevent
- *                      conflicting pin assignments across buses.
  *
- * @return rx_err_t Initialization status
  *
- * @retval k_rx_ok Manager initialized successfully, ready for use
- * @retval k_rx_err_null_ptr manager, tag, error_iface, or pin_iface is nullptr
- * @retval k_rx_err_invalid_arg error_iface or pin_iface validation failed
- * @retval k_rx_err_threadx ThreadX mutex creation failed (tx_mutex_create returned != TX_SUCCESS)
  *
  * @pre manager points to allocated rx_bus_manager_t structure
  * @pre tag is non-NULL string (must remain valid for manager lifetime)
@@ -510,9 +487,6 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
 /**
  * @brief Validate error and pin interfaces for bus manager init
  *
- * @param[in] error_iface Error interface to validate
- * @param[in] pin_iface   Pin interface to validate
- * @return k_rx_ok on success, error code on validation failure
  */
 static rx_err_t internal_validate_bus_manager_interfaces(rx_error_interface_t* error_iface,
                                                          rx_pin_interface_t*   pin_iface)
@@ -615,15 +589,8 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
  *
  * Manager still zeroed even on mutex delete failure (partial cleanup).
  *
- * @param[in,out] manager Bus manager instance to deinitialize.
- *                        On success, structure zeroed and unusable until
- *                        reinitialized via rx_bus_manager_init().
  *
- * @return rx_err_t Deinitialization status
  *
- * @retval k_rx_ok Manager deinitialized successfully (all resources released)
- * @retval k_rx_err_null_ptr manager parameter is nullptr
- * @retval k_rx_err_threadx ThreadX mutex deletion failed (tx_mutex_delete != TX_SUCCESS)
  *
  * @pre manager was initialized via rx_bus_manager_init()
  * @pre No other threads are using this manager (all operations completed)
@@ -814,21 +781,8 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
  * | k_rx_err_exists | Duplicate name | Use unique name or remove existing |
  * | k_rx_err_no_mem | >=16 buses registered | Remove unused buses |
  *
- * @param[in,out] manager Bus manager instance (must be initialized).
- *                        On success, contains new bus in linked list.
- * @param[in] bus_config Bus configuration to add. Manager links this into
- *                       list but does NOT take ownership of memory. Structure
- *                       must remain valid until removed via remove_bus() or
- *                       manager deinitialized. Must have valid name and type fields.
  *
- * @return rx_err_t Registration status
  *
- * @retval k_rx_ok Bus registered successfully, accessible via find_bus/with_bus
- * @retval k_rx_err_null_ptr manager, bus_config, or bus_config->name is nullptr
- * @retval k_rx_err_invalid_arg bus_config->name is empty string ("")
- * @retval k_rx_err_exists Bus with same name already registered (duplicate)
- * @retval k_rx_err_no_mem Maximum buses reached (bus_count >= k_max_buses = 16)
- * @retval k_rx_err_timeout Mutex timeout acquiring lock (1000 ms expired)
  *
  * @pre manager initialized via rx_bus_manager_init()
  * @pre bus_config points to valid allocated configuration
@@ -937,9 +891,6 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
  * @pre Manager mutex is held by caller
  * @post Manager mutex is released on all return paths
  *
- * @param[in,out] manager    Bus manager (mutex already acquired)
- * @param[in,out] bus_config Bus configuration to add
- * @return k_rx_ok on success, error code otherwise
  */
 static rx_err_t internal_add_bus_locked(rx_bus_manager_t* manager, rx_bus_config_t* bus_config)
 {
@@ -1078,16 +1029,8 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
  * - **Flexibility**: Caller might re-register bus with different config
  * - **Simplicity**: Manager only manages registry, not hardware lifecycle
  *
- * @param[in,out] manager Bus manager instance. On success, bus removed from list.
- * @param[in] name Bus name to remove (case-sensitive, null-terminated string).
- *                 Must match exactly (strncmp with k_max_bus_name_len).
  *
- * @return rx_err_t Removal status
  *
- * @retval k_rx_ok Bus removed successfully, bus_count decremented
- * @retval k_rx_err_null_ptr manager or name is nullptr
- * @retval k_rx_err_not_found No bus with given name found in registry
- * @retval k_rx_err_timeout Mutex timeout acquiring lock (1000 ms expired)
  *
  * @pre manager initialized via rx_bus_manager_init()
  * @pre Bus with name exists in registry (otherwise k_rx_err_not_found)

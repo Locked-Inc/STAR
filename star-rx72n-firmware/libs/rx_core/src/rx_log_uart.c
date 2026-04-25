@@ -121,6 +121,31 @@ static void internal_init_mutex_once(void)
  * Public API -- producers
  * ============================================================================= */
 
+/**
+ * @brief Append a single character to the log ring buffer
+ *
+ * @details
+ * Lazily initializes the producer/consumer mutex on first call, then appends
+ * a single byte to the ring buffer.  If the ring is full the oldest byte is
+ * dropped (silent overflow); the dropped-bytes counter is updated through
+ * internal_append_byte().
+ *
+ *
+ * @pre ThreadX kernel is running (mutex create/get must succeed).
+ * @pre The log ring buffer storage is statically allocated; no caller setup.
+ *
+ * @post On exit: byte has either been appended or counted as dropped.
+ * @post The producer/consumer mutex is released before return.
+ *
+ * @note Thread-safe via an internal ThreadX mutex; bounded blocking on
+ *       contention.  Safe to call from any task context.  NOT safe from
+ *       ISR context (mutex would block).
+ *
+ * @see rx_log_uart_puts()  Append a NUL-terminated string.
+ * @see rx_log_uart_drain() Consume queued bytes for transmission.
+ *
+ * @since Version 1.0.0
+ */
 void rx_log_uart_putc(char c)
 {
   internal_init_mutex_once();
@@ -129,6 +154,32 @@ void rx_log_uart_putc(char c)
   (void)tx_mutex_put(&s_mutex);
 }
 
+/**
+ * @brief Append a NUL-terminated string to the log ring buffer
+ *
+ * @details
+ * Iterates over the input string and appends each byte to the ring buffer
+ * under a single lock (one mutex acquire per call, not per byte).  This
+ * keeps multi-byte log records atomic with respect to other producers and
+ * to the drain consumer.  A NULL input pointer is treated as a no-op for
+ * caller convenience and does not require explicit guards in caller code.
+ *
+ *
+ * @pre ThreadX kernel is running.
+ * @pre str is either NULL or a valid NUL-terminated string.
+ *
+ * @post On exit: all bytes from str (excluding NUL) have either been
+ *       appended or counted as dropped.
+ * @post The producer/consumer mutex is released before return.
+ *
+ * @note Thread-safe via an internal ThreadX mutex; bounded blocking on
+ *       contention.  NOT safe from ISR context.
+ *
+ * @see rx_log_uart_putc() Append a single character.
+ * @see rx_log_uart_drain() Consume queued bytes for transmission.
+ *
+ * @since Version 1.0.0
+ */
 void rx_log_uart_puts(const char* str)
 {
   if (str == NULL) {
@@ -142,6 +193,30 @@ void rx_log_uart_puts(const char* str)
   (void)tx_mutex_put(&s_mutex);
 }
 
+/**
+ * @brief Append a signed 32-bit decimal integer to the log ring buffer
+ *
+ * @details
+ * Converts value to its decimal string representation in a stack-local
+ * buffer (no heap allocation), then forwards to rx_log_uart_puts().
+ * Negative numbers are prefixed with '-'.  Conversion is unsigned after
+ * sign extraction so INT32_MIN does not wrap.
+ *
+ *
+ * @pre ThreadX kernel is running.
+ *
+ * @post On exit: the decimal representation of value has been appended (or
+ *       partially dropped on overflow).
+ * @post No state other than the ring buffer is mutated.
+ *
+ * @note Thread-safe via the underlying rx_log_uart_puts() mutex.
+ *       NOT safe from ISR context.
+ *
+ * @see rx_log_uart_putuint() Unsigned variant.
+ * @see rx_log_uart_puthex()  Hex format with fixed digit count.
+ *
+ * @since Version 1.0.0
+ */
 void rx_log_uart_putint(int32_t value)
 {
   char buf[k_int32_buf_len];
@@ -166,6 +241,29 @@ void rx_log_uart_putint(int32_t value)
   rx_log_uart_puts(p);
 }
 
+/**
+ * @brief Append an unsigned 32-bit decimal integer to the log ring buffer
+ *
+ * @details
+ * Converts value to a decimal string in a stack-local buffer using base-10
+ * division, then forwards to rx_log_uart_puts().  Output never includes a
+ * leading sign.
+ *
+ *
+ * @pre ThreadX kernel is running.
+ *
+ * @post On exit: the decimal representation of value has been appended (or
+ *       partially dropped on ring overflow).
+ * @post No state other than the ring buffer is mutated.
+ *
+ * @note Thread-safe via the underlying rx_log_uart_puts() mutex.
+ *       NOT safe from ISR context.
+ *
+ * @see rx_log_uart_putint()  Signed variant.
+ * @see rx_log_uart_puthex()  Hex format with fixed digit count.
+ *
+ * @since Version 1.0.0
+ */
 void rx_log_uart_putuint(uint32_t value)
 {
   char buf[k_uint32_buf_len];
@@ -182,6 +280,29 @@ void rx_log_uart_putuint(uint32_t value)
   rx_log_uart_puts(p);
 }
 
+/**
+ * @brief Append a fixed-width uppercase hex value to the log ring buffer
+ *
+ * @details
+ * Formats value as `digits` hex characters (uppercase A-F, zero padded on
+ * the left) into a stack-local buffer, then forwards to rx_log_uart_puts().
+ * If digits is 0 it is silently promoted to 1; if it exceeds
+ * k_hex_max_digits it is clamped to that maximum to fit the local buffer.
+ *
+ *
+ * @pre ThreadX kernel is running.
+ *
+ * @post On exit: exactly `digits` hex characters have been appended (or
+ *       partially dropped on overflow).
+ * @post No state other than the ring buffer is mutated.
+ *
+ * @note Thread-safe via the underlying rx_log_uart_puts() mutex.
+ *       NOT safe from ISR context.
+ *
+ * @see rx_log_uart_putuint() Decimal unsigned variant.
+ *
+ * @since Version 1.0.0
+ */
 void rx_log_uart_puthex(uint32_t value, uint8_t digits)
 {
   if (digits == 0U) {
@@ -208,6 +329,27 @@ void rx_log_uart_puthex(uint32_t value, uint8_t digits)
  * Public API -- consumer (comm_task)
  * ============================================================================= */
 
+/**
+ * @brief Return the number of bytes currently queued in the log ring
+ *
+ * @details
+ * Acquires the producer/consumer mutex, snapshots s_count, and releases
+ * the mutex before returning.  This gives a momentarily-consistent count
+ * suitable for deciding whether the consumer needs to drain on this tick.
+ * The value can change between read and use; treat it as a hint.
+ *
+ *
+ * @pre ThreadX kernel is running.
+ *
+ * @post No state is mutated.
+ * @post The producer/consumer mutex is released before return.
+ *
+ * @note Thread-safe via the internal mutex.  NOT safe from ISR context.
+ *
+ * @see rx_log_uart_drain() Consumer that empties the ring.
+ *
+ * @since Version 1.0.0
+ */
 uint32_t rx_log_uart_pending_len(void)
 {
   internal_init_mutex_once();
@@ -217,6 +359,38 @@ uint32_t rx_log_uart_pending_len(void)
   return n;
 }
 
+/**
+ * @brief Drain queued log bytes into the caller's buffer for transmission
+ *
+ * @details
+ * Single-consumer drain entry-point.  Copies up to max_len bytes of queued
+ * log data from the ring tail into out_buf, returning the actual byte count
+ * via *out_len.  If the unread region wraps the ring end, only the
+ * pre-wrap contiguous run is returned this call; the caller drains again
+ * to pick up the remainder.  This bounds execution time per call (NASA
+ * Rule 2) and keeps the consumer loop simple.
+ *
+ * Updates s_tail and s_count under the producer/consumer mutex, and
+ * accumulates drained_bytes into the stats block.
+ *
+ *
+ *
+ * @pre ThreadX kernel is running.
+ * @pre out_buf points to writable storage of at least max_len bytes.
+ *
+ * @post On k_rx_ok: *out_len in [0, max_len]; ring tail advanced by
+ *       *out_len bytes; s_count decreased by *out_len.
+ * @post On k_rx_err_invalid_arg: ring state unchanged.
+ *
+ * @note Thread-safe via the internal mutex.  Designed for a single
+ *       consumer task (typically comm_task).  Multiple concurrent
+ *       consumers would share bytes incorrectly even though no corruption
+ *       would occur.
+ *
+ * @see rx_log_uart_pending_len() Cheap precheck before draining.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_log_uart_drain(uint8_t* out_buf, uint32_t max_len, uint32_t* out_len)
 {
   if ((out_buf == NULL) || (out_len == NULL) || (max_len == 0U)) {
@@ -251,6 +425,27 @@ rx_err_t rx_log_uart_drain(uint8_t* out_buf, uint32_t max_len, uint32_t* out_len
   return k_rx_ok;
 }
 
+/**
+ * @brief Snapshot the log-ring statistics into a caller-supplied struct
+ *
+ * @details
+ * Copies the current rx_log_uart_stats_t value (drained_bytes,
+ * dropped_bytes, ring_high_water, etc.) under the producer/consumer mutex.
+ * A NULL output pointer is treated as a no-op for caller convenience.
+ *
+ *
+ * @pre ThreadX kernel is running.
+ * @pre stats is either NULL or points to writable rx_log_uart_stats_t.
+ *
+ * @post On non-NULL stats: *stats holds a momentarily-consistent snapshot.
+ * @post Internal stats counters are not reset.
+ *
+ * @note Thread-safe via the internal mutex.  NOT safe from ISR context.
+ *
+ * @see rx_log_uart_pending_len() Live pending-length view.
+ *
+ * @since Version 1.0.0
+ */
 void rx_log_uart_get_stats(rx_log_uart_stats_t* stats)
 {
   if (stats == NULL) {

@@ -72,7 +72,6 @@
  * C is 5
  *
  * @enduml
- * @enduml
  *
  * **Forward Motion (Phase A leads Phase B):**
  * ```
@@ -463,9 +462,7 @@ RX_STATIC_TESTABLE bool internal_is_valid_channel(rx_mtu_channel_t channel);
 /**
  * @brief Get MTU channel base address
  *
- * @param[in] channel MTU channel
  *
- * @return Pointer to MTU register base, or nullptr if invalid
  */
 RX_STATIC_TESTABLE volatile rx_mtu_channel_regs_t*
 internal_get_mtu_base(const rx_mtu_channel_t channel)
@@ -529,22 +526,7 @@ RX_STATIC_TESTABLE bool internal_is_valid_channel(const rx_mtu_channel_t channel
  * - 4x decoding: 341 x 4 = 1364 counts/revolution
  * - Angular resolution: 360deg / 1364 = 0.264deg per count
  *
- * @param[in] config Pointer to encoder configuration structure
- *   - Must not be NULL (validated)
- *   - config->channel: MTU channel to use (k_mtu_channel_0 to k_mtu_channel_7, excluding 5)
- *   - config->counts_per_rev: Encoder resolution after 4x decoding [1, 65535]
- *     - STAR motors: 341 PPR x 4 = 1364 counts/rev
- *     - Must be >= 1 to prevent division by zero
- *   - config->invert_direction: true to reverse count direction, false for normal
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, encoder initialized and counting
- * @retval k_rx_err_null_ptr config pointer is nullptr
- * @retval k_rx_err_invalid_arg counts_per_rev < 1 (would cause division by zero)
- * @retval k_rx_err_invalid_arg channel invalid or not supported (e.g., channel 5)
- * @retval k_rx_err_* Propagated from rx_mtu_stop() (failed to stop timer before config)
- * @retval k_rx_err_hw_init_failed Timer configuration not latched (hardware fault)
- * @retval k_rx_err_* Propagated from rx_mtu_start() (failed to start timer)
  *
  * @pre config must point to valid rx_encoder_config_t structure
  * @pre MTU channel must not already be in use (no double initialization check)
@@ -692,20 +674,8 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
  * - Counter wraps: 65535 -> 0 (forward) or 0 -> 65535 (reverse)
  * - No software processing applied to value
  *
- * @param[in] channel MTU channel to read
- *   - Must be valid channel (0-4, 6-7, excluding 5)
- *   - Must be initialized via rx_encoder_init()
  *
- * @param[out] count Pointer to store raw 16-bit counter value
- *   - Must not be NULL (validated)
- *   - Value range: [0, 65535]
- *   - Value unchanged if function returns error
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, count contains current TCNT value
- * @retval k_rx_err_null_ptr count pointer is nullptr
- * @retval k_rx_err_invalid_arg channel invalid (not 0-4, 6-7)
- * @retval k_rx_err_invalid_state Encoder not initialized on this channel
  *
  * @pre channel must be initialized via rx_encoder_init()
  * @pre count must point to valid uint16_t variable
@@ -760,9 +730,6 @@ rx_err_t rx_encoder_read_raw(const rx_mtu_channel_t channel, uint16_t* count)
 
 /**
  * @brief Read encoder count and position
- * @param[in] channel MTU channel
- * @param[out] state Pointer to store encoder state (count, position, revolutions)
- * @return k_rx_ok on success, error code otherwise
  */
 rx_err_t rx_encoder_read_count(const rx_mtu_channel_t channel, rx_encoder_state_t* state)
 {
@@ -822,31 +789,9 @@ rx_err_t rx_encoder_read_count(const rx_mtu_channel_t channel, rx_encoder_state_
  * Function maintains internal state (s_last_count[channel]) to calculate delta between calls.
  * First call after init returns velocity based on change since initialization (typically zero).
  *
- * @param[out] velocity_rps Pointer to store calculated velocity in revolutions per second
- *   - Must not be NULL (validated)
- *   - Units: Revolutions per second (RPS)
- *   - Positive: Forward rotation, negative: Reverse rotation
- *   - Range: Typically [-10, +10] RPS for STAR motors (+/-600 RPM)
- *   - Unrealistic values (> 100 RPS = 6000 RPM) trigger warning but succeed
  *
- * @param[in] delta_time_s Time interval since last velocity measurement
- *   - Must be > 0 and <= 10 seconds (validated to catch parameter swaps)
- *   - Units: Seconds (s)
- *   - Typical: 0.01s (100 Hz control loop) or 0.001s (1 kHz)
- *   - Smaller values -> lower resolution, faster response
- *   - Larger values -> higher resolution, slower response
  *
- * @param[in] channel MTU channel to read
- *   - Must be valid channel (0-4, 6-7, excluding 5)
- *   - Must be initialized via rx_encoder_init()
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, velocity calculated and written to *velocity_rps
- * @retval k_rx_err_null_ptr velocity_rps pointer is nullptr
- * @retval k_rx_err_invalid_arg delta_time_s <= 0 or > 10 (possible parameter swap with channel)
- * @retval k_rx_err_invalid_arg channel invalid (not 0-4, 6-7)
- * @retval k_rx_err_invalid_state Encoder not initialized on this channel
- * @retval k_rx_err_invalid_state counts_per_rev < 1 (state corrupted)
  *
  * @pre channel must be initialized via rx_encoder_init()
  * @pre delta_time_s must match actual time since last call for accurate results
@@ -1012,14 +957,7 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
  * - Error recovery: Clear accumulated position after fault
  * - Testing: Reset between test runs
  *
- * @param[in] channel MTU channel to reset
- *   - Must be valid channel (0-4, 6-7, excluding 5)
- *   - Must be initialized via rx_encoder_init()
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, encoder reset to zero
- * @retval k_rx_err_invalid_arg channel invalid (not 0-4, 6-7)
- * @retval k_rx_err_invalid_state Encoder not initialized on this channel
  *
  * @pre channel must be initialized via rx_encoder_init()
  * @pre No other tasks reading encoder during reset (race condition possible)
@@ -1110,9 +1048,6 @@ rx_err_t rx_encoder_reset(const rx_mtu_channel_t channel)
 
 /**
  * @brief Set encoder count to specific value
- * @param[in] count Desired count value
- * @param[in] channel MTU channel
- * @return k_rx_ok on success, error code otherwise
  */
 rx_err_t rx_encoder_set_count(const int32_t count, const rx_mtu_channel_t channel)
 {
@@ -1169,14 +1104,7 @@ rx_err_t rx_encoder_set_count(const int32_t count, const rx_mtu_channel_t channe
  * - Error recovery: Clean up after hardware fault
  * - Resource sharing: Free MTU channel for other use
  *
- * @param[in] channel MTU channel to deinitialize
- *   - Must be valid channel (0-4, 6-7, excluding 5)
- *   - Must be initialized (double-deinit returns error)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, encoder deinitialized and timer stopped
- * @retval k_rx_err_invalid_arg channel invalid (not 0-4, 6-7)
- * @retval k_rx_err_invalid_state Encoder not initialized (already deinitialized)
  *
  * @pre channel must be initialized via rx_encoder_init()
  * @pre No other tasks are currently accessing this encoder
@@ -1265,9 +1193,7 @@ rx_err_t rx_encoder_deinit(const rx_mtu_channel_t channel)
 /**
  * @brief Enable MTU module by clearing module stop bit
  *
- * @param[in] channel MTU channel
  *
- * @return k_rx_ok on success
  */
 RX_STATIC_TESTABLE rx_err_t internal_enable_mtu_module(const rx_mtu_channel_t channel)
 {
@@ -1300,9 +1226,7 @@ RX_STATIC_TESTABLE rx_err_t internal_enable_mtu_module(const rx_mtu_channel_t ch
 /**
  * @brief Configure MTU timer for encoder phase counting mode
  *
- * @param[in] mtu Pointer to MTU channel registers
  *
- * @return k_rx_ok on success
  */
 RX_STATIC_TESTABLE rx_err_t internal_configure_encoder_timer(volatile rx_mtu_channel_regs_t* mtu)
 {
@@ -1343,11 +1267,7 @@ RX_STATIC_TESTABLE rx_err_t internal_configure_encoder_timer(volatile rx_mtu_cha
  * available at initialization time, this function validates the timer configuration
  * instead of actual counting.
  *
- * @param[in] mtu Pointer to MTU channel registers
  *
- * @return k_rx_ok if timer configuration is valid
- * @return k_rx_err_null_ptr if mtu is nullptr
- * @return k_rx_err_hw_init_failed if timer mode is incorrectly configured
  */
 RX_STATIC_TESTABLE rx_err_t
 internal_verify_timer_counting(const volatile rx_mtu_channel_regs_t* mtu)
@@ -1371,10 +1291,7 @@ internal_verify_timer_counting(const volatile rx_mtu_channel_regs_t* mtu)
 /**
  * @brief Initialize encoder state variables
  *
- * @param[in] channel MTU channel
- * @param[in] config Encoder configuration
  *
- * @return k_rx_ok on success
  */
 RX_STATIC_TESTABLE rx_err_t internal_initialize_encoder_state(const rx_mtu_channel_t     channel,
                                                               const rx_encoder_config_t* config)
@@ -1478,7 +1395,6 @@ RX_STATIC_TESTABLE rx_err_t internal_update_state_from_count(rx_encoder_state_t*
 /**
  * @brief Corrupt s_counts_per_rev for a channel to exercise runtime guards (test-only)
  *
- * @param[in] channel MTU channel (must be a valid array index: 0-7)
  * @post s_counts_per_rev[channel] == 0
  */
 void rx_mtu_encoder_test_corrupt_cpr(rx_mtu_channel_t channel)

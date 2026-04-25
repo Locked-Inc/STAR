@@ -240,12 +240,7 @@ static bool s_tpu_initialized[k_tpu_phase_channel_count] = {false, false, false,
  * Converts the non-contiguous channel enumeration (1, 2, 4, 5) to a
  * contiguous array index (0-3) for use with s_tpu_initialized[].
  *
- * @param[in] channel TPU channel identifier
- * @param[out] index Pointer to store the array index
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Valid channel, index written
- * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
  *
  * @pre index must be non-NULL (caller responsibility)
  * @pre channel must be a valid rx_tpu_channel_t enumeration value
@@ -285,11 +280,7 @@ static rx_err_t internal_channel_to_index(const rx_tpu_channel_t channel, uint8_
  * base address pointer. Only returns pointers for phase-counting-capable
  * channels (1, 2, 4, 5).
  *
- * @param[in] channel TPU channel identifier (1, 2, 4, or 5)
  *
- * @return Volatile pointer to TPU channel register structure
- * @retval Non-NULL Valid pointer for channels 1, 2, 4, 5
- * @retval NULL Invalid channel (not phase-counting capable)
  *
  * @pre TPU module enabled (MSTPCRA.MSTPA13 = 0)
  * @pre channel must be a valid rx_tpu_channel_t enumeration value
@@ -327,11 +318,7 @@ RX_STATIC_TESTABLE volatile rx_tpu_regs_t* internal_get_regs(const rx_tpu_channe
  * Each phase-counting-capable channel has a dedicated bit position in the
  * shared TSTR register: CST1, CST2, CST4, and CST5.
  *
- * @param[in] channel TPU channel identifier (1, 2, 4, or 5)
  *
- * @return TSTR bit mask for the channel
- * @retval Non-zero Valid CST bit mask
- * @retval 0 Invalid channel
  *
  * @pre channel must be one of k_tpu_channel_1, _2, _4, or _5
  * @pre Caller validates that a non-zero return indicates a valid channel
@@ -368,11 +355,7 @@ RX_STATIC_TESTABLE uint8_t internal_get_cst_bit(const rx_tpu_channel_t channel)
  * whether the return value equals k_tpu_tmdr_md_normal (0x00) to detect
  * an invalid mode argument before writing to hardware.
  *
- * @param[in] mode Phase counting mode (1-4)
  *
- * @return TMDR.MD register value
- * @retval 0x04-0x07 Valid phase counting mode values
- * @retval 0x00 Invalid mode (normal operation fallback)
  *
  * @pre mode must be a valid rx_tpu_phase_mode_t enumeration value
  * @pre Caller must check return != k_tpu_tmdr_md_normal before hardware write
@@ -512,13 +495,7 @@ rx_err_t rx_tpu_init_phase_count(const rx_tpu_config_t* config)
  * operation. Once started, the TCNT register increments or decrements on
  * each external encoder clock edge according to the configured phase mode.
  *
- * @param[in] channel TPU channel to start (1, 2, 4, or 5)
- *   - Must have been previously initialized via rx_tpu_init_phase_count()
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Counter started successfully
- * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
- * @retval k_rx_err_not_initialized Channel not yet initialized
  *
  * @pre Channel must be initialized via rx_tpu_init_phase_count()
  * @pre External encoder clock pins must be connected and valid
@@ -565,12 +542,7 @@ rx_err_t rx_tpu_start(const rx_tpu_channel_t channel)
  * operation. The TCNT value is preserved and encoder edges no longer update
  * it. The channel remains initialized and can be restarted with rx_tpu_start().
  *
- * @param[in] channel TPU channel to stop (1, 2, 4, or 5)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Counter stopped successfully
- * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
- * @retval k_rx_err_not_initialized Channel not yet initialized
  *
  * @pre Channel must be initialized via rx_tpu_init_phase_count()
  * @pre TSTR register must be accessible (module clock enabled)
@@ -617,15 +589,7 @@ rx_err_t rx_tpu_stop(const rx_tpu_channel_t channel)
  * channel. In 4x phase counting mode, the counter increments or decrements
  * on every edge of both A and B encoder channels.
  *
- * @param[in]  channel TPU channel to read (1, 2, 4, or 5)
- * @param[out] count   Pointer to store the 16-bit counter value [0, 65535]
- *   - Must be non-NULL
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Counter value read into *count
- * @retval k_rx_err_null_ptr count pointer is nullptr
- * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
- * @retval k_rx_err_not_initialized Channel not yet initialized
  *
  * @pre Channel must be initialized via rx_tpu_init_phase_count()
  * @pre count must point to valid uint16_t storage
@@ -678,17 +642,7 @@ rx_err_t rx_tpu_read_count(const rx_tpu_channel_t channel, uint16_t* count)
  * - TCFD = 1: Counter incremented on the last edge (counting up / forward)
  * - TCFD = 0: Counter decremented on the last edge (counting down / reverse)
  *
- * @param[in]  channel     TPU channel to query (1, 2, 4, or 5)
- * @param[out] counting_up Pointer to store direction result
- *   - true  = last count was an increment (encoder moving forward)
- *   - false = last count was a decrement (encoder moving in reverse)
- *   - Must be non-NULL
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Direction read into *counting_up
- * @retval k_rx_err_null_ptr counting_up pointer is nullptr
- * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
- * @retval k_rx_err_not_initialized Channel not yet initialized
  *
  * @pre Channel must be initialized via rx_tpu_init_phase_count()
  * @pre counting_up must point to valid bool storage
@@ -742,12 +696,7 @@ rx_err_t rx_tpu_read_direction(const rx_tpu_channel_t channel, bool* counting_up
  *
  * Typical use: zero encoder position at a known reference point (home).
  *
- * @param[in] channel TPU channel to reset (1, 2, 4, or 5)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Counter reset to zero successfully
- * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
- * @retval k_rx_err_not_initialized Channel not yet initialized
  *
  * @pre Channel must be initialized via rx_tpu_init_phase_count()
  * @pre Channel should be stopped (rx_tpu_stop()) before resetting for atomic 0
@@ -804,12 +753,7 @@ rx_err_t rx_tpu_reset_count(const rx_tpu_channel_t channel)
  * This function does NOT disable the TPU module clock (MSTPCRA.MSTPA13),
  * as other channels may still be in use.
  *
- * @param[in] channel TPU channel to deinitialize (1, 2, 4, or 5)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Channel deinitialized successfully
- * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
- * @retval k_rx_err_invalid_arg Register pointer could not be resolved
  *
  * @pre channel must be a valid phase-counting TPU channel (1, 2, 4, or 5)
  * @pre Motor driven by this encoder must be stopped before calling

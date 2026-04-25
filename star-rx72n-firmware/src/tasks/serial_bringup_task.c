@@ -291,9 +291,7 @@ rx_err_t serial_bringup_task_create(void)
  * Sleeps briefly so other init tasks settle, then loops forever at
  * ~100 Hz: drain RX, evaluate watchdog, emit telemetry every 5th tick.
  *
- * @param[in] input Unused (ThreadX convention)
  *
- * @return void (ThreadX entry functions are void)
  *
  * @pre uart_debug_init() has initialized SCI9 before the kernel started.
  * @pre shared_data_init() has succeeded.
@@ -344,7 +342,6 @@ static void internal_task_entry(ULONG input)
  * Overflow (line would exceed k_serial_max_line_len-1) resets the buffer
  * and emits "# overrun".
  *
- * @return void
  *
  * @pre SCI9 initialized via uart_debug_init()
  * @post s_line_len is always strictly less than k_serial_max_line_len
@@ -419,10 +416,7 @@ static void internal_drain_rx(void)
  * shared_data with valid=true; motor_control_task will pick it up on
  * its next 10 ms iteration.
  *
- * @param[in] line Pointer to line buffer (NOT null-terminated; use len)
- * @param[in] len  Number of valid bytes in line (1 <= len < k_serial_max_line_len)
  *
- * @return void
  *
  * @pre line != NULL and len > 0 (callers guarantee this)
  * @post On "V ..." parse success: shared_data motor_command_t updated,
@@ -499,7 +493,6 @@ static void internal_handle_line(const char* line, uint8_t len)
  * interpreted as int16 so wrap shows negative values) and the current
  * ThreadX tick, formats them as ASCII, and writes via uart_debug_puts().
  *
- * @return void
  *
  * @pre MTU1/MTU2/TPU1/TPU2 encoder hardware already initialized (done by
  *      motor_control_task's internal_init_encoders()). If not, we still
@@ -544,7 +537,6 @@ static void internal_emit_telemetry(void)
  * busy before motor_control_task ran its first iteration), the line is
  * skipped silently so we don't flood the host with stale zeros.
  *
- * @return void
  * @pre motor_control_task has been created and populates motor_state_t
  * @post One ASCII "M ..." line written to SCI9 on success; nothing on busy
  * @since Version 1.0.0
@@ -607,7 +599,6 @@ static void internal_emit_motor_telemetry(void)
  * completed a read the fields will all be zero. This keeps the host-side
  * parser's cadence predictable at 20 Hz during BNO055 calibration drift.
  *
- * @return void
  * @pre imu_task has been created
  * @post One ASCII "I ..." line written to SCI9 on success
  * @since Version 1.0.0
@@ -661,7 +652,6 @@ static void internal_emit_imu_telemetry(void)
  * period, when s_last_valid is still true. motor_control_task's
  * bring-up loop treats valid=false as 0% duty on all 4 motors.
  *
- * @return void
  *
  * @pre s_last_cmd_tick initialized in internal_task_entry()
  * @post On watchdog trip: s_last_valid = false and a zero motor_command_t

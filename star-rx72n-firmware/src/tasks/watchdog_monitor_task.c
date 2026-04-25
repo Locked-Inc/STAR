@@ -294,10 +294,6 @@ static void internal_watchdog_monitor_task_entry(ULONG input);
  * // s_watchdog_created is now true
  * @endcode
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Task created successfully
- * @retval k_rx_err_invalid_state Already created
- * @retval k_rx_err_rtos_thread_create ThreadX error
  *
  * @pre ThreadX kernel running
  * @pre rx_iwdt_init() called successfully
@@ -354,8 +350,6 @@ rx_err_t watchdog_monitor_task_create(void)
  * (stop feeding watchdog), ok (feed watchdog), or unexpected error (stop
  * feeding as a safe default).
  *
- * @param[in]     err            Return value from rx_iwdt_check_tasks()
- * @param[in,out] timeout_logged Flag set on first timeout log; cleared on recovery
  *
  * @pre timeout_logged is a valid non-NULL pointer
  * @pre err is a valid rx_err_t value returned by rx_iwdt_check_tasks()
@@ -417,9 +411,7 @@ static void internal_handle_check_result(rx_err_t err, bool* timeout_logged)
  *                  TX_AUTO_START);
  * @endcode
  *
- * @param[in] input Thread input parameter (unused, always 0)
  *
- * @return void Function never returns (infinite loop)
  *
  * @pre watchdog_monitor_task_create() called successfully
  * @pre ThreadX scheduler started

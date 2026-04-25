@@ -224,15 +224,8 @@ typedef uint8_t rx_pin_t;
  * - **k_rx_port_j = 10**: Ports 0-9, A, B, C, D, E, J available
  * - **k_rx_pin_max = 7**: Pins 0-7 per port (some ports have fewer)
  *
- * @param[in] pin Combined port/pin value (rx_port_pin_t typed enum).
- *                Format: (port << 8) | pin_num
- * @param[in] context_tag Context string for error logging (e.g., "GPIO", "I2C SDA").
- *                        Used to identify which configuration failed.
  *
- * @return rx_err_t Validation status
  *
- * @retval k_rx_ok Pin is valid (port <= Port J, pin <= 7)
- * @retval k_rx_err_invalid_arg Port > Port J or pin > 7
  *
  * @pre pin is rx_port_pin_t typed enum value (compile-time type safety)
  * @pre context_tag is non-NULL string (used for logging only)
@@ -307,9 +300,6 @@ static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, const char* 
  * Zeros the config structure and sets all common fields shared by every bus
  * type. Called by each bus-specific init function after validation passes.
  *
- * @param[out] config   Config to initialize (already validated non-null)
- * @param[in]  name     Bus name string (already validated non-null)
- * @param[in]  bus_type Bus type enum value to set
  *
  * @pre config != nullptr
  * @pre name != nullptr
@@ -360,21 +350,8 @@ internal_set_common_fields(rx_bus_config_t* config, const char* name, const rx_b
  * - **Direction control**: Motor direction pins
  * - **Chip select**: Manual SPI CS control
  *
- * @param[out] config Pointer to bus configuration structure to initialize.
- *                    Caller-allocated (stack or static). On success, contains
- *                    fully initialized GPIO bus configuration.
- * @param[in] name Bus name string (e.g., "led_status", "motor_enable").
- *                 Must be non-NULL, unique within bus manager, <=k_max_bus_name_len.
- *                 String pointer stored directly (NOT copied).
- * @param[in] pin GPIO port and pin number as rx_port_pin_t typed enum.
- *                Format: k_rx_pin_pXY where X=port, Y=pin (e.g., k_rx_pin_p40).
- *                Must be valid RX72N pin (port <= Port J, pin <= 7).
  *
- * @return rx_err_t Initialization status
  *
- * @retval k_rx_ok Configuration initialized successfully
- * @retval k_rx_err_null_ptr config or name is nullptr
- * @retval k_rx_err_invalid_arg Invalid port (> Port J) or pin (> 7)
  *
  * @pre config points to allocated rx_bus_config_t structure
  * @pre name is non-NULL string (must remain valid after this call)
@@ -530,32 +507,8 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  *
  * **Recommendation**: Use 12-bit for motor current (+/-2% system accuracy), 10-bit for voltage.
  *
- * @param[out] config Pointer to bus configuration structure to initialize.
- *                    Caller-allocated (stack or static). On success, contains
- *                    fully initialized ADC bus configuration.
- * @param[in] name Bus name string (e.g., "motor0_current", "power_rail").
- *                 Must be non-NULL, unique within bus manager, <=k_max_bus_name_len.
- *                 String pointer stored directly (NOT copied).
- * @param[in] unit ADC unit number (0 or 1 on RX72N).
- *                 - Unit 0: Port 4 analog inputs (AN000-AN007)
- *                 - Unit 1: Port D analog inputs (AN100-AN107)
- *                 Must be < k_adc_unit_count (2 on RX72N).
- * @param[in] channel ADC channel number (0-7).
- *                    Maps to ANxxx pin (e.g., channel 0 = AN000 for unit 0).
- *                    Must be <= k_adc_channel_max (7).
- * @param[in] bits ADC resolution in bits (8, 10, or 12).
- *                 - 8: Fast conversion, 12.9 mV LSB @ 3.3V
- *                 - 10: Balanced, 3.2 mV LSB @ 3.3V
- *                 - 12: Precision, 0.8 mV LSB @ 3.3V
- *                 Must be k_adc_resolution_8bit, _10bit, or _12bit typed enum.
  *
- * @return rx_err_t Initialization status
  *
- * @retval k_rx_ok Configuration initialized successfully
- * @retval k_rx_err_null_ptr config or name is nullptr
- * @retval k_rx_err_invalid_arg unit >= 2 (invalid ADC unit)
- * @retval k_rx_err_invalid_arg channel > 7 (invalid channel)
- * @retval k_rx_err_invalid_arg bits not in {8, 10, 12} (invalid resolution)
  *
  * @pre config points to allocated rx_bus_config_t structure
  * @pre name is non-NULL string (must remain valid after this call)
@@ -764,36 +717,8 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
  * Valid addresses: 0x08-0x77 (0x00-0x07 and 0x78-0x7F are reserved)
  * - **Reserved addresses**: 0x00 (broadcast), 0x01-0x07 (special), 0x78-0x7F (future)
  *
- * @param[out] config Pointer to bus configuration structure to initialize.
- *                    Caller-allocated (stack or static). On success, contains
- *                    fully initialized I2C bus configuration.
- * @param[in] name Bus name string (e.g., "imu_i2c", "eeprom_i2c").
- *                 Must be non-NULL, unique within bus manager, <=k_max_bus_name_len.
- *                 String pointer stored directly (NOT copied).
- * @param[in] channel RIIC channel number (0-2 on RX72N).
- *                    Must be < k_riic_channel_count (3).
- * @param[in] device_addr I2C device address (7-bit, 0x08-0x77).
- *                        Must be <= k_i2c_addr_max_7bit (0x7F) and NOT in reserved range.
- *                        Example: MPU6050 IMU = 0x68, AT24C256 EEPROM = 0x50.
- * @param[in] sda_pin SDA (data) pin as rx_port_pin_t typed enum.
- *                    Must be valid RX72N pin (port <= Port J, pin <= 7).
- *                    Must support I2C SDA function (check MPC settings).
- * @param[in] scl_pin SCL (clock) pin as rx_port_pin_t typed enum.
- *                    Must be valid RX72N pin (port <= Port J, pin <= 7).
- *                    Must support I2C SCL function (check MPC settings).
- * @param[in] frequency_hz I2C bus frequency in Hz.
- *                         - 100000 (100 kHz): Standard mode
- *                         - 400000 (400 kHz): Fast mode (recommended)
- *                         - 1000000 (1 MHz): Fast+ mode (check device support)
  *
- * @return rx_err_t Initialization status
  *
- * @retval k_rx_ok Configuration initialized successfully
- * @retval k_rx_err_null_ptr config or name is nullptr
- * @retval k_rx_err_invalid_arg sda_pin invalid (port > J or pin > 7)
- * @retval k_rx_err_invalid_arg scl_pin invalid (port > J or pin > 7)
- * @retval k_rx_err_invalid_arg channel >= 3 (invalid RIIC channel)
- * @retval k_rx_err_invalid_arg device_addr > 0x7F (invalid 7-bit address)
  *
  * @pre config points to allocated rx_bus_config_t structure
  * @pre name is non-NULL string (must remain valid after this call)
@@ -1029,33 +954,8 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t*    config,
  * - **Typical error**: +/-0.16% @ 115200 with 240 MHz PCLK
  * - **Acceptable**: <3% error for async communication
  *
- * @param[out] config Pointer to bus configuration structure to initialize.
- *                    Caller-allocated (stack or static). On success, contains
- *                    fully initialized UART bus configuration.
- * @param[in] name Bus name string (e.g., "debug_uart", "gps_uart", "bt_uart").
- *                 Must be non-NULL, unique within bus manager, <=k_max_bus_name_len.
- *                 String pointer stored directly (NOT copied).
- * @param[in] channel SCI channel number (0-12 on RX72N).
- *                    Must be < k_sci_channel_count (13).
- *                    Example: SCI0 for debug, SCI1 for GPS.
- * @param[in] tx_pin TX (transmit) pin as rx_port_pin_t typed enum.
- *                   Must be valid RX72N pin with SCI TX capability (check MPC).
- *                   Example: k_rx_pin_p26 for SCI0 TXD0.
- * @param[in] rx_pin RX (receive) pin as rx_port_pin_t typed enum.
- *                   Must be valid RX72N pin with SCI RX capability (check MPC).
- *                   Example: k_rx_pin_p30 for SCI0 RXD0.
- * @param[in] baudrate UART baud rate in bits per second.
- *                     Common values: 9600, 19200, 38400, 57600, 115200, 230400.
- *                     Must be non-zero. RX72N supports up to 3 Mbps (check device limits).
  *
- * @return rx_err_t Initialization status
  *
- * @retval k_rx_ok Configuration initialized successfully
- * @retval k_rx_err_null_ptr config or name is nullptr
- * @retval k_rx_err_invalid_arg channel >= 13 (invalid SCI channel)
- * @retval k_rx_err_invalid_arg tx_pin invalid (port > J or pin > 7)
- * @retval k_rx_err_invalid_arg rx_pin invalid (port > J or pin > 7)
- * @retval k_rx_err_invalid_arg baudrate == 0 (invalid baud rate)
  *
  * @pre config points to allocated rx_bus_config_t structure
  * @pre name is non-NULL string (must remain valid after this call)
@@ -1320,22 +1220,8 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
  * - Bits [55:8]: 48-bit unique serial number
  * - Bits [63:56]: CRC-8 checksum
  *
- * @param[out] config Pointer to bus configuration structure to initialize.
- *                    Caller-allocated (stack or static). On success, contains
- *                    fully initialized 1-Wire bus configuration.
- * @param[in] name Bus name string (e.g., "temp_onewire", "ds18b20_bus").
- *                 Must be non-NULL, unique within bus manager, <=k_max_bus_name_len.
- *                 String pointer stored directly (NOT copied).
- * @param[in] pin 1-Wire data line pin as rx_port_pin_t typed enum.
- *                Must be valid RX72N pin (port <= Port J, pin <= 7).
- *                Requires external 4.7 kOhm pull-up resistor to VDD.
- *                Example: k_rx_pin_pc6 for 1-Wire data line.
  *
- * @return rx_err_t Initialization status
  *
- * @retval k_rx_ok Configuration initialized successfully
- * @retval k_rx_err_null_ptr config or name is nullptr
- * @retval k_rx_err_invalid_arg pin invalid (port > J or pin > 7)
  *
  * @pre config points to allocated rx_bus_config_t structure
  * @pre name is non-NULL string (must remain valid after this call)

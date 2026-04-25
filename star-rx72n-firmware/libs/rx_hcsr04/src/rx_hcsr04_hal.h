@@ -623,8 +623,6 @@ extern "C" {
  *
  * @param[in] us Delay duration in microseconds (0 = no delay, max ~500,000)
  *
- * @return void (never fails)
- *
  * @pre CMT2 timer initialized (automatic on first call)
  * @post Caller blocked for approximately us microseconds
  * @post No side effects (timer state unchanged)

@@ -108,8 +108,6 @@ Exported global functions (to be accessed by other files)
  *
  * @param[in] output_char Character to output (ASCII or binary data)
  *
- * @return void
- *
  * @pre BSP I/O library must be initialized (BSP_CFG_IO_LIB_ENABLE == 1)
  * @pre If using user charput, BSP_CFG_USER_CHARPUT_FUNCTION must be defined
  * @post Character written to configured output device

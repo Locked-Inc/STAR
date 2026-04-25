@@ -124,7 +124,6 @@ extern "C" {
 /**
  * @defgroup rx_icu_regs RX72N ICU Register Definitions
  * @brief Interrupt Controller Unit hardware register interface
- * @ingroup rx_hal
  *
  * @details
  * Provides memory-mapped register access to the RX72N ICU peripheral

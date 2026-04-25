@@ -877,11 +877,7 @@ typedef struct {
  *
  * @return rx_err_t Error code indicating initialization success or failure
  * @retval k_rx_ok Success - handle fully initialized and ready for operation
- * @retval k_rx_err_invalid_arg handle is nullptr
- * @retval k_rx_err_invalid_arg config is nullptr
- * @retval k_rx_err_invalid_arg config->session is nullptr
- * @retval k_rx_err_invalid_arg config->channel > 2 (invalid RSPI channel)
- * @retval k_rx_err_invalid_arg config->spi_mode > 3 (invalid SPI mode)
+ * @retval k_rx_err_invalid_arg handle is nullptr; config is nullptr; config->session is nullptr; config->channel > 2 (invalid RSPI channel); config->spi_mode > 3 (invalid SPI mode)
  *
  * @pre handle must point to allocated memory (uninitialized content OK)
  * @pre RSPI hardware must already be initialized via rspi_init_peripheral()
@@ -1043,9 +1039,7 @@ typedef struct {
  *
  * @return rx_err_t Error code indicating send success or failure
  * @retval k_rx_ok Frame sent successfully, tx_sequence incremented
- * @retval k_rx_err_invalid_arg handle or payload is nullptr
- * @retval k_rx_err_invalid_arg payload_len > k_frame_max_payload (255 bytes)
- * @retval k_rx_err_invalid_arg payload is nullptr but payload_len > 0
+ * @retval k_rx_err_invalid_arg handle or payload is nullptr; payload_len > k_frame_max_payload (255 bytes); payload is nullptr but payload_len > 0
  * @retval k_rx_err_invalid_state handle not initialized
  * @retval k_rx_err_hw SPI hardware error (RSPI transfer failed)
  * @retval k_rx_err_timeout SPI transfer timeout

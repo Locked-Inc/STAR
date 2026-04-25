@@ -192,8 +192,7 @@ typedef struct {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Registration successful
- * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
- * @retval k_rx_err_invalid_arg sensor_index >= k_hcsr04_sensor_count (4)
+ * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]; sensor_index >= k_hcsr04_sensor_count (4)
  *
  * @pre IRQ configured via rx_hcsr04_icu_configure()
  * @pre sensor_index must be a valid sensor array index (< k_hcsr04_sensor_count)
@@ -433,8 +432,6 @@ typedef struct {
  * Delegates to internal_irq_handler(8). Clears IR[72], detects rising/falling
  * edge from PORT0 PIDR bit 0, and captures hcsr04_hal_get_time_us_isr() timestamp.
  *
- * @return void (ISR context; no return value)
- *
  * @pre ICU configured for IRQ8 via rx_hcsr04_icu_configure()
  * @pre PIN P00 configured for IRQ function via rx_mpc_set_irq()
  *
@@ -457,8 +454,6 @@ void INT_IRQ8(void);
  * Hardware-triggered ISR on both edges of the HC-SR04 echo pulse from P01.
  * Delegates to internal_irq_handler(9). Clears IR[73], detects rising/falling
  * edge from PORT0 PIDR bit 1, and captures hcsr04_hal_get_time_us_isr() timestamp.
- *
- * @return void (ISR context; no return value)
  *
  * @pre ICU configured for IRQ9 via rx_hcsr04_icu_configure()
  * @pre PIN P01 configured for IRQ function via rx_mpc_set_irq()
@@ -483,8 +478,6 @@ void INT_IRQ9(void);
  * Delegates to internal_irq_handler(10). Clears IR[74], detects rising/falling
  * edge from PORT0 PIDR bit 2, and captures hcsr04_hal_get_time_us_isr() timestamp.
  *
- * @return void (ISR context; no return value)
- *
  * @pre ICU configured for IRQ10 via rx_hcsr04_icu_configure()
  * @pre PIN P02 configured for IRQ function via rx_mpc_set_irq()
  *
@@ -507,8 +500,6 @@ void INT_IRQ10(void);
  * Hardware-triggered ISR on both edges of the HC-SR04 echo pulse from P03.
  * Delegates to internal_irq_handler(11). Clears IR[75], detects rising/falling
  * edge from PORT0 PIDR bit 3, and captures hcsr04_hal_get_time_us_isr() timestamp.
- *
- * @return void (ISR context; no return value)
  *
  * @pre ICU configured for IRQ11 via rx_hcsr04_icu_configure()
  * @pre PIN P03 configured for IRQ function via rx_mpc_set_irq()

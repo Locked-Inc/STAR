@@ -422,7 +422,6 @@ static const char s_tag[] = "COMM_MGR";
  * uses ThreadX tx_time_get() multiplied by tick period. In simulator builds,
  * returns 0 (timing not available).
  *
- * @return Current time in milliseconds
  *
  * @since Version 1.0.0
  */
@@ -529,21 +528,9 @@ typedef enum : uint32_t {
  * **Performance**: ~50-150 us depending on frame size (ASCII formatting overhead).
  * Disable in production for optimal performance.
  *
- * @param[in,out] mgr Communication manager handle (uses ascii_buffer)
- *   - **Valid range**: Non-nullptr to initialized handle
- *   - **Constraints**: Must have valid ascii_buffer (256 bytes)
- *   - **Side effects**: Modifies mgr->ascii_buffer content
  *
- * @param[in] frame Frame to format and output
- *   - **Valid range**: Non-nullptr to valid rx_frame_t
- *   - **Constraints**: Header and payload must be valid
- *   - **Units**: Binary frame structure
  *
- * @param[in] is_tx Direction flag (true = TX, false = RX)
- *   - **Valid range**: true (outgoing frame) or false (incoming frame)
- *   - **Purpose**: Prefix ASCII output with "TX:" or "RX:" for clarity
  *
- * @return void (no return value - errors silently ignored)
  *
  * @pre mgr must be initialized via rx_comm_manager_init()
  * @pre frame must be a valid frame structure
@@ -590,8 +577,6 @@ internal_output_decoded(rx_comm_manager_t* mgr, const rx_frame_t* frame, bool is
  * send. Constructs a temporary rx_frame_t from the send parameters and delegates to
  * internal_output_decoded().
  *
- * @param[in,out] mgr Communication manager handle (uses ascii_buffer)
- * @param[in] params Send parameters containing payload and header fields
  *
  * @pre mgr must be non-NULL and initialized
  * @pre params must be non-NULL with valid fields
@@ -636,22 +621,9 @@ static void internal_output_decoded_from_params(rx_comm_manager_t*           mgr
  * **Design Rationale**: Centralizing frame handling logic ensures consistent
  * behavior across USB and SPI channels (single point of dispatch).
  *
- * @param[in,out] mgr Communication manager handle
- *   - **Valid range**: Non-nullptr to initialized handle
- *   - **Constraints**: Must be initialized via rx_comm_manager_init()
- *   - **Side effects**: May modify ascii_buffer if decoded output enabled
  *
- * @param[in] channel Channel the frame was received on
- *   - **Valid range**: k_comm_channel_usb or k_comm_channel_spi
- *   - **Constraints**: Must be < k_comm_channel_count
- *   - **Purpose**: Passed to user callback for channel identification
  *
- * @param[in] frame Received frame data
- *   - **Valid range**: Non-nullptr to valid, CRC-verified frame
- *   - **Constraints**: Already validated by transport layer
- *   - **Lifetime**: Valid only for duration of this function call
  *
- * @return void (no return value - errors silently handled)
  *
  * @pre mgr must be initialized
  * @pre frame must be valid and CRC-verified by transport layer
@@ -728,18 +700,7 @@ internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const r
  * **Design Note**: Identical logic to internal_poll_usb() but for SPI channel.
  * Code duplication is intentional (NASA Rule 4: keep functions short and simple).
  *
- * @param[in,out] mgr Communication manager handle
- *   - **Valid range**: Non-nullptr to initialized handle
- *   - **Constraints**: Must have valid spi_handle if SPI channel enabled
- *   - **Side effects**: May invoke callback, modify ascii_buffer
  *
- * @return rx_err_t Error code indicating poll result
- * @retval k_rx_ok Frame received and handled successfully
- * @retval k_rx_err_timeout No data available (normal, expected condition)
- * @retval k_rx_err_invalid_arg mgr is nullptr
- * @retval k_rx_err_crc CRC verification failed (corrupted frame)
- * @retval k_rx_err_invalid_state SPI peripheral not ready
- * @retval (other) Transport layer errors propagated
  *
  * @pre mgr must be non-NULL
  * @pre If SPI channel enabled, spi_handle must be initialized
@@ -818,13 +779,7 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
  * Attempts to receive one frame from I2C peripheral channel with zero timeout.
  * If frame is successfully received, it is dispatched via internal_handle_frame().
  *
- * @param[in,out] mgr Communication manager handle
  *
- * @return rx_err_t Error code indicating poll result
- * @retval k_rx_ok Frame received and handled successfully
- * @retval k_rx_err_timeout No data available (expected, not an error)
- * @retval k_rx_err_no_data No complete frame in receive buffer
- * @retval k_rx_err_invalid_arg mgr is nullptr
  *
  * @pre mgr must be non-NULL
  * @pre mgr->i2c_handle must be initialized before calling rx_comm_manager_poll()
@@ -862,13 +817,7 @@ static rx_err_t internal_poll_i2c(rx_comm_manager_t* mgr)
  * Attempts to receive one frame from UART (SCI9) channel with zero timeout.
  * If frame is successfully received, it is dispatched via internal_handle_frame().
  *
- * @param[in,out] mgr Communication manager handle
  *
- * @return rx_err_t Error code indicating poll result
- * @retval k_rx_ok Frame received and handled successfully
- * @retval k_rx_err_timeout No data available (expected, not an error)
- * @retval k_rx_err_no_data No complete frame in receive buffer
- * @retval k_rx_err_invalid_arg mgr is nullptr
  *
  * @pre mgr must be non-NULL
  * @pre mgr->uart_handle must be initialized before calling rx_comm_manager_poll()
@@ -915,7 +864,6 @@ static rx_err_t internal_poll_uart(rx_comm_manager_t* mgr)
  * send fails, the event is re-enqueued with incremented retry count (up to
  * k_event_max_retries). For USB events, failure is simply dropped (fire-and-forget).
  *
- * @param[in,out] mgr Communication manager handle
  *
  * @pre mgr must be non-NULL and initialized
  * @post One event processed (sent or dropped on max retries)
@@ -925,8 +873,6 @@ static rx_err_t internal_poll_uart(rx_comm_manager_t* mgr)
 /**
  * @brief Dequeue the front event entry and advance the tail pointer
  *
- * @param[in,out] mgr Communication manager handle
- * @param[in,out] entry Event entry to clear
  *
  * @pre mgr->event_queue_count > 0
  * @post entry cleared and tail pointer advanced
@@ -1015,7 +961,6 @@ static void internal_process_event_queue(rx_comm_manager_t* mgr)
  * If no valid frame has been received on a transport within 200ms, the link
  * is declared dead and the status callback is invoked.
  *
- * @param[in,out] mgr Communication manager handle
  *
  * @pre mgr must be non-NULL and initialized
  * @post Link status updated for each transport
@@ -1025,9 +970,6 @@ static void internal_process_event_queue(rx_comm_manager_t* mgr)
 /**
  * @brief Check heartbeat timeout on a single channel
  *
- * @param[in,out] mgr Communication manager handle
- * @param[in] ch Channel index to check
- * @param[in] now_ms Current time in milliseconds
  *
  * @pre ch < k_comm_channel_count
  * @post Link status updated if timeout exceeded
@@ -1110,22 +1052,8 @@ static const rx_comm_manager_t s_zero_mgr = {};
  * - **callback = NULL**: No callback invoked (silent frame consumption)
  * - **enable_decoded_output = true**: ASCII debugging enabled (Port 1)
  *
- * @param[out] mgr Pointer to communication manager handle to initialize
- *   - **Valid range**: Non-nullptr to allocated rx_comm_manager_t (328 bytes)
- *   - **Constraints**: Must be allocated by caller (typically static or global)
- *   - **Side effects**: Entire structure zero-filled, then populated from cfg
- *   - **Lifetime**: Must remain valid until rx_comm_manager_deinit() called
  *
- * @param[in] cfg Optional configuration structure
- *   - **Valid range**: NULL or pointer to valid rx_comm_manager_config_t
- *   - **NULL behavior**: All channels disabled, no callback, ASCII off
- *   - **Lifetime**: Not stored - values copied into mgr
- *   - **Constraints**: If non-NULL, all fields must be valid or nullptr as appropriate
  *
- * @return rx_err_t Error code indicating initialization success or failure
- * @retval k_rx_ok Success - manager fully initialized and ready for operation
- * @retval k_rx_err_invalid_arg mgr is nullptr
- * @retval k_rx_err_invalid_state Post-condition validation failed (buffer not cleared)
  *
  * @pre mgr must point to allocated memory (uninitialized content OK)
  * @pre USB/SPI handles (if provided) must already be initialized
@@ -1256,15 +1184,7 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
  * (all memory is statically allocated). Function primarily serves as safety
  * guard to prevent use-after-deinit.
  *
- * @param[in,out] mgr Communication manager handle
- *   - **Valid range**: Non-nullptr to initialized handle
- *   - **Constraints**: Must have been initialized via rx_comm_manager_init()
- *   - **Side effects**: Clears mgr->initialized flag
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success - manager deinitialized
- * @retval k_rx_err_invalid_arg mgr is nullptr
- * @retval k_rx_err_invalid_state mgr was not initialized
  *
  * @pre mgr must be non-NULL
  * @pre mgr must be initialized (mgr->initialized == true)
@@ -1347,18 +1267,7 @@ rx_err_t rx_comm_manager_deinit(rx_comm_manager_t* mgr)
  * - **Error prioritization**: Critical errors returned immediately
  * - **Aggregation**: k_rx_ok if ANY channel received data
  *
- * @param[in,out] mgr Communication manager handle
- *   - **Valid range**: Non-nullptr to initialized handle
- *   - **Constraints**: Must be initialized via rx_comm_manager_init()
- *   - **Side effects**: Invokes callback, modifies ascii_buffer if frames received
  *
- * @return rx_err_t Error code indicating aggregate poll result
- * @retval k_rx_ok At least one frame received on any channel (success)
- * @retval k_rx_err_timeout No frames received on any channel (normal, not an error)
- * @retval k_rx_err_invalid_arg mgr is nullptr
- * @retval k_rx_err_invalid_state mgr not initialized
- * @retval k_rx_err_crc CRC verification failed on received frame (data corruption)
- * @retval (other) Transport layer critical errors propagated
  *
  * @pre mgr must be non-NULL
  * @pre mgr must be initialized
@@ -1432,10 +1341,7 @@ rx_err_t rx_comm_manager_deinit(rx_comm_manager_t* mgr)
 /**
  * @brief Poll all transport channels and aggregate results
  *
- * @param[in,out] mgr Communication manager handle
- * @param[out] received Set to true if any channel received a frame
  *
- * @return k_rx_ok on success/timeout, or critical error code
  *
  * @pre mgr must be non-NULL and initialized
  * @post *received reflects whether any frames were received
@@ -1527,31 +1433,8 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
  * - SPI: ~20-100 us (depends on payload size, SPI hardware transfer)
  * - ASCII debugging: Add ~50-150 us if enabled
  *
- * @param[in] mgr Communication manager handle
- *   - **Valid range**: Non-nullptr to initialized handle
- *   - **Constraints**: Must be initialized via rx_comm_manager_init()
- *   - **Side effects**: May modify ascii_buffer if decoded output enabled
  *
- * @param[in] params Send parameters structure
- *   - **Valid range**: Non-nullptr to valid rx_comm_send_params_t
- *   - **Constraints**: All fields must be valid:
- *     - channel: k_comm_channel_usb or k_comm_channel_spi
- *     - type: Frame type (command, request, response, etc.)
- *     - flags: Frame flags (k_frame_flag_none or specific flags)
- *     - payload: Non-NULL if payload_len > 0, may be NULL if payload_len == 0
- *     - payload_len: [0, k_frame_max_payload] (0-255 bytes)
- *   - **Lifetime**: Not stored - values used immediately
  *
- * @return rx_err_t Error code indicating send success or failure
- * @retval k_rx_ok Frame sent successfully
- * @retval k_rx_err_invalid_arg mgr or params is nullptr, or payload invalid
- * @retval k_rx_err_invalid_arg payload_len > k_frame_max_payload (255 bytes)
- * @retval k_rx_err_invalid_arg Invalid channel specified
- * @retval k_rx_err_invalid_arg Payload is nullptr but payload_len > 0
- * @retval k_rx_err_invalid_state Manager not initialized
- * @retval k_rx_err_invalid_state Channel not configured (handle is nullptr)
- * @retval k_rx_err_hw USB/SPI hardware error (transport layer)
- * @retval (other) Transport layer errors propagated
  *
  * @pre mgr must be non-NULL and initialized
  * @pre params must be non-NULL with all valid fields
@@ -1617,10 +1500,7 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
 /**
  * @brief Route frame to transport layer based on channel
  *
- * @param[in] mgr Communication manager handle (must be initialized)
- * @param[in] params Send parameters with channel, type, flags, payload
  *
- * @return rx_err_t from the transport layer, or k_rx_err_invalid_state/k_rx_err_invalid_arg
  *
  * @pre mgr and params must be non-NULL
  * @pre params validated by caller (payload length, etc.)
@@ -1739,28 +1619,10 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
  * - Need custom frame type (use rx_comm_manager_send instead)
  * - Need custom flags (use rx_comm_manager_send instead)
  *
- * @param[in] mgr Communication manager handle
- *   - **Valid range**: Non-nullptr to initialized handle
- *   - **Constraints**: Must be initialized via rx_comm_manager_init()
  *
- * @param[in] channel Channel to send response on
- *   - **Valid range**: k_comm_channel_usb or k_comm_channel_spi
- *   - **Constraints**: Channel handle must be configured
  *
- * @param[in] payload Response payload data
- *   - **Valid range**: Non-NULL if payload_len > 0, may be NULL if payload_len == 0
- *   - **Constraints**: Must contain valid data for payload_len bytes
- *   - **Lifetime**: Copied immediately, does not need to persist
  *
- * @param[in] payload_len Response payload length in bytes
- *   - **Valid range**: [0, k_frame_max_payload] (0-255 bytes)
- *   - **Units**: Bytes
  *
- * @return rx_err_t Error code (same as rx_comm_manager_send)
- * @retval k_rx_ok Response sent successfully
- * @retval k_rx_err_invalid_arg mgr is nullptr or payload invalid
- * @retval k_rx_err_invalid_state Manager not initialized or channel not configured
- * @retval (other) Errors propagated from rx_comm_manager_send()
  *
  * @pre Same preconditions as rx_comm_manager_send()
  * @post Response frame transmitted with type=response, flags=none
@@ -1928,23 +1790,9 @@ rx_err_t rx_comm_manager_link_status(const rx_comm_manager_t* mgr,
  * - Implement fallback logic (try USB, fall back to SPI)
  * - Log channel availability status
  *
- * @param[in] mgr Communication manager handle
- *   - **Valid range**: Non-nullptr to initialized handle
- *   - **Constraints**: Must be initialized via rx_comm_manager_init()
  *
- * @param[in] channel Channel to query
- *   - **Valid range**: k_comm_channel_usb or k_comm_channel_spi
- *   - **Constraints**: Must be valid channel ID
  *
- * @param[out] ready Pointer to receive ready status
- *   - **Valid range**: Non-nullptr to bool
- *   - **Output values**: true (ready) or false (not ready)
- *   - **On error**: Set to false
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Query successful, ready flag updated
- * @retval k_rx_err_invalid_arg mgr or ready is nullptr, or channel invalid
- * @retval k_rx_err_invalid_state Manager not initialized
  *
  * @pre mgr must be non-NULL and initialized
  * @pre ready must be non-NULL
@@ -2060,14 +1908,7 @@ rx_comm_manager_channel_ready(rx_comm_manager_t* mgr, rx_comm_channel_t channel,
  * - User interface display
  * - Error messages
  *
- * @param[in] channel Communication channel enum value
- *   - **Valid range**: Any rx_comm_channel_t value
- *   - **Constraints**: None (invalid values return "UNKNOWN")
  *
- * @return const char* Human-readable channel name (never NULL)
- * @retval "USB" If channel == k_comm_channel_usb
- * @retval "SPI" If channel == k_comm_channel_spi
- * @retval "UNKNOWN" If channel is invalid or out of range
  *
  * @pre None (accepts any input)
  * @post Returns pointer to static string (valid for program lifetime)

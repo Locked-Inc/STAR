@@ -251,7 +251,6 @@ static rx_wdt_state_t s_wdt_state = {};
 
 /**
  * @brief Write WDT hardware registers from validated config.
- * @param[in] config Validated WDT configuration (must not be nullptr).
  * @pre config is not nullptr and has been validated.
  * @pre WDT registers are accessible (clock enabled).
  * @post WDTCR and WDTRCR registers written.
@@ -338,11 +337,7 @@ static void internal_configure_wdt_registers(const rx_wdt_config_t* config)
  * }
  * @enddot
  *
- * @param[in] config Configuration structure pointer, or nullptr for defaults
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, WDT initialized
- * @retval k_rx_err_invalid_state Already initialized
  *
  * @pre WDT must not already be initialized
  *
@@ -431,9 +426,6 @@ rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
  * - Register-start mode: WDT starts when WDTRR sequence written
  * - Auto-start mode: WDT starts at reset, this function refreshes only
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, WDT counter started
- * @retval k_rx_err_not_initialized WDT not initialized
  *
  * @pre WDT must be initialized via rx_wdt_init()
  *
@@ -489,9 +481,6 @@ rx_err_t rx_wdt_start(void)
  * This function ONLY updates software state. If using auto-start mode,
  * you must continue calling rx_wdt_feed() even after rx_wdt_stop().
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, software state updated
- * @retval k_rx_err_not_initialized WDT not initialized
  *
  * @pre WDT must be initialized via rx_wdt_init()
  *
@@ -552,10 +541,6 @@ rx_err_t rx_wdt_stop(void)
  * | k_wdt_timeout_4096_cycles | 4096 | 68 us | >14.7 kHz |
  * | k_wdt_timeout_16384_cycles | 16384 | 273 us | >3.6 kHz |
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, WDT counter reset
- * @retval k_rx_err_not_initialized WDT not initialized
- * @retval k_rx_err_invalid_state WDT not running (stopped or never started)
  *
  * @pre WDT must be initialized via rx_wdt_init()
  * @pre WDT must be running (rx_wdt_start() called or enable_on_init=true)

@@ -203,8 +203,7 @@ typedef struct {
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, channel configured
  * @retval k_rx_err_null_ptr config is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel (not 1/2/4/5)
- * @retval k_rx_err_invalid_arg Invalid phase mode (not 1-4)
+ * @retval k_rx_err_invalid_arg Invalid channel (not 1/2/4/5); Invalid phase mode (not 1-4)
  * @retval k_rx_err_invalid_state Channel already initialized
  *
  * @pre TPU module clock enabled (or function enables it)

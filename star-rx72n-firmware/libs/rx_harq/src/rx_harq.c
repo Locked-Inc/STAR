@@ -299,9 +299,7 @@ rx_err_t rx_chase_combiner_reset(rx_chase_combiner_t* combiner)
 /**
  * @brief Check if combiner can accept more transmissions
  *
- * @param[in] combiner Pointer to Chase combiner instance
  *
- * @return true if more transmissions can be added, false otherwise
  */
 bool rx_chase_combiner_can_add(const rx_chase_combiner_t* combiner)
 {
@@ -317,9 +315,7 @@ bool rx_chase_combiner_can_add(const rx_chase_combiner_t* combiner)
 /**
  * @brief Get number of transmissions combined so far
  *
- * @param[in] combiner Pointer to Chase combiner instance
  *
- * @return Number of combined transmissions (0 if combiner is nullptr)
  */
 uint8_t rx_chase_combiner_count(const rx_chase_combiner_t* combiner)
 {
@@ -385,9 +381,7 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
 /**
  * @brief Deinitialize HARQ handle and release resources
  *
- * @param[in] harq Pointer to HARQ handle
  *
- * @return k_rx_ok on success, k_rx_err_invalid_arg if harq is nullptr
  */
 rx_err_t rx_harq_deinit(rx_harq_handle_t* harq)
 {
@@ -412,9 +406,7 @@ rx_err_t rx_harq_deinit(rx_harq_handle_t* harq)
 /**
  * @brief Get current HARQ state
  *
- * @param[in] harq Pointer to HARQ handle
  *
- * @return Current state, or k_harq_state_error if harq is nullptr
  */
 rx_harq_state_t rx_harq_get_state(const rx_harq_handle_t* harq)
 {
@@ -427,11 +419,7 @@ rx_harq_state_t rx_harq_get_state(const rx_harq_handle_t* harq)
 /**
  * @brief Reset HARQ state for new transmission
  *
- * @param[in] harq Pointer to HARQ handle
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if harq is nullptr
- * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_harq_reset(rx_harq_handle_t* harq)
 {
@@ -516,14 +504,7 @@ typedef enum : uint8_t {
 /**
  * @brief Convert combined soft bits to hard bits (non-FEC path)
  *
- * @param[in]  soft_bits        Combined soft bits
- * @param[in]  soft_bit_count   Number of soft bits
- * @param[in]  max_output_bytes Maximum output length (bytes, must be > 0)
- * @param[out] output           Output hard bits (packed bytes)
- * @param[out] output_len       Actual output length
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if any pointer is nullptr
  */
 static rx_err_t internal_soft_to_hard(const rx_soft_bit_t* soft_bits,
                                       const uint32_t       soft_bit_count,
@@ -566,13 +547,7 @@ static rx_err_t internal_soft_to_hard(const rx_soft_bit_t* soft_bits,
 /**
  * @brief Handle FEC decode result and update HARQ state
  *
- * @param[in,out] harq   HARQ handle (must not be NULL)
- * @param[in]     result Decode result from FEC decoder
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if harq is nullptr
- * @return k_rx_err_protocol_error if decode failed but retries available
- * @return result error code if max retries reached
  */
 static rx_err_t internal_handle_fec_result(rx_harq_handle_t* harq, const rx_err_t result)
 {
@@ -673,9 +648,7 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*              harq,
 /**
  * @brief Get number of retries attempted
  *
- * @param[in] harq Pointer to HARQ handle
  *
- * @return Number of retries (0 if harq is nullptr)
  */
 uint8_t rx_harq_get_retry_count(const rx_harq_handle_t* harq)
 {
@@ -688,9 +661,7 @@ uint8_t rx_harq_get_retry_count(const rx_harq_handle_t* harq)
 /**
  * @brief Check if more retries are allowed
  *
- * @param[in] harq Pointer to HARQ handle
  *
- * @return true if retry is possible, false otherwise
  */
 bool rx_harq_can_retry(const rx_harq_handle_t* harq)
 {

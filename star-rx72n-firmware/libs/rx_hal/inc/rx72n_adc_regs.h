@@ -114,7 +114,6 @@ extern "C" {
 /**
  * @defgroup rx_adc_regs RX72N S12AD Register Definitions
  * @brief 12-bit A/D Converter hardware register interface
- * @ingroup rx_hal
  *
  * @details
  * Provides memory-mapped register access to the RX72N S12AD peripheral

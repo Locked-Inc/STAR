@@ -233,13 +233,7 @@ static uint32_t s_gptw_period[k_gptw_max_channels] = {};
  * | k_gptw_channel_2 | 0x000C2200 | 0x100 |
  * | k_gptw_channel_3 | 0x000C2280 | 0x180 |
  *
- * @param[in] channel GPTW channel identifier
- *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
- *   - Values outside this range returnnullptr
  *
- * @return Pointer to GPTW channel register structure
- * @retval Non-NULL Pointer to rx_gptw_channel_regs_t for valid channels
- * @retval NULL Invalid channel value (outside 0-3 range)
  *
  * @pre Module clock must be enabled before accessing returned pointer
  *
@@ -291,13 +285,7 @@ static volatile rx_gptw_channel_regs_t* internal_get_gptw_base(const rx_gptw_cha
  * | k_gptw_wave_tri_pwm2 | Triangle (center-aligned) | true |
  * | k_gptw_wave_tri_pwm3 | Triangle (center-aligned) | true |
  *
- * @param[in] mode Waveform mode enumeration value
- *   - Valid values: Any rx_gptw_wave_mode_t enum value
- *   - Invalid values return false (sawtooth assumed)
  *
- * @return bool Mode classification result
- * @retval true Mode is triangle wave (k_gptw_wave_tri_pwm1/2/3)
- * @retval false Mode is sawtooth wave or invalid value
  *
  * @pre mode should be a valid rx_gptw_wave_mode_t value
  *
@@ -339,15 +327,7 @@ static inline bool internal_is_triangle_mode(const rx_gptw_wave_mode_t mode)
  * | k_gptw_wave_tri_pwm2 | k_gptw_gtcr_md_tri_pwm2 | 0b101 | Triangle PWM 2 |
  * | k_gptw_wave_tri_pwm3 | k_gptw_gtcr_md_tri_pwm3 | 0b110 | Triangle PWM 3 |
  *
- * @param[in] mode Waveform mode to convert
- *   - Valid range: Any rx_gptw_wave_mode_t enum value
- *   - Invalid values trigger RX_ASSERT and return sawtooth mode
  *
- * @return uint32_t GTCR register value with MD bits set appropriately
- * @retval k_gptw_gtcr_md_saw_pwm For sawtooth mode or invalid input (fallback)
- * @retval k_gptw_gtcr_md_tri_pwm1 For triangle PWM mode 1
- * @retval k_gptw_gtcr_md_tri_pwm2 For triangle PWM mode 2
- * @retval k_gptw_gtcr_md_tri_pwm3 For triangle PWM mode 3
  *
  * @pre mode should be validated before calling (caller's responsibility)
  * @pre GTCR write protection must be unlocked before writing returned value
@@ -435,21 +415,7 @@ static uint32_t internal_get_gtcr_mode(const rx_gptw_wave_mode_t mode)
  * | 100 Hz | Sawtooth | 1,200,000 | 0.000083% |
  * | 1 MHz | Sawtooth | 120 | 0.833% |
  *
- * @param[in] frequency_hz Desired PWM frequency in Hz
- *   - Valid range: [1, 12000000] Hz (practical upper limit)
- *   - Frequencies resulting in period < 10 are rejected
- *   - Zero frequency is rejected with k_rx_err_invalid_arg
- * @param[in] wave_mode Waveform mode selection
- *   - Valid values: k_gptw_wave_saw_pwm, k_gptw_wave_tri_pwm1/2/3
- *   - Invalid values rejected with k_rx_err_invalid_arg
- * @param[out] period Pointer to store calculated period count
- *   - Must be non-NULL
- *   - Receives value in range [10, 0xFFFFFFFF]
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, period contains valid count
- * @retval k_rx_err_null_ptr period pointer is nullptr
- * @retval k_rx_err_invalid_arg wave_mode invalid, frequency=0, or period out of range
  *
  * @pre PCLKA configured to 120 MHz (system clock setup complete)
  * @pre period pointer must point to valid uint32_t storage
@@ -555,13 +521,7 @@ static rx_err_t internal_calculate_period(const uint32_t            frequency_hz
  * | GPTW2 | PE3 | PE0 | 0x1E |
  * | GPTW3 | PE7 | PE6 | 0x1E |
  *
- * @param[in] channel GPTW channel to configure MPC for
- *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
- *   - Invalid channels return k_rx_err_invalid_arg
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok MPC configuration successful
- * @retval k_rx_err_invalid_arg Invalid channel value
  *
  * @pre MPC module accessible (no separate clock enable required)
  * @pre Pins not in use by other peripherals
@@ -638,11 +598,6 @@ static rx_err_t internal_configure_mpc(const rx_gptw_config_t* config)
  * | GPTW2 | PE3 (bit 3) | PE0 (bit 0) |
  * | GPTW3 | PE7 (bit 7) | PE6 (bit 6) |
  *
- * @param[in] config GPTW channel configuration providing pin coordinates
- *   - Must be non-NULL
- *   - port_a_idx / port_b_idx must be valid Port indices for rx_port_get_base()
- *   - bit_a / bit_b must be in range 0..7
- *   - If either port lookup fails, function is a silent no-op
  *
  * @pre MPC configured for GPTW function via internal_configure_mpc()
  * @pre config->port_a_idx / config->port_b_idx are valid for rx_port_get_base()
@@ -766,21 +721,7 @@ static void internal_enable_gptw_module_clock(void)
  *
  * For 1000 ns at 96 MHz: deadtime_counts = 96
  *
- * @param[in] gptw Pointer to GPTW channel register structure
- *   - Must be non-NULL
- *   - Must point to valid GPTW register base (from internal_get_gptw_base)
- * @param[in] config Configuration parameters structure
- *   - Must be non-NULL
- *   - wave_mode determines GTCR.MD field
- *   - deadtime_ns determines deadtime register values
- * @param[in] period Pre-calculated period register value
- *   - Valid range: [k_gptw_period_min, s_gptw_period_max]
- *   - Obtained from internal_calculate_period()
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Configuration successful
- * @retval k_rx_err_null_ptr gptw or config is nullptr
- * @retval k_rx_err_invalid_arg period outside valid range [10, 0xFFFFFFFF]
  *
  * @pre gptw points to valid, unlocked GPTW registers
  * @pre config contains validated parameters
@@ -896,19 +837,7 @@ static rx_err_t internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t
  * 1. Validate channel range and resolve register base pointer
  * 2. Calculate the GTPR period value from frequency and wave mode
  *
- * @param[in]  channel    GPTW channel to initialize
- *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
- * @param[in]  config     Configuration structure (caller guarantees non-NULL)
- *   - config->frequency_hz and config->wave_mode are used
- * @param[out] gptw_out   Pointer-to-pointer to receive the channel register base
- *   - Must be non-NULL; *gptw_out set on success
- * @param[out] period_out Pointer to receive the calculated period count
- *   - Must be non-NULL; *period_out set on success
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Validation and period calculation succeeded
- * @retval k_rx_err_invalid_arg channel out of range or register base unresolvable
- * @retval k_rx_err_invalid_arg frequency_hz is zero, wave_mode invalid, or period out of range
  *
  * @pre gptw_out and period_out must be non-NULL (caller's responsibility)
  * @pre config must be non-NULL (caller's responsibility)
@@ -975,18 +904,7 @@ static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t          
  * 10. Store period value and set initialized flag
  * 11. Start timer
  *
- * @param[in] channel GPTW channel to initialize
- *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
- *   - Invalid channels return k_rx_err_invalid_arg
- * @param[in] config PWM configuration parameters
- *   - Must be non-NULL
- *   - See rx_gptw_config_t for field descriptions
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Channel initialized and running successfully
- * @retval k_rx_err_null_ptr config pointer is nullptr
- * @retval k_rx_err_invalid_arg channel out of range, frequency=0, or invalid wave_mode
- * @retval k_rx_err_hw_error Failed to get register base address
  *
  * @pre System clock configured (PCLKA = 120 MHz)
  * @pre Port E pins not used by other peripherals
@@ -1114,15 +1032,7 @@ rx_err_t rx_gptw_init_pwm(const rx_gptw_channel_t channel, const rx_gptw_config_
  *   \text{duty\_count} = \left\lfloor \frac{\text{duty\_percent} \times \text{period}}{100} \right\rfloor
  * @f]
  *
- * @param[in] channel      Typed channel identifier (use rx_gptw_channel_id())
- * @param[in] output       Typed output identifier (use rx_gptw_output_id())
- * @param[in] duty_percent Duty cycle [0.0, 100.0] percent
- *   - 0.0 = always-off, 100.0 = always-on
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Duty cycle updated successfully
- * @retval k_rx_err_invalid_state Channel out of range or not initialized
- * @retval k_rx_err_invalid_arg duty_percent outside [0.0, 100.0] or invalid output
  *
  * @pre Channel must be initialized via rx_gptw_init_*()
  * @pre duty_percent must be in [0.0, 100.0]
@@ -1181,14 +1091,7 @@ rx_err_t rx_gptw_set_duty(const rx_gptw_channel_id_t channel,
  * - Output A: Writes to GTCCRA
  * - Output B: Writes to GTCCRB
  *
- * @param[in] channel    GPTW channel (k_gptw_channel_0 to k_gptw_channel_3)
- * @param[in] output     Output to update (k_gptw_output_a or k_gptw_output_b)
- * @param[in] duty_count Raw count [0, period]; values > period clamped to period
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Duty count written successfully
- * @retval k_rx_err_invalid_state Channel out of range or not initialized
- * @retval k_rx_err_invalid_arg Could not resolve register base or invalid output
  *
  * @pre Channel must be initialized via rx_gptw_init_*()
  * @pre duty_count should be in [0, period] for meaningful duty; higher values clamped
@@ -1260,16 +1163,7 @@ rx_gptw_set_duty_raw(const rx_gptw_channel_t channel, rx_gptw_output_t output, u
  *   \text{duty\_percent} = \frac{\text{duty\_count} \times 100}{\text{period}}
  * @f]
  *
- * @param[in]  channel      GPTW channel (k_gptw_channel_0 to k_gptw_channel_3)
- * @param[in]  output       Output to read (k_gptw_output_a or k_gptw_output_b)
- * @param[out] duty_percent Pointer to store percentage result [0.0, 100.0]
- *   - Must be non-NULL
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Percentage written to *duty_percent
- * @retval k_rx_err_null_ptr duty_percent is nullptr
- * @retval k_rx_err_invalid_state Channel out of range or not initialized
- * @retval k_rx_err_invalid_arg Invalid output or register pointer unresolvable
  *
  * @pre Channel must be initialized via rx_gptw_init_*()
  * @pre duty_percent must point to valid float storage
@@ -1334,15 +1228,7 @@ rx_err_t rx_gptw_get_duty(const rx_gptw_channel_t channel,
  * Returns the cached period value from s_gptw_period[], which matches the
  * GTPR register value set during initialization.
  *
- * @param[in] channel GPTW channel to query
- *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
- * @param[out] period_count Pointer to store period count value
- *   - Must be non-NULL
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, period_count contains valid value
- * @retval k_rx_err_null_ptr period_count is nullptr
- * @retval k_rx_err_invalid_state Channel not initialized
  *
  * @pre Channel initialized via rx_gptw_init_*()
  * @pre period_count points to valid uint32_t storage
@@ -1382,14 +1268,7 @@ rx_err_t rx_gptw_get_period(const rx_gptw_channel_t channel, uint32_t* period_co
  * | Output A | GTIOR.OAE | Enable/disable GTIOCnA pin |
  * | Output B | GTIOR.OBE | Enable/disable GTIOCnB pin |
  *
- * @param[in] channel GPTW channel (0-3)
- * @param[in] output Output to control (k_gptw_output_a or k_gptw_output_b)
- * @param[in] enable true to enable PWM output, false to disable (hold LOW)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Output enable state changed successfully
- * @retval k_rx_err_invalid_state Channel not initialized
- * @retval k_rx_err_invalid_arg Invalid channel or output value
  *
  * @pre Channel initialized via rx_gptw_init_*()
  *
@@ -1460,12 +1339,7 @@ rx_gptw_enable_output(const rx_gptw_channel_t channel, const rx_gptw_output_t ou
  * 2. Set GTCR.CST bit
  * 3. Lock write protection (GTWP)
  *
- * @param[in] channel GPTW channel to start
- *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Timer started successfully
- * @retval k_rx_err_invalid_arg Invalid channel value
  *
  * @pre Channel configured via rx_gptw_init_*() (recommended)
  *
@@ -1513,12 +1387,7 @@ rx_err_t rx_gptw_start(const rx_gptw_channel_t channel)
  * 2. Clear GTCR.CST bit
  * 3. Lock write protection (GTWP)
  *
- * @param[in] channel GPTW channel to stop
- *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Timer stopped successfully
- * @retval k_rx_err_invalid_arg Invalid channel value
  *
  * @pre None (can be called on uninitialized channel)
  *
@@ -1620,20 +1489,6 @@ typedef enum : uint8_t {
  * | Ch2 | 180deg | period | Down |
  * | Ch3 | 270deg | period/2 | Down |
  *
- * @param[in] channel GPTW channel for phase calculation
- *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
- *   - Invalid values result in default outputs (0, true)
- * @param[in] period PWM period in counter counts
- *   - Must be > 0 to avoid division by zero
- *   - Zero period results in default outputs (0, true)
- * @param[in] is_triangle true for triangle (center-aligned), false for sawtooth
- * @param[out] init_count Pointer to store initial counter value
- *   - Must be non-NULL
- *   - Range: [0, period]
- * @param[out] init_dir_up Pointer to store initial count direction
- *   - Must be non-NULL
- *   - true = counting up, false = counting down
- *   - Only meaningful for triangle mode
  *
  * @pre Output pointers must be non-NULL
  * @pre period should be > 0 for valid calculations
@@ -1770,19 +1625,7 @@ static void internal_calculate_phase_offset(const rx_gptw_channel_t channel,
  * - Ch2: 180deg (GTCNT=period/2)
  * - Ch3: 270deg (GTCNT=3xperiod/4)
  *
- * @param[in] channel GPTW channel to configure
- *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
- * @param[in] config Configuration parameters (frequency, deadtime, mode)
- *   - Must be non-NULL (caller's responsibility)
- * @param[in] period Pre-calculated period register value
- *   - Obtained from internal_calculate_period()
- * @param[in] is_triangle true if using triangle wave mode
- *   - Determines direction seeding requirement
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Channel configured successfully
- * @retval k_rx_err_invalid_arg Channel out of range or nullptr gptw base
- * @retval Others Propagated from internal_configure_gptw_hardware, internal_configure_mpc
  *
  * @pre Module clock enabled
  * @pre Timer stopped
@@ -1895,15 +1738,7 @@ static rx_err_t internal_configure_channel_staggered(const rx_gptw_channel_t cha
  * - Lowers EMI from simultaneous switching transients
  * - Allows smaller power supply capacitors
  *
- * @param[in] configs Array of pointers (one per channel) to per-channel configurations.
- *   - configs and each configs[i] must be non-NULL
- *   - All entries must share frequency_hz and wave_mode (validated against configs[0])
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok All 4 channels initialized and running
- * @retval k_rx_err_null_ptr configs or any configs[i] is nullptr
- * @retval k_rx_err_invalid_arg Invalid frequency or wave_mode
- * @retval k_rx_err_hw_error GPTW common registers inaccessible
  *
  * @see rx_gptw.h Complete API documentation with diagrams and examples
  *
@@ -1983,11 +1818,7 @@ rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* configs[k_rx_gptw_ch
  * Stops the timer, disables both PWM outputs (A and B), and resets
  * the counter to zero. Call only when motor control is no longer active.
  *
- * @param[in] channel GPTW channel (0-3)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success
- * @retval k_rx_err_invalid_arg Invalid channel number
  *
  * @pre Motor using this channel must be stopped before calling
  * @pre channel must be in range [k_gptw_channel_0, k_gptw_channel_3]

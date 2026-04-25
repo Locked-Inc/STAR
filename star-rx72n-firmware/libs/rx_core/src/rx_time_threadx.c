@@ -203,13 +203,6 @@ typedef enum : uint32_t {
  * @f]
  * @note Implemented via overflow-safe quotient/remainder to avoid wrap at high ms values.
  *
- * @param[in] ctx Unused context pointer (ThreadX uses global state)
- *                Must be NULL for this implementation
- * @param[in] ms  Sleep duration in milliseconds
- *                - Valid range: [0, UINT32_MAX]
- *                - 0: No-op (returns immediately)
- *                - 1-10: Sleeps 1 tick (10ms actual)
- *                - 11-20: Sleeps 2 ticks (20ms actual)
  *
  * @pre Calling thread must be a valid ThreadX thread
  * @pre ThreadX kernel must be running (tx_kernel_enter() called)
@@ -268,12 +261,7 @@ static void impl_sleep_ms(void* ctx, uint32_t ms)
  *   \text{ms} = \text{ticks} \times 10
  * @f]
  *
- * @param[in] ctx Unused context pointer (ThreadX uses global state)
- *                Must be NULL for this implementation
  *
- * @return Current time in milliseconds since kernel start
- * @retval 0 Immediately after kernel start
- * @retval UINT32_MAX * 10 Wraps at ~49.7 days
  *
  * @pre ThreadX kernel must be running
  *
@@ -330,16 +318,7 @@ static uint32_t impl_get_ms(void* ctx)
  *   \text{elapsed} = (\text{now} - \text{start}) \mod 2^{32}
  * @f]
  *
- * @param[in] ctx        Unused context pointer (ThreadX uses global state)
- * @param[in] start_ms   Start time from get_ms(), in milliseconds
- *                       - Must be from a previous get_ms() call
- * @param[in] timeout_ms Timeout duration in milliseconds
- *                       - Valid range: [0, UINT32_MAX]
- *                       - 0: Always returns true
  *
- * @return true if timeout has elapsed, false otherwise
- * @retval true  (now - start_ms) >= timeout_ms
- * @retval false (now - start_ms) < timeout_ms
  *
  * @pre start_ms must be from a previous get_ms() call
  * @pre Elapsed time since start_ms < 24.8 days (half wraparound period)
@@ -418,14 +397,7 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
  * | get_ms     | impl_get_ms      | tx_time_get() x 10 wrapper     |
  * | is_elapsed | impl_is_elapsed  | Wraparound-safe timeout check  |
  *
- * @param[out] iface Pointer to interface structure to populate
- *                   - Must not benullptr
- *                   - Caller owns memory
- *                   - Structure is fully initialized on success
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok          Success, interface populated
- * @retval k_rx_err_null_ptr iface is nullptr
  *
  * @pre iface !=nullptr
  *

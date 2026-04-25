@@ -288,13 +288,7 @@ static const char s_hex_chars[] = "0123456789ABCDEF";
  * Copies characters from source string to output buffer until null terminator
  * is reached or buffer is full (leaving room for final null terminator).
  *
- * @param[in,out] buf Output buffer (may be NULL)
- * @param[in] pos Current write position
- * @param[in] max Maximum buffer size
- * @param[in] str Source string to append (may be NULL)
  *
- * @return Updated position after appending
- * @retval pos (unchanged) If buf, str is nullptr, or buffer full
  *
  * @pre pos < max (for any writing to occur)
  *
@@ -329,14 +323,7 @@ RX_STATIC_TESTABLE uint32_t internal_append_str(char*       buf,
  * Writes a single character to the buffer at the current position if space
  * is available (accounting for null terminator).
  *
- * @param[in,out] buf Output buffer (may be NULL)
- * @param[in] pos Current write position
- * @param[in] max Maximum buffer size
- * @param[in] c Character to append
  *
- * @return Updated position after appending
- * @retval pos (unchanged) If buf is nullptr or buffer full
- * @retval pos + 1 If character was written
  *
  * @pre pos < max - 1 (for writing to occur)
  *
@@ -365,13 +352,7 @@ RX_STATIC_TESTABLE uint32_t internal_append_char(char* buf, uint32_t pos, uint32
  * (e.g., 0xFF -> "FF") and appends it to the buffer. Uses uppercase hex
  * letters via s_hex_chars lookup table.
  *
- * @param[in,out] buf Output buffer (may be NULL)
- * @param[in] pos Current write position
- * @param[in] max Maximum buffer size
- * @param[in] byte Byte value to convert (0x00-0xFF)
  *
- * @return Updated position after appending (pos + 2 on success)
- * @retval pos (unchanged) If buf is nullptr or insufficient space
  *
  * @pre pos + 2 <= max - 1 (for writing to occur)
  *
@@ -409,13 +390,7 @@ RX_STATIC_TESTABLE uint32_t internal_append_hex_byte(char*    buf,
  * Converts a 16-bit value to its four-character hexadecimal representation
  * (e.g., 0xABCD -> "ABCD") in big-endian order (most significant byte first).
  *
- * @param[in,out] buf Output buffer (may be NULL)
- * @param[in] pos Current write position
- * @param[in] max Maximum buffer size
- * @param[in] value 16-bit value to convert
  *
- * @return Updated position after appending (pos + 4 on success)
- * @retval pos (unchanged) If buf is nullptr or insufficient space
  *
  * @pre pos + 4 <= max - 1 (for writing to occur)
  *
@@ -449,15 +424,9 @@ RX_STATIC_TESTABLE uint32_t internal_append_hex_u16(char*    buf,
  * @details
  * Converts a 32-bit value to its eight-character hexadecimal representation
  * (e.g., 0xDEADBEEF -> "DEADBEEF") in big-endian order. Commonly used for
- * CRC-32 values in frame output.
+ * \\rC-32 values in frame output.
  *
- * @param[in,out] buf Output buffer (may be NULL)
- * @param[in] pos Current write position
- * @param[in] max Maximum buffer size
- * @param[in] value 32-bit value to convert
  *
- * @return Updated position after appending (pos + 8 on success)
- * @retval pos (unchanged) If buf is nullptr or insufficient space
  *
  * @pre pos + 8 <= max - 1 (for writing to occur)
  *
@@ -498,13 +467,7 @@ RX_STATIC_TESTABLE uint32_t internal_append_hex_u32(char*    buf,
  * 2. Store in temporary stack buffer
  * 3. Reverse and append to output buffer
  *
- * @param[in,out] buf Output buffer (may be NULL)
- * @param[in] pos Current write position
- * @param[in] max Maximum buffer size
- * @param[in] value 16-bit value to convert (0-65535)
  *
- * @return Updated position after appending
- * @retval pos (unchanged) If buf is nullptr or insufficient space
  *
  * @pre Sufficient space for up to 5 digits
  *
@@ -566,11 +529,7 @@ RX_STATIC_TESTABLE uint32_t internal_append_decimal_u16(char*    buf,
  * - 0x7F (DEL) is not printable
  * - 0x80-0xFF are extended ASCII (not printable in this implementation)
  *
- * @param[in] c Byte value to test
  *
- * @return true if printable, false otherwise
- * @retval true If c in range [0x20, 0x7E]
- * @retval false Otherwise
  *
  * @note Pure function with no side effects
  *
@@ -601,21 +560,14 @@ RX_STATIC_TESTABLE bool internal_is_printable(uint8_t c)
  * - ASCII sidebar shows printable chars or '.' for non-printable
  *
  * @par Empty Payload Handling
- * If length is 0, outputs: `[PAYLOAD] (empty)\r\n`
+ * If length is 0, outputs: `[PAYLOAD] (empty)\\r\\n`
  *
- * @param[in,out] buf Output buffer
- * @param[in] pos Current position in buffer
- * @param[in] max Maximum buffer size
- * @param[in] payload Payload data to format (may be NULL if length is 0)
- * @param[in] length Payload length in bytes
  *
- * @return Updated position in buffer
- * @retval pos (unchanged) If buf is nullptr or max is 0
  *
  * @pre buf != nullptr (for any output)
  * @pre payload != nullptr if length > 0
  *
- * @post Hex dump lines written with CRLF line endings
+ * @post Hex dump lines written with \\r\\n line endings
  *
  * @par Loop Bounds (NASA Rule 2)
  * - Outer loop: bounded by `length / k_bytes_per_line + 1` iterations
@@ -627,14 +579,7 @@ RX_STATIC_TESTABLE bool internal_is_printable(uint8_t c)
 /**
  * @brief Format one hex dump line (hex bytes + ASCII sidebar)
  *
- * @param[in,out] buf Output buffer
- * @param[in] pos Current position in buffer
- * @param[in] max Maximum buffer size
- * @param[in] payload Payload data
- * @param[in] offset Byte offset within payload for this line
- * @param[in] line_bytes Number of payload bytes on this line
  *
- * @return Updated position in buffer
  *
  * @ingroup frame_ascii_helpers
  * @since Version 1.0.0
@@ -736,19 +681,12 @@ RX_STATIC_TESTABLE uint32_t internal_format_payload(char*          buf,
  * | Type | type=NAME | type=COMMAND |
  * | Flags | flags=F1\|F2 | flags=ACK\|PRI |
  *
- * @param[in,out] buf Output buffer
- * @param[in] pos Current position in buffer
- * @param[in] max Maximum buffer size
- * @param[in] header Frame header to format
- * @param[in] is_tx Direction indicator (true=TX, false=RX)
  *
- * @return Updated position in buffer
- * @retval pos (unchanged) If buf or header is nullptr, or max is 0
  *
  * @pre buf != nullptr
  * @pre header != nullptr
  *
- * @post Header line written with CRLF line ending
+ * @post Header line written with \\r\\n line ending
  * @post pos <= max (invariant maintained)
  *
  * @ingroup frame_ascii_helpers
@@ -813,10 +751,7 @@ RX_STATIC_TESTABLE uint32_t internal_format_header(char*                    buf,
  * Implementation of rx_frame_ascii_type_name(). Uses switch statement
  * for O(1) lookup with compile-time string literals.
  *
- * @param[in] type Frame type enum value
  *
- * @return String representation ("PING", "PONG", "COMMAND", "RESPONSE", "ACK", "NACK",
- *         "RESET_ACK", "RESET", or "UNKNOWN")
  *
  * @see rx_frame_ascii.h for full documentation
  */
@@ -858,19 +793,7 @@ const char* rx_frame_ascii_type_name(rx_frame_type_t type)
  * 1. flags=ACK|PRI, first call (first=true): appends "ACK", sets first=false
  * 2. Same flags, second call: appends "|PRI"
  *
- * @param[in,out] buffer Output buffer
- * @param[in] pos Current position in buffer
- * @param[in] max Maximum buffer size
- * @param[in,out] first Pointer to first-flag indicator
- *   - true: No separator needed (this is first flag)
- *   - false: Prepend '|' separator
- *   - Set to false after appending a flag
- * @param[in] flags Complete flag bitmask to test
- * @param[in] flag_bit Specific flag bit to check (e.g., 0x01 for ACK)
- * @param[in] flag_name String name of the flag (e.g., "ACK")
  *
- * @return Updated position in buffer
- * @retval pos (unchanged) If flag_bit not set or first is nullptr
  *
  * @pre first != nullptr
  *
@@ -908,11 +831,7 @@ RX_STATIC_TESTABLE uint32_t internal_append_flag(char*       buffer,
  * Implementation of rx_frame_ascii_flags_str(). Iterates through known
  * flag bits, appending names with pipe separators.
  *
- * @param[in] flags Frame flags bitmask
- * @param[out] buffer Output buffer for formatted string
- * @param[in] buffer_len Size of output buffer in bytes
  *
- * @return Pointer to buffer (or "" if buffer is nullptr)
  *
  * @note Flags formatted as pipe-separated: "ACK|RETX|PRI"
  *
@@ -954,24 +873,16 @@ const char* rx_frame_ascii_flags_str(uint8_t flags, char* buffer, uint32_t buffe
  *
  * @details
  * Implementation of rx_frame_ascii_format(). Orchestrates header, payload,
- * and CRC formatting using internal helper functions.
+ * and \\rC formatting using internal helper functions.
  *
  * @par Implementation Notes
  * - Validates all inputs before any output
  * - Calls internal_format_header() for metadata line
  * - Calls internal_format_payload() for hex dump
- * - Appends CRC footer directly
+ * - Appends \\rC footer directly
  * - Detects truncation and returns k_rx_err_no_mem
  *
- * @param[in] frame Frame to format (must not be NULL)
- * @param[in] is_tx Direction (true=TX, false=RX)
- * @param[out] output Output buffer for formatted string
- * @param[in] output_max_len Maximum output buffer size
- * @param[out] output_len Pointer to receive actual output length
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if frame/output/output_len is nullptr
- * @return k_rx_err_no_mem if output buffer is too small
  *
  * @see rx_frame_ascii.h for full documentation
  */

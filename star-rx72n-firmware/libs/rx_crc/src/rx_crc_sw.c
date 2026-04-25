@@ -209,11 +209,7 @@ static const uint32_t s_crc32c_table[k_crc32_table_size] = {
  * byte via s_crc32_table lookup, then XORs final result with 0xFFFFFFFF
  * (k_crc32_final_xor). Implements CRC-32/ISO-HDLC (reflected poly 0xEDB88320).
  *
- * @param[in] data Input buffer (must not be NULL; caller enforces)
- * @param[in] len  Number of bytes [1, k_crc_len_max]
  *
- * @return uint32_t Finalized CRC-32/IEEE value
- * @retval 0x00000000..0xFFFFFFFF CRC result; value depends on input data
  *
  * @pre data != NULL
  * @pre 0 < len <= k_crc_len_max
@@ -240,11 +236,7 @@ static uint32_t internal_crc32_compute(const uint8_t* data, uint32_t len)
  * Same structure as internal_crc32_compute() but uses s_crc32c_table
  * (reflected poly 0x82F63B78, iSCSI / Castagnoli polynomial).
  *
- * @param[in] data Input buffer (must not be NULL; caller enforces)
- * @param[in] len  Number of bytes [1, k_crc_len_max]
  *
- * @return uint32_t Finalized CRC-32C value
- * @retval 0x00000000..0xFFFFFFFF CRC result; value depends on input data
  *
  * @pre data != NULL
  * @pre 0 < len <= k_crc_len_max
@@ -272,11 +264,7 @@ static uint32_t internal_crc32c_compute(const uint8_t* data, uint32_t len)
  * reflected polynomial 0x8005 (k_crc16_ibm_poly = 0xA001 reflected).
  * No final XOR (k_crc16_final_xor = 0). Implements CRC-16/ARC.
  *
- * @param[in] data Input buffer (must not be NULL; caller enforces)
- * @param[in] len  Number of bytes [1, k_crc_len_max]
  *
- * @return uint16_t CRC-16/IBM value
- * @retval 0x0000..0xFFFF CRC result; value depends on input data
  *
  * @pre data != NULL
  * @pre 0 < len <= k_crc_len_max
@@ -311,11 +299,7 @@ static uint16_t internal_crc16_ibm_compute(const uint8_t* data, uint32_t len)
  * with reflected polynomial 0x1021 (k_crc_ccitt_poly = 0x8408 reflected).
  * No final XOR. Implements CRC-16/KERMIT.
  *
- * @param[in] data Input buffer (must not be NULL; caller enforces)
- * @param[in] len  Number of bytes [1, k_crc_len_max]
  *
- * @return uint16_t CRC-CCITT/Kermit value
- * @retval 0x0000..0xFFFF CRC result; value depends on input data
  *
  * @pre data != NULL
  * @pre 0 < len <= k_crc_len_max
@@ -350,11 +334,7 @@ static uint16_t internal_crc_ccitt_compute(const uint8_t* data, uint32_t len)
  * reflected polynomial 0x31 (k_crc8_maxim_poly = 0x8C reflected).
  * No final XOR. Implements CRC-8/MAXIM-DOW (used by 1-Wire devices).
  *
- * @param[in] data Input buffer (must not be NULL; caller enforces)
- * @param[in] len  Number of bytes [1, k_crc_len_max]
  *
- * @return uint8_t CRC-8/Maxim value
- * @retval 0x00..0xFF CRC result; value depends on input data
  *
  * @pre data != NULL
  * @pre 0 < len <= k_crc_len_max
@@ -396,12 +376,7 @@ static uint8_t internal_crc8_maxim_compute(const uint8_t* data, uint32_t len)
  * (LSB-first) form of the polynomial. Caller must ensure data != NULL and
  * len is in [k_crc_len_min, k_crc_len_max]; these are not re-validated here.
  *
- * @param[in] poly CRC polynomial selection
- * @param[in] data Input data buffer (must not be NULL; caller enforces)
- * @param[in] len  Number of bytes [1, k_crc_len_max]
  *
- * @return uint32_t CRC result (8, 16, or 32 significant bits depending on poly)
- * @retval 0x00000000..0xFFFFFFFF CRC result; significant bits depend on polynomial
  *
  * @pre data != NULL (enforced by caller rx_crc_compute())
  * @pre len in [k_crc_len_min, k_crc_len_max] (enforced by caller)
@@ -467,13 +442,7 @@ uint32_t internal_crc_sw_compute(rx_crc_poly_t poly, const uint8_t* data, uint32
  * Caller (rx_crc32_update) is responsible for filtering null data and zero len
  * before invoking this function.
  *
- * @param[in] crc  Previous finalized CRC-32 value (0U for first chunk)
- * @param[in] data Additional data buffer (caller ensures non-NULL, len > 0)
- * @param[in] len  Number of bytes to process (caller ensures > 0);
- *                 returns crc unchanged if len > k_crc_len_max
  *
- * @return uint32_t Updated finalized CRC-32/IEEE value
- * @retval 0x00000000..0xFFFFFFFF Updated CRC, or original crc if len > k_crc_len_max
  *
  * @pre crc is either 0U (first call) or the return value of a prior
  *      internal_crc32_sw_update() / rx_crc32_update() call

@@ -361,9 +361,6 @@ typedef enum : uint8_t {
  * Bounded by k_pll_stabilization_timeout to satisfy NASA Rule 2.
  * Returns immediately in simulator mode (hardware PLL not modeled).
  *
- * @return rx_err_t Result code
- * @retval k_rx_ok PLL locked within timeout
- * @retval k_rx_err_hw_timeout PLL did not lock before timeout expired
  *
  * @pre PLL must be enabled (pllcr2 = k_pll_enabled) before calling
  * @pre PRCR registers must be unlocked
@@ -401,9 +398,6 @@ static rx_err_t internal_wait_pll_lock(void)
  * Bounded by k_pll_stabilization_timeout to satisfy NASA Rule 2.
  * Returns immediately in simulator mode (hardware PPLL not modeled).
  *
- * @return rx_err_t Result code
- * @retval k_rx_ok PPLL locked within timeout
- * @retval k_rx_err_hw_timeout PPLL did not lock before timeout expired
  *
  * @pre PPLL must be enabled (ppllcr2 = k_ppll_enabled) before calling
  * @pre PRCR registers must be unlocked
@@ -448,9 +442,6 @@ static rx_err_t internal_wait_ppll_lock(void)
  * - Configures PLL (24 MHz x 10 / 1 = 240 MHz) and waits for lock
  * - Configures PPLL (24 MHz x 8 / 4 = 48 MHz USB) and waits for lock
  *
- * @return rx_err_t Result code
- * @retval k_rx_ok All oscillators started and PLLs locked
- * @retval k_rx_err_hw_timeout PLL or PPLL failed to lock within timeout
  *
  * @pre PRCR must be unlocked before calling
  * @pre External 24 MHz crystal must be connected
@@ -566,7 +557,6 @@ static rx_err_t internal_start_oscillators_and_plls(void)
  * - Switches system clock source to PLL
  * - Verifies PLL selection took effect
  *
- * @return rx_err_t Always k_rx_ok (assertions halt on failure)
  *
  * @pre PLL must be locked before calling (call internal_start_oscillators_and_plls first)
  * @pre PRCR must be unlocked
@@ -636,9 +626,6 @@ static rx_err_t internal_switch_to_pll_clock(void)
  *
  * Must be called before any peripheral initialization or RTOS startup.
  *
- * @return rx_err_t Initialization result
- * @retval k_rx_ok All oscillators locked and clocks configured correctly
- * @retval k_rx_err_hw_timeout PLL or PPLL failed to lock within stabilization limit
  *
  * @pre External 24 MHz crystal is connected and oscillating
  * @pre VCC supply voltage is within RX72N operating range
@@ -704,7 +691,6 @@ static rx_err_t internal_clock_init(void)
  *
  * Note: SCI modules are enabled per-channel in uart_init_channel()
  *
- * @return k_rx_ok on success, k_rx_err if verification fails after retries
  */
 /**
  * @brief Perform one attempt to clear module stop register bits and verify
@@ -714,11 +700,7 @@ static rx_err_t internal_clock_init(void)
  * RSPI0, RSPI1, and S12AD modules, re-locks PRCR, then verifies the bits
  * were accepted by hardware.
  *
- * @param[in] mstpcra_clear_mask Bit mask to clear in MSTPCRA
- * @param[in] mstpcrb_clear_mask Bit mask to clear in MSTPCRB
- * @param[in] mstpcrc_clear_mask Bit mask to clear in MSTPCRC
  *
- * @return bool true if all bits verified clear, false if any bit still set
  *
  * @pre PRCR accessible (not in protected state requiring special unlock)
  * @post PRCR re-locked on return
@@ -793,10 +775,6 @@ static rx_err_t internal_module_stop_init(void)
  * Intended to be called immediately after internal_clock_init() to confirm that
  * all register writes took effect.
  *
- * @return rx_err_t Verification result
- * @retval k_rx_ok All clock configuration registers match expected values
- * @retval k_rx_err_null_ptr system_regs() returned nullptr
- * @retval k_rx_err_hw_init_failed One or more clock registers do not match expected values
  *
  * @pre internal_clock_init() completed successfully
  * @pre Hardware registers are accessible (not in reset or low-power mode)
@@ -995,11 +973,6 @@ static rx_err_t internal_verify_system_state(void)
  * - Data corruption (constants read from flash)
  * - Unpredictable behavior (random crashes, incorrect execution)
  *
- * @return rx_err_t Initialization status
- * @retval k_rx_ok All clocks configured successfully (system ready for peripherals)
- * @retval k_rx_err_hw_timeout PLL or PPLL stabilization timeout (oscillator failure)
- * @retval k_rx_err_hw_timeout Module stop verification failed after 3 retries (register access issue)
- * @retval k_rx_err_hw_init_failed Clock configuration verification failed (register corruption)
  *
  * @pre MCU reset complete (C runtime initialized, BSS cleared)
  * @pre Stack pointer valid (main stack at least 4 KB available)

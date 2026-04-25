@@ -410,8 +410,7 @@ typedef struct {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success
- * @retval k_rx_err_invalid_arg link or config isnullptr
- * @retval k_rx_err_invalid_arg config->spi_handle isnullptr
+ * @retval k_rx_err_invalid_arg link or config isnullptr; config->spi_handle isnullptr
  *
  * @pre link must point to valid, allocated memory (~86 KB)
  * @pre config->spi_handle must be initialized via rx_spi_comm_init()

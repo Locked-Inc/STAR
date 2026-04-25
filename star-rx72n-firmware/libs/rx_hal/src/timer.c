@@ -596,10 +596,6 @@ void __attribute__((interrupt)) cmt0_isr(void)
  * Func => CPU [label="Enable global IRQ: setpsw i"];
  * @endmsc
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success - CMT0 configured and running at 100 Hz
- * @retval k_rx_err_invalid_state Hardware registers NULL (clock not configured)
- * @retval k_rx_err_hw_error Timer failed to start (hardware fault)
  *
  * @par Return Value Details:
  *
@@ -805,11 +801,6 @@ rx_err_t timer_init(void)
  *          operations (tx_thread_sleep, timeouts) will hang. Only call during
  *          controlled shutdown or with ThreadX suspended.
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success - CMT0 stopped, no more interrupts
- * @retval k_rx_err_hw_unmapped CMT_CTRL register inaccessible
- * @retval k_rx_err_invalid_state Timer already stopped
- * @retval k_rx_err_hw_error Failed to stop timer (hardware fault)
  *
  * @pre timer_init() must have been called successfully
  * @pre CMT0 should be running (otherwise returns k_rx_err_invalid_state)
@@ -897,19 +888,7 @@ rx_err_t timer_stop(void)
  *   \text{Max count} = CMCOR = 18749 \approx 10\text{ ms}
  * @f]
  *
- * @param[out] count Pointer to uint16_t to store current counter value
- *                   - **Type**: uint16_t*
- *                   - **Valid range**: Must be non-NULL
- *                   - **Output range**: 0 to k_cmt0_compare_match (18749)
- *                   - **Units**: Timer counts (1 count = 0.533 us)
- *                   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
- *                   - **Lifetime**: Caller must ensure pointer valid until return
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success - counter value written to *count
- * @retval k_rx_err_null_ptr count parameter is nullptr
- * @retval k_rx_err_hw_unmapped CMT0 register inaccessible
- * @retval k_rx_err_hw_error Counter value exceeds CMCOR (hardware fault)
  *
  * @par Return Value Details:
  *

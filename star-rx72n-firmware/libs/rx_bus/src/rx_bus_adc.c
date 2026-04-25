@@ -352,20 +352,7 @@ typedef struct {
  * - Set trigger mode (ADCSR.EXTRG = 0, software trigger)
  * - Enable ADC unit (ADCSR.ADST cleared initially)
  *
- * @param[in,out] bus_config Bus configuration structure
- *   - Must have type = k_bus_type_adc
- *   - proto.adc.unit: 0 or 1 (S12AD0 or S12AD1)
- *   - proto.adc.channel: 0-15 (unit-specific channels)
- *   - proto.adc.bits: 8, 10, or 12 (resolution)
- *   - initialized flag set to true on success
- * @param[in,out] user_ctx User context (adc_init_ctx_t*)
- *   - output: ctx->result contains operation result
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, ADC initialized
- * @retval k_rx_err_invalid_arg Bus type is not ADC
- * @retval k_rx_err_hw_init_failed ADC HAL initialization failed
- * @retval k_rx_err_timeout Test read timeout (hardware not responding)
  *
  * @pre bus_config pointer is valid (validated by bus manager)
  * @pre user_ctx pointer is valid and points to adc_init_ctx_t
@@ -463,21 +450,7 @@ static rx_err_t internal_adc_init_callback(rx_bus_config_t* bus_config, void* us
  * - Conversion: 1.5 us (12 ADCLK cycles for 12-bit)
  * - Total: 4.5 us typical
  *
- * @param[in] bus_config Bus configuration structure
- *   - Must be initialized (initialized flag = true)
- *   - proto.adc.unit: 0 or 1 (S12AD0/1)
- *   - proto.adc.channel: ADC channel number
- *   - proto.adc.bits: Resolution for range validation
- * @param[in,out] user_ctx User context (adc_read_ctx_t*)
- *   - input: ctx->value points to output uint16_t
- *   - output: *ctx->value set to raw ADC result
- *   - output: ctx->result contains operation result
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, value contains raw ADC reading
- * @retval k_rx_err_invalid_state Bus not initialized
- * @retval k_rx_err_timeout Conversion timeout (hardware fault)
- * @retval k_rx_err_hw_error ADC read failed
  *
  * @pre bus_config->initialized must be true
  * @pre user_ctx points to valid adc_read_ctx_t
@@ -567,23 +540,7 @@ static rx_err_t internal_adc_read_callback(rx_bus_config_t* bus_config, void* us
  *
  * Precision: 0.805 mV/LSB @ 3.3V VREF, 12-bit
  *
- * @param[in] bus_config Bus configuration structure
- *   - Must be initialized (initialized flag = true)
- *   - proto.adc.unit: S12AD unit number (0 or 1)
- *   - proto.adc.channel: ADC channel number
- *   - proto.adc.bits: Resolution (8, 10, or 12)
- *   - proto.adc.vref_mv: Reference voltage in millivolts (typically 3300 or 5000)
- * @param[in,out] user_ctx User context (adc_voltage_ctx_t*)
- *   - input: ctx->voltage_mv points to output uint32_t
- *   - input: ctx->bits contains resolution (from bus_config)
- *   - output: *ctx->voltage_mv set to voltage in mV
- *   - output: ctx->result contains operation result
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, voltage_mv contains reading in millivolts
- * @retval k_rx_err_invalid_state Bus not initialized
- * @retval k_rx_err_timeout Conversion timeout (hardware fault)
- * @retval k_rx_err_hw_error ADC voltage read failed
  *
  * @pre bus_config->initialized must be true
  * @pre user_ctx points to valid adc_voltage_ctx_t
@@ -685,20 +642,7 @@ static rx_err_t internal_adc_voltage_callback(rx_bus_config_t* bus_config, void*
  * - Callback executes with mutex held
  * - Results extracted after mutex released
  *
- * @param[in] manager Bus manager instance
- *   - Must be initialized via rx_bus_manager_init()
- *   - Must have ADC bus registered
- * @param[in] bus_name Name of the ADC bus
- *   - Must match registered bus name
- *   - Null-terminated string
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, ADC initialized
- * @retval k_rx_err_null_ptr nullptr in manager or bus_name
- * @retval k_rx_err_not_found Bus name not found
- * @retval k_rx_err_invalid_arg Bus is not ADC type
- * @retval k_rx_err_timeout Mutex timeout
- * @retval k_rx_err_hw_init_failed ADC hardware initialization failed
  *
  * @pre manager must be initialized
  * @pre Bus must be registered with type k_rx_bus_type_adc
@@ -759,22 +703,7 @@ rx_err_t rx_bus_adc_init(rx_bus_manager_t* manager, const char* bus_name)
  * 4. Extract result from context (value already updated by callback)
  * 5. Return result to caller
  *
- * @param[in] manager Bus manager instance
- *   - Must be initialized
- *   - Must have ADC bus registered and initialized
- * @param[in] bus_name Name of the ADC bus
- *   - Must match registered and initialized bus
- * @param[out] value Pointer to store raw ADC value
- *   - Range: 0-4095 (12-bit resolution)
- *   - 0 = 0V input, 4095 = VREF input
- *   - Valid only if k_rx_ok returned
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, value contains raw ADC reading
- * @retval k_rx_err_null_ptr nullptr in any parameter
- * @retval k_rx_err_not_found Bus name not found
- * @retval k_rx_err_invalid_state Bus not initialized
- * @retval k_rx_err_timeout Conversion or mutex timeout
  *
  * @pre Bus must be initialized via rx_bus_adc_init()
  * @pre All pointers must be non-NULL
@@ -842,22 +771,7 @@ rx_err_t rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16
  *
  * The conversion uses VREF from bus configuration (set in rx_bus_register).
  *
- * @param[in] manager Bus manager instance
- *   - Must be initialized
- *   - Must have ADC bus registered and initialized
- * @param[in] bus_name Name of the ADC bus
- *   - Must match registered and initialized bus
- * @param[out] voltage_mv Pointer to store voltage in millivolts
- *   - Range: 0 to VREF_mV (typically 0-3300 mV)
- *   - Resolution: 0.805 mV @ 3.3V VREF, 12-bit
- *   - Valid only if k_rx_ok returned
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, voltage_mv contains reading in millivolts
- * @retval k_rx_err_null_ptr nullptr in any parameter
- * @retval k_rx_err_not_found Bus name not found
- * @retval k_rx_err_invalid_state Bus not initialized
- * @retval k_rx_err_timeout Conversion or mutex timeout
  *
  * @pre Bus must be initialized via rx_bus_adc_init()
  * @pre All pointers must be non-NULL

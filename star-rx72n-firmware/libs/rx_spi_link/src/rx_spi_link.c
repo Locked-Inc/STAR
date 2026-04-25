@@ -86,11 +86,34 @@
 
 #include "rx_spi_link.h"
 
+#include <stdatomic.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "rx_check.h"
 #include "rx_fec.h"
 #include "rx_log.h"
+
+/* =============================================================================
+ * Audit F-04: single-task invariant guard for the link send path
+ * =============================================================================
+ *
+ * The "get-then-send-then-increment" sequence-capture pattern in
+ * internal_send_attempt() (rx_session_get_tx() captures the next
+ * sequence, then rx_spi_comm_send() consumes and increments it) is
+ * only race-free if exactly one task is in the link send path at a
+ * time. The invariant is documented but was not enforced.
+ *
+ * s_send_path_busy is a process-wide atomic flag. The first entrant
+ * sets it; a re-entrant caller observes the prior set and trips
+ * RX_ASSERT_PRE, halting the system before it can corrupt the session
+ * sequence. Cleared on exit.
+ *
+ * Use atomic_flag (lock-free, MMIO-safe on RXv3) rather than a plain
+ * bool: even on a single-core MCU, an interrupt could pre-empt a task
+ * mid-send. atomic_flag_test_and_set is the cheapest correct primitive.
+ */
+static atomic_flag s_send_path_busy = ATOMIC_FLAG_INIT;
 
 /* =============================================================================
  * Module Constants
@@ -142,13 +165,7 @@ typedef enum : uint8_t {
  * +127, bit value 0 becomes -127. This matches the Go gateway's
  * bytesToSoftBits() function.
  *
- * @param[in]  data     Input hard bytes
- * @param[in]  data_len Number of input bytes
- * @param[out] soft     Output soft bits (must hold data_len * 8 elements)
- * @param[in]  soft_size Size of soft buffer in elements
- * @param[out] soft_len Actual number of soft bits written
  *
- * @return k_rx_ok on success, k_rx_err_invalid_size if buffer too small
  *
  * @pre data and soft must be non-NULL
  * @pre soft_size >= data_len * k_spi_link_bits_per_byte
@@ -213,12 +230,7 @@ RX_STATIC_TESTABLE rx_err_t internal_bytes_to_soft_bits(const uint8_t* data,
  * Polls rx_spi_comm_receive() looking for an ACK or NACK frame matching
  * the expected sequence number. Non-matching frames are logged and ignored.
  *
- * @param[in,out] link Link handle
- * @param[in]     expected_seq Expected ACK/NACK sequence
  *
- * @return k_rx_ok if ACK received
- * @return k_rx_err_protocol_error if NACK received
- * @return k_rx_err_timeout if no ACK/NACK within timeout
  *
  * @pre link must be initialized
  * @pre expected_seq matches the last sent frame's sequence
@@ -371,18 +383,7 @@ rx_err_t rx_spi_link_deinit(rx_spi_link_t* link)
  * then retry state (attempt). While adjacent integer parameters may appear swappable,
  * the semantic grouping is intentional for code clarity.
  *
- * @param[in,out] link       Link handle (must be initialized)
- * @param[in]     type       Frame type (command, telemetry, etc.)
- * @param[in]     base_flags Base flags (fec_enabled, requires_ack)
- * @param[in]     tx_payload Payload to transmit (may be FEC-encoded)
- * @param[in]     tx_len     Payload length in bytes
- * @param[in]     attempt    Attempt number (0 = first, >0 = retransmit)
  *
- * @return rx_err_t Result of attempt
- * @retval k_rx_ok ACK received (success)
- * @retval k_rx_err_protocol_error NACK received (retry needed)
- * @retval k_rx_err_timeout Timeout (retry needed)
- * @retval Other SPI send errors
  */
 RX_STATIC_TESTABLE rx_err_t internal_send_attempt(rx_spi_link_t*  link,
                                                   rx_frame_type_t type,
@@ -391,6 +392,15 @@ RX_STATIC_TESTABLE rx_err_t internal_send_attempt(rx_spi_link_t*  link,
                                                   uint32_t        tx_len,
                                                   uint8_t         attempt)
 {
+  /* Audit F-04: enforce the single-task invariant on the link send path.
+   * atomic_flag_test_and_set returns the PREVIOUS value; if it was
+   * already true, another task / ISR is mid-send and will race with us
+   * on rx_session_get_tx() / rx_spi_comm_send(). Halt now -- the bug is
+   * upstream (a missing mutex or the wrong task-priority assumption)
+   * and continuing would corrupt the session sequence. */
+  RX_ASSERT_PRE(!atomic_flag_test_and_set(&s_send_path_busy),
+                "rx_spi_link send-path re-entered: single-task invariant broken");
+
   uint8_t flags = base_flags;
 
   /* Mark retransmissions */
@@ -415,15 +425,23 @@ RX_STATIC_TESTABLE rx_err_t internal_send_attempt(rx_spi_link_t*  link,
   (void)(rx_session_get_tx(link->spi_handle->session, &next_seq));
   const uint16_t expected_seq = next_seq; /* This will be used by send */
 
+  rx_err_t result;
+
   /* Send frame via SPI transport */
   const rx_err_t send_err = rx_spi_comm_send(link->spi_handle, type, flags, tx_payload, tx_len);
   if (send_err != k_rx_ok) {
     rx_log_warn(s_tag, "SPI send failed");
-    return send_err;
+    result = send_err;
+  } else {
+    /* Wait for ACK/NACK using the sequence we captured */
+    result = internal_wait_for_ack(link, expected_seq);
   }
 
-  /* Wait for ACK/NACK using the sequence we captured */
-  return internal_wait_for_ack(link, expected_seq);
+  /* Release the single-task guard before returning so subsequent
+   * (sequential) calls succeed. Cleared regardless of result so a
+   * single failure does not permanently lock the path. */
+  atomic_flag_clear(&s_send_path_busy);
+  return result;
 }
 
 /**
@@ -435,16 +453,7 @@ RX_STATIC_TESTABLE rx_err_t internal_send_attempt(rx_spi_link_t*  link,
  * base_flags to include k_frame_flag_requires_ack and optionally
  * k_frame_flag_fec_enabled.
  *
- * @param[in,out] link        Link handle (must be initialized, fec_enabled checked)
- * @param[in]     payload     Original payload to send
- * @param[in]     payload_len Original payload length
- * @param[out]    out_payload Pointer to prepared payload (original or encoded buffer)
- * @param[out]    out_len     Prepared payload length
- * @param[out]    out_flags   Base flags for transmission
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Preparation successful
- * @retval k_rx_err_* FEC encoding error
  *
  * @pre link->fec_enabled indicates whether FEC should be used
  * @pre link->fec_encode_buf sized for k_spi_link_max_encoded_payload
@@ -573,9 +582,7 @@ rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
  * Note: integer division truncates, which is correct because the padding
  * bits in the last encoded byte are zero and do not contribute to symbols.
  *
- * @param[in] soft_len Number of soft bits from internal_bytes_to_soft_bits()
  *
- * @return Expected decoded payload length in bytes
  *
  * @pre soft_len is the output of internal_bytes_to_soft_bits()
  * @pre soft_len >= k_fec_num_outputs * k_fec_tail_bits (else underflow)
@@ -603,13 +610,7 @@ static inline uint32_t internal_fec_decoded_len(uint32_t soft_len)
  * 3. If decode succeeds: send ACK, reset combiner, return payload
  * 4. If decode fails: send NACK, accumulate soft bits for next retransmit
  *
- * @param[in,out] link    Link handle (must be initialized)
- * @param[in]     frame   Received frame with FEC-encoded payload
- * @param[out]    result  Decode result (payload, length, metadata)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Decode success, ACK sent
- * @retval k_rx_err_protocol_error Decode failed, NACK sent
  *
  * @pre link->initialized == true (link must be initialized)
  * @pre frame->payload contains FEC-encoded data (FEC flag set)
@@ -676,12 +677,7 @@ RX_STATIC_TESTABLE rx_err_t internal_receive_fec_decode(rx_spi_link_t*          
  * Copies payload directly to result buffer and sends ACK if required
  * by frame flags. No FEC decoding or Chase Combining applied.
  *
- * @param[in,out] link    Link handle (must be initialized)
- * @param[in]     frame   Received frame with raw payload
- * @param[out]    result  Receive result (payload, length, metadata)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, payload copied and ACK sent (if required)
  */
 RX_STATIC_TESTABLE rx_err_t internal_receive_passthrough(rx_spi_link_t*                link,
                                                          const rx_frame_t*             frame,

@@ -724,7 +724,7 @@ typedef enum : uint8_t {
  * @note This is a C23 **typed enum** with explicit underlying type uint16_t,
  *       ensuring 2-byte size and consistent ABI across compiler versions
  * @note Constants are evaluated at compile time (zero runtime overhead)
- * @note Naming follows Renesas conventions: P<port><pin> (e.g., PB2, PE5)
+ * @note Naming follows Renesas conventions: P{port}{pin} (e.g., PB2, PE5)
  * @note Package availability is documented in inline comments (search "N/A on 144-pin")
  *
  * @warning Using undefined pins (N/A on your package) may cause undefined behavior

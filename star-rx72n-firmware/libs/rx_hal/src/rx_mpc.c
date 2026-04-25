@@ -404,18 +404,7 @@ typedef enum : uint8_t {
  *   = 0x0008C19F (PB7PFS)
  * @endverbatim
  *
- * @param[in] port Port number (0-9, A-G, J encoded as uint8_t)
- *                 - Valid range: [k_mpc_port_0, k_mpc_port_j]
- *                 - Port G is handled explicitly and returns NULL (not on 144-pin package)
- *                 - Port H has no k_rx_port_h constant; any raw value in that range falls to default and returns NULL
- * @param[in] pin Pin number within the port
- *                - Valid range: [0, 7]
- *                - Some ports have fewer than 8 pins; caller must verify
  *
- * @return Pointer to the PFS register for the specified pin
- * @retval non-NULL Valid volatile pointer to PFS register
- * @retval NULL Invalid port (out of range or unavailable on package)
- * @retval NULL Invalid pin number (> 7)
  *
  * @pre PCLKB clock must be running for MPC register access
  * @pre Caller has verified channel is in valid range for the target package
@@ -658,16 +647,7 @@ static void internal_mpc_lock(void)
  * }
  * @enddot
  *
- * @param[in] port Port number (0-9, A-G, J)
- *                 - Validated by internal_get_pfs_register()
- * @param[in] pin Pin number within port
- *                - Valid range: [0, 7]
- * @param[in] value Value to write to PFS register
- *                  - Typically PSEL code (0-31) or ASEL/ISEL bits
  *
- * @return Error code indicating success or failure
- * @retval k_rx_ok PFS register successfully written
- * @retval k_rx_err_invalid_arg Invalid port or pin (register address NULL)
  *
  * @pre PCLKB clock must be running
  * @pre Value should be a valid PFS configuration
@@ -724,13 +704,7 @@ static rx_err_t internal_write_pfs(const uint8_t port, uint8_t pin, uint8_t valu
  * 3. Validate pin is in range [0, 7]
  * 4. Write 0x00 to PFS register (via internal_write_pfs)
  *
- * @param[in] pin GPIO pin identifier (rx_port_pin_t from rx_port_constants.h)
  *
- * @return Error code indicating success or failure
- * @retval k_rx_ok Pin successfully set to GPIO mode
- * @retval k_rx_err_invalid_arg Port number invalid (> Port J)
- * @retval k_rx_err_invalid_arg Pin number invalid (> 7)
- * @retval k_rx_err_invalid_arg Port not available on package
  *
  * @pre PCLKB clock running, MPC not in module stop
  * @pre pin must be a valid rx_port_pin_t constant
@@ -780,15 +754,7 @@ rx_err_t rx_mpc_set_gpio(const rx_port_pin_t pin)
  * 4. Validate extracted values
  * 5. Write PSEL to PFS register (via internal_write_pfs)
  *
- * @param[in] config Pointer to peripheral configuration structure
- *                   - config->pin: Target pin identifier
- *                   - config->psel: PSEL value to write (0-31)
  *
- * @return Error code indicating success or failure
- * @retval k_rx_ok Pin successfully configured
- * @retval k_rx_err_invalid_arg config is nullptr
- * @retval k_rx_err_invalid_arg PSEL exceeds 31
- * @retval k_rx_err_invalid_arg Invalid port or pin
  *
  * @pre config must be non-NULL with valid fields
  * @pre PCLKB clock running
@@ -857,11 +823,7 @@ rx_err_t rx_mpc_set_peripheral(const rx_mpc_peripheral_config_t* config)
  * Convenience wrapper that configures a pin for MTU I/O compare output
  * using PSEL = k_psel_mtu_ioc (0x01). Commonly used for motor PWM.
  *
- * @param[in] pin GPIO pin identifier for MTU PWM output
  *
- * @return Error code indicating success or failure
- * @retval k_rx_ok Pin configured for MTU PWM
- * @retval k_rx_err_invalid_arg Invalid port or pin
  *
  * @pre PCLKB clock must be running, MPC not in module stop
  * @pre pin must encode a valid port/pin combination supported by MTU MTIOC
@@ -903,11 +865,7 @@ rx_err_t rx_mpc_set_mtu_pwm(const rx_port_pin_t pin)
  * counting mode using PSEL = k_psel_mtu_phase (0x02). Used for quadrature
  * encoders on pins that expose MTCLKA/B/C/D.
  *
- * @param[in] pin GPIO pin identifier for encoder input (e.g., P24/P25)
  *
- * @return Error code indicating success or failure
- * @retval k_rx_ok Pin configured for encoder input
- * @retval k_rx_err_invalid_arg Invalid port or pin
  *
  * @pre PCLKB clock must be running, MPC not in module stop
  * @pre pin must encode a valid port/pin combination supported by MTCLK input
@@ -968,11 +926,7 @@ rx_err_t rx_mpc_set_mtu_encoder(const rx_port_pin_t pin)
  * halves of STAR's rear-wheel encoders (PA3 for Motor 2 Phase B, PB3 for
  * Motor 3 Phase B) so those edges were never counted.
  *
- * @param[in] pin GPIO pin identifier for TPU encoder input (e.g., PC2/PA3)
  *
- * @return Error code indicating success or failure
- * @retval k_rx_ok Pin configured for TPU encoder input
- * @retval k_rx_err_invalid_arg Invalid port or pin
  *
  * @pre PCLKB clock must be running, MPC not in module stop
  * @pre pin must encode a valid port/pin combination supported by TCLK input
@@ -1014,11 +968,7 @@ rx_err_t rx_mpc_set_tpu_encoder(const rx_port_pin_t pin)
  * bit in the PFS register. This disables the digital input buffer to
  * prevent noise during analog measurement.
  *
- * @param[in] pin GPIO pin identifier for ADC (typically P40-P47)
  *
- * @return Error code indicating success or failure
- * @retval k_rx_ok Pin configured for ADC input
- * @retval k_rx_err_invalid_arg Invalid port or pin
  *
  * @pre PCLKB clock must be running, MPC not in module stop
  * @pre pin must encode a valid port/pin combination with analog capability
@@ -1066,11 +1016,7 @@ rx_err_t rx_mpc_set_adc(const rx_port_pin_t pin)
  * Convenience wrapper that configures a pin for SCI UART operation using
  * PSEL = k_psel_sci_tx (0x0A). Works for both TXD and RXD pins.
  *
- * @param[in] pin GPIO pin identifier for SCI (e.g., PB7 for TXD9)
  *
- * @return Error code indicating success or failure
- * @retval k_rx_ok Pin configured for SCI UART
- * @retval k_rx_err_invalid_arg Invalid port or pin
  *
  * @pre PCLKB clock must be running, MPC not in module stop
  * @pre pin must encode a valid port/pin combination with SCI multiplexing
@@ -1137,11 +1083,7 @@ rx_err_t rx_mpc_set_sci(const rx_port_pin_t pin)
  * imu_test/main.c (which sets PMR=1 at line 227 before calling its own
  * riic_init()) talked to BNO055 + BMP280 cleanly on the same board.
  *
- * @param[in] pin GPIO pin identifier for RIIC (e.g., P12 for SCL)
  *
- * @return Error code indicating success or failure
- * @retval k_rx_ok Pin configured for RIIC I2C (PFS + PMR set)
- * @retval k_rx_err_invalid_arg Invalid port or pin
  *
  * @pre PCLKB clock must be running, MPC not in module stop
  * @pre pin must encode a valid port/pin combination with RIIC multiplexing
@@ -1207,11 +1149,7 @@ rx_err_t rx_mpc_set_riic(const rx_port_pin_t pin)
  * PSEL = k_psel_rspi_clk (0x0D). Works for all SPI signals (CLK, COPI,
  * CIPO, SSL).
  *
- * @param[in] pin GPIO pin identifier for RSPI (e.g., PA0-PA4)
  *
- * @return Error code indicating success or failure
- * @retval k_rx_ok Pin configured for RSPI SPI
- * @retval k_rx_err_invalid_arg Invalid port or pin
  *
  * @pre PCLKB clock must be running, MPC not in module stop
  * @pre pin must encode a valid port/pin combination with RSPI multiplexing
@@ -1253,12 +1191,7 @@ rx_err_t rx_mpc_set_rspi(const rx_port_pin_t pin)
  * PSEL = k_psel_gptw (0x1E). GPTW provides complementary PWM output with dead-time
  * insertion for motor control.
  *
- * @param[in] pin GPIO pin identifier for GPTW function
  *
- * @return Error code from rx_mpc_set_peripheral()
- * @retval k_rx_ok Pin configured successfully
- * @retval k_rx_err_invalid_arg Invalid port or pin
- * @retval k_rx_err_hw_error PWPR unlock failed
  *
  * @pre PCLKB clock must be running, MPC not in module stop
  * @pre pin must encode a valid port/pin combination with GPTW multiplexing
@@ -1302,12 +1235,7 @@ rx_err_t rx_mpc_set_gptw(const rx_port_pin_t pin)
  * Convenience wrapper that configures a pin for USB VBUS detection using
  * PSEL = 0x11. Required for USB CDC enumeration and power monitoring.
  *
- * @param[in] pin GPIO pin identifier for USB VBUS (typically P1.6)
  *
- * @return Error code from rx_mpc_set_peripheral()
- * @retval k_rx_ok Pin configured successfully
- * @retval k_rx_err_invalid_arg Invalid port or pin
- * @retval k_rx_err_hw_error PWPR unlock failed
  *
  * @pre PCLKB clock must be running, MPC not in module stop
  * @pre pin must encode a valid port/pin combination with USB VBUS multiplexing
@@ -1363,11 +1291,7 @@ rx_err_t rx_mpc_set_usb_vbus(const rx_port_pin_t pin)
  * 3. Validate pin in range [0, 7]
  * 4. Write ISEL bit (0x40) to PFS register via internal_write_pfs()
  *
- * @param[in] pin GPIO pin identifier (must support IRQ function, P00-P07)
  *
- * @return Error code indicating success or failure
- * @retval k_rx_ok Pin configured for IRQ input mode
- * @retval k_rx_err_invalid_arg Invalid port or pin number
  *
  * @pre Pin must have IRQ multiplexing capability (P00-P07 for IRQ8-15)
  * @pre PCLKB clock must be running

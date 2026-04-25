@@ -170,7 +170,7 @@
  * | 5. Assertions | [OK] | N/A (header-only configuration) |
  * | 6. Smallest scope | [OK] | File-scope constant |
  * | 7. Check return values | [OK] | N/A (no function calls) |
- * | 8. Limited preprocessor | [OK] | No macros (uses const, not #define) |
+ * | 8. Limited preprocessor | [OK] | No macros (uses const, not \#define) |
  * | 9. Pointer restrictions | [OK] | No pointers |
  * | 10. Compiler warnings | [OK] | `-Wall -Wextra -Werror` enforced |
  *
@@ -235,7 +235,7 @@ extern "C" {
  *
  * **ThreadX Core Configuration (tx_user.h):**
  * ```c
- * #define TX_TIMER_TICKS_PER_SECOND  100
+ * \#define TX_TIMER_TICKS_PER_SECOND  100
  * ```
  *
  * **Hardware Timer Configuration (CMT0):**
@@ -321,9 +321,9 @@ extern "C" {
  *
  * @par Basic Sleep Example:
  * @code{.c}
- * #include "rx_threadx_config.h"
- * #include "rx_time_constants.h"
- * #include "tx_api.h"
+ * \#include "rx_threadx_config.h"
+ * \#include "rx_time_constants.h"
+ * \#include "tx_api.h"
  *
  * // Sleep for 500ms using ThreadX
  * void delay_500ms(void)
@@ -343,9 +343,9 @@ extern "C" {
  *
  * @par Semaphore Timeout Example:
  * @code{.c}
- * #include "rx_threadx_config.h"
- * #include "rx_time_constants.h"
- * #include "tx_api.h"
+ * \#include "rx_threadx_config.h"
+ * \#include "rx_time_constants.h"
+ * \#include "tx_api.h"
  *
  * TX_SEMAPHORE data_ready_semaphore;
  *
@@ -367,9 +367,9 @@ extern "C" {
  *
  * @par Software Timer Example:
  * @code{.c}
- * #include "rx_threadx_config.h"
- * #include "rx_time_constants.h"
- * #include "tx_api.h"
+ * \#include "rx_threadx_config.h"
+ * \#include "rx_time_constants.h"
+ * \#include "tx_api.h"
  *
  * TX_TIMER telemetry_timer;
  *
@@ -397,9 +397,9 @@ extern "C" {
  *
  * @par Watchdog Timeout Calculation Example:
  * @code{.c}
- * #include "rx_threadx_config.h"
- * #include "rx_time_constants.h"
- * #include "rx_iwdt.h"
+ * \#include "rx_threadx_config.h"
+ * \#include "rx_time_constants.h"
+ * \#include "rx_iwdt.h"
  *
  * // Configure IWDT for 8-second timeout
  * void configure_watchdog(void)
@@ -427,9 +427,9 @@ extern "C" {
  *
  * @par Performance Measurement Example:
  * @code{.c}
- * #include "rx_threadx_config.h"
- * #include "rx_time_constants.h"
- * #include "tx_api.h"
+ * \#include "rx_threadx_config.h"
+ * \#include "rx_time_constants.h"
+ * \#include "tx_api.h"
  *
  * // Measure function execution time (tick granularity)
  * void measure_execution_time(void)

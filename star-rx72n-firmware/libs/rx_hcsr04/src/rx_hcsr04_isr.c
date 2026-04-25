@@ -228,9 +228,7 @@ static uint8_t s_sensor_map[k_sensor_map_size] = {
  * 5. Rising edge (HIGH): Capture start_us timestamp
  * 6. Falling edge (LOW): Capture end_us timestamp, set complete=true, active=false
  *
- * @param[in] irq_num IRQ number (8-11)
  *
- * @return void (ISR context - no return value)
  *
  * @pre irq_num must be in range [k_irq_min, k_irq_max]
  * @pre ICU configured via rx_hcsr04_icu_configure()
@@ -292,13 +290,7 @@ static void internal_irq_handler(const uint8_t irq_num)
  * and sensor_index range before storing the mapping. Used to identify
  * which sensor triggered a given interrupt.
  *
- * @param[in] irq_num      IRQ number (8-11 for P00-P03)
- * @param[in] sensor_index Sensor array index (0-3 for 4 HC-SR04 sensors)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Registration successful
- * @retval k_rx_err_invalid_arg irq_num not in [k_irq_min, k_irq_max]
- * @retval k_rx_err_invalid_arg sensor_index >= k_hcsr04_sensor_count
  *
  * @pre IRQ configured via rx_hcsr04_icu_configure()
  * @pre sensor_index must be a valid sensor array index
@@ -337,12 +329,7 @@ rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const rx_hcsr04_sensor_in
  * k_sensor_unused sentinel. Call this during sensor deinitialization to
  * prevent stale ISR callbacks after the sensor handle is invalidated.
  *
- * @param[in] irq_num IRQ number (8-11) to unregister
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Unregistration successful
- * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
- * @retval k_rx_err_invalid_state IRQ slot was not registered (s_sensor_map entry is k_sensor_unused)
  *
  * @pre IRQ was previously registered via rx_hcsr04_isr_register()
  * @pre No measurement currently active on this IRQ
@@ -382,12 +369,7 @@ rx_err_t rx_hcsr04_isr_unregister(const uint8_t irq_num)
  * Order matters: complete must be cleared before active is set to prevent
  * a race where ISR fires between the two writes.
  *
- * @param[in] irq_num IRQ number (8-11)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok ISR armed successfully
- * @retval k_rx_err_invalid_arg irq_num not in valid range [k_irq_min, k_irq_max]
- * @retval k_rx_err_invalid_state irq_num slot not registered (s_sensor_map[irq_num] == k_sensor_unused)
  *
  * @pre rx_hcsr04_isr_register() called for this IRQ number
  * @pre No measurement currently active on this IRQ
@@ -430,12 +412,7 @@ rx_err_t rx_hcsr04_isr_start(const uint8_t irq_num)
  * Call this in the error path when rx_hcsr04_isr_start() succeeded but the
  * trigger pulse failed, to prevent the ISR from remaining armed indefinitely.
  *
- * @param[in] irq_num IRQ number (8-11) to disarm
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok ISR disarmed successfully
- * @retval k_rx_err_invalid_arg irq_num not in range [k_irq_min, k_irq_max]
- * @retval k_rx_err_invalid_state irq_num not registered via rx_hcsr04_isr_register()
  *
  * @pre rx_hcsr04_isr_start() called successfully for this IRQ
  * @pre irq_num registered via rx_hcsr04_isr_register() (s_sensor_map[irq_num] != k_sensor_unused)
@@ -475,17 +452,7 @@ rx_err_t rx_hcsr04_isr_disarm(const uint8_t irq_num)
  * both edges. On success, clears the complete flag to prepare for the
  * next measurement.
  *
- * @param[in]  irq_num     IRQ number (8-11)
- * @param[out] duration_us Pointer to store pulse duration in microseconds
- *                         (valid range: 150-8700 us for 2-150 cm in IRQ mode;
- *                          CMT2 wrap handled automatically for durations < k_cmt2_wrap_us)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Duration available, *duration_us written, complete flag cleared
- * @retval k_rx_err_timeout Both edges not yet captured
- * @retval k_rx_err_null_ptr duration_us is NULL
- * @retval k_rx_err_invalid_arg irq_num not in [k_irq_min, k_irq_max]
- * @retval k_rx_err_range_check_failed Computed duration exceeds k_cmt2_wrap_us (invalid measurement)
  *
  * @pre rx_hcsr04_isr_start() called before trigger pulse
  * @pre ISR handlers registered in ICU (INT_IRQ8-11)
@@ -579,7 +546,6 @@ typedef enum : uint8_t {
  * internal_irq_handler(). The handler clears the IR flag, reads the GPIO
  * pin state, and captures the rising or falling edge timestamp.
  *
- * @return void
  *
  * @pre ICU configured for IRQ8 via rx_hcsr04_icu_configure() with k_hcsr04_irq_8
  * @pre Interrupts globally enabled (PSW.I = 1)
@@ -608,7 +574,6 @@ void INT_IRQ8(void)
  * internal_irq_handler(). The handler clears the IR flag, reads the GPIO
  * pin state, and captures the rising or falling edge timestamp.
  *
- * @return void
  *
  * @pre ICU configured for IRQ9 via rx_hcsr04_icu_configure() with k_hcsr04_irq_9
  * @pre Interrupts globally enabled (PSW.I = 1)
@@ -637,7 +602,6 @@ void INT_IRQ9(void)
  * internal_irq_handler(). The handler clears the IR flag, reads the GPIO
  * pin state, and captures the rising or falling edge timestamp.
  *
- * @return void
  *
  * @pre ICU configured for IRQ10 via rx_hcsr04_icu_configure() with k_hcsr04_irq_10
  * @pre Interrupts globally enabled (PSW.I = 1)
@@ -666,7 +630,6 @@ void INT_IRQ10(void)
  * internal_irq_handler(). The handler clears the IR flag, reads the GPIO
  * pin state, and captures the rising or falling edge timestamp.
  *
- * @return void
  *
  * @pre ICU configured for IRQ11 via rx_hcsr04_icu_configure() with k_hcsr04_irq_11
  * @pre Interrupts globally enabled (PSW.I = 1)

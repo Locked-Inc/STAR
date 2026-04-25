@@ -449,15 +449,7 @@ typedef enum : uint32_t {
  * - Returns safe default (0 = motor stopped) rather than undefined behavior
  * - NASA Rule 5 compliance: validate all inputs before use
  *
- * @param[in] duty Duty cycle percentage to clamp
- *   - Valid range: [-100.0, +100.0]
- *   - Units: Percent (%)
- *   - Special values: NaN/Inf -> treated as 0.0
- *   - Type: float (IEEE 754 single precision)
  *
- * @return Clamped duty cycle percentage
- * @retval [-100.0, +100.0] Valid duty cycle (clamped to range)
- * @retval 0.0 If input was NaN or Inf (safe default)
  *
  * @pre None (this function handles all input values safely)
  * @post Return value is always in range [-100.0, +100.0] or exactly 0.0
@@ -579,31 +571,9 @@ typedef struct {
  * - If rx_gptw_set_duty() fails -> deinitialize GPTW before returning error
  * - Ensures no partial initialization state remains after failure
  *
- * @param[in] channel GPTW timer channel to use for PWM generation
- *   - Valid values: k_gptw_channel_0 through k_gptw_channel_7
- *   - Must support PWM mode and dead-time insertion
- *   - Must have unused/available outputs for motor control
  *
- * @param[in] outputs Output pin pair for DRV8263H-Q1 IN/IN mode control
- *   - outputs.a: IN2 signal, half-bridge A control
- *   - outputs.b: IN1 (PWM/enable) signal, speed PWM
- *   - Must be from same GPTW channel
- *   - Must be different (a != b)
  *
- * @param[in] gptw_config GPTW peripheral configuration parameters
- *   - Must not be nullptr
- *   - frequency_hz: PWM frequency [1 kHz, 50 kHz]
- *   - deadtime_ns: Dead-time insertion [100 ns, 10 us]
- *   - enable_complementary: Should be false for IN/IN mode
- *   - invert_polarity: true if H-bridge needs inverted PWM
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, GPTW initialized and outputs set to 0% duty
- * @retval k_rx_err_null_ptr gptw_config pointer is nullptr
- * @retval k_rx_err_invalid_arg outputs.a or outputs.b not valid GPTW output
- * @retval k_rx_err_invalid_arg outputs.a == outputs.b (same pin assigned twice)
- * @retval k_rx_err_* Propagated from rx_gptw_init_pwm() (GPTW initialization failed)
- * @retval k_rx_err_* Propagated from rx_gptw_set_duty() (duty cycle write failed)
  *
  * @pre channel must be a valid GPTW channel with available outputs
  * @pre outputs.a and outputs.b must be valid GPTW outputs from same channel
@@ -746,32 +716,8 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
  * - **output_b:** IN1 (PWM/enable) signal pin for speed PWM
  * - **invert_pwm:** Polarity inversion (true = inverted, false = normal)
  *
- * @param[out] handle Pointer to motor handle structure to initialize
- *   - Must not be nullptr
- *   - Must not already be initialized (checked via handle->initialized flag)
- *   - Will be populated with configuration on success
- *   - Structure should be allocated by caller (typically stack allocation)
- *   - Contents undefined on error
  *
- * @param[in] config Pointer to motor configuration parameters
- *   - Must not be nullptr
- *   - pwm_freq_hz: [1000, 50000] Hz (validated)
- *   - dead_time_ns: [100, 10000] ns (validated)
- *   - channel: Valid GPTW channel with available outputs
- *   - output_a, output_b: Valid GPTW outputs, must be different
- *   - invert_pwm: true (inverted) or false (normal)
- *   - Configuration is copied to handle (config can be stack-allocated)
  *
- * @return rx_err_t Error code indicating success or failure reason
- * @retval k_rx_ok Success, motor initialized and ready for use
- * @retval k_rx_err_null_ptr handle or config pointer is nullptr
- * @retval k_rx_err_invalid_state handle already initialized (must call rx_motor_deinit first)
- * @retval k_rx_err_invalid_arg pwm_freq_hz out of range [1 kHz, 50 kHz]
- * @retval k_rx_err_invalid_arg dead_time_ns out of range [100 ns, 10 us]
- * @retval k_rx_err_invalid_arg output_a or output_b invalid GPTW output
- * @retval k_rx_err_invalid_arg output_a == output_b (same pin used twice)
- * @retval k_rx_err_invalid_state Post-condition check failed (initialization verification)
- * @retval k_rx_err_* Propagated from rx_gptw_init_pwm() or rx_gptw_set_duty()
  *
  * @pre handle must point to valid, uninitialized rx_motor_handle_t structure
  * @pre config must point to valid rx_motor_config_t with parameters in valid ranges
@@ -1002,17 +948,7 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
  * - Error recovery: Clean up after hardware fault
  * - Resource sharing: Free GPTW channel for other use
  *
- * @param[in,out] handle Pointer to initialized motor handle
- *   - Must not be NULL (validated)
- *   - Must be initialized (validated via handle->initialized flag)
- *   - Will be marked uninitialized (initialized = false) on success
- *   - Contents remain valid but motor operations will fail until reinitialized
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, motor deinitialized and GPTW released
- * @retval k_rx_err_null_ptr handle is nullptr
- * @retval k_rx_err_invalid_state Motor not initialized (already deinitialized)
- * @retval k_rx_err_* Propagated from rx_gptw_deinit() (hardware cleanup failed)
  *
  * @pre handle must be initialized via rx_motor_init()
  * @pre No other tasks are currently accessing this motor handle
@@ -1124,14 +1060,7 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  * using the DRV8263H-Q1 IN/IN truth table. Extracted from rx_motor_set_duty()
  * to satisfy clang-tidy readability-function-size.
  *
- * @param[in] handle    Motor handle providing channel and output identifiers
- * @param[in] duty_a    Duty cycle for output_a (IN2), percentage 0-100
- * @param[in] duty_b    Duty cycle for output_b (IN1), percentage 0-100
- * @param[in] dir_label Human-readable label for error messages (e.g. "forward")
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok             Both outputs set successfully
- * @retval k_rx_err_*          First GPTW error encountered
  *
  * @pre  handle != nullptr and handle->initialized
  * @post Both GPTW outputs updated on success
@@ -1244,28 +1173,8 @@ static rx_err_t internal_set_direction_outputs(const rx_motor_handle_t* handle,
  * - Suitable for 100 Hz - 10 kHz control loops
  * - STAR platform: Called at 100 Hz from PID velocity controller
  *
- * @param[in] handle Pointer to initialized motor handle
- *   - Must not be NULL (validated)
- *   - Must be initialized via rx_motor_init() (validated)
- *   - Handle state will be updated with new duty value
- *   - current_duty field reflects actual commanded duty after return
  *
- * @param[in] duty Signed duty cycle percentage (speed and direction)
- *   - Valid range: [-100.0, +100.0]
- *   - Values outside range are clamped (no error returned)
- *   - Units: Percent (%)
- *   - Positive: Forward rotation, negative: Reverse rotation
- *   - Zero: Motor coast (high impedance)
- *   - NaN/Inf: Rejected with k_rx_err_invalid_arg
- *   - Resolution: Float precision (~7 decimal digits)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, motor duty updated, outputs configured
- * @retval k_rx_err_null_ptr handle is nullptr
- * @retval k_rx_err_invalid_state Motor not initialized (call rx_motor_init first)
- * @retval k_rx_err_invalid_arg duty is NaN or Inf (invalid float value)
- * @retval k_rx_err_invalid_state Post-condition check failed (duty not updated)
- * @retval k_rx_err_* Propagated from rx_gptw_set_duty() (hardware write failed)
  *
  * @pre handle must be initialized via rx_motor_init()
  * @pre duty must be finite (not NaN or Inf)
@@ -1474,20 +1383,8 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
  * - Coast: Gradual deceleration via friction, lower power
  * - Direction change preparation: Brake before reversing for faster response
  *
- * @param[in,out] handle Pointer to initialized motor handle
- *   - Must not be NULL (validated)
- *   - Must be initialized (validated via handle->initialized flag)
- *   - current_duty field will be set to 0.0 on success
  *
- * @param[in] brake Brake mode selection
- *   - true: Active brake (both outputs LOW, low-side FETs short motor)
- *   - false: Coast (both outputs HIGH, motor free-wheels in Hi-Z)
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, motor stopped
- * @retval k_rx_err_null_ptr handle is nullptr
- * @retval k_rx_err_invalid_state Motor not initialized
- * @retval k_rx_err_* Propagated from rx_gptw_set_duty() (hardware write failed)
  *
  * @pre handle must be initialized via rx_motor_init()
  * @pre GPTW peripheral must be operational
@@ -1597,20 +1494,8 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
  * **Note:** This returns commanded duty, not actual motor velocity. For actual velocity,
  * use encoder feedback (rx_encoder_get_velocity_mps).
  *
- * @param[in] handle Pointer to initialized motor handle
- *   - Must not be NULL (validated)
- *   - Must be initialized (validated via handle->initialized flag)
- *   - Handle state is not modified (const qualified)
  *
- * @param[out] out_duty Pointer to float variable to receive duty cycle
- *   - Must not be NULL (validated)
- *   - Will be set to current duty cycle [-100.0, +100.0]
- *   - Value remains unchanged if function returns error
  *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success, duty cycle written to *out_duty
- * @retval k_rx_err_null_ptr handle or out_duty is nullptr
- * @retval k_rx_err_invalid_state Motor not initialized
  *
  * @pre handle must be initialized via rx_motor_init()
  * @pre out_duty must point to valid float variable
@@ -1733,17 +1618,7 @@ rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
  * - Unrecoverable software error
  * - System shutdown or panic
  *
- * @param[in,out] handle Pointer to initialized motor handle
- *   - Must not be NULL (validated)
- *   - Must be initialized (validated via handle->initialized flag)
- *   - Will be marked uninitialized (initialized = false) on completion
- *   - Requires rx_motor_init() before motor can be used again
  *
- * @return rx_err_t Error code indicating success or first failure encountered
- * @retval k_rx_ok Success, all emergency stop steps completed without errors
- * @retval k_rx_err_null_ptr handle is nullptr
- * @retval k_rx_err_invalid_state Motor not initialized (already in emergency stop state)
- * @retval k_rx_err_* First error encountered during shutdown sequence (duty, disable, or stop)
  *
  * @pre handle must be initialized via rx_motor_init()
  * @pre No other tasks are accessing this motor handle
@@ -1868,9 +1743,7 @@ rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
  * to LOW, disables both GPTW outputs, and stops the timer. Errors are collected
  * but do not abort the sequence -- all steps are attempted.
  *
- * @param[in] handle Motor handle with channel and output identifiers
  *
- * @return rx_err_t First error encountered, or k_rx_ok if all steps succeeded
  *
  * @pre  handle != nullptr and handle->initialized
  * @post Both outputs at LOW duty, both outputs disabled, timer stopped
@@ -1928,6 +1801,45 @@ static rx_err_t internal_estop_shutdown_hw(const rx_motor_handle_t* handle)
   return result;
 }
 
+/**
+ * @brief Emergency stop -- shut down motor outputs and disarm the handle
+ *
+ * @details
+ * Performs an unconditional safe-state shutdown of the motor:
+ *
+ *  1. Validates the handle pointer and initialization state.
+ *  2. Calls internal_estop_shutdown_hw(), which (a) drives PWM duty to zero,
+ *     (b) disables the GPTW output, and (c) stops the GPTW timer.  Any
+ *     register error from rx_gptw_set_duty / rx_gptw_enable_output /
+ *     rx_gptw_stop is propagated to the caller.
+ *  3. Clears handle->initialized so that any subsequent control call will
+ *     fail until rx_motor_init() is invoked again.  This prevents accidental
+ *     re-engagement of a faulted motor.
+ *  4. Resets handle->current_duty to zero.
+ *  5. Logs a warning indicating that the motor was emergency stopped.
+ *
+ * Called from comm_task on E-Stop frames, motor_control_task on overcurrent
+ * or runaway detection, and from safety supervisors.
+ *
+ *
+ *
+ * @pre handle != nullptr.
+ * @pre handle->initialized == true at entry.
+ *
+ * @post handle->initialized == false (motor must be re-initialized to use).
+ * @post handle->current_duty == 0.0F.
+ *
+ * @note Safety-critical.  Designed to be safe to call from any context,
+ *       including ISRs.  Not internally locked; callers must serialize
+ *       against rx_motor_set_duty / rx_motor_set_velocity_mps if they
+ *       could race.
+ *
+ * @see rx_motor_init()             Required to re-arm after E-Stop.
+ * @see rx_motor_stop()              Non-emergency stop (keeps initialized).
+ * @see rx_motor_set_duty()          Disabled until re-initialized.
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
 {
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");

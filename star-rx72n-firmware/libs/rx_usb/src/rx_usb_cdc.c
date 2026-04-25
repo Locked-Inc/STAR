@@ -1650,7 +1650,6 @@ static void internal_handle_set_address(const uint16_t usb_value)
 /**
  * @brief Disable a single USB pipe by setting PID to NAK
  *
- * @param[in] pipe  Pipe number (1-9) to disable
  */
 static void internal_disable_pipe(uint8_t pipe)
 {
@@ -1680,7 +1679,6 @@ static void internal_disable_pipe(uint8_t pipe)
  * Disables all pipes from the first configured pipe up to (but not including)
  * the pipe that failed configuration.
  *
- * @param[in] failed_pipe  The pipe number that failed (pipes 1 to failed_pipe-1 are disabled)
  */
 static void internal_rollback_pipes(uint8_t failed_pipe)
 {
@@ -1699,7 +1697,6 @@ static void internal_rollback_pipes(uint8_t failed_pipe)
 /**
  * @brief Configure Port 0 pipes (bulk IN/OUT + interrupt IN)
  *
- * @return true on success, false on failure (STALL already set)
  */
 static bool internal_configure_port0_pipes(void)
 {
@@ -1741,7 +1738,6 @@ static bool internal_configure_port0_pipes(void)
 /**
  * @brief Configure Port 1 pipes (bulk IN/OUT + interrupt IN)
  *
- * @return true on success, false on failure (STALL already set)
  */
 static bool internal_configure_port1_pipes(void)
 {
@@ -1784,7 +1780,6 @@ static bool internal_configure_port1_pipes(void)
 /**
  * @brief Configure Port 2 pipes (bulk IN/OUT + interrupt IN)
  *
- * @return true on success, false on failure (STALL already set)
  */
 static bool internal_configure_port2_pipes(void)
 {
@@ -2039,10 +2034,7 @@ static void internal_handle_set_control_line_state(const rx_usb_port_id_t port,
  *
  * Host will set DTR=1 when opening the port (e.g., `screen /dev/ttyACM0 115200`).
  *
- * @param None
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, CDC class initialized
  *
  * @pre USB hardware initialized via rx_usb_hw_init()
  * @pre USB core initialized via rx_usb_init()
@@ -2287,9 +2279,7 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * - [OK] Minimal execution time (<500 us worst-case)
  * - [OK] Re-entrant safe (no shared mutable state between SETUP packets)
  *
- * @param None (reads SETUP packet from USB registers)
  *
- * @return void (no return value)
  *
  * @pre USB ISR context (called from usb0_usbi_isr())
  * @pre CTRT interrupt flag set in INTSTS0
@@ -2468,9 +2458,7 @@ void rx_usb_cdc_handle_setup(void)
  * - [OK] Re-entrant safe (per-port state isolation)
  * - [OK] Callback invoked from ISR context (callback must be ISR-safe)
  *
- * @param[in] port Port ID that received data (k_usb_port_proto, k_usb_port_decoded, k_usb_port_log)
  *
- * @return void (no return value)
  *
  * @pre USB ISR context (called from usb0_usbi_isr())
  * @pre BRDY interrupt for bulk OUT pipe
@@ -2700,9 +2688,7 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
  * - [OK] Re-entrant safe (per-port state isolation)
  * - [OK] Callback invoked from ISR context (callback must be ISR-safe)
  *
- * @param[in] port Port ID to transmit from (k_usb_port_proto, k_usb_port_decoded, k_usb_port_log)
  *
- * @return void (no return value)
  *
  * @pre USB ISR context (called from usb0_usbi_isr())
  * @pre BEMP interrupt for bulk IN pipe

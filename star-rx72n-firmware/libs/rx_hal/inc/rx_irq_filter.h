@@ -311,8 +311,7 @@ static const uint8_t s_irq_max = 15U;
  *
  * @return Error code indicating success or failure
  * @retval k_rx_ok Filter successfully enabled
- * @retval k_rx_err_invalid_arg irq_num > 15
- * @retval k_rx_err_invalid_arg filter_clk > k_irq_filter_pclk_64
+ * @retval k_rx_err_invalid_arg irq_num > 15 or filter_clk > k_irq_filter_pclk_64
  *
  * @pre PCLKB clock must be running (filter clock source)
  * @pre ICU module not in module stop
@@ -410,8 +409,7 @@ static const uint8_t s_irq_max = 15U;
  *
  * @return Error code indicating success or failure
  * @retval k_rx_ok Status successfully retrieved
- * @retval k_rx_err_invalid_arg irq_num > 15
- * @retval k_rx_err_invalid_arg enabled pointer is nullptr
+ * @retval k_rx_err_invalid_arg irq_num > 15 or enabled pointer is nullptr
  *
  * @pre enabled pointer must be non-NULL
  *
@@ -453,8 +451,7 @@ static const uint8_t s_irq_max = 15U;
  *
  * @return Error code indicating success or failure
  * @retval k_rx_ok Clock setting successfully retrieved
- * @retval k_rx_err_invalid_arg irq_num > 15
- * @retval k_rx_err_invalid_arg filter_clk pointer is nullptr
+ * @retval k_rx_err_invalid_arg irq_num > 15 or filter_clk pointer is nullptr
  *
  * @pre filter_clk pointer must be non-NULL
  *

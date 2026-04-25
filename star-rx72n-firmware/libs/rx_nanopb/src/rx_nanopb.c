@@ -290,10 +290,6 @@ static const double k_velocity_mps_max = 1000.0;
  * }
  * @enddot
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, module initialized and ready
- * @retval k_rx_err_invalid_state Module already initialized
- * @retval k_rx_fail Internal verification failed (should not occur)
  *
  * @pre Module must not be already initialized
  * @pre System startup must be in progress (single-threaded context)
@@ -503,25 +499,7 @@ void rx_nanopb_test_reset_state(void)
  * }
  * @enddot
  *
- * @param[in] msg SetVelocityRequest message to encode
- *   - Must be fully populated with valid velocity values
- *   - Velocities typically in range [-2.0, +2.0] m/s
- *   - header.request_id can be empty string
- * @param[out] buffer Output buffer for encoded bytes
- *   - Receives Protocol Buffer wire-format data
- *   - Must be at least s_nanopb_buffer_size (512) bytes
- * @param[in] buffer_size Size of output buffer in bytes
- *   - Must be >= s_nanopb_buffer_size (512)
- *   - Larger buffers are acceptable
- * @param[out] len Pointer to receive actual encoded length
- *   - Typically 40-60 bytes for velocity command
- *   - Varies based on field values
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, buffer contains valid encoded message
- * @retval k_rx_err_invalid_arg nullptr pointer in msg, buffer, or len
- * @retval k_rx_err_not_initialized Module not initialized via rx_nanopb_init()
- * @retval k_rx_err_invalid_size Buffer too small or encoding failed
  *
  * @pre rx_nanopb_init() must have been called successfully
  * @pre msg must be fully populated with valid data
@@ -646,22 +624,7 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
  * }
  * @enddot
  *
- * @param[in] buffer Input buffer containing encoded message
- *   - Wire-format Protocol Buffer data from SPI/USB
- *   - Must contain complete, valid message
- * @param[in] len Length of encoded message in bytes
- *   - Must match actual encoded message size
- *   - Valid range: [1, s_nanopb_buffer_size]
- * @param[out] msg Decoded message structure
- *   - Initialized to zero before decoding
- *   - Fully populated on successful decode
- *   - Contains velocity values in m/s
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, msg contains decoded values
- * @retval k_rx_err_invalid_arg nullptr pointer or len == 0 or len too large
- * @retval k_rx_err_not_initialized Module not initialized via rx_nanopb_init()
- * @retval k_rx_err_protocol_error Malformed message or decoding failure
  *
  * @pre rx_nanopb_init() must have been called successfully
  * @pre buffer must contain valid Protocol Buffer wire-format data
@@ -763,20 +726,7 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
  * 8. Return encoded length in *len
  * 9. Verify encoded length is within bounds (post-condition)
  *
- * @param[in] msg SetVelocityResponse message to encode
- *   - header.status indicates success/failure
- *   - header.request_id should echo original request
- * @param[out] buffer Output buffer for encoded bytes
- *   - Must be at least s_nanopb_buffer_size (512) bytes
- * @param[in] buffer_size Size of output buffer in bytes
- * @param[out] len Pointer to receive actual encoded length
- *   - Typically 20-30 bytes for response
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, buffer contains valid encoded response
- * @retval k_rx_err_invalid_arg nullptr pointer in msg, buffer, or len
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_invalid_size Buffer too small or encoding failed
  *
  * @pre rx_nanopb_init() must have been called successfully
  * @pre msg should be populated via rx_nanopb_create_response_header()
@@ -873,15 +823,7 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
  * 6. Create nanopb input stream from buffer
  * 7. Decode message using generated field descriptors
  *
- * @param[in] buffer Input buffer containing encoded E-Stop message
- * @param[in] len Length of encoded message in bytes
- * @param[out] msg Decoded EmergencyStopRequest structure
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, msg contains decoded E-Stop request
- * @retval k_rx_err_invalid_arg nullptr pointer or len == 0 or len too large
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_protocol_error Malformed message or decoding failure
  *
  * @pre rx_nanopb_init() must have been called
  * @pre buffer contains valid Protocol Buffer data
@@ -957,18 +899,7 @@ rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
  * This response informs RPi5 that the RX72N has received the E-Stop command
  * and has entered safe state (motors stopped).
  *
- * @param[in] msg EmergencyStopResponse message to encode
- *   - header.status: Typically STATUS_OK (motors stopped)
- *   - header.request_id: Echo of original request ID
- * @param[out] buffer Output buffer for encoded bytes
- * @param[in] buffer_size Size of output buffer (>= s_nanopb_buffer_size)
- * @param[out] len Pointer to receive actual encoded length
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, buffer contains encoded E-Stop response
- * @retval k_rx_err_invalid_arg nullptr pointer in parameters
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_invalid_size Buffer too small or encoding failed
  *
  * @pre rx_nanopb_init() must have been called
  * @pre Motors should already be stopped before sending response
@@ -1048,23 +979,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  *   - integral_max: Anti-windup upper bound
  * - motor_id: Target motor (0-3 for specific motor, -1 for all motors)
  *
- * @param[in] buffer Input buffer containing encoded message
- *   - Wire-format Protocol Buffer data
- *   - Received from SPI or USB channel
- *   - Must not benullptr
- * @param[in] len Buffer length in bytes
- *   - Must be > 0 and <= s_nanopb_buffer_size (512)
- *   - Typically ~30-50 bytes for PID gains message
- * @param[out] msg Decoded message structure
- *   - Fully populated on successful decode
- *   - Initialized to zero before decode
- *   - Must not benullptr
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, msg contains valid PID configuration
- * @retval k_rx_err_invalid_arg nullptr in buffer or msg, or len invalid
- * @retval k_rx_err_not_initialized rx_nanopb_init() not called
- * @retval k_rx_err_protocol_error Malformed message, CRC error, or decode failure
  *
  * @pre rx_nanopb_init() must be called first
  * @pre buffer must point to valid wire-format data
@@ -1188,16 +1103,7 @@ rx_err_t rx_nanopb_decode_pid_gains_request(const uint8_t*              buffer,
  * is NULL (init_zero default). The success boolean and response header status
  * are sufficient for programmatic acknowledgment.
  *
- * @param[in]  msg         Message to encode (must not be nullptr)
- * @param[out] buffer      Output buffer for wire-format bytes (must not be nullptr)
- * @param[in]  buffer_size Size of output buffer (must be >= s_nanopb_buffer_size)
- * @param[out] len         Actual encoded length in bytes (must not be nullptr)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Encode successful
- * @retval k_rx_err_invalid_arg nullptr in msg, buffer, or len
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_invalid_size buffer_size too small or encoded length out of bounds
  *
  * @pre rx_nanopb_init() must be called before this function
  * @pre buffer must point to at least buffer_size bytes of writable memory
@@ -1247,13 +1153,6 @@ rx_err_t rx_nanopb_encode_pid_gains_response(const star_v1_SetPidGainsResponse* 
 
 /**
  * @brief Decode SetRetransmitConfigRequest from Protocol Buffer bytes
- * @param[in] buffer Raw protobuf bytes
- * @param[in] len Buffer length
- * @param[out] msg Decoded message
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if nullptr or invalid length
- * @return k_rx_err_not_initialized if module not initialized
- * @return k_rx_err_protocol_error if decode fails
  */
 rx_err_t rx_nanopb_decode_retransmit_config_request(const uint8_t*                      buffer,
                                                     const uint32_t                      len,
@@ -1307,20 +1206,7 @@ rx_err_t rx_nanopb_decode_retransmit_config_request(const uint8_t*              
  * | Encoder positions | 4 x int32 (ticks) | 100 Hz |
  * | Temperature | system temp (degC) | 1 Hz |
  *
- * @param[in] msg TelemetryData message to encode
- *   - Should be fully populated with current sensor values
- *   - timestamp_us should be set to current system time
- * @param[out] buffer Output buffer for encoded bytes
- *   - Must be at least s_nanopb_buffer_size (512) bytes
- * @param[in] buffer_size Size of output buffer
- * @param[out] len Pointer to receive actual encoded length
- *   - Typically 150-200 bytes for full telemetry
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, buffer contains encoded telemetry
- * @retval k_rx_err_invalid_arg nullptr pointer in parameters
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_invalid_size Buffer too small or encoding failed
  *
  * @pre rx_nanopb_init() must have been called
  * @pre msg should contain current sensor/motor data
@@ -1435,17 +1321,7 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
  * 6. Copy sequence number
  * 7. Set timestamp to 0 (caller sets if needed)
  *
- * @param[out] cmd VelocityCommand structure to populate
- *   - All velocity fields set from params
- *   - timestamp_us set to 0 (caller may override)
- * @param[in] params Velocity command parameters
- *   - All velocities in m/s
- *   - Valid range: [-1000.0, +1000.0] m/s
- *   - sequence should be monotonically increasing
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, cmd fully populated
- * @retval k_rx_err_invalid_arg nullptr pointer or velocity out of range
  *
  * @pre cmd must not be nullptr
  * @pre params must not be nullptr
@@ -1544,15 +1420,7 @@ rx_err_t rx_nanopb_create_velocity_command(star_v1_VelocityCommand*            c
  * | +1.0 | +0.5 | Curve right (forward) |
  * | +0.5 | +1.0 | Curve left (forward) |
  *
- * @param[out] cmd VelocityCommand structure to populate
- * @param[in] params Differential drive parameters
- *   - left_mps: Velocity for FL and BL motors
- *   - right_mps: Velocity for FR and BR motors
- *   - sequence: Command sequence number
  *
- * @return rx_err_t Error code indicating result
- * @retval k_rx_ok Success, cmd populated with duplicated left/right values
- * @retval k_rx_err_invalid_arg nullptr pointer or velocity out of range
  *
  * @pre cmd must not be nullptr
  * @pre params must not be nullptr
@@ -1628,17 +1496,6 @@ rx_err_t rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand*  
  * function (internal_encode_string_callback) that will be invoked during
  * pb_encode() to serialize the string field.
  *
- * @param[out] header ResponseHeader structure to populate
- *   - Initialized to zero, then status set
- *   - request_id callback configured if provided
- * @param[in] status Response status code
- *   - star_v1_Status_STATUS_OK: Request processed successfully
- *   - star_v1_Status_STATUS_INVALID_ARGUMENT: Bad request parameters
- *   - star_v1_Status_STATUS_INTERNAL_ERROR: Processing error
- * @param[in] request_id Original request ID to echo (can be nullptr)
- *   - If nullptr, request_id field left empty
- *   - If provided, must be <= s_nanopb_buffer_size characters
- *   - Pointer must remain valid until header is encoded
  *
  * @pre header must not be nullptr (silently returns if nullptr)
  * @pre request_id, if provided, must remain valid until encoding completes

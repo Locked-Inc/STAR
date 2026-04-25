@@ -239,13 +239,7 @@ static uint16_t s_mtu_period[k_mtu_max_channels] = {};
  * rx_mtu3_channel_regs_t directly; this function returns nullptr for all four
  * channels to prevent callers from applying the wrong struct offset mapping.
  *
- * @param[in] channel MTU channel identifier
- *   - Valid: k_mtu_channel_0 through k_mtu_channel_7 (excluding 3, 4, 5, 6, 7)
- *   - Invalid values return nullptr
  *
- * @return Pointer to MTU register base
- * @retval Non-NULL Pointer to register structure for consecutive-layout channels (0,1,2)
- * @retval NULL Invalid channel, or interleaved-layout channel (3, 4, 6, 7)
  *
  * @pre Module clock must be enabled before accessing returned pointer
  *
@@ -287,11 +281,7 @@ static volatile void* internal_get_mtu_base(const rx_mtu_channel_t channel)
  * Validates an MTU channel by checking if it has a valid register base address.
  * MTU channels 0-4 and 6-7 are valid; channel 5 does not exist.
  *
- * @param[in] channel MTU channel to validate
  *
- * @return bool Validation result
- * @retval true Channel is valid (0-4, 6-7)
- * @retval false Channel is invalid (5 or out of range)
  *
  * @note Thread-safe: Pure function
  * @note Delegates to internal_get_mtu_base() for actual validation
@@ -314,15 +304,7 @@ static bool internal_is_valid_channel(const rx_mtu_channel_t channel)
  * Returns a hardware error if the bit is still set after the write, which
  * can indicate a peripheral fault.
  *
- * @param[in] tstr Pointer to the MTU timer-start register structure (TSTRA or TSTRB)
- *   - Must be non-NULL
- * @param[in] mask Bitmask of the bit(s) to clear (e.g. k_mtu_tstr_cst0)
- *   - Must correspond to a valid CSTn bit for the chosen register
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Bit cleared successfully and verified
- * @retval k_rx_err_invalid_arg tstr pointer is nullptr
- * @retval k_rx_err_hw_error Bit still set after write (hardware fault)
  *
  * @pre tstr points to a valid TSTRA or TSTRB hardware register
  * @pre mask is a valid CSTn bit mask from mtu_tstr_bits_t
@@ -377,16 +359,7 @@ static rx_err_t internal_clear_tstr_bit(volatile rx_mtu_tstr_regs_t* tstr, const
  * | 915 Hz - 6 MHz | 10-65535 | Valid |
  * | > 6 MHz | < 10 | Rejected (too small) |
  *
- * @param[in] frequency_hz Desired PWM frequency in Hz
- *   - Valid range: ~915 Hz to ~6 MHz
- *   - Zero frequency rejected
- * @param[out] period Pointer to store calculated period value
- *   - Must be non-NULL
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, period contains valid 16-bit value
- * @retval k_rx_err_null_ptr period pointer is nullptr
- * @retval k_rx_err_invalid_arg Frequency=0, too high, or too low
  *
  * @pre PCLKA configured to 120 MHz
  * @pre period points to valid uint16_t storage
@@ -435,10 +408,7 @@ static rx_err_t internal_calculate_period(const uint32_t frequency_hz, uint16_t*
 /**
  * @brief Get TGR register pointer for output channel
  *
- * @param[in] mtu MTU base pointer
- * @param[in] output Output channel
  *
- * @return Pointer to TGR register, or nullptr if invalid
  */
 static volatile uint16_t* internal_get_tgr_register(volatile rx_mtu_channel_regs_t* mtu,
                                                     const rx_mtu_output_t           output)
@@ -476,17 +446,7 @@ static volatile uint16_t* internal_get_tgr_register(volatile rx_mtu_channel_regs
  * 3. Validate resolved TGR pointer is non-NULL
  * 4. Write duty_count to TGR register
  *
- * @param[in] mtu        Pointer to MTU channel register structure
- *   - Must be non-NULL
- *   - Must point to a valid, clock-enabled MTU channel register block
- * @param[in] output     Output channel whose TGR register to update
- *   - Valid values: k_mtu_output_a, k_mtu_output_b, k_mtu_output_c, k_mtu_output_d
- * @param[in] duty_count Raw count value to write to the TGR register
- *   - Caller is responsible for clamping to [0, period] before calling
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok duty_count written to TGR register successfully
- * @retval k_rx_err_invalid_arg mtu is nullptr, or output has no corresponding TGR register
  *
  * @pre mtu points to a valid, initialized MTU channel register block
  * @pre duty_count has been validated or clamped by the caller to [0, period]
@@ -562,14 +522,7 @@ static rx_err_t internal_set_duty_raw_mtu(volatile rx_mtu_channel_regs_t* mtu,
  * | TMDR | MD=PWM1 | Triangle wave mode |
  * | TIORH/L | Init low | Outputs toggle on compare match |
  *
- * @param[in] channel MTU channel to initialize (0-4, 6-7)
- * @param[in] config PWM configuration parameters
- *   - frequency_hz: Desired PWM frequency [915 Hz - 6 MHz]
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Channel initialized and running
- * @retval k_rx_err_null_ptr config is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel or frequency
  *
  * @pre System clock configured (PCLKA = 120 MHz)
  * @pre config pointer valid with valid frequency
@@ -692,16 +645,7 @@ rx_err_t rx_mtu_init_pwm(const rx_mtu_channel_t channel, const rx_mtu_config_t* 
  * 4. Compute duty_count = (duty_percent * period) / 100
  * 5. Write duty_count to TGR register via internal_set_duty_raw_mtu()
  *
- * @param[in] channel MTU channel (0-4, 6-7)
- * @param[in] output  Output pin to update (k_mtu_output_a through k_mtu_output_d)
- * @param[in] duty_percent Duty cycle percentage [0.0, 100.0]
- *   - 0.0 = always-off (0% duty)
- *   - 100.0 = always-on (100% duty)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Duty cycle updated successfully
- * @retval k_rx_err_invalid_arg Invalid channel or duty_percent out of range
- * @retval k_rx_err_not_initialized Channel not initialized via rx_mtu_init_pwm()
  *
  * @pre Channel must be initialized via rx_mtu_init_pwm()
  * @pre duty_percent must be in [0.0, 100.0]
@@ -755,15 +699,7 @@ rx_mtu_set_duty(const rx_mtu_channel_t channel, rx_mtu_output_t output, const fl
  * to counts (e.g. via rx_mtu_get_period()) to avoid redundant floating-point
  * multiplication.
  *
- * @param[in] channel    MTU channel (0-4, 6-7)
- * @param[in] output     Output pin (k_mtu_output_a through k_mtu_output_d)
- * @param[in] duty_count Raw count value in range [0, period]
- *   - Values > period are automatically clamped to period
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Duty count written successfully
- * @retval k_rx_err_invalid_arg Invalid channel or output
- * @retval k_rx_err_not_initialized Channel not initialized
  *
  * @pre Channel must be initialized via rx_mtu_init_pwm()
  * @pre duty_count should be in [0, period]; values above period are clamped
@@ -815,16 +751,7 @@ rx_mtu_set_duty_raw(const rx_mtu_channel_t channel, rx_mtu_output_t output, uint
  *   \text{duty\_percent} = \frac{\text{duty\_count} \times 100}{\text{period}}
  * @f]
  *
- * @param[in]  channel      MTU channel (0-4, 6-7)
- * @param[in]  output       Output to read (k_mtu_output_a through k_mtu_output_d)
- * @param[out] duty_percent Pointer to store percentage result [0.0, 100.0]
- *   - Must be non-NULL
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, duty_percent updated
- * @retval k_rx_err_null_ptr duty_percent is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel or output
- * @retval k_rx_err_not_initialized Channel not initialized
  *
  * @pre Channel must be initialized via rx_mtu_init_pwm()
  * @pre duty_percent must point to valid float storage
@@ -877,14 +804,7 @@ rx_mtu_get_duty(const rx_mtu_channel_t channel, const rx_mtu_output_t output, fl
  * Returns the cached period value (TGRA) from initialization. Useful for
  * calculating raw duty counts from percentages without floating-point.
  *
- * @param[in] channel MTU channel to query
- * @param[out] period_count Pointer to store period count value
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success, period_count contains valid value
- * @retval k_rx_err_null_ptr period_count is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel
- * @retval k_rx_err_not_initialized Channel not initialized
  *
  * @pre Channel must be initialized via rx_mtu_init_pwm()
  * @pre period_count must point to valid uint16_t storage
@@ -937,14 +857,7 @@ rx_err_t rx_mtu_get_period(const rx_mtu_channel_t channel, uint16_t* period_coun
  * | C      | TIORL    | Low  (bits 3:0) |
  * | D      | TIORL    | High (bits 7:4) |
  *
- * @param[in] channel MTU channel (0-4, 6-7)
- * @param[in] output  Output to control (k_mtu_output_a through k_mtu_output_d)
- * @param[in] enable  true to enable PWM output, false to disable (hold initial state)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Output state changed successfully
- * @retval k_rx_err_invalid_arg Invalid channel or output
- * @retval k_rx_err_not_initialized Channel not initialized
  *
  * @pre Channel must be initialized via rx_mtu_init_pwm()
  * @pre output must be a valid rx_mtu_output_t enum value
@@ -1023,12 +936,7 @@ rx_mtu_enable_output(const rx_mtu_channel_t channel, rx_mtu_output_t output, con
  * | MTU6 | TSTRB | CST6 |
  * | MTU7 | TSTRB | CST7 |
  *
- * @param[in] channel MTU channel to start
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Timer started successfully
- * @retval k_rx_err_invalid_arg Invalid channel
- * @retval k_rx_err_not_initialized Channel not initialized
  *
  * @pre Channel initialized via rx_mtu_init_pwm()
  *
@@ -1086,12 +994,7 @@ rx_err_t rx_mtu_start(const rx_mtu_channel_t channel)
  * Clears the Count Start (CSTn) bit in the appropriate TSTR register to
  * halt counter operation. Counter value and output state are preserved.
  *
- * @param[in] channel MTU channel to stop
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Timer stopped successfully
- * @retval k_rx_err_invalid_arg Invalid channel
- * @retval k_rx_err_hw_error Failed to clear TSTR bit (hardware issue)
  *
  * @pre None (can be called on uninitialized channel)
  *
@@ -1158,12 +1061,7 @@ rx_err_t rx_mtu_stop(const rx_mtu_channel_t channel)
  * After this call the channel may be safely re-initialized with different
  * parameters via rx_mtu_init_pwm().
  *
- * @param[in] channel MTU channel to deinitialize (0-4, 6-7)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Channel successfully deinitialized
- * @retval k_rx_err_invalid_arg Invalid channel number
- * @retval k_rx_err_hw_error Hardware error while stopping timer
  *
  * @pre Motor or load driven by this channel must be stopped externally before call
  * @pre channel must be a valid MTU channel (0-4, 6-7)

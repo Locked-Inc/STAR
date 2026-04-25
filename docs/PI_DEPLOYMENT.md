@@ -129,9 +129,19 @@ Set these in `.bashrc` only -- document the variable name here, never its value 
 |----------|---------|
 | `ROS_DOMAIN_ID` | Isolates DDS traffic. `0` = default (single machine). Use a non-zero value (e.g. `42`) to isolate from other ROS2 systems on the same LAN. |
 | `RMW_IMPLEMENTATION` | Already in `.bashrc`; also set in launch files for portability. |
+| `STAR_REQUIRE_LOCALHOST` | When `true` (or pass `--require-localhost`), the gateway refuses to bind any TCP listener to a non-loopback address. Use this on the Pi until TLS / mTLS is implemented. |
+| `WS_STRICT_ORIGIN` / `INSECURE_DEV_MODE` | Both keys must be set together (`WS_STRICT_ORIGIN=false` AND `INSECURE_DEV_MODE=true`) to actually disable WebSocket origin checking. Setting only one is rejected at startup. Origin checking should be ON in every non-developer-laptop deployment. |
 | Hardware serials, API keys, network credentials | Store in `.bashrc` or a local `.env` (gitignored). |
 
 The repo's `.gitignore` already excludes `.env` and `.local` files at the root level.
+
+**Transport security gap (audit F-01):** the gateway currently runs in
+plaintext with no client authentication on the gRPC and HTTP/WebSocket
+listeners. This is acceptable only for LAN-only deployments behind the
+Pi's network boundary. Until TLS / mTLS lands as a follow-up PR, deploy
+with `STAR_REQUIRE_LOCALHOST=true` (or `--require-localhost`) and tunnel
+external access via SSH or WireGuard. The startup banner reminds you of
+this posture every boot.
 
 ---
 

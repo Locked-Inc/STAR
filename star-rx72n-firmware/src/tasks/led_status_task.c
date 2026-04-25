@@ -187,10 +187,6 @@ static void internal_update_obstacle_and_estop_leds(void);
  * visual system health feedback at 20 Hz. GPIO pins are initialized
  * as outputs inside the task entry to keep creation lightweight.
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok Task created successfully
- * @retval k_rx_err_invalid_state Already created
- * @retval k_rx_err_rtos_thread_create ThreadX error
  *
  * @pre ThreadX kernel running
  * @pre shared_data_init() called
@@ -314,14 +310,6 @@ static void internal_led_init_gpio(void)
  * 4. Compute pin_mask = (1U << s_led_pins[led_index])
  * 5. Set (on=true) or clear (on=false) the PODR bit for the pin
  *
- * @param[in] led_index LED index (0 to k_led_count - 1, inclusive)
- *   - 0: Heartbeat LED
- *   - 1: Error LED
- *   - 2: Motor active LED
- *   - 3: Communication activity LED
- *   - 4: Obstacle detected LED
- *   - 5: E-stop active LED
- * @param[in] on true to turn LED on (PODR bit set), false to turn off
  *
  * @pre LED GPIO initialized via internal_led_init_gpio()
  * @pre led_index < k_led_count (silently ignored if out of range)
@@ -508,7 +496,6 @@ static void internal_update_obstacle_and_estop_leds(void)
  * - LED 4: Solid on when any obstacle detected
  * - LED 5: Solid on when e-stop is active
  *
- * @param[in] input Thread input parameter (unused)
  *
  * @pre led_status_task_create() called successfully
  * @pre ThreadX scheduler started

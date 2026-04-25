@@ -124,13 +124,7 @@ static const char* const s_tag = "HCSR04_ICU"; /**< Logging tag (pointer and dat
  * 7. Write priority to IPR[vector]
  * 8. Set IER[vector/8] bit (vector%8) to enable interrupt
  *
- * @param[in] irq_num  IRQ number (8-11 for P00-P03; ISR handlers exist for IRQ8-11 only)
- * @param[in] priority Interrupt priority (1-15; recommend 10)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok ICU configured successfully
- * @retval k_rx_err_invalid_arg irq_num not in [8, 11] or priority not in [1, 15]
- * @retval k_rx_err_invalid_arg irq_num not valid for digital filter (propagated from rx_irq_filter_enable())
  *
  * @pre Pin already configured for IRQ function via rx_mpc_set_irq()
  * @pre ICU module not in module stop (MSTPCRA bit cleared)
@@ -212,13 +206,7 @@ rx_err_t rx_hcsr04_icu_configure(const uint8_t irq_num, const uint8_t priority)
  * 4. Write k_ir_flag_clear to IR[vector] to clear any pending flag
  * 5. Disable digital filter via rx_irq_filter_disable() and return its error
  *
- * @param[in] irq_num IRQ number to disable (8-11)
  *
- * @return rx_err_t Error code
- * @retval k_rx_ok IRQ and digital filter both disabled successfully
- * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
- * @retval k_rx_err_invalid_state IRQ was not enabled in IER (rx_hcsr04_icu_configure() not called)
- * @retval k_rx_err_invalid_arg irq_num not valid for digital filter (propagated from rx_irq_filter_disable())
  *
  * @pre IRQ was previously enabled via rx_hcsr04_icu_configure() (IER bit must be set)
  * @pre No measurement in progress on this IRQ
