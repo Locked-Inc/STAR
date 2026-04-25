@@ -759,7 +759,11 @@ static bool s_motor_created = false;
  *          the thread has run or initialized any motor hardware
  * @since Version 1.0.0
  */
-static bool s_motor_stack_initialized = false;
+/* volatile because written by the motor task (priority 8) and read by
+ * obstacle_detect_task (priority 12) via motor_control_task_get_motors().
+ * Without volatile the reader may cache `false` in a register and never
+ * observe the motor task's set, blocking the e-stop motor-handle lookup. */
+static volatile bool s_motor_stack_initialized = false;
 
 /** @brief Motor handles for each motor */
 static rx_motor_handle_t s_motors[k_motor_count];

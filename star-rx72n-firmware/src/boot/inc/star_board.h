@@ -47,8 +47,7 @@
  * @copyright Copyright (c) 2026 Locked Inc.
  */
 
-#ifndef STAR_BOARD_H
-#define STAR_BOARD_H
+#pragma once
 
 #if !defined(STAR_BOARD_PROD) && !defined(STAR_BOARD_TOM)
 #error "STAR_BOARD variant is not defined. Configure with -DSTAR_BOARD=PROD or -DSTAR_BOARD=TOM."
@@ -64,5 +63,3 @@
 #elif defined(STAR_BOARD_TOM)
 #define STAR_BOARD_NAME_STR "TOM"
 #endif
-
-#endif /* STAR_BOARD_H */

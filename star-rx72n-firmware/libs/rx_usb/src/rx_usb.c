@@ -639,11 +639,17 @@ typedef struct {
  * @brief Global USB driver state
  */
 typedef struct {
-  bool                initialized;             /**< Driver is initialized */
-  rx_usb_state_t      device_state;            /**< USB device state (shared) */
-  rx_usb_callback_t   global_callback;         /**< Global callback (from init config) */
-  void*               global_context;          /**< Global callback context */
-  rx_usb_port_state_t ports[k_usb_port_count]; /**< Per-port state */
+  bool initialized; /**< Driver is initialized */
+  /* volatile because rx_usb_set_state() runs from both task context
+   * (rx_usb_init / rx_usb_deinit) and ISR context (usb0_usbi_isr ->
+   * rx_usb_isr_handler -> internal_handle_dvst_interrupt et al.).
+   * Readers in rx_usb_write / rx_usb_read / rx_usb_get_state must see
+   * the latest hardware-derived value or USB attach/configure events
+   * triggered by the host get cached and missed. */
+  volatile rx_usb_state_t device_state;            /**< USB device state (ISR + task shared) */
+  rx_usb_callback_t       global_callback;         /**< Global callback (from init config) */
+  void*                   global_context;          /**< Global callback context */
+  rx_usb_port_state_t     ports[k_usb_port_count]; /**< Per-port state */
 } usb_driver_t;
 
 /* =============================================================================
