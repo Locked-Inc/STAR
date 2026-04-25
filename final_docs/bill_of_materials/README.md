@@ -38,9 +38,9 @@ source via the command in the regeneration section below.
 
 ## Human-Readable Summary
 
-`BOM_summary.md` is a mirror of `final_capstone/bom.md`. It adds
-cost totals, manufacturer notes, and the rough buy-list view that
-was presented to the review committee.
+`BOM_summary.md` is the human-readable BOM with cost totals,
+manufacturer notes, and the rough buy-list view that was presented
+to the review committee.
 
 ## Regeneration Command
 

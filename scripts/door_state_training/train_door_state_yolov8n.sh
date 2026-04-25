@@ -4,7 +4,7 @@
 #
 # One-shot training script for the STAR door-state classifier. Produces
 # `door_state_yolov8n.onnx` ready to drop into
-# `final_capstone/compliance-engine/star_compliance/models/`.
+# `star-compliance/star_compliance/models/`.
 #
 # Requires:
 #   - A machine with Python 3.10+ and an NVIDIA GPU with CUDA 11.8+
@@ -187,11 +187,11 @@ say ""
 say "Next steps:"
 say "  1. Copy the ONNX to the compliance-engine models dir:"
 say "     cp \"$OUTPUT_ONNX\" \\"
-say "        \"$STAR_DIR/final_capstone/compliance-engine/star_compliance/models/door_state_yolov8n.onnx\""
+say "        \"$STAR_DIR/star-compliance/star_compliance/models/door_state_yolov8n.onnx\""
 say ""
 say "  2. Run the compliance-engine smoke tests to confirm the node"
 say "     picks up the weights:"
-say "     cd $STAR_DIR/final_capstone/compliance-engine"
+say "     cd $STAR_DIR/star-compliance"
 say "     PYTHONPATH=. pytest tests/"
 say ""
 say "  3. Update star_compliance/models/README.md with the md5 hash,"
@@ -199,8 +199,8 @@ say "     dataset commit, and training-log location."
 say ""
 say "  4. Commit + push:"
 say "     cd $STAR_DIR"
-say "     git add final_capstone/compliance-engine/star_compliance/models/door_state_yolov8n.onnx"
-say "     git add final_capstone/compliance-engine/star_compliance/models/README.md"
+say "     git add star-compliance/star_compliance/models/door_state_yolov8n.onnx"
+say "     git add star-compliance/star_compliance/models/README.md"
 say "     git commit -m 'Add trained door_state_yolov8n.onnx weights'"
 say "     git push origin main"
 say "========================================"

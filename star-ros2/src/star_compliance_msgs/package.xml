@@ -9,7 +9,7 @@
     Covers door clear-width (ADA 404.2.3), door threshold (404.2.5),
     protruding objects (307), path blockage (403.5), and dynamic-obstacle
     clustering. Consumed by the compliance-engine Python nodes under
-    final_capstone/compliance-engine/.
+    star-compliance/.
   </description>
   <maintainer email="locked-inc@tamu.edu">Team Locked Inc.</maintainer>
   <license>MIT</license>

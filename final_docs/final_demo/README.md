@@ -36,11 +36,6 @@ layout described in the STAR System and Software User Manual
 `/compliance/ramp_slope` and appears in the compliance panel in
 real time.
 
-## Source of Truth
-
-The authoritative editable copies live under `final_capstone/demo/`.
-The files here are the submission snapshot.
-
 ## Team
 
 Locked Inc. (Texas A&M ESET Senior Capstone, Spring 2026).

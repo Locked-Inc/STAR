@@ -47,7 +47,7 @@ cd STAR
 git checkout main         # or your working branch
 ```
 
-The compliance engine lives at `final_capstone/compliance-engine/`.
+The compliance engine lives at `star-compliance/`.
 The compliance messages live at `star-ros2/src/star_compliance_msgs/`.
 
 ---
@@ -66,7 +66,7 @@ This does:
 2. `pip install --user numpy scikit-image scikit-learn opencv-python
    onnxruntime reportlab`
 3. `pip install --user open3d` (the long pole, 5-15 min on arm64)
-4. Symlinks `final_capstone/compliance-engine/` -> `star-ros2/src/star_compliance/`
+4. Symlinks `star-compliance/` -> `star-ros2/src/star_compliance/`
 5. `colcon build --packages-select star_compliance_msgs star_compliance
    --symlink-install`
 6. `ros2 interface show star_compliance_msgs/msg/DoorwayMeasurement`
@@ -190,7 +190,7 @@ During a traversal, you should see:
 ## Step 6: collect the audit CSVs
 
 Every flagged measurement appends a row to a CSV file under
-`final_capstone/extras/`:
+`star-compliance/extras/`:
 
 | File | Rows written by |
 | --- | --- |
@@ -202,7 +202,7 @@ Every flagged measurement appends a row to a CSV file under
 Tail any of these during a run:
 
 ```bash
-tail -f final_capstone/extras/validation_log.csv
+tail -f star-compliance/extras/validation_log.csv
 ```
 
 ---
@@ -213,7 +213,7 @@ The `pdf_generator.py` helper compiles any of the above CSVs into a
 shareable report:
 
 ```bash
-cd final_capstone/compliance-engine
+cd star-compliance
 PYTHONPATH=. python3 -m star_compliance.report.pdf_generator
 # writes star_audit_report_sample.pdf in the current directory
 ```

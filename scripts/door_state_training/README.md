@@ -29,14 +29,14 @@ at the end. Typically:
 
 ```bash
 cp scripts/door_state_training/door_state_yolov8n.onnx \
-   final_capstone/compliance-engine/star_compliance/models/door_state_yolov8n.onnx
+   star-compliance/star_compliance/models/door_state_yolov8n.onnx
 
-cd final_capstone/compliance-engine && PYTHONPATH=. pytest tests/
+cd star-compliance && PYTHONPATH=. pytest tests/
 # expect: 62+ passed, 17+ skipped
 
 cd ../..
-git add final_capstone/compliance-engine/star_compliance/models/door_state_yolov8n.onnx
-git add final_capstone/compliance-engine/star_compliance/models/README.md
+git add star-compliance/star_compliance/models/door_state_yolov8n.onnx
+git add star-compliance/star_compliance/models/README.md
 git commit -m "Add trained door_state_yolov8n.onnx weights"
 git push origin main
 ```
@@ -174,13 +174,13 @@ Copy the resulting `best.onnx` to its destination:
 
 ```bash
 cp runs/door_state_yolov8n/weights/best.onnx \
-   ../../../final_capstone/compliance-engine/star_compliance/models/door_state_yolov8n.onnx
+   ../../../star-compliance/star_compliance/models/door_state_yolov8n.onnx
 ```
 
 ### 7. Verify the compliance engine picks up the weights
 
 ```bash
-cd final_capstone/compliance-engine
+cd star-compliance
 PYTHONPATH=. python3 - <<'EOF'
 from star_compliance.detectors.door_state_classifier import DoorStateClassifier
 cls = DoorStateClassifier(
@@ -201,7 +201,7 @@ PYTHONPATH=. pytest tests/ -v
 ### 8. Update the models/README.md provenance
 
 Replace the "pending training" block in
-`final_capstone/compliance-engine/star_compliance/models/README.md`
+`star-compliance/star_compliance/models/README.md`
 with a provenance entry documenting:
 
 - date of training
@@ -214,8 +214,8 @@ with a provenance entry documenting:
 ### 9. Commit
 
 ```bash
-git add final_capstone/compliance-engine/star_compliance/models/door_state_yolov8n.onnx
-git add final_capstone/compliance-engine/star_compliance/models/README.md
+git add star-compliance/star_compliance/models/door_state_yolov8n.onnx
+git add star-compliance/star_compliance/models/README.md
 git commit -m "Add trained door_state_yolov8n.onnx weights
 
 Fine-tuned YOLOv8n-cls on gasparramoa/DoorDetect-Class-Dataset

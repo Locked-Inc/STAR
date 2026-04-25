@@ -22,7 +22,7 @@ set -euo pipefail
 
 STAR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAR_ROS2_DIR="$STAR_DIR/star-ros2"
-COMPLIANCE_SRC_DIR="$STAR_DIR/final_capstone/compliance-engine"
+COMPLIANCE_SRC_DIR="$STAR_DIR/star-compliance"
 COMPLIANCE_LINK_DIR="$STAR_ROS2_DIR/src/star_compliance"
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
@@ -35,7 +35,7 @@ die()  { echo -e "${RED}[bootstrap]${NC} $*" >&2; exit 1; }
 # ---------------------------------------------------------------------
 [[ -d "$STAR_ROS2_DIR" ]] || die "cannot find star-ros2/ under $STAR_DIR"
 [[ -d "$COMPLIANCE_SRC_DIR" ]] \
-    || die "cannot find final_capstone/compliance-engine/ under $STAR_DIR"
+    || die "cannot find star-compliance/ under $STAR_DIR"
 
 if ! command -v ros2 >/dev/null 2>&1; then
     die "ros2 CLI not found; install ROS 2 Jazzy first (see star-ros2/README.md)"

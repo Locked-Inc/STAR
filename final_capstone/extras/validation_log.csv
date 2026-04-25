@@ -1,9 +1,0 @@
-run_id,date,time,operator,location,ramp_slope_gt_deg,ramp_slope_bno055_deg,ramp_slope_lidar_deg,bno055_lidar_agreement_deg,violation_threshold_deg,flagged,notes
-# TEMPLATE - fill in during the dress-rehearsal and demo-day runs.
-# One row per ramp measurement. Ground truth via Wixey WR300 digital angle gauge.
-# violation_threshold_deg is 4.76 (ADA 405.2 / 1:12). flagged=yes when measured slope > threshold AND sensors agree within 0.5 deg.
-R01,YYYY-MM-DD,HH:MM,P3,Building XYZ hallway ramp,,,,,4.76,,dress rehearsal
-R02,YYYY-MM-DD,HH:MM,P3,same,,,,,4.76,,dress rehearsal
-R03,YYYY-MM-DD,HH:MM,P3,same,,,,,4.76,,dress rehearsal
-R04,YYYY-MM-DD,HH:MM,P3,same,,,,,4.76,,dress rehearsal
-R05,YYYY-MM-DD,HH:MM,P3,same,,,,,4.76,,dress rehearsal

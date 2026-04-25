@@ -16,7 +16,7 @@ REPO = Path("/Users/cesarmagana/Documents/GitHub/STAR")
 SKELETON = "/tmp/deck_skeleton.pptx"
 OUT = REPO / "final_docs/final_presentation/STAR_Final_Presentation.pptx"
 
-CHARTS = REPO / "final_capstone/charts/output"
+CHARTS = REPO / "final_docs/final_presentation/charts/output"
 SCREENS = REPO / "final_docs/system_software_user_manual/images"
 
 # === Per-slide content =====================================================

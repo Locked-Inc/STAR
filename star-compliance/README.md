@@ -118,7 +118,7 @@ compliance-engine/
 ### Off-robot (dev machine, no ROS install needed)
 
 ```bash
-cd final_capstone/compliance-engine
+cd star-compliance
 
 # Just the detectors and engines
 PYTHONPATH=. pytest tests/ -v

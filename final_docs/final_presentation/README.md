@@ -39,7 +39,7 @@ documents for the full taxonomy).
 | `templates/24_Template_PowerPoint_Dark-ArialOnly.pptx` | TAMU-supplied template (build base) |
 | `slide_outline.md` | Earlier 12-slide outline that informed the narrative |
 | `speaker_notes.md` | Per-slide cue cards |
-| `final_capstone/charts/output/chart_a..f_*.png` | Six pitch charts embedded on slides 3, 4, 6, 10 |
+| `charts/output/chart_a..f_*.png` | Six pitch charts embedded on slides 3, 4, 6, 10 |
 | `final_docs/system_software_user_manual/images/lichtblick-teleop.png` | Slide 8 screenshot |
 | `final_docs/system_software_user_manual/images/thompson-hall-map.png` | Slide 9 screenshot |
 

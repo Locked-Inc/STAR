@@ -25,7 +25,7 @@ STAR is accurate enough to be worth a CASp's time.
 ### Bookkeeping
 
 Every validation session writes rows into one of these CSVs in
-`final_capstone/extras/`:
+`star-compliance/extras/`:
 
 - `validation_log.csv` - ramp slope + door clear width
 - `threshold_log.csv` - threshold events
