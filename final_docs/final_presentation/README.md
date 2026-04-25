@@ -1,41 +1,68 @@
 # Final Presentation - ESET 420 Capstone Submission
 
-## Primary Deliverable
+## Canvas Submission Artifact
 
-`STAR_Deck.pptx` -- 12-slide deck, 5-7 minute speaking budget, four
-rotating presenters.
+`STAR_Final_Presentation.pdf` -- 14-slide deck rendered to PDF
+(16:9, 13.33 in x 7.5 in, 14 pages, 3.6 MB) built on the
+TAMU-supplied dark-Arial template. This is the single PDF
+uploaded for the Canvas Final Presentation assignment.
 
-## Supporting Materials
+`STAR_Final_Presentation.pptx` -- editable PowerPoint source for
+the same deck. Speaker notes are populated on slides 1 through 13.
 
-- `slide_outline.md` -- per-slide talking points, visuals, and
-  speaker assignments.
-- `speaker_notes.md` -- expanded speaker notes with timings and
-  hand-off cues.
+## Slide Map
 
-## Mapping to the Audit Mission
+| # | Layout | Title |
+|---|---|---|
+| 1 | Title slide | STAR -- Spatial Topography Accessibility Robot |
+| 2 | Two-column, stat callout | $236,451 per door |
+| 3 | Two-column with chart | Who measures this? |
+| 4 | Two-column with chart | Enforcement is accelerating |
+| 5 | Three-column subheadings | Tech stack |
+| 6 | Two-column with chart | System architecture |
+| 7 | Three-column subheadings | Seven ADA checks |
+| 8 | Two-column with screenshot | Live demo |
+| 9 | Two-column with screenshot | Validation |
+| 10 | Two-column with chart | Cost |
+| 11 | Section breaker | Broader impact |
+| 12 | Title + bullets | Future work |
+| 13 | Three-column subheadings | Q&A and team |
+| 14 | Closing | Thank You |
 
-Slide flow: lawsuit stakes (#1) -> problem framing (#2, #3) -> STAR
-as platform + compliance layer (#4) -> tech stack (#5) -> system
-architecture (#6) -> seven ADA checks with status labels (#7) ->
-live demo pointer (#8) -> validation against a Wixey WR300 ground
-truth (#9) -> broader impact (#10) -> future work (#11) -> Q&A
-(#12).
+Status labels on slide 7 match the SDD and SSUM (see those
+documents for the full taxonomy).
 
-Status labels used in slide #7 match the SDD and SSUM:
+## Build Inputs
 
-- `[IMPLEMENTED]` -- ramp slope (ADA 405.2).
-- `[STRETCH]` -- trip hazard, path width.
-- `[ARCHITECTED]` -- ramp width, ramp landing, door clear width,
-  door threshold.
+| Path | Role |
+|---|---|
+| `templates/24_Template_PowerPoint_Dark-ArialOnly.pptx` | TAMU-supplied template (build base) |
+| `slide_outline.md` | Earlier 12-slide outline that informed the narrative |
+| `speaker_notes.md` | Per-slide cue cards |
+| `final_capstone/charts/output/chart_a..f_*.png` | Six pitch charts embedded on slides 3, 4, 6, 10 |
+| `final_docs/system_software_user_manual/images/lichtblick-teleop.png` | Slide 8 screenshot |
+| `final_docs/system_software_user_manual/images/thompson-hall-map.png` | Slide 9 screenshot |
 
-## Source of Truth
+## Regeneration
 
-The authoritative editable copy lives under
-`final_capstone/deck/`. The files in this directory are the
-submission snapshot. Rebuild from source via
-`final_capstone/deck/build_deck.py` if the slide content changes.
+The deck is built programmatically from the template. If slide
+content changes, edit the `SLIDES` table in the build script and
+re-run:
+
+```
+python3 /tmp/build_deck.py    # rebuilds STAR_Final_Presentation.pptx
+soffice --headless --convert-to pdf \
+    final_docs/final_presentation/STAR_Final_Presentation.pptx \
+    --outdir final_docs/final_presentation/
+```
+
+## Archive
+
+`STAR_Deck.pptx` -- the prior 12-slide draft from earlier in the
+semester. Kept for archival reference; superseded by
+`STAR_Final_Presentation.pptx`.
 
 ## Team
 
-Locked Inc. (Texas A&M ESET Senior Capstone, Spring 2026).
+Locked Inc. -- Texas A&M ESET Senior Capstone, Spring 2026.
 See the SDD or SSUM title page for the full team roster.
