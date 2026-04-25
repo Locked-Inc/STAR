@@ -41,6 +41,15 @@
                          Foxglove, ROS2, RX72N}]{hyperref}
 
 %----------------------------------------------------------------------
+% Status-label hyperlink macro (mirrors SDD)
+% Use as: \statuslabel{IMPLEMENTED} / \statuslabel{STRETCH} /
+%         \statuslabel{ARCHITECTED} / \statuslabel{STRETCH stub} /
+%         \statuslabel{ARCHITECTED stubs}
+% All occurrences hyperlink back to the legend at sec:status-legend.
+%----------------------------------------------------------------------
+\newcommand{\statuslabel}[1]{\hyperref[sec:status-legend]{[#1]}}
+
+%----------------------------------------------------------------------
 % Style
 %----------------------------------------------------------------------
 \pagestyle{fancy}
@@ -106,8 +115,8 @@
 
 {\large \textbf{Team Locked Inc}}\\[0.15in]
 \begin{tabular}{r l}
-Cesar Magana        & Software (firmware, gateway, ROS2, UI, compliance, infra) \\
-Brighton Sikarskie  & Embedded Development and Schematic Design \\
+Cesar Magana        & Software \\
+Brighton Sikarskie  & Software, Embedded Development, Schematic Design \\
 Jeremie Hockey      & PCB Design and Layout \\
 Michael Norton      & Mechanical Design \\
 Shawn Ciaciura      & Schematic Review \\
@@ -179,8 +188,13 @@ decisions. Those live in the STAR SDD. Mechanical assembly, PCB
 schematics, and BOM are covered in their own capstone deliverables.
 
 \subsection{Status Label Legend}
+\phantomsection
+\label{sec:status-legend}
 Throughout this document, three status labels identify how complete
-each subsystem or feature is on the delivered system:
+each subsystem or feature is on the delivered system. Every body
+occurrence of \texttt{[IMPLEMENTED]} / \texttt{[STRETCH]} /
+\texttt{[ARCHITECTED]} elsewhere in this manual is a hyperlink back
+to this legend.
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
 \item \textbf{[IMPLEMENTED]} -- complete and exercised in daily use.
 \item \textbf{[STRETCH]} -- partial implementation with scaffolding;
@@ -211,7 +225,16 @@ each subsystem or feature is on the delivered system:
       that serves Prometheus metrics and map images.
 \item \texttt{star-ros2/src/star\_bringup/foxglove/star-default.json}
       -- default Foxglove / Lichtblick layout.
-\item ADA 2010 Standards, Section 405.2 (Ramp Slope).
+\item U.S. Department of Justice, \textit{2010 ADA Standards for
+      Accessible Design}, Section 405.2 (Ramp Running Slope).
+      \url{https://www.access-board.gov/ada/chapter/ch04/}
+\item Open Navigation LLC, Nav2 navigation framework documentation.
+      \url{https://docs.nav2.org/}
+\item Lichtblick, \texttt{lichtblick-suite/lichtblick} static web
+      bundle (Foxglove Studio fork).
+      \url{https://github.com/lichtblick-suite/lichtblick}
+\item Open Robotics, ROS 2 Jazzy Jalisco (LTS, May 2024 -- May
+      2029, Ubuntu 24.04). \url{https://docs.ros.org/en/jazzy/}
 \end{itemize}
 
 %======================================================================
@@ -246,29 +269,29 @@ and uses. Everything underneath is described in the SDD.
 \midrule
 Grafana dashboard       & k3s cluster / browser
     & Primary cockpit. Live telemetry, autonomy toggle, e-stop,
-      speed, SLAM controls. [IMPLEMENTED] \\
+      speed, SLAM controls. \statuslabel{IMPLEMENTED} \\
 Lichtblick web app      & k3s cluster / browser
     & 3D visualization of LiDAR, map, odometry, and TF tree.
-      Foxglove-compatible. [IMPLEMENTED] \\
+      Foxglove-compatible. \statuslabel{IMPLEMENTED} \\
 Foxglove Studio desktop & Laptop (tailnet)
     & Power-user alternative to Lichtblick, same layout file.
-      [IMPLEMENTED] \\
+      \statuslabel{IMPLEMENTED} \\
 \texttt{star\_cockpit\_api} & Pi5 \texttt{:9102}
     & HTTP API backing the Grafana cockpit toggles.
-      [IMPLEMENTED] \\
+      \statuslabel{IMPLEMENTED} \\
 \texttt{star\_simple\_bridge} & Pi5 \texttt{:9101}
     & ROS2 serial bridge to RX72N, Prometheus metrics, map image
-      server. [IMPLEMENTED] \\
+      server. \statuslabel{IMPLEMENTED} \\
 Caddy (Pi5-side)        & Pi5 \texttt{:443}
-    & Local-CA TLS front for \texttt{star.local}. [IMPLEMENTED] \\
+    & Local-CA TLS front for \texttt{star.local}. \statuslabel{IMPLEMENTED} \\
 \texttt{star-slam-mvp.service} & Pi5 systemd
     & Autostarts the SLAM MVP node set on boot; safe MANUAL state.
-      [IMPLEMENTED] \\
+      \statuslabel{IMPLEMENTED} \\
 RX72N firmware          & On-board MCU
     & Closed-loop motor control, encoder and IMU decoding.
-      [IMPLEMENTED] \\
+      \statuslabel{IMPLEMENTED} \\
 \texttt{flash-rx72n.sh}  & Workstation
-    & One-shot firmware flashing helper. [IMPLEMENTED] \\
+    & One-shot firmware flashing helper. \statuslabel{IMPLEMENTED} \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -389,6 +412,14 @@ Two flashing methods are supported by \texttt{scripts/flash-rx72n.sh}:
       again to run the new image.
 \end{itemize}
 
+On Apple Silicon and ARM Linux workstations, Renesas only ships
+\texttt{rfp-cli} as an x86\_64 binary. The
+\texttt{flash-rx72n.sh} helper detects an aarch64 host and
+launches \texttt{rfp-cli} through \texttt{box64} when present, which
+avoids a known SIGSEGV that the kernel's binfmt + qemu-user fallback
+hits during \texttt{rfp-cli} startup. Install \texttt{box64} once
+on aarch64 hosts; x86\_64 hosts run \texttt{rfp-cli} natively.
+
 \begin{lstlisting}[style=shellcmd]
 # Build a release image and flash via E2 Lite
 make build-rx72n-release
@@ -416,6 +447,47 @@ The Grafana dashboard iframes the STAR map served by
 browser to trust the Pi5 Caddy's local CA. See
 \texttt{docs/ARCHITECTURE.md} for the one-time browser trust-store
 step.
+
+\subsection{Optional: Local Lichtblick Web Bundle}
+The public Lichtblick URL is the primary 3D viz path. For
+demos in places without reliable internet (the senior-design
+showcase floor in particular), the script
+\texttt{scripts/setup-lichtblick-web.sh} downloads the
+\texttt{lichtblick-suite/lichtblick} static web bundle to
+\texttt{/opt/star-lichtblick-web} so the Pi5 can serve it
+locally over the on-board AP at
+\texttt{http://192.168.50.1:8081}. The Pi5 default layout at
+\texttt{star-ros2/src/star\_bringup/foxglove/star-default.json}
+is preserved on every run. \statuslabel{IMPLEMENTED}.
+\begin{lstlisting}[style=shellcmd]
+# One-time, with the Pi5 on the internet
+sudo ./scripts/setup-lichtblick-web.sh
+# Default install pins lichtblick v1.24.3.
+\end{lstlisting}
+
+\subsection{Bring-Up Helper: \texttt{slam-mvp.sh}}
+\texttt{scripts/slam-mvp.sh} is the canonical one-command bring-up
+that \texttt{star-slam-mvp.service} runs on boot. It is also useful
+on a developer workstation. The four subcommands:
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
+\item \texttt{slam-mvp.sh start [--mcu /dev/star-mcu]
+      [--lidar /dev/star-lidar]} -- launches each ROS2 node in the
+      MVP set as a separate background process with its own log
+      file under \texttt{/tmp/slam-mvp-logs/}. PIDs land in
+      \texttt{/tmp/slam-mvp.pids}.
+\item \texttt{slam-mvp.sh status} -- reports which PIDs are still
+      alive and which logs were written.
+\item \texttt{slam-mvp.sh stop} -- sends SIGTERM, then SIGKILL after
+      a grace window.
+\item \texttt{slam-mvp.sh logs <node>} -- tails the per-node log
+      file (e.g. \texttt{slam-mvp.sh logs simple\_bridge}).
+\end{itemize}
+If \texttt{/dev/star-mcu} is missing at start time -- which happens
+when the E2 Lite holds the RX72N in reset during power-up ordering
+and starves the Cypress USB-UART -- the script automatically cycles
+the E2 Lite USB device (vendor \texttt{045b}, product
+\texttt{82a0}) to release reset. The MCU enumerates within roughly
+one second.
 
 \subsection{Verifying the Install}
 From the operator's browser on the tailnet, confirm each surface is
@@ -523,8 +595,9 @@ If SLAM is not already active:
 \subsection{Running a Compliance Audit}
 Compliance nodes (Section~\ref{sec:topics}) publish check results on
 the \texttt{/compliance/*} topics whenever SLAM is active and the
-robot is moving. The ramp-slope check is [IMPLEMENTED]; other checks
-are [STRETCH] or [ARCHITECTED] per the SDD traceability matrix. The
+robot is moving. The ramp-slope check is \statuslabel{IMPLEMENTED};
+other checks are \statuslabel{STRETCH} or \statuslabel{ARCHITECTED}
+per the SDD traceability matrix. The
 report generator in
 \texttt{final\_capstone/compliance-engine/star\_compliance/report/}
 produces a PDF audit report at the end of a run; copy it off the Pi5
@@ -589,8 +662,48 @@ wires the following topics into Lichtblick's 3D panel:
 \item \texttt{/odometry/filtered} -- EKF odometry, arrow marker.
 \item \texttt{/odom/unfiltered} -- raw wheel odometry, arrow marker.
 \end{itemize}
-Plots beside the 3D panel show IMU acceleration and angular velocity
-on all three axes.
+
+\subsubsection*{Foxglove Gauge Mirror Topics}
+\texttt{sensor\_msgs/Imu} and the wheel \texttt{Float32MultiArray}
+topics carry nested fields that Foxglove Gauge panels cannot read
+directly. \texttt{star\_simple\_bridge} mirrors the relevant scalars
+into single-valued \texttt{std\_msgs/Float32} topics so each Gauge
+binds to one topic. These are the topics to use when building
+custom Foxglove panels:
+\begin{table}[H]
+\centering
+\caption{Scalar telemetry topics for Foxglove Gauge panels.}
+\label{tab:foxglove-gauges}
+\small
+\begin{tabularx}{\linewidth}{l X}
+\toprule
+\textbf{Topic} & \textbf{Meaning} \\
+\midrule
+\texttt{/motor/fl/velocity\_mps}, \texttt{/motor/fr/...}
+    & Per-wheel signed linear velocity in \unit{\meter\per\second}.
+      Repeated for \texttt{bl} and \texttt{br}. \\
+\texttt{/motor/fl/duty\_percent}, \texttt{/motor/fr/...}
+    & Per-wheel signed PWM duty in percent (\(-100\) to \(+100\)),
+      including the bl and br wheels. \\
+\texttt{/imu/roll\_deg}, \texttt{/imu/pitch\_deg},
+\texttt{/imu/heading\_deg}
+    & BNO055 fused orientation in degrees. \\
+\texttt{/imu/gyro\_x\_dps}, \texttt{/imu/gyro\_y\_dps},
+\texttt{/imu/gyro\_z\_dps}
+    & Body-frame angular velocity in degrees per second. \\
+\texttt{/imu/accel\_x\_mps2}, \texttt{/imu/accel\_y\_mps2},
+\texttt{/imu/accel\_z\_mps2}
+    & Gravity-compensated linear acceleration in \unit{\meter\per\second\squared}. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The same scalars are simultaneously exposed as Prometheus gauges
+on \texttt{:9100} (e.g.
+\texttt{star\_motor\_velocity\_mps\{wheel="fl"\}},
+\texttt{star\_imu\_orientation\_deg\{axis="heading"\}}) so a
+Grafana Gauge panel binds the same datum without going through
+ROS2.
 
 \subsection{Foxglove Studio (desktop alternative)}
 Foxglove Studio can load the same layout JSON. Connect to
@@ -870,6 +983,73 @@ layout; to edit, change
 \texttt{star-ros2/src/star\_bringup/foxglove/star-default.json},
 commit, rebuild the Lichtblick deployment image, and re-apply.
 
+\subsection{Calibration}
+Three calibration constants live inside
+\texttt{star-ros2/src/star\_simple\_bridge/star\_simple\_bridge/}\\
+\texttt{simple\_bridge\_node.py} and must be revisited whenever the
+chassis hardware changes (motor swap, encoder swap, IMU re-mount).
+
+\textbf{Encoder ticks per wheel revolution
+(\texttt{TICKS\_PER\_REV}).}
+The firmware reports raw quadrature counts at the motor shaft
+(341 PPR Hall sensor times 4x quadrature decoding =
+\num{1364} ticks per shaft revolution). Empirically, on the current
+goBILDA Wasteland chassis with two damaged motors, the geometric
+mean of two ruler-measured drives gave \num{1283}, which is the
+constant currently checked in (the script's comment block at the
+constant records the date and the per-drive values). Recalibrate
+when motors are replaced:
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt]
+\item Mark a straight-line course of \qty{1.00}{\meter} on the
+      floor.
+\item With \texttt{TICKS\_PER\_REV} at its current value, drive the
+      robot the marked distance under teleop and read the integrated
+      \texttt{/odom/unfiltered} pose-x.
+\item If odom reads
+      \(d_{odom}\) for an actual distance \(d_{ruler}\), the new
+      \texttt{TICKS\_PER\_REV} is
+      \(\texttt{old} \times d_{odom} / d_{ruler}\).
+\item Average two drives in opposite directions to absorb any
+      asymmetric wheel slip; commit the geometric mean.
+\end{enumerate}
+SLAM toolbox's scan matching tolerates \(\pm \qty{10}{\percent}\)
+drift, so the calibration only needs to be approximately right.
+
+\textbf{IMU mount flip
+(\texttt{IMU\_MOUNT\_FLIP\_Y}).} The BNO055 chip is soldered
+face-down on the PCB, so its native \(+Z\) points into the board
+(downward in the robot frame). The bridge applies a
+\(180\)-degree rotation about the IMU body \(Y\) axis before
+publishing \texttt{/imu/data}, so the published pitch is near
+\(0\) when the robot sits level. If the IMU is ever remounted
+right-side-up, set \texttt{IMU\_MOUNT\_FLIP\_Y = False} and
+restart the bridge.
+
+\textbf{Encoder direction signs.} On the current chassis the
+right-side quadrature A/B phase is swapped relative to the left,
+so the bridge negates \(d_{ticks}\) for the FR and BR wheels at
+the integration step. If a future harness rewire reverses one
+side's connector, flip the corresponding sign in
+\texttt{\_handle\_encoder\_line}; verify with a \(+\qty{0.5}{\meter\per\second}\)
+forward command for \qty{2}{\second} producing positive
+\texttt{pose\_x} of approximately \qty{1.0}{\meter}.
+
+\textbf{Motor saturation and stiction floor.} Two safety
+constants in the same module shape the per-wheel command:
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
+\item \texttt{MAX\_WHEEL\_MPS = 1.0} -- when a combined
+      linear+angular twist would push one wheel past
+      \qty{1}{\meter\per\second}, both wheels are scaled
+      proportionally so the commanded turn ratio is preserved.
+\item \texttt{MIN\_WHEEL\_MPS\_STICTION = 0.30} -- a stiction-break
+      floor that boosts each non-zero wheel command up to the
+      stall threshold while preserving the sign. Required because
+      the damaged motors stall below approximately
+      \qty{0.30}{\meter\per\second} commanded; remove this once
+      motors are replaced and the Nav2 controller reaches
+      \qty{10}{\hertz} loop rate.
+\end{itemize}
+
 \subsection{Updating Firmware PID Gains}
 PID gain design is performed offline in MATLAB per the SDD. New gains
 are written to
@@ -895,11 +1075,12 @@ Operator-facing subset of the SDD limitations:
 \item Online PID autotuning is not supported. Plant or load changes
       require an offline MATLAB re-run and a firmware rebuild.
 \item Compliance coverage: only the ramp-slope check is
-      [IMPLEMENTED]; path width and trip hazard are [STRETCH], and
-      ramp width, ramp landings, door clear width, and door
-      threshold are [ARCHITECTED] per the SDD traceability matrix.
+      \statuslabel{IMPLEMENTED}; path width and trip hazard are
+      \statuslabel{STRETCH}, and ramp width, ramp landings, door
+      clear width, and door threshold are \statuslabel{ARCHITECTED}
+      per the SDD traceability matrix.
 \item \texttt{star-simple} (a planned lightweight bring-up tree on
-      the field Pi5) is [ARCHITECTED]: some of it is present on the
+      the field Pi5) is \statuslabel{ARCHITECTED}: some of it is present on the
       physical robot but has not been committed back to the
       repository yet. Use \texttt{star\_simple\_bridge} directly
       for now.
