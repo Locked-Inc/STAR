@@ -1,0 +1,164 @@
+% ============================================================================
+% USB MODES, RE-ENUMERATION, AND BENCH JTAG INTERACTION
+% ============================================================================
+
+\section{USB Modes and Bench Behavior}
+
+\subsection{Transport Selection at the Gateway}
+
+The Go gateway picks a transport via the \texttt{TransportMode} enum
+defined in \texttt{star-gateway/internal/manager/types.go}. Four modes
+are valid:
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Mode}              & \textbf{Wire-format invariant}        & \textbf{When to use}                                       \\
+\hline
+\texttt{auto}              & Same framed protocol, any transport   & Default; prefers USB CDC, falls back to SPI                \\
+\texttt{force-usb}         & Full HARQ + reset handshake on USB    & Strict-host environments where SPI is intentionally off    \\
+\texttt{simple-usb}        & Framed protocol, no Layer-3 HARQ      & Pi 5 xHCI hosts where USB CDC is already lossless          \\
+\texttt{force-spi}         & Full HARQ over SPI; USB hot-plug off  & Closed-loop motor-control rigs that need bounded jitter    \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{Simple USB mode}
+
+\textbf{What it is:} The gateway opens the USB CDC port (typically
+\texttt{/dev/ttyACM\{1,2,3\}} on PROD or \texttt{/dev/ttyACM\{4,5,6\}}
+on TOM) and treats the byte stream as already-reliable. It performs:
+
+\begin{itemize}
+  \item CRC-32 frame validation as defense in depth.
+  \item No reset handshake at the link layer.
+  \item No strict sequence-validation (gaps are tolerated rather than
+        triggering NACK + retransmit storms).
+  \item Relaxed health monitoring (lower retry budgets, longer dead
+        timers).
+\end{itemize}
+
+\textbf{Why it is safe:} USB 2.0 Full-Speed already delivers a CRC-16
+on every packet and re-transmits transparently in the host controller.
+Layering HARQ on top is wasted work and introduces latency that is
+nontrivial under typical CDC ACM scheduling (every-frame ACK + retry
+budget). On a Pi 5 xHCI host, simple-usb has been bench-verified to
+enumerate cleanly and survive arbitrary disconnect/reconnect cycles.
+
+\textbf{When to avoid:} Strict-host environments (some Windows HCDs,
+some macOS releases, embedded controller hubs) may be picky enough
+about USB framing or clock accuracy that the loss-tolerant assumption
+fails. In that case prefer \texttt{force-usb} (or fall back to SPI).
+
+\subsubsection{Complex (full) USB mode -- \texttt{force-usb}}
+
+This is the original transport design: a full link-layer state machine
+with reset handshake (RST/RST-ACK), strict 16-bit sequence checking,
+NACK-driven retransmits with Chase-Combining HARQ, and deadline
+monitors. It is the canonical mode on hardware that also has the SPI
+link active and where deterministic recovery is more important than
+raw throughput.
+
+\subsubsection{Forcing SPI -- \texttt{force-spi}}
+
+Used by the ROS2 motor-control bridge (\texttt{star\_spi\_bridge}).
+USB hot-plug is disabled so that wandering USB cables can never knock
+the closed-loop control off the deterministic SPI path. The full HARQ
+stack runs on this transport because SPI itself has no error
+correction and PWM/motor noise is real.
+
+\subsection{USB enumeration topology}
+
+The RX72N exposes a single composite USB device that the host sees as
+three CDC-ACM serial endpoints in a single \texttt{idVendor / idProduct}
+tuple. Bench-verified mappings (commit \texttt{341bd09ce} on
+\texttt{feat/usb0}, 2026-04-24):
+
+\begin{itemize}
+  \item \textbf{PROD board} (E2L \texttt{5AS071312B}, 24~MHz crystal):
+        \texttt{/dev/ttyACM1} = PROTO,
+        \texttt{/dev/ttyACM2} = DECODED,
+        \texttt{/dev/ttyACM3} = LOG.
+  \item \textbf{TOM board} (E2L \texttt{5AS071321B}, HOCO PLL):
+        \texttt{/dev/ttyACM4} = PROTO,
+        \texttt{/dev/ttyACM5} = DECODED,
+        \texttt{/dev/ttyACM6} = LOG.
+  \item Both enumerate as \texttt{idVendor=045b idProduct=0235}, and
+        both heartbeat on all three ports under \texttt{p0/p1/p2}.
+\end{itemize}
+
+\subsection{Re-enumeration: when ttyACM* changes}
+
+The OS assigns \texttt{/dev/ttyACM*} indices in order of appearance.
+Anything that drops the device and re-enumerates it can shift the
+mapping. Common causes on the bench:
+
+\begin{itemize}
+  \item Reflash via E2 Lite -- the firmware re-init cycles USB power
+        and the USBb peripheral, so the host sees a disconnect followed
+        by a fresh enumerate. The new \texttt{ACM} numbers usually
+        come back in the same order, but if another USB-CDC device
+        was plugged in between cycles, indices can advance.
+  \item Power-cycling the board (USB unplug or barrel-jack toggle).
+  \item Hot-plugging another CDC ACM device (an Arduino, an ESP32,
+        another RX72N) while the gateway is running.
+\end{itemize}
+
+To make the assignment stable, install
+\texttt{scripts/71-star-symlinks.rules} via
+\texttt{scripts/setup-pi5-host.sh}. That udev rule creates persistent
+symlinks (e.g.\ \texttt{/dev/star-rx72n-proto},
+\texttt{/dev/star-rx72n-decoded}, \texttt{/dev/star-rx72n-log}) keyed
+on the device's serial / interface index, so the gateway can open
+those symlinks regardless of what \texttt{/dev/ttyACM*} number the
+kernel happens to pick on a given boot.
+
+\subsection{Bench JTAG interaction (E2 Lite vs CY7C65213)}
+
+On the STAR bench, the Renesas E2 Lite debugger and the Cypress
+CY7C65213 USB-UART bridge are mutually exclusive on the host:
+
+\begin{itemize}
+  \item While the E2 Lite is attached and holding the JTAG/FINE
+        interface, the CY7C65213 does \emph{not} enumerate as
+        \texttt{/dev/cu.usbmodem*} or
+        \texttt{/dev/cu.usbserial-*}. This is bench-harness wiring
+        (shared USB power gating), not a fault.
+  \item After flashing, physically disconnect the E2 Lite to expose
+        the bridge to the host before running picocom or starting
+        the gateway against the SCI9 fallback path.
+  \item The USB0 path (\texttt{/dev/ttyACM*}) is not affected by E2
+        Lite presence -- it runs on the RX72N USBb peripheral on
+        the dedicated USB-C connector and is independent of SCI9.
+\end{itemize}
+
+\subsection{Clock-source notes (TOM vs PROD)}
+
+The TOM board has no external main crystal and runs USB0 from
+HOCO~$\rightarrow$~PLL (PLLSRCSEL=1, multiplier 12,
+\texttt{k\_pll\_multiplier\_12\_hoco = 0x1710}). The Renesas HUM
+explicitly recommends an 8--24~MHz crystal as the USB clock source
+(HUM page~345 PLLCR Note~1, section~9.1, Table~63.18). HOCO is
+$\pm$2.44~\% accurate at $T_a \ge -20^\circ$C; USB 2.0 Full-Speed is
+specified at $\pm$0.25~\%, so HOCO is roughly 10x off-spec on paper.
+
+In practice, the Pi~5's xHCI controller accepts the HOCO-driven clock
+without complaint, and TOM enumerates the 3-port CDC composite
+cleanly. Treat the HUM warnings as a portability risk (some macOS
+revisions or Windows HCDs may reject the clock source) rather than a
+blocking defect for ship-to-Pi deployments. For field deployments on
+unknown hosts, prefer the 24~MHz crystal-clocked PROD configuration.
+
+\subsection{References}
+
+\begin{itemize}
+  \item \texttt{star-gateway/internal/manager/types.go} -- transport
+        mode definitions.
+  \item \texttt{star-rx72n-firmware/libs/rx\_usb/} -- USBb peripheral
+        driver.
+  \item \texttt{scripts/71-star-symlinks.rules} -- udev rules for
+        stable \texttt{/dev/star-rx72n-*} symlinks.
+  \item \texttt{scripts/setup-pi5-host.sh} -- one-time Pi 5 host
+        setup that installs the rules above plus the USB
+        autosuspend overrides.
+\end{itemize}

@@ -248,7 +248,7 @@ tab:
 39 & P87 & Unused &Available GPIO \\
 \hline
 \rowcolor { gray!15}
-40 & P16 & Unused (was USB0\_VBUS) & USB0 path removed; pin left floating \\
+40 & P16 / USB0\_VBUS & USB0 VBUS sense & 5\,V detect on USB-C, gate for USBb peripheral \\
 \hline
 \rowcolor {
   blue!20
@@ -275,10 +275,10 @@ tab:
 46 & VCC\_USB &Boards 3v3 & USB power supply \\
 \hline
 \rowcolor { gray!15}
-47 & USB0\_DM & Not connected & USB0 path removed \\
+47 & USB0\_DM & USB D- & USB0 differential pair (3-port CDC) \\
 \hline
 \rowcolor { gray!15}
-48 & USB0\_DP & Not connected & USB0 path removed \\
+48 & USB0\_DP & USB D+ & USB0 differential pair (3-port CDC) \\
 \hline
 \rowcolor {
   gray!15
@@ -919,7 +919,7 @@ All open & DO NOT SET \\
 tab:
   op - mode - config}
 \small
-\textbf{Note:} Only the SCI (UART-over-USB via CY7C65213) USB-C port is used. The former USB0 USB-C port is retained on the PCB but electrically unused: boot flashing goes through the SCI boot mode (E2 Lite debugger over the JTAG header is the normal path). USB0 boot mode is preserved in the silicon but not exercised by this project.
+\textbf{Note:} Both USB-C ports are active: the SCI (UART-over-USB via CY7C65213) port carries fallback / bring-up traffic, and the USB0 port carries the primary 3-port CDC composite device (PROTO / DECODED / LOG). Boot flashing normally goes through the E2 Lite debugger over the JTAG header; SCI boot mode and USB0 boot mode are preserved in the silicon as recovery paths.
 
 \vspace{
   0.2cm}

@@ -2,81 +2,114 @@
 
 Use this checklist when reviewing ROS2 C++ code in the STAR project.
 
-**Automation:** ~65% of these checks are automated via `./scripts/ros2/review-ros2.sh`.
-- ? = Fully automated (checked by script)
-- ? = Manual review required
+**Automation:** A subset of these checks is automated via
+`./scripts/ros2/review-ros2.sh`. Items below are tagged:
+- `[auto]`   -- the script verifies it
+- `[manual]` -- requires reviewer judgement
+
+**Authoritative style references:**
+`docs/sections/11_ros2_cpp_style_guide.tex` and the project root `CLAUDE.md`.
+This file is a runtime checklist; if anything here disagrees with those
+two, the .tex / CLAUDE.md wins.
 
 ## Naming Conventions
 
-- [ ] ? Classes use `CamelCase` (e.g., `StarGatewayBridgeNode`)
-- [ ] ? Methods use `snake_case` (e.g., `publish_telemetry()`) - same as C firmware
-- [ ] ? Variables use `snake_case` (e.g., `encoder_ticks`)
-- [ ] ? Member variables have trailing `_` (e.g., `grpc_channel_`)
-- [ ] ? Constants use `ALL_CAPITALS` (e.g., `MAX_RETRIES`)
-- [ ] ? Namespaces use `under_scored` and match package name (e.g., `star::spi_bridge`)
+- [ ] `[auto]`   Classes use `CamelCase` (e.g., `StarGatewayBridgeNode`)
+- [ ] `[auto]`   Methods use `snake_case` (e.g., `publish_telemetry()`)
+- [ ] `[auto]`   Variables use `snake_case` (e.g., `encoder_ticks`)
+- [ ] `[auto]`   Member variables have trailing `_` (e.g., `grpc_channel_`)
+- [ ] `[manual]` Compile-time constants are `constexpr` or scoped `enum class`,
+                 not `#define`. Spelling follows `kCamelCase` for `constexpr`
+                 and `SCREAMING_SNAKE` for class-level public constants.
+- [ ] `[auto]`   Namespaces use `under_scored` and match the package name
+                 (e.g., `star::spi_bridge`)
 
 ## File Organization
 
-- [ ] ? C++ headers use `.hpp` extension (not `.h`)
-- [ ] ? Include guards follow pattern: `PACKAGE_FILE_NAME_HPP_`
-- [ ] ? Includes are organized in correct order (ROS2, system, project)
-- [ ] ? No unnecessary includes (use forward declarations when possible)
+- [ ] `[auto]`   C++ headers use `.hpp` extension (not `.h`).
+- [ ] `[auto]`   **Headers use `#pragma once`** (CLAUDE.md mandate; not
+                 traditional `PACKAGE__FILE_HPP_` triplets).
+                 `scripts/ros2/fix-header-guards.sh` rewrites legacy guards.
+- [ ] `[manual]` Includes are organized in correct order (system, ROS2,
+                 project) per `docs/sections/11_ros2_cpp_style_guide.tex`.
+- [ ] `[manual]` No unnecessary includes (use forward declarations when
+                 possible).
 
 ## Formatting
 
-- [ ] ? Code is formatted with `clang-format` (run formatter before commit)
-- [ ] ? Line length <= 120 characters
-- [ ] ? 2-space indentation (no tabs)
-- [ ] ? Function braces on new line
-- [ ] ? Control statement braces cuddled (`if (x) {`)
-- [ ] ? No indentation inside namespaces
+- [ ] `[auto]`   Code is formatted with **`ament_uncrustify`** (NOT
+                 `clang-format`; see `docs/ROS2_FORMATTING.md`).
+- [ ] `[auto]`   Line length <= 120 characters.
+- [ ] `[auto]`   2-space indentation (no tabs).
+- [ ] `[auto]`   Function braces on new line; control-statement braces
+                 cuddled (`if (x) {`).
+- [ ] `[auto]`   No indentation inside namespaces.
 
 ## ROS2 Patterns
 
-- [ ] ? Node inherits from `rclcpp::Node` or `rclcpp_lifecycle::LifecycleNode`
-- [ ] ? Publishers/subscribers use `SharedPtr` types
-- [ ] ? Timer callbacks use `std::bind` or lambdas
-- [ ] ? QoS settings are appropriate for use case
+- [ ] `[manual]` Node inherits from `rclcpp::Node` or
+                 `rclcpp_lifecycle::LifecycleNode`.
+- [ ] `[manual]` Publishers/subscribers use `SharedPtr` types; **read-only
+                 message access uses `ConstSharedPtr`**.
+- [ ] `[manual]` Timer callbacks use `std::bind` or lambdas; lifetime is
+                 owned by the node.
+- [ ] `[manual]` QoS settings match the publisher/subscriber pair (no
+                 best-effort vs reliable mismatches).
 
 ## Error Handling
 
-- [ ] ? Exceptions used for error conditions (not return codes)
-- [ ] ? All exceptions are caught in callbacks (prevent node crash)
-- [ ] ? `RCLCPP_ERROR/WARN/INFO` used for logging (not `printf`/`cout`)
-- [ ] ? Throttled logging used for high-frequency messages
+- [ ] `[manual]` Exceptions are used for error conditions (not return
+                 codes); all exceptions are caught in callbacks to prevent
+                 node crash.
+- [ ] `[auto]`   `RCLCPP_ERROR/WARN/INFO` used for logging (not `printf`,
+                 `std::cout`, `std::cerr`).
+- [ ] `[manual]` Throttled logging used for high-frequency messages.
 
 ## Documentation
 
-- [ ] ? All public methods have Doxygen `/**` and `/**<` comments (same as C firmware)
-- [ ] ? Class has `@brief` description
-- [ ] ? Complex logic has inline comments explaining "why" (not "what")
-- [ ] ? Parameter and return value documented with `@param` and `@return`
+- [ ] `[manual]` All public methods have Doxygen `/** ... */` comments;
+                 struct fields use inline `///<` (per CLAUDE.md
+                 "MAXIMUM documentation coverage" mandate).
+- [ ] `[manual]` Class has `@brief` description.
+- [ ] `[manual]` Complex logic has inline comments explaining the *why*,
+                 not the *what*.
+- [ ] `[manual]` Parameters and return values documented with `@param`,
+                 `@return`, `@retval` where applicable.
 
 ## Safety and Best Practices
 
-- [ ] ? No blocking operations in callbacks (use timers or async)
-- [ ] ? Resource cleanup in destructors (RAII pattern)
-- [ ] ? Thread-safe access to shared data (use mutexes)
-- [ ] ? Input validation for all external data (messages, parameters)
-- [ ] ? Graceful shutdown implemented (cleanup on node termination)
+- [ ] `[manual]` No blocking operations in callbacks (use timers or
+                 async).
+- [ ] `[manual]` Resource cleanup in destructors (RAII pattern).
+- [ ] `[manual]` Thread-safe access to shared data (mutex / atomic).
+- [ ] `[manual]` Input validation for all external data (messages,
+                 parameters, services).
+- [ ] `[manual]` Graceful shutdown implemented (`on_shutdown` /
+                 lifecycle transitions clean up resources).
 
 ## Testing
 
-- [ ] ? Unit tests exist for new functionality (gtest)
-- [ ] ? Integration tests for ROS2 interactions (launch tests)
-- [ ] ? Edge cases tested (null pointers, invalid input, timeouts)
-- [ ] ? Test coverage >= 80% for new code
+- [ ] `[manual]` Unit tests exist for new functionality (gtest).
+- [ ] `[manual]` Integration tests for ROS2 interactions (launch tests).
+- [ ] `[manual]` Edge cases tested (null pointers, invalid input,
+                 timeouts).
+- [ ] `[manual]` Coverage target: >= 80 % for new code (target, not CI-
+                 enforced today).
 
 ## Specific to STAR Project
 
-- [ ] ? Follows NASA Power of 10 rules where applicable (see CLAUDE.md)
-- [ ] ? No dynamic allocation in critical paths (prefer static allocation)
-- [ ] ? Constants defined as enums or `const` (not macros)
-- [ ] ? Consistent with C firmware patterns (error handling philosophy)
+- [ ] `[manual]` Follows NASA Power of 10 rules where applicable
+                 (see CLAUDE.md and `docs/sections/06_nasa_power_of_10.tex`).
+- [ ] `[manual]` No dynamic allocation in critical paths (prefer static
+                 allocation).
+- [ ] `[manual]` Inclusive terminology -- Controller/Peripheral, COPI/CIPO
+                 (NOT master/slave, MOSI/MISO).
+- [ ] `[manual]` Consistent with C firmware patterns (error-handling
+                 philosophy, naming where reasonable).
 
 ## CI/CD
 
-- [ ] ? Code passes `colcon build` without warnings
-- [ ] ? Code passes `colcon test` (all tests green)
-- [ ] ? Code passes `clang-format` check
-- [ ] ? Code passes `ament_cppcheck` and `ament_cpplint`
+- [ ] `[auto]`   Code passes `colcon build` without warnings.
+- [ ] `[auto]`   Code passes `colcon test` (all tests green).
+- [ ] `[auto]`   Code passes `ament_uncrustify` check.
+- [ ] `[auto]`   Code passes `ament_cppcheck` and `ament_cpplint`.

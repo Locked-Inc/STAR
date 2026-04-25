@@ -22,8 +22,8 @@ Setup and GitHub integration reference for the STAR Raspberry Pi 5 (native aarch
 
 ```bash
 source /opt/ros/jazzy/setup.bash
-if [ -f /workspaces/STAR/star-ros2/install/local_setup.bash ]; then
-    source /workspaces/STAR/star-ros2/install/local_setup.bash
+if [ -f ${STAR_ROOT}/star-ros2/install/local_setup.bash ]; then
+    source ${STAR_ROOT}/star-ros2/install/local_setup.bash
 fi
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 export PATH="$PATH:/usr/local/go/bin"
@@ -47,7 +47,7 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 ### Build
 
 ```bash
-cd /workspaces/STAR
+cd ${STAR_ROOT}
 git pull
 ./build-ros2.sh   # handles proto gen + colcon build
 ```
@@ -201,7 +201,7 @@ a non-interactive shell and does not source `.bashrc`.
 Daily workflow:
 
 ```bash
-cd /workspaces/STAR
+cd ${STAR_ROOT}
 git pull
 ./build-ros2.sh   # rebuild if star-ros2/ or star-proto/ changed
 ```
@@ -213,7 +213,7 @@ git pull
 Run once on every Pi5 after flashing the OS:
 
 ```bash
-sudo bash /workspaces/STAR/scripts/setup-pi5-host.sh
+sudo bash ${STAR_ROOT}/scripts/setup-pi5-host.sh
 ```
 
 That installs:

@@ -1,8 +1,31 @@
 # STAR Robot -- Full Operations Stack
 
-End-to-end architecture for the STAR robot, from the Pi5 compute brick to the
-remote browser-based cockpit. Generic hostnames/IPs are used throughout.
-Substitute your own values where you see `<LIKE_THIS>` placeholders.
+End-to-end architecture for the STAR robot, from the embedded RX72N motor
+controller up through the Pi5 compute brick to the remote browser-based
+cockpit. Generic hostnames / IPs are used throughout. Substitute your own
+values where you see `<LIKE_THIS>` placeholders.
+
+> **Path convention:** examples below use `${STAR_ROOT}` for the path to
+> your local STAR checkout. On the devcontainer that's `/workspaces/STAR`;
+> on a native Pi5 it's wherever you ran `git clone` (typically `~/STAR`
+> after `bootstrap_pi.sh`).
+
+## Component map
+
+| Path                    | Role                                             |
+|-------------------------|--------------------------------------------------|
+| `star-rx72n-firmware/`  | Renesas RX72N motor + sensor controller (C, ThreadX) |
+| `star-gateway/`         | Go gateway: gRPC + WebSocket bridge to ROS2/UI   |
+| `star-ros2/`            | ROS2 Jazzy workspace (autonomy + bridges)        |
+| `star-proto/`           | Protocol Buffer schemas (canonical)              |
+| `star-ui/`              | Operator UI (TypeScript / Vite)                  |
+| `star-compliance/`      | Python ADA compliance engine (ROS2 nodes)        |
+| `final_docs/`           | Capstone deliverables (SDD, SSUM, test report)   |
+| `docs/`                 | Engineering docs (this file, sections, decisions)|
+| `infra/`                | Pi5 system files (caddy, systemd units)          |
+| `monitoring/`           | Grafana dashboard JSON                           |
+| `schematic/`            | KiCad PCB sources                                |
+| `matlab/`               | Motor system identification + PID tuning scripts |
 
 ## Topology
 
@@ -78,6 +101,35 @@ Substitute your own values where you see `<LIKE_THIS>` placeholders.
     |    <GRAFANA_HOST>   -> 192.168.1.221:80 (k3s traefik)         |
     |    ...                                                       |
     |  ACME via Cloudflare DNS-01 (public certs)                   |
+    +--------------------------------------------------------------+
+
+    +--------------------------------------------------------------+
+    |             Embedded layer (RX72N + DRV8263)                 |
+    |                                                              |
+    |  Pi5 USB ports                                               |
+    |     | (xHCI, full-speed CDC ACM)                             |
+    |     v                                                        |
+    |  /dev/ttyACM{1,2,3} (PROD) or {4,5,6} (TOM)                  |
+    |     | 3-port composite CDC: PROTO / DECODED / LOG            |
+    |     v                                                        |
+    |  RX72N USB0 (USBb peripheral, single-buffer bulk-IN, HOCO    |
+    |              PLL clock path; see libs/rx_usb/)               |
+    |     |                                                        |
+    |     +-- ThreadX tasks: comm_task, motor_control_task @ 100Hz,|
+    |     |                  telemetry_task, imu_task, ...         |
+    |     |                                                        |
+    |     +-- 4x DRV8263H H-bridge motor drivers (GPTW PWM,        |
+    |     |   IPROPI current sense via S12AD)                      |
+    |     |                                                        |
+    |     +-- 4x quadrature encoders (MTU1/MTU2/TPU1/TPU2 phase    |
+    |     |   counting, 341 PPR + 4x decode)                       |
+    |     |                                                        |
+    |     +-- BNO055 IMU (RIIC0), BMP280 baro (RIIC1),             |
+    |         DS18B20 temp (1-wire), 4x HC-SR04 sonar (ICU)        |
+    |                                                              |
+    |  Wire protocol: nanopb (firmware) <-> protobuf (gateway)     |
+    |  framed with SYNC (0x55AA) + CRC-32 + HARQ (Chase Combining, |
+    |  rate-1/2 K=7 convolutional). See ADR-001.                   |
     +--------------------------------------------------------------+
 ```
 
@@ -186,7 +238,7 @@ are marked [GREEN]; manual-restart ones [RED].
 |----------------------|-----------------------------------------------------------------|----------------------------------------------------|
 | tailscale            | [GREEN] `tailscaled.service` (auto)                                  | `tailscale ip -4` returns `100.64.0.6`             |
 | Caddy (TLS frontend) | [GREEN] `caddy.service` (auto, `After=tailscaled.service`)           | `systemctl is-active caddy` -> `active`             |
-| ROS workspace        | [RED] needs sourcing in each shell                                 | `source /workspaces/STAR/star-ros2/install/setup.bash` |
+| ROS workspace        | auto-sourced via `.bashrc` after `bootstrap_pi.sh`; manual sourcing also works for ad-hoc shells | `source ${STAR_ROOT}/star-ros2/install/setup.bash` |
 | SLAM stack           | [GREEN] `star-slam-mvp.service` (auto); initial state manual+no-estop | `pgrep -f supervisor_node` returns a PID           |
 | Nav2 (when wanted)   | [RED] `bash scripts/slam-mvp.sh start-nav` on Pi5                  | `/goal_pose` topic has a subscriber                |
 | Alloy (metrics push) | [GREEN] `alloy.service` (was *disabled*; now enabled for boot)       | `systemctl is-active alloy` -> `active`             |
@@ -290,7 +342,7 @@ systemctl is-active alloy                       # -> active
 curl -sS --resolve star.local:443:100.64.0.6 -k -o /dev/null -w "%{http_code}\n" https://star.local/
 #   expect 502 (bridge not started) or 200 (bridge up)
 
-bash /workspaces/STAR/scripts/slam-mvp.sh start
+bash ${STAR_ROOT}/scripts/slam-mvp.sh start
 # Note: if /dev/star-mcu is missing at boot, the script auto-reflashes the
 # RX72N to recover it. Wait for "recovered" then it continues. Takes ~30-60s.
 
@@ -335,9 +387,9 @@ still the same two calls:
 
 ```bash
 source /opt/ros/jazzy/setup.bash
-source /workspaces/STAR/star-ros2/install/setup.bash
+source ${STAR_ROOT}/star-ros2/install/setup.bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-export CYCLONEDDS_URI=file:///workspaces/STAR/config/cyclonedds.xml
+export CYCLONEDDS_URI=file://${STAR_ROOT}/config/cyclonedds.xml
 ros2 service call /slam_toolbox/change_state lifecycle_msgs/srv/ChangeState "{transition: {id: 1}}"
 ros2 service call /slam_toolbox/change_state lifecycle_msgs/srv/ChangeState "{transition: {id: 3}}"
 ```

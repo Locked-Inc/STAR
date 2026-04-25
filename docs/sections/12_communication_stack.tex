@@ -1,43 +1,52 @@
 % ============================================================================
-% COMMUNICATION STACK (post-USB0 purge)
+% COMMUNICATION STACK
 % ============================================================================
 
 \section{Communication Stack}
 
 \subsection{Overview}
 
-The STAR platform uses two independent communication paths between the
-Raspberry Pi 5 and the RX72N motor controller. Both carry the same
-frame-level protocol described in \S\ref{section:nanopb-protocol}; they are
-dedicated to different host-side consumers rather than acting as redundant
-failover paths for the same consumer.
+The STAR platform exposes three independent communication paths between
+the Raspberry Pi 5 and the RX72N motor controller. All three carry the
+same frame-level protocol described in
+\S\ref{section:nanopb-protocol}. The host side picks whichever it
+needs; the firmware multiplexes them via \texttt{rx\_comm\_manager}.
 
 \begin{center}
 \begin{tabular}{|l|l|l|l|}
 \hline
-\textbf{Path}      & \textbf{Host consumer}                & \textbf{Link}                                      & \textbf{Rate} \\
+\textbf{Path}      & \textbf{Host consumer}                & \textbf{Link}                                                & \textbf{Rate} \\
 \hline
-UART-over-USB      & \texttt{star-gateway} (Go, gRPC / WS) & SCI9 $\rightarrow$ CY7C65213 $\rightarrow$ ttyUSB0 & 921\,600 baud \\
-SPI                & \texttt{star\_spi\_bridge} (ROS2)      & RSPI2 $\rightarrow$ spidev0.0                       & 10\,MHz clock \\
+USB CDC (USB0)     & \texttt{star-gateway}, log viewers    & USBb $\rightarrow$ \texttt{ttyACM\{1,2,3\}} (PROD) or \texttt{\{4,5,6\}} (TOM) & 12\,Mbit/s (USB FS) \\
+UART-over-USB      & \texttt{star-gateway} (Go, gRPC / WS) & SCI9 $\rightarrow$ CY7C65213 $\rightarrow$ \texttt{ttyUSB0}   & 921\,600 baud \\
+SPI                & \texttt{star\_spi\_bridge} (ROS2)      & RSPI2 $\rightarrow$ \texttt{spidev0.0}                        & 10\,MHz clock \\
 \hline
 \end{tabular}
 \end{center}
 
-The RX72N's native USB peripheral (USB0) has been removed. It formerly
-enumerated multiple virtual COM ports on the same USB connector; that entire
-driver stack is gone. Only the two paths above remain.
+USB CDC is the primary transport; it bench-verified working on both PROD
+(crystal clock) and TOM (HOCO-PLL clock) on 2026-04-24. SCI9 over the
+CY7C65213 bridge chip remains as a fallback / bring-up path; it is
+independent of the RX72N's USB peripheral state, which makes it useful
+during clock-tree debug. The SPI path is dedicated to the ROS2
+motor-control bridge.
 
-\subsection{Why Two Paths}
+\subsection{Why three paths}
 
 \begin{itemize}
-  \item The gateway needs a plug-and-play transport suited to human-paced
-        command / telemetry traffic (WebSocket clients, CLI tools, gRPC
-        integration tests). UART-over-USB is both simple and resilient
-        thanks to the CY7C65213 bridge chip absorbing USB framing quirks.
-  \item The ROS2 motor-control node needs sub-millisecond, jitter-bounded
-        round-trips for closed-loop velocity control at 100\,Hz on four
-        wheels. SPI is the right fit; it also permits hardware FEC and
-        Chase Combining under the PWM-noisy motor environment.
+  \item \textbf{USB CDC (3-port)} is plug-and-play, supports the
+        composite-device pattern (PROTO / DECODED / LOG ports), and
+        gives the gateway a single USB cable for both command/telemetry
+        and runtime logs. It is the path the gateway prefers when
+        present.
+  \item \textbf{UART-over-USB} via the CY7C65213 bridge is independent
+        of the RX72N USB controller, so it stays alive across USB
+        peripheral resets. Useful for bring-up, single-port host tools,
+        and CI rigs without a working USB CDC stack.
+  \item \textbf{SPI} delivers sub-millisecond, jitter-bounded
+        round-trips for closed-loop 100\,Hz velocity control on four
+        wheels. It also permits hardware FEC and Chase Combining HARQ
+        under the PWM-noisy motor environment.
 \end{itemize}
 
 \subsection{Layers}
@@ -45,26 +54,30 @@ driver stack is gone. Only the two paths above remain.
 \begin{center}
 \begin{tabular}{|c|l|l|}
 \hline
-\textbf{Layer} & \textbf{Responsibility}                     & \textbf{Implementation} \\
+\textbf{Layer} & \textbf{Responsibility}                                 & \textbf{Implementation} \\
 \hline
-5 Application  & Command handlers, telemetry aggregation      & Gateway services, ROS2 nodes \\
-4 Serialization& Protocol Buffers                             & generated Go / C++ / nanopb \\
-3 Link (SPI)   & FEC + Chase Combining, ARQ retries          & \texttt{rx\_spi\_link}, gateway FEC \\
-2 Framing      & SYNC + SEQ + LEN + TYPE + FLAGS + CRC-32    & \texttt{rx\_frame}, \texttt{internal/frame} \\
-1 Transport    & UART @ 921\,600 or SPI @ 10\,MHz             & \texttt{rx\_uart\_comm}, \texttt{rx\_spi\_comm} \\
+5 Application  & Command handlers, telemetry aggregation                  & Gateway services, ROS2 nodes \\
+4 Serialization& Protocol Buffers                                         & generated Go / C++ / nanopb \\
+3 Link (SPI)   & FEC + Chase Combining, ARQ retries                       & \texttt{rx\_spi\_link}, gateway FEC \\
+2 Framing      & SYNC + SEQ + LEN + TYPE + FLAGS + CRC-32                 & \texttt{rx\_frame}, \texttt{internal/frame} \\
+1 Transport    & USB CDC, UART @ 921\,600, or SPI @ 10\,MHz                & \texttt{rx\_usb}, \texttt{rx\_uart\_comm}, \texttt{rx\_spi\_comm} \\
 \hline
 \end{tabular}
 \end{center}
 
-The UART path skips the Layer-3 link layer because the CY7C65213 plus USB
-CDC driver on the host already provides lossless, in-order byte delivery;
-the framing-layer CRC is enough. The SPI path uses the full link layer
-because SPI itself is ECC-free and sensitive to motor-driver EMI.
+The USB CDC and UART paths skip Layer-3 because the host-side USB stack
+(or the CY7C65213 bridge plus USB CDC driver) already provides
+lossless, in-order byte delivery; the framing-layer CRC alone is
+sufficient. The SPI path uses the full link layer because SPI itself
+is ECC-free and sensitive to motor-driver EMI.
 
-\subsection{Log Multiplexing on UART}
+\subsection{Log multiplexing}
 
-The UART byte stream carries both protobuf frames and firmware runtime logs,
-distinguished by the TYPE byte:
+The USB CDC composite device dedicates port 3 to firmware runtime
+logs, so log lines never share a byte stream with framed protocol
+data on USB. On the SCI9 UART path -- which is single-port -- and on
+the SPI path, log frames are inlined into the same byte stream as
+protobuf frames and distinguished by the TYPE byte:
 
 \begin{itemize}
   \item TYPE $\in \{0x10, 0x11, 0xFF, \ldots\}$: application or control
@@ -75,6 +88,7 @@ distinguished by the TYPE byte:
         \texttt{[RX72N]} prefix.
 \end{itemize}
 
-There is no risk of the sync word \texttt{0x55AA} appearing inside log text
-and fooling the decoder because log bytes never leave the framing layer as
-raw bytes -- every log chunk is a complete, CRC-checked frame.
+There is no risk of the sync word \texttt{0x55AA} appearing inside log
+text and fooling the decoder because log bytes never leave the framing
+layer as raw bytes -- every log chunk is a complete, CRC-checked
+frame.

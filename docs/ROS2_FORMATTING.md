@@ -52,12 +52,24 @@ ament_uncrustify --reformat
 
 ## Pre-Commit Hook
 
-A pre-commit hook is installed at `.git/hooks/pre-commit` that automatically checks formatting before allowing commits. It will:
+The pre-commit hook **script** lives at `scripts/git/pre-commit`. It is not
+installed by default; opt in with one of:
 
-1. Only run if ROS2 `.cpp`/`.hpp` files are staged
-2. Check both code formatting and header guards
-3. Block the commit if issues are found
-4. Provide instructions to fix
+```bash
+# Recommended: point Git at the tracked hooks directory (project-wide)
+git config core.hooksPath scripts/git
+
+# Or, symlink just the pre-commit hook
+ln -s ../../scripts/git/pre-commit .git/hooks/pre-commit
+```
+
+When installed, it automatically checks formatting before allowing commits.
+It will:
+
+1. Only run if ROS2 `.cpp`/`.hpp` files are staged.
+2. Check both code formatting and (project-wide) ASCII / `#pragma once`
+   policy.
+3. Block the commit if issues are found and provide instructions to fix.
 
 To bypass (not recommended):
 ```bash
@@ -68,27 +80,28 @@ git commit --no-verify
 
 The workspace settings in `.vscode/settings.json` now:
 
-1. **Disable auto-formatting** for C++ files to prevent clang-format conflicts
-2. **Configure header guards** to use the `PACKAGE__FILENAME_HPP_` pattern
-3. Set formatOnSave to false for C++ (manual formatting with `./scripts/ros2/format-ros2.sh`)
+1. **Disable auto-formatting** for C++ files to prevent clang-format conflicts.
+2. Set formatOnSave to false for C++ (manual formatting with
+   `./scripts/ros2/format-ros2.sh`).
 
 ## Header Guards
 
-Header guards must follow the ROS2 pattern: `PACKAGE__FILENAME_HPP_`
+CLAUDE.md mandates **`#pragma once`** for ALL C/C++ headers in this
+project, including ROS2 packages. Use it consistently:
 
-**Example:**
 ```cpp
 // File: star-ros2/src/star_spi_bridge/include/star_spi_bridge/spi_driver.hpp
 
-#ifndef STAR_SPI_BRIDGE__SPI_DRIVER_HPP_
-#define STAR_SPI_BRIDGE__SPI_DRIVER_HPP_
+#pragma once
 
 // ... code ...
-
-#endif  // STAR_SPI_BRIDGE__SPI_DRIVER_HPP_
 ```
 
-The format script automatically fixes incorrect guards.
+`ament_uncrustify` does not require traditional include guards; the
+project policy is to use `#pragma once` everywhere. The
+`scripts/ros2/fix-header-guards.sh` helper (referenced under "Files
+Used" below) rewrites legacy `#ifndef`/`#define`/`#endif` triplets
+to `#pragma once`.
 
 ## CI Integration
 
@@ -140,11 +153,14 @@ Make sure you ran the script **inside the devcontainer** or via Docker wrapper, 
 
 4. **Use the script** even for small changes to ensure consistency
 
-## Files Modified
+## Files Used
 
-- `scripts/ros2/format-ros2.sh` - Main formatting script (uses uncrustify)
-- `scripts/ros2/format-ros2-docker.sh` - Docker wrapper for host usage
-- `scripts/ros2/fix-header-guards.sh` - Standalone header guard fixer
-- `scripts/git/pre-commit` - Pre-commit hook
-- `.vscode/settings.json` - Disables clang-format for C++
-- Removed: `star-ros2/.clang-format` (no longer used)
+- `scripts/ros2/format-ros2.sh` -- main formatting script (uses uncrustify)
+- `scripts/ros2/format-ros2-docker.sh` -- Docker wrapper for host usage
+- `scripts/ros2/fix-header-guards.sh` -- legacy-guard -> `#pragma once` rewriter
+- `scripts/git/pre-commit` -- pre-commit hook script (opt-in install via
+  `git config core.hooksPath scripts/git`)
+- `.vscode/settings.json` -- disables clang-format for C++
+
+`star-ros2/.clang-format` is intentionally absent: ROS2 ament tooling
+formats with `ament_uncrustify`, not clang-format.

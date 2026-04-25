@@ -33,8 +33,8 @@
 
 \vfill
 
-{\large Version 1.0\par}
-{\large December 2025\par}
+{\large Version 1.1\par}
+{\large April 2026\par}
 
 \vfill
 
@@ -49,7 +49,7 @@
 % DOCUMENT SECTIONS
 % =============================================================================
 
-% Section 1: Nanopb Protocol Specification (SPI, ARQ, CRC)
+% Section 1: Nanopb Protocol Specification (USB CDC + HARQ + CRC-32)
 \input{sections/01_nanopb_protocol}
 
 % Section 2: Protocol Buffer Schema Definitions
@@ -79,8 +79,9 @@
 % Section 12: End-to-End Communication Stack
 \input{sections/12_communication_stack}
 
-% (Former Sections 9/13/14 -- USB CDC protocol, transport failover and
-% dual-channel arbitration -- were removed along with the USB0 path. The
-% new UART-plus-SPI architecture is documented in sections 01 and 12.)
+% Section 13: USB Modes, Re-enumeration, and Bench JTAG Interaction
+\input{sections/13_usb_modes}
+
+% (Section numbers 8/9/14 retired; active sections are 1-7, 10-13.)
 
 \end{document}

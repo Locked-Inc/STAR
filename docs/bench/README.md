@@ -10,8 +10,8 @@ on TOM's breakout board from an Apple Silicon Mac.
 | Mac (macOS 15 arm64)                         | Build host, flash host, capture host  |
 | Renesas E2 Lite (USB `045B:82A0`)            | JTAG/FINE programmer for the RX72N    |
 | RX72N on TOM's breakout PCB                  | Device under test                     |
-| 3x Digilent Analog Discovery 2 (`0403:6014`) | 48 digital capture channels           |
-| Raspberry Pi 5 over ASIX USB-Ethernet        | (Planned) robot control host          |
+| 7x Digilent Analog Discovery 2 (`0403:6014`) | 112 digital capture channels (7 x 16) |
+| Raspberry Pi 5 over USB or ASIX USB-Ethernet | Robot control host (active)           |
 
 ## Tooling layout
 
@@ -52,9 +52,9 @@ cross-compilation stays in the Linux container.
 
 ## Verification workflow
 
-`gpio_test` drives every GPIO pin in sequence; three AD2s capture the
-transitions; a host script matches them against the expected firmware
-order. See
+`gpio_test` drives every GPIO pin in sequence; the AD2 array (7 units,
+112 channels) captures the transitions; a host script matches them
+against the expected firmware order. See
 [`../../star-rx72n-firmware/gpio_test/README.md`](../../star-rx72n-firmware/gpio_test/README.md)
 for the detailed firmware architecture and `gpio_verify.py` modes.
 
@@ -110,5 +110,5 @@ system install).
   Docker Desktop). Always flash from the host.
 - **First `make flash` after board power-up** occasionally reports
   `E4000004: framing error`. Harmless, just re-run.
-- **Pi5 SSH**: not yet set up. `en12` (ASIX USB-Eth) has no link when
-  the Pi5 is off or the cable is unplugged.
+- **Pi5 SSH**: configured (see `docs/PI_DEPLOYMENT.md`). `en12` (ASIX
+  USB-Eth) has no link when the Pi5 is off or the cable is unplugged.

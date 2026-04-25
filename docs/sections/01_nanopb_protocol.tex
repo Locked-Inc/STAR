@@ -1,21 +1,31 @@
 % ============================================================================
-% NANOPB PROTOCOL SPECIFICATION (UART + SPI)
+% NANOPB PROTOCOL SPECIFICATION (USB CDC + UART + SPI)
 % ============================================================================
 
-\section{Nanopb Protocol over UART and SPI}
+\section{Nanopb Protocol}
 
 \subsection{Executive Summary}
 
 \textbf{Overview:} Protocol Buffers (nanopb) encapsulated in length-prefixed,
-CRC-32-protected frames. A single wire format is shared across two transports:
+CRC-32-protected frames. A single wire format is shared across three
+transport layers; the host can use any combination, and the firmware
+exposes all three concurrently.
 
 \begin{itemize}
-  \item \textbf{UART} (primary, gateway link): RX72N SCI9 $\rightarrow$
+  \item \textbf{USB CDC (USB0, primary)}: RX72N USB0 peripheral exposes a
+        3-port CDC composite device. The Pi5 enumerates it as
+        \texttt{/dev/ttyACM\{1,2,3\}} (PROD board) or
+        \texttt{/dev/ttyACM\{4,5,6\}} (TOM board). Port 1 carries the
+        framed protocol (commands + telemetry); port 2 streams a
+        decoded human-readable view; port 3 carries the runtime log
+        stream. Bench-verified working on both boards 2026-04-24
+        (PROD via crystal, TOM via HOCO-PLL clock path).
+  \item \textbf{UART-over-USB} (legacy / fallback): RX72N SCI9 $\rightarrow$
         CY7C65213 USB-UART bridge $\rightarrow$ Raspberry Pi 5
-        \texttt{/dev/ttyUSB0} at 921\,600 baud. Carries every frame type
-        including protobuf commands, telemetry, heartbeats, and
-        \texttt{LOG\_MESSAGE} payloads that multiplex the RX72N's runtime log
-        stream onto the same byte stream as protocol traffic.
+        \texttt{/dev/ttyUSB0} at 921\,600 baud. Single-port; carries the
+        same framed protocol when USB CDC is unavailable. Useful in
+        bring-up because the bridge chip is independent of the RX72N's
+        USB peripheral state.
   \item \textbf{SPI} (dedicated ROS2 link): RSPI2 $\rightarrow$
         \texttt{/dev/spidev0.0} at 10\,MHz, full-duplex. Terminated on the Pi5
         by the \texttt{star\_spi\_bridge} ROS2 node for motor-control and
@@ -24,9 +34,9 @@ CRC-32-protected frames. A single wire format is shared across two transports:
         against motor-driver EMI.
 \end{itemize}
 
-Native USB (USB0) on the RX72N has been removed from the system: its driver
-stack was not reliable. The UART-to-USB bridge is the sole USB-class
-connection between the board and the Pi5.
+The three transports use the same wire format described below; the
+firmware multiplexes them via the comm-manager layer so the host can pick
+any one of them and see the same frame stream.
 
 \subsection{Frame Format}
 
@@ -79,9 +89,11 @@ Minimum frame: 12 bytes (header + CRC, empty payload). Maximum: 1036 bytes.
 The RX72N's \texttt{rx\_log\_*} macros enqueue ASCII bytes into an in-RAM ring
 buffer (\texttt{rx\_log\_uart.c}). The communication task drains the ring on
 every 10\,ms poll tick, wraps the drained bytes in a \texttt{LOG\_MESSAGE}
-frame, and transmits over UART. The gateway's frame dispatcher
-(\texttt{manager.go}) extracts the payload and prints it to
-\texttt{stderr}/log file with an \texttt{[RX72N]} prefix.
+frame, and transmits over the active transport (USB CDC port 3 when the
+3-port composite device is enumerated; otherwise SCI9 UART or the SPI
+log channel). The gateway's frame dispatcher (\texttt{manager.go})
+extracts the payload and prints it to \texttt{stderr}/log file with an
+\texttt{[RX72N]} prefix.
 
 Framing the log bytes (rather than writing raw ASCII) prevents the log text
 from containing the \texttt{0x55AA} sync word and fooling the frame decoder.
@@ -101,8 +113,13 @@ path.
 \begin{itemize}
   \item \texttt{star-rx72n-firmware/libs/rx\_frame/inc/rx\_frame.h} -- frame
         format reference (bit-exact with gateway).
-  \item \texttt{star-rx72n-firmware/libs/rx\_uart\_comm/} -- UART framer.
+  \item \texttt{star-rx72n-firmware/libs/rx\_usb/} -- USB0 USBb peripheral
+        driver (3-port CDC composite, primary transport).
+  \item \texttt{star-rx72n-firmware/libs/rx\_uart\_comm/} -- UART framer
+        (SCI9 + CY7C65213 fallback path).
   \item \texttt{star-rx72n-firmware/libs/rx\_spi\_link/} -- SPI HARQ link.
+  \item \texttt{star-rx72n-firmware/libs/rx\_comm\_manager/} -- multiplex
+        across USB / UART / SPI.
   \item \texttt{star-gateway/internal/frame/frame.go} -- Go reference.
   \item \texttt{star-ros2/src/star\_spi\_bridge/} -- ROS2 SPI consumer.
 \end{itemize}
