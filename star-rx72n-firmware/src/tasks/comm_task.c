@@ -2057,7 +2057,11 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
        * back on the same transport that carries host commands. ACK/NACK frames
        * are host responses to our telemetry and must not overwrite the channel. */
       (void)shared_data_update_active_channel((uint8_t)channel);
-      (void)internal_handle_command_frame(channel, frame);
+      if (!internal_handle_command_frame(channel, frame)) {
+        rx_log_warn_val(s_tag,
+                        "command frame handler failed for type",
+                        (uint32_t)frame->header.type);
+      }
       break;
 
     case k_frame_type_ping: {
