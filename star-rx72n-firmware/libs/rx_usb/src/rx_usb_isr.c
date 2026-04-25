@@ -192,6 +192,7 @@
  * ## Integration Example - ISR Callback Handling
  *
  * @code{.c}
+ * #include "rx_isr_log.h"
  * #include "rx_usb.h"
  * #include "tx_api.h"
  *
@@ -207,9 +208,11 @@
  *
  *   switch (event) {
  *     case k_usb_event_configured:
- *       // Port ready, signal application task
+ *       // Port ready, signal application task. Logging from ISR uses
+ *       // the deferred ring (see rx_isr_log.h); never call rx_log_*
+ *       // directly because it acquires a TX_WAIT_FOREVER mutex.
  *       tx_event_flags_set(&g_usb_events, (1 << port), TX_OR);
- *       rx_log_info("USB_ISR", "Port %u configured", port);
+ *       (void)rx_isr_log_push(k_isr_log_event_cdc_composite_configured, port);
  *       break;
  *
  *     case k_usb_event_data_rx:
@@ -221,13 +224,13 @@
  *     case k_usb_event_reset:
  *       // Bus reset, clear port-ready flags
  *       tx_event_flags_set(&g_usb_events, 0xFFFF0000, TX_OR);
- *       rx_log_warn("USB_ISR", "USB bus reset");
+ *       (void)rx_isr_log_push(k_isr_log_event_usb_dvst_default, 0U);
  *       break;
  *
  *     case k_usb_event_detached:
  *       // Cable unplugged, abort all operations
  *       g_usb_cable_connected = false;
- *       rx_log_warn("USB_ISR", "USB cable detached");
+ *       (void)rx_isr_log_push(k_isr_log_event_usb_vbus_se0, 0U);
  *       break;
  *
  *     default:
@@ -420,11 +423,11 @@ static void internal_handle_dvst_interrupt(void)
 
   switch (dvsq) {
     case k_usb_intsts0_dvsq_powered:
-      rx_log_debug(s_tag, "DVST: Powered state");
+      (void)rx_isr_log_push(k_isr_log_event_usb_dvst_powered, 0U);
       rx_usb_set_state(k_usb_state_powered);
       break;
     case k_usb_intsts0_dvsq_default:
-      rx_log_debug(s_tag, "DVST: Default state (bus reset complete)");
+      (void)rx_isr_log_push(k_isr_log_event_usb_dvst_default, 0U);
       rx_usb_set_state(k_usb_state_default);
       rx_usb_count_bus_reset();
       /* Notify all ports of reset */
@@ -433,16 +436,16 @@ static void internal_handle_dvst_interrupt(void)
       }
       break;
     case k_usb_intsts0_dvsq_address:
-      rx_log_debug(s_tag, "DVST: Address state");
+      (void)rx_isr_log_push(k_isr_log_event_usb_dvst_address, 0U);
       rx_usb_set_state(k_usb_state_addressed);
       break;
     case k_usb_intsts0_dvsq_configured:
-      rx_log_debug(s_tag, "DVST: Configured state");
+      (void)rx_isr_log_push(k_isr_log_event_usb_dvst_configured, 0U);
       rx_usb_set_state(k_usb_state_configured);
       /* Note: configured callback is sent from SET_CONFIGURATION handler */
       break;
     case k_usb_intsts0_dvsq_suspend:
-      rx_log_debug(s_tag, "DVST: Suspended state");
+      (void)rx_isr_log_push(k_isr_log_event_usb_dvst_suspended, 0U);
       rx_usb_set_state(k_usb_state_suspended);
       rx_usb_count_suspend();
       /* Notify all ports of suspend */
@@ -451,7 +454,7 @@ static void internal_handle_dvst_interrupt(void)
       }
       break;
     default:
-      rx_log_warn(s_tag, "DVST: Unknown state");
+      (void)rx_isr_log_push(k_isr_log_event_usb_dvst_unknown, (uint32_t)dvsq);
       break;
   }
 
