@@ -622,25 +622,25 @@ typedef enum : uint32_t {
  *       both 32-bit RX72N target and 64-bit unit-test host).
  */
 typedef enum : uintptr_t {
-  k_inline_addr_prcr     = 0x000803FEU, /**< PRCR (Protect Register), 16-bit */
-  k_inline_addr_mstpcrb  = 0x00080014U, /**< MSTPCRB Module Stop Ctrl Reg B, 32-bit */
-  k_inline_addr_syscfg   = 0x000A0000U, /**< USB0.SYSCFG, 16-bit */
-  k_inline_addr_intenb0  = 0x000A0030U, /**< USB0.INTENB0, 16-bit */
-  k_inline_addr_brdyenb  = 0x000A0036U, /**< USB0.BRDYENB, 16-bit */
-  k_inline_addr_bempenb  = 0x000A003AU, /**< USB0.BEMPENB, 16-bit */
-  k_inline_addr_dcpcfg   = 0x000A005CU, /**< USB0.DCPCFG, 16-bit */
-  k_inline_addr_dcpmaxp  = 0x000A005EU, /**< USB0.DCPMAXP, 16-bit */
-  k_inline_addr_dcpctr   = 0x000A0060U, /**< USB0.DCPCTR, 16-bit */
-  k_inline_addr_physlew  = 0x000A00F0U, /**< USB0.PHYSLEW, 32-bit */
-  k_inline_addr_dpusr0r  = 0x000A0400U, /**< USB.DPUSR0R (absolute), 32-bit */
-  k_inline_addr_icu_ir   = 0x00087000U, /**< ICU IR000-IR255 base */
-  k_inline_addr_icu_ier  = 0x00087200U, /**< ICU IER02-IER1F base */
-  k_inline_addr_icu_ipr  = 0x00087300U, /**< ICU IPR000-IPR255 base */
+  k_inline_addr_prcr      = 0x000803FEU, /**< PRCR (Protect Register), 16-bit */
+  k_inline_addr_mstpcrb   = 0x00080014U, /**< MSTPCRB Module Stop Ctrl Reg B, 32-bit */
+  k_inline_addr_syscfg    = 0x000A0000U, /**< USB0.SYSCFG, 16-bit */
+  k_inline_addr_intenb0   = 0x000A0030U, /**< USB0.INTENB0, 16-bit */
+  k_inline_addr_brdyenb   = 0x000A0036U, /**< USB0.BRDYENB, 16-bit */
+  k_inline_addr_bempenb   = 0x000A003AU, /**< USB0.BEMPENB, 16-bit */
+  k_inline_addr_dcpcfg    = 0x000A005CU, /**< USB0.DCPCFG, 16-bit */
+  k_inline_addr_dcpmaxp   = 0x000A005EU, /**< USB0.DCPMAXP, 16-bit */
+  k_inline_addr_dcpctr    = 0x000A0060U, /**< USB0.DCPCTR, 16-bit */
+  k_inline_addr_physlew   = 0x000A00F0U, /**< USB0.PHYSLEW, 32-bit */
+  k_inline_addr_dpusr0r   = 0x000A0400U, /**< USB.DPUSR0R (absolute), 32-bit */
+  k_inline_addr_icu_ir    = 0x00087000U, /**< ICU IR000-IR255 base */
+  k_inline_addr_icu_ier   = 0x00087200U, /**< ICU IER02-IER1F base */
+  k_inline_addr_icu_ipr   = 0x00087300U, /**< ICU IPR000-IPR255 base */
   k_inline_addr_icu_slibr = 0x00087700U, /**< ICU SLIBR table base (vec 144 entry @ +0x90) */
-  k_inline_addr_sliprcr  = 0x00087A00U, /**< ICU SLIPRCR write-protect register */
-  k_inline_addr_pb_pdr   = 0x0008C00BU, /**< PORTB.PDR  (Port Direction)         */
-  k_inline_addr_pb_podr  = 0x0008C02BU, /**< PORTB.PODR (Port Output Data)       */
-  k_inline_addr_pb_pmr   = 0x0008C06BU, /**< PORTB.PMR  (Port Mode: 0=GPIO)      */
+  k_inline_addr_sliprcr   = 0x00087A00U, /**< ICU SLIPRCR write-protect register */
+  k_inline_addr_pb_pdr    = 0x0008C00BU, /**< PORTB.PDR  (Port Direction)         */
+  k_inline_addr_pb_podr   = 0x0008C02BU, /**< PORTB.PODR (Port Output Data)       */
+  k_inline_addr_pb_pmr    = 0x0008C06BU, /**< PORTB.PMR  (Port Mode: 0=GPIO)      */
 } usb_inline_addr_t;
 
 /**
@@ -696,12 +696,12 @@ typedef enum : uint32_t {
  * SYSCFG-clear). PHYSLEW is 32-bit and gets its own constant.
  */
 typedef enum : uint16_t {
-  k_inline_val_syscfg_clear  = 0x0000U, /**< Clear all SYSCFG bits before SCKE */
-  k_inline_val_dcpcfg        = 0x0000U, /**< DCPCFG = 0 (default ctrl pipe)    */
-  k_inline_val_dcpmaxp_64    = 64U,     /**< 64-byte EP0 max packet size       */
+  k_inline_val_syscfg_clear   = 0x0000U, /**< Clear all SYSCFG bits before SCKE */
+  k_inline_val_dcpcfg         = 0x0000U, /**< DCPCFG = 0 (default ctrl pipe)    */
+  k_inline_val_dcpmaxp_64     = 64U,     /**< 64-byte EP0 max packet size       */
   k_inline_val_dcpctr_pid_buf = 0x0001U, /**< DCPCTR PID = BUF (ack outstanding) */
-  k_inline_val_brdyenb_pipe0 = 0x0001U, /**< BRDYENB: enable pipe 0 (DCP)      */
-  k_inline_val_bempenb_pipe0 = 0x0001U, /**< BEMPENB: enable pipe 0 (DCP)      */
+  k_inline_val_brdyenb_pipe0  = 0x0001U, /**< BRDYENB: enable pipe 0 (DCP)      */
+  k_inline_val_bempenb_pipe0  = 0x0001U, /**< BEMPENB: enable pipe 0 (DCP)      */
 } usb_inline_value_t;
 
 /**
@@ -730,11 +730,11 @@ typedef enum : uint32_t {
  * 8-bit, IER is 8-bit, SLIBR is 8-bit, source codes are 0-255).
  */
 typedef enum : uint8_t {
-  k_inline_icu_usbi0_vector = 144U, /**< Vector 144 = USBI0 (HUM 15.7.7) */
-  k_inline_icu_usbi0_src    = 62U,  /**< SLIBR source code for USBI0     */
-  k_inline_icu_usbi_priority = 12U, /**< IPR144 priority (IPL=12)        */
-  k_inline_icu_ier_idx_usbi  = 18U, /**< IER18  = vector 144 / 8         */
-  k_inline_icu_ier_bit_usbi  = 0U,  /**< IER18 bit 0 = vector 144 % 8    */
+  k_inline_icu_usbi0_vector  = 144U,  /**< Vector 144 = USBI0 (HUM 15.7.7) */
+  k_inline_icu_usbi0_src     = 62U,   /**< SLIBR source code for USBI0     */
+  k_inline_icu_usbi_priority = 12U,   /**< IPR144 priority (IPL=12)        */
+  k_inline_icu_ier_idx_usbi  = 18U,   /**< IER18  = vector 144 / 8         */
+  k_inline_icu_ier_bit_usbi  = 0U,    /**< IER18 bit 0 = vector 144 % 8    */
   k_inline_icu_sliprcr_wprc  = 0x01U, /**< SLIPRCR.WPRC: write-once latch */
 } usb_inline_icu_t;
 
@@ -3155,9 +3155,10 @@ static void internal_inline_usb0_endpoint_setup(void)
   *DCPCTR_R  = (uint16_t)k_inline_val_dcpctr_pid_buf;
   *BRDYENB_R = (uint16_t)k_inline_val_brdyenb_pipe0;
   *BEMPENB_R = (uint16_t)k_inline_val_bempenb_pipe0;
-  *INTENB0_R = (uint16_t)((uint32_t)k_inline_bit_intenb0_vbse | (uint32_t)k_inline_bit_intenb0_rsme |
-                          (uint32_t)k_inline_bit_intenb0_sofe | (uint32_t)k_inline_bit_intenb0_dvse |
-                          (uint32_t)k_inline_bit_intenb0_ctre);
+  *INTENB0_R =
+    (uint16_t)((uint32_t)k_inline_bit_intenb0_vbse | (uint32_t)k_inline_bit_intenb0_rsme |
+               (uint32_t)k_inline_bit_intenb0_sofe | (uint32_t)k_inline_bit_intenb0_dvse |
+               (uint32_t)k_inline_bit_intenb0_ctre);
 
   *SYSCFG_R |= (uint16_t)k_inline_bit_syscfg_dprpu;
 }

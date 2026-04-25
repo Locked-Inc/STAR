@@ -342,10 +342,27 @@ void test_drain_has_value_default_branch_falls_through_to_debug(void)
   enum : uint8_t {
     k_test_drain_level_invalid = 7U, /* Any value not in 0..3 */
   };
-  rx_isr_log_test_set_event_meta(
-    k_isr_log_event_usb_resume, (uint8_t)k_test_drain_level_invalid, true);
+  rx_isr_log_test_set_event_meta(k_isr_log_event_usb_resume,
+                                 (uint8_t)k_test_drain_level_invalid,
+                                 true);
 
   TEST_ASSERT_TRUE(rx_isr_log_push(k_isr_log_event_usb_resume, k_test_first_value));
+  TEST_ASSERT_EQUAL_UINT32(1U, rx_isr_log_drain());
+}
+
+void test_drain_no_value_default_branch_falls_through_to_debug(void)
+{
+  /* Same as the has_value=true default test, but with has_value=false so
+   * the second switch (line 294) gets its default branch exercised too --
+   * otherwise gcov reports the case-debug-only path as never taken. */
+  enum : uint8_t {
+    k_test_drain_level_invalid = 9U, /* Any value not in 0..3 */
+  };
+  rx_isr_log_test_set_event_meta(k_isr_log_event_usb_resume,
+                                 (uint8_t)k_test_drain_level_invalid,
+                                 false);
+
+  TEST_ASSERT_TRUE(rx_isr_log_push(k_isr_log_event_usb_resume, 0U));
   TEST_ASSERT_EQUAL_UINT32(1U, rx_isr_log_drain());
 }
 
@@ -402,8 +419,9 @@ void test_inject_raw_record_returns_false_when_full(void)
 void test_set_event_meta_ignores_out_of_range_id(void)
 {
   /* Should not crash; verify idempotency by drain on a real id afterwards */
-  rx_isr_log_test_set_event_meta(
-    (rx_isr_log_event_id_t)k_isr_log_event_count, k_test_drain_level_warn, true);
+  rx_isr_log_test_set_event_meta((rx_isr_log_event_id_t)k_isr_log_event_count,
+                                 k_test_drain_level_warn,
+                                 true);
 
   TEST_ASSERT_TRUE(rx_isr_log_push(k_isr_log_event_usb_resume, 0U));
   TEST_ASSERT_EQUAL_UINT32(1U, rx_isr_log_drain());
@@ -435,6 +453,7 @@ int main(void)
   RUN_TEST(test_drain_has_value_warn_branch);
   RUN_TEST(test_drain_has_value_error_branch);
   RUN_TEST(test_drain_has_value_default_branch_falls_through_to_debug);
+  RUN_TEST(test_drain_no_value_default_branch_falls_through_to_debug);
   RUN_TEST(test_drain_skips_torn_record_with_event_id_none);
   RUN_TEST(test_drain_skips_torn_record_with_out_of_range_event_id);
   RUN_TEST(test_inject_raw_record_returns_false_when_full);
