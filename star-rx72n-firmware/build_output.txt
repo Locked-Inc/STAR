@@ -1,2 +1,0 @@
-  release - Build release configuration
-  clean   - Clean all build artifacts

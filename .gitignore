@@ -6,7 +6,6 @@ CLAUDE.local.md
 
 # macOS system files
 .DS_Store
-.DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
@@ -201,7 +200,6 @@ log/
 **/*Release*/
 
 # OS files
-.DS_Store
 Thumbs.db
 .metadata
 
@@ -222,9 +220,6 @@ CMakeUserPresets.json
 jtag-extract/
 .claude/scheduled_tasks.lock
 
-# Vendor toolchain installers (do not commit)
-gcc-*-GNURX-ELF.run
-RFP_CLI_*.tgz
 
 # Built virtual_rx72n binary (source is in star-gateway/cmd/virtual_rx72n/)
 /virtual_rx72n
