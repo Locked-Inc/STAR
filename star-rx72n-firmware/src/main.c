@@ -2657,14 +2657,30 @@ int main(void)
      *  confirm that the WPRC bit is 1 BEFORE the corresponding interrupt
      *  request is generated."  This matches the
      *  usb0_isr_not_firing_blocker symptom exactly. */
-    *SLIBR144_R = 62U;   /* USBI0 source code (HUM Table 15.3 row 62) */
-    *SLIPRCR_R  = 0x01U; /* WPRC=1, latches SLIBR routing (write-once) */
-    while ((*SLIPRCR_R & 0x01U) == 0U) {
-      /* spin until WPRC reads back 1 -- HUM step (6) verification */
+    enum : uint8_t {
+      k_inline_usbi0_sli_src  = 62U,   /* USBI0 source number per HUM Table 15.3 */
+      k_inline_sliprcr_wprc   = 0x01U, /* SLIPRCR.WPRC: write-once latch */
+      k_inline_usbi_priority  = 12U,   /* IPR144 priority for USBI0 */
+      k_inline_ier18_usbi_bit = 0U,    /* IER18 bit 0 == vector 144 (144 % 8) */
+    };
+    enum : uint16_t {
+      k_inline_sliprcr_poll_max = 1024U, /* Bounded poll for HUM 15.7.7 step (6) */
+    };
+
+    *SLIBR144_R = k_inline_usbi0_sli_src;
+    *SLIPRCR_R  = k_inline_sliprcr_wprc;
+    /* HUM 15.7.7 step (6) bounded confirmation: WPRC latches in 1-2 ICLK
+     * cycles; cap the poll so the boot path never spins forever (NASA
+     * P10 Rule 2).  If WPRC fails to latch the IER enable below is a
+     * no-op -- the ISR-entry counter diagnostic catches that case. */
+    for (uint16_t i = 0; i < k_inline_sliprcr_poll_max; i++) {
+      if ((*SLIPRCR_R & k_inline_sliprcr_wprc) != 0U) {
+        break;
+      }
     }
-    *IPR144_R = 12U;
+    *IPR144_R = k_inline_usbi_priority;
     *IR144_R  = 0U;
-    *IER18_R |= (uint8_t)(1U << 0); /* 144 % 8 == 0 */
+    *IER18_R |= (uint8_t)(1U << k_inline_ier18_usbi_bit);
 
     /* Diagnostic: drive PB3 (P4 pad 2, MCU pin 82, silkscreen EN3D)
      * HIGH here in main BEFORE tx_kernel_enter.  usb_task later drives

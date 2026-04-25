@@ -595,7 +595,18 @@ typedef enum : uint8_t {
 typedef enum : uint8_t {
   k_icu_bits_per_ier_register = 8, /**< Number of interrupt enable bits per IER register */
   k_usb_interrupt_priority    = 6, /**< USB interrupt priority (moderate, below motor control) */
+  k_icu_sliprcr_wprc =
+    0x01, /**< SLIPRCR.WPRC bit -- write-once latch for SLIBR/SLIBXR/SLIAR routing */
 } usb_icu_config_t;
+
+/** @brief Bound for the SLIPRCR.WPRC poll loop (NASA P10 Rule 2).
+ *
+ * The bit latches in 1-2 ICLK cycles when the write succeeds; cap the
+ * confirmation poll at 1024 iterations so the loop is statically bounded
+ * and we don't spin forever if the silicon ever behaves out of spec. */
+typedef enum : uint16_t {
+  k_icu_sliprcr_poll_max = 1024U,
+} usb_icu_poll_t;
 
 /** @brief USB pipe and endpoint validation limits */
 typedef enum : uint16_t {
@@ -730,9 +741,19 @@ static void internal_usb_configure_interrupts(void)
    * is the exact symptom recorded in MEMORY.md as
    * usb0_isr_not_firing_blocker. */
   *icu_slibr(k_vect_usb0_usbi) = (uint8_t)k_usb0_usbi_sli_src;
-  icu()->sliprcr               = 0x01U; /* WPRC=1 latches routing (write-once) */
-  while ((icu()->sliprcr & 0x01U) == 0U) {
-    /* HUM 15.7.7 step (6): confirm WPRC == 1 before enabling IER. */
+  icu()->sliprcr               = (uint8_t)k_icu_sliprcr_wprc; /* latch routing (write-once) */
+  /* HUM 15.7.7 step (6): confirm WPRC == 1 before enabling IER.
+   * Bounded poll (NASA P10 Rule 2): k_icu_sliprcr_poll_max iterations
+   * cap is enough for any real silicon -- the bit latches in 1-2 ICLK
+   * cycles when the write succeeds, and if it ever doesn't there's no
+   * recovery path other than reset, so spinning forever would mask the
+   * fault.  Drop through on timeout; the IER enable below is harmless
+   * if WPRC didn't latch (the ISR just stays dormant, which the
+   * existing g_usb_isr_entry_count diagnostic catches). */
+  for (uint32_t i = 0; i < k_icu_sliprcr_poll_max; i++) {
+    if ((icu()->sliprcr & (uint8_t)k_icu_sliprcr_wprc) != 0U) {
+      break;
+    }
   }
   icu()->ir[k_vect_usb0_usbi]  = 0;
   icu()->ipr[k_vect_usb0_usbi] = k_usb_interrupt_priority;

@@ -1746,8 +1746,8 @@ typedef enum : uint16_t {
   k_bringup_duty_max_pct = 100U, /**< Upper duty-cycle clamp in percent */
 } motor_bringup_clamp_t;
 
-static const float k_bringup_duty_per_mps = 80.0F;
-static const float k_bringup_duty_clamp   = 100.0F;
+static const float s_bringup_duty_per_mps = 80.0F;
+static const float s_bringup_duty_clamp   = 100.0F;
 
 /** @brief Per-motor direction signs for the open-loop bring-up driver.
  *
@@ -1756,7 +1756,7 @@ static const float k_bringup_duty_clamp   = 100.0F;
  * Applying the sign here means a uniform positive command from the host
  * drives the chassis forward.
  */
-static const float k_motor_direction_sign[k_motor_count] = {
+static const float s_motor_direction_sign[k_motor_count] = {
   -1.0F, /* FL (index 0): wired backwards */
   +1.0F, /* FR (index 1) */
   +1.0F, /* BR (index 2) */
@@ -1793,15 +1793,15 @@ static rx_err_t internal_bringup_init_motor_stack(void)
 }
 
 /**
- * @brief Clamp a duty-cycle percent to [-k_bringup_duty_clamp, +clamp].
+ * @brief Clamp a duty-cycle percent to [-s_bringup_duty_clamp, +clamp].
  */
 static float internal_bringup_clamp_duty(float duty)
 {
-  if (duty > k_bringup_duty_clamp) {
-    return k_bringup_duty_clamp;
+  if (duty > s_bringup_duty_clamp) {
+    return s_bringup_duty_clamp;
   }
-  if (duty < -k_bringup_duty_clamp) {
-    return -k_bringup_duty_clamp;
+  if (duty < -s_bringup_duty_clamp) {
+    return -s_bringup_duty_clamp;
   }
   return duty;
 }
@@ -1818,7 +1818,7 @@ static void internal_bringup_apply_command(const motor_command_t* cmd, bool have
     float duty = 0.0F;
     if (have) {
       const float target_mps = internal_get_target_velocity(cmd, i);
-      duty                   = target_mps * k_bringup_duty_per_mps * k_motor_direction_sign[i];
+      duty                   = target_mps * s_bringup_duty_per_mps * s_motor_direction_sign[i];
       duty                   = internal_bringup_clamp_duty(duty);
     }
     (void)rx_motor_set_duty(&s_motors[i], duty);
@@ -2801,7 +2801,7 @@ static void internal_control_loop_iteration(void)
    * PID output (so the duty written to the H-bridge produces the
    * commanded direction). Without inverting both, the closed loop runs
    * away on the left wheels. */
-  static const int8_t k_motor_direction_signs[k_motor_count] = {
+  static const int8_t s_motor_direction_signs[k_motor_count] = {
     [k_motor_front_left]  = -1,
     [k_motor_front_right] = +1,
     [k_motor_back_right]  = +1,
@@ -2810,7 +2810,7 @@ static void internal_control_loop_iteration(void)
 
   /* Process each motor */
   for (uint8_t i = 0; i < k_motor_count; i++) {
-    const float sign = (float)k_motor_direction_signs[i];
+    const float sign = (float)s_motor_direction_signs[i];
 
     /* 1. Read encoder velocity (motor-frame), convert to robot-frame */
     float current_velocity_motor = 0.0F;
