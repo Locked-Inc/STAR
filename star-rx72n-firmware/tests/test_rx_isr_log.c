@@ -25,6 +25,16 @@
 #include "rx_log_uart.h"
 #include "unity.h"
 
+/* Test fixture constants -- avoid clang-tidy readability-magic-numbers. */
+enum : uint32_t {
+  k_test_5_records  = 5U,
+  k_test_4_rounds   = 4U,
+  k_test_8_records  = 8U,
+  k_test_10_records = 10U,
+  k_test_3          = 3U,
+  k_test_15         = 15U,
+  k_test_32_records = 32U,
+};
 typedef enum : uint32_t {
   k_test_capacity        = 32U,
   k_test_overflow_pushes = 40U, /* 8 over capacity */
@@ -177,33 +187,33 @@ void test_drain_empty_returns_zero(void)
 void test_drain_advances_tail_only_for_processed_records(void)
 {
   /* Push 5 records */
-  for (uint32_t i = 0U; i < 5U; i++) {
+  for (uint32_t i = 0U; i < k_test_5_records; i++) {
     (void)rx_isr_log_push(k_isr_log_event_usb_dvst_address, i);
   }
-  TEST_ASSERT_EQUAL_UINT32(5U, rx_isr_log_test_pending_count());
+  TEST_ASSERT_EQUAL_UINT32(k_test_5_records, rx_isr_log_test_pending_count());
 
   const uint32_t drained = rx_isr_log_drain();
-  TEST_ASSERT_EQUAL_UINT32(5U, drained);
+  TEST_ASSERT_EQUAL_UINT32(k_test_5_records, drained);
   TEST_ASSERT_EQUAL_UINT32(0U, rx_isr_log_test_pending_count());
 
   rx_isr_log_stats_t stats;
   rx_isr_log_get_stats(&stats);
-  TEST_ASSERT_EQUAL_UINT32(5U, stats.total_drained);
+  TEST_ASSERT_EQUAL_UINT32(k_test_5_records, stats.total_drained);
 }
 
 void test_push_drain_push_drain_does_not_lose_records(void)
 {
-  for (uint32_t round = 0U; round < 4U; round++) {
-    for (uint32_t i = 0U; i < 8U; i++) {
+  for (uint32_t round = 0U; round < k_test_4_rounds; round++) {
+    for (uint32_t i = 0U; i < k_test_8_records; i++) {
       TEST_ASSERT_TRUE(rx_isr_log_push(k_isr_log_event_usb_vbus_fs_j, i));
     }
-    TEST_ASSERT_EQUAL_UINT32(8U, rx_isr_log_drain());
+    TEST_ASSERT_EQUAL_UINT32(k_test_8_records, rx_isr_log_drain());
   }
 
   rx_isr_log_stats_t stats;
   rx_isr_log_get_stats(&stats);
-  TEST_ASSERT_EQUAL_UINT32(32U, stats.total_pushed);
-  TEST_ASSERT_EQUAL_UINT32(32U, stats.total_drained);
+  TEST_ASSERT_EQUAL_UINT32(k_test_32_records, stats.total_pushed);
+  TEST_ASSERT_EQUAL_UINT32(k_test_32_records, stats.total_drained);
   TEST_ASSERT_EQUAL_UINT32(0U, stats.total_dropped);
 }
 
@@ -218,19 +228,19 @@ void test_get_stats_with_null_is_silent(void)
 
 void test_high_water_tracks_peak_occupancy(void)
 {
-  for (uint32_t i = 0U; i < 10U; i++) {
+  for (uint32_t i = 0U; i < k_test_10_records; i++) {
     (void)rx_isr_log_push(k_isr_log_event_usb_resume, 0U);
   }
   rx_isr_log_stats_t stats1;
   rx_isr_log_get_stats(&stats1);
-  TEST_ASSERT_EQUAL_UINT32(10U, stats1.high_water);
+  TEST_ASSERT_EQUAL_UINT32(k_test_10_records, stats1.high_water);
 
   (void)rx_isr_log_drain();
 
   /* Drain should NOT shrink high_water */
   rx_isr_log_stats_t stats2;
   rx_isr_log_get_stats(&stats2);
-  TEST_ASSERT_EQUAL_UINT32(10U, stats2.high_water);
+  TEST_ASSERT_EQUAL_UINT32(k_test_10_records, stats2.high_water);
 }
 
 /* =============================================================================
