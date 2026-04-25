@@ -35,7 +35,7 @@
  * | Velocity Response Encode | 6 | Header population, status codes, error handling |
  * | Emergency Stop Request Decode | 6 | E-stop message parsing, error injection |
  * | Emergency Stop Response Encode | 8 | E-stop engaged/disengaged states, status codes |
- * | SetPIDGainsRequest Decode | 8 | PID controller gains update command validation |
+ * | SetPidGainsRequest Decode | 8 | PID controller gains update command validation |
  * | Telemetry Encode | 13 | GPS, IMU, temperature, WiFi, CPU, motor load |
  * | Helper Functions (Velocity Cmd) | 5 | Message factory validation, zero initialization |
  * | Helper Functions (Response Hdr) | 6 | Status code mapping, request ID handling |
@@ -1531,12 +1531,12 @@ void test_decode_estop_request_oversized_buffer(void)
 /** @} */ /* End of nanopb_test_estop_req_decode */
 
 /* =============================================================================
- * SetPIDGainsRequest Decode Tests
+ * SetPidGainsRequest Decode Tests
  * =============================================================================
  */
 
 /**
- * @defgroup nanopb_test_pid_gains_req_decode SetPIDGainsRequest Decoding Tests
+ * @defgroup nanopb_test_pid_gains_req_decode SetPidGainsRequest Decoding Tests
  * @brief Tests for decoding PID controller gains update commands (RPi5 -> RX72N)
  * @details
  * Validates rx_nanopb_decode_pid_gains_request() with various error conditions
@@ -1544,7 +1544,7 @@ void test_decode_estop_request_oversized_buffer(void)
  *
  * **Message Structure:**
  * @code
- * message SetPIDGainsRequest {
+ * message SetPidGainsRequest {
  *   optional RequestHeader header = 1;
  *   optional PidConfig pid_config = 2;  // PID controller configuration
  *   int32 motor_id = 3;                 // 0-3 for specific motor, -1 for all
@@ -1572,7 +1572,7 @@ void test_decode_estop_request_oversized_buffer(void)
  */
 void test_decode_pid_gains_request_null_buffer(void)
 {
-  star_v1_SetPIDGainsRequest msg;
+  star_v1_SetPidGainsRequest msg;
   rx_err_t err = rx_nanopb_decode_pid_gains_request(nullptr, k_test_decode_dummy_len, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1595,7 +1595,7 @@ void test_decode_pid_gains_request_empty_buffer(void)
 {
   uint8_t buffer[k_test_decode_buf_size_64] = {};
 
-  star_v1_SetPIDGainsRequest msg;
+  star_v1_SetPidGainsRequest msg;
   rx_err_t                   err = rx_nanopb_decode_pid_gains_request(buffer, 0, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1608,7 +1608,7 @@ void test_decode_pid_gains_request_invalid_data(void)
 {
   uint8_t buffer[k_test_decode_buf_size_64];
 
-  star_v1_SetPIDGainsRequest msg;
+  star_v1_SetPidGainsRequest msg;
 
   /* Fill buffer with invalid protobuf data */
   for (size_t i = 0; i < sizeof(buffer); i++) {
@@ -1626,7 +1626,7 @@ void test_decode_pid_gains_request_not_initialized(void)
 {
   uint8_t buffer[k_test_decode_buf_size_64] = {};
 
-  star_v1_SetPIDGainsRequest msg;
+  star_v1_SetPidGainsRequest msg;
 
   /* Reset state to uninitialized */
   rx_nanopb_test_reset_state();
@@ -1644,7 +1644,7 @@ void test_decode_pid_gains_request_not_initialized(void)
 void test_decode_pid_gains_request_oversized_buffer(void)
 {
   uint8_t                    buffer[k_test_decode_buf_size_600] = {};
-  star_v1_SetPIDGainsRequest msg;
+  star_v1_SetPidGainsRequest msg;
 
   rx_err_t err = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1659,7 +1659,7 @@ void test_decode_pid_gains_request_valid(void)
   uint8_t  encode_buffer[k_test_decode_buf_size_256];
   uint32_t encode_len;
 
-  star_v1_SetPIDGainsRequest encode_msg = star_v1_SetPIDGainsRequest_init_zero;
+  star_v1_SetPidGainsRequest encode_msg = star_v1_SetPidGainsRequest_init_zero;
 
   /* Build valid PID gains request */
   encode_msg.has_pid_config                = true;
@@ -1674,12 +1674,12 @@ void test_decode_pid_gains_request_valid(void)
 
   /* Encode using nanopb directly (since we don't have encode function yet) */
   pb_ostream_t ostream   = pb_ostream_from_buffer(encode_buffer, sizeof(encode_buffer));
-  bool         encode_ok = pb_encode(&ostream, star_v1_SetPIDGainsRequest_fields, &encode_msg);
+  bool         encode_ok = pb_encode(&ostream, star_v1_SetPidGainsRequest_fields, &encode_msg);
   TEST_ASSERT_TRUE(encode_ok);
   encode_len = ostream.bytes_written;
 
   /* Now decode and verify */
-  star_v1_SetPIDGainsRequest decode_msg;
+  star_v1_SetPidGainsRequest decode_msg;
   rx_err_t err = rx_nanopb_decode_pid_gains_request(encode_buffer, encode_len, &decode_msg);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1711,7 +1711,7 @@ void test_pid_gains_request_round_trip(void)
   uint8_t  buffer[k_test_decode_buf_size_256];
   uint32_t encode_len;
 
-  star_v1_SetPIDGainsRequest original = star_v1_SetPIDGainsRequest_init_zero;
+  star_v1_SetPidGainsRequest original = star_v1_SetPidGainsRequest_init_zero;
 
   /* MATLAB-tuned gains for motor system (tau=75ms) */
   original.has_pid_config                = true;
@@ -1726,12 +1726,12 @@ void test_pid_gains_request_round_trip(void)
 
   /* Encode */
   pb_ostream_t ostream   = pb_ostream_from_buffer(buffer, sizeof(buffer));
-  bool         encode_ok = pb_encode(&ostream, star_v1_SetPIDGainsRequest_fields, &original);
+  bool         encode_ok = pb_encode(&ostream, star_v1_SetPidGainsRequest_fields, &original);
   TEST_ASSERT_TRUE(encode_ok);
   encode_len = ostream.bytes_written;
 
   /* Decode */
-  star_v1_SetPIDGainsRequest decoded;
+  star_v1_SetPidGainsRequest decoded;
   rx_err_t                   err = rx_nanopb_decode_pid_gains_request(buffer, encode_len, &decoded);
 
   /* Verify lossless round-trip */
@@ -2123,12 +2123,12 @@ void test_encode_telemetry_not_initialized(void)
 /** @} */ /* End of nanopb_test_telemetry_encode */
 
 /* =============================================================================
- * SetPIDGainsResponse Encode Tests
+ * SetPidGainsResponse Encode Tests
  * =============================================================================
  */
 
 /**
- * @defgroup nanopb_test_pid_gains_resp_encode SetPIDGainsResponse Encoding Tests
+ * @defgroup nanopb_test_pid_gains_resp_encode SetPidGainsResponse Encoding Tests
  * @brief Tests for encoding PID gains acknowledgments (RX72N -> RPi5)
  * @details
  * Validates rx_nanopb_encode_pid_gains_response() with success/failure states.
@@ -2152,7 +2152,7 @@ void test_encode_pid_gains_response_null_msg(void)
  */
 void test_encode_pid_gains_response_null_buffer(void)
 {
-  star_v1_SetPIDGainsResponse msg = star_v1_SetPIDGainsResponse_init_zero;
+  star_v1_SetPidGainsResponse msg = star_v1_SetPidGainsResponse_init_zero;
   uint32_t                    len;
   rx_err_t err = rx_nanopb_encode_pid_gains_response(&msg, nullptr, sizeof(s_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -2163,7 +2163,7 @@ void test_encode_pid_gains_response_null_buffer(void)
  */
 void test_encode_pid_gains_response_null_len(void)
 {
-  star_v1_SetPIDGainsResponse msg = star_v1_SetPIDGainsResponse_init_zero;
+  star_v1_SetPidGainsResponse msg = star_v1_SetPidGainsResponse_init_zero;
   rx_err_t err = rx_nanopb_encode_pid_gains_response(&msg, s_buffer, sizeof(s_buffer), nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -2173,7 +2173,7 @@ void test_encode_pid_gains_response_null_len(void)
  */
 void test_encode_pid_gains_response_success(void)
 {
-  star_v1_SetPIDGainsResponse msg = star_v1_SetPIDGainsResponse_init_zero;
+  star_v1_SetPidGainsResponse msg = star_v1_SetPidGainsResponse_init_zero;
   msg.has_header                  = true;
   msg.header.status               = star_v1_Status_STATUS_OK;
   msg.success                     = true;
@@ -2189,7 +2189,7 @@ void test_encode_pid_gains_response_success(void)
  */
 void test_encode_pid_gains_response_failure(void)
 {
-  star_v1_SetPIDGainsResponse msg = star_v1_SetPIDGainsResponse_init_zero;
+  star_v1_SetPidGainsResponse msg = star_v1_SetPidGainsResponse_init_zero;
   msg.has_header                  = true;
   msg.header.status               = star_v1_Status_STATUS_INTERNAL_ERROR;
   msg.success                     = false;
@@ -2820,7 +2820,7 @@ void test_encode_pid_gains_response_not_initialized(void)
 {
   rx_nanopb_test_reset_state();
 
-  star_v1_SetPIDGainsResponse msg = star_v1_SetPIDGainsResponse_init_zero;
+  star_v1_SetPidGainsResponse msg = star_v1_SetPidGainsResponse_init_zero;
   uint32_t                    len = 0;
   rx_err_t err = rx_nanopb_encode_pid_gains_response(&msg, s_buffer, sizeof(s_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
@@ -2833,7 +2833,7 @@ void test_encode_pid_gains_response_not_initialized(void)
  */
 void test_encode_pid_gains_response_small_buffer(void)
 {
-  star_v1_SetPIDGainsResponse msg = star_v1_SetPIDGainsResponse_init_zero;
+  star_v1_SetPidGainsResponse msg = star_v1_SetPidGainsResponse_init_zero;
   uint32_t                    len = 0;
   rx_err_t                    err =
     rx_nanopb_encode_pid_gains_response(&msg, s_buffer, k_test_small_buffer_size, &len);
@@ -3060,7 +3060,7 @@ static void internal_run_estop_pid_tests(void)
   RUN_TEST(test_decode_estop_request_oversized_buffer);
   RUN_TEST(test_decode_estop_request_valid);
 
-  /* SetPIDGainsRequest decode tests */
+  /* SetPidGainsRequest decode tests */
   RUN_TEST(test_decode_pid_gains_request_null_buffer);
   RUN_TEST(test_decode_pid_gains_request_null_msg);
   RUN_TEST(test_decode_pid_gains_request_empty_buffer);
@@ -3101,7 +3101,7 @@ static void internal_run_telemetry_retransmit_tests(void)
   RUN_TEST(test_encode_telemetry_all_fields);
   RUN_TEST(test_encode_telemetry_not_initialized);
 
-  /* SetPIDGainsResponse encode tests */
+  /* SetPidGainsResponse encode tests */
   RUN_TEST(test_encode_pid_gains_response_null_msg);
   RUN_TEST(test_encode_pid_gains_response_null_buffer);
   RUN_TEST(test_encode_pid_gains_response_null_len);

@@ -17,8 +17,9 @@ typedef struct _star_v1_ControllerState {
     /* Angular velocity (omega) from Left Stick X-axis. Range: [-1.0, 1.0] */
     float angular_vel;
     /* Timestamp in milliseconds (e.g., since epoch or monotonic boot time)
- Used for jitter buffer and out-of-order packet handling. */
-    int64_t timestamp;
+ Used for jitter buffer and out-of-order packet handling.
+ Project MKS-suffix mandate: numeric fields name the unit; ms here. */
+    int64_t timestamp_ms;
     /* Enable verbose debug logging on the gateway */
     bool debug;
 } star_v1_ControllerState;
@@ -35,14 +36,14 @@ extern "C" {
 /* Field tags (for use in manual encoding/decoding) */
 #define star_v1_ControllerState_linear_vel_tag   1
 #define star_v1_ControllerState_angular_vel_tag  2
-#define star_v1_ControllerState_timestamp_tag    3
+#define star_v1_ControllerState_timestamp_ms_tag 3
 #define star_v1_ControllerState_debug_tag        4
 
 /* Struct field encoding specification for nanopb */
 #define star_v1_ControllerState_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, FLOAT,    linear_vel,        1) \
 X(a, STATIC,   SINGULAR, FLOAT,    angular_vel,       2) \
-X(a, STATIC,   SINGULAR, INT64,    timestamp,         3) \
+X(a, STATIC,   SINGULAR, INT64,    timestamp_ms,      3) \
 X(a, STATIC,   SINGULAR, BOOL,     debug,             4)
 #define star_v1_ControllerState_CALLBACK NULL
 #define star_v1_ControllerState_DEFAULT NULL

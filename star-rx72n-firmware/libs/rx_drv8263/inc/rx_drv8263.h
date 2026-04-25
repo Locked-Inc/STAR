@@ -337,7 +337,9 @@ typedef struct {
  * 1. Drives nSLEEP LOW
  * 2. Busy-waits ~20 us (middle of 5-35 us window)
  * 3. Drives nSLEEP HIGH
- * 4. Waits ~1.2 ms for tWAKE (nFAULT returns HIGH)
+ * 4. Sleeps one ThreadX tick (~10 ms with 100 Hz tick) to satisfy tWAKE (~1.2 ms);
+ *    coarse-grained because tx_thread_sleep granularity is one tick
+ *    (nFAULT is not polled -- it may be configured as a POEG input)
  *
  * @param[in] handle Pointer to initialized handle. Must not be nullptr.
  *

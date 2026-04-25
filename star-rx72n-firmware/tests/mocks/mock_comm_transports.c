@@ -284,7 +284,7 @@ rx_err_t rx_comm_manager_set_auto_retransmit(rx_comm_manager_t*                 
  */
 rx_err_t rx_nanopb_decode_pid_gains_request(const uint8_t*              buffer,
                                             uint32_t                    len,
-                                            star_v1_SetPIDGainsRequest* msg)
+                                            star_v1_SetPidGainsRequest* msg)
 {
   (void)buffer;
   (void)len;
@@ -467,7 +467,7 @@ rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* msg,
  * @since Version 1.0.0
  */
 rx_err_t
-rx_nanopb_encode_pid_gains_response(const star_v1_SetPIDGainsResponse* msg,
+rx_nanopb_encode_pid_gains_response(const star_v1_SetPidGainsResponse* msg,
                                     uint8_t*  buffer, /* NOLINT(readability-non-const-parameter) */
                                     uint32_t  buffer_size,
                                     uint32_t* len)

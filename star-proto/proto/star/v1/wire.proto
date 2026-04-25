@@ -50,6 +50,15 @@ option java_package = "com.star.proto.v1";
 //       handleTelemetry(msg.TelemetryData)
 //   }
 message WireMessage {
+  // Reserved field numbers/names from removed Battery Management subsystem.
+  // Fields 20 and 21 were previously `BatteryStatus battery_status = 20` and
+  //   `BatteryState battery_state = 21`, deleted in git 4f6c255f3
+  //   "Remove BMS/battery monitoring from STAR project (#359)".
+  //   Reserving the 20-29 range claims the historic Battery slot so any future
+  //   message added there cannot collide with old senders' wire bytes.
+  reserved 20 to 29;
+  reserved "battery_status", "battery_state";
+
   // Payload contains the actual message. Exactly one field must be set.
   // This oneof discriminator enables type-safe message routing over a single transport channel.
   oneof payload {

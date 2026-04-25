@@ -26,7 +26,8 @@ message ControllerState {
 
   // Timestamp in milliseconds (e.g., since epoch or monotonic boot time)
   // Used for jitter buffer and out-of-order packet handling.
-  int64 timestamp = 3;
+  // Project MKS-suffix mandate: numeric fields name the unit; ms here.
+  int64 timestamp_ms = 3;
 
   // Enable verbose debug logging on the gateway
   bool debug = 4;

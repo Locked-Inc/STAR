@@ -40,7 +40,7 @@ option java_package = "com.star.proto.v1";
 //    UI sends via WebSocket -> Gateway caches -> ROS2 polls GetTeleopCommand()
 //
 // 3. PID Gains (UI -> ROS2 -> Motor Controller):
-//    UI sends via WebSocket -> Gateway calls SetPIDGains() -> ROS2 -> SPI -> RX72N
+//    UI sends via WebSocket -> Gateway calls SetPidGains() -> ROS2 -> SPI -> RX72N
 service GatewayService {
   // Forward telemetry data from ROS2 to Gateway for UI streaming.
   //
@@ -64,7 +64,7 @@ service GatewayService {
   // to ROS2, which then forwards to motor controller via SPI bridge.
   //
   // Blocking: Waits for confirmation from motor controller.
-  rpc SetPIDGains(SetPIDGainsRequest) returns (SetPIDGainsResponse);
+  rpc SetPidGains(SetPidGainsRequest) returns (SetPidGainsResponse);
 }
 
 // ============================================================================
@@ -73,6 +73,14 @@ service GatewayService {
 
 // Request to forward telemetry from ROS2 to Gateway.
 message ForwardTelemetryRequest {
+  // Reserved field number/name from removed Battery Management subsystem.
+  // Field 3 was previously `BatteryState battery_state = 3` and was removed in
+  //   git 4f6c255f3 "Remove BMS/battery monitoring from STAR project (#359)".
+  //   Reserving prevents future field at #3 from silently misreading bytes
+  //   emitted by any old client still on the previous schema.
+  reserved 3;
+  reserved "battery_state";
+
   // Standard request header.
   RequestHeader header = 1;
 
@@ -98,8 +106,9 @@ message ForwardTelemetryRequest {
   // Latest LiDAR scan from RPLiDAR C1.
   // Forwarded from /scan ROS2 topic.
   // nanopb: LidarScan.angle_rad, LidarScan.range_m, and LidarScan.intensity are
-  //   bounded by max_count:800 (RPLiDAR C1 maximum samples per revolution at
-  //   10 Hz scan mode). Defined in ui.options and duplicated in gateway_service.options.
+  //   bounded by max_count:500 (RPLiDAR C1 ~500 samples per revolution at
+  //   10 Hz scan mode -- 5 kHz sample rate / 10 Hz = 500 samples).
+  //   Defined in ui.options and duplicated in gateway_service.options.
   LidarScan lidar_scan = 7;
 }
 
@@ -143,11 +152,11 @@ message GetTeleopCommandResponse {
 }
 
 // ============================================================================
-// SetPIDGains: UI -> Gateway -> ROS2 -> Motor Controller
+// SetPidGains: UI -> Gateway -> ROS2 -> Motor Controller
 // ============================================================================
 
 // Request to set PID gains for motor velocity control.
-message SetPIDGainsRequest {
+message SetPidGainsRequest {
   // Standard request header.
   RequestHeader header = 1;
 
@@ -159,7 +168,7 @@ message SetPIDGainsRequest {
 }
 
 // Response to PID gains update.
-message SetPIDGainsResponse {
+message SetPidGainsResponse {
   // Standard response header.
   ResponseHeader header = 1;
 

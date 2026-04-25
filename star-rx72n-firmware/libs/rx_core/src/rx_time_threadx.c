@@ -147,7 +147,7 @@ static const char* const s_tag = "TIME";
  * }
  * @endcode
  *
- * @see rx_time_threadx_ms_to_ticks()
+ * @see impl_sleep_ms() Inline ceiling-division ms-to-ticks conversion
  *
  * @since Version 1.0.0
  */
@@ -170,7 +170,7 @@ typedef enum : uint32_t {
  * const uint32_t ticks     = quotient + (remainder > k_rx_zero ? k_ceil_div_offset : k_rx_zero);
  * @endcode
  *
- * @see rx_time_threadx_ms_to_ticks()
+ * @see impl_sleep_ms() Inline ceiling-division ms-to-ticks conversion
  *
  * @since Version 1.0.0
  */

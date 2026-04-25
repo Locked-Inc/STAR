@@ -1661,7 +1661,7 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
  * @endcode
  *
  * @see rx_motor_set_duty() Set duty cycle
- * @see rx_encoder_get_velocity_mps() Get actual motor velocity from encoder
+ * @see rx_tpu_encoder_read_velocity() Get actual motor velocity from encoder (rev/s)
  *
  * @since Version 1.0.0
  *

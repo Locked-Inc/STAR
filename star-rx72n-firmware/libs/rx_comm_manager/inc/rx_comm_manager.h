@@ -340,8 +340,9 @@
  * - rx_err: Standardized error code system
  * - rx_log: Logging infrastructure
  *
- * @see rx_usb_comm.h USB CDC transport implementation
  * @see rx_spi_comm.h SPI transport implementation
+ * @see rx_uart_comm.h UART transport implementation
+ * @see rx_i2c_comm.h I2C peripheral transport implementation
  * @see rx_frame.h Frame protocol specification
  * @see docs/sections/01_nanopb_protocol.tex Communication protocol documentation
  *

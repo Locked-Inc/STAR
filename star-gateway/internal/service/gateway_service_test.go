@@ -270,12 +270,12 @@ func TestGetTeleopCommand(t *testing.T) {
 	})
 }
 
-func TestSetPIDGains(t *testing.T) {
+func TestSetPidGains(t *testing.T) {
 	svc := NewGatewayService()
 	ctx := context.Background()
 
 	t.Run("Success", func(t *testing.T) {
-		req := &starv1.SetPIDGainsRequest{
+		req := &starv1.SetPidGainsRequest{
 			Header: &starv1.RequestHeader{
 				RequestId: "test-pid",
 			},
@@ -287,7 +287,7 @@ func TestSetPIDGains(t *testing.T) {
 			},
 		}
 
-		resp, err := svc.SetPIDGains(ctx, req)
+		resp, err := svc.SetPidGains(ctx, req)
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
@@ -298,7 +298,7 @@ func TestSetPIDGains(t *testing.T) {
 	})
 
 	t.Run("NilRequest", func(t *testing.T) {
-		_, err := svc.SetPIDGains(ctx, nil)
+		_, err := svc.SetPidGains(ctx, nil)
 		if err == nil {
 			t.Fatal("Expected error for nil request")
 		}
@@ -314,7 +314,7 @@ func TestSetPIDGains(t *testing.T) {
 	})
 
 	t.Run("NilPidConfig", func(t *testing.T) {
-		req := &starv1.SetPIDGainsRequest{
+		req := &starv1.SetPidGainsRequest{
 			Header: &starv1.RequestHeader{
 				RequestId: "test-pid-nil",
 			},
@@ -322,7 +322,7 @@ func TestSetPIDGains(t *testing.T) {
 			PidConfig: nil,
 		}
 
-		_, err := svc.SetPIDGains(ctx, req)
+		_, err := svc.SetPidGains(ctx, req)
 		if err == nil {
 			t.Fatal("Expected error for nil pid_config")
 		}
@@ -338,7 +338,7 @@ func TestSetPIDGains(t *testing.T) {
 	})
 
 	t.Run("InvalidMotorID", func(t *testing.T) {
-		req := &starv1.SetPIDGainsRequest{
+		req := &starv1.SetPidGainsRequest{
 			Header: &starv1.RequestHeader{
 				RequestId: "test-pid-invalid",
 			},
@@ -350,7 +350,7 @@ func TestSetPIDGains(t *testing.T) {
 			},
 		}
 
-		_, err := svc.SetPIDGains(ctx, req)
+		_, err := svc.SetPidGains(ctx, req)
 		if err == nil {
 			t.Fatal("Expected error for invalid motor ID")
 		}

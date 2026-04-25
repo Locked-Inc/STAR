@@ -482,6 +482,119 @@ static rx_bus_config_t s_i2c1_baro_config;
 /** @brief Bench-test I2C bus config for a GY-521 / MPU-6050 at 0x68 on RIIC1. */
 static rx_bus_config_t s_i2c1_mpu_config;
 
+/**
+ * @var g_bus_manager
+ * @brief Single file-scope forward declaration of the global bus manager singleton
+ *
+ * @details
+ * The bus manager itself is defined in rx_bus_manager.c. This translation unit
+ * only needs a forward declaration so internal_init_bus_manager(),
+ * internal_register_system_buses(), and their extracted helpers can share the
+ * same symbol without each repeating an `extern` line (which clang-tidy flags
+ * as redundant under readability-redundant-declaration).
+ *
+ * @note Single-threaded use only inside tx_application_define() (pre-scheduler).
+ * @see rx_bus_manager_init() Definition / lifetime owner
+ * @since Version 1.0.0
+ */
+extern rx_bus_manager_t g_bus_manager;
+
+/**
+ * @enum dflash_fcu_cmd_t
+ * @brief RX72N Flash Control Unit (FCU) command opcodes for data-flash P/E
+ *
+ * @details
+ * Single-byte opcodes written to the FACI command area to drive the FCU
+ * state machine for data-flash erase and program operations. Sourced from
+ * RX72N HW manual R01UH0824EJ0111 Ch 62 (Flash Memory), Tables 62.6/62.7.
+ *
+ * The terminator byte (0xD0) finalizes the command sequence and tells the
+ * FCU to begin executing the requested operation.
+ */
+typedef enum : uint8_t {
+  k_dflash_fcu_cmd_block_erase = 0x20U, /**< Block erase opcode (Ch 62.9.3.5) */
+  k_dflash_fcu_cmd_program     = 0xE8U, /**< Program opcode (Ch 62.9.3.4) */
+  k_dflash_fcu_cmd_terminator  = 0xD0U, /**< Command terminator -- launches op */
+  k_dflash_fcu_program_words   = 0x02U, /**< N parameter for program: 2 x 16-bit words = 4 bytes */
+  k_dflash_fwepror_enable_pe   = 0x01U, /**< FWEPROR.FLWE = 1 -- allow P/E ops */
+} dflash_fcu_cmd_t;
+
+/**
+ * @enum dflash_fentryr_t
+ * @brief RX72N FENTRYR (Flash P/E Mode Entry) control values
+ *
+ * @details
+ * 16-bit writes to FENTRYR control entry/exit of flash program/erase mode.
+ * Upper byte 0xAA is the unlock key (FEKEY); lower byte selects target area.
+ * Per RX72N HW manual Ch 62, Section 62.4.2 (FENTRYR register).
+ */
+typedef enum : uint16_t {
+  k_dflash_fentryr_enter_dataflash_pe = 0xAA80U, /**< Enter data-flash P/E mode (FENTRYD=1) */
+  k_dflash_fentryr_exit_pe            = 0xAA00U, /**< Exit P/E mode (read mode) */
+  k_dflash_fentryr_low_byte_mask      = 0x00FFU, /**< Mask to read FENTRYR status (low byte) */
+  k_dflash_fentryr_pe_active          = 0x0080U, /**< Low-byte value indicating data-flash P/E mode active */
+  k_dflash_fentryr_pe_inactive        = 0x0000U, /**< Low-byte value indicating P/E mode exited */
+  k_dflash_fpckar_key                 = 0x1E00U, /**< FPCKAR key (upper byte 0x1E); OR'd with FCLK MHz */
+} dflash_fentryr_t;
+
+/**
+ * @enum dflash_probe_layout_t
+ * @brief Magic header bytes and frequency constants for the bench dflash probe
+ *
+ * @details
+ * The bench probe writes a 4-byte payload to data flash so rfp-cli can
+ * verify the firmware ran without needing a UART bridge. The first two
+ * bytes are a fixed sentinel pattern; bytes 2-3 carry runtime data.
+ */
+typedef enum : uint8_t {
+  k_dflash_probe_magic_byte0 = 0xA5U, /**< Sentinel byte 0 (LE: at addr+0) */
+  k_dflash_probe_magic_byte1 = 0x5AU, /**< Sentinel byte 1 (LE: at addr+1) */
+  k_dflash_probe_byte_mask   = 0xFFU, /**< Mask to extract low byte of 32-bit error code */
+  k_dflash_fclk_mhz          = 60U,   /**< FCLK frequency in MHz (OR'd with FPCKAR key) */
+} dflash_probe_layout_t;
+
+/**
+ * @enum fcu_poll_iters_t
+ * @brief Bounded poll iteration counts for FCU state-machine waits
+ *
+ * @details
+ * NASA P10 Rule 2 requires fixed loop bounds. These values cap waits on
+ * FENTRYR/FSTATR.FRDY transitions; values are empirically large enough
+ * that the FCU completes the slowest operation (block erase) well within
+ * the cap at 60 MHz FCLK.
+ */
+typedef enum : uint32_t {
+  k_fcu_poll_short = 100000U,  /**< Mode entry/exit + FRDY wait (~1.7 ms @ 60 MHz) */
+  k_fcu_poll_long  = 1000000U, /**< Erase/program completion wait (~17 ms @ 60 MHz) */
+} fcu_poll_iters_t;
+
+/**
+ * @enum prcr_key_t
+ * @brief RX72N PRCR (Protect Register) key/unlock values
+ *
+ * @details
+ * The PRCR upper byte (0xA5) is the protection key; the low nibble enables
+ * write access to specific protected register groups. Required before
+ * touching MSTPCR* and clock-tree registers. Per RX72N HW manual Ch 13.2.1.
+ */
+typedef enum : uint16_t {
+  k_prcr_unlock_clock_lpm = 0xA503U, /**< Key 0xA5 + PRC0 | PRC1: unlock clock + low-power-mode regs */
+  k_prcr_lock_all         = 0xA500U, /**< Key 0xA5 + all PRC bits cleared: re-lock everything */
+} prcr_key_t;
+
+/**
+ * @enum usb_init_delay_iters_t
+ * @brief Busy-loop iteration counts used during pre-kernel USB0 bring-up
+ *
+ * @details
+ * Empirically tuned for ICLK = 240 MHz: ~10 ms spin per phase. Used to
+ * straddle the SYSCFG -> SCKE -> USBE ordering required by HUM 40.3.1.1
+ * (the RX72N USB module needs internal clock to settle before USBE=1).
+ */
+typedef enum : uint32_t {
+  k_usb_syscfg_settle_nops = 2400000U, /**< ~10 ms spin between SYSCFG / SCKE / USBE writes */
+} usb_init_delay_iters_t;
+
 /* =============================================================================
  * Bench probe: write {magic, who_am_i, err} to data flash @ 0x00100000 so that
  * rfp-cli -rv 0x00100000 16 can read the result without a UART. No dependency
@@ -499,45 +612,52 @@ static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
   const uint32_t           DF_ADDR = 0x00100000U;
 
   /* Enable P/E operations. */
-  *FWEPROR = 0x01U;
+  *FWEPROR = k_dflash_fwepror_enable_pe;
 
   /* Notify FCU of FCLK = 60 MHz (key 0x1E00 | freq_in_MHz). Must be done
    * BEFORE entering P/E mode or FCU silently rejects every command. */
-  *FPCKAR = (uint16_t)(0x1E00U | 60U);
+  *FPCKAR = (uint16_t)(k_dflash_fpckar_key | k_dflash_fclk_mhz);
 
   /* Enter data flash P/E mode. */
-  *FENTRYR = 0xAA80U;
+  *FENTRYR = k_dflash_fentryr_enter_dataflash_pe;
   /* Spin until data-flash P/E mode is active (FENTRYR low byte = 0x80). */
-  for (uint32_t i = 0; i < 100000U && (*FENTRYR & 0x00FFU) != 0x80U; i++) {
+  for (uint32_t i = 0;
+       i < k_fcu_poll_short
+       && (*FENTRYR & k_dflash_fentryr_low_byte_mask) != k_dflash_fentryr_pe_active;
+       i++) {
   }
   /* Wait for FRDY. */
-  for (uint32_t i = 0; i < 100000U && ((*FSTATR) & (1UL << 15)) == 0U; i++) {
+  for (uint32_t i = 0; i < k_fcu_poll_short && ((*FSTATR) & (1UL << 15)) == 0U; i++) {
   }
 
   /* Erase the 64-byte block containing DF_ADDR. */
   *FSADDR = DF_ADDR;
-  *FACI_B = 0x20U; /* block erase */
-  *FACI_B = 0xD0U; /* terminator */
-  for (uint32_t i = 0; i < 1000000U && ((*FSTATR) & (1UL << 15)) == 0U; i++) {
+  *FACI_B = k_dflash_fcu_cmd_block_erase;
+  *FACI_B = k_dflash_fcu_cmd_terminator;
+  for (uint32_t i = 0; i < k_fcu_poll_long && ((*FSTATR) & (1UL << 15)) == 0U; i++) {
   }
 
   /* Program 4 bytes: [0xA5, 0x5A, who_am_i, err_byte_low]. */
-  const uint8_t  err_byte = (err == 0) ? 0x00U : (uint8_t)(err & 0xFFU);
-  const uint16_t word0    = (uint16_t)((0x5AU << 8) | 0xA5U); /* LE: bytes 0=A5, 1=5A */
+  const uint8_t  err_byte = (err == 0) ? 0x00U : (uint8_t)(err & k_dflash_probe_byte_mask);
+  const uint16_t word0    = (uint16_t)(((uint16_t)k_dflash_probe_magic_byte1 << 8)
+                                    | k_dflash_probe_magic_byte0); /* LE: bytes 0=A5, 1=5A */
   const uint16_t word1 = (uint16_t)(((uint16_t)err_byte << 8) | who_am_i); /* LE: 2=who, 3=err    */
 
   *FSADDR = DF_ADDR;
-  *FACI_B = 0xE8U; /* program */
-  *FACI_B = 0x02U; /* N = 2 x 16-bit words (= 4 bytes) */
+  *FACI_B = k_dflash_fcu_cmd_program;
+  *FACI_B = k_dflash_fcu_program_words;
   *FACI_W = word0;
   *FACI_W = word1;
-  *FACI_B = 0xD0U; /* terminator */
-  for (uint32_t i = 0; i < 1000000U && ((*FSTATR) & (1UL << 15)) == 0U; i++) {
+  *FACI_B = k_dflash_fcu_cmd_terminator;
+  for (uint32_t i = 0; i < k_fcu_poll_long && ((*FSTATR) & (1UL << 15)) == 0U; i++) {
   }
 
   /* Exit P/E mode. */
-  *FENTRYR = 0xAA00U;
-  for (uint32_t i = 0; i < 100000U && (*FENTRYR & 0x00FFU) != 0x00U; i++) {
+  *FENTRYR = k_dflash_fentryr_exit_pe;
+  for (uint32_t i = 0;
+       i < k_fcu_poll_short
+       && (*FENTRYR & k_dflash_fentryr_low_byte_mask) != k_dflash_fentryr_pe_inactive;
+       i++) {
   }
 }
 
@@ -784,7 +904,7 @@ static bool internal_check_rstsr2_flag_clear(const uint8_t flag_mask)
  * **Configuration:**
  * - **Timeout period:** 128 ms (configured in option setting memory)
  * - **Clock source:** IWDTCLK (independent 15 kHz RC oscillator)
- * - **Refresh requirement:** Call `rx_iwdt_refresh()` every 100 ms (from PID control loop)
+ * - **Refresh requirement:** Call `rx_iwdt_feed()` every 100 ms (from PID control loop)
  *
  * **Failure scenarios triggering IWDT reset:**
  * - Infinite loop (forgot `tx_thread_sleep()` in task)
@@ -859,11 +979,11 @@ static bool internal_check_rstsr2_flag_clear(const uint8_t flag_mask)
  * 2. **Deadlock:** Check mutex acquisition order (AB-BA deadlock)
  * 3. **Priority inversion:** Low-priority task holds mutex, high-priority waits forever
  * 4. **Hard fault:** Exception handler doesn't refresh IWDT before reset
- * 5. **Missing refresh:** `rx_iwdt_refresh()` not called every 100 ms from main task
+ * 5. **Missing refresh:** `rx_iwdt_feed()` not called every 100 ms from main task
  *
  * @see internal_check_rstsr2_flag_clear() Generic RSTSR2 flag checker (helper)
  * @see internal_check_startup_flags() Orchestrates all reset checks (caller)
- * @see rx_iwdt_refresh() Refresh IWDT to prevent timeout (must call every 100 ms)
+ * @see rx_iwdt_feed() Refresh IWDT to prevent timeout (must call every 100 ms)
  *
  * @since Version 1.0.0
  *
@@ -1767,8 +1887,6 @@ static const rx_iwdt_config_t s_iwdt_config = {
  */
 static void internal_init_bus_manager(void)
 {
-  extern rx_bus_manager_t g_bus_manager;
-
   rx_error_interface_t* error_iface = rx_infrastructure_get_error_interface();
   rx_pin_interface_t*   pin_iface   = rx_infrastructure_get_pin_interface();
 
@@ -1807,81 +1925,185 @@ static void internal_init_bus_manager(void)
  *
  * @since Version 1.0.0
  */
-static void internal_register_system_buses(void)
+/**
+ * @brief Register the 1-Wire bus for the DS18B20 temperature sensor on P51
+ *
+ * @details
+ * Initializes s_onewire0_config via rx_bus_config_init_onewire() and registers
+ * it with the global bus manager. Failure asserts (boot precondition).
+ *
+ * @pre internal_init_bus_manager() completed successfully
+ * @pre s_onewire0_config zero-initialized (BSS)
+ *
+ * @post s_onewire0_config populated with name="onewire0" and pin=P51
+ * @post Bus "onewire0" available via the global bus manager
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see rx_bus_config_init_onewire() Underlying configuration helper
+ * @see rx_bus_manager_add_bus() Registers the populated config
+ *
+ * @since Version 1.0.0
+ */
+static void internal_register_onewire0_bus(void)
 {
-  extern rx_bus_manager_t g_bus_manager;
-
-  /* Register onewire0 - DS18B20 Temperature Sensor */
   rx_err_t err = rx_bus_config_init_onewire(&s_onewire0_config,
                                             "onewire0", /* name */
                                             k_rx_p5_1); /* pin = P51 */
   RX_ASSERT(err == k_rx_ok, "onewire0 config init must succeed");
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_onewire0_config);
   RX_ASSERT(err == k_rx_ok, "onewire0 registration must succeed");
+}
 
-  /* Register gpio - Generic GPIO Access (initial pin P00) */
-  err = rx_bus_config_init_gpio(&s_gpio_config,
-                                "gpio",     /* name */
-                                k_rx_p0_0); /* pin = P00 (generic bus) */
+/**
+ * @brief Register the generic GPIO bus abstraction used by motor drivers
+ *
+ * @details
+ * Initializes s_gpio_config via rx_bus_config_init_gpio() with placeholder pin
+ * P00 (the API requires an initial pin -- actual pins are specified per-call by
+ * motor_control_task) and registers it with the global bus manager.
+ *
+ * @pre internal_init_bus_manager() completed successfully
+ * @pre s_gpio_config zero-initialized (BSS)
+ *
+ * @post s_gpio_config populated with name="gpio" and initial pin=P00
+ * @post Bus "gpio" available via the global bus manager
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see rx_bus_config_init_gpio() Underlying configuration helper
+ * @see rx_bus_manager_add_bus() Registers the populated config
+ *
+ * @since Version 1.0.0
+ */
+static void internal_register_gpio_bus(void)
+{
+  rx_err_t err = rx_bus_config_init_gpio(&s_gpio_config,
+                                         "gpio",     /* name */
+                                         k_rx_p0_0); /* pin = P00 (generic bus) */
   RX_ASSERT(err == k_rx_ok, "gpio config init must succeed");
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_gpio_config);
   RX_ASSERT(err == k_rx_ok, "gpio registration must succeed");
+}
 
-  /* Register motor current-sense ADC channels (S12AD0, 12-bit, 4 motors) */
+/**
+ * @brief Register all four motor current-sense ADC channels (S12AD0)
+ *
+ * @details
+ * Iterates over k_motor_current_adc_channels[] and registers one ADC bus per
+ * motor (FL, FR, BL, BR) on S12AD0 channels 4-7. Each iteration:
+ *   1. Populates s_motor_current_configs[i] via rx_bus_config_init_adc()
+ *   2. Adds the config to the bus manager
+ *   3. Initialises the ADC hardware via rx_bus_adc_init()
+ *
+ * @pre internal_init_bus_manager() completed successfully
+ * @pre s_motor_current_configs[] zero-initialized (BSS)
+ * @pre k_motor_current_adc_channels and g_motor_current_bus_names indexed [0..k_motor_current_adc_count)
+ *
+ * @post All four motor-current ADC buses registered and ADC hardware initialised
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see rx_bus_config_init_adc() Underlying configuration helper
+ * @see rx_bus_adc_init() Initialises ADC hardware after registration
+ *
+ * @since Version 1.0.0
+ */
+static void internal_register_motor_current_adc_buses(void)
+{
   for (uint8_t i = 0; i < k_motor_current_adc_count; i++) {
-    err = rx_bus_config_init_adc(&s_motor_current_configs[i],
-                                 g_motor_current_bus_names[i],    /* name (shared) */
-                                 k_adc_unit_0,                    /* unit = S12AD0 */
-                                 k_motor_current_adc_channels[i], /* channel = AN004-7 */
-                                 k_adc_resolution_12bit);         /* bits = 12-bit */
+    rx_err_t err = rx_bus_config_init_adc(&s_motor_current_configs[i],
+                                          g_motor_current_bus_names[i],    /* name (shared) */
+                                          k_adc_unit_0,                    /* unit = S12AD0 */
+                                          k_motor_current_adc_channels[i], /* channel = AN004-7 */
+                                          k_adc_resolution_12bit);         /* bits = 12-bit */
     RX_ASSERT(err == k_rx_ok, "motor_current config init must succeed");
     err = rx_bus_manager_add_bus(&g_bus_manager, &s_motor_current_configs[i]);
     RX_ASSERT(err == k_rx_ok, "motor_current registration must succeed");
     err = rx_bus_adc_init(&g_bus_manager, g_motor_current_bus_names[i]);
     RX_ASSERT(err == k_rx_ok, "motor_current ADC init must succeed");
   }
+}
 
-  /* Register i2c1_imu - BNO055 IMU (RIIC1, addr 0x28, SDA=P2.0, SCL=P2.1) */
-  err = rx_bus_config_init_i2c(&s_i2c1_imu_config,
-                               "i2c1_imu",              /* name: matches rx_bno055.c s_bus_name */
-                               k_riic_channel_1,        /* channel: RIIC1 */
-                               k_i2c_addr_bno055,       /* device_addr: BNO055 (COM3/ADR=LOW) */
-                               k_rx_p2_0,               /* sda_pin: P2.0 = SDA1 */
-                               k_rx_p2_1,               /* scl_pin: P2.1 = SCL1 */
-                               k_i2c_frequency_400khz); /* frequency_hz: 400 kHz fast mode */
-  RX_ASSERT(err == k_rx_ok, "i2c1_imu config init must succeed");
-  err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c1_imu_config);
-  RX_ASSERT(err == k_rx_ok, "i2c1_imu registration must succeed");
-  err = rx_bus_i2c_init(&g_bus_manager, "i2c1_imu");
-  RX_ASSERT(err == k_rx_ok, "i2c1_imu I2C init must succeed");
+/**
+ * @brief Register a single mandatory I2C device on RIIC1 at 400 kHz
+ *
+ * @details
+ * Common wrapper for the BNO055 and BMP280 registrations: both share RIIC1,
+ * SDA=P2.0, SCL=P2.1, and 400 kHz fast mode and differ only by name, device
+ * address and config-storage struct. Failure asserts (boot precondition).
+ *
+ * Steps:
+ *   1. rx_bus_config_init_i2c(config, name, RIIC1, addr, P2.0, P2.1, 400 kHz)
+ *   2. rx_bus_manager_add_bus(g_bus_manager, config)
+ *   3. rx_bus_i2c_init(g_bus_manager, name)
+ *
+ * @param[out] config Pointer to caller-owned static rx_bus_config_t storage
+ * @param[in] name Stable name string used to look the bus up later
+ * @param[in] device_addr 7-bit I2C address of the peripheral
+ *
+ * @pre internal_init_bus_manager() completed successfully
+ * @pre config != NULL and points to BSS-zeroed storage
+ * @pre name is a stable string with lifetime >= bus manager lifetime
+ *
+ * @post Bus "name" registered, configured and ready for read/write
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see rx_bus_config_init_i2c() Underlying configuration helper
+ * @see rx_bus_i2c_init() Initialises RIIC hardware after registration
+ *
+ * @since Version 1.0.0
+ */
+static void internal_register_riic1_device(rx_bus_config_t* config, const char* name,
+                                           uint8_t device_addr)
+{
+  rx_err_t err = rx_bus_config_init_i2c(config, name, k_riic_channel_1, /* channel: RIIC1 */
+                                        device_addr,             /* device_addr: per-sensor */
+                                        k_rx_p2_0,               /* sda_pin: P2.0 = SDA1 */
+                                        k_rx_p2_1,               /* scl_pin: P2.1 = SCL1 */
+                                        k_i2c_frequency_400khz); /* 400 kHz fast mode */
+  RX_ASSERT(err == k_rx_ok, "RIIC1 device config init must succeed");
+  err = rx_bus_manager_add_bus(&g_bus_manager, config);
+  RX_ASSERT(err == k_rx_ok, "RIIC1 device registration must succeed");
+  err = rx_bus_i2c_init(&g_bus_manager, name);
+  RX_ASSERT(err == k_rx_ok, "RIIC1 device I2C init must succeed");
+}
 
-  /* Register i2c1_baro - BMP280 barometric sensor (RIIC1, addr 0x76, SDA=P2.0, SCL=P2.1) */
-  err = rx_bus_config_init_i2c(&s_i2c1_baro_config,
-                               "i2c1_baro",             /* name: matches rx_bmp280.c s_bus_name */
-                               k_riic_channel_1,        /* channel: RIIC1 (same as i2c1_imu) */
-                               k_i2c_addr_bmp280,       /* device_addr: BMP280 (SDO=LOW) */
-                               k_rx_p2_0,               /* sda_pin: P2.0 = SDA1 */
-                               k_rx_p2_1,               /* scl_pin: P2.1 = SCL1 */
-                               k_i2c_frequency_400khz); /* frequency_hz: 400 kHz fast mode */
-  RX_ASSERT(err == k_rx_ok, "i2c1_baro (BMP280) config init must succeed");
-  err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c1_baro_config);
-  RX_ASSERT(err == k_rx_ok, "i2c1_baro (BMP280) registration must succeed");
-  err = rx_bus_i2c_init(&g_bus_manager, "i2c1_baro");
-  RX_ASSERT(err == k_rx_ok, "i2c1_baro (BMP280) I2C init must succeed");
-
-  /* =========================================================================
-   * BENCH PROBE: GY-521 / MPU-6050 WHO_AM_I at 0x68 on RIIC1
-   * Purpose: confirm a fresh GY-521 wired to SDA1/SCL1 ACKs and returns 0x68
-   *          (or 0x70 on MPU-6500 clones) from register 0x75.
-   * No RX_ASSERT here -- if the module is absent, log and keep booting.
-   * ========================================================================= */
-  err = rx_bus_config_init_i2c(&s_i2c1_mpu_config,
-                               "i2c1_mpu",              /* bench-test bus name */
-                               k_riic_channel_1,        /* channel: RIIC1 */
-                               k_i2c_addr_mpu6050,      /* device_addr: 0x68 */
-                               k_rx_p2_0,               /* sda_pin: P2.0 = SDA1 */
-                               k_rx_p2_1,               /* scl_pin: P2.1 = SCL1 */
-                               k_i2c_frequency_400khz); /* frequency_hz: 400 kHz */
+/**
+ * @brief Probe MPU-6050 WHO_AM_I and persist {who_am_i, err} to data flash
+ *
+ * @details
+ * Bench-only diagnostic: registers the GY-521/MPU-6050 at 0x68 on RIIC1, reads
+ * register 0x75 (WHO_AM_I), and writes the result to data flash at 0x00100000
+ * via internal_bench_dflash_write() so the result is recoverable through
+ * rfp-cli without a UART bridge.
+ *
+ * Unlike the BNO055/BMP280 paths, missing hardware here is **not fatal** -- the
+ * function logs the failure and continues. RX_ASSERT is intentionally absent.
+ *
+ * @pre internal_init_bus_manager() completed successfully
+ * @pre s_i2c1_mpu_config zero-initialized (BSS)
+ *
+ * @post s_i2c1_mpu_config populated with bench bus parameters (best-effort)
+ * @post Data flash @ 0x00100000 contains {magic, who_am_i, err} record
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see internal_bench_dflash_write() Persists the probe result
+ * @see rx_bus_i2c_write_read() Performs the WHO_AM_I single-byte read
+ *
+ * @since Version 1.0.0
+ */
+static void internal_probe_mpu6050_who_am_i(void)
+{
+  rx_err_t err = rx_bus_config_init_i2c(&s_i2c1_mpu_config,
+                                        "i2c1_mpu",              /* bench-test bus name */
+                                        k_riic_channel_1,        /* channel: RIIC1 */
+                                        k_i2c_addr_mpu6050,      /* device_addr: 0x68 */
+                                        k_rx_p2_0,               /* sda_pin: P2.0 = SDA1 */
+                                        k_rx_p2_1,               /* scl_pin: P2.1 = SCL1 */
+                                        k_i2c_frequency_400khz); /* frequency_hz: 400 kHz */
   if (err == k_rx_ok) {
     err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c1_mpu_config);
   }
@@ -1906,6 +2128,19 @@ static void internal_register_system_buses(void)
   /* Persist the result to data flash @ 0x00100000 so it's readable via
    * rfp-cli -rv 0x00100000 16 without needing the UART bridge. */
   internal_bench_dflash_write(who_am_i, probe_err);
+}
+
+static void internal_register_system_buses(void)
+{
+  /* Production buses required by tasks. */
+  internal_register_onewire0_bus();
+  internal_register_gpio_bus();
+  internal_register_motor_current_adc_buses();
+  internal_register_riic1_device(&s_i2c1_imu_config, "i2c1_imu", k_i2c_addr_bno055);
+  internal_register_riic1_device(&s_i2c1_baro_config, "i2c1_baro", k_i2c_addr_bmp280);
+
+  /* Bench-only diagnostic; not fatal if the module is absent. */
+  internal_probe_mpu6050_who_am_i();
 }
 
 /**
@@ -2061,13 +2296,35 @@ static void internal_register_iwdt_tasks(void)
  *
  * @since Version 1.0.0
  */
-static void internal_create_system_tasks(void)
+/**
+ * @brief Create the low-priority observability tasks (serial bring-up + LED status)
+ *
+ * @details
+ * Spawns the lowest-priority threads first so the scheduler has visible
+ * heartbeat output the moment higher-priority work begins:
+ * - serial_bringup_task (priority 18 slot, replaces the dormant telemetry_task)
+ * - led_status_task (priority 17, blinks D9 at 1 Hz once running)
+ *
+ * MVP BYPASS (2026-04-22): the framed nanopb / HARQ / session stack is
+ * currently disabled; serial_bringup_task owns SCI9 with a simple ASCII line
+ * protocol for SLAM bring-up. To restore framed comms, swap
+ * serial_bringup_task_create() for telemetry_task_create() + comm_task_create()
+ * and update the matching IWDT registrations in internal_register_iwdt_tasks().
+ *
+ * @pre internal_register_iwdt_tasks() completed (heartbeat slots reserved)
+ * @pre Per-task static stacks defined in their respective task modules
+ *
+ * @post serial_bringup_task and led_status_task created in READY state
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see serial_bringup_task_create() Replaces telemetry_task in the MVP
+ * @see led_status_task_create() D9 heartbeat
+ *
+ * @since Version 1.0.0
+ */
+static void internal_create_observability_tasks(void)
 {
-  /* MVP BYPASS (2026-04-22): framed nanopb/HARQ/session stack disabled.
-   * serial_bringup_task owns SCI9 with a simple ASCII line protocol for
-   * SLAM bring-up. Re-enable the telemetry_task_create() + comm_task_create()
-   * lines below and comment out serial_bringup_task_create() to restore
-   * framed comms. */
   /* Telemetry Task - Priority 18 (lowest) */
   // rx_err_t err = telemetry_task_create();
   // RX_ASSERT(err == k_rx_ok, "telemetry_task_create must succeed");
@@ -2077,7 +2334,36 @@ static void internal_create_system_tasks(void)
   /* LED Status Task - Priority 17 (visual feedback) */
   err = led_status_task_create();
   RX_ASSERT(err == k_rx_ok, "led_status_task_create must succeed");
+}
 
+/**
+ * @brief Create the sensor and motor-control tasks (IMU + motor control)
+ *
+ * @details
+ * Spawns the safety-critical mid-priority tasks. Exact set is gated by the
+ * scheduler-bring-up TODO (2026-04-22): temp_sensor_task / obstacle_detect_task
+ * / comm_task are currently commented out because each hangs its own init path
+ * when the scheduler is alive, starving the lower-priority observability tasks.
+ * Re-enable lines ONE AT A TIME after each task's init hang is diagnosed.
+ *
+ * Currently active:
+ * - imu_task (priority 13, BNO055 + BMP280 at 20 Hz)
+ * - motor_control_task (priority 8, 250 Hz control loop)
+ *
+ * @pre internal_create_observability_tasks() completed
+ * @pre internal_register_system_buses() registered i2c1_imu, i2c1_baro and gpio buses
+ *
+ * @post imu_task and motor_control_task created in READY state
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see imu_task_create() BNO055/BMP280 fusion task
+ * @see motor_control_task_create() 250 Hz PID + telemetry task
+ *
+ * @since Version 1.0.0
+ */
+static void internal_create_sensor_and_motor_tasks(void)
+{
   /* TODO(2026-04-22, scheduler-bring-up): temp / imu / obstacle / motor
    * tasks are DISABLED here because each hangs its own init path when the
    * scheduler is alive, starving every lower-priority task (led_status
@@ -2097,11 +2383,11 @@ static void internal_create_system_tasks(void)
    */
 
   /* Temperature Sensor Task - Priority 15 */
-  // err = temp_sensor_task_create();
+  // rx_err_t err = temp_sensor_task_create();
   // RX_ASSERT(err == k_rx_ok, "temp_sensor_task_create must succeed");
 
   /* IMU Task - Priority 13 (BNO055 + BMP280 at 20 Hz) */
-  err = imu_task_create();
+  rx_err_t err = imu_task_create();
   RX_ASSERT(err == k_rx_ok, "imu_task_create must succeed");
 
   /* Obstacle Detection Task - Priority 12 */
@@ -2117,23 +2403,82 @@ static void internal_create_system_tasks(void)
   /* Motor Control Task - Priority 8 */
   err = motor_control_task_create();
   RX_ASSERT(err == k_rx_ok, "motor_control_task_create must succeed");
+}
 
+/**
+ * @brief Create the infrastructure tasks (USB CDC stack + watchdog monitor)
+ *
+ * @details
+ * Spawns the highest-priority infrastructure tasks last so that they pre-empt
+ * the lower priority work as soon as the scheduler starts:
+ * - usb_task (priority 4, drives 3-port CDC: ttyACM0 PROTO, 1 DECODED, 2 LOG)
+ * - watchdog_monitor_task (priority 6, IWDT feeding + heartbeat aggregation)
+ *
+ * The 9 non-control USB pipes split 3 per CDC; HUM Ch.40 allows 10 pipes total
+ * (DCP + 9), so all three CDCs fit cleanly. usb_task also polls the production
+ * rx_usb_isr_handler() once per tick as a backstop in case the SLIBR/IER edge
+ * case ever drops a USBI0.
+ *
+ * @pre internal_create_sensor_and_motor_tasks() completed
+ * @pre rx_usb_init() completed in main() pre-kernel window
+ *
+ * @post usb_task and watchdog_monitor_task created in READY state
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see usb_task_create() 3-port CDC stack driver
+ * @see watchdog_monitor_task_create() IWDT feeding + heartbeat aggregation
+ *
+ * @since Version 1.0.0
+ */
+static void internal_create_infrastructure_tasks(void)
+{
   /* USB Task - Priority 4 (above comm_task) -- drives the 3-port CDC
    * stack: ttyACM0 PROTO (R/W), ttyACM1 DECODED (R/W), ttyACM2 LOG (RO).
    * The 9 non-control USB pipes split 3 per CDC; HUM Ch.40 allows 10
    * pipes total (DCP + 9), so all three CDCs fit cleanly.  Polls the
    * production rx_usb_isr_handler() once per tick as a backstop in
    * case the SLIBR/IER edge case ever drops a USBI0. */
-  err = usb_task_create();
+  rx_err_t err = usb_task_create();
   RX_ASSERT(err == k_rx_ok, "usb_task_create must succeed");
 
   /* Watchdog Monitor Task - Priority 6 */
   err = watchdog_monitor_task_create();
   RX_ASSERT(err == k_rx_ok, "watchdog_monitor_task_create must succeed");
+}
 
-  /* Transition to running state (all tasks created) */
-  err = rx_iwdt_set_state(k_system_state_running);
+/**
+ * @brief Transition the IWDT state machine to k_system_state_running
+ *
+ * @details
+ * After all application tasks are created, switch the IWDT to the 2-second
+ * running-state timeout. Until this point the IWDT used the 5-second
+ * init-phase timeout configured by internal_register_iwdt_tasks().
+ *
+ * @pre internal_create_observability_tasks() completed
+ * @pre internal_create_sensor_and_motor_tasks() completed
+ * @pre internal_create_infrastructure_tasks() completed
+ *
+ * @post IWDT state == k_system_state_running (2 s timeout)
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see rx_iwdt_set_state() State machine setter
+ *
+ * @since Version 1.0.0
+ */
+static void internal_set_iwdt_running_state(void)
+{
+  rx_err_t err = rx_iwdt_set_state(k_system_state_running);
   RX_ASSERT(err == k_rx_ok, "IWDT set running state must succeed");
+}
+
+static void internal_create_system_tasks(void)
+{
+  internal_create_observability_tasks();
+  internal_create_sensor_and_motor_tasks();
+  internal_create_infrastructure_tasks();
+  internal_set_iwdt_running_state();
 }
 
 /**
@@ -2497,19 +2842,34 @@ void tx_application_define(void* first_unused_memory)
  *
  * @test test_main.c Verify boot sequence and error handling paths
  */
-int main(void)
+/**
+ * @brief Configure the five boot-checkpoint LEDs (D9-D13) and light D9
+ *
+ * @details
+ * Sets up the "one-hot" boot-progress indicator. Each later stage in main()
+ * extinguishes the previous LED and lights its own so a single glowing LED
+ * tells the operator exactly where boot got to without needing a UART:
+ *   - D9  (PA7) = main() entered
+ *   - D10 (PB0) = startup flags checked
+ *   - D11 (P71) = rx_clock_power_init done
+ *   - D12 (P72) = uart_debug_init done (UART live)
+ *   - D13 (PB1) = hardware_init done, about to tx_kernel_enter
+ *
+ * GPIO works on the default LOCO 240 kHz clock, no MSTP release needed.
+ *
+ * @pre MCU reset complete and C runtime initialised
+ *
+ * @post All five checkpoint pins configured as outputs and driven low
+ * @post D9 (PA7) lit to indicate main() entered
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see gpio_set_output() / gpio_write_low() / gpio_write_high()
+ *
+ * @since Version 1.0.0
+ */
+static void internal_init_boot_checkpoint_leds(void)
 {
-  /* BRING-UP CHECKPOINTS -- "one hot" LED indicator of how far boot got
-   * without any UART.  Only ONE of the five LEDs is lit at any time --
-   * each stage extinguishes every prior checkpoint LED before lighting
-   * its own, so the single glowing LED tells us exactly where we are.
-   * Keeps total LED brightness down (important -- these are bright).
-   *   D9  (PA7) = main() entered
-   *   D10 (PB0) = startup flags checked
-   *   D11 (P71) = rx_clock_power_init done
-   *   D12 (P72) = uart_debug_init done (UART should be live)
-   *   D13 (PB1) = hardware_init done, about to tx_kernel_enter
-   * GPIO works on the default LOCO 240 kHz clock, no MSTP release needed. */
   (void)gpio_set_output(k_rx_pa_7);
   (void)gpio_set_output(k_rx_pb_0);
   (void)gpio_set_output(k_rx_p7_1);
@@ -2521,6 +2881,264 @@ int main(void)
   (void)gpio_write_low(k_rx_p7_2);
   (void)gpio_write_low(k_rx_pb_1);
   (void)gpio_write_high(k_rx_pa_7); /* D9 on: main() entered */
+}
+
+/**
+ * @brief Configure USB0 module clock, SYSCFG and PHY (HUM 40.3.1.1 sequence)
+ *
+ * @details
+ * Releases USB0 module-stop (MSTPCRB bit 19) under PRCR unlock, then walks the
+ * HUM 40.3.1.1 ordering: clear SYSCFG -> SCKE=1 -> wait -> USBE=1. The two
+ * spin-loop waits use volatile loop variables so the compiler cannot collapse
+ * them. After USBE the PHY housekeeping (FIXPHY0 clear, PHYSLEW=0x5) runs
+ * before INTENB0 programming (mirror of rx_usb_hw.c internal_usb_configure_phy()).
+ *
+ * Background: the previous order (USBE then SCKE) silently no-oped half the
+ * SYSCFG follow-on writes because the USB module clock was gated until SCKE=1
+ * was acknowledged. DPRPU stays 0 here; it is asserted later (after pipe + ICU
+ * config) to announce attach to the host.
+ *
+ * @pre rx_clock_power_init() configured ICLK/PCLK; PRCR is currently locked
+ *
+ * @post MSTPCRB bit 19 cleared (USB0 module clock running)
+ * @post SYSCFG.SCKE=1, USBE=1, DPRPU=0
+ * @post DPUSR0R.FIXPHY0=0, USB0.PHYSLEW=0x5
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see HUM 40.3.1.1 USB clock supply ordering
+ * @see rx_usb_hw.c internal_usb_configure_phy()
+ *
+ * @since Version 1.0.0
+ */
+static void internal_inline_usb0_clock_and_phy(void)
+{
+  volatile uint16_t* const PRCR_R    = (volatile uint16_t*)0x000803FEU;
+  volatile uint32_t* const MSTPCRB_R = (volatile uint32_t*)0x00080014U;
+  volatile uint16_t* const SYSCFG_R  = (volatile uint16_t*)0x000A0000U;
+
+  *PRCR_R = k_prcr_unlock_clock_lpm;
+  *MSTPCRB_R &= ~(1UL << 19);
+  *PRCR_R = k_prcr_lock_all;
+
+  /* HUM 40.3.1.1 ("Setting Data to the USB Related Register"):
+   *   "Setting the SYSCFG.USBE bit to 1 AFTER starting the clock supply
+   *    to the USB (SYSCFG.SCKE bit = 1) enables and starts USB operation."
+   * The previous order (USBE then SCKE) silently no-ops half the SYSCFG
+   * follow-on writes because the USB module clock is gated until SCKE=1
+   * is acknowledged.  Required order: clear SYSCFG -> SCKE=1 -> wait ->
+   * USBE=1.  DPRPU stays 0 here; it is asserted last (after pipe + ICU
+   * config) to announce attach to the host. */
+  *SYSCFG_R = 0x0000U;
+  for (volatile uint32_t d = 0; d < k_usb_syscfg_settle_nops; d++) {
+    __asm__ volatile("nop");
+  }
+  *SYSCFG_R |= (1U << 10); /* SCKE first per HUM 40.3.1.1 */
+  for (volatile uint32_t d = 0; d < k_usb_syscfg_settle_nops; d++) {
+    __asm__ volatile("nop");
+  }
+  *SYSCFG_R |= (1U << 0); /* USBE only after the clock is up */
+
+  /* RX72N PHY housekeeping that mirrors rx_usb_hw.c's
+   * internal_usb_configure_phy() -- must run between USBE=1 and
+   * INTENB0 programming.  See tinyusb renesas/usba dcd_usba.c:626-628.
+   *   - USB.DPUSR0R.FIXPHY0 cleared: release PHY from output-fixed state
+   *   - USB0.PHYSLEW = 0x5     : RX72N-specific slew-rate trim */
+  volatile uint32_t* const DPUSR0R_R = (volatile uint32_t*)0x000A0400U;
+  volatile uint32_t* const PHYSLEW_R = (volatile uint32_t*)0x000A00F0U;
+  *DPUSR0R_R &= ~(uint32_t)(1U << 4); /* FIXPHY0 */
+  *PHYSLEW_R = 0x00000005U;           /* SLEWR00 | SLEWF00 */
+}
+
+/**
+ * @brief Configure USB0 default control pipe (DCP) and endpoint interrupt enables
+ *
+ * @details
+ * Programs DCPCFG, DCPMAXP=64 (default control pipe), DCPCTR=0x01, then enables
+ * BRDY/BEMP for pipe 0 (DCP) and the global INTENB0 mask covering VBSE, RESM,
+ * SOFE, DVSE, CTRE. Finally asserts SYSCFG.DPRPU to pull D+ high and announce
+ * attach to the host.
+ *
+ * @pre internal_inline_usb0_clock_and_phy() completed (USBE=1, PHY trimmed)
+ *
+ * @post DCP configured for 64-byte EP0 control transfers
+ * @post BRDYENB / BEMPENB / INTENB0 enable masks programmed
+ * @post DPRPU=1 (D+ pull-up engaged; host enumeration begins)
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see HUM 40 Default Control Pipe register layout
+ *
+ * @since Version 1.0.0
+ */
+static void internal_inline_usb0_endpoint_setup(void)
+{
+  volatile uint16_t* const SYSCFG_R  = (volatile uint16_t*)0x000A0000U;
+  volatile uint16_t* const INTENB0_R = (volatile uint16_t*)0x000A0030U;
+  volatile uint16_t* const BRDYENB_R = (volatile uint16_t*)0x000A0036U;
+  volatile uint16_t* const BEMPENB_R = (volatile uint16_t*)0x000A003AU;
+  volatile uint16_t* const DCPCFG_R  = (volatile uint16_t*)0x000A005CU;
+  volatile uint16_t* const DCPMAXP_R = (volatile uint16_t*)0x000A005EU;
+  volatile uint16_t* const DCPCTR_R  = (volatile uint16_t*)0x000A0060U;
+
+  *DCPCFG_R  = 0x0000U;
+  *DCPMAXP_R = 64U;
+  *DCPCTR_R  = 0x0001U;
+  *BRDYENB_R = 0x0001U;
+  *BEMPENB_R = 0x0001U;
+  *INTENB0_R = (uint16_t)((1U << 15) | (1U << 12) | (1U << 11) | (1U << 10) | (1U << 8));
+
+  *SYSCFG_R |= (1U << 4); /* DPRPU */
+}
+
+/**
+ * @brief Wire USB0 USBI to ICU vector 144 (HUM 15.7.7 software-configurable IRQ)
+ *
+ * @details
+ * USBI0 is a Group-B software-configurable interrupt on RX72N (HW manual Ch15
+ * Table 15.3; hirakuni45/RX RX72N icu.hpp SELECTB::USBI0 = 62), so SLIBR[144]
+ * must be programmed to 62 before IER/IPR/IR for vector 144 do anything.
+ * Earlier revisions used vector 36 (a reserved gap), which silently consumed
+ * IER/IPR writes and left the ISR dormant.
+ *
+ * Steps follow HUM 15.7.7 mandatory 9-step procedure:
+ *   (1) IER bit clear (POR default; we re-set it in step 9)
+ *   (2) SLIBR144 = 62 (USBI0 source code)
+ *   (5) SLIPRCR.WPRC = 1   <-- previously missing -> ISR never fired
+ *   (6) confirm WPRC == 1 (bounded poll, NASA P10 Rule 2)
+ *   (8) IR144 = 0          (edge-detected vector, clear stale request)
+ *   (9) IER18.IEN0 = 1     (enable vector 144 delivery)
+ *
+ * @pre internal_inline_usb0_endpoint_setup() completed (DPRPU on, EP enables set)
+ *
+ * @post SLIBR[144] = 62, SLIPRCR.WPRC latched (best-effort within bounded poll)
+ * @post IPR[144] = 12, IR[144] = 0, IER18.IEN0 = 1
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ * @note If WPRC fails to latch within the bounded poll, the IER enable below is
+ *       a no-op -- the ISR-entry counter diagnostic catches that case.
+ *
+ * @see HUM 15.7.7 Setting Software Configurable Interrupts (page 153)
+ *
+ * @since Version 1.0.0
+ */
+static void internal_inline_usb0_icu_setup(void)
+{
+  volatile uint8_t* const SLIBR144_R = (volatile uint8_t*)(0x00087700U + 144U);
+  volatile uint8_t* const SLIPRCR_R  = (volatile uint8_t*)0x00087A00U;
+  volatile uint8_t* const IPR144_R   = (volatile uint8_t*)(0x00087300U + 144U);
+  volatile uint8_t* const IR144_R    = (volatile uint8_t*)(0x00087000U + 144U);
+  volatile uint8_t* const IER18_R    = (volatile uint8_t*)(0x00087200U + 18U); /* 144 / 8 */
+
+  enum : uint8_t {
+    k_inline_usbi0_sli_src  = 62U,   /* USBI0 source number per HUM Table 15.3 */
+    k_inline_sliprcr_wprc   = 0x01U, /* SLIPRCR.WPRC: write-once latch */
+    k_inline_usbi_priority  = 12U,   /* IPR144 priority for USBI0 */
+    k_inline_ier18_usbi_bit = 0U,    /* IER18 bit 0 == vector 144 (144 % 8) */
+  };
+  enum : uint16_t {
+    k_inline_sliprcr_poll_max = 1024U, /* Bounded poll for HUM 15.7.7 step (6) */
+  };
+
+  *SLIBR144_R = k_inline_usbi0_sli_src;
+  *SLIPRCR_R  = k_inline_sliprcr_wprc;
+  /* HUM 15.7.7 step (6) bounded confirmation: WPRC latches in 1-2 ICLK
+   * cycles; cap the poll so the boot path never spins forever (NASA
+   * P10 Rule 2).  If WPRC fails to latch the IER enable below is a
+   * no-op -- the ISR-entry counter diagnostic catches that case. */
+  for (uint16_t i = 0; i < k_inline_sliprcr_poll_max; i++) {
+    if ((*SLIPRCR_R & k_inline_sliprcr_wprc) != 0U) {
+      break;
+    }
+  }
+  *IPR144_R = k_inline_usbi_priority;
+  *IR144_R  = 0U;
+  *IER18_R |= (uint8_t)(1U << k_inline_ier18_usbi_bit);
+}
+
+/**
+ * @brief Drive PB3 high as a pre-scheduler "main reached tx_kernel_enter" probe
+ *
+ * @details
+ * PB3 (P4 pad 2, MCU pin 82, silkscreen EN3D) is driven HIGH in main BEFORE
+ * tx_kernel_enter and later driven LOW by usb_task once it runs. An AD2 DIO7
+ * probe on P4 pad 2 thus shows:
+ *   HIGH = firmware reached main init but usb_task hasn't run
+ *   LOW  = usb_task ran and set PB3 low
+ *   0x0  = neither wrote (probe/wiring issue)
+ *
+ * @pre PORTB clocks active (default after reset)
+ *
+ * @post PB3 configured as GPIO output and driven HIGH
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see usb_task.c (drives PB3 LOW once running)
+ *
+ * @since Version 1.0.0
+ */
+static void internal_set_pb3_pre_kernel_probe(void)
+{
+  volatile uint8_t* const pb_pdr  = (volatile uint8_t*)0x0008C00BU;
+  volatile uint8_t* const pb_podr = (volatile uint8_t*)0x0008C02BU;
+  volatile uint8_t* const pb_pmr  = (volatile uint8_t*)0x0008C06BU;
+  *pb_pmr &= (uint8_t) ~(1U << 3);
+  *pb_pdr |= (uint8_t)(1U << 3);
+  *pb_podr |= (uint8_t)(1U << 3); /* HIGH */
+}
+
+/**
+ * @brief Run the full inline USB0 bring-up sequence in the pre-kernel window
+ *
+ * @details
+ * Composes the four extracted helpers in the only order the HUM allows:
+ *   1. Module-stop release + clock + PHY (HUM 40.3.1.1)
+ *   2. Default control pipe + EP interrupt enables (HUM 40 EP layout)
+ *   3. ICU/SLIBR/IER wiring for USBI0 (HUM 15.7.7)
+ *   4. PB3 diagnostic probe HIGH
+ *
+ * Kept as raw register pokes (mirrors rx_usb_hw.c) rather than calling
+ * rx_usb_hw_init() so the very first PRCR/MSTPCR/SYSCFG writes run in the
+ * single-threaded pre-kernel window. This lets the call to
+ * rx_usb_hw_mark_initialized() afterwards safely tell rx_usb_init() to skip
+ * its own redundant init pass. See cherry-pick 0abb79c54.
+ *
+ * @pre hardware_init() completed (peripheral clocks, GPIO already configured)
+ * @pre rx_nanopb_init() completed (so the post-attach RX path is ready)
+ *
+ * @post USB0 module enabled, DCP configured, USBI0 ICU vector wired
+ * @post DPRPU asserted (host enumeration in flight)
+ * @post PB3 driven HIGH for AD2 visibility
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see internal_inline_usb0_clock_and_phy()
+ * @see internal_inline_usb0_endpoint_setup()
+ * @see internal_inline_usb0_icu_setup()
+ * @see internal_set_pb3_pre_kernel_probe()
+ *
+ * @since Version 1.0.0
+ */
+static void internal_inline_usb0_bringup(void)
+{
+  /* Inline USB0 bring-up sequence -- raw register pokes that mirror
+   * libs/rx_usb/src/rx_usb_hw.c.  Kept inline (rather than inside
+   * rx_usb_hw_init()) so the very first PRCR/MSTPCR/SYSCFG writes run
+   * in the single-threaded pre-kernel window and the call to
+   * rx_usb_hw_mark_initialized() below can safely tell rx_usb_init()
+   * to skip its own redundant init pass.  See cherry-pick 0abb79c54. */
+  internal_inline_usb0_clock_and_phy();
+  internal_inline_usb0_endpoint_setup();
+  internal_inline_usb0_icu_setup();
+  internal_set_pb3_pre_kernel_probe();
+}
+
+int main(void)
+{
+  /* BRING-UP CHECKPOINTS -- "one hot" LED indicator of how far boot got
+   * without any UART. See internal_init_boot_checkpoint_leds() for the
+   * complete D9-D13 mapping table. */
+  internal_init_boot_checkpoint_leds();
 
   /* Check startup flags (bring-up: never halt; diagnostic printed later). */
   rx_err_t ret = internal_check_startup_flags();
@@ -2572,129 +3190,9 @@ int main(void)
   ret = rx_nanopb_init();
   RX_ERROR_CHECK(ret);
 
-  {
-    /* Inline USB0 bring-up sequence -- raw register pokes that mirror
-     * libs/rx_usb/src/rx_usb_hw.c.  Kept inline (rather than inside
-     * rx_usb_hw_init()) so the very first PRCR/MSTPCR/SYSCFG writes run
-     * in the single-threaded pre-kernel window and the call to
-     * rx_usb_hw_mark_initialized() below can safely tell rx_usb_init()
-     * to skip its own redundant init pass.  See cherry-pick 0abb79c54. */
-    volatile uint16_t* const PRCR_R    = (volatile uint16_t*)0x000803FEU;
-    volatile uint32_t* const MSTPCRB_R = (volatile uint32_t*)0x00080014U;
-    volatile uint16_t* const SYSCFG_R  = (volatile uint16_t*)0x000A0000U;
-    volatile uint16_t* const INTENB0_R = (volatile uint16_t*)0x000A0030U;
-    volatile uint16_t* const BRDYENB_R = (volatile uint16_t*)0x000A0036U;
-    volatile uint16_t* const BEMPENB_R = (volatile uint16_t*)0x000A003AU;
-    volatile uint16_t* const DCPCFG_R  = (volatile uint16_t*)0x000A005CU;
-    volatile uint16_t* const DCPMAXP_R = (volatile uint16_t*)0x000A005EU;
-    volatile uint16_t* const DCPCTR_R  = (volatile uint16_t*)0x000A0060U;
-
-    *PRCR_R = 0xA503U;
-    *MSTPCRB_R &= ~(1UL << 19);
-    *PRCR_R = 0xA500U;
-
-    /* HUM 40.3.1.1 ("Setting Data to the USB Related Register"):
-     *   "Setting the SYSCFG.USBE bit to 1 AFTER starting the clock supply
-     *    to the USB (SYSCFG.SCKE bit = 1) enables and starts USB operation."
-     * The previous order (USBE then SCKE) silently no-ops half the SYSCFG
-     * follow-on writes because the USB module clock is gated until SCKE=1
-     * is acknowledged.  Required order: clear SYSCFG -> SCKE=1 -> wait ->
-     * USBE=1.  DPRPU stays 0 here; it is asserted last (after pipe + ICU
-     * config) to announce attach to the host. */
-    *SYSCFG_R = 0x0000U;
-    for (volatile uint32_t d = 0; d < 2400000U; d++) {
-      __asm__ volatile("nop");
-    }
-    *SYSCFG_R |= (1U << 10); /* SCKE first per HUM 40.3.1.1 */
-    for (volatile uint32_t d = 0; d < 2400000U; d++) {
-      __asm__ volatile("nop");
-    }
-    *SYSCFG_R |= (1U << 0); /* USBE only after the clock is up */
-
-    /* RX72N PHY housekeeping that mirrors rx_usb_hw.c's
-     * internal_usb_configure_phy() -- must run between USBE=1 and
-     * INTENB0 programming.  See tinyusb renesas/usba dcd_usba.c:626-628.
-     *   - USB.DPUSR0R.FIXPHY0 cleared: release PHY from output-fixed state
-     *   - USB0.PHYSLEW = 0x5     : RX72N-specific slew-rate trim */
-    volatile uint32_t* const DPUSR0R_R = (volatile uint32_t*)0x000A0400U;
-    volatile uint32_t* const PHYSLEW_R = (volatile uint32_t*)0x000A00F0U;
-    *DPUSR0R_R &= ~(uint32_t)(1U << 4); /* FIXPHY0 */
-    *PHYSLEW_R = 0x00000005U;           /* SLEWR00 | SLEWF00 */
-
-    *DCPCFG_R  = 0x0000U;
-    *DCPMAXP_R = 64U;
-    *DCPCTR_R  = 0x0001U;
-    *BRDYENB_R = 0x0001U;
-    *BEMPENB_R = 0x0001U;
-    *INTENB0_R = (uint16_t)((1U << 15) | (1U << 12) | (1U << 11) | (1U << 10) | (1U << 8));
-
-    *SYSCFG_R |= (1U << 4); /* DPRPU */
-
-    /* Enable CPU ICU delivery for USB0 USBI so BRDY/BEMP/CTRT interrupts
-     * fire directly.  USBI0 is a Group-B software-configurable interrupt
-     * on RX72N (HW manual Ch15 Table 15.3; hirakuni45/RX RX72N/icu.hpp
-     * SELECTB::USBI0 = 62), so we must program SLIBR[144] = 62 before
-     * IER/IPR/IR for vector 144 do anything.  See rx72n_usb_regs.h for
-     * the full narrative -- earlier revisions used vector 36 (a
-     * reserved gap), which silently consumed IER/IPR writes and left
-     * the ISR dormant. */
-    volatile uint8_t* const SLIBR144_R = (volatile uint8_t*)(0x00087700U + 144U);
-    volatile uint8_t* const SLIPRCR_R  = (volatile uint8_t*)0x00087A00U;
-    volatile uint8_t* const IPR144_R   = (volatile uint8_t*)(0x00087300U + 144U);
-    volatile uint8_t* const IR144_R    = (volatile uint8_t*)(0x00087000U + 144U);
-    volatile uint8_t* const IER18_R    = (volatile uint8_t*)(0x00087200U + 18U); /* 144 / 8 */
-
-    /* HUM 15.7.7 "Setting Software Configurable Interrupts" -- mandatory
-     * 9-step procedure.  Steps:
-     *   (1) IER bit clear (POR default; we set later in step 9)
-     *   (2) SLIBR144 = 62 (USBI0 source code)
-     *   (5) SLIPRCR.WPRC = 1   <-- previously missing -> ISR never fired
-     *   (6) confirm WPRC == 1
-     *   (8) IR144 = 0          (edge-detected vector, clear stale request)
-     *   (9) IER18.IEN0 = 1     (enable vector 144 delivery)
-     *
-     * Page 153: "After assigning software configurable interrupts,
-     *  confirm that the WPRC bit is 1 BEFORE the corresponding interrupt
-     *  request is generated."  This matches the
-     *  usb0_isr_not_firing_blocker symptom exactly. */
-    enum : uint8_t {
-      k_inline_usbi0_sli_src  = 62U,   /* USBI0 source number per HUM Table 15.3 */
-      k_inline_sliprcr_wprc   = 0x01U, /* SLIPRCR.WPRC: write-once latch */
-      k_inline_usbi_priority  = 12U,   /* IPR144 priority for USBI0 */
-      k_inline_ier18_usbi_bit = 0U,    /* IER18 bit 0 == vector 144 (144 % 8) */
-    };
-    enum : uint16_t {
-      k_inline_sliprcr_poll_max = 1024U, /* Bounded poll for HUM 15.7.7 step (6) */
-    };
-
-    *SLIBR144_R = k_inline_usbi0_sli_src;
-    *SLIPRCR_R  = k_inline_sliprcr_wprc;
-    /* HUM 15.7.7 step (6) bounded confirmation: WPRC latches in 1-2 ICLK
-     * cycles; cap the poll so the boot path never spins forever (NASA
-     * P10 Rule 2).  If WPRC fails to latch the IER enable below is a
-     * no-op -- the ISR-entry counter diagnostic catches that case. */
-    for (uint16_t i = 0; i < k_inline_sliprcr_poll_max; i++) {
-      if ((*SLIPRCR_R & k_inline_sliprcr_wprc) != 0U) {
-        break;
-      }
-    }
-    *IPR144_R = k_inline_usbi_priority;
-    *IR144_R  = 0U;
-    *IER18_R |= (uint8_t)(1U << k_inline_ier18_usbi_bit);
-
-    /* Diagnostic: drive PB3 (P4 pad 2, MCU pin 82, silkscreen EN3D)
-     * HIGH here in main BEFORE tx_kernel_enter.  usb_task later drives
-     * it LOW.  AD2 DIO7 probe on P4 pad 2 thus shows:
-     *   HIGH = firmware reached main init but usb_task hasn't run
-     *   LOW  = usb_task ran and set PB3 low
-     *   0x0  = neither wrote (probe/wiring issue) */
-    volatile uint8_t* const pb_pdr  = (volatile uint8_t*)0x0008C00BU;
-    volatile uint8_t* const pb_podr = (volatile uint8_t*)0x0008C02BU;
-    volatile uint8_t* const pb_pmr  = (volatile uint8_t*)0x0008C06BU;
-    *pb_pmr &= (uint8_t) ~(1U << 3);
-    *pb_pdr |= (uint8_t)(1U << 3);
-    *pb_podr |= (uint8_t)(1U << 3); /* HIGH */
-  }
+  /* Pre-kernel inline USB0 bring-up: HUM 40.3.1.1 clock + PHY -> EP setup ->
+   * HUM 15.7.7 ICU wiring -> PB3 diagnostic. See helper for the full narrative. */
+  internal_inline_usb0_bringup();
 
   /* Hardware is now fully attached by the inline sequence above.  Tell
    * the production rx_usb_hw layer that s_hw_initialized = true so

@@ -1,0 +1,45 @@
+# firmware_update.options - nanopb static bounds for FirmwareUpdateService.
+# Enforces zero dynamic allocation on the RX72N target (NASA Power-of-10 Rule 3).
+#
+# Without these bounds, every string/bytes field in firmware_update.proto
+# falls back to pb_callback_t in the generated nanopb header, forcing OTA
+# code to hand-write encode/decode callbacks and silently violating the
+# project's no-malloc policy.
+#
+# Sizing convention (see sibling .options files):
+#   Version strings:           32   (e.g., "1.2.3-rc4+git.abcdefg")
+#   Short hashes / chip ids:   16   (git short hash, "rx72n")
+#   Build timestamps:          32   (ISO 8601, "2026-04-25T13:42:00Z")
+#   Session IDs (UUID-ish):    64
+#   Operator-entered reasons: 128
+#   Error message strings:    128
+#   Error detail strings:     128
+#   Firmware chunk payload:  1024   (matches FirmwareChunk recommended size)
+#
+# All max_size values count bytes (chars + 1 null terminator handled by nanopb).
+# Increase a single bound only after auditing the static RAM impact for the
+# RX72N OTA buffer holding multiple in-flight messages.
+
+# BeginUpdateRequest / BeginUpdateResponse
+star.v1.BeginUpdateRequest.expected_version    max_size:32
+star.v1.BeginUpdateResponse.session_id         max_size:64
+
+# FirmwareChunk
+star.v1.FirmwareChunk.data                     max_size:1024
+
+# AbortUpdateRequest
+star.v1.AbortUpdateRequest.reason              max_size:128
+
+# RollbackResponse
+star.v1.RollbackResponse.previous_version      max_size:32
+
+# FirmwareInfo
+star.v1.FirmwareInfo.version                   max_size:32
+star.v1.FirmwareInfo.git_hash                  max_size:16
+star.v1.FirmwareInfo.build_date                max_size:32
+star.v1.FirmwareInfo.idf_version               max_size:32
+star.v1.FirmwareInfo.chip_target               max_size:16
+
+# FirmwareUpdateError
+star.v1.FirmwareUpdateError.message            max_size:128
+star.v1.FirmwareUpdateError.details            max_size:128

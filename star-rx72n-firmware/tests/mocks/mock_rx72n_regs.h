@@ -4,8 +4,8 @@
  *
  * @details
  * This file provides a comprehensive mock of RX72N hardware register structures
- * for host-side unit testing. It serves as the central "master header" that
- * aggregates all peripheral register mocks (CMT timers, system registers, module
+ * for host-side unit testing. It serves as the central aggregator header that
+ * collects all peripheral register mocks (CMT timers, system registers, module
  * stop control) into a single include, mirroring the real `lib/rx_hal/inc/rx72n_regs.h`.
  *
  * ## Purpose and Architecture

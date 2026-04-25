@@ -913,7 +913,7 @@ Shared bus between the Pi5 controller and the RX72N peripheral. Clock
 rate \qty{10}{\mega\hertz}, CPOL = 0, CPHA = 0, MSB-first, 8-bit word.
 Chip select is driven by a single GPIO on the Pi5. The Pi5 side uses
 the \texttt{periph.io} SPI driver, and the RX72N side uses RSPI in
-peripheral (slave) mode with DMA-backed ping-pong buffers.
+peripheral mode with DMA-backed ping-pong buffers.
 
 \subsection{gRPC Services}
 Five services are defined in the proto inventory. Every request

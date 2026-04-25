@@ -495,7 +495,8 @@ typedef struct {
  * @retval k_rx_err_invalid_arg handle or payload is nullptr
  * @retval k_rx_err_invalid_state Not initialized
  * @retval k_rx_err_invalid_size Payload exceeds maximum frame size
- * @retval k_rx_err_hw UART hardware write failure
+ * @retval k_rx_err_hw_error UART hardware write failure (propagated from uart_write_channel())
+ * @retval other Propagated from rx_session_next_tx() or rx_frame_encode()
  *
  * @pre handle initialized via rx_uart_comm_init()
  * @pre payload != nullptr

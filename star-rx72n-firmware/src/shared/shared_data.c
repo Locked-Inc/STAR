@@ -738,6 +738,10 @@ typedef enum : uint8_t {
   k_mutex_idx_baro     = 6U, /**< baro_mutex created sixth (all mutexes) */
 } mutex_init_idx_t;
 
+/* Forward declaration -- definition below internal_cleanup_mutexes() so cleanup
+ * can be referenced from the create path. */
+static rx_err_t internal_create_shared_sync_objects(void);
+
 /**
  * @brief Delete the first @p count successfully created mutexes on init failure
  *
@@ -757,8 +761,6 @@ typedef enum : uint8_t {
  * @note Not thread-safe; called only during single-threaded initialization
  * @since Version 1.0.0
  */
-static rx_err_t internal_create_shared_sync_objects(void);
-
 static void internal_cleanup_mutexes(uint8_t count)
 {
   TX_MUTEX* const mutexes[k_mutex_idx_baro] = {

@@ -638,12 +638,14 @@ static rx_err_t internal_configure_mpc(const rx_gptw_config_t* config)
  * | GPTW2 | PE3 (bit 3) | PE0 (bit 0) |
  * | GPTW3 | PE7 (bit 7) | PE6 (bit 6) |
  *
- * @param[in] channel GPTW channel whose pins to configure
- *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
- *   - Invalid channels result in no action (no error)
+ * @param[in] config GPTW channel configuration providing pin coordinates
+ *   - Must be non-NULL
+ *   - port_a_idx / port_b_idx must be valid Port indices for rx_port_get_base()
+ *   - bit_a / bit_b must be in range 0..7
+ *   - If either port lookup fails, function is a silent no-op
  *
  * @pre MPC configured for GPTW function via internal_configure_mpc()
- * @pre Port E GPIO registers accessible
+ * @pre config->port_a_idx / config->port_b_idx are valid for rx_port_get_base()
  *
  * @post PMR bits set for both channel pins
  * @post PDR bits set for both channel pins
@@ -1893,11 +1895,13 @@ static rx_err_t internal_configure_channel_staggered(const rx_gptw_channel_t cha
  * - Lowers EMI from simultaneous switching transients
  * - Allows smaller power supply capacitors
  *
- * @param[in] config Pointer to common configuration for all channels
+ * @param[in] configs Array of pointers (one per channel) to per-channel configurations.
+ *   - configs and each configs[i] must be non-NULL
+ *   - All entries must share frequency_hz and wave_mode (validated against configs[0])
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok All 4 channels initialized and running
- * @retval k_rx_err_null_ptr config is nullptr
+ * @retval k_rx_err_null_ptr configs or any configs[i] is nullptr
  * @retval k_rx_err_invalid_arg Invalid frequency or wave_mode
  * @retval k_rx_err_hw_error GPTW common registers inaccessible
  *
@@ -2003,7 +2007,7 @@ rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* configs[k_rx_gptw_ch
  * rx_err_t err = rx_gptw_deinit(k_gptw_channel_0);
  * @endcode
  *
- * @see rx_gptw_init_all() Re-initialize after deinit
+ * @see rx_gptw_init_all_staggered() Re-initialize after deinit
  * @see rx_gptw_stop() Stop without full teardown
  *
  * @since Version 1.0.0

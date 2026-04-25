@@ -80,7 +80,7 @@
  * |--------------|------------------|------|-----------------|-----------|
  * | **SetVelocityRequest** | star.v1.SetVelocityRequest | ~32 bytes | ~200 us | 100 Hz (10ms) |
  * | **EmergencyStopRequest** | star.v1.EmergencyStopRequest | ~8 bytes | ~50 us | On event |
- * | **SetPIDGainsRequest** | star.v1.SetPIDGainsRequest | ~28 bytes | ~180 us | Rarely (config) |
+ * | **SetPidGainsRequest** | star.v1.SetPidGainsRequest | ~28 bytes | ~180 us | Rarely (config) |
  *
  * **SetVelocityRequest structure (4-motor differential drive):**
  * @code{.proto}
@@ -184,7 +184,7 @@
  *   return_estop [label="return (success)", fillcolor=lightgreen, style=filled];
  *
  *   try_pid [label="rx_nanopb_decode_pid_gains_request()", shape=diamond];
- *   pid_ok [label="SetPIDGainsRequest decoded", fillcolor=lightblue, style=filled];
+ *   pid_ok [label="SetPidGainsRequest decoded", fillcolor=lightblue, style=filled];
  *   set_pid [label="shared_data_set_pid_gains()"];
  *   return_pid [label="return (success)", fillcolor=lightgreen, style=filled];
  *
@@ -679,6 +679,9 @@ static void internal_ship_log_frames(void);
 static void internal_send_command_response(rx_comm_channel_t channel,
                                            const uint8_t*    payload,
                                            uint32_t          payload_len);
+static star_v1_Status     internal_rx_err_to_proto_status(rx_err_t err);
+static star_v1_MotorState internal_motor_mode_to_proto_state(motor_mode_t mode,
+                                                             uint8_t      fault_flags);
 static rx_err_t internal_handle_command_frame(rx_comm_channel_t channel, const rx_frame_t* frame);
 static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx_frame_t* frame);
 static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_frame_t* frame);
@@ -1195,7 +1198,6 @@ static bool internal_init_uart_transport(void)
  * when at least one channel was enabled but all enabled channels failed.
  * Disabled channels are excluded from failure detection.
  *
- * @param[in] usb_ok  true if USB transport initialized successfully
  * @param[in] spi_ok  true if SPI transport initialized successfully
  * @param[in] link_ok true if SPI HARQ link initialized successfully
  * @param[in] i2c_ok  true if I2C transport initialized successfully
@@ -2107,7 +2109,7 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  * **Decode Priority (most frequent first):**
  * 1. SetVelocityRequest (~100 Hz)
  * 2. EmergencyStopRequest (rare, on demand)
- * 3. SetPIDGainsRequest (very rare, config only)
+ * 3. SetPidGainsRequest (very rare, config only)
  * 4. SetRetransmitConfigRequest (very rare, config only)
  * 5. Unknown (log warning, return error)
  *
@@ -2172,7 +2174,7 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  *
  * @see internal_handle_velocity_command() SetVelocityRequest handler
  * @see internal_handle_estop_command() EmergencyStopRequest handler
- * @see internal_handle_pid_gains_command() SetPIDGainsRequest handler
+ * @see internal_handle_pid_gains_command() SetPidGainsRequest handler
  * @see internal_handle_retransmit_config_command() SetRetransmitConfigRequest handler
  *
  * @par NASA Power of 10 Compliance:
@@ -2201,6 +2203,78 @@ static rx_err_t internal_handle_command_frame(rx_comm_channel_t channel, const r
 
   rx_log_warn(s_tag, "unknown command frame message type");
   return k_rx_err_invalid_arg;
+}
+
+/**
+ * @brief Map an internal rx_err_t code to a wire-level star_v1_Status enum value.
+ *
+ * @details
+ * Translates firmware error codes (rx_err.h) into the proto Status enum exposed
+ * to clients on the response header. Avoids collapsing every failure into
+ * STATUS_INTERNAL_ERROR so the host can distinguish bad input, busy peripherals,
+ * timeouts, and an active e-stop.
+ *
+ * @param[in] err Firmware error code returned by an internal API
+ * @return star_v1_Status enum value suitable for ResponseHeader.status
+ */
+static star_v1_Status internal_rx_err_to_proto_status(rx_err_t err)
+{
+  switch ((int32_t)err) {
+    case (int32_t)k_rx_ok:
+      return star_v1_Status_STATUS_OK;
+    case (int32_t)k_rx_err_null_ptr:
+    case (int32_t)k_rx_err_invalid_arg:
+    case (int32_t)k_rx_err_invalid_size:
+    case (int32_t)k_rx_err_validation_failed:
+    case (int32_t)k_rx_err_range_check_failed:
+    case (int32_t)k_rx_err_crc_mismatch:
+    case (int32_t)k_rx_err_checksum_mismatch:
+    case (int32_t)k_rx_err_protocol_error:
+      return star_v1_Status_STATUS_INVALID_REQUEST;
+    case (int32_t)k_rx_err_not_initialized:
+    case (int32_t)k_rx_err_invalid_state:
+      return star_v1_Status_STATUS_INVALID_STATE;
+    case (int32_t)k_rx_err_estop:
+      return star_v1_Status_STATUS_ESTOP_ACTIVE;
+    case (int32_t)k_rx_err_timeout:
+    case (int32_t)k_rx_err_hw_timeout:
+      return star_v1_Status_STATUS_TIMEOUT;
+    case (int32_t)k_rx_err_not_found:
+      return star_v1_Status_STATUS_NOT_FOUND;
+    default:
+      return star_v1_Status_STATUS_INTERNAL_ERROR;
+  }
+}
+
+/**
+ * @brief Map firmware motor_mode_t to wire star_v1_MotorState enum.
+ *
+ * @details
+ * Translates motor_mode_t (idle / velocity / estop) to the proto MotorState enum
+ * (UNKNOWN / IDLE / RUNNING / FAULT / ESTOP). A non-zero fault_flags bitfield is
+ * reported as MOTOR_STATE_FAULT regardless of mode, matching the proto's
+ * "motor is in fault condition" semantics.
+ *
+ * @param[in] mode        Current firmware motor mode
+ * @param[in] fault_flags Per-motor fault flags from motor_state_t
+ * @return Corresponding star_v1_MotorState
+ */
+static star_v1_MotorState internal_motor_mode_to_proto_state(motor_mode_t mode,
+                                                             uint8_t      fault_flags)
+{
+  if (fault_flags != 0U) {
+    return star_v1_MotorState_MOTOR_STATE_FAULT;
+  }
+  switch (mode) {
+    case k_motor_mode_idle:
+      return star_v1_MotorState_MOTOR_STATE_IDLE;
+    case k_motor_mode_velocity:
+      return star_v1_MotorState_MOTOR_STATE_RUNNING;
+    case k_motor_mode_estop:
+      return star_v1_MotorState_MOTOR_STATE_ESTOP;
+    default:
+      return star_v1_MotorState_MOTOR_STATE_UNKNOWN;
+  }
 }
 
 /**
@@ -2345,14 +2419,41 @@ static void internal_velocity_send_response(rx_comm_channel_t                 ch
 {
   star_v1_SetVelocityResponse response =
     (star_v1_SetVelocityResponse)star_v1_SetVelocityResponse_init_zero;
-  response.has_header = true;
-  const star_v1_Status resp_status =
-    (set_err == k_rx_ok) ? star_v1_Status_STATUS_OK : star_v1_Status_STATUS_INTERNAL_ERROR;
-  const char* req_id = nullptr;
+  response.has_header              = true;
+  const star_v1_Status resp_status = internal_rx_err_to_proto_status(set_err);
+  const char*          req_id      = nullptr;
   if (req->has_header) {
     req_id = req->header.request_id;
   }
   rx_nanopb_create_response_header(&response.header, resp_status, req_id);
+
+  /* Populate per-side MotorStatus (state, velocity, fault flags) so the UI
+   * sees a meaningful MotorState rather than MOTOR_STATE_UNKNOWN. */
+  motor_state_t motor_state;
+  if (shared_data_get_motor_state(&motor_state) == k_rx_ok) {
+    star_v1_MotorStatus* const left  = &response.motor_status[0];
+    star_v1_MotorStatus* const right = &response.motor_status[1];
+    *left                            = (star_v1_MotorStatus)star_v1_MotorStatus_init_zero;
+    *right                           = (star_v1_MotorStatus)star_v1_MotorStatus_init_zero;
+
+    left->motor_id           = (int32_t)k_motor_idx_front_left;
+    left->velocity_mps       = (double)motor_state.current_velocity_mps[k_motor_idx_front_left];
+    left->duty_cycle_percent = (double)motor_state.duty_cycle_percent[k_motor_idx_front_left];
+    left->current_ma         = (double)motor_state.current_ma[k_motor_idx_front_left];
+    left->fault_flags        = (uint32_t)motor_state.fault_flags[k_motor_idx_front_left];
+    left->state              = internal_motor_mode_to_proto_state(
+      motor_state.mode, motor_state.fault_flags[k_motor_idx_front_left]);
+
+    right->motor_id           = (int32_t)k_motor_idx_front_right;
+    right->velocity_mps       = (double)motor_state.current_velocity_mps[k_motor_idx_front_right];
+    right->duty_cycle_percent = (double)motor_state.duty_cycle_percent[k_motor_idx_front_right];
+    right->current_ma         = (double)motor_state.current_ma[k_motor_idx_front_right];
+    right->fault_flags        = (uint32_t)motor_state.fault_flags[k_motor_idx_front_right];
+    right->state              = internal_motor_mode_to_proto_state(
+      motor_state.mode, motor_state.fault_flags[k_motor_idx_front_right]);
+
+    response.motor_status_count = 2;
+  }
 
   uint32_t       encoded_len = 0;
   const rx_err_t enc_err     = rx_nanopb_encode_velocity_response(&response,
@@ -2451,11 +2552,11 @@ static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_fr
   {
     star_v1_EmergencyStopResponse response =
       (star_v1_EmergencyStopResponse)star_v1_EmergencyStopResponse_init_zero;
-    response.has_header    = true;
-    response.estop_engaged = (bool)(trigger_err == k_rx_ok);
-    const star_v1_Status resp_status =
-      (trigger_err == k_rx_ok) ? star_v1_Status_STATUS_OK : star_v1_Status_STATUS_INTERNAL_ERROR;
-    const char* req_id = (int)estop_req.has_header ? estop_req.header.request_id : nullptr;
+    response.has_header              = true;
+    response.estop_engaged           = (bool)(trigger_err == k_rx_ok);
+    const star_v1_Status resp_status = internal_rx_err_to_proto_status(trigger_err);
+    const char*          req_id =
+      (int)estop_req.has_header ? estop_req.header.request_id : nullptr;
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 
     uint32_t       encoded_len = 0;
@@ -2474,10 +2575,10 @@ static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_fr
 }
 
 /**
- * @brief Attempt to decode and handle a SetPIDGainsRequest from a command frame
+ * @brief Attempt to decode and handle a SetPidGainsRequest from a command frame
  *
  * @details
- * Tries to decode the frame payload as a star_v1_SetPIDGainsRequest protobuf message.
+ * Tries to decode the frame payload as a star_v1_SetPidGainsRequest protobuf message.
  * If decoding succeeds and the required pid_config sub-message is present, converts all
  * gain fields (double -> float) into a pid_gains_t structure and writes it to shared_data.
  * The Motor Control Task applies the gains on the next control cycle.
@@ -2487,7 +2588,7 @@ static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_fr
  * 2. Verify has_pid_config flag is set (sub-message present)
  * 3. Build pid_gains_t: convert kp, ki, kd, limits, set update_pending=true
  * 4. Write to shared_data via shared_data_set_pid_gains()
- * 5. Encode SetPIDGainsResponse and send back on originating channel
+ * 5. Encode SetPidGainsResponse and send back on originating channel
  * 6. Log result and return true
  *
  * @param[in] channel Channel the command arrived on; response sent on same channel
@@ -2496,19 +2597,19 @@ static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_fr
  *                  - frame->payload and frame->header.length are used for decode
  *
  * @return bool Whether this handler recognised and consumed the frame
- * @retval true  Frame decoded as SetPIDGainsRequest; PID gains written to shared_data
+ * @retval true  Frame decoded as SetPidGainsRequest; PID gains written to shared_data
  * @retval false Decode failed or has_pid_config not set (try next handler)
  *
  * @pre frame must not be nullptr
  * @pre shared_data_init() must have been called
  * @post On true: shared_data PID gains updated with new values
  * @post On true: k_event_pid_gains_updated event set (Motor Control Task will apply)
- * @post On true: SetPIDGainsResponse sent back on channel (best-effort)
+ * @post On true: SetPidGainsResponse sent back on channel (best-effort)
  *
  * @note Not thread-safe; executes in Communication Task context (Priority 5)
  * @note double -> float gain conversion: precision loss negligible for PID tuning
  * @note Response send failure is logged but does not affect command processing
- * @note The optional message string field in SetPIDGainsResponse is left empty
+ * @note The optional message string field in SetPidGainsResponse is left empty
  *
  * @since Version 1.0.0
  * @see rx_nanopb_decode_pid_gains_request() nanopb decode function
@@ -2523,7 +2624,7 @@ static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_fr
  */
 static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
-  star_v1_SetPIDGainsRequest pid_req = star_v1_SetPIDGainsRequest_init_zero;
+  star_v1_SetPidGainsRequest pid_req = star_v1_SetPidGainsRequest_init_zero;
   const rx_err_t             err =
     rx_nanopb_decode_pid_gains_request(frame->payload, frame->header.length, &pid_req);
   if (err != k_rx_ok || !pid_req.has_pid_config) {
@@ -2552,13 +2653,12 @@ static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const r
 
   /* Send response back to host (best-effort; gains already written to shared_data) */
   {
-    star_v1_SetPIDGainsResponse response =
-      (star_v1_SetPIDGainsResponse)star_v1_SetPIDGainsResponse_init_zero;
-    response.has_header = true;
-    response.success    = (bool)(set_err == k_rx_ok);
+    star_v1_SetPidGainsResponse response =
+      (star_v1_SetPidGainsResponse)star_v1_SetPidGainsResponse_init_zero;
+    response.has_header              = true;
+    response.success                 = (bool)(set_err == k_rx_ok);
     /* response.message left as init_zero: NULL callback skips optional string field */
-    const star_v1_Status resp_status =
-      (set_err == k_rx_ok) ? star_v1_Status_STATUS_OK : star_v1_Status_STATUS_INTERNAL_ERROR;
+    const star_v1_Status resp_status = internal_rx_err_to_proto_status(set_err);
     const char* req_id = (int)pid_req.has_header ? pid_req.header.request_id : nullptr;
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 

@@ -1015,12 +1015,12 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
 }
 
 /* =============================================================================
- * SetPIDGainsRequest Encode/Decode
+ * SetPidGainsRequest Encode/Decode
  * =============================================================================
  */
 
 /**
- * @brief Decode SetPIDGainsRequest message from Protocol Buffer wire format
+ * @brief Decode SetPidGainsRequest message from Protocol Buffer wire format
  *
  * @details
  * Deserializes a PID gains update command from RPi5. This message contains
@@ -1032,7 +1032,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  * 2. Check module initialization state
  * 3. Initialize message structure to zero
  * 4. Create nanopb input stream from buffer
- * 5. Decode using star_v1_SetPIDGainsRequest_fields descriptor
+ * 5. Decode using star_v1_SetPidGainsRequest_fields descriptor
  * 6. Return success or protocol error
  *
  * @par PID Configuration Fields
@@ -1087,7 +1087,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  *
  * @par Example - Single Motor Update:
  * @code
- * star_v1_SetPIDGainsRequest request;
+ * star_v1_SetPidGainsRequest request;
  * rx_err_t err = rx_nanopb_decode_pid_gains_request(spi_buffer, spi_len, &request);
  *
  * if (err == k_rx_ok && request.has_pid_config) {
@@ -1122,7 +1122,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  * @par Example - All Motors Update:
  * @code
  * // RPi5 sends motor_id = -1 to update all 4 motors
- * star_v1_SetPIDGainsRequest request;
+ * star_v1_SetPidGainsRequest request;
  * rx_err_t err = rx_nanopb_decode_pid_gains_request(buffer, len, &request);
  *
  * if (err == k_rx_ok && request.motor_id == -1) {
@@ -1135,7 +1135,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  * @see rx_nanopb_encode_pid_gains_response() Send acknowledgment
  * @see shared_data_set_pid_gains() Apply gains to motor controllers
  * @see internal_apply_pid_updates() Motor task applies pending gains
- * @see star_v1_SetPIDGainsRequest_fields nanopb field descriptors
+ * @see star_v1_SetPidGainsRequest_fields nanopb field descriptors
  *
  * @par NASA Power of 10 Compliance:
  * - **Rule 5:** [PASS] 3 preconditions, 2 postconditions documented
@@ -1148,7 +1148,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  */
 rx_err_t rx_nanopb_decode_pid_gains_request(const uint8_t*              buffer,
                                             const uint32_t              len,
-                                            star_v1_SetPIDGainsRequest* msg)
+                                            star_v1_SetPidGainsRequest* msg)
 {
   /* Pre-condition 1: nullptr pointer checks */
   if (buffer == nullptr || msg == nullptr) {
@@ -1166,11 +1166,11 @@ rx_err_t rx_nanopb_decode_pid_gains_request(const uint8_t*              buffer,
   }
 
   /* Initialize message to default values (NASA Rule 5 - prevent stale data) */
-  *msg = (star_v1_SetPIDGainsRequest)star_v1_SetPIDGainsRequest_init_zero;
+  *msg = (star_v1_SetPidGainsRequest)star_v1_SetPidGainsRequest_init_zero;
 
   pb_istream_t stream = pb_istream_from_buffer(buffer, len);
 
-  if (!pb_decode(&stream, star_v1_SetPIDGainsRequest_fields, msg)) {
+  if (!pb_decode(&stream, star_v1_SetPidGainsRequest_fields, msg)) {
     return k_rx_err_protocol_error;
   }
 
@@ -1178,11 +1178,11 @@ rx_err_t rx_nanopb_decode_pid_gains_request(const uint8_t*              buffer,
 }
 
 /**
- * @brief Encode SetPIDGainsResponse message to Protocol Buffer bytes
+ * @brief Encode SetPidGainsResponse message to Protocol Buffer bytes
  *
  * @details
- * Serializes a SetPIDGainsResponse message as acknowledgment to a PID gains
- * update command. Sent back to RPi5 after processing a SetPIDGainsRequest.
+ * Serializes a SetPidGainsResponse message as acknowledgment to a PID gains
+ * update command. Sent back to RPi5 after processing a SetPidGainsRequest.
  *
  * The optional pb_callback_t message field is skipped when its encode callback
  * is NULL (init_zero default). The success boolean and response header status
@@ -1216,7 +1216,7 @@ rx_err_t rx_nanopb_decode_pid_gains_request(const uint8_t*              buffer,
  * - Rule 5: [PASS] 3 preconditions, 2 postconditions documented
  * - Rule 7: [PASS] pb_encode() return value checked
  */
-rx_err_t rx_nanopb_encode_pid_gains_response(const star_v1_SetPIDGainsResponse* msg,
+rx_err_t rx_nanopb_encode_pid_gains_response(const star_v1_SetPidGainsResponse* msg,
                                              uint8_t*                           buffer,
                                              const uint32_t                     buffer_size,
                                              uint32_t*                          len)
@@ -1239,7 +1239,7 @@ rx_err_t rx_nanopb_encode_pid_gains_response(const star_v1_SetPIDGainsResponse* 
   pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
 
   /* pb_encode always succeeds for valid msg with sufficient buffer (pre-validated above) */
-  (void)pb_encode(&stream, star_v1_SetPIDGainsResponse_fields, msg);
+  (void)pb_encode(&stream, star_v1_SetPidGainsResponse_fields, msg);
   *len = stream.bytes_written;
 
   return k_rx_ok;

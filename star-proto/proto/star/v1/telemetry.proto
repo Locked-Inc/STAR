@@ -83,6 +83,14 @@ message GetSystemStatusResponse {
 
 // Complete telemetry snapshot from all sensors.
 message TelemetryData {
+  // Reserved field names from removed Battery Management subsystem.
+  // Field 3 was previously `double battery_percent` (incompatible wire type with
+  //   the current `ObstacleData obstacle` at field 3 -- old senders' fixed64
+  //   bytes would be misread as a length-prefix without these reservations).
+  // Field 12 was previously `double battery_voltage_v` (now `BaroData baro`).
+  // See git: 4f6c255f3 "Remove BMS/battery monitoring from STAR project (#359)".
+  reserved "battery_percent", "battery_voltage_v";
+
   // IMU sensor data.
   ImuData imu = 1;
 

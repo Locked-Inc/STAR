@@ -41,8 +41,9 @@ typedef struct _star_v1_ForwardTelemetryRequest {
     /* Latest LiDAR scan from RPLiDAR C1.
  Forwarded from /scan ROS2 topic.
  nanopb: LidarScan.angle_rad, LidarScan.range_m, and LidarScan.intensity are
-   bounded by max_count:800 (RPLiDAR C1 maximum samples per revolution at
-   10 Hz scan mode). Defined in ui.options and duplicated in gateway_service.options. */
+   bounded by max_count:500 (RPLiDAR C1 ~500 samples per revolution at
+   10 Hz scan mode -- 5 kHz sample rate / 10 Hz = 500 samples).
+   Defined in ui.options and duplicated in gateway_service.options. */
     bool has_lidar_scan;
     star_v1_LidarScan lidar_scan;
 } star_v1_ForwardTelemetryRequest;
@@ -82,7 +83,7 @@ typedef struct _star_v1_GetTeleopCommandResponse {
 } star_v1_GetTeleopCommandResponse;
 
 /* Request to set PID gains for motor velocity control. */
-typedef struct _star_v1_SetPIDGainsRequest {
+typedef struct _star_v1_SetPidGainsRequest {
     /* Standard request header. */
     bool has_header;
     star_v1_RequestHeader header;
@@ -91,10 +92,10 @@ typedef struct _star_v1_SetPIDGainsRequest {
     star_v1_PidConfig pid_config;
     /* Motor ID to configure (0 = left, 1 = right, -1 = both). */
     int32_t motor_id;
-} star_v1_SetPIDGainsRequest;
+} star_v1_SetPidGainsRequest;
 
 /* Response to PID gains update. */
-typedef struct _star_v1_SetPIDGainsResponse {
+typedef struct _star_v1_SetPidGainsResponse {
     /* Standard response header. */
     bool has_header;
     star_v1_ResponseHeader header;
@@ -102,7 +103,7 @@ typedef struct _star_v1_SetPIDGainsResponse {
     bool success;
     /* Human-readable message (e.g., "PID gains updated for both motors"). */
     pb_callback_t message;
-} star_v1_SetPIDGainsResponse;
+} star_v1_SetPidGainsResponse;
 
 
 #ifdef __cplusplus
@@ -114,14 +115,14 @@ extern "C" {
 #define star_v1_ForwardTelemetryResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, 0}
 #define star_v1_GetTeleopCommandRequest_init_default {false, star_v1_RequestHeader_init_default}
 #define star_v1_GetTeleopCommandResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_VelocityCommand_init_default, 0, 0}
-#define star_v1_SetPIDGainsRequest_init_default  {false, star_v1_RequestHeader_init_default, false, star_v1_PidConfig_init_default, 0}
-#define star_v1_SetPIDGainsResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, {{NULL}, NULL}}
+#define star_v1_SetPidGainsRequest_init_default  {false, star_v1_RequestHeader_init_default, false, star_v1_PidConfig_init_default, 0}
+#define star_v1_SetPidGainsResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, {{NULL}, NULL}}
 #define star_v1_ForwardTelemetryRequest_init_zero {false, star_v1_RequestHeader_init_zero, false, star_v1_SystemStatus_init_zero, false, star_v1_TelemetryData_init_zero, 0, {star_v1_MotorStatus_init_zero, star_v1_MotorStatus_init_zero, star_v1_MotorStatus_init_zero, star_v1_MotorStatus_init_zero}, false, star_v1_OdometryData_init_zero, false, star_v1_LidarScan_init_zero}
 #define star_v1_ForwardTelemetryResponse_init_zero {false, star_v1_ResponseHeader_init_zero, 0, 0}
 #define star_v1_GetTeleopCommandRequest_init_zero {false, star_v1_RequestHeader_init_zero}
 #define star_v1_GetTeleopCommandResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_VelocityCommand_init_zero, 0, 0}
-#define star_v1_SetPIDGainsRequest_init_zero     {false, star_v1_RequestHeader_init_zero, false, star_v1_PidConfig_init_zero, 0}
-#define star_v1_SetPIDGainsResponse_init_zero    {false, star_v1_ResponseHeader_init_zero, 0, {{NULL}, NULL}}
+#define star_v1_SetPidGainsRequest_init_zero     {false, star_v1_RequestHeader_init_zero, false, star_v1_PidConfig_init_zero, 0}
+#define star_v1_SetPidGainsResponse_init_zero    {false, star_v1_ResponseHeader_init_zero, 0, {{NULL}, NULL}}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define star_v1_ForwardTelemetryRequest_header_tag 1
@@ -138,12 +139,12 @@ extern "C" {
 #define star_v1_GetTeleopCommandResponse_command_tag 2
 #define star_v1_GetTeleopCommandResponse_command_available_tag 3
 #define star_v1_GetTeleopCommandResponse_command_age_ms_tag 4
-#define star_v1_SetPIDGainsRequest_header_tag    1
-#define star_v1_SetPIDGainsRequest_pid_config_tag 2
-#define star_v1_SetPIDGainsRequest_motor_id_tag  3
-#define star_v1_SetPIDGainsResponse_header_tag   1
-#define star_v1_SetPIDGainsResponse_success_tag  2
-#define star_v1_SetPIDGainsResponse_message_tag  3
+#define star_v1_SetPidGainsRequest_header_tag    1
+#define star_v1_SetPidGainsRequest_pid_config_tag 2
+#define star_v1_SetPidGainsRequest_motor_id_tag  3
+#define star_v1_SetPidGainsResponse_header_tag   1
+#define star_v1_SetPidGainsResponse_success_tag  2
+#define star_v1_SetPidGainsResponse_message_tag  3
 
 /* Struct field encoding specification for nanopb */
 #define star_v1_ForwardTelemetryRequest_FIELDLIST(X, a) \
@@ -186,46 +187,46 @@ X(a, STATIC,   SINGULAR, INT64,    command_age_ms,    4)
 #define star_v1_GetTeleopCommandResponse_header_MSGTYPE star_v1_ResponseHeader
 #define star_v1_GetTeleopCommandResponse_command_MSGTYPE star_v1_VelocityCommand
 
-#define star_v1_SetPIDGainsRequest_FIELDLIST(X, a) \
+#define star_v1_SetPidGainsRequest_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  pid_config,        2) \
 X(a, STATIC,   SINGULAR, INT32,    motor_id,          3)
-#define star_v1_SetPIDGainsRequest_CALLBACK NULL
-#define star_v1_SetPIDGainsRequest_DEFAULT NULL
-#define star_v1_SetPIDGainsRequest_header_MSGTYPE star_v1_RequestHeader
-#define star_v1_SetPIDGainsRequest_pid_config_MSGTYPE star_v1_PidConfig
+#define star_v1_SetPidGainsRequest_CALLBACK NULL
+#define star_v1_SetPidGainsRequest_DEFAULT NULL
+#define star_v1_SetPidGainsRequest_header_MSGTYPE star_v1_RequestHeader
+#define star_v1_SetPidGainsRequest_pid_config_MSGTYPE star_v1_PidConfig
 
-#define star_v1_SetPIDGainsResponse_FIELDLIST(X, a) \
+#define star_v1_SetPidGainsResponse_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
 X(a, STATIC,   SINGULAR, BOOL,     success,           2) \
 X(a, CALLBACK, SINGULAR, STRING,   message,           3)
-#define star_v1_SetPIDGainsResponse_CALLBACK pb_default_field_callback
-#define star_v1_SetPIDGainsResponse_DEFAULT NULL
-#define star_v1_SetPIDGainsResponse_header_MSGTYPE star_v1_ResponseHeader
+#define star_v1_SetPidGainsResponse_CALLBACK pb_default_field_callback
+#define star_v1_SetPidGainsResponse_DEFAULT NULL
+#define star_v1_SetPidGainsResponse_header_MSGTYPE star_v1_ResponseHeader
 
 extern const pb_msgdesc_t star_v1_ForwardTelemetryRequest_msg;
 extern const pb_msgdesc_t star_v1_ForwardTelemetryResponse_msg;
 extern const pb_msgdesc_t star_v1_GetTeleopCommandRequest_msg;
 extern const pb_msgdesc_t star_v1_GetTeleopCommandResponse_msg;
-extern const pb_msgdesc_t star_v1_SetPIDGainsRequest_msg;
-extern const pb_msgdesc_t star_v1_SetPIDGainsResponse_msg;
+extern const pb_msgdesc_t star_v1_SetPidGainsRequest_msg;
+extern const pb_msgdesc_t star_v1_SetPidGainsResponse_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define star_v1_ForwardTelemetryRequest_fields &star_v1_ForwardTelemetryRequest_msg
 #define star_v1_ForwardTelemetryResponse_fields &star_v1_ForwardTelemetryResponse_msg
 #define star_v1_GetTeleopCommandRequest_fields &star_v1_GetTeleopCommandRequest_msg
 #define star_v1_GetTeleopCommandResponse_fields &star_v1_GetTeleopCommandResponse_msg
-#define star_v1_SetPIDGainsRequest_fields &star_v1_SetPIDGainsRequest_msg
-#define star_v1_SetPIDGainsResponse_fields &star_v1_SetPIDGainsResponse_msg
+#define star_v1_SetPidGainsRequest_fields &star_v1_SetPidGainsRequest_msg
+#define star_v1_SetPidGainsResponse_fields &star_v1_SetPidGainsResponse_msg
 
 /* Maximum encoded size of messages (where known) */
-/* star_v1_SetPIDGainsResponse_size depends on runtime parameters */
+/* star_v1_SetPidGainsResponse_size depends on runtime parameters */
 #define STAR_V1_STAR_V1_GATEWAY_SERVICE_PB_H_MAX_SIZE star_v1_ForwardTelemetryRequest_size
 #define star_v1_ForwardTelemetryRequest_size     8565
 #define star_v1_ForwardTelemetryResponse_size    376
 #define star_v1_GetTeleopCommandRequest_size     149
 #define star_v1_GetTeleopCommandResponse_size    431
-#define star_v1_SetPIDGainsRequest_size          225
+#define star_v1_SetPidGainsRequest_size          225
 
 #ifdef __cplusplus
 } /* extern "C" */

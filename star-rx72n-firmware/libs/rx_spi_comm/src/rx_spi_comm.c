@@ -1555,7 +1555,7 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
   rx_frame_t frame;
   (void)(internal_build_frame(handle, sequence, type, flags, payload, payload_len, &frame));
 
-  /* Encode frame into handle-owned scratch buffer (not stack — see comment
+  /* Encode frame into handle-owned scratch buffer (not stack -- see comment
    * on tx_encode_buffer in rx_spi_comm.h). Cannot fail: encoder initialized,
    * pointers valid. */
   uint32_t wire_len = 0;
@@ -2306,7 +2306,7 @@ rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle, const uint8_t* payload, uint
   rx_frame_t pong_frame;
   (void)(rx_frame_create_pong(&pong_frame, sequence, payload, payload_len));
 
-  /* Encode into handle-owned scratch buffer (not stack — see comment on
+  /* Encode into handle-owned scratch buffer (not stack -- see comment on
    * tx_encode_buffer in rx_spi_comm.h). encoder initialized at
    * rx_spi_comm_init; all pointers valid. */
   uint32_t wire_len = 0;

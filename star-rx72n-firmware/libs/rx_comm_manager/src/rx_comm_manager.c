@@ -383,8 +383,9 @@
  * @since Version 1.0.0
  *
  * @see rx_comm_manager.h Full API documentation
- * @see rx_usb_comm.h USB CDC protocol implementation
  * @see rx_spi_comm.h SPI protocol implementation
+ * @see rx_uart_comm.h UART protocol implementation
+ * @see rx_i2c_comm.h I2C peripheral protocol implementation
  * @see rx_frame_ascii.h ASCII debugging interface
  */
 
@@ -708,57 +709,6 @@ internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const r
   }
 }
 
-/**
- * @brief Poll USB channel for incoming frames (non-blocking)
- *
- * @details
- * Attempts to receive one frame from USB CDC channel with zero timeout (non-blocking).
- * If frame is successfully received, it is dispatched via internal_handle_frame().
- * Timeout (no data available) is expected and normal - not an error condition.
- *
- * **Algorithm:**
- * 1. Validate mgr pointer (NULL check)
- * 2. Skip if USB handle is nullptr (channel not configured)
- * 3. Call rx_usb_comm_receive() with 0 ms timeout
- * 4. On success: dispatch frame via internal_handle_frame()
- * 5. On timeout: return k_rx_err_timeout (expected, not error)
- * 6. On other errors: propagate error code
- *
- * **Design Note**: This function treats timeout as non-error. The calling poll
- * function (rx_comm_manager_poll) decides whether overall operation succeeded
- * based on aggregate results from all channels.
- *
- * @param[in,out] mgr Communication manager handle
- *   - **Valid range**: Non-nullptr to initialized handle
- *   - **Constraints**: Must have valid usb_handle if USB channel enabled
- *   - **Side effects**: May invoke callback, modify ascii_buffer
- *
- * @return rx_err_t Error code indicating poll result
- * @retval k_rx_ok Frame received and handled successfully
- * @retval k_rx_err_timeout No data available (normal, expected condition)
- * @retval k_rx_err_invalid_arg mgr is nullptr
- * @retval k_rx_err_crc CRC verification failed (corrupted frame)
- * @retval k_rx_err_invalid_state USB peripheral not ready
- * @retval (other) Transport layer errors propagated
- *
- * @pre mgr must be non-NULL
- * @pre If USB channel enabled, usb_handle must be initialized
- * @post On k_rx_ok: callback invoked, ASCII output sent (if enabled)
- * @post On timeout: no side effects (no frame received)
- *
- * @note Non-blocking - always returns immediately
- * @note Timeout is NOT an error - it means no data is available
- * @warning Do not call if usb_handle is uninitialized (will return timeout)
- *
- * @par Performance:
- * - No data available: ~10 us (fast path)
- * - Frame received: ~100-250 us (USB bulk transfer + callback)
- *
- * @see internal_handle_frame() Frame dispatch
- * @see rx_usb_comm_receive() USB CDC receive implementation
- *
- * @since Version 1.0.0
- */
 /**
  * @brief Poll SPI channel for incoming frames (non-blocking)
  *
@@ -1233,8 +1183,9 @@ static const rx_comm_manager_t s_zero_mgr = {};
  *
  * @see rx_comm_manager_deinit() Cleanup and resource release
  * @see rx_comm_manager_poll() Poll for incoming frames
- * @see rx_usb_comm_init() Initialize USB CDC transport
  * @see rx_spi_comm_init() Initialize SPI transport
+ * @see rx_uart_comm_init() Initialize UART transport
+ * @see rx_i2c_comm_init() Initialize I2C peripheral transport
  *
  * @since Version 1.0.0
  */
@@ -1338,7 +1289,6 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
  * @endcode
  *
  * @see rx_comm_manager_init() Initialization
- * @see rx_usb_comm_deinit() USB transport cleanup
  * @see rx_spi_comm_deinit() SPI transport cleanup
  *
  * @since Version 1.0.0
@@ -1658,8 +1608,9 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
  *
  * @see rx_comm_manager_respond() Convenience wrapper for response frames
  * @see rx_comm_send_params_t Send parameters structure
- * @see rx_usb_comm_send() USB CDC send implementation
  * @see rx_spi_comm_send() SPI send implementation
+ * @see rx_uart_comm_send() UART send implementation
+ * @see rx_i2c_comm_send() I2C peripheral send implementation
  *
  * @since Version 1.0.0
  */

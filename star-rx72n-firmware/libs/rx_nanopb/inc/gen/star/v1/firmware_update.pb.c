@@ -12,13 +12,13 @@ PB_BIND(star_v1_BeginUpdateRequest, star_v1_BeginUpdateRequest, AUTO)
 PB_BIND(star_v1_BeginUpdateResponse, star_v1_BeginUpdateResponse, 2)
 
 
-PB_BIND(star_v1_WriteChunkRequest, star_v1_WriteChunkRequest, AUTO)
+PB_BIND(star_v1_WriteChunkRequest, star_v1_WriteChunkRequest, 2)
 
 
 PB_BIND(star_v1_WriteChunkResponse, star_v1_WriteChunkResponse, 2)
 
 
-PB_BIND(star_v1_FirmwareChunk, star_v1_FirmwareChunk, AUTO)
+PB_BIND(star_v1_FirmwareChunk, star_v1_FirmwareChunk, 2)
 
 
 PB_BIND(star_v1_StreamChunksResponse, star_v1_StreamChunksResponse, 2)
@@ -30,7 +30,7 @@ PB_BIND(star_v1_FinalizeUpdateRequest, star_v1_FinalizeUpdateRequest, AUTO)
 PB_BIND(star_v1_FinalizeUpdateResponse, star_v1_FinalizeUpdateResponse, 2)
 
 
-PB_BIND(star_v1_AbortUpdateRequest, star_v1_AbortUpdateRequest, AUTO)
+PB_BIND(star_v1_AbortUpdateRequest, star_v1_AbortUpdateRequest, 2)
 
 
 PB_BIND(star_v1_AbortUpdateResponse, star_v1_AbortUpdateResponse, 2)
@@ -75,7 +75,7 @@ PB_BIND(star_v1_GetFirmwareInfoResponse, star_v1_GetFirmwareInfoResponse, 2)
 PB_BIND(star_v1_FirmwareInfo, star_v1_FirmwareInfo, AUTO)
 
 
-PB_BIND(star_v1_FirmwareUpdateError, star_v1_FirmwareUpdateError, AUTO)
+PB_BIND(star_v1_FirmwareUpdateError, star_v1_FirmwareUpdateError, 2)
 
 
 

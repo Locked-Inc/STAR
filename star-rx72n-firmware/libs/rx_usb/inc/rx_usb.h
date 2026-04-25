@@ -714,7 +714,7 @@ typedef enum : uint8_t {
  * State transitions are managed automatically by the USB interrupt handler based
  * on host actions and VBUS status.
  *
- * **State Machine** (see file header @startuml diagram for visual):
+ * **State Machine** (see file header PlantUML diagram for visual):
  * ```
  * Detached -> Attached -> Powered -> Default -> Addressed -> Configured
  *                                     ^          v            v

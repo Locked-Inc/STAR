@@ -440,7 +440,7 @@ def set_title(text_box, title_text):
 def normalize_run_spacing(text_frame):
     """Clear any letter-spacing (a:rPr/spc) on every run so text doesn't
     render with the template's stretched tracking. Also pin font name to
-    Arial which the template's master prescribes."""
+    Arial which the template's slide layout prescribes."""
     from pptx.oxml.ns import qn
     for paragraph in text_frame.paragraphs:
         for run in paragraph.runs:

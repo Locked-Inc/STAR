@@ -499,12 +499,12 @@ static const uint16_t s_nanopb_buffer_size = 512U;
                                                        uint32_t* len);
 
 /* =============================================================================
- * SetPIDGainsRequest Encode/Decode
+ * SetPidGainsRequest Encode/Decode
  * =============================================================================
  */
 
 /**
- * @brief Decode SetPIDGainsRequest message from Protocol Buffer bytes
+ * @brief Decode SetPidGainsRequest message from Protocol Buffer bytes
  *
  * @details
  * Deserializes a PID gains update command from RPi5 over SPI. This message
@@ -554,7 +554,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  *
  * @par Example:
  * @code
- * star_v1_SetPIDGainsRequest request;
+ * star_v1_SetPidGainsRequest request;
  * rx_err_t err = rx_nanopb_decode_pid_gains_request(spi_buffer, spi_len, &request);
  * if (err == k_rx_ok && request.has_pid_config) {
  *     // Apply gains to motors
@@ -581,14 +581,14 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  */
 [[nodiscard]] rx_err_t rx_nanopb_decode_pid_gains_request(const uint8_t*              buffer,
                                                           uint32_t                    len,
-                                                          star_v1_SetPIDGainsRequest* msg);
+                                                          star_v1_SetPidGainsRequest* msg);
 
 /**
- * @brief Encode SetPIDGainsResponse message to Protocol Buffer bytes
+ * @brief Encode SetPidGainsResponse message to Protocol Buffer bytes
  *
  * @details
- * Serializes a SetPIDGainsResponse message as acknowledgment to a PID gains
- * update command. Sent back to RPi5 after processing a SetPIDGainsRequest.
+ * Serializes a SetPidGainsResponse message as acknowledgment to a PID gains
+ * update command. Sent back to RPi5 after processing a SetPidGainsRequest.
  *
  * The response indicates whether the gains were successfully written to
  * shared_data for the Motor Control Task to apply. The optional human-readable
@@ -624,7 +624,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  * @see rx_nanopb_create_response_header() Create header with status and request_id
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_nanopb_encode_pid_gains_response(const star_v1_SetPIDGainsResponse* msg,
+[[nodiscard]] rx_err_t rx_nanopb_encode_pid_gains_response(const star_v1_SetPidGainsResponse* msg,
                                                            uint8_t*  buffer,
                                                            uint32_t  buffer_size,
                                                            uint32_t* len);

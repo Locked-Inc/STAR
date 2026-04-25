@@ -67,16 +67,17 @@ typedef struct _star_v1_BeginUpdateRequest {
     /* Expected firmware size in bytes. */
     uint32_t firmware_size;
     /* Expected firmware version (for validation). */
-    pb_callback_t expected_version;
+    char expected_version[32];
     /* Expected CRC-32 checksum of complete firmware. */
     uint32_t expected_crc32;
 } star_v1_BeginUpdateRequest;
 
+typedef PB_BYTES_ARRAY_T(1024) star_v1_FirmwareChunk_data_t;
 /* Firmware data chunk. */
 typedef struct _star_v1_FirmwareChunk {
     /* Raw firmware data bytes.
  Recommended size: 1024 bytes (1KB). */
-    pb_callback_t data;
+    star_v1_FirmwareChunk_data_t data;
     /* Chunk sequence number (0-indexed).
  Used for ordering and deduplication. */
     uint32_t sequence;
@@ -109,7 +110,7 @@ typedef struct _star_v1_AbortUpdateRequest {
     bool has_header;
     star_v1_RequestHeader header;
     /* Reason for abort (for logging). */
-    pb_callback_t reason;
+    char reason[128];
 } star_v1_AbortUpdateRequest;
 
 /* Response to abort request. */
@@ -219,7 +220,7 @@ typedef struct _star_v1_RollbackResponse {
     /* True if rollback will occur. */
     bool rolling_back;
     /* Previous firmware version being restored. */
-    pb_callback_t previous_version;
+    char previous_version[32];
 } star_v1_RollbackResponse;
 
 /* Request to mark firmware valid. */
@@ -248,19 +249,19 @@ typedef struct _star_v1_GetFirmwareInfoRequest {
 /* Firmware version and metadata. */
 typedef struct _star_v1_FirmwareInfo {
     /* Firmware version string (e.g., "1.0.0"). */
-    pb_callback_t version;
+    char version[32];
     /* Git commit hash (short form). */
-    pb_callback_t git_hash;
+    char git_hash[16];
     /* Build date in ISO 8601 format. */
-    pb_callback_t build_date;
+    char build_date[32];
     /* Firmware size in bytes. */
     uint32_t size;
     /* Firmware CRC-32 checksum. */
     uint32_t crc32;
     /* IDF version used to build. */
-    pb_callback_t idf_version;
+    char idf_version[32];
     /* Target chip (e.g., "esp32s3"). */
-    pb_callback_t chip_target;
+    char chip_target[16];
 } star_v1_FirmwareInfo;
 
 /* Response with firmware information. */
@@ -286,9 +287,9 @@ typedef struct _star_v1_FirmwareUpdateError {
     /* Error code for programmatic handling. */
     star_v1_FirmwareUpdateErrorCode code;
     /* Human-readable error message. */
-    pb_callback_t message;
+    char message[128];
     /* Additional error details (ESP error code, etc.). */
-    pb_callback_t details;
+    char details[128];
     /* Chunk sequence number where error occurred (if applicable). */
     uint32_t error_at_sequence;
     /* Byte offset where error occurred (if applicable). */
@@ -305,7 +306,7 @@ typedef struct _star_v1_BeginUpdateResponse {
     /* Maximum chunk size supported (in bytes). */
     uint32_t max_chunk_size;
     /* Update session ID for tracking. */
-    pb_callback_t session_id;
+    char session_id[64];
     /* Detailed error if not accepted. */
     bool has_error;
     star_v1_FirmwareUpdateError error;
@@ -382,15 +383,15 @@ extern "C" {
 
 
 /* Initializer values for message structs */
-#define star_v1_BeginUpdateRequest_init_default  {false, star_v1_RequestHeader_init_default, 0, {{NULL}, NULL}, 0}
-#define star_v1_BeginUpdateResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, 0, {{NULL}, NULL}, false, star_v1_FirmwareUpdateError_init_default}
+#define star_v1_BeginUpdateRequest_init_default  {false, star_v1_RequestHeader_init_default, 0, "", 0}
+#define star_v1_BeginUpdateResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, 0, "", false, star_v1_FirmwareUpdateError_init_default}
 #define star_v1_WriteChunkRequest_init_default   {false, star_v1_RequestHeader_init_default, false, star_v1_FirmwareChunk_init_default}
 #define star_v1_WriteChunkResponse_init_default  {false, star_v1_ResponseHeader_init_default, 0, false, star_v1_FirmwareUpdateProgress_init_default}
-#define star_v1_FirmwareChunk_init_default       {{{NULL}, NULL}, 0, 0, 0}
+#define star_v1_FirmwareChunk_init_default       {{0, {0}}, 0, 0, 0}
 #define star_v1_StreamChunksResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, false, star_v1_FirmwareUpdateProgress_init_default, false, star_v1_FirmwareUpdateError_init_default}
 #define star_v1_FinalizeUpdateRequest_init_default {false, star_v1_RequestHeader_init_default}
 #define star_v1_FinalizeUpdateResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, 0, false, star_v1_FirmwareUpdateError_init_default}
-#define star_v1_AbortUpdateRequest_init_default  {false, star_v1_RequestHeader_init_default, {{NULL}, NULL}}
+#define star_v1_AbortUpdateRequest_init_default  {false, star_v1_RequestHeader_init_default, ""}
 #define star_v1_AbortUpdateResponse_init_default {false, star_v1_ResponseHeader_init_default, 0}
 #define star_v1_GetUpdateProgressRequest_init_default {false, star_v1_RequestHeader_init_default}
 #define star_v1_GetUpdateProgressResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_FirmwareUpdateProgress_init_default}
@@ -399,22 +400,22 @@ extern "C" {
 #define star_v1_RebootRequest_init_default       {false, star_v1_RequestHeader_init_default, 0}
 #define star_v1_RebootResponse_init_default      {false, star_v1_ResponseHeader_init_default, 0, 0}
 #define star_v1_RollbackRequest_init_default     {false, star_v1_RequestHeader_init_default}
-#define star_v1_RollbackResponse_init_default    {false, star_v1_ResponseHeader_init_default, 0, {{NULL}, NULL}}
+#define star_v1_RollbackResponse_init_default    {false, star_v1_ResponseHeader_init_default, 0, ""}
 #define star_v1_MarkValidRequest_init_default    {false, star_v1_RequestHeader_init_default}
 #define star_v1_MarkValidResponse_init_default   {false, star_v1_ResponseHeader_init_default, 0}
 #define star_v1_GetFirmwareInfoRequest_init_default {false, star_v1_RequestHeader_init_default}
 #define star_v1_GetFirmwareInfoResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_FirmwareInfo_init_default, false, star_v1_FirmwareInfo_init_default, 0, 0}
-#define star_v1_FirmwareInfo_init_default        {{{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}, 0, 0, {{NULL}, NULL}, {{NULL}, NULL}}
-#define star_v1_FirmwareUpdateError_init_default {_star_v1_FirmwareUpdateErrorCode_MIN, {{NULL}, NULL}, {{NULL}, NULL}, 0, 0}
-#define star_v1_BeginUpdateRequest_init_zero     {false, star_v1_RequestHeader_init_zero, 0, {{NULL}, NULL}, 0}
-#define star_v1_BeginUpdateResponse_init_zero    {false, star_v1_ResponseHeader_init_zero, 0, 0, {{NULL}, NULL}, false, star_v1_FirmwareUpdateError_init_zero}
+#define star_v1_FirmwareInfo_init_default        {"", "", "", 0, 0, "", ""}
+#define star_v1_FirmwareUpdateError_init_default {_star_v1_FirmwareUpdateErrorCode_MIN, "", "", 0, 0}
+#define star_v1_BeginUpdateRequest_init_zero     {false, star_v1_RequestHeader_init_zero, 0, "", 0}
+#define star_v1_BeginUpdateResponse_init_zero    {false, star_v1_ResponseHeader_init_zero, 0, 0, "", false, star_v1_FirmwareUpdateError_init_zero}
 #define star_v1_WriteChunkRequest_init_zero      {false, star_v1_RequestHeader_init_zero, false, star_v1_FirmwareChunk_init_zero}
 #define star_v1_WriteChunkResponse_init_zero     {false, star_v1_ResponseHeader_init_zero, 0, false, star_v1_FirmwareUpdateProgress_init_zero}
-#define star_v1_FirmwareChunk_init_zero          {{{NULL}, NULL}, 0, 0, 0}
+#define star_v1_FirmwareChunk_init_zero          {{0, {0}}, 0, 0, 0}
 #define star_v1_StreamChunksResponse_init_zero   {false, star_v1_ResponseHeader_init_zero, 0, false, star_v1_FirmwareUpdateProgress_init_zero, false, star_v1_FirmwareUpdateError_init_zero}
 #define star_v1_FinalizeUpdateRequest_init_zero  {false, star_v1_RequestHeader_init_zero}
 #define star_v1_FinalizeUpdateResponse_init_zero {false, star_v1_ResponseHeader_init_zero, 0, 0, false, star_v1_FirmwareUpdateError_init_zero}
-#define star_v1_AbortUpdateRequest_init_zero     {false, star_v1_RequestHeader_init_zero, {{NULL}, NULL}}
+#define star_v1_AbortUpdateRequest_init_zero     {false, star_v1_RequestHeader_init_zero, ""}
 #define star_v1_AbortUpdateResponse_init_zero    {false, star_v1_ResponseHeader_init_zero, 0}
 #define star_v1_GetUpdateProgressRequest_init_zero {false, star_v1_RequestHeader_init_zero}
 #define star_v1_GetUpdateProgressResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_FirmwareUpdateProgress_init_zero}
@@ -423,13 +424,13 @@ extern "C" {
 #define star_v1_RebootRequest_init_zero          {false, star_v1_RequestHeader_init_zero, 0}
 #define star_v1_RebootResponse_init_zero         {false, star_v1_ResponseHeader_init_zero, 0, 0}
 #define star_v1_RollbackRequest_init_zero        {false, star_v1_RequestHeader_init_zero}
-#define star_v1_RollbackResponse_init_zero       {false, star_v1_ResponseHeader_init_zero, 0, {{NULL}, NULL}}
+#define star_v1_RollbackResponse_init_zero       {false, star_v1_ResponseHeader_init_zero, 0, ""}
 #define star_v1_MarkValidRequest_init_zero       {false, star_v1_RequestHeader_init_zero}
 #define star_v1_MarkValidResponse_init_zero      {false, star_v1_ResponseHeader_init_zero, 0}
 #define star_v1_GetFirmwareInfoRequest_init_zero {false, star_v1_RequestHeader_init_zero}
 #define star_v1_GetFirmwareInfoResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_FirmwareInfo_init_zero, false, star_v1_FirmwareInfo_init_zero, 0, 0}
-#define star_v1_FirmwareInfo_init_zero           {{{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}, 0, 0, {{NULL}, NULL}, {{NULL}, NULL}}
-#define star_v1_FirmwareUpdateError_init_zero    {_star_v1_FirmwareUpdateErrorCode_MIN, {{NULL}, NULL}, {{NULL}, NULL}, 0, 0}
+#define star_v1_FirmwareInfo_init_zero           {"", "", "", 0, 0, "", ""}
+#define star_v1_FirmwareUpdateError_init_zero    {_star_v1_FirmwareUpdateErrorCode_MIN, "", "", 0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define star_v1_BeginUpdateRequest_header_tag    1
@@ -511,9 +512,9 @@ extern "C" {
 #define star_v1_BeginUpdateRequest_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
 X(a, STATIC,   SINGULAR, UINT32,   firmware_size,     2) \
-X(a, CALLBACK, SINGULAR, STRING,   expected_version,   3) \
+X(a, STATIC,   SINGULAR, STRING,   expected_version,   3) \
 X(a, STATIC,   SINGULAR, UINT32,   expected_crc32,    4)
-#define star_v1_BeginUpdateRequest_CALLBACK pb_default_field_callback
+#define star_v1_BeginUpdateRequest_CALLBACK NULL
 #define star_v1_BeginUpdateRequest_DEFAULT NULL
 #define star_v1_BeginUpdateRequest_header_MSGTYPE star_v1_RequestHeader
 
@@ -521,9 +522,9 @@ X(a, STATIC,   SINGULAR, UINT32,   expected_crc32,    4)
 X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
 X(a, STATIC,   SINGULAR, BOOL,     accepted,          2) \
 X(a, STATIC,   SINGULAR, UINT32,   max_chunk_size,    3) \
-X(a, CALLBACK, SINGULAR, STRING,   session_id,        4) \
+X(a, STATIC,   SINGULAR, STRING,   session_id,        4) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  error,             5)
-#define star_v1_BeginUpdateResponse_CALLBACK pb_default_field_callback
+#define star_v1_BeginUpdateResponse_CALLBACK NULL
 #define star_v1_BeginUpdateResponse_DEFAULT NULL
 #define star_v1_BeginUpdateResponse_header_MSGTYPE star_v1_ResponseHeader
 #define star_v1_BeginUpdateResponse_error_MSGTYPE star_v1_FirmwareUpdateError
@@ -546,11 +547,11 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  progress,          3)
 #define star_v1_WriteChunkResponse_progress_MSGTYPE star_v1_FirmwareUpdateProgress
 
 #define star_v1_FirmwareChunk_FIELDLIST(X, a) \
-X(a, CALLBACK, SINGULAR, BYTES,    data,              1) \
+X(a, STATIC,   SINGULAR, BYTES,    data,              1) \
 X(a, STATIC,   SINGULAR, UINT32,   sequence,          2) \
 X(a, STATIC,   SINGULAR, UINT32,   offset,            3) \
 X(a, STATIC,   SINGULAR, UINT32,   chunk_crc32,       4)
-#define star_v1_FirmwareChunk_CALLBACK pb_default_field_callback
+#define star_v1_FirmwareChunk_CALLBACK NULL
 #define star_v1_FirmwareChunk_DEFAULT NULL
 
 #define star_v1_StreamChunksResponse_FIELDLIST(X, a) \
@@ -582,8 +583,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  error,             4)
 
 #define star_v1_AbortUpdateRequest_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, CALLBACK, SINGULAR, STRING,   reason,            2)
-#define star_v1_AbortUpdateRequest_CALLBACK pb_default_field_callback
+X(a, STATIC,   SINGULAR, STRING,   reason,            2)
+#define star_v1_AbortUpdateRequest_CALLBACK NULL
 #define star_v1_AbortUpdateRequest_DEFAULT NULL
 #define star_v1_AbortUpdateRequest_header_MSGTYPE star_v1_RequestHeader
 
@@ -651,8 +652,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1)
 #define star_v1_RollbackResponse_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
 X(a, STATIC,   SINGULAR, BOOL,     rolling_back,      2) \
-X(a, CALLBACK, SINGULAR, STRING,   previous_version,   3)
-#define star_v1_RollbackResponse_CALLBACK pb_default_field_callback
+X(a, STATIC,   SINGULAR, STRING,   previous_version,   3)
+#define star_v1_RollbackResponse_CALLBACK NULL
 #define star_v1_RollbackResponse_DEFAULT NULL
 #define star_v1_RollbackResponse_header_MSGTYPE star_v1_ResponseHeader
 
@@ -688,23 +689,23 @@ X(a, STATIC,   SINGULAR, BOOL,     is_valid,          5)
 #define star_v1_GetFirmwareInfoResponse_previous_firmware_MSGTYPE star_v1_FirmwareInfo
 
 #define star_v1_FirmwareInfo_FIELDLIST(X, a) \
-X(a, CALLBACK, SINGULAR, STRING,   version,           1) \
-X(a, CALLBACK, SINGULAR, STRING,   git_hash,          2) \
-X(a, CALLBACK, SINGULAR, STRING,   build_date,        3) \
+X(a, STATIC,   SINGULAR, STRING,   version,           1) \
+X(a, STATIC,   SINGULAR, STRING,   git_hash,          2) \
+X(a, STATIC,   SINGULAR, STRING,   build_date,        3) \
 X(a, STATIC,   SINGULAR, UINT32,   size,              4) \
 X(a, STATIC,   SINGULAR, UINT32,   crc32,             5) \
-X(a, CALLBACK, SINGULAR, STRING,   idf_version,       6) \
-X(a, CALLBACK, SINGULAR, STRING,   chip_target,       7)
-#define star_v1_FirmwareInfo_CALLBACK pb_default_field_callback
+X(a, STATIC,   SINGULAR, STRING,   idf_version,       6) \
+X(a, STATIC,   SINGULAR, STRING,   chip_target,       7)
+#define star_v1_FirmwareInfo_CALLBACK NULL
 #define star_v1_FirmwareInfo_DEFAULT NULL
 
 #define star_v1_FirmwareUpdateError_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UENUM,    code,              1) \
-X(a, CALLBACK, SINGULAR, STRING,   message,           2) \
-X(a, CALLBACK, SINGULAR, STRING,   details,           3) \
+X(a, STATIC,   SINGULAR, STRING,   message,           2) \
+X(a, STATIC,   SINGULAR, STRING,   details,           3) \
 X(a, STATIC,   SINGULAR, UINT32,   error_at_sequence,   4) \
 X(a, STATIC,   SINGULAR, UINT32,   error_at_offset,   5)
-#define star_v1_FirmwareUpdateError_CALLBACK pb_default_field_callback
+#define star_v1_FirmwareUpdateError_CALLBACK NULL
 #define star_v1_FirmwareUpdateError_DEFAULT NULL
 
 extern const pb_msgdesc_t star_v1_BeginUpdateRequest_msg;
@@ -759,22 +760,19 @@ extern const pb_msgdesc_t star_v1_FirmwareUpdateError_msg;
 #define star_v1_FirmwareUpdateError_fields &star_v1_FirmwareUpdateError_msg
 
 /* Maximum encoded size of messages (where known) */
-/* star_v1_BeginUpdateRequest_size depends on runtime parameters */
-/* star_v1_BeginUpdateResponse_size depends on runtime parameters */
-/* star_v1_WriteChunkRequest_size depends on runtime parameters */
-/* star_v1_FirmwareChunk_size depends on runtime parameters */
-/* star_v1_StreamChunksResponse_size depends on runtime parameters */
-/* star_v1_FinalizeUpdateResponse_size depends on runtime parameters */
-/* star_v1_AbortUpdateRequest_size depends on runtime parameters */
-/* star_v1_RollbackResponse_size depends on runtime parameters */
-/* star_v1_GetFirmwareInfoResponse_size depends on runtime parameters */
-/* star_v1_FirmwareInfo_size depends on runtime parameters */
-/* star_v1_FirmwareUpdateError_size depends on runtime parameters */
-#define STAR_V1_STAR_V1_FIRMWARE_UPDATE_PB_H_MAX_SIZE star_v1_WriteChunkResponse_size
+#define STAR_V1_STAR_V1_FIRMWARE_UPDATE_PB_H_MAX_SIZE star_v1_WriteChunkRequest_size
+#define star_v1_AbortUpdateRequest_size          279
 #define star_v1_AbortUpdateResponse_size         365
+#define star_v1_BeginUpdateRequest_size          194
+#define star_v1_BeginUpdateResponse_size         713
 #define star_v1_FinalizeUpdateRequest_size       149
+#define star_v1_FinalizeUpdateResponse_size      644
+#define star_v1_FirmwareChunk_size               1045
+#define star_v1_FirmwareInfo_size                145
+#define star_v1_FirmwareUpdateError_size         274
 #define star_v1_FirmwareUpdateProgress_size      54
 #define star_v1_GetFirmwareInfoRequest_size      149
+#define star_v1_GetFirmwareInfoResponse_size     663
 #define star_v1_GetUpdateProgressRequest_size    149
 #define star_v1_GetUpdateProgressResponse_size   419
 #define star_v1_MarkValidRequest_size            149
@@ -782,7 +780,10 @@ extern const pb_msgdesc_t star_v1_FirmwareUpdateError_msg;
 #define star_v1_RebootRequest_size               155
 #define star_v1_RebootResponse_size              371
 #define star_v1_RollbackRequest_size             149
+#define star_v1_RollbackResponse_size            398
+#define star_v1_StreamChunksResponse_size        702
 #define star_v1_StreamUpdateProgressRequest_size 155
+#define star_v1_WriteChunkRequest_size           1197
 #define star_v1_WriteChunkResponse_size          421
 
 #ifdef __cplusplus

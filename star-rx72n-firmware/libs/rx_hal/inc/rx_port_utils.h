@@ -299,7 +299,6 @@ extern "C" {
  *
  * @see port0() through portj() Inline register accessors in rx72n_port_regs.h
  * @see rx_port_constants.h Port number constant definitions
- * @see rx_gpio_init() Higher-level GPIO initialization using this function
  * @see docs/sections/03_hardware_pinout.tex Complete pin assignment reference
  *
  * @since Version 1.0.0

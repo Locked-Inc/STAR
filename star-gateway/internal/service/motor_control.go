@@ -19,6 +19,29 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// processStart anchors a monotonic clock used to populate proto
+// `timestamp_us` fields on outbound commands. The wire convention is
+// "microseconds since the sender started", NOT Unix epoch, so the value
+// is comparable against the firmware's own boot-relative timestamps for
+// gateway-side latency math without producing trillions-of-seconds garbage
+// when subtracted from RX72N's tx_time_get()-based timestamps.
+//
+// Both gateway and ROS2 must use the same convention; see
+// star-ros2/.../message_converter.cpp for the ROS2 equivalent.
+var processStart = time.Now()
+
+// monoMicrosSinceStart returns microseconds elapsed since this process
+// started. Use it for proto `timestamp_us` fields on outbound commands
+// (VelocityCommand, EmergencyStopCommand, etc.) so that round-trip
+// latency math `now - cmd.timestamp_us` stays inside one monotonic
+// reference frame and never mixes wall-clock with boot-time microseconds.
+//
+// Returns: int64 microseconds since processStart (always positive,
+// monotonically increasing, ~1e8 after a few seconds; never trillions).
+func monoMicrosSinceStart() int64 {
+	return time.Since(processStart).Microseconds()
+}
+
 // MotorControlService implements the MotorControlServiceServer interface.
 // This service handles low-latency differential drive control.
 //
@@ -91,11 +114,13 @@ func (s *MotorControlService) SetVelocity(ctx context.Context, req *starv1.SetVe
 // The frame layer supports FlagPriority, but the HARQ interface doesn't expose it.
 // EmergencyStop should use priority framing to ensure immediate processing by RX72N.
 func (s *MotorControlService) EmergencyStop(ctx context.Context, req *starv1.EmergencyStopRequest) (*starv1.EmergencyStopResponse, error) {
-	// Create dedicated EmergencyStopCommand
+	// Create dedicated EmergencyStopCommand. timestamp_us uses our monotonic
+	// since-start clock so round-trip latency math stays consistent with the
+	// RX72N's boot-relative timestamps (see comment on monoMicrosSinceStart).
 	estopCmd := &starv1.EmergencyStopCommand{
 		Reason:             req.Reason,
 		EngageHardwareStop: true, // Request firmware to enter MOTOR_STATE_ESTOP
-		TimestampUs:        time.Now().UnixMicro(),
+		TimestampUs:        monoMicrosSinceStart(),
 	}
 
 	// Wrap in WireMessage for protocol multiplexing

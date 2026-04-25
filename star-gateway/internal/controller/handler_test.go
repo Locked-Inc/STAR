@@ -37,7 +37,7 @@ func TestWebSocketHandler_ProcessMessage(t *testing.T) {
 	msg := &starv1.ControllerState{
 		LinearVel:  1.0,
 		AngularVel: 0.5,
-		Timestamp:  time.Now().UnixMilli(),
+		TimestampMs: time.Now().UnixMilli(),
 	}
 	bytes, err := proto.Marshal(msg)
 	if err != nil {
@@ -90,7 +90,7 @@ func TestWebSocketHandler_DebugFlag(t *testing.T) {
 	msg := &starv1.ControllerState{
 		LinearVel:  0.5,
 		AngularVel: -0.5,
-		Timestamp:  time.Now().UnixMilli(),
+		TimestampMs: time.Now().UnixMilli(),
 		Debug:      true,
 	}
 	bytes, err := proto.Marshal(msg)
@@ -166,7 +166,7 @@ func TestHandlerWithGateway(t *testing.T) {
 	msg := &starv1.ControllerState{
 		LinearVel:  1.0,
 		AngularVel: 0.0,
-		Timestamp:  time.Now().UnixMilli(),
+		TimestampMs: time.Now().UnixMilli(),
 	}
 	bytes, _ := proto.Marshal(msg)
 	if err := c.WriteMessage(websocket.BinaryMessage, bytes); err != nil {

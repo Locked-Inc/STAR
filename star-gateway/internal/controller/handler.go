@@ -12,6 +12,20 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// processStart anchors a monotonic since-start clock for proto
+// `timestamp_us` fields on outbound commands. See the gateway service
+// package's monoMicrosSinceStart for rationale; we duplicate the helper
+// locally to avoid an import cycle (service -> controller is allowed but
+// controller -> service is the existing direction, so we keep this small).
+var processStart = time.Now()
+
+// monoMicrosSinceStart returns microseconds since this process started.
+// Used for VelocityCommand.timestamp_us so the gateway and RX72N stay in
+// the same "since boot/start" epoch convention.
+func monoMicrosSinceStart() int64 {
+	return time.Since(processStart).Microseconds()
+}
+
 type Handler struct {
 	mu sync.Mutex
 
@@ -150,13 +164,15 @@ func convertToVelocityCommand(state *starv1.ControllerState) *starv1.VelocityCom
 	vLeft := state.LinearVel - (state.AngularVel * halfBase)
 	vRight := state.LinearVel + (state.AngularVel * halfBase)
 
-	// For differential drive: left side motors get same velocity, right side motors get same velocity
+	// For differential drive: left side motors get same velocity, right side motors get same velocity.
+	// timestamp_us uses our monotonic since-start clock so round-trip latency math
+	// stays consistent with the RX72N's boot-relative timestamps.
 	return &starv1.VelocityCommand{
 		FrontLeftVelocityMps:  float64(vLeft),
 		FrontRightVelocityMps: float64(vRight),
 		BackLeftVelocityMps:   float64(vLeft),
 		BackRightVelocityMps:  float64(vRight),
 		Sequence:              0,
-		TimestampUs:           time.Now().UnixMicro(),
+		TimestampUs:           monoMicrosSinceStart(),
 	}
 }

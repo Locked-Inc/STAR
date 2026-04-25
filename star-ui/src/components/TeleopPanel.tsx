@@ -29,7 +29,7 @@ export function TeleopPanel({ sendControllerState }: TeleopPanelProps) {
       sendRef.current({
         linearVel: gp.linearVel,
         angularVel: gp.angularVel,
-        timestamp: String(Date.now()),
+        timestampMs: String(Date.now()),
         debug: false,
       });
     }, sendIntervalMs);

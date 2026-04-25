@@ -298,7 +298,7 @@ extern "C" {
  * | channel | rx_gptw_channel_t | 0-3 (k_gptw_channel_0 to k_gptw_channel_3) | enum | Must be valid GPTW channel |
  * | output_a | rx_gptw_output_t | k_gptw_output_a or k_gptw_output_b | enum | H-bridge IN2 (PWM) pin |
  * | output_b | rx_gptw_output_t | k_gptw_output_a or k_gptw_output_b | enum | H-bridge IN1 (PWM) pin (must differ from output_a) |
- * | pwm_freq_hz | uint32_t | 1000-100000 Hz | Hz | Typical: 20000 (20 kHz) |
+ * | pwm_freq_hz | uint32_t | 1000-50000 Hz | Hz | Typical: 20000 (20 kHz) |
  * | dead_time_ns | uint32_t | 0-10000 ns | nanoseconds | Typical: 1000 (1 us), 0 = no dead-time (unsafe) |
  * | invert_pwm | bool | true/false | boolean | Swap active-high/active-low logic |
  *
@@ -419,7 +419,7 @@ typedef struct {
  * | channel | GPTW hardware channel | init | Never | 0-3 |
  * | output_a | IN2 (half-bridge A) pin | init | Never | k_gptw_output_a/b |
  * | output_b | IN1 (half-bridge B) pin | init | Never | k_gptw_output_a/b |
- * | pwm_freq_hz | PWM frequency | init | Never | 1000-100000 Hz |
+ * | pwm_freq_hz | PWM frequency | init | Never | 1000-50000 Hz |
  * | current_duty | Active duty cycle | init (0), set_duty | set_duty, stop | -100.0 to +100.0 |
  * | invert_pwm | PWM polarity | init | Never | true/false |
  * | initialized | Ready for use | init | deinit, emergency_stop | true/false |
@@ -553,6 +553,7 @@ typedef struct {
  * @return k_rx_ok on success
  * @return k_rx_err_null_ptr if handle is nullptr
  * @return k_rx_err_invalid_state if motor not initialized
+ * @return k_rx_err_invalid_arg if duty is NaN or Inf
  */
 [[nodiscard]] rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty);
 
@@ -605,6 +606,9 @@ typedef struct {
  * @return k_rx_ok on success
  * @return k_rx_err_null_ptr if handle is nullptr
  * @return k_rx_err_invalid_state if motor not initialized
+ * @return other Any error propagated from rx_gptw_set_duty(), rx_gptw_enable_output(),
+ *               or rx_gptw_stop() during shutdown (e.g. k_rx_err_hw_error,
+ *               k_rx_err_invalid_arg). Handle is still marked uninitialized regardless.
  *
  * @note After emergency stop, motor requires rx_motor_init() to operate again
  * @warning This is a safety function - use for emergency conditions only

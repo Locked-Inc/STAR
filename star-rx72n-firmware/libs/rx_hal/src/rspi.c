@@ -220,7 +220,7 @@ typedef enum : uint8_t {
 
 /** @brief RSPI controller mode constants
  *
- * PCLKB rate comes from rx72n_clock.h (k_pclkb_hz) — do not duplicate the
+ * PCLKB rate comes from rx72n_clock.h (k_pclkb_hz) -- do not duplicate the
  * literal here so the divisor math tracks any future clock-tree change.
  */
 typedef enum : uint32_t {

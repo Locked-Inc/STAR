@@ -11,8 +11,8 @@
 // - Proto3 only, 100 char line limit, 4 space indent
 // - All fields documented with units and valid ranges
 //
-// STAR Project - Texas A&M University
-// January 2026
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
 //
 import type { BinaryWriteOptions } from "@protobuf-ts/runtime";
 import type { IBinaryWriter } from "@protobuf-ts/runtime";
@@ -44,10 +44,11 @@ export interface ControllerState {
     /**
      * Timestamp in milliseconds (e.g., since epoch or monotonic boot time)
      * Used for jitter buffer and out-of-order packet handling.
+     * Project MKS-suffix mandate: numeric fields name the unit; ms here.
      *
-     * @generated from protobuf field: int64 timestamp = 3
+     * @generated from protobuf field: int64 timestamp_ms = 3
      */
-    timestamp: string;
+    timestampMs: string;
     /**
      * Enable verbose debug logging on the gateway
      *
@@ -61,7 +62,7 @@ class ControllerState$Type extends MessageType<ControllerState> {
         super("star.v1.ControllerState", [
             { no: 1, name: "linear_vel", kind: "scalar", T: 2 /*ScalarType.FLOAT*/ },
             { no: 2, name: "angular_vel", kind: "scalar", T: 2 /*ScalarType.FLOAT*/ },
-            { no: 3, name: "timestamp", kind: "scalar", T: 3 /*ScalarType.INT64*/ },
+            { no: 3, name: "timestamp_ms", kind: "scalar", T: 3 /*ScalarType.INT64*/ },
             { no: 4, name: "debug", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
         ]);
     }
@@ -69,7 +70,7 @@ class ControllerState$Type extends MessageType<ControllerState> {
         const message = globalThis.Object.create((this.messagePrototype!));
         message.linearVel = 0;
         message.angularVel = 0;
-        message.timestamp = "0";
+        message.timestampMs = "0";
         message.debug = false;
         if (value !== undefined)
             reflectionMergePartial<ControllerState>(this, message, value);
@@ -86,8 +87,8 @@ class ControllerState$Type extends MessageType<ControllerState> {
                 case /* float angular_vel */ 2:
                     message.angularVel = reader.float();
                     break;
-                case /* int64 timestamp */ 3:
-                    message.timestamp = reader.int64().toString();
+                case /* int64 timestamp_ms */ 3:
+                    message.timestampMs = reader.int64().toString();
                     break;
                 case /* bool debug */ 4:
                     message.debug = reader.bool();
@@ -110,9 +111,9 @@ class ControllerState$Type extends MessageType<ControllerState> {
         /* float angular_vel = 2; */
         if (message.angularVel !== 0)
             writer.tag(2, WireType.Bit32).float(message.angularVel);
-        /* int64 timestamp = 3; */
-        if (message.timestamp !== "0")
-            writer.tag(3, WireType.Varint).int64(message.timestamp);
+        /* int64 timestamp_ms = 3; */
+        if (message.timestampMs !== "0")
+            writer.tag(3, WireType.Varint).int64(message.timestampMs);
         /* bool debug = 4; */
         if (message.debug !== false)
             writer.tag(4, WireType.Varint).bool(message.debug);

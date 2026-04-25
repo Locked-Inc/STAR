@@ -28,6 +28,33 @@ constexpr uint32_t MAX_NANOSECONDS = 1'000'000'000U;
 constexpr double PI = 3.14159265358979323846;
 
 /**
+ * @brief Anchor point for the monotonic since-start clock used to populate
+ *        proto `timestamp_us` fields on outbound commands.
+ *
+ * @details
+ * Captured once when this translation unit is first loaded. The wire convention
+ * for command `timestamp_us` is "microseconds since the sender started",
+ * NOT Unix epoch -- this keeps round-trip latency math consistent with the
+ * RX72N firmware's boot-relative timestamps and avoids producing
+ * trillions-of-seconds garbage when the host subtracts firmware timestamps
+ * from wall-clock timestamps.
+ *
+ * Both gateway (Go) and ROS2 (C++) must use the same convention; see
+ * star-gateway/internal/service/motor_control.go for the Go equivalent.
+ */
+const auto kProcessStart = std::chrono::steady_clock::now();
+
+/**
+ * @brief Microseconds elapsed since this process started (monotonic).
+ * @return Microseconds since kProcessStart, always positive and non-decreasing.
+ */
+inline int64_t mono_micros_since_start()
+{
+  const auto now = std::chrono::steady_clock::now();
+  return std::chrono::duration_cast<std::chrono::microseconds>(now - kProcessStart).count();
+}
+
+/**
  * @brief Convert ROS builtin time stamp to microseconds since epoch.
  * @param[in] stamp ROS time stamp with sec + nanosec fields.
  * @return Timestamp in microseconds since epoch.
@@ -121,12 +148,11 @@ bool MessageConverter::twist_to_velocity_command(
   command.set_back_right_velocity_mps(right_velocity);
   command.set_sequence(sequence);
 
-  // Timestamp in microseconds since epoch
-  auto now = std::chrono::system_clock::now();
-  auto us = std::chrono::duration_cast<std::chrono::microseconds>(
-    now.time_since_epoch())
-    .count();
-  command.set_timestamp_us(us);
+  // Timestamp in microseconds since this process started (monotonic), so
+  // the gateway-side latency math `now - cmd.timestamp_us` stays inside one
+  // monotonic reference frame and never mixes wall-clock with the RX72N's
+  // boot-time microseconds. See kProcessStart above for rationale.
+  command.set_timestamp_us(mono_micros_since_start());
 
   return true;
 }

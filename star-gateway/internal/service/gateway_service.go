@@ -35,7 +35,7 @@ type HubNotifier interface {
 //  2. Teleop (UI -> ROS2):
 //     UI sends via WebSocket -> UpdateTeleopCommand() -> ROS2 polls GetTeleopCommand()
 //  3. PID Gains (UI -> ROS2):
-//     UI sends via WebSocket -> SetPIDGains() -> ROS2 -> SPI -> RX72N
+//     UI sends via WebSocket -> SetPidGains() -> ROS2 -> SPI -> RX72N
 type GatewayService struct {
 	starv1.UnimplementedGatewayServiceServer
 
@@ -208,7 +208,9 @@ func (s *GatewayService) GetTeleopCommand(
 			BackLeftVelocityMps:   0.0,
 			BackRightVelocityMps:  0.0,
 			Sequence:              0,
-			TimestampUs:           time.Now().UnixMicro(),
+			// monoMicrosSinceStart() lives in motor_control.go, same package;
+			// keeps timestamp_us in our since-start epoch (not Unix wall-clock).
+			TimestampUs: monoMicrosSinceStart(),
 		}
 	}
 
@@ -227,15 +229,15 @@ func (s *GatewayService) GetTeleopCommand(
 	}, nil
 }
 
-// SetPIDGains updates PID gains for motor velocity control.
+// SetPidGains updates PID gains for motor velocity control.
 //
 // Called by Gateway when UI requests PID tuning. This is a placeholder implementation
 // that returns success but doesn't actually forward to ROS2 yet (will be implemented
 // when ROS2 PID service is available).
-func (s *GatewayService) SetPIDGains(
+func (s *GatewayService) SetPidGains(
 	ctx context.Context,
-	req *starv1.SetPIDGainsRequest,
-) (*starv1.SetPIDGainsResponse, error) {
+	req *starv1.SetPidGainsRequest,
+) (*starv1.SetPidGainsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
@@ -252,7 +254,7 @@ func (s *GatewayService) SetPIDGains(
 	}
 
 	// Log the request
-	s.logger.Info("SetPIDGains",
+	s.logger.Info("SetPidGains",
 		slog.Int("motor_id", int(motorID)),
 		slog.Float64("kp", float64(req.PidConfig.Kp)),
 		slog.Float64("ki", float64(req.PidConfig.Ki)),
@@ -283,7 +285,7 @@ func (s *GatewayService) SetPIDGains(
 		Status:          starv1.Status_STATUS_OK,
 	}
 
-	return &starv1.SetPIDGainsResponse{
+	return &starv1.SetPidGainsResponse{
 		Header:  respHeader,
 		Success: true,
 		Message: "PID gains update for " + motorDesc + " (placeholder - ROS2 integration pending)",

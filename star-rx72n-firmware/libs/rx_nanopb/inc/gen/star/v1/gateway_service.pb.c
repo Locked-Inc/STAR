@@ -18,10 +18,10 @@ PB_BIND(star_v1_GetTeleopCommandRequest, star_v1_GetTeleopCommandRequest, AUTO)
 PB_BIND(star_v1_GetTeleopCommandResponse, star_v1_GetTeleopCommandResponse, 2)
 
 
-PB_BIND(star_v1_SetPIDGainsRequest, star_v1_SetPIDGainsRequest, AUTO)
+PB_BIND(star_v1_SetPidGainsRequest, star_v1_SetPidGainsRequest, AUTO)
 
 
-PB_BIND(star_v1_SetPIDGainsResponse, star_v1_SetPIDGainsResponse, 2)
+PB_BIND(star_v1_SetPidGainsResponse, star_v1_SetPidGainsResponse, 2)
 
 
 

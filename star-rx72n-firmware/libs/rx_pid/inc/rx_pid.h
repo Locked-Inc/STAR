@@ -473,7 +473,8 @@ typedef struct {
  * ## Performance Characteristics
  * - **Execution Time**: ~833 ns @ 240 MHz RX72N (200 cycles with FPU)
  * - **Memory**: 32 bytes stack (local variables)
- * - **Determinism**: Constant execution time (no data-dependent branches)
+ * - **Determinism**: Near-constant execution time; only data-dependent branch is the
+ *                    final isfinite() post-condition check (returns k_rx_fail if NaN/Inf)
  * - **Numerical Stability**: IEEE 754 single-precision (6-7 decimal digits)
  *
  * ## Sample Rate Guidelines
@@ -519,6 +520,7 @@ typedef struct {
  * @retval k_rx_err_null_ptr handle or output pointer is nullptr
  * @retval k_rx_err_invalid_state PID controller not initialized (call rx_pid_init first)
  * @retval k_rx_err_invalid_arg dt <= 0 (invalid sample period)
+ * @retval k_rx_fail Computed output is non-finite (NaN or Inf) -- post-condition violation
  *
  * @pre handle must be initialized via rx_pid_init()
  * @pre handle->initialized must be true
