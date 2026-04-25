@@ -113,7 +113,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_motor/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_obstacle_detect/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_pid/inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_sync/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_spi_comm/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_usb/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_usb/src
@@ -164,16 +163,12 @@ file(GLOB THREADX_LOWPOWER_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/th
 
 # Custom libraries (using GLOB_RECURSE for src subdirectories)
 file(GLOB_RECURSE LIB_RX_CORE_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_core/src/*.c)
-# rx_log_usb.c is orphaned after dc6f3201b (includes rx_usb.h which was purged).
-# rx_log_uart.c is the active log backend.
-list(REMOVE_ITEM LIB_RX_CORE_SOURCES ${CMAKE_SOURCE_DIR}/libs/rx_core/src/rx_log_usb.c)
 file(GLOB_RECURSE LIB_RX_HAL_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_SOURCE_DIR}/libs/rx_hal/src/*.c
     ${CMAKE_SOURCE_DIR}/libs/rx_hal/src/*.S
 )
 file(GLOB_RECURSE LIB_RX_BUS_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_bus/src/*.c)
 file(GLOB_RECURSE LIB_RX_PID_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_pid/src/*.c)
-file(GLOB_RECURSE LIB_RX_SYNC_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_sync/src/*.c)
 file(GLOB_RECURSE LIB_RX_MOTOR_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_motor/src/*.c)
 file(GLOB_RECURSE LIB_RX_ENCODER_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_encoder/src/*.c)
 file(GLOB_RECURSE LIB_RX_CRC_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_crc/src/*.c)
@@ -231,7 +226,6 @@ set(ALL_SOURCES
     ${LIB_RX_HAL_SOURCES}
     ${LIB_RX_BUS_SOURCES}
     ${LIB_RX_PID_SOURCES}
-    ${LIB_RX_SYNC_SOURCES}
     ${LIB_RX_MOTOR_SOURCES}
     ${LIB_RX_ENCODER_SOURCES}
     ${LIB_RX_CRC_SOURCES}
@@ -337,7 +331,6 @@ target_include_directories(${PROJECT_NAME}.elf PRIVATE
     ${CMAKE_SOURCE_DIR}/libs/rx_hal/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_bus/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_pid/inc
-    ${CMAKE_SOURCE_DIR}/libs/rx_sync/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_motor/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_encoder/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_crc/inc

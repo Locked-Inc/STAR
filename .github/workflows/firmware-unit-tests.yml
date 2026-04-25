@@ -148,6 +148,10 @@ jobs:
           # All five new drivers (rx_cac, rx_doc, rx_eccram, rx_lpc, rx_tmr)
           # were backfilled to 100/100/100 on 2026-04-21 and are now in the
           # 100%/100%/100% gate alongside every other file in libs/.
+          # Hardware-only sources excluded below: these compile only in the cross-build
+          # because they touch USB/RIIC/RSPI/ICU registers or hardware peripherals that
+          # cannot be exercised on the host. They are exercised on-target during bring-up
+          # tests, not in the host coverage gate.
           gcovr \
             --object-directory star-rx72n-firmware/tests/build \
             --filter 'star-rx72n-firmware/libs/' \
@@ -155,6 +159,21 @@ jobs:
             --exclude '.*/rx_nanopb/inc/gen/.*' \
             --exclude '.*/rx_hal/inc/rx72n_port_regs.h' \
             --exclude '.*/rx_hal/inc/rx_port_utils.h' \
+            --exclude '.*/rx_usb/src/.*' \
+            --exclude '.*/rx_crc/src/rx_crc_hw\.c' \
+            --exclude '.*/rx_hcsr04/src/rx_hcsr04_hal_hw\.c' \
+            --exclude '.*/rx_hcsr04/src/rx_hcsr04_isr\.c' \
+            --exclude '.*/rx_hcsr04/src/rx_hcsr04_icu\.c' \
+            --exclude '.*/rx_hal/src/uart\.c' \
+            --exclude '.*/rx_hal/src/riic\.c' \
+            --exclude '.*/rx_hal/src/rspi\.c' \
+            --exclude '.*/rx_hal/src/timer\.c' \
+            --exclude '.*/rx_hal/src/gpio\.c' \
+            --exclude '.*/rx_hal/src/adc\.c' \
+            --exclude '.*/rx_hal/src/rx_gptw\.c' \
+            --exclude '.*/rx_hal/src/rx_irq_filter\.c' \
+            --exclude '.*/rx_hal/src/rx_mtu\.c' \
+            --exclude '.*/rx_hal/src/rx_cmt\.c' \
             --exclude '.*/CMakeFiles/.*' \
             --gcov-executable 'llvm-cov-18 gcov' \
             --gcov-ignore-errors=source_not_found \

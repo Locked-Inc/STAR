@@ -43,7 +43,7 @@ endif()
 # Collect generated protobuf source files
 # ============================================
 
-file(GLOB PROTO_SRCS "${STAR_PROTO_DIR}/star/v1/*.pb.cc")
+file(GLOB PROTO_SRCS CONFIGURE_DEPENDS "${STAR_PROTO_DIR}/star/v1/*.pb.cc")
 
 # SPI Driver Library
 add_library(spi_driver

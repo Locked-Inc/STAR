@@ -50,8 +50,8 @@ include_directories(${STAR_PROTO_DIR})
 # Collect generated protobuf/grpc source files
 # ============================================
 
-file(GLOB PROTO_SRCS "${STAR_PROTO_DIR}/star/v1/*.pb.cc")
-file(GLOB GRPC_SRCS "${STAR_PROTO_DIR}/star/v1/*.grpc.pb.cc")
+file(GLOB PROTO_SRCS CONFIGURE_DEPENDS "${STAR_PROTO_DIR}/star/v1/*.pb.cc")
+file(GLOB GRPC_SRCS CONFIGURE_DEPENDS "${STAR_PROTO_DIR}/star/v1/*.grpc.pb.cc")
 
 # Verify we found protobuf files
 list(LENGTH PROTO_SRCS PROTO_COUNT)
