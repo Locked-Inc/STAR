@@ -163,15 +163,17 @@ Jared Bartz         & Schematic Review \\
 The Spatial Topography Accessibility Robot (STAR) is an autonomous indoor
 robotic platform whose mission is to automate compliance auditing of
 facilities against the Americans with Disabilities Act (ADA) Title III.
-Industry surveys estimate that approximately 73 percent of public-facing
-facilities fail at least one ADA Title III requirement, and the Seyfarth
-Shaw annual ADA Title III report shows federal lawsuit filings growing
-steadily from 2018 through 2024. Manual audits by certified inspectors
-remain expensive and slow, creating a structural gap between the volume
-of non-compliant spaces and the rate at which they can be identified and
-remediated. STAR exists to close that gap by replacing discretionary
-manual measurement with deterministic, sensor-grounded, repeatable
-software measurements.
+Title III enforcement remains active at scale: Seyfarth Shaw's
+ADA Title III tracker, sourced from PACER, reports federal lawsuit
+filings rose from 10{,}163 in 2018 to a peak of 11{,}452 in 2021,
+declined to 8{,}227 in 2023, and rebounded to 8{,}800 in 2024 -- a
+sustained baseline of roughly nine to eleven thousand new federal
+suits per year over the seven-year window. Manual audits by certified
+inspectors remain expensive and slow, creating a structural gap
+between the volume of physical spaces under enforcement risk and the
+rate at which they can be measured and remediated. STAR exists to
+close that gap by replacing discretionary manual measurement with
+deterministic, sensor-grounded, repeatable software measurements.
 
 This document describes the software that realizes that mission. The
 STAR software stack is a distributed system spanning five deployment
@@ -340,17 +342,20 @@ should focus on Section~\ref{sec:component-descriptions} subsystem
 \label{sec:system-overview}
 
 \subsection{Problem Statement}
-ADA Title III Section 405.2 requires that newly constructed or altered
-ramps not exceed a 1:12 rise-to-run slope. In practice, inspectors
-audit this and related geometric constraints by hand, using
-inclinometers, tape measures, and photography. Manual auditing is
-slow, subjective, and error-prone. Filed lawsuits against
-non-compliant facilities have grown every year from 2018 through 2024
-(Seyfarth Shaw ADA Title III report, 2024), yet the rate of formal
-audit completions has not kept pace. STAR addresses this gap by
-combining an autonomous mobile platform with a deterministic software
-pipeline that measures ramp slope, path width, trip-hazard height, and
-related ADA geometry from sensor data with known tolerances.
+The 2010 ADA Standards for Accessible Design, Section 405.2
+(incorporated under DOJ Title III regulation at 28 CFR Part 36),
+require that newly constructed or altered ramp runs have a running
+slope no steeper than 1:12. In practice, inspectors audit this and
+related geometric constraints by hand, using inclinometers, tape
+measures, and photography. Manual auditing is slow, subjective, and
+error-prone. Federal Title III lawsuit filings have remained at a
+sustained high baseline -- between roughly 8{,}200 and 11{,}500 per
+year from 2018 through 2024 (Seyfarth Shaw ADA Title III tracker,
+2025) -- yet the rate of formal audit completions has not kept pace.
+STAR addresses this gap by combining an autonomous mobile platform
+with a deterministic software pipeline that measures ramp slope,
+path width, trip-hazard height, and related ADA geometry from sensor
+data with known tolerances.
 
 \subsection{System Context}
 STAR is a four-motor differential-plus-caster mobile base carrying a
@@ -1393,21 +1398,30 @@ frame hierarchy \texttt{map -> odom -> base\_link}.
 \addcontentsline{toc}{subsection}{Appendix B: References}
 
 \begin{enumerate}[leftmargin=2em,itemsep=2pt]
-\item Americans with Disabilities Act, Title III, Section 405.2
-      (Running Slope of Ramps).
-\item Seyfarth Shaw LLP, ADA Title III Report, 2024.
-\item NASA/JPL Institutional Coding Standard: ``The Power of 10:
-      Rules for Developing Safety-Critical Code.''
-\item Boston Dynamics Proto3 Style Guide, public release.
-\item Open Source Robotics Foundation, Nav2 documentation,
-      \url{https://docs.nav2.org/}.
-\item \texttt{slam\_toolbox} project, S. Macenski et al.
-\item nanopb, Petteri Aimonen,
-      \url{https://github.com/nanopb/nanopb}.
-\item Azure RTOS ThreadX, Microsoft.
-\item ROS2 Jazzy Jalisco release documentation.
-\item S. Macenski and I. Jambrecic, \textit{SLAM Toolbox: SLAM for
-      the dynamic world}.
+\item U.S. Department of Justice, \textit{2010 ADA Standards for
+      Accessible Design}, Section 405.2 (Ramp Running Slope), 15
+      September 2010. \url{https://www.access-board.gov/ada/chapter/ch04/}
+\item Seyfarth Shaw LLP, ``ADA Title III Federal Lawsuit Numbers
+      Rebound to 8{,}800 in 2024,'' ADA Title III blog, March 2025.
+      \url{https://www.adatitleiii.com/2025/03/ada-title-iii-federal-lawsuit-numbers-rebound-to-8800-in-2024/}
+\item G. J. Holzmann, ``The Power of 10: Rules for Developing
+      Safety-Critical Code,'' \textit{IEEE Computer}, vol. 39, no. 6,
+      pp. 95--99, June 2006.
+      \url{https://spinroot.com/gerard/pdf/P10.pdf}
+\item Boston Dynamics, ``API Protobuf Guidelines,'' Spot SDK.
+      \url{https://github.com/boston-dynamics/spot-sdk/blob/master/docs/protos/style_guide.md}
+\item Open Navigation LLC, Nav2 documentation.
+      \url{https://docs.nav2.org/}
+\item nanopb, Petteri Aimonen et al.
+      \url{https://github.com/nanopb/nanopb}
+\item Eclipse ThreadX, Eclipse Foundation (donated by Microsoft, 2024).
+      \url{https://threadx.io/}
+\item Open Robotics, ROS 2 Jazzy Jalisco release (LTS, May 2024 --
+      May 2029, Ubuntu 24.04). \url{https://docs.ros.org/en/jazzy/}
+\item S. Macenski and I. Jambrecic, ``SLAM Toolbox: SLAM for the
+      dynamic world,'' \textit{Journal of Open Source Software},
+      vol. 6, no. 61, art. 2783, 2021.
+      \url{https://doi.org/10.21105/joss.02783}
 \end{enumerate}
 
 \subsection*{Appendix C: Traceability Matrix (ADA Checks)}
