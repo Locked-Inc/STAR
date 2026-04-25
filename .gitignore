@@ -223,3 +223,11 @@ CMakeUserPresets.json
 # Built virtual_rx72n binary (source is in star-gateway/cmd/virtual_rx72n/)
 /virtual_rx72n
 /star-gateway/virtual_rx72n
+
+# Combined reference PDF (rebuild via 'make combined-reference')
+docs/STAR_Combined_Reference.pdf
+docs/combine.pdf
+docs/combine.aux
+docs/combine.log
+docs/combine.out
+docs/combine.toc

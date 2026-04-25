@@ -1,0 +1,137 @@
+% =============================================================================
+% STAR Combined Reference -- driver that concatenates every existing PDF
+% into one master deliverable. Compile with:
+%   pdflatex -interaction=nonstopmode combine.tex
+% (single pass is enough; no \tableofcontents references nothing else)
+% =============================================================================
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{pdfpages}
+\usepackage[bookmarks=true,bookmarksopen=true,bookmarksnumbered=true,colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+
+\hypersetup{
+  pdftitle={STAR Project Combined Reference},
+  pdfauthor={STAR Development Team -- Locked Inc.},
+  pdfsubject={Comprehensive STAR engineering, API, and capstone reference},
+  pdfkeywords={STAR, RX72N, ROS2, ThreadX, robotics, ADA, capstone}
+}
+
+\title{\Huge\bfseries STAR Project\\[0.4em]\Large Combined Reference}
+\author{STAR Development Team \\ Locked Inc.}
+\date{Version 1.0 \\ April 25, 2026 \\ MIT License}
+
+\begin{document}
+
+% -----------------------------------------------------------------------------
+% Cover page
+% -----------------------------------------------------------------------------
+\begin{titlepage}
+\centering
+\vspace*{2.5cm}
+
+{\Huge\bfseries STAR Project\par}
+\vspace{0.3cm}
+{\LARGE Combined Reference\par}
+\vspace{0.5cm}
+{\large Spatial Topography Accessibility Robot\par}
+
+\vfill
+
+{\large Version 1.0\par}
+{\large April 25, 2026\par}
+\vspace{0.4cm}
+{\large MIT License\par}
+
+\vfill
+
+{\normalsize STAR Development Team\\Locked Inc.\par}
+\vspace{0.8cm}
+
+{\small\itshape This volume bundles the engineering reference, per-library
+Doxygen API documentation, and capstone deliverables (SDD, SSUM, Test Report)
+into a single PDF for offline distribution.\par}
+\end{titlepage}
+
+% -----------------------------------------------------------------------------
+% Brief table of contents (parts only -- each part has its own internal TOC)
+% -----------------------------------------------------------------------------
+\tableofcontents
+\newpage
+
+% =============================================================================
+% PART I -- Engineering Reference
+% =============================================================================
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,part,1,Engineering Reference,part:eng
+}]{/Users/bsikar/Documents/github/STAR/docs/star_documentation.pdf}
+
+% =============================================================================
+% PART II -- Doxygen API Reference (per-library, alphabetical)
+% =============================================================================
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,part,1,Doxygen API Reference,part:doxy
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/src.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_comm\_manager},sec:doxy:comm
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_comm_manager.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_core},sec:doxy:core
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_core.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_crc},sec:doxy:crc
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_crc.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_ds18b20},sec:doxy:ds
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_ds18b20.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_fec},sec:doxy:fec
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_fec.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_frame},sec:doxy:frame
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_frame.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_frame\_ascii},sec:doxy:frameascii
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_frame_ascii.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_harq},sec:doxy:harq
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_harq.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_hcsr04},sec:doxy:hcsr04
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_hcsr04.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_pid},sec:doxy:pid
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_pid.pdf}
+
+% =============================================================================
+% PART III -- Software Description Document (capstone)
+% =============================================================================
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,part,1,Software Description Document,part:sdd
+}]{/Users/bsikar/Documents/github/STAR/final_docs/software_description_document/STAR_Software_Description_Document.pdf}
+
+% =============================================================================
+% PART IV -- System and Software User Manual (capstone)
+% =============================================================================
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,part,1,System and Software User Manual,part:ssum
+}]{/Users/bsikar/Documents/github/STAR/final_docs/system_software_user_manual/STAR_System_and_Software_User_Manual.pdf}
+
+% =============================================================================
+% PART V -- Test Report (capstone)
+% =============================================================================
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,part,1,Test Report,part:tr
+}]{/Users/bsikar/Documents/github/STAR/final_docs/test_report/STAR_Test_Report.pdf}
+
+\end{document}

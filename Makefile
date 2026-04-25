@@ -485,6 +485,32 @@ doxygen-clean:
 	@rm -rf $(DOXY_OUT)
 	@echo "Done."
 
+# Combined reference PDF: cover + engineering reference + per-library
+# doxygen API + capstone SDD/SSUM/test report concatenated into one
+# 3000+ page master deliverable.
+#
+# Strategy: pdfpages-driven concat via docs/combine.tex. Inputs:
+#   * docs/star_documentation.pdf   (rebuilt if .tex sources changed)
+#   * star-rx72n-firmware/docs/doxygen/pdf/*.pdf   (must exist; run
+#     `make doxygen-pdfs` first if not)
+#   * final_docs/{software_description_document,system_software_user_manual,
+#                 test_report}/*.pdf   (capstone-built; should be present)
+#
+# Output: docs/STAR_Combined_Reference.pdf
+combined-reference:
+	@echo "Building STAR Combined Reference PDF..."
+	@echo "  [1/3] Refreshing engineering reference (docs/star_documentation.pdf)..."
+	@cd docs && pdflatex -interaction=nonstopmode star_documentation.tex >/dev/null 2>&1 && \
+	  pdflatex -interaction=nonstopmode star_documentation.tex >/dev/null 2>&1
+	@echo "  [2/3] Compiling combined driver (docs/combine.tex)..."
+	@cd docs && pdflatex -interaction=nonstopmode combine.tex >/dev/null 2>&1 && \
+	  pdflatex -interaction=nonstopmode combine.tex >/dev/null 2>&1
+	@echo "  [3/3] Installing as docs/STAR_Combined_Reference.pdf..."
+	@mv docs/combine.pdf docs/STAR_Combined_Reference.pdf
+	@echo ""
+	@echo "[OK] docs/STAR_Combined_Reference.pdf"
+	@which pdfinfo >/dev/null 2>&1 && pdfinfo docs/STAR_Combined_Reference.pdf | grep -E "Pages|File size" || true
+
 # Install LaTeX packages required by doxygen-pdf-* that are not in the
 # Dockerfile's base texlive set. xelatex itself and fonts-urw-base35 are
 # installed via the Dockerfile (rebuild the Docker image if missing).
