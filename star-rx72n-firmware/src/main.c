@@ -800,13 +800,13 @@ typedef enum : uint32_t {
  *       both 32-bit RX72N target and 64-bit unit-test host).
  */
 typedef enum : uintptr_t {
-  k_dflash_addr_fstatr     = 0x007FE080U, /**< Flash Status Register, 32-bit */
-  k_dflash_addr_fentryr    = 0x007FE084U, /**< Flash P/E Mode Entry, 16-bit */
-  k_dflash_addr_fsaddr     = 0x007FE030U, /**< Flash Start Address, 32-bit */
-  k_dflash_addr_fpckar     = 0x007FE0E4U, /**< Flash Peripheral Clock Notify, 16-bit */
-  k_dflash_addr_fwepror    = 0x0008C296U, /**< Flash P/E Erase/Write Protect, 8-bit */
-  k_dflash_addr_faci       = 0x007E0000U, /**< FACI command port, byte/word access */
-  k_dflash_probe_addr      = 0x00100000U, /**< Bench probe payload slot in data-flash */
+  k_dflash_addr_fstatr  = 0x007FE080U, /**< Flash Status Register, 32-bit */
+  k_dflash_addr_fentryr = 0x007FE084U, /**< Flash P/E Mode Entry, 16-bit */
+  k_dflash_addr_fsaddr  = 0x007FE030U, /**< Flash Start Address, 32-bit */
+  k_dflash_addr_fpckar  = 0x007FE0E4U, /**< Flash Peripheral Clock Notify, 16-bit */
+  k_dflash_addr_fwepror = 0x0008C296U, /**< Flash P/E Erase/Write Protect, 8-bit */
+  k_dflash_addr_faci    = 0x007E0000U, /**< FACI command port, byte/word access */
+  k_dflash_probe_addr   = 0x00100000U, /**< Bench probe payload slot in data-flash */
 } dflash_addr_t;
 
 /* =============================================================================
@@ -931,7 +931,8 @@ static void internal_dflash_enter_pe(volatile uint16_t* fentryr, volatile const 
  *
  * @since Version 1.0.0
  */
-static void internal_dflash_erase_block(volatile uint32_t* fsaddr, volatile uint8_t* faci_b,
+static void internal_dflash_erase_block(volatile uint32_t*       fsaddr,
+                                        volatile uint8_t*        faci_b,
                                         volatile const uint32_t* fstatr)
 {
   /* Erase the 64-byte block containing k_dflash_probe_addr. */
@@ -964,10 +965,12 @@ static void internal_dflash_erase_block(volatile uint32_t* fsaddr, volatile uint
  *
  * @since Version 1.0.0
  */
-static void internal_dflash_program_payload(volatile uint32_t* fsaddr, volatile uint8_t* faci_b,
+static void internal_dflash_program_payload(volatile uint32_t*       fsaddr,
+                                            volatile uint8_t*        faci_b,
                                             volatile uint16_t*       faci_w,
-                                            volatile const uint32_t* fstatr, uint8_t who_am_i,
-                                            int32_t err)
+                                            volatile const uint32_t* fstatr,
+                                            uint8_t                  who_am_i,
+                                            int32_t                  err)
 {
   /* Program 4 bytes: [0xA5, 0x5A, who_am_i, err_byte_low]. */
   const uint8_t  err_byte = (err == 0) ? 0x00U : (uint8_t)(err & k_dflash_probe_byte_mask);
@@ -3322,10 +3325,9 @@ static void internal_inline_usb0_endpoint_setup(void)
   *dcpctr  = (uint16_t)k_inline_val_dcpctr_pid_buf;
   *brdyenb = (uint16_t)k_inline_val_brdyenb_pipe0;
   *bempenb = (uint16_t)k_inline_val_bempenb_pipe0;
-  *intenb0 =
-    (uint16_t)((uint32_t)k_inline_bit_intenb0_vbse | (uint32_t)k_inline_bit_intenb0_rsme |
-               (uint32_t)k_inline_bit_intenb0_sofe | (uint32_t)k_inline_bit_intenb0_dvse |
-               (uint32_t)k_inline_bit_intenb0_ctre);
+  *intenb0 = (uint16_t)((uint32_t)k_inline_bit_intenb0_vbse | (uint32_t)k_inline_bit_intenb0_rsme |
+                        (uint32_t)k_inline_bit_intenb0_sofe | (uint32_t)k_inline_bit_intenb0_dvse |
+                        (uint32_t)k_inline_bit_intenb0_ctre);
 
   *syscfg |= (uint16_t)k_inline_bit_syscfg_dprpu;
 }

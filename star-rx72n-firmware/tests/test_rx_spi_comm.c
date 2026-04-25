@@ -3037,7 +3037,7 @@ void test_spi_comm_receive_too_many_control_frames(void)
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
 
-/** @brief Test receive: sequence validation fail -> frame dropped, loop continues -> timeout */
+/** @brief Test receive: sequence validation fail -> NACK sent -> error propagated */
 void test_spi_comm_receive_sequence_validation_fail(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -3049,7 +3049,9 @@ void test_spi_comm_receive_sequence_validation_fail(void)
   helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Inject a command frame with sequence 10 but session expects sequence 0.
-   * rx_session_validate_rx should reject a jump of 10 (gap > 1). */
+   * rx_session_validate_rx should reject a jump of 10 (gap > 1). NACK send
+   * succeeds (default write_ready=true), then receive propagates the
+   * original protocol error. */
   uint8_t  encoded_frame[k_test_buf_medium];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_command,
@@ -3062,8 +3064,38 @@ void test_spi_comm_receive_sequence_validation_fail(void)
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
-  /* Sequence gap >= k_session_max_gap_tolerance: rx_session_validate_rx returns
-   * k_rx_err_protocol_error which the receive loop propagates immediately. */
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
+}
+
+/** @brief Test receive: sequence validation fail when NACK send also fails -> still propagates protocol error */
+void test_spi_comm_receive_sequence_validation_fail_nack_send_fails(void)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_spi_comm_init(&s_handle,
+                                     &(rx_spi_comm_config_t){.session     = &s_session,
+                                                             .channel     = k_rspi_channel_0,
+                                                             .spi_mode    = 0,
+                                                             .fec_enabled = false}));
+  helper_init_rspi_channel(k_rspi_channel_0);
+
+  /* Inject the bad-seq frame first so the RX read succeeds, then disable
+   * write_ready so the subsequent NACK TX fails. RX-only transfers inside
+   * the receive path do not check write_ready, so the bad frame is decoded
+   * successfully. validate_rx rejects it; send_nack fails; the NACK-failed
+   * warning is logged; original validate_err is returned to caller. */
+  uint8_t  encoded_frame[k_test_buf_medium];
+  uint32_t encoded_len = 0;
+  helper_create_encoded_frame(k_frame_type_command,
+                              k_test_seq_gap,
+                              nullptr,
+                              0,
+                              encoded_frame,
+                              &encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded_frame, encoded_len);
+  mock_rspi_set_write_ready(nullptr, k_rspi_channel_0, false);
+
+  rx_frame_t frame;
+  rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
 }
 
@@ -3657,6 +3689,7 @@ static void internal_run_coverage_tests(void)
   RUN_TEST(test_spi_comm_receive_second_transfer_fails);
   RUN_TEST(test_spi_comm_receive_too_many_control_frames);
   RUN_TEST(test_spi_comm_receive_sequence_validation_fail);
+  RUN_TEST(test_spi_comm_receive_sequence_validation_fail_nack_send_fails);
   RUN_TEST(test_spi_comm_receive_ping_pong_send_fails);
   RUN_TEST(test_spi_comm_receive_reset_ack_send_fails);
   RUN_TEST(test_spi_comm_nack_retransmit_transfer_fails);

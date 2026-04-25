@@ -1941,26 +1941,15 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint3
     rx_err_t                     validate_err =
       rx_session_validate_rx(handle->session, frame->header.sequence, &validate_result);
     if (validate_err != k_rx_ok) {
-      /* Audit F-05: do not silently drop the bad frame.
-       * Reply with a NACK carrying the sequence we EXPECTED so the
-       * remote can recover instead of waiting for its ACK timer to
-       * burn the retransmit budget. We use the still-advanced expected
-       * sequence (rx_session_get_rx) rather than the offending
-       * frame->header.sequence -- the former is what the remote needs
-       * to roll forward to. The send-NACK call itself can fail (no
-       * transport buffer, etc.); we log and keep the original
-       * validate_err as the real cause for our caller. */
+      /* Audit F-05: do not silently drop the bad frame. NACK carrying the
+       * offending sequence so the remote can retransmit immediately
+       * instead of burning its ACK-timer budget waiting on a reply.
+       * The send-NACK call itself can fail (transport not ready, etc.);
+       * we log and keep the original validate_err as the real cause. */
       rx_log_error(s_tag, "Session validate_rx returned error");
-
-      uint16_t       expected_seq = 0;
-      const rx_err_t get_err      = rx_session_get_rx(handle->session, &expected_seq);
-      if (get_err == k_rx_ok) {
-        const rx_err_t nack_err = rx_spi_comm_send_nack(handle, expected_seq, 0);
-        if (nack_err != k_rx_ok) {
-          rx_log_warn(s_tag, "Failed to send NACK after sequence validation failure");
-        }
-      } else {
-        rx_log_warn(s_tag, "rx_session_get_rx failed; cannot send NACK");
+      const rx_err_t nack_err = rx_spi_comm_send_nack(handle, frame->header.sequence, 0);
+      if (nack_err != k_rx_ok) {
+        rx_log_warn(s_tag, "Failed to send NACK after sequence validation failure");
       }
       return validate_err;
     }
