@@ -342,9 +342,7 @@ void test_drain_has_value_default_branch_falls_through_to_debug(void)
   enum : uint8_t {
     k_test_drain_level_invalid = 7U, /* Any value not in 0..3 */
   };
-  rx_isr_log_test_set_event_meta(k_isr_log_event_usb_resume,
-                                 k_test_drain_level_invalid,
-                                 true);
+  rx_isr_log_test_set_event_meta(k_isr_log_event_usb_resume, k_test_drain_level_invalid, true);
 
   TEST_ASSERT_TRUE(rx_isr_log_push(k_isr_log_event_usb_resume, k_test_first_value));
   TEST_ASSERT_EQUAL_UINT32(1U, rx_isr_log_drain());
@@ -358,9 +356,7 @@ void test_drain_no_value_default_branch_falls_through_to_debug(void)
   enum : uint8_t {
     k_test_drain_level_invalid = 9U, /* Any value not in 0..3 */
   };
-  rx_isr_log_test_set_event_meta(k_isr_log_event_usb_resume,
-                                 k_test_drain_level_invalid,
-                                 false);
+  rx_isr_log_test_set_event_meta(k_isr_log_event_usb_resume, k_test_drain_level_invalid, false);
 
   TEST_ASSERT_TRUE(rx_isr_log_push(k_isr_log_event_usb_resume, 0U));
   TEST_ASSERT_EQUAL_UINT32(1U, rx_isr_log_drain());
