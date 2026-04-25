@@ -208,23 +208,42 @@ to this legend.
 \section{Referenced Documents}
 \label{sec:refs}
 
+The STAR project is open-source. The full repository, including
+every internal document, configuration, and script referenced
+below, lives at
+\url{https://github.com/Locked-Inc/STAR}. Each entry below links to
+its current location on GitHub's main branch; click through to read
+the source.
+
+\textbf{In-repo references} (open-source, follow each link):
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
 \item STAR Software Description Document (companion capstone
-      deliverable, \texttt{final\_docs/software\_description\_document/}).
-\item \texttt{docs/ARCHITECTURE.md} -- end-to-end operations stack
-      topology (Pi5, Tailscale, k3s, Cloudflare).
-\item \texttt{infra/README.md} -- Pi5-side system files, Caddy
-      configuration, systemd units, and fresh-Pi5 install procedure.
-\item \texttt{docs/PI\_DEPLOYMENT.md} -- ROS2 Jazzy workstation and
-      Pi5 provisioning.
-\item \texttt{scripts/flash-rx72n.sh} -- RX72N firmware flashing
-      helper.
-\item \texttt{monitoring/grafana-star-dashboard.json} -- Grafana
-      dashboard definition used by the operator cockpit.
-\item \texttt{star-ros2/src/star\_simple\_bridge/} -- MVP ROS2 bridge
-      that serves Prometheus metrics and map images.
-\item \texttt{star-ros2/src/star\_bringup/foxglove/star-default.json}
-      -- default Foxglove / Lichtblick layout.
+      deliverable):
+      \href{https://github.com/Locked-Inc/STAR/tree/main/final_docs/software_description_document}{\texttt{final\_docs/software\_description\_document/}}.
+\item End-to-end operations stack topology (Pi5, Tailscale, k3s,
+      Cloudflare):
+      \href{https://github.com/Locked-Inc/STAR/blob/main/docs/ARCHITECTURE.md}{\texttt{docs/ARCHITECTURE.md}}.
+\item Pi5-side system files, Caddy configuration, systemd units,
+      fresh-Pi5 install procedure:
+      \href{https://github.com/Locked-Inc/STAR/blob/main/infra/README.md}{\texttt{infra/README.md}}.
+\item ROS2 Jazzy workstation and Pi5 provisioning:
+      \href{https://github.com/Locked-Inc/STAR/blob/main/docs/PI_DEPLOYMENT.md}{\texttt{docs/PI\_DEPLOYMENT.md}}.
+\item RX72N firmware flashing helper:
+      \href{https://github.com/Locked-Inc/STAR/blob/main/scripts/flash-rx72n.sh}{\texttt{scripts/flash-rx72n.sh}}.
+\item Grafana dashboard used by the operator cockpit:
+      \href{https://github.com/Locked-Inc/STAR/blob/main/monitoring/grafana-star-dashboard.json}{\texttt{monitoring/grafana-star-dashboard.json}}.
+\item MVP ROS2 bridge that serves Prometheus metrics and map images:
+      \href{https://github.com/Locked-Inc/STAR/tree/main/star-ros2/src/star_simple_bridge}{\texttt{star-ros2/src/star\_simple\_bridge/}}.
+\item Default Foxglove / Lichtblick layout:
+      \href{https://github.com/Locked-Inc/STAR/blob/main/star-ros2/src/star_bringup/foxglove/star-default.json}{\texttt{star-ros2/src/star\_bringup/foxglove/star-default.json}}.
+\item One-command bring-up helper:
+      \href{https://github.com/Locked-Inc/STAR/blob/main/scripts/slam-mvp.sh}{\texttt{scripts/slam-mvp.sh}}.
+\item Local Lichtblick web bundle setup:
+      \href{https://github.com/Locked-Inc/STAR/blob/main/scripts/setup-lichtblick-web.sh}{\texttt{scripts/setup-lichtblick-web.sh}}.
+\end{itemize}
+
+\textbf{External references}:
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
 \item U.S. Department of Justice, \textit{2010 ADA Standards for
       Accessible Design}, Section 405.2 (Ramp Running Slope).
       \url{https://www.access-board.gov/ada/chapter/ch04/}
