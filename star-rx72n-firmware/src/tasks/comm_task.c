@@ -2292,7 +2292,76 @@ static void internal_send_command_response(rx_comm_channel_t channel,
  * - Rule 5: [PASS] 2 preconditions, 3 postconditions documented
  * - Rule 7: [PASS] All return values checked
  */
-/* NOLINTBEGIN(readability-function-size,readability-function-cognitive-complexity) */
+/**
+ * @brief Translate a decoded SetVelocityRequest into a shared motor_command_t.
+ */
+static motor_command_t internal_velocity_request_to_command(const star_v1_SetVelocityRequest* req)
+{
+  motor_command_t cmd                              = {};
+  cmd.target_velocity_mps[k_motor_idx_front_left]  = (float)req->command.front_left_velocity_mps;
+  cmd.target_velocity_mps[k_motor_idx_front_right] = (float)req->command.front_right_velocity_mps;
+  cmd.target_velocity_mps[k_motor_idx_back_left]   = (float)req->command.back_left_velocity_mps;
+  cmd.target_velocity_mps[k_motor_idx_back_right]  = (float)req->command.back_right_velocity_mps;
+  cmd.sequence                                     = req->command.sequence;
+  cmd.timestamp_ms                                 = tx_time_get();
+  cmd.valid                                        = true;
+  return cmd;
+}
+
+/**
+ * @brief Push a motor command to shared_data and read it back to verify.
+ *
+ * @return The error code from shared_data_set_motor_command() so the caller
+ *         can include it in the SetVelocityResponse status field.
+ */
+static rx_err_t internal_velocity_apply_command(const motor_command_t* cmd)
+{
+  const rx_err_t set_err = shared_data_set_motor_command(cmd);
+  if (set_err != k_rx_ok) {
+    rx_log_error_val(s_tag, "Failed to set motor cmd", (uint32_t)set_err);
+    return set_err;
+  }
+  motor_command_t verify_cmd = {};
+  const rx_err_t  get_err    = shared_data_get_motor_command(&verify_cmd);
+  if (get_err == k_rx_ok) {
+    rx_log_info_val(s_tag, "VEL set valid=", (uint32_t)verify_cmd.valid);
+    rx_log_info_val(s_tag, "VEL set seq=", verify_cmd.sequence);
+  } else {
+    rx_log_warn_val(s_tag, "VEL verify get failed", (uint32_t)get_err);
+  }
+  return set_err;
+}
+
+/**
+ * @brief Encode and best-effort-send the SetVelocityResponse for a command.
+ */
+static void internal_velocity_send_response(rx_comm_channel_t                 channel,
+                                            rx_err_t                          set_err,
+                                            const star_v1_SetVelocityRequest* req)
+{
+  star_v1_SetVelocityResponse response =
+    (star_v1_SetVelocityResponse)star_v1_SetVelocityResponse_init_zero;
+  response.has_header = true;
+  const star_v1_Status resp_status =
+    (set_err == k_rx_ok) ? star_v1_Status_STATUS_OK : star_v1_Status_STATUS_INTERNAL_ERROR;
+  const char* req_id = nullptr;
+  if (req->has_header) {
+    req_id = req->header.request_id;
+  }
+  rx_nanopb_create_response_header(&response.header, resp_status, req_id);
+
+  uint32_t       encoded_len = 0;
+  const rx_err_t enc_err     = rx_nanopb_encode_velocity_response(&response,
+                                                              s_response_buffer,
+                                                              (uint32_t)k_comm_response_buffer_size,
+                                                              &encoded_len);
+  if (enc_err == k_rx_ok) {
+    internal_send_command_response(channel, s_response_buffer, encoded_len);
+  } else {
+    rx_log_warn_val(s_tag, "Velocity response encode failed", (uint32_t)enc_err);
+  }
+}
+
 static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
   rx_log_info_val(s_tag, "VEL entry, frame.len=", (uint32_t)frame->header.length);
@@ -2304,60 +2373,14 @@ static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx
     return false;
   }
 
-  /* Build motor command from protobuf doubles -> firmware floats */
-  motor_command_t cmd = {};
-  cmd.target_velocity_mps[k_motor_idx_front_left] =
-    (float)velocity_req.command.front_left_velocity_mps;
-  cmd.target_velocity_mps[k_motor_idx_front_right] =
-    (float)velocity_req.command.front_right_velocity_mps;
-  cmd.target_velocity_mps[k_motor_idx_back_left] =
-    (float)velocity_req.command.back_left_velocity_mps;
-  cmd.target_velocity_mps[k_motor_idx_back_right] =
-    (float)velocity_req.command.back_right_velocity_mps;
-  cmd.sequence     = velocity_req.command.sequence;
-  cmd.timestamp_ms = tx_time_get();
-  cmd.valid        = true;
+  const motor_command_t cmd     = internal_velocity_request_to_command(&velocity_req);
+  const rx_err_t        set_err = internal_velocity_apply_command(&cmd);
 
-  const rx_err_t set_err = shared_data_set_motor_command(&cmd);
-  if (set_err != k_rx_ok) {
-    rx_log_error_val(s_tag, "Failed to set motor cmd", (uint32_t)set_err);
-  } else {
-    motor_command_t verify_cmd = {};
-    const rx_err_t  get_err    = shared_data_get_motor_command(&verify_cmd);
-    if (get_err == k_rx_ok) {
-      rx_log_info_val(s_tag, "VEL set valid=", (uint32_t)verify_cmd.valid);
-      rx_log_info_val(s_tag, "VEL set seq=", verify_cmd.sequence);
-    } else {
-      rx_log_warn_val(s_tag, "VEL verify get failed", (uint32_t)get_err);
-    }
-  }
-
-  /* Send response back to host (best-effort; command already applied) */
-  {
-    star_v1_SetVelocityResponse response =
-      (star_v1_SetVelocityResponse)star_v1_SetVelocityResponse_init_zero;
-    response.has_header = true;
-    const star_v1_Status resp_status =
-      (set_err == k_rx_ok) ? star_v1_Status_STATUS_OK : star_v1_Status_STATUS_INTERNAL_ERROR;
-    const char* req_id = (int)velocity_req.has_header ? velocity_req.header.request_id : nullptr;
-    rx_nanopb_create_response_header(&response.header, resp_status, req_id);
-
-    uint32_t       encoded_len = 0;
-    const rx_err_t enc_err =
-      rx_nanopb_encode_velocity_response(&response,
-                                         s_response_buffer,
-                                         (uint32_t)k_comm_response_buffer_size,
-                                         &encoded_len);
-    if (enc_err == k_rx_ok) {
-      internal_send_command_response(channel, s_response_buffer, encoded_len);
-    } else {
-      rx_log_warn_val(s_tag, "Velocity response encode failed", (uint32_t)enc_err);
-    }
-  }
+  /* Best-effort response (command is already applied to shared_data). */
+  internal_velocity_send_response(channel, set_err, &velocity_req);
 
   return true;
 }
-/* NOLINTEND(readability-function-size,readability-function-cognitive-complexity) */
 
 /**
  * @brief Attempt to decode and handle an EmergencyStopRequest from a command frame

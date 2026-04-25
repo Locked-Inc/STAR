@@ -441,7 +441,15 @@ typedef enum : uint16_t {
   k_motor_task_priority    = 8, /**< ThreadX priority: 8 (below watchdog=6, comm=5) */
   k_motor_task_sleep_ticks = 1, /**< Sleep period: 1 tick = 10ms at 100 Hz system tick rate */
   k_motor_task_input       = 0, /**< Thread entry input parameter: unused (ThreadX convention) */
+  k_motor_task_boot_settle_ticks =
+    200U, /**< 2 s warm-up so comm_task/shared_data are up before motor init */
+  k_motor_heartbeat_tick_divisor = 100U, /**< Emit debug heartbeat once every 100 ticks (~1 Hz) */
 } motor_task_constants_t;
+
+/** @brief Duty-cycle bounds used by the MVP bring-up open-loop driver. */
+typedef enum : int16_t {
+  k_motor_duty_clamp_pct_int = 100, /**< +/- limit applied to the open-loop duty */
+} motor_duty_clamp_t;
 
 /**
  * @enum motor_control_constants_t
@@ -483,6 +491,81 @@ typedef enum : uint16_t {
   k_encoder_counts_per_rev =
     1364, /**< Encoder resolution: 341 PPR x 4 (quadrature) = 1364 counts/rev */
 } motor_control_constants_t;
+
+/** @brief MTU/TPU TMDR and TPU NFCR constants for encoder bring-up. */
+typedef enum : uint8_t {
+  k_tmdr_phase_count_mode_1 = 0x04U, /**< MTU/TPU TMDR.MD = phase-counting mode 1 */
+  k_tpu_nfcr_idx_ch1        = 1U,    /**< TPU noise-filter control-register index, ch 1 */
+  k_tpu_nfcr_idx_ch2        = 2U,    /**< TPU noise-filter control-register index, ch 2 */
+} motor_encoder_tmdr_t;
+
+/** @brief Raw port / MPC addresses for encoder pin bring-up (encoder_test ref). */
+typedef enum : uintptr_t {
+  k_mpc_pwpr_addr     = 0x0008C11FU, /**< MPC write-protect register PWPR */
+  k_port_p2_pmr_addr  = 0x0008C062U, /**< Port 2 PMR (peripheral-mode register) */
+  k_port_pa_pmr_addr  = 0x0008C06AU, /**< Port A PMR */
+  k_port_pb_pmr_addr  = 0x0008C06BU, /**< Port B PMR */
+  k_port_pc_pmr_addr  = 0x0008C06CU, /**< Port C PMR */
+  k_mpc_pfs_base_addr = 0x0008C140U, /**< MPC PFS register base (PFS[port*8+bit]) */
+} motor_encoder_mpc_addr_t;
+
+/** @brief Bit masks for the encoder-pin PMR clears/sets. */
+typedef enum : uint8_t {
+  k_pmr_mask_p2_enc = (1U << 4) | (1U << 5),             /**< P24, P25 */
+  k_pmr_mask_pa_enc = (1U << 1) | (1U << 3),             /**< PA1, PA3 */
+  k_pmr_mask_pc_enc = (1U << 0) | (1U << 2) | (1U << 5), /**< PC0, PC2, PC5 */
+  k_pmr_mask_pb_enc = (1U << 3),                         /**< PB3 */
+} motor_encoder_pmr_mask_t;
+
+/** @brief PWPR values for unlocking/locking the MPC PFS registers. */
+typedef enum : uint8_t {
+  k_pwpr_clear          = 0x00U, /**< Clear all PWPR bits */
+  k_pwpr_pfswe_unlocked = 0x40U, /**< PFSWE=1, B0WI=0 -- PFS writes allowed */
+  k_pwpr_b0wi_locked    = 0x80U, /**< PFSWE=0, B0WI=1 -- PFS writes blocked */
+} motor_encoder_pwpr_val_t;
+
+/** @brief MPC PSEL values selected per encoder pin (HUM Table 23.6). */
+typedef enum : uint8_t {
+  k_psel_mtclk = 0x02U, /**< MTCLKA/B/C/D (MTU1/2 phase-counting inputs) */
+  k_psel_tclka = 0x03U, /**< TCLKA / TCLKC (TPU1/2 phase-counting A inputs) */
+  k_psel_tclkb = 0x04U, /**< TCLKB / TCLKD (TPU1/2 phase-counting B inputs) */
+} motor_encoder_psel_t;
+
+/** @brief Port-number selectors for the MPC PFS slot lookup.
+ *
+ * RX72N ports are numbered 0-15 per the MPC documentation.  Only the
+ * ports we actually touch from the encoder bring-up are listed here.
+ */
+typedef enum : uint8_t {
+  k_port_no_p2 = 2U,  /**< Port 2 (PMR @ k_port_p2_pmr_addr)  */
+  k_port_no_pa = 10U, /**< Port A */
+  k_port_no_pb = 11U, /**< Port B */
+  k_port_no_pc = 12U, /**< Port C */
+} motor_encoder_port_no_t;
+
+/** @brief Bit-position selectors for the MPC PFS slot lookup. */
+typedef enum : uint8_t {
+  k_pin_bit_0 = 0U, /**< Pin 0 within a port */
+  k_pin_bit_1 = 1U, /**< Pin 1 within a port */
+  k_pin_bit_2 = 2U, /**< Pin 2 within a port */
+  k_pin_bit_3 = 3U, /**< Pin 3 within a port */
+  k_pin_bit_4 = 4U, /**< Pin 4 within a port */
+  k_pin_bit_5 = 5U, /**< Pin 5 within a port */
+} motor_encoder_pin_bit_t;
+
+/**
+ * @brief Compile-time PFS register address for (port, bit).
+ *
+ * RX72N MPC layout is PFS[port * 8 + bit] at k_mpc_pfs_base_addr; the
+ * arithmetic is intentional (matches encoder_test/main.c) and the
+ * factor 8 is one PFS slot per port-bit.
+ */
+static inline volatile uint8_t* internal_mpc_pfs(uint8_t port, uint8_t bit)
+{
+  const uintptr_t pfs_slot_bytes = 8U;
+  return (volatile uint8_t*)(k_mpc_pfs_base_addr + ((uintptr_t)port * pfs_slot_bytes) +
+                             (uintptr_t)bit);
+}
 
 /**
  * @enum motor_index_t
@@ -1654,100 +1737,112 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
  * @callgraph
  * @callergraph
  */
-/* NOLINTBEGIN(readability-magic-numbers,readability-function-size,readability-simplify-boolean-expr,readability-implicit-bool-conversion,readability-function-cognitive-complexity)
- * MVP bring-up stub: the raw-register motor/encoder poke blocks below
- * are deliberately inline so the sequence exactly matches the proven
- * encoder_test/main.c reference.  Named-constant-ification is pending
- * the lib refactor that folds this into rx_motor / rx_encoder. */
-static void internal_motor_task_entry(ULONG input)
+/** @brief MVP bring-up open-loop driver constants. */
+typedef enum : uint16_t {
+  k_bringup_duty_max_pct = 100U, /**< Upper duty-cycle clamp in percent */
+} motor_bringup_clamp_t;
+
+static const float k_bringup_duty_per_mps = 80.0F;
+static const float k_bringup_duty_clamp   = 100.0F;
+
+/** @brief Per-motor direction signs for the open-loop bring-up driver.
+ *
+ * FL (M0) and BL (M3) are wired such that positive duty drives those
+ * wheels in reverse (see motor_spin_test/main.c k_motors[].direction_sign).
+ * Applying the sign here means a uniform positive command from the host
+ * drives the chassis forward.
+ */
+static const float k_motor_direction_sign[k_motor_count] = {
+  -1.0F, /* FL (index 0): wired backwards */
+  +1.0F, /* FR (index 1) */
+  +1.0F, /* BR (index 2) */
+  -1.0F, /* BL (index 3): wired backwards */
+};
+
+/**
+ * @brief Run the four-stage motor-stack init (PID/PWM/DRV8263/encoders).
+ * @return k_rx_ok on full success, or the first failing stage's error code.
+ */
+static rx_err_t internal_bringup_init_motor_stack(void)
 {
-  (void)input;
-
-  /* BRING-UP STUB: no IWDT registration in main.c for MotorCtrl, so the
-   * heartbeat call below is a harmless no-op lookup. Once we prove the
-   * task body runs, we'll add init steps and flip IWDT back on. */
-  (void)tx_thread_sleep(200U); /* 2 s delay so comm_task is fully up */
-  rx_log_info(s_tag, "MDBG: motor task entry");
-
   rx_err_t err = internal_init_pid_controllers();
   rx_log_info_val(s_tag, "MDBG: pid err=", (uint32_t)err);
-
-  if (err == k_rx_ok) {
-    err = internal_init_motor_pwm_channels();
+  if (err != k_rx_ok) {
+    return err;
   }
+
+  err = internal_init_motor_pwm_channels();
   rx_log_info_val(s_tag, "MDBG: pwm err=", (uint32_t)err);
-
-  if (err == k_rx_ok) {
-    err = internal_init_drv8263_drivers();
+  if (err != k_rx_ok) {
+    return err;
   }
+
+  err = internal_init_drv8263_drivers();
   rx_log_info_val(s_tag, "MDBG: drv err=", (uint32_t)err);
-
-  if (err == k_rx_ok) {
-    err = internal_init_encoders();
+  if (err != k_rx_ok) {
+    return err;
   }
+
+  err = internal_init_encoders();
   rx_log_info_val(s_tag, "MDBG: enc err=", (uint32_t)err);
+  return err;
+}
 
-  if (err == k_rx_ok) {
-    s_motor_stack_initialized = true;
-    rx_log_info(s_tag, "MDBG: stack init OK");
-  } else {
-    rx_log_info(s_tag, "MDBG: stack init FAIL");
+/**
+ * @brief Clamp a duty-cycle percent to [-k_bringup_duty_clamp, +clamp].
+ */
+static float internal_bringup_clamp_duty(float duty)
+{
+  if (duty > k_bringup_duty_clamp) {
+    return k_bringup_duty_clamp;
   }
-
-  /* Bring-up control loop. Open-loop duty = target_mps * 40, clamped to +/-50%.
-   * 1.0 m/s -> 40% duty. Pulls every iteration from shared_data; relies on
-   * comm_task setting cmd.valid=true via SetVelocityRequest. */
-  static const float k_bringup_duty_per_mps = 80.0F;
-  /* Per-motor direction signs: FL (M0) and BL (M3) are wired such that
-   * positive duty drives those wheels in reverse (see motor_spin_test/main.c
-   * k_motors[].direction_sign). Applying the sign here means a uniform
-   * positive command from the host drives the chassis forward. */
-  static const float k_motor_direction_sign[k_motor_count] = {
-    -1.0F, /* FL (index 0): wired backwards */
-    +1.0F, /* FR (index 1) */
-    +1.0F, /* BR (index 2) */
-    -1.0F, /* BL (index 3): wired backwards */
-  };
-  uint32_t tick       = 0U;
-  bool     last_valid = false;
-  while (true) {
-    motor_command_t cmd     = {0};
-    const rx_err_t  cmd_err = shared_data_get_motor_command(&cmd);
-    const bool      have    = (cmd_err == k_rx_ok) && cmd.valid;
-    if (have != last_valid) {
-      rx_log_info_val(s_tag, "MOTOR cmd.valid->", (uint32_t)have);
-      last_valid = have;
-    }
-
-    for (uint8_t i = 0; i < k_motor_count; i++) {
-      float duty = 0.0F;
-      if (have) {
-        const float target_mps = internal_get_target_velocity(&cmd, i);
-        duty                   = target_mps * k_bringup_duty_per_mps * k_motor_direction_sign[i];
-        if (duty > 100.0F) {
-          duty = 100.0F;
-        } else if (duty < -100.0F) {
-          duty = -100.0F;
-        }
-      }
-      (void)rx_motor_set_duty(&s_motors[i], duty);
-    }
-
-    tick++;
-    if ((tick % 100U) == 0U) {
-      /* Once-per-second framed log: use typed command fields from the
-       * mutex-protected shared_data_get_motor_command() snapshot above.
-       * This avoids brittle raw-byte offset diagnostics. */
-      rx_log_debug_val(s_tag, "MOTOR cmd.valid=", (uint32_t)cmd.valid);
-      rx_log_debug_val(s_tag, "MOTOR cmd_err=", (uint32_t)cmd_err);
-      rx_log_debug_val(s_tag, "MOTOR enc_mtu1=", (uint32_t)mtu1()->tcnt);
-      rx_log_debug_val(s_tag, "MOTOR enc_tpu1=", (uint32_t)tpu1()->tcnt);
-    }
-    (void)tx_thread_sleep(k_motor_task_sleep_ticks);
+  if (duty < -k_bringup_duty_clamp) {
+    return -k_bringup_duty_clamp;
   }
+  return duty;
+}
 
-  /* Dead-code to silence -Wunused-function on helpers we will re-enable */
-  if (false) {
+/**
+ * @brief Apply a snapshot of the shared command to all four motors.
+ *
+ * @param[in] cmd  Motor command snapshot from shared_data_get_motor_command().
+ * @param[in] have True iff the caller already validated cmd.valid && no err.
+ */
+static void internal_bringup_apply_command(const motor_command_t* cmd, bool have)
+{
+  for (uint8_t i = 0; i < k_motor_count; i++) {
+    float duty = 0.0F;
+    if (have) {
+      const float target_mps = internal_get_target_velocity(cmd, i);
+      duty                   = target_mps * k_bringup_duty_per_mps * k_motor_direction_sign[i];
+      duty                   = internal_bringup_clamp_duty(duty);
+    }
+    (void)rx_motor_set_duty(&s_motors[i], duty);
+  }
+}
+
+/**
+ * @brief Emit the 1 Hz framed debug log from a single tick.
+ */
+static void internal_bringup_log_heartbeat(const motor_command_t* cmd, rx_err_t cmd_err)
+{
+  rx_log_debug_val(s_tag, "MOTOR cmd.valid=", (uint32_t)cmd->valid);
+  rx_log_debug_val(s_tag, "MOTOR cmd_err=", (uint32_t)cmd_err);
+  rx_log_debug_val(s_tag, "MOTOR enc_mtu1=", (uint32_t)mtu1()->tcnt);
+  rx_log_debug_val(s_tag, "MOTOR enc_tpu1=", (uint32_t)tpu1()->tcnt);
+}
+
+/**
+ * @brief Keep the dead-code helpers live for the scheduler-bring-up chain.
+ *
+ * These helpers are still compiled but not yet wired into the task loop;
+ * call them from a statically-false path so -Wunused-function stays quiet
+ * without resorting to __attribute__((unused)) sprinkled per-function.
+ */
+static void internal_bringup_keep_helpers_live(void)
+{
+  static volatile bool s_always_false = false;
+  if (s_always_false) {
     (void)shared_data_commit_isr_estop();
     (void)shared_data_is_estop_active();
     internal_active_brake_sequence();
@@ -1755,11 +1850,56 @@ static void internal_motor_task_entry(ULONG input)
     internal_apply_pid_updates();
     internal_control_loop_iteration();
     internal_update_motor_state();
-    err = rx_iwdt_task_heartbeat(s_task_name);
-    (void)err;
+    (void)rx_iwdt_task_heartbeat(s_task_name);
   }
 }
-/* NOLINTEND(readability-magic-numbers,readability-function-size,readability-simplify-boolean-expr,readability-implicit-bool-conversion,readability-function-cognitive-complexity) */
+
+static void internal_motor_task_entry(ULONG input)
+{
+  (void)input;
+
+  /* BRING-UP STUB: no IWDT registration in main.c for MotorCtrl, so the
+   * heartbeat call below is a harmless no-op lookup. Once we prove the
+   * task body runs, we'll add init steps and flip IWDT back on. */
+  (void)tx_thread_sleep(k_motor_task_boot_settle_ticks);
+  rx_log_info(s_tag, "MDBG: motor task entry");
+
+  const rx_err_t init_err = internal_bringup_init_motor_stack();
+  if (init_err == k_rx_ok) {
+    s_motor_stack_initialized = true;
+    rx_log_info(s_tag, "MDBG: stack init OK");
+  } else {
+    rx_log_info(s_tag, "MDBG: stack init FAIL");
+  }
+
+  /* Open-loop bring-up control loop.  Pulls every iteration from
+   * shared_data; relies on comm_task setting cmd.valid=true via
+   * SetVelocityRequest. */
+  uint32_t tick       = 0U;
+  bool     last_valid = false;
+  while (true) {
+    motor_command_t cmd     = {0};
+    const rx_err_t  cmd_err = shared_data_get_motor_command(&cmd);
+    bool            have    = false;
+    if (cmd_err == k_rx_ok) {
+      have = cmd.valid;
+    }
+    if (have != last_valid) {
+      rx_log_info_val(s_tag, "MOTOR cmd.valid->", (uint32_t)have);
+      last_valid = have;
+    }
+
+    internal_bringup_apply_command(&cmd, have);
+
+    tick++;
+    if ((tick % k_motor_heartbeat_tick_divisor) == 0U) {
+      internal_bringup_log_heartbeat(&cmd, cmd_err);
+    }
+    (void)tx_thread_sleep(k_motor_task_sleep_ticks);
+  }
+
+  internal_bringup_keep_helpers_live();
+}
 
 /**
  * @brief Initialize motor control stack (4 motors, encoders, PIDs, drivers)
@@ -2191,54 +2331,56 @@ static rx_err_t internal_init_pid_controllers(void)
  *
  * @since Version 1.0.0
  */
-/* NOLINTBEGIN(readability-magic-numbers,readability-function-size,readability-function-cognitive-complexity,readability-math-missing-parentheses)
- * MVP encoder bring-up: the PFS/PMR poke block at the tail mirrors
- * encoder_test/main.c byte-for-byte; the raw port-bit and MPC PSEL
- * values are the source-of-truth here.  Lift into rx_encoder lib in
- * a follow-up; for now the literals stay so the sequence can be
- * diffed against the known-good test. */
-static rx_err_t internal_init_encoders(void)
+/**
+ * @brief Initialize the two front-wheel MTU encoders (M0/M1).
+ *
+ * @return k_rx_ok on success, otherwise the failing encoder's error code.
+ */
+static rx_err_t internal_init_front_mtu_encoders(void)
 {
-  /* Front encoders: MTU1 (motor 0) and MTU2 (motor 1) */
   const rx_mtu_channel_t front_mtu_channels[k_front_encoder_count] = {
     k_mtu_channel_1, /* Motor 0: Front-left */
-    k_mtu_channel_2  /* Motor 1: Front-right */
+    k_mtu_channel_2, /* Motor 1: Front-right */
   };
 
   for (uint8_t i = 0; i < k_front_encoder_count; i++) {
     rx_encoder_config_t encoder_config = {.channel          = front_mtu_channels[i],
                                           .counts_per_rev   = k_encoder_counts_per_rev,
                                           .invert_direction = false};
-
-    rx_err_t err = rx_encoder_init(&encoder_config);
+    const rx_err_t      err            = rx_encoder_init(&encoder_config);
     if (err != k_rx_ok) {
       rx_log_error_val(s_tag, "MTU encoder init failed for motor", (uint8_t)i);
       return err;
     }
   }
+  return k_rx_ok;
+}
 
-  /* Rear encoders -- physical harness wires BR motor's encoder to TPU2
-   * and BL motor's encoder to TPU1, opposite of the natural motor-index
-   * order.  Verified 2026-04-21 by cross-check with motor_spin_test
-   * IPROPI (M2 draws ~0 current, motor is dead) -- the encoder that
-   * still counted under M2 duty had to be the OTHER back wheel.  See
-   * memory project_encoder_harness_tpu_swap.md. */
+/**
+ * @brief Initialize the two rear-wheel TPU encoders (M2/M3).
+ *
+ * Physical harness wires BR's encoder to TPU2 and BL's encoder to TPU1,
+ * opposite the natural motor-index order.  See memory note
+ * project_encoder_harness_tpu_swap.md.
+ *
+ * @return k_rx_ok on success, otherwise the failing encoder's error code.
+ */
+static rx_err_t internal_init_rear_tpu_encoders(void)
+{
   const rx_tpu_channel_t rear_tpu_channels[k_rear_encoder_count] = {
     k_tpu_channel_2, /* Motor 2 (BR) -> TPU2 per harness */
-    k_tpu_channel_1  /* Motor 3 (BL) -> TPU1 per harness */
+    k_tpu_channel_1, /* Motor 3 (BL) -> TPU1 per harness */
   };
-
   const bool rear_invert[k_rear_encoder_count] = {
     false, /* Motor 2 (BR): normal direction */
-    true   /* Motor 3 (BL): inverted (mirrored mounting) */
+    true,  /* Motor 3 (BL): inverted (mirrored mounting) */
   };
 
   for (uint8_t i = 0; i < k_rear_encoder_count; i++) {
     rx_tpu_encoder_config_t tpu_config = {.channel          = rear_tpu_channels[i],
                                           .counts_per_rev   = k_encoder_counts_per_rev,
                                           .invert_direction = rear_invert[i]};
-
-    rx_err_t err = rx_tpu_encoder_init(&tpu_config);
+    const rx_err_t          err        = rx_tpu_encoder_init(&tpu_config);
     if (err != k_rx_ok) {
       rx_log_error_val(s_tag,
                        "TPU encoder init failed for motor",
@@ -2246,94 +2388,157 @@ static rx_err_t internal_init_encoders(void)
       return err;
     }
   }
+  return k_rx_ok;
+}
 
-  /* BRING-UP: the rx_mtu_encoder / rx_tpu_encoder libs set s_encoder_initialized
-   * but DON'T actually (a) write MPC PFS for the MTCLK / TCLK input pins,
-   * (b) flip PMR to route the pad to the peripheral, or (c) set TSTRA/TSTR
-   * to start the counter. encoder_test/main.c documents this and works around
-   * it with direct-register writes. Do the same here so TCNT actually
-   * increments on encoder edges. */
-  {
-    volatile uint8_t* pwpr  = (volatile uint8_t*)0x0008C11FU;
-    volatile uint8_t* p2pmr = (volatile uint8_t*)0x0008C062U;
-    volatile uint8_t* papmr = (volatile uint8_t*)0x0008C06AU;
-    volatile uint8_t* pbpmr = (volatile uint8_t*)0x0008C06BU;
-    volatile uint8_t* pcpmr = (volatile uint8_t*)0x0008C06CU;
+/**
+ * @brief Drop encoder pins out of peripheral mode so PFS writes will stick.
+ */
+static void internal_encoder_pmr_clear(void)
+{
+  volatile uint8_t* p2pmr = (volatile uint8_t*)k_port_p2_pmr_addr;
+  volatile uint8_t* papmr = (volatile uint8_t*)k_port_pa_pmr_addr;
+  volatile uint8_t* pbpmr = (volatile uint8_t*)k_port_pb_pmr_addr;
+  volatile uint8_t* pcpmr = (volatile uint8_t*)k_port_pc_pmr_addr;
 
-    /* Clear PMR for all encoder input pins so PFS writes take effect */
-    *p2pmr &= (uint8_t) ~(uint8_t)((1U << 4) | (1U << 5));             /* P24, P25 */
-    *papmr &= (uint8_t) ~(uint8_t)((1U << 1) | (1U << 3));             /* PA1, PA3 */
-    *pcpmr &= (uint8_t) ~(uint8_t)((1U << 0) | (1U << 2) | (1U << 5)); /* PC0, PC2, PC5 */
-    *pbpmr &= (uint8_t) ~(uint8_t)(1U << 3);                           /* PB3 */
+  *p2pmr &= (uint8_t)~k_pmr_mask_p2_enc;
+  *papmr &= (uint8_t)~k_pmr_mask_pa_enc;
+  *pcpmr &= (uint8_t)~k_pmr_mask_pc_enc;
+  *pbpmr &= (uint8_t)~k_pmr_mask_pb_enc;
+}
 
-    /* Unlock PFS (PWPR: B0WI=0, PFSWE=1) */
-    *pwpr = 0x00U;
-    *pwpr = 0x40U;
-/* PSEL values per RX72N HW manual R01UH0824EJ0111 Table 23.6 */
-#define PFS_AT(port, bit)                                                                          \
-  (*(volatile uint8_t*)(0x0008C140U + (uint32_t)(port) * 8U + (uint32_t)(bit)))
-    PFS_AT(2, 4)  = 0x02U; /* P24 MTCLKA -- enc0 A */
-    PFS_AT(2, 5)  = 0x02U; /* P25 MTCLKB -- enc0 B */
-    PFS_AT(10, 1) = 0x02U; /* PA1 MTCLKC -- enc1 A */
-    PFS_AT(12, 5) = 0x02U; /* PC5 MTCLKD -- enc1 B */
-    PFS_AT(12, 2) = 0x03U; /* PC2 TCLKA  -- TPU1 enc (BL per harness) */
-    PFS_AT(10, 3) = 0x04U; /* PA3 TCLKB  -- TPU1 enc */
-    PFS_AT(12, 0) = 0x03U; /* PC0 TCLKC  -- TPU2 enc (BR per harness) */
-    PFS_AT(11, 3) = 0x04U; /* PB3 TCLKD  -- TPU2 enc */
-#undef PFS_AT
-    /* Lock PFS (PWPR: PFSWE=0, B0WI=1) */
-    *pwpr = 0x00U;
-    *pwpr = 0x80U;
+/**
+ * @brief Route encoder pads to their respective peripherals via PMR.
+ */
+static void internal_encoder_pmr_set(void)
+{
+  volatile uint8_t* p2pmr = (volatile uint8_t*)k_port_p2_pmr_addr;
+  volatile uint8_t* papmr = (volatile uint8_t*)k_port_pa_pmr_addr;
+  volatile uint8_t* pbpmr = (volatile uint8_t*)k_port_pb_pmr_addr;
+  volatile uint8_t* pcpmr = (volatile uint8_t*)k_port_pc_pmr_addr;
 
-    /* Route pads to peripherals */
-    *p2pmr |= (uint8_t)((1U << 4) | (1U << 5));
-    *papmr |= (uint8_t)((1U << 1) | (1U << 3));
-    *pcpmr |= (uint8_t)((1U << 0) | (1U << 2) | (1U << 5));
-    *pbpmr |= (uint8_t)(1U << 3);
+  *p2pmr |= k_pmr_mask_p2_enc;
+  *papmr |= k_pmr_mask_pa_enc;
+  *pcpmr |= k_pmr_mask_pc_enc;
+  *pbpmr |= k_pmr_mask_pb_enc;
+}
 
-    /* Reconfirm MTU channel 1/2 in phase-counting mode and zero the counter
-     * (the lib tends to leave TMDR=0 via its stop-before-config path).
-     * MTU TMDR.MD[3:0] = 0x04 selects phase-counting mode 1; the MTU
-     * rx_hal enum (mtu_tmdr_bits_t) doesn't expose the phase-count values
-     * yet because the production MTU path only uses PWM, so we name the
-     * local bring-up constant inline to satisfy the no-magic-number rule. */
-    enum : uint8_t {
-      k_tmdr_phase_count_mode_1 = 0x04U, /**< MTU/TPU TMDR.MD = phase-counting */
-      k_tpu_nfcr_idx_ch2        = 2U,    /**< TPU noise-filter control index for ch 2 */
-    };
+/**
+ * @brief Write all PFS PSEL values for the eight encoder inputs.
+ *
+ * Caller must have unlocked PWPR (PFSWE=1, B0WI=0) immediately before
+ * and re-lock it (PFSWE=0, B0WI=1) immediately after.  PSEL values come
+ * from RX72N HW manual R01UH0824EJ0111 Table 23.6.
+ */
+static void internal_encoder_pfs_write_psels(void)
+{
+  /* Encoder0 (front-left, MTU1): MTCLKA/B on P24/P25 */
+  *internal_mpc_pfs(k_port_no_p2, k_pin_bit_4) = k_psel_mtclk;
+  *internal_mpc_pfs(k_port_no_p2, k_pin_bit_5) = k_psel_mtclk;
+  /* Encoder1 (front-right, MTU2): MTCLKC/D on PA1/PC5 */
+  *internal_mpc_pfs(k_port_no_pa, k_pin_bit_1) = k_psel_mtclk;
+  *internal_mpc_pfs(k_port_no_pc, k_pin_bit_5) = k_psel_mtclk;
+  /* Encoder2 (rear, TPU1 per harness swap): TCLKA/B on PC2/PA3 */
+  *internal_mpc_pfs(k_port_no_pc, k_pin_bit_2) = k_psel_tclka;
+  *internal_mpc_pfs(k_port_no_pa, k_pin_bit_3) = k_psel_tclkb;
+  /* Encoder3 (rear, TPU2 per harness swap): TCLKC/D on PC0/PB3 */
+  *internal_mpc_pfs(k_port_no_pc, k_pin_bit_0) = k_psel_tclka;
+  *internal_mpc_pfs(k_port_no_pb, k_pin_bit_3) = k_psel_tclkb;
+}
 
-    volatile rx_mtu_channel_regs_t* m1 = mtu1();
-    m1->tcr                            = 0;
-    m1->tmdr                           = k_tmdr_phase_count_mode_1;
-    m1->tcnt                           = 0;
-    volatile rx_mtu_channel_regs_t* m2 = mtu2();
-    m2->tcr                            = 0;
-    m2->tmdr                           = k_tmdr_phase_count_mode_1;
-    m2->tcnt                           = 0;
+/**
+ * @brief Run the full PFS+PMR poke sequence so encoder edges reach the timers.
+ *
+ * The rx_mtu_encoder / rx_tpu_encoder libs set s_encoder_initialized but
+ * don't (a) write MPC PFS for the MTCLK/TCLK input pins, (b) flip PMR to
+ * route the pad, or (c) start the counter via TSTRA/TSTR.  encoder_test/
+ * main.c documents this and works around it with direct register writes;
+ * we mirror that exact sequence here so TCNT actually increments.
+ */
+static void internal_encoder_route_pins(void)
+{
+  volatile uint8_t* pwpr = (volatile uint8_t*)k_mpc_pwpr_addr;
 
-    /* Same for TPU channel 1/2 */
-    volatile rx_tpu_regs_t* t1 = tpu1();
-    t1->tcr                    = 0;
-    t1->tmdr                   = k_tmdr_phase_count_mode_1;
-    t1->tcnt                   = 0;
-    volatile rx_tpu_regs_t* t2 = tpu2();
-    t2->tcr                    = 0;
-    t2->tmdr                   = k_tmdr_phase_count_mode_1;
-    t2->tcnt                   = 0;
+  internal_encoder_pmr_clear();
 
-    /* TPU noise filter OFF (reset state, but be explicit) */
-    tpu_control()->nfcr[1]                  = 0;
-    tpu_control()->nfcr[k_tpu_nfcr_idx_ch2] = 0;
+  /* Unlock PFS, write PSELs, re-lock PFS. */
+  *pwpr = k_pwpr_clear;
+  *pwpr = k_pwpr_pfswe_unlocked;
+  internal_encoder_pfs_write_psels();
+  *pwpr = k_pwpr_clear;
+  *pwpr = k_pwpr_b0wi_locked;
 
-    /* Start counters (MTU TSTRA + TPU TSTR) -- this is what the libs skip */
-    mtu_tstra()->tstr |= (uint8_t)(k_mtu_tstr_cst1 | k_mtu_tstr_cst2);
-    tpu_control()->tstr |= (uint8_t)(k_tpu_tstr_cst1 | k_tpu_tstr_cst2);
+  internal_encoder_pmr_set();
+}
+
+/**
+ * @brief Reconfirm MTU1/MTU2 in phase-counting mode and zero TCNT.
+ *
+ * The libs tend to leave TMDR=0 via their stop-before-config path; this
+ * forces TMDR.MD = phase-counting and clears the counter.
+ */
+static void internal_encoder_configure_mtu_phase(void)
+{
+  volatile rx_mtu_channel_regs_t* m1 = mtu1();
+  m1->tcr                            = 0;
+  m1->tmdr                           = k_tmdr_phase_count_mode_1;
+  m1->tcnt                           = 0;
+  volatile rx_mtu_channel_regs_t* m2 = mtu2();
+  m2->tcr                            = 0;
+  m2->tmdr                           = k_tmdr_phase_count_mode_1;
+  m2->tcnt                           = 0;
+}
+
+/**
+ * @brief Reconfirm TPU1/TPU2 in phase-counting mode, clear NFCR + TCNT.
+ */
+static void internal_encoder_configure_tpu_phase(void)
+{
+  volatile rx_tpu_regs_t* t1 = tpu1();
+  t1->tcr                    = 0;
+  t1->tmdr                   = k_tmdr_phase_count_mode_1;
+  t1->tcnt                   = 0;
+  volatile rx_tpu_regs_t* t2 = tpu2();
+  t2->tcr                    = 0;
+  t2->tmdr                   = k_tmdr_phase_count_mode_1;
+  t2->tcnt                   = 0;
+
+  /* TPU noise filter OFF (reset state, but be explicit). */
+  tpu_control()->nfcr[k_tpu_nfcr_idx_ch1] = 0;
+  tpu_control()->nfcr[k_tpu_nfcr_idx_ch2] = 0;
+}
+
+/**
+ * @brief Start the MTU + TPU counters via TSTRA / TSTR.
+ *
+ * The rx_mtu / rx_tpu libs skip this step; without it TCNT never
+ * increments on encoder edges.
+ */
+static void internal_encoder_start_counters(void)
+{
+  mtu_tstra()->tstr |= (uint8_t)(k_mtu_tstr_cst1 | k_mtu_tstr_cst2);
+  tpu_control()->tstr |= (uint8_t)(k_tpu_tstr_cst1 | k_tpu_tstr_cst2);
+}
+
+static rx_err_t internal_init_encoders(void)
+{
+  rx_err_t err = internal_init_front_mtu_encoders();
+  if (err != k_rx_ok) {
+    return err;
   }
+  err = internal_init_rear_tpu_encoders();
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  internal_encoder_route_pins();
+  internal_encoder_configure_mtu_phase();
+  internal_encoder_configure_tpu_phase();
+  internal_encoder_start_counters();
 
   rx_log_info(s_tag, "All 4 encoders initialized (2 MTU + 2 TPU, TSTRA forced)");
   return k_rx_ok;
 }
-/* NOLINTEND(readability-magic-numbers,readability-function-size,readability-function-cognitive-complexity,readability-math-missing-parentheses) */
 
 /**
  * @brief Read encoder velocity for any motor (dispatches MTU or TPU)

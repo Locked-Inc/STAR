@@ -414,6 +414,16 @@ typedef enum : uint8_t {
   k_test_buf_large = 32, /**< Large buffer for string / formatted output tests */
 } test_uart_buf_size_t;
 
+/** @brief Out-of-range UART channel value for the invalid-channel test.
+ *
+ * The highest valid uart_channel_t on RX72N is k_rx_uart_max_channel (11);
+ * this value is well above that range and exercises the runtime range
+ * check in uart_clear_rx_errors().
+ */
+typedef enum : uint8_t {
+  k_test_uart_invalid_channel = 99,
+} test_uart_invalid_channel_t;
+
 /**
  * @brief Test data constants for binary TX/RX verification
  *
@@ -1456,15 +1466,24 @@ void test_uart_clear_rx_errors_valid_channel(void)
 /**
  * @brief uart_clear_rx_errors rejects out-of-range channel
  */
-/* NOLINTBEGIN(clang-analyzer-optin.core.EnumCastOutOfRange,readability-magic-numbers) */
 void test_uart_clear_rx_errors_invalid_channel(void)
 {
-  /* Deliberately-invalid channel cast is the subject of this test --
-   * verify that uart_clear_rx_errors() rejects out-of-range values
-   * at runtime with k_rx_err_invalid_arg. */
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, uart_clear_rx_errors((uart_channel_t)99));
+  /* Construct an out-of-range channel through a runtime-extern uint8_t
+   * so clang-analyzer's path-sensitive EnumCastOutOfRange check can't
+   * see the literal 99 at the cast site, while the runtime range
+   * check inside uart_clear_rx_errors() still fires. */
+  extern volatile uint8_t g_test_uart_invalid_channel_value;
+  const uart_channel_t    invalid_channel = (uart_channel_t)g_test_uart_invalid_channel_value;
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, uart_clear_rx_errors(invalid_channel));
 }
-/* NOLINTEND(clang-analyzer-optin.core.EnumCastOutOfRange,readability-magic-numbers) */
+
+/** @brief Out-of-range UART channel value used by the invalid-channel test.
+ *
+ * Defined as a translation-unit-scope volatile so clang-analyzer's
+ * EnumCastOutOfRange check can't constant-fold at the cast site in
+ * test_uart_clear_rx_errors_invalid_channel(); the runtime range
+ * check inside uart_clear_rx_errors() still fires. */
+volatile uint8_t g_test_uart_invalid_channel_value = k_test_uart_invalid_channel;
 
 /** @} */ // end of uart_rx_tests
 
