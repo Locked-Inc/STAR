@@ -194,6 +194,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "rx_check.h"
 #include "rx_err.h"

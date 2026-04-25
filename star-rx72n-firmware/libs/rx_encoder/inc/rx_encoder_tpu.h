@@ -83,6 +83,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "rx_err.h"
 #include "rx_mtu_encoder.h"

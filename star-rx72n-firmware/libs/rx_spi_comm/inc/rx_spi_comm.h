@@ -382,6 +382,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "hardware.h"
 #include "rx_err.h"

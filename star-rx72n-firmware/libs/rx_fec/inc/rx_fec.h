@@ -169,6 +169,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "rx_bit_constants.h"
 #include "rx_err.h"

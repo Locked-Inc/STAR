@@ -76,6 +76,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #include "rx_err.h"
 #include "tx_api.h"
 

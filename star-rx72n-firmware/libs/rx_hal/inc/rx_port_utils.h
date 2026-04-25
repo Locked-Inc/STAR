@@ -125,6 +125,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #include "rx72n_port_regs.h"
 #include "rx_port_constants.h"
 

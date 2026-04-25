@@ -15,6 +15,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "rx_err.h"
 #include "tx_api.h"

@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef STAR_SAFETY_MONITOR__SAFETY_MONITOR_HPP_
-#define STAR_SAFETY_MONITOR__SAFETY_MONITOR_HPP_
+#pragma once
 
 #include <chrono>
 #include <map>
@@ -151,5 +150,3 @@ private:
 };
 
 }  // namespace star_safety_monitor
-
-#endif  // STAR_SAFETY_MONITOR__SAFETY_MONITOR_HPP_

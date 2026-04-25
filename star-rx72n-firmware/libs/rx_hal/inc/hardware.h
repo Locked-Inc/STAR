@@ -255,6 +255,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 /* Core infrastructure */
 #include "rx_check.h"
