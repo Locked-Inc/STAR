@@ -371,7 +371,9 @@ daily operation see Section~\ref{sec:daily}.
 \subsection{Provisioning the Pi5}
 Follow \texttt{docs/PI\_DEPLOYMENT.md} end-to-end. At a minimum:
 \begin{enumerate}[leftmargin=1.4em,itemsep=2pt]
-\item Install ROS2 Jazzy from the OSRF apt repository and source
+\item Install ROS 2 Jazzy from the Open Robotics apt repository
+      (\texttt{packages.ros.org}) via the \texttt{ros2-apt-source}
+      package, and source
       \texttt{/opt/ros/jazzy/setup.bash}.
 \item Install the STAR udev rules for \texttt{/dev/star-mcu} and
       \texttt{/dev/star-lidar} so device paths are stable across
@@ -460,12 +462,13 @@ the authoritative source of truth is the JSON file at
 re-pushing the dashboard is a one-step operation the cluster admin
 performs out of band.
 
-The Grafana dashboard iframes the STAR map served by
-\texttt{star\_simple\_bridge} at
-\texttt{https://star.local/map.png}, which requires the operator's
-browser to trust the Pi5 Caddy's local CA. See
-\texttt{docs/ARCHITECTURE.md} for the one-time browser trust-store
-step.
+The Grafana dashboard embeds the STAR map served by
+\texttt{star\_simple\_bridge} directly over the tailnet at
+\texttt{http://100.64.0.6:9101/map.png} (plain HTTP, no certificate
+required). For other tabs that hit the Pi5 Caddy front
+(\texttt{https://star.local/}), the operator's browser must trust
+the Pi5 Caddy's local CA -- see \texttt{docs/ARCHITECTURE.md} for
+the one-time browser trust-store step.
 
 \subsection{Optional: Local Lichtblick Web Bundle}
 The public Lichtblick URL is the primary 3D viz path. For
@@ -487,13 +490,16 @@ sudo ./scripts/setup-lichtblick-web.sh
 \subsection{Bring-Up Helper: \texttt{slam-mvp.sh}}
 \texttt{scripts/slam-mvp.sh} is the canonical one-command bring-up
 that \texttt{star-slam-mvp.service} runs on boot. It is also useful
-on a developer workstation. The four subcommands:
+on a developer workstation. The five subcommands:
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
 \item \texttt{slam-mvp.sh start [--mcu /dev/star-mcu]
       [--lidar /dev/star-lidar]} -- launches each ROS2 node in the
-      MVP set as a separate background process with its own log
-      file under \texttt{/tmp/slam-mvp-logs/}. PIDs land in
+      SLAM MVP set as a separate background process with its own
+      log file under \texttt{/tmp/slam-mvp-logs/}. PIDs land in
       \texttt{/tmp/slam-mvp.pids}.
+\item \texttt{slam-mvp.sh start-nav} -- same as \texttt{start} plus
+      Nav2 (planner, controller, behavior server) on top, for
+      AUTONOMY-mode bring-up.
 \item \texttt{slam-mvp.sh status} -- reports which PIDs are still
       alive and which logs were written.
 \item \texttt{slam-mvp.sh stop} -- sends SIGTERM, then SIGKILL after
@@ -559,11 +565,16 @@ Open two browser tabs from the operator laptop:
 \end{enumerate}
 
 \subsection{Granting the Browser Trust for \texttt{star.local}}
-The Grafana dashboard loads map images directly from
-\texttt{https://star.local/map.png}. This URL is served by the Pi5's
-Caddy using a local CA. Install that CA on the operator laptop one
-time (per \texttt{docs/ARCHITECTURE.md}), otherwise the map panel
-will show a broken-image placeholder.
+The Pi5 Caddy front (\texttt{https://star.local/}) uses a local CA
+to issue its certificate, so cross-tab requests like
+\texttt{curl https://star.local/api/state} require the operator's
+laptop to trust the Pi5's local-CA root. Install that CA on the
+laptop one time per \texttt{docs/ARCHITECTURE.md}. The committed
+Grafana dashboard panel loads its map image from
+\texttt{http://100.64.0.6:9101/map.png} on the tailnet (plain HTTP,
+no certificate involved), so the local CA is not required for the
+map panel itself; it is required for any browser interaction with
+\texttt{star.local}.
 
 \subsection{Teleoperation (MANUAL mode)}
 In MANUAL mode the robot follows velocity commands from the Grafana
@@ -595,6 +606,21 @@ configured to publish to \texttt{/goal\_pose}. Nav2 plans and
 executes, publishing status back to the topic tree.
 
 \subsection{Running SLAM}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\linewidth]{images/thompson-hall-map.png}
+\caption{A finished SLAM occupancy grid produced by STAR in
+Thompson Hall on the Texas A\&M campus. White cells are free
+space, black cells are detected obstacles (walls, doorways,
+furniture), and grey is unobserved. This is the same image format
+the Grafana cockpit map panel and the
+\texttt{http://100.64.0.6:9101/map.png} endpoint serve; download
+\texttt{.pgm} and \texttt{.yaml} from the cockpit (see
+Figure~\ref{fig:grafana-cockpit}) to feed the map back into
+Nav2.}
+\label{fig:thompson-hall-map}
+\end{figure}
+
 If SLAM is not already active:
 \begin{enumerate}[leftmargin=1.4em,itemsep=2pt]
 \item Click the SLAM START toggle in Grafana (POSTs to
@@ -603,11 +629,11 @@ If SLAM is not already active:
 \item Drive the robot slowly through the space. The Lichtblick map
       panel fills in as scans accumulate. A separate SLAM map can be
       viewed directly at
-      \texttt{https://star.local/map.png}.
+      \texttt{http://100.64.0.6:9101/map.png}.
 \item When finished, click SLAM STOP to deactivate the node. To
       reset the map, send
       \texttt{POST /map/reset?confirm=yes} to
-      \texttt{https://star.local/map/reset} on
+      \texttt{http://100.64.0.6:9101/map/reset} on
       \texttt{star\_simple\_bridge}.
 \end{enumerate}
 
@@ -640,32 +666,68 @@ over SCP.
 \label{sec:dashboards}
 
 \subsection{Grafana Cockpit}
-The committed dashboard is
-\texttt{monitoring/grafana-star-dashboard.json}. It contains row
-groups for SLAM map, motors, safety, sensors, and SLAM diagnostics.
-Key widgets the operator uses:
-\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
-\item \textbf{Map panel:} iframe-style HTML rendering of
-      \texttt{https://star.local/map.png}. Auto-refreshes on the
-      Grafana time-range tick.
-\item \textbf{Motor gauges:} per-wheel velocity in
-      \unit{\meter\per\second} (metric
-      \texttt{star\_motor\_velocity\_mps\{wheel=...\}}).
-\item \textbf{E-stop button and indicator:} POST
-      \texttt{/api/estop/toggle}. The indicator gauge reflects the
-      latched \texttt{/star/estop} topic.
-\item \textbf{Autonomy toggle:} POST
-      \texttt{/api/autonomy/toggle}.
-\item \textbf{Speed slider:} POST \texttt{/api/speed} with a scalar
-      in $[0, 1]$ that becomes \texttt{/star/speed\_scale}.
-\item \textbf{SLAM start/stop buttons:} POST
-      \texttt{/api/slam/start} or \texttt{/api/slam/stop}.
-\end{itemize}
-Grafana's minimum refresh interval is configured to
-\qty{1}{\second} via the \texttt{GF\_DASHBOARDS\_MIN\_REFRESH\_INTERVAL}
-environment variable on the Grafana pod.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\linewidth]{images/grafana-cockpit.png}
+\caption{The STAR Grafana cockpit. The CONTROL row holds the
+E-STOP toggle, the MANUAL/AUTONOMY toggle, and the SPEED slider
+(percent of \texttt{MAX\_WHEEL\_MPS}). The TURN field publishes a
+test \texttt{angular.z} pulse in \unit{\radian\per\second}. Below
+that, MAP gives \texttt{Download .pgm} / \texttt{Download .yaml}
+exports plus \texttt{STOP MAPPING} and \texttt{CLEAR MAP} buttons,
+the live SLAM map panel, and the eight-direction WASD-equivalent
+keypad. ``ok 7:20:26 AM'' is the heartbeat indicator from
+\texttt{star\_cockpit\_api}.}
+\label{fig:grafana-cockpit}
+\end{figure}
+
+The cockpit you see in Figure~\ref{fig:grafana-cockpit} has two
+parts that share the same Grafana page:
+\begin{enumerate}[leftmargin=1.4em,itemsep=2pt]
+\item \textbf{Read-only telemetry from the committed JSON.} The
+      file \texttt{monitoring/grafana-star-dashboard.json} defines
+      Grafana panels that are pure visualization: row groups for
+      SLAM map, motors, safety, sensors, and SLAM diagnostics.
+      These panels read Prometheus metrics scraped from the Pi5
+      and render gauges, time series, and the embedded map image
+      from \texttt{http://100.64.0.6:9101/map.png} (the
+      \texttt{star\_simple\_bridge} HTTP server on the tailnet).
+      The dashboard JSON contains no buttons or forms; everything
+      defined inside it is read-only.
+\item \textbf{Cockpit control widgets at the top of the page.}
+      The CONTROL row -- E-STOP toggle, MANUAL/AUTONOMY toggle,
+      SPEED slider with Apply, TURN field, MAP \texttt{Download
+      .pgm} / \texttt{Download .yaml} / \texttt{STOP MAPPING} /
+      \texttt{CLEAR MAP} buttons, and the eight-direction WASD
+      keypad -- is an HTML control surface that POSTs to
+      \texttt{star\_cockpit\_api} on \texttt{:9102} (see
+      Table~\ref{tab:cockpit}). It is layered on top of the
+      Grafana dashboard at deployment time and is not part of the
+      committed JSON.
+\end{enumerate}
+
+The dashboard JSON's own panels include the per-wheel motor
+gauges keyed on \texttt{star\_motor\_velocity\_mps\{wheel=fl|fr|bl|br\}}
+and the embedded map image at
+\texttt{http://100.64.0.6:9101/map.png}. The dashboard sets its
+own \texttt{refresh} field to \qty{1}{\second} -- there is no
+\texttt{GF\_DASHBOARDS\_MIN\_REFRESH\_INTERVAL} override required.
 
 \subsection{Lichtblick Layout}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\linewidth]{images/lichtblick-teleop.png}
+\caption{Lichtblick layout in operator use. The center 3D panel
+shows the live SLAM map (occupancy grid) with the
+\texttt{laser\_frame} and \texttt{odom} TF axes overlaid. The
+right-rail Teleop panel publishes \texttt{geometry\_msgs/Twist}
+on \texttt{/cmd\_vel} at \qty{10}{\hertz}; the down-arrow is
+highlighted because it is being held. The left sidebar exposes
+the per-button \texttt{linear-x} / \texttt{angular-z} bindings
+the layout uses.}
+\label{fig:lichtblick-teleop}
+\end{figure}
+
 The default layout
 \texttt{star-ros2/src/star\_bringup/foxglove/star-default.json}
 wires the following topics into Lichtblick's 3D panel:
@@ -725,6 +787,19 @@ Grafana Gauge panel binds the same datum without going through
 ROS2.
 
 \subsection{Foxglove Studio (desktop alternative)}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\linewidth]{images/foxglove-studio.png}
+\caption{Foxglove Studio desktop app reading the same layout JSON
+the web Lichtblick uses. Center: live 3D scene with the
+\texttt{/scan} rays around \texttt{laser\_frame} on top of the
+SLAM occupancy grid. Bottom: time-series plots of
+\texttt{/imu/data.linear\_acceleration} and
+\texttt{angular\_velocity} on all three axes. Right: the
+Diagnostics summary and the foxglove-bridge log stream.}
+\label{fig:foxglove-studio}
+\end{figure}
+
 Foxglove Studio can load the same layout JSON. Connect to
 \texttt{ws://100.64.0.6:8765} (the foxglove bridge on the Pi5).
 This is useful when the public Lichtblick URL is unavailable or for
@@ -748,8 +823,8 @@ power users who prefer the desktop app.
 \midrule
 443  & Caddy (tls internal)      & Fronts \texttt{star.local} \\
 8765 & foxglove\_bridge          & ROS2 over WebSocket \\
-9100 & node\_exporter            & Scraped by Alloy / Prometheus \\
-9101 & star\_simple\_bridge      & \texttt{/map.*}, metrics, map reset \\
+9100 & star\_simple\_bridge      & Prometheus \texttt{/metrics} (\texttt{PROMETHEUS\_PORT}) \\
+9101 & star\_simple\_bridge      & \texttt{/map.png}, \texttt{/map.pgm}, \texttt{/map.yaml}, \texttt{POST /map/reset} (\texttt{MAP\_HTTP\_PORT}) \\
 9102 & star\_cockpit\_api        & Cockpit HTTP API \\
 \bottomrule
 \end{tabular}
@@ -783,7 +858,10 @@ POST & \texttt{/api/slam/stop}       & Deactivate \texttt{/slam\_toolbox} \\
 \subsection{ROS2 Topics the Operator Cares About}
 \begin{table}[H]
 \centering
-\caption{Operator-relevant ROS2 topics.}
+\caption{Operator-relevant ROS2 topics. Compliance check topics
+(e.g. \texttt{/compliance/ramp\_slope}, \texttt{/compliance/report})
+are not yet wired up on the bridge -- the engine is run as an
+offline post-processing step today; see Section~\ref{sec:limits}.}
 \label{tab:topics}
 \small
 \begin{tabularx}{\linewidth}{l l X}
@@ -802,8 +880,6 @@ POST & \texttt{/api/slam/stop}       & Deactivate \texttt{/slam\_toolbox} \\
 \texttt{/imu/data}              & Imu      & Fused BNO055 data \\
 \texttt{/scan}                  & LaserScan & RPLiDAR C1 \\
 \texttt{/map}                   & OccupancyGrid & SLAM output \\
-\texttt{/compliance/report}     & Custom   & Aggregate ADA result \\
-\texttt{/compliance/ramp\_slope} & Custom  & Per-check result \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -883,10 +959,13 @@ and are authoritative.
 \subsection{Common Failure Modes}
 
 \textbf{Problem: The Grafana cockpit map panel shows a broken image.}
-The browser does not trust the Pi5 Caddy's local CA. Install the CA
-per \texttt{docs/ARCHITECTURE.md} and reload. If the problem persists,
-confirm \texttt{curl -k https://star.local/map.png} from any machine
-on the tailnet returns an image.
+\texttt{star\_simple\_bridge} has not produced a map yet (SLAM not
+started, or no scans accumulated), or the Pi5 is unreachable on the
+tailnet. Confirm
+\texttt{curl http://100.64.0.6:9101/map.png} from any machine on
+the tailnet returns an image. If it returns 503, start SLAM through
+the cockpit; if it times out, check that
+\texttt{star-slam-mvp.service} is running on the Pi5.
 
 \textbf{Problem: Grafana panels are empty.} Prometheus is not
 receiving metrics. On the Pi5, run
