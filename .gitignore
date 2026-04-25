@@ -221,3 +221,11 @@ CMakeUserPresets.json
 # Local scratch (not for commit)
 jtag-extract/
 .claude/scheduled_tasks.lock
+
+# Vendor toolchain installers (do not commit)
+gcc-*-GNURX-ELF.run
+RFP_CLI_*.tgz
+
+# Built virtual_rx72n binary (source is in star-gateway/cmd/virtual_rx72n/)
+/virtual_rx72n
+/star-gateway/virtual_rx72n
