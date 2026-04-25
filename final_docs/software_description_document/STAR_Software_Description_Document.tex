@@ -114,8 +114,8 @@
 
 {\large \textbf{Team Locked Inc}}\\[0.15in]
 \begin{tabular}{r l}
-Cesar Magana        & Software (firmware, gateway, ROS2, UI, compliance, infra) \\
-Brighton Sikarskie  & Embedded Development and Schematic Design \\
+Cesar Magana        & Software (proto, gateway, ROS2, UI, MATLAB) \\
+Brighton Sikarskie  & Software (firmware, compliance engine, infra), Embedded Development, Schematic Design \\
 Jeremie Hockey      & PCB Design and Layout \\
 Michael Norton      & Mechanical Design \\
 Shawn Ciaciura      & Schematic Review \\
@@ -208,7 +208,7 @@ RX72N motor-control firmware, the Go gateway service, the ROS2 autonomy
 workspace, the React operator UI, offline MATLAB scripts for motor
 system identification and PID gain design, the Pi5 cockpit API plus
 provisioning scripts, and the ADA compliance-audit engine. The STM32
-peripheral and BeagleBone Black bring-up targets are intentionally
+peripheral and BeagleBone Blue bring-up targets are intentionally
 outside the scope of this SDD.
 
 STAR's core engineering discipline is safety-critical: zero dynamic
@@ -238,14 +238,14 @@ performs code review and integration verification.
 \toprule
 \textbf{Subsystem} & \textbf{Primary Owner} & \textbf{Secondary / Reviewer} \\
 \midrule
-star-proto (API contract)     & Cesar Magana & Brighton Sikarskie \\
-star-rx72n-firmware           & Cesar Magana & Brighton Sikarskie \\
-star-gateway (Go)             & Cesar Magana & Brighton Sikarskie \\
-star-ros2 (autonomy)          & Cesar Magana & Brighton Sikarskie \\
-star-ui (React)               & Cesar Magana & Brighton Sikarskie \\
-matlab/ (sys-ID and PID)      & Cesar Magana & Brighton Sikarskie \\
-infra/ + scripts/ (cockpit)   & Cesar Magana & Brighton Sikarskie \\
-compliance-engine (ADA)       & Cesar Magana & Brighton Sikarskie \\
+star-proto (API contract)     & Cesar Magana       & Brighton Sikarskie \\
+star-rx72n-firmware           & Brighton Sikarskie & Cesar Magana       \\
+star-gateway (Go)             & Cesar Magana       & Brighton Sikarskie \\
+star-ros2 (autonomy)          & Cesar Magana       & Brighton Sikarskie \\
+star-ui (React)               & Cesar Magana       & Brighton Sikarskie \\
+matlab/ (sys-ID and PID)      & Cesar Magana       & Brighton Sikarskie \\
+infra/ + scripts/ (cockpit)   & Brighton Sikarskie & Cesar Magana       \\
+compliance-engine (ADA)       & Brighton Sikarskie & Cesar Magana       \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -277,7 +277,7 @@ The following are explicitly \emph{out of scope}:
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
 \item STM32 peripheral firmware (covered in a separate hardware
       deliverable).
-\item BeagleBone Black bring-up and secondary compute work (retired
+\item BeagleBone Blue bring-up and secondary compute work (retired
       target; retained only as a historical reference).
 \item Mechanical CAD, PCB schematics, and power electronics design.
 \item Field-trial results data sets and published experimental data.
