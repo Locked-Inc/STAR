@@ -1,0 +1,267 @@
+% ============================================================================
+% COMPLIANCE ENGINE -- ADA AUDITOR PIPELINE
+% ============================================================================
+
+\section{Compliance Engine}
+\label{section:compliance-engine}
+
+\subsection{Executive summary}
+
+The STAR compliance engine is a ROS2 Jazzy Python package
+(\texttt{star\_compliance}) that turns the Pi 5's fused sensor stream
+into ADA-2010 accessibility audit reports. It runs entirely on the
+Raspberry Pi 5, consuming the live SLAM map, the RPLiDAR C1 \texttt{/scan},
+the BNO055 IMU \texttt{/imu/data} (forwarded from the RX72N via
+\texttt{star\_spi\_bridge}), the IMX219 stereo cloud
+\texttt{/stereo/points2}, the rectified left image, the EKF-fused
+\texttt{/odom}, and the optional Hailo-8L YOLO 3D detection feed
+\texttt{/perception/detections\_3d}. It produces per-check ROS2 messages
+on the \texttt{/compliance/*} topic tree, appends rows to
+\texttt{extras/validation\_log.csv}, and -- on demand -- builds a PDF
+audit report of every flagged violation and every passing measurement.
+The engine is the only piece of STAR whose output is human-facing: it
+is what a Certified Access Specialist (CASp) actually reads after a
+scan. See the package map in \S\ref{section:repository-layout} for
+where it lives in the repo.
+
+\subsection{Pipeline in one picture}
+
+\begin{center}
+\begin{verbatim}
+   Sensors (Pi 5 inputs)
+     |
+     |  /scan         (RPLiDAR C1, 10 Hz)
+     |  /imu/data     (BNO055, 200 Hz, forwarded over SPI)
+     |  /odom         (robot_localization EKF, 100 Hz)
+     |  /map          (slam_toolbox async, 0.5 Hz)
+     |  /stereo/points2 + /cam0/.../image_rect_color (IMX219 stereo)
+     |  /perception/detections_3d (Hailo YOLO 3D, optional)
+     v
+   Detectors (pure-numpy / sklearn / Open3D, no rclpy)
+     |
+     |  cane_zone_filter, corridor_medial_axis, doorway_lidar_detector,
+     |  imu_jolt_detector, jamb_plane_fitter, obstacle_clusterer,
+     |  wall_plane_fitter, door_state_classifier (ONNX)
+     v
+   Engines (cross-cutting math)
+     |
+     |  floor_frame, plane_segmentation, imu_cross_validate,
+     |  door_offset_calibration
+     v
+   Nodes (rclpy glue, one per ADA check)
+     |
+     |  ramp_slope_node, door_clear_width_node, door_threshold_node,
+     |  path_blockage_node, protruding_objects_node,
+     |  dynamic_obstacle_node, ...
+     v
+   compliance_monitor_node (CPU safety net, throttles ADA 307)
+     |
+     v
+   /compliance/* topics + extras/validation_log.csv
+     |
+     v
+   report/pdf_generator.py
+     |
+     v
+   star_audit_report_sample.pdf  (CASp-readable PDF)
+\end{verbatim}
+\end{center}
+
+The pipeline is strictly one-way: detectors never call into nodes,
+nodes never call detectors back. Detectors and engines are pure Python
+(no \texttt{rclpy} import) so they unit-test against synthetic inputs.
+ROS2 wiring is confined to the \texttt{nodes/} layer.
+
+\subsection{Detectors}
+
+Detectors live under \texttt{star-compliance/star\_compliance/detectors/}.
+Each is a pure-Python module (numpy, sklearn, optionally Open3D or
+OpenCV-DNN) that takes raw sensor arrays and returns geometric
+features. None of them import \texttt{rclpy}.
+
+\begin{center}
+\begin{tabular}{|p{3.6cm}|p{4.2cm}|p{6.8cm}|}
+\hline
+\textbf{Module} & \textbf{Sensor inputs} & \textbf{What it detects} \\
+\hline
+\texttt{cane\_zone\_filter}        & 3D point cloud + floor plane                 & Points whose height above the floor falls in the ADA 307 ``cane-detectable zone'' (27--80\,in / 0.686--2.032\,m). Filters fixed protrusions from transient occupants (person, chair, backpack). \\
+\hline
+\texttt{corridor\_medial\_axis}    & \texttt{nav\_msgs/OccupancyGrid} (slam\_toolbox) & Medial-axis skeleton of free space plus per-pixel local clearance via 2x distance transform. Returns the minimum corridor width along each accessible segment. \\
+\hline
+\texttt{door\_state\_classifier}   & Rectified left RGB image                     & Door state (open / closed / ajar / none) via a YOLOv8n ONNX model trained on DoorDet. Falls back to a geometric heuristic on the disparity cloud when no ONNX weights are present. \\
+\hline
+\texttt{doorway\_lidar\_detector}  & Rolling \texttt{sensor\_msgs/LaserScan} window & Two parallel-wall RANSAC lines on either side of the path; flags local minima of corridor width below 1.1\,m as doorway candidates for the stereo jamb fitter. \\
+\hline
+\texttt{imu\_jolt\_detector}       & \texttt{/imu/data} (200\,Hz) + \texttt{/odom}    & Sustained 25\,ms bursts of gravity-compensated z-axis acceleration above a 2.0\,m/s\textsuperscript{2} rolling-mean threshold. Used as ADA 404.2.5 door-threshold presence cue. \\
+\hline
+\texttt{jamb\_plane\_fitter}       & 3D point cloud + floor plane                 & Two parallel vertical planes (door jambs) inside the handle-height band (85--100\,cm), reporting their perpendicular distance. RANSAC + verticality gate. \\
+\hline
+\texttt{obstacle\_clusterer}       & \texttt{/scan} + \texttt{/map} + \texttt{/odom}  & DBSCAN clusters of LaserScan returns after slam\_toolbox background subtraction. Output is the dynamic-obstacle set (centroid, radius, density). \\
+\hline
+\texttt{wall\_plane\_fitter}       & 3D point cloud (room scan)                   & Iterative RANSAC of vertical wall planes; returns up to 8 walls with normal, offset, and inlier count. Used as the reference surface for ADA 307 protrusion measurement. \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Engines}
+
+Engines live under \texttt{star-compliance/star\_compliance/engines/}
+and provide cross-cutting math reused by multiple detectors and
+nodes. They are pure-Python and unit-tested independently.
+
+\begin{center}
+\begin{tabular}{|p{3.8cm}|p{10.6cm}|}
+\hline
+\textbf{Module} & \textbf{Purpose} \\
+\hline
+\texttt{door\_offset\_calibration} & Calibrated door-thickness + stop-depth + hinge-offset constants (default 2.5\,in / 0.0635\,m total) applied to the frame-opening width to produce the ADA 404.2.3 ``between the face of the door and the stop'' clear-width estimate. JSON-loadable per deployment; the offset is echoed in the audit PDF. \\
+\hline
+\texttt{floor\_frame}              & Rolling floor-plane estimate in the map frame, sourced from BNO055 quaternion (robot pitch/roll) and optional forward-floor LiDAR returns. Exposes ``height above the floor'' for any 3D point. Fails loud if the floor normal deviates by more than 18\,deg from vertical. \\
+\hline
+\texttt{imu\_cross\_validate}      & 0.5\,s rolling window of IMU pitch samples plus an agreement gate: a LiDAR-plane slope is only published when its agreement with the IMU window is within 0.5\,deg. Used by the ramp-slope node as a sanity check. \\
+\hline
+\texttt{plane\_segmentation}       & Open3D RANSAC plane fitter shared by every ramp-related ADA check. Returns plane normal, offset \texttt{d}, inlier count, and the slope (angle between normal and gravity) in degrees. \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Nodes (one ROS2 node per ADA check)}
+
+Nodes live under \texttt{star-compliance/star\_compliance/nodes/} and
+form the only \texttt{rclpy}-aware layer. Each implements a single
+ADA section's measurement workflow, subscribes to the sensors listed
+in its module docstring, runs the relevant detectors and engines, and
+publishes a typed \texttt{star\_compliance\_msgs/*} message plus a
+CSV row to \texttt{extras/validation\_log.csv}.
+
+\begin{center}
+\begin{tabular}{|p{4.2cm}|p{2.0cm}|p{8.2cm}|}
+\hline
+\textbf{Node} & \textbf{ADA section} & \textbf{Audited check} \\
+\hline
+\texttt{compliance\_\allowbreak monitor\_node}      & --                 & Orchestrator and CPU safety net. Reads the Pi 5 1-minute load average; when normalized load $> 80\%$ it disables \texttt{star\_protruding\_objects\_node} (the ADA 307 RANSAC pipeline is the heaviest consumer); re-enables below 50\%. Publishes \texttt{/compliance/monitor/status}. \\
+\hline
+\texttt{door\_clear\_\allowbreak width\_node}        & 404.2.3            & Door clear width must be $\geq 32$\,in (0.8128\,m), measured between the face of the door and the stop with the door open 90\,deg. Pipeline: LiDAR doorway candidate $\rightarrow$ time-synced stereo cloud + image $\rightarrow$ jamb-plane RANSAC at handle height $\rightarrow$ YOLO door-state $\rightarrow$ calibrated door+stop+hinge offset. \\
+\hline
+\texttt{door\_\allowbreak threshold\_node}           & 404.2.5            & Door threshold height; STAR reports presence only (no precise height). Watches a 2\,s window after each \texttt{/compliance/door\_clear\_width} event and fires \texttt{detected=True} if \texttt{ImuJoltDetector} confirms a $> 2.0$\,m/s\textsuperscript{2} z-axis burst. The PDF report carries the mandatory CASp-follow-up disclosure. \\
+\hline
+\texttt{dynamic\_\allowbreak obstacle\_node}         & --                 & DBSCAN clusterer fed by \texttt{/scan} + \texttt{/map} + \texttt{/odom}, optionally fused with Hailo YOLO 3D detections (\texttt{yolo+lidar}, \texttt{lidar}, \texttt{yolo}-only sources). Not ADA-specific; feeds path-blockage and Nav2 behavior tree pedestrian-pause actions. \\
+\hline
+\texttt{path\_blockage\_node}                         & 403.5              & Live corridor clear width below the 36\,in ADA threshold. Compares slam\_toolbox baseline width (medial-axis transform on \texttt{/map}) to the instantaneous \texttt{/scan}-derived width along the robot's heading; flags when live $<$ 36\,in AND map-minus-live $> 0.15$\,m for 3 consecutive scans. \\
+\hline
+\texttt{path\_width\_node}                            & 403.5 (stretch)    & Standalone medial-axis path-width auditor. Stub in the capstone build; production algorithm uses \texttt{skimage.morphology.medial\_axis} + \texttt{distance\_transform\_edt} on the OccupancyGrid. \\
+\hline
+\texttt{protruding\_\allowbreak objects\_node}       & 307                & Fixed objects protruding $> 4$\,in (0.1016\,m) into circulation paths within the 27--80\,in cane-detectable zone. Consumes \texttt{/cloud\_map} (RTAB-Map consolidated, 1\,Hz) plus optional Hailo YOLO 3D class labels; transient classes (person, chair, backpack) are emitted with \texttt{flagged\_violation=false}. Heaviest CPU consumer; gated by \texttt{compliance\_monitor\_node}. \\
+\hline
+\texttt{ramp\_landing\_node}                          & 405.7              & Architected only. Designed algorithm: 60\,in $\times$ 60\,in inscribed-rectangle test on flat regions adjacent to ramp endpoints. Placeholder so the package launches with the full topology in place. \\
+\hline
+\texttt{ramp\_slope\_node}                            & 405.2              & Ramp running slope must not exceed 1:12 (4.76\,deg). Forward LiDAR fan ($\pm 15$\,deg, $\leq 2$\,m) RANSAC plane fit, cross-validated against the BNO055 pitch window within 0.5\,deg. Writes a PNG thumbnail per accepted measurement to \texttt{/tmp/star\_compliance/}. \\
+\hline
+\texttt{ramp\_width\_node}                            & 405.5              & Architected only. Designed algorithm: reuse the ramp plane RANSAC from \texttt{ramp\_slope\_node}, project inliers, SVD principal axis, minimum perpendicular width. Stub for the capstone demo. \\
+\hline
+\texttt{trip\_hazard\_node}                           & 303                & Stretch goal. Vertical changes in level $> 0.25$\,in. Designed algorithm: per-angular-bin floor-return delta vs accumulated median, cross-validated against a coincident BNO055 z-acceleration jolt. Stub in the capstone build. \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Report generation}
+
+\texttt{star\_compliance/report/pdf\_generator.py} is a single-shot
+PDF builder. It loads
+\texttt{extras/validation\_log.csv} (the rolling append-only log every
+node writes to), partitions rows by the \texttt{flagged} column into
+violations and passing measurements, and emits a one-or-two-page PDF
+via \texttt{reportlab}. The default output path is
+\texttt{star-compliance/star\_audit\_report\_sample.pdf}; an operator
+can re-run \texttt{python3 -m star\_compliance.report.pdf\_generator}
+after any scan to refresh it.
+
+The PDF contains:
+
+\begin{itemize}
+  \item Title block with generation timestamp.
+  \item One-paragraph summary (total measurements, violations, passing).
+  \item Violations table (run id, time, location, measured slope, ground-truth slope, IMU/LiDAR agreement, notes).
+  \item Passing-measurements table with the same columns.
+  \item Footer disclosure that ``measurements are observational; final legal attestation of ADA compliance remains with the Certified Access Specialist''.
+\end{itemize}
+
+The CSV schema is shared across nodes: \texttt{run\_id}, \texttt{date},
+\texttt{time}, \texttt{location}, \texttt{ada\_section},
+\texttt{measurement} (per-node columns such as
+\texttt{ramp\_slope\_lidar\_deg}, \texttt{ada\_clear\_width\_m}),
+\texttt{flagged} (yes/no), and \texttt{notes}. Comment rows beginning
+with \texttt{\#} in the \texttt{run\_id} field are skipped by the
+loader.
+
+\subsection{Bring-up: \texttt{compliance.launch.py}}
+
+\texttt{star\_compliance/bringup/compliance.launch.py} brings up the
+full compliance stack with \texttt{ros2 launch star\_compliance
+compliance.launch.py}. It declares the following launch arguments
+(each gates one or more nodes via \texttt{IfCondition}):
+
+\begin{center}
+\begin{tabular}{|p{4.6cm}|p{2.6cm}|p{7.0cm}|}
+\hline
+\textbf{Argument} & \textbf{Default} & \textbf{Effect} \\
+\hline
+\texttt{use\_stereo}              & \texttt{true}        & Enable stereo-dependent nodes (\texttt{door\_clear\_width\_node}). Disable when running headless without IMX219. \\
+\hline
+\texttt{use\_ada\_307}            & \texttt{true}        & Enable \texttt{protruding\_objects\_node}. Disable on CPU-constrained scans. \\
+\hline
+\texttt{use\_path\_blockage}      & \texttt{true}        & Enable \texttt{path\_blockage\_node} (requires \texttt{/map}). \\
+\hline
+\texttt{use\_dynamic\_obstacles}  & \texttt{true}        & Enable the DBSCAN \texttt{dynamic\_obstacle\_node}. \\
+\hline
+\texttt{use\_compliance\_monitor} & \texttt{true}        & Enable the \texttt{compliance\_monitor\_node} CPU safety net. \\
+\hline
+\texttt{ada\_307\_input\_topic}   & \texttt{/cloud\_map} & Switch the ADA 307 cloud source to \texttt{/stereo/points2} for higher-rate / higher-CPU operation. \\
+\hline
+\end{tabular}
+\end{center}
+
+The \texttt{ramp\_slope\_node} and \texttt{door\_threshold\_node} are
+unconditional; they have no stereo or map dependency. The architected
+stubs (\texttt{ramp\_width\_node}, \texttt{ramp\_landing\_node},
+\texttt{path\_width\_node}, \texttt{trip\_hazard\_node}) are not
+launched by the capstone bring-up but ship in the package so the
+topology is in place for the deployment phase.
+
+Per-node parameters worth noting:
+
+\begin{itemize}
+  \item \texttt{compliance\_monitor\_node}: \texttt{cpu\_count} (defaults to \texttt{os.cpu\_count()}) tunes the load-normalization denominator.
+  \item \texttt{protruding\_objects\_node}: \texttt{enabled} (bool) is set live by the monitor; \texttt{input\_cloud\_topic} comes from the launch argument.
+  \item \texttt{door\_threshold\_node}: \texttt{STAR\_THRESHOLD\_CSV} environment variable redirects the per-node CSV log.
+  \item \texttt{door\_clear\_width\_node}: \texttt{STAR\_VALIDATION\_CSV} env redirects the shared validation log; \texttt{DEFAULT\_SENSOR\_HEIGHT\_M} (0.25) is the LiDAR mounting height for floor-anchor cross-checks.
+  \item \texttt{ramp\_slope\_node}: \texttt{IMU\_AGREEMENT\_GATE\_DEG} (0.5\,deg), \texttt{SCAN\_FORWARD\_MAX\_M} (2.0\,m), \texttt{SCAN\_FORWARD\_HALF\_ANGLE\_DEG} (15\,deg), and \texttt{MIN\_POINTS\_FOR\_FIT} (50). Output PNGs land under \texttt{/tmp/star\_compliance/}.
+\end{itemize}
+
+For sensor-side context (camera intrinsics, stereo baseline, LiDAR
+mounting height), see \texttt{docs/imx219\_stereo\_camera.md} and the
+hardware-pinout section in \S\ref{section:repository-layout}.
+
+\subsection{Where to look in code}
+
+\begin{center}
+\begin{tabular}{|p{5.0cm}|p{9.0cm}|}
+\hline
+\textbf{Topic} & \textbf{Source} \\
+\hline
+Package manifest                       & \texttt{star-compliance/package.xml}, \texttt{setup.py}, \texttt{setup.cfg} \\
+Detectors (pure-Python)                & \texttt{star-compliance/star\_compliance/detectors/} \\
+Engines (cross-cutting math)           & \texttt{star-compliance/star\_compliance/engines/} \\
+Nodes (rclpy glue)                     & \texttt{star-compliance/star\_compliance/nodes/} \\
+Bring-up launch file                   & \texttt{star-compliance/star\_compliance/bringup/compliance.launch.py} \\
+PDF audit report builder               & \texttt{star-compliance/star\_compliance/report/pdf\_generator.py} \\
+Sample audit PDF                       & \texttt{star-compliance/star\_audit\_report\_sample.pdf} \\
+ONNX door-state model location         & \texttt{star-compliance/star\_compliance/models/} \\
+Validation log (append-only)           & \texttt{extras/validation\_log.csv} \\
+Per-node tests                         & \texttt{star-compliance/tests/} \\
+Architecture / deployment / tuning     & \texttt{star-compliance/docs/ARCHITECTURE.md}, \texttt{DEPLOYMENT.md}, \texttt{TUNING.md} \\
+Stereo camera bench notes              & \texttt{docs/imx219\_stereo\_camera.md} \\
+Repo-wide layout                       & \S\ref{section:repository-layout} \\
+\hline
+\end{tabular}
+\end{center}

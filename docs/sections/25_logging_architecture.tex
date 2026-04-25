@@ -1,0 +1,362 @@
+% ============================================================================
+% LOGGING ARCHITECTURE
+% ============================================================================
+
+\section{Logging Architecture}
+\label{section:logging-architecture}
+
+\subsection{Scope}
+
+This section consolidates how a single log byte travels from a call
+site such as \texttt{rx\_log\_info("MOTOR", "...")} in the firmware to
+a line on an operator's screen. The same story is touched in
+\S\ref{section:nanopb-protocol} (\texttt{LOG\_MESSAGE} frame
+definition), \S\ref{section:communication-stack} (log multiplexing on
+shared transports) and \S\ref{section:troubleshooting} (operator-side
+log paths); this section is the central reference and the others
+cross-link back here.
+
+\subsection{Layers}
+
+The producer side runs in many ThreadX tasks; the single drainer runs
+in \texttt{comm\_task} at 100\,Hz; the gateway is the final consumer.
+The path is the same regardless of which transport is active.
+
+\begin{verbatim}
+    rx_log_info("MOTOR", "...")             (call site, any task)
+            |
+            v
+    compile-time level filter               (LOG_LEVEL macro)
+            |
+            v
+    rx_log_uart ring buffer (4096 B)        (libs/rx_core/src/rx_log_uart.c)
+            |
+            v
+    comm_task drain @ 100 Hz                (internal_ship_log_frames)
+            |
+            v
+    LOG_MESSAGE frame, TYPE = 0x20          (libs/rx_frame/, gateway frame.go)
+            |
+            v
+    UART (SCI9 -> CY7C65213) | USB CDC port 3 | SPI MISO
+            |
+            v
+    Gateway TransportManager.handle()       (FrameTypeLogMessage case)
+            |
+            v
+    log.Printf("[RX72N] %s", payload)       (stderr / log file)
+\end{verbatim}
+
+The ISR producer is a side branch into the same drain path -- see
+\S\ref{section:logging-architecture}.7 below.
+
+\subsection{Log levels}
+
+The level enum lives in
+\texttt{libs/rx\_core/inc/rx\_log.h}:
+
+\begin{center}
+\begin{tabular}{|l|l|p{7.5cm}|}
+\hline
+\textbf{Level}            & \textbf{Value} & \textbf{Compiled in when LOG\_LEVEL >=} \\
+\hline
+\texttt{k\_log\_none}     & 0              & Nothing emitted; everything compiled out             \\
+\texttt{k\_log\_error}    & 1              & Operation-preventing failures only                   \\
+\texttt{k\_log\_warn}     & 2              & Recoverable but worth noting                         \\
+\texttt{k\_log\_info}     & 3              & Default at \texttt{-DCMAKE\_BUILD\_TYPE=Release}     \\
+\texttt{k\_log\_debug}    & 4              & Default at \texttt{-DCMAKE\_BUILD\_TYPE=Debug}       \\
+\texttt{k\_log\_verbose}  & 5              & Maximum detail; trace-level                          \\
+\hline
+\end{tabular}
+\end{center}
+
+Filtering is compile-time, not runtime. Each macro expands inside an
+\texttt{\#if (LOG\_LEVEL >= k\_log\_*)} guard; if the level is below
+threshold the macro becomes \texttt{((void)0)} and the compiler removes
+the call site entirely. With
+\texttt{-DLOG\_LEVEL=k\_log\_info} the binary contains zero bytes of
+debug-level log code -- not zero overhead at runtime, but zero text
+section as well. This matters because log strings live in flash and
+add up quickly across the firmware.
+
+Override at configure time:
+
+\begin{verbatim}
+    cmake -DLOG_LEVEL=k_log_warn ...    # field-test build
+    cmake -DLOG_LEVEL=k_log_debug ...   # bench / development build
+    cmake -DLOG_LEVEL=k_log_none ...    # silent production build
+\end{verbatim}
+
+\subsection{Tagging convention}
+
+Every translation unit that logs declares a file-scope tag:
+
+\begin{verbatim}
+    static const char* const s_tag = "MOTOR";
+\end{verbatim}
+
+The double-\texttt{const} (pointer is const, the bytes pointed to are
+const) is mandatory: a round-1 source audit found tags declared as
+plain \texttt{static const char* s\_tag} which placed the pointer
+itself in RAM as a writable variable, even though the string literal
+was in flash. That allowed a runaway pointer in another module to swap
+the tag at runtime. The hardened form parks both pointer and bytes in
+\texttt{.rodata}.
+
+Tag strings are short (3-8 characters), upper-case, and module-scoped:
+\texttt{"MOTOR"}, \texttt{"COMM"}, \texttt{"USB\_CDC"},
+\texttt{"USB\_ISR"}, \texttt{"ISR\_LOG"}, etc. The gateway prefixes
+forwarded log lines with \texttt{[RX72N]}; the firmware tag is the
+\textit{second} field, which lets log-grep workflows like
+\texttt{grep '\textbackslash[RX72N\textbackslash].*MOTOR'} pull
+per-module subsets.
+
+\subsection{Three logging API tiers}
+
+The macros in \texttt{rx\_log.h} fan out into three categories with
+distinct safety and performance properties.
+
+\begin{center}
+\begin{tabular}{|p{4.6cm}|p{4.0cm}|p{6.0cm}|}
+\hline
+\textbf{Tier}                              & \textbf{Caller context}    & \textbf{What it does}                                        \\
+\hline
+\texttt{rx\_log\_info(tag, msg)}           & Task only                  & Plain string log, \texttt{[INFO] [TAG] msg\textbackslash n}  \\
+\texttt{rx\_log\_info\_str(tag, msg, str)} & Task only                  & Logs \texttt{msg} followed by a bounded string (256 char cap) \\
+\texttt{rx\_log\_info\_val(tag, msg, v)}   & Task only                  & C23 \texttt{\_Generic} dispatch; uint8 / 16 / 32 decimal      \\
+\texttt{rx\_log\_info\_hex(tag, msg, v)}   & Task only                  & 8-digit hex; common for \texttt{rx\_err\_t} or register dumps \\
+\texttt{rx\_isr\_log\_push(event\_id, v)}  & ISR or task                & Lock-free SPSC enqueue; deferred emit at next drain          \\
+\hline
+\end{tabular}
+\end{center}
+
+The same \texttt{\_str}, \texttt{\_val}, \texttt{\_hex} suffixes exist
+for every level (\texttt{rx\_log\_error\_*}, \texttt{rx\_log\_warn\_*},
+etc.). The \texttt{\_val} family uses C23 \texttt{\_Generic} to dispatch
+on the argument's type -- \texttt{uint8\_t} prints as decimal,
+\texttt{uint16\_t} as decimal, \texttt{int32\_t} as 8-digit hex (because
+\texttt{rx\_err\_t} is \texttt{int32\_t} and is the dominant signed
+caller). To force decimal on a signed value, cast to \texttt{uint32\_t}
+explicitly.
+
+String logs (\texttt{\_str}) are bounded by
+\texttt{k\_log\_str\_max\_len} (256) per NASA Power-of-10 Rule 2; longer
+inputs are silently truncated rather than blocked from logging.
+
+\subsection{Banner: ISR vs task context}
+
+\textbf{Never call \texttt{rx\_log\_*} from anything reachable from an
+ISR.} The \texttt{rx\_log\_uart} backend acquires a ThreadX mutex with
+\texttt{TX\_WAIT\_FOREVER}; that is legal from a task and a deadlock
+(plus undefined behavior under ThreadX) from interrupt context. Every
+USB and SCI ISR runs at priority 5 and would block the entire
+peripheral while waiting on a mutex held by a lower-priority task.
+
+This rule is enforced by audit and by a banner comment at the top of
+every ISR-reachable source file. The two canonical examples are:
+
+\begin{itemize}
+  \item \texttt{libs/rx\_usb/src/rx\_usb\_isr.c} -- USB0 vector 144,
+        every function in the file is reachable from
+        \texttt{usb0\_usbi\_isr()}. Banner enforces zero
+        \texttt{rx\_log\_*} call sites.
+  \item \texttt{libs/rx\_usb/src/rx\_usb\_cdc.c} -- CDC class handlers
+        invoked from the same ISR. Same banner, same rule.
+\end{itemize}
+
+The CI / source-audit step grep-checks these files for any
+\texttt{rx\_log\_} substring; finding one is a hard failure.
+
+The escape hatch is \texttt{rx\_isr\_log\_push}, described next.
+
+\subsection{The deferred-ISR-log machinery}
+
+The deferred path lives in
+\texttt{libs/rx\_core/inc/rx\_isr\_log.h} and \texttt{src/rx\_isr\_log.c}.
+It is a lock-free single-producer / single-consumer ring buffer
+sized at \texttt{k\_rx\_isr\_log\_capacity = 32} records of 8 bytes
+each (256 bytes total).
+
+\begin{center}
+\begin{tabular}{|l|p{10cm}|}
+\hline
+\textbf{Field}              & \textbf{Purpose}                                                                                                  \\
+\hline
+\texttt{event\_id} (uint8)  & Index into a static \texttt{s\_isr\_log\_event\_table[]} of \{tag, message, level, has\_value\} tuples            \\
+\texttt{value} (uint32)     & One auxiliary integer (port id, error code, register snapshot); event-specific                                    \\
+\hline
+\end{tabular}
+\end{center}
+
+The producer side (ISR) does not allocate, format, or block. It reads
+\texttt{tail}, computes \texttt{(head + 1) \& 31}, writes the record,
+and advances \texttt{head}. If the ring is full it bumps
+\texttt{s\_total\_dropped} and returns \texttt{false} -- preferable
+to corrupting the ring or stalling the ISR.
+
+The consumer side is \texttt{rx\_isr\_log\_drain()}, called every
+~10\,ms by \texttt{comm\_task} (the same tick that ships log frames).
+It walks \texttt{tail} forward to the snapshot of \texttt{head} at
+entry, looks up each record's metadata in the static table, and emits
+via the regular \texttt{rx\_log\_*} macros. This means an ISR-pushed
+event ends up in exactly the same \texttt{rx\_log\_uart} ring as
+task-context logs, framed identically, with the right level prefix.
+After draining, if drops occurred since the previous tick the drain
+emits a single summary line \texttt{"ISR log overflow: dropped N
+records"} so observers know events were lost.
+
+Adding a new ISR log event:
+
+\begin{enumerate}
+  \item Append the new \texttt{k\_isr\_log\_event\_*} value to the
+        enum in \texttt{rx\_isr\_log.h}.
+  \item Add the matching row to
+        \texttt{s\_isr\_log\_event\_table[]} in \texttt{rx\_isr\_log.c}
+        with the desired tag, message, level, and \texttt{has\_value}.
+  \item In ISR code, call
+        \texttt{rx\_isr\_log\_push(k\_isr\_log\_event\_xxx, value)}.
+\end{enumerate}
+
+The 32-record ring at the 100\,Hz drain rate absorbs ~3200 events/s
+before any drops, well above the steady-state USB ISR rate of ~10-20
+events/s during enumeration and ~0/s after. The drop counter and
+high-water mark are exposed via \texttt{rx\_isr\_log\_get\_stats()}.
+
+The deferred queue is what allows the
+\texttt{nFAULT}/\texttt{DRVOFF} / e-stop instrumentation in
+\S\ref{section:safety-architecture} to log from interrupt context
+without violating the no-mutex-from-ISR rule.
+
+\subsection{LOG\_MESSAGE wire format}
+
+The byte-level format -- SYNC (0x55AA) + header + TYPE = 0x20 +
+payload + CRC-32 -- is documented in
+\S\ref{section:nanopb-protocol}, and the \texttt{rx\_frame\_type\_t}
+enum lives in \texttt{libs/rx\_frame/inc/rx\_frame.h}. The payload of
+a \texttt{LOG\_MESSAGE} frame is 1..1024 bytes of raw ASCII log text,
+\textit{not} null-terminated and may span multiple lines. The framing
+layer protects every chunk with the same CRC-32 used by command and
+response frames, so log bytes cannot fool the decoder by accidentally
+reproducing the sync word inside their payload.
+
+\subsection{Multi-transport log multiplexing}
+
+The same producer ring (\texttt{rx\_log\_uart}) feeds three different
+transports depending on which one the gateway has opened. The wire
+behavior is summarized below; see \S\ref{section:communication-stack}
+for the framing rationale.
+
+\begin{center}
+\begin{tabular}{|l|p{4.0cm}|p{6.5cm}|}
+\hline
+\textbf{Transport}             & \textbf{Log channel}                & \textbf{Multiplex strategy}                                              \\
+\hline
+USB CDC composite (USB0)       & Dedicated CDC port 3                & Dedicated; logs never share a byte stream with proto frames              \\
+SCI9 UART (CY7C65213)          & Same byte stream, framed            & TYPE = 0x20 distinguishes log frames from proto frames                   \\
+SPI (CIPO from RX72N)          & Same byte stream, framed            & TYPE = 0x20; gateway's frame decoder filters on type                      \\
+\hline
+\end{tabular}
+\end{center}
+
+The dedicated USB CDC log port is host-visible at
+\texttt{/dev/ttyACM3} on PROD boards or \texttt{/dev/ttyACM6} on TOM
+boards (the third interface of the 3-port composite -- see
+\S\ref{section:usb-modes} for the topology and re-enumeration story).
+Because the LOG port is its own USB interface, the operator can attach
+a plain serial terminal (\texttt{minicom -D /dev/ttyACM3}) and read
+firmware logs without going through the gateway at all -- useful when
+the gateway itself is the suspect.
+
+On UART and SPI the gateway does the demultiplexing: every received
+frame whose TYPE byte equals 0x20 is routed through the log path
+instead of the protobuf application path.
+
+\subsection{Gateway-side log forwarding}
+
+The gateway's \texttt{TransportManager.handle()} method (in
+\texttt{star-gateway/internal/manager/manager.go}) recognizes frame
+type \texttt{frame.FrameTypeLogMessage} (0x20). The handler:
+
+\begin{enumerate}
+  \item Updates the implicit heartbeat (the firmware is alive enough
+        to be emitting logs).
+  \item Calls \texttt{log.Printf("[RX72N] \%s",
+        string(result.Payload))}, writing the payload verbatim to the
+        gateway's \texttt{stderr} (or whatever log sink the
+        \texttt{log} package was redirected to under systemd).
+  \item Returns \texttt{nil} so the receive loop does not attempt to
+        unmarshal the bytes as protobuf.
+\end{enumerate}
+
+Notably, \texttt{LOG\_MESSAGE} is intentionally absent from the
+gateway's HARQ allow-list -- log frames are best-effort, not
+acknowledged, and not retransmitted.
+
+\subsection{Operator-visible log paths}
+
+\begin{center}
+\begin{tabular}{|p{5.5cm}|p{8.0cm}|}
+\hline
+\textbf{Path}                                          & \textbf{What you see there}                                                              \\
+\hline
+\texttt{/tmp/star-logs/star-gateway.log}               & Gateway log file when launched by the launch scripts (Pi 5)                              \\
+\texttt{journalctl -u star-cockpit-api}                & Same log stream when running as a systemd unit                                            \\
+Foxglove cockpit "Logs" panel                          & Live tail of gateway stderr forwarded over the cockpit websocket                          \\
+\texttt{minicom -D /dev/ttyACM3} (PROD)                & Raw firmware log stream straight off the dedicated USB CDC log port                       \\
+\texttt{minicom -D /dev/ttyACM6} (TOM)                 & Same, on TOM-board hardware                                                              \\
+\hline
+\end{tabular}
+\end{center}
+
+The first three paths get the same bytes (the gateway is the single
+forwarder). The last two skip the gateway entirely and read directly
+from the firmware over USB; useful when the gateway is hung or has
+crashed and there is still a need to read RX72N logs.
+
+\subsection{Performance constraints}
+
+The producer side is cheap: \texttt{rx\_log\_info(...)} formats
+inline, acquires the ring mutex, memcpys the bytes, and returns. There
+is no I/O on the call path. That said, two rules from prior audits
+apply.
+
+\textbf{No \texttt{rx\_log\_debug} on the 100\,Hz hot path.} Round-3
+review found that issuing a debug log from
+\texttt{motor\_control\_task}'s control loop pushes ~80 bytes per
+tick -- 8\,kB/s -- into the ring. Combined with \texttt{comm\_task}
+also generating logs, this saturates the 4\,KiB ring within 0.5\,s on
+any moderately verbose build; bytes start dropping silently. Rule:
+the motor control loop logs only on transitions and faults, never
+per-tick.
+
+\textbf{No string logs on the hot path.} \texttt{rx\_log\_*\_str}
+iterates up to 256 characters per call; even though it is cycle-bounded
+it is the slowest log API. Use \texttt{\_val} or \texttt{\_hex}
+when the operand is an integer (almost always).
+
+\textbf{Drops are silent at the producer.} The
+\texttt{rx\_log\_uart} ring counts dropped bytes in
+\texttt{rx\_log\_uart\_stats\_t.dropped\_bytes}. Inspect it via
+\texttt{rx\_log\_uart\_get\_stats()} during bring-up to confirm the
+build is not over-logging. The ISR-side ring exposes the same counter
+through \texttt{rx\_isr\_log\_get\_stats()}.
+
+\subsection{Where to look in code}
+
+\begin{center}
+\begin{tabular}{|p{5.5cm}|p{9.0cm}|}
+\hline
+\textbf{Topic}                          & \textbf{Source}                                                                                                                    \\
+\hline
+Log macros, level enum, \texttt{\_Generic} dispatch & \texttt{star-rx72n-firmware/libs/rx\_core/inc/rx\_log.h}                                                                \\
+UART backend ring buffer + drain API    & \texttt{star-rx72n-firmware/libs/rx\_core/src/rx\_log\_uart.c}                                                                     \\
+ISR-safe deferred queue (header)        & \texttt{star-rx72n-firmware/libs/rx\_core/inc/rx\_isr\_log.h}                                                                     \\
+ISR-safe deferred queue (impl + table)  & \texttt{star-rx72n-firmware/libs/rx\_core/src/rx\_isr\_log.c}                                                                     \\
+Drain + ship as LOG\_MESSAGE frames     & \texttt{star-rx72n-firmware/src/tasks/comm\_task.c} (\texttt{internal\_ship\_log\_frames}, \texttt{rx\_isr\_log\_drain} call site) \\
+Frame type 0x20 definition              & \texttt{star-rx72n-firmware/libs/rx\_frame/inc/rx\_frame.h} (\texttt{k\_frame\_type\_log\_message})                                \\
+ISR logging discipline banner           & \texttt{star-rx72n-firmware/libs/rx\_usb/src/rx\_usb\_isr.c}, \texttt{rx\_usb\_cdc.c}                                              \\
+Gateway-side LOG\_MESSAGE handler       & \texttt{star-gateway/internal/manager/manager.go} (\texttt{FrameTypeLogMessage} case)                                              \\
+Frame type Go enum                      & \texttt{star-gateway/internal/frame/frame.go} (\texttt{FrameTypeLogMessage = 0x20})                                                \\
+\hline
+\end{tabular}
+\end{center}

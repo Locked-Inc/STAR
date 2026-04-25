@@ -50,6 +50,26 @@ void setUp(void)
 void tearDown(void) {}
 
 /* =============================================================================
+ * Test helpers
+ *
+ * Extracted to keep individual tests under the readability-function-size and
+ * cognitive-complexity thresholds enforced by clang-tidy.
+ * ============================================================================= */
+
+/**
+ * @brief Push n records of the same event id into the ring.
+ *
+ * Each call asserts the push succeeded so callers can chain invocations
+ * without re-stating the assertion on every record.
+ */
+static void push_n_records(uint32_t n, rx_isr_log_event_id_t evt)
+{
+  for (uint32_t i = 0U; i < n; i++) {
+    TEST_ASSERT_TRUE(rx_isr_log_push(evt, i));
+  }
+}
+
+/* =============================================================================
  * Producer path
  * ============================================================================= */
 
@@ -204,9 +224,7 @@ void test_drain_advances_tail_only_for_processed_records(void)
 void test_push_drain_push_drain_does_not_lose_records(void)
 {
   for (uint32_t round = 0U; round < k_test_4_rounds; round++) {
-    for (uint32_t i = 0U; i < k_test_8_records; i++) {
-      TEST_ASSERT_TRUE(rx_isr_log_push(k_isr_log_event_usb_vbus_fs_j, i));
-    }
+    push_n_records(k_test_8_records, k_isr_log_event_usb_vbus_fs_j);
     TEST_ASSERT_EQUAL_UINT32(k_test_8_records, rx_isr_log_drain());
   }
 
@@ -252,7 +270,7 @@ void test_high_water_tracks_peak_occupancy(void)
 
 void test_drain_handles_all_event_ids(void)
 {
-  for (uint8_t id = (uint8_t)k_isr_log_event_none + 1U; id < (uint8_t)k_isr_log_event_count; id++) {
+  for (uint8_t id = k_isr_log_event_none + 1U; id < k_isr_log_event_count; id++) {
     rx_isr_log_test_reset_state();
     rx_log_uart_test_reset_state();
 

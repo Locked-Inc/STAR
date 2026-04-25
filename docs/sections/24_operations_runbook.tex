@@ -1,0 +1,546 @@
+% ============================================================================
+% OPERATIONS RUNBOOK
+% ============================================================================
+
+\section{Operations Runbook}
+\label{section:operations-runbook}
+
+\subsection{Scope}
+
+This section is the in-the-field guide. It assumes a Pi 5 has already
+been provisioned per \texttt{docs/PI\_DEPLOYMENT.md} (one-time
+hardware-and-OS setup) and that the topology is the one drawn in
+\texttt{docs/ARCHITECTURE.md} (cockpit, Caddy, supervisor mux, k3s).
+\textbf{This file answers only one question}: what does the operator
+do during a session, when something is on fire, or when the routine
+"power-on, drive, power-off" sequence drifts. Setup, build, and
+topology are explicitly out of scope.
+
+Throughout the runbook, \texttt{\$\{STAR\_ROOT\}} is whatever
+absolute path the repo lives at on the Pi 5
+(\texttt{/workspaces/STAR} on the development Pi; the value is
+interchangeable). All paths in this section use that placeholder.
+
+\subsection{Daily start sequence}
+
+\textbf{Power up.} Plug the chassis battery, give it ~10 seconds for
+the Pi 5 to come out of POST and finish boot. You should see the Pi
+5's PWR LED solid red and the activity LED blinking; the RX72N PCB's
+3.3 V LED solid green; the RPLiDAR LED solid green (the rotor will
+spin up only when SLAM activates it).
+
+\textbf{Wait for Pi services.} The Pi runs three units that come up
+on boot, before any operator action:
+
+\begin{itemize}
+  \item \texttt{star-cpu-governor.service} (one-shot, pins governor
+        to \texttt{schedutil}).
+  \item \texttt{caddy.service} (TLS termination on
+        \texttt{https://star.local}, binds to the tailscale interface
+        \texttt{100.64.0.6}).
+  \item \texttt{star-cockpit-api.service} (HTTP API at
+        \texttt{127.0.0.1:9102} that the Grafana cockpit toggles
+        autonomy / e-stop / speed against).
+\end{itemize}
+
+These are \emph{infrastructure} -- they always run. They do not
+launch ROS2. To confirm the Pi is ready before you launch the stack:
+
+\begin{quote}\small
+\texttt{systemctl is-active caddy star-cockpit-api star-cpu-governor}
+\end{quote}
+
+All three should print \texttt{active}.
+
+\textbf{Run \texttt{./start.sh}.} From \texttt{\$\{STAR\_ROOT\}} on
+the Pi (over SSH or local console):
+
+\begin{quote}\small
+\texttt{./start.sh}
+\end{quote}
+
+\texttt{start.sh} is the canonical robot launcher. It:
+
+\begin{enumerate}
+  \item Calls \texttt{require\_host\_setup} -- warns (but does not
+        block) if the Pi 5 host setup from
+        \texttt{scripts/setup-pi5-host.sh} is incomplete.
+  \item Brings up the WiFi AP \texttt{STAR-Robot} on
+        \texttt{wlan0} unless \texttt{--no-ap} is passed. The Pi
+        becomes \texttt{192.168.50.1}.
+  \item Stops anything already running (\texttt{./stop.sh}), flushes
+        the Cyclone DDS daemon's stale participant cache.
+  \item Probes for an RX72N over SPI for ~4 seconds. Falls back to
+        \texttt{virtual\_rx72n} (DEV mode) if the probe fails.
+  \item Detects RPLiDAR on \texttt{/dev/rplidar} or
+        \texttt{/dev/ttyUSB0}; stops \texttt{ModemManager} so it does
+        not grab the port.
+  \item Launches in order: \texttt{virtual\_rx72n} (DEV only),
+        \texttt{star-gateway} (gRPC :50051, WS :8080),
+        \texttt{star\_spi\_bridge}, fake odom TF (DEV only), SLAM
+        stack (\texttt{slam.launch.py}), compliance engine,
+        \texttt{star\_gateway\_bridge\_main}, UI (Vite, :5173), RViz
+        (optional), Lichtblick web (:8081).
+\end{enumerate}
+
+The operator-facing flags are summarized below.
+
+\begin{center}
+\begin{tabular}{|p{3.3cm}|p{11.5cm}|}
+\hline
+\textbf{Flag} & \textbf{Meaning} \\
+\hline
+(no flags) & Auto-detect everything; full stack. Default field choice. \\
+\hline
+\texttt{--no-lidar} & Skip LiDAR / SLAM / EKF even when \texttt{/dev/rplidar} is present. Use for indoor bench tests where the rotor is in the way. \\
+\hline
+\texttt{--no-ui} & Skip the Vite dev server. Use when no operator laptop is connected; saves ~150 MB RAM. \\
+\hline
+\texttt{--no-compliance} & Skip the seven compliance nodes (ramp slope, doorway, protrusions, etc.). Use during pure-mobility testing. \\
+\hline
+\texttt{--no-ap} & Do not broadcast \texttt{STAR-Robot} AP. Use when the Pi is connected via Ethernet and you want to keep \texttt{wlan0} on a station network. \\
+\hline
+\texttt{--rviz} & Launch \texttt{rviz2} with \texttt{slam\_lidar.rviz} after startup. \\
+\hline
+\texttt{--help} & Print usage. \\
+\hline
+\end{tabular}
+\end{center}
+
+Environment overrides:
+\texttt{STAR\_SIMULATION\_MODE=true|false} forces DEV / HW mode and
+skips the SPI probe; \texttt{STAR\_WIFI\_SSID},
+\texttt{STAR\_WIFI\_PASS}, and \texttt{STAR\_WIFI\_IFACE} override the
+AP defaults.
+
+\textbf{Verify health.} After \texttt{start.sh} prints its summary
+banner, sanity-check the stack:
+
+\begin{center}
+\begin{tabular}{|p{4.4cm}|p{10.4cm}|}
+\hline
+\textbf{Check} & \textbf{Expected} \\
+\hline
+\texttt{nc -z localhost 50051} & gateway gRPC reachable. \\
+\hline
+\texttt{nc -z localhost 8080}  & gateway WS reachable. \\
+\hline
+\texttt{nc -z localhost 8765}  & \texttt{foxglove\_bridge} listening. \\
+\hline
+\texttt{nc -z localhost 5173}  & UI dev server reachable (HW WiFi mode prints \texttt{http://192.168.50.1:5173}). \\
+\hline
+\texttt{ros2 topic hz /scan}   & ~10\,Hz when LiDAR is up. \\
+\hline
+\texttt{ros2 topic hz /odom/unfiltered} & ~50\,Hz from \texttt{simple\_bridge} or \texttt{star\_gateway\_bridge}. \\
+\hline
+\texttt{ros2 topic echo /map -n 1 --field info} & a non-empty origin / resolution after the robot has moved. \\
+\hline
+\texttt{curl -s https://star.local/api/state} & \texttt{\{"autonomy":..., "estop":..., "speed":...\}} (cockpit API live). \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Daily stop sequence}
+
+From \texttt{\$\{STAR\_ROOT\}}:
+
+\begin{quote}\small
+\texttt{./stop.sh}\\
+\texttt{./stop.sh --stop-ap}      \quad (also tear down the WiFi AP)
+\end{quote}
+
+\texttt{stop.sh} unwinds in the reverse of startup, with
+process-group SIGTERM first, a 3--5 second grace, then SIGKILL on
+survivors:
+
+\begin{enumerate}
+  \item ROS2 client first: \texttt{star\_gateway\_bridge\_main}.
+  \item ROS2 launch groups (\texttt{slam.launch.py},
+        \texttt{compliance.launch.py},
+        \texttt{star\_spi\_bridge.launch.py},
+        \texttt{stereo\_camera.launch.py}).
+  \item Individual ROS2 nodes that may have outlived their launch
+        parent (\texttt{sllidar}, \texttt{slam\_toolbox},
+        \texttt{ekf\_node}, \texttt{robot\_state\_publisher},
+        \texttt{static\_transform\_publisher}, \texttt{gscam},
+        \texttt{foxglove\_bridge}).
+  \item Go binaries: \texttt{star-gateway}, \texttt{virtual\_rx72n}
+        (a 2-second sleep here lets the serial port release before
+        the next \texttt{start.sh}).
+  \item Visualization: Vite UI, RViz, Lichtblick.
+  \item A final pgrep sweep for orphans.
+  \item By default, leaves the WiFi AP up so SSH from the operator
+        laptop survives. \texttt{--stop-ap} tears it down.
+\end{enumerate}
+
+\textbf{When to use Ctrl-C vs \texttt{stop.sh} vs power-cycle.}
+Ctrl-C in \texttt{start.sh}'s shell triggers the script's INT trap,
+which calls \texttt{./stop.sh} -- equivalent. Use Ctrl-C if you ran
+\texttt{start.sh} in the foreground and want a clean unwind. Use
+\texttt{./stop.sh} from any other shell. Use a power-cycle only when
+\texttt{stop.sh} fails to release \texttt{/dev/ttyACM*} or
+\texttt{/dev/ttyUSB0} (rare; usually means a node is stuck in an
+uninterruptible kernel I/O wait, which only a hardware reset clears).
+
+\subsection{Dev mode}
+
+\texttt{./dev.sh} is a one-liner wrapper:
+
+\begin{quote}\small
+\texttt{exec env STAR\_SIMULATION\_MODE=true \$\{STAR\_ROOT\}/start.sh --rviz "\$@"}
+\end{quote}
+
+It forces the SPI probe to skip, brings up \texttt{virtual\_rx72n}
+(the Go simulator that emits synthesized telemetry), launches RViz,
+and otherwise runs the same launch order as \texttt{start.sh}. Use it
+when:
+
+\begin{itemize}
+  \item The robot hardware is not connected (desk-side dev).
+  \item You want to test a new SLAM tuning on a recorded bag without
+        the real motors.
+  \item You want to debug the gateway or UI without an RX72N
+        responding.
+\end{itemize}
+
+DEV mode publishes a static \texttt{odom -> base\_link} TF
+(\texttt{robot stationary at origin}) so the SLAM TF chain stays
+intact. Never \texttt{./dev.sh} on a robot whose wheels are on the
+ground.
+
+\subsection{Field deployment checklist}
+
+\begin{center}
+\begin{tabular}{|p{2.6cm}|p{4.0cm}|p{8.2cm}|}
+\hline
+\textbf{Phase} & \textbf{Item} & \textbf{Pass criterion} \\
+\hline
+Pre-flight & Power cable & Battery shows $>$11.5 V at the chassis
+distribution block. \\
+\hline
+Pre-flight & USB CDC enumerated &
+\texttt{ls /dev/star-rx72n-proto /dev/ttyACM*} resolves; if
+missing, see the E2 Lite recovery path inside
+\texttt{scripts/slam-mvp.sh}'s \texttt{ensure\_mcu()}. \\
+\hline
+Pre-flight & RPLiDAR powered &
+\texttt{ls /dev/rplidar /dev/ttyUSB0}; LED on the lidar should be
+solid green. \\
+\hline
+Pre-flight & IMU calibration & BNO055 reaches sys / gyro / accel
+calib level 3 -- check via the cockpit IMU panel or
+\texttt{ros2 topic echo /star/imu/calib\_status -n 1}. \\
+\hline
+Pre-flight & Host setup &
+\texttt{./start.sh} prints no \texttt{require\_host\_setup}
+warnings. If it does, run
+\texttt{sudo bash \$\{STAR\_ROOT\}/scripts/setup-pi5-host.sh}. \\
+\hline
+Operational & E-stop test &
+\texttt{ros2 topic pub --once /star/estop std\_msgs/Bool '\{data: true\}'}
+-- wheels must brake within $\le$50\,ms. Confirm with cockpit /
+Grafana. \\
+\hline
+Operational & Autonomy toggle &
+\texttt{POST https://star.local/api/autonomy/toggle} -- the cockpit
+or \texttt{ros2 topic echo /star/state/autonomy\_enable} should
+flip. \\
+\hline
+Operational & Supervisor mux &
+With autonomy off, \texttt{/cmd\_vel} drives the robot; with
+autonomy on, only \texttt{/nav2/cmd\_vel} drives. Use
+\texttt{ros2 topic echo /cmd\_vel\_out}. \\
+\hline
+Post-flight & Log archive &
+\texttt{tar czf run-\$(date +\%Y\%m\%d-\%H\%M).tgz /tmp/star-logs/}
+-- copy off the Pi before shutdown. \\
+\hline
+Post-flight & Mission report &
+Compliance engine writes a PDF under
+\texttt{\$\{STAR\_ROOT\}/star-compliance/reports/} -- archive
+alongside the logs. \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Cockpit URLs and ports}
+
+These are the ports operators interact with. All bind to
+\texttt{0.0.0.0} on the Pi 5 unless noted otherwise (so they are
+reachable from a laptop joined to \texttt{STAR-Robot} or over the
+tailnet).
+
+\begin{center}
+\begin{tabular}{|p{1.5cm}|p{4.4cm}|p{8.9cm}|}
+\hline
+\textbf{Port} & \textbf{Service} & \textbf{What it serves; credential strategy} \\
+\hline
+443  & Caddy on Pi 5 & TLS terminator. Bound to
+\texttt{100.64.0.6} (tailscale interface) only.
+Routes \texttt{/api/*} to the cockpit API at
+\texttt{100.64.0.6:9102}; everything else proxies to
+\texttt{star\_simple\_bridge} on \texttt{localhost:9101}. Internal
+CA -- one-time install on operator laptop. \\
+\hline
+50051 & gateway gRPC & Used by the ROS2
+\texttt{star\_gateway\_bridge} only. Localhost-only by convention;
+no auth. \\
+\hline
+8080  & gateway WS & UI -> gateway WebSocket.
+\texttt{WS\_STRICT\_ORIGIN=false} during dev. No auth (lab-only). \\
+\hline
+8765  & \texttt{foxglove\_bridge} & ROS topic visualizer used by
+both the bundled Lichtblick at \texttt{:8081} and any external
+Foxglove Studio install (\texttt{ws://<pi5>:8765}). Plaintext;
+relies on tailscale or the AP for confidentiality. \\
+\hline
+5173  & UI Vite dev server & The TypeScript operator UI. No auth,
+plaintext. AP-network only by default. \\
+\hline
+8081  & Lichtblick web (\texttt{npx serve}) & Self-hosted Foxglove
+Studio fork. Requires one-time install via
+\texttt{scripts/setup-lichtblick-web.sh}. \\
+\hline
+9100  & node\_exporter & Prometheus host metrics scraped by Alloy
+on the Pi and pushed to k3s. No auth. \\
+\hline
+9101  & \texttt{star\_simple\_bridge} & Serves
+\texttt{/map.\{png,pgm,yaml\}}, accepts
+\texttt{POST /map/reset?confirm=yes}, exposes its own custom
+metrics. Fronted by Caddy on \texttt{star.local}. \\
+\hline
+9102  & \texttt{star\_cockpit\_api} & The Python HTTP backend for
+the cockpit toggles. Binds to \texttt{100.64.0.6:9102}; reachable
+only via Caddy at \texttt{https://star.local/api/*}. Endpoints:
+\texttt{GET /api/state}, \texttt{POST /api/autonomy/toggle},
+\texttt{POST /api/estop/toggle},
+\texttt{POST /api/slam/\{start,stop\}},
+\texttt{POST /api/cmd\_vel}, \texttt{POST /api/speed}. \\
+\hline
+\end{tabular}
+\end{center}
+
+The Grafana cockpit dashboard (panels: SLAM map, Motors / FL.. BR
+velocity / duty / faults, IMU roll / pitch / heading / gyro / accel,
+Odometry linear / angular / pose, LiDAR closest obstacle / bearing /
+range stats, Bridge health line-rate / parse errors / serial reopens)
+runs in the homelab k3s cluster, not on the Pi. It scrapes via Alloy
+and embeds \texttt{https://star.local/map.png} directly from the
+operator's browser.
+
+\subsection{Systemd unit reference}
+
+\begin{center}
+\begin{tabular}{|p{4.4cm}|p{4.0cm}|p{6.4cm}|}
+\hline
+\textbf{Unit} & \textbf{What it runs} & \textbf{Status / log access} \\
+\hline
+\texttt{caddy.service} & \texttt{caddy run --config /etc/caddy/Caddyfile} as user \texttt{caddy}. Provides TLS on \texttt{star.local}, binds to \texttt{100.64.0.6}. \texttt{Restart=always}. & \texttt{systemctl status caddy};
+\texttt{journalctl -u caddy -f}. \\
+\hline
+\texttt{star-cockpit-api.service} & Sources ROS2, exports
+\texttt{rmw\_cyclonedds\_cpp} + \texttt{CYCLONEDDS\_URI}, runs
+\texttt{python3 /opt/star\_cockpit\_api/server.py}. Subscribes
+to latched supervisor state topics, publishes to
+\texttt{/star/autonomy\_enable}, \texttt{/star/estop},
+\texttt{/star/speed\_scale}. \texttt{Restart=always},
+\texttt{RestartSec=3}. & \texttt{systemctl status star-cockpit-api};
+\texttt{journalctl -u star-cockpit-api -f}. \\
+\hline
+\texttt{star-slam-mvp.service} & \emph{Optional, opt-in.} Runs
+\texttt{scripts/slam-mvp.sh start} as user \texttt{star} after
+\texttt{network-online.target} and a 8-second sleep so USB
+devices have enumerated. \texttt{Type=forking,
+RemainAfterExit=yes, Restart=no}. \textbf{Not enabled by
+default.} Enable with \texttt{sudo systemctl enable --now
+star-slam-mvp.service}. & \texttt{systemctl status star-slam-mvp};
+log files live under \texttt{/tmp/slam-mvp-logs/<node>.log}. \\
+\hline
+\texttt{star-cpu-governor.service} & One-shot at very early boot
+(\texttt{DefaultDependencies=no, Before=base.target}); writes
+\texttt{schedutil} into every CPU's \texttt{scaling\_governor}.
+\texttt{RemainAfterExit=yes} so \texttt{systemctl status} reflects
+"applied". & \texttt{systemctl status star-cpu-governor}; not in
+journal beyond the initial run. \\
+\hline
+\texttt{star-robot.service} & Optional auto-boot wrapper around
+\texttt{./start.sh --no-ui} / \texttt{./stop.sh}. Installed by
+\texttt{setup-pi5-host.sh} but \textbf{disabled} by default --
+auto-starting on a robot the operator did not intend to drive is
+a safety hazard. & Enabled only for field deployments;
+\texttt{journalctl -u star-robot} captures
+\texttt{/tmp/star-logs/systemd.log}. \\
+\hline
+\end{tabular}
+\end{center}
+
+The full safety model behind autonomy / e-stop arbitration is in
+\S\ref{section:safety-architecture}; the supervisor topic mux table
+in \texttt{docs/ARCHITECTURE.md} is the authoritative version.
+
+\subsection{Wi-Fi and Ethernet helpers}
+
+Two helper scripts live on the Pi 5 \texttt{PATH} (installed by
+\texttt{setup-pi5-host.sh}, sourced from
+\texttt{\$\{STAR\_ROOT\}/scripts/}):
+
+\begin{center}
+\begin{tabular}{|p{3.0cm}|p{11.7cm}|}
+\hline
+\textbf{Helper} & \textbf{Behaviour} \\
+\hline
+\texttt{star-ap up} & Brings up the \texttt{STAR-Hotspot}
+NetworkManager profile on \texttt{wlan0}. Pi becomes
+\texttt{192.168.50.1} broadcasting SSID \texttt{STAR-Robot}.
+\textbf{Drops any existing wlan0 SSH session.} \\
+\hline
+\texttt{star-ap down} & Tears down the AP and lets
+NetworkManager rejoin the previous station network. \\
+\hline
+\texttt{star-ap status} & Reports current Wi-Fi mode (AP / station / down). \\
+\hline
+\texttt{star-eth up} & Force-activates the
+\texttt{netplan-eth0} shared profile. Pi becomes
+\texttt{10.42.0.1}, runs dnsmasq for the laptop on the other end.
+The autoconnect default is on, so this is rarely needed -- plug in
+the cable and \texttt{star-eth status} should already report
+\texttt{UP}. \\
+\hline
+\texttt{star-eth down} & Drops the eth0 shared profile (cable can
+stay plugged in). \\
+\hline
+\texttt{star-eth auto on|off} & Toggles
+\texttt{connection.autoconnect} on the profile.
+\texttt{auto off} means the cable does nothing until you call
+\texttt{star-eth up}. \\
+\hline
+\texttt{star-eth status} & Shows carrier, IPv4, peer DHCP lease,
+and the autoconnect setting. \\
+\hline
+\end{tabular}
+\end{center}
+
+The two are mutually exclusive in practice -- \texttt{star-ap up} owns
+\texttt{wlan0}; \texttt{star-eth} owns \texttt{eth0}. Running both is
+fine; the Pi just routes per-interface. SSH options are summarized
+in the cheat sheet at \texttt{scripts/star-help.sh} (run
+\texttt{star-help} on the Pi for a colorized rendering).
+
+\subsection{Common runtime issues}
+
+For the deep gotcha catalog -- USB enumeration, AD2 buffer caps, FPU
+context save, MSTPCR module-stop -- see
+\S\ref{section:troubleshooting}. The few entries below are
+operations-specific and not duplicated there.
+
+\paragraph{Robot moves but no telemetry on the cockpit / UI.}
+\texttt{/cmd\_vel\_out} is being consumed (motors spin) but the UI
+shows stale topics. Almost always the WebSocket origin or URL: the
+gateway runs with \texttt{WS\_STRICT\_ORIGIN=false} during dev;
+verify with \texttt{ss -tlnp | grep 8080} that the gateway is on
+\texttt{:8080}, then check the UI is pointing at
+\texttt{ws://192.168.50.1:8080/ws} (AP) or
+\texttt{ws://10.42.0.1:8080/ws} (Eth). If the cockpit (Grafana
+panels) has no telemetry but Lichtblick over
+\texttt{ws://<pi>:8765} is fine, the bridge to k3s Prometheus is the
+issue, not the robot.
+
+\paragraph{Robot freezes mid-motion.}
+The RX72N IWDT will reset the chip if \texttt{watchdog\_task} ever
+stops kicking, which forces motor outputs to zero on power-up. See
+\S\ref{section:safety-architecture} for the three layers
+(supervisor / comm / firmware-watchdog) and which one likely caught
+the fault. Recovery: power-cycle the chassis. The Pi 5 stays up; only
+the RX72N reboots.
+
+\paragraph{Compass / yaw is bad after start.}
+BNO055 needs the calibration loop to converge. Wave the chassis in a
+figure-eight for 15--30 seconds; sys / gyro / accel calib levels
+should each climb to 3. Until they do, the EKF heading drifts and
+SLAM matches poorly. The cockpit IMU panel exposes the calib state
+directly; \texttt{ros2 topic echo /star/imu/calib\_status -n 1} is
+the CLI equivalent.
+
+\paragraph{LiDAR reports zero ranges across the whole scan.}
+Power, not data. Either:
+
+\begin{itemize}
+  \item The RPLiDAR's 5\,V rail dropped (battery low; chassis
+        distribution loose) -- LED on the lidar will be off or
+        amber.
+  \item \texttt{ModemManager} grabbed \texttt{/dev/ttyUSB0} during
+        boot before \texttt{start.sh} could stop it. Run
+        \texttt{sudo systemctl stop ModemManager} and
+        \texttt{./start.sh} again.
+  \item Permissions: confirm \texttt{ls -l /dev/ttyUSB0} shows
+        group-writable; the udev rule from
+        \texttt{setup-pi5-host.sh} should have set this.
+\end{itemize}
+
+\subsection{Log locations}
+
+\begin{center}
+\begin{tabular}{|p{4.6cm}|p{4.4cm}|p{5.7cm}|}
+\hline
+\textbf{Source} & \textbf{Path} & \textbf{Access pattern} \\
+\hline
+\texttt{start.sh} children &
+\texttt{/tmp/star-logs/<node>.log} &
+\texttt{tail -f /tmp/star-logs/gateway.log}, etc. Rotated daily by
+\texttt{/etc/logrotate.d/star-robot}, 3 generations, 20\,MB cap. \\
+\hline
+\texttt{slam-mvp.sh} children &
+\texttt{/tmp/slam-mvp-logs/<node>.log} &
+\texttt{scripts/slam-mvp.sh logs <node>} or
+\texttt{tail -f /tmp/slam-mvp-logs/<node>.log}. \\
+\hline
+\texttt{star-cockpit-api.service} & journald only &
+\texttt{journalctl -u star-cockpit-api -f}; backs to
+\texttt{/var/log/journal/}. \\
+\hline
+\texttt{caddy.service} & journald only &
+\texttt{journalctl -u caddy -f}. \\
+\hline
+\texttt{star-slam-mvp.service} & journald + per-node files &
+\texttt{journalctl -u star-slam-mvp} for the systemd wrapper;
+per-node detail under \texttt{/tmp/slam-mvp-logs/}. \\
+\hline
+\texttt{star-robot.service} (if enabled) &
+\texttt{/tmp/star-logs/systemd.log} +
+\texttt{journalctl -u star-robot} & As specified in
+\texttt{StandardOutput=append:} of the unit. \\
+\hline
+\texttt{rosout} log files & \texttt{\textasciitilde/.ros/log/<run-id>/} &
+ROS2 daemon writes one directory per run; useful for crash
+post-mortems. \\
+\hline
+\texttt{nginx-style HTTP access} (Caddy) & journald only &
+\texttt{journalctl -u caddy | grep "GET /api"} for cockpit-API
+requests. \\
+\hline
+\end{tabular}
+\end{center}
+
+To grep across all robot logs from one shell:
+
+\begin{quote}\small
+\texttt{grep -RIn ERROR /tmp/star-logs/ /tmp/slam-mvp-logs/}
+\end{quote}
+
+\subsection{Ops references}
+
+The placeholder \texttt{\$\{STAR\_ROOT\}} is whatever absolute path
+the repository lives at on the host -- \texttt{/workspaces/STAR} on
+the development Pi 5, \texttt{\textasciitilde/STAR} on a fresh
+checkout, etc. Substitute as appropriate; the systemd units in
+\texttt{infra/pi5/etc/systemd/system/} hardcode
+\texttt{/workspaces/STAR} and must be re-templated if the repo lives
+elsewhere.
+
+For a deeper map of every directory referenced in this section
+(\texttt{infra/pi5/}, \texttt{scripts/}, \texttt{star-ros2/launch/},
+the systemd units, \texttt{monitoring/}), see
+\S\ref{section:repository-layout}. For setup steps that run once per
+Pi (deploy keys, apt packages, host-level udev / governor), see
+\texttt{docs/PI\_DEPLOYMENT.md}. For the supervisor mux topology and
+TLS / hostname strategy, see \texttt{docs/ARCHITECTURE.md}.
