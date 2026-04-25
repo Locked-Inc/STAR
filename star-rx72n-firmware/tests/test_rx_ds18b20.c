@@ -688,7 +688,7 @@ static rx_bus_manager_t s_mock_bus_manager;
  * Arbitrary name used for testing. In production, bus names identify
  * physical GPIO pins (e.g., "onewire_p40" for port 4, pin 0).
  */
-static const char* s_test_bus_name = "test_onewire";
+static const char* const s_test_bus_name = "test_onewire";
 
 /* =============================================================================
  * Mock OneWire Bus Functions

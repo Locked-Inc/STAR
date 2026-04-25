@@ -474,7 +474,7 @@ static rx_bus_config_t s_onewire_config;
  * @details
  * Unique identifier for bus registration. Used in all rx_bus_onewire_*() calls.
  */
-static const char* s_test_bus_name = "test_onewire";
+static const char* const s_test_bus_name = "test_onewire";
 
 /**
  * @brief GPIO pin assigned to 1-Wire bus

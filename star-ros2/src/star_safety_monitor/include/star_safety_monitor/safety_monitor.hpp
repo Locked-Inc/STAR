@@ -81,13 +81,13 @@ private:
 
   // Sonar topic names (must match gateway bridge topic constants)
   static constexpr size_t NUM_SONARS = 4;
-  static constexpr std::array<const char *, NUM_SONARS> SONAR_TOPICS = {{
+  static constexpr std::array<const char * const, NUM_SONARS> SONAR_TOPICS = {{
     "/star/obstacle/front_left",
     "/star/obstacle/front_right",
     "/star/obstacle/back_left",
     "/star/obstacle/back_right",
   }};
-  static constexpr std::array<const char *, NUM_SONARS> SONAR_NAMES = {{
+  static constexpr std::array<const char * const, NUM_SONARS> SONAR_NAMES = {{
     "front_left", "front_right", "back_left", "back_right",
   }};
 
