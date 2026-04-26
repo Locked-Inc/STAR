@@ -6,19 +6,18 @@ platform for autonomous indoor ADA-compliance auditing.
 ## Overview
 
 STAR combines custom PCB hardware, embedded firmware, control software,
-ROS2 autonomy, and a browser UI in a single repo. It's a four-language
-system (C, Go, C++, TypeScript) plus a Python ROS2 package that produces
-ADA compliance audit reports.
+ROS2 autonomy, and a Grafana-based operator cockpit in a single repo.
+It's a three-language system (C, Go, C++) plus a Python ROS2 package
+that produces ADA compliance audit reports.
 
 ## Repository at a glance
 
 | Path                      | Role                                                |
 |---------------------------|-----------------------------------------------------|
 | `star-rx72n-firmware/`    | Motor + sensor controller firmware (C, RX72N, ThreadX) |
-| `star-gateway/`           | Go gateway: gRPC + WebSocket bridge to ROS2 / UI    |
+| `star-gateway/`           | Go gateway: gRPC + HTTP bridge to ROS2 / cockpit-API |
 | `star-ros2/`              | ROS2 Jazzy workspace (autonomy + bridges, C++)      |
 | `star-proto/`             | Protocol Buffer schemas (canonical, all languages)  |
-| `star-ui/`                | Operator UI (TypeScript / React + Vite)             |
 | `star-compliance/`        | ADA compliance engine (Python ROS2 package)         |
 | `matlab/`                 | Motor system identification + PID design scripts    |
 | `schematic/`              | KiCad PCB sources (STAR_MCU + TOM breakout)         |

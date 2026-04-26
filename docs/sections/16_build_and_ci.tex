@@ -106,7 +106,6 @@ A small set of CMake options gate non-default behaviour. Pass them with
 \texttt{star-gateway/}               & \texttt{go build ./...}; \texttt{go.work} resolves the proto-gen module.                                                       \\
 \texttt{star-ros2/}                  & \texttt{./build-ros2.sh} -- wraps \texttt{buf generate} + \texttt{colcon build --symlink-install}.                              \\
 \texttt{star-proto/}                 & \texttt{buf generate}; output in \texttt{star-proto/gen/}.                                                                      \\
-\texttt{star-ui/}                    & Vite (\texttt{npm install \&\& npm run build}).                                                                                  \\
 \texttt{star-compliance/}            & Setuptools + colcon when used as a ROS2 package.                                                                                \\
 \texttt{schematic/}                  & KiCad CLI for BOM / PDF / Gerber regeneration.                                                                                  \\
 \texttt{docs/}                       & \texttt{cd docs \&\& make} drives \texttt{pdflatex star\_documentation.tex} (twice for TOC).                                     \\
@@ -130,7 +129,7 @@ The active workflows live under \texttt{.github/workflows/}.
 \texttt{firmware.yml}                      & Top-level firmware orchestration that pulls the above into one PR-status check.                                                  \\
 \texttt{gateway.yml}                       & Go gateway: build, race tests, golangci-lint, govulncheck, cross-compile linux/amd64 + linux/arm64.                              \\
 \texttt{ros2.yml}                          & ROS2 workspace: proto-gen, colcon build, colcon test on x86 plus a Pi 5 self-hosted ARM64 runner.                                \\
-\texttt{proto.yml}                         & buf format / lint / build / breaking, regen Go/TypeScript/nanopb, round-trip serialization tests.                                \\
+\texttt{proto.yml}                         & buf format / lint / build / breaking, regen Go/nanopb/C++, round-trip serialization tests.                                \\
 \texttt{proto-gen.yml}                     & Lockstep check: regenerate proto outputs and fail if the working tree changes.                                                  \\
 \texttt{compliance-engine-ci.yml}          & Python \texttt{star-compliance/}: lint, unit, integration, coverage XML.                                                        \\
 \texttt{ascii-check.yml}                   & 7-bit-ASCII enforcement (CLAUDE.md mandate).                                                                                     \\

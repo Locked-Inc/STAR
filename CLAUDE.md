@@ -206,25 +206,25 @@ Before proposing any RX72N peripheral fix, check each of these:
 |-----------|-------------|
 | `star-rx72n-firmware/` | Renesas RX72N motor controller (CMake + GNURX + ThreadX) |
 | `star-proto/` | Protocol Buffers schemas with multi-language code generation |
-| `star-gateway/` | Go gateway service (UI <-> ROS2 bridge) running on RPi5 |
-| `star-ui/` | User interface (TypeScript) |
+| `star-gateway/` | Go gateway service (Grafana cockpit <-> ROS2 bridge) running on RPi5 |
 | `matlab/` | Motor system identification and PID controller design |
 | `schematic/` | KiCad PCB designs |
 
 ### System Communication Flow
 
 ```
-User -> UI (TypeScript)
-     -> Gateway (Go on RPi5)
-     -> ROS2 (C++ on RPi5)
-     -> [SPI Bridge - TBD: ROS2 node or custom C]
-     -> RX72N (C firmware with ThreadX + nanopb)
+Operator -> Grafana cockpit (browser, panel-29 + Pi5 cockpit-API)
+         -> Gateway (Go on RPi5)
+         -> ROS2 (C++ on RPi5)
+         -> SPI Bridge (ROS2 node)
+         -> RX72N (C firmware with ThreadX + nanopb)
 ```
 
 **Key Design Notes:**
-- **Gateway (Go):** Handles WebSocket/HTTP with UI, bridges to ROS2, runs on RPi5
+- **Cockpit (Grafana):** Browser-based operator interface backed by the Pi5 cockpit-API (`infra/pi5/opt/star_cockpit_api/server.py`) and `monitoring/grafana-star-dashboard.json`
+- **Gateway (Go):** Bridges the cockpit-API / ROS2, runs on RPi5
 - **ROS2 (C++):** Robot control framework, runs on RPi5
-- **SPI Bridge:** Not yet implemented - ROS2 node with SPI support
+- **SPI Bridge:** ROS2 node bridging ROS2 topics to RX72N over SPI
 - **RX72N:** Real-time motor control, communicates via Protocol Buffers over SPI
 
 ### Hardware
@@ -247,7 +247,7 @@ Skills provide workflow-specific instructions that load automatically when relev
 
 **Available skills:**
 
-- **`/build [subsystem]`** - Build commands for proto, gateway, firmware, ROS2, UI, MATLAB, docs
+- **`/build [subsystem]`** - Build commands for proto, gateway, firmware, ROS2, MATLAB, docs
 - **`/commit`** - Create git commits with safety gates, proper message formatting, and STAR conventions
 - **`/pr`** - Create pull requests with comprehensive description, test plan, and change analysis
 - **`/code-review [directory]`** - Review code for NASA Power of 10, SOLID, and STAR standards

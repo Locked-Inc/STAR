@@ -13,7 +13,7 @@ make proto-gen
 ```
 
 This will:
-1. Generate code for all targets (Go, TypeScript, C/nanopb, C++)
+1. Generate code for all targets (Go, C/nanopb, C++)
 2. Initialize the Go module in `gen/go/` if needed
 3. Download Go dependencies with `go mod tidy`
 4. Synchronize the Go workspace
@@ -45,7 +45,6 @@ star-proto/
 |   +-- star/v1/        # STAR v1 API
 +-- gen/                # Generated code (gitignored)
 |   +-- go/             # Go gRPC/protobuf code
-|   +-- typescript/     # TypeScript code for star-ui
 |   +-- nanopb/         # C code for star-rx72n-firmware
 |   +-- cpp/            # C++ code for star-ros2
 +-- nanopb/             # nanopb configuration files

@@ -29,7 +29,7 @@ The gateway service runs on the Raspberry Pi 5 and serves as the communication b
           High -
       level clients
     \node[box, fill=blue!20](nav2) at(0, 0){Nav2 / ROS2\\(Autonomous)};
-  \node[box, fill=green!20, right=of nav2](ui){star-ui\\(Manual Control)};
+  \node[box, fill=green!20, right=of nav2](ui){Grafana cockpit\\(Operator panel-29)};
 
   % Gateway
     \node[box, fill=orange!30, below=1cm of $(nav2)!0.5!(ui)$, minimum width=8cm](gateway){\textbf{star-gateway}\\gRPC Server + SPI Controller};

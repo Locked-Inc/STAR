@@ -1,4 +1,4 @@
-# buf.gen.web.yaml - STAR Code Generation for Web/Gateway
+# buf.gen.web.yaml - STAR Code Generation for Gateway / CI
 # Excludes nanopb for environments without protoc-gen-nanopb
 
 version: v1
@@ -22,15 +22,3 @@ plugins:
     out: gen/go
     opt:
       - paths=source_relative
-
-  # ============================================
-  # TypeScript for star-ui (protobuf-ts)
-  # ============================================
-  - plugin: buf.build/community/timostamm-protobuf-ts
-    out: gen/typescript
-    opt:
-      - long_type_string
-      - optimize_code_size
-      - generate_dependencies
-      - ts_nocheck
-      - eslint_disable

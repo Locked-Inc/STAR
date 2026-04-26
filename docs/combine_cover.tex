@@ -1,0 +1,138 @@
+% =============================================================================
+% STAR Combined Reference -- cover/TOC page only.
+%
+% Driven by `make combined-reference`. Compiled to a tiny PDF (cover + part
+% summary), then pdfunite concatenates it with every per-subsystem combined
+% PDF + capstone deliverables to produce the final everything-PDF.
+%
+% Why pdfunite (not pdflatex pdfpages with \includepdf): the firmware
+% combined PDF is ~16,000 pages / 128 MB. Pdflatex's main-memory pool
+% size of 5,000,000 words exhausts before the second \includepdf even
+% starts. pdfunite handles arbitrarily-large concatenation in O(1)
+% memory because it just rewrites the page tree.
+% =============================================================================
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[bookmarks=true,bookmarksopen=true,bookmarksnumbered=true,colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+
+\hypersetup{
+  pdftitle={STAR Project Combined Reference},
+  pdfauthor={STAR Development Team -- Locked Inc.},
+  pdfsubject={Comprehensive STAR engineering, API, capstone, mechanical, and electrical reference},
+  pdfkeywords={STAR, RX72N, ROS2, ThreadX, robotics, ADA, capstone, mechanical, PCB}
+}
+
+\title{\Huge\bfseries STAR Project\\[0.4em]\Large Combined Reference}
+\author{STAR Development Team \\ Locked Inc.}
+\date{Version 1.1 \\ April 2026 \\ MIT License}
+
+\begin{document}
+
+% -----------------------------------------------------------------------------
+% Cover page
+% -----------------------------------------------------------------------------
+\begin{titlepage}
+\centering
+\vspace*{2.5cm}
+
+{\Huge\bfseries STAR Project\par}
+\vspace{0.3cm}
+{\LARGE Combined Reference\par}
+\vspace{0.5cm}
+{\large Spatial Topography Accessibility Robot\par}
+
+\vfill
+
+{\large Version 1.1\par}
+{\large April 2026\par}
+\vspace{0.4cm}
+{\large MIT License\par}
+
+\vfill
+
+{\normalsize STAR Development Team\\Locked Inc.\par}
+\vspace{0.8cm}
+
+{\small\itshape The everything-PDF: engineering reference, every per-module
+firmware Doxygen PDF (src, tests, 27 libs, 11 bench apps), gateway / ROS2 /
+proto / compliance / MATLAB source listings, the production Grafana dashboard
++ Pi 5 ops surface, capstone deliverables (SDD, SSUM, Test Report, Demo,
+Presentation), and the mechanical drawings + electrical schematic / PCB
+package -- bundled into a single PDF for offline distribution.\par}
+
+\vfill
+
+{\footnotesize\itshape Each section below is its own self-contained PDF with
+its own internal table of contents and bookmarks; navigate via the PDF
+viewer's bookmark tree.\par}
+\end{titlepage}
+
+% -----------------------------------------------------------------------------
+% Section overview (text-only -- the actual PDFs are appended by pdfunite)
+% -----------------------------------------------------------------------------
+\section*{Section overview}
+\addcontentsline{toc}{section}{Section overview}
+
+\begin{description}
+\item[Part I -- Engineering Reference] Comprehensive technical book:
+hardware pinout, communication stack, NASA Power-of-10 rules, gateway
+architecture, ROS2 integration, motor control loop, safety architecture,
+test strategy, troubleshooting, glossary, compliance engine, operations
+runbook, logging architecture (\texttt{docs/star\_documentation.pdf},
+$\sim$241 pages).
+
+\item[Part II -- Firmware Combined PDF] Every per-module Doxygen PDF for
+the RX72N firmware: \texttt{src/} (application), \texttt{tests/} (host
+unit-test suite), all 27 libraries under \texttt{libs/}, and all 11
+bench-test applications. $\sim$16,000 pages, 128 MB
+(\texttt{docs/STAR\_Firmware\_Combined.pdf}).
+
+\item[Part III -- Gateway Combined PDF] Go gateway: \texttt{cmd/}
+(virtual\_rx72n + cli tools), \texttt{internal/} (manager / controller /
+service / transport / WebSocket), and \texttt{tests/} as syntax-highlighted
+source listings (469 pages).
+
+\item[Part IV -- ROS2 Combined PDF] All 9 STAR-owned ROS2 packages as
+syntax-highlighted source listings: \texttt{star\_bringup},
+\texttt{star\_compliance\_msgs}, \texttt{star\_gateway\_bridge},
+\texttt{star\_perception}, \texttt{star\_safety\_monitor},
+\texttt{star\_simple\_bridge}, \texttt{star\_simulation},
+\texttt{star\_spi\_bridge}, \texttt{star\_supervisor} ($\sim$226 pages).
+
+\item[Part V -- Protocol Buffers Combined PDF] All proto3 schemas under
+\texttt{star-proto/proto/star/v1/} (33 pages).
+
+\item[Part VI -- Compliance Combined PDF] Python ADA-auditing engine
+under \texttt{star-compliance/} ($\sim$85 pages).
+
+\item[Part VII -- MATLAB Sources] System identification + PID design
+scripts under \texttt{matlab/} (39 pages).
+
+\item[Part VIII -- Operations] Production Grafana dashboard JSON +
+rendered panel screenshots + Pi 5 cockpit-API server + systemd units
+(\texttt{monitoring/} + \texttt{infra/pi5/}, 83 pages).
+
+\item[Part IX -- Software Description Document] Capstone deliverable.
+
+\item[Part X -- System and Software User Manual] Capstone deliverable.
+
+\item[Part XI -- Test Report] Capstone deliverable.
+
+\item[Part XII -- Final Demo Handout] Capstone deliverable.
+
+\item[Part XIII -- Final Presentation] Capstone deliverable (PowerPoint
+export).
+
+\item[Part XIV -- Mechanical Drawings] Master + 9 individual parts
+(Battery Box, Drivetrain Assembly, Lid L, Lid R, Motor mount, Sheet base,
+Sheet Lidar, Side panel, Split rail).
+
+\item[Part XV -- Electrical Schematics + PCB] KiCad outputs: Electrical
+Design + Schematic + PCB layout.
+
+\item[Part XVI -- Miscellaneous] Bench schematic, camera calibration,
+TOM board build instructions, compliance audit sample.
+\end{description}
+
+\end{document}

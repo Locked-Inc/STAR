@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # STAR start -- auto-detect hardware and boot all components in order.
-# Usage: ./start.sh [--no-lidar] [--no-ui] [--no-compliance] [--rviz] [--help]
+# Usage: ./start.sh [--no-lidar] [--no-compliance] [--rviz] [--help]
 
 set -euo pipefail
 
@@ -55,7 +55,6 @@ require_host_setup() {
 
 # -- argument parsing ----------------------------------------------------------
 OPT_NO_LIDAR=false
-OPT_NO_UI=false
 OPT_NO_COMPLIANCE=false
 OPT_RVIZ=false
 OPT_NO_AP=false
@@ -76,7 +75,6 @@ Usage: ./start.sh [OPTIONS]
 
   (no flags)   Auto-detect hardware; start everything
   --no-lidar       Skip LiDAR/SLAM/EKF even if /dev/rplidar is present
-  --no-ui          Skip npm dev server
   --no-compliance  Skip the compliance-engine launch (ADA checks)
   --no-ap          Skip WiFi AP setup (use when connected via Ethernet)
   --rviz       Launch RViz2 after startup
@@ -95,7 +93,6 @@ EOF
 for arg in "$@"; do
   case "$arg" in
   --no-lidar) OPT_NO_LIDAR=true ;;
-  --no-ui) OPT_NO_UI=true ;;
   --no-compliance) OPT_NO_COMPLIANCE=true ;;
   --no-ap) OPT_NO_AP=true ;;
   --rviz) OPT_RVIZ=true ;;
@@ -328,7 +325,6 @@ PID_GW=""
 PID_FAKEODOM=""
 PID_SLAM=""
 PID_GWBRIDGE=""
-PID_UI=""
 PID_RVIZ=""
 PID_FOXGLOVE=""
 
@@ -507,23 +503,7 @@ else
   say "gateway_bridge running (PID $PID_GWBRIDGE)"
 fi
 
-# -- Step 7: UI dev server -----------------------------------------------------
-if [[ "$OPT_NO_UI" == "false" ]]; then
-  say "Starting UI dev server..."
-  (cd "$STAR_DIR/star-ui" && npm run dev \
-    >"$LOG_DIR/ui.log" 2>&1) &
-  PID_UI=$!
-  sleep 3
-  if ! kill -0 "$PID_UI" 2>/dev/null; then
-    warn "UI dev server may have exited -- check $LOG_DIR/ui.log"
-  else
-    say "UI dev server running (PID $PID_UI)"
-  fi
-else
-  say "Skipping UI (--no-ui)"
-fi
-
-# -- Step 8: RViz2 -------------------------------------------------------------
+# -- Step 7: RViz2 -------------------------------------------------------------
 RVIZ_CFG="$STAR_DIR/star-ros2/src/star_bringup/rviz/slam_lidar.rviz"
 
 if [[ "$OPT_RVIZ" == "true" ]]; then
@@ -580,9 +560,6 @@ if [[ -n "$PID_COMPLIANCE" ]]; then
   printf "  %-18s PID %s   ADA checks on /compliance/*\n" "compliance" "$PID_COMPLIANCE"
 fi
 printf "  %-18s PID %s\n" "gw_bridge" "${PID_GWBRIDGE:-unknown}"
-if [[ -n "$PID_UI" ]]; then
-  printf "  %-18s PID %s   http://%s:5173\n" "UI" "$PID_UI" "$DISPLAY_IP"
-fi
 if [[ -n "$PID_RVIZ" ]]; then
   printf "  %-18s PID %s\n" "rviz2" "$PID_RVIZ"
 fi

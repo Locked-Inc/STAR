@@ -6,7 +6,7 @@
 #   2. ros2 launch groups (SIGTERM to launch proc, waits for process group)
 #   3. Individual ROS2 nodes that may outlive their launch parent
 #   4. Go binaries (gateway, virtual_rx72n)
-#   5. Support processes (foxglove, UI, RViz)
+#   5. Support processes (foxglove, RViz)
 
 set -uo pipefail
 
@@ -129,9 +129,8 @@ stop_proc "virtual_rx72n" "[v]irtual_rx72n" 3
 sleep 2
 
 # ---------------------------------------------------------------------------
-# UI and visualization
+# Visualization
 # ---------------------------------------------------------------------------
-stop_proc "UI (vite)" "vite" 3
 stop_proc "rviz2" "rviz2" 3
 # Use the literal install path as the match, not "serve.*star-lichtblick-web".
 # The regex form false-matches any bash -c wrapper whose argv happens to

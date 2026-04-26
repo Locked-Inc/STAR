@@ -15,10 +15,6 @@
         {
             "name": "star-gateway",
             "path": "star-gateway"
-        },
-        {
-            "name": "star-ui",
-            "path": "star-ui"
         }
     ],
     "settings": {

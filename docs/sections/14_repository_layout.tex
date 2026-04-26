@@ -11,12 +11,13 @@ specific file.
 
 \subsection{Project shape, in one paragraph}
 
-STAR is a four-language distributed system: a real-time motor-control
+STAR is a three-language distributed system: a real-time motor-control
 firmware (C, Renesas RX72N + ThreadX), a Go gateway service (running
-on a Raspberry Pi 5), a ROS2 Jazzy autonomy workspace (C++, also on
-the Pi 5), and a TypeScript operator UI. They communicate via a
-shared Protocol Buffers schema (\texttt{star-proto/}) over USB CDC,
-SCI9 UART, or SPI. A separate Python ROS2 package
+on a Raspberry Pi 5), and a ROS2 Jazzy autonomy workspace (C++, also
+on the Pi 5). The operator interface is a Grafana cockpit (panel-29)
+served from the Pi 5 cockpit-API. They communicate via a shared
+Protocol Buffers schema (\texttt{star-proto/}) over USB CDC, SCI9
+UART, or SPI. A separate Python ROS2 package
 (\texttt{star-compliance/}) consumes sensor data to generate ADA
 compliance audit reports. The repository also contains the KiCad PCB
 sources, the bench / Pi-deployment infrastructure scripts, the
@@ -37,8 +38,6 @@ capstone deliverable PDFs, and the engineering documentation
 \texttt{star-ros2/}           & ROS2 Jazzy workspace (C++)               & Autonomy + safety stack on the Pi 5. Packages: \texttt{star\_bringup} (launch orchestration), \texttt{star\_supervisor} (e-stop/autonomy gating), \texttt{star\_safety\_monitor}, \texttt{star\_gateway\_bridge}, \texttt{star\_spi\_bridge}, \texttt{star\_simple\_bridge}, \texttt{star\_simulation}, \texttt{star\_perception}. \\
 \hline
 \texttt{star-proto/}          & Wire protocol contract                   & \texttt{.proto} schemas in \texttt{proto/star/v1/}, generated code under \texttt{gen/} (per language), nanopb config in \texttt{nanopb/}. The single source of truth for every message that crosses a process boundary. \\
-\hline
-\texttt{star-ui/}             & Operator UI (TypeScript / React + Vite)  & Browser-based cockpit. Talks to the gateway over WebSocket. Includes telemetry panels, joystick / gamepad input, PID tuning UI, transport diagnostics. \\
 \hline
 \texttt{star-compliance/}     & ADA compliance engine (Python ROS2 pkg)  & Detectors (door, ramp, jamb, obstacle), engines (plane segmentation, floor frame), nodes (compliance\_monitor, ramp\_slope, etc.), report PDF generator. Runs on the Pi 5 alongside ROS2. \\
 \hline

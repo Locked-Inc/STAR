@@ -6,7 +6,7 @@ IMAGE_NAME := star-ros2-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-tests doxygen-pdf-deps doxygen-clean combined-firmware combined-reference build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell blinky build-blinky clean-blinky flash-blinky flash-blinky-sci motor0 motor0-forward motor0-reverse motor1 motor1-forward motor1-reverse motor2 motor2-forward motor2-reverse motor3 motor3-forward motor3-reverse motor-all motor-all-forward motor-stop motor-clean none ui-screenshots pdfs-gateway combined-gateway pdfs-ros2 combined-ros2 pdfs-compliance combined-compliance pdfs-ui combined-ui pdfs-proto combined-proto pdf-matlab pdf-ops combined-ops pdfs-all combined-all
+.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-tests doxygen-pdf-deps doxygen-clean combined-firmware combined-reference build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell blinky build-blinky clean-blinky flash-blinky flash-blinky-sci motor0 motor0-forward motor0-reverse motor1 motor1-forward motor1-reverse motor2 motor2-forward motor2-reverse motor3 motor3-forward motor3-reverse motor-all motor-all-forward motor-stop motor-clean none pdfs-gateway combined-gateway pdfs-ros2 combined-ros2 pdfs-compliance combined-compliance pdfs-proto combined-proto pdf-matlab pdf-ops combined-ops pdfs-all combined-all render-grafana
 
 help:
 	@echo "STAR Project Development Helper"
@@ -60,7 +60,7 @@ help:
 	@echo "  make combined-firmware   - Bundle the 40 firmware PDFs into one (~7000+ pages)"
 	@echo "                             Output: docs/STAR_Firmware_Combined.pdf"
 	@echo "  make combined-reference  - Top-level everything-PDF: engineering ref + firmware combined +"
-	@echo "                             gateway / ROS2 / proto / UI / compliance / MATLAB combineds +"
+	@echo "                             gateway / ROS2 / proto / compliance / MATLAB combineds +"
 	@echo "                             SDD + SSUM + Test Report + Demo + Presentation +"
 	@echo "                             Mechanical + Electrical + Misc"
 	@echo "                             Output: docs/STAR_Combined_Reference.pdf"
@@ -78,22 +78,22 @@ help:
 	@echo "                             Output: docs/pdfs/compliance/STAR_Compliance.pdf"
 	@echo "  make combined-compliance - Bundle compliance PDFs into one"
 	@echo "                             Output: docs/STAR_Compliance_Combined.pdf"
-	@echo "  make pdfs-ui             - Build star-ui TypeScript source PDF"
-	@echo "                             Output: docs/pdfs/ui/STAR_UI.pdf"
-	@echo "  make combined-ui         - Bundle UI PDFs into one"
-	@echo "                             Output: docs/STAR_UI_Combined.pdf"
 	@echo "  make pdfs-proto          - Build star-proto schema source PDF"
 	@echo "                             Output: docs/pdfs/proto/STAR_Proto.pdf"
 	@echo "  make combined-proto      - Bundle proto PDFs into one"
 	@echo "                             Output: docs/STAR_Proto_Combined.pdf"
 	@echo "  make pdf-matlab          - Build matlab/ source-listing PDF"
 	@echo "                             Output: docs/STAR_MATLAB.pdf"
-	@echo "  make pdf-ops             - Build Grafana dashboard + infra/pi5 (cockpit_api +"
-	@echo "                             systemd units + README) source PDFs"
-	@echo "                             Output: docs/pdfs/ops/{STAR_Grafana,STAR_Infra_Pi5}.pdf"
-	@echo "  make combined-ops        - Concat the two ops PDFs into one"
+	@echo "  make render-grafana      - Render Grafana dashboard JSON into PNG snapshots"
+	@echo "                             Output: docs/grafana-screenshots/*.png"
+	@echo "                                     docs/pdfs/ops/STAR_Grafana_Render.pdf"
+	@echo "  make pdf-ops             - Build Grafana dashboard JSON listing + rendered"
+	@echo "                             snapshot + infra/pi5 (cockpit_api + systemd)"
+	@echo "                             Output: docs/pdfs/ops/{STAR_Grafana,"
+	@echo "                                     STAR_Grafana_Render,STAR_Infra_Pi5}.pdf"
+	@echo "  make combined-ops        - Concat all ops PDFs into one"
 	@echo "                             Output: docs/STAR_Ops_Combined.pdf"
-	@echo "  make pdfs-all            - Build per-subsystem PDFs (gateway, ros2, compliance, ui,"
+	@echo "  make pdfs-all            - Build per-subsystem PDFs (gateway, ros2, compliance,"
 	@echo "                             proto, matlab, ops)"
 	@echo "  make combined-all        - Build every per-subsystem combined PDF AND combined-reference"
 	@echo "                             (Single command for 'produce all PDFs'.)"
@@ -107,10 +107,6 @@ help:
 	@echo "  make devcontainer         - Build and start the dev container"
 	@echo "  make devcontainer-rebuild - Force rebuild (applies devcontainer.json changes)"
 	@echo "  make devcontainer-shell   - Open a shell in the running dev container"
-	@echo ""
-	@echo "STAR UI:"
-	@echo "  make ui-screenshots       - Boot Vite dev server, capture every UI view to"
-	@echo "                              docs/ui-screenshots/<view>.png (uses Edge / Chrome headless)"
 
 # Build the Docker image (cached)
 build-image:
@@ -621,36 +617,56 @@ doxygen-clean:
 #
 # Both outputs are gitignored as build artifacts; rebuild on demand.
 combined-firmware:
-	@echo "Building STAR Firmware Combined PDF..."
-	@echo "  Compiling docs/combine_firmware.tex..."
-	@cd docs && pdflatex -interaction=nonstopmode combine_firmware.tex >/dev/null 2>&1 && \
-	  pdflatex -interaction=nonstopmode combine_firmware.tex >/dev/null 2>&1
-	@echo "  Installing as docs/STAR_Firmware_Combined.pdf..."
-	@mv docs/combine_firmware.pdf docs/STAR_Firmware_Combined.pdf
+	@echo "Building STAR Firmware Combined PDF (pdfunite concat -- pdflatex"
+	@echo "pdfpages exhausts TeX pool size on the 7000+ page bundle)..."
+	@if ! command -v pdfunite >/dev/null 2>&1; then \
+	  echo "ERROR: pdfunite (poppler-utils) not found. brew install poppler / apt install poppler-utils."; \
+	  exit 1; \
+	fi
+	@PDFDIR=star-rx72n-firmware/docs/doxygen/pdf; \
+	 if [ ! -d "$$PDFDIR" ] || [ -z "$$(ls -A $$PDFDIR/*.pdf 2>/dev/null)" ]; then \
+	   echo "ERROR: no per-module PDFs under $$PDFDIR. Run 'make doxygen-pdfs' first."; \
+	   exit 1; \
+	 fi; \
+	 ORDER="src tests rx_bmp280 rx_bno055 rx_bus rx_comm_manager rx_core rx_crc rx_dmaca rx_drv8263 rx_ds18b20 rx_encoder rx_fec rx_frame rx_frame_ascii rx_hal rx_harq rx_hcsr04 rx_i2c_comm rx_motor rx_nanopb rx_obstacle_detect rx_pid rx_session rx_spi_comm rx_spi_link rx_uart_comm rx_usb threadx blinky blinky_rtos encoder_test gpio_test imu_test motor_spin_test motors_rtos pwm_test pwm_test_fit pwm_test_hal uart_test"; \
+	 INPUTS=""; \
+	 for n in $$ORDER; do \
+	   if [ -f "$$PDFDIR/$$n.pdf" ]; then INPUTS="$$INPUTS $$PDFDIR/$$n.pdf"; fi; \
+	 done; \
+	 echo "  Concatenating per-module PDFs into docs/STAR_Firmware_Combined.pdf..."; \
+	 pdfunite $$INPUTS docs/STAR_Firmware_Combined.pdf
 	@echo ""
 	@echo "[OK] docs/STAR_Firmware_Combined.pdf"
 	@which pdfinfo >/dev/null 2>&1 && pdfinfo docs/STAR_Firmware_Combined.pdf | grep -E "Pages|File size" || true
 
 combined-reference:
-	@echo "Building STAR Combined Reference PDF (top-level)..."
-	@echo "  [1/5] Refreshing engineering reference (docs/star_documentation.pdf)..."
+	@echo "Building STAR Combined Reference PDF (top-level, via pdfunite)..."
+	@if ! command -v pdfunite >/dev/null 2>&1; then \
+	  echo "ERROR: pdfunite (poppler-utils) not found. brew install poppler / apt install poppler-utils."; \
+	  exit 1; \
+	fi
+	@echo "  [1/4] Refreshing engineering reference (docs/star_documentation.pdf)..."
 	@cd docs && pdflatex -interaction=nonstopmode star_documentation.tex >/dev/null 2>&1 && \
 	  pdflatex -interaction=nonstopmode star_documentation.tex >/dev/null 2>&1
-	@echo "  [2/5] Refreshing firmware combined PDF (docs/STAR_Firmware_Combined.pdf)..."
-	@$(MAKE) combined-firmware >/dev/null 2>&1
-	@echo "  [3/5] Refreshing per-subsystem combined PDFs (gateway, ros2, compliance, ui, proto, matlab, ops)..."
+	@echo "  [2/4] Refreshing firmware + per-subsystem combined PDFs..."
+	@$(MAKE) combined-firmware   >/dev/null 2>&1
 	@$(MAKE) combined-gateway    >/dev/null 2>&1
 	@$(MAKE) combined-ros2       >/dev/null 2>&1
 	@$(MAKE) combined-compliance >/dev/null 2>&1
-	@$(MAKE) combined-ui         >/dev/null 2>&1
 	@$(MAKE) combined-proto      >/dev/null 2>&1
 	@$(MAKE) pdf-matlab          >/dev/null 2>&1
 	@$(MAKE) combined-ops        >/dev/null 2>&1
-	@echo "  [4/5] Compiling top-level driver (docs/combine.tex)..."
-	@cd docs && pdflatex -interaction=nonstopmode combine.tex >/dev/null 2>&1 && \
-	  pdflatex -interaction=nonstopmode combine.tex >/dev/null 2>&1
-	@echo "  [5/5] Installing as docs/STAR_Combined_Reference.pdf..."
-	@mv docs/combine.pdf docs/STAR_Combined_Reference.pdf
+	@echo "  [3/4] Compiling cover-page driver (docs/combine_cover.tex)..."
+	@cd docs && pdflatex -interaction=nonstopmode combine_cover.tex >/dev/null 2>&1 && \
+	  pdflatex -interaction=nonstopmode combine_cover.tex >/dev/null 2>&1
+	@echo "  [4/4] Concatenating all parts via pdfunite..."
+	@# pdflatex would exhaust its 5,000,000-word memory pool on the
+	@# 16,000+ page firmware bundle; pdfunite handles arbitrarily-large
+	@# input via direct page-tree rewrite.
+	@INPUTS="docs/combine_cover.pdf docs/star_documentation.pdf docs/STAR_Firmware_Combined.pdf docs/STAR_Gateway_Combined.pdf docs/STAR_ROS2_Combined.pdf docs/STAR_Proto_Combined.pdf docs/STAR_Compliance_Combined.pdf docs/STAR_MATLAB.pdf docs/STAR_Ops_Combined.pdf final_docs/software_description_document/STAR_Software_Description_Document.pdf final_docs/system_software_user_manual/STAR_System_and_Software_User_Manual.pdf final_docs/test_report/STAR_Test_Report.pdf final_docs/final_demo/STAR_DemoHandout.pdf final_docs/final_presentation/STAR_Final_Presentation.pdf final_docs/mechanical_designs/STAR_Mechanical_Drawings.pdf final_docs/electrical_schematics_pcb/STAR_MCU_Electrical_Design.pdf final_docs/electrical_schematics_pcb/STAR_MCU_schematic.pdf final_docs/electrical_schematics_pcb/STAR_MCU_PCB.pdf docs/bench/kicad/STAR_MCU.pdf docs/checkerboard_calibration.pdf"; \
+	 EXISTING=""; \
+	 for f in $$INPUTS; do [ -f "$$f" ] && EXISTING="$$EXISTING $$f"; done; \
+	 pdfunite $$EXISTING docs/STAR_Combined_Reference.pdf
 	@echo ""
 	@echo "[OK] docs/STAR_Combined_Reference.pdf"
 	@which pdfinfo >/dev/null 2>&1 && pdfinfo docs/STAR_Combined_Reference.pdf | grep -E "Pages|File size" || true
@@ -692,7 +708,7 @@ doxygen-pdf-deps:
 # Per-Subsystem Source-Listing PDFs
 #
 # Mirrors the firmware doxygen pipeline for the OTHER STAR subsystems
-# (gateway, ros2, compliance, ui, proto, matlab) using a uniform
+# (gateway, ros2, compliance, proto, matlab) using a uniform
 # Pygments-based source-listing approach implemented in
 # scripts/codedump-pdf.sh. Each subsystem produces:
 #   1. One or more per-subpackage PDFs under docs/pdfs/<subsys>/
@@ -778,23 +794,6 @@ combined-compliance: pdfs-compliance
 	@which pdfinfo >/dev/null 2>&1 && pdfinfo docs/STAR_Compliance_Combined.pdf | grep -E "Pages|File size" || true
 
 # ----------------------------------------------------------------------------
-# UI (TypeScript) -- React + Vite
-# ----------------------------------------------------------------------------
-pdfs-ui:
-	@echo "Generating UI source PDF..."
-	@mkdir -p docs/pdfs/ui
-	@$(CODEDUMP) star-ui docs/pdfs/ui/STAR_UI.pdf "STAR UI (TypeScript)" "*.ts" "*.tsx"
-	@echo "[OK] docs/pdfs/ui/STAR_UI.pdf"
-
-combined-ui: pdfs-ui
-	@echo "Building STAR UI Combined PDF..."
-	@cd docs && pdflatex -interaction=nonstopmode combine_ui.tex >/dev/null 2>&1 && \
-	  pdflatex -interaction=nonstopmode combine_ui.tex >/dev/null 2>&1
-	@mv docs/combine_ui.pdf docs/STAR_UI_Combined.pdf
-	@echo "[OK] docs/STAR_UI_Combined.pdf"
-	@which pdfinfo >/dev/null 2>&1 && pdfinfo docs/STAR_UI_Combined.pdf | grep -E "Pages|File size" || true
-
-# ----------------------------------------------------------------------------
 # Proto (.proto schemas) -- 10 .proto files under star-proto/proto/star/v1/
 # ----------------------------------------------------------------------------
 pdfs-proto:
@@ -825,26 +824,45 @@ pdf-matlab:
 #               runtime ops surface (dashboards, services, on-Pi cockpit
 #               API) is captured alongside the code.
 # ----------------------------------------------------------------------------
-pdf-ops:
+# render-grafana -- regenerate dashboard PNG snapshots + STAR_Grafana_Render.pdf
+# from monitoring/grafana-star-dashboard.json. Pure Python (PIL) renderer +
+# xelatex wrapper, no Grafana / Docker required.
+#
+# To capture screenshots of the production dashboard with live Prometheus
+# data instead, deploy via monitoring/docker-compose.yml + grafana-image-
+# renderer plugin (not implemented here).
+render-grafana:
+	@echo "Rendering Grafana dashboard JSON -> PNG snapshots..."
+	@mkdir -p docs/grafana-screenshots docs/pdfs/ops
+	@python3 scripts/render-grafana-json.py
+	@echo "Building STAR_Grafana_Render.pdf from snapshots..."
+	@bash scripts/grafana-render-pdf.sh
+
+pdf-ops: render-grafana
 	@echo "Generating Operations / Monitoring PDFs..."
 	@mkdir -p docs/pdfs/ops
 	@$(CODEDUMP) monitoring docs/pdfs/ops/STAR_Grafana.pdf \
-	  "STAR Grafana Dashboard JSON" "*.json"
+	  "STAR Grafana Dashboard JSON" "*.json" "*.yml" "*.yaml"
 	@$(CODEDUMP) infra docs/pdfs/ops/STAR_Infra_Pi5.pdf \
 	  "STAR Pi5 Cockpit + Systemd Units" \
 	  "*.py" "*.sh" "*.service" "*.conf" "*.yml" "*.yaml" "*.md"
 	@echo "[OK] docs/pdfs/ops/STAR_Grafana.pdf"
+	@echo "[OK] docs/pdfs/ops/STAR_Grafana_Render.pdf"
 	@echo "[OK] docs/pdfs/ops/STAR_Infra_Pi5.pdf"
 
 combined-ops: pdf-ops
-	@echo "Building STAR Ops Combined PDF (Grafana + infra/pi5)..."
+	@echo "Building STAR Ops Combined PDF (Grafana JSON + Render + infra/pi5)..."
 	@if command -v pdftk >/dev/null 2>&1; then \
-	    pdftk docs/pdfs/ops/STAR_Grafana.pdf docs/pdfs/ops/STAR_Infra_Pi5.pdf \
+	    pdftk docs/pdfs/ops/STAR_Grafana.pdf \
+	          docs/pdfs/ops/STAR_Grafana_Render.pdf \
+	          docs/pdfs/ops/STAR_Infra_Pi5.pdf \
 	          cat output docs/STAR_Ops_Combined.pdf; \
 	  else \
 	    gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite \
 	       -sOutputFile=docs/STAR_Ops_Combined.pdf \
-	       docs/pdfs/ops/STAR_Grafana.pdf docs/pdfs/ops/STAR_Infra_Pi5.pdf; \
+	       docs/pdfs/ops/STAR_Grafana.pdf \
+	       docs/pdfs/ops/STAR_Grafana_Render.pdf \
+	       docs/pdfs/ops/STAR_Infra_Pi5.pdf; \
 	  fi
 	@echo "[OK] docs/STAR_Ops_Combined.pdf"
 	@which pdfinfo >/dev/null 2>&1 && pdfinfo docs/STAR_Ops_Combined.pdf | grep -E "Pages|File size" || true
@@ -852,11 +870,11 @@ combined-ops: pdf-ops
 # ----------------------------------------------------------------------------
 # Aggregate targets
 # ----------------------------------------------------------------------------
-pdfs-all: pdfs-gateway pdfs-ros2 pdfs-compliance pdfs-ui pdfs-proto pdf-matlab pdf-ops
+pdfs-all: pdfs-gateway pdfs-ros2 pdfs-compliance pdfs-proto pdf-matlab pdf-ops
 	@echo "[OK] Built all per-subsystem PDFs under docs/pdfs/ and docs/STAR_MATLAB.pdf"
 
 combined-all: combined-firmware combined-gateway combined-ros2 \
-              combined-compliance combined-ui combined-proto pdf-matlab \
+              combined-compliance combined-proto pdf-matlab \
               combined-ops combined-reference
 	@echo ""
 	@echo "============================================================"
@@ -865,21 +883,8 @@ combined-all: combined-firmware combined-gateway combined-ros2 \
 	@echo "  docs/STAR_Gateway_Combined.pdf"
 	@echo "  docs/STAR_ROS2_Combined.pdf"
 	@echo "  docs/STAR_Compliance_Combined.pdf"
-	@echo "  docs/STAR_UI_Combined.pdf"
 	@echo "  docs/STAR_Proto_Combined.pdf"
 	@echo "  docs/STAR_MATLAB.pdf"
 	@echo "  docs/STAR_Combined_Reference.pdf  (the everything-PDF)"
 	@echo "============================================================"
-
-# ----------------------------------------------------------------------------
-# STAR UI screenshots
-# ----------------------------------------------------------------------------
-# Boots a Vite dev server (if one isn't already running on port 5173) and
-# drives a headless Chromium-based browser through every view defined in
-# star-ui/src/store/useWindowStore.ts, writing one PNG per view to
-# docs/ui-screenshots/.
-#
-# The downstream UI Combined PDF generator embeds these images directly.
-ui-screenshots:
-	@bash scripts/ui/capture-screenshots.sh
 

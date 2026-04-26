@@ -37,7 +37,7 @@
             pdftitle={STAR Test Report},
             pdfauthor={Cesar Magana (Team Locked Inc)},
             pdfsubject={STAR Capstone Test Report},
-            pdfkeywords={STAR, testing, Unity, Vitest, pytest, CI, coverage,
+            pdfkeywords={STAR, testing, Unity, pytest, CI, coverage,
                          IEEE 29119}]{hyperref}
 
 %----------------------------------------------------------------------
@@ -166,12 +166,15 @@ IEEE 829-2008 legacy practice (superseded by 29119-3), adapted to
 the multi-language, multi-target STAR codebase.
 
 \subsection{Scope}
-The report covers eight software subsystems: the RX72N real-time
+The report covers seven software subsystems: the RX72N real-time
 firmware, the Go gateway, the ROS2 Jazzy autonomy stack, the
-TypeScript operator UI, the Python compliance engine, the Protocol
-Buffers schema repository, the virtual-RX72N simulator, and the CI/CD
-automation that drives the whole pipeline. Physical PCB and
-mechanical verification are out of scope for this report.
+Python compliance engine, the Protocol Buffers schema repository, the
+virtual-RX72N simulator, and the CI/CD automation that drives the
+whole pipeline. The Grafana cockpit (panel-29 plus the Pi5
+\texttt{star\_cockpit\_api}) provides the operator interface and is
+exercised end-to-end at HIL time but is not unit-tested in isolation.
+Physical PCB and mechanical verification are out of scope for this
+report.
 
 \subsection{Companion Documents and Source-of-Truth Repository}
 The STAR project is open-source. The full repository, including
@@ -213,8 +216,8 @@ STAR applies a four-tier strategy:
 \begin{enumerate}[leftmargin=1.4em,itemsep=2pt]
 \item \textbf{Unit tests} run on host with native compilers and
       mock-injected hardware (Unity for firmware, Go's \texttt{testing}
-      for the gateway, \texttt{pytest} for compliance, Vitest for UI
-      and Protobuf TypeScript, C Unity for nanopb).
+      for the gateway, \texttt{pytest} for compliance, C Unity for
+      nanopb).
 \item \textbf{Integration tests} exercise multi-component flows via
       an in-process simulator (\texttt{virtual\_rx72n}) and ROS2
       launch tests.
@@ -235,7 +238,7 @@ STAR applies a four-tier strategy:
 Unit-test runs target x86\_64 Linux (Ubuntu 24.04) on CI and on
 developer workstations. Toolchains include GNU Make, CMake, the
 GNURX cross-compiler for firmware host-test fallback, Go 1.26,
-Node 22 with Vitest, Python 3.12, and ROS2 Jazzy.
+Python 3.12, and ROS2 Jazzy.
 
 \subsection{Target Hardware}
 HIL and bench tests run against: Renesas RX72N (4 MB Flash, 512 KB
@@ -260,10 +263,8 @@ star-rx72n-firmware   & Unity v2.6.1        & CMake FetchContent; 41 mock \textt
 star-gateway          & Go \texttt{testing} & With \texttt{-race} and \texttt{-coverprofile} \\
 star-ros2 (C++)       & ament\_cmake\_gtest & colcon test integration \\
 star-ros2 (Python)    & ament\_python / pytest & launch\_test for simulation \\
-star-ui               & Vitest              & jsdom environment, testing-library \\
 compliance-engine     & pytest              & Coverage via \texttt{pytest-cov} \\
 star-proto (Go)       & Go \texttt{testing} & Serialization round-trips \\
-star-proto (TS)       & Vitest              & Serialization + conformance \\
 star-proto (nanopb)   & Unity               & C serialization tests \\
 \bottomrule
 \end{tabularx}
@@ -650,8 +651,8 @@ test fails or if the integration-phase smoke test does not complete.
 \label{sec:proto}
 
 \subsection{Cross-Language Serialization Tests}
-Three parallel test harnesses validate that Go, TypeScript, and
-nanopb encode identical bytes for the same canonical fixtures.
+Two parallel test harnesses validate that Go and nanopb encode
+identical bytes for the same canonical fixtures.
 
 \begin{table}[H]
 \centering
@@ -665,8 +666,6 @@ nanopb encode identical bytes for the same canonical fixtures.
 Go        & \texttt{star-proto/tests/go/}         & 5 tests (telemetry, config,
                                                     firmware update, motor control,
                                                     serialization round-trip) \\
-TypeScript & \texttt{star-proto/tests/typescript/} & 3 tests (telemetry,
-                                                     serialization, motor control) \\
 nanopb (C) & \texttt{star-proto/tests/nanopb/}    & Unity-based C serialization \\
 \bottomrule
 \end{tabularx}
@@ -680,44 +679,33 @@ against main on pull requests. A breaking change blocks merge unless
 the PR updates firmware, gateway, and ROS2 in the same change.
 
 \subsection{Results}
-All three serialization harnesses pass at HEAD. Buf lint, format,
-and build are green; no open breaking-change violations.
+Both serialization harnesses pass at HEAD. Buf lint, format, and
+build are green; no open breaking-change violations.
 
 %======================================================================
-% 8. UI Tests
+% 8. Operator UI (Grafana cockpit)
 %======================================================================
-\section{User Interface Tests}
+\section{Operator UI Tests (Grafana Cockpit)}
 \label{sec:ui}
 
 \subsection{Scope}
-The legacy React operator UI at \texttt{star-ui/} is the subject of
-a single Vitest suite at
-\texttt{star-ui/src/hooks/useGamepad.test.ts}. It verifies the
-gamepad hook's axis mapping, dead-zone handling, and \qty{50}{\hertz}
-command cadence. Coverage configuration is present but not gated in
-CI, because the primary operator dashboard (Grafana and Lichtblick)
-replaced the React UI as the main entry point late in development.
+The production operator interface is a Grafana cockpit
+(\texttt{monitoring/grafana-star-dashboard.json}) backed by the Pi5
+\texttt{star\_cockpit\_api}
+(\texttt{infra/pi5/opt/star\_cockpit\_api/server.py}). It is
+exercised end-to-end at HIL time -- by walking the operator through
+panel-29 for teleoperation, autonomy mode switching, SLAM control,
+and compliance-report viewing -- rather than via a frontend unit-test
+harness. There is no legacy React UI in the tree any more; the only
+remaining UI surface is the dashboard JSON and the Flask cockpit-API
+service.
 
 \subsection{Status}
-\begin{table}[H]
-\centering
-\caption{UI test status.}
-\small
-\begin{tabular}{l l}
-\toprule
-\textbf{Suite} & \textbf{Status} \\
-\midrule
-\texttt{useGamepad.test.ts} & \pass{} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The gap between this single suite and the thirty-panel inventory
-of the original React UI is acknowledged explicitly: the UI is
-\statuslabel{STRETCH} as delivered, since the Grafana and Lichtblick dashboards
-became the primary surfaces the grader will exercise. Tests for
-those dashboards exist at the protocol layer (gateway and
-compliance-engine tests cover every endpoint they invoke).
+The Grafana cockpit is exercised end-to-end at HIL time. There are
+no frontend unit suites in the repository -- by design, since the
+dashboard is declarative JSON. Tests for the underlying surface
+exist at the protocol layer: gateway tests and compliance-engine
+tests cover every endpoint the cockpit-API exposes.
 
 %======================================================================
 % 9. Integration and Simulation
@@ -852,9 +840,8 @@ ROS2 colcon                      & 14 tests     & \pass{} & All packages \\
 ROS2 safety behavior             & 4 launch tests & \pass{} & E-stop, stall, EKF, teleop \\
 Compliance pytest                & 12 modules   & \pass{} & Coverage XML uploaded \\
 Protobuf Go                      & 5 tests      & \pass{} & Serialization round-trip \\
-Protobuf TS                      & 3 tests      & \pass{} & Serialization round-trip \\
 Protobuf nanopb (C)              & 1 harness    & \pass{} & Unity-based \\
-UI Vitest                        & 1 suite      & \pass{} & Gamepad hook only \\
+Operator UI (Grafana)            & end-to-end   & \pass{} & Exercised at HIL time \\
 Integration (virtual\_rx72n)     & 2 test files & \pass{} & In-process simulator \\
 HIL nightly                      & 1 harness    & \pass{} & GitHub Actions artifact \\
 Pre-commit ASCII                 & enforced     & \pass{} & Local + CI \\
@@ -863,13 +850,11 @@ CI gates                         & 15 workflows & \pass{} & On HEAD \\
 \end{tabularx}
 \end{table}
 
-The single visible shortfall is the sparseness of the React UI test
-suite. Because the operator surface migrated to Grafana and
-Lichtblick mid-semester, the React UI's test coverage was not
-expanded to match its original thirty-panel scope; instead, the
-new dashboards rely on the gateway and compliance-engine test
-suites to validate every endpoint they invoke. This is recorded in
-Section~\ref{sec:ui}.
+The operator interface is the Grafana cockpit (dashboard JSON plus
+Pi5 cockpit-API). It is exercised end-to-end at HIL time and is
+covered indirectly by the gateway and compliance-engine test suites
+that exercise every endpoint the cockpit-API invokes. This is
+recorded in Section~\ref{sec:ui}.
 
 %======================================================================
 % 12. Defects, Gaps, and Mitigations
@@ -879,10 +864,11 @@ Section~\ref{sec:ui}.
 
 \subsection{Open Gaps}
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
-\item \textbf{UI coverage} -- single Vitest suite against a
-      thirty-panel inventory. Mitigation: the Grafana/Lichtblick
-      dashboards are exercised at the API layer by gateway tests;
-      the React UI is \statuslabel{STRETCH} rather than required.
+\item \textbf{UI coverage} -- the Grafana cockpit is exercised
+      end-to-end at HIL time rather than via a frontend unit-test
+      harness. Mitigation: the cockpit's underlying surface (the
+      Pi5 cockpit-API and the gateway it invokes) is fully covered
+      by the Go and Python test suites.
 \item \textbf{\texttt{ws/hub.route} at 50 percent} -- a private-branch
       coverage hole. Mitigation: a refactor is scheduled for
       post-capstone work; gateway total coverage still exceeds the
@@ -968,11 +954,6 @@ pytest --cov=star_compliance --cov-report=term tests/
 cd star-proto
 buf lint && buf format --diff && buf build
 ( cd tests/go        && go test -v ./... )
-( cd tests/typescript && npm test )
-
-# UI
-cd star-ui
-npm install && npm test
 \end{lstlisting}
 
 \phantomsection

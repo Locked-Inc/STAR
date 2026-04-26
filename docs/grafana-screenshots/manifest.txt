@@ -1,0 +1,37 @@
+# Grafana dashboard render manifest
+# Format: <kind>|<filename>|<row_idx>|<row_title>|<title>
+overview|dashboard-overview.png|-1|all|STAR robot telemetry
+row|row-0-slam-map.png|0|SLAM map|Row 0: SLAM map
+row|row-1-motors.png|1|Motors|Row 1: Motors
+row|row-2-imu.png|2|IMU|Row 2: IMU
+row|row-3-odometry.png|3|Odometry|Row 3: Odometry
+row|row-4-lidar.png|4|LiDAR|Row 4: LiDAR
+row|row-5-bridge-health.png|5|Bridge health|Row 5: Bridge health
+panel|panel-29-cockpit-map-controls-teleop.png|0|SLAM map|Cockpit -- map + controls + teleop
+panel|panel-01-fl-velocity.png|0|SLAM map|FL velocity
+panel|panel-02-fr-velocity.png|0|SLAM map|FR velocity
+panel|panel-03-bl-velocity.png|0|SLAM map|BL velocity
+panel|panel-04-br-velocity.png|0|SLAM map|BR velocity
+panel|panel-05-fl-duty.png|0|SLAM map|FL duty
+panel|panel-06-fr-duty.png|0|SLAM map|FR duty
+panel|panel-07-bl-duty.png|0|SLAM map|BL duty
+panel|panel-08-br-duty.png|0|SLAM map|BR duty
+panel|panel-09-wheel-velocities-over-time.png|1|Motors|Wheel velocities over time
+panel|panel-10-wheel-duty-over-time.png|1|Motors|Wheel duty over time
+panel|panel-11-motor-faults-any-0-is-bad.png|1|Motors|Motor faults (any != 0 is bad)
+panel|panel-12-roll.png|2|IMU|Roll
+panel|panel-13-pitch.png|2|IMU|Pitch
+panel|panel-14-heading.png|2|IMU|Heading
+panel|panel-15-gyro-deg-s.png|2|IMU|Gyro (deg/s)
+panel|panel-16-linear-acceleration-m-s-2.png|2|IMU|Linear acceleration (m/s^2)
+panel|panel-17-linear-velocity.png|3|Odometry|Linear velocity
+panel|panel-18-angular-velocity.png|3|Odometry|Angular velocity
+panel|panel-19-odom-pose-x-y-theta.png|3|Odometry|Odom pose (x, y, theta)
+panel|panel-24-closest-obstacle.png|4|LiDAR|Closest obstacle
+panel|panel-25-closest-bearing-0deg-forward.png|4|LiDAR|Closest bearing (0deg=forward)
+panel|panel-26-obstacles-1-m.png|4|LiDAR|Obstacles < 1 m
+panel|panel-27-scan-range-min-mean-max.png|4|LiDAR|Scan range min / mean / max
+panel|panel-20-line-rate-by-kind-msg-s.png|5|Bridge health|Line rate by kind (msg/s)
+panel|panel-21-parse-errors-s.png|5|Bridge health|Parse errors (/s)
+panel|panel-22-serial-reopens-cumulative.png|5|Bridge health|Serial reopens (cumulative)
+panel|panel-23-rx-bytes-total.png|5|Bridge health|RX bytes total

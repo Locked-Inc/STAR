@@ -15,10 +15,9 @@ values where you see `<LIKE_THIS>` placeholders.
 | Path                    | Role                                             |
 |-------------------------|--------------------------------------------------|
 | `star-rx72n-firmware/`  | Renesas RX72N motor + sensor controller (C, ThreadX) |
-| `star-gateway/`         | Go gateway: gRPC + WebSocket bridge to ROS2/UI   |
+| `star-gateway/`         | Go gateway: gRPC + HTTP bridge to ROS2 / Grafana cockpit |
 | `star-ros2/`            | ROS2 Jazzy workspace (autonomy + bridges)        |
 | `star-proto/`           | Protocol Buffer schemas (canonical)              |
-| `star-ui/`              | Operator UI (TypeScript / Vite)                  |
 | `star-compliance/`      | Python ADA compliance engine (ROS2 nodes)        |
 | `final_docs/`           | Capstone deliverables (SDD, SSUM, test report)   |
 | `docs/`                 | Engineering docs (this file, sections, decisions)|

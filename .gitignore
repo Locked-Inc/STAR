@@ -230,9 +230,9 @@ docs/STAR_Combined_Reference.pdf
 docs/STAR_Gateway_Combined.pdf
 docs/STAR_ROS2_Combined.pdf
 docs/STAR_Compliance_Combined.pdf
-docs/STAR_UI_Combined.pdf
 docs/STAR_Proto_Combined.pdf
 docs/STAR_MATLAB.pdf
+docs/STAR_Ops_Combined.pdf
 docs/combine.pdf
 docs/combine.aux
 docs/combine.log
@@ -258,11 +258,6 @@ docs/combine_compliance.aux
 docs/combine_compliance.log
 docs/combine_compliance.out
 docs/combine_compliance.toc
-docs/combine_ui.pdf
-docs/combine_ui.aux
-docs/combine_ui.log
-docs/combine_ui.out
-docs/combine_ui.toc
 docs/combine_proto.pdf
 docs/combine_proto.aux
 docs/combine_proto.log
@@ -272,8 +267,10 @@ docs/combine_proto.toc
 # Per-subsystem source-listing PDFs (rebuild via 'make pdfs-*')
 docs/pdfs/
 
-# UI screenshot tooling -- the captured PNGs ARE committed (downstream PDF
-# generators embed them); only the puppeteer-core scratch install is ignored.
-.cache/ui-capture/
-!docs/ui-screenshots/
-!docs/ui-screenshots/*.png
+# Grafana dashboard render snapshots -- the captured PNGs ARE committed
+# (downstream STAR_Grafana_Render.pdf embeds them directly). Regenerate
+# with `make render-grafana`. Only the rendered-PDF artifact under
+# docs/pdfs/ops/ is ignored (caught by `docs/pdfs/` above).
+!docs/grafana-screenshots/
+!docs/grafana-screenshots/*.png
+!docs/grafana-screenshots/manifest.txt

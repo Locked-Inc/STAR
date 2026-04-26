@@ -6,11 +6,11 @@
 
 **System Architecture:**
 ```
-User -> UI (TypeScript/React)
-     -> Gateway (Go on RPi5, WebSocket/HTTP <-> ROS2 bridge)
-     -> ROS2 (C++ on RPi5, robot control + SLAM)
-     -> SPI Bridge (ROS2 node, 10 Mbps SPI)
-     -> RX72N Firmware (C + ThreadX, real-time motor control + nanopb)
+Operator -> Grafana cockpit (browser, panel-29 + Pi5 cockpit-API)
+         -> Gateway (Go on RPi5, gRPC/HTTP <-> ROS2 bridge)
+         -> ROS2 (C++ on RPi5, robot control + SLAM)
+         -> SPI Bridge (ROS2 node, 10 Mbps SPI)
+         -> RX72N Firmware (C + ThreadX, real-time motor control + nanopb)
 ```
 
 ---
@@ -106,21 +106,6 @@ make -j$(nproc)
 ctest --output-on-failure
 ```
 
-### UI (star-ui/)
-
-```bash
-# Development server
-npm run dev
-
-# Build and lint
-npm run build
-npm run lint
-
-# Test
-npm run test
-npm run test -- --testNamePattern="test name"  # Single test
-```
-
 ### Code Quality Tools
 
 ```bash
@@ -169,10 +154,9 @@ grep -i "warning" doxygen_warnings.log
 | Component | Description | Language/Framework |
 |-----------|-------------|--------------------|
 | `star-rx72n-firmware/` | Renesas RX72N motor controller firmware | C + ThreadX RTOS |
-| `star-proto/` | Protocol Buffers schemas with code generation | Proto3 -> Go/TypeScript/nanopb |
-| `star-gateway/` | Gateway service (UI <-> ROS2 bridge) | Go + gRPC |
+| `star-proto/` | Protocol Buffers schemas with code generation | Proto3 -> Go/nanopb/C++ |
+| `star-gateway/` | Gateway service (Grafana cockpit <-> ROS2 bridge) | Go + gRPC |
 | `star-ros2/` | ROS2 integration + SLAM | C++ (ROS2 Jazzy) |
-| `star-ui/` | User interface | TypeScript + React |
 | `matlab/` | Motor system identification + PID design | MATLAB |
 | `schematic/` | PCB designs | KiCad |
 
@@ -574,16 +558,6 @@ Follows standard Go conventions with project-specific patterns:
 
 **See `star-gateway/CLAUDE.md` for detailed Go style guide.**
 
-### TypeScript UI Style (star-ui/)
-
-Standard TypeScript/React conventions:
-
-- PascalCase for components and types
-- camelCase for variables and functions
-- Strict TypeScript with no `any` types
-- React hooks and functional components preferred
-- ESLint with React-specific rules
-
 ### Protocol Buffers Style (star-proto/)
 
 **Boston Dynamics-based style guide:**
@@ -599,8 +573,8 @@ Standard TypeScript/React conventions:
 | Target | Plugin | Output |
 |--------|--------|--------|
 | Go | buf.build/protocolbuffers/go, buf.build/grpc/go | `gen/go/` |
-| TypeScript | timostamm-protobuf-ts | `gen/typescript/` |
 | C (RX72N) | nanopb_generator | `gen/nanopb/` |
+| C++ (ROS2 bridge) | buf.build/protocolbuffers/cpp, buf.build/grpc/cpp | `gen/cpp/` |
 
 **nanopb Considerations:**
 
@@ -870,7 +844,6 @@ ctest --output-on-failure
 - **C Firmware**: Unity framework, 100% branch coverage for critical functions
 - **C++ ROS2**: gtest/gmock, minimum 80% code coverage
 - **Go Gateway**: Standard testing package with table-driven tests
-- **TypeScript UI**: Vitest with React Testing Library
 
 ### Integration Tests
 
@@ -890,9 +863,6 @@ cd star-gateway && go test -v -cover ./...
 
 # ROS2 tests
 cd star-ros2 && colcon test && colcon test-result --verbose
-
-# UI tests
-cd star-ui && npm run test
 ```
 
 ---
@@ -902,7 +872,7 @@ cd star-ui && npm run test
 ### [PASS] Always Do
 
 - **Run tests before commits:** `go test ./...`, `colcon test`, `ctest`, etc.
-- **Format code:** `clang-format`, `go fmt`, `buf format`, `npm run lint`
+- **Format code:** `clang-format`, `go fmt`, `buf format`
 - **Use C23 typed enums** for ALL integer constants (`: uint8_t`, `: uint16_t`, etc.)
 - **Document functions** with ALL applicable Doxygen tags (`@brief`, `@param`, `@return`, `@retval`, `@pre`, `@post`, etc.)
 - **Follow NASA Power of 10 rules** (except Rule 9 deviation for function pointers)

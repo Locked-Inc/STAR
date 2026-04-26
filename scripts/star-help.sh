@@ -55,8 +55,7 @@ cmd "ros2 run star_gateway_bridge star_gateway_bridge_main" "telemetry bridge @ 
 
 hdr "SUPPORT PROCESSES"
 cmd "virtual_rx72n"                             "motor-controller sim (when RX72N not plugged)"
-cmd "WS_STRICT_ORIGIN=false star-gateway"       "gateway on :8080 (CORS open for Vite)"
-cmd "cd star-ui && npm run dev"                 "UI dev server on :5173"
+cmd "WS_STRICT_ORIGIN=false star-gateway"       "gateway on :8080 (CORS open for cockpit)"
 cmd "rviz2 -d .../slam_lidar.rviz"              "visualization"
 
 hdr "HARDWARE QUICK-CHECKS"
