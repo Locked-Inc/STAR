@@ -31,19 +31,49 @@ SafetyMonitor::on_configure(const rclcpp_lifecycle::State & previous_state)
   RCLCPP_INFO(get_logger(), "Configuring SafetyMonitor");
 
   try {
-    // Declare and get parameters
-    declare_parameter("heartbeat_timeout_ms", 500);
-    declare_parameter("max_linear_velocity", 1.0);
-    declare_parameter("max_angular_velocity", 2.0);
-    declare_parameter("publish_rate", 10.0);
-    declare_parameter("enable_auto_estop", true);
-    declare_parameter("estop_recovery_delay", 5.0);
-    declare_parameter("stall_detection_threshold", 0.05);
-    declare_parameter("stall_samples_required", 5);
-    declare_parameter("cmd_vel_timeout_ms", 500);
-    declare_parameter("obstacle_estop_distance", 0.10);
-    declare_parameter("obstacle_warn_distance", 0.30);
-    declare_parameter("obstacle_clear_count_required", 10);
+    // Declare and get parameters.
+    //
+    // Guard each declare with has_parameter() so that on_configure can be
+    // called multiple times across the lifecycle (configure -> cleanup ->
+    // configure). ROS2 Jazzy uses statically-typed parameters by default,
+    // which cannot be undeclared in on_cleanup -- the only safe pattern
+    // is to skip the second declare if one already exists.
+    if (!has_parameter("heartbeat_timeout_ms")) {
+      declare_parameter("heartbeat_timeout_ms", 500);
+    }
+    if (!has_parameter("max_linear_velocity")) {
+      declare_parameter("max_linear_velocity", 1.0);
+    }
+    if (!has_parameter("max_angular_velocity")) {
+      declare_parameter("max_angular_velocity", 2.0);
+    }
+    if (!has_parameter("publish_rate")) {
+      declare_parameter("publish_rate", 10.0);
+    }
+    if (!has_parameter("enable_auto_estop")) {
+      declare_parameter("enable_auto_estop", true);
+    }
+    if (!has_parameter("estop_recovery_delay")) {
+      declare_parameter("estop_recovery_delay", 5.0);
+    }
+    if (!has_parameter("stall_detection_threshold")) {
+      declare_parameter("stall_detection_threshold", 0.05);
+    }
+    if (!has_parameter("stall_samples_required")) {
+      declare_parameter("stall_samples_required", 5);
+    }
+    if (!has_parameter("cmd_vel_timeout_ms")) {
+      declare_parameter("cmd_vel_timeout_ms", 500);
+    }
+    if (!has_parameter("obstacle_estop_distance")) {
+      declare_parameter("obstacle_estop_distance", 0.10);
+    }
+    if (!has_parameter("obstacle_warn_distance")) {
+      declare_parameter("obstacle_warn_distance", 0.30);
+    }
+    if (!has_parameter("obstacle_clear_count_required")) {
+      declare_parameter("obstacle_clear_count_required", 10);
+    }
 
     heartbeat_timeout_ms_ = get_parameter("heartbeat_timeout_ms").as_int();
     max_linear_velocity_ = get_parameter("max_linear_velocity").as_double();
@@ -218,19 +248,12 @@ SafetyMonitor::on_cleanup(const rclcpp_lifecycle::State & previous_state)
     // Clear state
     heartbeat_times_.clear();
 
-    // Undeclare parameters so a subsequent on_configure() can declare them
-    // again without hitting AlreadyDeclaredParameterException. This is the
-    // contract for lifecycle reconfigurability per ROS2 design REP-2003.
-    const std::vector<std::string> declared_params = {
-      "heartbeat_timeout_ms", "max_linear_velocity", "max_angular_velocity",
-      "publish_rate", "enable_auto_estop", "estop_recovery_delay",
-      "stall_detection_threshold", "stall_samples_required", "cmd_vel_timeout_ms",
-      "obstacle_estop_distance", "obstacle_warn_distance", "obstacle_clear_count_required"};
-    for (const auto & name : declared_params) {
-      if (has_parameter(name)) {
-        undeclare_parameter(name);
-      }
-    }
+    // NOTE: parameters are NOT undeclared here. ROS2 Jazzy uses
+    // statically-typed parameters by default, and undeclare_parameter()
+    // throws "cannot undeclare a statically typed parameter" on those.
+    // Reconfigurability is provided by the has_parameter() guards in
+    // on_configure() instead -- second-pass configure simply re-reads
+    // the existing parameter values rather than redeclaring.
 
     RCLCPP_INFO(get_logger(), "SafetyMonitor cleaned up successfully");
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;

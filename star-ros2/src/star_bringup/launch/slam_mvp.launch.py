@@ -4,7 +4,8 @@
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
 
-"""SLAM MVP launch: minimal stack for bring-up demo on 2026-04-22.
+"""
+SLAM MVP launch: minimal stack for bring-up demo on 2026-04-22.
 
 Brings up only what SLAM needs:
   - robot_state_publisher + static TFs (via static_transforms.launch.py)
