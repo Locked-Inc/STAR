@@ -5,15 +5,20 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "star/v1/motor_control.pb.h"
-
-#include <gtest/gtest.h> // NOLINT
-
+// cpplint expects: self-header (test_message_converter.h, doesn't exist),
+// C system, C++ system, then "other". Path-prefixed project headers are
+// classified as "other"; clang-format would alphabetise everything into
+// one block. The off/on directives preserve the cpplint-compliant order.
+// clang-format off
 #include <cmath>
-#include <geometry_msgs/msg/twist.hpp>
 #include <limits>
 
+#include <geometry_msgs/msg/twist.hpp>  // NOLINT(build/include_order)
+#include <gtest/gtest.h>  // NOLINT(build/include_order)
+
+#include "star/v1/motor_control.pb.h"
 #include "star_gateway_bridge/message_converter.hpp"
+// clang-format on
 
 namespace star {
 

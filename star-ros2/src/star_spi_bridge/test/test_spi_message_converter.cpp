@@ -5,11 +5,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <gtest/gtest.h> // NOLINT
-
+// cpplint expects: self-header, C system, C++ system, then "other".
+// clang-format off preserves the order against alphabetisation drift.
+// clang-format off
 #include <cmath>
 
+#include <gtest/gtest.h>  // NOLINT(build/include_order)
+
 #include "star_spi_bridge/spi_message_converter.hpp"
+// clang-format on
 
 using star_spi_bridge::SpiMessageConverter;
 

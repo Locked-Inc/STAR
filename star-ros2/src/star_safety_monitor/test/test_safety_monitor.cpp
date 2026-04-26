@@ -5,13 +5,13 @@
  * SPDX-License-Identifier: MIT
  */
 
-// cpplint requires self-header, C++ system, then "other".
-// clang-format would alphabetise these into a single block which cpplint
-// rejects as "C++ system header after other header". The directives below
-// preserve the manual order so ament_cpplint accepts it.
+// cpplint expects: self-header (test_safety_monitor.h, doesn't exist),
+// C system, C++ system, then "other". Path-prefixed
+// "star_safety_monitor/safety_monitor.hpp" is classified as "other" not
+// self -- so C++ system headers MUST come before it. clang-format would
+// alphabetise these into one block; the off/on directives preserve the
+// manual cpplint-compliant order.
 // clang-format off
-#include "star_safety_monitor/safety_monitor.hpp"
-
 #include <atomic>
 #include <chrono>
 #include <thread>
@@ -23,6 +23,8 @@
 #include <nav_msgs/msg/odometry.hpp>  // NOLINT(build/include_order)
 #include <sensor_msgs/msg/range.hpp>  // NOLINT(build/include_order)
 #include <std_msgs/msg/bool.hpp>  // NOLINT(build/include_order)
+
+#include "star_safety_monitor/safety_monitor.hpp"
 // clang-format on
 
 namespace {
