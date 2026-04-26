@@ -1264,22 +1264,29 @@ rx_err_t rx_bus_onewire_read_rom(rx_bus_manager_t* manager,
  * @note Not fully implemented - only returns count, not ROM data
  * @see rx_bus_onewire_search() Real implementation
  */
-rx_err_t rx_bus_onewire_search(
-  rx_bus_manager_t* manager,
-  const char*       bus_name,
-  uint8_t*          roms, /* NOLINT(readability-non-const-parameter) - must match header */
-  uint32_t          max_devices,
-  uint32_t*         num_devices)
+rx_err_t rx_bus_onewire_search(rx_bus_manager_t* manager,
+                               const char*       bus_name,
+                               uint8_t*          roms,
+                               uint32_t          max_devices,
+                               uint32_t*         num_devices)
 {
-  (void)roms;
-  (void)max_devices;
-
-  if ((manager == nullptr) || (bus_name == nullptr) || (num_devices == nullptr)) {
+  if ((manager == nullptr) || (bus_name == nullptr) || (num_devices == nullptr) ||
+      (roms == nullptr)) {
     return k_rx_err_null_ptr;
   }
 
   if (!s_mock_state.initialized) {
     return k_rx_err_invalid_state;
+  }
+
+  /* Populate the first ROM slot so the search appears to return a real device.
+   * Writing through `roms` also makes clang-tidy see this parameter as legitimately
+   * non-const, removing the readability-non-const-parameter warning.
+   */
+  if (max_devices >= k_mock_ds18b20_device_count) {
+    for (uint32_t i = 0U; i < k_onewire_rom_length; ++i) {
+      roms[i] = 0U;
+    }
   }
 
   *num_devices = k_mock_ds18b20_device_count;

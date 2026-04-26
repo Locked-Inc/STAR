@@ -134,9 +134,12 @@ typedef enum : uint8_t {
   k_mock_tx_error = 99, /**< Arbitrary ThreadX error code for failure injection */
 } mock_tx_error_codes_t;
 
-/* ---- Mock ThreadX types ---- */
-typedef unsigned long ULONG; /* NOLINT(readability-identifier-naming) */
-typedef unsigned int  UINT;  /* NOLINT(readability-identifier-naming) */
+/* ---- Mock ThreadX types (project-style names; this test reimplements the
+ *      LED task locally and never links against real ThreadX, so we are free
+ *      to drop the upstream UPPERCASE naming).
+ */
+typedef unsigned long mock_tx_ulong_t;
+typedef unsigned int  mock_tx_uint_t;
 /** @brief ThreadX thread name buffer size */
 typedef enum : uint8_t {
   k_tx_thread_name_len = 16, /**< Max thread name length including null */
@@ -146,22 +149,22 @@ typedef struct {
   char    name[k_tx_thread_name_len];
   uint8_t priority;
   bool    created;
-} TX_THREAD; /* NOLINT(readability-identifier-naming) */
-/* ThreadX constants */
-enum {
-  TX_SUCCESS       = 0, /* NOLINT(readability-identifier-naming) */
-  TX_NO_TIME_SLICE = 0, /* NOLINT(readability-identifier-naming) */
-  TX_AUTO_START    = 1, /* NOLINT(readability-identifier-naming) */
-};
+} mock_tx_thread_t;
+/* ThreadX-equivalent constants (project-style names) */
+typedef enum : uint8_t {
+  k_mock_tx_success       = 0,
+  k_mock_tx_no_time_slice = 0,
+  k_mock_tx_auto_start    = 1,
+} mock_tx_constants_t;
 
 /* ---- Mock counters ---- */
-static uint32_t s_mock_tx_create_calls;
-static UINT     s_mock_tx_create_return;
-static uint32_t s_mock_tx_sleep_calls;
-static uint32_t s_mock_tx_sleep_last_ticks;
+static uint32_t       s_mock_tx_create_calls;
+static mock_tx_uint_t s_mock_tx_create_return;
+static uint32_t       s_mock_tx_sleep_calls;
+static uint32_t       s_mock_tx_sleep_last_ticks;
 
 /* ---- Mock function pointer capture ---- */
-typedef void (*thread_entry_t)(ULONG);
+typedef void (*thread_entry_t)(mock_tx_ulong_t);
 static thread_entry_t s_captured_entry;
 
 /* =============================================================================
@@ -170,16 +173,16 @@ static thread_entry_t s_captured_entry;
  */
 
 /* ThreadX mocks */
-UINT tx_thread_create(TX_THREAD*  thread,
-                      const char* name,
-                      void (*entry)(ULONG),
-                      ULONG input,
-                      void* stack,
-                      ULONG stack_size,
-                      UINT  priority,
-                      UINT  preempt,
-                      ULONG time_slice,
-                      UINT  auto_start)
+mock_tx_uint_t tx_thread_create(mock_tx_thread_t* thread,
+                                const char*       name,
+                                void (*entry)(mock_tx_ulong_t),
+                                mock_tx_ulong_t input,
+                                void*           stack,
+                                mock_tx_ulong_t stack_size,
+                                mock_tx_uint_t  priority,
+                                mock_tx_uint_t  preempt,
+                                mock_tx_ulong_t time_slice,
+                                mock_tx_uint_t  auto_start)
 {
   (void)input;
   (void)stack;
@@ -191,7 +194,7 @@ UINT tx_thread_create(TX_THREAD*  thread,
   s_mock_tx_create_calls++;
   s_captured_entry = entry;
 
-  if (s_mock_tx_create_return == TX_SUCCESS) {
+  if (s_mock_tx_create_return == k_mock_tx_success) {
     /* Copy thread name byte-by-byte (replaces strncpy) */
     size_t max_copy = sizeof(thread->name) - 1U;
     size_t i        = 0;
@@ -207,11 +210,11 @@ UINT tx_thread_create(TX_THREAD*  thread,
   return s_mock_tx_create_return;
 }
 
-UINT tx_thread_sleep(ULONG ticks)
+mock_tx_uint_t tx_thread_sleep(mock_tx_ulong_t ticks)
 {
   s_mock_tx_sleep_calls++;
   s_mock_tx_sleep_last_ticks = (uint32_t)ticks;
-  return TX_SUCCESS;
+  return k_mock_tx_success;
 }
 
 /** @brief Mock ThreadX constants */
@@ -219,7 +222,7 @@ typedef enum : uint32_t {
   k_mock_tick_value = 12345, /**< Arbitrary tick count for tx_time_get mock */
 } mock_threadx_constants_t;
 
-ULONG tx_time_get(void)
+mock_tx_ulong_t tx_time_get(void)
 {
   return k_mock_tick_value;
 }
@@ -541,13 +544,13 @@ static bool internal_test_led_is_on(uint8_t led_index)
 }
 
 /* Task create function (replicated for testing) */
-static TX_THREAD s_test_led_thread;
-static uint8_t   s_test_led_stack[k_led_task_stack_size];
-static bool      s_test_led_created = false;
+static mock_tx_thread_t s_test_led_thread;
+static uint8_t          s_test_led_stack[k_led_task_stack_size];
+static bool             s_test_led_created = false;
 
 static rx_err_t test_led_status_task_create(void)
 {
-  UINT tx_status;
+  mock_tx_uint_t tx_status;
 
   if (s_test_led_created) {
     return k_rx_err_invalid_state;
@@ -561,10 +564,10 @@ static rx_err_t test_led_status_task_create(void)
                                k_led_task_stack_size,
                                k_led_task_priority,
                                k_led_task_priority,
-                               TX_NO_TIME_SLICE,
-                               TX_AUTO_START);
+                               k_mock_tx_no_time_slice,
+                               k_mock_tx_auto_start);
 
-  if (tx_status != TX_SUCCESS) {
+  if (tx_status != k_mock_tx_success) {
     return k_rx_err_rtos_thread_create;
   }
 
@@ -594,7 +597,7 @@ void setUp(void)
   s_mock_estop_active = false;
 
   s_mock_tx_create_calls     = 0;
-  s_mock_tx_create_return    = TX_SUCCESS;
+  s_mock_tx_create_return    = k_mock_tx_success;
   s_mock_tx_sleep_calls      = 0;
   s_mock_tx_sleep_last_ticks = 0;
   s_captured_entry           = (thread_entry_t)0;

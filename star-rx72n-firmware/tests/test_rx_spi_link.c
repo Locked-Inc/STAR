@@ -2921,11 +2921,14 @@ static void internal_run_behavioral_and_internal_tests(void)
   /* Direct internal-function tests (RX_STATIC_TESTABLE) */
   RUN_TEST(test_bytes_to_soft_bits_null_data);
   RUN_TEST(test_bytes_to_soft_bits_null_data_null_len);
+  RUN_TEST(test_bytes_to_soft_bits_null_data_null_soft_len);
   RUN_TEST(test_bytes_to_soft_bits_null_soft);
   RUN_TEST(test_bytes_to_soft_bits_null_soft_null_len);
+  RUN_TEST(test_bytes_to_soft_bits_null_soft_null_soft_len);
   RUN_TEST(test_bytes_to_soft_bits_null_soft_len);
   RUN_TEST(test_bytes_to_soft_bits_valid);
   RUN_TEST(test_bytes_to_soft_bits_buffer_too_small);
+  RUN_TEST(test_bytes_to_soft_bits_zero_len);
   RUN_TEST(test_wait_for_ack_no_hardware);
   RUN_TEST(test_receive_passthrough_copies_payload);
   RUN_TEST(test_receive_passthrough_zero_payload);

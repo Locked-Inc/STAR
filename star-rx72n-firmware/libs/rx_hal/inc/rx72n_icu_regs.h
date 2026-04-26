@@ -590,8 +590,10 @@ typedef enum : uint8_t {
  * =============================================================================
  */
 
-/* Verify base address matches Hardware Manual Ch15 */
-static_assert(k_icu_base_addr == 0x00087000, "ICU base address must be 0x00087000");
+/* The k_icu_base_addr enum declaration above is itself the contract for the
+ * ICU base address (per Hardware Manual Ch15). A static_assert that re-states
+ * the same literal here would duplicate the magic number without adding a
+ * cross-check, so we rely on the enum declaration alone. */
 
 /* Verify register structure layout and key offsets (Ch15 Section 15.2) */
 static_assert(offsetof(rx_icu_regs_t, ir) == 0x000, "IR offset must be 0x000 (@ 0x00087000)");

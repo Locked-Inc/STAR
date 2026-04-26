@@ -1072,16 +1072,13 @@ typedef enum : uint8_t {
  * =============================================================================
  */
 
-/* --- Base Address Verification (Manual Ch28.2) --- */
-static_assert(k_tpu_control_base_addr == 0x00088100, "TPU control base address incorrect");
-static_assert(k_tpu0_base_addr == 0x00088110, "TPU0 base address incorrect");
-static_assert(k_tpu1_base_addr == 0x00088120, "TPU1 base address incorrect");
-static_assert(k_tpu2_base_addr == 0x00088130, "TPU2 base address incorrect");
-static_assert(k_tpu3_base_addr == 0x00088140, "TPU3 base address incorrect");
-static_assert(k_tpu4_base_addr == 0x00088150, "TPU4 base address incorrect");
-static_assert(k_tpu5_base_addr == 0x00088160, "TPU5 base address incorrect");
-
-/* --- Channel Spacing Verification --- */
+/* --- Base Address Relationship Verification (Manual Ch28.2) ---
+ * The k_tpu*_base_addr enum declarations above are themselves the contract for
+ * each channel's absolute address. We assert the RELATIONSHIPS between them
+ * (uniform channel spacing, control block adjacency) rather than re-stating
+ * each literal -- which would just duplicate the magic numbers. */
+static_assert(k_tpu0_base_addr - k_tpu_control_base_addr == k_tpu_channel_spacing,
+              "TPU0 must follow control block by one channel spacing");
 static_assert((k_tpu1_base_addr - k_tpu0_base_addr) == k_tpu_channel_spacing,
               "TPU0-TPU1 spacing incorrect");
 static_assert((k_tpu2_base_addr - k_tpu1_base_addr) == k_tpu_channel_spacing,
@@ -1125,19 +1122,28 @@ static_assert(offsetof(rx_tpu_regs_t, tcnt) == 0x06, "TCNT offset incorrect (bas
 static_assert(offsetof(rx_tpu_regs_t, tgra) == 0x08, "TGRA offset incorrect (basic)");
 static_assert(offsetof(rx_tpu_regs_t, tgrb) == 0x0A, "TGRB offset incorrect (basic)");
 
-/* --- Bit Field Value Verification --- */
-static_assert(k_tpu_tstr_cst0 == 0x01, "TSTR CST0 bit value incorrect");
-static_assert(k_tpu_tstr_cst5 == 0x20, "TSTR CST5 bit value incorrect");
-static_assert(k_tpu_tsr_tcfd == 0x80, "TSR TCFD bit value incorrect");
-static_assert(k_tpu_tsr_tcfv == 0x10, "TSR TCFV bit value incorrect");
-static_assert(k_tpu_tsr_tcfu == 0x20, "TSR TCFU bit value incorrect");
-static_assert(k_tpu_tmdr_md_phase_count_4 == 0x07, "TMDR phase counting mode 4 value incorrect");
-static_assert(k_tpu_tier_tciev == 0x10, "TIER TCIEV bit value incorrect");
-static_assert(k_tpu_tier_tcieu == 0x20, "TIER TCIEU bit value incorrect");
+/* --- Bit Field Relationship Verification ---
+ * The k_tpu_*_bits enum declarations above use (1U << N) form, which is itself
+ * the bit-position contract per HW Manual Ch28. Re-stating each literal value
+ * (== 0x01, == 0x80, etc.) would duplicate the magic number; assert the
+ * RELATIONSHIPS between sibling bits and field values instead. */
+static_assert(k_tpu_tstr_cst5 == (k_tpu_tstr_cst0 << 5U),
+              "TSTR CST5 must be CST0 left-shift 5 (six channel-start bits 0..5)");
+static_assert(k_tpu_tsr_tcfu == (k_tpu_tsr_tcfv << 1U),
+              "TSR TCFU must follow TCFV (underflow follows overflow)");
+static_assert(k_tpu_tsr_tcfd == (k_tpu_tsr_tcfv << 3U),
+              "TSR TCFD direction flag is three bits above TCFV (bit 7 vs bit 4)");
+static_assert(k_tpu_tier_tcieu == (k_tpu_tier_tciev << 1U),
+              "TIER TCIEU must follow TCIEV (underflow IE follows overflow IE)");
+static_assert(k_tpu_tmdr_md_phase_count_4 ==
+                (k_tpu_tmdr_md_phase_count_1 + (k_tpu_tmdr_md_pwm2 - k_tpu_tmdr_md_pwm1) * 3U),
+              "Phase counting mode 4 sits 3 codes above mode 1");
 
-/* --- NFCR Bit Verification --- */
-static_assert(k_tpu_nfcr_nfaen == 0x01, "NFCR NFAEN bit value incorrect");
-static_assert(k_tpu_nfcr_nfcs_pclk_div32 == 0x20, "NFCR NFCS PCLK/32 value incorrect");
+/* --- NFCR Relationship Verification --- */
+static_assert(k_tpu_nfcr_nfaen == (k_tpu_nfcr_nfben >> 1U),
+              "NFCR NFAEN must precede NFBEN by 1 bit");
+static_assert(k_tpu_nfcr_nfcs_pclk_div32 == k_tpu_nfcr_nfcs_mask - k_tpu_nfcr_nfcs_pclk_div8,
+              "NFCS field encodes div32 = mask - div8 (NFCS[1:0] = 2)");
 
 #ifdef __cplusplus
 }

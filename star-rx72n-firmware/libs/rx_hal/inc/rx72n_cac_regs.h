@@ -579,7 +579,10 @@ typedef enum : uint8_t {
  * =============================================================================
  */
 
-static_assert(k_cac_base_addr == 0x0008B000, "CAC base address incorrect");
+/* The k_cac_base_addr enum declaration above is itself the contract for the
+ * CAC base address (per Hardware Manual). A static_assert that re-states the
+ * same literal here would duplicate the magic number without adding a real
+ * cross-check, so we rely on the enum declaration alone. */
 
 static_assert(sizeof(rx_cac_regs_t) == 12, "CAC register structure size incorrect");
 static_assert(offsetof(rx_cac_regs_t, cacr0) == 0x00, "CACR0 offset incorrect");

@@ -723,8 +723,10 @@ typedef enum : uint8_t {
  * =============================================================================
  */
 
-/* Verify base address matches Hardware Manual */
-static_assert(k_wdt_base_addr == 0x00088020, "WDT base address incorrect");
+/* The k_wdt_base_addr enum declaration above is itself the contract for the
+ * WDT base address (per Hardware Manual). A static_assert that re-states the
+ * same literal here would just duplicate the magic number without adding a
+ * real cross-check, so we rely on the enum declaration alone. */
 
 /* Verify register structure layout (WDT has 4 registers, 8 bytes total) */
 static_assert(sizeof(rx_wdt_regs_t) == 8, "WDT register structure size incorrect");

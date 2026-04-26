@@ -232,9 +232,6 @@ enum {
 /* Motor count */
 enum { k_poeg_motor_count = 4 };
 
-/* Redirect register accessors to mocks */
-#define s_poeg_groups_test   s_mock_poeg /* NOLINT(readability-identifier-naming) */
-#define s_gptw_channels_test s_mock_gptw /* NOLINT(readability-identifier-naming) */
 /* ICU constants */
 enum {
   k_icu_ir_clear_test     = 0,

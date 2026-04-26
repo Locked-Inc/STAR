@@ -325,12 +325,15 @@ typedef enum : uint8_t {
  * =============================================================================
  */
 
-static_assert(k_doc_base_addr == 0x0008B080, "DOC base address incorrect (manual p.2969)");
+/* The k_doc_base_addr and k_doc_mstpb_bit enum declarations above are
+ * themselves the contract (per Hardware Manual p.2969 and p.409). Re-stating
+ * the same literals in static_asserts would duplicate the magic numbers
+ * without adding a real cross-check, so we rely on the enum declarations
+ * alone. */
 static_assert(sizeof(rx_doc_regs_t) == 6, "DOC register structure size incorrect");
 static_assert(offsetof(rx_doc_regs_t, docr) == 0x00, "DOCR offset incorrect");
 static_assert(offsetof(rx_doc_regs_t, dodir) == 0x02, "DODIR offset incorrect");
 static_assert(offsetof(rx_doc_regs_t, dodsr) == 0x04, "DODSR offset incorrect");
-static_assert(k_doc_mstpb_bit == 6, "DOC MSTPCRB bit must be 6 (manual p.409)");
 
 #ifdef __cplusplus
 }

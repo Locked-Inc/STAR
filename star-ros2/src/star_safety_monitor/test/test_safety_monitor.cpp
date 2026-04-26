@@ -5,17 +5,19 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "star_safety_monitor/safety_monitor.hpp"
+
+#include <atomic>
+#include <chrono>
+#include <thread>
+
+#include <gtest/gtest.h>
 #include <rclcpp/rclcpp.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/range.hpp>
 #include <std_msgs/msg/bool.hpp>
-#include "star_safety_monitor/safety_monitor.hpp"
-#include <atomic>
-#include <chrono>
-#include <thread>
-#include <gtest/gtest.h>
 
 namespace
 {
