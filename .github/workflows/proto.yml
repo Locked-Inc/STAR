@@ -138,44 +138,11 @@ jobs:
           path: star-proto/gen/go/
           retention-days: 7
 
-  # ============================================
-  # Job 4: Generate TypeScript Code
-  # ============================================
-  generate-typescript:
-    name: Generate TypeScript Code
-    runs-on: ubuntu-latest
-    needs: lint
-    defaults:
-      run:
-        working-directory: star-proto
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: star-proto/tests/typescript/package-lock.json
-
-      - name: Setup Buf
-        uses: bufbuild/buf-setup-action@v1
-        with:
-          version: ${{ env.BUF_VERSION }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Generate TypeScript Code
-        run: |
-          mkdir -p gen/typescript
-          buf generate proto/ --template buf.gen.web.yaml --include-imports
-
-      - name: Upload TypeScript Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: typescript-generated
-          path: star-proto/gen/typescript/
-          retention-days: 7
+  # Job 4 (Generate TypeScript Code) removed: the star-ui front-end was
+  # abandoned and deleted from the repo, so there is no TypeScript
+  # consumer of the protobuf bindings. star-proto/buf.gen.web.yaml is
+  # also gone. If a TypeScript consumer is ever re-added, restore both
+  # this job and the test-typescript job below.
 
   # ============================================
   # Job 5: Generate nanopb C Code
@@ -258,45 +225,8 @@ jobs:
           name: go-test-results
           path: star-proto/tests/go/
 
-  # ============================================
-  # Job 7: Test TypeScript Serialization
-  # ============================================
-  test-typescript:
-    name: Test TypeScript Serialization
-    runs-on: ubuntu-latest
-    needs: generate-typescript
-    defaults:
-      run:
-        working-directory: star-proto/tests/typescript
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: star-proto/tests/typescript/package-lock.json
-
-      - name: Download TypeScript Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: typescript-generated
-          path: star-proto/gen/typescript/
-
-      - name: Install Dependencies
-        run: npm ci || npm install
-
-      - name: Run TypeScript Tests
-        run: npm test
-
-      - name: Upload Test Results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: typescript-test-results
-          path: star-proto/tests/typescript/coverage/
+  # Job 7 (Test TypeScript Serialization) removed -- see Job 4 comment.
+  # star-proto/tests/typescript/ has been deleted.
 
   # ============================================
   # Job 8: Test nanopb C Serialization
@@ -358,7 +288,7 @@ jobs:
   summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [lint, generate-go, generate-typescript, generate-nanopb, test-go, test-typescript, test-nanopb, nanopb-sync]
+    needs: [lint, generate-go, generate-nanopb, test-go, test-nanopb, nanopb-sync]
     if: always()
     steps:
       - name: Check Job Results
@@ -369,9 +299,7 @@ jobs:
           echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Lint | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Generate Go** | ${{ needs.generate-go.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Generate TypeScript | ${{ needs.generate-typescript.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Generate nanopb | ${{ needs.generate-nanopb.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Test Go (Primary)** | ${{ needs.test-go.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Test TypeScript | ${{ needs.test-typescript.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Test nanopb | ${{ needs.test-nanopb.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| nanopb Sync | ${{ needs.nanopb-sync.result }} |" >> $GITHUB_STEP_SUMMARY
