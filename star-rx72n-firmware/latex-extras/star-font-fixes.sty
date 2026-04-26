@@ -1,16 +1,31 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{star-font-fixes}
 
-% Suppress spurious LuaLaTeX font substitution warnings.
+% Font fixes for XeLaTeX-built doxygen PDFs.
 %
-% LuaLaTeX uses the TU font encoding (via fontspec) and does not define the
-% phv/b/n (Helvetica bold upright) or phv/b/sl (bold slanted) shapes.  It
-% silently substitutes phv/bx/n and phv/bx/sl, which look identical, but
-% emits one warning per occurrence -- flooding the log.  Declaring the
-% substitution explicitly suppresses the warnings.
+% Background: doxygen-generated refman.tex loads \usepackage[scaled=.90]{helvet}
+% which declares the legacy PostScript Type1 phv (Adobe Helvetica) family in
+% the OT1/T1 encodings.  Under xelatex with fontspec, the document encoding
+% is TU (Unicode), so phv must be redeclared in TU -- otherwise any sectsty
+% bold-condensed call (\fontseries{bc}\selectfont) errors out with
+% "LaTeX Error: Font family TU+phv unknown" at \begin{document}.
 %
-% Must run after fontspec establishes TU encoding, hence \AtBeginDocument.
+% Round 19 (2026-04-26): the build_doxy_pdf macro now substitutes helvet ->
+% tgheros (TeX Gyre Heros, OpenType, qhv family) so xelatex finds the font.
+% We still need to declare the phv family in TU because doxygen.sty's
+% sectsty/condensed font macros explicitly select phv/bc/n.
 \AtBeginDocument{%
-  \DeclareFontShape{TU}{phv}{b}{n}{<->ssub*phv/bx/n}{}%
-  \DeclareFontShape{TU}{phv}{b}{sl}{<->ssub*phv/bx/sl}{}%
+  % Declare phv (Helvetica) family in TU encoding -- alias to qhv (TeX Gyre Heros).
+  % Without this, \fontseries{bc} from sectsty errors "Font family TU+phv unknown".
+  \DeclareFontFamily{TU}{phv}{}%
+  \DeclareFontShape{TU}{phv}{m}{n}{<->ssub*qhv/m/n}{}%
+  \DeclareFontShape{TU}{phv}{m}{it}{<->ssub*qhv/m/it}{}%
+  \DeclareFontShape{TU}{phv}{m}{sl}{<->ssub*qhv/m/sl}{}%
+  \DeclareFontShape{TU}{phv}{b}{n}{<->ssub*qhv/b/n}{}%
+  \DeclareFontShape{TU}{phv}{b}{it}{<->ssub*qhv/b/it}{}%
+  \DeclareFontShape{TU}{phv}{b}{sl}{<->ssub*qhv/b/sl}{}%
+  \DeclareFontShape{TU}{phv}{bx}{n}{<->ssub*qhv/b/n}{}%
+  \DeclareFontShape{TU}{phv}{bx}{sl}{<->ssub*qhv/b/sl}{}%
+  \DeclareFontShape{TU}{phv}{bc}{n}{<->ssub*qhv/b/n}{}%
+  \DeclareFontShape{TU}{phv}{bc}{sl}{<->ssub*qhv/b/sl}{}%
 }

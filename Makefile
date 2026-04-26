@@ -48,8 +48,12 @@ help:
 	@echo "  make coverage-rx72n      - Show coverage summary without rebuilding"
 	@echo "  make doxygen-html        - Generate unified HTML docs (all features, all cross-links)"
 	@echo "  make doxygen-pdf-src     - Generate PDF for firmware src/"
+	@echo "  make doxygen-pdf-tests   - Generate PDF for host unit tests/"
 	@echo "  make doxygen-pdf-<lib>   - Generate PDF for a specific library (e.g. doxygen-pdf-rx_pid)"
-	@echo "  make doxygen-pdfs        - Generate all per-module PDFs (default 4 parallel jobs)"
+	@echo "  make doxygen-pdf-<bench> - Generate PDF for a bench-test app (e.g. doxygen-pdf-blinky,"
+	@echo "                             doxygen-pdf-encoder_test, doxygen-pdf-motor_spin_test, etc.)"
+	@echo "  make doxygen-pdfs        - Generate ALL per-module PDFs (src + tests + libs + bench dirs;"
+	@echo "                             default 4 parallel jobs, ~40 PDFs total)"
 	@echo "                             Override: make doxygen-pdfs DOXY_PDF_JOBS=8"
 	@echo "  make doxygen-pdf-deps    - Install missing LaTeX packages for PDF builds (varwidth, collection-latexextra)"
 	@echo "  make doxygen-clean       - Remove generated Doxygen output"
@@ -377,7 +381,25 @@ DOXY_OUT     := $(FIRMWARE_DIR)/docs/doxygen
 # Discover all libraries automatically -- new libs under libs/ are picked up
 # without any Makefile changes.
 LIBS         := $(notdir $(wildcard $(CURDIR)/$(FIRMWARE_DIR)/libs/*))
-PDF_TARGETS  := doxygen-pdf-src $(addprefix doxygen-pdf-, $(LIBS))
+
+# Bench-test dirs (one per firmware sub-application). Each is its own
+# top-level dir with a main.c + helpers; we want a per-bench PDF too.
+# Listed explicitly (rather than wildcard) so we can EXCLUDE noisy
+# pwm_test_fit/iodefine.h (Renesas-generated 36K-line register dump
+# whose doxygen run produces meaningless output).
+BENCH_DIRS   := blinky blinky_rtos encoder_test gpio_test imu_test \
+                motor_spin_test motors_rtos pwm_test pwm_test_fit \
+                pwm_test_hal uart_test
+
+# All per-module PDFs we know how to build:
+#   doxygen-pdf-src        firmware src/
+#   doxygen-pdf-tests      host unit tests
+#   doxygen-pdf-<lib>      every directory under libs/
+#   doxygen-pdf-<bench>    every bench-test app
+PDF_TARGETS  := doxygen-pdf-src \
+                doxygen-pdf-tests \
+                $(addprefix doxygen-pdf-, $(LIBS)) \
+                $(addprefix doxygen-pdf-, $(BENCH_DIRS))
 
 # Generate unified HTML reference (all features, all cross-links)
 # Uses Doxyfile.main: INPUT = src + libs, GENERATE_HTML = YES, GENERATE_LATEX = NO
@@ -400,16 +422,51 @@ doxygen-pdfs:
 doxygen-pdf-src:
 	$(call build_doxy_pdf,src,STAR RX72N - Firmware Source,src)
 
+# PDF for the host unit-test suite under tests/
+doxygen-pdf-tests:
+	$(call build_doxy_pdf,tests,STAR RX72N - Host Unit Tests,tests)
+
+# Explicit bench-test PDF targets. Each maps the bench dir name to an
+# INPUT path. pwm_test_fit's iodefine.h is excluded because doxygen on
+# 36K vendor-generated lines produces nothing meaningful (and times out
+# under xelatex). The exclusion happens at the per-Doxyfile level via
+# the EXCLUDE override printed by build_doxy_pdf when name=pwm_test_fit.
+doxygen-pdf-blinky:
+	$(call build_doxy_pdf,blinky,STAR RX72N - blinky Bench Test,blinky)
+doxygen-pdf-blinky_rtos:
+	$(call build_doxy_pdf,blinky_rtos,STAR RX72N - blinky_rtos Bench Test,blinky_rtos)
+doxygen-pdf-encoder_test:
+	$(call build_doxy_pdf,encoder_test,STAR RX72N - encoder_test Bench Test,encoder_test)
+doxygen-pdf-gpio_test:
+	$(call build_doxy_pdf,gpio_test,STAR RX72N - gpio_test Bench Test,gpio_test)
+doxygen-pdf-imu_test:
+	$(call build_doxy_pdf,imu_test,STAR RX72N - imu_test Bench Test,imu_test)
+doxygen-pdf-motor_spin_test:
+	$(call build_doxy_pdf,motor_spin_test,STAR RX72N - motor_spin_test Bench Test,motor_spin_test)
+doxygen-pdf-motors_rtos:
+	$(call build_doxy_pdf,motors_rtos,STAR RX72N - motors_rtos Bench Test,motors_rtos)
+doxygen-pdf-pwm_test:
+	$(call build_doxy_pdf,pwm_test,STAR RX72N - pwm_test Bench Test,pwm_test)
+doxygen-pdf-pwm_test_fit:
+	$(call build_doxy_pdf,pwm_test_fit,STAR RX72N - pwm_test_fit Bench Test,pwm_test_fit,*/iodefine.h)
+doxygen-pdf-pwm_test_hal:
+	$(call build_doxy_pdf,pwm_test_hal,STAR RX72N - pwm_test_hal Bench Test,pwm_test_hal)
+doxygen-pdf-uart_test:
+	$(call build_doxy_pdf,uart_test,STAR RX72N - uart_test Bench Test,uart_test)
+
 # PDF per library -- e.g. make doxygen-pdf-rx_pid, make doxygen-pdf-threadx
 # The % matches the lib name; INPUT is set to libs/<name>
+# This pattern rule is defined LAST so the explicit bench/test/src targets
+# above take precedence (Make's most-specific-match rule).
 doxygen-pdf-%:
 	$(call build_doxy_pdf,$*,STAR RX72N - $* Library,libs/$*)
 
 # Helper: build one per-module PDF
-# Usage: $(call build_doxy_pdf, name, project_title, input_path)
+# Usage: $(call build_doxy_pdf, name, project_title, input_path[, exclude_pattern])
 #   $(1) = short name     (e.g. rx_pid)
 #   $(2) = project title  (e.g. STAR RX72N - rx_pid Library)
 #   $(3) = INPUT path     relative to FIRMWARE_DIR (e.g. libs/rx_pid)
+#   $(4) = optional EXCLUDE_PATTERNS (e.g. */iodefine.h for vendor-generated dumps)
 # Output PDF: $(DOXY_OUT)/pdf/$(1).pdf  (doxygen runs in /tmp, only PDF written to 9p)
 define build_doxy_pdf
 	@if ! command -v xelatex >/dev/null 2>&1; then \
@@ -421,27 +478,35 @@ define build_doxy_pdf
 	@ramdisk=$$(mktemp -d /tmp/doxygen-pdf-$(1)-XXXXXX); \
 	 dest_pdf=$$(readlink -f $(DOXY_OUT)/pdf)/$(1).pdf; \
 	 tmp=$$(mktemp $(FIRMWARE_DIR)/Doxyfile.$(1).XXXXXX); \
-	 printf '@INCLUDE = Doxyfile.pdf.base\nPROJECT_NAME = "$(2)"\nINPUT = $(3)\nOUTPUT_DIRECTORY = %s\nWARN_LOGFILE = %s/warnings.log\n' "$$ramdisk" "$$ramdisk" > "$$tmp"; \
+	 printf '@INCLUDE = Doxyfile.pdf.base\nPROJECT_NAME = "$(2)"\nINPUT = $(3)\nOUTPUT_DIRECTORY = %s\nWARN_LOGFILE = %s/warnings.log\n%s' "$$ramdisk" "$$ramdisk" "$(if $(4),EXCLUDE_PATTERNS = $(4)\n,)" > "$$tmp"; \
 	 cd $(FIRMWARE_DIR) && doxygen "$$(basename $$tmp)"; \
 	 rm -f "$$tmp"; \
 	 echo "  tmpfs build dir: $$ramdisk"; \
 	 echo "  Deduplicating multiply-defined Doxygen labels..."; \
 	 grep -rl 'label{doc-' "$$ramdisk/latex" | xargs -r perl -i -ne 'print unless /\\label\{doc-[a-z-]*-members\}/'; \
-	 echo "  Converting EPS graphs to properly-sized PDFs (gs respects BoundingBox)..."; \
+	 echo "  Converting EPS graphs to properly-sized PDFs (epstopdf handles atend BoundingBox)..."; \
 	 for eps in "$$ramdisk/latex"/*.eps; do \
 	   [ -f "$$eps" ] || continue; \
 	   pdf="$${eps%.eps}.pdf"; \
 	   [ -f "$$pdf" ] && continue; \
-	   bb=$$(grep "^%%BoundingBox:" "$$eps" | grep -v atend | head -1); \
-	   [ -z "$$bb" ] && continue; \
-	   llx=$$(echo "$$bb" | awk '{print $$2}'); lly=$$(echo "$$bb" | awk '{print $$3}'); \
-	   urx=$$(echo "$$bb" | awk '{print $$4}'); ury=$$(echo "$$bb" | awk '{print $$5}'); \
-	   w=$$((urx - llx)); h=$$((ury - lly)); \
-	   gs -q -dBATCH -dNOPAUSE -dSAFER -sDEVICE=pdfwrite \
-	     -dFIXEDMEDIA -dDEVICEWIDTHPOINTS=$$w -dDEVICEHEIGHTPOINTS=$$h \
-	     -sOutputFile=$$pdf \
-	     -c "<</PageOffset [-$$llx -$$lly]>> setpagedevice" \
-	     -f "$$eps" 2>/dev/null || true; \
+	   if command -v epstopdf >/dev/null 2>&1; then \
+	     epstopdf --outfile="$$pdf" "$$eps" 2>/dev/null || true; \
+	   fi; \
+	   if [ ! -f "$$pdf" ]; then \
+	     bb=$$(grep "^%%BoundingBox:" "$$eps" | grep -v atend | tail -1); \
+	     if [ -z "$$bb" ]; then \
+	       bb=$$(grep "^%%PageBoundingBox:" "$$eps" | tail -1); \
+	     fi; \
+	     [ -z "$$bb" ] && continue; \
+	     llx=$$(echo "$$bb" | awk '{print $$2}'); lly=$$(echo "$$bb" | awk '{print $$3}'); \
+	     urx=$$(echo "$$bb" | awk '{print $$4}'); ury=$$(echo "$$bb" | awk '{print $$5}'); \
+	     w=$$((urx - llx)); h=$$((ury - lly)); \
+	     gs -q -dBATCH -dNOPAUSE -dSAFER -sDEVICE=pdfwrite \
+	       -dFIXEDMEDIA -dDEVICEWIDTHPOINTS=$$w -dDEVICEHEIGHTPOINTS=$$h \
+	       -sOutputFile=$$pdf \
+	       -c "<</PageOffset [-$$llx -$$lly]>> setpagedevice" \
+	       -f "$$eps" 2>/dev/null || true; \
+	   fi; \
 	 done; \
 	 echo "  Creating placeholder PDFs for any @msc blocks still missing a PDF..."; \
 	 PLACEHOLDER=$$(ls "$$ramdisk/latex"/inline_mscgraph_*.pdf 2>/dev/null | head -1); \
@@ -460,9 +525,9 @@ define build_doxy_pdf
 	   [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
 	 done; \
 	 echo "  Fixing refman.tex: \\\\+, \\\\_, and replacing helvet with TeX Gyre Heros for xelatex..."; \
-	 perl -i -pe 's{\\newcommand\{\\\+\}\{.*\}}{\\renewcommand{\\+}{}\n  \\renewcommand{\\_}{\\char95}}' "$$ramdisk/latex/refman.tex"; \
-	 perl -i -pe 's{\\usepackage\[scaled=\.90\]\{helvet\}}{\\setsansfont[Scale=.90]{TeX Gyre Heros}}' "$$ramdisk/latex/refman.tex"; \
-	 perl -i -pe 's{\\usepackage\{doxygen\}}{\\usepackage{doxygen}\n\\usepackage[export]{adjustbox}}' "$$ramdisk/latex/refman.tex"; \
+	 perl -i -pe 's{\\newcommand\{\\\+\}\{.*\}}{\\def\\+{}\n  \\def\\_{\\char95\\relax}}' "$$ramdisk/latex/refman.tex"; \
+	 perl -i -pe 's{\\usepackage\[scaled=\.90\]\{helvet\}}{\\usepackage{tgheros}\\renewcommand{\\sfdefault}{qhv}}' "$$ramdisk/latex/refman.tex"; \
+	 perl -i -pe 's{\\usepackage\{doxygen\}}{\\PassOptionsToPackage{export}{adjustbox}\n\\usepackage{doxygen}}' "$$ramdisk/latex/refman.tex"; \
 	 echo "  Replacing uncaptioned figure[H] envs with center blocks, removing nopagebreak, capping sizes..."; \
 	 find "$$ramdisk/latex" -name "*.tex" ! -name "refman.tex" ! -name "doxygen.sty" | xargs -r perl -i -0pe 's/\\begin\{figure\}\[H\]\n\\begin\{center\}(.*?)\\end\{center\}\n\\end\{figure\}/\\begin{center}$$1\\end{center}/gs; s/\\nopagebreak//g'; \
 	 find "$$ramdisk/latex" -name "*.tex" | xargs -r perl -i -pe 's/\\includegraphics\[width=/\\includegraphics[max width=\\linewidth,max totalheight=.8\\textheight,width=/g'; \
