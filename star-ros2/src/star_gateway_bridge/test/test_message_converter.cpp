@@ -550,7 +550,8 @@ TEST_F(ObstacleDistanceToRangeTest, ZeroMapsToMaxRange)
 TEST_F(ObstacleDistanceToRangeTest, NaNMapsToMaxRange)
 {
   sensor_msgs::msg::Range out;
-  converter_.obstacle_distance_to_range(std::numeric_limits<float>::quiet_NaN(), "obstacle_back_left", make_stamp(),
+  converter_.obstacle_distance_to_range(std::numeric_limits<float>::quiet_NaN(),
+      "obstacle_back_left", make_stamp(),
                                         out);
 
   EXPECT_NEAR(out.range, HC_SR04_MAX, FLOAT_TOL);
@@ -559,7 +560,8 @@ TEST_F(ObstacleDistanceToRangeTest, NaNMapsToMaxRange)
 TEST_F(ObstacleDistanceToRangeTest, PosInfMapsToMaxRange)
 {
   sensor_msgs::msg::Range out;
-  converter_.obstacle_distance_to_range(std::numeric_limits<float>::infinity(), "obstacle_back_right", make_stamp(),
+  converter_.obstacle_distance_to_range(std::numeric_limits<float>::infinity(),
+      "obstacle_back_right", make_stamp(),
                                         out);
 
   EXPECT_NEAR(out.range, HC_SR04_MAX, FLOAT_TOL);
@@ -570,7 +572,8 @@ TEST_F(ObstacleDistanceToRangeTest, NegInfMapsToMinRange)
   // Negative infinity is non-finite; clamped to min_range after the
   // isfinite check falls through to std::max/min clamping.
   sensor_msgs::msg::Range out;
-  converter_.obstacle_distance_to_range(-std::numeric_limits<float>::infinity(), "obstacle_front_left", make_stamp(),
+  converter_.obstacle_distance_to_range(-std::numeric_limits<float>::infinity(),
+      "obstacle_front_left", make_stamp(),
                                         out);
 
   // Non-finite maps to max_range per implementation.
@@ -840,8 +843,8 @@ TEST_F(LaserScanToProtoTest, InvalidReadingsEncodedAsZero)
   scan.range_min = 0.5F;
   scan.range_max = 10.0F;
   scan.ranges = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::infinity(),
-                 0.1F,  // below range_min
-                 1.5F};
+    0.1F,               // below range_min
+    1.5F};
   scan.intensities = {0.0F, 0.0F, 0.0F, 0.7F};
 
   star::v1::LidarScan proto;

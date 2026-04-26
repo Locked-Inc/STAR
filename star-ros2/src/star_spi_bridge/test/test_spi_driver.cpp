@@ -209,7 +209,8 @@ TEST_F(SpiDriverTest, EncodeRejectsOversizedPayload)
   std::vector<uint8_t> oversized(SpiDriver::MAX_PAYLOAD_SIZE + 1, 0xAA);
   std::vector<uint8_t> frame;
 
-  EXPECT_THROW(SpiDriver::encode_frame(0, FrameType::Command, 0x00, oversized, frame), std::invalid_argument);
+  EXPECT_THROW(SpiDriver::encode_frame(0, FrameType::Command, 0x00, oversized, frame),
+    std::invalid_argument);
 }
 
 // ---------------------------------------------------------------------------
@@ -436,8 +437,10 @@ TEST_F(FrameFlagsTest, NotClearsReservedBitsForAllSingleFlags)
 {
   // Verify reserved bits are always 0 regardless of input
   constexpr uint8_t kReservedMask = 0xE0u;
-  for (const auto flag : {FrameFlags::None, FrameFlags::RequiresAck, FrameFlags::Retransmit, FrameFlags::Priority,
-                          FrameFlags::FecEnabled, FrameFlags::SoftNack}) {
+  for (const auto flag : {FrameFlags::None, FrameFlags::RequiresAck, FrameFlags::Retransmit,
+      FrameFlags::Priority,
+      FrameFlags::FecEnabled, FrameFlags::SoftNack})
+  {
     const auto raw = static_cast<uint8_t>(~flag);
     EXPECT_EQ(raw & kReservedMask, 0u) << "Reserved bits 5-7 set for ~flag with underlying value "
                                        << static_cast<int>(static_cast<uint8_t>(flag));

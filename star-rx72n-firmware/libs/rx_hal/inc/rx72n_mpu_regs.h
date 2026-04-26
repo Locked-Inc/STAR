@@ -923,18 +923,14 @@ static_assert(offsetof(rx_mpu_region_regs_t, rspage) == 0, "RSPAGE offset in str
 
 static_assert(offsetof(rx_mpu_region_regs_t, repage) == 4, "REPAGE offset in struct must be 4");
 
-/* Verify bit definitions */
+/* The enum declarations above ARE the bit-position contract; assert the
+ * RELATIONSHIPS between them rather than re-stating each literal value
+ * (which would just duplicate the magic numbers and trip
+ * readability-magic-numbers without adding a real check). */
 static_assert(k_repage_v == 0x01U, "REPAGE V bit must be bit 0");
-
-static_assert(k_repage_uac_r == 0x02U,
-              "REPAGE UAC.R bit must be bit 1"); /* NOLINT(readability-magic-numbers) */
-
-static_assert(k_repage_uac_w == 0x04U,
-              "REPAGE UAC.W bit must be bit 2"); /* NOLINT(readability-magic-numbers) */
-
-static_assert(k_repage_uac_x == 0x08U,
-              "REPAGE UAC.X bit must be bit 3"); /* NOLINT(readability-magic-numbers) */
-
+static_assert(k_repage_uac_r == (k_repage_v << 1U), "UAC.R must be REPAGE.V left-shift 1");
+static_assert(k_repage_uac_w == (k_repage_uac_r << 1U), "UAC.W must be UAC.R left-shift 1");
+static_assert(k_repage_uac_x == (k_repage_uac_w << 1U), "UAC.X must be UAC.W left-shift 1");
 static_assert(k_mpen_mpen == 0x01U, "MPEN.MPEN bit must be bit 0");
 
 static_assert(k_mpests_imper == 0x01U, "MPESTS.IMPER bit must be bit 0");

@@ -64,35 +64,37 @@ SafetyMonitor::on_configure(const rclcpp_lifecycle::State & previous_state)
     RCLCPP_INFO(get_logger(), "  Max angular velocity: %.2f rad/s", max_angular_velocity_);
 
     // Create lifecycle publishers
-    diagnostics_pub_ = create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
+    diagnostics_pub_ =
+      create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
     emergency_stop_pub_ = create_publisher<std_msgs::msg::Bool>("/emergency_stop", 10);
 
     // Create subscribers
-    odom_sub_ = create_subscription<nav_msgs::msg::Odometry>("/odom", 10,
-                                                             std::bind(&SafetyMonitor::odometry_callback, this,
-                                                                       std::placeholders::_1));
+    odom_sub_ = create_subscription<nav_msgs::msg::Odometry>(
+      "/odom", 10,
+      std::bind(&SafetyMonitor::odometry_callback, this, std::placeholders::_1));
 
-    diag_sub_ = create_subscription<
-      diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10,
-                                             std::bind(&SafetyMonitor::diagnostics_callback, this,
-                                                       std::placeholders::_1));
+    diag_sub_ = create_subscription<diagnostic_msgs::msg::DiagnosticArray>(
+      "/diagnostics", 10,
+      std::bind(&SafetyMonitor::diagnostics_callback, this, std::placeholders::_1));
 
-    cmd_vel_sub_ = create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", 10,
-                                                                  std::bind(&SafetyMonitor::cmd_vel_callback, this,
-                                                                            std::placeholders::_1));
+    cmd_vel_sub_ = create_subscription<geometry_msgs::msg::Twist>(
+      "/cmd_vel", 10,
+      std::bind(&SafetyMonitor::cmd_vel_callback, this, std::placeholders::_1));
 
     // Subscribe to ultrasonic sonar Range topics
     for (size_t i = 0; i < NUM_SONARS; ++i) {
-      sonar_subs_[i] = create_subscription<sensor_msgs::msg::Range>(std::string(SONAR_TOPICS[i]), 10,
-                                                                    [this,
-                                                                     i](const sensor_msgs::msg::Range::SharedPtr msg) {
-                                                                      sonar_callback(msg, i);
-                                                                    });
+      sonar_subs_[i] = create_subscription<sensor_msgs::msg::Range>(
+        std::string(SONAR_TOPICS[i]), 10,
+        [this, i](const sensor_msgs::msg::Range::SharedPtr msg) {
+          sonar_callback(msg, i);
+        });
       sonar_ranges_[i] = std::numeric_limits<double>::infinity();
     }
 
-    RCLCPP_INFO(get_logger(), "  Obstacle E-stop distance: %.2f m", obstacle_estop_distance_);
-    RCLCPP_INFO(get_logger(), "  Obstacle warn distance: %.2f m", obstacle_warn_distance_);
+    RCLCPP_INFO(get_logger(), "  Obstacle E-stop distance: %.2f m",
+      obstacle_estop_distance_);
+    RCLCPP_INFO(get_logger(), "  Obstacle warn distance: %.2f m",
+      obstacle_warn_distance_);
 
     // Initialize state
     last_diagnostics_time_ = std::chrono::system_clock::now();
@@ -139,8 +141,8 @@ SafetyMonitor::on_activate(const rclcpp_lifecycle::State & previous_state)
 
     // Create monitoring timer (10 Hz by default).
     //
-    // Guard against zero/negative publish_rate: a user-supplied override of
-    // 0.0 would otherwise yield a 0 ms timer period (busy spin) via the
+    // Guard against zero/negative/NaN publish_rate: a user-supplied override
+    // of 0.0 would otherwise yield a 0 ms timer period (busy spin) via the
     // 1000.0/publish_rate_ division. Negative rates produce negative periods
     // which std::chrono::milliseconds wraps non-deterministically. Clamp to
     // a sensible floor (0.1 Hz = 10 s period) and log the override; the
@@ -149,12 +151,15 @@ SafetyMonitor::on_activate(const rclcpp_lifecycle::State & previous_state)
     constexpr double k_default_publish_rate_hz = 10.0;
     if (!std::isfinite(publish_rate_) || publish_rate_ < k_min_publish_rate_hz) {
       RCLCPP_ERROR(get_logger(),
-                   "Invalid publish_rate=%.3f Hz (must be >= %.2f Hz and finite); falling back to %.1f Hz",
-                   publish_rate_, k_min_publish_rate_hz, k_default_publish_rate_hz);
+        "Invalid publish_rate=%.3f Hz (must be >= %.2f Hz and finite); falling back to %.1f Hz",
+        publish_rate_, k_min_publish_rate_hz, k_default_publish_rate_hz);
       publish_rate_ = k_default_publish_rate_hz;
     }
-    auto timer_period = std::chrono::milliseconds(static_cast<int>(1000.0 / publish_rate_));
-    monitoring_timer_ = create_wall_timer(timer_period, std::bind(&SafetyMonitor::monitoring_timer_callback, this));
+    auto timer_period = std::chrono::milliseconds(
+      static_cast<int>(1000.0 / publish_rate_));
+    monitoring_timer_ =
+      create_wall_timer(timer_period,
+        std::bind(&SafetyMonitor::monitoring_timer_callback, this));
 
     RCLCPP_INFO(get_logger(), "SafetyMonitor activated successfully");
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
@@ -213,6 +218,20 @@ SafetyMonitor::on_cleanup(const rclcpp_lifecycle::State & previous_state)
     // Clear state
     heartbeat_times_.clear();
 
+    // Undeclare parameters so a subsequent on_configure() can declare them
+    // again without hitting AlreadyDeclaredParameterException. This is the
+    // contract for lifecycle reconfigurability per ROS2 design REP-2003.
+    const std::vector<std::string> declared_params = {
+      "heartbeat_timeout_ms", "max_linear_velocity", "max_angular_velocity",
+      "publish_rate", "enable_auto_estop", "estop_recovery_delay",
+      "stall_detection_threshold", "stall_samples_required", "cmd_vel_timeout_ms",
+      "obstacle_estop_distance", "obstacle_warn_distance", "obstacle_clear_count_required"};
+    for (const auto & name : declared_params) {
+      if (has_parameter(name)) {
+        undeclare_parameter(name);
+      }
+    }
+
     RCLCPP_INFO(get_logger(), "SafetyMonitor cleaned up successfully");
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
   } catch (const std::exception & e) {
@@ -252,16 +271,19 @@ SafetyMonitor::on_shutdown(const rclcpp_lifecycle::State & previous_state)
 void SafetyMonitor::odometry_callback(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
   // Extract current velocities
-  current_linear_velocity_ = std::sqrt(msg->twist.twist.linear.x * msg->twist.twist.linear.x +
-                                       msg->twist.twist.linear.y * msg->twist.twist.linear.y +
-                                       msg->twist.twist.linear.z * msg->twist.twist.linear.z);
+  current_linear_velocity_ = std::sqrt(
+    msg->twist.twist.linear.x * msg->twist.twist.linear.x +
+    msg->twist.twist.linear.y * msg->twist.twist.linear.y +
+    msg->twist.twist.linear.z * msg->twist.twist.linear.z);
 
-  current_angular_velocity_ = std::sqrt(msg->twist.twist.angular.x * msg->twist.twist.angular.x +
-                                        msg->twist.twist.angular.y * msg->twist.twist.angular.y +
-                                        msg->twist.twist.angular.z * msg->twist.twist.angular.z);
+  current_angular_velocity_ = std::sqrt(
+    msg->twist.twist.angular.x * msg->twist.twist.angular.x +
+    msg->twist.twist.angular.y * msg->twist.twist.angular.y +
+    msg->twist.twist.angular.z * msg->twist.twist.angular.z);
 }
 
-void SafetyMonitor::diagnostics_callback(const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg)
+void SafetyMonitor::diagnostics_callback(
+  const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg)
 {
   // Ignore our own diagnostics (we publish on the same topic).
   // Only count messages from external nodes as heartbeats.
@@ -278,13 +300,15 @@ void SafetyMonitor::diagnostics_callback(const diagnostic_msgs::msg::DiagnosticA
   }
 }
 
-void SafetyMonitor::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
+void SafetyMonitor::cmd_vel_callback(
+  const geometry_msgs::msg::Twist::SharedPtr msg)
 {
   last_cmd_vel_ = *msg;
   last_cmd_vel_time_ = std::chrono::system_clock::now();
 }
 
-void SafetyMonitor::sonar_callback(const sensor_msgs::msg::Range::SharedPtr msg, size_t sonar_index)
+void SafetyMonitor::sonar_callback(
+  const sensor_msgs::msg::Range::SharedPtr msg, size_t sonar_index)
 {
   if (sonar_index < NUM_SONARS) {
     sonar_ranges_[sonar_index] = static_cast<double>(msg->range);
@@ -336,14 +360,16 @@ void SafetyMonitor::check_velocity_limits()
   velocity_exceeded_ = false;
 
   if (current_linear_velocity_ > max_linear_velocity_) {
-    RCLCPP_WARN(get_logger(), "Linear velocity limit exceeded: %.2f > %.2f m/s", current_linear_velocity_,
-                max_linear_velocity_);
+    RCLCPP_WARN(get_logger(),
+      "Linear velocity limit exceeded: %.2f > %.2f m/s",
+      current_linear_velocity_, max_linear_velocity_);
     velocity_exceeded_ = true;
   }
 
   if (current_angular_velocity_ > max_angular_velocity_) {
-    RCLCPP_WARN(get_logger(), "Angular velocity limit exceeded: %.2f > %.2f rad/s", current_angular_velocity_,
-                max_angular_velocity_);
+    RCLCPP_WARN(get_logger(),
+      "Angular velocity limit exceeded: %.2f > %.2f rad/s",
+      current_angular_velocity_, max_angular_velocity_);
     velocity_exceeded_ = true;
   }
 }
@@ -359,15 +385,18 @@ void SafetyMonitor::check_motor_stall()
   auto now = std::chrono::system_clock::now();
   auto cmd_age = now - last_cmd_vel_time_;
 
-  if (cmd_age < std::chrono::milliseconds(cmd_vel_timeout_ms_) && cmd_linear > stall_detection_threshold_) {
+  if (cmd_age < std::chrono::milliseconds(cmd_vel_timeout_ms_) &&
+    cmd_linear > stall_detection_threshold_)
+  {
     // We have a recent command to move
     if (current_linear_velocity_ < stall_detection_threshold_) {
       // But we're not actually moving
       stall_detection_count_++;
 
       if (stall_detection_count_ >= stall_samples_required_) {
-        RCLCPP_WARN(get_logger(), "Motor stall detected: cmd=%.2f m/s, actual=%.2f m/s", cmd_linear,
-                    current_linear_velocity_);
+        RCLCPP_WARN(get_logger(),
+          "Motor stall detected: cmd=%.2f m/s, actual=%.2f m/s",
+          cmd_linear, current_linear_velocity_);
         motor_stall_detected_ = true;
         estop_trigger_time_ = now;
       }
@@ -395,8 +424,8 @@ void SafetyMonitor::check_obstacle_proximity()
 
     if (range < obstacle_estop_distance_) {
       RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
-                           "Obstacle E-STOP: %s sonar reads %.3f m (threshold: %.2f m)", SONAR_NAMES[i], range,
-                           obstacle_estop_distance_);
+        "Obstacle E-STOP: %s sonar reads %.3f m (threshold: %.2f m)",
+        SONAR_NAMES[i], range, obstacle_estop_distance_);
       obstacle_too_close_ = true;
       if (enable_auto_estop_) {
         obstacle_estop_triggered_ = true;
@@ -404,8 +433,8 @@ void SafetyMonitor::check_obstacle_proximity()
       }
     } else if (range < obstacle_warn_distance_) {
       RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
-                           "Obstacle warning: %s sonar reads %.3f m (threshold: %.2f m)", SONAR_NAMES[i], range,
-                           obstacle_warn_distance_);
+        "Obstacle warning: %s sonar reads %.3f m (threshold: %.2f m)",
+        SONAR_NAMES[i], range, obstacle_warn_distance_);
     }
   }
 
@@ -414,8 +443,9 @@ void SafetyMonitor::check_obstacle_proximity()
   if (!obstacle_too_close_ && obstacle_estop_triggered_) {
     obstacle_clear_count_++;
     if (obstacle_clear_count_ >= obstacle_clear_count_required_) {
-      RCLCPP_INFO(get_logger(), "Obstacle cleared for %d consecutive checks, releasing obstacle E-stop",
-                  obstacle_clear_count_required_);
+      RCLCPP_INFO(get_logger(),
+        "Obstacle cleared for %d consecutive checks, releasing obstacle E-stop",
+        obstacle_clear_count_required_);
       obstacle_estop_triggered_ = false;
       obstacle_clear_count_ = 0;
     }
@@ -445,7 +475,8 @@ void SafetyMonitor::update_overall_state()
 
   // Derive emergency_stop_active_ from all independent sources.
   if (enable_auto_estop_) {
-    emergency_stop_active_ = heartbeat_timeout_triggered_ || obstacle_estop_triggered_ || motor_stall_detected_;
+    emergency_stop_active_ = heartbeat_timeout_triggered_ ||
+      obstacle_estop_triggered_ || motor_stall_detected_;
   }
 
   // Publish emergency stop signal if needed
@@ -524,12 +555,14 @@ void SafetyMonitor::publish_diagnostics()
   diagnostic_msgs::msg::DiagnosticStatus heartbeat_status;
   heartbeat_status.name = "safety_monitor: Heartbeat Status";
   heartbeat_status.hardware_id = "safety_monitor";
-  heartbeat_status.level = heartbeat_timeout_triggered_ ? diagnostic_msgs::msg::DiagnosticStatus::ERROR
-                                                        : diagnostic_msgs::msg::DiagnosticStatus::OK;
+  heartbeat_status.level = heartbeat_timeout_triggered_ ?
+    diagnostic_msgs::msg::DiagnosticStatus::ERROR :
+    diagnostic_msgs::msg::DiagnosticStatus::OK;
 
   auto now_time = std::chrono::system_clock::now();
   for (const auto & [node_name, last_time] : heartbeat_times_) {
-    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now_time - last_time).count();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+      now_time - last_time).count();
 
     kv.key = node_name;
     kv.value = std::to_string(duration_ms) + " ms";
@@ -575,7 +608,10 @@ void SafetyMonitor::publish_diagnostics()
 
 double SafetyMonitor::compute_linear_magnitude(const geometry_msgs::msg::Twist & twist) const
 {
-  return std::sqrt(twist.linear.x * twist.linear.x + twist.linear.y * twist.linear.y + twist.linear.z * twist.linear.z);
+  return std::sqrt(
+    twist.linear.x * twist.linear.x +
+    twist.linear.y * twist.linear.y +
+    twist.linear.z * twist.linear.z);
 }
 
 }  // namespace star_safety_monitor

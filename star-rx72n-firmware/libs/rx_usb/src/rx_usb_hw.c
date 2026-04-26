@@ -641,11 +641,6 @@ typedef enum : uint16_t {
   k_usb_pipe_status_mask = 0x03FFU, /**< Pipes 0-9 status bit mask (10 bits) */
 } usb_pipe_status_mask_t;
 
-/** @brief CFIFOSEL ISEL bit position for DCP transmit direction */
-typedef enum : uint8_t {
-  k_usb_cfifosel_isel_shift = 5, /**< ISEL bit position in CFIFOSEL */
-} usb_cfifosel_bits_t;
-
 /** @brief Bulk full-speed default max-packet-size fallback */
 typedef enum : uint16_t {
   k_usb_bulk_fs_mps_default = 64U, /**< Defensive fallback when MPS cache is 0 */
@@ -1104,8 +1099,7 @@ static void internal_usb_restore_usbi_irq(volatile uint8_t* ier_r,
 static void internal_usb_select_cfifo_pipe(const uint8_t pipe)
 {
   volatile uint16_t* const fifosel_r = &usb0()->cfifosel;
-  const uint16_t           isel_bit =
-    (pipe == k_usb_pipe_min) ? (uint16_t)(1U << k_usb_cfifosel_isel_shift) : 0U;
+  const uint16_t           isel_bit = (pipe == k_usb_pipe_min) ? (uint16_t)k_usb_cfifosel_isel : 0U;
   /* Overwrite the whole register (not RMW) so leftover RCNT/REW bits
    * from enumeration-side DCP access don't bleed in. */
   *fifosel_r = (uint16_t)(isel_bit | (pipe & k_usb_cfifosel_curpipe_mask));

@@ -7,22 +7,22 @@
 
 #include "star_spi_bridge/spi_message_converter.hpp"
 
-#include <tf2/LinearMath/Quaternion.h>  // NOLINT(build/include_order)
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <limits>
+#include <tf2/LinearMath/Quaternion.h>  // NOLINT(build/include_order)
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 namespace star_spi_bridge
 {
 
 SpiMessageConverter::SpiMessageConverter(const Parameters & params)
-: params_(params)
-{}
+: params_(params) {}
 
-bool SpiMessageConverter::twist_to_velocity_command(const geometry_msgs::msg::Twist & twist,
-                                                    star::v1::VelocityCommand & command)
+bool SpiMessageConverter::twist_to_velocity_command(
+  const geometry_msgs::msg::Twist & twist,
+  star::v1::VelocityCommand & command)
 {
   if (!std::isfinite(twist.linear.x) || !std::isfinite(twist.angular.z)) {
     return false;
@@ -52,8 +52,9 @@ bool SpiMessageConverter::twist_to_velocity_command(const geometry_msgs::msg::Tw
   return true;
 }
 
-void SpiMessageConverter::telemetry_to_odometry(const star::v1::TelemetryData & telemetry,
-                                                nav_msgs::msg::Odometry & odom)
+void SpiMessageConverter::telemetry_to_odometry(
+  const star::v1::TelemetryData & telemetry,
+  nav_msgs::msg::Odometry & odom)
 {
   // Extract encoder data from telemetry
   const auto & enc_fl = telemetry.encoder_front_left();
@@ -144,12 +145,12 @@ void SpiMessageConverter::telemetry_to_odometry(const star::v1::TelemetryData & 
 
   // Pose covariance -- row-major 6x6 (x, y, z, roll, pitch, yaw)
   // Zero covariance makes robot_localization unstable; use realistic dead-reckoning values.
-  odom.pose.covariance[0] = 0.1;   // x
-  odom.pose.covariance[7] = 0.1;   // y
-  odom.pose.covariance[14] = 1e6;  // z (not observed)
-  odom.pose.covariance[21] = 1e6;  // roll (not observed)
-  odom.pose.covariance[28] = 1e6;  // pitch (not observed)
-  odom.pose.covariance[35] = 0.1;  // yaw
+  odom.pose.covariance[0] = 0.1;     // x
+  odom.pose.covariance[7] = 0.1;     // y
+  odom.pose.covariance[14] = 1e6;    // z (not observed)
+  odom.pose.covariance[21] = 1e6;    // roll (not observed)
+  odom.pose.covariance[28] = 1e6;    // pitch (not observed)
+  odom.pose.covariance[35] = 0.1;    // yaw
 
   // Twist covariance -- same layout
   odom.twist.covariance[0] = 0.05;   // vx
@@ -160,8 +161,9 @@ void SpiMessageConverter::telemetry_to_odometry(const star::v1::TelemetryData & 
   odom.twist.covariance[35] = 0.05;  // angular z (yaw rate)
 }
 
-void SpiMessageConverter::telemetry_to_joint_state(const star::v1::TelemetryData & telemetry,
-                                                   sensor_msgs::msg::JointState & joint_state)
+void SpiMessageConverter::telemetry_to_joint_state(
+  const star::v1::TelemetryData & telemetry,
+  sensor_msgs::msg::JointState & joint_state)
 {
   // Extract encoder data from telemetry
   const auto & enc_fl = telemetry.encoder_front_left();
@@ -169,21 +171,24 @@ void SpiMessageConverter::telemetry_to_joint_state(const star::v1::TelemetryData
   const auto & enc_bl = telemetry.encoder_back_left();
   const auto & enc_br = telemetry.encoder_back_right();
 
-  joint_state.name = {"front_left_wheel", "front_right_wheel", "back_left_wheel", "back_right_wheel"};
+  joint_state.name = {
+    "front_left_wheel", "front_right_wheel", "back_left_wheel", "back_right_wheel"};
 
   // Position (radians)
   double rad_per_tick = (2.0 * M_PI) / params_.ticks_per_rev;
   joint_state.position = {static_cast<double>(enc_fl.ticks()) * rad_per_tick,
-                          static_cast<double>(enc_fr.ticks()) * rad_per_tick,
-                          static_cast<double>(enc_bl.ticks()) * rad_per_tick,
-                          static_cast<double>(enc_br.ticks()) * rad_per_tick};
+    static_cast<double>(enc_fr.ticks()) * rad_per_tick,
+    static_cast<double>(enc_bl.ticks()) * rad_per_tick,
+    static_cast<double>(enc_br.ticks()) * rad_per_tick};
 
   // Velocity (rad/s)
   // velocity_mps = radius * angular_velocity_rad_s
   // angular_velocity = velocity_mps / radius
   double inv_radius = 1.0 / params_.wheel_radius;
-  joint_state.velocity = {enc_fl.velocity_mps() * inv_radius, enc_fr.velocity_mps() * inv_radius,
-                          enc_bl.velocity_mps() * inv_radius, enc_br.velocity_mps() * inv_radius};
+  joint_state.velocity = {enc_fl.velocity_mps() * inv_radius,
+    enc_fr.velocity_mps() * inv_radius,
+    enc_bl.velocity_mps() * inv_radius,
+    enc_br.velocity_mps() * inv_radius};
 }
 
 /**
@@ -226,33 +231,35 @@ void SpiMessageConverter::telemetry_to_joint_state(const star::v1::TelemetryData
  * @since Version 1.0.0
 
 */
-void SpiMessageConverter::telemetry_to_obstacle_ranges(const star::v1::TelemetryData & telemetry,
-                                                       sensor_msgs::msg::Range & front_left,
-                                                       sensor_msgs::msg::Range & front_right,
-                                                       sensor_msgs::msg::Range & back_left,
-                                                       sensor_msgs::msg::Range & back_right)
+void SpiMessageConverter::telemetry_to_obstacle_ranges(
+  const star::v1::TelemetryData & telemetry,
+  sensor_msgs::msg::Range & front_left,
+  sensor_msgs::msg::Range & front_right,
+  sensor_msgs::msg::Range & back_left,
+  sensor_msgs::msg::Range & back_right)
 {
   // HC-SR04 ultrasonic sensor characteristics
   static constexpr float FIELD_OF_VIEW_RAD = 0.2618F;  // ~15 degrees
   static constexpr float MIN_RANGE_M = 0.02F;
   static constexpr float MAX_RANGE_M = 4.0F;
 
-  auto populate = [&](sensor_msgs::msg::Range & msg, const std::string & frame_id, float distance_m) {
-    assert(!frame_id.empty());
-    msg.radiation_type = sensor_msgs::msg::Range::ULTRASOUND;
-    msg.field_of_view = FIELD_OF_VIEW_RAD;
-    msg.min_range = MIN_RANGE_M;
-    msg.max_range = MAX_RANGE_M;
-    msg.header.frame_id = frame_id;
-    if (std::isfinite(distance_m)) {
-      // Clamp finite values to the HC-SR04 valid operating range
-      msg.range = std::clamp(distance_m, MIN_RANGE_M, MAX_RANGE_M);
-    } else {
-      msg.range = std::numeric_limits<float>::quiet_NaN();
-    }
-    // Postcondition: range is a clamped finite value in [MIN_RANGE_M, MAX_RANGE_M], or NaN
-    assert(!std::isinf(msg.range));
-  };
+  auto populate = [&](sensor_msgs::msg::Range & msg, const std::string & frame_id,
+    float distance_m) {
+      assert(!frame_id.empty());
+      msg.radiation_type = sensor_msgs::msg::Range::ULTRASOUND;
+      msg.field_of_view = FIELD_OF_VIEW_RAD;
+      msg.min_range = MIN_RANGE_M;
+      msg.max_range = MAX_RANGE_M;
+      msg.header.frame_id = frame_id;
+      if (std::isfinite(distance_m)) {
+        // Clamp finite values to the HC-SR04 valid operating range
+        msg.range = std::clamp(distance_m, MIN_RANGE_M, MAX_RANGE_M);
+      } else {
+        msg.range = std::numeric_limits<float>::quiet_NaN();
+      }
+      // Postcondition: range is a clamped finite value in [MIN_RANGE_M, MAX_RANGE_M], or NaN
+      assert(!std::isinf(msg.range));
+    };
 
   const auto & obs = telemetry.obstacle();
   populate(front_left, "obstacle_sensor_front_left", obs.distance_front_left_m());

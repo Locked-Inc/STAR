@@ -22,7 +22,7 @@
  *                -p telemetry_rate_hz:=20.0
 
 */
-int main(int argc, char ** argv)
+int main(int argc, char **argv)
 {
   // Initialize ROS2
   rclcpp::init(argc, argv);

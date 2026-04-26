@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include "star_safety_monitor/safety_monitor.hpp"
-#include <memory>
 
 int main(int argc, char ** argv)
 {

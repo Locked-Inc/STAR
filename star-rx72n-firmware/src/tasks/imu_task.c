@@ -210,9 +210,10 @@ typedef enum : uint16_t {
 typedef enum : uint8_t {
   /** @brief RST assert duration: ceil(10 ms * 100 Hz / 1000) + 1 = 2 ticks */
   k_imu_hw_rst_assert_ticks =
-    (k_imu_hw_rst_assert_ms * TX_TIMER_TICKS_PER_SECOND + 999U) / 1000U + 1U,
+    ((((k_imu_hw_rst_assert_ms * TX_TIMER_TICKS_PER_SECOND) + 999U) / 1000U) + 1U),
   /** @brief POR wait after deassert: ceil(650 ms * 100 Hz / 1000) + 1 = 66 ticks */
-  k_imu_hw_rst_por_ticks = (k_imu_hw_rst_por_ms * TX_TIMER_TICKS_PER_SECOND + 999U) / 1000U + 1U,
+  k_imu_hw_rst_por_ticks =
+    ((((k_imu_hw_rst_por_ms * TX_TIMER_TICKS_PER_SECOND) + 999U) / 1000U) + 1U),
 } imu_task_hw_rst_t;
 
 /**
@@ -258,8 +259,8 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_imu_int_timeout_ticks =
-    ((uint32_t)k_imu_int_timeout_ms * TX_TIMER_TICKS_PER_SECOND + 999U) / 1000U +
-    1U, /**< Timeout in ticks with +1 slack: (20*100+999)/1000+1 = 3 ticks */
+    (((((uint32_t)k_imu_int_timeout_ms * TX_TIMER_TICKS_PER_SECOND) + 999U) / 1000U) +
+     1U), /**< Timeout in ticks with +1 slack: (20*100+999)/1000+1 = 3 ticks */
   k_imu_event_data_ready = 0x01U, /**< Event flag bit set by ISR on BNO055 INT assertion */
 } imu_task_int_cfg_t;
 
@@ -281,9 +282,9 @@ typedef enum : uint8_t {
 #endif /* __RX__ */
 
 static_assert(
-  (bool)((((uint32_t)k_imu_int_timeout_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND +
-           k_imu_ceiling_addend) /
-            (uint32_t)k_imu_ms_per_second +
+  (bool)((((((uint32_t)k_imu_int_timeout_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) +
+            k_imu_ceiling_addend) /
+           (uint32_t)k_imu_ms_per_second) +
           1U) <= k_imu_uint8_max_val),
   "k_imu_int_timeout_ticks overflows uint8_t; reduce k_imu_int_timeout_ms or use a wider type");
 static_assert((bool)(TX_TIMER_TICKS_PER_SECOND != 0U),

@@ -180,8 +180,8 @@ TEST_F(SafetyMonitorTest, DiagnosticsPublication)
   auto test_node = rclcpp::Node::make_shared("test_node");
   auto diag_sub = test_node->create_subscription<
     diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10,
-                                           [&diag_count](const diagnostic_msgs::msg::DiagnosticArray::SharedPtr) {
-                                             diag_count++;
+      [&diag_count](const diagnostic_msgs::msg::DiagnosticArray::SharedPtr) {
+        diag_count++;
                                            });
 
   // Wait for a few diagnostic messages
@@ -301,12 +301,12 @@ rclcpp::NodeOptions make_fast_options(bool enable_auto_estop = true)
 {
   rclcpp::NodeOptions options;
   options.parameter_overrides({
-    {"heartbeat_timeout_ms", FAST_HEARTBEAT_TIMEOUT_MS},
-    {"publish_rate", FAST_PUBLISH_RATE_HZ},
-    {"enable_auto_estop", enable_auto_estop},
-    {"obstacle_estop_distance", OBSTACLE_ESTOP_DISTANCE_M},
-    {"obstacle_warn_distance", OBSTACLE_WARN_DISTANCE_M},
-    {"obstacle_clear_count_required", OBSTACLE_CLEAR_COUNT},
+      {"heartbeat_timeout_ms", FAST_HEARTBEAT_TIMEOUT_MS},
+      {"publish_rate", FAST_PUBLISH_RATE_HZ},
+      {"enable_auto_estop", enable_auto_estop},
+      {"obstacle_estop_distance", OBSTACLE_ESTOP_DISTANCE_M},
+      {"obstacle_warn_distance", OBSTACLE_WARN_DISTANCE_M},
+      {"obstacle_clear_count_required", OBSTACLE_CLEAR_COUNT},
   });
   return options;
 }
@@ -326,11 +326,15 @@ sensor_msgs::msg::Range make_range_msg(float range_m)
 // `predicate` returns true or the wall-clock budget is exhausted. Using a
 // shared executor instead of background threads matches the rclcpp test idiom
 // already in use elsewhere in this file (see DiagnosticsPublication).
-template <typename Predicate>
-bool spin_until(rclcpp::executors::SingleThreadedExecutor & executor, Predicate predicate, double timeout_s)
+template<typename Predicate>
+bool spin_until(
+  rclcpp::executors::SingleThreadedExecutor & executor, Predicate predicate,
+  double timeout_s)
 {
   const auto start = std::chrono::steady_clock::now();
-  while (std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count() < timeout_s) {
+  while (std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count() <
+    timeout_s)
+  {
     executor.spin_some(SPIN_TIMEOUT);
     if (predicate()) {
       return true;
@@ -353,15 +357,16 @@ TEST_F(SafetyMonitorTest, EStopTriggeredByObstacleProximity)
   std::this_thread::sleep_for(LIFECYCLE_TRANSITION_DELAY);
 
   auto test_node = rclcpp::Node::make_shared("test_obstacle_pub");
-  auto sonar_pub = test_node->create_publisher<sensor_msgs::msg::Range>("/star/obstacle/front_left", 10);
+  auto sonar_pub = test_node->create_publisher<sensor_msgs::msg::Range>("/star/obstacle/front_left",
+    10);
 
   std::atomic<bool> estop_received{false};
   auto estop_sub = test_node->create_subscription<std_msgs::msg::Bool>("/emergency_stop", 10,
-                                                                       [&estop_received](
-                                                                         const std_msgs::msg::Bool::SharedPtr msg) {
-                                                                         if (msg->data) {
-                                                                           estop_received = true;
-                                                                         }
+      [&estop_received](
+        const std_msgs::msg::Bool::SharedPtr msg) {
+        if (msg->data) {
+          estop_received = true;
+        }
                                                                        });
 
   rclcpp::executors::SingleThreadedExecutor executor;
@@ -373,7 +378,7 @@ TEST_F(SafetyMonitorTest, EStopTriggeredByObstacleProximity)
   range_msg.header.stamp = node->now();
   sonar_pub->publish(range_msg);
 
-  EXPECT_TRUE(spin_until(executor, [&]() { return estop_received.load(); }, MESSAGE_WAIT_TIMEOUT_S));
+  EXPECT_TRUE(spin_until(executor, [&]() {return estop_received.load();}, MESSAGE_WAIT_TIMEOUT_S));
 }
 
 TEST_F(SafetyMonitorTest, EStopNotTriggeredByObstacleWarnRange)
@@ -382,22 +387,36 @@ TEST_F(SafetyMonitorTest, EStopNotTriggeredByObstacleWarnRange)
   // < 0.30 m) must NOT raise emergency_stop_active_. This guards against a
   // regression where the warn-vs-estop branch in safety_monitor.cpp:381-394
   // collapses into a single threshold.
-  auto node = std::make_shared<star_safety_monitor::SafetyMonitor>(make_fast_options());
+  //
+  // Use a long heartbeat timeout (5 s) instead of make_fast_options' 150 ms
+  // so the heartbeat watchdog does NOT fire during the warn-band wait
+  // window (otherwise an unrelated heartbeat-timeout e-stop would mask the
+  // intended assertion).
+  rclcpp::NodeOptions options;
+  options.parameter_overrides({
+    {"heartbeat_timeout_ms", 5000},
+    {"publish_rate", FAST_PUBLISH_RATE_HZ},
+    {"enable_auto_estop", true},
+    {"obstacle_estop_distance", OBSTACLE_ESTOP_DISTANCE_M},
+    {"obstacle_warn_distance", OBSTACLE_WARN_DISTANCE_M},
+  });
+  auto node = std::make_shared<star_safety_monitor::SafetyMonitor>(options);
   node->configure();
   std::this_thread::sleep_for(LIFECYCLE_TRANSITION_DELAY);
   node->activate();
   std::this_thread::sleep_for(LIFECYCLE_TRANSITION_DELAY);
 
   auto test_node = rclcpp::Node::make_shared("test_obstacle_warn_pub");
-  auto sonar_pub = test_node->create_publisher<sensor_msgs::msg::Range>("/star/obstacle/front_right", 10);
+  auto sonar_pub =
+    test_node->create_publisher<sensor_msgs::msg::Range>("/star/obstacle/front_right", 10);
 
   std::atomic<bool> estop_received{false};
   auto estop_sub = test_node->create_subscription<std_msgs::msg::Bool>("/emergency_stop", 10,
-                                                                       [&estop_received](
-                                                                         const std_msgs::msg::Bool::SharedPtr msg) {
-                                                                         if (msg->data) {
-                                                                           estop_received = true;
-                                                                         }
+      [&estop_received](
+        const std_msgs::msg::Bool::SharedPtr msg) {
+        if (msg->data) {
+          estop_received = true;
+        }
                                                                        });
 
   rclcpp::executors::SingleThreadedExecutor executor;
@@ -411,7 +430,7 @@ TEST_F(SafetyMonitorTest, EStopNotTriggeredByObstacleWarnRange)
 
   // Spin for the full timeout to give every monitoring tick a chance to fire;
   // we want to confirm no e-stop is published, not that one happens fast.
-  spin_until(executor, [&]() { return estop_received.load(); }, MESSAGE_WAIT_TIMEOUT_S / 2.0);
+  spin_until(executor, [&]() {return estop_received.load();}, MESSAGE_WAIT_TIMEOUT_S / 2.0);
   EXPECT_FALSE(estop_received.load());
 }
 
@@ -429,15 +448,16 @@ TEST_F(SafetyMonitorTest, EStopReleasedAfterObstacleClearsForRequiredCount)
   std::this_thread::sleep_for(LIFECYCLE_TRANSITION_DELAY);
 
   auto test_node = rclcpp::Node::make_shared("test_obstacle_clear_pub");
-  auto sonar_pub = test_node->create_publisher<sensor_msgs::msg::Range>("/star/obstacle/back_left", 10);
+  auto sonar_pub = test_node->create_publisher<sensor_msgs::msg::Range>("/star/obstacle/back_left",
+    10);
 
   std::atomic<int> estop_true_count{0};
   auto estop_sub = test_node->create_subscription<std_msgs::msg::Bool>("/emergency_stop", 10,
-                                                                       [&estop_true_count](
-                                                                         const std_msgs::msg::Bool::SharedPtr msg) {
-                                                                         if (msg->data) {
-                                                                           estop_true_count++;
-                                                                         }
+      [&estop_true_count](
+        const std_msgs::msg::Bool::SharedPtr msg) {
+        if (msg->data) {
+          estop_true_count++;
+        }
                                                                        });
 
   rclcpp::executors::SingleThreadedExecutor executor;
@@ -448,7 +468,9 @@ TEST_F(SafetyMonitorTest, EStopReleasedAfterObstacleClearsForRequiredCount)
   auto close_msg = make_range_msg(static_cast<float>(SONAR_RANGE_TOO_CLOSE_M));
   close_msg.header.stamp = node->now();
   sonar_pub->publish(close_msg);
-  EXPECT_TRUE(spin_until(executor, [&]() { return estop_true_count.load() > 0; }, MESSAGE_WAIT_TIMEOUT_S));
+  EXPECT_TRUE(spin_until(executor, [&]() {
+      return estop_true_count.load() > 0;
+    }, MESSAGE_WAIT_TIMEOUT_S));
 
   // Step 2: publish a clear range repeatedly and let the recovery counter
   // reach obstacle_clear_count_required_. We push more clears than the
@@ -465,7 +487,7 @@ TEST_F(SafetyMonitorTest, EStopReleasedAfterObstacleClearsForRequiredCount)
   // After recovery, no new /emergency_stop=true publishes should occur. Spin
   // a bit longer to confirm the count stops climbing.
   const int after_recovery = estop_true_count.load();
-  spin_until(executor, [&]() { return estop_true_count.load() > after_recovery + 1; }, 0.5);
+  spin_until(executor, [&]() {return estop_true_count.load() > after_recovery + 1;}, 0.5);
   EXPECT_GE(snapshot_after_trigger, 1);
   // We expect the count to have stabilized: at most a small handful of
   // additional publishes from in-flight ticks before recovery latched.
@@ -490,18 +512,18 @@ TEST_F(SafetyMonitorTest, HeartbeatTimeoutTriggersEStop)
   auto test_node = rclcpp::Node::make_shared("test_heartbeat_listener");
   std::atomic<bool> estop_received{false};
   auto estop_sub = test_node->create_subscription<std_msgs::msg::Bool>("/emergency_stop", 10,
-                                                                       [&estop_received](
-                                                                         const std_msgs::msg::Bool::SharedPtr msg) {
-                                                                         if (msg->data) {
-                                                                           estop_received = true;
-                                                                         }
+      [&estop_received](
+        const std_msgs::msg::Bool::SharedPtr msg) {
+        if (msg->data) {
+          estop_received = true;
+        }
                                                                        });
 
   rclcpp::executors::SingleThreadedExecutor executor;
   executor.add_node(node->get_node_base_interface());
   executor.add_node(test_node->get_node_base_interface());
 
-  EXPECT_TRUE(spin_until(executor, [&]() { return estop_received.load(); }, MESSAGE_WAIT_TIMEOUT_S));
+  EXPECT_TRUE(spin_until(executor, [&]() {return estop_received.load();}, MESSAGE_WAIT_TIMEOUT_S));
 }
 
 TEST_F(SafetyMonitorTest, HeartbeatTimeoutSuppressedWhenAutoEStopDisabled)
@@ -519,18 +541,18 @@ TEST_F(SafetyMonitorTest, HeartbeatTimeoutSuppressedWhenAutoEStopDisabled)
   auto test_node = rclcpp::Node::make_shared("test_estop_disabled_listener");
   std::atomic<bool> estop_received{false};
   auto estop_sub = test_node->create_subscription<std_msgs::msg::Bool>("/emergency_stop", 10,
-                                                                       [&estop_received](
-                                                                         const std_msgs::msg::Bool::SharedPtr msg) {
-                                                                         if (msg->data) {
-                                                                           estop_received = true;
-                                                                         }
+      [&estop_received](
+        const std_msgs::msg::Bool::SharedPtr msg) {
+        if (msg->data) {
+          estop_received = true;
+        }
                                                                        });
 
   rclcpp::executors::SingleThreadedExecutor executor;
   executor.add_node(node->get_node_base_interface());
   executor.add_node(test_node->get_node_base_interface());
 
-  spin_until(executor, [&]() { return estop_received.load(); }, MESSAGE_WAIT_TIMEOUT_S / 2.0);
+  spin_until(executor, [&]() {return estop_received.load();}, MESSAGE_WAIT_TIMEOUT_S / 2.0);
   EXPECT_FALSE(estop_received.load());
 }
 
@@ -547,28 +569,30 @@ TEST_F(SafetyMonitorTest, ObstacleProximityElevatesDiagnosticSeverity)
   std::this_thread::sleep_for(LIFECYCLE_TRANSITION_DELAY);
 
   auto test_node = rclcpp::Node::make_shared("test_diag_listener");
-  auto sonar_pub = test_node->create_publisher<sensor_msgs::msg::Range>("/star/obstacle/back_right", 10);
+  auto sonar_pub = test_node->create_publisher<sensor_msgs::msg::Range>("/star/obstacle/back_right",
+    10);
 
   std::atomic<bool> saw_error_level{false};
   std::atomic<bool> saw_obstacle_kv{false};
   auto diag_sub = test_node->create_subscription<
     diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10,
-                                           [&saw_error_level, &saw_obstacle_kv](
-                                             const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg) {
-                                             for (const auto & status : msg->status) {
-                                               if (status.hardware_id != "safety_monitor") {
-                                                 continue;
-                                               }
-                                               if (status.name == "safety_monitor: System Health" &&
-                                                   status.level == diagnostic_msgs::msg::DiagnosticStatus::ERROR) {
-                                                 saw_error_level = true;
-                                               }
-                                               for (const auto & kv : status.values) {
-                                                 if (kv.key == "Obstacle Too Close" && kv.value == "true") {
-                                                   saw_obstacle_kv = true;
-                                                 }
-                                               }
-                                             }
+      [&saw_error_level, &saw_obstacle_kv](
+        const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg) {
+        for (const auto & status : msg->status) {
+          if (status.hardware_id != "safety_monitor") {
+            continue;
+          }
+          if (status.name == "safety_monitor: System Health" &&
+          status.level == diagnostic_msgs::msg::DiagnosticStatus::ERROR)
+          {
+            saw_error_level = true;
+          }
+          for (const auto & kv : status.values) {
+            if (kv.key == "Obstacle Too Close" && kv.value == "true") {
+              saw_obstacle_kv = true;
+            }
+          }
+        }
                                            });
 
   rclcpp::executors::SingleThreadedExecutor executor;
@@ -580,7 +604,9 @@ TEST_F(SafetyMonitorTest, ObstacleProximityElevatesDiagnosticSeverity)
   sonar_pub->publish(close_msg);
 
   EXPECT_TRUE(
-    spin_until(executor, [&]() { return saw_error_level.load() && saw_obstacle_kv.load(); }, MESSAGE_WAIT_TIMEOUT_S));
+    spin_until(executor, [&]() {
+      return saw_error_level.load() && saw_obstacle_kv.load();
+    }, MESSAGE_WAIT_TIMEOUT_S));
 }
 
 TEST_F(SafetyMonitorTest, DiagnosticPublishingContainsRequiredKeyValuePairs)
@@ -602,44 +628,44 @@ TEST_F(SafetyMonitorTest, DiagnosticPublishingContainsRequiredKeyValuePairs)
   std::atomic<bool> saw_required_kv{false};
   auto diag_sub = test_node->create_subscription<
     diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10,
-                                           [&saw_system_health, &saw_heartbeat_status, &saw_motor_status,
-                                            &saw_required_kv](
-                                             const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg) {
-                                             bool linear = false;
-                                             bool angular = false;
-                                             bool emergency = false;
-                                             bool obstacle = false;
-                                             for (const auto & status : msg->status) {
-                                               if (status.hardware_id != "safety_monitor") {
-                                                 continue;
-                                               }
-                                               if (status.name == "safety_monitor: System Health") {
-                                                 saw_system_health = true;
-                                                 for (const auto & kv : status.values) {
-                                                   if (kv.key == "Linear Velocity (m/s)") {
-                                                     linear = true;
-                                                   }
-                                                   if (kv.key == "Angular Velocity (rad/s)") {
-                                                     angular = true;
-                                                   }
-                                                   if (kv.key == "Emergency Stop Active") {
-                                                     emergency = true;
-                                                   }
-                                                   if (kv.key == "Obstacle Too Close") {
-                                                     obstacle = true;
-                                                   }
-                                                 }
-                                               }
-                                               if (status.name == "safety_monitor: Heartbeat Status") {
-                                                 saw_heartbeat_status = true;
-                                               }
-                                               if (status.name == "safety_monitor: Motor Status") {
-                                                 saw_motor_status = true;
-                                               }
-                                             }
-                                             if (linear && angular && emergency && obstacle) {
-                                               saw_required_kv = true;
-                                             }
+      [&saw_system_health, &saw_heartbeat_status, &saw_motor_status,
+      &saw_required_kv](
+        const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg) {
+        bool linear = false;
+        bool angular = false;
+        bool emergency = false;
+        bool obstacle = false;
+        for (const auto & status : msg->status) {
+          if (status.hardware_id != "safety_monitor") {
+            continue;
+          }
+          if (status.name == "safety_monitor: System Health") {
+            saw_system_health = true;
+            for (const auto & kv : status.values) {
+              if (kv.key == "Linear Velocity (m/s)") {
+                linear = true;
+              }
+              if (kv.key == "Angular Velocity (rad/s)") {
+                angular = true;
+              }
+              if (kv.key == "Emergency Stop Active") {
+                emergency = true;
+              }
+              if (kv.key == "Obstacle Too Close") {
+                obstacle = true;
+              }
+            }
+          }
+          if (status.name == "safety_monitor: Heartbeat Status") {
+            saw_heartbeat_status = true;
+          }
+          if (status.name == "safety_monitor: Motor Status") {
+            saw_motor_status = true;
+          }
+        }
+        if (linear && angular && emergency && obstacle) {
+          saw_required_kv = true;
+        }
                                            });
 
   rclcpp::executors::SingleThreadedExecutor executor;
@@ -648,9 +674,9 @@ TEST_F(SafetyMonitorTest, DiagnosticPublishingContainsRequiredKeyValuePairs)
 
   EXPECT_TRUE(spin_until(
     executor,
-    [&]() {
-      return saw_system_health.load() && saw_heartbeat_status.load() && saw_motor_status.load() &&
-             saw_required_kv.load();
+      [&]() {
+        return saw_system_health.load() && saw_heartbeat_status.load() && saw_motor_status.load() &&
+               saw_required_kv.load();
     },
     MESSAGE_WAIT_TIMEOUT_S));
 }

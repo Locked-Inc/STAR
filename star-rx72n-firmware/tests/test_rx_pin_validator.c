@@ -977,14 +977,18 @@ static bool s_stub_is_pin_reserved(void* ctx, uint8_t port, uint8_t pin)
   return false;
 }
 
-static rx_err_t /* NOLINTNEXTLINE(readability-non-const-parameter) -- matches rx_pin_get_function_fn */
+static rx_err_t
 s_stub_get_pin_function(void* ctx, uint8_t port, uint8_t pin, char* out_buf, uint32_t buf_size)
 {
   (void)ctx;
   (void)port;
   (void)pin;
-  (void)out_buf;
-  (void)buf_size;
+  /* Write through out_buf so clang-tidy sees a real (non-const) use,
+   * preventing readability-non-const-parameter while preserving the
+   * function-pointer-signature contract with rx_pin_get_function_fn. */
+  if (buf_size > 0U) {
+    out_buf[0] = '\0';
+  }
   return k_rx_ok;
 }
 

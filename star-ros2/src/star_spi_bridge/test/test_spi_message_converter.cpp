@@ -22,7 +22,8 @@ constexpr int kTestEncoderTicksPerRev = 11599;  // 341 PPR x 34.02:1 gearbox
 
 class SpiMessageConverterTest : public ::testing::Test {
 protected:
-  SpiMessageConverter::Parameters params{kTestTrackWidthM, kTestWheelRadiusM, kTestEncoderTicksPerRev};
+  SpiMessageConverter::Parameters params{kTestTrackWidthM, kTestWheelRadiusM,
+    kTestEncoderTicksPerRev};
   SpiMessageConverter converter{params};
 };
 
