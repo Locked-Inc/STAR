@@ -41,8 +41,7 @@ constexpr int SPI_IOC_WR_MODE = 0;
 constexpr int SPI_IOC_WR_BITS_PER_WORD = 0;
 constexpr int SPI_IOC_WR_MAX_SPEED_HZ = 0;
 
-struct spi_ioc_transfer
-{
+struct spi_ioc_transfer {
   uint64_t tx_buf_;
   uint64_t rx_buf_;
   uint32_t len_;
@@ -170,7 +169,9 @@ std::once_flag SpiDriver::crc32_table_init_flag_;
  * @post CRC-32 lookup table is initialised (thread-safe, once).
  */
 SpiDriver::SpiDriver(const std::string & device_path, uint32_t speed_hz)
-: device_path_(device_path), speed_hz_(speed_hz), spi_fd_(-1)
+: device_path_(device_path),
+  speed_hz_(speed_hz),
+  spi_fd_(-1)
 {
   assert(!device_path_.empty());
   assert(speed_hz_ > 0);
@@ -197,8 +198,7 @@ bool SpiDriver::initialize()
   // Open SPI device
   spi_fd_ = open(device_path_.c_str(), O_RDWR);
   if (spi_fd_ < 0) {
-    RCLCPP_ERROR(logger(), "Failed to open SPI device: %s (%s)",
-                 device_path_.c_str(), strerror(errno));
+    RCLCPP_ERROR(logger(), "Failed to open SPI device: %s (%s)", device_path_.c_str(), strerror(errno));
     return false;
   }
 
@@ -252,9 +252,7 @@ void SpiDriver::close_device()
   }
 }
 
-bool SpiDriver::transfer(
-  const std::vector<uint8_t> & tx_data,
-  std::vector<uint8_t> & rx_data)
+bool SpiDriver::transfer(const std::vector<uint8_t> & tx_data, std::vector<uint8_t> & rx_data)
 {
 #ifndef __linux__
   RCLCPP_ERROR(logger(), "SPI driver is only supported on Linux platforms");
@@ -271,10 +269,8 @@ bool SpiDriver::transfer(
   struct spi_ioc_transfer xfer;
   std::memset(&xfer, 0, sizeof(xfer));
 
-  set_spi_xfer_tx_buf(
-      xfer, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tx_data.data())));
-  set_spi_xfer_rx_buf(
-      xfer, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(rx_data.data())));
+  set_spi_xfer_tx_buf(xfer, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tx_data.data())));
+  set_spi_xfer_rx_buf(xfer, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(rx_data.data())));
   set_spi_xfer_len(xfer, static_cast<uint32_t>(tx_data.size()));
   set_spi_xfer_speed_hz(xfer, speed_hz_);
   set_spi_xfer_bits_per_word(xfer, BITS_PER_WORD);
@@ -288,10 +284,8 @@ bool SpiDriver::transfer(
   return true;
 }
 
-void SpiDriver::encode_frame(
-  uint16_t seq, FrameType type, uint8_t flags,
-  const std::vector<uint8_t> & payload,
-  std::vector<uint8_t> & out_frame)
+void SpiDriver::encode_frame(uint16_t seq, FrameType type, uint8_t flags, const std::vector<uint8_t> & payload,
+                             std::vector<uint8_t> & out_frame)
 {
   if (payload.size() > MAX_PAYLOAD_SIZE) {
     throw std::invalid_argument("payload exceeds maximum size of 1024 bytes");
@@ -308,17 +302,17 @@ void SpiDriver::encode_frame(
   // SYNC: 0x55AA (Little Endian)
   // Note: Header fields (SYNC, SEQ, LEN) use little-endian byte order
   // Wire format: [0xAA, 0x55] for 0x55AA
-  out_frame.push_back(SYNC_WORD & 0xFF);        // LSB first (0xAA)
-  out_frame.push_back((SYNC_WORD >> 8) & 0xFF); // MSB second (0x55)
+  out_frame.push_back(SYNC_WORD & 0xFF);         // LSB first (0xAA)
+  out_frame.push_back((SYNC_WORD >> 8) & 0xFF);  // MSB second (0x55)
 
   // SEQ (Little Endian)
-  out_frame.push_back(seq & 0xFF);        // LSB first
-  out_frame.push_back((seq >> 8) & 0xFF); // MSB second
+  out_frame.push_back(seq & 0xFF);         // LSB first
+  out_frame.push_back((seq >> 8) & 0xFF);  // MSB second
 
   // LEN (Little Endian)
   uint16_t len = static_cast<uint16_t>(payload.size());
-  out_frame.push_back(len & 0xFF);        // LSB first
-  out_frame.push_back((len >> 8) & 0xFF); // MSB second
+  out_frame.push_back(len & 0xFF);         // LSB first
+  out_frame.push_back((len >> 8) & 0xFF);  // MSB second
 
   // TYPE
   out_frame.push_back(static_cast<uint8_t>(type));
@@ -341,17 +335,13 @@ void SpiDriver::encode_frame(
   if (out_frame.size() != frame_size) {
     throw std::logic_error("encoded frame size does not match expected layout");
   }
-  if (out_frame[0] != (SYNC_WORD & 0xFF) ||
-    out_frame[1] != ((SYNC_WORD >> 8) & 0xFF))
-  {
+  if (out_frame[0] != (SYNC_WORD & 0xFF) || out_frame[1] != ((SYNC_WORD >> 8) & 0xFF)) {
     throw std::logic_error("encoded frame sync word mismatch");
   }
 }
 
-bool SpiDriver::decode_frame(
-  const std::vector<uint8_t> & frame, uint16_t & seq,
-  FrameType & type, uint8_t & flags,
-  std::vector<uint8_t> & payload)
+bool SpiDriver::decode_frame(const std::vector<uint8_t> & frame, uint16_t & seq, FrameType & type, uint8_t & flags,
+                             std::vector<uint8_t> & payload)
 {
   if (frame.size() < HEADER_SIZE + CRC_SIZE) {
     return false;
@@ -373,8 +363,7 @@ bool SpiDriver::decode_frame(
   // match HEADER_SIZE + len + CRC_SIZE for some absurd len.
   if (len > MAX_PAYLOAD_SIZE) {
     static rclcpp::Clock throttle_clock{RCL_STEADY_TIME};
-    RCLCPP_WARN_THROTTLE(logger(), throttle_clock, 1000,
-                         "decode_frame: payload length %u exceeds MAX_PAYLOAD_SIZE %zu",
+    RCLCPP_WARN_THROTTLE(logger(), throttle_clock, 1000, "decode_frame: payload length %u exceeds MAX_PAYLOAD_SIZE %zu",
                          static_cast<unsigned>(len), MAX_PAYLOAD_SIZE);
     return false;
   }
@@ -390,11 +379,10 @@ bool SpiDriver::decode_frame(
   std::vector<uint8_t> data_to_check(frame.begin(), frame.end() - CRC_SIZE);
   uint32_t calculated_crc = calculate_crc32(data_to_check);
 
-  uint32_t received_crc =
-    static_cast<uint32_t>(frame[frame.size() - 4]) |
-    (static_cast<uint32_t>(frame[frame.size() - 3]) << 8) |
-    (static_cast<uint32_t>(frame[frame.size() - 2]) << 16) |
-    (static_cast<uint32_t>(frame[frame.size() - 1]) << 24);
+  uint32_t received_crc = static_cast<uint32_t>(frame[frame.size() - 4]) |
+                          (static_cast<uint32_t>(frame[frame.size() - 3]) << 8) |
+                          (static_cast<uint32_t>(frame[frame.size() - 2]) << 16) |
+                          (static_cast<uint32_t>(frame[frame.size() - 1]) << 24);
 
   if (calculated_crc != received_crc) {
     return false;
@@ -407,8 +395,7 @@ bool SpiDriver::decode_frame(
   // Reject frames carrying an unknown or reserved frame type byte
   if (!is_valid_frame_type(type)) {
     static rclcpp::Clock throttle_clock{RCL_STEADY_TIME};
-    RCLCPP_WARN_THROTTLE(logger(), throttle_clock, 1000,
-                         "decode_frame: unknown frame type 0x%02X",
+    RCLCPP_WARN_THROTTLE(logger(), throttle_clock, 1000, "decode_frame: unknown frame type 0x%02X",
                          static_cast<uint8_t>(type));
     return false;
   }

@@ -92,7 +92,7 @@
  * @msc
  * App, Timer_Init, CMT0, ICU, ThreadX;
  *
- * --- [label="Initialization Phase"];
+ * ... [label="Initialization Phase"];
  * App => Timer_Init [label="timer_init()"];
  * Timer_Init box Timer_Init [label="Validate hardware"];
  * Timer_Init => CMT0 [label="Stop timer"];
@@ -106,7 +106,7 @@
  * Timer_Init box Timer_Init [label="Enable global interrupts"];
  * Timer_Init => App [label="return k_rx_ok"];
  *
- * --- [label="Runtime Operation (every 10 ms)"];
+ * ... [label="Runtime Operation (every 10 ms)"];
  * CMT0 => ICU [label="Compare match interrupt"];
  * ICU => Timer_Init [label="cmt0_isr()"];
  * Timer_Init => ICU [label="Clear IR flag"];

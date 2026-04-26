@@ -386,8 +386,8 @@ typedef enum : uint8_t {
  *   rankdir=TB;
  *   node [shape=record, fontsize=10];
  *
- *   sawtooth [label="{Sawtooth Mode|Counter: 0->P->0->P->0|Update: trough only|PWM edges: aligned to start|Best for: LED dimming}"];
- *   triangle [label="{Triangle Mode|Counter: 0->P->0->P->0|Update: crest and/or trough|PWM edges: centered|Best for: motor control}"];
+ *   sawtooth [label="{Sawtooth Mode|Counter: 0..P repeats|Update: trough only|PWM edges: aligned to start|Best for: LED dimming}"];
+ *   triangle [label="{Triangle Mode|Counter: 0..P..0 repeats|Update: crest and/or trough|PWM edges: centered|Best for: motor control}"];
  *
  *   sawtooth -> triangle [style=invis];
  * }

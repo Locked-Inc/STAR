@@ -49,19 +49,19 @@
  * @msc
  * RPi5, RX72N;
  *
- * --- [label="Normal Command/Response"];
+ * ... [label="Normal Command/Response"];
  * RPi5 => RX72N [label="COMMAND (seq=1, requires_ack)"];
  * RPi5 <= RX72N [label="ACK (seq=1)"];
  * RPi5 <= RX72N [label="RESPONSE (seq=1)"];
  * RPi5 => RX72N [label="ACK (seq=1)"];
  *
- * --- [label="Retransmission on CRC Error"];
+ * ... [label="Retransmission on CRC Error"];
  * RPi5 => RX72N [label="COMMAND (seq=2)"];
  * RPi5 box RPi5 [label="Timeout"];
  * RPi5 => RX72N [label="COMMAND (seq=2, retransmit)"];
  * RPi5 <= RX72N [label="ACK (seq=2)"];
  *
- * --- [label="NACK on Decode Error"];
+ * ... [label="NACK on Decode Error"];
  * RPi5 => RX72N [label="COMMAND (seq=3, bad payload)"];
  * RPi5 <= RX72N [label="NACK (seq=3, soft_nack)"];
  * @endmsc

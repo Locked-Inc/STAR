@@ -128,8 +128,11 @@ WARN_IF_INCOMPLETE_DOC  = YES
 WARN_NO_PARAMDOC        = YES
 # FAIL_ON_WARNINGS: doxygen runs to completion, then exits non-zero if any
 # warning was emitted. Preferred over plain YES because the YES abort path in
-# doxygen 1.16.1 SIGSEGVs during caller-graph generation when aborting on
-# environment errors (\startuml without PLANTUML, mscgen INPUT FORMAT ERROR).
+# doxygen 1.16.1 SIGSEGVs (exit 139) during caller-graph generation when
+# aborting mid-build, even with PLANTUML/MSCGEN configured. Verified Round 13
+# 2026-04-25: with all environment errors resolved (plantuml/mscgen installed,
+# msc/uml syntax fixed), WARN_AS_ERROR=YES still SIGSEGVs and HTML output is
+# never written. FAIL_ON_WARNINGS lets doxygen finish, then exits 1 on warnings.
 # Behavior is equivalent for CI purposes: exit 0 on clean run, exit 1 on warnings.
 WARN_AS_ERROR           = FAIL_ON_WARNINGS
 WARN_FORMAT             = "$file:$line: $text"
@@ -330,10 +333,10 @@ DOT_IMAGE_FORMAT        = svg
 INTERACTIVE_SVG         = YES
 DOT_PATH                =
 DOTFILE_DIRS            =
-MSCGEN_TOOL             =
+MSCGEN_TOOL             = /opt/homebrew/bin/mscgen
 MSCFILE_DIRS            =
 DIAFILE_DIRS            =
-PLANTUML_JAR_PATH       =
+PLANTUML_JAR_PATH       = /opt/homebrew/opt/plantuml/libexec/plantuml.jar
 PLANTUML_CFG_FILE       =
 PLANTUML_INCLUDE_PATH   =
 DOT_GRAPH_MAX_NODES     = 500

@@ -8,7 +8,7 @@
 package controller
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
@@ -62,23 +62,23 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Printf("failed to accept websocket: %v", err)
+		slog.Error("failed to accept websocket", "error", err)
 		return
 	}
 
-	log.Printf("controller connected from %s", r.RemoteAddr)
+	slog.Info("controller connected", "remote_addr", r.RemoteAddr)
 
 	defer func() {
 		deadline := time.Now().Add(time.Second)
 		closePayload := websocket.FormatCloseMessage(websocket.CloseInternalServerErr, "internal error")
 		if err := c.WriteControl(websocket.CloseMessage, closePayload, deadline); err != nil {
 			// It's normal for Close to fail if connection is already closed
-			log.Printf("websocket close: %v", err)
+			slog.Error("websocket close", "error", err)
 		}
 		if err := c.Close(); err != nil {
-			log.Printf("websocket close: %v", err)
+			slog.Error("websocket close", "error", err)
 		}
-		log.Printf("controller disconnected from %s", r.RemoteAddr)
+		slog.Info("controller disconnected", "remote_addr", r.RemoteAddr)
 	}()
 
 	var lastDebug bool
@@ -86,7 +86,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for {
 		typ, bytes, err := c.ReadMessage()
 		if err != nil {
-			log.Printf("failed to read: %v", err)
+			slog.Error("failed to read", "error", err)
 			break
 		}
 
@@ -96,21 +96,21 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		var msg starv1.ControllerState
 		if err := proto.Unmarshal(bytes, &msg); err != nil {
-			log.Printf("failed to unmarshal: %v", err)
+			slog.Error("failed to unmarshal", "error", err)
 			continue
 		}
 
 		// Handle debug state transitions
 		if msg.Debug && !lastDebug {
-			log.Println(">>> DEBUG MODE ENABLED")
+			slog.Info(">>> DEBUG MODE ENABLED")
 		} else if !msg.Debug && lastDebug {
-			log.Println(">>> DEBUG MODE DISABLED")
+			slog.Info(">>> DEBUG MODE DISABLED")
 		}
 		lastDebug = msg.Debug
 
 		// Debug log to verify data reception
 		if msg.Debug {
-			log.Printf("Received: Linear=%.2f, Angular=%.2f", msg.LinearVel, msg.AngularVel)
+			slog.Debug("controller state received", "linear", msg.LinearVel, "angular", msg.AngularVel)
 		}
 
 		// Convert ControllerState to VelocityCommand and forward to Gateway

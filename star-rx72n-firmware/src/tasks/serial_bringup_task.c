@@ -395,7 +395,7 @@ static void internal_drain_rx(void)
     s_total_rx_bytes++;
     const uint8_t byte_u = (uint8_t)byte_c;
 
-    if ((byte_u == (uint8_t)k_ascii_lf) || (byte_u == (uint8_t)k_ascii_cr)) {
+    if ((byte_u == k_ascii_lf) || (byte_u == k_ascii_cr)) {
       if (s_line_len > 0U) {
         s_total_lines++;
         internal_handle_line(s_line, s_line_len);
@@ -404,10 +404,10 @@ static void internal_drain_rx(void)
       continue;
     }
 
-    if (byte_u < (uint8_t)k_ascii_space) {
+    if (byte_u < k_ascii_space) {
       continue;
     }
-    if (byte_u > (uint8_t)k_ascii_tilde) {
+    if (byte_u > k_ascii_tilde) {
       continue;
     }
 
@@ -448,7 +448,7 @@ static void internal_handle_line(const char* line, uint8_t len)
     return;
   }
   /* Comment / non-command lines: ignore silently. */
-  if ((uint8_t)line[0] != (uint8_t)k_ascii_cmd_velocity) {
+  if ((uint8_t)line[0] != k_ascii_cmd_velocity) {
     return;
   }
 
@@ -462,7 +462,7 @@ static void internal_handle_line(const char* line, uint8_t len)
   const char* cursor                      = &scratch[1];
   float       parsed[k_serial_num_motors] = {0.0F, 0.0F, 0.0F, 0.0F};
 
-  for (uint8_t i = 0; i < (uint8_t)k_serial_num_motors; i++) {
+  for (uint8_t i = 0; i < k_serial_num_motors; i++) {
     char* endptr = NULL;
     /* strtof() in newlib-nano returns NaN on this build; strtod() works. */
     const double v = strtod(cursor, &endptr);

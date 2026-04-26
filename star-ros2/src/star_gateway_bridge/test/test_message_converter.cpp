@@ -7,19 +7,18 @@
 
 #include "star_gateway_bridge/message_converter.hpp"
 
-#include <cmath>  // NOLINT(build/include_order)
+#include <cmath>   // NOLINT(build/include_order)
 #include <limits>  // NOLINT(build/include_order)
 
 #include <geometry_msgs/msg/twist.hpp>  // NOLINT(build/include_order)
-#include <gtest/gtest.h>  // NOLINT(build/include_order)
 #include "star/v1/motor_control.pb.h"
+#include <gtest/gtest.h>  // NOLINT(build/include_order)
 
 namespace star
 {
 
 // Test fixture for MessageConverter tests
-class MessageConverterTest : public ::testing::Test
-{
+class MessageConverterTest : public ::testing::Test {
 protected:
   star_gateway_bridge::MessageConverter converter_;
   static constexpr double TOLERANCE = 1e-6;
@@ -511,8 +510,7 @@ TEST_F(MessageConverterTest, TwistToCommandVeryLargeWheelBase)
 // obstacle_distance_to_range Tests (HC-SR04 Sensor Converter)
 // =============================================================================
 
-class ObstacleDistanceToRangeTest : public ::testing::Test
-{
+class ObstacleDistanceToRangeTest : public ::testing::Test {
 protected:
   star_gateway_bridge::MessageConverter converter_;
   static constexpr float FLOAT_TOL = 1e-5F;
@@ -552,8 +550,8 @@ TEST_F(ObstacleDistanceToRangeTest, ZeroMapsToMaxRange)
 TEST_F(ObstacleDistanceToRangeTest, NaNMapsToMaxRange)
 {
   sensor_msgs::msg::Range out;
-  converter_.obstacle_distance_to_range(
-    std::numeric_limits<float>::quiet_NaN(), "obstacle_back_left", make_stamp(), out);
+  converter_.obstacle_distance_to_range(std::numeric_limits<float>::quiet_NaN(), "obstacle_back_left", make_stamp(),
+                                        out);
 
   EXPECT_NEAR(out.range, HC_SR04_MAX, FLOAT_TOL);
 }
@@ -561,8 +559,8 @@ TEST_F(ObstacleDistanceToRangeTest, NaNMapsToMaxRange)
 TEST_F(ObstacleDistanceToRangeTest, PosInfMapsToMaxRange)
 {
   sensor_msgs::msg::Range out;
-  converter_.obstacle_distance_to_range(
-    std::numeric_limits<float>::infinity(), "obstacle_back_right", make_stamp(), out);
+  converter_.obstacle_distance_to_range(std::numeric_limits<float>::infinity(), "obstacle_back_right", make_stamp(),
+                                        out);
 
   EXPECT_NEAR(out.range, HC_SR04_MAX, FLOAT_TOL);
 }
@@ -572,8 +570,8 @@ TEST_F(ObstacleDistanceToRangeTest, NegInfMapsToMinRange)
   // Negative infinity is non-finite; clamped to min_range after the
   // isfinite check falls through to std::max/min clamping.
   sensor_msgs::msg::Range out;
-  converter_.obstacle_distance_to_range(
-    -std::numeric_limits<float>::infinity(), "obstacle_front_left", make_stamp(), out);
+  converter_.obstacle_distance_to_range(-std::numeric_limits<float>::infinity(), "obstacle_front_left", make_stamp(),
+                                        out);
 
   // Non-finite maps to max_range per implementation.
   EXPECT_NEAR(out.range, HC_SR04_MAX, FLOAT_TOL);
@@ -632,7 +630,7 @@ TEST_F(ObstacleDistanceToRangeTest, StampPropagated)
 
 }  // namespace star
 
-int main(int argc, char **argv)
+int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

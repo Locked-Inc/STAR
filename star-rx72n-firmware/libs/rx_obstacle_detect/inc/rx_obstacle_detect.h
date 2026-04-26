@@ -76,14 +76,14 @@
  * @msc
  * Task, Sensor1, Sensor2, Motors, Callback;
  *
- * --- [label="Normal Operation"];
+ * ... [label="Normal Operation"];
  * Task => Sensor1 [label="measure()"];
  * Sensor1 => Task [label="50cm (OK)"];
  * Task => Sensor2 [label="measure()"];
  * Sensor2 => Task [label="60cm (OK)"];
  * Task note Task [label="wait poll_interval_ms"];
  *
- * --- [label="Obstacle Detection"];
+ * ... [label="Obstacle Detection"];
  * Task => Sensor1 [label="measure()"];
  * Sensor1 => Task [label="25cm (< 30cm threshold)"];
  * Task box Task [label="debounce_counter++ (1)"];

@@ -1119,136 +1119,223 @@ static rx_err_t internal_calculate_bit_rate(const uint32_t frequency_hz,
  * - Rule 2: [OK] Bounded loop with k_riic_timeout_us maximum iterations
  * - Rule 5: [OK] nullptr check via RX_CHECK_NULL_PTR
  */
-static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
+/**
+ * @brief Snapshot of RIIC config registers preserved across IICRST pulses
+ *
+ * @details
+ * IICRST resets ICBRH/ICBRL/ICMR1/ICMR2/ICMR3 to power-on defaults.  The
+ * recovery sequence saves these before pulsing IICRST and restores them
+ * after, so the post-recovery RIIC keeps the configured baud rate and
+ * mode bits.
+ *
+ * @since Version 1.0.0
+ */
+typedef struct {
+  uint8_t icbrh; /**< @brief ICBRH (high-period bit-rate divisor) */
+  uint8_t icbrl; /**< @brief ICBRL (low-period bit-rate divisor) */
+  uint8_t icmr1; /**< @brief ICMR1 (mode register 1) */
+  uint8_t icmr2; /**< @brief ICMR2 (mode register 2) */
+} riic_saved_cfg_t;
+
+/**
+ * @brief Poll BBSY for up to k_riic_timeout_us iterations
+ *
+ * @details
+ * Tight-loop watcher for the Bus Busy bit in ICCR2.  Returns true when
+ * BBSY clears within the timeout, false otherwise.
+ *
+ * @param[in] riic RIIC peripheral base (must be non-null)
+ *
+ * @return bool true if BBSY observed clear, false on timeout
+ *
+ * @pre riic non-null
+ * @post Returns false on timeout
+ *
+ * @note Caller decides recovery action (warn + IICRST or bit-bang).
+ *
+ * @since Version 1.0.0
+ */
+static bool internal_riic_poll_bbsy_clear(volatile rx_riic_regs_t* const riic)
 {
   uint32_t timeout = k_riic_timeout_us;
-
-  RX_CHECK_NULL_PTR(riic, s_tag, "RIIC peripheral base is nullptr");
-
   while ((riic->iccr2 & k_riic_iccr2_bbsy) && timeout > k_riic_timeout_zero) {
     timeout--;
   }
+  return timeout > k_riic_timeout_zero;
+}
 
-  if (timeout > k_riic_timeout_zero) {
-    return k_rx_ok;
-  }
+/**
+ * @brief Save config registers wiped by an IICRST pulse
+ *
+ * @param[in] riic RIIC peripheral base (must be non-null)
+ * @param[out] saved Snapshot of ICBRH/ICBRL/ICMR1/ICMR2
+ *
+ *
+ * @pre riic and saved non-null
+ * @post saved holds the pre-reset register values
+ *
+ * @since Version 1.0.0
+ */
+static void internal_riic_save_config(const volatile rx_riic_regs_t* const riic,
+                                      riic_saved_cfg_t* const              saved)
+{
+  saved->icbrh = riic->icbrh;
+  saved->icbrl = riic->icbrl;
+  saved->icmr1 = riic->icmr1;
+  saved->icmr2 = riic->icmr2;
+}
 
-  /* BBSY can latch stuck when the peripheral comes up observing lines that
-   * are mid-transition (e.g. a peripheral holding SDA low from a prior aborted
-   * byte). Per RX72N HW manual section 42.2.1 the only software-side clear
-   * is an IICRST pulse -- which wipes the config registers back to reset,
-   * so we must restore them after. */
-  rx_log_warn(s_tag, "BBSY stuck - pulsing IICRST to recover");
+/**
+ * @brief Pulse IICRST and restore config from a saved snapshot
+ *
+ * @details
+ * Asserts IICRST=1 then deasserts back to configuration state, restores
+ * ICBRH/ICBRL/ICMR1/ICMR2 plus ICMR3=k_riic_icmr3_init (IICRST also wipes
+ * ICMR3, and ACKWP=1 must be restored so reads can NACK the final byte).
+ * Clears stale ICSR1/ICSR2 flags before re-enabling ICE=1.
+ *
+ * @param[in] riic RIIC peripheral base (must be non-null)
+ * @param[in] saved Pre-recovery config snapshot
+ *
+ *
+ * @pre riic and saved non-null
+ * @post ICE=1 with saved config and clean status registers
+ *
+ * @since Version 1.0.0
+ */
+static void internal_riic_iicrst_with_restore(volatile rx_riic_regs_t* const riic,
+                                              const riic_saved_cfg_t* const  saved)
+{
+  riic->iccr1 = k_riic_iccr1_iicrst;
+  riic->iccr1 = k_riic_register_clear;
 
-  /* Debug-level detail (compiled out when LOG_LEVEL < k_log_debug): SDA/SCL
-   * pad state + ICCR2/ICSR2 before recovery. PIDR tells us whether the bus
-   * is held physically low (pad bit=0 -> peripheral still driving) or only
-   * the RIIC state machine latched stuck (pad bit=1). RIIC1 = port 2
-   * (0x0008C002). Struct access lets rx72n_port_regs.h static_asserts catch
-   * layout drift at compile time. */
-  rx_log_debug_val(s_tag, "  PIDR =0x", ((volatile const rx_port_regs_t*)0x0008C002U)->pidr);
-  rx_log_debug_val(s_tag, "  ICCR2=0x", riic->iccr2);
-  rx_log_debug_val(s_tag, "  ICSR2=0x", riic->icsr2);
-  const uint8_t saved_icbrh = riic->icbrh;
-  const uint8_t saved_icbrl = riic->icbrl;
-  const uint8_t saved_icmr1 = riic->icmr1;
-  const uint8_t saved_icmr2 = riic->icmr2;
-
-  riic->iccr1 = k_riic_iccr1_iicrst;   /* assert reset (ICEEN=0, IICRST=1) */
-  riic->iccr1 = k_riic_register_clear; /* deassert -> configuration state */
-
-  riic->icbrh = saved_icbrh;
-  riic->icbrl = saved_icbrl;
-  riic->icmr1 = saved_icmr1;
-  riic->icmr2 = saved_icmr2;
-  /* IICRST wipes ICMR3 too. Restore ACKWP=1 so subsequent read transactions
-   * can still NACK the final byte; without this, the first read after a
-   * recovery would lock the bus all over again. */
+  riic->icbrh = saved->icbrh;
+  riic->icbrl = saved->icbrl;
+  riic->icmr1 = saved->icmr1;
+  riic->icmr2 = saved->icmr2;
   riic->icmr3 = k_riic_icmr3_init;
 
-  /* Clear any stale status flags left by the aborted transaction. IICRST
-   * resets most of ICSR1/ICSR2, but writing explicit zeros closes any
-   * silicon window where a flag might survive the reset window. */
   riic->icsr1 = k_riic_register_clear;
   riic->icsr2 = k_riic_register_clear;
 
-  riic->iccr1 = k_riic_iccr1_ice; /* re-enable */
+  riic->iccr1 = k_riic_iccr1_ice;
+}
 
-  /* SOWP / SCLO / SDAO release dance (same as the post-init path). */
+/**
+ * @brief Drive the SOWP/SCLO/SDAO release dance after an IICRST pulse
+ *
+ * @details
+ * Forces SCLO=SDAO=1 via SOWP write-protect-clear so the open-drain
+ * drivers release the bus (high-Z) on handback to the peripheral.
+ *
+ * @param[in] riic RIIC peripheral base (must be non-null)
+ *
+ *
+ * @pre riic non-null and ICE=1
+ * @post SOWP restored to write-protected
+ *
+ * @since Version 1.0.0
+ */
+static void internal_riic_release_lines(volatile rx_riic_regs_t* const riic)
+{
   uint8_t iccr1 = riic->iccr1;
   iccr1 &= (uint8_t) ~(uint8_t)k_riic_iccr1_sowp;
   iccr1 |= (uint8_t)(k_riic_iccr1_sclo | k_riic_iccr1_sdao);
   riic->iccr1 = iccr1;
   iccr1 |= (uint8_t)k_riic_iccr1_sowp;
   riic->iccr1 = iccr1;
+}
 
-  /* Second wait. If BBSY still set after a full IICRST cycle, the bus is
-   * genuinely stuck -- probably a peripheral holding the line low -- and
-   * IICRST alone cannot clear it because the peripheral reset does not
-   * toggle external SCL edges. */
-  timeout = k_riic_timeout_us;
-  while ((riic->iccr2 & k_riic_iccr2_bbsy) && timeout > k_riic_timeout_zero) {
-    timeout--;
-  }
-  if (timeout > k_riic_timeout_zero) {
-    return k_rx_ok;
-  }
+/**
+ * @brief Log debug-level pre-recovery bus state
+ *
+ * @param[in] riic RIIC peripheral base (must be non-null)
+ *
+ *
+ * @note PIDR struct access lets rx72n_port_regs.h static_asserts catch
+ *       layout drift at compile time.  Compiled out when
+ *       LOG_LEVEL < k_log_debug.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_riic_log_pre_recovery(const volatile rx_riic_regs_t* const riic)
+{
+  rx_log_debug_val(s_tag, "  PIDR =0x", ((volatile const rx_port_regs_t*)0x0008C002U)->pidr);
+  rx_log_debug_val(s_tag, "  ICCR2=0x", riic->iccr2);
+  rx_log_debug_val(s_tag, "  ICSR2=0x", riic->icsr2);
+}
 
-  /* Last-resort: bit-bang 9 SCL edges + manual STOP to walk any stuck
-   * peripheral through a byte + ACK. This is the only software path
-   * that can release a peripheral that is clock-stretching or holding
-   * SDA low from an aborted transaction across an MCU reboot (verified
-   * on BNO055 against the production STAR PCB).
-   *
-   * Critical ordering: bit-bang leaves PMR=0 (pads still GPIO), THEN we
-   * reset the RIIC peripheral while it has no pads, THEN we hand the
-   * pads back. If we raised PMR before resetting the peripheral, its
-   * leftover SCLO=SDAO=0 latches would drive both lines LOW again the
-   * moment the peripheral takes the pads, glitching the bus. */
+/**
+ * @brief Bit-bang last-resort bus recovery + peripheral reset + handback
+ *
+ * @details
+ * Walks the bus through 9 SCL edges + manual STOP via GPIO bit-bang to
+ * release a peripheral holding SDA low from an aborted transaction
+ * across an MCU reboot (verified on BNO055 against the production STAR
+ * PCB).  Critical ordering preserved: bit-bang leaves PMR=0 (pads still
+ * GPIO), peripheral reset runs while pads are GPIO, then handback
+ * raises PMR=1 with the SOWP dance already done so the lines stay
+ * high-Z.
+ *
+ * @param[in] riic RIIC peripheral base (must be non-null)
+ * @param[in] saved Pre-recovery config snapshot (used for restore)
+ *
+ *
+ * @pre riic and saved non-null; bus has refused to clear via IICRST alone
+ * @post Pads handed back to the peripheral with config restored
+ *
+ * @since Version 1.0.0
+ */
+static void internal_riic_bit_bang_recovery_sequence(volatile rx_riic_regs_t* const riic,
+                                                     const riic_saved_cfg_t* const  saved)
+{
   const uint8_t channel = internal_riic_channel_from_base(riic);
   rx_log_warn(s_tag, "IICRST insufficient - bit-bang bus recovery");
   internal_riic_bit_bang_recover(channel); /* leaves PMR=0 */
 
-  /* Reset the peripheral fully while pads are still GPIO. IICRST clears
-   * the internal state machine; config restore reprograms what IICRST
-   * wiped; ICE=1 re-enables; SOWP dance forces SCLO=SDAO=1 so the
-   * peripheral's open-drain drivers release (high-Z) on handback. */
-  riic->iccr1 = k_riic_iccr1_iicrst;
-  riic->iccr1 = k_riic_register_clear;
-  riic->icbrh = saved_icbrh;
-  riic->icbrl = saved_icbrl;
-  riic->icmr1 = saved_icmr1;
-  riic->icmr2 = saved_icmr2;
-  riic->icmr3 = k_riic_icmr3_init;     /* Restore ACKWP=1 (IICRST wiped it). */
-  riic->icsr1 = k_riic_register_clear; /* Drop any stale flag that survived. */
-  riic->icsr2 = k_riic_register_clear;
-  riic->iccr1 = k_riic_iccr1_ice;
+  internal_riic_iicrst_with_restore(riic, saved);
+  internal_riic_release_lines(riic);
 
-  iccr1 = riic->iccr1;
-  iccr1 &= (uint8_t) ~(uint8_t)k_riic_iccr1_sowp;
-  iccr1 |= (uint8_t)(k_riic_iccr1_sclo | k_riic_iccr1_sdao);
-  riic->iccr1 = iccr1;
-  iccr1 |= (uint8_t)k_riic_iccr1_sowp;
-  riic->iccr1 = iccr1;
-
-  /* Now hand the pads back to the freshly-reset peripheral (PMR=1). */
   internal_riic_bit_bang_handback(channel);
 
-  /* Debug-only post-recovery pad state. PIDR with both SCL and SDA bits
-   * set means the bus is idle (pull-ups in control); any cleared bit means
-   * a peripheral is still physically holding the line low and no amount
-   * of software will fix it. */
   if (channel == (uint8_t)k_riic_channel_1) {
     rx_log_debug_val(s_tag,
                      "  post-recover PIDR=0x",
                      ((volatile const rx_port_regs_t*)0x0008C002U)->pidr);
   }
+}
 
-  timeout = k_riic_timeout_us;
-  while ((riic->iccr2 & k_riic_iccr2_bbsy) && timeout > k_riic_timeout_zero) {
-    timeout--;
+static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
+{
+  RX_CHECK_NULL_PTR(riic, s_tag, "RIIC peripheral base is nullptr");
+
+  if (internal_riic_poll_bbsy_clear(riic)) {
+    return k_rx_ok;
   }
-  if (timeout == k_riic_timeout_zero) {
+
+  /* BBSY can latch stuck when the peripheral comes up observing lines that
+   * are mid-transition. Per RX72N HW manual section 42.2.1 the only
+   * software-side clear is an IICRST pulse -- which wipes the config
+   * registers back to reset, so we must restore them after. */
+  rx_log_warn(s_tag, "BBSY stuck - pulsing IICRST to recover");
+  internal_riic_log_pre_recovery(riic);
+
+  riic_saved_cfg_t saved;
+  internal_riic_save_config(riic, &saved);
+
+  internal_riic_iicrst_with_restore(riic, &saved);
+  internal_riic_release_lines(riic);
+
+  /* Second wait. If BBSY still set after a full IICRST cycle, the bus is
+   * genuinely stuck and IICRST alone cannot clear it because the
+   * peripheral reset does not toggle external SCL edges. */
+  if (internal_riic_poll_bbsy_clear(riic)) {
+    return k_rx_ok;
+  }
+
+  internal_riic_bit_bang_recovery_sequence(riic, &saved);
+
+  if (!internal_riic_poll_bbsy_clear(riic)) {
     rx_log_error(s_tag, "I2C bus busy timeout (after bit-bang recovery)");
     return k_rx_err_timeout;
   }
@@ -2032,112 +2119,157 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
  *
  * @callgraph
  */
-rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
+/**
+ * @brief Validate riic_init arguments and resolve peripheral base
+ *
+ * @details
+ * Checks that channel is in range, frequency is one of the three
+ * supported buckets (100k/400k/1M), and resolves the channel to its
+ * peripheral base address.
+ *
+ * @param[in] channel Channel handle
+ * @param[in] frequency_hz Requested SCL frequency
+ * @param[out] riic_out On success, set to the peripheral base
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Inputs valid, *riic_out non-null
+ * @retval k_rx_err_invalid_arg Bounds violation or unknown channel
+ *
+ * @pre riic_out non-null
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_riic_validate_init(const riic_channel_t      channel,
+                                            const uint32_t            frequency_hz,
+                                            volatile rx_riic_regs_t** riic_out)
 {
-  /* Validate channel */
   if (channel.value >= k_riic_max_channels) {
     rx_log_error(s_tag, "Invalid RIIC channel");
     return k_rx_err_invalid_arg;
   }
-
-  /* Validate frequency (100kHz, 400kHz, or 1MHz) */
   if (frequency_hz != k_riic_freq_100khz && frequency_hz != k_riic_freq_400khz &&
       frequency_hz != k_riic_freq_1mhz) {
     rx_log_error(s_tag, "Invalid I2C frequency (use 100000, 400000, or 1000000)");
     return k_rx_err_invalid_arg;
   }
-
-  /* Get RIIC base */
-  volatile rx_riic_regs_t* const riic = internal_get_riic_base(channel.value);
-  if (riic == nullptr) {
+  *riic_out = internal_get_riic_base(channel.value);
+  if (*riic_out == nullptr) {
     return k_rx_err_invalid_arg;
   }
+  return k_rx_ok;
+}
 
-  /* Enable RIIC module (clear module stop bit) */
+/**
+ * @brief Release the module-stop bit for the requested RIIC channel
+ *
+ * @details
+ * Wraps the protected-register PRCR unlock/lock around the MSTPCRB/CRC
+ * write that releases the channel's clock gate.  Channel-to-MSTP-bit
+ * mapping mirrors the RX72N HW manual MSTP table.
+ *
+ * @param[in] channel_value Validated channel index
+ *
+ *
+ * @pre channel_value < k_riic_max_channels
+ * @post Channel module clock is running
+ *
+ * @since Version 1.0.0
+ */
+static void internal_riic_release_module_stop(const uint8_t channel_value)
+{
   *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
 
-  if (channel.value == k_riic_channel_0) {
+  if (channel_value == k_riic_channel_0) {
     system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic0);
-  } else if (channel.value == k_riic_channel_1) {
+  } else if (channel_value == k_riic_channel_1) {
     system_regs()->mstpcrb &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpb_riic1);
   } else {
     system_regs()->mstpcrc &= ~((uint32_t)k_riic_mstpb_bit_value << k_riic_mstpc_riic2);
   }
 
   *prcr_reg() = k_rx_prcr_lock;
+}
 
-  /* Unconditional bit-bang bus recovery BEFORE the peripheral observes the
-   * bus. Per RX72N HW manual section 42.2.1, the RIIC comes out of
-   * module-stop + IICRST with SCLO=SDAO=0 internally -- it *drives the bus
-   * low* until the SOWP dance below writes SCLO=SDAO=1. hardware_init has
-   * already raised PMR for SCL/SDA by the time riic_init runs, so without
-   * this step the low-drive glitches the external bus and can latch
-   * BBSY=1 as soon as ICE=1. The bit-bang helper drops PMR (pads back to
-   * GPIO, tristated via pull-ups), wiggles SCL 9x, issues a manual STOP,
-   * and leaves PMR=0. We hand the pads back AFTER the SOWP dance below.
-   *
-   * Do NOT skip this on the assumption that hardware_init's bus recovery is
-   * enough: that one runs before PMR is raised, so it only cleans the pull-
-   * ups, not the freshly-enabled RIIC's internal start-detect state. Do
-   * NOT run bit-bang AFTER the SOWP dance either -- PMR would already be 1
-   * and the RIIC would drive against our GPIO writes. Channels without an
-   * entry in k_riic_recovery_pins[] (RIIC0, RIIC2) are no-ops. */
-  internal_riic_bit_bang_recover(channel.value); /* leaves PMR=0 */
-
-  /* Reset RIIC */
-  riic->iccr1 = k_riic_iccr1_iicrst;
-  riic->iccr1 = k_riic_register_clear;
-
-  /* Bit-rate lookup. CKS is in ICMR1[6:4] and must be written alongside
-   * MTWP / BCWP / BC in a single ICMR1 write. ICBRH/ICBRL hold the 5-bit
-   * counts (upper 3 bits are reserved, read-as-1, write-ignored). */
+/**
+ * @brief Program ICBRL/ICBRH/ICMR1..3 for the requested SCL frequency
+ *
+ * @details
+ * Looks up CKS / ICBRH / ICBRL via internal_calculate_bit_rate(), then
+ * writes the bit-rate registers and mode registers.  CKS is in ICMR1[6:4]
+ * and must be written alongside MTWP/BCWP/BC in a single ICMR1 write.
+ * ICMR3 = ACKWP | 0 -- ACKWP=1 is mandatory so internal_read_byte() can
+ * NACK the final received byte (otherwise STOP after every read times out).
+ *
+ * @param[in] riic RIIC peripheral base (must be non-null)
+ * @param[in] frequency_hz Validated SCL frequency
+ *
+ * @return rx_err_t Error code from internal_calculate_bit_rate()
+ *
+ * @pre RIIC peripheral is in IICRST or post-IICRST configuration state
+ * @post ICBRL/ICBRH/ICMR1/ICMR2/ICMR3 programmed
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_riic_program_bit_rate(volatile rx_riic_regs_t* const riic,
+                                               const uint32_t                 frequency_hz)
+{
   uint8_t        icbrl     = 0;
   uint8_t        icbrh     = 0;
   uint8_t        cks_field = 0;
   const rx_err_t err       = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh, &cks_field);
   RX_RETURN_ON_ERROR(err, s_tag, "Bit rate calculation failed");
 
-  /* Configure bit rate */
   riic->icbrl = icbrl;
   riic->icbrh = icbrh;
-
-  /* Configure RIIC for controller mode + CKS per HUM Table 42.5 */
   riic->icmr1 = (uint8_t)(k_riic_icmr1_controller_7bit | (uint8_t)(cks_field << k_riic_cks_shift));
-  riic->icmr2 = k_riic_icmr2_default; /* No timeout, no clock sync */
-  /* ICMR3 = ACKWP | 0 -- ACKWP=1 is mandatory so internal_read_byte() can
-   * toggle ACKBT to NACK the final received byte. Leaving ACKWP=0 here was
-   * the silent root cause of "Stop condition timeout" after every read: the
-   * peripheral never saw a NACK, kept driving SDA to ACK the imaginary next
-   * byte, and the controller's STOP request could not complete. */
+  riic->icmr2 = k_riic_icmr2_default;
   riic->icmr3 = k_riic_icmr3_init;
+
+  return k_rx_ok;
+}
+
+rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
+{
+  volatile rx_riic_regs_t* riic  = nullptr;
+  const rx_err_t           check = internal_riic_validate_init(channel, frequency_hz, &riic);
+  if (check != k_rx_ok) {
+    return check;
+  }
+
+  internal_riic_release_module_stop(channel.value);
+
+  /* Unconditional bit-bang bus recovery BEFORE the peripheral observes the
+   * bus. Per RX72N HW manual section 42.2.1, the RIIC comes out of
+   * module-stop + IICRST with SCLO=SDAO=0 internally -- it drives the bus
+   * low until the SOWP dance below writes SCLO=SDAO=1. hardware_init has
+   * already raised PMR for SCL/SDA by the time riic_init runs, so without
+   * this step the low-drive glitches the external bus and can latch
+   * BBSY=1 as soon as ICE=1.  Channels without an entry in
+   * k_riic_recovery_pins[] (RIIC0, RIIC2) are no-ops. */
+  internal_riic_bit_bang_recover(channel.value); /* leaves PMR=0 */
+
+  /* Reset RIIC */
+  riic->iccr1 = k_riic_iccr1_iicrst;
+  riic->iccr1 = k_riic_register_clear;
+
+  RX_RETURN_ON_ERROR(internal_riic_program_bit_rate(riic, frequency_hz),
+                     s_tag,
+                     "RIIC bit-rate program failed");
 
   /* Enable I2C bus interface */
   riic->iccr1 = k_riic_iccr1_ice;
 
-  /* Post-enable bus release: per RX72N HW manual section 42.2.1 (ICCR1.SCLO
-   * and ICCR1.SDAO reset to 0), the RIIC leaves SCLO/SDAO=0 after ICE=1 --
-   * which drives both lines LOW -- until it detects its first STOP on the
-   * wire. Force an early release by clearing SOWP, writing SCLO=SDAO=1
-   * (open-drain release -> external pull-ups bring lines to 3.3V), then
-   * re-locking SOWP. Without this the very first transaction sees BBSY=1
-   * with both lines stuck low and never reaches ACK detection. The SOWP
-   * write-protect must be cleared in its own ICCR1 write before the SCLO/
-   * SDAO change; combining them into one write leaves SCLO/SDAO locked. */
-  uint8_t iccr1 = riic->iccr1;
-  iccr1 &= (uint8_t) ~(uint8_t)k_riic_iccr1_sowp;
-  iccr1 |= (uint8_t)(k_riic_iccr1_sclo | k_riic_iccr1_sdao);
-  riic->iccr1 = iccr1;
-  iccr1 |= (uint8_t)k_riic_iccr1_sowp;
-  riic->iccr1 = iccr1;
+  /* Post-enable bus release: per RX72N HW manual section 42.2.1 the RIIC
+   * leaves SCLO/SDAO=0 after ICE=1 -- which drives both lines LOW -- until
+   * it detects its first STOP on the wire. */
+  internal_riic_release_lines(riic);
 
   /* Pair to the unconditional bit-bang above: now that SCLO=SDAO=1 in the
    * peripheral (set by the SOWP dance), it is safe to route the pads back
-   * to RIIC. Raising PMR before the dance would glitch the bus low. */
+   * to RIIC. */
   internal_riic_bit_bang_handback(channel.value);
 
-  /* Mark channel as initialized in controller mode */
   s_riic_channel_mode[channel.value] = k_riic_mode_controller;
-
   rx_log_debug(s_tag, "RIIC channel initialized");
 
   return k_rx_ok;

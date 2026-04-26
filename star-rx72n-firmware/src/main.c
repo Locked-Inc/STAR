@@ -1835,7 +1835,6 @@ static void internal_report_startup_flags(void)
  * ## Execution Flow
  *
  * @msc
- * msc {
  *   width=600;
  *   Caller, CheckFlags, PORF, IWDTRF, WDTRF, SWRF, LVD0RF, CWSF;
  *
@@ -1854,7 +1853,6 @@ static void internal_report_startup_flags(void)
  *   CheckFlags => CWSF [label="internal_check_cwsf()"];
  *   CWSF => CheckFlags [label="bool (info only)"];
  *   CheckFlags => Caller [label="k_rx_ok or k_rx_err_hw_init_failed"];
- * }
  * @endmsc
  *
  * ## Performance (RX72N @ 240 MHz)
@@ -3004,7 +3002,6 @@ void tx_application_define(void* first_unused_memory)
  * ## Execution Flow Diagram
  *
  * @msc
- * msc {
  *   width=800;
  *   Main, ClockInit, HardwareInit, ThreadX, AppTask;
  *
@@ -3020,7 +3017,6 @@ void tx_application_define(void* first_unused_memory)
  *   ThreadX => ThreadX [label="Start scheduler\n(NEVER RETURNS)", textcolor="purple"];
  *   ThreadX => AppTask [label="tx_application_define()\ntask creation", textcolor="purple"];
  *   AppTask => AppTask [label="ThreadX scheduler running\n(comm, motor, sensors)", textcolor="purple"];
- * }
  * @endmsc
  *
  * ## Performance Characteristics (RX72N @ 240 MHz)

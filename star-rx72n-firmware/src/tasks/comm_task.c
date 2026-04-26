@@ -134,27 +134,27 @@
  * @msc
  * RPi5, SPI, CommManager, CommTask, Nanopb, SharedData, MotorTask;
  *
- * --- [label="SetVelocityRequest Reception"];
+ * ... [label="SetVelocityRequest Reception"];
  * RPi5 => SPI [label="SPI transfer\n(SetVelocityRequest)"];
  * SPI box SPI [label="RSPI2 ISR\nReceive frame bytes"];
  * SPI => CommManager [label="Frame complete"];
  * CommManager box CommManager [label="Validate CRC-32\nParse header"];
  * CommManager => CommTask [label="internal_frame_callback()\n(k_frame_type_command)"];
  *
- * --- [label="Command Decode and Dispatch"];
+ * ... [label="Command Decode and Dispatch"];
  * CommTask box CommTask [label="Update last_comm_tick\n(500ms watchdog)"];
  * CommTask => CommTask [label="internal_handle_command_frame()"];
  * CommTask => Nanopb [label="rx_nanopb_decode_velocity_request()"];
  * Nanopb box Nanopb [label="Decode protobuf\n(~200 us)"];
  * Nanopb => CommTask [label="star_v1_SetVelocityRequest"];
  *
- * --- [label="Motor Command Update"];
+ * ... [label="Motor Command Update"];
  * CommTask box CommTask [label="Build motor_command_t\nFL: 1.0, FR: 1.0\nBL: 1.0, BR: 1.0"];
  * CommTask => SharedData [label="shared_data_set_motor_command(&cmd)"];
  * SharedData box SharedData [label="Mutex lock\nUpdate command\nSet k_event_new_motor_cmd\nMutex unlock"];
  * SharedData => CommTask [label="k_rx_ok"];
  *
- * --- [label="Motor Task Reaction"];
+ * ... [label="Motor Task Reaction"];
  * MotorTask box MotorTask [label="Wait on k_event_new_motor_cmd\n(blocking)"];
  * SharedData -> MotorTask [label="Event triggered"];
  * MotorTask => SharedData [label="shared_data_get_motor_command()"];

@@ -437,7 +437,6 @@
  * ### Data Source Failure Handling
  *
  * @msc
- * msc {
  *   width=900;
  *   ThreadX, TelemetryTask, SharedData, MotorTask, TempTask, CommManager;
  *
@@ -459,7 +458,6 @@
  *   TelemetryTask box TelemetryTask [label="Log debug message (non-critical)\nContinue to next cycle"];
  *   TelemetryTask box TelemetryTask [label="Sleep 50ms"];
  *   TelemetryTask note CommManager [label="Next cycle will retry transmission"];
- * }
  * @endmsc
  *
  * ### Failure Modes and Responses
@@ -481,7 +479,6 @@
  * interactions with shared data, nanopb encoding, and communication manager.
  *
  * @msc
- * msc {
  *   width=1200;
  *   ThreadX, TelemetryTask, MotorTask, TempTask, SharedData, Nanopb, CommManager, USB;
  *
@@ -526,7 +523,6 @@
  *   --- [label="Telemetry Cycle Complete"];
  *   TelemetryTask box TelemetryTask [label="Sleep 50ms\n(tx_thread_sleep(5 ticks))"];
  *   TelemetryTask => ThreadX [label="Yield to higher priority tasks"];
- * }
  * @endmsc
  *
  * ## Encoder Data Collection Timing
@@ -535,7 +531,6 @@
  * the mutex-protected read operations and the data freshness guarantees.
  *
  * @msc
- * msc {
  *   width=900;
  *   MotorTask, SharedData, TelemetryTask;
  *
@@ -556,7 +551,6 @@
  *   SharedData box SharedData [label="Lock mutex\nCopy motor_state (snapshot)\nUnlock mutex"];
  *   SharedData >> TelemetryTask [label="k_rx_ok, motor_state"];
  *   TelemetryTask box TelemetryTask [label="Motor data is fresh:\nAge = 0-4ms (worst case)\n(motor task updated 0-12 times since last telemetry)"];
- * }
  * @endmsc
  *
  * **Data Freshness Guarantee:**

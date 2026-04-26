@@ -453,79 +453,115 @@ static rx_err_t internal_wait_ppll_lock(void)
  * @note Not thread-safe; call only during single-threaded boot
  * @since Version 1.0.0
  */
-static rx_err_t internal_start_oscillators_and_plls(void)
+/**
+ * @brief Stop sub-clock oscillator and disable RTC sub-clock
+ *
+ * @details
+ * Sets SOSCCR=stopped and clears RCR3.RTCEN so the sub-clock is fully
+ * shut down per RX72N HW manual.  Used as the first step of either
+ * TOM or PROD oscillator/PLL bring-up.
+ *
+ *
+ * @pre PRCR must be unlocked for system register writes
+ * @post Sub-clock fully stopped
+ *
+ * @since Version 1.0.0
+ */
+static void internal_stop_sub_clock(void)
 {
-  /* Stop sub-clock oscillator (not used) */
   system_regs()->sosccr = k_sub_clock_stopped;
-
-  /* Disable RTC to fully disable sub-clock (RCR3.RTCEN = 0)
-   * Required for complete sub-clock shutdown as per hardware manual */
-  *rtc_rcr3_reg() = k_rcr3_rtcen_disable;
+  *rtc_rcr3_reg()       = k_rcr3_rtcen_disable;
+}
 
 #if defined(STAR_BOARD_TOM)
-  /* -----------------------------------------------------------------------
-   * TOM variant: no external crystal.  Route PLL from HOCO.
-   *
-   *   HOCO 16 MHz -> PLL x12 -> 192 MHz main PLL output
-   *   UCLK is later derived by SCKCR2.UCK = /4 directly from main PLL
-   *   (no PPLL required).
-   *
-   * NOTE: HOCO accuracy is ~+/-1 % (10 000 ppm), which is 20x outside
-   * the USB FS spec of 500 ppm.  Enumeration and short bulk transfers
-   * work in practice on permissive hosts (e.g., Pi 5 xHCI) but the
-   * device is not USB-IF compliant on this clock source.  See
-   * docs/BOARD_VARIANTS.md for the full tradeoff writeup.
-   * ----------------------------------------------------------------------- */
-
-  /* Start HOCO (HOCOCR = 0 means "oscillating"). */
+/**
+ * @brief Start HOCO + main PLL on the TOM bench board (no crystal)
+ *
+ * @details
+ * TOM has no external crystal -- HOCO 16 MHz feeds main PLL x12 to
+ * produce a 192 MHz output.  UCLK is later derived by SCKCR2.UCK=/4
+ * straight from main PLL (no PPLL required).  HOCO accuracy is ~+/-1%
+ * (10 000 ppm), which is 20x outside the USB FS spec of 500 ppm;
+ * enumeration on permissive hosts (Pi 5 xHCI) works but the device is
+ * not USB-IF compliant on this clock source.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok HOCO stable + PLL locked
+ * @retval k_rx_err_hw_timeout HOCO failed to stabilize
+ *
+ * @pre PRCR unlocked, sub-clock already stopped
+ * @post Main PLL output running at 192 MHz
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_start_pll_from_hoco(void)
+{
   system_regs()->hococr = k_hococr_enabled;
 
-  /* Wait for HOCO stable (OSCOVFSR.HCOVF = bit 3). */
 #if !RX_IS_SIMULATOR
-  {
-    volatile uint32_t hoco_timeout = k_pll_stabilization_timeout;
-    while ((system_regs()->oscovfsr & k_hoco_stable_flag) == 0U && hoco_timeout > 0U) {
-      hoco_timeout--;
-    }
-    if ((system_regs()->oscovfsr & k_hoco_stable_flag) == 0U) {
-      return k_rx_err_hw_timeout;
-    }
+  volatile uint32_t hoco_timeout = k_pll_stabilization_timeout;
+  while ((system_regs()->oscovfsr & k_hoco_stable_flag) == 0U && hoco_timeout > 0U) {
+    hoco_timeout--;
+  }
+  if ((system_regs()->oscovfsr & k_hoco_stable_flag) == 0U) {
+    return k_rx_err_hw_timeout;
   }
 #endif
 
-  /* Configure PLL: 192 MHz = HOCO 16 MHz * 12, PLLSRCSEL = HOCO. */
   system_regs()->pllcr  = k_pll_multiplier_12_hoco;
   system_regs()->pllcr2 = k_pll_enabled;
-
-  /* TOM skips PPLL -- no Ethernet expected on Tom's bench PCB and UCLK
-   * comes straight from main PLL via SCKCR2. */
   return internal_wait_pll_lock();
+}
 #else
-  /* -----------------------------------------------------------------------
-   * PROD variant: 24 MHz external crystal -> MOSC -> PLL x10 -> 240 MHz.
-   * ----------------------------------------------------------------------- */
-
-  /* Start main oscillator (24 MHz external crystal) */
+/**
+ * @brief Start main 24 MHz crystal oscillator and main PLL (PROD board)
+ *
+ * @details
+ * Enables MOSC, busy-waits k_main_osc_stabilization_cycles (~10 ms at
+ * boot clock), programs PLL = 24 MHz x 10 / 1 = 240 MHz, waits for
+ * lock.  Caller follows with PPLL setup.
+ *
+ * @return rx_err_t Error code from internal_wait_pll_lock()
+ *
+ * @pre 24 MHz crystal connected; PRCR unlocked
+ * @post Main PLL locked at 240 MHz
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_start_pll_from_xtal(void)
+{
   system_regs()->mosccr = k_main_osc_enabled;
 
-  /* Wait for main oscillator stabilization (typically 10ms)
-   * NOTE: Busy-wait required - runs before ThreadX initialization */
 #if !RX_IS_SIMULATOR
   for (volatile uint32_t i = 0; i < k_main_osc_stabilization_cycles; i++) {
     __asm__ volatile("nop");
   }
 #endif
 
-  /* Configure PLL: 240 MHz = (24 MHz x 10) / 1 */
   system_regs()->pllcr  = k_pll_multiplier_10_div_1;
   system_regs()->pllcr2 = k_pll_enabled;
+  return internal_wait_pll_lock();
+}
 
-  const rx_err_t pll_err = internal_wait_pll_lock();
-  if (pll_err != k_rx_ok) {
-    return pll_err;
-  }
-
-  /* Configure PPLL for 48 MHz USB clock: 48 MHz = (24 MHz x 8) / 4 */
+/**
+ * @brief Start the peripheral PLL (USB) and route UCLK from main PLL
+ *
+ * @details
+ * Configures PPLL = 24 MHz x 8 / 4 = 48 MHz, waits for lock, then sets
+ * PACKCR.UPLLSEL=0 so SCKCR2.UCK=/5 (programmed elsewhere) yields
+ * 240 MHz / 5 = 48 MHz.  Bench-observed failure when UPLLSEL=1 was
+ * dmesg "device descriptor read/64, error -32" (EPIPE) on first SETUP
+ * because UCLK was 240 MHz, not 48 MHz.
+ *
+ * @return rx_err_t Error code from internal_wait_ppll_lock()
+ *
+ * @pre Main PLL already locked
+ * @post PPLL locked at 48 MHz; USB UCLK routed from main PLL
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_start_ppll_for_usb(void)
+{
   *ppllcr_reg()  = k_ppll_config_48mhz;
   *ppllcr2_reg() = k_ppll_enabled;
 
@@ -534,16 +570,28 @@ static rx_err_t internal_start_oscillators_and_plls(void)
     return ppll_err;
   }
 
-  /* Route USB0 UCLK from the main-PLL path (UPLLSEL=0) so
-   * SCKCR2.UCK=/5 (set in internal_switch_to_pll_clock) yields
-   * 240 MHz / 5 = 48 MHz.  The PPLL path would require PPLLCR3 to also
-   * be programmed to /5 and we don't do that -- see k_packcr_main_pll
-   * rationale at the typedef.  Bench-observed failure when UPLLSEL=1
-   * was exactly host dmesg "device descriptor read/64, error -32"
-   * (EPIPE) on first SETUP because UCLK was 240 MHz, not 48 MHz. */
   *((volatile uint16_t*)k_packcr_addr) = k_packcr_main_pll;
-
   return k_rx_ok;
+}
+#endif /* STAR_BOARD_TOM */
+
+static rx_err_t internal_start_oscillators_and_plls(void)
+{
+  internal_stop_sub_clock();
+
+#if defined(STAR_BOARD_TOM)
+  /* TOM variant: no external crystal -- HOCO 16 MHz -> PLL x12 = 192 MHz.
+   * TOM skips PPLL -- no Ethernet expected on Tom's bench PCB and UCLK
+   * comes straight from main PLL via SCKCR2. */
+  return internal_start_pll_from_hoco();
+#else
+  /* PROD variant: 24 MHz crystal -> MOSC -> PLL x10 = 240 MHz, then PPLL
+   * for 48 MHz USB. */
+  const rx_err_t pll_err = internal_start_pll_from_xtal();
+  if (pll_err != k_rx_ok) {
+    return pll_err;
+  }
+  return internal_start_ppll_for_usb();
 #endif /* STAR_BOARD_TOM */
 }
 

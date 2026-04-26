@@ -95,26 +95,26 @@
  * @msc
  * App, IWDT, Task1, Task2, HW;
  *
- * --- [label="Initialization"];
+ * ... [label="Initialization"];
  * App => IWDT [label="rx_iwdt_init()"];
  * IWDT => HW [label="Initial feed"];
  *
- * --- [label="Task Registration"];
+ * ... [label="Task Registration"];
  * Task1 => IWDT [label="rx_iwdt_register_task(\"motor\", 500)"];
  * Task2 => IWDT [label="rx_iwdt_register_task(\"comm\", 1000)"];
  *
- * --- [label="Normal Operation"];
+ * ... [label="Normal Operation"];
  * Task1 => IWDT [label="rx_iwdt_task_heartbeat(\"motor\")"];
  * IWDT box IWDT [label="Update last_heartbeat_tick"];
  * Task2 => IWDT [label="rx_iwdt_task_heartbeat(\"comm\")"];
  *
- * --- [label="Check & Feed Loop"];
+ * ... [label="Check & Feed Loop"];
  * App => IWDT [label="rx_iwdt_check_tasks()"];
  * IWDT box IWDT [label="Compare ticks vs timeout"];
  * App => IWDT [label="rx_iwdt_feed()"];
  * IWDT => HW [label="Write 0x00, 0xFF"];
  *
- * --- [label="Task Timeout"];
+ * ... [label="Task Timeout"];
  * IWDT box IWDT [label="Task1 missed deadline"];
  * App => IWDT [label="rx_iwdt_check_tasks()"];
  * IWDT >> App [label="k_rx_err_timeout"];

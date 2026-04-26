@@ -496,56 +496,68 @@ static void internal_set_mstpcrb_for_channel(const rspi_channel_t channel, const
  *       - s_rspi_channel_initialized[channel] is set to true
  *       - Peripheral is ready to receive transfers from SPI controller
  */
-rx_err_t rspi_init_peripheral(const rspi_channel_t channel, const rspi_config_t* config)
+/**
+ * @brief Validate rspi_init_peripheral inputs and resolve peripheral base
+ *
+ * @param[in] channel Channel index
+ * @param[in] config Caller's config (must be non-null)
+ * @param[out] rspi_out On success, set to peripheral base
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All checks pass
+ * @retval k_rx_err_null_ptr config is nullptr
+ * @retval k_rx_err_invalid_arg Bounds violation or unknown channel
+ *
+ * @pre rspi_out non-null
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_rspi_validate_init(const rspi_channel_t       channel,
+                                            const rspi_config_t* const config,
+                                            volatile rx_rspi_regs_t**  rspi_out)
 {
-  uint16_t spcmd = k_rspi_spcmd_init;
-
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
 
-  /* Validate channel */
   if ((uint8_t)channel >= k_rspi_max_channels) {
     rx_log_error(s_tag, "Invalid RSPI channel");
     return k_rx_err_invalid_arg;
   }
-
-  /* Validate mode (0-3) - lower bound check omitted since spi_mode is uint8_t and
-   * k_rspi_mode_min == 0, so spi_mode >= k_rspi_mode_min is always true (-Wtype-limits) */
+  /* Lower bound check omitted: spi_mode is uint8_t and k_rspi_mode_min == 0
+   * so spi_mode >= k_rspi_mode_min is always true (-Wtype-limits). */
   if ((uint8_t)config->spi_mode > k_rspi_mode_max) {
     rx_log_error(s_tag, "Invalid SPI mode (must be 0-3)");
     return k_rx_err_invalid_arg;
   }
-
-  /* Get RSPI base */
-  volatile rx_rspi_regs_t* rspi = internal_get_rspi_base(channel);
-  if (rspi == nullptr) {
+  *rspi_out = internal_get_rspi_base(channel);
+  if (*rspi_out == nullptr) {
     return k_rx_err_invalid_arg;
   }
+  return k_rx_ok;
+}
 
-  /*
-   * RSPI Peripheral Mode Register Write Sequence
-   * =============================================
-   * The register write order follows the RX72N Hardware Manual Section 38.3.6
-   * (RSPI Initialization Procedure). The sequence is:
-   *
-   * 1. Enable module clock (MSTPCRB) - module must be powered before register access
-   * 2. Disable SPI (SPCR.SPE=0) - registers must not be modified while SPI is active
-   * 3. Configure SPCMD0 - set CPOL, CPHA, and data length while SPI is disabled
-   * 4. Configure SPDCR - set data access width (byte or word) while SPI is disabled
-   * 5. Configure SPPCR - set pin control (no loopback) BEFORE enabling SPI
-   * 6. Enable SPI (SPCR.SPE=1) - must be the LAST register write to avoid
-   *    partial configuration being active during setup
-   */
+/**
+ * @brief Build SPCMD0 value and program SPDCR for the requested data width
+ *
+ * @details
+ * Encodes CPOL/CPHA bits from spi_mode and selects 8-bit or 16-bit data
+ * length.  SPDCR is set to longword access for 16-bit transfers, byte
+ * access for 8-bit, matching the SPCMD0 SPL field.
+ *
+ * @param[in] rspi Peripheral base (non-null)
+ * @param[in] config Validated init config
+ *
+ * @return uint16_t Encoded SPCMD0 value
+ *
+ * @pre SPCR.SPE=0 (caller has already disabled SPI)
+ * @post SPDCR programmed; SPCMD0 not yet written
+ *
+ * @since Version 1.0.0
+ */
+static uint16_t internal_rspi_build_spcmd(volatile rx_rspi_regs_t* const rspi,
+                                          const rspi_config_t* const     config)
+{
+  uint16_t spcmd = k_rspi_spcmd_init;
 
-  /* Step 1: Enable RSPI module clock (clear module stop bit in MSTPCRB) */
-  *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
-  internal_set_mstpcrb_for_channel(channel, true);
-
-  *prcr_reg() = k_rx_prcr_lock;
-
-  /* Step 2: Disable SPI before modifying configuration registers */
-  rspi->spcr = k_rspi_spcr_disabled;
-
-  /* Step 3: Configure SPI mode (CPOL and CPHA) in SPCMD0 */
   if (config->spi_mode & k_rspi_spcmd_cpol_mask) {
     spcmd |= (uint16_t)(k_rspi_bit_set << k_rspi_spcmd_cpol_pos); /* CPOL = 1 */
   }
@@ -553,31 +565,71 @@ rx_err_t rspi_init_peripheral(const rspi_channel_t channel, const rspi_config_t*
     spcmd |= (uint16_t)(k_rspi_bit_set << k_rspi_spcmd_cpha_pos); /* CPHA = 1 */
   }
 
-  /* Step 3b: Configure data length in SPCMD0 and access mode in SPDCR */
   if (config->use_16bit) {
-    spcmd |= (k_rspi_spcmd_16bit << k_rspi_spcmd_spl_shift); /* 16-bit data */
-    rspi->spdcr =
-      (uint8_t)(k_rspi_bit_set << k_rspi_spdcr_splw_pos); /* Longword (32-bit) access mode */
+    spcmd |= (k_rspi_spcmd_16bit << k_rspi_spcmd_spl_shift);
+    rspi->spdcr = (uint8_t)(k_rspi_bit_set << k_rspi_spdcr_splw_pos); /* longword */
   } else {
-    spcmd |= (k_rspi_spcmd_8bit << k_rspi_spcmd_spl_shift); /* 8-bit data */
-    rspi->spdcr = k_rspi_spdcr_byte_mode;                   /* Byte access mode */
+    spcmd |= (k_rspi_spcmd_8bit << k_rspi_spcmd_spl_shift);
+    rspi->spdcr = k_rspi_spdcr_byte_mode;
   }
 
-  rspi->spcmd0 = spcmd;
+  return spcmd;
+}
 
-  /* Step 5: Configure pin control (no loopback) - MUST be written before SPCR.SPE
-   * per HW manual to avoid glitches on COPI/CIPO lines during enable */
+/**
+ * @brief Release the MSTPCRB module-stop bit for the requested channel
+ *
+ * @details
+ * Wraps the protected-register PRCR unlock/lock around the MSTPCRB
+ * write that clears the channel's clock gate.
+ *
+ * @param[in] channel Validated channel index
+ *
+ *
+ * @pre channel < k_rspi_max_channels
+ * @post Channel module clock running
+ *
+ * @since Version 1.0.0
+ */
+static void internal_rspi_release_module_stop(const rspi_channel_t channel)
+{
+  *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
+  internal_set_mstpcrb_for_channel(channel, true);
+  *prcr_reg() = k_rx_prcr_lock;
+}
+
+rx_err_t rspi_init_peripheral(const rspi_channel_t channel, const rspi_config_t* config)
+{
+  volatile rx_rspi_regs_t* rspi  = nullptr;
+  const rx_err_t           check = internal_rspi_validate_init(channel, config, &rspi);
+  if (check != k_rx_ok) {
+    return check;
+  }
+
+  /*
+   * RSPI Peripheral Mode Register Write Sequence (RX72N HW Manual 38.3.6):
+   *   1. Enable module clock (MSTPCRB)
+   *   2. Disable SPI (SPCR.SPE=0)
+   *   3. Configure SPCMD0 (CPOL/CPHA/data length)
+   *   4. Configure SPDCR (byte vs longword access)
+   *   5. Configure SPPCR (no loopback) BEFORE enabling SPI
+   *   6. Enable SPI (SPCR.SPE=1) -- LAST write so partial config is never active
+   */
+  internal_rspi_release_module_stop(channel);
+  rspi->spcr = k_rspi_spcr_disabled;
+
+  rspi->spcmd0 = internal_rspi_build_spcmd(rspi, config);
+
+  /* SPPCR MUST be written before SPCR.SPE per HW manual to avoid glitches
+   * on COPI/CIPO lines during enable */
   rspi->sppcr = k_rspi_sppcr_no_loopback;
 
-  /* Step 6: Enable SPI in peripheral mode (MSTR=0) - MUST be the last register
-   * write so all configuration is stable before the peripheral becomes active */
+  /* SPCR.SPE=1 MUST be the last register write so all configuration is
+   * stable before the peripheral becomes active. MSTR=0 -> peripheral mode. */
   rspi->spcr = k_rspi_spcr_spe;
 
-  /* Mark channel as initialized */
   s_rspi_channel_initialized[channel] = true;
-
   rx_log_debug(s_tag, "RSPI peripheral mode initialized");
-
   return k_rx_ok;
 }
 

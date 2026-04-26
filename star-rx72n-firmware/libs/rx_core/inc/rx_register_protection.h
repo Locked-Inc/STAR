@@ -26,12 +26,12 @@
  * @msc
  * Code, PRCR, "Protected Registers";
  *
- * --- [label="Attempt Direct Write (FAILS)"];
+ * ... [label="Attempt Direct Write (FAILS)"];
  * Code => "Protected Registers" [label="Write value"];
  * "Protected Registers" box "Protected Registers" [label="IGNORED\n(protection active)"];
  * "Protected Registers" => Code [label="Write has no effect"];
  *
- * --- [label="Correct Unlock Sequence (SUCCEEDS)"];
+ * ... [label="Correct Unlock Sequence (SUCCEEDS)"];
  * Code => PRCR [label="Write 0xA502\n(unlock PRC1)"];
  * PRCR box PRCR [label="Protection\ndisabled"];
  * Code => "Protected Registers" [label="Write value"];

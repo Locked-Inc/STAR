@@ -118,7 +118,6 @@
  * The DS18B20 requires a four-step conversion sequence to read temperature:
  *
  * @msc
- * msc {
  *   width=900;
  *   RX72N, OneWire, DS18B20;
  *
@@ -151,7 +150,6 @@
  *
  *   --- [label="Wait 200ms to Complete 1s Period"];
  *   RX72N box RX72N [label="tx_thread_sleep(20 ticks)\n200ms idle"];
- * }
  * @endmsc
  *
  * ## Temperature Conversion State Machine
@@ -408,9 +406,6 @@ static rx_ds18b20_handle_t s_ds18b20;
 
 /** @brief Log tag for this module */
 static const char* const s_tag = "TEMP";
-
-/** @brief Bus manager handle (assumed initialized elsewhere) */
-extern rx_bus_manager_t g_bus_manager;
 
 /** @brief 1-Wire bus name for DS18B20 */
 static const char* const s_onewire_bus_name = "onewire0";

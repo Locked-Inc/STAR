@@ -138,7 +138,7 @@
  * @msc
  * CPU, PRCR, MSTPCR, PSW;
  *
- * --- [label="PRCR Unlock Sequence"];
+ * ... [label="PRCR Unlock Sequence"];
  * CPU => PSW [label="mvfc psw"];
  * CPU box CPU [label="Save interrupt state"];
  * CPU => PSW [label="clrpsw i"];
@@ -146,10 +146,10 @@
  * CPU => PRCR [label="Write 0xA502"];
  * PRCR box PRCR [label="PRC1 unlocked"];
  *
- * --- [label="Protected Write"];
+ * ... [label="Protected Write"];
  * CPU => MSTPCR [label="Write golden value"];
  *
- * --- [label="PRCR Lock"];
+ * ... [label="PRCR Lock"];
  * CPU => PRCR [label="Write 0xA500"];
  * PRCR box PRCR [label="All bits locked"];
  * CPU => PSW [label="mvtc psw"];
@@ -200,6 +200,7 @@
 
 #ifdef __RX__
 #include "rx72n_regs.h"
+#include "rx_gpio_constants.h" /* k_prcr_key, k_prcr_key_shift, k_prcr_lock_* */
 #endif
 
 /* =============================================================================

@@ -40,17 +40,16 @@ namespace star_spi_bridge
  *
  * @since Version 1.0.0
  */
-enum class FrameType : uint8_t
-{
-  Ping = 0x00,        /**< Keepalive request (RPi5 <-> RX72N) */
-  Pong = 0x01,        /**< Keepalive response echoing the PING payload */
-  Command = 0x10,     /**< Protobuf-encoded command (RPi5 -> RX72N) */
-  Response = 0x11,    /**< Protobuf-encoded response (RX72N -> RPi5) */
-  Ack = 0x12,         /**< Positive acknowledgment, empty payload (SPI only) */
-  Nack = 0x13,        /**< Negative acknowledgment, empty payload (SPI only) */
-  LogMessage = 0x20,  /**< Firmware ASCII log payload (RX72N -> gateway; not expected on SPI) */
-  ResetAck = 0xFE,    /**< Confirms reset completed; seq matches reset request */
-  Reset = 0xFF,       /**< Request to reset communication state */
+enum class FrameType : uint8_t {
+  Ping = 0x00,       /**< Keepalive request (RPi5 <-> RX72N) */
+  Pong = 0x01,       /**< Keepalive response echoing the PING payload */
+  Command = 0x10,    /**< Protobuf-encoded command (RPi5 -> RX72N) */
+  Response = 0x11,   /**< Protobuf-encoded response (RX72N -> RPi5) */
+  Ack = 0x12,        /**< Positive acknowledgment, empty payload (SPI only) */
+  Nack = 0x13,       /**< Negative acknowledgment, empty payload (SPI only) */
+  LogMessage = 0x20, /**< Firmware ASCII log payload (RX72N -> gateway; not expected on SPI) */
+  ResetAck = 0xFE,   /**< Confirms reset completed; seq matches reset request */
+  Reset = 0xFF,      /**< Request to reset communication state */
 };
 
 /**
@@ -65,8 +64,7 @@ enum class FrameType : uint8_t
  *
  * @since Version 1.0.0
  */
-enum class FrameFlags : uint8_t
-{
+enum class FrameFlags : uint8_t {
   None = 0x00,        /**< No flags set; default for frames needing no special handling */
   RequiresAck = 0x01, /**< Sender expects an ACK or NACK response (bit 0) */
   Retransmit = 0x02,  /**< This is a retry after timeout or NACK (bit 1) */
@@ -111,9 +109,8 @@ constexpr uint8_t FRAME_FLAGS_MASK = 0x1Fu;
  */
 constexpr inline FrameFlags operator|(FrameFlags lhs, FrameFlags rhs)
 {
-  return static_cast<FrameFlags>(
-    static_cast<std::underlying_type_t<FrameFlags>>(lhs) |
-    static_cast<std::underlying_type_t<FrameFlags>>(rhs));
+  return static_cast<FrameFlags>(static_cast<std::underlying_type_t<FrameFlags>>(lhs) |
+                                 static_cast<std::underlying_type_t<FrameFlags>>(rhs));
 }
 /**
  * @brief Bitwise AND for FrameFlags.
@@ -129,9 +126,8 @@ constexpr inline FrameFlags operator|(FrameFlags lhs, FrameFlags rhs)
  */
 constexpr inline FrameFlags operator&(FrameFlags lhs, FrameFlags rhs)
 {
-  return static_cast<FrameFlags>(
-    static_cast<std::underlying_type_t<FrameFlags>>(lhs) &
-    static_cast<std::underlying_type_t<FrameFlags>>(rhs));
+  return static_cast<FrameFlags>(static_cast<std::underlying_type_t<FrameFlags>>(lhs) &
+                                 static_cast<std::underlying_type_t<FrameFlags>>(rhs));
 }
 /**
  * @brief Bitwise XOR for FrameFlags.
@@ -147,9 +143,8 @@ constexpr inline FrameFlags operator&(FrameFlags lhs, FrameFlags rhs)
  */
 constexpr inline FrameFlags operator^(FrameFlags lhs, FrameFlags rhs)
 {
-  return static_cast<FrameFlags>(
-    static_cast<std::underlying_type_t<FrameFlags>>(lhs) ^
-    static_cast<std::underlying_type_t<FrameFlags>>(rhs));
+  return static_cast<FrameFlags>(static_cast<std::underlying_type_t<FrameFlags>>(lhs) ^
+                                 static_cast<std::underlying_type_t<FrameFlags>>(rhs));
 }
 /**
  * @brief Bitwise NOT for FrameFlags.
@@ -165,8 +160,7 @@ constexpr inline FrameFlags operator^(FrameFlags lhs, FrameFlags rhs)
  */
 constexpr inline FrameFlags operator~(FrameFlags val)
 {
-  return static_cast<FrameFlags>(
-    (~static_cast<std::underlying_type_t<FrameFlags>>(val)) & FRAME_FLAGS_MASK);
+  return static_cast<FrameFlags>((~static_cast<std::underlying_type_t<FrameFlags>>(val)) & FRAME_FLAGS_MASK);
 }
 /**
  * @brief Bitwise OR-assignment for FrameFlags.
@@ -249,13 +243,10 @@ constexpr inline FrameFlags & operator^=(FrameFlags & lhs, FrameFlags rhs)
 class SpiDriver {
 public:
   // -- Frame-structure constants ------------------------------------------
-  static constexpr size_t HEADER_SIZE =
-    8;   /**< SYNC + SEQ + LEN + TYPE + FLAGS = 8 bytes. */
-  static constexpr size_t CRC_SIZE = 4; /**< CRC-32 trailer length in bytes. */
-  static constexpr size_t MAX_PAYLOAD_SIZE =
-    1024;   /**< Maximum application payload per frame (bytes). */
-  static constexpr uint16_t SYNC_WORD =
-    0x55AA;   /**< SYNC word transmitted in every frame header. */
+  static constexpr size_t HEADER_SIZE = 8;         /**< SYNC + SEQ + LEN + TYPE + FLAGS = 8 bytes. */
+  static constexpr size_t CRC_SIZE = 4;            /**< CRC-32 trailer length in bytes. */
+  static constexpr size_t MAX_PAYLOAD_SIZE = 1024; /**< Maximum application payload per frame (bytes). */
+  static constexpr uint16_t SYNC_WORD = 0x55AA;    /**< SYNC word transmitted in every frame header. */
 
   /**
    * @brief Construct a new SpiDriver.
@@ -270,9 +261,7 @@ public:
    * @post spi_fd_ is set to -1 (invalid); call initialize() to open and
    *       configure the SPI device before calling transfer().
    */
-  explicit SpiDriver(
-    const std::string & device_path,
-    uint32_t speed_hz = 10000000);
+  explicit SpiDriver(const std::string & device_path, uint32_t speed_hz = 10000000);
 
   /**
    * @brief Destructor -- calls close_device() if the device is still open.
@@ -325,9 +314,7 @@ public:
    *
    * @note Only supported on Linux; returns false on other platforms.
    */
-  bool transfer(
-    const std::vector<uint8_t> & tx_data,
-    std::vector<uint8_t> & rx_data);
+  bool transfer(const std::vector<uint8_t> & tx_data, std::vector<uint8_t> & rx_data);
 
   /**
    * @brief Encode an application payload into the STAR wire format.
@@ -350,10 +337,8 @@ public:
    *
    * @see decode_frame  Inverse operation.
    */
-  static void encode_frame(
-    uint16_t seq, FrameType type, uint8_t flags,
-    const std::vector<uint8_t> & payload,
-    std::vector<uint8_t> & out_frame);
+  static void encode_frame(uint16_t seq, FrameType type, uint8_t flags, const std::vector<uint8_t> & payload,
+                           std::vector<uint8_t> & out_frame);
 
   /**
    * @brief Decode a STAR wire frame into its constituent fields.
@@ -376,10 +361,8 @@ public:
    *
    * @see encode_frame  Inverse operation.
    */
-  static bool decode_frame(
-    const std::vector<uint8_t> & frame, uint16_t & seq,
-    FrameType & type, uint8_t & flags,
-    std::vector<uint8_t> & payload);
+  static bool decode_frame(const std::vector<uint8_t> & frame, uint16_t & seq, FrameType & type, uint8_t & flags,
+                           std::vector<uint8_t> & payload);
 
   /**
    * @brief Compute the IEEE 802.3 CRC-32 of the given byte vector.

@@ -25,7 +25,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -173,10 +173,10 @@ func (c *CDCTransport) Open() error {
 	// Log successful auto-detection (after critical section completes)
 	if len(allPorts) > 0 {
 		if len(allPorts) > 1 {
-			log.Printf("CDC: Multiple serial ports detected: %v", allPorts)
-			log.Printf("CDC: Auto-selected first port: %s", device)
+			slog.Info("CDC: Multiple serial ports detected", "ports", allPorts)
+			slog.Info("CDC: Auto-selected first port", "device", device)
 		} else {
-			log.Printf("CDC: Auto-detected device: %s", device)
+			slog.Info("CDC: Auto-detected device", "device", device)
 		}
 	}
 
@@ -324,7 +324,7 @@ func (c *CDCTransport) Transfer(ctx context.Context, txData []byte) ([]byte, err
 		// Restore original timeout on all return paths
 		defer func() {
 			if err := c.port.SetReadTimeout(c.config.Timeout); err != nil {
-				log.Printf("CDC: failed to restore read timeout: %v", err)
+				slog.Error("CDC: failed to restore read timeout", "error", err)
 			}
 		}()
 	}

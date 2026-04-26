@@ -6,7 +6,7 @@ package manager
 import (
 	"context"
 	"encoding/binary"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/transport"
@@ -55,12 +55,12 @@ func (hm *HealthMonitor) Run(ctx context.Context, tm *TransportManager) {
 	ticker := time.NewTicker(hm.interval)
 	defer ticker.Stop()
 
-	log.Printf("HealthMonitor started (interval: %v)", hm.interval)
+	slog.Info("HealthMonitor started", "interval", hm.interval)
 
 	for {
 		select {
 		case <-ctx.Done():
-			log.Printf("HealthMonitor stopped")
+			slog.Info("HealthMonitor stopped")
 			return
 
 		case <-ticker.C:
@@ -106,7 +106,8 @@ func (hm *HealthMonitor) checkTransports(tm *TransportManager) {
 		// Trigger failback asynchronously outside of lock to avoid blocking the monitor loop
 		// while attemptFailover/executeSwitch pauseOperations and drainInflight
 		if needFailover {
-			log.Printf("Transport %s recovered (now healthy), triggering failover evaluation (damping: %v)", recoveredName, dampingDuration)
+			slog.Info("transport recovered, triggering failover evaluation",
+				"transport", recoveredName, "damping", dampingDuration)
 			go tm.attemptFailover(FailureTypeGraceful)
 		}
 	}
@@ -161,7 +162,7 @@ func (hm *HealthMonitor) probeUSB() bool {
 	}
 
 	if err := port.Close(); err != nil {
-		log.Printf("WARNING: Failed to close USB probe port: %v", err)
+		slog.Warn("failed to close USB probe port", "error", err)
 		return false
 	}
 	return true

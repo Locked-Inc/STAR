@@ -718,7 +718,6 @@ extern void rx_usb_priv_set_port_state(rx_usb_port_id_t port, rx_usb_state_t sta
  * ## Test Simulation Flow
  *
  * @msc
- * msc {
  *   width=500;
  *   Test, RxPush, RxBuffer, UsbRead;
  *
@@ -733,7 +732,6 @@ extern void rx_usb_priv_set_port_state(rx_usb_port_id_t port, rx_usb_state_t sta
  *   UsbRead => RxBuffer [label="read from buffer"];
  *   RxBuffer >> UsbRead [label="return data"];
  *   UsbRead >> Test [label="return count"];
- * }
  * @endmsc
  *
  * @param[in] port USB port identifier to push data to.

@@ -920,6 +920,41 @@ rx_err_t rx_usb_hw_detach(void)
  * @brief Read data from USB FIFO
  *
  */
+/* Forward declaration: wait for CFIFOCTR.FRDY (definition near write helpers). */
+static bool internal_usb_wait_frdy(volatile uint16_t* const fifoctr_r);
+
+/**
+ * @brief Drain bytes from CFIFO into a caller-supplied buffer
+ *
+ * @details
+ * Performs byte-wide reads of CFIFO (matches the MBW=8 selection done
+ * by the public read path) for `len` bytes into `data`.  Each access
+ * dequeues exactly one byte from the hardware FIFO -- the MBW=16
+ * approach silently lost the high byte of an odd-length OUT transfer.
+ *
+ * @param[out] data Destination buffer (must hold at least len bytes)
+ * @param[in] len Number of bytes to read
+ *
+ * @pre data is non-null
+ * @pre CFIFOSEL has been set with MBW=8 + correct pipe
+ * @pre FRDY=1 (caller verified via internal_usb_wait_frdy)
+ * @post len bytes written to data
+ *
+ * @note Caller must serialize CFIFO access.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_usb_drain_cfifo(uint8_t* const data, const uint32_t len)
+{
+  /* CFIFO is declared `volatile uint16_t`; cast its address to `uint8_t *`
+   * so each access is byte-wide, matching what the hardware presents in
+   * 8-bit MBW mode. */
+  volatile const uint8_t* cfifo_byte = (volatile const uint8_t*)&usb0()->cfifo;
+  for (uint32_t i = 0; i < len; i++) {
+    data[i] = *cfifo_byte;
+  }
+}
+
 uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
 {
   /* Rule 5: Pre-condition validation */
@@ -927,7 +962,6 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
     return k_min_transfer_size;
   }
 
-  /* Validate pipe number */
   if (pipe > k_usb_pipe_max) {
     rx_log_error(s_tag, "Invalid pipe number");
     return k_min_transfer_size;
@@ -935,52 +969,24 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
 
   /* Select pipe for CFIFO access.
    *   ISEL = 0   read direction (device OUT, host->device data)
-   *   MBW  = 0   8-bit FIFO width.  Same rationale as the write path: each
-   *              read must dequeue exactly one byte from the hardware FIFO
-   *              so that the loop terminates with `data` holding exactly
-   *              DTLN bytes for any DTLN value, including odd ones.  The
-   *              old MBW=16 path lost the high-byte half-word at the end
-   *              of an odd-length OUT transfer (and silently advanced
-   *              DTLN by 2 anyway). */
+   *   MBW  = 0   8-bit FIFO width (see internal_usb_drain_cfifo for why). */
   usb0()->cfifosel = (pipe & k_usb_cfifosel_curpipe_mask) | k_usb_cfifosel_mbw_8;
 
-  /* Wait for FIFO ready (hardware polling) */
-  /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
-  volatile uint32_t timeout = k_usb_fifo_timeout_iterations;
-  while (!(usb0()->cfifoctr & k_usb_fifoctr_frdy) && timeout--) {
-    __asm__ volatile("nop");
-  }
-
-  if (timeout == k_usb_fifo_timeout_expired) {
+  if (!internal_usb_wait_frdy(&usb0()->cfifoctr)) {
     rx_log_error(s_tag, "FIFO read timeout");
     return k_min_transfer_size;
   }
 
-  /* Get received data length */
   uint32_t len = usb0()->cfifoctr & k_usb_fifoctr_dtln_mask;
   if (len > max_len) {
     rx_log_error(s_tag, "FIFO read overflow detected");
     len = max_len;
   }
 
-  /* Read data from FIFO one byte at a time (matches MBW=8 above).
-   * CFIFO is declared `volatile uint16_t`; cast its address to `uint8_t *`
-   * so each access is byte-wide, matching what the hardware presents in
-   * 8-bit MBW mode.  See the write path for the wLength=9 / -75 EOVERFLOW
-   * incident that motivated dropping 16-bit access here. */
-  volatile const uint8_t* cfifo_byte = (volatile const uint8_t*)&usb0()->cfifo;
-  for (uint32_t i = 0; i < len; i++) {
-    data[i] = *cfifo_byte;
-  }
+  internal_usb_drain_cfifo(data, len);
 
   /* Clear buffer */
   usb0()->cfifoctr |= k_usb_fifoctr_bclr;
-
-  /* Rule 5: Post-condition validation */
-  if (len > max_len) {
-    rx_log_error(s_tag, "FIFO read length validation failed");
-    return k_min_transfer_size;
-  }
 
   return len;
 }
@@ -1412,46 +1418,68 @@ void rx_usb_hw_set_address(const uint8_t address)
 }
 
 /**
- * @brief Configure a pipe for bulk/interrupt transfer
+ * @brief Validate inputs to rx_usb_hw_configure_pipe()
+ *
+ * @details
+ * Implements Rule 5 pre-condition checks for the public configure_pipe
+ * entry point.  Logs to s_tag for non-trivial failures.
+ *
+ * @param[in] pipe Pipe number (must be in [1, k_usb_pipe_max])
+ * @param[in] endpoint Endpoint number (must be in [0, k_usb_endpoint_max])
+ * @param[in] max_packet Maximum packet size (must be <= k_usb_max_packet_size_max)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All inputs valid
+ * @retval k_rx_err_invalid_arg One of the bounds violated
+ *
+ * @pre None (input validation routine)
+ * @post On success no state mutated
+ *
+ * @note Pure validation, safe to call from any thread.
+ *
+ * @since Version 1.0.0
  */
-rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
-                                  const uint8_t  endpoint,
-                                  const bool     is_in,
-                                  const uint16_t type,
-                                  const uint16_t max_packet)
+static rx_err_t internal_usb_validate_pipe_config(const uint8_t  pipe,
+                                                  const uint8_t  endpoint,
+                                                  const uint16_t max_packet)
 {
-  /* Rule 5: Pre-condition validation */
   if (pipe == k_usb_pipe_min || pipe > k_usb_pipe_max) {
     return k_rx_err_invalid_arg;
   }
-
-  /* Validate endpoint number (0-15) */
   if (endpoint > k_usb_endpoint_max) {
     rx_log_error(s_tag, "Invalid endpoint number");
     return k_rx_err_invalid_arg;
   }
-
-  /* Validate max packet size */
   if (max_packet > k_usb_max_packet_size_max) {
     rx_log_error(s_tag, "Invalid max packet size");
     return k_rx_err_invalid_arg;
   }
+  return k_rx_ok;
+}
 
-  /* Mirror Renesas FIT library usb_cstd_pipe_init() for USB0 peripheral
-   * mode.  Sequence (from r_usb_basic v1.44 r_usb_creg_abs.c):
-   *   1. Clear BRDYENB/NRDYENB/BEMPENB for this pipe
-   *   2. Force PID=NAK
-   *   3. PIPESEL = pipe ; write PIPECFG / PIPEMAXP / PIPEPERI
-   *   4. PIPESEL = 0 (deselect)
-   *   5. Pulse SQCLR, ACLRM; assert CSCLR on pipe CTR register
-   *   6. Clear BRDYSTS / NRDYSTS / BEMPSTS for this pipe
-   *   7. Set PID = BUF so the pipe responds to transfers
-   *
-   * Critically: for USB0 the FIT library does NOT write PIPEBUF at all
-   * -- USB0 has a fixed internal buffer-to-pipe mapping.  The earlier
-   * explicit PIPEBUF writes were corrupting that mapping and caused
-   * bulk IN BVAL commits to silently drop.  PIPEBUF writes in the FIT
-   * library are guarded by `#if RX64M||RX71M` AND `USB_IP1==ip_no`. */
+/**
+ * @brief Resolve PIPEnCTR pointer and pipe-mask bit for a data pipe
+ *
+ * @details
+ * Maps a data-pipe number (1..k_usb_pipe_max) to its PIPEnCTR register
+ * pointer and the BRDYENB/NRDYENB/BEMPENB bit position used to enable
+ * per-pipe interrupts.  Mirrors the FIT library lookup table.
+ *
+ * @param[in] pipe Pipe number (must be in [1, k_usb_pipe_max])
+ * @param[out] pipe_bit_out Pipe mask (1U << pipe)
+ *
+ * @return volatile uint16_t* Pointer to PIPEnCTR register
+ *
+ * @pre pipe in [1, k_usb_pipe_max]
+ * @pre pipe_bit_out non-null
+ * @post *pipe_bit_out == (1U << pipe)
+ *
+ * @note Read-only register access; thread-safe with respect to register state.
+ *
+ * @since Version 1.0.0
+ */
+static volatile uint16_t* internal_usb_resolve_pipe_ctr(const uint8_t pipe, uint16_t* pipe_bit_out)
+{
   volatile uint16_t* pipe_ctr_map[] = {
     &usb0()->pipe1ctr,
     &usb0()->pipe2ctr,
@@ -1463,83 +1491,197 @@ rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
     &usb0()->pipe8ctr,
     &usb0()->pipe9ctr,
   };
-  volatile uint16_t* const pipe_ctr = pipe_ctr_map[pipe - 1U];
-  const uint16_t           pipe_bit = (uint16_t)(1U << pipe);
+  *pipe_bit_out = (uint16_t)(1U << pipe);
+  return pipe_ctr_map[pipe - 1U];
+}
 
-  /* 1. Disable pipe interrupts while we reconfigure. */
+/**
+ * @brief Quiesce a pipe before reconfiguration (FIT step 1+2)
+ *
+ * @details
+ * Disables BRDY/NRDY/BEMP interrupts for the pipe and forces PID=NAK so
+ * mid-configuration transfers cannot race with the rest of the
+ * configure_pipe sequence.  Mirrors r_usb_basic FIT v1.44.
+ *
+ * @param[in] pipe_ctr Pointer to the PIPEnCTR register
+ * @param[in] pipe_bit Pipe mask (1U << pipe)
+ *
+ * @pre pipe_ctr is non-null and points to USB0 PIPEnCTR
+ * @pre pipe_bit corresponds to pipe_ctr's pipe number
+ * @post BRDYENB/NRDYENB/BEMPENB bits cleared for the pipe
+ * @post Pipe PID forced to NAK
+ *
+ * @note Caller must hold any necessary USB lock.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_usb_quiesce_pipe(volatile uint16_t* const pipe_ctr, const uint16_t pipe_bit)
+{
   usb0()->brdyenb &= (uint16_t)~pipe_bit;
   usb0()->nrdyenb &= (uint16_t)~pipe_bit;
   usb0()->bempenb &= (uint16_t)~pipe_bit;
-
-  /* 2. Force pipe to NAK so mid-configuration transfers don't race. */
   *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask) | k_usb_pipectr_pid_nak);
+}
 
-  /* 3. Select and configure.  Use SINGLE-BUFFER (no DBLB) for bulk
-   * IN pipes -- the working raw-register repro
-   * the original bring-up test configured pipe 1 as single-buffer
-   * bulk IN (PIPECFG = 0x4011) and successfully transmits.  DBLB on
-   * RX72N USB0 has been observed to silently drop bulk-IN BVAL
-   * commits.  Bulk OUT can keep DBLB + SHTNAK as before -- only the
-   * IN side appears affected. */
-  usb0()->pipesel = pipe;
-
+/**
+ * @brief Build the PIPECFG value for a pipe
+ *
+ * @details
+ * Encodes endpoint number, transfer direction (DIR), and the
+ * DBLB/SHTNAK bits for bulk-OUT pipes.  Bulk-IN pipes stay
+ * single-buffered to match the proven-working bulk_in_fix.c
+ * configuration on RX72N silicon (DBLB on bulk-IN silently drops
+ * BVAL commits).
+ *
+ * @param[in] endpoint Endpoint number (0..k_usb_endpoint_max)
+ * @param[in] is_in true for IN pipe, false for OUT pipe
+ * @param[in] type Transfer type bits (PIPECFG.TYPE field)
+ *
+ * @return uint16_t Encoded PIPECFG value
+ *
+ * @pre endpoint in [0, k_usb_endpoint_max]
+ * @post Returned value is a valid PIPECFG register write
+ *
+ * @note Pure function, no side effects.
+ *
+ * @since Version 1.0.0
+ */
+static uint16_t
+internal_usb_build_pipecfg(const uint8_t endpoint, const bool is_in, const uint16_t type)
+{
   uint16_t cfg = (endpoint & k_usb_pipecfg_epnum_mask) | type;
   if (is_in) {
     cfg |= k_usb_pipecfg_dir;
   }
   if (type == k_usb_pipecfg_type_bulk && !is_in) {
-    /* Only OUT side gets DBLB + SHTNAK.  Bulk IN pipes stay
-     * SINGLE-buffered to exactly match bulk_in_fix.c (PIPECFG=0x4011)
-     * which is the proven-working reference on this silicon. */
     cfg |= k_usb_pipecfg_dblb;
     cfg |= k_usb_pipecfg_shtnak;
   }
-  usb0()->pipecfg = cfg;
+  return cfg;
+}
 
-  /* PIPEBUF (offset 0x6A) does not exist on RX72N USB0 per manual Ch40 --
-   * the DPRAM buffer allocation is automatic/fixed for USB0.  On other
-   * RX USBb IP revisions (e.g. RX65N USBHS) PIPEBUF is valid, but for
-   * this target the slot allocation must be skipped.  bulk_in_fix.c
-   * verified that writes to offset 0x6A are no-ops on RX72N. */
-
+/**
+ * @brief Write PIPECFG / PIPEMAXP / PIPEPERI for the selected pipe (FIT step 3)
+ *
+ * @details
+ * Selects the pipe via PIPESEL, writes the configuration registers,
+ * caches state in s_pipe_max_packet/s_pipe_is_in, then deselects
+ * PIPESEL.  PIPEBUF is intentionally NOT written -- USB0 on RX72N has
+ * automatic DPRAM buffer-to-pipe mapping (manual Ch40), and writing
+ * PIPEBUF corrupted the mapping during earlier bring-up.
+ *
+ * @param[in] pipe Pipe number (must be in [1, k_usb_pipe_max])
+ * @param[in] cfg Encoded PIPECFG value
+ * @param[in] is_in true for IN pipe, false for OUT pipe
+ * @param[in] max_packet Maximum packet size for the pipe
+ *
+ * @pre pipe in [1, k_usb_pipe_max]
+ * @post PIPECFG/PIPEMAXP/PIPEPERI written
+ * @post s_pipe_max_packet[pipe], s_pipe_is_in[pipe] updated
+ * @post PIPESEL deselected (set to 0)
+ *
+ * @note Caller must hold any necessary USB lock.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_usb_write_pipe_config(const uint8_t  pipe,
+                                           const uint16_t cfg,
+                                           const bool     is_in,
+                                           const uint16_t max_packet)
+{
+  usb0()->pipesel  = pipe;
+  usb0()->pipecfg  = cfg;
   usb0()->pipemaxp = max_packet;
   usb0()->pipeperi = 0U;
 
   s_pipe_max_packet[pipe] = max_packet;
   s_pipe_is_in[pipe]      = is_in;
 
-  /* Deselect PIPESEL so the next configure_pipe call starts clean. */
   usb0()->pipesel = 0U;
+}
 
-  /* 5. Reset sequence toggle + pulse auto-clear buffer.  RX72N PIPEnCTR
-   * does not expose a CSCLR bit (manual Ch40 p.1976 -- valid bits are
-   * PID, PBUSY, SQMON, SQSET, SQCLR, ACLRM, ATREPM, INBUFM, BSTS). */
+/**
+ * @brief Reset sequence toggle, clear interrupts, enable pipe (FIT steps 5..7)
+ *
+ * @details
+ * Implements the post-configuration reset/clear sequence:
+ *   - Pulse SQCLR (sequence-bit clear) + ACLRM (auto-clear pulse)
+ *   - Clear BRDYSTS / BEMPSTS for the pipe
+ *   - Set PID=BUF so the pipe responds to transfers
+ *
+ * RX72N PIPEnCTR does NOT expose a CSCLR bit (HW manual Ch40 p.1976).
+ *
+ * @param[in] pipe_ctr Pointer to the PIPEnCTR register
+ * @param[in] pipe_bit Pipe mask (1U << pipe)
+ *
+ * @pre pipe_ctr is non-null and points to USB0 PIPEnCTR
+ * @post Sequence-bit cleared, pending status cleared, PID = BUF
+ *
+ * @note Caller must hold any necessary USB lock.
+ *
+ * @since Version 1.0.0
+ */
+static void internal_usb_finalize_pipe(volatile uint16_t* const pipe_ctr, const uint16_t pipe_bit)
+{
   *pipe_ctr |= k_usb_pipectr_sqclr;
   *pipe_ctr |= k_usb_pipectr_aclrm;
   *pipe_ctr &= (uint16_t)~k_usb_pipectr_aclrm;
 
-  /* 6. Clear pending interrupt status bits. */
   usb0()->brdysts = (uint16_t)~pipe_bit;
   usb0()->bempsts = (uint16_t)~pipe_bit;
 
-  /* 7. Enable pipe: PID = BUF. */
   *pipe_ctr = (uint16_t)((*pipe_ctr & (uint16_t)~k_usb_pipectr_pid_mask) | k_usb_pipectr_pid_buf);
+}
+
+/**
+ * @brief Configure a pipe for bulk/interrupt transfer
+ */
+rx_err_t rx_usb_hw_configure_pipe(const uint8_t  pipe,
+                                  const uint8_t  endpoint,
+                                  const bool     is_in,
+                                  const uint16_t type,
+                                  const uint16_t max_packet)
+{
+  const rx_err_t check = internal_usb_validate_pipe_config(pipe, endpoint, max_packet);
+  if (check != k_rx_ok) {
+    return check;
+  }
+
+  /* Mirror Renesas FIT library usb_cstd_pipe_init() for USB0 peripheral
+   * mode.  Sequence (from r_usb_basic v1.44 r_usb_creg_abs.c):
+   *   1. Clear BRDYENB/NRDYENB/BEMPENB for this pipe
+   *   2. Force PID=NAK
+   *   3. PIPESEL = pipe ; write PIPECFG / PIPEMAXP / PIPEPERI
+   *   4. PIPESEL = 0 (deselect)
+   *   5. Pulse SQCLR, ACLRM
+   *   6. Clear BRDYSTS / BEMPSTS for this pipe
+   *   7. Set PID = BUF so the pipe responds to transfers
+   *
+   * Critically: for USB0 the FIT library does NOT write PIPEBUF at all
+   * -- USB0 has a fixed internal buffer-to-pipe mapping.  PIPEBUF
+   * writes in the FIT library are guarded by `#if RX64M||RX71M` AND
+   * `USB_IP1==ip_no`. */
+  uint16_t                 pipe_bit = 0U;
+  volatile uint16_t* const pipe_ctr = internal_usb_resolve_pipe_ctr(pipe, &pipe_bit);
+
+  internal_usb_quiesce_pipe(pipe_ctr, pipe_bit);
+
+  const uint16_t cfg = internal_usb_build_pipecfg(endpoint, is_in, type);
+  internal_usb_write_pipe_config(pipe, cfg, is_in, max_packet);
+
+  internal_usb_finalize_pipe(pipe_ctr, pipe_bit);
 
   /* 8. Enable the per-pipe interrupt the ISR routes off of.  Step (1)
    * zeroed BRDYENB/NRDYENB/BEMPENB for this pipe while reconfiguring;
    * without re-enabling, the ISR's brdysts/bempsts scan sees clean
-   * bits forever, handle_bulk_in/handle_bulk_out never fires, and the
-   * only drain path is the synchronous trigger_tx_if_idle() inside
-   * rx_usb_write().  That explains bench-observed ~100 B/s cap on
-   * D->H and host `write()` blocking forever on H->D (bulk OUT).
+   * bits forever and handle_bulk_in/handle_bulk_out never fires.
    *
    * Routing rule (matches internal_handle_brdy_interrupt /
    * internal_handle_bemp_interrupt in rx_usb_isr.c):
    *   - OUT pipes (host -> device): BRDY fires when a bulk-OUT packet
    *     lands in the pipe FIFO.  Handler drains it to the RX ring.
    *   - IN pipes  (device -> host): BEMP fires when the pipe has
-   *     finished transmitting and its buffer is empty, i.e. the HW
-   *     is ready for the next packet.  Handler refills from TX ring. */
+   *     finished transmitting and its buffer is empty. */
   if (is_in) {
     usb0()->bempenb |= pipe_bit;
   } else {

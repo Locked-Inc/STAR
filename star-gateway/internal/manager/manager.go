@@ -12,7 +12,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"sort"
 	"sync"
 	"time"
@@ -134,13 +134,13 @@ func NewTransportManager(config *Config) *TransportManager {
 		failureTimeout,      // 200ms (SPI/auto) or 2s (simple-usb)
 		func() {
 			// Callback to trigger failover on heartbeat timeout
-			log.Printf("Heartbeat failure detected, triggering failover")
+			slog.Warn("heartbeat failure detected, triggering failover")
 			go tm.attemptFailover(FailureTypeTimeout)
 		},
 	)
 	if err != nil {
 		// This should never happen with valid constants, but handle gracefully
-		log.Printf("FATAL: Failed to create HeartbeatManager: %v", err)
+		slog.Error("failed to create HeartbeatManager", "error", err)
 		panic(fmt.Sprintf("HeartbeatManager creation failed: %v", err))
 	}
 	tm.heartbeat = heartbeat
@@ -212,12 +212,12 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 		// was designed for SPI and causes 30s startup delays + false frame rejection on USB.
 		if tm.config.Mode == ModeSimpleUSB {
 			tm.sessionState.SetSimpleMode(true)
-			log.Printf("Simple USB mode: skipped reset handshake, sequence validation relaxed")
+			slog.Info("simple USB mode: skipped reset handshake, sequence validation relaxed")
 		} else {
 			// CRITICAL FIX #4: Send Reset handshake before entering Active state
 			// This synchronizes sequence numbers with RX72N after Gateway restart
 			if err := tm.performResetHandshake(tm.ctx); err != nil {
-				log.Printf("WARNING: Reset handshake failed: %v (continuing anyway)", err)
+				slog.Warn("reset handshake failed, continuing anyway", "error", err)
 				// Don't fail startup - RX72N might be rebooting
 			}
 		}
@@ -225,7 +225,8 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 		// Reacquire mutex to update state
 		tm.mu.Lock()
 		tm.state = targetState
-		log.Printf("TransportManager started with %s transport (priority %d)", transportName, transportPriority)
+		slog.Info("TransportManager started",
+			"transport", transportName, "priority", transportPriority)
 		tm.mu.Unlock() // Release before return
 	} else {
 		tm.state = StateFailed
@@ -234,7 +235,7 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 			tm.mu.Unlock() // Release before error return
 			return fmt.Errorf("no %s transport available (required by mode)", tm.config.Mode)
 		}
-		log.Printf("TransportManager started with no available transports (will retry)")
+		slog.Warn("TransportManager started with no available transports (will retry)")
 		tm.mu.Unlock() // Release before return
 	}
 
@@ -290,13 +291,13 @@ func (tm *TransportManager) performResetHandshake(ctx context.Context) error {
 
 	var lastErr error
 	for attempt := 1; attempt <= maxRetries; attempt++ {
-		log.Printf("Reset handshake attempt %d/%d (session=%d)...",
-			attempt, maxRetries, newSessionID)
+		slog.Info("reset handshake attempt",
+			"attempt", attempt, "max", maxRetries, "session", newSessionID)
 
 		// Send RESET with FrameTypeReset
 		if err := sender.SendWithType(ctx, resetPayload, frame.FrameTypeReset); err != nil {
 			lastErr = fmt.Errorf("send RESET failed: %w", err)
-			log.Printf("Reset send failed (attempt %d): %v", attempt, err)
+			slog.Warn("reset send failed", "attempt", attempt, "error", err)
 			time.Sleep(retryDelay)
 			continue
 		}
@@ -309,13 +310,13 @@ func (tm *TransportManager) performResetHandshake(ctx context.Context) error {
 		if err == nil {
 			// Reset sequences AFTER valid RESET_ACK (not before)
 			tm.sessionState.Reset()
-			log.Printf("Reset handshake successful (session=%d, attempt=%d)",
-				newSessionID, attempt)
+			slog.Info("reset handshake successful",
+				"session", newSessionID, "attempt", attempt)
 			return nil
 		}
 
 		lastErr = err
-		log.Printf("Reset handshake attempt %d failed: %v", attempt, err)
+		slog.Warn("reset handshake attempt failed", "attempt", attempt, "error", err)
 		time.Sleep(retryDelay)
 	}
 
@@ -337,7 +338,7 @@ func (tm *TransportManager) drainUntilResetAck(ctx context.Context, expectedSess
 				return fmt.Errorf("timeout waiting for RESET_ACK: %w", ctx.Err())
 			}
 			// Transient receive error -- backoff briefly to avoid tight-loop CPU spin
-			log.Printf("DEBUG: Reset handshake receive error (continuing): %v", err)
+			slog.Debug("reset handshake receive error (continuing)", "error", err)
 			select {
 			case <-ctx.Done():
 				return fmt.Errorf("timeout waiting for RESET_ACK: %w", ctx.Err())
@@ -358,20 +359,20 @@ func (tm *TransportManager) drainUntilResetAck(ctx context.Context, expectedSess
 
 		// Non-RESET_ACK frames are stale -- discard and continue draining
 		if result.Metadata.Type != frame.FrameTypeResetAck {
-			log.Printf("DEBUG: Discarding stale frame during reset (type=%s, seq=%d)",
-				result.Metadata.Type.String(), result.Metadata.Sequence)
+			slog.Debug("discarding stale frame during reset",
+				"type", result.Metadata.Type.String(), "seq", result.Metadata.Sequence)
 			continue
 		}
 
 		// Got RESET_ACK -- validate session ID
 		if !tm.sessionState.ValidateResetAck(result.Payload) {
-			log.Printf("WARN: RESET_ACK with invalid/mismatched session ID, discarding")
+			slog.Warn("RESET_ACK with invalid/mismatched session ID, discarding")
 			continue
 		}
 
 		// Valid RESET_ACK with matching session ID
-		log.Printf("Received valid RESET_ACK (session=%d, seq=%d)",
-			expectedSessionID, result.Metadata.Sequence)
+		slog.Info("received valid RESET_ACK",
+			"session", expectedSessionID, "seq", result.Metadata.Sequence)
 		return nil
 	}
 }
@@ -400,11 +401,11 @@ func (tm *TransportManager) Stop() error {
 	for name, wrapper := range tm.availableTransports {
 		if wrapper.Transport != nil {
 			wrapper.Transport.Reset()
-			log.Printf("Reset transport: %s", name)
+			slog.Info("reset transport", "transport", name)
 		}
 	}
 
-	log.Printf("TransportManager stopped")
+	slog.Info("TransportManager stopped")
 	return nil
 }
 
@@ -434,7 +435,7 @@ func (tm *TransportManager) RegisterTransport(name string, transport harq.HARQ, 
 	}
 
 	tm.availableTransports[name] = wrapper
-	log.Printf("Registered transport: %s (priority %d)", name, priority)
+	slog.Info("registered transport", "transport", name, "priority", priority)
 
 	// If this is higher priority than current, attempt switch
 	if tm.activeTransport == nil {
@@ -442,7 +443,7 @@ func (tm *TransportManager) RegisterTransport(name string, transport harq.HARQ, 
 		tm.activeTransport = wrapper.Transport
 		tm.activeTransportName = wrapper.Name
 		tm.state = tm.getActiveStateLocked(wrapper.Name)
-		log.Printf("Activated initial transport: %s", name)
+		slog.Info("activated initial transport", "transport", name)
 	} else if currentWrapper, exists := tm.availableTransports[tm.activeTransportName]; exists && priority > currentWrapper.Priority {
 		// Higher priority transport available, switch in background
 		go tm.attemptSwitch(wrapper)
@@ -546,7 +547,8 @@ func (tm *TransportManager) SendWithType(ctx context.Context, data []byte, frame
 	sender, ok := active.(frameTypeSender)
 	if !ok {
 		// Fallback: use Send() (shouldn't happen with CDCLink/SPILink)
-		log.Printf("WARNING: Active transport %s does not support SendWithType, falling back to Send()", activeName)
+		slog.Warn("active transport does not support SendWithType, falling back to Send()",
+			"transport", activeName)
 		return tm.Send(ctx, data)
 	}
 
@@ -694,8 +696,8 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 	// This prevents stale USB FIFO frames from reaching the dispatcher.
 	// Returns nil which the dispatcher treats as a transient timeout.
 	if tm.sessionState.IsBarrierActive() {
-		log.Printf("DEBUG: Barrier active, discarding frame (type=%s, seq=%d)",
-			result.Metadata.Type.String(), result.Metadata.Sequence)
+		slog.Debug("barrier active, discarding frame",
+			"type", result.Metadata.Type.String(), "seq", result.Metadata.Sequence)
 		return nil
 	}
 
@@ -721,8 +723,8 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 		// Without this, HARQ retransmission bursts (many ACKs, no COMMAND/RESPONSE)
 		// would false-positive the 200ms implicit timeout.
 		tm.heartbeat.OnFrameReceived()
-		log.Printf("Received %s (seq=%d) - consumed by dispatcher",
-			result.Metadata.Type.String(), result.Metadata.Sequence)
+		slog.Debug("received control frame consumed by dispatcher",
+			"type", result.Metadata.Type.String(), "seq", result.Metadata.Sequence)
 		return nil
 
 	case frame.FrameTypeReset:
@@ -731,14 +733,14 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 		// Reset sequences: firmware resets its TX counter to 0 after sending RESET, so the
 		// gateway must mirror that to avoid sequence-mismatch rejection on the next frame.
 		tm.heartbeat.OnFrameReceived()
-		log.Printf("Received RESET (seq=%d) - sending RESET_ACK", result.Metadata.Sequence)
+		slog.Info("received RESET, sending RESET_ACK", "seq", result.Metadata.Sequence)
 		tm.sendResetAck(ctx)
 		tm.sessionState.Reset()
 		return nil
 
 	case frame.FrameTypeResetAck:
-		log.Printf("Received RESET_ACK (seq=%d) - session synchronized",
-			result.Metadata.Sequence)
+		slog.Info("received RESET_ACK, session synchronized",
+			"seq", result.Metadata.Sequence)
 		return nil
 
 	case frame.FrameTypeCommand, frame.FrameTypeResponse:
@@ -753,13 +755,14 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 		// typically ends on a newline.
 		tm.heartbeat.OnFrameReceived()
 		if len(result.Payload) > 0 {
-			log.Printf("[RX72N] %s", string(result.Payload))
+			slog.Info("[RX72N] " + string(result.Payload))
 		}
 		return nil
 
 	default:
-		log.Printf("Received unknown frame type 0x%02X (seq=%d) - consumed",
-			uint8(result.Metadata.Type), result.Metadata.Sequence)
+		slog.Warn("received unknown frame type, consumed",
+			"type", fmt.Sprintf("0x%02X", uint8(result.Metadata.Type)),
+			"seq", result.Metadata.Sequence)
 		return nil
 	}
 }
@@ -793,12 +796,12 @@ func (tm *TransportManager) sendPong(ctx context.Context, payload []byte) {
 
 	sender, ok := active.(frameTypeSender)
 	if !ok {
-		log.Printf("PONG send skipped: transport does not support SendWithType")
+		slog.Warn("PONG send skipped: transport does not support SendWithType")
 		return
 	}
 
 	if err := sender.SendWithType(pongCtx, payload, frame.FrameTypePong); err != nil {
-		log.Printf("PONG send failed: %v", err)
+		slog.Warn("PONG send failed", "error", err)
 	}
 }
 
@@ -826,12 +829,12 @@ func (tm *TransportManager) sendResetAck(ctx context.Context) {
 
 	sender, ok := active.(frameTypeSender)
 	if !ok {
-		log.Printf("RESET_ACK send skipped: transport does not support SendWithType")
+		slog.Warn("RESET_ACK send skipped: transport does not support SendWithType")
 		return
 	}
 
 	if err := sender.SendWithType(ackCtx, nil, frame.FrameTypeResetAck); err != nil {
-		log.Printf("RESET_ACK send failed: %v", err)
+		slog.Warn("RESET_ACK send failed", "error", err)
 	}
 }
 
@@ -889,7 +892,7 @@ func (tm *TransportManager) Reset() {
 
 	if tm.activeTransport != nil {
 		tm.activeTransport.Reset()
-		log.Printf("Reset active transport: %s", tm.activeTransportName)
+		slog.Info("reset active transport", "transport", tm.activeTransportName)
 	}
 }
 
@@ -939,7 +942,7 @@ func (tm *TransportManager) ForceSwitch(transportName string) error {
 	}
 	tm.mu.Unlock()
 
-	log.Printf("Force switching to transport: %s", transportName)
+	slog.Info("force switching transport", "transport", transportName)
 	return tm.executeSwitch(wrapper, FailureTypeGraceful)
 }
 
@@ -1002,8 +1005,9 @@ func (tm *TransportManager) selectBestTransportLocked() *TransportWrapper {
 		if damping > 0 && !wrapper.Health.LastRecovery.IsZero() &&
 			time.Since(wrapper.Health.LastRecovery) < damping &&
 			wrapper.Name != tm.activeTransportName {
-			log.Printf("Transport %s skipped (failback damping: %v remaining)",
-				wrapper.Name, damping-time.Since(wrapper.Health.LastRecovery))
+			slog.Debug("transport skipped (failback damping)",
+				"transport", wrapper.Name,
+				"damping_remaining", damping-time.Since(wrapper.Health.LastRecovery))
 			continue
 		}
 		candidates = append(candidates, wrapper)
@@ -1060,7 +1064,8 @@ func (tm *TransportManager) executeSwitch(target *TransportWrapper, failureType 
 	tm.state = tm.getSwitchingStateLocked(target.Name)
 	tm.mu.Unlock()
 
-	log.Printf("Starting transport switch: %s -> %s (failure type: %v)", oldName, target.Name, failureType)
+	slog.Info("starting transport switch",
+		"from", oldName, "to", target.Name, "failure_type", failureType)
 
 	// Step 1: Pause new operations
 	tm.pauseOperations()
@@ -1073,11 +1078,11 @@ func (tm *TransportManager) executeSwitch(target *TransportWrapper, failureType 
 
 	if shouldDrain {
 		if err := tm.drainInflight(tm.config.SwitchTimeout); err != nil {
-			log.Printf("WARNING: Drain timeout during switch, continuing anyway: %v", err)
+			slog.Warn("drain timeout during switch, continuing anyway", "error", err)
 			// Continue with switch despite timeout (better than staying on failed transport)
 		}
 	} else {
-		log.Printf("Skipping drain for failure type: %v (hard failure, fast failover)", failureType)
+		slog.Info("skipping drain (hard failure, fast failover)", "failure_type", failureType)
 	}
 
 	// Step 3: Reset old transport
@@ -1092,7 +1097,7 @@ func (tm *TransportManager) executeSwitch(target *TransportWrapper, failureType 
 	tm.state = tm.getActiveStateLocked(target.Name)
 	tm.mu.Unlock()
 
-	log.Printf("Transport switch completed: %s -> %s", oldName, target.Name)
+	slog.Info("transport switch completed", "from", oldName, "to", target.Name)
 	return nil
 }
 
@@ -1197,7 +1202,8 @@ func (tm *TransportManager) recordOperation(name string, err error, latency time
 	if len(reasons) > 0 && prevHealthy {
 		h.IsHealthy = false
 		wrapper.Available = false
-		log.Printf("Transport %s marked unhealthy: %s", name, fmt.Sprintf("%v", reasons))
+		slog.Warn("transport marked unhealthy",
+			"transport", name, "reasons", reasons)
 		go tm.attemptFailover(FailureTypeIOError)
 	} else if len(reasons) == 0 && err == nil {
 		h.IsHealthy = true
@@ -1227,7 +1233,7 @@ func (tm *TransportManager) attemptFailover(failureType FailureType) {
 	tm.mu.Unlock()
 
 	if nextBest == nil {
-		log.Printf("Failover failed: no healthy transports available")
+		slog.Error("failover failed: no healthy transports available")
 		tm.mu.Lock()
 		tm.state = StateFailed
 		tm.mu.Unlock()
@@ -1235,16 +1241,18 @@ func (tm *TransportManager) attemptFailover(failureType FailureType) {
 	}
 
 	if nextBest.Name == currentName {
-		log.Printf("Failover: current transport %s is still best option (degraded mode)", currentName)
+		slog.Warn("failover: current transport is still best option (degraded mode)",
+			"transport", currentName)
 		tm.mu.Lock()
 		tm.state = StateDegraded
 		tm.mu.Unlock()
 		return
 	}
 
-	log.Printf("Failover triggered: %s -> %s (failure type: %v)", currentName, nextBest.Name, failureType)
+	slog.Info("failover triggered",
+		"from", currentName, "to", nextBest.Name, "failure_type", failureType)
 	if err := tm.executeSwitch(nextBest, failureType); err != nil {
-		log.Printf("Failover switch failed: %v", err)
+		slog.Error("failover switch failed", "error", err)
 		tm.mu.Lock()
 		tm.state = StateDegraded
 		tm.mu.Unlock()
@@ -1255,19 +1263,22 @@ func (tm *TransportManager) attemptFailover(failureType FailureType) {
 // Priority upgrades are graceful switches (drain in-flight operations).
 func (tm *TransportManager) attemptSwitch(target *TransportWrapper) {
 	if err := tm.executeSwitch(target, FailureTypeGraceful); err != nil {
-		log.Printf("Priority-based switch failed: %v", err)
+		slog.Error("priority-based switch failed", "error", err)
 	}
 }
 
 // handleHotPlugEvent processes USB hot-plug add/remove events.
 func (tm *TransportManager) handleHotPlugEvent(event HotPlugEvent) {
-	log.Printf("Hot-plug event: %s %s (VID=0x%04X PID=0x%04X)", event.Action, event.Device, event.VendorID, event.ProductID)
+	slog.Info("hot-plug event",
+		"action", event.Action, "device", event.Device,
+		"vid", fmt.Sprintf("0x%04X", event.VendorID),
+		"pid", fmt.Sprintf("0x%04X", event.ProductID))
 
 	switch event.Action {
 	case "add":
 		// USB device added - will be registered by the main initialization code
 		// This event is primarily informational; actual registration happens via RegisterTransport
-		log.Printf("USB device connected: %s", event.Device)
+		slog.Info("USB device connected", "device", event.Device)
 		tm.mu.Lock()
 		usbExists := false
 		if wrapper, exists := tm.availableTransports[TransportNameUSB]; exists {
@@ -1278,7 +1289,7 @@ func (tm *TransportManager) handleHotPlugEvent(event HotPlugEvent) {
 			wrapper.Health.ConsecutiveFailures = 0 // Reset stale failure count
 			wrapper.Health.LastRecovery = time.Now()
 			usbExists = true
-			log.Printf("Marked USB transport as available and healthy due to hot-plug add")
+			slog.Info("marked USB transport as available and healthy due to hot-plug add")
 		}
 		tm.mu.Unlock()
 
@@ -1291,7 +1302,7 @@ func (tm *TransportManager) handleHotPlugEvent(event HotPlugEvent) {
 		tm.mu.Lock()
 		// Check if this was the active transport
 		if tm.activeTransportName == TransportNameUSB {
-			log.Printf("Active USB transport disconnected, triggering failover")
+			slog.Warn("active USB transport disconnected, triggering failover")
 			tm.mu.Unlock()
 			go tm.attemptFailover(FailureTypeHotPlugRemove)
 		} else {

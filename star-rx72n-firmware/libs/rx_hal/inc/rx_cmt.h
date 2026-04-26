@@ -63,7 +63,6 @@
  * ## CMT Operation Principle
  *
  * @msc
- * msc {
  *   width=600;
  *   Counter, CMCOR, Interrupt;
  *
@@ -73,7 +72,6 @@
  *   CMCOR box CMCOR [label="Compare match!\nCMCNT = 0"];
  *   CMCOR => Interrupt [label="CMIn interrupt"];
  *   Interrupt >> Counter [label="Continue counting"];
- * }
  * @endmsc
  *
  * ## Clock Divider Selection
@@ -346,7 +344,6 @@ typedef struct {
  * ## Initialization Sequence
  *
  * @msc
- * msc {
  *   width=600;
  *   Caller, Init, Module, Timer, ICU;
  *
@@ -364,7 +361,6 @@ typedef struct {
  *   Init => Timer [label="Start timer (CMSTR)"];
  *   Timer >> Init;
  *   Init >> Caller [label="k_rx_ok"];
- * }
  * @endmsc
  *
  * ## Divider Auto-Selection

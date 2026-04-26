@@ -2052,7 +2052,6 @@ const rx_port_pin_t g_pin_host_irq = (rx_port_pin_t)k_pin_host_irq;
  * **Stage order is CRITICAL** - violating dependencies causes failures:
  *
  * @msc
- * msc {
  *   width=700;
  *   Caller, HwInit, Timers, UART, SPI, I2C, ADC;
  *
@@ -2077,7 +2076,6 @@ const rx_port_pin_t g_pin_host_irq = (rx_port_pin_t)k_pin_host_irq;
  *   HwInit note HwInit [label="Postcondition: Check SCKCR3 still valid", textcolor="green"];
  *   HwInit => HwInit [label="RX_ASSERT(clocks not corrupted)"];
  *   HwInit => Caller [label="k_rx_ok"];
- * }
  * @endmsc
  *
  * ## Performance Characteristics (RX72N @ 240 MHz)

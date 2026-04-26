@@ -29,10 +29,10 @@
 #include <string>
 #include <vector>
 
-#include <geometry_msgs/msg/twist.hpp>
-#include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <sensor_msgs/msg/range.hpp>
@@ -47,8 +47,7 @@ namespace star_spi_bridge
 
 class StarSpiDriverNode : public rclcpp_lifecycle::LifecycleNode {
 public:
-  explicit StarSpiDriverNode(
-    const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  explicit StarSpiDriverNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
   ~StarSpiDriverNode() override;
 
   // Lifecycle transitions
@@ -173,24 +172,16 @@ private:
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr emergency_stop_sub_;
 
   // ROS handles -- lifecycle publishers
-  rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Odometry>::SharedPtr
-    odom_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::JointState>::SharedPtr
-    joint_state_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Imu>::SharedPtr
-    imu_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Range>::SharedPtr
-    obstacle_front_left_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Range>::SharedPtr
-    obstacle_front_right_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Range>::SharedPtr
-    obstacle_back_left_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Range>::SharedPtr
-    obstacle_back_right_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Bool>::SharedPtr
-    obstacle_detected_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Range>::SharedPtr obstacle_front_left_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Range>::SharedPtr obstacle_front_right_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Range>::SharedPtr obstacle_back_left_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Range>::SharedPtr obstacle_back_right_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Bool>::SharedPtr obstacle_detected_pub_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Int32>::SharedPtr
-    estop_reason_pub_;  /**< E-STOP reason code (star_v1_EstopReason, Int32). Valid when emergency_stop is true. */
+    estop_reason_pub_; /**< E-STOP reason code (star_v1_EstopReason, Int32). Valid when emergency_stop is true. */
 
   rclcpp::TimerBase::SharedPtr timer_;
 

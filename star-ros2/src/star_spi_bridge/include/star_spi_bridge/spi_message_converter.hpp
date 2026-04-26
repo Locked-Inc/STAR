@@ -39,8 +39,7 @@ namespace star_spi_bridge
 
 class SpiMessageConverter {
 public:
-  struct Parameters
-  {
+  struct Parameters {
     double wheel_base;
     double wheel_radius;
     int32_t ticks_per_rev;
@@ -49,17 +48,11 @@ public:
   explicit SpiMessageConverter(const Parameters & params);
 
   // ROS2 -> Protobuf
-  bool twist_to_velocity_command(
-    const geometry_msgs::msg::Twist & twist,
-    star::v1::VelocityCommand & command);
+  bool twist_to_velocity_command(const geometry_msgs::msg::Twist & twist, star::v1::VelocityCommand & command);
 
   // Protobuf -> ROS2
-  void telemetry_to_odometry(
-    const star::v1::TelemetryData & telemetry,
-    nav_msgs::msg::Odometry & odom);
-  void telemetry_to_joint_state(
-    const star::v1::TelemetryData & telemetry,
-    sensor_msgs::msg::JointState & joint_state);
+  void telemetry_to_odometry(const star::v1::TelemetryData & telemetry, nav_msgs::msg::Odometry & odom);
+  void telemetry_to_joint_state(const star::v1::TelemetryData & telemetry, sensor_msgs::msg::JointState & joint_state);
   /**
    * @brief Convert TelemetryData obstacle fields to four Range messages.
    *
@@ -103,12 +96,9 @@ public:
    *
    * @since Version 1.0.0
    */
-  void telemetry_to_obstacle_ranges(
-    const star::v1::TelemetryData & telemetry,
-    sensor_msgs::msg::Range & front_left,
-    sensor_msgs::msg::Range & front_right,
-    sensor_msgs::msg::Range & back_left,
-    sensor_msgs::msg::Range & back_right);
+  void telemetry_to_obstacle_ranges(const star::v1::TelemetryData & telemetry, sensor_msgs::msg::Range & front_left,
+                                    sensor_msgs::msg::Range & front_right, sensor_msgs::msg::Range & back_left,
+                                    sensor_msgs::msg::Range & back_right);
 
 private:
   Parameters params_;

@@ -37,7 +37,6 @@
  * ## Failure Detection Flow
  *
  * @msc
- * msc {
  *   MotorTask, WatchdogMon, IWDT;
  *
  *   MotorTask -> WatchdogMon [label="heartbeat @ t=0ms"];
@@ -51,7 +50,6 @@
  *   WatchdogMon note WatchdogMon [label="Log error"];
  *   IWDT note IWDT [label="Timeout @ t=2050ms", textbgcolor="red"];
  *   IWDT -> IWDT [label="SYSTEM RESET"];
- * }
  * @endmsc
  *
  * ## Timeout Strategy

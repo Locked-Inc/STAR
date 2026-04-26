@@ -11,7 +11,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"log"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -221,8 +221,8 @@ func (hm *HeartbeatManager) OnPongReceived(payload []byte) bool {
 
 	// Validate payload length
 	if len(payload) != pingPayloadSize {
-		log.Printf("WARN: PONG payload length %d, expected %d",
-			len(payload), pingPayloadSize)
+		slog.Warn("PONG payload length mismatch",
+			"length", len(payload), "expected", pingPayloadSize)
 		return false
 	}
 
@@ -231,8 +231,8 @@ func (hm *HeartbeatManager) OnPongReceived(payload []byte) bool {
 
 	// Validate counter matches last sent PING
 	if receivedCounter != hm.lastPingSent {
-		log.Printf("WARN: PONG counter mismatch: received %d, expected %d (stale or replayed)",
-			receivedCounter, hm.lastPingSent)
+		slog.Warn("PONG counter mismatch (stale or replayed)",
+			"received", receivedCounter, "expected", hm.lastPingSent)
 		return false
 	}
 
@@ -262,7 +262,7 @@ func (hm *HeartbeatManager) OnPongReceived(payload []byte) bool {
 func (hm *HeartbeatManager) Run(ctx context.Context, tm *TransportManager) {
 	// Validate TransportManager is not nil (prevents panic in sendPing)
 	if tm == nil {
-		log.Printf("ERROR: HeartbeatManager.Run called with nil TransportManager, exiting")
+		slog.Error("HeartbeatManager.Run called with nil TransportManager, exiting")
 		return
 	}
 
@@ -333,13 +333,14 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 			lastSent := hm.lastPingSent // capture under lock to avoid race
 			hm.mu.Unlock()
 
-			log.Printf("PONG miss: counter=%d unanswered, consecutive_misses=%d/%d",
-				lastSent, currentMisses, DefaultConsecutiveMissThreshold)
+			slog.Warn("PONG miss",
+				"counter", lastSent, "consecutive_misses", currentMisses,
+				"threshold", DefaultConsecutiveMissThreshold)
 
 			// Counter-based failure detection
 			if currentMisses >= DefaultConsecutiveMissThreshold {
-				log.Printf("Consecutive PONG misses (%d >= %d), triggering failover",
-					currentMisses, DefaultConsecutiveMissThreshold)
+				slog.Warn("consecutive PONG misses, triggering failover",
+					"misses", currentMisses, "threshold", DefaultConsecutiveMissThreshold)
 
 				hm.mu.Lock()
 				hm.failureTriggered = true
@@ -363,7 +364,7 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 	// links where no frames flow at all. Because failureTimeout (200ms) << pingInterval
 	// (1s), this fires first on a hard dead link. Only triggers once per failure.
 	if implicitElapsed > hm.failureTimeout && !alreadyTriggered {
-		log.Printf("Heartbeat timeout (%v), triggering failover", implicitElapsed)
+		slog.Warn("heartbeat timeout, triggering failover", "elapsed", implicitElapsed)
 
 		// Set flag BEFORE calling onLinkFailed to prevent race.
 		hm.mu.Lock()
@@ -408,7 +409,7 @@ func (hm *HeartbeatManager) sendPing(ctx context.Context, tm *TransportManager) 
 	defer cancel()
 
 	if err := tm.SendWithType(pingCtx, payload, frame.FrameTypePing); err != nil {
-		log.Printf("PING send failed: %v (counter=%d)", err, counter)
+		slog.Warn("PING send failed", "error", err, "counter", counter)
 		// Don't set pendingPing - failed sends should not count as misses
 		return
 	}

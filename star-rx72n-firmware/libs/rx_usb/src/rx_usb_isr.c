@@ -359,6 +359,35 @@ typedef enum : uint8_t {
   k_port2_pipe_int_in   = 8,
 } usb_pipe_assignment_t;
 
+/**
+ * @enum usb_isr_debug_pin_t
+ * @brief Debug pin constants for the PB5 USB ISR entry-edge marker
+ *
+ * @details
+ * Toggles PB5 (PORTB pin 5) on every ISR entry so a logic analyser can
+ * distinguish "ISR never fires" from "ISR fires but hangs / handler
+ * misroutes the event". PORTB.PODR is at 0x0008C02B per the RX72N HUM.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_usb_isr_debug_pin_bit = 5, /**< PB5 bit position in PORTB.PODR */
+} usb_isr_debug_pin_t;
+
+/**
+ * @enum usb_isr_debug_pin_addr_t
+ * @brief PORTB.PODR memory-mapped address for the ISR debug pin
+ *
+ * @details
+ * Separate enum because address constants must use uintptr_t (32-bit on
+ * RX72N, 64-bit on x86_64 unit-test host) while bit positions are uint8_t.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uintptr_t {
+  k_usb_isr_debug_portb_podr_addr = 0x0008C02BU, /**< PORTB.PODR register address */
+} usb_isr_debug_pin_addr_t;
+
 /* Redundant extern declarations removed - now provided by rx_usb_internal.h */
 
 /* =============================================================================
@@ -385,6 +414,62 @@ void __attribute__((interrupt(".rvectors", 90)))  usb0_usbr_isr(void);
  * Private Functions
  * =============================================================================
  */
+
+/**
+ * @brief Map a USB pipe number to its bulk-OUT CDC port id
+ *
+ * @details
+ * Returns k_usb_port_count if the pipe is not a port-owned bulk-OUT pipe
+ * (i.e. DCP or any non-OUT pipe). Used by the BRDY ISR to dispatch
+ * received data to the correct CDC port handler in O(1) without an
+ * if/else chain (which clang-tidy flags as bugprone-branch-clone).
+ *
+ * @param[in] pipe USB pipe number (0-9)
+ * @return rx_usb_port_id_t Matching port id, or k_usb_port_count if none
+ *
+ * @since Version 1.0.0
+ */
+static rx_usb_port_id_t internal_pipe_to_bulk_out_port(uint8_t pipe)
+{
+  switch (pipe) {
+    case k_port0_pipe_bulk_out:
+      return k_usb_port_proto;
+    case k_port1_pipe_bulk_out:
+      return k_usb_port_decoded;
+    case k_port2_pipe_bulk_out:
+      return k_usb_port_log;
+    default:
+      return k_usb_port_count;
+  }
+}
+
+/**
+ * @brief Map a USB pipe number to its bulk-IN CDC port id
+ *
+ * @details
+ * Returns k_usb_port_count if the pipe is not a port-owned bulk-IN pipe
+ * (i.e. DCP or any non-IN pipe). Used by the BEMP ISR to dispatch the
+ * "buffer empty" notification to the correct CDC port handler in O(1)
+ * without an if/else chain (which clang-tidy flags as bugprone-branch-clone).
+ *
+ * @param[in] pipe USB pipe number (0-9)
+ * @return rx_usb_port_id_t Matching port id, or k_usb_port_count if none
+ *
+ * @since Version 1.0.0
+ */
+static rx_usb_port_id_t internal_pipe_to_bulk_in_port(uint8_t pipe)
+{
+  switch (pipe) {
+    case k_port0_pipe_bulk_in:
+      return k_usb_port_proto;
+    case k_port1_pipe_bulk_in:
+      return k_usb_port_decoded;
+    case k_port2_pipe_bulk_in:
+      return k_usb_port_log;
+    default:
+      return k_usb_port_count;
+  }
+}
 
 /**
  * @brief Handle VBUS interrupt (cable connect/disconnect)
@@ -535,18 +620,11 @@ static void internal_handle_brdy_interrupt(void)
   /* Check each pipe for buffer ready */
   for (uint8_t pipe = k_usb_pipe_dcp; pipe <= k_usb_pipe_max; pipe++) {
     if (brdysts & (1U << pipe)) {
-      if (pipe == k_usb_pipe_dcp) {
-        /* DCP buffer ready - control transfer data */
-        /* Handled in CTRT interrupt */
-      } else if (pipe == k_port0_pipe_bulk_out) {
-        /* Port 0: Bulk OUT data received from host */
-        rx_usb_cdc_handle_bulk_out(k_usb_port_proto);
-      } else if (pipe == k_port1_pipe_bulk_out) {
-        /* Port 1: Bulk OUT data received from host */
-        rx_usb_cdc_handle_bulk_out(k_usb_port_decoded);
-      } else if (pipe == k_port2_pipe_bulk_out) {
-        /* Port 2: Bulk OUT data received from host */
-        rx_usb_cdc_handle_bulk_out(k_usb_port_log);
+      /* DCP (pipe 0) is handled in CTRT, not here.
+       * Port-bulk-OUT pipes route to the matching CDC port handler. */
+      const rx_usb_port_id_t port = internal_pipe_to_bulk_out_port(pipe);
+      if (port != k_usb_port_count) {
+        rx_usb_cdc_handle_bulk_out(port);
       }
       /* Note: Other pipes (Bulk IN, Interrupt IN) don't trigger BRDY */
       /* Clear pipe buffer ready flag */
@@ -567,18 +645,11 @@ static void internal_handle_bemp_interrupt(void)
   /* Check each pipe for buffer empty */
   for (uint8_t pipe = k_usb_pipe_dcp; pipe <= k_usb_pipe_max; pipe++) {
     if (bempsts & (1U << pipe)) {
-      if (pipe == k_usb_pipe_dcp) {
-        /* DCP buffer empty - control transfer complete */
-        /* Handled in CTRT interrupt */
-      } else if (pipe == k_port0_pipe_bulk_in) {
-        /* Port 0: Bulk IN transmission complete - can send more data */
-        rx_usb_cdc_handle_bulk_in(k_usb_port_proto);
-      } else if (pipe == k_port1_pipe_bulk_in) {
-        /* Port 1: Bulk IN transmission complete - can send more data */
-        rx_usb_cdc_handle_bulk_in(k_usb_port_decoded);
-      } else if (pipe == k_port2_pipe_bulk_in) {
-        /* Port 2: Bulk IN transmission complete - can send more data */
-        rx_usb_cdc_handle_bulk_in(k_usb_port_log);
+      /* DCP (pipe 0) buffer-empty is handled in CTRT.
+       * Port-bulk-IN pipes route to the matching CDC port handler. */
+      const rx_usb_port_id_t port = internal_pipe_to_bulk_in_port(pipe);
+      if (port != k_usb_port_count) {
+        rx_usb_cdc_handle_bulk_in(port);
       }
       /* Note: Interrupt IN pipes don't typically need BEMP handling for CDC */
       /* Clear pipe buffer empty flag */
@@ -680,9 +751,10 @@ void __attribute__((interrupt(".rvectors", 144))) usb0_usbi_isr(void)
   /* Direct pin toggle on PB5 so the logic analyser sees a fast edge pair
    * on every ISR entry, independent of whether rx_usb_isr_handler() runs
    * or hangs. */
-  *((volatile uint8_t*)0x0008C02BU) |= (uint8_t)(1U << 5U);
+  volatile uint8_t* const portb_podr = (volatile uint8_t*)k_usb_isr_debug_portb_podr_addr;
+  *portb_podr |= (uint8_t)(1U << k_usb_isr_debug_pin_bit);
   g_usb_isr_entry_count++;
-  *((volatile uint8_t*)0x0008C02BU) &= (uint8_t) ~(1U << 5U);
+  *portb_podr &= (uint8_t) ~(1U << k_usb_isr_debug_pin_bit);
 
   /* Clear interrupt request flag in ICU */
   icu()->ir[k_vect_usb0_usbi] = 0;

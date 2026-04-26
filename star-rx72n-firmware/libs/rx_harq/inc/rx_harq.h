@@ -45,7 +45,7 @@
  * @msc
  * Transmitter, Channel, Receiver;
  *
- * --- [label="Transmission 1"];
+ * ... [label="Transmission 1"];
  * Transmitter box Transmitter [label="Encode with FEC\n100 bytes -> 202 bytes"];
  * Transmitter => Channel [label="Soft bits (1st attempt)"];
  * Channel box Channel [label="Add noise\nBER = 10^-3"];
@@ -54,7 +54,7 @@
  * Receiver box Receiver [label="Store soft bits\nin combiner"];
  * Receiver => Transmitter [label="NACK (request retry)"];
  *
- * --- [label="Transmission 2"];
+ * ... [label="Transmission 2"];
  * Transmitter => Channel [label="Soft bits (2nd attempt)"];
  * Channel box Channel [label="Independent noise\nBER = 10^-3"];
  * Channel => Receiver [label="Noisy soft bits"];

@@ -72,7 +72,7 @@
  *
  * **Macro Usage Justification (CLAUDE.md Compliance):**
  * ALL macros in this file are **justified** per CLAUDE.md policy:
- * - **Conditional compilation:** Compiler-specific code selection (#if defined(__CCRX__))
+ * - **Conditional compilation:** Compiler-specific code selection (`#if defined(__CCRX__)`)
  * - **Reducing duplicated code:** Single BSP codebase for 3 compilers
  * - **NOT integer constants:** Not used for numeric values (use enums for that)
  *

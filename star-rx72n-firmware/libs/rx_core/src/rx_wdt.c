@@ -104,7 +104,7 @@
  * @msc
  * CPU, WDTRR, Counter;
  *
- * --- [label="Refresh Sequence"];
+ * ... [label="Refresh Sequence"];
  * CPU => WDTRR [label="Write 0x00"];
  * WDTRR box WDTRR [label="First byte received"];
  * CPU => WDTRR [label="Write 0xFF"];
@@ -112,7 +112,7 @@
  * WDTRR => Counter [label="Reset to timeout value"];
  * Counter box Counter [label="Begin countdown"];
  *
- * --- [label="Invalid Sequence (wrong order)"];
+ * ... [label="Invalid Sequence (wrong order)"];
  * CPU => WDTRR [label="Write 0xFF"];
  * WDTRR box WDTRR [label="Invalid first byte"];
  * WDTRR box WDTRR [label="Sequence rejected"];

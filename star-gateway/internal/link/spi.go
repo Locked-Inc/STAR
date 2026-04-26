@@ -24,7 +24,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -613,7 +613,8 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 			// Skip NACK send if context is already cancelled.
 			if ctx.Err() == nil {
 				if nackErr := s.sendNack(ctx, crcErr.Sequence); nackErr != nil {
-					log.Printf("WARN: Failed to send NACK for CRC failure seq=%d: %v", crcErr.Sequence, nackErr)
+					slog.Warn("failed to send NACK for CRC failure",
+						"seq", crcErr.Sequence, "error", nackErr)
 				}
 			}
 			if crcRetries > s.config.MaxRetries {
@@ -644,7 +645,8 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 		// Skip ACK resend if context is cancelled (graceful shutdown in progress)
 		if ctx.Err() == nil {
 			if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
-				log.Printf("WARN: Failed to resend ACK for duplicate seq=%d: %v", f.Header.Sequence, err)
+				slog.Warn("failed to resend ACK for duplicate",
+					"seq", f.Header.Sequence, "error", err)
 			}
 		}
 		return nil, harq.ErrDuplicateFrame
@@ -664,7 +666,8 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 			// Skip NACK send if context is cancelled
 			if ctx.Err() == nil {
 				if nackErr := s.sendNack(ctx, f.Header.Sequence); nackErr != nil {
-					log.Printf("WARN: Failed to send NACK for FEC decode failure seq=%d: %v", f.Header.Sequence, nackErr)
+					slog.Warn("failed to send NACK for FEC decode failure",
+						"seq", f.Header.Sequence, "error", nackErr)
 				}
 			}
 			return nil, fmt.Errorf("FEC decode failed: %w", err)
@@ -683,7 +686,8 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 				// Don't fail receive if ACK send fails
 				// We successfully decoded the payload, just log the error
 				// Sender will timeout and retransmit, we'll send ACK again
-				log.Printf("WARN: ACK send failed for seq=%d: %v (payload decoded successfully)", f.Header.Sequence, err)
+				slog.Warn("ACK send failed (payload decoded successfully)",
+					"seq", f.Header.Sequence, "error", err)
 			}
 		}
 	}

@@ -71,7 +71,6 @@
  * - **RPES**: Window end position (when refresh becomes prohibited)
  *
  * @startuml
- * @startuml
  * robust "Refresh Window" as RW
  * robust "Counter" as CNT
  *
@@ -80,12 +79,10 @@
  * RW is "Prohibited"
  *
  * @100
- * RW is "Allowed"
- * note right: RPSS = 75%\n(allowed after 25% elapsed)
+ * RW is "Allowed (RPSS=75%)"
  *
  * @250
- * RW is "Prohibited"
- * note right: RPES = 50%\n(prohibited below 50%)
+ * RW is "Prohibited (RPES=50%)"
  *
  * @400
  * CNT is "0 (Timeout)"

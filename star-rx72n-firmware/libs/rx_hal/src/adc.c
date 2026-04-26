@@ -69,13 +69,13 @@
  * @msc
  * Application, ADC_HAL, MSTPCRA, ADCSR, ADDRn;
  *
- * --- [label="Initialization"];
+ * ... [label="Initialization"];
  * Application => ADC_HAL [label="adc_init(unit=0, ch=2, bits=12)"];
  * ADC_HAL => MSTPCRA [label="Clear bit 17 (enable S12AD0)"];
  * ADC_HAL => ADCSR [label="Configure resolution"];
  * ADC_HAL => Application [label="k_rx_ok"];
  *
- * --- [label="Conversion"];
+ * ... [label="Conversion"];
  * Application => ADC_HAL [label="adc_read(unit=0, ch=2, &value)"];
  * ADC_HAL => ADCSR [label="Set ADST bit (start)"];
  * ADC_HAL box ADC_HAL [label="Poll ADST until clear"];

@@ -985,116 +985,183 @@ static rx_err_t internal_configure_uart_pins(const rx_port_pin_t tx_gpio, rx_por
  *
  * @since Version 1.0.0
  */
-rx_err_t uart_init_channel(const uart_channel_config_t* config)
+/**
+ * @brief Validate uart_init_channel arguments and resolve SCI base
+ *
+ * @details
+ * Checks for null config, channel range, baud range, channel-already-
+ * initialized state.  Resolves config->channel to its SCI peripheral
+ * base address.
+ *
+ * @param[in] config Caller's channel config (must be non-null)
+ * @param[out] sci_out On success, set to the SCI peripheral base
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All checks pass, *sci_out non-null
+ * @retval k_rx_err_null_ptr config is nullptr
+ * @retval k_rx_err_invalid_arg Bounds violation
+ * @retval k_rx_err_invalid_state Channel already initialized
+ *
+ * @pre sci_out non-null
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_uart_validate_init(const uart_channel_config_t* const config,
+                                            volatile rx_sci_regs_t** const     sci_out)
 {
-  /* Validate config pointer */
   if (config == nullptr) {
     return k_rx_err_null_ptr;
   }
-
-  /* Validate channel */
   if ((uint8_t)config->channel >= k_uart_max_channels) {
     return k_rx_err_invalid_arg;
   }
-
   if ((config->baudrate < k_uart_baudrate_min) || (config->baudrate > k_uart_baudrate_max)) {
     return k_rx_err_invalid_arg;
   }
-
-  /* Get SCI register base */
-  volatile rx_sci_regs_t* sci = sci_get_channel(config->channel);
-  if (sci == nullptr) {
+  *sci_out = sci_get_channel(config->channel);
+  if (*sci_out == nullptr) {
     return k_rx_err_invalid_arg;
   }
-
-  /* Check if already initialized */
   if (s_channel_initialized[config->channel]) {
     return k_rx_err_invalid_state;
   }
+  return k_rx_ok;
+}
 
-  /* Enable SCI module clock (clear module stop bit) */
+/**
+ * @brief Resolve the peripheral clock frequency for a given SCI channel
+ *
+ * @details
+ * SCIj (SCI0-SCI6) and SCIh (SCI12) are clocked by PCLKB.  SCIi
+ * (SCI7-SCI11, extended region 0x000D0xxx) are clocked by PCLKA.  Using
+ * the wrong clock produces a wrong BRR and a wrong baud rate.
+ *
+ * @param[in] channel Validated SCI channel index
+ *
+ * @return uint32_t Peripheral clock in Hz
+ *
+ * @pre channel < k_uart_max_channels
+ *
+ * @since Version 1.0.0
+ */
+static uint32_t internal_uart_select_pclk(const uart_channel_t channel)
+{
+  return (((uint8_t)channel >= k_uart_pclka_channel_min) &&
+          ((uint8_t)channel <= k_uart_pclka_channel_max))
+           ? k_pclka_hz
+           : k_pclkb_hz;
+}
+
+/**
+ * @brief Program SMR/SEMR/BRR for the requested channel and baud
+ *
+ * @details
+ * Sets SMR=async-8N1, picks SEMR.ABCS=1 for SCI9 (lowers baud error
+ * from +1.72% to +0.16% at 115200 on PCLKA=120 MHz, see HUM 34.2.12),
+ * computes BRR via internal_calculate_brr, then waits k_uart_bit_time_-
+ * delay_cycles for the new rate to settle.  SEMR MUST be written before
+ * BRR because BRR is interpreted against whatever base clock SEMR
+ * selects.
+ *
+ * @param[in] sci SCI peripheral base (must be non-null)
+ * @param[in] channel Validated SCI channel index
+ * @param[in] baudrate Validated requested baud
+ *
+ *
+ * @pre SCR=disabled before this call
+ * @post SMR/SEMR/BRR programmed
+ *
+ * @since Version 1.0.0
+ */
+static void internal_uart_program_baud(volatile rx_sci_regs_t* const sci,
+                                       const uart_channel_t          channel,
+                                       const uint32_t                baudrate)
+{
+  sci->smr            = k_sci_smr_async_8n1;
+  const bool use_abcs = (channel == k_uart_channel_9);
+  sci->semr           = use_abcs ? (uint8_t)k_sci_semr_abcs_bit : (uint8_t)k_sci_semr_default;
+  sci->brr = internal_calculate_brr(baudrate, internal_uart_select_pclk(channel), use_abcs);
+
+  /* NOTE: Busy-wait required - may run before ThreadX initialization */
+  for (volatile uint32_t i = 0; i < k_uart_bit_time_delay_cycles; i++) {
+    __asm__ volatile("nop");
+  }
+}
+
+/**
+ * @brief Switch SCI9 to interrupt-driven RX mode
+ *
+ * @details
+ * Resets the ring-buffer head/tail, drains any pending RDR + clears
+ * boot-time error flags, programs the RXI9 vector priority/IER/IR, then
+ * sets SCR.RIE=1 so the RXI9 ISR begins firing on RDRF.  HUM vector 102
+ * = SCI9_RXI9, IER index 12 ((102>>3)=12), IER bit 6 ((102&7)=6).  See
+ * comm_task RX overrun note at the top of this file.
+ *
+ * @param[in] sci SCI9 peripheral base (must be non-null)
+ *
+ *
+ * @pre Caller has set SCR=TX|RE before this call
+ * @post SCR.RIE asserted, RXI9 vector enabled, ring drained
+ *
+ * @since Version 1.0.0
+ */
+static void internal_uart_enable_sci9_rx_isr(volatile rx_sci_regs_t* const sci)
+{
+  s_sci9_rx_head = 0U;
+  s_sci9_rx_tail = 0U;
+
+  /* Drain any pending RDR byte and clear error flags BEFORE enabling the
+   * RXI interrupt, so the first real byte doesn't find an ORER set from
+   * boot-time noise (which would gate further interrupts). */
+  if ((sci->ssr & k_sci_ssr_error_mask) != k_uart_flag_clear) {
+    internal_clear_errors(sci);
+  }
+  if ((sci->ssr & k_sci_ssr_rdrf_flag) != k_uart_flag_clear) {
+    (void)sci->rdr;
+    const uint8_t ssr = sci->ssr;
+    sci->ssr          = (uint8_t)(ssr & ~k_sci_ssr_rdrf_flag);
+  }
+
+  const uint16_t vec_rxi9 = (uint16_t)k_vect_sci9_rxi9;
+  icu()->ipr[vec_rxi9]    = k_sci9_rxi9_priority;
+  icu()->ir[vec_rxi9]     = 0U;
+  icu()->ier[vec_rxi9 / k_icu_ier_bits_per_reg] |=
+    (uint8_t)(1U << (vec_rxi9 % k_icu_ier_bits_per_reg));
+
+  sci->scr = (uint8_t)(k_sci_scr_txrx_enabled | k_sci_scr_rie_bit);
+}
+
+rx_err_t uart_init_channel(const uart_channel_config_t* config)
+{
+  volatile rx_sci_regs_t* sci   = nullptr;
+  const rx_err_t          check = internal_uart_validate_init(config, &sci);
+  if (check != k_rx_ok) {
+    return check;
+  }
+
   rx_err_t err = internal_enable_sci_clock(config->channel);
   if (err != k_rx_ok) {
     return err;
   }
-
-  /* Configure TX/RX pins (MPC and GPIO) */
   err = internal_configure_uart_pins(config->tx_gpio, config->rx_gpio);
   if (err != k_rx_ok) {
     return err;
   }
 
-  /* Disable TX/RX */
+  /* Disable TX/RX while reprogramming registers */
   sci->scr = k_sci_scr_disabled;
 
-  /* Configure serial mode: Async, 8-bit, no parity, 1 stop, PCLK/1 */
-  sci->smr = k_sci_smr_async_8n1;
-
-  /* Select the correct peripheral clock for this channel.
-   * SCIj (SCI0-SCI6) and SCIh (SCI12) are clocked by PCLKB.
-   * SCIi (SCI7-SCI11, extended region 0x000D0xxx) are clocked by PCLKA.
-   * Using the wrong clock produces a wrong BRR and a wrong baud rate. */
-  const uint32_t pclk_hz = (((uint8_t)config->channel >= k_uart_pclka_channel_min) &&
-                            ((uint8_t)config->channel <= k_uart_pclka_channel_max))
-                             ? k_pclka_hz
-                             : k_pclkb_hz;
-
-  /* SEMR.ABCS selects the base clock used by the bit-rate generator:
-   * ABCS=0 -> 16 cycles/bit (default), ABCS=1 -> 8 cycles/bit (HUM 34.2.12).
-   * For SCI9 @ 115200 baud the 16-cycle path only produces +1.72% baud
-   * error on PCLKA=120 MHz, which causes a framing error (SSR.FER) on
-   * every byte and prevents SSR.RDRF from ever latching -- so the RXI9
-   * interrupt never fires and bytes never land in the ring. Switching
-   * SCI9 to ABCS=1 halves the divisor, cuts the error to +0.16%, and
-   * lets the receiver latch clean bytes. SEMR MUST be written before BRR
-   * because BRR is interpreted against whatever base clock SEMR selects. */
-  const bool use_abcs = (config->channel == k_uart_channel_9);
-  sci->semr           = use_abcs ? (uint8_t)k_sci_semr_abcs_bit : (uint8_t)k_sci_semr_default;
-
-  /* Set baud rate (uses the divisor selected by SEMR above) */
-  sci->brr = internal_calculate_brr(config->baudrate, pclk_hz, use_abcs);
-
-  /* Wait for at least 1 bit time */
-  /* NOTE: Busy-wait required - may run before ThreadX initialization */
-  for (volatile uint32_t i = 0; i < k_uart_bit_time_delay_cycles; i++) {
-    __asm__ volatile("nop");
-  }
+  internal_uart_program_baud(sci, config->channel, config->baudrate);
 
   /* Configure serial control: Enable TX and RX */
   sci->scr = k_sci_scr_txrx_enabled;
 
-  /* For SCI9, switch RX to interrupt-driven mode: reset the ring buffer,
-   * set the RXI9 priority + IER bit + clear pending IR, then arm SCR.RIE.
-   * HUM vector 102 = SCI9_RXI9, IER index 12 ((102>>3)=12), IER bit 6
-   * ((102&7)=6). See comm_task RX overrun note at the top of this file. */
   if (config->channel == k_uart_channel_9) {
-    s_sci9_rx_head = 0U;
-    s_sci9_rx_tail = 0U;
-
-    /* Drain any pending RDR byte and clear error flags BEFORE enabling the
-     * RXI interrupt, so the first real byte doesn't find an ORER set from
-     * boot-time noise (which would gate further interrupts). */
-    if ((sci->ssr & k_sci_ssr_error_mask) != k_uart_flag_clear) {
-      internal_clear_errors(sci);
-    }
-    if ((sci->ssr & k_sci_ssr_rdrf_flag) != k_uart_flag_clear) {
-      (void)sci->rdr;
-      const uint8_t ssr = sci->ssr;
-      sci->ssr          = (uint8_t)(ssr & ~k_sci_ssr_rdrf_flag);
-    }
-
-    const uint16_t vec_rxi9 = (uint16_t)k_vect_sci9_rxi9;
-    icu()->ipr[vec_rxi9]    = k_sci9_rxi9_priority;
-    icu()->ir[vec_rxi9]     = 0U;
-    icu()->ier[vec_rxi9 / k_icu_ier_bits_per_reg] |=
-      (uint8_t)(1U << (vec_rxi9 % k_icu_ier_bits_per_reg));
-
-    sci->scr = (uint8_t)(k_sci_scr_txrx_enabled | k_sci_scr_rie_bit);
+    internal_uart_enable_sci9_rx_isr(sci);
   }
 
-  /* Mark channel as initialized */
   s_channel_initialized[config->channel] = true;
-
   return k_rx_ok;
 }
 

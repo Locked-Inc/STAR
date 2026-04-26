@@ -9,7 +9,7 @@ package manager
 
 import (
 	"encoding/binary"
-	"log"
+	"log/slog"
 	"sync"
 )
 
@@ -114,8 +114,8 @@ func (s *SessionState) ValidateRxSequence(seq uint16) bool {
 	// Reset barrier: reject ALL data frames while barrier is active.
 	// Stale frames from USB FIFO buffers must be discarded during reset handshake.
 	if s.resetBarrierActive {
-		log.Printf("DEBUG: Reset barrier active (session=%d), rejecting frame seq=%d",
-			s.resetBarrierSessionID, seq)
+		slog.Debug("reset barrier active, rejecting frame",
+			"session", s.resetBarrierSessionID, "seq", seq)
 		return false
 	}
 
@@ -130,8 +130,8 @@ func (s *SessionState) ValidateRxSequence(seq uint16) bool {
 
 	// Small gap (packet loss on USB) - Accept and catch up
 	if diff > 0 && diff < MaxGapTolerance {
-		log.Printf("WARN: Skipped %d frames (packet loss), expected %d, got %d",
-			diff, s.rxSequence, seq)
+		slog.Warn("skipped frames (packet loss)",
+			"skipped", diff, "expected", s.rxSequence, "got", seq)
 		s.rxSequence = (seq + 1) & seqMask
 		return true
 	}
@@ -139,8 +139,8 @@ func (s *SessionState) ValidateRxSequence(seq uint16) bool {
 	// Large gap or negative difference (duplicate/out-of-order)
 	// diff > maxGapTolerance: Too many frames lost (possible transport failure)
 	// diff is large positive (near 65535): Likely duplicate from wraparound
-	log.Printf("ERROR: Sequence mismatch, expected %d, got %d (diff=%d)",
-		s.rxSequence, seq, diff)
+	slog.Error("sequence mismatch",
+		"expected", s.rxSequence, "got", seq, "diff", diff)
 	return false
 }
 
@@ -173,7 +173,7 @@ func (s *SessionState) Reset() {
 	defer s.mu.Unlock()
 	s.txSequence = 0
 	s.rxSequence = 0
-	log.Printf("SessionState reset: sequences synchronized to 0")
+	slog.Info("SessionState reset: sequences synchronized to 0")
 }
 
 // IncrementSessionID atomically increments and returns the new session ID.
@@ -210,7 +210,7 @@ func (s *SessionState) ActivateBarrier(sessionID uint32) {
 	defer s.mu.Unlock()
 	s.resetBarrierActive = true
 	s.resetBarrierSessionID = sessionID
-	log.Printf("Reset barrier activated (session=%d)", sessionID)
+	slog.Info("reset barrier activated", "session", sessionID)
 }
 
 // DeactivateBarrier disables the reset barrier.
@@ -222,7 +222,7 @@ func (s *SessionState) DeactivateBarrier() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.resetBarrierActive = false
-	log.Printf("Reset barrier deactivated (session=%d)", s.resetBarrierSessionID)
+	slog.Info("reset barrier deactivated", "session", s.resetBarrierSessionID)
 }
 
 // IsBarrierActive returns whether the reset barrier is currently active.
@@ -246,20 +246,20 @@ func (s *SessionState) ValidateResetAck(payload []byte) bool {
 	defer s.mu.Unlock()
 
 	if !s.resetBarrierActive {
-		log.Printf("WARN: ValidateResetAck called with barrier inactive")
+		slog.Warn("ValidateResetAck called with barrier inactive")
 		return false
 	}
 
 	if len(payload) < SessionIDPayloadSize {
-		log.Printf("WARN: RESET_ACK payload too short (%d bytes, need %d)",
-			len(payload), SessionIDPayloadSize)
+		slog.Warn("RESET_ACK payload too short",
+			"bytes", len(payload), "need", SessionIDPayloadSize)
 		return false
 	}
 
 	receivedID := binary.LittleEndian.Uint32(payload[:SessionIDPayloadSize])
 	if receivedID != s.resetBarrierSessionID {
-		log.Printf("WARN: RESET_ACK session ID mismatch (got=%d, expected=%d)",
-			receivedID, s.resetBarrierSessionID)
+		slog.Warn("RESET_ACK session ID mismatch",
+			"got", receivedID, "expected", s.resetBarrierSessionID)
 		return false
 	}
 

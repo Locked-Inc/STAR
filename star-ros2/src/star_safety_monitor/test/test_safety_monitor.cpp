@@ -5,25 +5,24 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <gtest/gtest.h>
-#include <chrono>
-#include <thread>
 #include <rclcpp/rclcpp.hpp>
-#include "star_safety_monitor/safety_monitor.hpp"
-#include <nav_msgs/msg/odometry.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include "star_safety_monitor/safety_monitor.hpp"
+#include <chrono>
+#include <thread>
+#include <gtest/gtest.h>
 
 namespace
 {
 constexpr auto LIFECYCLE_TRANSITION_DELAY = std::chrono::milliseconds(100);
 constexpr auto SPIN_TIMEOUT = std::chrono::milliseconds(100);
 constexpr double MESSAGE_WAIT_TIMEOUT_S = 2.0;
-}
+}  // namespace
 
-class SafetyMonitorTest : public ::testing::Test
-{
+class SafetyMonitorTest : public ::testing::Test {
 protected:
   void SetUp() override
   {
@@ -118,11 +117,10 @@ TEST_F(SafetyMonitorTest, DiagnosticsPublication)
   std::atomic<int> diag_count{0};
   auto test_node = rclcpp::Node::make_shared("test_node");
   auto diag_sub = test_node->create_subscription<
-    diagnostic_msgs::msg::DiagnosticArray>(
-    "/diagnostics", 10,
-    [&diag_count](const diagnostic_msgs::msg::DiagnosticArray::SharedPtr) {
-      diag_count++;
-    });
+    diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10,
+                                           [&diag_count](const diagnostic_msgs::msg::DiagnosticArray::SharedPtr) {
+                                             diag_count++;
+                                           });
 
   // Wait for a few diagnostic messages
   auto executor = rclcpp::executors::SingleThreadedExecutor();

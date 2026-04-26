@@ -113,7 +113,11 @@
  * bool: even on a single-core MCU, an interrupt could pre-empt a task
  * mid-send. atomic_flag_test_and_set is the cheapest correct primitive.
  */
-static atomic_flag s_send_path_busy = ATOMIC_FLAG_INIT;
+/* RX_STATIC_TESTABLE: exposed in UNIT_TEST builds so tests can pre-set the
+ * flag and reach the false branch of the RX_ASSERT_PRE in internal_send_attempt
+ * (the re-entrancy guard's failure branch). Same testability pattern as the
+ * RX_STATIC_TESTABLE function-qualifier already used in this file. */
+RX_STATIC_TESTABLE atomic_flag s_send_path_busy = ATOMIC_FLAG_INIT;
 
 /* =============================================================================
  * Module Constants

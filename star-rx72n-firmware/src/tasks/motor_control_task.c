@@ -167,7 +167,6 @@
  * to quickly stop motor momentum:
  *
  * @msc
- * msc {
  *   width=900;
  *   ThreadX, MotorTask, Encoders, Motors, Drivers;
  *
@@ -193,7 +192,6 @@
  *
  *   --- [label="Brake Complete"];
  *   MotorTask box MotorTask [label="Active brake complete\nMotors stopped"];
- * }
  * @endmsc
  *
  * ### Active Braking Timing Diagram

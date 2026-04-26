@@ -84,7 +84,6 @@
  * - rx_bus_manager_execute_command() - Recommended for operations
  *
  * @msc
- * msc {
  *   width=600;
  *   Thread1, Manager, Mutex, Thread2;
  *
@@ -103,7 +102,6 @@
  *
  *   Mutex >> Manager [label="TX_SUCCESS"];
  *   Manager note Manager [label="Thread2 gets lock"];
- * }
  * @endmsc
  *
  * ## Recommended Access Pattern
@@ -597,7 +595,6 @@ typedef rx_err_t (*rx_bus_callback_t)(rx_bus_config_t* bus_config, void* user_ct
  * ## Execution Flow
  *
  * @msc
- * msc {
  *   width=500;
  *   Caller, WithBus, Mutex, Callback;
  *
@@ -609,7 +606,6 @@ typedef rx_err_t (*rx_bus_callback_t)(rx_bus_config_t* bus_config, void* user_ct
  *   Callback >> WithBus [label="k_rx_ok"];
  *   WithBus => Mutex [label="tx_mutex_put()"];
  *   WithBus >> Caller [label="k_rx_ok"];
- * }
  * @endmsc
  *
  * @param[in] manager Bus manager instance
@@ -714,7 +710,6 @@ typedef rx_err_t (*rx_bus_callback_t)(rx_bus_config_t* bus_config, void* user_ct
  * ## Execution Flow
  *
  * @msc
- * msc {
  *   width=600;
  *   Caller, Manager, Mutex, Command, Hardware;
  *
@@ -728,7 +723,6 @@ typedef rx_err_t (*rx_bus_callback_t)(rx_bus_config_t* bus_config, void* user_ct
  *   Command >> Manager [label="k_rx_ok"];
  *   Manager => Mutex [label="tx_mutex_put()"];
  *   Manager >> Caller [label="k_rx_ok"];
- * }
  * @endmsc
  *
  * @param[in] manager Bus manager instance

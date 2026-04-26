@@ -12,11 +12,11 @@
  * @par Implementation Architecture:
  * @msc
  * App, I2C_Comm, Frame, RIIC_HAL;
- * --- [label="TX Path (peripheral -> controller)"];
+ * ... [label="TX Path (peripheral -> controller)"];
  * App => I2C_Comm [label="send(type, payload)"];
  * I2C_Comm => Frame [label="encode()"];
  * I2C_Comm => RIIC_HAL [label="riic_peripheral_write()"];
- * --- [label="RX Path (controller -> peripheral)"];
+ * ... [label="RX Path (controller -> peripheral)"];
  * RIIC_HAL => I2C_Comm [label="riic_peripheral_read()"];
  * I2C_Comm box I2C_Comm [label="Find sync, decode"];
  * I2C_Comm => App [label="frame"];

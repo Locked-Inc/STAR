@@ -86,17 +86,17 @@
  * @msc
  * Transmitter, Channel, Receiver;
  *
- * --- [label="Encoding Phase"];
+ * ... [label="Encoding Phase"];
  * Transmitter box Transmitter [label="Input: 100 bytes"];
  * Transmitter => Transmitter [label="rx_fec_encode()"];
  * Transmitter box Transmitter [label="Output: 202 bytes\n(100*8+6)*2 bits"];
  *
- * --- [label="Transmission"];
+ * ... [label="Transmission"];
  * Transmitter => Channel [label="Encoded bits"];
  * Channel box Channel [label="Add noise\nBit flips\nErasures"];
  * Channel => Receiver [label="Noisy soft bits"];
  *
- * --- [label="Decoding Phase"];
+ * ... [label="Decoding Phase"];
  * Receiver box Receiver [label="Soft bits: [-127, +127]"];
  * Receiver => Receiver [label="rx_fec_decode_soft()"];
  * Receiver box Receiver [label="Viterbi algorithm\nForward pass\nTraceback"];

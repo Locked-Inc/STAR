@@ -114,7 +114,7 @@
  * @msc
  * Comm, Motor, SharedData;
  *
- * --- [label="Normal Operation"];
+ * ... [label="Normal Operation"];
  * Comm => SharedData [label="set_motor_command()"];
  * SharedData box SharedData [label="Update last_comm_tick"];
  * SharedData => Comm [label="k_rx_ok"];
@@ -125,7 +125,7 @@
  * SharedData box SharedData [label="elapsed < 500ms"];
  * SharedData => Motor [label="false (OK)"];
  *
- * --- [label="Timeout Scenario"];
+ * ... [label="Timeout Scenario"];
  * ... [label="> 500ms (no commands)"];
  *
  * Motor => SharedData [label="is_comm_timeout()"];

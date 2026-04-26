@@ -10,11 +10,11 @@
  * @par Implementation Architecture:
  * @msc
  * App, UART_Comm, Frame, UART_HAL;
- * --- [label="TX Path"];
+ * ... [label="TX Path"];
  * App => UART_Comm [label="send(type, payload)"];
  * UART_Comm => Frame [label="encode()"];
  * UART_Comm => UART_HAL [label="uart_write_channel()"];
- * --- [label="RX Path"];
+ * ... [label="RX Path"];
  * UART_HAL => UART_Comm [label="uart_read_channel()"];
  * UART_Comm box UART_Comm [label="Find sync, decode"];
  * UART_Comm => App [label="frame"];

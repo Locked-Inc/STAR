@@ -6,7 +6,7 @@ package manager
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
@@ -59,17 +59,18 @@ func NewHotPlugDetector(pollInterval time.Duration, vid, pid uint16) *HotPlugDet
 //
 // On non-Linux platforms or if fsnotify fails, it falls back to a no-op (graceful degradation).
 func (hpd *HotPlugDetector) Run(ctx context.Context, eventHandler func(HotPlugEvent)) {
-	log.Printf("HotPlugDetector started (VID=0x%04X PID=0x%04X)",
-		hpd.vendorID, hpd.productID)
+	slog.Info("HotPlugDetector started",
+		"vid", fmt.Sprintf("0x%04X", hpd.vendorID),
+		"pid", fmt.Sprintf("0x%04X", hpd.productID))
 
 	// Try inotify-based detection
 	if err := hpd.runInotify(ctx, eventHandler); err != nil {
-		log.Printf("HotPlugDetector inotify failed: %v (falling back to no-op)", err)
+		slog.Warn("HotPlugDetector inotify failed, falling back to no-op", "error", err)
 		// Fallback: block on context cancellation
 		<-ctx.Done()
 	}
 
-	log.Printf("HotPlugDetector stopped")
+	slog.Info("HotPlugDetector stopped")
 }
 
 // runInotify implements the core inotify-based detection logic.
@@ -94,7 +95,7 @@ func (hpd *HotPlugDetector) runInotify(ctx context.Context, eventHandler func(Ho
 		return fmt.Errorf("failed to watch %s: %w", usbDevicesPath, err)
 	}
 
-	log.Printf("HotPlugDetector watching %s for USB events", usbDevicesPath)
+	slog.Info("HotPlugDetector watching for USB events", "path", usbDevicesPath)
 
 	for {
 		select {
@@ -110,7 +111,7 @@ func (hpd *HotPlugDetector) runInotify(ctx context.Context, eventHandler func(Ho
 			if event.Op&(fsnotify.Create|fsnotify.Rename) != 0 {
 				if hpd.matchesTargetDevice(event.Name) {
 					devicePath := hpd.getDevicePath(event.Name)
-					log.Printf("HotPlugDetector: USB device added: %s", devicePath)
+					slog.Info("HotPlugDetector: USB device added", "device", devicePath)
 					eventHandler(HotPlugEvent{
 						Action:    "add",
 						Device:    devicePath,
@@ -120,7 +121,7 @@ func (hpd *HotPlugDetector) runInotify(ctx context.Context, eventHandler func(Ho
 			} else if event.Op&fsnotify.Remove != 0 {
 				if hpd.matchesTargetDevice(event.Name) {
 					devicePath := hpd.getDevicePath(event.Name)
-					log.Printf("HotPlugDetector: USB device removed: %s", devicePath)
+					slog.Info("HotPlugDetector: USB device removed", "device", devicePath)
 					eventHandler(HotPlugEvent{
 						Action:    "remove",
 						Device:    devicePath,
@@ -133,7 +134,7 @@ func (hpd *HotPlugDetector) runInotify(ctx context.Context, eventHandler func(Ho
 			if !ok {
 				return fmt.Errorf("fsnotify error channel closed")
 			}
-			log.Printf("HotPlugDetector fsnotify error: %v", err)
+			slog.Error("HotPlugDetector fsnotify error", "error", err)
 			// Continue watching despite errors
 		}
 	}

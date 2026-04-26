@@ -75,7 +75,6 @@
  * ## Data Flow: Bus Registration and Access
  *
  * @msc
- * msc {
  *   width=700;
  *   App, Manager, Config, Hardware;
  *
@@ -96,7 +95,6 @@
  *   App >> Manager [label="k_rx_ok"];
  *   Manager => Manager [label="Release mutex"];
  *   Manager >> App [label="k_rx_ok"];
- * }
  * @endmsc
  *
  * ## Memory Layout Overview
@@ -761,7 +759,6 @@ typedef enum : uint8_t {
  * All public API functions acquire mutex before accessing internal state:
  *
  * @msc
- * msc {
  *   width=500;
  *   Thread1, Mutex, Manager, Thread2;
  *
@@ -775,7 +772,6 @@ typedef enum : uint8_t {
  *   Thread1 => Mutex [label="tx_mutex_put()"];
  *   Mutex >> Thread2 [label="TX_SUCCESS"];
  *   Thread2 => Manager [label="Access buses"];
- * }
  * @endmsc
  *
  * ## Resource Tracking

@@ -63,7 +63,6 @@
  * The CMT operates as a 16-bit up-counter with compare match:
  *
  * @msc
- * msc {
  *   width=600;
  *   CMCNT, CMCOR, ISR, Callback;
  *
@@ -76,7 +75,6 @@
  *   Callback >> ISR;
  *   ISR >> CMCNT [label="Return"];
  *   CMCNT -> CMCNT [label="Continue counting..."];
- * }
  * @endmsc
  *
  * ## Clock Divider Selection Algorithm

@@ -70,20 +70,20 @@
  * @msc
  * Controller, Bus, Device;
  *
- * --- [label="Reset/Presence"];
+ * ... [label="Reset/Presence"];
  * Controller -> Bus [label="Drive LOW 480us"];
  * Controller -> Bus [label="Release"];
  * Bus -> Device [label="Presence pulse (60-240us)"];
  *
- * --- [label="Write 1"];
+ * ... [label="Write 1"];
  * Controller -> Bus [label="Drive LOW 10us"];
  * Controller -> Bus [label="Release (55us high)"];
  *
- * --- [label="Write 0"];
+ * ... [label="Write 0"];
  * Controller -> Bus [label="Drive LOW 60us"];
  * Controller -> Bus [label="Release (10us recovery)"];
  *
- * --- [label="Read Bit"];
+ * ... [label="Read Bit"];
  * Controller -> Bus [label="Drive LOW 6us"];
  * Controller -> Bus [label="Release"];
  * Device -> Controller [label="Sample at 9us from slot start"];

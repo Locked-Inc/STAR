@@ -1325,16 +1325,16 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
  * @msc
  * Host, Bus, Device;
  *
- * --- [label="Initialization"];
+ * ... [label="Initialization"];
  * Host box Bus [label="Pull low 480 us (reset)"];
  * Bus box Device [label="Bus released (pull-up)"];
  * Device box Bus [label="Pull low 60-240 us (presence)"];
  * Bus box Host [label="Read presence pulse"];
  *
- * --- [label="ROM Command"];
+ * ... [label="ROM Command"];
  * Host => Device [label="Skip ROM (0xCC)"];
  *
- * --- [label="Function Command"];
+ * ... [label="Function Command"];
  * Host => Device [label="Convert T (0x44)"];
  * Device box Device [label="Wait 750 ms"];
  * Host => Device [label="Read Scratchpad (0xBE)"];

@@ -181,7 +181,6 @@
  * ## Obstacle Detection Sequence - From Sensor to Emergency Stop
  *
  * @msc
- * msc {
  *   width=1000;
  *   ObstacleTask, RxObstacle, HC_SR04, Callback, SharedData, MotorTask;
  *
@@ -232,7 +231,6 @@
  *   Callback box Callback [label="Log info:\nObstacle cleared"];
  *   Callback => SharedData [label="set_event(k_event_obstacle_cleared)"];
  *   Callback box Callback [label="Note: E-stop NOT auto-cleared\n(requires manual reset)"];
- * }
  * @endmsc
  *
  * **Debouncing Strategy:**
@@ -1945,7 +1943,6 @@ static void internal_obstacle_task_entry(ULONG input)
  * ## Callback Execution Sequence (Obstacle Detected)
  *
  * @msc
- * msc {
  *   width=1000;
  *   RxObstacle, Callback, SharedData, MotorTask, Telemetry;
  *
@@ -1982,13 +1979,11 @@ static void internal_obstacle_task_entry(ULONG input)
  *   MotorTask box MotorTask [label="EMERGENCY BRAKE\nDisable PWM"];
  *
  *   Telemetry box Telemetry [label="Poll obstacle state:\nSensor 1 = 29 cm"];
- * }
  * @endmsc
  *
  * ## Callback Execution Sequence (Obstacle Cleared)
  *
  * @msc
- * msc {
  *   width=800;
  *   RxObstacle, Callback, SharedData;
  *
@@ -2008,7 +2003,6 @@ static void internal_obstacle_task_entry(ULONG input)
  *
  *   Callback box Callback [label="Note: E-stop NOT cleared\n(requires manual reset)"];
  *   Callback >> RxObstacle [label="Return"];
- * }
  * @endmsc
  *
  * ## Thread Safety - Callback Execution Context

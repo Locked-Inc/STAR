@@ -36,7 +36,6 @@
  *
  * Quadrature encoders output two square waves (Phase A and Phase B) 90deg out of phase:
  *
- * @startuml
  * @startuml{quadrature_waveforms.png}
  * hide footbox
  *

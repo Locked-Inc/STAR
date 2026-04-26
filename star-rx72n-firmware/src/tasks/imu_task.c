@@ -396,24 +396,6 @@ static TX_EVENT_FLAGS_GROUP s_imu_event_flags;
  */
 static volatile bool s_imu_event_flags_ready = false;
 
-/**
- * @var g_bus_manager
- * @brief External bus manager defined in shared_data.c; registered buses include "i2c1_imu" and "i2c1_baro"
- *
- * @details
- * Declared extern here because main.h does not export g_bus_manager.
- * If a main.h public header is added, replace this with \#include "main.h".
- * The IMU task uses this to pass the bus manager to rx_bno055_init() and
- * rx_bmp280_init() during task startup.
- *
- * @note Using inline extern is necessary because shared_data.h does not export g_bus_manager.
- *       If a shared_data.h public accessor is added, replace this with the accessor.
- *
- * @since Version 1.0.0
- */
-extern rx_bus_manager_t
-  g_bus_manager; /* TODO(#373): add main.h public header to replace inline extern */
-
 /* =============================================================================
  * Forward Declarations
  * =============================================================================

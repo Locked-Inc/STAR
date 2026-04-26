@@ -10,7 +10,7 @@
  * @par Implementation Architecture:
  * @msc
  * App, Bus_Manager, OneWire, GPIO, Timer;
- * --- [label="Reset Pulse"];
+ * ... [label="Reset Pulse"];
  * App => Bus_Manager [label="reset()"];
  * Bus_Manager => OneWire [label="callback"];
  * OneWire => GPIO [label="drive_low()"];

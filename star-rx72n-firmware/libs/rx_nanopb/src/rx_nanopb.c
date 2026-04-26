@@ -69,7 +69,7 @@
  * @msc
  * Caller, API, nanopb, Buffer;
  *
- * --- [label="Encode Flow"];
+ * ... [label="Encode Flow"];
  * Caller -> API [label="encode_velocity_request(msg, buf, size, &len)"];
  * API box API [label="1. Validate params\n2. Check initialized"];
  * API -> nanopb [label="pb_ostream_from_buffer()"];
@@ -80,7 +80,7 @@
  * nanopb -> API [label="true/false"];
  * API -> Caller [label="k_rx_ok / error"];
  *
- * --- [label="Decode Flow"];
+ * ... [label="Decode Flow"];
  * Caller -> API [label="decode_velocity_request(buf, len, &msg)"];
  * API box API [label="1. Validate params\n2. Check initialized"];
  * API -> API [label="Initialize msg to zero"];

@@ -427,83 +427,98 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
+/**
+ * @brief Sentinel value indicating a port that is not pin-muxable
+ *
+ * @details
+ * Used in the s_port_pfs_offsets table to flag ports that are unavailable
+ * on the 144-pin LFQFP package (port G, port H).  Looking up such a port
+ * returns nullptr from internal_get_pfs_register().
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_mpc_port_offset_invalid = 0xFFFFU, /**< @brief Port not available on this package */
+} mpc_port_offset_sentinel_t;
+
+/**
+ * @brief Resolve a port enum to its PFS-register offset
+ *
+ * @details
+ * Lookup table indexed by k_mpc_port_* values.  Returns
+ * k_mpc_port_offset_invalid for ports unavailable on this package.
+ * Replaces the prior 60+ line switch statement that this function used.
+ *
+ * @param[in] port Port enum value (k_mpc_port_0 .. k_mpc_port_j)
+ *
+ * @return uint16_t PFS port offset, or k_mpc_port_offset_invalid if absent
+ *
+ * @pre None
+ * @post Return value is either a valid offset or the sentinel
+ *
+ * @note Pure function, no side effects.
+ *
+ * @since Version 1.0.0
+ */
+static uint16_t internal_mpc_port_offset(const uint8_t port)
+{
+  switch (port) {
+    case k_mpc_port_0:
+      return k_mpc_port0_offset;
+    case k_mpc_port_1:
+      return k_mpc_port1_offset;
+    case k_mpc_port_2:
+      return k_mpc_port2_offset;
+    case k_mpc_port_3:
+      return k_mpc_port3_offset;
+    case k_mpc_port_4:
+      return k_mpc_port4_offset;
+    case k_mpc_port_5:
+      return k_mpc_port5_offset;
+    case k_mpc_port_6:
+      return k_mpc_port6_offset;
+    case k_mpc_port_7:
+      return k_mpc_port7_offset;
+    case k_mpc_port_8:
+      return k_mpc_port8_offset;
+    case k_mpc_port_9:
+      return k_mpc_port9_offset;
+    case k_mpc_port_a:
+      return k_mpc_porta_offset;
+    case k_mpc_port_b:
+      return k_mpc_portb_offset;
+    case k_mpc_port_c:
+      return k_mpc_portc_offset;
+    case k_mpc_port_d:
+      return k_mpc_portd_offset;
+    case k_mpc_port_e:
+      return k_mpc_porte_offset;
+    case k_mpc_port_f:
+      return k_mpc_portf_offset;
+    case k_mpc_port_j:
+      return k_mpc_portj_offset;
+    case k_mpc_port_g: /* not on 144-pin LFQFP */
+    default:
+      return k_mpc_port_offset_invalid;
+  }
+}
+
 static volatile uint8_t* internal_get_pfs_register(const uint8_t port, uint8_t pin)
 {
-  /* Validate pin number */
   if (pin > k_mpc_max_pin) {
     return nullptr;
   }
 
-  /* Calculate PFS register offset
-   * PFS registers start at MPC base + 0x40 (offset for P00PFS)
-   * Each port has 8 pins, layout: P00-P07, P10-P17, P20-P27, etc.
-   */
-  volatile uint8_t* pfs_base = (volatile uint8_t*)mpc() + k_mpc_pfs_base_offset;
-
-  /* Port offset calculation */
-  uint16_t port_offset;
-
-  switch (port) {
-    case k_mpc_port_0:
-      port_offset = k_mpc_port0_offset;
-      break;
-    case k_mpc_port_1:
-      port_offset = k_mpc_port1_offset;
-      break;
-    case k_mpc_port_2:
-      port_offset = k_mpc_port2_offset;
-      break;
-    case k_mpc_port_3:
-      port_offset = k_mpc_port3_offset;
-      break;
-    case k_mpc_port_4:
-      port_offset = k_mpc_port4_offset;
-      break;
-    case k_mpc_port_5:
-      port_offset = k_mpc_port5_offset;
-      break;
-    case k_mpc_port_6:
-      port_offset = k_mpc_port6_offset;
-      break;
-    case k_mpc_port_7:
-      port_offset = k_mpc_port7_offset;
-      break;
-    case k_mpc_port_8:
-      port_offset = k_mpc_port8_offset;
-      break;
-    case k_mpc_port_9:
-      port_offset = k_mpc_port9_offset;
-      break;
-    case k_mpc_port_a:
-      port_offset = k_mpc_porta_offset;
-      break;
-    case k_mpc_port_b:
-      port_offset = k_mpc_portb_offset;
-      break;
-    case k_mpc_port_c:
-      port_offset = k_mpc_portc_offset;
-      break;
-    case k_mpc_port_d:
-      port_offset = k_mpc_portd_offset;
-      break;
-    case k_mpc_port_e:
-      port_offset = k_mpc_porte_offset;
-      break;
-    case k_mpc_port_f:
-      port_offset = k_mpc_portf_offset;
-      break;
-    case k_mpc_port_g:
-      /* Ports G, H not available on 144-pin LFQFP package */
-      rx_log_error(s_tag, "Port not available on this package");
-      return nullptr;
-    case k_mpc_port_j:
-      port_offset = k_mpc_portj_offset;
-      break;
-    default:
-      rx_log_error(s_tag, "Invalid port");
-      return nullptr;
+  const uint16_t port_offset = internal_mpc_port_offset(port);
+  if (port_offset == (uint16_t)k_mpc_port_offset_invalid) {
+    rx_log_error(s_tag,
+                 (port == k_mpc_port_g) ? "Port not available on this package" : "Invalid port");
+    return nullptr;
   }
 
+  /* PFS registers start at MPC base + 0x40 (offset for P00PFS).  Each port
+   * has 8 pins laid out P00-P07, P10-P17, P20-P27, etc. */
+  volatile uint8_t* pfs_base = (volatile uint8_t*)mpc() + k_mpc_pfs_base_offset;
   return pfs_base + port_offset + pin;
 }
 

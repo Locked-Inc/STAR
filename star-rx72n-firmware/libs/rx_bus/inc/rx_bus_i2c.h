@@ -75,7 +75,7 @@
  * @msc
  * Controller, SDA, SCL, Peripheral;
  *
- * --- [label="Write Transaction"];
+ * ... [label="Write Transaction"];
  * Controller -> SDA [label="START"];
  * Controller -> SCL [label="Clock 8 bits"];
  * Controller -> SDA [label="Address + W (0)"];
@@ -85,7 +85,7 @@
  * Peripheral -> SDA [label="ACK"];
  * Controller -> SDA [label="STOP"];
  *
- * --- [label="Read Transaction"];
+ * ... [label="Read Transaction"];
  * Controller -> SDA [label="START"];
  * Controller -> SDA [label="Address + R (1)"];
  * Peripheral -> SDA [label="ACK"];
@@ -93,7 +93,7 @@
  * Controller -> SDA [label="ACK/NACK"];
  * Controller -> SDA [label="STOP"];
  *
- * --- [label="Write-Read (Register Read)"];
+ * ... [label="Write-Read (Register Read)"];
  * Controller -> SDA [label="START"];
  * Controller -> SDA [label="Address + W"];
  * Peripheral -> SDA [label="ACK"];
