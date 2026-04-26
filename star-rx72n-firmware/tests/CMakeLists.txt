@@ -17,6 +17,25 @@ endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # =============================================================================
+# Bench-only diagnostic probes (mirrors firmware CMakeLists.txt option)
+#
+# Enable with: cmake -B build/bench -S . -DSTAR_BENCH_PROBES=ON
+# When ON, defines STAR_BENCH_PROBES so any host-compiled translation unit
+# that includes src/main.c logic (currently none -- main.c is firmware-only)
+# can compile the bench MPU-6050 probe + data-flash write helpers. Default
+# is OFF so the standard test build never compiles bench-only paths.
+# =============================================================================
+option(STAR_BENCH_PROBES
+    "Enable bench-only MPU-6050 probe + data-flash result write (default OFF)"
+    OFF)
+if(STAR_BENCH_PROBES)
+    add_compile_definitions(STAR_BENCH_PROBES)
+    message(STATUS "Bench probes: ON (STAR_BENCH_PROBES defined)")
+else()
+    message(STATUS "Bench probes: OFF (production default)")
+endif()
+
+# =============================================================================
 # clang-tidy integration (optional, default OFF)
 #
 # Enable with: cmake -B build/tidy -S . -DENABLE_CLANG_TIDY=ON

@@ -14,7 +14,8 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
+	"os"
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
@@ -101,7 +102,8 @@ func openSerial() serial.Port {
 		BaudRate: 115200, DataBits: 8, Parity: serial.NoParity, StopBits: serial.OneStopBit,
 	})
 	if err != nil {
-		log.Fatalf("open serial: %v", err)
+		slog.Error("open serial", "err", err)
+		os.Exit(1)
 	}
 	port.SetReadTimeout(50 * time.Millisecond)
 	return port
@@ -117,7 +119,7 @@ func sendWireMessage(port serial.Port, enc frame.Encoder, seq uint16, payload pr
 	}
 	body, err := proto.Marshal(wm)
 	if err != nil {
-		log.Printf("wm marshal: %v", err)
+		slog.Info("wm marshal failed", "err", err)
 		return
 	}
 	f := &frame.Frame{
@@ -127,11 +129,11 @@ func sendWireMessage(port serial.Port, enc frame.Encoder, seq uint16, payload pr
 	}
 	bs, err := enc.Encode(f)
 	if err != nil {
-		log.Printf("encode: %v", err)
+		slog.Info("encode failed", "err", err)
 		return
 	}
 	if _, err := port.Write(bs); err != nil {
-		log.Printf("write: %v", err)
+		slog.Info("write failed", "err", err)
 	}
 }
 
@@ -144,7 +146,7 @@ func captureAndSummarize(port serial.Port, dur time.Duration, label string) *tel
 	for time.Now().Before(deadline) && rxTotal < len(buf) {
 		n, err := port.Read(buf[rxTotal:])
 		if err != nil && err != io.EOF {
-			log.Printf("read err: %v", err)
+			slog.Info("read err", "err", err)
 			break
 		}
 		rxTotal += n
@@ -214,6 +216,10 @@ func captureAndSummarize(port serial.Port, dur time.Duration, label string) *tel
 }
 
 func main() {
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	})))
+
 	port := openSerial()
 	defer port.Close()
 

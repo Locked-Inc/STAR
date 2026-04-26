@@ -9,7 +9,8 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
+	"os"
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
@@ -19,11 +20,16 @@ import (
 )
 
 func main() {
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	})))
+
 	port, err := serial.Open("/dev/ttyACM0", &serial.Mode{
 		BaudRate: 115200, DataBits: 8, Parity: serial.NoParity, StopBits: serial.OneStopBit,
 	})
 	if err != nil {
-		log.Fatalf("open: %v", err)
+		slog.Error("open", "err", err)
+		os.Exit(1)
 	}
 	defer port.Close()
 	port.SetReadTimeout(50 * time.Millisecond)
@@ -58,7 +64,8 @@ func main() {
 	}
 	body, err := proto.Marshal(req)
 	if err != nil {
-		log.Fatalf("marshal: %v", err)
+		slog.Error("marshal", "err", err)
+		os.Exit(1)
 	}
 	fmt.Printf("VelocityCommand payload (%d bytes)\n", len(body))
 
@@ -70,11 +77,13 @@ func main() {
 	}
 	bs, err := enc.Encode(f)
 	if err != nil {
-		log.Fatalf("encode: %v", err)
+		slog.Error("encode", "err", err)
+		os.Exit(1)
 	}
 	fmt.Printf("Wire frame (%d bytes): % X\n", len(bs), bs[:min(len(bs), 32)])
 	if _, err := port.Write(bs); err != nil {
-		log.Fatalf("write: %v", err)
+		slog.Error("write", "err", err)
+		os.Exit(1)
 	}
 
 	// Capture 4 s

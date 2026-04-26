@@ -298,11 +298,35 @@ if(NOT STAR_BOARD STREQUAL "PROD" AND NOT STAR_BOARD STREQUAL "TOM")
 endif()
 message(STATUS "Board variant: ${STAR_BOARD}")
 
+#############################################################################
+# Bench-only diagnostic probes
+#
+# When STAR_BENCH_PROBES=ON, src/main.c compiles in the MPU-6050 WHO_AM_I
+# probe on RIIC1 plus the data-flash {magic, who_am_i, err} write at
+# 0x00100000 that lets `rfp-cli -rv 0x00100000 16` recover the result
+# without a UART bridge.  These run during system bus registration on
+# every boot, so the data-flash erase+program cycle wears flash on every
+# reset.  Keep OFF for production firmware; enable only on the bench.
+#
+# Configure with:
+#   cmake -DSTAR_BENCH_PROBES=ON ..    # bench bring-up / hardware probe
+#   cmake -DSTAR_BENCH_PROBES=OFF ..   # default (production)
+#
+# The option is forwarded as a -DSTAR_BENCH_PROBES preprocessor symbol
+# that src/main.c uses to gate `internal_probe_mpu6050_who_am_i()`,
+# `internal_bench_dflash_write()`, and their support data.
+#############################################################################
+option(STAR_BENCH_PROBES
+    "Enable bench-only MPU-6050 probe + data-flash result write (default OFF)"
+    OFF)
+message(STATUS "Bench probes: ${STAR_BENCH_PROBES}")
+
 # Target-specific compile definitions (previously global add_compile_definitions)
 target_compile_definitions(${PROJECT_NAME}.elf PRIVATE
     TX_INCLUDE_USER_DEFINE_FILE
     CPPAPP  # Enables C++ support in reset_program.S
     STAR_BOARD_${STAR_BOARD}=1   # STAR_BOARD_PROD=1 or STAR_BOARD_TOM=1
+    $<$<BOOL:${STAR_BENCH_PROBES}>:STAR_BENCH_PROBES>
 )
 
 # Target-specific include directories (previously global include_directories)

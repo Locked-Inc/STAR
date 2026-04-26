@@ -155,6 +155,23 @@
  * - **Hardware init:** See [hardware_init.c](hardware_init.c) - Motor drivers, USB CDC, sensors
  * - **ThreadX config:** See [rx_threadx_config.h](../lib/rx_core/inc/rx_threadx_config.h) - RTOS tuning
  *
+ * ## Build-Time Feature Flags
+ *
+ * | Flag | Default | Effect |
+ * |------|---------|--------|
+ * | `STAR_BENCH_PROBES` | **OFF** | Compiles the MPU-6050 WHO_AM_I probe on RIIC1 plus the data-flash {magic, who_am_i, err} write at 0x00100000 (recoverable via `rfp-cli -rv 0x00100000 16`). |
+ *
+ * **`STAR_BENCH_PROBES`** is a preprocessor symbol defined by the CMake
+ * option of the same name (see top-level `CMakeLists.txt`).  When undefined
+ * (production default), `internal_probe_mpu6050_who_am_i()`,
+ * `internal_bench_dflash_write()`, and the related FCU helpers are
+ * **not compiled**, so the data-flash erase+program cycle never runs at
+ * boot and the bench-only MPU-6050 is never probed.  Configure with
+ * `cmake -DSTAR_BENCH_PROBES=ON ..` to compile them in for bench bring-up.
+ *
+ * Search the codebase with `grep STAR_BENCH_PROBES` to find every gated
+ * region.
+ *
  * @note This file compiles for both RX72N hardware and x86-64 unit tests (mock register access).
  *
  * @warning Never call main() directly from application code - entry point is for reset vector only.
@@ -317,9 +334,12 @@ static_assert(k_i2c_addr_mpu6050 != k_i2c_addr_bmp280,
  * @since Version 1.0.0
  */
 /** @brief Log tags for this translation unit (project convention: variables, not string literals) */
-[[maybe_unused]] static const char* const s_tag         = "MAIN";
-static const char* const                  s_boot_tag    = "BOOT";
-static const char* const                  s_mpu6050_tag = "MPU6050";
+[[maybe_unused]] static const char* const s_tag      = "MAIN";
+static const char* const                  s_boot_tag = "BOOT";
+#ifdef STAR_BENCH_PROBES
+/** @brief Log tag for bench-only MPU-6050 probe (gated by STAR_BENCH_PROBES). */
+static const char* const s_mpu6050_tag = "MPU6050";
+#endif /* STAR_BENCH_PROBES */
 
 static rx_bus_config_t s_onewire0_config;
 
@@ -476,8 +496,18 @@ static rx_bus_config_t s_i2c1_imu_config;
  */
 static rx_bus_config_t s_i2c1_baro_config;
 
-/** @brief Bench-test I2C bus config for a GY-521 / MPU-6050 at 0x68 on RIIC1. */
+#ifdef STAR_BENCH_PROBES
+/** @brief Bench-test I2C bus config for a GY-521 / MPU-6050 at 0x68 on RIIC1.
+ *
+ *  Compiled in only when `STAR_BENCH_PROBES` is defined (see file-level
+ *  "Build-Time Feature Flags" section).  Production builds omit this. */
 static rx_bus_config_t s_i2c1_mpu_config;
+#endif /* STAR_BENCH_PROBES */
+
+#ifdef STAR_BENCH_PROBES
+/* All FCU constants below feed `internal_bench_dflash_write()` and are
+ * compiled in only when `STAR_BENCH_PROBES` is defined.  See file-level
+ * "Build-Time Feature Flags" section. */
 
 /**
  * @enum dflash_fcu_cmd_t
@@ -566,6 +596,7 @@ typedef enum : uint32_t {
   k_fcu_poll_short = 100000U,  /**< Mode entry/exit + FRDY wait (~1.7 ms @ 60 MHz) */
   k_fcu_poll_long  = 1000000U, /**< Erase/program completion wait (~17 ms @ 60 MHz) */
 } fcu_poll_iters_t;
+#endif /* STAR_BENCH_PROBES */
 
 /**
  * @enum main_prcr_key_t
@@ -749,6 +780,11 @@ typedef enum : uint8_t {
 typedef enum : uint16_t {
   k_inline_sliprcr_poll_max = 1024U, /**< Max poll iters for HUM 15.7.7 step (6) */
 } usb_inline_poll_t;
+
+#ifdef STAR_BENCH_PROBES
+/* Bench-only dflash address/bit enums + FCU helpers + the end-to-end
+ * `internal_bench_dflash_write()` driver are all gated by
+ * `STAR_BENCH_PROBES`.  See file-level "Build-Time Feature Flags" section. */
 
 /**
  * @enum dflash_fstatr_bit_t
@@ -1042,6 +1078,7 @@ static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
   internal_dflash_program_payload(fsaddr, faci_b, faci_w, fstatr, who_am_i, err);
   internal_dflash_exit_pe(fentryr);
 }
+#endif /* STAR_BENCH_PROBES */
 
 /* =============================================================================
  * Startup Flag Check Helpers
@@ -2422,6 +2459,7 @@ internal_register_riic1_device(rx_bus_config_t* config, const char* name, uint8_
   RX_ASSERT(err == k_rx_ok, "RIIC1 device I2C init must succeed");
 }
 
+#ifdef STAR_BENCH_PROBES
 /**
  * @brief Probe MPU-6050 WHO_AM_I and persist {who_am_i, err} to data flash
  *
@@ -2433,6 +2471,11 @@ internal_register_riic1_device(rx_bus_config_t* config, const char* name, uint8_
  *
  * Unlike the BNO055/BMP280 paths, missing hardware here is **not fatal** -- the
  * function logs the failure and continues. RX_ASSERT is intentionally absent.
+ *
+ * Compiled in only when `STAR_BENCH_PROBES` is defined (CMake option of the
+ * same name, default OFF).  Production builds omit this entirely so the
+ * data-flash erase+program cycle never runs at boot and the bench-only
+ * MPU-6050 is never probed.  See file-level "Build-Time Feature Flags".
  *
  * @pre internal_init_bus_manager() completed successfully
  * @pre s_i2c1_mpu_config zero-initialized (BSS)
@@ -2481,6 +2524,7 @@ static void internal_probe_mpu6050_who_am_i(void)
    * rfp-cli -rv 0x00100000 16 without needing the UART bridge. */
   internal_bench_dflash_write(who_am_i, probe_err);
 }
+#endif /* STAR_BENCH_PROBES */
 
 /**
  * @brief Register every production hardware bus with the global bus manager
@@ -2493,15 +2537,18 @@ static void internal_probe_mpu6050_who_am_i(void)
  *   4. `i2c1_imu` (RIIC1, 0x28) -- BNO055 9-DOF
  *   5. `i2c1_baro` (RIIC1, 0x76) -- BMP280 baro
  *
- * Trailing call to `internal_probe_mpu6050_who_am_i()` is a bench-only
- * diagnostic that runs unconditionally; missing hardware logs an error and
- * continues without asserting.
+ * When `STAR_BENCH_PROBES` is defined (default OFF), a trailing call to
+ * `internal_probe_mpu6050_who_am_i()` runs the bench-only MPU-6050 + data
+ * flash probe; missing hardware logs an error and continues without
+ * asserting.  Production builds skip the call entirely (no flash wear, no
+ * RIIC1 probe), see file-level "Build-Time Feature Flags".
  *
  * @pre `internal_init_bus_manager()` completed (g_bus_manager initialized)
  * @pre Static config storage zero-initialised (BSS)
  *
  * @post All five production buses registered and ready for task use
- * @post Bench-test MPU-6050 probe attempted; result persisted to data flash
+ * @post If `STAR_BENCH_PROBES`: bench MPU-6050 probe attempted; result
+ *       persisted to data flash
  *
  * @note Executes single-threaded before scheduler start; no synchronization needed.
  *
@@ -2509,7 +2556,7 @@ static void internal_probe_mpu6050_who_am_i(void)
  * @see internal_register_gpio_bus()
  * @see internal_register_motor_current_adc_buses()
  * @see internal_register_riic1_device()
- * @see internal_probe_mpu6050_who_am_i() Bench-only diagnostic
+ * @see internal_probe_mpu6050_who_am_i() Bench-only diagnostic (gated by STAR_BENCH_PROBES)
  *
  * @since Version 1.0.0
  */
@@ -2522,8 +2569,12 @@ static void internal_register_system_buses(void)
   internal_register_riic1_device(&s_i2c1_imu_config, "i2c1_imu", k_i2c_addr_bno055);
   internal_register_riic1_device(&s_i2c1_baro_config, "i2c1_baro", k_i2c_addr_bmp280);
 
-  /* Bench-only diagnostic; not fatal if the module is absent. */
+#ifdef STAR_BENCH_PROBES
+  /* Bench-only diagnostic; not fatal if the module is absent.  Compiled in
+   * only when STAR_BENCH_PROBES is defined; production builds skip the
+   * data-flash erase+program cycle and the RIIC1 MPU-6050 probe entirely. */
   internal_probe_mpu6050_who_am_i();
+#endif /* STAR_BENCH_PROBES */
 }
 
 /**

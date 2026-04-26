@@ -10,7 +10,8 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
+	"os"
 	"strings"
 	"time"
 
@@ -21,11 +22,16 @@ import (
 )
 
 func main() {
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	})))
+
 	port, err := serial.Open("/dev/ttyACM0", &serial.Mode{
 		BaudRate: 115200, DataBits: 8, Parity: serial.NoParity, StopBits: serial.OneStopBit,
 	})
 	if err != nil {
-		log.Fatalf("open: %v", err)
+		slog.Error("open", "err", err)
+		os.Exit(1)
 	}
 	defer port.Close()
 	port.SetReadTimeout(50 * time.Millisecond)
@@ -37,10 +43,12 @@ func main() {
 	rf := &frame.Frame{Type: frame.FrameTypeReset, Header: frame.Header{Sequence: 0}}
 	rb, err := enc.Encode(rf)
 	if err != nil {
-		log.Fatalf("encode RESET: %v", err)
+		slog.Error("encode RESET", "err", err)
+		os.Exit(1)
 	}
 	if _, werr := port.Write(rb); werr != nil {
-		log.Fatalf("write RESET: %v", werr)
+		slog.Error("write RESET", "err", werr)
+		os.Exit(1)
 	}
 	time.Sleep(150 * time.Millisecond)
 
@@ -85,11 +93,11 @@ func main() {
 			enc3 := frame.NewEncoder()
 			bs2, encErr := enc3.Encode(f2)
 			if encErr != nil {
-				log.Printf("encode seq=%d: %v", seq, encErr)
+				slog.Info("encode failed", "seq", seq, "err", encErr)
 				return
 			}
 			if _, werr := port.Write(bs2); werr != nil {
-				log.Printf("write seq=%d: %v", seq, werr)
+				slog.Info("write failed", "seq", seq, "err", werr)
 				return
 			}
 			seq++

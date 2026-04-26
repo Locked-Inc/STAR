@@ -6,7 +6,7 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"os"
 	"time"
 
@@ -15,6 +15,10 @@ import (
 )
 
 func main() {
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	})))
+
 	port, err := serial.Open("/dev/ttyACM0", &serial.Mode{
 		BaudRate: 115200,
 		DataBits: 8,
@@ -22,7 +26,8 @@ func main() {
 		StopBits: serial.OneStopBit,
 	})
 	if err != nil {
-		log.Fatalf("open serial: %v", err)
+		slog.Error("open serial", "err", err)
+		os.Exit(1)
 	}
 	defer port.Close()
 	port.SetReadTimeout(time.Millisecond * 100)
@@ -39,11 +44,13 @@ func main() {
 	}
 	resetBytes, err := enc.Encode(resetFrame)
 	if err != nil {
-		log.Fatalf("encode reset: %v", err)
+		slog.Error("encode reset", "err", err)
+		os.Exit(1)
 	}
 	fmt.Printf("Sending RESET (%d bytes): % X\n", len(resetBytes), resetBytes)
 	if _, err := port.Write(resetBytes); err != nil {
-		log.Fatalf("write reset: %v", err)
+		slog.Error("write reset", "err", err)
+		os.Exit(1)
 	}
 	time.Sleep(100 * time.Millisecond)
 
@@ -58,12 +65,14 @@ func main() {
 	}
 	pingBytes, err := enc.Encode(pingFrame)
 	if err != nil {
-		log.Fatalf("encode ping: %v", err)
+		slog.Error("encode ping", "err", err)
+		os.Exit(1)
 	}
 	fmt.Printf("Sending PING (%d bytes): % X\n", len(pingBytes), pingBytes)
 
 	if _, err := port.Write(pingBytes); err != nil {
-		log.Fatalf("write: %v", err)
+		slog.Error("write", "err", err)
+		os.Exit(1)
 	}
 
 	deadline := time.Now().Add(3 * time.Second)
@@ -72,7 +81,7 @@ func main() {
 	for time.Now().Before(deadline) && rxTotal < len(buf) {
 		n, err := port.Read(buf[rxTotal:])
 		if err != nil && err != io.EOF {
-			log.Printf("read err: %v", err)
+			slog.Info("read err", "err", err)
 			break
 		}
 		rxTotal += n

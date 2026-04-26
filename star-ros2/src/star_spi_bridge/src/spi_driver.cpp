@@ -111,14 +111,19 @@ inline void set_spi_xfer_bits_per_word(spi_ioc_transfer & xfer, uint8_t value)
 }
 
 /**
- * @brief Check whether a FrameType value is one of the eight valid protocol types.
+ * @brief Check whether a FrameType value is one of the eight valid SPI protocol types.
  *
  * @details
  * Validates the frame type field decoded from an incoming SPI frame against the
- * eight explicit values defined in the STAR SPI protocol (rx_frame.h on the
- * RX72N firmware side).  A contiguous range check is intentionally avoided
- * because valid codes are sparse: 0x00-0x01, 0x10-0x13, 0xFE-0xFF.  Any byte
- * not in this enumerated set is treated as an unknown or corrupted frame type.
+ * eight values defined in star_spi_bridge::FrameType.  A contiguous range check
+ * is intentionally avoided because valid codes are sparse: 0x00-0x01, 0x10-0x13,
+ * 0xFE-0xFF.  Any byte not in this enumerated set is treated as an unknown or
+ * corrupted frame type.
+ *
+ * Note: the RX72N firmware (rx_frame.h) also defines k_frame_type_log_message
+ * (0x20), but that frame type is UART-only -- the firmware never ships log
+ * messages over SPI -- so it is intentionally absent from FrameType and from
+ * this validator.
  *
  * @param[in] frame_type  FrameType value to validate.  May be any uint8_t
  *                        bit-pattern cast to FrameType.
@@ -136,7 +141,7 @@ inline void set_spi_xfer_bits_per_word(spi_ioc_transfer & xfer, uint8_t value)
  */
 inline bool is_valid_frame_type(FrameType frame_type) noexcept
 {
-  // Accept exactly the 8 frame type values defined in rx_frame.h.
+  // Accept exactly the 8 frame type values supported on the SPI link.
   // A contiguous range check would accept invalid bytes between 0x02 and 0x0F
   // and between 0x14 and 0xFD, so we enumerate valid values explicitly.
   switch (frame_type) {

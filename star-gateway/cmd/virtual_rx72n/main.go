@@ -25,7 +25,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
-	"log"
+	"log/slog"
 	"net"
 	"os"
 	"os/signal"
@@ -127,8 +127,12 @@ func parseSimLatency() time.Duration {
 
 	ms, err := strconv.Atoi(envVal)
 	if err != nil || ms < MinSimLatencyMs || ms > MaxSimLatencyMs {
-		log.Printf("Invalid %s value %q (must be %d-%d), using default %dms",
-			EnvSimLatencyMs, envVal, MinSimLatencyMs, MaxSimLatencyMs, DefaultSimLatencyMs)
+		slog.Warn("invalid sim latency env var, using default",
+			"name", EnvSimLatencyMs,
+			"value", envVal,
+			"min_ms", MinSimLatencyMs,
+			"max_ms", MaxSimLatencyMs,
+			"default_ms", DefaultSimLatencyMs)
 		return time.Duration(DefaultSimLatencyMs) * time.Millisecond
 	}
 
@@ -136,25 +140,31 @@ func parseSimLatency() time.Duration {
 }
 
 func main() {
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	})))
+
 	// Parse simulation latency (once at startup, not per-frame)
 	simLatency := parseSimLatency()
 
 	// Cleanup old socket file if it exists
 	if err := os.Remove(SocketPath); err != nil && !os.IsNotExist(err) {
-		log.Printf("Warning: failed to remove old socket: %v", err)
+		slog.Warn("failed to remove old socket", "err", err)
 	}
 
 	// Create Unix domain socket listener
 	listener, err := net.Listen("unix", SocketPath)
 	if err != nil {
-		log.Fatalf("Failed to create virtual device: %v", err)
+		slog.Error("Failed to create virtual device", "err", err)
+		os.Exit(1)
 	}
 	defer listener.Close()
 
-	log.Println("Virtual RX72N Started. Waiting for Gateway...")
-	log.Printf("   Socket: %s", SocketPath)
-	log.Printf("   Max Frame Size: %d bytes", MaxFrameSize)
-	log.Printf("   Simulated Latency: %v", simLatency)
+	slog.Info("Virtual RX72N Started. Waiting for Gateway...")
+	slog.Info("simulator config",
+		"socket", SocketPath,
+		"max_frame_size", MaxFrameSize,
+		"simulated_latency", simLatency)
 
 	// Channel to signal graceful shutdown
 	done := make(chan struct{})
@@ -164,13 +174,13 @@ func main() {
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-sigChan
-		log.Println("\nShutting down Virtual RX72N...")
+		slog.Info("Shutting down Virtual RX72N...")
 		// Signal main loop to stop
 		close(done)
 		// Close listener to unblock Accept()
 		listener.Close()
 		if err := os.Remove(SocketPath); err != nil {
-			log.Printf("Warning: failed to remove socket: %v", err)
+			slog.Warn("failed to remove socket", "err", err)
 		}
 	}()
 
@@ -197,10 +207,10 @@ func main() {
 				return
 			}
 
-			log.Printf("Connection error: %v", err)
+			slog.Info("Connection error", "err", err)
 			continue
 		}
-		log.Printf("Gateway connected from %v", conn.RemoteAddr())
+		slog.Info("Gateway connected", "remote_addr", conn.RemoteAddr())
 
 		// Handle each connection in a goroutine
 		go handleConnection(conn, simLatency)
@@ -210,7 +220,7 @@ func main() {
 // handleConnection processes messages from a single Gateway connection.
 func handleConnection(conn net.Conn, latency time.Duration) {
 	defer conn.Close()
-	defer log.Println("Gateway disconnected")
+	defer slog.Info("Gateway disconnected")
 
 	buffer := make([]byte, MaxFrameSize)
 	session := &simulatorSession{}
@@ -221,7 +231,7 @@ func handleConnection(conn net.Conn, latency time.Duration) {
 		// Read data from Gateway
 		// Set a read deadline (readDeadlineTimeout) to avoid indefinite blocking if the peer stalls.
 		if err := conn.SetReadDeadline(time.Now().Add(readDeadlineTimeout)); err != nil {
-			log.Printf("Failed to set read deadline: %v", err)
+			slog.Info("Failed to set read deadline", "err", err)
 		}
 
 		n, err := conn.Read(buffer)
@@ -234,7 +244,7 @@ func handleConnection(conn net.Conn, latency time.Duration) {
 			if errors.Is(err, io.EOF) {
 				return
 			}
-			log.Printf("Read error: %v", err)
+			slog.Info("Read error", "err", err)
 			return
 		}
 
@@ -243,13 +253,15 @@ func handleConnection(conn net.Conn, latency time.Duration) {
 		// Decode the frame
 		decodedFrame, err := decoder.Decode(rxData)
 		if err != nil {
-			log.Printf("Frame decode error: %v", err)
+			slog.Info("Frame decode error", "err", err)
 			continue
 		}
 
-		log.Printf("Received frame: seq=%d, type=%s, flags=%d, payload_len=%d",
-			decodedFrame.Header.Sequence, decodedFrame.Type.String(),
-			decodedFrame.Header.Flags, len(decodedFrame.Payload))
+		slog.Info("Received frame",
+			"seq", decodedFrame.Header.Sequence,
+			"type", decodedFrame.Type.String(),
+			"flags", decodedFrame.Header.Flags,
+			"payload_len", len(decodedFrame.Payload))
 
 		// Process frame through extracted handler
 		resp := handleFrame(decodedFrame, session, latency)
@@ -258,15 +270,17 @@ func handleConnection(conn net.Conn, latency time.Duration) {
 		for _, respFrame := range resp.frames {
 			txData, err := encoder.Encode(respFrame)
 			if err != nil {
-				log.Printf("Frame encode error: %v", err)
+				slog.Info("Frame encode error", "err", err)
 				continue
 			}
 
-			log.Printf("Sending frame: seq=%d, type=%s, payload_len=%d",
-				respFrame.Header.Sequence, respFrame.Type.String(), len(respFrame.Payload))
+			slog.Info("Sending frame",
+				"seq", respFrame.Header.Sequence,
+				"type", respFrame.Type.String(),
+				"payload_len", len(respFrame.Payload))
 
 			if _, err := conn.Write(txData); err != nil {
-				log.Printf("Write error: %v", err)
+				slog.Info("Write error", "err", err)
 				return
 			}
 		}
@@ -278,21 +292,22 @@ func processCommand(wireMsg *starv1.WireMessage) *starv1.WireMessage {
 	// Check which type of command was received
 	switch payload := wireMsg.Payload.(type) {
 	case *starv1.WireMessage_VelocityCommand:
-		log.Printf("VelocityCommand: FL=%.2f, FR=%.2f, BL=%.2f, BR=%.2f m/s",
-			payload.VelocityCommand.FrontLeftVelocityMps,
-			payload.VelocityCommand.FrontRightVelocityMps,
-			payload.VelocityCommand.BackLeftVelocityMps,
-			payload.VelocityCommand.BackRightVelocityMps)
+		slog.Info("VelocityCommand",
+			"fl_mps", payload.VelocityCommand.FrontLeftVelocityMps,
+			"fr_mps", payload.VelocityCommand.FrontRightVelocityMps,
+			"bl_mps", payload.VelocityCommand.BackLeftVelocityMps,
+			"br_mps", payload.VelocityCommand.BackRightVelocityMps)
 
 		// Generate telemetry response with simulated data
 		return generateTelemetryResponse()
 
 	case *starv1.WireMessage_EmergencyStopCommand:
-		log.Printf("EmergencyStopCommand received: %s", payload.EmergencyStopCommand.Reason)
+		slog.Info("EmergencyStopCommand received",
+			"reason", payload.EmergencyStopCommand.Reason)
 		return generateEmergencyStopResponse()
 
 	default:
-		log.Printf("Unknown command type, generating default telemetry")
+		slog.Info("Unknown command type, generating default telemetry")
 		return generateTelemetryResponse()
 	}
 }
@@ -360,7 +375,7 @@ func handleFrame(decoded *frame.Frame, session *simulatorSession, latency time.D
 		return handleCommand(decoded, session, responses)
 
 	default:
-		log.Printf("Unhandled frame type: %s", decoded.Type.String())
+		slog.Info("Unhandled frame type", "type", decoded.Type.String())
 		return frameResponse{frames: responses}
 	}
 }
@@ -369,7 +384,9 @@ func handleFrame(decoded *frame.Frame, session *simulatorSession, latency time.D
 // Applies simulated latency before generating the response.
 func handlePing(decoded *frame.Frame, session *simulatorSession, latency time.Duration, existing []*frame.Frame) frameResponse {
 	if len(decoded.Payload) != PingPayloadSize {
-		log.Printf("PING payload size mismatch: got %d, expected %d", len(decoded.Payload), PingPayloadSize)
+		slog.Info("PING payload size mismatch",
+			"got", len(decoded.Payload),
+			"expected", PingPayloadSize)
 		return frameResponse{frames: existing}
 	}
 
@@ -379,7 +396,7 @@ func handlePing(decoded *frame.Frame, session *simulatorSession, latency time.Du
 	}
 
 	counter := binary.LittleEndian.Uint32(decoded.Payload)
-	log.Printf("PING received (counter=%d), sending PONG", counter)
+	slog.Info("PING received, sending PONG", "counter", counter)
 
 	// Echo the same 4-byte counter in PONG
 	pongPayload := make([]byte, PingPayloadSize)
@@ -418,15 +435,18 @@ func handleReset(decoded *frame.Frame, session *simulatorSession, latency time.D
 	// of size `sessionIDPayloadSize`. Any other length is a protocol error.
 	var resetAckPayload []byte
 	if len(decoded.Payload) == 0 {
-		log.Printf("RESET received (no session ID), sending RESET_ACK")
+		slog.Info("RESET received (no session ID), sending RESET_ACK")
 		resetAckPayload = []byte{}
 	} else if len(decoded.Payload) == sessionIDPayloadSize {
 		sessionID := binary.LittleEndian.Uint32(decoded.Payload[:sessionIDPayloadSize])
-		log.Printf("RESET received (session=%d), sending RESET_ACK", sessionID)
+		slog.Info("RESET received, sending RESET_ACK", "session", sessionID)
 		resetAckPayload = make([]byte, sessionIDPayloadSize)
 		binary.LittleEndian.PutUint32(resetAckPayload, sessionID)
 	} else {
-		log.Printf("RESET payload length protocol error: got %d, expected 0 or %d; dropping frame", len(decoded.Payload), sessionIDPayloadSize)
+		slog.Info("RESET payload length protocol error; dropping frame",
+			"got", len(decoded.Payload),
+			"expected_alt1", 0,
+			"expected_alt2", sessionIDPayloadSize)
 		return frameResponse{frames: existing}
 	}
 
@@ -451,7 +471,7 @@ func handleReset(decoded *frame.Frame, session *simulatorSession, latency time.D
 func handleCommand(decoded *frame.Frame, session *simulatorSession, existing []*frame.Frame) frameResponse {
 	var wireMsg starv1.WireMessage
 	if err := proto.Unmarshal(decoded.Payload, &wireMsg); err != nil {
-		log.Printf("Protobuf unmarshal error: %v", err)
+		slog.Info("Protobuf unmarshal error", "err", err)
 		return frameResponse{frames: existing}
 	}
 
@@ -459,14 +479,14 @@ func handleCommand(decoded *frame.Frame, session *simulatorSession, existing []*
 
 	responsePayload, err := proto.Marshal(responseMsg)
 	if err != nil {
-		log.Printf("Protobuf marshal error: %v", err)
+		slog.Info("Protobuf marshal error", "err", err)
 		return frameResponse{frames: existing}
 	}
 
 	// Use frame.NewFrame to ensure payload size validation
 	responseFrame, err := frame.NewFrame(frame.FrameTypeResponse, responsePayload)
 	if err != nil {
-		log.Printf("Failed to create response frame: %v", err)
+		slog.Info("Failed to create response frame", "err", err)
 		return frameResponse{frames: existing}
 	}
 

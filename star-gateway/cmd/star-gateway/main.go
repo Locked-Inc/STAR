@@ -5,7 +5,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"os"
 	"strconv"
 
@@ -35,12 +35,12 @@ const requireLocalhostEnv = "STAR_REQUIRE_LOCALHOST"
 // See audit finding F-01: transport security is a follow-up PR; this
 // banner is the interim mitigation.
 func printSecurityBanner() {
-	log.Printf("================================================================")
-	log.Printf("WARNING: gateway listens in plaintext with no auth -- LAN-only")
-	log.Printf("         deployments only. No TLS, no client authentication.")
-	log.Printf("         Set %s=true to refuse non-loopback binds.",
-		requireLocalhostEnv)
-	log.Printf("================================================================")
+	slog.Info("================================================================")
+	slog.Info("WARNING: gateway listens in plaintext with no auth -- LAN-only")
+	slog.Info("         deployments only. No TLS, no client authentication.")
+	slog.Info("         Set env var to refuse non-loopback binds",
+		"env_var", requireLocalhostEnv)
+	slog.Info("================================================================")
 }
 
 // findRX72NDevice scans for the STAR PCB's Cypress USB-UART bridge that fronts
@@ -54,7 +54,12 @@ func findRX72NDevice() string {
 }
 
 func main() {
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+	// Configure structured logging for the gateway entrypoint. app.Run
+	// later installs its own logger; this default covers any logging
+	// before that point (banner, flag parsing, transport auto-detect).
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	})))
 
 	printSecurityBanner()
 
@@ -81,22 +86,24 @@ func main() {
 	} else if val, ok := os.LookupEnv(requireLocalhostEnv); ok {
 		parsed, err := strconv.ParseBool(val)
 		if err != nil {
-			log.Fatalf("invalid %s=%q: %v", requireLocalhostEnv, val, err)
+			slog.Error("invalid env var",
+				"name", requireLocalhostEnv, "value", val, "err", err)
+			os.Exit(1)
 		}
 		config.RequireLocalhost = parsed
 	}
 	if config.RequireLocalhost {
-		log.Printf("require-localhost enabled: refusing non-loopback binds")
+		slog.Info("require-localhost enabled: refusing non-loopback binds")
 	}
 
 	if simpleFlag {
 		config.TransportMode = manager.ModeSimpleUSB
-		log.Printf("Simple USB mode enabled via --simple flag")
+		slog.Info("Simple USB mode enabled via --simple flag")
 	} else {
 		// Get transport mode from environment variable, default to auto if not set or invalid
 		mode, err := manager.ParseTransportMode(os.Getenv("TRANSPORT_MODE"))
 		if err != nil {
-			log.Printf("Warning: %v. Defaulting to auto mode.", err)
+			slog.Warn("transport mode parse failed; defaulting to auto", "err", err)
 		}
 		config.TransportMode = mode
 	}
@@ -108,16 +115,18 @@ func main() {
 		if dev := os.Getenv("STAR_CDC_DEVICE"); dev != "" {
 			config.TransportMode = manager.ModeSimpleUSB
 			config.CDCDevice = dev
-			log.Printf("STAR_CDC_DEVICE override: using %s in simple-usb mode", dev)
+			slog.Info("STAR_CDC_DEVICE override: using simple-usb mode", "device", dev)
 		} else if device := findRX72NDevice(); device != "" {
 			config.TransportMode = manager.ModeSimpleUSB
 			config.CDCDevice = device
 			config.USBVID = rx72nCypressVID
 			config.USBPID = rx72nCypressPID
-			log.Printf("RX72N (Cypress USB-UART) detected at %s (VID:PID %04x:%04x), using simple-usb mode",
-				device, rx72nCypressVID, rx72nCypressPID)
+			slog.Info("RX72N (Cypress USB-UART) detected, using simple-usb mode",
+				"device", device,
+				"vid", rx72nCypressVID,
+				"pid", rx72nCypressPID)
 		} else if simpleFlag {
-			log.Printf("WARNING: --simple flag set but no RX72N CDC detected")
+			slog.Warn("--simple flag set but no RX72N CDC detected")
 		}
 	}
 
@@ -125,11 +134,13 @@ func main() {
 		var err error
 		config.SimulationMode, err = strconv.ParseBool(val)
 		if err != nil {
-			log.Fatalf("invalid STAR_SIMULATION_MODE %q: %v", val, err)
+			slog.Error("invalid STAR_SIMULATION_MODE", "value", val, "err", err)
+			os.Exit(1)
 		}
 	}
 
 	if err := app.Run(context.Background(), config); err != nil {
-		log.Fatalf("Application error: %v", err)
+		slog.Error("Application error", "err", err)
+		os.Exit(1)
 	}
 }

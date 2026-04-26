@@ -171,6 +171,39 @@ TEST_F(SpiDriverTest, DecodeRejectsUnknownFrameType)
   EXPECT_FALSE(SpiDriver::decode_frame(frame, seq, type, flags, decoded_payload));
 }
 
+// Regression: TYPE=0x20 is k_frame_type_log_message in the RX72N firmware
+// (rx_frame.h), but the firmware ships log frames over UART only -- never over
+// SPI. The SPI driver must therefore reject 0x20 like any other unknown type so
+// a stray log-frame byte (or stale SPI buffer contents) cannot be mis-dispatched
+// as a control frame. Round-15 audit caught a stale FrameType::LogMessage = 0x20
+// declaration that was inconsistent with the validator; the enum value has been
+// removed and this test pins the wire-level rejection in place.
+TEST_F(SpiDriverTest, DecodeRejectsLogMessageFrameType)
+{
+  std::vector<uint8_t> payload = {0x01};
+  std::vector<uint8_t> frame;
+  SpiDriver::encode_frame(1, FrameType::Command, 0x00, payload, frame);
+
+  // Replace TYPE byte (offset 6) with the firmware's UART-only log message code.
+  frame[6] = 0x20;
+
+  // Recompute CRC over header + payload (all bytes except the last 4) so the
+  // frame is otherwise wire-valid; only TYPE is "wrong" for the SPI link.
+  std::vector<uint8_t> to_crc(frame.begin(), frame.end() - 4);
+  const uint32_t new_crc = SpiDriver::calculate_crc32(to_crc);
+  frame[frame.size() - 4] = static_cast<uint8_t>(new_crc & 0xFFu);
+  frame[frame.size() - 3] = static_cast<uint8_t>((new_crc >> 8u) & 0xFFu);
+  frame[frame.size() - 2] = static_cast<uint8_t>((new_crc >> 16u) & 0xFFu);
+  frame[frame.size() - 1] = static_cast<uint8_t>((new_crc >> 24u) & 0xFFu);
+
+  uint16_t seq = 0;
+  FrameType type = FrameType::Command;
+  uint8_t flags = 0;
+  std::vector<uint8_t> decoded_payload;
+
+  EXPECT_FALSE(SpiDriver::decode_frame(frame, seq, type, flags, decoded_payload));
+}
+
 TEST_F(SpiDriverTest, EncodeRejectsOversizedPayload)
 {
   std::vector<uint8_t> oversized(SpiDriver::MAX_PAYLOAD_SIZE + 1, 0xAA);

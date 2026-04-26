@@ -137,7 +137,22 @@ SafetyMonitor::on_activate(const rclcpp_lifecycle::State & previous_state)
     bond_->setHeartbeatTimeout(4.0);
     bond_->start();
 
-    // Create monitoring timer (10 Hz by default)
+    // Create monitoring timer (10 Hz by default).
+    //
+    // Guard against zero/negative publish_rate: a user-supplied override of
+    // 0.0 would otherwise yield a 0 ms timer period (busy spin) via the
+    // 1000.0/publish_rate_ division. Negative rates produce negative periods
+    // which std::chrono::milliseconds wraps non-deterministically. Clamp to
+    // a sensible floor (0.1 Hz = 10 s period) and log the override; the
+    // safety monitor must never be the cause of a CPU pegging the core.
+    constexpr double k_min_publish_rate_hz = 0.1;
+    constexpr double k_default_publish_rate_hz = 10.0;
+    if (!std::isfinite(publish_rate_) || publish_rate_ < k_min_publish_rate_hz) {
+      RCLCPP_ERROR(get_logger(),
+                   "Invalid publish_rate=%.3f Hz (must be >= %.2f Hz and finite); falling back to %.1f Hz",
+                   publish_rate_, k_min_publish_rate_hz, k_default_publish_rate_hz);
+      publish_rate_ = k_default_publish_rate_hz;
+    }
     auto timer_period = std::chrono::milliseconds(static_cast<int>(1000.0 / publish_rate_));
     monitoring_timer_ = create_wall_timer(timer_period, std::bind(&SafetyMonitor::monitoring_timer_callback, this));
 

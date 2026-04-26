@@ -7,7 +7,8 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
+	"log/slog"
+	"os"
 	"strings"
 	"time"
 
@@ -15,11 +16,16 @@ import (
 )
 
 func main() {
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	})))
+
 	port, err := serial.Open("/dev/ttyACM0", &serial.Mode{
 		BaudRate: 115200, DataBits: 8, Parity: serial.NoParity, StopBits: serial.OneStopBit,
 	})
 	if err != nil {
-		log.Fatalf("open: %v", err)
+		slog.Error("open", "err", err)
+		os.Exit(1)
 	}
 	defer port.Close()
 	port.SetReadTimeout(50 * time.Millisecond)
