@@ -197,7 +197,7 @@ Standard ROS2 / colcon workspace.
 \hline
 \textbf{Package}                        & \textbf{Role}                                                                                                                                                                       \\
 \hline
-\texttt{star\_bringup}                  & Launch orchestration: \texttt{star.launch.py} top-level, sub-launches for SLAM, sensor fusion (\texttt{robot\_localization}), Nav2, frontier exploration, the stereo camera.            \\
+\texttt{star\_bringup}                  & Launch orchestration: \texttt{slam.launch.py} / \texttt{slam\_mvp.launch.py}, \texttt{static\_transforms.launch.py}, \texttt{explore.launch.py} (frontier exploration), \texttt{stereo\_camera.launch.py}.            \\
 \texttt{star\_supervisor}               & E-stop / autonomy gating between \texttt{/cmd\_vel} (manual), \texttt{/nav2/cmd\_vel} (autonomous), and \texttt{/cmd\_vel\_out} (hardware bridge). Dual-enforced with the firmware-side e-stop. \\
 \texttt{star\_safety\_monitor}          & Lifecycle node consuming sonar topics; publishes \texttt{/star/estop} on threshold breach.                                                                                              \\
 \texttt{star\_gateway\_bridge}          & ROS2 -> Go-gateway shim. Wraps the gateway's gRPC API as ROS2 publishers/subscribers/services.                                                                                          \\

@@ -112,7 +112,7 @@ Period                  & ~1\,s with current divider                  & --      
         \texttt{shared\_data.task\_heartbeats}.
   \item If any task is more than 3 ticks late, logs an error and
         asserts \texttt{shared\_data.estop\_active}.
-  \item Calls \texttt{rx\_iwdt\_kick()} only after every check has
+  \item Calls \texttt{rx\_iwdt\_feed()} only after every check has
         passed.
   \item Reads stack high-watermarks and asserts on starvation
         (less than 256\,B remaining on any task).
