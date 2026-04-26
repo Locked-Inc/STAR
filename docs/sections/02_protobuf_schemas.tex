@@ -48,7 +48,7 @@ This section documents the Protocol Buffer schema architecture for RPi5$\leftrig
   \end{tikzpicture} %
 }
 
-\vspace { 0.3cm}
+\vspace{0.3cm}
 
 \layerbox{keyinsightcolor} { Key Design Principles}
 {
@@ -76,13 +76,8 @@ This section documents the Protocol Buffer schema architecture for RPi5$\leftrig
 
 \begin{table}[H]
 \centering
-\caption{
-  MotorControlService RPCs
-}
-\label {
-tab:
-  motor - rpcs
-}
+\caption{MotorControlService RPCs}
+\label{tab:motor-rpcs}
 \begin{tabular} { | l | l | p{6cm} |}
 \hline
 \textbf{RPC} & \textbf{Type} & \textbf{Description}
@@ -129,13 +124,8 @@ ControlStream &Bidirectional &Velocity in,
 
 \begin{table}[H]
 \centering
-\caption {
-  TelemetryService RPCs
-}
-\label {
-tab:
-  telemetry - rpcs
-}
+\caption{TelemetryService RPCs}
+\label{tab:telemetry-rpcs}
 \begin{tabular} { | l | l | p{6cm} |}
 \hline
 \textbf{RPC} & \textbf{Type} & \textbf{Description}
@@ -193,13 +183,8 @@ GetSystemStatus &Unary &Firmware version,
 
 \begin{table}[H]
 \centering
-\caption{
-  BatteryManagementService RPCs
-}
-\label {
-tab:
-  battery - rpcs
-}
+\caption{BatteryManagementService RPCs}
+\label{tab:battery-rpcs}
 \begin{tabular} { | l | l | p{6cm} |}
 \hline
 \textbf{RPC} & \textbf{Type} & \textbf{Description}
@@ -250,13 +235,8 @@ GetDeviceInfo &Unary &Manufacturer,
 
 \begin{table}[H]
 \centering
-\caption {
-  ConfigurationService RPCs
-}
-\label {
-tab:
-  config - rpcs
-}
+\caption{ConfigurationService RPCs}
+\label{tab:config-rpcs}
 \begin{tabular} { | l | l | p{6cm} |}
 \hline
 \textbf{RPC} & \textbf{Type} & \textbf{Description}
@@ -305,13 +285,8 @@ All services import \texttt {
 
 \begin{table}[H]
 \centering
-\caption {
-    Standard Headers
- }
-\label {
-tab:
-  headers
-}
+\caption{Standard Headers}
+\label{tab:headers}
 \begin{tabular} { | l | p{9cm} |}
 \hline
 \textbf{Message} & \textbf{Fields}
@@ -347,11 +322,8 @@ ResponseHeader &request\_id(echo), server\_timestamp, status,
 
 \begin{table}[H]
 \centering
-\caption { Code Generation Targets}
-\label {
-tab:
-  codegen
-}
+\caption{Code Generation Targets}
+\label{tab:codegen}
 \begin{tabular}{|l|l|l|l|}
 \hline
 \textbf{Target} & \textbf{Generator} & \textbf{Output} & \textbf{Usage} \\

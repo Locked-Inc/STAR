@@ -426,7 +426,7 @@ define build_doxy_pdf
 	 rm -f "$$tmp"; \
 	 echo "  tmpfs build dir: $$ramdisk"; \
 	 echo "  Deduplicating multiply-defined Doxygen labels..."; \
-	 grep -rl 'label{doc-' "$$ramdisk/latex" | xargs -r sed -i '/\\label{doc-[a-z-]*-members}/d'; \
+	 grep -rl 'label{doc-' "$$ramdisk/latex" | xargs -r perl -i -ne 'print unless /\\label\{doc-[a-z-]*-members\}/'; \
 	 echo "  Converting EPS graphs to properly-sized PDFs (gs respects BoundingBox)..."; \
 	 for eps in "$$ramdisk/latex"/*.eps; do \
 	   [ -f "$$eps" ] || continue; \
@@ -460,12 +460,12 @@ define build_doxy_pdf
 	   [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
 	 done; \
 	 echo "  Fixing refman.tex: \\\\+, \\\\_, and replacing helvet with TeX Gyre Heros for xelatex..."; \
-	 sed -i 's/\\newcommand{\\+}{.*}/\\renewcommand{\\+}{}\n  \\renewcommand{\\_}{\\char95}/' "$$ramdisk/latex/refman.tex"; \
-	 sed -i 's/\\usepackage\[scaled=.90\]{helvet}/\\setsansfont[Scale=.90]{TeX Gyre Heros}/' "$$ramdisk/latex/refman.tex"; \
-	 sed -i 's/\\usepackage{doxygen}/\\usepackage{doxygen}\n\\usepackage[export]{adjustbox}/' "$$ramdisk/latex/refman.tex"; \
+	 perl -i -pe 's{\\newcommand\{\\\+\}\{.*\}}{\\renewcommand{\\+}{}\n  \\renewcommand{\\_}{\\char95}}' "$$ramdisk/latex/refman.tex"; \
+	 perl -i -pe 's{\\usepackage\[scaled=\.90\]\{helvet\}}{\\setsansfont[Scale=.90]{TeX Gyre Heros}}' "$$ramdisk/latex/refman.tex"; \
+	 perl -i -pe 's{\\usepackage\{doxygen\}}{\\usepackage{doxygen}\n\\usepackage[export]{adjustbox}}' "$$ramdisk/latex/refman.tex"; \
 	 echo "  Replacing uncaptioned figure[H] envs with center blocks, removing nopagebreak, capping sizes..."; \
 	 find "$$ramdisk/latex" -name "*.tex" ! -name "refman.tex" ! -name "doxygen.sty" | xargs -r perl -i -0pe 's/\\begin\{figure\}\[H\]\n\\begin\{center\}(.*?)\\end\{center\}\n\\end\{figure\}/\\begin{center}$$1\\end{center}/gs; s/\\nopagebreak//g'; \
-	 find "$$ramdisk/latex" -name "*.tex" | xargs -r sed -i 's/\\includegraphics\[width=/\\includegraphics[max width=\\linewidth,max totalheight=.8\\textheight,width=/g'; \
+	 find "$$ramdisk/latex" -name "*.tex" | xargs -r perl -i -pe 's/\\includegraphics\[width=/\\includegraphics[max width=\\linewidth,max totalheight=.8\\textheight,width=/g'; \
 	 cd "$$ramdisk/latex" && xelatex -interaction=nonstopmode -no-pdf refman.tex; \
 	 xelatex -interaction=nonstopmode -no-pdf refman.tex; \
 	 xdvipdfmx -E -o refman.pdf refman.xdv; \

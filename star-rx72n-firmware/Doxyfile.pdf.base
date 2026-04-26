@@ -34,10 +34,13 @@ LATEX_CMD_NAME         = xelatex
 USE_PDFLATEX           = NO
 
 #---------------------------------------------------------------------------
-# Graphviz: switch SVG -> PDF for LaTeX (SVG is invalid in LaTeX figures)
-# Interactive SVG is browser-only, disabled here
+# Graphviz: switch SVG -> PNG for LaTeX
+# Doxygen 1.16.1 does NOT support pdf as a DOT_IMAGE_FORMAT value (warns
+# "not a valid enum value" and silently falls back to png anyway). Use png
+# explicitly so xelatex can include the dot graphs via \includegraphics.
+# Interactive SVG is browser-only, disabled here.
 #---------------------------------------------------------------------------
-DOT_IMAGE_FORMAT       = pdf
+DOT_IMAGE_FORMAT       = png
 INTERACTIVE_SVG        = NO
 
 #---------------------------------------------------------------------------

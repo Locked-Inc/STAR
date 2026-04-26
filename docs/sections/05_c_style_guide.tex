@@ -1337,8 +1337,7 @@ enum star_bus_type : int32_t {
 \subsection{Naming Convention Summary}
 
 \begin{center}
-\begin{tabular}{
-      | l | l | l |}
+\begin{tabular}{|l|l|l|}
 \hline
 \textbf{Element} & \textbf{Convention} & \textbf{Example} \\
 \hline
@@ -2422,8 +2421,7 @@ rx_err_t safe_increment_counter(void)
 \subsection{Summary}
 
 \begin{center}
-\begin{tabular}{
-      | l | l | l |}
+\begin{tabular}{|l|l|l|}
 \hline
 \textbf{Type} & \textbf{Prefix} & \textbf{Usage} \\
 \hline
@@ -3052,8 +3050,7 @@ spi_device_interface_config_t spi_cfg = {
 \subsection{Summary}
 
 \begin{center}
-\begin{tabular}{
-      | l | l |}
+\begin{tabular}{|l|l|}
 \hline
 \textbf{Context} & \textbf{Rule} \\
 \hline
@@ -3325,8 +3322,7 @@ struct star_bus_manager* manager);
 \subsection{Summary}
 
 \begin{center}
-\begin{tabular}{
-      | l | l | l |}
+\begin{tabular}{|l|l|l|}
 \hline
 \textbf{Order} & \textbf{Category} & \textbf{Style} \\
 \hline
@@ -3643,8 +3639,7 @@ struct star_bus_manager* manager)
 \subsection{Summary Table}
 
 \begin{center}
-\begin{tabular}{
-      | l | l | l |}
+\begin{tabular}{|l|l|l|}
 \hline
 \textbf{Identifier Type} & \textbf{Convention} & \textbf{Example} \\
 \hline
@@ -4410,8 +4405,7 @@ The STAR project follows inclusive terminology guidelines to ensure our codebase
 \subsubsection{COPI / CIPO(Not MOSI / MISO)}
 
 \begin{center}
-\begin{tabular}{
-      | l | l | l |}
+\begin{tabular}{|l|l|l|}
 \hline
 \textbf{STAR Term} & \textbf{Legacy Term} & \textbf{Description} \\
 \hline
@@ -4469,8 +4463,7 @@ true);
 \subsubsection{Controller / Peripheral(Not Master / Slave)}
 
 \begin{center}
-\begin{tabular}{
-      | l | l | l |}
+\begin{tabular}{|l|l|l|}
 \hline
 \textbf{STAR Term} & \textbf{Legacy Term} & \textbf{Description} \\
 \hline
@@ -4634,8 +4627,7 @@ config->name, "SPI CIPO", true);
 \subsection{Summary}
 
 \begin{center}
-\begin{tabular}{
-      | l | l |}
+\begin{tabular}{|l|l|}
 \hline
 \textbf{Use This} & \textbf{Not This} \\
 \hline
@@ -5335,11 +5327,8 @@ The firmware uses the MKS (Meter-Kilogram-Second) system as the foundation for a
 \begin{table}[H]
 \centering
 \caption{Standard Unit Suffixes for STAR Firmware}
-\label{
-    tab:
-      unit - suffixes}
-\begin{tabular}{
-      | l | l | l | l |}
+\label{tab:unit-suffixes}
+\begin{tabular}{|l|l|l|l|}
 \hline
 \textbf{Suffix} & \textbf{Unit} & \textbf{Proto Example} & \textbf{C Example} \\
 \hline
@@ -5710,13 +5699,9 @@ void calculate_checksum(const uint8_t* data, size_t len)
 
 \begin{table}[H]
 \centering
-\caption{
-      Stack Allocation Guidelines}
-\label{
-    tab:
-      stack - guidelines}
-\begin{tabular}{
-      | l | l | l |}
+\caption{Stack Allocation Guidelines}
+\label{tab:stack-guidelines}
+\begin{tabular}{|l|l|l|}
 \hline
 \textbf{Size} & \textbf{Allowed} & \textbf{Storage Location} \\
 \hline
@@ -5924,11 +5909,8 @@ size_t len)
 
 \begin{table}[H]
 \centering
-\caption{
-      Memory Management Rules Summary}
-\label{
-    tab:
-      memory - rules - summary}
+\caption{Memory Management Rules Summary}
+\label{tab:memory-rules-summary}
 \begin{tabular}{
       | l | p{9cm} |}
 \hline
@@ -6061,11 +6043,8 @@ void sensor_task(void* arg)
 
 \begin{table}[H]
 \centering
-\caption{
-      Real - Time Best Practices}
-\label{
-    tab:
-      realtime - practices}
+\caption{Real - Time Best Practices}
+\label{tab:realtime-practices}
 \begin{tabular}{
       | l | p{9cm} |}
 \hline
@@ -6576,12 +6555,8 @@ This section establishes configuration requirements for Protocol Buffer messages
 
 \begin{table}[H]
 \centering
-\caption {nanopb Field Size Constraints for Embedded Platforms
-}
-\label {
-tab:
-  nanopb - constraints
-}
+\caption{nanopb Field Size Constraints for Embedded Platforms}
+\label{tab:nanopb-constraints}
 \begin{tabular} { | l | l | l |}
 \hline
 \textbf{Field Type} & \textbf{Constraint} & \textbf{Example}
@@ -6672,11 +6647,8 @@ typedef struct _FirmwareChunk {
 
 \begin{table}[H]
 \centering
-\caption { Recommended String Field Sizes}
-\label {
-tab:
-  string - sizes
-}
+\caption{Recommended String Field Sizes}
+\label{tab:string-sizes}
 \begin{tabular} { | l | l | l |}
 \hline
 \textbf{Purpose} & \textbf{Size} & \textbf{Example}
@@ -6701,11 +6673,8 @@ tab:
 
 \begin{table}[H]
 \centering
-\caption { Recommended Repeated Field Counts}
-\label {
-tab:
-  repeated - counts
-}
+\caption{Recommended Repeated Field Counts}
+\label{tab:repeated-counts}
 \begin{tabular} { | l | l | l |}
 \hline
 \textbf{Purpose} & \textbf{Count} & \textbf{Example}
@@ -6728,11 +6697,8 @@ tab:
 
 \begin{table}[H]
 \centering
-\caption { Recommended Bytes Field Sizes}
-\label {
-tab:
-  bytes - sizes
-}
+\caption{Recommended Bytes Field Sizes}
+\label{tab:bytes-sizes}
 \begin{tabular} { | l | l | l |}
 \hline
 \textbf{Purpose} & \textbf{Size} & \textbf{Example}

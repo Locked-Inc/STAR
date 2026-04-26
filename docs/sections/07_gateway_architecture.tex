@@ -50,18 +50,13 @@ The gateway service runs on the Raspberry Pi 5 and serves as the communication b
 \subsection{Protocol Stack Implementation}
 
 The gateway implements all layers of the communication
-protocol(see Section ~\ref{sec : protocol - stack})
+protocol(see Section ~\ref{section:nanopb-protocol})
     .
 
 \begin{table}[H]
 \centering
-\caption {
-  Gateway Protocol Stack Implementation
-}
-\label {
-tab:
-  gateway - stack
-}
+\caption{Gateway Protocol Stack Implementation}
+\label{tab:gateway-stack}
 \begin{tabular}{|c|l|l|l|}
 \hline
 \textbf{Layer} & \textbf{Name} & \textbf{Go Package} & \textbf{Status} \\
@@ -108,11 +103,8 @@ The \texttt{internal /
 
 \begin{table}[H]
 \centering
-\caption { Frame Protocol Constants}
-\label {
-tab:
-  frame - constants
-}
+\caption{Frame Protocol Constants}
+\label{tab:frame-constants}
 \begin{tabular} { | l | c | l |}
 \hline
 \textbf{Constant} & \textbf{Value} & \textbf{Description}
@@ -156,11 +148,8 @@ The \texttt{internal/transport} package provides physical transport implementati
 
 \begin{table}[H]
 \centering
-\caption { Transport Implementations}
-\label {
-tab:
-  transport - implementations
-}
+\caption{Transport Implementations}
+\label{tab:transport-implementations}
 \begin{tabular} { | l | l | l | l |}
 \hline
 \textbf{Transport} & \textbf{Device} & \textbf{Speed} & \textbf{Usage}
@@ -179,11 +168,8 @@ Socket &Unix socket &N / A &Simulation mode \\
 
 \begin{table}[H]
 \centering
-\caption { SPI Configuration Constants}
-\label {
-tab:
-  spi - config
-}
+\caption{SPI Configuration Constants}
+\label{tab:spi-config}
 \begin{tabular} { | l | l | l |}
 \hline
 \textbf{Parameter} & \textbf{Value} & \textbf{Description}
@@ -252,11 +238,8 @@ Both link types use the shared \texttt{SessionState} from \texttt{
 
 \begin{table}[H]
 \centering
-\caption { HARQ Protocol Parameters}
-\label {
-tab:
-  harq - params
-}
+\caption{HARQ Protocol Parameters}
+\label{tab:harq-params}
 \begin{tabular} { | l | l | l |}
 \hline
 \textbf{Parameter} & \textbf{Value} & \textbf{Description}
@@ -283,13 +266,8 @@ FEC Codec &Convolutional K = 7,
 
 \begin{table}[H]
 \centering
-\caption {
-  Transport Manager Priority Configuration
-}
-\label {
-tab:
-  transport - priorities
-}
+\caption{Transport Manager Priority Configuration}
+\label{tab:transport-priorities}
 \begin{tabular} { | l | c | l |}
 \hline
 \textbf{Transport} & \textbf{Priority} & \textbf{Role}
@@ -317,9 +295,7 @@ SPI & 5 & Backup transport \\
 
 \subsection{gRPC Services}
 
-The gateway exposes five gRPC services (see Section~\ref{
-sec:
-  service - specifications} for detailed specifications):
+The gateway exposes five gRPC services (see Section~\ref{sec:service-specifications} for detailed specifications):
 
 \begin{table}[H]
 \centering
@@ -392,4 +368,4 @@ use (
 
 \noindent For the complete end - to -
     end communication path from UI to motor controller,
-    see Section ~\ref{sec : communication - stack}.
+    see Section ~\ref{section:communication-stack}.

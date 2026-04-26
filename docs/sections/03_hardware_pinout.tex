@@ -5,8 +5,8 @@
     =
 
 \newpage
-\section{Hardware Pin Connections
-}
+\section{Hardware Pin Connections}
+\label{section:hardware-pinout}
 
 \subsection{RX72N Microcontroller Pinout-- - 144 - Pin LFQFP(R5F572NNHxFB)}
 
@@ -72,166 +72,110 @@
 \hline
 \endlastfoot
 
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 1 & AVSS0 & Ground &Analog ground \\
 \hline
 2 & P05 / IRQ13 & Unused & Available GPIO (IRQ13) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 3 & AVCC1 &Boards 3v3 &Analog power supply(3.3V, connect to VCC via branch with 0.1uF bypass to AVSS1) \\
 \hline
-\rowcolor {
-  cyan!15
-} 4 & P03/IRQ11 & Sonar 0 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
+\rowcolor{cyan!15} 4 & P03/IRQ11 & Sonar 0 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
 \hline
-\rowcolor{
-  gray!15
-}
+\rowcolor{gray!15}
 5 & AVSS1 & Ground &Analog ground \\
 \hline
-\rowcolor { cyan!15} 6 & P02/IRQ10 & Sonar 1 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
+\rowcolor{cyan!15} 6 & P02/IRQ10 & Sonar 1 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
 \hline
-\rowcolor{
-  cyan!15
-} 7 & P01/IRQ9 & Sonar 2 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
+\rowcolor{cyan!15} 7 & P01/IRQ9 & Sonar 2 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
 \hline
-\rowcolor{
-  cyan!15
-} 8 & P00/IRQ8 & Sonar 3 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
+\rowcolor{cyan!15} 8 & P00/IRQ8 & Sonar 3 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
 \hline
-\rowcolor{
-  cyan!15
-}
+\rowcolor{cyan!15}
 9 & PF5 &Sonar 0 TRIG &HC -
         SR04 ultrasonic sensor trigger(10\textmu s GPIO pulse) \\
 \hline
-\rowcolor {
-  yellow!15
-}
-10 & EMLE &Emulator Configuration jumper &See Table ~\ref {
-tab:
-  emulator - config
-}
+\rowcolor{yellow!15}
+10 & EMLE &Emulator Configuration jumper &See Table ~\ref{tab:emulator-config}
 \\
 \hline
-\rowcolor { cyan!15}
+\rowcolor{cyan!15}
 11 & PJ5 &Sonar 1 TRIG &HC -
          SR04 ultrasonic sensor trigger(10\textmu s GPIO pulse) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 12 & VSS & Ground &Power supply \\
 \hline
-\rowcolor { cyan!15}
+\rowcolor{cyan!15}
 13 & PJ3 &Sonar 2 TRIG &HC -
          SR04 ultrasonic sensor trigger(10\textmu s GPIO pulse) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 14 & VCL & 220nF cap to ground &Voltage regulator \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 15 & VBATT &Boards 3v3 & Battery backup \\
 \hline
-\rowcolor { yellow!15}
+\rowcolor{yellow!15}
 16 & MD / FINED &E1E2 - Emulator - Interface,
-    DIP switch &See Table ~\ref{tab : op - mode - config}.Default : OFF, OFF \\
+    DIP switch &See Table ~\ref{tab:op-mode-config}.Default : OFF, OFF \\
 \hline
-\rowcolor {
-  yellow!15
-}
+\rowcolor{yellow!15}
 17 & XCIN & 10k resistor to ground &RTC crystal input(not used) \\
 \hline
-\rowcolor {
-  yellow!15
-}
+\rowcolor{yellow!15}
 18 & XCOUT & Floating &RTC crystal output(not used) \\
 \hline
-\rowcolor {
-  yellow!15
-}
+\rowcolor{yellow!15}
 19 & RES\#&E1E2 - Emulator - Interface, Reset button &MCU reset \\
 \hline
-\rowcolor {
-  yellow!15
-}
+\rowcolor{yellow!15}
 20 & P37 / XTAL & 24MHz crystal(to pin 22) & System clock crystal \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 21 & VSS & Ground &Power supply \\
 \hline
-\rowcolor { yellow!15}
+\rowcolor{yellow!15}
 22 & P36 / EXTAL & 24MHz crystal(to pin 20) & System clock crystal \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 23 & VCC &Boards 3v3 & Power supply \\
 \hline
-\rowcolor { yellow!15} 24 & P35/NMI/UPSEL & UPSEL configuration jumper & Can be used for NMI (not used). See Table~\ref{
-tab:
-  upsel - config
-}
+\rowcolor{yellow!15} 24 & P35/NMI/UPSEL & UPSEL configuration jumper & Can be used for NMI (not used). See Table~\ref{tab:upsel-config}
 \\
 \hline
-\rowcolor { yellow!15}
+\rowcolor{yellow!15}
 25 & P34 / TRST\#&E1E2 - Emulator - Interface &JTAG(TRST\#) \\
 \hline
-\rowcolor {
-  cyan!15
-}
+\rowcolor{cyan!15}
 26 & P33 &Sonar 3 TRIG &HC -
          SR04 ultrasonic sensor trigger(10\textmu s GPIO pulse) \\
 \hline
 \rowcolor{lime!10}
 27 & P32 & IMU INT & IMU interrupt line (active-low, IRQ input) \\
 \hline
-\rowcolor { yellow!15}
+\rowcolor{yellow!15}
 28 & P31 / TMS &E1E2 - Emulator - Interface &JTAG(TMS) \\
 \hline
-\rowcolor {
-  yellow!15
-}
+\rowcolor{yellow!15}
 29 & P30 / TDI &E1E2 - Emulator - Interface &JTAG(TDI) \\
 \hline
-\rowcolor {
-  yellow!15
-}
+\rowcolor{yellow!15}
 30 & P27 / TCK &E1E2 - Emulator - Interface &JTAG(TCK) \\
 \hline
-\rowcolor {
-  yellow!15
-}
+\rowcolor{yellow!15}
 31 & P26 / TDO &E1E2 - Emulator - Interface &JTAG(TDO) \\
 \hline
-\rowcolor {
-  green!20
-}
+\rowcolor{green!20}
 32 & P25 / MTCLKB &Encoder 0 Phase B &MTU1 encoder(quadrature counting) \\
 \hline
-\rowcolor {
-  green!20
-}
+\rowcolor{green!20}
 33 & P24 / MTCLKA &Encoder 0 Phase A &MTU1 encoder(quadrature counting) \\
 \hline
-\rowcolor {
-  blue!20
-}
+\rowcolor{blue!20}
 34 & P23/GTIOC0A & Motor 0 \texttt{IN2} & \texttt{GPTW} PWM channel 0A (32-bit) \\
 \hline
-\rowcolor {
-  blue!20
-}
+\rowcolor{blue!20}
 35 & P22/GTIOC1A & Motor 1 \texttt{IN2} & \texttt{GPTW} PWM channel 1A (32-bit) \\
 \hline
 \rowcolor{violet!15}
@@ -240,19 +184,15 @@ tab:
 \rowcolor{violet!15}
 37 & P20/SDA1 & IMU SDA & IMU I2C data (RIIC1) \\
 \hline
-\rowcolor{
-  blue!20
-}
+\rowcolor{blue!20}
 38 & P17/GTIOC0B & Motor 0 \texttt{IN1} & \texttt{GPTW} PWM channel 0B (32-bit) \\
 \hline
 39 & P87 & Unused &Available GPIO \\
 \hline
-\rowcolor { gray!15}
+\rowcolor{gray!15}
 40 & P16 / USB0\_VBUS & USB0 VBUS sense & 5\,V detect on USB-C, gate for USBb peripheral \\
 \hline
-\rowcolor {
-  blue!20
-}
+\rowcolor{blue!20}
 41 & P86/GTIOC2B & Motor 2 \texttt{IN1} & \texttt{GPTW} PWM channel 2B (32-bit) \\
 \hline
 \rowcolor{lime!10}
@@ -261,28 +201,20 @@ tab:
 \rowcolor{lime!10}
 43 & P14/GTETRGD & PWM Ext Trig 3 & GPTW external trigger D (GTETRGD) \\
 \hline
-\rowcolor {
-  violet!15
-} 44 & P13/SDA0 & Host I2C Data & RIIC0 for RPi5 communication (FM+ capable) \\
+\rowcolor{violet!15} 44 & P13/SDA0 & Host I2C Data & RIIC0 for RPi5 communication (FM+ capable) \\
 \hline
-\rowcolor{
-  violet!15
-} 45 & P12/SCL0 & Host I2C Clock & RIIC0 for RPi5 communication (FM+ capable) \\
+\rowcolor{violet!15} 45 & P12/SCL0 & Host I2C Clock & RIIC0 for RPi5 communication (FM+ capable) \\
 \hline
-\rowcolor{
-  gray!15
-}
+\rowcolor{gray!15}
 46 & VCC\_USB &Boards 3v3 & USB power supply \\
 \hline
-\rowcolor { gray!15}
+\rowcolor{gray!15}
 47 & USB0\_DM & USB D- & USB0 differential pair (3-port CDC) \\
 \hline
-\rowcolor { gray!15}
+\rowcolor{gray!15}
 48 & USB0\_DP & USB D+ & USB0 differential pair (3-port CDC) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 49 & VSS\_USB &Ground &USB ground \\
 \hline
 50 & P56 & Unused &Available GPIO \\
@@ -295,38 +227,29 @@ tab:
 \hline
 54 & P52 & Unused & Available GPIO \\
 \hline
-\rowcolor { lime!10}
+\rowcolor{lime!10}
 55 & P51 &DS18B20 DQ & 1 - Wire temperature sensor data pin \\
 \hline
 56 & P50 & Unused & Available GPIO \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 57 & VSS & Ground &Power supply \\
 \hline
 \rowcolor{lime!10}
 58 & P83 & IMU RST & IMU reset (active-low, GPIO output) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 59 & VCC &Boards 3v3 & Power supply \\
 \hline
-\rowcolor { yellow!15}
+\rowcolor{yellow!15}
 60 & PC7 / UB &E1E2 - Emulator - Interface,
-    DIP switch &Operation mode configuration.See Table ~\ref {
-tab:
-  op - mode - config
-}
+    DIP switch &Operation mode configuration.See Table ~\ref{tab:op-mode-config}
 \\
 \hline
-\rowcolor { blue!20}
+\rowcolor{blue!20}
 61 & PC6/GTIOC3B & Motor 3 \texttt{IN1} & \texttt{GPTW} PWM channel 3B (32-bit) \\
 \hline
-\rowcolor {
-  green!20
-}
+\rowcolor{green!20}
 62 & PC5 / MTCLKD &Encoder 1 Phase B &MTU2 encoder(quadrature counting) \\
 \hline
 63 & P82 & Unused &Available GPIO(GTIOC2A, SCI10, Ethernet) \\
@@ -338,18 +261,14 @@ tab:
 \rowcolor{lime!10}
 66 & PC4/GTETRGC & PWM Ext Trig 2 & GPTW external trigger C (GTETRGC) \\
 \hline
-\rowcolor {
-  blue!20
-}
+\rowcolor{blue!20}
 67 & PC3/GTIOC1B & Motor 1 \texttt{IN1} & \texttt{GPTW} PWM channel 1B (32-bit) \\
 \hline
 68 & P77 & Unused &Available GPIO(SCI11, Ethernet, QSPI, SDHI) \\
 \hline
 69 & P76 & Unused &Available GPIO(SCI11, Ethernet, QSPI, SDHI) \\
 \hline
-\rowcolor {
-  green!20
-}
+\rowcolor{green!20}
 70 & PC2 / TCLKA &Encoder 2 Phase A &TPU1 encoder(quadrature counting, 16 - bit) \\
 \hline
 71 & P75 & Unused &Available GPIO(SCI11, Ethernet, SDHI) \\
@@ -358,74 +277,48 @@ tab:
 \hline
 73 & PC1 & Unused & Available GPIO \\
 \hline
-\rowcolor{
-  gray!15
-}
+\rowcolor{gray!15}
 74 & VCC &Boards 3v3 & Power supply \\
 \hline
-\rowcolor { green!20}
+\rowcolor{green!20}
 75 & PC0 / TCLKC &Encoder 3 Phase A &TPU2 encoder(quadrature counting, 16 - bit) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 76 & VSS & Ground &Power supply \\
 \hline
 77 & P73 & Unused &Available GPIO(Ethernet) \\
 \hline
-\rowcolor {
-  yellow!15
-}
-78 & PB7 / TXD9 &Debug SCI USB - C RX &UART crossed.See Table ~\ref {
-tab:
-  sci9 - config
-}
+\rowcolor{yellow!15}
+78 & PB7 / TXD9 &Debug SCI USB - C RX &UART crossed.See Table ~\ref{tab:sci9-config}
 \\
 \hline
-\rowcolor { yellow!15}
-79 & PB6 / RXD9 &Debug SCI USB - C TX &UART crossed.See Table ~\ref {
-tab:
-  sci9 - config
-}
+\rowcolor{yellow!15}
+79 & PB6 / RXD9 &Debug SCI USB - C TX &UART crossed.See Table ~\ref{tab:sci9-config}
 \\
 \hline
 80 & PB5 & Unused & Available GPIO \\
 \hline
 81 & PB4 & Unused & Available GPIO \\
 \hline
-\rowcolor{
-  green!20
-}
+\rowcolor{green!20}
 82 & PB3 / TCLKD &Encoder 3 Phase B &TPU2 encoder(quadrature counting, 16 - bit) \\
 \hline
-\rowcolor {
-  teal!15
-}
+\rowcolor{teal!15}
 83 & PB2 & LED5 &Status LED(GPIO output) \\
 \hline
-\rowcolor {
-  teal!15
-}
+\rowcolor{teal!15}
 84 & PB1 & LED4 &Status LED(GPIO output) \\
 \hline
-\rowcolor {
-  teal!15
-}
+\rowcolor{teal!15}
 85 & P72 & LED3 &Status LED(GPIO output) \\
 \hline
-\rowcolor {
-  teal!15
-}
+\rowcolor{teal!15}
 86 & P71 & LED2 &Status LED(GPIO output) \\
 \hline
-\rowcolor {
-  teal!15
-}
+\rowcolor{teal!15}
 87 & PB0 & LED1 &Status LED(GPIO output) \\
 \hline
-\rowcolor {
-  teal!15
-}
+\rowcolor{teal!15}
 88 & PA7 & LED0 &Status LED(GPIO output) \\
 \hline
 \rowcolor{lime!10}
@@ -434,33 +327,25 @@ tab:
 90 &
     PA5 & Unused &Available GPIO(GTIOC0A, RSPI\_A SCLK, Ethernet) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 91 & VCC &Boards 3v3 & Power supply \\
 \hline
 92 & PA4 & Unused &Available GPIO(RSPI\_A CS, Ethernet, IRQ5) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 93 & VSS & Ground &Power supply \\
 \hline
-\rowcolor { green!20}
+\rowcolor{green!20}
 94 & PA3 / TCLKB &Encoder 2 Phase B &TPU1 encoder(quadrature counting, 16 - bit) \\
 \hline
 95 & PA2 & Unused &Available GPIO(GTIOC1A, SCI5 RX) \\
 \hline
-\rowcolor {
-  green!20
-}
+\rowcolor{green!20}
 96 & PA1 / MTCLKC &Encoder 1 Phase A &MTU2 encoder(quadrature counting) \\
 \hline
 97 & PA0 & Unused &Available GPIO(GTIOC0B, Ethernet) \\
 \hline
-\rowcolor {
-  orange!20
-}
+\rowcolor{orange!20}
 98 &
     P67 / IRQ15 &HOST\_IRQ &Host interrupt output to RPi5(active - low,
                                                           data ready) \\
@@ -470,23 +355,17 @@ tab:
 \hline
 100 & P65 & Unused &Available GPIO(external bus CKE) \\
 \hline
-\rowcolor {
-  blue!20
-}
+\rowcolor{blue!20}
 101 & PE7/GTIOC3A & Motor 3 \texttt{IN2} & \texttt{GPTW} PWM channel 3A (32-bit) \\
 \hline
 102 & PE6/GTIOC3B & Unused & Available GPIO (GTIOC3B) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 103 & VCC &Boards 3v3 & Power supply \\
 \hline
 104 & P70 & Unused &Available GPIO(SDCLK) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 105 & VSS & Ground &Power supply \\
 \hline
 106 & PE5/GTIOC0A & Unused & Available GPIO (GTIOC0A) \\
@@ -517,17 +396,13 @@ tab:
 \rowcolor{blue!20}
 115 & P61 & Motor 0 \texttt{DRVOFF} & \texttt{DRV8263H} motor 0 drive output disable (GPIO output, active-high; held HIGH at boot to keep bridge disabled until firmware ready) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 116 & VSS & Ground &Power supply \\
 \hline
 \rowcolor{blue!20}
 117 & P60 & Motor 0 \texttt{nSLEEP} & \texttt{DRV8263H} motor 0 sleep control (GPIO output, active-low) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 118 & VCC &Boards 3v3 & Power supply \\
 \hline
 119 & PD7 & Unused &Available GPIO(QSPI, SDHI, Ethernet, IRQ7, AN107) \\
@@ -536,24 +411,16 @@ tab:
 \hline
 121 & PD5 & Unused &Available GPIO(QSPI, SDHI, Ethernet, IRQ5, AN113) \\
 \hline
-\rowcolor {
-  orange!20
-}
+\rowcolor{orange!20}
 122 & PD4 / SSLC0 &RPi5 RSPI2 CS &RSPI2 - A chip select \\
 \hline
-\rowcolor {
-  orange!20
-}
+\rowcolor{orange!20}
 123 & PD3 / RSPCKC &RPi5 RSPI2 SCLK &RSPI2 - A clock \\
 \hline
-\rowcolor {
-  orange!20
-}
+\rowcolor{orange!20}
 124 & PD2 / MISOC &RPi5 RSPI2 CIPO &RSPI2 - A Controller In Peripheral Out \\
 \hline
-\rowcolor {
-  orange!20
-}
+\rowcolor{orange!20}
 125 & PD1 / MOSIC &RPi5 RSPI2 COPI &RSPI2 - A Controller Out Peripheral In \\
 \hline
 126 & PD0 & Unused &Available GPIO(GTIOC1B, IRQ0, AN108) \\
@@ -564,37 +431,27 @@ tab:
 \hline
 129 & P91/SCK7 & Unused & Available GPIO (SCI7) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 130 & VSS & Ground &Power supply \\
 \hline
 131 & P90/SMOSI7 & Unused & Available GPIO (SCI7) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 132 & VCC &Boards 3v3 & Power supply \\
 \hline
-\rowcolor { red!15}
+\rowcolor{red!15}
 133 & P47 / AN007 &Motor 0 Current Sense &ADC Unit 0, 12 - bit,
     \texttildelow 3.20A max at 3.3V ADC reference (\texttt{IPROPI} from \texttt{DRV8263H}, 5.1k$\Omega$ sense to GND, 202 \textmu A/A mirror) \\
 \hline
-\rowcolor {
-  red!15
-}
+\rowcolor{red!15}
 134 & P46 / AN006 &Motor 1 Current Sense &ADC Unit 0, 12 - bit,
     \texttildelow 3.20A max at 3.3V ADC reference (\texttt{IPROPI} from \texttt{DRV8263H}, 5.1k$\Omega$ sense to GND, 202 \textmu A/A mirror) \\
 \hline
-\rowcolor {
-  red!15
-}
+\rowcolor{red!15}
 135 & P45 / AN005 &Motor 2 Current Sense &ADC Unit 0, 12 - bit,
     \texttildelow 3.20A max at 3.3V ADC reference (\texttt{IPROPI} from \texttt{DRV8263H}, 5.1k$\Omega$ sense to GND, 202 \textmu A/A mirror) \\
 \hline
-\rowcolor {
-  red!15
-}
+\rowcolor{red!15}
 136 & P44 / AN004 &Motor 3 Current Sense &ADC Unit 0, 12 - bit,
     \texttildelow 3.20A max at 3.3V ADC reference (\texttt{IPROPI} from \texttt{DRV8263H}, 5.1k$\Omega$ sense to GND, 202 \textmu A/A mirror) \\
 \hline
@@ -604,19 +461,15 @@ tab:
 \hline
 139 & P41 & Unused &Available GPIO(IRQ9, AN001) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 140 & VREFL0 & Ground &ADC reference low \\
 \hline
 141 & P40 & Unused &Available GPIO(IRQ8, AN000) \\
 \hline
-\rowcolor {
-  gray!15
-}
+\rowcolor{gray!15}
 142 & VREFH0 & 3.3V & ADC reference high \\
 \hline
-\rowcolor { gray!15}
+\rowcolor{gray!15}
 143 & AVCC0 &Boards 3v3 & ADC power supply \\
 \hline
 144 & P07 & Unused & Floating \\
@@ -892,11 +745,8 @@ The \texttt{DRV8263H} motor drivers are controlled via three interfaces:
 
 \begin{table}[H]
 \centering
-\caption{
-  Emulator Configuration Jumper Settings}
-\label{
-tab:
-  emulator - config}
+\caption{Emulator Configuration Jumper Settings}
+\label{tab:emulator-config}
 \begin{tabular}{
   | p{6cm} | p{8cm} |}
 \hline
@@ -913,19 +763,14 @@ All open & DO NOT SET \\
 
 \begin{table}[H]
 \centering
-\caption{
-  Operation Configuration Mode DIP Switch Settings}
-\label{
-tab:
-  op - mode - config}
+\caption{Operation Configuration Mode DIP Switch Settings}
+\label{tab:op-mode-config}
 \small
 \textbf{Note:} Both USB-C ports are active: the SCI (UART-over-USB via CY7C65213) port carries fallback / bring-up traffic, and the USB0 port carries the primary 3-port CDC composite device (PROTO / DECODED / LOG). Boot flashing normally goes through the E2 Lite debugger over the JTAG header; SCI boot mode and USB0 boot mode are preserved in the silicon as recovery paths.
 
-\vspace{
-  0.2cm}
+\vspace{0.2cm}
 
-\begin{tabular}{
-  | c | c | c | l |}
+\begin{tabular}{|c|c|c|l|}
 \hline
 \textbf{Pin1} & \textbf{Pin2} & \textbf{UPSEL\_CFG} & \textbf{OP Mode} \\
 \hline
@@ -943,11 +788,8 @@ ON & ON & 2/3 & USB (Self Powered) (USB0) \\
 \begin{table}[H]
 \centering
 \caption{UPSEL Power Configuration for USB Boot Mode}
-\label{
-tab:
-  upsel - config}
-\begin{tabular}{
-  | l | l |}
+\label{tab:upsel-config}
+\begin{tabular}{|l|l|}
 \hline
 \textbf{Jumper Position} & \textbf{Power Configuration for USB Boot Mode} \\
 \hline
@@ -960,19 +802,14 @@ Shorted Pin 2-3 (Battery Pack) & Self Powered \\
 
 \begin{table}[H]
 \centering
-\caption{
-  Required Pin States Upon Reset Release}
-\label{
-tab:
-  reset - pin - states}
+\caption{Required Pin States Upon Reset Release}
+\label{tab:reset-pin-states}
 \small
 To enter a mode capable of flashing firmware, the following pin configurations must be held when the \textbf{RES\#pin} goes from Low to High:
 
-\vspace{
-  0.2cm}
+\vspace{0.2cm}
 
-\begin{tabular}{
-  | l | l | l | l |}
+\begin{tabular}{|l|l|l|l|}
 \hline
 \textbf{Desired Flashing Mode} & \textbf{MD Pin Level} & \textbf{UB Pin Level} & \textbf{Interface Used} \\
 \hline
@@ -984,8 +821,7 @@ Boot Mode (FINE) & Low $\rightarrow$ High* & Low & FINE Interface \\
 \hline
 \end{tabular}
 
-\vspace{
-  0.2cm}
+\vspace{0.2cm}
 
 \small
 *For FINE interface, the MD pin must be Low at reset release and then switched to High within 20 to 100 ms.
@@ -993,16 +829,12 @@ Boot Mode (FINE) & Low $\rightarrow$ High* & Low & FINE Interface \\
 
 \begin{table}[H]
 \centering
-\caption{
-  SCI9 Firmware Configuration(MPC Settings)}
-\label{
-tab:
-  sci9 - config}
+\caption{SCI9 Firmware Configuration(MPC Settings)}
+\label{tab:sci9-config}
 \small
 \textbf{Note:} Pins are multiplexed. Firmware must explicitly configure the Multi-Function Pin Controller (MPC) as follows:
 
-\vspace{
-  0.2cm}
+\vspace{0.2cm}
 
 \begin{tabular}{
   | l | p{11cm} |}
@@ -1017,8 +849,7 @@ tab:
 \hline
 \end{tabular}
 
-\vspace{
-  0.2cm}
+\vspace{0.2cm}
 
 \small
 \textbf{USB-UART IC Configuration:} Use Cypress configuration utility to enable BUSDETECT.
