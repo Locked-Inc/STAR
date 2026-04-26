@@ -278,41 +278,17 @@ rx_err_t rx_lpc_init(void)
 }
 
 /**
- * @brief Switch the MCU to a different operating-power-control mode
+ * @brief Switch the MCU to a different operating-power-control mode (implementation)
  *
  * @details
  * Programs the OPCCR register with the OPCM bits derived from the
- * requested mode (high-speed / middle-speed / low-power, etc.).  Performs
+ * requested mode (high-speed / middle-speed / low-power, etc.). Performs
  * the standard PRCR.PRC1 unlock-write-lock dance, then bounded-polls the
  * OPCMTSF transition-status flag for completion (max
- * k_opcmtsf_poll_max iterations).  On the unit-test target the register
+ * k_opcmtsf_poll_max iterations). On the unit-test target the register
  * write is skipped.
  *
- * @param[in] mode Requested operating-power mode (high-speed, low-speed-1,
- *                 or low-speed-2).
- *
- * @return rx_err_t Error code.
- * @retval k_rx_ok                  Mode applied; OPCMTSF cleared.
- * @retval k_rx_err_not_initialized rx_lpc_init() has not been called.
- * @retval k_rx_err_invalid_arg     mode is outside rx_lpc_opcc_mode_t.
- * @retval k_rx_err_hw_timeout      OPCMTSF poll exceeded
- *                                  k_opcmtsf_poll_max iterations.
- *
- * @pre rx_lpc_init() previously returned k_rx_ok.
- * @pre mode is a valid value of rx_lpc_opcc_mode_t.
- *
- * @post On k_rx_ok: OPCCR.OPCM == requested mode bits and OPCMTSF == 0
- *       (transition complete).
- * @post On k_rx_err_hw_timeout: OPCMTSF poll exceeded
- *       k_opcmtsf_poll_max iterations; the new mode may or may not be
- *       active depending on hardware state.
- *
- * @note Not thread-safe.  Serialize all rx_lpc_* operations.
- *
- * @see rx_lpc_init()        Required to establish init state.
- * @see rx_lpc_enter_sleep() Optional follow-on for low-power entry.
- *
- * @since Version 1.0.0
+ * @note Not thread-safe. Serialize all rx_lpc_* operations.
  */
 rx_err_t rx_lpc_set_operating_power(rx_lpc_opcc_mode_t mode)
 {
@@ -348,32 +324,16 @@ rx_err_t rx_lpc_set_operating_power(rx_lpc_opcc_mode_t mode)
 }
 
 /**
- * @brief Enter Sleep low-power mode (CPU stopped, peripherals running)
+ * @brief Enter Sleep low-power mode (implementation)
  *
  * @details
  * Configures SBYCR for Sleep mode (SSBY=0) under PRCR.PRC1 protection,
- * then issues a WAIT instruction to halt the CPU.  Peripheral clocks
+ * then issues a WAIT instruction to halt the CPU. Peripheral clocks
  * continue running, so any enabled interrupt resumes execution at the
- * instruction following WAIT.  Records the last entered mode for
- * post-mortem diagnostics.  On the unit-test target the WAIT is skipped.
+ * instruction following WAIT. Records the last entered mode for
+ * post-mortem diagnostics. On the unit-test target the WAIT is skipped.
  *
- * @return rx_err_t Error code.
- * @retval k_rx_ok                  Returned after wake interrupt resumed
- *                                  execution.
- * @retval k_rx_err_not_initialized rx_lpc_init() has not been called.
- *
- * @pre rx_lpc_init() previously returned k_rx_ok.
- * @pre At least one wake source (peripheral interrupt) is configured.
- *
- * @post On wake: s_last_mode == k_lpc_mode_sleep; control returns to the
- *       caller after the wake interrupt's ISR completes.
- * @post On k_rx_err_not_initialized: no register writes performed.
- *
- * @note Not thread-safe.  Serialize all rx_lpc_* operations.
- *
- * @see rx_lpc_enter_software_standby() Deeper sleep with peripherals off.
- *
- * @since Version 1.0.0
+ * @note Not thread-safe. Serialize all rx_lpc_* operations.
  */
 rx_err_t rx_lpc_enter_sleep(void)
 {
@@ -400,34 +360,16 @@ rx_err_t rx_lpc_enter_sleep(void)
 }
 
 /**
- * @brief Enter Software Standby mode (CPU and peripherals stopped)
+ * @brief Enter Software Standby mode (implementation)
  *
  * @details
  * Configures SBYCR.SSBY=1 and DPSBYCR.DPSBY=0 under PRCR.PRC1 so that the
  * upcoming WAIT instruction enters Software Standby (not Sleep, not Deep
- * Standby).  Most peripheral clocks are gated off; only configured wake
+ * Standby). Most peripheral clocks are gated off; only configured wake
  * sources (level-sensitive IRQ pins, RTC, watchdog) can resume execution.
  * On the unit-test target the WAIT is skipped.
  *
- * @return rx_err_t Error code.
- * @retval k_rx_ok                  Returned after wake interrupt resumed
- *                                  execution.
- * @retval k_rx_err_not_initialized rx_lpc_init() has not been called.
- *
- * @pre rx_lpc_init() previously returned k_rx_ok.
- * @pre At least one wake source (level-sensitive interrupt or RTC) is
- *      configured before entry.
- *
- * @post On wake: s_last_mode == k_lpc_mode_software_standby; control
- *       returns to the caller after the wake interrupt's ISR.
- * @post On k_rx_err_not_initialized: no register writes performed.
- *
- * @note Not thread-safe.  Serialize all rx_lpc_* operations.
- *
- * @see rx_lpc_enter_sleep()                  Lighter sleep mode.
- * @see rx_lpc_enter_deep_software_standby()  Deepest sleep mode.
- *
- * @since Version 1.0.0
+ * @note Not thread-safe. Serialize all rx_lpc_* operations.
  */
 rx_err_t rx_lpc_enter_software_standby(void)
 {
@@ -547,33 +489,16 @@ bool rx_lpc_was_deep_standby_wake(void)
 }
 
 /**
- * @brief Read the latched Deep Software Standby wake-source bitfield
+ * @brief Read the latched Deep Software Standby wake-source bitfield (implementation)
  *
  * @details
  * Copies the cached s_latched_wake_flags into the caller-supplied
- * destination.  The bitfield has one bit per wake source; the layout is
- * defined by rx_lpc_wake_t.  Useful after wake to determine which event
+ * destination. The bitfield has one bit per wake source; the layout is
+ * defined by rx_lpc_wake_t. Useful after wake to determine which event
  * resumed execution.
- *
- * @param[out] flags Destination for the latched 32-bit wake-source bitfield.
- *
- * @return rx_err_t Error code.
- * @retval k_rx_ok                  *flags populated with the latched bits.
- * @retval k_rx_err_invalid_arg     flags is NULL.
- * @retval k_rx_err_not_initialized rx_lpc_init() has not been called.
- *
- * @pre rx_lpc_init() previously returned k_rx_ok.
- * @pre flags != NULL.
- *
- * @post On k_rx_ok: *flags holds the latched wake-source bitfield;
- *       internal state unchanged.
  *
  * @note Not safe from ISR (acquires no lock but reads driver state that
  *       could be torn during init).
- *
- * @see rx_lpc_was_deep_standby_wake() Cheap boolean wake-source query.
- *
- * @since Version 1.0.0
  */
 rx_err_t rx_lpc_get_wake_flags(uint32_t* flags)
 {

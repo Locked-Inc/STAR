@@ -1802,18 +1802,18 @@ static rx_err_t internal_estop_shutdown_hw(const rx_motor_handle_t* handle)
 }
 
 /**
- * @brief Emergency stop -- shut down motor outputs and disarm the handle
+ * @brief Emergency stop -- shut down motor outputs and disarm (implementation)
  *
  * @details
  * Performs an unconditional safe-state shutdown of the motor:
  *
  *  1. Validates the handle pointer and initialization state.
  *  2. Calls internal_estop_shutdown_hw(), which (a) drives PWM duty to zero,
- *     (b) disables the GPTW output, and (c) stops the GPTW timer.  Any
+ *     (b) disables the GPTW output, and (c) stops the GPTW timer. Any
  *     register error from rx_gptw_set_duty / rx_gptw_enable_output /
  *     rx_gptw_stop is propagated to the caller.
  *  3. Clears handle->initialized so that any subsequent control call will
- *     fail until rx_motor_init() is invoked again.  This prevents accidental
+ *     fail until rx_motor_init() is invoked again. This prevents accidental
  *     re-engagement of a faulted motor.
  *  4. Resets handle->current_duty to zero.
  *  5. Logs a warning indicating that the motor was emergency stopped.
@@ -1821,34 +1821,10 @@ static rx_err_t internal_estop_shutdown_hw(const rx_motor_handle_t* handle)
  * Called from comm_task on E-Stop frames, motor_control_task on overcurrent
  * or runaway detection, and from safety supervisors.
  *
- * @param[in,out] handle Motor handle (initialized flag cleared and
- *                       current_duty zeroed on return).
- *
- * @return rx_err_t Error code.
- * @retval k_rx_ok                  Emergency stop succeeded; outputs
- *                                  disabled and timer stopped.
- * @retval k_rx_err_null_ptr        handle is nullptr.
- * @retval k_rx_err_invalid_state   handle was not initialized.
- * @retval other                    Propagated from rx_gptw_set_duty /
- *                                  rx_gptw_enable_output / rx_gptw_stop on
- *                                  the underlying register failure.
- *
- * @pre handle != nullptr.
- * @pre handle->initialized == true at entry.
- *
- * @post handle->initialized == false (motor must be re-initialized to use).
- * @post handle->current_duty == 0.0F.
- *
- * @note Safety-critical.  Designed to be safe to call from any context,
- *       including ISRs.  Not internally locked; callers must serialize
+ * @note Safety-critical. Designed to be safe to call from any context,
+ *       including ISRs. Not internally locked; callers must serialize
  *       against rx_motor_set_duty / rx_motor_set_velocity_mps if they
  *       could race.
- *
- * @see rx_motor_init()             Required to re-arm after E-Stop.
- * @see rx_motor_stop()              Non-emergency stop (keeps initialized).
- * @see rx_motor_set_duty()          Disabled until re-initialized.
- *
- * @since Version 1.0.0
  */
 rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
 {

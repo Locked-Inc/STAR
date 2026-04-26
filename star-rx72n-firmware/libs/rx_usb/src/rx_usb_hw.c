@@ -557,7 +557,7 @@ bool rx_usb_hw_pipe_ready_for_write(const uint8_t pipe)
     &usb0()->pipe8ctr,
     &usb0()->pipe9ctr,
   };
-  return (*pipe_ctr_map[pipe - 1U] & k_usb_pipectr_pbusy) == 0U;
+  return (bool)((*pipe_ctr_map[pipe - 1U] & k_usb_pipectr_pbusy) == 0U);
 }
 
 /** @brief USB timing constants for initialization delays */
@@ -741,10 +741,10 @@ static void internal_usb_configure_phy(void)
   /* FIXPHY0 is a sticky bit across deep-standby; force-clear it rather
    * than RMW so we don't depend on reset state of the other fields
    * (SRPC0 / RPUE0 default 0 at power-on). */
-  *usb_dpusr0r() &= ~(uint32_t)k_usb_dpusr0r_fixphy0;
+  *usb_dpusr0r() &= ~k_usb_dpusr0r_fixphy0;
 
   /* RX72N-specific slew-rate programming. */
-  usb0()->physlew = (uint32_t)k_usb_physlew_rx72n;
+  usb0()->physlew = k_usb_physlew_rx72n;
 }
 
 /**
@@ -772,8 +772,8 @@ static void internal_usb_configure_interrupts(void)
    * INTSTS0/BRDY/BEMP set correctly inside the USB peripheral.  This
    * is the exact symptom recorded in MEMORY.md as
    * usb0_isr_not_firing_blocker. */
-  *icu_slibr(k_vect_usb0_usbi) = (uint8_t)k_usb0_usbi_sli_src;
-  icu()->sliprcr               = (uint8_t)k_icu_sliprcr_wprc; /* latch routing (write-once) */
+  *icu_slibr(k_vect_usb0_usbi) = k_usb0_usbi_sli_src;
+  icu()->sliprcr               = k_icu_sliprcr_wprc; /* latch routing (write-once) */
   /* HUM 15.7.7 step (6): confirm WPRC == 1 before enabling IER.
    * Bounded poll (NASA P10 Rule 2): k_icu_sliprcr_poll_max iterations
    * cap is enough for any real silicon -- the bit latches in 1-2 ICLK
@@ -783,7 +783,7 @@ static void internal_usb_configure_interrupts(void)
    * if WPRC didn't latch (the ISR just stays dormant, which the
    * existing g_usb_isr_entry_count diagnostic catches). */
   for (uint32_t i = 0; i < k_icu_sliprcr_poll_max; i++) {
-    if ((icu()->sliprcr & (uint8_t)k_icu_sliprcr_wprc) != 0U) {
+    if ((icu()->sliprcr & k_icu_sliprcr_wprc) != 0U) {
       break;
     }
   }
@@ -841,9 +841,9 @@ rx_err_t rx_usb_hw_init(void)
    * and enumeration times out with -110.
    */
   usb0()->dcpcfg = 0U;
-  usb0()->dcpctr = (uint16_t)k_usb_dcpctr_pid_buf;
-  usb0()->brdyenb |= (uint16_t)k_usb_pipe_bit_0;
-  usb0()->bempenb |= (uint16_t)k_usb_pipe_bit_0;
+  usb0()->dcpctr = k_usb_dcpctr_pid_buf;
+  usb0()->brdyenb |= k_usb_pipe_bit_0;
+  usb0()->bempenb |= k_usb_pipe_bit_0;
 
   s_hw_initialized = true;
   rx_log_info(s_tag, "USB0 hardware initialized");
@@ -921,7 +921,7 @@ rx_err_t rx_usb_hw_detach(void)
  *
  */
 /* Forward declaration: wait for CFIFOCTR.FRDY (definition near write helpers). */
-static bool internal_usb_wait_frdy(volatile uint16_t* const fifoctr_r);
+static bool internal_usb_wait_frdy(const volatile uint16_t* fifoctr_r);
 
 /**
  * @brief Drain bytes from CFIFO into a caller-supplied buffer
@@ -1128,13 +1128,13 @@ static void internal_usb_select_cfifo_pipe(const uint8_t pipe)
  *
  * @since Version 1.0.0
  */
-static bool internal_usb_wait_frdy(volatile uint16_t* const fifoctr_r)
+static bool internal_usb_wait_frdy(const volatile uint16_t* fifoctr_r)
 {
   volatile uint32_t timeout = k_usb_fifo_timeout_iterations;
   while (!(*fifoctr_r & k_usb_fifoctr_frdy) && timeout--) {
     __asm__ volatile("nop");
   }
-  return timeout != k_usb_fifo_timeout_expired;
+  return (bool)(timeout != k_usb_fifo_timeout_expired);
 }
 
 /**
@@ -1161,7 +1161,7 @@ static bool internal_usb_clear_fifo(volatile uint16_t* const fifoctr_r)
   while ((*fifoctr_r & k_usb_fifoctr_bclr) && timeout--) {
     __asm__ volatile("nop");
   }
-  return timeout != k_usb_fifo_timeout_expired;
+  return (bool)(timeout != k_usb_fifo_timeout_expired);
 }
 
 /**

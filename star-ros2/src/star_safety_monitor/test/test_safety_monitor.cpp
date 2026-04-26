@@ -86,6 +86,66 @@ TEST_F(SafetyMonitorTest, LifecycleDeactivation)
   EXPECT_EQ(node->get_current_state().label(), std::string("inactive"));
 }
 
+TEST_F(SafetyMonitorTest, LifecycleCleanupReturnsToUnconfigured)
+{
+  // configure -> cleanup must drop us back to "unconfigured" so the node can
+  // be reconfigured cleanly.  This exercises on_cleanup() in safety_monitor.cpp
+  // which resets bond_, publishers, subscribers, and clears heartbeat state.
+  auto node = std::make_shared<star_safety_monitor::SafetyMonitor>();
+
+  node->configure();
+  std::this_thread::sleep_for(LIFECYCLE_TRANSITION_DELAY);
+  EXPECT_EQ(node->get_current_state().label(), std::string("inactive"));
+
+  node->cleanup();
+  std::this_thread::sleep_for(LIFECYCLE_TRANSITION_DELAY);
+  EXPECT_EQ(node->get_current_state().label(), std::string("unconfigured"));
+}
+
+TEST_F(SafetyMonitorTest, LifecycleFullCycleConfigureActivateDeactivateCleanup)
+{
+  // Round-trip the full nominal lifecycle: configure -> activate -> deactivate
+  // -> cleanup, asserting the state label after each transition.  This verifies
+  // that the node releases its bond/timer/publishers cleanly on deactivate
+  // and that on_cleanup() can run without leaving stale state behind.
+  auto node = std::make_shared<star_safety_monitor::SafetyMonitor>();
+
+  node->configure();
+  std::this_thread::sleep_for(LIFECYCLE_TRANSITION_DELAY);
+  EXPECT_EQ(node->get_current_state().label(), std::string("inactive"));
+
+  node->activate();
+  std::this_thread::sleep_for(LIFECYCLE_TRANSITION_DELAY);
+  EXPECT_EQ(node->get_current_state().label(), std::string("active"));
+
+  node->deactivate();
+  std::this_thread::sleep_for(LIFECYCLE_TRANSITION_DELAY);
+  EXPECT_EQ(node->get_current_state().label(), std::string("inactive"));
+
+  node->cleanup();
+  std::this_thread::sleep_for(LIFECYCLE_TRANSITION_DELAY);
+  EXPECT_EQ(node->get_current_state().label(), std::string("unconfigured"));
+}
+
+TEST_F(SafetyMonitorTest, LifecycleReconfigureAfterCleanup)
+{
+  // After cleanup() the node should be reusable: a second configure() must
+  // succeed and bring the node back to "inactive".  This catches state
+  // pollution bugs in on_cleanup() (e.g. subscribers not reset, parameters
+  // already declared on the second configure pass).
+  auto node = std::make_shared<star_safety_monitor::SafetyMonitor>();
+
+  node->configure();
+  std::this_thread::sleep_for(LIFECYCLE_TRANSITION_DELAY);
+  node->cleanup();
+  std::this_thread::sleep_for(LIFECYCLE_TRANSITION_DELAY);
+
+  // Second configure must succeed.
+  node->configure();
+  std::this_thread::sleep_for(LIFECYCLE_TRANSITION_DELAY);
+  EXPECT_EQ(node->get_current_state().label(), std::string("inactive"));
+}
+
 TEST_F(SafetyMonitorTest, ParameterLoading)
 {
   rclcpp::NodeOptions options;

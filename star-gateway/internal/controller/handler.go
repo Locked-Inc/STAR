@@ -57,28 +57,29 @@ func NewHandlerWithGateway(gatewaySvc *service.GatewayService) *Handler {
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(_ *http.Request) bool { return true },
 	}
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		slog.Error("failed to accept websocket", "error", err)
+		slog.ErrorContext(ctx, "failed to accept websocket", "error", err)
 		return
 	}
 
-	slog.Info("controller connected", "remote_addr", r.RemoteAddr)
+	slog.InfoContext(ctx, "controller connected", "remote_addr", r.RemoteAddr)
 
 	defer func() {
 		deadline := time.Now().Add(time.Second)
 		closePayload := websocket.FormatCloseMessage(websocket.CloseInternalServerErr, "internal error")
 		if err := c.WriteControl(websocket.CloseMessage, closePayload, deadline); err != nil {
 			// It's normal for Close to fail if connection is already closed
-			slog.Error("websocket close", "error", err)
+			slog.ErrorContext(ctx, "websocket close", "error", err)
 		}
 		if err := c.Close(); err != nil {
-			slog.Error("websocket close", "error", err)
+			slog.ErrorContext(ctx, "websocket close", "error", err)
 		}
-		slog.Info("controller disconnected", "remote_addr", r.RemoteAddr)
+		slog.InfoContext(ctx, "controller disconnected", "remote_addr", r.RemoteAddr)
 	}()
 
 	var lastDebug bool
@@ -86,7 +87,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for {
 		typ, bytes, err := c.ReadMessage()
 		if err != nil {
-			slog.Error("failed to read", "error", err)
+			slog.ErrorContext(ctx, "failed to read", "error", err)
 			break
 		}
 
@@ -96,21 +97,21 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		var msg starv1.ControllerState
 		if err := proto.Unmarshal(bytes, &msg); err != nil {
-			slog.Error("failed to unmarshal", "error", err)
+			slog.ErrorContext(ctx, "failed to unmarshal", "error", err)
 			continue
 		}
 
 		// Handle debug state transitions
 		if msg.Debug && !lastDebug {
-			slog.Info(">>> DEBUG MODE ENABLED")
+			slog.InfoContext(ctx, ">>> DEBUG MODE ENABLED")
 		} else if !msg.Debug && lastDebug {
-			slog.Info(">>> DEBUG MODE DISABLED")
+			slog.InfoContext(ctx, ">>> DEBUG MODE DISABLED")
 		}
 		lastDebug = msg.Debug
 
 		// Debug log to verify data reception
 		if msg.Debug {
-			slog.Debug("controller state received", "linear", msg.LinearVel, "angular", msg.AngularVel)
+			slog.DebugContext(ctx, "controller state received", "linear", msg.LinearVel, "angular", msg.AngularVel)
 		}
 
 		// Convert ControllerState to VelocityCommand and forward to Gateway

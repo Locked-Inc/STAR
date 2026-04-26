@@ -55,12 +55,12 @@ func (hm *HealthMonitor) Run(ctx context.Context, tm *TransportManager) {
 	ticker := time.NewTicker(hm.interval)
 	defer ticker.Stop()
 
-	slog.Info("HealthMonitor started", "interval", hm.interval)
+	slog.InfoContext(ctx, "HealthMonitor started", "interval", hm.interval)
 
 	for {
 		select {
 		case <-ctx.Done():
-			slog.Info("HealthMonitor stopped")
+			slog.InfoContext(ctx, "HealthMonitor stopped")
 			return
 
 		case <-ticker.C:

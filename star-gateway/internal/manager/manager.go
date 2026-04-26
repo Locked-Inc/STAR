@@ -212,12 +212,12 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 		// was designed for SPI and causes 30s startup delays + false frame rejection on USB.
 		if tm.config.Mode == ModeSimpleUSB {
 			tm.sessionState.SetSimpleMode(true)
-			slog.Info("simple USB mode: skipped reset handshake, sequence validation relaxed")
+			slog.InfoContext(ctx, "simple USB mode: skipped reset handshake, sequence validation relaxed")
 		} else {
 			// CRITICAL FIX #4: Send Reset handshake before entering Active state
 			// This synchronizes sequence numbers with RX72N after Gateway restart
 			if err := tm.performResetHandshake(tm.ctx); err != nil {
-				slog.Warn("reset handshake failed, continuing anyway", "error", err)
+				slog.WarnContext(ctx, "reset handshake failed, continuing anyway", "error", err)
 				// Don't fail startup - RX72N might be rebooting
 			}
 		}
@@ -225,7 +225,7 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 		// Reacquire mutex to update state
 		tm.mu.Lock()
 		tm.state = targetState
-		slog.Info("TransportManager started",
+		slog.InfoContext(ctx, "TransportManager started",
 			"transport", transportName, "priority", transportPriority)
 		tm.mu.Unlock() // Release before return
 	} else {
@@ -235,7 +235,7 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 			tm.mu.Unlock() // Release before error return
 			return fmt.Errorf("no %s transport available (required by mode)", tm.config.Mode)
 		}
-		slog.Warn("TransportManager started with no available transports (will retry)")
+		slog.WarnContext(ctx, "TransportManager started with no available transports (will retry)")
 		tm.mu.Unlock() // Release before return
 	}
 
@@ -291,13 +291,13 @@ func (tm *TransportManager) performResetHandshake(ctx context.Context) error {
 
 	var lastErr error
 	for attempt := 1; attempt <= maxRetries; attempt++ {
-		slog.Info("reset handshake attempt",
+		slog.InfoContext(ctx, "reset handshake attempt",
 			"attempt", attempt, "max", maxRetries, "session", newSessionID)
 
 		// Send RESET with FrameTypeReset
 		if err := sender.SendWithType(ctx, resetPayload, frame.FrameTypeReset); err != nil {
 			lastErr = fmt.Errorf("send RESET failed: %w", err)
-			slog.Warn("reset send failed", "attempt", attempt, "error", err)
+			slog.WarnContext(ctx, "reset send failed", "attempt", attempt, "error", err)
 			time.Sleep(retryDelay)
 			continue
 		}
@@ -310,13 +310,13 @@ func (tm *TransportManager) performResetHandshake(ctx context.Context) error {
 		if err == nil {
 			// Reset sequences AFTER valid RESET_ACK (not before)
 			tm.sessionState.Reset()
-			slog.Info("reset handshake successful",
+			slog.InfoContext(ctx, "reset handshake successful",
 				"session", newSessionID, "attempt", attempt)
 			return nil
 		}
 
 		lastErr = err
-		slog.Warn("reset handshake attempt failed", "attempt", attempt, "error", err)
+		slog.WarnContext(ctx, "reset handshake attempt failed", "attempt", attempt, "error", err)
 		time.Sleep(retryDelay)
 	}
 
@@ -338,7 +338,7 @@ func (tm *TransportManager) drainUntilResetAck(ctx context.Context, expectedSess
 				return fmt.Errorf("timeout waiting for RESET_ACK: %w", ctx.Err())
 			}
 			// Transient receive error -- backoff briefly to avoid tight-loop CPU spin
-			slog.Debug("reset handshake receive error (continuing)", "error", err)
+			slog.DebugContext(ctx, "reset handshake receive error (continuing)", "error", err)
 			select {
 			case <-ctx.Done():
 				return fmt.Errorf("timeout waiting for RESET_ACK: %w", ctx.Err())
@@ -359,19 +359,19 @@ func (tm *TransportManager) drainUntilResetAck(ctx context.Context, expectedSess
 
 		// Non-RESET_ACK frames are stale -- discard and continue draining
 		if result.Metadata.Type != frame.FrameTypeResetAck {
-			slog.Debug("discarding stale frame during reset",
+			slog.DebugContext(ctx, "discarding stale frame during reset",
 				"type", result.Metadata.Type.String(), "seq", result.Metadata.Sequence)
 			continue
 		}
 
 		// Got RESET_ACK -- validate session ID
 		if !tm.sessionState.ValidateResetAck(result.Payload) {
-			slog.Warn("RESET_ACK with invalid/mismatched session ID, discarding")
+			slog.WarnContext(ctx, "RESET_ACK with invalid/mismatched session ID, discarding")
 			continue
 		}
 
 		// Valid RESET_ACK with matching session ID
-		slog.Info("received valid RESET_ACK",
+		slog.InfoContext(ctx, "received valid RESET_ACK",
 			"session", expectedSessionID, "seq", result.Metadata.Sequence)
 		return nil
 	}
@@ -547,7 +547,7 @@ func (tm *TransportManager) SendWithType(ctx context.Context, data []byte, frame
 	sender, ok := active.(frameTypeSender)
 	if !ok {
 		// Fallback: use Send() (shouldn't happen with CDCLink/SPILink)
-		slog.Warn("active transport does not support SendWithType, falling back to Send()",
+		slog.WarnContext(ctx, "active transport does not support SendWithType, falling back to Send()",
 			"transport", activeName)
 		return tm.Send(ctx, data)
 	}
@@ -696,7 +696,7 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 	// This prevents stale USB FIFO frames from reaching the dispatcher.
 	// Returns nil which the dispatcher treats as a transient timeout.
 	if tm.sessionState.IsBarrierActive() {
-		slog.Debug("barrier active, discarding frame",
+		slog.DebugContext(ctx, "barrier active, discarding frame",
 			"type", result.Metadata.Type.String(), "seq", result.Metadata.Sequence)
 		return nil
 	}
@@ -723,7 +723,7 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 		// Without this, HARQ retransmission bursts (many ACKs, no COMMAND/RESPONSE)
 		// would false-positive the 200ms implicit timeout.
 		tm.heartbeat.OnFrameReceived()
-		slog.Debug("received control frame consumed by dispatcher",
+		slog.DebugContext(ctx, "received control frame consumed by dispatcher",
 			"type", result.Metadata.Type.String(), "seq", result.Metadata.Sequence)
 		return nil
 
@@ -733,13 +733,13 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 		// Reset sequences: firmware resets its TX counter to 0 after sending RESET, so the
 		// gateway must mirror that to avoid sequence-mismatch rejection on the next frame.
 		tm.heartbeat.OnFrameReceived()
-		slog.Info("received RESET, sending RESET_ACK", "seq", result.Metadata.Sequence)
+		slog.InfoContext(ctx, "received RESET, sending RESET_ACK", "seq", result.Metadata.Sequence)
 		tm.sendResetAck(ctx)
 		tm.sessionState.Reset()
 		return nil
 
 	case frame.FrameTypeResetAck:
-		slog.Info("received RESET_ACK, session synchronized",
+		slog.InfoContext(ctx, "received RESET_ACK, session synchronized",
 			"seq", result.Metadata.Sequence)
 		return nil
 
@@ -755,12 +755,12 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 		// typically ends on a newline.
 		tm.heartbeat.OnFrameReceived()
 		if len(result.Payload) > 0 {
-			slog.Info("[RX72N] " + string(result.Payload))
+			slog.InfoContext(ctx, "[RX72N] "+string(result.Payload))
 		}
 		return nil
 
 	default:
-		slog.Warn("received unknown frame type, consumed",
+		slog.WarnContext(ctx, "received unknown frame type, consumed",
 			"type", fmt.Sprintf("0x%02X", uint8(result.Metadata.Type)),
 			"seq", result.Metadata.Sequence)
 		return nil
@@ -796,12 +796,12 @@ func (tm *TransportManager) sendPong(ctx context.Context, payload []byte) {
 
 	sender, ok := active.(frameTypeSender)
 	if !ok {
-		slog.Warn("PONG send skipped: transport does not support SendWithType")
+		slog.WarnContext(ctx, "PONG send skipped: transport does not support SendWithType")
 		return
 	}
 
 	if err := sender.SendWithType(pongCtx, payload, frame.FrameTypePong); err != nil {
-		slog.Warn("PONG send failed", "error", err)
+		slog.WarnContext(ctx, "PONG send failed", "error", err)
 	}
 }
 
@@ -829,12 +829,12 @@ func (tm *TransportManager) sendResetAck(ctx context.Context) {
 
 	sender, ok := active.(frameTypeSender)
 	if !ok {
-		slog.Warn("RESET_ACK send skipped: transport does not support SendWithType")
+		slog.WarnContext(ctx, "RESET_ACK send skipped: transport does not support SendWithType")
 		return
 	}
 
 	if err := sender.SendWithType(ackCtx, nil, frame.FrameTypeResetAck); err != nil {
-		slog.Warn("RESET_ACK send failed", "error", err)
+		slog.WarnContext(ctx, "RESET_ACK send failed", "error", err)
 	}
 }
 

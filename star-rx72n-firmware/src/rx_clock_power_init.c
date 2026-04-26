@@ -840,6 +840,35 @@ static rx_err_t internal_module_stop_init(void)
  * @par NASA Power of 10 Compliance:
  * - Rule 5: [OK] 2 preconditions, 2 postconditions
  */
+/**
+ * @brief Verify the optional PPLL clock state.
+ *
+ * Split out of internal_verify_system_state() so that function meets the
+ * 60-line clean-code threshold.  PROD builds gate USB clock through PPLL;
+ * TOM derives UCLK from the main PLL and skips PPLL entirely.
+ */
+static rx_err_t internal_verify_ppll_state(const volatile rx_system_regs_t* sys)
+{
+  (void)sys; /* unused on TOM, and on simulator where OSCOVFSR isn't modelled */
+#if !defined(STAR_BOARD_TOM)
+  /* Verify PPLL is enabled for USB clock (PROD only -- TOM skips PPLL
+   * entirely and derives UCLK directly from the main PLL). */
+  const uint8_t ppllcr2 = *ppllcr2_reg();
+  if (ppllcr2 != k_ppll_enabled) {
+    return k_rx_err_hw_init_failed;
+  }
+
+#if !RX_IS_SIMULATOR
+  /* Verify PPLL is stable (hardware only - simulator doesn't model OSCOVFSR flags) */
+  const uint8_t oscovfsr = sys->oscovfsr;
+  if ((oscovfsr & k_ppll_stable_flag) == 0) {
+    return k_rx_err_hw_init_failed;
+  }
+#endif
+#endif /* !STAR_BOARD_TOM */
+  return k_rx_ok;
+}
+
 static rx_err_t internal_verify_system_state(void)
 {
   const volatile rx_system_regs_t* sys = system_regs();
@@ -865,22 +894,11 @@ static rx_err_t internal_verify_system_state(void)
     return k_rx_err_hw_init_failed;
   }
 
-#if !defined(STAR_BOARD_TOM)
-  /* Verify PPLL is enabled for USB clock (PROD only -- TOM skips PPLL
-   * entirely and derives UCLK directly from the main PLL). */
-  const uint8_t ppllcr2 = *ppllcr2_reg();
-  if (ppllcr2 != k_ppll_enabled) {
-    return k_rx_err_hw_init_failed;
+  /* Verify PPLL state (PROD-only; TOM derives UCLK from main PLL). */
+  const rx_err_t ppll_err = internal_verify_ppll_state(sys);
+  if (ppll_err != k_rx_ok) {
+    return ppll_err;
   }
-
-#if !RX_IS_SIMULATOR
-  /* Verify PPLL is stable (hardware only - simulator doesn't model OSCOVFSR flags) */
-  const uint8_t oscovfsr = sys->oscovfsr;
-  if ((oscovfsr & k_ppll_stable_flag) == 0) {
-    return k_rx_err_hw_init_failed;
-  }
-#endif
-#endif /* !STAR_BOARD_TOM */
 
   /* Verify MEMWAIT is configured for 240 MHz operation */
   const uint8_t memwait = *memwait_reg();
@@ -897,13 +915,13 @@ static rx_err_t internal_verify_system_state(void)
 #elif !RX_IS_SIMULATOR
   /* Hardware: Verify all clock configuration including PPLL stability */
   RX_ASSERT((pllcr2 == k_pll_enabled) && (sckcr == k_system_clock_dividers) &&
-              (sckcr3 == k_system_clock_source_pll) && (ppllcr2 == k_ppll_enabled) &&
-              ((oscovfsr & k_ppll_stable_flag) != 0) && (memwait == k_memwait_one_wait),
+              (sckcr3 == k_system_clock_source_pll) && (*ppllcr2_reg() == k_ppll_enabled) &&
+              ((sys->oscovfsr & k_ppll_stable_flag) != 0) && (memwait == k_memwait_one_wait),
             "Postcondition: clock configuration verified");
 #else
   /* Simulator: Verify clock configuration (skip PPLL stability - not modeled in simulator) */
   RX_ASSERT((pllcr2 == k_pll_enabled) && (sckcr == k_system_clock_dividers) &&
-              (sckcr3 == k_system_clock_source_pll) && (ppllcr2 == k_ppll_enabled) &&
+              (sckcr3 == k_system_clock_source_pll) && (*ppllcr2_reg() == k_ppll_enabled) &&
               (memwait == k_memwait_one_wait),
             "Postcondition: clock configuration verified (simulator mode)");
 #endif

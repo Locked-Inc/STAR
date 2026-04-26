@@ -265,37 +265,17 @@ rx_err_t rx_doc_init(rx_doc_mode_t mode)
 }
 
 /**
- * @brief Set the DOC compare reference (DODIR) register
+ * @brief Set the DOC compare reference (DODIR) register (implementation)
  *
  * @details
  * Writes the supplied 16-bit reference value into the Data Operation
  * Circuit Input register (DODIR) that subsequent rx_doc_compare() /
- * rx_doc_add() / rx_doc_subtract() calls operate against.  Validates
+ * rx_doc_add() / rx_doc_subtract() calls operate against. Validates
  * driver init state but does not validate or constrain the value range
  * (any 16-bit value is meaningful in compare/add/subtract modes).
  *
- * @param[in] reference 16-bit value to load into DODIR for subsequent
- *                      compare/add/subtract operations.
- *
- * @return rx_err_t Error code.
- * @retval k_rx_ok                  Reference written.
- * @retval k_rx_err_not_initialized rx_doc_init() has not been called.
- *
- * @pre rx_doc_init() previously returned k_rx_ok.
- * @pre Caller has ensured no other thread is racing with this DOC channel
- *      (driver is single-instance global).
- *
- * @post DOC->DODIR == reference.
- * @post No other DOC register is mutated.
- *
- * @note Not thread-safe.  The DOC peripheral is global; serialize access
+ * @note Not thread-safe. The DOC peripheral is global; serialize access
  *       at the application layer.
- *
- * @see rx_doc_compare()  Use the reference for compare operations.
- * @see rx_doc_add()      Use the reference for add operations.
- * @see rx_doc_subtract() Use the reference for subtract operations.
- *
- * @since Version 1.0.0
  */
 rx_err_t rx_doc_set_reference(uint16_t reference)
 {
@@ -308,41 +288,17 @@ rx_err_t rx_doc_set_reference(uint16_t reference)
 }
 
 /**
- * @brief Compare value against the previously set DOC reference
+ * @brief Compare value against the previously set DOC reference (implementation)
  *
  * @details
  * Writes value into DODSR, latches the comparator flag (DOPCF), and
- * reports whether the configured compare condition is satisfied.  In
+ * reports whether the configured compare condition is satisfied. In
  * k_rx_doc_mode_compare the flag is set on equality; in
- * k_rx_doc_mode_compare_neq the flag is set on inequality.  The
+ * k_rx_doc_mode_compare_neq the flag is set on inequality. The
  * comparator flag is cleared internally before return so successive
  * compares are independent.
  *
- * @param[in]  value   16-bit input written into DODSR to trigger the
- *                     comparison.
- * @param[out] matched On k_rx_ok holds the latched DOPCF result for the
- *                     configured compare mode (true if condition satisfied).
- *
- * @return rx_err_t Error code.
- * @retval k_rx_ok                  Compare succeeded; *matched populated.
- * @retval k_rx_err_null_ptr        matched is NULL.
- * @retval k_rx_err_not_initialized rx_doc_init() has not been called.
- * @retval k_rx_err_invalid_state   Driver not configured in a compare mode.
- *
- * @pre matched != NULL.
- * @pre rx_doc_init() was called with one of the compare modes.
- * @pre Caller previously set a reference via rx_doc_set_reference() if
- *      the comparison should be against anything other than the reset
- *      value.
- *
- * @post On k_rx_ok: *matched holds the result; DOC->DOPCF is cleared.
- * @post DOC->DODSR == value (samples register).
- *
- * @note Not thread-safe.  Serialize access to the global DOC peripheral.
- *
- * @see rx_doc_set_reference() Set the comparison reference.
- *
- * @since Version 1.0.0
+ * @note Not thread-safe. Serialize access to the global DOC peripheral.
  */
 rx_err_t rx_doc_compare(uint16_t value, bool* matched)
 {
@@ -364,39 +320,15 @@ rx_err_t rx_doc_compare(uint16_t value, bool* matched)
 }
 
 /**
- * @brief Perform a hardware-accelerated 16-bit add with overflow detection
+ * @brief Perform a hardware-accelerated 16-bit add (implementation)
  *
  * @details
  * Writes the addend into DODSR; the DOC then computes
- * sum = DODIR + addend with overflow flagged in DOPCF.  Reads the result
+ * sum = DODIR + addend with overflow flagged in DOPCF. Reads the result
  * back through DODSR (post-operation register) and reports the overflow
  * flag, then clears DOPCF before return.
  *
- * @param[in]  addend   16-bit value to add to the DODIR reference.
- * @param[out] sum      Destination for the 16-bit DODIR + addend result
- *                      (mod 2^16).
- * @param[out] overflow Destination for the carry-out flag (true on overflow
- *                      past 0xFFFF).
- *
- * @return rx_err_t Error code.
- * @retval k_rx_ok                  Add succeeded; *sum and *overflow
- *                                  populated.
- * @retval k_rx_err_null_ptr        sum or overflow is NULL.
- * @retval k_rx_err_not_initialized rx_doc_init() has not been called.
- * @retval k_rx_err_invalid_state   Driver not configured for add mode.
- *
- * @pre sum != NULL and overflow != NULL.
- * @pre rx_doc_init() was called with k_rx_doc_mode_add.
- * @pre rx_doc_set_reference() previously set the addition operand DODIR.
- *
- * @post On k_rx_ok: *sum holds DODIR + addend (mod 2^16); *overflow holds
- *       the carry-out flag; DOC->DOPCF is cleared.
- *
- * @note Not thread-safe.  Serialize access to the global DOC peripheral.
- *
- * @see rx_doc_subtract() Hardware subtract counterpart.
- *
- * @since Version 1.0.0
+ * @note Not thread-safe. Serialize access to the global DOC peripheral.
  */
 rx_err_t rx_doc_add(uint16_t addend, uint16_t* sum, bool* overflow)
 {
@@ -420,40 +352,15 @@ rx_err_t rx_doc_add(uint16_t addend, uint16_t* sum, bool* overflow)
 }
 
 /**
- * @brief Perform a hardware-accelerated 16-bit subtract with borrow
- *        detection
+ * @brief Perform a hardware-accelerated 16-bit subtract (implementation)
  *
  * @details
  * Writes subtrahend into DODSR; the DOC computes
- * difference = DODIR - subtrahend with borrow flagged in DOPCF.  Reads
+ * difference = DODIR - subtrahend with borrow flagged in DOPCF. Reads
  * the result back through DODSR and reports the borrow flag, then clears
  * DOPCF before return.
  *
- * @param[in]  subtrahend 16-bit value to subtract from the DODIR minuend.
- * @param[out] difference Destination for the 16-bit DODIR - subtrahend
- *                        result.
- * @param[out] borrow     Destination for the borrow flag (true if result
- *                        underflowed below 0).
- *
- * @return rx_err_t Error code.
- * @retval k_rx_ok                  Subtract succeeded; *difference and
- *                                  *borrow populated.
- * @retval k_rx_err_null_ptr        difference or borrow is NULL.
- * @retval k_rx_err_not_initialized rx_doc_init() has not been called.
- * @retval k_rx_err_invalid_state   Driver not configured for subtract mode.
- *
- * @pre difference != NULL and borrow != NULL.
- * @pre rx_doc_init() was called with k_rx_doc_mode_subtract.
- * @pre rx_doc_set_reference() previously set DODIR (the minuend).
- *
- * @post On k_rx_ok: *difference holds DODIR - subtrahend; *borrow holds
- *       the borrow flag; DOC->DOPCF is cleared.
- *
- * @note Not thread-safe.  Serialize access to the global DOC peripheral.
- *
- * @see rx_doc_add() Hardware add counterpart.
- *
- * @since Version 1.0.0
+ * @note Not thread-safe. Serialize access to the global DOC peripheral.
  */
 rx_err_t rx_doc_subtract(uint16_t subtrahend, uint16_t* difference, bool* borrow)
 {
@@ -477,28 +384,15 @@ rx_err_t rx_doc_subtract(uint16_t subtrahend, uint16_t* difference, bool* borrow
 }
 
 /**
- * @brief Deinitialize the DOC peripheral and gate its clock
+ * @brief Deinitialize the DOC peripheral and gate its clock (implementation)
  *
  * @details
  * Idempotent: returns k_rx_ok immediately if the driver was not
- * initialized.  Otherwise clears DOC->DOCR (mode register), disables the
+ * initialized. Otherwise clears DOC->DOCR (mode register), disables the
  * DOC module clock through internal_disable_doc_clock(), and marks the
  * driver as uninitialized.
  *
- * @return rx_err_t Error code.
- * @retval k_rx_ok Always returned (idempotent: ok if uninitialized too).
- *
- * @pre None (function is safe to call without prior init).
- *
- * @post DOC->DOCR == 0 and DOC module clock is gated.
- * @post Subsequent rx_doc_* operations (other than rx_doc_init) will
- *       return k_rx_err_not_initialized.
- *
- * @note Not thread-safe.  Serialize access to the global DOC peripheral.
- *
- * @see rx_doc_init() Required to re-arm after deinit.
- *
- * @since Version 1.0.0
+ * @note Not thread-safe. Serialize access to the global DOC peripheral.
  */
 rx_err_t rx_doc_deinit(void)
 {

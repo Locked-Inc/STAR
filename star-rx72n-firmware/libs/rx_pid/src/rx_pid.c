@@ -641,11 +641,11 @@ rx_err_t rx_pid_deinit(rx_pid_handle_t* handle)
 }
 
 /**
- * @brief Compute one PID control iteration and produce a clamped output
+ * @brief Compute one PID control iteration (implementation)
  *
  * @details
  * Implements the discrete-time PID algorithm using forward Euler integration
- * and a simple finite-difference derivative.  The function:
+ * and a simple finite-difference derivative. The function:
  *
  *  1. Computes the error (setpoint - measured).
  *  2. Accumulates the integral, then clamps to [integral_min, integral_max]
@@ -661,38 +661,8 @@ rx_err_t rx_pid_deinit(rx_pid_handle_t* handle)
  * Typical call site: motor_control_task at 250 Hz with dt = 0.004 s.
  * Touches mutable state: handle->integral and handle->prev_error.
  *
- * @param[in,out] handle   PID controller handle (mutable: integral and
- *                         prev_error are updated).
- * @param[in]     setpoint Desired value in engineering units.
- * @param[in]     measured Current measured value (same units as setpoint).
- * @param[in]     dt       Loop period in seconds (must be > 0).
- * @param[out]    output   Destination for the clamped control output.
- *
- * @return rx_err_t Error code.
- * @retval k_rx_ok                Compute succeeded; *output finite and
- *                                clamped.
- * @retval k_rx_err_null_ptr      handle or output is NULL.
- * @retval k_rx_err_invalid_state Handle was not initialized via
- *                                rx_pid_init().
- * @retval k_rx_err_invalid_arg   dt <= 0.0F.
- * @retval k_rx_fail              Post-condition failed (output not finite).
- *
- * @pre handle and output are non-null.
- * @pre handle was successfully initialized via rx_pid_init().
- * @pre dt > 0.0F and matches the actual loop period.
- *
- * @post On k_rx_ok: *output is finite and clamped to configured limits.
- * @post On k_rx_ok: handle->integral is clamped to [integral_min, integral_max].
- * @post handle->prev_error == (setpoint - measured) after a successful return.
- *
- * @note Not thread-safe.  Each PID instance must be owned by a single task or
+ * @note Not thread-safe. Each PID instance must be owned by a single task or
  *       protected by a caller-provided mutex.
- *
- * @see rx_pid_init()      Initializes the controller before first compute.
- * @see rx_pid_reset()     Clears integral and prev_error after instability.
- * @see rx_pid_set_gains() Updates Kp/Ki/Kd at runtime.
- *
- * @since Version 1.0.0
  */
 rx_err_t rx_pid_compute(rx_pid_handle_t* handle,
                         const float      setpoint,

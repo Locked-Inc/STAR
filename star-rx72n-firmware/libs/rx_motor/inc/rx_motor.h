@@ -601,7 +601,9 @@ typedef struct {
  * - Stops timer to prevent glitches
  * - Marks handle as uninitialized (requires re-init to use)
  *
- * @param[in] handle Pointer to motor handle. Must not be nullptr.
+ * @param[in,out] handle Pointer to motor handle. Must not be nullptr. On
+ *                       success, handle->initialized is cleared and
+ *                       handle->current_duty is zeroed.
  *
  * @return k_rx_ok on success
  * @return k_rx_err_null_ptr if handle is nullptr

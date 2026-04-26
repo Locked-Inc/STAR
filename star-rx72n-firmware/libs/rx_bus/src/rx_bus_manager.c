@@ -163,25 +163,24 @@
 
 static const char* const s_tag = "BUS_MANAGER";
 
-/* ThreadX exposes the current-thread pointer; it is TX_NULL until the
- * scheduler dispatches its first thread.  `tx_application_define` runs
- * BEFORE the first dispatch, so every mutex operation from inside it
- * must be bypassed (this port hangs in tx_mutex_get pre-scheduler).
- * Once the scheduler is live, real mutex protection kicks in for all
- * runtime callers (`with_bus`, `find_bus`, `remove_bus`).
- */
-extern TX_THREAD* _tx_thread_current_ptr;
-
 /**
  * @brief True once the ThreadX scheduler has dispatched a thread.
  *
  * Used to gate mutex operations that are unsafe before the scheduler
  * is running.  Pre-kernel calls are single-threaded by construction,
  * so bypassing mutex protection in that phase is correct.
+ *
+ * tx_thread_identify() returns the current-thread pointer (TX_NULL
+ * until the scheduler dispatches its first thread).
+ * tx_application_define() runs BEFORE that first dispatch, so every
+ * mutex operation from inside it must be bypassed (this port hangs
+ * in tx_mutex_get pre-scheduler).  Once the scheduler is live, real
+ * mutex protection kicks in for all runtime callers (`with_bus`,
+ * `find_bus`, `remove_bus`).
  */
 static inline bool internal_scheduler_is_running(void)
 {
-  return _tx_thread_current_ptr != TX_NULL;
+  return (bool)(tx_thread_identify() != TX_NULL);
 }
 
 /**

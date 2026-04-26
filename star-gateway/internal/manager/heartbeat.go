@@ -262,7 +262,7 @@ func (hm *HeartbeatManager) OnPongReceived(payload []byte) bool {
 func (hm *HeartbeatManager) Run(ctx context.Context, tm *TransportManager) {
 	// Validate TransportManager is not nil (prevents panic in sendPing)
 	if tm == nil {
-		slog.Error("HeartbeatManager.Run called with nil TransportManager, exiting")
+		slog.ErrorContext(ctx, "HeartbeatManager.Run called with nil TransportManager, exiting")
 		return
 	}
 
@@ -333,13 +333,13 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 			lastSent := hm.lastPingSent // capture under lock to avoid race
 			hm.mu.Unlock()
 
-			slog.Warn("PONG miss",
+			slog.WarnContext(ctx, "PONG miss",
 				"counter", lastSent, "consecutive_misses", currentMisses,
 				"threshold", DefaultConsecutiveMissThreshold)
 
 			// Counter-based failure detection
 			if currentMisses >= DefaultConsecutiveMissThreshold {
-				slog.Warn("consecutive PONG misses, triggering failover",
+				slog.WarnContext(ctx, "consecutive PONG misses, triggering failover",
 					"misses", currentMisses, "threshold", DefaultConsecutiveMissThreshold)
 
 				hm.mu.Lock()
@@ -364,7 +364,7 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 	// links where no frames flow at all. Because failureTimeout (200ms) << pingInterval
 	// (1s), this fires first on a hard dead link. Only triggers once per failure.
 	if implicitElapsed > hm.failureTimeout && !alreadyTriggered {
-		slog.Warn("heartbeat timeout, triggering failover", "elapsed", implicitElapsed)
+		slog.WarnContext(ctx, "heartbeat timeout, triggering failover", "elapsed", implicitElapsed)
 
 		// Set flag BEFORE calling onLinkFailed to prevent race.
 		hm.mu.Lock()
@@ -409,7 +409,7 @@ func (hm *HeartbeatManager) sendPing(ctx context.Context, tm *TransportManager) 
 	defer cancel()
 
 	if err := tm.SendWithType(pingCtx, payload, frame.FrameTypePing); err != nil {
-		slog.Warn("PING send failed", "error", err, "counter", counter)
+		slog.WarnContext(ctx, "PING send failed", "error", err, "counter", counter)
 		// Don't set pendingPing - failed sends should not count as misses
 		return
 	}

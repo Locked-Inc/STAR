@@ -2329,10 +2329,10 @@ static rx_err_t internal_init_all_peripherals(void)
 #endif /* !RX_IS_SIMULATOR */
 
 /**
- * @brief Initialize all on-board peripherals after the clock tree is up
+ * @brief Initialize all on-board peripherals after the clock tree is up (implementation)
  *
  * @details
- * Top-level peripheral bring-up entry point.  Called once from rx_main()
+ * Top-level peripheral bring-up entry point. Called once from rx_main()
  * after the clock subsystem has been brought online (SCKCR3 != reset).
  *
  * On real hardware (RX_IS_SIMULATOR not defined) the function delegates to
@@ -2353,31 +2353,11 @@ static rx_err_t internal_init_all_peripherals(void)
  *
  * Under RX_IS_SIMULATOR the body of internal_init_all_peripherals() is
  * compiled out so the function only validates the clock pre/post-conditions
- * and returns success.  This lets the unit-test host run integration tests
+ * and returns success. This lets the unit-test host run integration tests
  * that exercise hardware_init() without touching simulated MMIO.
  *
- * @return rx_err_t Error code.
- * @retval k_rx_ok All configured peripherals initialized successfully (or
- *                 always returned under RX_IS_SIMULATOR).
- * @retval other   Propagated from internal_init_all_peripherals() if any
- *                 sub-initialization (GPIO, GPTW, POEG, timer, SPI, I2C,
- *                 ADC) failed.
- *
- * @pre System clock subsystem initialized (SCKCR3 != reset value).
- * @pre Called from supervisor/boot context before the ThreadX scheduler
- *      starts.
- *
- * @post On k_rx_ok: all configured peripherals are initialized and the
- *       clock register state has not been corrupted (post-condition assert).
- * @post On error: only a prefix of peripherals is initialized; the caller
- *       must not assume any particular peripheral is usable.
- *
- * @note Not thread-safe.  Designed to be called exactly once from
+ * @note Not thread-safe. Designed to be called exactly once from
  *       single-threaded boot context before the ThreadX scheduler starts.
- *
- * @see rx_main() Calls hardware_init() during boot.
- *
- * @since Version 1.0.0
  */
 rx_err_t hardware_init(void)
 {

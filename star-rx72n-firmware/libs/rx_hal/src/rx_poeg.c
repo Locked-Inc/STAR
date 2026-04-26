@@ -284,34 +284,15 @@ rx_err_t rx_poeg_init(void)
 }
 
 /**
- * @brief Read whether any latched POEG fault is currently set for a motor
+ * @brief Read latched POEG fault status (implementation)
  *
  * @details
  * Reads POEGGn for the specified motor's POEG group and checks the OR of
  * the three fault-source bits: PIDF (port input fault), IOCF (output
- * comparator fault), and OSTPF (over-stop signal fault).  Reports whether
+ * comparator fault), and OSTPF (over-stop signal fault). Reports whether
  * any of them are currently latched.
  *
- * @param[in]  motor_index  Motor index in [0, k_poeg_motor_count).
- * @param[out] fault_active Destination for the fault status (true if any
- *                          POEG fault bit is latched).
- *
- * @return rx_err_t Error code.
- * @retval k_rx_ok               Status read; *fault_active populated.
- * @retval k_rx_err_null_ptr     fault_active is NULL.
- * @retval k_rx_err_invalid_arg  motor_index >= k_poeg_motor_count.
- *
- * @pre rx_poeg_init() previously returned k_rx_ok.
- * @pre fault_active != NULL.
- * @pre motor_index < k_poeg_motor_count.
- *
- * @post On k_rx_ok: *fault_active true iff any latched fault is set.
- *
  * @note Safe from any context including ISR; single register read.
- *
- * @see rx_poeg_clear_fault() Acknowledge and clear a latched fault.
- *
- * @since Version 1.0.0
  */
 rx_err_t rx_poeg_get_fault_status(uint8_t motor_index, bool* fault_active)
 {
@@ -329,42 +310,19 @@ rx_err_t rx_poeg_get_fault_status(uint8_t motor_index, bool* fault_active)
 }
 
 /**
- * @brief Acknowledge and clear all latched POEG fault flags for one motor
+ * @brief Acknowledge and clear all latched POEG fault flags (implementation)
  *
  * @details
  * Reads POEGGn, masks off the PIDF / IOCF / OSTPF latched-fault bits, and
- * writes the result back.  Refuses to clear (returns k_rx_err_busy) while
+ * writes the result back. Refuses to clear (returns k_rx_err_busy) while
  * the underlying nFAULT pin is still active (POEGGn.ST==0 indicates
- * nFAULT still asserted under INV=1).  After a successful clear, also
+ * nFAULT still asserted under INV=1). After a successful clear, also
  * clears any driver-fault E-Stop in shared_data when applicable, so the
  * system can resume motor control if the underlying physical fault has
  * been cleared.
  *
- * @param[in] motor_index Motor index in [0, k_poeg_motor_count).
- *
- * @return rx_err_t Error code.
- * @retval k_rx_ok              Latched faults cleared and (if applicable)
- *                              driver-fault E-Stop cleared.
- * @retval k_rx_err_invalid_arg motor_index >= k_poeg_motor_count.
- * @retval k_rx_err_busy        Underlying nFAULT pin is still asserted.
- *
- * @pre rx_poeg_init() previously returned k_rx_ok.
- * @pre motor_index < k_poeg_motor_count.
- * @pre Underlying physical fault has been cleared (nFAULT high) before
- *      calling, otherwise the call returns k_rx_err_busy.
- *
- * @post On k_rx_ok: PIDF/IOCF/OSTPF cleared in POEGGn; if the global
- *       E-Stop reason was k_estop_reason_driver_fault, it has been
- *       cleared in shared_data.
- * @post On k_rx_err_busy: register state unchanged; physical fault still
- *       present.
- *
  * @note Not thread-safe with concurrent access to shared_data E-Stop
- *       fields.  Typically called from the safety supervisor task.
- *
- * @see rx_poeg_get_fault_status() Query latched fault state.
- *
- * @since Version 1.0.0
+ *       fields. Typically called from the safety supervisor task.
  */
 rx_err_t rx_poeg_clear_fault(uint8_t motor_index)
 {
@@ -396,32 +354,16 @@ rx_err_t rx_poeg_clear_fault(uint8_t motor_index)
 }
 
 /**
- * @brief Trigger a Software Stop on the POEG group of a specific motor
+ * @brief Trigger a Software Stop (implementation)
  *
  * @details
  * Sets POEGGn.SSF=1, force-disabling the GPTW outputs of the targeted
- * motor as if a hardware fault had occurred.  Does not touch the latched
+ * motor as if a hardware fault had occurred. Does not touch the latched
  * fault flags; once a Software Stop is set, the user must call
  * rx_poeg_clear_software_stop() to release.
  *
- * @param[in] motor_index Motor index in [0, k_poeg_motor_count).
- *
- * @return rx_err_t Error code.
- * @retval k_rx_ok              SSF set; outputs disabled.
- * @retval k_rx_err_invalid_arg motor_index >= k_poeg_motor_count.
- *
- * @pre rx_poeg_init() previously returned k_rx_ok.
- * @pre motor_index < k_poeg_motor_count.
- *
- * @post On k_rx_ok: POEGGn.SSF == 1; the motor's PWM outputs are
- *       hardware-disabled regardless of GPTW state.
- *
  * @note Safe from any context including ISR; single register write.
  *       Used by the safety supervisor for software-initiated E-Stop.
- *
- * @see rx_poeg_clear_software_stop() Release the SSF after recovery.
- *
- * @since Version 1.0.0
  */
 rx_err_t rx_poeg_software_stop(uint8_t motor_index)
 {
@@ -434,31 +376,14 @@ rx_err_t rx_poeg_software_stop(uint8_t motor_index)
 }
 
 /**
- * @brief Release a Software Stop set by rx_poeg_software_stop()
+ * @brief Release a Software Stop (implementation)
  *
  * @details
- * Reads POEGGn, clears the SSF bit, and writes the result back.  This
+ * Reads POEGGn, clears the SSF bit, and writes the result back. This
  * re-enables the GPTW outputs of the targeted motor (subject to any
  * hardware-latched fault flags still being cleared first).
  *
- * @param[in] motor_index Motor index in [0, k_poeg_motor_count).
- *
- * @return rx_err_t Error code.
- * @retval k_rx_ok              SSF cleared.
- * @retval k_rx_err_invalid_arg motor_index >= k_poeg_motor_count.
- *
- * @pre rx_poeg_init() previously returned k_rx_ok.
- * @pre motor_index < k_poeg_motor_count.
- * @pre No latched hardware fault remains (use rx_poeg_clear_fault() if
- *      needed) -- otherwise the GPTW outputs stay disabled.
- *
- * @post On k_rx_ok: POEGGn.SSF == 0.
- *
  * @note Safe from any context including ISR; single read-modify-write.
- *
- * @see rx_poeg_software_stop() Counterpart that sets the SSF bit.
- *
- * @since Version 1.0.0
  */
 rx_err_t rx_poeg_clear_software_stop(uint8_t motor_index)
 {

@@ -136,7 +136,7 @@ static void internal_usb_task_entry(ULONG input)
   for (;;) {
     rx_usb_isr_handler();
 
-    const bool do_tx = (tick % k_tx_every_n_tick) == 0U;
+    const bool do_tx = (bool)((tick % k_tx_every_n_tick) == 0U);
 
 #if (STAR_STRESS_PORTS) & 0x01U
     if (do_tx) {

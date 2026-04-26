@@ -628,6 +628,272 @@ TEST_F(ObstacleDistanceToRangeTest, StampPropagated)
   EXPECT_EQ(out.header.stamp.nanosec, 123456789u);
 }
 
+// =============================================================================
+// string_to_system_status Tests (JSON-keyword robot-mode parsing)
+// =============================================================================
+
+class StringToSystemStatusTest : public ::testing::Test {
+protected:
+  star_gateway_bridge::MessageConverter converter_;
+};
+
+TEST_F(StringToSystemStatusTest, ParsesManualMode)
+{
+  std_msgs::msg::String msg;
+  msg.data = "{\"mode\":\"MANUAL\"}";
+
+  star::v1::SystemStatus out;
+  ASSERT_TRUE(converter_.string_to_system_status(msg, out));
+
+  EXPECT_EQ(out.mode(), star::v1::ROBOT_MODE_MANUAL);
+  EXPECT_EQ(out.connection_status(), star::v1::CONNECTION_STATUS_CONNECTED);
+  EXPECT_TRUE(out.rx72n_connected());
+  EXPECT_TRUE(out.lidar_connected());
+  EXPECT_TRUE(out.ros_connected());
+}
+
+TEST_F(StringToSystemStatusTest, ParsesAutonomousMode)
+{
+  std_msgs::msg::String msg;
+  msg.data = "{\"mode\":\"AUTONOMOUS\"}";
+
+  star::v1::SystemStatus out;
+  ASSERT_TRUE(converter_.string_to_system_status(msg, out));
+  EXPECT_EQ(out.mode(), star::v1::ROBOT_MODE_AUTONOMOUS);
+}
+
+TEST_F(StringToSystemStatusTest, ParsesMappingMode)
+{
+  std_msgs::msg::String msg;
+  msg.data = "MAPPING_ACTIVE";
+
+  star::v1::SystemStatus out;
+  ASSERT_TRUE(converter_.string_to_system_status(msg, out));
+  EXPECT_EQ(out.mode(), star::v1::ROBOT_MODE_MAPPING);
+}
+
+TEST_F(StringToSystemStatusTest, ParsesEmergencyStopMode)
+{
+  std_msgs::msg::String msg;
+  msg.data = "{\"mode\":\"EMERGENCY_STOP\"}";
+
+  star::v1::SystemStatus out;
+  ASSERT_TRUE(converter_.string_to_system_status(msg, out));
+  EXPECT_EQ(out.mode(), star::v1::ROBOT_MODE_EMERGENCY_STOP);
+}
+
+TEST_F(StringToSystemStatusTest, UnknownStringFallsBackToIdle)
+{
+  std_msgs::msg::String msg;
+  msg.data = "totally_unrecognized_payload";
+
+  star::v1::SystemStatus out;
+  ASSERT_TRUE(converter_.string_to_system_status(msg, out));
+  EXPECT_EQ(out.mode(), star::v1::ROBOT_MODE_IDLE);
+}
+
+TEST_F(StringToSystemStatusTest, EmptyStringFallsBackToIdle)
+{
+  std_msgs::msg::String msg;
+  msg.data = "";
+
+  star::v1::SystemStatus out;
+  ASSERT_TRUE(converter_.string_to_system_status(msg, out));
+  EXPECT_EQ(out.mode(), star::v1::ROBOT_MODE_IDLE);
+}
+
+// =============================================================================
+// odometry_to_proto Tests (NaN sanitisation, yaw extraction)
+// =============================================================================
+
+class OdometryToProtoTest : public ::testing::Test {
+protected:
+  star_gateway_bridge::MessageConverter converter_;
+  static constexpr double TOL = 1e-6;
+};
+
+TEST_F(OdometryToProtoTest, NominalConversion)
+{
+  nav_msgs::msg::Odometry msg;
+  msg.header.stamp.sec = 100;
+  msg.header.stamp.nanosec = 500'000U;  // 500 us
+  msg.pose.pose.position.x = 1.5;
+  msg.pose.pose.position.y = -2.0;
+  // Identity quaternion -> yaw = 0
+  msg.pose.pose.orientation.w = 1.0;
+  msg.pose.pose.orientation.x = 0.0;
+  msg.pose.pose.orientation.y = 0.0;
+  msg.pose.pose.orientation.z = 0.0;
+  msg.twist.twist.linear.x = 0.5;
+  msg.twist.twist.angular.z = 0.25;
+
+  star::v1::OdometryData proto;
+  converter_.odometry_to_proto(msg, proto);
+
+  EXPECT_NEAR(proto.x_m(), 1.5, TOL);
+  EXPECT_NEAR(proto.y_m(), -2.0, TOL);
+  EXPECT_NEAR(proto.theta_rad(), 0.0, TOL);
+  EXPECT_NEAR(proto.linear_velocity_mps(), 0.5, TOL);
+  EXPECT_NEAR(proto.angular_velocity_rad_per_s(), 0.25, TOL);
+  // 100 sec * 1e6 us/sec + 500 us = 100,000,500 us
+  EXPECT_EQ(proto.timestamp_us(), 100'000'500LL);
+}
+
+TEST_F(OdometryToProtoTest, NaNPositionSanitisedToZero)
+{
+  // Per the @post in odometry_to_proto: non-finite position becomes 0.0.
+  nav_msgs::msg::Odometry msg;
+  msg.header.stamp.sec = 0;
+  msg.header.stamp.nanosec = 0U;
+  msg.pose.pose.position.x = std::numeric_limits<double>::quiet_NaN();
+  msg.pose.pose.position.y = std::numeric_limits<double>::infinity();
+  msg.pose.pose.orientation.w = 1.0;
+  msg.twist.twist.linear.x = std::numeric_limits<double>::quiet_NaN();
+  msg.twist.twist.angular.z = std::numeric_limits<double>::infinity();
+
+  star::v1::OdometryData proto;
+  converter_.odometry_to_proto(msg, proto);
+
+  EXPECT_NEAR(proto.x_m(), 0.0, TOL);
+  EXPECT_NEAR(proto.y_m(), 0.0, TOL);
+  EXPECT_NEAR(proto.linear_velocity_mps(), 0.0, TOL);
+  EXPECT_NEAR(proto.angular_velocity_rad_per_s(), 0.0, TOL);
+  EXPECT_TRUE(std::isfinite(proto.theta_rad()));
+}
+
+// =============================================================================
+// laserscan_to_proto Tests (downsampling + invalid-reading handling)
+// =============================================================================
+
+class LaserScanToProtoTest : public ::testing::Test {
+protected:
+  star_gateway_bridge::MessageConverter converter_;
+};
+
+TEST_F(LaserScanToProtoTest, RejectsEmptyRanges)
+{
+  sensor_msgs::msg::LaserScan scan;
+  scan.angle_min = -1.57F;
+  scan.angle_increment = 0.01F;
+  scan.range_min = 0.1F;
+  scan.range_max = 10.0F;
+  // Leave scan.ranges empty.
+
+  star::v1::LidarScan proto;
+  EXPECT_FALSE(converter_.laserscan_to_proto(scan, proto));
+}
+
+TEST_F(LaserScanToProtoTest, RejectsZeroAngleIncrement)
+{
+  sensor_msgs::msg::LaserScan scan;
+  scan.angle_min = -1.57F;
+  scan.angle_increment = 0.0F;  // invalid
+  scan.range_min = 0.1F;
+  scan.range_max = 10.0F;
+  scan.ranges = {1.0F, 1.0F, 1.0F};
+
+  star::v1::LidarScan proto;
+  EXPECT_FALSE(converter_.laserscan_to_proto(scan, proto));
+}
+
+TEST_F(LaserScanToProtoTest, RejectsRangeMinAboveRangeMax)
+{
+  sensor_msgs::msg::LaserScan scan;
+  scan.angle_min = -1.57F;
+  scan.angle_increment = 0.01F;
+  scan.range_min = 5.0F;
+  scan.range_max = 1.0F;  // inverted
+  scan.ranges = {1.0F, 2.0F, 3.0F};
+
+  star::v1::LidarScan proto;
+  EXPECT_FALSE(converter_.laserscan_to_proto(scan, proto));
+}
+
+TEST_F(LaserScanToProtoTest, NominalSmallScanFitsWithoutDownsample)
+{
+  // 10 samples; well under MAX_LIDAR_SAMPLES (500), stride should be 1.
+  sensor_msgs::msg::LaserScan scan;
+  scan.header.stamp.sec = 1;
+  scan.header.stamp.nanosec = 0U;
+  scan.angle_min = 0.0F;
+  scan.angle_increment = 0.1F;
+  scan.range_min = 0.1F;
+  scan.range_max = 10.0F;
+  scan.ranges = {1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F};
+  scan.intensities = {0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F};
+
+  star::v1::LidarScan proto;
+  ASSERT_TRUE(converter_.laserscan_to_proto(scan, proto));
+  EXPECT_EQ(proto.range_m_size(), 10);
+  EXPECT_EQ(proto.angle_rad_size(), 10);
+  EXPECT_EQ(proto.intensity_size(), 10);
+}
+
+TEST_F(LaserScanToProtoTest, InvalidReadingsEncodedAsZero)
+{
+  // NaN, +inf, and out-of-spec values must all be encoded as range=0.0.
+  sensor_msgs::msg::LaserScan scan;
+  scan.header.stamp.sec = 1;
+  scan.header.stamp.nanosec = 0U;
+  scan.angle_min = 0.0F;
+  scan.angle_increment = 0.1F;
+  scan.range_min = 0.5F;
+  scan.range_max = 10.0F;
+  scan.ranges = {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::infinity(),
+                 0.1F,  // below range_min
+                 1.5F};
+  scan.intensities = {0.0F, 0.0F, 0.0F, 0.7F};
+
+  star::v1::LidarScan proto;
+  ASSERT_TRUE(converter_.laserscan_to_proto(scan, proto));
+  EXPECT_EQ(proto.range_m_size(), 4);
+  EXPECT_FLOAT_EQ(proto.range_m(0), 0.0F);  // NaN -> 0
+  EXPECT_FLOAT_EQ(proto.range_m(1), 0.0F);  // inf -> 0
+  EXPECT_FLOAT_EQ(proto.range_m(2), 0.0F);  // below range_min -> 0
+  EXPECT_FLOAT_EQ(proto.range_m(3), 1.5F);  // valid passes through
+}
+
+TEST_F(LaserScanToProtoTest, DownsamplesToMaxLidarSamples)
+{
+  // 1500 ranges should be downsampled to <= 500 samples.
+  sensor_msgs::msg::LaserScan scan;
+  scan.header.stamp.sec = 1;
+  scan.header.stamp.nanosec = 0U;
+  scan.angle_min = -3.14F;
+  scan.angle_increment = 0.005F;
+  scan.range_min = 0.1F;
+  scan.range_max = 10.0F;
+  scan.ranges.assign(1500U, 1.0F);
+
+  star::v1::LidarScan proto;
+  ASSERT_TRUE(converter_.laserscan_to_proto(scan, proto));
+  // MAX_LIDAR_SAMPLES = 500 per message_converter.hpp.
+  EXPECT_LE(proto.range_m_size(), 500);
+  EXPECT_GT(proto.range_m_size(), 0);
+}
+
+TEST_F(LaserScanToProtoTest, MissingIntensitiesFilledWithZero)
+{
+  // intensities.size() < ranges.size() must fill missing entries with 0.0
+  // without erroring out.
+  sensor_msgs::msg::LaserScan scan;
+  scan.header.stamp.sec = 1;
+  scan.header.stamp.nanosec = 0U;
+  scan.angle_min = 0.0F;
+  scan.angle_increment = 0.1F;
+  scan.range_min = 0.1F;
+  scan.range_max = 10.0F;
+  scan.ranges = {1.0F, 2.0F, 3.0F};
+  // intensities deliberately left empty.
+
+  star::v1::LidarScan proto;
+  ASSERT_TRUE(converter_.laserscan_to_proto(scan, proto));
+  EXPECT_EQ(proto.intensity_size(), 3);
+  EXPECT_FLOAT_EQ(proto.intensity(0), 0.0F);
+  EXPECT_FLOAT_EQ(proto.intensity(1), 0.0F);
+  EXPECT_FLOAT_EQ(proto.intensity(2), 0.0F);
+}
+
 }  // namespace star
 
 int main(int argc, char ** argv)

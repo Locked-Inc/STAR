@@ -180,6 +180,169 @@ TEST_F(SpiDriverTest, EncodeRejectsOversizedPayload)
 }
 
 // ---------------------------------------------------------------------------
+// Round-11 audit: payload-length bounds check on the decode path
+// ---------------------------------------------------------------------------
+// The encoder caps payload at MAX_PAYLOAD_SIZE (1024 B), but the decoder
+// also has to reject crafted/corrupt frames whose LEN field claims more
+// bytes than the protocol allows.  Without this guard, a malicious sender
+// could trigger arithmetic on (HEADER_SIZE + len + CRC_SIZE) using an
+// out-of-spec len.  See spi_driver.cpp lines 364-369.
+// ---------------------------------------------------------------------------
+
+TEST_F(SpiDriverTest, DecodeRejectsLenAboveMaxPayloadSize)
+{
+  // Build a wire-shaped frame that is large enough to satisfy the
+  // size-equality check that runs after the bounds check, but with the LEN
+  // field set to MAX_PAYLOAD_SIZE + 1.  decode_frame must reject this on
+  // the bounds check before any size-equality math runs.
+  const uint16_t bogus_len = static_cast<uint16_t>(SpiDriver::MAX_PAYLOAD_SIZE + 1u);
+  std::vector<uint8_t> frame(SpiDriver::HEADER_SIZE + bogus_len + SpiDriver::CRC_SIZE, 0x00);
+
+  // Valid SYNC (0x55AA, little-endian on the wire as 0xAA, 0x55)
+  frame[0] = 0xAA;
+  frame[1] = 0x55;
+  // SEQ = 0
+  frame[2] = 0x00;
+  frame[3] = 0x00;
+  // LEN = MAX_PAYLOAD_SIZE + 1 (little-endian)
+  frame[4] = static_cast<uint8_t>(bogus_len & 0xFFu);
+  frame[5] = static_cast<uint8_t>((bogus_len >> 8u) & 0xFFu);
+  // TYPE / FLAGS
+  frame[6] = static_cast<uint8_t>(FrameType::Command);
+  frame[7] = 0x00;
+
+  // Even with a valid CRC over header + payload, the decoder must reject
+  // because len exceeds MAX_PAYLOAD_SIZE.
+  std::vector<uint8_t> to_crc(frame.begin(), frame.end() - SpiDriver::CRC_SIZE);
+  const uint32_t crc = SpiDriver::calculate_crc32(to_crc);
+  frame[frame.size() - 4] = static_cast<uint8_t>(crc & 0xFFu);
+  frame[frame.size() - 3] = static_cast<uint8_t>((crc >> 8u) & 0xFFu);
+  frame[frame.size() - 2] = static_cast<uint8_t>((crc >> 16u) & 0xFFu);
+  frame[frame.size() - 1] = static_cast<uint8_t>((crc >> 24u) & 0xFFu);
+
+  uint16_t seq = 0;
+  FrameType type = FrameType::Response;
+  uint8_t flags = 0;
+  std::vector<uint8_t> payload;
+
+  // Must return false (no crash, no buffer overflow, no size-mismatch path).
+  EXPECT_FALSE(SpiDriver::decode_frame(frame, seq, type, flags, payload));
+}
+
+TEST_F(SpiDriverTest, DecodeRejectsMaxLenU16Pathological)
+{
+  // Worst-case LEN field: 0xFFFF.  Without the round-11 bounds check, the
+  // size-equality test (frame.size() == HEADER_SIZE + len + CRC_SIZE) would
+  // fail anyway because no realistic frame is 65547 bytes -- but we still
+  // exercise the explicit guard with an undersized buffer to make sure the
+  // decoder does not read past the frame end while computing the expected
+  // size.  This protects against out-of-bounds reads in pathological inputs.
+  std::vector<uint8_t> frame(SpiDriver::HEADER_SIZE + SpiDriver::CRC_SIZE, 0x00);
+  frame[0] = 0xAA;
+  frame[1] = 0x55;
+  frame[2] = 0x00;
+  frame[3] = 0x00;
+  frame[4] = 0xFFu;  // LEN LSB
+  frame[5] = 0xFFu;  // LEN MSB -> 0xFFFF = 65535
+  frame[6] = static_cast<uint8_t>(FrameType::Command);
+  frame[7] = 0x00;
+  // CRC bytes left at zero -- decoder must reject before checking CRC.
+
+  uint16_t seq = 0;
+  FrameType type = FrameType::Response;
+  uint8_t flags = 0;
+  std::vector<uint8_t> payload;
+
+  EXPECT_FALSE(SpiDriver::decode_frame(frame, seq, type, flags, payload));
+  // Output payload is left untouched (still empty) on failure.
+  EXPECT_TRUE(payload.empty());
+}
+
+TEST_F(SpiDriverTest, DecodeAcceptsLenAtMaxPayloadBoundary)
+{
+  // Boundary case: len == MAX_PAYLOAD_SIZE must be accepted (the bounds
+  // check uses '>', not '>=').  Round-trip a max-sized payload to confirm.
+  std::vector<uint8_t> payload_in(SpiDriver::MAX_PAYLOAD_SIZE, 0x5A);
+  std::vector<uint8_t> frame;
+  SpiDriver::encode_frame(99, FrameType::Command, 0x00, payload_in, frame);
+
+  uint16_t seq = 0;
+  FrameType type = FrameType::Response;
+  uint8_t flags = 0;
+  std::vector<uint8_t> payload_out;
+
+  ASSERT_TRUE(SpiDriver::decode_frame(frame, seq, type, flags, payload_out));
+  EXPECT_EQ(seq, 99u);
+  EXPECT_EQ(type, FrameType::Command);
+  EXPECT_EQ(payload_out.size(), SpiDriver::MAX_PAYLOAD_SIZE);
+  EXPECT_EQ(payload_out, payload_in);
+}
+
+// ---------------------------------------------------------------------------
+// Decoder negative-path coverage: SYNC word, undersized buffers, length mismatch
+// ---------------------------------------------------------------------------
+
+TEST_F(SpiDriverTest, DecodeRejectsTooShortFrame)
+{
+  // Anything shorter than HEADER_SIZE + CRC_SIZE (12 B) must be rejected.
+  std::vector<uint8_t> frame(SpiDriver::HEADER_SIZE + SpiDriver::CRC_SIZE - 1u, 0xAA);
+
+  uint16_t seq = 0;
+  FrameType type = FrameType::Response;
+  uint8_t flags = 0;
+  std::vector<uint8_t> payload;
+
+  EXPECT_FALSE(SpiDriver::decode_frame(frame, seq, type, flags, payload));
+}
+
+TEST_F(SpiDriverTest, DecodeRejectsBadSyncWord)
+{
+  std::vector<uint8_t> payload = {0x42};
+  std::vector<uint8_t> frame;
+  SpiDriver::encode_frame(1, FrameType::Command, 0x00, payload, frame);
+
+  // Corrupt the SYNC word (offsets 0,1)
+  frame[0] = 0xDE;
+  frame[1] = 0xAD;
+
+  uint16_t seq = 0;
+  FrameType type = FrameType::Response;
+  uint8_t flags = 0;
+  std::vector<uint8_t> decoded_payload;
+
+  EXPECT_FALSE(SpiDriver::decode_frame(frame, seq, type, flags, decoded_payload));
+}
+
+TEST_F(SpiDriverTest, DecodeRejectsLenMismatch)
+{
+  // LEN field claims 5 bytes but frame is sized for 1-byte payload.  The
+  // bounds check passes (5 < MAX_PAYLOAD_SIZE) so the size-equality check
+  // at line 373 is what must reject this frame.
+  std::vector<uint8_t> payload = {0x99};
+  std::vector<uint8_t> frame;
+  SpiDriver::encode_frame(2, FrameType::Command, 0x00, payload, frame);
+
+  // Bump LEN from 1 to 5 (LE)
+  frame[4] = 0x05;
+  frame[5] = 0x00;
+
+  // Recompute CRC so only the size mismatch can cause rejection.
+  std::vector<uint8_t> to_crc(frame.begin(), frame.end() - SpiDriver::CRC_SIZE);
+  const uint32_t crc = SpiDriver::calculate_crc32(to_crc);
+  frame[frame.size() - 4] = static_cast<uint8_t>(crc & 0xFFu);
+  frame[frame.size() - 3] = static_cast<uint8_t>((crc >> 8u) & 0xFFu);
+  frame[frame.size() - 2] = static_cast<uint8_t>((crc >> 16u) & 0xFFu);
+  frame[frame.size() - 1] = static_cast<uint8_t>((crc >> 24u) & 0xFFu);
+
+  uint16_t seq = 0;
+  FrameType type = FrameType::Response;
+  uint8_t flags = 0;
+  std::vector<uint8_t> decoded_payload;
+
+  EXPECT_FALSE(SpiDriver::decode_frame(frame, seq, type, flags, decoded_payload));
+}
+
+// ---------------------------------------------------------------------------
 // FrameFlags bitwise operator tests
 // ---------------------------------------------------------------------------
 // All valid flag bits are in [0, 4] (mask 0x1F). Bits 5-7 are reserved and

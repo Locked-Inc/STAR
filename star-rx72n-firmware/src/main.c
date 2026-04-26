@@ -274,8 +274,10 @@ typedef enum : uint8_t {
 static_assert(sizeof(imu_i2c_addr_t) == sizeof(uint8_t), "imu_i2c_addr_t must be uint8_t sized");
 static_assert(k_i2c_addr_bno055 != k_i2c_addr_bmp280,
               "k_i2c_addr_bno055 and k_i2c_addr_bmp280 must be distinct");
-static_assert(k_i2c_addr_mpu6050 != k_i2c_addr_bno055 && k_i2c_addr_mpu6050 != k_i2c_addr_bmp280,
-              "k_i2c_addr_mpu6050 must be distinct from other RIIC1 addresses");
+static_assert(k_i2c_addr_mpu6050 != k_i2c_addr_bno055,
+              "k_i2c_addr_mpu6050 must be distinct from k_i2c_addr_bno055");
+static_assert(k_i2c_addr_mpu6050 != k_i2c_addr_bmp280,
+              "k_i2c_addr_mpu6050 must be distinct from k_i2c_addr_bmp280");
 
 /* =============================================================================
  * Static Bus Configurations
@@ -994,6 +996,36 @@ static void internal_dflash_exit_pe(volatile uint16_t* fentryr)
   }
 }
 
+/**
+ * @brief End-to-end bench-test write of {magic, who_am_i, err} to data flash
+ *
+ * @details
+ * Composes the five FCU helpers (clock setup -> P/E enter -> erase -> program ->
+ * P/E exit) so the MPU-6050 WHO_AM_I bench probe can persist its result to data
+ * flash @ k_dflash_probe_addr.  The 4-byte payload is recoverable via
+ * `rfp-cli -rv 0x00100000 16` without needing the UART bridge.
+ *
+ * @param[in] who_am_i Byte read from MPU-6050 WHO_AM_I register (0x68 expected)
+ * @param[in] err Probe result code (0 on success; lower byte stored on failure)
+ *
+ * @pre `rx_clock_power_init()` ran (PCLKB / FCLK at 60 MHz)
+ * @pre Single-threaded pre-scheduler context (FCU access is non-reentrant)
+ *
+ * @post 4 bytes at `k_dflash_probe_addr` programmed with sentinel + result
+ * @post FCU returned to read mode; data-flash readable via normal CPU loads
+ *
+ * @note Bench-only diagnostic; runs unconditionally during system bus
+ *       registration.  Best-effort: failures inside the FCU sequence are not
+ *       propagated (the loop bounds in fcu_poll_iters_t cap the worst case).
+ *
+ * @see internal_dflash_setup_clock() Step 1: FWEPROR + FPCKAR
+ * @see internal_dflash_enter_pe() Step 2: enter P/E mode
+ * @see internal_dflash_erase_block() Step 3: erase target block
+ * @see internal_dflash_program_payload() Step 4: program 4-byte payload
+ * @see internal_dflash_exit_pe() Step 5: exit P/E mode
+ *
+ * @since Version 1.0.0
+ */
 static void internal_bench_dflash_write(uint8_t who_am_i, int32_t err)
 {
   volatile uint32_t* const fstatr  = (volatile uint32_t*)k_dflash_addr_fstatr;
@@ -2450,6 +2482,37 @@ static void internal_probe_mpu6050_who_am_i(void)
   internal_bench_dflash_write(who_am_i, probe_err);
 }
 
+/**
+ * @brief Register every production hardware bus with the global bus manager
+ *
+ * @details
+ * Composes the per-bus registration helpers in the order tasks consume them:
+ *   1. `onewire0` (P51)        -- DS18B20 temperature sensor
+ *   2. `gpio` (P00 placeholder) -- generic GPIO abstraction for motor drivers
+ *   3. `motor[0..3]_current`   -- four S12AD0 channels (AN004-7) for IPROPI
+ *   4. `i2c1_imu` (RIIC1, 0x28) -- BNO055 9-DOF
+ *   5. `i2c1_baro` (RIIC1, 0x76) -- BMP280 baro
+ *
+ * Trailing call to `internal_probe_mpu6050_who_am_i()` is a bench-only
+ * diagnostic that runs unconditionally; missing hardware logs an error and
+ * continues without asserting.
+ *
+ * @pre `internal_init_bus_manager()` completed (g_bus_manager initialized)
+ * @pre Static config storage zero-initialised (BSS)
+ *
+ * @post All five production buses registered and ready for task use
+ * @post Bench-test MPU-6050 probe attempted; result persisted to data flash
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see internal_register_onewire0_bus()
+ * @see internal_register_gpio_bus()
+ * @see internal_register_motor_current_adc_buses()
+ * @see internal_register_riic1_device()
+ * @see internal_probe_mpu6050_who_am_i() Bench-only diagnostic
+ *
+ * @since Version 1.0.0
+ */
 static void internal_register_system_buses(void)
 {
   /* Production buses required by tasks. */
@@ -2582,40 +2645,6 @@ static void internal_register_iwdt_tasks(void)
   RX_ASSERT(err == k_rx_ok, "IWDT set init state must succeed");
 }
 
-/**
- * @brief Create all eight application tasks and transition to running state
- *
- * @details
- * Creates all eight ThreadX tasks in dependency-aware order (lowest priority
- * first, except Watchdog Monitor which follows Communication for logical
- * grouping). Tasks do not begin executing until tx_application_define()
- * returns and the scheduler starts. After all tasks are created, the IWDT
- * system state transitions to k_system_state_running.
- *
- * Task creation order:
- * 1. Telemetry (priority 18, lowest)
- * 2. LED Status (priority 17)
- * 3. Temperature Sensor (priority 15)
- * 4. IMU (priority 13, BNO055 + BMP280)
- * 5. Obstacle Detection (priority 12)
- * 6. Motor Control (priority 8)
- * 7. Communication (priority 5)
- * 8. Watchdog Monitor (priority 6)
- *
- * @pre internal_register_iwdt_tasks() completed (all tasks registered for monitoring)
- * @pre Static task stacks allocated in each task module
- *
- * @post All eight ThreadX threads created in READY state
- * @post IWDT system state set to k_system_state_running (2s timeout)
- *
- * @note Executes in single-threaded context (scheduler not started). No synchronization needed.
- * @note Tasks do not begin executing until tx_application_define() returns.
- *
- * @see telemetry_task_create() through watchdog_monitor_task_create()
- * @see rx_iwdt_set_state() Transitions to running state after task creation
- *
- * @since Version 1.0.0
- */
 /**
  * @brief Create the low-priority observability tasks (serial bring-up + LED status)
  *
@@ -2793,6 +2822,31 @@ static void internal_set_iwdt_running_state(void)
   RX_ASSERT(err == k_rx_ok, "IWDT set running state must succeed");
 }
 
+/**
+ * @brief Create every application task and transition the IWDT to running state
+ *
+ * @details
+ * Composes the three task-creation helpers (observability -> sensor/motor ->
+ * infrastructure) in the only order the priority hierarchy allows, then
+ * transitions the IWDT state machine to `k_system_state_running` (2-second
+ * timeout).  Tasks do not begin executing until `tx_application_define()`
+ * returns and the scheduler starts.
+ *
+ * @pre `internal_register_iwdt_tasks()` completed (heartbeat slots reserved)
+ * @pre Per-task static stacks defined in their respective task modules
+ *
+ * @post All currently-enabled tasks created in READY state
+ * @post IWDT system state set to `k_system_state_running` (2 s timeout)
+ *
+ * @note Executes single-threaded before scheduler start; no synchronization needed.
+ *
+ * @see internal_create_observability_tasks() Pri 17/18 -- LED + serial bring-up
+ * @see internal_create_sensor_and_motor_tasks() Pri 8/13 -- IMU + motor control
+ * @see internal_create_infrastructure_tasks() Pri 4/6 -- USB CDC + watchdog mon
+ * @see internal_set_iwdt_running_state() IWDT state-machine transition
+ *
+ * @since Version 1.0.0
+ */
 static void internal_create_system_tasks(void)
 {
   internal_create_observability_tasks();
@@ -2934,6 +2988,11 @@ static void internal_init_stack_monitor(void)
  *
  * @test test_main.c Verify thread creation and scheduler startup
  */
+/* ThreadX kernel ABI: tx_kernel_enter() resolves this symbol at link time via the
+ * ThreadX library, so the function MUST have external linkage.  The clang-tidy
+ * mock build doesn't include the real tx_api.h declaration of tx_application_define,
+ * which is what triggers the misc-use-internal-linkage false positive below. */
+// NOLINTNEXTLINE(misc-use-internal-linkage)
 void tx_application_define(void* first_unused_memory)
 {
   /* Precondition: first_unused_memory parameter is provided by ThreadX */

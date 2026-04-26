@@ -613,7 +613,7 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 			// Skip NACK send if context is already cancelled.
 			if ctx.Err() == nil {
 				if nackErr := s.sendNack(ctx, crcErr.Sequence); nackErr != nil {
-					slog.Warn("failed to send NACK for CRC failure",
+					slog.WarnContext(ctx, "failed to send NACK for CRC failure",
 						"seq", crcErr.Sequence, "error", nackErr)
 				}
 			}
@@ -645,7 +645,7 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 		// Skip ACK resend if context is cancelled (graceful shutdown in progress)
 		if ctx.Err() == nil {
 			if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
-				slog.Warn("failed to resend ACK for duplicate",
+				slog.WarnContext(ctx, "failed to resend ACK for duplicate",
 					"seq", f.Header.Sequence, "error", err)
 			}
 		}
@@ -666,7 +666,7 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 			// Skip NACK send if context is cancelled
 			if ctx.Err() == nil {
 				if nackErr := s.sendNack(ctx, f.Header.Sequence); nackErr != nil {
-					slog.Warn("failed to send NACK for FEC decode failure",
+					slog.WarnContext(ctx, "failed to send NACK for FEC decode failure",
 						"seq", f.Header.Sequence, "error", nackErr)
 				}
 			}
@@ -686,7 +686,7 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 				// Don't fail receive if ACK send fails
 				// We successfully decoded the payload, just log the error
 				// Sender will timeout and retransmit, we'll send ACK again
-				slog.Warn("ACK send failed (payload decoded successfully)",
+				slog.WarnContext(ctx, "ACK send failed (payload decoded successfully)",
 					"seq", f.Header.Sequence, "error", err)
 			}
 		}
