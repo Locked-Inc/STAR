@@ -1,0 +1,65 @@
+% =============================================================================
+% STAR Proto Combined PDF -- bundles the Protocol Buffer schema source
+% listing. Built by `make combined-proto`; emitted as
+% docs/STAR_Proto_Combined.pdf.
+%
+% Build: pdflatex -interaction=nonstopmode combine_proto.tex
+% =============================================================================
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{pdfpages}
+\usepackage[bookmarks=true,bookmarksopen=true,bookmarksnumbered=true,colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+
+\hypersetup{
+  pdftitle={STAR Proto Combined PDF},
+  pdfauthor={STAR Development Team -- Locked Inc.},
+  pdfsubject={Protocol Buffer schemas (proto3) for UI/Gateway/ROS2/Firmware},
+  pdfkeywords={STAR, protobuf, proto3, nanopb}
+}
+
+\title{\Huge\bfseries STAR Proto\\[0.4em]\Large Combined PDF}
+\author{STAR Development Team \\ Locked Inc.}
+\date{Version 1.1 \\ April 2026 \\ MIT License}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{2.5cm}
+
+{\Huge\bfseries STAR Protocol Buffers\par}
+\vspace{0.3cm}
+{\LARGE Combined PDF\par}
+\vspace{0.3cm}
+{\large proto3 schemas: UI / Gateway / ROS2 / RX72N firmware\par}
+
+\vfill
+
+{\large Version 1.1\par}
+{\large April 2026\par}
+\vspace{0.4cm}
+{\large MIT License\par}
+
+\vfill
+
+{\normalsize STAR Development Team\\Locked Inc.\par}
+\vspace{0.8cm}
+
+{\small\itshape Bundles the syntax-highlighted source listing for the
+\texttt{star.v1} Protocol Buffer schemas: \texttt{common},
+\texttt{configuration}, \texttt{controller}, \texttt{diagnostics},
+\texttt{firmware\_update}, \texttt{gateway\_service},
+\texttt{motor\_control}, \texttt{telemetry}, \texttt{ui},
+\texttt{wire}. Generated bindings (Go / TypeScript / nanopb) are
+excluded -- see the per-language combined PDFs.\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,part,1,Protocol Buffer Schemas,part:proto
+}]{/Users/bsikar/Documents/github/STAR/docs/pdfs/proto/STAR_Proto.pdf}
+
+\end{document}

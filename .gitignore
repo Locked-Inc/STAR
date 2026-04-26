@@ -224,9 +224,15 @@ CMakeUserPresets.json
 /virtual_rx72n
 /star-gateway/virtual_rx72n
 
-# Combined PDFs (rebuild via 'make combined-firmware' / 'make combined-reference')
+# Combined PDFs (rebuild via 'make combined-*' / 'make combined-reference')
 docs/STAR_Firmware_Combined.pdf
 docs/STAR_Combined_Reference.pdf
+docs/STAR_Gateway_Combined.pdf
+docs/STAR_ROS2_Combined.pdf
+docs/STAR_Compliance_Combined.pdf
+docs/STAR_UI_Combined.pdf
+docs/STAR_Proto_Combined.pdf
+docs/STAR_MATLAB.pdf
 docs/combine.pdf
 docs/combine.aux
 docs/combine.log
@@ -237,3 +243,37 @@ docs/combine_firmware.aux
 docs/combine_firmware.log
 docs/combine_firmware.out
 docs/combine_firmware.toc
+docs/combine_gateway.pdf
+docs/combine_gateway.aux
+docs/combine_gateway.log
+docs/combine_gateway.out
+docs/combine_gateway.toc
+docs/combine_ros2.pdf
+docs/combine_ros2.aux
+docs/combine_ros2.log
+docs/combine_ros2.out
+docs/combine_ros2.toc
+docs/combine_compliance.pdf
+docs/combine_compliance.aux
+docs/combine_compliance.log
+docs/combine_compliance.out
+docs/combine_compliance.toc
+docs/combine_ui.pdf
+docs/combine_ui.aux
+docs/combine_ui.log
+docs/combine_ui.out
+docs/combine_ui.toc
+docs/combine_proto.pdf
+docs/combine_proto.aux
+docs/combine_proto.log
+docs/combine_proto.out
+docs/combine_proto.toc
+
+# Per-subsystem source-listing PDFs (rebuild via 'make pdfs-*')
+docs/pdfs/
+
+# UI screenshot tooling -- the captured PNGs ARE committed (downstream PDF
+# generators embed them); only the puppeteer-core scratch install is ignored.
+.cache/ui-capture/
+!docs/ui-screenshots/
+!docs/ui-screenshots/*.png
