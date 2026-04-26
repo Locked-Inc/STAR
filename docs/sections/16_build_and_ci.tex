@@ -78,6 +78,23 @@ selection:
 \end{tabular}
 \end{center}
 
+\subsection{Build-time feature flags}
+
+A small set of CMake options gate non-default behaviour. Pass them with
+\texttt{-D<NAME>=ON} on the configure line.
+
+\begin{center}
+\begin{tabular}{|p{5.0cm}|p{2.0cm}|p{7.5cm}|}
+\hline
+\textbf{Flag}                       & \textbf{Default} & \textbf{Effect}                                                                                                   \\
+\hline
+\texttt{STAR\_BENCH\_PROBES}        & OFF             & Compile in the bench-only MPU-6050 WHO\_AM\_I probe and the data-flash erase/program self-test in
+                                                       \texttt{src/main.c}. Default OFF so production boots do not write data-flash on every reset.                                       \\
+\texttt{ENABLE\_CLANG\_TIDY}        & OFF             & Run \texttt{clang-tidy} as part of the host test build (matches the CI \texttt{clang-tidy (SEI CERT C)} workflow).\\
+\hline
+\end{tabular}
+\end{center}
+
 \subsection{Per-subproject build}
 
 \begin{center}

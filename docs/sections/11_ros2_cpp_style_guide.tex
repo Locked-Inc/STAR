@@ -159,7 +159,7 @@ Source files use the \texttt{.cpp} extension with \texttt{under\_scored} naming:
 \subsection{Header Organization}
 
 Headers must be organized in a standard order (enforced by
-\texttt{.clang-format}):
+\texttt{ament\_cpplint}, ROS2's official include-order checker):
 
 \begin{enumerate}
 \item License and copyright
@@ -180,9 +180,17 @@ See CLAUDE.md for complete example.
 \subsubsection{Line Length}
 
 \begin{itemize}
-\item \textbf{ROS2 C++}: 120 characters (\texttt{star-ros2/.clang-format})
+\item \textbf{ROS2 C++}: 100 characters (enforced by
+\texttt{ament\_uncrustify}, ROS2's official formatter)
 \item \textbf{C firmware}: 100 characters
 (\texttt{star-rx72n-firmware/.clang-format}) \end{itemize}
+
+\textbf{Note:} The ROS2 packages do NOT carry a \texttt{star-ros2/.clang-format}
+file. ROS2 uses \texttt{ament\_uncrustify} (uncrustify with a bundled
+\texttt{ament\_code\_style.cfg}) and \texttt{ament\_cpplint}, NOT clang-format.
+Running clang-format on \texttt{star-ros2/} sources will introduce drift that
+\texttt{ament\_uncrustify --check} rejects in CI. To format ROS2 code locally,
+source ROS2 and run \texttt{./scripts/ros2/format-ros2.sh}.
 
 \subsubsection{Indentation}
 

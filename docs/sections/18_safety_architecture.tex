@@ -180,6 +180,20 @@ estop when any threshold breaches. The \texttt{on\_shutdown}
 callback gracefully publishes \texttt{/star/estop=true} as a final
 "safe stop" before exit.
 
+\textbf{Reconfigurability:} \texttt{on\_cleanup()} is required by REP-2003
+to leave the node in a state where a subsequent \texttt{on\_configure()}
+succeeds. The implementation \texttt{undeclare\_parameter()}s all 12
+declared parameters in addition to releasing publishers, subscribers
+and the bond -- otherwise the second \texttt{declare\_parameter()} call
+would throw \texttt{AlreadyDeclaredParameterException}.
+
+\textbf{Safe-rate guard:} \texttt{on\_activate()} clamps
+\texttt{publish\_rate} to a $\geq 0.1\,\text{Hz}$ floor (10 s monitoring
+period) and rejects \texttt{NaN}/$\pm\infty$. A user override of $0.0$
+would otherwise produce a 0 ms timer (busy-spin) via the
+$1000.0/\text{publish\_rate}$ division -- the safety monitor must
+never be the cause of a CPU peg. The default rate is $10\,\text{Hz}$.
+
 \subsection{Where to look in code}
 
 \begin{center}

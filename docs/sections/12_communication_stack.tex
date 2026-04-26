@@ -76,9 +76,9 @@ is ECC-free and sensitive to motor-driver EMI.
 
 The USB CDC composite device dedicates port 3 to firmware runtime
 logs, so log lines never share a byte stream with framed protocol
-data on USB. On the SCI9 UART path -- which is single-port -- and on
-the SPI path, log frames are inlined into the same byte stream as
-protobuf frames and distinguished by the TYPE byte:
+data on USB. On the SCI9 UART path -- which is single-port -- log
+frames are inlined into the same byte stream as protobuf frames and
+distinguished by the TYPE byte:
 
 \begin{itemize}
   \item TYPE $\in \{0x10, 0x11, 0xFF, \ldots\}$: application or control
@@ -88,6 +88,14 @@ protobuf frames and distinguished by the TYPE byte:
         extracts the payload and writes it to its own log stream with a
         \texttt{[RX72N]} prefix.
 \end{itemize}
+
+\textbf{SPI does NOT carry log frames.} The firmware sets
+\texttt{channel = k\_comm\_channel\_uart} on every log emission in
+\texttt{comm\_task.c}, and the ROS2 SPI driver's
+\texttt{is\_valid\_frame\_type()} rejects \texttt{0x20} on the SPI wire
+(see \texttt{star\_spi\_bridge/src/spi\_driver.cpp}). Use UART or the
+USB CDC log port for runtime log capture; SPI is reserved for
+protobuf command/response and HARQ control frames only.
 
 There is no risk of the sync word \texttt{0x55AA} appearing inside log
 text and fooling the decoder because log bytes never leave the framing
