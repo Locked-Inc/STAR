@@ -192,7 +192,6 @@
 #include "hardware.h"
 #include "rx72n_regs.h"
 #include "rx_check.h"
-#include "tx_api.h"
 
 /* Interrupt handler forward declaration (required for -Wmissing-declarations) */
 void __attribute__((interrupt)) cmt0_isr(void);

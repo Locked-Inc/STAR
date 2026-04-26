@@ -167,7 +167,6 @@
 
 #include "rx_wdt.h"
 
-#include "rx72n_system_regs.h"
 #include "rx72n_wdt_regs.h"
 
 /* =============================================================================

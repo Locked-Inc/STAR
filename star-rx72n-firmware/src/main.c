@@ -183,20 +183,15 @@
 #include "rx_err.h"
 #include "rx_infrastructure.h"
 #include "rx_nanopb.h"
-#include "rx_port_utils.h"
 #include "rx_usb.h"
 #include "tx_api.h"
 
 /* Multi-task architecture includes */
-#include "comm_task.h"
 #include "imu_task.h"
 #include "led_status_task.h"
 #include "motor_control_task.h"
-#include "obstacle_detect_task.h"
 #include "serial_bringup_task.h"
 #include "shared_data.h"
-#include "telemetry_task.h"
-#include "temp_sensor_task.h"
 #include "usb_task.h"
 #include "watchdog_monitor_task.h"
 

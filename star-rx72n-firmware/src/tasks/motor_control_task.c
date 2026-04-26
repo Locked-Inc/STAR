@@ -381,7 +381,6 @@
 #include "rx72n_mtu_regs.h" /* mtu1/mtu2/mtu_tstra */
 #include "rx72n_tpu_regs.h" /* tpu1/tpu2/tpu_control */
 #include "rx_bus_adc.h"
-#include "rx_bus_manager.h"
 #include "rx_check.h"
 #include "rx_drv8263.h"
 #include "rx_encoder_tpu.h"

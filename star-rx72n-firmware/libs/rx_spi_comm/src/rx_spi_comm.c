@@ -303,7 +303,6 @@
 
 #include "hardware.h"
 #include "rx_crc.h"
-#include "rx_threadx_config.h"
 #include "rx_time_constants.h"
 
 #ifdef __RX__

@@ -196,7 +196,6 @@
 
 #include "hardware.h"
 #include "rx72n_icu_regs.h"
-#include "rx72n_sci_regs.h"
 #include "rx72n_system_regs.h"
 #include "rx_check.h"
 #include "rx_err.h"

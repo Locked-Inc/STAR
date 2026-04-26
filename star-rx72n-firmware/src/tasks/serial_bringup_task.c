@@ -153,6 +153,22 @@ typedef enum : uint8_t {
 } serial_ascii_t;
 
 /**
+ * @enum serial_sci_ssr_mask_t
+ * @brief SCI9 SSR sticky receive-error mask (FER|PER|ORER)
+ *
+ * @details
+ * Per RX72N HUM 34.2.7, SSR bits 3 (PER), 4 (FER), 5 (ORER) latch on a
+ * receive framing/parity/overrun error and prevent RDRF from re-asserting
+ * until cleared. The init path read-modify-writes SSR with this mask
+ * inverted to clear all three flags while preserving TDRE/RDRF/TEND.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_sci_ssr_rx_err_mask = 0x38, /**< ORER|FER|PER bits (5..3) -- sticky RX error flags */
+} serial_sci_ssr_mask_t;
+
+/**
  * @enum serial_motor_slot_t
  * @brief Wire-order motor slots parsed from "V fl fr bl br"
  *
@@ -355,12 +371,13 @@ static void internal_drain_rx(void)
   /* Clear sticky SCI9 RX error flags (FER/PER/ORER) so RDRF can latch.
    * Without this, a single framing error during boot/enum locks the
    * receiver -- the RXI9 ISR never fires and the ring stays empty.
-   * Bit mask 0x38 = ORER|FER|PER per RX72N HUM 34.2.7. Read-modify-write
-   * of SSR with the error bits cleared (TDRE/RDRF/TEND preserved). */
+   * Mask k_sci_ssr_rx_err_mask = ORER|FER|PER per RX72N HUM 34.2.7.
+   * Read-modify-write of SSR with the error bits cleared
+   * (TDRE/RDRF/TEND preserved). */
   {
     const uint8_t ssr = sci9()->ssr;
-    if ((ssr & 0x38U) != 0U) {
-      sci9()->ssr = (uint8_t)(ssr & ~0x38U);
+    if ((ssr & k_sci_ssr_rx_err_mask) != 0U) {
+      sci9()->ssr = (uint8_t)(ssr & (uint8_t)~k_sci_ssr_rx_err_mask);
     }
   }
 

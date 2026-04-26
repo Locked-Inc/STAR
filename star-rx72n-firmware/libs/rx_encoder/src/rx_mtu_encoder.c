@@ -369,7 +369,6 @@
 #include "rx72n_regs.h"
 #endif
 #include "rx_check.h"
-#include "rx_gpio_constants.h"
 #include "rx_log.h"
 #include "rx_register_protection.h"
 

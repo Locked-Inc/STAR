@@ -198,8 +198,6 @@
 
 #include <assert.h>
 
-#include "rx_gpio_constants.h"
-
 #ifdef __RX__
 #include "rx72n_regs.h"
 #endif

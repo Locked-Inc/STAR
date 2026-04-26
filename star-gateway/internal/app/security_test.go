@@ -174,6 +174,71 @@ func TestResolveStrictOriginChecking_TruthyFalseyVariants(t *testing.T) {
 	}
 }
 
+// TestIsFalsey covers the input-parsing helpers used by audit F-02.
+// We exercise each supported synonym, the empty-string case (which must
+// be reported as not-falsey because LookupEnv distinguishes set-empty
+// from unset), case folding, surrounding whitespace, and a value the
+// helper must reject.
+func TestIsFalsey(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		in   string
+		want bool
+	}{
+		{"false", true},
+		{"FALSE", true},
+		{"0", true},
+		{"no", true},
+		{" off ", true},
+		{"true", false},
+		{"1", false},
+		{"", false},
+		{"maybe", false},
+	}
+	for _, tc := range cases {
+		if got := isFalsey(tc.in); got != tc.want {
+			t.Errorf("isFalsey(%q) = %v, want %v", tc.in, got, tc.want)
+		}
+	}
+}
+
+// TestIsTruthy mirrors TestIsFalsey for the truthy synonyms.
+func TestIsTruthy(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		in   string
+		want bool
+	}{
+		{"true", true},
+		{"TRUE", true},
+		{"1", true},
+		{"yes", true},
+		{" on ", true},
+		{"false", false},
+		{"0", false},
+		{"", false},
+		{"maybe", false},
+	}
+	for _, tc := range cases {
+		if got := isTruthy(tc.in); got != tc.want {
+			t.Errorf("isTruthy(%q) = %v, want %v", tc.in, got, tc.want)
+		}
+	}
+}
+
+// TestPrintInsecureBanner just exercises the banner emission path so it
+// shows up in coverage. We capture log output through io.Discard via the
+// quiet logger and assert the call does not panic.
+func TestPrintInsecureBanner(t *testing.T) {
+	t.Parallel()
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("printInsecureBanner panicked: %v", r)
+		}
+	}()
+	printInsecureBanner(quietLogger())
+}
+
 // unsetEnv removes the given env var for the lifetime of the test. We
 // implement this manually because t.Setenv(name, "") still leaves the
 // variable defined (set to empty) -- our LookupEnv branches need it

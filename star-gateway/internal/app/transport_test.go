@@ -132,9 +132,16 @@ func TestCreateSocketTransport(t *testing.T) {
 			socketPath := tc.path
 			var listener net.Listener
 			if tc.setupSock {
-				tempDir := t.TempDir()
-				socketPath = filepath.Join(tempDir, "test.sock")
-				var err error
+				// Use os.MkdirTemp under /tmp instead of t.TempDir() because
+				// darwin caps unix-socket sun_path at 104 bytes; the default
+				// /var/folders/.../TestName.../001/ prefix overflows that
+				// budget and net.Listen returns "bind: invalid argument".
+				tempDir, err := os.MkdirTemp("", "starsock")
+				if err != nil {
+					t.Fatalf("MkdirTemp failed: %v", err)
+				}
+				t.Cleanup(func() { _ = os.RemoveAll(tempDir) })
+				socketPath = filepath.Join(tempDir, "t.sock")
 				listener, err = net.Listen("unix", socketPath)
 				if err != nil {
 					t.Fatalf("Failed to create test socket: %v", err)

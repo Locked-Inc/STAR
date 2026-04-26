@@ -12,7 +12,6 @@
 
 #include "rx_log.h"
 #include "rx_usb.h"
-#include "star_board.h"
 #include "tx_api.h"
 
 /* Board-specific stress pacing.

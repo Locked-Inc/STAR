@@ -440,6 +440,7 @@
 #include "rx_time_constants.h"
 #include "rx_usb_endpoints.h"
 #include "rx_usb_internal.h"
+#include "rx_usb_private.h"
 
 /* rx_check.h includes rx_log.h which defines rx_log_* macros.
  * Include rx_check.h first so its dependency on rx_log.h is resolved cleanly,
@@ -448,7 +449,6 @@
 
 #ifndef UNIT_TEST
 #include "rx72n_regs.h"
-#include "rx_threadx_config.h"
 #include "tx_api.h"
 #else
 /* Mock includes for unit testing: override log macros as no-ops.
@@ -696,16 +696,15 @@ static inline bool internal_port_is_valid(const rx_usb_port_id_t port)
   if (port >= k_usb_port_count) {
     return false;
   }
-  switch (port) {
-    case k_usb_port_proto:
-      return (bool)STAR_USB_ENABLE_PORT_PROTO;
-    case k_usb_port_decoded:
-      return (bool)STAR_USB_ENABLE_PORT_DECODED;
-    case k_usb_port_log:
-      return (bool)STAR_USB_ENABLE_PORT_LOG;
-    default:
-      return false;
-  }
+  /* Index a compile-time table instead of three identical-shape case arms.
+   * Order matches the rx_usb_port_id_t declaration; static_assert below
+   * guards against silent reordering. */
+  static const bool s_port_enabled[k_usb_port_count] = {
+    [k_usb_port_proto]   = (bool)STAR_USB_ENABLE_PORT_PROTO,
+    [k_usb_port_decoded] = (bool)STAR_USB_ENABLE_PORT_DECODED,
+    [k_usb_port_log]     = (bool)STAR_USB_ENABLE_PORT_LOG,
+  };
+  return s_port_enabled[port];
 }
 
 /**
@@ -723,16 +722,11 @@ static inline bool internal_state_is_valid(const rx_usb_state_t state)
 /* =============================================================================
  * Private Functions - Ring Buffer Operations
  *
- * Internal implementation functions exposed for unit testing via rx_usb_private.h.
- * Forward declarations required by -Wmissing-declarations.
+ * Internal implementation functions exposed for unit testing via rx_usb_private.h
+ * (canonical extern declarations live there; redeclaring here would trip
+ * misc-use-internal-linkage because clang-tidy sees only this TU at a time).
  * =============================================================================
  */
-
-void     priv_ring_buffer_init(ring_buffer_t* buf, uint8_t* data, uint32_t size);
-uint32_t priv_ring_buffer_available(const ring_buffer_t* buf);
-uint32_t priv_ring_buffer_free(const ring_buffer_t* buf);
-uint32_t priv_ring_buffer_write(ring_buffer_t* buf, const uint8_t* data, uint32_t len);
-uint32_t priv_ring_buffer_read(ring_buffer_t* buf, uint8_t* data, uint32_t max_len);
 
 /**
  * @brief Initialize a ring buffer with backing storage

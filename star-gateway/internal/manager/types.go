@@ -36,6 +36,7 @@ const (
 	// is unchanged.
 	ModeSimpleUSB TransportMode = "simple-usb"
 )
+
 // Error message format strings used by manager validation routines.
 const (
 	// InvalidTransportModeError is the format string returned by ParseTransportMode

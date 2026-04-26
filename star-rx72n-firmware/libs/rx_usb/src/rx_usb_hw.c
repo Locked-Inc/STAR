@@ -475,11 +475,8 @@
 #include "rx72n_regs.h"
 #include "rx_log.h"
 #include "rx_register_protection.h"
-#include "rx_threadx_config.h"
-#include "rx_time_constants.h"
 #include "rx_usb.h"
 #include "rx_usb_internal.h"
-#include "tx_api.h"
 
 /* =============================================================================
  * Private Definitions
@@ -488,15 +485,35 @@
 
 static const char* const s_tag = "USB_HW";
 
+/**
+ * @enum usb_pipe_table_t
+ * @brief Per-pipe cache table size covering DCP (slot 0) + data pipes 1..9
+ *
+ * @details
+ * RX72N USB0 supports a Default Control Pipe (DCP, pipe 0) plus nine data
+ * pipes numbered 1..9. The configure-time cache arrays carry one slot per
+ * pipe number, so they need 10 entries indexed by pipe id directly. Slot 0
+ * is left zero -- DCP uses its own DCPMAXP register and the dedicated ISEL=1
+ * routing in CFIFOSEL, never the cache.
+ *
+ * @invariant k_usb_pipe_table_size == k_usb_pipe_max + 1
+ *
+ * @see usb_validation_limits_t k_usb_pipe_max canonical pipe-number bound
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_usb_pipe_table_size = 10, /**< Slots for DCP (0) plus pipes 1..9 */
+} usb_pipe_table_t;
+
 /* Per-pipe configure-time cache.  configure_pipe writes both arrays;
  * rx_usb_hw_fifo_write reads them.  Sized for pipes 0..9 (DCP at
  * index 0 left zero -- DCP uses DCPMAXP and ISEL=1 unconditionally). */
-static uint16_t s_pipe_max_packet[10] = {0};
-static bool     s_pipe_is_in[10]      = {false};
+static uint16_t s_pipe_max_packet[k_usb_pipe_table_size] = {0};
+static bool     s_pipe_is_in[k_usb_pipe_table_size]      = {false};
 
 uint16_t rx_usb_hw_pipe_max_packet(const uint8_t pipe)
 {
-  if (pipe == 0U || pipe >= 10U) {
+  if (pipe == 0U || pipe >= k_usb_pipe_table_size) {
     return 0U;
   }
   return s_pipe_max_packet[pipe];
@@ -504,7 +521,7 @@ uint16_t rx_usb_hw_pipe_max_packet(const uint8_t pipe)
 
 bool rx_usb_hw_pipe_is_in(const uint8_t pipe)
 {
-  if (pipe >= 10U) {
+  if (pipe >= k_usb_pipe_table_size) {
     return false;
   }
   return s_pipe_is_in[pipe];
@@ -526,7 +543,7 @@ bool rx_usb_hw_pipe_is_in(const uint8_t pipe)
  */
 bool rx_usb_hw_pipe_ready_for_write(const uint8_t pipe)
 {
-  if (pipe == 0U || pipe >= 10U) {
+  if (pipe == 0U || pipe >= k_usb_pipe_table_size) {
     return false;
   }
   volatile uint16_t* const pipe_ctr_map[] = {
@@ -618,6 +635,21 @@ typedef enum : uint16_t {
   k_usb_endpoint_max        = 15,  /**< Maximum endpoint number (0-15) */
   k_usb_max_packet_size_max = 512, /**< Maximum packet size (512 bytes for FS) */
 } usb_validation_limits_t;
+
+/** @brief BEMP/BRDY status register bit-mask constants */
+typedef enum : uint16_t {
+  k_usb_pipe_status_mask = 0x03FFU, /**< Pipes 0-9 status bit mask (10 bits) */
+} usb_pipe_status_mask_t;
+
+/** @brief CFIFOSEL ISEL bit position for DCP transmit direction */
+typedef enum : uint8_t {
+  k_usb_cfifosel_isel_shift = 5, /**< ISEL bit position in CFIFOSEL */
+} usb_cfifosel_bits_t;
+
+/** @brief Bulk full-speed default max-packet-size fallback */
+typedef enum : uint16_t {
+  k_usb_bulk_fs_mps_default = 64U, /**< Defensive fallback when MPS cache is 0 */
+} usb_bulk_mps_default_t;
 
 /* =============================================================================
  * Private Variables
@@ -954,200 +986,326 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
 }
 
 /**
+ * @brief Look up PIPEnCTR pointer for a data pipe (1..9)
+ *
+ * @details
+ * Maps a data-pipe number to its PIPEnCTR register address.  The DCP
+ * (pipe 0) has no PIPEnCTR.PBUSY -- callers must check for pipe == 0
+ * before invoking this helper.
+ *
+ * @param[in] pipe Data pipe number, must be in [1, k_usb_pipe_max]
+ *
+ * @return volatile uint16_t* Pointer to the matching PIPEnCTR register
+ *
+ * @pre pipe in [1, k_usb_pipe_max]
+ * @post Returned pointer is non-null
+ *
+ * @note Not thread-safe; caller must serialize CFIFO access.
+ *
+ * @since Version 1.0.0
+ */
+static volatile uint16_t* internal_usb_pipe_ctr(const uint8_t pipe)
+{
+  volatile uint16_t* const pipe_ctr_map[] = {
+    &usb0()->pipe1ctr,
+    &usb0()->pipe2ctr,
+    &usb0()->pipe3ctr,
+    &usb0()->pipe4ctr,
+    &usb0()->pipe5ctr,
+    &usb0()->pipe6ctr,
+    &usb0()->pipe7ctr,
+    &usb0()->pipe8ctr,
+    &usb0()->pipe9ctr,
+  };
+  return pipe_ctr_map[pipe - 1U];
+}
+
+/**
+ * @brief Mask USB0 USBI IRQ delivery for the FIFO write sequence
+ *
+ * @details
+ * Without this, a BRDY/BEMP/CTRT interrupt firing mid-write can
+ * preempt us, run the ISR, which will re-enter the FIFO logic for a
+ * different pipe.  The preempted CFIFOSEL.CURPIPE and FRDY snapshot
+ * are now stale and subsequent byte writes land in the wrong pipe's
+ * buffer.  Vector 144 (SELECTB) => IER[18] bit 0.
+ *
+ * @param[out] ier_r_out  Pointer to IER byte (must be non-null)
+ * @param[out] mask_out   Bit-mask within that IER byte
+ *
+ * @return uint8_t  Snapshot of pre-mask IER bit (non-zero = previously enabled)
+ *
+ * @pre  ier_r_out and mask_out are non-null
+ * @post On return the USBI vector is masked; restore via
+ *       internal_usb_restore_usbi_irq()
+ *
+ * @note Not thread-safe; serialize at the pipe level.
+ *
+ * @since Version 1.0.0
+ */
+static uint8_t internal_usb_mask_usbi_irq(volatile uint8_t** ier_r_out, uint8_t* mask_out)
+{
+  *ier_r_out                = &icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register];
+  *mask_out                 = (uint8_t)(1U << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
+  const uint8_t was_enabled = (uint8_t)(**ier_r_out & *mask_out);
+  **ier_r_out &= (uint8_t) ~(*mask_out);
+  return was_enabled;
+}
+
+/**
+ * @brief Restore USB IRQ delivery after a FIFO write sequence
+ *
+ * @param[in,out] ier_r        IER byte pointer obtained from
+ *                              internal_usb_mask_usbi_irq()
+ * @param[in]     usbi_mask    Bit-mask within IER byte
+ * @param[in]     was_enabled  Saved enable state from
+ *                              internal_usb_mask_usbi_irq()
+ *
+ * @pre  ier_r non-null
+ * @post IER bit set if was_enabled was non-zero
+ *
+ * @since Version 1.0.0
+ */
+static void internal_usb_restore_usbi_irq(volatile uint8_t* ier_r,
+                                          const uint8_t     usbi_mask,
+                                          const uint8_t     was_enabled)
+{
+  if (was_enabled != 0U) {
+    *ier_r |= usbi_mask;
+  }
+}
+
+/**
+ * @brief Program CFIFOSEL to the requested pipe and wait for confirmation
+ *
+ * @details
+ * ISEL semantics differ by pipe:
+ *   - DCP (pipe 0): ISEL selects direction of the default control pipe.
+ *     ISEL = 1 -> host-to-device write direction (TX to host).
+ *   - Data pipes (pipe 1+): ISEL has NO defined behaviour.  Some RX72N
+ *     IP revisions interpret a 1 here as "keep old DCP selection" which
+ *     leaves the pipe's IN buffer unarmed and the endpoint NAKs every
+ *     IN token forever.
+ *
+ * @param[in] pipe Pipe number in [0, k_usb_pipe_max]
+ *
+ * @pre  pipe in [0, k_usb_pipe_max]
+ * @post CFIFOSEL.CURPIPE matches `pipe` (or k_usb_fifo_timeout_iterations
+ *       have elapsed)
+ *
+ * @since Version 1.0.0
+ */
+static void internal_usb_select_cfifo_pipe(const uint8_t pipe)
+{
+  volatile uint16_t* const fifosel_r = &usb0()->cfifosel;
+  const uint16_t           isel_bit =
+    (pipe == k_usb_pipe_min) ? (uint16_t)(1U << k_usb_cfifosel_isel_shift) : 0U;
+  /* Overwrite the whole register (not RMW) so leftover RCNT/REW bits
+   * from enumeration-side DCP access don't bleed in. */
+  *fifosel_r = (uint16_t)(isel_bit | (pipe & k_usb_cfifosel_curpipe_mask));
+  for (volatile uint32_t n = 0; n < k_usb_fifo_timeout_iterations; ++n) {
+    if ((*fifosel_r & k_usb_cfifosel_curpipe_mask) == (pipe & k_usb_cfifosel_curpipe_mask)) {
+      break;
+    }
+  }
+}
+
+/**
+ * @brief Busy-wait until CFIFOCTR.FRDY is asserted
+ *
+ * @param[in] fifoctr_r  CFIFOCTR register pointer (non-null)
+ *
+ * @return bool true if FRDY observed within k_usb_fifo_timeout_iterations,
+ *              false on timeout
+ *
+ * @pre  fifoctr_r non-null
+ *
+ * @since Version 1.0.0
+ */
+static bool internal_usb_wait_frdy(volatile uint16_t* const fifoctr_r)
+{
+  volatile uint32_t timeout = k_usb_fifo_timeout_iterations;
+  while (!(*fifoctr_r & k_usb_fifoctr_frdy) && timeout--) {
+    __asm__ volatile("nop");
+  }
+  return timeout != k_usb_fifo_timeout_expired;
+}
+
+/**
+ * @brief BCLR the CFIFO buffer and wait for hardware acknowledge
+ *
+ * @details
+ * Matches bulk_in_fix.c's cfifo_write_current which does BCLR on pipe 1
+ * between every write.  Skipping it on data pipes was a bug -- it left
+ * potentially-stale bytes in the buffer from aborted host transfers.
+ *
+ * @param[in] fifoctr_r  CFIFOCTR register pointer (non-null)
+ *
+ * @return bool true on success, false on hardware timeout
+ *
+ * @pre  fifoctr_r non-null
+ * @post On success the FIFO buffer is empty
+ *
+ * @since Version 1.0.0
+ */
+static bool internal_usb_clear_fifo(volatile uint16_t* const fifoctr_r)
+{
+  *fifoctr_r |= k_usb_fifoctr_bclr;
+  volatile uint32_t timeout = k_usb_fifo_timeout_iterations;
+  while ((*fifoctr_r & k_usb_fifoctr_bclr) && timeout--) {
+    __asm__ volatile("nop");
+  }
+  return timeout != k_usb_fifo_timeout_expired;
+}
+
+/**
+ * @brief Resolve the per-chunk maximum packet size for a pipe
+ *
+ * @param[in] pipe Pipe number in [0, k_usb_pipe_max]
+ *
+ * @return uint16_t Max chunk size in bytes (DCPMAXP for DCP, configured
+ *                  MPS for data pipes, k_usb_bulk_fs_mps_default otherwise)
+ *
+ * @pre  pipe in [0, k_usb_pipe_max]
+ *
+ * @since Version 1.0.0
+ */
+static uint16_t internal_usb_resolve_chunk_max(const uint8_t pipe)
+{
+  if (pipe == k_usb_pipe_min) {
+    return (uint16_t)usb0()->dcpmaxp;
+  }
+  uint16_t chunk_max = rx_usb_hw_pipe_max_packet(pipe);
+  if (chunk_max == 0U) {
+    chunk_max = k_usb_bulk_fs_mps_default;
+  }
+  return chunk_max;
+}
+
+/**
+ * @brief Write `data[0..len)` into CFIFO in <= chunk_max-byte packets
+ *
+ * @details
+ * The DCP's CFIFO has a max-packet-size window (DCPMAXP, 64 B for Full
+ * Speed); writing more than one packet's worth in a single BVAL commit
+ * overflows the buffer.  Bulk pipes have the same per-packet limit.
+ *
+ * Each chunk is preceded by a fresh FRDY wait because after BVAL on the
+ * previous chunk the hardware holds FRDY low until the packet has been
+ * drained to the bus.
+ *
+ * @param[in]  fifoctr_r  CFIFOCTR register pointer (non-null)
+ * @param[in]  fifo_byte  CFIFO data port (volatile, non-null)
+ * @param[in]  data       Source buffer (non-null, len > 0)
+ * @param[in]  len        Total bytes to write
+ * @param[in]  chunk_max  Per-packet max bytes (DCPMAXP / pipe MPS)
+ * @param[out] written    Bytes successfully committed (always written)
+ *
+ * @return bool true if the entire `len` bytes were committed, false on
+ *              hardware timeout (with `*written` reflecting the partial
+ *              count for caller diagnostics)
+ *
+ * @pre  All pointer parameters non-null
+ * @post `*written <= len`
+ *
+ * @since Version 1.0.0
+ */
+static bool internal_usb_write_chunks(volatile uint16_t* const fifoctr_r,
+                                      volatile uint8_t* const  fifo_byte,
+                                      const uint8_t*           data,
+                                      const uint32_t           len,
+                                      const uint16_t           chunk_max,
+                                      uint32_t* const          written)
+{
+  *written = 0;
+  while (*written < len) {
+    if (!internal_usb_wait_frdy(fifoctr_r)) {
+      rx_log_error(s_tag, "FIFO refill timeout");
+      return false;
+    }
+
+    const uint32_t remaining = len - *written;
+    const uint32_t chunk     = (remaining < chunk_max) ? remaining : chunk_max;
+
+    for (uint32_t i = 0; i < chunk; i++) {
+      *fifo_byte = data[*written + i];
+    }
+    *fifoctr_r |= k_usb_fifoctr_bval;
+    *written += chunk;
+  }
+  return true;
+}
+
+/**
+ * @brief Acknowledge BEMP/BRDY status bits for a data pipe
+ *
+ * @details
+ * Clearing BEMPSTS/BRDYSTS for the pipe AFTER BVAL (FIT order).
+ * Clearing it before write was a spurious ack of the "buffer empty"
+ * interrupt the hardware sets on entry; after BVAL the buffer has data
+ * so this is the matching hardware state.
+ *
+ * @param[in] pipe Data pipe number in [1, k_usb_pipe_max] (DCP excluded)
+ *
+ * @pre  pipe > k_usb_pipe_min
+ *
+ * @since Version 1.0.0
+ */
+static void internal_usb_clear_pipe_status(const uint8_t pipe)
+{
+  const uint16_t pipe_bit = (uint16_t)(1U << pipe);
+  usb0()->bempsts         = (uint16_t)((~pipe_bit) & k_usb_pipe_status_mask);
+  usb0()->brdysts         = (uint16_t)((~pipe_bit) & k_usb_pipe_status_mask);
+}
+
+/**
  * @brief Write data to USB FIFO
  *
  */
 uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
 {
-  /* Rule 5: Pre-condition validation */
   if (data == nullptr || len == k_min_transfer_size) {
     return k_min_transfer_size;
   }
-
-  /* Validate pipe number */
   if (pipe > k_usb_pipe_max) {
     rx_log_error(s_tag, "Invalid pipe number");
     return k_min_transfer_size;
   }
-
-  /* For data pipes: bail if pipe is busy (mid-transmission).
-   * configure_pipe already armed PID=BUF so the pipe stays armed
-   * across writes -- no PID toggle needed (matches bulk_in_fix.c). */
+  /* Bail if a data pipe is mid-transmission (DCP has no PBUSY). */
   volatile uint16_t* pipe_ctr = nullptr;
   if (pipe != k_usb_pipe_min) {
-    volatile uint16_t* const pipe_ctr_map[] = {
-      &usb0()->pipe1ctr,
-      &usb0()->pipe2ctr,
-      &usb0()->pipe3ctr,
-      &usb0()->pipe4ctr,
-      &usb0()->pipe5ctr,
-      &usb0()->pipe6ctr,
-      &usb0()->pipe7ctr,
-      &usb0()->pipe8ctr,
-      &usb0()->pipe9ctr,
-    };
-    pipe_ctr = pipe_ctr_map[pipe - 1U];
+    pipe_ctr = internal_usb_pipe_ctr(pipe);
     if ((*pipe_ctr & k_usb_pipectr_pbusy) != 0U) {
       return k_min_transfer_size;
     }
   }
+  volatile uint8_t*        ier_r       = nullptr;
+  uint8_t                  usbi_mask   = 0U;
+  const uint8_t            was_enabled = internal_usb_mask_usbi_irq(&ier_r, &usbi_mask);
+  volatile uint16_t* const fifoctr_r   = &usb0()->cfifoctr;
+  volatile uint16_t* const fifo_r      = &usb0()->cfifo;
 
-  /* Mask USB0 USBI IRQ delivery for the duration of the FIFO sequence.
-   * Without this, a BRDY/BEMP/CTRT interrupt firing mid-write can
-   * preempt us, run the ISR, which will re-enter the FIFO logic for a
-   * different pipe.  The preempted CFIFOSEL.CURPIPE and FRDY snapshot
-   * are now stale and subsequent byte writes land in the wrong pipe's
-   * buffer.
-   *
-   * Vector 144 (SELECTB) => IER[18] bit 0.  IER[18] byte address is
-   * 0x00087200 + 18 = 0x00087212. */
-  volatile uint8_t* const ier_r = &icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register];
-  const uint8_t usbi_mask       = (uint8_t)(1U << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
-  const uint8_t was_enabled     = (uint8_t)(*ier_r & usbi_mask);
-  *ier_r &= (uint8_t)~usbi_mask;
-
-  /* Use CFIFO for everything (DCP + data pipes).  D0FIFO would give
-   * independence from DCP traffic but requires additional setup
-   * (DCLRM, DREQE) that we haven't verified.  CFIFO works for both
-   * bulk_in_fix.c and FIT's default single-FIFO path; DCP / bulk
-   * contention is mitigated by the IER mask wrapping this sequence. */
-  volatile uint16_t* const fifosel_r = &usb0()->cfifosel;
-  volatile uint16_t* const fifoctr_r = &usb0()->cfifoctr;
-  volatile uint16_t* const fifo_r    = &usb0()->cfifo;
-
-  /* FIFOSEL programming.  ISEL semantics differ by pipe:
-   *   - DCP (pipe 0): ISEL selects direction of the default control pipe.
-   *     ISEL = 1 -> host-to-device write direction (TX to host).  We need
-   *     this set for control-IN GET_DESCRIPTOR etc.
-   *   - Data pipes (pipe 1+): ISEL has NO defined behaviour.  Some RX72N
-   *     IP revisions interpret a 1 here as "keep old DCP selection" which
-   *     leaves the pipe's IN buffer unarmed and the endpoint NAKs every
-   *     IN token forever.  Empirically proved on Tom's PCB by the
-   *     bulk_in_fix.c diagnostic -- 5/5 bulk IN reads failed with ISEL=1,
-   *     5/5 succeeded with ISEL=0.
-   *
-   * D0FIFOSEL (not used here) has no ISEL bit at all, so this decision
-   * only matters for CFIFOSEL. */
-  {
-    const uint16_t isel_bit = (pipe == k_usb_pipe_min) ? (uint16_t)(1U << 5) : 0U;
-    /* Overwrite the whole register (not RMW) so leftover RCNT/REW bits
-     * from enumeration-side DCP access don't bleed in. */
-    *fifosel_r = (uint16_t)(isel_bit | (pipe & k_usb_cfifosel_curpipe_mask));
-    for (volatile uint32_t n = 0; n < k_usb_fifo_timeout_iterations; ++n) {
-      if ((*fifosel_r & k_usb_cfifosel_curpipe_mask) == (pipe & k_usb_cfifosel_curpipe_mask)) {
-        break;
-      }
-    }
-  }
-
-  /* Wait for FIFO ready (hardware polling) */
-  /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
-  volatile uint32_t timeout = k_usb_fifo_timeout_iterations;
-  while (!(*fifoctr_r & k_usb_fifoctr_frdy) && timeout--) {
-    __asm__ volatile("nop");
-  }
-
-  if (timeout == k_usb_fifo_timeout_expired) {
+  internal_usb_select_cfifo_pipe(pipe);
+  if (!internal_usb_wait_frdy(fifoctr_r)) {
     rx_log_error(s_tag, "FIFO write timeout");
-    if (was_enabled != 0U) {
-      *ier_r |= usbi_mask;
-    }
+    internal_usb_restore_usbi_irq(ier_r, usbi_mask, was_enabled);
     return k_min_transfer_size;
   }
-
-  /* BCLR the FIFO buffer for ALL pipes (DCP + data).  This matches
-   * bulk_in_fix.c's cfifo_write_current which does BCLR on pipe 1
-   * between every write.  Skipping it on data pipes was a bug -- it
-   * left potentially-stale bytes in the buffer from aborted
-   * host transfers, and the hardware never transmitted the fresh
-   * data because the buffer was already marked valid with old
-   * contents. */
-  *fifoctr_r |= k_usb_fifoctr_bclr;
-  timeout = k_usb_fifo_timeout_iterations;
-  while ((*fifoctr_r & k_usb_fifoctr_bclr) && timeout--) {
-    __asm__ volatile("nop");
-  }
-  if (timeout == k_usb_fifo_timeout_expired) {
+  if (!internal_usb_clear_fifo(fifoctr_r)) {
     rx_log_error(s_tag, "FIFO clear timeout");
-    if (was_enabled != 0U) {
-      *ier_r |= usbi_mask;
-    }
+    internal_usb_restore_usbi_irq(ier_r, usbi_mask, was_enabled);
     return k_min_transfer_size;
   }
 
-  /*
-   * The DCP's CFIFO has a max-packet-size window (DCPMAXP, 64 B for
-   * Full Speed) -- writing more than one packet's worth in a single
-   * BVAL commit overflows the buffer and the extra bytes never reach
-   * the host.  That's why GET_DESCRIPTOR(Device, 18) succeeded but
-   * GET_DESCRIPTOR(Configuration, 207) used to time out with
-   * "can't read configurations, error -110".
-   *
-   * Chunk the transfer into <= DCPMAXP-byte packets, commit each with
-   * BVAL, and wait for the hardware to drain it (BEMP -> FRDY) before
-   * loading the next.  For `len <= DCPMAXP` this degenerates to a
-   * single pass, preserving the earlier behaviour for small requests.
-   */
   volatile uint8_t* const fifo_byte = (volatile uint8_t*)fifo_r;
-  /* Use the cached MAXP from configure_pipe to avoid touching
-   * PIPESEL mid-write (PIPESEL rebinds CURPIPE on RX72N USB0,
-   * which would corrupt CFIFO routing if we shared a bank with
-   * DCP -- now that data pipes use D0FIFO, this is moot, but the
-   * cache is still cheaper than a register read). */
-  uint16_t chunk_max;
-  if (pipe == k_usb_pipe_min) {
-    chunk_max = (uint16_t)usb0()->dcpmaxp;
-  } else {
-    chunk_max = rx_usb_hw_pipe_max_packet(pipe);
-    if (chunk_max == 0U) {
-      chunk_max = 64U; /* defensive fallback = Full-Speed bulk MPS */
-    }
-  }
-  uint32_t written = 0;
+  const uint16_t          chunk_max = internal_usb_resolve_chunk_max(pipe);
+  uint32_t                written   = 0;
+  (void)internal_usb_write_chunks(fifoctr_r, fifo_byte, data, len, chunk_max, &written);
 
-  while (written < len) {
-    /* Wait for FRDY before writing: after BVAL on the previous chunk
-     * the hardware holds FRDY low until the packet has been drained
-     * to the bus, and writes issued during that window are silently
-     * dropped (FIFO has one packet of capacity, not MAXP * N). */
-    timeout = k_usb_fifo_timeout_iterations;
-    while (!(*fifoctr_r & k_usb_fifoctr_frdy) && timeout--) {
-      __asm__ volatile("nop");
-    }
-    if (timeout == k_usb_fifo_timeout_expired) {
-      rx_log_error(s_tag, "FIFO refill timeout");
-      if (was_enabled != 0U) {
-        *ier_r |= usbi_mask;
-      }
-      return written;
-    }
-
-    const uint32_t remaining = len - written;
-    const uint32_t chunk     = (remaining < chunk_max) ? remaining : chunk_max;
-
-    for (uint32_t i = 0; i < chunk; i++) {
-      *fifo_byte = data[written + i];
-    }
-    *fifoctr_r |= k_usb_fifoctr_bval;
-    written += chunk;
-  }
-
-  /* Clear BEMPSTS for the pipe AFTER BVAL (FIT order).  Clearing it
-   * before write was a spurious ack of the "buffer empty" interrupt
-   * the hardware sets on entry; after BVAL the buffer has data so
-   * this is the matching hardware state. */
   if (pipe_ctr != nullptr) {
-    const uint16_t pipe_bit = (uint16_t)(1U << pipe);
-    const uint16_t sts_mask = 0x03FFU;
-    usb0()->bempsts         = (uint16_t)((~pipe_bit) & sts_mask);
-    usb0()->brdysts         = (uint16_t)((~pipe_bit) & sts_mask);
+    internal_usb_clear_pipe_status(pipe);
   }
-
-  /* Restore USB IRQ delivery if we previously disabled it. */
-  if (was_enabled != 0U) {
-    *ier_r |= usbi_mask;
-  }
-
+  internal_usb_restore_usbi_irq(ier_r, usbi_mask, was_enabled);
   return written;
 }
 
@@ -1189,73 +1347,35 @@ rx_err_t rx_usb_hw_fifo_write_zlp(const uint8_t pipe)
     return k_rx_err_invalid_arg;
   }
 
-  volatile uint16_t* const pipe_ctr_map[] = {
-    &usb0()->pipe1ctr,
-    &usb0()->pipe2ctr,
-    &usb0()->pipe3ctr,
-    &usb0()->pipe4ctr,
-    &usb0()->pipe5ctr,
-    &usb0()->pipe6ctr,
-    &usb0()->pipe7ctr,
-    &usb0()->pipe8ctr,
-    &usb0()->pipe9ctr,
-  };
-  volatile uint16_t* const pipe_ctr = pipe_ctr_map[pipe - 1U];
-  if ((*pipe_ctr & k_usb_pipectr_pbusy) != 0U) {
+  if ((*internal_usb_pipe_ctr(pipe) & k_usb_pipectr_pbusy) != 0U) {
     return k_rx_err_busy;
   }
 
-  /* Vector 144 (SELECTB) => IER[18] bit 0.  See equivalent block in
-   * internal_fifo_write_pipe() for full rationale. */
-  volatile uint8_t* const ier_r = &icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register];
-  const uint8_t usbi_mask       = (uint8_t)(1U << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
-  const uint8_t was_enabled     = (uint8_t)(*ier_r & usbi_mask);
-  *ier_r &= (uint8_t)~usbi_mask;
+  volatile uint8_t* ier_r       = nullptr;
+  uint8_t           usbi_mask   = 0U;
+  const uint8_t     was_enabled = internal_usb_mask_usbi_irq(&ier_r, &usbi_mask);
 
-  volatile uint16_t* const fifosel_r = &usb0()->cfifosel;
   volatile uint16_t* const fifoctr_r = &usb0()->cfifoctr;
 
-  /* Select target pipe on CFIFO.  ISEL is meaningful only for DCP, so
-   * we leave it at 0 for data pipes -- matches the write path. */
-  *fifosel_r = (uint16_t)(pipe & k_usb_cfifosel_curpipe_mask);
-  for (volatile uint32_t n = 0; n < k_usb_fifo_timeout_iterations; ++n) {
-    if ((*fifosel_r & k_usb_cfifosel_curpipe_mask) == (pipe & k_usb_cfifosel_curpipe_mask)) {
-      break;
-    }
-  }
+  internal_usb_select_cfifo_pipe(pipe);
 
   /* Wait for FRDY, BCLR the buffer (ensures 0 bytes present), commit
    * via BVAL.  The hardware emits an empty IN packet on the bus at
    * the next IN token. */
-  volatile uint32_t timeout = k_usb_fifo_timeout_iterations;
-  while (!(*fifoctr_r & k_usb_fifoctr_frdy) && timeout--) {
-    __asm__ volatile("nop");
-  }
-  if (timeout == k_usb_fifo_timeout_expired) {
-    if (was_enabled != 0U) {
-      *ier_r |= usbi_mask;
-    }
+  if (!internal_usb_wait_frdy(fifoctr_r)) {
+    internal_usb_restore_usbi_irq(ier_r, usbi_mask, was_enabled);
     return k_rx_err_timeout;
   }
 
-  *fifoctr_r |= k_usb_fifoctr_bclr;
-  timeout = k_usb_fifo_timeout_iterations;
-  while ((*fifoctr_r & k_usb_fifoctr_bclr) && timeout--) {
-    __asm__ volatile("nop");
-  }
+  (void)internal_usb_clear_fifo(fifoctr_r);
 
   *fifoctr_r |= k_usb_fifoctr_bval;
 
   /* Acknowledge BEMP/BRDY for this pipe so the next BEMP IRQ arrives
    * only when the ZLP has actually been transmitted. */
-  const uint16_t pipe_bit = (uint16_t)(1U << pipe);
-  const uint16_t sts_mask = 0x03FFU;
-  usb0()->bempsts         = (uint16_t)((~pipe_bit) & sts_mask);
-  usb0()->brdysts         = (uint16_t)((~pipe_bit) & sts_mask);
+  internal_usb_clear_pipe_status(pipe);
 
-  if (was_enabled != 0U) {
-    *ier_r |= usbi_mask;
-  }
+  internal_usb_restore_usbi_irq(ier_r, usbi_mask, was_enabled);
   return k_rx_ok;
 }
 

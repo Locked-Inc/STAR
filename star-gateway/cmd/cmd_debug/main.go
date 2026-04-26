@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
+	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"go.bug.st/serial"
 	"google.golang.org/protobuf/proto"
 )

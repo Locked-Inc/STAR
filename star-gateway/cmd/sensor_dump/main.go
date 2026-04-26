@@ -17,8 +17,8 @@ import (
 	"log"
 	"time"
 
-	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
+	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"go.bug.st/serial"
 	"google.golang.org/protobuf/proto"
 )
@@ -121,8 +121,8 @@ func sendWireMessage(port serial.Port, enc frame.Encoder, seq uint16, payload pr
 		return
 	}
 	f := &frame.Frame{
-		Type: frame.FrameTypeCommand,
-		Header: frame.Header{Sequence: seq, Length: uint16(len(body)), Flags: frame.FlagNone},
+		Type:    frame.FrameTypeCommand,
+		Header:  frame.Header{Sequence: seq, Length: uint16(len(body)), Flags: frame.FlagNone},
 		Payload: body,
 	}
 	bs, err := enc.Encode(f)
