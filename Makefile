@@ -662,11 +662,45 @@ combined-reference:
 	@echo "  [4/4] Concatenating all parts via pdfunite..."
 	@# pdflatex would exhaust its 5,000,000-word memory pool on the
 	@# 16,000+ page firmware bundle; pdfunite handles arbitrarily-large
-	@# input via direct page-tree rewrite.
-	@INPUTS="docs/combine_cover.pdf docs/star_documentation.pdf docs/STAR_Firmware_Combined.pdf docs/STAR_Gateway_Combined.pdf docs/STAR_ROS2_Combined.pdf docs/STAR_Proto_Combined.pdf docs/STAR_Compliance_Combined.pdf docs/STAR_MATLAB.pdf docs/STAR_Ops_Combined.pdf final_docs/software_description_document/STAR_Software_Description_Document.pdf final_docs/system_software_user_manual/STAR_System_and_Software_User_Manual.pdf final_docs/test_report/STAR_Test_Report.pdf final_docs/final_demo/STAR_DemoHandout.pdf final_docs/final_presentation/STAR_Final_Presentation.pdf final_docs/mechanical_designs/STAR_Mechanical_Drawings.pdf final_docs/electrical_schematics_pcb/STAR_MCU_Electrical_Design.pdf final_docs/electrical_schematics_pcb/STAR_MCU_schematic.pdf final_docs/electrical_schematics_pcb/STAR_MCU_PCB.pdf docs/bench/kicad/STAR_MCU.pdf docs/checkerboard_calibration.pdf"; \
-	 EXISTING=""; \
-	 for f in $$INPUTS; do [ -f "$$f" ] && EXISTING="$$EXISTING $$f"; done; \
-	 pdfunite $$EXISTING docs/STAR_Combined_Reference.pdf
+	@# input via direct page-tree rewrite. Use bash + nul-delimited
+	@# list so paths with spaces (e.g. "Battery Box.pdf") survive.
+	@bash -c 'set -e; \
+	  files=( \
+	    "docs/combine_cover.pdf" \
+	    "docs/star_documentation.pdf" \
+	    "docs/STAR_Firmware_Combined.pdf" \
+	    "docs/STAR_Gateway_Combined.pdf" \
+	    "docs/STAR_ROS2_Combined.pdf" \
+	    "docs/STAR_Proto_Combined.pdf" \
+	    "docs/STAR_Compliance_Combined.pdf" \
+	    "docs/STAR_MATLAB.pdf" \
+	    "docs/STAR_Ops_Combined.pdf" \
+	    "final_docs/software_description_document/STAR_Software_Description_Document.pdf" \
+	    "final_docs/system_software_user_manual/STAR_System_and_Software_User_Manual.pdf" \
+	    "final_docs/test_report/STAR_Test_Report.pdf" \
+	    "final_docs/final_demo/STAR_DemoHandout.pdf" \
+	    "final_docs/final_presentation/STAR_Final_Presentation.pdf" \
+	    "final_docs/mechanical_designs/STAR_Mechanical_Drawings.pdf" \
+	    "final_docs/mechanical_designs/Battery Box.pdf" \
+	    "final_docs/mechanical_designs/Drivetrain Assembly.pdf" \
+	    "final_docs/mechanical_designs/Lid L.pdf" \
+	    "final_docs/mechanical_designs/Lid R.pdf" \
+	    "final_docs/mechanical_designs/Motor mount.pdf" \
+	    "final_docs/mechanical_designs/Sheet base.pdf" \
+	    "final_docs/mechanical_designs/Sheet Lidar.pdf" \
+	    "final_docs/mechanical_designs/Side panel.pdf" \
+	    "final_docs/mechanical_designs/Split rail.pdf" \
+	    "final_docs/electrical_schematics_pcb/STAR_MCU_Electrical_Design.pdf" \
+	    "final_docs/electrical_schematics_pcb/STAR_MCU_schematic.pdf" \
+	    "final_docs/electrical_schematics_pcb/STAR_MCU_PCB.pdf" \
+	    "docs/bench/kicad/STAR_MCU.pdf" \
+	    "docs/checkerboard_calibration.pdf" \
+	  ); \
+	  existing=(); \
+	  for f in "$${files[@]}"; do \
+	    if [ -f "$$f" ]; then existing+=("$$f"); fi; \
+	  done; \
+	  pdfunite "$${existing[@]}" docs/STAR_Combined_Reference.pdf'
 	@echo ""
 	@echo "[OK] docs/STAR_Combined_Reference.pdf"
 	@which pdfinfo >/dev/null 2>&1 && pdfinfo docs/STAR_Combined_Reference.pdf | grep -E "Pages|File size" || true
