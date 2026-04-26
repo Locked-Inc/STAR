@@ -20,14 +20,15 @@
 #include "star_gateway_bridge/message_converter.hpp"
 // clang-format on
 
-namespace star {
+namespace star
+{
 
 // Test fixture for MessageConverter tests
 class MessageConverterTest : public ::testing::Test {
-  protected:
-    star_gateway_bridge::MessageConverter converter_;
-    static constexpr double               TOLERANCE    = 1e-6;
-    static constexpr double               WHEEL_BASE_M = 0.150; // 150mm wheel base
+protected:
+  star_gateway_bridge::MessageConverter converter_;
+  static constexpr double               TOLERANCE = 1e-6;
+  static constexpr double               WHEEL_BASE_M = 0.150;   // 150mm wheel base
 };
 
 // =============================================================================
@@ -37,7 +38,7 @@ class MessageConverterTest : public ::testing::Test {
 TEST_F(MessageConverterTest, TwistToCommandZeroVelocity)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 0.0;
+    twist.linear.x = 0.0;
     twist.angular.z = 0.0;
 
     star::v1::VelocityCommand command;
@@ -50,7 +51,7 @@ TEST_F(MessageConverterTest, TwistToCommandZeroVelocity)
 TEST_F(MessageConverterTest, TwistToCommandPureTranslation)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 1.0; // 1 m/s forward
+    twist.linear.x = 1.0;  // 1 m/s forward
     twist.angular.z = 0.0;
 
     star::v1::VelocityCommand command;
@@ -64,7 +65,7 @@ TEST_F(MessageConverterTest, TwistToCommandPureTranslation)
 TEST_F(MessageConverterTest, TwistToCommandPureRotation)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 0.0;
+    twist.linear.x = 0.0;
     twist.angular.z = 1.0; // 1 rad/s counter-clockwise
 
     star::v1::VelocityCommand command;
@@ -80,7 +81,7 @@ TEST_F(MessageConverterTest, TwistToCommandPureRotation)
 TEST_F(MessageConverterTest, TwistToCommandMixedMotion)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 1.0; // 1 m/s forward
+    twist.linear.x = 1.0;  // 1 m/s forward
     twist.angular.z = 2.0; // 2 rad/s counter-clockwise
 
     star::v1::VelocityCommand command;
@@ -89,8 +90,8 @@ TEST_F(MessageConverterTest, TwistToCommandMixedMotion)
     // v_left = v - omega*L/2
     // v_right = v + omega*L/2
     double rotational_component = 2.0 * WHEEL_BASE_M / 2.0;   // 0.150 m/s
-    double expected_left        = 1.0 - rotational_component; // 0.850 m/s
-    double expected_right       = 1.0 + rotational_component; // 1.150 m/s
+    double expected_left = 1.0 - rotational_component;        // 0.850 m/s
+    double expected_right = 1.0 + rotational_component;       // 1.150 m/s
 
     EXPECT_NEAR(command.front_left_velocity_mps(), expected_left, TOLERANCE);
     EXPECT_NEAR(command.front_right_velocity_mps(), expected_right, TOLERANCE);
@@ -99,7 +100,7 @@ TEST_F(MessageConverterTest, TwistToCommandMixedMotion)
 TEST_F(MessageConverterTest, TwistToCommandNegativeLinear)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = -0.5; // 0.5 m/s backward
+    twist.linear.x = -0.5;  // 0.5 m/s backward
     twist.angular.z = 0.0;
 
     star::v1::VelocityCommand command;
@@ -113,7 +114,7 @@ TEST_F(MessageConverterTest, TwistToCommandNegativeLinear)
 TEST_F(MessageConverterTest, TwistToCommandNegativeAngular)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 0.0;
+    twist.linear.x = 0.0;
     twist.angular.z = -1.0; // 1 rad/s clockwise
 
     star::v1::VelocityCommand command;
@@ -194,7 +195,7 @@ TEST_F(MessageConverterTest, CommandToTwistMixedMotion)
 
     // v = (v_left + v_right) / 2 = (0.5 + 1.5) / 2 = 1.0
     // omega = (v_right - v_left) / L = (1.5 - 0.5) / 0.150 = 6.667
-    double expected_linear  = (0.5 + 1.5) / 2.0;
+    double expected_linear = (0.5 + 1.5) / 2.0;
     double expected_angular = (1.5 - 0.5) / WHEEL_BASE_M;
 
     EXPECT_NEAR(twist.linear.x, expected_linear, TOLERANCE);
@@ -208,7 +209,7 @@ TEST_F(MessageConverterTest, CommandToTwistMixedMotion)
 TEST_F(MessageConverterTest, KinematicsRoundtripZero)
 {
     geometry_msgs::msg::Twist original_twist;
-    original_twist.linear.x  = 0.0;
+    original_twist.linear.x = 0.0;
     original_twist.angular.z = 0.0;
 
     star::v1::VelocityCommand command;
@@ -224,7 +225,7 @@ TEST_F(MessageConverterTest, KinematicsRoundtripZero)
 TEST_F(MessageConverterTest, KinematicsRoundtripTranslation)
 {
     geometry_msgs::msg::Twist original_twist;
-    original_twist.linear.x  = 1.23;
+    original_twist.linear.x = 1.23;
     original_twist.angular.z = 0.0;
 
     star::v1::VelocityCommand command;
@@ -240,7 +241,7 @@ TEST_F(MessageConverterTest, KinematicsRoundtripTranslation)
 TEST_F(MessageConverterTest, KinematicsRoundtripRotation)
 {
     geometry_msgs::msg::Twist original_twist;
-    original_twist.linear.x  = 0.0;
+    original_twist.linear.x = 0.0;
     original_twist.angular.z = 2.5;
 
     star::v1::VelocityCommand command;
@@ -256,7 +257,7 @@ TEST_F(MessageConverterTest, KinematicsRoundtripRotation)
 TEST_F(MessageConverterTest, KinematicsRoundtripMixed)
 {
     geometry_msgs::msg::Twist original_twist;
-    original_twist.linear.x  = 0.75;
+    original_twist.linear.x = 0.75;
     original_twist.angular.z = -1.5;
 
     star::v1::VelocityCommand command;
@@ -276,7 +277,7 @@ TEST_F(MessageConverterTest, KinematicsRoundtripMixed)
 TEST_F(MessageConverterTest, TwistToCommandNaNLinear)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = std::numeric_limits<double>::quiet_NaN();
+    twist.linear.x = std::numeric_limits<double>::quiet_NaN();
     twist.angular.z = 0.0;
 
     star::v1::VelocityCommand command;
@@ -286,7 +287,7 @@ TEST_F(MessageConverterTest, TwistToCommandNaNLinear)
 TEST_F(MessageConverterTest, TwistToCommandNaNAngular)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 0.0;
+    twist.linear.x = 0.0;
     twist.angular.z = std::numeric_limits<double>::quiet_NaN();
 
     star::v1::VelocityCommand command;
@@ -296,7 +297,7 @@ TEST_F(MessageConverterTest, TwistToCommandNaNAngular)
 TEST_F(MessageConverterTest, TwistToCommandInfinityLinear)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = std::numeric_limits<double>::infinity();
+    twist.linear.x = std::numeric_limits<double>::infinity();
     twist.angular.z = 0.0;
 
     star::v1::VelocityCommand command;
@@ -306,7 +307,7 @@ TEST_F(MessageConverterTest, TwistToCommandInfinityLinear)
 TEST_F(MessageConverterTest, TwistToCommandInfinityAngular)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 0.0;
+    twist.linear.x = 0.0;
     twist.angular.z = std::numeric_limits<double>::infinity();
 
     star::v1::VelocityCommand command;
@@ -316,7 +317,7 @@ TEST_F(MessageConverterTest, TwistToCommandInfinityAngular)
 TEST_F(MessageConverterTest, TwistToCommandNegativeInfinity)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = -std::numeric_limits<double>::infinity();
+    twist.linear.x = -std::numeric_limits<double>::infinity();
     twist.angular.z = 0.0;
 
     star::v1::VelocityCommand command;
@@ -326,7 +327,7 @@ TEST_F(MessageConverterTest, TwistToCommandNegativeInfinity)
 TEST_F(MessageConverterTest, TwistToCommandZeroWheelBase)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 1.0;
+    twist.linear.x = 1.0;
     twist.angular.z = 0.0;
 
     star::v1::VelocityCommand command;
@@ -336,7 +337,7 @@ TEST_F(MessageConverterTest, TwistToCommandZeroWheelBase)
 TEST_F(MessageConverterTest, TwistToCommandNegativeWheelBase)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 1.0;
+    twist.linear.x = 1.0;
     twist.angular.z = 0.0;
 
     star::v1::VelocityCommand command;
@@ -469,7 +470,7 @@ TEST_F(MessageConverterTest, TwistToCommandMaxVelocity)
 {
     // Test with high velocities (near physical limits)
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 10.0; // 10 m/s (unrealistic but valid)
+    twist.linear.x = 10.0;  // 10 m/s (unrealistic but valid)
     twist.angular.z = 20.0; // 20 rad/s
 
     star::v1::VelocityCommand command;
@@ -485,7 +486,7 @@ TEST_F(MessageConverterTest, TwistToCommandMaxVelocity)
 TEST_F(MessageConverterTest, TwistToCommandVerySmallWheelBase)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 1.0;
+    twist.linear.x = 1.0;
     twist.angular.z = 1.0;
 
     star::v1::VelocityCommand command;
@@ -500,7 +501,7 @@ TEST_F(MessageConverterTest, TwistToCommandVerySmallWheelBase)
 TEST_F(MessageConverterTest, TwistToCommandVeryLargeWheelBase)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 1.0;
+    twist.linear.x = 1.0;
     twist.angular.z = 1.0;
 
     star::v1::VelocityCommand command;
@@ -516,17 +517,17 @@ TEST_F(MessageConverterTest, TwistToCommandVeryLargeWheelBase)
 // =============================================================================
 
 class ObstacleDistanceToRangeTest : public ::testing::Test {
-  protected:
-    star_gateway_bridge::MessageConverter converter_;
-    static constexpr float                FLOAT_TOL   = 1e-5F;
-    static constexpr float                HC_SR04_MIN = 0.02F;
-    static constexpr float                HC_SR04_MAX = 4.00F;
-    static constexpr float                HC_SR04_FOV = 0.2618F;
+protected:
+  star_gateway_bridge::MessageConverter converter_;
+  static constexpr float                FLOAT_TOL = 1e-5F;
+  static constexpr float                HC_SR04_MIN = 0.02F;
+  static constexpr float                HC_SR04_MAX = 4.00F;
+  static constexpr float                HC_SR04_FOV = 0.2618F;
 
-    rclcpp::Time make_stamp() const
-    {
-        return rclcpp::Time(0, 0, RCL_ROS_TIME);
-    }
+  rclcpp::Time make_stamp() const
+  {
+    return rclcpp::Time(0, 0, RCL_ROS_TIME);
+  }
 };
 
 TEST_F(ObstacleDistanceToRangeTest, NominalReading)
@@ -644,8 +645,8 @@ TEST_F(ObstacleDistanceToRangeTest, StampPropagated)
 // =============================================================================
 
 class StringToSystemStatusTest : public ::testing::Test {
-  protected:
-    star_gateway_bridge::MessageConverter converter_;
+protected:
+  star_gateway_bridge::MessageConverter converter_;
 };
 
 TEST_F(StringToSystemStatusTest, ParsesManualMode)
@@ -718,15 +719,15 @@ TEST_F(StringToSystemStatusTest, EmptyStringFallsBackToIdle)
 // =============================================================================
 
 class OdometryToProtoTest : public ::testing::Test {
-  protected:
-    star_gateway_bridge::MessageConverter converter_;
-    static constexpr double               TOL = 1e-6;
+protected:
+  star_gateway_bridge::MessageConverter converter_;
+  static constexpr double               TOL = 1e-6;
 };
 
 TEST_F(OdometryToProtoTest, NominalConversion)
 {
     nav_msgs::msg::Odometry msg;
-    msg.header.stamp.sec     = 100;
+    msg.header.stamp.sec = 100;
     msg.header.stamp.nanosec = 500'000U; // 500 us
     msg.pose.pose.position.x = 1.5;
     msg.pose.pose.position.y = -2.0;
@@ -735,8 +736,8 @@ TEST_F(OdometryToProtoTest, NominalConversion)
     msg.pose.pose.orientation.x = 0.0;
     msg.pose.pose.orientation.y = 0.0;
     msg.pose.pose.orientation.z = 0.0;
-    msg.twist.twist.linear.x    = 0.5;
-    msg.twist.twist.angular.z   = 0.25;
+    msg.twist.twist.linear.x = 0.5;
+    msg.twist.twist.angular.z = 0.25;
 
     star::v1::OdometryData proto;
     converter_.odometry_to_proto(msg, proto);
@@ -754,13 +755,13 @@ TEST_F(OdometryToProtoTest, NaNPositionSanitisedToZero)
 {
     // Per the @post in odometry_to_proto: non-finite position becomes 0.0.
     nav_msgs::msg::Odometry msg;
-    msg.header.stamp.sec        = 0;
-    msg.header.stamp.nanosec    = 0U;
-    msg.pose.pose.position.x    = std::numeric_limits<double>::quiet_NaN();
-    msg.pose.pose.position.y    = std::numeric_limits<double>::infinity();
+    msg.header.stamp.sec = 0;
+    msg.header.stamp.nanosec = 0U;
+    msg.pose.pose.position.x = std::numeric_limits<double>::quiet_NaN();
+    msg.pose.pose.position.y = std::numeric_limits<double>::infinity();
     msg.pose.pose.orientation.w = 1.0;
-    msg.twist.twist.linear.x    = std::numeric_limits<double>::quiet_NaN();
-    msg.twist.twist.angular.z   = std::numeric_limits<double>::infinity();
+    msg.twist.twist.linear.x = std::numeric_limits<double>::quiet_NaN();
+    msg.twist.twist.angular.z = std::numeric_limits<double>::infinity();
 
     star::v1::OdometryData proto;
     converter_.odometry_to_proto(msg, proto);
@@ -777,17 +778,17 @@ TEST_F(OdometryToProtoTest, NaNPositionSanitisedToZero)
 // =============================================================================
 
 class LaserScanToProtoTest : public ::testing::Test {
-  protected:
-    star_gateway_bridge::MessageConverter converter_;
+protected:
+  star_gateway_bridge::MessageConverter converter_;
 };
 
 TEST_F(LaserScanToProtoTest, RejectsEmptyRanges)
 {
     sensor_msgs::msg::LaserScan scan;
-    scan.angle_min       = -1.57F;
+    scan.angle_min = -1.57F;
     scan.angle_increment = 0.01F;
-    scan.range_min       = 0.1F;
-    scan.range_max       = 10.0F;
+    scan.range_min = 0.1F;
+    scan.range_max = 10.0F;
     // Leave scan.ranges empty.
 
     star::v1::LidarScan proto;
@@ -797,11 +798,11 @@ TEST_F(LaserScanToProtoTest, RejectsEmptyRanges)
 TEST_F(LaserScanToProtoTest, RejectsZeroAngleIncrement)
 {
     sensor_msgs::msg::LaserScan scan;
-    scan.angle_min       = -1.57F;
+    scan.angle_min = -1.57F;
     scan.angle_increment = 0.0F; // invalid
-    scan.range_min       = 0.1F;
-    scan.range_max       = 10.0F;
-    scan.ranges          = {1.0F, 1.0F, 1.0F};
+    scan.range_min = 0.1F;
+    scan.range_max = 10.0F;
+    scan.ranges = {1.0F, 1.0F, 1.0F};
 
     star::v1::LidarScan proto;
     EXPECT_FALSE(converter_.laserscan_to_proto(scan, proto));
@@ -810,11 +811,11 @@ TEST_F(LaserScanToProtoTest, RejectsZeroAngleIncrement)
 TEST_F(LaserScanToProtoTest, RejectsRangeMinAboveRangeMax)
 {
     sensor_msgs::msg::LaserScan scan;
-    scan.angle_min       = -1.57F;
+    scan.angle_min = -1.57F;
     scan.angle_increment = 0.01F;
-    scan.range_min       = 5.0F;
-    scan.range_max       = 1.0F; // inverted
-    scan.ranges          = {1.0F, 2.0F, 3.0F};
+    scan.range_min = 5.0F;
+    scan.range_max = 1.0F;       // inverted
+    scan.ranges = {1.0F, 2.0F, 3.0F};
 
     star::v1::LidarScan proto;
     EXPECT_FALSE(converter_.laserscan_to_proto(scan, proto));
@@ -824,14 +825,14 @@ TEST_F(LaserScanToProtoTest, NominalSmallScanFitsWithoutDownsample)
 {
     // 10 samples; well under MAX_LIDAR_SAMPLES (500), stride should be 1.
     sensor_msgs::msg::LaserScan scan;
-    scan.header.stamp.sec     = 1;
+    scan.header.stamp.sec = 1;
     scan.header.stamp.nanosec = 0U;
-    scan.angle_min            = 0.0F;
-    scan.angle_increment      = 0.1F;
-    scan.range_min            = 0.1F;
-    scan.range_max            = 10.0F;
-    scan.ranges               = {1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F};
-    scan.intensities          = {0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F};
+    scan.angle_min = 0.0F;
+    scan.angle_increment = 0.1F;
+    scan.range_min = 0.1F;
+    scan.range_max = 10.0F;
+    scan.ranges = {1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F};
+    scan.intensities = {0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F, 0.5F};
 
     star::v1::LidarScan proto;
     ASSERT_TRUE(converter_.laserscan_to_proto(scan, proto));
@@ -844,17 +845,17 @@ TEST_F(LaserScanToProtoTest, InvalidReadingsEncodedAsZero)
 {
     // NaN, +inf, and out-of-spec values must all be encoded as range=0.0.
     sensor_msgs::msg::LaserScan scan;
-    scan.header.stamp.sec     = 1;
+    scan.header.stamp.sec = 1;
     scan.header.stamp.nanosec = 0U;
-    scan.angle_min            = 0.0F;
-    scan.angle_increment      = 0.1F;
-    scan.range_min            = 0.5F;
-    scan.range_max            = 10.0F;
-    scan.ranges               = {std::numeric_limits<float>::quiet_NaN(),
-                                 std::numeric_limits<float>::infinity(),
-                                 0.1F, // below range_min
-                                 1.5F};
-    scan.intensities          = {0.0F, 0.0F, 0.0F, 0.7F};
+    scan.angle_min = 0.0F;
+    scan.angle_increment = 0.1F;
+    scan.range_min = 0.5F;
+    scan.range_max = 10.0F;
+    scan.ranges = {std::numeric_limits<float>::quiet_NaN(),
+    std::numeric_limits<float>::infinity(),
+    0.1F,                              // below range_min
+    1.5F};
+    scan.intensities = {0.0F, 0.0F, 0.0F, 0.7F};
 
     star::v1::LidarScan proto;
     ASSERT_TRUE(converter_.laserscan_to_proto(scan, proto));
@@ -869,12 +870,12 @@ TEST_F(LaserScanToProtoTest, DownsamplesToMaxLidarSamples)
 {
     // 1500 ranges should be downsampled to <= 500 samples.
     sensor_msgs::msg::LaserScan scan;
-    scan.header.stamp.sec     = 1;
+    scan.header.stamp.sec = 1;
     scan.header.stamp.nanosec = 0U;
-    scan.angle_min            = -3.14F;
-    scan.angle_increment      = 0.005F;
-    scan.range_min            = 0.1F;
-    scan.range_max            = 10.0F;
+    scan.angle_min = -3.14F;
+    scan.angle_increment = 0.005F;
+    scan.range_min = 0.1F;
+    scan.range_max = 10.0F;
     scan.ranges.assign(1500U, 1.0F);
 
     star::v1::LidarScan proto;
@@ -889,13 +890,13 @@ TEST_F(LaserScanToProtoTest, MissingIntensitiesFilledWithZero)
     // intensities.size() < ranges.size() must fill missing entries with 0.0
     // without erroring out.
     sensor_msgs::msg::LaserScan scan;
-    scan.header.stamp.sec     = 1;
+    scan.header.stamp.sec = 1;
     scan.header.stamp.nanosec = 0U;
-    scan.angle_min            = 0.0F;
-    scan.angle_increment      = 0.1F;
-    scan.range_min            = 0.1F;
-    scan.range_max            = 10.0F;
-    scan.ranges               = {1.0F, 2.0F, 3.0F};
+    scan.angle_min = 0.0F;
+    scan.angle_increment = 0.1F;
+    scan.range_min = 0.1F;
+    scan.range_max = 10.0F;
+    scan.ranges = {1.0F, 2.0F, 3.0F};
     // intensities deliberately left empty.
 
     star::v1::LidarScan proto;
@@ -908,8 +909,8 @@ TEST_F(LaserScanToProtoTest, MissingIntensitiesFilledWithZero)
 
 } // namespace star
 
-int main(int argc, char** argv)
+int main(int argc, char ** argv)
 {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

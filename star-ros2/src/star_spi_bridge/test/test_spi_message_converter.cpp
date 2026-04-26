@@ -20,22 +20,22 @@ using star_spi_bridge::SpiMessageConverter;
 // Test robot geometry. Mirrors the production defaults in
 // star_spi_driver_node.cpp so test expected values (e.g. 2*pi*r per
 // revolution) remain in sync with what the production node computes.
-constexpr double kTestTrackWidthM        = 0.356; // left-right wheel center-to-center [m]
-constexpr double kTestWheelRadiusM       = 0.072; // rolling radius [m]
+constexpr double kTestTrackWidthM = 0.356;        // left-right wheel center-to-center [m]
+constexpr double kTestWheelRadiusM = 0.072;       // rolling radius [m]
 constexpr int    kTestEncoderTicksPerRev = 11599; // 341 PPR x 34.02:1 gearbox
 
 class SpiMessageConverterTest : public ::testing::Test {
-  protected:
-    SpiMessageConverter::Parameters params{kTestTrackWidthM,
-                                           kTestWheelRadiusM,
-                                           kTestEncoderTicksPerRev};
-    SpiMessageConverter             converter{params};
+protected:
+  SpiMessageConverter::Parameters params{kTestTrackWidthM,
+    kTestWheelRadiusM,
+    kTestEncoderTicksPerRev};
+  SpiMessageConverter             converter{params};
 };
 
 TEST_F(SpiMessageConverterTest, TwistToVelocity_Forward)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 1.0;
+    twist.linear.x = 1.0;
     twist.angular.z = 0.0;
 
     star::v1::VelocityCommand cmd;
@@ -48,7 +48,7 @@ TEST_F(SpiMessageConverterTest, TwistToVelocity_Forward)
 TEST_F(SpiMessageConverterTest, TwistToVelocity_RotateLeft)
 {
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 0.0;
+    twist.linear.x = 0.0;
     twist.angular.z = 2.0; // 2 rad/s
 
     star::v1::VelocityCommand cmd;
@@ -59,7 +59,7 @@ TEST_F(SpiMessageConverterTest, TwistToVelocity_RotateLeft)
     //   v_left  = linear - angular * (track_width / 2)
     // For linear=0, angular=2: |v| = track_width.
     const double expected_right = twist.angular.z * (kTestTrackWidthM / 2.0);
-    const double expected_left  = -expected_right;
+    const double expected_left = -expected_right;
     EXPECT_NEAR(cmd.front_right_velocity_mps(), expected_right, 0.001);
     EXPECT_NEAR(cmd.front_left_velocity_mps(), expected_left, 0.001);
 }
@@ -225,7 +225,7 @@ TEST_F(SpiMessageConverterTest, RoundTrip_TwistToVelocityToJointState)
 {
     // Create a twist command
     geometry_msgs::msg::Twist twist;
-    twist.linear.x  = 0.5;
+    twist.linear.x = 0.5;
     twist.angular.z = 0.2;
 
     // Convert to velocity command
@@ -236,9 +236,9 @@ TEST_F(SpiMessageConverterTest, RoundTrip_TwistToVelocityToJointState)
     // Differential drive kinematics with kTestTrackWidthM as the track:
     //   v_right = linear + angular * (track_width / 2)
     //   v_left  = linear - angular * (track_width / 2)
-    const double half_track     = kTestTrackWidthM / 2.0;
+    const double half_track = kTestTrackWidthM / 2.0;
     const double expected_right = twist.linear.x + twist.angular.z * half_track;
-    const double expected_left  = twist.linear.x - twist.angular.z * half_track;
+    const double expected_left = twist.linear.x - twist.angular.z * half_track;
     EXPECT_NEAR(cmd.front_right_velocity_mps(), expected_right, 0.001);
     EXPECT_NEAR(cmd.front_left_velocity_mps(), expected_left, 0.001);
     EXPECT_NEAR(cmd.back_right_velocity_mps(), expected_right, 0.001);
