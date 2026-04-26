@@ -154,9 +154,28 @@ silently and the codebase loses the structural feedback the lint
 gave for free.
 
 \textbf{Exception:} path-sensitive checks like
-\texttt{clang-analyzer-optin.core.EnumCastOutOfRange} where there
-is genuinely no source-level workaround -- a NOLINT is acceptable
-there. \texttt{readability-*} is not in that exception class.
+\texttt{clang-analyzer-optin.core.EnumCastOutOfRange} or
+\texttt{clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling}
+where there is genuinely no source-level workaround -- a NOLINT is
+acceptable there. \texttt{readability-*} is NOT in that exception class.
+
+\textbf{Common refactor patterns} (see commit \texttt{9b5a0d53e}):
+\begin{itemize}
+\item \emph{magic-numbers in static\_asserts}: replace
+      \texttt{static\_assert(k\_x == 0xLITERAL, ...)} with
+      \texttt{static\_assert(k\_x != k\_y \&\& (k\_x \& k\_y) == 0, ...)}
+      so the relationship between named constants is asserted instead
+      of re-stating the literal.
+\item \emph{non-const-parameter on stub callbacks}: have the stub
+      actually use the parameter (e.g.
+      \texttt{if (buf\_size > 0U) out\_buf[0] = '\\0';}) so clang-tidy
+      sees a real non-const use, preserving the function-pointer
+      signature contract.
+\item \emph{math-missing-parentheses}: wrap each operand cluster in
+      its own pair of parens so the precedence is obvious to the
+      reader and to clang-tidy
+      (\texttt{((a * b) + c) / d} instead of \texttt{a * b + c / d}).
+\end{itemize}
 
 \subsubsection{Trust headers over comments}
 
