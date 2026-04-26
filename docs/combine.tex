@@ -1,8 +1,25 @@
 % =============================================================================
-% STAR Combined Reference -- driver that concatenates every existing PDF
-% into one master deliverable. Compile with:
-%   pdflatex -interaction=nonstopmode combine.tex
-% (single pass is enough; no \tableofcontents references nothing else)
+% STAR Combined Reference (top-level) -- the everything-PDF.
+%
+% Built by `make combined-reference`; emitted as
+% docs/STAR_Combined_Reference.pdf.
+%
+% Compile order (handled by the Makefile):
+%   1. `make combined-firmware`  -> docs/STAR_Firmware_Combined.pdf
+%   2. pdflatex combine.tex       -> docs/combine.pdf
+%   3. mv combine.pdf STAR_Combined_Reference.pdf
+%
+% Sections (in order):
+%   I   - Engineering Reference (docs/star_documentation.pdf, ~241 pages)
+%   II  - Firmware Combined PDF (40 doxygen PDFs: src+tests+libs+bench)
+%   III - Software Description Document (capstone)
+%   IV  - System and Software User Manual (capstone)
+%   V   - Test Report (capstone)
+%   VI  - Final Demo Handout (capstone)
+%   VII - Final Presentation (capstone)
+%   VIII- Mechanical Drawings (overview + 9 sub-drawings)
+%   IX  - Electrical Schematics + PCB (3 KiCad outputs)
+%   X   - Bench Schematic + Calibration + Board Instructions + Compliance sample
 % =============================================================================
 \documentclass[11pt,letterpaper]{article}
 
@@ -13,13 +30,13 @@
 \hypersetup{
   pdftitle={STAR Project Combined Reference},
   pdfauthor={STAR Development Team -- Locked Inc.},
-  pdfsubject={Comprehensive STAR engineering, API, and capstone reference},
-  pdfkeywords={STAR, RX72N, ROS2, ThreadX, robotics, ADA, capstone}
+  pdfsubject={Comprehensive STAR engineering, API, capstone, mechanical, and electrical reference},
+  pdfkeywords={STAR, RX72N, ROS2, ThreadX, robotics, ADA, capstone, mechanical, PCB}
 }
 
 \title{\Huge\bfseries STAR Project\\[0.4em]\Large Combined Reference}
 \author{STAR Development Team \\ Locked Inc.}
-\date{Version 1.0 \\ April 25, 2026 \\ MIT License}
+\date{Version 1.1 \\ April 2026 \\ MIT License}
 
 \begin{document}
 
@@ -38,8 +55,8 @@
 
 \vfill
 
-{\large Version 1.0\par}
-{\large April 25, 2026\par}
+{\large Version 1.1\par}
+{\large April 2026\par}
 \vspace{0.4cm}
 {\large MIT License\par}
 
@@ -48,70 +65,34 @@
 {\normalsize STAR Development Team\\Locked Inc.\par}
 \vspace{0.8cm}
 
-{\small\itshape This volume bundles the engineering reference, per-library
-Doxygen API documentation, and capstone deliverables (SDD, SSUM, Test Report)
-into a single PDF for offline distribution.\par}
+{\small\itshape The everything-PDF: engineering reference, every per-module
+firmware Doxygen PDF (src, tests, 27 libs, 11 bench apps), the four capstone
+deliverables, the mechanical drawings (overview + 9 individual parts), the
+electrical schematic / PCB / design package, and miscellaneous
+calibration/instructions/compliance documents -- bundled into a single PDF
+for offline distribution.\par}
 \end{titlepage}
 
 % -----------------------------------------------------------------------------
-% Brief table of contents (parts only -- each part has its own internal TOC)
+% Brief table of contents (parts only -- each included PDF carries its own
+% internal TOC and bookmarks)
 % -----------------------------------------------------------------------------
 \tableofcontents
 \newpage
 
 % =============================================================================
-% PART I -- Engineering Reference
+% PART I -- Engineering Reference (LaTeX book, 25 sections, ~241 pages)
 % =============================================================================
 \includepdf[pages=-,pagecommand={},addtotoc={
   1,part,1,Engineering Reference,part:eng
 }]{/Users/bsikar/Documents/github/STAR/docs/star_documentation.pdf}
 
 % =============================================================================
-% PART II -- Doxygen API Reference (per-library, alphabetical)
+% PART II -- Firmware Combined PDF (the 40-PDF firmware bundle inlined)
 % =============================================================================
 \includepdf[pages=-,pagecommand={},addtotoc={
-  1,part,1,Doxygen API Reference,part:doxy
-}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/src.pdf}
-
-\includepdf[pages=-,pagecommand={},addtotoc={
-  1,section,1,{rx\_comm\_manager},sec:doxy:comm
-}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_comm_manager.pdf}
-
-\includepdf[pages=-,pagecommand={},addtotoc={
-  1,section,1,{rx\_core},sec:doxy:core
-}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_core.pdf}
-
-\includepdf[pages=-,pagecommand={},addtotoc={
-  1,section,1,{rx\_crc},sec:doxy:crc
-}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_crc.pdf}
-
-\includepdf[pages=-,pagecommand={},addtotoc={
-  1,section,1,{rx\_ds18b20},sec:doxy:ds
-}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_ds18b20.pdf}
-
-\includepdf[pages=-,pagecommand={},addtotoc={
-  1,section,1,{rx\_fec},sec:doxy:fec
-}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_fec.pdf}
-
-\includepdf[pages=-,pagecommand={},addtotoc={
-  1,section,1,{rx\_frame},sec:doxy:frame
-}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_frame.pdf}
-
-\includepdf[pages=-,pagecommand={},addtotoc={
-  1,section,1,{rx\_frame\_ascii},sec:doxy:frameascii
-}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_frame_ascii.pdf}
-
-\includepdf[pages=-,pagecommand={},addtotoc={
-  1,section,1,{rx\_harq},sec:doxy:harq
-}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_harq.pdf}
-
-\includepdf[pages=-,pagecommand={},addtotoc={
-  1,section,1,{rx\_hcsr04},sec:doxy:hcsr04
-}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_hcsr04.pdf}
-
-\includepdf[pages=-,pagecommand={},addtotoc={
-  1,section,1,{rx\_pid},sec:doxy:pid
-}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_pid.pdf}
+  1,part,1,Firmware Combined PDF,part:fw
+}]{/Users/bsikar/Documents/github/STAR/docs/STAR_Firmware_Combined.pdf}
 
 % =============================================================================
 % PART III -- Software Description Document (capstone)
@@ -133,5 +114,97 @@ into a single PDF for offline distribution.\par}
 \includepdf[pages=-,pagecommand={},addtotoc={
   1,part,1,Test Report,part:tr
 }]{/Users/bsikar/Documents/github/STAR/final_docs/test_report/STAR_Test_Report.pdf}
+
+% =============================================================================
+% PART VI -- Final Demo Handout (capstone)
+% =============================================================================
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,part,1,Final Demo Handout,part:demo
+}]{/Users/bsikar/Documents/github/STAR/final_docs/final_demo/STAR_DemoHandout.pdf}
+
+% =============================================================================
+% PART VII -- Final Presentation (capstone)
+% =============================================================================
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,part,1,Final Presentation,part:pres
+}]{/Users/bsikar/Documents/github/STAR/final_docs/final_presentation/STAR_Final_Presentation.pdf}
+
+% =============================================================================
+% PART VIII -- Mechanical Drawings (overview + 9 individual parts)
+% =============================================================================
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,part,1,Mechanical Drawings,part:mech
+}]{/Users/bsikar/Documents/github/STAR/final_docs/mechanical_designs/STAR_Mechanical_Drawings.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{Battery Box},sec:mech:battery
+}]{/Users/bsikar/Documents/github/STAR/final_docs/mechanical_designs/Battery Box.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{Drivetrain Assembly},sec:mech:drive
+}]{/Users/bsikar/Documents/github/STAR/final_docs/mechanical_designs/Drivetrain Assembly.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{Lid (Left)},sec:mech:lidl
+}]{/Users/bsikar/Documents/github/STAR/final_docs/mechanical_designs/Lid L.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{Lid (Right)},sec:mech:lidr
+}]{/Users/bsikar/Documents/github/STAR/final_docs/mechanical_designs/Lid R.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{Motor Mount},sec:mech:motormount
+}]{/Users/bsikar/Documents/github/STAR/final_docs/mechanical_designs/Motor mount.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{Sheet Base},sec:mech:base
+}]{/Users/bsikar/Documents/github/STAR/final_docs/mechanical_designs/Sheet base.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{Sheet Lidar},sec:mech:lidar
+}]{/Users/bsikar/Documents/github/STAR/final_docs/mechanical_designs/Sheet Lidar.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{Side Panel},sec:mech:sidepanel
+}]{/Users/bsikar/Documents/github/STAR/final_docs/mechanical_designs/Side panel.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{Split Rail},sec:mech:splitrail
+}]{/Users/bsikar/Documents/github/STAR/final_docs/mechanical_designs/Split rail.pdf}
+
+% =============================================================================
+% PART IX -- Electrical Schematics + PCB
+% =============================================================================
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,part,1,Electrical Design,part:elec
+}]{/Users/bsikar/Documents/github/STAR/final_docs/electrical_schematics_pcb/STAR_MCU_Electrical_Design.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{MCU Schematic},sec:elec:sch
+}]{/Users/bsikar/Documents/github/STAR/final_docs/electrical_schematics_pcb/STAR_MCU_schematic.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{MCU PCB Layout},sec:elec:pcb
+}]{/Users/bsikar/Documents/github/STAR/final_docs/electrical_schematics_pcb/STAR_MCU_PCB.pdf}
+
+% =============================================================================
+% PART X -- Miscellaneous (bench schematic, calibration, instructions,
+%                          compliance audit sample)
+% =============================================================================
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,part,1,Miscellaneous,part:misc
+}]{/Users/bsikar/Documents/github/STAR/docs/bench/kicad/STAR_MCU.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{Camera Calibration (Checkerboard)},sec:misc:checker
+}]{/Users/bsikar/Documents/github/STAR/docs/checkerboard_calibration.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{TOM Board Build Instructions},sec:misc:tom
+}]{/Users/bsikar/Documents/github/STAR/schematic/TOM/2026-03-19 Student Project Instructions.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{Compliance Audit Report (sample)},sec:misc:audit
+}]{/Users/bsikar/Documents/github/STAR/star-compliance/star_audit_report_sample.pdf}
 
 \end{document}

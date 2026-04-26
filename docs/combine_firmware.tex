@@ -1,0 +1,246 @@
+% =============================================================================
+% STAR Firmware Combined PDF -- concatenates every doxygen PDF for the
+% RX72N firmware (src + tests + libs + bench-test apps) into one volume.
+% Built by `make combined-firmware`; emitted as
+% docs/STAR_Firmware_Combined.pdf.
+%
+% This is the FIRMWARE-ONLY combined PDF. For the top-level reference that
+% includes the engineering reference + capstone + mechanical/electrical
+% PDFs, see docs/combine.tex / `make combined-reference`.
+%
+% Compile with:
+%   pdflatex -interaction=nonstopmode combine_firmware.tex
+% (single pass; pdfpages doesn't need a second pass)
+%
+% New libs / bench dirs need a one-line \includepdf entry below.
+% =============================================================================
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{pdfpages}
+\usepackage[bookmarks=true,bookmarksopen=true,bookmarksnumbered=true,colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+
+\hypersetup{
+  pdftitle={STAR Firmware Combined PDF},
+  pdfauthor={STAR Development Team -- Locked Inc.},
+  pdfsubject={RX72N firmware Doxygen API: src + tests + libs + bench-test apps},
+  pdfkeywords={STAR, RX72N, firmware, doxygen, API, libs, tests, bench}
+}
+
+\title{\Huge\bfseries STAR Firmware\\[0.4em]\Large Combined PDF}
+\author{STAR Development Team \\ Locked Inc.}
+\date{Version 1.1 \\ April 2026 \\ MIT License}
+
+\begin{document}
+
+% -----------------------------------------------------------------------------
+% Cover page
+% -----------------------------------------------------------------------------
+\begin{titlepage}
+\centering
+\vspace*{2.5cm}
+
+{\Huge\bfseries STAR Firmware\par}
+\vspace{0.3cm}
+{\LARGE Combined PDF\par}
+\vspace{0.5cm}
+{\large Renesas RX72N -- src, tests, libs, bench apps\par}
+
+\vfill
+
+{\large Version 1.1\par}
+{\large April 2026\par}
+\vspace{0.4cm}
+{\large MIT License\par}
+
+\vfill
+
+{\normalsize STAR Development Team\\Locked Inc.\par}
+\vspace{0.8cm}
+
+{\small\itshape This volume bundles every per-module Doxygen PDF for the
+RX72N firmware: src/ (the application), tests/ (host unit-test suite),
+all 27 libraries under libs/, and all 11 bench-test applications. For
+the top-level volume that adds the engineering reference + capstone
+deliverables + mechanical / electrical PDFs, see
+\texttt{STAR\_Combined\_Reference.pdf} (built by
+\texttt{make combined-reference}).\par}
+\end{titlepage}
+
+% -----------------------------------------------------------------------------
+% Brief table of contents (parts only -- each included PDF carries its own
+% internal TOC and bookmarks)
+% -----------------------------------------------------------------------------
+\tableofcontents
+\newpage
+
+% =============================================================================
+% PART I -- Firmware Source Doxygen API (src/ + tests/)
+% =============================================================================
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,part,1,Firmware Source API,part:doxy:src
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/src.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{Host Unit Tests (tests/)},sec:doxy:tests
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/tests.pdf}
+
+% =============================================================================
+% PART II -- Per-Library Doxygen API (alphabetical, all 27 libs)
+% =============================================================================
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,part,1,Per-Library API,part:doxy:libs
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_bmp280.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_bno055},sec:doxy:bno055
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_bno055.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_bus},sec:doxy:bus
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_bus.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_comm\_manager},sec:doxy:comm
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_comm_manager.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_core},sec:doxy:core
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_core.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_crc},sec:doxy:crc
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_crc.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_dmaca},sec:doxy:dmaca
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_dmaca.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_drv8263},sec:doxy:drv
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_drv8263.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_ds18b20},sec:doxy:ds
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_ds18b20.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_encoder},sec:doxy:encoder
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_encoder.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_fec},sec:doxy:fec
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_fec.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_frame},sec:doxy:frame
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_frame.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_frame\_ascii},sec:doxy:frameascii
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_frame_ascii.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_hal},sec:doxy:hal
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_hal.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_harq},sec:doxy:harq
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_harq.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_hcsr04},sec:doxy:hcsr04
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_hcsr04.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_i2c\_comm},sec:doxy:i2c
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_i2c_comm.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_motor},sec:doxy:motor
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_motor.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_nanopb},sec:doxy:nanopb
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_nanopb.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_obstacle\_detect},sec:doxy:obstacle
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_obstacle_detect.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_pid},sec:doxy:pid
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_pid.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_session},sec:doxy:session
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_session.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_spi\_comm},sec:doxy:spicomm
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_spi_comm.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_spi\_link},sec:doxy:spilink
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_spi_link.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_uart\_comm},sec:doxy:uart
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_uart_comm.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{rx\_usb},sec:doxy:usb
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/rx_usb.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{threadx},sec:doxy:threadx
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/threadx.pdf}
+
+% =============================================================================
+% PART III -- Bench-Test Apps (the "examples"; alphabetical, all 11 dirs)
+% =============================================================================
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,part,1,Bench-Test Apps,part:bench
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/blinky.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{blinky\_rtos},sec:bench:blinky_rtos
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/blinky_rtos.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{encoder\_test},sec:bench:encoder
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/encoder_test.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{gpio\_test},sec:bench:gpio
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/gpio_test.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{imu\_test},sec:bench:imu
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/imu_test.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{motor\_spin\_test},sec:bench:motor_spin
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/motor_spin_test.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{motors\_rtos},sec:bench:motors_rtos
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/motors_rtos.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{pwm\_test},sec:bench:pwm
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/pwm_test.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{pwm\_test\_fit},sec:bench:pwm_fit
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/pwm_test_fit.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{pwm\_test\_hal},sec:bench:pwm_hal
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/pwm_test_hal.pdf}
+
+\includepdf[pages=-,pagecommand={},addtotoc={
+  1,section,1,{uart\_test},sec:bench:uart
+}]{/Users/bsikar/Documents/github/STAR/star-rx72n-firmware/docs/doxygen/pdf/uart_test.pdf}
+
+\end{document}

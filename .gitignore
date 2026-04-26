@@ -224,10 +224,16 @@ CMakeUserPresets.json
 /virtual_rx72n
 /star-gateway/virtual_rx72n
 
-# Combined reference PDF (rebuild via 'make combined-reference')
+# Combined PDFs (rebuild via 'make combined-firmware' / 'make combined-reference')
+docs/STAR_Firmware_Combined.pdf
 docs/STAR_Combined_Reference.pdf
 docs/combine.pdf
 docs/combine.aux
 docs/combine.log
 docs/combine.out
 docs/combine.toc
+docs/combine_firmware.pdf
+docs/combine_firmware.aux
+docs/combine_firmware.log
+docs/combine_firmware.out
+docs/combine_firmware.toc

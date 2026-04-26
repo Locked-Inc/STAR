@@ -6,7 +6,7 @@ IMAGE_NAME := star-ros2-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell blinky build-blinky clean-blinky flash-blinky flash-blinky-sci motor0 motor0-forward motor0-reverse motor1 motor1-forward motor1-reverse motor2 motor2-forward motor2-reverse motor3 motor3-forward motor3-reverse motor-all motor-all-forward motor-stop motor-clean none
+.PHONY: help build-image build format shell test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n coverage-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-tests doxygen-pdf-deps doxygen-clean combined-firmware combined-reference build-rx72n build-rx72n-release format-rx72n check-rx72n ci-rx72n devcontainer devcontainer-rebuild devcontainer-shell blinky build-blinky clean-blinky flash-blinky flash-blinky-sci motor0 motor0-forward motor0-reverse motor1 motor1-forward motor1-reverse motor2 motor2-forward motor2-reverse motor3 motor3-forward motor3-reverse motor-all motor-all-forward motor-stop motor-clean none
 
 help:
 	@echo "STAR Project Development Helper"
@@ -57,6 +57,12 @@ help:
 	@echo "                             Override: make doxygen-pdfs DOXY_PDF_JOBS=8"
 	@echo "  make doxygen-pdf-deps    - Install missing LaTeX packages for PDF builds (varwidth, collection-latexextra)"
 	@echo "  make doxygen-clean       - Remove generated Doxygen output"
+	@echo "  make combined-firmware   - Bundle the 40 firmware PDFs into one (~7000+ pages)"
+	@echo "                             Output: docs/STAR_Firmware_Combined.pdf"
+	@echo "  make combined-reference  - Top-level 10-part PDF: engineering ref + firmware combined +"
+	@echo "                             SDD + SSUM + Test Report + Demo + Presentation +"
+	@echo "                             Mechanical + Electrical + Misc"
+	@echo "                             Output: docs/STAR_Combined_Reference.pdf"
 	@echo "  Note: GNURX toolchain required for build targets (rx-elf-gcc)"
 	@echo ""
 	@echo "Protocol Buffers:"
@@ -552,25 +558,52 @@ doxygen-clean:
 
 # Combined reference PDF: cover + engineering reference + per-library
 # doxygen API + capstone SDD/SSUM/test report concatenated into one
-# 3000+ page master deliverable.
+# 3000+ page top-level deliverable.
 #
-# Strategy: pdfpages-driven concat via docs/combine.tex. Inputs:
-#   * docs/star_documentation.pdf   (rebuilt if .tex sources changed)
-#   * star-rx72n-firmware/docs/doxygen/pdf/*.pdf   (must exist; run
-#     `make doxygen-pdfs` first if not)
-#   * final_docs/{software_description_document,system_software_user_manual,
-#                 test_report}/*.pdf   (capstone-built; should be present)
+# Two layers:
+#   `make combined-firmware`  -> docs/STAR_Firmware_Combined.pdf
+#       Bundles every doxygen PDF for the RX72N firmware:
+#         src + tests + 27 libs + 11 bench-test apps = 40 PDFs.
+#       Built from docs/combine_firmware.tex (pdfpages-driven concat).
 #
-# Output: docs/STAR_Combined_Reference.pdf
+#   `make combined-reference` -> docs/STAR_Combined_Reference.pdf
+#       The everything-PDF. Bundles:
+#         I    docs/star_documentation.pdf   (rebuilt; ~241 pages)
+#         II   STAR_Firmware_Combined.pdf    (rebuilt; ~7000+ pages)
+#         III  Software Description Document (capstone)
+#         IV   System and Software User Manual (capstone)
+#         V    Test Report (capstone)
+#         VI   Final Demo Handout (capstone)
+#         VII  Final Presentation (capstone)
+#         VIII Mechanical Drawings (overview + 9 parts)
+#         IX   Electrical Schematics + PCB (3 KiCad outputs)
+#         X    Miscellaneous (bench schematic, camera calibration,
+#              TOM board instructions, compliance audit sample)
+#       Built from docs/combine.tex.
+#
+# Both outputs are gitignored as build artifacts; rebuild on demand.
+combined-firmware:
+	@echo "Building STAR Firmware Combined PDF..."
+	@echo "  Compiling docs/combine_firmware.tex..."
+	@cd docs && pdflatex -interaction=nonstopmode combine_firmware.tex >/dev/null 2>&1 && \
+	  pdflatex -interaction=nonstopmode combine_firmware.tex >/dev/null 2>&1
+	@echo "  Installing as docs/STAR_Firmware_Combined.pdf..."
+	@mv docs/combine_firmware.pdf docs/STAR_Firmware_Combined.pdf
+	@echo ""
+	@echo "[OK] docs/STAR_Firmware_Combined.pdf"
+	@which pdfinfo >/dev/null 2>&1 && pdfinfo docs/STAR_Firmware_Combined.pdf | grep -E "Pages|File size" || true
+
 combined-reference:
-	@echo "Building STAR Combined Reference PDF..."
-	@echo "  [1/3] Refreshing engineering reference (docs/star_documentation.pdf)..."
+	@echo "Building STAR Combined Reference PDF (top-level)..."
+	@echo "  [1/4] Refreshing engineering reference (docs/star_documentation.pdf)..."
 	@cd docs && pdflatex -interaction=nonstopmode star_documentation.tex >/dev/null 2>&1 && \
 	  pdflatex -interaction=nonstopmode star_documentation.tex >/dev/null 2>&1
-	@echo "  [2/3] Compiling combined driver (docs/combine.tex)..."
+	@echo "  [2/4] Refreshing firmware combined PDF (docs/STAR_Firmware_Combined.pdf)..."
+	@$(MAKE) combined-firmware >/dev/null 2>&1
+	@echo "  [3/4] Compiling top-level driver (docs/combine.tex)..."
 	@cd docs && pdflatex -interaction=nonstopmode combine.tex >/dev/null 2>&1 && \
 	  pdflatex -interaction=nonstopmode combine.tex >/dev/null 2>&1
-	@echo "  [3/3] Installing as docs/STAR_Combined_Reference.pdf..."
+	@echo "  [4/4] Installing as docs/STAR_Combined_Reference.pdf..."
 	@mv docs/combine.pdf docs/STAR_Combined_Reference.pdf
 	@echo ""
 	@echo "[OK] docs/STAR_Combined_Reference.pdf"
