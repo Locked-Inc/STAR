@@ -145,7 +145,19 @@ WARN_LOGFILE            = docs/doxygen/doxygen_warnings.log
 INPUT                   = README_CMAKE.md \
                           BOARD_CONFIG.md \
                           src \
-                          libs
+                          libs \
+                          tests \
+                          blinky \
+                          blinky_rtos \
+                          encoder_test \
+                          gpio_test \
+                          imu_test \
+                          motor_spin_test \
+                          motors_rtos \
+                          pwm_test \
+                          pwm_test_fit \
+                          pwm_test_hal \
+                          uart_test
 INPUT_ENCODING          = UTF-8
 FILE_PATTERNS           = *.c \
                           *.h \
@@ -155,10 +167,13 @@ RECURSIVE               = YES
 EXCLUDE                 =
 EXCLUDE_SYMLINKS        = NO
 # Exclude assembly files - doxygen confuses ';' as an initializer terminator
+# pwm_test_fit/iodefine.h is Renesas-generated 36K-line vendor file: skip
+# (doxygen produces nothing meaningful and times out under xelatex anyway).
 EXCLUDE_PATTERNS        = */libs/threadx/* \
                           */nanopb/tests/* \
                           */nanopb/examples/* \
-                          */nanopb/build-tests/*
+                          */nanopb/build-tests/* \
+                          */pwm_test_fit/iodefine.h
 EXCLUDE_SYMBOLS         =
 # Use libs/ as example root so any \include of headers resolves
 EXAMPLE_PATH            = libs \
